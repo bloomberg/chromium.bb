@@ -134,7 +134,7 @@ Response InspectorPerformanceAgent::getMetrics(
       protocol::Array<protocol::Performance::Metric>::create();
 
   AppendMetric(result.get(), "Timestamp",
-               TimeTicksInSeconds(CurrentTimeTicks()));
+               CurrentTimeTicks().since_origin().InSecondsF());
 
   // Renderer instance counters.
   for (size_t i = 0; i < ARRAY_SIZE(kInstanceCounterNames); ++i) {
@@ -189,14 +189,21 @@ Response InspectorPerformanceAgent::getMetrics(
   Document* document = inspected_frames_->Root()->GetDocument();
   if (document) {
     AppendMetric(result.get(), "FirstMeaningfulPaint",
-                 TimeTicksInSeconds(
-                     PaintTiming::From(*document).FirstMeaningfulPaint()));
-    AppendMetric(
-        result.get(), "DomContentLoaded",
-        TimeTicksInSeconds(document->GetTiming().DomContentLoadedEventStart()));
-    AppendMetric(
-        result.get(), "NavigationStart",
-        TimeTicksInSeconds(document->Loader()->GetTiming().NavigationStart()));
+                 PaintTiming::From(*document)
+                     .FirstMeaningfulPaint()
+                     .since_origin()
+                     .InSecondsF());
+    AppendMetric(result.get(), "DomContentLoaded",
+                 document->GetTiming()
+                     .DomContentLoadedEventStart()
+                     .since_origin()
+                     .InSecondsF());
+    AppendMetric(result.get(), "NavigationStart",
+                 document->Loader()
+                     ->GetTiming()
+                     .NavigationStart()
+                     .since_origin()
+                     .InSecondsF());
   }
 
   *out_result = std::move(result);

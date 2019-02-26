@@ -505,8 +505,9 @@ TEST_F(InteractiveDetectorTest, InvalidatedFMP) {
                    TimeDelta::FromSecondsD(5.0 + 0.1));
   // Since FMP was invalidated, we do not have TTI or TTI Detection Time.
   EXPECT_EQ(GetInteractiveTime(), TimeTicks());
-  EXPECT_EQ(TimeTicksInSeconds(GetDetector()->GetInteractiveDetectionTime()),
-            0.0);
+  EXPECT_EQ(
+      GetDetector()->GetInteractiveDetectionTime().since_origin().InSecondsF(),
+      0.0);
   // Invalidating input timestamp is available.
   EXPECT_EQ(GetDetector()->GetFirstInvalidatingInputTime(),
             t0 + TimeDelta::FromSeconds(1));

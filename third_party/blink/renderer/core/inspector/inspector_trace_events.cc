@@ -782,7 +782,8 @@ std::unique_ptr<TracedValue> inspector_send_navigation_request_event::Data(
 
 namespace {
 void RecordTiming(const ResourceLoadTiming& timing, TracedValue* value) {
-  value->SetDouble("requestTime", TimeTicksInSeconds(timing.RequestTime()));
+  value->SetDouble("requestTime",
+                   timing.RequestTime().since_origin().InSecondsF());
   value->SetDouble("proxyStart",
                    timing.CalculateMillisecondDelta(timing.ProxyStart()));
   value->SetDouble("proxyEnd",
@@ -807,8 +808,8 @@ void RecordTiming(const ResourceLoadTiming& timing, TracedValue* value) {
                    timing.CalculateMillisecondDelta(timing.SendEnd()));
   value->SetDouble("receiveHeadersEnd", timing.CalculateMillisecondDelta(
                                             timing.ReceiveHeadersEnd()));
-  value->SetDouble("pushStart", TimeTicksInSeconds(timing.PushStart()));
-  value->SetDouble("pushEnd", TimeTicksInSeconds(timing.PushEnd()));
+  value->SetDouble("pushStart", timing.PushStart().since_origin().InSecondsF());
+  value->SetDouble("pushEnd", timing.PushEnd().since_origin().InSecondsF());
 }
 }  // namespace
 
@@ -866,7 +867,7 @@ std::unique_ptr<TracedValue> inspector_resource_finish_event::Data(
   value->SetDouble("encodedDataLength", encoded_data_length);
   value->SetDouble("decodedBodyLength", decoded_body_length);
   if (!finish_time.is_null())
-    value->SetDouble("finishTime", TimeTicksInSeconds(finish_time));
+    value->SetDouble("finishTime", finish_time.since_origin().InSecondsF());
   return value;
 }
 

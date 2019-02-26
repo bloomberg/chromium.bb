@@ -865,7 +865,7 @@ void Animation::StartAnimationOnCompositor(
   base::Optional<double> start_time = base::nullopt;
   double time_offset = 0;
   if (start_time_) {
-    start_time = TimeTicksInSeconds(TimelineInternal()->ZeroTime()) +
+    start_time = TimelineInternal()->ZeroTime().since_origin().InSecondsF() +
                  start_time_.value();
     if (reversed)
       start_time = start_time.value() - (EffectEnd() / fabs(playback_rate_));

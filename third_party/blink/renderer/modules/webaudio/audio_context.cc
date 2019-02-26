@@ -261,7 +261,7 @@ AudioTimestamp* AudioContext::getOutputTimestamp(
   }
 
   double performance_time = performance->MonotonicTimeToDOMHighResTimeStamp(
-      TimeTicksFromSeconds(position.timestamp));
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(position.timestamp));
   if (performance_time < 0.0)
     performance_time = 0.0;
 

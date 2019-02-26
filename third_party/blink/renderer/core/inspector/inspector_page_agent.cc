@@ -79,7 +79,6 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8-inspector.h"
 
@@ -599,19 +598,20 @@ Response InspectorPageAgent::setLifecycleEventsEnabled(bool enabled) {
     TimeTicks commit_timestamp = timing.ResponseEnd();
     if (!commit_timestamp.is_null()) {
       LifecycleEvent(frame, loader, "commit",
-                     TimeTicksInSeconds(commit_timestamp));
+                     commit_timestamp.since_origin().InSecondsF());
     }
 
     TimeTicks domcontentloaded_timestamp =
         document->GetTiming().DomContentLoadedEventEnd();
     if (!domcontentloaded_timestamp.is_null()) {
       LifecycleEvent(frame, loader, "DOMContentLoaded",
-                     TimeTicksInSeconds(domcontentloaded_timestamp));
+                     domcontentloaded_timestamp.since_origin().InSecondsF());
     }
 
     TimeTicks load_timestamp = timing.LoadEventEnd();
     if (!load_timestamp.is_null()) {
-      LifecycleEvent(frame, loader, "load", TimeTicksInSeconds(load_timestamp));
+      LifecycleEvent(frame, loader, "load",
+                     load_timestamp.since_origin().InSecondsF());
     }
 
     IdlenessDetector* idleness_detector = frame->GetIdlenessDetector();
@@ -619,12 +619,12 @@ Response InspectorPageAgent::setLifecycleEventsEnabled(bool enabled) {
         idleness_detector->GetNetworkAlmostIdleTime();
     if (!network_almost_idle_timestamp.is_null()) {
       LifecycleEvent(frame, loader, "networkAlmostIdle",
-                     TimeTicksInSeconds(network_almost_idle_timestamp));
+                     network_almost_idle_timestamp.since_origin().InSecondsF());
     }
     TimeTicks network_idle_timestamp = idleness_detector->GetNetworkIdleTime();
     if (!network_idle_timestamp.is_null()) {
       LifecycleEvent(frame, loader, "networkIdle",
-                     TimeTicksInSeconds(network_idle_timestamp));
+                     network_idle_timestamp.since_origin().InSecondsF());
     }
   }
 

@@ -113,7 +113,9 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   DOMHighResTimeStamp timeOrigin() const;
 
   // Internal getter method for the time origin value.
-  double GetTimeOrigin() const { return TimeTicksInSeconds(time_origin_); }
+  double GetTimeOrigin() const {
+    return time_origin_.since_origin().InSecondsF();
+  }
 
   PerformanceEntryVector getEntries();
   PerformanceEntryVector getEntriesByType(const AtomicString& entry_type);
