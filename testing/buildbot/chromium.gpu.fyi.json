@@ -6,8 +6,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -495,8 +494,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -4922,8 +4920,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -5529,8 +5526,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -6016,8 +6012,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -6600,8 +6595,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -6849,8 +6843,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -7339,8 +7332,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -7898,8 +7890,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -8842,8 +8833,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -9332,8 +9322,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -9822,8 +9811,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -10312,8 +10300,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -10715,8 +10702,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -11191,8 +11177,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -11687,8 +11672,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -12183,8 +12167,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -12727,8 +12710,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -13175,8 +13157,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -13616,8 +13597,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -14057,8 +14037,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -14547,8 +14526,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -15165,8 +15143,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -15624,8 +15601,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -15866,8 +15842,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -16232,8 +16207,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -16405,8 +16379,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -16596,8 +16569,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -16759,8 +16731,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -17219,8 +17190,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -17912,8 +17882,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -18576,8 +18545,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -19462,8 +19430,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -20282,8 +20249,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -21788,8 +21754,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -21911,8 +21876,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -22546,8 +22510,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -23256,8 +23219,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
@@ -24291,8 +24253,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,
         "swarming": {
