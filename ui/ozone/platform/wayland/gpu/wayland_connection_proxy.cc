@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/process/process.h"
 #include "third_party/khronos/EGL/egl.h"
@@ -105,6 +107,31 @@ void WaylandConnectionProxy::ScheduleBufferSwap(
                               std::move(callback));
 }
 
+void WaylandConnectionProxy::CreateShmBufferForWidget(
+    gfx::AcceleratedWidget widget,
+    base::File file,
+    size_t length,
+    const gfx::Size size) {
+  if (!bound_) {
+    wc_ptr_.Bind(std::move(wc_ptr_info_));
+    bound_ = true;
+  }
+  DCHECK(wc_ptr_);
+  wc_ptr_->CreateShmBufferForWidget(widget, std::move(file), length, size);
+}
+
+void WaylandConnectionProxy::PresentShmBufferForWidget(
+    gfx::AcceleratedWidget widget,
+    const gfx::Rect& damage) {
+  DCHECK(wc_ptr_);
+  wc_ptr_->PresentShmBufferForWidget(widget, damage);
+}
+
+void WaylandConnectionProxy::DestroyShmBuffer(gfx::AcceleratedWidget widget) {
+  DCHECK(wc_ptr_);
+  wc_ptr_->DestroyShmBuffer(widget);
+}
+
 WaylandWindow* WaylandConnectionProxy::GetWindow(
     gfx::AcceleratedWidget widget) {
   if (connection_)
@@ -120,12 +147,6 @@ void WaylandConnectionProxy::ScheduleFlush() {
                 "when multi-process moe is used";
 }
 
-wl_shm* WaylandConnectionProxy::shm() {
-  wl_shm* shm = nullptr;
-  if (connection_)
-    shm = connection_->shm();
-  return shm;
-}
 
 intptr_t WaylandConnectionProxy::Display() {
   if (connection_)
