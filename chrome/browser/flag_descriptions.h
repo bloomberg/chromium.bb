@@ -1450,9 +1450,6 @@ extern const char kMediaScreenCaptureDescription[];
 extern const char kModalPermissionDialogViewName[];
 extern const char kModalPermissionDialogViewDescription[];
 
-extern const char kModalPermissionPromptsName[];
-extern const char kModalPermissionPromptsDescription[];
-
 extern const char kNewContactsPickerName[];
 extern const char kNewContactsPickerDescription[];
 

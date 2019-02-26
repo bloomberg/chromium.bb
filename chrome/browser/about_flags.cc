@@ -2592,11 +2592,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExpensiveBackgroundTimerThrottlingName,
      flag_descriptions::kExpensiveBackgroundTimerThrottlingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kExpensiveBackgroundTimerThrottling)},
-#if defined(OS_ANDROID)
-    {"modal-permission-prompts", flag_descriptions::kModalPermissionPromptsName,
-     flag_descriptions::kModalPermissionPromptsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kModalPermissionPrompts)},
-#endif
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     {"enable-nup-printing", flag_descriptions::kEnableNupPrintingName,
      flag_descriptions::kEnableNupPrintingDescription, kOsAll,
