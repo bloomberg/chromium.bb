@@ -2116,7 +2116,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   static bool CollapseWhiteSpace(EWhiteSpace ws) {
     // Pre and prewrap do not collapse whitespace.
-    return ws != EWhiteSpace::kPre && ws != EWhiteSpace::kPreWrap;
+    return ws != EWhiteSpace::kPre && ws != EWhiteSpace::kPreWrap && ws != EWhiteSpace::kBbPreWrapText;
   }
 
   bool CollapseWhiteSpace() const { return CollapseWhiteSpace(WhiteSpace()); }
@@ -2132,7 +2132,7 @@ class ComputedStyle : public ComputedStyleBase,
     return false;
   }
   bool BreakOnlyAfterWhiteSpace() const {
-    return WhiteSpace() == EWhiteSpace::kPreWrap ||
+    return WhiteSpace() == EWhiteSpace::kPreWrap || WhiteSpace() == EWhiteSpace::kBbPreWrapText ||
            GetLineBreak() == LineBreak::kAfterWhiteSpace;
   }
 
