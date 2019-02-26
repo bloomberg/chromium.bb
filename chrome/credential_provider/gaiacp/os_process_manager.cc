@@ -473,14 +473,11 @@ HRESULT OSProcessManager::CreateRunningProcess(
     const base::CommandLine& command_line,
     _STARTUPINFOW* startupinfo,
     base::win::ScopedProcessInformation* procinfo) {
-  // CreateProcessWithTokenW() expects the command line to be non-const, so make
-  // a copy here.
-  //
   // command_line.GetCommandLineString() is not used here because it quotes the
   // command line to follow the command line rules of Microsoft C/C++ startup
   // code.  However this function is called to execute rundll32 which parses
-  // command lines in a special same way and fails when the first arg is
-  // double quoted.  Therefore the command line is built manually here.
+  // command lines in a special way and fails when the first arg is double
+  // quoted.  Therefore the command line is built manually here.
   base::string16 unquoted_cmdline;
   base::StringAppendF(&unquoted_cmdline, L"\"%ls\"",
                       command_line.GetProgram().value().c_str());

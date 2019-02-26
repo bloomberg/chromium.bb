@@ -231,6 +231,14 @@ struct FakesForTesting {
   OSProcessManager* os_process_manager_for_testing = nullptr;
 };
 
+// Class used in tests to force either a successful on unsuccessful enrollment
+// to google MDM.
+class GoogleMdmEnrollmentStatusForTesting {
+ public:
+  explicit GoogleMdmEnrollmentStatusForTesting(bool success);
+  ~GoogleMdmEnrollmentStatusForTesting();
+};
+
 // DLL entrypoint signature for settings testing fakes.  This is used by
 // the setup tests to install fakes into the dynamically loaded gaia1_0 DLL
 // static data.  This way the production DLL does not need to include binary

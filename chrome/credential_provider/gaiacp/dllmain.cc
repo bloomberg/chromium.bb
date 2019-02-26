@@ -147,7 +147,7 @@ STDAPI DllUnregisterServer(void) {
 }
 
 // This entry point is called via rundll32.  See
-// CGaiaCredential::WaitForLoginUI() for details.
+// CGaiaCredential::ForkSaveAccountInfoStub() for details.
 void CALLBACK SaveAccountInfoW(HWND /*hwnd*/,
                                HINSTANCE /*hinst*/,
                                wchar_t* /*pszCmdLine*/,
@@ -182,22 +182,6 @@ void CALLBACK SaveAccountInfoW(HWND /*hwnd*/,
   hr = credential_provider::CGaiaCredentialBase::SaveAccountInfo(*dict);
   if (FAILED(hr))
     LOGFN(ERROR) << "SaveAccountInfoW hr=" << putHR(hr);
-
-  // If an MDM URL is configured in the registry, use it.
-
-  wchar_t mdm_url[256];
-  ULONG length = base::size(mdm_url);
-  hr = credential_provider::GetGlobalFlag(credential_provider::kRegMdmUrl,
-                                          mdm_url, &length);
-  if (SUCCEEDED(hr)) {
-    dict->SetString(credential_provider::kKeyMdmUrl, mdm_url);
-
-    hr = credential_provider::EnrollToGoogleMdmIfNeeded(*dict);
-    if (FAILED(hr))
-      LOGFN(INFO) << "EnrollToGoogleMdmIfNeeded hr=" << putHR(hr);
-  } else {
-    LOGFN(INFO) << "Not enrolling to MDM";
-  }
 
   LOGFN(INFO) << "Done";
 }

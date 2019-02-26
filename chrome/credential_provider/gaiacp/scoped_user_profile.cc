@@ -344,7 +344,6 @@ HRESULT ScopedUserProfile::SaveAccountInfo(
     return hr;
 
   hr = RegisterAssociation(sid, id, email, token_handle);
-
   if (FAILED(hr))
     return hr;
 

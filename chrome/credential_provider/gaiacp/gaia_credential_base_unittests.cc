@@ -5,6 +5,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_base.h"
+#include "chrome/credential_provider/gaiacp/gaia_resources.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/test/gls_runner_test_base.h"
 #include "chrome/credential_provider/test/test_credential.h"
@@ -169,6 +170,93 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Finish) {
   EXPECT_EQ(2ul, fake_os_user_manager()->GetUserCount());
 }
 
+TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_MdmEnrollment) {
+  // Force a successful MDM enrollment.
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  GoogleMdmEnrollmentStatusForTesting force_success(true);
+
+  FakeGaiaCredentialProvider provider;
+
+  // Start logon.
+  CComPtr<IGaiaCredential> gaia_cred;
+  CComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
+
+  ASSERT_EQ(S_OK, run_helper()->StartLogonProcess(cred, true));
+
+  // When MDM enrollment is enabled, the logon is synchronous so the user
+  // account should already be created.
+  PSID sid;
+  EXPECT_EQ(S_OK, fake_os_user_manager()->GetUserSID(
+                      OSUserManager::GetLocalDomain().c_str(), kDefaultUsername,
+                      &sid));
+  ::LocalFree(sid);
+  EXPECT_EQ(2ul, fake_os_user_manager()->GetUserCount());
+
+  // Now finish the logon.
+  CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
+  CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION cpcs;
+  wchar_t* status_text;
+  CREDENTIAL_PROVIDER_STATUS_ICON status_icon;
+  ASSERT_EQ(S_OK,
+            cred->GetSerialization(&cpgsr, &cpcs, &status_text, &status_icon));
+  EXPECT_EQ(nullptr, status_text);
+  EXPECT_EQ(CPSI_SUCCESS, status_icon);
+  EXPECT_EQ(CPGSR_RETURN_CREDENTIAL_FINISHED, cpgsr);
+  EXPECT_LT(0u, cpcs.cbSerialization);
+  EXPECT_NE(nullptr, cpcs.rgbSerialization);
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
+  // State was not reset.
+  EXPECT_TRUE(test->AreCredentialsValid());
+
+  EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
+
+  wchar_t* report_status_text = nullptr;
+  CREDENTIAL_PROVIDER_STATUS_ICON report_icon;
+  EXPECT_EQ(S_OK, cred->ReportResult(0, 0, &report_status_text, &report_icon));
+  // State was reset.
+  EXPECT_FALSE(test->AreCredentialsValid());
+
+  EXPECT_EQ(S_OK, gaia_cred->Terminate());
+}
+
+TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_MdmEnrollmentFails) {
+  USES_CONVERSION;
+
+  // Force a failed MDM enrollment.
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  GoogleMdmEnrollmentStatusForTesting force_success(false);
+
+  FakeGaiaCredentialProvider provider;
+
+  EXPECT_EQ(1ul, fake_os_user_manager()->GetUserCount());
+
+  // Start logon.
+  CComPtr<IGaiaCredential> gaia_cred;
+  CComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
+  ASSERT_EQ(S_OK, run_helper()->StartLogonProcess(cred, true));
+
+  // No user should have been created.
+  EXPECT_EQ(1ul, fake_os_user_manager()->GetUserCount());
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
+  EXPECT_EQ(test->GetFinalEmail(), "");
+  EXPECT_EQ(GetStringResource(IDS_MDM_ENROLLMENT_FAILED_BASE),
+            OLE2CW(test->GetErrorText()));
+  EXPECT_FALSE(test->CanAttemptWindowsLogon());
+  EXPECT_FALSE(test->AreCredentialsValid());
+  EXPECT_FALSE(test->IsWindowsPasswordValidForStoredUser());
+  EXPECT_FALSE(test->IsGlsRunning());
+
+  EXPECT_EQ(S_OK, gaia_cred->Terminate());
+}
+
 TEST_F(GcpGaiaCredentialBaseTest,
        GetSerialization_AssociateToMatchingAssociatedUser) {
   USES_CONVERSION;
@@ -290,7 +378,7 @@ TEST_F(GcpGaiaCredentialBaseTest,
   ASSERT_EQ(S_OK, run_helper()->StartLogonProcessAndWait(cred));
 
   EXPECT_TRUE(test->CanAttemptWindowsLogon());
-  EXPECT_FALSE(test->IsWindowsPasswordValidForStoredUser());
+  EXPECT_EQ(S_OK, test->IsWindowsPasswordValidForStoredUser());
 
   // Check that the process has not finished yet.
   CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
@@ -304,7 +392,7 @@ TEST_F(GcpGaiaCredentialBaseTest,
 
   // Credentials should still be available.
   EXPECT_TRUE(test->CanAttemptWindowsLogon());
-  EXPECT_FALSE(test->IsWindowsPasswordValidForStoredUser());
+  EXPECT_EQ(S_OK, test->IsWindowsPasswordValidForStoredUser());
 
   // Set an invalid password and try to get serialization again. Credentials
   // should still be valid but serialization is not complete.
@@ -322,7 +410,7 @@ TEST_F(GcpGaiaCredentialBaseTest,
 
   // Both Windows and Gaia credentials should be valid now
   EXPECT_TRUE(test->CanAttemptWindowsLogon());
-  EXPECT_TRUE(test->IsWindowsPasswordValidForStoredUser());
+  EXPECT_EQ(S_FALSE, test->IsWindowsPasswordValidForStoredUser());
 
   // Serialization should complete without any errors.
   ASSERT_EQ(S_OK,

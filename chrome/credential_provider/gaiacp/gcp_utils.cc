@@ -44,10 +44,12 @@
 #include "base/win/embedded_i18n/language_selector.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
+#include "base/win/wmi.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+#include "chrome/credential_provider/gaiacp/reg_utils.h"
 
 namespace credential_provider {
 
@@ -64,6 +66,26 @@ constexpr base::win::i18n::LanguageSelector::LangToOffset
         DO_LANGUAGES
 #undef HANDLE_LANGUAGE
 };
+
+// Overridden in tests to force the MDM enrollment to either succeed or fail.
+enum class EnrollmentStatus {
+  kForceSuccess,
+  kForceFailure,
+  kDontForce,
+};
+EnrollmentStatus g_enrollment_status = EnrollmentStatus::kDontForce;
+
+template <typename T>
+T GetMdmFunctionPointer(const base::ScopedNativeLibrary& library,
+                        const char* function_name) {
+  if (!library.is_valid())
+    return nullptr;
+
+  return reinterpret_cast<T>(library.GetFunctionPointer(function_name));
+}
+
+#define GET_MDM_FUNCTION_POINTER(library, name) \
+  GetMdmFunctionPointer<decltype(&::name)>(library, #name)
 
 base::FilePath GetStartupSentinelLocation() {
   base::FilePath sentienal_path;
@@ -86,29 +108,60 @@ const base::win::i18n::LanguageSelector& GetLanguageSelector() {
   return *instance;
 }
 
+bool IsEnrolledWithGoogleMdm(const base::string16& mdm_url) {
+  base::ScopedNativeLibrary library(
+      base::FilePath(FILE_PATH_LITERAL("MDMRegistration.dll")));
+  auto get_device_registration_info_function =
+      GET_MDM_FUNCTION_POINTER(library, GetDeviceRegistrationInfo);
+  if (!get_device_registration_info_function) {
+    LOGFN(ERROR) << "GET_MDM_FUNCTION_POINTER(GetDeviceRegistrationInfo)";
+    return false;
+  }
+
+  MANAGEMENT_REGISTRATION_INFO* info;
+  HRESULT hr = get_device_registration_info_function(
+      DeviceRegistrationBasicInfo, reinterpret_cast<void**>(&info));
+
+  bool is_enrolled = SUCCEEDED(hr) && info->fDeviceRegisteredWithManagement &&
+                     GURL(mdm_url) == GURL(info->pszMDMServiceUri);
+
+  ::HeapFree(::GetProcessHeap(), 0, info);
+  return is_enrolled;
+}
+
 HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
                                            const base::string16& email,
                                            const std::string& data) {
-  base::ScopedNativeLibrary library(
-      base::FilePath(FILE_PATH_LITERAL("MDMRegistration.dll")));
-  if (!library.is_valid()) {
-    LOGFN(ERROR) << "base::ScopedNativeLibrary hr=" << putHR(E_NOTIMPL);
-    return E_NOTIMPL;
+  switch (g_enrollment_status) {
+    case EnrollmentStatus::kForceSuccess:
+      return S_OK;
+    case EnrollmentStatus::kForceFailure:
+      return E_FAIL;
+    case EnrollmentStatus::kDontForce:
+      break;
   }
 
-  using RegisterDeviceWithManagementFunction =
-      decltype(&::RegisterDeviceWithManagement);
-  RegisterDeviceWithManagementFunction
-      register_device_with_management_function =
-          reinterpret_cast<RegisterDeviceWithManagementFunction>(
-              library.GetFunctionPointer("RegisterDeviceWithManagement"));
+  // TODO(crbug.com/935577): Check if machine is already enrolled because
+  // attempting to enroll when already enrolled causes a crash.
+  if (IsEnrolledWithGoogleMdm(mdm_url)) {
+    LOGFN(INFO) << "Already enrolled to Google MDM";
+    return S_OK;
+  }
+
+  base::ScopedNativeLibrary library(
+      base::FilePath(FILE_PATH_LITERAL("MDMRegistration.dll")));
+  auto register_device_with_management_function =
+      GET_MDM_FUNCTION_POINTER(library, RegisterDeviceWithManagement);
   if (!register_device_with_management_function) {
-    LOGFN(ERROR) << "library.GetFunctionPointer hr=" << putHR(E_NOTIMPL);
-    return E_NOTIMPL;
+    LOGFN(ERROR) << "GET_MDM_FUNCTION_POINTER(RegisterDeviceWithManagement)";
+    return false;
   }
 
   std::string data_encoded;
   base::Base64Encode(data, &data_encoded);
+
+  // This register call is blocking.  It won't return until the machine is
+  // properly registered with the MDM server.
   return register_device_with_management_function(
       email.c_str(), mdm_url.c_str(), base::UTF8ToWide(data_encoded).c_str());
 }
@@ -197,6 +250,18 @@ void DeleteVersionsExcept(const base::FilePath& gcp_path,
     // DeleteVersionDirectory().
     DeleteVersionDirectory(gcp_path.Append(basename));
   }
+}
+
+// GoogleMdmEnrollmentStatusForTesting ////////////////////////////////////////
+
+GoogleMdmEnrollmentStatusForTesting::GoogleMdmEnrollmentStatusForTesting(
+    bool success) {
+  g_enrollment_status = success ? EnrollmentStatus::kForceSuccess
+                                : EnrollmentStatus::kForceFailure;
+}
+
+GoogleMdmEnrollmentStatusForTesting::~GoogleMdmEnrollmentStatusForTesting() {
+  g_enrollment_status = EnrollmentStatus::kDontForce;
 }
 
 // StdParentHandles ///////////////////////////////////////////////////////////
@@ -609,128 +674,51 @@ HRESULT GetCommandLineForEntrypoint(HINSTANCE dll_handle,
   return hr;
 }
 
-// Gets the serial number of the machine based on the recipe found at
-// https://docs.microsoft.com/en-us/windows/desktop/WmiSdk/example-creating-a-wmi-application
-HRESULT GetMachineSerialNumber(base::string16* serial_number) {
-  USES_CONVERSION;
-  DCHECK(serial_number);
-
-  serial_number->clear();
-
-  // Make sure COM is initialized.
-  HRESULT hr = ::CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "CoInitializeEx hr=" << putHR(hr);
-    return hr;
-  }
-
-  hr = ::CoInitializeSecurity(
-      nullptr, -1, nullptr, nullptr, RPC_C_AUTHN_LEVEL_DEFAULT,
-      RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, EOAC_NONE, nullptr);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "CoInitializeSecurity hr=" << putHR(hr);
-    return hr;
-  }
-
-  CComPtr<IWbemLocator> locator;
-  hr = locator.CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "CoCreateInstance(CLSID_WbemLocator) hr=" << putHR(hr);
-    return hr;
-  }
-
-  CComPtr<IWbemServices> services;
-  hr = locator->ConnectServer(CComBSTR(W2COLE(L"ROOT\\CIMV2")), nullptr,
-                              nullptr, nullptr, 0, nullptr, nullptr, &services);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "locator->ConnectServer hr=" << putHR(hr);
-    return hr;
-  }
-
-  CComPtr<IEnumWbemClassObject> enum_wbem;
-  hr = services->ExecQuery(CComBSTR(W2COLE(L"WQL")),
-                           CComBSTR(W2COLE(L"select * from Win32_Bios")),
-                           WBEM_FLAG_FORWARD_ONLY, nullptr, &enum_wbem);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "services->ExecQuery hr=" << putHR(hr);
-    return hr;
-  }
-
-  while (SUCCEEDED(hr) && serial_number->empty()) {
-    CComPtr<IWbemClassObject> class_obj;
-    ULONG count = 1;
-    hr = enum_wbem->Next(WBEM_INFINITE, 1, &class_obj, &count);
-    if (count == 0)
-      break;
-
-    VARIANT var;
-    hr = class_obj->Get(L"SerialNumber", 0, &var, 0, 0);
-    if (SUCCEEDED(hr) && var.vt == VT_BSTR)
-      serial_number->assign(OLE2CW(var.bstrVal));
-
-    VariantClear(&var);
-  }
-
-  LOGFN(INFO) << "GetMachineSerialNumber sn=" << *serial_number
-              << " hr=" << putHR(hr);
-
-  return hr;
-}
-
 HRESULT EnrollToGoogleMdmIfNeeded(const base::DictionaryValue& properties) {
   USES_CONVERSION;
   LOGFN(INFO);
 
-  // Enroll to Google MDM if not already enrolled.
+  base::string16 email = GetDictString(&properties, kKeyEmail);
+  base::string16 token = GetDictString(&properties, kKeyMdmIdToken);
 
-  HRESULT hr = E_FAIL;
-  BOOL is_registered = base::win::IsDeviceRegisteredWithManagement();
-  LOGFN(INFO) << "MDM is_registered=" << is_registered;
-
-  if (!is_registered) {
-    base::string16 email = GetDictString(&properties, kKeyEmail);
-    base::string16 token = GetDictString(&properties, kKeyMdmIdToken);
-    base::string16 mdm_url = GetDictString(&properties, kKeyMdmUrl);
-
-    if (email.empty()) {
-      LOGFN(ERROR) << "Email is empty";
-      return E_INVALIDARG;
-    }
-
-    if (token.empty()) {
-      LOGFN(ERROR) << "MDM id token is empty";
-      return E_INVALIDARG;
-    }
-
-    if (mdm_url.empty()) {
-      LOGFN(ERROR) << "No MDM URL specified";
-      return E_INVALIDARG;
-    }
-
-    LOGFN(INFO) << "MDM_URL=" << mdm_url
-                << " token=" << base::string16(token.c_str(), 10);
-
-    // Build the json data needed by the server.
-    base::DictionaryValue registration_data;
-    base::string16 serial_number;
-    hr = GetMachineSerialNumber(&serial_number);
-    if (FAILED(hr)) {
-      LOGFN(ERROR) << "GetMachineSerialNumber hr=" << putHR(hr);
-      return hr;
-    }
-
-    registration_data.SetString("serial_number", serial_number);
-    registration_data.SetString("id_token", token);
-    std::string registration_data_str;
-    if (!base::JSONWriter::Write(registration_data, &registration_data_str)) {
-      LOGFN(ERROR) << "JSONWriter::Write(registration_data)";
-      return E_FAIL;
-    }
-
-    hr = RegisterWithGoogleDeviceManagement(mdm_url, email,
-                                            registration_data_str);
-    LOGFN(INFO) << "RegisterWithGoogleDeviceManagement hr=" << putHR(hr);
+  if (email.empty()) {
+    LOGFN(ERROR) << "Email is empty";
+    return E_INVALIDARG;
   }
+
+  if (token.empty()) {
+    LOGFN(ERROR) << "MDM id token is empty";
+    return E_INVALIDARG;
+  }
+
+  // Only enroll with MDM if configured.
+  wchar_t mdm_url[256];
+  ULONG mdm_length = base::size(mdm_url);
+  HRESULT hr = credential_provider::GetGlobalFlag(
+      credential_provider::kRegMdmUrl, mdm_url, &mdm_length);
+  if (FAILED(hr) || mdm_length == 0)
+    return S_OK;
+
+  LOGFN(INFO) << "MDM_URL=" << mdm_url
+              << " token=" << base::string16(token.c_str(), 10);
+
+  // Build the json data needed by the server.
+
+  base::string16 serial_number =
+      base::win::WmiComputerSystemInfo::Get().serial_number();
+  base::DictionaryValue registration_data;
+  registration_data.SetString("serial_number", serial_number);
+  registration_data.SetString("id_token", token);
+  std::string registration_data_str;
+  if (!base::JSONWriter::Write(registration_data, &registration_data_str)) {
+    LOGFN(ERROR) << "JSONWriter::Write(registration_data)";
+    return E_FAIL;
+  }
+
+  hr =
+      RegisterWithGoogleDeviceManagement(mdm_url, email, registration_data_str);
+  if (FAILED(hr))
+    LOGFN(ERROR) << "RegisterWithGoogleDeviceManagement hr=" << putHR(hr);
 
   return hr;
 }

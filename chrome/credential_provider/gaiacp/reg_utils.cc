@@ -108,6 +108,8 @@ HRESULT SetMachineRegString(const base::string16& key_name,
 
   if (value.empty()) {
     sts = key.DeleteValue(name.c_str());
+    if (sts == ERROR_FILE_NOT_FOUND)
+      sts = ERROR_SUCCESS;
   } else {
     sts = key.WriteValue(name.c_str(), value.c_str());
   }

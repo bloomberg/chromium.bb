@@ -26,6 +26,8 @@ source_set("common") {
     "gcp_utils.h",
     "logging.cc",
     "logging.h",
+    "reg_utils.cc",
+    "reg_utils.h",
   ]
   public_configs = [ ":common_config" ]
   public_deps = [
@@ -77,8 +79,6 @@ source_set("gaiacp_lib") {
     "os_user_manager.h",
     "reauth_credential.cc",
     "reauth_credential.h",
-    "reg_utils.cc",
-    "reg_utils.h",
     "scoped_handle.h",
     "scoped_lsa_policy.cc",
     "scoped_lsa_policy.h",

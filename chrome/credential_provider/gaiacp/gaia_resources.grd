@@ -109,6 +109,9 @@
       <message name="IDS_ACCOUNT_LOCKED" desc="">
         Your account has been locked. Please contact a system adminstrator.
       </message>
+      <message name="IDS_MDM_ENROLLMENT_FAILED" desc="">
+        Unable to enroll this computer for enterprise management.  Please sign in with a different Google Account.
+      </message>
     </messages>
   </release>
 </grit>
