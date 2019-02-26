@@ -2338,8 +2338,8 @@
   },
   {
     "name": "new-net-error-page-ui",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "harringtond" ],
+    "expiry_milestone": 75
   },
   {
     "name": "new-password-form-parsing",
