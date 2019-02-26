@@ -779,11 +779,8 @@ void ChromeClientImpl::ClearLayerSelection(LocalFrame* frame) {
       WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
   WebWidgetClient* client = widget->Client();
   // TODO(dcheng): This shouldn't be called on detached frames?
-  if (!client)
-    return;
-
-  if (WebLayerTreeView* layer_tree_view = widget->GetLayerTreeView())
-    layer_tree_view->ClearSelection();
+  if (client)
+    client->RegisterSelection(cc::LayerSelection());
 }
 
 void ChromeClientImpl::UpdateLayerSelection(
@@ -793,11 +790,8 @@ void ChromeClientImpl::UpdateLayerSelection(
       WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
   WebWidgetClient* client = widget->Client();
   // TODO(dcheng): This shouldn't be called on detached frames?
-  if (!client)
-    return;
-
-  if (WebLayerTreeView* layer_tree_view = widget->GetLayerTreeView())
-    layer_tree_view->RegisterSelection(selection);
+  if (client)
+    client->RegisterSelection(selection);
 }
 
 bool ChromeClientImpl::HasOpenedPopup() const {

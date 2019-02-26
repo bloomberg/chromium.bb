@@ -164,7 +164,7 @@ void CreateVirtualViewportLayers(Layer* root_layer,
 
   inner_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
   outer_scroll_layer->SetIsContainerForFixedPositionLayers(true);
-  LayerTreeHost::ViewportLayers viewport_layers;
+  ViewportLayers viewport_layers;
   viewport_layers.overscroll_elasticity_element_id =
       overscroll_elasticity_layer->element_id();
   viewport_layers.page_scale = page_scale_layer;

@@ -343,30 +343,6 @@ void LayerTreeView::SetNeedsBeginFrame() {
   layer_tree_host_->SetNeedsAnimate();
 }
 
-void LayerTreeView::RegisterViewportLayers(const ViewportLayers& layers) {
-  cc::LayerTreeHost::ViewportLayers viewport_layers;
-  viewport_layers.overscroll_elasticity_element_id =
-      layers.overscroll_elasticity_element_id;
-  viewport_layers.page_scale = layers.page_scale;
-  viewport_layers.inner_viewport_container = layers.inner_viewport_container;
-  viewport_layers.outer_viewport_container = layers.outer_viewport_container;
-  viewport_layers.inner_viewport_scroll = layers.inner_viewport_scroll;
-  viewport_layers.outer_viewport_scroll = layers.outer_viewport_scroll;
-  layer_tree_host_->RegisterViewportLayers(viewport_layers);
-}
-
-void LayerTreeView::ClearViewportLayers() {
-  layer_tree_host_->RegisterViewportLayers(cc::LayerTreeHost::ViewportLayers());
-}
-
-void LayerTreeView::RegisterSelection(const cc::LayerSelection& selection) {
-  layer_tree_host_->RegisterSelection(selection);
-}
-
-void LayerTreeView::ClearSelection() {
-  layer_tree_host_->RegisterSelection(cc::LayerSelection());
-}
-
 void LayerTreeView::SetMutatorClient(
     std::unique_ptr<cc::LayerTreeMutator> client) {
   TRACE_EVENT0("cc", "LayerTreeView::setMutatorClient");

@@ -348,6 +348,8 @@ cc_component("cc") {
     "trees/tree_synchronizer.h",
     "trees/ukm_manager.cc",
     "trees/ukm_manager.h",
+    "trees/viewport_layers.cc",
+    "trees/viewport_layers.h",
   ]
 
   public_deps = [
