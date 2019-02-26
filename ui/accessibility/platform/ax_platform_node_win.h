@@ -912,6 +912,8 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   LONG ComputeUIAControlType();
 
+  bool IsUIAControl() const;
+
   // AXPlatformNodeBase overrides.
   void Dispose() override;
 
@@ -990,7 +992,6 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
  private:
   int MSAAEvent(ax::mojom::Event event);
   bool IsWebAreaForPresentationalIframe();
-  bool ShouldNodeHaveReadonlyStateByDefault(const AXNodeData& data) const;
   bool ShouldNodeHaveFocusableState(const AXNodeData& data) const;
 
   HRESULT GetStringAttributeAsBstr(ax::mojom::StringAttribute attribute,

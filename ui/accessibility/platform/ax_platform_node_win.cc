@@ -3669,7 +3669,8 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
 
     case UIA_IsContentElementPropertyId:
     case UIA_IsControlElementPropertyId:
-      // TODO(suproteem)
+      result->vt = VT_BOOL;
+      result->boolVal = IsUIAControl() ? VARIANT_TRUE : VARIANT_FALSE;
       break;
 
     case UIA_IsDataValidForFormPropertyId:
@@ -3707,6 +3708,17 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_LabeledByPropertyId:
+      relation_attribute = ax::mojom::IntListAttribute::kLabelledbyIds;
+      for (int32_t id : GetIntListAttribute(relation_attribute)) {
+        auto* node_win = GetDelegate()->GetFromNodeID(id);
+        if (node_win) {
+          DCHECK(node_win);
+          result->vt = VT_UNKNOWN;
+          result->punkVal = node_win->GetNativeViewAccessible();
+          result->punkVal->AddRef();
+          break;
+        }
+      }
       break;
 
     case UIA_LocalizedControlTypePropertyId:
@@ -5254,7 +5266,7 @@ base::string16 AXPlatformNodeWin::ComputeUIAProperties() {
       // even if the node data isn't marked as read only, as long as the
       // node is not editable.
       if (!data.HasState(ax::mojom::State::kRichlyEditable) &&
-          ShouldNodeHaveReadonlyStateByDefault(data))
+          ShouldHaveReadonlyStateByDefault(data.role))
         properties.push_back(L"readonly=true");
       break;
   }
@@ -5811,6 +5823,60 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
   return UIA_DocumentControlTypeId;
 }
 
+bool AXPlatformNodeWin::IsUIAControl() const {
+  // UIA provides multiple "views": raw, content and control. We only want to
+  // populate the content and control views with items that make sense to
+  // traverse over.
+  if (GetDelegate()->IsWebContent()) {
+    if (IsTextOnlyObject()) {
+      // A text leaf can be a UIAControl, but text inside of a heading, link,
+      // button, etc. where the role allows the name to be generated from the
+      // content is not. We want to avoid reading out a button, moving to the
+      // next item, and then reading out the button's text child, causing the
+      // text to be effectively repeated.
+      auto* parent = FromNativeViewAccessible(GetDelegate()->GetParent());
+      while (parent) {
+        const ui::AXNodeData& data = parent->GetData();
+        switch (data.role) {
+          case ax::mojom::Role::kButton:
+          case ax::mojom::Role::kCell:
+          case ax::mojom::Role::kCheckBox:
+          case ax::mojom::Role::kColumnHeader:
+          case ax::mojom::Role::kGroup:
+          case ax::mojom::Role::kHeading:
+          case ax::mojom::Role::kLineBreak:
+          case ax::mojom::Role::kLink:
+          case ax::mojom::Role::kListBoxOption:
+          case ax::mojom::Role::kListItem:
+          case ax::mojom::Role::kMenuItem:
+          case ax::mojom::Role::kMenuItemCheckBox:
+          case ax::mojom::Role::kMenuItemRadio:
+          case ax::mojom::Role::kMenuListOption:
+          case ax::mojom::Role::kRadioButton:
+          case ax::mojom::Role::kRow:
+          case ax::mojom::Role::kRowHeader:
+          case ax::mojom::Role::kStaticText:
+          case ax::mojom::Role::kSwitch:
+          case ax::mojom::Role::kTab:
+          case ax::mojom::Role::kTooltip:
+          case ax::mojom::Role::kTreeItem:
+            return false;
+          default:
+            break;
+        }
+        parent = FromNativeViewAccessible(parent->GetParent());
+      }
+    }
+    return true;
+  }
+  // non web-content case
+  const ui::AXNodeData& data = GetData();
+  return !(ui::ShouldHaveReadonlyStateByDefault(data.role) ||
+           data.GetRestriction() == ax::mojom::Restriction::kReadOnly ||
+           data.HasState(ax::mojom::State::kInvisible) ||
+           data.role == ax::mojom::Role::kIgnored);
+}
+
 base::string16 AXPlatformNodeWin::GetValue() const {
   base::string16 value = AXPlatformNodeBase::GetValue();
 
@@ -5823,41 +5889,6 @@ base::string16 AXPlatformNodeWin::GetValue() const {
     value = GetString16Attribute(ax::mojom::StringAttribute::kUrl);
 
   return value;
-}
-
-bool AXPlatformNodeWin::ShouldNodeHaveReadonlyStateByDefault(
-    const AXNodeData& data) const {
-  switch (data.role) {
-    case ax::mojom::Role::kArticle:
-    case ax::mojom::Role::kDefinition:
-    case ax::mojom::Role::kDescriptionList:
-    case ax::mojom::Role::kDescriptionListTerm:
-    case ax::mojom::Role::kDocument:
-    case ax::mojom::Role::kGraphicsDocument:
-    case ax::mojom::Role::kImage:
-    case ax::mojom::Role::kImageMap:
-    case ax::mojom::Role::kList:
-    case ax::mojom::Role::kListItem:
-    case ax::mojom::Role::kProgressIndicator:
-    case ax::mojom::Role::kRootWebArea:
-    case ax::mojom::Role::kTerm:
-    case ax::mojom::Role::kTimer:
-    case ax::mojom::Role::kToolbar:
-    case ax::mojom::Role::kTooltip:
-    case ax::mojom::Role::kWebArea:
-      return true;
-
-    case ax::mojom::Role::kGrid:
-      // TODO(aleventhal) this changed between ARIA 1.0 and 1.1,
-      // need to determine whether grids/treegrids should really be readonly
-      // or editable by default
-      // msaa_state |= STATE_SYSTEM_READONLY;
-      break;
-
-    default:
-      break;
-  }
-  return false;
 }
 
 bool AXPlatformNodeWin::ShouldNodeHaveFocusableState(
@@ -6003,7 +6034,7 @@ int AXPlatformNodeWin::MSAAState() const {
       // even if the node data isn't marked as read only, as long as the
       // node is not editable.
       if (!data.HasState(ax::mojom::State::kRichlyEditable) &&
-          ShouldNodeHaveReadonlyStateByDefault(data))
+          ShouldHaveReadonlyStateByDefault(data.role))
         msaa_state |= STATE_SYSTEM_READONLY;
       break;
   }

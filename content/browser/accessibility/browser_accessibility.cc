@@ -928,6 +928,10 @@ bool BrowserAccessibility::IsOffscreen() const {
   return offscreen;
 }
 
+bool BrowserAccessibility::IsWebContent() const {
+  return true;
+}
+
 std::set<ui::AXPlatformNode*> BrowserAccessibility::GetNodesForNodeIdSet(
     const std::set<int32_t>& ids) {
   std::set<ui::AXPlatformNode*> nodes;
