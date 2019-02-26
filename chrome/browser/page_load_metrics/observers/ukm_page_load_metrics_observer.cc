@@ -297,26 +297,26 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
   if (timing.interactive_timing->first_input_delay) {
     base::TimeDelta first_input_delay =
         timing.interactive_timing->first_input_delay.value();
-    builder.SetInteractiveTiming_FirstInputDelay3(
+    builder.SetInteractiveTiming_FirstInputDelay2(
         first_input_delay.InMilliseconds());
   }
   if (timing.interactive_timing->first_input_timestamp) {
     base::TimeDelta first_input_timestamp =
         timing.interactive_timing->first_input_timestamp.value();
-    builder.SetInteractiveTiming_FirstInputTimestamp3(
+    builder.SetInteractiveTiming_FirstInputTimestamp2(
         first_input_timestamp.InMilliseconds());
   }
 
   if (timing.interactive_timing->longest_input_delay) {
     base::TimeDelta longest_input_delay =
         timing.interactive_timing->longest_input_delay.value();
-    builder.SetInteractiveTiming_LongestInputDelay3(
+    builder.SetInteractiveTiming_LongestInputDelay2(
         longest_input_delay.InMilliseconds());
   }
   if (timing.interactive_timing->longest_input_timestamp) {
     base::TimeDelta longest_input_timestamp =
         timing.interactive_timing->longest_input_timestamp.value();
-    builder.SetInteractiveTiming_LongestInputTimestamp3(
+    builder.SetInteractiveTiming_LongestInputTimestamp2(
         longest_input_timestamp.InMilliseconds());
   }
 
