@@ -25,7 +25,6 @@
 #include "ios/chrome/browser/history/history_tab_helper.h"
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #import "ios/chrome/browser/infobars/infobar_manager_impl.h"
-#include "ios/chrome/browser/itunes_urls/itunes_urls_flag.h"
 #import "ios/chrome/browser/itunes_urls/itunes_urls_handler_tab_helper.h"
 #import "ios/chrome/browser/metrics/ukm_url_recorder.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
@@ -85,9 +84,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   FindTabHelper::CreateForWebState(web_state);
   StoreKitTabHelper::CreateForWebState(web_state);
   JavaScriptConsoleTabHelper::CreateForWebState(tab.webState);
-  if (base::FeatureList::IsEnabled(kITunesUrlsStoreKitHandling)) {
-    ITunesUrlsHandlerTabHelper::CreateForWebState(web_state);
-  }
+  ITunesUrlsHandlerTabHelper::CreateForWebState(web_state);
   HistoryTabHelper::CreateForWebState(web_state);
   LoadTimingTabHelper::CreateForWebState(web_state);
 
