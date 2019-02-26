@@ -4,7 +4,6 @@
 
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 
-#include "base/command_line.h"
 #include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "chrome/browser/accessibility/accessibility_state_utils.h"
@@ -17,7 +16,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_accessibility_state.h"
-#include "ui/accessibility/accessibility_switches.h"
+#include "content/public/common/content_features.h"
 #include "ui/accessibility/ax_action_data.h"
 
 AccessibilityLabelsService::~AccessibilityLabelsService() {}
@@ -32,8 +31,7 @@ void AccessibilityLabelsService::RegisterProfilePrefs(
 
 void AccessibilityLabelsService::Init() {
   // Hidden behind a feature flag.
-  base::CommandLine& cmd = *base::CommandLine::ForCurrentProcess();
-  if (!cmd.HasSwitch(::switches::kEnableExperimentalAccessibilityLabels))
+  if (!base::FeatureList::IsEnabled(features::kExperimentalAccessibilityLabels))
     return;
 
   pref_change_registrar_.Init(profile_->GetPrefs());
@@ -58,8 +56,8 @@ ui::AXMode AccessibilityLabelsService::GetAXMode() {
       content::BrowserAccessibilityState::GetInstance()->GetAccessibilityMode();
 
   // Hidden behind a feature flag.
-  base::CommandLine& cmd = *base::CommandLine::ForCurrentProcess();
-  if (cmd.HasSwitch(::switches::kEnableExperimentalAccessibilityLabels) &&
+  if (base::FeatureList::IsEnabled(
+          features::kExperimentalAccessibilityLabels) &&
       accessibility_state_utils::IsScreenReaderEnabled()) {
     bool enabled = profile_->GetPrefs()->GetBoolean(
         prefs::kAccessibilityImageLabelsEnabled);

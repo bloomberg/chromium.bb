@@ -18,10 +18,6 @@ const char kEnableExperimentalAccessibilityFeatures[] =
 const char kEnableExperimentalAccessibilityAutoclick[] =
     "enable-experimental-accessibility-autoclick";
 
-// Enables additional image label features that haven't launched yet.
-const char kEnableExperimentalAccessibilityLabels[] =
-    "enable-experimental-accessibility-labels";
-
 // Enables language detection on in-page text content which is then exposed to
 // accessibility technology such as screen readers.
 const char kEnableExperimentalAccessibilityLanguageDetection[] =

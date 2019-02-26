@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -26,8 +25,8 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/context_menu_params.h"
-#include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -134,10 +133,8 @@ void AccessibilityLabelsMenuObserver::ExecuteCommand(int command_id) {
 
 bool AccessibilityLabelsMenuObserver::ShouldShowLabelsItem() {
   // Hidden behind a feature flag.
-  base::CommandLine& cmd = *base::CommandLine::ForCurrentProcess();
-  if (!cmd.HasSwitch(::switches::kEnableExperimentalAccessibilityLabels)) {
+  if (!base::FeatureList::IsEnabled(features::kExperimentalAccessibilityLabels))
     return false;
-  }
 
   return accessibility_state_utils::IsScreenReaderEnabled();
 }

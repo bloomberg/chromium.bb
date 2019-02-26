@@ -8,7 +8,6 @@
 
 #include <set>
 
-#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -16,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/common/accessibility_messages.h"
+#include "content/public/common/content_features.h"
 #include "content/renderer/accessibility/ax_image_annotator.h"
 #include "content/renderer/accessibility/blink_ax_enum_conversion.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
@@ -39,7 +39,6 @@
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_view.h"
-#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -1040,8 +1039,7 @@ void BlinkAXTreeSource::TruncateAndAddStringAttribute(
 
 void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject src,
                                             AXContentNodeData* dst) const {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalAccessibilityLabels))
+  if (!base::FeatureList::IsEnabled(features::kExperimentalAccessibilityLabels))
     return;
 
   // Reject images that are explicitly empty, or that have a name already.
