@@ -825,7 +825,7 @@ views::View* ShelfView::FindFirstFocusableChild() {
 }
 
 views::View* ShelfView::FindLastFocusableChild() {
-  if (is_showing_overflow_bubble())
+  if (IsShowingOverflowBubble())
     return overflow_shelf()->FindLastFocusableChild();
   return overflow_button_->visible()
              ? overflow_button_
