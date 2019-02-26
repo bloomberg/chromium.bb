@@ -25,11 +25,6 @@ gaia::GaiaSource MiceAccountReconcilorDelegate::GetGaiaApiSource() const {
   return gaia::GaiaSource::kAccountReconcilorMirror;
 }
 
-bool MiceAccountReconcilorDelegate::ShouldAbortReconcileIfPrimaryHasError()
-    const {
-  return false;
-}
-
 std::string MiceAccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
     const std::vector<std::string>& chrome_accounts,
     const std::vector<gaia::ListedAccount>& gaia_accounts,
@@ -48,7 +43,23 @@ MiceAccountReconcilorDelegate::GetChromeAccountsForReconcile(
     const std::string& primary_account,
     const std::vector<gaia::ListedAccount>& gaia_accounts,
     const gaia::MultiloginMode mode) const {
-  return chrome_accounts;
+  if (chrome_accounts.empty())
+    return {};
+
+  // First account, by priority order:
+  // - primary account
+  // - first account on the device.
+  // Warning: As a result, the reconciliation may change the default Gaia
+  // account. It should be ensured that this is not surprising for the user.
+  std::string new_first_account =
+      base::ContainsValue(chrome_accounts, primary_account)
+          ? primary_account
+          : chrome_accounts[0];
+
+  // Minimize account shuffling and ensure that the number of accounts does not
+  // exceed the limit.
+  return ReorderChromeAccountsForReconcile(chrome_accounts, new_first_account,
+                                           gaia_accounts);
 }
 
 gaia::MultiloginMode MiceAccountReconcilorDelegate::CalculateModeForReconcile(
