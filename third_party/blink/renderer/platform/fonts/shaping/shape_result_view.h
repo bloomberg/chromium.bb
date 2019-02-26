@@ -155,6 +155,8 @@ class PLATFORM_EXPORT ShapeResultView final
   template <bool is_horizontal_run>
   void ComputeBoundsForPart(const RunInfoPart&, float origin);
 
+  unsigned CharacterIndexOffsetForGlyphData(const RunInfoPart&) const;
+
   // Common signatures with ShapeResult, to templatize algorithms.
   const Vector<std::unique_ptr<RunInfoPart>, 4>& RunsOrParts() const {
     return parts_;
