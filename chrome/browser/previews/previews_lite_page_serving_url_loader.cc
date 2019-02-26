@@ -4,6 +4,7 @@
 
 #include "chrome/browser/previews/previews_lite_page_serving_url_loader.h"
 
+#include <stdint.h>
 #include <string>
 #include <utility>
 
@@ -86,6 +87,33 @@ void SetServerUnavailableFor(base::TimeDelta duration, int frame_tree_node_id) {
       FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&SetServerUnavailableForOnUIThread, duration,
                      frame_tree_node_id));
+}
+
+void ReportDataSavingsOnUIThread(int64_t network_bytes,
+                                 int64_t original_bytes,
+                                 std::string host,
+                                 int frame_tree_node_id) {
+  auto* web_contents =
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+  // If the WebContents has been closed this may be null.
+  if (!web_contents)
+    return;
+
+  static_cast<PreviewsLitePageNavigationThrottleManager*>(
+      PreviewsServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()))
+          ->previews_lite_page_decider())
+      ->ReportDataSavings(network_bytes, original_bytes, host);
+}
+
+void ReportDataSavings(int64_t network_bytes,
+                       int64_t original_bytes,
+                       std::string host,
+                       int frame_tree_node_id) {
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&ReportDataSavingsOnUIThread, network_bytes,
+                     original_bytes, std::move(host), frame_tree_node_id));
 }
 
 const base::TimeDelta kBlacklistDuration = base::TimeDelta::FromDays(30);
@@ -274,6 +302,17 @@ void PreviewsLitePageServingURLLoader::OnReceiveResponse(
   // Make a deep copy of ResourceResponseHead before passing it cross-thread.
   resource_response_ = base::MakeRefCounted<network::ResourceResponse>();
   resource_response_->head = head;
+
+  const int64_t ofcl =
+      data_reduction_proxy::GetDataReductionProxyOFCL(response_headers);
+  if (ofcl > 0) {
+    std::string original_url;
+    previews::ExtractOriginalURLFromLitePageRedirectURL(previews_url_,
+                                                        &original_url);
+
+    ReportDataSavings(response_headers->GetContentLength(), ofcl,
+                      GURL(original_url).host(), frame_tree_node_id_);
+  }
 
   url_loader_binding_.PauseIncomingMethodCallProcessing();
   std::move(result_callback_)
