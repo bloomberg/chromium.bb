@@ -2891,7 +2891,7 @@ void RenderFrameImpl::LoadNavigationErrorPage(
   if (replace_current_item)
     navigation_params->frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
   navigation_params->service_worker_network_provider =
-      BuildServiceWorkerNetworkProviderForNavigation(nullptr, nullptr);
+      ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance();
 
   // The load of the error page can result in this frame being removed.
   frame_->CommitNavigation(std::move(navigation_params),
@@ -3835,6 +3835,9 @@ void RenderFrameImpl::MarkInitiatorAsRequiringSeparateURLLoaderFactory(
     network::mojom::URLLoaderFactoryPtr url_loader_factory) {
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
 
+  // Set up |loader_factories_| to be updated by the
+  // UpdateSubresourceLoaderFactories() below.
+  GetLoaderFactoryBundle();
   auto factory_bundle = std::make_unique<blink::URLLoaderFactoryBundleInfo>();
   factory_bundle->initiator_specific_factory_infos()[initiator_origin] =
       url_loader_factory.PassInterface();
@@ -4466,8 +4469,7 @@ void RenderFrameImpl::DidCreateDocumentLoader(
     // document.
     document_loader->SetExtraData(BuildDocumentState());
     document_loader->SetServiceWorkerNetworkProvider(
-        BuildServiceWorkerNetworkProviderForNavigation(
-            nullptr /* commit_params */, nullptr /* controller_info */));
+        ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance());
   }
 }
 
@@ -6388,9 +6390,7 @@ void RenderFrameImpl::CommitSyncNavigation(
   // We need the provider to be non-null, otherwise Blink crashes, even
   // though the provider should not be used for any actual networking.
   navigation_params->service_worker_network_provider =
-      BuildServiceWorkerNetworkProviderForNavigation(
-          nullptr /* commit_params */,
-          nullptr /* controller_service_worker_info */);
+      ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance();
   frame_->CommitNavigation(std::move(navigation_params), BuildDocumentState());
 }
 
@@ -6713,7 +6713,8 @@ void RenderFrameImpl::SetupLoaderFactoryBundle(
     // 2) With NetworkService, but only for a placeholder document or an
     // initial empty document cases.
     DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-           !frame_->GetDocumentLoader());
+           GetLoadingUrl().is_empty() ||
+           GetLoadingUrl().spec() == url::kAboutBlankURL);
     loader_factories_->Update(render_thread->blink_platform_impl()
                                   ->CreateDefaultURLLoaderFactoryBundle()
                                   ->PassInterface());
@@ -7444,12 +7445,17 @@ RenderFrameImpl::BuildServiceWorkerNetworkProviderForNavigation(
     const CommitNavigationParams* commit_params,
     blink::mojom::ControllerServiceWorkerInfoPtr
         controller_service_worker_info) {
+  // An empty provider will always be created since it is expected in a certain
+  // number of places.
+  if (!commit_params->should_create_service_worker) {
+    return ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance();
+  }
   scoped_refptr<network::SharedURLLoaderFactory> fallback_factory =
       network::SharedURLLoaderFactory::Create(
           GetLoaderFactoryBundle()->CloneWithoutAppCacheFactory());
   return ServiceWorkerNetworkProviderForFrame::Create(
-      this, commit_params, std::move(controller_service_worker_info),
-      std::move(fallback_factory));
+      this, commit_params->service_worker_provider_id,
+      std::move(controller_service_worker_info), std::move(fallback_factory));
 }
 
 }  // namespace content

@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "content/common/navigation_params.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -74,18 +73,9 @@ class ServiceWorkerNetworkProviderForFrame::NewDocumentObserver
 std::unique_ptr<ServiceWorkerNetworkProviderForFrame>
 ServiceWorkerNetworkProviderForFrame::Create(
     RenderFrameImpl* frame,
-    const CommitNavigationParams* commit_params,
+    int provider_id,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory) {
-  // Determine if a provider should be created and properly initialized for the
-  // navigation. A default provider will always be created since it is expected
-  // in a certain number of places, however it will have an invalid id.
-  if (!commit_params || !commit_params->should_create_service_worker) {
-    return CreateInvalidInstance();
-  }
-
-  // Otherwise, create the provider.
-
   // Ideally Document::IsSecureContext would be called here, but the document is
   // not created yet, and due to redirects the URL may change. So pass
   // is_parent_frame_secure to the browser process, so it can determine the
@@ -94,7 +84,6 @@ ServiceWorkerNetworkProviderForFrame::Create(
   const bool is_parent_frame_secure =
       IsFrameSecure(frame->GetWebFrame()->Parent());
 
-  int provider_id = commit_params->service_worker_provider_id;
   // If the browser process did not assign a provider id already, assign one
   // now (see class comments for content::ServiceWorkerProviderHost).
   DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id) ||
