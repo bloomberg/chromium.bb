@@ -38,7 +38,7 @@ const char kHistogramFromGWSParseDuration[] =
 const char kHistogramFromGWSParseStart[] =
     "PageLoad.Clients.FromGoogleSearch.ParseTiming.NavigationToParseStart";
 const char kHistogramFromGWSFirstInputDelay[] =
-    "PageLoad.Clients.FromGoogleSearch.InteractiveTiming.FirstInputDelay2";
+    "PageLoad.Clients.FromGoogleSearch.InteractiveTiming.FirstInputDelay3";
 
 const char kHistogramFromGWSAbortNewNavigationBeforeCommit[] =
     "PageLoad.Clients.FromGoogleSearch.Experimental.AbortTiming.NewNavigation."
