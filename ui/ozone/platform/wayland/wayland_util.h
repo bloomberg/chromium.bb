@@ -35,6 +35,8 @@ namespace wl {
 using BufferSwapCallback =
     base::OnceCallback<void(gfx::SwapResult, const gfx::PresentationFeedback&)>;
 
+using RequestSizeCallback = base::OnceCallback<void(const gfx::Size&)>;
+
 wl_buffer* CreateSHMBuffer(const gfx::Size& size,
                            base::SharedMemory* shared_memory,
                            wl_shm* shm);

@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/wayland/wayland_surface_factory.h"
+#include <utility>
+
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
+#include "ui/ozone/platform/wayland/wayland_surface_factory.h"
 #include "ui/ozone/platform/wayland/wayland_test.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
@@ -26,8 +29,23 @@ class WaylandSurfaceFactoryTest : public WaylandTest {
 
   void SetUp() override {
     WaylandTest::SetUp();
+
+    auto connection_ptr = connection_->BindInterface();
+    connection_proxy_->SetWaylandConnection(std::move(connection_ptr));
+
     canvas = surface_factory.CreateCanvasForWidget(widget_);
     ASSERT_TRUE(canvas);
+
+    // Wait until initialization and mojo calls go through.
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void TearDown() override {
+    canvas.reset();
+
+    // The mojo call to destroy shared buffer goes after canvas is destroyed.
+    // Wait until it's done.
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:
@@ -39,8 +57,12 @@ class WaylandSurfaceFactoryTest : public WaylandTest {
 };
 
 TEST_P(WaylandSurfaceFactoryTest, Canvas) {
+  canvas->ResizeCanvas(window_->GetBounds().size());
   canvas->GetSurface();
   canvas->PresentCanvas(gfx::Rect(5, 10, 20, 15));
+
+  // Wait until the mojo calls are done.
+  base::RunLoop().RunUntilIdle();
 
   Expectation damage = EXPECT_CALL(*surface_, Damage(5, 10, 20, 15));
   wl_resource* buffer_resource = nullptr;
@@ -61,10 +83,13 @@ TEST_P(WaylandSurfaceFactoryTest, Canvas) {
 }
 
 TEST_P(WaylandSurfaceFactoryTest, CanvasResize) {
+  canvas->ResizeCanvas(window_->GetBounds().size());
   canvas->GetSurface();
   canvas->ResizeCanvas(gfx::Size(100, 50));
   canvas->GetSurface();
   canvas->PresentCanvas(gfx::Rect(0, 0, 100, 50));
+
+  base::RunLoop().RunUntilIdle();
 
   Expectation damage = EXPECT_CALL(*surface_, Damage(0, 0, 100, 50));
   wl_resource* buffer_resource = nullptr;

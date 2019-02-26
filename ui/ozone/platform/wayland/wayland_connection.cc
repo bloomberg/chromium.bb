@@ -20,6 +20,7 @@
 #include "ui/ozone/platform/wayland/wayland_input_method_context.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 #include "ui/ozone/platform/wayland/wayland_output_manager.h"
+#include "ui/ozone/platform/wayland/wayland_shared_memory_buffer_manager.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
 
 static_assert(XDG_SHELL_VERSION_CURRENT == 5, "Unsupported xdg-shell version");
@@ -227,6 +228,29 @@ void WaylandConnection::ScheduleBufferSwap(
   }
 }
 
+void WaylandConnection::CreateShmBufferForWidget(gfx::AcceleratedWidget widget,
+                                                 base::File file,
+                                                 uint64_t length,
+                                                 const gfx::Size& size) {
+  DCHECK(shm_buffer_manager_);
+  if (!shm_buffer_manager_->CreateBufferForWidget(widget, std::move(file),
+                                                  length, size))
+    TerminateGpuProcess("Failed to create SHM buffer.");
+}
+
+void WaylandConnection::PresentShmBufferForWidget(gfx::AcceleratedWidget widget,
+                                                  const gfx::Rect& damage) {
+  DCHECK(shm_buffer_manager_);
+  if (!shm_buffer_manager_->PresentBufferForWidget(widget, damage))
+    TerminateGpuProcess("Failed to present SHM buffer.");
+}
+
+void WaylandConnection::DestroyShmBuffer(gfx::AcceleratedWidget widget) {
+  DCHECK(shm_buffer_manager_);
+  if (!shm_buffer_manager_->DestroyBuffer(widget))
+    TerminateGpuProcess("Failed to destroy SHM buffer.");
+}
+
 PlatformClipboard* WaylandConnection::GetPlatformClipboard() {
   return this;
 }
@@ -414,6 +438,8 @@ void WaylandConnection::Global(void* data,
         wl::Bind<wl_shm>(registry, name, std::min(version, kMaxShmVersion));
     if (!connection->shm_)
       LOG(ERROR) << "Failed to bind to wl_shm global";
+    connection->shm_buffer_manager_ =
+        std::make_unique<WaylandShmBufferManager>(connection);
   } else if (!connection->seat_ && strcmp(interface, "wl_seat") == 0) {
     connection->seat_ =
         wl::Bind<wl_seat>(registry, name, std::min(version, kMaxSeatVersion));

@@ -18,8 +18,6 @@
 #include "ui/ozone/common/linux/gbm_device.h"  // nogncheck
 #endif
 
-struct wl_shm;
-
 namespace gfx {
 enum class SwapResult;
 class Rect;
@@ -80,6 +78,23 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   }
 #endif
 
+  // Methods that are used to manage shared buffers when software rendering is
+  // used:
+  //
+  // Asks Wayland to create a buffer based on shared memory |file| handle for
+  // specific |widget|. There can be only one buffer per widget.
+  void CreateShmBufferForWidget(gfx::AcceleratedWidget widget,
+                                base::File file,
+                                size_t length,
+                                const gfx::Size size);
+
+  // Asks to damage and commit previously created buffer for the |widget|.
+  void PresentShmBufferForWidget(gfx::AcceleratedWidget widget,
+                                 const gfx::Rect& damage);
+
+  // Asks to destroy shared memory based buffer for the |widget|.
+  void DestroyShmBuffer(gfx::AcceleratedWidget widget);
+
   // Methods, which must be used when a single process mode is used (GPU is
   // hosted in the browser process).
   //
@@ -87,8 +102,6 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   WaylandWindow* GetWindow(gfx::AcceleratedWidget widget);
   // Schedule flush in the Wayland message loop.
   void ScheduleFlush();
-  // Returns an object for a shared memory support. Used for software fallback.
-  wl_shm* shm();
 
   // Methods, which can be used with both single- and multi-process modes.
   //
