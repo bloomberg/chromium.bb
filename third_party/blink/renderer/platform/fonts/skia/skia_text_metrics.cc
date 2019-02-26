@@ -36,7 +36,7 @@ void SkFontGetGlyphWidthForHarfBuzz(const SkFont& font,
   SkScalar sk_width;
   uint16_t glyph = codepoint;
 
-  font.getWidths(&glyph, 1, &sk_width, nullptr);
+  font.getWidths(&glyph, 1, &sk_width);
   if (!font.isSubpixel())
     sk_width = SkScalarRoundToInt(sk_width);
   *width = SkiaScalarToHarfBuzzPosition(sk_width);
@@ -57,7 +57,7 @@ void SkFontGetGlyphWidthForHarfBuzz(const SkFont& font,
     glyph_array[i] = *glyphs;
   }
   Vector<SkScalar, 256> sk_width_array(count);
-  font.getWidths(glyph_array.data(), count, sk_width_array.data(), nullptr);
+  font.getWidths(glyph_array.data(), count, sk_width_array.data());
 
   if (!font.isSubpixel()) {
     for (unsigned i = 0; i < count; i++)
@@ -90,10 +90,13 @@ void SkFontGetGlyphExtentsForHarfBuzz(const SkFont& font,
   // TODO(drott): Remove this once we have better metrics bounds
   // on Mac, https://bugs.chromium.org/p/skia/issues/detail?id=5328
   SkPath path;
-  font.getPath(glyph, &path);
-  sk_bounds = path.getBounds();
+  if (font.getPath(glyph, &path)) {
+    sk_bounds = path.getBounds();
+  } else {
+    font.getBounds(&glyph, 1, &sk_bounds, nullptr);
+  }
 #else
-  font.getWidths(&glyph, 1, nullptr, &sk_bounds);
+  font.getBounds(&glyph, 1, &sk_bounds, nullptr);
 #endif
   if (!font.isSubpixel()) {
     // Use roundOut() rather than round() to avoid rendering glyphs
@@ -114,16 +117,14 @@ void SkFontGetBoundsForGlyph(const SkFont& font, Glyph glyph, SkRect* bounds) {
   // TODO(drott): Remove this once we have better metrics bounds
   // on Mac, https://bugs.chromium.org/p/skia/issues/detail?id=5328
   SkPath path;
-  font.getPath(glyph, &path);
-  *bounds = path.getBounds();
-  // For Apple Color Emoji path bounds are returning empty rectangles, see
-  // https://bugs.chromium.org/p/skia/issues/detail?id=8779
-  // OpenTypeVerticalData::GetVerticalTranslationsForGlyphs needs a non-empty
-  // rectangle for vertical origin computation, hence fall back to bounds here.
-  if (UNLIKELY(bounds->isEmpty()))
-    font.getWidths(&glyph, 1, nullptr, bounds);
+  if (font.getPath(glyph, &path)) {
+    *bounds = path.getBounds();
+  } else {
+    // Fonts like Apple Color Emoji have no paths, fall back to bounds here.
+    font.getBounds(&glyph, 1, bounds, nullptr);
+  }
 #else
-  font.getWidths(&glyph, 1, nullptr, bounds);
+  font.getBounds(&glyph, 1, bounds, nullptr);
 #endif
 
   if (!font.isSubpixel()) {
@@ -142,7 +143,7 @@ void SkFontGetBoundsForGlyphs(const SkFont& font,
   }
 #else
   static_assert(sizeof(Glyph) == 2, "Skia expects 2 bytes glyph id.");
-  font.getWidths(glyphs.data(), glyphs.size(), nullptr, bounds);
+  font.getBounds(glyphs.data(), glyphs.size(), bounds, nullptr);
 
   if (!font.isSubpixel()) {
     for (unsigned i = 0; i < glyphs.size(); i++) {
@@ -156,7 +157,7 @@ void SkFontGetBoundsForGlyphs(const SkFont& font,
 
 float SkFontGetWidthForGlyph(const SkFont& font, Glyph glyph) {
   SkScalar sk_width;
-  font.getWidths(&glyph, 1, &sk_width, nullptr);
+  font.getWidths(&glyph, 1, &sk_width);
 
   if (!font.isSubpixel())
     sk_width = SkScalarRoundToInt(sk_width);
