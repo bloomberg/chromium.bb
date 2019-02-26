@@ -9790,6 +9790,16 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Registered App"/>
 </enum>
 
+<enum name="CrostiniExportContainerResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failed"/>
+</enum>
+
+<enum name="CrostiniImportContainerResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failed"/>
+</enum>
+
 <enum name="CrostiniSetupResult">
   <int value="0" label="Not Started"/>
   <int value="1" label="User Cancelled"/>
