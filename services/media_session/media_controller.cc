@@ -6,6 +6,8 @@
 
 #include <set>
 
+#include "services/media_session/public/cpp/media_image_manager.h"
+
 namespace media_session {
 
 // ImageObserverHolder will hold each mojo image observer with the image
@@ -18,7 +20,8 @@ class MediaController::ImageObserverHolder {
                       int desired_size_px,
                       mojom::MediaControllerImageObserverPtr observer,
                       const std::vector<MediaImage>& current_images)
-      : owner_(owner),
+      : manager_(minimum_size_px, desired_size_px),
+        owner_(owner),
         type_(type),
         minimum_size_px_(minimum_size_px),
         desired_size_px_(desired_size_px),
@@ -39,18 +42,18 @@ class MediaController::ImageObserverHolder {
   mojom::MediaSessionImageType type() const { return type_; }
 
   void ImagesChanged(const std::vector<MediaImage>& images) {
-    // If we do not have any images then we should call with an empty image to
+    base::Optional<MediaImage> image = manager_.SelectImage(images);
+
+    // If we could not find an image then we should call with an empty image to
     // flush the observer.
-    if (images.empty()) {
+    if (!image) {
       ClearImage();
       return;
     }
 
-    // TODO(beccahughes): Pick the best image based on ranking.
-
     DCHECK(owner_->session_);
     owner_->session_->GetMediaImageBitmap(
-        images.at(0), minimum_size_px_, desired_size_px_,
+        *image, minimum_size_px_, desired_size_px_,
         base::BindOnce(&MediaController::ImageObserverHolder::OnImage,
                        base::Unretained(this)));
   }
@@ -63,6 +66,8 @@ class MediaController::ImageObserverHolder {
   void OnImage(const SkBitmap& image) {
     observer_->MediaControllerImageChanged(type_, image);
   }
+
+  media_session::MediaImageManager manager_;
 
   MediaController* const owner_;
 
