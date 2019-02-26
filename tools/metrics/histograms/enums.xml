@@ -50219,25 +50219,33 @@ Called by update_net_trust_anchors.py.-->
 
 <enum name="SqliteStatsEnum">
   <summary/>
-  <int value="0" label="EVENT_STATEMENT_RUN">
+  <int value="0" label="EVENT_STATEMENT_RUN_DEPRECATED">
     Count statements initiated by Step(), Run(), or Execute*().
   </int>
-  <int value="1" label="EVENT_STATEMENT_ROWS">
+  <int value="1" label="EVENT_STATEMENT_ROWS_DEPRECATED">
     Count steps which returned SQLITE_ROW.
   </int>
-  <int value="2" label="EVENT_STATEMENT_SUCCESS">
+  <int value="2" label="EVENT_STATEMENT_SUCCESS_DEPRECATED">
     Count statements which ran to completion with no errors.
   </int>
-  <int value="3" label="EVENT_EXECUTE">Count calls to Execute*().</int>
-  <int value="4" label="EVENT_CHANGES_AUTOCOMMIT">
+  <int value="3" label="EVENT_EXECUTE_DEPRECATED">
+    Count calls to Execute*().
+  </int>
+  <int value="4" label="EVENT_CHANGES_AUTOCOMMIT_DEPRECATED">
     Count rows changed without an explicit transaction.
   </int>
-  <int value="5" label="EVENT_CHANGES">
+  <int value="5" label="EVENT_CHANGES_DEPRECATED">
     Count rows changed in an explicit transaction.
   </int>
-  <int value="6" label="EVENT_BEGIN">Explicit transactions begun.</int>
-  <int value="7" label="EVENT_COMMIT">Explicit transactions committed.</int>
-  <int value="8" label="EVENT_ROLLBACK">Explicit transactions rolled back.</int>
+  <int value="6" label="EVENT_BEGIN_DEPRECATED">
+    Explicit transactions begun.
+  </int>
+  <int value="7" label="EVENT_COMMIT_DEPRECATED">
+    Explicit transactions committed.
+  </int>
+  <int value="8" label="EVENT_ROLLBACK_DEPRECATED">
+    Explicit transactions rolled back.
+  </int>
   <int value="9" label="EVENT_MMAP_META_MISSING">
     No meta table in mmap probe.
   </int>
@@ -50256,13 +50264,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="14" label="EVENT_MMAP_FAILED_NEW">
     Error while reading database in mmap probe.
   </int>
-  <int value="15" label="EVENT_MMAP_SUCCESS_NEW">
+  <int value="15" label="EVENT_MMAP_SUCCESS_NEW_DEPRECATED">
     Successfully read to end of database in mmap probe.
   </int>
-  <int value="16" label="EVENT_MMAP_SUCCESS_PARTIAL">
+  <int value="16" label="EVENT_MMAP_SUCCESS_PARTIAL_DEPRECATED">
     Successfully read some of database in mmap probe.
   </int>
-  <int value="17" label="EVENT_MMAP_SUCCESS_NO_PROGRESS">
+  <int value="17" label="EVENT_MMAP_SUCCESS_NO_PROGRESS_DEPRECATED">
     Exhausted read quota in mmap probe.
   </int>
   <int value="18" label="EVENT_MMAP_STATUS_FAILURE_READ">

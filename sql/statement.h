@@ -176,15 +176,9 @@ class COMPONENT_EXPORT(SQL) Statement {
   // ensuring that contracts are honored in error edge cases.
   bool CheckValid() const;
 
-  // Helper for Run() and Step(), calls sqlite3_step() and then generates
-  // sql::Database histograms based on the results.  Timing and change count
-  // are only recorded if |timer_flag| is true.  The checked value from
-  // sqlite3_step() is returned.
-  int StepInternal(bool timer_flag);
-
-  // sql::Database uses cached statments for transactions, but tracks their
-  // runtime independently.
-  bool RunWithoutTimers();
+  // Helper for Run() and Step(), calls sqlite3_step() and returns the checked
+  // value from it.
+  int StepInternal();
 
   // The actual sqlite statement. This may be unique to us, or it may be cached
   // by the Database, which is why it's ref-counted. This pointer is

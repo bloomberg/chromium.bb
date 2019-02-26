@@ -23,7 +23,6 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "base/time/tick_clock.h"
 #include "sql/internal_api_token.h"
 #include "sql/statement_id.h"
 
@@ -148,48 +147,48 @@ class COMPONENT_EXPORT(SQL) Database {
   // before EVENT_MAX_VALUE.
   enum Events {
     // Number of statements run, either with sql::Statement or Execute*().
-    EVENT_STATEMENT_RUN = 0,
+    EVENT_STATEMENT_RUN_DEPRECATED = 0,
 
     // Number of rows returned by statements run.
-    EVENT_STATEMENT_ROWS,
+    EVENT_STATEMENT_ROWS_DEPRECATED,
 
     // Number of statements successfully run (all steps returned SQLITE_DONE or
     // SQLITE_ROW).
-    EVENT_STATEMENT_SUCCESS,
+    EVENT_STATEMENT_SUCCESS_DEPRECATED,
 
     // Number of statements run by Execute() or ExecuteAndReturnErrorCode().
-    EVENT_EXECUTE,
+    EVENT_EXECUTE_DEPRECATED,
 
     // Number of rows changed by autocommit statements.
-    EVENT_CHANGES_AUTOCOMMIT,
+    EVENT_CHANGES_AUTOCOMMIT_DEPRECATED,
 
     // Number of rows changed by statements in transactions.
-    EVENT_CHANGES,
+    EVENT_CHANGES_DEPRECATED,
 
     // Count actual SQLite transaction statements (not including nesting).
-    EVENT_BEGIN,
-    EVENT_COMMIT,
-    EVENT_ROLLBACK,
+    EVENT_BEGIN_DEPRECATED,
+    EVENT_COMMIT_DEPRECATED,
+    EVENT_ROLLBACK_DEPRECATED,
 
     // Track success and failure in GetAppropriateMmapSize().
     // GetAppropriateMmapSize() should record at most one of these per run.  The
     // case of mapping everything is not recorded.
-    EVENT_MMAP_META_MISSING,         // No meta table present.
-    EVENT_MMAP_META_FAILURE_READ,    // Failed reading meta table.
-    EVENT_MMAP_META_FAILURE_UPDATE,  // Failed updating meta table.
-    EVENT_MMAP_VFS_FAILURE,          // Failed to access VFS.
-    EVENT_MMAP_FAILED,               // Failure from past run.
-    EVENT_MMAP_FAILED_NEW,           // Read error in this run.
-    EVENT_MMAP_SUCCESS_NEW,          // Read to EOF in this run.
-    EVENT_MMAP_SUCCESS_PARTIAL,      // Read but did not reach EOF.
-    EVENT_MMAP_SUCCESS_NO_PROGRESS,  // Read quota exhausted.
+    EVENT_MMAP_META_MISSING,                    // No meta table present.
+    EVENT_MMAP_META_FAILURE_READ,               // Failed reading meta table.
+    EVENT_MMAP_META_FAILURE_UPDATE,             // Failed updating meta table.
+    EVENT_MMAP_VFS_FAILURE,                     // Failed to access VFS.
+    EVENT_MMAP_FAILED,                          // Failure from past run.
+    EVENT_MMAP_FAILED_NEW,                      // Read error in this run.
+    EVENT_MMAP_SUCCESS_NEW_DEPRECATED,          // Read to EOF in this run.
+    EVENT_MMAP_SUCCESS_PARTIAL_DEPRECATED,      // Read but did not reach EOF.
+    EVENT_MMAP_SUCCESS_NO_PROGRESS_DEPRECATED,  // Read quota exhausted.
 
     EVENT_MMAP_STATUS_FAILURE_READ,    // Failure reading MmapStatus view.
     EVENT_MMAP_STATUS_FAILURE_UPDATE,  // Failure updating MmapStatus view.
 
     // Leave this at the end.
     // TODO(shess): |EVENT_MAX| causes compile fail on Windows.
-    EVENT_MAX_VALUE
+    EVENT_MAX_VALUE,
   };
   void RecordEvent(Events event, size_t count);
   void RecordOneEvent(Events event) { RecordEvent(event, 1); }
@@ -467,16 +466,6 @@ class COMPONENT_EXPORT(SQL) Database {
   // crash server.
   void ReportDiagnosticInfo(int extended_error, Statement* stmt);
 
-  // Helper to return the current time from the time source.
-  base::TimeTicks NowTicks() const { return clock_->NowTicks(); }
-
-  // Intended for tests to inject a mock time source.
-  //
-  // Inlined to avoid generating code in the production binary.
-  inline void set_clock_for_testing(std::unique_ptr<base::TickClock> clock) {
-    clock_ = std::move(clock);
-  }
-
   // Computes the path of a database's rollback journal.
   //
   // The journal file is created at the beginning of the database's first
@@ -686,30 +675,6 @@ class COMPONENT_EXPORT(SQL) Database {
                             std::vector<std::string>* messages)
       WARN_UNUSED_RESULT;
 
-  // Record time spent executing explicit COMMIT statements.
-  void RecordCommitTime(const base::TimeDelta& delta);
-
-  // Record time in DML (Data Manipulation Language) statements such as INSERT
-  // or UPDATE outside of an explicit transaction.  Due to implementation
-  // limitations time spent on DDL (Data Definition Language) statements such as
-  // ALTER and CREATE is not included.
-  void RecordAutoCommitTime(const base::TimeDelta& delta);
-
-  // Record all time spent on updating the database.  This includes CommitTime()
-  // and AutoCommitTime(), plus any time spent spilling to the journal if
-  // transactions do not fit in cache.
-  void RecordUpdateTime(const base::TimeDelta& delta);
-
-  // Record all time spent running statements, including time spent doing
-  // updates and time spent on read-only queries.
-  void RecordQueryTime(const base::TimeDelta& delta);
-
-  // Record |delta| as query time if |read_only| (from sqlite3_stmt_readonly) is
-  // true, autocommit time if the database is not in a transaction, or update
-  // time if the database is in a transaction.  Also records change count to
-  // EVENT_CHANGES_AUTOCOMMIT or EVENT_CHANGES_COMMIT.
-  void RecordTimeAndChanges(const base::TimeDelta& delta, bool read_only);
-
   // Release page-cache memory if memory-mapped I/O is enabled and the database
   // was changed.  Passing true for |implicit_change_performed| allows
   // overriding the change detection for cases like DDL (CREATE, DROP, etc),
@@ -818,23 +783,6 @@ class COMPONENT_EXPORT(SQL) Database {
 
   // Linear histogram for RecordEvent().
   base::HistogramBase* stats_histogram_;
-
-  // Histogram for tracking time taken in commit.
-  base::HistogramBase* commit_time_histogram_;
-
-  // Histogram for tracking time taken in autocommit updates.
-  base::HistogramBase* autocommit_time_histogram_;
-
-  // Histogram for tracking time taken in updates (including commit and
-  // autocommit).
-  base::HistogramBase* update_time_histogram_;
-
-  // Histogram for tracking time taken in all queries.
-  base::HistogramBase* query_time_histogram_;
-
-  // Source for timing information, provided to allow tests to inject time
-  // changes.
-  std::unique_ptr<base::TickClock> clock_;
 
   // Stores the dump provider object when db is open.
   std::unique_ptr<DatabaseMemoryDumpProvider> memory_dump_provider_;
