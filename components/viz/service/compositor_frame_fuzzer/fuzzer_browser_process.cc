@@ -96,6 +96,7 @@ CompositorFrame FuzzerBrowserProcess::BuildBrowserUICompositorFrame(
     SurfaceId renderer_surface_id) {
   CompositorFrame frame;
 
+  frame.metadata.frame_token = 1;
   frame.metadata.begin_frame_ack.source_id = BeginFrameArgs::kManualSourceId;
   frame.metadata.begin_frame_ack.sequence_number =
       BeginFrameArgs::kStartingFrameNumber;

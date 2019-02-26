@@ -67,15 +67,28 @@ CompositorFrame GenerateFuzzedCompositorFrame(
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
   gfx::Rect rp_output_rect =
       GetRectFromProtobuf(render_pass_spec.output_rect());
+  gfx::Rect rp_damage_rect =
+      GetRectFromProtobuf(render_pass_spec.damage_rect());
+
+  // Handle constraints on RenderPass:
+  // Ensure that |rp_output_rect| has non-zero area and that |rp_damage_rect| is
+  // contained in |rp_output_rect|.
   ExpandToMinSize(&rp_output_rect, 1);
-  pass->SetNew(1, rp_output_rect,
-               GetRectFromProtobuf(render_pass_spec.damage_rect()),
-               gfx::Transform());
+  rp_damage_rect.AdjustToFit(rp_output_rect);
+
+  pass->SetNew(1, rp_output_rect, rp_damage_rect, gfx::Transform());
 
   content::fuzzing::proto::SolidColorDrawQuad quad_spec =
       render_pass_spec.draw_quad();
   gfx::Rect quad_rect = GetRectFromProtobuf(quad_spec.rect());
   gfx::Rect quad_visible_rect = GetRectFromProtobuf(quad_spec.visible_rect());
+
+  // Handle constraints on DrawQuad:
+  // Ensure that |quad_rect| has non-zero area and that |quad_visible_rect| is
+  // contained in |quad_rect|.
+  ExpandToMinSize(&quad_rect, 1);
+  quad_visible_rect.AdjustToFit(quad_rect);
+
   auto* shared_quad_state = pass->CreateAndAppendSharedQuadState();
   shared_quad_state->SetAll(gfx::Transform(), gfx::Rect(quad_rect),
                             gfx::Rect(quad_rect), gfx::Rect(quad_rect),
@@ -83,7 +96,7 @@ CompositorFrame GenerateFuzzedCompositorFrame(
                             /*are_contents_opaque=*/false, 1,
                             SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
   auto* color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-  color_quad->SetNew(shared_quad_state, quad_visible_rect, gfx::Rect(quad_rect),
+  color_quad->SetNew(shared_quad_state, quad_rect, quad_visible_rect,
                      quad_spec.color(), quad_spec.force_anti_aliasing_off());
 
   frame.render_pass_list.push_back(std::move(pass));
