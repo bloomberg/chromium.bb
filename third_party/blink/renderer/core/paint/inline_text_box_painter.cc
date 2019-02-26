@@ -441,7 +441,7 @@ bool InlineTextBoxPainter::ShouldPaintTextBox(const PaintInfo& paint_info) {
 InlineTextBoxPainter::PaintOffsets
 InlineTextBoxPainter::ApplyTruncationToPaintOffsets(
     const InlineTextBoxPainter::PaintOffsets& offsets) {
-  const unsigned short truncation = inline_text_box_.Truncation();
+  const uint16_t truncation = inline_text_box_.Truncation();
   if (truncation == kCNoTruncation)
     return offsets;
 
