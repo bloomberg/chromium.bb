@@ -4,6 +4,7 @@
 
 #include "ash/system/accessibility/autoclick_tray_action_list_view.h"
 
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/accessibility/autoclick_tray.h"
 #include "ash/system/accessibility/autoclick_tray_action_view.h"
@@ -36,6 +37,7 @@ AutoclickTrayActionListView::AutoclickTrayActionListView(
       this, mojom::AutoclickEventType::kLeftClick,
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_AUTOCLICK_OPTION_LEFT_CLICK),
+      kAutoclickLeftClickIcon,
       selected_event_type_ == mojom::AutoclickEventType::kLeftClick);
   left_click_view->set_id(kLeftClickViewID);
   AddChildView(left_click_view);
@@ -45,6 +47,7 @@ AutoclickTrayActionListView::AutoclickTrayActionListView(
       this, mojom::AutoclickEventType::kRightClick,
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_AUTOCLICK_OPTION_RIGHT_CLICK),
+      kAutoclickRightClickIcon,
       selected_event_type_ == mojom::AutoclickEventType::kRightClick);
   right_click_view->set_id(kRightClickViewID);
   AddChildView(right_click_view);
@@ -54,6 +57,7 @@ AutoclickTrayActionListView::AutoclickTrayActionListView(
       this, mojom::AutoclickEventType::kDoubleClick,
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_AUTOCLICK_OPTION_DOUBLE_CLICK),
+      kAutoclickDoubleClickIcon,
       selected_event_type_ == mojom::AutoclickEventType::kDoubleClick);
   double_click_view->set_id(kDoubleClickViewID);
   AddChildView(double_click_view);
@@ -63,6 +67,7 @@ AutoclickTrayActionListView::AutoclickTrayActionListView(
       this, mojom::AutoclickEventType::kDragAndDrop,
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_AUTOCLICK_OPTION_DRAG_AND_DROP),
+      kAutoclickDragIcon,
       selected_event_type_ == mojom::AutoclickEventType::kDragAndDrop);
   drag_and_drop_view->set_id(kDragAndDropViewID);
   AddChildView(drag_and_drop_view);
@@ -71,6 +76,7 @@ AutoclickTrayActionListView::AutoclickTrayActionListView(
   views::View* pause_view = new AutoclickTrayActionView(
       this, mojom::AutoclickEventType::kNoAction,
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUTOCLICK_OPTION_NO_ACTION),
+      kAutoclickPauseIcon,
       selected_event_type_ == mojom::AutoclickEventType::kNoAction);
   pause_view->set_id(kPauseViewID);
   AddChildView(pause_view);

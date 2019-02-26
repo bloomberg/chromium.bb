@@ -227,8 +227,7 @@ void AutoclickTray::UpdateIconsForSession() {
       Shell::Get()->session_controller()->GetSessionState();
   SkColor color = TrayIconColor(session_state);
 
-  // TODO(katie): Use autoclick asset when available.
-  tray_image_ = gfx::CreateVectorIcon(kSystemTraySelectToSpeakNewuiIcon, color);
+  tray_image_ = gfx::CreateVectorIcon(kAutoclickIcon, color);
 }
 
 void AutoclickTray::CheckStatusAndUpdateIcon() {

@@ -8,6 +8,7 @@
 #include "ash/public/interfaces/accessibility_controller_enums.mojom.h"
 #include "ash/system/tray/actionable_view.h"
 #include "base/macros.h"
+#include "ui/gfx/vector_icon_types.h"
 
 namespace ash {
 class AutoclickTrayActionListView;
@@ -18,6 +19,7 @@ class AutoclickTrayActionView : public ActionableView {
   AutoclickTrayActionView(AutoclickTrayActionListView* list_view,
                           mojom::AutoclickEventType event_type,
                           const base::string16& label,
+                          const gfx::VectorIcon& vector_icon,
                           bool selected);
   ~AutoclickTrayActionView() override = default;
 
