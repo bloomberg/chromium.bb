@@ -9,7 +9,9 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "remoting/protocol/message_pipe.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/rtc_base/ref_count.h"
@@ -35,15 +37,33 @@ class WebrtcDataStreamAdapter : public MessagePipe,
  private:
   enum class State { CONNECTING, OPEN, CLOSED };
 
+  struct PendingMessage {
+    PendingMessage(webrtc::DataBuffer buffer, base::OnceClosure done_callback);
+    PendingMessage(PendingMessage&&);
+    ~PendingMessage();
+    PendingMessage& operator=(PendingMessage&&);
+
+    webrtc::DataBuffer buffer;
+    base::OnceClosure done_callback;
+  };
+
+  void SendMessagesIfReady();
+
   // webrtc::DataChannelObserver interface.
   void OnStateChange() override;
   void OnMessage(const webrtc::DataBuffer& buffer) override;
+  void OnBufferedAmountChange(uint64_t previous_amount) override;
 
   rtc::scoped_refptr<webrtc::DataChannelInterface> channel_;
 
   EventHandler* event_handler_ = nullptr;
 
   State state_ = State::CONNECTING;
+
+  // The data and done callbacks for queued but not yet sent messages.
+  base::queue<PendingMessage> pending_messages_;
+
+  base::WeakPtrFactory<WebrtcDataStreamAdapter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcDataStreamAdapter);
 };
