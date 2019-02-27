@@ -62,7 +62,10 @@ WindowProxy::WindowProxy(v8::Isolate* isolate,
       lifecycle_(Lifecycle::kContextIsUninitialized) {}
 
 void WindowProxy::ClearForClose() {
-  DisposeContext(Lifecycle::kFrameIsDetached, kFrameWillNotBeReused);
+  DisposeContext(lifecycle_ == Lifecycle::kV8MemoryIsForciblyPurged
+                     ? Lifecycle::kFrameIsDetachedAndV8MemoryIsPurged
+                     : Lifecycle::kFrameIsDetached,
+                 kFrameWillNotBeReused);
 }
 
 void WindowProxy::ClearForNavigation() {
@@ -74,7 +77,7 @@ void WindowProxy::ClearForSwap() {
 }
 
 void WindowProxy::ClearForV8MemoryPurge() {
-  DisposeContext(Lifecycle::kForciblyPurgeV8Memory, kFrameWillNotBeReused);
+  DisposeContext(Lifecycle::kV8MemoryIsForciblyPurged, kFrameWillNotBeReused);
 }
 
 v8::Local<v8::Object> WindowProxy::GlobalProxyIfNotDetached() {
