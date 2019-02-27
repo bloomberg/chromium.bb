@@ -19,6 +19,8 @@
 namespace views {
 namespace corewm {
 
+static HFONT s_tooltipFont = 0;
+
 TooltipWin::TooltipWin(HWND parent)
     : parent_hwnd_(parent),
       tooltip_hwnd_(NULL),
@@ -36,6 +38,14 @@ TooltipWin::TooltipWin(HWND parent)
 TooltipWin::~TooltipWin() {
   if (tooltip_hwnd_)
     DestroyWindow(tooltip_hwnd_);
+}
+
+HWND TooltipWin::GetParentHwnd() {
+  return parent_hwnd_;
+}
+
+void TooltipWin::SetTooltipStyle(HFONT font) {
+  s_tooltipFont = font;
 }
 
 bool TooltipWin::HandleNotify(int w_param, NMHDR* l_param, LRESULT* l_result) {
@@ -71,6 +81,11 @@ bool TooltipWin::EnsureTooltipWindow() {
   }
 
   l10n_util::AdjustUIFontForWindow(tooltip_hwnd_);
+
+  if (s_tooltipFont) {
+    SendMessage(tooltip_hwnd_, WM_SETFONT,
+                reinterpret_cast<WPARAM>(s_tooltipFont), TRUE);
+  }
 
   SendMessage(tooltip_hwnd_, TTM_ADDTOOL, 0,
               reinterpret_cast<LPARAM>(&toolinfo_));
