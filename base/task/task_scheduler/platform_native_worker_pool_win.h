@@ -10,7 +10,6 @@
 #include "base/base_export.h"
 #include "base/logging.h"
 #include "base/synchronization/atomic_flag.h"
-#include "base/task/task_scheduler/priority_queue.h"
 #include "base/task/task_scheduler/scheduler_worker_pool.h"
 
 namespace base {
@@ -72,11 +71,6 @@ class BASE_EXPORT PlatformNativeWorkerPoolWin : public SchedulerWorkerPool {
   // |PlatformNativeWorkerPoolWin| and a pointer to |environment_| bound to
   // it.
   PTP_WORK work_ = nullptr;
-
-  SchedulerLock lock_;
-
-  // PriorityQueue from which all threads of this worker pool get work.
-  PriorityQueue priority_queue_ GUARDED_BY(lock_);
 
   // Indicates whether the pool has been started yet.
   bool started_ GUARDED_BY(lock_) = false;
