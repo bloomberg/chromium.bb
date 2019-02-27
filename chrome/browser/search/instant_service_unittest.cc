@@ -20,6 +20,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/ntp_tiles/constants.h"
 #include "components/ntp_tiles/ntp_tile.h"
+#include "components/ntp_tiles/pref_names.cc"
 #include "components/ntp_tiles/section_type.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -45,6 +46,15 @@ base::DictionaryValue GetBackgroundInfoAsDict(const GURL& background_url) {
 
   return background_info;
 }
+
+class MockInstantService : public InstantService {
+ public:
+  explicit MockInstantService(Profile* profile) : InstantService(profile) {}
+  ~MockInstantService() override = default;
+
+  MOCK_METHOD0(ResetCustomLinks, bool());
+  MOCK_METHOD0(ResetCustomBackgroundThemeInfo, void());
+};
 
 }  // namespace
 
@@ -427,6 +437,13 @@ TEST_F(InstantServiceTest, ValidateBackdropUrls) {
   theme_info = instant_service_->GetThemeInfoForTesting();
   EXPECT_EQ(GURL(), theme_info->custom_background_url);
   EXPECT_FALSE(instant_service_->IsCustomBackgroundSet());
+}
+
+TEST_F(InstantServiceTest, TestResetToDefault) {
+  MockInstantService mock_instant_service_(profile());
+  EXPECT_CALL(mock_instant_service_, ResetCustomLinks());
+  EXPECT_CALL(mock_instant_service_, ResetCustomBackgroundThemeInfo());
+  mock_instant_service_.ResetToDefault();
 }
 
 class InstantServiceThemeTest : public InstantServiceTest {
