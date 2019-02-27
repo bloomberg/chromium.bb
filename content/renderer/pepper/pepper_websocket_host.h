@@ -45,7 +45,7 @@ class CONTENT_EXPORT PepperWebSocketHost
   void DidStartClosingHandshake() override;
   void DidClose(unsigned long unhandled_buffered_amount,
                 ClosingHandshakeCompletionStatus status,
-                unsigned short code,
+                uint16_t code,
                 const blink::WebString& reason) override;
 
  private:
