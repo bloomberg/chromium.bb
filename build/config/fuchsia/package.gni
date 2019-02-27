@@ -212,12 +212,19 @@ template("fuchsia_package") {
   copy(target_name) {
     forward_variables_from(invoker, [ "testonly" ])
 
+    # Allows dependent targets to make use of "ids.txt".
+    public_deps = [
+      ":$_write_manifest_target",
+    ]
+
     deps = [
       ":$_bundle_target",
     ]
 
     data = [
       _final_far_file,
+
+      # Files specified here so that they can be read by isolated testbots.
       _package_info_path,
       _build_ids_file,
     ]
