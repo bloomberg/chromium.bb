@@ -1121,7 +1121,7 @@ if (current_toolchain == default_toolchain) {
 
       generate_resource_whitelist(_resource_whitelist_target) {
         _fat_lib_toolchain = ""
-        if (_is_monochrome || _is_trichrome) {
+        if (_is_monochrome) {
           # Always use the 32-bit library's whitelist since the 64-bit one is
           # webview-only.
           if (!android_64bit_target_cpu) {
