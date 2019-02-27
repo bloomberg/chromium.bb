@@ -27,7 +27,6 @@ struct AccountsInCookieJarInfo;
 }
 
 class AccountTrackerService;
-class GaiaCookieManagerService;
 class PrefRegistrySimple;
 class SigninClient;
 
@@ -56,7 +55,6 @@ class AboutSigninInternals
   AboutSigninInternals(AccountTrackerService* account_tracker,
                        identity::IdentityManager* identity_manager,
                        SigninErrorController* signin_error_controller,
-                       GaiaCookieManagerService* cookie_manager_service,
                        signin::AccountConsistencyMethod account_consistency);
   ~AboutSigninInternals() override;
 
@@ -182,7 +180,6 @@ class AboutSigninInternals
         AccountTrackerService* account_tracker,
         identity::IdentityManager* identity_manager,
         SigninErrorController* signin_error_controller,
-        GaiaCookieManagerService* cookie_manager_service_,
         SigninClient* signin_client,
         signin::AccountConsistencyMethod account_consistency);
   };
@@ -236,9 +233,6 @@ class AboutSigninInternals
 
   // Weak pointer to the SigninErrorController
   SigninErrorController* signin_error_controller_;
-
-  // Weak pointer to the GaiaCookieManagerService
-  GaiaCookieManagerService* cookie_manager_service_;
 
   // Encapsulates the actual signin and token related values.
   // Most of the values are mirrored in the prefs for persistence.
