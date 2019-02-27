@@ -5585,7 +5585,7 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
       return UIA_TextControlTypeId;
 
     case ax::mojom::Role::kLayoutTable:
-      return UIA_DataGridControlTypeId;
+      return UIA_TableControlTypeId;
 
     case ax::mojom::Role::kLayoutTableCell:
       return UIA_DataItemControlTypeId;
@@ -5753,7 +5753,7 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
       return UIA_TabItemControlTypeId;
 
     case ax::mojom::Role::kTable:
-      return UIA_DataGridControlTypeId;
+      return UIA_TableControlTypeId;
 
     case ax::mojom::Role::kTableHeaderContainer:
       return UIA_GroupControlTypeId;
