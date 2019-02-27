@@ -43,7 +43,7 @@ class ElementInternals : public ScriptWrappable, public ListedElement {
   String ValidationMessageForBinding(ExceptionState& exception_state);
   bool checkValidity(ExceptionState& exception_state);
   bool reportValidity(ExceptionState& exception_state);
-  LabelsNodeList* labels();
+  LabelsNodeList* labels(ExceptionState& exception_state);
 
  private:
   bool IsTargetFormAssociated() const;
