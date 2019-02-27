@@ -21773,6 +21773,25 @@
       },
       {
         "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6613",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600
+        },
+        "test": "angle_unittests"
+      },
+      {
+        "args": [
           "--test-launcher-retry-limit=0"
         ],
         "should_retry_with_patch": false,

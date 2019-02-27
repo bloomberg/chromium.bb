@@ -4925,6 +4925,7 @@
 
     'gpu_win_angle_amd_gtests': [
       'gpu_angle_end2end_tests',
+      'gpu_angle_unittests',
       'gpu_angle_white_box_tests',
     ],
 
