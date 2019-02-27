@@ -295,8 +295,6 @@ source_set("chromeos") {
     "account_manager/account_manager_migrator.h",
     "account_manager/account_migration_runner.cc",
     "account_manager/account_migration_runner.h",
-    "account_mapper_util.cc",
-    "account_mapper_util.h",
     "android_sms/android_sms_app_manager.cc",
     "android_sms/android_sms_app_manager.h",
     "android_sms/android_sms_app_manager_impl.cc",
