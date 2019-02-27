@@ -24,6 +24,7 @@
       "file_manager/drive_specific.js",
       "file_manager/file_dialog.js",
       "file_manager/file_display.js",
+      "file_manager/files_tooltip.js",
       "file_manager/folder_shortcuts.js",
       "file_manager/gear_menu.js",
       "file_manager/grid_view.js",

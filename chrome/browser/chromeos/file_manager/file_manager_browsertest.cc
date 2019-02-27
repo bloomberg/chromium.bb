@@ -895,6 +895,13 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("showSendFeedbackAction")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
+    FilesTooltip, /* files_tooltip.js */
+    FilesAppBrowserTest,
+    ::testing::Values(TestCase("filesTooltipFocus"),
+                      TestCase("filesTooltipMouseOver"),
+                      TestCase("filesTooltipClickHides")));
+
+WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Crostini, /* crostini.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("mountCrostini"),

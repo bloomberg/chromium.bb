@@ -333,7 +333,7 @@ test.util.sync.sendEvent = (contentWindow, targetQuery, event) => {
  * @param {Window} contentWindow Window to be tested.
  * @param {string} targetQuery Query to specify the element.
  * @param {string} eventType Type of event.
- * @param {Object=} opt_additionalProperties Object contaning additional
+ * @param {Object=} opt_additionalProperties Object containing additional
  *     properties.
  * @return {boolean} True if the event is sent to the target, false otherwise.
  */
@@ -385,8 +385,8 @@ test.util.sync.fakeKeyDown = (contentWindow, targetQuery, key, ctrl, shift, alt)
  *     If targetQuery is an array, |targetQuery[0]| specifies the first
  *     element(s), |targetQuery[1]| specifies elements inside the shadow DOM of
  *     the first element, and so on.
- * @param {{shift: boolean, alt: boolean, ctrl: boolean}=} opt_keyModifiers Object
- *     contaning common key modifiers : shift, alt, and ctrl.
+ * @param {{shift: boolean, alt: boolean, ctrl: boolean}=} opt_keyModifiers
+ *     Object containing common key modifiers : shift, alt, and ctrl.
  * @return {boolean} True if the all events are sent to the target, false
  *     otherwise.
  */
@@ -414,6 +414,62 @@ test.util.sync.fakeMouseClick = (contentWindow, targetQuery, opt_keyModifiers) =
       test.util.sync.sendEvent(contentWindow, targetQuery, clickEvent);
   return resultMouseOver && resultMouseDown && resultMouseUp && resultClick;
 };
+
+/**
+ * Simulates a mouse hover on an element specified by |targetQuery|.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string|Array<string>} targetQuery Query to specify the element.
+ *     If targetQuery is an array, |targetQuery[0]| specifies the first
+ *     element(s), |targetQuery[1]| specifies elements inside the shadow DOM of
+ *     the first element, and so on.
+ * @param {{shift: boolean, alt: boolean, ctrl: boolean}=} opt_keyModifiers
+ *     Object containing common key modifiers : shift, alt, and ctrl.
+ * @return {boolean} True if the event was sent to the target, false otherwise.
+ */
+test.util.sync.fakeMouseOver =
+    (contentWindow, targetQuery, opt_keyModifiers) => {
+      const modifiers = opt_keyModifiers || {};
+      const props = {
+        bubbles: true,
+        detail: 1,
+        composed: true,  // Allow the event to bubble past shadow DOM root.
+        ctrlKey: modifiers.ctrl,
+        shiftKey: modifiers.shift,
+        altKey: modifiers.alt,
+      };
+      const mouseOverEvent = new MouseEvent('mouseover', props);
+      return test.util.sync.sendEvent(
+          contentWindow, targetQuery, mouseOverEvent);
+    };
+
+/**
+ * Simulates a mouseout event on an element specified by |targetQuery|.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string|Array<string>} targetQuery Query to specify the element.
+ *     If targetQuery is an array, |targetQuery[0]| specifies the first
+ *     element(s), |targetQuery[1]| specifies elements inside the shadow DOM of
+ *     the first element, and so on.
+ * @param {{shift: boolean, alt: boolean, ctrl: boolean}=} opt_keyModifiers
+ *     Object containing common key modifiers : shift, alt, and ctrl.
+ * @return {boolean} True if the event is sent to the target, false otherwise.
+ */
+test.util.sync.fakeMouseOut =
+    (contentWindow, targetQuery, opt_keyModifiers) => {
+      const modifiers = opt_keyModifiers || {};
+      const props = {
+        bubbles: true,
+        detail: 1,
+        composed: true,  // Allow the event to bubble past shadow DOM root.
+        ctrlKey: modifiers.ctrl,
+        shiftKey: modifiers.shift,
+        altKey: modifiers.alt,
+      };
+      const mouseOutEvent = new MouseEvent('mouseout', props);
+      return test.util.sync.sendEvent(
+          contentWindow, targetQuery, mouseOutEvent);
+    };
 
 /**
  * Simulates a fake mouse click (right button, single click) on the element
