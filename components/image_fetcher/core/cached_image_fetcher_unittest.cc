@@ -57,8 +57,6 @@ const char kCacheLoadHistogramName[] =
     "CachedImageFetcher.ImageLoadFromCacheTime";
 const char kNetworkLoadHistogramName[] =
     "CachedImageFetcher.ImageLoadFromNetworkTime";
-const char kNetworkLoadAfterCacheHitHistogram[] =
-    "CachedImageFetcher.ImageLoadFromNetworkAfterCacheHit";
 
 }  // namespace
 
@@ -312,26 +310,31 @@ TEST_F(CachedImageFetcherTest, FetchImagePopulatesCacheReadOnly) {
   }
 }
 
-TEST_F(CachedImageFetcherTest, FetchDecodingErrorDeletesCache) {
-  // Save the image in the database.
-  image_cache()->SaveImage(kImageUrl.spec(), kImageData);
-  RunUntilIdle();
+TEST_F(CachedImageFetcherTest, FetchImageWithoutTranscodingDoesNotDecode) {
+  {
+    test_url_loader_factory()->AddResponse(kImageUrl.spec(), kImageData);
+    image_decoder()->SetDecodingValid(false);
 
-  image_decoder()->SetDecodingValid(false);
-  base::MockCallback<ImageDataFetcherCallback> data_callback;
-  base::MockCallback<ImageFetcherCallback> image_callback;
-  EXPECT_CALL(data_callback, Run(NonEmptyString(), _));
-  EXPECT_CALL(image_callback, Run(EmptyImage(), _));
-  test_url_loader_factory()->AddResponse(kImageUrl.spec(), kImageData);
-  cached_image_fetcher()->FetchImageAndData(
-      kImageUrl, data_callback.Get(), image_callback.Get(),
-      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kUmaClientName));
-  RunUntilIdle();
+    base::MockCallback<ImageDataFetcherCallback> data_callback;
 
-  histogram_tester().ExpectTotalCount(kNetworkLoadAfterCacheHitHistogram, 1);
-  histogram_tester().ExpectBucketCount(
-      kCachedImageFetcherEventHistogramName,
-      CachedImageFetcherEvent::kTranscodingError, 1);
+    EXPECT_CALL(data_callback, Run(kImageData, _));
+    ImageFetcherParams params(TRAFFIC_ANNOTATION_FOR_TESTS, kUmaClientName);
+    params.set_skip_transcoding_for_testing(true);
+    cached_image_fetcher()->FetchImageAndData(kImageUrl, data_callback.Get(),
+                                              ImageFetcherCallback(), params);
+
+    RunUntilIdle();
+  }
+  {
+    test_url_loader_factory()->ClearResponses();
+    base::MockCallback<ImageDataFetcherCallback> data_callback;
+    EXPECT_CALL(data_callback, Run(kImageData, _));
+    cached_image_fetcher()->FetchImageAndData(
+        kImageUrl, data_callback.Get(), ImageFetcherCallback(),
+        ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kUmaClientName));
+
+    RunUntilIdle();
+  }
 }
 
 }  // namespace image_fetcher

@@ -14,6 +14,8 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.BitmapCache;
 import org.chromium.chrome.browser.util.ConversionUtils;
 
+import jp.tomorrowkey.android.gifplayer.BaseGifImage;
+
 /**
  * A wrapper around the CachedImageFetcher that also provides in-memory caching.
  */
@@ -59,6 +61,11 @@ public class InMemoryCachedImageFetcher implements CachedImageFetcher {
 
         mBitmapCache.destroy();
         mBitmapCache = null;
+    }
+
+    @Override
+    public void fetchGif(String url, String clientName, Callback<BaseGifImage> callback) {
+        mCachedImageFetcher.fetchGif(url, clientName, callback);
     }
 
     @Override

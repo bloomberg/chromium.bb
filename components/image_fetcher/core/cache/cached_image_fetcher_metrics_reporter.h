@@ -47,6 +47,10 @@ class CachedImageFetcherMetricsReporter {
   static void ReportImageLoadFromCacheTimeJava(const std::string& client_name,
                                                base::Time start_time);
 
+  // Report the time it takes to load an image from native code.
+  static void ReportTotalFetchFromNativeTimeJava(const std::string& client_name,
+                                                 base::Time start_time);
+
   // Report the time it takes to load an image from the network.
   static void ReportImageLoadFromNetworkTime(const std::string& client_name,
                                              base::Time start_time);

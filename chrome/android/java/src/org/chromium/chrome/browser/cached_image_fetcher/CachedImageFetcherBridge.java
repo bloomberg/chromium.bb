@@ -10,6 +10,8 @@ import org.chromium.base.Callback;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.profiles.Profile;
 
+import jp.tomorrowkey.android.gifplayer.BaseGifImage;
+
 /**
  * Provides access to native implementations of CachedImageFetcher for the given profile.
  */
@@ -41,6 +43,24 @@ class CachedImageFetcherBridge {
     public String getFilePath(String url) {
         assert mNativeCachedImageFetcherBridge != 0;
         return nativeGetFilePath(mNativeCachedImageFetcherBridge, url);
+    }
+
+    /**
+     * Fetch a gif from native or null if the gif can't be fetched or decoded.
+     *
+     * @param url The url to fetch.
+     * @param clientName The UMA client name to report the metrics to.
+     * @param callback The callback to call when the gif is ready.
+     */
+    public void fetchGif(String url, String clientName, Callback<BaseGifImage> callback) {
+        assert mNativeCachedImageFetcherBridge != 0;
+        nativeFetchImageData(mNativeCachedImageFetcherBridge, url, clientName, (byte[] data) -> {
+            if (data == null || data.length == 0) {
+                callback.onResult(null);
+            }
+
+            callback.onResult(new BaseGifImage(data));
+        });
     }
 
     /**
@@ -78,14 +98,30 @@ class CachedImageFetcherBridge {
         nativeReportCacheHitTime(mNativeCachedImageFetcherBridge, clientName, startTimeMillis);
     }
 
+    /**
+     * Report a timing event for a call to native
+     *
+     * @param clientName The UMA client name to report the metrics to.
+     * @param startTimeMillis The start time (in milliseconds) of the request, used to measure the
+     * total duration.
+     */
+    public void reportTotalFetchTimeFromNative(String clientName, long startTimeMillis) {
+        assert mNativeCachedImageFetcherBridge != 0;
+        nativeReportCacheHitTime(mNativeCachedImageFetcherBridge, clientName, startTimeMillis);
+    }
+
     // Native methods
     private static native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeCachedImageFetcherBridge);
     private native String nativeGetFilePath(long nativeCachedImageFetcherBridge, String url);
+    private native void nativeFetchImageData(long nativeCachedImageFetcherBridge, String url,
+            String clientName, Callback<byte[]> callback);
     private native void nativeFetchImage(long nativeCachedImageFetcherBridge, String url,
             String clientName, Callback<Bitmap> callback);
     private native void nativeReportEvent(
             long nativeCachedImageFetcherBridge, String clientName, int eventId);
     private native void nativeReportCacheHitTime(
+            long nativeCachedImageFetcherBridge, String clientName, long startTimeMillis);
+    private native void nativeReportTotalFetchTimeFromNative(
             long nativeCachedImageFetcherBridge, String clientName, long startTimeMillis);
 }

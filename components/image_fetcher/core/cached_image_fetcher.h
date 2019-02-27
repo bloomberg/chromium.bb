@@ -66,12 +66,16 @@ class CachedImageFetcher : public ImageFetcher {
       CachedImageFetcherRequest request,
       ImageDataFetcherCallback image_data_callback,
       ImageFetcherCallback image_callback);
-  void OnImageFetchedFromNetwork(CachedImageFetcherRequest request,
-                                 ImageFetcherCallback image_callback,
-                                 const gfx::Image& image,
-                                 const RequestMetadata& request_metadata);
-  void StoreEncodedData(CachedImageFetcherRequest request,
-                        std::string image_data);
+  void StoreImageDataWithoutTranscoding(
+      CachedImageFetcherRequest request,
+      ImageDataFetcherCallback image_data_callback,
+      const std::string& image_data,
+      const RequestMetadata& request_metadata);
+  void StoreImageDataWithTranscoding(CachedImageFetcherRequest request,
+                                     ImageFetcherCallback image_data_callback,
+                                     const gfx::Image& image,
+                                     const RequestMetadata& request_metadata);
+  void StoreData(CachedImageFetcherRequest request, std::string image_data);
 
   // Whether the ImageChache is allowed to be modified in any way from requests
   // made by this CachedImageFetcher. This includes updating last used times,

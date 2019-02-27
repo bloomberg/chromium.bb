@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/android/callback_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -99,6 +100,32 @@ ScopedJavaLocalRef<jstring> CachedImageFetcherBridge::GetFilePath(
   return base::android::ConvertUTF8ToJavaString(j_env, file_path);
 }
 
+void CachedImageFetcherBridge::FetchImageData(
+    JNIEnv* j_env,
+    const JavaRef<jobject>& j_this,
+    const JavaRef<jstring>& j_url,
+    const JavaRef<jstring>& j_client_name,
+    const JavaRef<jobject>& j_callback) {
+  ScopedJavaGlobalRef<jobject> callback(j_callback);
+  std::string url = base::android::ConvertJavaStringToUTF8(j_url);
+  std::string client_name =
+      base::android::ConvertJavaStringToUTF8(j_client_name);
+
+  image_fetcher::ImageFetcherParams params(kTrafficAnnotation, client_name);
+
+  // We can skip transcoding here because this method is used in java as
+  // CachedImageFetcher.fetchGif, which decodes the data in a Java-only library.
+  params.set_skip_transcoding(true);
+
+  // TODO(wylieb): We checked disk in Java, so provide a way to tell
+  // CachedImageFetcher to skip checking disk in native.
+  cached_image_fetcher_->FetchImageData(
+      GURL(url),
+      base::BindOnce(&CachedImageFetcherBridge::OnImageDataFetched,
+                     weak_ptr_factory_.GetWeakPtr(), callback),
+      std::move(params));
+}
+
 void CachedImageFetcherBridge::FetchImage(JNIEnv* j_env,
                                           const JavaRef<jobject>& j_this,
                                           const JavaRef<jstring>& j_url,
@@ -142,6 +169,29 @@ void CachedImageFetcherBridge::ReportCacheHitTime(
   base::Time start_time = base::Time::FromJavaTime(start_time_millis);
   CachedImageFetcherMetricsReporter::ReportImageLoadFromCacheTimeJava(
       client_name, start_time);
+}
+
+void CachedImageFetcherBridge::ReportTotalFetchTimeFromNative(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this,
+    const base::android::JavaRef<jstring>& j_client_name,
+    const jlong start_time_millis) {
+  std::string client_name =
+      base::android::ConvertJavaStringToUTF8(j_client_name);
+  base::Time start_time = base::Time::FromJavaTime(start_time_millis);
+  CachedImageFetcherMetricsReporter::ReportTotalFetchFromNativeTimeJava(
+      client_name, start_time);
+}
+
+void CachedImageFetcherBridge::OnImageDataFetched(
+    base::android::ScopedJavaGlobalRef<jobject> callback,
+    const std::string& image_data,
+    const RequestMetadata& request_metadata) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jbyteArray> j_bytes = base::android::ToJavaByteArray(
+      env, reinterpret_cast<const uint8_t*>(image_data.data()),
+      image_data.size());
+  RunObjectCallbackAndroid(callback, j_bytes);
 }
 
 void CachedImageFetcherBridge::OnImageFetched(
