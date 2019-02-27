@@ -9,7 +9,7 @@
             1. paddingStart causes a crash on Galaxy Tab&Note b/8351339.
             2. So we wrote a build script(generate_v14_compatible_resources.py) to convert
                paddingStart to paddingLeft for pre-v17 (crbug.com/235118).
-            3. However, style files are not overrided by the corresponding generated style files,
+            3. However, style files are not overridden by the corresponding generated style files,
                but merged when we pass them to aapt unlike layout files.
 
             So we decided to keep style resources under values-v17/ so that it is not merged with
@@ -440,16 +440,6 @@
     </style>
     <style name="PromoDialogNormalText" parent="@style/TextAppearance.BlackBody">
         <item name="android:lineSpacingMultiplier">1.3</item>
-    </style>
-
-    <!-- Cast and media playback notifications -->
-    <style name="CastMediaRouteButton" parent="@style/Widget.MediaRouter.MediaRouteButton">
-        <item name="android:background">@null</item>
-        <item name="android:paddingTop">0dp</item>
-        <item name="android:paddingBottom">0dp</item>
-        <item name="android:paddingStart">0dp</item>
-        <item name="android:paddingEnd">0dp</item>
-        <item name="externalRouteEnabledDrawable">@drawable/ic_cast_dark_chrome</item>
     </style>
 
     <!-- First Run Experience -->
