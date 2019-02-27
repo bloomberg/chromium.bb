@@ -64,6 +64,7 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // Search Secondary Provider (past query in history)                   |  200*
 // Search Secondary Provider (navigational suggestion)                 |  150++
 // Search Secondary Provider (suggestion)                              |  100++
+// Non Personalized On Device Head Suggest Provider                    |   99--
 // Document Suggestions (*experimental): value controlled by Finch     |    *
 //
 // URL input type:
@@ -102,6 +103,7 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // Search Secondary Provider (past query in history)                   |  200*
 // Search Secondary Provider (navigational suggestion)                 |  150++
 // Search Secondary Provider (suggestion)                              |  100++
+// Non Personalized On Device Head Suggest Provider                    |   99--
 //
 // (A search keyword is a keyword with a replacement string; a bookmark keyword
 // is a keyword with no replacement string, that is, a shortcut for a URL.)
@@ -142,6 +144,7 @@ class AutocompleteProvider
     TYPE_ZERO_SUGGEST = 1 << 7,
     TYPE_CLIPBOARD = 1 << 8,
     TYPE_DOCUMENT = 1 << 9,
+    TYPE_ON_DEVICE_HEAD = 1 << 10,
   };
 
   explicit AutocompleteProvider(Type type);

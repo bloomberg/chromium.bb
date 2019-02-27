@@ -197,6 +197,9 @@ message OmniboxEventProto {
     PHYSICAL_WEB = 15;  // DEPRECATED. Suggestions triggered by URLs broadcast
                         // by nearby devices.
     DOCUMENT = 16;      // Suggestions for documents in a cloud corpus.
+    // Non personalized query suggestions generated from a lightweight on device
+    // head model.
+    ON_DEVICE_HEAD = 17;
   }
 
   // The result set displayed on the completion popup
