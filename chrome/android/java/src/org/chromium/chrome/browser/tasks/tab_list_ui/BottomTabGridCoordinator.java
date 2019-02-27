@@ -12,32 +12,45 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
- * A coordinator for BottomTabGrid component. Manages the communication
- * with {@link TabListCoordinator} as well as the life-cycle of shared component objects.
+ * A coordinator for BottomTabGrid component. Manages the communication with
+ * {@link TabListCoordinator} as well as the life-cycle of shared component
+ * objects.
  */
 @ActivityScope
 public class BottomTabGridCoordinator implements Destroyable {
-    private final BottomTabGridMediator mMediator;
-    private final TabListCoordinator mTabGridCoordinator;
-    private BottomTabGridSheetContent mBottomSheetContent;
+    private final Context mContext;
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
+    private final TabListCoordinator mTabGridCoordinator;
+    private final BottomTabGridMediator mMediator;
+    private BottomTabGridSheetContent mBottomSheetContent;
+    private BottomTabGridSheetToolbarCoordinator mToolbarCoordinator;
+    private final PropertyModel mToolbarPropertyModel;
 
     @Inject
     BottomTabGridCoordinator(@Named(ACTIVITY_CONTEXT) Context context,
             BottomSheetController bottomSheetController, TabModelSelector tabModelSelector,
-            TabContentManager tabContentManager, ActivityLifecycleDispatcher lifecycleDispatcher) {
+            TabContentManager tabContentManager, ActivityLifecycleDispatcher lifecycleDispatcher,
+            TabCreatorManager tabCreatorManager) {
+        mContext = context;
+
+        mToolbarPropertyModel = new PropertyModel(BottomTabGridSheetToolbarProperties.ALL_KEYS);
+
         mTabGridCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 tabModelSelector, tabContentManager, bottomSheetController.getBottomSheet(), false);
 
-        mMediator = new BottomTabGridMediator(bottomSheetController, this::resetWithTabModel);
+        mMediator =
+                new BottomTabGridMediator(mContext, bottomSheetController, this::resetWithTabModel,
+                        mToolbarPropertyModel, tabModelSelector, tabCreatorManager);
 
         mLifecycleDispatcher = lifecycleDispatcher;
         mLifecycleDispatcher.register(this);
@@ -49,17 +62,24 @@ public class BottomTabGridCoordinator implements Destroyable {
     @Override
     public void destroy() {
         mTabGridCoordinator.destroy();
-        mLifecycleDispatcher.unregister(this);
+        mMediator.destroy();
+
         if (mBottomSheetContent != null) {
             mBottomSheetContent.destroy();
         }
+
+        if (mToolbarCoordinator != null) {
+            mToolbarCoordinator.destroy();
+        }
+
+        mLifecycleDispatcher.unregister(this);
     }
 
     /**
-     * Updates tabs list through {@link TabListCoordinator} with given tab model
-     * and calls onReset() on {@link BottomTabGridMediator}
+     * Updates tabs list through {@link TabListCoordinator} with given tab model and
+     * calls onReset() on {@link BottomTabGridMediator}
      */
-    void resetWithTabModel(TabModel tabModel) {
+    public void resetWithTabModel(TabModel tabModel) {
         mTabGridCoordinator.resetWithTabModel(tabModel);
         updateBottomSheetContent(tabModel);
         mMediator.onReset(mBottomSheetContent);
@@ -67,13 +87,19 @@ public class BottomTabGridCoordinator implements Destroyable {
 
     private void updateBottomSheetContent(TabModel tabModel) {
         if (tabModel != null) {
-            // create and display sheet content
-            mBottomSheetContent =
-                    new BottomTabGridSheetContent(mTabGridCoordinator.getContainerView());
+            // create bottom sheet content
+            mToolbarCoordinator = new BottomTabGridSheetToolbarCoordinator(
+                    mContext, mTabGridCoordinator.getContainerView(), mToolbarPropertyModel);
+            mBottomSheetContent = new BottomTabGridSheetContent(
+                    mTabGridCoordinator.getContainerView(), mToolbarCoordinator);
         } else {
             if (mBottomSheetContent != null) {
                 mBottomSheetContent.destroy();
                 mBottomSheetContent = null;
+            }
+
+            if (mToolbarCoordinator != null) {
+                mToolbarCoordinator.destroy();
             }
         }
     }
