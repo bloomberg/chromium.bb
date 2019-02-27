@@ -610,23 +610,9 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
   ExpectNoHistogramsForAddressesDiff();
 }
 
-class SingleClientWalletSyncTestWithDataUss
-    : public UssWalletSwitchToggler,
-      public SingleClientWalletSyncTest {
- public:
-  SingleClientWalletSyncTestWithDataUss() {
-    InitWithFeatures(
-        /*enabled_features=*/{switches::kSyncUSSAutofillWalletData},
-        /*disabled_features=*/{});
-  }
-};
-
-// Check on top of
-// SingleClientWalletSyncTestWithDefaultFeatures.EmptyUpdatesAreIgnored that the
-// new progress marker is stored for empty updates. This is a regression test
-// for crbug.com/924447 (and restricts to USS because the bug cannot exist for
-// Directory and because the USS implementation is launching).
-IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDataUss,
+// Check on top of EmptyUpdatesAreIgnored that the new progress marker is stored
+// for empty updates. This is a regression test for crbug.com/924447.
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
                        EmptyUpdatesUpdateProgressMarker) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
@@ -1418,31 +1404,16 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletWithAccountStorageSyncTest,
 
 INSTANTIATE_TEST_SUITE_P(USS,
                          SingleClientWalletSyncTestWithoutAccountStorage,
-                         ::testing::Values(std::make_pair(false, false),
-                                           std::make_pair(true, false),
-                                           std::make_pair(true, true)));
+                         ::testing::Values(false, true));
 
-// Depends on SyncUSSWalletData, cannot set the first param to false.
 INSTANTIATE_TEST_SUITE_P(USS,
                          SingleClientWalletWithAccountStorageSyncTest,
-                         ::testing::Values(std::make_pair(true, false),
-                                           std::make_pair(true, true)));
+                         ::testing::Values(false, true));
 
 INSTANTIATE_TEST_SUITE_P(USS,
                          SingleClientWalletSyncTestWithDefaultFeatures,
-                         ::testing::Values(std::make_pair(false, false),
-                                           std::make_pair(true, false),
-                                           std::make_pair(true, true)));
+                         ::testing::Values(false, true));
 
-// TODO(jkrcal): Merge this with SingleClientWalletSyncTestWithDefaultFeatures
-// once wallet data USS is launched. https://crbug.com/853688.
-INSTANTIATE_TEST_SUITE_P(USS,
-                         SingleClientWalletSyncTestWithDataUss,
-                         ::testing::Values(std::make_pair(true, false),
-                                           std::make_pair(true, true)));
-
-// Depends on SyncUSSWalletData, cannot set the first param to false.
 INSTANTIATE_TEST_SUITE_P(USS,
                          SingleClientWalletSecondaryAccountSyncTest,
-                         ::testing::Values(std::make_pair(true, false),
-                                           std::make_pair(true, true)));
+                         ::testing::Values(false, true));
