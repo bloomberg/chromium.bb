@@ -57,6 +57,10 @@ class MODULES_EXPORT PaymentsValidators final {
   static bool IsValidPaymentValidationErrorsFormat(
       const PaymentValidationErrors* errors,
       String* optional_error_message);
+
+  // Implements the PMI validation algorithm from:
+  // https://www.w3.org/TR/payment-method-id/#dfn-validate-a-payment-method-identifier
+  static bool IsValidMethodFormat(const String& identifier);
 };
 
 }  // namespace blink

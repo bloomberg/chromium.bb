@@ -16,7 +16,6 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_regexp.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_string_resource.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_android_pay_method_data.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_basic_card_request.h"
@@ -58,8 +57,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/uuid.h"
-#include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -547,28 +544,6 @@ void CountPaymentRequestNetworkNameInSupportedMethod(
   }
 }
 
-// Implements the PMI validation algorithm from:
-// https://www.w3.org/TR/payment-method-id/#dfn-validate-a-payment-method-identifier
-bool IsValidMethodFormat(const String& identifier) {
-  KURL url(NullURL(), identifier);
-  if (url.IsValid()) {
-    // Allow localhost payment method for test.
-    if (SecurityOrigin::Create(url)->IsLocalhost())
-      return true;
-
-    // URL PMI validation rules:
-    // https://www.w3.org/TR/payment-method-id/#dfn-validate-a-url-based-payment-method-identifier
-    return url.Protocol() == "https" && url.User().IsEmpty() &&
-           url.Pass().IsEmpty();
-  } else {
-    // Syntax for a valid standardized PMI:
-    // https://www.w3.org/TR/payment-method-id/#dfn-syntax-of-a-standardized-payment-method-identifier
-    return ScriptRegexp("^[a-z]+[0-9a-z]*(-[a-z]+[0-9a-z]*)*$",
-                        kTextCaseSensitive)
-               .Match(identifier) == 0;
-  }
-}
-
 void ValidateAndConvertPaymentDetailsModifiers(
     const HeapVector<Member<PaymentDetailsModifier>>& input,
     Vector<PaymentDetailsModifierPtr>& output,
@@ -598,7 +573,7 @@ void ValidateAndConvertPaymentDetailsModifiers(
         return;
     }
 
-    if (!IsValidMethodFormat(modifier->supportedMethod())) {
+    if (!PaymentsValidators::IsValidMethodFormat(modifier->supportedMethod())) {
       exception_state.ThrowRangeError(
           "Invalid payment method identifier format");
       return;
@@ -732,7 +707,8 @@ void ValidateAndConvertPaymentMethodData(
   }
 
   for (const PaymentMethodData* payment_method_data : input) {
-    if (!IsValidMethodFormat(payment_method_data->supportedMethod())) {
+    if (!PaymentsValidators::IsValidMethodFormat(
+            payment_method_data->supportedMethod())) {
       exception_state.ThrowRangeError(
           "Invalid payment method identifier format");
       return;
