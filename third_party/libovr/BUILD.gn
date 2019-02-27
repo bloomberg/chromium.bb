@@ -27,5 +27,8 @@ static_library("libovr") {
     "src/OVR_StereoProjection.cpp",
   ]
 
+  # TODO(crbug.com/936459): Fix oculus sdk upstream, remove this.
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ ":libovr-config" ]
 }
