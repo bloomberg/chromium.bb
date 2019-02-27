@@ -19,6 +19,9 @@ class WebContents;
 
 namespace local_ntp_test_utils {
 
+// Tests that dark mode styling is properly applied to the local NTP.
+// class BaseDarkModeTest;
+
 content::WebContents* OpenNewTab(Browser* browser, const GURL& url);
 
 // Navigates the active tab to chrome://newtab and waits until the NTP is

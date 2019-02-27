@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
+#include "chrome/browser/ui/search/local_ntp_browsertest_base.h"
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -68,10 +69,6 @@ const char kMostVisitedIframe[] = "mv-single";
 // Name for the edit/add custom link iframe in the NTP.
 const char kEditCustomLinkIframe[] = "custom-links-edit";
 
-// Delimiter in the Most Visited icon URL that indicates a dark icon. Keep value
-// in sync with NtpIconSource.
-const char kMVIconDarkParameter[] = "/dark/";
-
 // Returns the RenderFrameHost corresponding to the |iframe_name| in the
 // given |tab|. |tab| must correspond to an NTP.
 content::RenderFrameHost* GetIframe(content::WebContents* tab,
@@ -83,50 +80,6 @@ content::RenderFrameHost* GetIframe(content::WebContents* tab,
   }
   return nullptr;
 }
-
-class TestMostVisitedObserver : public InstantServiceObserver {
- public:
-  explicit TestMostVisitedObserver(InstantService* service)
-      : service_(service), expected_count_(0) {
-    service_->AddObserver(this);
-  }
-
-  ~TestMostVisitedObserver() override { service_->RemoveObserver(this); }
-
-  void WaitForNumberOfItems(size_t count) {
-    DCHECK(!quit_closure_);
-
-    expected_count_ = count;
-
-    if (items_.size() == count) {
-      return;
-    }
-
-    base::RunLoop run_loop;
-    quit_closure_ = run_loop.QuitClosure();
-    run_loop.Run();
-  }
-
- private:
-  void ThemeInfoChanged(const ThemeBackgroundInfo&) override {}
-
-  void MostVisitedItemsChanged(const std::vector<InstantMostVisitedItem>& items,
-                               bool is_custom_links) override {
-    items_ = items;
-
-    if (quit_closure_ && items_.size() == expected_count_) {
-      std::move(quit_closure_).Run();
-      quit_closure_.Reset();
-    }
-  }
-
-  InstantService* const service_;
-
-  std::vector<InstantMostVisitedItem> items_;
-
-  size_t expected_count_;
-  base::OnceClosure quit_closure_;
-};
 
 class LocalNTPTest : public InProcessBrowserTest {
  public:
@@ -146,11 +99,11 @@ class LocalNTPTest : public InProcessBrowserTest {
     // a chance that it hasn't finished and we receive 0 tiles.)
     InstantService* instant_service =
         InstantServiceFactory::GetForProfile(browser()->profile());
-    TestMostVisitedObserver mv_observer(instant_service);
+    TestInstantServiceObserver mv_observer(instant_service);
     // Make sure the observer knows about the current items. Typically, this
     // gets triggered by navigating to an NTP.
     instant_service->UpdateMostVisitedItemsInfo();
-    mv_observer.WaitForNumberOfItems(kDefaultMostVisitedItemCount);
+    mv_observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount);
   }
 
  private:
@@ -308,12 +261,12 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIEndToEnd) {
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
 
-  TestMostVisitedObserver observer(
+  TestInstantServiceObserver observer(
       InstantServiceFactory::GetForProfile(browser()->profile()));
 
   // Navigating to an NTP should trigger an update of the MV items.
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
-  observer.WaitForNumberOfItems(kDefaultMostVisitedItemCount);
+  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount);
 
   // Make sure the same number of items is available in JS.
   int most_visited_count = -1;
@@ -334,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIEndToEnd) {
       base::StringPrintf(
           "window.chrome.embeddedSearch.newTabPage.deleteMostVisitedItem(%d)",
           most_visited_rid)));
-  observer.WaitForNumberOfItems(kDefaultMostVisitedItemCount - 1);
+  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount - 1);
 }
 
 // Regression test for crbug.com/592273.
@@ -348,12 +301,12 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIAfterDownload) {
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
 
-  TestMostVisitedObserver observer(
+  TestInstantServiceObserver observer(
       InstantServiceFactory::GetForProfile(browser()->profile()));
 
   // Navigating to an NTP should trigger an update of the MV items.
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
-  observer.WaitForNumberOfItems(kDefaultMostVisitedItemCount);
+  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount);
 
   // Download some file.
   content::DownloadTestObserverTerminal download_observer(
@@ -387,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIAfterDownload) {
       base::StringPrintf(
           "window.chrome.embeddedSearch.newTabPage.deleteMostVisitedItem(%d)",
           most_visited_rid)));
-  observer.WaitForNumberOfItems(kDefaultMostVisitedItemCount - 1);
+  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount - 1);
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, NTPRespectsBrowserLanguageSetting) {
@@ -577,11 +530,11 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, DontShowAddCustomLinkButtonWhenMaxLinks) {
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
 
-  TestMostVisitedObserver observer(
+  TestInstantServiceObserver observer(
       InstantServiceFactory::GetForProfile(browser()->profile()));
 
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
-  observer.WaitForNumberOfItems(kDefaultMostVisitedItemCount);
+  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount);
 
   // Get the Most Visited iframe and add to maximum number of tiles.
   content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
@@ -598,7 +551,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, DontShowAddCustomLinkButtonWhenMaxLinks) {
             "', '" + title + "')");
   }
   // Confirm that there are max number of custom link tiles.
-  observer.WaitForNumberOfItems(kDefaultCustomLinkMaxCount);
+  observer.WaitForMostVisitedItems(kDefaultCustomLinkMaxCount);
 
   // Check there is no add button in the iframe. Make sure not to select from
   // old tiles that are in the process of being deleted.
@@ -614,11 +567,11 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, ReorderCustomLinks) {
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
 
-  TestMostVisitedObserver observer(
+  TestInstantServiceObserver observer(
       InstantServiceFactory::GetForProfile(browser()->profile()));
 
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
-  observer.WaitForNumberOfItems(kDefaultMostVisitedItemCount);
+  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount);
 
   // Fill tiles up to the maximum count.
   content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
@@ -633,7 +586,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, ReorderCustomLinks) {
             "', '" + title + "')");
   }
   // Confirm that there are max number of custom link tiles.
-  observer.WaitForNumberOfItems(kDefaultCustomLinkMaxCount);
+  observer.WaitForMostVisitedItems(kDefaultCustomLinkMaxCount);
 
   // Get the title of the tile at index 1. Make sure not to select from old
   // tiles that are in the process of being deleted.
@@ -705,43 +658,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPRTLTest, RightToLeft) {
 }
 
 // Tests that dark mode styling is properly applied to the local NTP.
-class LocalNTPDarkModeTest : public LocalNTPTest {
+class LocalNTPDarkModeTest : public LocalNTPTest, public DarkModeTestBase {
  public:
   LocalNTPDarkModeTest() {}
-
- protected:
-  ui::TestNativeTheme* theme() { return &theme_; }
-
-  // Returns true if dark mode is applied on the |frame|.
-  bool GetIsDarkModeApplied(const content::ToRenderFrameHost& frame) {
-    bool dark_mode_applied = false;
-    if (instant_test_utils::GetBoolFromJS(
-            frame,
-            "document.documentElement.getAttribute('darkmode') === 'true'",
-            &dark_mode_applied)) {
-      return dark_mode_applied;
-    }
-    return false;
-  }
-
-  // Returns true if dark mode is applied to the Most Visited icon at |index|
-  // (i.e. the icon URL contains the |kMVIconDarkParameter|).
-  bool GetIsDarkTile(const content::ToRenderFrameHost& frame, int index) {
-    bool dark_tile = false;
-    if (instant_test_utils::GetBoolFromJS(
-            frame,
-            base::StringPrintf(
-                "document.querySelectorAll('#mv-tiles .md-icon img')[%d]"
-                ".src.includes('%s')",
-                index, kMVIconDarkParameter),
-            &dark_tile)) {
-      return dark_tile;
-    }
-    return false;
-  }
-
- private:
-  ui::TestNativeTheme theme_;
 };
 
 IN_PROC_BROWSER_TEST_F(LocalNTPDarkModeTest, ToggleDarkMode) {
@@ -765,6 +684,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDarkModeTest, ToggleDarkMode) {
   ASSERT_FALSE(GetIsDarkModeApplied(active_tab));
   ASSERT_FALSE(GetIsDarkModeApplied(mv_iframe));
   ASSERT_FALSE(GetIsDarkModeApplied(cl_iframe));
+  ASSERT_TRUE(GetIsLightChipsApplied(active_tab));
   for (int i = 0; i < kDefaultMostVisitedItemCount; ++i) {
     ASSERT_FALSE(GetIsDarkTile(mv_iframe, i));
   }
@@ -780,6 +700,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDarkModeTest, ToggleDarkMode) {
   EXPECT_TRUE(GetIsDarkModeApplied(active_tab));
   EXPECT_TRUE(GetIsDarkModeApplied(mv_iframe));
   EXPECT_TRUE(GetIsDarkModeApplied(cl_iframe));
+  EXPECT_FALSE(GetIsLightChipsApplied(active_tab));
   for (int i = 0; i < kDefaultMostVisitedItemCount; ++i) {
     EXPECT_TRUE(GetIsDarkTile(mv_iframe, i));
   }
@@ -795,6 +716,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDarkModeTest, ToggleDarkMode) {
   EXPECT_FALSE(GetIsDarkModeApplied(active_tab));
   EXPECT_FALSE(GetIsDarkModeApplied(mv_iframe));
   EXPECT_FALSE(GetIsDarkModeApplied(cl_iframe));
+  EXPECT_TRUE(GetIsLightChipsApplied(active_tab));
   for (int i = 0; i < kDefaultMostVisitedItemCount; ++i) {
     EXPECT_FALSE(GetIsDarkTile(mv_iframe, i));
   }

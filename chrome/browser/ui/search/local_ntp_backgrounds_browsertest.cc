@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
+#include "chrome/browser/ui/search/local_ntp_browsertest_base.h"
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/search/instant_types.h"
@@ -28,104 +29,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-
-class TestThemeInfoObserver : public InstantServiceObserver {
- public:
-  explicit TestThemeInfoObserver(InstantService* service) : service_(service) {
-    service_->AddObserver(this);
-  }
-
-  ~TestThemeInfoObserver() override { service_->RemoveObserver(this); }
-
-  void WaitForThemeInfoUpdated(std::string background_url,
-                               std::string attribution_1,
-                               std::string attribution_2,
-                               std::string attribution_action_url) {
-    DCHECK(!quit_closure_);
-
-    expected_background_url_ = background_url;
-    expected_attribution_1_ = attribution_1;
-    expected_attribution_2_ = attribution_2;
-    expected_attribution_action_url_ = attribution_action_url;
-
-    if (theme_info_.custom_background_url == background_url &&
-        theme_info_.custom_background_attribution_line_1 == attribution_1 &&
-        theme_info_.custom_background_attribution_line_2 == attribution_2 &&
-        theme_info_.custom_background_attribution_action_url ==
-            attribution_action_url) {
-      return;
-    }
-
-    base::RunLoop run_loop;
-    quit_closure_ = run_loop.QuitClosure();
-    run_loop.Run();
-  }
-
-  void WaitForThemeApplied(bool theme_installed) {
-    DCHECK(!quit_closure_);
-
-    theme_installed_ = theme_installed;
-    if (!theme_info_.using_default_theme == theme_installed) {
-      return;
-    }
-
-    base::RunLoop run_loop;
-    quit_closure_ = run_loop.QuitClosure();
-    run_loop.Run();
-  }
-
-  // Switch the exit condition for ThemeInfoChanged.
-  void SwitchCheck() {
-    wait_for_custom_background_or_theme_ =
-        !wait_for_custom_background_or_theme_;
-  }
-
-  bool IsUsingDefaultTheme() { return theme_info_.using_default_theme; }
-
- private:
-  void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) override {
-    theme_info_ = theme_info;
-
-    if (quit_closure_) {
-      // Exit when the custom background was applied successfully.
-      if (wait_for_custom_background_or_theme_ &&
-          theme_info_.custom_background_url == expected_background_url_ &&
-          theme_info_.custom_background_attribution_line_1 ==
-              expected_attribution_1_ &&
-          theme_info_.custom_background_attribution_line_2 ==
-              expected_attribution_2_ &&
-          theme_info_.custom_background_attribution_action_url ==
-              expected_attribution_action_url_) {
-        std::move(quit_closure_).Run();
-        quit_closure_.Reset();
-      }
-      // Exit when the theme was applied successfully.
-      else if (!wait_for_custom_background_or_theme_ &&
-               !theme_info_.using_default_theme == theme_installed_) {
-        std::move(quit_closure_).Run();
-        quit_closure_.Reset();
-      }
-    }
-  }
-
-  void MostVisitedItemsChanged(const std::vector<InstantMostVisitedItem>&,
-                               bool is_custom_links) override {}
-
-  InstantService* const service_;
-
-  ThemeBackgroundInfo theme_info_;
-
-  bool theme_installed_;
-  // When wait_for_custom_background_or_theme_ is true, we wait for the custom
-  // background to get applied. When wait_for_custom_background_or_theme_ is
-  // false, we wait for a theme gets applied
-  bool wait_for_custom_background_or_theme_ = true;
-  std::string expected_background_url_;
-  std::string expected_attribution_1_;
-  std::string expected_attribution_2_;
-  std::string expected_attribution_action_url_;
-  base::OnceClosure quit_closure_;
-};
 
 class LocalNTPCustomBackgroundsTest : public InProcessBrowserTest {
  public:
@@ -142,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest,
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
 
-  TestThemeInfoObserver observer(
+  TestInstantServiceObserver observer(
       InstantServiceFactory::GetForProfile(browser()->profile()));
 
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
@@ -177,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest, AttributionSetAndReset) {
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
 
-  TestThemeInfoObserver observer(
+  TestInstantServiceObserver observer(
       InstantServiceFactory::GetForProfile(browser()->profile()));
 
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
@@ -221,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest,
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
 
-  TestThemeInfoObserver observer(
+  TestInstantServiceObserver observer(
       InstantServiceFactory::GetForProfile(browser()->profile()));
 
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
@@ -267,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest,
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
 
-  TestThemeInfoObserver observer(
+  TestInstantServiceObserver observer(
       InstantServiceFactory::GetForProfile(browser()->profile()));
 
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
@@ -377,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
 
-  TestThemeInfoObserver observer(
+  TestInstantServiceObserver observer(
       InstantServiceFactory::GetForProfile(profile()));
 
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
@@ -407,7 +310,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
   ASSERT_TRUE(observer.IsUsingDefaultTheme());
 
   // Switch to waiting for the theme to get applied.
-  observer.SwitchCheck();
   ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme", "camo theme"));
   observer.WaitForThemeApplied(true);
   ASSERT_FALSE(observer.IsUsingDefaultTheme());
@@ -437,7 +339,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
 
-  TestThemeInfoObserver observer(
+  TestInstantServiceObserver observer(
       InstantServiceFactory::GetForProfile(profile()));
 
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
@@ -469,7 +371,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
   ASSERT_TRUE(observer.IsUsingDefaultTheme());
 
   // Switch to waiting for the theme to get applied.
-  observer.SwitchCheck();
   ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme", "camo theme"));
   observer.WaitForThemeApplied(true);
   ASSERT_FALSE(observer.IsUsingDefaultTheme());
@@ -490,13 +391,12 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
 
-  TestThemeInfoObserver observer(
+  TestInstantServiceObserver observer(
       InstantServiceFactory::GetForProfile(profile()));
 
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
 
   // Switch to waiting for the theme to get applied.
-  observer.SwitchCheck();
   ASSERT_NO_FATAL_FAILURE(
       InstallThemeAndVerify("theme_with_attribution", "attribution theme"));
   observer.WaitForThemeApplied(true);
@@ -510,7 +410,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
   EXPECT_TRUE(result);
 
   // Set a custom background image via the EmbeddedSearch API.
-  observer.SwitchCheck();
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(profile());
   instant_service->AddValidBackdropUrlForTesting(
@@ -541,4 +440,117 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
       &result));
   EXPECT_TRUE(result);
 }
+
+// Tests that dark mode styling is properly applied when a theme and/or custom
+// background is set.
+class LocalNTPBackgroundsAndDarkModeTest
+    : public LocalNTPCustomBackgroundsThemeTest,
+      public DarkModeTestBase {
+ public:
+  LocalNTPBackgroundsAndDarkModeTest() {}
+
+ protected:
+  void SetUpOnMainThread() override {
+    LocalNTPCustomBackgroundsThemeTest::SetUpOnMainThread();
+
+    // Enable dark mode.
+    instant_service =
+        InstantServiceFactory::GetForProfile(browser()->profile());
+    theme()->SetDarkMode(true);
+    instant_service->SetDarkModeThemeForTesting(theme());
+  }
+
+  InstantService* instant_service;
+};
+
+IN_PROC_BROWSER_TEST_F(LocalNTPBackgroundsAndDarkModeTest,
+                       WithCustomBackground) {
+  TestInstantServiceObserver observer(
+      InstantServiceFactory::GetForProfile(profile()));
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+
+  // Set a custom background image via the EmbeddedSearch API.
+  instant_service->AddValidBackdropUrlForTesting(
+      GURL("chrome-search://local-ntp/background1.jpg"));
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab,
+      "window.chrome.embeddedSearch.newTabPage."
+      "setBackgroundURL('chrome-search://local-ntp/background1.jpg"
+      "')"));
+  observer.WaitForThemeInfoUpdated("chrome-search://local-ntp/background1.jpg",
+                                   "", "", "");
+
+  // Elements other than chips (i.e. Most Visited, etc.) should have dark mode
+  // applied.
+  EXPECT_TRUE(GetIsDarkModeApplied(active_tab));
+  EXPECT_TRUE(GetIsLightChipsApplied(active_tab));
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPBackgroundsAndDarkModeTest, WithTheme) {
+  TestInstantServiceObserver observer(
+      InstantServiceFactory::GetForProfile(profile()));
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+
+  // Switch to waiting for the theme to get applied. With img
+  ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme", "camo theme"));
+  observer.WaitForThemeApplied(true);
+  ASSERT_FALSE(observer.IsUsingDefaultTheme());
+
+  // Elements other than chips (i.e. Most Visited, etc.) should have dark mode
+  // applied.
+  EXPECT_TRUE(GetIsDarkModeApplied(active_tab));
+  EXPECT_TRUE(GetIsLightChipsApplied(active_tab));
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPBackgroundsAndDarkModeTest, WithThemeNoImage) {
+  TestInstantServiceObserver observer(
+      InstantServiceFactory::GetForProfile(profile()));
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+
+  // Switch to waiting for the theme to get applied. With img
+  ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme_minimal", "minimal"));
+  observer.WaitForThemeApplied(true);
+  ASSERT_FALSE(observer.IsUsingDefaultTheme());
+
+  // All elements should have dark mode applied.
+  EXPECT_TRUE(GetIsDarkModeApplied(active_tab));
+  EXPECT_FALSE(GetIsLightChipsApplied(active_tab));
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPBackgroundsAndDarkModeTest,
+                       WithThemeAndCustomBackground) {
+  TestInstantServiceObserver observer(
+      InstantServiceFactory::GetForProfile(profile()));
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+
+  // Set a custom background image via the EmbeddedSearch API.
+  instant_service->AddValidBackdropUrlForTesting(
+      GURL("chrome-search://local-ntp/background1.jpg"));
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab,
+      "window.chrome.embeddedSearch.newTabPage."
+      "setBackgroundURL('chrome-search://local-ntp/background1.jpg"
+      "')"));
+  observer.WaitForThemeInfoUpdated("chrome-search://local-ntp/background1.jpg",
+                                   "", "", "");
+
+  // Switch to waiting for the theme to get applied. With img
+  ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme_minimal", "minimal"));
+  observer.WaitForThemeApplied(true);
+  ASSERT_FALSE(observer.IsUsingDefaultTheme());
+
+  // Elements other than chips (i.e. Most Visited, etc.) should have dark mode
+  // applied.
+  EXPECT_TRUE(GetIsDarkModeApplied(active_tab));
+  EXPECT_TRUE(GetIsLightChipsApplied(active_tab));
+}
+
 }  // namespace
