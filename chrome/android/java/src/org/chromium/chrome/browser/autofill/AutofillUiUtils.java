@@ -6,19 +6,29 @@ package org.chromium.chrome.browser.autofill;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.ColorFilter;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import android.os.Build;
 import android.os.Handler;
+import android.support.annotation.IntDef;
 import android.support.v4.widget.TextViewCompat;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.Calendar;
 /**
  * Helper methods that can be used across multiple Autofill UIs.
+ * TODO(crbug.com/934915) Add unit tests.
  */
 public class AutofillUiUtils {
     /**
@@ -34,7 +44,20 @@ public class AutofillUiUtils {
     // 200ms is chosen small enough not to be detectable to human eye, but big
     // enough for to avoid any race conditions on modern machines.
     private static final int TOOLTIP_DEFERRED_PERIOD_MS = 200;
+    public static final int EXPIRATION_FIELDS_LENGTH = 2;
 
+    @IntDef({ErrorType.EXPIRATION_MONTH, ErrorType.EXPIRATION_YEAR, ErrorType.EXPIRATION_DATE,
+            ErrorType.CVC, ErrorType.CVC_AND_EXPIRATION, ErrorType.NOT_ENOUGH_INFO, ErrorType.NONE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ErrorType {
+        int EXPIRATION_MONTH = 1;
+        int EXPIRATION_YEAR = 2;
+        int EXPIRATION_DATE = 3;
+        int CVC = 4;
+        int CVC_AND_EXPIRATION = 5;
+        int NOT_ENOUGH_INFO = 6;
+        int NONE = 7;
+    }
     /**
      * Show Tooltip UI.
      *
@@ -69,5 +92,205 @@ public class AutofillUiUtils {
         popup.showAsDropDown(anchorView, offsetProvider.getXOffset(textView),
                 offsetProvider.getYOffset(textView));
         textView.announceForAccessibility(textView.getText());
+    }
+
+    /**
+     * Determines what type of error, if any, is present in the expiration date fields of the
+     * prompt.
+     *
+     * @param monthInput EditText for the month field.
+     * @param yearInput EditText for the year field.
+     * @param didFocusOnMonth True if the month field was ever in focus.
+     * @param didFocusOnYear True if the year field was ever in focus.
+     * @return The ErrorType value representing the type of error found for the expiration date
+     *         unmask fields.
+     */
+    @ErrorType
+    public static int getExpirationDateErrorType(EditText monthInput, EditText yearInput,
+            boolean didFocusOnMonth, boolean didFocusOnYear) {
+        Calendar calendar = Calendar.getInstance();
+        int thisYear = calendar.get(Calendar.YEAR);
+        int thisMonth = calendar.get(Calendar.MONTH) + 1; // calendar month is 0-based
+
+        int month = getMonth(monthInput);
+        if (month < 1 || month > 12) {
+            if (monthInput.getText().length() == EXPIRATION_FIELDS_LENGTH
+                    || (!monthInput.isFocused() && didFocusOnMonth)) {
+                return ErrorType.EXPIRATION_MONTH;
+            }
+            return ErrorType.NOT_ENOUGH_INFO;
+        }
+
+        int year = getFourDigitYear(yearInput);
+        if (year < thisYear || year > thisYear + 10) {
+            if (yearInput.getText().length() == EXPIRATION_FIELDS_LENGTH
+                    || (!yearInput.isFocused() && didFocusOnYear)) {
+                return ErrorType.EXPIRATION_YEAR;
+            }
+            return ErrorType.NOT_ENOUGH_INFO;
+        }
+
+        if (year == thisYear && month < thisMonth) {
+            return ErrorType.EXPIRATION_DATE;
+        }
+
+        return ErrorType.NONE;
+    }
+
+    /**
+     * @param yearInput EditText for the year field.
+     * @return The expiration year the user entered.
+     *         Two digit values (such as 17) will be converted to 4 digit years (such as 2017).
+     *         Returns -1 if the input is empty or otherwise not a valid year.
+     */
+    public static int getFourDigitYear(EditText yearInput) {
+        Calendar calendar = Calendar.getInstance();
+        int thisYear = calendar.get(Calendar.YEAR);
+        try {
+            int year = Integer.parseInt(yearInput.getText().toString());
+            if (year < 0) return -1;
+            if (year < 100) year += thisYear - thisYear % 100;
+            return year;
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    /**
+     * @param monthInput EditText for the month field.
+     * @return The expiration month the user entered.
+     *         Returns -1 if the input is empty or not a number.
+     */
+    private static int getMonth(EditText monthInput) {
+        try {
+            return Integer.parseInt(monthInput.getText().toString());
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    /**
+     * @param context Context required to get resources.
+     * @param errorType Type of the error used to get the resource string.
+     * @return Error string retrieved from the string resources.
+     */
+    public static String getErrorMessage(Context context, @ErrorType int errorType) {
+        Resources resources = context.getResources();
+        switch (errorType) {
+            case ErrorType.EXPIRATION_MONTH:
+                return resources.getString(
+                        R.string.autofill_card_unmask_prompt_error_try_again_expiration_month);
+            case ErrorType.EXPIRATION_YEAR:
+                return resources.getString(
+                        R.string.autofill_card_unmask_prompt_error_try_again_expiration_year);
+            case ErrorType.EXPIRATION_DATE:
+                return resources.getString(
+                        R.string.autofill_card_unmask_prompt_error_try_again_expiration_date);
+            case ErrorType.CVC:
+                return resources.getString(
+                        R.string.autofill_card_unmask_prompt_error_try_again_cvc);
+            case ErrorType.CVC_AND_EXPIRATION:
+                return resources.getString(
+                        R.string.autofill_card_unmask_prompt_error_try_again_cvc_and_expiration);
+            case ErrorType.NONE:
+            case ErrorType.NOT_ENOUGH_INFO:
+            default:
+                return "";
+        }
+    }
+
+    /**
+     * Shows (or removes) the appropriate error message and apply the error filter to the
+     * appropriate fields depending on the error type.
+     *
+     * @param errorType The type of error detected.
+     * @param context Context required to get resources,
+     * @param errorMessageTextView TextView to display the error message.
+     */
+    public static void showDetailedErrorMessage(
+            @ErrorType int errorType, Context context, TextView errorMessageTextView) {
+        switch (errorType) {
+            case ErrorType.NONE:
+            case ErrorType.NOT_ENOUGH_INFO:
+                clearInputError(errorMessageTextView);
+                break;
+            default:
+                String errorMessage = getErrorMessage(context, errorType);
+                showErrorMessage(errorMessage, errorMessageTextView);
+        }
+    }
+
+    /**
+     * Sets the error message on the inputs.
+     * @param message The error message to show.
+     * @param errorMessageTextView TextView used to display the error message.
+     */
+    public static void showErrorMessage(String message, TextView errorMessageTextView) {
+        assert message != null;
+
+        // Set the message to display;
+        errorMessageTextView.setText(message);
+        errorMessageTextView.setVisibility(View.VISIBLE);
+
+        // A null message is passed in during card verification, which also makes an announcement.
+        // Announcing twice in a row may cancel the first announcement.
+        errorMessageTextView.announceForAccessibility(message);
+    }
+
+    /**
+     * Removes the error message on the inputs.
+     * @param errorMessageTextView TextView used to display the error message.
+     */
+    public static void clearInputError(TextView errorMessageTextView) {
+        errorMessageTextView.setText(null);
+        errorMessageTextView.setVisibility(View.GONE);
+    }
+
+    /**
+     * Applies the error filter to the invalid fields based on the errorType.
+     *
+     * @param errorType The ErrorType value representing the type of error found for the unmask
+     *                  fields.
+     * @param context Context required to get resources,
+     * @param monthInput EditText for the month field.
+     * @param yearInput EditText for the year field.
+     * @param cvcInput EditText for the cvc field.
+     */
+    public static void updateColorForInputs(@ErrorType int errorType, Context context,
+            EditText monthInput, EditText yearInput, EditText cvcInput) {
+        // The rest of this code makes L-specific assumptions about the background being used to
+        // draw the TextInput.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
+
+        ColorFilter filter =
+                new PorterDuffColorFilter(ApiCompatibilityUtils.getColor(context.getResources(),
+                                                  R.color.input_underline_error_color),
+                        PorterDuff.Mode.SRC_IN);
+
+        // Decide on what field(s) to apply the filter.
+        boolean filterMonth = errorType == ErrorType.EXPIRATION_MONTH
+                || errorType == ErrorType.EXPIRATION_DATE
+                || errorType == ErrorType.CVC_AND_EXPIRATION;
+        boolean filterYear = errorType == ErrorType.EXPIRATION_YEAR
+                || errorType == ErrorType.EXPIRATION_DATE
+                || errorType == ErrorType.CVC_AND_EXPIRATION;
+
+        updateColorForInput(monthInput, filterMonth ? filter : null);
+        updateColorForInput(yearInput, filterYear ? filter : null);
+
+        if (cvcInput != null) {
+            boolean filterCvc =
+                    errorType == ErrorType.CVC || errorType == ErrorType.CVC_AND_EXPIRATION;
+            updateColorForInput(cvcInput, filterCvc ? filter : null);
+        }
+    }
+
+    /**
+     * Sets the stroke color for the given input.
+     * @param input The input to modify.
+     * @param filter The color filter to apply to the background.
+     */
+    public static void updateColorForInput(EditText input, ColorFilter filter) {
+        input.getBackground().mutate().setColorFilter(filter);
     }
 }

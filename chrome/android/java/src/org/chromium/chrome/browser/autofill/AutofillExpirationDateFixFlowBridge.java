@@ -26,22 +26,24 @@ final class AutofillExpirationDateFixFlowBridge
     private final String mTitle;
     private final String mConfirmButtonLabel;
     private final int mIconId;
+    private final String mCardLabel;
     private AutofillExpirationDateFixFlowPrompt mExpirationDateFixFlowPrompt;
 
     private AutofillExpirationDateFixFlowBridge(long nativeCardExpirationDateFixFlowViewAndroid,
-            String title, String confirmButtonLabel, int iconId) {
+            String title, String confirmButtonLabel, int iconId, String cardLabel) {
         mNativeCardExpirationDateFixFlowViewAndroid = nativeCardExpirationDateFixFlowViewAndroid;
         mTitle = title;
         mConfirmButtonLabel = confirmButtonLabel;
         mIconId = iconId;
+        mCardLabel = cardLabel;
     }
 
     @CalledByNative
     private static AutofillExpirationDateFixFlowBridge create(
             long nativeCardExpirationDateFixFlowViewAndroid, String title,
-            String confirmButtonLabel, int iconId) {
-        return new AutofillExpirationDateFixFlowBridge(
-                nativeCardExpirationDateFixFlowViewAndroid, title, confirmButtonLabel, iconId);
+            String confirmButtonLabel, int iconId, String cardLabel) {
+        return new AutofillExpirationDateFixFlowBridge(nativeCardExpirationDateFixFlowViewAndroid,
+                title, confirmButtonLabel, iconId, cardLabel);
     }
 
     @Override
@@ -68,8 +70,8 @@ final class AutofillExpirationDateFixFlowBridge
             return;
         }
 
-        mExpirationDateFixFlowPrompt = new AutofillExpirationDateFixFlowPrompt(
-                activity, this, mTitle, mConfirmButtonLabel, ResourceId.mapToDrawableId(mIconId));
+        mExpirationDateFixFlowPrompt = new AutofillExpirationDateFixFlowPrompt(activity, this,
+                mTitle, mConfirmButtonLabel, ResourceId.mapToDrawableId(mIconId), mCardLabel);
         mExpirationDateFixFlowPrompt.show((ChromeActivity) activity);
     }
 

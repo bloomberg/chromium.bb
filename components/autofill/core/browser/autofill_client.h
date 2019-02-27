@@ -280,13 +280,15 @@ class AutofillClient : public RiskDataLoader {
       LocalSaveCardPromptCallback callback) = 0;
 
 #if defined(OS_ANDROID)
-  // Run |callback| if the card should be uploaded to payments with updated
-  // name from the user.
+  // Display the cardholder name fix flow prompt and run the |callback| if
+  // the card should be uploaded to payments with updated name from the user.
   virtual void ConfirmAccountNameFixFlow(
       base::OnceCallback<void(const base::string16&)> callback) = 0;
-  // Run |callback| if the card should be uploaded to payments with updated
-  // expiration date from the user.
+  // Display the expiration date fix flow prompt with the |card| details
+  // and run the |callback| if the card should be uploaded to payments with
+  // updated expiration date from the user.
   virtual void ConfirmExpirationDateFixFlow(
+      const CreditCard& card,
       base::OnceCallback<void(const base::string16&, const base::string16&)>
           callback) = 0;
 #endif  // defined(OS_ANDROID)

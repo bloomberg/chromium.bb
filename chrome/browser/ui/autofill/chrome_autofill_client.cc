@@ -328,11 +328,13 @@ void ChromeAutofillClient::ConfirmAccountNameFixFlow(
 }
 
 void ChromeAutofillClient::ConfirmExpirationDateFixFlow(
+    const CreditCard& card,
     base::OnceCallback<void(const base::string16&, const base::string16&)>
         callback) {
   std::unique_ptr<CardExpirationDateFixFlowViewDelegateMobile>
       card_expiration_date_fix_flow_view_delegate_mobile =
           std::make_unique<CardExpirationDateFixFlowViewDelegateMobile>(
+              card,
               /*upload_save_card_callback=*/std::move(callback));
 
   // Destruction is handled by the fix flow dialog by explicitly calling delete

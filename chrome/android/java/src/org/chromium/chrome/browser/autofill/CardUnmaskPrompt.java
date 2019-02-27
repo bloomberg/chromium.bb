@@ -6,14 +6,8 @@ package org.chromium.chrome.browser.autofill;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Color;
-import android.graphics.ColorFilter;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
-import android.os.Build;
 import android.os.Handler;
-import android.support.annotation.IntDef;
-import android.support.v4.view.MarginLayoutParamsCompat;
+import android.support.v4.text.TextUtilsCompat;
 import android.support.v4.view.ViewCompat;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -30,22 +24,20 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.autofill.AutofillUiUtils.ErrorType;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.Calendar;
+import java.util.Locale;
 
 /**
  * A prompt that bugs users to enter their CVC when unmasking a Wallet instrument (credit card).
@@ -82,30 +74,9 @@ public class CardUnmaskPrompt
     private ModalDialogManager mModalDialogManager;
     private Context mContext;
 
-    private String mCvcErrorMessage;
-    private String mExpirationMonthErrorMessage;
-    private String mExpirationYearErrorMessage;
-    private String mExpirationDateErrorMessage;
-    private String mCvcAndExpirationErrorMessage;
-
     private boolean mDidFocusOnMonth;
     private boolean mDidFocusOnYear;
     private boolean mDidFocusOnCvc;
-
-    private static final int EXPIRATION_FIELDS_LENGTH = 2;
-
-    @IntDef({ErrorType.EXPIRATION_MONTH, ErrorType.EXPIRATION_YEAR, ErrorType.EXPIRATION_DATE,
-            ErrorType.CVC, ErrorType.CVC_AND_EXPIRATION, ErrorType.NOT_ENOUGH_INFO, ErrorType.NONE})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface ErrorType {
-        int EXPIRATION_MONTH = 1;
-        int EXPIRATION_YEAR = 2;
-        int EXPIRATION_DATE = 3;
-        int CVC = 4;
-        int CVC_AND_EXPIRATION = 5;
-        int NOT_ENOUGH_INFO = 6;
-        int NONE = 7;
-    }
 
     /**
      * An interface to handle the interaction with an CardUnmaskPrompt object.
@@ -237,18 +208,6 @@ public class CardUnmaskPrompt
             mDidFocusOnYear = true;
             validate();
         });
-
-        // Load the error messages to show to the user.
-        mCvcErrorMessage =
-                resources.getString(R.string.autofill_card_unmask_prompt_error_try_again_cvc);
-        mExpirationMonthErrorMessage = resources.getString(
-                R.string.autofill_card_unmask_prompt_error_try_again_expiration_month);
-        mExpirationYearErrorMessage = resources.getString(
-                R.string.autofill_card_unmask_prompt_error_try_again_expiration_year);
-        mExpirationDateErrorMessage = resources.getString(
-                R.string.autofill_card_unmask_prompt_error_try_again_expiration_date);
-        mCvcAndExpirationErrorMessage = resources.getString(
-                R.string.autofill_card_unmask_prompt_error_try_again_cvc_and_expiration);
     }
 
     /**
@@ -315,7 +274,7 @@ public class CardUnmaskPrompt
         if (errorMessage != null) {
             setOverlayVisibility(View.GONE);
             if (allowRetry) {
-                showErrorMessage(errorMessage);
+                AutofillUiUtils.showErrorMessage(errorMessage, mErrorMessage);
                 setInputsEnabled(true);
                 setInitialFocus();
 
@@ -352,7 +311,9 @@ public class CardUnmaskPrompt
         @ErrorType int errorType = getExpirationAndCvcErrorType();
         mDialogModel.set(
                 ModalDialogProperties.POSITIVE_BUTTON_DISABLED, errorType != ErrorType.NONE);
-        showDetailedErrorMessage(errorType);
+        AutofillUiUtils.showDetailedErrorMessage(errorType, mContext, mErrorMessage);
+        AutofillUiUtils.updateColorForInputs(
+                errorType, mContext, mMonthInput, mYearInput, mCardUnmaskInput);
         moveFocus(errorType);
 
         if (sObserverForTest != null) {
@@ -398,35 +359,29 @@ public class CardUnmaskPrompt
         if (mStoreLocallyTooltipPopup != null) return;
 
         mStoreLocallyTooltipPopup = new PopupWindow(mContext);
-        TextView text = new TextView(mContext);
-        text.setText(R.string.autofill_card_unmask_prompt_storage_tooltip);
-        // Width is the dialog's width less the margins and padding around the checkbox and
-        // icon.
-        text.setWidth(mMainView.getWidth() - ViewCompat.getPaddingStart(mStoreLocallyCheckbox)
-                - ViewCompat.getPaddingEnd(mStoreLocallyTooltipIcon)
-                - MarginLayoutParamsCompat.getMarginStart((RelativeLayout.LayoutParams)
-                        mStoreLocallyCheckbox.getLayoutParams())
-                - MarginLayoutParamsCompat.getMarginEnd((RelativeLayout.LayoutParams)
-                        mStoreLocallyTooltipIcon.getLayoutParams()));
-        text.setTextColor(Color.WHITE);
-        Resources resources = mContext.getResources();
-        int hPadding = resources.getDimensionPixelSize(R.dimen.autofill_tooltip_horizontal_padding);
-        int vPadding = resources.getDimensionPixelSize(R.dimen.autofill_tooltip_vertical_padding);
-        text.setPadding(hPadding, vPadding, hPadding, vPadding);
+        Runnable dismissAction = () -> {
+            mStoreLocallyTooltipPopup = null;
+        };
+        boolean isLeftToRight = TextUtilsCompat.getLayoutDirectionFromLocale(Locale.getDefault())
+                == ViewCompat.LAYOUT_DIRECTION_LTR;
+        AutofillUiUtils.showTooltip(mContext, mStoreLocallyTooltipPopup,
+                R.string.autofill_card_unmask_prompt_storage_tooltip,
+                new AutofillUiUtils.OffsetProvider() {
+                    @Override
+                    public int getXOffset(TextView textView) {
+                        int xOffset =
+                                mStoreLocallyTooltipIcon.getLeft() - textView.getMeasuredWidth();
+                        return Math.max(0, xOffset);
+                    }
 
-        mStoreLocallyTooltipPopup.setContentView(text);
-        mStoreLocallyTooltipPopup.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
-        mStoreLocallyTooltipPopup.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
-        mStoreLocallyTooltipPopup.setOutsideTouchable(true);
-        mStoreLocallyTooltipPopup.setBackgroundDrawable(ApiCompatibilityUtils.getDrawable(
-                resources, R.drawable.store_locally_tooltip_background));
-        mStoreLocallyTooltipPopup.setOnDismissListener(() -> {
-            Handler h = new Handler();
-            h.postDelayed(() -> mStoreLocallyTooltipPopup = null, 200);
-        });
-        mStoreLocallyTooltipPopup.showAsDropDown(mStoreLocallyCheckbox,
-                ViewCompat.getPaddingStart(mStoreLocallyCheckbox), 0);
-        text.announceForAccessibility(text.getText());
+                    @Override
+                    public int getYOffset(TextView textView) {
+                        return 0;
+                    }
+                },
+                // If the layout is right to left then anchor on the edit text field else anchor on
+                // the tooltip icon, which would be on the left.
+                isLeftToRight ? mStoreLocallyCheckbox : mStoreLocallyTooltipIcon, dismissAction);
     }
 
     private void onNewCardLinkClicked() {
@@ -458,10 +413,10 @@ public class CardUnmaskPrompt
     private void moveFocus(@ErrorType int errorType) {
         if (errorType == ErrorType.NOT_ENOUGH_INFO) {
             if (mMonthInput.isFocused()
-                    && mMonthInput.getText().length() == EXPIRATION_FIELDS_LENGTH) {
+                    && mMonthInput.getText().length() == AutofillUiUtils.EXPIRATION_FIELDS_LENGTH) {
                 // The user just finished typing in the month field and there are no validation
                 // errors.
-                if (mYearInput.getText().length() == EXPIRATION_FIELDS_LENGTH) {
+                if (mYearInput.getText().length() == AutofillUiUtils.EXPIRATION_FIELDS_LENGTH) {
                     // Year was already filled, move focus to CVC field.
                     mCardUnmaskInput.requestFocus();
                     mDidFocusOnCvc = true;
@@ -471,76 +426,13 @@ public class CardUnmaskPrompt
                     mDidFocusOnYear = true;
                 }
             } else if (mYearInput.isFocused()
-                    && mYearInput.getText().length() == EXPIRATION_FIELDS_LENGTH) {
+                    && mYearInput.getText().length() == AutofillUiUtils.EXPIRATION_FIELDS_LENGTH) {
                 // The user just finished typing in the year field and there are no validation
                 // errors. Move focus to CVC field.
                 mCardUnmaskInput.requestFocus();
                 mDidFocusOnCvc = true;
             }
         }
-    }
-
-    /**
-     * Shows (or removes) the appropriate error message and apply the error filter to the
-     * appropriate fields depending on the error type.
-     *
-     * @param errorType The type of error detected.
-     */
-    private void showDetailedErrorMessage(@ErrorType int errorType) {
-        switch (errorType) {
-            case ErrorType.EXPIRATION_MONTH:
-                showErrorMessage(mExpirationMonthErrorMessage);
-                break;
-            case ErrorType.EXPIRATION_YEAR:
-                showErrorMessage(mExpirationYearErrorMessage);
-                break;
-            case ErrorType.EXPIRATION_DATE:
-                showErrorMessage(mExpirationDateErrorMessage);
-                break;
-            case ErrorType.CVC:
-                showErrorMessage(mCvcErrorMessage);
-                break;
-            case ErrorType.CVC_AND_EXPIRATION:
-                showErrorMessage(mCvcAndExpirationErrorMessage);
-                break;
-            case ErrorType.NONE:
-            case ErrorType.NOT_ENOUGH_INFO:
-            default:
-                clearInputError();
-                return;
-        }
-
-        updateColorForInputs(errorType);
-    }
-
-    /**
-     * Applies the error filter to the invalid fields based on the errorType.
-     *
-     * @param errorType The ErrorType value representing the type of error found for the unmask
-     *                  fields.
-     */
-    private void updateColorForInputs(@ErrorType int errorType) {
-        // The rest of this code makes L-specific assumptions about the background being used to
-        // draw the TextInput.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
-
-        ColorFilter filter =
-                new PorterDuffColorFilter(ApiCompatibilityUtils.getColor(mContext.getResources(),
-                                                  R.color.input_underline_error_color),
-                        PorterDuff.Mode.SRC_IN);
-
-        // Decide on what field(s) to apply the filter.
-        boolean filterMonth = errorType == ErrorType.EXPIRATION_MONTH
-                || errorType == ErrorType.EXPIRATION_DATE
-                || errorType == ErrorType.CVC_AND_EXPIRATION;
-        boolean filterYear = errorType == ErrorType.EXPIRATION_YEAR
-                || errorType == ErrorType.EXPIRATION_DATE
-                || errorType == ErrorType.CVC_AND_EXPIRATION;
-        boolean filterCvc = errorType == ErrorType.CVC || errorType == ErrorType.CVC_AND_EXPIRATION;
-
-        updateColorForInput(mMonthInput, filterMonth ? filter : null);
-        updateColorForInput(mYearInput, filterYear ? filter : null);
-        updateColorForInput(mCardUnmaskInput, filterCvc ? filter : null);
     }
 
     /**
@@ -553,7 +445,10 @@ public class CardUnmaskPrompt
         @ErrorType
         int errorType = ErrorType.NONE;
 
-        if (mShouldRequestExpirationDate) errorType = getExpirationDateErrorType();
+        if (mShouldRequestExpirationDate) {
+            errorType = AutofillUiUtils.getExpirationDateErrorType(
+                    mMonthInput, mYearInput, mDidFocusOnMonth, mDidFocusOnYear);
+        }
 
         // If the CVC is valid, return the error type determined so far.
         if (isCvcValid()) return errorType;
@@ -573,46 +468,6 @@ public class CardUnmaskPrompt
         }
 
         return errorType;
-    }
-
-    /**
-     * Determines what type of error, if any, is present in the expiration date fields of the
-     * prompt.
-     *
-     * @return The ErrorType value representing the type of error found for the expiration date
-     *         unmask fields.
-     */
-    @ErrorType private int getExpirationDateErrorType() {
-        if (mThisYear == -1 || mThisMonth == -1) {
-            mValidationWaitsForCalendarTask = true;
-            return ErrorType.NOT_ENOUGH_INFO;
-        }
-
-        int month = getMonth();
-        if (month < 1 || month > 12) {
-            if (mMonthInput.getText().length() == EXPIRATION_FIELDS_LENGTH
-                    || (!mMonthInput.isFocused() && mDidFocusOnMonth)) {
-                // mFinishedTypingMonth = true;
-                return ErrorType.EXPIRATION_MONTH;
-            }
-            return ErrorType.NOT_ENOUGH_INFO;
-        }
-
-        int year = getFourDigitYear();
-        if (year < mThisYear || year > mThisYear + 10) {
-            if (mYearInput.getText().length() == EXPIRATION_FIELDS_LENGTH
-                    || (!mYearInput.isFocused() && mDidFocusOnYear)) {
-                // mFinishedTypingYear = true;
-                return ErrorType.EXPIRATION_YEAR;
-            }
-            return ErrorType.NOT_ENOUGH_INFO;
-        }
-
-        if (year == mThisYear && month < mThisMonth) {
-            return ErrorType.EXPIRATION_DATE;
-        }
-
-        return ErrorType.NONE;
     }
 
     /**
@@ -660,36 +515,13 @@ public class CardUnmaskPrompt
     }
 
     /**
-     * Sets the error message on the inputs.
-     * @param message The error message to show.
-     */
-    private void showErrorMessage(String message) {
-        assert message != null;
-
-        // Set the message to display;
-        mErrorMessage.setText(message);
-        mErrorMessage.setVisibility(View.VISIBLE);
-
-        // A null message is passed in during card verification, which also makes an announcement.
-        // Announcing twice in a row may cancel the first announcement.
-        mErrorMessage.announceForAccessibility(message);
-    }
-
-    /**
      * Removes the error message on the inputs.
      */
     private void clearInputError() {
-        mErrorMessage.setText(null);
-        mErrorMessage.setVisibility(View.GONE);
-
-        // The rest of this code makes L-specific assumptions about the background being used to
-        // draw the TextInput.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
-
+        AutofillUiUtils.clearInputError(mErrorMessage);
         // Remove the highlight on the input fields.
-        updateColorForInput(mMonthInput, null);
-        updateColorForInput(mYearInput, null);
-        updateColorForInput(mCardUnmaskInput, null);
+        AutofillUiUtils.updateColorForInputs(
+                ErrorType.NONE, mContext, mMonthInput, mYearInput, mCardUnmaskInput);
     }
 
     /**
@@ -701,48 +533,12 @@ public class CardUnmaskPrompt
         mNoRetryErrorMessage.announceForAccessibility(message);
     }
 
-    /**
-     * Sets the stroke color for the given input.
-     * @param input The input to modify.
-     * @param filter The color filter to apply to the background.
-     */
-    private void updateColorForInput(EditText input, ColorFilter filter) {
-        input.getBackground().mutate().setColorFilter(filter);
-    }
-
-    /**
-     * @return The expiration year the user entered.
-     *         Two digit values (such as 17) will be converted to 4 digit years (such as 2017).
-     *         Returns -1 if the input is empty or otherwise not a valid year.
-     */
-    private int getFourDigitYear() {
-        try {
-            int year = Integer.parseInt(mYearInput.getText().toString());
-            if (year < 0) return -1;
-            if (year < 100) year += mThisYear - mThisYear % 100;
-            return year;
-        } catch (NumberFormatException e) {
-            return -1;
-        }
-    }
-
-    /**
-     * @return The expiration month the user entered.
-     *         Returns -1 if the input is empty or not a number.
-     */
-    private int getMonth() {
-        try {
-            return Integer.parseInt(mMonthInput.getText().toString());
-        } catch (NumberFormatException e) {
-            return -1;
-        }
-    }
-
     @Override
     public void onClick(PropertyModel model, int buttonType) {
         if (buttonType == ModalDialogProperties.ButtonType.POSITIVE) {
             mDelegate.onUserInput(mCardUnmaskInput.getText().toString(),
-                    mMonthInput.getText().toString(), Integer.toString(getFourDigitYear()),
+                    mMonthInput.getText().toString(),
+                    Integer.toString(AutofillUiUtils.getFourDigitYear(mYearInput)),
                     mStoreLocallyCheckbox != null && mStoreLocallyCheckbox.isChecked());
         } else if (buttonType == ModalDialogProperties.ButtonType.NEGATIVE) {
             mModalDialogManager.dismissDialog(model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);

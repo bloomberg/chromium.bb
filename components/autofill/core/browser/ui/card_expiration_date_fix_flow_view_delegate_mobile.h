@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/credit_card.h"
 
 namespace autofill {
 
@@ -21,10 +22,13 @@ namespace autofill {
 class CardExpirationDateFixFlowViewDelegateMobile {
  public:
   CardExpirationDateFixFlowViewDelegateMobile(
+      const CreditCard& card,
       base::OnceCallback<void(const base::string16&, const base::string16&)>
           upload_save_card_callback);
 
   ~CardExpirationDateFixFlowViewDelegateMobile();
+
+  const base::string16& card_label() const { return card_label_; }
 
   int GetIconId() const;
   base::string16 GetTitleText() const;
@@ -44,6 +48,9 @@ class CardExpirationDateFixFlowViewDelegateMobile {
 
   // Did the user ever explicitly accept or dismiss this prompt?
   bool had_user_interaction_;
+
+  // Label of the card describing the network and the last four digits.
+  base::string16 card_label_;
 
   DISALLOW_COPY_AND_ASSIGN(CardExpirationDateFixFlowViewDelegateMobile);
 };
