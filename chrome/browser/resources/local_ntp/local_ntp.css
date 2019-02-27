@@ -44,7 +44,7 @@ html {
   height: 100%;
 }
 
-html[darkmode=true] {
+html[darkmode=true] body:not(.light-chip) {
   /* These can be overridden by themes. */
   --text-color: rgb(var(--GG200-rgb));
   --text-color-light: rgb(var(--GG200-rgb));
@@ -148,7 +148,7 @@ body.remove-fakebox #fakebox-container {
   transition: background-color 300ms ease-in-out, opacity 200ms
 }
 
-html[darkmode=true] #fakebox {
+html[darkmode=true] body:not(.light-chip) #fakebox {
   background-color: rgb(var(--GG900-rgb));
 }
 
@@ -156,7 +156,7 @@ html[darkmode=true] #fakebox {
   background-color: rgb(var(--GG200-rgb));
 }
 
-html[darkmode=true] #fakebox:hover {
+html[darkmode=true] body:not(.light-chip) #fakebox:hover {
   background-color: rgb(42, 43, 46);
 }
 
@@ -199,7 +199,7 @@ html[dir=rtl] #fakebox > input {
   white-space: nowrap;
 }
 
-html[darkmode=true] #fakebox-text {
+html[darkmode=true] body:not(.light-chip) #fakebox-text {
   color: rgb(var(--GG200-rgb));
 }
 
@@ -223,7 +223,7 @@ html[dir=rtl] #fakebox-cursor {
   right: 20px;
 }
 
-html[darkmode=true] #fakebox-cursor {
+html[darkmode=true] body:not(.light-chip) #fakebox-cursor {
   background: rgb(var(--GB300-rgb));
 }
 
@@ -330,7 +330,7 @@ body.remove-fakebox #user-content {
   width: 16px;
 }
 
-html[darkmode=true] #mv-notice-x {
+html[darkmode=true] body:not(.light-chip) #mv-notice-x {
   background-color: rgb(var(--GG200-rgb));
 }
 
@@ -342,8 +342,8 @@ html[darkmode=true] #mv-notice-x {
   background-color: rgb(var(--GB500-rgb));
 }
 
-html[darkmode=true] #mv-notice-x:hover,
-html[darkmode=true] #mv-notice-x:active {
+html[darkmode=true] body:not(.light-chip) #mv-notice-x:hover,
+html[darkmode=true] body:not(.light-chip) #mv-notice-x:active {
   background-color: rgb(var(--GG400-rgb));
 }
 
@@ -403,7 +403,7 @@ html[darkmode=true] #mv-notice-x:active {
   width: fit-content;
 }
 
-html[darkmode=true] .md-icons #mv-notice {
+html[darkmode=true] body:not(.light-chip) .md-icons #mv-notice {
   background-color: rgb(var(--GG900-rgb));
   border-color: rgba(0, 0, 0, 0.1);
 }
@@ -423,7 +423,7 @@ html[darkmode=true] .md-icons #mv-notice {
   vertical-align: unset;
 }
 
-html[darkmode=true] .md-icons #mv-notice span {
+html[darkmode=true] body:not(.light-chip) .md-icons #mv-notice span {
   color: rgb(var(--GG200-rgb));
 }
 
@@ -445,7 +445,7 @@ html[darkmode=true] .md-icons #mv-notice span {
   position: relative;
 }
 
-html[darkmode=true] .md-icons #mv-notice-links span {
+html[darkmode=true] body:not(.light-chip) .md-icons #mv-notice-links span {
   color: rgb(var(--GB400-dark-rgb));
 }
 
@@ -461,8 +461,8 @@ html[darkmode=true] .md-icons #mv-notice-links span {
   transition: background-color 200ms;
 }
 
-html[darkmode=true] .md-icons #mv-notice-links span:hover,
-html[darkmode=true] .md-icons #mv-notice-links span:active {
+html[darkmode=true] body:not(.light-chip) .md-icons #mv-notice-links span:hover,
+html[darkmode=true] body:not(.light-chip) .md-icons #mv-notice-links span:active {
   background-color: rgba(var(--GB400-dark-rgb), 0.1);
 }
 
@@ -482,8 +482,8 @@ html[darkmode=true] .md-icons #mv-notice-links span:active {
   color: #fff;
 }
 
-html[darkmode=true] .default-theme.dark #mv-msg :not(.md-icons),
-html[darkmode=true] .default-theme.dark #mv-notice-links :not(.md-icons) span {
+html[darkmode=true] body:not(.light-chip) .default-theme.dark #mv-msg :not(.md-icons),
+html[darkmode=true] body:not(.light-chip) .default-theme.dark #mv-notice-links :not(.md-icons) span {
   color: rgb(var(--GG200-rgb));
 }
 
@@ -661,7 +661,7 @@ input:checked + .toggle::before {
   width: fit-content;
 }
 
-html[darkmode=true] #error-notice {
+html[darkmode=true] body:not(.light-chip) #error-notice {
   background-color: rgb(var(--GG900-rgb));
   border-color: rgba(0, 0, 0, 0.1);
   color: rgb(var(--GR500-dark-rgb));
@@ -709,7 +709,7 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
   position: relative;
 }
 
-html[darkmode=true] #error-notice-link {
+html[darkmode=true] body:not(.light-chip) #error-notice-link {
   color: rgb(var(--GB400-dark-rgb));
 }
 
@@ -729,8 +729,8 @@ html[darkmode=true] #error-notice-link {
   transition: background-color 200ms;
 }
 
-html[darkmode=true] #error-notice-link:hover,
-html[darkmode=true] #error-notice-link:active {
+html[darkmode=true] body:not(.light-chip) #error-notice-link:hover,
+html[darkmode=true] body:not(.light-chip) #error-notice-link:active {
   background-color: rgba(var(--GB400-dark-rgb), 0.1);
 }
 
@@ -767,7 +767,7 @@ html[darkmode=true] #error-notice-link:active {
   white-space: nowrap;
 }
 
-html[darkmode=true] #promo > div {
+html[darkmode=true] body:not(.light-chip) #promo > div {
   background-color: rgb(var(--GG900-rgb));
   border-color: rgba(0, 0, 0, 0.1);
   color: rgb(var(--GG200-rgb));
@@ -794,8 +794,8 @@ html[darkmode=true] #promo > div {
   color: rgb(51, 103, 214) !important;
 }
 
-html[darkmode=true] #promo > div > a,
-html[darkmode=true] #promo > div > a:visited {
+html[darkmode=true] body:not(.light-chip) #promo > div > a,
+html[darkmode=true] body:not(.light-chip) #promo > div > a:visited {
   color: rgb(var(--GB400-dark-rgb)) !important;
 }
 
@@ -808,7 +808,7 @@ html[darkmode=true] #promo > div > a:visited {
   width: 24px;
 }
 
-html[darkmode=true] #promo > div > img {
+html[darkmode=true] body:not(.light-chip) #promo > div > img {
   background-color: rgb(var(--GG200-rgb));
 }
 
