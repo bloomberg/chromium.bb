@@ -19,7 +19,9 @@ class RemoteDOMWindow final : public DOMWindow {
 
   explicit RemoteDOMWindow(RemoteFrame&);
 
-  RemoteFrame* GetFrame() const { return ToRemoteFrame(DOMWindow::GetFrame()); }
+  RemoteFrame* GetFrame() const {
+    return To<RemoteFrame>(DOMWindow::GetFrame());
+  }
 
   // EventTarget overrides:
   ExecutionContext* GetExecutionContext() const override;

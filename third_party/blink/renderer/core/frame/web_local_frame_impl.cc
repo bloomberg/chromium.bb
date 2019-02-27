@@ -1714,11 +1714,10 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
 
   LocalFrame* new_frame = web_frame->GetFrame();
   new_frame->SetOwner(old_frame->Owner());
-  if (new_frame->Owner() && new_frame->Owner()->IsRemote()) {
-    ToRemoteFrameOwner(new_frame->Owner())
-        ->SetSandboxFlags(static_cast<SandboxFlags>(flags));
-    ToRemoteFrameOwner(new_frame->Owner())
-        ->SetContainerPolicy(container_policy);
+  if (auto* remote_frame_owner =
+          DynamicTo<RemoteFrameOwner>(new_frame->Owner())) {
+    remote_frame_owner->SetSandboxFlags(static_cast<SandboxFlags>(flags));
+    remote_frame_owner->SetContainerPolicy(container_policy);
   } else if (!new_frame->Owner()) {
     // Provisional main frames need to force sandbox flags.  This is necessary
     // to inherit sandbox flags when a sandboxed frame does a window.open()

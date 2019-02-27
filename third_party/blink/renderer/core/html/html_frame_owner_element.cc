@@ -240,9 +240,8 @@ void HTMLFrameOwnerElement::UpdateContainerPolicy(Vector<String>* messages) {
 }
 
 void HTMLFrameOwnerElement::PointerEventsChanged() {
-  if (ContentFrame() && ContentFrame()->IsRemoteFrame()) {
-    ToRemoteFrame(ContentFrame())->PointerEventsChanged();
-  }
+  if (auto* remote_frame = DynamicTo<RemoteFrame>(ContentFrame()))
+    remote_frame->PointerEventsChanged();
 }
 
 void HTMLFrameOwnerElement::FrameOwnerPropertiesChanged() {

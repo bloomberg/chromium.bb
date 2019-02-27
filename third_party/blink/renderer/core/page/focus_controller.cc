@@ -1031,7 +1031,7 @@ bool FocusController::AdvanceFocusInDocumentOrder(
       document->ClearFocusedElement();
       document->SetSequentialFocusNavigationStartingPoint(nullptr);
       SetFocusedFrame(nullptr);
-      ToRemoteFrame(frame->LocalFrameRoot().Tree().Parent())
+      To<RemoteFrame>(frame->LocalFrameRoot().Tree().Parent())
           ->AdvanceFocus(type, &frame->LocalFrameRoot());
       return true;
     }
@@ -1083,8 +1083,8 @@ bool FocusController::AdvanceFocusInDocumentOrder(
     //
     // ClearFocusedElement() fires events that might detach the contentFrame,
     // hence the need to null-check it again.
-    if (owner->ContentFrame() && owner->ContentFrame()->IsRemoteFrame())
-      ToRemoteFrame(owner->ContentFrame())->AdvanceFocus(type, frame);
+    if (auto* remote_frame = DynamicTo<RemoteFrame>(owner->ContentFrame()))
+      remote_frame->AdvanceFocus(type, frame);
     else
       SetFocusedFrame(owner->ContentFrame());
 
