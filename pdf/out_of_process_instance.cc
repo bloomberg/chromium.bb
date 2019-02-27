@@ -673,6 +673,10 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     }
     const bool force = dict.Get(pp::Var(kJSForce)).AsBool();
     if (force) {
+      // |force| being true means the user has entered annotation mode. In which
+      // case, assume the user will make edits and prefer saving using the
+      // plugin data.
+      pp::PDF::SetPluginCanSave(this, true);
       SaveToBuffer(dict.Get(pp::Var(kJSToken)).AsString());
     } else {
       SaveToFile(dict.Get(pp::Var(kJSToken)).AsString());
