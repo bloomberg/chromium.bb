@@ -661,12 +661,16 @@ bool CreditCard::HasSameNumberAs(const CreditCard& other) const {
   // cards matches.
   if (record_type() == MASKED_SERVER_CARD ||
       other.record_type() == MASKED_SERVER_CARD) {
+    bool last_four_digits_match = LastFourDigits() == other.LastFourDigits();
     // The below metric is logged because this function previously compared
     // cards' last four digits and networks if one card was masked. It may be
-    // useful to know how often networks match; however, it is expected that the
-    // number of discrepanies will be low.
-    AutofillMetrics::LogMaskedCardComparisonNetworksMatch(
-        NetworkForDisplay() == other.NetworkForDisplay());
+    // useful to know how often networks match when the last four digits match.
+    // It is expected that when two cards' last four digits are the same, their
+    // networks will almost always match, too.
+    if (last_four_digits_match) {
+      AutofillMetrics::LogMaskedCardComparisonNetworksMatch(
+          NetworkForDisplay() == other.NetworkForDisplay());
+    }
 
     bool months_match = expiration_month() == other.expiration_month() ||
                         expiration_month() == 0 ||
@@ -675,8 +679,7 @@ bool CreditCard::HasSameNumberAs(const CreditCard& other) const {
     bool years_match = expiration_year() == other.expiration_year() ||
                        expiration_year() == 0 || other.expiration_year() == 0;
 
-    return LastFourDigits() == other.LastFourDigits() && months_match &&
-           years_match;
+    return last_four_digits_match && months_match && years_match;
   }
 
   return StripSeparators(number_) == StripSeparators(other.number_);
