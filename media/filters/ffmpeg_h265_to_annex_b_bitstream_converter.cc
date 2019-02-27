@@ -52,7 +52,7 @@ bool FFmpegH265ToAnnexBBitstreamConverter::ConvertPacket(AVPacket* packet) {
   // allow that (see crbug.com/455379).
   input_frame.insert(input_frame.end(),
                      packet->data, packet->data + packet->size);
-  int nalu_size_len = hevc_config_->lengthSizeMinusOne + 1;
+  size_t nalu_size_len = hevc_config_->lengthSizeMinusOne + 1;
   if (!mp4::AVC::ConvertFrameToAnnexB(nalu_size_len, &input_frame,
                                       &subsamples)) {
     DVLOG(1) << "AnnexB conversion failed";
