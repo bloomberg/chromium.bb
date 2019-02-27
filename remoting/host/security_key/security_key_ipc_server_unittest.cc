@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "ipc/ipc_channel.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
@@ -348,7 +349,13 @@ TEST_F(SecurityKeyIpcServerTest,
               kConnectionTimeoutErrorDeltaMs);
 }
 
-TEST_F(SecurityKeyIpcServerTest, NoSecurityKeyRequestTimeout) {
+// Flaky on mac, https://crbug.com/936583
+#if defined(OS_MACOSX)
+#define MAYBE_NoSecurityKeyRequestTimeout DISABLED_NoSecurityKeyRequestTimeout
+#else
+#define MAYBE_NoSecurityKeyRequestTimeout NoSecurityKeyRequestTimeout
+#endif
+TEST_F(SecurityKeyIpcServerTest, MAYBE_NoSecurityKeyRequestTimeout) {
   // Create a channel and connect to it via IPC but do not send a request.
   // The channel should be closed and cleaned up if the IPC client does not
   // issue a request within the specified timeout period.
