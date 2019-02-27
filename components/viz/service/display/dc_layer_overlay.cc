@@ -494,10 +494,10 @@ void DCLayerOverlayProcessor::ProcessForUnderlay(
     gfx::Rect* this_frame_underlay_rect,
     gfx::Rect* this_frame_underlay_occlusion,
     DCLayerOverlay* dc_layer) {
-  // TODO(magchen): Assign decreasing z-order so that underlays processed
-  // earlier, and hence which are above the subsequent underlays, are placed
-  // above in the direct composition visual tree.
-  dc_layer->z_order = -1;
+  // Assign decreasing z-order so that underlays processed earlier, and hence
+  // which are above the subsequent underlays, are placed above in the direct
+  // composition visual tree.
+  dc_layer->z_order = -1 - current_frame_processed_overlay_count_;
 
   const SharedQuadState* shared_quad_state = it->shared_quad_state;
   gfx::Rect rect = it->visible_rect;
