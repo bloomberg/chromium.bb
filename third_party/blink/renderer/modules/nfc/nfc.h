@@ -18,7 +18,7 @@
 namespace blink {
 
 class NFCPushOptions;
-using NFCPushMessage = StringOrArrayBufferOrNDEFMessage;
+using NDEFMessageSource = StringOrArrayBufferOrNDEFMessage;
 class NFCWatchOptions;
 class ScriptPromiseResolver;
 
@@ -41,9 +41,9 @@ class NFC final : public ScriptWrappable,
   // ContextLifecycleObserver overrides.
   void ContextDestroyed(ExecutionContext*) override;
 
-  // Pushes NFCPushMessage asynchronously to NFC tag / peer.
+  // Pushes NDEFMessageSource asynchronously to NFC tag / peer.
   ScriptPromise push(ScriptState*,
-                     const NFCPushMessage&,
+                     const NDEFMessageSource&,
                      const NFCPushOptions*);
 
   // Cancels ongoing push operation.

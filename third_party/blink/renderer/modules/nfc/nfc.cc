@@ -290,8 +290,8 @@ struct TypeConverter<NDEFMessagePtr, blink::DOMArrayBuffer*> {
 };
 
 template <>
-struct TypeConverter<NDEFMessagePtr, blink::NFCPushMessage> {
-  static NDEFMessagePtr Convert(const blink::NFCPushMessage& message) {
+struct TypeConverter<NDEFMessagePtr, blink::NDEFMessageSource> {
+  static NDEFMessagePtr Convert(const blink::NDEFMessageSource& message) {
     if (message.IsString())
       return NDEFMessage::From(message.GetAsString());
 
@@ -499,14 +499,14 @@ ScriptPromise RejectIfInvalidNDEFRecordArray(
   return ScriptPromise();
 }
 
-ScriptPromise RejectIfInvalidNFCPushMessage(
+ScriptPromise RejectIfInvalidNDEFMessageSource(
     ScriptState* script_state,
-    const NFCPushMessage& push_message) {
-  // If NFCPushMessage of invalid type, reject promise with TypeError
+    const NDEFMessageSource& push_message) {
+  // If NDEFMessageSource of invalid type, reject promise with TypeError
   if (!push_message.IsNDEFMessage() && !push_message.IsString() &&
       !push_message.IsArrayBuffer()) {
     return RejectWithTypeError(script_state,
-                               "Invalid NFCPushMessage type was provided.");
+                               "Invalid NDEFMessageSource type was provided.");
   }
 
   if (push_message.IsNDEFMessage()) {
@@ -681,14 +681,14 @@ void NFC::ContextDestroyed(ExecutionContext*) {
 // https://w3c.github.io/web-nfc/#writing-or-pushing-content
 // https://w3c.github.io/web-nfc/#dom-nfc-push
 ScriptPromise NFC::push(ScriptState* script_state,
-                        const NFCPushMessage& push_message,
+                        const NDEFMessageSource& push_message,
                         const NFCPushOptions* options) {
   ScriptPromise promise = RejectIfNotSupported(script_state);
   if (!promise.IsEmpty())
     return promise;
 
   ScriptPromise isValidMessage =
-      RejectIfInvalidNFCPushMessage(script_state, push_message);
+      RejectIfInvalidNDEFMessageSource(script_state, push_message);
   if (!isValidMessage.IsEmpty())
     return isValidMessage;
 
