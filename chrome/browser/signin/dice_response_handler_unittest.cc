@@ -118,7 +118,6 @@ class DiceResponseHandlerTest : public testing::Test,
         about_signin_internals_(&account_tracker_service_,
                                 identity_test_env_.identity_manager(),
                                 &signin_error_controller_,
-                                &cookie_service_,
                                 signin::AccountConsistencyMethod::kDice),
         reconcilor_blocked_count_(0),
         reconcilor_unblocked_count_(0) {

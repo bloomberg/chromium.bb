@@ -20,7 +20,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
@@ -182,13 +181,11 @@ AboutSigninInternals::AboutSigninInternals(
     AccountTrackerService* account_tracker,
     identity::IdentityManager* identity_manager,
     SigninErrorController* signin_error_controller,
-    GaiaCookieManagerService* cookie_manager_service,
     signin::AccountConsistencyMethod account_consistency)
     : account_tracker_(account_tracker),
       identity_manager_(identity_manager),
       client_(nullptr),
       signin_error_controller_(signin_error_controller),
-      cookie_manager_service_(cookie_manager_service),
       account_consistency_(account_consistency) {}
 
 AboutSigninInternals::~AboutSigninInternals() {}
@@ -313,17 +310,17 @@ void AboutSigninInternals::NotifyObservers() {
 
   std::unique_ptr<base::DictionaryValue> signin_status_value =
       signin_status_.ToValue(account_tracker_, identity_manager_,
-                             signin_error_controller_, cookie_manager_service_,
-                             client_, account_consistency_);
+                             signin_error_controller_, client_,
+                             account_consistency_);
 
   for (auto& observer : signin_observers_)
     observer.OnSigninStateChanged(signin_status_value.get());
 }
 
 std::unique_ptr<base::DictionaryValue> AboutSigninInternals::GetSigninStatus() {
-  return signin_status_.ToValue(
-      account_tracker_, identity_manager_, signin_error_controller_,
-      cookie_manager_service_, client_, account_consistency_);
+  return signin_status_.ToValue(account_tracker_, identity_manager_,
+                                signin_error_controller_, client_,
+                                account_consistency_);
 }
 
 void AboutSigninInternals::OnAccessTokenRequested(
@@ -572,7 +569,6 @@ AboutSigninInternals::SigninStatus::ToValue(
     AccountTrackerService* account_tracker,
     identity::IdentityManager* identity_manager,
     SigninErrorController* signin_error_controller,
-    GaiaCookieManagerService* cookie_manager_service,
     SigninClient* signin_client,
     signin::AccountConsistencyMethod account_consistency) {
   auto signin_status = std::make_unique<base::DictionaryValue>();
@@ -637,13 +633,13 @@ AboutSigninInternals::SigninStatus::ToValue(
             .second);
   }
 
-  const net::BackoffEntry* cookie_manager_backoff_entry =
-      cookie_manager_service->GetBackoffEntry();
+  base::TimeDelta cookie_requests_delay =
+      identity_manager->GetDiagnosticsProvider()
+          ->GetDelayBeforeMakingCookieRequests();
 
-  if (cookie_manager_backoff_entry->ShouldRejectRequest()) {
+  if (cookie_requests_delay > base::TimeDelta()) {
     base::Time next_retry_time =
-        base::Time::NowFromSystemTime() +
-        cookie_manager_backoff_entry->GetTimeUntilRelease();
+        base::Time::NowFromSystemTime() + cookie_requests_delay;
 
     std::string next_retry_time_as_str =
         base::UTF16ToUTF8(
@@ -655,11 +651,13 @@ AboutSigninInternals::SigninStatus::ToValue(
                     "");
   }
 
-  base::TimeDelta delay = identity_manager->GetDiagnosticsProvider()
-                              ->GetDelayBeforeMakingAccessTokenRequests();
+  base::TimeDelta token_requests_delay =
+      identity_manager->GetDiagnosticsProvider()
+          ->GetDelayBeforeMakingAccessTokenRequests();
 
-  if (delay > base::TimeDelta()) {
-    base::Time next_retry_time = base::Time::NowFromSystemTime() + delay;
+  if (token_requests_delay > base::TimeDelta()) {
+    base::Time next_retry_time =
+        base::Time::NowFromSystemTime() + token_requests_delay;
 
     std::string next_retry_time_as_str =
         base::UTF16ToUTF8(

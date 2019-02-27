@@ -8,7 +8,6 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -21,7 +20,6 @@ AboutSigninInternalsFactory::AboutSigninInternalsFactory()
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(AccountTrackerServiceFactory::GetInstance());
   DependsOn(ChromeSigninClientFactory::GetInstance());
-  DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
   DependsOn(SigninErrorControllerFactory::GetInstance());
 }
 
@@ -51,7 +49,6 @@ KeyedService* AboutSigninInternalsFactory::BuildServiceInstanceFor(
       AccountTrackerServiceFactory::GetForProfile(profile),
       IdentityManagerFactory::GetForProfile(profile),
       SigninErrorControllerFactory::GetForProfile(profile),
-      GaiaCookieManagerServiceFactory::GetForProfile(profile),
       AccountConsistencyModeManager::GetMethodForProfile(profile));
   service->Initialize(ChromeSigninClientFactory::GetForProfile(profile));
   return service;
