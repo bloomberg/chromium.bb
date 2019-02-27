@@ -2,18 +2,49 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('policy', function() {
-  /**
-   * A hack to check if we are displaying the mobile version of this page by
-   * checking if the first column is hidden.
-   * @return {boolean} True if this is the mobile version.
-   */
-  const isMobilePage = function() {
-    return document.defaultView
-               .getComputedStyle(document.querySelector('.scope-column'))
-               .display == 'none';
-  };
+cr.exportPath('policy');
 
+/**
+ * @typedef {{
+ *    [id: string]: {
+ *      name: string,
+ *      policyNames: !Array<string>,
+ * }}
+ */
+policy.PolicyNamesResponse;
+
+/**
+ * @typedef {!Array<{
+ *  name: string,
+ *  id: ?String,
+ *  policies: {[name: string]: policy.Policy}
+ * }>}
+ */
+policy.PolicyValuesResponse;
+
+/**
+ * @typedef {{
+ *    name: string,
+ *    level: string,
+ *    link: ?string,
+ *    scope: string,
+ *    source: string,
+ *    error: string,
+ *    value: any,
+ * }}
+ */
+policy.Policy;
+
+/**
+ * @typedef {{
+ *     id: ?string,
+ *     name: string,
+ *     policies: !Array<!Policy>
+ * }}
+ */
+policy.PolicyTableModel;
+
+cr.define('policy', function() {
   /**
    * A box that shows the status of cloud policy for a device, machine or user.
    * @constructor
@@ -113,7 +144,7 @@ cr.define('policy', function() {
   /**
    * A single policy's entry in the policy table.
    * @constructor
-   * @extends {HTMLTableSectionElement}
+   * @extends {HTMLDivElement}
    */
   const Policy = cr.ui.define(function() {
     const node = $('policy-template').cloneNode(true);
@@ -123,156 +154,81 @@ cr.define('policy', function() {
 
   Policy.prototype = {
     // Set up the prototype chain.
-    __proto__: HTMLTableSectionElement.prototype,
+    __proto__: HTMLDivElement.prototype,
 
     /**
      * Initialization function for the cr.ui framework.
      */
     decorate: function() {
-      const links = this.querySelectorAll('.overflow-link');
-      for (let i = 0; i < links.length; i++) {
-        this.setExpandedText_(links[i], true);
-      }
-      this.querySelector('.toggle-expanded-value')
-          .addEventListener('click', this.toggleExpanded_);
-      this.querySelector('.toggle-expanded-status')
-          .addEventListener('click', this.toggleExpanded_);
+      const policyRowDisplay = this.querySelector('.policy.row');
+      policyRowDisplay.addEventListener('click', this.toggleExpanded_);
     },
 
-    /**
-     * Populate the table columns with information about the policy name, value
-     * and status.
-     * @param {string} name The policy name.
-     * @param {Object} value Dictionary with information about the policy value.
-     * @param {boolean} unknown Whether the policy name is not recognized.
-     */
-    initialize: function(name, value, unknown) {
-      this.name = name;
-      this.unset = !value;
+    /** @param {Policy} policy */
+    initialize(policy) {
+      /** @type {Policy} */
+      this.policy = policy;
+
+      /** @private {boolean} */
+      this.unset_ = policy.value === undefined;
+
+      /** @private {boolean} */
+      this.hasMessages_ = !!policy.error;
 
       // Populate the name column.
-      this.querySelector('.name-link').textContent = name;
-      this.querySelector('.name-link').href =
-          'https://chromium.org/administrators/policy-list-3#' + name;
-      this.querySelector('.name-link').title =
-          loadTimeData.getStringF('policyLearnMore', name);
-
-      if (unknown) {
+      const nameDisplay = this.querySelector('.name-link');
+      nameDisplay.textContent = policy.name;
+      if (policy.link) {
+        nameDisplay.href = policy.link;
+        nameDisplay.title =
+            loadTimeData.getStringF('policyLearnMore', policy.name);
+      } else {
         this.classList.add('no-help-link');
       }
 
       // Populate the remaining columns with policy scope, level and value if a
       // value has been set. Otherwise, leave them blank.
-      if (value) {
-        this.querySelector('.scope').textContent = loadTimeData.getString(
-            value.scope == 'user' ? 'scopeUser' : 'scopeDevice');
-        this.querySelector('.level').textContent = loadTimeData.getString(
-            value.level == 'recommended' ? 'levelRecommended' :
-                                           'levelMandatory');
-        this.querySelector('.source').textContent =
-            loadTimeData.getString(value.source);
-        this.querySelector('.value').textContent = value.value;
-        this.querySelector('.expanded-value-container .expanded-text')
-            .textContent = value.value;
-      }
+      if (!this.unset_) {
+        const scopeDisplay = this.querySelector('.scope');
+        scopeDisplay.textContent = loadTimeData.getString(
+            policy.scope == 'user' ? 'scopeUser' : 'scopeDevice');
 
-      // Populate the status column.
-      let status;
-      if (!value) {
-        // If the policy value has not been set, show an error message.
-        status = loadTimeData.getString('unset');
-      } else if (unknown) {
-        // If the policy name is not recognized, show an error message.
-        status = loadTimeData.getString('unknown');
-      } else if (value.error) {
-        // If an error occurred while parsing the policy value, show the error
-        // message.
-        status = value.error;
-      } else {
-        // Otherwise, indicate that the policy value was parsed correctly.
-        status = loadTimeData.getString('ok');
-      }
-      this.querySelector('.status').textContent = status;
-      this.querySelector('.expanded-status-container .expanded-text')
-          .textContent = status;
-      if (isMobilePage()) {
-        // The number of columns which are hidden by the css file for the mobile
-        // (Android) version of this page.
-        /** @const */ const HIDDEN_COLUMNS_IN_MOBILE_VERSION = 2;
-        const expandedCells = this.querySelector('.expanded-text');
-        for (const cell in expandedCells) {
-          cell.setAttribute(
-              'colspan', cell.colSpan - HIDDEN_COLUMNS_IN_MOBILE_VERSION);
-        }
-      }
-    },
+        const levelDisplay = this.querySelector('.level');
+        levelDisplay.textContent = loadTimeData.getString(
+            policy.level == 'recommended' ? 'levelRecommended' :
+                                            'levelMandatory');
 
-    /*
-     * Get width of a DOM element inside a container.
-     * @param {Object} container Container for the element.
-     * @param {string} elemClass Class of the element containing text.
-     * @private
-     */
-    getElementWidth_: function(container, elemClass) {
-      return container.querySelector(elemClass).offsetWidth;
-    },
+        const sourceDisplay = this.querySelector('.source');
+        sourceDisplay.textContent = loadTimeData.getString(policy.source);
+        // Reduces load on the DOM for long values;
+        const truncatedValue =
+            (policy.value && policy.value.toString().length > 256) ?
+            `${policy.value.toString().substr(0, 256)}\u2026` :
+            policy.value;
 
-    /*
-     * Update the value width for a container if necessary.
-     * @param {Object} container Container for the DOM element.
-     * @param {string} elemClass Class of the element containing text.
-     * @private
-     */
-    updateContainerWidth_: function(container, elemClass) {
-      if (container.valueWidth == undefined) {
-        container.valueWidth = this.getElementWidth_(container, elemClass);
-      }
-    },
+        const valueDisplay = this.querySelector('.value');
+        valueDisplay.textContent = truncatedValue;
 
-    /**
-     * Check the table columns for overflow. Most columns are automatically
-     * elided when overflow occurs. The only action required is to add a
-     * tooltip that shows the complete content. The value and status columns
-     * are exceptions. If overflow occurs here, the contents are replaced links
-     * that toggle the visibility of additional rows containing the complete
-     * value and/or status texts.
-     */
-    checkOverflow: function() {
-      // Set a tooltip on all overflowed columns except the columns value and
-      // status.
-      const divs = this.querySelectorAll('div.elide');
-      for (let i = 0; i < divs.length; i++) {
-        const div = divs[i];
-        div.title = div.offsetWidth < div.scrollWidth ? div.textContent : '';
-      }
-      const collapsibleCells = this.querySelectorAll('.collapsible-cell');
-      for (let i = 0; i < collapsibleCells.length; i++) {
-        const cell = collapsibleCells[i];
-        // Cache the width of the column's contents when it is first shown.
-        // This is required to be able to check whether the contents would still
-        // overflow the column once it has been hidden and replaced by a link.
-        this.updateContainerWidth_(cell, '.cell-text');
-        // Determine whether the contents of the column overflows.
-        if (cell.offsetWidth <= cell.valueWidth) {
-          cell.querySelector('.cell-text').hidden = true;
-          cell.querySelector('.overflow-link').hidden = false;
-        } else {
-          cell.querySelector('.cell-text').hidden = false;
-          cell.querySelector('.overflow-link').hidden = true;
-          this.querySelector(cell.dataset.expandableRow).hidden = true;
-          this.setExpandedText_(cell.querySelector('.overflow-link'), true);
-        }
-      }
-    },
+        const messagesDisplay = this.querySelector('.messages');
+        messagesDisplay.textContent =
+            this.hasMessages_ ? loadTimeData.getString('messages') : '';
+        messagesDisplay.hidden = !this.hasMessages_;
 
-    /**
-     * Sets the text for a toggle link with hide/show modes.
-     * @param {Object} link The DOM element to set the text for.
-     * @param {bool} show Indicates if the link is in show of hide mode.
-     */
-    setExpandedText_: function(link, show) {
-      link.textContent =
-          loadTimeData.getString(show ? link.dataset.show : link.dataset.hide);
+        const valueRowContentDisplay = this.querySelector('.value.row .value');
+        valueRowContentDisplay.textContent = policy.value;
+
+        const messageRowContentDisplay =
+            this.querySelector('.messages.row .value');
+        messageRowContentDisplay.textContent = policy.error;
+
+        // <if expr="android">
+        const valueRowDisplay = this.querySelector('.value.row');
+        valueRowDisplay.hidden = false;
+        valueDisplay.hidden = true;
+        levelDisplay.hidden = true;
+        scopeDisplay.hidden = true;
+        // </if>
+      }
     },
 
     /**
@@ -280,24 +236,33 @@ cr.define('policy', function() {
      * @private
      */
     toggleExpanded_: function() {
-      const cell = this.parentElement;
-      // get the expandable row corresponding to this collapsed cell
-      row = cell.closest('tbody').querySelector(cell.dataset.expandableRow);
-      row.hidden = !row.hidden;
-      this.setExpandedText_(this, !row.hidden);
+      // <if expr="not android">
+      const row = this.parentElement;
+      const messageRowDisplay = row.querySelector('.messages.row');
+      const valueRowDisplay = row.querySelector('.value.row');
+      valueRowDisplay.hidden = !valueRowDisplay.hidden;
+      if (row.hasMessages) {
+        messageRowDisplay.hidden = !messageRowDisplay.hidden;
+      }
+      // </if>
     },
   };
 
   /**
    * A table of policies and their values.
    * @constructor
-   * @extends {HTMLTableElement}
+   * @extends {HTMLDivElement}
    */
-  const PolicyTable = cr.ui.define('tbody');
+  const PolicyTable = cr.ui.define(function() {
+    const node = $('policy-table-template').cloneNode(true);
+    node.removeAttribute('id');
+    return node;
+  });
+
 
   PolicyTable.prototype = {
     // Set up the prototype chain.
-    __proto__: HTMLTableElement.prototype,
+    __proto__: HTMLDivElement.prototype,
 
     /**
      * Initialization function for the cr.ui framework.
@@ -305,54 +270,39 @@ cr.define('policy', function() {
     decorate: function() {
       this.policies_ = {};
       this.filterPattern_ = '';
-      window.addEventListener('resize', this.checkOverflow_.bind(this));
     },
 
-    /**
-     * Initialize the list of all known policies.
-     * @param {Object} names Dictionary containing all known policy names.
-     */
-    setPolicyNames: function(names) {
-      this.policies_ = names;
-      this.setPolicyValues({});
-    },
+    /** @param {PolicyTableModel} dataModel */
+    update(dataModel) {
+      // Clear policies
+      const mainContent = this.querySelector('.main');
+      const policies = this.querySelectorAll('.policies-data');
+      this.querySelector('.header').textContent = dataModel.name;
+      this.querySelector('.id').textContent = dataModel.id;
+      this.querySelector('.id').hidden = !dataModel.id;
+      policies.forEach(row => mainContent.removeChild(row));
 
-    /**
-     * Populate the table with the currently set policy values and any errors
-     * detected while parsing these.
-     * @param {Object} values Dictionary containing the current policy values.
-     */
-    setPolicyValues: function(values) {
-      // Remove all policies from the table.
-      const policies = this.getElementsByTagName('tbody');
-      while (policies.length > 0) {
-        this.removeChild(policies.item(0));
-      }
+      dataModel.policies
+          .sort((a, b) => {
+            if ((a.value !== undefined && b.value !== undefined) ||
+                a.value === b.value) {
+              if (a.link !== undefined && b.link !== undefined) {
+                // Sorting the policies in ascending alpha order.
+                return a.name > b.name ? 1 : -1;
+              }
 
-      // First, add known policies whose value is currently set.
-      const unset = [];
-      for (const name in this.policies_) {
-        if (name in values) {
-          this.setPolicyValue_(name, values[name], false);
-        } else {
-          unset.push(name);
-        }
-      }
+              // Sorting so unknown policies are last.
+              return a.link !== undefined ? -1 : 1;
+            }
 
-      // Second, add policies whose value is currently set but whose name is not
-      // recognized.
-      for (const name in values) {
-        if (!(name in this.policies_)) {
-          this.setPolicyValue_(name, values[name], true);
-        }
-      }
-
-      // Finally, add known policies whose value is not currently set.
-      for (let i = 0; i < unset.length; i++) {
-        this.setPolicyValue_(unset[i], undefined, false);
-      }
-
-      // Filter the policies.
+            // Sorting so unset values are last.
+            return a.value !== undefined ? -1 : 1;
+          })
+          .forEach(policy => {
+            const policyRow = new Policy;
+            policyRow.initialize(policy);
+            mainContent.appendChild(policyRow);
+          });
       this.filter();
     },
 
@@ -374,125 +324,27 @@ cr.define('policy', function() {
      */
     filter: function() {
       const showUnset = $('show-unset').checked;
-      const policies = this.getElementsByTagName('tbody');
+      const policies = this.querySelectorAll('.policy-data');
       for (let i = 0; i < policies.length; i++) {
-        const policy = policies[i];
-        policy.hidden = policy.unset && !showUnset ||
-            policy.name.toLowerCase().indexOf(this.filterPattern_) == -1;
+        const policyDisplay = policies[i];
+        policyDisplay.hidden =
+            policyDisplay.policy.value === undefined && !showUnset ||
+            policyDisplay.policy.name.toLowerCase().indexOf(
+                this.filterPattern_) === -1;
       }
-      if (this.querySelector('tbody:not([hidden])')) {
-        this.parentElement.classList.remove('empty');
-      } else {
-        this.parentElement.classList.add('empty');
-      }
-      setTimeout(this.checkOverflow_.bind(this), 0);
-    },
-
-    /**
-     * Check the table columns for overflow.
-     * @private
-     */
-    checkOverflow_: function() {
-      const policies = this.getElementsByTagName('tbody');
-      for (let i = 0; i < policies.length; i++) {
-        if (!policies[i].hidden) {
-          policies[i].checkOverflow();
-        }
-      }
-    },
-
-    /**
-     * Add a policy with the given |name| and |value| to the table.
-     * @param {string} name The policy name.
-     * @param {Object} value Dictionary with information about the policy value.
-     * @param {boolean} unknown Whether the policy name is not recoginzed.
-     * @private
-     */
-    setPolicyValue_: function(name, value, unknown) {
-      const policy = new Policy;
-      policy.initialize(name, value, unknown);
-      this.appendChild(policy);
+      this.querySelector('.no-policy').hidden =
+          !!this.querySelector('.policy-data:not([hidden])');
     },
   };
 
   /**
-   * A singelton object that handles communication between browser and WebUI.
+   * A singleton object that handles communication between browser and WebUI.
    * @constructor
    */
   function Page() {}
 
   // Make Page a singleton.
   cr.addSingletonGetter(Page);
-
-  /**
-   * Provide a list of all known policies to the UI. Called by the browser on
-   * page load.
-   * @param {Object} names Dictionary containing all known policy names.
-   */
-  Page.setPolicyNames = function(names) {
-    const page = this.getInstance();
-
-    // Clear all policy tables.
-    page.mainSection.innerHTML = '';
-    page.policyTables = {};
-
-    let table;
-    // Create tables and set known policy names for Chrome and extensions.
-    if (names.hasOwnProperty('chromePolicyNames')) {
-      table = page.appendNewTable('chrome', 'Chrome policies', '');
-      table.setPolicyNames(names.chromePolicyNames);
-    }
-
-    if (names.hasOwnProperty('extensionPolicyNames')) {
-      for (const ext in names.extensionPolicyNames) {
-        table = page.appendNewTable(
-            'extension-' + ext, names.extensionPolicyNames[ext].name,
-            'ID: ' + ext);
-        table.setPolicyNames(names.extensionPolicyNames[ext].policyNames);
-      }
-    }
-  };
-
-  /**
-   * Provide a list of the currently set policy values and any errors detected
-   * while parsing these to the UI. Called by the browser on page load and
-   * whenever policy values change.
-   * @param {Object} values Dictionary containing the current policy values.
-   */
-  Page.setPolicyValues = function(values) {
-    const page = this.getInstance();
-    let table;
-    if (values.hasOwnProperty('chromePolicies')) {
-      table = page.policyTables['chrome'];
-      table.setPolicyValues(values.chromePolicies);
-    }
-
-    if (values.hasOwnProperty('extensionPolicies')) {
-      for (const extensionId in values.extensionPolicies) {
-        table = page.policyTables['extension-' + extensionId];
-        if (table) {
-          table.setPolicyValues(values.extensionPolicies[extensionId]);
-        }
-      }
-    }
-  };
-
-  /**
-   * Provide the current cloud policy status to the UI. Called by the browser on
-   * page load if cloud policy is present and whenever the status changes.
-   * @param {Object} status Dictionary containing the current policy status.
-   */
-  Page.setStatus = function(status) {
-    this.getInstance().setStatus(status);
-  };
-
-  /**
-   * Notify the UI that a request to reload policy values has completed. Called
-   * by the browser after a request to reload policy has been sent by the UI.
-   */
-  Page.reloadPoliciesDone = function() {
-    this.getInstance().reloadPoliciesDone();
-  };
 
   Page.prototype = {
     /**
@@ -502,6 +354,8 @@ cr.define('policy', function() {
       cr.ui.FocusOutlineManager.forDocument(document);
 
       this.mainSection = $('main-section');
+
+      /** @type {{[id: string]: PolicyTable}} */
       this.policyTables = {};
 
       // Place the initial focus on the filter input field.
@@ -528,90 +382,54 @@ cr.define('policy', function() {
         }
       };
 
-      // Notify the browser that the page has loaded, causing it to send the
-      // list of all known policies, the current policy values and the cloud
-      // policy status.
-      chrome.send('initialized');
+      chrome.send('listenPoliciesUpdates');
+      cr.addWebUIListener('status-updated', status => this.setStatus(status));
+      cr.addWebUIListener(
+          'policies-updated',
+          (names, values) => this.onPoliciesReceived_(names, values));
     },
 
     /**
-     * Creates a new policy table section, adds the section to the page,
-     * and returns the new table from that section.
-     * @param {string} id The key for storing the new table in policyTables.
-     * @param {string} label_title Title for this policy table.
-     * @param {string} label_content Description for the policy table.
-     * @return {Element} The newly created table.
+     * @param {PolicyNamesResponse} policyNames
+     * @param {PolicyValuesResponse} policyValues
+     * @private
      */
-    appendNewTable: function(id, label_title, label_content) {
-      const newSection =
-          this.createPolicyTableSection(id, label_title, label_content);
-      if (id != 'chrome') {
-        newSection.classList.add('no-help-link');
-      }
-      this.mainSection.appendChild(newSection);
-      return this.policyTables[id];
+    onPoliciesReceived_(policyNames, policyValues) {
+      /** @type {Array<!PolicyTableModel>} */ const policyGroups =
+          policyValues.map(value => {
+            const knownPolicyNames =
+                (policyNames[value.id] || policyNames.chrome).policyNames;
+            const knownPolicyNamesSet = new Set(knownPolicyNames);
+            const receivedPolicyNames = Object.keys(value.policies);
+            const allPolicyNames = Array.from(
+                new Set([...knownPolicyNames, ...receivedPolicyNames]));
+            const policies = allPolicyNames.map(
+                name => Object.assign(
+                    {
+                      name,
+                      link: knownPolicyNamesSet.has(name) ?
+                          `https://chromium.org/administrators/policy-list-3#${
+                              name}` :
+                          undefined,
+                    },
+                    value.policies[name]));
+
+            return {name: value.name, id: value.id, policies};
+          });
+
+      policyGroups.forEach(group => this.createOrUpdatePolicyTable(group));
+
+      this.reloadPoliciesDone();
     },
 
-    /**
-     * Creates a new section containing a title, description and table of
-     * policies.
-     * @param {id} id The key for storing the new table in policyTables.
-     * @param {string} label_title Title for this policy table.
-     * @param {string} label_content Description for the policy table.
-     * @return {Element} The newly created section.
-     */
-    createPolicyTableSection: function(id, label_title, label_content) {
-      const section = document.createElement('section');
-      section.setAttribute('class', 'policy-table-section');
-
-      // Add title and description.
-      const title = window.document.createElement('h3');
-      title.textContent = label_title;
-      section.appendChild(title);
-
-      if (label_content) {
-        const description = window.document.createElement('div');
-        description.classList.add('table-description');
-        description.textContent = label_content;
-        section.appendChild(description);
+    /** @param {PolicyTableModel} dataModel */
+    createOrUpdatePolicyTable(dataModel) {
+      const id = `${dataModel.name}-${dataModel.id}`;
+      if (!this.policyTables[id]) {
+        this.policyTables[id] = new PolicyTable;
+        this.mainSection.appendChild(this.policyTables[id]);
       }
-
-      // Add 'No Policies Set' element.
-      const noPolicies = window.document.createElement('div');
-      noPolicies.classList.add('no-policies-set');
-      noPolicies.textContent = loadTimeData.getString('noPoliciesSet');
-      section.appendChild(noPolicies);
-
-      // Add table of policies.
-      const newTable = this.createPolicyTable();
-      this.policyTables[id] = newTable;
-      section.appendChild(newTable);
-
-      return section;
-    },
-
-    tableHeadings: ['Scope', 'Level', 'Source', 'Name', 'Value', 'Status'],
-
-    /**
-     * Creates a new table for displaying policies.
-     * @return {Element} The newly created table.
-     */
-    createPolicyTable: function() {
-      const newTable = window.document.createElement('table');
-      const tableHead = window.document.createElement('thead');
-      const tableRow = window.document.createElement('tr');
-      for (let i = 0; i < this.tableHeadings.length; i++) {
-        const tableHeader = window.document.createElement('th');
-        tableHeader.classList.add(
-            this.tableHeadings[i].toLowerCase() + '-column');
-        tableHeader.textContent =
-            loadTimeData.getString('header' + this.tableHeadings[i]);
-        tableRow.appendChild(tableHeader);
-      }
-      tableHead.appendChild(tableRow);
-      newTable.appendChild(tableHead);
-      cr.ui.decorate(newTable, PolicyTable);
-      return newTable;
+      this.policyTables[id].update(dataModel);
     },
 
     /**

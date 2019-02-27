@@ -329,7 +329,18 @@ void GetDeviceLocalAccountPolicies(bool convert_values,
         map, &errors, true, convert_values,
         GetKnownPolicies(schema_map, policy_namespace, is_pretty_print),
         &current_account_policies, is_pretty_print);
-    values->SetKey(user_id, std::move(current_account_policies));
+
+    if (values->is_list()) {
+      Value current_account_policies_data(Value::Type::DICTIONARY);
+      current_account_policies_data.SetKey("id", Value(user_id));
+      current_account_policies_data.SetKey("user_id", Value(user_id));
+      current_account_policies_data.SetKey("name", Value(user_id));
+      current_account_policies_data.SetKey("policies",
+                                           std::move(current_account_policies));
+      values->GetList().push_back(std::move(current_account_policies_data));
+    } else {
+      values->SetKey(user_id, std::move(current_account_policies));
+    }
   }
 }
 #endif  // defined(OS_CHROMEOS)
@@ -344,6 +355,77 @@ const PolicyStringMap kPolicySources[policy::POLICY_SOURCE_COUNT] = {
     {"sourcePlatform", IDS_POLICY_SOURCE_PLATFORM},
     {"sourcePriorityCloud", IDS_POLICY_SOURCE_CLOUD},
 };
+
+Value GetAllPolicyValuesAsArray(content::BrowserContext* context,
+                                bool with_user_policies,
+                                bool convert_values,
+                                bool with_device_data,
+                                bool is_pretty_print) {
+  Value all_policies(Value::Type::LIST);
+  DCHECK(context);
+
+  context = chrome::GetBrowserContextRedirectedInIncognito(context);
+
+  // Add Chrome policy values.
+  Value chrome_policies(Value::Type::DICTIONARY);
+  GetChromePolicyValues(context, with_user_policies, convert_values,
+                        &chrome_policies, is_pretty_print);
+  Value chrome_policies_data(Value::Type::DICTIONARY);
+  chrome_policies_data.SetKey("name", Value("Chrome Policies"));
+  chrome_policies_data.SetKey("policies", std::move(chrome_policies));
+
+  all_policies.GetList().push_back(std::move(chrome_policies_data));
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Add extension policy values.
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(Profile::FromBrowserContext(context));
+  if (!registry) {
+    LOG(ERROR) << "Can not dump extension policies, no extension registry";
+    return all_policies;
+  }
+  auto* schema_registry_service_factory =
+      SchemaRegistryServiceFactory::GetForContext(context);
+  if (!schema_registry_service_factory ||
+      !schema_registry_service_factory->registry()) {
+    LOG(ERROR) << "Can not dump extension policies, no schema registry service";
+    return all_policies;
+  }
+  const scoped_refptr<policy::SchemaMap> schema_map =
+      schema_registry_service_factory->registry()->schema_map();
+  for (const scoped_refptr<const extensions::Extension>& extension :
+       registry->enabled_extensions()) {
+    // Skip this extension if it's not an enterprise extension.
+    if (!extension->manifest()->HasPath(
+            extensions::manifest_keys::kStorageManagedSchema)) {
+      continue;
+    }
+
+    Value extension_policies(Value::Type::DICTIONARY);
+    policy::PolicyNamespace policy_namespace = policy::PolicyNamespace(
+        policy::POLICY_DOMAIN_EXTENSIONS, extension->id());
+    policy::PolicyErrorMap empty_error_map;
+    GetPolicyValues(
+        GetPolicyService(context)->GetPolicies(policy_namespace),
+        &empty_error_map, with_user_policies, convert_values,
+        GetKnownPolicies(schema_map, policy_namespace, is_pretty_print),
+        &extension_policies, is_pretty_print);
+    Value extension_policies_data(Value::Type::DICTIONARY);
+    extension_policies_data.SetKey("name", Value(extension->name()));
+    extension_policies_data.SetKey("id", Value(extension->id()));
+    extension_policies_data.SetKey("policies", std::move(extension_policies));
+    all_policies.GetList().push_back(std::move(extension_policies_data));
+  }
+#endif
+
+#if defined(OS_CHROMEOS)
+  Value device_local_account_policies(Value::Type::DICTIONARY);
+  GetDeviceLocalAccountPolicies(convert_values, &all_policies, with_device_data,
+                                is_pretty_print);
+#endif  // defined(OS_CHROMEOS)
+
+  return all_policies;
+}
 
 Value GetAllPolicyValuesAsDictionary(content::BrowserContext* context,
                                      bool with_user_policies,
