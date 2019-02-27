@@ -10,6 +10,8 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "crypto/random.h"
 #include "device/fido/hid/fido_hid_message.h"
@@ -421,6 +423,39 @@ std::string FidoHidDevice::GetId() const {
 
 FidoTransportProtocol FidoHidDevice::DeviceTransport() const {
   return FidoTransportProtocol::kUsbHumanInterfaceDevice;
+}
+
+// VidPidToString returns the device's vendor and product IDs as formatted by
+// the lsusb utility.
+static std::string VidPidToString(const mojom::HidDeviceInfoPtr& device_info) {
+  static_assert(sizeof(device_info->vendor_id) == 2,
+                "vendor_id must be uint16_t");
+  static_assert(sizeof(device_info->product_id) == 2,
+                "product_id must be uint16_t");
+  uint16_t vendor_id = ((device_info->vendor_id & 0xff) << 8) |
+                       ((device_info->vendor_id & 0xff00) >> 8);
+  uint16_t product_id = ((device_info->product_id & 0xff) << 8) |
+                        ((device_info->product_id & 0xff00) >> 8);
+  return base::ToLowerASCII(base::HexEncode(&vendor_id, 2) + ":" +
+                            base::HexEncode(&product_id, 2));
+}
+
+void FidoHidDevice::DiscoverSupportedProtocolAndDeviceInfo(
+    base::OnceClosure done) {
+  // The following devices cannot handle GetInfo messages.
+  static const base::flat_set<std::string> kForceU2fCompatibilitySet({
+      "10c4:8acf",  // U2F Zero
+      "20a0:4287",  // Nitrokey FIDO U2F
+  });
+
+  if (base::ContainsKey(kForceU2fCompatibilitySet,
+                        VidPidToString(device_info_))) {
+    supported_protocol_ = ProtocolVersion::kU2f;
+    DCHECK(SupportedProtocolIsInitialized());
+    std::move(done).Run();
+    return;
+  }
+  FidoDevice::DiscoverSupportedProtocolAndDeviceInfo(std::move(done));
 }
 
 // static
