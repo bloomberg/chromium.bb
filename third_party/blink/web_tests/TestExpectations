@@ -5895,11 +5895,11 @@ crbug.com/936108 virtual/streams-native/http/tests/streams/transferable/readable
 # Sheriff 2019-02-27
 crbug.com/936279 external/wpt/import-maps/fallback-disallowed.sub.tentative.html [ Failure Pass ]
 
-# Device Sensor Events are being restricted to secure browsing contexts, but the change is still gated on a runtime flag.
-crbug.com/932078 http/tests/security/powerfulFeatureRestrictions/device-orientation-future-behavior-on-insecure-origin.html [ Skip ]
-crbug.com/932078 virtual/secure-device-sensor-events/http/tests/security/powerfulFeatureRestrictions/device-orientation-on-insecure-origin.html [ Skip ]
-crbug.com/932078 virtual/feature-policy-for-sandbox/http/tests/security/powerfulFeatureRestrictions/device-orientation-future-behavior-on-insecure-origin.html [ Skip ]
-crbug.com/932078 virtual/outofblink-cors/http/tests/security/powerfulFeatureRestrictions/device-orientation-future-behavior-on-insecure-origin.html [ Skip ]
+# Device Sensor Events were restricted to secure browsing contexts in M74, with a flag available until M76 to undo the change in case of an emergency.
+crbug.com/932078 http/tests/security/powerfulFeatureRestrictions/device-orientation-on-insecure-origin.html [ Skip ]
+crbug.com/932078 virtual/insecure-device-sensor-events/http/tests/security/powerfulFeatureRestrictions/device-orientation-handler-not-fired-on-insecure-origin.html [ Skip ]
+crbug.com/932078 virtual/feature-policy-for-sandbox/http/tests/security/powerfulFeatureRestrictions/device-orientation-on-insecure-origin.html [ Skip ]
+crbug.com/932078 virtual/outofblink-cors/http/tests/security/powerfulFeatureRestrictions/device-orientation-on-insecure-origin.html [ Skip ]
 
 # Wasm threads enabled by default
 crbug.com/754910 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/wasm-threads-origin-trial-disabled.html [ Skip ]
