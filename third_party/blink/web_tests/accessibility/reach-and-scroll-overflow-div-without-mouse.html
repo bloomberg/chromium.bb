@@ -25,32 +25,35 @@
 
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 <script src="../fast/spatial-navigation/resources/snav-testharness.js"></script>
 <script>
-  test(function(t) {
+  test_after_layout_and_paint(function(t) {
       assert_true(internals.runtimeFlags.keyboardFocusableScrollersEnabled);
   }, "Make sure KeyboardFocusableScrollers is set.");
 
   let scroller = document.getElementById('scroller')
-  test(() => {
+  test_after_layout_and_paint(() => {
     assert_equals(scroller.scrollTop, 0);
   }, "Scroller starts at its top.");
 
-  test(() => {
+  test_after_layout_and_paint(() => {
     assert_equals(scroller.tabIndex, 0);
   }, "tabIndex reflects reality (the scroller can be focused).");
 
-  async_test(t => {
-    scroller.addEventListener("scroll", t.step_func_done(function() {
-      assert_greater_than(scroller.scrollTop, 0);
-    }));
-  }, "Down-key scrolled the focused div.");  // assertFocusMoves triggers a scroll.
+  runAfterLayoutAndPaint(() => {
+    async_test(t => {
+      scroller.addEventListener("scroll", t.step_func_done(function() {
+        assert_greater_than(scroller.scrollTop, 0);
+      }));
+    }, "Down-key scrolled the focused div.");  // assertFocusMoves triggers a scroll.
 
-  document.getElementById("b1").focus();  // Start outside the scroller.
-  snav.assertFocusMoves([
-    ["Forward", "scroller"],   // Focus the scroller using sequential navigation (forward).
-    ["Forward", "b2"],         // Blur the scroller using sequential navigation.
-    ["Backward", "scroller"],  // Focus the scroller using sequential navigation (backward).
-    ["Down", "scroller"],      // Verify arrow-key-scrolling.
-  ], false);
+    document.getElementById("b1").focus();  // Start outside the scroller.
+    snav.assertFocusMoves([
+      ["Forward", "scroller"],   // Focus the scroller using sequential navigation (forward).
+      ["Forward", "b2"],         // Blur the scroller using sequential navigation.
+      ["Backward", "scroller"],  // Focus the scroller using sequential navigation (backward).
+      ["Down", "scroller"],      // Verify arrow-key-scrolling.
+    ], false);
+  });
 </script>

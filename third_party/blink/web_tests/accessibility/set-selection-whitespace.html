@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div id="main" role="main">
 
@@ -13,7 +14,7 @@
 </div>
 
 <script>
-    test(function()
+    test_after_layout_and_paint(function()
     {
         var axEditable1 = accessibilityController.accessibleElementById("editable1");
         var axTextNode1 = axEditable1.childAtIndex(0);
@@ -32,7 +33,7 @@
         assert_equals(range.endOffset, 6);
     }, "Using accessible APIs to set selection works when there's no extra whitespace.");
 
-    test(function()
+    test_after_layout_and_paint(function()
     {
         var axEditable2 = accessibilityController.accessibleElementById("editable2");
         var axTextNode2 = axEditable2.childAtIndex(0);
@@ -53,7 +54,7 @@
 </script>
 
 <script>
-    test(function()
+    test_after_layout_and_paint(function()
     {
         var axHeading = accessibilityController.accessibleElementById("heading");
         axHeading.setSelectedTextRange(0, 1);  // Should select the whole element.
@@ -69,9 +70,4 @@
         assert_equals(range.endContainer, textNode);
         assert_equals(range.endOffset, 8);
     }, "Use accessible APIs to set selection on element rather than static text node.");
-</script>
-
-<script>
-    if (window.testRunner)
-        document.getElementById("main").style.display = "none";;
 </script>

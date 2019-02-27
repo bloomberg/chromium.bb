@@ -1,7 +1,9 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
 <head>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 </head>
 <body id="body">
 
@@ -23,30 +25,25 @@
 
 <script>
 
-    description("This tests that if aria-hidden changes on an element, all it's existing children will update their children caches");
+function axElementById(id) {
+    return accessibilityController.accessibleElementById(id);
+}
 
-    function axElementById(id) {
-        return accessibilityController.accessibleElementById(id);
-    }
+test_after_layout_and_paint((t) => {
+    var main = axElementById("main");
+    assert_equals(main.childrenCount, 1);
 
-    if (window.accessibilityController) {
-          var main = axElementById("main");
+    var group = document.getElementsByTagName('main')[0];
+    var items = group.getElementsByTagName('div');
+    items[0].removeAttribute('aria-hidden');
 
-          // Access the element so the children cache is generated.
-          main.childAtIndex(0);
-          main.childAtIndex(1);
-          shouldBe("main.childrenCount", "1");
+    assert_equals(main.childrenCount, 2,
+                  "After removing aria-hidden, the new count should be 2.");
 
-          var group = document.getElementsByTagName('main')[0];
-          var items = group.getElementsByTagName('div');
-          items[0].removeAttribute('aria-hidden');
-
-          // After removing aria-hidden, the new count should be 2.
-          shouldBe("main.childrenCount", "2");
-
-          // And most importantly, the DIV that was made non-hidden should have one child now.
-          shouldBe("main.childAtIndex(1).childrenCount", "1");
-    }
+    // And most importantly...
+    assert_equals(main.childAtIndex(1).childrenCount, 1,
+                      "The DIV that was made non-hidden should have one child now.");
+}, "This tests that if aria-hidden changes on an element, all it's existing children will update their children caches");
 
 </script>
 

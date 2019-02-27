@@ -1,7 +1,9 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
 <head>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 </head>
 <body id="body">
 
@@ -16,17 +18,15 @@
 
 <script>
 
-    description("This tests that table caption element is exposed for accessibility.");
-
-    if (window.accessibilityController) {
-        var table = accessibilityController.accessibleElementById("table");
-        shouldBe("table.childrenCount", "2");
-        window.captionText = table.childAtIndex(0).childAtIndex(0).name;
-        shouldBe("captionText", "'TableCaption'");
-        // Clear the HTML for cleaner results.
-        document.getElementById("content").innerHTML = "";
-    }
-
+test_after_layout_and_paint((t) => {
+  var table = accessibilityController.accessibleElementById("table");
+    assert_equals(table.childrenCount, 2);
+    window.captionText = table.childAtIndex(0).childAtIndex(0).name;
+    assert_equals(captionText, 'TableCaption');
+    // Clear the HTML for cleaner results.
+    document.getElementById("content").innerHTML = "";
+}
+,"This tests that table caption element is exposed for accessibility.");
 
 </script>
 

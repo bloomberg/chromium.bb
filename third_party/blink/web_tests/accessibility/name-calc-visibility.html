@@ -1,12 +1,7 @@
 <!DOCTYPE HTML>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div id="link1" class="container" tabIndex=0 role="link">
     <p>1</p>
@@ -21,7 +16,7 @@
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axLink1 = accessibilityController.accessibleElementById("link1");
     assert_equals(axLink1.name, "1 2 7");
 }, "Visibility: 'hidden' and display: 'none' inside ARIA link");
@@ -44,7 +39,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axInput2 = accessibilityController.accessibleElementById("input2");
     assert_equals(axInput2.name, "1 2 7");
 }, "Visibility: 'hidden' and display: 'none' inside aria-labelledby label subtree");
@@ -65,7 +60,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axInput3 = accessibilityController.accessibleElementById("input3");
     assert_equals(axInput3.name, "1 2 3 4 6 7");
 }, "Visibility: 'hidden' and display: 'none' referenced directly by aria-labelledby");
@@ -90,13 +85,8 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axInput4 = accessibilityController.accessibleElementById("input4");
     assert_equals(axInput4.name, " 1 2 7 ");
 }, "Visibility: 'hidden' and display: 'none' inside aria-labelledby label subtree, where entire label subtree is display: 'none'");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

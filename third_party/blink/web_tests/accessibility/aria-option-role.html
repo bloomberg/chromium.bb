@@ -1,7 +1,9 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
 <head>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 </head>
 <body id="body">
 
@@ -10,32 +12,25 @@
 <div role="option" aria-label="label 2">option 2</div>
 </div>
 
-<p id="description"></p>
-<div id="console"></div>
-
 <script>
+test_after_layout_and_paint((t) => {
+    var body = document.getElementById("body");
+    body.focus();
 
-    description("This tests that the aria 'option' role works as expected. That is, it becomes a static text element with no children.");
+    var listBox = accessibilityController.focusedElement.childAtIndex(0);
+    var firstChild = listBox.childAtIndex(0);
+    var secondChild = listBox.childAtIndex(1);
+    assert_equals(firstChild.role, "AXRole: AXListBoxOption");
+    assert_equals(firstChild.name, "option 1");
 
-    if (window.accessibilityController) {
+    assert_equals(secondChild.role, "AXRole: AXListBoxOption");
+    assert_equals(secondChild.name, "label 2");
 
-          var body = document.getElementById("body");
-          body.focus();
+    assert_equals(firstChild.childrenCount, 0);
+    assert_equals(secondChild.childrenCount, 0);
 
-          var listBox = accessibilityController.focusedElement.childAtIndex(0);
-          var firstChild = listBox.childAtIndex(0);
-          var secondChild = listBox.childAtIndex(1);
-          debug("firstChild.role is " + firstChild.role);
-          shouldBe("firstChild.name", "'option 1'");
-
-          debug("secondChild.role is " + secondChild.role);
-          shouldBe("secondChild.name", "'label 2'");
-
-          shouldBe("firstChild.childrenCount", "0");
-          shouldBe("secondChild.childrenCount", "0");
-
-          shouldBe("firstChild.isFocusable", "true");
-    }
+    assert_equals(firstChild.isFocusable, true);
+}, "This tests that the aria 'option' role works as expected. That is, it becomes a static text element with no children.");
 
 </script>
 

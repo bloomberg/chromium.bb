@@ -1,21 +1,22 @@
 <!DOCTYPE HTML>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div id="wrapper1">
     <button id="button1">Button</button>
 </div>
 
 <script>
-async_test(function(t)
+async_test_after_layout_and_paint(function(t)
 {
     var axButton = accessibilityController.accessibleElementById("button1");
-    axButton.addNotificationListener(function(notification) {
+    axButton.addNotificationListener(t.step_func(function(notification) {
+        t.done();
         if (notification == 'Clicked') {
-            document.getElementById("wrapper1").style.display = "none";
             t.done();
         }
-    });
+    }));
 
     var button = document.getElementById("button1");
     button.click();
@@ -27,15 +28,14 @@ async_test(function(t)
 </div>
 
 <script>
-async_test(function(t)
+async_test_after_layout_and_paint(function(t)
 {
     var axButton = accessibilityController.accessibleElementById("button2");
-    axButton.addNotificationListener(function(notification) {
+    axButton.addNotificationListener(t.step_func(function(notification) {
         if (notification == 'Clicked') {
-            document.getElementById("wrapper2").style.display = "none";
             t.done();
         }
-    });
+    }));
 
     eventSender.mouseMoveTo(axButton.x + 10, axButton.y + 10);
     eventSender.mouseDown();
@@ -48,15 +48,14 @@ async_test(function(t)
 </div>
 
 <script>
-async_test(function(t)
+async_test_after_layout_and_paint(function(t)
 {
     var axButton = accessibilityController.accessibleElementById("button3");
-    axButton.addNotificationListener(function(notification) {
+    axButton.addNotificationListener(t.step_func(function(notification) {
         if (notification == 'Clicked') {
-            document.getElementById("wrapper3").style.display = "none";
             t.done();
         }
-    });
+    }));
 
     var button = document.getElementById("button3");
     button.focus();
@@ -69,15 +68,14 @@ async_test(function(t)
 </div>
 
 <script>
-async_test(function(t)
+async_test_after_layout_and_paint(function(t)
 {
     var axButton = accessibilityController.accessibleElementById("button4");
-    axButton.addNotificationListener(function(notification) {
+    axButton.addNotificationListener(t.step_func(function(notification) {
         if (notification == 'Clicked') {
-            document.getElementById("wrapper4").style.display = "none";
             t.done();
         }
-    });
+    }));
 
     axButton.press();
 }, "clicking a button via accessibility sends an accessible click event");
@@ -88,58 +86,59 @@ async_test(function(t)
 </div>
 
 <script>
-async_test(function(t)
+async_test_after_layout_and_paint(function(t)
 {
     var axButton = accessibilityController.accessibleElementById("button5");
-    axButton.addNotificationListener(function(notification) {
+    axButton.addNotificationListener(t.step_func(function(notification) {
         if (notification == 'Clicked') {
             assert_unreached("There shouldn't be a Clicked notification.");
         }
-    });
+    }));
 
+    let x = axButton.x;
+    let y = axButton.y;
     eventSender.dragMode = true;
-    eventSender.mouseMoveTo(axButton.x + 10, axButton.y + 10);
+    eventSender.mouseMoveTo(x + 10, y + 10);
     eventSender.mouseDown();
     eventSender.leapForward(100);
-    eventSender.mouseMoveTo(axButton.x + 10, axButton.y + 100);
+    eventSender.mouseMoveTo(x + 10, y + 100);
     eventSender.mouseUp();
 
     // Make the test pass after a short delay. The test passes if the
     // accessible click event does not fire.
-    window.setTimeout(function() {
-        document.getElementById("wrapper5").style.display = "none";
+    window.setTimeout(t.step_func(function() {
         t.done();
-    }, 200);
+    }, 200));
 }, "dragging the mouse off a button does not send an accessible click event");
 </script>
-
 <div id="wrapper6">
     <button id="button6">Button</button>
 </div>
 
 <script>
-async_test(function(t)
+async_test_after_layout_and_paint(function(t)
 {
     var axButton = accessibilityController.accessibleElementById("button6");
-    axButton.addNotificationListener(function(notification) {
+    axButton.addNotificationListener(t.step_func(function(notification) {
         if (notification == 'Clicked') {
             assert_unreached("There shouldn't be a Clicked notification.");
         }
-    });
+    }));
 
+    let x = axButton.x;
+    let y = axButton.y;
     eventSender.dragMode = true;
-    eventSender.mouseMoveTo(axButton.x + 10, axButton.y + 100);
+    eventSender.mouseMoveTo(x + 10, y + 100);
     eventSender.mouseDown();
     eventSender.leapForward(100);
-    eventSender.mouseMoveTo(axButton.x + 10, axButton.y + 10);
+    eventSender.mouseMoveTo(x + 10, y + 10);
     eventSender.mouseUp();
 
     // Make the test pass after a short delay. The test passes if the
     // accessible click event does not fire.
-    window.setTimeout(function() {
-        document.getElementById("wrapper6").style.display = "none";
+    window.setTimeout(t.step_func(function() {
         t.done();
-    }, 0);
+    }, 0));
 }, "dragging the mouse onto a button does not send an accessible click event");
 </script>
 
@@ -148,16 +147,17 @@ async_test(function(t)
 </div>
 
 <script>
-async_test(function(t)
+async_test_after_layout_and_paint(function(t)
 {
     var axButton = accessibilityController.accessibleElementById("button7");
-    axButton.addNotificationListener(function(notification) {
+    axButton.addNotificationListener(t.step_func(function(notification) {
         if (notification == 'Clicked') {
-            document.getElementById("wrapper7").style.display = "none";
             t.done();
         }
-    });
+    }));
 
-    eventSender.gestureTap(axButton.x + 10, axButton.y + 10);
+    let x = axButton.x;
+    let y = axButton.y;
+    eventSender.gestureTap(x + 10, y + 10);
 }, "tapping on a button with a touch event sends an accessible click event");
 </script>

@@ -1,12 +1,7 @@
 <!DOCTYPE HTML>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div class="container">
   <div role="listbox">
@@ -16,15 +11,10 @@
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axOption1 = accessibilityController.accessibleElementById("option1");
     assert_equals(axOption1.name, "option 1");
     var axOption2 = accessibilityController.accessibleElementById("option2");
     assert_equals(axOption2.name, "label 2");
 }, "ARIA listbox option with button inside");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

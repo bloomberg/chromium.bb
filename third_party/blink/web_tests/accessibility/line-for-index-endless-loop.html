@@ -1,12 +1,7 @@
 <!DOCTYPE HTML>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div class="container" id="contentEditable" contentEditable>
   <span style="display: inline-block;">
@@ -20,13 +15,8 @@
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axContentEditable = accessibilityController.accessibleElementById("contentEditable");
     assert_equals(axContentEditable.lineForIndex(0), 0);
 }, "No endless loop when getting line for index in contentEditable");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

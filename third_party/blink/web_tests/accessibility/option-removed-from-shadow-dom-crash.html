@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <script>
 /* doc > span */
@@ -37,7 +38,7 @@ spanElem.appendChild(textNode2);
  */
 textNode1.remove();
 
-test(function(t) {
+test_after_layout_and_paint(function(t) {
   document.querySelector("option").remove();
 }, "Removing an option inside a shadow dom shouldn't crash");
 

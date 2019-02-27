@@ -1,19 +1,14 @@
 <!DOCTYPE HTML>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div class="container">
     <input id="button1" type="button">
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axButtonInput1 = accessibilityController.accessibleElementById("button1");
     assert_equals(axButtonInput1.name, "");
     assert_equals(axButtonInput1.nameFrom, "");
@@ -27,7 +22,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axButtonInput2 = accessibilityController.accessibleElementById("button2");
     assert_equals(axButtonInput2.name, "button-value2");
     assert_equals(axButtonInput2.nameFrom, "value");
@@ -41,7 +36,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axButtonInput3 = accessibilityController.accessibleElementById("button3");
     assert_equals(axButtonInput3.name, "button-value3");
     assert_equals(axButtonInput3.nameFrom, "value");
@@ -55,7 +50,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axSubmitButton1 = accessibilityController.accessibleElementById("submit1");
     assert_equals(axSubmitButton1.name, "Submit");
     assert_equals(axSubmitButton1.nameFrom, "contents");
@@ -69,7 +64,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axSubmitButton2 = accessibilityController.accessibleElementById("submit2");
     assert_equals(axSubmitButton2.name, "submit-value2");
     assert_equals(axSubmitButton2.nameFrom, "value");
@@ -83,7 +78,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axSubmitButton3 = accessibilityController.accessibleElementById("submit3");
     assert_equals(axSubmitButton3.name, "Submit");
     assert_equals(axSubmitButton3.nameFrom, "contents");
@@ -97,7 +92,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axSubmitButton4 = accessibilityController.accessibleElementById("submit4");
     assert_equals(axSubmitButton4.name, "Label");
     assert_equals(axSubmitButton4.nameFrom, "attribute");
@@ -111,16 +106,11 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axSubmitButton5 = accessibilityController.accessibleElementById("submit5");
     assert_equals(axSubmitButton5.name, "Label");
     assert_equals(axSubmitButton5.nameFrom, "attribute");
     assert_equals(axSubmitButton5.description, "Value");
     assert_equals(axSubmitButton5.descriptionFrom, "attribute");
 }, "Submit button with aria-label and value");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

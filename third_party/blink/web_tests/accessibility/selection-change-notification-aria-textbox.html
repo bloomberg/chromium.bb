@@ -1,7 +1,9 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 </head>
 <body id="static_eventTarget">
 
@@ -13,10 +15,7 @@
 
 <div id="console"></div>
 <script>
-description("Tests that a 'selected text changed' notification fires on a focusable element with role=textbox when the user moves the cursor within it.");
-window.jsTestIsAsync = true;
-
-function runTest() {
+async_test_after_layout_and_paint((t) => {
     // This forces building the accessibility tree, because selection change
     // events only fire on elements that already exist.
     accessibilityController.accessibleElementById('dummy');
@@ -25,13 +24,14 @@ function runTest() {
     var axElement = accessibilityController.accessibleElementById('ariaTextbox');
     element.focus();
 
-    axElement.addNotificationListener(function(notification) {
+    axElement.addNotificationListener(t.step_func((notification) => {
         if (notification == 'SelectedTextChanged') {
-            debug('Got SelectedTextChanged notification on focusable element with role=textbox.');
             axElement.removeNotificationListener();
-            finishJSTest();
-        }
-    });
+            t.done();
+            return;
+        };
+        assert_unreached('Unexpected notification: ' + notification);
+    }));
 
     var p = document.getElementById('p');
     var range = document.createRange();
@@ -39,12 +39,7 @@ function runTest() {
     range.setEnd(p.firstChild, 1);
     window.getSelection().removeAllRanges();
     window.getSelection().addRange(range);
-}
-
-if (window.testRunner && window.accessibilityController) {
-    testRunner.dumpAsText();
-    window.onload = runTest();
-}
+}, "Tests that a 'selected text changed' notification fires on a focusable element with role=textbox when the user moves the cursor within it.");
 
 </script>
 

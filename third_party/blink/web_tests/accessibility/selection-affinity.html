@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div id="main" role="main">
 
@@ -12,7 +13,7 @@
 <div id="console"></div>
 
 <script>
-    test(function()
+    test_after_layout_and_paint(function()
     {
         // Create a range selecting more and more characters of text until
         // the bounding rect has a nonzero width, indicating we got the first

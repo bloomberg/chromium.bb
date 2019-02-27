@@ -1,12 +1,13 @@
 <!DOCTYPE HTML>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <button id="button">Button</button>
 <label id="label" for="button" style="display:none" aria-label="AriaLabel">Label</label>
 
 <script>
-test(function(t){
+test_after_layout_and_paint(function(t) {
     var axButton = accessibilityController.accessibleElementById("button");
 
     // Get the AXObject for the label indirectly, even though it's display:none.
@@ -29,7 +30,6 @@ test(function(t){
 
     // Now hide the label again.
     label.style.display = "none";
-
     // Check once more: the second AXObject is now invalid, but if we fetch
     // an AXObject for the label a third time, we get a valid object again.
     var axLabel3 = axButton.nameElementAtIndex(0);
@@ -40,7 +40,4 @@ test(function(t){
     assert_equals(axLabel.isEqual(axLabel3), false);
     assert_equals(axLabel2.isEqual(axLabel3), false);
 }, "Accessibility objects for display:none elements");
-
-if (window.testRunner)
-    document.getElementById('button').style.display = 'none';
 </script>

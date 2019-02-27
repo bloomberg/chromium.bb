@@ -1,12 +1,7 @@
 <!DOCTYPE HTML>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div class="container">
   <svg id="svg1">
@@ -15,14 +10,9 @@
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
   var axSvg1 = accessibilityController.accessibleElementById("svg1");
   assert_equals(axSvg1.name, "svg1-title");
   assert_equals(axSvg1.nameFrom, "relatedElement");
 }, "SVG element with title element");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

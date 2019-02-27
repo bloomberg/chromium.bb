@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div role="region">
     <span role="presentation" id="span1">this is a<a id="link" href="#1">test</a></span>
@@ -14,7 +15,7 @@
     }
 
     // The accessibility tree contains a region with 3 children, select each.
-    test(function()
+    test_after_layout_and_paint(function()
     {
         assert_not_equals(window.accessibilityController, undefined, 'This test requires accessibilityController');
 

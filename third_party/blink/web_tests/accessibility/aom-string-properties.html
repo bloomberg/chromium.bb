@@ -2,6 +2,7 @@
 <script src="../resources/gc.js"></script>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <!--
 
@@ -12,7 +13,7 @@ Spec: https://wicg.github.io/aom/spec/
 -->
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     assert_true(internals.runtimeFlags.accessibilityObjectModelEnabled);
 }, "Make sure that Accessibility Object Model is enabled");
 </script>
@@ -20,7 +21,7 @@ test(function(t) {
 <input role="combobox" id="autocomplete">
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var node = document.getElementById("autocomplete");
     var axNode = accessibilityController.accessibleElementById("autocomplete");
     assert_equals(axNode.autocomplete, "");
@@ -32,7 +33,7 @@ test(function(t) {
 <div role="checkbox" id="checked"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var node = document.getElementById("checked");
     var axNode = accessibilityController.accessibleElementById("checked");
     assert_equals(axNode.checked, "false");
@@ -52,7 +53,7 @@ test(function(t) {
 <div role="tab" id="current"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var node = document.getElementById("current");
     var axNode = accessibilityController.accessibleElementById("current");
     assert_equals(axNode.current, "");
@@ -64,7 +65,7 @@ test(function(t) {
 <div role="textbox" id="hasPopUp" aria-haspopup="false"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var node = document.getElementById("hasPopUp");
     var axNode = accessibilityController.accessibleElementById("hasPopUp");
     assert_equals(axNode.hasPopup, "");
@@ -79,7 +80,7 @@ test(function(t) {
 <div role="textbox" id="invalid"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var node = document.getElementById("invalid");
     var axNode = accessibilityController.accessibleElementById("invalid");
     assert_equals(axNode.invalid, "");
@@ -91,7 +92,7 @@ test(function(t) {
 <div role="button" id="keyShortcuts"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var node = document.getElementById("keyShortcuts");
     var axNode = accessibilityController.accessibleElementById("keyShortcuts");
     assert_equals(axNode.keyShortcuts, "");
@@ -103,7 +104,7 @@ test(function(t) {
 <div role="heading" id="label">Inner text</div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var node = document.getElementById("label");
     var axNode = accessibilityController.accessibleElementById("label");
     assert_equals(axNode.name, "Inner text");
@@ -115,7 +116,7 @@ test(function(t) {
 <div role="banner" id="live"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var node = document.getElementById("live");
     var axNode = accessibilityController.accessibleElementById("live");
     assert_equals(axNode.live, "");
@@ -127,7 +128,7 @@ test(function(t) {
 <div role="slider" id="orientation"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var node = document.getElementById("orientation");
     var axNode = accessibilityController.accessibleElementById("orientation");
     assert_equals(axNode.orientation, "AXOrientation: AXHorizontalOrientation");
@@ -139,7 +140,7 @@ test(function(t) {
 <input id="placeholder">
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var node = document.getElementById("placeholder");
     var axNode = accessibilityController.accessibleElementById("placeholder");
     assert_equals(axNode.name, "");
@@ -152,7 +153,7 @@ test(function(t) {
 <div role="banner" id="relevant"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var node = document.getElementById("relevant");
     var axNode = accessibilityController.accessibleElementById("relevant");
     assert_equals(axNode.relevant, "additions text");
@@ -164,14 +165,16 @@ test(function(t) {
 <div role="button" id="role"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var node = document.getElementById("role");
     var axNode = accessibilityController.accessibleElementById("role");
     assert_equals(axNode.role, "AXRole: AXButton");
     node.accessibleNode.role = "combobox";
+
     axNode = accessibilityController.accessibleElementById("role");
     assert_equals(axNode.role, "AXRole: AXComboBoxGrouping");
     node.accessibleNode.role = "banana button";
+
     axNode = accessibilityController.accessibleElementById("role");
     assert_equals(axNode.role, "AXRole: AXButton");
 }, "AccessibleNode.role");
@@ -180,7 +183,7 @@ test(function(t) {
 <div role="button" id="roleDescription"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var node = document.getElementById("roleDescription");
     var axNode = accessibilityController.accessibleElementById("roleDescription");
     assert_equals(axNode.roleDescription, "");
@@ -192,7 +195,7 @@ test(function(t) {
 <div role="columnheader" id="sort"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var node = document.getElementById("sort");
     var axNode = accessibilityController.accessibleElementById("sort");
     assert_equals(axNode.sort, "");
@@ -204,7 +207,7 @@ test(function(t) {
 <div role="slider" id="valueText" aria-valuetext="5"></div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var node = document.getElementById("valueText");
     var axNode = accessibilityController.accessibleElementById("valueText");
     assert_equals(axNode.valueDescription, "AXValueDescription: 5");
