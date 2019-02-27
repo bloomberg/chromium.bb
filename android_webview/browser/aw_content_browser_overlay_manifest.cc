@@ -11,7 +11,7 @@
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/web_restrictions/interfaces/web_restrictions.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
-#include "third_party/blink/public/platform/input_host.mojom.h"
+#include "third_party/blink/public/mojom/input/input_host.mojom.h"
 
 namespace android_webview {
 
