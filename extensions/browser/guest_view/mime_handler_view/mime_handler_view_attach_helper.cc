@@ -12,15 +12,18 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/mime_handler_view_mode.h"
+#include "content/public/common/webplugininfo.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 using content::BrowserThread;
 using content::RenderFrameHost;
@@ -34,11 +37,26 @@ namespace {
 // TODO(ekaramad): Should we use an <embed>? Verify if this causes issues with
 // post messaging support for PDF viewer (https://crbug.com/659750).
 const char kFullPageMimeHandlerViewHTML[] =
-    "<!doctype html><html><body style='height: 100%; width: 100%; overflow: "
-    "hidden; margin:0px; background-color: rgb(82, 86, 89);'><iframe "
-    "style='position:absolute; left: 0; top: 0;'width='100%' height='100%'"
+    "<!doctype html><html><body style='height: 100%%; width: 100%%; overflow: "
+    "hidden; margin:0px; background-color: rgb(%d, %d, %d);'><iframe "
+    "style='position:absolute; left: 0; top: 0;'width='100%%' height='100%%'"
     "></iframe></body></html>";
 const uint32_t kFullPageMimeHandlerViewDataPipeSize = 256U;
+
+SkColor GetBackgroundColorStringForMimeType(const GURL& url,
+                                            const std::string& mime_type) {
+  std::vector<content::WebPluginInfo> web_plugin_info_array;
+  std::vector<std::string> unused_actual_mime_types;
+  content::PluginService::GetInstance()->GetPluginInfoArray(
+      url, mime_type, true, &web_plugin_info_array, &unused_actual_mime_types);
+  for (const auto& info : web_plugin_info_array) {
+    for (const auto& mime_info : info.mime_types) {
+      if (mime_type == mime_info.mime_type)
+        return info.background_color;
+    }
+  }
+  return content::WebPluginInfo::kDefaultBackgroundColor;
+}
 
 using ProcessIdToHelperMap =
     base::flat_map<int32_t, std::unique_ptr<MimeHandlerViewAttachHelper>>;
@@ -161,7 +179,11 @@ void MimeHandlerViewAttachHelper::OverrideBodyForInterceptedResponse(
     return;
   if (!IsRelevantMimeType(mime_type))
     return;
-  payload->assign(kFullPageMimeHandlerViewHTML);
+  auto color = GetBackgroundColorStringForMimeType(resource_url, mime_type);
+  auto html_str =
+      base::StringPrintf(kFullPageMimeHandlerViewHTML, SkColorGetR(color),
+                         SkColorGetG(color), SkColorGetB(color));
+  payload->assign(html_str);
   *data_pipe_size = kFullPageMimeHandlerViewDataPipeSize;
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                            base::BindOnce(CreateFullPageMimeHandlerView,
