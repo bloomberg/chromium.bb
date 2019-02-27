@@ -19552,7 +19552,18 @@ should be able to be added at any place in this file.
 <action name="StatusArea_Notifications_ClearAll">
   <owner>tetsui@chromium.org</owner>
   <description>
-    User removed all notifications from the Clear All button in the system menu.
+    User removed all notifications using the bottom Clear All button in the
+    system menu. Note that there are two clear all buttons, and this button is
+    located on the bottom of the notification list.
+  </description>
+</action>
+
+<action name="StatusArea_Notifications_StackingBarClearAll">
+  <owner>tengs@chromium.org</owner>
+  <description>
+    User removed all notifications using the top Clear All button in the system
+    menu. Note that there are two clear all buttons, and this one is located on
+    the top stacking bar of the notification list.
   </description>
 </action>
 
