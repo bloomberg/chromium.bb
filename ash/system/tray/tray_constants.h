@@ -206,6 +206,7 @@ constexpr int kTrayTopShortcutButtonIconSize = 20;
 
 constexpr int kUnifiedSystemInfoHeight = 16;
 constexpr int kUnifiedSystemInfoSpacing = 8;
+constexpr gfx::Insets kUnifiedSystemInfoDateViewPadding(3);
 
 // Constants used in FeaturePodsView of UnifiedSystemTray.
 constexpr gfx::Size kUnifiedFeaturePodIconSize(48, 48);

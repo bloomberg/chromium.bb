@@ -63,6 +63,7 @@ class DateView : public views::Button,
   void Update();
 
   // views::Button:
+  gfx::Insets GetInsets() const override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
@@ -114,6 +115,11 @@ void DateView::Update() {
   SetAccessibleName(TimeFormatFriendlyDateAndTime(now));
   label_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
   NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
+}
+
+gfx::Insets DateView::GetInsets() const {
+  // This padding provides room to render the focus ring around this button.
+  return kUnifiedSystemInfoDateViewPadding;
 }
 
 std::unique_ptr<views::InkDrop> DateView::CreateInkDrop() {
