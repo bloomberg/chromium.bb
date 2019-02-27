@@ -194,6 +194,9 @@ std::vector<ash::mojom::LocaleInfoPtr> GetSupportedLocales() {
 }  // namespace
 
 // static
+constexpr char DemoSession::kSupportedCountries[][3];
+
+// static
 std::string DemoSession::DemoConfigToString(
     DemoSession::DemoModeConfig config) {
   switch (config) {
@@ -330,8 +333,30 @@ bool DemoSession::ShouldDisplayInAppLauncher(const std::string& app_id) {
 }
 
 // static
+base::Value DemoSession::GetCountryList() {
+  base::Value country_list(base::Value::Type::LIST);
+  if (!base::FeatureList::IsEnabled(
+          switches::kSupportCountryCustomizationInDemoMode)) {
+    return country_list;
+  }
+  const std::string current_country =
+      g_browser_process->local_state()->GetString(prefs::kDemoModeCountry);
+  const std::string current_locale = g_browser_process->GetApplicationLocale();
+  for (const std::string country : kSupportedCountries) {
+    base::DictionaryValue dict;
+    dict.SetString("value", country);
+    dict.SetString(
+        "title", l10n_util::GetDisplayNameForCountry(country, current_locale));
+    dict.SetBoolean("selected", current_country == country);
+    country_list.GetList().push_back(std::move(dict));
+  }
+  return country_list;
+}
+
+// static
 void DemoSession::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kDemoModeDefaultLocale, std::string());
+  registry->RegisterStringPref(prefs::kDemoModeCountry, kSupportedCountries[0]);
 }
 
 void DemoSession::EnsureOfflineResourcesLoaded(

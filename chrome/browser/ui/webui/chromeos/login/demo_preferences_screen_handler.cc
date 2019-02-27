@@ -51,6 +51,8 @@ void DemoPreferencesScreenHandler::DeclareLocalizedValues(
   builder->Add("languageDropdownLabel", IDS_LANGUAGE_DROPDOWN_LABEL);
   builder->Add("keyboardDropdownTitle", IDS_KEYBOARD_DROPDOWN_TITLE);
   builder->Add("keyboardDropdownLabel", IDS_KEYBOARD_DROPDOWN_LABEL);
+  builder->Add("countryDropdownTitle", IDS_COUNTRY_DROPDOWN_TITLE);
+  builder->Add("countryDropdownLabel", IDS_COUNTRY_DROPDOWN_LABEL);
 }
 
 }  // namespace chromeos

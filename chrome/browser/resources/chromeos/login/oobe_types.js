@@ -32,6 +32,16 @@ OobeTypes.LanguageDsc;
 OobeTypes.IMEDsc;
 
 /**
+ * ChromeOS OOBE demo country descriptor.
+ * @typedef {{
+ *   value: (String|undefined),
+ *   title: (String|undefined),
+ *   selected: (Boolean|undefined),
+ * }}
+ */
+OobeTypes.DemoCountryDsc;
+
+/**
  * A set of flags of accessibility options for ChromeOS OOBE.
  * @typedef {{
  *   highContrastEnabled: Boolean,

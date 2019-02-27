@@ -420,6 +420,9 @@
   <message name="IDS_KEYBOARD_DROPDOWN_TITLE" desc="Title of keyboard selection dropdown menu" meaning="Small title near keyboard dropdown menu suggesting that this is a keyboard layout selector.">
     Keyboard
   </message>
+  <message name="IDS_COUNTRY_DROPDOWN_TITLE" desc="Title of country selection dropdown menu" meaning="Small title near country dropdown menu suggesting that this is a country selector.">
+    Country
+  </message>
   <message name="IDS_OOBE_WELCOME_NEXT_BUTTON_TEXT" desc="Text on 'Start to use Chrome OS' button" meaning="This is the text label displayed on the 'Next' button for the first Chrome OS initial device setup screen ('Welcome screen').">
     Let's go
   </message>
@@ -491,6 +494,9 @@
   </message>
   <message name="IDS_KEYBOARD_DROPDOWN_LABEL" desc="Navigation label attached to the 'List of keyboards' dropdown menu on Chrome OS Language and keyboard initial device setup screen" meaning="The menu itself displays only current keyboard layout name. But for accessibility mode we need full description of this menu. So this label suggests that activating a menu will allow to change current input method.">
     Select keyboard
+  </message>
+  <message name="IDS_COUNTRY_DROPDOWN_LABEL" desc="Navigation label attached to the 'List of countries' dropdown menu on Chrome OS Demo Mode setup screen" meaning="The menu itself displays only current country name. But for accessibility mode we need full description of this menu. So this label suggests that activating a menu will allow to change current country.">
+    Select country
   </message>
   <message name="IDS_OOBE_OTHER_LANGUAGES" desc="Option group name dividing vendor-configured languages from other available languages in out-of-box 'Select language' select control.">
     Other languages

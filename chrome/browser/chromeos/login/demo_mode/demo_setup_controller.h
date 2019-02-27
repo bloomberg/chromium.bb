@@ -174,6 +174,11 @@ class DemoSetupController
   // OOBE.
   static bool IsOobeDemoSetupFlowInProgress();
 
+  // If the current country requires customization, returns an user email that
+  // corresponds to the sub organization the device should be enrolled into.
+  // Otherwise, returns an empty string.
+  static std::string GetSubOrganizationEmail();
+
   DemoSetupController();
   ~DemoSetupController() override;
 

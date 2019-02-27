@@ -206,24 +206,6 @@ DemoSetupController::DemoSetupError CreateFromLockStatus(
       ErrorCode::kUnexpectedError, RecoveryMethod::kUnknown, debug_message);
 }
 
-// If the current country requires customization, returns an user email that
-// corresponds to the sub organization the device should be enrolled into.
-// Otherwise, returns an empty string.
-std::string GetSubOrganizationEmail() {
-  if (!base::FeatureList::IsEnabled(
-          switches::kSupportCountryCustomizationInDemoMode)) {
-    return std::string();
-  }
-  // TODO(wzang): Get the country code from Local State, which should be set
-  // during demo setup.
-  const std::string country = "fr";
-  const base::flat_set<std::string> kCountriesWithCustomization(
-      {"dk", "fi", "fr", "nl", "no", "se"});
-  if (kCountriesWithCustomization.contains(country))
-    return "admin-" + country + "@" + DemoSetupController::kDemoModeDomain;
-  return std::string();
-}
-
 }  //  namespace
 
 // static
@@ -474,12 +456,26 @@ bool DemoSetupController::IsDemoModeAllowed() {
 }
 
 // static
-// static
 bool DemoSetupController::IsOobeDemoSetupFlowInProgress() {
   const WizardController* const wizard_controller =
       WizardController::default_controller();
   return wizard_controller &&
          wizard_controller->demo_setup_controller() != nullptr;
+}
+
+// static
+std::string DemoSetupController::GetSubOrganizationEmail() {
+  if (!base::FeatureList::IsEnabled(
+          switches::kSupportCountryCustomizationInDemoMode)) {
+    return std::string();
+  }
+  const std::string country =
+      g_browser_process->local_state()->GetString(prefs::kDemoModeCountry);
+  const base::flat_set<std::string> kCountriesWithCustomization(
+      {"dk", "fi", "fr", "nl", "no", "se"});
+  if (kCountriesWithCustomization.contains(country))
+    return "admin-" + country + "@" + DemoSetupController::kDemoModeDomain;
+  return std::string();
 }
 
 DemoSetupController::DemoSetupController() : weak_ptr_factory_(this) {}

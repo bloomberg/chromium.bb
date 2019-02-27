@@ -23,6 +23,14 @@ Polymer({
     keyboards: {
       type: Array,
     },
+
+    /**
+     * List of countries for country selector dropdown.
+     * @type {!Array<!OobeTypes.DemoCountryDsc>}
+     */
+    countries: {
+      type: Array,
+    },
   },
 
   /**
@@ -61,6 +69,9 @@ Polymer({
 
     var inputMethodsList = loadTimeData.getValue('inputMethodsList');
     this.setInputMethods_(inputMethodsList);
+
+    var countryList = loadTimeData.getValue('demoModeCountryList');
+    this.setCountryList_(countryList);
 
     this.i18nUpdateLocale();
   },
@@ -105,6 +116,16 @@ Polymer({
   },
 
   /**
+   * Sets country list.
+   * @param {!Array<!OobeTypes.DemoCountryDsc>} countries
+   * @private
+   */
+  setCountryList_: function(countries) {
+    this.countries = countries;
+    this.$.countryDropdownContainer.hidden = countries.length == 0;
+  },
+
+  /**
    * Handle language selection.
    * @param {!CustomEvent<!{!OobeTypes.LanguageDsc}>} event
    * @private
@@ -124,6 +145,15 @@ Polymer({
     var item = event.detail;
     var inputMethodId = item.value;
     this.screen.onKeyboardSelected_(inputMethodId);
+  },
+
+  /**
+   * Handle country selection.
+   * @param {!CustomEvent<!{!OobeTypes.DemoCountryDsc}>} event
+   * @private
+   */
+  onCountrySelected_: function(event) {
+    this.screen.onCountrySelected_(event.detail.value);
   },
 
   /**

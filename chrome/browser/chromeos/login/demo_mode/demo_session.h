@@ -66,6 +66,10 @@ class DemoSession : public session_manager::SessionManagerObserver,
     kMaxValue = kExtensionApi
   };
 
+  // The list of countries that Demo Mode supports.
+  static constexpr char kSupportedCountries[][3] = {
+      "us", "be", "ca", "dk", "fi", "fr", "ie", "lu", "nl", "no", "se", "gb"};
+
   static std::string DemoConfigToString(DemoModeConfig config);
 
   // Whether the device is set up to run demo sessions.
@@ -104,6 +108,13 @@ class DemoSession : public session_manager::SessionManagerObserver,
   // Returns whether the app with |app_id| should be displayed in app launcher
   // in demo mode. Returns true for all apps in non-demo mode.
   static bool ShouldDisplayInAppLauncher(const std::string& app_id);
+
+  // Returns the list of countries that Demo Mode supports. Each country is
+  // denoted by:
+  // |value|: The ISO country code.
+  // |title|: The display name of the country in the current locale.
+  // |selected|: Whether the country is currently selected.
+  static base::Value GetCountryList();
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 

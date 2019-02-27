@@ -8,10 +8,12 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/flat_map.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time_to_iso8601.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -148,6 +150,8 @@ class DemoSetupTest : public LoginManagerTest {
   // LoginTestManager:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     LoginManagerTest::SetUpCommandLine(command_line);
+    scoped_feature_list_.InitAndEnableFeature(
+        chromeos::switches::kSupportCountryCustomizationInDemoMode);
     command_line->AppendSwitchASCII(switches::kArcAvailability,
                                     "officially-supported");
     ASSERT_TRUE(arc::IsArcAvailable());
@@ -444,6 +448,7 @@ class DemoSetupTest : public LoginManagerTest {
   // TODO(agawronska): Maybe create a separate test fixture for offline setup.
   base::ScopedTempDir fake_demo_resources_dir_;
   policy::MockCloudPolicyStore mock_policy_store_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoSetupTest);
 };
@@ -549,8 +554,95 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowSuccess) {
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_UPDATE).Wait();
 
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
+  EXPECT_TRUE(DemoSetupController::GetSubOrganizationEmail().empty());
   // TODO(agawronska): Progress dialog transition is async - extra work is
   // needed to be able to check it reliably.
+
+  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+  EXPECT_TRUE(StartupUtils::IsOobeCompleted());
+  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+}
+
+IN_PROC_BROWSER_TEST_F(DemoSetupTest,
+                       OnlineSetupFlowSuccessWithCountryCustomization) {
+  // Simulate successful online setup.
+  enrollment_helper_.ExpectEnrollmentMode(
+      policy::EnrollmentConfig::MODE_ATTESTATION);
+  enrollment_helper_.ExpectAttestationEnrollmentSuccess();
+  SimulateNetworkConnected();
+
+  InvokeDemoModeWithAccelerator();
+  ClickOkOnConfirmationDialog();
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
+  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
+
+  // Verify the country names are displayed correctly. Regression test for
+  // potential country code changes.
+  const base::flat_map<std::string, std::string> kCountryCodeToNameMap(
+      {{"us", "United States"},
+       {"be", "Belgium"},
+       {"ca", "Canada"},
+       {"dk", "Denmark"},
+       {"fi", "Finland"},
+       {"fr", "France"},
+       {"ie", "Ireland"},
+       {"lu", "Luxembourg"},
+       {"nl", "Netherlands"},
+       {"no", "Norway"},
+       {"se", "Sweden"},
+       {"gb", "United Kingdom"}});
+  for (const std::string country_code : DemoSession::kSupportedCountries) {
+    const auto it = kCountryCodeToNameMap.find(country_code);
+    ASSERT_NE(kCountryCodeToNameMap.end(), it);
+    const std::string query = base::StrCat(
+        {ScreenToContentQuery(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES),
+         ".$$('oobe-dialog').querySelector('#countrySelect').$$('option[value="
+         "\"",
+         country_code, "\"]').innerHTML"});
+    EXPECT_EQ(it->second, test::OobeJS().GetString(query));
+  }
+
+  // Select France as the Demo Mode country.
+  const std::string select_country = base::StrCat(
+      {ScreenToContentQuery(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES),
+       ".$$('oobe-dialog').querySelector('#countrySelect').onSelected_('fr')"
+       ";"});
+  test::ExecuteOobeJSAsync(select_country);
+
+  ClickOobeButton(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES, OobeButton::kText,
+                  JSExecution::kAsync);
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_NETWORK));
+  EXPECT_TRUE(IsScreenDialogElementEnabled(OobeScreen::SCREEN_OOBE_NETWORK,
+                                           DemoSetupDialog::kNetwork,
+                                           ButtonToTag(OobeButton::kNext)));
+
+  ClickOobeButton(OobeScreen::SCREEN_OOBE_NETWORK, OobeButton::kNext,
+                  JSExecution::kAsync);
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_EULA));
+
+  ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_EULA, DemoSetupDialog::kEula,
+                          OobeButton::kText, JSExecution::kAsync);
+
+  OobeScreenWaiter(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE).Wait();
+  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE));
+
+  SetPlayStoreTermsForTesting();
+  ClickOobeButtonWithSelector(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+                              "#arc-tos-next-button", JSExecution::kSync);
+  ClickOobeButtonWithSelector(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+                              "#arc-tos-accept-button", JSExecution::kAsync);
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_UPDATE).Wait();
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
+  // Verify the email corresponds to France.
+  EXPECT_EQ("admin-fr@cros-demo-mode.com",
+            DemoSetupController::GetSubOrganizationEmail());
 
   OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
   EXPECT_TRUE(StartupUtils::IsOobeCompleted());
