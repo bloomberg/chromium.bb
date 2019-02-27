@@ -105,6 +105,11 @@
         padding-inline-end: 12px;
         width: 20px;
       }
+
+      #google-account-footer > div {
+        /* At large font sizes, prevents the text from wrapping weirdly. */
+        overflow-x: hidden;
+      }
     </style>
 
     <iron-selector id="menu" selected="{{selectedPage}}"
