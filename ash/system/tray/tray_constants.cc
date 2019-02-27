@@ -54,11 +54,10 @@ const SkColor kHeaderTextColorNormal = SkColorSetARGB(0x7f, 0, 0, 0);
 const SkColor kMobileNotConnectedXIconColor = SkColorSetRGB(0xb2, 0xb2, 0xb2);
 
 const SkColor kTrayIconColor = gfx::kGoogleGrey200;
+const SkColor kOobeTrayIconColor = gfx::kGoogleGrey600;
 // Note that the alpha value should match kSignalStrengthImageBgAlpha in
 // ash/public/cpp/network_icon_image_source.cc
-const SkColor kTrayIconBackgroundColor =
-    SkColorSetA(gfx::kGoogleGrey200, 0x4D /* 30% */);
-const SkColor kOobeTrayIconColor = gfx::kGoogleGrey600;
+const int kTrayIconBackgroundAlpha = 0x4D /* 30% */;
 
 const int kMenuIconSize = 20;
 const SkColor kMenuIconColor = gfx::kChromeIconGrey;
