@@ -473,8 +473,6 @@ SkiaOutputSurfaceImplOnGpu::OffscreenSurface::fulfill() {
   if (!promise_texture_) {
     promise_texture_ = SkPromiseImageTexture::Make(
         surface_->getBackendTexture(SkSurface::kFlushRead_BackendHandleAccess));
-  } else {
-    surface_->flush();
   }
   return promise_texture_;
 }
