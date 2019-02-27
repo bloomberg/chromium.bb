@@ -368,11 +368,11 @@ void WebURLResponse::SetRemoteIPAddress(const WebString& remote_ip_address) {
   resource_response_->SetRemoteIPAddress(remote_ip_address);
 }
 
-unsigned short WebURLResponse::RemotePort() const {
+uint16_t WebURLResponse::RemotePort() const {
   return resource_response_->RemotePort();
 }
 
-void WebURLResponse::SetRemotePort(unsigned short remote_port) {
+void WebURLResponse::SetRemotePort(uint16_t remote_port) {
   resource_response_->SetRemotePort(remote_port);
 }
 

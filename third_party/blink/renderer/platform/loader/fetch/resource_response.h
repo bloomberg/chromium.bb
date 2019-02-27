@@ -357,8 +357,8 @@ class PLATFORM_EXPORT ResourceResponse final {
     remote_ip_address_ = value;
   }
 
-  unsigned short RemotePort() const { return remote_port_; }
-  void SetRemotePort(unsigned short value) { remote_port_ = value; }
+  uint16_t RemotePort() const { return remote_port_; }
+  void SetRemotePort(uint16_t value) { remote_port_ = value; }
 
   const AtomicString& AlpnNegotiatedProtocol() const {
     return alpn_negotiated_protocol_;
@@ -430,7 +430,7 @@ class PLATFORM_EXPORT ResourceResponse final {
   AtomicString remote_ip_address_;
 
   // Remote port number of the socket which fetched this resource.
-  unsigned short remote_port_ = 0;
+  uint16_t remote_port_ = 0;
 
   bool was_cached_ = false;
   bool connection_reused_ = false;

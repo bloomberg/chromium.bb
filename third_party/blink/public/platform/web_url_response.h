@@ -273,8 +273,8 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void SetRemoteIPAddress(const WebString&);
 
   // Remote port number of the socket which fetched this resource.
-  BLINK_PLATFORM_EXPORT unsigned short RemotePort() const;
-  BLINK_PLATFORM_EXPORT void SetRemotePort(unsigned short);
+  BLINK_PLATFORM_EXPORT uint16_t RemotePort() const;
+  BLINK_PLATFORM_EXPORT void SetRemotePort(uint16_t);
 
   // ALPN negotiated protocol of the socket which fetched this resource.
   BLINK_PLATFORM_EXPORT WebString AlpnNegotiatedProtocol() const;
