@@ -13,6 +13,7 @@
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -75,6 +76,9 @@ mojom::ArcCustomTabViewPtr ArcCustomTabView::Create(int32_t task_id,
   parent->AddChildView(view);
   parent->SetLayoutManager(std::make_unique<views::FillLayout>());
   parent->Layout();
+
+  view->remote_view_host_->GetNativeViewContainer()->SetEventTargeter(
+      std::make_unique<aura::WindowTargeter>());
 
   mojom::ArcCustomTabViewPtr ptr;
   view->Bind(&ptr);
