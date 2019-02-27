@@ -15,6 +15,8 @@ enum GinEmbedder {
   kEmbedderNativeGin,
   kEmbedderBlink,
   kEmbedderPDFium,
+
+  kEmbedderUnknown
 };
 
 }  // namespace gin

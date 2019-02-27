@@ -4869,8 +4869,10 @@ void Heap::NotifyDeserializationComplete() {
 }
 
 void Heap::SetEmbedderHeapTracer(EmbedderHeapTracer* tracer) {
-  DCHECK_EQ(gc_state_, HeapState::NOT_IN_GC);
-  local_embedder_heap_tracer()->SetRemoteTracer(tracer);
+  if (local_embedder_heap_tracer()) {
+    DCHECK_EQ(gc_state_, HeapState::NOT_IN_GC);
+    local_embedder_heap_tracer()->SetRemoteTracer(tracer);
+  }
 }
 
 void Heap::TracePossibleWrapper(JSObject* js_object) {

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "gin/gin_export.h"
+#include "gin/public/multi_heap_tracer.h"
 #include "gin/public/v8_idle_task_runner.h"
 #include "v8/include/v8.h"
 
@@ -98,6 +99,9 @@ class GIN_EXPORT IsolateHolder {
                          V8ExtrasMode v8_extras_mode,
                          v8::ArrayBuffer::Allocator* allocator,
                          const intptr_t* reference_table = nullptr);
+
+  // Return the heap tracer.
+  MultiHeapTracer* heap_tracer();
 
   v8::Isolate* isolate() { return isolate_; }
 
