@@ -148,7 +148,8 @@ public class FeedProcessScopeFactory {
                         .setContentStorage(contentStorage)
                         .setJournalStorage(journalStorage)
                         .build();
-        schedulerBridge.initializeFeedDependencies(sFeedProcessScope.getRequestManager());
+        schedulerBridge.initializeFeedDependencies(
+                sFeedProcessScope.getRequestManager(), sFeedProcessScope.getSessionManager());
 
         sFeedOfflineIndicator =
                 new FeedOfflineBridge(profile, sFeedProcessScope.getKnownContentApi());
