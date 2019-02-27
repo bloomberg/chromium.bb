@@ -102,21 +102,20 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
 
   source->AddLocalizedString("inIncognito", IDS_DOWNLOAD_IN_INCOGNITO);
 
-  source->AddResourcePath("1x/incognito_marker.png",
-                          IDR_DOWNLOADS_1X_INCOGNITO_MARKER_PNG);
-  source->AddResourcePath("2x/incognito_marker.png",
-                          IDR_DOWNLOADS_2X_INCOGNITO_MARKER_PNG);
-  source->AddResourcePath("1x/no_downloads.png",
-                          IDR_DOWNLOADS_1X_NO_DOWNLOADS_PNG);
-  source->AddResourcePath("2x/no_downloads.png",
-                          IDR_DOWNLOADS_2X_NO_DOWNLOADS_PNG);
+  source->AddResourcePath("images/1x/incognito_marker.png",
+                          IDR_DOWNLOADS_IMAGES_1X_INCOGNITO_MARKER_PNG);
+  source->AddResourcePath("images/2x/incognito_marker.png",
+                          IDR_DOWNLOADS_IMAGES_2X_INCOGNITO_MARKER_PNG);
+  source->AddResourcePath("images/no_downloads.svg",
+                          IDR_DOWNLOADS_IMAGES_NO_DOWNLOADS_SVG);
   source->AddResourcePath("downloads.mojom-lite.js",
                           IDR_DOWNLOADS_MOJO_LITE_JS);
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->UseGzip(base::BindRepeating([](const std::string& path) {
-    return path != "1x/incognito_marker.png" && path != "1x/no_downloads.png" &&
-           path != "2x/incognito_marker.png" && path != "2x/no_downloads.png" &&
+    return path != "images/1x/incognito_marker.png" &&
+           path != "images/2x/incognito_marker.png" &&
+           path != "images/no_downloads.svg" &&
            path != "downloads.mojom-lite.js";
   }));
 
