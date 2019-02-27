@@ -713,9 +713,11 @@ TEST_F(AutofillAgentTests, FrameInitializationOrderFrames) {
   test_web_state_.RemoveWebFrame(fake_main_frame_->GetFrameId());
 
   // Both frames available, then page loaded.
+  test_web_state_.SetLoading(true);
   auto main_frame_unique =
       std::make_unique<web::FakeWebFrame>("main", true, GURL());
   web::FakeWebFrame* main_frame = main_frame_unique.get();
+  test_web_state_.AddWebFrame(std::move(main_frame_unique));
   autofill::AutofillDriverIOS* main_frame_driver =
       autofill::AutofillDriverIOS::FromWebStateAndWebFrame(&test_web_state_,
                                                            main_frame);
@@ -725,13 +727,11 @@ TEST_F(AutofillAgentTests, FrameInitializationOrderFrames) {
         EXPECT_TRUE(main_frame_driver->is_processed());
       });
   FakeWebFrameCallback* iframe = iframe_unique.get();
+  test_web_state_.AddWebFrame(std::move(iframe_unique));
   autofill::AutofillDriverIOS* iframe_driver =
       autofill::AutofillDriverIOS::FromWebStateAndWebFrame(&test_web_state_,
                                                            iframe);
   EXPECT_FALSE(iframe_driver->IsInMainFrame());
-  test_web_state_.SetLoading(true);
-  test_web_state_.AddWebFrame(std::move(main_frame_unique));
-  test_web_state_.AddWebFrame(std::move(iframe_unique));
   EXPECT_FALSE(main_frame_driver->is_processed());
   EXPECT_FALSE(iframe_driver->is_processed());
   test_web_state_.SetLoading(false);
