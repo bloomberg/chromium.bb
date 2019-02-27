@@ -4,10 +4,15 @@
 
 #include "android_webview/browser/aw_http_auth_handler.h"
 
+#include <utility>
+
 #include "android_webview/browser/aw_contents.h"
-#include "android_webview/browser/aw_login_delegate.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
+#include "base/optional.h"
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/AwHttpAuthHandler_jni.h"
@@ -19,16 +24,23 @@ using content::BrowserThread;
 
 namespace android_webview {
 
-AwHttpAuthHandler::AwHttpAuthHandler(AwLoginDelegate* login_delegate,
-                                     net::AuthChallengeInfo* auth_info,
-                                     bool first_auth_attempt)
-    : login_delegate_(login_delegate),
+AwHttpAuthHandler::AwHttpAuthHandler(net::AuthChallengeInfo* auth_info,
+                                     content::WebContents* web_contents,
+                                     bool first_auth_attempt,
+                                     LoginAuthRequiredCallback callback)
+    : WebContentsObserver(web_contents),
       host_(auth_info->challenger.host()),
-      realm_(auth_info->realm) {
+      realm_(auth_info->realm),
+      callback_(std::move(callback)),
+      weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = base::android::AttachCurrentThread();
   http_auth_handler_.Reset(Java_AwHttpAuthHandler_create(
       env, reinterpret_cast<intptr_t>(this), first_auth_attempt));
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&AwHttpAuthHandler::Start, weak_factory_.GetWeakPtr()));
 }
 
 AwHttpAuthHandler::~AwHttpAuthHandler() {
@@ -42,28 +54,35 @@ void AwHttpAuthHandler::Proceed(JNIEnv* env,
                                 const JavaParamRef<jstring>& user,
                                 const JavaParamRef<jstring>& password) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (login_delegate_.get()) {
-    login_delegate_->Proceed(ConvertJavaStringToUTF16(env, user),
-                             ConvertJavaStringToUTF16(env, password));
-    login_delegate_ = NULL;
+  if (callback_) {
+    std::move(callback_).Run(
+        net::AuthCredentials(ConvertJavaStringToUTF16(env, user),
+                             ConvertJavaStringToUTF16(env, password)));
   }
 }
 
 void AwHttpAuthHandler::Cancel(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (login_delegate_.get()) {
-    login_delegate_->Cancel();
-    login_delegate_ = NULL;
+  if (callback_) {
+    std::move(callback_).Run(base::nullopt);
   }
 }
 
-bool AwHttpAuthHandler::HandleOnUIThread(content::WebContents* web_contents) {
-  DCHECK(web_contents);
+void AwHttpAuthHandler::Start() {
+  DCHECK(web_contents());
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  AwContents* aw_contents = AwContents::FromWebContents(web_contents);
 
-  return aw_contents->OnReceivedHttpAuthRequest(http_auth_handler_, host_,
-                                                realm_);
+  // The WebContents may have been destroyed during the PostTask.
+  if (!web_contents()) {
+    std::move(callback_).Run(base::nullopt);
+    return;
+  }
+
+  AwContents* aw_contents = AwContents::FromWebContents(web_contents());
+  if (!aw_contents->OnReceivedHttpAuthRequest(http_auth_handler_, host_,
+                                              realm_)) {
+    std::move(callback_).Run(base::nullopt);
+  }
 }
 
 }  // namespace android_webview
