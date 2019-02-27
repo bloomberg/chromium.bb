@@ -161,10 +161,12 @@ void MakeUsernameForAccount(const base::DictionaryValue* result,
 HRESULT WaitForLoginUIAndGetResult(
     CGaiaCredentialBase::UIProcessInfo* uiprocinfo,
     std::string* json_result,
+    DWORD* exit_code,
     BSTR* status_text) {
   LOGFN(INFO);
   DCHECK(uiprocinfo);
   DCHECK(json_result);
+  DCHECK(exit_code);
   DCHECK(status_text);
 
   // Buffer used to accumulate output from UI.
@@ -174,18 +176,17 @@ HRESULT WaitForLoginUIAndGetResult(
       base::BindOnce(base::IgnoreResult(&RtlSecureZeroMemory),
                      &output_buffer[0], kBufferSize));
 
-  DWORD exit_code;
   HRESULT hr = WaitForProcess(uiprocinfo->procinfo.process_handle(),
-                              uiprocinfo->parent_handles, &exit_code,
+                              uiprocinfo->parent_handles, exit_code,
                               &output_buffer[0], kBufferSize);
   // output_buffer contains sensitive information like the password. Don't log
   // it.
   LOGFN(INFO) << "exit_code=" << exit_code;
 
-  if (exit_code == kUiecAbort) {
+  if (*exit_code == kUiecAbort) {
     LOGFN(ERROR) << "Aborted hr=" << putHR(hr);
     return E_ABORT;
-  } else if (exit_code != kUiecSuccess) {
+  } else if (*exit_code != kUiecSuccess) {
     LOGFN(ERROR) << "Error hr=" << putHR(hr);
     *status_text =
         CGaiaCredentialBase::AllocErrorString(IDS_INVALID_UI_RESPONSE_BASE);
@@ -1366,9 +1367,10 @@ unsigned __stdcall CGaiaCredentialBase::WaitForLoginUI(void* param) {
   }
 
   CComBSTR status_text;
+  DWORD exit_code;
   std::string json_result;
-  HRESULT hr =
-      WaitForLoginUIAndGetResult(uiprocinfo.get(), &json_result, &status_text);
+  HRESULT hr = WaitForLoginUIAndGetResult(uiprocinfo.get(), &json_result,
+                                          &exit_code, &status_text);
   if (SUCCEEDED(hr)) {
     // Notify that the new user is created.
     // TODO(rogerta): Docs say this should not be called on a background
@@ -1380,7 +1382,10 @@ unsigned __stdcall CGaiaCredentialBase::WaitForLoginUI(void* param) {
         CComBSTR(A2COLE(json_result.c_str())), &status_text);
   }
 
-  if (FAILED(hr)) {
+  // If the process was killed by the credential in Terminate(), don't process
+  // the error message since it is possible that the credential and/or the
+  // provider no longer exists.
+  if (FAILED(hr) && exit_code != kUiecKilled) {
     if (hr != E_ABORT)
       LOGFN(ERROR) << "WaitForLoginUIAndGetResult hr=" << putHR(hr);
 
