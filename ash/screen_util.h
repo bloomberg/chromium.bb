@@ -26,6 +26,11 @@ ASH_EXPORT gfx::Rect GetMaximizedWindowBoundsInParent(aura::Window* window);
 // Returns the display bounds in parent coordinates.
 ASH_EXPORT gfx::Rect GetDisplayBoundsInParent(aura::Window* window);
 
+// Returns the bounds of fullscreened windows in the parent coordinates of
+// |window| taking into account the height of the Docked Magnifier and Chromevox
+// panel (if they are enabled).
+ASH_EXPORT gfx::Rect GetFullscreenWindowBoundsInParent(aura::Window* window);
+
 // Returns the display's work area bounds in parent coordinates.
 ASH_EXPORT gfx::Rect GetDisplayWorkAreaBoundsInParent(aura::Window* window);
 

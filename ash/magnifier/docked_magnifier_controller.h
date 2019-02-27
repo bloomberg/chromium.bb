@@ -122,6 +122,11 @@ class ASH_EXPORT DockedMagnifierController
   bool GetFullscreenMagnifierEnabled() const;
   void SetFullscreenMagnifierEnabled(bool enabled);
 
+  // Returns the total height of the Docked Magnifier, which is the height of
+  // the viewport widget plus the height of the separator, if enabled, or zero
+  // if disabled.
+  int GetTotalMagnifierHeight() const;
+
   const views::Widget* GetViewportWidgetForTesting() const;
 
   const ui::Layer* GetViewportMagnifierLayerForTesting() const;
