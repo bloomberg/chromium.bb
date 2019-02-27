@@ -361,7 +361,7 @@ Status WebViewImpl::CallFunction(const std::string& frame,
   std::string w3c = w3c_compliant_ ? "true" : "false";
   // TODO(zachconrad): Second null should be array of shadow host ids.
   std::string expression = base::StringPrintf(
-      "(%s).apply(null, [null, %s, %s, %s])",
+      "(%s).apply(null, [%s, %s, %s])",
       kCallFunctionScript,
       function.c_str(),
       json.c_str(),
@@ -1141,7 +1141,7 @@ Status GetNodeIdFromFunction(DevToolsClient* client,
   std::string w3c = w3c_compliant ? "true" : "false";
   // TODO(zachconrad): Second null should be array of shadow host ids.
   std::string expression = base::StringPrintf(
-      "(%s).apply(null, [null, %s, %s, %s, true])",
+      "(%s).apply(null, [%s, %s, %s, true])",
       kCallFunctionScript,
       function.c_str(),
       json.c_str(),
