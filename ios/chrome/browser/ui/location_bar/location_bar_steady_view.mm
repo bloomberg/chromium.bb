@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/location_bar/extended_touch_target_button.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -245,6 +246,25 @@ const CGFloat kButtonTrailingSpacing = 10;
                          constant:-kButtonTrailingSpacing],
     ];
     [NSLayoutConstraint activateConstraints:_showButtonConstraints];
+
+    if (IsInfobarUIRebootEnabled()) {
+      // Setup leading button.
+      _leadingButton =
+          [ExtendedTouchTargetButton buttonWithType:UIButtonTypeSystem];
+      _leadingButton.translatesAutoresizingMaskIntoConstraints = NO;
+      [_locationButton addSubview:_leadingButton];
+
+      // Setup and activate the leading button constraints.
+      [NSLayoutConstraint activateConstraints:@[
+        [_leadingButton.widthAnchor constraintEqualToConstant:kButtonSize],
+        [_leadingButton.heightAnchor constraintEqualToConstant:kButtonSize],
+        [_leadingButton.leadingAnchor
+            constraintEqualToAnchor:self.leadingAnchor
+                           constant:kButtonTrailingSpacing],
+        [_leadingButton.centerYAnchor
+            constraintEqualToAnchor:self.centerYAnchor],
+      ]];
+    }
   }
 
   // Setup accessibility.

@@ -65,6 +65,7 @@ source_set("infobars_ui") {
   deps = [
     ":public",
     "resources:infobar_downloading",
+    "resources:infobar_passwords_icon",
     "resources:infobar_popup_blocker",
     "resources:infobar_warning",
     "//base",
