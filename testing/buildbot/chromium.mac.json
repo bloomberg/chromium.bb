@@ -1044,6 +1044,20 @@
         }
       },
       {
+        "experiment_percentage": 100,
+        "isolate_name": "flatbuffers_unittests",
+        "name": "flatbuffers_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.10"
+            }
+          ]
+        }
+      },
+      {
         "isolate_name": "metrics_python_tests",
         "name": "metrics_python_tests",
         "swarming": {
@@ -2178,6 +2192,20 @@
       {
         "isolate_name": "content_shell_crash_test",
         "name": "content_shell_crash_test",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.11"
+            }
+          ]
+        }
+      },
+      {
+        "experiment_percentage": 100,
+        "isolate_name": "flatbuffers_unittests",
+        "name": "flatbuffers_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3334,6 +3362,20 @@
         }
       },
       {
+        "experiment_percentage": 100,
+        "isolate_name": "flatbuffers_unittests",
+        "name": "flatbuffers_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.12.6"
+            }
+          ]
+        }
+      },
+      {
         "isolate_name": "metrics_python_tests",
         "name": "metrics_python_tests",
         "swarming": {
@@ -4479,6 +4521,20 @@
         }
       },
       {
+        "experiment_percentage": 100,
+        "isolate_name": "flatbuffers_unittests",
+        "name": "flatbuffers_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.13"
+            }
+          ]
+        }
+      },
+      {
         "isolate_name": "metrics_python_tests",
         "name": "metrics_python_tests",
         "swarming": {
@@ -5555,6 +5611,20 @@
       {
         "isolate_name": "content_shell_crash_test",
         "name": "content_shell_crash_test",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.13"
+            }
+          ]
+        }
+      },
+      {
+        "experiment_percentage": 100,
+        "isolate_name": "flatbuffers_unittests",
+        "name": "flatbuffers_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
