@@ -308,9 +308,10 @@ public class CronetHttpURLConnectionTest {
             fail();
         } catch (IOException e) {
             assertTrue(e instanceof java.net.ConnectException || e instanceof CronetException);
-            assertTrue((e.getMessage().contains("ECONNREFUSED")
-                    || (e.getMessage().contains("Connection refused"))
-                    || e.getMessage().contains("net::ERR_CONNECTION_REFUSED")));
+            assertTrue(e.getMessage().contains("ECONNREFUSED")
+                    || e.getMessage().contains("Connection refused")
+                    || e.getMessage().contains("net::ERR_CONNECTION_REFUSED")
+                    || e.getMessage().contains("Failed to connect"));
         }
         checkExceptionsAreThrown(secondConnection);
         urlConnection.disconnect();
@@ -335,9 +336,10 @@ public class CronetHttpURLConnectionTest {
             fail();
         } catch (IOException e) {
             assertTrue(e instanceof java.net.ConnectException || e instanceof CronetException);
-            assertTrue((e.getMessage().contains("ECONNREFUSED")
-                    || (e.getMessage().contains("Connection refused"))
-                    || e.getMessage().contains("net::ERR_CONNECTION_REFUSED")));
+            assertTrue(e.getMessage().contains("ECONNREFUSED")
+                    || e.getMessage().contains("Connection refused")
+                    || e.getMessage().contains("net::ERR_CONNECTION_REFUSED")
+                    || e.getMessage().contains("Failed to connect"));
         }
         checkExceptionsAreThrown(urlConnection);
     }
