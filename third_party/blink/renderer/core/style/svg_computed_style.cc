@@ -224,14 +224,12 @@ bool SVGComputedStyle::DiffNeedsPaintInvalidation(
   }
 
   // If gradient stops change, we just need to issue paint invalidations. Style
-  // updates are already handled through LayoutSVGGradientSTop.
+  // updates are already handled through SVGStopElement.
   if (stops != other.stops)
     return true;
 
   // Changes of these flags only cause paint invalidations.
-  if (svg_inherited_flags.color_rendering !=
-          other.svg_inherited_flags.color_rendering ||
-      svg_inherited_flags.shape_rendering !=
+  if (svg_inherited_flags.shape_rendering !=
           other.svg_inherited_flags.shape_rendering ||
       svg_inherited_flags.clip_rule != other.svg_inherited_flags.clip_rule ||
       svg_inherited_flags.fill_rule != other.svg_inherited_flags.fill_rule ||
@@ -240,10 +238,6 @@ bool SVGComputedStyle::DiffNeedsPaintInvalidation(
       svg_inherited_flags.color_interpolation_filters !=
           other.svg_inherited_flags.color_interpolation_filters ||
       svg_inherited_flags.paint_order != other.svg_inherited_flags.paint_order)
-    return true;
-
-  if (svg_noninherited_flags.f.buffered_rendering !=
-      other.svg_noninherited_flags.f.buffered_rendering)
     return true;
 
   if (svg_noninherited_flags.f.mask_type !=
