@@ -84,9 +84,10 @@ void AccessibilityLabelsService::EnableLabelsServiceOnce() {
   // Fire an AXAction on the active tab to enable this feature once only.
   ui::AXActionData action_data;
   action_data.action = ax::mojom::Action::kAnnotatePageImages;
-  web_contents->GetMainFrame()->AccessibilityPerformAction(action_data);
-  // TODO(katie): Support iframes by doing this to all RenderFrameHosts within
-  // the web_contents.
+  for (content::RenderFrameHost* frame : web_contents->GetAllFrames()) {
+    if (frame->IsRenderFrameLive())
+      frame->AccessibilityPerformAction(action_data);
+  }
 #endif
 }
 
