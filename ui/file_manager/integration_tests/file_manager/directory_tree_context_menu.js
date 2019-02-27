@@ -430,8 +430,18 @@ testcase.dirRenameWithoutChangingCurrent = async function() {
 /**
  * Tests renaming a folder to an empty string.
  */
-testcase.dirRenameToEmptyString = function() {
-  return renameDirectoryFromDirectoryTreeAndConfirmAlertDialog('');
+testcase.dirRenameToEmptyString = async function() {
+  const appId = await setupForDirectoryTreeContextMenuTest();
+
+  await remoteCall.navigateWithDirectoryTree(
+      appId, RootPath.DOWNLOADS_PATH + '/photos', 'My files/Downloads');
+  await renamePhotosDirectoryTo(appId, '', false);
+
+  // Wait for the input to be removed.
+  await remoteCall.waitForElementLost(appId, '.tree-row > input');
+
+  // No dialog should be shown.
+  await remoteCall.waitForElementLost(appId, '.cr-dialog-container.shown');
 };
 
 /**
