@@ -243,11 +243,6 @@ struct DowncastTraits<ShadowRoot> {
   }
 };
 
-template <>
-struct DowncastTraits<TreeScope> {
-  static bool AllowFrom(const ShadowRoot& shadow_root) { return true; }
-};
-
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const ShadowRootType&);
 
 }  // namespace blink

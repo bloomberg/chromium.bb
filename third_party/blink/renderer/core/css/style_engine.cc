@@ -271,8 +271,10 @@ void StyleEngine::RemoveStyleSheetCandidateNode(
   if (!shadow_root)
     shadow_root = insertion_point.ContainingShadowRoot();
 
+  static_assert(std::is_base_of<TreeScope, ShadowRoot>::value,
+                "The ShadowRoot must be subclass of TreeScope.");
   TreeScope& tree_scope =
-      shadow_root ? *To<TreeScope>(shadow_root) : GetDocument();
+      shadow_root ? static_cast<TreeScope&>(*shadow_root) : GetDocument();
   TreeScopeStyleSheetCollection* collection =
       StyleSheetCollectionFor(tree_scope);
   // After detaching document, collection could be null. In the case,
