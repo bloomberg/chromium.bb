@@ -168,12 +168,15 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   }
 
   bool HasDirectCompositingReasons() const {
-    return state_.direct_compositing_reasons != CompositingReason::kNone;
+    return DirectCompositingReasons() != CompositingReason::kNone;
   }
-
   bool RequiresCompositingForAnimation() const {
-    return state_.direct_compositing_reasons &
+    return DirectCompositingReasons() &
            CompositingReason::kComboActiveAnimation;
+  }
+  bool HasActiveTransformAnimation() const {
+    return DirectCompositingReasons() &
+           CompositingReason::kActiveTransformAnimation;
   }
 
   bool RequiresCompositingForRootScroller() const {
@@ -203,6 +206,11 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       : PaintPropertyNode(parent, is_parent_alias), state_(std::move(state)) {
     CheckAndUpdateIsIdentityOr2DTranslation();
     Validate();
+  }
+
+  CompositingReasons DirectCompositingReasons() const {
+    DCHECK(!Parent() || !IsParentAlias());
+    return state_.direct_compositing_reasons;
   }
 
   void CheckAndUpdateIsIdentityOr2DTranslation() {
