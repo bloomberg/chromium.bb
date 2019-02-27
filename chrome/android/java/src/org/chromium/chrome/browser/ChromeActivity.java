@@ -878,8 +878,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         TraceEvent.begin("ChromeActivity:CompositorInitialization");
         super.initializeCompositor();
 
-        setTabContentManager(new TabContentManager(this, getContentOffsetProvider(),
-                getChromeApplication().getReferencePool(), DeviceClassManager.enableSnapshots()));
+        setTabContentManager(new TabContentManager(
+                this, getContentOffsetProvider(), DeviceClassManager.enableSnapshots()));
         mCompositorViewHolder.onNativeLibraryReady(getWindowAndroid(), getTabContentManager());
 
         if (isContextualSearchAllowed() && ContextualSearchFieldTrial.isEnabled()) {
