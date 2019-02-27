@@ -12,6 +12,8 @@
 #include "ash/login/ui/login_button.h"
 #include "ash/login/ui/login_pin_view.h"
 #include "ash/login/ui/login_test_base.h"
+#include "ash/shell.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -177,6 +179,8 @@ TEST_F(ParentAccessViewTest, Backspace) {
 
 // Tests input with virtual pin keyboard.
 TEST_F(ParentAccessViewTest, PinKeyboard) {
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
   ParentAccessView::TestApi test_api(view_);
   LoginPinView::TestApi test_pin_keyboard(test_api.pin_keyboard_view());
   EXPECT_FALSE(test_api.submit_button()->enabled());
@@ -193,6 +197,19 @@ TEST_F(ParentAccessViewTest, PinKeyboard) {
   SimulateButtonPress(test_api.submit_button());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, successful_validation_);
+}
+
+// Tests that pin keyboard visibility changes upon tablet mode changes.
+TEST_F(ParentAccessViewTest, PinKeyboardVisibilityChange) {
+  ParentAccessView::TestApi test_api(view_);
+  LoginPinView::TestApi test_pin_keyboard(test_api.pin_keyboard_view());
+  EXPECT_FALSE(test_api.pin_keyboard_view()->visible());
+
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_TRUE(test_api.pin_keyboard_view()->visible());
+
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  EXPECT_FALSE(test_api.pin_keyboard_view()->visible());
 }
 
 // Tests that error state is shown and cleared when neccesary.

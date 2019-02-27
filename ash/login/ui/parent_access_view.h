@@ -9,10 +9,13 @@
 
 #include "ash/ash_export.h"
 #include "ash/login/ui/non_accessible_view.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "components/account_id/account_id.h"
 #include "ui/views/controls/button/button.h"
 
@@ -29,7 +32,8 @@ class LoginPinView;
 // The view that allows for input of parent access code to authorize certain
 // actions on child's device.
 class ASH_EXPORT ParentAccessView : public NonAccessibleView,
-                                    public views::ButtonListener {
+                                    public views::ButtonListener,
+                                    public TabletModeObserver {
  public:
   // ParentAccessView state.
   enum class State {
@@ -76,9 +80,16 @@ class ASH_EXPORT ParentAccessView : public NonAccessibleView,
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
   void RequestFocus() override;
+  void Layout() override;
+  gfx::Size CalculatePreferredSize() const override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // TabletModeObserver:
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
+  void OnTabletControllerDestroyed() override;
 
  private:
   class AccessCodeInput;
@@ -112,6 +123,9 @@ class ASH_EXPORT ParentAccessView : public NonAccessibleView,
   LoginButton* back_button_ = nullptr;
   views::LabelButton* help_button_ = nullptr;
   ArrowButtonView* submit_button_ = nullptr;
+
+  ScopedObserver<TabletModeController, TabletModeObserver>
+      tablet_mode_observer_{this};
 
   base::WeakPtrFactory<ParentAccessView> weak_ptr_factory_{this};
 

@@ -49,9 +49,10 @@ constexpr const char kParentAccessViewClassName[] = "ParentAccessView";
 constexpr int kParentAccessCodePinLength = 6;
 
 constexpr int kParentAccessViewWidthDp = 340;
-constexpr int kParentAccessViewHeightDp = 560;
+constexpr int kParentAccessViewHeightDp = 340;
+constexpr int kParentAccessViewTabletModeHeightDp = 580;
 constexpr int kParentAccessViewRoundedCornerRadiusDp = 8;
-constexpr int kParentAccessViewVerticalInsetDp = 36;
+constexpr int kParentAccessViewVerticalInsetDp = 16;
 constexpr int kParentAccessViewHorizontalInsetDp = 26;
 
 constexpr int kLockIconSizeDp = 24;
@@ -76,6 +77,12 @@ constexpr int kArrowSizeDp = 20;
 constexpr SkColor kTextColor = SK_ColorWHITE;
 constexpr SkColor kErrorColor = SkColorSetARGB(0xFF, 0xF2, 0x8B, 0x82);
 constexpr SkColor kArrowButtonColor = SkColorSetARGB(0x57, 0xFF, 0xFF, 0xFF);
+
+bool IsTabletMode() {
+  return Shell::Get()
+      ->tablet_mode_controller()
+      ->IsTabletModeWindowManagerEnabled();
+}
 
 }  // namespace
 
@@ -198,6 +205,38 @@ class ParentAccessView::AccessCodeInput : public views::View,
     return true;
   }
 
+  bool HandleMouseEvent(views::Textfield* sender,
+                        const ui::MouseEvent& mouse_event) override {
+    if (!mouse_event.IsOnlyLeftMouseButton())
+      return false;
+
+    // Move focus to the field that was selected with mouse input.
+    for (size_t i = 0; i < input_fields_.size(); ++i) {
+      if (input_fields_[i] == sender) {
+        active_input_index_ = i;
+        break;
+      }
+    }
+
+    return true;
+  }
+
+  bool HandleGestureEvent(views::Textfield* sender,
+                          const ui::GestureEvent& gesture_event) override {
+    if (gesture_event.details().type() != ui::EventType::ET_GESTURE_TAP)
+      return false;
+
+    // Move focus to the field that was selected with gesture.
+    for (size_t i = 0; i < input_fields_.size(); ++i) {
+      if (input_fields_[i] == sender) {
+        active_input_index_ = i;
+        break;
+      }
+    }
+
+    return true;
+  }
+
  private:
   // Moves focus to the previous input field if it exists.
   void FocusPreviousField() {
@@ -279,13 +318,11 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
       gfx::Insets(kParentAccessViewVerticalInsetDp,
                   kParentAccessViewHorizontalInsetDp),
       0);
-  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  SetLayoutManager(std::move(layout));
+  views::BoxLayout* main_layout = SetLayoutManager(std::move(layout));
 
-  SetPreferredSize(
-      gfx::Size(kParentAccessViewWidthDp, kParentAccessViewHeightDp));
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
@@ -375,6 +412,12 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   pin_keyboard_view_->OnPasswordTextChanged(false);
   AddChildView(pin_keyboard_view_);
 
+  // Vertical spacer to consume height remaining in the view after all children
+  // are accounted for.
+  auto* vertical_spacer = new NonAccessibleView();
+  AddChildView(vertical_spacer);
+  main_layout->SetFlexForView(vertical_spacer, 1);
+
   // Footer view contains help text button aligned to its start, submit
   // button aligned to its end and spacer view in between.
   auto* footer = new NonAccessibleView();
@@ -405,6 +448,11 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
       gfx::Size(kArrowButtonSizeDp, kArrowButtonSizeDp));
   submit_button_->SetEnabled(false);
   footer->AddChildView(submit_button_);
+
+  // Pin keyboard is only shown in tablet mode.
+  pin_keyboard_view_->SetVisible(IsTabletMode());
+
+  tablet_mode_observer_.Add(Shell::Get()->tablet_mode_controller());
 }
 
 ParentAccessView::~ParentAccessView() = default;
@@ -428,6 +476,17 @@ void ParentAccessView::RequestFocus() {
   access_code_view_->RequestFocus();
 }
 
+void ParentAccessView::Layout() {
+  NonAccessibleView::Layout();
+  SizeToPreferredSize();
+}
+
+gfx::Size ParentAccessView::CalculatePreferredSize() const {
+  return gfx::Size(kParentAccessViewWidthDp,
+                   IsTabletMode() ? kParentAccessViewTabletModeHeightDp
+                                  : kParentAccessViewHeightDp);
+}
+
 void ParentAccessView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   if (sender == back_button_) {
@@ -438,6 +497,27 @@ void ParentAccessView::ButtonPressed(views::Button* sender,
   } else if (sender == submit_button_) {
     SubmitCode();
   }
+}
+
+void ParentAccessView::OnTabletModeStarted() {
+  VLOG(1) << "Showing PIN keyboard in ParentAccessView";
+  pin_keyboard_view_->SetVisible(true);
+  // This will trigger ChildPreferredSizeChanged in parent view and Layout() in
+  // view. As the result whole hierarchy will go through re-layout.
+  PreferredSizeChanged();
+}
+
+void ParentAccessView::OnTabletModeEnded() {
+  VLOG(1) << "Hiding PIN keyboard in ParentAccessView";
+  DCHECK(pin_keyboard_view_);
+  pin_keyboard_view_->SetVisible(false);
+  // This will trigger ChildPreferredSizeChanged in parent view and Layout() in
+  // view. As the result whole hierarchy will go through re-layout.
+  PreferredSizeChanged();
+}
+
+void ParentAccessView::OnTabletControllerDestroyed() {
+  tablet_mode_observer_.RemoveAll();
 }
 
 void ParentAccessView::SubmitCode() {

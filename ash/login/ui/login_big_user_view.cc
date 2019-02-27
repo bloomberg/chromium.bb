@@ -151,6 +151,10 @@ void LoginBigUserView::RequestFocus() {
   return auth_user_->RequestFocus();
 }
 
+void LoginBigUserView::ChildPreferredSizeChanged(views::View* child) {
+  parent()->Layout();
+}
+
 void LoginBigUserView::OnWallpaperBlurChanged() {
   if (Shell::Get()->wallpaper_controller()->IsWallpaperBlurred()) {
     SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
