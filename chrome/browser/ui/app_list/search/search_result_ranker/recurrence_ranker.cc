@@ -43,7 +43,7 @@ void SaveProtoToDisk(const base::FilePath& filepath,
   bool write_result;
   {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
     write_result = base::ImportantFileWriter::WriteFileAtomically(
         filepath, proto_str, "RecurrenceRanker");
   }

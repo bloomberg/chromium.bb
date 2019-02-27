@@ -40,7 +40,7 @@ DrmDeviceHandle::DrmDeviceHandle() {
 DrmDeviceHandle::~DrmDeviceHandle() {
   if (file_.is_valid()) {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
     file_.reset();
   }
 }

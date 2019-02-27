@@ -304,7 +304,7 @@ void ObjectProxy::Detach() {
 
   for (auto* pending_call : pending_calls_) {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     dbus_pending_call_cancel(pending_call);
     dbus_pending_call_unref(pending_call);

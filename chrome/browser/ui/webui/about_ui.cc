@@ -231,7 +231,7 @@ class ChromeOSTermsHandler
 
   void LoadOemEulaFileAsync() {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     const chromeos::StartupCustomizationDocument* customization =
         chromeos::StartupCustomizationDocument::GetInstance();
@@ -249,7 +249,7 @@ class ChromeOSTermsHandler
 
   void LoadEulaFileAsync() {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     std::string file_path =
         base::StringPrintf(chrome::kEULAPathFormat, locale_.c_str());
@@ -266,7 +266,7 @@ class ChromeOSTermsHandler
 
   void LoadArcPrivacyPolicyFileAsync() {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     for (const auto& locale : CreateArcLocaleLookupArray()) {
       // Offline ARC privacy policis are only available during demo mode setup.
@@ -288,7 +288,7 @@ class ChromeOSTermsHandler
 
   void LoadArcTermsFileAsync() {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     for (const auto& locale : CreateArcLocaleLookupArray()) {
       // Offline ARC TOS are only available during demo mode setup.

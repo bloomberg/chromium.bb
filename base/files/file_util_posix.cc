@@ -497,6 +497,7 @@ bool ReadFromFD(int fd, char* buffer, size_t bytes) {
 int CreateAndOpenFdForTemporaryFileInDir(const FilePath& directory,
                                          FilePath* path) {
   ScopedBlockingCall scoped_blocking_call(
+      FROM_HERE,
       BlockingType::MAY_BLOCK);  // For call to mkstemp().
   *path = directory.Append(TempFileName());
   const std::string& tmpdir_string = path->value();
@@ -633,7 +634,7 @@ FilePath GetHomeDir() {
 
 bool CreateTemporaryFile(FilePath* path) {
   ScopedBlockingCall scoped_blocking_call(
-      BlockingType::MAY_BLOCK);  // For call to close().
+      FROM_HERE, BlockingType::MAY_BLOCK);  // For call to close().
   FilePath directory;
   if (!GetTempDir(&directory))
     return false;
@@ -657,7 +658,7 @@ FILE* CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* path) {
 
 bool CreateTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
   ScopedBlockingCall scoped_blocking_call(
-      BlockingType::MAY_BLOCK);  // For call to close().
+      FROM_HERE, BlockingType::MAY_BLOCK);  // For call to close().
   int fd = CreateAndOpenFdForTemporaryFileInDir(dir, temp_file);
   return ((fd >= 0) && !IGNORE_EINTR(close(fd)));
 }
@@ -666,7 +667,7 @@ static bool CreateTemporaryDirInDirImpl(const FilePath& base_dir,
                                         const FilePath::StringType& name_tmpl,
                                         FilePath* new_dir) {
   ScopedBlockingCall scoped_blocking_call(
-      BlockingType::MAY_BLOCK);  // For call to mkdtemp().
+      FROM_HERE, BlockingType::MAY_BLOCK);  // For call to mkdtemp().
   DCHECK(name_tmpl.find("XXXXXX") != FilePath::StringType::npos)
       << "Directory name template must contain \"XXXXXX\".";
 
@@ -704,7 +705,7 @@ bool CreateNewTempDirectory(const FilePath::StringType& prefix,
 bool CreateDirectoryAndGetError(const FilePath& full_path,
                                 File::Error* error) {
   ScopedBlockingCall scoped_blocking_call(
-      BlockingType::MAY_BLOCK);  // For call to mkdir().
+      FROM_HERE, BlockingType::MAY_BLOCK);  // For call to mkdir().
   std::vector<FilePath> subpaths;
 
   // Collect a list of all parent directories.

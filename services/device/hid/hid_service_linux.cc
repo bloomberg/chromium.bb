@@ -94,7 +94,7 @@ class HidServiceLinux::BlockingTaskHelper : public UdevWatcher::Observer {
   void OnDeviceAdded(ScopedUdevDevicePtr device) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     const char* device_path = udev_device_get_syspath(device.get());
     if (!device_path)
@@ -171,7 +171,7 @@ class HidServiceLinux::BlockingTaskHelper : public UdevWatcher::Observer {
   void OnDeviceRemoved(ScopedUdevDevicePtr device) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     const char* device_path = udev_device_get_syspath(device.get());
     if (device_path) {
