@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FINDER_FIND_BUFFER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FINDER_FIND_BUFFER_H_
 
+#include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/editing/finder/find_options.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_searcher_icu.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
@@ -119,6 +120,19 @@ class CORE_EXPORT FindBuffer {
   // another LayoutBlockFlow or after |end_position|) to |node_after_block_|.
   void CollectTextUntilBlockBoundary(const EphemeralRangeInFlatTree& range);
 
+  // Adds the ScopedForcedUpdate of |element|'s DisplayLockContext (if it's
+  // there) to |scoped_forced_update_list_|. Returns true if we added a
+  // ScopedForceUpdate.
+  bool PushScopedForcedUpdateIfNeeded(const Element& element);
+
+  // Collects all ScopedForceUpdates of any activatable-locked element
+  // within the range of [start_node, search_range_end_node] or
+  // [start_node, node_after_block) whichever is smaller, to
+  // |scoped_forced_update_list_|.
+  void CollectScopedForcedUpdates(Node& start_node,
+                                  const Node* search_range_end_node,
+                                  const Node* node_after_block);
+
   class CORE_EXPORT InvisibleLayoutScope {
     STACK_ALLOCATED();
 
@@ -179,6 +193,7 @@ class CORE_EXPORT FindBuffer {
   Member<Node> node_after_block_;
   Vector<UChar> buffer_;
   Vector<BufferNodeMapping> buffer_node_mappings_;
+  Vector<DisplayLockContext::ScopedForcedUpdate> scoped_forced_update_list_;
 
   // For legacy layout, we need to save a unique_ptr of the NGOffsetMapping
   // because nobody owns it. In LayoutNG, the NGOffsetMapping is owned by

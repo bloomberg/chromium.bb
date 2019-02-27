@@ -67,7 +67,7 @@ class CORE_EXPORT DisplayLockContext final
   };
 
   // See GetScopedForcedUpdate() for description.
-  class ScopedForcedUpdate {
+  class CORE_EXPORT ScopedForcedUpdate {
     DISALLOW_NEW();
 
    public:

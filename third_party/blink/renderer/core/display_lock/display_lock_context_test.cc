@@ -279,6 +279,151 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaFindInPage) {
   client.Reset();
 }
 
+TEST_F(DisplayLockContextTest,
+       ActivatableLockedElementIsSearchableViaFindInPage) {
+  ResizeAndFocus();
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    #container {
+      width: 100px;
+      height: 100px;
+      contain: content;
+    }
+    </style>
+    <body><div id="container">testing</div></body>
+  )HTML");
+
+  WebString search_text(String("testing"));
+  auto* find_in_page = GetFindInPage();
+  ASSERT_TRUE(find_in_page);
+
+  DisplayLockTestFindInPageClient client;
+  client.SetFrame(LocalMainFrame());
+
+  auto find_options = mojom::blink::FindOptions::New();
+  find_options->run_synchronously_for_testing = true;
+  find_options->find_next = false;
+  find_options->forward = true;
+
+  int current_id = 123;
+  find_in_page->Find(current_id++, "testing", find_options->Clone());
+  EXPECT_FALSE(client.FindResultsAreReady());
+  test::RunPendingTasks();
+  EXPECT_TRUE(client.FindResultsAreReady());
+  EXPECT_EQ(1, client.Count());
+  client.Reset();
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+
+  DisplayLockOptions options;
+  options.setActivatable(true);
+  auto* element = GetDocument().getElementById("container");
+  auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+  {
+    ScriptState::Scope scope(script_state);
+    element->getDisplayLockForBindings()->acquire(script_state, &options);
+  }
+
+  UpdateAllLifecyclePhasesForTest();
+
+  // Sanity checks to ensure the element is locked.
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+
+  EXPECT_TRUE(element->GetDisplayLockContext()->IsActivatable());
+
+  // Check if we can still get the same result with the same query.
+  find_in_page->Find(current_id++, "testing", find_options->Clone());
+  EXPECT_FALSE(client.FindResultsAreReady());
+  test::RunPendingTasks();
+  EXPECT_TRUE(client.FindResultsAreReady());
+  EXPECT_EQ(1, client.Count());
+  client.Reset();
+
+  // Check if the result is correct if we update the contents.
+  element->SetInnerHTMLFromString(
+      "<div>tes</div>ting"
+      "<div style='display:none;'>testing</div>");
+  find_in_page->Find(current_id++, "testing", find_options->Clone());
+  EXPECT_FALSE(client.FindResultsAreReady());
+  test::RunPendingTasks();
+  EXPECT_TRUE(client.FindResultsAreReady());
+  EXPECT_EQ(0, client.Count());
+  client.Reset();
+
+  // Check if the result is correct if we have non-activatable lock.
+  element->SetInnerHTMLFromString(
+      "<div>testing1</div>"
+      "<div id='activatable' style='contain: style layout;'>"
+      " testing2"
+      " <div id='nestedNonActivatable' style='contain: style layout;'>"
+      "   testing3"
+      " </div>"
+      "</div>"
+      "<div id='nonActivatable' style='contain: style layout;'>testing4</div>");
+  auto* activatable = GetDocument().getElementById("activatable");
+  auto* non_activatable = GetDocument().getElementById("nonActivatable");
+  auto* nested_non_activatable =
+      GetDocument().getElementById("nestedNonActivatable");
+
+  {
+    ScriptState::Scope scope(script_state);
+    activatable->getDisplayLockForBindings()->acquire(script_state, &options);
+    nested_non_activatable->getDisplayLockForBindings()->acquire(script_state,
+                                                                 nullptr);
+    non_activatable->getDisplayLockForBindings()->acquire(script_state,
+                                                          nullptr);
+  }
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 4);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 2);
+
+  find_in_page->Find(current_id++, "testing", find_options->Clone());
+  EXPECT_FALSE(client.FindResultsAreReady());
+  test::RunPendingTasks();
+  EXPECT_TRUE(client.FindResultsAreReady());
+  EXPECT_EQ(2, client.Count());
+  client.Reset();
+
+  // Check if the result is correct if we update style.
+  activatable->setAttribute("style", "contain: style layout; display: none;");
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 4);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 2);
+
+  find_in_page->Find(current_id++, "testing", find_options->Clone());
+  EXPECT_FALSE(client.FindResultsAreReady());
+  test::RunPendingTasks();
+  EXPECT_TRUE(client.FindResultsAreReady());
+  EXPECT_EQ(1, client.Count());
+  client.Reset();
+
+  // Now commit all the locks and ensure we can find.
+  {
+    ScriptState::Scope scope(script_state);
+    element->getDisplayLockForBindings()->commit(script_state);
+    activatable->getDisplayLockForBindings()->commit(script_state);
+    nested_non_activatable->getDisplayLockForBindings()->commit(script_state);
+    non_activatable->getDisplayLockForBindings()->commit(script_state);
+  }
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+
+  find_in_page->Find(current_id++, "testing", find_options->Clone());
+  EXPECT_FALSE(client.FindResultsAreReady());
+  test::RunPendingTasks();
+  EXPECT_TRUE(client.FindResultsAreReady());
+  EXPECT_EQ(2, client.Count());
+  client.Reset();
+}
+
 TEST_F(DisplayLockContextTest, CallUpdateStyleAndLayoutAfterChange) {
   ResizeAndFocus();
   SetHtmlInnerHTML(R"HTML(
