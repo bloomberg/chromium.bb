@@ -949,18 +949,18 @@ cr.define('omnibox_output', function() {
   const COLUMNS = [
     new Column(
         ['Provider', 'Type'], '', 'providerAndType', true,
-        'The AutocompleteProvider suggesting this result. / The type of the ' +
-            'result.',
+        'Provider & Type\nThe AutocompleteProvider suggesting this result. / ' +
+            'The type of the result.',
         ['providerName', 'type'], OutputPairProperty),
     new Column(
         ['Relevance'], '', 'relevance', true,
-        'The result score. Higher is more relevant.', ['relevance'],
+        'Relevance\nThe result score. Higher is more relevant.', ['relevance'],
         OutputTextProperty),
     new Column(
         ['Contents', 'Description', 'Answer'], '', 'contentsAndDescription',
         true,
-        'The text that is presented identifying the result. / The page title ' +
-            'of the result.',
+        'Contents & Description & Answer\nThe text that is presented ' +
+            'identifying the result. / The page title of the result.',
         ['image', 'contents', 'description', 'answer'], OutputAnswerProperty),
     new Column(
         ['D'], '', 'allowedToBeDefaultMatch', true,
@@ -980,14 +980,15 @@ cr.define('omnibox_output', function() {
         ['hasTabMatch'], OutputBooleanProperty),
     new Column(
         ['URL', 'Stripped URL'], '', 'destinationUrl', true,
-        'The URL for the result.',
+        'URL & Stripped URL\nThe URL for the result. / The stripped URL for ' +
+            'the result.',
         ['destinationUrl', 'isSearchType', 'strippedDestinationUrl'],
         OutputUrlProperty),
     new Column(
         ['Fill', 'Inline'], '', 'fillAndInline', false,
-        'The text shown in the omnibox when the result is selected. / The ' +
-            'text shown in the omnibox as a blue highlight selection ' +
-            'following the cursor, if this match is shown inline.',
+        'Fill & Inline\nThe text shown in the omnibox when the result is ' +
+            'selected. / The text shown in the omnibox as a blue highlight ' +
+            'selection following the cursor, if this match is shown inline.',
         ['fillIntoEdit', 'inlineAutocompletion'],
         OutputOverlappingPairProperty),
     new Column(
@@ -1003,8 +1004,8 @@ cr.define('omnibox_output', function() {
         ['Tran'],
         'https://cs.chromium.org/chromium/src/ui/base/page_transition_types.h' +
             '?q=page_transition_types.h&sq=package:chromium&dr=CSs&l=14',
-        'transition', false, 'How the user got to the result.', ['transition'],
-        OutputTextProperty),
+        'transition', false, 'Transition\nHow the user got to the result.',
+        ['transition'], OutputTextProperty),
     new Column(
         ['D'], '', 'providerDone', false,
         'Done\nA green checkmark indicates that the provider is done looking ' +
@@ -1012,12 +1013,12 @@ cr.define('omnibox_output', function() {
         ['providerDone'], OutputBooleanProperty),
     new Column(
         ['Associated Keyword'], '', 'associatedKeyword', false,
-        'If non-empty, a "press tab to search" hint will be shown and will ' +
-            'engage this keyword.',
+        'Associated Keyword\nIf non-empty, a "press tab to search" hint will ' +
+            'be shown and will engage this keyword.',
         ['associatedKeyword'], OutputTextProperty),
     new Column(
         ['Keyword'], '', 'keyword', false,
-        'The keyword of the search engine to be used.', ['keyword'],
+        'Keyword\nThe keyword of the search engine to be used.', ['keyword'],
         OutputTextProperty),
     new Column(
         ['D'], '', 'duplicates', false,
@@ -1026,8 +1027,8 @@ cr.define('omnibox_output', function() {
         ['duplicates'], OutputTextProperty),
     new Column(
         ['Additional Info'], '', 'additionalInfo', false,
-        'Provider-specific information about the result.', ['additionalInfo'],
-        OutputKeyValueTuplesProperty)
+        'Additional Info\nProvider-specific information about the result.',
+        ['additionalInfo'], OutputKeyValueTuplesProperty)
   ];
 
   /** @type {!Column} */
