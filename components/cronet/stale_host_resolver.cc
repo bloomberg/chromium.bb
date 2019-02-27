@@ -444,34 +444,6 @@ StaleHostResolver::CreateRequest(
       optional_parameters.value_or(ResolveHostParameters()), tick_clock_);
 }
 
-int StaleHostResolver::Resolve(const RequestInfo& info,
-                               net::RequestPriority priority,
-                               net::AddressList* addresses,
-                               net::CompletionOnceCallback callback,
-                               std::unique_ptr<Request>* out_req,
-                               const net::NetLogWithSource& net_log) {
-  std::unique_ptr<ResolveHostRequest> inner_request =
-      CreateRequest(info.host_port_pair(), net_log,
-                    RequestInfoToResolveHostParameters(info, priority));
-  return LegacyResolve(std::move(inner_request), info.is_speculative(),
-                       addresses, std::move(callback), out_req);
-}
-
-int StaleHostResolver::ResolveFromCache(const RequestInfo& info,
-                                        net::AddressList* addresses,
-                                        const net::NetLogWithSource& net_log) {
-  return inner_resolver_->ResolveFromCache(info, addresses, net_log);
-}
-
-int StaleHostResolver::ResolveStaleFromCache(
-    const RequestInfo& info,
-    net::AddressList* addresses,
-    net::HostCache::EntryStaleness* stale_info,
-    const net::NetLogWithSource& net_log) {
-  return inner_resolver_->ResolveStaleFromCache(info, addresses, stale_info,
-                                                net_log);
-}
-
 bool StaleHostResolver::HasCached(
     base::StringPiece hostname,
     net::HostCache::Entry::Source* source_out,

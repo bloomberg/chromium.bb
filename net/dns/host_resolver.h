@@ -48,21 +48,6 @@ class URLRequestContext;
 // goes out of scope).
 class NET_EXPORT HostResolver {
  public:
-  // HostResolver::Request class is used to cancel the request and change it's
-  // priority. It must be owned by consumer. Deletion cancels the request.
-  //
-  // TODO(crbug.com/922699): Delete this class once all usage has been
-  // converted to the new CreateRequest() API.
-  class Request {
-   public:
-    virtual ~Request() {}
-
-    // Changes the priority of the specified request. Can be called after
-    // Resolve() is called. Can't be called once the request is cancelled or
-    // completed.
-    virtual void ChangeRequestPriority(RequestPriority priority) = 0;
-  };
-
   // Handler for an individual host resolution request. Created by
   // HostResolver::CreateRequest().
   class ResolveHostRequest {
@@ -151,71 +136,6 @@ class NET_EXPORT HostResolver {
     // See HostResolver::CreateSystemResolver.
     virtual std::unique_ptr<HostResolver> CreateResolver(const Options& options,
                                                          NetLog* net_log);
-  };
-
-  // The parameters for doing a Resolve(). A hostname and port are
-  // required; the rest are optional (and have reasonable defaults).
-  //
-  // TODO(crbug.com/922699): Delete this class once all usage has been
-  // converted to the new CreateRequest() API.
-  class NET_EXPORT RequestInfo {
-   public:
-    explicit RequestInfo(const HostPortPair& host_port_pair);
-    RequestInfo(const RequestInfo& request_info);
-    ~RequestInfo();
-
-    const HostPortPair& host_port_pair() const { return host_port_pair_; }
-    void set_host_port_pair(const HostPortPair& host_port_pair) {
-      host_port_pair_ = host_port_pair;
-    }
-
-    uint16_t port() const { return host_port_pair_.port(); }
-    const std::string& hostname() const { return host_port_pair_.host(); }
-
-    AddressFamily address_family() const { return address_family_; }
-    void set_address_family(AddressFamily address_family) {
-      address_family_ = address_family;
-    }
-
-    HostResolverFlags host_resolver_flags() const {
-      return host_resolver_flags_;
-    }
-    void set_host_resolver_flags(HostResolverFlags host_resolver_flags) {
-      host_resolver_flags_ = host_resolver_flags;
-    }
-
-    bool allow_cached_response() const { return allow_cached_response_; }
-    void set_allow_cached_response(bool b) { allow_cached_response_ = b; }
-
-    bool is_speculative() const { return is_speculative_; }
-    void set_is_speculative(bool b) { is_speculative_ = b; }
-
-    bool is_my_ip_address() const { return is_my_ip_address_; }
-    void set_is_my_ip_address(bool b) { is_my_ip_address_ = b; }
-
-   private:
-    RequestInfo();
-
-    // The hostname to resolve, and the port to use in resulting sockaddrs.
-    HostPortPair host_port_pair_;
-
-    // The address family to restrict results to.
-    AddressFamily address_family_;
-
-    // Flags to use when resolving this request.
-    HostResolverFlags host_resolver_flags_;
-
-    // Whether it is ok to return a result from the host cache.
-    bool allow_cached_response_;
-
-    // Whether this request was started by the DNS prefetcher.
-    bool is_speculative_;
-
-    // Indicates a request for myIpAddress (to differentiate from other requests
-    // for localhost, currently used by Chrome OS).
-    //
-    // TODO(https://crbug.com/827533): Remove.
-    bool is_my_ip_address_;
   };
 
   // Parameter-grouping struct for additional optional parameters for
@@ -322,44 +242,10 @@ class NET_EXPORT HostResolver {
   //
   // Additional parameters may be set using |optional_parameters|. Reasonable
   // defaults will be used if passed |base::nullopt|.
-  //
-  // This method is intended as a direct replacement for the old Resolve()
-  // method, but it may not yet cover all the capabilities of the old method.
   virtual std::unique_ptr<ResolveHostRequest> CreateRequest(
       const HostPortPair& host,
       const NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters) = 0;
-
-  // DO NOT USE.  This is a no-longer-tested legacy method that will soon be
-  // deleted.
-  //
-  // TODO(crbug.com/922699): Delete this method once all usage has been
-  // converted to CreateRequest().
-  virtual int Resolve(const RequestInfo& info,
-                      RequestPriority priority,
-                      AddressList* addresses,
-                      CompletionOnceCallback callback,
-                      std::unique_ptr<Request>* out_req,
-                      const NetLogWithSource& net_log) = 0;
-
-  // DO NOT USE.  This is a no-longer-tested legacy method that will soon be
-  // deleted.
-  //
-  // TODO(crbug.com/922699): Delete this method once all usage has been
-  // converted to CreateRequest().
-  virtual int ResolveFromCache(const RequestInfo& info,
-                               AddressList* addresses,
-                               const NetLogWithSource& net_log) = 0;
-
-  // DO NOT USE.  This is a no-longer-tested legacy method that will soon be
-  // deleted.
-  //
-  // TODO(crbug.com/922699): Delete this method once all usage has been
-  // converted to CreateRequest().
-  virtual int ResolveStaleFromCache(const RequestInfo& info,
-                                    AddressList* addresses,
-                                    HostCache::EntryStaleness* stale_info,
-                                    const NetLogWithSource& source_net_log) = 0;
 
   // Create a listener to watch for updates to an MDNS result.
   virtual std::unique_ptr<MdnsListener> CreateMdnsListener(
@@ -423,35 +309,13 @@ class NET_EXPORT HostResolver {
   static std::unique_ptr<HostResolverImpl> CreateDefaultResolverImpl(
       NetLog* net_log);
 
-  static AddressFamily DnsQueryTypeToAddressFamily(DnsQueryType query_type);
-
-  // Helpers for converting old Resolve() API parameters to new CreateRequest()
-  // parameters.
-  //
-  // TODO(crbug.com/922699): Delete these methods once all usage has been
-  // converted to the new CreateRequest() API.
-  static ResolveHostParameters RequestInfoToResolveHostParameters(
-      const RequestInfo& request_info,
-      RequestPriority priority);
-  static HostResolverSource FlagsToSource(HostResolverFlags flags);
-  static HostResolverFlags ParametersToHostResolverFlags(
-      const ResolveHostParameters& parameters);
-
-  // Use legacy Resolve()-style semantics to run the new-style |inner_request|.
-  // Useful to implement legacy Resolve() in HostResolver implementations.
-  //
-  // |inner_request| must be newly-created and not yet started.
-  //
-  // TODO(crbug.com/922699): Delete this once all usage has been converted to
-  // the new CreateRequest() API and HostResolver::Resolve() is removed.
-  static int LegacyResolve(std::unique_ptr<ResolveHostRequest> inner_request,
-                           bool is_speculative,
-                           AddressList* addresses,
-                           CompletionOnceCallback callback,
-                           std::unique_ptr<Request>* out_req);
-
  protected:
   HostResolver();
+
+  // Helpers for interacting with HostCache and ProcResolver.
+  static AddressFamily DnsQueryTypeToAddressFamily(DnsQueryType query_type);
+  static HostResolverFlags ParametersToHostResolverFlags(
+      const ResolveHostParameters& parameters);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostResolver);

@@ -145,19 +145,6 @@ class NET_EXPORT HostResolverImpl
       const NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters)
       override;
-  int Resolve(const RequestInfo& info,
-              RequestPriority priority,
-              AddressList* addresses,
-              CompletionOnceCallback callback,
-              std::unique_ptr<Request>* out_req,
-              const NetLogWithSource& source_net_log) override;
-  int ResolveFromCache(const RequestInfo& info,
-                       AddressList* addresses,
-                       const NetLogWithSource& source_net_log) override;
-  int ResolveStaleFromCache(const RequestInfo& info,
-                            AddressList* addresses,
-                            HostCache::EntryStaleness* stale_info,
-                            const NetLogWithSource& source_net_log) override;
   std::unique_ptr<MdnsListener> CreateMdnsListener(
       const HostPortPair& host,
       DnsQueryType query_type) override;

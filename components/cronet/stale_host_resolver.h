@@ -67,35 +67,20 @@ class StaleHostResolver : public net::HostResolver {
 
   // HostResolver implementation:
 
-  std::unique_ptr<ResolveHostRequest> CreateRequest(
-      const net::HostPortPair& host,
-      const net::NetLogWithSource& net_log,
-      const base::Optional<ResolveHostParameters>& optional_parameters)
-      override;
-
   // Resolves as a regular HostResolver, but if stale data is available and
   // usable (according to the options passed to the constructor), and fresh data
   // is not returned before the specified delay, returns the stale data instead.
   //
   // If stale data is returned, the StaleHostResolver allows the underlying
   // request to continue in order to repopulate the cache.
-  int Resolve(const RequestInfo& info,
-              net::RequestPriority priority,
-              net::AddressList* addresses,
-              net::CompletionOnceCallback callback,
-              std::unique_ptr<Request>* out_req,
-              const net::NetLogWithSource& net_log) override;
+  std::unique_ptr<ResolveHostRequest> CreateRequest(
+      const net::HostPortPair& host,
+      const net::NetLogWithSource& net_log,
+      const base::Optional<ResolveHostParameters>& optional_parameters)
+      override;
 
   // The remaining public methods pass through to the inner resolver:
 
-  int ResolveFromCache(const RequestInfo& info,
-                       net::AddressList* addresses,
-                       const net::NetLogWithSource& net_log) override;
-  int ResolveStaleFromCache(
-      const RequestInfo& info,
-      net::AddressList* addresses,
-      net::HostCache::EntryStaleness* stale_info,
-      const net::NetLogWithSource& source_net_log) override;
   void SetDnsClientEnabled(bool enabled) override;
   net::HostCache* GetHostCache() override;
   bool HasCached(base::StringPiece hostname,

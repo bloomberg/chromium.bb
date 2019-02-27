@@ -278,64 +278,10 @@ MockHostResolverBase::CreateRequest(
   return std::make_unique<RequestImpl>(host, optional_parameters, AsWeakPtr());
 }
 
-int MockHostResolverBase::Resolve(const RequestInfo& info,
-                                  RequestPriority priority,
-                                  AddressList* addresses,
-                                  CompletionOnceCallback callback,
-                                  std::unique_ptr<Request>* out_request,
-                                  const NetLogWithSource& net_log) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(out_request);
-
-  auto request = std::make_unique<RequestImpl>(
-      info.host_port_pair(), RequestInfoToResolveHostParameters(info, priority),
-      AsWeakPtr());
-  return LegacyResolve(std::move(request), info.is_speculative(), addresses,
-                       std::move(callback), out_request);
-}
-
-int MockHostResolverBase::ResolveFromCache(const RequestInfo& info,
-                                           AddressList* addresses,
-                                           const NetLogWithSource& net_log) {
-  num_resolve_from_cache_++;
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  next_request_id_++;
-  base::Optional<HostCache::EntryStaleness> stale_info;
-  int rv = ResolveFromIPLiteralOrCache(
-      info.host_port_pair(), AddressFamilyToDnsQueryType(info.address_family()),
-      info.host_resolver_flags(), HostResolverSource::ANY,
-      info.allow_cached_response()
-          ? HostResolver::ResolveHostParameters::CacheUsage::ALLOWED
-          : HostResolver::ResolveHostParameters::CacheUsage::DISALLOWED,
-      addresses, &stale_info);
-  return rv;
-}
-
 std::unique_ptr<HostResolver::MdnsListener>
 MockHostResolverBase::CreateMdnsListener(const HostPortPair& host,
                                          DnsQueryType query_type) {
   return std::make_unique<MdnsListenerImpl>(host, query_type, AsWeakPtr());
-}
-
-int MockHostResolverBase::ResolveStaleFromCache(
-    const RequestInfo& info,
-    AddressList* addresses,
-    HostCache::EntryStaleness* out_stale_info,
-    const NetLogWithSource& net_log) {
-  num_resolve_from_cache_++;
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  next_request_id_++;
-  base::Optional<HostCache::EntryStaleness> stale_info;
-  int rv = ResolveFromIPLiteralOrCache(
-      info.host_port_pair(), AddressFamilyToDnsQueryType(info.address_family()),
-      info.host_resolver_flags(), HostResolverSource::ANY,
-      info.allow_cached_response()
-          ? HostResolver::ResolveHostParameters::CacheUsage::STALE_ALLOWED
-          : HostResolver::ResolveHostParameters::CacheUsage::DISALLOWED,
-      addresses, &stale_info);
-  if (rv == OK)
-    *out_stale_info = std::move(stale_info).value_or(HostCache::kNotStale);
-  return rv;
 }
 
 HostCache* MockHostResolverBase::GetHostCache() {
@@ -889,19 +835,14 @@ RuleBasedHostResolverProc* CreateCatchAllHostResolverProc() {
 
 //-----------------------------------------------------------------------------
 
-// Implementation of both the Request and ResolveHostRequest interfaces. Both
-// can be implemented from the same class as this implementation does not really
-// do anything except track cancellations, which for both interfaces is when the
+// Implementation of ResolveHostRequest that tracks cancellations when the
 // request is destroyed after being started.
 class HangingHostResolver::RequestImpl
-    : public HostResolver::Request,
-      public HostResolver::ResolveHostRequest {
+    : public HostResolver::ResolveHostRequest {
  public:
-  RequestImpl(base::WeakPtr<HangingHostResolver> resolver,
-              bool is_running,
-              bool is_local_only)
+  RequestImpl(base::WeakPtr<HangingHostResolver> resolver, bool is_local_only)
       : resolver_(resolver),
-        is_running_(is_running),
+        is_running_(false),
         is_local_only_(is_local_only) {}
 
   ~RequestImpl() override {
@@ -974,33 +915,7 @@ HangingHostResolver::CreateRequest(
           ? optional_parameters.value().source == HostResolverSource::LOCAL_ONLY
           : false;
   return std::make_unique<RequestImpl>(weak_ptr_factory_.GetWeakPtr(),
-                                       false /* started */, is_local_only);
-}
-
-int HangingHostResolver::Resolve(const RequestInfo& info,
-                                 RequestPriority priority,
-                                 AddressList* addresses,
-                                 CompletionOnceCallback callback,
-                                 std::unique_ptr<Request>* request,
-                                 const NetLogWithSource& net_log) {
-  *request = std::make_unique<RequestImpl>(weak_ptr_factory_.GetWeakPtr(),
-                                           true /* started */,
-                                           false /* is_local_only */);
-  return ERR_IO_PENDING;
-}
-
-int HangingHostResolver::ResolveFromCache(const RequestInfo& info,
-                                          AddressList* addresses,
-                                          const NetLogWithSource& net_log) {
-  return ERR_DNS_CACHE_MISS;
-}
-
-int HangingHostResolver::ResolveStaleFromCache(
-    const RequestInfo& info,
-    AddressList* addresses,
-    HostCache::EntryStaleness* stale_info,
-    const NetLogWithSource& net_log) {
-  return ERR_DNS_CACHE_MISS;
+                                       is_local_only);
 }
 
 bool HangingHostResolver::HasCached(

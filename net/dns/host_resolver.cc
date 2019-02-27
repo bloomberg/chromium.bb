@@ -31,76 +31,6 @@ namespace {
 // that limit this to 6, so we're temporarily holding it at that level.
 const size_t kDefaultMaxProcTasks = 6u;
 
-// Wraps a ResolveHostRequest to implement Request objects from the legacy
-// Resolve() API. The wrapped request must not yet have been started.
-//
-// TODO(crbug.com/922699): Delete this class once all usage has been
-// converted to the new CreateRequest() API.
-class LegacyRequestImpl : public HostResolver::Request {
- public:
-  LegacyRequestImpl(
-      std::unique_ptr<HostResolver::ResolveHostRequest> inner_request,
-      bool is_speculative)
-      : inner_request_(std::move(inner_request)),
-        is_speculative_(is_speculative) {}
-
-  ~LegacyRequestImpl() override {}
-
-  void ChangeRequestPriority(RequestPriority priority) override {
-    inner_request_->ChangeRequestPriority(priority);
-  }
-
-  int Start() {
-    return inner_request_->Start(base::BindOnce(
-        &LegacyRequestImpl::LegacyApiCallback, base::Unretained(this)));
-  }
-
-  // Do not call to assign the callback until we are running an async job (after
-  // Start() returns ERR_IO_PENDING) and before completion.  Until then, the
-  // legacy HostResolverImpl::Resolve() needs to hang onto |callback| to ensure
-  // it stays alive for the duration of the method call, as some callers may be
-  // binding objects, eg the AddressList, with the callback.
-  void AssignCallback(CompletionOnceCallback callback,
-                      AddressList* addresses_result_ptr) {
-    DCHECK(callback);
-    DCHECK(addresses_result_ptr);
-
-    callback_ = std::move(callback);
-    addresses_result_ptr_ = addresses_result_ptr;
-  }
-
-  const HostResolver::ResolveHostRequest& inner_request() const {
-    return *inner_request_;
-  }
-
- private:
-  // Result callback to bridge results handled entirely via ResolveHostRequest
-  // to legacy API styles where AddressList was a separate method out parameter.
-  void LegacyApiCallback(int error) {
-    // Must call AssignCallback() before async results.
-    DCHECK(callback_);
-
-    if (error == OK && !is_speculative_) {
-      // Legacy API does not allow non-address results (eg TXT), so AddressList
-      // is always expected to be present on OK.
-      DCHECK(inner_request_->GetAddressResults());
-      *addresses_result_ptr_ = inner_request_->GetAddressResults().value();
-    }
-    addresses_result_ptr_ = nullptr;
-    std::move(callback_).Run(error);
-  }
-
-  const std::unique_ptr<HostResolver::ResolveHostRequest> inner_request_;
-  const bool is_speculative_;
-
-  CompletionOnceCallback callback_;
-  // This is a caller-provided pointer and should not be used once |callback_|
-  // is invoked.
-  AddressList* addresses_result_ptr_;
-
-  DISALLOW_COPY_AND_ASSIGN(LegacyRequestImpl);
-};
-
 }  // namespace
 
 PrioritizedDispatcher::Limits HostResolver::Options::GetDispatcherLimits()
@@ -169,23 +99,6 @@ std::unique_ptr<HostResolver> HostResolver::Factory::CreateResolver(
     NetLog* net_log) {
   return CreateSystemResolver(options, net_log);
 }
-
-HostResolver::RequestInfo::RequestInfo(const HostPortPair& host_port_pair)
-    : RequestInfo() {
-  host_port_pair_ = host_port_pair;
-}
-
-HostResolver::RequestInfo::RequestInfo(const RequestInfo& request_info) =
-    default;
-
-HostResolver::RequestInfo::~RequestInfo() = default;
-
-HostResolver::RequestInfo::RequestInfo()
-    : address_family_(ADDRESS_FAMILY_UNSPECIFIED),
-      host_resolver_flags_(0),
-      allow_cached_response_(true),
-      is_speculative_(false),
-      is_my_ip_address_(false) {}
 
 HostResolver::~HostResolver() = default;
 
@@ -272,47 +185,6 @@ AddressFamily HostResolver::DnsQueryTypeToAddressFamily(
 }
 
 // static
-HostResolver::ResolveHostParameters
-HostResolver::RequestInfoToResolveHostParameters(
-    const HostResolver::RequestInfo& request_info,
-    RequestPriority priority) {
-  // Flag that should only be set internally, not used in input.
-  DCHECK(!(request_info.host_resolver_flags() &
-           HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6));
-
-  ResolveHostParameters parameters;
-
-  parameters.dns_query_type =
-      AddressFamilyToDnsQueryType(request_info.address_family());
-  parameters.initial_priority = priority;
-  parameters.source = FlagsToSource(request_info.host_resolver_flags());
-  parameters.cache_usage = request_info.allow_cached_response()
-                               ? ResolveHostParameters::CacheUsage::ALLOWED
-                               : ResolveHostParameters::CacheUsage::DISALLOWED;
-  parameters.include_canonical_name =
-      request_info.host_resolver_flags() & HOST_RESOLVER_CANONNAME;
-  parameters.loopback_only =
-      request_info.host_resolver_flags() & HOST_RESOLVER_LOOPBACK_ONLY;
-  parameters.is_speculative = request_info.is_speculative();
-
-  return parameters;
-}
-
-// static
-HostResolverSource HostResolver::FlagsToSource(HostResolverFlags flags) {
-  // To counter the lack of CNAME support in the async host resolver, SYSTEM is
-  // forced when CANONNAME flags is present. This restriction can be removed
-  // once CNAME support is added to the async resolver.  See
-  // https://crbug.com/872665
-  //
-  // It is intentional that the presence of either flag forces SYSTEM.
-  if (flags & (HOST_RESOLVER_SYSTEM_ONLY | HOST_RESOLVER_CANONNAME))
-    return HostResolverSource::SYSTEM;
-
-  return HostResolverSource::ANY;
-}
-
-// static
 HostResolverFlags HostResolver::ParametersToHostResolverFlags(
     const ResolveHostParameters& parameters) {
   HostResolverFlags flags = 0;
@@ -323,33 +195,6 @@ HostResolverFlags HostResolver::ParametersToHostResolverFlags(
   if (parameters.loopback_only)
     flags |= HOST_RESOLVER_LOOPBACK_ONLY;
   return flags;
-}
-
-// static
-int HostResolver::LegacyResolve(
-    std::unique_ptr<ResolveHostRequest> inner_request,
-    bool is_speculative,
-    AddressList* addresses,
-    CompletionOnceCallback callback,
-    std::unique_ptr<Request>* out_req) {
-  auto wrapped_request = std::make_unique<LegacyRequestImpl>(
-      std::move(inner_request), is_speculative);
-
-  int rv = wrapped_request->Start();
-
-  if (rv == OK && !is_speculative) {
-    DCHECK(addresses);
-    DCHECK(wrapped_request->inner_request().GetAddressResults());
-    *addresses = wrapped_request->inner_request().GetAddressResults().value();
-  } else if (rv == ERR_IO_PENDING) {
-    DCHECK(addresses);
-    DCHECK(callback);
-    DCHECK(out_req);
-    wrapped_request->AssignCallback(std::move(callback), addresses);
-    *out_req = std::move(wrapped_request);
-  }
-
-  return rv;
 }
 
 HostResolver::HostResolver() = default;

@@ -70,45 +70,6 @@ MappedHostResolver::CreateRequest(
   return impl_->CreateRequest(rewritten, source_net_log, optional_parameters);
 }
 
-int MappedHostResolver::Resolve(const RequestInfo& original_info,
-                                RequestPriority priority,
-                                AddressList* addresses,
-                                CompletionOnceCallback callback,
-                                std::unique_ptr<Request>* request,
-                                const NetLogWithSource& net_log) {
-  RequestInfo info = original_info;
-  int rv = ApplyRules(&info);
-  if (rv != OK)
-    return rv;
-
-  return impl_->Resolve(info, priority, addresses, std::move(callback), request,
-                        net_log);
-}
-
-int MappedHostResolver::ResolveFromCache(const RequestInfo& original_info,
-                                         AddressList* addresses,
-                                         const NetLogWithSource& net_log) {
-  RequestInfo info = original_info;
-  int rv = ApplyRules(&info);
-  if (rv != OK)
-    return rv;
-
-  return impl_->ResolveFromCache(info, addresses, net_log);
-}
-
-int MappedHostResolver::ResolveStaleFromCache(
-    const RequestInfo& original_info,
-    AddressList* addresses,
-    HostCache::EntryStaleness* stale_info,
-    const NetLogWithSource& net_log) {
-  RequestInfo info = original_info;
-  int rv = ApplyRules(&info);
-  if (rv != OK)
-    return rv;
-
-  return impl_->ResolveStaleFromCache(info, addresses, stale_info, net_log);
-}
-
 void MappedHostResolver::SetDnsClientEnabled(bool enabled) {
   impl_->SetDnsClientEnabled(enabled);
 }
@@ -147,16 +108,6 @@ void MappedHostResolver::SetRequestContext(URLRequestContext* request_context) {
 const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
 MappedHostResolver::GetDnsOverHttpsServersForTesting() const {
   return impl_->GetDnsOverHttpsServersForTesting();
-}
-
-int MappedHostResolver::ApplyRules(RequestInfo* info) const {
-  HostPortPair host_port(info->host_port_pair());
-  if (rules_.RewriteHost(&host_port)) {
-    if (host_port.host() == "~NOTFOUND")
-      return ERR_NAME_NOT_RESOLVED;
-    info->set_host_port_pair(host_port);
-  }
-  return OK;
 }
 
 }  // namespace net
