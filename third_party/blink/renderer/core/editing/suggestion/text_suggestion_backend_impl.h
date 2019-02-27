@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SUGGESTION_TEXT_SUGGESTION_BACKEND_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SUGGESTION_TEXT_SUGGESTION_BACKEND_IMPL_H_
 
-#include "third_party/blink/public/platform/input_messages.mojom-blink.h"
+#include "third_party/blink/public/mojom/input/input_messages.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 

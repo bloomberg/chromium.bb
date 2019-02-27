@@ -42,7 +42,7 @@
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "services/preferences/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
-#include "third_party/blink/public/platform/input_host.mojom.h"
+#include "third_party/blink/public/mojom/input/input_host.mojom.h"
 #include "third_party/blink/public/platform/modules/badging/badging.mojom.h"
 #include "third_party/blink/public/platform/modules/credentialmanager/credential_manager.mojom.h"
 #include "third_party/blink/public/platform/modules/installedapp/installed_app_provider.mojom.h"

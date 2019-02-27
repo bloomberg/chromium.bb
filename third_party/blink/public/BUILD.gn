@@ -715,8 +715,6 @@ mojom("android_mojo_bindings") {
     ":authenticator_test_mojo_bindings_blink",
   ]
   sources = [
-    "platform/input_host.mojom",
-    "platform/input_messages.mojom",
     "platform/modules/document_metadata/copyless_paste.mojom",
     "platform/modules/font_unique_name_lookup/font_unique_name_lookup.mojom",
     "platform/modules/installation/installation.mojom",
