@@ -102,7 +102,7 @@ DialogFooter.prototype = {
  * @param {!Document} document Document.
  * @return {!DialogFooter} Dialog footer created with the found element.
  */
-DialogFooter.findDialogFooter = function(dialogType, document) {
+DialogFooter.findDialogFooter = (dialogType, document) => {
   return new DialogFooter(
       dialogType, queryRequiredElement('.dialog-footer'),
       queryRequiredElement('#filename-input-box cr-input'));
@@ -114,7 +114,7 @@ DialogFooter.findDialogFooter = function(dialogType, document) {
  * @return {string} OK button label.
  * @private
  */
-DialogFooter.getOKButtonLabel_ = function(dialogType) {
+DialogFooter.getOKButtonLabel_ = dialogType => {
   switch (dialogType) {
     case DialogType.SELECT_UPLOAD_FOLDER:
       return str('UPLOAD_LABEL');
@@ -163,7 +163,7 @@ DialogFooter.prototype.initFileTypeFilter = function(
 
       if (!description) {
         // Convert ['jpg', 'png'] to '*.jpg, *.png'.
-        description = fileType.extensions.map(function(s) {
+        description = fileType.extensions.map(s => {
           return '*.' + s;
         }).join(', ');
       }
@@ -200,9 +200,9 @@ DialogFooter.prototype.onFilenameInputFocus_ = function(event) {
   // On focus we want to select everything but the extension, but
   // Chrome will select-all after the focus event completes.  We
   // schedule a timeout to alter the focus after that happens.
-  setTimeout(function() {
+  setTimeout(() => {
     this.selectTargetNameInFilenameInput();
-  }.bind(this), 0);
+  }, 0);
 };
 
 /**

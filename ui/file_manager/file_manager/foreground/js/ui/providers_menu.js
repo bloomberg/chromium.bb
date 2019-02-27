@@ -85,12 +85,12 @@ ProvidersMenu.prototype.addProvider_ = function(providerId, iconSet, name) {
  * @private
  */
 ProvidersMenu.prototype.onUpdate_ = function(event) {
-  this.model_.getMountableProviders().then(function(providers) {
+  this.model_.getMountableProviders().then(providers => {
     this.clearProviders_();
-    providers.forEach(function(provider) {
+    providers.forEach(provider => {
       this.addProvider_(provider.providerId, provider.iconSet, provider.name);
-    }.bind(this));
-  }.bind(this));
+    });
+  });
 };
 
 /**

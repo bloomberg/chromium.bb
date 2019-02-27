@@ -98,7 +98,7 @@ FileManagerDialogBase.prototype.showTitleAndTextDialog = function(title, text) {
  * @param {Function=} opt_onHide Called when the dialog is hidden.
  */
 FileManagerDialogBase.prototype.hide = function(opt_onHide) {
-  cr.ui.dialogs.BaseDialog.prototype.hide.call(this, function() {
+  cr.ui.dialogs.BaseDialog.prototype.hide.call(this, () => {
     if (opt_onHide) {
       opt_onHide();
     }

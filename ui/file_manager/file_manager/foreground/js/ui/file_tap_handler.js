@@ -148,7 +148,7 @@ FileTapHandler.prototype.handleTouchEvents = function(event, index, callback) {
       this.isLongTap_ = false;
       this.isTwoFingerTap_ = false;
       this.hasLongPressProcessed_ = false;
-      this.longTapDetectorTimerId_ = setTimeout(function() {
+      this.longTapDetectorTimerId_ = setTimeout(() => {
         this.longTapDetectorTimerId_ = -1;
         if (!this.tapStarted_) {
           return;
@@ -157,7 +157,7 @@ FileTapHandler.prototype.handleTouchEvents = function(event, index, callback) {
         if (callback(event, index, FileTapHandler.TapEvent.LONG_PRESS)) {
           this.hasLongPressProcessed_ = true;
         }
-      }.bind(this), FileTapHandler.LONG_PRESS_THRESHOLD_MILLISECONDS);
+      }, FileTapHandler.LONG_PRESS_THRESHOLD_MILLISECONDS);
       break;
 
     case 'touchmove':

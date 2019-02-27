@@ -203,7 +203,7 @@ function testNormalizeWidthWithSmallWidth() {
   model.normalizeWidths(10);  // not enough width to contain all columns
 
   // Should keep the minimum width.
-  getColumnWidths(model).map(function(width) {
+  getColumnWidths(model).map(width => {
     assertEquals(FileTableColumnModel.MIN_WIDTH_, width);
   });
 }
@@ -216,7 +216,7 @@ function testSetWidthAndKeepTotal() {
   model.setWidthAndKeepTotal(2, 400);
 
   // Should keep the minimum width.
-  getColumnWidths(model).map(function(width) {
+  getColumnWidths(model).map(width => {
     assertTrue(width >= FileTableColumnModel.MIN_WIDTH_);
   });
   const minWidth = FileTableColumnModel.MIN_WIDTH_;

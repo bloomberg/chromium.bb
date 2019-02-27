@@ -80,7 +80,7 @@ Object.freeze(SuggestAppsDialog.Result);
 /**
  * Dummy function for SuggestAppsDialog.show() not to be called unintentionally.
  */
-SuggestAppsDialog.prototype.show = function() {
+SuggestAppsDialog.prototype.show = () => {
   console.error('SuggestAppsDialog.show() shouldn\'t be called directly.');
 };
 
@@ -171,7 +171,7 @@ SuggestAppsDialog.prototype.createWidgetPlatformDelegate_ = function() {
       chrome.webstoreWidgetPrivate.installWebstoreItem(
           itemId,
           false /* show installation prompt */,
-          function() {
+          () => {
             callback(chrome.runtime.lastError ?
                 chrome.runtime.lastError.message || 'UNKNOWN ERROR' : null);
           });
@@ -181,31 +181,31 @@ SuggestAppsDialog.prototype.createWidgetPlatformDelegate_ = function() {
      * @param {function(?Array<!string>)} callback Callback
      *     argument is a list of installed item ids (null on error).
      */
-    getInstalledItems: function(callback) {
+    getInstalledItems: callback => {
       // Return only installed provided extensions. Returning other
       // extensions/apps is redundant, as the suggest app for non-providers is
       // executed only when there is no extension/app matching a file task.
       // Hence, none of the suggested extensions/apps can be already installed.
       this.providersModel_.getInstalledProviders()
-          .then(function(providers) {
-            callback(providers.map(function(provider) {
+          .then(providers => {
+            callback(providers.map(provider => {
               // Assume that the provider is an extension backed provider. In
               // such case the providerId is the same as extensionId.
               return provider.providerId;
             }));
           })
-          .catch(function(error) {
+          .catch(error => {
             console.error(error.stack || error);
             callback(null);
           });
-    }.bind(this),
+    },
 
     /**
      * @param {function(?string)} callback Callback argument is the requested
      *     token (null on error).
      */
     requestWebstoreAccessToken: function(callback) {
-      chrome.fileManagerPrivate.requestWebStoreAccessToken(function(token) {
+      chrome.fileManagerPrivate.requestWebStoreAccessToken(token => {
         if (chrome.runtime.lastError) {
           console.error(chrome.runtime.lastError.message);
           callback(null);
@@ -243,27 +243,27 @@ SuggestAppsDialog.prototype.showInternal_ =
   let tokenObtained = false;
 
   this.widget_.ready()
-      .then((/** @return {!Promise} */
-             function() {
-               tokenObtained = true;
-               return this.showDialog_(title);
-             }).bind(this))
-      .then((/** @return {!Promise<CWSWidgetContainer.ResolveReason>} */
-             function() {
-               dialogShown = true;
-               // This is not set before so it doesn't polute state if the
-               // previous dialog hasn't finished hiding.
-               this.onDialogClosed_ = onDialogClosed;
-               return this.widget_.start(options, webStoreUrl);
-             }).bind(this))
-      .then((/** @param {CWSWidgetContainer.ResolveReason} reason */
-             function(reason) {
-               if (reason !== CWSWidgetContainer.ResolveReason.RESET) {
-                 this.hide();
-               }
-             }).bind(this))
+      .then(/** @return {!Promise} */
+  () => {
+    tokenObtained = true;
+    return this.showDialog_(title);
+  })
+      .then(/** @return {!Promise<CWSWidgetContainer.ResolveReason>} */
+  () => {
+    dialogShown = true;
+    // This is not set before so it doesn't pollute state if the
+    // previous dialog hasn't finished hiding.
+    this.onDialogClosed_ = onDialogClosed;
+    return this.widget_.start(options, webStoreUrl);
+  })
+      .then(/** @param {CWSWidgetContainer.ResolveReason} reason */
+  reason => {
+    if (reason !== CWSWidgetContainer.ResolveReason.RESET) {
+      this.hide();
+    }
+  })
       .catch(
-          function(error) {
+          error => {
             console.error('Failed to start CWS widget: ' + error);
 
             if (!dialogShown) {
@@ -287,7 +287,7 @@ SuggestAppsDialog.prototype.showInternal_ =
 
             this.result_ = SuggestAppsDialog.Result.FAILED;
             this.hide();
-          }.bind(this));
+          });
 };
 
 /**
@@ -296,7 +296,7 @@ SuggestAppsDialog.prototype.showInternal_ =
  * @return {!Promise}
  */
 SuggestAppsDialog.prototype.showDialog_ = function(title) {
-  return new Promise(function(resolve, reject) {
+  return new Promise((resolve, reject) => {
      const success = this.dialogText_ ?
          FileManagerDialogBase.prototype.showTitleAndTextDialog.call(
              this, title, this.dialogText_) :
@@ -307,7 +307,7 @@ SuggestAppsDialog.prototype.showDialog_ = function(title) {
        return;
      }
      resolve();
-  }.bind(this));
+  });
 };
 
 /**
