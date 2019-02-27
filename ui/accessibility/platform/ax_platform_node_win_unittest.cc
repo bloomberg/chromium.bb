@@ -3771,6 +3771,33 @@ TEST_F(AXPlatformNodeWinTest,
   EXPECT_HRESULT_SUCCEEDED(::SafeArrayDestroy(selected_items));
 }
 
+TEST_F(AXPlatformNodeWinTest, TestComputeUIAControlType) {
+  AXNodeData root;
+  root.id = 0;
+  root.role = ax::mojom::Role::kRootWebArea;
+
+  AXNodeData child1;
+  int32_t child1_id = 1;
+  child1.id = child1_id;
+  child1.role = ax::mojom::Role::kTable;
+  root.child_ids.push_back(child1_id);
+
+  AXNodeData child2;
+  int32_t child2_id = 2;
+  child2.id = child2_id;
+  child2.role = ax::mojom::Role::kLayoutTable;
+  root.child_ids.push_back(child2_id);
+
+  Init(root, child1, child2);
+
+  EXPECT_UIA_INT_EQ(
+      QueryInterfaceFromNodeId<IRawElementProviderSimple>(child1_id),
+      UIA_ControlTypePropertyId, int{UIA_TableControlTypeId});
+  EXPECT_UIA_INT_EQ(
+      QueryInterfaceFromNodeId<IRawElementProviderSimple>(child2_id),
+      UIA_ControlTypePropertyId, int{UIA_TableControlTypeId});
+}
+
 TEST_F(AXPlatformNodeWinTest, TestUIAErrorHandling) {
   AXNodeData root;
   Init(root);
