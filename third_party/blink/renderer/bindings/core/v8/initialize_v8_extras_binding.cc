@@ -136,8 +136,13 @@ void AddOriginals(ScriptState* script_state, v8::Local<v8::Object> binding) {
   // Most Worklets don't have MessagePort. In this case, serialization will
   // fail. AudioWorklet has MessagePort but no DOMException, so it can't use
   // serialization for now.
-  if (message_port->IsUndefined() || dom_exception->IsUndefined())
+  if (message_port->IsUndefined() || dom_exception->IsUndefined()) {
+    // Allow V8 Extras JavaScript to safely detect that MessagePort is not
+    // available. Without this, lookups of MessagePort_postMessage will follow
+    // the prototype chain.
+    Bind("MessagePort_postMessage", v8::Undefined(isolate));
     return;
+  }
 
   v8::Local<v8::Value> event_target_prototype =
       GetPrototype(ObjectGet(global, "EventTarget"));
