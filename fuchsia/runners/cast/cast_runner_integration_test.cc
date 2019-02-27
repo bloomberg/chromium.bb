@@ -306,8 +306,7 @@ TEST_F(CastRunnerIntegrationTest, CastChannel) {
         cr_fuchsia::CallbackToFitFunction(message.GetReceiveCallback()));
     run_loop.Run();
 
-    EXPECT_EQ(cr_fuchsia::test::StringFromMemBufferOrDie(message->data),
-              expected);
+    EXPECT_EQ(cr_fuchsia::StringFromMemBufferOrDie(message->data), expected);
   }
 
   // Shutdown the component and wait for the CastChannel to close.

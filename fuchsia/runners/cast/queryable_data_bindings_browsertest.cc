@@ -13,7 +13,7 @@
 namespace {
 
 class QueryableDataBindingsTest
-    : public cr_fuchsia::test::WebEngineBrowserTest,
+    : public cr_fuchsia::WebEngineBrowserTest,
       public chromium::web::NavigationEventObserver {
  public:
   QueryableDataBindingsTest()
@@ -25,7 +25,7 @@ class QueryableDataBindingsTest
   ~QueryableDataBindingsTest() override = default;
 
   void SetUpOnMainThread() override {
-    cr_fuchsia::test::WebEngineBrowserTest::SetUpOnMainThread();
+    cr_fuchsia::WebEngineBrowserTest::SetUpOnMainThread();
     base::ScopedAllowBlockingForTesting allow_blocking;
     frame_ = WebEngineBrowserTest::CreateFrame(this);
     frame_->SetNavigationEventObserver(nav_observer_binding_.NewBinding());

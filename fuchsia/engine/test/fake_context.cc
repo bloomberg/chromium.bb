@@ -8,7 +8,6 @@
 #include "base/logging.h"
 
 namespace cr_fuchsia {
-namespace test {
 
 FakeFrame::FakeFrame(fidl::InterfaceRequest<chromium::web::Frame> request)
     : binding_(this, std::move(request)) {
@@ -55,5 +54,4 @@ void FakeContext::NotImplemented_(const std::string& name) {
   NOTREACHED() << name;
 }
 
-}  // namespace test
 }  // namespace cr_fuchsia

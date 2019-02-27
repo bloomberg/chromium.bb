@@ -51,7 +51,7 @@ MATCHER(IsSet, "Checks if an optional field is set.") {
 
 // Defines a suite of tests that exercise Frame-level functionality, such as
 // navigation commands and page events.
-class FrameImplTest : public cr_fuchsia::test::WebEngineBrowserTest {
+class FrameImplTest : public cr_fuchsia::WebEngineBrowserTest {
  public:
   FrameImplTest()
       : run_timeout_(TestTimeouts::action_timeout(),
@@ -87,8 +87,7 @@ class FrameImplTest : public cr_fuchsia::test::WebEngineBrowserTest {
     navigation_observer_.Acknowledge();
   }
 
-  testing::StrictMock<cr_fuchsia::test::MockNavigationObserver>
-      navigation_observer_;
+  testing::StrictMock<cr_fuchsia::MockNavigationObserver> navigation_observer_;
 
  private:
   const base::RunLoop::ScopedRunTimeoutForTest run_timeout_;
@@ -844,8 +843,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessagePassMessagePort) {
     message_port->ReceiveMessage(
         cr_fuchsia::CallbackToFitFunction(receiver.GetReceiveCallback()));
     run_loop.Run();
-    EXPECT_EQ("got_port",
-              cr_fuchsia::test::StringFromMemBufferOrDie(receiver->data));
+    EXPECT_EQ("got_port", cr_fuchsia::StringFromMemBufferOrDie(receiver->data));
   }
 
   {
@@ -860,8 +858,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessagePassMessagePort) {
     message_port->ReceiveMessage(
         cr_fuchsia::CallbackToFitFunction(receiver.GetReceiveCallback()));
     run_loop.Run();
-    EXPECT_EQ("ack ping",
-              cr_fuchsia::test::StringFromMemBufferOrDie(receiver->data));
+    EXPECT_EQ("ack ping", cr_fuchsia::StringFromMemBufferOrDie(receiver->data));
     EXPECT_TRUE(*post_result);
   }
 }
@@ -897,8 +894,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageMessagePortDisconnected) {
     message_port->ReceiveMessage(
         cr_fuchsia::CallbackToFitFunction(receiver.GetReceiveCallback()));
     run_loop.Run();
-    EXPECT_EQ("got_port",
-              cr_fuchsia::test::StringFromMemBufferOrDie(receiver->data));
+    EXPECT_EQ("got_port", cr_fuchsia::StringFromMemBufferOrDie(receiver->data));
     EXPECT_TRUE(*post_result);
   }
 
@@ -946,8 +942,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
     message_port->ReceiveMessage(
         cr_fuchsia::CallbackToFitFunction(receiver.GetReceiveCallback()));
     run_loop.Run();
-    EXPECT_EQ("got_port",
-              cr_fuchsia::test::StringFromMemBufferOrDie(receiver->data));
+    EXPECT_EQ("got_port", cr_fuchsia::StringFromMemBufferOrDie(receiver->data));
     incoming_message_port = receiver->incoming_transfer->message_port().Bind();
     EXPECT_TRUE(*post_result);
   }
@@ -987,8 +982,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
     ack_message_port->ReceiveMessage(
         cr_fuchsia::CallbackToFitFunction(receiver.GetReceiveCallback()));
     run_loop.Run();
-    EXPECT_EQ("got_port",
-              cr_fuchsia::test::StringFromMemBufferOrDie(receiver->data));
+    EXPECT_EQ("got_port", cr_fuchsia::StringFromMemBufferOrDie(receiver->data));
     EXPECT_TRUE(*post_result);
   }
 
@@ -1000,8 +994,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
     incoming_message_port->ReceiveMessage(
         cr_fuchsia::CallbackToFitFunction(receiver.GetReceiveCallback()));
     run_loop.Run();
-    EXPECT_EQ("ack ping",
-              cr_fuchsia::test::StringFromMemBufferOrDie(receiver->data));
+    EXPECT_EQ("ack ping", cr_fuchsia::StringFromMemBufferOrDie(receiver->data));
   }
 }
 
@@ -1056,8 +1049,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageBadOriginDropped) {
   message_port->ReceiveMessage(
       cr_fuchsia::CallbackToFitFunction(receiver.GetReceiveCallback()));
   run_loop.Run();
-  EXPECT_EQ("got_port",
-            cr_fuchsia::test::StringFromMemBufferOrDie(receiver->data));
+  EXPECT_EQ("got_port", cr_fuchsia::StringFromMemBufferOrDie(receiver->data));
   incoming_message_port = receiver->incoming_transfer->message_port().Bind();
   EXPECT_TRUE(*post_result);
 

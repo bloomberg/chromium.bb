@@ -13,7 +13,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace cr_fuchsia {
-namespace test {
 
 // Defines mock methods used by tests to observe NavigationStateChangeEvents
 // and lower-level WebContentsObserver events.
@@ -52,7 +51,6 @@ class MockNavigationObserver : public chromium::web::NavigationEventObserver,
 // Reads the contents of |buffer| in a std::string.
 std::string StringFromMemBufferOrDie(const fuchsia::mem::Buffer& buffer);
 
-}  // namespace test
 }  // namespace cr_fuchsia
 
 #endif  // FUCHSIA_ENGINE_TEST_TEST_COMMON_H_

@@ -27,7 +27,7 @@
 using NavigationDetails = chromium::web::NavigationEvent;
 
 class NamedMessagePortConnectorTest
-    : public cr_fuchsia::test::WebEngineBrowserTest,
+    : public cr_fuchsia::WebEngineBrowserTest,
       public chromium::web::NavigationEventObserver {
  public:
   NamedMessagePortConnectorTest()
@@ -40,7 +40,7 @@ class NamedMessagePortConnectorTest
 
  protected:
   void SetUpOnMainThread() override {
-    cr_fuchsia::test::WebEngineBrowserTest::SetUpOnMainThread();
+    cr_fuchsia::WebEngineBrowserTest::SetUpOnMainThread();
     frame_ = WebEngineBrowserTest::CreateFrame(this);
   }
 
@@ -108,9 +108,8 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest,
         ->ReceiveMessage(cr_fuchsia::CallbackToFitFunction(
             message_receiver.GetReceiveCallback()));
     run_loop.Run();
-    EXPECT_EQ(
-        cr_fuchsia::test::StringFromMemBufferOrDie(message_receiver->data),
-        expected_msg);
+    EXPECT_EQ(cr_fuchsia::StringFromMemBufferOrDie(message_receiver->data),
+              expected_msg);
   }
 
   // Ensure that the MessagePort is dropped when navigating away.

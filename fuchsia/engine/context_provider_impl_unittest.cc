@@ -59,7 +59,7 @@ MULTIPROCESS_TEST_MAIN(SpawnContextServer) {
   zx::channel context_handle(zx_take_startup_handle(kContextRequestHandleId));
   CHECK(context_handle);
 
-  cr_fuchsia::test::FakeContext context;
+  cr_fuchsia::FakeContext context;
   fidl::Binding<chromium::web::Context> context_binding(
       &context, fidl::InterfaceRequest<chromium::web::Context>(
                     std::move(context_handle)));
@@ -67,9 +67,9 @@ MULTIPROCESS_TEST_MAIN(SpawnContextServer) {
   // When a Frame's NavigationEventObserver is bound, immediately broadcast a
   // navigation event to its listeners.
   context.set_on_create_frame_callback(
-      base::BindRepeating([](cr_fuchsia::test::FakeFrame* frame) {
+      base::BindRepeating([](cr_fuchsia::FakeFrame* frame) {
         frame->set_on_set_observer_callback(base::BindOnce(
-            [](cr_fuchsia::test::FakeFrame* frame) {
+            [](cr_fuchsia::FakeFrame* frame) {
               chromium::web::NavigationEvent event;
               event.url = kUrl;
               event.title = kTitle;
