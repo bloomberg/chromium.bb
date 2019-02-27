@@ -225,6 +225,8 @@ class CrOSTest(object):
           '-remotebundledir=%s' % remote_bundle_dir,
           '-remotedatadir=%s' % remote_data_dir,
       ]
+      if self._device.private_key:
+        cmd += ['-keyfile', self._device.private_key]
     if self.test_timeout > 0:
       cmd += ['-timeout=%d' % self.test_timeout]
     if self._device.is_vm:
