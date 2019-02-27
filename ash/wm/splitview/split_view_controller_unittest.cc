@@ -139,6 +139,18 @@ class SplitViewControllerTest : public AshTestBase {
     return window;
   }
 
+  bool IsDividerAnimating() {
+    return split_view_controller()->IsDividerAnimating();
+  }
+
+  void SkipDividerSnapAnimation() {
+    if (!IsDividerAnimating())
+      return;
+    split_view_controller()->StopAndShoveAnimatedDivider();
+    split_view_controller()->EndResizeImpl();
+    split_view_controller()->EndSplitViewAfterResizingIfAppropriate();
+  }
+
   void EndSplitView() { split_view_controller()->EndSplitView(); }
 
   void ToggleOverview() {
@@ -579,6 +591,7 @@ TEST_F(SplitViewControllerTest, SplitDividerWindowBounds) {
   GetEventGenerator()->set_current_screen_location(
       divider_bounds.CenterPoint());
   GetEventGenerator()->DragMouseTo(screen_width * 0.67f, 0);
+  SkipDividerSnapAnimation();
   window1_width = window1->GetBoundsInScreen().width();
   window2_width = window2->GetBoundsInScreen().width();
   const int old_window1_width = window1_width;
@@ -595,6 +608,7 @@ TEST_F(SplitViewControllerTest, SplitDividerWindowBounds) {
   GetEventGenerator()->set_current_screen_location(
       divider_bounds.CenterPoint());
   GetEventGenerator()->DragMouseTo(screen_width * 0.7f, 0);
+  SkipDividerSnapAnimation();
   window1_width = window1->GetBoundsInScreen().width();
   window2_width = window2->GetBoundsInScreen().width();
   EXPECT_EQ(window1_width, old_window1_width);
@@ -607,6 +621,7 @@ TEST_F(SplitViewControllerTest, SplitDividerWindowBounds) {
   GetEventGenerator()->set_current_screen_location(
       divider_bounds.CenterPoint());
   GetEventGenerator()->DragMouseTo(screen_width * 0.33f, 0);
+  SkipDividerSnapAnimation();
   window1_width = window1->GetBoundsInScreen().width();
   window2_width = window2->GetBoundsInScreen().width();
   EXPECT_GT(window2_width, 2 * window1_width);
@@ -665,8 +680,178 @@ TEST_F(SplitViewControllerTest, DisplayConfigurationChangeTest) {
             new_bounds_divider.x() + new_bounds_divider.width());
 }
 
+// Tests that the bounds of the snapped windows and divider are adjusted when
+// the internal screen display configuration changes.
+TEST_F(SplitViewControllerTest, InternalDisplayConfigurationChangeTest) {
+  UpdateDisplay("407x400");
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager,
+                                                         display_id);
+
+  const gfx::Rect bounds(0, 0, 200, 200);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+
+  const gfx::Rect bounds_window1 = window1->GetBoundsInScreen();
+  const gfx::Rect bounds_window2 = window2->GetBoundsInScreen();
+  const gfx::Rect bounds_divider =
+      split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
+
+  // Test that |window1| and |window2| has the same width and height after snap.
+  EXPECT_NEAR(bounds_window1.width(), bounds_window2.width(), 1);
+  EXPECT_EQ(bounds_window1.height(), bounds_window2.height());
+  EXPECT_EQ(bounds_divider.height(), bounds_window1.height());
+
+  // Test that |window1|, divider, |window2| are aligned properly.
+  EXPECT_EQ(bounds_divider.x(), bounds_window1.x() + bounds_window1.width());
+  EXPECT_EQ(bounds_window2.x(), bounds_divider.x() + bounds_divider.width());
+
+  // Now change the display configuration.
+  UpdateDisplay("507x500");
+  const gfx::Rect new_bounds_window1 = window1->GetBoundsInScreen();
+  const gfx::Rect new_bounds_window2 = window2->GetBoundsInScreen();
+  const gfx::Rect new_bounds_divider =
+      split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
+
+  // Test that the new bounds are different with the old ones.
+  EXPECT_NE(bounds_window1, new_bounds_window1);
+  EXPECT_NE(bounds_window2, new_bounds_window2);
+  EXPECT_NE(bounds_divider, new_bounds_divider);
+
+  // Test that |window1|, divider, |window2| are still aligned properly.
+  EXPECT_EQ(new_bounds_divider.x(),
+            new_bounds_window1.x() + new_bounds_window1.width());
+  EXPECT_EQ(new_bounds_window2.x(),
+            new_bounds_divider.x() + new_bounds_divider.width());
+}
+
+// Test that if the internal screen display configuration changes during the
+// divider snap animation, then this animation stops, and the bounds of the
+// snapped windows and divider are adjusted as normal.
+TEST_F(SplitViewControllerTest,
+       InternalDisplayConfigurationChangeDuringDividerSnap) {
+  UpdateDisplay("407x400");
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager,
+                                                         display_id);
+
+  const gfx::Rect bounds(0, 0, 200, 200);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+
+  const gfx::Rect bounds_window1 = window1->GetBoundsInScreen();
+  const gfx::Rect bounds_window2 = window2->GetBoundsInScreen();
+  const gfx::Rect bounds_divider =
+      split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
+
+  // Test that |window1| and |window2| has the same width and height after snap.
+  EXPECT_NEAR(bounds_window1.width(), bounds_window2.width(), 1);
+  EXPECT_EQ(bounds_window1.height(), bounds_window2.height());
+  EXPECT_EQ(bounds_divider.height(), bounds_window1.height());
+
+  // Test that |window1|, divider, |window2| are aligned properly.
+  EXPECT_EQ(bounds_divider.x(), bounds_window1.x() + bounds_window1.width());
+  EXPECT_EQ(bounds_window2.x(), bounds_divider.x() + bounds_divider.width());
+
+  // Drag the divider to trigger the snap animation.
+  const gfx::Point divider_center =
+      split_view_divider()
+          ->GetDividerBoundsInScreen(false /* is_dragging */)
+          .CenterPoint();
+  GetEventGenerator()->set_current_screen_location(divider_center);
+  GetEventGenerator()->DragMouseBy(20, 0);
+  ASSERT_TRUE(IsDividerAnimating());
+  const gfx::Rect animation_start_bounds_window1 = window1->GetBoundsInScreen();
+  const gfx::Rect animation_start_bounds_window2 = window2->GetBoundsInScreen();
+  const gfx::Rect animation_start_bounds_divider =
+      split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
+
+  // Change the display configuration and check that the snap animation stops.
+  UpdateDisplay("507x500");
+  EXPECT_FALSE(IsDividerAnimating());
+  const gfx::Rect new_bounds_window1 = window1->GetBoundsInScreen();
+  const gfx::Rect new_bounds_window2 = window2->GetBoundsInScreen();
+  const gfx::Rect new_bounds_divider =
+      split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
+
+  // Test that the new bounds are different with the old ones.
+  EXPECT_NE(bounds_window1, new_bounds_window1);
+  EXPECT_NE(bounds_window2, new_bounds_window2);
+  EXPECT_NE(bounds_divider, new_bounds_divider);
+
+  // Test that the new bounds are also different with the ones from the start of
+  // the divider snap animation.
+  EXPECT_NE(bounds_window1, animation_start_bounds_window1);
+  EXPECT_NE(bounds_window2, animation_start_bounds_window2);
+  EXPECT_NE(bounds_divider, animation_start_bounds_divider);
+
+  // Test that |window1|, divider, |window2| are still aligned properly.
+  EXPECT_EQ(new_bounds_divider.x(),
+            new_bounds_window1.x() + new_bounds_window1.width());
+  EXPECT_EQ(new_bounds_window2.x(),
+            new_bounds_divider.x() + new_bounds_divider.width());
+}
+
+// Test that if the internal screen display configuration changes during the
+// divider snap animation, and if the adjusted divider bounds place it at an
+// edge of the screen, then split view ends.
+TEST_F(SplitViewControllerTest,
+       InternalDisplayConfigurationChangeDuringDividerSnapToEndSplitView) {
+  UpdateDisplay("407x400");
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager,
+                                                         display_id);
+
+  const gfx::Rect bounds(0, 0, 200, 200);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+
+  const gfx::Rect bounds_window1 = window1->GetBoundsInScreen();
+  const gfx::Rect bounds_window2 = window2->GetBoundsInScreen();
+  const gfx::Rect bounds_divider =
+      split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
+
+  // Test that |window1| and |window2| has the same width and height after snap.
+  EXPECT_NEAR(bounds_window1.width(), bounds_window2.width(), 1);
+  EXPECT_EQ(bounds_window1.height(), bounds_window2.height());
+  EXPECT_EQ(bounds_divider.height(), bounds_window1.height());
+
+  // Test that |window1|, divider, |window2| are aligned properly.
+  EXPECT_EQ(bounds_divider.x(), bounds_window1.x() + bounds_window1.width());
+  EXPECT_EQ(bounds_window2.x(), bounds_divider.x() + bounds_divider.width());
+
+  // Drag the divider to end split view pending the snap animation.
+  const gfx::Point divider_center =
+      split_view_divider()
+          ->GetDividerBoundsInScreen(false /* is_dragging */)
+          .CenterPoint();
+  GetEventGenerator()->set_current_screen_location(divider_center);
+  GetEventGenerator()->DragMouseBy(bounds_window2.width() - 20, 0);
+  ASSERT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  ASSERT_TRUE(IsDividerAnimating());
+
+  // Change the display configuration and check that split view ends.
+  UpdateDisplay("507x500");
+  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+}
+
 // Verify the left and right windows get swapped when SwapWindows is called or
-// the divider is double tapped.
+// the divider is double clicked.
 TEST_F(SplitViewControllerTest, SwapWindows) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
@@ -675,8 +860,8 @@ TEST_F(SplitViewControllerTest, SwapWindows) {
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller()->SnapWindow(window2.get(),
                                       SplitViewController::RIGHT);
-  EXPECT_EQ(split_view_controller()->left_window(), window1.get());
-  EXPECT_EQ(split_view_controller()->right_window(), window2.get());
+  ASSERT_EQ(split_view_controller()->left_window(), window1.get());
+  ASSERT_EQ(split_view_controller()->right_window(), window2.get());
 
   gfx::Rect left_bounds = window1->GetBoundsInScreen();
   gfx::Rect right_bounds = window2->GetBoundsInScreen();
@@ -695,8 +880,8 @@ TEST_F(SplitViewControllerTest, SwapWindows) {
   split_view_controller()->SnapWindow(window1.get(),
                                       SplitViewController::RIGHT);
   split_view_controller()->SnapWindow(window2.get(), SplitViewController::LEFT);
-  EXPECT_EQ(split_view_controller()->right_window(), window1.get());
-  EXPECT_EQ(split_view_controller()->left_window(), window2.get());
+  ASSERT_EQ(split_view_controller()->right_window(), window1.get());
+  ASSERT_EQ(split_view_controller()->left_window(), window2.get());
 
   left_bounds = window2->GetBoundsInScreen();
   right_bounds = window1->GetBoundsInScreen();
@@ -707,7 +892,7 @@ TEST_F(SplitViewControllerTest, SwapWindows) {
   EXPECT_EQ(left_bounds, window1->GetBoundsInScreen());
   EXPECT_EQ(right_bounds, window2->GetBoundsInScreen());
 
-  // Perform a double tap on the divider center.
+  // Perform a double click on the divider center.
   const gfx::Point divider_center =
       split_view_divider()
           ->GetDividerBoundsInScreen(false /* is_dragging */)
@@ -719,6 +904,146 @@ TEST_F(SplitViewControllerTest, SwapWindows) {
   EXPECT_EQ(split_view_controller()->right_window(), window1.get());
   EXPECT_EQ(left_bounds, window2->GetBoundsInScreen());
   EXPECT_EQ(right_bounds, window1->GetBoundsInScreen());
+}
+
+// Verify the left and right windows get swapped when the divider is double
+// tapped. SwapWindows() contains a long code comment that shows it is worth
+// having separate tests for double clicking and double tapping the divider.
+TEST_F(SplitViewControllerTest, DoubleTapDivider) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  ASSERT_EQ(split_view_controller()->left_window(), window1.get());
+  ASSERT_EQ(split_view_controller()->right_window(), window2.get());
+
+  gfx::Rect left_bounds = window1->GetBoundsInScreen();
+  gfx::Rect right_bounds = window2->GetBoundsInScreen();
+
+  // Perform a double tap on the divider center.
+  const gfx::Point divider_center =
+      split_view_divider()
+          ->GetDividerBoundsInScreen(false /* is_dragging */)
+          .CenterPoint();
+  GetEventGenerator()->GestureTapAt(divider_center);
+  GetEventGenerator()->GestureTapAt(divider_center);
+
+  EXPECT_EQ(split_view_controller()->left_window(), window2.get());
+  EXPECT_EQ(split_view_controller()->right_window(), window1.get());
+  EXPECT_EQ(left_bounds, window2->GetBoundsInScreen());
+  EXPECT_EQ(right_bounds, window1->GetBoundsInScreen());
+}
+
+// Verify the left and right windows do not get swapped when the divider is
+// dragged and double clicked.
+TEST_F(SplitViewControllerTest, DragAndDoubleClickDivider) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  ASSERT_EQ(split_view_controller()->left_window(), window1.get());
+  ASSERT_EQ(split_view_controller()->right_window(), window2.get());
+
+  // Drag the divider and double click it before the snap animation moves it.
+  const gfx::Point divider_center =
+      split_view_divider()
+          ->GetDividerBoundsInScreen(false /* is_dragging */)
+          .CenterPoint();
+  GetEventGenerator()->set_current_screen_location(divider_center);
+  GetEventGenerator()->DragMouseBy(20, 0);
+  GetEventGenerator()->DoubleClickLeftButton();
+
+  EXPECT_EQ(split_view_controller()->left_window(), window1.get());
+  EXPECT_EQ(split_view_controller()->right_window(), window2.get());
+}
+
+// Verify the left and right windows do not get swapped when the divider is
+// dragged and double tapped.
+TEST_F(SplitViewControllerTest, DragAndDoubleTapDivider) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  ASSERT_EQ(split_view_controller()->left_window(), window1.get());
+  ASSERT_EQ(split_view_controller()->right_window(), window2.get());
+
+  // Drag the divider and double tap it before the snap animation moves it.
+  const gfx::Point divider_center =
+      split_view_divider()
+          ->GetDividerBoundsInScreen(false /* is_dragging */)
+          .CenterPoint();
+  GetEventGenerator()->set_current_screen_location(divider_center);
+  const gfx::Point drag_destination = divider_center + gfx::Vector2d(20, 0);
+  GetEventGenerator()->DragMouseTo(drag_destination);
+  GetEventGenerator()->GestureTapAt(drag_destination);
+  GetEventGenerator()->GestureTapAt(drag_destination);
+
+  EXPECT_EQ(split_view_controller()->left_window(), window1.get());
+  EXPECT_EQ(split_view_controller()->right_window(), window2.get());
+}
+
+// Verify that you cannot snap a window during the divider snap animation.
+TEST_F(SplitViewControllerTest, SnapWindowDuringDividerSnapAnimation) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window4(CreateWindow(bounds));
+
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  ASSERT_EQ(split_view_controller()->left_window(), window1.get());
+  ASSERT_EQ(split_view_controller()->right_window(), window2.get());
+
+  // Drag the divider to trigger the snap animation.
+  const gfx::Point divider_center =
+      split_view_divider()
+          ->GetDividerBoundsInScreen(false /* is_dragging */)
+          .CenterPoint();
+  GetEventGenerator()->set_current_screen_location(divider_center);
+  GetEventGenerator()->DragMouseBy(20, 0);
+  ASSERT_TRUE(IsDividerAnimating());
+
+  split_view_controller()->SnapWindow(window3.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window4.get(),
+                                      SplitViewController::RIGHT);
+  EXPECT_EQ(split_view_controller()->left_window(), window1.get());
+  EXPECT_EQ(split_view_controller()->right_window(), window2.get());
+}
+
+// Verify that you cannot start dragging the divider during its snap animation.
+TEST_F(SplitViewControllerTest, StartDraggingDividerDuringSnapAnimation) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  ASSERT_EQ(split_view_controller()->left_window(), window1.get());
+  ASSERT_EQ(split_view_controller()->right_window(), window2.get());
+
+  // Drag the divider and then try to start dragging it again without waiting
+  // for the snap animation.
+  const gfx::Point divider_center =
+      split_view_divider()
+          ->GetDividerBoundsInScreen(false /* is_dragging */)
+          .CenterPoint();
+  GetEventGenerator()->set_current_screen_location(divider_center);
+  GetEventGenerator()->DragMouseBy(20, 0);
+  GetEventGenerator()->PressLeftButton();
+  EXPECT_FALSE(split_view_controller()->is_resizing());
+  GetEventGenerator()->ReleaseLeftButton();
 }
 
 // Verifies that by long pressing on the overview button tray, split view gets
@@ -1110,6 +1435,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
             window1->delegate()->GetMinimumSize().width());
   EXPECT_FALSE(window1->layer()->GetTargetTransform().IsIdentity());
   split_view_controller()->EndResize(resize_point);
+  SkipDividerSnapAnimation();
   EndSplitView();
 
   // Rotate the screen by 270 degree.
@@ -1139,6 +1465,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
             window1->delegate()->GetMinimumSize().height());
   EXPECT_FALSE(window1->layer()->GetTargetTransform().IsIdentity());
   split_view_controller()->EndResize(resize_point);
+  SkipDividerSnapAnimation();
   EndSplitView();
 
   // Rotate the screen by 180 degree.
@@ -1170,6 +1497,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
             window1->delegate()->GetMinimumSize().width());
   EXPECT_FALSE(window1->layer()->GetTargetTransform().IsIdentity());
   split_view_controller()->EndResize(resize_point);
+  SkipDividerSnapAnimation();
   EndSplitView();
 
   // Rotate the screen by 90 degree.
@@ -1201,6 +1529,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
             window1->delegate()->GetMinimumSize().height());
   EXPECT_FALSE(window1->layer()->GetTargetTransform().IsIdentity());
   split_view_controller()->EndResize(resize_point);
+  SkipDividerSnapAnimation();
   EndSplitView();
 }
 
@@ -1229,6 +1558,7 @@ TEST_F(SplitViewControllerTest,
       split_view_divider()->GetDividerBoundsInScreen(false);
   generator->set_current_screen_location(divider_bounds.CenterPoint());
   generator->DragMouseTo(gfx::Point(workarea_bounds.width() * 0.33f, 0));
+  SkipDividerSnapAnimation();
   EXPECT_GT(divider_position(), 0.33f * workarea_bounds.width());
   EXPECT_LE(divider_position(), 0.5f * workarea_bounds.width());
 
@@ -1236,6 +1566,7 @@ TEST_F(SplitViewControllerTest,
   // dragging.
   generator->set_current_screen_location(divider_bounds.CenterPoint());
   generator->DragMouseTo(gfx::Point(workarea_bounds.width() * 0.67f, 0));
+  SkipDividerSnapAnimation();
   EXPECT_GT(divider_position(), 0.5f * workarea_bounds.width());
   EXPECT_LE(divider_position(), 0.67f * workarea_bounds.width());
   EndSplitView();
@@ -1250,6 +1581,7 @@ TEST_F(SplitViewControllerTest,
   divider_bounds = split_view_divider()->GetDividerBoundsInScreen(false);
   generator->set_current_screen_location(divider_bounds.CenterPoint());
   generator->DragMouseTo(gfx::Point(workarea_bounds.width() * 0.67f, 0));
+  SkipDividerSnapAnimation();
   EXPECT_GT(divider_position(), 0.33f * workarea_bounds.width());
   EXPECT_LE(divider_position(), 0.5f * workarea_bounds.width());
 
@@ -1257,6 +1589,7 @@ TEST_F(SplitViewControllerTest,
   // dragging.
   generator->set_current_screen_location(divider_bounds.CenterPoint());
   generator->DragMouseTo(gfx::Point(workarea_bounds.width() * 0.33f, 0));
+  SkipDividerSnapAnimation();
   EXPECT_GT(divider_position(), 0);
   EXPECT_LE(divider_position(), 0.33f * workarea_bounds.width());
   EndSplitView();
@@ -1276,6 +1609,7 @@ TEST_F(SplitViewControllerTest,
   divider_bounds = split_view_divider()->GetDividerBoundsInScreen(false);
   generator->set_current_screen_location(divider_bounds.CenterPoint());
   generator->DragMouseTo(gfx::Point(workarea_bounds.width() * 0.33f, 0));
+  SkipDividerSnapAnimation();
   EXPECT_GT(divider_position(), 0.33f * workarea_bounds.width());
   EXPECT_LE(divider_position(), 0.5f * workarea_bounds.width());
 
@@ -1283,6 +1617,7 @@ TEST_F(SplitViewControllerTest,
   // position after dragging.
   generator->set_current_screen_location(divider_bounds.CenterPoint());
   generator->DragMouseTo(gfx::Point(workarea_bounds.width() * 0.67f, 0));
+  SkipDividerSnapAnimation();
   EXPECT_GT(divider_position(), 0.33f * workarea_bounds.width());
   EXPECT_LE(divider_position(), 0.5f * workarea_bounds.width());
   EndSplitView();
@@ -1311,6 +1646,7 @@ TEST_F(SplitViewControllerTest,
       split_view_divider()->GetDividerBoundsInScreen(false);
   generator->set_current_screen_location(divider_bounds.CenterPoint());
   generator->DragMouseTo(gfx::Point(workarea_bounds.width() * 0.67f, 0));
+  SkipDividerSnapAnimation();
   EXPECT_GT(divider_position(), 0.5f * workarea_bounds.width());
   EXPECT_LE(divider_position(), 0.67f * workarea_bounds.width());
 
@@ -1719,6 +2055,7 @@ TEST_F(SplitViewControllerTest, DividerClosestRatioOnWorkArea) {
   // Drag the divider to one third position of the work area's width.
   generator->DragMouseTo(
       gfx::Point(workarea_bounds.width() * 0.33f, workarea_bounds.y()));
+  SkipDividerSnapAnimation();
   EXPECT_EQ(divider_closest_ratio(), 0.33f);
 
   // Divider closest position ratio changed from one third to two thirds if
@@ -1823,6 +2160,46 @@ TEST_F(SplitViewControllerTest, EndSplitViewWhileResizingBeyondMinimum) {
   split_view_controller()->Resize(resize_point);
   ASSERT_FALSE(window->layer()->GetTargetTransform().IsIdentity());
   EndSplitView();
+  EXPECT_TRUE(window->layer()->GetTargetTransform().IsIdentity());
+}
+
+// Test that if split view ends during the divider snap animation while a
+// snapped window is sliding off the screen because it has reached minimum size,
+// then the animation is ended and the window offset is cleared.
+TEST_F(SplitViewControllerTest, EndSplitViewDuringDividerSnapAnimation) {
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager,
+                                                         display_id);
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+
+  const gfx::Rect bounds(0, 0, 300, 200);
+  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+  aura::test::TestWindowDelegate* delegate =
+      static_cast<aura::test::TestWindowDelegate*>(window->delegate());
+
+  // Set the screen orientation to LANDSCAPE_PRIMARY
+  test_api.SetDisplayRotation(display::Display::ROTATE_0,
+                              display::Display::RotationSource::ACTIVE);
+
+  gfx::Rect display_bounds =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window.get());
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+  delegate->set_minimum_size(
+      gfx::Size(display_bounds.width() * 0.4f, display_bounds.height()));
+
+  gfx::Rect divider_bounds =
+      split_view_divider()->GetDividerBoundsInScreen(false);
+  split_view_controller()->StartResize(divider_bounds.CenterPoint());
+  gfx::Point resize_point((int)(display_bounds.width() * 0.33f) + 20, 0);
+  split_view_controller()->Resize(resize_point);
+  split_view_controller()->EndResize(resize_point);
+  ASSERT_TRUE(IsDividerAnimating());
+  ASSERT_FALSE(window->layer()->GetTargetTransform().IsIdentity());
+  EndSplitView();
+  EXPECT_FALSE(IsDividerAnimating());
   EXPECT_TRUE(window->layer()->GetTargetTransform().IsIdentity());
 }
 
