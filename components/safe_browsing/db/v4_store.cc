@@ -175,7 +175,7 @@ void RecordStoreWriteResult(StoreWriteResult result) {
 }
 
 // Returns the name of the temporary file used to buffer data for
-// |filename|.  Exported for unit tests.
+// |filename|.
 const base::FilePath TemporaryFileForFilename(const base::FilePath& filename) {
   return base::FilePath(filename.value() + FILE_PATH_LITERAL("_new"));
 }
@@ -765,10 +765,12 @@ StoreWriteResult V4Store::WriteToDisk(const Checksum& checksum) {
                                    file_format_string.size());
 
   if (file_format_string.size() != written) {
+    base::DeleteFile(new_filename, /*recursive=*/false);
     return UNEXPECTED_BYTES_WRITTEN_FAILURE;
   }
 
   if (!base::Move(new_filename, store_path_)) {
+    base::DeleteFile(new_filename, /*recursive=*/false);
     return UNABLE_TO_RENAME_FAILURE;
   }
 
