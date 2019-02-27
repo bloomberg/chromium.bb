@@ -12,6 +12,7 @@
 #include "components/autofill/ios/browser/autofill_switches.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/origin_util.h"
+#import "ios/web/public/web_state/web_frame_util.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -63,10 +64,10 @@ AutofillDriverIOS::AutofillDriverIOS(
     const std::string& app_locale,
     AutofillManager::AutofillDownloadManagerState enable_download_manager)
     : web_state_(web_state),
-      web_frame_(web_frame),
       bridge_(bridge),
       autofill_manager_(this, client, app_locale, enable_download_manager),
       autofill_external_delegate_(&autofill_manager_, this) {
+  web_frame_id_ = web::GetWebFrameId(web_frame);
   autofill_manager_.SetExternalDelegate(&autofill_external_delegate_);
 }
 
@@ -77,7 +78,8 @@ bool AutofillDriverIOS::IsIncognito() const {
 }
 
 bool AutofillDriverIOS::IsInMainFrame() const {
-  return web_frame_ ? web_frame_->IsMainFrame() : true;
+  web::WebFrame* web_frame = web::GetWebFrameWithId(web_state_, web_frame_id_);
+  return web_frame ? web_frame->IsMainFrame() : true;
 }
 
 net::URLRequestContextGetter* AutofillDriverIOS::GetURLRequestContext() {
@@ -98,7 +100,8 @@ void AutofillDriverIOS::SendFormDataToRenderer(
     int query_id,
     RendererFormDataAction action,
     const FormData& data) {
-  [bridge_ fillFormData:data inFrame:web_frame_];
+  web::WebFrame* web_frame = web::GetWebFrameWithId(web_state_, web_frame_id_);
+  [bridge_ fillFormData:data inFrame:web_frame];
 }
 
 void AutofillDriverIOS::PropagateAutofillPredictions(
@@ -108,8 +111,9 @@ void AutofillDriverIOS::PropagateAutofillPredictions(
 
 void AutofillDriverIOS::SendAutofillTypePredictionsToRenderer(
     const std::vector<FormStructure*>& forms) {
+  web::WebFrame* web_frame = web::GetWebFrameWithId(web_state_, web_frame_id_);
   [bridge_ fillFormDataPredictions:FormStructure::GetFieldTypePredictions(forms)
-                           inFrame:web_frame_];
+                           inFrame:web_frame];
 }
 
 void AutofillDriverIOS::RendererShouldAcceptDataListSuggestion(
