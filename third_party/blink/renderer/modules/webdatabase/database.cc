@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/modules/webdatabase/storage_log.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 // Registering "opened" databases with the DatabaseTracker
 // =======================================================
@@ -90,6 +91,8 @@ namespace {
 // Stores a cached version of each database, keyed by a unique integer obtained
 // by providing an origin-name pair.
 class DatabaseVersionCache {
+  USING_FAST_MALLOC(DatabaseVersionCache);
+
  public:
   Mutex& GetMutex() const LOCK_RETURNED(mutex_) { return mutex_; }
 

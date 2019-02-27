@@ -111,6 +111,8 @@ class DOMWebSocketWithMockChannel final : public DOMWebSocket {
 };
 
 class DOMWebSocketTestScope {
+  STACK_ALLOCATED();
+
  public:
   explicit DOMWebSocketTestScope(ExecutionContext* execution_context)
       : websocket_(DOMWebSocketWithMockChannel::Create(execution_context)) {}
