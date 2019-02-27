@@ -34,11 +34,11 @@ import org.robolectric.shadows.multidex.ShadowMultiDex;
 
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.DeviceConditions;
+import org.chromium.chrome.browser.ShadowDeviceConditions;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
-import org.chromium.chrome.browser.offlinepages.DeviceConditions;
-import org.chromium.chrome.browser.offlinepages.ShadowDeviceConditions;
 import org.chromium.components.background_task_scheduler.BackgroundTask.TaskFinishedCallback;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
