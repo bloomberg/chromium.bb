@@ -49,7 +49,7 @@ class CONTENT_EXPORT SessionStorageDataMap final
   static scoped_refptr<SessionStorageDataMap> CreateClone(
       Listener* listener,
       scoped_refptr<SessionStorageMetadata::MapData> map_data,
-      StorageAreaImpl* clone_from);
+      scoped_refptr<SessionStorageDataMap> clone_from);
 
   Listener* listener() const { return listener_; }
 
@@ -82,13 +82,21 @@ class CONTENT_EXPORT SessionStorageDataMap final
   SessionStorageDataMap(
       Listener* listener,
       scoped_refptr<SessionStorageMetadata::MapData> map_entry,
-      StorageAreaImpl* forking_from);
+      scoped_refptr<SessionStorageDataMap> forking_from);
   ~SessionStorageDataMap() override;
+
+  void OnMapLoaded(leveldb::mojom::DatabaseError error) override;
 
   static StorageAreaImpl::Options GetOptions();
 
   Listener* listener_;
   int binding_count_ = 0;
+
+  // If we're cloning from another map, we need to keep it alive while it forks.
+  // Note, this has to be above the storage_area_impl_ in case the Fork call
+  // completes synchronously.
+  scoped_refptr<SessionStorageDataMap> clone_from_data_map_;
+
   scoped_refptr<SessionStorageMetadata::MapData> map_data_;
   std::unique_ptr<StorageAreaImpl> storage_area_impl_;
   // Holds the same value as |storage_area_impl_|. The reason for this is that

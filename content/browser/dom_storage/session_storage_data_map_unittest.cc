@@ -153,7 +153,7 @@ TEST_F(SessionStorageDataMapTest, Clone) {
           &listener_,
           base::MakeRefCounted<SessionStorageMetadata::MapData>(2,
                                                                 test_origin_),
-          map1->storage_area());
+          map1);
 
   bool success;
   std::vector<blink::mojom::KeyValuePtr> data;
