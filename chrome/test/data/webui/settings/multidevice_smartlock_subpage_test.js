@@ -237,8 +237,10 @@ suite('Multidevice', function() {
     assertEquals(settings.SignInEnabledState.DISABLED,
                  smartLockSignInRadio.selected);
 
-    // Simulate the user entering a valid password.
-    smartLockSubPage.fire('auth-token-changed', {value: 'validAuthToken'});
+    // Simulate the user entering a valid password into the dialog.
+    smartLockSubPage.$$('#smartLockSignInPasswordPrompt').authToken =
+        'validAuthToken';
+    smartLockSubPage.$$('#smartLockSignInPasswordPrompt').fire('close');
 
     assertEquals(settings.SignInEnabledState.ENABLED,
                   smartLockSignInRadio.selected);
