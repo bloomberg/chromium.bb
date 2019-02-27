@@ -988,8 +988,8 @@
     "args": ["--enable-blink-features=FeaturePolicyForSandbox"]
   },
   {
-    "prefix": "secure-device-sensor-events",
+    "prefix": "insecure-device-sensor-events",
     "base": "http/tests/security/powerfulFeatureRestrictions/",
-    "args": ["--enable-features=RestrictDeviceSensorEventsToSecureContexts"]
+    "args": ["--disable-features=RestrictDeviceSensorEventsToSecureContexts"]
   }
 ]

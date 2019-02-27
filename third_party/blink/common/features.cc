@@ -192,7 +192,7 @@ const base::Feature kForbidSyncXHRInPageDismissal{
 // See: https://crbug.com/932078.
 const base::Feature kRestrictDeviceSensorEventsToSecureContexts{
     "RestrictDeviceSensorEventsToSecureContexts",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const char kAutofillPreviewStyleExperimentBgColorParameterName[] = "bg_color";
 
