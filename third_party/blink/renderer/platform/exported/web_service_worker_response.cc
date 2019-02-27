@@ -58,7 +58,7 @@ void WebServiceWorkerResponse::SetStatus(uint16_t status) {
   private_->status = status;
 }
 
-unsigned short WebServiceWorkerResponse::Status() const {
+uint16_t WebServiceWorkerResponse::Status() const {
   return private_->status;
 }
 
