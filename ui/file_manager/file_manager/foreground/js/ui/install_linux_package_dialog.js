@@ -5,7 +5,7 @@
 /**
  * InstallLinuxPackageDialog is used as the handler for .deb files.
  */
-cr.define('cr.filebrowser', function() {
+cr.define('cr.filebrowser', () => {
   /**
    * Creates dialog in DOM tree.
    *

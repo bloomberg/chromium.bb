@@ -304,10 +304,10 @@ function FileManagerUI(providersModel, element, launchParam) {
   const shareMenuButtonToggleRipple =
       /** @type {!FilesToggleRipple} */ (
           queryRequiredElement('files-toggle-ripple', this.shareMenuButton));
-  this.shareMenuButton.addEventListener('menushow', function() {
+  this.shareMenuButton.addEventListener('menushow', () => {
     shareMenuButtonToggleRipple.activated = true;
   });
-  this.shareMenuButton.addEventListener('menuhide', function() {
+  this.shareMenuButton.addEventListener('menuhide', () => {
     shareMenuButtonToggleRipple.activated = false;
   });
 
@@ -388,11 +388,11 @@ function FileManagerUI(providersModel, element, launchParam) {
 
   // Modify UI default behavior.
   this.element.addEventListener('click', this.onExternalLinkClick_.bind(this));
-  this.element.addEventListener('drop', function(e) {
+  this.element.addEventListener('drop', e => {
     e.preventDefault();
   });
   if (util.runningInBrowser()) {
-    this.element.addEventListener('contextmenu', function(e) {
+    this.element.addEventListener('contextmenu', e => {
       e.preventDefault();
       e.stopPropagation();
     });
@@ -485,7 +485,7 @@ FileManagerUI.prototype.initBanners = function(banners) {
 /**
  * Attaches files tooltip.
  */
-FileManagerUI.prototype.attachFilesTooltip = function() {
+FileManagerUI.prototype.attachFilesTooltip = () => {
   assertInstanceof(document.querySelector('files-tooltip'), FilesTooltip)
       .addTargets(document.querySelectorAll('[has-tooltip]'));
 };
@@ -494,7 +494,7 @@ FileManagerUI.prototype.attachFilesTooltip = function() {
  * Initialize files menu items. This method must be called after all files menu
  * items are decorated as cr.ui.MenuItem.
  */
-FileManagerUI.prototype.decorateFilesMenuItems = function() {
+FileManagerUI.prototype.decorateFilesMenuItems = () => {
   const filesMenuItems = document.querySelectorAll(
       'cr-menu.files-menu > cr-menu-item');
 
@@ -608,7 +608,7 @@ FileManagerUI.prototype.showOpenInOtherDesktopAlert = function(entries) {
     return;
   }
   chrome.fileManagerPrivate.getProfiles(
-    function(profiles, currentId, displayedId) {
+    (profiles, currentId, displayedId) => {
       // Find strings.
       let displayName;
       for (let i = 0; i < profiles.length; i++) {
@@ -632,7 +632,7 @@ FileManagerUI.prototype.showOpenInOtherDesktopAlert = function(entries) {
 
       // Show the dialog.
       this.alertDialog.showWithTitle(title, message, null, null, null);
-    }.bind(this));
+    });
 };
 
 /**
@@ -649,13 +649,13 @@ FileManagerUI.prototype.showConfirmationDialog = function(isMove, messages) {
   } else {
     dialog = this.copyConfirmDialog;
   }
-  return new Promise(function(resolve, reject) {
+  return new Promise((resolve, reject) => {
     dialog.show(
         messages.join(' '),
-        function() {
+        () => {
           resolve(true);
         },
-        function() {
+        () => {
           resolve(false);
         });
   });

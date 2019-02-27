@@ -6,7 +6,7 @@
  * @fileoverview This implements a combobutton control.
  * TODO(yawano): Migrate combobutton to Polymer element.
  */
-cr.define('cr.ui', function() {
+cr.define('cr.ui', () => {
   /**
    * Creates a new combobutton element.
    * @param {Object=} opt_propertyBag Optional properties.

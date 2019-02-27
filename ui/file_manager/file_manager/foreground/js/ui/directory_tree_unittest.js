@@ -162,10 +162,10 @@ function testCreateDirectoryTree(callback) {
   const driveItem = directoryTree.items[0];
 
   reportPromise(
-      waitUntil(function() {
+      waitUntil(() => {
         // Under the drive item, there exist 3 entries.
         return driveItem.items.length == 3;
-      }).then(function() {
+      }).then(() => {
         // There exist 1 my drive entry and 3 fake entries under the drive item.
         assertEquals(str('DRIVE_MY_DRIVE_LABEL'), driveItem.items[0].label);
         assertEquals(
@@ -217,10 +217,10 @@ function testCreateDirectoryTreeWithTeamDrive(callback) {
   const driveItem = directoryTree.items[0];
 
   reportPromise(
-      waitUntil(function() {
+      waitUntil(() => {
         // Under the drive item, there exist 4 entries.
         return driveItem.items.length == 4;
-      }).then(function() {
+      }).then(() => {
         // There exist 1 my drive entry and 3 fake entries under the drive item.
         assertEquals(str('DRIVE_MY_DRIVE_LABEL'), driveItem.items[0].label);
         assertEquals(str('DRIVE_TEAM_DRIVES_LABEL'), driveItem.items[1].label);
@@ -258,12 +258,12 @@ function testCreateDirectoryTreeWithEmptyTeamDrive(callback) {
   const driveItem = directoryTree.items[0];
 
   reportPromise(
-      waitUntil(function() {
+      waitUntil(() => {
         // Root entries under Drive volume is generated, Team Drives isn't
         // included because it has no child.
         // See testCreateDirectoryTreeWithTeamDrive for detail.
         return driveItem.items.length == 3;
-      }).then(function() {
+      }).then(() => {
         let teamDrivesItemFound = false;
         for (let i = 0; i < driveItem.items.length; i++) {
           if (driveItem.items[i].label == str('DRIVE_TEAM_DRIVES_LABEL')) {
@@ -315,10 +315,10 @@ function testCreateDirectoryTreeWithComputers(callback) {
   const driveItem = directoryTree.items[0];
 
   reportPromise(
-      waitUntil(function() {
+      waitUntil(() => {
         // Under the drive item, there exist 4 entries.
         return driveItem.items.length == 4;
-      }).then(function() {
+      }).then(() => {
         // There exist 1 my drive entry and 3 fake entries under the drive item.
         assertEquals(str('DRIVE_MY_DRIVE_LABEL'), driveItem.items[0].label);
         assertEquals(str('DRIVE_COMPUTERS_LABEL'), driveItem.items[1].label);
@@ -358,12 +358,12 @@ function testCreateDirectoryTreeWithEmptyComputers(callback) {
   // Ensure we do not have a "Computers" item in drive, as it does not contain
   // any children.
   reportPromise(
-      waitUntil(function() {
+      waitUntil(() => {
         // Root entries under Drive volume is generated, Computers isn't
         // included because it has no child.
         // See testCreateDirectoryTreeWithComputers for detail.
         return driveItem.items.length == 3;
-      }).then(function() {
+      }).then(() => {
         let teamDrivesItemFound = false;
         for (let i = 0; i < driveItem.items.length; i++) {
           if (driveItem.items[i].label == str('DRIVE_COMPUTERS_LABEL')) {
@@ -418,10 +418,10 @@ function testCreateDirectoryTreeWithTeamDrivesAndComputers(callback) {
   const driveItem = directoryTree.items[0];
 
   reportPromise(
-      waitUntil(function() {
+      waitUntil(() => {
         // Under the drive item, there exist 4 entries.
         return driveItem.items.length == 5;
-      }).then(function() {
+      }).then(() => {
         // There exist 1 my drive entry and 3 fake entries under the drive item.
         assertEquals(str('DRIVE_MY_DRIVE_LABEL'), driveItem.items[0].label);
         assertEquals(str('DRIVE_TEAM_DRIVES_LABEL'), driveItem.items[1].label);

@@ -73,7 +73,7 @@ DragSelector.SelectionFlag_ = {
  * @param {Event} event The mouse event.
  * @return {Object} Scrolled position.
  */
-DragSelector.getScrolledPosition = function(element, event) {
+DragSelector.getScrolledPosition = (element, event) => {
   if (!element.cachedBounds) {
     element.cachedBounds = element.getBoundingClientRect();
     if (!element.cachedBounds) {

@@ -119,7 +119,7 @@ SearchBox.AutocompleteList.prototype = {
  * Do nothing when a suggestion is selected.
  * @override
  */
-SearchBox.AutocompleteList.prototype.handleSelectedSuggestion = function() {};
+SearchBox.AutocompleteList.prototype.handleSelectedSuggestion = () => {};
 
 /**
  * Change the selection by a mouse over instead of just changing the

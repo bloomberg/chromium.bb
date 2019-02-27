@@ -124,12 +124,12 @@ function ListContainer(element, table, grid) {
   this.element.addEventListener(
       'contextmenu', this.onContextMenu_.bind(this), /* useCapture */ true);
 
-  util.isTouchModeEnabled().then(function(enabled) {
+  util.isTouchModeEnabled().then(enabled => {
     if (!enabled) {
       return;
     }
     this.disableContextMenuByLongTapDuringCheckSelect_();
-  }.bind(this));
+  });
 }
 
 /**
@@ -272,27 +272,27 @@ ListContainer.prototype.setCurrentListType = function(listType) {
  */
 ListContainer.prototype.disableContextMenuByLongTapDuringCheckSelect_ =
     function() {
-  this.element.addEventListener('touchstart', function(e) {
+  this.element.addEventListener('touchstart', e => {
     if (e.touches.length > 1) {
       this.allowContextMenuByTouch_ = true;
     }
-  }.bind(this));
-  this.element.addEventListener('touchend', function(e) {
+  });
+  this.element.addEventListener('touchend', e => {
     if (e.touches.length == 0) {
       // contextmenu event will be sent right after touchend.
-      setTimeout(function() {
+      setTimeout(() => {
         this.allowContextMenuByTouch_ = false;
-      }.bind(this));
+      });
     }
-  }.bind(this));
-  this.element.addEventListener('contextmenu', function(e) {
+  });
+  this.element.addEventListener('contextmenu', e => {
     // Block context menu triggered by touch event unless it is right after
     // multi-touch, or we are currently selecting a file.
     if (this.currentList.selectedItem && !this.allowContextMenuByTouch_ &&
         e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) {
       e.stopPropagation();
     }
-  }.bind(this), true);
+  }, true);
 };
 
 /**
@@ -336,7 +336,7 @@ ListContainer.prototype.focus = function() {
  * @return {boolean} True if the menu has action item. Otherwise, false.
  * @private
  */
-ListContainer.prototype.contextMenuHasActions_ = function() {
+ListContainer.prototype.contextMenuHasActions_ = () => {
   const menu = document.querySelector('#file-context-menu');
   const menuItems = menu.querySelectorAll('cr-menu-item, hr');
   for (const item of menuItems) {

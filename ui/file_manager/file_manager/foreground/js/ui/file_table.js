@@ -360,8 +360,7 @@ FileTable.prototype.__proto__ = cr.ui.Table.prototype;
  * @param {boolean} fullPage True if it's full page File Manager,
  *                           False if a file open/save dialog.
  */
-FileTable.decorate = function(
-    self, metadataModel, volumeManager, historyLoader, fullPage) {
+FileTable.decorate = (self, metadataModel, volumeManager, historyLoader, fullPage) => {
   cr.ui.Table.decorate(self);
   self.__proto__ = FileTable.prototype;
   FileTableList.decorate(self.list);
@@ -439,7 +438,7 @@ FileTable.decorate = function(
       self.renderTableRow_.bind(self, selfAsTable.getRenderFunction()));
 
   // Keep focus on the file list when clicking on the header.
-  selfAsTable.header.addEventListener('mousedown', function(e) {
+  selfAsTable.header.addEventListener('mousedown', e => {
     self.list.focus();
     e.preventDefault();
   });
@@ -838,7 +837,7 @@ FileTable.prototype.getImportStatus_ = function(entry, destination) {
   return this.historyLoader_.getHistory()
       .then(
           /** @param {!importer.ImportHistory} history */
-          function(history) {
+          history => {
             return Promise.all([
                 history.wasImported(fileEntry, destination),
                 history.wasCopied(fileEntry, destination)
@@ -846,7 +845,7 @@ FileTable.prototype.getImportStatus_ = function(entry, destination) {
           })
       .then(
           /** @param {!Array<boolean>} status */
-          function(status) {
+          status => {
             if (status[0]) {
               return 'imported';
             } else if (status[1]) {
@@ -867,7 +866,7 @@ FileTable.prototype.getImportStatus_ = function(entry, destination) {
 FileTable.prototype.updateStatus_ = function(div, entry) {
   this.getImportStatus_(entry, importer.Destination.GOOGLE_DRIVE).then(
       /** @param {string} status */
-      function(status) {
+      status => {
         div.setAttribute('file-status-icon', status);
       });
 };
@@ -963,7 +962,7 @@ FileTable.prototype.updateFileMetadata = function(item, entry) {
  */
 FileTable.prototype.updateListItemsMetadata = function(type, entries) {
   const urls = util.entriesToURLs(entries);
-  const forEachCell = function(selector, callback) {
+  const forEachCell = (selector, callback) => {
     const cells = this.querySelectorAll(selector);
     for (let i = 0; i < cells.length; i++) {
       const cell = cells[i];
@@ -973,7 +972,7 @@ FileTable.prototype.updateListItemsMetadata = function(type, entries) {
         callback.call(this, cell, entry, listItem);
       }
     }
-  }.bind(this);
+  };
   if (type === 'filesystem') {
     forEachCell('.table-row-cell > .date', function(item, entry, unused) {
       this.updateDate_(item, entry);
@@ -1053,13 +1052,13 @@ FileTable.prototype.renderThumbnail_ = function(entry) {
  *     or not.
  * @private
  */
-FileTable.prototype.setThumbnailImage_ = function(box, dataUrl, shouldAnimate) {
+FileTable.prototype.setThumbnailImage_ = (box, dataUrl, shouldAnimate) => {
   const oldThumbnails = box.querySelectorAll('.thumbnail');
 
   const thumbnail = box.ownerDocument.createElement('div');
   thumbnail.classList.add('thumbnail');
   thumbnail.style.backgroundImage = 'url(' + dataUrl + ')';
-  thumbnail.addEventListener('animationend', function() {
+  thumbnail.addEventListener('animationend', () => {
     // Remove animation css once animation is completed in order not to animate
     // again when an item is attached to the dom again.
     thumbnail.classList.remove('animate');
@@ -1083,7 +1082,7 @@ FileTable.prototype.setThumbnailImage_ = function(box, dataUrl, shouldAnimate) {
  * @param {!HTMLDivElement} box Detail thumbnail div element.
  * @private
  */
-FileTable.prototype.clearThumbnailImage_ = function(box) {
+FileTable.prototype.clearThumbnailImage_ = box => {
   const oldThumbnails = box.querySelectorAll('.thumbnail');
 
   for (let i = 0; i < oldThumbnails.length; i++) {

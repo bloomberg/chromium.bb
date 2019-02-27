@@ -43,7 +43,7 @@ ActionsSubmenu.prototype.addMenuItem_ = function(options) {
  * @param {ActionsModel} actionsModel
  */
 ActionsSubmenu.prototype.setActionsModel = function(actionsModel) {
-  this.items_.forEach(function(item) {
+  this.items_.forEach(item => {
     item.parentNode.removeChild(item);
   });
   this.items_ = [];
@@ -52,7 +52,7 @@ ActionsSubmenu.prototype.setActionsModel = function(actionsModel) {
   if (actionsModel) {
     const actions = actionsModel.getActions();
      Object.keys(actions).forEach(
-        function(key) {
+        key => {
           remainingActions[key] = actions[key];
         });
   }
@@ -107,15 +107,15 @@ ActionsSubmenu.prototype.setActionsModel = function(actionsModel) {
       '#toggle-pinned', cr.ui.Command).canExecuteChange();
 
   // Process all the rest as custom actions.
-  Object.keys(remainingActions).forEach(function(key) {
+  Object.keys(remainingActions).forEach(key => {
     const action = remainingActions[key];
     const options = { label: action.getTitle() };
     const menuItem = this.addMenuItem_(options);
 
-    menuItem.addEventListener('activate', function() {
+    menuItem.addEventListener('activate', () => {
       action.execute();
     });
-  }.bind(this));
+  });
 
   this.separator_.hidden = !this.items_.length;
 };

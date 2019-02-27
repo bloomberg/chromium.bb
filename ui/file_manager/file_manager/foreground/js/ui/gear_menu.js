@@ -110,7 +110,7 @@ GearMenu.prototype.setSpaceInfo = function(
     this.volumeSpaceInnerBar_.style.width = '100%';
   }
 
-  spaceInfoPromise.then(function(spaceInfo) {
+  spaceInfoPromise.then(spaceInfo => {
     if (this.spaceInfoPromise_ != spaceInfoPromise) {
       return;
     }
@@ -128,5 +128,5 @@ GearMenu.prototype.setSpaceInfo = function(
       this.volumeSpaceOuterBar_.hidden = true;
       this.volumeSpaceInfoLabel_.textContent = str('FAILED_SPACE_INFO');
     }
-  }.bind(this));
+  });
 };

@@ -106,8 +106,7 @@ DirectoryItemTreeBaseMethods.searchAndSelectByEntry = function(entry) {
  * @param {boolean} isRootEntry Whether the entry selected was a root entry.
  * @return
  */
-DirectoryItemTreeBaseMethods.recordUMASelectedEntry = function(
-    e, rootType, isRootEntry) {
+DirectoryItemTreeBaseMethods.recordUMASelectedEntry = (e, rootType, isRootEntry) => {
   const expandIconSelected = e.target.classList.contains('expand-icon');
   let metricName = 'Location.OnEntrySelected.TopLevel';
   if (!expandIconSelected && isRootEntry) {
@@ -411,7 +410,7 @@ DirectoryItem.prototype.searchAndSelectByEntry = function(entry) {
  * @param {boolean=} opt_unused Unused.
  * @override
  */
-DirectoryItem.prototype.scrollIntoViewIfNeeded = function(opt_unused) {};
+DirectoryItem.prototype.scrollIntoViewIfNeeded = opt_unused => {};
 
 /**
  * Removes the child node, but without selecting the parent item, to avoid
@@ -598,7 +597,7 @@ DirectoryItem.prototype.updateItemByEntry = function(changedDirectoryEntry) {
 /**
  * Update the icon based on whether the folder is shared on Drive.
  */
-DirectoryItem.prototype.updateDriveSpecificIcons = function() {};
+DirectoryItem.prototype.updateDriveSpecificIcons = () => {};
 
 /**
  * Select the item corresponding to the given {@code entry}.
@@ -1074,7 +1073,7 @@ VolumeItem.prototype.activate = function() {
  * @param {VolumeInfo} volumeInfo VolumeInfo determines the icon type.
  * @private
  */
-VolumeItem.prototype.setupIcon_ = function(icon, volumeInfo) {
+VolumeItem.prototype.setupIcon_ = (icon, volumeInfo) => {
   icon.classList.add('item-icon');
   const backgroundImage =
       util.iconSetToCSSBackgroundImageValue(volumeInfo.iconSet);
@@ -1100,7 +1099,7 @@ VolumeItem.prototype.setupIcon_ = function(icon, volumeInfo) {
  * @param {HTMLElement} rowElement The parent element for placeholder.
  * @private
  */
-VolumeItem.prototype.setupRenamePlaceholder_ = function(rowElement) {
+VolumeItem.prototype.setupRenamePlaceholder_ = rowElement => {
   const placeholder = cr.doc.createElement('span');
   placeholder.className = 'rename-placeholder';
   rowElement.appendChild(placeholder);
@@ -1334,12 +1333,12 @@ DriveVolumeItem.prototype.updateSubDirectories = function(recursive) {
   let entries = [this.entry];
 
   const teamDrivesDisplayRoot = this.volumeInfo_.teamDriveDisplayRoot;
-  if (!!teamDrivesDisplayRoot) {
+  if (teamDrivesDisplayRoot) {
     entries.push(teamDrivesDisplayRoot);
   }
 
   const computersDisplayRoot = this.volumeInfo_.computersDisplayRoot;
-  if (!!computersDisplayRoot) {
+  if (computersDisplayRoot) {
     entries.push(computersDisplayRoot);
   }
 
@@ -1517,7 +1516,7 @@ ShortcutItem.prototype = {
  *     be a fake.
  * @return {boolean} True if the parent item is found.
  */
-ShortcutItem.prototype.searchAndSelectByEntry = function(entry) {
+ShortcutItem.prototype.searchAndSelectByEntry = entry => {
   // Always false as shortcuts have no children.
   return false;
 };
@@ -1645,7 +1644,7 @@ FakeItem.prototype = {
  * @param {!DirectoryEntry|!FakeEntry} entry
  * @return {boolean} True if the parent item is found.
  */
-FakeItem.prototype.searchAndSelectByEntry = function(entry) {
+FakeItem.prototype.searchAndSelectByEntry = entry => {
   return false;
 };
 
@@ -1679,15 +1678,14 @@ FakeItem.prototype.activate = function() {
  * FakeItem doesn't really have sub-directories, it's defined here only to have
  * the same API of other Items on this file.
  */
-FakeItem.prototype.updateSubDirectories = function(
-    recursive, opt_successCallback, opt_errorCallback) {
+FakeItem.prototype.updateSubDirectories = (recursive, opt_successCallback, opt_errorCallback) => {
   return opt_successCallback && opt_successCallback();
 };
 
 /**
  * FakeItem doesn't really have shared status/icon so we define here as no-op.
  */
-FakeItem.prototype.updateDriveSpecificIcons = function() {};
+FakeItem.prototype.updateDriveSpecificIcons = () => {};
 
 ////////////////////////////////////////////////////////////////////////////////
 // DirectoryTree
@@ -1710,9 +1708,14 @@ function DirectoryTree() {}
  * @param {!FileOperationManager} fileOperationManager
  * @param {boolean} fakeEntriesVisible True if it should show the fakeEntries.
  */
-DirectoryTree.decorate = function(
-    el, directoryModel, volumeManager, metadataModel, fileOperationManager,
-    fakeEntriesVisible) {
+DirectoryTree.decorate = (
+  el,
+  directoryModel,
+  volumeManager,
+  metadataModel,
+  fileOperationManager,
+  fakeEntriesVisible
+) => {
   el.__proto__ = DirectoryTree.prototype;
   /** @type {DirectoryTree} */ (el).decorateDirectoryTree(
       directoryModel, volumeManager, metadataModel, fileOperationManager,
@@ -1796,7 +1799,7 @@ cr.defineProperty(DirectoryTree, 'contextMenuForRootItems', cr.PropertyKind.JS);
  * @return {!cr.ui.TreeItem} a newly created instance of a
  *     DirectoryItem type.
  */
-DirectoryTree.createDirectoryItem = function(modelItem, tree) {
+DirectoryTree.createDirectoryItem = (modelItem, tree) => {
   switch (modelItem.type) {
     case NavigationModelItemType.VOLUME:
       const volumeModelItem =

@@ -4,7 +4,7 @@
 
 cr.exportPath('cr.ui');
 
-cr.define('cr.ui', function() {
+cr.define('cr.ui', () => {
   /** @const */
   const Menu = cr.ui.Menu;
 

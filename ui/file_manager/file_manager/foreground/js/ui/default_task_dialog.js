@@ -7,7 +7,7 @@
  * cancel button.
  * This dialog should be used as task picker for file operations.
  */
-cr.define('cr.filebrowser', function() {
+cr.define('cr.filebrowser', () => {
 
   /**
    * Creates dialog in DOM tree.
@@ -144,7 +144,7 @@ cr.define('cr.filebrowser', function() {
    * currently active item so ChromeVox can read it out.
    * @param {!Event} event triggered by cr.ui.List.
    */
-  DefaultTaskDialog.prototype.onListChange_ = function(event) {
+  DefaultTaskDialog.prototype.onListChange_ = event => {
     const list = /** @type {cr.ui.List} */ (event.target);
     const activeItem =
         list.getListItemByIndex(list.selectionModel_.selectedIndex);

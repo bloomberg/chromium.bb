@@ -48,18 +48,18 @@ function ProgressCenterItemElement(document) {
 /**
  * Ensures the animation triggers.
  *
- * @param {function()} callback Function to set the transition end properties.
+ * @param {function(?)} callback Function to set the transition end properties.
  * @return {function()} Function to cancel the request.
  * @private
  */
-ProgressCenterItemElement.safelySetAnimation_ = function(callback) {
-  let requestId = window.requestAnimationFrame(function() {
+ProgressCenterItemElement.safelySetAnimation_ = callback => {
+  let requestId = window.requestAnimationFrame(() => {
     // The transition start properties currently set are rendered at this frame.
     // And the transition end properties set by the callback is rendered at the
     // next frame.
     requestId = window.requestAnimationFrame(callback);
   });
-  return function() {
+  return () => {
     window.cancelAnimationFrame(requestId);
   };
 };
@@ -76,7 +76,7 @@ ProgressCenterItemElement.PROGRESS_ANIMATION_END_EVENT = 'progressAnimationEnd';
  * @param {Element} element Item to be decorated.
  * @return {ProgressCenterItemElement} Decorated item.
  */
-ProgressCenterItemElement.decorate = function(element) {
+ProgressCenterItemElement.decorate = element => {
   element.__proto__ = ProgressCenterItemElement.prototype;
   element = /** @type {ProgressCenterItemElement} */ (element);
   element.state_ = ProgressItemState.PROGRESSING;
@@ -124,7 +124,7 @@ ProgressCenterItemElement.prototype.update = function(item, animated) {
   }
 
   // Set track width.
-  const setWidth = function(nextWidthFrame) {
+  const setWidth = nextWidthFrame => {
     const currentWidthRate = parseInt(this.track_.style.width, 10);
     // Prevent assigning the same width to avoid stopping the animation.
     // animated == false may be intended to cancel the animation, so in that
@@ -135,7 +135,7 @@ ProgressCenterItemElement.prototype.update = function(item, animated) {
     this.track_.hidden = false;
     this.track_.style.width = nextWidthFrame + '%';
     this.track_.classList.toggle('animated', animated);
-  }.bind(this, item.progressRateInPercent);
+  };
 
   if (animated) {
     this.cancelTransition_ =
@@ -143,7 +143,7 @@ ProgressCenterItemElement.prototype.update = function(item, animated) {
   } else {
     // For animated === false, we should call setWidth immediately to cancel the
     // animation, otherwise the animation may complete before canceling it.
-    setWidth();
+    setWidth(undefined);
   }
 };
 
@@ -274,7 +274,7 @@ function ProgressCenterPanel(element) {
  * @return {CSSKeyframesRule} Animation rule.
  * @private
  */
-ProgressCenterPanel.getToggleAnimation_ = function(document) {
+ProgressCenterPanel.getToggleAnimation_ = document => {
   for (let i = 0; i < document.styleSheets.length; i++) {
     const styleSheet = document.styleSheets[i];
     for (let j = 0; j < styleSheet.cssRules.length; j++) {

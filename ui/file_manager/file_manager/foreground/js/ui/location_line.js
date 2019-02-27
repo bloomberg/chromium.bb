@@ -55,7 +55,7 @@ LocationLine.prototype.getCurrentPathComponents = function() {
  * @return {string} new URL with the new root directory name
  * @private
  */
-LocationLine.prototype.replaceRootName_ = function(url, newRoot) {
+LocationLine.prototype.replaceRootName_ = (url, newRoot) => {
   return url.slice(0, url.length - '/root'.length) + newRoot;
 };
 
@@ -371,11 +371,11 @@ LocationLine.prototype.onClick_ = function(index, event) {
   }
 
   const pathComponent = this.components_[index];
-  pathComponent.resolveEntry().then(function(entry) {
+  pathComponent.resolveEntry().then(entry => {
     const pathClickEvent = new Event('pathclick');
     pathClickEvent.entry = entry;
     this.dispatchEvent(pathClickEvent);
-  }.bind(this));
+  });
   metrics.recordUserAction('ClickBreadcrumbs');
 };
 

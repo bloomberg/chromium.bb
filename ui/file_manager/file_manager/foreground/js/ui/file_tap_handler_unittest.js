@@ -18,7 +18,7 @@ let events;
 /**
  * @type {function(!Event, number, !FileTapHandler.TapEvent)}
  */
-const handleTap = function(e, index, eventType) {
+const handleTap = (e, index, eventType) => {
   events.push({index: index, eventType: eventType});
   return false;
 };
@@ -160,10 +160,10 @@ function testLongTap(callback) {
       0, handleTap);
   assertEquals(0, events.length);
   reportPromise(
-      new Promise(function(resolve) {
+      new Promise(resolve => {
         setTimeout(resolve, 250);
       })
-          .then(function() {
+          .then(() => {
             // Move slightly, but still touching.
             handler.handleTouchEvents(
                 new TouchEvent('touchmove', {
@@ -172,12 +172,12 @@ function testLongTap(callback) {
                   touches: [touch1]
                 }),
                 0, handleTap);
-            return new Promise(function(resolve) {
+            return new Promise(resolve => {
               // Exceeds the threshold (500ms) when added with the one above.
               setTimeout(resolve, 300);
             });
           })
-          .then(function() {
+          .then(() => {
             assertEquals(1, events.length);
             assertEquals(
                 FileTapHandler.TapEvent.LONG_PRESS, events[0].eventType);
@@ -208,10 +208,10 @@ function testCancelLongTapBySlide(callback) {
       0, handleTap);
   assertEquals(0, events.length);
   reportPromise(
-      new Promise(function(resolve) {
+      new Promise(resolve => {
         setTimeout(resolve, 250);
       })
-          .then(function() {
+          .then(() => {
             handler.handleTouchEvents(
                 new TouchEvent('touchmove', {
                   changedTouches: [touch1],
@@ -219,12 +219,12 @@ function testCancelLongTapBySlide(callback) {
                   touches: [touch1]
                 }),
                 0, handleTap);
-            return new Promise(function(resolve) {
+            return new Promise(resolve => {
               // Exceeds the threshold (500ms) when added with the one above.
               setTimeout(resolve, 300);
             });
           })
-          .then(function() {
+          .then(() => {
             assertEquals(0, events.length);
           }),
       callback);

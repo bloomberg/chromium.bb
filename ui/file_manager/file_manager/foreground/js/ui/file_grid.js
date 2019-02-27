@@ -51,8 +51,7 @@ FileGrid.prototype = {
  * @param {!VolumeManager} volumeManager Volume manager instance.
  * @param {!importer.HistoryLoader} historyLoader
  */
-FileGrid.decorate = function(
-    element, metadataModel, volumeManager, historyLoader) {
+FileGrid.decorate = (element, metadataModel, volumeManager, historyLoader) => {
   cr.ui.Grid.decorate(element);
   const self = /** @type {!FileGrid} */ (element);
   self.__proto__ = FileGrid.prototype;
@@ -354,11 +353,11 @@ FileGrid.prototype.scrollIndexIntoView = function(index) {
 
   const self = this;
   // Function to adjust the tops of viewport and row.
-  const scrollToAdjustTop = function() {
+  const scrollToAdjustTop = () => {
       self.scrollTop = top;
   };
   // Function to adjust the bottoms of viewport and row.
-  const scrollToAdjustBottom = function() {
+  const scrollToAdjustBottom = () => {
       self.scrollTop = top + itemHeight - availableHeight;
   };
 
@@ -434,7 +433,7 @@ FileGrid.prototype.getFileRowCount = function() {
  * Returns the height of folder items in grid view.
  * @return {number} The height of folder items.
  */
-FileGrid.prototype.getFolderItemHeight_ = function() {
+FileGrid.prototype.getFolderItemHeight_ = () => {
   return 44;  // TODO(fukino): Read from DOM and cache it.
 };
 
@@ -442,7 +441,7 @@ FileGrid.prototype.getFolderItemHeight_ = function() {
  * Returns the height of file items in grid view.
  * @return {number} The height of file items.
  */
-FileGrid.prototype.getFileItemHeight_ = function() {
+FileGrid.prototype.getFileItemHeight_ = () => {
   return 184;  // TODO(fukino): Read from DOM and cache it.
 };
 
@@ -450,7 +449,7 @@ FileGrid.prototype.getFileItemHeight_ = function() {
  * Returns the width of grid items.
  * @return {number}
  */
-FileGrid.prototype.getItemWidth_ = function() {
+FileGrid.prototype.getItemWidth_ = () => {
   return 184;  // TODO(fukino): Read from DOM and cache it.
 };
 
@@ -458,7 +457,7 @@ FileGrid.prototype.getItemWidth_ = function() {
  * Returns the margin top of grid items.
  * @return {number};
  */
-FileGrid.prototype.getItemMarginTop_ = function() {
+FileGrid.prototype.getItemMarginTop_ = () => {
   return 4;  // TODO(fukino): Read from DOM and cache it.
 };
 
@@ -466,7 +465,7 @@ FileGrid.prototype.getItemMarginTop_ = function() {
  * Returns the margin left of grid items.
  * @return {number}
  */
-FileGrid.prototype.getItemMarginLeft_ = function() {
+FileGrid.prototype.getItemMarginLeft_ = () => {
   return 4;  // TODO(fukino): Read from DOM and cache it.
 };
 
@@ -474,7 +473,7 @@ FileGrid.prototype.getItemMarginLeft_ = function() {
  * Returns the height of the separator which separates folders and files.
  * @return {number} The height of the separator.
  */
-FileGrid.prototype.getSeparatorHeight_ = function() {
+FileGrid.prototype.getSeparatorHeight_ = () => {
   return 5;  // TODO(fukino): Read from DOM and cache it.
 };
 
@@ -717,8 +716,7 @@ FileGrid.prototype.onSplice_ = function() {
  * @param {string=} opt_mimeType Optional mime type for the image.
  * @private
  */
-FileGrid.setThumbnailImage_ = function(
-    box, entry, dataUrl, width, height, shouldAnimate, opt_mimeType) {
+FileGrid.setThumbnailImage_ = (box, entry, dataUrl, width, height, shouldAnimate, opt_mimeType) => {
   const oldThumbnails = box.querySelectorAll('.thumbnail');
 
   const thumbnail = box.ownerDocument.createElement('div');
@@ -733,7 +731,7 @@ FileGrid.setThumbnailImage_ = function(
   }
 
   thumbnail.style.backgroundImage = 'url(' + dataUrl + ')';
-  thumbnail.addEventListener('animationend', function() {
+  thumbnail.addEventListener('animationend', () => {
     // Remove animation css once animation is completed in order not to animate
     // again when an item is attached to the dom again.
     thumbnail.classList.remove('animate');
@@ -755,7 +753,7 @@ FileGrid.setThumbnailImage_ = function(
  * @param {!HTMLDivElement} box A div element to hold thumbnails.
  * @private
  */
-FileGrid.clearThumbnailImage_ = function(box) {
+FileGrid.clearThumbnailImage_ = box => {
   const oldThumbnails = box.querySelectorAll('.thumbnail');
   for (let i = 0; i < oldThumbnails.length; i++) {
     box.removeChild(oldThumbnails[i]);
@@ -769,7 +767,7 @@ FileGrid.clearThumbnailImage_ = function(box) {
  * @param {!Entry} entry An entry of the thumbnail.
  * @private
  */
-FileGrid.setGenericThumbnail_ = function(box, entry) {
+FileGrid.setGenericThumbnail_ = (box, entry) => {
   if (entry.isDirectory) {
     box.setAttribute('generic-thumbnail', 'folder');
   } else {
@@ -787,10 +785,10 @@ FileGrid.setGenericThumbnail_ = function(box, entry) {
  *
  * @private
  */
-FileGrid.applyHistoryBadges_ = function(entry, box, history) {
+FileGrid.applyHistoryBadges_ = (entry, box, history) => {
   history.wasImported(entry, importer.Destination.GOOGLE_DRIVE)
       .then(
-          function(imported) {
+          imported => {
             if (imported) {
               // TODO(smckay): update badges when history changes
               // "box" is currently the sibling of the elemement
@@ -801,7 +799,7 @@ FileGrid.applyHistoryBadges_ = function(entry, box, history) {
             } else {
               history.wasCopied(entry, importer.Destination.GOOGLE_DRIVE)
                   .then(
-                      function(copied) {
+                      copied => {
                         if (copied) {
                           // TODO(smckay): update badges when history changes
                           // "box" is currently the sibling of the elemement
@@ -975,9 +973,9 @@ function FileGridSelectionController(selectionModel, grid) {
    * @private {boolean}
    */
   this.enableTouchMode_ = false;
-  util.isTouchModeEnabled().then(function(enabled) {
+  util.isTouchModeEnabled().then(enabled => {
     this.enableTouchMode_ = enabled;
-  }.bind(this));
+  });
 
   /**
    * @type {!FileTapHandler}
