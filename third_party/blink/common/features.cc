@@ -10,6 +10,9 @@
 namespace blink {
 namespace features {
 
+const base::Feature kAutofillPreviewStyleExperiment{
+    "AutofillPreviewStyleExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable defer commits a bit to avoid flash.
 const base::Feature kAvoidFlashBetweenNavigation{
     "AvoidFlashBetweenNavigation", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -187,6 +190,10 @@ const base::Feature kForbidSyncXHRInPageDismissal{
 const base::Feature kRestrictDeviceSensorEventsToSecureContexts{
     "RestrictDeviceSensorEventsToSecureContexts",
     base::FEATURE_ENABLED_BY_DEFAULT};
+
+const char kAutofillPreviewStyleExperimentBgColorParameterName[] = "bg_color";
+
+const char kAutofillPreviewStyleExperimentColorParameterName[] = "color";
 
 const char kMixedContentAutoupgradeModeParamName[] = "mode";
 const char kMixedContentAutoupgradeModeBlockable[] = "blockable";
