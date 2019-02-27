@@ -33,6 +33,8 @@ import org.chromium.base.task.test.BackgroundShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulatorTest.ShadowUrlUtilities;
 
+import jp.tomorrowkey.android.gifplayer.BaseGifImage;
+
 /**
  * Unit tests for CachedImageFetcherImpl.
  */
@@ -51,6 +53,8 @@ public class CachedImageFetcherImplTest {
     CachedImageFetcherBridge mCachedImageFetcherBridge;
     @Mock
     Bitmap mBitmap;
+    @Mock
+    BaseGifImage mGif;
 
     @Captor
     ArgumentCaptor<Callback<Bitmap>> mCallbackCaptor;
@@ -147,5 +151,34 @@ public class CachedImageFetcherImplTest {
                 .fetchImageImpl(eq(URL), eq(UMA_CLIENT_NAME + "2"), eq(0), eq(0), any());
         verify(mCachedImageFetcherBridge).fetchImage(eq(URL), eq(UMA_CLIENT_NAME), any());
         verify(mCachedImageFetcherBridge).fetchImage(eq(URL), eq(UMA_CLIENT_NAME + "2"), any());
+    }
+
+    @Test
+    @SmallTest
+    public void testFetchGifFoundOnDisk() throws Exception {
+        Mockito.doReturn(mGif).when(mCachedImageFetcher).tryToLoadGifFromDisk(anyObject());
+        mCachedImageFetcher.fetchGif(
+                URL, UMA_CLIENT_NAME, (BaseGifImage gif) -> { assertEquals(gif, mGif); });
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        ShadowLooper.runUiThreadTasks();
+
+        verify(mCachedImageFetcherBridge, never()) // Should never make it to native.
+                .fetchGif(eq(URL), eq(UMA_CLIENT_NAME), any());
+
+        // Verify metrics have been reported.
+        verify(mCachedImageFetcherBridge)
+                .reportEvent(eq(UMA_CLIENT_NAME), eq(CachedImageFetcherEvent.JAVA_DISK_CACHE_HIT));
+        verify(mCachedImageFetcherBridge).reportCacheHitTime(eq(UMA_CLIENT_NAME), anyLong());
+    }
+
+    @Test
+    @SmallTest
+    public void testFetchGifCallToNative() throws Exception {
+        Mockito.doReturn(null).when(mCachedImageFetcher).tryToLoadGifFromDisk(anyObject());
+        mCachedImageFetcher.fetchGif(URL, UMA_CLIENT_NAME, (BaseGifImage gif) -> {});
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        ShadowLooper.runUiThreadTasks();
+
+        verify(mCachedImageFetcherBridge).fetchGif(eq(URL), eq(UMA_CLIENT_NAME), any());
     }
 }

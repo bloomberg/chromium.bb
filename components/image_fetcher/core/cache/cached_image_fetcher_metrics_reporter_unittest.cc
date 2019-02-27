@@ -22,6 +22,8 @@ const char kCacheLoadHistogramName[] =
     "CachedImageFetcher.ImageLoadFromCacheTime";
 const char kCacheLoadHistogramNameJava[] =
     "CachedImageFetcher.ImageLoadFromCacheTimeJava";
+constexpr char kTotalFetchFromNativeHistogramNameJava[] =
+    "CachedImageFetcher.ImageLoadFromNativeTimeJava";
 const char kNetworkLoadHistogramName[] =
     "CachedImageFetcher.ImageLoadFromNetworkTime";
 const char kNetworkLoadAfterCacheHitHistogram[] =
@@ -94,6 +96,26 @@ TEST_F(CachedImageFetcherMetricsReporterTest,
                                           .append(".")
                                           .append(kUmaClientNameOther),
                                       1);
+}
+
+TEST_F(CachedImageFetcherMetricsReporterTest,
+       TestReportTotalFetchFromNativeTimeJava) {
+  CachedImageFetcherMetricsReporter::ReportTotalFetchFromNativeTimeJava(
+      kUmaClientName, base::Time());
+  CachedImageFetcherMetricsReporter::ReportTotalFetchFromNativeTimeJava(
+      kUmaClientNameOther, base::Time());
+  histogram_tester().ExpectTotalCount(kTotalFetchFromNativeHistogramNameJava,
+                                      2);
+  histogram_tester().ExpectTotalCount(
+      std::string(kTotalFetchFromNativeHistogramNameJava)
+          .append(".")
+          .append(kUmaClientName),
+      1);
+  histogram_tester().ExpectTotalCount(
+      std::string(kTotalFetchFromNativeHistogramNameJava)
+          .append(".")
+          .append(kUmaClientNameOther),
+      1);
 }
 
 TEST_F(CachedImageFetcherMetricsReporterTest,

@@ -22,6 +22,8 @@ constexpr char kImageLoadFromCacheHistogram[] =
     "CachedImageFetcher.ImageLoadFromCacheTime";
 constexpr char kImageLoadFromCacheJavaHistogram[] =
     "CachedImageFetcher.ImageLoadFromCacheTimeJava";
+constexpr char kTotalFetchFromNativeTimeJavaHistogram[] =
+    "CachedImageFetcher.ImageLoadFromNativeTimeJava";
 constexpr char kImageLoadFromNetworkHistogram[] =
     "CachedImageFetcher.ImageLoadFromNetworkTime";
 constexpr char kImageLoadFromNetworkAfterCacheHitHistogram[] =
@@ -72,6 +74,17 @@ void CachedImageFetcherMetricsReporter::ReportImageLoadFromCacheTimeJava(
   base::TimeDelta time_delta = base::Time::Now() - start_time;
   UMA_HISTOGRAM_TIMES(kImageLoadFromCacheJavaHistogram, time_delta);
   GetTimeHistogram(kImageLoadFromCacheJavaHistogram, client_name)
+      ->Add(time_delta.InMilliseconds());
+}
+
+// static
+void CachedImageFetcherMetricsReporter::ReportTotalFetchFromNativeTimeJava(
+    const std::string& client_name,
+    base::Time start_time) {
+  DCHECK(!client_name.empty());
+  base::TimeDelta time_delta = base::Time::Now() - start_time;
+  UMA_HISTOGRAM_TIMES(kTotalFetchFromNativeTimeJavaHistogram, time_delta);
+  GetTimeHistogram(kTotalFetchFromNativeTimeJavaHistogram, client_name)
       ->Add(time_delta.InMilliseconds());
 }
 

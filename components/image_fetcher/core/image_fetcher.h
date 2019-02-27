@@ -32,6 +32,10 @@ class ImageDecoder;
 //   that's closest to the given size (only useful for .icos). Does NOT resize
 //   the downloaded image to the given dimensions.
 class ImageFetcherParams {
+  // Only allow the bridge to access the private function set_skip_transcoding
+  // used for gif download.
+  friend class CachedImageFetcherBridge;
+
  public:
   // Sets the UMA client name to report feature-specific metrics. Make sure
   // |uma_client_name| is also present in histograms.xml.
@@ -63,12 +67,28 @@ class ImageFetcherParams {
 
   const std::string& uma_client_name() const { return uma_client_name_; }
 
+  bool skip_transcoding() const { return skip_transcoding_; }
+
+  // Only to be used in unittests.
+  void set_skip_transcoding_for_testing(bool skip_transcoding) {
+    skip_transcoding_ = skip_transcoding;
+  }
+
  private:
+  void set_skip_transcoding(bool skip_transcoding) {
+    skip_transcoding_ = skip_transcoding;
+  }
+
   const net::NetworkTrafficAnnotationTag network_traffic_annotation_tag_;
 
   base::Optional<int64_t> max_download_bytes_;
   gfx::Size desired_frame_size_;
   std::string uma_client_name_;
+  // When true, the image fetcher will skip transcoding whenever possible. Only
+  // use this if you've considered the security implications. For instance, in
+  // some java clients we decode GIFs entirely in Java which is safe to do
+  // in-process without transcoding.
+  bool skip_transcoding_;
 };
 
 // A class used to fetch server images. It can be called from any thread and the

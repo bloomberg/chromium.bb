@@ -9,6 +9,8 @@ import android.graphics.Bitmap;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 
+import jp.tomorrowkey.android.gifplayer.BaseGifImage;
+
 /**
  * Provides cached image fetching capabilities. Uses getLastUsedProfile, which
  * will need to be changed when supporting multi-profile.
@@ -33,17 +35,28 @@ public interface CachedImageFetcher {
     void reportEvent(String clientName, @CachedImageFetcherEvent int eventId);
 
     /**
+     * Fetch the gif for the given url.
+     *
+     * @param url The url to fetch the image from.
+     * @param clientName The UMA client name to report the metrics to. If using CachedImageFetcher
+     *         to fetch images and gifs, use separate clientNames for them.
+     * @param callback The function which will be called when the image is ready; will be called
+     *         with null result if fetching fails.
+     */
+    void fetchGif(String url, String clientName, Callback<BaseGifImage> callback);
+
+    /**
      * Fetches the image at url with the desired size. Image is null if not
      * found or fails decoding.
      *
      * @param url The url to fetch the image from.
      * @param clientName Name of the cached image fetcher client to report UMA metrics for.
      * @param width The new bitmap's desired width (in pixels). If the given value is <= 0, the
-     * image won't be scaled.
+     *         image won't be scaled.
      * @param height The new bitmap's desired height (in pixels). If the given value is <= 0, the
-     * image won't be scaled.
+     *         image won't be scaled.
      * @param callback The function which will be called when the image is ready; will be called
-     * with null result if fetching fails;
+     *         with null result if fetching fails;
      */
     void fetchImage(
             String url, String clientName, int width, int height, Callback<Bitmap> callback);
@@ -54,7 +67,7 @@ public interface CachedImageFetcher {
      * @param url The url to fetch the image from.
      * @param clientName Name of the cached image fetcher client to report UMA metrics for.
      * @param callback The function which will be called when the image is ready; will be called
-     * with null result if fetching fails;
+     *         with null result if fetching fails;
      */
     void fetchImage(String url, String clientName, Callback<Bitmap> callback);
 

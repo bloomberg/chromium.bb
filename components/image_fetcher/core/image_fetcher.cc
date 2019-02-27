@@ -10,7 +10,8 @@ ImageFetcherParams::ImageFetcherParams(
     const net::NetworkTrafficAnnotationTag network_traffic_annotation_tag,
     std::string uma_client_name)
     : network_traffic_annotation_tag_(network_traffic_annotation_tag),
-      uma_client_name_(uma_client_name) {}
+      uma_client_name_(uma_client_name),
+      skip_transcoding_(false) {}
 
 ImageFetcherParams::ImageFetcherParams(const ImageFetcherParams& params) =
     default;

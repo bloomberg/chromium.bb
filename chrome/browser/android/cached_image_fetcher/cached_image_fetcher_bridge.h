@@ -32,6 +32,12 @@ class CachedImageFetcherBridge {
       const base::android::JavaRef<jobject>& j_this,
       const base::android::JavaRef<jstring>& j_url);
 
+  void FetchImageData(JNIEnv* j_env,
+                      const base::android::JavaRef<jobject>& j_this,
+                      const base::android::JavaRef<jstring>& j_url,
+                      const base::android::JavaRef<jstring>& j_client_name,
+                      const base::android::JavaRef<jobject>& j_callback);
+
   void FetchImage(JNIEnv* j_env,
                   const base::android::JavaRef<jobject>& j_this,
                   const base::android::JavaRef<jstring>& j_url,
@@ -48,7 +54,17 @@ class CachedImageFetcherBridge {
                           const base::android::JavaRef<jstring>& j_client_name,
                           const jlong start_time_millis);
 
+  void ReportTotalFetchTimeFromNative(
+      JNIEnv* j_env,
+      const base::android::JavaRef<jobject>& j_this,
+      const base::android::JavaRef<jstring>& j_client_name,
+      const jlong start_time_millis);
+
  private:
+  void OnImageDataFetched(base::android::ScopedJavaGlobalRef<jobject> callback,
+                          const std::string& image_data,
+                          const RequestMetadata& request_metadata);
+
   void OnImageFetched(base::android::ScopedJavaGlobalRef<jobject> callback,
                       const gfx::Image& image,
                       const RequestMetadata& request_metadata);
