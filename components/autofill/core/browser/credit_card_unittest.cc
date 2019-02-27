@@ -624,12 +624,13 @@ TEST(CreditCardTest, HasSameNumberAs_LogMaskedCardComparisonNetworksMatch) {
   CreditCard b(base::GenerateGUID(), std::string());
 
   a.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  a.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
   a.SetNetworkForMaskedCard(kVisaCard);
   // CreditCard b's network is set to kVisaCard because it starts with 4, so the
   // two cards have the same network.
   b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
   base::HistogramTester histogram_tester;
-  EXPECT_FALSE(a.HasSameNumberAs(b));
+  EXPECT_TRUE(a.HasSameNumberAs(b));
   histogram_tester.ExpectUniqueSample(
       "Autofill.MaskedCardComparisonNetworksMatch", true, 1);
 }
@@ -640,11 +641,14 @@ TEST(CreditCardTest,
   CreditCard b(base::GenerateGUID(), std::string());
 
   a.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  a.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
   a.SetNetworkForMaskedCard(kDiscoverCard);
-  // CreditCard b's network is set to kVisaCard because it starts with 4.
+  // CreditCard b's network is set to kVisaCard because it starts with 4. The
+  // two cards have the same last four digits, but their networks are different,
+  // so this discrepancy should be logged.
   b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
   base::HistogramTester histogram_tester;
-  EXPECT_FALSE(a.HasSameNumberAs(b));
+  EXPECT_TRUE(a.HasSameNumberAs(b));
   histogram_tester.ExpectUniqueSample(
       "Autofill.MaskedCardComparisonNetworksMatch", false, 1);
 }
