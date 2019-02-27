@@ -191,9 +191,6 @@ HRESULT GetCommandLineForEntrypoint(HINSTANCE dll_handle,
                                     const wchar_t* entrypoint,
                                     base::CommandLine* command_line);
 
-// Enrolls the machine to with the Google MDM server if not already.
-HRESULT EnrollToGoogleMdmIfNeeded(const base::DictionaryValue& properties);
-
 // Handles the writing and deletion of a startup sentinel file used to ensure
 // that the GCPW does not crash continuously on startup and render the
 // winlogon process unusable.
@@ -229,14 +226,6 @@ struct FakesForTesting {
   ScopedLsaPolicy::CreatorCallback scoped_lsa_policy_creator;
   OSUserManager* os_user_manager_for_testing = nullptr;
   OSProcessManager* os_process_manager_for_testing = nullptr;
-};
-
-// Class used in tests to force either a successful on unsuccessful enrollment
-// to google MDM.
-class GoogleMdmEnrollmentStatusForTesting {
- public:
-  explicit GoogleMdmEnrollmentStatusForTesting(bool success);
-  ~GoogleMdmEnrollmentStatusForTesting();
 };
 
 // DLL entrypoint signature for settings testing fakes.  This is used by
