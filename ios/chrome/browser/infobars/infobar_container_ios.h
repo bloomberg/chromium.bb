@@ -7,8 +7,6 @@
 
 #include "components/infobars/core/infobar_container.h"
 
-#include <stddef.h>
-
 #include "base/macros.h"
 
 @protocol InfobarContainerConsumer;

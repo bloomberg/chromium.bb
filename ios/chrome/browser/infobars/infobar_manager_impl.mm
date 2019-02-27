@@ -4,18 +4,14 @@
 
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 
-#include <utility>
-
 #include "base/logging.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
-#include "components/infobars/core/infobar_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_utils.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/web_state.h"
-#include "ui/base/page_transition_types.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
