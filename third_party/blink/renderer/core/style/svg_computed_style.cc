@@ -167,15 +167,18 @@ bool SVGComputedStyle::DiffNeedsLayoutAndPaintInvalidation(
       other->svg_noninherited_flags.f.vector_effect)
     return true;
 
-  // Some stroke properties, requires relayouts, as the cached stroke boundaries
+  // Some stroke properties require relayouts as the cached stroke boundaries
   // need to be recalculated.
   if (stroke.Get() != other->stroke.Get()) {
     if (stroke->width != other->stroke->width ||
         stroke->paint != other->stroke->paint ||
         stroke->miter_limit != other->stroke->miter_limit ||
-        *stroke->dash_array != *other->stroke->dash_array ||
-        stroke->dash_offset != other->stroke->dash_offset ||
         stroke->visited_link_paint != other->stroke->visited_link_paint)
+      return true;
+    // If the dash array is toggled from/to 'none' we need to relayout, because
+    // some shapes will decide on which codepath to use based on the presence
+    // of a dash array.
+    if (stroke->dash_array->IsEmpty() != other->stroke->dash_array->IsEmpty())
       return true;
   }
 
@@ -188,8 +191,16 @@ bool SVGComputedStyle::DiffNeedsLayoutAndPaintInvalidation(
 
 bool SVGComputedStyle::DiffNeedsPaintInvalidation(
     const SVGComputedStyle* other) const {
-  if (stroke->opacity != other->stroke->opacity)
-    return true;
+  if (stroke.Get() != other->stroke.Get()) {
+    if (stroke->opacity != other->stroke->opacity)
+      return true;
+    // Changes to the dash effect only require a repaint because we don't
+    // include it when computing (approximating) the stroke boundaries during
+    // layout.
+    if (stroke->dash_offset != other->stroke->dash_offset ||
+        *stroke->dash_array != *other->stroke->dash_array)
+      return true;
+  }
 
   // Painting related properties only need paint invalidation.
   if (misc.Get() != other->misc.Get()) {
