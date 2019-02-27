@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.compositor.bottombar;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
@@ -50,7 +51,8 @@ public class OverlayPanelBaseTest {
          * Expose protected super method as public.
          */
         @Override
-        public PanelState findNearestPanelStateFromHeight(float desiredHeight, float velocity) {
+        public @PanelState int findNearestPanelStateFromHeight(
+                float desiredHeight, float velocity) {
             return super.findNearestPanelStateFromHeight(desiredHeight, velocity);
         }
 
@@ -58,13 +60,13 @@ public class OverlayPanelBaseTest {
          * Override to return arbitrary test heights.
          */
         @Override
-        public float getPanelHeightFromState(PanelState state) {
+        public float getPanelHeightFromState(@Nullable @PanelState Integer state) {
             switch (state) {
-                case PEEKED:
+                case PanelState.PEEKED:
                     return MOCK_PEEKED_HEIGHT;
-                case EXPANDED:
+                case PanelState.EXPANDED:
                     return MOCK_EXPANDED_HEIGHT;
-                case MAXIMIZED:
+                case PanelState.MAXIMIZED:
                     return MOCK_MAXIMIZED_HEIGHT;
                 default:
                     return 0.0f;
@@ -87,7 +89,7 @@ public class OverlayPanelBaseTest {
         }
 
         @Override
-        protected boolean isSupportedState(PanelState state) {
+        protected boolean isSupportedState(@PanelState int state) {
             return state != PanelState.EXPANDED;
         }
     }
@@ -118,8 +120,9 @@ public class OverlayPanelBaseTest {
         final float maxToPeekBound = (1.0f - threshold) * height + MOCK_PEEKED_HEIGHT;
 
         // Between PEEKING and MAXIMIZED past the threshold in the up direction.
-        PanelState nextState = mNoExpandPanel.findNearestPanelStateFromHeight(
-                peekToMaxBound + 1, UPWARD_VELOCITY);
+        @PanelState
+        int nextState =
+                mNoExpandPanel.findNearestPanelStateFromHeight(peekToMaxBound + 1, UPWARD_VELOCITY);
         Assert.assertTrue(nextState == PanelState.MAXIMIZED);
 
         // Between PEEKING and MAXIMIZED before the threshold in the up direction.
@@ -164,8 +167,9 @@ public class OverlayPanelBaseTest {
         final float maxToExpBound = (1.0f - threshold) * expToMaxHeight + MOCK_EXPANDED_HEIGHT;
 
         // Between PEEKING and EXPANDED past the threshold in the up direction.
-        PanelState nextState = mExpandPanel.findNearestPanelStateFromHeight(
-                peekToExpBound + 1, UPWARD_VELOCITY);
+        @PanelState
+        int nextState =
+                mExpandPanel.findNearestPanelStateFromHeight(peekToExpBound + 1, UPWARD_VELOCITY);
         Assert.assertTrue(nextState == PanelState.EXPANDED);
 
         // Between PEEKING and EXPANDED before the threshold in the up direction.
@@ -214,8 +218,8 @@ public class OverlayPanelBaseTest {
     public void testNegativeHeightClosesPanel() {
         final float belowPeek = MOCK_PEEKED_HEIGHT - 1000;
 
-        PanelState nextState =
-                mExpandPanel.findNearestPanelStateFromHeight(belowPeek, DOWNWARD_VELOCITY);
+        @PanelState
+        int nextState = mExpandPanel.findNearestPanelStateFromHeight(belowPeek, DOWNWARD_VELOCITY);
         Assert.assertTrue(nextState == PanelState.CLOSED);
 
         nextState = mNoExpandPanel.findNearestPanelStateFromHeight(belowPeek, DOWNWARD_VELOCITY);
@@ -239,8 +243,8 @@ public class OverlayPanelBaseTest {
     public void testLargeDesiredHeightIsMaximized() {
         final float aboveMax = MOCK_MAXIMIZED_HEIGHT + 1000;
 
-        PanelState nextState =
-                mExpandPanel.findNearestPanelStateFromHeight(aboveMax, UPWARD_VELOCITY);
+        @PanelState
+        int nextState = mExpandPanel.findNearestPanelStateFromHeight(aboveMax, UPWARD_VELOCITY);
         Assert.assertTrue(nextState == PanelState.MAXIMIZED);
 
         nextState = mNoExpandPanel.findNearestPanelStateFromHeight(aboveMax, UPWARD_VELOCITY);
