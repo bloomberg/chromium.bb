@@ -6,9 +6,11 @@
 
 #include <memory>
 
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/dark_mode_handler.h"
+#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/management_ui_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -35,7 +37,7 @@ base::string16 GetChromeOSManagementPageTitle() {
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
   if (!connector->IsEnterpriseManaged()) {
-    return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_TITLE,
+    return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_NOT_MANAGED_TITLE,
                                       l10n_util::GetStringUTF16(device_type));
   }
 
@@ -49,86 +51,68 @@ base::string16 GetChromeOSManagementPageTitle() {
     display_domain = connector->GetRealm();
   }
 
-  return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_TITLE_MANAGED_BY,
+  return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_TITLE_BY,
                                     l10n_util::GetStringUTF16(device_type),
                                     base::UTF8ToUTF16(display_domain));
-}
-
-#else   // if defined(OS_CHROMEOS)
-
-// TODO(ydago): Fill in the function.
-base::string16 GetBrowserManagementPageTitle() {
-  return l10n_util::GetStringUTF16(IDS_MANAGEMENT_TITLE);
 }
 #endif  // defined(OS_CHROMEOS)
 
 content::WebUIDataSource* CreateManagementUIHtmlSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIManagementHost);
+
 #if defined(OS_CHROMEOS)
   source->AddString("title", GetChromeOSManagementPageTitle());
-#else
-  source->AddString("title", GetBrowserManagementPageTitle());
 #endif  // defined(OS_CHROMEOS)
+
+  static constexpr LocalizedString kLocalizedStrings[] = {
 #if defined(OS_CHROMEOS)
-  source->AddLocalizedString("deviceReporting",
-                             IDS_MANAGEMENT_DEVICE_REPORTING);
-  source->AddLocalizedString("deviceConfiguration",
-                             IDS_MANAGEMENT_DEVICE_CONFIGURATION);
-  source->AddLocalizedString(kManagementLogUploadEnabled,
-                             IDS_MANAGEMENT_LOG_UPLOAD_ENABLED);
-  source->AddLocalizedString(kManagementReportActivityTimes,
-                             IDS_MANAGEMENT_REPORT_DEVICE_ACTIVITY_TIMES);
-  source->AddLocalizedString(kManagementReportHardwareStatus,
-                             IDS_MANAGEMENT_REPORT_DEVICE_HARDWARE_STATUS);
-  source->AddLocalizedString(kManagementReportNetworkInterfaces,
-                             IDS_MANAGEMENT_REPORT_DEVICE_NETWORK_INTERFACES);
-  source->AddLocalizedString(kManagementReportUsers,
-                             IDS_MANAGEMENT_REPORT_DEVICE_USERS);
-#endif
-  source->AddLocalizedString("browserReporting",
-                             IDS_MANAGEMENT_BROWSER_REPORTING);
-  source->AddLocalizedString("browserReportingExplanation",
-                             IDS_MANAGEMENT_BROWSER_REPORTING_EXPLANATION);
-  source->AddLocalizedString("extensionReporting",
-                             IDS_MANAGEMENT_EXTENSION_REPORTING);
-  source->AddLocalizedString("extensionsInstalled",
-                             IDS_MANAGEMENT_EXTENSIONS_INSTALLED);
-  source->AddLocalizedString("extensionName", IDS_MANAGEMENT_EXTENSIONS_NAME);
-  source->AddLocalizedString("extensionPermissions",
-                             IDS_MANAGEMENT_EXTENSIONS_PERMISSIONS);
-  source->AddLocalizedString("localTrustRoots",
-                             IDS_MANAGEMENT_LOCAL_TRUST_ROOTS);
-  source->AddLocalizedString("managementTrustRootsNotConfigured",
-                             IDS_MANAGEMENT_TRUST_ROOTS_NOT_CONFIGURED);
-  source->AddLocalizedString("managementDesktopMonitoringNotice",
-                             IDS_MANAGEMENT_DESKTOP_MONITORING_NOTICE);
-  source->AddLocalizedString("managementTitle", IDS_MANAGEMENT_TITLE);
+    {"deviceConfiguration", IDS_MANAGEMENT_DEVICE_CONFIGURATION},
+    {"deviceReporting", IDS_MANAGEMENT_DEVICE_REPORTING},
+    {kManagementLogUploadEnabled, IDS_MANAGEMENT_LOG_UPLOAD_ENABLED},
+    {kManagementReportActivityTimes,
+     IDS_MANAGEMENT_REPORT_DEVICE_ACTIVITY_TIMES},
+    {kManagementReportHardwareStatus,
+     IDS_MANAGEMENT_REPORT_DEVICE_HARDWARE_STATUS},
+    {kManagementReportNetworkInterfaces,
+     IDS_MANAGEMENT_REPORT_DEVICE_NETWORK_INTERFACES},
+    {kManagementReportUsers, IDS_MANAGEMENT_REPORT_DEVICE_USERS},
+#endif  // defined(OS_CHROMEOS)
+    {"browserReporting", IDS_MANAGEMENT_BROWSER_REPORTING},
+    {"browserReportingExplanation",
+     IDS_MANAGEMENT_BROWSER_REPORTING_EXPLANATION},
+    {"extensionReporting", IDS_MANAGEMENT_EXTENSION_REPORTING},
+    {"extensionsInstalled", IDS_MANAGEMENT_EXTENSIONS_INSTALLED},
+    {"extensionName", IDS_MANAGEMENT_EXTENSIONS_NAME},
+    {"extensionPermissions", IDS_MANAGEMENT_EXTENSIONS_PERMISSIONS},
+    {"localTrustRoots", IDS_MANAGEMENT_LOCAL_TRUST_ROOTS},
+    {"managementTrustRootsNotConfigured",
+     IDS_MANAGEMENT_TRUST_ROOTS_NOT_CONFIGURED},
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    {kManagementExtensionReportMachineName,
+     IDS_MANAGEMENT_EXTENSION_REPORT_MACHINE_NAME},
+    {kManagementExtensionReportMachineNameAddress,
+     IDS_MANAGEMENT_EXTENSION_REPORT_MACHINE_NAME_ADDRESS},
+    {kManagementExtensionReportUsername,
+     IDS_MANAGEMENT_EXTENSION_REPORT_USERNAME},
+    {kManagementExtensionReportVersion,
+     IDS_MANAGEMENT_EXTENSION_REPORT_VERSION},
+    {kManagementExtensionReportExtensionsPlugin,
+     IDS_MANAGEMENT_EXTENSION_REPORT_EXTENSIONS_PLUGINS},
+    {kManagementExtensionReportSafeBrowsingWarnings,
+     IDS_MANAGEMENT_EXTENSION_REPORT_SAFE_BROWSING_WARNINGS},
+    {kManagementExtensionReportPerfCrash,
+     IDS_MANAGEMENT_EXTENSION_REPORT_PERF_CRASH},
+    {kManagementExtensionReportUserBrowsingData,
+     IDS_MANAGEMENT_EXTENSION_REPORT_USER_BROWSING_DATA},
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+  };
+
+  AddLocalizedStringsBulk(source, kLocalizedStrings,
+                          base::size(kLocalizedStrings));
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  source->AddLocalizedString(kManagementExtensionReportMachineName,
-                             IDS_MANAGEMENT_EXTENSION_REPORT_MACHINE_NAME);
-  source->AddLocalizedString(
-      kManagementExtensionReportMachineNameAddress,
-      IDS_MANAGEMENT_EXTENSION_REPORT_MACHINE_NAME_ADDRESS);
-  source->AddLocalizedString(kManagementExtensionReportUsername,
-                             IDS_MANAGEMENT_EXTENSION_REPORT_USERNAME);
-  source->AddLocalizedString(kManagementExtensionReportVersion,
-                             IDS_MANAGEMENT_EXTENSION_REPORT_VERSION);
-  source->AddLocalizedString(kManagementExtensionReportPolicies,
-                             IDS_MANAGEMENT_EXTENSION_REPORT_POLICIES);
-  source->AddLocalizedString(
-      kManagementExtensionReportExtensionsPlugin,
-      IDS_MANAGEMENT_EXTENSION_REPORT_EXTENSIONS_PLUGINS);
-  source->AddLocalizedString(
-      kManagementExtensionReportExtensionsAndPolicies,
-      IDS_MANAGEMENT_EXTENSION_REPORT_EXTENSIONS_AND_POLICIES);
 
-  source->AddLocalizedString(
-      kManagementExtensionReportSafeBrowsingWarnings,
-      IDS_MANAGEMENT_EXTENSION_REPORT_SAFE_BROWSING_WARNINGS);
-  source->AddLocalizedString(kManagementExtensionReportPerfCrash,
-                             IDS_MANAGEMENT_EXTENSION_REPORT_PERF_CRASH);
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if defined(OS_CHROMEOS)
@@ -159,10 +143,13 @@ base::RefCountedMemory* ManagementUI::GetFaviconResourceBytes(
 }
 
 ManagementUI::ManagementUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(std::make_unique<ManagementUIHandler>());
   content::WebUIDataSource* source = CreateManagementUIHtmlSource();
+  Profile* profile = Profile::FromWebUI(web_ui);
+  auto management_ui_handler = std::make_unique<ManagementUIHandler>();
+  management_ui_handler->InitializeManagementContextualStrings(profile, source);
+  web_ui->AddMessageHandler(std::move(management_ui_handler));
   DarkModeHandler::Initialize(web_ui, source);
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
+  content::WebUIDataSource::Add(profile, source);
 }
 
 ManagementUI::~ManagementUI() {}

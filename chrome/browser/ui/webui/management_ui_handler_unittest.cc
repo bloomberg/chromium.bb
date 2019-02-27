@@ -85,7 +85,7 @@ TEST_F(ManagementUIHandlerTests,
   std::set<std::string> expected_messages = {
       kManagementExtensionReportMachineName, kManagementExtensionReportUsername,
       kManagementExtensionReportVersion,
-      kManagementExtensionReportExtensionsAndPolicies,
+      kManagementExtensionReportExtensionsPlugin,
       kManagementExtensionReportSafeBrowsingWarnings};
 
   auto reporting_info = handler_.GetExtensionReportingInfo();
@@ -143,8 +143,9 @@ TEST_F(ManagementUIHandlerTests, ExtensionReportingInfoPoliciesMerge) {
       kManagementExtensionReportMachineNameAddress,
       kManagementExtensionReportUsername,
       kManagementExtensionReportVersion,
-      kManagementExtensionReportExtensionsAndPolicies,
+      kManagementExtensionReportExtensionsPlugin,
       kManagementExtensionReportSafeBrowsingWarnings,
+      kManagementExtensionReportUserBrowsingData,
       kManagementExtensionReportPerfCrash};
 
   auto reporting_info = handler_.GetExtensionReportingInfo();
