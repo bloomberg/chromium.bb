@@ -1,14 +1,7 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-
-<style>
-.hideAllContainers .container { display: none; }
-
-button {
-  display: block;
-}
-</style>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div class="container" id="container1" role="group" aria-label="Container">
     <div id="heading1" role="heading" aria-owns="menu1">heading</div>
@@ -16,8 +9,7 @@ button {
 </div>
 
 <script>
-test(function(t)
-{
+test_after_layout_and_paint(function(t) {
     // No problem with using aria-owns to put a menu inside a heading.
     var axHeading1 = accessibilityController.accessibleElementById("heading1");
     assert_equals(axHeading1.name, "heading");
@@ -33,7 +25,7 @@ test(function(t)
 </div>
 
 <script>
-test(function(t)
+test_after_layout_and_paint(function(t)
 {
     // A button can't have children, so we should ignore aria-owns.
     var axButton2 = accessibilityController.accessibleElementById("button2");
@@ -57,14 +49,14 @@ input, textarea {
 </div>
 
 <script>
-test(function(t)
+test_after_layout_and_paint(function(t)
 {
     var axTextfield3 = accessibilityController.accessibleElementById("textfield3");
     assert_equals(axTextfield3.name, "textfield");
     var axContainer3 = accessibilityController.accessibleElementById("container3");
     assert_equals(axContainer3.childrenCount, 2);
     assert_equals(axContainer3.childAtIndex(0).role, "AXRole: AXTextField");
-    // An input element naturally gets 1 child that corresponds to the anonymous 
+    // An input element naturally gets 1 child that corresponds to the anonymous
     // inner editor element.
     assert_equals(axContainer3.childAtIndex(0).childrenCount, 1);
     assert_equals(axContainer3.childAtIndex(1).role, "AXRole: AXMenu");
@@ -78,7 +70,7 @@ test(function(t)
 </div>
 
 <script>
-test(function(t)
+test_after_layout_and_paint(function(t)
 {
     var axTextfield4 = accessibilityController.accessibleElementById("textfield4");
     assert_equals(axTextfield4.name, "textfield");
@@ -97,7 +89,7 @@ test(function(t)
 </div>
 
 <script>
-test(function(t)
+test_after_layout_and_paint(function(t)
 {
     var axTextfield5 = accessibilityController.accessibleElementById("textfield5");
     assert_equals(axTextfield5.name, "textfield");
@@ -107,9 +99,4 @@ test(function(t)
     assert_equals(axContainer5.childAtIndex(0).childrenCount, 0);
     assert_equals(axContainer5.childAtIndex(1).role, "AXRole: AXMenu");
 }, "Aria-owns doesn't create children of a contenteditable element.");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

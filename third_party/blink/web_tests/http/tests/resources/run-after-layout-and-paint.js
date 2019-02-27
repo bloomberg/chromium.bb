@@ -58,3 +58,18 @@ function runAfterLayoutAndPaint(callback, autoNotifyDone) {
         }, 0);
     });
 }
+
+function test_after_layout_and_paint(func, name, properties) {
+    var test = async_test(name, properties);
+    runAfterLayoutAndPaint(test.step_func(() => {
+        func.call(test, test);
+        test.done();
+    }, false));
+}
+
+function async_test_after_layout_and_paint(func, name, properties) {
+    var test = async_test(name, properties);
+    runAfterLayoutAndPaint(test.step_func(() => {
+        func.call(test, test);
+    }, false));
+}

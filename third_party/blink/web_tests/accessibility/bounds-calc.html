@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <!--
 This is a test of the new (June 2016) bounds calculation code,
@@ -17,12 +18,6 @@ This test asserts that the bounding box we compute is the
 same as what's computed by the DOM getBoundingClientRect
 interface.
  -->
-
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
 
 <div class="container">
     <input type="text" id="input">
@@ -107,7 +102,7 @@ function assertHasTransform(id, expected) {
     assert_equals(axObject.hasNonIdentityTransform(), expected, id + " hasNonIdentityTransform");
 }
 
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     assertDOMRectSameAsAXRect("input");
     assertDOMRectSameAsAXRect("checkbox");
     assertDOMRectSameAsAXRect("radio");
@@ -151,7 +146,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     assertHasTransform("container2", false);
 
     assertHasTransform("div2", false);
@@ -168,7 +163,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     document.getElementById("container3").scrollTop = 200;
 
     assertHasTransform("container3", false);
@@ -187,7 +182,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     assertHasTransform("container4", true);
 
     assertHasTransform("div4", false);
@@ -209,7 +204,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     document.getElementById("scroll5").scrollTop = 40;
     assertDOMRectSameAsAXRect("div5");
 }, "Test object inside of several nested containers with transforms and scrolling.");
@@ -228,7 +223,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     // This test uses aria-owns to rearrange children between ancestors,
     // to ensure that an object's offset container is not a node that's an
     // ancestor in the accessibility tree but not in the layout tree.
@@ -261,7 +256,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     assertHasTransform("container7", false);
     assertHasTransform("span7", false);
     assertDOMRectSameAsAXRect("span7");
@@ -274,12 +269,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     assertStaticTextChildDOMRectSameAsAXRect("span8", 0);
 }, "Test node that's inline and relative-positioned");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

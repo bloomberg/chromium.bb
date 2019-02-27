@@ -1,12 +1,7 @@
 <!DOCTYPE HTML>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div class="container">
   <div tabIndex=0 role="link" id="link1">
@@ -17,13 +12,8 @@
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axLink1 = accessibilityController.accessibleElementById("link1");
     assert_equals(axLink1.name, "I like ice cream.");
 }, "Presentational element ignored in name calculation..");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

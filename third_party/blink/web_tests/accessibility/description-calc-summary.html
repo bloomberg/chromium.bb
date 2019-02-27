@@ -1,12 +1,7 @@
 <!DOCTYPE HTML>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div class="container">
   <details id="details1">
@@ -15,7 +10,7 @@
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axDetails1 = accessibilityController.accessibleElementById("details1");
     var axSummary1 = axDetails1.childAtIndex(0);
     assert_equals(axSummary1.role, "AXRole: AXDisclosureTriangle");
@@ -34,7 +29,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axSummary2 = accessibilityController.accessibleElementById("summary2");
     assert_equals(axSummary2.name, "summary2-contents");
     assert_equals(axSummary2.nameFrom, "contents");
@@ -51,16 +46,11 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axSummary3 = accessibilityController.accessibleElementById("summary3");
     assert_equals(axSummary3.name, "summary3-aria-label");
     assert_equals(axSummary3.nameFrom, "attribute");
     assert_equals(axSummary3.description, "summary3-contents");
     assert_equals(axSummary3.descriptionFrom, "contents");
 }, "Summary with aria-label and contents");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

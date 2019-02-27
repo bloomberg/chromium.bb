@@ -1,19 +1,14 @@
 <!DOCTYPE HTML>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div class="container">
     <input id="text1" type="text" placeholder="Placeholder">
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axTextInput1 = accessibilityController.accessibleElementById("text1");
     assert_equals(axTextInput1.name, "Placeholder");
     assert_equals(axTextInput1.nameFrom, "placeholder");
@@ -27,7 +22,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axTextInput1a = accessibilityController.accessibleElementById("text1a");
     assert_equals(axTextInput1a.name, "ARIA Placeholder");
     assert_equals(axTextInput1a.nameFrom, "placeholder");
@@ -41,7 +36,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axTextInput1b = accessibilityController.accessibleElementById("text1b");
     assert_equals(axTextInput1b.name, "Placeholder");
     assert_equals(axTextInput1b.nameFrom, "placeholder");
@@ -55,7 +50,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axTextInput2 = accessibilityController.accessibleElementById("text2");
     assert_equals(axTextInput2.name, "Label");
     assert_equals(axTextInput2.nameFrom, "attribute");
@@ -70,7 +65,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axTextInput2a = accessibilityController.accessibleElementById("text2a");
     assert_equals(axTextInput2a.name, "Label");
     assert_equals(axTextInput2a.nameFrom, "attribute");
@@ -85,7 +80,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axTextInput2b = accessibilityController.accessibleElementById("text2b");
     assert_equals(axTextInput2b.name, "Label");
     assert_equals(axTextInput2b.nameFrom, "attribute");
@@ -101,7 +96,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axTextInput3 = accessibilityController.accessibleElementById("text3");
     assert_equals(axTextInput3.name, "Label");
     assert_equals(axTextInput3.nameFrom, "attribute");
@@ -116,7 +111,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axTextInput4 = accessibilityController.accessibleElementById("text4");
     assert_equals(axTextInput4.name, "Title");
     assert_equals(axTextInput4.nameFrom, "title");
@@ -130,7 +125,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axTextInput5 = accessibilityController.accessibleElementById("text5");
     assert_equals(axTextInput5.name, "Label");
     assert_equals(axTextInput5.nameFrom, "attribute");
@@ -145,7 +140,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axTextInput6 = accessibilityController.accessibleElementById("text6");
     assert_equals(axTextInput6.name, "Label");
     assert_equals(axTextInput6.nameFrom, "attribute");
@@ -164,16 +159,11 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axTextInput7 = accessibilityController.accessibleElementById("text7");
     assert_equals(axTextInput7.name, "");
     assert_equals(axTextInput7.nameFrom, "");
     assert_equals(axTextInput7.description, "Described By");
     assert_equals(axTextInput7.descriptionFrom, "relatedElement");
 }, "aria-describedby does not include newlines.");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

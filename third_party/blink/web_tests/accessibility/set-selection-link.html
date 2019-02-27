@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div id="main" role="main">
 
@@ -9,7 +10,7 @@
 </div>
 
 <script>
-    test(function()
+    test_after_layout_and_paint(function()
     {
         assert_not_equals(window.accessibilityController, undefined, 'This test requires accessibilityController');
 

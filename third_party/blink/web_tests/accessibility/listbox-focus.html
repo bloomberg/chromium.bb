@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 <select id="listbox" size="3">
   <option id="item0">Alicia</option>
   <option id="item1">Peter</option>
@@ -8,7 +9,7 @@
   <option id="item3" disabled>Frank</option>
 </select>
 <script>
-async_test(function(t)
+async_test_after_layout_and_paint(function(t)
 {
     var listbox = document.getElementById("listbox");
     listbox.selectedIndex = 0;
@@ -43,12 +44,12 @@ function axElementById(id) {
     return accessibilityController.accessibleElementById(id);
 }
 
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axOption = axElementById("item2");
     assert_equals(axOption.isFocusable, true);
 }, "Listbox option is focusable");
 
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axOption = axElementById("item3");
     assert_equals(axOption.isFocusable, false);
 }, "Disabled listbox option is not focusable");

@@ -1,12 +1,7 @@
 <!DOCTYPE HTML>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div class="container">
     <h3 id="heading1">
@@ -18,7 +13,7 @@
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axHeading1 = accessibilityController.accessibleElementById("heading1");
     assert_equals(axHeading1.name, "Before After");
     var axButton1 = accessibilityController.accessibleElementById("button1");
@@ -36,7 +31,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axHeading2 = accessibilityController.accessibleElementById("heading2");
     assert_equals(axHeading2.name, "Before After");
     var axButton2 = accessibilityController.accessibleElementById("button2");
@@ -54,7 +49,7 @@ test(function(t) {
 </div>
 
 <script>
- test(function(t) {
+ test_after_layout_and_paint(function(t) {
      var axHeading3 = accessibilityController.accessibleElementById("heading3");
      assert_equals(axHeading3, undefined);
      var axButton3 = accessibilityController.accessibleElementById("button3");
@@ -72,7 +67,7 @@ test(function(t) {
 </div>
 
 <script>
- test(function(t) {
+ test_after_layout_and_paint(function(t) {
      var axButton4 = accessibilityController.accessibleElementById("button4");
      assert_equals(axButton4.name, "Before After");
  }, "Aria-labelledby of aria-hidden subtree with another aria-hidden inside");
@@ -87,13 +82,8 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axInput5 = accessibilityController.accessibleElementById("input5");
     assert_equals(axInput5.name, "Before After");
 }, "Label can get accessible text from aria-hidden subtree");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

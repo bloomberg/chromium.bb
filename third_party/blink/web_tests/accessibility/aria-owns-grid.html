@@ -1,10 +1,7 @@
 <!DOCTYPE HTML>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-
-<style>
-.hideAllContainers .container { display: none; }
-</style>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div class="container">
     <div id="grid" role="grid" aria-owns="row1 row2"></div>
@@ -21,15 +18,10 @@
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axGrid = accessibilityController.accessibleElementById("grid");
     assert_equals(axGrid.role, "AXRole: AXGrid");
     assert_equals(axGrid.columnCount, 3);
     assert_equals(axGrid.rowCount, 2);
 }, "Aria-owns works on ARIA grids.");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

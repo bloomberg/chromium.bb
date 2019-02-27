@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <p id="paragraph">
   The <b id="quick">quick</b> brown fox
@@ -30,7 +31,7 @@
 </ol>
 
 <script>
-test(() => {
+test_after_layout_and_paint(() => {
   let axObj = accessibilityController.accessibleElementById('paragraph');
   // Find the first inline text box.
   while (axObj.childrenCount > 0)
@@ -58,7 +59,7 @@ test(() => {
   assert_array_equals(lineText, ['The ', 'quick', ' brown fox ']);
 }, 'Test |NextOnLine| and |PreviousOnLine| on |AXInlineTextBox|.');
 
-test(() => {
+test_after_layout_and_paint(() => {
   let axEditable = accessibilityController.accessibleElementById('contentEditable');
   // There should be two lines in this content editable.
   assert_equals(axEditable.childrenCount, 2);
@@ -100,7 +101,7 @@ test(() => {
   }
 }, 'Test |NextOnLine| and |PreviousOnLine| on |AXLayoutObject|.');
 
-test(() => {
+test_after_layout_and_paint(() => {
   let axObj = accessibilityController.accessibleElementById('paragraphWithLink');
   // There should be two static text children and a link in this paragraph.
   assert_equals(axObj.childrenCount, 3);
@@ -125,7 +126,7 @@ test(() => {
       'link', 'Paragraph with a ']);
 }, 'Test |NextOnLine| and |PreviousOnLine| on paragraphs with links.');
 
-test(() => {
+test_after_layout_and_paint(() => {
   let axObj = accessibilityController.accessibleElementById('paragraphWithAnonymousBlock');
   // There should be three static text children in this paragraph.
   assert_equals(axObj.childrenCount, 3);
@@ -150,7 +151,7 @@ test(() => {
       'anonymous block', 'Paragraph with an ']);
 }, 'Test |NextOnLine| and |PreviousOnLine| on paragraphs with anonymous blocks.');
 
-test(() => {
+test_after_layout_and_paint(() => {
   let axObj = accessibilityController.accessibleElementById('list');
   // There should be a list item in this list.
   assert_equals(axObj.childrenCount, 1);
@@ -172,11 +173,4 @@ test(() => {
   assert_array_equals(lineText, ['1. ', 'List item', '1. ']);
 }, 'Test |NextOnLine| and |PreviousOnLine| on list markers.');
 
-if (window.testRunner) {
-  document.getElementById('paragraph').style.display = 'none';
-  document.getElementById('contentEditable').style.display = 'none';
-  document.getElementById('paragraphWithLink').style.display = 'none';
-  document.getElementById('paragraphWithAnonymousBlock').style.display = 'none';
-  document.getElementById('list').style.display = 'none';
-}
 </script>
