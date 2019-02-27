@@ -717,10 +717,9 @@ void DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
   if (render_pass == current_frame()->root_render_pass) {
     BindFramebufferToOutputSurface();
 
-    if (supports_dc_layers_) {
+    if (supports_dc_layers_)
       SetEnableDCLayers(using_dc_layers_);
-      output_surface_->SetDrawRectangle(current_frame()->root_damage_rect);
-    }
+    output_surface_->SetDrawRectangle(current_frame()->root_damage_rect);
     InitializeViewport(current_frame(), render_pass->output_rect,
                        gfx::Rect(current_frame()->device_viewport_size),
                        current_frame()->device_viewport_size);

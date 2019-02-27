@@ -59,6 +59,7 @@ class VIZ_SERVICE_EXPORT BufferQueue {
                bool use_stencil);
   void RecreateBuffers();
   uint32_t GetCurrentTextureId() const;
+  void CopyDamageForCurrentSurface(const gfx::Rect& damage);
 
   uint32_t fbo() const { return fbo_; }
   uint32_t internal_format() const { return internal_format_; }

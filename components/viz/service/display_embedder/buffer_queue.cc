@@ -101,38 +101,45 @@ void BufferQueue::UpdateBufferDamage(const gfx::Rect& damage) {
   }
 }
 
+void BufferQueue::CopyDamageForCurrentSurface(const gfx::Rect& damage) {
+  if (!current_surface_)
+    return;
+
+  if (damage != gfx::Rect(size_)) {
+    // Copy damage from the most recently swapped buffer. In the event that
+    // the buffer was destroyed and failed to recreate, pick from the most
+    // recently available buffer.
+    uint32_t texture_id = 0;
+    for (auto& surface : base::Reversed(in_flight_surfaces_)) {
+      if (surface) {
+        texture_id = surface->texture;
+        break;
+      }
+    }
+    if (!texture_id && displayed_surface_)
+      texture_id = displayed_surface_->texture;
+
+    if (texture_id) {
+      CopyBufferDamage(current_surface_->texture, texture_id, damage,
+                       current_surface_->damage);
+      gl_->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    }
+  }
+  current_surface_->damage = gfx::Rect();
+}
+
 void BufferQueue::SwapBuffers(const gfx::Rect& damage) {
   if (damage.IsEmpty()) {
     in_flight_surfaces_.push_back(std::move(current_surface_));
     return;
   }
 
-  if (current_surface_) {
-    if (damage != gfx::Rect(size_)) {
-      // Copy damage from the most recently swapped buffer. In the event that
-      // the buffer was destroyed and failed to recreate, pick from the most
-      // recently available buffer.
-      uint32_t texture_id = 0;
-      for (auto& surface : base::Reversed(in_flight_surfaces_)) {
-        if (surface) {
-          texture_id = surface->texture;
-          break;
-        }
-      }
-      if (!texture_id && displayed_surface_)
-        texture_id = displayed_surface_->texture;
-
-      if (texture_id) {
-        CopyBufferDamage(current_surface_->texture, texture_id, damage,
-                         current_surface_->damage);
-      }
-    }
-    current_surface_->damage = gfx::Rect();
-  }
+  DCHECK(!current_surface_ || current_surface_->damage.IsEmpty());
   UpdateBufferDamage(damage);
   in_flight_surfaces_.push_back(std::move(current_surface_));
   // Some things reset the framebuffer (CopyBufferDamage, some GLRenderer
   // paths), so ensure we restore it here.
+  // TODO(khushalsagar): Not needed anymore. Remove this.
   gl_->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
 }
 
