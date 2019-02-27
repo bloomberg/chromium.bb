@@ -274,6 +274,8 @@ jumbo_source_set("browser_sources") {
     "speech_recognition_session_context.h",
     "speech_recognition_session_preamble.cc",
     "speech_recognition_session_preamble.h",
+    "spellcheck_data.cc",
+    "spellcheck_data.h",
     "ssl_host_state_delegate.h",
     "ssl_status.cc",
     "ssl_status.h",

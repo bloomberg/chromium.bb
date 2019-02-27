@@ -19,6 +19,7 @@
           "content.mojom.ResourceUsageReporter",
           "content.mojom.SharedWorkerFactory",
           "IPC.mojom.ChannelBootstrap",
+          "spellcheck.mojom.SpellChecker",
           "visitedlink.mojom.VisitedLinkNotificationSink",
           "web_cache.mojom.WebCache"
         ],
