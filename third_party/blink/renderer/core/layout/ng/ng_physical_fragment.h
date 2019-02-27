@@ -256,6 +256,10 @@ class CORE_EXPORT NGPhysicalFragment
   const unsigned sub_type_ : 3;  // NGBoxType, NGTextType, or NGLineBoxType
   const unsigned style_variant_ : 2;  // NGStyleVariant
 
+  // The following bitfield is only to be used by NGPhysicalContainerFragment
+  // (it's defined here to save memory, since that class has no bitfields).
+  unsigned has_floating_descendants_ : 1;
+
   // The following bitfield is only to be used by NGPhysicalLineBoxFragment
   // (it's defined here to save memory, since that class has no bitfields).
   unsigned base_direction_ : 1;  // TextDirection

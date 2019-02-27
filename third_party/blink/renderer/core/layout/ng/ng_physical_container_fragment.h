@@ -50,6 +50,8 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
                                     const LayoutPoint& additional_offset,
                                     NGOutlineType outline_type) const;
 
+  bool HasFloatingDescendants() const { return has_floating_descendants_; }
+
  protected:
   // block_or_line_writing_mode is used for converting the child offsets.
   NGPhysicalContainerFragment(NGContainerFragmentBuilder*,

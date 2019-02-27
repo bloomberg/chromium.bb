@@ -233,6 +233,7 @@ void NGBoxFragmentPainter::PaintObject(
     const LayoutPoint& paint_offset,
     bool suppress_box_decoration_background) {
   const PaintPhase paint_phase = paint_info.phase;
+  const NGPhysicalBoxFragment& physical_box_fragment = PhysicalFragment();
   const ComputedStyle& style = box_fragment_.Style();
   bool is_visible = style.Visibility() == EVisibility::kVisible;
 
@@ -245,7 +246,7 @@ void NGBoxFragmentPainter::PaintObject(
       PaintBoxDecorationBackground(paint_info, paint_offset);
 
     if (NGFragmentPainter::ShouldRecordHitTestData(paint_info,
-                                                   PhysicalFragment()))
+                                                   physical_box_fragment))
       RecordHitTestData(paint_info, paint_offset);
 
     // Record the scroll hit test after the background so background squashing
@@ -268,16 +269,22 @@ void NGBoxFragmentPainter::PaintObject(
   }
 
   if (paint_phase != PaintPhase::kSelfOutlineOnly) {
-    if (PhysicalFragment().ChildrenInline()) {
-      if (PhysicalFragment().IsBlockFlow())
-        PaintBlockFlowContents(paint_info, paint_offset);
-      else
-        PaintInlineChildren(box_fragment_.Children(), paint_info, paint_offset);
+    if (physical_box_fragment.ChildrenInline()) {
+      if (paint_phase != PaintPhase::kFloat) {
+        if (physical_box_fragment.IsBlockFlow()) {
+          PaintBlockFlowContents(paint_info, paint_offset);
+        } else {
+          PaintInlineChildren(box_fragment_.Children(), paint_info,
+                              paint_offset);
+        }
+      }
 
       if (paint_phase == PaintPhase::kFloat ||
           paint_phase == PaintPhase::kSelection ||
-          paint_phase == PaintPhase::kTextClip)
-        PaintFloats(paint_info);
+          paint_phase == PaintPhase::kTextClip) {
+        if (physical_box_fragment.HasFloatingDescendants())
+          PaintFloats(paint_info);
+      }
     } else {
       PaintBlockChildren(paint_info);
     }
@@ -390,13 +397,19 @@ void NGBoxFragmentPainter::PaintFloatingChildren(
       // we're more stable.
       ObjectPainter(*child->GetLayoutObject())
           .PaintAllPhasesAtomically(paint_info);
-    } else {
-      PaintFloatingChildren(child->Children(), paint_info);
+      continue;
+    }
+    if (const NGPhysicalContainerFragment* child_container =
+            ToNGPhysicalContainerFragmentOrNull(&fragment)) {
+      if (child_container->HasFloatingDescendants())
+        PaintFloatingChildren(child->Children(), paint_info);
     }
   }
 }
 
 void NGBoxFragmentPainter::PaintFloats(const PaintInfo& paint_info) {
+  DCHECK(PhysicalFragment().HasFloatingDescendants());
+
   // TODO(eae): The legacy paint code currently handles most floats, if they can
   // be painted by PaintNG BlockFlowPainter::PaintFloats will then call
   // NGBlockFlowPainter::Paint on each float.
