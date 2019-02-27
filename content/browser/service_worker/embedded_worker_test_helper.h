@@ -182,12 +182,6 @@ class EmbeddedWorkerTestHelper {
       blink::mojom::BackgroundFetchRegistrationPtr registration,
       blink::mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
           callback);
-  virtual void OnFetchEvent(
-      int embedded_worker_id,
-      blink::mojom::FetchAPIRequestPtr request,
-      blink::mojom::FetchEventPreloadHandlePtr preload_handle,
-      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback);
   virtual void OnSetIdleTimerDelayToZero(int embedded_worker_id);
 
   EmbeddedWorkerRegistry* registry();
@@ -230,16 +224,6 @@ class EmbeddedWorkerTestHelper {
       blink::mojom::BackgroundFetchRegistrationPtr registration,
       blink::mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
           callback);
-  void OnExtendableMessageEventStub(
-      blink::mojom::ExtendableMessageEventPtr event,
-      blink::mojom::ServiceWorker::DispatchExtendableMessageEventCallback
-          callback);
-  void OnFetchEventStub(
-      int embedded_worker_id,
-      blink::mojom::FetchAPIRequestPtr request,
-      blink::mojom::FetchEventPreloadHandlePtr preload_handle,
-      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback);
 
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<MockRenderProcessHost> render_process_host_;

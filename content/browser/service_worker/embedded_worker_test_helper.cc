@@ -30,33 +30,14 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/http/http_util.h"
-#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "storage/common/blob_storage/blob_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 
 namespace content {
-
-namespace {
-
-void OnFetchEventCommon(
-    blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-    blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback) {
-  auto response = blink::mojom::FetchAPIResponse::New();
-  response->status_code = 200;
-  response->status_text = "OK";
-  response->response_type = network::mojom::FetchResponseType::kDefault;
-  response_callback->OnResponse(
-      std::move(response), blink::mojom::ServiceWorkerFetchEventTiming::New());
-  std::move(finish_callback)
-      .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
-}
-
-}  // namespace
 
 // A URLLoaderFactory that returns 200 OK with a simple body to any request.
 class EmbeddedWorkerTestHelper::MockNetworkURLLoaderFactory final
@@ -376,16 +357,6 @@ void EmbeddedWorkerTestHelper::OnBackgroundFetchSuccessEvent(
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
-void EmbeddedWorkerTestHelper::OnFetchEvent(
-    int /* embedded_worker_id */,
-    blink::mojom::FetchAPIRequestPtr /* request */,
-    blink::mojom::FetchEventPreloadHandlePtr /* preload_handle */,
-    blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-    blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback) {
-  // TODO(falken): In-line common into here.
-  OnFetchEventCommon(std::move(response_callback), std::move(finish_callback));
-}
-
 void EmbeddedWorkerTestHelper::OnSetIdleTimerDelayToZero(
     int embedded_worker_id) {
   // Subclasses may implement this method.
@@ -443,20 +414,6 @@ void EmbeddedWorkerTestHelper::OnBackgroundFetchSuccessEventStub(
       base::BindOnce(&EmbeddedWorkerTestHelper::OnBackgroundFetchSuccessEvent,
                      AsWeakPtr(), std::move(registration),
                      std::move(callback)));
-}
-
-void EmbeddedWorkerTestHelper::OnFetchEventStub(
-    int embedded_worker_id,
-    blink::mojom::FetchAPIRequestPtr request,
-    blink::mojom::FetchEventPreloadHandlePtr preload_handle,
-    blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-    blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&EmbeddedWorkerTestHelper::OnFetchEvent, AsWeakPtr(),
-                     embedded_worker_id, std::move(request),
-                     std::move(preload_handle), std::move(response_callback),
-                     std::move(finish_callback)));
 }
 
 EmbeddedWorkerRegistry* EmbeddedWorkerTestHelper::registry() {
