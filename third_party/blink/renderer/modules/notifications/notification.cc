@@ -166,7 +166,12 @@ Notification::Notification(ExecutionContext* context,
       prepare_show_timer_(context->GetTaskRunner(TaskType::kMiscPlatformAPI),
                           this,
                           &Notification::PrepareShow),
-      listener_binding_(this) {}
+      listener_binding_(this) {
+  if (data_->show_trigger_timestamp.has_value()) {
+    show_trigger_ = TimestampTrigger::Create(static_cast<DOMTimeStamp>(
+        data_->show_trigger_timestamp.value().ToJsTime()));
+  }
+}
 
 Notification::~Notification() = default;
 
@@ -494,6 +499,7 @@ bool Notification::HasPendingActivity() const {
 }
 
 void Notification::Trace(blink::Visitor* visitor) {
+  visitor->Trace(show_trigger_);
   visitor->Trace(loader_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
