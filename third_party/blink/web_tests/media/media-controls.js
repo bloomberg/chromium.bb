@@ -32,6 +32,14 @@ function buttonPanelElement(videoElement) {
   return element;
 }
 
+function loadingPanelElement(videoElement) {
+  var controlID = '-internal-media-controls-loading-panel';
+  var element = mediaControlsElement(internals.shadowRoot(videoElement).firstChild, controlID);
+  if (!element)
+    throw 'Failed to find loading panel';
+  return element;
+}
+
 function panelElement(videoElement) {
   var element = mediaControlsButton(videoElement, "panel");
   if (!element)
