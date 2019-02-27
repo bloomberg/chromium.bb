@@ -91,7 +91,7 @@ DirectoryTreeNamingController.prototype.attachAndStart = function(
   this.isRemovableRoot_ = isRemovableRoot;
   this.volumeInfo_ = this.isRemovableRoot_ ? assert(volumeInfo) : null;
 
-  if (!!this.currentDirectoryItem_) {
+  if (this.currentDirectoryItem_) {
     return;
   }
 
@@ -129,10 +129,8 @@ DirectoryTreeNamingController.prototype.commitRename_ = function() {
   var entry = this.currentDirectoryItem_.entry;
   var newName = this.inputElement_.value;
 
-  // If new name is the same as current name or empty (only for removable
-  // devices), do nothing.
-  if (newName === this.currentDirectoryItem_.label ||
-      (newName.length == 0 && this.isRemovableRoot_)) {
+  // If new name is the same as current name or empty, do nothing.
+  if (newName === this.currentDirectoryItem_.label || newName.length == 0) {
     this.detach_();
     return;
   }
