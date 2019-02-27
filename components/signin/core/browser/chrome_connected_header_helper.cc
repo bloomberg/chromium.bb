@@ -6,10 +6,12 @@
 
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "components/google/core/common/google_util.h"
 #include "components/signin/core/browser/cookie_settings_util.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -167,14 +169,17 @@ std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
     const GURL& url,
     const std::string& account_id,
     int profile_mode_mask) {
-// If we are not on Chrome OS, an empty |account_id| corresponds to the user not
-// signed in to Chrome. Do NOT enforce account consistency otherwise users will
-// not be able to use Google services at all. Therefore, send an empty header.
+// If we are on mobile, an empty |account_id| corresponds to the user not signed
+// into Sync. Do not enforce account consistency, unless Mice is enabled on
+// Android.
 // On Chrome OS, an empty |account_id| corresponds to Public Sessions, Guest
 // Sessions and Active Directory logins. Guest Sessions have already been
 // filtered upstream and we want to enforce account consistency in Public
 // Sessions and Active Directory logins.
-#if !defined(OS_CHROMEOS)
+#if defined(OS_ANDROID)
+  if (account_id.empty() && !base::FeatureList::IsEnabled(kMiceFeature))
+    return std::string();
+#elif !defined(OS_CHROMEOS)
   if (account_id.empty())
     return std::string();
 #endif
