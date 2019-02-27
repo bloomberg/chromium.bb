@@ -15,3 +15,8 @@ Test with disableDefaultSuggestionForEmptyInput
 Text:
 TextWithCurrentSuggestion:
 
+Test expression and query
+Text:the expression and query
+Expression:the expression and 
+Query:query
+
