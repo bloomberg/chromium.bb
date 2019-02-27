@@ -51,6 +51,8 @@ void ProtoDatabaseSelector::InitWithDatabase(
   if (!db_)
     db_ = std::make_unique<UniqueProtoDatabase>(task_runner_);
 
+  unique_database_dir_ = database_dir;
+
   db_->InitWithDatabase(
       database, database_dir, options, false,
       base::BindOnce(&RunInitCallbackOnTaskRunner, std::move(callback),
@@ -67,16 +69,17 @@ void ProtoDatabaseSelector::InitUniqueOrShared(
     Callbacks::InitStatusCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   init_status_ = InitStatus::IN_PROGRESS;
+  unique_database_dir_ = db_dir;
+  client_name_ = client_name;
   auto unique_db =
       std::make_unique<UniqueProtoDatabase>(db_dir, options, task_runner_);
   auto* unique_db_ptr = unique_db.get();
   unique_db_ptr->Init(
-      client_name.c_str(),
-      base::BindOnce(
-          &ProtoDatabaseSelector::OnInitUniqueDB, this, std::move(unique_db),
-          use_shared_db,
-          base::BindOnce(&RunInitCallbackOnTaskRunner, std::move(callback),
-                         callback_task_runner)));
+      client_name, base::BindOnce(&ProtoDatabaseSelector::OnInitUniqueDB, this,
+                                  std::move(unique_db), use_shared_db,
+                                  base::BindOnce(&RunInitCallbackOnTaskRunner,
+                                                 std::move(callback),
+                                                 callback_task_runner)));
 }
 
 void ProtoDatabaseSelector::OnInitUniqueDB(
@@ -535,9 +538,16 @@ void ProtoDatabaseSelector::GetEntry(const std::string& key,
 void ProtoDatabaseSelector::Destroy(Callbacks::DestroyCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!db_) {
+    if (!unique_database_dir_.empty()) {
+      ProtoLevelDBWrapper::Destroy(unique_database_dir_, client_name_,
+                                   task_runner_, std::move(callback));
+      return;
+    }
+
     std::move(callback).Run(false);
     return;
   }
+
   db_->Destroy(std::move(callback));
 }
 

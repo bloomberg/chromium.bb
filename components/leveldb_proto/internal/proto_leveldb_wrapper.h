@@ -40,6 +40,13 @@ using ValueVector = std::vector<std::string>;
 // Construction/calls/destruction should all happen on the same thread.
 class ProtoLevelDBWrapper {
  public:
+  // Used to destroy database when initialization fails.
+  static void Destroy(
+      const base::FilePath& db_dir,
+      const std::string& client_id,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+      Callbacks::DestroyCallback callback);
+
   // All blocking calls/disk access will happen on the provided |task_runner|.
   ProtoLevelDBWrapper(
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);

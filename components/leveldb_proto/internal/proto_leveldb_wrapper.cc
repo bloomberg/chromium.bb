@@ -44,6 +44,18 @@ bool DestroyFromTaskRunner(LevelDB* database, const std::string& client_id) {
   return success;
 }
 
+bool DestroyWithDirectoryFromTaskRunner(const base::FilePath& db_dir,
+                                        const std::string& client_id) {
+  leveldb::Status result = leveldb::DestroyDB(
+      db_dir.AsUTF8Unsafe(), leveldb_proto::CreateSimpleOptions());
+  bool success = result.ok();
+
+  if (!client_id.empty())
+    ProtoLevelDBWrapperMetrics::RecordDestroy(client_id, success);
+
+  return success;
+}
+
 void LoadKeysFromTaskRunner(
     LevelDB* database,
     const std::string& target_prefix,
@@ -373,6 +385,17 @@ void ProtoLevelDBWrapper::Destroy(Callbacks::DestroyCallback callback) {
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
       base::BindOnce(DestroyFromTaskRunner, base::Unretained(db_), metrics_id_),
+      std::move(callback));
+}
+
+void ProtoLevelDBWrapper::Destroy(
+    const base::FilePath& db_dir,
+    const std::string& client_id,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    Callbacks::DestroyCallback callback) {
+  base::PostTaskAndReplyWithResult(
+      task_runner.get(), FROM_HERE,
+      base::BindOnce(DestroyWithDirectoryFromTaskRunner, db_dir, client_id),
       std::move(callback));
 }
 
