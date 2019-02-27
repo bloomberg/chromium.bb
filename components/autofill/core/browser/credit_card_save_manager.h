@@ -93,11 +93,18 @@ class CreditCardSaveManager {
   virtual ~CreditCardSaveManager();
 
   // Begins the process to offer local credit card save to the user.
-  void AttemptToOfferCardLocalSave(const CreditCard& card);
+  // If |has_non_focusable_field| is true, the save is triggered by a form that
+  // has non_focusable fields.
+  void AttemptToOfferCardLocalSave(bool has_non_focusable_field,
+                                   const CreditCard& card);
 
   // Begins the process to offer upload credit card save to the user if the
   // imported card passes all requirements and Google Payments approves.
+  // If |has_non_focusable_field| is true, the save is triggered by a form that
+  // has non-focusable fields. if |uploading_local_card| is true, the card being
+  // offered for upload is already a local card on the device.
   void AttemptToOfferCardUploadSave(const FormStructure& submitted_form,
+                                    bool has_non_focusable_field,
                                     const CreditCard& card,
                                     const bool uploading_local_card);
 
@@ -307,6 +314,10 @@ class CreditCardSaveManager {
   // |found_cvc_value_in_non_cvc_field_| is |true| if a field that is not
   // determined to be a CVC field via heuristics has a valid CVC |value|.
   bool found_cvc_value_in_non_cvc_field_ = false;
+
+  // |has_non_focusable_field_| is |true| if there exists a field that
+  // |is_focusable| is false.
+  bool has_non_focusable_field_ = false;
 
   // The origin of the top level frame from which a form is uploaded.
   url::Origin pending_upload_request_origin_;

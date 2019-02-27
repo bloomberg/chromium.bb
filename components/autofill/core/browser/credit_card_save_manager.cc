@@ -99,9 +99,11 @@ CreditCardSaveManager::CreditCardSaveManager(
 CreditCardSaveManager::~CreditCardSaveManager() {}
 
 void CreditCardSaveManager::AttemptToOfferCardLocalSave(
+    bool has_non_focusable_field,
     const CreditCard& card) {
   local_card_save_candidate_ = card;
   show_save_prompt_ = base::nullopt;
+  has_non_focusable_field_ = has_non_focusable_field;
 
   // Query the Autofill StrikeDatabase on if we should pop up the
   // offer-to-save prompt for this card.
@@ -126,6 +128,7 @@ void CreditCardSaveManager::AttemptToOfferCardLocalSave(
 
 void CreditCardSaveManager::AttemptToOfferCardUploadSave(
     const FormStructure& submitted_form,
+    bool has_non_focusable_field,
     const CreditCard& card,
     const bool uploading_local_card) {
   // Abort the uploading if |payments_client_| is nullptr.
@@ -152,6 +155,8 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
   found_value_in_cvc_field_ = false;
   found_cvc_value_in_non_cvc_field_ = false;
 
+  has_non_focusable_field_ = has_non_focusable_field;
+
   for (const auto& field : submitted_form) {
     const bool is_valid_cvc = IsValidCreditCardSecurityCode(
         field->value, upload_request_.card.network());
@@ -175,6 +180,11 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
   SetProfilesForCreditCardUpload(card, &upload_request_);
 
   pending_upload_request_origin_ = submitted_form.main_frame_origin();
+
+  if (has_non_focusable_field_) {
+    upload_decision_metrics_ |=
+        AutofillMetrics::UPLOAD_OFFERED_FROM_NON_FOCUSABLE_FIELD;
+  }
 
   if (upload_request_.cvc.empty()) {
     // Apply the CVC decision to |upload_decision_metrics_| to denote a problem
@@ -446,8 +456,10 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
          upload_request_.detected_values & DetectedValue::ADDRESS_NAME) &&
         upload_request_.detected_values & DetectedValue::POSTAL_CODE &&
         upload_request_.detected_values & DetectedValue::CVC;
-    if (found_name_and_postal_code_and_cvc && !uploading_local_card_)
-      AttemptToOfferCardLocalSave(upload_request_.card);
+    if (found_name_and_postal_code_and_cvc && !uploading_local_card_) {
+      AttemptToOfferCardLocalSave(has_non_focusable_field_,
+                                  upload_request_.card);
+    }
     upload_decision_metrics_ |=
         AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED;
     LogCardUploadDecisions(upload_decision_metrics_);
@@ -499,6 +511,7 @@ void CreditCardSaveManager::OfferCardUploadSave() {
     client_->ConfirmSaveCreditCardToCloud(
         upload_request_.card, std::move(legal_message_),
         AutofillClient::SaveCreditCardOptions()
+            .with_has_non_focusable_field(has_non_focusable_field_)
             .with_should_request_name_from_user(should_request_name_from_user_)
             .with_should_request_expiration_date_from_user(
                 should_request_expiration_date_from_user_)

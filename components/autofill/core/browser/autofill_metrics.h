@@ -111,6 +111,9 @@ class AutofillMetrics {
     // A pair of dropdowns for the user to select expiration date was surfaced
     // in the offer-to-save dialog.
     USER_REQUESTED_TO_PROVIDE_EXPIRATION_DATE = 1 << 14,
+    // All the required conditions were satisfied even though the form is
+    // unfocused after the user entered information into it.
+    UPLOAD_OFFERED_FROM_NON_FOCUSABLE_FIELD = 1 << 15,
     // Update |kNumCardUploadDecisionMetrics| when adding new enum here.
   };
 
@@ -889,8 +892,7 @@ class AutofillMetrics {
   static void LogCreditCardInfoBarMetric(
       InfoBarMetric metric,
       bool is_uploading,
-      bool is_requesting_cardholder_name,
-      bool is_requesting_expiration_date,
+      AutofillClient::SaveCreditCardOptions options,
       int previous_save_credit_card_prompt_user_decision);
   static void LogCreditCardFillingInfoBarMetric(InfoBarMetric metric);
   static void LogSaveCardRequestExpirationDateReasonMetric(
@@ -1228,7 +1230,7 @@ class AutofillMetrics {
  private:
   static void Log(AutocompleteEvent event);
 
-  static const int kNumCardUploadDecisionMetrics = 15;
+  static const int kNumCardUploadDecisionMetrics = 16;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AutofillMetrics);
 };

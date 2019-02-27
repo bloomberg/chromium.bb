@@ -123,8 +123,13 @@ class AutofillClient : public RiskDataLoader {
     base::string16 expiration_date_year;
   };
 
-  // Used for options of upload bubble.
+  // Used for options of upload prompt.
   struct SaveCreditCardOptions {
+    SaveCreditCardOptions& with_has_non_focusable_field(bool b) {
+      has_non_focusable_field = b;
+      return *this;
+    }
+
     SaveCreditCardOptions& with_should_request_name_from_user(bool b) {
       should_request_name_from_user = b;
       return *this;
@@ -141,6 +146,7 @@ class AutofillClient : public RiskDataLoader {
       return *this;
     }
 
+    bool has_non_focusable_field = false;
     bool should_request_name_from_user = false;
     bool should_request_expiration_date_from_user = false;
     bool show_prompt = false;

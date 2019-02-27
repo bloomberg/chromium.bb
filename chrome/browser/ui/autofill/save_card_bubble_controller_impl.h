@@ -46,6 +46,8 @@ class SaveCardBubbleControllerImpl
   // with respect to the offer-to-save prompt. If
   // |options.show_bubble| is true, pops up the offer-to-save
   // bubble; otherwise, only the omnibox icon is displayed.
+  // If |options.has_non_focusable_field| is true, the save is triggered by a
+  // form that has non_focusable fields.
   void OfferLocalSave(
       const CreditCard& card,
       AutofillClient::SaveCreditCardOptions options,
@@ -61,6 +63,8 @@ class SaveCardBubbleControllerImpl
   // |options.should_request_expiration_date_from_user| is
   // true. If |options.show_prompt| is true, pops up the
   // offer-to-save bubble; otherwise, only the omnibox icon is displayed.
+  // If |options.has_non_focusable_field| is true, the save is triggered by a
+  // form that has non-focusable fields.
   void OfferUploadSave(
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,

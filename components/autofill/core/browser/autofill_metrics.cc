@@ -657,24 +657,29 @@ void AutofillMetrics::LogCardUploadDecisionMetrics(
 void AutofillMetrics::LogCreditCardInfoBarMetric(
     InfoBarMetric metric,
     bool is_uploading,
-    bool should_request_name_from_user,
-    bool should_request_expiration_date_from_user,
+    AutofillClient::SaveCreditCardOptions options,
     int previous_save_credit_card_prompt_user_decision) {
   DCHECK_LT(metric, NUM_INFO_BAR_METRICS);
 
   std::string destination = is_uploading ? ".Server" : ".Local";
   base::UmaHistogramEnumeration("Autofill.CreditCardInfoBar" + destination,
                                 metric, NUM_INFO_BAR_METRICS);
-  if (should_request_name_from_user) {
+  if (options.should_request_name_from_user) {
     base::UmaHistogramEnumeration("Autofill.CreditCardInfoBar" + destination +
                                       ".RequestingCardholderName",
                                   metric, NUM_INFO_BAR_METRICS);
   }
 
-  if (should_request_expiration_date_from_user) {
+  if (options.should_request_expiration_date_from_user) {
     base::UmaHistogramEnumeration("Autofill.CreditCardInfoBar" + destination +
                                       ".RequestingExpirationDate",
                                   metric, NUM_INFO_BAR_METRICS);
+  }
+
+  if (options.has_non_focusable_field) {
+    base::UmaHistogramEnumeration(
+        "Autofill.CreditCardInfoBar" + destination + ".FromNonFocusableForm",
+        metric, NUM_INFO_BAR_METRICS);
   }
 
   base::UmaHistogramEnumeration(
@@ -726,6 +731,11 @@ void AutofillMetrics::LogSaveCardPromptMetric(
   if (options.should_request_expiration_date_from_user) {
     base::UmaHistogramEnumeration(
         metric_with_destination_and_show + ".RequestingExpirationDate", metric,
+        NUM_SAVE_CARD_PROMPT_METRICS);
+  }
+  if (options.has_non_focusable_field) {
+    base::UmaHistogramEnumeration(
+        metric_with_destination_and_show + ".FromNonFocusableForm", metric,
         NUM_SAVE_CARD_PROMPT_METRICS);
   }
   base::UmaHistogramEnumeration(
