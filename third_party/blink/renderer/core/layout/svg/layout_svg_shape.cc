@@ -112,8 +112,9 @@ bool HasSquareCapStyle(const SVGComputedStyle& svg_style) {
 
 }  // namespace
 
-FloatRect LayoutSVGShape::ApproximateStrokeBoundingBox() const {
-  FloatRect stroke_box = fill_bounding_box_;
+FloatRect LayoutSVGShape::ApproximateStrokeBoundingBox(
+    const FloatRect& shape_bounds) const {
+  FloatRect stroke_box = shape_bounds;
 
   // Implementation of
   // https://drafts.fxtf.org/css-masking/#compute-stroke-bounding-box
@@ -143,7 +144,7 @@ FloatRect LayoutSVGShape::ApproximateStrokeBoundingBox() const {
 FloatRect LayoutSVGShape::HitTestStrokeBoundingBox() const {
   if (StyleRef().SvgStyle().HasStroke())
     return stroke_bounding_box_;
-  return ApproximateStrokeBoundingBox();
+  return ApproximateStrokeBoundingBox(fill_bounding_box_);
 }
 
 bool LayoutSVGShape::ShapeDependentStrokeContains(
@@ -410,7 +411,7 @@ FloatRect LayoutSVGShape::CalculateStrokeBoundingBox() const {
     return fill_bounding_box_;
   if (HasNonScalingStroke())
     return CalculateNonScalingStrokeBoundingBox();
-  return ApproximateStrokeBoundingBox();
+  return ApproximateStrokeBoundingBox(fill_bounding_box_);
 }
 
 FloatRect LayoutSVGShape::CalculateNonScalingStrokeBoundingBox() const {
@@ -418,16 +419,12 @@ FloatRect LayoutSVGShape::CalculateNonScalingStrokeBoundingBox() const {
   DCHECK(StyleRef().SvgStyle().HasStroke());
   DCHECK(HasNonScalingStroke());
 
-  StrokeData stroke_data;
-  SVGLayoutSupport::ApplyStrokeStyleToStrokeData(stroke_data, StyleRef(), *this,
-                                                 DashScaleFactor());
-
   FloatRect stroke_bounding_box = fill_bounding_box_;
   const auto& non_scaling_transform = NonScalingStrokeTransform();
   if (non_scaling_transform.IsInvertible()) {
     const auto& non_scaling_stroke = NonScalingStrokePath();
     FloatRect stroke_bounding_rect =
-        non_scaling_stroke.StrokeBoundingRect(stroke_data);
+        ApproximateStrokeBoundingBox(non_scaling_stroke.BoundingRect());
     stroke_bounding_rect =
         non_scaling_transform.Inverse().MapRect(stroke_bounding_rect);
     stroke_bounding_box.Unite(stroke_bounding_rect);

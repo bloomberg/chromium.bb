@@ -176,7 +176,7 @@ class LayoutSVGShape : public LayoutSVGModelObject {
   FloatRect HitTestStrokeBoundingBox() const;
   // Compute an approximation of the bounding box that this stroke geometry
   // would generate when applied to the shape.
-  FloatRect ApproximateStrokeBoundingBox() const;
+  FloatRect ApproximateStrokeBoundingBox(const FloatRect& shape_bounds) const;
   FloatRect CalculateNonScalingStrokeBoundingBox() const;
   void UpdateNonScalingStrokeData();
   bool UpdateLocalTransform();
