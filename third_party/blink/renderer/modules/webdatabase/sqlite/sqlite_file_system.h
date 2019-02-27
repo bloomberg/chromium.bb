@@ -42,10 +42,9 @@ namespace blink {
 // A class that abstracts the file system related operations required
 // by the WebKit database code.
 class SQLiteFileSystem {
- public:
-  // This class is used as a namespace, so instantiating it doesn't make sense.
-  SQLiteFileSystem() = delete;
+  STATIC_ONLY(SQLiteFileSystem);
 
+ public:
   // Initializes SQLite for Blink's use.
   //
   // This must be called exactly once in each renderer process that uses SQLite.
