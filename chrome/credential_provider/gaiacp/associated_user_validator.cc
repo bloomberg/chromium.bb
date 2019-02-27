@@ -238,7 +238,7 @@ AssociatedUserValidator::AssociatedUserValidator(
 
 AssociatedUserValidator::~AssociatedUserValidator() = default;
 
-bool AssociatedUserValidator::HasInternetConnection() {
+bool AssociatedUserValidator::HasInternetConnection() const {
   return InternetAvailabilityChecker::Get()->HasInternetConnection();
 }
 
@@ -257,6 +257,9 @@ bool AssociatedUserValidator::IsUserAccessBlockingEnforced(
     return false;
 
   if (!CGaiaCredentialProvider::IsUsageScenarioSupported(cpus))
+    return false;
+
+  if (!HasInternetConnection())
     return false;
 
   return true;
@@ -411,7 +414,7 @@ bool AssociatedUserValidator::IsTokenHandleValidForUser(
   if (!HasInternetConnection())
     return true;
 
-  // If at this point there is not token info entry for this user, assume the
+  // If at this point there is no token info entry for this user, assume the
   // user is not associated and does not need a token handle and is thus always
   // valid. On initial startup we should have already called
   // StartRefreshingTokenHandleValidity to create all the token info for all the
@@ -424,6 +427,11 @@ bool AssociatedUserValidator::IsTokenHandleValidForUser(
 
   if (validity_it == user_to_token_handle_info_.end())
     return true;
+
+  // If mdm enrollment is needed, then force a reauth for all users so
+  // that they enroll.
+  if (NeedsToEnrollWithMdm())
+    return false;
 
   // This function will start a new query if the current info for the token
   // handle is stale or has not yet been queried. At the end of this function,

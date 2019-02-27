@@ -249,25 +249,45 @@ TEST_F(AssociatedUserValidatorTest, TokenHandleValidityStillFresh) {
   EXPECT_EQ(1u, fake_http_url_fetcher_factory()->requests_created());
 }
 
-class AssociatedUserValidatorUserLockingTest
+// Tests various scenarios where user access is blocked.
+// Parameters are:
+// 1. CREDENTIAL_PROVIDER_USAGE_SCENARIO - Usage scenario.
+// 2. bool - User token handle is valid.
+// 3. bool - Mdm url is set.
+// 4. bool - Mdm enrollment is already done.
+// 5. bool - Internet is available.
+class AssociatedUserValidatorUserAccessBlockingTest
     : public AssociatedUserValidatorTest,
       public ::testing::WithParamInterface<
-          std::tuple<CREDENTIAL_PROVIDER_USAGE_SCENARIO, bool>> {
+          std::tuple<CREDENTIAL_PROVIDER_USAGE_SCENARIO,
+                     bool,
+                     bool,
+                     bool,
+                     bool>> {
  private:
   FakeScopedLsaPolicyFactory fake_scoped_lsa_policy_factory_;
 };
 
-TEST_P(AssociatedUserValidatorUserLockingTest, LockUserWithInvalidTokenHandle) {
+TEST_P(AssociatedUserValidatorUserAccessBlockingTest,
+       BlockUserAccessAsNeeded) {
   const CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus = std::get<0>(GetParam());
-  const bool mdm_url_set = std::get<1>(GetParam());
+  const bool token_handle_valid = std::get<1>(GetParam());
+  const bool mdm_url_set = std::get<2>(GetParam());
+  const bool mdm_enrolled = std::get<3>(GetParam());
+  const bool internet_available = std::get<4>(GetParam());
+  GoogleMdmEnrolledStatusForTesting forced_status(mdm_enrolled);
+
   FakeAssociatedUserValidator validator;
-  FakeInternetAvailabilityChecker internet_checker;
+  FakeInternetAvailabilityChecker internet_checker(
+      internet_available ? FakeInternetAvailabilityChecker::kHicForceYes
+                         : FakeInternetAvailabilityChecker::kHicForceNo);
 
   if (mdm_url_set)
     ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
 
   bool should_user_locking_be_enabled =
-      mdm_url_set && CGaiaCredentialProvider::IsUsageScenarioSupported(cpus);
+      internet_available && mdm_url_set &&
+      CGaiaCredentialProvider::IsUsageScenarioSupported(cpus);
 
   EXPECT_EQ(should_user_locking_be_enabled,
             validator.IsUserAccessBlockingEnforced(cpus));
@@ -278,20 +298,26 @@ TEST_P(AssociatedUserValidatorUserLockingTest, LockUserWithInvalidTokenHandle) {
                       username, L"password", L"fullname", L"comment",
                       L"gaia-id", base::string16(), &sid));
 
-  // Invalid token fetch result.
+  // Token handle fetch result.
   fake_http_url_fetcher_factory()->SetFakeResponse(
       GURL(AssociatedUserValidator::kTokenInfoUrl),
-      FakeWinHttpUrlFetcher::Headers(), "{}");
+      FakeWinHttpUrlFetcher::Headers(),
+      token_handle_valid ? "{\"expires_in\":1}" : "{}");
 
   validator.StartRefreshingTokenHandleValidity();
   validator.DenySigninForUsersWithInvalidTokenHandles(cpus);
 
   DWORD reg_value = 0;
 
-  EXPECT_FALSE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
-  EXPECT_EQ(should_user_locking_be_enabled,
+  bool should_user_be_blocked =
+      should_user_locking_be_enabled && (!mdm_enrolled || !token_handle_valid);
+
+  EXPECT_EQ(!internet_available || (!mdm_url_set && token_handle_valid) ||
+                (mdm_url_set && mdm_enrolled && token_handle_valid),
+            validator.IsTokenHandleValidForUser(OLE2W(sid)));
+  EXPECT_EQ(should_user_be_blocked,
             validator.IsUserAccessBlocked(OLE2W(sid)));
-  if (should_user_locking_be_enabled) {
+  if (should_user_be_blocked) {
     EXPECT_EQ(S_OK, GetMachineRegDWORD(kWinlogonUserListRegKey, username,
                                        &reg_value));
     EXPECT_EQ(0u, reg_value);
@@ -307,12 +333,15 @@ TEST_P(AssociatedUserValidatorUserLockingTest, LockUserWithInvalidTokenHandle) {
 
 INSTANTIATE_TEST_CASE_P(
     ,
-    AssociatedUserValidatorUserLockingTest,
+    AssociatedUserValidatorUserAccessBlockingTest,
     ::testing::Combine(::testing::Values(CPUS_INVALID,
                                          CPUS_LOGON,
                                          CPUS_UNLOCK_WORKSTATION,
                                          CPUS_CHANGE_PASSWORD,
                                          CPUS_CREDUI),
+                       ::testing::Bool(),
+                       ::testing::Bool(),
+                       ::testing::Bool(),
                        ::testing::Bool()));
 
 class TimeClockOverrideValue {

@@ -74,7 +74,7 @@ class AssociatedUserValidator {
   explicit AssociatedUserValidator(base::TimeDelta validation_timeout);
   virtual ~AssociatedUserValidator();
 
-  bool HasInternetConnection();
+  bool HasInternetConnection() const;
   void CheckTokenHandleValidity(
       const std::map<base::string16, base::string16>& handles_to_verify);
   void StartTokenValidityQuery(const base::string16& sid,

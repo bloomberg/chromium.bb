@@ -398,11 +398,16 @@ INSTANTIATE_TEST_CASE_P(,
 // 1. bool - are the users' token handles still valid.
 // 2. CREDENTIAL_PROVIDER_USAGE_SCENARIO - the usage scenario.
 // 3. bool - is the other user tile available.
-// 4. bool - is the second user locking the system.
+// 4. bool - is machine enrolled to mdm.
+// 5. bool - is the second user locking the system.
 class GcpCredentialProviderAvailableCredentialsTest
     : public GcpCredentialProviderTest,
       public ::testing::WithParamInterface<
-          std::tuple<bool, CREDENTIAL_PROVIDER_USAGE_SCENARIO, bool, bool>> {
+          std::tuple<bool,
+                     CREDENTIAL_PROVIDER_USAGE_SCENARIO,
+                     bool,
+                     bool,
+                     bool>> {
  protected:
   void SetUp() override;
 };
@@ -421,7 +426,10 @@ TEST_P(GcpCredentialProviderAvailableCredentialsTest, AvailableCredentials) {
   const bool valid_token_handles = std::get<0>(GetParam());
   const CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus = std::get<1>(GetParam());
   const bool other_user_tile_available = std::get<2>(GetParam());
-  const bool second_user_locking_system = std::get<3>(GetParam());
+  const bool enrolled_to_mdm = std::get<3>(GetParam());
+  const bool second_user_locking_system = std::get<4>(GetParam());
+
+  GoogleMdmEnrolledStatusForTesting forced_status(enrolled_to_mdm);
 
   if (other_user_tile_available)
     array.SetAccountOptions(CPAO_EMPTY_LOCAL);
@@ -489,9 +497,9 @@ TEST_P(GcpCredentialProviderAvailableCredentialsTest, AvailableCredentials) {
   if (other_user_tile_available) {
     expected_credentials = 1;
   } else if (cpus != CPUS_UNLOCK_WORKSTATION) {
-    expected_credentials = valid_token_handles ? 0 : 2;
+    expected_credentials = valid_token_handles && enrolled_to_mdm ? 0 : 2;
   } else {
-    expected_credentials = valid_token_handles ? 0 : 1;
+    expected_credentials = valid_token_handles && enrolled_to_mdm ? 0 : 1;
   }
 
   ASSERT_EQ(expected_credentials, count);
@@ -554,6 +562,7 @@ INSTANTIATE_TEST_CASE_P(
     GcpCredentialProviderAvailableCredentialsTest,
     ::testing::Combine(::testing::Bool(),
                        ::testing::Values(CPUS_UNLOCK_WORKSTATION, CPUS_LOGON),
+                       ::testing::Bool(),
                        ::testing::Bool(),
                        ::testing::Bool()));
 
