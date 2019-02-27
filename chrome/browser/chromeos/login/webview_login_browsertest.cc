@@ -844,7 +844,8 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
     // |fake_session_manager_client_| above, so the device will request policy
     // with these identifiers.
     policy_test_server_.RegisterClient(policy::PolicyBuilder::kFakeToken,
-                                       policy::PolicyBuilder::kFakeDeviceId);
+                                       policy::PolicyBuilder::kFakeDeviceId,
+                                       {} /* state_keys */);
     UpdateServedPolicyFromDevicePolicyTestHelper();
     ASSERT_TRUE(policy_test_server_.Start());
 

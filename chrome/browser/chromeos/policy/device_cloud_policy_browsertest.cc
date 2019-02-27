@@ -184,7 +184,8 @@ class KeyRotationDeviceCloudPolicyTest : public DevicePolicyCrosBrowserTest {
  private:
   void StartPolicyTestServer() {
     policy_test_server_.RegisterClient(PolicyBuilder::kFakeToken,
-                                       PolicyBuilder::kFakeDeviceId);
+                                       PolicyBuilder::kFakeDeviceId,
+                                       {} /* state_keys */);
     UpdateServedTestPolicy();
     policy_test_server_.EnableAutomaticRotationOfSigningKeys();
     EXPECT_TRUE(policy_test_server_.Start());
@@ -380,7 +381,8 @@ class SigninExtensionsDeviceCloudPolicyBrowserTest
     EXPECT_TRUE(policy_test_server_.SetSigningKeyAndSignature(
         signing_key.get(), PolicyBuilder::GetTestSigningKeySignature()));
     policy_test_server_.RegisterClient(PolicyBuilder::kFakeToken,
-                                       PolicyBuilder::kFakeDeviceId);
+                                       PolicyBuilder::kFakeDeviceId,
+                                       {} /* state_keys */);
     EXPECT_TRUE(policy_test_server_.Start());
   }
 

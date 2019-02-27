@@ -445,7 +445,8 @@ class PolicyProvidedTrustAnchorsDeviceLocalAccountTest
         signing_key.get(), PolicyBuilder::GetTestSigningKeySignature()));
     signing_key.reset();
     policy_server_.RegisterClient(PolicyBuilder::kFakeToken,
-                                  PolicyBuilder::kFakeDeviceId);
+                                  PolicyBuilder::kFakeDeviceId,
+                                  {} /* state_keys */);
     ASSERT_TRUE(policy_server_.Start());
 
     DevicePolicyCrosBrowserTest::SetUp();

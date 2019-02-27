@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_POLICY_TEST_LOCAL_POLICY_TEST_SERVER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -49,12 +50,13 @@ class LocalPolicyTestServer : public net::LocalTestServer {
   // works when the server serves from a temporary directory.
   void EnableAutomaticRotationOfSigningKeys();
 
-  // Pre-configures a registered client so the server returns policy without the
-  // client having to make a registration call. This must be called before
-  // starting the server, and only works when the server serves from a temporary
-  // directory.
-  void RegisterClient(const std::string& dm_token,
-                      const std::string& device_id);
+  // Register client so the server returns policy without the client having to
+  // make a registration call. This could be called at any time (before or after
+  // starting the server). This only works when the server serves from a
+  // temporary directory.
+  bool RegisterClient(const std::string& dm_token,
+                      const std::string& device_id,
+                      const std::vector<std::string>& state_keys);
 
   // Updates policy served by the server for a given (type, entity_id) pair.
   // This only works when the server serves from a temporary directory.
@@ -81,6 +83,9 @@ class LocalPolicyTestServer : public net::LocalTestServer {
                         const std::string& entity_id,
                         const std::string& data);
 
+  // Writes |config| into the configuration file.
+  bool SetConfig(const base::Value& config);
+
   // Gets the service URL.
   GURL GetServiceURL() const;
 
@@ -96,6 +101,7 @@ class LocalPolicyTestServer : public net::LocalTestServer {
 
   base::FilePath config_file_;
   base::FilePath policy_key_;
+  base::FilePath client_state_file_;
   base::DictionaryValue clients_;
   base::ScopedTempDir server_data_dir_;
   bool automatic_rotation_of_signing_keys_enabled_ = false;

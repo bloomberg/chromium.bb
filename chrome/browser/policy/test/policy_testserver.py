@@ -1219,21 +1219,28 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
 
     Args:
       server_address: Server host and port.
+      data_dir: Directory that contains files with signature, policy, clients
+        information.
       policy_path: Names the file to read JSON-formatted policy from.
+      client_state_file: Path to file with registered clients.
       private_key_paths: List of paths to read private keys from.
       rotate_keys_automatically: Whether the keys should be rotated in a
         round-robin fashion for each policy request (by default, either the
         key specified in the config or the first key will be used for all
         requests).
+      server_base_url: The server base URL. Used for ExternalPolicyData message.
     """
     testserver_base.StoppableHTTPServer.__init__(self, server_address,
                                                  PolicyRequestHandler)
-    self._registered_tokens = {}
     self.data_dir = data_dir
     self.policy_path = policy_path
-    self.client_state_file = client_state_file
     self.rotate_keys_automatically = rotate_keys_automatically
     self.server_base_url = server_base_url
+
+    #  _registered_tokens and client_state_file kept in sync if the file is set.
+    self._registered_tokens = {}
+    self.client_state_file = client_state_file
+    self.client_state_file_timestamp = 0
 
     self.keys = []
     if private_key_paths:
@@ -1289,13 +1296,11 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
       pubkey = asn1der.Sequence([ algorithm, asn1der.Bitstring(rsa_pubkey) ])
       entry['public_key'] = pubkey
 
-    # Load client state.
-    if self.client_state_file is not None:
-      try:
-        file_contents = open(self.client_state_file).read()
-        self._registered_tokens = json.loads(file_contents, strict=False)
-      except IOError:
-        pass
+    try:
+      self.ReadClientStateFile()
+    except Exception as e:
+      # Could fail if file is not written yet.
+      logging.info('failed to load client state %s' % e)
 
   def GetPolicies(self):
     """Returns the policies to be used, reloaded from the backend file every
@@ -1454,6 +1459,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
       A dictionary with information about a device or user that is registered by
       dmtoken, or None if the token is not found.
     """
+    self.ReadClientStateFile()
     return self._registered_tokens.get(dmtoken, None)
 
   def LookupByStateKey(self, state_key):
@@ -1466,6 +1472,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
       A dictionary with information about a device or user or None if there is
       no matching record.
     """
+    self.ReadClientStateFile()
     for client in self._registered_tokens.values():
       if state_key.encode('hex') in client.get('state_keys', []):
         return client
@@ -1478,6 +1485,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
     Returns:
       The list of registered clients.
     """
+    self.ReadClientStateFile()
     state_keys = sum([ c.get('state_keys', [])
                        for c in self._registered_tokens.values() ], [])
     hashed_keys = map(lambda key: hashlib.sha256(key.decode('hex')).digest(),
@@ -1496,11 +1504,25 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
       del self._registered_tokens[dmtoken]
       self.WriteClientState()
 
+  def ReadClientStateFile(self):
+    """ Loads _registered_tokens from client_state_file."""
+    if self.client_state_file is None:
+      return
+    file_timestamp = os.stat(self.client_state_file).st_mtime
+    if file_timestamp == self.client_state_file_timestamp:
+      return
+    logging.info('load client state')
+    file_contents = open(self.client_state_file).read()
+    self._registered_tokens = json.loads(file_contents, strict=False)
+    self.client_state_file_timestamp = file_timestamp
+
   def WriteClientState(self):
     """Writes the client state back to the file."""
     if self.client_state_file is not None:
       json_data = json.dumps(self._registered_tokens)
       open(self.client_state_file, 'w').write(json_data)
+      self.client_state_file_timestamp = os.stat(
+                                         self.client_state_file).st_mtime
 
   def GetBaseFilename(self, policy_selector):
     """Returns the base filename for the given policy_selector.

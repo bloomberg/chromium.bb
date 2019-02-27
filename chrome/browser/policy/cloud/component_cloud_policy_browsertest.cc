@@ -116,7 +116,7 @@ class ComponentCloudPolicyTest : public extensions::ExtensionBrowserTest {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    test_server_.RegisterClient(kDMToken, kDeviceID);
+    test_server_.RegisterClient(kDMToken, kDeviceID, {} /* state_keys */);
     EXPECT_TRUE(test_server_.UpdatePolicyData(
         dm_protocol::kChromeExtensionPolicyType, kTestExtension, kTestPolicy));
     ASSERT_TRUE(test_server_.Start());

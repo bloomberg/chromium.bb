@@ -613,7 +613,7 @@ class MachineLevelUserCloudPolicyPolicyFetchTest
     base::FilePath config_path = temp_dir_.GetPath().AppendASCII("config.json");
     base::WriteFile(config_path, kTestPolicyConfig, strlen(kTestPolicyConfig));
     test_server_ = std::make_unique<LocalPolicyTestServer>(config_path);
-    test_server_->RegisterClient(kDMToken, kClientID);
+    test_server_->RegisterClient(kDMToken, kClientID, {} /* state_keys */);
   }
 
   const std::string dm_token() const { return GetParam(); }
