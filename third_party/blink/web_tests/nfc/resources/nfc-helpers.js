@@ -142,7 +142,7 @@ function toByteArray(data) {
 function assertNDEFMessagesEqual(providedMessage, receivedMessage) {
   // If simple data type is passed, e.g. String or ArrayBuffer, convert it
   // to NDEFMessage before comparing.
-  // https://w3c.github.io/web-nfc/#idl-def-nfcpushmessage
+  // https://w3c.github.io/web-nfc/#dom-ndefmessagesource
   let provided = providedMessage;
   if (providedMessage instanceof ArrayBuffer)
     provided = createMessage([createOpaqueRecord(providedMessage)]);
