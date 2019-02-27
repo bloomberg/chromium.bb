@@ -4,11 +4,13 @@
 
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
 
+#include <fcntl.h>
 #include <stddef.h>
 
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -28,6 +30,7 @@
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
+#include "ui/events/ozone/evdev/event_device_info.h"
 
 namespace ui {
 
@@ -101,6 +104,11 @@ const struct ModifierRemapping {
      prefs::kLanguageRemapBackspaceKeyTo,
      {ui::EF_NONE, ui::DomCode::BACKSPACE, ui::DomKey::BACKSPACE,
       ui::VKEY_BACK}},
+    {ui::EF_NONE,
+     ui::chromeos::ModifierKey::kAssistantKey,
+     prefs::kLanguageRemapAssistantKeyTo,
+     {ui::EF_NONE, ui::DomCode::LAUNCH_ASSISTANT, ui::DomKey::LAUNCH_ASSISTANT,
+      ui::VKEY_ASSISTANT}},
     {ui::EF_NONE,
      ui::chromeos::ModifierKey::kNumModifierKeys,
      prefs::kLanguageRemapDiamondKeyTo,
@@ -268,6 +276,24 @@ bool IsFromTouchpadDevice(const ui::MouseEvent& mouse_event) {
   return false;
 }
 
+// Returns true if |value| is replaced with the specific device property value
+// without getting an error.
+bool GetDeviceProperty(const base::FilePath& device_path,
+                       const char* key,
+                       std::string* value) {
+  device::ScopedUdevPtr udev(device::udev_new());
+  if (!udev.get())
+    return false;
+
+  device::ScopedUdevDevicePtr device(device::udev_device_new_from_syspath(
+      udev.get(), device_path.value().c_str()));
+  if (!device.get())
+    return false;
+
+  *value = device::UdevDeviceGetPropertyValue(device.get(), key);
+  return true;
+}
+
 }  // namespace
 
 EventRewriterChromeOS::EventRewriterChromeOS(
@@ -403,18 +429,11 @@ void EventRewriterChromeOS::BuildRewrittenKeyEvent(
 bool EventRewriterChromeOS::GetKeyboardTopRowLayout(
     const base::FilePath& device_path,
     KeyboardTopRowLayout* out_layout) {
-  device::ScopedUdevPtr udev(device::udev_new());
-  if (!udev.get())
-    return false;
-
-  device::ScopedUdevDevicePtr device(device::udev_device_new_from_syspath(
-      udev.get(), device_path.value().c_str()));
-  if (!device.get())
-    return false;
-
   const char kLayoutProperty[] = "CROS_KEYBOARD_TOP_ROW_LAYOUT";
-  std::string layout =
-      device::UdevDeviceGetPropertyValue(device.get(), kLayoutProperty);
+  std::string layout;
+  if (!GetDeviceProperty(device_path, kLayoutProperty, &layout))
+    return false;
+
   if (layout.empty()) {
     *out_layout = EventRewriterChromeOS::kKbdTopRowLayoutDefault;
     return true;
@@ -433,6 +452,31 @@ bool EventRewriterChromeOS::GetKeyboardTopRowLayout(
   }
   *out_layout =
       static_cast<EventRewriterChromeOS::KeyboardTopRowLayout>(layout_id);
+  return true;
+}
+
+bool EventRewriterChromeOS::HasAssistantKeyOnKeyboard(
+    const base::FilePath& device_path,
+    bool* has_assistant_key) {
+  const char kDevNameProperty[] = "DEVNAME";
+  std::string dev_name;
+  if (!GetDeviceProperty(device_path, kDevNameProperty, &dev_name))
+    return false;
+
+  base::ScopedFD fd(open(dev_name.c_str(), O_RDONLY));
+  if (fd.get() < 0) {
+    LOG(ERROR) << "Cannot open " << dev_name.c_str() << " : " << errno;
+    return false;
+  }
+
+  ui::EventDeviceInfo devinfo;
+  if (!devinfo.Initialize(fd.get(), device_path)) {
+    LOG(ERROR) << "Failed to get device information for "
+               << device_path.value();
+    return false;
+  }
+
+  *has_assistant_key = devinfo.HasKeyEvent(KEY_ASSISTANT);
   return true;
 }
 
@@ -805,6 +849,10 @@ bool EventRewriterChromeOS::RewriteModifierKeys(const ui::KeyEvent& key_event,
     case ui::DomCode::BACKSPACE:
       remapped_key =
           GetRemappedKey(prefs::kLanguageRemapBackspaceKeyTo, delegate_);
+      break;
+    case ui::DomCode::LAUNCH_ASSISTANT:
+      remapped_key =
+          GetRemappedKey(prefs::kLanguageRemapAssistantKeyTo, delegate_);
       break;
     default:
       break;

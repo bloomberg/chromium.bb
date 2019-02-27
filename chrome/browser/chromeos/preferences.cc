@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/preferences.h"
 
+#include <limits>
 #include <vector>
 
 #include "ash/public/cpp/ash_constants.h"
@@ -367,6 +368,10 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterIntegerPref(
       prefs::kLanguageRemapAltKeyTo,
       static_cast<int>(ui::chromeos::ModifierKey::kAltKey),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kLanguageRemapAssistantKeyTo,
+      static_cast<int>(ui::chromeos::ModifierKey::kAssistantKey),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   // We don't sync the CapsLock remapping pref, since the UI hides this pref
   // on certain devices, so syncing a non-default value to a device that

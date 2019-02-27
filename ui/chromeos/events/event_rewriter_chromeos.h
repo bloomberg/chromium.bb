@@ -146,11 +146,18 @@ class EventRewriterChromeOS : public ui::EventRewriter {
       const MutableKeyState& state,
       std::unique_ptr<ui::Event>* rewritten_event);
 
-  // Given the file path of a keyboard device, returns the layout type of the
-  // top row keys.
+  // Given the file path of a keyboard device, returns true if we get back
+  // the layout type of the top row keys without getting an error. Type
+  // value is stored in |out_layout|.
   static bool GetKeyboardTopRowLayout(const base::FilePath& device_path,
                                       KeyboardTopRowLayout* out_layout)
       WARN_UNUSED_RESULT;
+
+  // Given the file path of a keyboard device, returns true if we get back
+  // the Assistant key property without getting an error. Property value
+  // is stored in |has_assistant_key|.
+  static bool HasAssistantKeyOnKeyboard(const base::FilePath& device_path,
+                                        bool* has_assistant_key);
 
  private:
   struct DeviceInfo {

@@ -21,6 +21,7 @@ settings.ModifierKey = {
   CAPS_LOCK_KEY: 4,
   ESCAPE_KEY: 5,
   BACKSPACE_KEY: 6,
+  ASSISTANT_KEY: 7,
 };
 
 Polymer({
@@ -41,6 +42,9 @@ Polymer({
 
     /** @private Whether this device has an internal keyboard. */
     hasInternalKeyboard_: Boolean,
+
+    /** @private Whether this device has an Assistant key on keyboard. */
+    hasAssistantKey_: Boolean,
 
     /**
      * Whether to show a remapping option for external keyboard's Meta key
@@ -124,6 +128,10 @@ Polymer({
         name: loadTimeData.getString('keyboardKeyBackspace')
       },
       {
+        value: settings.ModifierKey.ASSISTANT_KEY,
+        name: loadTimeData.getString('keyboardKeyAssistant')
+      },
+      {
         value: settings.ModifierKey.VOID_KEY,
         name: loadTimeData.getString('keyboardKeyDisabled')
       }
@@ -137,6 +145,7 @@ Polymer({
    */
   onShowKeysChange_: function(keyboardParams) {
     this.hasInternalKeyboard_ = keyboardParams['hasInternalKeyboard'];
+    this.hasAssistantKey_ = keyboardParams['hasAssistantKey'];
     this.showCapsLock_ = keyboardParams['showCapsLock'];
     this.showDiamondKey_ = keyboardParams['showDiamondKey'];
     this.showExternalMetaKey_ = keyboardParams['showExternalMetaKey'];

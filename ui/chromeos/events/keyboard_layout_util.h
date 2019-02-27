@@ -11,6 +11,10 @@ namespace ui {
 // or external) that is using the 2017 keyboard layout.
 bool DeviceUsesKeyboardLayout2();
 
+// Returns true if one of the keyboards currently connected to the device has
+// an Assistant key.
+bool DeviceKeyboardHasAssistantKey();
+
 }  // namespace ui
 
 #endif  // UI_CHROMEOS_EVENTS_KEYBOARD_LAYOUT_UTIL_H_
