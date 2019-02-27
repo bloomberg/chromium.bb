@@ -198,11 +198,6 @@ public class Linker {
     // The name of a class that implements TestRunner.
     private String mTestRunnerClassName;
 
-    // Size of reserved Breakpad guard region. Should match the value of
-    // kBreakpadGuardRegionBytes on the JNI side. Used when computing the load
-    // addresses of multiple loaded libraries. Set to 0 to disable the guard.
-    private static final int BREAKPAD_GUARD_REGION_BYTES = 16 * 1024 * 1024;
-
     // Size of the area requested when using ASLR to obtain a random load address.
     // Should match the value of kAddressSpaceReservationSize on the JNI side.
     // Used when computing the load addresses of multiple loaded libraries to
@@ -954,8 +949,7 @@ public class Linker {
                 // is not 0, this is an explicit library load address. Otherwise,
                 // this is an explicit load address for relocated RELRO sections
                 // only.
-                mCurrentLoadAddress =
-                        libInfo.mLoadAddress + libInfo.mLoadSize + BREAKPAD_GUARD_REGION_BYTES;
+                mCurrentLoadAddress = libInfo.mLoadAddress + libInfo.mLoadSize;
             }
 
             mLoadedLibraries.put(sharedRelRoName, libInfo);

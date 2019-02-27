@@ -21,34 +21,6 @@ namespace crazy {
    MAYBE_MAP_FLAG((x), PF_R, PROT_READ) | \
    MAYBE_MAP_FLAG((x), PF_W, PROT_WRITE))
 
-// Whether to add a Breakpad guard region.  Breakpad currently requires
-// a library's reported start_addr to be equal to its load_bias.  It will
-// also complain if there is an apparent overlap in the memory mappings
-// it reads in from a microdump.  So if load_bias and start_addr differ
-// due to relocation packing, and if something in the process mmaps into
-// the address space between load_bias and start_addr, this will break
-// Breakpad's minidump processor.
-//
-// For now, the expedient workround is to add a "guard region" ahead of
-// the start_addr where a library with a non-zero min vaddr is loaded.
-// Making this part of the reserved address space for the library ensures
-// that nothing will later mmap into it.
-//
-// Note: ~SharedLibrary() calls munmap() on the values returned from here
-// through load_start() and load_size().  Where we added a guard region,
-// these values do not cover the entire reserved mapping.  The result is
-// that we potentially 'leak' between 2Mb and 6Mb of virtual address space
-// if we unload a library in a controlled fashion.  For now we live with
-// this, since a) we do not unload libraries on Android targets, and b) any
-// leakage that might occur if we did is small and should not consume any
-// real memory.
-//
-// Also defined in linker_jni.cc.  If changing here, change there also.
-//
-// For more, see:
-//   https://crbug.com/504410
-#define RESERVE_BREAKPAD_GUARD_REGION 1
-
 namespace {
 
 class InternalElfLoader {
@@ -267,20 +239,6 @@ bool InternalElfLoader::ReserveAddressSpace(Error* error) {
 
   size_t reserved_size = load_size_;
 
-#if RESERVE_BREAKPAD_GUARD_REGION
-  // Increase size to extend the address reservation mapping so that it will
-  // also include a min_vaddr bytes region from load_bias_ to start_addr.
-  // If loading at a fixed address, move our requested address back by the
-  // guard region size.
-  if (min_vaddr) {
-    reserved_size += min_vaddr;
-    if (wanted_load_address_) {
-      addr -= min_vaddr;
-    }
-    LOG("added %d to size, for Breakpad guard", min_vaddr);
-  }
-#endif
-
   LOG("address=%p size=%p", addr, reserved_size);
   void* start = mmap(addr, reserved_size, PROT_NONE, mmap_flags, -1, 0);
   if (start == MAP_FAILED) {
@@ -299,20 +257,6 @@ bool InternalElfLoader::ReserveAddressSpace(Error* error) {
 
   load_start_ = start;
   load_bias_ = reinterpret_cast<ELF::Addr>(start) - min_vaddr;
-
-#if RESERVE_BREAKPAD_GUARD_REGION
-  // If we increased size to accommodate a Breakpad guard region, move
-  // load_start_ and load_bias_ upwards by the size of the guard region.
-  // File data is mapped at load_start_, and while nothing ever uses the
-  // guard region between load_bias_ and load_start_, the fact that we
-  // included it in the mmap() above means that nothing else will map it.
-  if (min_vaddr) {
-    load_start_ = reinterpret_cast<void*>(
-        reinterpret_cast<uintptr_t>(load_start_) + min_vaddr);
-    load_bias_ += min_vaddr;
-    LOG("moved map by %d, for Breakpad guard", min_vaddr);
-  }
-#endif
 
   LOG("load start=%p, bias=%p", load_start_, load_bias_);
   return true;
