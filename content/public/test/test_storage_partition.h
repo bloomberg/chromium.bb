@@ -17,6 +17,7 @@ class URLRequestContextGetter;
 namespace content {
 
 class AppCacheService;
+class BackgroundSyncContext;
 class DOMStorageContext;
 class IndexedDBContext;
 class PlatformNotificationContext;
@@ -82,6 +83,11 @@ class TestStoragePartition : public StoragePartition {
     file_system_context_ = context;
   }
   storage::FileSystemContext* GetFileSystemContext() override;
+
+  void set_background_sync_context(BackgroundSyncContext* context) {
+    background_sync_context_ = context;
+  }
+  BackgroundSyncContext* GetBackgroundSyncContext() override;
 
   void set_database_tracker(storage::DatabaseTracker* tracker) {
     database_tracker_ = tracker;
@@ -186,6 +192,7 @@ class TestStoragePartition : public StoragePartition {
   network::mojom::CookieManager* cookie_manager_for_browser_process_ = nullptr;
   storage::QuotaManager* quota_manager_ = nullptr;
   AppCacheService* app_cache_service_ = nullptr;
+  BackgroundSyncContext* background_sync_context_ = nullptr;
   storage::FileSystemContext* file_system_context_ = nullptr;
   storage::DatabaseTracker* database_tracker_ = nullptr;
   DOMStorageContext* dom_storage_context_ = nullptr;

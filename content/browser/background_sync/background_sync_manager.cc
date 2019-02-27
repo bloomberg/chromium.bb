@@ -944,13 +944,20 @@ void BackgroundSyncManager::RunInBackgroundIfNecessary() {
 void BackgroundSyncManager::FireReadyEvents() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  FireReadyEventsThenRunCallback(MakeEmptyCompletion());
+}
+
+void BackgroundSyncManager::FireReadyEventsThenRunCallback(
+    base::OnceClosure callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   if (disabled_)
     return;
 
   op_scheduler_.ScheduleOperation(
       CacheStorageSchedulerOp::kBackgroundSync,
       base::BindOnce(&BackgroundSyncManager::FireReadyEventsImpl,
-                     weak_ptr_factory_.GetWeakPtr(), MakeEmptyCompletion()));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void BackgroundSyncManager::FireReadyEventsImpl(base::OnceClosure callback) {

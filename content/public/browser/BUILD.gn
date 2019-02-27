@@ -52,6 +52,7 @@ jumbo_source_set("browser_sources") {
     "background_fetch_description.h",
     "background_fetch_response.cc",
     "background_fetch_response.h",
+    "background_sync_context.h",
     "background_sync_controller.h",
     "background_sync_parameters.cc",
     "background_sync_parameters.h",

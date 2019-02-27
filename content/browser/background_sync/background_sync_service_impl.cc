@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
-#include "content/browser/background_sync/background_sync_context.h"
+#include "content/browser/background_sync/background_sync_context_impl.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -41,7 +41,7 @@ BackgroundSyncServiceImpl::~BackgroundSyncServiceImpl() {
 }
 
 BackgroundSyncServiceImpl::BackgroundSyncServiceImpl(
-    BackgroundSyncContext* background_sync_context,
+    BackgroundSyncContextImpl* background_sync_context,
     mojo::InterfaceRequest<blink::mojom::BackgroundSyncService> request)
     : background_sync_context_(background_sync_context),
       binding_(this, std::move(request)),
