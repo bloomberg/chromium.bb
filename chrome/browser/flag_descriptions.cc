@@ -697,10 +697,6 @@ const char kEnableNotificationExpansionAnimationName[] =
 const char kEnableNotificationExpansionAnimationDescription[] =
     "Enable notification animations whenever the expansion state is toggled.";
 
-const char kEnableNupPrintingName[] = "Enable N-up printing";
-const char kEnableNupPrintingDescription[] =
-    "Enable N-up printing in the print preview panel.";
-
 const char kEnableOptimizationHintsName[] = "Optimization Hints";
 const char kEnableOptimizationHintsDescription[] =
     "Enable the Optimization Hints feature which incorporates server hints "
