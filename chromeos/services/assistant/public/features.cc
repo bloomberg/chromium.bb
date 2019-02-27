@@ -50,6 +50,9 @@ const base::Feature kTimerTicks{"ChromeOSAssistantTimerTicks",
 const base::Feature kEnablePowerManager{"ChromeOSAssistantEnablePowerManager",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAssistantKeyRemapping{"AssistantKeyRemapping",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsAppSupportEnabled() {
   return base::FeatureList::IsEnabled(
       assistant::features::kAssistantAppSupport);
@@ -93,6 +96,10 @@ bool IsWarmerWelcomeEnabled() {
 
 bool IsPowerManagerEnabled() {
   return base::FeatureList::IsEnabled(kEnablePowerManager);
+}
+
+bool IsKeyRemappingEnabled() {
+  return base::FeatureList::IsEnabled(kAssistantKeyRemapping);
 }
 
 }  // namespace features

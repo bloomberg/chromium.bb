@@ -59,6 +59,15 @@
           menu-options="[[keyMapTargets_]]">
       </settings-dropdown-menu>
     </div>
+    <template is="dom-if" if="[[hasAssistantKey_]]">
+      <div class="settings-box" id="assistantKey">
+        <div class="start">$i18n{keyboardKeyAssistant}</div>
+        <settings-dropdown-menu label="$i18n{keyboardKeyAssistant}"
+            pref="{{prefs.settings.language.xkb_remap_assistant_key_to}}"
+            menu-options="[[keyMapTargets_]]">
+        </settings-dropdown-menu>
+      </div>
+    </template>
     <template is="dom-if" if="[[showCapsLock_]]">
       <div class="settings-box" id="capsLockKey">
         <div class="start">$i18n{keyboardKeyCapsLock}</div>

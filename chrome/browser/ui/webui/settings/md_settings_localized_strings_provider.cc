@@ -733,6 +733,7 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"keyboardKeyDiamond", IDS_SETTINGS_KEYBOARD_KEY_DIAMOND},
       {"keyboardKeyEscape", IDS_SETTINGS_KEYBOARD_KEY_ESCAPE},
       {"keyboardKeyBackspace", IDS_SETTINGS_KEYBOARD_KEY_BACKSPACE},
+      {"keyboardKeyAssistant", IDS_SETTINGS_KEYBOARD_KEY_ASSISTANT},
       {"keyboardKeyDisabled", IDS_SETTINGS_KEYBOARD_KEY_DISABLED},
       {"keyboardKeyExternalCommand",
        IDS_SETTINGS_KEYBOARD_KEY_EXTERNAL_COMMAND},
