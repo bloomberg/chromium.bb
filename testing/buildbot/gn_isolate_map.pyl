@@ -988,6 +988,11 @@
     "label": "//components/payments/content/utility:fingerprint_fuzzer",
     "type": "fuzzer",
   },
+  "flatbuffers_unittests": {
+    "label": "//third_party/flatbuffers:flatbuffers_unittests",
+    "script": "//testing/scripts/run_flatbuffers_unittests.py",
+    "type": "script",
+  },
   "flatbuffers_verifier_fuzzer": {
     "label": "//testing/libfuzzer/fuzzers:flatbuffers_verifier_fuzzer",
     "type": "fuzzer",

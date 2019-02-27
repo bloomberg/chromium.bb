@@ -1651,6 +1651,14 @@
         }
       },
       {
+        "experiment_percentage": 100,
+        "isolate_name": "flatbuffers_unittests",
+        "name": "flatbuffers_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
         "isolate_name": "metrics_python_tests",
         "name": "metrics_python_tests",
         "swarming": {
@@ -2375,6 +2383,14 @@
         }
       },
       {
+        "experiment_percentage": 100,
+        "isolate_name": "flatbuffers_unittests",
+        "name": "flatbuffers_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
         "isolate_name": "metrics_python_tests",
         "name": "metrics_python_tests",
         "swarming": {
@@ -3044,6 +3060,14 @@
       {
         "isolate_name": "devtools_eslint",
         "name": "devtools_eslint",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "experiment_percentage": 100,
+        "isolate_name": "flatbuffers_unittests",
+        "name": "flatbuffers_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -4201,6 +4225,19 @@
       {
         "isolate_name": "devtools_eslint",
         "name": "devtools_eslint",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        }
+      },
+      {
+        "experiment_percentage": 100,
+        "isolate_name": "flatbuffers_unittests",
+        "name": "flatbuffers_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

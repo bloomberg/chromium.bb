@@ -89,6 +89,7 @@ group("gn_all") {
       "//components:components_unittests",
       "//services:services_unittests",
       "//services/service_manager/public/cpp",
+      "//third_party/flatbuffers:flatbuffers_unittests",
       "//tools/metrics:metrics_metadata",
       "//ui/gfx:gfx_unittests",
     ]

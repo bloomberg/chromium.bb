@@ -100,7 +100,7 @@ flatbuffer("flatbuffers_samplebuffer") {
   flatc_include_dirs = [ "src/tests/include_test" ]
 }
 
-test("flatbuffers_unittest") {
+test("flatbuffers_unittests") {
   sources = [
     "src/tests/test.cpp",
     "src/tests/test_assert.cpp",
@@ -113,10 +113,18 @@ test("flatbuffers_unittest") {
   ]
   data = [
     "src/tests/",
+
+    "//testing/scripts/common.py",
+    "//testing/scripts/run_flatbuffers_unittests.py",
+    "//testing/xvfb.py",
   ]
 
   defines = [
     "FLATBUFFERS_TRACK_VERIFIER_BUFFER_SIZE",
-    "FLATBUFFERS_TEST_PATH_PREFIX=third_party/flatbuffers/src/",
+
+    # Careful, this test suite needs to be run in the actual out/<build_dir>
+    # directory.
+    "FLATBUFFERS_TEST_PATH_PREFIX=" +
+        rebase_path("//third_party/flatbuffers/src/", root_build_dir),
   ]
 }
