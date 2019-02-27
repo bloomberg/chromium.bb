@@ -380,9 +380,19 @@ void WmToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event,
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN: {
       if (!(WindowResizer::GetBoundsChangeForWindowComponent(component) &
-            WindowResizer::kBoundsChange_Resizes))
+            WindowResizer::kBoundsChange_Resizes) ||
+          (!client_area_drag && !CanStartOneFingerDrag(component)))
         return;
+
       ShowResizeShadow(target, component);
+
+      gfx::Point location_in_parent = event_location;
+      aura::Window::ConvertPointToTarget(target, target->parent(),
+                                         &location_in_parent);
+      AttemptToStartDrag(target, location_in_parent, component,
+                         ::wm::WINDOW_MOVE_SOURCE_TOUCH, EndClosure(),
+                         /*update_gesture_target=*/false);
+      event->StopPropagation();
       return;
     }
     case ui::ET_GESTURE_END: {
