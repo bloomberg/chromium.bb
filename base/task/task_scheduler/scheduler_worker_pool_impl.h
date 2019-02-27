@@ -114,8 +114,6 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
     return num_workers_histogram_;
   }
 
-  void GetHistograms(std::vector<const HistogramBase*>* histograms) const;
-
   // Returns the maximum number of non-blocked tasks that can run concurrently
   // in this pool.
   //

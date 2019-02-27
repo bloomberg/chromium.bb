@@ -436,14 +436,6 @@ void SchedulerWorkerPoolImpl::PushSequenceAndWakeUpWorkers(
     ScheduleAdjustMaxTasks();
 }
 
-void SchedulerWorkerPoolImpl::GetHistograms(
-    std::vector<const HistogramBase*>* histograms) const {
-  histograms->push_back(detach_duration_histogram_);
-  histograms->push_back(num_tasks_between_waits_histogram_);
-  histograms->push_back(num_workers_histogram_);
-  histograms->push_back(num_active_workers_histogram_);
-}
-
 size_t SchedulerWorkerPoolImpl::GetMaxConcurrentNonBlockedTasksDeprecated()
     const {
 #if DCHECK_IS_ON()

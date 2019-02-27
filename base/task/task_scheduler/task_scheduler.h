@@ -35,7 +35,6 @@ class BrowserMainLoopTest_CreateThreadsInSingleProcess_Test;
 
 namespace base {
 
-class HistogramBase;
 class SchedulerWorkerObserver;
 class TaskSchedulerTestHelpers;
 
@@ -105,9 +104,6 @@ class BASE_EXPORT TaskScheduler : public TaskExecutor {
   virtual void Start(
       const InitParams& init_params,
       SchedulerWorkerObserver* scheduler_worker_observer = nullptr) = 0;
-
-  // Returns a vector of all histograms available in this task scheduler.
-  virtual std::vector<const HistogramBase*> GetHistograms() const = 0;
 
   // Synchronously shuts down the scheduler. Once this is called, only tasks
   // posted with the BLOCK_SHUTDOWN behavior will be run. When this returns:
