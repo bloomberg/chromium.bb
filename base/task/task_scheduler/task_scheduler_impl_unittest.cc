@@ -59,13 +59,6 @@ namespace internal {
 
 namespace {
 
-enum class SchedulerState {
-  // TaskScheduler::Start() was not called yet, no thread was created.
-  kBeforeSchedulerStart,
-  // TaskScheduler::Start() has been called.
-  kAfterSchedulerStart,
-};
-
 struct TaskSchedulerImplTestParams {
   TaskSchedulerImplTestParams(const TaskTraits& traits,
                               test::ExecutionMode execution_mode)
@@ -87,7 +80,7 @@ bool GetIOAllowed() {
 // Verify that the current thread priority and I/O restrictions are appropriate
 // to run a Task with |traits|.
 // Note: ExecutionMode is verified inside TestTaskFactory.
-void VerifyTaskEnvironment(const TaskTraits& traits, SchedulerState state) {
+void VerifyTaskEnvironment(const TaskTraits& traits) {
   EXPECT_EQ(CanUseBackgroundPriorityForSchedulerWorker() &&
                     traits.priority() == TaskPriority::BEST_EFFORT
                 ? ThreadPriority::BACKGROUND
@@ -131,32 +124,29 @@ void VerifyTaskEnvironment(const TaskTraits& traits, SchedulerState state) {
 }
 
 void VerifyTaskEnvironmentAndSignalEvent(const TaskTraits& traits,
-                                         SchedulerState state,
                                          WaitableEvent* event) {
   DCHECK(event);
-  VerifyTaskEnvironment(traits, state);
+  VerifyTaskEnvironment(traits);
   event->Signal();
 }
 
 void VerifyTimeAndTaskEnvironmentAndSignalEvent(const TaskTraits& traits,
-                                                SchedulerState state,
                                                 TimeTicks expected_time,
                                                 WaitableEvent* event) {
   DCHECK(event);
   EXPECT_LE(expected_time, TimeTicks::Now());
-  VerifyTaskEnvironment(traits, state);
+  VerifyTaskEnvironment(traits);
   event->Signal();
 }
 
 void VerifyOrderAndTaskEnvironmentAndSignalEvent(
     const TaskTraits& traits,
-    SchedulerState state,
     WaitableEvent* expected_previous_event,
     WaitableEvent* event) {
   DCHECK(event);
   if (expected_previous_event)
     EXPECT_TRUE(expected_previous_event->IsSignaled());
-  VerifyTaskEnvironment(traits, state);
+  VerifyTaskEnvironment(traits);
   event->Signal();
 }
 
@@ -202,10 +192,8 @@ class ThreadPostingTasks : public SimpleThread {
 
     const size_t kNumTasksPerThread = 150;
     for (size_t i = 0; i < kNumTasksPerThread; ++i) {
-      factory_.PostTask(
-          test::TestTaskFactory::PostNestedTask::NO,
-          Bind(&VerifyTaskEnvironment, traits_,
-               SchedulerState::kAfterSchedulerStart));
+      factory_.PostTask(test::TestTaskFactory::PostNestedTask::NO,
+                        BindOnce(&VerifyTaskEnvironment, traits_));
     }
   }
 
@@ -291,7 +279,7 @@ TEST_P(TaskSchedulerImplTest, PostDelayedTaskWithTraitsNoDelay) {
   scheduler_.PostDelayedTaskWithTraits(
       FROM_HERE, GetParam().traits,
       BindOnce(&VerifyTaskEnvironmentAndSignalEvent, GetParam().traits,
-               SchedulerState::kAfterSchedulerStart, Unretained(&task_ran)),
+               Unretained(&task_ran)),
       TimeDelta());
   task_ran.Wait();
 }
@@ -306,7 +294,6 @@ TEST_P(TaskSchedulerImplTest, PostDelayedTaskWithTraitsWithDelay) {
   scheduler_.PostDelayedTaskWithTraits(
       FROM_HERE, GetParam().traits,
       BindOnce(&VerifyTimeAndTaskEnvironmentAndSignalEvent, GetParam().traits,
-               SchedulerState::kAfterSchedulerStart,
                TimeTicks::Now() + TestTimeouts::tiny_timeout(),
                Unretained(&task_ran)),
       TestTimeouts::tiny_timeout());
@@ -326,10 +313,8 @@ TEST_P(TaskSchedulerImplTest, PostTasksViaTaskRunner) {
 
   const size_t kNumTasksPerTest = 150;
   for (size_t i = 0; i < kNumTasksPerTest; ++i) {
-    factory.PostTask(
-        test::TestTaskFactory::PostNestedTask::NO,
-        Bind(&VerifyTaskEnvironment, GetParam().traits,
-             SchedulerState::kAfterSchedulerStart));
+    factory.PostTask(test::TestTaskFactory::PostNestedTask::NO,
+                     BindOnce(&VerifyTaskEnvironment, GetParam().traits));
   }
 
   factory.WaitForAllTasksToRun();
@@ -342,7 +327,7 @@ TEST_P(TaskSchedulerImplTest, PostDelayedTaskWithTraitsNoDelayBeforeStart) {
   scheduler_.PostDelayedTaskWithTraits(
       FROM_HERE, GetParam().traits,
       BindOnce(&VerifyTaskEnvironmentAndSignalEvent, GetParam().traits,
-               SchedulerState::kBeforeSchedulerStart, Unretained(&task_running)),
+               Unretained(&task_running)),
       TimeDelta());
 
   // Wait a little bit to make sure that the task doesn't run before Start().
@@ -363,7 +348,6 @@ TEST_P(TaskSchedulerImplTest, PostDelayedTaskWithTraitsWithDelayBeforeStart) {
   scheduler_.PostDelayedTaskWithTraits(
       FROM_HERE, GetParam().traits,
       BindOnce(&VerifyTimeAndTaskEnvironmentAndSignalEvent, GetParam().traits,
-               SchedulerState::kAfterSchedulerStart,
                TimeTicks::Now() + TestTimeouts::tiny_timeout(),
                Unretained(&task_running)),
       TestTimeouts::tiny_timeout());
@@ -387,7 +371,6 @@ TEST_P(TaskSchedulerImplTest, PostTaskViaTaskRunnerBeforeStart) {
                                              GetParam().execution_mode)
       ->PostTask(FROM_HERE, BindOnce(&VerifyTaskEnvironmentAndSignalEvent,
                                      GetParam().traits,
-                                     SchedulerState::kBeforeSchedulerStart,
                                      Unretained(&task_running)));
 
   // Wait a little bit to make sure that the task doesn't run before Start().
@@ -417,7 +400,6 @@ TEST_P(TaskSchedulerImplTest, AllTasksAreUserBlockingTaskRunner) {
                  BindOnce(&VerifyTaskEnvironmentAndSignalEvent,
                           TaskTraits::Override(GetParam().traits,
                                                {TaskPriority::USER_BLOCKING}),
-                          SchedulerState::kAfterSchedulerStart,
                           Unretained(&task_running)));
   task_running.Wait();
 }
@@ -436,7 +418,7 @@ TEST_P(TaskSchedulerImplTest, AllTasksAreUserBlocking) {
       BindOnce(&VerifyTaskEnvironmentAndSignalEvent,
                TaskTraits::Override(GetParam().traits,
                                     {TaskPriority::USER_BLOCKING}),
-               SchedulerState::kAfterSchedulerStart, Unretained(&task_running)),
+               Unretained(&task_running)),
       TimeDelta());
   task_running.Wait();
 }
@@ -1016,7 +998,6 @@ TEST_F(TaskSchedulerPriorityUpdateTest, UpdatePrioritySequenceNotScheduled) {
         FROM_HERE,
         BindOnce(&VerifyOrderAndTaskEnvironmentAndSignalEvent,
                  task_runner_and_events->updated_priority,
-                 SchedulerState::kAfterSchedulerStart,
                  Unretained(task_runner_and_events->expected_previous_event),
                  Unretained(&task_runner_and_events->task_ran)));
   }
@@ -1073,7 +1054,6 @@ TEST_F(TaskSchedulerPriorityUpdateTest, UpdatePrioritySequenceScheduled) {
         FROM_HERE,
         BindOnce(&VerifyOrderAndTaskEnvironmentAndSignalEvent,
                  TaskTraits(task_runner_and_events->updated_priority),
-                 SchedulerState::kAfterSchedulerStart,
                  Unretained(task_runner_and_events->expected_previous_event),
                  Unretained(&task_runner_and_events->task_ran)));
   }
