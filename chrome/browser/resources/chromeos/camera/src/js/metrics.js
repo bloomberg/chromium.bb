@@ -93,11 +93,12 @@ cca.metrics.launchType_ = function(ackMigrate) {
 
 /**
  * Returns event builder for the metrics type: capture.
- * @param {number=} time Time in minutes for capture-video.
+ * @param {string} facingMode Camera facing-mode of the capture.
+ * @param {number=} length Length of 1 minute buckets for captured video.
  * @return {analytics.EventBuilder}
  * @private
  */
-cca.metrics.captureType_ = function(time) {
+cca.metrics.captureType_ = function(facingMode, length) {
   var condState = (states, cond) => {
     // Return the first existing state among the given states only if there is
     // no gate condition or the condition is met.
@@ -107,13 +108,15 @@ cca.metrics.captureType_ = function(time) {
 
   return cca.metrics.base_.category('capture')
       .action(cca.state.get('record-mode') ? 'capture-video' : 'capture-photo')
-      .label('')  // TODO(yuli): Add camera facing-mode.
+      .label(facingMode)
       .dimen(3, condState(['sound']))
       .dimen(4, condState(['mirror']))
       .dimen(5, condState(['_3x3', '_4x4', 'golden'], 'grid'))
       .dimen(6, condState(['_3sec', '_10sec'], 'timer'))
       .dimen(7, condState(['mic'], 'record-mode'))
-      .value(time || 0);
+      .dimen(8, condState(['max-wnd']))
+      .dimen(9, condState(['tall']))
+      .value(length || 0);
 };
 
 /**
