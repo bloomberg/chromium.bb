@@ -32,6 +32,7 @@
 <translation id="1930711995431081526">وضعیت</translation>
 <translation id="1938124657309484470">مقدار باید <ph name="MAXIMUM_DATE_OR_TIME" /> یا قبل از آن باشد.</translation>
 <translation id="1946271899482435442">نمایش انتخابگر تاریخ</translation>
+<translation id="1982354452682152483">توضیحی دردسترس نیست.</translation>
 <translation id="1993104285338243655">به نمایش صفحه‌نمایش روی دستگاه دیگر تغییر یافت</translation>
 <translation id="2060505056492490888">«<ph name="DOT" />» در «<ph name="INVALIDDOMAIN" />» در محل اشتباهی قرار دارد.</translation>
 <translation id="2148716181193084225">امروز</translation>
@@ -73,6 +74,7 @@
 <translation id="3450233048674729344">مقدار باید کمتر یا برابر با <ph name="MAXIMUM" /> باشد.</translation>
 <translation id="3486220673238053218">معنی</translation>
 <translation id="3557673793733683882">عنوان <ph name="HEADING_LEVEL" /></translation>
+<translation id="3685101356851116974">تصویر بدون برچسب</translation>
 <translation id="3706100364254443312">تعویض</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> گیگابایت</translation>
@@ -153,6 +155,7 @@
 <translation id="6453774872122745852">قدردانی</translation>
 <translation id="648732519525291180">انتخابگر زمان</translation>
 <translation id="6550675742724504774">گزینه‌ها</translation>
+<translation id="6572309429103589720">دستور زبان نامعتبر</translation>
 <translation id="658823671542763450">رفتن به حالت تمام صفحه</translation>
 <translation id="663493177488814956">خبرمایه</translation>
 <translation id="6637586476836377253">log</translation>
@@ -175,6 +178,7 @@
 <translation id="7139483182332611405">پیش‌گفتار</translation>
 <translation id="7263440858009898357">لطفاً یک مورد را در فهرست انتخاب کنید.</translation>
 <translation id="727747134524199931">عنوان ستون</translation>
+<translation id="7336527682887843386">توضیح دریافت نشد.</translation>
 <translation id="7353453495576941748">تأیید اعتبار</translation>
 <translation id="7364796246159120393">انتخاب فایل</translation>
 <translation id="739024184232394898">موارد دیگر...</translation>
@@ -183,22 +187,28 @@
 <translation id="7491962110804786152">برگه</translation>
 <translation id="7514365320538308">بارگیری</translation>
 <translation id="7529102961911894712">پیوند برگشت</translation>
+<translation id="7533959249147584474">گرافیک بدون برچسب</translation>
 <translation id="7647456547678091388">نکته</translation>
 <translation id="7661956066982048809">سند گرافیکی</translation>
 <translation id="7673697353781729403">ساعت</translation>
 <translation id="7681220483256441252">فهرست موضوعی</translation>
 <translation id="7740050170769002709">‏محتوای HTML</translation>
+<translation id="7745230546936012372">برای دریافت توضیحات تصویر جاافتاده، منوی بافت را باز کنید.</translation>
 <translation id="7750228210027921155">تصویردرتصویر</translation>
+<translation id="775297008183122718">ورودی نامعتبر</translation>
 <translation id="7789962463072032349">مکث</translation>
 <translation id="7802800022689234070">مثلث افشا</translation>
 <translation id="7888071071722539607">لطفاً نماد «<ph name="ATSIGN" />» را به نشانی ایمیل اضافه کنید. «<ph name="INVALIDADDRESS" />» در «<ph name="ATSIGN" />» موجود نیست.</translation>
 <translation id="7891486169920085145">تقسیم‌کننده</translation>
 <translation id="795667975304826397">فایلی انتخاب نشده است</translation>
+<translation id="8042519864538898414">ظاهراً محتوای بزرگسالان است.</translation>
 <translation id="8053789581856978548">فیلد نوشتاری جستجو</translation>
 <translation id="8057695513531652401">اطلاعیه</translation>
 <translation id="8105797009065549151">مرجع یادداشت</translation>
+<translation id="811583516810654505">درحال دریافت توضیح…</translation>
 <translation id="8117451130807776954">این هفته</translation>
 <translation id="8199524924445686405">yyyy</translation>
+<translation id="8261464734335370856">املای نامعتبر</translation>
 <translation id="8284326494547611709">زیرنویس‌ها</translation>
 <translation id="835897206747267392">مقدار نامعتبر.</translation>
 <translation id="8403857369060869934">زمان سپری‌شده: <ph name="ELAPSED_TIME" /></translation>

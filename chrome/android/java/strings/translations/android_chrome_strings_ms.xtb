@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">Masukkan VR</translation>
 <translation id="116280672541001035">Digunakan</translation>
 <translation id="1172593791219290334">Halaman Permulaan</translation>
+<translation id="1173894706177603556">Namakan semula</translation>
 <translation id="1175310183703641346">Penanda halaman, sejarah, kata laluan dan pelbagai lagi tidak akan disegerakkan ke Akaun Google anda</translation>
 <translation id="1178581264944972037">Jeda</translation>
 <translation id="1181037720776840403">Alih keluar</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">Ketik untuk Mencari</translation>
 <translation id="2079545284768500474">Buat asal</translation>
 <translation id="2082238445998314030">Hasil carian <ph name="RESULT_NUMBER" /> daripada <ph name="TOTAL_RESULTS" /></translation>
-<translation id="208586643495776849">Sila cuba lagi</translation>
 <translation id="2086652334978798447">Untuk mendapatkan kandungan diperibadikan yang dicadangkan oleh Google, log masuk ke Chrome.</translation>
 <translation id="2091887806945687916">Bunyi</translation>
 <translation id="2096012225669085171">Segerakkan dan peribadikan pada semua peranti</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">Muat turun <ph name="FILE_NAME" /> gagal disebabkan oleh ralat sistem fail.</translation>
 <translation id="3398320232533725830">Buka pengurus penanda halaman</translation>
 <translation id="3414952576877147120">Saiz:</translation>
-<translation id="3434611491093664205">Bersiap sedia untuk VR…</translation>
 <translation id="3443221991560634068">Muat semula halaman semasa</translation>
 <translation id="3445014427084483498">Sebentar Tadi</translation>
 <translation id="3452612588551937789">Log masuk dengan Akaun Google anda untuk mendapatkan penanda halaman, sejarah, kata laluan dan tetapan anda yang lain pada semua peranti anda.</translation>
@@ -929,7 +928,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7929962904089429003">Buka menu</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> telah lapuk.</translation>
 <translation id="7947953824732555851">Terima dan log masuk</translation>
-<translation id="7960977077911686065">Dengan meneruskan, anda bersetuju membenarkan Chrome menghantar data daripada Autolengkap Chrome, URL tapak dan kandungannya kepada Google untuk menyediakan perkhidmatan ini. Anda juga bersetuju membenarkan Chrome menghantar data peribadi yang anda pilih ke tapak web tersebut melalui Autolengkap Chrome. \n\nLawati tetapan Chrome untuk mematikan Google Assistant dalam Chrome dan Autolengkap Chrome.  <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Vendor:</translation>
 <translation id="7975379999046275268">Pratonton halaman <ph name="BEGIN_NEW" />Baharu<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Pramuat halaman untuk penyemakan imbas dan pencarian yang lebih cepat</translation>
@@ -987,7 +985,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="8339163506404995330">Halaman dalam <ph name="LANGUAGE" /> tidak akan diterjemahkan</translation>
 <translation id="8349013245300336738">Isih mengikut jumlah data yang digunakan</translation>
 <translation id="8372893542064058268">Benarkan Penyegerakan Latar Belakang untuk tapak tertentu</translation>
-<translation id="8373513848523649558">Anda boleh <ph name="BEGIN_LINK1" />menyesuaikan tetapan ini<ph name="END_LINK1" /> pada bila-bila masa</translation>
 <translation id="8374821112118309944">Anda perlu mengemas kini TalkBack kepada versi yang lebih baharu.</translation>
 <translation id="8378714024927312812">Diurus oleh organisasi anda</translation>
 <translation id="8380167699614421159">Tapak ini menyiarkan iklan yang mengganggu atau mengelirukan</translation>

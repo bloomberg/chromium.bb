@@ -228,6 +228,7 @@
 <translation id="4585337515783392668">Deixa d'emetre en un receptor desconegut</translation>
 <translation id="4628757576491864469">Dispositius</translation>
 <translation id="4659419629803378708">S'ha activat ChromeVox</translation>
+<translation id="4696813013609194136">Desbloqueja el dispositiu amb el codi parental</translation>
 <translation id="4734965478015604180">Horitzontal</translation>
 <translation id="4774338217796918551">Pots tornar demà a les <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Contrasenya per a <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -308,6 +309,7 @@
 <translation id="615957422585914272">Mostra el teclat en pantalla</translation>
 <translation id="6164005077879661055">Tots els fitxers i les dades locals associats amb l'usuari supervisat se suprimiran permanentment quan aquest usuari supervisat se suprimeixi. És possible que el gestor encara pugui veure els llocs web visitats i la configuració d'aquest usuari supervisat a la pàgina <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Més informació</translation>
+<translation id="6226658484809055840">L'administrador del dispositiu té accés a tota l'activitat, incloses les contrasenyes i les comunicacions.</translation>
 <translation id="6254629735336163724">Bloquejada en horitzontal</translation>
 <translation id="6259254695169772643">Fes servir el llapis òptic per seleccionar</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: s'està activant...</translation>
@@ -376,6 +378,7 @@
 <translation id="7377169924702866686">Bloq Maj està activat.</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> s</translation>
 <translation id="7398254312354928459">S'ha canviat la connexió de xarxa</translation>
+<translation id="7405710164030118432">Introdueix el codi d'accés parental de Family Link per desbloquejar el dispositiu</translation>
 <translation id="742594950370306541">La càmera s'està utilitzant.</translation>
 <translation id="743058460480092004">La càmera i el micròfon s'estan utilitzant.</translation>
 <translation id="7497767806359279797">Tria l'idioma i el teclat</translation>

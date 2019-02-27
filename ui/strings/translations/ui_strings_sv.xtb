@@ -82,6 +82,7 @@
 <translation id="3897092660631435901">Meny</translation>
 <translation id="3909791450649380159">&amp;Klipp ut</translation>
 <translation id="3990502903496589789">Högerkant</translation>
+<translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 oläst avisering}other{# olästa aviseringar}}</translation>
 <translation id="4202807286478387388">fortsätta</translation>
 <translation id="4250229828105606438">Skärmdump</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 månad sedan}other{# månader sedan}}</translation>
@@ -203,4 +204,5 @@
 <translation id="9161053988251441839">FÖRESLAGNA APPAR</translation>
 <translation id="9170848237812810038">&amp;Ångra</translation>
 <translation id="932327136139879170">Startsida</translation>
+<translation id="944069440740578670">Olästa aviseringar</translation>
 </translationbundle>

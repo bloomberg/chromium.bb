@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">Virtuális valóság – belépés</translation>
 <translation id="116280672541001035">Használt</translation>
 <translation id="1172593791219290334">Kezdőoldal</translation>
+<translation id="1173894706177603556">Átnevezés</translation>
 <translation id="1175310183703641346">Könyvjelzői, előzményei, jelszavai és más beállításai többé nem lesznek szinkronizálva a Google-fiókjával</translation>
 <translation id="1178581264944972037">Szünet</translation>
 <translation id="1181037720776840403">Eltávolítás</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">A Keresés koppintással funkció</translation>
 <translation id="2079545284768500474">Visszavonás</translation>
 <translation id="2082238445998314030">Eredmény: <ph name="RESULT_NUMBER" />/<ph name="TOTAL_RESULTS" /></translation>
-<translation id="208586643495776849">Próbálkozzon újra</translation>
 <translation id="2086652334978798447">A Google által javasolt, személyre szabott tartalmak fogadásához jelentkezzen be a Chrome-ba.</translation>
 <translation id="2091887806945687916">Hang</translation>
 <translation id="2096012225669085171">Szinkronizálás és személyre szabás az eszközök között</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">A következő fájl letöltése a fájlrendszer hibái miatt nem sikerült: <ph name="FILE_NAME" />.</translation>
 <translation id="3398320232533725830">A Könyvjelzőkezelő megnyitása</translation>
 <translation id="3414952576877147120">Méret:</translation>
-<translation id="3434611491093664205">Felkészülés a VR-re…</translation>
 <translation id="3443221991560634068">Az aktuális oldal újratöltése</translation>
 <translation id="3445014427084483498">Épp most</translation>
 <translation id="3452612588551937789">Jelentkezzen be Google-fiókjába, hogy könyvjelzőit, előzményeit, jelszavait és más beállításait az összes eszközén elérhesse.</translation>
@@ -929,7 +928,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7929962904089429003">A menü megnyitása</translation>
 <translation id="7942131818088350342">A(z) <ph name="PRODUCT_NAME" /> elavult.</translation>
 <translation id="7947953824732555851">Elfogadás és bejelentkezés</translation>
-<translation id="7960977077911686065">Ha továbblép, azzal elfogadja, hogy a szolgáltatás biztosítása érdekében a Chrome böngésző elküldi a Chrome Automatikus kitöltés adatait, valamint a webhely URL-jét és tartalmát a Google-nak. Elfogadja továbbá azt is, hogy a Chrome Automatikus kitöltés segítségével a böngésző továbbítja a webhelynek az Ön által kiválasztott személyes adatokat. \n\nHa ki szeretné kapcsolni a Google Segéd a Chrome-ban szolgáltatást és a Chrome Automatikus kitöltés funkcióját, nyissa meg a Chrome beállításait.  <ph name="BEGIN_LINK" />További információ.<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Szolgáltató:</translation>
 <translation id="7975379999046275268">Oldal előnézete <ph name="BEGIN_NEW" />Új<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Oldalak előtöltése a gyorsabb böngészés és keresés érdekében</translation>
@@ -987,7 +985,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8339163506404995330">A(z) <ph name="LANGUAGE" /> nyelvű oldalak nem lesznek lefordítva</translation>
 <translation id="8349013245300336738">Rendezés a felhasznált adatmennyiség szerint</translation>
 <translation id="8372893542064058268">Háttérben történő szinkronizálás engedélyezése adott webhely esetében.</translation>
-<translation id="8373513848523649558">Bármikor <ph name="BEGIN_LINK1" />személyre szabhatja ezeket a beállításokat<ph name="END_LINK1" /></translation>
 <translation id="8374821112118309944">Frissítenie kell a TalkBack alkalmazást egy újabb verzióra.</translation>
 <translation id="8378714024927312812">Az Ön szervezete kezeli</translation>
 <translation id="8380167699614421159">Ez a webhely tolakodó vagy félrevezető hirdetéseket jelenít meg</translation>

@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">Įgalinti VR</translation>
 <translation id="116280672541001035">Naudojama</translation>
 <translation id="1172593791219290334">Paleidimo puslapis</translation>
+<translation id="1173894706177603556">Pervadinti</translation>
 <translation id="1175310183703641346">Žymės, istorija, slaptažodžiai ir kiti nustatymai nebebus sinchronizuojami su „Google“ paskyra</translation>
 <translation id="1178581264944972037">Pristabdyti</translation>
 <translation id="1181037720776840403">Pašalinti</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">Paliesti ir ieškoti</translation>
 <translation id="2079545284768500474">Anuliuoti</translation>
 <translation id="2082238445998314030">Rezultatų: <ph name="RESULT_NUMBER" /> iš <ph name="TOTAL_RESULTS" /></translation>
-<translation id="208586643495776849">Bandykite dar kartą</translation>
 <translation id="2086652334978798447">Jei norite gauti „Google“ siūlomo suasmeninto turinio, prisijunkite prie „Chrome“.</translation>
 <translation id="2091887806945687916">Garsas</translation>
 <translation id="2096012225669085171">Sinchronizuoti ir suasmeninti įrenginiuose</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">Nepavyko atsisiųsti „<ph name="FILE_NAME" />“ dėl failų sistemos klaidų.</translation>
 <translation id="3398320232533725830">Atidaryti žymių tvarkytuvę</translation>
 <translation id="3414952576877147120">Dydis:</translation>
-<translation id="3434611491093664205">Ruošiama naudoti VR…</translation>
 <translation id="3443221991560634068">Iš naujo įkelti dabartinį puslapį</translation>
 <translation id="3445014427084483498">Ką tik</translation>
 <translation id="3452612588551937789">Prisijunkite naudodami „Google“ paskyrą, kad gautumėte žymes, slaptažodžius, istoriją ir kitus nustatymus visuose įrenginiuose.</translation>
@@ -929,7 +928,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7929962904089429003">Atidaryti meniu</translation>
 <translation id="7942131818088350342">„<ph name="PRODUCT_NAME" />“ pasenęs.</translation>
 <translation id="7947953824732555851">Sutikti ir prisij.</translation>
-<translation id="7960977077911686065">Tęsdami sutinkate, kad „Chrome“ siųs „Chrome“ automatinio pildymo funkcijos, svetainės URL ir jos turinio duomenis sistemai „Google“, kad galėtų teikti minėtas paslaugas. Taip pat sutinkate, kad „Chrome“ siųs pasirinktus asmens duomenis svetainei, kai naudojama „Chrome“ automatinio pildymo funkcija. \n\nJei norite išjungti „Google“ padėjėją sistemoje „Chrome“ ir „Chrome“ automatinio pildymo funkcijoje, apsilankykite „Chrome“ skiltyje „Nustatymai“.  <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Paslaugos teikėjas:</translation>
 <translation id="7975379999046275268">Peržiūrėti puslapį <ph name="BEGIN_NEW" />Naujas<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Iš anksto įkelti puslapius, kad naršymo ir paieškos procesai vyktų greičiau</translation>
@@ -987,7 +985,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="8339163506404995330">Puslapiai, parašyti <ph name="LANGUAGE" />, verčiami nebus</translation>
 <translation id="8349013245300336738">Rūšiuoti pagal naudojamų duomenų kiekį</translation>
 <translation id="8372893542064058268">Leisti fono sinchronizavimą konkrečioje svetainėje.</translation>
-<translation id="8373513848523649558">Galite bet kuriuo metu <ph name="BEGIN_LINK1" />tinkinti šiuos nustatymus<ph name="END_LINK1" /></translation>
 <translation id="8374821112118309944">Reikia atnaujinti „TalkBack“ versiją į naujesnę.</translation>
 <translation id="8378714024927312812">Tvarko jūsų organizacija</translation>
 <translation id="8380167699614421159">Šioje svetainėje rodomi nepageidaujami arba klaidinantys skelbimai</translation>

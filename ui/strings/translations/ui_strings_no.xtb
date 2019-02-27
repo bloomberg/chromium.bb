@@ -82,6 +82,7 @@
 <translation id="3897092660631435901">Meny</translation>
 <translation id="3909791450649380159">Klipp u&amp;t</translation>
 <translation id="3990502903496589789">Høyre kant</translation>
+<translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 ulest varsel}other{# uleste varsler}}</translation>
 <translation id="4202807286478387388">hopp</translation>
 <translation id="4250229828105606438">Skjermdump</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{for 1 måned siden}other{for # måneder siden}}</translation>
@@ -203,4 +204,5 @@
 <translation id="9161053988251441839">FORESLÅTTE APPER</translation>
 <translation id="9170848237812810038">&amp;Angre</translation>
 <translation id="932327136139879170">Gå til startsiden</translation>
+<translation id="944069440740578670">Uleste varsler</translation>
 </translationbundle>

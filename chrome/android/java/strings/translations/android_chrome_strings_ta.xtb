@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">VRஐ உள்ளிடு</translation>
 <translation id="116280672541001035">பயன்படுத்தியது</translation>
 <translation id="1172593791219290334">துவக்கப் பக்கம்</translation>
+<translation id="1173894706177603556">மறுபெயரிடு</translation>
 <translation id="1175310183703641346">உங்கள் புக்மார்க்குகள், வரலாறு, கடவுச்சொற்கள் மற்றும் பிற அமைப்புகள் இனி உங்கள் Google கணக்குடன் ஒத்திசைக்கப்படாது</translation>
 <translation id="1178581264944972037">இடைநிறுத்து</translation>
 <translation id="1181037720776840403">அகற்று</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">தேடத் தட்டுக</translation>
 <translation id="2079545284768500474">செயல்தவிர்</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> முடிவுகளில் <ph name="RESULT_NUMBER" />வது முடிவு</translation>
-<translation id="208586643495776849">மீண்டும் முயலவும்</translation>
 <translation id="2086652334978798447">Google பரிந்துரைக்கும் தனிப்பயனாக்கிய உள்ளடக்கத்தைப் பெற, Chrome இல் உள்நுழையவும்.</translation>
 <translation id="2091887806945687916">ஒலி</translation>
 <translation id="2096012225669085171">பல சாதனங்களுக்கிடையில் ஒத்திசைக்கலாம், தனிப்பயனாக்கலாம்</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">கோப்பு முறைமைப் பிழைகளால் <ph name="FILE_NAME" />ஐப் பதிவிறக்க முடியவில்லை.</translation>
 <translation id="3398320232533725830">புக்மார்க்குகள் மேலாளரைத் திறக்கும்</translation>
 <translation id="3414952576877147120">அளவு:</translation>
-<translation id="3434611491093664205">VRரைத் தயார்செய்கிறது…</translation>
 <translation id="3443221991560634068">தற்போதைய பக்கத்தை மீண்டும் ஏற்றும்</translation>
 <translation id="3445014427084483498">சற்றுமுன்</translation>
 <translation id="3452612588551937789">உங்கள் எல்லா சாதனங்களிலும் புக்மார்க்குகள், வரலாறு, கடவுச்சொற்கள் மற்றும் பிற அமைப்புகளைப் பெற, உங்கள் Google கணக்கு மூலம் உள்நுழையவும்.</translation>
@@ -754,7 +753,7 @@
 <translation id="6643016212128521049">அழி</translation>
 <translation id="6643649862576733715">சேமித்த தரவு அளவின்படி வரிசைப்படுத்தும்</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 மற்றும் <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> தொடர்பு}other{<ph name="CONTACT_PREVIEW" />\u2026 மற்றும் <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> தொடர்புகள்}}</translation>
-<translation id="6649642165559792194">பட ப்ரிவியூவைக் காட்டு <ph name="BEGIN_NEW" />புதிது<ph name="END_NEW" /></translation>
+<translation id="6649642165559792194">மாதிரிக்காட்சி <ph name="BEGIN_NEW" />புதிது<ph name="END_NEW" /></translation>
 <translation id="6656545060687952787">சாதனங்களை ஸ்கேன் செய்ய Chromeக்கு இருப்பிட அணுகல் தேவை. <ph name="BEGIN_LINK" />அனுமதிகளைப் புதுப்பிக்கவும்<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">கடவுச்சொல்</translation>
 <translation id="6659594942844771486">Tab</translation>
@@ -929,9 +928,8 @@
 <translation id="7929962904089429003">மெனுவைத் திறக்கும்</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> காலாவதியாகிவிட்டது.</translation>
 <translation id="7947953824732555851">ஏற்று உள்நுழைக</translation>
-<translation id="7960977077911686065">தொடர்வதன் மூலம், Chrome இந்தச் சேவையை வழங்குவதற்காக ‘Chrome தன்னிரப்பி’ அம்சத்தின் தரவு, தளத்தின் URL, அதன் உள்ளடக்கம் ஆகியவற்றை Googleளுக்கு அனுப்பும் என்பதை ஏற்கிறீர்கள். Chrome நீங்கள் தேர்ந்தெடுக்கும் தனிப்பட்ட தரவை 'Chrome தன்னிரப்பி’ அம்சம் மூலமாக இணையதளத்திற்கு அனுப்பும் என்பதையும் ஏற்கிறீர்கள். \n\n‘Chromeமில் Google அசிஸ்டண்ட்’, 'Chrome தன்னிரப்பி’ அம்சம் ஆகியவற்றை முடக்க Chrome அமைப்புகளைப் பார்க்கவும்.  <ph name="BEGIN_LINK" />மேலும் அறிக<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">விற்பனையாளர்:</translation>
-<translation id="7975379999046275268">பக்க ப்ரிவியூவை காட்டு <ph name="BEGIN_NEW" />புதிது<ph name="END_NEW" /></translation>
+<translation id="7975379999046275268">பக்க மாதிரிக்காட்சியைக் காட்டு <ph name="BEGIN_NEW" />புதிது<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">மிக விரைவான உலாவலுக்காகவும் தேடலிற்காகவும் பக்கங்களை முன்னதாக ஏற்றும்</translation>
 <translation id="79859296434321399">ஆக்மென்ட்டட் ரியாலிட்டி உள்ளடக்கத்தைப் பார்க்க, ARCoreஐ நிறுவவும்</translation>
 <translation id="7986741934819883144">தொடர்பைத் தேர்ந்தெடுக்கவும்</translation>
@@ -987,7 +985,6 @@
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> மொழியில் உள்ள பக்கங்கள் மொழிபெயர்க்கப்படாது</translation>
 <translation id="8349013245300336738">பயன்படுத்திய தரவு அளவின்படி வரிசைப்படுத்தும்</translation>
 <translation id="8372893542064058268">குறிப்பிட்ட தளத்திற்கு, பின்னணி ஒத்திசைவை அனுமதி.</translation>
-<translation id="8373513848523649558">எந்த நேரத்திலும் <ph name="BEGIN_LINK1" />இந்த அமைப்புகளை மாற்றியமைக்கலாம்<ph name="END_LINK1" /></translation>
 <translation id="8374821112118309944">நீங்கள் TalkBack ஐப் புதிய பதிப்பிற்குப் புதுப்பிக்க வேண்டும்.</translation>
 <translation id="8378714024927312812">உங்கள் நிறுவனத்தால் நிர்வகிக்கப்படுகிறது</translation>
 <translation id="8380167699614421159">குறுக்கிடும் அல்லது தவறாக வழிநடத்தும் விளம்பரங்களை இந்தத் தளம் காண்பிக்கிறது</translation>

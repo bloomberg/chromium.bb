@@ -24,6 +24,7 @@
       Quando esta política está definida como falsa ou não definida, os cookies definidos pelo IdP são transferidos para o perfil do utilizador durante o primeiro início de sessão apenas num dispositivo.
 
       Esta política afeta os utilizadores cujo domínio coincide com o domínio de inscrição apenas do dispositivo. Para todos os outros utilizadores, os cookies definidos pelo IdP são transferidos para o perfil do utilizador durante o seu primeiro início de sessão apenas no dispositivo.</translation>
+<translation id="1029052664284722254">Forçar o reinício do dispositivo quando o utilizador terminar sessão</translation>
 <translation id="1030120600562044329">Ativa o envio de relatórios anónimos com dados relativos à utilização e às falhas de sistema do <ph name="PRODUCT_NAME" /> à Google e impede os utilizadores de alterar esta definição.
 
       Se esta definição estiver ativada, são enviados relatórios anónimos com dados relativos à utilização e às falhas de sistema à Google.  Se estiver desativada, essas informações não são enviadas à Google.  Em ambos os casos, os utilizadores não podem alterar nem substituir a definição.
@@ -154,13 +155,6 @@
 <translation id="1307454923744766368">Origens ou padrões de nomes de anfitrião aos quais as restrições sobre
       origens inseguras não devem ser aplicadas</translation>
 <translation id="1312799700549720683">Controla as definições de visualização.</translation>
-<translation id="1313457536529613143">Especifica a percentagem que determina a escala do atraso do esbatimento do ecrã quando há atividade da parte do utilizador, enquanto o ecrã é esbatido ou pouco depois de o ecrã ter sido desligado.
-
-          Se esta política estiver definida, especifica a percentagem que determina a escala do atraso do esbatimento do ecrã quando há atividade da parte do utilizador, enquanto o ecrã é esbatido ou pouco depois de o ecrã ter sido desligado. Quando se determina a escala do atraso do esbatimento, o bloqueio e a ação de desligar o ecrã e atrasos inativos são ajustados para manter as mesmas distâncias do atraso de esbatimento do ecrã, conforme foi configurado originalmente.
-
-          Se esta política não estiver definida, utiliza-se um fator de escala predefinido.
-
-          O fator de escala deve ser de 100% ou mais.</translation>
 <translation id="131353325527891113">Mostrar nomes de utilizador no ecrã de início de sessão</translation>
 <translation id="1327466551276625742">Ativar o pedido de configuração da rede quando estiver offline</translation>
 <translation id="1330145147221172764">Ativar o teclado no ecrã</translation>
@@ -374,6 +368,17 @@
 
           Esta política só será seguida se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="1852294065645015766">Permitir a reprodução automática de multimédia</translation>
+<translation id="1857152770025485173">Esta política impede que o utilizador carregue páginas Web a partir de URLs incluídos na lista negra. A lista negra fornece uma lista de padrões de URL que especifica que URLs são nela incluídos.
+
+      Um padrão de URL tem de ser formatado de acordo com as indicações em https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      É possível definir exceções na política de lista de autorizações de URLs. Estas políticas estão limitadas a 1000 entradas; as entradas subsequentes são ignoradas.
+
+      Tenha em atenção que não é recomendado bloquear URLs "'chrome://*" internos, uma vez que isso pode causar erros inesperados.
+
+      A partir de M73, pode bloquear URLs "javascript://*". Contudo, apenas é afetado o JavaScript introduzido na barra de endereço (ou, por exemplo, bookmarklets). Tenha em atenção que os URLs de JavaScript na página, com o comprimento de dados carregados dinamicamente, não estão sujeitos a esta política. Por exemplo, se bloquear "example.com/abc", a página "example.com" continua a poder carregar "example.com/abc" através de XMLHTTPRequest.
+
+      Se esta política não estiver definida, nenhum URL será incluído na lista negra no navegador.</translation>
 <translation id="1859859319036806634">Aviso: a alternativa da versão do TLS será removida do <ph name="PRODUCT_NAME" /> após a versão 52 (em meados de setembro de 2016) e esta política deixa de funcionar nessa altura.
 
       Anteriormente, quando um handshake de TLS falhava, o <ph name="PRODUCT_NAME" /> tentava estabelecer novamente ligação com uma versão inferior do TLS para contornar os erros dos servidores HTTPS. Esta definição configura a versão na qual este processo alternativo para. Se um servidor executar corretamente a negociação da versão (ou seja, sem interromper a ligação), esta definição não se aplica. Independentemente disso, a ligação resultante deve, mesmo assim, estar em conformidade com a política SSLVersionMin.
@@ -646,6 +651,7 @@
       Se esta política não estiver definida ou estiver definida como Verdadeira e uma conta do dispositivo local estiver configurada para o início de sessão automático de atraso zero, o <ph name="PRODUCT_OS_NAME" /> irá cumprir o atalho Ctrl+Alt+S, ignorando o início de sessão automático e apresentando o ecrã de início de sessão.
 
       Se esta política estiver definida como Falsa, o início de sessão automático de atraso zero (se configurado) não pode ser ignorado.</translation>
+<translation id="2454228136871844693">Optimizar para estabilidade.</translation>
 <translation id="2463365186486772703">Local da aplicação</translation>
 <translation id="2466131534462628618">A autenticação de portal cativo ignora proxy</translation>
 <translation id="2482676533225429905">Mensagens nativas</translation>
@@ -836,6 +842,31 @@
 
       Se esta política for utilizada, apenas as impressoras com IDs correspondentes aos valores nesta política estão disponíveis para o utilizador. Os IDs têm de corresponder aos campos "id" ou "guid" no ficheiro especificado em <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="2842152347010310843">Controla a lista de autorizações dos padrões de URL nos quais a reprodução automática estará sempre ativada.
+
+      Se a reprodução automática estiver ativada, os vídeos podem ser reproduzidos automaticamente (sem autorização do utilizador) com conteúdo de áudio no <ph name="PRODUCT_NAME" />.
+
+      As especificações dos padrões de URL válidos são:
+
+      - [*.]domain.tld (corresponde a domain.tld e a todos os subdomínios)
+
+      - host (corresponde a um nome de anfitrião exato)
+
+      - scheme://host:port (esquemas suportados: http, https)
+
+      - scheme://[*.]domain.tld:port (esquemas suportados: http, https)
+
+      - file://path (o caminho tem de ser um caminho absoluto e começar com "/")
+
+      - a.b.c.d (corresponde a um IP IPv4 exato)
+
+      - [a:b:c:d:e:f:g:h] (corresponde a um IP IPv6 exato)
+
+      Se a política AutoplayAllowed estiver definida como verdadeira, esta política não tem qualquer efeito.
+
+      Se a política AutoplayAllowed estiver definida como falsa, quaisquer padrões de URL definidos nesta política continuam a ter autorização de reprodução.
+
+      Tenha em atenção que, se o <ph name="PRODUCT_NAME" /> estiver em execução e esta política for alterada, a alteração aplica-se apenas aos novos separadores abertos. Por conseguinte, é possível que alguns separadores continuem a seguir o comportamento anterior.</translation>
 <translation id="285480231336205327">Ativar modo de alto contraste</translation>
 <translation id="2854919890879212089">Faz com que o <ph name="PRODUCT_NAME" /> utilize a impressora predefinida do sistema como a escolha predefinida na Pré-visualização de impressão em vez da impressora utilizada mais recentemente.
 
@@ -955,6 +986,7 @@
       Se estiver ativada ou por definir, a Limpeza do Chrome verifica periodicamente a existência de software indesejado no sistema e, caso encontre algum, pergunta ao utilizador se pretende removê-lo. O acionamento manual da Limpeza do Chrome a partir de chrome://settings está ativado.
 
       Esta política está apenas disponível em instâncias do Windows associadas a um domínio do <ph name="MS_AD_NAME" /> ou em instâncias do Windows 10 Pro ou Enterprise inscritas para gestão de dispositivos.</translation>
+<translation id="3159375329008977062">O utilizador pode exportar/importar contentores do Crostini através da IU</translation>
 <translation id="3165808775394012744">Estas políticas estão incluídas aqui para que seja fácil removê-las.</translation>
 <translation id="316778957754360075">Esta definição foi removida a partir da versão 29 do <ph name="PRODUCT_NAME" />. A forma recomendada de configurar coleções de extensões/aplicações alojadas na entidade é incluir no alojamento do site os pacotes CRX em ExtensionInstallSources e colocar links de transferência diretos para os pacotes numa página Web. Pode ser criado um iniciador para essa página Web utilizando a política ExtensionInstallForcelist.</translation>
 <translation id="3171369832001535378">Modelo de nome do anfitrião da rede do dispositivo</translation>
@@ -1241,6 +1273,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se a política for definida como falsa, as informações da sessão do quiosque não são
       comunicadas. Se for definida como verdadeira ou deixada por definir, as informações da sessão do quiosque são
       comunicadas.</translation>
+<translation id="3852924591079583104">
+      Quando definida como ArcSession, esta política força o reinício do dispositivo após o fim de sessão do utilizador, se o Android tiver sido iniciado.
+      Quando definida como Sempre, força o reinício do dispositivo aquando de todos os fins de sessão do utilizador.
+      Se não for definida, não tem qualquer efeito e não é forçado nenhum reinício aquando o fim de sessão do utilizador. O mesmo se aplica se for definida como Nunca.
+      </translation>
 <translation id="3858658082795336534">Modo duplex de impressão padrão</translation>
 <translation id="3859780406608282662">Adiciona um parâmetro para a obtenção da semente Variações no <ph name="PRODUCT_OS_NAME" />.
 
@@ -1532,6 +1569,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="4555850956567117258">Permitir a comprovação remota para o utilizador</translation>
 <translation id="4557134566541205630">URL da página Novo separador do motor de pesquisa predefinido</translation>
 <translation id="4567137030726189378">Permite a utilização das Ferramentas para programadores.</translation>
+<translation id="4578265298946081589">Não reiniciar quando o utilizador terminar sessão.</translation>
 <translation id="4600786265870346112">Ativar cursor grande</translation>
 <translation id="4604931264910482931">Configurar a lista negra de mensagens nativas</translation>
 <translation id="4613508646038788144">Se a política estiver definida como falsa, o software de terceiros está autorizado a injetar código executável nos processos do Chrome. Se a política não estiver definida ou estiver definida como verdadeira, o software de terceiros é impedido de injetar código executável nos processos do Chrome.</translation>
@@ -1581,11 +1619,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="4725528134735324213">Ativar o Android Backup Service</translation>
 <translation id="4725801978265372736">Requerer que o nome do utilizador local e o proprietário do anfitrião de acesso remoto coincidam</translation>
 <translation id="4733471537137819387">Políticas relacionadas com a autenticação HTTP integrada</translation>
-<translation id="4744190513568488164">Os servidores para os quais o <ph name="PRODUCT_NAME" /> poderá delegar.
-
-          Separe os vários nomes de servidor por vírgulas. Os carateres universais (*) são permitidos.
-
-          Se esta política não estiver definida, o <ph name="PRODUCT_NAME" /> não irá delegar as credenciais de utilizador, mesmo que um servidor seja detetado como Intranet.</translation>
 <translation id="4752880493649142945">Certificado de cliente para estabelecer ligação a RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">Se esta política estiver definida como verdadeira ou não estiver definida, o <ph name="PRODUCT_NAME" /> irá sugerir páginas relacionadas com a página atual.
       Essas sugestões são obtidas remotamente a partir dos servidores da Google.
@@ -1606,6 +1639,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se esta política não for definida, o cursor grande estará inicialmente desativado, mas poderá ser ativado em qualquer altura pelo utilizador.</translation>
 <translation id="4802905909524200151">Configurar o comportamento de atualização de firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
+<translation id="4804828344300125154">Reiniciar sempre quando o utilizador terminar sessão.</translation>
 <translation id="4807950475297505572">Os utilizadores menos recentemente utilizados são removidos até existir espaço livre suficiente</translation>
 <translation id="4815725774537609998">Esta política está obsoleta; em alternativa, utilize o ProxyMode.
 
@@ -1651,6 +1685,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="4917385247580444890">Forte</translation>
 <translation id="4923806312383904642">Permitir ao WebDriver substituir políticas incompatíveis</translation>
 <translation id="494613465159630803">Recetor do Cast</translation>
+<translation id="494924690085329212">Reiniciar quando o utilizador terminar sessão se o Android tiver sido iniciado.</translation>
 <translation id="4962262530309732070">Se esta política estiver definida como verdadeira ou não estiver configurada, o <ph name="PRODUCT_NAME" /> permite a opção Adicionar pessoa a partir do gestor de utilizadores.
 
       Se esta política estiver definida como falsa, o <ph name="PRODUCT_NAME" /> não permite a criação de novos perfis a partir do gestor de utilizadores.</translation>
@@ -2015,6 +2050,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Se esta política não for definida, as respostas faladas são desativadas quando o ecrã de início de sessão é mostrado pela primeira vez. Os utilizadores podem ativar ou desativar as respostas faladas em qualquer altura e o estado desta funcionalidade no ecrã de início de sessão persiste entre utilizadores.</translation>
 <translation id="5868414965372171132">Configuração de rede ao nível do utilizador</translation>
 <translation id="5879014913445067283">Controla a deteção de Partilha de ficheiros na rede através de <ph name="NETBIOS_NAME" /></translation>
+<translation id="5882345429632338713">Atraso antes da inicialização do navegador alternativo (milissegundos)</translation>
 <translation id="5883015257301027298">Definição de cookies predefinida</translation>
 <translation id="5887414688706570295">Configura o prefixo do TalkGadget a ser utilizado por anfitriões de acesso remoto e evita que os utilizadores o alterem.
 
@@ -2203,6 +2239,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Apenas se allowCorporateKeyUsage for definido como verdadeiro para uma extensão, pode utilizar qualquer chave de plataforma assinalada para utilização empresarial para assinar dados arbitrários. Esta autorização apenas deve ser concedida se a extensão for fidedigna para proteger o acesso à chave por parte de utilizadores mal-intencionados.</translation>
 <translation id="6208896993204286313">Comunicar informações da política do <ph name="PRODUCT_NAME" /></translation>
 <translation id="6210259502936598222">Comunicar informações da versão do SO e do <ph name="PRODUCT_NAME" /></translation>
+<translation id="6210610748361191729">Se a política estiver definida como falsa, a IU de exportação/importação não estará disponível para os utilizadores. Contudo, continua ser possível utilizar comandos "lxc" diretamente na máquina virtual para exportar e importar imagens de contentor.</translation>
 <translation id="6211428344788340116">Comunicar períodos de atividade do dispositivo.
 
       Se esta opção não estiver definida ou estiver definida como "true", os dispositivos inscritos comunicarão os períodos de tempo em que um utilizador está ativo no dispositivo. Se esta opção estiver definida como "false", os períodos de atividade do dispositivo não serão gravados nem comunicados.</translation>
@@ -2253,6 +2290,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Esta política funciona apenas se a política "RestoreOnStartup" estiver definida como "RestoreOnStartupIsURLs".
 
           Esta política está apenas disponível em instâncias do Windows associadas a um domínio do <ph name="MS_AD_NAME" /> ou em instâncias do Windows 10 Pro ou Enterprise inscritas para gestão de dispositivos.</translation>
+<translation id="6417265370957905582">Assistente Google</translation>
 <translation id="6426205278746959912">Não pode forçar as aplicações para Android a utilizar um proxy. É disponibilizado um subconjunto de definições de proxy para aplicações para Android, que estas podem optar voluntariamente por aceitar:
 
           Se escolher nunca utilizar um servidor proxy, as aplicações para Android são informadas de que não existe nenhum proxy configurado.
@@ -2521,6 +2559,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Quando o ecrã está prestes a ser escurecido, o modelo de escurecimento inteligente determina se essa ação deve ser adiada. Se o modelo de escurecimento inteligente adiar o escurecimento do ecrã, prolonga efetivamente o tempo até essa ação. Neste caso, os atrasos de desativação, de bloqueio do ecrã e de inatividade são ajustados para manter as mesmas distâncias relativamente ao atraso de escurecimento do ecrã, conforme configurado originalmente.
       Se esta política não for definida ou estiver definida como verdadeira, o modelo de escurecimento inteligente será ativado para poder prolongar o tempo que precede o escurecimento do ecrã. Se estiver definida como falsa, o modelo de escurecimento inteligente não irá influenciar o escurecimento do ecrã.</translation>
+<translation id="6972540544240464302">Selecionar configuração do programador de tarefas</translation>
 <translation id="6994082778848658360">Especifica de que forma o hardware de elemento seguro integrado pode ser utilizado para fornecer uma autenticação de fator duplo, se for compatível com esta funcionalidade. O botão ligar/desligar do computador é utilizado para detetar a presença física do utilizador.
 
       Se estiver selecionado "Desativado", o fator duplo não é fornecido.
@@ -2597,6 +2636,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política não for configurada, o utilizador pode alterar a lista de aplicações fixadas no iniciador.</translation>
 <translation id="7132877481099023201">URLs aos quais será concedido acesso a dispositivos de captura de vídeo imediatamente</translation>
 <translation id="7138678301420049075">Outros</translation>
+<translation id="7140629953254369759">Dá instruções ao <ph name="PRODUCT_OS_NAME" /> para utilizar a configuração do programador de tarefas identificada pelo nome especificado.
+
+      Esta política pode ser definida como "conservadora" e "desempenho", as quais selecionam configurações do programador de tarefas que são aperfeiçoadas, respetivamente, para estabilidade vs. máximo desempenho.
+
+      Se a política não for definida, o utilizador pode efetuar a sua própria escolha.</translation>
 <translation id="7158064522994309072">Esta política controla qual o comando a utilizar para abrir os URLs num navegador alternativo.
 
       Quando esta política não está definida, é utilizada uma predefinição específica da plataforma: o Internet Explorer para o Windows ou o Safari para o Mac OS X. No Linux, a inicialização de um navegador alternativo falha quando esta política não está definida.
@@ -2788,6 +2832,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Tenha em atenção que esta política depende da pilha de confirmação de certificados de sistema operativo que autoriza assinaturas SHA-1. Se uma atualização do SO alterar o processamento do SO de certificados SHA-1, esta política pode deixar de ter efeito. Além disso, esta política serve de solução temporária para dar às empresas mais tempo para se desvincularem do SHA-1. Esta política será removida em meados do dia 1 de janeiro de 2019.
 
       Se esta política não for definida ou se for definida como falsa, o <ph name="PRODUCT_NAME" /> segue o calendário de descontinuação do SHA-1 anunciado publicamente.</translation>
+<translation id="7578049687634719313">Esta política controla o tempo de espera necessário, em milissegundos, antes de iniciar um navegador alternativo.
+
+      Se esta política não for definida ou for definida como 0, ao navegar para um determinado URL, este é imediatamente aberto num navegador alternativo.
+
+      Se esta política for definida como um número, o Chrome apresenta uma mensagem com esse número de milissegundos e, em seguida, abre o navegador alternativo.</translation>
 <translation id="7593523670408385997">Configura o tamanho da cache que o <ph name="PRODUCT_NAME" /> utilizará para armazenar ficheiros em cache no disco.
 
       Se definir esta política, o <ph name="PRODUCT_NAME" /> utilizará o tamanho da cache fornecido, independentemente de o utilizador ter especificado ou não a sinalização "--disk-cache-size". O valor especificado nesta política não é um limite rígido, mas, sim, uma sugestão para o sistema de colocação em cache. Qualquer valor alguns megabytes abaixo é demasiado pequeno e será arredondado para o mesmo valor mínimo.
@@ -2835,6 +2884,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Consulte https://developers.google.com/safe-browsing para obter mais informações sobre a Navegação segura.</translation>
 <translation id="7643883929273267746">Restrinja as contas que estão visíveis no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7651739109954974365">Determina se o roaming de dados deve estar ativado para o aparelho. Se a política estiver definida como verdadeira, o roaming de dados é permitido. Se ficar por configurar ou for definida como falsa, o roaming de dados não estará disponível.</translation>
+<translation id="7657261947024629645">Otimizar o desempenho.</translation>
 <translation id="7673194325208122247">Período de tempo (milissegundos)</translation>
 <translation id="7676708657861783864">Os cookies definidos pelas páginas correspondentes a estes padrões de URL estão limitados à sessão atual, ou seja, são eliminados quando sair do navegador.
 
@@ -3310,13 +3360,6 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
       Se esta definição estiver ativada, o serviço de proteção por palavra-passe envia os utilizadores para este URL para que alterem as respetivas palavras-passe depois de ser apresentado um aviso no navegador.
       Se esta definição estiver desativada ou não estiver configurada, o serviço de proteção por palavra-passe envia os utilizadores para https://myaccounts.google.com para que alterem as respetivas palavras-passe.
       Esta política está apenas disponível em instâncias do Windows associadas a um domínio do <ph name="MS_AD_NAME" /> ou em instâncias do Windows 10 Pro ou Enterprise inscritas para gestão de dispositivos.</translation>
-<translation id="8782750230688364867">Especifica a percentagem que determina a escala do atraso de esbatimento do ecrã quando o dispositivo está no modo de apresentação.
-
-          Se esta política estiver definida, especifica a percentagem que determina a escala do atraso de esbatimento do ecrã quando o dispositivo está no modo de apresentação. Quando se determina a escala do atraso de esbatimento, o bloqueio e a ação de desligar o ecrã e atrasos inativos são ajustados para manter as mesmas distâncias do atraso de esbatimento, conforme foi configurado originalmente.
-
-          Se esta política não estiver definida, utiliza-se um fator de escala predefinido.
-
-          O fator de escala deve ser de 100% ou mais. Não são permitidos valores que façam com que o atraso de esbatimento do ecrã no modo de apresentação seja mais curto do que o atraso de esbatimento do ecrã normal.</translation>
 <translation id="8798099450830957504">Predefinição</translation>
 <translation id="8801680448782904838">Notificar um utilizador de que é recomendado ou necessário reiniciar o navegador ou o dispositivo</translation>
 <translation id="8818173863808665831">Comunique a localização geográfica do dispositivo.

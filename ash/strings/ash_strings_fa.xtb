@@ -229,6 +229,7 @@
 <translation id="4585337515783392668">توقف ارسال محتوا به گیرنده ناشناس</translation>
 <translation id="4628757576491864469">دستگاه‌ها</translation>
 <translation id="4659419629803378708">‏ChromeVox فعال شد</translation>
+<translation id="4696813013609194136">باز کردن قفل دستگاه با کد والدین</translation>
 <translation id="4734965478015604180">افقی</translation>
 <translation id="4774338217796918551">فردا ساعت <ph name="COME_BACK_TIME" /> برگردید.</translation>
 <translation id="4776917500594043016">گذرواژه <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -260,7 +261,7 @@
 <translation id="5331975486040154427">‏دستگاه USB-C (درگاه عقب سمت چپ)</translation>
 <translation id="5379115545237091094">تلاش‌های ناموفق زیادی انجام شده است</translation>
 <translation id="5397578532367286026">‏میزان مصرف و سابقه این کاربر می‌تواند توسط مدیر (<ph name="MANAGER_EMAIL" />) در chrome.com بازبینی شود.</translation>
-<translation id="5430931332414098647">اتصال فوری به اینترنت با تلفن همراه</translation>
+<translation id="5430931332414098647">اشتراک‌گذاری اینترنت فوری</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">تمام کاربران موجود قبلاً به این جلسه اضافه شده‌اند.</translation>
 <translation id="5465662442746197494">به راهنمایی نیاز دارید؟</translation>
@@ -309,6 +310,7 @@
 <translation id="615957422585914272">نمایش صفحه‌کلید روی صفحه</translation>
 <translation id="6164005077879661055">با حذف این کاربر نظارت‌شده، کلیه فایل‌ها و داده‌های محلی مربوط به کاربر نظارت‌شده برای همیشه حذف خواهند شد. وب‌سایت‌های بازدید شده و تنظیمات این کاربر نظارت‌شده همچنان برای مدیر در <ph name="MANAGEMENT_URL" /> قابل مشاهده خواهد بود.</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
+<translation id="6226658484809055840">سرپرست دستگاه به همه فعالیت‌ها ازجمله گذرواژه‌ها و ارتباطات شما دسترسی دارد.</translation>
 <translation id="6254629735336163724">قفل درحالت افقی</translation>
 <translation id="6259254695169772643">برای انتخاب از قلم استفاده کنید</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: در حال فعال‌سازی…</translation>
@@ -377,6 +379,7 @@
 <translation id="7377169924702866686">‏Caps Lock روشن است.</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> ثانیه</translation>
 <translation id="7398254312354928459">اتصال شبکه تغییریافته</translation>
+<translation id="7405710164030118432">‏برای باز کردن قفل دستگاه، کد دسترسی والدین را برای Family Link وارد کنید</translation>
 <translation id="742594950370306541">دوربین در حال استفاده است.</translation>
 <translation id="743058460480092004">دوربین و میکروفن در حال استفاده هستند.</translation>
 <translation id="7497767806359279797">انتخاب زبان و صفحه‌کلید</translation>

@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">Tumia hali ya VR</translation>
 <translation id="116280672541001035">Imetumika</translation>
 <translation id="1172593791219290334">Ukurasa Unaoanza</translation>
+<translation id="1173894706177603556">Ipe jina jipya</translation>
 <translation id="1175310183703641346">Haitasawazisha tena alamisho, historia, manenosiri na zaidi kwenye Akaunti yako ya Google</translation>
 <translation id="1178581264944972037">Sitisha</translation>
 <translation id="1181037720776840403">Ondoa</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">Gusa ili Utafute</translation>
 <translation id="2079545284768500474">Tendua</translation>
 <translation id="2082238445998314030">Tokeo <ph name="RESULT_NUMBER" /> kati ya <ph name="TOTAL_RESULTS" /></translation>
-<translation id="208586643495776849">Tafadhali jaribu tena</translation>
 <translation id="2086652334978798447">Ili Google ikupendekezee maudhui yanayokufaa, ingia katika Chrome.</translation>
 <translation id="2091887806945687916">Sauti</translation>
 <translation id="2096012225669085171">Sawazisha na uweke mapendeleo kwenye vifaa vyote</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">Kipakuliwa cha <ph name="FILE_NAME" /> hakijafaulu kwa sababu ya hitilafu za mfumo wa faili.</translation>
 <translation id="3398320232533725830">Fungua kidhibiti cha alamisho</translation>
 <translation id="3414952576877147120">Ukubwa:</translation>
-<translation id="3434611491093664205">Inasubiri VR…</translation>
 <translation id="3443221991560634068">Pakia upya ukurasa wa sasa</translation>
 <translation id="3445014427084483498">Sasa Hivi</translation>
 <translation id="3452612588551937789">Ingia kwa kutumia Akaunti yako ya Google ili upate alamisho, historia, manenosiri na mipangilio mingine kwenye vifaa vyako vyote.</translation>
@@ -929,7 +928,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="7929962904089429003">Fungua menyu</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> imepitwa na wakati.</translation>
 <translation id="7947953824732555851">Kubali na uingie</translation>
-<translation id="7960977077911686065">Kwa kuendelea, unakubali kwamba Chrome itatuma kwa Google data kutoka kipengele cha Chrome cha Kujaza Kiotomatiki, URL ya tovuti na maudhui yake, ili kukupa huduma hii. Pia unakubali kwamba Chrome itatuma data ya binafsi uliyochagua kwa tovuti hiyo kupitia kipengele cha Chrome cha Kujaza Kiotomatiki. \n\nTembelea mipangilio ya Chrome ili uzime programu ya Mratibu wa Google katika Chrome na kipengele cha Chrome cha Kujaza Kiotomatiki.  <ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Mchuuzi:</translation>
 <translation id="7975379999046275268">Kagua ukurasa kwanza <ph name="BEGIN_NEW" />Mpya<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Pakia mapema kurasa ili upate huduma ya haraka ya kuvinjari na kutafuta</translation>
@@ -987,7 +985,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="8339163506404995330">Kurasa za <ph name="LANGUAGE" /> hazitatafsiriwa</translation>
 <translation id="8349013245300336738">Panga kulingana na kiasi cha data kilichotumika</translation>
 <translation id="8372893542064058268">Ruhusu Usawazishaji wa Chini Chini wa tovuti mahususi.</translation>
-<translation id="8373513848523649558">Unaweza<ph name="BEGIN_LINK1" />kuweka mapendeleo kwenye mipangilio hii <ph name="END_LINK1" /> wakati wowote.</translation>
 <translation id="8374821112118309944">Unahitaji kubadilisha TalkBack kwa kupata toleo jipya.</translation>
 <translation id="8378714024927312812">Inasimamiwa na shirika lako</translation>
 <translation id="8380167699614421159">Tovuti hii inaonyesha matangazo yanayopotosha au yanayokatiza huduma</translation>

@@ -32,6 +32,7 @@
 <translation id="1930711995431081526">ሁኔታ</translation>
 <translation id="1938124657309484470">ዋጋ <ph name="MAXIMUM_DATE_OR_TIME" /> ወይም ከዚያ በፊት መሆን አለበት።</translation>
 <translation id="1946271899482435442">የቀን መልቀሚያ አሳይ</translation>
+<translation id="1982354452682152483">ምንም ዝርዝር መግለጫ አይገኝም።</translation>
 <translation id="1993104285338243655">ወደ ማንጸባረቅ ተቀይሯል</translation>
 <translation id="2060505056492490888">«<ph name="DOT" />» በ«<ph name="INVALIDDOMAIN" />» ውስጥ በተሳሳተ ቦታ ላይ ነው የገባው።</translation>
 <translation id="2148716181193084225">ዛሬ</translation>
@@ -73,6 +74,7 @@
 <translation id="3450233048674729344">ዋጋ ከ<ph name="MAXIMUM" /> የሚያንስ ወይም ከእሱ እኩል መሆን አለበት።</translation>
 <translation id="3486220673238053218">ብየና</translation>
 <translation id="3557673793733683882">አርዕስት <ph name="HEADING_LEVEL" /></translation>
+<translation id="3685101356851116974">መሰየሚያ ያልተሰጠው ምስል</translation>
 <translation id="3706100364254443312">ቀይር</translation>
 <translation id="3732799496749320381">ሚሜ</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> ጊባ</translation>
@@ -153,6 +155,7 @@
 <translation id="6453774872122745852">ምስጋና</translation>
 <translation id="648732519525291180">ሰዓት መራጭ</translation>
 <translation id="6550675742724504774">አማራጮች</translation>
+<translation id="6572309429103589720">ልክ ያልኾነ ሰዋሰው</translation>
 <translation id="658823671542763450">ወደ ሙሉ ገጽ ዕይታ ግባ</translation>
 <translation id="663493177488814956">ምግብ</translation>
 <translation id="6637586476836377253">የምዝግብ ማስታወሻ</translation>
@@ -175,6 +178,7 @@
 <translation id="7139483182332611405">መቅድም</translation>
 <translation id="7263440858009898357">እባክዎ በዝርዝሩ ውስጥ አንድ ንጥል ይምረጡ።</translation>
 <translation id="727747134524199931">የአምድ ራስጌ</translation>
+<translation id="7336527682887843386">ዝርዝር መግለጫን ማግኘት አልተቻለም።</translation>
 <translation id="7353453495576941748">ክሬዲት</translation>
 <translation id="7364796246159120393">ፋይል ምረጥ</translation>
 <translation id="739024184232394898">ሌላ...</translation>
@@ -183,22 +187,28 @@
 <translation id="7491962110804786152">TAB</translation>
 <translation id="7514365320538308">አውርድ</translation>
 <translation id="7529102961911894712">የጀርባ አገናኝ</translation>
+<translation id="7533959249147584474">ያልተሰየመ ግራፊክ</translation>
 <translation id="7647456547678091388">ጠቃሚ ምክር</translation>
 <translation id="7661956066982048809">ግራፊካዊ ሰነድ</translation>
 <translation id="7673697353781729403">ሰዓቶች</translation>
 <translation id="7681220483256441252">መረጃ ጠቋሚ</translation>
 <translation id="7740050170769002709">የኤች ቲ ኤም ኤል ይዘት</translation>
+<translation id="7745230546936012372">የጎደሉ የምስል ዝርዝር መግለጫዎችን ለማግኘት፣ የአውድ ምናሌውን ይክፈቱ።</translation>
 <translation id="7750228210027921155">በሥዕል ውስጥ ሥዕል</translation>
+<translation id="775297008183122718">ትክክል ያልሆነ አገባብ </translation>
 <translation id="7789962463072032349">ላፍታ አቁም</translation>
 <translation id="7802800022689234070">ይፋ ማሳወቂያ ሶስት ማዕዘን</translation>
 <translation id="7888071071722539607">እባክዎ በኢሜይል አድራሻው ውስጥ «<ph name="ATSIGN" />» ያካትቱ። «<ph name="INVALIDADDRESS" />» ውስጥ «<ph name="ATSIGN" />» ይጎድላል።</translation>
 <translation id="7891486169920085145">መክፈያ</translation>
 <translation id="795667975304826397">ምንም ፋይል አልተመረጠም</translation>
+<translation id="8042519864538898414">የዐዋቂ ሰው ይዘት ይመስላል።</translation>
 <translation id="8053789581856978548">የጽሑፍ መስክ ፈልግ</translation>
 <translation id="8057695513531652401">ማስታወቂያ</translation>
 <translation id="8105797009065549151">ማስታወሻ ማጣቀሻ</translation>
+<translation id="811583516810654505">ዝርዝርን በማግኘት ላይ...</translation>
 <translation id="8117451130807776954">በዚህ ሳምንት</translation>
 <translation id="8199524924445686405">ዓዓዓዓ</translation>
+<translation id="8261464734335370856">ልክ ያልኾነ ሥርዓተ አጻጻፍ</translation>
 <translation id="8284326494547611709">መግለጫ ጽሑፎች</translation>
 <translation id="835897206747267392">ልክ ያልሆነ እሴት።</translation>
 <translation id="8403857369060869934">ያለፈው ጊዜ፦ <ph name="ELAPSED_TIME" /></translation>

@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">VR'ye Gir</translation>
 <translation id="116280672541001035">Kullanılan</translation>
 <translation id="1172593791219290334">Başlangıç Sayfası</translation>
+<translation id="1173894706177603556">Yeniden adlandır</translation>
 <translation id="1175310183703641346">Yer işaretleri, geçmiş, şifreler ve diğer ayarlarınız artık Google Hesabınız ile senkronize edilmeyecek.</translation>
 <translation id="1178581264944972037">Duraklat</translation>
 <translation id="1181037720776840403">Kaldır</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">Aramak İçin Hafifçe Dokunma</translation>
 <translation id="2079545284768500474">Geri al</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> sonuçtan <ph name="RESULT_NUMBER" /> numaralı sonuç</translation>
-<translation id="208586643495776849">Lütfen tekrar deneyin</translation>
 <translation id="2086652334978798447">Google tarafından önerilen kişiselleştirilmiş içeriği almak için Chrome'da oturum açın.</translation>
 <translation id="2091887806945687916">Ses</translation>
 <translation id="2096012225669085171">Cihazlar arasında senkronizasyon ve kişiselleştirme</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">Dosya sistemi hataları nedeniyle <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
 <translation id="3398320232533725830">Yer işareti yöneticisini açar</translation>
 <translation id="3414952576877147120">Boyut:</translation>
-<translation id="3434611491093664205">VR için hazırlanıyor…</translation>
 <translation id="3443221991560634068">Geçerli sayfayı yeniden yükler</translation>
 <translation id="3445014427084483498">Az Önce</translation>
 <translation id="3452612588551937789">Yer işaretleri, geçmiş, şifreler ve diğer ayarlarınıza tüm cihazlarınızdan erişmek için Google Hesabınızla oturum açın.</translation>
@@ -929,7 +928,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7929962904089429003">Menüyü açar</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> güncel değil.</translation>
 <translation id="7947953824732555851">Kabul et ve oturum aç</translation>
-<translation id="7960977077911686065">Devam ederek, Chrome'un, bu hizmeti sağlamak amacıyla Chrome Otomatik Doldurma özelliğinden verileri, sitenin URL'sini ve içeriğini Google'a göndermesini kabul etmiş olursunuz. Ayrıca Chrome'un, seçtiğiniz kişisel verileri Chrome Otomatik Doldurma özelliği üzerinden web sitesine göndermesini de kabul etmiş olursunuz. \n\nChrome'da ve Chrome Otomatik Doldurma özelliğinde Google Asistan'ı kapatmak için Chrome ayarlarına gidin.  <ph name="BEGIN_LINK" />Daha fazla bilgi<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Firma:</translation>
 <translation id="7975379999046275268">Sayfanın önizlemesini aç <ph name="BEGIN_NEW" />Yeni<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Daha hızlı göz atmak ve arama yapmak için sayfaları önceden yükle</translation>
@@ -987,7 +985,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> dilindeki sayfalar çevrilmeyecek</translation>
 <translation id="8349013245300336738">Kullanılan veri miktarına göre sırala</translation>
 <translation id="8372893542064058268">Belirli bir site için Arka Plan Senkronizasyonuna izin verin.</translation>
-<translation id="8373513848523649558"><ph name="BEGIN_LINK1" />Bu ayarları istediğiniz zaman özelleştirebilirsiniz<ph name="END_LINK1" /></translation>
 <translation id="8374821112118309944">TalkBack'i daha yeni bir sürüme güncellemeniz gerekiyor.</translation>
 <translation id="8378714024927312812">Kuruluşunuz tarafından yönetiliyor</translation>
 <translation id="8380167699614421159">Bu site, araya giren veya yanıltıcı reklamlar gösteriyor</translation>

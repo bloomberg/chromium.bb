@@ -28,6 +28,7 @@
 <translation id="1125573121925420732">Peringatan mungkin akan sering ditampilkan selama situs mengupdate keamanannya. Situasi ini akan segera diperbaiki.</translation>
 <translation id="1126551341858583091">Ukuran di penyimpanan lokal adalah <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Cache kebijakan Oke</translation>
+<translation id="1131264053432022307">Gambar yang Anda Salin</translation>
 <translation id="1150979032973867961">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh sistem operasi komputer Anda. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="1151972924205500581">Sandi wajib ada</translation>
 <translation id="1152921474424827756">Akses <ph name="BEGIN_LINK" />salinan yang disimpan dalam cache<ph name="END_LINK" /> dari <ph name="URL" /></translation>
@@ -195,7 +196,7 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{dan 1 lainnya}other{dan # lainnya}}</translation>
 <translation id="2003709556000175978">Setel ulang sandi Anda sekarang</translation>
 <translation id="20053308747750172">Server yang akan Anda akses, <ph name="ORIGIN" />, telah meminta
-    agar kebijakan kemanan diterapkan ke semua permintaannya. Namun server tersebut sekarang
+    agar kebijakan keamanan diterapkan ke semua permintaannya. Namun server tersebut sekarang
     menerapkan kebijakan yang tidak valid, yang mencegah browser agar tidak
     memenuhi permintaan Anda untuk <ph name="SITE" />.</translation>
 <translation id="2025186561304664664">Proxy disetel ke konfigurasi otomatis.</translation>
@@ -244,7 +245,7 @@
 <translation id="2270484714375784793">Nomor telepon</translation>
 <translation id="2283340219607151381">Simpan dan isi alamat</translation>
 <translation id="2292556288342944218">Akses Internet Anda diblokir</translation>
-<translation id="2294558542833290837">Link yang awalnya Anda buka tidak biasa</translation>
+<translation id="2294558542833290837">Link yang tadinya Anda buka tidak biasa</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
 <translation id="2316887270356262533">Sediakan ruang kurang dari 1 MB. Beberapa situs mungkin dimuat lebih lambat dibuka lagi.</translation>
@@ -252,6 +253,7 @@
 <translation id="2317583587496011522">Kartu debit diterima.</translation>
 <translation id="2330137317877982892">Masa berlaku <ph name="CREDIT_CARD" /> habis pada <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="2337852623177822836">Setelan dikontrol oleh administrator Anda</translation>
+<translation id="2346319942568447007">Gambar yang Anda salin</translation>
 <translation id="2349790679044093737">Sesi VR aktif</translation>
 <translation id="2354001756790975382">Bookmark lain</translation>
 <translation id="2354430244986887761">Baru-baru ini, Google Safe Browsing <ph name="BEGIN_LINK" />menemukan aplikasi berbahaya<ph name="END_LINK" /> di <ph name="SITE" />.</translation>
@@ -272,7 +274,7 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya mungkin dicabut. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="2418081434543109369">Server yang akan Anda akses, <ph name="ORIGIN" />, telah meminta
-    agar kebijakan kemanan diterapkan ke semua permintaannya. Namun server tersebut sekarang
+    agar kebijakan keamanan diterapkan ke semua permintaannya. Namun server tersebut sekarang
     gagal menerapkan kebijakan, yang mencegah browser agar tidak memenuhi
     permintaan Anda untuk <ph name="SITE" />.</translation>
 <translation id="244665789865330679">Perangkat dan akun Anda dikelola oleh <ph name="ENROLLMENT_DOMAIN" />. Ini berarti bahwa administrator dapat mengonfigurasi perangkat dan akun Anda dari jarak jauh.</translation>
@@ -301,6 +303,7 @@
 <translation id="255002559098805027"><ph name="HOST_NAME" /> mengirimkan tanggapan yang tidak valid.</translation>
 <translation id="2556876185419854533">&amp;Urungkan Pengeditan</translation>
 <translation id="2586657967955657006">Papan klip</translation>
+<translation id="2586916519180891564">Infromasi tentang kebijakan perusahaan yang diterapkan</translation>
 <translation id="2587730715158995865">Dari <ph name="ARTICLE_PUBLISHER" />. Baca artikel ini dan <ph name="OTHER_ARTICLE_COUNT" /> artikel lainnya.</translation>
 <translation id="2587841377698384444">ID API Direktori:</translation>
 <translation id="2597378329261239068">Dokumen ini dilindungi sandi. Masukkan sandi.</translation>
@@ -386,6 +389,7 @@
 <translation id="3096100844101284527">Tambahkan Alamat Pengambilan</translation>
 <translation id="3105172416063519923">ID Aset:</translation>
 <translation id="3109728660330352905">Anda tidak memiliki otorisasi untuk melihat halaman ini.</translation>
+<translation id="3111297330804935615">Informasi tentang kebijakan perusahaan yang diterapkan serta ekstensi dan plugin yang diinstal</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Coba jalankan Diagnostik Konektivitas<ph name="END_LINK" />.</translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Tidak ada}=1{data login untuk 1 akun}other{data login untuk # akun}}</translation>
@@ -471,6 +475,7 @@
 <translation id="358285529439630156">Kartu kredit dan prabayar diterima.</translation>
 <translation id="3582930987043644930">Tambahkan nama</translation>
 <translation id="3583757800736429874">&amp;Ulangi Pemindahan</translation>
+<translation id="35866233670761917">Konten situs yang Anda buka tidak dilihat oleh administrator</translation>
 <translation id="3586931643579894722">Sembunyikan detail</translation>
 <translation id="3592413004129370115">Italian (Envelope)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
@@ -484,6 +489,7 @@
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Validasi berhasil</translation>
 <translation id="3655670868607891010">Jika Anda sering melihatnya, coba <ph name="HELP_LINK" />.</translation>
+<translation id="3656922233114135933">Nama pengguna browser dan OS Anda</translation>
 <translation id="3658742229777143148">Revisi</translation>
 <translation id="366077651725703012">Perbarui Kartu Kredit</translation>
 <translation id="3676592649209844519">ID Perangkat:</translation>
@@ -494,6 +500,7 @@
 <translation id="3704162925118123524">Jaringan yang digunakan mungkin mewajibkan Anda mengunjungi halaman masuk jaringan.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Memuat...</translation>
+<translation id="3709599264800900598">Teks yang Anda Salin</translation>
 <translation id="3712624925041724820">Lisensi habis</translation>
 <translation id="3714780639079136834">Aktifkan data seluler atau Wi-Fi</translation>
 <translation id="3715597595485130451">Menyambung ke jaringan Wi-Fi</translation>
@@ -587,6 +594,7 @@
     &lt;h4&gt;Langkah 5: Dapatkan bantuan ekstra&lt;/h4&gt;
     &lt;p&gt;Jika Anda masih melihat error, hubungi pemilik situs.&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Coba jalankan Diagnostik Jaringan<ph name="END_LINK" />.</translation>
+<translation id="423093089485419548">Nama mesin Anda</translation>
 <translation id="4235360514405112390">Valid</translation>
 <translation id="4250431568374086873">Sambungan ke situs ini tidak sepenuhnya aman</translation>
 <translation id="4250680216510889253">Tidak</translation>
@@ -620,6 +628,7 @@
 <translation id="4408413947728134509">Cookie <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Alamat Pengambilan</translation>
 <translation id="4424024547088906515">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh Chrome. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
+<translation id="443121186588148776">Port serial</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> tidak menerima sertifikat masuk Anda, atau sertifikat masuk mungkin tidak diberikan.</translation>
 <translation id="4434045419905280838">Pop-up dan pengalihan</translation>
 <translation id="4435702339979719576">Postcard)</translation>
@@ -709,6 +718,7 @@
 <translation id="5002932099480077015">Jika diaktifkan, Chrome akan menyimpan salinan kartu Anda di perangkat ini untuk pengisian formulir yang lebih cepat.</translation>
 <translation id="5014174725590676422">Layar penggunaan pertama Asisten Google di Chrome ditampilkan</translation>
 <translation id="5015510746216210676">Nama Mesin:</translation>
+<translation id="5017554619425969104">Teks yang Anda salin</translation>
 <translation id="5018422839182700155">Tidak dapat membuka halaman ini</translation>
 <translation id="5019198164206649151">Penyimpanan cadangan dalam kondisi buruk</translation>
 <translation id="5023310440958281426">Periksa kebijakan administrator Anda</translation>
@@ -718,6 +728,8 @@
 <translation id="5034369478845443529">Konteks Lokal <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="5039804452771397117">Izinkan</translation>
 <translation id="5040262127954254034">Privasi</translation>
+<translation id="5043480802608081735">Link yang Anda Salin</translation>
+<translation id="5043595640478528013">Informasi versi software terkait browser dan mesin Anda</translation>
 <translation id="5045550434625856497">Sandi salah</translation>
 <translation id="5056549851600133418">Artikel untuk Anda</translation>
 <translation id="5068524481479508725">A10</translation>
@@ -729,6 +741,7 @@
 <translation id="5095208057601539847">Provinsi</translation>
 <translation id="5097501891273180634">A2</translation>
 <translation id="5098222253617183465">Perangkat dikelola oleh <ph name="ENROLLMENT_DOMAIN" /> dan akun dikelola oleh <ph name="ACCOUNT_DOMAIN" />. Ini berarti bahwa administrator dapat mengonfigurasi perangkat dan akun Anda dari jarak jauh.</translation>
+<translation id="5107918638290237391">Ekstensi dan plugin yang diinstal</translation>
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 bit)</translation>
@@ -780,6 +793,7 @@
 <translation id="5386426401304769735">Rantai sertifikat untuk situs ini berisi sertifikat yang ditandatangani menggunakan SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="540969355065856584">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya saat ini tidak valid. Hal ini mungkin disebabkan oleh kesalahan konfigurasi atau ada penyerang yang mengganggu sambungan internet Anda.</translation>
+<translation id="5417233485731142850">Nama dan alamat jaringan mesin Anda</translation>
 <translation id="5421136146218899937">Hapus data browsing...</translation>
 <translation id="5430298929874300616">Buang bookmark</translation>
 <translation id="5431657950005405462">File Anda tidak ditemukan</translation>
@@ -950,6 +964,7 @@
 <translation id="6417515091412812850">Tidak dapat memeriksa apakah sertifikat telah ditarik.</translation>
 <translation id="6433490469411711332">Edit info kontak</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> menolak untuk tersambung.</translation>
+<translation id="6434309073475700221">Tutup</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Tambahkan informasi lainnya</translation>
 <translation id="6447842834002726250">Cookie</translation>
@@ -963,11 +978,13 @@
 <translation id="6508722015517270189">Buka Ulang Chrome</translation>
 <translation id="6529602333819889595">&amp;Ulangi Penghapusan</translation>
 <translation id="6534179046333460208">Saran Web Fisik</translation>
+<translation id="654507709116376806">Administrator mungkin memiliki cara lain untuk memantau pengguna, selain Chrome.</translation>
 <translation id="6563469144985748109">Pengelola Anda belum menyetujuinya</translation>
 <translation id="6569060085658103619">Anda melihat halaman ekstensi</translation>
 <translation id="6578796323535178455">C2 (Envelope)</translation>
 <translation id="6579990219486187401">Merah Muda Terang</translation>
 <translation id="6583674473685352014">B6 (Envelope)</translation>
+<translation id="6587923378399804057">Link yang Anda salin</translation>
 <translation id="6596325263575161958">Opsi enkripsi</translation>
 <translation id="6604181099783169992">Sensor Gerakan atau Cahaya</translation>
 <translation id="6609880536175561541">Prc7 (Envelope)</translation>
@@ -1060,7 +1077,7 @@
 <translation id="717330890047184534">ID GAIA:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> lainnya}other{<ph name="SHIPPING_OPTION_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> lainnya}}</translation>
 <translation id="7177397715882417099">Server yang akan Anda akses, <ph name="ORIGIN" />, telah meminta
-    agar kebijakan kemanan diterapkan ke semua permintaannya. Namun bukannya
+    agar kebijakan keamanan diterapkan ke semua permintaannya. Namun bukannya
     menerapkan kebijakan, server tersebut telah mengalihkan browser ke tempat lain, yang mencegah
     browser agar tidak memenuhi permintaan Anda untuk <ph name="SITE" />.</translation>
 <translation id="7179323680825933600">Simpan dan Isi Metode Pembayaran</translation>
@@ -1157,6 +1174,7 @@
 <translation id="7610193165460212391">Nilai di luar jangkauan <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Masa berlaku habis: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Anda sudah memiliki data yang dienkripsi menggunakan versi sandi Akun Google yang berbeda. Masukkan sandi di bawah.</translation>
+<translation id="7633909222644580952">Data performa dan laporan kerusakan</translation>
 <translation id="7637571805876720304">Hapus kartu kredit dari Chromium?</translation>
 <translation id="7639968568612851608">Abu-Abu Tua</translation>
 <translation id="765676359832457558">Sembunyikan setelan lanjutan...</translation>
@@ -1239,6 +1257,7 @@
 <translation id="8074253406171541171">10x13 (Envelope)</translation>
 <translation id="8078141288243656252">Tidak dapat menambahkan anotasi saat diputar</translation>
 <translation id="8079031581361219619">Muat ulang situs?</translation>
+<translation id="8086639673041095862">Peringatan safe browsing</translation>
 <translation id="8088680233425245692">Gagal melihat artikel.</translation>
 <translation id="808894953321890993">Ubah sandi</translation>
 <translation id="8090403583893450254">Ukuran 20</translation>
@@ -1250,7 +1269,6 @@
 <translation id="8103161714697287722">Metode Pembayaran</translation>
 <translation id="8118489163946903409">Metode pembayaran</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" tidak diinstal dengan benar di komputer atau jaringan Anda. Mintalah administrator IT untuk menyelesaikan masalah ini.</translation>
-<translation id="8130693978878176684">Maaf, kami tidak bisa membantu lagi. Silakan lanjutkan sendiri.</translation>
 <translation id="8131740175452115882">Konfirmasi</translation>
 <translation id="8149426793427495338">Komputer Anda sedang dalam mode tidur.</translation>
 <translation id="8150722005171944719">File pada <ph name="URL" /> tidak dapat dibaca.  File mungkin telah dihapus, dipindahkan, atau izin file mungkin mencegah akses.</translation>
@@ -1328,6 +1346,7 @@
 <translation id="8620436878122366504">Orang tuamu belum menyetujuinya</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Simpan Kartu Ini ke Perangkat Ini</translation>
+<translation id="8662327642270533767">Pelaporan browser</translation>
 <translation id="8663226718884576429">Ringkasan Pesanan, <ph name="TOTAL_LABEL" />, Detail Selengkapnya</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, dengan jawaban, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>
@@ -1348,6 +1367,7 @@
 <translation id="8790007591277257123">&amp;Ulangi penghapusan</translation>
 <translation id="8792621596287649091">Anda dapat kehilangan akses ke akun <ph name="ORG_NAME" /> atau mengalami pencurian identitas. Chromium menyarankan Anda untuk mengubah sandi sekarang.</translation>
 <translation id="8800988563907321413">Saran terdekat muncul di sini</translation>
+<translation id="8810879605219182134">Browser Anda telah dikonfigurasi untuk melaporkan</translation>
 <translation id="8820817407110198400">Bookmark</translation>
 <translation id="883848425547221593">Bookmark Lain</translation>
 <translation id="884264119367021077">Alamat pengiriman</translation>
@@ -1375,7 +1395,6 @@
 <translation id="8978053250194585037">Google Safe Browsing baru-baru ini <ph name="BEGIN_LINK" />mendeteksi phishing<ph name="END_LINK" /> di <ph name="SITE" />. Situs phishing berpura-pura menjadi situs lain untuk mengelabui Anda.</translation>
 <translation id="8983003182662520383">Metode Pembayaran dan Alamat yang Menggunakan Google Pay</translation>
 <translation id="8987927404178983737">Bulan</translation>
-<translation id="8988408250700415532">Terjadi masalah. Anda dapat menyelesaikan pesanan di situs.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Situs yang akan dibuka berisi program berbahaya</translation>
 <translation id="8997023839087525404">Server menampilkan sertifikat yang tidak diungkapkan ke publik melalui kebijakan Transparansi Sertifikat. Ini adalah persyaratan untuk beberapa sertifikat, untuk memastikan bahwa sertifikat dapat dipercaya agar terlindung dari penyerang.</translation>
@@ -1430,7 +1449,7 @@
 <translation id="939736085109172342">Folder baru</translation>
 <translation id="945855313015696284">Periksa info di bawah dan hapus kartu apa pun yang tidak valid</translation>
 <translation id="951104842009476243">Kartu Debit dan Prabayar yang Diterima</translation>
-<translation id="958202389743790697">Diblokir sesuai dengan kebijakan kemanan <ph name="ORIGIN" />.</translation>
+<translation id="958202389743790697">Diblokir sesuai dengan kebijakan keamanan <ph name="ORIGIN" />.</translation>
 <translation id="962484866189421427">Konten ini mungkin mencoba menginstal aplikasi penipuan dengan berpura-pura menjadi sesuatu yang lain atau mengumpulkan data yang dapat digunakan untuk melacak Anda. <ph name="BEGIN_LINK" />Tampilkan saja<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Pembuatan Resmi</translation>
 <translation id="973773823069644502">Tambahkan Alamat Pengiriman</translation>

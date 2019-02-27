@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">Nhập VR</translation>
 <translation id="116280672541001035">Đã sử dụng</translation>
 <translation id="1172593791219290334">Trang khởi động</translation>
+<translation id="1173894706177603556">Đổi tên</translation>
 <translation id="1175310183703641346">Dấu trang, lịch sử, mật khẩu và các dữ liệu khác sẽ không còn đồng bộ hóa với Tài khoản Google của bạn nữa</translation>
 <translation id="1178581264944972037">Tạm dừng</translation>
 <translation id="1181037720776840403">Xóa</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">Nhấn để tìm kiếm</translation>
 <translation id="2079545284768500474">Hoàn tác</translation>
 <translation id="2082238445998314030">Kết quả <ph name="RESULT_NUMBER" /> trong tổng số <ph name="TOTAL_RESULTS" /></translation>
-<translation id="208586643495776849">Vui lòng thử lại</translation>
 <translation id="2086652334978798447">Để nhận nội dung được cá nhân hóa do Google đề xuất, hãy đăng nhập vào Chrome.</translation>
 <translation id="2091887806945687916">Âm thanh</translation>
 <translation id="2096012225669085171">Đồng bộ hóa và cá nhân hóa trên các thiết bị</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">Tải xuống <ph name="FILE_NAME" /> không thành công do lỗi hệ thống tệp.</translation>
 <translation id="3398320232533725830">Mở trình quản lý dấu trang</translation>
 <translation id="3414952576877147120">Kích thước:</translation>
-<translation id="3434611491093664205">Đang chuẩn bị cho VR…</translation>
 <translation id="3443221991560634068">Tải lại trang hiện tại</translation>
 <translation id="3445014427084483498">Vừa xong</translation>
 <translation id="3452612588551937789">Đăng nhập bằng Tài khoản Google để nhận dấu trang, lịch sử, mật khẩu và các cài đặt khác trên tất cả thiết bị của bạn.</translation>
@@ -929,7 +928,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7929962904089429003">Mở menu</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> đã lỗi thời.</translation>
 <translation id="7947953824732555851">Chấp nhận &amp; đăng nhập</translation>
-<translation id="7960977077911686065">Bằng việc tiếp tục, bạn đồng ý cho phép Chrome gửi dữ liệu từ tính năng Tự động điền trên Chrome, URL và nội dung của trang web tới Google để cung cấp dịch vụ này. Bạn cũng đồng ý cho phép Chrome gửi dữ liệu cá nhân do bạn chọn tới trang web thông qua tính năng Tự động điền trên Chrome. \n\nHãy truy cập vào mục Cài đặt Chrome để tắt Trợ lý Google trong Chrome và tính năng Tự động điền trên Chrome.  <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Nhà cung cấp:</translation>
 <translation id="7975379999046275268">Xem trước trang <ph name="BEGIN_NEW" />Mới<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Tải trước các trang để tìm kiếm và duyệt web nhanh hơn</translation>
@@ -987,7 +985,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8339163506404995330">Các trang viết bằng <ph name="LANGUAGE" /> sẽ không được dịch</translation>
 <translation id="8349013245300336738">Sắp xếp theo lượng dữ liệu đã dùng</translation>
 <translation id="8372893542064058268">Cho phép Đồng bộ hóa dưới nền cho trang web cụ thể.</translation>
-<translation id="8373513848523649558">Bạn có thể <ph name="BEGIN_LINK1" />tùy chỉnh các tùy chọn cài đặt này<ph name="END_LINK1" /> bất cứ lúc nào</translation>
 <translation id="8374821112118309944">Bạn cần phải cập nhật TalkBack lên phiên bản mới hơn.</translation>
 <translation id="8378714024927312812">Do tổ chức của bạn quản lý</translation>
 <translation id="8380167699614421159">Trang web này hiển thị quảng cáo xâm nhập hoặc quảng cáo gây hiểu nhầm</translation>

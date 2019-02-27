@@ -24,6 +24,7 @@
       When this policy is set to false or unset, cookies set by the IdP are transferred to the user's profile during their first login on a device only.
 
       This policy affects users whose domain matches the device's enrolment domain only. For all other users, cookies set by the IdP are transferred to the user's profile during their first login on the device only.</translation>
+<translation id="1029052664284722254">Force device reboot when user signs out</translation>
 <translation id="1030120600562044329">Enables anonymous reporting of usage and crash-related data about <ph name="PRODUCT_NAME" /> to Google, and prevents users from changing this setting.
 
       If this setting is enabled, anonymous reporting of usage and crash-related
@@ -153,13 +154,6 @@
 <translation id="1307454923744766368">Origins or hostname patterns for which restrictions on
       insecure origins should not apply</translation>
 <translation id="1312799700549720683">Controls display settings.</translation>
-<translation id="1313457536529613143">Specifies the percentage by which the screen dim delay is scaled when user activity is observed while the screen is dimmed or soon after the screen has been turned off.
-
-          If this policy is set, it specifies the percentage by which the screen dim delay is scaled when user activity is observed while the screen is dimmed or soon after the screen has been turned off. When the dim delay is scaled, the screen off, screen lock and idle delays get adjusted to maintain the same distances from the screen dim delay as originally configured.
-
-          If this policy is unset, a default scale factor is used.
-
-          The scale factor must be 100% or more.</translation>
 <translation id="131353325527891113">Show usernames on login screen</translation>
 <translation id="1327466551276625742">Enable network configuration prompt when offline</translation>
 <translation id="1330145147221172764">Enable on-screen keyboard</translation>
@@ -375,6 +369,17 @@
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="1852294065645015766">Allow media auto-play</translation>
+<translation id="1857152770025485173">This policy prevents the user from loading web pages from blacklisted URLs. The blacklist provides a list of URL patterns that specify which URLs will be blacklisted.
+
+      A URL pattern has to be formatted according to https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Exceptions can be defined in the URL whitelist policy. These policies are limited to 1,000 entries; subsequent entries will be ignored.
+
+      Note that it is not recommended to block internal 'chrome://*' URLs after this may lead to unexpected errors.
+
+      From M73 you can block 'javascript://*' URLs. However, it only affects JavaScript typed in address bar (or, for example, bookmarklets). Note that in-page JavaScript URLs, as long as data is dynamically loaded, are not subject to this policy. For example, if you block 'example.com/abc', page 'example.com' will still be able to load 'example.com/abc' via XMLHTTPRequest.
+
+      If this policy is not set, no URL will be blacklisted in the browser.</translation>
 <translation id="1859859319036806634">Warning: The TLS version fallback will be removed from <ph name="PRODUCT_NAME" /> after version 52 (around September 2016) and this policy will stop working then.
 
       When a TLS handshake fails, <ph name="PRODUCT_NAME" /> would previously retry the connection with a lesser version of TLS in order to work around bugs in HTTPS servers. This setting configures the version at which this fallback process will stop. If a server performs version negotiation correctly (i.e. without breaking the connection) then this setting doesn't apply. Regardless, the resulting connection must still comply with SSLVersionMin.
@@ -653,6 +658,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this policy is unset or set to True and a device-local account is configured for zero-delay auto-login, <ph name="PRODUCT_OS_NAME" /> will honour the keyboard shortcut Ctrl+Alt+S for bypassing auto-login and showing the login screen.
 
       If this policy is set to False, zero-delay auto-login (if configured) cannot be bypassed.</translation>
+<translation id="2454228136871844693">Optimise for stability.</translation>
 <translation id="2463365186486772703">Application locale</translation>
 <translation id="2466131534462628618">Captive portal authentication ignores proxy</translation>
 <translation id="2482676533225429905">Native Messaging</translation>
@@ -854,6 +860,31 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If this policy is used, only the printers with ids matching the values in this policy are available to the user. The ids must correspond to the 'id' or 'guid' fields in the file specified in <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="2842152347010310843">Controls the whitelist of URL patterns on which auto-play will always be enabled.
+
+      If auto-play is enabled then videos can play automatically (without user consent) with audio content in <ph name="PRODUCT_NAME" />.
+
+      Valid URL patterns specifications are:
+
+      - [*.]domain.tld (matches domain.tld and all sub-domains)
+
+      - host (matches an exact hostname)
+
+      - scheme://host:port (supported schemes: http,https)
+
+      - scheme://[*.]domain.tld:port (supported schemes: http,https)
+
+      - file://path (The path has to be an absolute path and start with a '/')
+
+      - a.b.c.d (matches an exact IPv4 ip)
+
+      - [a:b:c:d:e:f:g:h] (matches an exact IPv6 ip)
+
+      If the AutoplayAllowed policy is set to True then this policy will have no effect.
+
+      If the AutoplayAllowed policy is set to False then any URL patterns set in this policy will still be allowed to play.
+
+      Note that if <ph name="PRODUCT_NAME" /> is running and this policy changes, it will only be applied to new opened tabs. Therefore some tabs might still observe the previous behaviour.</translation>
 <translation id="285480231336205327">Enable high contrast mode</translation>
 <translation id="2854919890879212089">Causes <ph name="PRODUCT_NAME" /> to use the system default printer as the default choice in Print Preview instead of the most recently used printer.
 
@@ -975,6 +1006,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If enabled or unset, Chrome Clean-Up periodically scans the system for unwanted software and should any be found, will ask the user if they wish to remove it. Manually triggering Chrome Clean-Up from chrome://settings is enabled.
 
       This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
+<translation id="3159375329008977062">User is enabled to export/import Crostini containers via the UI</translation>
 <translation id="3165808775394012744">These policies are included here to make them easy to remove.</translation>
 <translation id="316778957754360075">This setting has been retired as of <ph name="PRODUCT_NAME" /> version 29. The recommended way to set up organisation-hosted extension/app collections is to include the site hosting the CRX packages in ExtensionInstallSources and put direct download links to the packages on a web page. A launcher for that web page can be created using the ExtensionInstallForcelist policy.</translation>
 <translation id="3171369832001535378">Device network hostname template</translation>
@@ -1267,6 +1299,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If the policy is set to false, the kiosk session information will not be
       reported. If set to true or left unset, kiosk session information will be
       reported.</translation>
+<translation id="3852924591079583104">
+      This policy, when set to ArcSession, forces the device to reboot when a user signs out if Android has started.
+      When set to Always, it forces the device to reboot on every user sign-out.
+      If left unset, it has no effect and no reboot is forced on user sign-out. The same applies if set to Never.
+      </translation>
 <translation id="3858658082795336534">Default printing duplex mode</translation>
 <translation id="3859780406608282662">Add a parameter to the fetching of the Variations seed in <ph name="PRODUCT_OS_NAME" />.
 
@@ -1568,6 +1605,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="4555850956567117258">Enable remote attestation for the user</translation>
 <translation id="4557134566541205630">Default search provider new tab page URL</translation>
 <translation id="4567137030726189378">Allow usage of the Developer Tools</translation>
+<translation id="4578265298946081589">Do not reboot on user sign-out.</translation>
 <translation id="4600786265870346112">Enable large cursor</translation>
 <translation id="4604931264910482931">Configure native messaging blacklist</translation>
 <translation id="4613508646038788144">If the policy is set to false then third-party software will be allowed to inject executable code into Chrome's processes. If the policy is unset or set to true then third-party software will be prevented from injecting executable code into Chrome's processes.</translation>
@@ -1617,11 +1655,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="4725528134735324213">Enable Android Backup Service</translation>
 <translation id="4725801978265372736">Require that the name of the local user and the remote access host owner match</translation>
 <translation id="4733471537137819387">Policies related to integrated HTTP authentication.</translation>
-<translation id="4744190513568488164">Servers that <ph name="PRODUCT_NAME" /> may delegate to.
-
-          Separate multiple server names with commas. Wildcards (*) are allowed.
-
-          If you leave this policy unset <ph name="PRODUCT_NAME" /> will not delegate user credentials even if a server is detected as Intranet.</translation>
 <translation id="4752880493649142945">Client certificate for connecting to RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">If this is set to true or unset, <ph name="PRODUCT_NAME" /> will suggest pages related to the current page.
       These suggestions are fetched remotely from Google servers.
@@ -1642,6 +1675,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           If this policy is left unset, the large cursor is disabled initially but can be enabled by the user at any time.</translation>
 <translation id="4802905909524200151">Configure <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update behaviour</translation>
+<translation id="4804828344300125154">Always reboot on user sign-out.</translation>
 <translation id="4807950475297505572">Least recently used users are removed until there is enough free space</translation>
 <translation id="4815725774537609998">This policy is deprecated, use ProxyMode instead.
 
@@ -1687,6 +1721,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="4917385247580444890">Strong</translation>
 <translation id="4923806312383904642">Allow WebDriver to Override Incompatible Policies</translation>
 <translation id="494613465159630803">Cast Receiver</translation>
+<translation id="494924690085329212">Reboot on user sign-out if Android has started.</translation>
 <translation id="4962262530309732070">If this policy is set to true or not configured, <ph name="PRODUCT_NAME" /> will allow Add Person from the user manager.
 
       If this policy is set to false, <ph name="PRODUCT_NAME" /> will not allow creation of new profiles from the user manager.</translation>
@@ -2086,6 +2121,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           If this policy is left unset, spoken feedback is disabled when the login screen is first shown. Users can enable or disable spoken feedback at any time and its status on the login screen is persisted between users.</translation>
 <translation id="5868414965372171132">User-level network configuration</translation>
 <translation id="5879014913445067283">Controls Network File Share discovery via <ph name="NETBIOS_NAME" /></translation>
+<translation id="5882345429632338713">Delay before launching alternative browser (milliseconds)</translation>
 <translation id="5883015257301027298">Default cookies setting</translation>
 <translation id="5887414688706570295">Configures the TalkGadget prefix that will be used by remote access hosts and prevents users from changing it.
 
@@ -2276,6 +2312,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       Only if allowCorporateKeyUsage is set to true for an extension, it can use any platform key marked for corporate usage to sign arbitrary data. This permission should only be granted if the extension is trusted to secure access to the key against attackers.</translation>
 <translation id="6208896993204286313">Report <ph name="PRODUCT_NAME" /> policy information</translation>
 <translation id="6210259502936598222">Report OS and <ph name="PRODUCT_NAME" /> version information</translation>
+<translation id="6210610748361191729">If the policy is set to false, the export/import UI will not be available to users. However, it is still possible to use 'lxc' commands directly in the virtual machine to export and import container images.</translation>
 <translation id="6211428344788340116">Report device activity times.
 
       If this setting is not set or set to True, enrolled devices will report time periods when a user is active on the device. If this setting is set to False, device activity times will not be recorded or reported.</translation>
@@ -2326,6 +2363,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           This policy only works if the 'RestoreOnStartup' policy is set to 'RestoreOnStartupIsURLs'.
 
           This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
+<translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6426205278746959912">You cannot force Android apps to use a proxy. A subset of proxy settings is made available to Android apps, which they may voluntarily choose to honour:
 
           If you choose to never use a proxy server, Android apps are informed that no proxy is configured.
@@ -2596,6 +2634,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       When the screen is about to be dimmed, the smart dim model evaluates if dimming the screen should be deferred. If the smart dim model defers dimming the screen, it effectively extends the time until the screen is dimmed. In this case, the screen off, screen lock and idle delays get adjusted to maintain the same distances from the screen dim delay as originally configured.
       If this policy is set to True or left not set, the smart dim model will be enabled and allowed to extend the time until the screen is dimmed. If this policy is set to False, the smart dim model will not influence screen dimming.</translation>
+<translation id="6972540544240464302">Select task scheduler configuration</translation>
 <translation id="6994082778848658360">Specifies how the on-board secure element hardware can be used to provide a second-factor authentication if it is compatible with this feature. The machine power button is used to detect the user physical presence.
 
       If 'Disabled' is selected, no second factor is provided.
@@ -2684,6 +2723,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this policy is left unset, the user may change the list of pinned apps in the launcher.</translation>
 <translation id="7132877481099023201">URLs that will be granted access to video capture devices without prompt</translation>
 <translation id="7138678301420049075">Other</translation>
+<translation id="7140629953254369759">Instructs <ph name="PRODUCT_OS_NAME" /> to use the task scheduler configuration identified by the specified name.
+
+      This policy can be set to 'conservative' and 'performance', which select task scheduler configurations that are tuned for stability vs. maximum performance, respectively.
+
+      If the policy is left unset, the user can make their own choice.</translation>
 <translation id="7158064522994309072">This policy controls which command to use to open URLs in an alternative browser.
 
       When this policy is left unset, a platform-specific default is used: Internet Explorer for Windows or Safari for Mac OS X. On Linux, launching an alternative browser will fail when this is unset.
@@ -2883,6 +2927,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       Note that this policy depends on the operating system certificate verification stack allowing SHA-1 signatures. If an OS update changes the OS handling of SHA-1 certificates, this policy may no longer have effect. Furthermore, this policy is intended as a temporary workaround to give enterprises more time to move away from SHA-1. This policy will be removed on or around 1 January 2019.
 
       If this policy is not set, or it is set to false, then <ph name="PRODUCT_NAME" /> follows the publicly announced SHA-1 deprecation schedule.</translation>
+<translation id="7578049687634719313">This policy controls how long to wait before launching an alternative browser, in milliseconds.
+
+      When this policy is left unset, or set to 0, navigating to a designated URL immediately opens it in an alternative browser.
+
+      When this policy is set to a number, Chrome shows a message for that many milliseconds, and then opens the alternative browser.</translation>
 <translation id="7593523670408385997">Configures the cache size that <ph name="PRODUCT_NAME" /> will use for storing cached files on the disk.
 
       If you set this policy, <ph name="PRODUCT_NAME" /> will use the provided cache size regardless of whether the user has specified the '--disk-cache-size' flag or not. The value specified in this policy is not a hard boundary but rather a suggestion to the caching system, any value below a few megabytes is too small and will be rounded up to a sane minimum.
@@ -2935,6 +2984,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       See https://developers.google.com/safe-browsing for more info on Safe Browsing.</translation>
 <translation id="7643883929273267746">Restrict accounts that are visible in <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Determines whether data roaming should be enabled for the device. If set to true, data roaming is allowed. If left unconfigured or set to false, data roaming will be unavailable.</translation>
+<translation id="7657261947024629645">Optimise for performance.</translation>
 <translation id="7673194325208122247">Time period (milliseconds)</translation>
 <translation id="7676708657861783864">Cookies set by pages matching these URL patterns will be limited to the current session, i.e. they will be deleted when the browser exits.
 
@@ -3424,13 +3474,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       If this setting is enabled, then password protection service will send users to this URL to change their password after seeing a warning in the browser.
       If this setting is disabled or not set, then password protection service will send users to https://myaccounts.google.com to change their password.
       This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
-<translation id="8782750230688364867">Specifies the percentage by which the screen dim delay is scaled when the device is in presentation mode.
-
-          If this policy is set, it specifies the percentage by which the screen dim delay is scaled when the device is in presentation mode. When the screen dim delay is scaled, the screen off, screen lock and idle delays get adjusted to maintain the same distances from the screen dim delay as originally configured.
-
-          If this policy is unset, a default scale factor is used.
-
-          The scale factor must be 100% or more. Values that would make the screen dim delay in presentation mode shorter than the regular screen dim delay are not allowed.</translation>
 <translation id="8798099450830957504">Default</translation>
 <translation id="8801680448782904838">Notify a user that a browser relaunch or device restart is recommended or required</translation>
 <translation id="8818173863808665831">Report the geographic location of the device.

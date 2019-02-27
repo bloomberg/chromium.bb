@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">V navidezno resničnost</translation>
 <translation id="116280672541001035">Porabljeno</translation>
 <translation id="1172593791219290334">Začetna stran</translation>
+<translation id="1173894706177603556">Preimenuj</translation>
 <translation id="1175310183703641346">Vaši zaznamki, zgodovina, gesla in drugo ne bodo več sinhronizirani z Google Računom</translation>
 <translation id="1178581264944972037">Prekini</translation>
 <translation id="1181037720776840403">Odstrani</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">Iskanje z dotikom</translation>
 <translation id="2079545284768500474">Razveljavi</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" />. rezultat od <ph name="TOTAL_RESULTS" /></translation>
-<translation id="208586643495776849">Poskusite znova</translation>
 <translation id="2086652334978798447">Če želite prejemati prilagojeno vsebino, ki jo predlaga Google, se prijavite v Chrome.</translation>
 <translation id="2091887806945687916">Zvok</translation>
 <translation id="2096012225669085171">Sinhronizacija in prilagajanje med napravami</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">Prenos datoteke <ph name="FILE_NAME" /> ni uspel zaradi napak v datotečnem sistemu.</translation>
 <translation id="3398320232533725830">Odpiranje upravitelja zaznamkov</translation>
 <translation id="3414952576877147120">Velikost:</translation>
-<translation id="3434611491093664205">Pripravljanje na VR …</translation>
 <translation id="3443221991560634068">Vnovično nalaganje trenutne strani</translation>
 <translation id="3445014427084483498">Pravkar</translation>
 <translation id="3452612588551937789">Prijavite se z Google Računom, da boste zaznamke, zgodovino, gesla in druge nastavitve imeli na voljo v vseh napravah.</translation>
@@ -928,7 +927,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7929962904089429003">Odpiranje menija</translation>
 <translation id="7942131818088350342">Izdelek <ph name="PRODUCT_NAME" /> je zastarel.</translation>
 <translation id="7947953824732555851">Sprejem in prijava</translation>
-<translation id="7960977077911686065">Če nadaljujete, se strinjate, da Chrome zaradi zagotavljanja te storitve Googlu pošilja podatke samodejnega izpolnjevanja v Chromu, URL spletnega mesta in njegovo vsebino. Strinjate se tudi s tem, da Chrome prek samodejnega izpolnjevanja v Chromu spletnemu mestu pošilja osebne podatke, ki ste jih izbrali. \n\nČe želite izklopiti Pomočnika Google v Chromu in samodejno izpolnjevanje za Chrome, lahko to storite v nastavitvah za Chrome.  <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Ponudnik:</translation>
 <translation id="7975379999046275268">Predogled strani <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Vnaprejšnje nalaganje strani zaradi hitrejšega brskanja in iskanja</translation>
@@ -986,7 +984,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="8339163506404995330">Strani v jeziku <ph name="LANGUAGE" /> ne bodo prevedene</translation>
 <translation id="8349013245300336738">Razvrsti glede na količino prenesenih podatkov</translation>
 <translation id="8372893542064058268">Dovoli sinhroniziranje v ozadju za določeno spletno mesto.</translation>
-<translation id="8373513848523649558"><ph name="BEGIN_LINK1" />Te nastavitve lahko kadar koli prilagodite<ph name="END_LINK1" /></translation>
 <translation id="8374821112118309944">TalkBack morate posodobiti na novejšo različico.</translation>
 <translation id="8378714024927312812">Upravlja vaša organizacija</translation>
 <translation id="8380167699614421159">To spletno mesto prikazuje vsiljive ali zavajajoče oglase</translation>

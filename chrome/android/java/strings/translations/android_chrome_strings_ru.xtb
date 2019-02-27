@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">Войти в режим VR</translation>
 <translation id="116280672541001035">Использовано</translation>
 <translation id="1172593791219290334">Стартовая страница</translation>
+<translation id="1173894706177603556">Переименовать</translation>
 <translation id="1175310183703641346">Ваши закладки, пароли, история и настройки больше не будут синхронизироваться с аккаунтом Google</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1181037720776840403">Удалить</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">Нажмите для поиска</translation>
 <translation id="2079545284768500474">Отмена</translation>
 <translation id="2082238445998314030">Результат <ph name="RESULT_NUMBER" />, всего <ph name="TOTAL_RESULTS" /></translation>
-<translation id="208586643495776849">Повторите попытку.</translation>
 <translation id="2086652334978798447">Чтобы мы могли рекомендовать вам интересный контент, войдите в свой аккаунт в Chrome.</translation>
 <translation id="2091887806945687916">Звук</translation>
 <translation id="2096012225669085171">Синхронизация и персонализация данных на всех устройствах.</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">Не удалось скачать файл <ph name="FILE_NAME" /> из-за ошибок файловой системы.</translation>
 <translation id="3398320232533725830">Открыть диспетчер закладок</translation>
 <translation id="3414952576877147120">Размер:</translation>
-<translation id="3434611491093664205">Подготовка для VR…</translation>
 <translation id="3443221991560634068">Обновить страницу</translation>
 <translation id="3445014427084483498">Только что</translation>
 <translation id="3452612588551937789">Войдите в аккаунт Google, чтобы пользоваться закладками, паролями, историей и другими вашими настройками на любом устройстве.</translation>
@@ -929,7 +928,6 @@
 <translation id="7929962904089429003">Открыть меню</translation>
 <translation id="7942131818088350342">Версия <ph name="PRODUCT_NAME" /> устарела.</translation>
 <translation id="7947953824732555851">Принять и войти</translation>
-<translation id="7960977077911686065">Продолжая, вы разрешаете Chrome отправлять в Google данные автозаполнения, а также URL и контент сайта. Ваши персональные данные, выбранные для автозаполнения, будут также отправлены в Google. \n\nОтключить Google Ассистента и функцию автозаполнения можно в настройках Chrome.  <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Поставщик:</translation>
 <translation id="7975379999046275268">Просмотреть страницу <ph name="BEGIN_NEW" />Новинка<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Разрешить предзагрузку страниц для повышения скорости работы браузера и поиска</translation>
@@ -987,7 +985,6 @@
 <translation id="8339163506404995330">Страницы на этом языке (<ph name="LANGUAGE" />) не будут переводиться автоматически</translation>
 <translation id="8349013245300336738">Сортировать по объему использованного трафика</translation>
 <translation id="8372893542064058268">Разрешить фоновую синхронизацию для конкретного сайта.</translation>
-<translation id="8373513848523649558"><ph name="BEGIN_LINK1" />Изменить эти настройки<ph name="END_LINK1" /> можно в любое время.</translation>
 <translation id="8374821112118309944">Установите последнюю версию TalkBack.</translation>
 <translation id="8378714024927312812">Управляется вашей организацией</translation>
 <translation id="8380167699614421159">Этот сайт показывает навязчивую или вводящую в заблуждение рекламу</translation>
@@ -1087,7 +1084,7 @@
 <translation id="9100610230175265781">Необходима кодовая фраза</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Показать оригинал</translation>
-<translation id="9138504265731110181">Google Ассистент экономит время, помогая оформлять заказы в Интернете.</translation>
+<translation id="9138504265731110181">Google Ассистент экономит ваше время, помогая оформлять заказы в Интернете.</translation>
 <translation id="9139068048179869749">Запрашивать разрешение на отправку уведомлений (рекомендуется)</translation>
 <translation id="9139318394846604261">Покупки</translation>
 <translation id="9155898266292537608">Также можно выполнить поиск, нажав на слово.</translation>

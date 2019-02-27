@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">VR-ൽ പ്രവേശിക്കുക</translation>
 <translation id="116280672541001035">ഉപയോഗിച്ചത്</translation>
 <translation id="1172593791219290334">ആരംഭ പേജ്</translation>
+<translation id="1173894706177603556">പേരുമാറ്റുക</translation>
 <translation id="1175310183703641346">നിങ്ങളുടെ ബുക്ക്‌മാർക്കുകൾ, ചരിത്രം, പാസ്‌വേഡുകൾ എന്നിവയും മറ്റും ഇനിയങ്ങോട്ട് Google അക്കൗണ്ടുമായി സമന്വയിപ്പിക്കില്ല</translation>
 <translation id="1178581264944972037">അല്പംനിര്‍ത്തൂ</translation>
 <translation id="1181037720776840403">നീക്കംചെയ്യൂ</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">തിരയാൻ ടാപ്പുചെയ്യുക</translation>
 <translation id="2079545284768500474">പഴയപടിയാക്കുക</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" /> / <ph name="TOTAL_RESULTS" /> ഫലം</translation>
-<translation id="208586643495776849">വീണ്ടും ശ്രമിക്കുക</translation>
 <translation id="2086652334978798447">Google നിർദ്ദേശിച്ച, വ്യക്തിപരമാക്കിയ ഉള്ളടക്കം സ്വന്തമാക്കാൻ, Chrome-ൽ സൈൻ ഇൻ ചെയ്യുക.</translation>
 <translation id="2091887806945687916">ശബ്‌ദം</translation>
 <translation id="2096012225669085171">ഉപകരണങ്ങളിലുടനീളം സമന്വയിപ്പിക്കലും വ്യക്തിപരമാക്കലും നടത്തുക.</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">ഫയൽ സിസ്‌റ്റം പിശകുകൾ കാരണം <ph name="FILE_NAME" /> ഡൗൺലോഡ് ചെയ്യാനായില്ല.</translation>
 <translation id="3398320232533725830">ബുക്ക്‌മാർക്കുകൾ മാനേജർ തുറക്കുക</translation>
 <translation id="3414952576877147120">വലുപ്പം:</translation>
-<translation id="3434611491093664205">VR-ന് തയ്യാറാകുന്നു…</translation>
 <translation id="3443221991560634068">നിലവിലെ പേജ് റീലോഡുചെയ്യുക</translation>
 <translation id="3445014427084483498">ഇപ്പോൾ</translation>
 <translation id="3452612588551937789">നിങ്ങളുടെ എല്ലാ ഉപകരണങ്ങളിലും ബുക്ക്മാർക്കുകൾ, ചരിത്രം, പാസ്‌വേഡുകൾ, മറ്റ് ക്രമീകരണം എന്നിവ ലഭിക്കാൻ Google അക്കൗണ്ട് ഉപയോഗിച്ച് സൈൻ ഇൻ ചെയ്യുക.</translation>
@@ -929,7 +928,6 @@
 <translation id="7929962904089429003">മെനു തുറക്കുക</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> കാലഹരണപ്പെട്ടതാണ്.</translation>
 <translation id="7947953824732555851">അംഗീകരിച്ച് സൈൻ ഇൻ ചെയ്യുക</translation>
-<translation id="7960977077911686065">തുടരുന്നതിലൂടെ, ഈ സേവനം നൽകുന്നതിന് Chrome സ്വയമേവ പൂരിപ്പിക്കലിൽ നിന്നുള്ള ഡാറ്റ, സൈറ്റിൻ്റെ URL, അതിൻ്റെ ഉള്ളടക്കം എന്നിവ Chrome, Google-ലേക്ക് അയയ്ക്കുമെന്നത് നിങ്ങൾ അംഗീകരിക്കുന്നു. കൂടാതെ, നിങ്ങൾ തിരഞ്ഞെടുത്ത വ്യക്തിഗത ഡാറ്റ Chrome സ്വയമേവ പൂരിപ്പിക്കൽ വഴി വെബ്സൈറ്റിലേക്ക് Chrome അയയ്ക്കുമെന്നതും നിങ്ങൾ അംഗീകരിക്കുന്നു. \n\nChrome-ലെയും Chrome സ്വമേധയാ പൂരിപ്പിക്കലിലെയും Google അസിസ്‌റ്റൻ്റ് ഓഫാക്കാൻ, Chrome ക്രമീകരണം സന്ദർശിക്കുക.  <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">വെണ്ടർ:</translation>
 <translation id="7975379999046275268"><ph name="BEGIN_NEW" />പുതിയ<ph name="END_NEW" /> പേജ് പ്രിവ്യൂ ചെയ്യുക</translation>
 <translation id="7981313251711023384">കൂടുതൽ വേഗത്തിൽ ബ്രൗസ് ചെയ്യാനും തിരയാനും പേജുകൾ റീലോഡ് ചെയ്യുക</translation>
@@ -987,7 +985,6 @@
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> ഭാഷയിലുള്ള പേജുകൾ വിവർത്തനം ചെയ്യില്ല</translation>
 <translation id="8349013245300336738">ഉപയോഗിച്ച ഡാറ്റയുടെ അളവിനനുസരിച്ച് അടുക്കുക</translation>
 <translation id="8372893542064058268">ഒരു പ്രത്യേക സൈറ്റിന് വേണ്ടി പശ്ചാത്തലം സമന്വയിപ്പിക്കൽ അനുവദിക്കുക.</translation>
-<translation id="8373513848523649558">നിങ്ങൾക്ക് ഏത് സമയത്തും <ph name="BEGIN_LINK1" />ഈ ക്രമീകരണം ഇഷ്‌ടാനുസൃതമാക്കാം<ph name="END_LINK1" /></translation>
 <translation id="8374821112118309944">നിങ്ങൾ ഏറ്റവും പുതിയ പതിപ്പിലേക്ക് TalkBack അപ്ഡേറ്റുചെയ്യേണ്ടതുണ്ട്.</translation>
 <translation id="8378714024927312812">നിങ്ങളുടെ സ്ഥാപനം മാനേജ് ചെയ്യുന്നത്</translation>
 <translation id="8380167699614421159">ഈ സൈറ്റ്, അനാവശ്യമോ തെറ്റിദ്ധരിപ്പിക്കുന്നതോ ആയ പരസ്യങ്ങള്‍ കാണിക്കുന്നു</translation>

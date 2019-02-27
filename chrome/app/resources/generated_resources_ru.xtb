@@ -173,7 +173,6 @@
 <translation id="1225177025209879837">Обработка запроса...</translation>
 <translation id="1227507814927581609">При подключении к "<ph name="DEVICE_NAME" />" произошла ошибка аутентификации.</translation>
 <translation id="1231733316453485619">Включить синхронизацию?</translation>
-<translation id="123186018454553812">Используйте другой ключ</translation>
 <translation id="1232569758102978740">Без имени</translation>
 <translation id="1233721473400465416">Региональные настройки</translation>
 <translation id="1234808891666923653">Service Workers</translation>
@@ -490,7 +489,6 @@
 <translation id="1718835860248848330">Последний час</translation>
 <translation id="1719312230114180055">Помните, что распознавание отпечатков защищает не так надежно, как сложный пароль или PIN-код.</translation>
 <translation id="1720318856472900922">Аутентификация сервера TLS WWW</translation>
-<translation id="1720421759229874">Изменить эти настройки можно в любое время.</translation>
 <translation id="1721937473331968728">В <ph name="CLOUD_PRINT_NAME" /> можно добавлять обычные принтеры, подключенные к компьютеру.</translation>
 <translation id="1722487484194605434">Архивирование объектов (<ph name="NUMBER_OF_ITEMS" />)…</translation>
 <translation id="1723824996674794290">&amp;Новое окно</translation>
@@ -1177,12 +1175,11 @@
 <translation id="2740393541869613458">проверка сайтов, посещенных пользователем контролируемого аккаунта, и</translation>
 <translation id="2743387203779672305">Скопировать в буфер</translation>
 <translation id="2745080116229976798">Квалифицированное подчинение Microsoft</translation>
-<translation id="2745305015456260872">Устройство находится под управлением домена <ph name="ENROLLMENT_DOMAIN" />. Администратору домена доступна информация обо всех действиях пользователя и посещенных сайтах, а также адрес электронной почты и пароли. Подробнее…</translation>
+<translation id="2745305015456260872">Устройство находится под управлением домена <ph name="ENROLLMENT_DOMAIN" />. Администратору домена доступна информация обо всех действиях пользователя, включая сайты, которые он посетил, а также адрес электронной почты и пароли. Подробнее…</translation>
 <translation id="2749756011735116528">Войти в <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">Проверять грамматику и правописание</translation>
 <translation id="2751739896257479635">2-й этап аутентификации EAP</translation>
 <translation id="2755367719610958252">Настроить специальные возможности</translation>
-<translation id="2755628026949580719">Если электронного ключа нет в списке, нажмите и удерживайте кнопку на ключе в течение пяти секунд.</translation>
 <translation id="275662540872599901">экран выключен</translation>
 <translation id="2761898608071930085">Использовать другой аккаунт</translation>
 <translation id="2762441749940182211">Доступ к камере запрещен</translation>
@@ -1368,7 +1365,6 @@
 <translation id="3031557471081358569">Выберите элементы для импорта:</translation>
 <translation id="3031601332414921114">Возобновить печать</translation>
 <translation id="303198083543495566">Место съемки</translation>
-<translation id="3033999583152214331">Запускайте инструменты, редакторы и интегрированные среды разработки Linux на устройстве Chromebook. &lt;a target="_blank" href="<ph name="URL" />"&gt;Подробнее…&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Включить Flash</translation>
 <translation id="3037754279345160234">Не удалось проанализировать конфигурацию для подключения к домену. Обратитесь к администратору.</translation>
 <translation id="3038612606416062604">Добавление принтера вручную</translation>
@@ -1658,7 +1654,6 @@
 <translation id="3497560059572256875">Поделиться дудлом</translation>
 <translation id="3505030558724226696">Запретить доступ к устройствам</translation>
 <translation id="3507421388498836150">Текущие разрешения расширения "<ph name="EXTENSION_NAME" />"</translation>
-<translation id="3507547268929739059">Удалить приложения Linux с устройства Chromebook</translation>
 <translation id="3507888235492474624">Повторите поиск устройств Bluetooth</translation>
 <translation id="3508920295779105875">Выбрать другую папку...</translation>
 <translation id="3510797500218907545">WiMAX</translation>
@@ -2061,7 +2056,6 @@
 <translation id="407520071244661467">Масштаб</translation>
 <translation id="4075639477629295004">Невозможно транслировать файл "<ph name="FILE_NAME" />"</translation>
 <translation id="4077917118009885966">Реклама заблокирована на этом сайте</translation>
-<translation id="4079799245038595838">Выполните инструкции из уведомления, которое было отправлено на ваш номер телефона.</translation>
 <translation id="4081242589061676262">Ошибка трансляции файла.</translation>
 <translation id="4084682180776658562">Закладка</translation>
 <translation id="4084835346725913160">Закрыть вкладку "<ph name="TAB_NAME" />"</translation>
@@ -2374,7 +2368,6 @@
 <translation id="4611114513649582138">Доступно Интернет-подключение</translation>
 <translation id="4613271546271159013">Одно из расширений изменило страницу, которая открывается в новой вкладке.</translation>
 <translation id="4615586811063744755">файлы cookie не выбраны</translation>
-<translation id="4615618657481886098">Вы уже зарегистрировали этот ключ ранее.</translation>
 <translation id="4617270414136722281">Параметры расширений</translation>
 <translation id="4619615317237390068">Вкладки с других устройств</translation>
 <translation id="4620809267248568679">Этот параметр определяется расширением.</translation>
@@ -2464,7 +2457,6 @@
 <translation id="4756378406049221019">Остановить/Перезапустить</translation>
 <translation id="4756388243121344051">&amp;История</translation>
 <translation id="4759238208242260848">Скачанные файлы</translation>
-<translation id="4761016275844545177">Управление паролями</translation>
 <translation id="4761104368405085019">Использование микрофона</translation>
 <translation id="4762718786438001384">Свободное пространство почти закончилось</translation>
 <translation id="4763408175235639573">При посещении этой страницы на вашем компьютере были сохранены следующие файлы cookie:</translation>
@@ -2550,14 +2542,12 @@
 <translation id="4882312758060467256">У расширения есть доступ к этому сайту</translation>
 <translation id="4882831918239250449">Использование данных о посещенных страницах для персонализации Поиска, рекламы и т. д.</translation>
 <translation id="4883178195103750615">Экспортировать закладки в файл HTML...</translation>
-<translation id="4883274597792587930">Найдите на задней стороне ключа его название.</translation>
 <translation id="4883436287898674711">Все сайты <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">Диспетчер задач</translation>
 <translation id="4884987973312178454">6x</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4887424188275796356">Открыть в программе просмотра по умолчанию</translation>
 <translation id="488785315393301722">Показать сведения</translation>
-<translation id="4890242622846228088">На основе этих записей и голосовых запросов Ассистент создает и обновляет образец вашего голоса, который хранится только на устройствах, где включена функция Voice Match. Посмотреть и удалить голосовые команды можно на странице "Отслеживание действий" в аккаунте Google.</translation>
 <translation id="4890773143211625964">Показать дополнительные настройки принтера</translation>
 <translation id="4891089016822695758">Форум бета-версии</translation>
 <translation id="4892969127351273348">Не удалось открыть файл с помощью приложения "<ph name="APP_NAME" />"</translation>
@@ -3291,7 +3281,6 @@
 <translation id="5958529069007801266">Контролируемый профиль</translation>
 <translation id="5959471481388474538">Сеть недоступна</translation>
 <translation id="595959584676692139">Перезагрузите страницу, чтобы использовать расширение</translation>
-<translation id="5962207703002684882">На основе этих записей Ассистент создает образец вашего голоса. Образец хранится на устройстве, и его можно перезаписать или удалить в настройках Ассистента. Чтобы посмотреть или удалить голосовые команды, перейдите на страницу "Отслеживание действий".</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (макс. <ph name="NUM_KILOBYTES_LIVE" />)</translation>
 <translation id="5965661248935608907">Кроме того, расширение изменило страницу, которая отображается при нажатии кнопки "Главная страница", и поисковую систему, используемую по умолчанию при вводе запроса в омнибокс.</translation>
 <translation id="5971037678316050792">Управление состоянием адаптера Bluetooth и подключением</translation>
@@ -3528,7 +3517,6 @@
 <translation id="6308937455967653460">Сохранить ссыл&amp;ку как...</translation>
 <translation id="6311220991371174222">Не удалось открыть профиль. Перезапустите Chrome.</translation>
 <translation id="6312403991423642364">Неизвестная ошибка сети</translation>
-<translation id="6313320178014547270">Вы используете ключ, который не зарегистрирован на этом сайте.</translation>
 <translation id="6313641880021325787">ВЫЙТИ ИЗ VR</translation>
 <translation id="6314819609899340042">Функции отладки на устройстве <ph name="IDS_SHORT_PRODUCT_NAME" /> включены.</translation>
 <translation id="6315493146179903667">Переместить все на передний план</translation>
@@ -3575,6 +3563,7 @@
 <translation id="6388429472088318283">Поиск по языкам</translation>
 <translation id="6390799748543157332">Страницы, открытые в гостевом режиме, не сохранятся в истории браузера и не оставят на компьютере следов, таких как файлы cookie. После того как вы их закроете, будут сохранены только скачанные вами файлы.</translation>
 <translation id="6390994422085833176">Проверить настройки синхронизации и персонализации после завершения установки</translation>
+<translation id="6393156038355142111">Сгенерировать надежный пароль</translation>
 <translation id="6395575651121294044">Объектов: <ph name="NUMBER_OF_FILES" /></translation>
 <translation id="6397094776139756010">Настройки синхронизации и персонализации</translation>
 <translation id="6397592254427394018">Открыть все закладки в режиме &amp;инкогнито</translation>
@@ -3582,7 +3571,6 @@
 <translation id="6398765197997659313">Обычный режим</translation>
 <translation id="6399774419735315745">Шпион</translation>
 <translation id="6404511346730675251">Изменить закладку</translation>
-<translation id="6405510437656969977">Продолжите, когда будете готовы ввести PIN-код.</translation>
 <translation id="6406303162637086258">Симулировать перезапуск браузера</translation>
 <translation id="6406506848690869874">Синхронизация...</translation>
 <translation id="6406708970972405507">Настройки – <ph name="SECTION_TITLE" /></translation>
@@ -4394,7 +4382,6 @@
 <translation id="7663719505383602579">Получатель: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">Устройство Bluetooth "<ph name="DEVICE_NAME" />" не поддерживается.</translation>
 <translation id="7665369617277396874">Добавить аккаунт</translation>
-<translation id="7667248760110172428">Внешний накопитель</translation>
 <translation id="7671130400130574146">Использовать системные рамки и строку заголовка</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" /> на странице <ph name="PAGE_TITLE" />.</translation>
 <translation id="7676867886086876795">Запись вашего голоса отправляется в Google. Это позволяет использовать голосовой набор для любого текстового поля.</translation>
@@ -4549,7 +4536,6 @@
 <translation id="7853747251428735">Дополнительные инструмен&amp;ты</translation>
 <translation id="7857117644404132472">Добавить исключение</translation>
 <translation id="7857949311770343000">Другая страница быстрого доступа?</translation>
-<translation id="7859183520363892678">Научите Google Ассистента узнавать ваш голос</translation>
 <translation id="786073089922909430">Сервис: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;Загрузки</translation>
 <translation id="7864662577698025113">Добавить новый сервис</translation>
@@ -4886,7 +4872,6 @@
 <translation id="8353683614194668312">Разрешения:</translation>
 <translation id="8356197132883132838"><ph name="TITLE" /> (<ph name="COUNT" />)</translation>
 <translation id="8358685469073206162">Восстановить страницы?</translation>
-<translation id="8362993567435070757">Найдите на обратной стороне ключа шестизначный PIN-код.</translation>
 <translation id="8363095875018065315">стабильная</translation>
 <translation id="8363142353806532503">Доступ к микрофону запрещен</translation>
 <translation id="8366396658833131068">Подключение к сети восстановлено. Выберите другую сеть или нажмите кнопку "Продолжить", чтобы запустить киоск-приложение.</translation>
@@ -5353,7 +5338,6 @@
 <translation id="9066773882585798925">Позволяет прослушивать текст с экрана.</translation>
 <translation id="9066782832737749352">Озвучивание текста</translation>
 <translation id="9073281213608662541">PAP</translation>
-<translation id="90737709606140813">Подключите ключ к этому устройству, чтобы использовать его для входа в аккаунт.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9074836595010225693">USB-мышь подключена</translation>
 <translation id="9076523132036239772">Не удалось проверить адрес электронной почты или пароль. Подключитесь к сети.</translation>
@@ -5477,7 +5461,6 @@
 <translation id="971774202801778802">URL закладки</translation>
 <translation id="973473557718930265">Выйти</translation>
 <translation id="974555521953189084">Чтобы начать синхронизацию, введите кодовую фразу</translation>
-<translation id="977640333593638907">У большинства ключей нужно просто нажать кнопку.</translation>
 <translation id="981121421437150478">Офлайн</translation>
 <translation id="983511809958454316">Эта функция не поддерживается в режиме VR</translation>
 <translation id="984275831282074731">Способы оплаты</translation>

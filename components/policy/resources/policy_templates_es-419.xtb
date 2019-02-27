@@ -151,13 +151,6 @@
 <translation id="1307454923744766368">Los orígenes o patrones de nombres de host para los cuales no deben aplicarse
       restricciones en los orígenes no seguros</translation>
 <translation id="1312799700549720683">Controla la configuración de visualización.</translation>
-<translation id="1313457536529613143">Especifica el porcentaje de ajuste del tiempo de espera de inactividad de la pantalla cuando se observa la actividad del usuario con la pantalla oscurecida o poco después de que esta se haya desactivado.
-
-          Si se establece esta política, se especificará el porcentaje de ajuste del tiempo de espera de inactividad de la pantalla cuando se observe la actividad del usuario con la pantalla oscurecida o poco después de que esta se haya desactivado. Cuando se ajusta el tiempo de espera de inactividad de la pantalla, se ajustan las demoras de desconexión, bloqueo y desactivación de la pantalla para mantener las mismas distancias del tiempo de espera de inactividad de la pantalla que la configuración original.
-
-          Si no se establece esta política, se utilizará un factor de escala predeterminado.
-
-          El factor de escala debe ser igual o superior a 100 %.</translation>
 <translation id="131353325527891113">Mostrar los nombres de usuario en la pantalla de inicio de sesión</translation>
 <translation id="1327466551276625742">Habilitar mensaje de configuración de red si no hay conexión</translation>
 <translation id="1330145147221172764">Habilitar el teclado en pantalla</translation>
@@ -189,7 +182,7 @@
 
       Esta política solo previene que los usuarios avancen ante advertencias de la "Navegación segura" (p. ej., por la presencia de software malicioso o suplantación de identidad [phishing]), pero no soluciona problemas relacionados con certificados SSL, como certificados no válidos o caducados.
 
-      Si se inhabilita esta configuración o no se establece, los usuarios podrán continuar al sitio marcado después de ver la advertencia.
+      Si se inhabilita esta configuración o no se establece, los usuarios podrán acceder al sitio marcado después de ver la advertencia.
 
       Para obtener más información sobre la "Navegación segura", consulta https://developers.google.com/safe-browsing.</translation>
 <translation id="1413936351612032792">Informar datos sobre el uso de las apps de Linux</translation>
@@ -1566,11 +1559,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4725528134735324213">Habilitar Android Backup Service</translation>
 <translation id="4725801978265372736">Solicitar que el nombre del usuario local y el propietario del host de acceso remoto coincidan</translation>
 <translation id="4733471537137819387">Políticas relacionadas con la autenticación de HTTP integrada</translation>
-<translation id="4744190513568488164">Servidores a los que <ph name="PRODUCT_NAME" /> puede delegar las credenciales de usuarios
-
-          Separa los distintos nombres de servidor con comas. Se permite el uso de caracteres comodín (*).
-
-          Si esta política no se establece, <ph name="PRODUCT_NAME" /> no delegará las credenciales de usuario aunque un servidor se detecte como intranet.</translation>
 <translation id="4752880493649142945">Certificado de cliente para conectarse a RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">Si se establece como verdadera o no se establece esta política, <ph name="PRODUCT_NAME" /> sugerirá páginas relacionadas con la página actual.
       Estas sugerencias se obtienen de forma remota de los servidores de Google.
@@ -2238,6 +2226,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Esta política solo funciona si la política "RestoreOnStartup" está establecida en "RestoreOnStartupIsURLs".
 
           Esta política está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
+<translation id="6417265370957905582">Asistente de Google</translation>
 <translation id="6426205278746959912">No puedes forzar las apps de Android a que usen un proxy. Las apps de Android tienen a su disposición un subgrupo de opciones de configuración de proxy que pueden respetar de forma voluntaria:
 
           Si eliges no usar nunca un servidor proxy, se informa a las apps de Android que no hay ningún proxy configurado.
@@ -3316,13 +3305,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si se habilita esta configuración, el servicio de protección de contraseñas enviará a los usuarios a esta URL para que cambien sus contraseñas en el caso de que vean una advertencia en el navegador.
       Si se inhabilita esta configuración o no se establece, el servicio de protección de contraseñas enviará a los usuarios a https://myaccounts.google.com para que cambien sus contraseñas.
       Esta política está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
-<translation id="8782750230688364867">Especifica el porcentaje de ajuste del tiempo de espera de inactividad de la pantalla cuando el dispositivo se encuentra en modo de presentación.
-
-          Si se establece esta política, se especificará el porcentaje de ajuste del tiempo de espera de inactividad de la pantalla cuando el dispositivo esté en modo de presentación. Cuando se ajusta el tiempo de espera de inactividad de la pantalla, se ajustan las demoras de desconexión, bloqueo y desactivación de la pantalla para mantener las mismas distancias del tiempo de espera de inactividad de la pantalla que la configuración original.
-
-          Si no es establece esta política, se utilizará un factor de escala predeterminado.
-
-          El factor de escala debe ser igual o superior a 100 %. No se permiten valores que puedan reducir el tiempo de espera de inactividad de la pantalla en el modo de presentación más allá de su valor habitual.</translation>
 <translation id="8798099450830957504">Predeterminado</translation>
 <translation id="8801680448782904838">Notificar a un usuario que se recomienda o es obligatorio reiniciar el navegador o el dispositivo</translation>
 <translation id="8818173863808665831">Informa la ubicación geográfica del dispositivo.

@@ -32,6 +32,7 @@
 <translation id="1930711995431081526">статус</translation>
 <translation id="1938124657309484470">Має бути <ph name="MAXIMUM_DATE_OR_TIME" /> або раніша дата.</translation>
 <translation id="1946271899482435442">Показує засіб вибору дати</translation>
+<translation id="1982354452682152483">Немає опису.</translation>
 <translation id="1993104285338243655">Змінено на дзеркалювання</translation>
 <translation id="2060505056492490888">Символ "<ph name="DOT" />" у "<ph name="INVALIDDOMAIN" />" використано неправильно.</translation>
 <translation id="2148716181193084225">Сьогодні</translation>
@@ -73,6 +74,7 @@
 <translation id="3450233048674729344">Значення має бути меншим або дорівнювати <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">визначення</translation>
 <translation id="3557673793733683882">заголовок <ph name="HEADING_LEVEL" /></translation>
+<translation id="3685101356851116974">Зображення без мітки</translation>
 <translation id="3706100364254443312">перемикач</translation>
 <translation id="3732799496749320381">мм</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> ГБ</translation>
@@ -153,6 +155,7 @@
 <translation id="6453774872122745852">слова подяки</translation>
 <translation id="648732519525291180">засіб вибору часу</translation>
 <translation id="6550675742724504774">Параметри</translation>
+<translation id="6572309429103589720">Граматична помилка</translation>
 <translation id="658823671542763450">увійти в повноекранний режим</translation>
 <translation id="663493177488814956">стрічка</translation>
 <translation id="6637586476836377253">журнал</translation>
@@ -175,6 +178,7 @@
 <translation id="7139483182332611405">передмова</translation>
 <translation id="7263440858009898357">Виберіть елемент зі списку.</translation>
 <translation id="727747134524199931">заголовок стовпця</translation>
+<translation id="7336527682887843386">Не вдалося отримати опис.</translation>
 <translation id="7353453495576941748">подяка</translation>
 <translation id="7364796246159120393">Вибрати файл</translation>
 <translation id="739024184232394898">Інші...</translation>
@@ -183,22 +187,28 @@
 <translation id="7491962110804786152">вкладка</translation>
 <translation id="7514365320538308">Завантажити</translation>
 <translation id="7529102961911894712">зворотне посилання</translation>
+<translation id="7533959249147584474">Графічний об’єкт без мітки</translation>
 <translation id="7647456547678091388">порада</translation>
 <translation id="7661956066982048809">графічний документ</translation>
 <translation id="7673697353781729403">Години</translation>
 <translation id="7681220483256441252">покажчик</translation>
 <translation id="7740050170769002709">Вміст HTML</translation>
+<translation id="7745230546936012372">Щоб відсутні описи зображення з’явилися, відкрийте контекстне меню.</translation>
 <translation id="7750228210027921155">Картинка в картинці</translation>
+<translation id="775297008183122718">Недійсне введене значення</translation>
 <translation id="7789962463072032349">призупинити</translation>
 <translation id="7802800022689234070">трикутник відкривання</translation>
 <translation id="7888071071722539607">Електронна адреса має містити знак "<ph name="ATSIGN" />". В електронній адресі "<ph name="INVALIDADDRESS" />" знака "<ph name="ATSIGN" />" немає.</translation>
 <translation id="7891486169920085145">розділювач</translation>
 <translation id="795667975304826397">Файл не вибрано</translation>
+<translation id="8042519864538898414">Схоже, це вміст для дорослих.</translation>
 <translation id="8053789581856978548">текстове поле пошуку</translation>
 <translation id="8057695513531652401">примітка</translation>
 <translation id="8105797009065549151">посилання на примітку</translation>
+<translation id="811583516810654505">Завантажується опис…</translation>
 <translation id="8117451130807776954">Цей тиждень</translation>
 <translation id="8199524924445686405">рррр</translation>
+<translation id="8261464734335370856">Орфографічна помилка</translation>
 <translation id="8284326494547611709">Субтитри</translation>
 <translation id="835897206747267392">Недійсне значення</translation>
 <translation id="8403857369060869934">минуло часу: <ph name="ELAPSED_TIME" /></translation>

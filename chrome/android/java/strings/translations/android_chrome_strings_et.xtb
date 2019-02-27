@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">Ava VR</translation>
 <translation id="116280672541001035">Kasutatud</translation>
 <translation id="1172593791219290334">Käivitamisel avatav leht</translation>
+<translation id="1173894706177603556">Muuda nime</translation>
 <translation id="1175310183703641346">Teie järjehoidjaid, ajalugu, paroole ja muud sisu ei sünkroonita enam teie Google'i kontoga</translation>
 <translation id="1178581264944972037">Peata</translation>
 <translation id="1181037720776840403">Eemalda</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">Puudutage otsimiseks</translation>
 <translation id="2079545284768500474">Võta tagasi</translation>
 <translation id="2082238445998314030">Tulemus <ph name="RESULT_NUMBER" />/<ph name="TOTAL_RESULTS" /></translation>
-<translation id="208586643495776849">Proovige uuesti</translation>
 <translation id="2086652334978798447">Google'i soovitatud isikupärastatud sisu hankimiseks logige Chrome'i sisse.</translation>
 <translation id="2091887806945687916">Heli</translation>
 <translation id="2096012225669085171">Seadmete vahel sünkroonimine ja isikupärastamine</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">Faili <ph name="FILE_NAME" /> allalaadimine ebaõnnestus failisüsteemi vigade tõttu.</translation>
 <translation id="3398320232533725830">Järjehoidjate halduri avamine</translation>
 <translation id="3414952576877147120">Suurus:</translation>
-<translation id="3434611491093664205">VR-iks valmistumine …</translation>
 <translation id="3443221991560634068">Praeguse lehe uuesti laadimine</translation>
 <translation id="3445014427084483498">Just praegu</translation>
 <translation id="3452612588551937789">Logige sisse oma Google'i kontoga, et oma järjehoidjaid, ajalugu, paroole ja muid seadeid kõigis oma seadmetes näha.</translation>
@@ -929,7 +928,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="7929962904089429003">Menüü avamine</translation>
 <translation id="7942131818088350342">Teenus <ph name="PRODUCT_NAME" /> on aegunud.</translation>
 <translation id="7947953824732555851">Nõustu ja logi sisse</translation>
-<translation id="7960977077911686065">Jätkades nõustute, et Chrome saadab selle teenuse osutamiseks Google’ile andmeid Chrome’i automaattäite, saidi URLi ja selle sisu kohta. Samuti nõustute, et Chrome saadab Chrome'i automaattäite kaudu veebisaidile teie valitud isikuandmeid. \n\nAvage Chrome'i seaded, et Google’i assistent Chrome’is ja Chrome’i automaattäites välja lülitada.  <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Teenusepakkuja:</translation>
 <translation id="7975379999046275268">Lehe eelvaade <ph name="BEGIN_NEW" />Uus<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Eellaaditakse lehti kiiremaks sirvimiseks ja otsimiseks</translation>
@@ -987,7 +985,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> keeles olevaid lehti ei tõlgita</translation>
 <translation id="8349013245300336738">Sordi kasutatud andmemahu alusel</translation>
 <translation id="8372893542064058268">Konkreetse saidi jaoks taustal sünkroonimise lubamine.</translation>
-<translation id="8373513848523649558"><ph name="BEGIN_LINK1" />Neid seadeid saab igal ajal kohandada<ph name="END_LINK1" />.</translation>
 <translation id="8374821112118309944">Peate värskendama TalkBacki uuemale versioonile.</translation>
 <translation id="8378714024927312812">Haldab teie organisatsioon</translation>
 <translation id="8380167699614421159">Sait kuvab sekkuvaid või eksitavaid reklaame.</translation>

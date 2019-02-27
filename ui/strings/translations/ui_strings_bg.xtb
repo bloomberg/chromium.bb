@@ -82,6 +82,7 @@
 <translation id="3897092660631435901">Меню</translation>
 <translation id="3909791450649380159">Изрязва&amp;не</translation>
 <translation id="3990502903496589789">Десн край</translation>
+<translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 непрочетено известие}other{# непрочетени известия}}</translation>
 <translation id="4202807286478387388">преминаване</translation>
 <translation id="4250229828105606438">Eкранна снимка</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{Преди 1 месец}other{Преди # месеца}}</translation>
@@ -203,4 +204,5 @@
 <translation id="9161053988251441839">ПРЕДЛОЖЕНИ ПРИЛОЖЕНИЯ</translation>
 <translation id="9170848237812810038">&amp;Отмяна</translation>
 <translation id="932327136139879170">Начална страница</translation>
+<translation id="944069440740578670">Непрочетени известия</translation>
 </translationbundle>

@@ -28,6 +28,7 @@
 <translation id="1125573121925420732">Les avertissements peuvent être fréquents en attendant que les sites Web finissent de mettre à jour leurs systèmes de sécurité. Ce problème devrait être bientôt résolu.</translation>
 <translation id="1126551341858583091">La taille sur l'espace de stockage local est de <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Cache de la règle valide.</translation>
+<translation id="1131264053432022307">Image copiée</translation>
 <translation id="1150979032973867961">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par le système d'exploitation de votre ordinateur. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="1151972924205500581">Veuillez saisir un mot de passe</translation>
 <translation id="1152921474424827756">Accédez à une <ph name="BEGIN_LINK" />copie mise en cache<ph name="END_LINK" /> de <ph name="URL" />.</translation>
@@ -247,6 +248,7 @@
 <translation id="2317583587496011522">Les cartes de débit sont acceptées.</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, arrive à expiration le <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="2337852623177822836">Paramètre contrôlé par votre administrateur</translation>
+<translation id="2346319942568447007">Image copiée</translation>
 <translation id="2349790679044093737">Une session RV est active</translation>
 <translation id="2354001756790975382">Autres favoris</translation>
 <translation id="2354430244986887761">La navigation sécurisée de Google a récemment <ph name="BEGIN_LINK" />détecté des applications malveillantes<ph name="END_LINK" /> sur le site <ph name="SITE" />.</translation>
@@ -293,6 +295,7 @@
 <translation id="255002559098805027"><ph name="HOST_NAME" /> a envoyé une réponse incorrecte.</translation>
 <translation id="2556876185419854533">&amp;Annuler la modification</translation>
 <translation id="2586657967955657006">Presse-papiers</translation>
+<translation id="2586916519180891564">Informations concernant les règles d'entreprise applicables</translation>
 <translation id="2587730715158995865">Proposé par <ph name="ARTICLE_PUBLISHER" />. Lisez cet article et <ph name="OTHER_ARTICLE_COUNT" /> autres.</translation>
 <translation id="2587841377698384444">ID de l'API d'annuaire :</translation>
 <translation id="2597378329261239068">Ce document est protégé par mot de passe. Veuillez saisir ce dernier.</translation>
@@ -378,6 +381,7 @@
 <translation id="3096100844101284527">Ajouter une adresse d'enlèvement</translation>
 <translation id="3105172416063519923">ID d'élément :</translation>
 <translation id="3109728660330352905">Vous n'êtes pas autorisé à consulter cette page.</translation>
+<translation id="3111297330804935615">Informations relatives aux règles d'entreprise appliquées, ainsi qu'aux extensions et aux plug-ins installés</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Essayez d'exécuter les diagnostics de connectivité<ph name="END_LINK" />.</translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Aucun}=1{données de connexion pour 1 compte}one{données de connexion pour # compte}other{données de connexion pour # comptes}}</translation>
@@ -464,6 +468,7 @@
 <translation id="358285529439630156">Les cartes de crédit et les cartes prépayées sont acceptées.</translation>
 <translation id="3582930987043644930">Ajouter un nom</translation>
 <translation id="3583757800736429874">&amp;Rétablir le déplacement</translation>
+<translation id="35866233670761917">Les contenus des sites Web que vous visitez ne sont pas visibles par vos administrateurs</translation>
 <translation id="3586931643579894722">Masquer les détails</translation>
 <translation id="3592413004129370115">Italian (enveloppe)</translation>
 <translation id="3600246354004376029">"<ph name="TITLE" />", <ph name="DOMAIN" />, <ph name="TIME" /></translation>
@@ -477,6 +482,7 @@
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Validation réussie.</translation>
 <translation id="3655670868607891010">Si ce message s'affiche régulièrement, essayez ces <ph name="HELP_LINK" />.</translation>
+<translation id="3656922233114135933">Noms d'utilisateur pour votre OS et votre navigateur</translation>
 <translation id="3658742229777143148">Révision</translation>
 <translation id="366077651725703012">Mettre à jour la carte de crédit</translation>
 <translation id="3676592649209844519">ID de l'appareil :</translation>
@@ -487,6 +493,7 @@
 <translation id="3704162925118123524">Pour utiliser ce réseau, il est possible que vous deviez vous rendre sur la page de connexion correspondante.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Chargement en cours...</translation>
+<translation id="3709599264800900598">Texte copié</translation>
 <translation id="3712624925041724820">Licences épuisées.</translation>
 <translation id="3714780639079136834">Activer les données mobiles ou le réseau Wi-Fi</translation>
 <translation id="3715597595485130451">Connexion au réseau Wi-Fi</translation>
@@ -580,6 +587,7 @@
     &lt;h4&gt;Étape 5 : Obtenez de l'aide supplémentaire&lt;/h4&gt;
     &lt;p&gt;Si le message d'erreur s'affiche toujours, contactez le propriétaire du site.&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Essayez d'exécuter les diagnostics réseau<ph name="END_LINK" />.</translation>
+<translation id="423093089485419548">Nom de votre ordinateur</translation>
 <translation id="4235360514405112390">Valide</translation>
 <translation id="4250431568374086873">Votre connexion à ce site n'est pas totalement sécurisée.</translation>
 <translation id="4250680216510889253">Non</translation>
@@ -613,6 +621,7 @@
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Adresse d'enlèvement</translation>
 <translation id="4424024547088906515">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par Chrome. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
+<translation id="443121186588148776">Port de série</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> n'a pas accepté votre certificat de connexion, ou vous ne l'avez pas fourni.</translation>
 <translation id="4434045419905280838">Pop-up et redirections</translation>
 <translation id="4435702339979719576">Carte postale)</translation>
@@ -702,6 +711,7 @@
 <translation id="5002932099480077015">Si cette option est activée, Chrome enregistre une copie de votre carte sur cet appareil pour vous permettre de remplir plus rapidement les formulaires.</translation>
 <translation id="5014174725590676422">L'écran de première utilisation de l'Assistant Google dans Chrome est affiché</translation>
 <translation id="5015510746216210676">Nom de la machine :</translation>
+<translation id="5017554619425969104">Texte copié</translation>
 <translation id="5018422839182700155">Impossible d'ouvrir cette page</translation>
 <translation id="5019198164206649151">L'espace de stockage destiné à la sauvegarde est en mauvais état.</translation>
 <translation id="5023310440958281426">Vérifiez les règles définies par votre administrateur</translation>
@@ -711,6 +721,8 @@
 <translation id="5034369478845443529">Contexte local : <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="5039804452771397117">Autoriser</translation>
 <translation id="5040262127954254034">Confidentialité</translation>
+<translation id="5043480802608081735">Lien copié</translation>
+<translation id="5043595640478528013">Informations relatives aux versions de logiciels correspondant à votre navigateur et à votre ordinateur</translation>
 <translation id="5045550434625856497">Mot de passe incorrect</translation>
 <translation id="5056549851600133418">Articles pour vous</translation>
 <translation id="5068524481479508725">A10</translation>
@@ -722,6 +734,7 @@
 <translation id="5095208057601539847">Province</translation>
 <translation id="5097501891273180634">A2</translation>
 <translation id="5098222253617183465">Votre appareil est géré par <ph name="ENROLLMENT_DOMAIN" /> et votre compte est géré par <ph name="ACCOUNT_DOMAIN" />. Cela signifie que vos administrateurs peuvent configurer votre appareil et votre compte à distance.</translation>
+<translation id="5107918638290237391">Extensions et plug-ins installés</translation>
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 bits)</translation>
@@ -773,6 +786,7 @@
 <translation id="5386426401304769735">La chaîne de certificats de ce site contient un certificat signé avec SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="540969355065856584">Impossible de vérifier que ce serveur est bien <ph name="DOMAIN" />, car son certificat de sécurité actuel n'est pas valide. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
+<translation id="5417233485731142850">Nom et adresse réseau de votre ordinateur</translation>
 <translation id="5421136146218899937">Effacer les données de navigation...</translation>
 <translation id="5430298929874300616">Supprimer le favori</translation>
 <translation id="5431657950005405462">Votre fichier est introuvable</translation>
@@ -943,6 +957,7 @@
 <translation id="6417515091412812850">Impossible de vérifier si le certificat a été révoqué.</translation>
 <translation id="6433490469411711332">Modifier les coordonnées</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> n'autorise pas la connexion.</translation>
+<translation id="6434309073475700221">Annuler</translation>
 <translation id="6446163441502663861">Kahu (enveloppe)</translation>
 <translation id="6446608382365791566">Ajouter d'autres informations</translation>
 <translation id="6447842834002726250">Cookies</translation>
@@ -956,11 +971,13 @@
 <translation id="6508722015517270189">Relancez Chrome</translation>
 <translation id="6529602333819889595">&amp;Rétablir la suppression</translation>
 <translation id="6534179046333460208">Suggestions pour le Web physique</translation>
+<translation id="654507709116376806">Les administrateurs peuvent utiliser d'autres méthodes pour surveiller les activités des utilisateurs, en dehors de Chrome.</translation>
 <translation id="6563469144985748109">Votre responsable ne l'a pas encore autorisé</translation>
 <translation id="6569060085658103619">Vous consultez actuellement une page d'extension</translation>
 <translation id="6578796323535178455">C2 (enveloppe)</translation>
 <translation id="6579990219486187401">Rose clair</translation>
 <translation id="6583674473685352014">B6 (enveloppe)</translation>
+<translation id="6587923378399804057">Lien copié</translation>
 <translation id="6596325263575161958">Options de chiffrement</translation>
 <translation id="6604181099783169992">Capteurs de mouvement ou de lumière</translation>
 <translation id="6609880536175561541">Prc7 (enveloppe)</translation>
@@ -1052,7 +1069,7 @@
 <translation id="7158980942472052083">URL non valide : vous devez saisir une URL avec un schéma standard.</translation>
 <translation id="717330890047184534">Identifiant GAIA :</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> autre}one{<ph name="SHIPPING_OPTION_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> autre}other{<ph name="SHIPPING_OPTION_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> autres}}</translation>
-<translation id="7177397715882417099">Le serveur auquel vous accédez, <ph name="ORIGIN" />, a exigé qu'une règle de sécurité soit appliquée à toutes les demandes qu'il reçoit. Cependant, au lieu d'émettre une règle, il a redirigé le navigateur vers une autre destination, ce qui empêche ce dernier de réponde à votre demande pour <ph name="SITE" />.</translation>
+<translation id="7177397715882417099">Le serveur auquel vous accédez, <ph name="ORIGIN" />, a exigé qu'une règle de sécurité soit appliquée à toutes les demandes qu'il reçoit. Cependant, au lieu d'émettre une règle, il a redirigé le navigateur vers une autre destination, ce qui empêche ce dernier de répondre à votre demande pour <ph name="SITE" />.</translation>
 <translation id="7179323680825933600">Enregistrer et renseigner les modes de paiement</translation>
 <translation id="7180611975245234373">Actualiser</translation>
 <translation id="7182878459783632708">Aucune règle n'est définie</translation>
@@ -1149,6 +1166,7 @@ Informations supplémentaires :
 <translation id="7610193165460212391">La valeur <ph name="VALUE" /> est hors limites.</translation>
 <translation id="7613889955535752492">Date d'expiration : <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Vous disposez déjà de données chiffrées à l'aide d'une autre version de votre mot de passe de compte Google. Veuillez saisir celui-ci ci-dessous.</translation>
+<translation id="7633909222644580952">Données relatives aux performances et rapports d'erreur</translation>
 <translation id="7637571805876720304">Supprimer les données de carte de paiement de Chromium ?</translation>
 <translation id="7639968568612851608">Gris foncé</translation>
 <translation id="765676359832457558">Masquer les paramètres avancés…</translation>
@@ -1158,7 +1176,7 @@ Informations supplémentaires :
 <translation id="7667346355482952095">Le jeton de règle renvoyé est vide ou ne correspond pas au jeton actuel.</translation>
 <translation id="7668654391829183341">Appareil inconnu</translation>
 <translation id="7669271284792375604">Des individus malveillants à l'œuvre sur ce site pourraient vous inciter à installer des programmes qui nuisent à votre confort de navigation (par exemple, en changeant votre page d'accueil ou en affichant des annonces supplémentaires sur les sites que vous consultez.</translation>
-<translation id="7676643023259824263">Rechercher du texte du presse-papier, <ph name="TEXT" /></translation>
+<translation id="7676643023259824263">Rechercher le texte du presse-papier "<ph name="TEXT" />"</translation>
 <translation id="7681101578153515023">Changer de moteur de recherche</translation>
 <translation id="7682287625158474539">Adresse de livraison</translation>
 <translation id="7687186412095877299">Saisit automatiquement les informations correspondant aux modes de paiement enregistrés</translation>
@@ -1231,6 +1249,7 @@ Informations supplémentaires :
 <translation id="8074253406171541171">10x13 (enveloppe)</translation>
 <translation id="8078141288243656252">Impossible d'ajouter des annotations si le document a pivoté</translation>
 <translation id="8079031581361219619">Actualiser le site Web ?</translation>
+<translation id="8086639673041095862">Avertissements relatifs à la navigation sécurisée</translation>
 <translation id="8088680233425245692">Échec de l'affichage de l'article.</translation>
 <translation id="808894953321890993">Modifier le mot de passe</translation>
 <translation id="8090403583893450254">Taille 20</translation>
@@ -1242,7 +1261,6 @@ Informations supplémentaires :
 <translation id="8103161714697287722">Mode de paiement</translation>
 <translation id="8118489163946903409">Mode de paiement</translation>
 <translation id="8127301229239896662">Le logiciel "<ph name="SOFTWARE_NAME" />" n'a pas été installé correctement sur votre ordinateur ou sur votre réseau. Demandez à l'administrateur informatique de résoudre le problème.</translation>
-<translation id="8130693978878176684">Je ne peux pas vous aider davantage. Veuillez continuer manuellement.</translation>
 <translation id="8131740175452115882">Confirmer</translation>
 <translation id="8149426793427495338">Votre ordinateur s'est mis en veille.</translation>
 <translation id="8150722005171944719">Le fichier disponible à l'adresse <ph name="URL" /> n'est pas lisible. Il est possible qu'il ait été supprimé ou déplacé, ou que les autorisations associées empêchent d'y accéder.</translation>
@@ -1322,6 +1340,7 @@ Informations supplémentaires :
 <translation id="8620436878122366504">Tes parents ne l'ont pas encore autorisé</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Enregistrer cette carte sur cet appareil</translation>
+<translation id="8662327642270533767">Création de rapports par le navigateur</translation>
 <translation id="8663226718884576429">Récapitulatif de la commande, <ph name="TOTAL_LABEL" />, détails supplémentaires</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, réponse, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>
@@ -1342,6 +1361,7 @@ Informations supplémentaires :
 <translation id="8790007591277257123">&amp;Rétablir la suppression</translation>
 <translation id="8792621596287649091">Vous risquez de perdre l'accès à votre compte <ph name="ORG_NAME" /> ou d'être victime d'usurpation d'identité. L'équipe Chromium vous recommande de modifier votre mot de passe maintenant.</translation>
 <translation id="8800988563907321413">Vos suggestions à proximité s'affichent ici</translation>
+<translation id="8810879605219182134">Votre navigateur a été configuré pour créer des rapports</translation>
 <translation id="8820817407110198400">Favoris</translation>
 <translation id="883848425547221593">Autres favoris</translation>
 <translation id="884264119367021077">Adresse de livraison</translation>
@@ -1369,7 +1389,6 @@ Informations supplémentaires :
 <translation id="8978053250194585037">La fonctionnalité de navigation sécurisée Google a récemment permis de <ph name="BEGIN_LINK" />détecter une tentative d'hameçonnage<ph name="END_LINK" /> sur le site <ph name="SITE" />. Un site d'hameçonnage se présente comme un site légitime dans le but de vous tromper.</translation>
 <translation id="8983003182662520383">Modes de paiement et adresses utilisés dans Google Pay</translation>
 <translation id="8987927404178983737">Mois</translation>
-<translation id="8988408250700415532">Un problème est survenu. Vous pouvez finaliser votre commande sur le site Web.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Le site Web que vous allez ouvrir contient des programmes dangereux</translation>
 <translation id="8997023839087525404">Le certificat présenté par le serveur n'a pas été communiqué au public. Selon les règles de transparence des certificats, certains certificats doivent obligatoirement être communiqués publiquement pour garantir qu'ils sont dignes de confiance et qu'ils protègent contre les individus malveillants.</translation>

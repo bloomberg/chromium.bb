@@ -187,6 +187,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6014844626092547096">Vous êtes maintenant connecté à Chrome. La synchronisation a été désactivée par votre administrateur.</translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="6070348360322141662">Pour plus de sécurité, vos données seront chiffrées dans Google Chrome</translation>
+<translation id="6100051050886660823">Si une image n'est pas accompagnée d'une description, Google Chrome essaiera de vous en proposer une. Les images sont analysées par Google. Vous pouvez désactiver cette option dans les paramètres à tout moment.</translation>
 <translation id="6113794647360055231">Chrome s'est amélioré</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Google Chrome Bêta</translation>
@@ -220,7 +221,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7106741999175697885">Gestionnaire de tâches - Google Chrome</translation>
 <translation id="7164397146364144019">Vous pouvez nous aider à rendre Chrome plus sûr et plus facile à utiliser en nous signalant automatiquement les incidents de sécurité potentiels.</translation>
 <translation id="7242029209006116544">Vous vous connectez avec un compte géré et donnez le contrôle de votre profil Google Chrome à son administrateur. Vos données Chrome, telles que les applications, les favoris, l'historique, les mots de passe et les autres paramètres, vont être définitivement associées à <ph name="USER_NAME" />. Vous pouvez supprimer ces données via le tableau de bord des comptes Google, mais vous ne pouvez pas les associer à un autre compte. Vous pouvez éventuellement créer un nouveau profil pour maintenir vos données Chrome séparées. <ph name="LEARN_MORE" /></translation>
-<translation id="7295052994004373688">Cette langue est utilisée pour l'UI Google Chrome</translation>
+<translation id="7295052994004373688">Cette langue est utilisée pour l'UI de Google Chrome</translation>
 <translation id="7296210096911315575">Informations importantes concernant l'utilisation et la sécurité</translation>
 <translation id="7308322188646931570">Pour télécharger des fichiers, Chrome a besoin d'accéder à l'espace de stockage</translation>
 <translation id="7339898014177206373">Nouvelle fenêtre</translation>
@@ -283,11 +284,12 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="870251953148363156">Mettre à jour &amp;Google Chrome</translation>
 <translation id="873133009373065397">Impossible d'identifier ou de définir le navigateur par défaut avec Google Chrome</translation>
 <translation id="8736674169840206667">À la demande de votre administrateur, vous devez relancer Chrome pour installer une mise à jour</translation>
-<translation id="8788264404293392165">Cette langue est utilisée pour l'UI Chrome OS</translation>
+<translation id="8788264404293392165">Cette langue est utilisée pour l'UI de Chrome OS</translation>
 <translation id="8791470158600044404">{0,plural, =1{Chrome OS va redémarrer dans 1 minute}one{Chrome OS va redémarrer dans # minute}other{Chrome OS va redémarrer dans # minutes}}</translation>
 <translation id="8823341990149967727">Version de Chrome obsolète</translation>
 <translation id="884296878221830158">Elle contrôle également la page qui s'affiche au démarrage de Chrome ou lorsque vous cliquez sur le bouton Accueil.</translation>
 <translation id="8862326446509486874">Vous ne disposez pas des droits requis pour installer la version système. Relancez l'installation en vous connectant comme administrateur.</translation>
+<translation id="8878013752519808729">Si une image n'est pas accompagnée d'une description, Google Chrome essaiera de vous en proposer une. Les images sont analysées par Google.</translation>
 <translation id="8914504000324227558">Relancer Google Chrome</translation>
 <translation id="9026991721384951619">Impossible de synchroniser vos données dans Chrome OS, car les informations de connexion de votre compte ne sont plus à jour.</translation>
 <translation id="9067395829937117663">Vous devez disposer de Windows 7 ou version ultérieure pour utiliser Google Chrome.</translation>

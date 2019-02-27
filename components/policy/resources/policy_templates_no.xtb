@@ -24,6 +24,7 @@
       Når denne regelen settes til false (usann) eller ikke spesifiseres, overføres informasjonskapsler som er angitt av IdP-en, til brukerens profil bare første gang vedkommende logger på en enhet.
 
       Denne regelen berører bare brukere med domener som samsvarer med enhetens registreringsdomene. For alle andre brukere overføres informasjonskapslene som angis av IdP-en, til brukerens profil bare første gang vedkommende logger på enheten.</translation>
+<translation id="1029052664284722254">Tving enheten til å starte på nytt når brukeren logger av</translation>
 <translation id="1030120600562044329">Aktiverer sending av anonyme rapporter med bruks- og kræsjrelaterte data om <ph name="PRODUCT_NAME" /> til Google, og forhindrer at brukerne kan endre denne innstillingen.
 
       Hvis denne innstillingen er slått på, blir det sendt anonyme rapporter med bruks- og kræsjrelaterte data til Google.  Hvis den er slått av, sendes ikke denne informasjonen til Google.  Uansett kan ikke brukerne endre eller overstyre innstillingen.
@@ -138,13 +139,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="1304973015437969093">ID-er for utvidelser/apper og oppdateringsnettadresser som skal installeres stille</translation>
 <translation id="1307454923744766368">Opprinnelser eller mønstre for vertsnavn der begrensninger for usikre opprinnelser ikke skal gjelde</translation>
 <translation id="1312799700549720683">Kontrollerer skjerminnstillinger.</translation>
-<translation id="1313457536529613143">Angir hvordan prosentandelen for forsinkelse av skjermdemping skaleres når brukeraktiviteten observeres mens skjermen er dempet, eller kort tid etter skjermen er slått av.
-
-          Hvis denne innstillingen angis, spesifiserer den hvordan prosentandelen for forsinkelse av skjermdemping skaleres når brukeraktiviteten observeres mens skjermen dempes, eller kort tid etter skjermen er slått av. Når dempingsforsinkelsen er skalert, blir forsinkelsen for avslått, låst og inaktiv skjerm justert slik at de har samme lengde fra skjermdempingsforsinkelsen som i den opprinnelige konfigurasjonen.
-
-          Hvis denne innstillingen ikke angis, brukes standard skaleringsfaktor.
-
-          Skaleringsfaktoren må være 100 % eller mer.</translation>
 <translation id="131353325527891113">Vis brukernavn på påloggingssiden</translation>
 <translation id="1327466551276625742">Aktiver melding om nettverkskonfigurasjon når du er uten nett.</translation>
 <translation id="1330145147221172764">Slå på skjermtastaturet</translation>
@@ -360,6 +354,17 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er aktivert.</translation>
 <translation id="1852294065645015766">Tillat automatisk avspilling av medier</translation>
+<translation id="1857152770025485173">Denne regelen hindrer at brukerne kan laste inn nettsider fra nettadresser som er svartelistet. Svartelisten inneholder nettadressemønstre som spesifiserer hvilke nettadresser som svartelistes.
+
+      Nettadressemønstre må formateres i samsvar med https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Unntak kan spesifiseres i regelen for godkjenning av nettadresser. Disse reglene er begrenset til 1000 oppføringer, og eventuelle oppføringer som overskrider dette, ignoreres.
+
+      Vær oppmerksom på at vi ikke anbefaler å blokkere interne «chrome://*»-nettadresser, siden det kan føre til uventede feil.
+
+      Fra M73 kan du blokkere «javascript://*»-nettadresser. Men dette påvirker kun JavaScript som skrives inn i adressefeltet (eller f.eks. minibokmerker). Merk at JavaScript-nettadresser på nettsider, så lenge de utgjør dynamisk innlastede data, ikke omfattes av denne regelen. Hvis du for eksempel blokkerer «eksempel.no/abc», kan siden «eksempel.no» fremdeles laste inn «eksempel.no/abc» via XMLHTTPRequest.
+
+      Hvis denne regelen ikke er angitt, svartelistes ingen nettadresser i nettleseren.</translation>
 <translation id="1859859319036806634">Advarsel: TLS-versjonen som fungerer som reserveløsning, fjernes fra <ph name="PRODUCT_NAME" /> etter versjon 52 (rundt september 2016), og da slutter denne regelen å fungere.
 
       Når et TLS-håndtrykk mislykkes, prøvde <ph name="PRODUCT_NAME" /> tidligere å koble til på nytt med en lavere versjon av TLS for å omgå feil på HTTPS-tjenere. Denne innstillingen konfigurerer hvilken versjon denne reserveprosessen stopper på. Hvis en tjener utfører versjonsforhandlingen riktig (det vil si uten å bryte tilkoblingen), gjelder ikke denne innstillingen. Tilkoblingen som opprettes, må uansett rette seg etter SSLVersionMin.
@@ -630,6 +635,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis denne regelen ikke er angitt eller har verdien «True», og en lokal konto på enheten er konfigurert for automatisk pålogging uten forsinkelse, følger <ph name="PRODUCT_OS_NAME" /> hurtigtasten Ctrl+Alt+S for å unngå automatisk pålogging og vise påloggingsskjermen.
 
       Hvis denne regelen har verdien «False», kan ikke automatisk pålogging uten forsinkelse unngås (hvis den er konfigurert).</translation>
+<translation id="2454228136871844693">Optimaliser for stabilitet.</translation>
 <translation id="2463365186486772703">Lokalitet for program</translation>
 <translation id="2466131534462628618">Autentisering via obligatoriske sider ignorerer proxy-tjenere</translation>
 <translation id="2482676533225429905">Innebygde meldinger</translation>
@@ -829,6 +835,31 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Hvis denne regelen brukes, blir bare skriverne med ID-er som samsvarer med verdiene i denne regelen, tilgjengelige for brukeren. ID-ene må samsvare med «id»- eller «quid»-feltene i filen spesifisert i <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="2842152347010310843">Styrer godkjenningslisten med nettadressemønstre der autoavspilling alltid er på.
+
+      Hvis autoavspilling er på, kan videoer spilles av automatisk (uten samtykke fra brukeren) med lydinnhold i <ph name="PRODUCT_NAME" />.
+
+      Gyldige nettadressemønstre er:
+
+      - [*.]domene.tld (gir treff på domene.tld og alle underdomener)
+
+      - vert (gir treff på et eksakt vertsnavn)
+
+      - protokoll://vert:port (protokoller som støttes: http, https)
+
+      - protokoll://[*.]domene.tld:port (protokoller som støttes: http, https)
+
+      - file://bane (banen må være absolutt og begynne med «/»)
+
+      - a.b.c.d (gir treff på en eksakt IPv4-IP)
+
+      - [a:b:c:d:e:f:g:h] (gir treff på en eksakt IPv6-IP)
+
+      Hvis AutoplayAllowed-regelen er satt til «True» (sann), har denne regelen ingen virkning.
+
+      Hvis AutoplayAllowed-regelen er satt til «False» (usann), får eventuelle nettadressemønstre som er angitt i denne regelen, fremdeles lov til å spille av automatisk.
+
+      Merk at hvis <ph name="PRODUCT_NAME" /> kjører og denne regelen endres, brukes den kun for nye faner som åpnes. Derfor kan noen faner fremdeles følge den gamle atferden.</translation>
 <translation id="285480231336205327">Aktiver modus for høy kontrast</translation>
 <translation id="2854919890879212089">Gjør at <ph name="PRODUCT_NAME" /> bruker skriveren som er standard for systemet, i stedet for skriveren som ble brukt sist, som standardvalg i forhåndsvisning av utskrift.
 
@@ -950,6 +981,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis regelen er slått på eller ikke er angitt, søker Opprydning for Chrome med jevne mellomrom etter uønsket programvare på systemet, og hvis det blir funnet noe, blir brukeren spurt om det skal fjernes. Manuell start av Opprydning for Chrome fra chrome://settings er aktivert.
 
       Denne regelen er bare tilgjengelig på Windows-forekomster som er tilknyttet <ph name="MS_AD_NAME" />-domener, eller Windows 10 Pro- eller Enterprise-forekomster som er registrert for enhetsadministrering.</translation>
+<translation id="3159375329008977062">Brukeren har tillatelse til å eksportere og importere Crostini-beholdere via UI-et</translation>
 <translation id="3165808775394012744">Disse reglene er tatt med her for å gjøre det lett å fjerne dem.</translation>
 <translation id="316778957754360075">Denne innstillingen ble trukket tilbake fra og med <ph name="PRODUCT_NAME" /> versjon 29. Den anbefalte måten å konfigurere utvidelses- og appsamlinger fra organisasjoner på, er å inkludere nettstedet som leverer CRX-pakkene i ExtensionInstallSources, og legge direktenedlastingslinkene til pakkene på en nettside. En appvelger for denne nettsiden kan opprettes ved hjelp av innstillingen for ExtensionInstallForcelist.</translation>
 <translation id="3171369832001535378">Mal for nettverkets vertsnavn på enheter</translation>
@@ -1232,6 +1264,11 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis regelen settes til false (usann), rapporteres ikke
       informasjonen om kioskøkten. Hvis den settes til true (sann)
       eller ikke angis, rapporteres informasjonen om kioskøkten.</translation>
+<translation id="3852924591079583104">
+      Hvis denne regelen er satt til ArcSession og Android har startet, tvinges enheten til å starte på nytt når brukeren logger av.
+      Når regelen er satt til «Always» (Alltid), tvinges enheten til å starte på nytt hver gang brukeren logger av.
+      Hvis den ikke er angitt, har den ingen virkning, og enheten tvinges ikke til å starte på nytt når brukeren logger av. Det samme gjelder hvis den er satt til «Never» (Aldri).
+      </translation>
 <translation id="3858658082795336534">Utskrift på begge sider som standard</translation>
 <translation id="3859780406608282662">Legg til en parameter i hentingen av Variasjoner-utgangsverdien i <ph name="PRODUCT_OS_NAME" />.
 
@@ -1534,6 +1571,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="4555850956567117258">Slå på ekstern attestasjon for brukeren</translation>
 <translation id="4557134566541205630">Nettadresse for ny fane for standard søkeleverandør</translation>
 <translation id="4567137030726189378">Tillat bruk av utviklerverktøy</translation>
+<translation id="4578265298946081589">Ikke start på nytt når brukeren logger av.</translation>
 <translation id="4600786265870346112">Aktiver stor markør</translation>
 <translation id="4604931264910482931">Konfigurer svarteliste for innebygde meldinger</translation>
 <translation id="4613508646038788144">Hvis regelen er satt til «usann», kan tredjepartsprogramvare sette inn kjørbar kode i Chromes prosesser. Hvis regelen ikke er spesifisert eller er satt til «sann», forhindres tredjepartsprogramvare fra å sette inn kjørbar kode i Chromes prosesser.</translation>
@@ -1582,12 +1620,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="4725528134735324213">Slå på Android Backup Service</translation>
 <translation id="4725801978265372736">Krev at navnet på den lokale brukeren samsvarer med verten for ekstern tilgang</translation>
 <translation id="4733471537137819387">Retningslinjer knyttet til integrert HTTP-autentisering.</translation>
-<translation id="4744190513568488164">Tjenere <ph name="PRODUCT_NAME" /> kan delegere til.
-
-          Atskill tjenernavnene med komma. Jokertegn (*) er tillatt.
-
-
-          Hvis du ikke spesifiserer denne regelen, delegerer ikke <ph name="PRODUCT_NAME" /> brukerlegitimasjon selv om en tjener registreres som intranett.</translation>
 <translation id="4752880493649142945">Klientsertifikatet for tilkobling til RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">Hvis denne regelen er angitt som sann eller ikke er angitt, foreslår <ph name="PRODUCT_NAME" /> sider som er relatert til den aktive siden.
       Forslagene hentes fra Googles tjenere.
@@ -1609,6 +1641,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
           Hvis denne innstillingen ikke angis, deaktiveres den store musepekeren til å å begynne med, men brukere kan aktivere den når som helst.</translation>
 <translation id="4802905909524200151">Konfigurer funksjonaliteten for oppdatering av <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvare</translation>
+<translation id="4804828344300125154">Start alltid på nytt når brukeren logger av.</translation>
 <translation id="4807950475297505572">Det fjernes brukere til nok plass er frigjort, i rekkefølgen «lengst tid siden forrige gang brukt»</translation>
 <translation id="4815725774537609998">Denne regelen er avviklet. Bruk ProxyMode i stedet.
 
@@ -1654,6 +1687,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="4917385247580444890">Sterk</translation>
 <translation id="4923806312383904642">Tillat at WebDriver overstyrer inkompatible regler</translation>
 <translation id="494613465159630803">Cast-mottaker</translation>
+<translation id="494924690085329212">Start på nytt når brukeren logger av, hvis Android har startet.</translation>
 <translation id="4962262530309732070">Hvis denne regelen angis som «true» (sann) eller ikke konfigureres, tillates «Legg til person» i brukeradministreringen for <ph name="PRODUCT_NAME" />.
 
       Hvis denne regelen angis som «false» (usann), tillates ikke oppretting av nye profiler via brukeradministreringen for <ph name="PRODUCT_NAME" />.</translation>
@@ -2044,6 +2078,7 @@ I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder denne regelen begge 
           Hvis innstillingen ikke angis, deaktiveres muntlig tilbakemelding når påloggingssiden vises for første gang. Brukere kan aktivere eller deaktivere muntlig tilbakemelding når som helst, og dens status på påloggingssiden forblir den samme mellom brukere.</translation>
 <translation id="5868414965372171132">Nettverkskonfigurasjon på brukernivå</translation>
 <translation id="5879014913445067283">Kontrollerer funn av fildelinger på nettverket via <ph name="NETBIOS_NAME" /></translation>
+<translation id="5882345429632338713">Forsinkelse før alternativ nettleser startes (millisekunder)</translation>
 <translation id="5883015257301027298">Standardinnstilling for informasjonskapsler</translation>
 <translation id="5887414688706570295">Konfigurerer TalkGadget-prefikset som skal brukes av verter med ekstern adgang, og forhindrer brukere fra å endre det.
 
@@ -2234,6 +2269,7 @@ I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder denne regelen begge 
       Bare hvis allowCorporateKeyUsage er satt til «true» (sann) for en utvidelse, kan den bruke plattformnøkler som er spesifisert for bedriftsbruk, til å signere vilkårlige data. Denne tillatelsen må bare gis hvis du vet at utvidelsen kan sikre tilgangen til nøkkelen mot angripere.</translation>
 <translation id="6208896993204286313">Rapportering av informasjon tilknyttet <ph name="PRODUCT_NAME" />-regelen</translation>
 <translation id="6210259502936598222">Rapportering av versjonsinformasjon for OS og <ph name="PRODUCT_NAME" /></translation>
+<translation id="6210610748361191729">Hvis regelen er satt til «false» (usann), får ikke brukere tilgang til UI-et for eksportering og importering, men det er fremdeles mulig å bruke «lxc»-kommandoer direkte i den virtuelle maskinen for å eksportere og importere beholderbilder.</translation>
 <translation id="6211428344788340116">Rapportér aktivitetstider for enhet.
 
       Hvis denne innstillingen ikke angis eller angis som «true», rapporterer registrerte enheter om hvilke tidsperioder en bruker er aktiv på enheten. Hvis innstillingen angis som «false», blir ikke aktivitetstider registrert eller rapportert.</translation>
@@ -2288,6 +2324,7 @@ I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder denne regelen begge 
           Denne regelen fungerer bare hvis «RestoreOnStartup» er satt til «RestoreOnStartupIsURLs».
 
           Denne regelen er bare tilgjengelig på Windows-forekomster som er tilknyttet <ph name="MS_AD_NAME" />-domener, eller Windows 10 Pro- eller Enterprise-forekomster som er registrert for enhetsadministrering.</translation>
+<translation id="6417265370957905582">Google Assistent</translation>
 <translation id="6426205278746959912">Du kan ikke tvinge Android-apper til å bruke proxy-tjenere. En undergruppe av proxy-innstillinger er gjort tilgjengelige for Android-apper, og utviklerne av slike apper kan selv velge om appene skal følge dem eller ikke:
 
           Hvis du velger aldri å bruke proxy-tjenere, blir Android-apper informert om at ingen proxy-tjenere er konfigurert.
@@ -2552,6 +2589,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Like før skjermen nedtones, evaluerer den smarte modellen for nedtoning om nedtoning av skjermen bør utsettes. Hvis den smarte modellen for nedtoning utsetter nedtoning av skjermen, forlenges tiden det tar før skjermen nedtones. I dette tilfellet blir utsettelsen av avslått skjerm, låseskjerm og inaktivitet justert til å samsvare med tidsrommet fra nedtoningsutsettelsen slik det ble konfigurert opprinnelig.
       Hvis denne regelen er angitt som «True» (sann), eller hvis den ikke er angitt, slås den smarte modellen for nedtoning på, og den kan forlenge tiden det tar før skjermen nedtones. Hvis denne regelen er angitt som «False» (usann), påvirkes ikke nedtoning av skjermen av den smarte modellen for nedtoning.</translation>
+<translation id="6972540544240464302">Velg konfigurasjon for oppgaveplanlegging</translation>
 <translation id="6994082778848658360">Spesifiserer hvordan det integrerte sikre maskinvareelementet kan brukes til å tilby tofaktor-autentisering hvis det er kompatibelt med denne funksjonen. Av/på-knappen på maskinen brukes til å finne ut om brukeren er fysisk til stede.
 
       Hvis «Disabled» (deaktivert) er valgt, tilbys ingen tofaktor-autentisering.
@@ -2636,6 +2674,11 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis denne innstillingen ikke angis, kan brukeren endre listen over programmer som er festet i programlisten.</translation>
 <translation id="7132877481099023201">Nettadresser som uten forespørsel blir gitt tilgang til enheter med videoopptak</translation>
 <translation id="7138678301420049075">Annet</translation>
+<translation id="7140629953254369759">Instruerer <ph name="PRODUCT_OS_NAME" /> om å bruke konfigurasjonen for oppgaveplanlegging med navnet som angis.
+
+      Denne regelen kan settes til «konservativ» og «ytelse», som medfører at konfigurasjoner for oppgaveplanlegging som er justert for henholdsvis stabilitet og maksimal ytelse, brukes.
+
+      Hvis regelen ikke er angitt, kan brukeren velge selv.</translation>
 <translation id="7158064522994309072">Denne regelen kontrollerer hvilken kommando som skal brukes for å åpne nettadresser i en alternativ nettleser.
 
       Hvis denne regelen ikke er angitt, brukes en plattformspesifikk standardregel: Internet Explorer for Windows, eller Safari for Mac OS X. På Linux åpnes det ikke noen alternativ nettleser når denne regelen ikke er angitt.
@@ -2835,6 +2878,11 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Vær oppmerksom på at denne regelen avhenger av at operativsystemstakken for sertifikatverifisering tillater SHA-1-signaturer. Hvis en OS-oppdatering endrer hvordan OS-et håndterer SHA-1-sertifikater, kan det hende denne regelen ikke har noen effekt lenger. Videre er denne regelen ment som en midlertidig løsning for å gi bedrifter mer tid til å gå bort fra bruken av SHA-1. Denne regelen blir fjernet ca. 1. januar 2019.
 
       Hvis denne regelen ikke er konfigurert eller er angitt som false (usann), følger <ph name="PRODUCT_NAME" /> den offentlig kunngjorte planen for SHA-1-avvikling.</translation>
+<translation id="7578049687634719313">Denne regelen styrer ventetiden i millisekunder før en alternativ nettleser åpnes.
+
+      Hvis denne regelen er satt til 0 eller ikke er angitt, åpnes konfigurerte nettadresser umiddelbart i en alternativ nettleser når brukeren navigerer til dem.
+
+      Når denne regelen er satt til et tall, viser Chrome en melding i dette antallet millisekunder og åpner deretter den alternative nettleseren.</translation>
 <translation id="7593523670408385997">Konfigurerer bufferstørrelsen som <ph name="PRODUCT_NAME" /> bruker for lagring av bufrede filer på disken.
 
       Hvis du angir denne innstillingen, bruker <ph name="PRODUCT_NAME" /> den tildelte bufferstørrelsen uansett om brukeren har spesifisert «--disk-cache-size»-flagget eller ikke. Verdien som er angitt i denne innstillingen er ikke en hard grense, men et forslag til buffersystemet. Alle verdier under et par megabyte er for små og blir avrundet oppover til et logisk minimum.
@@ -2887,6 +2935,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Gå til https://developers.google.com/safe-browsing for å få mer informasjon om Safe Browsing.</translation>
 <translation id="7643883929273267746">Begrens kontoer som er synlige i <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Avgjør om datastreifing skal aktiveres for enheten. Hvis innstillingen er angitt som Sann, tillates datastreifing. Hvis innstillingen er angitt som Usann eller ikke er konfigurert, blir ikke datastreifing tilgjengelig.</translation>
+<translation id="7657261947024629645">Optimaliser for ytelse.</translation>
 <translation id="7673194325208122247">Tidsperiode (millisekunder)</translation>
 <translation id="7676708657861783864">Informasjonskapsler angitt av sider som samsvarer med disse nettadressemønstrene, begrenses til den gjeldende økten. Det vil si at de slettes dersom nettleseren lukkes.
 
@@ -3364,13 +3413,6 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
       Hvis denne innstillingen er slått på, sender tjenesten for passordbeskyttelse brukerne til denne nettadressen for å endre passordet etter at de har sett en advarsel i nettleseren.
       Hvis denne innstillingen er slått av eller ikke er angitt, sender tjenesten for passordbeskyttelse brukerne til https://myaccounts.google.com for å endre passordet.
       Denne regelen er bare tilgjengelig på Windows-forekomster som er tilknyttet <ph name="MS_AD_NAME" />-domener, eller Windows 10 Pro- eller Enterprise-forekomster som er registrert for enhetsadministrering.</translation>
-<translation id="8782750230688364867">Angir prosentandelen for hvordan forsinkelsen til skjermdemping skaleres når enheten er i presentasjonsmodus.
-
-          Hvis denne innstillingen er konfigurert, angir den prosentandelen for hvordan forsinkelsen til skjermdemping skaleres når enheten er i presentasjonsmodus. Når forsinkelsen er skalert, blir forsinkelsen for avslått, låst og inaktiv skjerm justert slik at de har samme lengde fra skjermdempingsforsinkelsen som i den opprinnelige konfigurasjonen.
-
-          Hvis denne innstillingen ikke angis, brukes en standard skaleringsfaktor.
-
-          Skaleringsfaktoren må være på minst 100 %. Det er ikke tillatt med verdier som gjør inaktivitetsforsinkelsen i presentasjonsmodus kortere enn den er ved vanlig bruk.</translation>
 <translation id="8798099450830957504">Standard</translation>
 <translation id="8801680448782904838">Varsle en bruker om at nettleseren eller enheten bør eller må startes på nytt</translation>
 <translation id="8818173863808665831">Rapportering av enhetens geografiske posisjon.

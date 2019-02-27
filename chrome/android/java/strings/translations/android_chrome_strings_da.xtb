@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">Angiv VR</translation>
 <translation id="116280672541001035">Brugt</translation>
 <translation id="1172593791219290334">Opstartsside</translation>
+<translation id="1173894706177603556">Omdøb</translation>
 <translation id="1175310183703641346">Dine bogmærker, din historik, dine adgangskoder og meget andet bliver ikke længere synkroniseret med din Google-konto</translation>
 <translation id="1178581264944972037">Pause</translation>
 <translation id="1181037720776840403">Fjern</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">Tryk for at søge</translation>
 <translation id="2079545284768500474">Fortryd</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> af <ph name="TOTAL_RESULTS" /></translation>
-<translation id="208586643495776849">Prøv igen</translation>
 <translation id="2086652334978798447">Log ind på Chrome for at hente brugertilpasset indhold, som er foreslået af Chrome.</translation>
 <translation id="2091887806945687916">Lyd</translation>
 <translation id="2096012225669085171">Synkroniser og tilpas på flere enheder</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">Download af <ph name="FILE_NAME" /> mislykkedes på grund af fejl i filsystemet.</translation>
 <translation id="3398320232533725830">Åbn bogmærkeadministratoren</translation>
 <translation id="3414952576877147120">Størrelse:</translation>
-<translation id="3434611491093664205">Gør klar til VR…</translation>
 <translation id="3443221991560634068">Genindlæs den aktuelle side</translation>
 <translation id="3445014427084483498">Lige nu</translation>
 <translation id="3452612588551937789">Log ind med din Google-konto for at få adgang til dine bogmærker, dine adgangskoder, din historik og andre indstillinger på alle dine enheder.</translation>
@@ -929,7 +928,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7929962904089429003">Åbn menuen</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> er forældet.</translation>
 <translation id="7947953824732555851">Acceptér og log ind</translation>
-<translation id="7960977077911686065">Ved at fortsætte accepterer du, at Chrome sender data fra Chrome AutoFyld samt websitets adresse og indhold til Google for at levere denne tjeneste. Du accepterer også, at Chrome sender de personoplysninger, du har valgt, til websitet via Chrome AutoFyld. \n\nGå til Chrome-indstillingerne for at deaktivere Google Assistent i Chrome og Chrome AutoFyld.  <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Leverandør:</translation>
 <translation id="7975379999046275268">Se forhåndsvisning af siden <ph name="BEGIN_NEW" />Ny<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Forudindlæs sider, så du kan browse og søge hurtigere</translation>
@@ -987,7 +985,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8339163506404995330">Sider på <ph name="LANGUAGE" /> oversættes ikke</translation>
 <translation id="8349013245300336738">Sortér efter mængden af data, der er brugt</translation>
 <translation id="8372893542064058268">Tillad synkronisering i baggrunden for et bestemt website.</translation>
-<translation id="8373513848523649558">Du kan til enhver tid <ph name="BEGIN_LINK1" />tilpasse disse indstillinger<ph name="END_LINK1" /></translation>
 <translation id="8374821112118309944">Du skal opdatere TalkBack til en nyere version.</translation>
 <translation id="8378714024927312812">Administreret af din organisation</translation>
 <translation id="8380167699614421159">Dette website viser påtrængende eller vildledende annoncer</translation>

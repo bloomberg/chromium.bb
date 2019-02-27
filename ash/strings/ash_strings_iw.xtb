@@ -228,6 +228,7 @@
 <translation id="4585337515783392668">הפסקת העברה במכשיר לא מוכר</translation>
 <translation id="4628757576491864469">מכשירים</translation>
 <translation id="4659419629803378708">‏ChromeVox הופעל</translation>
+<translation id="4696813013609194136">ביטול נעילת המכשיר באמצעות קוד הורה</translation>
 <translation id="4734965478015604180">אופקי</translation>
 <translation id="4774338217796918551">אפשר לחזור מחר בשעה <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">סיסמה עבור <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -308,6 +309,7 @@
 <translation id="615957422585914272">הצג מקלדת במסך</translation>
 <translation id="6164005077879661055">כל הקבצים והנתונים המקומיים המשויכים למשתמש בפיקוח יימחקו לצמיתות לאחר שמשתמש בפיקוח זה יוסר. המנהל עדיין יוכל לראות את האתרים שבהם משתמש בפיקוח זה ביקר, ואת ההגדרות שלו, בכתובת <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
+<translation id="6226658484809055840">למנהל המכשיר יש גישה לכל הפעילות, כולל סיסמאות ותקשורת.</translation>
 <translation id="6254629735336163724">נעול במצב אופקי</translation>
 <translation id="6259254695169772643">כדי לבחור יש להשתמש בסטיילוס</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: מפעיל...</translation>
@@ -376,6 +378,7 @@
 <translation id="7377169924702866686">‏Caps Lock מופעל.</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> שניות</translation>
 <translation id="7398254312354928459">חיבור הרשת הוחלף</translation>
+<translation id="7405710164030118432">‏כדי לבטל את נעילת המכשיר, יש להזין את קוד גישת ההורה של Family Link</translation>
 <translation id="742594950370306541">המצלמה נמצאת בשימוש.</translation>
 <translation id="743058460480092004">המצלמה והמיקרופון נמצאים בשימוש.</translation>
 <translation id="7497767806359279797">בחירת שפה ומקלדת</translation>

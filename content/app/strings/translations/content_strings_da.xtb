@@ -32,6 +32,7 @@
 <translation id="1930711995431081526">status</translation>
 <translation id="1938124657309484470">Værdien må ikke være senere end <ph name="MAXIMUM_DATE_OR_TIME" />.</translation>
 <translation id="1946271899482435442">Vis datovælger</translation>
+<translation id="1982354452682152483">Der er ingen tilgængelig beskrivelse.</translation>
 <translation id="1993104285338243655">Ændret til spejling</translation>
 <translation id="2060505056492490888">"<ph name="DOT" />" er placeret forkert i "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">I dag</translation>
@@ -73,6 +74,7 @@
 <translation id="3450233048674729344">Værdien skal være mindre end eller lig med <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definition</translation>
 <translation id="3557673793733683882">overskrift <ph name="HEADING_LEVEL" /></translation>
+<translation id="3685101356851116974">Billedet har ingen etiket</translation>
 <translation id="3706100364254443312">kontakt</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
@@ -153,6 +155,7 @@
 <translation id="6453774872122745852">tak</translation>
 <translation id="648732519525291180">tidsvælger</translation>
 <translation id="6550675742724504774">Valgmuligheder</translation>
+<translation id="6572309429103589720">Ugyldig grammatik</translation>
 <translation id="658823671542763450">åbn fuld skærm</translation>
 <translation id="663493177488814956">feed</translation>
 <translation id="6637586476836377253">log</translation>
@@ -175,6 +178,7 @@
 <translation id="7139483182332611405">forord</translation>
 <translation id="7263440858009898357">Vælg et punkt på listen.</translation>
 <translation id="727747134524199931">kolonneoverskrift</translation>
+<translation id="7336527682887843386">Der kunne ikke hentes en beskrivelse.</translation>
 <translation id="7353453495576941748">anerkendelse</translation>
 <translation id="7364796246159120393">Vælg fil</translation>
 <translation id="739024184232394898">Andet...</translation>
@@ -183,22 +187,28 @@
 <translation id="7491962110804786152">fane</translation>
 <translation id="7514365320538308">Download</translation>
 <translation id="7529102961911894712">backlink</translation>
+<translation id="7533959249147584474">Grafikken har ingen etiket</translation>
 <translation id="7647456547678091388">tip</translation>
 <translation id="7661956066982048809">grafikdokument</translation>
 <translation id="7673697353781729403">Timer</translation>
 <translation id="7681220483256441252">indeks</translation>
 <translation id="7740050170769002709">HTML-indhold</translation>
+<translation id="7745230546936012372">Åbn genvejsmenuen for at få beskrivelser til billeder, der mangler en beskrivelse.</translation>
 <translation id="7750228210027921155">Integreret billede</translation>
+<translation id="775297008183122718">Ugyldig indtastning</translation>
 <translation id="7789962463072032349">pause</translation>
 <translation id="7802800022689234070">Trekant til at vise eller skjule indhold</translation>
 <translation id="7888071071722539607">Mailadressen skal indeholde et "<ph name="ATSIGN" />". "<ph name="INVALIDADDRESS" />" mangler et "<ph name="ATSIGN" />".</translation>
 <translation id="7891486169920085145">splitter</translation>
 <translation id="795667975304826397">Der er ikke valgt nogen fil</translation>
+<translation id="8042519864538898414">Lader til at indeholde voksenindhold.</translation>
 <translation id="8053789581856978548">tekstfelt til søgning</translation>
 <translation id="8057695513531652401">meddelelse</translation>
 <translation id="8105797009065549151">reference i noter</translation>
+<translation id="811583516810654505">Henter beskrivelsen...</translation>
 <translation id="8117451130807776954">Denne uge</translation>
 <translation id="8199524924445686405">åååå</translation>
+<translation id="8261464734335370856">Ugyldig stavning</translation>
 <translation id="8284326494547611709">Undertekster</translation>
 <translation id="835897206747267392">Ugyldig værdi.</translation>
 <translation id="8403857369060869934">forløbet tid: <ph name="ELAPSED_TIME" /></translation>

@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">Intră în RV</translation>
 <translation id="116280672541001035">Utilizate</translation>
 <translation id="1172593791219290334">Pagină de pornire</translation>
+<translation id="1173894706177603556">Redenumește</translation>
 <translation id="1175310183703641346">Marcajele, istoricul, parolele și alte setări nu vor mai fi sincronizate cu Contul Google</translation>
 <translation id="1178581264944972037">Întrerupe</translation>
 <translation id="1181037720776840403">Elimină</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">Atinge pentru a căuta</translation>
 <translation id="2079545284768500474">Anulează</translation>
 <translation id="2082238445998314030">Rezultatul <ph name="RESULT_NUMBER" /> din <ph name="TOTAL_RESULTS" /></translation>
-<translation id="208586643495776849">Încearcă din nou</translation>
 <translation id="2086652334978798447">Pentru a obține sugestii de conținut personalizat de la Google, conectează-te la Chrome.</translation>
 <translation id="2091887806945687916">Sunet</translation>
 <translation id="2096012225669085171">Sincronizează și personalizează pe toate dispozitivele</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">Descărcarea fișierului <ph name="FILE_NAME" /> nu a reușit din cauza unor erori privind sistemul de fișiere.</translation>
 <translation id="3398320232533725830">Deschide managerul de marcaje</translation>
 <translation id="3414952576877147120">Dimensiune:</translation>
-<translation id="3434611491093664205">Se pregătește RV…</translation>
 <translation id="3443221991560634068">Reîncarcă pagina curentă</translation>
 <translation id="3445014427084483498">Adineauri</translation>
 <translation id="3452612588551937789">Conectează-te folosind Contul Google pentru a accesa marcajele, istoricul, parolele și alte setări pe toate dispozitivele.</translation>
@@ -929,7 +928,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7929962904089429003">Deschide meniul</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> este învechit.</translation>
 <translation id="7947953824732555851">Accept și conectare</translation>
-<translation id="7960977077911686065">Continuând, ești de acord că din Chrome se vor trimite date din completarea automată din Chrome, adresa URL a site-ului și conținutul său la Google pentru a oferi acest serviciu. Ești de acord și că din Chrome se vor trimite către site datele cu caracter personal pe care le-ai selectat prin completarea automată din Chrome. \n\nAccesează setările Chrome pentru a dezactiva Asistentul Google în Chrome și în completarea automată Chrome.  <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Producător:</translation>
 <translation id="7975379999046275268">Previzualizează pagina <ph name="BEGIN_NEW" />Nou<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Preîncarcă paginile pentru navigare și căutare mai rapide</translation>
@@ -987,7 +985,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="8339163506404995330">Paginile în <ph name="LANGUAGE" /> nu vor fi traduse</translation>
 <translation id="8349013245300336738">Sortează după volumul de date folosite</translation>
 <translation id="8372893542064058268">Permite sincronizarea în fundal pentru un anumit site.</translation>
-<translation id="8373513848523649558">Poți <ph name="BEGIN_LINK1" />personaliza aceste setări<ph name="END_LINK1" /> oricând</translation>
 <translation id="8374821112118309944">Trebuie să actualizați TalkBack la o versiune mai nouă.</translation>
 <translation id="8378714024927312812">Gestionat de organizația ta</translation>
 <translation id="8380167699614421159">Acest site afișează anunțuri deranjante sau înșelătoare</translation>
@@ -1087,7 +1084,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="9100610230175265781">Este necesară o expresie de acces</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Afișează originalul</translation>
-<translation id="9138504265731110181">Asistentul Google îți permite să economisești timp ajutându-te să finalizezi procesele de plată pe web</translation>
+<translation id="9138504265731110181">Cu Asistentul Google economisești timp la finalizarea achizițiilor pe web</translation>
 <translation id="9139068048179869749">Întreabă înainte de a permite site-urilor să trimită notificări (recomandat)</translation>
 <translation id="9139318394846604261">Cumpărături</translation>
 <translation id="9155898266292537608">De asemenea, poți căuta atingând scurt un cuvânt</translation>

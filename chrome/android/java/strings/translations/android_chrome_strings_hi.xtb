@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">VR डालें</translation>
 <translation id="116280672541001035">उपयोग किया गया</translation>
 <translation id="1172593791219290334">शुरुआती पन्ना</translation>
+<translation id="1173894706177603556">नाम बदलें</translation>
 <translation id="1175310183703641346">आपके बुकमार्क, इतिहास, पासवर्ड वगैरह अब आपके Google खाते से समन्‍वयित नहीं किए जाएंगे</translation>
 <translation id="1178581264944972037">पॉज़ करें</translation>
 <translation id="1181037720776840403">हटाएं</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">खोजने के लिए टैप करें</translation>
 <translation id="2079545284768500474">वापस लाएं</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> में से <ph name="RESULT_NUMBER" /> परिणाम</translation>
-<translation id="208586643495776849">कृपया दोबारा कोशिश करें</translation>
 <translation id="2086652334978798447">Google द्वारा सुझाई गई वैयक्तिकृत सामग्री प्राप्त करने के लिए, Chrome में प्रवेश करें.</translation>
 <translation id="2091887806945687916">ध्वनि</translation>
 <translation id="2096012225669085171">सभी डिवाइस में सिंक करना और मनमुताबिक बनाना</translation>
@@ -288,6 +288,7 @@
 <translation id="3166827708714933426">टैब और विंडो शॉर्टकट</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android सेटिंग<ph name="END_LINK" /> में Chrome के लिए अनुमतियां चालू करें.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> संग्रहित डेटा</translation>
+<translation id="3205824638308738187">करीब-करीब पूरा हो गया!</translation>
 <translation id="3207960819495026254">बुकमार्क किया गया</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> मिटाया गया</translation>
 <translation id="321773570071367578">यदि आप अपना पासफ़्रेज़ भूल गए हैं या यह सेटिंग बदलना चाहते हैं, तो <ph name="BEGIN_LINK" />समन्वयन रीसेट करें<ph name="END_LINK" /></translation>
@@ -320,7 +321,6 @@
 <translation id="3387650086002190359">सिस्‍टम त्रुटियों के कारण <ph name="FILE_NAME" /> डाउनलोड विफल रहा.</translation>
 <translation id="3398320232533725830">बुकमार्क प्रबंधक खोलें</translation>
 <translation id="3414952576877147120">आकार:</translation>
-<translation id="3434611491093664205">VR के लिए तैयार हो रहा है…</translation>
 <translation id="3443221991560634068">वर्तमान पेज फिर से लोड करें</translation>
 <translation id="3445014427084483498">अभी-अभी</translation>
 <translation id="3452612588551937789">अपने सभी डिवाइस पर अपने बुकमार्क, इतिहास, पासवर्ड और अन्य सेटिंग प्राप्त करने के लिए अपने Google खाते से प्रवेश करें.</translation>
@@ -358,6 +358,7 @@
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> एमबी अन्य ऐप्लिकेशन</translation>
 <translation id="3744111561329211289">पृष्ठभूमि समन्वयन</translation>
 <translation id="3745176700485982507">इस पेज पर आपकी पसंदीदा वेबसाइटों की लिंक मिल सकते हैं</translation>
+<translation id="3771001275138982843">अपडेट डाउनलोड नहीं किया जा सका</translation>
 <translation id="3773755127849930740">युग्मन की अनुमति देने के लिए <ph name="BEGIN_LINK" />ब्लूटूथ चालू करें<ph name="END_LINK" /></translation>
 <translation id="3778956594442850293">होम स्‍क्रीन में जोड़ा गया</translation>
 <translation id="3781011235031427080">'इसी तरह के और भी' आधी स्क्रीन पर खुला है</translation>
@@ -530,6 +531,7 @@
 <translation id="497421865427891073">आगे जाएं</translation>
 <translation id="4988210275050210843">फ़ाइल डाउनलोड हो रही है (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">पेज</translation>
+<translation id="4994033804516042629">कोई संपर्क नहीं मिला</translation>
 <translation id="4996978546172906250">इसके द्वारा शेयर करें</translation>
 <translation id="5004416275253351869">Google गतिविधि नियंत्रण</translation>
 <translation id="5005498671520578047">पासवर्ड कॉपी करें</translation>
@@ -751,6 +753,7 @@
 <translation id="6643016212128521049">साफ़ करें</translation>
 <translation id="6643649862576733715">सेव किए गए डेटा की मात्रा के हिसाब से क्रम में लगाएं</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 और <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अन्य}one{<ph name="CONTACT_PREVIEW" />\u2026 और <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अन्य}other{<ph name="CONTACT_PREVIEW" />\u2026 और <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अन्य}}</translation>
+<translation id="6649642165559792194">इमेज की झलक देखें <ph name="BEGIN_NEW" />नई<ph name="END_NEW" /></translation>
 <translation id="6656545060687952787">डिवाइस स्‍कैन करने के लिए Chrome को स्‍थान एक्‍सेस की आवश्‍यकता है. <ph name="BEGIN_LINK" />अनुमतियां अपडेट करें<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
 <translation id="6659594942844771486">टैब</translation>
@@ -926,6 +929,7 @@
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> पुराना है.</translation>
 <translation id="7947953824732555851">स्वीकार करें और साइन इन करें</translation>
 <translation id="7963646190083259054">विक्रेता:</translation>
+<translation id="7975379999046275268">पेज की झलक देखें <ph name="BEGIN_NEW" />नया<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">ज़्यादा तेज़ी से ब्राउज़ करने और खोजने के लिए पेज पहले से लोड करें</translation>
 <translation id="79859296434321399">'बढ़ी हुई वास्तविकता' की सामग्री देखने के लिए, ARCore इंस्टॉल करें</translation>
 <translation id="7986741934819883144">कोई संपर्क चुनें</translation>
@@ -981,7 +985,6 @@
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> भाषा के पेज का अनुवाद नहीं किया जाएगा</translation>
 <translation id="8349013245300336738">इस्तेमाल किए गए डेटा की मात्रा के हिसाब से क्रम में लगाएं</translation>
 <translation id="8372893542064058268">किसी विशिष्ट साइट के लिए पृष्ठभूमि समन्वयन की अनुमति दें.</translation>
-<translation id="8373513848523649558">आप कभी भी <ph name="BEGIN_LINK1" />इन सेटिंग को अपनी पसंद के मुताबिक बना<ph name="END_LINK1" /> सकते हैं</translation>
 <translation id="8374821112118309944">आपको TalkBack को अधिक नए वर्शन से अपडेट करना होगा.</translation>
 <translation id="8378714024927312812">आपके संगठन की ओर से प्रबंधित</translation>
 <translation id="8380167699614421159">इस साइट में तंग करने वाले या गुमराह करने वाले विज्ञापन दिखाई देते हैं</translation>
@@ -1081,6 +1084,7 @@
 <translation id="9100610230175265781">पासफ़्रेज़ आवश्यक</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">मूल दिखाएं</translation>
+<translation id="9138504265731110181">वेबसाइट से चेकआउट की प्रक्रिया तेज़ी से पूरी करके, Google Assistant आपका समय बचाती है.</translation>
 <translation id="9139068048179869749">साइट को नोटिफ़िकेशन भेजने देने से पहले अनुमति लेना आवश्यक बनाएं (अनुशंसित)</translation>
 <translation id="9139318394846604261">शॉपिंग</translation>
 <translation id="9155898266292537608">आप किसी शब्द पर बस एक टैप करके भी खोज सकते हैं</translation>

@@ -82,6 +82,7 @@
 <translation id="3897092660631435901">Izvēlne</translation>
 <translation id="3909791450649380159">Izgrie&amp;zt</translation>
 <translation id="3990502903496589789">Labā puse</translation>
+<translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 nelasīts paziņojums}zero{# nelasīti paziņojumi}one{# nelasīts paziņojums}other{# nelasīti paziņojumi}}</translation>
 <translation id="4202807286478387388">lekt</translation>
 <translation id="4250229828105606438">Ekrānuzņēmums</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{Pirms 1 mēneša}zero{Pirms # mēnešiem}one{Pirms # mēneša}other{Pirms # mēnešiem}}</translation>
@@ -203,4 +204,5 @@
 <translation id="9161053988251441839">IETEIKTĀS LIETOTNES</translation>
 <translation id="9170848237812810038">&amp;Atsaukt</translation>
 <translation id="932327136139879170">Sākums</translation>
+<translation id="944069440740578670">Nelasītie paziņojumi</translation>
 </translationbundle>

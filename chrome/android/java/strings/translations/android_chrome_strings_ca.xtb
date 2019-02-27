@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">Activa el mode RV</translation>
 <translation id="116280672541001035">Dades utilitzades</translation>
 <translation id="1172593791219290334">Pàgina d'inici</translation>
+<translation id="1173894706177603556">Canvia el nom</translation>
 <translation id="1175310183703641346">Les adreces d'interès, l'historial, les contrasenyes i altres opcions ja no se sincronitzaran amb el teu Compte de Google</translation>
 <translation id="1178581264944972037">Posa en pausa</translation>
 <translation id="1181037720776840403">Suprimeix</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">Toca per cercar</translation>
 <translation id="2079545284768500474">Desfés</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
-<translation id="208586643495776849">Torna-ho a provar</translation>
 <translation id="2086652334978798447">Inicia la sessió a Chrome perquè Google et suggereixi contingut personalitzat</translation>
 <translation id="2091887806945687916">So</translation>
 <translation id="2096012225669085171">Sincronitza i personalitza el contingut en tots els dispositius</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">No s'ha pogut baixar <ph name="FILE_NAME" /> a causa d'errors amb el sistema de fitxers.</translation>
 <translation id="3398320232533725830">Obre el gestor d'adreces d'interès</translation>
 <translation id="3414952576877147120">Mida:</translation>
-<translation id="3434611491093664205">Preparant per a RV…</translation>
 <translation id="3443221991560634068">Torna a carregar la pàgina actual</translation>
 <translation id="3445014427084483498">Ara mateix</translation>
 <translation id="3452612588551937789">Inicieu la sessió amb el compte de Google per tenir les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració en tots els dispositius.</translation>
@@ -929,7 +928,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7929962904089429003">Obre el menú</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> no està actualitzat.</translation>
 <translation id="7947953824732555851">Acc. i inicia sessió</translation>
-<translation id="7960977077911686065">En continuar, acceptes que Chrome enviï a Google dades recollides amb la funció Emplenament automàtic, així com l'URL i el contingut del lloc web, per proporcionar aquest servei. També acceptes que, mitjançant aquesta funció, Chrome enviï al lloc web les dades personals que hagis seleccionat. \n\nPer desactivar l'Assistent de Google i Emplenament automàtic a Chrome, ves a la configuració del navegador.  <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Proveïdor:</translation>
 <translation id="7975379999046275268">Previsualitza la pàgina <ph name="BEGIN_NEW" />Novetat<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Carrega les pàgines prèviament per poder-hi navegar i fer cerques més de pressa</translation>
@@ -987,7 +985,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8339163506404995330">Les pàgines en <ph name="LANGUAGE" /> no es traduiran</translation>
 <translation id="8349013245300336738">Ordena per quantitat de dades utilitzades</translation>
 <translation id="8372893542064058268">Permet la sincronització en segon pla en un lloc concret.</translation>
-<translation id="8373513848523649558">Pots <ph name="BEGIN_LINK1" />personalitzar aquestes opcions de configuració<ph name="END_LINK1" /> en qualsevol moment</translation>
 <translation id="8374821112118309944">Heu de fer l'actualització de TalkBack a una versió més recent</translation>
 <translation id="8378714024927312812">Gestionat per la teva organització</translation>
 <translation id="8380167699614421159">Aquest lloc web mostra anuncis intrusius o enganyosos</translation>

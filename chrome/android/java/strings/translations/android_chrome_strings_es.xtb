@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">Iniciar RV</translation>
 <translation id="116280672541001035">Usados</translation>
 <translation id="1172593791219290334">Página de inicio</translation>
+<translation id="1173894706177603556">Cambiar nombre</translation>
 <translation id="1175310183703641346">Tus marcadores, el historial, las contraseñas y otros datos dejarán de sincronizarse con tu cuenta de Google.</translation>
 <translation id="1178581264944972037">Pausar</translation>
 <translation id="1181037720776840403">Quitar</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">Tocar para buscar</translation>
 <translation id="2079545284768500474">Deshacer</translation>
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
-<translation id="208586643495776849">Vuelve a intentarlo</translation>
 <translation id="2086652334978798447">Para obtener contenido personalizado sugerido por Google, inicia sesión en Chrome.</translation>
 <translation id="2091887806945687916">Sonido</translation>
 <translation id="2096012225669085171">Sincroniza y personaliza todos tus dispositivos</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">No se ha podido descargar <ph name="FILE_NAME" /> debido a problemas con el sistema de archivos.</translation>
 <translation id="3398320232533725830">Abre el administrador de marcadores</translation>
 <translation id="3414952576877147120">Tamaño:</translation>
-<translation id="3434611491093664205">Preparando para RV…</translation>
 <translation id="3443221991560634068">Vuelve a cargar la página actual</translation>
 <translation id="3445014427084483498">Ahora mismo</translation>
 <translation id="3452612588551937789">Inicia sesión con tu cuenta de Google para acceder a tus marcadores, contraseñas, historial y otros ajustes desde todos tus dispositivos.</translation>
@@ -929,7 +928,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7929962904089429003">Abre el menú</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> está obsoleto.</translation>
 <translation id="7947953824732555851">Aceptar y acceder</translation>
-<translation id="7960977077911686065">Al continuar, aceptas que, para ofrecer este servicio, Chrome envíe a Google datos recogidos con la función Autocompletar, la URL del sitio web y su contenido. También aceptas que Chrome envíe al sitio web los datos personales que hayas seleccionado mediante la función Autocompletar de Chrome. \n\nVe a la configuración de Chrome para desactivar el Asistente de Google y la función Autocompletar.  <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Proveedor:</translation>
 <translation id="7975379999046275268">Revisar página <ph name="BEGIN_NEW" />Nuevo<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Cargar previamente las páginas para que la navegación y las búsquedas sean más rápidas</translation>
@@ -987,7 +985,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="8339163506404995330">No se traducirán las páginas en <ph name="LANGUAGE" /></translation>
 <translation id="8349013245300336738">Ordenar por cantidad de datos usados</translation>
 <translation id="8372893542064058268">Permite la sincronización en segundo plano de un sitio web específico.</translation>
-<translation id="8373513848523649558">Puedes <ph name="BEGIN_LINK1" />personalizar estos ajustes<ph name="END_LINK1" /> en cualquier momento</translation>
 <translation id="8374821112118309944">Debes instalar una nueva versión de TalkBack.</translation>
 <translation id="8378714024927312812">Gestionado por tu organización</translation>
 <translation id="8380167699614421159">El sitio web muestra anuncios invasivos o engañosos</translation>

@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">VR ನಮೂದಿಸಿ</translation>
 <translation id="116280672541001035">ಬಳಕೆಯಾಗಿದ್ದು</translation>
 <translation id="1172593791219290334">ಆರಂಭಿಕ ಪುಟ</translation>
+<translation id="1173894706177603556">ಮರುಹೆಸರಿಸು</translation>
 <translation id="1175310183703641346">ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಹೆಚ್ಚಿನವುಗಳನ್ನು ಇನ್ನು ಮುಂದೆ ನಿಮ್ಮ Google ಖಾತೆಗೆ ಸಿಂಕ್ ಮಾಡುವುದಿಲ್ಲ</translation>
 <translation id="1178581264944972037">ವಿರಾಮ</translation>
 <translation id="1181037720776840403">ತೆಗೆದುಹಾಕು</translation>
@@ -147,7 +148,6 @@
 <translation id="2063713494490388661">ಹುಡುಕಲು ಟ್ಯಾಪ್‌ ಮಾಡಿ</translation>
 <translation id="2079545284768500474">ರದ್ದುಮಾಡಿ</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> ರಲ್ಲಿ <ph name="RESULT_NUMBER" /> ಫಲಿತಾಂಶಗಳು</translation>
-<translation id="208586643495776849">ಪುನಃ ಪ್ರಯತ್ನಿಸಿ</translation>
 <translation id="2086652334978798447">Google ಸಲಹೆ ನೀಡಲಾದ ವೈಯಕ್ತೀಕರಿಸಲಾದ ವಿಷಯವನ್ನು ಪಡೆದುಕೊಳ್ಳಲು, Chrome ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.</translation>
 <translation id="2091887806945687916">ಶಬ್ಧ</translation>
 <translation id="2096012225669085171">ಸಾಧನಗಳಾದ್ಯಂತ ಸಿಂಕ್ ಮಾಡಿ ಮತ್ತು ವೈಯಕ್ತೀಕರಿಸಿ</translation>
@@ -322,7 +322,6 @@
 <translation id="3387650086002190359">ಫೈಲ್ ಸಿಸ್ಟಂ ದೋಷಗಳ ಕಾರಣದಿಂದಾಗಿ <ph name="FILE_NAME" /> ಡೌನ್‌ಲೋಡ್ ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="3398320232533725830">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳ ಮ್ಯಾನೇಜರ್ ತೆರೆಯಿರಿ</translation>
 <translation id="3414952576877147120">ಗಾತ್ರ:</translation>
-<translation id="3434611491093664205">VR ಗೆ ಸಿದ್ಧವಾಗುತ್ತಿದೆ…</translation>
 <translation id="3443221991560634068">ಪ್ರಸ್ತುತ ಪುಟ ಮರುಲೋಡ್ ಮಾಡಿ</translation>
 <translation id="3445014427084483498">ಇದೀಗ</translation>
 <translation id="3452612588551937789">ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಇತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ನಿಮ್ಮ ಎಲ್ಲಾ ಸಾಧನಗಳಲ್ಲಿ ಪಡೆದುಕೊಳ್ಳಲು ನಿಮ್ಮ Google ಖಾತೆ ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿ.</translation>
@@ -930,7 +929,6 @@
 <translation id="7929962904089429003">ಮೆನು ತೆರೆಯಿರಿ</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> ನ ಅವಧಿ ಮುಗಿದಿದೆ.</translation>
 <translation id="7947953824732555851">ಸಮ್ಮತಿಸಿ ಮತ್ತು ಸೈನ್‌ ಇನ್‌ ಮಾಡಿ</translation>
-<translation id="7960977077911686065">ಮುಂದುವರಿಯುವ ಮೂಲಕ, ಈ ಸೇವೆಯನ್ನು ಒದಗಿಸುವುದಕ್ಕಾಗಿ Chrome, Chrome ನ ಸ್ವಯಂಭರ್ತಿ ವೈಶಿಷ್ಟ್ಯದಿಂದ ಪಡೆದ ಡೇಟಾ, ಸೈಟ್‍ನ URL ಮತ್ತು ಅದರ ವಿಷಯವನ್ನು Google ಗೆ ಕಳುಹಿಸುತ್ತದೆ ಎಂಬ ವಿಚಾರವನ್ನು ನೀವು ಒಪ್ಪುವಿರಿ. Chrome, ನೀವು ಆಯ್ಕೆ ಮಾಡಿದ ವೈಯಕ್ತಿಕ ಡೇಟಾವನ್ನು Chrome ಸ್ವಯಂಭರ್ತಿ ವೈಶಿಷ್ಟ್ಯದ ಮೂಲಕ ವೆಬ್‌ಸೈಟ್‌ಗೆ ಕಳುಹಿಸುತ್ತದೆ ಎಂಬ ವಿಚಾರವನ್ನು ಸಹ ನೀವು ಒಪ್ಪುವಿರಿ. \n\nChrome ಮತ್ತು Chrome ಸ್ವಯಂ ಭರ್ತಿ ಮಾಡುವಿಕೆಯಲ್ಲಿ Google ಅಸಿಸ್ಟೆಂಟ್ ಅನ್ನು ಆಫ್ ಮಾಡಲು Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ ಭೇಟಿ ನೀಡಿ.  <ph name="BEGIN_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">ಮಾರಾಟಗಾರ:</translation>
 <translation id="7975379999046275268">ಪುಟ ಪೂರ್ವವೀಕ್ಷಿಸಿ <ph name="BEGIN_NEW" />ಹೊಸದು<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">ವೇಗವಾದ ಬ್ರೌಸಿಂಗ್ ಮತ್ತು ಹುಡುಕಾಟಕ್ಕಾಗಿ ಪುಟಗಳನ್ನು ಮುಂಚಿತವಾಗಿ ಲೋಡ್ ಮಾಡಿ</translation>
@@ -988,7 +986,6 @@
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> ನಲ್ಲಿನ ಪುಟಗಳನ್ನು ಅನುವಾದ ಮಾಡಲಾಗುವುದಿಲ್ಲ</translation>
 <translation id="8349013245300336738">ಬಳಸಿದ ಡೇಟಾ ಪ್ರಮಾಣದ ಪ್ರಕಾರ ವಿಂಗಡಿಸಿ</translation>
 <translation id="8372893542064058268">ನಿರ್ದಿಷ್ಟ ಸೈಟ್‌ಗಾಗಿ ಹಿನ್ನೆಲೆ ಸಿಂಕ್‌ ಅನುಮತಿಸಿ.</translation>
-<translation id="8373513848523649558">ನೀವು ಯಾವಾಗ ಬೇಕಾದರೂ <ph name="BEGIN_LINK1" />ಈ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಕಸ್ಟಮೈಸ್<ph name="END_LINK1" /> ಮಾಡಬಹುದು.</translation>
 <translation id="8374821112118309944">ನೀವು TalkBack ಅನ್ನು ಹೊಸ ಆವೃತ್ತಿಗೆ ಅಪ್‌ಡೇಟ್‌ ಮಾಡಬೇಕಾದ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="8378714024927312812">ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಮೂಲಕ ನಿರ್ವಹಿಸಲಾಗಿದೆ</translation>
 <translation id="8380167699614421159">ಅತಿಕ್ರಮಣಕಾರಿಯಾಗಿರುವ ಅಥವಾ ತಪ್ಪುದಾರಿಗೆಳೆಯುವ ಜಾಹೀರಾತುಗಳನ್ನು ಈ ಸೈಟ್ ತೋರಿಸುತ್ತದೆ</translation>

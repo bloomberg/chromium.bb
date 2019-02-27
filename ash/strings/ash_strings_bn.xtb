@@ -228,6 +228,7 @@
 <translation id="4585337515783392668">অজানা ডিভাইসে কাস্ট করা বন্ধ করুন</translation>
 <translation id="4628757576491864469">ডিভাইস</translation>
 <translation id="4659419629803378708">ChromeVox সক্ষম করা আছে</translation>
+<translation id="4696813013609194136">অভিভাবকীয় কোড দিয়ে ডিভাইস আনলক করুন</translation>
 <translation id="4734965478015604180">অনুভূমিক</translation>
 <translation id="4774338217796918551">আগামীকাল <ph name="COME_BACK_TIME" />-এ আবার ব্যবহার করতে পারবেন।</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" />-এর জন্য পাসওয়ার্ড</translation>
@@ -309,6 +310,7 @@
 <translation id="6164005077879661055">একবার এই তত্ত্বাবধানে থাকা ব্যবহারকারী সরানো হলে এর সঙ্গে সংশ্লিষ্ট সমস্ত ফাইল এবং
 স্থানীয় ডেটা স্থায়ীভাবে মুছে ফেলা হবে৷ এই তত্ত্বাবধানে থাকা ব্যবহারকারীর জন্য পরিদর্শিত এবং সেটিংস <ph name="MANAGEMENT_URL" /> এ পরিচালকের কাছে এখনো দৃশ্যমান হতে পারে৷</translation>
 <translation id="6165508094623778733">আরও জানুন</translation>
+<translation id="6226658484809055840">পাসওয়ার্ড ও যোগাযোগের তথ্য সহ সব অ্যাক্টিভিটিতে ডিভাইস অ্যাডমিনিস্ট্রেটরের অ্যাক্সেস আছে।</translation>
 <translation id="6254629735336163724">স্ক্রিনটি ল্যান্ডস্কেপ মোডে লক করা আছে</translation>
 <translation id="6259254695169772643">বেছে নিতে স্টাইলাস ব্যবহার করুন</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: সক্রিয় করা হচ্ছে...</translation>
@@ -377,6 +379,7 @@
 <translation id="7377169924702866686">Caps Lock চালু আছে৷</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" />সেকেন্ড</translation>
 <translation id="7398254312354928459">নেটওয়ার্ক সংযোগ পরিবর্তন করা হয়েছে</translation>
+<translation id="7405710164030118432">ডিভাইসটি আনলক করতে আপনার Family Link-এর অভিভাবকীয় অ্যাক্সেস কোডটি লিখুন</translation>
 <translation id="742594950370306541">ক্যামেরা ব্যবহার করা হচ্ছে।</translation>
 <translation id="743058460480092004">ক্যামেরা এবং মাইক্রোফোন ব্যবহার করা হচ্ছে।</translation>
 <translation id="7497767806359279797">ভাষা এবং কীবোর্ড বেছে নিন</translation>

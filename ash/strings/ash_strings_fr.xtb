@@ -229,6 +229,7 @@
 <translation id="4585337515783392668">Arrêter la diffusion vers un destinataire inconnu</translation>
 <translation id="4628757576491864469">Appareils</translation>
 <translation id="4659419629803378708">ChromeVox activé</translation>
+<translation id="4696813013609194136">Déverrouiller l'appareil avec le code parental</translation>
 <translation id="4734965478015604180">Horizontal</translation>
 <translation id="4774338217796918551">Revenez demain à <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Mot de passe de <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -309,6 +310,7 @@
 <translation id="615957422585914272">Afficher le clavier à l'écran</translation>
 <translation id="6164005077879661055">Tous les fichiers et les données locales associés à l'utilisateur supervisé seront définitivement supprimés en même temps que cet utilisateur. Le gestionnaire peut toujours accéder aux sites Web consultés par l'utilisateur supervisé et aux paramètres de celui-ci à l'adresse <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">En savoir plus</translation>
+<translation id="6226658484809055840">L'administrateur de cet appareil a accès à toute votre activité de navigation, y compris vos mots de passe et vos communications.</translation>
 <translation id="6254629735336163724">Verrouillée en position horizontale</translation>
 <translation id="6259254695169772643">Effectuez une sélection à l'aide de votre stylet</translation>
 <translation id="6267036997247669271"><ph name="NAME" /> : activation en cours…</translation>
@@ -377,6 +379,7 @@
 <translation id="7377169924702866686">La touche de verrouillage des majuscules est activée</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" /> min <ph name="SECONDS_REMAINING" /> s</translation>
 <translation id="7398254312354928459">La connexion réseau a été établie</translation>
+<translation id="7405710164030118432">Pour déverrouiller l'appareil, saisissez le code d'accès parental Family Link</translation>
 <translation id="742594950370306541">La caméra est en cours d'utilisation.</translation>
 <translation id="743058460480092004">La caméra et le micro sont en cours d'utilisation.</translation>
 <translation id="7497767806359279797">Choisir la langue et le clavier</translation>
@@ -437,7 +440,7 @@
 <translation id="8261506727792406068">Supprimer</translation>
 <translation id="8297006494302853456">Faible</translation>
 <translation id="8308637677604853869">Menu précédent</translation>
-<translation id="8332664326438198339">Retour au lanceur d'applications</translation>
+<translation id="8332664326438198339">Retour au Lanceur d'applications</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Créer une note</translation>
 <translation id="8375916635258623388">L'appareil <ph name="DEVICE_NAME" /> et votre téléphone seront associés automatiquement</translation>

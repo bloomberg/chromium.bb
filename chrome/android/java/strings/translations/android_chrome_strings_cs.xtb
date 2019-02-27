@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">Zapnout VR</translation>
 <translation id="116280672541001035">Využito</translation>
 <translation id="1172593791219290334">Počáteční stránka</translation>
+<translation id="1173894706177603556">Přejmenovat</translation>
 <translation id="1175310183703641346">Vaše záložky, historie, hesla a další nastavení budou synchronizovány do účtu Google.</translation>
 <translation id="1178581264944972037">Pozastavit</translation>
 <translation id="1181037720776840403">Odebrat</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">Vyhledání klepnutím</translation>
 <translation id="2079545284768500474">Vrátit zpět</translation>
 <translation id="2082238445998314030">Výsledek <ph name="RESULT_NUMBER" /> z <ph name="TOTAL_RESULTS" /></translation>
-<translation id="208586643495776849">Zkuste to znovu</translation>
 <translation id="2086652334978798447">Chcete-li od Googlu získat personalizované návrhy obsahu, přihlaste se do Chromu.</translation>
 <translation id="2091887806945687916">Zvuk</translation>
 <translation id="2096012225669085171">Synchronizovat a přizpůsobit na různých zařízeních</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">Stažení souboru <ph name="FILE_NAME" /> se nezdařilo z důvodu chyb systému souborů.</translation>
 <translation id="3398320232533725830">Otevřít správce záložek</translation>
 <translation id="3414952576877147120">Velikost:</translation>
-<translation id="3434611491093664205">Příprava na VR…</translation>
 <translation id="3443221991560634068">Znovu načíst aktuální stránku</translation>
 <translation id="3445014427084483498">Právě teď</translation>
 <translation id="3452612588551937789">Přihlaste se pomocí účtu Google a získejte záložky, historii, hesla a další nastavení do všech svých zařízení.</translation>
@@ -929,7 +928,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7929962904089429003">Otevřít nabídku</translation>
 <translation id="7942131818088350342">Aplikace <ph name="PRODUCT_NAME" /> je zastaralá.</translation>
 <translation id="7947953824732555851">Přijmout a přihlásit</translation>
-<translation id="7960977077911686065">Pokračováním vyjadřujete souhlas s tím, že Chrome kvůli poskytování této služby bude data z Automatického vyplňování Chrome, adresu URL webu a jeho obsah odesílat do Googlu. Také souhlasíte s tím, že Chrome data, která jste vybrali, prostřednictvím Automatického vyplňování odešle webu. \n\nChcete-li Asistenta Google v Chromu a automatické vyplňování Chrome vypnout, přejděte do nastavení Chromu.  <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Dodavatel:</translation>
 <translation id="7975379999046275268">Zobrazit náhled stránky <ph name="BEGIN_NEW" />Nové<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Předběžně načítat stránky pro rychlejší procházení a vyhledávání</translation>
@@ -987,7 +985,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8339163506404995330">Stránky v jazyce <ph name="LANGUAGE" /> nebudou překládány</translation>
 <translation id="8349013245300336738">Seřadit podle množství využitých dat</translation>
 <translation id="8372893542064058268">Povolit synchronizaci na pozadí konkrétnímu webu.</translation>
-<translation id="8373513848523649558"><ph name="BEGIN_LINK1" />Tato nastavení si můžete kdykoli přizpůsobit<ph name="END_LINK1" /></translation>
 <translation id="8374821112118309944">Aplikaci TalkBack je potřeba aktualizovat na novější verzi.</translation>
 <translation id="8378714024927312812">Spravováno vaší organizací</translation>
 <translation id="8380167699614421159">Tento web zobrazuje rušivé nebo zavádějící reklamy</translation>
@@ -1087,7 +1084,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="9100610230175265781">Je vyžadována heslová fráze</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Zobrazit originál</translation>
-<translation id="9138504265731110181">Google Assistant vám šetří čas tím, že vám pomáhá dokončovat nákupy na webu</translation>
+<translation id="9138504265731110181">Asistent Google vám šetří čas tím, že vám pomáhá dokončovat nákupy na webu</translation>
 <translation id="9139068048179869749">Pokud web bude chtít odesílat oznámení, zobrazit dotaz (doporučeno)</translation>
 <translation id="9139318394846604261">Nákupy</translation>
 <translation id="9155898266292537608">Hledat můžete také rychlým klepnutím na slovo</translation>

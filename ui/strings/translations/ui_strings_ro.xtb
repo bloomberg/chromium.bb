@@ -82,6 +82,7 @@
 <translation id="3897092660631435901">Meniu</translation>
 <translation id="3909791450649380159">&amp;Taie</translation>
 <translation id="3990502903496589789">Marginea dreaptă</translation>
+<translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{O notificare necitită}few{# notificări necitite}other{# de notificări necitite}}</translation>
 <translation id="4202807286478387388">accesează</translation>
 <translation id="4250229828105606438">Captură de ecran</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{Acum 1 lună}few{Acum # luni}other{Acum # de luni}}</translation>
@@ -203,4 +204,5 @@
 <translation id="9161053988251441839">APLICAȚII SUGERATE</translation>
 <translation id="9170848237812810038">&amp;Anulează</translation>
 <translation id="932327136139879170">Pagina de pornire</translation>
+<translation id="944069440740578670">Notificări necitite</translation>
 </translationbundle>

@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">Włącz tryb VR</translation>
 <translation id="116280672541001035">Użyto</translation>
 <translation id="1172593791219290334">Strona startowa</translation>
+<translation id="1173894706177603556">Zmień nazwę</translation>
 <translation id="1175310183703641346">Twoje zakładki, historia, hasła i inne ustawienia przestaną być synchronizowane z Twoim kontem Google</translation>
 <translation id="1178581264944972037">Wstrzymaj</translation>
 <translation id="1181037720776840403">Usuń</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">Kliknij, by wyszukać</translation>
 <translation id="2079545284768500474">Cofnij</translation>
 <translation id="2082238445998314030">Wynik <ph name="RESULT_NUMBER" /> z <ph name="TOTAL_RESULTS" /></translation>
-<translation id="208586643495776849">Spróbuj ponownie</translation>
 <translation id="2086652334978798447">Aby uzyskać dostęp do spersonalizowanej treści proponowanej przez Google, zaloguj się w Chrome.</translation>
 <translation id="2091887806945687916">Dźwięk</translation>
 <translation id="2096012225669085171">Synchronizacja i personalizacja na urządzeniach</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">Nie udało się pobrać pliku <ph name="FILE_NAME" /> z powodu błędów systemu plików.</translation>
 <translation id="3398320232533725830">Otwórz menedżera zakładek</translation>
 <translation id="3414952576877147120">Rozmiar:</translation>
-<translation id="3434611491093664205">Przygotowuję tryb VR…</translation>
 <translation id="3443221991560634068">Ponownie załaduj bieżącą stronę</translation>
 <translation id="3445014427084483498">Przed chwilą</translation>
 <translation id="3452612588551937789">Zaloguj się na konto Google, by korzystać z zakładek, haseł, historii i innych ustawień na wszystkich urządzeniach.</translation>
@@ -929,7 +928,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7929962904089429003">Otwórz menu</translation>
 <translation id="7942131818088350342">Przeglądarka <ph name="PRODUCT_NAME" /> jest nieaktualna.</translation>
 <translation id="7947953824732555851">Zaakceptuj i zaloguj się</translation>
-<translation id="7960977077911686065">Przechodząc dalej, zgadzasz się, by w ramach tej usługi przeglądarka Chrome wysyłała do Google dane z Autouzupełniania, a także URL i zawartość strony. Zgadzasz się także, by w ramach Autouzupełniania przeglądarka Chrome wysyłała do strony wybrane przez Ciebie dane osobowe. \n\nAutouzupełnianie i Asystenta Google możesz wyłączyć w ustawieniach Chrome.  <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Dostawca:</translation>
 <translation id="7975379999046275268">Wyświetl podgląd strony <ph name="BEGIN_NEW" />Nowość<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Ładuj wstępnie strony, by przyspieszyć przeglądanie i wyszukiwanie</translation>
@@ -987,7 +985,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8339163506404995330">Strony, których językiem jest <ph name="LANGUAGE" />, nie będą tłumaczone</translation>
 <translation id="8349013245300336738">Sortuj według ilości wykorzystanych danych</translation>
 <translation id="8372893542064058268">Zezwalaj na synchronizowanie w tle z określoną stroną.</translation>
-<translation id="8373513848523649558">W każdej chwili możesz <ph name="BEGIN_LINK1" />zmienić te ustawienia<ph name="END_LINK1" /></translation>
 <translation id="8374821112118309944">Musisz zainstalować nowszą wersję TalkBack.</translation>
 <translation id="8378714024927312812">Zarządzane przez Twoją organizację</translation>
 <translation id="8380167699614421159">Na tej stronie wyświetlają się uciążliwe lub wprowadzające w błąd reklamy</translation>

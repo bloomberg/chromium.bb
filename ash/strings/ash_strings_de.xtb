@@ -228,6 +228,7 @@
 <translation id="4585337515783392668">Streaming an unbekannten Empfänger beenden</translation>
 <translation id="4628757576491864469">Geräte</translation>
 <translation id="4659419629803378708">ChromeVox aktiviert</translation>
+<translation id="4696813013609194136">Gerät mit Elterncode entsperren</translation>
 <translation id="4734965478015604180">Horizontal</translation>
 <translation id="4774338217796918551">Du darfst das Gerät um <ph name="COME_BACK_TIME" /> wieder verwenden.</translation>
 <translation id="4776917500594043016">Passwort für <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -308,6 +309,7 @@
 <translation id="615957422585914272">Bildschirmtastatur anzeigen</translation>
 <translation id="6164005077879661055">Durch das Entfernen des betreuten Nutzers werden alle mit ihm verknüpften Dateien und lokalen Daten endgültig gelöscht. Besuchte Websites und Einstellungen des betreuten Nutzers kann der Manager möglicherweise weiterhin unter <ph name="MANAGEMENT_URL" /> einsehen.</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
+<translation id="6226658484809055840">Der Geräteadministrator hat Zugriff auf alle Aktivitäten, u. a. auf Passwörter und die Kommunikation.</translation>
 <translation id="6254629735336163724">Nur horizontale Ausrichtung</translation>
 <translation id="6259254695169772643">Verwenden Sie den Eingabestift, um Ihre Auswahl zu treffen</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Wird aktiviert...</translation>
@@ -376,6 +378,7 @@
 <translation id="7377169924702866686">Feststelltaste An</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> Sek.</translation>
 <translation id="7398254312354928459">Netzwerkverbindung gewechselt</translation>
+<translation id="7405710164030118432">Wenn Sie das Gerät entsperren möchten, geben Sie Ihren Eltern-Zugangscode für Family Link ein</translation>
 <translation id="742594950370306541">Kamera wird verwendet.</translation>
 <translation id="743058460480092004">Kamera und Mikrofon werden verwendet.</translation>
 <translation id="7497767806359279797">Sprache und Tastatur auswählen</translation>

@@ -229,6 +229,7 @@
 <translation id="4585337515783392668">หยุดแคสต์ไปยังเครื่องรับที่ไม่รู้จัก</translation>
 <translation id="4628757576491864469">อุปกรณ์</translation>
 <translation id="4659419629803378708">เปิดใช้ ChromeVox แล้ว</translation>
+<translation id="4696813013609194136">ปลดล็อกอุปกรณ์ด้วยรหัสของผู้ปกครอง</translation>
 <translation id="4734965478015604180">แนวนอน</translation>
 <translation id="4774338217796918551">ใช้ได้อีกครั้งพรุ่งนี้ เวลา <ph name="COME_BACK_TIME" /></translation>
 <translation id="4776917500594043016">รหัสผ่านของ <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -260,7 +261,7 @@
 <translation id="5331975486040154427">อุปกรณ์ USB-C (พอร์ตด้านหลังซ้าย)</translation>
 <translation id="5379115545237091094">ลองหลายครั้งเกินไป</translation>
 <translation id="5397578532367286026">การใช้งานและประวัติของผู้ใช้รายนี้อาจถูกตรวจสอบโดยผู้จัดการ (<ph name="MANAGER_EMAIL" />) บน chrome.com</translation>
-<translation id="5430931332414098647">การเชื่อมต่ออินเทอร์เน็ตผ่านมือถือแบบด่วน</translation>
+<translation id="5430931332414098647">การเชื่อมต่อ Wi-Fi ฮอตสปอตจากมือถือโดยอัตโนมัติ</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">เพิ่มผู้ใช้ที่มีทั้งหมดลงในเซสชันนี้แล้ว</translation>
 <translation id="5465662442746197494">หากต้องการความช่วยเหลือ</translation>
@@ -309,6 +310,7 @@
 <translation id="615957422585914272">แสดงแป้นพิมพ์บนหน้าจอ</translation>
 <translation id="6164005077879661055">ไฟล์และข้อมูลในตัวเครื่องทั้งหมดที่เกี่ยวข้องกับผู้ใช้ภายใต้การดูแลจะถูกลบออกอย่างถาวรเมื่อผู้ใช้ภายใต้การดูแลนี้ถูกลบ เว็บไซต์ที่เข้าชมและการตั้งค่าสำหรับผู้ใช้ภายใต้การดูแลนี้อาจจะยังคงมองเห็นได้โดยผู้จัดการที่ <ph name="MANAGEMENT_URL" /></translation>
 <translation id="6165508094623778733">ดูข้อมูลเพิ่มเติม</translation>
+<translation id="6226658484809055840">ผู้ดูแลระบบอุปกรณ์มีสิทธิ์เข้าถึงกิจกรรมทั้งหมด ซึ่งรวมถึงรหัสผ่านและการสื่อสาร</translation>
 <translation id="6254629735336163724">ล็อกไว้ที่แนวนอนแล้ว</translation>
 <translation id="6259254695169772643">ใช้สไตลัสเพื่อเลือก</translation>
 <translation id="6267036997247669271"><ph name="NAME" /> กำลังเปิดใช้งาน...</translation>
@@ -377,6 +379,7 @@
 <translation id="7377169924702866686">Caps Lock เปิดอยู่</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> วินาที</translation>
 <translation id="7398254312354928459">เปลี่ยนการเชื่อมต่อเครือข่ายแล้ว</translation>
+<translation id="7405710164030118432">ป้อนรหัสการเข้าถึง Family Link ของผู้ปกครองเพื่อปลดล็อกอุปกรณ์</translation>
 <translation id="742594950370306541">ใช้กล้องถ่ายรูปอยู่</translation>
 <translation id="743058460480092004">ใช้กล้องถ่ายรูปและไมโครโฟนอยู่</translation>
 <translation id="7497767806359279797">เลือกภาษาและแป้นพิมพ์</translation>

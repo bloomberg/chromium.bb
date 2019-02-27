@@ -82,6 +82,7 @@
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909791450649380159">Al&amp;isin</translation>
 <translation id="3990502903496589789">Tamang Lamang</translation>
+<translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 Hindi Pa Nababasang Notification}one{# Hindi Pa Nababasang Notification}other{# na Hindi Pa Nababasang Notification}}</translation>
 <translation id="4202807286478387388">tumalon</translation>
 <translation id="4250229828105606438">Screenshot</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 buwan ang nakalipas}one{# buwan ang nakalipas}other{# na buwan ang nakalipas}}</translation>
@@ -203,4 +204,5 @@
 <translation id="9161053988251441839">MGA IMINUMUNGKAHING APP</translation>
 <translation id="9170848237812810038">&amp;I-undo</translation>
 <translation id="932327136139879170">Home</translation>
+<translation id="944069440740578670">Mga Hindi Pa Nababasang Notification</translation>
 </translationbundle>

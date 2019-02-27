@@ -28,6 +28,7 @@
 <translation id="1125573121925420732">Pode ser frequente a apresentação de avisos enquanto os Websites atualizam a respetiva segurança. Esta situação deve melhorar brevemente.</translation>
 <translation id="1126551341858583091">O tamanho no armazenamento local é de <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Cache da política OK</translation>
+<translation id="1131264053432022307">Imagem que copiou</translation>
 <translation id="1150979032973867961">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o sistema operativo do seu computador não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="1151972924205500581">É necessária a palavra-passe</translation>
 <translation id="1152921474424827756">Aceda a uma <ph name="BEGIN_LINK" />cópia em cache<ph name="END_LINK" /> de <ph name="URL" /></translation>
@@ -252,6 +253,7 @@
 <translation id="2317583587496011522">Os cartões de débito são admitidos.</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, expira a <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="2337852623177822836">Definição controlada pelo gestor</translation>
+<translation id="2346319942568447007">Imagem que copiou</translation>
 <translation id="2349790679044093737">A sessão de RV está ativa</translation>
 <translation id="2354001756790975382">Outros marcadores</translation>
 <translation id="2354430244986887761">A Navegação segura do Google <ph name="BEGIN_LINK" />encontrou aplicações prejudiciais<ph name="END_LINK" /> recentemente em <ph name="SITE" />.</translation>
@@ -301,6 +303,7 @@
 <translation id="255002559098805027"><ph name="HOST_NAME" /> enviou uma resposta inválida.</translation>
 <translation id="2556876185419854533">&amp;Anular edição</translation>
 <translation id="2586657967955657006">Área de transferência</translation>
+<translation id="2586916519180891564">Informações sobre políticas empresariais aplicadas</translation>
 <translation id="2587730715158995865">De <ph name="ARTICLE_PUBLISHER" />. Leia esta e mais <ph name="OTHER_ARTICLE_COUNT" /> notícias.</translation>
 <translation id="2587841377698384444">ID da API de diretório:</translation>
 <translation id="2597378329261239068">Este documento está protegido por palavra-passe.  Introduza uma palavra-passe.</translation>
@@ -386,6 +389,7 @@
 <translation id="3096100844101284527">Adicionar endereço de levantamento</translation>
 <translation id="3105172416063519923">ID de recurso:</translation>
 <translation id="3109728660330352905">Não tem autorização para ver esta página.</translation>
+<translation id="3111297330804935615">Informações sobre políticas empresariais, extensões e plug-ins instalados</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Experimente executar o Diagnóstico de conetividade<ph name="END_LINK" />.</translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Sem}=1{dados de início de sessão para 1 conta}other{dados de início de sessão para # contas}}</translation>
@@ -472,6 +476,7 @@
 <translation id="358285529439630156">Os cartões de crédito e pré-pagos são admitidos.</translation>
 <translation id="3582930987043644930">Adicionar nome</translation>
 <translation id="3583757800736429874">&amp;Refazer movimentação</translation>
+<translation id="35866233670761917">O conteúdo dos Websites que visita não são visualizados pelos seus administradores.</translation>
 <translation id="3586931643579894722">Ocultar detalhes</translation>
 <translation id="3592413004129370115">Italian (Envelope)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
@@ -485,6 +490,7 @@
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Validação com êxito</translation>
 <translation id="3655670868607891010">Se vê isto com frequência, experimente <ph name="HELP_LINK" />.</translation>
+<translation id="3656922233114135933">Os seus nomes de utilizador no SO e no navegador</translation>
 <translation id="3658742229777143148">Revisão</translation>
 <translation id="366077651725703012">Atualizar cartão de crédito</translation>
 <translation id="3676592649209844519">ID do dispositivo:</translation>
@@ -495,6 +501,7 @@
 <translation id="3704162925118123524">A rede que está a utilizar pode exigir que visite a respetivapágina de início de sessão.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">A carregar...</translation>
+<translation id="3709599264800900598">Texto que copiou</translation>
 <translation id="3712624925041724820">Licenças esgotadas</translation>
 <translation id="3714780639079136834">Ativar os dados móveis ou o Wi-Fi</translation>
 <translation id="3715597595485130451">Estabelecer ligação a redes Wi-Fi</translation>
@@ -588,6 +595,7 @@
     &lt;h4&gt;Passo 5: obtenha ajuda adicional&lt;/h4&gt;
     &lt;p&gt;Se o erro persistir, contacte o proprietário do Website.&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Experimente executar o Diagnóstico de rede<ph name="END_LINK" />.</translation>
+<translation id="423093089485419548">Nome do seu computador</translation>
 <translation id="4235360514405112390">Válido</translation>
 <translation id="4250431568374086873">A ligação a este site não é totalmente segura</translation>
 <translation id="4250680216510889253">Não</translation>
@@ -621,6 +629,7 @@
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Endereço de recolha</translation>
 <translation id="4424024547088906515">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o Chrome não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
+<translation id="443121186588148776">Porta de série</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> não aceitou o seu certificado de início de sessão ou este pode não ter sido fornecido.</translation>
 <translation id="4434045419905280838">Pop-ups e redirecionamentos</translation>
 <translation id="4435702339979719576">Postcard)</translation>
@@ -710,6 +719,7 @@
 <translation id="5002932099480077015">Quando esta opção está ativada, o Chrome armazena uma cópia do seu cartão neste dispositivo para preencher formulários mais rapidamente.</translation>
 <translation id="5014174725590676422">É apresentado o primeiro ecrã de execução do Assistente Google no Chrome.</translation>
 <translation id="5015510746216210676">Nome do computador:</translation>
+<translation id="5017554619425969104">Texto que copiou</translation>
 <translation id="5018422839182700155">Não é possível abrir esta página</translation>
 <translation id="5019198164206649151">Armazenamento de segurança em mau estado</translation>
 <translation id="5023310440958281426">Verificar as políticas do gestor</translation>
@@ -719,6 +729,8 @@
 <translation id="5034369478845443529">Contexto local <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidade</translation>
+<translation id="5043480802608081735">Link que copiou</translation>
+<translation id="5043595640478528013">Informações de versão de software sobre o navegador e o computador</translation>
 <translation id="5045550434625856497">Palavra-passe incorrecta</translation>
 <translation id="5056549851600133418">Artigos para si</translation>
 <translation id="5068524481479508725">A10</translation>
@@ -730,6 +742,7 @@
 <translation id="5095208057601539847">Província</translation>
 <translation id="5097501891273180634">A2</translation>
 <translation id="5098222253617183465">O seu dispositivo é gerido por <ph name="ENROLLMENT_DOMAIN" /> e a sua conta é gerida por <ph name="ACCOUNT_DOMAIN" />. Isto significa que os seus administradores podem configurar remotamente o seu dispositivo e a sua conta.</translation>
+<translation id="5107918638290237391">Extensões e plug-ins instalados</translation>
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 bits)</translation>
@@ -781,6 +794,7 @@
 <translation id="5386426401304769735">A cadeia de certificados inclui um certificado assinado através de SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="540969355065856584">Este servidor não conseguiu provar que é <ph name="DOMAIN" />; de momento, o respetivo certificado de segurança não é válido. Isto pode ser provocado por uma configuração incorreta ou por um atacante que esteja a intercetar a sua ligação.</translation>
+<translation id="5417233485731142850">O nome e o endereço de rede do seu computador</translation>
 <translation id="5421136146218899937">Limpar dados de navegação...</translation>
 <translation id="5430298929874300616">Remover marcador</translation>
 <translation id="5431657950005405462">O ficheiro não foi encontrado</translation>
@@ -951,6 +965,7 @@
 <translation id="6417515091412812850">Não é possível verificar se o certificado foi revogado.</translation>
 <translation id="6433490469411711332">Editar informações de contacto</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> recusou estabelecer ligação.</translation>
+<translation id="6434309073475700221">Rejeitar</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Adicionar mais informações</translation>
 <translation id="6447842834002726250">Cookies</translation>
@@ -964,11 +979,13 @@
 <translation id="6508722015517270189">Reiniciar o Chrome</translation>
 <translation id="6529602333819889595">&amp;Refazer eliminação</translation>
 <translation id="6534179046333460208">Sugestões da Web física</translation>
+<translation id="654507709116376806">Os administradores poderão ter outras formas de monitorizar os utilizadores, fora do Chrome.</translation>
 <translation id="6563469144985748109">O seu gestor ainda não o aprovou</translation>
 <translation id="6569060085658103619">Está a ver a página de uma extensão</translation>
 <translation id="6578796323535178455">C2 (Envelope)</translation>
 <translation id="6579990219486187401">Rosa claro</translation>
 <translation id="6583674473685352014">B6 (Envelope)</translation>
+<translation id="6587923378399804057">Link copiado por si</translation>
 <translation id="6596325263575161958">Opções de encriptação</translation>
 <translation id="6604181099783169992">Sensores de movimento ou de luz</translation>
 <translation id="6609880536175561541">Prc7 (Envelope)</translation>
@@ -1159,6 +1176,7 @@ Detalhes adicionais:
 <translation id="7610193165460212391">O valor está fora do intervalo <ph name="VALUE" /> .</translation>
 <translation id="7613889955535752492">Exp.: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Já tem dados encriptados usando uma versão diferente da palavra-passe da sua Conta Google. Introduza-a abaixo.</translation>
+<translation id="7633909222644580952">Dados de desempenho e relatórios de falhas</translation>
 <translation id="7637571805876720304">Pretende remover o cartão de crédito do Chromium?</translation>
 <translation id="7639968568612851608">Cinzento-escuro</translation>
 <translation id="765676359832457558">Ocultar definições avançadas...</translation>
@@ -1241,6 +1259,7 @@ Detalhes adicionais:
 <translation id="8074253406171541171">10x13 (Envelope)</translation>
 <translation id="8078141288243656252">Não é possível criar anotação se tiver sido aplicada uma rotação ao documento</translation>
 <translation id="8079031581361219619">Pretende atualizar o site?</translation>
+<translation id="8086639673041095862">Avisos da Navegação segura</translation>
 <translation id="8088680233425245692">Falha ao ver o artigo.</translation>
 <translation id="808894953321890993">Alterar palavra-passe</translation>
 <translation id="8090403583893450254">Tamanho 20</translation>
@@ -1252,7 +1271,6 @@ Detalhes adicionais:
 <translation id="8103161714697287722">Método de pagamento</translation>
 <translation id="8118489163946903409">Método de pagamento</translation>
 <translation id="8127301229239896662">O "<ph name="SOFTWARE_NAME" />" não foi instalado corretamente no computador ou na rede. Peça ao gestor de TI que resolva este problema.</translation>
-<translation id="8130693978878176684">Não é possível ajudar mais, continue por sua conta.</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8149426793427495338">O computador entrou em suspensão.</translation>
 <translation id="8150722005171944719">O ficheiro em <ph name="URL" /> não é legível. Pode ter sido removido, movido ou as permissões do ficheiro podem estar a impedir o acesso.</translation>
@@ -1333,6 +1351,7 @@ Detalhes adicionais:
 <translation id="8620436878122366504">Os teus pais ainda não o aprovaram</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Guardar este cartão neste dispositivo</translation>
+<translation id="8662327642270533767">Relatórios do navegador</translation>
 <translation id="8663226718884576429">Resumo da encomenda, <ph name="TOTAL_LABEL" />, mais detalhes</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, resposta, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>
@@ -1353,6 +1372,7 @@ Detalhes adicionais:
 <translation id="8790007591277257123">&amp;Refazer eliminação</translation>
 <translation id="8792621596287649091">Pode perder o acesso à sua conta do serviço <ph name="ORG_NAME" /> ou ser vítima de roubo de identidade. O Chromium recomenda a alteração da palavra-passe agora.</translation>
 <translation id="8800988563907321413">As sugestões próximas aparecem aqui</translation>
+<translation id="8810879605219182134">O seu navegador foi configurado para relatórios.</translation>
 <translation id="8820817407110198400">Marcadores</translation>
 <translation id="883848425547221593">Outros marcadores</translation>
 <translation id="884264119367021077">Endereço para envio</translation>
@@ -1380,7 +1400,6 @@ Detalhes adicionais:
 <translation id="8978053250194585037">A Navegação segura do Google <ph name="BEGIN_LINK" />detetou phishing<ph name="END_LINK" /> recentemente em <ph name="SITE" />. Os sites de phishing simulam ser outros Websites para o enganar.</translation>
 <translation id="8983003182662520383">Métodos de pagamento e endereços com o Google Pay</translation>
 <translation id="8987927404178983737">Mês</translation>
-<translation id="8988408250700415532">Ocorreu um erro. Pode concluir a sua encomenda no Website.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">O site que se segue contém programas prejudiciais</translation>
 <translation id="8997023839087525404">O servidor apresentou um certificado que não foi divulgado publicamente através da política de Transparência de certificados. Trata-se de um requisito para alguns certificados de modo a assegurar que são fidedignos e protegem contra utilizadores mal intencionados.</translation>

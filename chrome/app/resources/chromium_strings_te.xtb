@@ -143,7 +143,7 @@
 <translation id="5862307444128926510">Chromiumకు స్వాగతం</translation>
 <translation id="5877064549588274448">ఛానెల్ మార్చబడింది. మార్పులను వర్తింపజేయడానికి మీ పరికరాన్ని పునఃప్రారంభించండి.</translation>
 <translation id="5895138241574237353">మళ్ళీ ప్రారంభించు</translation>
-<translation id="5906655207909574370">దాదాపు నవీకృతంగా ఉంది! నవీకరణను పూర్తి చేయడానికి మీ పరికరాన్ని పునఃప్రారంభించండి.</translation>
+<translation id="5906655207909574370">దాదాపు తాజాగా ఉంది! అప్‌డేట్‌ను పూర్తి చేయడానికి మీ పరికరాన్ని పునఃప్రారంభించండి.</translation>
 <translation id="5987687638152509985">సింక్‌ను ప్రారంభించడానికి Chromiumను అప్‌డేట్ చేయండి</translation>
 <translation id="6013050204643758987"><ph name="BEGIN_LINK_LINUX_OSS" />Linux (బీటా) <ph name="END_LINK_LINUX_OSS" /> లాగానే, Chromium OS కూడా అదనపు <ph name="BEGIN_LINK_CROS_OSS" /> ఓపెన్ సోర్స్ సాఫ్ట్‌వేర్‌ <ph name="END_LINK_CROS_OSS" /> మూలంగానే సాధ్యమైంది.</translation>
 <translation id="6040143037577758943">మూసివేయి</translation>
@@ -184,7 +184,7 @@
 <translation id="6877899728743402439">ప్రత్యామ్నాయ బ్రౌజర్‌ను తెరవడానికి మీ సిస్టమ్‌ నిర్వాహకుడు Chromiumను కాన్ఫిగర్ చేసారు.</translation>
 <translation id="6893813176749746474">Chromium నవీకరించబడింది, కానీ మీరు దీన్ని గత 30 రోజులుగా ఉపయోగించలేదు.</translation>
 <translation id="6964305034639999644">Chromium అజ్ఞా&amp;త విండోలో లింక్‌ని తెరువు</translation>
-<translation id="6970811910055250180">మీ పరికరాన్ని నవీకరిస్తోంది...</translation>
+<translation id="6970811910055250180">మీ పరికరాన్ని అప్‌డేట్ చేస్తోంది...</translation>
 <translation id="6990124437352146030">ఈ సైట్ కోసం మీ మైక్రోఫోన్‌ను యాక్సెస్ చేయడానికి Chromiumకు అనుమతి అవసరం</translation>
 <translation id="705851970750939768">Chromiumను అప్‌డేట్ చేయి</translation>
 <translation id="7066436765290594559">Chromium OS మీ డేటాను సింక్ చేయ‌లేక‌పోయింది. దయచేసి మీ సింక్‌ రహస్య పదబంధాన్ని అప్‌డేట్ చేయండి.</translation>
@@ -212,8 +212,10 @@
 <translation id="7483335560992089831">ప్రస్తుతం అమలు అవుతోన్న అదే Chromium వెర్షన్‌ను ఇన్‌స్టాల్ చేయలేరు. దయచేసి Chromiumను మూసివేసి, మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="7549178288319965365">Chromium OS గురించి</translation>
 <translation id="7561906087460245826">అలాగే (<ph name="URL" />)లో ఉన్న Chromiumకి సంబంధించిన డేటాని తీసివేయి</translation>
+<translation id="7565141246891674585">చిత్రానికి వివరణ లేకుంటే, Chromium మీ కోసం వివరణను అందించడానికి ప్రయత్నిస్తుంది. చిత్రాలు Google ద్వారా స్కాన్ చేయబడతాయి.</translation>
 <translation id="761356813943268536">Chromium మీ కెమెరా మరియు మైక్రోఫోన్‌ని ఉపయోగిస్తోంది.</translation>
 <translation id="7617377681829253106">Chromium ఇప్పుడు మెరుగైంది</translation>
+<translation id="7654860720874072809">చిత్రానికి వివరణ లేకుంటే, Chromium మీ కోసం వివరణను అందించడానికి ప్రయత్నిస్తుంది. చిత్రాలు Google ద్వారా స్కాన్ చేయబడతాయి. మీరు దీనిని ఎప్పుడైనా సెట్టింగ్‌లలో ఆఫ్ చేయవచ్చు.</translation>
 <translation id="7686590090926151193">Chromium మీ డిఫాల్ట్ బ్రౌజర్ కాదు</translation>
 <translation id="7689606757190482937">మీ పరికరాల అంతటా Chromiumను సింక్ చేయండి మరియు వ్యక్తిగతీకరించండి</translation>
 <translation id="7729447699958282447">Chromium మీ డేటాను సింక్ చేయ‌లేక‌పోయింది. ఎందుకంటే మీ డొమైన్‌కు సింక్‌ అందుబాటులో లేదు.</translation>
@@ -228,7 +230,7 @@
 <translation id="7975919845073681630">ఇది Chromium రెండవ ఇన‌స్ట‌లేష‌న్. దీన్ని మీ డిఫాల్ట్ బ్రౌజర్‌గా చేయడం సాధ్యపడదు.</translation>
 <translation id="7979877361127045932">Chromium మెనూలో దాచండి</translation>
 <translation id="8013436988911883588">ఓసారి Chromiumకి యాక్సెస్ లభించాక, ఆపై వెబ్‌సైట్‌లకు ఏమైనా యాక్సెస్‌ కావాలంటే అవి మిమ్మల్ని అడగవచ్చు.</translation>
-<translation id="8030318113982266900">మీ పరికరాన్ని <ph name="CHANNEL_NAME" /> ఛానెల్‌కి నవీకరిస్తోంది...</translation>
+<translation id="8030318113982266900">మీ పరికరాన్ని <ph name="CHANNEL_NAME" /> ఛానెల్‌కు అప్‌డేట్ చేస్తోంది...</translation>
 <translation id="81770708095080097">ఈ ఫైల్ అపాయకరమైనది, కాబట్టి Chromium దీన్ని బ్లాక్ చేసింది.</translation>
 <translation id="8222496066431494154">మీ ఫోన్‌లో Chromiumను ఇన్‌స్టాల్ చేయండి. మేము మీ ఖాతా పునరుద్ధరణ ఫోన్ నంబర్‌కు SMS పంపుతాము: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Chromiumను మెరుగుపరచడంలో సహాయం అందించండి</translation>

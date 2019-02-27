@@ -82,6 +82,7 @@
 <translation id="3897092660631435901">Menü</translation>
 <translation id="3909791450649380159">&amp;Kes</translation>
 <translation id="3990502903496589789">Sağ Kenar</translation>
+<translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 Okunmamış Bildirim}other{# Okunmamış Bildirim}}</translation>
 <translation id="4202807286478387388">git</translation>
 <translation id="4250229828105606438">Ekran görüntüsü</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 ay önce}other{# ay önce}}</translation>
@@ -196,11 +197,12 @@
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">Raf her zaman gizleniyor</translation>
 <translation id="9002566407876343676">açma</translation>
-<translation id="9039076430527029379"><ph name="PAGE_NUMBER" />. sayfaya, <ph name="ROW_NUMBER" />. satıra, <ph name="COLUMN_NUMBER" />. sütuna taşınacak.</translation>
+<translation id="9039076430527029379"><ph name="PAGE_NUMBER" />. sayfa, <ph name="ROW_NUMBER" />. satır, <ph name="COLUMN_NUMBER" />. sütuna taşınacak.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 sn.}other{# sn.}}</translation>
 <translation id="9059834730836941392">Bildirimi daralt</translation>
 <translation id="9150735707954472829">Sekme</translation>
 <translation id="9161053988251441839">ÖNERİLEN UYGULAMALAR</translation>
 <translation id="9170848237812810038">&amp;Geri al</translation>
 <translation id="932327136139879170">Ana Sayfa</translation>
+<translation id="944069440740578670">Okunmamış Bildirimler</translation>
 </translationbundle>

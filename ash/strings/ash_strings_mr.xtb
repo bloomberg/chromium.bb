@@ -228,6 +228,7 @@
 <translation id="4585337515783392668">एखाद्या अज्ञात मिळवणाऱ्यावर कास्ट करणे थांबवा</translation>
 <translation id="4628757576491864469">डिव्हाइसेस</translation>
 <translation id="4659419629803378708">ChromeVox चालू केले</translation>
+<translation id="4696813013609194136">पालक कोडने डिव्हाइस अनलॉक करा</translation>
 <translation id="4734965478015604180">आडवा</translation>
 <translation id="4774338217796918551"><ph name="COME_BACK_TIME" /> वाजता परत या.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> साठी पासवर्ड</translation>
@@ -308,6 +309,7 @@
 <translation id="615957422585914272">ऑन-स्‍क्रीन कीबोर्ड दर्शवा</translation>
 <translation id="6164005077879661055">एकदा हा पर्यवेक्षी वापरकर्ता काढल्यानंतर पर्यवेक्षी वापरकर्त्याशी संबद्ध सर्व फायली आणि स्थानिक डेटा कायमचा हटवला जाईल. या पर्यवेक्षी वापरकर्त्यासाठी भेट दिलेल्या वेबसाइट आणि सेटिंग्ज तरीही <ph name="MANAGEMENT_URL" /> वर व्यवस्थापकाद्वारे दृश्यमान असू शकतात.</translation>
 <translation id="6165508094623778733">अधिक जाणून घ्या</translation>
+<translation id="6226658484809055840">डिव्हाइस अ‍ॅडमिनिस्ट्रेटरला सर्व अ‍ॅक्टिव्हिटीचा अ‍ॅक्सेस आहे, ज्यात पासवर्ड आणि संवादाचा समावेश आहे.</translation>
 <translation id="6254629735336163724">आडव्या दिशेने लॉक केले</translation>
 <translation id="6259254695169772643">निवडण्यासाठी तुमचे स्टायलस वापरा</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: सक्रिय करत आहे...</translation>
@@ -376,6 +378,7 @@
 <translation id="7377169924702866686">Caps Lock सुरू आहे.</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" />से</translation>
 <translation id="7398254312354928459">नेटवर्क कनेक्शन स्विच केले</translation>
+<translation id="7405710164030118432">डिव्हाइस अनलॉक करण्यासाठी, तुमचा Family Link पालक अॅक्सेस कोड एंटर करा</translation>
 <translation id="742594950370306541">कॅमेरा वापरात आहे.</translation>
 <translation id="743058460480092004">कॅमेरा आणि मायक्रोफोन वापरात आहेत.</translation>
 <translation id="7497767806359279797">भाषा आणि कीबोर्ड निवडा</translation>

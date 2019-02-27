@@ -82,6 +82,7 @@
 <translation id="3897092660631435901">메뉴</translation>
 <translation id="3909791450649380159">잘라내기(&amp;T)</translation>
 <translation id="3990502903496589789">오른쪽 모서리</translation>
+<translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{읽지 않은 알림 1개}other{읽지 않은 알림 #개}}</translation>
 <translation id="4202807286478387388">건너뛰기</translation>
 <translation id="4250229828105606438">캡처화면</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1개월 전}other{#개월 전}}</translation>
@@ -203,4 +204,5 @@
 <translation id="9161053988251441839">추천 앱</translation>
 <translation id="9170848237812810038">실행 취소(&amp;U)</translation>
 <translation id="932327136139879170">홈</translation>
+<translation id="944069440740578670">읽지 않은 알림</translation>
 </translationbundle>

@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">VR एंटर करा</translation>
 <translation id="116280672541001035">वापरला</translation>
 <translation id="1172593791219290334">स्टार्टअप पेज</translation>
+<translation id="1173894706177603556">नाव बदला</translation>
 <translation id="1175310183703641346">तुमचे बुकमार्क, इतिहास, पासवर्ड आणि बरेच काही आता तुमच्या Google खात्यामध्ये सिंक केले जाणार नाही</translation>
 <translation id="1178581264944972037">विराम द्या</translation>
 <translation id="1181037720776840403">काढून टाका</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">शोधण्यासाठी टॅप करा</translation>
 <translation id="2079545284768500474">पहिल्यासारखे करा</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> पैकी <ph name="RESULT_NUMBER" /> परिणाम</translation>
-<translation id="208586643495776849">कृपया पुन्हा प्रयत्न करा</translation>
 <translation id="2086652334978798447">Google ने सुचविलेली वैयक्तीकृत सामग्री मिळविण्यासाठी, Chrome मध्ये साइन इन करा.</translation>
 <translation id="2091887806945687916">ध्वनी</translation>
 <translation id="2096012225669085171">डिव्हाइसवर सिंक आणि पर्सनलाइझ करा</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">फाईल सिस्टम त्रुटींमुळे <ph name="FILE_NAME" /> डाउनलोड अयशस्वी झाले.</translation>
 <translation id="3398320232533725830">बुकमार्क व्यवस्थापक उघडा</translation>
 <translation id="3414952576877147120">आकार:</translation>
-<translation id="3434611491093664205">VR सेट करत आहे…</translation>
 <translation id="3443221991560634068">वर्तमान पृष्‍ठ रीलोड करा</translation>
 <translation id="3445014427084483498">आताच</translation>
 <translation id="3452612588551937789">आपल्या सर्व डिव्हाइसेेसवर तुमचे बुकमार्क, इतिहास, पासवर्ड आणि इतर सेटिंग्ज मिळविण्यासाठी आपल्या Google खात्यासह साइन इन करा.</translation>
@@ -929,7 +928,6 @@
 <translation id="7929962904089429003">मेनू उघडा</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> कालबाह्य झाले आहे.</translation>
 <translation id="7947953824732555851">स्वीकार करा आणि साइन इन करा</translation>
-<translation id="7960977077911686065">सुरू ठेवून, तुम्ही सहमती दर्शवता की Chrome ही सेवा पुरवण्यासाठी Chrome ऑटोफिल साइटवरील डेटा, साइटची URL आणि तिचा आशय Google ला पाठवेल. तुम्ही यालादेखील सहमती दर्शवता की Chrome तुम्ही निवडलेला वैयक्तिक डेटा Chrome ऑटोफिल मार्फत वेबसाइटला पाठवेल. \n\nChrome आणि Chrome ऑटोफिल मध्ये Google असिस्टंट बंद करण्यासाठी Chrome सेटिंग्जला भेट द्या.  <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">विक्रेता:</translation>
 <translation id="7975379999046275268">पेज <ph name="BEGIN_NEW" />नवीन<ph name="END_NEW" /> चे पूर्वावलोकन करा</translation>
 <translation id="7981313251711023384">जलद ब्राउझिंग आणि शोधाकरता पेज आधीच लोड करा</translation>
@@ -987,7 +985,6 @@
 <translation id="8339163506404995330"><ph name="LANGUAGE" />मधील पेज भाषांतरीत केले जाणार नाही</translation>
 <translation id="8349013245300336738">वापरलेल्या डेटानुसार क्रमाने लावा</translation>
 <translation id="8372893542064058268">विशिष्ट साइटसाठी पार्श्वभूमी संकालनासाठी अनुमती द्या.</translation>
-<translation id="8373513848523649558">तुम्ही कधीही <ph name="BEGIN_LINK1" />या सेटिंग्ज कस्टमाइझ करू शकता<ph name="END_LINK1" /></translation>
 <translation id="8374821112118309944">तुम्हाला नवीनतम आवृत्तीवर TalkBack बदलण्याची आवश्यकता आहे.</translation>
 <translation id="8378714024927312812">तुमच्या संस्थेकडून व्यवस्थापित केलेले</translation>
 <translation id="8380167699614421159">ही साइट अनाहूत किंवा दिशाभूल करणाऱ्या जाहिराती दाखवते</translation>
