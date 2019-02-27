@@ -206,6 +206,7 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   friend class SplitViewControllerTest;
   friend class SplitViewOverviewSessionTest;
   class TabDraggedWindowObserver;
+  class DividerSnapAnimation;
 
   // Start observing |window|.
   void StartObserving(aura::Window* window);
@@ -251,13 +252,22 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
                  gfx::Rect* left_or_top_rect,
                  gfx::Rect* right_or_bottom_rect);
 
-  // Finds the closest fix location for |divider_position_| and updates its
-  // value.
-  void MoveDividerToClosestFixedPosition();
+  // Returns the closest fix location for |divider_position_|.
+  int GetClosestFixedDividerPosition();
+
+  // Returns true during the divider snap animation.
+  bool IsDividerAnimating();
+
+  // While the divider is animating to somewhere, stop it and shove it there.
+  void StopAndShoveAnimatedDivider();
 
   // Returns true if we should end split view mode after resizing, i.e., the
   // split view divider is near to the edge of the screen.
   bool ShouldEndSplitViewAfterResizing();
+
+  // Ends split view if ShouldEndSplitViewAfterResizing() returns true. Handles
+  // extra details associated with dragging the divider off the screen.
+  void EndSplitViewAfterResizingIfAppropriate();
 
   // After resizing, if we should end split view mode, returns the window that
   // needs to be activated. Returns nullptr if there is no such window.
@@ -352,6 +362,10 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // snapped windows.
   void FinishWindowResizing(aura::Window* window);
 
+  // Finalizes and cleans up divider dragging/animating. Called when the divider
+  // snapping animation completes or is interrupted or totally skipped.
+  void EndResizeImpl();
+
   // Called by OnWindowDragEnded to do the actual work of finishing the window
   // dragging. If |is_being_destroyed| equals true, the dragged window is to be
   // destroyed, and SplitViewController should not try to put it in splitview.
@@ -407,6 +421,9 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // The location of the previous mouse/gesture event in screen coordinates.
   gfx::Point previous_event_location_;
 
+  // The animation that animates the divider to a fixed position after resizing.
+  std::unique_ptr<DividerSnapAnimation> divider_snap_animation_;
+
   // Current snap state.
   State state_ = NO_SNAP;
 
@@ -419,7 +436,7 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // The previous orientation of the screen.
   OrientationLockType previous_screen_orientation_ = OrientationLockType::kAny;
 
-  // If the divider is currently being dragging.
+  // True when the divider is being dragged (not during its snap animation).
   bool is_resizing_ = false;
 
   // Stores the reason which cause splitview to end.

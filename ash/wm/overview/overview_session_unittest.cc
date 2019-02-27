@@ -2629,6 +2629,18 @@ class SplitViewOverviewSessionTest : public OverviewSessionTest {
     return Shell::Get()->split_view_controller();
   }
 
+  bool IsDividerAnimating() {
+    return split_view_controller()->IsDividerAnimating();
+  }
+
+  void SkipDividerSnapAnimation() {
+    if (!IsDividerAnimating())
+      return;
+    split_view_controller()->StopAndShoveAnimatedDivider();
+    split_view_controller()->EndResizeImpl();
+    split_view_controller()->EndSplitViewAfterResizingIfAppropriate();
+  }
+
   void EndSplitView() { split_view_controller()->EndSplitView(); }
 
  protected:
@@ -3377,6 +3389,7 @@ TEST_F(SplitViewOverviewSessionTest, SplitViewOverviewBothActiveTest) {
   split_view_controller()->StartResize(resize_start_location);
   const gfx::Point resize_end_location(300, 0);
   split_view_controller()->EndResize(resize_end_location);
+  SkipDividerSnapAnimation();
 
   const gfx::Rect window1_bounds_after_resize = window1->GetBoundsInScreen();
   const gfx::Rect overview_grid_bounds_after_resize = GetGridBounds();
@@ -3494,6 +3507,7 @@ TEST_F(SplitViewOverviewSessionTest, OverviewUnsnappableIndicatorVisibility) {
   GetEventGenerator()->set_current_screen_location(
       divider_bounds.CenterPoint());
   GetEventGenerator()->DragMouseTo(0, 0);
+  SkipDividerSnapAnimation();
 
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
   EXPECT_EQ(0.f, unsnappable_layer->opacity());
@@ -3524,6 +3538,7 @@ TEST_F(SplitViewOverviewSessionTest, DragDividerToExitTest) {
   gfx::Rect divider_bounds = GetSplitViewDividerBounds(false /* is_dragging */);
   split_view_controller()->StartResize(divider_bounds.CenterPoint());
   split_view_controller()->EndResize(gfx::Point(0, 0));
+  SkipDividerSnapAnimation();
 
   // Test that split view mode is ended. Overview mode is still active.
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
@@ -3542,6 +3557,7 @@ TEST_F(SplitViewOverviewSessionTest, DragDividerToExitTest) {
   const gfx::Rect display_bounds = GetWorkAreaInScreen(window2.get());
   split_view_controller()->StartResize(divider_bounds.CenterPoint());
   split_view_controller()->EndResize(display_bounds.bottom_right());
+  SkipDividerSnapAnimation();
 
   // Test that split view mode is ended. Overview mode is also ended. |window2|
   // should be activated.
@@ -3607,6 +3623,7 @@ TEST_F(SplitViewOverviewSessionTest, SnappedWindowBoundsTest) {
   // Drag the divider to a point that is close enough but still have a short
   // distance to the edge of the screen.
   split_view_controller()->EndResize(gfx::Point(20, 20));
+  SkipDividerSnapAnimation();
 
   // Test that split view mode is ended. Overview mode is still active.
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
@@ -3634,6 +3651,7 @@ TEST_F(SplitViewOverviewSessionTest, SnappedWindowBoundsTest) {
   // distance to the edge of the screen.
   end_location2.Offset(-20, -20);
   split_view_controller()->EndResize(end_location2);
+  SkipDividerSnapAnimation();
 
   // Test that split view mode is ended. Overview mode is still active.
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
@@ -3678,6 +3696,7 @@ TEST_F(SplitViewOverviewSessionTest,
   GetEventGenerator()->set_current_screen_location(
       divider_bounds.CenterPoint());
   GetEventGenerator()->DragMouseTo(0, 0);
+  SkipDividerSnapAnimation();
 
   // Verify that it is still in overview mode and that |window1| is returned to
   // the overview list.
@@ -3720,6 +3739,7 @@ TEST_F(SplitViewOverviewSessionTest,
   EXPECT_EQ(200, grid->bounds().width());
   EXPECT_GT(grid->bounds().right(), 600);
   generator->ReleaseLeftButton();
+  SkipDividerSnapAnimation();
 
   // Releasing close to the edge will activate the left window and exit
   // overview.
@@ -3743,6 +3763,7 @@ TEST_F(SplitViewOverviewSessionTest,
   EXPECT_EQ(200, grid->bounds().width());
   EXPECT_LT(grid->bounds().x(), 0);
   generator->ReleaseLeftButton();
+  SkipDividerSnapAnimation();
 }
 
 // Test that when splitview mode is active, minimizing one of the snapped window
