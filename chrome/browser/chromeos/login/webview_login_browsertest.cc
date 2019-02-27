@@ -19,8 +19,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/signin_partition_manager.h"
-#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
-#include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -166,8 +164,8 @@ void PrefChangeWatcher::OnPrefChange() {
 
 class WebviewLoginTest : public OobeBaseTest {
  public:
-  WebviewLoginTest() = default;
-  ~WebviewLoginTest() override = default;
+  WebviewLoginTest() {}
+  ~WebviewLoginTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kOobeSkipPostLogin);
@@ -236,7 +234,6 @@ class WebviewLoginTest : public OobeBaseTest {
 
  protected:
   chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
-  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebviewLoginTest);
@@ -248,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
 
   ExpectIdentifierPage();
 
-  SetSignFormField("identifier", FakeGaiaMixin::kFakeUserEmail);
+  SetSignFormField("identifier", OobeBaseTest::kFakeUserEmail);
   ClickNext();
   WaitForGaiaPageBackButtonUpdate();
   ExpectPasswordPage();
@@ -258,7 +255,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
       content::NotificationService::AllSources());
 
   SetSignFormField("services", "[]");
-  SetSignFormField("password", FakeGaiaMixin::kFakeUserPassword);
+  SetSignFormField("password", OobeBaseTest::kFakeUserPassword);
   ClickNext();
 
   session_start_waiter.Wait();
@@ -272,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, DISABLED_BackButton) {
   ExpectIdentifierPage();
 
   // Move to password page.
-  SetSignFormField("identifier", FakeGaiaMixin::kFakeUserEmail);
+  SetSignFormField("identifier", OobeBaseTest::kFakeUserEmail);
   ClickNext();
   WaitForGaiaPageBackButtonUpdate();
   ExpectPasswordPage();
@@ -293,7 +290,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, DISABLED_BackButton) {
 
   // Finish sign-up.
   SetSignFormField("services", "[]");
-  SetSignFormField("password", FakeGaiaMixin::kFakeUserPassword);
+  SetSignFormField("password", OobeBaseTest::kFakeUserPassword);
   ClickNext();
 
   session_start_waiter.Wait();
@@ -322,7 +319,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, EmailPrefill) {
   WaitForGaiaPageLoad();
   test::OobeJS().ExecuteAsync("Oobe.showSigninUI('user@example.com')");
   WaitForGaiaPageReload();
-  EXPECT_EQ(fake_gaia_.fake_gaia()->prefilled_email(), "user@example.com");
+  EXPECT_EQ(fake_gaia_->prefilled_email(), "user@example.com");
 }
 
 IN_PROC_BROWSER_TEST_F(WebviewLoginTest, StoragePartitionHandling) {
