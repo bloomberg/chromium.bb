@@ -208,12 +208,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   SelfKeepAlive<WebFrameWidgetImpl> self_keep_alive_;
 };
 
-DEFINE_TYPE_CASTS(WebFrameWidgetImpl,
-                  WebFrameWidgetBase,
-                  widget,
-                  widget->ForSubframe(),
-                  widget.ForSubframe());
-
 }  // namespace blink
 
 #endif
