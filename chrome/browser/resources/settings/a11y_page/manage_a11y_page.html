@@ -79,14 +79,9 @@
       </div>
     </iron-collapse>
 
-    <cr-link-row
-        class="hr"
-        embedded
-        icon-class="subpage-arrow"
-        label="$i18n{manageTtsSettings}"
+    <cr-link-row class="hr" label="$i18n{manageTtsSettings}"
         on-click="onManageTtsSettingsTap_"
-        sub-label="$i18n{ttsSettingsLinkDescription}">
-    </cr-link-row>
+        sub-label="$i18n{ttsSettingsLinkDescription}" embedded></cr-link-row>
 
     <h2>$i18n{displayHeading}</h2>
     <settings-toggle-button class="first"
@@ -119,22 +114,12 @@
           disabled="[[!prefs.ash.docked_magnifier.enabled.value]]">
       </settings-dropdown-menu>
     </div>
-    <cr-link-row
-        class="hr"
-        embedded
-        icon-class="subpage-arrow"
-        label="$i18n{displaySettingsTitle}"
-        on-click="onDisplayTap_"
-        sub-label="$i18n{displaySettingsDescription}">
-    </cr-link-row>
-    <cr-link-row
-        class="hr"
-        embedded
-        icon-class="subpage-arrow"
-        label="$i18n{appearanceSettingsTitle}"
+    <cr-link-row class="hr" label="$i18n{displaySettingsTitle}"
+        on-click="onDisplayTap_" sub-label="$i18n{displaySettingsDescription}"
+        embedded></cr-link-row>
+    <cr-link-row class="hr" label="$i18n{appearanceSettingsTitle}"
         on-click="onAppearanceTap_"
-        sub-label="$i18n{appearanceSettingsDescription}">
-    </cr-link-row>
+        sub-label="$i18n{appearanceSettingsDescription}" embedded></cr-link-row>
 
     <h2>$i18n{keyboardAndTextInputHeading}</h2>
     <settings-toggle-button class="first"
@@ -164,22 +149,14 @@
           label="$i18n{switchAccessLabel}">
       </settings-toggle-button>
       <iron-collapse opened="[[prefs.settings.a11y.switch_access.value]]">
-        <cr-link-row
-            embedded
-            icon-class="icon-external"
-            label="$i18n{switchAccessOptionsLabel}"
-            on-click="onSwitchAccessSettingsTap_">
+        <cr-link-row label="$i18n{switchAccessOptionsLabel}"
+            on-click="onSwitchAccessSettingsTap_" embedded external>
         </cr-link-row>
       </iron-collapse>
     </template>
-    <cr-link-row
-        class="hr"
-        embedded
-        icon-class="subpage-arrow"
-        label="$i18n{keyboardSettingsTitle}"
-        on-click="onKeyboardTap_"
-        sub-label="$i18n{keyboardSettingsDescription}">
-    </cr-link-row>
+    <cr-link-row class="hr" label="$i18n{keyboardSettingsTitle}"
+        on-click="onKeyboardTap_" sub-label="$i18n{keyboardSettingsDescription}"
+        embedded></cr-link-row>
 
     <h2>$i18n{mouseAndTouchpadHeading}</h2>
     <settings-toggle-button class="first"
@@ -245,14 +222,9 @@
         pref="{{prefs.settings.a11y.cursor_highlight}}"
         label="$i18n{cursorHighlightLabel}">
     </settings-toggle-button>
-    <cr-link-row
-        class="hr"
-        embedded
-        icon-class="subpage-arrow"
-        label="$i18n{mouseSettingsTitle}"
-        on-click="onMouseTap_"
-        sub-label="$i18n{mouseSettingsDescription}">
-    </cr-link-row>
+    <cr-link-row class="hr" label="$i18n{mouseSettingsTitle}"
+        on-click="onMouseTap_" sub-label="$i18n{mouseSettingsDescription}"
+        embedded></cr-link-row>
 
     <h2>$i18n{audioHeading}</h2>
     <settings-toggle-button class="first"

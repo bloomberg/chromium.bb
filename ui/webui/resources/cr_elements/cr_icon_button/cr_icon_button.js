@@ -54,28 +54,35 @@ Polymer({
   },
 
   listeners: {
-    blur: 'hideRipple_',
+    blur: 'hideRipple',
     click: 'onClick_',
+    down: 'onDown_',
     focus: 'showRipple_',
     keydown: 'onKeyDown_',
     keyup: 'onKeyUp_',
-    up: 'hideRipple_',
+    up: 'hideRipple',
   },
 
-  /** @private */
-  hideRipple_: function() {
+  hideRipple: function() {
     this.getRipple().holdDown = false;
   },
 
   /** @private */
   showRipple_: function() {
-    if (!this.noink) {
+    if (!this.noink && !this.disabled) {
       this.getRipple().holdDown = true;
     }
   },
 
-  /** @private */
-  disabledChanged_: function() {
+  /**
+   * @param {boolean} newValue
+   * @param {boolean} oldValue
+   * @private
+   */
+  disabledChanged_: function(newValue, oldValue) {
+    if (!newValue && oldValue == undefined) {
+      return;
+    }
     if (this.disabled) {
       this.blur();
     }
@@ -91,6 +98,14 @@ Polymer({
     if (this.disabled) {
       e.stopImmediatePropagation();
     }
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onDown_: function(e) {
+    e.stopPropagation();
   },
 
   /** @private */

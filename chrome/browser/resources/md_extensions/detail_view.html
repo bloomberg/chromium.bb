@@ -389,21 +389,18 @@
         <cr-link-row class="hr" id="extensions-options"
             disabled="[[!isEnabled_(data.state)]]"
             hidden="[[!shouldShowOptionsLink_(data.*)]]"
-            icon-class="icon-external" label="$i18n{itemOptions}"
-            on-click="onExtensionOptionsTap_">
-        </cr-link-row>
-        <cr-link-row class="hr" icon-class="subpage-arrow"
+            label="$i18n{itemOptions}" on-click="onExtensionOptionsTap_"
+            external></cr-link-row>
+        <cr-link-row class="hr"
             id="extensionsActivityLogLink" hidden$="[[!showActivityLog]]"
             label="$i18n{viewActivityLog}" on-click="onActivityLogTap_">
         </cr-link-row>
         <cr-link-row class="hr" hidden="[[!data.manifestHomePageUrl.length]]"
-            icon-class="icon-external" id="extensionWebsite"
-            label="$i18n{extensionWebsite}" on-click="onExtensionWebSiteTap_">
-        </cr-link-row>
+            id="extensionWebsite" label="$i18n{extensionWebsite}"
+            on-click="onExtensionWebSiteTap_" external></cr-link-row>
         <cr-link-row class="hr" hidden="[[!data.webStoreUrl.length]]"
-            icon-class="icon-external" id="viewInStore"
-            label="$i18n{viewInStore}" on-click="onViewInStoreTap_">
-        </cr-link-row>
+            id="viewInStore" label="$i18n{viewInStore}"
+            on-click="onViewInStoreTap_" external></cr-link-row>
         <div class="section block">
           <div class="section-title">$i18n{itemSource}</div>
           <div id="source" class="section-content">
@@ -417,9 +414,8 @@
             </a>
           </div>
         </div>
-        <cr-link-row class="hr"
+        <cr-link-row class="hr" id="remove-extension"
             hidden="[[isControlled_(data.controlledInfo)]]"
-            icon-class="subpage-arrow" id="remove-extension"
             label="$i18n{itemRemoveExtension}" on-click="onRemoveTap_">
         </cr-link-row>
       </div>

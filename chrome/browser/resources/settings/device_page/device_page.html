@@ -23,51 +23,22 @@
     <settings-animated-pages id="pages" section="device"
         focus-config="[[focusConfig_]]">
       <div id="main" route-path="default">
-        <cr-link-row
-            icon-class="subpage-arrow"
-            id="pointersRow"
+        <cr-link-row id="pointersRow"
             label="[[getPointersTitle_(hasMouse_, hasTouchpad_)]]"
-            on-click="onPointersTap_">
-        </cr-link-row>
-        <cr-link-row
-            class="hr"
-            icon-class="subpage-arrow"
-            id="keyboardRow"
-            label="$i18n{keyboardTitle}"
-            on-click="onKeyboardTap_">
-        </cr-link-row>
+            on-click="onPointersTap_"></cr-link-row>
+        <cr-link-row class="hr" id="keyboardRow" label="$i18n{keyboardTitle}"
+            on-click="onKeyboardTap_"></cr-link-row>
         <template is="dom-if" if="[[hasStylus_]]">
-          <cr-link-row
-              class="hr"
-              icon-class="subpage-arrow"
-              id="stylusRow"
-              label="$i18n{stylusTitle}"
-              on-click="onStylusTap_">
-          </cr-link-row>
+          <cr-link-row class="hr" id="stylusRow" label="$i18n{stylusTitle}"
+              on-click="onStylusTap_"></cr-link-row>
         </template>
-        <cr-link-row
-            class="hr"
-            icon-class="subpage-arrow"
-            id="displayRow"
-            label="$i18n{displayTitle}"
-            on-click="onDisplayTap_">
-        </cr-link-row>
-        <cr-link-row
-            class="hr"
-            hidden="[[hideStorageInfo_]]"
-            icon-class="subpage-arrow"
-            id="storageRow"
-            label="$i18n{storageTitle}"
-            on-click="onStorageTap_">
-        </cr-link-row>
+        <cr-link-row class="hr" id="displayRow" label="$i18n{displayTitle}"
+            on-click="onDisplayTap_"> </cr-link-row>
+        <cr-link-row class="hr" hidden="[[hideStorageInfo_]]" id="storageRow"
+            label="$i18n{storageTitle}" on-click="onStorageTap_"></cr-link-row>
         <template is="dom-if" if="[[enablePowerSettings_]]">
-          <cr-link-row
-              class="hr"
-              icon-class="subpage-arrow"
-              id="powerRow"
-              label="$i18n{powerTitle}"
-              on-click="onPowerTap_">
-          </cr-link-row>
+          <cr-link-row class="hr" id="powerRow" label="$i18n{powerTitle}"
+              on-click="onPowerTap_"></cr-link-row>
         </template>
       </div>
       <template is="dom-if" route-path="/pointer-overlay">

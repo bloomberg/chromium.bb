@@ -46,11 +46,11 @@
         focus-config="[[focusConfig_]]">
       <div route-path="default">
 <if expr="chromeos">
-        <cr-link-row icon-class="icon-external" id="wallpaperButton"
+        <cr-link-row  id="wallpaperButton"
             hidden="[[!pageVisibility.setWallpaper]]"
-            on-click="openWallpaperManager_"
-            label="$i18n{setWallpaper}" sub-label="$i18n{openWallpaperApp}"
-            disabled="[[isWallpaperPolicyControlled_]]">
+            on-click="openWallpaperManager_" label="$i18n{setWallpaper}"
+            sub-label="$i18n{openWallpaperApp}"
+            disabled="[[isWallpaperPolicyControlled_]]" external>
           <template is="dom-if" if="[[isWallpaperPolicyControlled_]]">
             <cr-policy-indicator id="wallpaperPolicyIndicator"
                 indicator-type="devicePolicy">
@@ -61,10 +61,9 @@
 </if>
         <div class="settings-row continuation" id="themeRow"
             hidden="[[!pageVisibility.setTheme]]">
-          <cr-link-row class="first" icon-class="icon-external"
-              hidden="[[!pageVisibility.setTheme]]"
+          <cr-link-row class="first" hidden="[[!pageVisibility.setTheme]]"
               label="$i18n{themes}" sub-label="[[themeSublabel_]]"
-              on-click="openThemeUrl_"></cr-link-row>
+              on-click="openThemeUrl_" external></cr-link-row>
 <if expr="not is_linux or chromeos">
           <template is="dom-if" if="[[prefs.extensions.theme.id.value]]">
             <div class="separator"></div>
@@ -154,8 +153,7 @@
               menu-options="[[fontSizeOptions_]]">
           </settings-dropdown-menu>
         </div>
-        <cr-link-row class="hr"
-            icon-class="subpage-arrow" id="customize-fonts-subpage-trigger"
+        <cr-link-row class="hr" id="customize-fonts-subpage-trigger"
             label="$i18n{customizeFonts}" on-click="onCustomizeFontsTap_">
         </cr-link-row>
         <div class="settings-box" hidden="[[!pageVisibility.pageZoom]]">

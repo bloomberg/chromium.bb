@@ -20,26 +20,15 @@
         focus-config="[[focusConfig_]]">
       <div route-path="default">
 <if expr="chromeos">
-        <cr-link-row
-            icon-class="subpage-arrow"
-            id="cupsPrinters"
-            label="$i18n{cupsPrintersTitle}"
-            on-click="onTapCupsPrinters_">
-        </cr-link-row>
+        <cr-link-row id="cupsPrinters" label="$i18n{cupsPrintersTitle}"
+            on-click="onTapCupsPrinters_"></cr-link-row>
 </if>
 <if expr="not chromeos">
-        <cr-link-row
-            icon-class="subpage-arrow"
-            label="$i18n{localPrintersTitle}"
-            on-click="onTapLocalPrinters_">
-        </cr-link-row>
+        <cr-link-row label="$i18n{localPrintersTitle}"
+            on-click="onTapLocalPrinters_"></cr-link-row>
 </if>
-        <cr-link-row
-            class="hr"
-            icon-class="subpage-arrow"
-            id="cloudPrinters"
-            label="$i18n{cloudPrintersTitle}"
-            on-click="onTapCloudPrinters_">
+        <cr-link-row class="hr" id="cloudPrinters"
+            label="$i18n{cloudPrintersTitle}" on-click="onTapCloudPrinters_">
         </cr-link-row>
       </div>
 <if expr="chromeos">
