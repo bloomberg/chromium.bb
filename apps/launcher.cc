@@ -268,11 +268,11 @@ class PlatformAppPathLauncher
         }
       }
     } else {
-      const std::vector<const extensions::FileHandlerInfo*>& handlers =
-          extensions::app_file_handler_util::FindFileHandlersForEntries(
+      const std::vector<extensions::FileHandlerMatch> handlers =
+          extensions::app_file_handler_util::FindFileHandlerMatchesForEntries(
               *app, entries_);
       if (!handlers.empty())
-        handler = handlers[0];
+        handler = handlers[0].handler;
     }
 
     // If this app doesn't have a file handler that supports the file, launch

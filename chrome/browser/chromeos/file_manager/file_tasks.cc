@@ -51,7 +51,6 @@
 using extensions::Extension;
 using extensions::api::file_manager_private::Verb;
 using extensions::app_file_handler_util::FindFileHandlerMatchesForEntries;
-using extensions::app_file_handler_util::FindFileHandlersForEntries;
 using storage::FileSystemURL;
 
 namespace file_manager {
