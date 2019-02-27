@@ -308,7 +308,7 @@ ListContainer.prototype.clearHover = function() {
  * @return {cr.ui.ListItem}
  */
 ListContainer.prototype.findListItemForNode = function(node) {
-  var item = this.currentList.getListItemAncestor(node);
+  const item = this.currentList.getListItemAncestor(node);
   // TODO(serya): list should check that.
   return item && this.currentList.isItem(item) ?
       assertInstanceof(item, cr.ui.ListItem) : null;
@@ -409,9 +409,9 @@ ListContainer.prototype.onKeyPress_ = function(event) {
     return;
   }
 
-  var now = new Date();
-  var character = String.fromCharCode(event.charCode).toLowerCase();
-  var text = now - this.textSearchState.date > 1000 ? '' :
+  const now = new Date();
+  const character = String.fromCharCode(event.charCode).toLowerCase();
+  const text = now - this.textSearchState.date > 1000 ? '' :
       this.textSearchState.text;
   this.textSearchState.text = text + character;
   this.textSearchState.date = now;

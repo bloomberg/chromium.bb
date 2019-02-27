@@ -116,10 +116,10 @@ GearMenu.prototype.setSpaceInfo = function(
     }
     this.volumeSpaceInnerBar_.removeAttribute('pending');
     if (spaceInfo) {
-      var sizeStr = util.bytesToString(spaceInfo.remainingSize);
+      const sizeStr = util.bytesToString(spaceInfo.remainingSize);
       this.volumeSpaceInfoLabel_.textContent = strf('SPACE_AVAILABLE', sizeStr);
 
-      var usedSpace = spaceInfo.totalSize - spaceInfo.remainingSize;
+      const usedSpace = spaceInfo.totalSize - spaceInfo.remainingSize;
       this.volumeSpaceInnerBar_.style.width =
           (100 * usedSpace / spaceInfo.totalSize) + '%';
 

@@ -15,15 +15,15 @@ function MultiProfileShareDialog(parentNode) {
   this.mailLabel_ = parentNode.ownerDocument.createElement('label');
   this.mailLabel_.className = 'mail-label';
 
-  var canEdit = parentNode.ownerDocument.createElement('option');
+  const canEdit = parentNode.ownerDocument.createElement('option');
   canEdit.textContent = str('DRIVE_SHARE_TYPE_CAN_EDIT');
   canEdit.value = MultiProfileShareDialog.Result.CAN_EDIT;
 
-  var canComment = parentNode.ownerDocument.createElement('option');
+  const canComment = parentNode.ownerDocument.createElement('option');
   canComment.textContent = str('DRIVE_SHARE_TYPE_CAN_COMMENT');
   canComment.value = MultiProfileShareDialog.Result.CAN_COMMET;
 
-  var canView = parentNode.ownerDocument.createElement('option');
+  const canView = parentNode.ownerDocument.createElement('option');
   canView.textContent = str('DRIVE_SHARE_TYPE_CAN_VIEW');
   canView.value = MultiProfileShareDialog.Result.CAN_VIEW;
 
@@ -33,7 +33,7 @@ function MultiProfileShareDialog(parentNode) {
   this.shareTypeSelect_.appendChild(canComment);
   this.shareTypeSelect_.appendChild(canView);
 
-  var shareLine = parentNode.ownerDocument.createElement('div');
+  const shareLine = parentNode.ownerDocument.createElement('div');
   shareLine.className = 'share-line';
   shareLine.appendChild(this.mailLabel_);
   shareLine.appendChild(this.shareTypeSelect_);
@@ -78,7 +78,7 @@ MultiProfileShareDialog.prototype.showMultiProfileShareDialog =
     return new Promise(function(fulfill, reject) {
       this.shareTypeSelect_.selectedIndex = 0;
       this.mailLabel_.textContent = currentProfileId;
-      var result = FileManagerDialogBase.prototype.showOkCancelDialog.call(
+      const result = FileManagerDialogBase.prototype.showOkCancelDialog.call(
           this,
           str(plural ?
               'MULTI_PROFILE_SHARE_DIALOG_TITLE_PLURAL' :

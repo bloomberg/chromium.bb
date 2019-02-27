@@ -12,7 +12,7 @@
  * @constructor
  * @extends {HTMLButtonElement}
  */
-var CommandButton = cr.ui.define('button');
+const CommandButton = cr.ui.define('button');
 
 /** @override */
 CommandButton.prototype.__proto__ = HTMLButtonElement.prototype;
@@ -28,7 +28,7 @@ CommandButton.prototype.command_ = null;
  * Initializes the menu item.
  */
 CommandButton.prototype.decorate = function() {
-  var commandId;
+  let commandId;
   if ((commandId = this.getAttribute('command'))) {
     this.setCommand(commandId);
   }

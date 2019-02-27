@@ -66,8 +66,8 @@ LocationLine.prototype.replaceRootName_ = function(url, newRoot) {
  * @private
  */
 LocationLine.prototype.getComponents_ = function(entry) {
-  var components = [];
-  var locationInfo = this.volumeManager_.getLocationInfo(entry);
+  const components = [];
+  const locationInfo = this.volumeManager_.getLocationInfo(entry);
 
   if (!locationInfo) {
     return components;
@@ -81,10 +81,10 @@ LocationLine.prototype.getComponents_ = function(entry) {
   }
 
   // Add volume component.
-  var displayRootUrl = locationInfo.volumeInfo.displayRoot.toURL();
-  var displayRootFullPath = locationInfo.volumeInfo.displayRoot.fullPath;
+  let displayRootUrl = locationInfo.volumeInfo.displayRoot.toURL();
+  let displayRootFullPath = locationInfo.volumeInfo.displayRoot.fullPath;
 
-  var prefixEntry = locationInfo.volumeInfo.prefixEntry;
+  const prefixEntry = locationInfo.volumeInfo.prefixEntry;
   if (prefixEntry) {
     components.push(new LocationLine.PathComponent(
         prefixEntry.name, prefixEntry.toURL(), prefixEntry));
@@ -98,7 +98,7 @@ LocationLine.prototype.getComponents_ = function(entry) {
       displayRootFullPath = '/other';
     }
     displayRootUrl = this.replaceRootName_(displayRootUrl, displayRootFullPath);
-    var sharedWithMeFakeEntry = locationInfo.volumeInfo.fakeEntries[
+    const sharedWithMeFakeEntry = locationInfo.volumeInfo.fakeEntries[
         VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME];
     components.push(new LocationLine.PathComponent(
         str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL'),
@@ -121,7 +121,7 @@ LocationLine.prototype.getComponents_ = function(entry) {
   }
 
   // Get relative path to display root (e.g. /root/foo/bar -> foo/bar).
-  var relativePath = entry.fullPath.slice(displayRootFullPath.length);
+  let relativePath = entry.fullPath.slice(displayRootFullPath.length);
   if (entry.fullPath.startsWith(
           VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_PATH)) {
     relativePath = entry.fullPath.slice(
@@ -139,12 +139,12 @@ LocationLine.prototype.getComponents_ = function(entry) {
   }
 
   // currentUrl should be without trailing slash.
-  var currentUrl = /^.+\/$/.test(displayRootUrl) ?
+  let currentUrl = /^.+\/$/.test(displayRootUrl) ?
       displayRootUrl.slice(0, displayRootUrl.length - 1) : displayRootUrl;
 
   // Add directory components to the target path.
-  var paths = relativePath.split('/');
-  for (var i = 0; i < paths.length; i++) {
+  const paths = relativePath.split('/');
+  for (let i = 0; i < paths.length; i++) {
     currentUrl += '/' + encodeURIComponent(paths[i]);
     components.push(new LocationLine.PathComponent(paths[i], currentUrl));
   }
@@ -162,22 +162,22 @@ LocationLine.prototype.update_ = function(components) {
   this.components_ = components;
 
   // Make the new breadcrumbs temporarily.
-  var newBreadcrumbs = document.createElement('div');
-  for (var i = 0; i < components.length; i++) {
+  const newBreadcrumbs = document.createElement('div');
+  for (let i = 0; i < components.length; i++) {
     // Add a component.
-    var component = components[i];
-    var button = document.createElement('button');
+    const component = components[i];
+    const button = document.createElement('button');
     button.id = 'breadcrumb-path-' + i;
     button.classList.add(
         'breadcrumb-path', 'entry-name', 'imitate-paper-button');
-    var nameElement = document.createElement('div');
+    const nameElement = document.createElement('div');
     nameElement.classList.add('name');
     nameElement.textContent = component.name;
     button.appendChild(nameElement);
     button.addEventListener('click', this.onClick_.bind(this, i));
     newBreadcrumbs.appendChild(button);
 
-    var ripple = document.createElement('paper-ripple');
+    const ripple = document.createElement('paper-ripple');
     ripple.classList.add('recenteringTouch');
     ripple.setAttribute('fit', '');
     button.appendChild(ripple);
@@ -188,7 +188,7 @@ LocationLine.prototype.update_ = function(components) {
     }
 
     // Add a separator.
-    var separator = document.createElement('span');
+    const separator = document.createElement('span');
     separator.classList.add('separator');
     newBreadcrumbs.appendChild(separator);
   }
@@ -196,9 +196,9 @@ LocationLine.prototype.update_ = function(components) {
   // Replace the shown breadcrumbs with the new one, keeping the DOMs for common
   // prefix of the path.
   // 1. Forward the references to the path element while in the common prefix.
-  var childOriginal = this.breadcrumbs_.firstChild;
-  var childNew = newBreadcrumbs.firstChild;
-  var cnt = 0;
+  let childOriginal = this.breadcrumbs_.firstChild;
+  let childNew = newBreadcrumbs.firstChild;
+  let cnt = 0;
   while (childOriginal && childNew &&
          childOriginal.textContent === childNew.textContent) {
     childOriginal = childOriginal.nextSibling;
@@ -208,20 +208,20 @@ LocationLine.prototype.update_ = function(components) {
   // 2. Remove all elements in original breadcrumbs which are not in the common
   // prefix.
   while (childOriginal) {
-    var childToRemove = childOriginal;
+    const childToRemove = childOriginal;
     childOriginal = childOriginal.nextSibling;
     this.breadcrumbs_.removeChild(childToRemove);
   }
   // 3. Append new elements after the common prefix.
   while (childNew) {
-    var childToAppend = childNew;
+    const childToAppend = childNew;
     childNew = childNew.nextSibling;
     this.breadcrumbs_.appendChild(childToAppend);
   }
   // 4. Reset the tab index and class 'breadcrumb-last'.
-  for (var el = this.breadcrumbs_.firstChild; el; el = el.nextSibling) {
+  for (let el = this.breadcrumbs_.firstChild; el; el = el.nextSibling) {
     if (el.classList.contains('breadcrumb-path')) {
-      var isLast = !el.nextSibling;
+      const isLast = !el.nextSibling;
       el.tabIndex = isLast ? -1 : 9;
       el.classList.toggle('breadcrumb-last', isLast);
     }
@@ -241,18 +241,18 @@ LocationLine.prototype.truncate = function() {
 
   // Assume style.width == clientWidth (items have no margins).
 
-  for (var item = this.breadcrumbs_.firstChild; item; item = item.nextSibling) {
+  for (let item = this.breadcrumbs_.firstChild; item; item = item.nextSibling) {
     item.removeAttribute('style');
     item.removeAttribute('collapsed');
     item.removeAttribute('hidden');
   }
 
-  var containerWidth = this.breadcrumbs_.getBoundingClientRect().width;
+  const containerWidth = this.breadcrumbs_.getBoundingClientRect().width;
 
-  var pathWidth = 0;
-  var currentWidth = 0;
-  var lastSeparator;
-  for (var item = this.breadcrumbs_.firstChild; item; item = item.nextSibling) {
+  let pathWidth = 0;
+  let currentWidth = 0;
+  let lastSeparator;
+  for (let item = this.breadcrumbs_.firstChild; item; item = item.nextSibling) {
     if (item.className == 'separator') {
       pathWidth += currentWidth;
       currentWidth = item.getBoundingClientRect().width;
@@ -269,21 +269,21 @@ LocationLine.prototype.truncate = function() {
         Math.min(currentWidth, containerWidth) + 'px';
     return;
   }
-  var lastCrumbSeparatorWidth = lastSeparator.getBoundingClientRect().width;
+  const lastCrumbSeparatorWidth = lastSeparator.getBoundingClientRect().width;
   // Current directory name may occupy up to 70% of space or even more if the
   // path is short.
-  var maxPathWidth = Math.max(Math.round(containerWidth * 0.3),
+  let maxPathWidth = Math.max(Math.round(containerWidth * 0.3),
                               containerWidth - currentWidth);
   maxPathWidth = Math.min(pathWidth, maxPathWidth);
 
-  var parentCrumb = lastSeparator.previousSibling;
+  const parentCrumb = lastSeparator.previousSibling;
 
   // Pre-calculate the minimum width for crumbs.
   parentCrumb.setAttribute('collapsed', '');
-  var minCrumbWidth = parentCrumb.getBoundingClientRect().width;
+  const minCrumbWidth = parentCrumb.getBoundingClientRect().width;
   parentCrumb.removeAttribute('collapsed');
 
-  var collapsedWidth = 0;
+  let collapsedWidth = 0;
   if (parentCrumb &&
       pathWidth - parentCrumb.getBoundingClientRect().width + minCrumbWidth >
           maxPathWidth) {
@@ -307,7 +307,7 @@ LocationLine.prototype.truncate = function() {
   }
 
   pathWidth = 0;
-  for (var item = this.breadcrumbs_.firstChild; item != lastSeparator;
+  for (let item = this.breadcrumbs_.firstChild; item != lastSeparator;
        item = item.nextSibling) {
     // TODO(serya): Mixing access item.clientWidth and modifying style and
     // attributes could cause multiple layout reflows.
@@ -362,7 +362,7 @@ LocationLine.prototype.onClick_ = function(index, event) {
   }
 
   // Remove 'focused' state from the clicked button.
-  var button = event.target;
+  let button = event.target;
   while (button && !button.classList.contains('breadcrumb-path')) {
     button = button.parentElement;
   }
@@ -370,9 +370,9 @@ LocationLine.prototype.onClick_ = function(index, event) {
     button.blur();
   }
 
-  var pathComponent = this.components_[index];
+  const pathComponent = this.components_[index];
   pathComponent.resolveEntry().then(function(entry) {
-    var pathClickEvent = new Event('pathclick');
+    const pathClickEvent = new Event('pathclick');
     pathClickEvent.entry = entry;
     this.dispatchEvent(pathClickEvent);
   }.bind(this));

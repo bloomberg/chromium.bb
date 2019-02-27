@@ -3,25 +3,25 @@
 // found in the LICENSE file.
 
 /** @type {!MockVolumeManager} */
-var volumeManager;
+let volumeManager;
 
 /** @type {!DirectoryModel} */
-var directoryModel;
+let directoryModel;
 
 /** @type {!MetadataModel} */
-var metadataModel;
+let metadataModel;
 
 /** @type {!FileOperationManager} */
-var fileOperationManager;
+let fileOperationManager;
 
 /** @type {!Array} */
-var directoryChangedListeners;
+let directoryChangedListeners;
 
 /** @type {!Object<string,!MockDirectoryEntry>} */
-var fakeFileSystemURLEntries;
+let fakeFileSystemURLEntries;
 
 /** @type {!FileSystem} */
-var driveFileSystem;
+let driveFileSystem;
 
 /**
  * Mock metrics.
@@ -35,7 +35,7 @@ window.metrics = {
  * Mock Chrome APIs
  * @type {!Object}
  */
-var mockChrome;
+let mockChrome;
 
 // Set up test components.
 function setUp() {
@@ -144,7 +144,7 @@ function getDirectoryTreeItemLabels(directoryTree) {
  */
 function testCreateDirectoryTree(callback) {
   // Populate the directory tree with the mock filesystem.
-  var directoryTree = createElements();
+  let directoryTree = createElements();
   DirectoryTree.decorate(
       directoryTree, directoryModel, volumeManager, metadataModel,
       fileOperationManager, true);
@@ -159,7 +159,7 @@ function testCreateDirectoryTree(callback) {
   assertEquals(str('DRIVE_DIRECTORY_LABEL'), directoryTree.items[0].label);
   assertEquals(str('DOWNLOADS_DIRECTORY_LABEL'), directoryTree.items[1].label);
 
-  var driveItem = directoryTree.items[0];
+  const driveItem = directoryTree.items[0];
 
   reportPromise(
       waitUntil(function() {
@@ -193,12 +193,12 @@ function testCreateDirectoryTree(callback) {
  */
 function testCreateDirectoryTreeWithTeamDrive(callback) {
   // Setup entries returned by fakeFileSystemURLResults.
-  var driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
+  const driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
   fakeFileSystemURLEntries['filesystem:drive/team_drives/a'] =
       new MockDirectoryEntry(driveFileSystem, '/team_drives/a');
 
   // Populate the directory tree with the mock filesystem.
-  var directoryTree = createElements();
+  let directoryTree = createElements();
   directoryTree.metadataModel = createMockMetadataModel();
   DirectoryTree.decorate(
       directoryTree, directoryModel, volumeManager, metadataModel,
@@ -214,7 +214,7 @@ function testCreateDirectoryTreeWithTeamDrive(callback) {
   assertEquals(str('DRIVE_DIRECTORY_LABEL'), directoryTree.items[0].label);
   assertEquals(str('DOWNLOADS_DIRECTORY_LABEL'), directoryTree.items[1].label);
 
-  var driveItem = directoryTree.items[0];
+  const driveItem = directoryTree.items[0];
 
   reportPromise(
       waitUntil(function() {
@@ -244,7 +244,7 @@ function testCreateDirectoryTreeWithEmptyTeamDrive(callback) {
   // No directories exist under Team Drives
 
   // Populate the directory tree with the mock filesystem.
-  var directoryTree = createElements();
+  let directoryTree = createElements();
   directoryTree.metadataModel = createMockMetadataModel();
   DirectoryTree.decorate(
       directoryTree, directoryModel, volumeManager, metadataModel,
@@ -255,7 +255,7 @@ function testCreateDirectoryTreeWithEmptyTeamDrive(callback) {
   directoryTree = /** @type {!DirectoryTree} */ (directoryTree);
   directoryTree.redraw(true);
 
-  var driveItem = directoryTree.items[0];
+  const driveItem = directoryTree.items[0];
 
   reportPromise(
       waitUntil(function() {
@@ -264,8 +264,8 @@ function testCreateDirectoryTreeWithEmptyTeamDrive(callback) {
         // See testCreateDirectoryTreeWithTeamDrive for detail.
         return driveItem.items.length == 3;
       }).then(function() {
-        var teamDrivesItemFound = false;
-        for (var i = 0; i < driveItem.items.length; i++) {
+        let teamDrivesItemFound = false;
+        for (let i = 0; i < driveItem.items.length; i++) {
           if (driveItem.items[i].label == str('DRIVE_TEAM_DRIVES_LABEL')) {
             teamDrivesItemFound = true;
             break;
@@ -296,7 +296,7 @@ function testCreateDirectoryTreeWithComputers(callback) {
       new MockDirectoryEntry(driveFileSystem, '/Computers/My Laptop');
 
   // Populate the directory tree with the mock filesystem.
-  var directoryTree = createElements();
+  let directoryTree = createElements();
   directoryTree.metadataModel = createMockMetadataModel();
   DirectoryTree.decorate(
       directoryTree, directoryModel, volumeManager, metadataModel,
@@ -342,7 +342,7 @@ function testCreateDirectoryTreeWithEmptyComputers(callback) {
   // No directories exist under Team Drives
 
   // Populate the directory tree with the mock filesystem.
-  var directoryTree = createElements();
+  let directoryTree = createElements();
   directoryTree.metadataModel = createMockMetadataModel();
   DirectoryTree.decorate(
       directoryTree, directoryModel, volumeManager, metadataModel,
@@ -399,7 +399,7 @@ function testCreateDirectoryTreeWithTeamDrivesAndComputers(callback) {
       new MockDirectoryEntry(driveFileSystem, '/Computers/My Laptop');
 
   // Populate the directory tree with the mock filesystem.
-  var directoryTree = createElements();
+  let directoryTree = createElements();
   directoryTree.metadataModel = createMockMetadataModel();
   DirectoryTree.decorate(
       directoryTree, directoryModel, volumeManager, metadataModel,
@@ -453,7 +453,7 @@ function testUpdateSubElementsFromListSections() {
   assertEquals(NavigationSection.CLOUD, driveItem.section);
 
   // Populate the directory tree with the mock filesystem.
-  var directoryTree = createElements();
+  let directoryTree = createElements();
   const mockMetadata = createMockMetadataModel();
   DirectoryTree.decorate(
       directoryTree, directoryModel, volumeManager, mockMetadata,
@@ -491,7 +491,7 @@ function testUpdateSubElementsFromListSections() {
  */
 function testUpdateSubElementsFromList() {
   // Populate the directory tree with the mock filesystem.
-  var directoryTree = createElements();
+  let directoryTree = createElements();
   DirectoryTree.decorate(
       directoryTree, directoryModel, volumeManager, metadataModel,
       fileOperationManager, true);
@@ -508,7 +508,7 @@ function testUpdateSubElementsFromList() {
   ], getDirectoryTreeItemLabels(directoryTree));
 
   // Mounts a removable volume.
-  var removableVolume = MockVolumeManager.createMockVolumeInfo(
+  const removableVolume = MockVolumeManager.createMockVolumeInfo(
       VolumeManagerCommon.VolumeType.REMOVABLE, 'removable',
       str('REMOVABLE_DIRECTORY_LABEL'));
   volumeManager.volumeInfoList.add(removableVolume);
@@ -528,7 +528,7 @@ function testUpdateSubElementsFromList() {
   ], getDirectoryTreeItemLabels(directoryTree));
 
   // Mounts an archive volume.
-  var archiveVolume = MockVolumeManager.createMockVolumeInfo(
+  const archiveVolume = MockVolumeManager.createMockVolumeInfo(
       VolumeManagerCommon.VolumeType.ARCHIVE, 'archive',
       str('ARCHIVE_DIRECTORY_LABEL'));
   volumeManager.volumeInfoList.add(archiveVolume);
@@ -585,7 +585,7 @@ function testAddFirstTeamDrive(callback) {
   // No directories exist under Team Drives
 
   // Populate the directory tree with the mock filesystem.
-  var directoryTree = createElements();
+  let directoryTree = createElements();
   directoryTree.metadataModel = createMockMetadataModel();
   DirectoryTree.decorate(
       directoryTree, directoryModel, volumeManager, metadataModel,
@@ -596,7 +596,7 @@ function testAddFirstTeamDrive(callback) {
   directoryTree = /** @type {!DirectoryTree} */ (directoryTree);
   directoryTree.redraw(true);
 
-  var driveItem = directoryTree.items[0];
+  const driveItem = directoryTree.items[0];
 
   reportPromise(
       waitUntil(() => {
@@ -615,7 +615,7 @@ function testAddFirstTeamDrive(callback) {
           })
           .then(() => {
             return waitUntil(() => {
-              for (var i = 0; i < driveItem.items.length; i++) {
+              for (let i = 0; i < driveItem.items.length; i++) {
                 if (driveItem.items[i].label ==
                     str('DRIVE_TEAM_DRIVES_LABEL')) {
                   return !driveItem.items[i].hidden;
@@ -637,12 +637,12 @@ function testAddFirstTeamDrive(callback) {
  */
 function testRemoveLastTeamDrive(callback) {
   // Setup entries returned by fakeFileSystemURLResults.
-  var driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
+  const driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
   fakeFileSystemURLEntries['filesystem:drive/team_drives/a'] =
       new MockDirectoryEntry(driveFileSystem, '/team_drives/a');
 
   // Populate the directory tree with the mock filesystem.
-  var directoryTree = createElements();
+  let directoryTree = createElements();
   directoryTree.metadataModel = createMockMetadataModel();
   DirectoryTree.decorate(
       directoryTree, directoryModel, volumeManager, metadataModel,
@@ -653,7 +653,7 @@ function testRemoveLastTeamDrive(callback) {
   directoryTree = /** @type {!DirectoryTree} */ (directoryTree);
   directoryTree.redraw(true);
 
-  var driveItem = directoryTree.items[0];
+  const driveItem = directoryTree.items[0];
 
   reportPromise(
       waitUntil(() => {
@@ -677,7 +677,7 @@ function testRemoveLastTeamDrive(callback) {
           .then(() => {
             // Wait team drive grand root to appear.
             return waitUntil(() => {
-              for (var i = 0; i < driveItem.items.length; i++) {
+              for (let i = 0; i < driveItem.items.length; i++) {
                 if (driveItem.items[i].label ==
                     str('DRIVE_TEAM_DRIVES_LABEL')) {
                   return false;
@@ -701,7 +701,7 @@ function testAddFirstComputer(callback) {
   // No directories exist under Computers
 
   // Populate the directory tree with the mock filesystem.
-  var directoryTree = createElements();
+  let directoryTree = createElements();
   directoryTree.metadataModel = createMockMetadataModel();
   DirectoryTree.decorate(
       directoryTree, directoryModel, volumeManager, metadataModel,
@@ -756,12 +756,12 @@ function testAddFirstComputer(callback) {
  */
 function testRemoveLastComputer(callback) {
   // Setup entries returned by fakeFileSystemURLResults.
-  var driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
+  const driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
   fakeFileSystemURLEntries['filesystem:drive/Computers/a'] =
       new MockDirectoryEntry(driveFileSystem, '/Computers/a');
 
   // Populate the directory tree with the mock filesystem.
-  var directoryTree = createElements();
+  let directoryTree = createElements();
   directoryTree.metadataModel = createMockMetadataModel();
   DirectoryTree.decorate(
       directoryTree, directoryModel, volumeManager, metadataModel,
@@ -826,7 +826,7 @@ function testInsideMyDriveAndInsideDrive(callback) {
       new MockDirectoryEntry(downloadsFileSystem, '/folder1');
 
   // Populate the directory tree with the mock filesystem.
-  var directoryTree = createElements();
+  let directoryTree = createElements();
   directoryTree.metadataModel = createMockMetadataModel();
   const mockMetadata = createMockMetadataModel();
   DirectoryTree.decorate(
@@ -892,7 +892,7 @@ function testAddProviders(callback) {
       new MockDirectoryEntry(smbProvider, '/smb_child');
 
   // Populate the directory tree with the mock filesystem.
-  var directoryTree = createElements();
+  let directoryTree = createElements();
   const metadataModel = createMockMetadataModel();
   directoryTree.metadataModel = metadataModel;
   DirectoryTree.decorate(

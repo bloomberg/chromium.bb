@@ -32,7 +32,7 @@ function SuggestAppsDialog(providersModel, parentNode, state) {
    * The root element for the Chrome Web Store widget container.
    * @const {!HTMLElement}
    */
-  var widgetRoot = this.document_.createElement('div');
+  const widgetRoot = this.document_.createElement('div');
   this.frame_.insertBefore(widgetRoot, this.text_.nextSibling);
 
   /**
@@ -96,7 +96,7 @@ SuggestAppsDialog.prototype.show = function() {
 SuggestAppsDialog.prototype.showByExtensionAndMime =
     function(extension, mime, onDialogClosed) {
   assert(extension && extension[0] === '.');
-  var options = {file_extension: extension.substr(1)};
+  const options = {file_extension: extension.substr(1)};
   if (mime) {
     options.mime_type = mime;
   }
@@ -239,8 +239,8 @@ SuggestAppsDialog.prototype.showInternal_ =
     return;
   }
 
-  var dialogShown = false;
-  var tokenObtained = false;
+  let dialogShown = false;
+  let tokenObtained = false;
 
   this.widget_.ready()
       .then((/** @return {!Promise} */
@@ -272,7 +272,7 @@ SuggestAppsDialog.prototype.showInternal_ =
               // value reported by dialog.
               this.widget_.finalizeAndGetResult();
 
-              var result = tokenObtained ?
+              const result = tokenObtained ?
                   // Got access token but the widget dialog was not shown.
                   // Consider the widget was cancelled.
                   SuggestAppsDialog.Result.CANCELLED :
@@ -297,7 +297,7 @@ SuggestAppsDialog.prototype.showInternal_ =
  */
 SuggestAppsDialog.prototype.showDialog_ = function(title) {
   return new Promise(function(resolve, reject) {
-     var success = this.dialogText_ ?
+     const success = this.dialogText_ ?
          FileManagerDialogBase.prototype.showTitleAndTextDialog.call(
              this, title, this.dialogText_) :
          FileManagerDialogBase.prototype.showTitleOnlyDialog.call(
@@ -328,7 +328,7 @@ SuggestAppsDialog.prototype.onDriveConnectionChanged = function(
  * @override
  */
 SuggestAppsDialog.prototype.hide = function(opt_originalOnHide) {
-  var widgetResult = this.widget_.finalizeAndGetResult();
+  const widgetResult = this.widget_.finalizeAndGetResult();
 
   switch (widgetResult.result) {
     case CWSWidgetContainer.Result.INSTALL_SUCCESSFUL:

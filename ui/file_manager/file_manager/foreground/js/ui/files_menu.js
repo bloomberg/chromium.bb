@@ -10,7 +10,7 @@ cr.define('cr.ui', function() {
    *
    * TODO(mtomasz): Upstream to cr.ui.MenuItem.
    */
-  var FilesMenuItem = cr.ui.define(cr.ui.MenuItem);
+  const FilesMenuItem = cr.ui.define(cr.ui.MenuItem);
 
   FilesMenuItem.prototype = {
     __proto__: cr.ui.MenuItem.prototype,
@@ -79,7 +79,7 @@ cr.define('cr.ui', function() {
       }
 
       // Perform fade out animation.
-      var menu = assertInstanceof(this.parentNode, cr.ui.Menu);
+      const menu = assertInstanceof(this.parentNode, cr.ui.Menu);
       // If activation was on a menu-item that hosts a sub-menu, don't animate
       const subMenuId = event.target.getAttribute('sub-menu');
       if (subMenuId !== null) {
@@ -89,7 +89,7 @@ cr.define('cr.ui', function() {
       }
       this.setMenuAsAnimating_(menu, true /* animating */);
 
-      var player = menu.animate([{
+      const player = menu.animate([{
         opacity: 1,
         offset: 0
       }, {
@@ -110,8 +110,8 @@ cr.define('cr.ui', function() {
     setMenuAsAnimating_: function(menu, value) {
       menu.classList.toggle('animating', value);
 
-      for (var i = 0; i < menu.menuItems.length; i++) {
-        var menuItem = menu.menuItems[i];
+      for (let i = 0; i < menu.menuItems.length; i++) {
+        const menuItem = menu.menuItems[i];
         if (menuItem instanceof cr.ui.FilesMenuItem) {
           menuItem.setAnimating_(value);
         }
