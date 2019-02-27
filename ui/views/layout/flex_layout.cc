@@ -339,6 +339,11 @@ class FlexLayoutInternal {
   void DoLayout(const Layout& layout, const gfx::Rect& bounds);
 
  private:
+  // Maps a flex order (lower = allocated first, and therefore higher priority)
+  // to the indices of child views within that order that can flex.
+  // See FlexSpecification::order().
+  using FlexOrderToViewIndexMap = std::map<int, std::vector<int>>;
+
   LayoutOrientation orientation() const { return layout_.orientation(); }
 
   // Determines whether a layout is still valid.
@@ -347,6 +352,23 @@ class FlexLayoutInternal {
   // Creates a brand new layout from the available |bounds|.
   // Call DoLayout() to actually apply the layout.
   const Layout& CalculateNewLayout(const NormalizedSizeBounds& bounds);
+
+  // Applies flex rules to each view in a layout, updating |layout| and
+  // |child_spacing|.
+  //
+  // If |expandable_views| is specified, any view requesting more than its
+  // preferred size will be clamped to its preferred size and be added to
+  // |expandable_views| for later processing after all other flex space has been
+  // allocated.
+  //
+  // Typically, this method will be called once with |expandable_views| set and
+  // then again with it null to allocate the remaining space.
+  void AllocateFlexSpace(
+      Layout* layout,
+      ChildViewSpacing* child_spacing,
+      const NormalizedSizeBounds& bounds,
+      const FlexOrderToViewIndexMap& order_to_index,
+      FlexOrderToViewIndexMap* expandable_views = nullptr) const;
 
   // Calculates the position of each child view and the size of the overall
   // layout based on tentative visibilities and sizes for each child.
@@ -586,13 +608,154 @@ void FlexLayoutInternal::UpdateLayoutFromChildren(
   }
 }
 
+void FlexLayoutInternal::AllocateFlexSpace(
+    Layout* layout,
+    ChildViewSpacing* child_spacing,
+    const NormalizedSizeBounds& bounds,
+    const FlexOrderToViewIndexMap& order_to_index,
+    FlexOrderToViewIndexMap* expandable_views) const {
+  // Step through each flex priority allocating as much remaining space as
+  // possible to each flex view.
+  for (auto flex_it = order_to_index.begin(); flex_it != order_to_index.end();
+       ++flex_it) {
+    // Check to see we haven't filled available space.
+    int remaining = *bounds.main() - layout->total_size.main();
+    if (remaining <= 0)
+      break;
+    const int flex_order = flex_it->first;
+
+    // The flex algorithm we're using works as follows:
+    //  * For each child view at a particular flex order:
+    //    - Calculate the percentage of the remaining flex space to allocate
+    //      based on the ratio of its weight to the total unallocated weight
+    //      at that order.
+    //    - If the child view is already visible (it will be at its minimum
+    //      size, which may or may not be zero), add the space the child is
+    //      already taking up.
+    //    - If the child view is not visible and adding it would introduce
+    //      additional margin space between child views, subtract that
+    //      additional space from the amount available.
+    //    - Ask the child view's flex rule how large it would like to be
+    //      within the space available.
+    //    - If the child view would like to be larger, make it so, and
+    //      subtract the additional space consumed by the child and its
+    //      margins from the total remaining flex space.
+    //
+    // Note that this algorithm isn't *perfect* for specific cases, which are
+    // noted below; namely when margins very asymmetrical the sizing of child
+    // views can be slightly different from what would otherwise be expected.
+    // We have a TODO to look at ways of making this algorithm more "fair" in
+    // the future (but in the meantime most issues can be resolved by setting
+    // reasonable margins and by using flex order).
+
+    // Flex children at this priority order.
+    int flex_total = 0;
+    std::for_each(flex_it->second.begin(), flex_it->second.end(),
+                  [&](int index) {
+                    auto weight = layout->child_layouts[index].flex.weight();
+                    if (weight > 0)
+                      flex_total += weight;
+                  });
+
+    // Note: because the child views are evaluated in order, if preferred
+    // minimum sizes are not consistent across a single priority expanding
+    // the parent control could result in children swapping visibility.
+    // We currently consider this user error; if the behavior is not
+    // desired, prioritize the child views' flex.
+    bool dirty = false;
+    for (auto index_it = flex_it->second.begin();
+         remaining >= 0 && index_it != flex_it->second.end(); ++index_it) {
+      const int view_index = *index_it;
+
+      ChildLayout& child_layout = layout->child_layouts[view_index];
+
+      // Offer a share of the remaining space to the view.
+      int flex_amount;
+      if (child_layout.flex.weight() > 0) {
+        const int flex_weight = child_layout.flex.weight();
+        // Round up so we give slightly greater weight to earlier views.
+        flex_amount =
+            int{std::ceil((float{remaining} * flex_weight) / flex_total)};
+        flex_total -= flex_weight;
+      } else {
+        flex_amount = remaining;
+      }
+
+      // If the layout was previously invisible, then making it visible
+      // may result in the addition of margin space, so we'll have to
+      // recalculate the margins on either side of this view. The change in
+      // margin space (if any) counts against the child view's flex space
+      // allocation.
+      //
+      // Note: In cases where the layout's internal margins and/or the child
+      // views' margins are wildly different sizes, subtracting the full delta
+      // out of the available space can cause the first view to be smaller
+      // than we would expect (see TODOs in unit tests for examples). We
+      // should look into ways to make this "feel" better (but in the
+      // meantime, please try to specify reasonable margins).
+      const int margin_delta = child_spacing->HasViewIndex(view_index)
+                                   ? 0
+                                   : child_spacing->GetAddDelta(view_index);
+
+      // This is the space on the main axis that was already allocated to the
+      // child view; it will be added to the total flex space for the child
+      // view since it is considered a fixed overhead of the layout if it is
+      // nonzero.
+      const int old_size =
+          child_layout.visible ? child_layout.current_size.main() : 0;
+
+      // Offer the modified flex space to the child view and see how large it
+      // wants to be (or if it wants to be visible at that size at all).
+      const NormalizedSizeBounds available(
+          flex_amount + old_size - margin_delta,
+          child_layout.available_size.cross());
+      NormalizedSize new_size = Normalize(
+          orientation(),
+          child_layout.flex.rule().Run(child_layout.view,
+                                       Denormalize(orientation(), available)));
+      if (new_size.main() <= 0)
+        continue;
+
+      // Limit the expansion of views past their preferred size in the first
+      // pass so that enough space is available for lower-priority views. Save
+      // them to |expandable_views| so that the remaining space can be allocated
+      // later.
+      if (expandable_views &&
+          new_size.main() >= child_layout.preferred_size.main()) {
+        (*expandable_views)[flex_order].push_back(view_index);
+        new_size.set_main(child_layout.preferred_size.main());
+      }
+
+      // If the amount of space claimed increases (but is still within
+      // bounds set by our flex rule) we can make the control visible and
+      // claim the additional space.
+      const int to_deduct = (new_size.main() - old_size) + margin_delta;
+      DCHECK_GE(to_deduct, 0);
+      if (to_deduct > 0 && to_deduct <= remaining) {
+        child_layout.available_size = available;
+        child_layout.current_size = new_size;
+        child_layout.visible = true;
+        remaining -= to_deduct;
+        if (!child_spacing->HasViewIndex(view_index))
+          child_spacing->AddViewIndex(view_index);
+        dirty = true;
+      }
+    }
+
+    // Reposition the child controls (taking margins into account) and
+    // calculate remaining space.
+    if (dirty)
+      UpdateLayoutFromChildren(layout, child_spacing, bounds);
+  }
+}
+
 const Layout& FlexLayoutInternal::CalculateNewLayout(
     const NormalizedSizeBounds& bounds) {
   DCHECK(!bounds.cross() ||
          *bounds.cross() >= layout_.minimum_cross_axis_size());
   std::unique_ptr<Layout> layout = std::make_unique<Layout>(layout_counter_);
   layout->interior_margin = Normalize(orientation(), layout_.interior_margin());
-  std::map<int, std::vector<int>> order_to_view_index;
+  FlexOrderToViewIndexMap order_to_view_index;
   const bool main_axis_bounded = bounds.main().has_value();
 
   // Step through the children, creating placeholder layout view elements
@@ -658,126 +821,14 @@ const Layout& FlexLayoutInternal::CalculateNewLayout(
   UpdateLayoutFromChildren(layout.get(), &child_spacing, bounds);
 
   if (main_axis_bounded && !order_to_view_index.empty()) {
-    // Step through each flex priority allocating as much remaining space as
-    // possible to each flex view.
-    for (auto flex_it = order_to_view_index.begin();
-         flex_it != order_to_view_index.end(); ++flex_it) {
-      // Check to see we haven't filled available space.
-      int remaining = *bounds.main() - layout->total_size.main();
-      if (remaining <= 0) {
-        break;
-      }
+    // Flex up to preferred size.
+    FlexOrderToViewIndexMap expandable_views;
+    AllocateFlexSpace(layout.get(), &child_spacing, bounds, order_to_view_index,
+                      &expandable_views);
 
-      // The flex algorithm we're using works as follows:
-      //  * For each child view at a particular flex order:
-      //    - Calculate the percentage of the remaining flex space to allocate
-      //      based on the ratio of its weight to the total unallocated weight
-      //      at that order.
-      //    - If the child view is already visible (it will be at its minimum
-      //      size, which may or may not be zero), add the space the child is
-      //      already taking up.
-      //    - If the child view is not visible and adding it would introduce
-      //      additional margin space between child views, subtract that
-      //      additional space from the amount available.
-      //    - Ask the child view's flex rule how large it would like to be
-      //      within the space available.
-      //    - If the child view would like to be larger, make it so, and
-      //      subtract the additional space consumed by the child and its
-      //      margins from the total remaining flex space.
-      //
-      // Note that this algorithm isn't *perfect* for specific cases, which are
-      // noted below; namely when margins very asymmetrical the sizing of child
-      // views can be slightly different from what would otherwise be expected.
-      // We have a TODO to look at ways of making this algorithm more "fair" in
-      // the future (but in the meantime most issues can be resolved by setting
-      // reasonable margins and by using flex order).
-
-      // Build a list of the elements to flex.
-      int flex_total = 0;
-      std::for_each(flex_it->second.begin(), flex_it->second.end(),
-                    [&](int index) {
-                      auto weight = layout->child_layouts[index].flex.weight();
-                      if (weight > 0)
-                        flex_total += weight;
-                    });
-
-      // Note: because the child views are evaluated in order, if preferred
-      // minimum sizes are not consistent across a single priority expanding
-      // the parent control could result in children swapping visibility.
-      // We currently consider this user error; if the behavior is not
-      // desired, prioritize the child views' flex.
-      for (auto index_it = flex_it->second.begin();
-           remaining >= 0 && index_it != flex_it->second.end(); ++index_it) {
-        const int view_index = *index_it;
-
-        ChildLayout& child_layout = layout->child_layouts[view_index];
-
-        // Offer a share of the remaining space to the view.
-        int flex_amount;
-        if (child_layout.flex.weight() > 0) {
-          const int flex_weight = child_layout.flex.weight();
-          // Round up so we give slightly greater weight to earlier views.
-          flex_amount =
-              int{std::ceil((float{remaining} * flex_weight) / flex_total)};
-          flex_total -= flex_weight;
-        } else {
-          flex_amount = remaining;
-        }
-
-        // If the layout was previously invisible, then making it visible
-        // may result in the addition of margin space, so we'll have to
-        // recalculate the margins on either side of this view. The change in
-        // margin space (if any) counts against the child view's flex space
-        // allocation.
-        //
-        // Note: In cases where the layout's internal margins and/or the child
-        // views' margins are wildly different sizes, subtracting the full delta
-        // out of the available space can cause the first view to be smaller
-        // than we would expect (see TODOs in unit tests for examples). We
-        // should look into ways to make this "feel" better (but in the
-        // meantime, please try to specify reasonable margins).
-        const int margin_delta = child_spacing.HasViewIndex(view_index)
-                                     ? 0
-                                     : child_spacing.GetAddDelta(view_index);
-
-        // This is the space on the main axis that was already allocated to the
-        // child view; it will be added to the total flex space for the child
-        // view since it is considered a fixed overhead of the layout if it is
-        // nonzero.
-        const int old_size =
-            child_layout.visible ? child_layout.current_size.main() : 0;
-
-        // Offer the modified flex space to the child view and see how large it
-        // wants to be (or if it wants to be visible at that size at all).
-        const NormalizedSizeBounds available(
-            flex_amount + old_size - margin_delta,
-            child_layout.available_size.cross());
-        const NormalizedSize new_size = Normalize(
-            orientation(),
-            child_layout.flex.rule().Run(
-                child_layout.view, Denormalize(orientation(), available)));
-        if (new_size.main() <= 0)
-          continue;
-
-        // If the amount of space claimed increases (but is still within
-        // bounds set by our flex rule) we can make the control visible and
-        // claim the additional space.
-        const int to_deduct = (new_size.main() - old_size) + margin_delta;
-        DCHECK_GE(to_deduct, 0);
-        if (to_deduct > 0 && to_deduct <= remaining) {
-          child_layout.available_size = available;
-          child_layout.current_size = new_size;
-          child_layout.visible = true;
-          remaining -= to_deduct;
-          if (!child_spacing.HasViewIndex(view_index))
-            child_spacing.AddViewIndex(view_index);
-        }
-      }
-
-      // Reposition the child controls (taking margins into account) and
-      // calculate remaining space.
-      UpdateLayoutFromChildren(layout.get(), &child_spacing, bounds);
-    }
+    // Flex views that can exceed their preferred size.
+    if (!expandable_views.empty())
+      AllocateFlexSpace(layout.get(), &child_spacing, bounds, expandable_views);
   }
 
   const Layout& result = *layout;
