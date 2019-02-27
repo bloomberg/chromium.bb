@@ -82,6 +82,7 @@ WindowServiceDelegateImpl::WindowServiceDelegateImpl() = default;
 WindowServiceDelegateImpl::~WindowServiceDelegateImpl() = default;
 
 std::unique_ptr<aura::Window> WindowServiceDelegateImpl::NewTopLevel(
+    ws::TopLevelProxyWindow* top_level_proxy_window,
     aura::PropertyConverter* property_converter,
     const base::flat_map<std::string, std::vector<uint8_t>>& properties) {
   std::map<std::string, std::vector<uint8_t>> property_map =
@@ -89,8 +90,8 @@ std::unique_ptr<aura::Window> WindowServiceDelegateImpl::NewTopLevel(
   ws::mojom::WindowType window_type =
       aura::GetWindowTypeFromProperties(property_map);
 
-  auto* window = CreateAndParentTopLevelWindow(window_type, property_converter,
-                                               &property_map);
+  auto* window = CreateAndParentTopLevelWindow(
+      top_level_proxy_window, window_type, property_converter, &property_map);
   return base::WrapUnique<aura::Window>(window);
 }
 

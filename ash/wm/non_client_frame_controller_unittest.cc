@@ -21,10 +21,13 @@
 #include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
+#include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/events/test/event_generator.h"
+#include "ui/views/mus/mus_client.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -129,6 +132,68 @@ TEST_F(NonClientFrameControllerTest, NonClientAreaShouldBeDraggable) {
             window->delegate()->GetNonClientComponent(gfx::Point(30, 30)));
   EXPECT_EQ(HTCLIENT, window->delegate()->GetNonClientComponent(
                           gfx::Point(window->bounds().width() - 10, 10)));
+}
+
+using NonClientFrameControllerSingleProcessMashTest = SingleProcessMashTestBase;
+
+// Used to track whether in a window resize loop.
+class ResizeLoopWidgetDelegate : public views::WidgetDelegateView {
+ public:
+  ResizeLoopWidgetDelegate() = default;
+  ~ResizeLoopWidgetDelegate() override = default;
+
+  bool in_resize_loop() const { return in_resize_loop_; }
+
+  // views::WidgetDelegateView:
+  void OnWindowBeginUserBoundsChange() override {
+    EXPECT_FALSE(in_resize_loop_);
+    in_resize_loop_ = true;
+  }
+  void OnWindowEndUserBoundsChange() override {
+    EXPECT_TRUE(in_resize_loop_);
+    in_resize_loop_ = false;
+  }
+  int32_t GetResizeBehavior() const override {
+    return ws::mojom::kResizeBehaviorCanResize;
+  }
+
+ private:
+  bool in_resize_loop_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(ResizeLoopWidgetDelegate);
+};
+
+TEST_F(NonClientFrameControllerSingleProcessMashTest, ResizeLoop) {
+  // Owned by |widget|.
+  ResizeLoopWidgetDelegate* widget_delegate = new ResizeLoopWidgetDelegate;
+  // Create a widget. This widget is backed by mus.
+  views::Widget widget;
+  views::Widget::InitParams params;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(0, 0, 200, 200);
+  params.delegate = widget_delegate;
+  params.native_widget =
+      views::MusClient::Get()->CreateNativeWidget(params, &widget);
+  widget.Init(params);
+  widget.Show();
+
+  // Should not initially be in a resize loop.
+  EXPECT_FALSE(widget_delegate->in_resize_loop());
+
+  // Flush all messages from the WindowTreeClient to ensure ash processes the
+  // widget creation.
+  aura::test::WaitForAllChangesToComplete();
+
+  // The resize loop is entered once a possible resize is detected.
+  GetEventGenerator()->MoveMouseTo(gfx::Point(5, 199));
+  GetEventGenerator()->PressLeftButton();
+  aura::test::WaitForAllChangesToComplete();
+  EXPECT_TRUE(widget_delegate->in_resize_loop());
+
+  // Releasing the button ends the loop.
+  GetEventGenerator()->ReleaseLeftButton();
+  aura::test::WaitForAllChangesToComplete();
+  EXPECT_FALSE(widget_delegate->in_resize_loop());
 }
 
 }  // namespace ash

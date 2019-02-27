@@ -171,6 +171,9 @@ class WmToplevelWindowEventHandler::ScopedWindowResizer
   // Returns true if the drag moves the window and does not resize.
   bool IsMove() const;
 
+  // Returns true if the window may be resized.
+  bool IsResize() const;
+
   WindowResizer* resizer() { return resizer_.get(); }
 
   // WindowObserver overrides:
@@ -187,6 +190,9 @@ class WmToplevelWindowEventHandler::ScopedWindowResizer
   // Whether ScopedWindowResizer grabbed capture.
   bool grabbed_capture_;
 
+  // Set to true if OnWindowDestroying() is received.
+  bool window_destroying_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(ScopedWindowResizer);
 };
 
@@ -197,6 +203,9 @@ WmToplevelWindowEventHandler::ScopedWindowResizer::ScopedWindowResizer(
   aura::Window* target = resizer_->GetTarget();
   target->AddObserver(this);
   GetWindowState(target)->AddObserver(this);
+
+  if (IsResize())
+    target->NotifyResizeLoopStarted();
 
   if (!target->HasCapture()) {
     grabbed_capture_ = true;
@@ -210,11 +219,18 @@ WmToplevelWindowEventHandler::ScopedWindowResizer::~ScopedWindowResizer() {
   GetWindowState(target)->RemoveObserver(this);
   if (grabbed_capture_)
     target->ReleaseCapture();
+  if (!window_destroying_ && IsResize())
+    target->NotifyResizeLoopEnded();
 }
 
 bool WmToplevelWindowEventHandler::ScopedWindowResizer::IsMove() const {
   return resizer_->details().bounds_change ==
          WindowResizer::kBoundsChange_Repositions;
+}
+
+bool WmToplevelWindowEventHandler::ScopedWindowResizer::IsResize() const {
+  return (resizer_->details().bounds_change &
+          WindowResizer::kBoundsChange_Resizes) != 0;
 }
 
 void WmToplevelWindowEventHandler::ScopedWindowResizer::
@@ -226,6 +242,7 @@ void WmToplevelWindowEventHandler::ScopedWindowResizer::
 void WmToplevelWindowEventHandler::ScopedWindowResizer::OnWindowDestroying(
     aura::Window* window) {
   DCHECK_EQ(resizer_->GetTarget(), window);
+  window_destroying_ = true;
   handler_->ResizerWindowDestroyed();
 }
 

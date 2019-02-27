@@ -26,6 +26,7 @@
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
 #include "ui/display/display_layout_builder.h"
 #include "ui/display/manager/display_manager.h"
@@ -53,6 +54,39 @@ class TestWindowDelegate : public aura::test::TestWindowDelegate {
   void OnWindowDestroyed(aura::Window* window) override { delete this; }
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowDelegate);
+};
+
+class ResizeLoopWindowObserver : public aura::WindowObserver {
+ public:
+  explicit ResizeLoopWindowObserver(aura::Window* w) : window_(w) {
+    window_->AddObserver(this);
+  }
+  ~ResizeLoopWindowObserver() override {
+    if (window_)
+      window_->RemoveObserver(this);
+  }
+
+  bool in_resize_loop() const { return in_resize_loop_; }
+
+  // aura::WindowObserver:
+  void OnResizeLoopStarted(aura::Window* window) override {
+    EXPECT_FALSE(in_resize_loop_);
+    in_resize_loop_ = true;
+  }
+  void OnResizeLoopEnded(aura::Window* window) override {
+    EXPECT_TRUE(in_resize_loop_);
+    in_resize_loop_ = false;
+  }
+  void OnWindowDestroying(aura::Window* window) override {
+    window_->RemoveObserver(this);
+    window_ = nullptr;
+  }
+
+ private:
+  aura::Window* window_;
+  bool in_resize_loop_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(ResizeLoopWindowObserver);
 };
 
 class ToplevelWindowEventHandlerTest : public AshTestBase {
@@ -196,7 +230,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GrowBox) {
   // Size should have increased by 100,100.
   EXPECT_EQ(gfx::Size(200, 200).ToString(), w1->bounds().size().ToString());
 
-  // Shrink the wnidow by (-100, -100).
+  // Shrink the window by (-100, -100).
   generator.DragMouseBy(-100, -100);
   // Position should not have changed.
   EXPECT_EQ(position.ToString(), w1->bounds().origin().ToString());
@@ -1054,6 +1088,37 @@ TEST_F(ToplevelWindowEventHandlerTest, DragSnappedWindowToExternalDisplay) {
   // The window is now fully contained in the secondary display.
   EXPECT_TRUE(display_manager()->GetSecondaryDisplay().bounds().Contains(
       w1->GetBoundsInScreen()));
+}
+
+TEST_F(ToplevelWindowEventHandlerTest, MoveDoesntEnterResizeLoop) {
+  std::unique_ptr<aura::Window> w1(CreateWindow(HTCAPTION));
+  ResizeLoopWindowObserver window_observer(w1.get());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), w1.get());
+  // A click on the caption does not trigger the resize loop.
+  generator.PressLeftButton();
+  EXPECT_FALSE(window_observer.in_resize_loop());
+
+  // A move in the caption does not trigger the resize loop either.
+  generator.MoveMouseBy(100, 100);
+  EXPECT_FALSE(window_observer.in_resize_loop());
+  w1->RemoveObserver(&window_observer);
+}
+
+TEST_F(ToplevelWindowEventHandlerTest, EnterResizeLoopOnResize) {
+  std::unique_ptr<aura::Window> w1(CreateWindow(HTGROWBOX));
+  ResizeLoopWindowObserver window_observer(w1.get());
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), w1.get());
+  // The resize loop is entered once a possible resize is detected.
+  generator.PressLeftButton();
+  EXPECT_TRUE(window_observer.in_resize_loop());
+
+  // Should remain in the resize loop while dragging.
+  generator.MoveMouseBy(100, 100);
+  EXPECT_TRUE(window_observer.in_resize_loop());
+
+  // Releasing the button should end the loop.
+  generator.ReleaseLeftButton();
+  EXPECT_FALSE(window_observer.in_resize_loop());
 }
 
 // Showing the resize shadows when the mouse is over the window edges is

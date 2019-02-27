@@ -23,6 +23,7 @@
 #include "services/ws/event_observer_helper.h"
 #include "services/ws/proxy_window.h"
 #include "services/ws/public/cpp/property_type_converters.h"
+#include "services/ws/top_level_proxy_window_impl.h"
 #include "services/ws/topmost_window_observer.h"
 #include "services/ws/window_delegate_impl.h"
 #include "services/ws/window_manager_interface.h"
@@ -1509,9 +1510,13 @@ void WindowTree::NewTopLevelWindow(
     window_tree_client_->OnChangeCompleted(change_id, false);
     return;
   }
+  std::unique_ptr<TopLevelProxyWindowImpl> top_level_proxy_window =
+      std::make_unique<TopLevelProxyWindowImpl>(window_tree_client_,
+                                                transport_window_id);
   std::unique_ptr<aura::Window> top_level_ptr =
       window_service_->delegate()->NewTopLevel(
-          window_service_->property_converter(), properties);
+          top_level_proxy_window.get(), window_service_->property_converter(),
+          properties);
   if (!top_level_ptr) {
     DVLOG(1) << "NewTopLevelWindow failed (delegate window creation failed)";
     window_tree_client_->OnChangeCompleted(change_id, false);
@@ -1521,8 +1526,9 @@ void WindowTree::NewTopLevelWindow(
   const bool is_top_level = true;
   aura::Window* top_level = AddClientCreatedWindow(
       client_window_id, is_top_level, std::move(top_level_ptr));
-  ProxyWindow* top_level_proxy_window = ProxyWindow::GetMayBeNull(top_level);
-  top_level_proxy_window->set_frame_sink_id(client_window_id);
+  ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(top_level);
+  proxy_window->SetTopLevelProxyWindow(std::move(top_level_proxy_window));
+  proxy_window->set_frame_sink_id(client_window_id);
   const int64_t display_id =
       display::Screen::GetScreen()->GetDisplayNearestWindow(top_level).id();
   // This passes null for the mojom::WindowTreePtr because the client has
@@ -1530,11 +1536,10 @@ void WindowTree::NewTopLevelWindow(
   // WindowTree.
   CreateClientRoot(top_level, is_top_level)->RegisterVizEmbeddingSupport();
   // Creating the ClientRoot should trigger setting a LocalSurfaceIdAllocation.
-  DCHECK(top_level_proxy_window->local_surface_id_allocation());
+  DCHECK(proxy_window->local_surface_id_allocation());
   window_tree_client_->OnTopLevelCreated(
       change_id, WindowToWindowData(top_level), display_id,
-      top_level->IsVisible(),
-      *(top_level_proxy_window->local_surface_id_allocation()));
+      top_level->IsVisible(), *(proxy_window->local_surface_id_allocation()));
 }
 
 void WindowTree::DeleteWindow(uint32_t change_id, Id transport_window_id) {

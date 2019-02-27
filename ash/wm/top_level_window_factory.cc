@@ -18,6 +18,7 @@
 #include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
+#include "services/ws/top_level_proxy_window.h"
 #include "services/ws/window_delegate_impl.h"
 #include "services/ws/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
@@ -118,6 +119,7 @@ gfx::Rect CalculateDefaultBounds(
 // Does the real work of CreateAndParentTopLevelWindow() once the appropriate
 // RootWindowController was found.
 aura::Window* CreateAndParentTopLevelWindowInRoot(
+    ws::TopLevelProxyWindow* top_level_proxy_window,
     RootWindowController* root_window_controller,
     ws::mojom::WindowType window_type,
     aura::PropertyConverter* property_converter,
@@ -142,9 +144,9 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
   if (provide_non_client_frame) {
     // See NonClientFrameController for details on lifetime.
     NonClientFrameController* non_client_frame_controller =
-        new NonClientFrameController(container_window, context, bounds,
-                                     window_type, property_converter,
-                                     properties);
+        new NonClientFrameController(top_level_proxy_window, container_window,
+                                     context, bounds, window_type,
+                                     property_converter, properties);
     return non_client_frame_controller->window();
   }
 
@@ -175,6 +177,7 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
 }  // namespace
 
 aura::Window* CreateAndParentTopLevelWindow(
+    ws::TopLevelProxyWindow* top_level_proxy_window,
     ws::mojom::WindowType window_type,
     aura::PropertyConverter* property_converter,
     std::map<std::string, std::vector<uint8_t>>* properties) {
@@ -184,7 +187,8 @@ aura::Window* CreateAndParentTopLevelWindow(
   RootWindowController* root_window_controller =
       GetRootWindowControllerForNewTopLevelWindow(properties);
   aura::Window* window = CreateAndParentTopLevelWindowInRoot(
-      root_window_controller, window_type, property_converter, properties);
+      top_level_proxy_window, root_window_controller, window_type,
+      property_converter, properties);
   DisconnectedAppHandler::Create(window);
 
   // TODO: kFocusable_InitProperty should be removed. http://crbug.com/837713.

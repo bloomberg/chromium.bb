@@ -290,6 +290,7 @@ class NoSessionAshTestBase : public AshTestBase {
 // Base test class that forces single-process mash to be enabled *and* creates
 // a views::MusClient. This base class is useful for testing WindowService
 // related functionality exposed by Ash.
+// TODO(sky): this name is misleading. Rename to better indicate what it does.
 class SingleProcessMashTestBase : public AshTestBase {
  public:
   SingleProcessMashTestBase();

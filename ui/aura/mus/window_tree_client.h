@@ -480,6 +480,8 @@ class AURA_EXPORT WindowTreeClient
       const base::flat_map<ws::Id, ws::mojom::OcclusionState>&
           occlusion_changes) override;
   void CleanupGestureState(ws::Id window_id) override;
+  void OnWindowResizeLoopStarted(ws::Id window_id) override;
+  void OnWindowResizeLoopEnded(ws::Id window_id) override;
 
   // ws::mojom::ScreenProviderObserver:
   void OnDisplaysChanged(std::vector<ws::mojom::WsDisplayPtr> ws_displays,

@@ -1622,6 +1622,18 @@ void WindowTreeClient::CleanupGestureState(ws::Id window_id) {
   window->GetWindow()->CleanupGestureState();
 }
 
+void WindowTreeClient::OnWindowResizeLoopStarted(ws::Id window_id) {
+  WindowMus* window_mus = GetWindowByServerId(window_id);
+  if (window_mus)
+    window_mus->GetWindow()->NotifyResizeLoopStarted();
+}
+
+void WindowTreeClient::OnWindowResizeLoopEnded(ws::Id window_id) {
+  WindowMus* window_mus = GetWindowByServerId(window_id);
+  if (window_mus)
+    window_mus->GetWindow()->NotifyResizeLoopEnded();
+}
+
 void WindowTreeClient::OnDisplaysChanged(
     std::vector<ws::mojom::WsDisplayPtr> ws_displays,
     int64_t primary_display_id,
