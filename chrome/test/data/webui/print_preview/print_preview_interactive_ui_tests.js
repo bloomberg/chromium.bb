@@ -122,18 +122,6 @@ PrintPreviewPagesSettingsTest = class extends PrintPreviewInteractiveUITest {
   }
 };
 
-TEST_F('PrintPreviewPagesSettingsTest', 'ValidPageRanges', function() {
-  this.runMochaTest(pages_settings_test.TestNames.ValidPageRanges);
-});
-
-TEST_F('PrintPreviewPagesSettingsTest', 'InvalidPageRanges', function() {
-  this.runMochaTest(pages_settings_test.TestNames.InvalidPageRanges);
-});
-
-TEST_F('PrintPreviewPagesSettingsTest', 'NupChangesPages', function() {
-  this.runMochaTest(pages_settings_test.TestNames.NupChangesPages);
-});
-
 TEST_F('PrintPreviewPagesSettingsTest', 'ClearInput', function() {
   this.runMochaTest(pages_settings_test.TestNames.ClearInput);
 });
