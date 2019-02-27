@@ -14,7 +14,7 @@ namespace offline_pages {
 extern const char kPrefetchServer[];
 extern const char kPrefetchExperimentHeaderName[];
 extern const char kPrefetchOperationHeaderName[];
-extern const char kPrefetchTestingHeader[];
+extern const char kPrefetchTestingHeaderName[];
 
 // Returns the URL to send a request to generate page bundle.
 GURL GeneratePageBundleRequestURL(version_info::Channel channel);

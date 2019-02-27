@@ -33,26 +33,27 @@ std::unique_ptr<PrefetchRequestFetcher> PrefetchRequestFetcher::CreateForGet(
     const GURL& url,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     FinishedCallback callback) {
-  return base::WrapUnique(new PrefetchRequestFetcher(
-      url, std::string(), false, url_loader_factory, std::move(callback)));
+  return base::WrapUnique(
+      new PrefetchRequestFetcher(url, std::string(), std::string(),
+                                 url_loader_factory, std::move(callback)));
 }
 
 // static
 std::unique_ptr<PrefetchRequestFetcher> PrefetchRequestFetcher::CreateForPost(
     const GURL& url,
     const std::string& message,
-    bool send_testing_header,
+    const std::string& testing_header_value,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     FinishedCallback callback) {
   return base::WrapUnique(
-      new PrefetchRequestFetcher(url, message, send_testing_header,
+      new PrefetchRequestFetcher(url, message, testing_header_value,
                                  url_loader_factory, std::move(callback)));
 }
 
 PrefetchRequestFetcher::PrefetchRequestFetcher(
     const GURL& url,
     const std::string& message,
-    bool send_testing_header,
+    const std::string& testing_header_value,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     FinishedCallback callback)
     : url_loader_factory_(url_loader_factory), callback_(std::move(callback)) {
@@ -88,8 +89,9 @@ PrefetchRequestFetcher::PrefetchRequestFetcher(
   if (!experiment_header.empty())
     resource_request->headers.AddHeaderFromString(experiment_header);
 
-  if (send_testing_header)
-    resource_request->headers.AddHeaderFromString(kPrefetchTestingHeader);
+  if (!testing_header_value.empty())
+    resource_request->headers.SetHeader(kPrefetchTestingHeaderName,
+                                        testing_header_value);
 
   if (message.empty())
     resource_request->headers.SetHeader(net::HttpRequestHeaders::kContentType,

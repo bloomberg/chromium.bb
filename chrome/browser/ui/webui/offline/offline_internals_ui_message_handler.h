@@ -63,6 +63,14 @@ class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
   // Get whether limitless prefetching is enabled.
   void HandleGetLimitlessPrefetchingEnabled(const base::ListValue* args);
 
+  // Set whether to enable sending the testing header when making
+  // GeneratePageBundle requests.
+  void HandleSetPrefetchTestingHeader(const base::ListValue* args);
+
+  // Get whether we are sending the testing header for GeneratePageBundle
+  // requests.
+  void HandleGetPrefetchTestingHeader(const base::ListValue* args);
+
   // Load all offline services' event logs.
   void HandleGetEventLogs(const base::ListValue* args);
 

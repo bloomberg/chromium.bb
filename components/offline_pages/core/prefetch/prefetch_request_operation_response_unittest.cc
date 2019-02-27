@@ -56,8 +56,7 @@ class GeneratePageBundleRequestBuilder : public RequestBuilder {
     std::vector<std::string> pages = {kTestURL, kTestURL2};
     fetcher_.reset(new GeneratePageBundleRequest(
         kTestUserAgent, kTestGCMID, kTestMaxBundleSize, pages, kTestChannel,
-        /*send_prefetch_testing_header=*/false, url_loader_factory,
-        std::move(callback)));
+        /*testing_header_value=*/"", url_loader_factory, std::move(callback)));
   }
 
  private:
