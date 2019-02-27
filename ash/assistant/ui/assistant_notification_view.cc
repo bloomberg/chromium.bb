@@ -9,6 +9,7 @@
 #include "ash/assistant/ui/main_stage/suggestion_chip_view.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
@@ -25,6 +26,10 @@ constexpr int kPaddingLeftDip = 16;
 constexpr int kPaddingRightDip = 8;
 constexpr int kPreferredHeightDip = 48;
 constexpr int kShadowElevationDip = 6;
+
+// Animation.
+constexpr base::TimeDelta kAnimationDuration =
+    base::TimeDelta::FromMilliseconds(250);
 
 // Helpers ---------------------------------------------------------------------
 
@@ -56,6 +61,10 @@ const char* AssistantNotificationView::GetClassName() const {
   return "AssistantNotificationView";
 }
 
+void AssistantNotificationView::AddedToWidget() {
+  UpdateVisibility(/*visible=*/true);
+}
+
 gfx::Size AssistantNotificationView::CalculatePreferredSize() const {
   return gfx::Size(INT_MAX, GetHeightForWidth(INT_MAX));
 }
@@ -77,6 +86,14 @@ void AssistantNotificationView::ButtonPressed(views::Button* sender,
                                          notification_button_index);
 }
 
+void AssistantNotificationView::OnImplicitAnimationsCompleted() {
+  // When the view's layer has animated to |0.f| opacity, the underlying
+  // notification has been removed and our associated view can be deleted. Note
+  // that we check for opacity within epsilon to avoid exact float comparison.
+  if (cc::MathUtil::IsWithinEpsilon(layer()->opacity(), 0.f))
+    delete this;
+}
+
 void AssistantNotificationView::OnNotificationUpdated(
     const AssistantNotification* notification) {
   // We only care about the |notification| being updated if it is the
@@ -90,7 +107,7 @@ void AssistantNotificationView::OnNotificationUpdated(
   // If the notification associated with this view is no longer of type
   // |kInAssistant|, it should not be shown in Assistant UI.
   if (notification->type != AssistantNotificationType::kInAssistant) {
-    delete this;
+    UpdateVisibility(/*visible=*/false);
     return;
   }
 
@@ -120,7 +137,7 @@ void AssistantNotificationView::OnNotificationRemoved(
     const AssistantNotification* notification,
     bool from_server) {
   if (notification->client_id == notification_id_)
-    delete this;
+    UpdateVisibility(/*visible=*/false);
 }
 
 void AssistantNotificationView::InitLayout(
@@ -129,6 +146,10 @@ void AssistantNotificationView::InitLayout(
 
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
+
+  // Initialize opacity to |0.f| as the layer for this view will be animated in
+  // when the view is added to its widget.
+  layer()->SetOpacity(0.f);
 
   // Background/shadow.
   background_layer_.SetFillsBoundsOpaquely(false);
@@ -192,6 +213,24 @@ void AssistantNotificationView::UpdateBackground() {
   background_layer_.set_delegate(shadow_delegate_.get());
   background_layer_.SetBounds(
       gfx::ToEnclosingRect(shadow_delegate_->GetPaintedBounds()));
+}
+
+void AssistantNotificationView::UpdateVisibility(bool visible) {
+  ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
+
+  // We observe the animation to receive an event on its completion. When the
+  // layer for this view has completed animating to a hidden state, this view
+  // is deleted as the underlying notification has been removed.
+  animation.AddObserver(this);
+
+  // Parameters.
+  animation.SetPreemptionStrategy(
+      ui::LayerAnimator::PreemptionStrategy::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  animation.SetTransitionDuration(kAnimationDuration);
+  animation.SetTweenType(gfx::Tween::Type::EASE_IN_OUT);
+
+  // Animate opacity to a visible/hidden state.
+  layer()->SetOpacity(visible ? 1.f : 0.f);
 }
 
 }  // namespace ash
