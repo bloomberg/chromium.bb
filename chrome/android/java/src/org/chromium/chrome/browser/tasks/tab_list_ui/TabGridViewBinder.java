@@ -57,10 +57,8 @@ class TabGridViewBinder {
             });
         } else if (TabProperties.FAVICON == propertyKey) {
             holder.favicon.setImageBitmap(item.get(TabProperties.FAVICON));
-        } else if (TabProperties.THUMBNAIL_KEY == propertyKey) {
-            holder.thumbnail.setImageBitmap(
-                    item.get(TabProperties.THUMBNAIL_PROVIDER)
-                            .provideCachedThumbnailForKey(item.get(TabProperties.THUMBNAIL_KEY)));
+        } else if (TabProperties.THUMBNAIL_FETCHER == propertyKey) {
+            item.get(TabProperties.THUMBNAIL_FETCHER).fetch(holder.thumbnail::setImageBitmap);
         } else if (TabProperties.TAB_ID == propertyKey) {
             holder.setTabId(item.get(TabProperties.TAB_ID));
         }

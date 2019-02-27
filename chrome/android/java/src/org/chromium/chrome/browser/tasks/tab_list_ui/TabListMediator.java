@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks.tab_list_ui;
 import android.content.Context;
 import android.graphics.Bitmap;
 
+import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -36,10 +37,25 @@ class TabListMediator {
      * An interface to get the thumbnails to be shown inside the tab grid cards.
      */
     public interface ThumbnailProvider {
-        /**
-         * @return The thumbnail for the given key synchronously.
-         */
-        Bitmap provideCachedThumbnailForKey(String key);
+        void getTabThumbnailWithCallback(Tab tab, Callback<Bitmap> callback);
+    }
+
+    /**
+     * The object to set to TabProperties.THUMBNAIL_FETCHER for the TabGridViewBinder to obtain
+     * the thumbnail asynchronously.
+     */
+    class ThumbnailFetcher {
+        private ThumbnailProvider mThumbnailProvider;
+        private Tab mTab;
+
+        ThumbnailFetcher(ThumbnailProvider provider, Tab tab) {
+            mThumbnailProvider = provider;
+            mTab = tab;
+        }
+
+        void fetch(Callback<Bitmap> callback) {
+            mThumbnailProvider.getTabThumbnailWithCallback(mTab, callback);
+        }
     }
     private final int mFaviconSize;
     private final FaviconHelper mFaviconHelper = new FaviconHelper();
@@ -174,9 +190,7 @@ class TabListMediator {
                         .with(TabProperties.TITLE, tab.getTitle())
                         .with(TabProperties.FAVICON, tab.getFavicon())
                         .with(TabProperties.IS_SELECTED, isSelected)
-                        .with(TabProperties.THUMBNAIL_PROVIDER,
-                                mTabContentManager::provideCachedThumbnailForKey)
-                        .with(TabProperties.THUMBNAIL_KEY, "")
+                        .with(TabProperties.THUMBNAIL_FETCHER, null)
                         .with(TabProperties.TAB_SELECTED_LISTENER, mTabSelectedListener)
                         .with(TabProperties.TAB_CLOSED_LISTENER, mTabClosedListener)
                         .build();
@@ -186,10 +200,9 @@ class TabListMediator {
                     if (mModel.indexFromId(tab.getId()) == Tab.INVALID_TAB_ID) return;
                     mModel.get(mModel.indexFromId(tab.getId())).set(TabProperties.FAVICON, image);
                 });
-        mTabContentManager.getTabThumbnailWithCallback(tab, result -> {
-            if (mModel.indexFromId(tab.getId()) == Tab.INVALID_TAB_ID) return;
-            mModel.get(mModel.indexFromId(tab.getId())).set(TabProperties.THUMBNAIL_KEY, result);
-        });
+        ThumbnailFetcher callback =
+                new ThumbnailFetcher(mTabContentManager::getTabThumbnailWithCallback, tab);
+        tabInfo.set(TabProperties.THUMBNAIL_FETCHER, callback);
         tab.addObserver(mTabObserver);
     }
 }
