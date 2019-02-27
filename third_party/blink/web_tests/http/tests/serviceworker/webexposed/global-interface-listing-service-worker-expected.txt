@@ -835,6 +835,7 @@ interface Notification : EventTarget
     getter onshow
     getter renotify
     getter requireInteraction
+    getter showTrigger
     getter silent
     getter tag
     getter timestamp

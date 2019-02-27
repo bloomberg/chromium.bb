@@ -110,6 +110,7 @@
               assert_equals(notifications[0].data, notifications[0].data, '`data` attribute equality');
               assert_equals(notifications[0].vibrate, notifications[0].vibrate, '`vibrate` attribute equality');
 
+              assert_equals(notifications[0].showTrigger, notifications[0].showTrigger, '`showTrigger` attribute equality');
               test.done();
           }).catch(unreached_rejection(test));
 
