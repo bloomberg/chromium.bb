@@ -20,16 +20,6 @@ suite('cr-icon-button', function() {
     assertEquals('true', button.getAttribute('aria-disabled'));
   });
 
-  test('focus', () => {
-    if (cr.isMac) {
-      return;
-    }
-    button.focus();
-    assertTrue(button.getRipple().holdDown);
-    button.disabled = true;
-    assertFalse(button.getRipple().holdDown);
-  });
-
   test('iron-icon is created, reused and removed based on |ironIcon|', () => {
     assertFalse(!!button.$$('iron-icon'));
     button.ironIcon = 'icon-key';
@@ -79,5 +69,12 @@ suite('cr-icon-button', function() {
     await PolymerTest.flushTasks();
     assertEquals(4, clickCount);
     button.removeEventListener('click', clickHandler);
+  });
+
+  test('when tabindex is -1, it stays -1', async () => {
+    document.body.innerHTML = '<cr-icon-button tabindex="-1"></cr-icon-button>';
+    await PolymerTest.flushTasks();
+    button = document.body.querySelector('cr-icon-button');
+    assertEquals('-1', button.getAttribute('tabindex'));
   });
 });

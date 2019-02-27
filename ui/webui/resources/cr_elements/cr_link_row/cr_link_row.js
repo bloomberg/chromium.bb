@@ -13,15 +13,11 @@
 Polymer({
   is: 'cr-link-row',
 
-  behaviors: [Polymer.PaperRippleBehavior],
-
   properties: {
     startIcon: {
       type: String,
       value: '',
     },
-
-    iconClass: String,
 
     label: {
       type: String,
@@ -40,37 +36,59 @@ Polymer({
       reflectToAttribute: true,
     },
 
+    external: {
+      type: Boolean,
+      value: false,
+    },
+
     /** @private {string|undefined} */
     ariaDescribedBy_: String,
   },
 
   listeners: {
-    'down': '_rippleDown',
-    'up': '_rippleUp',
-    'focus': '_rippleDown',
-    'blur': '_rippleUp',
+    down: 'onDown_',
+    up: 'onUp_',
+  },
+
+  /** @type {boolean} */
+  get noink() {
+    return this.$.icon.noink;
+  },
+
+  /** @type {boolean} */
+  set noink(value) {
+    this.$.icon.noink = value;
   },
 
   focus: function() {
-    // Forward focus to the button wrapper.
-    this.$$('button').focus();
+    this.$.icon.focus();
   },
 
-  _rippleDown: function() {
-    this.getRipple().uiDownAction();
+  /** @private */
+  onDown_: function() {
+    // If the icon has focus, we want to preemptively blur it. Otherwise it will
+    // be blurred immediately after gaining focus. The ripple will either
+    // disappear when the mouse button is held down or the ripple will not
+    // be rendered. This is an issue only when the cr-link-row is clicked, not
+    // the icon itself.
+    if (this.shadowRoot.activeElement == this.$.icon) {
+      this.$.icon.blur();
+    }
+    // When cr-link-row is click, <body> will gain focus after the down event is
+    // handled. We need to wait until the next task to focus on the icon.
+    setTimeout(() => {
+      this.focus();
+    });
   },
 
-  _rippleUp: function() {
-    this.getRipple().uiUpAction();
+  /** @private */
+  onUp_: function() {
+    this.$.icon.hideRipple();
   },
 
-  _createRipple: function() {
-    this._rippleContainer = this.$.icon;
-    const ripple = Polymer.PaperRippleBehavior._createRipple();
-    ripple.id = 'ink';
-    ripple.setAttribute('recenters', '');
-    ripple.classList.add('circle');
-    return ripple;
+  /** @private */
+  getIconClass_: function() {
+    return this.external ? 'icon-external' : 'subpage-arrow';
   },
 
   /** @private */

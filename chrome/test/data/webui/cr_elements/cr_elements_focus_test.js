@@ -126,3 +126,26 @@ CrElementsInputTest.prototype = {
 TEST_F('CrElementsInputTest', 'All', function() {
   mocha.run();
 });
+
+/**
+ * @constructor
+ * @extends {CrElementsFocusTest}
+ */
+function CrElementsIconButtonFocusTest() {}
+
+CrElementsIconButtonFocusTest.prototype = {
+  __proto__: CrElementsFocusTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html',
+
+  /** @override */
+  extraLibraries: CrElementsFocusTest.prototype.extraLibraries.concat([
+    'cr_icon_button_focus_tests.js',
+  ]),
+};
+
+TEST_F('CrElementsIconButtonFocusTest', 'All', function() {
+  mocha.run();
+});

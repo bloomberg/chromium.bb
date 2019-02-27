@@ -217,10 +217,10 @@
         </div>
       </template>
 
-      <cr-link-row embedded icon-class="subpage-arrow" class="indented hr"
-          id="overscan" label="$i18n{displayOverscanPageTitle}"
+      <cr-link-row class="indented hr" id="overscan"
+          label="$i18n{displayOverscanPageTitle}"
           sub-label="$i18n{displayOverscanPageText}" on-click="onOverscanTap_"
-          hidden$="[[!showOverscanSetting_(selectedDisplay)]]">
+          hidden$="[[!showOverscanSetting_(selectedDisplay)]]" embedded>
       </cr-link-row>
 
       <settings-display-overscan-dialog id="displayOverscan"
@@ -228,11 +228,11 @@
           on-close="onCloseOverscanDialog_">
       </settings-display-overscan-dialog>
 
-      <cr-link-row embedded icon-class="subpage-arrow" class="indented hr"
-          id="touchCalibration" label="$i18n{displayTouchCalibrationTitle}"
+      <cr-link-row class="indented hr" id="touchCalibration"
+          label="$i18n{displayTouchCalibrationTitle}"
           sub-label="$i18n{displayTouchCalibrationText}"
           on-click="onTouchCalibrationTap_"
-          hidden$="[[!showTouchCalibrationSetting_(selectedDisplay)]]">
+          hidden$="[[!showTouchCalibrationSetting_(selectedDisplay)]]" embedded>
       </cr-link-row>
     </div>
 

@@ -24,12 +24,8 @@
     <style include="settings-shared"></style>
     <settings-animated-pages id="reset-pages" section="reset">
       <div route-path="default">
-        <cr-link-row
-            icon-class="subpage-arrow"
-            id="resetProfile"
-            label="$i18n{resetTrigger}"
-            on-click="onShowResetProfileDialog_">
-        </cr-link-row>
+        <cr-link-row id="resetProfile" label="$i18n{resetTrigger}"
+            on-click="onShowResetProfileDialog_"></cr-link-row>
         <!-- Keep a single instance of reset-profile-dialog on purpose, to
           preserve state across show/hide operations. -->
         <cr-lazy-render id="resetProfileDialog">
@@ -40,36 +36,22 @@
           </template>
         </cr-lazy-render>
 <if expr="chromeos">
-        <cr-link-row
-            class="hr"
-            hidden="[[!allowPowerwash_]]"
-            icon-class="subpage-arrow"
-            id="powerwash"
-            label="$i18n{powerwashTitle}"
-            on-click="onShowPowerwashDialog_"
-            sub-label="$i18n{powerwashDescription}">
-        </cr-link-row>
+        <cr-link-row class="hr" hidden="[[!allowPowerwash_]]" id="powerwash"
+            label="$i18n{powerwashTitle}" on-click="onShowPowerwashDialog_"
+            sub-label="$i18n{powerwashDescription}"></cr-link-row>
         <template is="dom-if" if="[[showPowerwashDialog_]]" restamp>
           <settings-powerwash-dialog on-close="onPowerwashDialogClose_">
           </settings-powerwash-dialog>
         </template>
 </if>
 <if expr="_google_chrome and is_win">
-        <cr-link-row
-            class="hr"
-            icon-class="subpage-arrow"
-            id="chromeCleanupSubpageTrigger"
+        <cr-link-row class="hr" id="chromeCleanupSubpageTrigger"
             label="$i18n{resetCleanupComputerTrigger}"
-            on-click="onChromeCleanupTap_">
-        </cr-link-row>
+            on-click="onChromeCleanupTap_"></cr-link-row>
         <template is="dom-if" if="[[showIncompatibleApplications_]]" restamp>
-          <cr-link-row
-              class="hr"
-              icon-class="subpage-arrow"
-              id="incompatibleApplicationsSubpageTrigger"
+          <cr-link-row class="hr" id="incompatibleApplicationsSubpageTrigger"
               label="$i18n{incompatibleApplicationsResetCardTitle}"
-              on-click="onIncompatibleApplicationsTap_">
-          </cr-link-row>
+              on-click="onIncompatibleApplicationsTap_"></cr-link-row>
         </template>
 </if>
       </div>

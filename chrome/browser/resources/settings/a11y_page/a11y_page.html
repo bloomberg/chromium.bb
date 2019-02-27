@@ -33,10 +33,7 @@
             label="$i18n{optionsInMenuLabel}"
             pref="{{prefs.settings.a11y.enable_menu}}">
         </settings-toggle-button>
-        <cr-link-row
-            class="hr"
-            icon-class="subpage-arrow"
-            id="subpage-trigger"
+        <cr-link-row class="hr" id="subpage-trigger"
             label="$i18n{manageAccessibilityFeatures}"
             on-click="onManageAccessibilityFeaturesTap_"
             sub-label="$i18n{moreFeaturesLinkDescription}">
@@ -63,13 +60,9 @@
 </if>
 
 <if expr="not chromeos">
-    <cr-link-row
-        class="hr"
-        icon-class="icon-external"
-        label="$i18n{moreFeaturesLink}"
-        on-click="onMoreFeaturesLinkClick_"
-        sub-label="$i18n{a11yWebStore}">
-    </cr-link-row>
+    <cr-link-row class="hr" label="$i18n{moreFeaturesLink}"
+        on-click="onMoreFeaturesLinkClick_" sub-label="$i18n{a11yWebStore}"
+        external></cr-link-row>
 </if>
 
   </template>
