@@ -577,13 +577,34 @@ cr.define('omnibox_output', function() {
     }
   }
 
-  class OutputPairProperty extends OutputProperty {
+  class FlexWrappingOutputProperty extends OutputProperty {
     constructor() {
       super();
 
+      // We use margin-right on .pair-item's to separate them. To compensate,
+      // .pair-container has negative margin-right. This means .pair-container's
+      // overflow their parent. Overflowing a table cell is problematic, as 1)
+      // scroll bars overlay adjacent cell, and 2) the page receives a
+      // horizontal scroll bar when the right most column overflows. To avoid
+      // this, we ensure the parent of any element with negative margins (e.g.
+      // .pair-container) is not a table cell; hence, we introduce
+      // scrollContainer_.
+      // Flex gutters may provide a cleaner alternative once implemented.
+      // https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Mastering_Wrapping_of_Flex_Items#Creating_gutters_between_items
+      /** @private {!Element} */
+      this.scrollContainer_ = document.createElement('div');
+      this.appendChild(this.scrollContainer_);
+
+      /** @private {!Element} */
       this.container_ = document.createElement('div');
       this.container_.classList.add('pair-container');
-      this.appendChild(this.container_);
+      this.scrollContainer_.appendChild(this.container_);
+    }
+  }
+
+  class OutputPairProperty extends FlexWrappingOutputProperty {
+    constructor() {
+      super();
 
       /** @type {!Element} */
       this.first_ = document.createElement('div');
@@ -633,14 +654,9 @@ cr.define('omnibox_output', function() {
     }
   }
 
-  class OutputAnswerProperty extends OutputProperty {
+  class OutputAnswerProperty extends FlexWrappingOutputProperty {
     constructor() {
       super();
-
-      /** @private {!Element} */
-      this.container_ = document.createElement('div');
-      this.container_.classList.add('pair-container');
-      this.appendChild(this.container_);
 
       /** @type {!Element} */
       this.image_ = document.createElement('img');
@@ -789,14 +805,9 @@ cr.define('omnibox_output', function() {
     }
   }
 
-  class OutputUrlProperty extends OutputProperty {
+  class OutputUrlProperty extends FlexWrappingOutputProperty {
     constructor() {
       super();
-
-      /** @private {!Element} */
-      this.container_ = document.createElement('div');
-      this.container_.classList.add('pair-container');
-      this.appendChild(this.container_);
 
       /** @private {!Element} */
       this.iconAndUrlContainer_ = document.createElement('div');
