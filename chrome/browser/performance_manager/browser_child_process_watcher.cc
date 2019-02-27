@@ -5,11 +5,14 @@
 #include "chrome/browser/performance_manager/browser_child_process_watcher.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/process/process.h"
+#include "base/stl_util.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/performance_manager/process_resource_coordinator.h"
 #include "content/public/browser/child_process_data.h"
+#include "content/public/browser/child_process_termination_info.h"
 #include "content/public/common/process_type.h"
 
 namespace performance_manager {
@@ -27,35 +30,41 @@ BrowserChildProcessWatcher::~BrowserChildProcessWatcher() {
 void BrowserChildProcessWatcher::BrowserChildProcessLaunchedAndConnected(
     const content::ChildProcessData& data) {
   if (data.process_type == content::PROCESS_TYPE_GPU) {
-    gpu_process_resource_coordinator_ =
+    std::unique_ptr<performance_manager::ProcessResourceCoordinator> gpu_node =
         std::make_unique<ProcessResourceCoordinator>(
             PerformanceManager::GetInstance());
-    gpu_process_resource_coordinator_->OnProcessLaunched(data.GetProcess());
+    gpu_node->OnProcessLaunched(data.GetProcess());
+    gpu_process_nodes_[data.id] = std::move(gpu_node);
   }
 }
 
 void BrowserChildProcessWatcher::BrowserChildProcessHostDisconnected(
     const content::ChildProcessData& data) {
-  if (data.process_type == content::PROCESS_TYPE_GPU)
-    GPUProcessStopped();
+  if (data.process_type == content::PROCESS_TYPE_GPU) {
+    size_t removed = gpu_process_nodes_.erase(data.id);
+    DCHECK_EQ(1u, removed);
+  }
 }
 
 void BrowserChildProcessWatcher::BrowserChildProcessCrashed(
     const content::ChildProcessData& data,
     const content::ChildProcessTerminationInfo& info) {
   if (data.process_type == content::PROCESS_TYPE_GPU)
-    GPUProcessStopped();
+    GPUProcessExited(data.id, info.exit_code);
 }
 
 void BrowserChildProcessWatcher::BrowserChildProcessKilled(
     const content::ChildProcessData& data,
     const content::ChildProcessTerminationInfo& info) {
   if (data.process_type == content::PROCESS_TYPE_GPU)
-    GPUProcessStopped();
+    GPUProcessExited(data.id, info.exit_code);
 }
 
-void BrowserChildProcessWatcher::GPUProcessStopped() {
-  gpu_process_resource_coordinator_.reset();
+void BrowserChildProcessWatcher::GPUProcessExited(int id, int exit_code) {
+  DCHECK(base::ContainsKey(gpu_process_nodes_, id));
+
+  auto* process_node = gpu_process_nodes_[id].get();
+  process_node->SetProcessExitStatus(exit_code);
 }
 
 }  // namespace performance_manager
