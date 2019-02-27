@@ -262,7 +262,8 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
                            ? raster_context_provider->ContextCapabilities()
                            : context_provider->ContextCapabilities();
     viz::ResourceFormat format =
-        viz::PlatformColor::BestSupportedRenderBufferFormat(caps);
+        gpu_raster ? viz::PlatformColor::BestSupportedRenderBufferFormat(caps)
+                   : viz::PlatformColor::BestSupportedTextureFormat(caps);
     pool_resource = pool_->AcquireResource(internal_content_bounds_, format,
                                            gfx::ColorSpace());
 
