@@ -2435,13 +2435,16 @@ bool HttpCache::Transaction::ShouldPassThrough() {
   if (effective_load_flags_ & LOAD_DISABLE_CACHE)
     return true;
 
-  // Prevent resources whose origin is opaque from being cached.
-  // Blink's memory cache should take care of reusing resources
-  // within the current page load, but otherwise a resource with
-  // an opaque top-frame origin won’t be used again.
+  // Prevent resources whose origin is opaque from being cached. Blink's memory
+  // cache should take care of reusing resources within the current page load,
+  // but otherwise a resource with an opaque top-frame origin won’t be used
+  // again. Also, if the request does not have a top frame origin, bypass the
+  // cache otherwise resources from different pages could share a cached entry
+  // in such cases.
   if (base::FeatureList::IsEnabled(features::kSplitCacheByTopFrameOrigin) &&
-      request_->top_frame_origin && request_->top_frame_origin->opaque())
+      (!request_->top_frame_origin || request_->top_frame_origin->opaque())) {
     return true;
+  }
 
   if (method_ == "GET" || method_ == "HEAD")
     return false;
