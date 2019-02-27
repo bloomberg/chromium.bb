@@ -1991,6 +1991,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-zero-state-app-reinstall-suggestions",
+    "owners": ["robsc", "napper", "jennyz"],
+    "expiry_milestone": 80
+  },
+  {
     "name": "enable-zero-state-suggestions",
     "owners": [ "jennyz", "xiyuan" ],
     "expiry_milestone": 75
