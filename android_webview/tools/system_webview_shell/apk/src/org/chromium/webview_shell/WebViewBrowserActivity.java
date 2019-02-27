@@ -335,6 +335,7 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
         webview.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                setUrlFail(false);
                 setUrlBarText(url);
             }
 
