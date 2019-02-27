@@ -80,6 +80,12 @@ using api::file_manager_private::ProfileInfo;
 
 const char kCWSScope[] = "https://www.googleapis.com/auth/chromewebstore";
 
+// Thresholds for mountCrostini() API.
+constexpr base::TimeDelta kMountCrostiniSlowOperationThreshold =
+    base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kMountCrostiniVerySlowOperationThreshold =
+    base::TimeDelta::FromSeconds(30);
+
 // Obtains the current app window.
 AppWindow* GetCurrentAppWindow(UIThreadExtensionFunction* function) {
   content::WebContents* const contents = function->GetSenderWebContents();
@@ -642,7 +648,11 @@ FileManagerPrivateIsCrostiniEnabledFunction::Run() {
 }
 
 FileManagerPrivateMountCrostiniFunction::
-    FileManagerPrivateMountCrostiniFunction() = default;
+    FileManagerPrivateMountCrostiniFunction() {
+  // Mounting crostini shares may require the crostini VM to be started.
+  SetWarningThresholds(kMountCrostiniSlowOperationThreshold,
+                       kMountCrostiniVerySlowOperationThreshold);
+}
 
 FileManagerPrivateMountCrostiniFunction::
     ~FileManagerPrivateMountCrostiniFunction() = default;

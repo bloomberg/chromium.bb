@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
 #include "extensions/browser/extension_function.h"
 
 class Browser;
@@ -80,7 +81,7 @@ class FileSelectorFactory {
 // The fileBrowserHandlerInternal.selectFile extension function implementation.
 // See the file description for more info.
 class FileBrowserHandlerInternalSelectFileFunction
-    : public UIThreadExtensionFunction {
+    : public extensions::LoggedUIThreadExtensionFunction {
  public:
   // Default constructor used in production code.
   // It will create its own FileSelectorFactory implementation, and set the
