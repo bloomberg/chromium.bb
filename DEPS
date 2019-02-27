@@ -331,6 +331,17 @@ deps = {
       'condition': 'checkout_mac',
   },
 
+  'src/tools/clang/dsymutil': {
+    'packages': [
+      {
+        'package': 'chromium/llvm-build-tools/dsymutil',
+        'version': 'kykIT8m8YzNqqLP2xFGBTuo0ZtU9lom3BwiStWleyWkC',
+      }
+    ],
+    'condition': 'checkout_mac',
+    'dep_type': 'cipd',
+  },
+
   'src/chrome/test/data/autofill/captured_sites': {
     'packages': [
       {
