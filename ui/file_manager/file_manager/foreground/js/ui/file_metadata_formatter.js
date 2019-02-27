@@ -45,7 +45,7 @@ class FileMetadataFormatter extends cr.EventTarget {
     if (!modTime) {
       return '...';
     }
-    var today = new Date();
+    const today = new Date();
     today.setHours(0);
     today.setMinutes(0);
     today.setSeconds(0);
@@ -54,7 +54,7 @@ class FileMetadataFormatter extends cr.EventTarget {
     /**
      * Number of milliseconds in a day.
      */
-    var MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000;
+    const MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000;
 
     if (isNaN(modTime.getTime())) {
       // In case of 'Invalid Date'.

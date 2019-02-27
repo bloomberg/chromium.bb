@@ -8,7 +8,7 @@
  * @constructor
  * @extends {cr.ui.dialogs.ConfirmDialog}
  */
-var FilesConfirmDialog = function(parentNode) {
+const FilesConfirmDialog = function(parentNode) {
   cr.ui.dialogs.ConfirmDialog.call(this, parentNode);
 };
 

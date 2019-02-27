@@ -31,7 +31,7 @@ function ProvidersMenu(model, menu) {
    */
   this.separator_ = assert(this.menu_.firstElementChild);
 
-  var installItem = this.addMenuItem_();
+  const installItem = this.addMenuItem_();
   installItem.command = '#install-new-extension';
 
   this.menu_.addEventListener('update', this.onUpdate_.bind(this));
@@ -41,9 +41,9 @@ function ProvidersMenu(model, menu) {
  * @private
  */
 ProvidersMenu.prototype.clearProviders_ = function() {
-  var childNode = this.menu_.firstElementChild;
+  let childNode = this.menu_.firstElementChild;
   while (childNode !== this.separator_) {
-    var node = childNode;
+    const node = childNode;
     childNode = childNode.nextElementSibling;
     this.menu_.removeChild(node);
   }
@@ -54,7 +54,7 @@ ProvidersMenu.prototype.clearProviders_ = function() {
  * @private
  */
 ProvidersMenu.prototype.addMenuItem_ = function() {
-  var menuItem = this.menu_.addMenuItem({});
+  const menuItem = this.menu_.addMenuItem({});
   cr.ui.decorate(/** @type {!Element} */ (menuItem), cr.ui.FilesMenuItem);
   return /** @type {!cr.ui.FilesMenuItem} */ (menuItem);
 };
@@ -67,10 +67,10 @@ ProvidersMenu.prototype.addMenuItem_ = function() {
  * @private
  */
 ProvidersMenu.prototype.addProvider_ = function(providerId, iconSet, name) {
-  var item = this.addMenuItem_();
+  const item = this.addMenuItem_();
   item.label = name;
 
-  var iconImage = util.iconSetToCSSBackgroundImageValue(iconSet);
+  const iconImage = util.iconSetToCSSBackgroundImageValue(iconSet);
   item.iconStartImage = iconImage;
 
   item.addEventListener(

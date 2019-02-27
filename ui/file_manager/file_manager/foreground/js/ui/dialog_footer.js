@@ -142,14 +142,14 @@ DialogFooter.getOKButtonLabel_ = function(dialogType) {
  */
 DialogFooter.prototype.initFileTypeFilter = function(
     fileTypes, includeAllFiles) {
-  for (var i = 0; i < fileTypes.length; i++) {
-    var fileType = fileTypes[i];
-    var option = document.createElement('option');
-    var description = fileType.description;
+  for (let i = 0; i < fileTypes.length; i++) {
+    const fileType = fileTypes[i];
+    const option = document.createElement('option');
+    let description = fileType.description;
     if (!description) {
       // See if all the extensions in the group have the same description.
-      for (var j = 0; j !== fileType.extensions.length; j++) {
-        var currentDescription = FileListModel.getFileTypeString(
+      for (let j = 0; j !== fileType.extensions.length; j++) {
+        const currentDescription = FileListModel.getFileTypeString(
             FileType.getTypeForName('.' + fileType.extensions[j]));
         if (!description) {
           // Set the first time.
@@ -179,13 +179,13 @@ DialogFooter.prototype.initFileTypeFilter = function(
   }
 
   if (includeAllFiles) {
-    var option = document.createElement('option');
+    const option = document.createElement('option');
     option.innerText = str('ALL_FILES_FILTER');
     option.value = 0;
     this.fileTypeSelector.appendChild(option);
   }
 
-  var options = this.fileTypeSelector.querySelectorAll('option');
+  const options = this.fileTypeSelector.querySelectorAll('option');
   if (options.length >= 2) {
     // There is in fact no choice, show the selector.
     this.fileTypeSelector.hidden = false;
@@ -216,7 +216,7 @@ DialogFooter.prototype.onFilenameInputKeyDown_ = function(event) {
 };
 
 DialogFooter.prototype.selectTargetNameInFilenameInput = function() {
-  var selectionEnd = this.filenameInput.value.lastIndexOf('.');
+  const selectionEnd = this.filenameInput.value.lastIndexOf('.');
   if (selectionEnd == -1) {
     this.filenameInput.select();
   } else {

@@ -301,7 +301,7 @@ function FileManagerUI(providersModel, element, launchParam) {
    */
   this.shareMenuButton =
       util.queryDecoratedElement('#share-menu-button', cr.ui.MultiMenuButton);
-  var shareMenuButtonToggleRipple =
+  const shareMenuButtonToggleRipple =
       /** @type {!FilesToggleRipple} */ (
           queryRequiredElement('files-toggle-ripple', this.shareMenuButton));
   this.shareMenuButton.addEventListener('menushow', function() {
@@ -376,8 +376,8 @@ function FileManagerUI(providersModel, element, launchParam) {
   // button so it doesn't have a tabfocus in nature. It prevents Chromevox from
   // speeaching because the opened menu is closed when the non-focusable object
   // tries to get the focus.
-  var menuitems = document.querySelectorAll('cr-menu.chrome-menu > :not(hr)');
-  for (var i = 0; i < menuitems.length; i++) {
+  const menuitems = document.querySelectorAll('cr-menu.chrome-menu > :not(hr)');
+  for (let i = 0; i < menuitems.length; i++) {
     // Make menuitems focusable. The value can be any non-negative value,
     // because pressing 'Tab' key on menu is handled and we don't need to mind
     // the taborder and the destination of tabfocus.
@@ -435,7 +435,7 @@ FileManagerUI.prototype.initAdditionalUI = function(table, grid, locationLine) {
 FileManagerUI.prototype.initUIFocus = function() {
   // Set the initial focus. When there is no focus, the active element is the
   // <body>.
-  var targetElement = null;
+  let targetElement = null;
   if (this.dialogType_ == DialogType.SELECT_SAVEAS_FILE) {
     targetElement = this.dialogFooter.filenameInput;
   } else if (this.listContainer.currentListType !=
@@ -464,9 +464,9 @@ FileManagerUI.prototype.initDirectoryTree = function(directoryTree) {
   // Visible height of the directory tree depends on the size of progress
   // center panel. When the size of progress center panel changes, directory
   // tree has to be notified to adjust its components (e.g. progress bar).
-  var relayoutLimiter = new AsyncUtil.RateLimiter(
+  const relayoutLimiter = new AsyncUtil.RateLimiter(
       directoryTree.relayout.bind(directoryTree), 200);
-  var observer = new MutationObserver(
+  const observer = new MutationObserver(
       relayoutLimiter.run.bind(relayoutLimiter));
   observer.observe(this.progressCenterPanel.element,
                    /** @type {MutationObserverInit} */
@@ -495,11 +495,11 @@ FileManagerUI.prototype.attachFilesTooltip = function() {
  * items are decorated as cr.ui.MenuItem.
  */
 FileManagerUI.prototype.decorateFilesMenuItems = function() {
-  var filesMenuItems = document.querySelectorAll(
+  const filesMenuItems = document.querySelectorAll(
       'cr-menu.files-menu > cr-menu-item');
 
-  for (var i = 0; i < filesMenuItems.length; i++) {
-    var filesMenuItem = filesMenuItems[i];
+  for (let i = 0; i < filesMenuItems.length; i++) {
+    const filesMenuItem = filesMenuItems[i];
     assertInstanceof(filesMenuItem, cr.ui.MenuItem);
     cr.ui.decorate(filesMenuItem, cr.ui.FilesMenuItem);
   }
@@ -527,10 +527,10 @@ FileManagerUI.prototype.relayout = function() {
 FileManagerUI.prototype.setCurrentListType = function(listType) {
   this.listContainer.setCurrentListType(listType);
 
-  var isListView = (listType === ListContainer.ListType.DETAIL);
+  const isListView = (listType === ListContainer.ListType.DETAIL);
   this.toggleViewButton.classList.toggle('thumbnail', isListView);
 
-  var label = isListView ? str('CHANGE_TO_THUMBNAILVIEW_BUTTON_LABEL') :
+  const label = isListView ? str('CHANGE_TO_THUMBNAILVIEW_BUTTON_LABEL') :
                            str('CHANGE_TO_LISTVIEW_BUTTON_LABEL');
   this.toggleViewButton.setAttribute('aria-label', label);
   this.relayout();
@@ -562,9 +562,9 @@ FileManagerUI.prototype.onExternalLinkClick_ = function(event) {
  */
 FileManagerUI.prototype.decorateSplitter_ = function(splitterElement,
     opt_resizeNextElement) {
-  var self = this;
-  var Splitter = cr.ui.Splitter;
-  var customSplitter = cr.ui.define('div');
+  const self = this;
+  const Splitter = cr.ui.Splitter;
+  const customSplitter = cr.ui.define('div');
 
   customSplitter.prototype = {
     __proto__: Splitter.prototype,
@@ -610,8 +610,8 @@ FileManagerUI.prototype.showOpenInOtherDesktopAlert = function(entries) {
   chrome.fileManagerPrivate.getProfiles(
     function(profiles, currentId, displayedId) {
       // Find strings.
-      var displayName;
-      for (var i = 0; i < profiles.length; i++) {
+      let displayName;
+      for (let i = 0; i < profiles.length; i++) {
         if (profiles[i].profileId === currentId) {
           displayName = profiles[i].displayName;
           break;
@@ -622,9 +622,9 @@ FileManagerUI.prototype.showOpenInOtherDesktopAlert = function(entries) {
         return;
       }
 
-      var title = entries.length > 1 ?
+      const title = entries.length > 1 ?
           entries[0].name + '\u2026' /* ellipsis */ : entries[0].name;
-      var message = strf(entries.length > 1 ?
+      const message = strf(entries.length > 1 ?
                          'OPEN_IN_OTHER_DESKTOP_MESSAGE_PLURAL' :
                          'OPEN_IN_OTHER_DESKTOP_MESSAGE',
                          displayName,
@@ -643,7 +643,7 @@ FileManagerUI.prototype.showOpenInOtherDesktopAlert = function(entries) {
  * @return {!Promise<boolean>}
  */
 FileManagerUI.prototype.showConfirmationDialog = function(isMove, messages) {
-  var dialog = null;
+  let dialog = null;
   if (isMove) {
     dialog = this.moveConfirmDialog;
   } else {

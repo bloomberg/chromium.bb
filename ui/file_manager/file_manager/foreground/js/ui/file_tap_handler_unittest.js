@@ -3,22 +3,22 @@
 // found in the LICENSE file.
 
 /** @type {!FileTapHandler} handler the handler. */
-var handler;
+let handler;
 
 /**
  * @type {!Element}
  */
-var dummyTarget;
+let dummyTarget;
 
 /**
  * @type {!Array<!Object>}
  */
-var events;
+let events;
 
 /**
  * @type {function(!Event, number, !FileTapHandler.TapEvent)}
  */
-var handleTap = function(e, index, eventType) {
+const handleTap = function(e, index, eventType) {
   events.push({index: index, eventType: eventType});
   return false;
 };
@@ -44,7 +44,7 @@ function setUp() {
 }
 
 function testTap() {
-  var touch = createTouch(0, 300, 400);
+  const touch = createTouch(0, 300, 400);
   handler.handleTouchEvents(
       new TouchEvent('touchstart', {targetTouches: [touch], touches: [touch]}),
       0, handleTap);
@@ -62,8 +62,8 @@ function testTap() {
 }
 
 function testIgnoreSlide() {
-  var touch0 = createTouch(0, 300, 400);
-  var touch1 = createTouch(0, 320, 450);
+  const touch0 = createTouch(0, 300, 400);
+  const touch1 = createTouch(0, 320, 450);
   handler.handleTouchEvents(
       new TouchEvent('touchstart', {
         targetTouches: [touch0],
@@ -86,7 +86,7 @@ function testIgnoreSlide() {
   assertEquals(0, events.length);
 
   // Next touch should be accepted.
-  var touch2 = createTouch(0, touch0.clientX + 1, touch0.clientY + 2);
+  const touch2 = createTouch(0, touch0.clientX + 1, touch0.clientY + 2);
   handler.handleTouchEvents(
       new TouchEvent('touchstart', {
         targetTouches: [touch0],
@@ -111,9 +111,9 @@ function testIgnoreSlide() {
 }
 
 function testTapMoveTolerance() {
-  var touch0 = createTouch(0, 300, 400);
-  var touch1 = createTouch(0, 300, 405);  // moved slightly
-  var touch2 = createTouch(0, 302, 405);  // moved slightly
+  const touch0 = createTouch(0, 300, 400);
+  const touch1 = createTouch(0, 300, 405);  // moved slightly
+  const touch2 = createTouch(0, 302, 405);  // moved slightly
   handler.handleTouchEvents(
       new TouchEvent('touchstart', {
         changedTouches: [touch0],
@@ -149,8 +149,8 @@ function testTapMoveTolerance() {
 }
 
 function testLongTap(callback) {
-  var touch0 = createTouch(0, 300, 400);
-  var touch1 = createTouch(0, 303, 404);
+  const touch0 = createTouch(0, 300, 400);
+  const touch1 = createTouch(0, 303, 404);
   handler.handleTouchEvents(
       new TouchEvent('touchstart', {
         changedTouches: [touch0],
@@ -197,8 +197,8 @@ function testLongTap(callback) {
 }
 
 function testCancelLongTapBySlide(callback) {
-  var touch0 = createTouch(0, 300, 400);
-  var touch1 = createTouch(0, 330, 450);
+  const touch0 = createTouch(0, 300, 400);
+  const touch1 = createTouch(0, 330, 450);
   handler.handleTouchEvents(
       new TouchEvent('touchstart', {
         changedTouches: [touch0],
@@ -231,10 +231,10 @@ function testCancelLongTapBySlide(callback) {
 }
 
 function testTwoFingerTap() {
-  var touch0_0 = createTouch(0, 300, 400);
-  var touch0_1 = createTouch(0, 303, 404);
-  var touch1_0 = createTouch(1, 350, 400);
-  var touch1_1 = createTouch(1, 354, 402);
+  const touch0_0 = createTouch(0, 300, 400);
+  const touch0_1 = createTouch(0, 303, 404);
+  const touch1_0 = createTouch(1, 350, 400);
+  const touch1_1 = createTouch(1, 354, 402);
   // case 1: Release the second touch point first.
   handler.handleTouchEvents(
       new TouchEvent('touchstart', {

@@ -24,7 +24,7 @@ function Banners(
   this.privateOnDirectoryChangedBound_ =
       this.privateOnDirectoryChanged_.bind(this);
 
-  var handler = this.checkSpaceAndMaybeShowWelcomeBanner_.bind(this);
+  const handler = this.checkSpaceAndMaybeShowWelcomeBanner_.bind(this);
   this.directoryModel_.addEventListener('scan-completed', handler);
   this.directoryModel_.addEventListener('rescan-completed', handler);
   this.directoryModel_.addEventListener('directory-changed',
@@ -74,7 +74,7 @@ function Banners(
   // Authentication failed banner.
   this.authFailedBanner_ =
       this.document_.querySelector('#drive-auth-failed-warning');
-  var authFailedText = this.authFailedBanner_.querySelector('.drive-text');
+  const authFailedText = this.authFailedBanner_.querySelector('.drive-text');
   authFailedText.innerHTML = util.htmlUnescape(str('DRIVE_NOT_REACHED'));
   authFailedText.querySelector('a').addEventListener('click', function(e) {
     chrome.fileManagerPrivate.logoutUserForReauthentication();
@@ -92,44 +92,44 @@ Banners.prototype.__proto__ = cr.EventTarget.prototype;
  * Key in localStorage to keep number of times the Drive Welcome
  * banner has shown.
  */
-var WELCOME_HEADER_COUNTER_KEY = 'driveWelcomeHeaderCounter';
+const WELCOME_HEADER_COUNTER_KEY = 'driveWelcomeHeaderCounter';
 
 // If the warning was dismissed before, this key stores the quota value
 // (as of the moment of dismissal).
 // If the warning was never dismissed or was reset this key stores 0.
-var DRIVE_WARNING_DISMISSED_KEY = 'driveSpaceWarningDismissed';
+const DRIVE_WARNING_DISMISSED_KEY = 'driveSpaceWarningDismissed';
 
 /**
  * If the warning was dismissed before, this key stores the moment of dismissal
  * in milliseconds since the UNIX epoch (i.e. the value of Date.now()).
  * @const {string}
  */
-var DOWNLOADS_WARNING_DISMISSED_KEY = 'downloadsSpaceWarningDismissed';
+const DOWNLOADS_WARNING_DISMISSED_KEY = 'downloadsSpaceWarningDismissed';
 
 /**
  * Maximum times Drive Welcome banner could have shown.
  */
-var WELCOME_HEADER_COUNTER_LIMIT = 25;
+const WELCOME_HEADER_COUNTER_LIMIT = 25;
 
 /**
  * If the remaining space in Drive is less than 10%, we'll show a warning.
  * @const {number}
  */
-var DRIVE_SPACE_WARNING_THRESHOLD_RATIO = 0.1;
+const DRIVE_SPACE_WARNING_THRESHOLD_RATIO = 0.1;
 
 /**
  * If the remaining space in Downloads is less than 1GB, we'll show a warning.
  * This value is in bytes.
  * @const {number}
  */
-var DOWNLOADS_SPACE_WARNING_THRESHOLD_SIZE = 1 * 1024 * 1024 * 1024;
+const DOWNLOADS_SPACE_WARNING_THRESHOLD_SIZE = 1 * 1024 * 1024 * 1024;
 
 /**
  * After the warning banner is dismissed, we won't show it for 36 hours.
  * This value is in milliseconds.
  * @const {number}
  */
-var DOWNLOADS_SPACE_WARNING_DISMISS_DURATION = 36 * 60 * 60 * 1000;
+const DOWNLOADS_SPACE_WARNING_DISMISS_DURATION = 36 * 60 * 60 * 1000;
 
 /**
  * @param {number} value How many times the Drive Welcome header banner
@@ -137,7 +137,7 @@ var DOWNLOADS_SPACE_WARNING_DISMISS_DURATION = 36 * 60 * 60 * 1000;
  * @private
  */
 Banners.prototype.setWelcomeHeaderCounter_ = function(value) {
-  var values = {};
+  const values = {};
   values[WELCOME_HEADER_COUNTER_KEY] = value;
   chrome.storage.local.set(values);
 };
@@ -147,7 +147,7 @@ Banners.prototype.setWelcomeHeaderCounter_ = function(value) {
  * @private
  */
 Banners.prototype.setWarningDismissedCounter_ = function(value) {
-  var values = {};
+  const values = {};
   values[DRIVE_WARNING_DISMISSED_KEY] = value;
   chrome.storage.local.set(values);
 };
@@ -192,21 +192,21 @@ Banners.prototype.prepareAndShowWelcomeBanner_ = function(type, messageId) {
 
   this.showWelcomeBanner_(type);
 
-  var container = queryRequiredElement(
+  const container = queryRequiredElement(
       '.drive-welcome.' + type, this.document_);
   if (container.firstElementChild) {
     return;
   }  // Do not re-create.
 
   if (!this.document_.querySelector('link[drive-welcome-style]')) {
-    var style = this.document_.createElement('link');
+    const style = this.document_.createElement('link');
     style.rel = 'stylesheet';
     style.href = constants.DRIVE_WELCOME_CSS;
     style.setAttribute('drive-welcome-style', '');
     this.document_.head.appendChild(style);
   }
 
-  var wrapper = util.createChild(container, 'drive-welcome-wrapper');
+  const wrapper = util.createChild(container, 'drive-welcome-wrapper');
   util.createChild(wrapper, 'drive-welcome-icon');
 
   if (type === 'header') {
@@ -214,17 +214,17 @@ Banners.prototype.prepareAndShowWelcomeBanner_ = function(type, messageId) {
     util.createChild(wrapper, 'banner-people');
   }
 
-  var close = util.createChild(wrapper, 'banner-close');
+  const close = util.createChild(wrapper, 'banner-close');
   close.addEventListener('click', this.closeWelcomeBanner_.bind(this));
 
-  var message = util.createChild(wrapper, 'drive-welcome-message');
+  const message = util.createChild(wrapper, 'drive-welcome-message');
 
-  var title = util.createChild(message, 'drive-welcome-title');
+  const title = util.createChild(message, 'drive-welcome-title');
 
-  var text = util.createChild(message, 'drive-welcome-text');
+  const text = util.createChild(message, 'drive-welcome-text');
   text.innerHTML = str(messageId);
 
-  var links = util.createChild(message, 'drive-welcome-links');
+  const links = util.createChild(message, 'drive-welcome-links');
 
   title.textContent = str('DRIVE_WELCOME_TITLE');
   const more = util.createChild(links, 'plain-link', 'a');
@@ -250,7 +250,7 @@ Banners.prototype.prepareAndShowWelcomeBanner_ = function(type, messageId) {
  * @private
  */
 Banners.prototype.showLowDriveSpaceWarning_ = function(show, opt_sizeStats) {
-  var box = this.document_.querySelector('#volume-space-warning');
+  const box = this.document_.querySelector('#volume-space-warning');
 
   // Avoid showing two banners.
   // TODO(kaznacheev): Unify the low space warning and the promo header.
@@ -278,30 +278,30 @@ Banners.prototype.showLowDriveSpaceWarning_ = function(show, opt_sizeStats) {
 
   box.textContent = '';
   if (show && opt_sizeStats) {
-    var icon = this.document_.createElement('div');
+    const icon = this.document_.createElement('div');
     icon.className = 'drive-icon';
     box.appendChild(icon);
 
-    var text = this.document_.createElement('div');
+    const text = this.document_.createElement('div');
     text.className = 'drive-text';
     text.textContent = strf('DRIVE_SPACE_AVAILABLE_LONG',
         util.bytesToString(opt_sizeStats.remainingSize));
     box.appendChild(text);
 
-    var link = this.document_.createElement('a');
+    const link = this.document_.createElement('a');
     link.href = str('GOOGLE_DRIVE_BUY_STORAGE_URL');
     link.target = '_blank';
-    var button = this.document_.createElement('button');
+    const button = this.document_.createElement('button');
     button.className = 'imitate-paper-button';
     button.textContent = str('DRIVE_BUY_MORE_SPACE_LINK');
     link.appendChild(button);
     box.appendChild(link);
 
-    var close = this.document_.createElement('div');
+    const close = this.document_.createElement('div');
     close.className = 'banner-close';
     box.appendChild(close);
     close.addEventListener('click', function(total) {
-      var values = {};
+      const values = {};
       values[DRIVE_WARNING_DISMISSED_KEY] = total;
       chrome.storage.local.set(values);
       box.hidden = true;
@@ -338,7 +338,7 @@ Banners.prototype.checkSpaceAndMaybeShowWelcomeBanner_ = function() {
       return;
     }
 
-    var driveVolume = this.volumeManager_.getCurrentProfileVolumeInfo(
+    const driveVolume = this.volumeManager_.getCurrentProfileVolumeInfo(
         VolumeManagerCommon.VolumeType.DRIVE);
     if (this.welcomeHeaderCounter_ >= WELCOME_HEADER_COUNTER_LIMIT ||
         !driveVolume || driveVolume.error) {
@@ -387,11 +387,11 @@ Banners.prototype.maybeShowWelcomeBanner_ = function() {
  * profile.
  */
 Banners.prototype.isOnCurrentProfileDrive = function() {
-  var entry = this.directoryModel_.getCurrentDirEntry();
+  const entry = this.directoryModel_.getCurrentDirEntry();
   if (!entry || util.isFakeEntry(entry)) {
     return false;
   }
-  var locationInfo = this.volumeManager_.getLocationInfo(entry);
+  const locationInfo = this.volumeManager_.getLocationInfo(entry);
   if (!locationInfo) {
     return false;
   }
@@ -405,7 +405,7 @@ Banners.prototype.isOnCurrentProfileDrive = function() {
  * @private
  */
 Banners.prototype.showWelcomeBanner_ = function(type) {
-  var container = this.document_.querySelector('.dialog-container');
+  const container = this.document_.querySelector('.dialog-container');
   if (container.getAttribute('drive-welcome') != type) {
     container.setAttribute('drive-welcome', type);
     this.requestRelayout_(200);  // Resize only after the animation is done.
@@ -419,11 +419,11 @@ Banners.prototype.showWelcomeBanner_ = function(type) {
  * @private
  */
 Banners.prototype.onDirectoryChanged_ = function(event) {
-  var rootVolume = this.volumeManager_.getVolumeInfo(event.newDirEntry);
+  const rootVolume = this.volumeManager_.getVolumeInfo(event.newDirEntry);
   if (!rootVolume) {
     return;
   }
-  var previousRootVolume = event.previousDirEntry ?
+  const previousRootVolume = event.previousDirEntry ?
       this.volumeManager_.getVolumeInfo(event.previousDirEntry) :
       null;
 
@@ -431,7 +431,7 @@ Banners.prototype.onDirectoryChanged_ = function(event) {
   this.maybeShowLowSpaceWarning_(rootVolume);
 
   // Add or remove listener to show low space warning, if necessary.
-  var isLowSpaceWarningTarget = this.isLowSpaceWarningTarget_(rootVolume);
+  const isLowSpaceWarningTarget = this.isLowSpaceWarningTarget_(rootVolume);
   if (isLowSpaceWarningTarget !==
       this.isLowSpaceWarningTarget_(previousRootVolume)) {
     if (isLowSpaceWarningTarget) {
@@ -476,15 +476,15 @@ Banners.prototype.isLowSpaceWarningTarget_ = function(volumeInfo) {
  * @private
  */
 Banners.prototype.privateOnDirectoryChanged_ = function(event) {
-  var currentDirEntry = this.directoryModel_.getCurrentDirEntry();
+  const currentDirEntry = this.directoryModel_.getCurrentDirEntry();
   if (!currentDirEntry) {
     return;
   }
-  var currentVolume = this.volumeManager_.getVolumeInfo(currentDirEntry);
+  const currentVolume = this.volumeManager_.getVolumeInfo(currentDirEntry);
   if (!currentVolume) {
     return;
   }
-  var eventVolume = this.volumeManager_.getVolumeInfo(event.entry);
+  const eventVolume = this.volumeManager_.getVolumeInfo(event.entry);
   if (currentVolume === eventVolume) {
     // The file system we are currently on is changed.
     // So, check the free space.
@@ -521,7 +521,7 @@ Banners.prototype.maybeShowLowSpaceWarning_ = function(volume) {
 
   chrome.fileManagerPrivate.getSizeStats(
       volume.volumeId, function(sizeStats) {
-        var currentVolume = this.volumeManager_.getVolumeInfo(
+        const currentVolume = this.volumeManager_.getVolumeInfo(
             assert(this.directoryModel_.getCurrentDirEntry()));
         if (volume !== currentVolume) {
           // This happens when the current directory is moved during requesting
@@ -539,7 +539,7 @@ Banners.prototype.maybeShowLowSpaceWarning_ = function(volume) {
               sizeStats.remainingSize < DOWNLOADS_SPACE_WARNING_THRESHOLD_SIZE);
         } else {
           // Show the warning banner when the available space ls less than 10%.
-          var remainingRatio = sizeStats.remainingSize / sizeStats.totalSize;
+          const remainingRatio = sizeStats.remainingSize / sizeStats.totalSize;
           this.showLowDriveSpaceWarning_(
               remainingRatio < DRIVE_SPACE_WARNING_THRESHOLD_RATIO, sizeStats);
         }
@@ -560,7 +560,7 @@ Banners.prototype.cleanupWelcomeBanner_ = function() {
  * @private
  */
 Banners.prototype.requestRelayout_ = function(delay) {
-  var self = this;
+  const self = this;
   setTimeout(function() {
     cr.dispatchSimpleEvent(self, 'relayout');
   }, delay);
@@ -572,7 +572,7 @@ Banners.prototype.requestRelayout_ = function(delay) {
  * @private
  */
 Banners.prototype.showLowDownloadsSpaceWarning_ = function(show) {
-  var box = this.document_.querySelector('.downloads-warning');
+  const box = this.document_.querySelector('.downloads-warning');
 
   if (box.hidden == !show) {
     return;
@@ -587,9 +587,9 @@ Banners.prototype.showLowDownloadsSpaceWarning_ = function(show) {
 
   box.textContent = '';
   if (show) {
-    var icon = this.document_.createElement('div');
+    const icon = this.document_.createElement('div');
     icon.className = 'warning-icon';
-    var message = this.document_.createElement('div');
+    const message = this.document_.createElement('div');
     message.className = 'warning-message';
     message.innerHTML = util.htmlUnescape(str('DOWNLOADS_DIRECTORY_WARNING'));
     box.appendChild(icon);
@@ -599,12 +599,12 @@ Banners.prototype.showLowDownloadsSpaceWarning_ = function(show) {
       e.preventDefault();
     });
 
-    var close = this.document_.createElement('div');
+    const close = this.document_.createElement('div');
     close.className = 'banner-close';
     close.tabIndex = 0;
     box.appendChild(close);
     close.addEventListener('click', function() {
-      var values = {};
+      const values = {};
       values[DOWNLOADS_WARNING_DISMISSED_KEY] = Date.now();
       chrome.storage.local.set(values);
       box.hidden = true;
@@ -625,7 +625,7 @@ Banners.prototype.showLowDownloadsSpaceWarning_ = function(show) {
  * @private
  */
 Banners.prototype.ensureDriveUnmountedPanelInitialized_ = function() {
-  var panel = this.unmountedPanel_;
+  const panel = this.unmountedPanel_;
   if (panel.firstElementChild) {
     return;
   }
@@ -638,8 +638,8 @@ Banners.prototype.ensureDriveUnmountedPanelInitialized_ = function() {
    * @param {string=} opt_textContent Text content of the new element.
    * @return {!Element} The newly created element.
    */
-  var create = function(parent, tag, className, opt_textContent) {
-    var div = panel.ownerDocument.createElement(tag);
+  const create = function(parent, tag, className, opt_textContent) {
+    const div = panel.ownerDocument.createElement(tag);
     div.className = className;
     div.textContent = opt_textContent || '';
     parent.appendChild(div);
@@ -648,7 +648,7 @@ Banners.prototype.ensureDriveUnmountedPanelInitialized_ = function() {
 
   create(panel, 'div', 'error', str('DRIVE_CANNOT_REACH'));
 
-  var learnMore = create(panel, 'a', 'learn-more plain-link',
+  const learnMore = create(panel, 'a', 'learn-more plain-link',
                          str('DRIVE_LEARN_MORE'));
   learnMore.href = str('GOOGLE_DRIVE_ERROR_HELP_URL');
   learnMore.target = '_blank';
@@ -660,7 +660,7 @@ Banners.prototype.ensureDriveUnmountedPanelInitialized_ = function() {
  * @private
  */
 Banners.prototype.onVolumeInfoListSplice_ = function(event) {
-  var isDriveVolume = function(volumeInfo) {
+  const isDriveVolume = function(volumeInfo) {
     return volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE;
   };
   if (event.removed.some(isDriveVolume) || event.added.some(isDriveVolume)) {
@@ -674,9 +674,9 @@ Banners.prototype.onVolumeInfoListSplice_ = function(event) {
  * @private
  */
 Banners.prototype.updateDriveUnmountedPanel_ = function() {
-  var node = this.document_.body;
+  const node = this.document_.body;
   if (this.isOnCurrentProfileDrive()) {
-    var driveVolume = this.volumeManager_.getCurrentProfileVolumeInfo(
+    const driveVolume = this.volumeManager_.getCurrentProfileVolumeInfo(
         VolumeManagerCommon.VolumeType.DRIVE);
     if (driveVolume) {
       if (driveVolume.error) {
@@ -701,8 +701,8 @@ Banners.prototype.updateDriveUnmountedPanel_ = function() {
  * @private
  */
 Banners.prototype.maybeShowAuthFailBanner_ = function() {
-  var connection = this.volumeManager_.getDriveConnectionState();
-  var showDriveNotReachedMessage =
+  const connection = this.volumeManager_.getDriveConnectionState();
+  const showDriveNotReachedMessage =
       this.isOnCurrentProfileDrive() &&
       connection.type == VolumeManagerCommon.DriveConnectionType.OFFLINE &&
       connection.reason == VolumeManagerCommon.DriveConnectionReason.NOT_READY;

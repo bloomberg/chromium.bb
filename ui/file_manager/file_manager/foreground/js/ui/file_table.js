@@ -36,14 +36,14 @@ FileTableColumnModel.MIN_WIDTH_ = 10;
  */
 FileTableColumnModel.prototype.applyColumnPositions_ = function(newPos) {
   // Check the minimum width and adjust the positions.
-  for (var i = 0; i < newPos.length - 2; i++) {
+  for (let i = 0; i < newPos.length - 2; i++) {
     if (!this.columns_[i].visible) {
       newPos[i + 1] = newPos[i];
     } else if (newPos[i + 1] - newPos[i] < FileTableColumnModel.MIN_WIDTH_) {
       newPos[i + 1] = newPos[i] + FileTableColumnModel.MIN_WIDTH_;
     }
   }
-  for (var i = newPos.length - 1; i >= 2; i--) {
+  for (let i = newPos.length - 1; i >= 2; i--) {
     if (!this.columns_[i - 1].visible) {
       newPos[i - 1] = newPos[i];
     } else if (newPos[i] - newPos[i - 1] < FileTableColumnModel.MIN_WIDTH_) {
@@ -51,7 +51,7 @@ FileTableColumnModel.prototype.applyColumnPositions_ = function(newPos) {
     }
   }
   // Set the new width of columns
-  for (var i = 0; i < this.columns_.length; i++) {
+  for (let i = 0; i < this.columns_.length; i++) {
     if (!this.columns_[i].visible) {
       this.columns_[i].width = 0;
     } else {
@@ -71,15 +71,15 @@ FileTableColumnModel.prototype.applyColumnPositions_ = function(newPos) {
  * @override
  */
 FileTableColumnModel.prototype.normalizeWidths = function(contentWidth) {
-  var totalWidth = 0;
+  let totalWidth = 0;
   // Some columns have fixed width.
-  for (var i = 0; i < this.columns_.length; i++) {
+  for (let i = 0; i < this.columns_.length; i++) {
     totalWidth += this.columns_[i].width;
   }
-  var positions = [0];
-  var sum = 0;
-  for (var i = 0; i < this.columns_.length; i++) {
-    var column = this.columns_[i];
+  const positions = [0];
+  let sum = 0;
+  for (let i = 0; i < this.columns_.length; i++) {
+    const column = this.columns_[i];
     sum += column.width;
     // Faster alternative to Math.floor for non-negative numbers.
     positions[i + 1] = ~~(contentWidth * sum / totalWidth);
@@ -154,14 +154,14 @@ FileTableColumnModel.prototype.setVisible = function(index, visible) {
     return;
   }
 
-  var column = this.columns_[index];
+  const column = this.columns_[index];
   if (column.visible === visible) {
     return;
   }
 
   // Re-layout the table.  This overrides the default column layout code in the
   // parent class.
-  var snapshot = new FileTableColumnModel.ColumnSnapshot(this.columns_);
+  const snapshot = new FileTableColumnModel.ColumnSnapshot(this.columns_);
 
   column.visible = visible;
 
@@ -181,15 +181,15 @@ FileTableColumnModel.prototype.setVisible = function(index, visible) {
 FileTableColumnModel.prototype.exportColumnConfig = function() {
   // Make a snapshot, and use that to compute a column layout where all the
   // columns are visible.
-  var snapshot = new FileTableColumnModel.ColumnSnapshot(this.columns_);
-  for (var i = 0; i < this.columns_.length; i++) {
+  const snapshot = new FileTableColumnModel.ColumnSnapshot(this.columns_);
+  for (let i = 0; i < this.columns_.length; i++) {
     if (!this.columns_[i].visible) {
       snapshot.setWidth(i, this.columns_[i].absoluteWidth);
     }
   }
   // Export the column widths.
-  var config = {};
-  for (var i = 0; i < this.columns_.length; i++) {
+  const config = {};
+  for (let i = 0; i < this.columns_.length; i++) {
     config[this.columns_[i].id] = {
       width: snapshot.newPos[i + 1] - snapshot.newPos[i]
     };
@@ -206,7 +206,7 @@ FileTableColumnModel.prototype.exportColumnConfig = function() {
 FileTableColumnModel.prototype.restoreColumnConfig = function(config) {
   // Convert old-style raw column widths into new-style config objects.
   if (Array.isArray(config)) {
-    var tmpConfig = {};
+    const tmpConfig = {};
     tmpConfig[this.columns_[0].id] = config[0];
     tmpConfig[this.columns_[1].id] = config[1];
     tmpConfig[this.columns_[3].id] = config[2];
@@ -216,8 +216,8 @@ FileTableColumnModel.prototype.restoreColumnConfig = function(config) {
 
   // Columns must all be made visible before restoring their widths.  Save the
   // current visibility so it can be restored after.
-  var visibility = [];
-  for (var i = 0; i < this.columns_.length; i++) {
+  const visibility = [];
+  for (let i = 0; i < this.columns_.length; i++) {
     visibility[i] = this.columns_[i].visible;
     this.columns_[i].visible = true;
   }
@@ -225,11 +225,11 @@ FileTableColumnModel.prototype.restoreColumnConfig = function(config) {
   // Do not use external setters (e.g. #setVisible, #setWidth) here because they
   // trigger layout thrash, and also try to dynamically resize columns, which
   // interferes with restoring the old column layout.
-  for (var columnId in config) {
-    var column = this.columns_[this.indexOf(columnId)];
+  for (const columnId in config) {
+    const column = this.columns_[this.indexOf(columnId)];
     if (column) {
       // Set column width.  Ignore invalid widths.
-      var width = ~~config[columnId].width;
+      const width = ~~config[columnId].width;
       if (width > 0) {
         column.width = width;
       }
@@ -237,7 +237,7 @@ FileTableColumnModel.prototype.restoreColumnConfig = function(config) {
   }
 
   // Restore column visibility.  Use setVisible here, to trigger table relayout.
-  for (var i = 0; i < this.columns_.length; i++) {
+  for (let i = 0; i < this.columns_.length; i++) {
     this.setVisible(i, visibility[i]);
   }
 };
@@ -250,7 +250,7 @@ FileTableColumnModel.prototype.restoreColumnConfig = function(config) {
 FileTableColumnModel.ColumnSnapshot = function(columns) {
   /** @private {!Array<number>} */
   this.columnPos_ = [0];
-  for (var i = 0; i < columns.length; i++) {
+  for (let i = 0; i < columns.length; i++) {
     this.columnPos_[i + 1] = columns[i].width + this.columnPos_[i];
   }
 
@@ -278,17 +278,17 @@ FileTableColumnModel.ColumnSnapshot.prototype.setWidth = function(
 
   // Round up if the column is shrinking, and down if the column is expanding.
   // This prevents off-by-one drift.
-  var currentWidth = this.columnPos_[index + 1] - this.columnPos_[index];
-  var round = width < currentWidth ? Math.ceil : Math.floor;
+  const currentWidth = this.columnPos_[index + 1] - this.columnPos_[index];
+  const round = width < currentWidth ? Math.ceil : Math.floor;
 
   // Calculate new positions of column splitters.
-  var newPosStart = this.columnPos_[index] + width;
-  var posEnd = this.columnPos_[this.columnPos_.length - 1];
-  for (var i = 0; i < index + 1; i++) {
+  const newPosStart = this.columnPos_[index] + width;
+  const posEnd = this.columnPos_[this.columnPos_.length - 1];
+  for (let i = 0; i < index + 1; i++) {
     this.newPos[i] = this.columnPos_[i];
   }
-  for (var i = index + 1; i < this.columnPos_.length - 1; i++) {
-    var posStart = this.columnPos_[index + 1];
+  for (let i = index + 1; i < this.columnPos_.length - 1; i++) {
+    const posStart = this.columnPos_[index + 1];
     this.newPos[i] = (posEnd - newPosStart) *
                 (this.columnPos_[i] - posStart) /
                 (posEnd - posStart) +
@@ -303,7 +303,7 @@ FileTableColumnModel.ColumnSnapshot.prototype.setWidth = function(
  * Custom splitter that resizes column with retaining the sum of all the column
  * width.
  */
-var FileTableSplitter = cr.ui.define('div');
+const FileTableSplitter = cr.ui.define('div');
 
 /**
  * Inherits from cr.ui.TableSplitter.
@@ -397,30 +397,30 @@ FileTable.decorate = function(
   /** @private {boolean} */
   self.useModificationByMeTime_ = false;
 
-  var nameColumn = new cr.ui.table.TableColumn(
+  const nameColumn = new cr.ui.table.TableColumn(
       'name', str('NAME_COLUMN_LABEL'), fullPage ? 386 : 324);
   nameColumn.renderFunction = self.renderName_.bind(self);
 
-  var sizeColumn = new cr.ui.table.TableColumn(
+  const sizeColumn = new cr.ui.table.TableColumn(
       'size', str('SIZE_COLUMN_LABEL'), 110, true);
   sizeColumn.renderFunction = self.renderSize_.bind(self);
   sizeColumn.defaultOrder = 'desc';
 
-  var statusColumn = new cr.ui.table.TableColumn(
+  const statusColumn = new cr.ui.table.TableColumn(
       'status', str('STATUS_COLUMN_LABEL'), 60, true);
   statusColumn.renderFunction = self.renderStatus_.bind(self);
   statusColumn.visible = self.importStatusVisible_;
 
-  var typeColumn = new cr.ui.table.TableColumn(
+  const typeColumn = new cr.ui.table.TableColumn(
       'type', str('TYPE_COLUMN_LABEL'), fullPage ? 110 : 110);
   typeColumn.renderFunction = self.renderType_.bind(self);
 
-  var modTimeColumn = new cr.ui.table.TableColumn(
+  const modTimeColumn = new cr.ui.table.TableColumn(
       'modificationTime', str('DATE_COLUMN_LABEL'), fullPage ? 150 : 210);
   modTimeColumn.renderFunction = self.renderDate_.bind(self);
   modTimeColumn.defaultOrder = 'desc';
 
-  var columns = [
+  const columns = [
       nameColumn,
       sizeColumn,
       statusColumn,
@@ -428,13 +428,13 @@ FileTable.decorate = function(
       modTimeColumn
   ];
 
-  var columnModel = new FileTableColumnModel(columns);
+  const columnModel = new FileTableColumnModel(columns);
 
   self.columnModel = columnModel;
 
   self.formatter_ = new FileMetadataFormatter();
 
-  var selfAsTable = /** @type {!cr.ui.Table} */ (self);
+  const selfAsTable = /** @type {!cr.ui.Table} */ (self);
   selfAsTable.setRenderFunction(
       self.renderTableRow_.bind(self, selfAsTable.getRenderFunction()));
 
@@ -452,8 +452,8 @@ FileTable.decorate = function(
   selfAsTable.header.redraw = function() {
     this.__proto__.redraw.call(this);
     // Extend table splitters
-    var splitters = this.querySelectorAll('.table-header-splitter');
-    for (var i = 0; i < splitters.length; i++) {
+    const splitters = this.querySelectorAll('.table-header-splitter');
+    for (let i = 0; i < splitters.length; i++) {
       if (splitters[i] instanceof FileTableSplitter) {
         continue;
       }
@@ -484,10 +484,10 @@ FileTable.decorate = function(
    * @this {cr.ui.List}
    */
   self.list.getHitElements = function(x, y, opt_width, opt_height) {
-    var currentSelection = [];
-    var bottom = y + (opt_height || 0);
-    for (var i = 0; i < this.selectionModel_.length; i++) {
-      var itemMetrics = this.getHeightsForIndex(i);
+    const currentSelection = [];
+    const bottom = y + (opt_height || 0);
+    for (let i = 0; i < this.selectionModel_.length; i++) {
+      const itemMetrics = this.getHeightsForIndex(i);
       if (itemMetrics.top < bottom &&
           itemMetrics.top + itemMetrics.height >= y) {
         currentSelection.push(i);
@@ -543,11 +543,11 @@ FileTable.prototype.setListThumbnailLoader = function(listThumbnailLoader) {
  *     occurred.
  */
 FileTable.prototype.getThumbnail = function(index) {
-  var listItem = this.getListItemByIndex(index);
+  const listItem = this.getListItemByIndex(index);
   if (!listItem) {
     return null;
   }
-  var container = listItem.querySelector('.detail-thumbnail');
+  const container = listItem.querySelector('.detail-thumbnail');
   if (!container) {
     return null;
   }
@@ -560,9 +560,9 @@ FileTable.prototype.getThumbnail = function(index) {
  * @private
  */
 FileTable.prototype.onThumbnailLoaded_ = function(event) {
-  var listItem = this.getListItemByIndex(event.index);
+  const listItem = this.getListItemByIndex(event.index);
   if (listItem) {
-    var box = listItem.querySelector('.detail-thumbnail');
+    const box = listItem.querySelector('.detail-thumbnail');
     if (box) {
       if (event.dataUrl) {
         this.setThumbnailImage_(
@@ -582,33 +582,33 @@ FileTable.prototype.onThumbnailLoaded_ = function(event) {
  * @override
  */
 FileTable.prototype.fitColumn = function(index) {
-  var render = this.columnModel.getRenderFunction(index);
-  var MAXIMUM_ROWS_TO_MEASURE = 1000;
+  const render = this.columnModel.getRenderFunction(index);
+  const MAXIMUM_ROWS_TO_MEASURE = 1000;
 
   // Create a temporaty list item, put all cells into it and measure its
   // width. Then remove the item. It fits "list > *" CSS rules.
-  var container = this.ownerDocument.createElement('li');
+  const container = this.ownerDocument.createElement('li');
   container.style.display = 'inline-block';
   container.style.textAlign = 'start';
   // The container will have width of the longest cell.
   container.style.webkitBoxOrient = 'vertical';
 
   // Select at most MAXIMUM_ROWS_TO_MEASURE items around visible area.
-  var items = this.list.getItemsInViewPort(this.list.scrollTop,
+  const items = this.list.getItemsInViewPort(this.list.scrollTop,
                                            this.list.clientHeight);
-  var firstIndex = Math.floor(Math.max(0,
+  const firstIndex = Math.floor(Math.max(0,
       (items.last + items.first - MAXIMUM_ROWS_TO_MEASURE) / 2));
-  var lastIndex = Math.min(this.dataModel.length,
+  const lastIndex = Math.min(this.dataModel.length,
                            firstIndex + MAXIMUM_ROWS_TO_MEASURE);
-  for (var i = firstIndex; i < lastIndex; i++) {
-    var item = this.dataModel.item(i);
-    var div = this.ownerDocument.createElement('div');
+  for (let i = firstIndex; i < lastIndex; i++) {
+    const item = this.dataModel.item(i);
+    const div = this.ownerDocument.createElement('div');
     div.className = 'table-row-cell';
     div.appendChild(render(item, this.columnModel.getId(index), this));
     container.appendChild(div);
   }
   this.list.appendChild(container);
-  var width = parseFloat(window.getComputedStyle(container).width);
+  const width = parseFloat(window.getComputedStyle(container).width);
   this.list.removeChild(container);
 
   this.columnModel.initializeColumnPos();
@@ -653,7 +653,7 @@ FileTable.prototype.setUseModificationByMeTime = function(
  *                   it is in the background.
  */
 FileTable.prototype.hasDragHitElement_ = function(event) {
-  var pos = DragSelector.getScrolledPosition(this.list, event);
+  const pos = DragSelector.getScrolledPosition(this.list, event);
   return this.list.getHitElements(pos.x, pos.y).length !== 0;
 };
 
@@ -678,7 +678,7 @@ FileTable.prototype.shouldStartDragSelection_ = function(event) {
   }
 
   // If the position values are negative, it points the out of list.
-  var pos = DragSelector.getScrolledPosition(this.list, event);
+  const pos = DragSelector.getScrolledPosition(this.list, event);
   if (!pos) {
     return false;
   }
@@ -687,9 +687,9 @@ FileTable.prototype.shouldStartDragSelection_ = function(event) {
   }
 
   // If the item index is out of range, it should start the drag selection.
-  var itemHeight = this.list.measureItem().height;
+  const itemHeight = this.list.measureItem().height;
   // Faster alternative to Math.floor for non-negative numbers.
-  var itemIndex = ~~(pos.y / itemHeight);
+  const itemIndex = ~~(pos.y / itemHeight);
   if (itemIndex >= this.list.dataModel.length) {
     return true;
   }
@@ -702,7 +702,7 @@ FileTable.prototype.shouldStartDragSelection_ = function(event) {
 
   // If the horizontal value is not hit to column, it should start the drag
   // selection.
-  var hitColumn = this.columnModel.getHitColumn(pos.x);
+  const hitColumn = this.columnModel.getHitColumn(pos.x);
   if (!hitColumn) {
     return true;
   }
@@ -710,19 +710,19 @@ FileTable.prototype.shouldStartDragSelection_ = function(event) {
   // Check if the point is on the column contents or not.
   switch (this.columnModel.columns_[hitColumn.index].id) {
     case 'name':
-      var item = this.list.getListItemByIndex(itemIndex);
+      const item = this.list.getListItemByIndex(itemIndex);
       if (!item) {
         return false;
       }
 
-      var spanElement = item.querySelector('.filename-label span');
-      var spanRect = spanElement.getBoundingClientRect();
+      const spanElement = item.querySelector('.filename-label span');
+      const spanRect = spanElement.getBoundingClientRect();
       // The this.list.cachedBounds_ object is set by
       // DragSelector.getScrolledPosition.
       if (!this.list.cachedBounds) {
         return true;
       }
-      var textRight =
+      const textRight =
           spanRect.left - this.list.cachedBounds.left + spanRect.width;
       return textRight <= hitColumn.hitPosition;
     default:
@@ -742,13 +742,13 @@ FileTable.prototype.shouldStartDragSelection_ = function(event) {
  * @private
  */
 FileTable.prototype.renderName_ = function(entry, columnId, table) {
-  var label = /** @type {!HTMLDivElement} */
+  const label = /** @type {!HTMLDivElement} */
       (this.ownerDocument.createElement('div'));
 
-  var mimeType = this.metadataModel_.getCache([entry],
+  const mimeType = this.metadataModel_.getCache([entry],
       ['contentMimeType'])[0].contentMimeType;
   const locationInfo = this.volumeManager_.getLocationInfo(entry);
-  var icon = filelist.renderFileTypeIcon(
+  const icon = filelist.renderFileTypeIcon(
       this.ownerDocument, entry, locationInfo, mimeType);
   if (FileType.isImage(entry, mimeType) || FileType.isVideo(entry, mimeType) ||
       FileType.isAudio(entry, mimeType) || FileType.isRaw(entry, mimeType)) {
@@ -774,7 +774,7 @@ FileTable.prototype.renderName_ = function(entry, columnId, table) {
  * @private
  */
 FileTable.prototype.renderSize_ = function(entry, columnId, table) {
-  var div = /** @type {!HTMLDivElement} */
+  const div = /** @type {!HTMLDivElement} */
       (this.ownerDocument.createElement('div'));
   div.className = 'size';
   this.updateSize_(div, entry);
@@ -790,10 +790,10 @@ FileTable.prototype.renderSize_ = function(entry, columnId, table) {
  * @private
  */
 FileTable.prototype.updateSize_ = function(div, entry) {
-  var metadata = this.metadataModel_.getCache(
+  const metadata = this.metadataModel_.getCache(
       [entry], ['size', 'hosted'])[0];
-  var size = metadata.size;
-  var hosted = metadata.hosted;
+  const size = metadata.size;
+  const hosted = metadata.hosted;
   div.textContent = this.formatter_.formatSize(size, hosted);
 };
 
@@ -807,7 +807,7 @@ FileTable.prototype.updateSize_ = function(div, entry) {
  * @private
  */
 FileTable.prototype.renderStatus_ = function(entry, columnId, table) {
-  var div = /** @type {!HTMLDivElement} */ (
+  const div = /** @type {!HTMLDivElement} */ (
       this.ownerDocument.createElement('div'));
   div.className = 'status status-icon';
   if (entry) {
@@ -833,7 +833,7 @@ FileTable.prototype.getImportStatus_ = function(entry, destination) {
     return Promise.resolve('unknown');
   }
   // For the compiler.
-  var fileEntry = /** @type {!FileEntry} */ (entry);
+  const fileEntry = /** @type {!FileEntry} */ (entry);
 
   return this.historyLoader_.getHistory()
       .then(
@@ -882,11 +882,11 @@ FileTable.prototype.updateStatus_ = function(div, entry) {
  * @private
  */
 FileTable.prototype.renderType_ = function(entry, columnId, table) {
-  var div = /** @type {!HTMLDivElement} */
+  const div = /** @type {!HTMLDivElement} */
       (this.ownerDocument.createElement('div'));
   div.className = 'type';
 
-  var mimeType = this.metadataModel_.getCache([entry],
+  const mimeType = this.metadataModel_.getCache([entry],
       ['contentMimeType'])[0].contentMimeType;
   div.textContent = FileListModel.getFileTypeString(
       FileType.getType(entry, mimeType));
@@ -909,7 +909,7 @@ FileTable.prototype.renderType_ = function(entry, columnId, table) {
  * @private
  */
 FileTable.prototype.renderDate_ = function(entry, columnId, table) {
-  var div = /** @type {!HTMLDivElement} */
+  const div = /** @type {!HTMLDivElement} */
       (this.ownerDocument.createElement('div'));
   div.className = 'date';
 
@@ -932,9 +932,9 @@ FileTable.prototype.updateDate_ = function(div, entry) {
     return;
   }
 
-  var item = this.metadataModel_.getCache(
+  const item = this.metadataModel_.getCache(
       [entry], ['modificationTime', 'modificationByMeTime'])[0];
-  var modTime = this.useModificationByMeTime_ ?
+  const modTime = this.useModificationByMeTime_ ?
       item.modificationByMeTime || item.modificationTime :
       item.modificationTime;
 
@@ -962,13 +962,13 @@ FileTable.prototype.updateFileMetadata = function(item, entry) {
  * @param {Array<Entry>} entries Entries to update.
  */
 FileTable.prototype.updateListItemsMetadata = function(type, entries) {
-  var urls = util.entriesToURLs(entries);
-  var forEachCell = function(selector, callback) {
-    var cells = this.querySelectorAll(selector);
-    for (var i = 0; i < cells.length; i++) {
-      var cell = cells[i];
-      var listItem = this.list_.getListItemAncestor(cell);
-      var entry = this.dataModel.item(listItem.listIndex);
+  const urls = util.entriesToURLs(entries);
+  const forEachCell = function(selector, callback) {
+    const cells = this.querySelectorAll(selector);
+    for (let i = 0; i < cells.length; i++) {
+      const cell = cells[i];
+      const listItem = this.list_.getListItemAncestor(cell);
+      const entry = this.dataModel.item(listItem.listIndex);
       if (entry && urls.indexOf(entry.toURL()) !== -1) {
         callback.call(this, cell, entry, listItem);
       }
@@ -1009,10 +1009,10 @@ FileTable.prototype.updateListItemsMetadata = function(type, entries) {
  * @private
  */
 FileTable.prototype.renderTableRow_ = function(baseRenderFunction, entry) {
-  var item = baseRenderFunction(entry, this);
-  var nameId = item.id + '-entry-name';
-  var sizeId = item.id + '-size';
-  var dateId = item.id + '-date';
+  const item = baseRenderFunction(entry, this);
+  const nameId = item.id + '-entry-name';
+  const sizeId = item.id + '-size';
+  const dateId = item.id + '-date';
   filelist.decorateListItem(item, entry, this.metadataModel_);
   item.setAttribute('file-name', entry.name);
   item.querySelector('.entry-name').setAttribute('id', nameId);
@@ -1029,12 +1029,12 @@ FileTable.prototype.renderTableRow_ = function(baseRenderFunction, entry) {
  * @private
  */
 FileTable.prototype.renderThumbnail_ = function(entry) {
-  var box = /** @type {!HTMLDivElement} */
+  const box = /** @type {!HTMLDivElement} */
       (this.ownerDocument.createElement('div'));
   box.className = 'detail-thumbnail';
 
   // Set thumbnail if it's already in cache.
-  var thumbnailData = this.listThumbnailLoader_ ?
+  const thumbnailData = this.listThumbnailLoader_ ?
       this.listThumbnailLoader_.getThumbnailFromCache(entry) : null;
   if (thumbnailData && thumbnailData.dataUrl) {
     this.setThumbnailImage_(
@@ -1054,9 +1054,9 @@ FileTable.prototype.renderThumbnail_ = function(entry) {
  * @private
  */
 FileTable.prototype.setThumbnailImage_ = function(box, dataUrl, shouldAnimate) {
-  var oldThumbnails = box.querySelectorAll('.thumbnail');
+  const oldThumbnails = box.querySelectorAll('.thumbnail');
 
-  var thumbnail = box.ownerDocument.createElement('div');
+  const thumbnail = box.ownerDocument.createElement('div');
   thumbnail.classList.add('thumbnail');
   thumbnail.style.backgroundImage = 'url(' + dataUrl + ')';
   thumbnail.addEventListener('animationend', function() {
@@ -1064,7 +1064,7 @@ FileTable.prototype.setThumbnailImage_ = function(box, dataUrl, shouldAnimate) {
     // again when an item is attached to the dom again.
     thumbnail.classList.remove('animate');
 
-    for (var i = 0; i < oldThumbnails.length; i++) {
+    for (let i = 0; i < oldThumbnails.length; i++) {
       if (box.contains(oldThumbnails[i])) {
         box.removeChild(oldThumbnails[i]);
       }
@@ -1084,9 +1084,9 @@ FileTable.prototype.setThumbnailImage_ = function(box, dataUrl, shouldAnimate) {
  * @private
  */
 FileTable.prototype.clearThumbnailImage_ = function(box) {
-  var oldThumbnails = box.querySelectorAll('.thumbnail');
+  const oldThumbnails = box.querySelectorAll('.thumbnail');
 
-  for (var i = 0; i < oldThumbnails.length; i++) {
+  for (let i = 0; i < oldThumbnails.length; i++) {
     box.removeChild(oldThumbnails[i]);
   }
 };
@@ -1097,7 +1097,7 @@ FileTable.prototype.clearThumbnailImage_ = function(box) {
  * @private
  */
 FileTable.prototype.renderCheckmark_ = function() {
-  var checkmark = /** @type {!HTMLDivElement} */
+  const checkmark = /** @type {!HTMLDivElement} */
       (this.ownerDocument.createElement('div'));
   checkmark.className = 'detail-checkmark';
   return checkmark;

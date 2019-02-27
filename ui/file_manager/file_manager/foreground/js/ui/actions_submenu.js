@@ -33,7 +33,7 @@ function ActionsSubmenu(menu) {
  * @private
  */
 ActionsSubmenu.prototype.addMenuItem_ = function(options) {
-  var menuItem = this.menu_.addMenuItem(options);
+  const menuItem = this.menu_.addMenuItem(options);
   menuItem.parentNode.insertBefore(menuItem, this.separator_);
   this.items_.push(menuItem);
   return menuItem;
@@ -48,9 +48,9 @@ ActionsSubmenu.prototype.setActionsModel = function(actionsModel) {
   });
   this.items_ = [];
 
-  var remainingActions = {};
+  const remainingActions = {};
   if (actionsModel) {
-    var actions = actionsModel.getActions();
+    const actions = actionsModel.getActions();
      Object.keys(actions).forEach(
         function(key) {
           remainingActions[key] = actions[key];
@@ -58,9 +58,9 @@ ActionsSubmenu.prototype.setActionsModel = function(actionsModel) {
   }
 
   // First add the sharing item (if available).
-  var shareAction = remainingActions[ActionsModel.CommonActionId.SHARE];
+  const shareAction = remainingActions[ActionsModel.CommonActionId.SHARE];
   if (shareAction) {
-    var menuItem = this.addMenuItem_({});
+    const menuItem = this.addMenuItem_({});
     menuItem.command = '#share';
     menuItem.classList.toggle('hide-on-toolbar', true);
     delete remainingActions[ActionsModel.CommonActionId.SHARE];
@@ -68,10 +68,10 @@ ActionsSubmenu.prototype.setActionsModel = function(actionsModel) {
   util.queryDecoratedElement('#share', cr.ui.Command).canExecuteChange();
 
   // Then add the Manage in Drive item (if available).
-  var manageInDriveAction =
+  const manageInDriveAction =
       remainingActions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE];
   if (manageInDriveAction) {
-    var menuItem = this.addMenuItem_({});
+    const menuItem = this.addMenuItem_({});
     menuItem.command = '#manage-in-drive';
     menuItem.classList.toggle('hide-on-toolbar', true);
     delete remainingActions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE];
@@ -87,12 +87,12 @@ ActionsSubmenu.prototype.setActionsModel = function(actionsModel) {
 
   // Both save-for-offline and offline-not-necessary are handled by the single
   // #toggle-pinned command.
-  var saveForOfflineAction = remainingActions[
+  const saveForOfflineAction = remainingActions[
       ActionsModel.CommonActionId.SAVE_FOR_OFFLINE];
-  var offlineNotNecessaryAction = remainingActions[
+  const offlineNotNecessaryAction = remainingActions[
       ActionsModel.CommonActionId.OFFLINE_NOT_NECESSARY];
   if (saveForOfflineAction || offlineNotNecessaryAction) {
-    var menuItem = this.addMenuItem_({});
+    const menuItem = this.addMenuItem_({});
     menuItem.command = '#toggle-pinned';
     if (saveForOfflineAction) {
       delete remainingActions[ActionsModel.CommonActionId.SAVE_FOR_OFFLINE];
@@ -108,9 +108,9 @@ ActionsSubmenu.prototype.setActionsModel = function(actionsModel) {
 
   // Process all the rest as custom actions.
   Object.keys(remainingActions).forEach(function(key) {
-    var action = remainingActions[key];
-    var options = { label: action.getTitle() };
-    var menuItem = this.addMenuItem_(options);
+    const action = remainingActions[key];
+    const options = { label: action.getTitle() };
+    const menuItem = this.addMenuItem_(options);
 
     menuItem.addEventListener('activate', function() {
       action.execute();
