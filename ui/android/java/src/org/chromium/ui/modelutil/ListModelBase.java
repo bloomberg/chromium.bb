@@ -55,6 +55,17 @@ public class ListModelBase<T, P> extends ListObservableImpl<P> implements Simple
     }
 
     /**
+     * Inserts a given {@code item} at position {@code position} of the held {@link List}.
+     * Notifies observers about the inserted item.
+     * @param position The position of the item to be inserted.
+     * @param item The item to be inserted.
+     */
+    public void add(int position, T item) {
+        mItems.add(position, item);
+        notifyItemInserted(position);
+    }
+
+    /**
      * Appends all given {@code items} to the last position of the held {@link List}.
      * Notifies observers about the inserted items.
      * @param items The items to be stored.
