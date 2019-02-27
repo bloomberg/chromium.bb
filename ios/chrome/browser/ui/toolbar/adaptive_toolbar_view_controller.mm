@@ -150,7 +150,7 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
   } else if (self.view.progressBar.hidden &&
              !IsRegularXRegularSizeClass(self) && !self.isNTP) {
     [self.view.progressBar setProgress:0];
-    [self.view.progressBar setHidden:NO animated:YES completion:nil];
+    [self updateProgressBarVisibility];
     // Layout if needed the progress bar to avoid having the progress bar going
     // backward when opening a page from the NTP.
     [self.view.progressBar layoutIfNeeded];
@@ -227,16 +227,12 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
 #pragma mark - Protected
 
 - (void)stopProgressBar {
-  __weak MDCProgressView* weakProgressBar = self.view.progressBar;
   __weak AdaptiveToolbarViewController* weakSelf = self;
-  [self.view.progressBar
-      setProgress:1
-         animated:YES
-       completion:^(BOOL finished) {
-         if (!weakSelf.loading) {
-           [weakProgressBar setHidden:YES animated:YES completion:nil];
-         }
-       }];
+  [self.view.progressBar setProgress:1
+                            animated:YES
+                          completion:^(BOOL finished) {
+                            [weakSelf updateProgressBarVisibility];
+                          }];
 }
 
 #pragma mark - PopupMenuUIUpdating
@@ -314,6 +310,25 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
 }
 
 #pragma mark - Private
+
+// Makes sure that the visibility of the progress bar is matching the one which
+// is expected.
+- (void)updateProgressBarVisibility {
+  __weak __typeof(self) weakSelf = self;
+  if (self.loading && self.view.progressBar.hidden) {
+    [self.view.progressBar setHidden:NO
+                            animated:YES
+                          completion:^(BOOL finished) {
+                            [weakSelf updateProgressBarVisibility];
+                          }];
+  } else if (!self.loading && !self.view.progressBar.hidden) {
+    [self.view.progressBar setHidden:YES
+                            animated:YES
+                          completion:^(BOOL finished) {
+                            [weakSelf updateProgressBarVisibility];
+                          }];
+  }
+}
 
 // Updates all buttons visibility to match any recent WebState or SizeClass
 // change.
