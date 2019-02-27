@@ -704,13 +704,13 @@ void CheckClientDownloadRequest::SendRequest() {
     request->mutable_archived_binary()->Swap(&archived_binaries_);
   request->set_archive_file_count(file_count_);
   request->set_archive_directory_count(directory_count_);
+  request->set_request_ap_verdicts(
+      base::FeatureList::IsEnabled(kUseAPDownloadProtection));
+
   if (!request->SerializeToString(&client_download_request_data_)) {
     FinishRequest(DownloadCheckResult::UNKNOWN, REASON_INVALID_REQUEST_PROTO);
     return;
   }
-
-  request->set_request_ap_verdicts(
-      base::FeatureList::IsEnabled(kUseAPDownloadProtection));
 
   // User can manually blacklist a sha256 via flag, for testing.
   // This is checked just before the request is sent, to verify the request

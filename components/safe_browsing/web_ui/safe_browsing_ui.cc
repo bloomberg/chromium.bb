@@ -491,6 +491,8 @@ std::string SerializeClientDownloadRequest(const ClientDownloadRequest& cdr) {
   dict.SetInteger("archive_file_count", cdr.archive_file_count());
   dict.SetInteger("archive_directory_count", cdr.archive_directory_count());
 
+  dict.SetBoolean("request_ap_verdicts", cdr.request_ap_verdicts());
+
   base::Value* request_tree = &dict;
   std::string request_serialized;
   JSONStringValueSerializer serializer(&request_serialized);
