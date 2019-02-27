@@ -394,7 +394,9 @@ bool ExtensionFrameHelper::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void ExtensionFrameHelper::OnExtensionValidateMessagePort(const PortId& id) {
+void ExtensionFrameHelper::OnExtensionValidateMessagePort(int worker_thread_id,
+                                                          const PortId& id) {
+  DCHECK_EQ(kMainThreadId, worker_thread_id);
   extension_dispatcher_->bindings_system()
       ->GetMessagingService()
       ->ValidateMessagePort(extension_dispatcher_->script_context_set(), id,
@@ -402,10 +404,12 @@ void ExtensionFrameHelper::OnExtensionValidateMessagePort(const PortId& id) {
 }
 
 void ExtensionFrameHelper::OnExtensionDispatchOnConnect(
+    int worker_thread_id,
     const PortId& target_port_id,
     const std::string& channel_name,
     const ExtensionMsg_TabConnectionInfo& source,
     const ExtensionMsg_ExternalConnectionInfo& info) {
+  DCHECK_EQ(kMainThreadId, worker_thread_id);
   extension_dispatcher_->bindings_system()
       ->GetMessagingService()
       ->DispatchOnConnect(extension_dispatcher_->script_context_set(),
@@ -413,8 +417,10 @@ void ExtensionFrameHelper::OnExtensionDispatchOnConnect(
                           render_frame());
 }
 
-void ExtensionFrameHelper::OnExtensionDeliverMessage(const PortId& target_id,
+void ExtensionFrameHelper::OnExtensionDeliverMessage(int worker_thread_id,
+                                                     const PortId& target_id,
                                                      const Message& message) {
+  DCHECK_EQ(kMainThreadId, worker_thread_id);
   extension_dispatcher_->bindings_system()
       ->GetMessagingService()
       ->DeliverMessage(extension_dispatcher_->script_context_set(), target_id,
@@ -422,8 +428,10 @@ void ExtensionFrameHelper::OnExtensionDeliverMessage(const PortId& target_id,
 }
 
 void ExtensionFrameHelper::OnExtensionDispatchOnDisconnect(
+    int worker_thread_id,
     const PortId& id,
     const std::string& error_message) {
+  DCHECK_EQ(kMainThreadId, worker_thread_id);
   extension_dispatcher_->bindings_system()
       ->GetMessagingService()
       ->DispatchOnDisconnect(extension_dispatcher_->script_context_set(), id,

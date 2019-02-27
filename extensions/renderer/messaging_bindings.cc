@@ -17,8 +17,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/values.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/worker_thread.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/api/messaging/messaging_endpoint.h"
+#include "extensions/common/api/messaging/port_context.h"
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/extension_frame_helper.h"
@@ -49,6 +51,10 @@ namespace {
 // A global map between ScriptContext and MessagingBindings.
 base::LazyInstance<std::map<ScriptContext*, MessagingBindings*>>::
     DestructorAtExit g_messaging_map = LAZY_INSTANCE_INITIALIZER;
+
+bool IsWorkerThread() {
+  return content::WorkerThread::GetCurrentId() != kMainThreadId;
+}
 
 }  // namespace
 
@@ -174,6 +180,9 @@ void MessagingBindings::BindToGC(
 
 void MessagingBindings::OpenChannelToExtension(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
+  // TODO(crbug.com/925918): Support messaging from a Service Worker.
+  DCHECK(!IsWorkerThread());
+
   content::RenderFrame* render_frame = context()->GetRenderFrame();
   if (!render_frame)
     return;
@@ -212,7 +221,8 @@ void MessagingBindings::OpenChannelToExtension(
     SCOPED_UMA_HISTOGRAM_TIMER(
         "Extensions.Messaging.SetPortIdTime.Extension");
     render_frame->Send(new ExtensionHostMsg_OpenChannelToExtension(
-        render_frame->GetRoutingID(), info, channel_name, port_id));
+        PortContext::ForFrame(render_frame->GetRoutingID()), info, channel_name,
+        port_id));
   }
 
   ++num_extension_ports_;
@@ -226,6 +236,9 @@ void MessagingBindings::OpenChannelToNativeApp(
   CHECK(args[0]->IsString());
   // This should be checked by our function routing code.
   CHECK(context()->GetAvailability("runtime.connectNative").is_available());
+
+  // TODO(crbug.com/925918): Support native messaging for Service Workers.
+  DCHECK(!IsWorkerThread());
 
   content::RenderFrame* render_frame = context()->GetRenderFrame();
   if (!render_frame)
@@ -242,7 +255,8 @@ void MessagingBindings::OpenChannelToNativeApp(
     SCOPED_UMA_HISTOGRAM_TIMER(
         "Extensions.Messaging.SetPortIdTime.NativeApp");
     render_frame->Send(new ExtensionHostMsg_OpenChannelToNativeApp(
-        render_frame->GetRoutingID(), native_app_name, port_id));
+        PortContext::ForFrame(render_frame->GetRoutingID()), native_app_name,
+        port_id));
   }
 
   args.GetReturnValue().Set(static_cast<int32_t>(js_id));
@@ -250,6 +264,9 @@ void MessagingBindings::OpenChannelToNativeApp(
 
 void MessagingBindings::OpenChannelToTab(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
+  // TODO(crbug.com/925918): Support Service worker to tab messaging.
+  DCHECK(!IsWorkerThread());
+
   content::RenderFrame* render_frame = context()->GetRenderFrame();
   if (!render_frame)
     return;
@@ -287,8 +304,8 @@ void MessagingBindings::OpenChannelToTab(
   {
     SCOPED_UMA_HISTOGRAM_TIMER("Extensions.Messaging.SetPortIdTime.Tab");
     render_frame->Send(new ExtensionHostMsg_OpenChannelToTab(
-        render_frame->GetRoutingID(), info, extension_id, channel_name,
-        port_id));
+        PortContext::ForFrame(render_frame->GetRoutingID()), info, extension_id,
+        channel_name, port_id));
   }
 
   args.GetReturnValue().Set(static_cast<int32_t>(js_id));

@@ -153,7 +153,8 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
     RecordIncludeTlsChannelIdBehavior(include_tls_channel_id);
     content::RenderFrame* render_frame = script_context->GetRenderFrame();
     DCHECK(render_frame);
-    int routing_id = render_frame->GetRoutingID();
+    PortContext frame_context =
+        PortContext::ForFrame(render_frame->GetRoutingID());
     const Extension* extension = script_context->extension();
 
     switch (target.type) {
@@ -171,7 +172,7 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
         info.source_url = script_context->url();
 
         render_thread_->Send(new ExtensionHostMsg_OpenChannelToExtension(
-            routing_id, info, channel_name, port_id));
+            frame_context, info, channel_name, port_id));
         break;
       }
       case MessageTarget::TAB: {
@@ -182,26 +183,26 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
         info.tab_id = *target.tab_id;
         info.frame_id = *target.frame_id;
         render_frame->Send(new ExtensionHostMsg_OpenChannelToTab(
-            routing_id, info, extension->id(), channel_name, port_id));
+            frame_context, info, extension->id(), channel_name, port_id));
         break;
       }
       case MessageTarget::NATIVE_APP:
         render_frame->Send(new ExtensionHostMsg_OpenChannelToNativeApp(
-            routing_id, *target.native_application_name, port_id));
+            frame_context, *target.native_application_name, port_id));
         break;
     }
   }
 
   void SendOpenMessagePort(int routing_id, const PortId& port_id) override {
-    render_thread_->Send(
-        new ExtensionHostMsg_OpenMessagePort(routing_id, port_id));
+    render_thread_->Send(new ExtensionHostMsg_OpenMessagePort(
+        PortContext::ForFrame(routing_id), port_id));
   }
 
   void SendCloseMessagePort(int routing_id,
                             const PortId& port_id,
                             bool close_channel) override {
     render_thread_->Send(new ExtensionHostMsg_CloseMessagePort(
-        routing_id, port_id, close_channel));
+        PortContext::ForFrame(routing_id), port_id, close_channel));
   }
 
   void SendPostMessageToPort(const PortId& port_id,

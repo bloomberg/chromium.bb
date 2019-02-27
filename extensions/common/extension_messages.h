@@ -19,6 +19,7 @@
 #include "content/public/common/socket_permission_request.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/api/messaging/messaging_endpoint.h"
+#include "extensions/common/api/messaging/port_context.h"
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/common_param_traits.h"
 #include "extensions/common/constants.h"
@@ -249,6 +250,21 @@ IPC_STRUCT_TRAITS_BEGIN(content::SocketPermissionRequest)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(host)
   IPC_STRUCT_TRAITS_MEMBER(port)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(extensions::PortContext::FrameContext)
+  IPC_STRUCT_TRAITS_MEMBER(routing_id)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(extensions::PortContext::WorkerContext)
+  IPC_STRUCT_TRAITS_MEMBER(thread_id)
+  IPC_STRUCT_TRAITS_MEMBER(version_id)
+  IPC_STRUCT_TRAITS_MEMBER(extension_id)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(extensions::PortContext)
+  IPC_STRUCT_TRAITS_MEMBER(frame)
+  IPC_STRUCT_TRAITS_MEMBER(worker)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(extensions::SocketPermissionEntry)
@@ -649,25 +665,35 @@ IPC_MESSAGE_ROUTED2(ExtensionMsg_GetAppInstallStateResponse,
                     std::string /* state */,
                     int32_t /* callback_id */)
 
-// Check whether the Port for extension messaging exists in the frame. If the
-// port ID is unknown, the frame replies with ExtensionHostMsg_CloseMessagePort.
-IPC_MESSAGE_ROUTED1(ExtensionMsg_ValidateMessagePort,
+// Check whether the Port for extension messaging exists in a frame or a Service
+// Worker. If the port ID is unknown, the frame replies with
+// ExtensionHostMsg_CloseMessagePort.
+IPC_MESSAGE_ROUTED2(ExtensionMsg_ValidateMessagePort,
+                    // For main thread, this is kMainThreadId.
+                    int /* worker_thread_id */,
                     extensions::PortId /* port_id */)
 
 // Dispatch the Port.onConnect event for message channels.
-IPC_MESSAGE_ROUTED4(ExtensionMsg_DispatchOnConnect,
+IPC_MESSAGE_ROUTED5(ExtensionMsg_DispatchOnConnect,
+                    // For main thread, this is kMainThreadId.
+                    // TODO(lazyboy): Can this be base::Optional<int> instead?
+                    int /* worker_thread_id */,
                     extensions::PortId /* target_port_id */,
                     std::string /* channel_name */,
                     ExtensionMsg_TabConnectionInfo /* source */,
                     ExtensionMsg_ExternalConnectionInfo)
 
 // Deliver a message sent with ExtensionHostMsg_PostMessage.
-IPC_MESSAGE_ROUTED2(ExtensionMsg_DeliverMessage,
+IPC_MESSAGE_ROUTED3(ExtensionMsg_DeliverMessage,
+                    // For main thread, this is kMainThreadId.
+                    int /* worker_thread_id */,
                     extensions::PortId /* target_port_id */,
                     extensions::Message)
 
 // Dispatch the Port.onDisconnect event for message channels.
-IPC_MESSAGE_ROUTED2(ExtensionMsg_DispatchOnDisconnect,
+IPC_MESSAGE_ROUTED3(ExtensionMsg_DispatchOnDisconnect,
+                    // For main thread, this is kMainThreadId.
+                    int /* worker_thread_id */,
                     extensions::PortId /* port_id */,
                     std::string /* error_message */)
 
@@ -791,20 +817,20 @@ IPC_MESSAGE_ROUTED1(ExtensionHostMsg_EventAck, int /* message_id */)
 // the given ID. This responds asynchronously with ExtensionMsg_AssignPortId.
 // If an error occurred, the opener will be notified asynchronously.
 IPC_MESSAGE_CONTROL4(ExtensionHostMsg_OpenChannelToExtension,
-                     int /* frame_routing_id */,
+                     extensions::PortContext /* source_context */,
                      ExtensionMsg_ExternalConnectionInfo,
                      std::string /* channel_name */,
                      extensions::PortId /* port_id */)
 
 IPC_MESSAGE_CONTROL3(ExtensionHostMsg_OpenChannelToNativeApp,
-                     int /* frame_routing_id */,
+                     extensions::PortContext /* source_context */,
                      std::string /* native_app_name */,
                      extensions::PortId /* port_id */)
 
 // Get a port handle to the given tab.  The handle can be used for sending
 // messages to the extension.
 IPC_MESSAGE_CONTROL5(ExtensionHostMsg_OpenChannelToTab,
-                     int /* frame_routing_id */,
+                     extensions::PortContext /* source_context */,
                      ExtensionMsg_TabTargetConnectionInfo,
                      std::string /* extension_id */,
                      std::string /* channel_name */,
@@ -813,13 +839,13 @@ IPC_MESSAGE_CONTROL5(ExtensionHostMsg_OpenChannelToTab,
 // Sent in response to ExtensionMsg_DispatchOnConnect when the port is accepted.
 // The handle is the value returned by ExtensionHostMsg_OpenChannelTo*.
 IPC_MESSAGE_CONTROL2(ExtensionHostMsg_OpenMessagePort,
-                     int /* frame_routing_id */,
+                     extensions::PortContext /* port_context */,
                      extensions::PortId /* port_id */)
 
 // Sent in response to ExtensionMsg_DispatchOnConnect and whenever the port is
 // closed. The handle is the value returned by ExtensionHostMsg_OpenChannelTo*.
 IPC_MESSAGE_CONTROL3(ExtensionHostMsg_CloseMessagePort,
-                     int /* frame_routing_id */,
+                     extensions::PortContext /* port_context */,
                      extensions::PortId /* port_id */,
                      bool /* force_close */)
 
