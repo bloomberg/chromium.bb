@@ -214,6 +214,7 @@ modules_idl_files =
           "nfc/nfc.idl",
           "notifications/notification.idl",
           "notifications/notification_event.idl",
+          "notifications/timestamp_trigger.idl",
           "payments/abort_payment_event.idl",
           "payments/can_make_payment_event.idl",
           "payments/merchant_validation_event.idl",

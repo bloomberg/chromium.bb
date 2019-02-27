@@ -1246,6 +1246,10 @@ interface TextEncoderStream
     getter readable
     getter writable
     method constructor
+interface TimestampTrigger
+    attribute @@toStringTag
+    getter timestamp
+    method constructor
 interface TransformStream
     attribute @@toStringTag
     getter readable

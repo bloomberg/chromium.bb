@@ -7578,6 +7578,10 @@ interface TimeRanges
     method constructor
     method end
     method start
+interface TimestampTrigger
+    attribute @@toStringTag
+    getter timestamp
+    method constructor
 interface Touch
     attribute @@toStringTag
     getter clientX
