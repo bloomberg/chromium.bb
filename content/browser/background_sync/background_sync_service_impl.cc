@@ -14,28 +14,6 @@
 
 namespace content {
 
-namespace {
-
-// TODO(iclelland): Move these converters to mojo::TypeConverter template
-// specializations.
-
-BackgroundSyncRegistrationOptions ToBackgroundSyncRegistrationOptions(
-    const blink::mojom::SyncRegistrationPtr& in) {
-  BackgroundSyncRegistrationOptions out;
-
-  out.tag = in->tag;
-  return out;
-}
-
-blink::mojom::SyncRegistrationPtr ToMojoRegistration(
-    const BackgroundSyncRegistration& in) {
-  blink::mojom::SyncRegistrationPtr out(blink::mojom::SyncRegistration::New());
-  out->tag = in.options()->tag;
-  return out;
-}
-
-}  // namespace
-
 #define COMPILE_ASSERT_MATCHING_ENUM(mojo_name, manager_name) \
   static_assert(static_cast<int>(blink::mojo_name) ==         \
                     static_cast<int>(content::manager_name),  \
@@ -82,19 +60,16 @@ void BackgroundSyncServiceImpl::OnConnectionError() {
 }
 
 void BackgroundSyncServiceImpl::Register(
-    blink::mojom::SyncRegistrationPtr options,
+    blink::mojom::SyncRegistrationOptionsPtr options,
     int64_t sw_registration_id,
     RegisterCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  BackgroundSyncRegistrationOptions manager_options =
-      ToBackgroundSyncRegistrationOptions(options);
 
   BackgroundSyncManager* background_sync_manager =
       background_sync_context_->background_sync_manager();
   DCHECK(background_sync_manager);
   background_sync_manager->Register(
-      sw_registration_id, manager_options,
+      sw_registration_id, *options,
       base::BindOnce(&BackgroundSyncServiceImpl::OnRegisterResult,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -132,16 +107,16 @@ void BackgroundSyncServiceImpl::OnRegisterResult(
   if (status != BACKGROUND_SYNC_STATUS_OK) {
     std::move(callback).Run(
         static_cast<blink::mojom::BackgroundSyncError>(status),
-        blink::mojom::SyncRegistrationPtr(
-            blink::mojom::SyncRegistration::New()));
+        blink::mojom::SyncRegistrationOptions::New());
     return;
   }
 
   DCHECK(result);
-  blink::mojom::SyncRegistrationPtr mojoResult = ToMojoRegistration(*result);
+  blink::mojom::SyncRegistrationOptionsPtr mojo_options =
+      blink::mojom::SyncRegistrationOptions::New(result->options()->tag);
   std::move(callback).Run(
       static_cast<blink::mojom::BackgroundSyncError>(status),
-      std::move(mojoResult));
+      std::move(mojo_options));
 }
 
 void BackgroundSyncServiceImpl::OnGetRegistrationsResult(
@@ -151,9 +126,10 @@ void BackgroundSyncServiceImpl::OnGetRegistrationsResult(
         result_registrations) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  std::vector<blink::mojom::SyncRegistrationPtr> mojo_registrations;
+  std::vector<blink::mojom::SyncRegistrationOptionsPtr> mojo_registrations;
   for (const auto& registration : result_registrations)
-    mojo_registrations.push_back(ToMojoRegistration(*registration));
+    mojo_registrations.push_back(blink::mojom::SyncRegistrationOptions::New(
+        registration->options()->tag));
 
   std::move(callback).Run(
       static_cast<blink::mojom::BackgroundSyncError>(status),

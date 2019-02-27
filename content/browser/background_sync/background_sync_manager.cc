@@ -20,7 +20,6 @@
 #include "build/build_config.h"
 #include "content/browser/background_sync/background_sync_metrics.h"
 #include "content/browser/background_sync/background_sync_network_observer.h"
-#include "content/browser/background_sync/background_sync_registration_options.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_storage.h"
@@ -204,7 +203,7 @@ BackgroundSyncManager::~BackgroundSyncManager() {
 
 void BackgroundSyncManager::Register(
     int64_t sw_registration_id,
-    const BackgroundSyncRegistrationOptions& options,
+    blink::mojom::SyncRegistrationOptions options,
     StatusAndRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -218,7 +217,7 @@ void BackgroundSyncManager::Register(
       CacheStorageSchedulerOp::kBackgroundSync,
       base::BindOnce(&BackgroundSyncManager::RegisterCheckIfHasMainFrame,
                      weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
-                     options,
+                     std::move(options),
                      op_scheduler_.WrapCallbackToRunNext(std::move(callback))));
 }
 
@@ -420,7 +419,8 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
         BackgroundSyncRegistration* registration =
             &registrations->registration_map[registration_proto.tag()];
 
-        BackgroundSyncRegistrationOptions* options = registration->options();
+        blink::mojom::SyncRegistrationOptions* options =
+            registration->options();
         options->tag = registration_proto.tag();
 
         registration->set_num_attempts(registration_proto.num_attempts());
@@ -437,7 +437,7 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
 
 void BackgroundSyncManager::RegisterCheckIfHasMainFrame(
     int64_t sw_registration_id,
-    const BackgroundSyncRegistrationOptions& options,
+    blink::mojom::SyncRegistrationOptions options,
     StatusAndRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -453,12 +453,12 @@ void BackgroundSyncManager::RegisterCheckIfHasMainFrame(
       url::Origin::Create(sw_registration->scope().GetOrigin()),
       base::BindOnce(&BackgroundSyncManager::RegisterDidCheckIfMainFrame,
                      weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
-                     options, std::move(callback)));
+                     std::move(options), std::move(callback)));
 }
 
 void BackgroundSyncManager::RegisterDidCheckIfMainFrame(
     int64_t sw_registration_id,
-    const BackgroundSyncRegistrationOptions& options,
+    blink::mojom::SyncRegistrationOptions options,
     StatusAndRegistrationCallback callback,
     bool has_main_frame_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -468,12 +468,12 @@ void BackgroundSyncManager::RegisterDidCheckIfMainFrame(
                               std::move(callback));
     return;
   }
-  RegisterImpl(sw_registration_id, options, std::move(callback));
+  RegisterImpl(sw_registration_id, std::move(options), std::move(callback));
 }
 
 void BackgroundSyncManager::RegisterImpl(
     int64_t sw_registration_id,
-    const BackgroundSyncRegistrationOptions& options,
+    blink::mojom::SyncRegistrationOptions options,
     StatusAndRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -504,12 +504,12 @@ void BackgroundSyncManager::RegisterImpl(
                      url::Origin::Create(sw_registration->scope().GetOrigin())),
       base::BindOnce(&BackgroundSyncManager::RegisterDidAskForPermission,
                      weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
-                     options, std::move(callback)));
+                     std::move(options), std::move(callback)));
 }
 
 void BackgroundSyncManager::RegisterDidAskForPermission(
     int64_t sw_registration_id,
-    const BackgroundSyncRegistrationOptions& options,
+    blink::mojom::SyncRegistrationOptions options,
     StatusAndRegistrationCallback callback,
     blink::mojom::PermissionStatus permission_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -542,7 +542,7 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
     DCHECK(existing_registration->options()->Equals(options));
 
     BackgroundSyncMetrics::RegistrationCouldFire registration_could_fire =
-        AreOptionConditionsMet(options)
+        AreOptionConditionsMet()
             ? BackgroundSyncMetrics::REGISTRATION_COULD_FIRE
             : BackgroundSyncMetrics::REGISTRATION_COULD_NOT_FIRE;
     BackgroundSyncMetrics::CountRegisterSuccess(
@@ -564,7 +564,7 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
 
   BackgroundSyncRegistration new_registration;
 
-  *new_registration.options() = options;
+  *new_registration.options() = std::move(options);
 
   AddActiveRegistration(
       sw_registration_id,
@@ -708,7 +708,7 @@ void BackgroundSyncManager::RegisterDidStore(
   }
 
   BackgroundSyncMetrics::RegistrationCouldFire registration_could_fire =
-      AreOptionConditionsMet(*new_registration.options())
+      AreOptionConditionsMet()
           ? BackgroundSyncMetrics::REGISTRATION_COULD_FIRE
           : BackgroundSyncMetrics::REGISTRATION_COULD_NOT_FIRE;
   BackgroundSyncMetrics::CountRegisterSuccess(
@@ -866,8 +866,7 @@ void BackgroundSyncManager::GetRegistrationsImpl(
                                 std::move(out_registrations)));
 }
 
-bool BackgroundSyncManager::AreOptionConditionsMet(
-    const BackgroundSyncRegistrationOptions& options) {
+bool BackgroundSyncManager::AreOptionConditionsMet() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return network_observer_->NetworkSufficient();
 }
@@ -891,7 +890,7 @@ bool BackgroundSyncManager::IsRegistrationReadyToFire(
   if (base::ContainsKey(emulated_offline_sw_, service_worker_id))
     return false;
 
-  return AreOptionConditionsMet(*registration.options());
+  return AreOptionConditionsMet();
 }
 
 void BackgroundSyncManager::RunInBackgroundIfNecessary() {
@@ -1047,8 +1046,7 @@ void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
   DCHECK_EQ(service_worker_id, service_worker_registration->id());
   DCHECK(registration);
 
-  const bool option_conditions_met =
-      AreOptionConditionsMet(*registration->options());
+  const bool option_conditions_met = AreOptionConditionsMet();
   UMA_HISTOGRAM_BOOLEAN("BackgroundSync.OptionConditionsChanged",
                         !option_conditions_met);
 

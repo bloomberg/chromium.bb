@@ -244,16 +244,18 @@ class BackgroundSyncManagerTest : public testing::Test {
     test_background_sync_manager_ = nullptr;
   }
 
-  bool Register(const BackgroundSyncRegistrationOptions& sync_options) {
-    return RegisterWithServiceWorkerId(sw_registration_id_1_, sync_options);
+  bool Register(blink::mojom::SyncRegistrationOptions sync_options) {
+    return RegisterWithServiceWorkerId(sw_registration_id_1_,
+                                       std::move(sync_options));
   }
 
   bool RegisterWithServiceWorkerId(
       int64_t sw_registration_id,
-      const BackgroundSyncRegistrationOptions& options) {
+      blink::mojom::SyncRegistrationOptions options) {
     bool was_called = false;
+    const std::string tag = options.tag;
     background_sync_manager_->Register(
-        sw_registration_id, options,
+        sw_registration_id, std::move(options),
         base::BindOnce(
             &BackgroundSyncManagerTest::StatusAndRegistrationCallback,
             base::Unretained(this), &was_called));
@@ -263,8 +265,7 @@ class BackgroundSyncManagerTest : public testing::Test {
     // Mock the client receiving the response and calling
     // DidResolveRegistration.
     if (callback_status_ == BACKGROUND_SYNC_STATUS_OK) {
-      background_sync_manager_->DidResolveRegistration(sw_registration_id,
-                                                       options.tag);
+      background_sync_manager_->DidResolveRegistration(sw_registration_id, tag);
       base::RunLoop().RunUntilIdle();
     }
 
@@ -277,14 +278,14 @@ class BackgroundSyncManagerTest : public testing::Test {
   }
 
   bool GetRegistration(
-      const BackgroundSyncRegistrationOptions& registration_options) {
+      blink::mojom::SyncRegistrationOptions registration_options) {
     return GetRegistrationWithServiceWorkerId(sw_registration_id_1_,
-                                              registration_options);
+                                              std::move(registration_options));
   }
 
   bool GetRegistrationWithServiceWorkerId(
       int64_t sw_registration_id,
-      const BackgroundSyncRegistrationOptions& registration_options) {
+      blink::mojom::SyncRegistrationOptions registration_options) {
     bool was_called = false;
     background_sync_manager_->GetRegistrations(
         sw_registration_id,
@@ -390,14 +391,14 @@ class BackgroundSyncManagerTest : public testing::Test {
   }
 
   void RegisterAndVerifySyncEventDelayed(
-      const BackgroundSyncRegistrationOptions& sync_options) {
+      blink::mojom::SyncRegistrationOptions sync_options) {
     int sync_events_called = sync_events_called_;
     EXPECT_FALSE(sync_fired_callback_);
 
     EXPECT_TRUE(Register(sync_options));
 
     EXPECT_EQ(sync_events_called + 1, sync_events_called_);
-    EXPECT_TRUE(GetRegistration(sync_options));
+    EXPECT_TRUE(GetRegistration(std::move(sync_options)));
     EXPECT_TRUE(sync_fired_callback_);
   }
 
@@ -429,8 +430,8 @@ class BackgroundSyncManagerTest : public testing::Test {
   scoped_refptr<ServiceWorkerRegistration> sw_registration_1_;
   scoped_refptr<ServiceWorkerRegistration> sw_registration_2_;
 
-  BackgroundSyncRegistrationOptions sync_options_1_;
-  BackgroundSyncRegistrationOptions sync_options_2_;
+  blink::mojom::SyncRegistrationOptions sync_options_1_;
+  blink::mojom::SyncRegistrationOptions sync_options_2_;
 
   // Callback values.
   BackgroundSyncStatus callback_status_ = BACKGROUND_SYNC_STATUS_OK;
@@ -795,7 +796,7 @@ TEST_F(BackgroundSyncManagerTest, RegistrationEqualsTag) {
 
 TEST_F(BackgroundSyncManagerTest, StoreAndRetrievePreservesValues) {
   InitDelayedSyncEventTest();
-  BackgroundSyncRegistrationOptions options;
+  blink::mojom::SyncRegistrationOptions options;
 
   // Set non-default values for each field.
   options.tag = "foo";

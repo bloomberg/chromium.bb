@@ -43,11 +43,11 @@ class SyncManager final : public ScriptWrappable {
   // Callbacks
   void RegisterCallback(ScriptPromiseResolver*,
                         mojom::blink::BackgroundSyncError,
-                        mojom::blink::SyncRegistrationPtr options);
+                        mojom::blink::SyncRegistrationOptionsPtr options);
   static void GetRegistrationsCallback(
       ScriptPromiseResolver*,
       mojom::blink::BackgroundSyncError,
-      WTF::Vector<mojom::blink::SyncRegistrationPtr> registrations);
+      WTF::Vector<mojom::blink::SyncRegistrationOptionsPtr> registrations);
 
   Member<ServiceWorkerRegistration> registration_;
   mojom::blink::BackgroundSyncServicePtr background_sync_service_;
