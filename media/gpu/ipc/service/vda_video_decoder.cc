@@ -282,7 +282,8 @@ void VdaVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   if (reinitializing) {
     if (is_profile_change) {
-      MEDIA_LOG(INFO, media_log_) << "Reinitialize VideoDecodeAccelerator";
+      MEDIA_LOG(INFO, media_log_) << "Reinitializing video decode accelerator "
+                                  << "for profile change";
       gpu_task_runner_->PostTask(
           FROM_HERE, base::BindOnce(&VdaVideoDecoder::ReinitializeOnGpuThread,
                                     gpu_weak_this_));
@@ -307,7 +308,10 @@ void VdaVideoDecoder::ReinitializeOnGpuThread() {
   DCHECK(!reinitializing_);
 
   reinitializing_ = true;
-  vda_->Flush();
+  gpu_weak_vda_factory_ = nullptr;
+  vda_ = nullptr;
+  vda_initialized_ = false;
+  InitializeOnGpuThread();
 }
 
 void VdaVideoDecoder::InitializeOnGpuThread() {
@@ -659,17 +663,6 @@ void VdaVideoDecoder::NotifyFlushDone() {
   DVLOG(2) << __func__;
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   DCHECK(vda_initialized_);
-
-  if (reinitializing_) {
-    // If reinitializing, this Flush() is requested by VdaVideoDecoder in
-    // ReinitializeOnGpuThread(), not MojoVideoDecoder. We should not invoke
-    // NotifyFlushDoneOnParentThread.
-    gpu_weak_vda_factory_ = nullptr;
-    vda_ = nullptr;
-    vda_initialized_ = false;
-    InitializeOnGpuThread();
-    return;
-  }
 
   parent_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VdaVideoDecoder::NotifyFlushDoneOnParentThread,
