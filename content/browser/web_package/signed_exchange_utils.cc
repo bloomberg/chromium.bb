@@ -17,6 +17,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response.h"
 
 namespace content {
@@ -37,6 +38,14 @@ bool IsSignedExchangeHandlingEnabled() {
   return base::FeatureList::IsEnabled(features::kSignedHTTPExchange) ||
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kEnableExperimentalWebPlatformFeatures);
+}
+
+bool IsSignedExchangeReportingForDistributorsEnabled() {
+  return base::FeatureList::IsEnabled(network::features::kReporting) &&
+         (base::FeatureList::IsEnabled(
+              features::kSignedExchangeReportingForDistributors) ||
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableExperimentalWebPlatformFeatures));
 }
 
 bool ShouldHandleAsSignedHTTPExchange(
