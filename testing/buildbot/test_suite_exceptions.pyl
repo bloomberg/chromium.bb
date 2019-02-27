@@ -1357,6 +1357,11 @@
       'linux-chromeos-dbg',  # https://crbug.com/859307
     ],
   },
+  'webdriver_tests_suite': {
+    'remove_from': [
+      'Linux Tests',  # https://crbug.com/929689, https://crbug.com/936557
+    ],
+  },
   'webgl2_conformance_gl_passthrough_tests': {
     'remove_from': [
       # https://crbug.com/927470

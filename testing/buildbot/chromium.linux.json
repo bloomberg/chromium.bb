@@ -1744,14 +1744,6 @@
         }
       },
       {
-        "isolate_name": "webdriver_wpt_tests",
-        "name": "webdriver_tests_suite",
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
-      {
         "args": [
           "--num-retries=3"
         ],
