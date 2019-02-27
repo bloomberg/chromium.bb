@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -108,6 +109,9 @@ struct BLINK_COMMON_EXPORT PlatformNotificationData {
 
   // Actions that should be shown as buttons on the notification.
   std::vector<PlatformNotificationAction> actions;
+
+  // The time at which the notification should be shown.
+  base::Optional<base::Time> show_trigger_timestamp;
 };
 
 }  // namespace blink

@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/notifications/notification.h"
 #include "third_party/blink/renderer/modules/notifications/notification_options.h"
+#include "third_party/blink/renderer/modules/notifications/timestamp_trigger.h"
 #include "third_party/blink/renderer/modules/vibration/vibration_controller.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -139,6 +140,12 @@ mojom::blink::NotificationDataPtr CreateNotificationData(
   }
 
   notification_data->actions = std::move(actions);
+
+  if (options->hasShowTrigger()) {
+    auto* timestamp_trigger = options->showTrigger();
+    notification_data->show_trigger_timestamp =
+        base::Time::FromJsTime(timestamp_trigger->timestamp());
+  }
 
   return notification_data;
 }

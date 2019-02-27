@@ -147,7 +147,8 @@ struct TypeConverter<blink::mojom::blink::NotificationDataPtr,
         input.title, input.direction, input.lang, input.body, input.tag,
         input.image, input.icon, input.badge, std::move(vibration_pattern),
         input.timestamp, input.renotify, input.silent,
-        input.require_interaction, std::move(data), std::move(actions));
+        input.require_interaction, std::move(data), std::move(actions),
+        input.show_trigger_timestamp);
   }
 };
 

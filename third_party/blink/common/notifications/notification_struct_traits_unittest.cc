@@ -55,6 +55,7 @@ TEST(NotificationStructTraitsTest, NotificationDataRoundtrip) {
   notification_data.renotify = true;
   notification_data.silent = true;
   notification_data.require_interaction = true;
+  notification_data.show_trigger_timestamp = base::Time::Now();
 
   const char data[] = "mock binary notification data";
   notification_data.data.assign(data, data + base::size(data));
@@ -110,6 +111,8 @@ TEST(NotificationStructTraitsTest, NotificationDataRoundtrip) {
     EXPECT_EQ(notification_data.actions[i].placeholder,
               roundtrip_notification_data.actions[i].placeholder);
   }
+  EXPECT_EQ(roundtrip_notification_data.show_trigger_timestamp,
+            notification_data.show_trigger_timestamp);
 }
 
 // Check upper bound on vibration entries (99).

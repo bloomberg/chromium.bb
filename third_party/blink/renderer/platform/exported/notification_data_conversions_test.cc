@@ -36,6 +36,7 @@ const char kAction1Placeholder[] = "Run into the... friendliness pellets.";
 const char kAction2Name[] = "btn2";
 const char kAction2Title[] = "Button 2";
 const char kAction2IconUrl[] = "https://example.com/action_icon_2.png";
+const base::Time kShowTriggerTimestamp = base::Time::FromJsTime(621086800.);
 
 TEST(NotificationDataConversionsTest, ToWebNotificationData) {
   std::vector<int> vibration_pattern(
@@ -73,6 +74,7 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
   platform_data.actions[1].title = base::ASCIIToUTF16(kAction2Title);
   platform_data.actions[1].icon = GURL(kAction2IconUrl);
   platform_data.actions[1].placeholder = base::NullableString16();
+  platform_data.show_trigger_timestamp = kShowTriggerTimestamp;
 
   WebNotificationData web_data = ToWebNotificationData(platform_data);
   EXPECT_EQ(kNotificationTitle, web_data.title);
@@ -109,6 +111,7 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
   EXPECT_EQ(kAction2Title, web_data.actions[1].title);
   EXPECT_EQ(kAction2IconUrl, web_data.actions[1].icon.GetString());
   EXPECT_TRUE(web_data.actions[1].placeholder.IsNull());
+  EXPECT_EQ(kShowTriggerTimestamp, web_data.show_trigger_timestamp);
 }
 
 }  // namespace blink
