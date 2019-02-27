@@ -9520,7 +9520,7 @@ TEST_F(HttpCacheTest, SplitCache) {
   url::Origin origin_data =
       url::Origin::Create(GURL("data:text/html,<body>Hello World</body>"));
 
-  // A request without a top frame origin is cached normally.
+  // A request without a top frame origin is not cached at all.
   MockHttpRequest trans_info = MockHttpRequest(kSimpleGET_Transaction);
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
@@ -9529,7 +9529,7 @@ TEST_F(HttpCacheTest, SplitCache) {
 
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
-  EXPECT_TRUE(response.was_cached);
+  EXPECT_FALSE(response.was_cached);
 
   // Now request with a.com as the top frame origin. It shouldn't be cached
   // since the cached resource has a different top frame origin.
