@@ -426,7 +426,7 @@ FontSelectionValue StyleBuilderConverterBase::ConvertFontStyle(
     CHECK_LT(values->length(), 2u);
     if (values->length()) {
       return FontSelectionValue(
-          ToCSSPrimitiveValue(values->Item(0)).GetFloatValue());
+          ToCSSPrimitiveValue(values->Item(0)).ComputeDegrees());
     } else {
       const CSSIdentifierValue* identifier_value =
           style_range_value.GetFontStyleValue();
