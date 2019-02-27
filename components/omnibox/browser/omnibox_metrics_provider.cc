@@ -174,25 +174,10 @@ void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {
     if (i->subtype_identifier > 0)
       suggestion->set_result_subtype_identifier(i->subtype_identifier);
     suggestion->set_has_tab_match(i->has_tab_match);
-    // TODO(krb@chromium.org): Try including when libprotobuf is updated.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-    suggestion->set_is_keyword_suggestion(i->from_keyword);
-#endif
   }
   for (auto i(log.providers_info.begin()); i != log.providers_info.end(); ++i) {
     OmniboxEventProto::ProviderInfo* provider_info =
         omnibox_event->add_provider_info();
     provider_info->CopyFrom(*i);
   }
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-  omnibox_event->set_in_keyword_mode(log.in_keyword_mode);
-  if (log.in_keyword_mode) {
-    if (metrics::OmniboxEventProto_KeywordModeEntryMethod_IsValid(
-            log.keyword_mode_entry_method))
-      omnibox_event->set_keyword_mode_entry_method(
-          log.keyword_mode_entry_method);
-    else
-      omnibox_event->set_keyword_mode_entry_method(OmniboxEventProto::INVALID);
-  }
-#endif
 }
