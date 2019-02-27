@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
-#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/dactyloscoper.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -68,6 +67,7 @@
 namespace blink {
 
 class ApplicationCacheHost;
+class ContentSecurityPolicy;
 class Document;
 class DocumentParser;
 class FrameLoader;

@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 
+#include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/reporting.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html_or_trusted_script_or_trusted_script_url_or_trusted_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
@@ -11,6 +14,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
@@ -19,10 +23,6 @@
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy_factory.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
-
-#include "services/service_manager/public/cpp/connector.h"
-#include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/reporting.mojom-blink.h"
 
 namespace blink {
 
