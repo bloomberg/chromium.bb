@@ -85,6 +85,7 @@ class CORE_EXPORT DevToolsAgent
     mojom::blink::DevToolsAgentHostRequest host_request;
     base::UnguessableToken devtools_worker_token;
     bool waiting_for_debugger;
+    String name;
   };
   void ReportChildWorker(std::unique_ptr<WorkerData>);
 

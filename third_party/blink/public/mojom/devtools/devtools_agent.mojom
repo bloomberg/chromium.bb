@@ -100,6 +100,7 @@ interface DevToolsAgentHost {
       DevToolsAgent worker_devtools_agent,
       DevToolsAgentHost& worker_devtools_agent_host,
       url.mojom.Url url,
+      string name,
       mojo_base.mojom.UnguessableToken devtools_worker_token,
       bool waiting_for_debugger);
 };

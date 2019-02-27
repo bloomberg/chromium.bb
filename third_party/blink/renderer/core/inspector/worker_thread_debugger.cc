@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/inspector/v8_inspector_string.h"
 #include "third_party/blink/renderer/core/inspector/worker_inspector_controller.h"
+#include "third_party/blink/renderer/core/workers/dedicated_worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
@@ -109,8 +110,13 @@ void WorkerThreadDebugger::ContextCreated(WorkerThread* worker_thread,
   int worker_context_group_id = ContextGroupId(worker_thread);
   if (!worker_threads_.Contains(worker_context_group_id))
     return;
-  v8_inspector::V8ContextInfo context_info(context, worker_context_group_id,
-                                           v8_inspector::StringView());
+  String human_readable_name = "";
+  WorkerOrWorkletGlobalScope* globalScope = worker_thread->GlobalScope();
+  if (auto* scope = DynamicTo<DedicatedWorkerGlobalScope>(globalScope))
+    human_readable_name = scope->name();
+  v8_inspector::V8ContextInfo context_info(
+      context, worker_context_group_id,
+      ToV8InspectorStringView(human_readable_name));
   String origin = url_for_debugger;
   context_info.origin = ToV8InspectorStringView(origin);
   GetV8Inspector()->contextCreated(context_info);

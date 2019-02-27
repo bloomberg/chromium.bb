@@ -155,6 +155,7 @@ std::unique_ptr<WorkerDevToolsParams> DevToolsAgent::WorkerThreadCreated(
   data->host_request = mojo::MakeRequest(&result->agent_host_ptr_info);
   data->devtools_worker_token = result->devtools_worker_token;
   data->waiting_for_debugger = agent->pause_child_workers_on_start_;
+  data->name = worker_thread->name().IsolatedCopy();
   result->wait_for_debugger = agent->pause_child_workers_on_start_;
 
   if (agent->report_child_workers_) {
@@ -177,13 +178,13 @@ void DevToolsAgent::ReportChildWorker(std::unique_ptr<WorkerData> data) {
   if (host_ptr_.is_bound()) {
     host_ptr_->ChildWorkerCreated(
         std::move(data->agent_ptr), std::move(data->host_request),
-        std::move(data->url), data->devtools_worker_token,
-        data->waiting_for_debugger);
+        std::move(data->url), std::move(data->name),
+        data->devtools_worker_token, data->waiting_for_debugger);
   } else if (associated_host_ptr_.is_bound()) {
     associated_host_ptr_->ChildWorkerCreated(
         std::move(data->agent_ptr), std::move(data->host_request),
-        std::move(data->url), data->devtools_worker_token,
-        data->waiting_for_debugger);
+        std::move(data->url), std::move(data->name),
+        data->devtools_worker_token, data->waiting_for_debugger);
   }
 }
 
