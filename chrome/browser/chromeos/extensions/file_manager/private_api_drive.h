@@ -41,6 +41,8 @@ struct EntryProperties;
 class FileManagerPrivateInternalEnsureFileDownloadedFunction
     : public LoggedUIThreadExtensionFunction {
  public:
+  FileManagerPrivateInternalEnsureFileDownloadedFunction();
+
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.ensureFileDownloaded",
                              FILEMANAGERPRIVATE_ENSUREFILEDOWNLOADED)
 
@@ -89,6 +91,8 @@ class FileManagerPrivateInternalGetEntryPropertiesFunction
 class FileManagerPrivateInternalPinDriveFileFunction
     : public LoggedUIThreadExtensionFunction {
  public:
+  FileManagerPrivateInternalPinDriveFileFunction();
+
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.pinDriveFile",
                              FILEMANAGERPRIVATEINTERNAL_PINDRIVEFILE)
 
@@ -110,7 +114,7 @@ class FileManagerPrivateInternalPinDriveFileFunction
 
 // Implements the chrome.fileManagerPrivate.cancelFileTransfers method.
 class FileManagerPrivateInternalCancelFileTransfersFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.cancelFileTransfers",
                              FILEMANAGERPRIVATEINTERNAL_CANCELFILETRANSFERS)
@@ -126,6 +130,8 @@ class FileManagerPrivateSearchDriveFunction
     : public LoggedUIThreadExtensionFunction {
  public:
   typedef std::vector<drive::SearchResultInfo> SearchResultInfoList;
+
+  FileManagerPrivateSearchDriveFunction();
 
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.searchDrive",
                              FILEMANAGERPRIVATE_SEARCHDRIVE)
@@ -166,6 +172,8 @@ class FileManagerPrivateSearchDriveMetadataFunction
     kSharedWithMe,
     kOffline,
   };
+
+  FileManagerPrivateSearchDriveMetadataFunction();
 
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.searchDriveMetadata",
                              FILEMANAGERPRIVATE_SEARCHDRIVEMETADATA)
@@ -214,6 +222,8 @@ class FileManagerPrivateGetDriveConnectionStateFunction
 class FileManagerPrivateRequestAccessTokenFunction
     : public LoggedUIThreadExtensionFunction {
  public:
+  FileManagerPrivateRequestAccessTokenFunction();
+
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.requestAccessToken",
                              FILEMANAGERPRIVATE_REQUESTACCESSTOKEN)
 
@@ -232,6 +242,8 @@ class FileManagerPrivateRequestAccessTokenFunction
 class FileManagerPrivateInternalRequestDriveShareFunction
     : public LoggedUIThreadExtensionFunction {
  public:
+  FileManagerPrivateInternalRequestDriveShareFunction();
+
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.requestDriveShare",
                              FILEMANAGERPRIVATEINTERNAL_REQUESTDRIVESHARE)
 

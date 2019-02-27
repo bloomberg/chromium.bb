@@ -90,6 +90,12 @@ const char kDriveConnectionReasonNoService[] = "no_service";
 // thumbnail. Given that we support hdpi devices, maximum dimension is 360.
 const int kFileManagerMaximumThumbnailDimension = 360;
 
+// Thresholds for logging slow operations.
+constexpr base::TimeDelta kDriveSlowOperationThreshold =
+    base::TimeDelta::FromSeconds(5);
+constexpr base::TimeDelta kDriveVerySlowOperationThreshold =
+    base::TimeDelta::FromMinutes(1);
+
 std::unique_ptr<std::string> GetShareUrlFromAlternateUrl(
     const GURL& alternate_url) {
   // Set |share_url| to a modified version of |alternate_url| that opens the
@@ -869,6 +875,8 @@ std::unique_ptr<base::ListValue> MakeBlankReturnValue() {
 FileManagerPrivateInternalGetEntryPropertiesFunction::
     FileManagerPrivateInternalGetEntryPropertiesFunction()
     : processed_count_(0) {
+  SetWarningThresholds(kDriveSlowOperationThreshold,
+                       kDriveVerySlowOperationThreshold);
 }
 
 FileManagerPrivateInternalGetEntryPropertiesFunction::
@@ -953,6 +961,12 @@ void FileManagerPrivateInternalGetEntryPropertiesFunction::
   Respond(
       ArgumentList(extensions::api::file_manager_private_internal::
                        GetEntryProperties::Results::Create(properties_list_)));
+}
+
+FileManagerPrivateInternalPinDriveFileFunction::
+    FileManagerPrivateInternalPinDriveFileFunction() {
+  SetWarningThresholds(kDriveSlowOperationThreshold,
+                       kDriveVerySlowOperationThreshold);
 }
 
 ExtensionFunction::ResponseAction
@@ -1050,6 +1064,12 @@ void FileManagerPrivateInternalPinDriveFileFunction::OnPinStateSet(
   }
 }
 
+FileManagerPrivateInternalEnsureFileDownloadedFunction::
+    FileManagerPrivateInternalEnsureFileDownloadedFunction() {
+  SetWarningThresholds(kDriveSlowOperationThreshold,
+                       kDriveVerySlowOperationThreshold);
+}
+
 ExtensionFunction::ResponseAction
 FileManagerPrivateInternalEnsureFileDownloadedFunction::Run() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1139,6 +1159,11 @@ FileManagerPrivateInternalCancelFileTransfersFunction::Run() {
   }
 
   return RespondNow(NoArguments());
+}
+
+FileManagerPrivateSearchDriveFunction::FileManagerPrivateSearchDriveFunction() {
+  SetWarningThresholds(kDriveSlowOperationThreshold,
+                       kDriveVerySlowOperationThreshold);
 }
 
 ExtensionFunction::ResponseAction FileManagerPrivateSearchDriveFunction::Run() {
@@ -1243,6 +1268,12 @@ void FileManagerPrivateSearchDriveFunction::OnEntryDefinitionList(
       true, !is_offline_,
       FileManagerPrivateSearchDriveMetadataFunction::SearchType::kText,
       operation_start_);
+}
+
+FileManagerPrivateSearchDriveMetadataFunction::
+    FileManagerPrivateSearchDriveMetadataFunction() {
+  SetWarningThresholds(kDriveSlowOperationThreshold,
+                       kDriveVerySlowOperationThreshold);
 }
 
 ExtensionFunction::ResponseAction
@@ -1486,6 +1517,12 @@ FileManagerPrivateGetDriveConnectionStateFunction::Run() {
           result)));
 }
 
+FileManagerPrivateRequestAccessTokenFunction::
+    FileManagerPrivateRequestAccessTokenFunction() {
+  SetWarningThresholds(kDriveSlowOperationThreshold,
+                       kDriveVerySlowOperationThreshold);
+}
+
 ExtensionFunction::ResponseAction
 FileManagerPrivateRequestAccessTokenFunction::Run() {
   using extensions::api::file_manager_private::RequestAccessToken::Params;
@@ -1518,6 +1555,12 @@ void FileManagerPrivateRequestAccessTokenFunction::OnAccessTokenFetched(
     google_apis::DriveApiErrorCode code,
     const std::string& access_token) {
   Respond(OneArgument(std::make_unique<base::Value>(access_token)));
+}
+
+FileManagerPrivateInternalRequestDriveShareFunction::
+    FileManagerPrivateInternalRequestDriveShareFunction() {
+  SetWarningThresholds(kDriveSlowOperationThreshold,
+                       kDriveVerySlowOperationThreshold);
 }
 
 ExtensionFunction::ResponseAction
@@ -1584,7 +1627,10 @@ void FileManagerPrivateInternalRequestDriveShareFunction::OnAddPermission(
 }
 
 FileManagerPrivateInternalGetDownloadUrlFunction::
-    FileManagerPrivateInternalGetDownloadUrlFunction() = default;
+    FileManagerPrivateInternalGetDownloadUrlFunction() {
+  SetWarningThresholds(kDriveSlowOperationThreshold,
+                       kDriveVerySlowOperationThreshold);
+}
 
 FileManagerPrivateInternalGetDownloadUrlFunction::
     ~FileManagerPrivateInternalGetDownloadUrlFunction() = default;
@@ -1736,7 +1782,10 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnGotMetadata(
 }
 
 FileManagerPrivateInternalGetThumbnailFunction::
-    FileManagerPrivateInternalGetThumbnailFunction() = default;
+    FileManagerPrivateInternalGetThumbnailFunction() {
+  SetWarningThresholds(kDriveSlowOperationThreshold,
+                       kDriveVerySlowOperationThreshold);
+}
 
 FileManagerPrivateInternalGetThumbnailFunction::
     ~FileManagerPrivateInternalGetThumbnailFunction() = default;

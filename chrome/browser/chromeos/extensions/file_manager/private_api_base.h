@@ -30,14 +30,20 @@ class LoggedUIThreadExtensionFunction : public UIThreadExtensionFunction {
   // UIThreadExtensionFunction overrides.
   void OnResponded() override;
 
+  void SetWarningThresholds(base::TimeDelta slow_threshold,
+                            base::TimeDelta very_slow_threshold);
+
   // Sets the logging on completion flag. By default, logging is turned off.
   void set_log_on_completion(bool log_on_completion) {
     log_on_completion_ = log_on_completion;
   }
 
  private:
-  base::Time start_time_;
+  base::TimeTicks start_time_;
   bool log_on_completion_;
+
+  base::TimeDelta slow_threshold_;
+  base::TimeDelta very_slow_threshold_;
 };
 
 }  // namespace extensions

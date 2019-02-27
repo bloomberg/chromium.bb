@@ -249,7 +249,7 @@ class FileManagerPrivateAddProvidedFileSystemFunction
 
 // Implements the chrome.fileManagerPrivate.configureVolume method.
 class FileManagerPrivateConfigureVolumeFunction
-    : public UIThreadExtensionFunction {
+    : public LoggedUIThreadExtensionFunction {
  public:
   FileManagerPrivateConfigureVolumeFunction();
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.configureVolume",
@@ -305,7 +305,7 @@ class FileManagerPrivateMountCrostiniFunction
 // Implements the chrome.fileManagerPrivate.sharePathsWithCrostini
 // method.  Shares specified paths.
 class FileManagerPrivateInternalSharePathsWithCrostiniFunction
-    : public UIThreadExtensionFunction {
+    : public LoggedUIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "fileManagerPrivateInternal.sharePathsWithCrostini",
@@ -326,7 +326,7 @@ class FileManagerPrivateInternalSharePathsWithCrostiniFunction
 // Implements the chrome.fileManagerPrivate.unsharePathWithCrostini
 // method.  Unshares specified path.
 class FileManagerPrivateInternalUnsharePathWithCrostiniFunction
-    : public UIThreadExtensionFunction {
+    : public LoggedUIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "fileManagerPrivateInternal.unsharePathWithCrostini",
@@ -367,7 +367,7 @@ class FileManagerPrivateInternalGetCrostiniSharedPathsFunction
 // Implements the chrome.fileManagerPrivate.getLinuxPackageInfo method.
 // Retrieves information about a Linux package.
 class FileManagerPrivateInternalGetLinuxPackageInfoFunction
-    : public UIThreadExtensionFunction {
+    : public LoggedUIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getLinuxPackageInfo",
                              FILEMANAGERPRIVATEINTERNAL_GETLINUXPACKAGEINFO)
@@ -387,7 +387,7 @@ class FileManagerPrivateInternalGetLinuxPackageInfoFunction
 // Implements the chrome.fileManagerPrivate.installLinuxPackage method.
 // Starts installation of a Linux package.
 class FileManagerPrivateInternalInstallLinuxPackageFunction
-    : public UIThreadExtensionFunction {
+    : public LoggedUIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.installLinuxPackage",
                              FILEMANAGERPRIVATEINTERNAL_INSTALLLINUXPACKAGE)
@@ -405,7 +405,7 @@ class FileManagerPrivateInternalInstallLinuxPackageFunction
 
 // Implements the chrome.fileManagerPrivate.getCustomActions method.
 class FileManagerPrivateInternalGetCustomActionsFunction
-    : public UIThreadExtensionFunction {
+    : public LoggedUIThreadExtensionFunction {
  public:
   FileManagerPrivateInternalGetCustomActionsFunction();
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getCustomActions",
@@ -424,7 +424,7 @@ class FileManagerPrivateInternalGetCustomActionsFunction
 
 // Implements the chrome.fileManagerPrivate.executeCustomAction method.
 class FileManagerPrivateInternalExecuteCustomActionFunction
-    : public UIThreadExtensionFunction {
+    : public LoggedUIThreadExtensionFunction {
  public:
   FileManagerPrivateInternalExecuteCustomActionFunction();
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.executeCustomAction",
@@ -443,7 +443,7 @@ class FileManagerPrivateInternalExecuteCustomActionFunction
 
 // Implements the chrome.fileManagerPrivateInternal.getRecentFiles method.
 class FileManagerPrivateInternalGetRecentFilesFunction
-    : public UIThreadExtensionFunction {
+    : public LoggedUIThreadExtensionFunction {
  public:
   FileManagerPrivateInternalGetRecentFilesFunction();
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getRecentFiles",

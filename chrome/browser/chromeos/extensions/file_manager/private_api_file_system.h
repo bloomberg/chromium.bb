@@ -291,7 +291,7 @@ class FileManagerPrivateCancelCopyFunction
 // Implements the chrome.fileManagerPrivateInternal.resolveIsolatedEntries
 // method.
 class FileManagerPrivateInternalResolveIsolatedEntriesFunction
-    : public UIThreadExtensionFunction {
+    : public LoggedUIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "fileManagerPrivateInternal.resolveIsolatedEntries",
@@ -380,7 +380,7 @@ class FileManagerPrivateIsUMAEnabledFunction
 
 // Implements the chrome.fileManagerPrivate.setEntryTag method.
 class FileManagerPrivateInternalSetEntryTagFunction
-    : public UIThreadExtensionFunction {
+    : public LoggedUIThreadExtensionFunction {
  public:
   FileManagerPrivateInternalSetEntryTagFunction();
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.setEntryTag",
