@@ -41,6 +41,7 @@ from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import portage_util
 from chromite.lib import request_build
+from chromite.lib import retry_util
 from chromite.lib import timeout_util
 
 BUILD_PACKAGES_PREBUILTS = '10774.0.0'
@@ -286,12 +287,27 @@ class WorkspaceSyncChromeStage(WorkspaceStageBase):
 
     logging.PrintBuildbotStepText('tag %s' % chrome_version)
 
-    useflags = self._run.config.useflags
-    commands.SyncChrome(build_root=self._orig_root,
-                        chrome_root=self._run.options.chrome_root,
-                        useflags=useflags,
-                        tag=chrome_version,
-                        git_cache_dir=self._run.options.git_cache_dir)
+    sync_chrome = os.path.join(
+        self._orig_root, 'chromite', 'bin', 'sync_chrome')
+    gclient = os.path.join(
+        self._build_root, 'chromium', 'tools', 'depot_tools', 'gclient')
+
+    # --reset tells sync_chrome to blow away local changes and to feel
+    # free to delete any directories that get in the way of syncing. This
+    # is needed for unattended operation.
+    # --ignore-locks tells sync_chrome to ignore git-cache locks.
+    cmd = [sync_chrome,
+           '--reset', '--ignore_locks',
+           '--gclient', gclient,
+           '--tag', chrome_version]
+
+    if constants.USE_CHROME_INTERNAL in self._run.config.useflags:
+      cmd += ['--internal']
+    if self._run.options.git_cache_dir:
+      cmd += ['--git_cache_dir', self._run.options.git_cache_dir]
+    cmd += [self._run.options.chrome_root]
+    retry_util.RunCommandWithRetries(
+        constants.SYNC_RETRIES, cmd, cwd=self._build_root)
 
 
 class WorkspaceUprevAndPublishStage(WorkspaceStageBase):
