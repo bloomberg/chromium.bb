@@ -22,50 +22,6 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
-namespace {
-
-enum class HttpProtocolScheme { kHttp11, kHttp2, kQuic };
-
-base::Optional<HttpProtocolScheme> ConvertConnectionInfoToHttpProtocolScheme(
-    net::HttpResponseInfo::ConnectionInfo connection_info) {
-  switch (connection_info) {
-    case net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN:
-    case net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_SPDY2:
-    case net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_SPDY3:
-    case net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_HTTP2_14:
-    case net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_HTTP2_15:
-    case net::HttpResponseInfo::CONNECTION_INFO_HTTP0_9:
-    case net::HttpResponseInfo::CONNECTION_INFO_HTTP1_0:
-    case net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS:
-      return base::nullopt;
-    case net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1:
-      return HttpProtocolScheme::kHttp11;
-    case net::HttpResponseInfo::CONNECTION_INFO_HTTP2:
-      return HttpProtocolScheme::kHttp2;
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_UNKNOWN_VERSION:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_32:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_33:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_34:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_35:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_36:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_37:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_38:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_39:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_40:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_41:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_42:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_43:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_44:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_45:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_46:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_47:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_99:
-      return HttpProtocolScheme::kQuic;
-  }
-}
-
-}  // namespace
-
 // static
 std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
 UkmPageLoadMetricsObserver::CreateIfNeeded() {
@@ -122,7 +78,6 @@ UkmPageLoadMetricsObserver::OnRedirect(
 UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle,
     ukm::SourceId source_id) {
-  connection_info_ = navigation_handle->GetConnectionInfo();
   const net::HttpResponseHeaders* response_headers =
       navigation_handle->GetResponseHeaders();
   if (response_headers)
@@ -453,13 +408,6 @@ void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(
 
     builder->SetMainFrameResource_NavigationStartToRequestStart(
         navigation_start_to_request_start.InMilliseconds());
-  }
-
-  base::Optional<HttpProtocolScheme> protocol_scheme =
-      ConvertConnectionInfoToHttpProtocolScheme(connection_info_);
-  if (protocol_scheme.has_value()) {
-    builder->SetMainFrameResource_HttpProtocolScheme(
-        static_cast<int>(protocol_scheme.value()));
   }
 
   if (main_frame_request_redirect_count_ > 0) {
