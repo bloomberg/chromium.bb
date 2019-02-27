@@ -927,6 +927,10 @@
       status: "stable",
     },
     {
+      name: "NotificationTriggers",
+      status: "experimental",
+    },
+    {
       name: "OffMainThreadCSSPaint",
     },
     {
