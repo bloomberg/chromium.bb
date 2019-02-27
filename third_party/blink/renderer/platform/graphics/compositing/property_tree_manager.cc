@@ -274,6 +274,11 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
     compositor_node.element_id = compositor_element_id;
   }
 
+  // Set has_potential_animation in case we push property tree during an ongoing
+  // animation. This condition should be kept consistent with cc.
+  if (transform_node.HasActiveTransformAnimation())
+    compositor_node.has_potential_animation = true;
+
   // If this transform is a scroll offset translation, create the associated
   // compositor scroll property node and adjust the compositor transform node's
   // scroll offset.
@@ -762,6 +767,14 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
     property_trees_.element_id_to_effect_node_index[compositor_element_id] =
         effect_node.id;
   }
+
+  // Set has_potential_xxx_animation in case we push property tree during
+  // ongoing animations. The conditions should be kept consistent with cc.
+  if (next_effect.HasActiveOpacityAnimation())
+    effect_node.has_potential_opacity_animation = true;
+  if (next_effect.HasActiveFilterAnimation())
+    effect_node.has_potential_filter_animation = true;
+
   effect_stack_.emplace_back(current_);
   SetCurrentEffectState(effect_node, CcEffectType::kEffect, next_effect,
                         *output_clip);

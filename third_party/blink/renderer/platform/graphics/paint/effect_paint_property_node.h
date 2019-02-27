@@ -152,14 +152,19 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   FloatRect MapRect(const FloatRect& input_rect) const;
 
   bool HasDirectCompositingReasons() const {
-    DCHECK(!Parent() || !IsParentAlias());
-    return state_.direct_compositing_reasons != CompositingReason::kNone;
+    return DirectCompositingReasons() != CompositingReason::kNone;
   }
-
   bool RequiresCompositingForAnimation() const {
-    DCHECK(!Parent() || !IsParentAlias());
-    return state_.direct_compositing_reasons &
+    return DirectCompositingReasons() &
            CompositingReason::kComboActiveAnimation;
+  }
+  bool HasActiveOpacityAnimation() const {
+    return DirectCompositingReasons() &
+           CompositingReason::kActiveOpacityAnimation;
+  }
+  bool HasActiveFilterAnimation() const {
+    return DirectCompositingReasons() &
+           CompositingReason::kActiveFilterAnimation;
   }
 
   const CompositorElementId& GetCompositorElementId() const {
@@ -177,6 +182,11 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
                           State&& state,
                           bool is_parent_alias)
       : PaintPropertyNode(parent, is_parent_alias), state_(std::move(state)) {}
+
+  CompositingReasons DirectCompositingReasons() const {
+    DCHECK(!Parent() || !IsParentAlias());
+    return state_.direct_compositing_reasons;
+  }
 
   State state_;
 };
