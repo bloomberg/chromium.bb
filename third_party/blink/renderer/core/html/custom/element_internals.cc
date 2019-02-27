@@ -225,14 +225,13 @@ void ElementInternals::AppendToFormData(FormData& form_data) {
     return;
   const AtomicString& name = Target().FastGetAttribute(html_names::kNameAttr);
   if (!entry_source_) {
-    if (name.IsNull())
+    if (name.IsEmpty())
       return;
     if (value_.IsFile())
       form_data.AppendFromElement(name, value_.GetAsFile());
     else if (value_.IsUSVString())
       form_data.AppendFromElement(name, value_.GetAsUSVString());
-    else
-      form_data.AppendFromElement(name, g_empty_string);
+    // Append nothing for null value.
     return;
   }
   for (const auto& entry : entry_source_->Entries()) {
