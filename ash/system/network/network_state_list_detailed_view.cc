@@ -244,11 +244,13 @@ void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
       NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
           guid);
   bool can_connect = network && !network->IsConnectingOrConnected();
-  if (network->IsDefaultCellular())
-    can_connect = false;  // Default Cellular network is not connectable.
-  if (!network->connectable() && IsSecondaryUser()) {
-    // Secondary users can only connect to fully configured networks.
-    can_connect = false;
+  if (network) {
+    if (network->IsDefaultCellular())
+      can_connect = false;  // Default Cellular network is not connectable.
+    if (!network->connectable() && IsSecondaryUser()) {
+      // Secondary users can only connect to fully configured networks.
+      can_connect = false;
+    }
   }
   if (can_connect) {
     Shell::Get()->metrics()->RecordUserMetricsAction(
