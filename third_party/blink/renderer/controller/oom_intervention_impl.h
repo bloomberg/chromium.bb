@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CONTROLLER_OOM_INTERVENTION_IMPL_H_
 
 #include "third_party/blink/public/common/oom_intervention/oom_intervention_types.h"
-#include "third_party/blink/public/platform/oom_intervention.mojom-blink.h"
+#include "third_party/blink/public/mojom/oom_intervention/oom_intervention.mojom-blink.h"
 #include "third_party/blink/renderer/controller/controller_export.h"
 #include "third_party/blink/renderer/controller/memory_usage_monitor.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"

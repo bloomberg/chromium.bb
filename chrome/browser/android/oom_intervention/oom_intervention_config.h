@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_OOM_INTERVENTION_OOM_INTERVENTION_CONFIG_H_
 #define CHROME_BROWSER_ANDROID_OOM_INTERVENTION_OOM_INTERVENTION_CONFIG_H_
 
-#include "third_party/blink/public/platform/oom_intervention.mojom.h"
+#include "third_party/blink/public/mojom/oom_intervention/oom_intervention.mojom.h"
 
 // Holds the configurations provided by field trials for OOM intervention.
 class OomInterventionConfig {
