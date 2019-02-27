@@ -449,7 +449,7 @@ BPF_TEST_C(ParameterRestrictions,
 }
 
 BPF_TEST_C(ParameterRestrictions,
-           ptrace_setregs_blocked,
+           DISABLED_ptrace_setregs_blocked,
            RestrictPtracePolicy) {
   auto tracer = [](pid_t pid) {
 #if defined(__arm__)
