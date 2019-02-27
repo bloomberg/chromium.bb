@@ -27,7 +27,8 @@ const CGFloat kLocationImageToLabelSpacing = -4.0;
 // Minimal horizontal padding between the leading edge of the location bar and
 // the content of the location bar.
 const CGFloat kLocationBarLeadingPadding = 5.0;
-// Trailing space between the button and the trailing edge of the location bar.
+// Trailing space between the trailing button and the trailing edge of the
+// location bar.
 const CGFloat kButtonTrailingSpacing = 10;
 
 }  // namespace
@@ -40,14 +41,6 @@ const CGFloat kButtonTrailingSpacing = 10;
 // The view containing the location label, and (sometimes) the location image
 // view.
 @property(nonatomic, strong) UIView* locationContainerView;
-
-// Constraints to hide the trailing button.
-@property(nonatomic, strong)
-    NSArray<NSLayoutConstraint*>* hideButtonConstraints;
-
-// Constraints to show the trailing button.
-@property(nonatomic, strong)
-    NSArray<NSLayoutConstraint*>* showButtonConstraints;
 
 // Constraints to hide the location image view.
 @property(nonatomic, strong)
@@ -131,8 +124,6 @@ const CGFloat kButtonTrailingSpacing = 10;
 @synthesize locationLabel = _locationLabel;
 @synthesize locationIconImageView = _locationIconImageView;
 @synthesize trailingButton = _trailingButton;
-@synthesize hideButtonConstraints = _hideButtonConstraints;
-@synthesize showButtonConstraints = _showButtonConstraints;
 @synthesize hideLocationImageConstraints = _hideLocationImageConstraints;
 @synthesize showLocationImageConstraints = _showLocationImageConstraints;
 @synthesize locationContainerView = _locationContainerView;
@@ -215,6 +206,7 @@ const CGFloat kButtonTrailingSpacing = 10;
         constraintEqualToAnchor:self.centerXAnchor];
     centerX.priority = UILayoutPriorityDefaultHigh;
 
+    // Setup and activate constraints.
     [NSLayoutConstraint activateConstraints:@[
       [_locationContainerView.leadingAnchor
           constraintGreaterThanOrEqualToAnchor:self.leadingAnchor
@@ -226,26 +218,13 @@ const CGFloat kButtonTrailingSpacing = 10;
       [_trailingButton.leadingAnchor
           constraintGreaterThanOrEqualToAnchor:_locationContainerView
                                                    .trailingAnchor],
-      centerX,
-    ]];
-
-    // Setup hiding constraints.
-    _hideButtonConstraints = @[
-      [_trailingButton.widthAnchor constraintEqualToConstant:0],
-      [_trailingButton.heightAnchor constraintEqualToConstant:0],
-      [self.trailingButton.trailingAnchor
-          constraintEqualToAnchor:self.trailingAnchor]
-    ];
-
-    // Setup and activate the show button constraints.
-    _showButtonConstraints = @[
       [_trailingButton.widthAnchor constraintEqualToConstant:kButtonSize],
       [_trailingButton.heightAnchor constraintEqualToConstant:kButtonSize],
       [self.trailingButton.trailingAnchor
           constraintEqualToAnchor:self.trailingAnchor
                          constant:-kButtonTrailingSpacing],
-    ];
-    [NSLayoutConstraint activateConstraints:_showButtonConstraints];
+      centerX,
+    ]];
 
     if (IsInfobarUIRebootEnabled()) {
       // Setup leading button.
@@ -312,18 +291,6 @@ const CGFloat kButtonTrailingSpacing = 10;
         deactivateConstraints:self.showLocationImageConstraints];
     [NSLayoutConstraint activateConstraints:self.hideLocationImageConstraints];
     [self.locationIconImageView removeFromSuperview];
-  }
-}
-
-- (void)hideButton:(BOOL)hidden {
-  if (hidden) {
-    [NSLayoutConstraint deactivateConstraints:self.showButtonConstraints];
-    [NSLayoutConstraint activateConstraints:self.hideButtonConstraints];
-    [self.accessibleElements removeObject:self.trailingButton];
-  } else {
-    [NSLayoutConstraint deactivateConstraints:self.hideButtonConstraints];
-    [NSLayoutConstraint activateConstraints:self.showButtonConstraints];
-    [self.accessibleElements addObject:self.trailingButton];
   }
 }
 
