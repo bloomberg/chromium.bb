@@ -158,10 +158,13 @@ void LayerImpl::PopulateScaledSharedQuadState(viz::SharedQuadState* state,
       visible_layer_rect(), layer_to_content_scale_x, layer_to_content_scale_y);
   scaled_visible_layer_rect.Intersect(gfx::Rect(scaled_bounds));
 
+  EffectNode* effect_node = GetEffectTree().Node(effect_tree_index_);
   state->SetAll(scaled_draw_transform, gfx::Rect(scaled_bounds),
                 scaled_visible_layer_rect, draw_properties().clip_rect,
                 draw_properties().is_clipped, contents_opaque,
-                draw_properties().opacity, SkBlendMode::kSrcOver,
+                draw_properties().opacity,
+                effect_node->has_render_surface ? SkBlendMode::kSrcOver
+                                                : effect_node->blend_mode,
                 GetSortingContextId());
 }
 
