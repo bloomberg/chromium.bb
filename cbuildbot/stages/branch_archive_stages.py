@@ -25,6 +25,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
+from chromite.lib import portage_util
 from chromite.lib import timeout_util
 
 
@@ -71,10 +72,31 @@ class WorkspaceArchiveBase(workspace_stages.WorkspaceStageBase,
   @property
   def dummy_archive_url(self):
     """Uniqify the name across boards."""
-    return os.path.join(
-        config_lib.GetSiteParams().ARCHIVE_URL,
-        self.dummy_config,
-        self.dummy_version)
+    return self.UniqifyArchiveUrl(config_lib.GetSiteParams().ARCHIVE_URL)
+
+  def UniqifyArchiveUrl(self, archive_url):
+    """Return an archive url unique to the current board.
+
+    Args:
+      archive_url: The base archive URL (e.g. 'chromeos-image-archive').
+
+    Returns:
+      The unique archive URL.
+    """
+    return os.path.join(archive_url, self.dummy_config, self.dummy_version)
+
+  def GetDummyArchiveUrls(self):
+    """Returns upload URLs for dummy artifacts based on artifacts.json."""
+    upload_urls = [self.dummy_archive_url]
+    artifacts_file = portage_util.ReadOverlayFile(
+        'scripts/artifacts.json',
+        board=self._current_board,
+        buildroot=self._build_root)
+    if artifacts_file is not None:
+      artifacts_json = json.loads(artifacts_file)
+      extra_upload_urls = artifacts_json.get('extra_upload_urls', [])
+      upload_urls += [self.UniqifyArchiveUrl(url) for url in extra_upload_urls]
+    return upload_urls
 
   def UploadDummyArtifact(self, path):
     """Upload artifacts to the dummy build results."""
@@ -91,10 +113,11 @@ class WorkspaceArchiveBase(workspace_stages.WorkspaceStageBase,
       self.UploadArtifact(artifact_path, archive=True)
 
     gs_context = gs.GSContext(dry_run=self._run.options.debug_forced)
-    with timeout_util.Timeout(20 * 60):
-      logging.info('Dummy artifact from: %s', path)
-      gs_context.CopyInto(path, self.dummy_archive_url,
-                          parallel=True, recursive=True)
+    for url in self.GetDummyArchiveUrls():
+      logging.info('Uploading dummy artifact to %s...', url)
+      with timeout_util.Timeout(20 * 60):
+        logging.info('Dummy artifact from: %s', path)
+        gs_context.CopyInto(path, url, parallel=True, recursive=True)
 
   def PushBoardImage(self):
     """Helper method to run push_image against the dummy boards artifacts."""

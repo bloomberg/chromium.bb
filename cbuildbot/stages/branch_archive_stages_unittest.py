@@ -21,6 +21,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.lib import gs_unittest
 from chromite.lib import osutils
+from chromite.lib import portage_util
 
 # pylint: disable=too-many-ancestors
 # pylint: disable=protected-access
@@ -46,6 +47,10 @@ class BranchArchiveStageTestBase(workspace_stages_unittest.WorkspaceStageBase,
         commands, 'PushImages')
 
     self.write_mock = self.PatchObject(osutils, 'WriteFile')
+
+    self.read_overlay_file_mock = self.PatchObject(
+        portage_util, 'ReadOverlayFile',
+        return_value='{"extra_upload_urls":["gs://chromeos-extra-archive"]}')
 
   def ConstructStage(self):
     """Returns an instance of the stage to be tested.
@@ -96,14 +101,27 @@ class FirmwareArchiveStageTest(BranchArchiveStageTestBase):
         mock.call('/tempdir/board_metadata.json', archive=True),
     ])
 
+    self.assertEqual(self.read_overlay_file_mock.call_args_list, 2 * [
+        mock.call(
+            'scripts/artifacts.json', buildroot=self.workspace, board='board'),
+    ])
+
     self.assertEqual(self.gs_copy_mock.call_args_list, [
         mock.call(
             '/tempdir/firmware_from_source.tar.bz2',
             'gs://chromeos-image-archive/board-firmware/R1-1.2.3',
             recursive=True, parallel=True),
         mock.call(
+            '/tempdir/firmware_from_source.tar.bz2',
+            'gs://chromeos-extra-archive/board-firmware/R1-1.2.3',
+            recursive=True, parallel=True),
+        mock.call(
             '/tempdir/metadata.json',
             'gs://chromeos-image-archive/board-firmware/R1-1.2.3',
+            recursive=True, parallel=True),
+        mock.call(
+            '/tempdir/metadata.json',
+            'gs://chromeos-extra-archive/board-firmware/R1-1.2.3',
             recursive=True, parallel=True),
     ])
 
@@ -150,14 +168,27 @@ class FirmwareArchiveStageTest(BranchArchiveStageTestBase):
         mock.call('/tempdir/board_metadata.json', archive=True),
     ])
 
+    self.assertEqual(self.read_overlay_file_mock.call_args_list, 2 * [
+        mock.call(
+            'scripts/artifacts.json', buildroot=self.workspace, board='board'),
+    ])
+
     self.assertEqual(self.gs_copy_mock.call_args_list, [
         mock.call(
             '/tempdir/firmware_from_source.tar.bz2',
             'gs://chromeos-image-archive/board-firmware-tryjob/R1-1.2.3-bNone',
             recursive=True, parallel=True),
         mock.call(
+            '/tempdir/firmware_from_source.tar.bz2',
+            'gs://chromeos-extra-archive/board-firmware-tryjob/R1-1.2.3-bNone',
+            recursive=True, parallel=True),
+        mock.call(
             '/tempdir/metadata.json',
             'gs://chromeos-image-archive/board-firmware-tryjob/R1-1.2.3-bNone',
+            recursive=True, parallel=True),
+        mock.call(
+            '/tempdir/metadata.json',
+            'gs://chromeos-extra-archive/board-firmware-tryjob/R1-1.2.3-bNone',
             recursive=True, parallel=True),
     ])
 
@@ -266,18 +297,35 @@ class FactoryArchiveStageTest(BranchArchiveStageTestBase):
         mock.call('/tempdir/board_metadata.json', archive=True),
     ])
 
+    self.assertEqual(self.read_overlay_file_mock.call_args_list, 3 * [
+        mock.call(
+            'scripts/artifacts.json', buildroot=self.workspace, board='board')
+    ])
+
     self.assertEqual(self.gs_copy_mock.call_args_list, [
         mock.call(
             '/factory.zip',
             'gs://chromeos-image-archive/board-factory/R1-1.2.3',
             recursive=True, parallel=True),
         mock.call(
+            '/factory.zip',
+            'gs://chromeos-extra-archive/board-factory/R1-1.2.3',
+            recursive=True, parallel=True),
+        mock.call(
             '/tempdir/chromiumos_test_image.tar.xz',
             'gs://chromeos-image-archive/board-factory/R1-1.2.3',
             recursive=True, parallel=True),
         mock.call(
+            '/tempdir/chromiumos_test_image.tar.xz',
+            'gs://chromeos-extra-archive/board-factory/R1-1.2.3',
+            recursive=True, parallel=True),
+        mock.call(
             '/tempdir/metadata.json',
             'gs://chromeos-image-archive/board-factory/R1-1.2.3',
+            recursive=True, parallel=True),
+        mock.call(
+            '/tempdir/metadata.json',
+            'gs://chromeos-extra-archive/board-factory/R1-1.2.3',
             recursive=True, parallel=True),
     ])
 
@@ -365,18 +413,35 @@ class FactoryArchiveStageTest(BranchArchiveStageTestBase):
         mock.call('/tempdir/board_metadata.json', archive=True),
     ])
 
+    self.assertEqual(self.read_overlay_file_mock.call_args_list, 3 * [
+        mock.call(
+            'scripts/artifacts.json', buildroot=self.workspace, board='board'),
+    ])
+
     self.assertEqual(self.gs_copy_mock.call_args_list, [
         mock.call(
             '/factory.zip',
             'gs://chromeos-image-archive/board-factory-tryjob/R1-1.2.3-bNone',
             recursive=True, parallel=True),
         mock.call(
+            '/factory.zip',
+            'gs://chromeos-extra-archive/board-factory-tryjob/R1-1.2.3-bNone',
+            recursive=True, parallel=True),
+        mock.call(
             '/tempdir/chromiumos_test_image.tar.xz',
             'gs://chromeos-image-archive/board-factory-tryjob/R1-1.2.3-bNone',
             recursive=True, parallel=True),
         mock.call(
+            '/tempdir/chromiumos_test_image.tar.xz',
+            'gs://chromeos-extra-archive/board-factory-tryjob/R1-1.2.3-bNone',
+            recursive=True, parallel=True),
+        mock.call(
             '/tempdir/metadata.json',
             'gs://chromeos-image-archive/board-factory-tryjob/R1-1.2.3-bNone',
+            recursive=True, parallel=True),
+        mock.call(
+            '/tempdir/metadata.json',
+            'gs://chromeos-extra-archive/board-factory-tryjob/R1-1.2.3-bNone',
             recursive=True, parallel=True),
     ])
 
