@@ -1029,7 +1029,7 @@ const char kAccessibilityImageLabelsEnabled[] =
 // Whether the opt-in dialog for image labels has been accepted yet. The opt-in
 // need not be shown every time if it has already been accepted once.
 const char kAccessibilityImageLabelsOptInAccepted[] =
-    "settings.a11y.enable_accessibility_image_labels.opt_in_accepted";
+    "settings.a11y.enable_accessibility_image_labels_opt_in_accepted";
 
 #if defined(OS_MACOSX)
 // Boolean that indicates whether the application should show the info bar
