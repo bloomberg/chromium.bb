@@ -580,10 +580,21 @@ void AuthenticatorImpl::MakeCredential(
     blink::mojom::PublicKeyCredentialCreationOptionsPtr options,
     MakeCredentialCallback callback) {
   if (request_) {
-    std::move(callback).Run(blink::mojom::AuthenticatorStatus::PENDING_REQUEST,
-                            nullptr);
-    return;
+    if (OriginIsCryptoTokenExtension(
+            render_frame_host_->GetLastCommittedOrigin())) {
+      // Requests originating from cryptotoken will generally outlive any
+      // navigation events on the tab of the request's sender. Evict pending
+      // requests if cryptotoken sends a new one such that requests from before
+      // a navigation event do not prevent new requests. See
+      // https://crbug.com/935480.
+      Cancel();
+    } else {
+      std::move(callback).Run(
+          blink::mojom::AuthenticatorStatus::PENDING_REQUEST, nullptr);
+      return;
+    }
   }
+  DCHECK(!request_);
 
   UpdateRequestDelegate();
   if (!request_delegate_) {
@@ -720,10 +731,21 @@ void AuthenticatorImpl::GetAssertion(
     blink::mojom::PublicKeyCredentialRequestOptionsPtr options,
     GetAssertionCallback callback) {
   if (request_) {
-    std::move(callback).Run(blink::mojom::AuthenticatorStatus::PENDING_REQUEST,
-                            nullptr);
-    return;
+    if (OriginIsCryptoTokenExtension(
+            render_frame_host_->GetLastCommittedOrigin())) {
+      // Requests originating from cryptotoken will generally outlive any
+      // navigation events on the tab of the request's sender. Evict pending
+      // requests if cryptotoken sends a new one such that requests from before
+      // a navigation event do not prevent new requests. See
+      // https://crbug.com/935480.
+      Cancel();
+    } else {
+      std::move(callback).Run(
+          blink::mojom::AuthenticatorStatus::PENDING_REQUEST, nullptr);
+      return;
+    }
   }
+  DCHECK(!request_);
 
   UpdateRequestDelegate();
   if (!request_delegate_) {
