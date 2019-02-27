@@ -11,12 +11,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/chromeos/account_mapper_util.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/account_manager/account_manager.h"
 #include "services/identity/public/cpp/identity_manager.h"
-
-class AccountTrackerService;
 
 namespace chromeos {
 namespace settings {
@@ -28,7 +25,6 @@ class AccountManagerUIHandler : public ::settings::SettingsPageUIHandler,
   // Accepts non-owning pointers to |AccountManager|, |AccountTrackerService|
   // and |IdentityManager|. Both of these must outlive |this| instance.
   AccountManagerUIHandler(AccountManager* account_manager,
-                          AccountTrackerService* account_tracker_service,
                           identity::IdentityManager* identity_manager);
   ~AccountManagerUIHandler() override;
 
@@ -75,8 +71,6 @@ class AccountManagerUIHandler : public ::settings::SettingsPageUIHandler,
 
   // A non-owning pointer to |IdentityManager|.
   identity::IdentityManager* const identity_manager_;
-
-  chromeos::AccountMapperUtil account_mapper_util_;
 
   // An observer for |AccountManager|. Automatically deregisters when |this| is
   // destructed.

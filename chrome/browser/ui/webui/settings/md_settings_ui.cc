@@ -86,7 +86,6 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/accessibility_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/account_manager_handler.h"
@@ -207,7 +206,6 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
     AddSettingsPageUIHandler(
         std::make_unique<chromeos::settings::AccountManagerUIHandler>(
             account_manager,
-            AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile),
             IdentityManagerFactory::GetForProfile(profile)));
   }
   AddSettingsPageUIHandler(

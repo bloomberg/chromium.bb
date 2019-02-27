@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
 #include "chromeos/account_manager/account_manager.h"
 #include "chromeos/account_manager/account_manager_factory.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/user_manager/user.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -52,15 +51,27 @@ AccountManager::AccountKey GetAccountKeyFromJsCallback(
   return AccountManager::AccountKey{id, account_type};
 }
 
+bool IsSameAccount(const AccountManager::AccountKey& account_key,
+                   const AccountId& account_id) {
+  switch (account_key.account_type) {
+    case chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA:
+      return (account_id.GetAccountType() == AccountType::GOOGLE) &&
+             (account_id.GetGaiaId() == account_key.id);
+    case chromeos::account_manager::AccountType::ACCOUNT_TYPE_ACTIVE_DIRECTORY:
+      return (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY) &&
+             (account_id.GetObjGuid() == account_key.id);
+    case chromeos::account_manager::AccountType::ACCOUNT_TYPE_UNSPECIFIED:
+      return false;
+  }
+}
+
 }  // namespace
 
 AccountManagerUIHandler::AccountManagerUIHandler(
     AccountManager* account_manager,
-    AccountTrackerService* account_tracker_service,
     identity::IdentityManager* identity_manager)
     : account_manager_(account_manager),
       identity_manager_(identity_manager),
-      account_mapper_util_(account_tracker_service),
       account_manager_observer_(this),
       identity_manager_observer_(this),
       weak_factory_(this) {
@@ -129,20 +140,15 @@ void AccountManagerUIHandler::OnGetAccounts(
     account.SetInteger("accountType", account_key.account_type);
     account.SetBoolean("isDeviceAccount", false);
 
-    const std::string oauth_account_id =
-        account_mapper_util_.AccountKeyToOAuthAccountId(account_key);
-    account.SetBoolean(
-        "isSignedIn",
-        identity_manager_->HasAccountWithRefreshToken(oauth_account_id) &&
-            !identity_manager_
-                 ->HasAccountWithRefreshTokenInPersistentErrorState(
-                     oauth_account_id));
-
     base::Optional<AccountInfo> maybe_account_info =
         identity_manager_->FindAccountInfoForAccountWithRefreshTokenByGaiaId(
             account_key.id);
     DCHECK(maybe_account_info.has_value());
 
+    account.SetBoolean(
+        "isSignedIn",
+        !identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
+            maybe_account_info->account_id));
     account.SetString("fullName", maybe_account_info->full_name);
     account.SetString("email", maybe_account_info->email);
     if (!maybe_account_info->account_image.IsEmpty()) {
@@ -158,7 +164,7 @@ void AccountManagerUIHandler::OnGetAccounts(
                             default_icon.GetRepresentation(1.0f).GetBitmap()));
     }
 
-    if (account_mapper_util_.IsEqual(account_key, device_account_id)) {
+    if (IsSameAccount(account_key, device_account_id)) {
       device_account = std::move(account);
     } else {
       accounts.GetList().push_back(std::move(account));
@@ -203,7 +209,7 @@ void AccountManagerUIHandler::HandleRemoveAccount(const base::ListValue* args) {
           ->GetAccountId();
   const AccountManager::AccountKey account_key =
       GetAccountKeyFromJsCallback(dictionary);
-  if (account_mapper_util_.IsEqual(account_key, device_account_id)) {
+  if (IsSameAccount(account_key, device_account_id)) {
     // It should not be possible to remove a device account.
     return;
   }
