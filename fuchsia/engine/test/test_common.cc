@@ -12,7 +12,6 @@
 #include "fuchsia/base/mem_buffer_util.h"
 
 namespace cr_fuchsia {
-namespace test {
 
 MockNavigationObserver::MockNavigationObserver() = default;
 
@@ -39,5 +38,4 @@ std::string StringFromMemBufferOrDie(const fuchsia::mem::Buffer& buffer) {
   return output;
 }
 
-}  // namespace test
 }  // namespace cr_fuchsia

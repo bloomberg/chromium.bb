@@ -12,7 +12,6 @@
 #include "net/test/embedded_test_server/default_handlers.h"
 
 namespace cr_fuchsia {
-namespace test {
 
 namespace {
 zx_handle_t g_context_channel = ZX_HANDLE_INVALID;
@@ -74,5 +73,4 @@ ContextImpl* WebEngineBrowserTest::context_impl() const {
       ->context();
 }
 
-}  // namespace test
 }  // namespace cr_fuchsia

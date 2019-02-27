@@ -16,7 +16,6 @@
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 
 namespace cr_fuchsia {
-namespace test {
 
 // Base test class used for testing the WebEngine Context FIDL service in
 // integration.
@@ -63,7 +62,6 @@ class WebEngineBrowserTest : public content::BrowserTestBase {
   DISALLOW_COPY_AND_ASSIGN(WebEngineBrowserTest);
 };
 
-}  // namespace test
 }  // namespace cr_fuchsia
 
 #endif  // FUCHSIA_ENGINE_TEST_WEB_ENGINE_BROWSER_TEST_H_

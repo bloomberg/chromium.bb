@@ -15,9 +15,6 @@
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "ui/ozone/public/ozone_switches.h"
 
-namespace cr_fuchsia {
-namespace test {
-
 namespace {
 
 class WebEngineTestLauncherDelegate : public content::TestLauncherDelegate {
@@ -47,7 +44,8 @@ class WebEngineTestLauncherDelegate : public content::TestLauncherDelegate {
     zx_status_t result =
         zx::channel::create(0, &client_channel, &server_channel);
     ZX_CHECK(result == ZX_OK, result) << "zx::channel::create";
-    WebEngineBrowserTest::SetContextClientChannel(std::move(client_channel));
+    cr_fuchsia::WebEngineBrowserTest::SetContextClientChannel(
+        std::move(client_channel));
 
     return new WebEngineMainDelegate(std::move(server_channel));
   }
@@ -60,9 +58,6 @@ class WebEngineTestLauncherDelegate : public content::TestLauncherDelegate {
 
 }  // namespace
 
-}  // namespace test
-}  // namespace cr_fuchsia
-
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
@@ -73,6 +68,6 @@ int main(int argc, char** argv) {
   if (parallel_jobs > 1U) {
     parallel_jobs /= 2U;
   }
-  cr_fuchsia::test::WebEngineTestLauncherDelegate launcher_delegate;
+  ::WebEngineTestLauncherDelegate launcher_delegate;
   return LaunchTests(&launcher_delegate, parallel_jobs, argc, argv);
 }

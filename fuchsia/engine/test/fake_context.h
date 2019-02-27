@@ -16,7 +16,6 @@
 #include "fuchsia/fidl/chromium/web/cpp/fidl_test_base.h"
 
 namespace cr_fuchsia {
-namespace test {
 
 // A fake Frame implementation that manages its own lifetime.
 class FakeFrame : public chromium::web::testing::Frame_TestBase {
@@ -86,7 +85,6 @@ class FakeContext : public chromium::web::testing::Context_TestBase {
   DISALLOW_COPY_AND_ASSIGN(FakeContext);
 };
 
-}  // namespace test
 }  // namespace cr_fuchsia
 
 #endif  // FUCHSIA_ENGINE_TEST_FAKE_CONTEXT_H_
