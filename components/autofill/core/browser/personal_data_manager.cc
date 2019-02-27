@@ -1170,8 +1170,10 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
                                         &labels);
   DCHECK_EQ(unique_suggestions.size(), labels.size());
   for (size_t i = 0; i < labels.size(); i++) {
+    // A suggestion's label has one line of disambiguating information to show
+    // to the user. However, when the two-line suggestion display experiment is
+    // enabled on desktop, label is replaced by additional label.
     unique_suggestions[i].label = labels[i];
-    // Used when two-line display is enabled.
     unique_suggestions[i].additional_label = labels[i];
   }
 
@@ -2077,7 +2079,7 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
         suggestion->label = credit_card->NetworkOrBankNameAndLastFourDigits();
 #else
         suggestion->label = credit_card->ObfuscatedLastFourDigits();
-        // Ad the card number with expiry information in the additional
+        // Add the card number with expiry information in the additional
         // label portion so that we an show it when two-line display is
         // enabled.
         suggestion->additional_label =
