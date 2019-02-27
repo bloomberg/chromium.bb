@@ -71,6 +71,7 @@ class ASH_EXPORT LoginBigUserView : public NonAccessibleView,
 
   // views::View:
   void RequestFocus() override;
+  void ChildPreferredSizeChanged(views::View* child) override;
 
   // WallpaperControllerObserver:
   void OnWallpaperBlurChanged() override;
