@@ -582,9 +582,9 @@ void DockKeyboard() {
 
   // Open a tab in incognito.
   [ChromeEarlGrey openNewIncognitoTab];
-  [ChromeEarlGreyUI focusOmnibox];  // To simulate a user navigating.
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);
-  [ChromeEarlGrey loadURL:URL];
+  NSString* omniboxText = base::SysUTF8ToNSString(URL.spec() + "\n");
+  [ChromeEarlGreyUI focusOmniboxAndType:omniboxText];
   [ChromeEarlGrey waitForWebViewContainingText:"Profile form"];
 
   // Bring up the keyboard by tapping the city, which is the element before the
@@ -613,9 +613,9 @@ void DockKeyboard() {
 
   // Open a tab in incognito.
   [ChromeEarlGrey openNewIncognitoTab];
-  [ChromeEarlGreyUI focusOmnibox];  // To simulate a user navigating.
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);
-  [ChromeEarlGrey loadURL:URL];
+  NSString* omniboxText = base::SysUTF8ToNSString(URL.spec() + "\n");
+  [ChromeEarlGreyUI focusOmniboxAndType:omniboxText];
   [ChromeEarlGrey waitForWebViewContainingText:"Profile form"];
 
   // Bring up the keyboard by tapping the city, which is the element before the

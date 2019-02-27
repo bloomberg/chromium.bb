@@ -30,13 +30,10 @@ const CGFloat kVerticalOffset = 6;
 @property(nonatomic, weak) id<OmniboxPopupPositioner> positioner;
 @property(nonatomic, weak) UIViewController* viewController;
 @property(nonatomic, strong) UIView* popupContainerView;
+@property(nonatomic) UIViewPropertyAnimator* animator;
 @end
 
 @implementation OmniboxPopupPresenter
-@synthesize viewController = _viewController;
-@synthesize positioner = _positioner;
-@synthesize popupContainerView = _popupContainerView;
-@synthesize bottomConstraint = _bottomConstraint;
 
 - (instancetype)initWithPopupPositioner:(id<OmniboxPopupPositioner>)positioner
                     popupViewController:(UIViewController*)viewController
@@ -87,15 +84,17 @@ const CGFloat kVerticalOffset = 6;
     self.bottomConstraint.active = YES;
   }
 
+  [self.animator stopAnimation:YES];
+
   if (popup.bounds.size.height == 0) {
     // Animate if it expanding.
-    [UIView animateWithDuration:kExpandAnimationDuration
-                          delay:0
-                        options:UIViewAnimationOptionCurveEaseInOut
-                     animations:^{
-                       [[popup superview] layoutIfNeeded];
-                     }
-                     completion:nil];
+    self.animator = [[UIViewPropertyAnimator alloc]
+        initWithDuration:kExpandAnimationDuration
+                   curve:UIViewAnimationCurveEaseInOut
+              animations:^{
+                [[popup superview] layoutIfNeeded];
+              }];
+    [self.animator startAnimation];
   }
 }
 
@@ -106,17 +105,20 @@ const CGFloat kVerticalOffset = 6;
     self.bottomConstraint.active = NO;
   }
 
-  [UIView animateWithDuration:kCollapseAnimationDuration
-      delay:0
-      options:UIViewAnimationOptionCurveEaseInOut
-      animations:^{
-        [[self.popupContainerView superview] layoutIfNeeded];
-      }
-      completion:^(BOOL) {
-        [retainedViewController willMoveToParentViewController:nil];
-        [retainedPopupView removeFromSuperview];
-        [retainedViewController removeFromParentViewController];
-      }];
+  [self.animator stopAnimation:YES];
+
+  self.animator = [[UIViewPropertyAnimator alloc]
+      initWithDuration:kCollapseAnimationDuration
+                 curve:UIViewAnimationCurveEaseInOut
+            animations:^{
+              [[self.popupContainerView superview] layoutIfNeeded];
+            }];
+  [self.animator addCompletion:^(UIViewAnimatingPosition) {
+    [retainedViewController willMoveToParentViewController:nil];
+    [retainedPopupView removeFromSuperview];
+    [retainedViewController removeFromParentViewController];
+  }];
+  [self.animator startAnimation];
 }
 
 #pragma mark - Private
