@@ -24,6 +24,10 @@ CastComponent::CastComponent(
     fidl::InterfaceRequest<fuchsia::sys::ComponentController>
         controller_request)
     : WebComponent(runner, std::move(context), std::move(controller_request)),
+      queryable_data_(frame(),
+                      startup_context()
+                          ->incoming_services()
+                          ->ConnectToService<chromium::cast::QueryableData>()),
       navigation_observer_binding_(this) {
   base::AutoReset<bool> constructor_active_reset(&constructor_active_, true);
 

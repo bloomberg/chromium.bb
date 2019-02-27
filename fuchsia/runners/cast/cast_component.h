@@ -12,6 +12,7 @@
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "fuchsia/runners/cast/cast_channel_bindings.h"
 #include "fuchsia/runners/cast/named_message_port_connector.h"
+#include "fuchsia/runners/cast/queryable_data_bindings.h"
 #include "fuchsia/runners/common/web_component.h"
 
 class CastRunner;
@@ -40,6 +41,7 @@ class CastComponent : public WebComponent,
   bool constructor_active_ = false;
   NamedMessagePortConnector connector_;
   std::unique_ptr<CastChannelBindings> cast_channel_;
+  QueryableDataBindings queryable_data_;
 
   fidl::Binding<chromium::web::NavigationEventObserver>
       navigation_observer_binding_;

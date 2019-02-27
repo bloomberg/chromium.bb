@@ -33,6 +33,7 @@ fidl_library("cast_fidl") {
   sources = [
     "fidl/cast/application_config.fidl",
     "fidl/cast/cast_channel.fidl",
+    "fidl/cast/queryable_data.fidl",
   ]
 
   public_deps = [

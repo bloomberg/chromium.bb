@@ -5,6 +5,8 @@
 #ifndef FUCHSIA_BASE_FIT_ADAPTER_H_
 #define FUCHSIA_BASE_FIT_ADAPTER_H_
 
+#include <lib/fit/function.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/optional.h"
