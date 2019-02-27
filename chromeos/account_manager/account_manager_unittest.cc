@@ -226,13 +226,24 @@ TEST_F(AccountManagerTest, TestAccountEmailPersistence) {
 TEST_F(AccountManagerTest, UpdatingAccountEmailShouldNotOverwriteTokens) {
   const std::string new_email = "new-email@example.org";
   account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
-  account_manager_->UpsertAccount(kGaiaAccountKey_, new_email, kGaiaToken);
+  account_manager_->UpdateEmail(kGaiaAccountKey_, new_email);
   scoped_task_environment_.RunUntilIdle();
 
   ResetAndInitializeAccountManager();
   const std::string raw_email = GetAccountEmailBlocking(kGaiaAccountKey_);
   EXPECT_EQ(new_email, raw_email);
   EXPECT_EQ(kGaiaToken, account_manager_->accounts_[kGaiaAccountKey_].token);
+}
+
+TEST_F(AccountManagerTest, UpsertAccountCanUpdateEmail) {
+  const std::string new_email = "new-email@example.org";
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
+  account_manager_->UpsertAccount(kGaiaAccountKey_, new_email, kGaiaToken);
+  scoped_task_environment_.RunUntilIdle();
+
+  ResetAndInitializeAccountManager();
+  const std::string raw_email = GetAccountEmailBlocking(kGaiaAccountKey_);
+  EXPECT_EQ(new_email, raw_email);
 }
 
 TEST_F(AccountManagerTest, UpdatingTokensShouldNotOverwriteAccountEmail) {

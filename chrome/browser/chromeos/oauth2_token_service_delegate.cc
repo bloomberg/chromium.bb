@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "chrome/browser/chromeos/account_mapper_util.h"
 #include "chromeos/account_manager/account_manager.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "content/public/browser/network_service_instance.h"
@@ -44,17 +43,23 @@ const net::BackoffEntry::Policy kBackoffPolicy = {
 // used by the OAuth token service chain. |account_keys| can safely contain Gaia
 // and non-Gaia accounts. Non-Gaia accounts will be filtered out.
 // |account_keys| is the set of accounts that need to be translated.
-// |account_mapper_util| is an unowned pointer to |AccountMapperUtil|.
+// |account_tracker_service| is an unowned pointer.
 std::vector<std::string> GetOAuthAccountIdsFromAccountKeys(
     const std::set<AccountManager::AccountKey>& account_keys,
-    const AccountMapperUtil* const account_mapper_util) {
+    const AccountTrackerService* const account_tracker_service) {
   std::vector<std::string> accounts;
   for (auto& account_key : account_keys) {
-    std::string account_id =
-        account_mapper_util->AccountKeyToOAuthAccountId(account_key);
-    if (!account_id.empty()) {
-      accounts.emplace_back(account_id);
+    if (account_key.account_type !=
+        account_manager::AccountType::ACCOUNT_TYPE_GAIA) {
+      continue;
     }
+
+    std::string account_id =
+        account_tracker_service
+            ->FindAccountInfoByGaiaId(account_key.id /* gaia_id */)
+            .account_id;
+    DCHECK(!account_id.empty());
+    accounts.emplace_back(account_id);
   }
 
   return accounts;
@@ -65,9 +70,7 @@ std::vector<std::string> GetOAuthAccountIdsFromAccountKeys(
 ChromeOSOAuth2TokenServiceDelegate::ChromeOSOAuth2TokenServiceDelegate(
     AccountTrackerService* account_tracker_service,
     chromeos::AccountManager* account_manager)
-    : account_mapper_util_(
-          std::make_unique<AccountMapperUtil>(account_tracker_service)),
-      account_tracker_service_(account_tracker_service),
+    : account_tracker_service_(account_tracker_service),
       account_manager_(account_manager),
       backoff_entry_(&kBackoffPolicy),
       backoff_error_(GoogleServiceAuthError::NONE),
@@ -109,12 +112,14 @@ ChromeOSOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
     return new OAuth2AccessTokenFetcherImmediateError(consumer, backoff_error_);
   }
 
-  const AccountManager::AccountKey& account_key =
-      account_mapper_util_->OAuthAccountIdToAccountKey(account_id);
-
   // |OAuth2TokenService| will manage the lifetime of the released pointer.
   return account_manager_
-      ->CreateAccessTokenFetcher(account_key, url_loader_factory, consumer)
+      ->CreateAccessTokenFetcher(
+          AccountManager::AccountKey{
+              account_tracker_service_->GetAccountInfo(account_id).gaia,
+              account_manager::AccountType::
+                  ACCOUNT_TYPE_GAIA} /* account_key */,
+          url_loader_factory, consumer)
       .release();
 }
 
@@ -131,7 +136,7 @@ bool ChromeOSOAuth2TokenServiceDelegate::RefreshTokenIsAvailable(
   // We intentionally do NOT check if the refresh token associated with
   // |account_id| is valid or not. See crbug.com/919793 for details.
   return base::ContainsValue(GetOAuthAccountIdsFromAccountKeys(
-                                 account_keys_, account_mapper_util_.get()),
+                                 account_keys_, account_tracker_service_),
                              account_id);
 }
 
@@ -184,7 +189,7 @@ std::vector<std::string> ChromeOSOAuth2TokenServiceDelegate::GetAccounts() {
   // details.
 
   return GetOAuthAccountIdsFromAccountKeys(account_keys_,
-                                           account_mapper_util_.get());
+                                           account_tracker_service_);
 }
 
 void ChromeOSOAuth2TokenServiceDelegate::LoadCredentials(
@@ -287,11 +292,31 @@ void ChromeOSOAuth2TokenServiceDelegate::OnTokenUpserted(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   account_keys_.insert(account.key);
 
-  std::string account_id =
-      account_mapper_util_->AccountKeyToOAuthAccountId(account.key);
-  if (account_id.empty()) {
+  if (account.key.account_type !=
+      account_manager::AccountType::ACCOUNT_TYPE_GAIA) {
     return;
   }
+
+  std::string email = account.raw_email;
+  if (email.empty()) {
+    // This is an old, un-migrated account for which we do not have an email id
+    // stored on disk. Check https://crbug.com/933307 and
+    // https://crbug.com/925827 for context.
+
+    // This is an existing account and thus, must be present in
+    // AccountTrackerService.
+    email = account_tracker_service_
+                ->FindAccountInfoByGaiaId(account.key.id /* gaia_id */)
+                .email;
+
+    // Additionally, backfill this email into Account Manager so that we can
+    // remove this block of code with a DCHECK in future (M75) releases.
+    account_manager_->UpdateEmail(account.key, email);
+  }
+
+  std::string account_id = account_tracker_service_->PickAccountIdForAccount(
+      account.key.id /* gaia_id */, email);
+  DCHECK(!account_id.empty());
 
   // Clear any previously cached errors for |account_id|.
   // We cannot directly use |UpdateAuthError| because it does not invoke
@@ -329,13 +354,17 @@ void ChromeOSOAuth2TokenServiceDelegate::OnAccountRemoved(
   if (it == account_keys_.end()) {
     return;
   }
-
   account_keys_.erase(it);
-  std::string account_id =
-      account_mapper_util_->AccountKeyToOAuthAccountId(account.key);
-  if (account_id.empty()) {
+
+  if (account.key.account_type !=
+      account_manager::AccountType::ACCOUNT_TYPE_GAIA) {
     return;
   }
+  std::string account_id =
+      account_tracker_service_
+          ->FindAccountInfoByGaiaId(account.key.id /* gaia_id */)
+          .account_id;
+  DCHECK(!account_id.empty());
 
   ScopedBatchChange batch(this);
 
