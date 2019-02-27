@@ -32,12 +32,14 @@ class CONTENT_EXPORT PictureInPictureServiceImpl final
                     const base::Optional<viz::SurfaceId>& surface_id,
                     const gfx::Size& natural_size,
                     bool show_play_pause_button,
+                    bool show_mute_button,
                     StartSessionCallback) final;
   void EndSession(EndSessionCallback) final;
   void UpdateSession(uint32_t player_id,
                      const base::Optional<viz::SurfaceId>& surface_id,
                      const gfx::Size& natural_size,
-                     bool show_play_pause_button) final;
+                     bool show_play_pause_button,
+                     bool show_mute_button) final;
   void SetDelegate(blink::mojom::PictureInPictureDelegatePtr) final;
 
   void NotifyWindowResized(const gfx::Size&);

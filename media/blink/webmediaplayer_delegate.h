@@ -57,6 +57,7 @@ class WebMediaPlayerDelegate {
     // Called when external controls are activated.
     virtual void OnPlay() = 0;
     virtual void OnPause() = 0;
+    virtual void OnMuted(bool muted) = 0;
     virtual void OnSeekForward(double seconds) = 0;
     virtual void OnSeekBackward(double seconds) = 0;
 

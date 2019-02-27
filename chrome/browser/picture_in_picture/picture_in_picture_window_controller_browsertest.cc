@@ -43,6 +43,7 @@
 #include "ui/gfx/codec/png_codec.h"
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/ui/views/overlay/mute_image_button.h"
 #include "chrome/browser/ui/views/overlay/overlay_window_views.h"
 #include "chrome/browser/ui/views/overlay/playback_image_button.h"
 #include "chrome/browser/ui/views/overlay/skip_ad_label_button.h"
@@ -80,10 +81,14 @@ class MockPictureInPictureWindowController
   MOCK_METHOD0(GetWindowForTesting, content::OverlayWindow*());
   MOCK_METHOD0(UpdateLayerBounds, void());
   MOCK_METHOD0(IsPlayerActive, bool());
+  MOCK_METHOD0(IsPlayerMuted, bool());
   MOCK_METHOD0(GetInitiatorWebContents, content::WebContents*());
   MOCK_METHOD2(UpdatePlaybackState, void(bool, bool));
+  MOCK_METHOD0(UpdateMutedState, void());
   MOCK_METHOD0(TogglePlayPause, bool());
+  MOCK_METHOD0(ToggleMute, bool());
   MOCK_METHOD1(SetAlwaysHidePlayPauseButton, void(bool));
+  MOCK_METHOD1(SetAlwaysHideMuteButton, void(bool));
   MOCK_METHOD0(SkipAd, void());
   MOCK_METHOD0(NextTrack, void());
   MOCK_METHOD0(PreviousTrack, void());
@@ -1450,8 +1455,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_FALSE(is_paused);
 }
 
-// Tests that the back-to-tab, close and resize controls move properly as the
-// window changes quadrants.
+// Tests that the back-to-tab, close, mute and resize controls move properly as
+// the window changes quadrants.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        MovingQuadrantsMovesBackToTabAndResizeControls) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
@@ -1489,6 +1494,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       overlay_window_views->back_to_tab_image_position_for_testing();
   gfx::Point close_button_position =
       overlay_window_views->close_image_position_for_testing();
+  gfx::Point mute_button_position =
+      overlay_window_views->mute_image_position_for_testing();
   gfx::Point resize_button_position =
       overlay_window_views->resize_handle_position_for_testing();
 
@@ -1498,6 +1505,9 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   // The close button should be in the top right corner.
   EXPECT_LT(center.x(), close_button_position.x());
   EXPECT_GT(center.y(), close_button_position.y());
+  // The mute button should be in the bottom left corner.
+  EXPECT_GT(center.x(), mute_button_position.x());
+  EXPECT_LT(center.y(), mute_button_position.y());
   // The resize button should be in the top left corner.
   EXPECT_GT(center.x(), resize_button_position.x());
   EXPECT_GT(center.y(), resize_button_position.y());
@@ -1513,6 +1523,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       overlay_window_views->back_to_tab_image_position_for_testing();
   close_button_position =
       overlay_window_views->close_image_position_for_testing();
+  mute_button_position =
+      overlay_window_views->mute_image_position_for_testing();
   resize_button_position =
       overlay_window_views->resize_handle_position_for_testing();
 
@@ -1522,6 +1534,9 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   // The close button should be in the top left corner.
   EXPECT_GT(center.x(), close_button_position.x());
   EXPECT_GT(center.y(), close_button_position.y());
+  // The mute button should be in the bottom left corner.
+  EXPECT_GT(center.x(), mute_button_position.x());
+  EXPECT_LT(center.y(), mute_button_position.y());
   // The resize button should be in the top right corner.
   EXPECT_LT(center.x(), resize_button_position.x());
   EXPECT_GT(center.y(), resize_button_position.y());
@@ -1537,6 +1552,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       overlay_window_views->back_to_tab_image_position_for_testing();
   close_button_position =
       overlay_window_views->close_image_position_for_testing();
+  mute_button_position =
+      overlay_window_views->mute_image_position_for_testing();
   resize_button_position =
       overlay_window_views->resize_handle_position_for_testing();
 
@@ -1546,6 +1563,9 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   // The close button should be in the top right corner.
   EXPECT_LT(center.x(), close_button_position.x());
   EXPECT_GT(center.y(), close_button_position.y());
+  // The mute button should be in the top left corner.
+  EXPECT_GT(center.x(), mute_button_position.x());
+  EXPECT_GT(center.y(), mute_button_position.y());
   // The resize button should be in the bottom left corner.
   EXPECT_GT(center.x(), resize_button_position.x());
   EXPECT_LT(center.y(), resize_button_position.y());
@@ -1560,6 +1580,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       overlay_window_views->back_to_tab_image_position_for_testing();
   close_button_position =
       overlay_window_views->close_image_position_for_testing();
+  mute_button_position =
+      overlay_window_views->mute_image_position_for_testing();
   resize_button_position =
       overlay_window_views->resize_handle_position_for_testing();
 
@@ -1569,6 +1591,9 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   // The close button should be in the top right corner.
   EXPECT_LT(center.x(), close_button_position.x());
   EXPECT_GT(center.y(), close_button_position.y());
+  // The mute button should be in the top left corner.
+  EXPECT_GT(center.x(), mute_button_position.x());
+  EXPECT_GT(center.y(), mute_button_position.y());
   // The resize button should be in the bottom right corner.
   EXPECT_LT(center.x(), resize_button_position.x());
   EXPECT_LT(center.y(), resize_button_position.y());
@@ -2556,3 +2581,197 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
 }
+
+#if !defined(OS_ANDROID)
+
+class MuteButtonPictureInPictureWindowControllerBrowserTest
+    : public PictureInPictureWindowControllerBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PictureInPictureWindowControllerBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII("enable-blink-features", "MuteButton");
+  }
+};
+
+// Tests the mute button and its state in the Picture-in-Picture window when
+// experimental feature MuteButton is enabled.
+IN_PROC_BROWSER_TEST_F(MuteButtonPictureInPictureWindowControllerBrowserTest,
+                       MuteButtonEnabled) {
+  LoadTabAndEnterPictureInPicture(browser());
+
+  OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
+      window_controller()->GetWindowForTesting());
+  EXPECT_EQ(overlay_window->muted_state_for_testing(),
+            OverlayWindowViews::MutedState::kUnmuted);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Play video-only mediastream.
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "changeVideoSrcToMediaStream();", &result));
+  EXPECT_TRUE(result);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(overlay_window->muted_state_for_testing(),
+            OverlayWindowViews::MutedState::kNoAudio);
+
+  // Play back video.
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "changeVideoSrc();", &result));
+  EXPECT_TRUE(result);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(overlay_window->muted_state_for_testing(),
+            OverlayWindowViews::MutedState::kUnmuted);
+
+  // Play no-audio track video.
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "changeVideoSrcToNoAudioTrackVideo();", &result));
+  EXPECT_TRUE(result);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(overlay_window->muted_state_for_testing(),
+            OverlayWindowViews::MutedState::kNoAudio);
+
+  // Play back video.
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "changeVideoSrc();", &result));
+  EXPECT_TRUE(result);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(overlay_window->muted_state_for_testing(),
+            OverlayWindowViews::MutedState::kUnmuted);
+
+  // Mute second video and enter Picture-in-Picture for second video.
+  EXPECT_TRUE(
+      content::ExecuteScript(active_web_contents, "secondVideo.muted = true;"));
+  ASSERT_TRUE(
+      content::ExecuteScript(active_web_contents, "secondPictureInPicture();"));
+  base::string16 expected_title = base::ASCIIToUTF16("left");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(overlay_window->muted_state_for_testing(),
+            OverlayWindowViews::MutedState::kMuted);
+
+  // Re-enter Picture-in-Picture for first video.
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  EXPECT_TRUE(result);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(overlay_window->muted_state_for_testing(),
+            OverlayWindowViews::MutedState::kUnmuted);
+
+  // Mute video from website.
+  EXPECT_TRUE(
+      content::ExecuteScript(active_web_contents, "video.muted = true;"));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(overlay_window->muted_state_for_testing(),
+            OverlayWindowViews::MutedState::kMuted);
+
+  // Unmute video from website.
+  EXPECT_TRUE(
+      content::ExecuteScript(active_web_contents, "video.muted = false;"));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(overlay_window->muted_state_for_testing(),
+            OverlayWindowViews::MutedState::kUnmuted);
+
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents,
+                                     "addVolumeChangeEventListener();"));
+
+  // Simulates user clicking mute button.
+  window_controller()->ToggleMute();
+  expected_title = base::ASCIIToUTF16("muted: true");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(overlay_window->muted_state_for_testing(),
+            OverlayWindowViews::MutedState::kMuted);
+
+  // Simulates user clicking unmute button.
+  window_controller()->ToggleMute();
+  expected_title = base::ASCIIToUTF16("muted: false");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(overlay_window->muted_state_for_testing(),
+            OverlayWindowViews::MutedState::kUnmuted);
+
+  // Umute second video and enter Picture-in-Picture for second video.
+  EXPECT_TRUE(content::ExecuteScript(active_web_contents,
+                                     "secondVideo.muted = false;"));
+  ASSERT_TRUE(
+      content::ExecuteScript(active_web_contents, "secondPictureInPicture();"));
+  expected_title = base::ASCIIToUTF16("left");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(overlay_window->muted_state_for_testing(),
+            OverlayWindowViews::MutedState::kUnmuted);
+}
+
+// Tests the mute button and its state in the Picture-in-Picture window when
+// experimental feature MuteButton is disabled.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       MuteButtonDisabled) {
+  LoadTabAndEnterPictureInPicture(browser());
+
+  OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
+      window_controller()->GetWindowForTesting());
+  EXPECT_EQ(overlay_window->muted_state_for_testing(),
+            OverlayWindowViews::MutedState::kNoAudio);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Play video-only mediastream.
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "changeVideoSrcToMediaStream();", &result));
+  EXPECT_TRUE(result);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(overlay_window->muted_state_for_testing(),
+            OverlayWindowViews::MutedState::kNoAudio);
+
+  // Play back video.
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "changeVideoSrc();", &result));
+  EXPECT_TRUE(result);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(overlay_window->muted_state_for_testing(),
+            OverlayWindowViews::MutedState::kNoAudio);
+
+  // Play no-audio track video.
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "changeVideoSrcToNoAudioTrackVideo();", &result));
+  EXPECT_TRUE(result);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(overlay_window->muted_state_for_testing(),
+            OverlayWindowViews::MutedState::kNoAudio);
+
+  // Play back video.
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "changeVideoSrc();", &result));
+  EXPECT_TRUE(result);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(overlay_window->muted_state_for_testing(),
+            OverlayWindowViews::MutedState::kNoAudio);
+
+  // Mute video from website.
+  EXPECT_TRUE(
+      content::ExecuteScript(active_web_contents, "video.muted = true;"));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(overlay_window->muted_state_for_testing(),
+            OverlayWindowViews::MutedState::kNoAudio);
+
+  // Unmute video from website.
+  EXPECT_TRUE(
+      content::ExecuteScript(active_web_contents, "video.muted = false;"));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(overlay_window->muted_state_for_testing(),
+            OverlayWindowViews::MutedState::kNoAudio);
+}
+
+#endif  // #if !defined(OS_ANDROID)

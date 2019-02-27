@@ -177,6 +177,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   void OnIdleTimeout() override;
   void OnPlay() override;
   void OnPause() override;
+  void OnMuted(bool muted) override;
   void OnSeekForward(double seconds) override;
   void OnSeekBackward(double seconds) override;
   void OnVolumeMultiplierUpdate(double multiplier) override;

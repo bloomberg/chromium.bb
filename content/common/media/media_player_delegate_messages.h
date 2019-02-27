@@ -38,6 +38,10 @@ IPC_MESSAGE_ROUTED1(MediaPlayerDelegateMsg_Pause,
 IPC_MESSAGE_ROUTED1(MediaPlayerDelegateMsg_Play,
                     int /* delegate_id, distinguishes instances */)
 
+IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_Muted,
+                    int /* delegate_id, distinguishes instances */,
+                    bool /* the new muted status */)
+
 IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_SeekForward,
                     int /* delegate_id, distinguishes instances */,
                     base::TimeDelta /* seek_time */)

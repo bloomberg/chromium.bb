@@ -588,6 +588,7 @@ class WebMediaPlayerMSTest
   void PictureInPictureStopped() override {}
   void RequestPlay() override {}
   void RequestPause() override {}
+  void RequestMuted(bool muted) override {}
 
   // Implementation of cc::VideoFrameProvider::Client
   void StopUsingProvider() override;

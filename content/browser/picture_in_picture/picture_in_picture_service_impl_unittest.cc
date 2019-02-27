@@ -56,6 +56,7 @@ class TestOverlayWindow : public OverlayWindow {
   ui::Layer* GetWindowBackgroundLayer() override { return nullptr; }
   ui::Layer* GetVideoLayer() override { return nullptr; }
   gfx::Rect GetVideoBounds() override { return gfx::Rect(); }
+  void SetMutedState(MutedState muted_state) override {}
   void SetSkipAdButtonVisibility(bool is_visible) override {}
   void SetNextTrackButtonVisibility(bool is_visible) override {}
   void SetPreviousTrackButtonVisibility(bool is_visible) override {}
@@ -127,7 +128,8 @@ TEST_F(PictureInPictureServiceImplTest, EnterPictureInPicture) {
               EnterPictureInPicture(contents(), surface_id, gfx::Size(42, 42)));
 
   service().StartSession(kPlayerVideoOnlyId, surface_id, gfx::Size(42, 42),
-                         true /* show_play_pause_button */, base::DoNothing());
+                         true /* show_play_pause_button */,
+                         true /* show_mute_button */, base::DoNothing());
   EXPECT_TRUE(service().player_id().has_value());
   EXPECT_EQ(kPlayerVideoOnlyId, service().player_id()->delegate_id);
 

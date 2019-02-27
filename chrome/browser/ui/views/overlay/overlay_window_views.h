@@ -19,6 +19,7 @@
 namespace views {
 class BackToTabImageButton;
 class CloseImageButton;
+class MuteImageButton;
 class PlaybackImageButton;
 class ResizeHandleButton;
 class SkipAdLabelButton;
@@ -49,6 +50,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   void UpdateVideoSize(const gfx::Size& natural_size) override;
   void SetPlaybackState(PlaybackState playback_state) override;
   void SetAlwaysHidePlayPauseButton(bool is_visible) override;
+  void SetMutedState(MutedState muted) override;
   void SetSkipAdButtonVisibility(bool is_visible) override;
   void SetNextTrackButtonVisibility(bool is_visible) override;
   void SetPreviousTrackButtonVisibility(bool is_visible) override;
@@ -73,6 +75,7 @@ class OverlayWindowViews : public content::OverlayWindow,
 
   // Gets the bounds of the controls.
   gfx::Rect GetBackToTabControlsBounds();
+  gfx::Rect GetMuteControlsBounds();
   gfx::Rect GetSkipAdControlsBounds();
   gfx::Rect GetCloseControlsBounds();
   gfx::Rect GetResizeHandleControlsBounds();
@@ -91,12 +94,14 @@ class OverlayWindowViews : public content::OverlayWindow,
   views::PlaybackImageButton* play_pause_controls_view_for_testing() const;
   views::TrackImageButton* next_track_controls_view_for_testing() const;
   views::TrackImageButton* previous_track_controls_view_for_testing() const;
-  gfx::Point back_to_tab_image_position_for_testing() const;
   views::SkipAdLabelButton* skip_ad_controls_view_for_testing() const;
+  gfx::Point back_to_tab_image_position_for_testing() const;
   gfx::Point close_image_position_for_testing() const;
+  gfx::Point mute_image_position_for_testing() const;
   gfx::Point resize_handle_position_for_testing() const;
   views::View* controls_parent_view_for_testing() const;
   OverlayWindowViews::PlaybackState playback_state_for_testing() const;
+  OverlayWindowViews::MutedState muted_state_for_testing() const;
 
  private:
   // Determine the intended bounds of |this|. This should be called when there
@@ -127,6 +132,7 @@ class OverlayWindowViews : public content::OverlayWindow,
 
   ui::Layer* GetControlsScrimLayer();
   ui::Layer* GetBackToTabControlsLayer();
+  ui::Layer* GetMuteControlsLayer();
   ui::Layer* GetCloseControlsLayer();
   ui::Layer* GetResizeHandleLayer();
   ui::Layer* GetControlsParentLayer();
@@ -135,6 +141,11 @@ class OverlayWindowViews : public content::OverlayWindow,
   // |play_pause_controls_view_| toggled state to reflect the current playing
   // state.
   void TogglePlayPause();
+
+  // Toggles the mute control through the |controller_| and updates the
+  // |mute_controls_view_| toggled state to reflect the current muted
+  // state.
+  void ToggleMute();
 
   // Not owned; |controller_| owns |this|.
   content::PictureInPictureWindowController* controller_;
@@ -178,6 +189,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   // track and next track control views.
   std::unique_ptr<views::View> controls_parent_view_;
   std::unique_ptr<views::BackToTabImageButton> back_to_tab_controls_view_;
+  std::unique_ptr<views::MuteImageButton> mute_controls_view_;
   std::unique_ptr<views::SkipAdLabelButton> skip_ad_controls_view_;
   std::unique_ptr<views::CloseImageButton> close_controls_view_;
   std::unique_ptr<views::ResizeHandleButton> resize_handle_view_;
@@ -194,6 +206,10 @@ class OverlayWindowViews : public content::OverlayWindow,
   // Current playback state on the video in Picture-in-Picture window. It is
   // used to toggle play/pause/replay button.
   PlaybackState playback_state_for_testing_ = kEndOfVideo;
+
+  // Current muted state on the video in Picture-in-Picture window. It is
+  // used to toggle mute button.
+  MutedState muted_state_for_testing_ = kNoAudio;
 
   // Whether or not the skip ad button will be shown. This is the
   // case when Media Session "skipad" action is handled by the website.

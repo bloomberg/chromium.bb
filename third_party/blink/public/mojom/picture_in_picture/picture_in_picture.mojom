@@ -28,6 +28,8 @@ interface PictureInPictureService {
   // natural_size: Size of the video frames.
   // show_play_pause_button: Whether a play/pause control should be offered in
   //                         the Picture-in-Picture window.
+  // show_mute_button: Whether a mute control should be offered in the
+  //                   Picture-in-Picture window.
   // NOTE: this method shouldn't be called twice in a raw. An interleaved call
   // to EndSession() would be expected. In case of some parameters have changed,
   // UpdateSession() should be called.
@@ -35,7 +37,8 @@ interface PictureInPictureService {
       uint32 player_id,
       viz.mojom.SurfaceId? surface_id,
       gfx.mojom.Size natural_size,
-      bool show_play_pause_button) => (gfx.mojom.Size size);
+      bool show_play_pause_button,
+      bool show_mute_button) => (gfx.mojom.Size size);
 
   // Notify the service to end the Picture-in-Picture session. It will close
   // the Picture-in-Picture window.
@@ -49,7 +52,8 @@ interface PictureInPictureService {
       uint32 player_id,
       viz.mojom.SurfaceId? surface_id,
       gfx.mojom.Size natural_size,
-      bool show_play_pause_button);
+      bool show_play_pause_button,
+      bool show_mute_button);
 
   // Associate a PictureInPictureDelegate with the service. All changes in
   // Picture-in-Picture states will be sent to the delegate. Only one delegate

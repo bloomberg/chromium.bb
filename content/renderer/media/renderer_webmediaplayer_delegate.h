@@ -89,6 +89,7 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
  private:
   void OnMediaDelegatePause(int player_id);
   void OnMediaDelegatePlay(int player_id);
+  void OnMediaDelegateMuted(int player_id, bool muted);
   void OnMediaDelegateSeekForward(int player_id, base::TimeDelta seek_time);
   void OnMediaDelegateSeekBackward(int player_id, base::TimeDelta seek_time);
   void OnMediaDelegateSuspendAllMediaPlayers();

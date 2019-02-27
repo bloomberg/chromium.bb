@@ -438,6 +438,7 @@ class CORE_EXPORT HTMLMediaElement
   bool IsInAutoPIP() const override { return false; }
   void RequestPlay() final;
   void RequestPause() final;
+  void RequestMuted(bool muted) final;
 
   void LoadTimerFired(TimerBase*);
   void ProgressEventTimerFired(TimerBase*);

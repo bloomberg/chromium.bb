@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/enter_picture_in_picture_event.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -120,7 +121,7 @@ void PictureInPictureControllerImpl::EnterPictureInPicture(
       element->GetWebMediaPlayer()->GetDelegateId(),
       element->GetWebMediaPlayer()->GetSurfaceId(),
       element->GetWebMediaPlayer()->NaturalSize(),
-      ShouldShowPlayPauseButton(*element),
+      ShouldShowPlayPauseButton(*element), ShouldShowMuteButton(*element),
       WTF::Bind(&PictureInPictureControllerImpl::OnEnteredPictureInPicture,
                 WrapPersistent(this), WrapPersistent(element),
                 WrapPersistent(resolver)));
@@ -306,13 +307,21 @@ void PictureInPictureControllerImpl::OnPictureInPictureStateChange() {
       picture_in_picture_element_->GetWebMediaPlayer()->GetDelegateId(),
       picture_in_picture_element_->GetWebMediaPlayer()->GetSurfaceId(),
       picture_in_picture_element_->GetWebMediaPlayer()->NaturalSize(),
-      ShouldShowPlayPauseButton(*picture_in_picture_element_));
+      ShouldShowPlayPauseButton(*picture_in_picture_element_),
+      ShouldShowMuteButton(*picture_in_picture_element_));
 }
 
 void PictureInPictureControllerImpl::PictureInPictureWindowSizeChanged(
     const blink::WebSize& size) {
   if (picture_in_picture_window_)
     picture_in_picture_window_->OnResize(size);
+}
+
+bool PictureInPictureControllerImpl::ShouldShowMuteButton(
+    const HTMLVideoElement& element) {
+  DCHECK(GetSupplementable());
+  return element.HasAudio() && origin_trials::MuteButtonEnabled(
+                                   GetSupplementable()->GetExecutionContext());
 }
 
 void PictureInPictureControllerImpl::Trace(blink::Visitor* visitor) {

@@ -14,6 +14,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/overlay/back_to_tab_image_button.h"
 #include "chrome/browser/ui/views/overlay/close_image_button.h"
+#include "chrome/browser/ui/views/overlay/mute_image_button.h"
 #include "chrome/browser/ui/views/overlay/playback_image_button.h"
 #include "chrome/browser/ui/views/overlay/resize_handle_button.h"
 #include "chrome/browser/ui/views/overlay/skip_ad_label_button.h"
@@ -117,6 +118,7 @@ class OverlayWindowFrameView : public views::NonClientFrameView {
     OverlayWindowViews* window = static_cast<OverlayWindowViews*>(widget_);
     if (window->AreControlsVisible() &&
         (window->GetBackToTabControlsBounds().Contains(point) ||
+         window->GetMuteControlsBounds().Contains(point) ||
          window->GetSkipAdControlsBounds().Contains(point) ||
          window->GetCloseControlsBounds().Contains(point) ||
          window->GetPlayPauseControlsBounds().Contains(point) ||
@@ -189,6 +191,7 @@ OverlayWindowViews::OverlayWindowViews(
       controls_scrim_view_(new views::View()),
       controls_parent_view_(new views::View()),
       back_to_tab_controls_view_(new views::BackToTabImageButton(this)),
+      mute_controls_view_(new views::MuteImageButton(this)),
       skip_ad_controls_view_(new views::SkipAdLabelButton(this)),
       close_controls_view_(new views::CloseImageButton(this)),
 #if defined(OS_CHROMEOS)
@@ -365,6 +368,13 @@ void OverlayWindowViews::SetUpViews() {
   back_to_tab_controls_view_->layer()->set_name("BackToTabControlsView");
   back_to_tab_controls_view_->set_owned_by_client();
 
+  // views::View that holds the mute image button. -------------------------
+  mute_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
+  mute_controls_view_->layer()->SetFillsBoundsOpaquely(false);
+  mute_controls_view_->layer()->set_name("MuteControlsView");
+  mute_controls_view_->SetMutedState(kNoAudio);
+  mute_controls_view_->set_owned_by_client();
+
   // views::View that holds the skip-ad label button. -------------------------
   skip_ad_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
   skip_ad_controls_view_->layer()->SetFillsBoundsOpaquely(true);
@@ -408,6 +418,7 @@ void OverlayWindowViews::SetUpViews() {
   GetContentsView()->AddChildView(controls_parent_view_.get());
   GetContentsView()->AddChildView(skip_ad_controls_view_.get());
   GetContentsView()->AddChildView(back_to_tab_controls_view_.get());
+  GetContentsView()->AddChildView(mute_controls_view_.get());
   GetContentsView()->AddChildView(close_controls_view_.get());
 #if defined(OS_CHROMEOS)
   GetContentsView()->AddChildView(resize_handle_view_.get());
@@ -458,6 +469,7 @@ void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
 
   // We need to do more than usual visibility change because otherwise control
   // is accessible via accessibility tools.
+  mute_controls_view_->ToggleVisibility(is_visible);
   skip_ad_controls_view_->ToggleVisibility(is_visible && show_skip_ad_button_);
 
 #if defined(OS_CHROMEOS)
@@ -475,6 +487,7 @@ void OverlayWindowViews::UpdateControlsBounds() {
 
   WindowQuadrant quadrant = GetCurrentWindowQuadrant(GetBounds(), controller_);
   back_to_tab_controls_view_->SetPosition(GetBounds().size(), quadrant);
+  mute_controls_view_->SetPosition(GetBounds().size(), quadrant);
   skip_ad_controls_view_->SetPosition(GetBounds().size());
   close_controls_view_->SetPosition(GetBounds().size(), quadrant);
 #if defined(OS_CHROMEOS)
@@ -592,6 +605,11 @@ void OverlayWindowViews::SetAlwaysHidePlayPauseButton(bool is_visible) {
   always_hide_play_pause_button_ = !is_visible;
 }
 
+void OverlayWindowViews::SetMutedState(MutedState muted_state) {
+  muted_state_for_testing_ = muted_state;
+  mute_controls_view_->SetMutedState(muted_state);
+}
+
 void OverlayWindowViews::SetSkipAdButtonVisibility(bool is_visible) {
   show_skip_ad_button_ = is_visible;
 }
@@ -663,6 +681,7 @@ void OverlayWindowViews::OnNativeWidgetMove() {
   // Update the positioning of some icons when the window is moved.
   WindowQuadrant quadrant = GetCurrentWindowQuadrant(GetBounds(), controller_);
   back_to_tab_controls_view_->SetPosition(GetBounds().size(), quadrant);
+  mute_controls_view_->SetPosition(GetBounds().size(), quadrant);
   close_controls_view_->SetPosition(GetBounds().size(), quadrant);
   resize_handle_view_->SetPosition(GetBounds().size(), quadrant);
 #endif
@@ -773,6 +792,9 @@ void OverlayWindowViews::OnGestureEvent(ui::GestureEvent* event) {
   if (GetBackToTabControlsBounds().Contains(event->location())) {
     controller_->CloseAndFocusInitiator();
     event->SetHandled();
+  } else if (GetMuteControlsBounds().Contains(event->location())) {
+    ToggleMute();
+    event->SetHandled();
   } else if (GetSkipAdControlsBounds().Contains(event->location())) {
     controller_->SkipAd();
     event->SetHandled();
@@ -797,6 +819,9 @@ void OverlayWindowViews::ButtonPressed(views::Button* sender,
   if (sender == back_to_tab_controls_view_.get())
     controller_->CloseAndFocusInitiator();
 
+  if (sender == mute_controls_view_.get())
+    ToggleMute();
+
   if (sender == skip_ad_controls_view_.get())
     controller_->SkipAd();
 
@@ -816,6 +841,10 @@ void OverlayWindowViews::ButtonPressed(views::Button* sender,
 
 gfx::Rect OverlayWindowViews::GetBackToTabControlsBounds() {
   return back_to_tab_controls_view_->GetMirroredBounds();
+}
+
+gfx::Rect OverlayWindowViews::GetMuteControlsBounds() {
+  return mute_controls_view_->GetMirroredBounds();
 }
 
 gfx::Rect OverlayWindowViews::GetSkipAdControlsBounds() {
@@ -858,6 +887,10 @@ ui::Layer* OverlayWindowViews::GetBackToTabControlsLayer() {
   return back_to_tab_controls_view_->layer();
 }
 
+ui::Layer* OverlayWindowViews::GetMuteControlsLayer() {
+  return mute_controls_view_->layer();
+}
+
 ui::Layer* OverlayWindowViews::GetCloseControlsLayer() {
   return close_controls_view_->layer();
 }
@@ -872,10 +905,18 @@ ui::Layer* OverlayWindowViews::GetControlsParentLayer() {
 
 void OverlayWindowViews::TogglePlayPause() {
   // Retrieve expected active state based on what command was sent in
-  // TogglePlayPause() since the IPC message may not have been propogated
+  // TogglePlayPause() since the IPC message may not have been propagated
   // the media player yet.
   bool is_active = controller_->TogglePlayPause();
   play_pause_controls_view_->SetPlaybackState(is_active ? kPlaying : kPaused);
+}
+
+void OverlayWindowViews::ToggleMute() {
+  // Retrieve expected active state based on what command was sent in
+  // ToggleMute() since the IPC message may not have been propagated
+  // the media player yet.
+  bool muted = controller_->ToggleMute();
+  mute_controls_view_->SetMutedState(muted ? kMuted : kUnmuted);
 }
 
 views::PlaybackImageButton*
@@ -893,17 +934,21 @@ OverlayWindowViews::previous_track_controls_view_for_testing() const {
   return previous_track_controls_view_.get();
 }
 
-gfx::Point OverlayWindowViews::back_to_tab_image_position_for_testing() const {
-  return back_to_tab_controls_view_->origin();
-}
-
 views::SkipAdLabelButton*
 OverlayWindowViews::skip_ad_controls_view_for_testing() const {
   return skip_ad_controls_view_.get();
 }
 
+gfx::Point OverlayWindowViews::back_to_tab_image_position_for_testing() const {
+  return back_to_tab_controls_view_->origin();
+}
+
 gfx::Point OverlayWindowViews::close_image_position_for_testing() const {
   return close_controls_view_->origin();
+}
+
+gfx::Point OverlayWindowViews::mute_image_position_for_testing() const {
+  return mute_controls_view_->origin();
 }
 
 gfx::Point OverlayWindowViews::resize_handle_position_for_testing() const {
@@ -917,4 +962,9 @@ views::View* OverlayWindowViews::controls_parent_view_for_testing() const {
 OverlayWindowViews::PlaybackState
 OverlayWindowViews::playback_state_for_testing() const {
   return playback_state_for_testing_;
+}
+
+OverlayWindowViews::MutedState OverlayWindowViews::muted_state_for_testing()
+    const {
+  return muted_state_for_testing_;
 }

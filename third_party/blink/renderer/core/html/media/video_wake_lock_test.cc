@@ -36,6 +36,7 @@ class VideoWakeLockPictureInPictureService
                     const base::Optional<viz::SurfaceId>&,
                     const blink::WebSize&,
                     bool,
+                    bool,
                     StartSessionCallback callback) final {
     std::move(callback).Run(WebSize());
   }
@@ -47,6 +48,7 @@ class VideoWakeLockPictureInPictureService
   void UpdateSession(uint32_t,
                      const base::Optional<viz::SurfaceId>&,
                      const blink::WebSize&,
+                     bool,
                      bool) final {}
   void SetDelegate(mojom::blink::PictureInPictureDelegatePtr) final {}
 
