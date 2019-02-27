@@ -11,10 +11,12 @@
 
 #include "ash/app_list/views/search_result_actions_view_delegate.h"
 #include "ash/app_list/views/search_result_view.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
@@ -68,6 +70,8 @@ class SearchResultImageButton : public views::ImageButton {
   // views::View overrides:
   void OnPaintBackground(gfx::Canvas* canvas) override;
 
+  void SetButtonImage(const gfx::ImageSkia& source, int icon_dimension);
+
   int GetInkDropRadius() const;
   const char* GetClassName() const override;
 
@@ -93,7 +97,10 @@ SearchResultImageButton::SearchResultImageButton(
   SetPreferredSize({kImageButtonSizeDip, kImageButtonSizeDip});
   SetImageAlignment(HorizontalAlignment::ALIGN_CENTER,
                     VerticalAlignment::ALIGN_MIDDLE);
-  SetImage(views::ImageButton::STATE_NORMAL, &action.image);
+
+  SetButtonImage(action.image,
+                 AppListConfig::instance().search_list_icon_dimension());
+
   SetAccessibleName(action.tooltip_text);
 
   SetVisible(!visible_on_hover_);
@@ -192,6 +199,14 @@ void SearchResultImageButton::OnPaintBackground(gfx::Canvas* canvas) {
     canvas->DrawCircle(GetLocalBounds().CenterPoint(), GetInkDropRadius(),
                        circle_flags);
   }
+}
+
+void SearchResultImageButton::SetButtonImage(const gfx::ImageSkia& source,
+                                             int icon_dimension) {
+  SetImage(views::ImageButton::STATE_NORMAL,
+           gfx::ImageSkiaOperations::CreateResizedImage(
+               source, skia::ImageOperations::RESIZE_BEST,
+               gfx::Size(icon_dimension, icon_dimension)));
 }
 
 int SearchResultImageButton::GetInkDropRadius() const {
