@@ -781,11 +781,7 @@ TEST_F(ShelfViewTest, OverflowVisibleIndex) {
 
   // Adding another shortcut should go into overflow bubble and not change
   // shelf index.
-  // TODO(crbug.com/918537): Remove when "SPM" indicator is removed.
-  if (::features::IsSingleProcessMash())
-    EXPECT_EQ(last_visible_index, test_api_->GetLastVisibleIndex() - 1);
-  else
-    EXPECT_EQ(last_visible_index, test_api_->GetLastVisibleIndex());
+  EXPECT_EQ(last_visible_index, test_api_->GetLastVisibleIndex());
 }
 
 // Adds one platform app button then adds app shortcut until overflow. Verifies
@@ -1262,11 +1258,7 @@ TEST_F(ShelfViewTest, ShelfRipOff) {
   generator->set_current_screen_location(overflow_app_location);
   generator->PressLeftButton();
   generator->MoveMouseTo(second_app_location);
-  // TODO(crbug.com/918537): Remove when "SPM" indicator is removed.
-  if (::features::IsSingleProcessMash())
-    EXPECT_FALSE(test_api_for_overflow.IsRippedOffFromShelf());
-  else
-    EXPECT_TRUE(test_api_for_overflow.IsRippedOffFromShelf());
+  EXPECT_TRUE(test_api_for_overflow.IsRippedOffFromShelf());
   generator->MoveMouseTo(overflow_app_location);
   generator->ReleaseLeftButton();
   EXPECT_FALSE(test_api_for_overflow.IsRippedOffFromShelf());
@@ -3621,11 +3613,7 @@ TEST_F(ShelfViewOverflowFocusTest, Basic) {
   EXPECT_TRUE(test_api_->IsOverflowButtonVisible());
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
 
-  // TODO(crbug.com/918537): Put back when "SPM" indicator is removed.
-  if (::features::IsSingleProcessMash())
-    EXPECT_EQ(last_item_on_main_shelf_index_, items_ - 4);
-  else
-    EXPECT_EQ(last_item_on_main_shelf_index_, items_ - 5);
+  EXPECT_EQ(last_item_on_main_shelf_index_, items_ - 5);
   EXPECT_TRUE(shelf_view_->shelf_widget()->IsActive());
   EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
 }
