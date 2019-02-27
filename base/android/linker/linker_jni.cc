@@ -42,13 +42,6 @@
 
 #define UNUSED __attribute__((unused))
 
-// See commentary in crazy_linker_elf_loader.cpp for the effect of setting
-// this. If changing there, change here also.
-//
-// For more, see:
-//   https://crbug.com/504410
-#define RESERVE_BREAKPAD_GUARD_REGION 1
-
 #if defined(ARCH_CPU_X86)
 // Dalvik JIT generated code doesn't guarantee 16-byte stack alignment on
 // x86 - use force_align_arg_pointer to realign the stack at the JNI
@@ -65,13 +58,6 @@ namespace {
 
 // Larger than the largest library we might attempt to load.
 constexpr size_t kAddressSpaceReservationSize = 192 * 1024 * 1024;
-
-// Size of any Breakpad guard region. 16MB is comfortably larger than the
-// ~6MB relocation packing of the current 64-bit libchrome.so, the largest we
-// expect to encounter.
-#if RESERVE_BREAKPAD_GUARD_REGION
-constexpr size_t kBreakpadGuardRegionBytes = 16 * 1024 * 1024;
-#endif
 
 // A simple scoped UTF String class that can be initialized from
 // a Java jstring handle. Modeled like std::string, which cannot
@@ -335,11 +321,6 @@ Java_org_chromium_base_library_1loader_Linker_nativeGetRandomBaseLoadAddress(
     jclass clazz) {
   size_t bytes = kAddressSpaceReservationSize;
 
-#if RESERVE_BREAKPAD_GUARD_REGION
-  // Pad the requested address space size for a Breakpad guard region.
-  bytes += kBreakpadGuardRegionBytes;
-#endif
-
   void* address =
       mmap(nullptr, bytes, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
   if (address == MAP_FAILED) {
@@ -347,12 +328,6 @@ Java_org_chromium_base_library_1loader_Linker_nativeGetRandomBaseLoadAddress(
     return 0;
   }
   munmap(address, bytes);
-
-#if RESERVE_BREAKPAD_GUARD_REGION
-  // Allow for a Breakpad guard region ahead of the returned address.
-  address = reinterpret_cast<void*>(
-      reinterpret_cast<uintptr_t>(address) + kBreakpadGuardRegionBytes);
-#endif
 
   LOG_INFO("Random base load address is %p", address);
   return static_cast<jlong>(reinterpret_cast<uintptr_t>(address));
