@@ -55,10 +55,10 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
 
   bool InheritedEqual(const SVGComputedStyle&) const;
   bool NonInheritedEqual(const SVGComputedStyle&) const;
-  void InheritFrom(const SVGComputedStyle*);
-  void CopyNonInheritedFromCached(const SVGComputedStyle*);
+  void InheritFrom(const SVGComputedStyle&);
+  void CopyNonInheritedFromCached(const SVGComputedStyle&);
 
-  CORE_EXPORT StyleDifference Diff(const SVGComputedStyle*) const;
+  CORE_EXPORT StyleDifference Diff(const SVGComputedStyle&) const;
 
   bool operator==(const SVGComputedStyle&) const;
   bool operator!=(const SVGComputedStyle& o) const { return !(*this == o); }
@@ -468,8 +468,8 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
   SVGComputedStyle(
       CreateInitialType);  // Used to create the initial style singleton.
 
-  bool DiffNeedsLayoutAndPaintInvalidation(const SVGComputedStyle* other) const;
-  bool DiffNeedsPaintInvalidation(const SVGComputedStyle* other) const;
+  bool DiffNeedsLayoutAndPaintInvalidation(const SVGComputedStyle& other) const;
+  bool DiffNeedsPaintInvalidation(const SVGComputedStyle& other) const;
 
   void SetBitDefaults() {
     svg_inherited_flags.clip_rule = InitialClipRule();
