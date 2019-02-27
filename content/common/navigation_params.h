@@ -341,14 +341,12 @@ struct CONTENT_EXPORT CommitNavigationParams {
   // navigation commits.
   bool should_clear_history_list = false;
 
-  // Whether a ServiceWorkerProviderHost should be created for the window.
-  bool should_create_service_worker = false;
-
   // Timing of navigation events.
   NavigationTiming navigation_timing;
 
-  // The ServiceWorkerProviderHost ID used for navigations, if it was already
-  // created by the browser. Set to kInvalidServiceWorkerProviderId otherwise.
+  // ID of the ServiceWorkerProviderHost pre-created by the browser.
+  // If this navigation has nothing to do with service workers for some reason
+  // like insecure origins etc., set to kInvalidServiceWorkerProviderId.
   int service_worker_provider_id = kInvalidServiceWorkerProviderId;
 
   // The AppCache host id to be used to identify this navigation.

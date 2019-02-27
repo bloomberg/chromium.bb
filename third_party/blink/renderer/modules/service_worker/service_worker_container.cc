@@ -237,14 +237,6 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (!provider_) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                                          "Failed to register a ServiceWorker: "
-                                          "The document is in an invalid "
-                                          "state."));
-    return promise;
-  }
-
   // TODO(asamidoi): Remove this check after module loading for
   // ServiceWorker is enabled by default (https://crbug.com/824647).
   if (options->type() == "module" &&
@@ -334,6 +326,13 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
     return promise;
   }
 
+  if (!provider_) {
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                          "Failed to register a ServiceWorker: "
+                                          "The document is in an invalid "
+                                          "state."));
+    return promise;
+  }
   WebString web_error_message;
   if (!provider_->ValidateScopeAndScriptURL(scope_url, script_url,
                                             &web_error_message)) {
@@ -376,14 +375,6 @@ ScriptPromise ServiceWorkerContainer::getRegistration(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (!provider_) {
-    resolver->Reject(DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                                          "Failed to get a "
-                                          "ServiceWorkerRegistration: The "
-                                          "document is in an invalid state."));
-    return promise;
-  }
-
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
 
   // The IDL definition is expected to restrict service worker to secure
@@ -415,6 +406,14 @@ ScriptPromise ServiceWorkerContainer::getRegistration(
                                  document_url_origin->ToString() +
                                  "') does not match the current origin ('" +
                                  document_origin->ToString() + "')."));
+    return promise;
+  }
+
+  if (!provider_) {
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                          "Failed to get a "
+                                          "ServiceWorkerRegistration: The "
+                                          "document is in an invalid state."));
     return promise;
   }
   provider_->GetRegistration(

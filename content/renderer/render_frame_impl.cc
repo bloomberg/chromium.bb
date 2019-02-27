@@ -7449,7 +7449,8 @@ RenderFrameImpl::BuildServiceWorkerNetworkProviderForNavigation(
         controller_service_worker_info) {
   // An empty provider will always be created since it is expected in a certain
   // number of places.
-  if (!commit_params->should_create_service_worker) {
+  if (commit_params->service_worker_provider_id ==
+      kInvalidServiceWorkerProviderId) {
     return ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance();
   }
   scoped_refptr<network::SharedURLLoaderFactory> fallback_factory =

@@ -76,6 +76,8 @@ ServiceWorkerNetworkProviderForFrame::Create(
     int provider_id,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory) {
+  DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id));
+
   // Ideally Document::IsSecureContext would be called here, but the document is
   // not created yet, and due to redirects the URL may change. So pass
   // is_parent_frame_secure to the browser process, so it can determine the
@@ -83,13 +85,6 @@ ServiceWorkerNetworkProviderForFrame::Create(
   // the document.
   const bool is_parent_frame_secure =
       IsFrameSecure(frame->GetWebFrame()->Parent());
-
-  // If the browser process did not assign a provider id already, assign one
-  // now (see class comments for content::ServiceWorkerProviderHost).
-  DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id) ||
-         provider_id == kInvalidServiceWorkerProviderId);
-  if (provider_id == kInvalidServiceWorkerProviderId)
-    provider_id = ServiceWorkerProviderContext::GetNextId();
 
   auto provider =
       base::WrapUnique(new ServiceWorkerNetworkProviderForFrame(frame));
