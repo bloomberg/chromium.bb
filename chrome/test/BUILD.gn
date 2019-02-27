@@ -495,7 +495,7 @@ test("browser_tests") {
       "//ui/file_manager/image_loader/",
       "//ui/file_manager/integration_tests/",
       "//ui/file_manager/video_player",
-      "//third_party/polymer/v1_0/components-chromium/polymer/",
+      "//third_party/polymer/v1_0/components-chromium/",
       "$root_gen_dir/ui/file_manager/file_manager/",
       "$root_gen_dir/ui/login/login_resources.pak",
       "$root_out_dir/chromevox_test_data/",
