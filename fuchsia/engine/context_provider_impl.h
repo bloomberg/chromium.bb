@@ -22,13 +22,12 @@ class Process;
 class WEB_ENGINE_EXPORT ContextProviderImpl
     : public chromium::web::ContextProvider {
  public:
+  using LaunchCallbackForTest = base::RepeatingCallback<base::Process(
+      const base::CommandLine& command,
+      const base::LaunchOptions& options)>;
+
   ContextProviderImpl();
   ~ContextProviderImpl() override;
-
-  // Creates a ContextProviderImpl that shares its /tmp directory with its child
-  // processes. This is useful for GTest processes, which depend on a shared
-  // tmpdir for storing startup flags and retrieving test result files.
-  static std::unique_ptr<ContextProviderImpl> CreateForTest();
 
   // Binds |this| object instance to |request|.
   // The service will persist and continue to serve other channels in the event
@@ -43,24 +42,14 @@ class WEB_ENGINE_EXPORT ContextProviderImpl
                ::fidl::InterfaceRequest<chromium::web::Context> context_request)
       override;
 
+  // Sets a |launch| callback to use instead of calling LaunchProcess() to
+  // create Context processes.
+  void SetLaunchCallbackForTest(LaunchCallbackForTest launch);
+
  private:
-  using LaunchContextProcessCallback = base::RepeatingCallback<base::Process(
-      const base::CommandLine& command,
-      const base::LaunchOptions& options)>;
-
-  friend class ContextProviderImplTest;
-
-  explicit ContextProviderImpl(bool use_shared_tmp);
-
-  // Overrides the default child process launching logic to call |launch|
-  // instead.
-  void SetLaunchCallbackForTests(const LaunchContextProcessCallback& launch);
-
-  // Spawns a Context child process.
-  LaunchContextProcessCallback launch_;
-
-  // If set, then the ContextProvider will share /tmp with its child processes.
-  bool use_shared_tmp_ = true;
+  // Set by tests to use to launch Context child processes, e.g. to allow a
+  // fake Context process to be launched.
+  LaunchCallbackForTest launch_for_test_;
 
   fidl::BindingSet<chromium::web::ContextProvider> bindings_;
 

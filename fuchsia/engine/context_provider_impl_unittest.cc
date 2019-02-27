@@ -90,13 +90,22 @@ MULTIPROCESS_TEST_MAIN(SpawnContextServer) {
   return 0;
 }
 
+base::Process LaunchFakeContextProcess(const base::CommandLine& command_line,
+                                       const base::LaunchOptions& options) {
+  base::LaunchOptions options_with_tmp = options;
+  options_with_tmp.paths_to_clone.push_back(base::FilePath("/tmp"));
+  return base::SpawnMultiProcessTestChild("SpawnContextServer", command_line,
+                                          options_with_tmp);
+}
+
 }  // namespace
 
 class ContextProviderImplTest : public base::MultiProcessTest {
  public:
-  ContextProviderImplTest() : provider_(ContextProviderImpl::CreateForTest()) {
-    provider_->SetLaunchCallbackForTests(base::BindRepeating(
-        &base::SpawnMultiProcessTestChild, "SpawnContextServer"));
+  ContextProviderImplTest()
+      : provider_(std::make_unique<ContextProviderImpl>()) {
+    provider_->SetLaunchCallbackForTest(
+        base::BindRepeating(&LaunchFakeContextProcess));
     provider_->Bind(provider_ptr_.NewRequest());
   }
 
