@@ -93,6 +93,22 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
         : FakeServiceWorker(worker_helper), worker_helper_(worker_helper) {}
     ~ServiceWorker() override = default;
 
+    void DispatchCanMakePaymentEvent(
+        payments::mojom::CanMakePaymentEventDataPtr event_data,
+        payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
+        DispatchCanMakePaymentEventCallback callback) override {
+      bool can_make_payment = false;
+      for (const auto& method_data : event_data->method_data) {
+        if (method_data->supported_method == "test-method") {
+          can_make_payment = true;
+          break;
+        }
+      }
+      response_callback->OnResponseForCanMakePayment(can_make_payment);
+      std::move(callback).Run(
+          blink::mojom::ServiceWorkerEventStatus::COMPLETED);
+    }
+
     void DispatchPaymentRequestEvent(
         payments::mojom::PaymentRequestEventDataPtr event_data,
         payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,

@@ -188,19 +188,6 @@ class EmbeddedWorkerTestHelper {
       blink::mojom::FetchEventPreloadHandlePtr preload_handle,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback);
-  virtual void OnAbortPaymentEvent(
-      payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-      blink::mojom::ServiceWorker::DispatchAbortPaymentEventCallback callback);
-  virtual void OnCanMakePaymentEvent(
-      payments::mojom::CanMakePaymentEventDataPtr data,
-      payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-      blink::mojom::ServiceWorker::DispatchCanMakePaymentEventCallback
-          callback);
-  virtual void OnPaymentRequestEvent(
-      payments::mojom::PaymentRequestEventDataPtr data,
-      payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-      blink::mojom::ServiceWorker::DispatchPaymentRequestEventCallback
-          callback);
   virtual void OnSetIdleTimerDelayToZero(int embedded_worker_id);
 
   EmbeddedWorkerRegistry* registry();
@@ -253,19 +240,6 @@ class EmbeddedWorkerTestHelper {
       blink::mojom::FetchEventPreloadHandlePtr preload_handle,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback);
-  void OnAbortPaymentEventStub(
-      payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-      blink::mojom::ServiceWorker::DispatchAbortPaymentEventCallback callback);
-  void OnCanMakePaymentEventStub(
-      payments::mojom::CanMakePaymentEventDataPtr data,
-      payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-      blink::mojom::ServiceWorker::DispatchCanMakePaymentEventCallback
-          callback);
-  void OnPaymentRequestEventStub(
-      payments::mojom::PaymentRequestEventDataPtr data,
-      payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-      blink::mojom::ServiceWorker::DispatchPaymentRequestEventCallback
-          callback);
 
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<MockRenderProcessHost> render_process_host_;

@@ -146,24 +146,25 @@ void FakeServiceWorker::DispatchSyncEvent(const std::string& tag,
 void FakeServiceWorker::DispatchAbortPaymentEvent(
     payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
     DispatchAbortPaymentEventCallback callback) {
-  helper_->OnAbortPaymentEventStub(std::move(response_callback),
-                                   std::move(callback));
+  response_callback->OnResponseForAbortPayment(true);
+  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
 void FakeServiceWorker::DispatchCanMakePaymentEvent(
     payments::mojom::CanMakePaymentEventDataPtr event_data,
     payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
     DispatchCanMakePaymentEventCallback callback) {
-  helper_->OnCanMakePaymentEventStub(
-      std::move(event_data), std::move(response_callback), std::move(callback));
+  response_callback->OnResponseForCanMakePayment(true);
+  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
 void FakeServiceWorker::DispatchPaymentRequestEvent(
     payments::mojom::PaymentRequestEventDataPtr event_data,
     payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
     DispatchPaymentRequestEventCallback callback) {
-  helper_->OnPaymentRequestEventStub(
-      std::move(event_data), std::move(response_callback), std::move(callback));
+  response_callback->OnResponseForPaymentRequest(
+      payments::mojom::PaymentHandlerResponse::New());
+  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
 void FakeServiceWorker::DispatchExtendableMessageEvent(
