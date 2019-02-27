@@ -125,7 +125,8 @@ class TestBookmarkAppInstallationTask : public BookmarkAppInstallationTask {
                                   bool succeeds)
       : BookmarkAppInstallationTask(profile, std::move(app_info)),
         profile_(profile),
-        succeeds_(succeeds) {}
+        succeeds_(succeeds),
+        extension_ids_map_(profile_->GetPrefs()) {}
   ~TestBookmarkAppInstallationTask() override = default;
 
   void InstallWebAppOrShortcutFromWebContents(
@@ -138,6 +139,8 @@ class TestBookmarkAppInstallationTask : public BookmarkAppInstallationTask {
       app_id = GenerateFakeAppId(app_info().url);
       ExtensionRegistry::Get(profile_)->AddEnabled(
           CreateDummyExtension(app_id));
+      extension_ids_map_.Insert(app_info().url, app_id,
+                                app_info().install_source);
     }
 
     std::move(on_install_called_).Run();
@@ -152,6 +155,7 @@ class TestBookmarkAppInstallationTask : public BookmarkAppInstallationTask {
  private:
   Profile* profile_;
   bool succeeds_;
+  web_app::ExtensionIdsMap extension_ids_map_;
 
   base::OnceClosure on_install_called_;
 
