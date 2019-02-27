@@ -37,6 +37,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "cc/animation/animation_host.h"
+#include "cc/layers/picture_layer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/core/animation/animatable/animatable_double.h"
@@ -53,6 +54,7 @@
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -1904,6 +1906,51 @@ TEST_F(AnimationCompositorAnimationsTest, CanStartElementOnCompositorEffect) {
   cc::AnimationHost* host = document->View()->GetCompositorAnimationHost();
   EXPECT_EQ(host->MainThreadAnimationsCount(), 0u);
   EXPECT_EQ(host->CompositedAnimationsCount(), 1u);
+}
+
+TEST_F(AnimationCompositorAnimationsTest,
+       NonAnimatedTransformPropertyChangeGetsUpdated) {
+  LoadTestData("transform-animation-update.html");
+  Document* document = GetFrame()->GetDocument();
+  Element* target = document->getElementById("target");
+  const ObjectPaintProperties* properties =
+      target->GetLayoutObject()->FirstFragment().PaintProperties();
+  ASSERT_NE(nullptr, properties);
+  const auto* transform = properties->Transform();
+  ASSERT_NE(nullptr, transform);
+  // Make sure composited animation is running on #target.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    EXPECT_TRUE(transform->HasDirectCompositingReasons());
+  CompositorAnimations::FailureCode code =
+      CompositorAnimations::CheckCanStartElementOnCompositor(*target);
+  EXPECT_EQ(code, CompositorAnimations::FailureCode::None());
+  EXPECT_EQ(document->Timeline().PendingAnimationsCount(), 1u);
+  cc::AnimationHost* host = document->View()->GetCompositorAnimationHost();
+  EXPECT_EQ(host->MainThreadAnimationsCount(), 0u);
+  EXPECT_EQ(host->CompositedAnimationsCount(), 1u);
+  // Make sure the backface-visibility is correctly set, both in blink and on
+  // the cc::Layer.
+  EXPECT_FALSE(transform->Matrix().IsIdentity());  // Rotated
+  EXPECT_EQ(transform->GetBackfaceVisibility(),
+            TransformPaintPropertyNode::BackfaceVisibility::kVisible);
+  const CompositedLayerMapping* composited_layer_mapping =
+      ToLayoutBoxModelObject(target->GetLayoutObject())
+          ->Layer()
+          ->GetCompositedLayerMapping();
+  ASSERT_NE(nullptr, composited_layer_mapping);
+  const cc::PictureLayer* layer =
+      composited_layer_mapping->MainGraphicsLayer()->CcLayer();
+  ASSERT_NE(nullptr, layer);
+  EXPECT_TRUE(layer->double_sided());
+  // Change the backface visibility, while the compositor animation is
+  // happening.
+  target->setAttribute(html_names::kClassAttr, "backface-hidden");
+  ForceFullCompositingUpdate();
+  // Make sure the setting made it to both blink and all the way to CC.
+  EXPECT_EQ(transform->GetBackfaceVisibility(),
+            TransformPaintPropertyNode::BackfaceVisibility::kHidden);
+  EXPECT_FALSE(layer->double_sided())
+      << "Change to hidden did not get propagated to CC";
 }
 
 // Regression test for https://crbug.com/781305. When we have a transform

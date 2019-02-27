@@ -127,6 +127,9 @@ class PaintPropertyNode : public RefCounted<NodeType> {
     static_cast<NodeType*>(this)->SetChanged();
     return true;
   }
+  bool HasParentChanged(const NodeType* parent) const {
+    return parent != parent_;
+  }
 
   void SetChanged() {
     DCHECK(!IsRoot());

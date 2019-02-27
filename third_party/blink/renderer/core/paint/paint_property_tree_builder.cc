@@ -709,9 +709,20 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
             CompositorElementIdNamespace::kPrimaryTransform);
       }
 
+      // If nothing but the transform matrix changed, and animations are
+      // running, avoid setting property_changed.
+      bool other_properties_changed = true;
+      if (properties_->Transform()) {
+        other_properties_changed =
+            properties_->Transform()->HaveNonAnimatingPropertiesChanged(
+                *context_.current.transform, state);
+      }
+      bool running_animation =
+          style.IsRunningTransformAnimationOnCompositor() &&
+          !other_properties_changed;
       OnUpdate(properties_->UpdateTransform(*context_.current.transform,
                                             std::move(state)),
-               style.IsRunningTransformAnimationOnCompositor());
+               running_animation);
     } else {
       OnClear(properties_->ClearTransform());
     }
@@ -958,12 +969,22 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
               object_.UniqueId(), CompositorElementIdNamespace::kPrimary);
         }
       }
-      bool running_effect_animation =
-          style.IsRunningOpacityAnimationOnCompositor() ||
-          style.IsRunningBackdropFilterAnimationOnCompositor();
+
+      // If nothing but the opacity and/or backdrop-filter changed, and
+      // animations are running, avoid setting property_changed.
+      bool other_properties_changed = true;
+      if (properties_->Effect()) {
+        other_properties_changed =
+            properties_->Effect()->HaveNonAnimatingPropertiesChanged(
+                *context_.current_effect, state);
+      }
+      bool running_animation =
+          (style.IsRunningOpacityAnimationOnCompositor() ||
+           style.IsRunningBackdropFilterAnimationOnCompositor()) &&
+          !other_properties_changed;
       OnUpdate(
           properties_->UpdateEffect(*context_.current_effect, std::move(state)),
-          running_effect_animation);
+          running_animation);
 
       if (mask_clip || has_spv1_composited_clip_path) {
         EffectPaintPropertyNode::State mask_state;
@@ -1108,9 +1129,19 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
             object_.UniqueId(), CompositorElementIdNamespace::kEffectFilter);
       }
 
+      // If nothing but the filter changed, and animations are running, avoid
+      // setting property_changed.
+      bool other_properties_changed = true;
+      if (properties_->Filter()) {
+        other_properties_changed =
+            properties_->Filter()->HaveNonAnimatingPropertiesChanged(
+                *context_.current_effect, state);
+      }
+      bool running_animation = style.IsRunningFilterAnimationOnCompositor() &&
+                               !other_properties_changed;
       OnUpdate(
           properties_->UpdateFilter(*context_.current_effect, std::move(state)),
-          style.IsRunningFilterAnimationOnCompositor());
+          running_animation);
     } else {
       OnClear(properties_->ClearFilter());
     }

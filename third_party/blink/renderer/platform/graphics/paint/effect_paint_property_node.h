@@ -54,15 +54,32 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     FloatPoint filters_origin;
 
     bool operator==(const State& o) const {
+      return EqualIgnoringAnimatingProperties(o, false);
+    }
+
+    bool EqualIgnoringAnimatingProperties(const State& o,
+                                          bool check_for_animations) const {
+      bool filters_equal =
+          (filter == o.filter) ||
+          (check_for_animations && (direct_compositing_reasons &
+                                    CompositingReason::kActiveFilterAnimation));
+      bool backdrops_equal =
+          (backdrop_filter == o.backdrop_filter) ||
+          (check_for_animations &&
+           (direct_compositing_reasons &
+            CompositingReason::kActiveBackdropFilterAnimation));
+      bool opacity_equal = (opacity == o.opacity) ||
+                           (check_for_animations &&
+                            (direct_compositing_reasons &
+                             CompositingReason::kActiveOpacityAnimation));
       return local_transform_space == o.local_transform_space &&
              output_clip == o.output_clip && color_filter == o.color_filter &&
-             filter == o.filter && opacity == o.opacity &&
-             backdrop_filter == o.backdrop_filter &&
              backdrop_filter_bounds == o.backdrop_filter_bounds &&
              blend_mode == o.blend_mode &&
              direct_compositing_reasons == o.direct_compositing_reasons &&
              compositor_element_id == o.compositor_element_id &&
-             filters_origin == o.filters_origin;
+             filters_origin == o.filters_origin && filters_equal &&
+             backdrops_equal && opacity_equal;
     }
   };
 
@@ -90,6 +107,12 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     state_ = std::move(state);
     SetChanged();
     return true;
+  }
+
+  bool HaveNonAnimatingPropertiesChanged(const EffectPaintPropertyNode& parent,
+                                         State& state) const {
+    return !state.EqualIgnoringAnimatingProperties(state_, true) ||
+           HasParentChanged(&parent);
   }
 
   // Checks if the accumulated effect from |this| to |relative_to_state
