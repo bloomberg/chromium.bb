@@ -70,10 +70,14 @@ class PrintViewManager : public PrintViewManagerBase,
   // IPC Message handlers.
   struct FrameDispatchHelper;
   void OnDidShowPrintDialog(content::RenderFrameHost* rfh);
+
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void OnSetupScriptedPrintPreview(content::RenderFrameHost* rfh,
                                    IPC::Message* reply_msg);
   void OnShowScriptedPrintPreview(content::RenderFrameHost* rfh,
                                   bool source_is_modifiable);
+#endif
+
   void OnScriptedPrintPreviewReply(IPC::Message* reply_msg);
 
   base::Closure on_print_dialog_shown_callback_;

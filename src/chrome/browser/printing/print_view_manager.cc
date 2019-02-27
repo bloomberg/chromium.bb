@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
+#include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/chrome_content_client.h"
 #include "components/printing/common/print_messages.h"
@@ -35,6 +36,7 @@ namespace {
 base::LazyInstance<std::map<content::RenderProcessHost*, base::Closure>>::Leaky
     g_scripted_print_preview_closure_map = LAZY_INSTANCE_INITIALIZER;
 
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void EnableInternalPDFPluginForContents(int render_process_id,
                                         int render_frame_id) {
   // Always enable the internal PDF plugin for the print preview page.
@@ -49,11 +51,13 @@ void EnableInternalPDFPluginForContents(int render_process_id,
   ChromePluginServiceFilter::GetInstance()->OverridePluginForFrame(
       render_process_id, render_frame_id, info->ToWebPluginInfo());
 }
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 }  // namespace
 
 namespace printing {
 
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 struct PrintViewManager::FrameDispatchHelper {
   PrintViewManager* manager;
   content::RenderFrameHost* render_frame_host;
@@ -64,18 +68,24 @@ struct PrintViewManager::FrameDispatchHelper {
     manager->OnSetupScriptedPrintPreview(render_frame_host, reply_msg);
   }
 };
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+
+extern PrintJobManager* g_print_job_manager;
 
 PrintViewManager::PrintViewManager(content::WebContents* web_contents)
     : PrintViewManagerBase(web_contents),
       print_preview_state_(NOT_PREVIEWING),
+
       print_preview_rfh_(nullptr),
       scripted_print_preview_rph_(nullptr),
       is_switching_to_system_dialog_(false) {
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (PrintPreviewDialogController::IsPrintPreviewURL(web_contents->GetURL())) {
     EnableInternalPDFPluginForContents(
         web_contents->GetMainFrame()->GetProcess()->GetID(),
         web_contents->GetMainFrame()->GetRoutingID());
   }
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 }
 
 PrintViewManager::~PrintViewManager() {
@@ -96,6 +106,7 @@ bool PrintViewManager::PrintForSystemDialogNow(
 }
 
 bool PrintViewManager::BasicPrint(content::RenderFrameHost* rfh) {
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   PrintPreviewDialogController* dialog_controller =
       PrintPreviewDialogController::GetInstance();
   if (!dialog_controller)
@@ -107,10 +118,14 @@ bool PrintViewManager::BasicPrint(content::RenderFrameHost* rfh) {
     return PrintNow(rfh);
 
   return !!print_preview_dialog->GetWebUI();
+#else   // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  return false;
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 }
 
 bool PrintViewManager::PrintPreviewNow(content::RenderFrameHost* rfh,
                                        bool has_selection) {
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   // Users can send print commands all they want and it is beyond
   // PrintViewManager's control. Just ignore the extra commands.
   // See http://crbug.com/136842 for example.
@@ -126,6 +141,9 @@ bool PrintViewManager::PrintPreviewNow(content::RenderFrameHost* rfh,
   print_preview_rfh_ = rfh;
   print_preview_state_ = USER_INITIATED_PREVIEW;
   return true;
+#else   // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  return false;
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 }
 
 void PrintViewManager::PrintPreviewForWebNode(content::RenderFrameHost* rfh) {
@@ -156,8 +174,10 @@ void PrintViewManager::PrintPreviewDone() {
   bool send_message = !is_switching_to_system_dialog_;
 #endif
   if (send_message) {
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     print_preview_rfh_->Send(new PrintMsg_ClosePrintPreviewDialog(
         print_preview_rfh_->GetRoutingID()));
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
   }
   is_switching_to_system_dialog_ = false;
 
@@ -175,11 +195,13 @@ void PrintViewManager::PrintPreviewDone() {
 
 void PrintViewManager::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (PrintPreviewDialogController::IsPrintPreviewURL(
           web_contents()->GetURL())) {
     EnableInternalPDFPluginForContents(render_frame_host->GetProcess()->GetID(),
                                        render_frame_host->GetRoutingID());
   }
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 }
 
 void PrintViewManager::RenderFrameDeleted(
@@ -200,6 +222,7 @@ void PrintViewManager::OnDidShowPrintDialog(content::RenderFrameHost* rfh) {
   on_print_dialog_shown_callback_.Reset();
 }
 
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void PrintViewManager::OnSetupScriptedPrintPreview(
     content::RenderFrameHost* rfh,
     IPC::Message* reply_msg) {
@@ -236,7 +259,9 @@ void PrintViewManager::OnSetupScriptedPrintPreview(
                         base::Unretained(this), reply_msg);
   scripted_print_preview_rph_ = rph;
 }
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void PrintViewManager::OnShowScriptedPrintPreview(content::RenderFrameHost* rfh,
                                                   bool source_is_modifiable) {
   DCHECK(print_preview_rfh_);
@@ -261,6 +286,7 @@ void PrintViewManager::OnShowScriptedPrintPreview(content::RenderFrameHost* rfh,
   PrintPreviewUI::SetInitialParams(
       dialog_controller->GetPrintPreviewForContents(web_contents()), params);
 }
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 void PrintViewManager::OnScriptedPrintPreviewReply(IPC::Message* reply_msg) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -270,15 +296,19 @@ void PrintViewManager::OnScriptedPrintPreviewReply(IPC::Message* reply_msg) {
 bool PrintViewManager::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   FrameDispatchHelper helper = {this, render_frame_host};
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(PrintViewManager, message, render_frame_host)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidShowPrintDialog, OnDidShowPrintDialog)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     IPC_MESSAGE_FORWARD_DELAY_REPLY(
         PrintHostMsg_SetupScriptedPrintPreview, &helper,
         FrameDispatchHelper::OnSetupScriptedPrintPreview)
     IPC_MESSAGE_HANDLER(PrintHostMsg_ShowScriptedPrintPreview,
                         OnShowScriptedPrintPreview)
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 

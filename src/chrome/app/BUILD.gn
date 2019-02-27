@@ -418,7 +418,7 @@ service_manifest("chrome_content_packaged_services_manifest_overlay") {
     packaged_services +=
         [ "//components/services/pdf_compositor:pdf_compositor_manifest" ]
   }
-  if (enable_print_preview) {
+  if (enable_basic_printing || enable_print_preview) {
     packaged_services += [ "//chrome/services/printing:manifest" ]
   }
   if (enable_extensions) {
