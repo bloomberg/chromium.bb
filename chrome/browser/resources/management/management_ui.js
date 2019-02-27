@@ -14,7 +14,10 @@ management.BrowserReportingData;
 Polymer({
   is: 'management-ui',
 
-  behaviors: [WebUIListenerBehavior, I18nBehavior],
+  behaviors: [
+    I18nBehavior,
+    WebUIListenerBehavior,
+  ],
 
   properties: {
     /**
@@ -66,6 +69,9 @@ Polymer({
         'browser-reporting-info-updated',
         reportingInfo => this.onBrowserReportingInfoReceived_(reportingInfo));
 
+    this.addWebUIListener(
+        'update-load-time-data', data => loadTimeData.overrideValues(data));
+
     this.getExtensions_();
     // <if expr="chromeos">
     this.getDeviceReportingInfo_();
@@ -98,7 +104,8 @@ Polymer({
       [management.ReportingType.SECURITY]: 1,
       [management.ReportingType.EXTENSIONS]: 2,
       [management.ReportingType.USER]: 3,
-      [management.ReportingType.DEVICE]: 4,
+      [management.ReportingType.USER_ACTIVITY]: 4,
+      [management.ReportingType.DEVICE]: 5,
     };
 
     this.browserReportingInfo_ =
@@ -193,7 +200,9 @@ Polymer({
       case management.ReportingType.EXTENSIONS:
         return 'cr:extension';
       case management.ReportingType.USER:
-        return 'cr:person';
+        return 'management:account-circle';
+      case management.ReportingType.USER_ACTIVITY:
+        return 'management:public';
       default:
         return 'cr:security';
     }

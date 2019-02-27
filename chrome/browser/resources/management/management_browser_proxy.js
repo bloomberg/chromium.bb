@@ -16,6 +16,7 @@ management.ReportingType = {
   SECURITY: 'security',
   DEVICE: 'device',
   USER: 'user',
+  USER_ACTIVITY: 'user-activity',
   EXTENSIONS: 'extensions'
 };
 

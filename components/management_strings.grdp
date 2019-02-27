@@ -13,25 +13,34 @@
 <grit-part>
   <!-- Title of the page -->
   <if expr="chromeos">
-    <message name="IDS_MANAGEMENT_TITLE_MANAGED_BY" desc="Title of chrome://management page, shows when device managed by known organization">
-      <ph name="DEVICE_NAME">$1<ex>Chromebook</ex></ph> managed by <ph name="ENROLLMENT_DOMAIN">$2<ex>example.com</ex></ph>
-    </message>
     <message name="IDS_MANAGEMENT_TITLE_MANAGED" desc="Title of chrome://management page, shows when device is managed by unknown organization">
       Your <ph name="DEVICE_NAME">$1<ex>Chromebook</ex></ph> is managed
     </message>
-    <message name="IDS_MANAGEMENT_TITLE" desc="Title of chrome://management page which is shown when the device is not managed">
-      Your <ph name="DEVICE_NAME">$1<ex>Chromebook</ex></ph> is not managed
+    <message name="IDS_MANAGEMENT_TITLE_BY" desc="Title of chrome://management page, shows when device managed by known organization">
+      <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> managed by <ph name="ENROLLMENT_DOMAIN">$2<ex>example.com</ex></ph>
+    </message>
+    <message name="IDS_MANAGEMENT_NOT_MANAGED_TITLE" desc="Message indicating that the device is not managed">
+      Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is not managed
     </message>
   </if>
   <if expr="not chromeos">
-    <message name="IDS_MANAGEMENT_TITLE_MANAGED_BY" desc="Title of browser version of chrome://management page, shows when browser is managed by known organization">
-      Your browser is managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph>
-    </message>
-    <message name="IDS_MANAGEMENT_TITLE_MANAGED" desc="Title of browser version of chrome://management page, shows when browser is managed by unknown organization">
+    <message name="IDS_MANAGEMENT_TITLE" desc="Title of chrome://management page, which shows the administrator's capabilities in a managed environment">
       Your browser is managed
     </message>
-    <message name="IDS_MANAGEMENT_TITLE" desc="Title of browser version of chrome://management page, shows when browser is not managed">
+    <message name="IDS_MANAGEMENT_TITLE_BY" desc="Title of chrome://management page, which shows the administrator's capabilities in a managed environment">
+      Your browser is managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph>
+    </message>
+    <message name="IDS_MANAGEMENT_NOT_MANAGED_TITLE" desc="Title of chrome://management page for a browser that is not managed">
       Your browser is not managed
+    </message>
+    <message name="IDS_MANAGEMENT_BROWSER_NOTICE" desc="Message indicating that the browser is managed by an unknown organization">
+      This browser is managed by a company, school or other organization. Your administrator can change your browser setup remotely. Activity on this device may also be managed outside of Chrome. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Learn More<ph name="END_LINK">&lt;/a&gt;</ph>
+    </message>
+    <message name="IDS_MANAGEMENT_NOT_MANAGED_NOTICE" desc="Message indicating that the browser is not managed">
+      This browser is not managed by a company or other organization. Activity on this device may be managed outside of Chrome. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Learn More<ph name="END_LINK">&lt;/a&gt;</ph>
+    </message>
+    <message name="IDS_MANAGEMENT_MANAGEMENT_BY_NOTICE" desc="Message indicating that the browser is managed by a known organization">
+      This browser is managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph>. Your administrator can change your browser setup remotely. Activity on this device may also be managed outside of Chrome. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$2"&gt;</ph>Learn More<ph name="END_LINK">&lt;/a&gt;</ph>
     </message>
   </if>
 
@@ -77,10 +86,13 @@
   </if>
 
   <message name="IDS_MANAGEMENT_EXTENSION_REPORTING" desc="Title of the force installed extensions section of the page">
-    Extension reporting
+    Extensions
   </message>
   <message name="IDS_MANAGEMENT_EXTENSIONS_INSTALLED" desc="Message describing that the administrator has installed some powerful extensions on the managed user's browser">
-    Your administrators have installed extensions with powerful capabilities.
+    The administrator of this device has installed extensions for additional functions. Extensions have access to some of your data.
+  </message>
+  <message name="IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY" desc="Message describing that the administrator has installed some powerful extensions on the managed user's browser from a specific domain">
+    <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph> has installed extensions for additional functions. Extensions have access to some of your data.
   </message>
   <message name="IDS_MANAGEMENT_EXTENSIONS_NAME" desc="Title of a column of the extension table showing the name of the extension">
     Name
@@ -96,7 +108,6 @@
     The contents of websites that you visit is not seen by your administrators
   </message>
 
-
   <message name="IDS_MANAGEMENT_BROWSER_REPORTING" desc="Title of the types of browser reporting section of the page">
     Browser
   </message>
@@ -104,38 +115,33 @@
     Your administrator can see:
   </message>
   <message name="IDS_MANAGEMENT_EXTENSION_REPORT_MACHINE_NAME" desc="Message explaining that an extension currently reports the user's machine name">
-    Your machine's name
+    Your device name
   </message>
   <message name="IDS_MANAGEMENT_EXTENSION_REPORT_MACHINE_NAME_ADDRESS" desc="Message explaining that an extension currently reports the user's machine name and address">
-    Your machine's name and network address
+    Your device name and network address
   </message>
   <message name="IDS_MANAGEMENT_EXTENSION_REPORT_USERNAME" desc="Message explaining that an extension currently reports the user's username">
-    Your OS and browser usernames
+    Usernames for your device and browser
   </message>
   <message name="IDS_MANAGEMENT_EXTENSION_REPORT_VERSION" desc="Message explaining that an extension currently reports the user's browser and machine version">
-    Software version information about your browser and machine
-  </message>
-  <message name="IDS_MANAGEMENT_EXTENSION_REPORT_POLICIES" desc="Message explaining that an extension currently reports the user's enterprise policies">
-    Information about applied enterprise policies
+    Version information about your device and browser
   </message>
   <message name="IDS_MANAGEMENT_EXTENSION_REPORT_EXTENSIONS_PLUGINS" desc="Message explaining that an extension currently reports the user's exensions and plugins">
-    Installed extensions and plugins
-  </message>
-  <message name="IDS_MANAGEMENT_EXTENSION_REPORT_EXTENSIONS_AND_POLICIES" desc="Message explaining that an extension currently reports the user's enterprise policies and extensions">
-    Information about applied enterprise policies, installed extensions and plugins
+    Information about installed extensions and plugins
   </message>
   <message name="IDS_MANAGEMENT_EXTENSION_REPORT_SAFE_BROWSING_WARNINGS" desc="Message explaining that an extension currently reports the user's safe browsing warnings and ignored warnings">
-    Safe browsing warnings
+    Safe Browsing warnings
+  </message>
+  <message name="IDS_MANAGEMENT_EXTENSION_REPORT_USER_BROWSING_DATA" desc="Message explaining that an extension currently reports the user's browsing data">
+    Websites you visit and time spent on them
   </message>
   <message name="IDS_MANAGEMENT_EXTENSION_REPORT_PERF_CRASH" desc="Message explaining that an extension currently reports the user's  performance data and crash report">
     Performance data and crash reports
   </message>
+
   <if expr="chromeos">
     <message name="IDS_MANAGEMENT_TRUST_ROOTS_CONFIGURED" desc="Message describing that the administrators have installed their own certificates">
       Your administrator has configured custom root certificates, which may allow the administrator to see the contents of websites that you visit.
     </message>
   </if>
-  <message name="IDS_MANAGEMENT_DESKTOP_MONITORING_NOTICE" desc="Message explaining that the administrators have ways to monitor users outside of chrome's control">
-    Administrators may have other ways of monitoring users, outside of Chrome.
-  </message>
 </grit-part>

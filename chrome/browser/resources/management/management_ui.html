@@ -20,6 +20,11 @@
         height: 100%;
       }
 
+      a {
+        color: var(--cr-link-color);
+        text-decoration: none;
+      }
+
       cr-toolbar {
         background-color: var(--md-toolbar-color);
         flex-shrink: 0;
@@ -151,6 +156,12 @@
     <main id="mainContent">
       <div class="sections-container">
         <div class="card">
+          <if expr="not chromeos">
+            <section class="three-line single-column">
+              <p inner-h-t-m-l="[[i18nAdvanced('browserManagementNotice')]]">
+              </p>
+            </section>
+          </if>
 <if expr="chromeos">
           <template is="dom-if"
               if="[[showDeviceReportingInfo_(deviceReportingInfo_)]]">
@@ -171,7 +182,6 @@
             </section>
           </template>
 </if>
-
           <template is="dom-if"
               if="[[showBrowserReportingInfo_(browserReportingInfo_)]]">
             <section class="three-line single-column">
@@ -232,11 +242,6 @@
                 <div id="trust-roots-configuration">[[localTrustRoots_]]</div>
               </section>
             </template>
-          </if>
-          <if expr="not chromeos">
-            <section class="three-line single-column">
-              <p>$i18n{managementDesktopMonitoringNotice}</p>
-            </section>
           </if>
         </div>
       </div>
