@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/management_ui_handler.h"
@@ -15,14 +16,60 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/buildflags/buildflags.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/grit/chromium_strings.h"
+#include "ui/chromeos/devicetype_utils.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace {
+
+#if defined(OS_CHROMEOS)
+
+base::string16 GetChromeOSManagementPageTitle() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
+  if (!connector->IsEnterpriseManaged()) {
+    return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_TITLE,
+                                      l10n_util::GetStringUTF16(device_type));
+  }
+
+  std::string display_domain = connector->GetEnterpriseDisplayDomain();
+
+  if (display_domain.empty()) {
+    if (!connector->IsActiveDirectoryManaged()) {
+      return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_TITLE_MANAGED,
+                                        l10n_util::GetStringUTF16(device_type));
+    }
+    display_domain = connector->GetRealm();
+  }
+
+  return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_TITLE_MANAGED_BY,
+                                    l10n_util::GetStringUTF16(device_type),
+                                    base::UTF8ToUTF16(display_domain));
+}
+
+#else   // if defined(OS_CHROMEOS)
+
+// TODO(ydago): Fill in the function.
+base::string16 GetBrowserManagementPageTitle() {
+  return l10n_util::GetStringUTF16(IDS_MANAGEMENT_TITLE);
+}
+#endif  // defined(OS_CHROMEOS)
 
 content::WebUIDataSource* CreateManagementUIHtmlSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIManagementHost);
-  source->AddLocalizedString("title", IDS_MANAGEMENT_TITLE);
+#if defined(OS_CHROMEOS)
+  source->AddString("title", GetChromeOSManagementPageTitle());
+#else
+  source->AddString("title", GetBrowserManagementPageTitle());
+#endif  // defined(OS_CHROMEOS)
 #if defined(OS_CHROMEOS)
   source->AddLocalizedString("deviceReporting",
                              IDS_MANAGEMENT_DEVICE_REPORTING);

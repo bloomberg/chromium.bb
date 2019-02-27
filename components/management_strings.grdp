@@ -11,19 +11,29 @@
 -->
 
 <grit-part>
+  <!-- Title of the page -->
   <if expr="chromeos">
-    <message name="IDS_MANAGEMENT_TITLE" desc="Title of chrome://management page, which shows the administrator's capabilities in a managed environment">
-      <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> management
+    <message name="IDS_MANAGEMENT_TITLE_MANAGED_BY" desc="Title of chrome://management page, shows when device managed by known organization">
+      <ph name="DEVICE_NAME">$1<ex>Chromebook</ex></ph> managed by <ph name="ENROLLMENT_DOMAIN">$2<ex>example.com</ex></ph>
+    </message>
+    <message name="IDS_MANAGEMENT_TITLE_MANAGED" desc="Title of chrome://management page, shows when device is managed by unknown organization">
+      Your <ph name="DEVICE_NAME">$1<ex>Chromebook</ex></ph> is managed
+    </message>
+    <message name="IDS_MANAGEMENT_TITLE" desc="Title of chrome://management page which is shown when the device is not managed">
+      Your <ph name="DEVICE_NAME">$1<ex>Chromebook</ex></ph> is not managed
     </message>
   </if>
   <if expr="not chromeos">
-  <message name="IDS_MANAGEMENT_TITLE" desc="Title of chrome://management page, which shows the administrator's capabilities in a managed environment">
-      Chrome Browser management
+    <message name="IDS_MANAGEMENT_TITLE_MANAGED_BY" desc="Title of browser version of chrome://management page, shows when browser is managed by known organization">
+      Your browser is managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph>
+    </message>
+    <message name="IDS_MANAGEMENT_TITLE_MANAGED" desc="Title of browser version of chrome://management page, shows when browser is managed by unknown organization">
+      Your browser is managed
+    </message>
+    <message name="IDS_MANAGEMENT_TITLE" desc="Title of browser version of chrome://management page, shows when browser is not managed">
+      Your browser is not managed
     </message>
   </if>
-  <message name="IDS_MANAGEMENT_TITLE_BY" desc="Title of chrome://management page, shows when device managed by known organization">
-    Device managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph>
-  </message>
 
   <message name="IDS_MANAGEMENT_DEVICE_NOT_MANAGED" desc="Message indicating that the device is not managed">
     Your device is not managed by an administrator.
