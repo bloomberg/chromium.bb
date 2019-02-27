@@ -2411,7 +2411,8 @@ TEST_F(DCLayerOverlayTest, Occluded) {
     EXPECT_EQ(0U, overlay_list.size());
     EXPECT_EQ(2U, dc_layer_list.size());
     EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
-    EXPECT_EQ(-1, dc_layer_list.back().z_order);
+    EXPECT_EQ(-1, dc_layer_list.front().z_order);
+    EXPECT_EQ(-2, dc_layer_list.back().z_order);
     // Entire underlay rect must be redrawn.
     EXPECT_EQ(gfx::Rect(0, 0, 256, 256), damage_rect_);
   }
@@ -2446,7 +2447,8 @@ TEST_F(DCLayerOverlayTest, Occluded) {
     EXPECT_EQ(0U, overlay_list.size());
     EXPECT_EQ(2U, dc_layer_list.size());
     EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
-    EXPECT_EQ(-1, dc_layer_list.back().z_order);
+    EXPECT_EQ(-1, dc_layer_list.front().z_order);
+    EXPECT_EQ(-2, dc_layer_list.back().z_order);
     // The underlay rectangle is the same, so the damage for first video quad is
     // contained within the combined occluding rects for this and the last
     // frame. Second video quad also adds its damage.
