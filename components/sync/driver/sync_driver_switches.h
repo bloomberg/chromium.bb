@@ -22,7 +22,6 @@ extern const char kSyncShortNudgeDelayForTest[];
 
 extern const base::Feature
     kSyncAllowWalletDataInTransportModeWithCustomPassphrase;
-extern const base::Feature kSyncClearDataOnPassphraseEncryption;
 extern const base::Feature kSyncPseudoUSSAppList;
 extern const base::Feature kSyncPseudoUSSApps;
 extern const base::Feature kSyncPseudoUSSDictionary;

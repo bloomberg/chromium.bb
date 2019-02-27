@@ -42,10 +42,6 @@ const base::Feature kSyncAllowWalletDataInTransportModeWithCustomPassphrase{
     "SyncAllowAutofillWalletDataInTransportModeWithCustomPassphrase",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables clearing of sync data when a user enables passphrase encryption.
-const base::Feature kSyncClearDataOnPassphraseEncryption{
-    "ClearSyncDataOnPassphraseEncryption", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // For each below, if enabled, the SyncableService implementation of the
 // corresponding datatype(s) is wrapped within the USS architecture.
 const base::Feature kSyncPseudoUSSAppList{"SyncPseudoUSSAppList",
