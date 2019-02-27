@@ -33,6 +33,7 @@
 #include "chrome/browser/guest_view/mime_handler_view/chrome_mime_handler_view_guest_delegate.h"
 #include "chrome/browser/guest_view/web_view/chrome_web_view_guest_delegate.h"
 #include "chrome/browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h"
+#include "chrome/browser/performance_manager/performance_manager_tab_helper.h"
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
@@ -99,6 +100,8 @@ void ChromeExtensionsAPIClient::AttachWebContentsHelpers(
   data_use_measurement::DataUseWebContentsObserver::CreateForWebContents(
       web_contents);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
+      web_contents);
+  performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
       web_contents);
 }
 
