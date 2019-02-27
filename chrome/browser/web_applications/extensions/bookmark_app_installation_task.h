@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
+#include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 
 class Profile;
 enum class WebappInstallSource;
@@ -89,6 +90,8 @@ class BookmarkAppInstallationTask {
                    const WebApplicationInfo& web_app_info);
 
   Profile* profile_;
+
+  web_app::ExtensionIdsMap extension_ids_map_;
 
   const web_app::PendingAppManager::AppInfo app_info_;
 

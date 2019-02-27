@@ -257,12 +257,9 @@ void PendingBookmarkAppManager::CurrentInstallationFinished(
       base::BindOnce(&PendingBookmarkAppManager::MaybeStartNextInstallation,
                      weak_ptr_factory_.GetWeakPtr()));
 
-  auto install_result_code = web_app::InstallResultCode::kFailedUnknownReason;
-  if (app_id) {
-    install_result_code = web_app::InstallResultCode::kSuccess;
-    const auto& info = current_task_and_callback_->task->app_info();
-    extension_ids_map_.Insert(info.url, app_id.value(), info.install_source);
-  }
+  auto install_result_code =
+      app_id ? web_app::InstallResultCode::kSuccess
+             : web_app::InstallResultCode::kFailedUnknownReason;
 
   std::unique_ptr<TaskAndCallback> task_and_callback;
   task_and_callback.swap(current_task_and_callback_);
