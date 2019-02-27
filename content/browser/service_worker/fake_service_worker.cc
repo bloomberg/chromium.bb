@@ -10,6 +10,8 @@
 #include "base/run_loop.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom.h"
 
 namespace content {
 
@@ -108,10 +110,13 @@ void FakeServiceWorker::DispatchFetchEvent(
     blink::mojom::DispatchFetchEventParamsPtr params,
     blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     DispatchFetchEventCallback callback) {
-  helper_->OnFetchEventStub(0 /* embedded_worker_id_ */,
-                            std::move(params->request),
-                            std::move(params->preload_handle),
-                            std::move(response_callback), std::move(callback));
+  auto response = blink::mojom::FetchAPIResponse::New();
+  response->status_code = 200;
+  response->status_text = "OK";
+  response->response_type = network::mojom::FetchResponseType::kDefault;
+  response_callback->OnResponse(
+      std::move(response), blink::mojom::ServiceWorkerFetchEventTiming::New());
+  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
 void FakeServiceWorker::DispatchNotificationClickEvent(

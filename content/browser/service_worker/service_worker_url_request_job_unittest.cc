@@ -665,34 +665,33 @@ TEST_F(ServiceWorkerURLRequestJobTest,
       0);
 }
 
-class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
+class ProviderDeleteWorker : public FakeServiceWorker {
  public:
-  ProviderDeleteHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
-  ~ProviderDeleteHelper() override {}
+  ProviderDeleteWorker(EmbeddedWorkerTestHelper* helper)
+      : FakeServiceWorker(helper) {}
+  ~ProviderDeleteWorker() override = default;
 
  protected:
-  void OnFetchEvent(
-      int /* embedded_worker_id */,
-      blink::mojom::FetchAPIRequestPtr /* request */,
-      blink::mojom::FetchEventPreloadHandlePtr /* preload_handle */,
+  void DispatchFetchEvent(
+      blink::mojom::DispatchFetchEventParamsPtr params,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
-      override {
-    context()->RemoveProviderHost(mock_render_process_id(), kProviderID);
+      DispatchFetchEventCallback callback) override {
+    helper()->context()->RemoveProviderHost(helper()->mock_render_process_id(),
+                                            kProviderID);
     response_callback->OnResponse(
         MakeOkResponse(), blink::mojom::ServiceWorkerFetchEventTiming::New());
-    std::move(finish_callback)
-        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
+    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ProviderDeleteHelper);
+  DISALLOW_COPY_AND_ASSIGN(ProviderDeleteWorker);
 };
 
 // Shouldn't crash if the ProviderHost is deleted prior to completion of the
 // fetch event.
 TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHostOnFetchEvent) {
-  SetUpWithHelper(std::make_unique<ProviderDeleteHelper>());
+  SetUpWithHelper(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
+  helper_->AddNewPendingServiceWorker<ProviderDeleteWorker>(helper_.get());
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   TestRequest(500, "Service Worker Response Error", std::string(),
@@ -741,22 +740,20 @@ TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHostBeforeFetchEvent) {
 }
 
 // Responds to fetch events with a blob.
-class BlobResponder : public EmbeddedWorkerTestHelper {
+class BlobResponderWorker : public FakeServiceWorker {
  public:
-  BlobResponder(const std::string& blob_uuid, uint64_t blob_size)
-      : EmbeddedWorkerTestHelper(base::FilePath()),
+  explicit BlobResponderWorker(EmbeddedWorkerTestHelper* helper,
+                               const std::string& blob_uuid,
+                               uint64_t blob_size)
+      : FakeServiceWorker(helper),
         blob_uuid_(blob_uuid),
         blob_size_(blob_size) {}
-  ~BlobResponder() override = default;
+  ~BlobResponderWorker() override = default;
 
- protected:
-  void OnFetchEvent(
-      int /* embedded_worker_id */,
-      blink::mojom::FetchAPIRequestPtr /* request */,
-      blink::mojom::FetchEventPreloadHandlePtr /* preload_handle */,
+  void DispatchFetchEvent(
+      blink::mojom::DispatchFetchEventParamsPtr params,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
-      override {
+      DispatchFetchEventCallback callback) override {
     blink::mojom::FetchAPIResponsePtr response = MakeOkResponse();
     response->headers = MakeHeaders();
     response->blob = blink::mojom::SerializedBlob::New();
@@ -769,15 +766,13 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
     response_callback->OnResponse(
         std::move(response),
         blink::mojom::ServiceWorkerFetchEventTiming::New());
-    std::move(finish_callback)
-        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
+    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
   }
 
+ private:
   std::string blob_uuid_;
   uint64_t blob_size_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BlobResponder);
+  DISALLOW_COPY_AND_ASSIGN(BlobResponderWorker);
 };
 
 TEST_F(ServiceWorkerURLRequestJobTest, BlobResponse) {
@@ -796,8 +791,9 @@ TEST_F(ServiceWorkerURLRequestJobTest, BlobResponse) {
   }
   std::unique_ptr<storage::BlobDataHandle> blob_handle =
       blob_storage_context->context()->AddFinishedBlob(std::move(blob_data));
-  SetUpWithHelper(std::make_unique<BlobResponder>(blob_handle->uuid(),
-                                                  expected_response.size()));
+  SetUpWithHelper(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
+  helper_->AddNewPendingServiceWorker<BlobResponderWorker>(
+      helper_.get(), blob_handle->uuid(), expected_response.size());
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   TestRequest(200, "OK", expected_response, true /* expect_valid_ssl */);
@@ -817,8 +813,10 @@ TEST_F(ServiceWorkerURLRequestJobTest, BlobResponse) {
 }
 
 TEST_F(ServiceWorkerURLRequestJobTest, NonExistentBlobUUIDResponse) {
-  SetUpWithHelper(
-      std::make_unique<BlobResponder>("blob-id:nothing-is-here", 0));
+  SetUpWithHelper(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
+  helper_->AddNewPendingServiceWorker<BlobResponderWorker>(
+      helper_.get(), "blob-id:nothing-is-here", 0);
+
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   TestRequest(500, "Service Worker Response Error", std::string(),
               true /* expect_valid_ssl */);
@@ -837,49 +835,46 @@ TEST_F(ServiceWorkerURLRequestJobTest, NonExistentBlobUUIDResponse) {
 }
 
 // Responds to fetch events with a stream.
-class StreamResponder : public EmbeddedWorkerTestHelper {
+class StreamResponderWorker : public FakeServiceWorker {
  public:
-  explicit StreamResponder(
+  explicit StreamResponderWorker(
+      EmbeddedWorkerTestHelper* helper,
       blink::mojom::ServiceWorkerStreamCallbackRequest callback_request,
       mojo::ScopedDataPipeConsumerHandle consumer_handle)
-      : EmbeddedWorkerTestHelper(base::FilePath()) {
+      : FakeServiceWorker(helper) {
     EXPECT_TRUE(stream_handle_.is_null());
     stream_handle_ = blink::mojom::ServiceWorkerStreamHandle::New();
     stream_handle_->callback_request = std::move(callback_request);
     stream_handle_->stream = std::move(consumer_handle);
   }
-  ~StreamResponder() override {}
+  ~StreamResponderWorker() override = default;
 
  protected:
-  void OnFetchEvent(
-      int /* embedded_worker_id */,
-      blink::mojom::FetchAPIRequestPtr /* request */,
-      blink::mojom::FetchEventPreloadHandlePtr /* preload_handle */,
+  void DispatchFetchEvent(
+      blink::mojom::DispatchFetchEventParamsPtr params,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
-      override {
+      DispatchFetchEventCallback callback) override {
     ASSERT_FALSE(stream_handle_.is_null());
     blink::mojom::FetchAPIResponsePtr response = MakeOkResponse();
     response->headers = MakeHeaders();
     response_callback->OnResponseStream(
         std::move(response), std::move(stream_handle_),
         blink::mojom::ServiceWorkerFetchEventTiming::New());
-    std::move(finish_callback)
-        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
+    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
   }
 
-  blink::mojom::ServiceWorkerStreamHandlePtr stream_handle_;
-
  private:
-  DISALLOW_COPY_AND_ASSIGN(StreamResponder);
+  blink::mojom::ServiceWorkerStreamHandlePtr stream_handle_;
+  DISALLOW_COPY_AND_ASSIGN(StreamResponderWorker);
 };
 
 TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse) {
   blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
   mojo::DataPipe data_pipe;
-  SetUpWithHelper(
-      std::make_unique<StreamResponder>(mojo::MakeRequest(&stream_callback),
-                                        std::move(data_pipe.consumer_handle)));
+  SetUpWithHelper(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
+  helper_->AddNewPendingServiceWorker<StreamResponderWorker>(
+      helper_.get(), mojo::MakeRequest(&stream_callback),
+      std::move(data_pipe.consumer_handle));
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
@@ -930,9 +925,10 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse) {
 TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_ConsecutiveRead) {
   blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
   mojo::DataPipe data_pipe;
-  SetUpWithHelper(
-      std::make_unique<StreamResponder>(mojo::MakeRequest(&stream_callback),
-                                        std::move(data_pipe.consumer_handle)));
+  SetUpWithHelper(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
+  helper_->AddNewPendingServiceWorker<StreamResponderWorker>(
+      helper_.get(), mojo::MakeRequest(&stream_callback),
+      std::move(data_pipe.consumer_handle));
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
@@ -980,9 +976,10 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_ConsecutiveRead) {
 TEST_F(ServiceWorkerURLRequestJobTest, StreamResponseAndCancel) {
   blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
   mojo::DataPipe data_pipe;
-  SetUpWithHelper(
-      std::make_unique<StreamResponder>(mojo::MakeRequest(&stream_callback),
-                                        std::move(data_pipe.consumer_handle)));
+  SetUpWithHelper(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
+  helper_->AddNewPendingServiceWorker<StreamResponderWorker>(
+      helper_.get(), mojo::MakeRequest(&stream_callback),
+      std::move(data_pipe.consumer_handle));
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
@@ -1033,9 +1030,10 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponseAndCancel) {
 TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_Abort) {
   blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
   mojo::DataPipe data_pipe;
-  SetUpWithHelper(
-      std::make_unique<StreamResponder>(mojo::MakeRequest(&stream_callback),
-                                        std::move(data_pipe.consumer_handle)));
+  SetUpWithHelper(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
+  helper_->AddNewPendingServiceWorker<StreamResponderWorker>(
+      helper_.get(), mojo::MakeRequest(&stream_callback),
+      std::move(data_pipe.consumer_handle));
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
@@ -1087,9 +1085,10 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_Abort) {
 TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_AbortBeforeData) {
   blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
   mojo::DataPipe data_pipe;
-  SetUpWithHelper(
-      std::make_unique<StreamResponder>(mojo::MakeRequest(&stream_callback),
-                                        std::move(data_pipe.consumer_handle)));
+  SetUpWithHelper(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
+  helper_->AddNewPendingServiceWorker<StreamResponderWorker>(
+      helper_.get(), mojo::MakeRequest(&stream_callback),
+      std::move(data_pipe.consumer_handle));
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
 
@@ -1141,9 +1140,10 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_AbortBeforeData) {
 TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_AbortAfterData) {
   blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
   mojo::DataPipe data_pipe;
-  SetUpWithHelper(
-      std::make_unique<StreamResponder>(mojo::MakeRequest(&stream_callback),
-                                        std::move(data_pipe.consumer_handle)));
+  SetUpWithHelper(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
+  helper_->AddNewPendingServiceWorker<StreamResponderWorker>(
+      helper_.get(), mojo::MakeRequest(&stream_callback),
+      std::move(data_pipe.consumer_handle));
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
 
@@ -1179,9 +1179,10 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_AbortAfterData) {
 TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_ConsecutiveReadAndAbort) {
   blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
   mojo::DataPipe data_pipe;
-  SetUpWithHelper(
-      std::make_unique<StreamResponder>(mojo::MakeRequest(&stream_callback),
-                                        std::move(data_pipe.consumer_handle)));
+  SetUpWithHelper(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
+  helper_->AddNewPendingServiceWorker<StreamResponderWorker>(
+      helper_.get(), mojo::MakeRequest(&stream_callback),
+      std::move(data_pipe.consumer_handle));
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
@@ -1321,10 +1322,11 @@ TEST_F(ServiceWorkerURLRequestJobTest, FailToActivate_Subresource) {
   EXPECT_EQ(host->controller(), version_);
 }
 
-class EarlyResponseHelper : public EmbeddedWorkerTestHelper {
+class EarlyResponseWorker : public FakeServiceWorker {
  public:
-  EarlyResponseHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
-  ~EarlyResponseHelper() override {}
+  explicit EarlyResponseWorker(EmbeddedWorkerTestHelper* helper)
+      : FakeServiceWorker(helper) {}
+  ~EarlyResponseWorker() override = default;
 
   void FinishWaitUntil() {
     std::move(finish_callback_)
@@ -1332,29 +1334,26 @@ class EarlyResponseHelper : public EmbeddedWorkerTestHelper {
   }
 
  protected:
-  void OnFetchEvent(
-      int /* embedded_worker_id */,
-      blink::mojom::FetchAPIRequestPtr /* request */,
-      blink::mojom::FetchEventPreloadHandlePtr /* preload_handle */,
+  void DispatchFetchEvent(
+      blink::mojom::DispatchFetchEventParamsPtr params,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
-      override {
-    finish_callback_ = std::move(finish_callback);
+      DispatchFetchEventCallback callback) override {
+    finish_callback_ = std::move(callback);
     response_callback->OnResponse(
         MakeOkResponse(), blink::mojom::ServiceWorkerFetchEventTiming::New());
   }
 
  private:
   blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback_;
-  DISALLOW_COPY_AND_ASSIGN(EarlyResponseHelper);
+  DISALLOW_COPY_AND_ASSIGN(EarlyResponseWorker);
 };
 
 // This simulates the case when a response is returned and the fetch event is
 // still in flight.
 TEST_F(ServiceWorkerURLRequestJobTest, EarlyResponse) {
-  SetUpWithHelper(std::make_unique<EarlyResponseHelper>());
-  EarlyResponseHelper* helper =
-      static_cast<EarlyResponseHelper*>(helper_.get());
+  SetUpWithHelper(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
+  auto* worker =
+      helper_->AddNewPendingServiceWorker<EarlyResponseWorker>(helper_.get());
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   TestRequest(200, "OK", std::string(), true /* expect_valid_ssl */);
@@ -1374,7 +1373,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, EarlyResponse) {
   EXPECT_EQ(std::string(), info->response_cache_storage_cache_name());
 
   EXPECT_FALSE(version_->HasNoWork());
-  helper->FinishWaitUntil();
+  worker->FinishWaitUntil();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(version_->HasNoWork());
 }
