@@ -77,8 +77,10 @@ gfx::Rect GetCenteredBounds(const gfx::Rect& bounds_in_parent,
 
 // Returns the maximized/full screen and/or centered bounds of a window.
 gfx::Rect GetBoundsInMaximizedMode(wm::WindowState* state_object) {
-  if (state_object->IsFullscreen() || state_object->IsPinned())
-    return screen_util::GetDisplayBoundsInParent(state_object->window());
+  if (state_object->IsFullscreen() || state_object->IsPinned()) {
+    return screen_util::GetFullscreenWindowBoundsInParent(
+        state_object->window());
+  }
 
   if (state_object->GetStateType() == mojom::WindowStateType::LEFT_SNAPPED) {
     return Shell::Get()

@@ -380,7 +380,7 @@ bool DefaultState::SetMaximizedOrFullscreenBounds(WindowState* window_state) {
   }
   if (window_state->IsFullscreen() || window_state->IsPinned()) {
     window_state->SetBoundsDirect(
-        screen_util::GetDisplayBoundsInParent(window_state->window()));
+        screen_util::GetFullscreenWindowBoundsInParent(window_state->window()));
     return true;
   }
   return false;
@@ -552,7 +552,7 @@ void DefaultState::UpdateBoundsFromState(
     case mojom::WindowStateType::FULLSCREEN:
     case mojom::WindowStateType::PINNED:
     case mojom::WindowStateType::TRUSTED_PINNED:
-      bounds_in_parent = screen_util::GetDisplayBoundsInParent(window);
+      bounds_in_parent = screen_util::GetFullscreenWindowBoundsInParent(window);
       break;
 
     case mojom::WindowStateType::MINIMIZED:
