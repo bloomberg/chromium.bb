@@ -140,6 +140,8 @@ std::string SysInfo::OperatingSystemArchitecture() {
       return "x86_64";
     case win::OSInfo::IA64_ARCHITECTURE:
       return "ia64";
+    case win::OSInfo::ARM64_ARCHITECTURE:
+      return "arm64";
     default:
       return "";
   }
