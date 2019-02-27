@@ -33,6 +33,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -504,6 +505,40 @@ IN_PROC_BROWSER_TEST_F(PermissionDialogTest, SwitchBrowserWindow) {
   test::PermissionRequestManagerTestApi(GetPermissionRequestManager())
       .SimulateWebContentsDestroyed();
   owned_requests_.clear();
+}
+
+// Regression test for https://crbug.com/933321.
+IN_PROC_BROWSER_TEST_F(
+    PermissionDialogTest,
+    ActiveTabClosedAfterRendererCrashesWithPendingPermissionRequest) {
+  ShowUi("geolocation");
+  ASSERT_TRUE(VerifyUi());
+
+  // Simulate a render process crash while the permission prompt is pending.
+  content::RenderViewHost* render_view_host =
+      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost();
+  content::RenderProcessHost* render_process_host =
+      render_view_host->GetProcess();
+  content::RenderProcessHostWatcher crash_observer(
+      render_process_host,
+      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  ASSERT_TRUE(render_process_host->Shutdown(0));
+  crash_observer.Wait();
+
+  // The permission request is still pending, but the BrowserView's WebView is
+  // now showing a crash overlay, so the permission prompt is hidden.
+  //
+  // Now close the tab. This will first detach the WebContents, causing the
+  // WebView's crash overlay to be torn down, which, in turn, will temporarily
+  // make the dying WebContents visible again, albeit without being attached to
+  // any BrowserView.
+  //
+  // Wait until the WebContents, and with it, the PermissionRequestManager, is
+  // gone, and make sure nothing crashes.
+  content::WebContentsDestroyedWatcher web_contents_destroyed_watcher(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  browser()->tab_strip_model()->CloseAllTabs();
+  web_contents_destroyed_watcher.Wait();
 }
 
 // Host wants to run flash.
