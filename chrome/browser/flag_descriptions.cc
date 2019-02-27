@@ -3476,6 +3476,12 @@ const char kWakeOnPacketsName[] = "Wake On Packets";
 const char kWakeOnPacketsDescription[] =
     "Enables waking the device based on the receipt of some network packets.";
 
+const char kEnableAppReinstallZeroStateName[] =
+    "Enable Zero State App Reinstall Suggestions.";
+const char kEnableAppReinstallZeroStateDescription[] =
+    "Enable Zero State App Reinstall Suggestions feature in launcher, which "
+    "will show app reinstall recommendations at end of zero state list.";
+
 #endif  // defined(OS_CHROMEOS)
 
 // Random platform combinations -----------------------------------------------
