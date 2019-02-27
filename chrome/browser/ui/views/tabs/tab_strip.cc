@@ -2032,8 +2032,6 @@ void TabStrip::StartedDraggingTabs(const Tabs& tabs) {
   if (MayHideNewTabButtonWhileDragging() && !drag_controller_)
     new_tab_button_->SetVisible(false);
 
-  PrepareForAnimation();
-
   // Reset dragging state of existing tabs.
   for (int i = 0; i < tab_count(); ++i)
     tab_at(i)->set_dragging(false);
