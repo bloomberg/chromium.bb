@@ -6,4 +6,5 @@
 
 dictionary GetNotificationOptions {
     DOMString tag = "";
+    [RuntimeEnabled=NotificationTriggers] boolean includeTriggered = false;
 };

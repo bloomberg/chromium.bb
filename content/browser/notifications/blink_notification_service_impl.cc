@@ -280,6 +280,7 @@ void BlinkNotificationServiceImpl::ClosePersistentNotification(
 void BlinkNotificationServiceImpl::GetNotifications(
     int64_t service_worker_registration_id,
     const std::string& filter_tag,
+    bool include_triggered,
     GetNotificationsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!GetNotificationService() ||
@@ -292,9 +293,10 @@ void BlinkNotificationServiceImpl::GetNotifications(
     return;
   }
 
-  auto read_notification_data_callback = base::BindOnce(
-      &BlinkNotificationServiceImpl::DidGetNotifications,
-      weak_factory_for_ui_.GetWeakPtr(), filter_tag, std::move(callback));
+  auto read_notification_data_callback =
+      base::BindOnce(&BlinkNotificationServiceImpl::DidGetNotifications,
+                     weak_factory_for_ui_.GetWeakPtr(), filter_tag,
+                     include_triggered, std::move(callback));
 
   notification_context_->ReadAllNotificationDataForServiceWorkerRegistration(
       origin_.GetURL(), service_worker_registration_id,
@@ -304,6 +306,7 @@ void BlinkNotificationServiceImpl::GetNotifications(
 
 void BlinkNotificationServiceImpl::DidGetNotifications(
     const std::string& filter_tag,
+    bool include_triggered,
     GetNotificationsCallback callback,
     bool success,
     const std::vector<NotificationDatabaseData>& notifications) {

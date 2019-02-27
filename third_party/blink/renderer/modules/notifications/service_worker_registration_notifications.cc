@@ -88,7 +88,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::getNotifications(
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   NotificationManager::From(execution_context)
       ->GetNotifications(registration.RegistrationId(), options->tag(),
-                         WrapPersistent(resolver));
+                         options->includeTriggered(), WrapPersistent(resolver));
   return promise;
 }
 

@@ -295,14 +295,22 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
 
   std::vector<std::string> GetNotificationsSync(
       int64_t service_worker_registration_id,
-      const std::string& filter_tag) {
+      const std::string& filter_tag,
+      bool include_triggered) {
     base::RunLoop run_loop;
     notification_service_->GetNotifications(
-        service_worker_registration_id, filter_tag,
+        service_worker_registration_id, filter_tag, include_triggered,
         base::BindOnce(&BlinkNotificationServiceImplTest::DidGetNotifications,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
     return get_notifications_callback_result_;
+  }
+
+  size_t CountDisplayedNotificationsSync(int64_t service_worker_registration_id,
+                                         const std::string& filter_tag) {
+    return GetNotificationsSync(service_worker_registration_id, filter_tag,
+                                /* include_triggered= */ false)
+        .size();
   }
 
   // Synchronous wrapper of
@@ -644,8 +652,8 @@ TEST_F(BlinkNotificationServiceImplTest, GetNotifications) {
   scoped_refptr<ServiceWorkerRegistration> registration;
   RegisterServiceWorker(&registration);
 
-  EXPECT_EQ(
-      0u, GetNotificationsSync(registration->id(), "" /* filter_tag */).size());
+  EXPECT_EQ(0u, CountDisplayedNotificationsSync(registration->id(),
+                                                /* filter_tag= */ ""));
 
   DisplayPersistentNotificationSync(registration->id(),
                                     blink::PlatformNotificationData(),
@@ -654,8 +662,8 @@ TEST_F(BlinkNotificationServiceImplTest, GetNotifications) {
   // Wait for service to receive all the Display calls.
   RunAllTasksUntilIdle();
 
-  EXPECT_EQ(
-      1u, GetNotificationsSync(registration->id(), "" /* filter_tag */).size());
+  EXPECT_EQ(1u, CountDisplayedNotificationsSync(registration->id(),
+                                                /* filter_tag= */ ""));
 }
 
 TEST_F(BlinkNotificationServiceImplTest, GetNotificationsWithoutPermission) {
@@ -673,8 +681,8 @@ TEST_F(BlinkNotificationServiceImplTest, GetNotificationsWithoutPermission) {
 
   SetPermissionStatus(blink::mojom::PermissionStatus::DENIED);
 
-  EXPECT_EQ(
-      0u, GetNotificationsSync(registration->id(), "" /* filter_tag */).size());
+  EXPECT_EQ(0u, CountDisplayedNotificationsSync(registration->id(),
+                                                /* filter_tag= */ ""));
 }
 
 TEST_F(BlinkNotificationServiceImplTest, GetNotificationsWithFilter) {
@@ -700,11 +708,11 @@ TEST_F(BlinkNotificationServiceImplTest, GetNotificationsWithFilter) {
   // Wait for service to receive all the Display calls.
   RunAllTasksUntilIdle();
 
-  EXPECT_EQ(2u, GetNotificationsSync(registration->id(), "").size());
-  EXPECT_EQ(1u, GetNotificationsSync(registration->id(), "tagA").size());
-  EXPECT_EQ(1u, GetNotificationsSync(registration->id(), "tagB").size());
-  EXPECT_EQ(0u, GetNotificationsSync(registration->id(), "tagC").size());
-  EXPECT_EQ(0u, GetNotificationsSync(registration->id(), "tag").size());
+  EXPECT_EQ(2u, CountDisplayedNotificationsSync(registration->id(), ""));
+  EXPECT_EQ(1u, CountDisplayedNotificationsSync(registration->id(), "tagA"));
+  EXPECT_EQ(1u, CountDisplayedNotificationsSync(registration->id(), "tagB"));
+  EXPECT_EQ(0u, CountDisplayedNotificationsSync(registration->id(), "tagC"));
+  EXPECT_EQ(0u, CountDisplayedNotificationsSync(registration->id(), "tag"));
 }
 
 }  // namespace content
