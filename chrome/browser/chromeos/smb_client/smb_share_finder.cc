@@ -138,7 +138,8 @@ void SmbShareFinder::OnSharesFound(
 
   if (error != smbprovider::ErrorType::ERROR_OK) {
     LOG(ERROR) << "Error finding shares: " << error;
-    return;
+    // Don't early out here because this could be the last host being queried,
+    // and the final share discovery callback may need to run.
   }
 
   for (const smbprovider::DirectoryEntryProto& entry : entries.entries()) {
