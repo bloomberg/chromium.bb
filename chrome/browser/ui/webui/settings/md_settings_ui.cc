@@ -339,6 +339,9 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("isDemoSession",
                           chromeos::DemoSession::IsDeviceInDemoMode());
 
+  html_source->AddBoolean("assistantEnabled",
+                          chromeos::switches::IsAssistantEnabled());
+
   // We have 2 variants of Android apps settings. Default case, when the Play
   // Store app exists we show expandable section that allows as to
   // enable/disable the Play Store and link to Android settings which is
