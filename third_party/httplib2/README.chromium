@@ -1,8 +1,8 @@
 Name: httplib2
 Short Name: httplib2
 URL: https://github.com/jcgregorio/httplib2
-Version: 0.8
-Revision: 0197ec868a4fc638c08358b94200ffd6ddb1bf50
+Version: 0.10.3
+Revision: 1ae16e0e8e868e4b81225631ee37c6555493014b
 License: MIT License
 
 Description:
