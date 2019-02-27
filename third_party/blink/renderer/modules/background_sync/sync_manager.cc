@@ -35,8 +35,8 @@ ScriptPromise SyncManager::registerFunction(ScriptState* script_state,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  mojom::blink::SyncRegistrationPtr sync_registration =
-      mojom::blink::SyncRegistration::New();
+  mojom::blink::SyncRegistrationOptionsPtr sync_registration =
+      mojom::blink::SyncRegistrationOptions::New();
   sync_registration->tag = tag;
 
   GetBackgroundSyncServicePtr()->Register(
@@ -68,9 +68,10 @@ SyncManager::GetBackgroundSyncServicePtr() {
   return background_sync_service_;
 }
 
-void SyncManager::RegisterCallback(ScriptPromiseResolver* resolver,
-                                   mojom::blink::BackgroundSyncError error,
-                                   mojom::blink::SyncRegistrationPtr options) {
+void SyncManager::RegisterCallback(
+    ScriptPromiseResolver* resolver,
+    mojom::blink::BackgroundSyncError error,
+    mojom::blink::SyncRegistrationOptionsPtr options) {
   // TODO(iclelland): Determine the correct error message to return in each case
   switch (error) {
     case mojom::blink::BackgroundSyncError::NONE:
@@ -112,7 +113,7 @@ void SyncManager::RegisterCallback(ScriptPromiseResolver* resolver,
 void SyncManager::GetRegistrationsCallback(
     ScriptPromiseResolver* resolver,
     mojom::blink::BackgroundSyncError error,
-    WTF::Vector<mojom::blink::SyncRegistrationPtr> registrations) {
+    WTF::Vector<mojom::blink::SyncRegistrationOptionsPtr> registrations) {
   // TODO(iclelland): Determine the correct error message to return in each case
   switch (error) {
     case mojom::blink::BackgroundSyncError::NONE: {

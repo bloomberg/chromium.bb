@@ -34,7 +34,7 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
   friend class BackgroundSyncServiceImplTest;
 
   // blink::mojom::BackgroundSyncService methods:
-  void Register(blink::mojom::SyncRegistrationPtr options,
+  void Register(blink::mojom::SyncRegistrationOptionsPtr options,
                 int64_t sw_registration_id,
                 RegisterCallback callback) override;
   void DidResolveRegistration(int64_t sw_registration_id,

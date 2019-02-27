@@ -4,7 +4,7 @@
 
 module blink.mojom;
 
-struct SyncRegistration {
+struct SyncRegistrationOptions {
   string tag = "";
 };
 
@@ -30,9 +30,9 @@ enum BackgroundSyncEventLastChance {
 };
 
 interface BackgroundSyncService {
-  Register(SyncRegistration options, int64 service_worker_registration_id)
-      => (BackgroundSyncError err, SyncRegistration options);
+  Register(SyncRegistrationOptions options, int64 service_worker_registration_id)
+      => (BackgroundSyncError err, SyncRegistrationOptions options);
   DidResolveRegistration(int64 service_worker_registration_id, string tag);
   GetRegistrations(int64 service_worker_registration_id)
-      => (BackgroundSyncError err, array<SyncRegistration> registrations);
+      => (BackgroundSyncError err, array<SyncRegistrationOptions> registrations);
 };
