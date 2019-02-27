@@ -110,6 +110,7 @@
 #if defined(OS_CHROMEOS)
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
+#include "chrome/browser/chromeos/dbus/dbus_helper.h"
 #include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/hugepage_text/hugepage_text.h"
@@ -516,6 +517,12 @@ void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
   // cookies need to go through one of Chrome's URLRequestContexts which have
   // a ChromeNetworkDelegate attached that selectively allows cookies again.
   net::URLRequest::SetDefaultCookiePolicyToBlock();
+
+#if defined(OS_CHROMEOS)
+  // The feature list depends on BrowserPolicyConnectorChromeOS which depends
+  // on DBus, so initialize it here.
+  chromeos::InitializeDBus();
+#endif
 
   DCHECK(chrome_feature_list_creator_);
   chrome_feature_list_creator_->CreateFeatureList();

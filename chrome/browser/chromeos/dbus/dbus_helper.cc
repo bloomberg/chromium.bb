@@ -11,7 +11,7 @@
 
 namespace chromeos {
 
-void PreEarlyInitDBus() {
+void InitializeDBus() {
   SystemSaltGetter::Initialize();
 
   // Initialize DBusThreadManager for the browser.

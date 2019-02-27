@@ -46,9 +46,9 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/dbus/dbus_helper.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chromeos/constants/chromeos_paths.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace {
@@ -132,7 +132,8 @@ void ChromeFeatureListCreator::CreatePrefService() {
 
 #if defined(OS_CHROMEOS)
   RegisterStubPathOverridesIfNecessary();
-  chromeos::PreEarlyInitDBus();
+  // DBus must be initialized before constructing the policy connector.
+  CHECK(chromeos::DBusThreadManager::IsInitialized());
   browser_policy_connector_ =
       std::make_unique<policy::BrowserPolicyConnectorChromeOS>();
 #else

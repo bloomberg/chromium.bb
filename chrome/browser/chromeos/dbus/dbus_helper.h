@@ -7,10 +7,10 @@
 
 namespace chromeos {
 
-// Creates state needed for field trials.
-void PreEarlyInitDBus();
+// Initializes the DBus thread manager and chrome DBus services.
+void InitializeDBus();
 
-// Shutdowns things initialized in the PreEarlyInitDBus().
+// Shuts down the DBus thread manager and chrome DBus services.
 void ShutdownDBus();
 
 }  // namespace chromeos
