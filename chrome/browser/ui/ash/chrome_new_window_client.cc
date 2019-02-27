@@ -40,8 +40,10 @@
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/common/user_agent.h"
 #include "content/public/common/was_activated_option.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
@@ -129,8 +131,21 @@ class CustomTabSessionImpl : public arc::mojom::CustomTabSession {
     std::unique_ptr<content::WebContents> web_contents =
         content::WebContents::Create(create_params);
 
+    // Use the same version number as browser_commands.cc
+    // TODO(hashimoto): Get the actual Android version from the container.
+    constexpr char kOsOverrideForTabletSite[] = "Linux; Android 4.0.3";
+    // Override the user agent to request mobile version web sites.
+    const std::string product =
+        version_info::GetProductNameAndVersionForUserAgent();
+    const std::string user_agent = content::BuildUserAgentFromOSAndProduct(
+        kOsOverrideForTabletSite, product);
+    web_contents->SetUserAgentOverride(user_agent,
+                                       false /* override_in_new_tabs */);
+
     content::NavigationController::LoadURLParams load_url_params(url);
     load_url_params.source_site_instance = site_instance;
+    load_url_params.override_user_agent =
+        content::NavigationController::UA_OVERRIDE_TRUE;
     web_contents->GetController().LoadURLWithParams(load_url_params);
 
     // Add a flag to remember this tab originated in the ARC context.
