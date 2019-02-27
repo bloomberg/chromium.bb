@@ -340,8 +340,8 @@ int BrowserActionsContainer::GetWidthForMaxWidth(int max_width) const {
     // for enough space to show the resize handle (if there are no icons, we
     // will ask for a width of zero so it won't matter).
     preferred_width =
-        std::max(GetResizeAreaWidth(),
-                 GetWidthForIconCount(WidthToIconCount(max_width)));
+        std::max(GetResizeAreaWidth(), GetWidthForIconCount(WidthToIconCount(
+                                           max_width - GetResizeAreaWidth())));
   }
   return preferred_width;
 }
