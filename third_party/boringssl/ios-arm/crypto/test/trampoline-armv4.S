@@ -36,10 +36,10 @@ Labi_test_trampoline_begin:
 	stmdb	sp!, {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,lr}
 
 	@ Reserve stack space for six (10-4) stack parameters, plus an extra 4
-	@ bytes to keep it 8-byte-aligned (see APCS, section 5.3).
+	@ bytes to keep it 8-byte-aligned (see AAPCS, section 5.3).
 	sub	sp, sp, #28
 
-	@ Every register in APCS is either non-volatile or a parameter (except
+	@ Every register in AAPCS is either non-volatile or a parameter (except
 	@ r9 on iOS), so this code, by the actual call, loses all its scratch
 	@ registers. First fill in stack parameters while there are registers
 	@ to spare.
