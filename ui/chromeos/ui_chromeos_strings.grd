@@ -1096,6 +1096,11 @@
       <message name="IDS_IME_NAME_TRANSLITERATION_UR" desc="The input method name shows in system tray menu. Please translate only for 'transliteration'.">
         Transliteration (salam &#x2190; &#x0633;&#x0644;&#x0627;&#x0645;)
       </message>
+
+      <!-- Strings shared between ARC++ (//components/arc) and Files app (//chrome/browser/chromeos/file_manager)  -->
+      <message name="IDS_FILE_BROWSER_MY_FILES_ROOT_LABEL" desc="A label for the 'My files' root which is parent of Downloads, Linux and Android files. Use sentence case.">
+        My files
+      </message>
     </messages>
   </release>
 </grit>
