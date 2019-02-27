@@ -124,9 +124,6 @@
   "chrome/browser/resources/sync_file_system_internals_resources.grd": {
     "includes": [13340],
   },
-  "chrome/browser/resources/task_scheduler_internals/resources.grd": {
-    "includes": [13360],
-  },
   "chrome/browser/resources/translate_internals_resources.grd": {
     "includes": [13370],
   },

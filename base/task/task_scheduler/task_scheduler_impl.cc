@@ -203,15 +203,6 @@ TaskSchedulerImpl::CreateUpdateableSequencedTaskRunnerWithTraitsForTesting(
   return MakeRefCounted<SchedulerSequencedTaskRunner>(new_traits, this);
 }
 
-std::vector<const HistogramBase*> TaskSchedulerImpl::GetHistograms() const {
-  std::vector<const HistogramBase*> histograms;
-  foreground_pool_->GetHistograms(&histograms);
-  if (background_pool_.has_value())
-    background_pool_->GetHistograms(&histograms);
-
-  return histograms;
-}
-
 int TaskSchedulerImpl::GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
     const TaskTraits& traits) const {
   // This method does not support getting the maximum number of BEST_EFFORT

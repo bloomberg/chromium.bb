@@ -145,7 +145,6 @@ const char kChromeUISyncHost[] = "sync";
 const char kChromeUISyncInternalsHost[] = "sync-internals";
 const char kChromeUISyncResourcesHost[] = "syncresources";
 const char kChromeUISystemInfoHost[] = "system";
-const char kChromeUITaskSchedulerInternalsHost[] = "taskscheduler-internals";
 const char kChromeUITermsHost[] = "terms";
 const char kChromeUITermsURL[] = "chrome://terms/";
 const char kChromeUIThemeHost[] = "theme";
@@ -366,7 +365,6 @@ const char* const kChromeHostURLs[] = {
     kChromeUISuggestionsHost,
     kChromeUISupervisedUserInternalsHost,
     kChromeUISyncInternalsHost,
-    kChromeUITaskSchedulerInternalsHost,
 #if !defined(OS_ANDROID)
     kChromeUITermsHost,
     kChromeUIThumbnailListHost,
