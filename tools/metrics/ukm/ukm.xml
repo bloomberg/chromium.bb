@@ -3958,6 +3958,13 @@ be describing additional metrics about the same event.
       origin of the main frame request. In ms.
     </summary>
   </metric>
+  <metric name="MainFrameResource.HttpProtocolScheme">
+    <summary>
+      HTTP Protocol scheme of the connection using which the main frame response
+      was fetched. Recorded as HttpProtocolScheme enum in
+      tools/metrics/histograms/enum.xml.
+    </summary>
+  </metric>
   <metric name="MainFrameResource.NavigationStartToRequestStart">
     <summary>
       The duration from the start of the navigation to the start of the main
