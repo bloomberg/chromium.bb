@@ -369,9 +369,9 @@ NGBlockLayoutAlgorithm::LayoutWithInlineChildLayoutContext() {
 
 inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
     NGInlineChildLayoutContext* inline_child_layout_context) {
-  NGBoxStrut borders = ComputeBorders(ConstraintSpace(), Node());
-  NGBoxStrut padding = ComputePadding(ConstraintSpace(), Style());
-  border_padding_ = borders + padding;
+  container_builder_.SetBorders(ComputeBorders(ConstraintSpace(), Node()));
+  container_builder_.SetPadding(ComputePadding(ConstraintSpace(), Style()));
+  border_padding_ = container_builder_.Borders() + container_builder_.Padding();
 
   NGBoxStrut scrollbars = Node().GetScrollbarSizes();
   border_scrollbar_padding_ = ConstraintSpace().IsAnonymous()
@@ -563,11 +563,23 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
     }
   }
 
-  NGMarginStrut end_margin_strut = previous_inflow_position.margin_strut;
-
   // The intrinsic block size is not allowed to be less than the content edge
   // offset, as that could give us a negative content box size.
   intrinsic_block_size_ = content_edge;
+
+  // To save space of the stack when we recurse into children, the rest of this
+  // function is continued within |FinishLayout|. However it should be read as
+  // one function.
+  return FinishLayout(&previous_inflow_position, border_box_size,
+                      container_builder_.Borders(), scrollbars);
+}
+
+scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
+    NGPreviousInflowPosition* previous_inflow_position,
+    NGLogicalSize border_box_size,
+    const NGBoxStrut& borders,
+    const NGBoxStrut& scrollbars) {
+  NGMarginStrut end_margin_strut = previous_inflow_position->margin_strut;
 
   // If the current layout is a new formatting context, we need to encapsulate
   // all of our floats.
@@ -583,7 +595,7 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
   //  - We are a new formatting context.
   // Additionally this fragment produces no end margin strut.
   if (border_scrollbar_padding_.block_end ||
-      previous_inflow_position.empty_block_affected_by_clearance ||
+      previous_inflow_position->empty_block_affected_by_clearance ||
       ConstraintSpace().IsNewFormattingContext()) {
     // If we are a quirky container, we ignore any quirky margins and
     // just consider normal margins to extend our size.  Other UAs
@@ -602,7 +614,7 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
       // shouldn't be here, because then the offset should already have been
       // determined.
       DCHECK(!ConstraintSpace().IsNewFormattingContext());
-      if (!ResolveBfcBlockOffset(&previous_inflow_position)) {
+      if (!ResolveBfcBlockOffset(previous_inflow_position)) {
         return container_builder_.Abort(
             NGLayoutResult::kBfcBlockOffsetResolved);
       }
@@ -618,7 +630,7 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
       // doubly accounted for as our block size.
       intrinsic_block_size_ = std::max(
           intrinsic_block_size_,
-          previous_inflow_position.logical_block_offset + margin_strut_sum);
+          previous_inflow_position->logical_block_offset + margin_strut_sum);
     }
 
     intrinsic_block_size_ += border_scrollbar_padding_.block_end;
@@ -628,7 +640,7 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
     // of the last in-flow child. The pending margin is to be propagated to our
     // container, so ignore it.
     intrinsic_block_size_ = std::max(
-        intrinsic_block_size_, previous_inflow_position.logical_block_offset);
+        intrinsic_block_size_, previous_inflow_position->logical_block_offset);
   }
 
   intrinsic_block_size_ = std::max(intrinsic_block_size_,
@@ -654,7 +666,7 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
   // if they're empty; it will be at the very start of the fragmentainer.
   if (!container_builder_.BfcBlockOffset() &&
       (border_box_size.block_size || BreakToken())) {
-    if (!ResolveBfcBlockOffset(&previous_inflow_position))
+    if (!ResolveBfcBlockOffset(previous_inflow_position))
       return container_builder_.Abort(NGLayoutResult::kBfcBlockOffsetResolved);
     DCHECK(container_builder_.BfcBlockOffset());
   }
@@ -676,8 +688,6 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
 
   container_builder_.SetEndMarginStrut(end_margin_strut);
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size_);
-  container_builder_.SetPadding(padding);
-  container_builder_.SetBorders(borders);
 
   // We only finalize for fragmentation if the fragment has a BFC block offset.
   // This may occur with a zero block size fragment. We need to know the BFC
