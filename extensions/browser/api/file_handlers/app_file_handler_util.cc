@@ -266,22 +266,6 @@ std::vector<FileHandlerMatch> FindFileHandlerMatchesForEntries(
   return matches;
 }
 
-std::vector<const FileHandlerInfo*> FindFileHandlersForEntries(
-    const Extension& app,
-    const std::vector<EntryInfo> entries) {
-  std::vector<const FileHandlerInfo*> handlers;
-
-  if (entries.empty())
-    return handlers;
-  // Get the matching handlers and extract the handler info from them.
-  std::vector<FileHandlerMatch> matches =
-      FindFileHandlerMatchesForEntries(app, entries);
-  for (const auto& match : matches) {
-    handlers.push_back(match.handler);
-  }
-  return handlers;
-}
-
 bool FileHandlerCanHandleEntry(const FileHandlerInfo& handler,
                                const EntryInfo& entry) {
   if (entry.is_directory)
