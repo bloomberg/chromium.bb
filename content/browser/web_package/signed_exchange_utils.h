@@ -45,6 +45,9 @@ void ReportErrorAndTraceEvent(
 // Returns true when SignedHTTPExchange feature is enabled.
 CONTENT_EXPORT bool IsSignedExchangeHandlingEnabled();
 
+// Returns true when SignedExchangeReportingForDistributors feature is enabled.
+bool IsSignedExchangeReportingForDistributorsEnabled();
+
 // Returns true when the response should be handled as a signed exchange by
 // checking the mime type and the feature flags.
 bool ShouldHandleAsSignedHTTPExchange(

@@ -8,10 +8,10 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -19,9 +19,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "net/base/ip_endpoint.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response_info.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "url/origin.h"
@@ -143,9 +141,8 @@ std::unique_ptr<SignedExchangeReporter> SignedExchangeReporter::MaybeCreate(
     const std::string& referrer,
     const network::ResourceResponseHead& response,
     base::OnceCallback<int(void)> frame_tree_node_id_getter) {
-  if (!base::FeatureList::IsEnabled(network::features::kReporting) ||
-      !base::FeatureList::IsEnabled(
-          features::kSignedExchangeReportingForDistributors)) {
+  if (!signed_exchange_utils::
+          IsSignedExchangeReportingForDistributorsEnabled()) {
     return nullptr;
   }
   return base::WrapUnique(new SignedExchangeReporter(
