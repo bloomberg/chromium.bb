@@ -713,7 +713,7 @@ StructBody = <empty>
            | StructBody Const
            | StructBody Enum
            | StructBody StructField
-StructField = AttributeSection TypeSpec Name Orginal Default ";"
+StructField = AttributeSection TypeSpec Name Ordinal Default ";"
 
 Union = AttributeSection "union" Name "{" UnionBody "}" ";"
 UnionBody = <empty> | UnionBody UnionField
