@@ -861,8 +861,7 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
         DynamicTo<HTMLFrameOwnerElement>(layout_object.GetNode());
     if (frame_owner && frame_owner->ContentFrame()) {
       Frame* frame = frame_owner->ContentFrame();
-      if (frame->IsRemoteFrame()) {
-        RemoteFrame* remote = ToRemoteFrame(frame);
+      if (auto* remote = DynamicTo<RemoteFrame>(frame)) {
         cc::Layer* layer = remote->GetCcLayer();
         graphics_layer_->SetContentsToCcLayer(
             layer, remote->WebLayerHasFixedContentsOpaque());

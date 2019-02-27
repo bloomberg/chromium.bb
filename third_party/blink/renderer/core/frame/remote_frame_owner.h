@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/frame_owner.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -112,11 +113,10 @@ class CORE_EXPORT RemoteFrameOwner final
   const FrameOwnerElementType frame_owner_element_type_;
 };
 
-DEFINE_TYPE_CASTS(RemoteFrameOwner,
-                  FrameOwner,
-                  owner,
-                  owner->IsRemote(),
-                  owner.IsRemote());
+template <>
+struct DowncastTraits<RemoteFrameOwner> {
+  static bool AllowFrom(const FrameOwner& owner) { return owner.IsRemote(); }
+};
 
 }  // namespace blink
 

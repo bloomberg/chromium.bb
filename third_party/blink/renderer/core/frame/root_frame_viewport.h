@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/platform/graphics/scroll_types.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -151,11 +152,12 @@ class CORE_EXPORT RootFrameViewport final
   Member<ScrollableArea> layout_viewport_;
 };
 
-DEFINE_TYPE_CASTS(RootFrameViewport,
-                  ScrollableArea,
-                  scrollableArea,
-                  scrollableArea->IsRootFrameViewport(),
-                  scrollableArea.IsRootFrameViewport());
+template <>
+struct DowncastTraits<RootFrameViewport> {
+  static bool AllowFrom(const ScrollableArea& scrollableArea) {
+    return scrollableArea.IsRootFrameViewport();
+  }
+};
 
 }  // namespace blink
 

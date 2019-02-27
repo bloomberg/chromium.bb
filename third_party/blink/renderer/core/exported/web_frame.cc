@@ -157,8 +157,7 @@ void WebFrame::SetFrameOwnerPolicy(
     const blink::ParsedFeaturePolicy& container_policy) {
   // At the moment, this is only used to replicate sandbox flags and container
   // policy for frames with a remote owner.
-  RemoteFrameOwner* owner = ToRemoteFrameOwner(ToCoreFrame(*this)->Owner());
-  DCHECK(owner);
+  auto* owner = To<RemoteFrameOwner>(ToCoreFrame(*this)->Owner());
   owner->SetSandboxFlags(static_cast<SandboxFlags>(flags));
   owner->SetContainerPolicy(container_policy);
 }
@@ -177,8 +176,7 @@ void WebFrame::SetFrameOwnerProperties(
     const WebFrameOwnerProperties& properties) {
   // At the moment, this is only used to replicate frame owner properties
   // for frames with a remote owner.
-  RemoteFrameOwner* owner = ToRemoteFrameOwner(ToCoreFrame(*this)->Owner());
-  DCHECK(owner);
+  auto* owner = To<RemoteFrameOwner>(ToCoreFrame(*this)->Owner());
 
   Frame* frame = ToCoreFrame(*this);
   DCHECK(frame);
@@ -321,7 +319,7 @@ WebFrame* WebFrame::FromFrame(Frame* frame) {
 
   if (auto* local_frame = DynamicTo<LocalFrame>(frame))
     return WebLocalFrameImpl::FromFrame(*local_frame);
-  return WebRemoteFrameImpl::FromFrame(ToRemoteFrame(*frame));
+  return WebRemoteFrameImpl::FromFrame(To<RemoteFrame>(*frame));
 }
 
 WebFrame::WebFrame(WebTreeScopeType scope)
