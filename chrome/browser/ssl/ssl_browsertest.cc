@@ -4650,7 +4650,8 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, InterstitialNotAffectedByHideShow) {
   EXPECT_EQ(tab, browser()->tab_strip_model()->GetWebContentsAt(1));
   EXPECT_FALSE(tab->GetRenderWidgetHostView()->IsShowing());
 
-  browser()->tab_strip_model()->ActivateTabAt(1, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      1, {TabStripModel::GestureType::kOther});
   EXPECT_TRUE(tab->GetRenderWidgetHostView()->IsShowing());
 }
 

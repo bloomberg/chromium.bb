@@ -272,7 +272,7 @@ TEST_F(SearchIPCRouterTest, HandleTabChangedEvents) {
   EXPECT_FALSE(IsActiveTab(contents));
 
   // Activate the first tab.
-  browser()->tab_strip_model()->ActivateTabAt(1, false);
+  browser()->tab_strip_model()->ActivateTabAt(1);
   EXPECT_EQ(browser()->tab_strip_model()->active_index(),
             browser()->tab_strip_model()->GetIndexOfWebContents(contents));
   EXPECT_TRUE(IsActiveTab(contents));

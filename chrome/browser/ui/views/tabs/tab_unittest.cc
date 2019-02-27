@@ -52,7 +52,7 @@ class FakeTabController : public TabController {
   }
   bool ShouldHideCloseButtonForTab(Tab* tab) const override { return false; }
   bool MaySetClip() override { return false; }
-  void SelectTab(Tab* tab) override {}
+  void SelectTab(Tab* tab, const ui::Event& event) override {}
   void ExtendSelectionTo(Tab* tab) override {}
   void ToggleSelected(Tab* tab) override {}
   void AddSelectionFromAnchorTo(Tab* tab) override {}

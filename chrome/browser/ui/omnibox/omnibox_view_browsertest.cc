@@ -649,7 +649,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, ClearUserTextAfterBackgroundCommit) {
 
   // Switch back to the first tab.  The user text should be cleared, and the
   // omnibox should have the new URL.
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
   EXPECT_EQ(ASCIIToUTF16(url2.spec()), omnibox_view->GetText());
 }
 
@@ -1419,7 +1420,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, PersistKeywordModeOnTabSwitch) {
   chrome::NewTab(browser());
 
   // Switch back to the first tab.
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
 
   // Make sure we're still in keyword mode.
   ASSERT_TRUE(omnibox_view->model()->is_keyword_selected());
@@ -1430,8 +1432,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, PersistKeywordModeOnTabSwitch) {
   ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchTextKeys));
 
   // Switch to the second tab and back to the first.
-  browser()->tab_strip_model()->ActivateTabAt(1, true);
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      1, {TabStripModel::GestureType::kOther});
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
 
   // Make sure we're still in keyword mode.
   ASSERT_TRUE(omnibox_view->model()->is_keyword_selected());

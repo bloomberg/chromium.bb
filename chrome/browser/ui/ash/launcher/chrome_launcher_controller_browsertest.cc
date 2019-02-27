@@ -1157,7 +1157,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AsyncActivationStateCheck) {
   EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(shortcut_id)->status);
   // To address the issue of crbug.com/174050, the tab we are about to close
   // has to be active.
-  tab_strip->ActivateTabAt(1, false);
+  tab_strip->ActivateTabAt(1);
   EXPECT_EQ(1, tab_strip->active_index());
 
   // Close the web contents.
@@ -1821,7 +1821,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MatchingShelfIDandActiveTab) {
   EXPECT_EQ(app_id, id);
 
   // Activate the tab at index 0 (NTP) and expect a browser ShelfID.
-  browser()->tab_strip_model()->ActivateTabAt(0, false);
+  browser()->tab_strip_model()->ActivateTabAt(0);
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
   id = ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
   EXPECT_EQ(browser_id, id);

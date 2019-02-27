@@ -2091,7 +2091,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderTargetHasPopup) {
   OpenURLViaWindowOpen(GURL(url::kAboutBlankURL));
 
   // Switch back to the current tab and attempt to swap it in.
-  current_browser()->tab_strip_model()->ActivateTabAt(0, true);
+  current_browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
   NavigateToDestURLWithDisposition(WindowOpenDisposition::CURRENT_TAB, false);
 }
 

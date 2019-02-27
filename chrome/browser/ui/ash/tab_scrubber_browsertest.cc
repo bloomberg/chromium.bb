@@ -353,7 +353,7 @@ IN_PROC_BROWSER_TEST_F(TabScrubberTest, FullScreenBrowser) {
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(
       gfx::Point(0, browser()->window()->GetBounds().height())));
   AddTabs(browser(), 6);
-  browser()->tab_strip_model()->ActivateTabAt(4, false);
+  browser()->tab_strip_model()->ActivateTabAt(4);
 
   chrome::ToggleFullscreenMode(browser());
   BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(

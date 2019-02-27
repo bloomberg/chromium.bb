@@ -347,7 +347,7 @@ void BrowserShortcutLauncherItemController::ExecuteCommand(
       multi_user_util::MoveWindowToCurrentDesktop(
           browser->window()->GetNativeWindow());
       if (tab_index != kNoTab && tab_strip->ContainsIndex(tab_index))
-        tab_strip->ActivateTabAt(tab_index, false);
+        tab_strip->ActivateTabAt(tab_index);
       browser->window()->Show();
       browser->window()->Activate();
     }

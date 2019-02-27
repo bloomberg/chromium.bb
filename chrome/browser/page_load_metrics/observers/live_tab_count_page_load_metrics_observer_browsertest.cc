@@ -92,7 +92,8 @@ IN_PROC_BROWSER_TEST_F(LiveTabCountPageLoadMetricsBrowserTest,
   waiter->AddPageExpectation(TimingField::kFirstMeaningfulPaint);
 
   // Switch tabs so the paint events occur.
-  browser()->tab_strip_model()->ActivateTabAt(1, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      1, {TabStripModel::GestureType::kOther});
 
   waiter->Wait();
 

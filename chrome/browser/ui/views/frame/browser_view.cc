@@ -2447,7 +2447,8 @@ bool BrowserView::AcceleratorPressed(const ui::Accelerator& accelerator) {
     return false;
 
   UpdateAcceleratorMetrics(accelerator, command_id);
-  return chrome::ExecuteCommand(browser_.get(), command_id);
+  return chrome::ExecuteCommand(browser_.get(), command_id,
+                                accelerator.time_stamp());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -539,14 +539,36 @@ void TabStripModel::SendDetachWebContentsNotifications(
   }
 }
 
-void TabStripModel::ActivateTabAt(int index, bool user_gesture) {
+void TabStripModel::ActivateTabAt(int index, UserGestureDetails user_gesture) {
   DCHECK(ContainsIndex(index));
   TRACE_EVENT0("ui", "TabStripModel::ActivateTabAt");
+
+  TabSwitchEventLatencyRecorder::EventType event_type;
+  switch (user_gesture.type) {
+    case GestureType::kMouse:
+      event_type = TabSwitchEventLatencyRecorder::EventType::kMouse;
+      break;
+    case GestureType::kKeyboard:
+      event_type = TabSwitchEventLatencyRecorder::EventType::kKeyboard;
+      break;
+    case GestureType::kTouch:
+      event_type = TabSwitchEventLatencyRecorder::EventType::kTouch;
+      break;
+    case GestureType::kWheel:
+      event_type = TabSwitchEventLatencyRecorder::EventType::kWheel;
+      break;
+    default:
+      event_type = TabSwitchEventLatencyRecorder::EventType::kOther;
+      break;
+  }
+  tab_switch_event_latency_recorder_.BeginLatencyTiming(user_gesture.time_stamp,
+                                                        event_type);
   ui::ListSelectionModel new_model = selection_model_;
   new_model.SetSelectedIndex(index);
   SetSelection(std::move(new_model),
-               user_gesture ? TabStripModelObserver::CHANGE_REASON_USER_GESTURE
-                            : TabStripModelObserver::CHANGE_REASON_NONE,
+               user_gesture.type != GestureType::kNone
+                   ? TabStripModelObserver::CHANGE_REASON_USER_GESTURE
+                   : TabStripModelObserver::CHANGE_REASON_NONE,
                /*triggered_by_other_operation=*/false);
 }
 
@@ -909,16 +931,16 @@ void TabStripModel::CloseSelectedTabs() {
       CLOSE_CREATE_HISTORICAL_TAB | CLOSE_USER_GESTURE);
 }
 
-void TabStripModel::SelectNextTab() {
-  SelectRelativeTab(true);
+void TabStripModel::SelectNextTab(UserGestureDetails detail) {
+  SelectRelativeTab(true, detail);
 }
 
-void TabStripModel::SelectPreviousTab() {
-  SelectRelativeTab(false);
+void TabStripModel::SelectPreviousTab(UserGestureDetails detail) {
+  SelectRelativeTab(false, detail);
 }
 
-void TabStripModel::SelectLastTab() {
-  ActivateTabAt(count() - 1, true);
+void TabStripModel::SelectLastTab(UserGestureDetails detail) {
+  ActivateTabAt(count() - 1, detail);
 }
 
 void TabStripModel::MoveTabNext() {
@@ -1610,6 +1632,10 @@ TabStripSelectionChange TabStripModel::SetSelection(
 
   if (!triggered_by_other_operation &&
       (selection.active_tab_changed() || selection.selection_changed())) {
+    if (selection.active_tab_changed()) {
+      tab_switch_event_latency_recorder_.OnWillChangeActiveTab(
+          base::TimeTicks::Now());
+    }
     TabStripModelChange change;
     auto visibility_tracker = InstallRenderWigetVisibilityTracker(selection);
     for (auto& observer : observers_)
@@ -1619,7 +1645,7 @@ TabStripSelectionChange TabStripModel::SetSelection(
   return selection;
 }
 
-void TabStripModel::SelectRelativeTab(bool next) {
+void TabStripModel::SelectRelativeTab(bool next, UserGestureDetails detail) {
   // This may happen during automated testing or if a user somehow buffers
   // many key accelerators.
   if (contents_data_.empty())
@@ -1628,7 +1654,7 @@ void TabStripModel::SelectRelativeTab(bool next) {
   int index = active_index();
   int delta = next ? 1 : -1;
   index = (index + count() + delta) % count();
-  ActivateTabAt(index, true);
+  ActivateTabAt(index, detail);
 }
 
 void TabStripModel::MoveWebContentsAtImpl(int index,

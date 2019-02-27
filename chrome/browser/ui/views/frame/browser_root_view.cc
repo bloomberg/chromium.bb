@@ -276,14 +276,16 @@ bool BrowserRootView::OnMouseWheel(const ui::MouseWheelEvent& event) {
       // Switch to the next tab only if not at the end of the tab-strip.
       if (whole_scroll_offset < 0 &&
           model->active_index() + 1 < model->count()) {
-        chrome::SelectNextTab(browser);
+        chrome::SelectNextTab(
+            browser, {TabStripModel::GestureType::kWheel, event.time_stamp()});
         return true;
       }
 
       // Switch to the previous tab only if not at the beginning of the
       // tab-strip.
       if (whole_scroll_offset > 0 && model->active_index() > 0) {
-        chrome::SelectPreviousTab(browser);
+        chrome::SelectPreviousTab(
+            browser, {TabStripModel::GestureType::kWheel, event.time_stamp()});
         return true;
       }
     }

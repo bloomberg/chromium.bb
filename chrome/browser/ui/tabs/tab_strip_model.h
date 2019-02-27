@@ -16,9 +16,11 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/tabs/tab_group_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
+#include "chrome/browser/ui/tabs/tab_switch_event_latency_recorder.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/page_transition_types.h"
 
@@ -192,11 +194,27 @@ class TabStripModel {
   // strip). Returns the detached WebContents.
   std::unique_ptr<content::WebContents> DetachWebContentsAt(int index);
 
-  // Makes the tab at the specified index the active tab. |user_gesture| is true
-  // if the user actually clicked on the tab or navigated to it using a keyboard
-  // command, false if the tab was activated as a by-product of some other
-  // action.
-  void ActivateTabAt(int index, bool user_gesture);
+  // User gesture type that triggers ActivateTabAt. kNone indicates that it was
+  // not triggered by a user gesture, but by a by-product of some other action.
+  enum class GestureType { kMouse, kTouch, kWheel, kKeyboard, kOther, kNone };
+
+  // Encapsulates user gesture information for tab activation
+  struct UserGestureDetails {
+    UserGestureDetails(GestureType type,
+                       base::TimeTicks time_stamp = base::TimeTicks::Now())
+        : type(type), time_stamp(time_stamp) {}
+
+    GestureType type;
+    base::TimeTicks time_stamp;
+  };
+
+  // Makes the tab at the specified index the active tab. |gesture_detail.type|
+  // contains the gesture type that triggers the tab activation.
+  // |gesture_detail.time_stamp| contains the timestamp of the user gesture, if
+  // any.
+  void ActivateTabAt(int index,
+                     UserGestureDetails gesture_detail =
+                         UserGestureDetails(GestureType::kNone));
 
   // Move the WebContents at the specified index to another index. This
   // method does NOT send Detached/Attached notifications, rather it moves the
@@ -333,11 +351,14 @@ class TabStripModel {
   void CloseSelectedTabs();
 
   // Select adjacent tabs
-  void SelectNextTab();
-  void SelectPreviousTab();
+  void SelectNextTab(
+      UserGestureDetails detail = UserGestureDetails(GestureType::kOther));
+  void SelectPreviousTab(
+      UserGestureDetails detail = UserGestureDetails(GestureType::kOther));
 
   // Selects the last tab in the tab strip.
-  void SelectLastTab();
+  void SelectLastTab(
+      UserGestureDetails detail = UserGestureDetails(GestureType::kOther));
 
   // Swap adjacent tabs.
   void MoveTabNext();
@@ -541,7 +562,7 @@ class TabStripModel {
 
   // Selects either the next tab (|forward| is true), or the previous tab
   // (|forward| is false).
-  void SelectRelativeTab(bool forward);
+  void SelectRelativeTab(bool forward, UserGestureDetails detail);
 
   // Does the work of MoveWebContentsAt. This has no checks to make sure the
   // position is valid, those are done in MoveWebContentsAt.
@@ -605,6 +626,9 @@ class TabStripModel {
   // TabStripModel is not re-entrancy safe. This member is used to guard public
   // methods that mutate state of |selection_model_| or |contents_data_|.
   bool reentrancy_guard_ = false;
+
+  // A recorder for recording tab switching input latency to UMA
+  TabSwitchEventLatencyRecorder tab_switch_event_latency_recorder_;
 
   base::WeakPtrFactory<TabStripModel> weak_factory_;
 

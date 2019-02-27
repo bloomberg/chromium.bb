@@ -131,10 +131,10 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NoMostVisitedChangedOnTabSwitch) {
   EXPECT_EQ(1, on_most_visited_change_calls_);
 
   // Activate the previous tab.
-  browser()->tab_strip_model()->ActivateTabAt(0, false);
+  browser()->tab_strip_model()->ActivateTabAt(0);
 
   // Switch back to new tab.
-  browser()->tab_strip_model()->ActivateTabAt(1, false);
+  browser()->tab_strip_model()->ActivateTabAt(1);
 
   // Confirm that new tab got no onmostvisitedchanged event.
   active_tab = browser()->tab_strip_model()->GetActiveWebContents();

@@ -235,7 +235,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
     }
 
     if (use_new_window) {
-      browser->tab_strip_model()->ActivateTabAt(0, true);
+      browser->tab_strip_model()->ActivateTabAt(
+          0, {TabStripModel::GestureType::kOther});
       browser->window()->Show();
     }
     NotifySessionServiceOfRestoredTabs(browser,
@@ -626,7 +627,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
   void ShowBrowser(Browser* browser, int selected_tab_index) {
     DCHECK(browser);
     DCHECK(browser->tab_strip_model()->count());
-    browser->tab_strip_model()->ActivateTabAt(selected_tab_index, true);
+    browser->tab_strip_model()->ActivateTabAt(
+        selected_tab_index, {TabStripModel::GestureType::kOther});
 
     if (browser_ == browser)
       return;

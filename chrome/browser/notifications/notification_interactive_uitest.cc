@@ -411,7 +411,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest,
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL("about:blank"), WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
   ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
   CreateSimpleNotification(browser(), true);
   ASSERT_EQ(1, GetNotificationCount());

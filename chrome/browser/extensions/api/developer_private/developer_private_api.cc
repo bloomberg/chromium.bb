@@ -1823,8 +1823,8 @@ DeveloperPrivateOpenDevToolsFunction::Run() {
     return RespondNow(NoArguments());
 
   TabStripModel* tab_strip = browser->tab_strip_model();
-  tab_strip->ActivateTabAt(tab_strip->GetIndexOfWebContents(web_contents),
-                           false);  // Not through direct user gesture.
+  tab_strip->ActivateTabAt(tab_strip->GetIndexOfWebContents(
+      web_contents));  // Not through direct user gesture.
   return RespondNow(NoArguments());
 }
 

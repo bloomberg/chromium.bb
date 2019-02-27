@@ -237,7 +237,7 @@ class TabStrip : public views::AccessiblePaneView,
   NewTabButtonPosition GetNewTabButtonPosition() const override;
   bool ShouldHideCloseButtonForTab(Tab* tab) const override;
   bool MaySetClip() override;
-  void SelectTab(Tab* tab) override;
+  void SelectTab(Tab* tab, const ui::Event& event) override;
   void ExtendSelectionTo(Tab* tab) override;
   void ToggleSelected(Tab* tab) override;
   void AddSelectionFromAnchorTo(Tab* tab) override;

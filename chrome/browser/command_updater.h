@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_COMMAND_UPDATER_H_
 #define CHROME_BROWSER_COMMAND_UPDATER_H_
 
+#include "base/time/time.h"
 #include "ui/base/window_open_disposition.h"
 
 class CommandObserver;
@@ -37,14 +38,18 @@ class CommandUpdater {
   // disposition.
   // Returns true if the command was executed (i.e. it is supported and is
   // enabled).
-  virtual bool ExecuteCommand(int id) = 0;
+  virtual bool ExecuteCommand(
+      int id,
+      base::TimeTicks time_stamp = base::TimeTicks::Now()) = 0;
 
   // Performs the action associated with this command ID using the given
   // disposition.
   // Returns true if the command was executed (i.e. it is supported and is
   // enabled).
   virtual bool ExecuteCommandWithDisposition(
-      int id, WindowOpenDisposition disposition) = 0;
+      int id,
+      WindowOpenDisposition disposition,
+      base::TimeTicks time_stamp = base::TimeTicks::Now()) = 0;
 
   // Adds an observer to the state of a particular command. If the command does
   // not exist, it is created, initialized to false.

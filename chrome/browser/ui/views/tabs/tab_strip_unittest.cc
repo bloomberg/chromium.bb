@@ -241,6 +241,13 @@ class TabStripTest : public ChromeViewsTestBase,
   TabStrip* tab_strip_ = nullptr;
   std::unique_ptr<views::Widget> widget_;
 
+  ui::MouseEvent dummy_event_ = ui::MouseEvent(ui::ET_MOUSE_PRESSED,
+                                               gfx::PointF(),
+                                               gfx::PointF(),
+                                               base::TimeTicks::Now(),
+                                               0,
+                                               0);
+
  private:
   ui::test::MaterialDesignControllerTestAPI test_api_;
   std::unique_ptr<base::AutoReset<gfx::Animation::RichAnimationRenderMode>>
@@ -514,7 +521,7 @@ TEST_P(TabStripTest, TabCloseButtonVisibilityWhenStacked) {
   // After switching tabs, the previously-active tab should have its
   // tab close button hidden and the newly-active tab should show
   // its tab close button.
-  tab_strip_->SelectTab(tab2);
+  tab_strip_->SelectTab(tab2, dummy_event_);
   ASSERT_FALSE(tab1->IsActive());
   ASSERT_TRUE(tab2->IsActive());
   EXPECT_FALSE(tab0->showing_close_button_);
@@ -599,7 +606,7 @@ TEST_P(TabStripTest, TabCloseButtonVisibilityWhenNotStacked) {
   // After switching tabs, the previously-active tab should have its
   // tab close button hidden and the newly-active tab should show
   // its tab close button.
-  tab_strip_->SelectTab(tab2);
+  tab_strip_->SelectTab(tab2, dummy_event_);
   ASSERT_FALSE(tab4->IsActive());
   ASSERT_TRUE(tab2->IsActive());
   EXPECT_FALSE(tab0->showing_close_button_);
@@ -784,7 +791,7 @@ TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {
 
   // During mouse-based tab closure, the active tab should remain at least as
   // wide as it's minium width.
-  controller_->SelectTab(0);
+  controller_->SelectTab(0, dummy_event_);
   for (const int min_active_width = TabStyle::GetMinimumActiveWidth();
        tab_strip_->tab_count();) {
     const int active_index = controller_->GetActiveIndex();
@@ -809,7 +816,7 @@ TEST_P(TabStripTest, InactiveTabWidthWhenTabsAreTiny) {
 
   // During mouse-based tab closure, inactive tabs shouldn't shrink
   // so that users can close tabs continuously without moving mouse.
-  controller_->SelectTab(0);
+  controller_->SelectTab(0, dummy_event_);
   for (int old_inactive_width = current_inactive_width();
        tab_strip_->tab_count(); old_inactive_width = current_inactive_width()) {
     tab_strip_->CloseTab(tab_strip_->tab_at(controller_->GetActiveIndex()),
@@ -845,7 +852,7 @@ TEST_P(TabStripTest, ResetBoundsForDraggedTabs) {
 
   // Change the ideal bounds of the tabs mid-animation by selecting a
   // different tab.
-  controller_->SelectTab(0);
+  controller_->SelectTab(0, dummy_event_);
 
   // Once the animation completes, the dragged tab should have animated to
   // the new ideal bounds (computed with this as an inactive tab) rather
@@ -872,9 +879,9 @@ TEST_P(TabStripTest, TabNeedsAttentionBlocked) {
   tab1->SetData(data);
 
   EXPECT_FALSE(IsShowingAttentionIndicator(tab1));
-  controller_->SelectTab(0);
+  controller_->SelectTab(0, dummy_event_);
   EXPECT_TRUE(IsShowingAttentionIndicator(tab1));
-  controller_->SelectTab(1);
+  controller_->SelectTab(1, dummy_event_);
   EXPECT_FALSE(IsShowingAttentionIndicator(tab1));
 }
 
@@ -888,9 +895,9 @@ TEST_P(TabStripTest, TabNeedsAttentionGeneric) {
   tab1->SetTabNeedsAttention(true);
 
   EXPECT_TRUE(IsShowingAttentionIndicator(tab1));
-  controller_->SelectTab(0);
+  controller_->SelectTab(0, dummy_event_);
   EXPECT_TRUE(IsShowingAttentionIndicator(tab1));
-  controller_->SelectTab(1);
+  controller_->SelectTab(1, dummy_event_);
   EXPECT_TRUE(IsShowingAttentionIndicator(tab1));
 }
 
@@ -945,7 +952,7 @@ TEST_P(TabStripTest, HorizontalScroll) {
     EXPECT_EQ(i, controller_->GetActiveIndex());
   }
 
-  controller_->SelectTab(0);
+  controller_->SelectTab(0, dummy_event_);
   for (int i = tab_strip_->tab_count() - 1; i >= 0; --i) {
     ui::MouseWheelEvent wheel_event(
         gfx::Vector2d(-ui::MouseWheelEvent::kWheelDelta, 0), tab_center,

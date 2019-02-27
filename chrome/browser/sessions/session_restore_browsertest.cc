@@ -1300,7 +1300,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestorePinnedSelectedTab) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
   // Select the pinned tab.
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
   ASSERT_EQ(0, browser()->tab_strip_model()->active_index());
   Profile* profile = browser()->profile();
 
@@ -1586,7 +1587,8 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, MAYBE_PRE_CorrectLoadingOrder) {
 
   // Activate the tabs one by one following the specified activation order.
   for (int i : activation_order)
-    browser()->tab_strip_model()->ActivateTabAt(i, true);
+    browser()->tab_strip_model()->ActivateTabAt(
+        i, {TabStripModel::GestureType::kOther});
 
   // Close the browser.
   std::unique_ptr<ScopedKeepAlive> keep_alive(new ScopedKeepAlive(
@@ -1618,7 +1620,8 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, MAYBE_PRE_CorrectLoadingOrder) {
 
   // Activate the 2nd tab before the browser closes. This should be persisted in
   // the following test.
-  new_browser->tab_strip_model()->ActivateTabAt(1, true);
+  new_browser->tab_strip_model()->ActivateTabAt(
+      1, {TabStripModel::GestureType::kOther});
 }
 
 IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, MAYBE_CorrectLoadingOrder) {

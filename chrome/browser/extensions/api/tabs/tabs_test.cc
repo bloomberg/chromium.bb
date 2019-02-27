@@ -1387,7 +1387,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardedProperty) {
   }
 
   // Activates the first created tab.
-  tab_strip_model->ActivateTabAt(1, false);
+  tab_strip_model->ActivateTabAt(1);
 
   // Get non-discarded tabs after activating a discarded tab.
   {
@@ -2093,10 +2093,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TemporaryAddressSpoof) {
 
   EXPECT_TRUE(navigation_manager.WaitForRequestStart());
 
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
   EXPECT_EQ(first_web_contents,
             browser()->tab_strip_model()->GetActiveWebContents());
-  browser()->tab_strip_model()->ActivateTabAt(1, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      1, {TabStripModel::GestureType::kOther});
   EXPECT_EQ(second_web_contents,
             browser()->tab_strip_model()->GetActiveWebContents());
 

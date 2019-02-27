@@ -3421,6 +3421,7 @@ test("unit_tests") {
       "../browser/ui/tabs/tab_menu_model_unittest.cc",
       "../browser/ui/tabs/tab_strip_model_stats_recorder_unittest.cc",
       "../browser/ui/tabs/tab_strip_model_unittest.cc",
+      "../browser/ui/tabs/tab_switch_event_latency_recorder_unittest.cc",
       "../browser/ui/tabs/test_tab_strip_model_delegate.cc",
       "../browser/ui/tabs/test_tab_strip_model_delegate.h",
       "../browser/ui/tabs/window_activity_watcher_unittest.cc",

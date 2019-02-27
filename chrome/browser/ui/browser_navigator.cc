@@ -680,8 +680,10 @@ void Navigate(NavigateParams* params) {
     if (params->source_contents != contents_to_navigate_or_insert) {
       // Use the index before the potential close below, because it could
       // make the index refer to a different tab.
+      auto gesture_type = user_initiated ? TabStripModel::GestureType::kOther
+                                         : TabStripModel::GestureType::kNone;
       params->browser->tab_strip_model()->ActivateTabAt(singleton_index,
-                                                        user_initiated);
+                                                        {gesture_type});
       if (params->disposition == WindowOpenDisposition::SWITCH_TO_TAB) {
         // Close orphaned NTP (and the like) with no history when the user
         // switches away from them.

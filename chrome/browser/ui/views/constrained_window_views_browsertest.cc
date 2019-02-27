@@ -110,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, MAYBE_FocusTest) {
   EXPECT_NE(dialog2->GetContentsView(), focus_manager->GetFocusedView());
 
   // Activating the previous tab should bring focus to the dialog.
-  browser()->tab_strip_model()->ActivateTabAt(tab_with_dialog, false);
+  browser()->tab_strip_model()->ActivateTabAt(tab_with_dialog);
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
   EXPECT_EQ(dialog2->GetContentsView(), focus_manager->GetFocusedView());
 

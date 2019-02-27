@@ -66,7 +66,7 @@ TEST_F(BrowserUnitTest, ReloadCrashedTab) {
   EXPECT_TRUE(raw_contents2->IsCrashed());
 
   // Selecting the second tab does not cause a load or clear the crash.
-  tab_strip_model->ActivateTabAt(1, true);
+  tab_strip_model->ActivateTabAt(1, {TabStripModel::GestureType::kOther});
   EXPECT_TRUE(tab_strip_model->IsTabSelected(1));
   EXPECT_FALSE(raw_contents2->IsLoading());
   EXPECT_TRUE(raw_contents2->IsCrashed());
@@ -97,7 +97,7 @@ TEST_F(BrowserUnitTest, MAYBE_SetBackgroundColorForNewTab) {
   WebContentsTester::For(raw_contents2)->NavigateAndCommit(GURL("about:blank"));
   WebContentsTester::For(raw_contents2)->TestSetIsLoading(false);
 
-  tab_strip_model->ActivateTabAt(1, true);
+  tab_strip_model->ActivateTabAt(1, {TabStripModel::GestureType::kOther});
   ASSERT_TRUE(raw_contents2->GetMainFrame()->GetView()->GetBackgroundColor());
   EXPECT_EQ(SK_ColorRED,
             *raw_contents2->GetMainFrame()->GetView()->GetBackgroundColor());
@@ -355,7 +355,8 @@ TEST_F(BrowserBookmarkBarTest, StateOnActiveTabChanged) {
   EXPECT_EQ(BookmarkBar::DETACHED, window_bookmark_bar_state());
 
   // Activate the 2nd tab which is non-NTP.
-  browser()->tab_strip_model()->ActivateTabAt(1, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      1, {TabStripModel::GestureType::kOther});
   EXPECT_EQ(BookmarkBar::HIDDEN, browser()->bookmark_bar_state());
   EXPECT_EQ(BookmarkBar::HIDDEN, window_bookmark_bar_state());
 
@@ -365,12 +366,14 @@ TEST_F(BrowserBookmarkBarTest, StateOnActiveTabChanged) {
   EXPECT_EQ(BookmarkBar::SHOW, window_bookmark_bar_state());
 
   // Activate the 1st tab which is NTP.
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
   EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
   EXPECT_EQ(BookmarkBar::SHOW, window_bookmark_bar_state());
 
   // Activate the 2nd tab which is non-NTP.
-  browser()->tab_strip_model()->ActivateTabAt(1, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      1, {TabStripModel::GestureType::kOther});
   EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
   EXPECT_EQ(BookmarkBar::SHOW, window_bookmark_bar_state());
 }

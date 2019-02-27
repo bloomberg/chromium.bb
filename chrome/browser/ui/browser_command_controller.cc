@@ -285,12 +285,16 @@ bool BrowserCommandController::IsCommandEnabled(int id) const {
   return command_updater_.IsCommandEnabled(id);
 }
 
-bool BrowserCommandController::ExecuteCommand(int id) {
-  return ExecuteCommandWithDisposition(id, WindowOpenDisposition::CURRENT_TAB);
+bool BrowserCommandController::ExecuteCommand(int id,
+                                              base::TimeTicks time_stamp) {
+  return ExecuteCommandWithDisposition(id, WindowOpenDisposition::CURRENT_TAB,
+                                       time_stamp);
 }
 
 bool BrowserCommandController::ExecuteCommandWithDisposition(
-    int id, WindowOpenDisposition disposition) {
+    int id,
+    WindowOpenDisposition disposition,
+    base::TimeTicks time_stamp) {
   // Doesn't go through the command_updater_ to avoid dealing with having a
   // naming collision for ExecuteCommandWithDisposition (both
   // CommandUpdaterDelegate and CommandUpdater declare this function so we
@@ -372,11 +376,13 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       break;
     case IDC_SELECT_NEXT_TAB:
       base::RecordAction(base::UserMetricsAction("Accel_SelectNextTab"));
-      SelectNextTab(browser_);
+      SelectNextTab(browser_,
+                    {TabStripModel::GestureType::kKeyboard, time_stamp});
       break;
     case IDC_SELECT_PREVIOUS_TAB:
       base::RecordAction(base::UserMetricsAction("Accel_SelectPreviousTab"));
-      SelectPreviousTab(browser_);
+      SelectPreviousTab(browser_,
+                        {TabStripModel::GestureType::kKeyboard, time_stamp});
       break;
     case IDC_MOVE_TAB_NEXT:
       MoveTabNext(browser_);
@@ -393,11 +399,13 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_SELECT_TAB_6:
     case IDC_SELECT_TAB_7:
       base::RecordAction(base::UserMetricsAction("Accel_SelectNumberedTab"));
-      SelectNumberedTab(browser_, id - IDC_SELECT_TAB_0);
+      SelectNumberedTab(browser_, id - IDC_SELECT_TAB_0,
+                        {TabStripModel::GestureType::kKeyboard, time_stamp});
       break;
     case IDC_SELECT_LAST_TAB:
       base::RecordAction(base::UserMetricsAction("Accel_SelectNumberedTab"));
-      SelectLastTab(browser_);
+      SelectLastTab(browser_,
+                    {TabStripModel::GestureType::kKeyboard, time_stamp});
       break;
     case IDC_DUPLICATE_TAB:
       DuplicateTab(browser_);

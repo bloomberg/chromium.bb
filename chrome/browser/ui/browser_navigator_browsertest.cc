@@ -760,7 +760,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, OutOfOrderTabSwitchTest) {
   NavigateHelper(singleton_url, browser(),
                  WindowOpenDisposition::NEW_FOREGROUND_TAB, true);
 
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
 
   NavigateHelper(singleton_url, browser(), WindowOpenDisposition::SWITCH_TO_TAB,
                  false);
@@ -1611,7 +1612,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, CloseSingletonTab) {
     observer.Wait();
   }
 
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
 
   {
     content::WindowedNotificationObserver observer(

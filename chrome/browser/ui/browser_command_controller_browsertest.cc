@@ -77,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest, DisableFind) {
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FIND));
 
   // Switching back to the blocked tab should disable it again.
-  browser()->tab_strip_model()->ActivateTabAt(0, false);
+  browser()->tab_strip_model()->ActivateTabAt(0);
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_FIND));
 
   // Closing the constrained window should reenable it.
