@@ -325,6 +325,8 @@ Module for interact with gerrit endpoints
 
 Wrapper for easy calling of gerrit_utils steps.
 
+&mdash; **def [abandon\_change](/recipes/recipe_modules/gerrit/api.py#159)(self, host, change, message=None, name=None, step_test_data=None):**
+
 &mdash; **def [create\_gerrit\_branch](/recipes/recipe_modules/gerrit/api.py#31)(self, host, project, branch, commit, \*\*kwargs):**
 
 Create a new branch from given project and commit

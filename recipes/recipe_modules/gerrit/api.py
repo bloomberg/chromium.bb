@@ -155,3 +155,23 @@ class GerritApi(recipe_api.RecipeApi):
         step_test_data=step_test_data,
         **kwargs
     ).json.output
+
+  def abandon_change(self, host, change, message=None, name=None,
+                     step_test_data=None):
+    args = [
+        'abandon',
+        '--host', host,
+        '--change', int(change),
+        '--json_file', self.m.json.output(),
+    ]
+    if message:
+      args.extend(['--message', message])
+    if not step_test_data:
+      step_test_data = lambda: self.test_api.get_one_change_response_data(
+          status='ABANDONED', _number=str(change))
+
+    return self(
+        name or 'abandon',
+        args,
+        step_test_data=step_test_data,
+    ).json.output
