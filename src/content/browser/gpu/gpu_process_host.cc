@@ -314,10 +314,10 @@ void OzoneRegisterStartupCallbackHelper(
 }
 #endif  // defined(USE_OZONE)
 
-void OnGpuProcessHostDestroyedOnUI(int host_id, const std::string& message) {
+void OnGpuProcessHostDestroyedOnUI(int host_id, const std::string& message, int severity) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   GpuDataManagerImpl::GetInstance()->AddLogMessage(
-      logging::LOG_ERROR, "GpuProcessHostUIShim", message);
+      severity, "GpuProcessHostUIShim", message);
 #if defined(USE_OZONE)
   ui::OzonePlatform::GetInstance()
       ->GetGpuPlatformSupportHost()
@@ -748,6 +748,7 @@ GpuProcessHost::~GpuProcessHost() {
 
   std::string message;
   bool block_offscreen_contexts = true;
+  int severity = logging::LOG_ERROR;
   if (!in_process_ && process_launched_ &&
       kind_ == GPU_PROCESS_KIND_SANDBOXED) {
     ChildProcessTerminationInfo info =
@@ -776,6 +777,7 @@ GpuProcessHost::~GpuProcessHost() {
         block_offscreen_contexts = false;
 #endif
         message = "The GPU process exited normally. Everything is okay.";
+        severity = logging::LOG_INFO;
         break;
       case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
         message = base::StringPrintf("The GPU process exited with code %d.",
@@ -785,7 +787,10 @@ GpuProcessHost::~GpuProcessHost() {
         UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessTerminationOrigin",
                                   termination_origin_,
                                   GpuTerminationOrigin::kMax);
-        message = "You killed the GPU process! Why?";
+        message = base::StringPrintf(
+            "You killed the GPU process! Why? exit_code=%d.",
+            info.exit_code);
+        severity = logging::LOG_WARNING;
         break;
 #if defined(OS_CHROMEOS)
       case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
@@ -793,12 +798,24 @@ GpuProcessHost::~GpuProcessHost() {
         break;
 #endif
       case base::TERMINATION_STATUS_PROCESS_CRASHED:
-        message = "The GPU process crashed!";
+        if (info.exit_code == RESULT_CODE_GPU_DEAD_ON_ARRIVAL) {
+          message = "The GPU process exited because initialization failed. Might be black listed to use gpu";
+          severity = logging::LOG_WARNING;
+        } else {
+            message = base::StringPrintf(
+            "The GPU process crashed! exit_code=%d.",
+            info.exit_code);
+        }
         break;
       case base::TERMINATION_STATUS_LAUNCH_FAILED:
         message = "The GPU process failed to start!";
         break;
       default:
+        message = base::StringPrintf(
+            "The GPU process exited with code %d. Termination status is %d",
+            info.exit_code, info.status);
+        severity = (info.status == base::TERMINATION_STATUS_NORMAL_TERMINATION) ?
+                      (logging::LOG_INFO) : (logging::LOG_WARNING);
         break;
     }
   }
@@ -811,7 +828,7 @@ GpuProcessHost::~GpuProcessHost() {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&OnGpuProcessHostDestroyedOnUI, host_id_, message));
+      base::BindOnce(&OnGpuProcessHostDestroyedOnUI, host_id_, message, severity));
 }
 
 #if defined(USE_OZONE)

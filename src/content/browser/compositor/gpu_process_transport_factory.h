@@ -178,6 +178,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   scoped_refptr<viz::VulkanInProcessContextProvider>
       shared_vulkan_context_provider_;
 #endif
+  bool disableGpuCompositorFallBackToSoftwareOnGLError_ = false;
 
   gpu::GpuChannelEstablishFactory* const gpu_channel_factory_;
   // Service-side impl that controls the compositing mode based on what mode the

@@ -118,6 +118,8 @@
 #include "gpu/vulkan/init/vulkan_factory.h"
 #endif
 
+#include "gpu/command_buffer/client/context_support.h"
+
 using viz::ContextProvider;
 using gpu::gles2::GLES2Interface;
 
@@ -194,6 +196,9 @@ GpuProcessTransportFactory::GpuProcessTransportFactory(
       command_line->HasSwitch(switches::kDisableGpuCompositing)) {
     DisableGpuCompositing(nullptr);
   }
+
+  disableGpuCompositorFallBackToSoftwareOnGLError_ = 
+    command_line->HasSwitch(switches::kDisableGpuCompositorFallBackToSoftwareOnGLError);
 }
 
 GpuProcessTransportFactory::~GpuProcessTransportFactory() {
@@ -342,6 +347,11 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   // Gpu compositing may have been disabled in the meantime.
   if (is_gpu_compositing_disabled_)
     use_gpu_compositing = false;
+
+  if (!disableGpuCompositorFallBackToSoftwareOnGLError_ && 
+      compositor->caught_fatal_gpu_error()) {
+    use_gpu_compositing = false;
+  }
 
   // The widget might have been released in the meantime.
   PerCompositorDataMap::iterator it =
@@ -630,6 +640,13 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       features::IsVizHitTestingEnabled());
   data->display->Resize(compositor->size());
   data->display->SetOutputIsSecure(data->output_is_secure);
+
+  gpu::ContextSupport* pContextSupport =
+      context_provider ? context_provider->ContextSupport() : nullptr;
+  if (pContextSupport) {
+    pContextSupport->SetErrorMessageCallback(
+        base::Bind(&ui::Compositor::OnGpuContextErrorMessage, compositor));
+  }
   compositor->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 }
 
