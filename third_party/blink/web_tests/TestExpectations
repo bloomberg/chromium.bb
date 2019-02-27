@@ -2872,6 +2872,9 @@ crbug.com/751952 http/tests/devtools/console/console-uncaught-promise.js [ Pass 
 crbug.com/800898 external/wpt/FileAPI/url/url-with-fetch.any.worker.html [ Pass Failure ]
 crbug.com/800898 external/wpt/FileAPI/url/url-with-xhr.any.worker.html [ Pass Failure ]
 
+crbug.com/849737 virtual/mojo-blob-urls/external/wpt/FileAPI/url/url-format.any.html [ Pass Timeout ]
+crbug.com/849737 virtual/mojo-blob-urls/external/wpt/FileAPI/url/url-format.any.worker.html [ Pass Timeout ]
+
 # Websockets
 # Cannot be rebaselined because the output contains a timestamp and a random number.
 crbug.com/803200 external/wpt/websockets/opening-handshake/005.html?wss [ Pass Failure ]
@@ -5848,6 +5851,9 @@ crbug.com/931646 [ Win7 ] http/tests/preload/meta-viewport-link-headers-imagesrc
 crbug.com/933346 [ Debug ] external/wpt/orientation-sensor/RelativeOrientationSensor.https.html [ Failure Timeout Pass ]
 
 # These started failing when network service was enabled by default.
+crbug.com/933880 external/wpt/FileAPI/url/cross-global-revoke.sub.html [ Failure ]
+crbug.com/933880 external/wpt/FileAPI/url/url-with-fetch.any.html [ Failure ]
+crbug.com/933880 external/wpt/FileAPI/url/url-with-xhr.any.html [ Failure ]
 crbug.com/933880 external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/933880 http/tests/inspector-protocol/network/interception-take-stream.js [ Failure ]
 crbug.com/933880 http/tests/inspector-protocol/network/xhr-interception-auth-fail.js [ Failure ]

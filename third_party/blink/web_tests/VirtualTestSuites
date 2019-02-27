@@ -670,6 +670,11 @@
              "--enable-accelerated-2d-canvas"]
   },
   {
+    "prefix": "mojo-blob-urls",
+    "base": "external/wpt/FileAPI/url",
+    "args": ["--enable-features=MojoBlobURLs"]
+  },
+  {
     "prefix": "lazyload-image",
     "base": "http/tests/lazyload",
     "args": ["--enable-features=LazyImageLoading"]
