@@ -850,6 +850,9 @@ extern const char kOmniboxUIShowSuggestionFaviconsDescription[];
 extern const char kOmniboxUISwapTitleAndUrlName[];
 extern const char kOmniboxUISwapTitleAndUrlDescription[];
 
+extern const char kOmniboxUIUnboldSuggestionTextName[];
+extern const char kOmniboxUIUnboldSuggestionTextDescription[];
+
 extern const char kOmniboxUIUseGenericSearchEngineIconName[];
 extern const char kOmniboxUIUseGenericSearchEngineIconDescription[];
 

@@ -1409,6 +1409,11 @@ const char kOmniboxUISwapTitleAndUrlDescription[] =
     "In the omnibox dropdown, shows titles before URLs when both are "
     "available.";
 
+const char kOmniboxUIUnboldSuggestionTextName[] =
+    "Omnibox UI Unbold Suggestion Text";
+const char kOmniboxUIUnboldSuggestionTextDescription[] =
+    "Displays search suggestions without bolding.";
+
 const char kOmniboxUIUseGenericSearchEngineIconName[] =
     "Omnibox UI Use Generic Search Engine Icon";
 const char kOmniboxUIUseGenericSearchEngineIconDescription[] =

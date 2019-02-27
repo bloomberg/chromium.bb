@@ -2981,6 +2981,11 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kUIExperimentBoldUserTextOnSearchSuggestions)},
 
+    {"omnibox-ui-unbold-suggestion-text",
+     flag_descriptions::kOmniboxUIUnboldSuggestionTextName,
+     flag_descriptions::kOmniboxUIUnboldSuggestionTextDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kUIExperimentUnboldSuggestionText)},
+
     {"omnibox-material-design-weather-icons",
      flag_descriptions::kOmniboxMaterialDesignWeatherIconsName,
      flag_descriptions::kOmniboxMaterialDesignWeatherIconsDescription,

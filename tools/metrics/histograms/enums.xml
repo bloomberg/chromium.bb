@@ -31746,6 +31746,8 @@ from previous Chrome versions.
   <int value="-639026783" label="disable-gpu-appcontainer"/>
   <int value="-638952203" label="RendererSideResourceScheduler:disabled"/>
   <int value="-634122679" label="GoogleBrandedContextMenu:enabled"/>
+  <int value="-634116286"
+      label="OmniboxUIExperimentUnboldSuggestionText:enabled"/>
   <int value="-633274640" label="WebRTCPipeWireCapturer:enabled"/>
   <int value="-632030508" label="NativeWindowNavButtons:disabled"/>
   <int value="-631740127" label="inert-visual-viewport"/>
@@ -32106,6 +32108,8 @@ from previous Chrome versions.
   <int value="-18464041" label="AutofillPrefilledFields:disabled"/>
   <int value="-17698200" label="DoubleTapToZoomInTabletMode:disabled"/>
   <int value="-16824589" label="ash-shelf-color"/>
+  <int value="-15879016"
+      label="OmniboxUIExperimentUnboldSuggestionText:disabled"/>
   <int value="-13918890" label="disable-download-notification"/>
   <int value="-11260186" label="enable-offline-pages-as-saved-pages"/>
   <int value="-10709540"
