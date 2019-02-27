@@ -145,7 +145,7 @@ Node* GetNonSearchableAncestor(const Node& node) {
   for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(node)) {
     const ComputedStyle* style = ancestor.EnsureComputedStyle();
     if ((style && style->Display() == EDisplay::kNone) ||
-        ShouldIgnoreContents(node))
+        ShouldIgnoreContents(ancestor))
       return &ancestor;
     if (ancestor.IsDocumentNode())
       return nullptr;
@@ -260,6 +260,45 @@ std::unique_ptr<FindBuffer::Results> FindBuffer::FindMatches(
   return std::make_unique<Results>(buffer_, search_text_16_bit, options);
 }
 
+bool FindBuffer::PushScopedForcedUpdateIfNeeded(const Element& element) {
+  if (auto* context = element.GetDisplayLockContext()) {
+    DCHECK(context->IsActivatable());
+    scoped_forced_update_list_.push_back(context->GetScopedForcedUpdate());
+    return true;
+  }
+  return false;
+}
+
+void FindBuffer::CollectScopedForcedUpdates(Node& start_node,
+                                            const Node* search_range_end_node,
+                                            const Node* node_after_block) {
+  if (!RuntimeEnabledFeatures::DisplayLockingEnabled())
+    return;
+  if (start_node.GetDocument().LockedDisplayLockCount() ==
+      start_node.GetDocument().ActivationBlockingDisplayLockCount())
+    return;
+
+  Node* node = &start_node;
+  // We assume |start_node| is always visible/activatable if locked, so we don't
+  // need to check activatability of ancestors here.
+  for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*node)) {
+    if (!ancestor.IsElementNode())
+      continue;
+    PushScopedForcedUpdateIfNeeded(ToElement(ancestor));
+  }
+
+  while (node && node != node_after_block && node != search_range_end_node) {
+    if (ShouldIgnoreContents(*node)) {
+      // Will skip display:none/non-activatable locked subtrees/etc.
+      node = FlatTreeTraversal::NextSkippingChildren(*node);
+      continue;
+    }
+    if (node->IsElementNode())
+      PushScopedForcedUpdateIfNeeded(ToElement(*node));
+    node = FlatTreeTraversal::Next(*node);
+  }
+}
+
 // Collects text until block boundary located at or after |start_node|
 // to |buffer_|. Saves the next starting node after the block to
 // |node_after_block_|.
@@ -291,6 +330,13 @@ void FindBuffer::CollectTextUntilBlockBoundary(
   Node* const first_traversed_node = node;
   // We will also stop if we encountered/passed |end_node|.
   Node* end_node = range.EndPosition().NodeAsRangeLastNode();
+
+  if (node) {
+    CollectScopedForcedUpdates(*node, end_node, just_after_block);
+    if (!scoped_forced_update_list_.IsEmpty())
+      node->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  }
+
   while (node && node != just_after_block) {
     if (ShouldIgnoreContents(*node)) {
       if (end_node && (end_node == node ||
