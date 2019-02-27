@@ -400,6 +400,7 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
     tableViewClearDataItem.accessibilityIdentifier =
         [self accessibilityIdentifierFromItemType:itemType];
     tableViewClearDataItem.dataTypeMask = mask;
+    tableViewClearDataItem.prefName = prefName;
     clearDataItem = tableViewClearDataItem;
   }
   return clearDataItem;

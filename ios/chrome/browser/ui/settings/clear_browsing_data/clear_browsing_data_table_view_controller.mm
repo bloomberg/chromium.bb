@@ -7,6 +7,8 @@
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "components/prefs/pref_service.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
@@ -33,10 +35,6 @@ namespace {
 // Separation space between sections.
 const CGFloat kSeparationSpaceBetweenSections = 9;
 }  // namespace
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 @interface ClearBrowsingDataTableViewController () <
     TableViewTextLinkCellDelegate,
@@ -212,6 +210,8 @@ class ChromeBrowserState;
       TableViewClearBrowsingDataItem* clearBrowsingDataItem =
           base::mac::ObjCCastStrict<TableViewClearBrowsingDataItem>(item);
       clearBrowsingDataItem.checked = !clearBrowsingDataItem.checked;
+      self.browserState->GetPrefs()->SetBoolean(clearBrowsingDataItem.prefName,
+                                                clearBrowsingDataItem.checked);
       [self reconfigureCellsForItems:@[ clearBrowsingDataItem ]];
       break;
     }
