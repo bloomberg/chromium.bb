@@ -92,7 +92,7 @@ WebString WebFrameContentDumper::DeprecatedDumpFrameTreeAsText(
   if (!frame)
     return WebString();
   StringBuilder text;
-  FrameContentAsPlainText(max_chars, ToWebLocalFrameImpl(frame)->GetFrame(),
+  FrameContentAsPlainText(max_chars, To<WebLocalFrameImpl>(frame)->GetFrame(),
                           text);
   return text.ToString();
 }
@@ -108,7 +108,7 @@ WebString WebFrameContentDumper::DumpWebViewAsText(WebView* web_view,
       WebWidget::LifecycleUpdateReason::kTest);
 
   StringBuilder text;
-  FrameContentAsPlainText(max_chars, ToWebLocalFrameImpl(frame)->GetFrame(),
+  FrameContentAsPlainText(max_chars, To<WebLocalFrameImpl>(frame)->GetFrame(),
                           text);
   return text.ToString();
 }
@@ -116,7 +116,7 @@ WebString WebFrameContentDumper::DumpWebViewAsText(WebView* web_view,
 WebString WebFrameContentDumper::DumpAsMarkup(WebLocalFrame* frame) {
   if (!frame)
     return WebString();
-  return CreateMarkup(ToWebLocalFrameImpl(frame)->GetFrame()->GetDocument());
+  return CreateMarkup(To<WebLocalFrameImpl>(frame)->GetFrame()->GetDocument());
 }
 
 WebString WebFrameContentDumper::DumpLayoutTreeAsText(
@@ -137,7 +137,7 @@ WebString WebFrameContentDumper::DumpLayoutTreeAsText(
   if (to_show & kLayoutAsTextPrinting)
     behavior |= kLayoutAsTextPrintingMode;
 
-  return ExternalRepresentation(ToWebLocalFrameImpl(frame)->GetFrame(),
+  return ExternalRepresentation(To<WebLocalFrameImpl>(frame)->GetFrame(),
                                 behavior);
 }
 }

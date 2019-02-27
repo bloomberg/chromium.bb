@@ -1533,7 +1533,7 @@ TEST_F(WebViewTest, DeleteSurroundingText) {
   RegisterMockedHttpURLLoad("input_field_populated.html");
   WebView* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html");
-  WebLocalFrameImpl* frame = ToWebLocalFrameImpl(web_view->MainFrame());
+  auto* frame = To<WebLocalFrameImpl>(web_view->MainFrame());
   WebInputMethodController* active_input_method_controller =
       frame->GetInputMethodController();
   web_view->SetInitialFocus(false);
@@ -3201,7 +3201,7 @@ TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
   EXPECT_EQ(MiddlePanningCursor().GetType(), client.GetLastCursorType());
 
   LocalFrame* local_frame =
-      ToWebLocalFrameImpl(web_view->MainFrame())->GetFrame();
+      To<WebLocalFrameImpl>(web_view->MainFrame())->GetFrame();
 
   // Even if a plugin tries to change the cursor type, that should be ignored
   // during middle-click autoscroll.
@@ -3491,7 +3491,8 @@ TEST_F(WebViewTest, DoNotFocusCurrentFrameOnNavigateFromLocalFrame) {
   // Make a request from a local frame.
   WebURLRequest web_url_request_with_target_start(KURL("about:blank"));
   LocalFrame* local_frame =
-      ToWebLocalFrameImpl(web_view_impl->MainFrame()->FirstChild())->GetFrame();
+      To<WebLocalFrameImpl>(web_view_impl->MainFrame()->FirstChild())
+          ->GetFrame();
   FrameLoadRequest request_with_target_start(
       local_frame->GetDocument(),
       web_url_request_with_target_start.ToResourceRequest(), "_top");
@@ -4624,7 +4625,8 @@ TEST_F(WebViewTest, SubframeBeforeUnloadUseCounter) {
     frame->ExecuteScript(WebScriptSource(
         "document.getElementsByTagName('iframe')[0].contentWindow."
         "addEventListener('beforeunload', function() {});"));
-    ToWebLocalFrameImpl(web_view->MainFrame()->FirstChild()->ToWebLocalFrame())
+    To<WebLocalFrameImpl>(
+        web_view->MainFrame()->FirstChild()->ToWebLocalFrame())
         ->DispatchBeforeUnloadEvent(false);
 
     Document* child_document = To<LocalFrame>(web_view_helper_.GetWebView()

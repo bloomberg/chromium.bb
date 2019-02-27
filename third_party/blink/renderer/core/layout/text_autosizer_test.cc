@@ -1111,7 +1111,7 @@ TEST_F(TextAutosizerSimTest, CrossSiteUseCounter) {
   Compositor().BeginFrame();
   test::RunPendingTasks();
 
-  auto* child_frame = ToWebLocalFrameImpl(MainFrame().FirstChild());
+  auto* child_frame = To<WebLocalFrameImpl>(MainFrame().FirstChild());
   auto* child_doc = child_frame->GetFrame()->GetDocument();
 
   EXPECT_TRUE(UseCounter::IsCounted(*child_doc,

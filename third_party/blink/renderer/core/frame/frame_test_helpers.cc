@@ -107,7 +107,7 @@ T* CreateDefaultClientIfNeeded(T* client, std::unique_ptr<T>& owned_client) {
 }  // namespace
 
 void LoadFrameDontWait(WebLocalFrame* frame, const WebURL& url) {
-  WebLocalFrameImpl* impl = ToWebLocalFrameImpl(frame);
+  auto* impl = To<WebLocalFrameImpl>(frame);
   if (url.ProtocolIs("javascript")) {
     impl->LoadJavaScriptURL(url);
   } else {
@@ -128,7 +128,7 @@ void LoadFrame(WebLocalFrame* frame, const std::string& url) {
 void LoadHTMLString(WebLocalFrame* frame,
                     const std::string& html,
                     const WebURL& base_url) {
-  WebLocalFrameImpl* impl = ToWebLocalFrameImpl(frame);
+  auto* impl = To<WebLocalFrameImpl>(frame);
   impl->CommitNavigation(
       WebNavigationParams::CreateWithHTMLString(html, base_url),
       nullptr /* extra_data */);
@@ -138,7 +138,7 @@ void LoadHTMLString(WebLocalFrame* frame,
 void LoadHistoryItem(WebLocalFrame* frame,
                      const WebHistoryItem& item,
                      mojom::FetchCacheMode cache_mode) {
-  WebLocalFrameImpl* impl = ToWebLocalFrameImpl(frame);
+  auto* impl = To<WebLocalFrameImpl>(frame);
   HistoryItem* history_item = item;
   auto params = std::make_unique<WebNavigationParams>();
   params->url = history_item->Url();
@@ -198,7 +198,7 @@ WebLocalFrameImpl* CreateLocalChild(WebLocalFrame& parent,
   std::unique_ptr<TestWebFrameClient> owned_client;
   client = CreateDefaultClientIfNeeded(client, owned_client);
   mojom::blink::DocumentInterfaceBrokerPtrInfo document_interface_broker;
-  WebLocalFrameImpl* frame = ToWebLocalFrameImpl(parent.CreateLocalChild(
+  auto* frame = To<WebLocalFrameImpl>(parent.CreateLocalChild(
       scope, client, nullptr,
       mojo::MakeRequest(&document_interface_broker).PassMessagePipe()));
   client->Bind(frame, std::move(owned_client));
@@ -212,7 +212,7 @@ WebLocalFrameImpl* CreateLocalChild(
   DCHECK(self_owned);
   TestWebFrameClient* client = self_owned.get();
   mojom::blink::DocumentInterfaceBrokerPtrInfo document_interface_broker;
-  WebLocalFrameImpl* frame = ToWebLocalFrameImpl(parent.CreateLocalChild(
+  auto* frame = To<WebLocalFrameImpl>(parent.CreateLocalChild(
       scope, client, nullptr,
       mojo::MakeRequest(&document_interface_broker).PassMessagePipe()));
   client->Bind(frame, std::move(self_owned));
@@ -224,11 +224,10 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
   std::unique_ptr<TestWebFrameClient> owned_client;
   client = CreateDefaultClientIfNeeded(client, owned_client);
   mojom::blink::DocumentInterfaceBrokerPtrInfo document_interface_broker;
-  WebLocalFrameImpl* frame =
-      ToWebLocalFrameImpl(WebLocalFrame::CreateProvisional(
-          client, nullptr,
-          mojo::MakeRequest(&document_interface_broker).PassMessagePipe(),
-          &old_frame, WebSandboxFlags::kNone, ParsedFeaturePolicy()));
+  auto* frame = To<WebLocalFrameImpl>(WebLocalFrame::CreateProvisional(
+      client, nullptr,
+      mojo::MakeRequest(&document_interface_broker).PassMessagePipe(),
+      &old_frame, WebSandboxFlags::kNone, ParsedFeaturePolicy()));
   client->Bind(frame, std::move(owned_client));
   std::unique_ptr<TestWebWidgetClient> widget_client;
   // Create a local root, if necessary.
@@ -269,7 +268,7 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
   std::unique_ptr<TestWebFrameClient> owned_client;
   client = CreateDefaultClientIfNeeded(client, owned_client);
   mojom::blink::DocumentInterfaceBrokerPtrInfo document_interface_broker;
-  WebLocalFrameImpl* frame = ToWebLocalFrameImpl(parent.CreateLocalChild(
+  auto* frame = To<WebLocalFrameImpl>(parent.CreateLocalChild(
       WebTreeScopeType::kDocument, name, WebSandboxFlags::kNone, client,
       nullptr, mojo::MakeRequest(&document_interface_broker).PassMessagePipe(),
       previous_sibling, ParsedFeaturePolicy(), properties,
@@ -441,7 +440,7 @@ void WebViewHelper::Reset() {
 }
 
 WebLocalFrameImpl* WebViewHelper::LocalMainFrame() const {
-  return ToWebLocalFrameImpl(web_view_->MainFrame());
+  return To<WebLocalFrameImpl>(web_view_->MainFrame());
 }
 
 WebRemoteFrameImpl* WebViewHelper::RemoteMainFrame() const {
@@ -485,7 +484,7 @@ void TestWebFrameClient::Bind(WebLocalFrame* frame,
                               std::unique_ptr<TestWebFrameClient> self_owned) {
   DCHECK(!frame_);
   DCHECK(!self_owned || self_owned.get() == this);
-  frame_ = ToWebLocalFrameImpl(frame);
+  frame_ = To<WebLocalFrameImpl>(frame);
   self_owned_ = std::move(self_owned);
 }
 
