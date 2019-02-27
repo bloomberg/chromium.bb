@@ -59,6 +59,20 @@ GTEST_API_ AssertionResult CmpHelperNSNE(const char* expected_expression,
                                          const NSPoint& expected,
                                          const NSPoint& actual);
 
+// This overloaded version allows comparison between NSRange objects using
+// NSEqualRanges. Used to implement {ASSERT|EXPECT}_NSEQ().
+GTEST_API_ AssertionResult CmpHelperNSEQ(const char* expected_expression,
+                                         const char* actual_expression,
+                                         const NSRange& expected,
+                                         const NSRange& actual);
+
+// This overloaded version allows comparison between NSRange objects using
+// NSEqualRanges. Used to implement {ASSERT|EXPECT}_NSNE().
+GTEST_API_ AssertionResult CmpHelperNSNE(const char* expected_expression,
+                                         const char* actual_expression,
+                                         const NSRange& expected,
+                                         const NSRange& actual);
+
 #endif  // !GTEST_OS_IOS
 
 }  // namespace internal
