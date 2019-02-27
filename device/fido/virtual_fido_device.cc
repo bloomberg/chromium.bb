@@ -10,6 +10,7 @@
 
 #include "crypto/ec_signature_creator.h"
 #include "device/fido/fido_parsing_utils.h"
+#include "third_party/boringssl/src/include/openssl/ec_key.h"
 
 namespace device {
 

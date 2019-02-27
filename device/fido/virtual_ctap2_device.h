@@ -30,7 +30,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     : public VirtualFidoDevice {
  public:
   VirtualCtap2Device();
-  explicit VirtualCtap2Device(scoped_refptr<State> state);
+  explicit VirtualCtap2Device(scoped_refptr<State> state, bool enable_pin);
   ~VirtualCtap2Device() override;
 
   // FidoDevice:
@@ -48,6 +48,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
   CtapDeviceResponseCode OnGetAssertion(base::span<const uint8_t> request,
                                         std::vector<uint8_t>* response);
 
+  CtapDeviceResponseCode OnPINCommand(base::span<const uint8_t> request,
+                                      std::vector<uint8_t>* response);
+
   CtapDeviceResponseCode OnAuthenticatorGetInfo(
       std::vector<uint8_t>* response) const;
 
@@ -58,7 +61,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
       base::Optional<AttestedCredentialData> attested_credential_data,
       base::Optional<cbor::Value> extensions);
 
-  AuthenticatorGetInfoResponse device_info_;
   base::WeakPtrFactory<FidoDevice> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualCtap2Device);

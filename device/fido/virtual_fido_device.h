@@ -23,6 +23,7 @@
 #include "device/fido/fido_device.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "net/cert/x509_util.h"
+#include "third_party/boringssl/src/include/openssl/base.h"
 
 namespace crypto {
 class ECPrivateKey;
@@ -88,6 +89,21 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // Only valid if |self_attestation| is true. Causes the AAGUID to be non-
     // zero, in violation of the rules for self-attestation.
     bool non_zero_aaguid_with_self_attestation = false;
+
+    // Number of PIN retries remaining.
+    int retries = 8;
+    // The number of failed PIN attempts since the token was "inserted".
+    int retries_since_insertion = 0;
+    // True if the token is soft-locked due to too many failed PIN attempts
+    // since "insertion".
+    bool soft_locked = false;
+    // The PIN for the device, or an empty string if no PIN is set.
+    std::string pin;
+    // The elliptic-curve key. (Not expected to be set externally.)
+    bssl::UniquePtr<EC_KEY> ecdh_key;
+    // The random PIN token that is returned as a placeholder for the PIN
+    // itself.
+    uint8_t pin_token[32];
 
     FidoTransportProtocol transport =
         FidoTransportProtocol::kUsbHumanInterfaceDevice;
