@@ -178,7 +178,7 @@
 #define IDC_SHOW_BETA_FORUM             40252
 #define IDC_TOGGLE_JAVASCRIPT_APPLE_EVENTS 40253
 #define IDC_INSTALL_PWA                 40254
-#define IDC_MANAGED_UI_HELP             40255
+#define IDC_SHOW_MANAGEMENT_PAGE             40255
 #define IDC_PASTE_AND_GO                40256
 
 // Spell-check

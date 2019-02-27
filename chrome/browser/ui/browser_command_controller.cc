@@ -686,8 +686,8 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_WINDOW_PIN_TAB:
       PinTab(browser_);
       break;
-    case IDC_MANAGED_UI_HELP:
-      ShowSingletonTab(browser_, GURL(kManagedUiLearnMoreUrl));
+    case IDC_SHOW_MANAGEMENT_PAGE:
+      ShowSingletonTab(browser_, GURL(kChromeUIManagementURL));
       break;
 
     // Hosted App commands
@@ -1207,7 +1207,7 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
   command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_ABOUT, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_APP_MENU, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_MANAGED_UI_HELP, true);
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_MANAGEMENT_PAGE, true);
 
   if (base::debug::IsProfilingSupported())
     command_updater_.UpdateCommandEnabled(IDC_PROFILING_ENABLED, show_main_ui);

@@ -833,7 +833,7 @@ void AppMenuModel::Build() {
         ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor);
     const auto icon =
         gfx::CreateVectorIcon(vector_icons::kBusinessIcon, kIconSize, color);
-    AddHighlightedItemWithStringIdAndIcon(IDC_MANAGED_UI_HELP,
+    AddHighlightedItemWithStringIdAndIcon(IDC_SHOW_MANAGEMENT_PAGE,
                                           IDS_MANAGED_BY_ORG, icon);
   }
 #endif  // !defined(OS_CHROMEOS)
