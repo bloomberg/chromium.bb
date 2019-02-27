@@ -27,8 +27,8 @@ def build(out_dir, build_target, extra_options=''):
 
 
 def install(out_dir):
-  cmd = 'build/android/adb_install_apk.py ' + out_dir + '/apks/{0}'
-  return run(cmd.format('CronetTest.apk')) or \
+  cmd = 'BUILDTYPE=' + out_dir[4:] + ' build/android/adb_install_apk.py {0}'
+  return run(cmd.format('CronetTestInstrumentation.apk')) or \
     run(cmd.format('ChromiumNetTestSupport.apk'))
 
 
