@@ -264,6 +264,7 @@
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnifier_type.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/chromeos/policy/login_policy_test_base.h"
@@ -274,6 +275,7 @@
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber_test_observer.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "components/account_id/account_id.h"
@@ -2160,6 +2162,64 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory) {
   // Verify that the first download location wasn't affected.
   EXPECT_FALSE(base::PathExists(initial_dir.Append(file)));
 }
+
+#if defined(OS_CHROMEOS)
+class DrivePolicyTest : public PolicyTest,
+                        public testing::WithParamInterface<bool> {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PolicyTest::SetUpCommandLine(command_line);
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(chromeos::features::kDriveFs);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(chromeos::features::kDriveFs);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Verifies that the download directory can be forced to Google Drive by policy.
+IN_PROC_BROWSER_TEST_P(DrivePolicyTest, DownloadDirectory_Drive) {
+  // Override the download directory with the policy.
+  {
+    PolicyMap policies;
+    policies.Set(key::kDownloadDirectory, POLICY_LEVEL_RECOMMENDED,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                 std::make_unique<base::Value>("${google_drive}/"), nullptr);
+    UpdateProviderPolicy(policies);
+
+    EXPECT_EQ(drive::DriveIntegrationServiceFactory::FindForProfile(
+                  browser()->profile())
+                  ->GetMountPointPath()
+                  .AppendASCII("root"),
+              DownloadPrefs(browser()->profile())
+                  .DownloadPath()
+                  .StripTrailingSeparators());
+  }
+
+  PolicyMap policies;
+  policies.Set(key::kDownloadDirectory, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>("${google_drive}/Downloads"),
+               nullptr);
+  UpdateProviderPolicy(policies);
+
+  EXPECT_EQ(drive::DriveIntegrationServiceFactory::FindForProfile(
+                browser()->profile())
+                ->GetMountPointPath()
+                .AppendASCII("root/Downloads"),
+            DownloadPrefs(browser()->profile())
+                .DownloadPath()
+                .StripTrailingSeparators());
+}
+
+INSTANTIATE_TEST_SUITE_P(DrivePolicyTestInstance,
+                         DrivePolicyTest,
+                         testing::Bool());
+
+#endif  // !defined(OS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistSelective) {
   // Verifies that blacklisted extensions can't be installed.
