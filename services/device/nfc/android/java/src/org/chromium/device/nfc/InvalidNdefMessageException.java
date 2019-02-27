@@ -5,6 +5,6 @@
 package org.chromium.device.nfc;
 
 /**
- * Exception that raised when NfcMessage is found to be invalid during conversion to NdefMessage.
+ * Exception that raised when NdefMessage is found to be invalid during conversion to NdefMessage.
  */
-public final class InvalidNfcMessageException extends Exception {}
+public final class InvalidNdefMessageException extends Exception {}

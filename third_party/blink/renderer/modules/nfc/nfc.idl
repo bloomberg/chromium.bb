@@ -4,7 +4,7 @@
 
 // https://w3c.github.io/web-nfc/#the-nfc-interface
 
-typedef (DOMString or ArrayBuffer or NFCMessage) NFCPushMessage;
+typedef (DOMString or ArrayBuffer or NDEFMessage) NFCPushMessage;
 
 [
   RuntimeEnabled=WebNFC,
@@ -17,4 +17,4 @@ typedef (DOMString or ArrayBuffer or NFCMessage) NFCPushMessage;
 };
 
 // https://w3c.github.io/web-nfc/#dom-messagecallback
-callback MessageCallback = void (NFCMessage message);
+callback MessageCallback = void (NDEFMessage message);
