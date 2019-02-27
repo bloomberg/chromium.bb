@@ -460,8 +460,6 @@ class CORE_EXPORT ContainerNode : public Node {
   TraceWrapperMember<Node> last_child_;
 };
 
-WILL_NOT_BE_EAGERLY_TRACED_CLASS(ContainerNode);
-
 DEFINE_NODE_TYPE_CASTS(ContainerNode, IsContainerNode());
 
 inline bool ContainerNode::HasChildCount(unsigned count) const {

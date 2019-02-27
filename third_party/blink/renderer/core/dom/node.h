@@ -111,9 +111,6 @@ enum class SlotChangeType {
 
 enum class CloneChildrenFlag { kClone, kSkip };
 
-class Node;
-WILL_NOT_BE_EAGERLY_TRACED_CLASS(Node);
-
 // A Node is a base class for all objects in the DOM tree.
 // The spec governing this interface can be found here:
 // https://dom.spec.whatwg.org/#interface-node
