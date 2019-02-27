@@ -156,7 +156,7 @@ void PageCappingPageLoadMetricsObserver::MaybeCreate() {
 
 void PageCappingPageLoadMetricsObserver::MediaStartedPlaying(
     const content::WebContentsObserver::MediaPlayerInfo& video_type,
-    bool is_in_main_frame) {
+    content::RenderFrameHost* render_frame_host) {
   media_page_load_ = true;
   page_cap_ = GetPageLoadCappingBytesThreshold(true /* media_page_load */);
 }

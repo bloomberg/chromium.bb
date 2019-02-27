@@ -284,7 +284,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client {
   // Invoked when a media element starts playing.
   void MediaStartedPlaying(
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
-      bool is_in_main_frame);
+      content::RenderFrameHost* render_frame_host);
 
   // Informs the observers that the event corresponding to |event_key| has
   // occurred.

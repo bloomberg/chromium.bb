@@ -78,6 +78,9 @@ class AdsPageLoadMetricsObserver
                                 bool is_display_none) override;
   void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
                         const gfx::Size& frame_size) override;
+  void MediaStartedPlaying(
+      const content::WebContentsObserver::MediaPlayerInfo& video_type,
+      content::RenderFrameHost* render_frame_host) override;
 
  private:
   // subresource_filter::SubresourceFilterObserver:
@@ -163,7 +166,7 @@ class AdsPageLoadMetricsObserver
   // Tracks byte counts only for resources loaded in the main frame.
   std::unique_ptr<FrameData> main_frame_data_;
 
-  // Tracks byte counts for the entire page.
+  // Tracks aggregate counts across all frames on the page.
   std::unique_ptr<FrameData> aggregate_frame_data_;
 
   // Flag denoting that this observer should no longer monitor changes in

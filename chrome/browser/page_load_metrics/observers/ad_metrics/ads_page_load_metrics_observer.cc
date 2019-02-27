@@ -383,6 +383,22 @@ void AdsPageLoadMetricsObserver::FrameSizeChanged(
   }
 }
 
+void AdsPageLoadMetricsObserver::MediaStartedPlaying(
+    const content::WebContentsObserver::MediaPlayerInfo& video_type,
+    content::RenderFrameHost* render_frame_host) {
+  aggregate_frame_data_->set_media_status(FrameData::MediaStatus::kPlayed);
+  if (render_frame_host == web_contents_->GetMainFrame())
+    main_frame_data_->set_media_status(FrameData::MediaStatus::kPlayed);
+
+  const auto& id_and_data =
+      ad_frames_data_.find(render_frame_host->GetFrameTreeNodeId());
+  if (id_and_data == ad_frames_data_.end())
+    return;
+  FrameData* ancestor_data = id_and_data->second;
+  if (ancestor_data)
+    ancestor_data->set_media_status(FrameData::MediaStatus::kPlayed);
+}
+
 void AdsPageLoadMetricsObserver::OnAdSubframeDetected(
     content::RenderFrameHost* render_frame_host) {
   FrameTreeNodeId frame_tree_node_id = render_frame_host->GetFrameTreeNodeId();
@@ -630,6 +646,13 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForAdTagging(
     ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.SizeIntervention",
                   UMA_HISTOGRAM_ENUMERATION, visibility,
                   ad_frame_data.size_intervention_status());
+
+    if (ad_frame_data.size_intervention_status() ==
+        FrameData::FrameSizeInterventionStatus::kTriggered) {
+      ADS_HISTOGRAM(
+          "FrameCounts.AdFrames.PerFrame.SizeIntervention.MediaStatus",
+          UMA_HISTOGRAM_ENUMERATION, visibility, ad_frame_data.media_status());
+    }
 
     non_zero_ad_frames += 1;
     total_ad_frame_bytes += ad_frame_data.bytes();
