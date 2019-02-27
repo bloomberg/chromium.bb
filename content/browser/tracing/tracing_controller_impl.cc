@@ -23,6 +23,7 @@
 #include "components/tracing/common/trace_startup_config.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/tracing/file_tracing_provider_impl.h"
+#include "content/browser/tracing/perfetto_file_tracer.h"
 #include "content/browser/tracing/tracing_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -150,6 +151,13 @@ TracingControllerImpl::TracingControllerImpl()
   base::FileTracing::SetProvider(new FileTracingProviderImpl);
   AddAgents();
   g_tracing_controller = this;
+
+  // TODO(oysteine): Startup tracing using Perfetto
+  // is enabled by the Mojo consumer in content/browser
+  // for now; this is too late in the browser startup
+  // process however.
+  if (PerfettoFileTracer::ShouldEnable())
+    perfetto_file_tracer_ = std::make_unique<PerfettoFileTracer>();
 }
 
 TracingControllerImpl::~TracingControllerImpl() = default;

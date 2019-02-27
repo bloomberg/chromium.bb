@@ -26,7 +26,8 @@ const service_manager::Manifest& GetManifest() {
                            .Build())
           .ExposeCapability(
               "tracing",
-              service_manager::Manifest::InterfaceList<mojom::Coordinator>())
+              service_manager::Manifest::InterfaceList<mojom::Coordinator,
+                                                       mojom::ConsumerHost>())
           .RequireCapability("service_manager",
                              "service_manager:service_manager")
           .WithInterfacesBindableOnAnyService(

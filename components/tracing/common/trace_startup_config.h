@@ -109,6 +109,8 @@ class TRACING_EXPORT TraceStartupConfig {
   void SetBackgroundStartupTracingEnabled(bool enabled);
 
  private:
+  bool IsUsingPerfettoOutput() const;
+
   // This allows constructor and destructor to be private and usable only
   // by the Singleton class.
   friend struct base::DefaultSingletonTraits<TraceStartupConfig>;
