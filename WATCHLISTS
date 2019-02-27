@@ -1654,6 +1654,9 @@
                   '|ios/chrome/app/strings/ios(_.+)*_strings.grd'\
                   '|ui/strings/ui_strings.grd',
     },
+    'ui_views': {
+      'filepath': '^ui/views',
+    },
     'unified_consent': {
       'filepath': 'components/unified_consent/'\
                   '|chrome/browser/unified_consent/',
@@ -2495,6 +2498,7 @@
     'ui_display_win': ['robliao+watch@chromium.org'],
     'ui_resources': ['oshima+watch@chromium.org'],
     'ui_strings': ['srahim+watch@chromium.org'],
+    'ui_views': ['robliao+watch@chromium.org'],
     'unified_consent': ['wfh+watch@chromuium.org'],
     'usb': ['mattreynolds+watch@chromium.org',
             'odejesush+watch@chromium.org'],
