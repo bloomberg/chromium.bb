@@ -83,17 +83,18 @@ cca.views.camera.Layout.cssStyle_ = function(selector) {
 
 /**
  * Updates the video element size for previewing in the window.
+ * @param {boolean} fullWindow Whether the window is maximized or fullscreen..
  * @return {Array<number>} Letterbox size in [width, height].
  * @private
  */
-cca.views.camera.Layout.prototype.updatePreviewSize_ = function() {
+cca.views.camera.Layout.prototype.updatePreviewSize_ = function(fullWindow) {
   // Make video content keeps its aspect ratio inside the window's inner-bounds;
   // it may fill up the window or be letterboxed when fullscreen/maximized.
   // Don't use app-window.innerBounds' width/height properties during resizing
   // as they are not updated immediately.
   var video = document.querySelector('#preview-video');
   if (video.videoHeight) {
-    var f = cca.util.isWindowFullSize() ? Math.min : Math.max;
+    var f = fullWindow ? Math.min : Math.max;
     var scale = f(window.innerHeight / video.videoHeight,
         window.innerWidth / video.videoWidth);
     video.width = scale * video.videoWidth;
@@ -106,12 +107,15 @@ cca.views.camera.Layout.prototype.updatePreviewSize_ = function() {
  * Updates the layout for video-size or window-size changes.
  */
 cca.views.camera.Layout.prototype.update = function() {
-  // TODO(yuli): Replace tablet-landscape with full-wnd/vert-orien.
+  // TODO(yuli): Replace tablet-landscape with max-wnd/tall.
   var fullWindow = cca.util.isWindowFullSize();
-  var tabletLandscape = fullWindow && (window.innerWidth > window.innerHeight);
+  var tall = window.innerHeight > window.innerWidth;
+  var tabletLandscape = fullWindow && !tall;
   cca.state.set('tablet-landscape', tabletLandscape);
+  cca.state.set('max-wnd', fullWindow);
+  cca.state.set('tall', tall);
 
-  var [letterboxW, letterboxH] = this.updatePreviewSize_();
+  var [letterboxW, letterboxH] = this.updatePreviewSize_(fullWindow);
   var [halfW, halfH] = [letterboxW / 2, letterboxH / 2];
   var [rightBox, bottomBox, leftBox, topBox] = [halfW, halfH, halfW, halfH];
 

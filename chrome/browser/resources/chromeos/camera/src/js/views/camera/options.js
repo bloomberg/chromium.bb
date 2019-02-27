@@ -167,15 +167,18 @@ cca.views.camera.Options.prototype.animatePreviewGrid_ = function() {
  * Updates the options' values for the current constraints and stream.
  * @param {Object} constraints Current stream constraints in use.
  * @param {MediaStream} stream Current Stream in use.
+ * @return {string} Facing-mode in use.
  */
 cca.views.camera.Options.prototype.updateValues = function(
     constraints, stream) {
   var track = stream.getVideoTracks()[0];
   var trackSettings = track.getSettings && track.getSettings();
+  var facingMode = trackSettings && trackSettings.facingMode;
   this.updateVideoDeviceId_(constraints, trackSettings);
-  this.updateMirroring_(trackSettings);
+  this.updateMirroring_(facingMode);
   this.audioTrack_ = stream.getAudioTracks()[0];
   this.updateAudioByMic_();
+  return facingMode;
 };
 
 /**
@@ -203,13 +206,12 @@ cca.views.camera.Options.prototype.updateVideoDeviceId_ = function(
 
 /**
  * Updates mirroring for a new stream.
- * @param {MediaTrackSettings} trackSettings Video track settings in use.
+ * @param {string} facingMode Facing-mode of the stream.
  * @private
  */
-cca.views.camera.Options.prototype.updateMirroring_ = function(trackSettings) {
+cca.views.camera.Options.prototype.updateMirroring_ = function(facingMode) {
   // Update mirroring by detected facing-mode. Enable mirroring by default if
   // facing-mode isn't available.
-  var facingMode = trackSettings && trackSettings.facingMode;
   var enabled = facingMode ? facingMode == 'user' : true;
 
   // Override mirroring only if mirroring was toggled manually.

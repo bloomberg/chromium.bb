@@ -86,6 +86,12 @@ cca.views.Camera = function(model) {
   this.shutterButton_ = document.querySelector('#shutter');
 
   /**
+   * @type {string}
+   * @private
+   */
+  this.facingMode_ = '';
+
+  /**
    * @type {boolean}
    * @private
    */
@@ -269,7 +275,7 @@ cca.views.Camera.prototype.endTake_ = function() {
   return Promise.resolve(this.take_).then((blob) => {
     if (blob && !blob.handled) {
       // Play a sound and save the result after a successful take.
-      cca.metrics.log(cca.metrics.Type.CAPTURE);
+      cca.metrics.log(cca.metrics.Type.CAPTURE, this.facingMode_, blob.mins);
       blob.handled = true;
       var recordMode = this.recordMode;
       cca.sound.play(recordMode ? '#sound-rec-end' : '#sound-shutter');
@@ -303,10 +309,10 @@ cca.views.Camera.prototype.createRecordingBlob_ = function() {
     var onstop = (event) => {
       this.mediaRecorder_.removeEventListener('dataavailable', ondataavailable);
       this.mediaRecorder_.removeEventListener('stop', onstop);
-      this.recordTime_.stop();
 
       var recordedBlob = new Blob(
           recordedChunks, {type: cca.views.Camera.RECORD_MIMETYPE});
+      recordedBlob.mins = this.recordTime_.stop();
       recordedChunks = [];
       if (recordedBlob.size) {
         resolve(recordedBlob);
@@ -463,7 +469,8 @@ cca.views.Camera.prototype.start_ = function() {
       var constraints = candidates[index];
       return navigator.mediaDevices.getUserMedia(constraints).then(
           this.preview_.start.bind(this.preview_)).then(() => {
-        this.options_.updateValues(constraints, this.preview_.stream);
+        this.facingMode_ = this.options_.updateValues(
+            constraints, this.preview_.stream);
         cca.nav.close('warning', 'no-camera');
       }).catch((error) => {
         console.error(error);
