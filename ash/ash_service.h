@@ -86,6 +86,8 @@ class ASH_EXPORT AshService : public service_manager::Service,
   // once the service starts (from OnStart()).
   void InitForMash();
 
+  void InitializeDBusClients();
+
   void BindServiceFactory(
       service_manager::mojom::ServiceFactoryRequest request);
 
@@ -122,12 +124,6 @@ class ASH_EXPORT AshService : public service_manager::Service,
       statistics_provider_;
 
   std::unique_ptr<ws::InputDeviceController> input_device_controller_;
-
-  // Whether this class initialized NetworkHandler and needs to clean it up.
-  bool network_handler_initialized_ = false;
-
-  // Whether this class initialized DBusThreadManager and needs to clean it up.
-  bool dbus_thread_manager_initialized_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AshService);
 };
