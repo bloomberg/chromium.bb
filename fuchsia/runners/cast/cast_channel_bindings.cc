@@ -17,6 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/runners/cast/named_message_port_connector.h"
+#include "fuchsia/runners/common/javascript_injection.h"
 
 // Unique identifier of the Cast Channel message port, used by the JavaScript
 // API to connect to the port.
@@ -45,24 +46,11 @@ CastChannelBindings::CastChannelBindings(
                           base::Unretained(this)),
       frame_);
 
-  // Load the cast.__platform__.channel bundle from the package assets, into a
-  // mem::Buffer.
   base::FilePath assets_path;
   CHECK(base::PathService::Get(base::DIR_ASSETS, &assets_path));
-  fuchsia::mem::Buffer bindings_buf = cr_fuchsia::MemBufferFromFile(base::File(
+  InjectJavaScriptFileIntoFrame(
       assets_path.AppendASCII("fuchsia/runners/cast/cast_channel_bindings.js"),
-      base::File::FLAG_OPEN | base::File::FLAG_READ));
-  CHECK(bindings_buf.vmo);
-
-  // Inject the cast.__platform__.channel API to all origins.
-  std::vector<std::string> origins = {"*"};
-
-  // Configure the bundle to be re-injected every time the |frame_| content is
-  // loaded.
-  frame_->ExecuteJavaScript(
-      std::move(origins), std::move(bindings_buf),
-      chromium::web::ExecuteMode::ON_PAGE_LOAD,
-      [](bool success) { CHECK(success) << "Couldn't insert bindings."; });
+      frame_);
 }
 
 CastChannelBindings::~CastChannelBindings() {

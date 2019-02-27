@@ -1,0 +1,19 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+library chromium.cast;
+
+struct QueryableDataEntry {
+  string key;
+  string json_value;
+};
+
+/// Interface for serving configuration- and environmental-related values
+/// to CastRunner instances.
+[Discoverable]
+protocol QueryableData {
+  /// Gets all entries managed by the QueryableData service.
+  GetAllEntries() -> (vector<QueryableDataEntry> values);
+};
+
