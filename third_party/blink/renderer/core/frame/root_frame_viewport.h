@@ -154,8 +154,8 @@ class CORE_EXPORT RootFrameViewport final
 
 template <>
 struct DowncastTraits<RootFrameViewport> {
-  static bool AllowFrom(const ScrollableArea& scrollableArea) {
-    return scrollableArea.IsRootFrameViewport();
+  static bool AllowFrom(const ScrollableArea& scrollable_area) {
+    return scrollable_area.IsRootFrameViewport();
   }
 };
 

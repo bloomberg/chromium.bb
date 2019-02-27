@@ -92,9 +92,7 @@ inline RemoteFrameView* RemoteFrame::View() const {
 
 template <>
 struct DowncastTraits<RemoteFrame> {
-  static bool AllowFrom(const Frame& remote_frame) {
-    return remote_frame.IsRemoteFrame();
-  }
+  static bool AllowFrom(const Frame& frame) { return frame.IsRemoteFrame(); }
 };
 
 }  // namespace blink
