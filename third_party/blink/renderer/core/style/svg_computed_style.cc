@@ -171,9 +171,11 @@ bool SVGComputedStyle::DiffNeedsLayoutAndPaintInvalidation(
   // need to be recalculated.
   if (stroke.Get() != other->stroke.Get()) {
     if (stroke->width != other->stroke->width ||
-        stroke->paint != other->stroke->paint ||
-        stroke->miter_limit != other->stroke->miter_limit ||
-        stroke->visited_link_paint != other->stroke->visited_link_paint)
+        stroke->miter_limit != other->stroke->miter_limit)
+      return true;
+    // If the stroke is toggled from/to 'none' we need to relayout, because the
+    // stroke shape will have changed.
+    if (stroke->paint.IsNone() != other->stroke->paint.IsNone())
       return true;
     // If the dash array is toggled from/to 'none' we need to relayout, because
     // some shapes will decide on which codepath to use based on the presence
@@ -192,7 +194,9 @@ bool SVGComputedStyle::DiffNeedsLayoutAndPaintInvalidation(
 bool SVGComputedStyle::DiffNeedsPaintInvalidation(
     const SVGComputedStyle* other) const {
   if (stroke.Get() != other->stroke.Get()) {
-    if (stroke->opacity != other->stroke->opacity)
+    if (stroke->paint != other->stroke->paint ||
+        stroke->opacity != other->stroke->opacity ||
+        stroke->visited_link_paint != other->stroke->visited_link_paint)
       return true;
     // Changes to the dash effect only require a repaint because we don't
     // include it when computing (approximating) the stroke boundaries during
