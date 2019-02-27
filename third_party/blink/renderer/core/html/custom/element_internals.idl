@@ -21,6 +21,6 @@ interface ElementInternals {
   [RaisesException] boolean checkValidity();
   [RaisesException] boolean reportValidity();
 
-  readonly attribute NodeList labels;
+  [RaisesException] readonly attribute NodeList labels;
 };
 

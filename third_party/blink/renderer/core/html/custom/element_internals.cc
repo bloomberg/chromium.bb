@@ -53,7 +53,7 @@ void ElementInternals::setFormValue(const FileOrUSVString& value,
                                     ExceptionState& exception_state) {
   if (!IsTargetFormAssociated()) {
     exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
+        DOMExceptionCode::kNotSupportedError,
         "The target element is not a form-associated custom element.");
     return;
   }
@@ -70,7 +70,7 @@ void ElementInternals::setFormValue(const FileOrUSVString& value,
 HTMLFormElement* ElementInternals::form(ExceptionState& exception_state) const {
   if (!IsTargetFormAssociated()) {
     exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
+        DOMExceptionCode::kNotSupportedError,
         "The target element is not a form-associated custom element.");
     return nullptr;
   }
@@ -87,7 +87,7 @@ void ElementInternals::setValidity(ValidityStateFlags* flags,
                                    ExceptionState& exception_state) {
   if (!IsTargetFormAssociated()) {
     exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
+        DOMExceptionCode::kNotSupportedError,
         "The target element is not a form-associated custom element.");
     return;
   }
@@ -108,7 +108,7 @@ void ElementInternals::setValidity(ValidityStateFlags* flags,
 bool ElementInternals::willValidate(ExceptionState& exception_state) const {
   if (!IsTargetFormAssociated()) {
     exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
+        DOMExceptionCode::kNotSupportedError,
         "The target element is not a form-associated custom element.");
     return false;
   }
@@ -118,7 +118,7 @@ bool ElementInternals::willValidate(ExceptionState& exception_state) const {
 ValidityState* ElementInternals::validity(ExceptionState& exception_state) {
   if (!IsTargetFormAssociated()) {
     exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
+        DOMExceptionCode::kNotSupportedError,
         "The target element is not a form-associated custom element.");
     return nullptr;
   }
@@ -129,7 +129,7 @@ String ElementInternals::ValidationMessageForBinding(
     ExceptionState& exception_state) {
   if (!IsTargetFormAssociated()) {
     exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
+        DOMExceptionCode::kNotSupportedError,
         "The target element is not a form-associated custom element.");
     return String();
   }
@@ -151,7 +151,7 @@ String ElementInternals::ValidationSubMessage() const {
 bool ElementInternals::checkValidity(ExceptionState& exception_state) {
   if (!IsTargetFormAssociated()) {
     exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
+        DOMExceptionCode::kNotSupportedError,
         "The target element is not a form-associated custom element.");
     return false;
   }
@@ -161,14 +161,20 @@ bool ElementInternals::checkValidity(ExceptionState& exception_state) {
 bool ElementInternals::reportValidity(ExceptionState& exception_state) {
   if (!IsTargetFormAssociated()) {
     exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
+        DOMExceptionCode::kNotSupportedError,
         "The target element is not a form-associated custom element.");
     return false;
   }
   return ListedElement::reportValidity();
 }
 
-LabelsNodeList* ElementInternals::labels() {
+LabelsNodeList* ElementInternals::labels(ExceptionState& exception_state) {
+  if (!IsTargetFormAssociated()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "The target element is not a form-associated custom element.");
+    return nullptr;
+  }
   return Target().labels();
 }
 

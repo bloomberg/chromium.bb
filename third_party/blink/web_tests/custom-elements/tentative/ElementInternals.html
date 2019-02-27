@@ -9,15 +9,16 @@ test(() => {
   const element = new MyElement1();
   const internals = element.attachInternals();
 
-  assert_throws('InvalidStateError', () => { internals.setFormValue(''); });
-  assert_throws('InvalidStateError', () => { internals.form; });
-  assert_throws('InvalidStateError', () => { internals.setValidity({}); });
-  assert_throws('InvalidStateError', () => { internals.willValidate; });
-  assert_throws('InvalidStateError', () => { internals.validity; });
-  assert_throws('InvalidStateError', () => { internals.validationMessage; });
-  assert_throws('InvalidStateError', () => { internals.checkValidity(); });
-  assert_throws('InvalidStateError', () => { internals.reportValidity(); });
-}, 'Form-related operations and attributes should throw InvalidStateErrors for' +
-     'non-form-associated custom elements.');
+  assert_throws('NotSupportedError', () => { internals.setFormValue(''); });
+  assert_throws('NotSupportedError', () => { internals.form; });
+  assert_throws('NotSupportedError', () => { internals.setValidity({}); });
+  assert_throws('NotSupportedError', () => { internals.willValidate; });
+  assert_throws('NotSupportedError', () => { internals.validity; });
+  assert_throws('NotSupportedError', () => { internals.validationMessage; });
+  assert_throws('NotSupportedError', () => { internals.checkValidity(); });
+  assert_throws('NotSupportedError', () => { internals.reportValidity(); });
+  assert_throws('NotSupportedError', () => { internals.labels; });
+}, 'Form-related operations and attributes should throw NotSupportedErrors' +
+     ' for non-form-associated custom elements.');
 </script>
 </body>
