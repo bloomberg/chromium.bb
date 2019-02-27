@@ -88,6 +88,20 @@ cr.define('safe_browsing', function() {
     });
 
     $('get-referrer-chain-form').addEventListener('submit', addReferrerChain);
+
+    // Allow tabs to be navigated to by anchor.
+    showTab(window.location.hash.substr(1));
+    window.onhashchange = function () {
+      showTab(window.location.hash.substr(1));
+    };
+
+    // When the tab updates, update the anchor
+    $('tabbox').addEventListener('selectedChange', function() {
+      var tabbox = $('tabbox');
+      var tabs = tabbox.querySelector('tabs').children;
+      var selectedTab = tabs[tabbox.selectedIndex];
+      window.location.hash = selectedTab.id;
+    }, true);
   }
 
   function addExperiments(result) {
@@ -221,6 +235,12 @@ cr.define('safe_browsing', function() {
         .then((response) => {
           $('referrer-chain').innerHTML = response;
         });
+  }
+
+  function showTab(tabId) {
+    if ($(tabId)) {
+      $(tabId).selected = "selected";
+    }
   }
 
   return {
