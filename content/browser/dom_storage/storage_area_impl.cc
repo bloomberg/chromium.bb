@@ -641,6 +641,7 @@ void StorageAreaImpl::OnGotMigrationData(std::unique_ptr<ValueMap> data) {
   keys_values_map_ = data ? std::move(*data) : ValueMap();
   map_state_ = MapState::LOADED_KEYS_AND_VALUES;
   CalculateStorageAndMemoryUsed();
+  delegate_->OnMapLoaded(leveldb::mojom::DatabaseError::OK);
 
   if (database_ && !empty()) {
     CreateCommitBatchIfNeeded();
@@ -649,7 +650,6 @@ void StorageAreaImpl::OnGotMigrationData(std::unique_ptr<ValueMap> data) {
       commit_batch_->changed_keys.insert(it.first);
     CommitChanges();
   }
-
   OnLoadComplete();
 }
 

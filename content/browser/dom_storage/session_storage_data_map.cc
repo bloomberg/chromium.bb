@@ -24,9 +24,9 @@ scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::Create(
 scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::CreateClone(
     Listener* listener,
     scoped_refptr<SessionStorageMetadata::MapData> map_data,
-    StorageAreaImpl* clone_from) {
-  return base::WrapRefCounted(
-      new SessionStorageDataMap(listener, std::move(map_data), clone_from));
+    scoped_refptr<SessionStorageDataMap> clone_from) {
+  return base::WrapRefCounted(new SessionStorageDataMap(
+      listener, std::move(map_data), std::move(clone_from)));
 }
 
 std::vector<leveldb::mojom::BatchedOperationPtr>
@@ -58,12 +58,14 @@ SessionStorageDataMap::SessionStorageDataMap(
 SessionStorageDataMap::SessionStorageDataMap(
     Listener* listener,
     scoped_refptr<SessionStorageMetadata::MapData> map_data,
-    StorageAreaImpl* forking_from)
+    scoped_refptr<SessionStorageDataMap> forking_from)
     : listener_(listener),
+      clone_from_data_map_(std::move(forking_from)),
       map_data_(std::move(map_data)),
-      storage_area_impl_(forking_from->ForkToNewPrefix(map_data_->KeyPrefix(),
-                                                       this,
-                                                       GetOptions())),
+      storage_area_impl_(clone_from_data_map_->storage_area()->ForkToNewPrefix(
+          map_data_->KeyPrefix(),
+          this,
+          GetOptions())),
       storage_area_ptr_(storage_area_impl_.get()) {
   DCHECK(listener_);
   DCHECK(map_data_);
@@ -83,6 +85,10 @@ void SessionStorageDataMap::RemoveBindingReference() {
   // deletion will happen under memory pressure or when another sessionstorage
   // area is opened.
   storage_area()->ScheduleImmediateCommit();
+}
+
+void SessionStorageDataMap::OnMapLoaded(leveldb::mojom::DatabaseError) {
+  clone_from_data_map_.reset();
 }
 
 // static

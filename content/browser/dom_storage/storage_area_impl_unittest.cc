@@ -240,6 +240,9 @@ class StorageAreaImplTest : public testing::Test,
   const std::vector<Observation>& observations() { return observations_; }
 
   MockDelegate* delegate() { return &delegate_; }
+  leveldb::mojom::LevelDBDatabase* database() const {
+    return level_db_database_ptr_.get();
+  }
 
   void should_record_send_old_value_observations(bool value) {
     should_record_send_old_value_observations_ = value;
@@ -325,6 +328,19 @@ TEST_F(StorageAreaImplTest, GetLoadedFromMap) {
   EXPECT_EQ(test_value2_bytes_, result);
 
   EXPECT_FALSE(GetSync(ToBytes("x"), &result));
+}
+
+TEST_F(StorageAreaImplTest, NoDataCallsOnMapLoaded) {
+  StorageAreaImpl::Options options =
+      GetDefaultTestingOptions(CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
+  // Load an area that has no data inside, so the result will be empty and the
+  // migration code is triggered.
+  auto area = std::make_unique<StorageAreaImpl>(database(), test_copy_prefix2_,
+                                                delegate(), options);
+  std::vector<blink::mojom::KeyValuePtr> data;
+  EXPECT_TRUE(test::GetAllSyncOnDedicatedPipe(area.get(), &data));
+  EXPECT_TRUE(data.empty());
+  EXPECT_EQ(1, delegate()->map_load_count());
 }
 
 TEST_F(StorageAreaImplTest, GetFromPutOverwrite) {

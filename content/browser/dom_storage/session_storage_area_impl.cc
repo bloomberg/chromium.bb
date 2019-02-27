@@ -139,7 +139,7 @@ void SessionStorageAreaImpl::CreateNewMap(
       shared_data_map_ = SessionStorageDataMap::CreateClone(
           shared_data_map_->listener(),
           register_new_map_callback_.Run(namespace_entry_, origin_),
-          shared_data_map_->storage_area());
+          shared_data_map_);
       break;
     case NewMapType::EMPTY_FROM_DELETE_ALL: {
       // The code optimizes the 'delete all' for shared maps by just creating
