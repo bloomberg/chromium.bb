@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
+#include "third_party/blink/renderer/platform/geometry/length_functions.h"
 
 namespace blink {
 
@@ -119,7 +120,8 @@ LayoutUnit ResolveInlineLength(const NGConstraintSpace& constraint_space,
     case Length::kCalculated: {
       LayoutUnit percentage_resolution_size =
           constraint_space.PercentageResolutionInlineSize();
-      LayoutUnit value = ValueForLength(length, percentage_resolution_size);
+      LayoutUnit value =
+          MinimumValueForLength(length, percentage_resolution_size);
       if (style.BoxSizing() == EBoxSizing::kContentBox) {
         value += border_padding.InlineSum();
       } else {
@@ -235,7 +237,7 @@ LayoutUnit ResolveBlockLength(
               ? *opt_percentage_resolution_block_size_for_min_max
               : constraint_space.PercentageResolutionBlockSize();
       LayoutUnit value =
-          ValueForLength(length, percentage_resolution_block_size);
+          MinimumValueForLength(length, percentage_resolution_block_size);
 
       // Percentage-sized children of table cells, in the table "layout" phase,
       // pretend they have box-sizing: border-box.
@@ -274,35 +276,6 @@ LayoutUnit ResolveBlockLength(
     default:
       NOTREACHED();
       return border_padding.BlockSum();
-  }
-}
-
-LayoutUnit ResolveMarginPaddingLength(LayoutUnit percentage_resolution_size,
-                                      const Length& length) {
-  DCHECK_GE(percentage_resolution_size, LayoutUnit());
-
-  // Margins and padding always get computed relative to the inline size:
-  // https://www.w3.org/TR/CSS2/box.html#value-def-margin-width
-  // https://www.w3.org/TR/CSS2/box.html#value-def-padding-width
-  switch (length.GetType()) {
-    case Length::kAuto:
-      return LayoutUnit();
-    case Length::kPercent:
-    case Length::kFixed:
-    case Length::kCalculated:
-      return ValueForLength(length, percentage_resolution_size);
-    case Length::kMinContent:
-    case Length::kMaxContent:
-    case Length::kFillAvailable:
-    case Length::kFitContent:
-    case Length::kExtendToZoom:
-    case Length::kDeviceWidth:
-    case Length::kDeviceHeight:
-    case Length::kMaxSizeNone:
-      FALLTHROUGH;
-    default:
-      NOTREACHED();
-      return LayoutUnit();
   }
 }
 
@@ -782,16 +755,11 @@ NGPhysicalBoxStrut ComputePhysicalMargins(
   if (!style.HasMargin())
     return NGPhysicalBoxStrut();
 
-  NGPhysicalBoxStrut physical_dim;
-  physical_dim.left = ResolveMarginPaddingLength(percentage_resolution_size,
-                                                 style.MarginLeft());
-  physical_dim.right = ResolveMarginPaddingLength(percentage_resolution_size,
-                                                  style.MarginRight());
-  physical_dim.top =
-      ResolveMarginPaddingLength(percentage_resolution_size, style.MarginTop());
-  physical_dim.bottom = ResolveMarginPaddingLength(percentage_resolution_size,
-                                                   style.MarginBottom());
-  return physical_dim;
+  return {
+      MinimumValueForLength(style.MarginTop(), percentage_resolution_size),
+      MinimumValueForLength(style.MarginRight(), percentage_resolution_size),
+      MinimumValueForLength(style.MarginBottom(), percentage_resolution_size),
+      MinimumValueForLength(style.MarginLeft(), percentage_resolution_size)};
 }
 
 NGBoxStrut ComputeMarginsFor(const NGConstraintSpace& constraint_space,
@@ -891,15 +859,11 @@ NGBoxStrut ComputePadding(const NGConstraintSpace& constraint_space,
 
   LayoutUnit percentage_resolution_size =
       constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
-  NGBoxStrut padding;
-  padding.inline_start = ResolveMarginPaddingLength(percentage_resolution_size,
-                                                    style.PaddingStart());
-  padding.inline_end = ResolveMarginPaddingLength(percentage_resolution_size,
-                                                  style.PaddingEnd());
-  padding.block_start = ResolveMarginPaddingLength(percentage_resolution_size,
-                                                   style.PaddingBefore());
-  padding.block_end = ResolveMarginPaddingLength(percentage_resolution_size,
-                                                 style.PaddingAfter());
+  NGBoxStrut padding = {
+      MinimumValueForLength(style.PaddingStart(), percentage_resolution_size),
+      MinimumValueForLength(style.PaddingEnd(), percentage_resolution_size),
+      MinimumValueForLength(style.PaddingBefore(), percentage_resolution_size),
+      MinimumValueForLength(style.PaddingAfter(), percentage_resolution_size)};
 
   if (style.Display() == EDisplay::kTableCell) {
     // Compatibility hack to mach legacy layout. Legacy layout floors padding on

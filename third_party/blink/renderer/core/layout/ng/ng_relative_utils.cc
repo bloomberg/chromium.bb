@@ -24,13 +24,13 @@ NGPhysicalOffset ComputeRelativeOffset(const ComputedStyle& child_style,
   base::Optional<LayoutUnit> left, right, top, bottom;
 
   if (!child_style.Left().IsAuto())
-    left = ValueForLength(child_style.Left(), container_size.width);
+    left = MinimumValueForLength(child_style.Left(), container_size.width);
   if (!child_style.Right().IsAuto())
-    right = ValueForLength(child_style.Right(), container_size.width);
+    right = MinimumValueForLength(child_style.Right(), container_size.width);
   if (!child_style.Top().IsAuto())
-    top = ValueForLength(child_style.Top(), container_size.height);
+    top = MinimumValueForLength(child_style.Top(), container_size.height);
   if (!child_style.Bottom().IsAuto())
-    bottom = ValueForLength(child_style.Bottom(), container_size.height);
+    bottom = MinimumValueForLength(child_style.Bottom(), container_size.height);
 
   // Common case optimization
   if (!left && !right && !top && !bottom)
