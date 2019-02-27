@@ -5,14 +5,12 @@
 cr.define('pages_settings_test', function() {
   /** @enum {string} */
   const TestNames = {
+    PagesDropdown: 'pages dropdown',
     ValidPageRanges: 'valid page ranges',
     InvalidPageRanges: 'invalid page ranges',
     NupChangesPages: 'nup changes pages',
     ClearInput: 'clear input',
-    TabOrder: 'tab order',
-    ClickingCustomFocusesInput: 'clicking custom focuses input',
     InputNotDisabledOnValidityChange: 'input not disabled on validity change',
-    IgnoreInputKeyEvents: 'ignore input key events',
     EnterOnInputTriggersPrint: 'enter on input triggers print',
   };
 
@@ -59,293 +57,261 @@ cr.define('pages_settings_test', function() {
     });
 
     /**
-     * Sets up the pages section to use the custom input with the input string
-     * given by |inputString|, with the document page count set to |pageCount|
-     * @param {string} inputString
-     * @param {number} pageCount
-     * @return {!Promise} Promise that resolves when the input-change event
-     *     has fired.
+     * @param {string} inputString The input value to set.
+     * @return {!Promise} Promise that resolves when the input has been set and
+     *     the input-change event has fired.
      */
-    function setupInput(inputString, pageCount) {
-      // Set page count.
-      pagesSection.pageCount = pageCount;
-      Polymer.dom.flush();
-      const input = pagesSection.$.pageSettingsCustomInput.inputElement;
-      const pagesSelect = pagesSection.$$('select');
-      const isCustomSelected =
-          pagesSelect.value === pagesSection.pagesValueEnum_.CUSTOM.toString();
-      const readyForInput = isCustomSelected ?
-          Promise.resolve() :
-          test_util.eventToPromise('process-select-change', pagesSection);
-
-      // Select custom
-      if (!isCustomSelected) {
-        pagesSelect.value = pagesSection.pagesValueEnum_.CUSTOM.toString();
-        pagesSelect.dispatchEvent(new CustomEvent('change'));
-      }
-      return readyForInput.then(() => {
-        input.focus();
-        // Set input string
-        input.value = inputString;
-        input.dispatchEvent(
-            new CustomEvent('input', {composed: true, bubbles: true}));
-
-        // Validate results
-        return test_util.eventToPromise('input-change', pagesSection);
-      });
+    function setCustomInput(inputString) {
+      const pagesInput = pagesSection.$.pageSettingsCustomInput.inputElement;
+      return print_preview_test_utils.triggerInputEvent(
+          pagesInput, inputString, pagesSection);
     }
 
     /**
      * @param {!Array<number>} expectedPages The expected pages value.
+     * @param {!Array<{to: number, from: number>} expectedPages The expected
+     *     pages value.
      * @param {string} expectedError The expected error message.
      * @param {boolean} invalid Whether the pages setting should be invalid.
      */
-    function validateState(expectedPages, expectedError, invalid) {
+    function validateState(
+        expectedPages, expectedRanges, expectedError, invalid) {
       const pagesValue = pagesSection.getSettingValue('pages');
       assertEquals(expectedPages.length, pagesValue.length);
       expectedPages.forEach((page, index) => {
         assertEquals(page, pagesValue[index]);
+      });
+      const rangesValue = pagesSection.getSettingValue('ranges');
+      assertEquals(expectedRanges.length, rangesValue.length);
+      expectedRanges.forEach((range, index) => {
+        assertEquals(range.to, rangesValue[index].to);
+        assertEquals(range.from, rangesValue[index].from);
       });
       assertEquals(!invalid, pagesSection.getSetting('pages').valid);
       assertEquals(expectedError !== '', pagesSection.$$('cr-input').invalid);
       assertEquals(expectedError, pagesSection.$$('cr-input').errorMessage);
     }
 
+    // Verifies that the pages setting updates correctly when the dropdown
+    // changes.
+    test(assert(TestNames.PagesDropdown), async () => {
+      pagesSection.pageCount = 3;
+
+      // Default value is all pages.
+      const pagesSelect = pagesSection.$$('select');
+      const customInputCollapse = pagesSection.$$('iron-collapse');
+      const pagesCrInput = pagesSection.$.pageSettingsCustomInput;
+      const pagesInput = pagesCrInput.inputElement;
+
+      validateState([1, 2, 3], [], '', false);
+      assertFalse(customInputCollapse.opened);
+
+      // Set selection of pages 1 and 2.
+      await print_preview_test_utils.selectOption(
+          pagesSection, pagesSection.pagesValueEnum_.CUSTOM.toString());
+      assertTrue(customInputCollapse.opened);
+
+      await setCustomInput('1-2');
+      validateState([1, 2], [{from: 1, to: 2}], '', false);
+
+      // Re-select "all".
+      await print_preview_test_utils.selectOption(
+          pagesSection, pagesSection.pagesValueEnum_.ALL.toString());
+      assertFalse(customInputCollapse.opened);
+      validateState([1, 2, 3], [], '', false);
+
+      // Re-select custom. The previously entered value should be
+      // restored.
+      await print_preview_test_utils.selectOption(
+          pagesSection, pagesSection.pagesValueEnum_.CUSTOM.toString());
+      assertTrue(customInputCollapse.opened);
+      validateState([1, 2], [{from: 1, to: 2}], '', false);
+    });
+
     // Tests that the page ranges set are valid for different user inputs.
-    test(assert(TestNames.ValidPageRanges), function() {
+    test(assert(TestNames.ValidPageRanges), async () => {
+      pagesSection.pageCount = 100;
       const tenToHundred = Array.from({length: 91}, (x, i) => i + 10);
 
-      return setupInput('1, 2, 3, 1, 56', 100)
-          .then(function() {
-            validateState([1, 2, 3, 56], '', false);
-            return setupInput('1-3, 6-9, 6-10', 100);
-          })
-          .then(function() {
-            validateState([1, 2, 3, 6, 7, 8, 9, 10], '', false);
-            return setupInput('10-', 100);
-          })
-          .then(function() {
-            validateState(tenToHundred, '', false);
-            return setupInput('10-100', 100);
-          })
-          .then(function() {
-            validateState(tenToHundred, '', false);
-            return setupInput('-', 100);
-          })
-          .then(function() {
-            validateState(oneToHundred, '', false);
-            // https://crbug.com/806165
-            return setupInput('1\u30012\u30013\u30011\u300156', 100);
-          })
-          .then(function() {
-            validateState([1, 2, 3, 56], '', false);
-            return setupInput('1,2,3\u30011\u300156', 100);
-          })
-          .then(function() {
-            validateState([1, 2, 3, 56], '', false);
-          });
+      await print_preview_test_utils.selectOption(
+          pagesSection, pagesSection.pagesValueEnum_.CUSTOM.toString());
+      await setCustomInput('1, 2, 3, 1, 56');
+      validateState(
+          [1, 2, 3, 56], [{from: 1, to: 3}, {from: 56, to: 56}], '', false);
+
+      await setCustomInput('1-3, 6-9, 6-10');
+      validateState(
+          [1, 2, 3, 6, 7, 8, 9, 10], [{from: 1, to: 3}, {from: 6, to: 10}], '',
+          false);
+
+      await setCustomInput('10-');
+      validateState(tenToHundred, [{from: 10, to: 100}], '', false);
+
+      await setCustomInput('10-100');
+      validateState(tenToHundred, [{from: 10, to: 100}], '', false);
+
+      await setCustomInput('-');
+      validateState(oneToHundred, [{from: 1, to: 100}], '', false);
+
+      // https://crbug.com/806165
+      await setCustomInput('1\u30012\u30013\u30011\u300156');
+      validateState(
+          [1, 2, 3, 56], [{from: 1, to: 3}, {from: 56, to: 56}], '', false);
+
+      await setCustomInput('1,2,3\u30011\u300156');
+      validateState(
+          [1, 2, 3, 56], [{from: 1, to: 3}, {from: 56, to: 56}], '', false);
     });
 
     // Tests that the correct error messages are shown for different user
     // inputs.
-    test(assert(TestNames.InvalidPageRanges), function() {
+    test(assert(TestNames.InvalidPageRanges), async () => {
+      pagesSection.pageCount = 100;
       const syntaxError = 'Invalid page range, use e.g. 1-5, 8, 11-13';
 
-      return setupInput('10-100000', 100)
-          .then(function() {
-            validateState(oneToHundred, limitError + '100', true);
-            return setupInput('1, 100000', 100);
-          })
-          .then(function() {
-            validateState(oneToHundred, limitError + '100', true);
-            return setupInput('1, 2, 0, 56', 100);
-          })
-          .then(function() {
-            validateState(oneToHundred, syntaxError, true);
-            return setupInput('-1, 1, 2,, 56', 100);
-          })
-          .then(function() {
-            validateState(oneToHundred, syntaxError, true);
-            return setupInput('1,2,56-40', 100);
-          })
-          .then(function() {
-            validateState(oneToHundred, syntaxError, true);
-            return setupInput('101-110', 100);
-          })
-          .then(function() {
-            validateState(oneToHundred, limitError + '100', true);
-            return setupInput('1\u30012\u30010\u300156', 100);
-          })
-          .then(function() {
-            validateState(oneToHundred, syntaxError, true);
-            return setupInput('-1,1,2\u3001\u300156', 100);
-          })
-          .then(function() {
-            validateState(oneToHundred, syntaxError, true);
-            return setupInput('--', 100);
-          })
-          .then(function() {
-            validateState(oneToHundred, syntaxError, true);
-            return setupInput(' 1 1 ', 100);
-          })
-          .then(function() {
-            validateState(oneToHundred, syntaxError, true);
-          });
+      await print_preview_test_utils.selectOption(
+          pagesSection, pagesSection.pagesValueEnum_.CUSTOM.toString());
+      await setCustomInput('10-100000');
+      validateState(oneToHundred, [], limitError + '100', true);
+
+      await setCustomInput('1, 2, 0, 56');
+      validateState(oneToHundred, [], syntaxError, true);
+
+      await setCustomInput('-1, 1, 2,, 56');
+      validateState(oneToHundred, [], syntaxError, true);
+
+      await setCustomInput('1,2,56-40');
+      validateState(oneToHundred, [], syntaxError, true);
+
+      await setCustomInput('101-110');
+      validateState(oneToHundred, [], limitError + '100', true);
+
+      await setCustomInput('1\u30012\u30010\u300156');
+      validateState(oneToHundred, [], syntaxError, true);
+
+      await setCustomInput('-1,1,2\u3001\u300156');
+      validateState(oneToHundred, [], syntaxError, true);
+
+      await setCustomInput('--');
+      validateState(oneToHundred, [], syntaxError, true);
+
+      await setCustomInput(' 1 1 ');
+      validateState(oneToHundred, [], syntaxError, true);
     });
 
     // Tests that the pages are set correctly for different values of pages per
     // sheet, and that ranges remain fixed (since they are used for generating
     // the print preview ticket).
-    test(assert(TestNames.NupChangesPages), function() {
-      /**
-       * @param {string} rangesValue The desired stringified ranges setting
-       *     value.
-       */
-      const validateRanges = function(rangesValue) {
-        assertEquals(
-            rangesValue,
-            JSON.stringify(pagesSection.getSettingValue('ranges')));
-      };
-      return setupInput('1, 2, 3, 1, 56', 100)
-          .then(function() {
-            const rangesValue =
-                JSON.stringify(pagesSection.getSettingValue('ranges'));
-            validateState([1, 2, 3, 56], '', false);
-            pagesSection.setSetting('pagesPerSheet', 2);
-            validateRanges(rangesValue);
-            validateState([1, 2], '', false);
-            pagesSection.setSetting('pagesPerSheet', 4);
-            validateRanges(rangesValue);
-            validateState([1], '', false);
-            pagesSection.setSetting('pagesPerSheet', 1);
-            return setupInput('1-3, 6-9, 6-10', 100);
-          })
-          .then(function() {
-            const rangesValue =
-                JSON.stringify(pagesSection.getSettingValue('ranges'));
-            validateState([1, 2, 3, 6, 7, 8, 9, 10], '', false);
-            pagesSection.setSetting('pagesPerSheet', 2);
-            validateRanges(rangesValue);
-            validateState([1, 2, 3, 4], '', false);
-            pagesSection.setSetting('pagesPerSheet', 3);
-            validateRanges(rangesValue);
-            validateState([1, 2, 3], '', false);
-            return setupInput('1-3', 100);
-          })
-          .then(function() {
-            const rangesValue =
-                JSON.stringify(pagesSection.getSettingValue('ranges'));
-            validateState([1], '', false);
-            pagesSection.setSetting('pagesPerSheet', 1);
-            validateRanges(rangesValue);
-            validateState([1, 2, 3], '', false);
-          });
+    test(assert(TestNames.NupChangesPages), async () => {
+      pagesSection.pageCount = 100;
+      await print_preview_test_utils.selectOption(
+          pagesSection, pagesSection.pagesValueEnum_.CUSTOM.toString());
+      await setCustomInput('1, 2, 3, 1, 56');
+      let expectedRanges = [{from: 1, to: 3}, {from: 56, to: 56}];
+      validateState([1, 2, 3, 56], expectedRanges, '', false);
+      pagesSection.setSetting('pagesPerSheet', 2);
+      validateState([1, 2], expectedRanges, '', false);
+      pagesSection.setSetting('pagesPerSheet', 4);
+      validateState([1], expectedRanges, '', false);
+      pagesSection.setSetting('pagesPerSheet', 1);
+
+      await setCustomInput('1-3, 6-9, 6-10');
+      expectedRanges = [{from: 1, to: 3}, {from: 6, to: 10}];
+      validateState([1, 2, 3, 6, 7, 8, 9, 10], expectedRanges, '', false);
+      pagesSection.setSetting('pagesPerSheet', 2);
+      validateState([1, 2, 3, 4], expectedRanges, '', false);
+      pagesSection.setSetting('pagesPerSheet', 3);
+      validateState([1, 2, 3], expectedRanges, '', false);
+
+      await setCustomInput('1-3');
+      expectedRanges = [{from: 1, to: 3}];
+      validateState([1], expectedRanges, '', false);
+      pagesSection.setSetting('pagesPerSheet', 1);
+      validateState([1, 2, 3], expectedRanges, '', false);
     });
 
+    // Note: Remaining tests in this file are interactive_ui_tests, and validate
+    // some focus related behavior.
     // Tests that the clearing a valid input has no effect, clearing an invalid
     // input does not show an error message but does not reset the preview, and
     // changing focus from an empty input in either case fills in the dropdown
     // with the full page range.
-    test(assert(TestNames.ClearInput), function() {
+    test(assert(TestNames.ClearInput), async () => {
+      pagesSection.pageCount = 3;
       const input = pagesSection.$.pageSettingsCustomInput.inputElement;
       const select = pagesSection.$$('select');
       const allValue = pagesSection.pagesValueEnum_.ALL.toString();
       const customValue = pagesSection.pagesValueEnum_.CUSTOM.toString();
       assertEquals(allValue, select.value);
-      return setupInput('1-2', 3)
-          .then(function() {
-            assertEquals(customValue, select.value);
-            validateState([1, 2], '', false);
-            return setupInput('', 3);
-          })
-          .then(function() {
-            assertEquals(customValue, select.value);
-            validateState([1, 2], '', false);
-            const whenBlurred = test_util.eventToPromise('blur', input);
-            input.blur();
-            return whenBlurred;
-          })
-          .then(function() {
-            // Blurring a blank field sets the full page range.
-            assertEquals(customValue, select.value);
-            validateState([1, 2, 3], '', false);
-            assertEquals('1-3', input.value);
-            return setupInput('5', 3);
-          })
-          .then(function() {
-            assertEquals(customValue, select.value);
-            // Invalid input doesn't change the preview.
-            validateState([1, 2, 3], limitError + '3', true);
-            return setupInput('', 3);
-          })
-          .then(function() {
-            assertEquals(customValue, select.value);
-            validateState([1, 2, 3], '', false);
-            const whenBlurred = test_util.eventToPromise('blur', input);
-            input.blur();
-            // Blurring an invalid value that has been cleared should reset the
-            // value to all pages.
-            return whenBlurred;
-          })
-          .then(function() {
-            assertEquals(customValue, select.value);
-            validateState([1, 2, 3], '', false);
-            assertEquals('1-3', input.value);
 
-            // Clear the input and then select "All" in the dropdown.
-            input.focus();
-            return setupInput('', 3);
-          })
-          .then(function() {
-            select.focus();
-            select.value = pagesSection.pagesValueEnum_.ALL.toString();
-            select.dispatchEvent(new CustomEvent('change'));
-            return test_util.eventToPromise(
-                'process-select-change', pagesSection);
-          })
-          .then(function() {
-            Polymer.dom.flush();
-            assertEquals(allValue, select.value);
-            validateState([1, 2, 3], '', false);
-            // Reselect custom.
-            select.value = pagesSection.pagesValueEnum_.CUSTOM.toString();
-            select.dispatchEvent(new CustomEvent('change'));
-            return test_util.eventToPromise('focus', input);
-          })
-          .then(function() {
-            // Input has been cleared.
-            assertEquals('', input.value);
-            validateState([1, 2, 3], '', false);
-          });
-    });
+      // Selecting custom focuses the input.
+      await Promise.all([
+        print_preview_test_utils.selectOption(pagesSection, customValue),
+        test_util.eventToPromise('focus', input)
+      ]);
+      input.focus();
 
-    test(assert(TestNames.ClickingCustomFocusesInput), function() {
-      const input = pagesSection.$.pageSettingsCustomInput.inputElement;
-      const radioGroup = pagesSection.$$('cr-radio-group');
-      assertEquals(pagesSection.pagesValueEnum_.ALL, radioGroup.selected);
+      await setCustomInput('1-2');
+      assertEquals(customValue, select.value);
+      validateState([1, 2], [{from: 1, to: 2}], '', false);
 
-      // Click the custom input and set a valid value.
-      return setupInput('1-2', 3)
-          .then(function() {
-            // Blur the custom input.
-            const whenCustomInputBlurred =
-                test_util.eventToPromise('blur', input);
-            input.blur();
-            Polymer.dom.flush();
-            return whenCustomInputBlurred;
-          })
-          .then(function() {
-            const whenCustomInputFocused =
-                test_util.eventToPromise('focus', input);
-            // Clicking the custom radio button should re-focus the input.
-            pagesSection.$.customRadioButton.click();
-            return whenCustomInputFocused;
-          });
+      await setCustomInput('');
+      assertEquals(customValue, select.value);
+      validateState([1, 2], [{from: 1, to: 2}], '', false);
+      let whenBlurred = test_util.eventToPromise('blur', input);
+      input.blur();
+
+      await whenBlurred;
+      // Blurring a blank field sets the full page range.
+      assertEquals(customValue, select.value);
+      validateState([1, 2, 3], [{from: 1, to: 3}], '', false);
+      assertEquals('1-3', input.value);
+      input.focus();
+
+      await setCustomInput('5');
+      assertEquals(customValue, select.value);
+      // Invalid input doesn't change the preview.
+      validateState([1, 2, 3], [{from: 1, to: 3}], limitError + '3', true);
+
+      await setCustomInput('');
+      assertEquals(customValue, select.value);
+      validateState([1, 2, 3], [{from: 1, to: 3}], '', false);
+      whenBlurred = test_util.eventToPromise('blur', input);
+      input.blur();
+
+      // Blurring an invalid value that has been cleared should reset the
+      // value to all pages.
+      await whenBlurred;
+      assertEquals(customValue, select.value);
+      validateState([1, 2, 3], [{from: 1, to: 3}], '', false);
+      assertEquals('1-3', input.value);
+
+      // Re-focus and clear the input and then select "All" in the
+      // dropdown.
+      input.focus();
+
+      await setCustomInput('', 3);
+      select.focus();
+
+      await print_preview_test_utils.selectOption(pagesSection, allValue);
+      Polymer.dom.flush();
+      assertEquals(allValue, select.value);
+      validateState([1, 2, 3], [], '', false);
+
+      // Reselect custom. This should focus the input.
+      await Promise.all([
+        print_preview_test_utils.selectOption(pagesSection, customValue),
+        test_util.eventToPromise('focus', input),
+      ]);
+      // Input has been cleared.
+      assertEquals('', input.value);
+      validateState([1, 2, 3], [], '', false);
     });
 
     // Verifies that the input is never disabled when the validity of the
     // setting changes.
-    test(assert(TestNames.InputNotDisabledOnValidityChange), function() {
+    test(assert(TestNames.InputNotDisabledOnValidityChange), async () => {
+      pagesSection.pageCount = 3;
       // In the real UI, the print preview app listens for this event from this
       // section and others and sets disabled to true if any change from true to
       // false is detected. Imitate this here. Since we are only interacting
@@ -358,80 +324,65 @@ cr.define('pages_settings_test', function() {
       });
 
       const input = pagesSection.$.pageSettingsCustomInput.inputElement;
+      await print_preview_test_utils.selectOption(
+          pagesSection, pagesSection.pagesValueEnum_.CUSTOM.toString());
+      await setCustomInput('1');
+      validateState([1], [{from: 1, to: 1}], '', false);
 
-      // Set a valid input
-      return setupInput('1', 3)
-          .then(function() {
-            validateState([1], '', false);
-            // Set invalid input
-            return setupInput('12', 3);
-          })
-          .then(function() {
-            validateState([1], limitError + '3', true);
-            // Restore valid input
-            return setupInput('1', 3);
-          })
-          .then(function() {
-            validateState([1], '', false);
-            // Invalid input again
-            return setupInput('8', 3);
-          })
-          .then(function() {
-            validateState([1], limitError + '3', true);
-            // Clear input
-            return setupInput('', 3);
-          })
-          .then(function() {
-            validateState([1], '', false);
-            // Set valid input
-            return setupInput('2', 3);
-          })
-          .then(function() {
-            validateState([2], '', false);
-          });
+      await setCustomInput('12');
+      validateState([1], [{from: 1, to: 1}], limitError + '3', true);
+
+      // Restore valid input
+      await setCustomInput('1');
+      validateState([1], [{from: 1, to: 1}], '', false);
+
+      // Invalid input again
+      await setCustomInput('8');
+      validateState([1], [{from: 1, to: 1}], limitError + '3', true);
+
+      // Clear input
+      await setCustomInput('');
+      validateState([1], [{from: 1, to: 1}], '', false);
+
+      // Set valid input
+      await setCustomInput('2');
+      validateState([2], [{from: 2, to: 2}], '', false);
     });
 
     // Verifies that the enter key event is bubbled to the pages settings
     // element, so that it will be bubbled to the print preview app to trigger a
     // print.
-    test(assert(TestNames.EnterOnInputTriggersPrint), function() {
+    test(assert(TestNames.EnterOnInputTriggersPrint), async () => {
       pagesSection.pageCount = 3;
       const input = pagesSection.$.pageSettingsCustomInput.inputElement;
       const whenPrintReceived =
           test_util.eventToPromise('keydown', pagesSection);
 
-      // Setup an empty input by clicking on the custom radio button.
+      // Setup an empty input by selecting custom..
       const customValue = pagesSection.pagesValueEnum_.CUSTOM.toString();
       const pagesSelect = pagesSection.$$('select');
-      pagesSelect.value = customValue;
-      pagesSelect.dispatchEvent(new CustomEvent('change'));
+      await Promise.all([
+        print_preview_test_utils.selectOption(pagesSection, customValue),
+        test_util.eventToPromise('focus', input)
+      ]);
+      assertEquals(customValue, pagesSelect.value);
+      MockInteractions.keyEventOn(input, 'keydown', 13, [], 'Enter');
 
-      const inputFocused = test_util.eventToPromise('focus', input);
-      return inputFocused
-          .then(function() {
-            assertEquals(customValue, pagesSelect.value);
-            MockInteractions.keyEventOn(input, 'keydown', 13, [], 'Enter');
-            return whenPrintReceived;
-          })
-          .then(function() {
-            // Keep custom selected, but pages to print should still be all.
-            assertEquals(customValue, pagesSelect.value);
-            assertEquals(3, pagesSection.getSetting('pages').value.length);
+      await whenPrintReceived;
+      // Keep custom selected, but pages to print should still be all.
+      assertEquals(customValue, pagesSelect.value);
+      validateState([1, 2, 3], [], '', false);
 
-            // Select a custom input of 1.
-            return setupInput('1', 3);
-          })
-          // Re-select custom and print again.
-          .then(function() {
-            assertEquals(customValue, pagesSelect.value);
-            const whenPrintReceived =
-                test_util.eventToPromise('keydown', pagesSection);
-            MockInteractions.keyEventOn(input, 'keydown', 13, [], 'Enter');
-            return whenPrintReceived;
-          })
-          .then(function() {
-            assertEquals(customValue, pagesSelect.value);
-          });
+      // Select a custom input of 1.
+      await setCustomInput('1');
+      assertEquals(customValue, pagesSelect.value);
+      const whenSecondPrintReceived =
+          test_util.eventToPromise('keydown', pagesSection);
+      MockInteractions.keyEventOn(input, 'keydown', 13, [], 'Enter');
+
+      await whenSecondPrintReceived;
+      assertEquals(customValue, pagesSelect.value);
+      validateState([1], [{from: 1, to: 1}], '', false);
     });
   });
 

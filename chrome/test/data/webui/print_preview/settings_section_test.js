@@ -24,7 +24,6 @@ cr.define('settings_sections_tests', function() {
     SetDpi: 'set dpi',
     SetMargins: 'set margins',
     SetPagesPerSheet: 'set pages per sheet',
-    SetScaling: 'set scaling',
     SetOther: 'set other',
     PresetCopies: 'preset copies',
     PresetDuplex: 'preset duplex',
@@ -570,93 +569,19 @@ cr.define('settings_sections_tests', function() {
       assertTrue(isSectionHidden(headerFooter));
     });
 
-    test(assert(TestNames.SetPages), function() {
-      initDocumentInfo(false, false);
-      const pagesElement = page.$$('print-preview-pages-settings');
-      // This section is always visible.
-      assertFalse(pagesElement.hidden);
-
-      // Default value is all pages. Print ticket expects this to be empty.
-      const pagesSelect = pagesElement.$$('select');
-      const customInputCollapse = pagesElement.$$('iron-collapse');
-      const pagesCrInput = pagesElement.$.pageSettingsCustomInput;
-      const pagesInput = pagesCrInput.inputElement;
-
-      /**
-       * @param {boolean} allSelected Whether the all pages option is selected.
-       * @param {string} inputString The expected string in the pages input.
-       * @param {boolean} valid Whether the input string is valid.
-       */
-      const validateInputState = function(allSelected, inputString, valid) {
-        assertEquals(allSelected, !customInputCollapse.opened);
-        assertEquals(
-            allSelected,
-            pagesSelect.value === pagesElement.pagesValueEnum_.ALL.toString());
-        assertEquals(inputString, pagesInput.value);
-        assertEquals(valid, !pagesCrInput.invalid);
-      };
-      validateInputState(true, '', true);
-      assertEquals(0, page.settings.ranges.value.length);
-      assertEquals(3, page.settings.pages.value.length);
-      assertTrue(page.settings.pages.valid);
-
-      // Set selection of pages 1 and 2.
-      pagesSelect.value = pagesElement.pagesValueEnum_.CUSTOM.toString();
-      pagesSelect.dispatchEvent(new CustomEvent('change'));
-
-      return test_util.eventToPromise('process-select-change', pagesElement)
-          .then(function() {
-            print_preview_test_utils.triggerInputEvent(pagesInput, '1-2');
-            return test_util.eventToPromise('input-change', pagesElement);
-          })
-          .then(function() {
-            validateInputState(false, '1-2', true);
-            assertEquals(1, page.settings.ranges.value.length);
-            assertEquals(1, page.settings.ranges.value[0].from);
-            assertEquals(2, page.settings.ranges.value[0].to);
-            assertEquals(2, page.settings.pages.value.length);
-            assertTrue(page.settings.pages.valid);
-
-            // Select pages 1 and 3
-            print_preview_test_utils.triggerInputEvent(pagesInput, '1, 3');
-            return test_util.eventToPromise('input-change', pagesElement);
-          })
-          .then(function() {
-            validateInputState(false, '1, 3', true);
-            assertEquals(2, page.settings.ranges.value.length);
-            assertEquals(1, page.settings.ranges.value[0].from);
-            assertEquals(1, page.settings.ranges.value[0].to);
-            assertEquals(3, page.settings.ranges.value[1].from);
-            assertEquals(3, page.settings.ranges.value[1].to);
-            assertEquals(2, page.settings.pages.value.length);
-            assertTrue(page.settings.pages.valid);
-
-            // Enter an out of bounds value.
-            print_preview_test_utils.triggerInputEvent(pagesInput, '5');
-            return test_util.eventToPromise('input-change', pagesElement);
-          })
-          .then(function() {
-            // Now the pages settings value should be invalid, and the error
-            // message should be displayed.
-            validateInputState(false, '5', false);
-            assertFalse(page.settings.pages.valid);
-          });
-    });
-
     test(assert(TestNames.SetCopies), function() {
       const copiesElement = page.$$('print-preview-copies-settings');
       assertFalse(copiesElement.hidden);
 
       // Default value is 1
       const copiesInput =
-          copiesElement.$$('print-preview-number-settings-section')
-              .$.userValue.inputElement;
+          copiesElement.$$('print-preview-number-settings-section').getInput();
       assertEquals('1', copiesInput.value);
       assertEquals(1, page.settings.copies.value);
 
       // Change to 2
-      print_preview_test_utils.triggerInputEvent(copiesInput, '2');
-      return test_util.eventToPromise('input-change', copiesElement)
+      return print_preview_test_utils
+          .triggerInputEvent(copiesInput, '2', copiesElement)
           .then(function() {
             assertEquals(2, page.settings.copies.value);
 
@@ -672,8 +597,8 @@ cr.define('settings_sections_tests', function() {
             assertFalse(page.settings.collate.value);
 
             // Set an empty value.
-            print_preview_test_utils.triggerInputEvent(copiesInput, '');
-            return test_util.eventToPromise('input-change', copiesElement);
+            return print_preview_test_utils.triggerInputEvent(
+                copiesInput, '', copiesElement);
           })
           .then(function() {
             // Collate should be hidden now, but no update to the backing value
@@ -692,8 +617,8 @@ cr.define('settings_sections_tests', function() {
             assertEquals(1, page.settings.copies.value);
 
             // Enter an invalid value.
-            print_preview_test_utils.triggerInputEvent(copiesInput, '0');
-            return test_util.eventToPromise('input-change', copiesElement);
+            return print_preview_test_utils.triggerInputEvent(
+                copiesInput, '0', copiesElement);
           })
           .then(function() {
             // Collate should be hidden. Value is not updated to the invalid
@@ -714,9 +639,7 @@ cr.define('settings_sections_tests', function() {
       assertFalse(page.settings.layout.value);
 
       // Change to landscape
-      layoutInput.value = 'landscape';
-      layoutInput.dispatchEvent(new CustomEvent('change'));
-      return test_util.eventToPromise('process-select-change', layoutElement)
+      return print_preview_test_utils.selectOption(layoutElement, 'landscape')
           .then(function() {
             assertTrue(page.settings.layout.value);
           });
@@ -732,9 +655,7 @@ cr.define('settings_sections_tests', function() {
       assertTrue(page.settings.color.value);
 
       // Change to black and white.
-      colorInput.value = 'bw';
-      colorInput.dispatchEvent(new CustomEvent('change'));
-      return test_util.eventToPromise('process-select-change', colorElement)
+      return print_preview_test_utils.selectOption(colorElement, 'bw')
           .then(function() {
             assertFalse(page.settings.color.value);
           });
@@ -751,16 +672,13 @@ cr.define('settings_sections_tests', function() {
       const squareOption = JSON.stringify(mediaSizeCapabilities.option[1]);
 
       // Default is letter
-      const mediaSizeInput =
-          mediaSizeElement.$$('print-preview-settings-select').$$('select');
-      assertEquals(letterOption, mediaSizeInput.value);
+      const settingsSelect =
+          mediaSizeElement.$$('print-preview-settings-select');
+      assertEquals(letterOption, settingsSelect.$$('select').value);
       assertEquals(letterOption, JSON.stringify(page.settings.mediaSize.value));
 
       // Change to square
-      mediaSizeInput.value = squareOption;
-      mediaSizeInput.dispatchEvent(new CustomEvent('change'));
-
-      return test_util.eventToPromise('process-select-change', mediaSizeElement)
+      return print_preview_test_utils.selectOption(settingsSelect, squareOption)
           .then(function() {
             assertEquals(
                 squareOption, JSON.stringify(page.settings.mediaSize.value));
@@ -796,25 +714,25 @@ cr.define('settings_sections_tests', function() {
       const lowQualityOption = dpiCapabilities.option[1];
 
       // Default is 200
-      const dpiInput =
-          dpiElement.$$('print-preview-settings-select').$$('select');
+      const settingsSelect = dpiElement.$$('print-preview-settings-select');
       const isDpiEqual = function(value1, value2) {
         return value1.horizontal_dpi == value2.horizontal_dpi &&
             value1.vertical_dpi == value2.vertical_dpi &&
             value1.vendor_id == value2.vendor_id;
       };
-      expectTrue(isDpiEqual(highQualityOption, JSON.parse(dpiInput.value)));
+      expectTrue(isDpiEqual(
+          highQualityOption, JSON.parse(settingsSelect.$$('select').value)));
       expectTrue(isDpiEqual(highQualityOption, page.settings.dpi.value));
 
       // Change to 100
-      dpiInput.value =
-          JSON.stringify(dpiElement.capabilityWithLabels_.option[1]);
-      dpiInput.dispatchEvent(new CustomEvent('change'));
-
-      return test_util.eventToPromise('process-select-change', dpiElement)
+      return print_preview_test_utils
+          .selectOption(
+              settingsSelect,
+              JSON.stringify(dpiElement.capabilityWithLabels_.option[1]))
           .then(function() {
             expectTrue(isDpiEqual(
-                lowQualityOption, JSON.parse(dpiInput.value)));
+                lowQualityOption,
+                JSON.parse(settingsSelect.$$('select').value)));
             expectTrue(isDpiEqual(lowQualityOption, page.settings.dpi.value));
 
             // Set to the setting to an option that is not supported by the
@@ -850,10 +768,10 @@ cr.define('settings_sections_tests', function() {
           page.settings.margins.value);
 
       // Change to minimum.
-      marginsInput.value =
-          print_preview.ticket_items.MarginsTypeValue.MINIMUM.toString();
-      marginsInput.dispatchEvent(new CustomEvent('change'));
-      return test_util.eventToPromise('process-select-change', marginsElement)
+      return print_preview_test_utils
+          .selectOption(
+              marginsElement,
+              print_preview.ticket_items.MarginsTypeValue.MINIMUM.toString())
           .then(function() {
             assertEquals(
                 print_preview.ticket_items.MarginsTypeValue.MINIMUM,
@@ -867,14 +785,10 @@ cr.define('settings_sections_tests', function() {
           page.$$('print-preview-pages-per-sheet-settings');
       assertFalse(pagesPerSheetElement.hidden);
 
-      const pagesPerSheetInput = pagesPerSheetElement.$$('select');
-      assertEquals(1, page.settings.pagesPerSheet.value);
+      assertEquals('1', pagesPerSheetElement.$$('select').value);
 
-      // Change to a different value.
-      pagesPerSheetInput.value = 2;
-      pagesPerSheetInput.dispatchEvent(new CustomEvent('change'));
-      return test_util
-          .eventToPromise('process-select-change', pagesPerSheetElement)
+      // Change to a different value
+      return print_preview_test_utils.selectOption(pagesPerSheetElement, '2')
           .then(function() {
             assertEquals(2, page.settings.pagesPerSheet.value);
           });
@@ -902,17 +816,14 @@ cr.define('settings_sections_tests', function() {
       assertEquals(marginsTypeEnum.DEFAULT, page.settings.margins.value);
 
       // Change margins to minimum.
-      marginsInput.value = marginsTypeEnum.MINIMUM.toString();
-      marginsInput.dispatchEvent(new CustomEvent('change'));
-      return test_util.eventToPromise('process-select-change', marginsElement)
+      return print_preview_test_utils
+          .selectOption(marginsElement, marginsTypeEnum.MINIMUM.toString())
           .then(function() {
             assertEquals(marginsTypeEnum.MINIMUM, page.settings.margins.value);
             assertFalse(marginsInput.disabled);
             // Change pages per sheet to a different value.
-            pagesPerSheetInput.value = 2;
-            pagesPerSheetInput.dispatchEvent(new CustomEvent('change'));
-            return test_util.eventToPromise(
-                'process-select-change', pagesPerSheetElement);
+            return print_preview_test_utils.selectOption(
+                pagesPerSheetElement, '2');
           })
           .then(function() {
             assertEquals(2, page.settings.pagesPerSheet.value);
@@ -922,10 +833,8 @@ cr.define('settings_sections_tests', function() {
             assertTrue(marginsInput.disabled);
 
             // Set pages per sheet back to 1.
-            pagesPerSheetInput.value = 1;
-            pagesPerSheetInput.dispatchEvent(new CustomEvent('change'));
-            return test_util.eventToPromise(
-                'process-select-change', pagesPerSheetElement);
+            return print_preview_test_utils.selectOption(
+                pagesPerSheetElement, '1');
           })
           .then(function() {
             assertEquals(1, page.settings.pagesPerSheet.value);
@@ -933,157 +842,6 @@ cr.define('settings_sections_tests', function() {
             assertEquals(
                 marginsTypeEnum.DEFAULT.toString(), marginsInput.value);
             assertFalse(marginsInput.disabled);
-          });
-    });
-
-    test(assert(TestNames.SetScaling), function() {
-      toggleMoreSettings();
-      const scalingElement = page.$$('print-preview-scaling-settings');
-
-      // Default is 100
-      const scalingInput =
-          scalingElement.$$('print-preview-number-settings-section')
-              .$.userValue.inputElement;
-      const collapse = scalingElement.$$('iron-collapse');
-      const scalingDropdown = scalingElement.$$('.md-select');
-
-      /**
-       * @param {boolean} isCustom Whether custom scaling is selected.
-       * @param {string} scalingValue The value of the scaling setting.
-       * @param {string} scalingDisplayValue The value displayed in the scaling
-       *     input.
-       * @param {boolean} scalingValid Whether the scaling setting is valid.
-       * @param {boolean} fitToPage Whether fit to page is selected.
-       */
-      const validateScalingState =
-          (isCustom, scalingValue, scalingDisplayValue, scalingValid,
-           fitToPage) => {
-            if (fitToPage) {
-              assertEquals(
-                  scalingElement.scalingValueEnum_.FIT_TO_PAGE.toString(),
-                  scalingDropdown.value);
-            } else if (isCustom) {
-              assertEquals(
-                  scalingElement.scalingValueEnum_.CUSTOM.toString(),
-                  scalingDropdown.value);
-            } else {
-              assertEquals(
-                  scalingElement.scalingValueEnum_.DEFAULT.toString(),
-                  scalingDropdown.value);
-            }
-            assertEquals(isCustom && !fitToPage, collapse.opened);
-            assertEquals(scalingDisplayValue, scalingInput.value);
-            assertEquals(scalingValue, page.settings.scaling.value);
-            assertEquals(scalingValid, page.settings.scaling.valid);
-            assertEquals(fitToPage, page.settings.fitToPage.value);
-            assertEquals(isCustom, page.settings.customScaling.value);
-          };
-
-      // Set PDF so both scaling and fit to page are active.
-      initDocumentInfo(true, false);
-      assertFalse(scalingElement.hidden);
-
-      // Default is 100
-      validateScalingState(false, '100', '100', true, false);
-
-      // Select custom
-      scalingDropdown.value =
-          scalingElement.scalingValueEnum_.CUSTOM.toString();
-      scalingDropdown.dispatchEvent(new CustomEvent('change'));
-      return test_util.eventToPromise('process-select-change', scalingElement)
-          .then(function() {
-            validateScalingState(true, '100', '100', true, false);
-
-            print_preview_test_utils.triggerInputEvent(scalingInput, '105');
-            return test_util.eventToPromise('input-change', scalingElement);
-          })
-          .then(function() {
-            validateScalingState(true, '105', '105', true, false);
-
-            // Change to fit to page.
-            scalingDropdown.value =
-                scalingElement.scalingValueEnum_.FIT_TO_PAGE.toString();
-            scalingDropdown.dispatchEvent(new CustomEvent('change'));
-            return test_util.eventToPromise(
-                'process-select-change', scalingElement);
-          })
-          .then(function(event) {
-            validateScalingState(true, '105', '105', true, true);
-
-            // Go back to custom. Restores 105 value.
-            scalingDropdown.value =
-                scalingElement.scalingValueEnum_.CUSTOM.toString();
-            scalingDropdown.dispatchEvent(new CustomEvent('change'));
-            return test_util.eventToPromise(
-                'process-select-change', scalingElement);
-          })
-          .then(function() {
-            validateScalingState(true, '105', '105', true, false);
-
-            // Set scaling to something invalid. Should change setting validity
-            // but not value.
-            print_preview_test_utils.triggerInputEvent(scalingInput, '5');
-            return test_util.eventToPromise('input-change', scalingElement);
-          })
-          .then(function() {
-            validateScalingState(true, '105', '5', false, false);
-
-            // Select fit to page. Should clear the invalid value.
-            scalingDropdown.value =
-                scalingElement.scalingValueEnum_.FIT_TO_PAGE.toString();
-            scalingDropdown.dispatchEvent(new CustomEvent('change'));
-            return test_util.eventToPromise(
-                'process-select-change', scalingElement);
-          })
-          .then(function(event) {
-            validateScalingState(true, '105', '105', true, true);
-
-            // Custom scaling should set to last valid.
-            scalingDropdown.value =
-                scalingElement.scalingValueEnum_.CUSTOM.toString();
-            scalingDropdown.dispatchEvent(new CustomEvent('change'));
-            return test_util.eventToPromise(
-                'process-select-change', scalingElement);
-          })
-          .then(function(event) {
-            validateScalingState(true, '105', '105', true, false);
-
-            // Set scaling to something invalid. Should change setting validity
-            // but not value.
-            print_preview_test_utils.triggerInputEvent(scalingInput, '500');
-            return test_util.eventToPromise('input-change', scalingElement);
-          })
-          .then(function() {
-            validateScalingState(true, '105', '500', false, false);
-
-            // Pick default scaling. This should clear the error.
-            scalingDropdown.value =
-                scalingElement.scalingValueEnum_.DEFAULT.toString();
-            scalingDropdown.dispatchEvent(new CustomEvent('change'));
-            return test_util.eventToPromise(
-                'process-select-change', scalingElement);
-          })
-          .then(function(event) {
-            validateScalingState(false, '105', '105', true, false);
-
-            // Custom scaling should set to last valid.
-            scalingDropdown.value =
-                scalingElement.scalingValueEnum_.CUSTOM.toString();
-            scalingDropdown.dispatchEvent(new CustomEvent('change'));
-            return test_util.eventToPromise(
-                'process-select-change', scalingElement);
-          })
-          .then(function() {
-            validateScalingState(true, '105', '105', true, false);
-
-            // Enter a blank value in the scaling field. This should not
-            // change the stored value of scaling or fit to page, to avoid an
-            // unnecessary preview regeneration.
-            print_preview_test_utils.triggerInputEvent(scalingInput, '');
-            return test_util.eventToPromise('input-change', scalingElement);
-          })
-          .then(function() {
-            validateScalingState(true, '105', '', true, false);
           });
     });
 

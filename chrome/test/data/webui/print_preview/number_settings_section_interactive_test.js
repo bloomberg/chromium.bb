@@ -28,41 +28,37 @@ cr.define('number_settings_section_interactive_test', function() {
 
     // Verifies that blurring the input will reset it to the default if it is
     // empty, but not if it contains an invalid value.
-    test(assert(TestNames.BlurResetsEmptyInput), function() {
+    test(assert(TestNames.BlurResetsEmptyInput), async () => {
       // Initial value is 10.
       const crInput = numberSettings.getInput();
       const input = crInput.inputElement;
       assertEquals('10', input.value);
 
       // Set something invalid in the input.
-      const whenFocused = test_util.eventToPromise('focus', input);
       input.focus();
-      print_preview_test_utils.triggerInputEvent(input, '0');
-      return test_util.eventToPromise('input-change', numberSettings)
-          .then(() => {
-            assertEquals('0', input.value);
-            assertTrue(crInput.invalid);
+      await print_preview_test_utils.triggerInputEvent(
+          input, '0', numberSettings);
+      assertEquals('0', input.value);
+      assertTrue(crInput.invalid);
 
-            // Blurring the input does not clear it or clear the error if there
-            // is an explicit invalid value.
-            input.blur();
-            assertEquals('0', input.value);
-            assertTrue(crInput.invalid);
+      // Blurring the input does not clear it or clear the error if there
+      // is an explicit invalid value.
+      input.blur();
+      assertEquals('0', input.value);
+      assertTrue(crInput.invalid);
 
-            // Clear the input.
-            input.focus();
-            print_preview_test_utils.triggerInputEvent(input, '');
-            return test_util.eventToPromise('input-change', numberSettings);
-          })
-          .then(() => {
-            assertEquals('', input.value);
-            assertFalse(crInput.invalid);
+      // Clear the input.
+      input.focus();
 
-            // Blurring the input clears it to the default when it is empty.
-            input.blur();
-            assertEquals('50', input.value);
-            assertFalse(crInput.invalid);
-          });
+      await print_preview_test_utils.triggerInputEvent(
+          input, '', numberSettings);
+      assertEquals('', input.value);
+      assertFalse(crInput.invalid);
+
+      // Blurring the input clears it to the default when it is empty.
+      input.blur();
+      assertEquals('50', input.value);
+      assertFalse(crInput.invalid);
     });
   });
 

@@ -288,13 +288,18 @@ cr.define('print_preview_test_utils', function() {
   }
 
   /**
-   * @param {!HTMLInputElement} element
+   * @param {!HTMLInputElement} inputElement
    * @param {!string} input The value to set for the input element.
+   * @param {!HTMLElement} parentElement The element that receives the
+   *     input-change event.
+   * @return {!Promise} Promise that resolves when the input-change event has
+   *     fired.
    */
-  function triggerInputEvent(element, input) {
-    element.value = input;
-    element.dispatchEvent(
+  function triggerInputEvent(inputElement, input, parentElement) {
+    inputElement.value = input;
+    inputElement.dispatchEvent(
         new CustomEvent('input', {composed: true, bubbles: true}));
+    return test_util.eventToPromise('input-change', parentElement);
   }
 
   function setupTestListenerElement() {
@@ -340,6 +345,20 @@ cr.define('print_preview_test_utils', function() {
         print_preview.DestinationConnectionStatus.ONLINE);
   }
 
+  /**
+   * @param {!HTMLElement} section The settings section that contains the
+   *    select to toggle.
+   * @param {string} option The option to select.
+   * @return {!Promise} Promise that resolves when the option has been
+   *     selected and the process-select-change event has fired.
+   */
+  function selectOption(section, option) {
+    const select = section.$$('select');
+    select.value = option;
+    select.dispatchEvent(new CustomEvent('change'));
+    return test_util.eventToPromise('process-select-change', section);
+  }
+
   return {
     createDestinationStore: createDestinationStore,
     createDestinationWithCertificateStatus:
@@ -355,6 +374,7 @@ cr.define('print_preview_test_utils', function() {
         getMediaSizeCapabilityWithCustomNames,
     getPdfPrinter: getPdfPrinter,
     getSaveAsPdfDestination: getSaveAsPdfDestination,
+    selectOption: selectOption,
     setupTestListenerElement: setupTestListenerElement,
     triggerInputEvent: triggerInputEvent,
   };
