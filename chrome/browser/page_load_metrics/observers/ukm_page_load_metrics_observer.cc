@@ -19,7 +19,6 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
 // static
@@ -418,11 +417,6 @@ void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(
 
 void UkmPageLoadMetricsObserver::ReportLayoutStability(
     const page_load_metrics::PageLoadExtraInfo& info) {
-  // Avoid reporting when the feature is disabled. This ensures that a report
-  // with score == 0 only occurs for a page that was actually jank-free.
-  if (!base::FeatureList::IsEnabled(blink::features::kJankTracking))
-    return;
-
   // Report (jank_score * 100) as an int in the range [0, 1000].
   float jank_score = info.main_frame_render_data.layout_jank_score;
   int64_t ukm_value =

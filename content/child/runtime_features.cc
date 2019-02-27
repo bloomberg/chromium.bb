@@ -466,11 +466,9 @@ void SetIndividualRuntimeFeatures(
 
   // TODO(yashard): Remove |enable_experimental_web_platform_features| flag
   // since the feature should have been enabled when it is set to experimental
-  WebRuntimeFeatures::EnableJankTracking(
-      base::FeatureList::IsEnabled(blink::features::kJankTracking) ||
-          enable_experimental_web_platform_features,
+  WebRuntimeFeatures::EnableJankTrackingSweepLine(
       base::FeatureList::IsEnabled(blink::features::kJankTrackingSweepLine) ||
-          enable_experimental_web_platform_features);
+      enable_experimental_web_platform_features);
 
   WebRuntimeFeatures::EnableFirstContentfulPaintPlusPlus(
       base::FeatureList::IsEnabled(

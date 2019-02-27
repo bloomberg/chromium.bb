@@ -37,11 +37,8 @@ const base::Feature kScriptStreaming{"ScriptStreaming",
 const base::Feature kFirstContentfulPaintPlusPlus{
     "FirstContentfulPaintPlusPlus", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Tracks "jank" from layout objects changing their visual location between
-// animation frames (see crbug.com/581518).
-const base::Feature kJankTracking{"JankTracking",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
-
+// Enables the experimental sweep-line algorithm for tracking "jank" from
+// layout objects changing their visual location between animation frames.
 const base::Feature kJankTrackingSweepLine{"JankTrackingSweepLine",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
