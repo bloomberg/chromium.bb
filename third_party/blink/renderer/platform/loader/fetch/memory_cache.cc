@@ -431,9 +431,14 @@ bool MemoryCache::OnMemoryDump(WebMemoryDumpLevelOfDetail level_of_detail,
     WebMemoryAllocatorDump* dump6 =
         memory_dump->CreateMemoryAllocatorDump("web_cache/Code_cache");
     dump6->AddScalar("size", "bytes", stats.scripts.code_cache_size);
-    WebMemoryAllocatorDump* dump7 =
-        memory_dump->CreateMemoryAllocatorDump("web_cache/Other_resources");
+    WebMemoryAllocatorDump* dump7 = memory_dump->CreateMemoryAllocatorDump(
+        "web_cache/Encoded_size_duplicated_in_data_urls");
     dump7->AddScalar("size", "bytes",
+                     stats.other.encoded_size +
+                         stats.other.encoded_size_duplicated_in_data_urls);
+    WebMemoryAllocatorDump* dump8 =
+        memory_dump->CreateMemoryAllocatorDump("web_cache/Other_resources");
+    dump8->AddScalar("size", "bytes",
                      stats.other.encoded_size + stats.other.overhead_size);
     return true;
   }
