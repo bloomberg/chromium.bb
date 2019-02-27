@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "net/http/http_response_info.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "ui/base/page_transition_types.h"
 
@@ -133,6 +134,9 @@ class UkmPageLoadMetricsObserver
 
   // The browser context this navigation is operating in.
   content::BrowserContext* browser_context_ = nullptr;
+
+  // The connection info for the committed URL.
+  base::Optional<net::HttpResponseInfo::ConnectionInfo> connection_info_;
 
   DISALLOW_COPY_AND_ASSIGN(UkmPageLoadMetricsObserver);
 };
