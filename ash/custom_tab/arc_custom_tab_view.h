@@ -44,7 +44,7 @@ class ArcCustomTabView : public views::View, public mojom::ArcCustomTabView {
   void ConvertPointFromWindow(aura::Window* window, gfx::Point* point);
 
   mojo::Binding<mojom::ArcCustomTabView> binding_;
-  std::unique_ptr<ws::ServerRemoteViewHost> remote_view_host_;
+  ws::ServerRemoteViewHost* remote_view_host_;
   int32_t surface_id_, top_margin_;
   base::WeakPtrFactory<ArcCustomTabView> weak_ptr_factory_;
 

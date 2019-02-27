@@ -121,7 +121,7 @@ ArcCustomTabView::ArcCustomTabView(int32_t surface_id, int32_t top_margin)
       surface_id_(surface_id),
       top_margin_(top_margin),
       weak_ptr_factory_(this) {
-  AddChildView(remote_view_host_.get());
+  AddChildView(remote_view_host_);
 }
 
 ArcCustomTabView::~ArcCustomTabView() = default;
