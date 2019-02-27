@@ -7,16 +7,15 @@
 #include <utility>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/printing/device_external_printers_factory.h"
-#include "chrome/browser/chromeos/printing/external_printers.h"
+#include "chrome/browser/chromeos/printing/bulk_printers_calculator_factory.h"
 #include "components/policy/policy_constants.h"
 
 namespace policy {
 
 namespace {
 
-base::WeakPtr<chromeos::ExternalPrinters> GetExternalPrinters() {
-  return chromeos::DeviceExternalPrintersFactory::Get()->GetForDevice();
+base::WeakPtr<chromeos::BulkPrintersCalculator> GetBulkPrintersCalculator() {
+  return chromeos::BulkPrintersCalculatorFactory::Get()->GetForDevice();
 }
 
 }  // namespace
@@ -33,25 +32,25 @@ DeviceNativePrintersHandler::~DeviceNativePrintersHandler() {}
 
 void DeviceNativePrintersHandler::OnDeviceExternalDataSet(
     const std::string& policy) {
-  GetExternalPrinters()->ClearData();
+  GetBulkPrintersCalculator()->ClearData();
 }
 
 void DeviceNativePrintersHandler::OnDeviceExternalDataCleared(
     const std::string& policy) {
-  GetExternalPrinters()->ClearData();
+  GetBulkPrintersCalculator()->ClearData();
 }
 
 void DeviceNativePrintersHandler::OnDeviceExternalDataFetched(
     const std::string& policy,
     std::unique_ptr<std::string> data,
     const base::FilePath& file_path) {
-  GetExternalPrinters()->SetData(std::move(data));
+  GetBulkPrintersCalculator()->SetData(std::move(data));
 }
 
 void DeviceNativePrintersHandler::Shutdown() {
   if (device_native_printers_observer_)
     device_native_printers_observer_.reset();
-  chromeos::DeviceExternalPrintersFactory::Get()->Shutdown();
+  chromeos::BulkPrintersCalculatorFactory::Get()->Shutdown();
 }
 
 }  // namespace policy
