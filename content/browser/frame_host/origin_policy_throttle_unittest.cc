@@ -120,7 +120,8 @@ TEST_P(OriginPolicyThrottleTest, RunRequestEndToEnd) {
 
   // Fake a response with a policy header. Check whether the navigation
   // is deferred.
-  const char* raw_headers = "HTTP/1.1 200 OK\nSec-Origin-Policy: policy-1\n\n";
+  const char* raw_headers =
+      "HTTP/1.1 200 OK\nSec-Origin-Policy: policy=policy-1\n\n";
   scoped_refptr<net::HttpResponseHeaders> headers =
       new net::HttpResponseHeaders(
           net::HttpUtil::AssembleRawHeaders(raw_headers, strlen(raw_headers)));
@@ -176,7 +177,8 @@ TEST_P(OriginPolicyThrottleTest, AddExceptionEndToEnd) {
             navigation->GetLastThrottleCheckResult().action());
 
   // Fake a response with a policy header.
-  const char* raw_headers = "HTTP/1.1 200 OK\nSec-Origin-Policy: policy-1\n\n";
+  const char* raw_headers =
+      "HTTP/1.1 200 OK\nSec-Origin-Policy: policy=policy-1\n\n";
   scoped_refptr<net::HttpResponseHeaders> headers =
       new net::HttpResponseHeaders(
           net::HttpUtil::AssembleRawHeaders(raw_headers, strlen(raw_headers)));
@@ -193,6 +195,72 @@ TEST_P(OriginPolicyThrottleTest, AddExceptionEndToEnd) {
   OriginPolicyThrottle::ShouldRequestOriginPolicy(
       GURL("https://example.org/bla"), &version);
   EXPECT_EQ(version, "0");
+}
+
+TEST(OriginPolicyThrottleTest, ParseHeaders) {
+  const struct {
+    const char* header;
+    const char* policy_version;
+    const char* report_to;
+  } testcases[] = {
+      // The common cases: We expect >99% of headers to look like these:
+      {"policy=policy", "policy", ""},
+      {"policy=policy, report-to=endpoint", "policy", "endpoint"},
+
+      // Delete a policy. This better work.
+      {"0", "0", ""},
+      {"policy=0", "0", ""},
+      {"policy=\"0\"", "0", ""},
+      {"policy=0, report-to=endpoint", "0", "endpoint"},
+
+      // Order, please!
+      {"policy=policy, report-to=endpoint", "policy", "endpoint"},
+      {"report-to=endpoint, policy=policy", "policy", "endpoint"},
+
+      // Quoting:
+      {"policy=\"policy\"", "policy", ""},
+      {"policy=\"policy\", report-to=endpoint", "policy", "endpoint"},
+      {"policy=\"policy\", report-to=\"endpoint\"", "policy", "endpoint"},
+      {"policy=policy, report-to=\"endpoint\"", "policy", "endpoint"},
+
+      // Whitespace, and funky but valid syntax:
+      {"  policy  =   policy  ", "policy", ""},
+      {" policy = \t policy ", "policy", ""},
+      {" policy \t= \t \"policy\"  ", "policy", ""},
+      {" policy = \" policy \" ", "policy", ""},
+      {" , policy = policy , report-to=endpoint , ", "policy", "endpoint"},
+
+      // Valid policy, invalid report-to:
+      {"policy=policy, report-to endpoint", "", ""},
+      {"policy=policy, report-to=here, report-to=there", "", ""},
+      {"policy=policy, \"report-to\"=endpoint", "", ""},
+
+      // Invalid policy, valid report-to:
+      {"policy=policy1, policy=policy2", "", ""},
+      {"policy, report-to=r", "", ""},
+      {"report-to=endpoint", "", "endpoint"},
+
+      // Invalid everything:
+      {"one two three", "", ""},
+      {"one, two, three", "", ""},
+      {"policy report-to=endpoint", "", ""},
+      {"policy=policy report-to=endpoint", "", ""},
+
+      // Forward compatibility, ignore unknown keywords:
+      {"policy=pol, report-to=endpoint, unknown=keyword", "pol", "endpoint"},
+      {"unknown=keyword, policy=pol, report-to=endpoint", "pol", "endpoint"},
+      {"policy=pol, unknown=keyword", "pol", ""},
+      {"policy=policy, report_to=endpoint", "policy", ""},
+      {"policy=policy, reportto=endpoint", "policy", ""},
+  };
+  for (const auto& testcase : testcases) {
+    SCOPED_TRACE(testcase.header);
+    const auto result = OriginPolicyThrottle::
+        GetRequestedPolicyAndReportGroupFromHeaderStringForTesting(
+            testcase.header);
+    EXPECT_EQ(result.policy_version, testcase.policy_version);
+    EXPECT_EQ(result.report_to, testcase.report_to);
+  }
 }
 
 }  // namespace content
