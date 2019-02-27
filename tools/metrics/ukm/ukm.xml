@@ -3385,6 +3385,12 @@ be describing additional metrics about the same event.
       Measure of memory consumed by CSS Stylesheet resources in Blink Web Cache.
     </summary>
   </metric>
+  <metric name="WebCache.EncodedSizeDuplicatedInDataUrls">
+    <summary>
+      Measure of memory consumed by data URLs of Image resources in Blink Web
+      Cache.
+    </summary>
+  </metric>
   <metric name="WebCache.FontResources">
     <summary>
       Measure of memory consumed by Font resources in Blink Web Cache.
