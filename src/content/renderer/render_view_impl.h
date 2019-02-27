@@ -260,6 +260,8 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void DidFocus(blink::WebLocalFrame* calling_frame) override;
   bool CanHandleGestureEvent() override;
   blink::WebWidgetClient* WidgetClient() override;
+  void setRubberbandRect(const blink::WebRect&) override;
+  void hideRubberbandRect() override;
 
 #if defined(OS_ANDROID)
   // Only used on Android since all other platforms implement
@@ -470,6 +472,8 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void OnUpdateTargetURLAck();
   void OnUpdateWebPreferences(const WebPreferences& prefs);
   void OnSetPageScale(float page_scale_factor);
+  void OnForceRedraw(const ui::LatencyInfo& latency_info);
+  void OnEnableAltDragRubberbanding(bool enable);
   void OnSelectWordAroundCaret();
   void OnAudioStateChanged(bool is_audio_playing);
   void OnPausePageScheduledTasks(bool paused);

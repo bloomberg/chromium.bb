@@ -397,6 +397,10 @@ IPC_MESSAGE_ROUTED1(ViewMsg_PpapiBrokerPermissionResult,
                     bool /* result */)
 #endif
 
+// Tells the renderer to enable/disable alt-mousedrag rubberbanding.
+IPC_MESSAGE_ROUTED1(ViewMsg_EnableAltDragRubberbanding,
+                    bool /* enable */)
+
 IPC_MESSAGE_ROUTED0(ViewMsg_SelectWordAroundCaret)
 
 // Sent by the browser to ask the renderer to redraw. Robust to events that can
@@ -603,6 +607,13 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_IntrinsicSizingInfoChanged,
 // whenever the mouse is unlocked (which may or may not be caused by
 // ViewHostMsg_UnlockMouse).
 IPC_MESSAGE_ROUTED0(ViewHostMsg_UnlockMouse)
+
+// Instructs the browser to draw the rubberband rect.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_SetRubberbandRect,
+                    gfx::Rect /* rect */)
+
+// Instructs the browser to stop drawing the rubberband rect.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_HideRubberbandRect)
 
 // Message sent from renderer to the browser when the element that is focused
 // has been touched. A bool is passed in this message which indicates if the

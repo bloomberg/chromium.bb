@@ -110,6 +110,9 @@ interface WebViewHost {
     enableNCHitTest(bool enabled);
         // Enable/Disable non-client hit-testing.
 
+    enableAltDragRubberbanding(bool enabled);
+        // Enable/Disable Alt-Drag rubber banding
+
     find(int32 reqId, string text, bool matchCase, bool findNext, bool forward);
         // Send a request to find 'text' in the loaded document.  The host
         // is expected to respond by sending a 'findReply' message back to the
