@@ -167,6 +167,11 @@ class CHROMEOS_EXPORT AccountManager {
   // Note: This API is idempotent.
   void UpdateToken(const AccountKey& account_key, const std::string& token);
 
+  // Updates the email associated with |account_key|. The account must be known
+  // to Account Manager. See |UpsertAccount| for information about adding an
+  // account.
+  void UpdateEmail(const AccountKey& account_key, const std::string& raw_email);
+
   // Add a non owning pointer to an |AccountManager::Observer|.
   void AddObserver(Observer* observer);
 
@@ -267,6 +272,10 @@ class CHROMEOS_EXPORT AccountManager {
   // Assumes that |AccountManager| initialization (|init_state_|) is complete.
   void UpdateTokenInternal(const AccountKey& account_key,
                            const std::string& token);
+
+  // Assumes that |AccountManager| initialization (|init_state_|) is complete.
+  void UpdateEmailInternal(const AccountKey& account_key,
+                           const std::string& raw_email);
 
   // Does the actual work of upserting an account and performing related tasks
   // like revoking old tokens and informing observers. All account updates

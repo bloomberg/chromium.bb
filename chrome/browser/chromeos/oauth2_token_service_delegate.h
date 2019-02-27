@@ -22,8 +22,6 @@ class AccountTrackerService;
 
 namespace chromeos {
 
-class AccountMapperUtil;
-
 class ChromeOSOAuth2TokenServiceDelegate
     : public OAuth2TokenServiceDelegate,
       public AccountManager::Observer,
@@ -79,10 +77,6 @@ class ChromeOSOAuth2TokenServiceDelegate
 
   // Callback handler for |AccountManager::GetAccounts|.
   void OnGetAccounts(const std::vector<AccountManager::Account>& accounts);
-
-  // TODO(sinhak): Either remove |AccountMapperUtil| or move it to an anonymous
-  // namespace.
-  std::unique_ptr<AccountMapperUtil> account_mapper_util_;
 
   // A non-owning pointer.
   AccountTrackerService* const account_tracker_service_;
