@@ -1447,7 +1447,6 @@ void NavigationRequest::OnStartChecksComplete(
   bool can_create_service_worker =
       (frame_tree_node_->pending_frame_policy().sandbox_flags &
        blink::WebSandboxFlags::kOrigin) != blink::WebSandboxFlags::kOrigin;
-  commit_params_.should_create_service_worker = can_create_service_worker;
   if (can_create_service_worker) {
     ServiceWorkerContextWrapper* service_worker_context =
         static_cast<ServiceWorkerContextWrapper*>(

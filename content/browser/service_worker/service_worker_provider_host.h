@@ -112,10 +112,9 @@ FORWARD_DECLARE_TEST(ServiceWorkerDispatcherHostTest,
 // created on the renderer, which sends an OnProviderCreated IPC to establish
 // the Mojo connection.
 //
-// 2) For clients created by the renderer not due to navigations (shared workers
-// in the non-S13nServiceWorker case, and about:blank iframes), the provider
-// host is created and the Mojo connection is established when the provider is
-// created by the renderer process and sends an OnProviderCreated IPC.
+// 2) For shared workers in the non-S13nServiceWorker case, the provider host is
+// created and the Mojo connection is established when the provider is created
+// by the renderer process and sends an OnProviderCreated IPC.
 //
 // 3) For shared workers in the S13nServiceWorker case and for service workers,
 // the provider host is pre-created by the browser process, and information
