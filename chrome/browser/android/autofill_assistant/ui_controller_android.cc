@@ -515,8 +515,8 @@ void UiControllerAndroid::OnDetailsChanged(const Details* details) {
       proto.datetime().date().year(), proto.datetime().date().month(),
       proto.datetime().date().day(), proto.datetime().time().hour(),
       proto.datetime().time().minute(), proto.datetime().time().second(),
-      base::android::ConvertUTF8ToJavaString(env, proto.description_line1()),
-      base::android::ConvertUTF8ToJavaString(env, proto.description_line2()),
+      base::android::ConvertUTF8ToJavaString(env, proto.description_line_1()),
+      base::android::ConvertUTF8ToJavaString(env, proto.description_line_2()),
       changes.user_approval_required(), changes.highlight_title(),
       changes.highlight_line1(), changes.highlight_line2());
   Java_AssistantDetailsModel_setDetails(env, jmodel, jdetails);

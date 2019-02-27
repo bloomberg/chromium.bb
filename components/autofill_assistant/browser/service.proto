@@ -656,11 +656,11 @@ message DetailsProto {
   // in the client's locale (e.g., $123.00).
   optional string total_price = 6;
 
-  optional string description_line1 = 7;
-  optional string description_line2 = 8;
+  optional string description_line_1 = 7;
+  optional string description_line_2 = 8;
 
   // Deprecated, but currently still necessary and supported. We can get rid of
-  // these fields when the backend starts setting description_line1 and 2.
+  // these fields when the backend starts setting description_line_1 and 2.
   optional DateTimeProto datetime = 3;
   optional string description = 4;
 
