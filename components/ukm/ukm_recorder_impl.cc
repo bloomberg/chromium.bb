@@ -322,9 +322,8 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
 
     serialized_source_type_counts[GetSourceIdType(kv.first)]++;
   }
+
   for (const auto& event_and_aggregate : recordings_.event_aggregations) {
-    if (event_and_aggregate.second.metrics.empty())
-      continue;
     const EventAggregate& event_aggregate = event_and_aggregate.second;
     Aggregate* proto_aggregate = report->add_aggregates();
     proto_aggregate->set_source_id(0);  // Across all sources.
