@@ -632,12 +632,12 @@ void ToolbarView::InitLayout() {
   const views::FlexSpecification browser_actions_flex_rule =
       views::FlexSpecification::ForCustomRule(
           BrowserActionsContainer::GetFlexRule())
-          .WithOrder(1);
+          .WithOrder(2);
   const views::FlexSpecification location_bar_flex_rule =
       views::FlexSpecification::ForSizeRule(
           views::MinimumFlexSizeRule::kScaleToMinimum,
           views::MaximumFlexSizeRule::kUnbounded)
-          .WithOrder(2);
+          .WithOrder(1);
 
   layout_manager_ = SetLayoutManager(std::make_unique<views::FlexLayout>());
 
