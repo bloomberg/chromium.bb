@@ -386,37 +386,6 @@ void EmbeddedWorkerTestHelper::OnFetchEvent(
   OnFetchEventCommon(std::move(response_callback), std::move(finish_callback));
 }
 
-void EmbeddedWorkerTestHelper::OnAbortPaymentEvent(
-    payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-    blink::mojom::ServiceWorker::DispatchAbortPaymentEventCallback callback) {
-  response_callback->OnResponseForAbortPayment(true);
-  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
-}
-
-void EmbeddedWorkerTestHelper::OnCanMakePaymentEvent(
-    payments::mojom::CanMakePaymentEventDataPtr event_data,
-    payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-    blink::mojom::ServiceWorker::DispatchCanMakePaymentEventCallback callback) {
-  bool can_make_payment = false;
-  for (const auto& method_data : event_data->method_data) {
-    if (method_data->supported_method == "test-method") {
-      can_make_payment = true;
-      break;
-    }
-  }
-  response_callback->OnResponseForCanMakePayment(can_make_payment);
-  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
-}
-
-void EmbeddedWorkerTestHelper::OnPaymentRequestEvent(
-    payments::mojom::PaymentRequestEventDataPtr event_data,
-    payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-    blink::mojom::ServiceWorker::DispatchPaymentRequestEventCallback callback) {
-  response_callback->OnResponseForPaymentRequest(
-      payments::mojom::PaymentHandlerResponse::New());
-  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
-}
-
 void EmbeddedWorkerTestHelper::OnSetIdleTimerDelayToZero(
     int embedded_worker_id) {
   // Subclasses may implement this method.
@@ -488,37 +457,6 @@ void EmbeddedWorkerTestHelper::OnFetchEventStub(
                      embedded_worker_id, std::move(request),
                      std::move(preload_handle), std::move(response_callback),
                      std::move(finish_callback)));
-}
-
-void EmbeddedWorkerTestHelper::OnAbortPaymentEventStub(
-    payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-    blink::mojom::ServiceWorker::DispatchAbortPaymentEventCallback callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&EmbeddedWorkerTestHelper::OnAbortPaymentEvent,
-                                AsWeakPtr(), std::move(response_callback),
-                                std::move(callback)));
-}
-
-void EmbeddedWorkerTestHelper::OnCanMakePaymentEventStub(
-    payments::mojom::CanMakePaymentEventDataPtr event_data,
-    payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-    blink::mojom::ServiceWorker::DispatchCanMakePaymentEventCallback callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&EmbeddedWorkerTestHelper::OnCanMakePaymentEvent,
-                     AsWeakPtr(), std::move(event_data),
-                     std::move(response_callback), std::move(callback)));
-}
-
-void EmbeddedWorkerTestHelper::OnPaymentRequestEventStub(
-    payments::mojom::PaymentRequestEventDataPtr event_data,
-    payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
-    blink::mojom::ServiceWorker::DispatchPaymentRequestEventCallback callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&EmbeddedWorkerTestHelper::OnPaymentRequestEvent,
-                     AsWeakPtr(), std::move(event_data),
-                     std::move(response_callback), std::move(callback)));
 }
 
 EmbeddedWorkerRegistry* EmbeddedWorkerTestHelper::registry() {
