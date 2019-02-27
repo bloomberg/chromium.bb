@@ -109,8 +109,10 @@ class ImageRepPNG : public ImageRep {
   ImageRepPNG() : ImageRep(Image::kImageRepPNG) {
   }
 
-  explicit ImageRepPNG(const std::vector<ImagePNGRep>& image_png_reps)
-      : ImageRep(Image::kImageRepPNG), image_png_reps_(image_png_reps) {}
+  ImageRepPNG(const std::vector<ImagePNGRep>& image_png_reps)
+      : ImageRep(Image::kImageRepPNG),
+        image_png_reps_(image_png_reps) {
+  }
 
   ~ImageRepPNG() override {}
 
@@ -123,11 +125,11 @@ class ImageRepPNG : public ImageRep {
     if (!size_cache_) {
       for (auto it = image_reps().begin(); it != image_reps().end(); ++it) {
         if (it->scale == 1.0f) {
-          size_cache_ = it->Size();
+          size_cache_.reset(new gfx::Size(it->Size()));
           return *size_cache_;
         }
       }
-      size_cache_ = gfx::Size();
+      size_cache_.reset(new gfx::Size);
     }
 
     return *size_cache_;
@@ -139,7 +141,7 @@ class ImageRepPNG : public ImageRep {
   std::vector<ImagePNGRep> image_png_reps_;
 
   // Cached to avoid having to parse the raw data multiple times.
-  mutable base::Optional<gfx::Size> size_cache_;
+  mutable std::unique_ptr<gfx::Size> size_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageRepPNG);
 };
@@ -148,21 +150,23 @@ class ImageRepSkia : public ImageRep {
  public:
   // Takes ownership of |image|.
   explicit ImageRepSkia(ImageSkia* image)
-      : ImageRep(Image::kImageRepSkia), image_(*image) {}
+      : ImageRep(Image::kImageRepSkia),
+        image_(image) {
+  }
 
   ~ImageRepSkia() override {}
 
-  int Width() const override { return image_.width(); }
+  int Width() const override { return image_->width(); }
 
-  int Height() const override { return image_.height(); }
+  int Height() const override { return image_->height(); }
 
-  gfx::Size Size() const override { return image_.size(); }
+  gfx::Size Size() const override { return image_->size(); }
 
-  const ImageSkia* image() const { return &image_; }
-  ImageSkia* image() { return &image_; }
+  const ImageSkia* image() const { return image_.get(); }
+  ImageSkia* image() { return image_.get(); }
 
  private:
-  ImageSkia image_;
+  std::unique_ptr<ImageSkia> image_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageRepSkia);
 };
@@ -234,7 +238,7 @@ class ImageRepCocoa : public ImageRep {
 // themselves not threadsafe.
 class ImageStorage : public base::RefCounted<ImageStorage> {
  public:
-  explicit ImageStorage(Image::RepresentationType default_type)
+  ImageStorage(Image::RepresentationType default_type)
       : default_representation_type_(default_type)
 #if defined(OS_MACOSX) && !defined(OS_IOS)
         ,
