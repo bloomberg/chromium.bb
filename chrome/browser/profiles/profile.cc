@@ -276,9 +276,9 @@ bool Profile::IsNewProfile() {
 }
 
 bool Profile::IsSyncAllowed() {
-  if (ProfileSyncServiceFactory::HasProfileSyncService(this)) {
+  if (ProfileSyncServiceFactory::HasSyncService(this)) {
     syncer::SyncService* sync_service =
-        ProfileSyncServiceFactory::GetSyncServiceForProfile(this);
+        ProfileSyncServiceFactory::GetForProfile(this);
     return !sync_service->HasDisableReason(
                syncer::SyncService::DISABLE_REASON_PLATFORM_OVERRIDE) &&
            !sync_service->HasDisableReason(

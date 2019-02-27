@@ -110,12 +110,6 @@ ProfileSyncServiceFactory* ProfileSyncServiceFactory::GetInstance() {
 // static
 syncer::SyncService* ProfileSyncServiceFactory::GetForProfile(
     Profile* profile) {
-  return GetSyncServiceForProfile(profile);
-}
-
-// static
-syncer::SyncService* ProfileSyncServiceFactory::GetSyncServiceForProfile(
-    Profile* profile) {
   if (!switches::IsSyncAllowedByFlag()) {
     return nullptr;
   }
@@ -276,7 +270,7 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
 }
 
 // static
-bool ProfileSyncServiceFactory::HasProfileSyncService(Profile* profile) {
+bool ProfileSyncServiceFactory::HasSyncService(Profile* profile) {
   return GetInstance()->GetServiceForBrowserContext(profile, false) != nullptr;
 }
 

@@ -401,7 +401,7 @@ void DiceTurnSyncOnHelper::OnNewProfileCreated(Profile* new_profile,
 
 syncer::SyncService* DiceTurnSyncOnHelper::GetSyncService() {
   return profile_->IsSyncAllowed()
-             ? ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_)
+             ? ProfileSyncServiceFactory::GetForProfile(profile_)
              : nullptr;
 }
 

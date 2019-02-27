@@ -53,7 +53,7 @@ KeyedService* UnifiedConsentServiceFactory::BuildServiceInstanceFor(
   RecordSettingsHistogram(pref_service);
 
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
+      ProfileSyncServiceFactory::GetForProfile(profile);
   if (!sync_service)
     return nullptr;
 

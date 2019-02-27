@@ -274,7 +274,7 @@ bool SaveCardBubbleControllerImpl::ShouldShowSignInPromo() const {
     return false;
 
   const syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(GetProfile());
+      ProfileSyncServiceFactory::GetForProfile(GetProfile());
 
   return !sync_service ||
          sync_service->HasDisableReason(

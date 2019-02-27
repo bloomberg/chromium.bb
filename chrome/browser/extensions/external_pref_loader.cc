@@ -103,7 +103,7 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
     // Start observing sync changes.
     DCHECK(profile_);
     syncer::SyncService* service =
-        ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
+        ProfileSyncServiceFactory::GetForProfile(profile_);
     DCHECK(service);
     if (service->CanSyncFeatureStart() &&
         (service->GetUserSettings()->IsFirstSetupComplete() ||
@@ -148,7 +148,7 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
     syncable_pref_observer_.Add(prefs);
 
     syncer::SyncService* service =
-        ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
+        ProfileSyncServiceFactory::GetForProfile(profile_);
     sync_service_observer_.Add(service);
   }
 

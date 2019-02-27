@@ -182,7 +182,7 @@ void ForeignSessionHelper::TriggerSessionSync(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   syncer::SyncService* service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   if (!service)
     return;
 
@@ -309,7 +309,7 @@ void ForeignSessionHelper::SetInvalidationsForSessionsEnabled(
     const JavaParamRef<jobject>& obj,
     jboolean enabled) {
   syncer::SyncService* service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   if (!service)
     return;
 

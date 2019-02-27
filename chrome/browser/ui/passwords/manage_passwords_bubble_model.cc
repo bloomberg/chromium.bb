@@ -58,7 +58,7 @@ std::vector<autofill::PasswordForm> DeepCopyForms(
 
 bool IsSyncUser(Profile* profile) {
   const syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
+      ProfileSyncServiceFactory::GetForProfile(profile);
   return password_bubble_experiment::IsSmartLockUser(sync_service);
 }
 
@@ -470,7 +470,7 @@ bool ManagePasswordsBubbleModel::ReplaceToShowPromotionIfNeeded() {
     return false;
   PrefService* prefs = profile->GetPrefs();
   const syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
+      ProfileSyncServiceFactory::GetForProfile(profile);
   // Signin promotion.
   if (password_bubble_experiment::ShouldShowChromeSignInPasswordPromo(
           prefs, sync_service)) {

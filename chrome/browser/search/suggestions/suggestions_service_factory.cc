@@ -58,7 +58,7 @@ KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
+      ProfileSyncServiceFactory::GetForProfile(profile);
 
   std::unique_ptr<SuggestionsStore> suggestions_store(
       new SuggestionsStore(profile->GetPrefs()));

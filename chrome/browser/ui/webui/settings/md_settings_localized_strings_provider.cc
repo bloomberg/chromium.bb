@@ -1583,7 +1583,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
                                                profile->GetPrefs()) != 0);
 
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
+      ProfileSyncServiceFactory::GetForProfile(profile);
   if (sync_service && sync_service->CanSyncFeatureStart() &&
       sync_service->GetPreferredDataTypes().Has(syncer::AUTOFILL_PROFILE)) {
     html_source->AddBoolean(

@@ -628,7 +628,7 @@ bool ChromePasswordProtectionService::IsPingingEnabled(
 
 bool ChromePasswordProtectionService::IsHistorySyncEnabled() {
   syncer::SyncService* sync =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   return sync && sync->IsSyncFeatureActive() && !sync->IsLocalSyncEnabled() &&
          sync->GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES);
 }

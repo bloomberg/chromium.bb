@@ -168,7 +168,7 @@ void SupervisedUserService::Init() {
           base::Unretained(this)));
 
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   // Can be null in tests.
   if (sync_service)
     sync_service->AddPreferenceProvider(this);
@@ -396,7 +396,7 @@ void SupervisedUserService::SetActive(bool active) {
 #endif
 
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   sync_service->GetUserSettings()->SetEncryptEverythingAllowed(!active_);
 
   GetSettingsService()->SetActive(active_);
@@ -722,7 +722,7 @@ void SupervisedUserService::Shutdown() {
   SetActive(false);
 
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   // Can be null in tests.
   if (sync_service)
     sync_service->RemovePreferenceProvider(this);

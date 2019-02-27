@@ -178,7 +178,7 @@ TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
     environment->MakePrimaryAccountAvailable(kTestUser);
 
     TestSyncService* service = static_cast<TestSyncService*>(
-        ProfileSyncServiceFactory::GetSyncServiceForProfile(profile.get()));
+        ProfileSyncServiceFactory::GetForProfile(profile.get()));
     sync_ui_util::ActionType expected_action_type =
         GetDistinctCase(service, identity_manager, idx);
     base::string16 status_label;
@@ -211,7 +211,7 @@ TEST_F(SyncUIUtilTest, UnrecoverableErrorWithActionableError) {
   std::unique_ptr<Profile> profile = BuildSignedInTestingProfile();
 
   TestSyncService* service = static_cast<TestSyncService*>(
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile.get()));
+      ProfileSyncServiceFactory::GetForProfile(profile.get()));
   service->SetFirstSetupComplete(true);
   service->SetDisableReasons(
       syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR);
@@ -247,7 +247,7 @@ TEST_F(SyncUIUtilTest, ActionableErrorWithPassiveMessage) {
   std::unique_ptr<Profile> profile = BuildSignedInTestingProfile();
 
   TestSyncService* service = static_cast<TestSyncService*>(
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile.get()));
+      ProfileSyncServiceFactory::GetForProfile(profile.get()));
   service->SetFirstSetupComplete(true);
   service->SetDisableReasons(
       syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR);
@@ -286,7 +286,7 @@ TEST_F(SyncUIUtilTest, SyncSettingsConfirmationNeededTest) {
   std::unique_ptr<Profile> profile = BuildSignedInTestingProfile();
 
   TestSyncService* service = static_cast<TestSyncService*>(
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile.get()));
+      ProfileSyncServiceFactory::GetForProfile(profile.get()));
   service->SetFirstSetupComplete(false);
   ASSERT_TRUE(sync_ui_util::ShouldRequestSyncConfirmation(service));
 
