@@ -3540,10 +3540,6 @@ def ApplyCustomOverrides(site_config):
           'sign_types': ['recovery', 'accessory_rwsig', 'factory'],
       },
 
-      'octopus-release': {
-          'sign_types': ['recovery', 'factory'],
-      },
-
       'sarien-release': {
           'sign_types': ['recovery', 'factory'],
       },
