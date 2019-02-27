@@ -5894,6 +5894,7 @@ crbug.com/936095 fast/css-intrinsic-dimensions/height-tables-collapsed.html [ Fa
 crbug.com/934818 [ Linux ] virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Failure Pass ]
 crbug.com/936165 media/autoplay-muted.html [ Timeout Pass ]
 crbug.com/936165 virtual/video-surface-layer/media/autoplay-muted.html [ Timeout Pass ]
+crbug.com/936108 virtual/streams-native/http/tests/streams/transferable/readable-stream.html [ Failure Pass ]
 
 # Device Sensor Events are being restricted to secure browsing contexts, but the change is still gated on a runtime flag.
 crbug.com/932078 http/tests/security/powerfulFeatureRestrictions/device-orientation-future-behavior-on-insecure-origin.html [ Skip ]
