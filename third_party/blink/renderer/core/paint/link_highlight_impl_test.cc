@@ -328,11 +328,12 @@ TEST_P(LinkHighlightImplTest, HighlightLayerEffectNode) {
   auto* property_trees = layer->layer_tree_host()->property_trees();
   EXPECT_EQ(
       effect_tree_index,
-      property_trees->element_id_to_effect_node_index[highlight->element_id()]);
+      property_trees
+          ->element_id_to_effect_node_index[highlight->ElementIdForTesting()]);
   // The link highlight cc effect node should correspond to the blink effect
   // node.
   EXPECT_EQ(highlight->Effect().GetCompositorElementId(),
-            highlight->element_id());
+            highlight->ElementIdForTesting());
   EXPECT_TRUE(highlight->Effect().RequiresCompositingForAnimation());
 
   touch_node->remove(IGNORE_EXCEPTION_FOR_TESTING);
@@ -379,7 +380,7 @@ TEST_P(LinkHighlightImplTest, MultiColumn) {
   // The link highlight cc effect node should correspond to the blink effect
   // node.
   const auto& effect = highlight->Effect();
-  EXPECT_EQ(effect.GetCompositorElementId(), highlight->element_id());
+  EXPECT_EQ(effect.GetCompositorElementId(), highlight->ElementIdForTesting());
   EXPECT_TRUE(effect.RequiresCompositingForAnimation());
 
   const auto& first_fragment = touch_node->GetLayoutObject()->FirstFragment();
@@ -393,9 +394,8 @@ TEST_P(LinkHighlightImplTest, MultiColumn) {
     EXPECT_EQ(cc::ElementId(), layer->element_id());
     auto effect_tree_index = layer->effect_tree_index();
     auto* property_trees = layer->layer_tree_host()->property_trees();
-    EXPECT_EQ(effect_tree_index,
-              property_trees
-                  ->element_id_to_effect_node_index[highlight->element_id()]);
+    EXPECT_EQ(effect_tree_index, property_trees->element_id_to_effect_node_index
+                                     [highlight->ElementIdForTesting()]);
   };
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
