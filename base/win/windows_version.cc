@@ -110,6 +110,9 @@ OSInfo::OSInfo(const _OSVERSIONINFOEXW& version_info,
     case PROCESSOR_ARCHITECTURE_INTEL: architecture_ = X86_ARCHITECTURE; break;
     case PROCESSOR_ARCHITECTURE_AMD64: architecture_ = X64_ARCHITECTURE; break;
     case PROCESSOR_ARCHITECTURE_IA64:  architecture_ = IA64_ARCHITECTURE; break;
+    case PROCESSOR_ARCHITECTURE_ARM64:
+      architecture_ = ARM64_ARCHITECTURE;
+      break;
   }
   processors_ = system_info.dwNumberOfProcessors;
   allocation_granularity_ = system_info.dwAllocationGranularity;
