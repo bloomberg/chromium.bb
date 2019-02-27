@@ -16,6 +16,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/ukm/ios/features.h"
 #include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -92,6 +93,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Updatable Items
   SettingsDetailItem* _handoffDetailItem;
   SettingsDetailItem* _sendUsageDetailItem;
+  SettingsSwitchItem* _sendUsageToggleSwitchItem;
 }
 
 @end
@@ -186,8 +188,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _showSuggestionsItem = [self showSuggestionsSwitchItem];
     [model addItem:_showSuggestionsItem
         toSectionWithIdentifier:SectionIdentifierWebServices];
-    [model addItem:[self sendUsageDetailItem]
-        toSectionWithIdentifier:SectionIdentifierWebServices];
+    if (base::FeatureList::IsEnabled(kUmaCellular)) {
+      [model addItem:[self sendUsageToggleSwitchItem]
+          toSectionWithIdentifier:SectionIdentifierWebServices];
+    } else {
+      [model addItem:[self sendUsageDetailItem]
+          toSectionWithIdentifier:SectionIdentifierWebServices];
+    }
+
     [model setFooter:[self showSuggestionsFooterItem]
         forSectionWithIdentifier:SectionIdentifierWebServices];
   }
@@ -279,6 +287,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return _sendUsageDetailItem;
 }
 
+- (SettingsSwitchItem*)sendUsageToggleSwitchItem {
+  _sendUsageToggleSwitchItem = [[SettingsSwitchItem alloc]
+      initWithType:ItemTypeWebServicesSendUsageData];
+  _sendUsageToggleSwitchItem.text =
+      l10n_util::GetNSString(IDS_IOS_OPTIONS_SEND_USAGE_DATA);
+  _sendUsageToggleSwitchItem.on =
+      GetApplicationContext()->GetLocalState()->GetBoolean(
+          metrics::prefs::kMetricsReportingEnabled);
+
+  return _sendUsageToggleSwitchItem;
+}
+
 - (SettingsDetailItem*)detailItemWithType:(NSInteger)type
                                   titleId:(NSInteger)titleId
                                detailText:(NSString*)detailText {
@@ -313,6 +333,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [switchCell.switchView addTarget:self
                               action:@selector(canMakePaymentSwitchChanged:)
                     forControlEvents:UIControlEventValueChanged];
+  } else if (itemType == ItemTypeWebServicesSendUsageData &&
+             base::FeatureList::IsEnabled(kUmaCellular)) {
+    SettingsSwitchCell* switchCell =
+        base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
+    [switchCell.switchView addTarget:self
+                              action:@selector(sendUsageDataToggled:)
+                    forControlEvents:UIControlEventValueChanged];
   }
   return cell;
 }
@@ -346,12 +373,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
           initWithBrowserState:_browserState];
       break;
     case ItemTypeWebServicesSendUsageData:
-      controller = [[DataplanUsageTableViewController alloc]
-          initWithPrefs:GetApplicationContext()->GetLocalState()
-               basePref:metrics::prefs::kMetricsReportingEnabled
-               wifiPref:prefs::kMetricsReportingWifiOnly
-                  title:l10n_util::GetNSString(
-                            IDS_IOS_OPTIONS_SEND_USAGE_DATA)];
+      if (!base::FeatureList::IsEnabled(kUmaCellular)) {
+        controller = [[DataplanUsageTableViewController alloc]
+            initWithPrefs:GetApplicationContext()->GetLocalState()
+                 basePref:metrics::prefs::kMetricsReportingEnabled
+                 wifiPref:prefs::kMetricsReportingWifiOnly
+                    title:l10n_util::GetNSString(
+                              IDS_IOS_OPTIONS_SEND_USAGE_DATA)];
+      }
       break;
     case ItemTypeClearBrowsingDataClear:
       if (base::FeatureList::IsEnabled(kSettingsRefresh)) {
@@ -451,6 +480,20 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self setCanMakePaymentEnabled:sender.isOn];
 }
 
+- (void)sendUsageDataToggled:(UISwitch*)sender {
+  NSIndexPath* switchPath =
+      [self.tableViewModel indexPathForItem:_sendUsageToggleSwitchItem];
+  SettingsSwitchCell* switchCell =
+      base::mac::ObjCCastStrict<SettingsSwitchCell>(
+          [self.tableView cellForRowAtIndexPath:switchPath]);
+
+  DCHECK_EQ(switchCell.switchView, sender);
+  _sendUsageToggleSwitchItem.on = sender.isOn;
+
+  GetApplicationContext()->GetLocalState()->SetBoolean(
+      metrics::prefs::kMetricsReportingEnabled, sender.isOn);
+}
+
 #pragma mark - PrefObserverDelegate
 
 - (void)onPreferenceChanged:(const std::string&)preferenceName {
@@ -466,15 +509,23 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   if (preferenceName == metrics::prefs::kMetricsReportingEnabled ||
       preferenceName == prefs::kMetricsReportingWifiOnly) {
-    NSString* detailText = [DataplanUsageTableViewController
-        currentLabelForPreference:GetApplicationContext()->GetLocalState()
-                         basePref:metrics::prefs::kMetricsReportingEnabled
-                         wifiPref:prefs::kMetricsReportingWifiOnly];
+    if (base::FeatureList::IsEnabled(kUmaCellular)) {
+      bool isOn = GetApplicationContext()->GetLocalState()->GetBoolean(
+          metrics::prefs::kMetricsReportingEnabled);
+      _sendUsageToggleSwitchItem.on = isOn;
+      [self reconfigureCellsForItems:@[ _sendUsageToggleSwitchItem ]];
+      return;
+    } else {
+      NSString* detailText = [DataplanUsageTableViewController
+          currentLabelForPreference:GetApplicationContext()->GetLocalState()
+                           basePref:metrics::prefs::kMetricsReportingEnabled
+                           wifiPref:prefs::kMetricsReportingWifiOnly];
 
-    _sendUsageDetailItem.detailText = detailText;
+      _sendUsageDetailItem.detailText = detailText;
 
-    [self reconfigureCellsForItems:@[ _sendUsageDetailItem ]];
-    return;
+      [self reconfigureCellsForItems:@[ _sendUsageDetailItem ]];
+      return;
+    }
   }
 }
 
