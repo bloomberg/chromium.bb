@@ -34,6 +34,9 @@ class ScopedVirtualFidoDevice
   void SetTransport(FidoTransportProtocol transport);
 
   void SetSupportedProtocol(ProtocolVersion supported_protocol);
+  // EnablePINSupport causes the virtual devices to support PINs and sets the
+  // protocol version to CTAP2.
+  void EnablePINSupport();
   VirtualFidoDevice::State* mutable_state();
 
  protected:
@@ -45,6 +48,7 @@ class ScopedVirtualFidoDevice
   ProtocolVersion supported_protocol_ = ProtocolVersion::kU2f;
   FidoTransportProtocol transport_ =
       FidoTransportProtocol::kUsbHumanInterfaceDevice;
+  bool enable_pin_ = false;
   scoped_refptr<VirtualFidoDevice::State> state_;
   DISALLOW_COPY_AND_ASSIGN(ScopedVirtualFidoDevice);
 };
