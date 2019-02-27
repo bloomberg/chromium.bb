@@ -487,7 +487,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     jobs_.clear();
   }
 
-  // Notify observers that a state update has occurred for |job|.
+  // Notify observers that a state update has occured for |job|.
   void NotifyJobStateUpdate(base::WeakPtr<CupsPrintJob> job) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
