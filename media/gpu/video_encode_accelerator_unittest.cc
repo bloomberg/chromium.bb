@@ -2915,6 +2915,9 @@ class VEATestSuite : public base::TestSuite {
                     media::g_verify_all_output)));
 
 #if BUILDFLAG(USE_VAAPI)
+    base::test::ScopedFeatureList scoped_feature_list;
+    // TODO(crbug.com/811912): remove once enabled by default.
+    scoped_feature_list.InitAndEnableFeature(media::kVaapiVP9Encoder);
     media::VaapiWrapper::PreSandboxInitialization();
 #elif defined(OS_WIN)
     media::MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();
@@ -2936,12 +2939,6 @@ class VEATestSuite : public base::TestSuite {
 int main(int argc, char** argv) {
   mojo::core::Init();
   media::VEATestSuite test_suite(argc, argv);
-
-#if BUILDFLAG(USE_VAAPI)
-  base::test::ScopedFeatureList scoped_feature_list;
-  // TODO(crbug.com/811912): remove once enabled by default.
-  scoped_feature_list.InitAndEnableFeature(media::kVaapiVP9Encoder);
-#endif
 
   base::ShadowingAtExitManager at_exit_manager;
 
