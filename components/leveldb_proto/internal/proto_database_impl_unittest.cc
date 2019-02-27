@@ -5,6 +5,7 @@
 #include "components/leveldb_proto/internal/proto_database_impl.h"
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
@@ -114,7 +115,7 @@ class ProtoDatabaseImplTest : public testing::Test {
     shared_db_temp_dir_.reset();
   }
 
-  std::unique_ptr<ProtoDatabaseImpl<TestProto>> CreateWrapper(
+  std::unique_ptr<ProtoDatabaseImpl<TestProto>> CreateDBImpl(
       ProtoDbType db_type,
       const base::FilePath& db_dir,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
@@ -153,20 +154,20 @@ class ProtoDatabaseImplTest : public testing::Test {
 
   // Uses ProtoDatabaseImpl's 3 parameter Init to bypass the check that gets
   // |use_shared_db|'s value.
-  void InitWrapper(ProtoDatabaseImpl<TestProto>* wrapper,
-                   const std::string& client_name,
-                   bool use_shared_db,
-                   Callbacks::InitStatusCallback callback) {
-    wrapper->Init(client_name, use_shared_db, std::move(callback));
+  void InitDBImpl(ProtoDatabaseImpl<TestProto>* db_impl,
+                  const std::string& client_name,
+                  bool use_shared_db,
+                  Callbacks::InitStatusCallback callback) {
+    db_impl->Init(client_name, use_shared_db, std::move(callback));
   }
 
-  void InitWrapperAndWait(ProtoDatabaseImpl<TestProto>* wrapper,
-                          const std::string& client_name,
-                          bool use_shared_db,
-                          Enums::InitStatus expect_status) {
+  void InitDBImplAndWait(ProtoDatabaseImpl<TestProto>* db_impl,
+                         const std::string& client_name,
+                         bool use_shared_db,
+                         Enums::InitStatus expect_status) {
     base::RunLoop init_loop;
-    InitWrapper(
-        wrapper, client_name, use_shared_db,
+    InitDBImpl(
+        db_impl, client_name, use_shared_db,
         base::BindOnce(
             [](base::OnceClosure closure, Enums::InitStatus expect_status,
                Enums::InitStatus status) {
@@ -214,8 +215,8 @@ class ProtoDatabaseImplTest : public testing::Test {
 
   // Just uses each entry's key to fill out the id/data fields in TestProto as
   // well.
-  void AddDataToWrapper(ProtoDatabaseImpl<TestProto>* wrapper,
-                        std::vector<std::string>* entry_keys) {
+  void AddDataToDBImpl(ProtoDatabaseImpl<TestProto>* db_impl,
+                       std::vector<std::string>* entry_keys) {
     auto data_set =
         std::make_unique<std::vector<std::pair<std::string, TestProto>>>();
     for (const auto& key : *entry_keys) {
@@ -226,7 +227,7 @@ class ProtoDatabaseImplTest : public testing::Test {
     }
 
     base::RunLoop data_loop;
-    wrapper->UpdateEntries(std::move(data_set),
+    db_impl->UpdateEntries(std::move(data_set),
                            std::make_unique<std::vector<std::string>>(),
                            base::BindOnce(
                                [](base::OnceClosure closure, bool success) {
@@ -237,10 +238,10 @@ class ProtoDatabaseImplTest : public testing::Test {
     data_loop.Run();
   }
 
-  void VerifyDataInWrapper(ProtoDatabaseImpl<TestProto>* wrapper,
-                           std::vector<std::string>* entry_keys) {
+  void VerifyDataInDBImpl(ProtoDatabaseImpl<TestProto>* db_impl,
+                          std::vector<std::string>* entry_keys) {
     base::RunLoop load_loop;
-    wrapper->LoadKeysAndEntries(base::BindOnce(
+    db_impl->LoadKeysAndEntries(base::BindOnce(
         [](base::OnceClosure closure, std::vector<std::string>* entry_keys,
            bool success,
            std::unique_ptr<std::map<std::string, TestProto>> keys_entries) {
@@ -322,11 +323,11 @@ class ProtoDatabaseImplTest : public testing::Test {
 TEST_F(ProtoDatabaseImplTest, FailsBothDatabases) {
   auto db_provider = CreateProviderNoSharedDB();
   auto shared_db_provider = CreateSharedProvider(db_provider.get());
-  auto wrapper = CreateWrapper(ProtoDbType::TEST_DATABASE1, temp_dir(),
-                               GetTestThreadTaskRunner(),
-                               CreateSharedProvider(db_provider.get()));
-  InitWrapperAndWait(wrapper.get(), kDefaultClientName, true,
-                     Enums::InitStatus::kError);
+  auto db_impl = CreateDBImpl(ProtoDbType::TEST_DATABASE1, temp_dir(),
+                              GetTestThreadTaskRunner(),
+                              CreateSharedProvider(db_provider.get()));
+  InitDBImplAndWait(db_impl.get(), kDefaultClientName, true,
+                    Enums::InitStatus::kError);
 }
 
 TEST_F(ProtoDatabaseImplTest, Fails_UseShared_NoSharedDB) {
@@ -342,7 +343,7 @@ TEST_F(ProtoDatabaseImplTest, Fails_UseShared_NoSharedDB) {
       true,                        // We should be using a shared DB.
       nullptr,                     // Shared DB failed to open.
       Enums::InitStatus::kError,   // Shared DB had an IO error.
-      Enums::InitStatus::kError);  // Then the wrapper should return an error.
+      Enums::InitStatus::kError);  // Then the DB impl should return an error.
 
   CallOnGetSharedDBClientAndWait(
       std::move(unique_db),  // Unique DB opens fine.
@@ -350,7 +351,7 @@ TEST_F(ProtoDatabaseImplTest, Fails_UseShared_NoSharedDB) {
       true,                                  // We should be using a shared DB.
       nullptr,                               // Shared DB failed to open.
       Enums::InitStatus::kInvalidOperation,  // Shared DB doesn't exist.
-      Enums::InitStatus::kError);  // Then the wrapper should return an error.
+      Enums::InitStatus::kError);  // Then the DB impl should return an error.
 }
 
 TEST_F(ProtoDatabaseImplTest,
@@ -370,7 +371,7 @@ TEST_F(ProtoDatabaseImplTest,
       true,                                  // We should be using a shared DB.
       std::move(shared_db_client),           // Shared DB opens fine.
       Enums::InitStatus::kOK,
-      Enums::InitStatus::kOK);  // Then the wrapper should return the shared DB.
+      Enums::InitStatus::kOK);  // Then the DB impl should return the shared DB.
 }
 
 TEST_F(ProtoDatabaseImplTest, Fails_UseShared_HasSharedDB_UniqueHadIOError) {
@@ -389,7 +390,7 @@ TEST_F(ProtoDatabaseImplTest, Fails_UseShared_HasSharedDB_UniqueHadIOError) {
       true,                         // We should be using a shared DB.
       std::move(shared_db_client),  // Shared DB opens fine.
       Enums::InitStatus::kOK,
-      Enums::InitStatus::kError);  // Then the wrapper should return an error.
+      Enums::InitStatus::kError);  // Then the DB impl should return an error.
 }
 
 TEST_F(ProtoDatabaseImplTest,
@@ -409,7 +410,7 @@ TEST_F(ProtoDatabaseImplTest,
       true,                                  // We should be using a shared DB.
       std::move(shared_db_client),           // Shared DB opens fine.
       Enums::InitStatus::kOK,
-      Enums::InitStatus::kOK);  // Then the wrapper should use the shared DB.
+      Enums::InitStatus::kOK);  // Then the DB impl should use the shared DB.
 
   shared_db_client = GetSharedClient();
 
@@ -427,7 +428,7 @@ TEST_F(ProtoDatabaseImplTest,
       true,                         // We should be using a shared DB.
       std::move(shared_db_client),  // Shared DB opens fine.
       Enums::InitStatus::kOK,
-      Enums::InitStatus::kOK);  // Then the wrapper should use the shared DB.
+      Enums::InitStatus::kOK);  // Then the DB impl should use the shared DB.
 }
 
 TEST_F(ProtoDatabaseImplTest,
@@ -447,7 +448,7 @@ TEST_F(ProtoDatabaseImplTest,
       true,                                  // We should be using a shared DB.
       std::move(shared_db_client),           // Shared DB opens fine.
       Enums::InitStatus::kOK,
-      Enums::InitStatus::kError);  // Then the wrapper should throw an error.
+      Enums::InitStatus::kError);  // Then the DB impl should throw an error.
 
   shared_db_client = GetSharedClient();
 
@@ -464,7 +465,7 @@ TEST_F(ProtoDatabaseImplTest,
       true,                         // We should be using a shared DB.
       std::move(shared_db_client),  // Shared DB opens fine.
       Enums::InitStatus::kOK,
-      Enums::InitStatus::kError);  // Then the wrapper should throw an error.
+      Enums::InitStatus::kError);  // Then the DB impl should throw an error.
 }
 
 TEST_F(ProtoDatabaseImplTest,
@@ -483,7 +484,7 @@ TEST_F(ProtoDatabaseImplTest,
       false,                                 // We should be using a unique DB.
       std::move(shared_db_client),           // Shared DB opens fine.
       Enums::InitStatus::kOK,
-      Enums::InitStatus::kOK);  // Then the wrapper should use the shared DB.
+      Enums::InitStatus::kOK);  // Then the DB impl should use the shared DB.
 
   shared_db_client = GetSharedClient();
 
@@ -500,7 +501,7 @@ TEST_F(ProtoDatabaseImplTest,
       true,                         // We should be using a shared DB.
       std::move(shared_db_client),  // Shared DB opens fine.
       Enums::InitStatus::kOK,
-      Enums::InitStatus::kOK);  // Then the wrapper should use the shared DB.
+      Enums::InitStatus::kOK);  // Then the DB impl should use the shared DB.
 }
 
 TEST_F(ProtoDatabaseImplTest,
@@ -516,7 +517,7 @@ TEST_F(ProtoDatabaseImplTest,
       false,                                 // We should be using a unique DB.
       nullptr,                               // Shared DB failed to open.
       Enums::InitStatus::kInvalidOperation,  // Shared DB doesn't exist.
-      Enums::InitStatus::kOK);  // Then the wrapper should return the unique DB.
+      Enums::InitStatus::kOK);  // Then the DB impl should return the unique DB.
 }
 
 TEST_F(ProtoDatabaseImplTest, Fails_DontUseShared_SharedDBFailed) {
@@ -532,36 +533,36 @@ TEST_F(ProtoDatabaseImplTest, Fails_DontUseShared_SharedDBFailed) {
       false,                       // We should be using a unique DB.
       nullptr,                     // Shared DB failed to open.
       Enums::InitStatus::kError,   // Shared DB had an IO error.
-      Enums::InitStatus::kError);  // Then the wrapper should return an error.
+      Enums::InitStatus::kError);  // Then the DB impl should return an error.
 }
 
 TEST_F(ProtoDatabaseImplTest, Fails_UseShared_NoSharedDB_NoUniqueDB) {
   auto db_provider = CreateProviderNoSharedDB();
-  auto wrapper = CreateWrapper(ProtoDbType::TEST_DATABASE1, temp_dir(),
-                               GetTestThreadTaskRunner(),
-                               CreateSharedProvider(db_provider.get()));
-  InitWrapperAndWait(wrapper.get(), kDefaultClientName, true,
-                     Enums::InitStatus::kError);
+  auto db_impl = CreateDBImpl(ProtoDbType::TEST_DATABASE1, temp_dir(),
+                              GetTestThreadTaskRunner(),
+                              CreateSharedProvider(db_provider.get()));
+  InitDBImplAndWait(db_impl.get(), kDefaultClientName, true,
+                    Enums::InitStatus::kError);
 }
 
 // Migration tests:
 TEST_F(ProtoDatabaseImplTest, Migration_EmptyDBs_UniqueToShared) {
   // First we create a unique DB so our second pass has a unique DB available.
   auto db_provider_noshared = CreateProviderNoSharedDB();
-  auto unique_wrapper = CreateWrapper(
+  auto unique_db_impl = CreateDBImpl(
       ProtoDbType::TEST_DATABASE1, temp_dir(), GetTestThreadTaskRunner(),
       CreateSharedProvider(db_provider_noshared.get()));
-  InitWrapperAndWait(unique_wrapper.get(), kDefaultClientName, false,
-                     Enums::InitStatus::kOK);
-  // Kill the wrapper so it doesn't have a lock on the DB anymore.
-  unique_wrapper.reset();
+  InitDBImplAndWait(unique_db_impl.get(), kDefaultClientName, false,
+                    Enums::InitStatus::kOK);
+  // Kill the DB impl so it doesn't have a lock on the DB anymore.
+  unique_db_impl.reset();
 
   auto db_provider_withshared = CreateProviderWithSharedDB();
-  auto shared_wrapper = CreateWrapper(
+  auto shared_db_impl = CreateDBImpl(
       ProtoDbType::TEST_DATABASE1, temp_dir(), GetTestThreadTaskRunner(),
       CreateSharedProvider(db_provider_withshared.get()));
-  InitWrapperAndWait(shared_wrapper.get(), kDefaultClientName, true,
-                     Enums::InitStatus::kOK);
+  InitDBImplAndWait(shared_db_impl.get(), kDefaultClientName, true,
+                    Enums::InitStatus::kOK);
 
   EXPECT_EQ(SharedDBMetadataProto::MIGRATE_TO_SHARED_SUCCESSFUL,
             GetClientMigrationStatus());
@@ -570,22 +571,22 @@ TEST_F(ProtoDatabaseImplTest, Migration_EmptyDBs_UniqueToShared) {
 TEST_F(ProtoDatabaseImplTest, Migration_EmptyDBs_SharedToUnique) {
   // First we create a unique DB so our second pass has a unique DB available.
   auto db_provider = CreateProviderWithSharedDB();
-  auto shared_wrapper = CreateWrapper(ProtoDbType::TEST_DATABASE1, temp_dir(),
-                                      GetTestThreadTaskRunner(),
-                                      CreateSharedProvider(db_provider.get()));
-  InitWrapperAndWait(shared_wrapper.get(), kDefaultClientName, true,
-                     Enums::InitStatus::kOK);
+  auto shared_db_impl = CreateDBImpl(ProtoDbType::TEST_DATABASE1, temp_dir(),
+                                     GetTestThreadTaskRunner(),
+                                     CreateSharedProvider(db_provider.get()));
+  InitDBImplAndWait(shared_db_impl.get(), kDefaultClientName, true,
+                    Enums::InitStatus::kOK);
 
-  // As the unique DB doesn't exist then the wrapper sets the migration status
+  // As the unique DB doesn't exist then the DB impl sets the migration status
   // to migrated to shared.
   EXPECT_EQ(SharedDBMetadataProto::MIGRATE_TO_SHARED_SUCCESSFUL,
             GetClientMigrationStatus());
 
-  auto unique_wrapper = CreateWrapper(ProtoDbType::TEST_DATABASE1, temp_dir(),
-                                      GetTestThreadTaskRunner(),
-                                      CreateSharedProvider(db_provider.get()));
-  InitWrapperAndWait(shared_wrapper.get(), kDefaultClientName, false,
-                     Enums::InitStatus::kOK);
+  auto unique_db_impl = CreateDBImpl(ProtoDbType::TEST_DATABASE1, temp_dir(),
+                                     GetTestThreadTaskRunner(),
+                                     CreateSharedProvider(db_provider.get()));
+  InitDBImplAndWait(shared_db_impl.get(), kDefaultClientName, false,
+                    Enums::InitStatus::kOK);
   EXPECT_EQ(SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SUCCESSFUL,
             GetClientMigrationStatus());
 }
@@ -598,22 +599,22 @@ TEST_F(ProtoDatabaseImplTest, Migration_UniqueToShared) {
 
   // First we create a unique DB so our second pass has a unique DB available.
   auto db_provider_noshared = CreateProviderNoSharedDB();
-  auto unique_wrapper = CreateWrapper(
+  auto unique_db_impl = CreateDBImpl(
       ProtoDbType::TEST_DATABASE1, temp_dir(), GetTestThreadTaskRunner(),
       CreateSharedProvider(db_provider_noshared.get()));
-  InitWrapperAndWait(unique_wrapper.get(), kDefaultClientName, false,
-                     Enums::InitStatus::kOK);
-  AddDataToWrapper(unique_wrapper.get(), data_set.get());
-  // Kill the wrapper so it doesn't have a lock on the DB anymore.
-  unique_wrapper.reset();
+  InitDBImplAndWait(unique_db_impl.get(), kDefaultClientName, false,
+                    Enums::InitStatus::kOK);
+  AddDataToDBImpl(unique_db_impl.get(), data_set.get());
+  // Kill the DB impl so it doesn't have a lock on the DB anymore.
+  unique_db_impl.reset();
 
   auto db_provider_withshared = CreateProviderWithSharedDB();
-  auto shared_wrapper = CreateWrapper(
+  auto shared_db_impl = CreateDBImpl(
       ProtoDbType::TEST_DATABASE1, temp_dir(), GetTestThreadTaskRunner(),
       CreateSharedProvider(db_provider_withshared.get()));
-  InitWrapperAndWait(shared_wrapper.get(), kDefaultClientName, true,
-                     Enums::InitStatus::kOK);
-  VerifyDataInWrapper(shared_wrapper.get(), data_set.get());
+  InitDBImplAndWait(shared_db_impl.get(), kDefaultClientName, true,
+                    Enums::InitStatus::kOK);
+  VerifyDataInDBImpl(shared_db_impl.get(), data_set.get());
 
   EXPECT_EQ(SharedDBMetadataProto::MIGRATE_TO_SHARED_SUCCESSFUL,
             GetClientMigrationStatus());
@@ -627,24 +628,24 @@ TEST_F(ProtoDatabaseImplTest, Migration_SharedToUnique) {
 
   // First we create a shared DB so our second pass has a shared DB available.
   auto db_provider_withshared = CreateProviderWithSharedDB();
-  auto shared_wrapper = CreateWrapper(
+  auto shared_db_impl = CreateDBImpl(
       ProtoDbType::TEST_DATABASE1, temp_dir(), GetTestThreadTaskRunner(),
       CreateSharedProvider(db_provider_withshared.get()));
-  InitWrapperAndWait(shared_wrapper.get(), kDefaultClientName, true,
-                     Enums::InitStatus::kOK);
-  AddDataToWrapper(shared_wrapper.get(), data_set.get());
+  InitDBImplAndWait(shared_db_impl.get(), kDefaultClientName, true,
+                    Enums::InitStatus::kOK);
+  AddDataToDBImpl(shared_db_impl.get(), data_set.get());
 
-  // As the unique DB doesn't exist then the wrapper sets the migration status
-  // is set to migrated to shared.
+  // As the unique DB doesn't exist then the DB impl sets the migration status
+  // to migrated to shared.
   EXPECT_EQ(SharedDBMetadataProto::MIGRATE_TO_SHARED_SUCCESSFUL,
             GetClientMigrationStatus());
 
-  auto unique_wrapper = CreateWrapper(
+  auto unique_db_impl = CreateDBImpl(
       ProtoDbType::TEST_DATABASE1, temp_dir(), GetTestThreadTaskRunner(),
       CreateSharedProvider(db_provider_withshared.get()));
-  InitWrapperAndWait(unique_wrapper.get(), kDefaultClientName, false,
-                     Enums::InitStatus::kOK);
-  VerifyDataInWrapper(unique_wrapper.get(), data_set.get());
+  InitDBImplAndWait(unique_db_impl.get(), kDefaultClientName, false,
+                    Enums::InitStatus::kOK);
+  VerifyDataInDBImpl(unique_db_impl.get(), data_set.get());
   EXPECT_EQ(SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SUCCESSFUL,
             GetClientMigrationStatus());
 }
@@ -657,28 +658,28 @@ TEST_F(ProtoDatabaseImplTest, Migration_UniqueToShared_UniqueObsolete) {
 
   // First we create a unique DB so our second pass has a unique DB available.
   auto db_provider_noshared = CreateProviderNoSharedDB();
-  auto unique_wrapper = CreateWrapper(
+  auto unique_db_impl = CreateDBImpl(
       ProtoDbType::TEST_DATABASE1, temp_dir(), GetTestThreadTaskRunner(),
       CreateSharedProvider(db_provider_noshared.get()));
-  InitWrapperAndWait(unique_wrapper.get(), kDefaultClientName, false,
-                     Enums::InitStatus::kOK);
-  AddDataToWrapper(unique_wrapper.get(), data_set.get());
-  // Kill the wrapper so it doesn't have a lock on the DB anymore.
-  unique_wrapper.reset();
+  InitDBImplAndWait(unique_db_impl.get(), kDefaultClientName, false,
+                    Enums::InitStatus::kOK);
+  AddDataToDBImpl(unique_db_impl.get(), data_set.get());
+  // Kill the DB impl so it doesn't have a lock on the DB anymore.
+  unique_db_impl.reset();
 
   UpdateClientMetadata(
       SharedDBMetadataProto::MIGRATE_TO_SHARED_UNIQUE_TO_BE_DELETED);
 
   auto db_provider_withshared = CreateProviderWithSharedDB();
-  auto shared_wrapper = CreateWrapper(
+  auto shared_db_impl = CreateDBImpl(
       ProtoDbType::TEST_DATABASE1, temp_dir(), GetTestThreadTaskRunner(),
       CreateSharedProvider(db_provider_withshared.get()));
-  InitWrapperAndWait(shared_wrapper.get(), kDefaultClientName, true,
-                     Enums::InitStatus::kOK);
+  InitDBImplAndWait(shared_db_impl.get(), kDefaultClientName, true,
+                    Enums::InitStatus::kOK);
 
   // Unique DB should be deleted in migration. So, shared DB should be clean.
   data_set->clear();
-  VerifyDataInWrapper(shared_wrapper.get(), data_set.get());
+  VerifyDataInDBImpl(shared_db_impl.get(), data_set.get());
   EXPECT_EQ(SharedDBMetadataProto::MIGRATE_TO_SHARED_SUCCESSFUL,
             GetClientMigrationStatus());
 }
@@ -691,42 +692,42 @@ TEST_F(ProtoDatabaseImplTest, Migration_UniqueToShared_SharedObsolete) {
 
   // First we create a shared DB so our second pass has a shared DB available.
   auto db_provider_withshared = CreateProviderWithSharedDB();
-  auto shared_wrapper = CreateWrapper(
+  auto shared_db_impl = CreateDBImpl(
       ProtoDbType::TEST_DATABASE1, temp_dir(), GetTestThreadTaskRunner(),
       CreateSharedProvider(db_provider_withshared.get()));
-  InitWrapperAndWait(shared_wrapper.get(), kDefaultClientName, true,
-                     Enums::InitStatus::kOK);
-  AddDataToWrapper(shared_wrapper.get(), data_set.get());
+  InitDBImplAndWait(shared_db_impl.get(), kDefaultClientName, true,
+                    Enums::InitStatus::kOK);
+  AddDataToDBImpl(shared_db_impl.get(), data_set.get());
 
-  // As there's no unique DB, the wrapper is going to set the state to migrated
+  // As there's no unique DB, the DB impl is going to set the state to migrated
   // to shared.
   EXPECT_EQ(SharedDBMetadataProto::MIGRATE_TO_SHARED_SUCCESSFUL,
             GetClientMigrationStatus());
 
   // Force create an unique DB, which was deleted by migration.
   auto db_provider_noshared = CreateProviderNoSharedDB();
-  auto unique_wrapper = CreateWrapper(
+  auto unique_db_impl = CreateDBImpl(
       ProtoDbType::TEST_DATABASE1, temp_dir(), GetTestThreadTaskRunner(),
       CreateSharedProvider(db_provider_noshared.get()));
-  InitWrapperAndWait(unique_wrapper.get(), kDefaultClientName, false,
-                     Enums::InitStatus::kOK);
-  unique_wrapper.reset();
+  InitDBImplAndWait(unique_db_impl.get(), kDefaultClientName, false,
+                    Enums::InitStatus::kOK);
+  unique_db_impl.reset();
 
   UpdateClientMetadata(
       SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SHARED_TO_BE_DELETED);
 
-  shared_wrapper.reset();
+  shared_db_impl.reset();
   db_provider_withshared = CreateProviderWithSharedDB();
 
-  auto shared_wrapper1 = CreateWrapper(
+  auto shared_db_impl1 = CreateDBImpl(
       ProtoDbType::TEST_DATABASE1, temp_dir(), GetTestThreadTaskRunner(),
       CreateSharedProvider(db_provider_withshared.get()));
-  InitWrapperAndWait(shared_wrapper1.get(), kDefaultClientName, true,
-                     Enums::InitStatus::kOK);
+  InitDBImplAndWait(shared_db_impl1.get(), kDefaultClientName, true,
+                    Enums::InitStatus::kOK);
 
   // Shared DB should be deleted in migration. So, shared DB should be clean.
   data_set->clear();
-  VerifyDataInWrapper(shared_wrapper1.get(), data_set.get());
+  VerifyDataInDBImpl(shared_db_impl1.get(), data_set.get());
   EXPECT_EQ(SharedDBMetadataProto::MIGRATE_TO_SHARED_SUCCESSFUL,
             GetClientMigrationStatus());
 }
@@ -739,14 +740,14 @@ TEST_F(ProtoDatabaseImplTest, Migration_SharedToUnique_SharedObsolete) {
 
   // First we create a shared DB so our second pass has a shared DB available.
   auto db_provider_withshared = CreateProviderWithSharedDB();
-  auto shared_wrapper = CreateWrapper(
+  auto shared_db_impl = CreateDBImpl(
       ProtoDbType::TEST_DATABASE1, temp_dir(), GetTestThreadTaskRunner(),
       CreateSharedProvider(db_provider_withshared.get()));
-  InitWrapperAndWait(shared_wrapper.get(), kDefaultClientName, true,
-                     Enums::InitStatus::kOK);
-  AddDataToWrapper(shared_wrapper.get(), data_set.get());
+  InitDBImplAndWait(shared_db_impl.get(), kDefaultClientName, true,
+                    Enums::InitStatus::kOK);
+  AddDataToDBImpl(shared_db_impl.get(), data_set.get());
 
-  // As there's no Unique DB, the wrapper changes the migration status to
+  // As there's no Unique DB, the DB impl changes the migration status to
   // migrated to shared.
   EXPECT_EQ(SharedDBMetadataProto::MIGRATE_TO_SHARED_SUCCESSFUL,
             GetClientMigrationStatus());
@@ -754,15 +755,15 @@ TEST_F(ProtoDatabaseImplTest, Migration_SharedToUnique_SharedObsolete) {
   UpdateClientMetadata(
       SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SHARED_TO_BE_DELETED);
 
-  auto unique_wrapper = CreateWrapper(
+  auto unique_db_impl = CreateDBImpl(
       ProtoDbType::TEST_DATABASE1, temp_dir(), GetTestThreadTaskRunner(),
       CreateSharedProvider(db_provider_withshared.get()));
-  InitWrapperAndWait(unique_wrapper.get(), kDefaultClientName, false,
-                     Enums::InitStatus::kOK);
+  InitDBImplAndWait(unique_db_impl.get(), kDefaultClientName, false,
+                    Enums::InitStatus::kOK);
 
   // Shared DB should be deleted in migration. So, unique DB should be clean.
   data_set->clear();
-  VerifyDataInWrapper(unique_wrapper.get(), data_set.get());
+  VerifyDataInDBImpl(unique_db_impl.get(), data_set.get());
   EXPECT_EQ(SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SUCCESSFUL,
             GetClientMigrationStatus());
 }
@@ -775,30 +776,60 @@ TEST_F(ProtoDatabaseImplTest, Migration_SharedToUnique_UniqueObsolete) {
 
   // First we create a shared DB so our second pass has a shared DB available.
   auto db_provider_noshared = CreateProviderNoSharedDB();
-  auto unique_wrapper = CreateWrapper(
+  auto unique_db_impl = CreateDBImpl(
       ProtoDbType::TEST_DATABASE1, temp_dir(), GetTestThreadTaskRunner(),
       CreateSharedProvider(db_provider_noshared.get()));
-  InitWrapperAndWait(unique_wrapper.get(), kDefaultClientName, false,
-                     Enums::InitStatus::kOK);
-  AddDataToWrapper(unique_wrapper.get(), data_set.get());
+  InitDBImplAndWait(unique_db_impl.get(), kDefaultClientName, false,
+                    Enums::InitStatus::kOK);
+  AddDataToDBImpl(unique_db_impl.get(), data_set.get());
 
   UpdateClientMetadata(
       SharedDBMetadataProto::MIGRATE_TO_SHARED_UNIQUE_TO_BE_DELETED);
 
-  unique_wrapper.reset();
+  unique_db_impl.reset();
 
   auto db_provider_withshared = CreateProviderWithSharedDB();
-  auto shared_wrapper = CreateWrapper(
+  auto shared_db_impl = CreateDBImpl(
       ProtoDbType::TEST_DATABASE1, temp_dir(), GetTestThreadTaskRunner(),
       CreateSharedProvider(db_provider_withshared.get()));
-  InitWrapperAndWait(shared_wrapper.get(), kDefaultClientName, false,
-                     Enums::InitStatus::kOK);
+  InitDBImplAndWait(shared_db_impl.get(), kDefaultClientName, false,
+                    Enums::InitStatus::kOK);
 
   // Unique DB should be deleted in migration. So, unique DB should be clean.
   data_set->clear();
-  VerifyDataInWrapper(shared_wrapper.get(), data_set.get());
+  VerifyDataInDBImpl(shared_db_impl.get(), data_set.get());
   EXPECT_EQ(SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SUCCESSFUL,
             GetClientMigrationStatus());
+}
+
+TEST_F(ProtoDatabaseImplTest, DestroyShouldWorkWhenUniqueInitFailed) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  auto db_provider = CreateProviderNoSharedDB();
+  auto shared_db_provider = CreateSharedProvider(db_provider.get());
+  auto db_impl = CreateDBImpl(ProtoDbType::TEST_DATABASE1, temp_dir.GetPath(),
+                              GetTestThreadTaskRunner(),
+                              CreateSharedProvider(db_provider.get()));
+
+  // Try to initialize a db and fail.
+  InitDBImplAndWait(db_impl.get(), kDefaultClientName, true,
+                    Enums::InitStatus::kError);
+
+  base::RunLoop run_destroy;
+
+  // Call destroy on the db, it should destroy the db directory.
+  db_impl->Destroy(base::BindOnce(
+      [](base::OnceClosure closure, bool success) {
+        std::move(closure).Run();
+        EXPECT_TRUE(success);
+      },
+      run_destroy.QuitClosure()));
+
+  run_destroy.Run();
+
+  // Verify the db is actually destroyed.
+  EXPECT_FALSE(base::PathExists(temp_dir.GetPath()));
 }
 
 }  // namespace leveldb_proto
