@@ -27,7 +27,8 @@ namespace tracing {
 // ProducerHost.
 class PerfettoService : public mojom::PerfettoService {
  public:
-  PerfettoService();
+  explicit PerfettoService(scoped_refptr<base::SequencedTaskRunner>
+                               task_runner_for_testing = nullptr);
   ~PerfettoService() override;
 
   static PerfettoService* GetInstance();

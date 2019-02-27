@@ -1783,6 +1783,8 @@ jumbo_source_set("browser") {
     "tracing/background_tracing_rule.h",
     "tracing/file_tracing_provider_impl.cc",
     "tracing/file_tracing_provider_impl.h",
+    "tracing/perfetto_file_tracer.cc",
+    "tracing/perfetto_file_tracer.h",
     "tracing/trace_message_filter.cc",
     "tracing/trace_message_filter.h",
     "tracing/tracing_controller_impl.cc",

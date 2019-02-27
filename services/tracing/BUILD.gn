@@ -13,6 +13,8 @@ source_set("lib") {
     "agent_registry.h",
     "coordinator.cc",
     "coordinator.h",
+    "perfetto/consumer_host.cc",
+    "perfetto/consumer_host.h",
     "perfetto/json_trace_exporter.cc",
     "perfetto/json_trace_exporter.h",
     "perfetto/perfetto_service.cc",
@@ -35,6 +37,7 @@ source_set("lib") {
     "//services/service_manager/public/cpp",
     "//services/tracing/public/cpp",
     "//third_party/perfetto:libperfetto",
+    "//third_party/perfetto/protos/perfetto/config:lite",
   ]
 
   deps = [
@@ -99,6 +102,7 @@ source_set("tests") {
 
   if (is_mac || is_linux || is_android || is_fuchsia) {
     sources += [
+      "perfetto/consumer_host_unittest.cc",
       "perfetto/json_trace_exporter_unittest.cc",
       "perfetto/perfetto_integration_unittest.cc",
       "perfetto/perfetto_tracing_coordinator_unittest.cc",

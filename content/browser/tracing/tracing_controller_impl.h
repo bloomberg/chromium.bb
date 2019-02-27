@@ -33,6 +33,7 @@ class BaseAgent;
 
 namespace content {
 
+class PerfettoFileTracer;
 class TracingDelegate;
 class TracingUI;
 
@@ -87,6 +88,7 @@ class TracingControllerImpl : public TracingController,
 
   void CompleteFlush();
 
+  std::unique_ptr<PerfettoFileTracer> perfetto_file_tracer_;
   tracing::mojom::CoordinatorPtr coordinator_;
   std::vector<std::unique_ptr<tracing::BaseAgent>> agents_;
   std::unique_ptr<TracingDelegate> delegate_;

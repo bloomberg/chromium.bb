@@ -24,8 +24,11 @@ PerfettoService* PerfettoService::GetInstance() {
   return perfetto_service.get();
 }
 
-PerfettoService::PerfettoService()
-    : perfetto_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
+PerfettoService::PerfettoService(
+    scoped_refptr<base::SequencedTaskRunner> task_runner_for_testing)
+    : perfetto_task_runner_(task_runner_for_testing
+                                ? std::move(task_runner_for_testing)
+                                : base::SequencedTaskRunnerHandle::Get()) {
   service_ = perfetto::TracingService::CreateInstance(
       std::make_unique<MojoSharedMemory::Factory>(), &perfetto_task_runner_);
   // Chromium uses scraping of the shared memory chunks to ensure that data

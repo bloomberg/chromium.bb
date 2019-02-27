@@ -13,6 +13,7 @@
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "services/tracing/agent_registry.h"
 #include "services/tracing/coordinator.h"
+#include "services/tracing/perfetto/consumer_host.h"
 #include "services/tracing/perfetto/perfetto_service.h"
 #include "services/tracing/perfetto/perfetto_tracing_coordinator.h"
 #include "services/tracing/public/cpp/tracing_features.h"
@@ -164,6 +165,10 @@ void TracingService::OnStart() {
                             base::Unretained(tracing_coordinator.get())));
     tracing_coordinator_ = std::move(tracing_coordinator);
   }
+
+  registry_.AddInterface(
+      base::BindRepeating(&ConsumerHost::BindConsumerRequest,
+                          base::Unretained(PerfettoService::GetInstance())));
 
   service_listener_ = std::make_unique<ServiceListener>(
       service_binding_.GetConnector(), tracing_agent_registry_.get(),

@@ -89,7 +89,7 @@ TraceStartupConfig::TraceStartupConfig()
   if (EnableFromCommandLine()) {
     DCHECK(IsEnabled());
   } else if (EnableFromConfigFile()) {
-    DCHECK(IsEnabled());
+    DCHECK(IsEnabled() || IsUsingPerfettoOutput());
   } else if (EnableFromBackgroundTracing()) {
     DCHECK(IsEnabled());
     DCHECK(!IsTracingStartupForDuration());
@@ -101,7 +101,12 @@ TraceStartupConfig::TraceStartupConfig()
 TraceStartupConfig::~TraceStartupConfig() = default;
 
 bool TraceStartupConfig::IsEnabled() const {
-  return is_enabled_;
+  // TODO(oysteine): Support early startup tracing using Perfetto
+  // output; right now the early startup tracing gets controlled
+  // through the TracingController, and the Perfetto output is
+  // using the Consumer Mojo interface; the two can't be used
+  // together.
+  return is_enabled_ && !IsUsingPerfettoOutput();
 }
 
 void TraceStartupConfig::SetDisabled() {
@@ -109,21 +114,21 @@ void TraceStartupConfig::SetDisabled() {
 }
 
 bool TraceStartupConfig::IsTracingStartupForDuration() const {
-  return is_enabled_ && startup_duration_ > 0;
+  return IsEnabled() && startup_duration_ > 0;
 }
 
 base::trace_event::TraceConfig TraceStartupConfig::GetTraceConfig() const {
-  DCHECK(IsEnabled());
+  DCHECK(IsEnabled() || IsUsingPerfettoOutput());
   return trace_config_;
 }
 
 int TraceStartupConfig::GetStartupDuration() const {
-  DCHECK(IsEnabled());
+  DCHECK(IsEnabled() || IsUsingPerfettoOutput());
   return startup_duration_;
 }
 
 bool TraceStartupConfig::ShouldTraceToResultFile() const {
-  return is_enabled_ && should_trace_to_result_file_;
+  return IsEnabled() && should_trace_to_result_file_;
 }
 
 base::FilePath TraceStartupConfig::GetResultFile() const {
@@ -134,6 +139,11 @@ base::FilePath TraceStartupConfig::GetResultFile() const {
 
 bool TraceStartupConfig::GetBackgroundStartupTracingEnabled() const {
   return is_enabled_from_background_tracing_;
+}
+
+bool TraceStartupConfig::IsUsingPerfettoOutput() const {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kPerfettoOutputFile);
 }
 
 void TraceStartupConfig::SetBackgroundStartupTracingEnabled(bool enabled) {
