@@ -37,7 +37,6 @@ namespace {
 // #000 at 87% opacity.
 constexpr SkColor kListIconColor = SkColorSetARGB(0xDE, 0x00, 0x00, 0x00);
 
-constexpr int kImageButtonIconSize = 20;
 constexpr SkColor kImageButtonColor = gfx::kGoogleGrey700;
 
 int ACMatchStyleToTagStyle(int styles) {
@@ -253,6 +252,8 @@ void OmniboxResult::SetZeroSuggestionActions() {
     gfx::ImageSkia button_image;
     base::string16 button_tooltip;
     bool visible_on_hover = false;
+    const int kImageButtonIconSize =
+        AppListConfig::instance().search_list_badge_icon_dimension();
 
     switch (button_action) {
       case ash::OmniBoxZeroStateAction::kRemoveSuggestion:
