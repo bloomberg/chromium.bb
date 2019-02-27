@@ -895,8 +895,10 @@ typedef struct AV1_COMP {
   int resize_pending_width;
   int resize_pending_height;
 
-  // ss_cfg[SS_CFG_LOOKAHEAD] : used only in temporal filtering
-  // ss_cfg[SS_CFG_SRC] : used everywhere except temporal filtering
+  // ss_cfg[SS_CFG_LOOKAHEAD] : used in following cases
+  //                           -> temporal filtering
+  //                           -> intrabc
+  // ss_cfg[SS_CFG_SRC] : used everywhere except above mentioned cases
   search_site_config ss_cfg[SS_CFG_TOTAL];
 
   TileDataEnc *tile_data;

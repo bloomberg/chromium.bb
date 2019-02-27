@@ -10659,7 +10659,8 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     const int bestsme = av1_full_pixel_search(
         cpi, x, bsize, &mvp_full, step_param, cpi->sf.mv.search_method, 0,
         sadpb, cond_cost_list(cpi, cost_list), &dv_ref.as_mv, INT_MAX, 1,
-        (MI_SIZE * mi_col), (MI_SIZE * mi_row), 1, &cpi->ss_cfg[SS_CFG_SRC]);
+        (MI_SIZE * mi_col), (MI_SIZE * mi_row), 1,
+        &cpi->ss_cfg[SS_CFG_LOOKAHEAD]);
 
     x->mv_limits = tmp_mv_limits;
     if (bestsme == INT_MAX) continue;
