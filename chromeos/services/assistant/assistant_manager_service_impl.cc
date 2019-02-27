@@ -120,7 +120,8 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
   background_thread_.Start();
   platform_api_ = std::make_unique<PlatformApiImpl>(
       connector, media_session_.get(), std::move(battery_monitor),
-      background_thread_.task_runner(), network_connection_tracker);
+      service_->main_task_runner(), background_thread_.task_runner(),
+      network_connection_tracker);
   connector->BindInterface(ash::mojom::kServiceName,
                            &ash_message_center_controller_);
 }

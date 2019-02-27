@@ -47,6 +47,9 @@ const base::Feature kEnableTextQueriesWithClientDiscourseContext{
 const base::Feature kTimerTicks{"ChromeOSAssistantTimerTicks",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kEnablePowerManager{"ChromeOSAssistantEnablePowerManager",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsAppSupportEnabled() {
   return base::FeatureList::IsEnabled(
       assistant::features::kAssistantAppSupport);
@@ -86,6 +89,10 @@ bool IsTimerTicksEnabled() {
 
 bool IsWarmerWelcomeEnabled() {
   return base::FeatureList::IsEnabled(kAssistantWarmerWelcomeFeature);
+}
+
+bool IsPowerManagerEnabled() {
+  return base::FeatureList::IsEnabled(kEnablePowerManager);
 }
 
 }  // namespace features

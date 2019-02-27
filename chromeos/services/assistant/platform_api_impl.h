@@ -36,6 +36,7 @@ class PlatformApiImpl : public assistant_client::PlatformApi {
       service_manager::Connector* connector,
       AssistantMediaSession* media_session,
       device::mojom::BatteryMonitorPtr battery_monitor,
+      scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> background_task_runner,
       network::NetworkConnectionTracker* network_connection_tracker);
   ~PlatformApiImpl() override;
@@ -92,7 +93,7 @@ class PlatformApiImpl : public assistant_client::PlatformApi {
   DummyAuthProvider auth_provider_;
   FileProviderImpl file_provider_;
   NetworkProviderImpl network_provider_;
-  SystemProviderImpl system_provider_;
+  std::unique_ptr<SystemProviderImpl> system_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformApiImpl);
 };

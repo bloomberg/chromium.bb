@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "chromeos/services/assistant/media_session/assistant_media_session.h"
+#include "chromeos/services/assistant/platform/power_manager_provider_impl.h"
+#include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/utils.h"
 #include "libassistant/shared/public/assistant_export.h"
 #include "libassistant/shared/public/platform_api.h"
@@ -19,8 +21,8 @@ using assistant_client::AudioOutputProvider;
 using assistant_client::AuthProvider;
 using assistant_client::FileProvider;
 using assistant_client::NetworkProvider;
-using assistant_client::SystemProvider;
 using assistant_client::PlatformApi;
+using assistant_client::SystemProvider;
 
 namespace chromeos {
 namespace assistant {
@@ -76,12 +78,21 @@ PlatformApiImpl::PlatformApiImpl(
     service_manager::Connector* connector,
     AssistantMediaSession* media_session,
     device::mojom::BatteryMonitorPtr battery_monitor,
+    scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> background_task_runner,
     network::NetworkConnectionTracker* network_connection_tracker)
     : audio_input_provider_(connector),
       audio_output_provider_(connector, media_session, background_task_runner),
-      network_provider_(network_connection_tracker),
-      system_provider_(std::move(battery_monitor)) {}
+      network_provider_(network_connection_tracker) {
+  // Only enable native power features if they are supported by the UI.
+  std::unique_ptr<PowerManagerProviderImpl> provider;
+  if (features::IsPowerManagerEnabled()) {
+    provider = std::make_unique<PowerManagerProviderImpl>(
+        connector, std::move(main_thread_task_runner));
+  }
+  system_provider_ = std::make_unique<SystemProviderImpl>(
+      std::move(provider), std::move(battery_monitor));
+}
 
 PlatformApiImpl::~PlatformApiImpl() = default;
 
@@ -106,7 +117,7 @@ NetworkProvider& PlatformApiImpl::GetNetworkProvider() {
 }
 
 SystemProvider& PlatformApiImpl::GetSystemProvider() {
-  return system_provider_;
+  return *system_provider_;
 }
 
 void PlatformApiImpl::SetMicState(bool mic_open) {

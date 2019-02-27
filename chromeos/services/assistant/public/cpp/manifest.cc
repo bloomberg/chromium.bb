@@ -28,6 +28,7 @@ const service_manager::Manifest& GetManifest() {
                              "assistant:audio_decoder")
           .RequireCapability("audio", "stream_factory")
           .RequireCapability("device", "device:battery_monitor")
+          .RequireCapability("device", "device:wake_lock")
           .RequireCapability("identity", "identity_manager")
           .RequireCapability("media_session", "app")
 
