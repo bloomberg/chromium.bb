@@ -1978,6 +1978,11 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Couldn’t download the update
       </message>
 
+      <!-- Inline Update Toast -->
+      <message name="IDS_INLINE_UPDATE_TOAST_DOWNLOADING_MESSAGE" desc="Text showing when the user starts the inline update process in Chrome which lets the user know that the update is downloading.">
+        Downloading Chrome Update…
+      </message>
+
       <!-- TranslateInfoBar -->
       <message name="IDS_TRANSLATE_INFOBAR_ERROR">
         Oops. This page could not be translated.
