@@ -20,11 +20,7 @@ def set_up_graph():
 def target_test_requirements(
     reference_design=None,
     build_target=None,
-    gce_test_configs=[],
-    hw_test_configs=[],
-    moblab_test_configs=[],
-    tast_vm_test_configs=[],
-    vm_test_configs=[]):
+    requirements=[]):
   """Create a PerTargetTestRestriction and binds it in the Starlark graph.
 
   Exactly one of reference_design or build_target must be selected. The former
@@ -34,16 +30,33 @@ def target_test_requirements(
   Args:
     reference_design: string, a mosys platform family, e.g. Google_Reef
     build_target: string, a particular CrOS build target, e.g. kevin
-    gce_test_configs: list(config_pb.GceTest)
-    hw_test_configs: list(config_pb.HwTest)
-    moblab_test_configs: list(config_pb.MoblabTest)
-    tast_vm_test_configs: list(config_pb.TastVmTest)
-    vm_test_configs: list(config_pb.VmTest)
+    requirements: list(config_pb.(Gce|Hw|Moblab|TastVm|Vm)Test)
   """
 
   if bool(reference_design) == bool(build_target):
     fail('Expected exactly one of reference_design and build_target to be set. '
          + 'Instead, got %s and %s'%(reference_design, build_target))
+
+  # Bucket the test requirements by their type.
+  gce_test_configs = []
+  hw_test_configs = []
+  moblab_test_configs = []
+  tast_vm_test_configs = []
+  vm_test_configs = []
+  for req in requirements:
+    req_type = type(req)
+    if req_type == type(config_pb.GceTestCfg.GceTest()):
+      gce_test_configs.append(req)
+    elif req_type == type(config_pb.HwTestCfg.HwTest()):
+      hw_test_configs.append(req)
+    elif req_type == type(config_pb.MoblabVmTestCfg.MoblabTest):
+      moblab_test_configs.append(req)
+    elif req_type == type(config_pb.TastVmTestCfg.TastVmTest):
+      tast_vm_test_configs.append(req)
+    elif req_type == type(config_pb.VmTestCfg.VmTest):
+      vm_test_configs.append(req)
+    else:
+      fail('Requirement with unexpected type %s', req_type)
 
   gce_test_cfg = None
   if gce_test_configs:
@@ -147,7 +160,7 @@ def _hw_test_config(
     offload_failures_only=offload_failures_only)
 
 
-def standard_bvt_inline():
+def hw_bvt_inline():
   """Creates a bvt-inline HwTest with default settings.
 
   Returns:
@@ -158,7 +171,7 @@ def standard_bvt_inline():
     minimum_duts=4)
 
 
-def standard_bvt_cq():
+def hw_bvt_cq():
   """Creates a bvt-cq HwTest with default settings.
 
   Returns:
@@ -169,7 +182,7 @@ def standard_bvt_cq():
     minimum_duts=4)
 
 
-def standard_bvt_tast_cq():
+def hw_bvt_tast_cq():
   """Creates a bvt-tast-cq HwTest with default settings.
 
   Returns:
@@ -180,7 +193,7 @@ def standard_bvt_tast_cq():
     minimum_duts=1)
 
 
-def standard_bvt_arc():
+def hw_bvt_arc():
   """Creates a bvt-arc HwTest with default settings.
 
   Returns:

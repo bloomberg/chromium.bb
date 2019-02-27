@@ -11,12 +11,12 @@
 
 load('//target_test_requirements_config_helper.star',
      'gce_sanity_test_config',
+     'hw_bvt_arc',
+     'hw_bvt_cq',
+     'hw_bvt_inline',
+     'hw_bvt_tast_cq',
      'moblab_smoke_test_config',
      'set_up_graph',
-     'standard_bvt_arc',
-     'standard_bvt_cq',
-     'standard_bvt_inline',
-     'standard_bvt_tast_cq',
      'target_test_requirements',
      'tast_vm_cq_test_config',
      'vm_smoke_test_config')
@@ -33,352 +33,338 @@ set_up_graph()
 # daisy (Exynos5250)
 target_test_requirements(
   build_target = 'daisy',
-  hw_test_configs = [],
+  requirements = [],
 )
 
 # slippy (HSW)
 target_test_requirements(
   reference_design = 'Google_Slippy',
-  hw_test_configs = [
-      standard_bvt_inline(),
-      standard_bvt_cq(),
-      standard_bvt_tast_cq(),
+  requirements = [
+      hw_bvt_inline(),
+      hw_bvt_cq(),
+      hw_bvt_tast_cq(),
   ],
 )
 
 # peach (Exynos5420)
 target_test_requirements(
   build_target = 'peach_pit',
-  hw_test_configs = [
-      standard_bvt_inline(),
-      standard_bvt_tast_cq(),
+  requirements = [
+      hw_bvt_inline(),
+      hw_bvt_tast_cq(),
   ],
 )
 
 # rambi (BYT)
 target_test_requirements(
   build_target = 'winky',
-  hw_test_configs = [
-      standard_bvt_inline(),
-      standard_bvt_tast_cq(),
+  requirements = [
+      hw_bvt_inline(),
+      hw_bvt_tast_cq(),
   ],
 )
 target_test_requirements(
   build_target = 'kip',
-  hw_test_configs = [
-      standard_bvt_cq(),
+  requirements = [
+      hw_bvt_cq(),
   ],
 )
 
 # nyan (K1)
 target_test_requirements(
   build_target = 'nyan_big',
-  hw_test_configs = [
-      standard_bvt_inline(),
-      standard_bvt_tast_cq(),
+  requirements = [
+      hw_bvt_inline(),
+      hw_bvt_tast_cq(),
   ],
 )
 target_test_requirements(
   build_target = 'nyan_kitty',
-  hw_test_configs = [
-      standard_bvt_cq(),
+  requirements = [
+      hw_bvt_cq(),
   ],
 )
 
 # auron (BDW)
 target_test_requirements(
   build_target = 'auron_paine',
-  hw_test_configs = [
-      standard_bvt_inline(),
-      standard_bvt_tast_cq(),
+  requirements = [
+      hw_bvt_inline(),
+      hw_bvt_tast_cq(),
   ],
 )
 target_test_requirements(
   build_target = 'tidus',
-  hw_test_configs = [
-      standard_bvt_cq(),
+  requirements = [
+      hw_bvt_cq(),
   ],
 )
 target_test_requirements(
   build_target = 'auron_yuna',
-  hw_test_configs = [
-      standard_bvt_arc(),
+  requirements = [
+      hw_bvt_arc(),
   ],
 )
 
 # pinky (RK3288)
 target_test_requirements(
   build_target = 'veyron_mighty',
-  hw_test_configs = [
-      standard_bvt_inline(),
-      standard_bvt_tast_cq(),
+  requirements = [
+      hw_bvt_inline(),
+      hw_bvt_tast_cq(),
   ],
 )
 target_test_requirements(
   build_target = 'veyron_speedy',
-  hw_test_configs = [
-      standard_bvt_cq(),
+  requirements = [
+      hw_bvt_cq(),
   ],
 )
 target_test_requirements(
   build_target = 'veyron_minnie',
-  hw_test_configs = [
-      standard_bvt_arc(),
+  requirements = [
+      hw_bvt_arc(),
   ],
 )
 
 # strago (BSW)
 target_test_requirements(
   build_target = 'wizpig',
-  hw_test_configs = [
-      standard_bvt_inline(),
-      standard_bvt_tast_cq(),
+  requirements = [
+      hw_bvt_inline(),
+      hw_bvt_tast_cq(),
   ],
 )
 target_test_requirements(
   build_target = 'edgar',
-  hw_test_configs = [
-      standard_bvt_cq(),
+  requirements = [
+      hw_bvt_cq(),
   ],
 )
 target_test_requirements(
   build_target = 'cyan',
-  hw_test_configs = [
-      standard_bvt_arc(),
+  requirements = [
+      hw_bvt_arc(),
   ],
 )
 
 # glados (SKL)
 target_test_requirements(
   reference_design = 'Google_Glados',
-  hw_test_configs = [
-      standard_bvt_inline(),
-      standard_bvt_cq(),
-      standard_bvt_tast_cq(),
+  requirements = [
+      hw_bvt_inline(),
+      hw_bvt_cq(),
+      hw_bvt_tast_cq(),
   ],
 )
 
 # oak (MTK8173)
 target_test_requirements(
   build_target = 'elm',
-  hw_test_configs = [
-      standard_bvt_inline(),
-      standard_bvt_tast_cq(),
+  requirements = [
+      hw_bvt_inline(),
+      hw_bvt_tast_cq(),
   ],
 )
 target_test_requirements(
   build_target = 'hana',
-  hw_test_configs = [
-      standard_bvt_arc(),
+  requirements = [
+      hw_bvt_arc(),
   ],
 )
 
 # gru (RK3399)
 target_test_requirements(
   build_target = 'bob',
-  hw_test_configs = [
-      standard_bvt_inline(),
-      standard_bvt_tast_cq(),
+  requirements = [
+      hw_bvt_inline(),
+      hw_bvt_tast_cq(),
   ],
 )
 target_test_requirements(
   build_target = 'kevin',
-  hw_test_configs = [
-      standard_bvt_arc(),
+  requirements = [
+      hw_bvt_arc(),
   ],
 )
 
 # reef (APL)
 target_test_requirements(
   reference_design = 'Google_Reef',
-  hw_test_configs = [
-      standard_bvt_inline(),
-      standard_bvt_tast_cq(),
+  requirements = [
+      hw_bvt_inline(),
+      hw_bvt_tast_cq(),
   ],
 )
 
 # coral (APL)
 target_test_requirements(
   reference_design = 'Google_Coral',
-  hw_test_configs = [
-      standard_bvt_inline(),
-      standard_bvt_tast_cq(),
+  requirements = [
+      hw_bvt_inline(),
+      hw_bvt_tast_cq(),
   ],
 )
 
 # poppy (KBL)
 target_test_requirements(
   reference_design = 'Google_Poppy',
-  hw_test_configs = [
-      standard_bvt_cq(),
-      standard_bvt_arc(),
-      standard_bvt_tast_cq(),
+  requirements = [
+      hw_bvt_cq(),
+      hw_bvt_arc(),
+      hw_bvt_tast_cq(),
   ],
 )
 
 # Nocturne (KBL)
 target_test_requirements(
   reference_design = 'Google_Nocturne',
-  hw_test_configs = [
-      standard_bvt_inline(),
-      standard_bvt_tast_cq(),
+  requirements = [
+      hw_bvt_inline(),
+      hw_bvt_tast_cq(),
   ],
 )
 
 # gru + arcnext
 target_test_requirements(
   build_target = 'kevin-arcnext',
-  hw_test_configs = [
-      standard_bvt_arc(),
-      standard_bvt_tast_cq(),
+  requirements = [
+      hw_bvt_arc(),
+      hw_bvt_tast_cq(),
   ],
 )
 
 # arcnext
 target_test_requirements(
   build_target = 'caroline-arcnext',
-  hw_test_configs = [
-      standard_bvt_arc(),
-      standard_bvt_tast_cq(),
+  requirements = [
+      hw_bvt_arc(),
+      hw_bvt_tast_cq(),
   ],
 )
 
 # Add for Skylab test
 target_test_requirements(
   build_target = 'nyan_blaze',
-  hw_test_configs = [
-      standard_bvt_inline(),
-      standard_bvt_tast_cq(),
+  requirements = [
+      hw_bvt_inline(),
+      hw_bvt_tast_cq(),
   ],
 )
 
 # scarlet (RK3399 unibuild)
 target_test_requirements(
   build_target = 'scarlet',
-  hw_test_configs = [
-      standard_bvt_inline(),
-      standard_bvt_tast_cq(),
+  requirements = [
+      hw_bvt_inline(),
+      hw_bvt_tast_cq(),
   ],
 )
 
 # grunt (AMD unibuild)
 target_test_requirements(
   build_target = 'grunt',
-  hw_test_configs = [
-      standard_bvt_inline(),
-      standard_bvt_arc(),
-      standard_bvt_tast_cq(),
+  requirements = [
+      hw_bvt_inline(),
+      hw_bvt_arc(),
+      hw_bvt_tast_cq(),
   ],
 )
 
 target_test_requirements(
   build_target = 'amd64-generic-asan',
-  vm_test_configs = [
+  requirements = [
       vm_smoke_test_config(use_ctest=True),
   ],
 )
 
 target_test_requirements(
   build_target = 'amd64-generic-ubsan',
-  vm_test_configs = [
+  requirements = [
       vm_smoke_test_config(use_ctest=True),
   ],
 )
 
 target_test_requirements(
   build_target = 'betty-arc64',
-  tast_vm_test_configs = [
+  requirements = [
       tast_vm_cq_test_config(),
-  ],
-  vm_test_configs = [
       vm_smoke_test_config(use_ctest=True),
   ],
 )
 
 target_test_requirements(
   build_target = 'betty-arcnext',
-  vm_test_configs = [
+  requirements = [
       vm_smoke_test_config(use_ctest=False),
   ],
 )
 
 target_test_requirements(
   build_target = 'betty-asan',
-  vm_test_configs = [
+  requirements = [
       vm_smoke_test_config(use_ctest=True),
   ],
 )
 
 target_test_requirements(
   build_target = 'betty',
-  tast_vm_test_configs = [
+  requirements = [
       tast_vm_cq_test_config(),
-  ],
-  vm_test_configs = [
       vm_smoke_test_config(use_ctest=False),
   ],
 )
 
 target_test_requirements(
   build_target = 'lakitu-gpu',
-  gce_test_configs = [
+  requirements = [
       gce_sanity_test_config(),
-  ],
-  vm_test_configs = [
       vm_smoke_test_config(use_ctest=True),
   ],
 )
 
 target_test_requirements(
   build_target = 'lakitu-nc',
-  gce_test_configs = [
+  requirements = [
       gce_sanity_test_config(),
-  ],
-  vm_test_configs = [
       vm_smoke_test_config(use_ctest=True),
   ],
 )
 
 target_test_requirements(
   build_target = 'lakitu',
-  gce_test_configs = [
+  requirements = [
       gce_sanity_test_config(),
-  ],
-  vm_test_configs = [
       vm_smoke_test_config(use_ctest=True),
   ],
 )
 
 target_test_requirements(
   build_target = 'lakitu-st',
-  gce_test_configs = [
+  requirements = [
       gce_sanity_test_config(),
-  ],
-  vm_test_configs = [
       vm_smoke_test_config(use_ctest=True),
   ],
 )
 
 target_test_requirements(
   build_target = 'lakitu_next',
-  gce_test_configs = [
+  requirements = [
       gce_sanity_test_config(),
-  ],
-  vm_test_configs = [
       vm_smoke_test_config(use_ctest=True),
   ],
 )
 
 target_test_requirements(
   build_target = 'amd64-generic',
-  tast_vm_test_configs = [
+  requirements = [
       tast_vm_cq_test_config(),
   ],
 )
 
 target_test_requirements(
   build_target = 'moblab-generic-vm',
-  moblab_test_configs = [
+  requirements = [
       moblab_smoke_test_config(),
   ],
 )
