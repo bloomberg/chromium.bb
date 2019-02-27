@@ -409,6 +409,7 @@ public class FullscreenManagerTest {
     @Test
     @LargeTest
     @Feature({"Fullscreen"})
+    @DisabledTest(message = "Flaky. crbug.com/936252")
     public void testManualFullscreenDisabledForChromePages() throws InterruptedException {
         FullscreenManagerTestUtils.disableBrowserOverrides();
         // The credits page was chosen as it is a chrome:// page that is long and would support
