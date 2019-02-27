@@ -1391,6 +1391,12 @@ void FragmentPaintPropertyTreeBuilder::UpdateInnerBorderRadiusClip() {
 
 static bool CanOmitOverflowClip(const LayoutObject& object) {
   DCHECK(NeedsOverflowClip(object));
+
+  if (object.IsLayoutView() && object.GetFrame()->IsMainFrame() &&
+      !object.GetFrame()->GetSettings()->GetMainFrameClipsContent()) {
+    return true;
+  }
+
   // Some non-block boxes and SVG objects have special overflow rules.
   if (!object.IsLayoutBlock() || object.IsSVG())
     return false;
