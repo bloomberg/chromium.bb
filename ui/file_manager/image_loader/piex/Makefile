@@ -12,7 +12,7 @@ PSRC = $(PIEX)/src/piex.cc \
 WAPI = ["cwrap", "addFunction", "removeFunction"]
 
 INCS = -I $(PIEX) -I .
-WASM = -s WASM=1 -fno-exceptions -D NO_ENABLE_LOGGING
+WASM = -s WASM=1 -fno-exceptions -Wall
 WOPT = -Os --llvm-opts 3 \
   -s STRICT=1 \
   -s ALLOW_MEMORY_GROWTH=1 \
@@ -24,7 +24,7 @@ all: a.out.js
 a.out.js: piex.cpp.bc piex.src.bc
 	em++ --bind --std=c++11 $(WASM) $(WOPT) $^
 
-piex.cpp.bc: piex.cpp log.h logfatal.h Makefile
+piex.cpp.bc: piex.cpp Makefile
 	em++ --bind --std=c++11 $(WASM) $(WOPT) $(INCS) piex.cpp -o $@
 
 piex.src.bc: $(PSRC) Makefile
