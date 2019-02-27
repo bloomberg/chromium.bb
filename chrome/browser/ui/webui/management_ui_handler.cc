@@ -119,37 +119,43 @@ std::string GetAccountDomain(Profile* profile) {
 
 #if defined(OS_CHROMEOS)
 
-void AddChromeOSReportingDevice(base::Value* report_sources) {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+enum class DeviceReportingType {
+  kSupervisedUser,
+  kDeviceActivity,
+  kDeviceStatistics,
+  kDevice,
+  kLogs
+};
 
-  // Only check for report status in managed environment.
-  if (!connector->IsEnterpriseManaged())
-    return;
-
-  policy::DeviceCloudPolicyManagerChromeOS* manager =
-      connector->GetDeviceCloudPolicyManager();
-
-  if (!manager)
-    return;
-
-  if (manager->GetSystemLogUploader()->upload_enabled()) {
-    report_sources->GetList().push_back(
-        base::Value(kManagementLogUploadEnabled));
-  }
-
-  const policy::DeviceStatusCollector* collector =
-      manager->GetStatusUploader()->device_status_collector();
-
-  if (collector->report_hardware_status()) {
-    report_sources->GetList().push_back(
-        base::Value(kManagementReportHardwareStatus));
+// Corresponds to DeviceReportingType in management_browser_proxy.js
+std::string ToJSDeviceReportingType(const DeviceReportingType& type) {
+  switch (type) {
+    case DeviceReportingType::kSupervisedUser:
+      return "supervised user";
+    case DeviceReportingType::kDeviceActivity:
+      return "device activity";
+    case DeviceReportingType::kDeviceStatistics:
+      return "device statistics";
+    case DeviceReportingType::kDevice:
+      return "device";
+    case DeviceReportingType::kLogs:
+      return "logs";
+    default:
+      NOTREACHED() << "Unknown device reporting type";
+      return "device";
   }
 }
 
-void AddChromeOSReportingSecurity(base::Value* report_sources) {}
+void AddDeviceReportingElement(base::Value* report_sources,
+                               const std::string& message_id,
+                               const DeviceReportingType& type) {
+  base::Value data(base::Value::Type::DICTIONARY);
+  data.SetKey("messageId", base::Value(message_id));
+  data.SetKey("reportingType", base::Value(ToJSDeviceReportingType(type)));
+  report_sources->GetList().push_back(std::move(data));
+}
 
-void AddChromeOSReportingUserActivity(base::Value* report_sources) {
+void AddDeviceReportingInfo(base::Value* report_sources) {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
 
@@ -166,74 +172,28 @@ void AddChromeOSReportingUserActivity(base::Value* report_sources) {
   const policy::DeviceStatusCollector* collector =
       manager->GetStatusUploader()->device_status_collector();
 
+  // Elements appear on the page in the order they are added.
   if (collector->report_activity_times()) {
-    report_sources->GetList().push_back(
-        base::Value(kManagementReportActivityTimes));
-  }
-  if (collector->report_users()) {
-    report_sources->GetList().push_back(base::Value(kManagementReportUsers));
-  }
-}
-
-void AddChromeOSReportingWeb(base::Value* report_sources) {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-
-  // Only check for report status in managed environment.
-  if (!connector->IsEnterpriseManaged())
-    return;
-
-  policy::DeviceCloudPolicyManagerChromeOS* manager =
-      connector->GetDeviceCloudPolicyManager();
-
-  if (!manager)
-    return;
-
-  const policy::DeviceStatusCollector* collector =
-      manager->GetStatusUploader()->device_status_collector();
-
-  if (collector->report_network_interfaces()) {
-    report_sources->GetList().push_back(
-        base::Value(kManagementReportNetworkInterfaces));
-  }
-}
-
-void AddChromeOSReportingInfo(base::Value* report_sources) {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-
-  // Only check for report status in managed environment.
-  if (!connector->IsEnterpriseManaged())
-    return;
-
-  policy::DeviceCloudPolicyManagerChromeOS* manager =
-      connector->GetDeviceCloudPolicyManager();
-
-  if (!manager)
-    return;
-
-  if (manager->GetSystemLogUploader()->upload_enabled()) {
-    report_sources->GetList().push_back(
-        base::Value(kManagementLogUploadEnabled));
-  }
-
-  const policy::DeviceStatusCollector* collector =
-      manager->GetStatusUploader()->device_status_collector();
-
-  if (collector->report_activity_times()) {
-    report_sources->GetList().push_back(
-        base::Value(kManagementReportActivityTimes));
+    AddDeviceReportingElement(report_sources, kManagementReportActivityTimes,
+                              DeviceReportingType::kDeviceActivity);
+  } else {
+    if (collector->report_users()) {
+      AddDeviceReportingElement(report_sources, kManagementReportUsers,
+                                DeviceReportingType::kSupervisedUser);
+    }
   }
   if (collector->report_hardware_status()) {
-    report_sources->GetList().push_back(
-        base::Value(kManagementReportHardwareStatus));
+    AddDeviceReportingElement(report_sources, kManagementReportHardwareStatus,
+                              DeviceReportingType::kDeviceStatistics);
   }
   if (collector->report_network_interfaces()) {
-    report_sources->GetList().push_back(
-        base::Value(kManagementReportNetworkInterfaces));
+    AddDeviceReportingElement(report_sources,
+                              kManagementReportNetworkInterfaces,
+                              DeviceReportingType::kDevice);
   }
-  if (collector->report_users()) {
-    report_sources->GetList().push_back(base::Value(kManagementReportUsers));
+  if (manager->GetSystemLogUploader()->upload_enabled()) {
+    AddDeviceReportingElement(report_sources, kManagementLogUploadEnabled,
+                              DeviceReportingType::kLogs);
   }
 }
 #endif  // defined(OS_CHROMEOS)
@@ -329,27 +289,11 @@ void ManagementUIHandler::RegisterMessages() {
       "getLocalTrustRootsInfo",
       base::BindRepeating(&ManagementUIHandler::HandleGetLocalTrustRootsInfo,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getDeviceReportingInfo",
+      base::BindRepeating(&ManagementUIHandler::HandleGetDeviceReportingInfo,
+                          base::Unretained(this)));
 #endif  // defined(OS_CHROMEOS)
-  web_ui()->RegisterMessageCallback(
-      "getReportingDevice",
-      base::BindRepeating(&ManagementUIHandler::HandleGetReportingDevice,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getReportingInfo",
-      base::BindRepeating(&ManagementUIHandler::HandleGetReportingInfo,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getReportingSecurity",
-      base::BindRepeating(&ManagementUIHandler::HandleGetReportingSecurity,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getReportingUserActivity",
-      base::BindRepeating(&ManagementUIHandler::HandleGetReportingUserActivity,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "getReportingWeb",
-      base::BindRepeating(&ManagementUIHandler::HandleGetReportingWeb,
-                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "initBrowserReportingInfo",
       base::BindRepeating(&ManagementUIHandler::HandleInitBrowserReportingInfo,
@@ -595,75 +539,19 @@ void ManagementUIHandler::HandleGetLocalTrustRootsInfo(
   ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
                             trust_roots_configured);
 }
-#endif  // defined(OS_CHROMEOS)
 
-void ManagementUIHandler::HandleGetReportingDevice(
+void ManagementUIHandler::HandleGetDeviceReportingInfo(
     const base::ListValue* args) {
   base::Value report_sources(base::Value::Type::LIST);
   AllowJavascript();
 
-// Only Chrome OS devices report status.
-#if defined(OS_CHROMEOS)
-  AddChromeOSReportingDevice(&report_sources);
-#endif  // defined(OS_CHROMEOS)
+  AddDeviceReportingInfo(&report_sources);
 
   ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
                             report_sources);
 }
-
-void ManagementUIHandler::HandleGetReportingInfo(const base::ListValue* args) {
-  base::Value report_sources(base::Value::Type::LIST);
-  AllowJavascript();
-
-// Only Chrome OS devices report status.
-#if defined(OS_CHROMEOS)
-  AddChromeOSReportingInfo(&report_sources);
 #endif  // defined(OS_CHROMEOS)
 
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
-                            report_sources);
-}
-
-void ManagementUIHandler::HandleGetReportingSecurity(
-    const base::ListValue* args) {
-  base::Value report_sources(base::Value::Type::LIST);
-  AllowJavascript();
-
-// Only Chrome OS devices report status.
-#if defined(OS_CHROMEOS)
-  AddChromeOSReportingSecurity(&report_sources);
-#endif  // defined(OS_CHROMEOS)
-
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
-                            report_sources);
-}
-
-void ManagementUIHandler::HandleGetReportingUserActivity(
-    const base::ListValue* args) {
-  base::Value report_sources(base::Value::Type::LIST);
-  AllowJavascript();
-
-// Only Chrome OS devices report status.
-#if defined(OS_CHROMEOS)
-  AddChromeOSReportingUserActivity(&report_sources);
-#endif  // defined(OS_CHROMEOS)
-
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
-                            report_sources);
-}
-
-void ManagementUIHandler::HandleGetReportingWeb(const base::ListValue* args) {
-  base::Value report_sources(base::Value::Type::LIST);
-  AllowJavascript();
-
-// Only Chrome OS devices report status.
-#if defined(OS_CHROMEOS)
-  AddChromeOSReportingWeb(&report_sources);
-#endif  // defined(OS_CHROMEOS)
-
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
-                            report_sources);
-}
 
 void ManagementUIHandler::HandleInitBrowserReportingInfo(
     const base::ListValue* args) {

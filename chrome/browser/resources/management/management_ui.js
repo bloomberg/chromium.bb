@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+
 /**
  * @typedef {{
  *    messages: !Array<string>,
@@ -13,9 +14,7 @@ management.BrowserReportingData;
 Polymer({
   is: 'management-ui',
 
-  behaviors: [
-    WebUIListenerBehavior,
-  ],
+  behaviors: [WebUIListenerBehavior, I18nBehavior],
 
   properties: {
     /**
@@ -31,6 +30,12 @@ Polymer({
     extensions_: Array,
 
     // <if expr="chromeos">
+    /**
+     * List of messages related to device reporting.
+     * @private {?Array<!management.DeviceReportingResponse>}
+     */
+    deviceReportingInfo_: Array,
+
     /**
      * Message stating if the Trust Roots are configured.
      * @private
@@ -63,6 +68,7 @@ Polymer({
 
     this.getExtensions_();
     // <if expr="chromeos">
+    this.getDeviceReportingInfo_();
     this.getLocalTrustRootsInfo_();
     // </if>
   },
@@ -116,6 +122,43 @@ Polymer({
           trustRootsConfigured ? 'managementTrustRootsConfigured' :
                                  'managementTrustRootsNotConfigured');
     });
+  },
+
+  /** @private */
+  getDeviceReportingInfo_() {
+    this.browserProxy_.getDeviceReportingInfo().then(reportingInfo => {
+      this.deviceReportingInfo_ = reportingInfo;
+    });
+  },
+
+  /**
+   * @return {boolean} True of there are device reporting info to show.
+   * @private
+   */
+  showDeviceReportingInfo_() {
+    return !!this.deviceReportingInfo_ && this.deviceReportingInfo_.length > 0;
+  },
+
+  /**
+   * @param {management.DeviceReportingType} reportingType
+   * @return {string} The associated icon.
+   * @private
+   */
+  getIconForDeviceReportingType_(reportingType) {
+    switch (reportingType) {
+      case management.DeviceReportingType.SUPERVISED_USER:
+        return 'management:supervised-user';
+      case management.DeviceReportingType.DEVICE_ACTIVITY:
+        return 'management:timelapse';
+      case management.DeviceReportingType.STATISTIC:
+        return 'management:bar-chart';
+      case management.DeviceReportingType.DEVICE:
+        return 'cr:computer';
+      case management.DeviceReportingType.LOGS:
+        return 'management:report';
+      default:
+        return 'cr:computer';
+    }
   },
   // </if>
 

@@ -27,6 +27,29 @@ management.ReportingType = {
  */
 management.BrowserReportingResponse;
 
+// <if expr="chromeos">
+/**
+ * @enum {string} Look at ToJSDeviceReportingType usage in
+ *    management_ui_handler.cc for more details.
+ */
+management.DeviceReportingType = {
+  SUPERVISED_USER: 'supervised user',
+  DEVICE_ACTIVITY: 'device activity',
+  STATISTIC: 'device statistics',
+  DEVICE: 'device',
+  LOGS: 'logs'
+};
+
+
+/**
+ * @typedef {{
+ *    messageId: string,
+ *    reportingType: !management.DeviceReportingType,
+ * }}
+ */
+management.DeviceReportingResponse;
+// </if>
+
 cr.define('management', function() {
   /** @interface */
   class ManagementBrowserProxy {
@@ -39,6 +62,12 @@ cr.define('management', function() {
      *     or not.
      */
     getLocalTrustRootsInfo() {}
+
+    /**
+     * @return {!Promise<!Array<management.DeviceReportingResponse>>} List of
+     *     items to display in device reporting section.
+     */
+    getDeviceReportingInfo() {}
     // </if>
 
     /**
@@ -59,6 +88,11 @@ cr.define('management', function() {
     /** @override */
     getLocalTrustRootsInfo() {
       return cr.sendWithPromise('getLocalTrustRootsInfo');
+    }
+
+    /** @override */
+    getDeviceReportingInfo() {
+      return cr.sendWithPromise('getDeviceReportingInfo');
     }
     // </if>
 
