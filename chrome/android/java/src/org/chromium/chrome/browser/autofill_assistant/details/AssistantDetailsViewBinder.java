@@ -116,15 +116,23 @@ class AssistantDetailsViewBinder
 
     private void setDetails(AssistantDetails details, ViewHolder viewHolder) {
         viewHolder.mTitleView.setText(details.getTitle());
-        if (!details.getDescriptionLine1().isEmpty()) {
-            viewHolder.mDescriptionLine1View.setText(details.getDescriptionLine1());
-        } else {
-            String datetimeText = makeDatetimeText(details);
-            viewHolder.mDescriptionLine1View.setText(datetimeText);
-        }
+        viewHolder.mDescriptionLine1View.setText(makeDescriptionLine1Text(details));
         viewHolder.mDescriptionLine2View.setText(details.getDescriptionLine2());
         viewHolder.mTotalPriceLabelView.setText(details.getTotalPriceLabel());
         viewHolder.mTotalPriceView.setText(details.getTotalPrice());
+
+        // Allow title line wrapping if no or only one description set.
+        boolean isDescriptionLine1Empty = viewHolder.mDescriptionLine1View.length() == 0;
+        boolean isDescriptionLine2Empty = viewHolder.mDescriptionLine2View.length() == 0;
+        if (isDescriptionLine1Empty || isDescriptionLine2Empty) {
+            int maxLines = isDescriptionLine1Empty && isDescriptionLine2Empty ? 3 : 2;
+            viewHolder.mTitleView.setSingleLine(false);
+            viewHolder.mTitleView.setMaxLines(maxLines);
+            viewHolder.mTitleView.setEllipsize(TextUtils.TruncateAt.END);
+        } else {
+            viewHolder.mTitleView.setSingleLine(true);
+            viewHolder.mTitleView.setEllipsize(null);
+        }
 
         hideIfEmpty(viewHolder.mDescriptionLine1View);
         hideIfEmpty(viewHolder.mDescriptionLine2View);
@@ -148,6 +156,14 @@ class AssistantDetailsViewBinder
                             viewHolder.mImageView.setImageDrawable(getRoundedImage(image));
                         }
                     });
+        }
+    }
+
+    private String makeDescriptionLine1Text(AssistantDetails details) {
+        if (!details.getDescriptionLine1().isEmpty()) {
+            return details.getDescriptionLine1();
+        } else {
+            return makeDatetimeText(details);
         }
     }
 
