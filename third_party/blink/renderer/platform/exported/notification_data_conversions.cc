@@ -53,6 +53,7 @@ WebNotificationData ToWebNotificationData(
     web_data.actions[i].placeholder =
         WebString::FromUTF16(platform_data.actions[i].placeholder);
   }
+  web_data.show_trigger_timestamp = platform_data.show_trigger_timestamp;
 
   return web_data;
 }

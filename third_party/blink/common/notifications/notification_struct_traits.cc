@@ -110,7 +110,9 @@ bool StructTraits<blink::mojom::NotificationDataDataView,
       !notification_data.ReadVibrationPattern(
           &platform_notification_data->vibration_pattern) ||
       !notification_data.ReadActions(&platform_notification_data->actions) ||
-      !notification_data.ReadData(&data)) {
+      !notification_data.ReadData(&data) ||
+      !notification_data.ReadShowTriggerTimestamp(
+          &platform_notification_data->show_trigger_timestamp)) {
     return false;
   }
 

@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_NOTIFICATIONS_WEB_NOTIFICATION_DATA_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_NOTIFICATIONS_WEB_NOTIFICATION_DATA_H_
 
+#include "base/optional.h"
+#include "base/time/time.h"
 #include "third_party/blink/public/mojom/notifications/notification.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_action.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -38,6 +40,7 @@ struct WebNotificationData {
   bool require_interaction = false;
   WebVector<char> data;
   WebVector<WebNotificationAction> actions;
+  base::Optional<base::Time> show_trigger_timestamp;
 };
 
 }  // namespace blink

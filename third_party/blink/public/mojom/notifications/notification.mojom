@@ -5,6 +5,7 @@
 module blink.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "skia/public/interfaces/bitmap.mojom";
 import "url/mojom/url.mojom";
 
@@ -103,6 +104,9 @@ struct NotificationData {
 
   // Actions that should be shown as buttons on the notification.
   array<NotificationAction>? actions;
+
+  // Time when to show this notification.
+  mojo_base.mojom.Time? show_trigger_timestamp;
 };
 
 // Structure representing the resources associated with a Web Notification.

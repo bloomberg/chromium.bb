@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/modules/notifications/notification.h"
 #include "third_party/blink/renderer/modules/notifications/notification_options.h"
+#include "third_party/blink/renderer/modules/notifications/timestamp_trigger.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -97,6 +98,9 @@ TEST_F(NotificationDataTest, ReflectProperties) {
     actions.push_back(action);
   }
 
+  DOMTimeStamp showTimestamp = WTF::CurrentTimeMS();
+  TimestampTrigger* showTrigger = TimestampTrigger::Create(showTimestamp);
+
   NotificationOptions* options = NotificationOptions::Create();
   options->setDir(kNotificationDir);
   options->setLang(kNotificationLang);
@@ -111,6 +115,7 @@ TEST_F(NotificationDataTest, ReflectProperties) {
   options->setSilent(kNotificationSilent);
   options->setRequireInteraction(kNotificationRequireInteraction);
   options->setActions(actions);
+  options->setShowTrigger(showTrigger);
 
   // TODO(peter): Test |options.data| and |notificationData.data|.
 
@@ -126,6 +131,8 @@ TEST_F(NotificationDataTest, ReflectProperties) {
   EXPECT_EQ(kNotificationLang, notification_data->lang);
   EXPECT_EQ(kNotificationBody, notification_data->body);
   EXPECT_EQ(kNotificationTag, notification_data->tag);
+  EXPECT_EQ(base::Time::FromJsTime(showTimestamp),
+            notification_data->show_trigger_timestamp);
 
   KURL base(kNotificationBaseUrl);
 

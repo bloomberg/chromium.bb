@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/modules/notifications/notification_manager.h"
 #include "third_party/blink/renderer/modules/notifications/notification_options.h"
 #include "third_party/blink/renderer/modules/notifications/notification_resources_loader.h"
+#include "third_party/blink/renderer/modules/notifications/timestamp_trigger.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/frame_resource_coordinator.h"
@@ -84,6 +85,13 @@ Notification* Notification::Create(ExecutionContext* context,
     exception_state.ThrowTypeError(
         "Actions are only supported for persistent notifications shown using "
         "ServiceWorkerRegistration.showNotification().");
+    return nullptr;
+  }
+
+  if (options->hasShowTrigger()) {
+    exception_state.ThrowTypeError(
+        "ShowTrigger is only supported for persistent notifications shown "
+        "using ServiceWorkerRegistration.showNotification().");
     return nullptr;
   }
 
