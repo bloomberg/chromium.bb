@@ -127,7 +127,7 @@ TEST_F(SessionStorageAreaImplTest, BasicUsage) {
 
   auto ss_leveldb_impl = std::make_unique<SessionStorageAreaImpl>(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_), test_origin1_,
-      SessionStorageDataMap::Create(
+      SessionStorageDataMap::CreateFromDisk(
           &listener_,
           metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_)
               ->second[test_origin1_],
@@ -149,6 +149,32 @@ TEST_F(SessionStorageAreaImplTest, BasicUsage) {
       .Times(1);
 }
 
+TEST_F(SessionStorageAreaImplTest, ExplicitlyEmptyMap) {
+  EXPECT_CALL(listener_,
+              OnDataMapCreation(StdStringToUint8Vector("0"), testing::_))
+      .Times(1);
+
+  auto ss_leveldb_impl = std::make_unique<SessionStorageAreaImpl>(
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_), test_origin1_,
+      SessionStorageDataMap::CreateEmpty(
+          &listener_,
+          metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_)
+              ->second[test_origin1_],
+          leveldb_database_.get()),
+      GetRegisterNewAreaMapCallback());
+
+  blink::mojom::StorageAreaAssociatedPtr ss_leveldb;
+  ss_leveldb_impl->Bind(
+      mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb));
+
+  std::vector<blink::mojom::KeyValuePtr> data;
+  EXPECT_TRUE(test::GetAllSync(ss_leveldb.get(), &data));
+  ASSERT_EQ(0ul, data.size());
+
+  EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("0")))
+      .Times(1);
+}
+
 TEST_F(SessionStorageAreaImplTest, DoubleBind) {
   EXPECT_CALL(listener_,
               OnDataMapCreation(StdStringToUint8Vector("0"), testing::_))
@@ -156,7 +182,7 @@ TEST_F(SessionStorageAreaImplTest, DoubleBind) {
 
   auto ss_leveldb_impl = std::make_unique<SessionStorageAreaImpl>(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_), test_origin1_,
-      SessionStorageDataMap::Create(
+      SessionStorageDataMap::CreateFromDisk(
           &listener_,
           metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_)
               ->second[test_origin1_],
@@ -190,7 +216,7 @@ TEST_F(SessionStorageAreaImplTest, Cloning) {
 
   auto ss_leveldb_impl1 = std::make_unique<SessionStorageAreaImpl>(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_), test_origin1_,
-      SessionStorageDataMap::Create(
+      SessionStorageDataMap::CreateFromDisk(
           &listener_,
           metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_)
               ->second[test_origin1_],
@@ -265,7 +291,7 @@ TEST_F(SessionStorageAreaImplTest, NotifyAllDeleted) {
 
   auto ss_leveldb_impl1 = std::make_unique<SessionStorageAreaImpl>(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_), test_origin1_,
-      SessionStorageDataMap::Create(
+      SessionStorageDataMap::CreateFromDisk(
           &listener_,
           metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_)
               ->second[test_origin1_],
@@ -301,7 +327,7 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllOnShared) {
 
   auto ss_leveldb_impl1 = std::make_unique<SessionStorageAreaImpl>(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_), test_origin1_,
-      SessionStorageDataMap::Create(
+      SessionStorageDataMap::CreateFromDisk(
           &listener_,
           metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_)
               ->second[test_origin1_],
@@ -367,7 +393,7 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllWithoutBinding) {
 
   auto ss_leveldb_impl1 = std::make_unique<SessionStorageAreaImpl>(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_), test_origin1_,
-      SessionStorageDataMap::Create(
+      SessionStorageDataMap::CreateFromDisk(
           &listener_,
           metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_)
               ->second[test_origin1_],

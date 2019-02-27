@@ -41,7 +41,12 @@ class CONTENT_EXPORT SessionStorageDataMap final
     virtual void OnCommitResult(leveldb::mojom::DatabaseError error) = 0;
   };
 
-  static scoped_refptr<SessionStorageDataMap> Create(
+  static scoped_refptr<SessionStorageDataMap> CreateFromDisk(
+      Listener* listener,
+      scoped_refptr<SessionStorageMetadata::MapData> map_data,
+      leveldb::mojom::LevelDBDatabase* database);
+
+  static scoped_refptr<SessionStorageDataMap> CreateEmpty(
       Listener* listener,
       scoped_refptr<SessionStorageMetadata::MapData> map_data,
       leveldb::mojom::LevelDBDatabase* database);
@@ -78,7 +83,8 @@ class CONTENT_EXPORT SessionStorageDataMap final
   SessionStorageDataMap(
       Listener* listener,
       scoped_refptr<SessionStorageMetadata::MapData> map_entry,
-      leveldb::mojom::LevelDBDatabase* database);
+      leveldb::mojom::LevelDBDatabase* database,
+      bool is_empty);
   SessionStorageDataMap(
       Listener* listener,
       scoped_refptr<SessionStorageMetadata::MapData> map_entry,

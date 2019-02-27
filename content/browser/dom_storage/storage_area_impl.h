@@ -100,6 +100,15 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
 
   ~StorageAreaImpl() override;
 
+  // Initializes the storage area as loaded & empty. This can only be called
+  // immediately after construction, and before any other methods are called
+  // that would load data from the database.
+  // This avoids hitting disk to load a map that the implementer already knows
+  // must be empty. Do not use this option unless you are absolutely certain
+  // that there must be no data for the |prefix|, as the data will not be loaded
+  // to check.
+  void InitializeAsEmpty();
+
   void Bind(blink::mojom::StorageAreaRequest request);
 
   // Forks, or copies, all data in this prefix to another prefix.

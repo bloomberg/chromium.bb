@@ -104,10 +104,12 @@ TEST_F(SessionStorageDataMapTest, BasicEmptyCreation) {
               OnDataMapCreation(StdStringToUint8Vector("1"), testing::_))
       .Times(1);
 
-  scoped_refptr<SessionStorageDataMap> map = SessionStorageDataMap::Create(
-      &listener_,
-      base::MakeRefCounted<SessionStorageMetadata::MapData>(1, test_origin_),
-      &database_);
+  scoped_refptr<SessionStorageDataMap> map =
+      SessionStorageDataMap::CreateFromDisk(
+          &listener_,
+          base::MakeRefCounted<SessionStorageMetadata::MapData>(1,
+                                                                test_origin_),
+          &database_);
 
   bool success;
   std::vector<blink::mojom::KeyValuePtr> data;
@@ -131,15 +133,47 @@ TEST_F(SessionStorageDataMapTest, BasicEmptyCreation) {
   EXPECT_EQ(2u, mock_data_.size());
 }
 
+TEST_F(SessionStorageDataMapTest, ExplicitlyEmpty) {
+  EXPECT_CALL(listener_,
+              OnDataMapCreation(StdStringToUint8Vector("1"), testing::_))
+      .Times(1);
+
+  scoped_refptr<SessionStorageDataMap> map = SessionStorageDataMap::CreateEmpty(
+      &listener_,
+      base::MakeRefCounted<SessionStorageMetadata::MapData>(1, test_origin_),
+      &database_);
+
+  bool success;
+  std::vector<blink::mojom::KeyValuePtr> data;
+  bool done = false;
+  base::RunLoop loop;
+  map->storage_area()->GetAll(
+      GetAllCallback::CreateAndBind(&done, loop.QuitClosure()),
+      MakeGetAllCallback(&success, &data));
+  loop.Run();
+
+  EXPECT_TRUE(done);
+  ASSERT_EQ(0u, data.size());
+
+  EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("1")))
+      .Times(1);
+
+  // Test data is not cleared on deletion.
+  map = nullptr;
+  EXPECT_EQ(2u, mock_data_.size());
+}
+
 TEST_F(SessionStorageDataMapTest, Clone) {
   EXPECT_CALL(listener_,
               OnDataMapCreation(StdStringToUint8Vector("1"), testing::_))
       .Times(1);
 
-  scoped_refptr<SessionStorageDataMap> map1 = SessionStorageDataMap::Create(
-      &listener_,
-      base::MakeRefCounted<SessionStorageMetadata::MapData>(1, test_origin_),
-      &database_);
+  scoped_refptr<SessionStorageDataMap> map1 =
+      SessionStorageDataMap::CreateFromDisk(
+          &listener_,
+          base::MakeRefCounted<SessionStorageMetadata::MapData>(1,
+                                                                test_origin_),
+          &database_);
 
   EXPECT_CALL(listener_,
               OnDataMapCreation(StdStringToUint8Vector("2"), testing::_))
