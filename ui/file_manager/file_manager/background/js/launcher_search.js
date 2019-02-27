@@ -237,7 +237,12 @@ LauncherSearch.prototype.queryDriveEntries_ = (queryId, query, limit) => {
   const param = {query: query, types: 'ALL', maxResults: limit};
   return new Promise((resolve, reject) => {
     chrome.fileManagerPrivate.searchDriveMetadata(param, results => {
-      resolve(results.map(result => result.entry));
+      chrome.fileManagerPrivate.getDriveConnectionState(connectionState => {
+        if (connectionState.type !== 'online') {
+          results = results.filter(result => result.availableOffline !== false);
+        }
+        resolve(results.map(result => result.entry));
+      });
     });
   });
 };

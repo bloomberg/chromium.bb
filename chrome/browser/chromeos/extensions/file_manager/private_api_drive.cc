@@ -86,6 +86,8 @@ const char kDriveConnectionReasonNotReady[] = "not_ready";
 const char kDriveConnectionReasonNoNetwork[] = "no_network";
 const char kDriveConnectionReasonNoService[] = "no_service";
 
+constexpr char kAvailableOfflinePropertyName[] = "availableOffline";
+
 // Maximum dimension of thumbnail in file manager. File manager shows 180x180
 // thumbnail. Given that we support hdpi devices, maximum dimension is 360.
 const int kFileManagerMaximumThumbnailDimension = 360;
@@ -808,6 +810,8 @@ void OnSearchDriveFs(
     bool is_dir =
         item->metadata->type == drivefs::mojom::FileMetadata::Type::kDirectory;
     entry.SetKey("fileIsDirectory", base::Value(is_dir));
+    entry.SetKey(kAvailableOfflinePropertyName,
+                 base::Value(item->metadata->available_offline));
     if (!filter_dirs || !is_dir) {
       result->GetList().emplace_back(std::move(entry));
     }
@@ -1418,6 +1422,11 @@ void FileManagerPrivateSearchDriveMetadataFunction::OnSearchDriveFs(
                                              &highlight)) {
         highlight = path.BaseName().value();
       }
+    }
+    if (base::Value* availableOffline = entry.FindKeyOfType(
+            kAvailableOfflinePropertyName, base::Value::Type::BOOLEAN)) {
+      dict.SetKey(kAvailableOfflinePropertyName, std::move(*availableOffline));
+      entry.RemoveKey(kAvailableOfflinePropertyName);
     }
     dict.SetKey("entry", std::move(entry));
     dict.SetKey("highlightedBaseName", base::Value(highlight));

@@ -600,6 +600,10 @@ dictionary SearchResult {
   // sub strings are highlighted with <b> element. Meta characters are escaped
   // like &lt;.
   DOMString highlightedBaseName;
+
+  // Whether the file is available while offline. May be unset if not
+  // applicable.
+  boolean? availableOffline;
 };
 
 dictionary DriveConnectionState {

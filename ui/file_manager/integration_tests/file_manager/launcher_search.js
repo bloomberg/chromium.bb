@@ -41,4 +41,53 @@ testcase.launcherOpenSearchResult = async function() {
           galleryAppId, 0, 0, imageNameNoExtension),
       'Failed to find the slide image element');
 };
+
+const hostedDocument = Object.assign(
+    {}, ENTRIES.testDocument,
+    {nameText: 'testDocument.txt.gdoc', targetPath: 'testDocument.txt'});
+
+/**
+ * Tests Local and Drive files show up in search results.
+ */
+testcase.launcherSearch = async function() {
+  // Create a file in Downloads, and a pinned and unpinned file in Drive.
+  await setupAndWaitUntilReady(
+      'downloads', [ENTRIES.tallText],
+      [ENTRIES.hello, ENTRIES.pinned, hostedDocument]);
+
+  const result = JSON.parse(await sendTestMessage({
+    name: 'runLauncherSearch',
+    query: '.txt',
+  }));
+  chrome.test.assertEq(
+      [
+        ENTRIES.hello.targetPath,
+        ENTRIES.pinned.targetPath,
+        ENTRIES.tallText.targetPath,
+        hostedDocument.targetPath,
+      ],
+      result);
+};
+
+/**
+ * Tests Local and Drive files show up in search results.
+ */
+testcase.launcherSearchOffline = async function() {
+  // Create a file in Downloads, and a pinned and unpinned file in Drive.
+  await setupAndWaitUntilReady(
+      'downloads', [ENTRIES.tallText],
+      [ENTRIES.hello, ENTRIES.pinned, hostedDocument]);
+
+  const result = JSON.parse(await sendTestMessage({
+    name: 'runLauncherSearch',
+    query: '.txt',
+  }));
+  chrome.test.assertEq(
+      [
+        ENTRIES.pinned.targetPath,
+        ENTRIES.tallText.targetPath,
+      ],
+      result);
+};
+
 })();

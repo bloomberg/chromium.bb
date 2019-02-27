@@ -925,7 +925,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     LauncherSearch, /* launcher_search.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("launcherOpenSearchResult")));
+    ::testing::Values(TestCase("launcherOpenSearchResult"),
+                      TestCase("launcherSearch"),
+                      TestCase("launcherSearchOffline").Offline()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Recents, /* recents.js */

@@ -43,6 +43,8 @@
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/sync_file_system/mock_remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
+#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_provider.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
@@ -2029,6 +2031,25 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
   if (name == "isSmbEnabled") {
     *output = IsNativeSmbTest() ? "true" : "false";
+    return;
+  }
+
+  if (name == "runLauncherSearch") {
+    app_list::LauncherSearchProvider search_provider(profile());
+    base::string16 query;
+    ASSERT_TRUE(value.GetString("query", &query));
+
+    search_provider.Start(query);
+    base::RunLoop run_loop;
+    search_provider.set_result_changed_callback(run_loop.QuitClosure());
+    run_loop.Run();
+
+    std::vector<base::Value> names;
+    for (auto& result : search_provider.results()) {
+      names.emplace_back(result->title());
+    }
+    std::sort(names.begin(), names.end());
+    base::JSONWriter::Write(base::Value(std::move(names)), output);
     return;
   }
 
