@@ -56,11 +56,11 @@ TEST_F(PushMessagingNotificationManagerTest, IsTabVisibleViewSource) {
 #if defined(OS_CHROMEOS)
 TEST_F(PushMessagingNotificationManagerTest,
        SkipEnforceUserVisibleOnlyRequirementsForAndroidMessages) {
-  GURL origin("https://example.com");
+  GURL app_url("https://example.com/test/");
   chromeos::android_sms::FakeAndroidSmsAppManager*
       fake_android_sms_app_manager =
           new chromeos::android_sms::FakeAndroidSmsAppManager();
-  fake_android_sms_app_manager->SetInstalledAppUrl(origin);
+  fake_android_sms_app_manager->SetInstalledAppUrl(app_url);
 
   chromeos::multidevice_setup::FakeMultiDeviceSetupClient*
       fake_multidevice_setup_client =
@@ -75,7 +75,7 @@ TEST_F(PushMessagingNotificationManagerTest,
 
   bool was_called = false;
   manager.EnforceUserVisibleOnlyRequirements(
-      origin, 0l,
+      app_url.GetOrigin(), 0l,
       base::BindRepeating([](bool* was_called) { *was_called = true; },
                           &was_called));
   EXPECT_TRUE(was_called);

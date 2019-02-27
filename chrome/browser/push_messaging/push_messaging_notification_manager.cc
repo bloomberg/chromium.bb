@@ -339,7 +339,7 @@ bool PushMessagingNotificationManager::ShouldSkipUserVisibleOnlyRequirements(
   if (!app_url)
     app_url = chromeos::android_sms::GetAndroidMessagesURL();
 
-  if (!origin.EqualsIgnoringRef(*app_url))
+  if (!origin.EqualsIgnoringRef(app_url->GetOrigin()))
     return false;
 
   return true;
