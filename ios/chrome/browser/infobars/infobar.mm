@@ -4,13 +4,8 @@
 
 #include "ios/chrome/browser/infobars/infobar.h"
 
-#include <utility>
-
 #include "base/logging.h"
-#include "components/infobars/core/confirm_infobar_delegate.h"
-#include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_controller.h"
-#include "ios/chrome/browser/translate/translate_infobar_tags.h"
 #import "ios/chrome/browser/ui/infobars/infobar_ui_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
