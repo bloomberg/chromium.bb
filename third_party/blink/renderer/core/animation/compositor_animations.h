@@ -158,6 +158,8 @@ class CORE_EXPORT CompositorAnimations {
                            CannotStartElementOnCompositorEffectSVG);
   FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
                            CancelIncompatibleCompositorAnimations);
+  FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
+                           NonAnimatedTransformPropertyChangeGetsUpdated);
 };
 
 }  // namespace blink

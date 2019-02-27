@@ -61,8 +61,16 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     std::unique_ptr<CompositorStickyConstraint> sticky_constraint;
 
     bool operator==(const State& o) const {
-      return matrix == o.matrix && origin == o.origin &&
-             flattens_inherited_transform == o.flattens_inherited_transform &&
+      return EqualIgnoringAnimatingProperties(o, false);
+    }
+
+    bool EqualIgnoringAnimatingProperties(const State& o,
+                                          bool check_for_animations) const {
+      bool matrix_equal = ((matrix == o.matrix) && (origin == o.origin)) ||
+                          (check_for_animations &&
+                           (direct_compositing_reasons &
+                            CompositingReason::kActiveTransformAnimation));
+      return flattens_inherited_transform == o.flattens_inherited_transform &&
              backface_visibility == o.backface_visibility &&
              rendering_context_id == o.rendering_context_id &&
              direct_compositing_reasons == o.direct_compositing_reasons &&
@@ -72,7 +80,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
                  o.affected_by_outer_viewport_bounds_delta &&
              ((!sticky_constraint && !o.sticky_constraint) ||
               (sticky_constraint && o.sticky_constraint &&
-               *sticky_constraint == *o.sticky_constraint));
+               *sticky_constraint == *o.sticky_constraint)) &&
+             matrix_equal;
     }
   };
 
@@ -103,6 +112,13 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     CheckAndUpdateIsIdentityOr2DTranslation();
     Validate();
     return true;
+  }
+
+  bool HaveNonAnimatingPropertiesChanged(
+      const TransformPaintPropertyNode& parent,
+      State& state) const {
+    return !state.EqualIgnoringAnimatingProperties(state_, true) ||
+           HasParentChanged(&parent);
   }
 
   // If |relative_to_node| is an ancestor of |this|, returns true if any node is
