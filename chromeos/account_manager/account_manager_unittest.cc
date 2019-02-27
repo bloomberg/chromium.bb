@@ -33,6 +33,17 @@ constexpr char kGaiaToken[] = "gaia_token";
 constexpr char kNewGaiaToken[] = "new_gaia_token";
 constexpr char kRawUserEmail[] = "user@example.com";
 
+bool IsAccountKeyPresent(const std::vector<AccountManager::Account>& accounts,
+                         const AccountManager::AccountKey& account_key) {
+  for (const auto& account : accounts) {
+    if (account.key == account_key) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 }  // namespace
 
 class AccountManagerSpy : public AccountManager {
@@ -58,18 +69,16 @@ class AccountManagerTest : public testing::Test {
   }
 
   // Gets the list of accounts stored in |account_manager_|.
-  std::vector<AccountManager::AccountKey> GetAccountsBlocking() {
-    std::vector<AccountManager::AccountKey> accounts;
+  std::vector<AccountManager::Account> GetAccountsBlocking() {
+    std::vector<AccountManager::Account> accounts;
 
     base::RunLoop run_loop;
-    account_manager_->GetAccounts(base::BindOnce(
-        [](std::vector<AccountManager::AccountKey>* accounts,
-           base::OnceClosure quit_closure,
-           std::vector<AccountManager::AccountKey> stored_accounts) -> void {
-          *accounts = std::move(stored_accounts);
-          std::move(quit_closure).Run();
-        },
-        base::Unretained(&accounts), run_loop.QuitClosure()));
+    account_manager_->GetAccounts(base::BindLambdaForTesting(
+        [&accounts, &run_loop](
+            const std::vector<AccountManager::Account>& stored_accounts) {
+          accounts = stored_accounts;
+          run_loop.Quit();
+        }));
     run_loop.Run();
 
     return accounts;
@@ -129,19 +138,26 @@ class AccountManagerObserver : public AccountManager::Observer {
   AccountManagerObserver() = default;
   ~AccountManagerObserver() override = default;
 
-  void OnTokenUpserted(const AccountManager::AccountKey& account_key) override {
+  void OnTokenUpserted(const AccountManager::Account& account) override {
     is_token_upserted_callback_called_ = true;
-    accounts_.insert(account_key);
+    accounts_.insert(account.key);
+    last_upserted_account_key_ = account.key;
+    last_upserted_account_email_ = account.raw_email;
   }
 
-  void OnAccountRemoved(
-      const AccountManager::AccountKey& account_key) override {
+  void OnAccountRemoved(const AccountManager::Account& account) override {
     is_account_removed_callback_called_ = true;
-    accounts_.erase(account_key);
+    accounts_.erase(account.key);
+    last_removed_account_key_ = account.key;
+    last_removed_account_email_ = account.raw_email;
   }
 
   bool is_token_upserted_callback_called_ = false;
   bool is_account_removed_callback_called_ = false;
+  AccountManager::AccountKey last_upserted_account_key_;
+  std::string last_upserted_account_email_;
+  AccountManager::AccountKey last_removed_account_key_;
+  std::string last_removed_account_email_;
   std::set<AccountManager::AccountKey> accounts_;
 
  private:
@@ -178,10 +194,11 @@ TEST_F(AccountManagerTest, TestInitialization) {
 TEST_F(AccountManagerTest, TestUpsert) {
   account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
 
-  std::vector<AccountManager::AccountKey> accounts = GetAccountsBlocking();
+  std::vector<AccountManager::Account> accounts = GetAccountsBlocking();
 
   EXPECT_EQ(1UL, accounts.size());
-  EXPECT_EQ(kGaiaAccountKey_, accounts[0]);
+  EXPECT_EQ(kGaiaAccountKey_, accounts[0].key);
+  EXPECT_EQ(kRawUserEmail, accounts[0].raw_email);
 }
 
 TEST_F(AccountManagerTest, TestTokenPersistence) {
@@ -189,10 +206,11 @@ TEST_F(AccountManagerTest, TestTokenPersistence) {
   scoped_task_environment_.RunUntilIdle();
 
   ResetAndInitializeAccountManager();
-  std::vector<AccountManager::AccountKey> accounts = GetAccountsBlocking();
+  std::vector<AccountManager::Account> accounts = GetAccountsBlocking();
 
   EXPECT_EQ(1UL, accounts.size());
-  EXPECT_EQ(kGaiaAccountKey_, accounts[0]);
+  EXPECT_EQ(kGaiaAccountKey_, accounts[0].key);
+  EXPECT_EQ(kRawUserEmail, accounts[0].raw_email);
   EXPECT_EQ(kGaiaToken, account_manager_->accounts_[kGaiaAccountKey_].token);
 }
 
@@ -239,6 +257,8 @@ TEST_F(AccountManagerTest, ObserversAreNotifiedOnTokenInsertion) {
   EXPECT_TRUE(observer->is_token_upserted_callback_called_);
   EXPECT_EQ(1UL, observer->accounts_.size());
   EXPECT_EQ(kGaiaAccountKey_, *observer->accounts_.begin());
+  EXPECT_EQ(kGaiaAccountKey_, observer->last_upserted_account_key_);
+  EXPECT_EQ(kRawUserEmail, observer->last_upserted_account_email_);
 
   account_manager_->RemoveObserver(observer.get());
 }
@@ -258,6 +278,8 @@ TEST_F(AccountManagerTest, ObserversAreNotifiedOnTokenUpdate) {
   EXPECT_TRUE(observer->is_token_upserted_callback_called_);
   EXPECT_EQ(1UL, observer->accounts_.size());
   EXPECT_EQ(kGaiaAccountKey_, *observer->accounts_.begin());
+  EXPECT_EQ(kGaiaAccountKey_, observer->last_upserted_account_key_);
+  EXPECT_EQ(kRawUserEmail, observer->last_upserted_account_email_);
 
   account_manager_->RemoveObserver(observer.get());
 }
@@ -283,7 +305,7 @@ TEST_F(AccountManagerTest, RemovedAccountsAreImmediatelyUnavailable) {
   account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
 
   account_manager_->RemoveAccount(kGaiaAccountKey_);
-  std::vector<AccountManager::AccountKey> accounts = GetAccountsBlocking();
+  std::vector<AccountManager::Account> accounts = GetAccountsBlocking();
 
   EXPECT_TRUE(accounts.empty());
 }
@@ -295,7 +317,7 @@ TEST_F(AccountManagerTest, AccountRemovalIsPersistedToDisk) {
 
   ResetAndInitializeAccountManager();
 
-  std::vector<AccountManager::AccountKey> accounts = GetAccountsBlocking();
+  std::vector<AccountManager::Account> accounts = GetAccountsBlocking();
 
   EXPECT_TRUE(accounts.empty());
 }
@@ -310,6 +332,8 @@ TEST_F(AccountManagerTest, ObserversAreNotifiedOnAccountRemoval) {
   account_manager_->RemoveAccount(kGaiaAccountKey_);
   EXPECT_TRUE(observer->is_account_removed_callback_called_);
   EXPECT_TRUE(observer->accounts_.empty());
+  EXPECT_EQ(kGaiaAccountKey_, observer->last_removed_account_key_);
+  EXPECT_EQ(kRawUserEmail, observer->last_removed_account_email_);
 
   account_manager_->RemoveObserver(observer.get());
 }
@@ -374,8 +398,8 @@ TEST_F(AccountManagerTest,
                                   AccountManager::kActiveDirectoryDummyToken);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_FALSE(account_manager_->IsTokenAvailable(kActiveDirectoryAccountKey_));
-  std::vector<AccountManager::AccountKey> accounts = GetAccountsBlocking();
-  EXPECT_TRUE(base::ContainsValue(accounts, kActiveDirectoryAccountKey_));
+  std::vector<AccountManager::Account> accounts = GetAccountsBlocking();
+  EXPECT_TRUE(IsAccountKeyPresent(accounts, kActiveDirectoryAccountKey_));
 }
 
 TEST_F(AccountManagerTest, IsTokenAvailableReturnsTrueForInvalidTokens) {
@@ -384,8 +408,8 @@ TEST_F(AccountManagerTest, IsTokenAvailableReturnsTrueForInvalidTokens) {
                                   AccountManager::kInvalidToken);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(account_manager_->IsTokenAvailable(kGaiaAccountKey_));
-  std::vector<AccountManager::AccountKey> accounts = GetAccountsBlocking();
-  EXPECT_TRUE(base::ContainsValue(accounts, kGaiaAccountKey_));
+  std::vector<AccountManager::Account> accounts = GetAccountsBlocking();
+  EXPECT_TRUE(IsAccountKeyPresent(accounts, kGaiaAccountKey_));
 }
 
 }  // namespace chromeos

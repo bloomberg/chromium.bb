@@ -59,8 +59,8 @@ class ChromeOSOAuth2TokenServiceDelegate
   const net::BackoffEntry* BackoffEntry() const override;
 
   // |AccountManager::Observer| overrides.
-  void OnTokenUpserted(const AccountManager::AccountKey& account_key) override;
-  void OnAccountRemoved(const AccountManager::AccountKey& account_key) override;
+  void OnTokenUpserted(const AccountManager::Account& account) override;
+  void OnAccountRemoved(const AccountManager::Account& account) override;
 
   // |NetworkConnectionTracker::NetworkConnectionObserver| overrides.
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
@@ -78,8 +78,7 @@ class ChromeOSOAuth2TokenServiceDelegate
   };
 
   // Callback handler for |AccountManager::GetAccounts|.
-  void GetAccountsCallback(
-      std::vector<AccountManager::AccountKey> account_keys);
+  void OnGetAccounts(const std::vector<AccountManager::Account>& accounts);
 
   // TODO(sinhak): Either remove |AccountMapperUtil| or move it to an anonymous
   // namespace.

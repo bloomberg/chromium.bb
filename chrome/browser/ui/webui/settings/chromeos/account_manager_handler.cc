@@ -101,13 +101,13 @@ void AccountManagerUIHandler::HandleGetAccounts(const base::ListValue* args) {
   base::Value callback_id = args->GetList()[0].Clone();
 
   account_manager_->GetAccounts(
-      base::BindOnce(&AccountManagerUIHandler::GetAccountsCallbackHandler,
+      base::BindOnce(&AccountManagerUIHandler::OnGetAccounts,
                      weak_factory_.GetWeakPtr(), std::move(callback_id)));
 }
 
-void AccountManagerUIHandler::GetAccountsCallbackHandler(
+void AccountManagerUIHandler::OnGetAccounts(
     base::Value callback_id,
-    std::vector<AccountManager::AccountKey> account_keys) {
+    const std::vector<AccountManager::Account>& stored_accounts) {
   base::ListValue accounts;
 
   const AccountId device_account_id =
@@ -116,7 +116,8 @@ void AccountManagerUIHandler::GetAccountsCallbackHandler(
           ->GetAccountId();
 
   base::DictionaryValue device_account;
-  for (const auto& account_key : account_keys) {
+  for (const auto& stored_account : stored_accounts) {
+    const AccountManager::AccountKey& account_key = stored_account.key;
     // We are only interested in listing GAIA accounts.
     if (account_key.account_type !=
         account_manager::AccountType::ACCOUNT_TYPE_GAIA) {
@@ -230,12 +231,12 @@ void AccountManagerUIHandler::OnJavascriptDisallowed() {
 // guarantee that |AccountManager| (our source of truth) will have a newly added
 // account by the time |IdentityManager| has it.
 void AccountManagerUIHandler::OnTokenUpserted(
-    const AccountManager::AccountKey& account_key) {
+    const AccountManager::Account& account) {
   RefreshUI();
 }
 
 void AccountManagerUIHandler::OnAccountRemoved(
-    const AccountManager::AccountKey& account_key) {
+    const AccountManager::Account& account) {
   RefreshUI();
 }
 
