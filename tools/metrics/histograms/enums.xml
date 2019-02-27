@@ -32026,6 +32026,8 @@ from previous Chrome versions.
   <int value="-138773929" label="PassiveDocumentEventListeners:enabled"/>
   <int value="-138760381" label="AutofillManualFallbackAndroid:enabled"/>
   <int value="-137303226" label="enable-chromevox-developer-option"/>
+  <int value="-135584721"
+      label="OmniboxUIExperimentBoldUserTextOnSearchSuggestions:disabled"/>
   <int value="-135223364" label="AutofillShowTypePredictions:disabled"/>
   <int value="-133098377" label="SyncPseudoUSSSearchEngines:disabled"/>
   <int value="-128687277"
@@ -33138,6 +33140,8 @@ from previous Chrome versions.
   <int value="1735934914" label="OverlayScrollbarFlashWhenMouseEnter:disabled"/>
   <int value="1736698988" label="FsNosymfollow:disabled"/>
   <int value="1739456903" label="PWAFullCodeCache:enabled"/>
+  <int value="1742398600"
+      label="OmniboxUIExperimentBoldUserTextOnSearchSuggestions:enabled"/>
   <int value="1747279677" label="disable-delegated-renderer"/>
   <int value="1748481830" label="AppManagement:enabled"/>
   <int value="1750822869" label="CrostiniBackup:disabled"/>

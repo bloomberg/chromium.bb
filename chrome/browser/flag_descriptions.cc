@@ -1358,6 +1358,11 @@ const char kOmniboxUIBlueTitlesOnPageSuggestionsName[] =
 const char kOmniboxUIBlueTitlesOnPageSuggestionsDescription[] =
     "Displays navigation suggestions with blue titles.";
 
+const char kOmniboxUIBoldUserTextOnSearchSuggestionsName[] =
+    "Omnibox UI Bold User Text On Search Suggestions";
+const char kOmniboxUIBoldUserTextOnSearchSuggestionsDescription[] =
+    "Bolds the user text instead of autocomplete text for search suggestions.";
+
 const char kOmniboxUIHideSteadyStateUrlSchemeName[] =
     "Omnibox UI Hide Steady-State URL Scheme";
 const char kOmniboxUIHideSteadyStateUrlSchemeDescription[] =
@@ -1417,7 +1422,7 @@ const char kOmniboxUIVerticalMarginDescription[] =
 const char kOmniboxUIWhiteBackgroundOnBlurName[] =
     "Omnibox UI White Background On Blur";
 const char kOmniboxUIWhiteBackgroundOnBlurDescription[] =
-    "Set the omnibox background white when it's unfocused.";
+    "Set the omnibox background white when it's unfocused";
 
 const char kOmniboxVoiceSearchAlwaysVisibleName[] =
     "Omnibox Voice Search Always Visible";

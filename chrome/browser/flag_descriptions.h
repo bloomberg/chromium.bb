@@ -823,6 +823,9 @@ extern const char kOmniboxUIBlueTitlesAndGrayUrlsOnPageSuggestionsDescription[];
 extern const char kOmniboxUIBlueTitlesOnPageSuggestionsName[];
 extern const char kOmniboxUIBlueTitlesOnPageSuggestionsDescription[];
 
+extern const char kOmniboxUIBoldUserTextOnSearchSuggestionsName[];
+extern const char kOmniboxUIBoldUserTextOnSearchSuggestionsDescription[];
+
 extern const char kOmniboxUIHideSteadyStateUrlSchemeName[];
 extern const char kOmniboxUIHideSteadyStateUrlSchemeDescription[];
 
