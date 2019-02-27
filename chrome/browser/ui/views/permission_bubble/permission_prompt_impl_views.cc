@@ -10,6 +10,11 @@
 std::unique_ptr<PermissionPrompt> PermissionPrompt::Create(
     content::WebContents* web_contents,
     Delegate* delegate) {
-  return base::WrapUnique(new PermissionPromptImpl(
-      chrome::FindBrowserWithWebContents(web_contents), delegate));
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (!browser) {
+    DLOG(WARNING) << "Permission prompt suppressed because the WebContents is "
+                     "not attached to any Browser window.";
+    return nullptr;
+  }
+  return base::WrapUnique(new PermissionPromptImpl(browser, delegate));
 }
