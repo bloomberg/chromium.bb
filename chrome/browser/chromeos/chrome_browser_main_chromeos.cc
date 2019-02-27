@@ -143,6 +143,7 @@
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector_stub.h"
+#include "chromeos/system/dark_resume_controller.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "chromeos/tpm/tpm_token_loader.h"
@@ -1039,6 +1040,10 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
     cros_usb_detector_->ConnectToDeviceManager();
   }
 
+  dark_resume_controller_ =
+      std::make_unique<chromeos::system::DarkResumeController>(
+          content::ServiceManagerConnection::GetForProcess()->GetConnector());
+
   ChromeBrowserMainPartsLinux::PostBrowserStart();
 }
 
@@ -1096,6 +1101,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   diagnosticsd_bridge_.reset();
   scheduler_configuration_manager_.reset();
   auto_screen_brightness_controller_.reset();
+  dark_resume_controller_.reset();
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
   idle_action_warning_observer_.reset();
