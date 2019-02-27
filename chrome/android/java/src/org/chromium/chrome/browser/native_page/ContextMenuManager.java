@@ -189,7 +189,7 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
                 put(ContextMenuItemId.OPEN_IN_NEW_TAB,
                         ChromeFeatureList.isInitialized()
                                         && ChromeFeatureList.isEnabled(
-                                                ChromeFeatureList.TAB_GROUP_ANDROID)
+                                                ChromeFeatureList.TAB_GROUPS_ANDROID)
                                 ? R.string.contextmenu_open_in_new_tab_group
                                 : R.string.contextmenu_open_in_new_tab);
                 put(ContextMenuItemId.OPEN_IN_INCOGNITO_TAB,

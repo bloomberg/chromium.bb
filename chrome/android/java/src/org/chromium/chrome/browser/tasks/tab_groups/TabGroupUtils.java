@@ -22,7 +22,7 @@ import org.chromium.ui.widget.ViewRectProvider;
  */
 public class TabGroupUtils {
     public static void maybeShowIPH(@FeatureConstants String featureName, View view) {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUP_ANDROID)) return;
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID)) return;
 
         Resources res = view.getContext().getResources();
         @StringRes

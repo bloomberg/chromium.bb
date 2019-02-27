@@ -469,6 +469,16 @@ public class FeatureUtilities {
     }
 
     /**
+     * @param activityContext The context for the containing {@link android.app.Activity}.
+     * @return Whether the tab group feature is enabled and available for use.
+     */
+    public static boolean isTabGroupsEnabled(Context activityContext) {
+        return !DeviceFormFactor.isNonMultiDisplayContextOnTablet(activityContext)
+                && !SysUtils.isLowEndDevice() && !DeviceClassManager.enableAccessibilityLayout()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID);
+    }
+
+    /**
      * @return Whether this device is running Android Go. This is assumed when we're running Android
      * O or later and we're on a low-end device.
      */
