@@ -64,8 +64,6 @@ class MemoryCacheEntry final : public GarbageCollected<MemoryCacheEntry> {
   WeakMember<Resource> resource_;
 };
 
-WILL_NOT_BE_EAGERLY_TRACED_CLASS(MemoryCacheEntry);
-
 // This cache holds subresources used by Web pages: images, scripts,
 // stylesheets, etc.
 class PLATFORM_EXPORT MemoryCache final

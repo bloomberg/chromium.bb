@@ -192,8 +192,6 @@ class HTMLElementStack {
   DISALLOW_COPY_AND_ASSIGN(HTMLElementStack);
 };
 
-WILL_NOT_BE_EAGERLY_TRACED_CLASS(HTMLElementStack::ElementRecord);
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_ELEMENT_STACK_H_

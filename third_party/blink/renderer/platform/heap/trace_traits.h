@@ -23,24 +23,12 @@
 
 namespace blink {
 
-template <typename T>
-class CrossThreadPersistent;
-template <typename T>
-class CrossThreadWeakPersistent;
-template <typename T>
-class HeapDoublyLinkedList;
-template <typename T>
-class Member;
-template <typename T>
-class TraceEagerlyTrait;
+template <typename ValueArg, wtf_size_t inlineCapacity>
+class HeapListHashSetAllocator;
 template <typename T>
 class TraceTrait;
 template <typename T>
 class WeakMember;
-template <typename T>
-class Persistent;
-template <typename T>
-class WeakPersistent;
 
 template <typename T, bool = NeedsAdjustPointer<T>::value>
 class AdjustPointerTrait;
@@ -51,7 +39,7 @@ class AdjustPointerTrait<T, false> {
 
  public:
   static TraceDescriptor GetTraceDescriptor(void* self) {
-    return {self, TraceTrait<T>::Trace, TraceEagerlyTrait<T>::value};
+    return {self, TraceTrait<T>::Trace};
   }
 
   static HeapObjectHeader* GetHeapObjectHeader(void* self) {
@@ -204,8 +192,7 @@ struct TraceTrait<HeapVectorBacking<T, Traits>> {
   using Backing = HeapVectorBacking<T, Traits>;
 
   static TraceDescriptor GetTraceDescriptor(void* self) {
-    return {self, TraceTrait<Backing>::Trace,
-            TraceEagerlyTrait<Backing>::value};
+    return {self, TraceTrait<Backing>::Trace};
   }
 
   template <typename VisitorDispatcher>
@@ -233,8 +220,7 @@ struct TraceTrait<HeapHashTableBacking<Table>> {
   using Traits = typename Table::ValueTraits;
 
   static TraceDescriptor GetTraceDescriptor(void* self) {
-    return {self, TraceTrait<Backing>::Trace,
-            TraceEagerlyTrait<Backing>::value};
+    return {self, TraceTrait<Backing>::Trace};
   }
 
   template <typename VisitorDispatcher>
@@ -280,129 +266,6 @@ class TraceTrait<base::Optional<T>> {
                                                            optional->value());
     }
   }
-};
-
-// If eager tracing leads to excessively deep |trace()| call chains (and
-// the system stack usage that this brings), the marker implementation will
-// switch to using an explicit mark stack. Recursive and deep object graphs
-// are uncommon for Blink objects.
-//
-// A class type can opt out of eager tracing by declaring a TraceEagerlyTrait<>
-// specialization, mapping the trait's |value| to |false| (see the
-// WILL_NOT_BE_EAGERLY_TRACED_CLASS() macros below.) For Blink, this is done for
-// the small set of GCed classes that are directly recursive.
-//
-// The TraceEagerlyTrait<T> trait controls whether or not a class
-// (and its subclasses) should be eagerly traced or not.
-//
-// If |TraceEagerlyTrait<T>::value| is |true|, then the marker thread
-// should invoke |trace()| on not-yet-marked objects deriving from class T
-// right away, and not queue their trace callbacks on its marker stack,
-// which it will do if |value| is |false|.
-//
-// The trait can be declared to enable/disable eager tracing for a class T
-// and any of its subclasses, or just to the class T, but none of its
-// subclasses.
-//
-template <typename T>
-class TraceEagerlyTrait {
-  STATIC_ONLY(TraceEagerlyTrait);
-
- public:
-  static const bool value = true;
-};
-
-// Disable eager tracing for TYPE, but not any of its subclasses.
-#define WILL_NOT_BE_EAGERLY_TRACED_CLASS(TYPE) \
-  template <>                                  \
-  class TraceEagerlyTrait<TYPE> {              \
-    STATIC_ONLY(TraceEagerlyTrait);            \
-                                               \
-   public:                                     \
-    static const bool value = false;           \
-  }
-
-template <typename T>
-class TraceEagerlyTrait<Member<T>> {
-  STATIC_ONLY(TraceEagerlyTrait);
-
- public:
-  static const bool value = TraceEagerlyTrait<T>::value;
-};
-
-template <typename T>
-class TraceEagerlyTrait<SameThreadCheckedMember<T>> {
-  STATIC_ONLY(TraceEagerlyTrait);
-
- public:
-  static const bool value = TraceEagerlyTrait<T>::value;
-};
-
-template <typename T>
-class TraceEagerlyTrait<TraceWrapperMember<T>> {
-  STATIC_ONLY(TraceEagerlyTrait);
-
- public:
-  static const bool value = TraceEagerlyTrait<T>::value;
-};
-
-template <typename T>
-class TraceEagerlyTrait<WeakMember<T>> {
-  STATIC_ONLY(TraceEagerlyTrait);
-
- public:
-  static const bool value = TraceEagerlyTrait<T>::value;
-};
-
-template <typename T>
-class TraceEagerlyTrait<Persistent<T>> {
-  STATIC_ONLY(TraceEagerlyTrait);
-
- public:
-  static const bool value = TraceEagerlyTrait<T>::value;
-};
-
-template <typename T>
-class TraceEagerlyTrait<WeakPersistent<T>> {
-  STATIC_ONLY(TraceEagerlyTrait);
-
- public:
-  static const bool value = TraceEagerlyTrait<T>::value;
-};
-
-template <typename T>
-class TraceEagerlyTrait<CrossThreadPersistent<T>> {
-  STATIC_ONLY(TraceEagerlyTrait);
-
- public:
-  static const bool value = TraceEagerlyTrait<T>::value;
-};
-
-template <typename T>
-class TraceEagerlyTrait<CrossThreadWeakPersistent<T>> {
-  STATIC_ONLY(TraceEagerlyTrait);
-
- public:
-  static const bool value = TraceEagerlyTrait<T>::value;
-};
-
-template <typename T>
-class TraceEagerlyTrait<HeapDoublyLinkedList<T>> {
-  STATIC_ONLY(TraceEagerlyTrait);
-
- public:
-  static const bool value = TraceEagerlyTrait<T>::value;
-};
-
-template <typename ValueArg, wtf_size_t inlineCapacity>
-class HeapListHashSetAllocator;
-template <typename T, wtf_size_t inlineCapacity>
-class TraceEagerlyTrait<
-    WTF::ListHashSetNode<T, HeapListHashSetAllocator<T, inlineCapacity>>> {
-  STATIC_ONLY(TraceEagerlyTrait);
-
- public:
-  static const bool value = false;
 };
 
 template <typename T>
