@@ -22,10 +22,14 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/base/android/media_drm_bridge.h"
+#include "services/network/test/test_network_connection_tracker.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace {
+
+using testing::Return;
 
 // These values must match the values specified for the implementation
 // in media_drm_origin_id_manager.cc.
@@ -34,6 +38,7 @@ const char kExpirableToken[] = "expirable_token";
 const char kAvailableOriginIds[] = "origin_ids";
 constexpr size_t kExpectedPreferenceListSize = 5;
 constexpr base::TimeDelta kExpirationDelta = base::TimeDelta::FromHours(24);
+constexpr size_t kConnectionAttempts = 5;
 
 using MediaDrmOriginId = base::Optional<base::UnguessableToken>;
 
@@ -45,8 +50,12 @@ class MediaDrmOriginIdManagerTest : public testing::Test {
     profile_ = std::make_unique<TestingProfile>();
     origin_id_manager_ =
         MediaDrmOriginIdManagerFactory::GetForProfile(profile_.get());
-    origin_id_manager_->SetProvisioningResultForTesting(true);
+    origin_id_manager_->SetProvisioningResultCBForTesting(
+        base::BindRepeating(&MediaDrmOriginIdManagerTest::GetProvisioningResult,
+                            base::Unretained(this)));
   }
+
+  MOCK_METHOD0(GetProvisioningResult, bool());
 
   // Call MediaDrmOriginIdManager::GetOriginId() synchronously.
   MediaDrmOriginId GetOriginId() {
@@ -99,10 +108,12 @@ TEST_F(MediaDrmOriginIdManagerTest, Creation) {
 }
 
 TEST_F(MediaDrmOriginIdManagerTest, OneOriginId) {
+  EXPECT_CALL(*this, GetProvisioningResult()).WillRepeatedly(Return(true));
   EXPECT_TRUE(GetOriginId());
 }
 
 TEST_F(MediaDrmOriginIdManagerTest, TwoOriginIds) {
+  EXPECT_CALL(*this, GetProvisioningResult()).WillRepeatedly(Return(true));
   MediaDrmOriginId origin_id1 = GetOriginId();
   MediaDrmOriginId origin_id2 = GetOriginId();
   EXPECT_TRUE(origin_id1);
@@ -116,6 +127,7 @@ TEST_F(MediaDrmOriginIdManagerTest, PreProvision) {
   // that don't, the list will be empty. Note that simply finding the preference
   // creates an empty one (as FindPreference() only returns NULL if the
   // preference is not registered).
+  EXPECT_CALL(*this, GetProvisioningResult()).WillRepeatedly(Return(true));
   PreProvision();
 
   DVLOG(1) << "Checking preference " << kMediaDrmOriginIds;
@@ -150,6 +162,7 @@ TEST_F(MediaDrmOriginIdManagerTest, PreProvision) {
 TEST_F(MediaDrmOriginIdManagerTest, GetOriginIdCreatesList) {
   // After fetching an origin ID the code should pre-provision more origins
   // and fill up the list.
+  EXPECT_CALL(*this, GetProvisioningResult()).WillRepeatedly(Return(true));
   GetOriginId();
   test_browser_thread_bundle_.RunUntilIdle();
 
@@ -170,6 +183,7 @@ TEST_F(MediaDrmOriginIdManagerTest, OriginIdNotInList) {
   // After fetching one origin ID MediaDrmOriginIdManager will create the list
   // of pre-provisioned origin IDs (asynchronously). It doesn't matter if the
   // device supports per-application provisioning or not.
+  EXPECT_CALL(*this, GetProvisioningResult()).WillRepeatedly(Return(true));
   MediaDrmOriginId origin_id = GetOriginId();
   test_browser_thread_bundle_.RunUntilIdle();
 
@@ -185,7 +199,7 @@ TEST_F(MediaDrmOriginIdManagerTest, ProvisioningFail) {
   // TODO(crbug.com/917527): Currently the code returns an origin ID even if
   // provisioning fails. Update this once it returns an empty origin ID when
   // pre-provisioning fails.
-  origin_id_manager_->SetProvisioningResultForTesting(false);
+  EXPECT_CALL(*this, GetProvisioningResult()).WillOnce(testing::Return(false));
   EXPECT_TRUE(GetOriginId());
 
   // After failure the preference should contain |kExpireableToken| only if
@@ -204,11 +218,11 @@ TEST_F(MediaDrmOriginIdManagerTest, ProvisioningSuccessAfterFail) {
   // TODO(crbug.com/917527): Currently the code returns an origin ID even if
   // provisioning fails. Update this once it returns an empty origin ID when
   // pre-provisioning fails.
-  origin_id_manager_->SetProvisioningResultForTesting(false);
+  EXPECT_CALL(*this, GetProvisioningResult())
+      .WillOnce(Return(false))
+      .WillRepeatedly(Return(true));
   EXPECT_TRUE(GetOriginId());
-
-  origin_id_manager_->SetProvisioningResultForTesting(true);
-  EXPECT_TRUE(GetOriginId());
+  EXPECT_TRUE(GetOriginId());  // Provisioning will succeed on the second call.
 
   // Let pre-provisioning of other origin IDs finish.
   test_browser_thread_bundle_.RunUntilIdle();
@@ -225,7 +239,9 @@ TEST_F(MediaDrmOriginIdManagerTest, ProvisioningAfterExpiration) {
   // provisioning fails. Update this once it returns an empty origin ID when
   // pre-provisioning fails.
   DVLOG(1) << "Current time: " << base::Time::Now();
-  origin_id_manager_->SetProvisioningResultForTesting(false);
+  EXPECT_CALL(*this, GetProvisioningResult())
+      .WillOnce(Return(false))
+      .WillRepeatedly(Return(true));
   EXPECT_TRUE(GetOriginId());
   test_browser_thread_bundle_.RunUntilIdle();
 
@@ -246,7 +262,6 @@ TEST_F(MediaDrmOriginIdManagerTest, ProvisioningAfterExpiration) {
   test_browser_thread_bundle_.FastForwardBy(kExpirationDelta);
   test_browser_thread_bundle_.FastForwardBy(base::TimeDelta::FromMinutes(1));
   DVLOG(1) << "Adjusted time: " << base::Time::Now();
-  origin_id_manager_->SetProvisioningResultForTesting(true);
   PreProvision();
   test_browser_thread_bundle_.RunUntilIdle();
 
@@ -276,4 +291,86 @@ TEST_F(MediaDrmOriginIdManagerTest, Incognito) {
   auto* incognito_profile = profile_->GetOffTheRecordProfile();
   EXPECT_FALSE(
       MediaDrmOriginIdManagerFactory::GetForProfile(incognito_profile));
+}
+
+TEST_F(MediaDrmOriginIdManagerTest, NetworkChange) {
+  // Try to pre-provision a bunch of origin IDs. Provisioning will fail, so
+  // there will not be a bunch of origin IDs created. However, it should be
+  // watching for a network change.
+  // TODO(crbug.com/917527): Currently the code returns an origin ID even if
+  // provisioning fails. Update this once it returns an empty origin ID when
+  // pre-provisioning fails.
+  EXPECT_CALL(*this, GetProvisioningResult())
+      .WillOnce(Return(false))
+      .WillRepeatedly(Return(true));
+  EXPECT_TRUE(GetOriginId());
+  test_browser_thread_bundle_.RunUntilIdle();
+
+  // Check that |kAvailableOriginIds| in the preference is empty.
+  DVLOG(1) << "Checking preference " << kMediaDrmOriginIds;
+  auto* dict = GetDictionary(kMediaDrmOriginIds);
+  DVLOG(1) << DisplayPref(dict);
+  EXPECT_FALSE(dict->FindKey(kAvailableOriginIds));
+
+  // Provisioning will now "succeed", so trigger a network change to
+  // unconnected.
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_NONE);
+  test_browser_thread_bundle_.RunUntilIdle();
+
+  // Check that |kAvailableOriginIds| is still empty.
+  DVLOG(1) << "Checking preference " << kMediaDrmOriginIds << " again";
+  dict = GetDictionary(kMediaDrmOriginIds);
+  DVLOG(1) << DisplayPref(dict);
+  EXPECT_FALSE(dict->FindKey(kAvailableOriginIds));
+
+  // Now trigger a network change to connected.
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_ETHERNET);
+  test_browser_thread_bundle_.RunUntilIdle();
+
+  // Pre-provisioning should have run and filled up the list.
+  DVLOG(1) << "Checking preference " << kMediaDrmOriginIds << " again";
+  dict = GetDictionary(kMediaDrmOriginIds);
+  DVLOG(1) << DisplayPref(dict);
+  auto* list = dict->FindKey(kAvailableOriginIds);
+  EXPECT_EQ(list->GetList().size(), kExpectedPreferenceListSize);
+}
+
+TEST_F(MediaDrmOriginIdManagerTest, NetworkChangeFails) {
+  // Try to pre-provision a bunch of origin IDs. Provisioning will fail the
+  // first time, so there will not be a bunch of origin IDs created. However, it
+  // should be watching for a network change, and will try again on the next
+  // |kConnectionAttempts| connections to a network. GetProvisioningResult()
+  // should only be called once for the GetOriginId() call +
+  // |kConnectionAttempts| when a network connection is detected.
+  // TODO(crbug.com/917527): Currently the code returns an origin ID even if
+  // provisioning fails. Update this once it returns an empty origin ID when
+  // pre-provisioning fails.
+  EXPECT_CALL(*this, GetProvisioningResult())
+      .Times(kConnectionAttempts + 1)
+      .WillOnce(Return(false));
+  EXPECT_TRUE(GetOriginId());
+  test_browser_thread_bundle_.RunUntilIdle();
+
+  // Check that |kAvailableOriginIds| in the preference is empty.
+  DVLOG(1) << "Checking preference " << kMediaDrmOriginIds;
+  auto* dict = GetDictionary(kMediaDrmOriginIds);
+  DVLOG(1) << DisplayPref(dict);
+  EXPECT_FALSE(dict->FindKey(kAvailableOriginIds));
+
+  // Trigger multiple network connections (provisioning still fails). Call more
+  // than |kConnectionAttempts| to ensure that the network change is ignored
+  // after several failed attempts.
+  for (size_t i = 0; i < kConnectionAttempts + 3; ++i) {
+    network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+        network::mojom::ConnectionType::CONNECTION_ETHERNET);
+    test_browser_thread_bundle_.RunUntilIdle();
+  }
+
+  // Check that |kAvailableOriginIds| is still empty.
+  DVLOG(1) << "Checking preference " << kMediaDrmOriginIds << " again";
+  dict = GetDictionary(kMediaDrmOriginIds);
+  DVLOG(1) << DisplayPref(dict);
+  EXPECT_FALSE(dict->FindKey(kAvailableOriginIds));
 }

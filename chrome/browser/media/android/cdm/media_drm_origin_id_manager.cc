@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -20,9 +19,11 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/provision_fetcher_factory.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/provision_fetcher.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
@@ -268,6 +269,44 @@ class MediaDrmProvisionHelper {
 
 }  // namespace
 
+// Watch for the device being connected to a network and call
+// PreProvisionIfNecessary(). This object is owned by MediaDrmOriginIdManager
+// and will be deleted when the manager goes away, so it is safe to keep a
+// direct reference to the manager.
+class MediaDrmOriginIdManager::NetworkObserver
+    : public network::NetworkConnectionTracker::NetworkConnectionObserver {
+ public:
+  explicit NetworkObserver(MediaDrmOriginIdManager* parent) : parent_(parent) {
+    content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
+  }
+
+  ~NetworkObserver() override {
+    content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(
+        this);
+  }
+
+  // Returns true if this NetworkObserver has seen a connection to the network
+  // more than |kMaxAttemptsAllowed| times.
+  bool MaxAttemptsExceeded() const {
+    constexpr int kMaxAttemptsAllowed = 5;
+    return number_of_attempts_ >= kMaxAttemptsAllowed;
+  }
+
+  // network::NetworkConnectionTracker::NetworkConnectionObserver
+  void OnConnectionChanged(network::mojom::ConnectionType type) override {
+    if (type == network::mojom::ConnectionType::CONNECTION_NONE)
+      return;
+
+    ++number_of_attempts_;
+    parent_->PreProvisionIfNecessary();
+  }
+
+ private:
+  // Use of raw pointer is okay as |parent_| owns this object.
+  MediaDrmOriginIdManager* const parent_;
+  int number_of_attempts_ = 0;
+};
+
 // static
 void MediaDrmOriginIdManager::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
@@ -293,8 +332,11 @@ void MediaDrmOriginIdManager::PreProvisionIfNecessary() {
   // On devices that need to, check that the user has recently requested
   // an origin ID. If not, then skip pre-provisioning on those devices.
   DictionaryPrefUpdate update(pref_service_, kMediaDrmOriginIds);
-  if (!CanPreProvision(update.Get()))
+  if (!CanPreProvision(update.Get())) {
+    // Disable any network monitoring, if it exists.
+    network_observer_.reset();
     return;
+  }
 
   // No need to pre-provision if there are already enough existing
   // pre-provisioned origin IDs.
@@ -348,10 +390,11 @@ void MediaDrmOriginIdManager::StartProvisioning() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(is_provisioning_);
 
-  if (skip_provisioning_for_testing_) {
+  if (provisioning_result_cb_for_testing_) {
     // MediaDrm can't provision an origin ID during unittests, so create a new
-    // origin ID and pretend it was provisioned or not depending on the setting.
-    OriginIdProvisioned(provisioning_result_for_testing_,
+    // origin ID and pretend it was provisioned or not depending on the result
+    // from |provisioning_result_cb_for_testing_|.
+    OriginIdProvisioned(provisioning_result_cb_for_testing_.Run(),
                         base::UnguessableToken::Create());
     return;
   }
@@ -372,10 +415,19 @@ void MediaDrmOriginIdManager::OriginIdProvisioned(
   DCHECK(is_provisioning_);
 
   if (!success) {
+    // Unable to provision an origin ID, most likely due to being unable to
+    // connect to a provisioning server. Set up a NetworkObserver to detect when
+    // we're connected to a network so that we can try again. If there is
+    // already a NetworkObserver and provisioning has failed multiple times,
+    // stop watching for network changes.
+    if (!network_observer_)
+      network_observer_ = std::make_unique<NetworkObserver>(this);
+    else if (network_observer_->MaxAttemptsExceeded())
+      network_observer_.reset();
+
     if (!pending_provisioned_origin_id_cbs_.empty()) {
       // This failure results from a user request (as opposed to
       // pre-provisioning having been started).
-      // TODO(crbug.com/917527): Register for network events.
       SetExpirableTokenIfNeeded(pref_service_);
 
       // As this failed, satisfy all pending requests by returning an
@@ -406,7 +458,9 @@ void MediaDrmOriginIdManager::OriginIdProvisioned(
     AddOriginId(update.Get(), origin_id);
 
     // If we already have enough pre-provisioned origin IDs, we're done.
+    // Stop watching for network change events.
     if (CountAvailableOriginIds(update.Get()) >= kMaxPreProvisionedOriginIds) {
+      network_observer_.reset();
       RemoveExpirableToken(update.Get());
       is_provisioning_ = false;
       return;
