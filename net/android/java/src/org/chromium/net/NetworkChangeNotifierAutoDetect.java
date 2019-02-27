@@ -728,7 +728,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     private final Observer mObserver;
     private final RegistrationPolicy mRegistrationPolicy;
     // Starting with Android Pie, used to detect changes in default network.
-    private final DefaultNetworkCallback mDefaultNetworkCallback;
+    private DefaultNetworkCallback mDefaultNetworkCallback;
 
     // mConnectivityManagerDelegates and mWifiManagerDelegate are only non-final for testing.
     private ConnectivityManagerDelegate mConnectivityManagerDelegate;
@@ -904,9 +904,16 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             connectionTypeChanged();
         }
         if (mDefaultNetworkCallback != null) {
-            mConnectivityManagerDelegate.registerDefaultNetworkCallback(
-                    mDefaultNetworkCallback, mHandler);
-        } else {
+            try {
+                mConnectivityManagerDelegate.registerDefaultNetworkCallback(
+                        mDefaultNetworkCallback, mHandler);
+            } catch (RuntimeException e) {
+                // If registering a default network callback failed, fallback to
+                // listening for CONNECTIVITY_ACTION broadcast.
+                mDefaultNetworkCallback = null;
+            }
+        }
+        if (mDefaultNetworkCallback == null) {
             // When registering for a sticky broadcast, like CONNECTIVITY_ACTION, if
             // registerReceiver returns non-null, it means the broadcast was previously issued and
             // onReceive() will be immediately called with this previous Intent. Since this initial
@@ -923,7 +930,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             try {
                 mConnectivityManagerDelegate.registerNetworkCallback(
                         mNetworkRequest, mNetworkCallback, mHandler);
-            } catch (IllegalArgumentException e) {
+            } catch (RuntimeException e) {
                 mRegisterNetworkCallbackFailed = true;
                 // If Android thinks this app has used up all available NetworkRequests, don't
                 // bother trying to register any more callbacks as Android will still think
