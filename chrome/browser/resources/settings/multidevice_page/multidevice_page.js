@@ -70,6 +70,7 @@ Polymer({
   },
 
   listeners: {
+    'auth-token-changed': 'onAuthTokenChanged_',
     'close': 'onDialogClose_',
     'feature-toggle-clicked': 'onFeatureToggleClicked_',
     'forget-device-requested': 'onForgetDeviceRequested_',
@@ -269,6 +270,14 @@ Polymer({
 
     // Remove the password prompt dialog from the DOM.
     this.showPasswordPromptDialog_ = false;
+  },
+
+  /**
+   * @param {!CustomEvent<!{value: string}>} event
+   * @private
+   */
+  onAuthTokenChanged_: function(event) {
+    this.authToken_ = event.detail.value;
   },
 
   /**
