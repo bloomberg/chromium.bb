@@ -4870,6 +4870,10 @@ jumbo_split_static_library("browser") {
 if (is_android) {
   generate_jni("jni_headers") {
     sources = [
+      "../android/features/media_router/java/org/chromium/chrome/browser/media/router/ChromeMediaRouter.java",
+      "../android/features/media_router/java/org/chromium/chrome/browser/media/router/ChromeMediaRouterDialogController.java",
+      "../android/features/media_router/java/org/chromium/chrome/browser/media/router/FlingingControllerBridge.java",
+      "../android/features/media_router/java/org/chromium/chrome/browser/media/router/MediaStatusBridge.java",
       "../android/java/src/org/chromium/chrome/browser/AfterStartupTaskUtils.java",
       "../android/java/src/org/chromium/chrome/browser/AppHooks.java",
       "../android/java/src/org/chromium/chrome/browser/ApplicationLifetime.java",
@@ -5022,10 +5026,6 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/locale/LocaleManager.java",
       "../android/java/src/org/chromium/chrome/browser/locale/LocaleTemplateUrlLoader.java",
       "../android/java/src/org/chromium/chrome/browser/media/remote/RecordCastAction.java",
-      "../android/java/src/org/chromium/chrome/browser/media/router/ChromeMediaRouter.java",
-      "../android/java/src/org/chromium/chrome/browser/media/router/ChromeMediaRouterDialogController.java",
-      "../android/java/src/org/chromium/chrome/browser/media/router/FlingingControllerBridge.java",
-      "../android/java/src/org/chromium/chrome/browser/media/router/MediaStatusBridge.java",
       "../android/java/src/org/chromium/chrome/browser/metrics/LaunchMetrics.java",
       "../android/java/src/org/chromium/chrome/browser/metrics/PageLoadMetrics.java",
       "../android/java/src/org/chromium/chrome/browser/metrics/UmaSessionStats.java",

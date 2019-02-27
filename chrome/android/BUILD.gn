@@ -27,10 +27,10 @@ import("static_initializers.gni")
 import("trichrome.gni")
 
 if (modularize_ar) {
-  import("//chrome/android/modules/ar/ar_module_tmpl.gni")
+  import("//chrome/android/features/ar/ar_module_tmpl.gni")
 }
 if (modularize_vr) {
-  import("//chrome/android/modules/vr/vr_module_tmpl.gni")
+  import("//chrome/android/features/vr/vr_module_tmpl.gni")
 }
 
 manifest_package = "org.chromium.chrome"
@@ -119,7 +119,6 @@ android_resources("chrome_app_java_resources") {
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:android_support_v7_gridlayout_java",
     "//third_party/android_deps:android_support_v7_recyclerview_java",
-    "//third_party/android_media:android_media_resources",
   ]
   custom_package = "org.chromium.chrome"
 }
@@ -630,6 +629,7 @@ android_library("chrome_test_util_java") {
     "//content/public/test/android:content_java_test_support",
     "//net/android:net_java_test_support",
     "//third_party/android_deps:android_support_v4_java",
+    "//third_party/android_media:android_media_resources",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/custom_tabs_client:custom_tabs_support_java",
     "//third_party/espresso:espresso_all_java",
@@ -1350,6 +1350,7 @@ java_group("chrome_public_base_module_java") {
   deps = [
     ":app_hooks_java",
     ":chrome_java",
+    "//chrome/android/features/media_router:java",
   ]
 }
 
@@ -1526,6 +1527,7 @@ android_library("monochrome_java") {
     "//android_webview/support_library:support_lib_glue_java",
     "//base:base_java",
     "//chrome/android:chrome_java",
+    "//chrome/android/features/media_router:java",
     "//content/public/android:content_java",
   ]
   java_files =
@@ -1624,6 +1626,7 @@ template("monochrome_public_apk_or_module_tmpl") {
       "//base:base_java",
       "//chrome/android:app_hooks_java",
       "//chrome/android:chrome_java",
+      "//chrome/android/features/media_router:java",
     ]
 
     add_unwind_tables_in_apk =
@@ -1769,6 +1772,7 @@ chrome_test_apk_tmpl("chrome_public_test_apk") {
   deps = [
     ":chrome_test_apk_template_resources",
     ":chrome_test_java",
+    "//chrome/android/features/media_router:test_java",
     "//chrome/android/webapk/libs/runtime_library:runtime_library_javatests",
     "//chrome/android/webapk/shell_apk:shell_apk_javatests",
     "//chrome/browser/profiling_host:profiling_host_javatests",

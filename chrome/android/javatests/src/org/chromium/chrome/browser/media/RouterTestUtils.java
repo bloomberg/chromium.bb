@@ -10,10 +10,10 @@ import android.support.v4.app.FragmentManager;
 import android.view.View;
 
 import org.chromium.base.Log;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.third_party.android.media.R;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
