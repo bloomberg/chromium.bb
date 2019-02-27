@@ -47,6 +47,8 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformHandle {
     kHandle,
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
     kMachPort,
+    kMachSend = kMachPort,
+    kMachReceive,
 #endif
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
     kFd,
@@ -62,6 +64,7 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformHandle {
   explicit PlatformHandle(zx::handle handle);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   explicit PlatformHandle(base::mac::ScopedMachSendRight mach_port);
+  explicit PlatformHandle(base::mac::ScopedMachReceiveRight mach_port);
 #endif
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
@@ -129,20 +132,47 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformHandle {
   }
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   bool is_valid() const { return is_valid_fd() || is_valid_mach_port(); }
-  bool is_valid_mach_port() const { return mach_port_.is_valid(); }
+  bool is_valid_mach_port() const {
+    return is_valid_mach_send() || is_valid_mach_receive();
+  }
+
+  bool is_valid_mach_send() const { return mach_send_.is_valid(); }
+  bool is_mach_send() const { return type_ == Type::kMachSend; }
+  const base::mac::ScopedMachSendRight& GetMachSendRight() const {
+    return mach_send_;
+  }
+  base::mac::ScopedMachSendRight TakeMachSendRight() {
+    if (type_ == Type::kMachSend)
+      type_ = Type::kNone;
+    return std::move(mach_send_);
+  }
+  mach_port_t ReleaseMachSendRight() WARN_UNUSED_RESULT {
+    return TakeMachSendRight().release();
+  }
+
+  bool is_valid_mach_receive() const { return mach_receive_.is_valid(); }
+  bool is_mach_receive() const { return type_ == Type::kMachReceive; }
+  const base::mac::ScopedMachReceiveRight& GetMachReceiveRight() const {
+    return mach_receive_;
+  }
+  base::mac::ScopedMachReceiveRight TakeMachReceiveRight() {
+    if (type_ == Type::kMachReceive)
+      type_ = Type::kNone;
+    return std::move(mach_receive_);
+  }
+  mach_port_t ReleaseMachReceiveRight() WARN_UNUSED_RESULT {
+    return TakeMachReceiveRight().release();
+  }
+
+  // The following Mach port methods are deprecated. Use the ones above
+  // instead.
   bool is_mach_port() const { return type_ == Type::kMachPort; }
   const base::mac::ScopedMachSendRight& GetMachPort() const {
-    return mach_port_;
+    return GetMachSendRight();
   }
-  base::mac::ScopedMachSendRight TakeMachPort() {
-    if (type_ == Type::kMachPort)
-      type_ = Type::kNone;
-    return std::move(mach_port_);
-  }
+  base::mac::ScopedMachSendRight TakeMachPort() { return TakeMachSendRight(); }
   mach_port_t ReleaseMachPort() WARN_UNUSED_RESULT {
-    if (type_ == Type::kMachPort)
-      type_ = Type::kNone;
-    return mach_port_.release();
+    return ReleaseMachSendRight();
   }
 #elif defined(OS_POSIX)
   bool is_valid() const { return is_valid_fd(); }
@@ -174,7 +204,8 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformHandle {
 #elif defined(OS_FUCHSIA)
   zx::handle handle_;
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
-  base::mac::ScopedMachSendRight mach_port_;
+  base::mac::ScopedMachSendRight mach_send_;
+  base::mac::ScopedMachReceiveRight mach_receive_;
 #endif
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
