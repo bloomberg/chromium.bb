@@ -111,6 +111,10 @@ class UtilitySandboxedProcessLauncherDelegate
         // Default policy is disabled for audio process to allow audio drivers
         // to read device properties (https://crbug.com/883326).
         return true;
+      case service_manager::SANDBOX_TYPE_NETWORK:
+        // Default policy is disabled for network process to allow incremental
+        // sandbox mitigations to be applied via experiments.
+        return true;
       case service_manager::SANDBOX_TYPE_XRCOMPOSITING:
         return base::FeatureList::IsEnabled(
             service_manager::features::kXRSandbox);
@@ -126,7 +130,7 @@ class UtilitySandboxedProcessLauncherDelegate
 
   bool PreSpawnTarget(sandbox::TargetPolicy* policy) override {
     if (sandbox_type_ == service_manager::SANDBOX_TYPE_NETWORK)
-      return network::NetworkPreSpawnTarget(policy);
+      return network::NetworkPreSpawnTarget(policy, cmd_line_);
 
     if (sandbox_type_ == service_manager::SANDBOX_TYPE_AUDIO)
       return audio::AudioPreSpawnTarget(policy);
