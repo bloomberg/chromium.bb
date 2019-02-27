@@ -227,7 +227,7 @@ class SchedulerWorkerCOMDelegate : public SchedulerWorkerDelegate {
     MSG msg;
     if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) != FALSE) {
       Task pump_message_task(FROM_HERE,
-                             Bind(
+                             BindOnce(
                                  [](MSG msg) {
                                    TranslateMessage(&msg);
                                    DispatchMessage(&msg);
@@ -588,8 +588,7 @@ SchedulerSingleThreadTaskRunnerManager::GetSharedSchedulerWorkerForTraits<
 
 void SchedulerSingleThreadTaskRunnerManager::UnregisterSchedulerWorker(
     SchedulerWorker* worker) {
-  // Cleanup uses a SchedulerLock, so call Cleanup() after releasing
-  // |lock_|.
+  // Cleanup uses a SchedulerLock, so call Cleanup() after releasing |lock_|.
   scoped_refptr<SchedulerWorker> worker_to_destroy;
   {
     AutoSchedulerLock auto_lock(lock_);
@@ -598,11 +597,7 @@ void SchedulerSingleThreadTaskRunnerManager::UnregisterSchedulerWorker(
     if (workers_.empty())
       return;
 
-    auto worker_iter =
-        std::find_if(workers_.begin(), workers_.end(),
-                     [worker](const scoped_refptr<SchedulerWorker>& candidate) {
-                       return candidate.get() == worker;
-                     });
+    auto worker_iter = std::find(workers_.begin(), workers_.end(), worker);
     DCHECK(worker_iter != workers_.end());
     worker_to_destroy = std::move(*worker_iter);
     workers_.erase(worker_iter);
