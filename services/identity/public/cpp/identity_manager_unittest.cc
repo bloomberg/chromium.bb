@@ -43,6 +43,8 @@
 namespace identity {
 namespace {
 
+const char kTestConsumerId[] = "dummy_consumer";
+const char kTestConsumerId2[] = "dummy_consumer 2";
 const char kTestGaiaId[] = "dummyId";
 const char kTestGaiaId2[] = "dummyId2";
 const char kTestGaiaId3[] = "dummyId3";
@@ -247,6 +249,9 @@ class TestIdentityManagerDiagnosticsObserver
   const std::string& on_access_token_request_completed_account_id() {
     return access_token_request_completed_account_id_;
   }
+  const std::string& on_access_token_request_completed_consumer_id() {
+    return access_token_request_completed_consumer_id_;
+  }
   const identity::ScopeSet& on_access_token_request_completed_scopes() {
     return access_token_request_completed_scopes_;
   }
@@ -274,9 +279,12 @@ class TestIdentityManagerDiagnosticsObserver
   }
 
   void OnAccessTokenRequestCompleted(const std::string& account_id,
+                                     const std::string& consumer_id,
+                                     const ScopeSet& scopes,
                                      GoogleServiceAuthError error,
-                                     const ScopeSet& scopes) override {
+                                     base::Time expiration_time) override {
     access_token_request_completed_account_id_ = account_id;
+    access_token_request_completed_consumer_id_ = consumer_id;
     access_token_request_completed_scopes_ = scopes;
     access_token_request_completed_error_ = error;
 
@@ -293,6 +301,7 @@ class TestIdentityManagerDiagnosticsObserver
   identity::ScopeSet token_requestor_scopes_;
   identity::ScopeSet token_remover_scopes_;
   std::string access_token_request_completed_account_id_;
+  std::string access_token_request_completed_consumer_id_;
   identity::ScopeSet access_token_request_completed_scopes_;
   GoogleServiceAuthError access_token_request_completed_error_;
 };
@@ -1160,7 +1169,7 @@ TEST_F(IdentityManagerTest, CreateAccessTokenFetcher) {
       [](GoogleServiceAuthError error, AccessTokenInfo access_token_info) {});
   std::unique_ptr<AccessTokenFetcher> token_fetcher =
       identity_manager()->CreateAccessTokenFetcherForAccount(
-          identity_manager()->GetPrimaryAccountId(), "dummy_consumer", scopes,
+          identity_manager()->GetPrimaryAccountId(), kTestConsumerId, scopes,
           std::move(callback), AccessTokenFetcher::Mode::kImmediate);
   EXPECT_TRUE(token_fetcher);
 }
@@ -1187,7 +1196,7 @@ TEST_F(IdentityManagerTest,
           &test_url_loader_factory));
   std::unique_ptr<AccessTokenFetcher> token_fetcher =
       identity_manager()->CreateAccessTokenFetcherForAccount(
-          account_id, "dummy_consumer", test_shared_url_loader_factory, scopes,
+          account_id, kTestConsumerId, test_shared_url_loader_factory, scopes,
           std::move(callback), AccessTokenFetcher::Mode::kImmediate);
 
   run_loop.Run();
@@ -1205,7 +1214,7 @@ TEST_F(IdentityManagerTest,
       account_id,
       identity_manager_diagnostics_observer()->token_requestor_account_id());
   EXPECT_EQ(
-      "dummy_consumer",
+      kTestConsumerId,
       identity_manager_diagnostics_observer()->token_requestor_consumer_id());
 
   // Cancel the pending request in preparation to check that creating an
@@ -1228,7 +1237,7 @@ TEST_F(IdentityManagerTest,
   // No changes to the declared scopes and callback, we can reuse them.
   std::unique_ptr<AccessTokenFetcher> token_fetcher2 =
       identity_manager()->CreateAccessTokenFetcherForAccount(
-          account_id2, "dummy_consumer 2", scopes, std::move(callback),
+          account_id2, kTestConsumerId2, scopes, std::move(callback),
           AccessTokenFetcher::Mode::kImmediate);
 
   run_loop2.Run();
@@ -1249,7 +1258,7 @@ TEST_F(IdentityManagerTest,
       account_id2,
       identity_manager_diagnostics_observer()->token_requestor_account_id());
   EXPECT_EQ(
-      "dummy_consumer 2",
+      kTestConsumerId2,
       identity_manager_diagnostics_observer()->token_requestor_consumer_id());
 }
 
@@ -1267,7 +1276,7 @@ TEST_F(IdentityManagerTest, ObserveAccessTokenFetch) {
       [](GoogleServiceAuthError error, AccessTokenInfo access_token_info) {});
   std::unique_ptr<AccessTokenFetcher> token_fetcher =
       identity_manager()->CreateAccessTokenFetcherForAccount(
-          identity_manager()->GetPrimaryAccountId(), "dummy_consumer", scopes,
+          identity_manager()->GetPrimaryAccountId(), kTestConsumerId, scopes,
           std::move(callback), AccessTokenFetcher::Mode::kImmediate);
 
   run_loop.Run();
@@ -1276,7 +1285,7 @@ TEST_F(IdentityManagerTest, ObserveAccessTokenFetch) {
       account_id,
       identity_manager_diagnostics_observer()->token_requestor_account_id());
   EXPECT_EQ(
-      "dummy_consumer",
+      kTestConsumerId,
       identity_manager_diagnostics_observer()->token_requestor_consumer_id());
   EXPECT_EQ(scopes,
             identity_manager_diagnostics_observer()->token_requestor_scopes());
@@ -1294,7 +1303,7 @@ TEST_F(IdentityManagerTest,
   // Account has no refresh token.
   std::unique_ptr<AccessTokenFetcher> token_fetcher =
       identity_manager()->CreateAccessTokenFetcherForAccount(
-          identity_manager()->GetPrimaryAccountId(), "dummy_consumer", scopes,
+          identity_manager()->GetPrimaryAccountId(), kTestConsumerId, scopes,
           std::move(callback), AccessTokenFetcher::Mode::kImmediate);
 
   run_loop.Run();
@@ -1322,7 +1331,7 @@ TEST_F(IdentityManagerTest,
   // This should result in a request for an access token without an error.
   std::unique_ptr<AccessTokenFetcher> token_fetcher =
       identity_manager()->CreateAccessTokenFetcherForAccount(
-          identity_manager()->GetPrimaryAccountId(), "dummy_consumer", scopes,
+          identity_manager()->GetPrimaryAccountId(), kTestConsumerId, scopes,
           std::move(callback), AccessTokenFetcher::Mode::kImmediate);
 
   run_loop.Run();
@@ -1330,6 +1339,9 @@ TEST_F(IdentityManagerTest,
   EXPECT_TRUE(token_fetcher);
   EXPECT_EQ(account_id, identity_manager_diagnostics_observer()
                             ->on_access_token_request_completed_account_id());
+  EXPECT_EQ(kTestConsumerId,
+            identity_manager_diagnostics_observer()
+                ->on_access_token_request_completed_consumer_id());
   EXPECT_EQ(scopes, identity_manager_diagnostics_observer()
                         ->on_access_token_request_completed_scopes());
   EXPECT_EQ(GoogleServiceAuthError(GoogleServiceAuthError::NONE),
@@ -1354,7 +1366,7 @@ TEST_F(IdentityManagerTest,
   // This should result in a request for an access token.
   std::unique_ptr<AccessTokenFetcher> token_fetcher =
       identity_manager()->CreateAccessTokenFetcherForAccount(
-          account_id2, "dummy_consumer 2", scopes, std::move(callback),
+          account_id2, kTestConsumerId2, scopes, std::move(callback),
           AccessTokenFetcher::Mode::kImmediate);
 
   // Revoke the refresh token result cancelling access token request.

@@ -176,8 +176,10 @@ class IdentityManager : public SigninManagerBase::Observer,
     // Called when an access token request is completed. Contains diagnostic
     // information about the access token request.
     virtual void OnAccessTokenRequestCompleted(const std::string& account_id,
+                                               const std::string& consumer_id,
+                                               const ScopeSet& scopes,
                                                GoogleServiceAuthError error,
-                                               const ScopeSet& scopes) {}
+                                               base::Time expiration_time) {}
 
     // Called when an access token was removed.
     virtual void OnAccessTokenRemovedFromCache(const std::string& account_id,
