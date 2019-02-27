@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_SERVICES_ASSISTANT_PLATFORM_SYSTEM_PROVIDER_IMPL_H_
 #define CHROMEOS_SERVICES_ASSISTANT_PLATFORM_SYSTEM_PROVIDER_IMPL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/component_export.h"
@@ -16,10 +17,16 @@
 namespace chromeos {
 namespace assistant {
 
+class PowerManagerProviderImpl;
+
 class COMPONENT_EXPORT(ASSISTANT_SERVICE) SystemProviderImpl
     : public assistant_client::SystemProvider {
  public:
-  explicit SystemProviderImpl(device::mojom::BatteryMonitorPtr battery_monitor);
+  // Acceptable to pass in |nullptr| for |power_manager_provider| when no
+  // platform power manager provider is available.
+  SystemProviderImpl(
+      std::unique_ptr<PowerManagerProviderImpl> power_manager_provider,
+      device::mojom::BatteryMonitorPtr battery_monitor);
   ~SystemProviderImpl() override;
 
   // assistant_client::SystemProvider implementation:
@@ -35,6 +42,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) SystemProviderImpl
   void OnBatteryStatus(device::mojom::BatteryStatusPtr battery_status);
 
   void FlushForTesting();
+
+  std::unique_ptr<PowerManagerProviderImpl> power_manager_provider_;
 
   device::mojom::BatteryMonitorPtr battery_monitor_;
   device::mojom::BatteryStatusPtr current_battery_status_;

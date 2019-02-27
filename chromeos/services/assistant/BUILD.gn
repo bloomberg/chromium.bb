@@ -81,6 +81,8 @@ component("lib") {
       "platform/file_provider_impl.h",
       "platform/network_provider_impl.cc",
       "platform/network_provider_impl.h",
+      "platform/power_manager_provider_impl.cc",
+      "platform/power_manager_provider_impl.h",
       "platform/system_provider_impl.cc",
       "platform/system_provider_impl.h",
       "platform_api_impl.cc",
@@ -93,6 +95,7 @@ component("lib") {
       "//chromeos/assistant/internal",
       "//chromeos/assistant/internal:build_libassistant",
       "//chromeos/assistant/internal/proto/google3",
+      "//chromeos/dbus",
       "//chromeos/resources",
       "//chromeos/services/assistant/public/proto",
       "//chromeos/strings",
@@ -105,6 +108,7 @@ component("lib") {
       "//services/media_session/public/mojom",
       "//services/network/public/cpp",
       "//services/network/public/mojom",
+      "//services/service_manager/public/cpp",
       "//ui/base",
       "//url",
     ]
@@ -138,10 +142,15 @@ source_set("tests") {
   if (enable_cros_libassistant) {
     sources += [
       "platform/audio_output_provider_impl_unittest.cc",
+      "platform/power_manager_provider_impl_unittest.cc",
       "platform/system_provider_impl_unittest.cc",
     ]
 
-    deps += [ "//libassistant/shared/public" ]
+    deps += [
+      "//chromeos/dbus",
+      "//libassistant/shared/public",
+      "//services/device/public/cpp/test:test_support",
+    ]
   }
 }
 

@@ -52,6 +52,10 @@ extern const base::Feature kEnableStereoAudioInput;
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kTimerNotification;
 
+// Enables power management features i.e. Wake locks and wake up alarms.
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+extern const base::Feature kEnablePowerManager;
+
 // Enables timer ticks. This feature causes alarms/timers tracked by the
 // AssistantAlarmTimerController to tick at a fixed interval, delivering updates
 // to AssistantAlarmTimerModelObservers of time remaining/elapsed since expiry.
@@ -84,6 +88,8 @@ COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsWarmerWelcomeEnabled();
 // Enables sending the client discourse context with text queries.
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kEnableTextQueriesWithClientDiscourseContext;
+
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsPowerManagerEnabled();
 
 }  // namespace features
 }  // namespace assistant
