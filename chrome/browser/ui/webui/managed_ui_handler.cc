@@ -15,7 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/managed_ui.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -122,7 +122,7 @@ std::unique_ptr<base::DictionaryValue> ManagedUIHandler::GetDataSourceUpdate()
   update->SetKey("managedByOrg",
                  base::Value(l10n_util::GetStringFUTF16(
                      IDS_MANAGED_BY_ORG_WITH_HYPERLINK,
-                     base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)
+                     base::UTF8ToUTF16(chrome::kChromeUIManagementURL)
 #if defined(OS_CHROMEOS)
                          ,
                      ui::GetChromeOSDeviceName()

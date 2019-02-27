@@ -12,7 +12,6 @@
  */
 
 (function() {
-
 Polymer({
   is: 'managed-footnote',
 
