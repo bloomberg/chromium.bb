@@ -8,6 +8,7 @@
 #include "base/metrics/metrics_hashes.h"
 #include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "build/build_config.h"
 #include "components/metrics/call_stack_profile_builder.h"
 #include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,7 +52,13 @@ void CheckProfile(int* profiles_count,
   ++*profiles_count;
 }
 
-TEST(HeapProfilerControllerTest, ProfileCollectionsScheduler) {
+#if !defined(OS_ANDROID) || \
+    BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && defined(OFFICIAL_BUILD)
+#define MAYBE_ProfileCollectionsScheduler ProfileCollectionsScheduler
+#else
+#define MAYBE_ProfileCollectionsScheduler DISABLED_ProfileCollectionsScheduler
+#endif
+TEST(HeapProfilerControllerTest, MAYBE_ProfileCollectionsScheduler) {
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
   base::TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner.get());
 
