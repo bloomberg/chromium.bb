@@ -87,19 +87,28 @@ class CustomTabBarTitleOriginView : public views::View {
 
     title_label_->SetBackgroundColor(background_color);
     title_label_->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
+    title_label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
 
     location_label_->SetBackgroundColor(background_color);
     location_label_->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
+    location_label_->SetHorizontalAlignment(
+        gfx::HorizontalAlignment::ALIGN_LEFT);
 
     AddChildView(title_label_);
     AddChildView(location_label_);
 
-    auto layout = std::make_unique<views::FlexLayout>();
+    auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
     layout->SetOrientation(views::LayoutOrientation::kVertical)
         .SetMainAxisAlignment(views::LayoutAlignment::kCenter)
-        .SetCrossAxisAlignment(views::LayoutAlignment::kStart);
-
-    SetLayoutManager(std::move(layout));
+        .SetCrossAxisAlignment(views::LayoutAlignment::kStart)
+        .SetFlexForView(title_label_,
+                        views::FlexSpecification::ForSizeRule(
+                            views::MinimumFlexSizeRule::kScaleToMinimum,
+                            views::MaximumFlexSizeRule::kPreferred))
+        .SetFlexForView(location_label_,
+                        views::FlexSpecification::ForSizeRule(
+                            views::MinimumFlexSizeRule::kScaleToMinimum,
+                            views::MaximumFlexSizeRule::kPreferred));
   }
 
   void Update(base::string16 title, base::string16 location) {
@@ -107,16 +116,30 @@ class CustomTabBarTitleOriginView : public views::View {
     location_label_->SetText(location);
   }
 
-  // views::View:
-  gfx::Size GetMinimumSize() const override {
+  int GetMinimumWidth() const {
     // As labels are not multi-line, the layout will calculate a minimum size
     // that would fit the entire text (potentially a long url). Instead, set a
     // minimum number of characters we want to display and elide the text if it
     // overflows.
+    // This is in a helper function because we also have to ensure that the
+    // preferred size is at least as wide as the minimum size, and the
+    // minimum height of the control should be the preferred height.
     constexpr int kMinCharacters = 20;
-    return gfx::Size(
-        title_label_->font_list().GetExpectedTextWidth(kMinCharacters),
-        GetPreferredSize().height());
+    return title_label_->font_list().GetExpectedTextWidth(kMinCharacters);
+  }
+
+  // views::View:
+  gfx::Size GetMinimumSize() const override {
+    return gfx::Size(GetMinimumWidth(), GetPreferredSize().height());
+  }
+
+  gfx::Size CalculatePreferredSize() const override {
+    // If we don't also override CalculatePreferredSize, we violate some
+    // assumptions in the FlexLayout (that our PreferredSize is always larger
+    // than our MinimumSize).
+    gfx::Size preferred_size = views::View::CalculatePreferredSize();
+    preferred_size.SetToMax(gfx::Size(GetMinimumWidth(), 0));
+    return preferred_size;
   }
 
  private:
@@ -157,13 +180,15 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
       new CustomTabBarTitleOriginView(kCustomTabBarViewBackgroundColor);
   AddChildView(title_origin_view_);
 
-  auto layout = std::make_unique<views::FlexLayout>();
+  auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
   layout->SetOrientation(views::LayoutOrientation::kHorizontal)
       .SetMainAxisAlignment(views::LayoutAlignment::kStart)
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
-      .SetInteriorMargin(GetLayoutInsets(LayoutInset::TOOLBAR_INTERIOR_MARGIN));
-
-  SetLayoutManager(std::move(layout));
+      .SetInteriorMargin(GetLayoutInsets(LayoutInset::TOOLBAR_INTERIOR_MARGIN))
+      .SetFlexForView(title_origin_view_,
+                      views::FlexSpecification::ForSizeRule(
+                          views::MinimumFlexSizeRule::kScaleToMinimum,
+                          views::MaximumFlexSizeRule::kPreferred));
 
   tab_strip_model_observer_.Add(browser->tab_strip_model());
 }
