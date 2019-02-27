@@ -86,6 +86,10 @@ void ComputedAccessibleNodePromiseResolver::EnsureUpToDate() {
 
 void ComputedAccessibleNodePromiseResolver::UpdateTreeAndResolve() {
   LocalFrame* local_frame = element_->ownerDocument()->GetFrame();
+  if (!local_frame) {
+    resolver_->Resolve();
+    return;
+  }
   WebLocalFrameClient* client =
       WebLocalFrameImpl::FromFrame(local_frame)->Client();
   WebComputedAXTree* tree = client->GetOrCreateWebComputedAXTree();
