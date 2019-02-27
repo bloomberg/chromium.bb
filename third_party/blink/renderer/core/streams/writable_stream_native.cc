@@ -777,7 +777,7 @@ void WritableStreamNative::UpdateBackpressure(ScriptState* script_state,
   DCHECK(!CloseQueuedOrInFlight(stream));
 
   //  3. Let writer be stream.[[writer]].
-  const auto writer = stream->writer_;
+  WritableStreamDefaultWriter* writer = stream->writer_;
 
   //  4. If writer is not undefined and backpressure is not
   //     stream.[[backpressure]],

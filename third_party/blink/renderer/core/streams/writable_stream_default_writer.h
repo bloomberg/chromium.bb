@@ -77,8 +77,8 @@ class WritableStreamDefaultWriter final : public ScriptWrappable {
   // not appear in the standard.
   //
 
-  StreamPromiseResolver* ClosedPromise() const { return closed_promise_; }
-  StreamPromiseResolver* ReadyPromise() const { return ready_promise_; }
+  StreamPromiseResolver* ClosedPromise() { return closed_promise_; }
+  StreamPromiseResolver* ReadyPromise() { return ready_promise_; }
 
   void SetReadyPromise(StreamPromiseResolver*);
 
