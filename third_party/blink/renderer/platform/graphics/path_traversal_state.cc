@@ -70,7 +70,7 @@ struct QuadraticBezier {
   FloatPoint start;
   FloatPoint control;
   FloatPoint end;
-  unsigned short split_depth;
+  uint16_t split_depth;
 };
 
 struct CubicBezier {
@@ -116,12 +116,12 @@ struct CubicBezier {
   FloatPoint control1;
   FloatPoint control2;
   FloatPoint end;
-  unsigned short split_depth;
+  uint16_t split_depth;
 };
 
 template <class CurveType>
 static float CurveLength(PathTraversalState& traversal_state, CurveType curve) {
-  static const unsigned short kCurveSplitDepthLimit = 20;
+  static const uint16_t kCurveSplitDepthLimit = 20;
   static const double kPathSegmentLengthToleranceSquared = 1.e-16;
 
   double curve_scale_for_tolerance_squared = curve.MagnitudeSquared();

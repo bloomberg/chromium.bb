@@ -307,7 +307,7 @@ void generatetables(){
 }
 */
 
-unsigned short g_base_table[512] = {
+uint16_t g_base_table[512] = {
     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
@@ -385,9 +385,9 @@ unsigned char g_shift_table[512] = {
     24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
     24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 13};
 
-unsigned short ConvertFloatToHalfFloat(float f) {
+uint16_t ConvertFloatToHalfFloat(float f) {
   unsigned temp = *(reinterpret_cast<unsigned*>(&f));
-  unsigned signexp = (temp >> 23) & 0x1ff;
+  uint16_t signexp = (temp >> 23) & 0x1ff;
   return g_base_table[signexp] +
          ((temp & 0x007fffff) >> g_shift_table[signexp]);
 }
