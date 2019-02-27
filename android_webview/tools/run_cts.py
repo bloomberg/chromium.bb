@@ -69,9 +69,7 @@ _SUPPORTED_ARCH_DICT = {
 }
 
 
-FILE_FILTER_OPT = '--test-launcher-filter-file'
 TEST_FILTER_OPT = '--test-filter'
-ISOLATED_FILTER_OPT = '--isolated-script-test-filter'
 
 def GetCtsInfo(arch, cts_release, item):
   """Gets contents of CTS Info for arch and cts_release.
@@ -111,33 +109,34 @@ def GetExpectedFailures():
 
 
 def GetTestRunFilterArg(args, test_run):
-  """ Filters specified in args override others """
-  filter_args = []
+  """ Merges json file filters with cmdline filters using
+      test_filter.InitializeFilterFromArgs
+  """
 
-  if args.test_filter_file:
-    filter_args.append(FILE_FILTER_OPT + '=' + args.test_filter_file)
-  if args.test_filter:
-    filter_args.append(TEST_FILTER_OPT + '=' + args.test_filter)
-  if args.isolated_script_test_filter:
-    filter_args.append(ISOLATED_FILTER_OPT + '='
-                       + args.isolated_script_test_filter)
-  if filter_args:
-    return filter_args
+  # Convert cmdline filters to test-filter style
+  filter_string = test_filter.InitializeFilterFromArgs(args)
 
-  skips = []
-  if args.skip_expected_failures:
-    skips = GetExpectedFailures()
+  # Only add inclusion filters if there's not already one specified, since
+  # they would conflict, see test_filter.ConflictingPositiveFiltersException.
+  if not test_filter.HasPositivePatterns(filter_string):
+    includes = test_run.get("includes", [])
+    filter_string = test_filter.AppendPatternsToFilter(
+        filter_string,
+        positive_patterns=[i["match"] for i in includes])
 
   excludes = test_run.get("excludes", [])
-  includes = test_run.get("includes", [])
-  assert len(excludes) == 0 or len(includes) == 0, \
-         "test_runs error, can't have both includes and excludes: %s" % test_run
-  if len(includes) > 0:
-    return ['--test-filter=' + ':'.join([i["match"] for i in includes])]
+  filter_string = test_filter.AppendPatternsToFilter(
+      filter_string,
+      negative_patterns=[e["match"] for e in excludes])
+
+  if args.skip_expected_failures:
+    filter_string = test_filter.AppendPatternsToFilter(
+        filter_string,
+        negative_patterns=GetExpectedFailures())
+
+  if filter_string:
+    return [TEST_FILTER_OPT + '=' + filter_string]
   else:
-    skips.extend([i["match"] for i in excludes])
-    if len(skips) > 0:
-      return ['--test-filter=' + "-" + ':'.join(skips)]
     return []
 
 
@@ -379,11 +378,6 @@ def main():
 
   if (args.test_filter_file or args.test_filter
       or args.isolated_script_test_filter):
-    if args.skip_expected_failures:
-      # TODO(aluo): allow both options to be used together so that expected
-      # failures in the filtered test set can be skipped
-      raise Exception('--skip-expected-failures and test filters are mutually'
-                      ' exclusive')
     # TODO(aluo): auto-determine the module based on the test filter and the
     # available tests in each module
     if not args.module_apk:

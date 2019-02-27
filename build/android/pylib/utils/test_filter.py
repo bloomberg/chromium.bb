@@ -65,6 +65,48 @@ def AddFilterOptions(parser):
       help='isolated script filter string. '
            'Like gtest filter strings, but with :: separators instead of :')
 
+
+def AppendPatternsToFilter(test_filter, positive_patterns=None,
+                           negative_patterns=None):
+  """Returns a test-filter string with additional patterns.
+
+  Args:
+    test_filter: test filter string
+    positive_patterns: list of positive patterns to add to string
+    negative_patterns: list of negative patterns to add to string
+  """
+  positives = []
+  negatives = []
+  positive = ''
+  negative = ''
+
+  split_filter = test_filter.split('-', 1)
+  if len(split_filter) == 1:
+    positive = split_filter[0]
+  else:
+    positive, negative = split_filter
+
+  positives += [f for f in positive.split(':') if f]
+  negatives += [f for f in negative.split(':') if f]
+
+  positives += positive_patterns if positive_patterns else []
+  negatives += negative_patterns if negative_patterns else []
+
+  final_filter = ':'.join([p.replace('#', '.') for p in positives])
+  if negatives:
+    final_filter += '-' + ':'.join([n.replace('#', '.') for n in negatives])
+  return final_filter
+
+
+def HasPositivePatterns(test_filter):
+  """Returns True if test_filter contains a positive pattern, else False
+
+  Args:
+    test_filter: test-filter style string
+  """
+  return bool(len(test_filter) > 0 and test_filter[0] != '-')
+
+
 def InitializeFilterFromArgs(args):
   """Returns a filter string from the command-line option values.
 
@@ -76,36 +118,22 @@ def InitializeFilterFromArgs(args):
     ConflictingPositiveFiltersException if both filter file and command line
     specify positive filters.
   """
-  positive_patterns = []
-  negative_patterns = []
+  test_filter = ''
   if args.isolated_script_test_filter:
     args.test_filter = args.isolated_script_test_filter.replace('::', ':')
   if args.test_filter:
-    parsed_filter = _CMDLINE_NAME_SEGMENT_RE.sub(
+    test_filter = _CMDLINE_NAME_SEGMENT_RE.sub(
         '', args.test_filter.replace('#', '.'))
-    split_filter = parsed_filter.split('-', 1)
-    positive = ''
-    negative = ''
-    if len(split_filter) == 1:
-      positive = split_filter[0]
-    else:
-      positive, negative = split_filter
-    positive_patterns = [f for f in positive.split(':') if f]
-    negative_patterns = [f for f in negative.split(':') if f]
-
 
   if args.test_filter_file:
     with open(args.test_filter_file, 'r') as f:
       positive_file_patterns, negative_file_patterns = ParseFilterFile(f)
-      if positive_file_patterns:
-        if positive_patterns:
-          raise ConflictingPositiveFiltersException(
-              'Cannot specify positive pattern in both filter file and ' +
-              'filter command line argument')
-        positive_patterns = positive_file_patterns
-      negative_patterns.extend(negative_file_patterns)
+      if positive_file_patterns and HasPositivePatterns(test_filter):
+        raise ConflictingPositiveFiltersException(
+            'Cannot specify positive pattern in both filter file and ' +
+            'filter command line argument')
+      test_filter = AppendPatternsToFilter(test_filter,
+          positive_patterns=positive_file_patterns,
+          negative_patterns=negative_file_patterns)
 
-  final_filter = ':'.join(positive_patterns)
-  if negative_patterns:
-    final_filter += '-' + ':'.join(negative_patterns)
-  return final_filter
+  return test_filter

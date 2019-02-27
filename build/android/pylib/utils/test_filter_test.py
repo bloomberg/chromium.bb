@@ -144,5 +144,90 @@ class InitializeFilterFromArgsTest(unittest.TestCase):
       self.assertEquals(actual, expected)
 
 
+class AppendPatternsToFilter(unittest.TestCase):
+  def testAllEmpty(self):
+    expected = ''
+    actual = test_filter.AppendPatternsToFilter('', [], [])
+    self.assertEquals(actual, expected)
+  def testAppendOnlyPositiveToEmptyFilter(self):
+    expected = 'positive'
+    actual = test_filter.AppendPatternsToFilter('', ['positive'])
+    self.assertEquals(actual, expected)
+  def testAppendOnlyNegativeToEmptyFilter(self):
+    expected = '-negative'
+    actual = test_filter.AppendPatternsToFilter('',
+                                                negative_patterns=['negative'])
+    self.assertEquals(actual, expected)
+  def testAppendToEmptyFilter(self):
+    expected = 'positive-negative'
+    actual = test_filter.AppendPatternsToFilter('', ['positive'], ['negative'])
+    self.assertEquals(actual, expected)
+  def testAppendToPositiveOnlyFilter(self):
+    expected = 'positive1:positive2-negative'
+    actual = test_filter.AppendPatternsToFilter('positive1', ['positive2'],
+                                                ['negative'])
+    self.assertEquals(actual, expected)
+  def testAppendToNegativeOnlyFilter(self):
+    expected = 'positive-negative1:negative2'
+    actual = test_filter.AppendPatternsToFilter('-negative1', ['positive'],
+                                                ['negative2'])
+    self.assertEquals(actual, expected)
+  def testAppendPositiveToFilter(self):
+    expected = 'positive1:positive2-negative1'
+    actual = test_filter.AppendPatternsToFilter('positive1-negative1',
+                                                ['positive2'])
+    self.assertEquals(actual, expected)
+  def testAppendNegativeToFilter(self):
+    expected = 'positive1-negative1:negative2'
+    actual = test_filter.AppendPatternsToFilter('positive1-negative1',
+                                                negative_patterns=['negative2'])
+    self.assertEquals(actual, expected)
+  def testAppendBothToFilter(self):
+    expected = 'positive1:positive2-negative1:negative2'
+    actual = test_filter.AppendPatternsToFilter('positive1-negative1',
+                                                positive_patterns=['positive2'],
+                                                negative_patterns=['negative2'])
+    self.assertEquals(actual, expected)
+  def testAppendMultipleToFilter(self):
+    expected = 'positive1:positive2:positive3-negative1:negative2:negative3'
+    actual = test_filter.AppendPatternsToFilter('positive1-negative1',
+                                                ['positive2', 'positive3'],
+                                                ['negative2', 'negative3'])
+    self.assertEquals(actual, expected)
+  def testRepeatedAppendToFilter(self):
+    expected = 'positive1:positive2:positive3-negative1:negative2:negative3'
+    filter_string = test_filter.AppendPatternsToFilter('positive1-negative1',
+                                                       ['positive2'],
+                                                       ['negative2'])
+    actual = test_filter.AppendPatternsToFilter(filter_string, ['positive3'],
+                                                ['negative3'])
+    self.assertEquals(actual, expected)
+  def testAppendHashSeparatedPatternsToFilter(self):
+    expected = 'positive.test1:positive.test2-negative.test1:negative.test2'
+    actual = test_filter.AppendPatternsToFilter('positive#test1-negative#test1',
+                                                       ['positive#test2'],
+                                                       ['negative#test2'])
+    self.assertEquals(actual, expected)
+
+
+class HasPositivePatterns(unittest.TestCase):
+  def testEmpty(self):
+    expected = False
+    actual = test_filter.HasPositivePatterns('')
+    self.assertEquals(actual, expected)
+  def testHasOnlyPositive(self):
+    expected = True
+    actual = test_filter.HasPositivePatterns('positive')
+    self.assertEquals(actual, expected)
+  def testHasOnlyNegative(self):
+    expected = False
+    actual = test_filter.HasPositivePatterns('-negative')
+    self.assertEquals(actual, expected)
+  def testHasBoth(self):
+    expected = True
+    actual = test_filter.HasPositivePatterns('positive-negative')
+    self.assertEquals(actual, expected)
+
+
 if __name__ == '__main__':
   sys.exit(unittest.main())
