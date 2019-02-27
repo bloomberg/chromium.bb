@@ -73,12 +73,13 @@ class WritableStreamDefaultController final : public ScriptWrappable {
   static void Close(ScriptState*, WritableStreamDefaultController*);
 
   // https://streams.spec.whatwg.org/#writable-stream-default-controller-get-chunk-size
+  // May error the stream as a side-effect.
   static double GetChunkSize(ScriptState*,
                              WritableStreamDefaultController*,
                              v8::Local<v8::Value> chunk);
 
   // https://streams.spec.whatwg.org/#writable-stream-default-controller-get-desired-size
-  static double GetDesiredSize(WritableStreamDefaultController*);
+  static double GetDesiredSize(const WritableStreamDefaultController*);
 
   // https://streams.spec.whatwg.org/#writable-stream-default-controller-write
   static void Write(ScriptState*,
@@ -113,7 +114,7 @@ class WritableStreamDefaultController final : public ScriptWrappable {
                            v8::Local<v8::Value> chunk);
 
   // https://streams.spec.whatwg.org/#writable-stream-default-controller-get-backpressure
-  static bool GetBackpressure(WritableStreamDefaultController*);
+  static bool GetBackpressure(const WritableStreamDefaultController*);
 
   // https://streams.spec.whatwg.org/#writable-stream-default-controller-error
   static void Error(ScriptState*,

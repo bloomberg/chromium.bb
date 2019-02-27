@@ -154,7 +154,7 @@ class CORE_EXPORT WritableStreamNative : public WritableStream {
 
   bool HasBackpressure() const { return has_backpressure_; }
 
-  StreamPromiseResolver* InFlightWriteRequest() const {
+  const StreamPromiseResolver* InFlightWriteRequest() const {
     return in_flight_write_request_;
   }
 
@@ -164,11 +164,14 @@ class CORE_EXPORT WritableStreamNative : public WritableStream {
 
   v8::Local<v8::Value> GetStoredError(v8::Isolate*) const;
 
-  WritableStreamDefaultController* Controller() const {
+  WritableStreamDefaultController* Controller() {
+    return writable_stream_controller_;
+  }
+  const WritableStreamDefaultController* Controller() const {
     return writable_stream_controller_;
   }
 
-  WritableStreamDefaultWriter* Writer() const { return writer_; }
+  const WritableStreamDefaultWriter* Writer() const { return writer_; }
 
   void SetCloseRequest(StreamPromiseResolver*);
   void SetController(WritableStreamDefaultController*);

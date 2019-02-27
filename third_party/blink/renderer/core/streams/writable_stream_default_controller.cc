@@ -343,7 +343,7 @@ double WritableStreamDefaultController::GetChunkSize(
 }
 
 double WritableStreamDefaultController::GetDesiredSize(
-    WritableStreamDefaultController* controller) {
+    const WritableStreamDefaultController* controller) {
   // https://streams.spec.whatwg.org/#writable-stream-default-controller-get-desired-size
   //  1. Return controller.[[strategyHWM]] − controller.[[queueTotalSize]].
   return controller->strategy_high_water_mark_ -
@@ -658,7 +658,7 @@ void WritableStreamDefaultController::ProcessWrite(
 }
 
 bool WritableStreamDefaultController::GetBackpressure(
-    WritableStreamDefaultController* controller) {
+    const WritableStreamDefaultController* controller) {
   // https://streams.spec.whatwg.org/#writable-stream-default-controller-get-backpressure
   //  1. Let desiredSize be ! WritableStreamDefaultControllerGetDesiredSize(
   //     controller).
