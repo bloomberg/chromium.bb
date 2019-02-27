@@ -522,8 +522,14 @@ const base::Feature kWebAssemblyBaseline{"WebAssemblyBaseline",
 
 // Enable WebAssembly threads.
 // https://github.com/WebAssembly/threads
-const base::Feature kWebAssemblyThreads{"WebAssemblyThreads",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kWebAssemblyThreads {
+  "WebAssemblyThreads",
+#if defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Enable WebAssembly trap handler.
 #if (defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)) && \

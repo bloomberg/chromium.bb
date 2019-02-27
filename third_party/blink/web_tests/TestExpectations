@@ -5897,3 +5897,6 @@ crbug.com/932078 http/tests/security/powerfulFeatureRestrictions/device-orientat
 crbug.com/932078 virtual/secure-device-sensor-events/http/tests/security/powerfulFeatureRestrictions/device-orientation-on-insecure-origin.html [ Skip ]
 crbug.com/932078 virtual/feature-policy-for-sandbox/http/tests/security/powerfulFeatureRestrictions/device-orientation-future-behavior-on-insecure-origin.html [ Skip ]
 crbug.com/932078 virtual/outofblink-cors/http/tests/security/powerfulFeatureRestrictions/device-orientation-future-behavior-on-insecure-origin.html [ Skip ]
+
+# Wasm threads enabled by default
+crbug.com/754910 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/wasm-threads-origin-trial-disabled.html [ Skip ]
