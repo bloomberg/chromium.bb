@@ -70,15 +70,25 @@ void WebFramesManagerImpl::RemoveFrameWithId(const std::string& frame_id) {
   DCHECK(web_frames_.count(frame_id) == 0 ||
          !web_frames_[frame_id]->IsMainFrame() ||
          main_web_frame_ == web_frames_[frame_id].get());
+  if (web_frames_.count(frame_id) == 0) {
+    return;
+  }
   if (main_web_frame_ && main_web_frame_->GetFrameId() == frame_id) {
     main_web_frame_ = nullptr;
   }
+  // The web::WebFrame destructor can call some callbacks that will try to
+  // access the frame via GetFrameWithId. This can lead to a reentrancy issue
+  // on |web_frames_|.
+  // To avoid this issue, keep the frame alive during the map operation and
+  // destroy it after.
+  auto keep_frame_alive = std::move(web_frames_[frame_id]);
   web_frames_.erase(frame_id);
 }
 
 void WebFramesManagerImpl::RemoveAllWebFrames() {
-  main_web_frame_ = nullptr;
-  web_frames_.clear();
+  while (web_frames_.size()) {
+    RemoveFrameWithId(web_frames_.begin()->first);
+  }
 }
 
 WebFrame* WebFramesManagerImpl::GetFrameWithId(const std::string& frame_id) {
