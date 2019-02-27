@@ -25,6 +25,7 @@ void WriteOpusHeader(const media::AudioParameters& params, uint8_t* header) {
   // Set Opus version.
   header[OPUS_EXTRADATA_VERSION_OFFSET] = 1;
   // Set channel count.
+  DCHECK_LE(params.channels(), 2);
   header[OPUS_EXTRADATA_CHANNELS_OFFSET] = params.channels();
   // Set pre-skip
   uint16_t skip = 0;
@@ -37,23 +38,7 @@ void WriteOpusHeader(const media::AudioParameters& params, uint8_t* header) {
   uint16_t gain = 0;
   memcpy(header + OPUS_EXTRADATA_GAIN_OFFSET, &gain, 2);
 
-  // Set channel mapping.
-  if (params.channels() > 2) {
-    // Also possible to have a multistream, not supported for now.
-    DCHECK_LE(params.channels(), OPUS_MAX_VORBIS_CHANNELS);
-    header[OPUS_EXTRADATA_CHANNEL_MAPPING_OFFSET] = 1;
-    // Assuming no coupled streams. This should actually be
-    // channels() - |coupled_streams|.
-    header[OPUS_EXTRADATA_NUM_STREAMS_OFFSET] = params.channels();
-    header[OPUS_EXTRADATA_NUM_COUPLED_OFFSET] = 0;
-    // Set the actual stream map.
-    for (int i = 0; i < params.channels(); ++i) {
-      header[OPUS_EXTRADATA_STREAM_MAP_OFFSET + i] =
-          kOpusVorbisChannelMap[params.channels() - 1][i];
-    }
-  } else {
-    header[OPUS_EXTRADATA_CHANNEL_MAPPING_OFFSET] = 0;
-  }
+  header[OPUS_EXTRADATA_CHANNEL_MAPPING_OFFSET] = 0;
 }
 
 static double GetFrameRate(const WebmMuxer::VideoParameters& params) {
@@ -293,6 +278,8 @@ void WebmMuxer::AddAudioTrack(const media::AudioParameters& params) {
   DCHECK(audio_track);
   DCHECK_EQ(params.sample_rate(), audio_track->sample_rate());
   DCHECK_EQ(params.channels(), static_cast<int>(audio_track->channels()));
+  DCHECK_LE(params.channels(), 2)
+      << "Only 1 or 2 channels supported, requested " << params.channels();
 
   // Audio data is always pcm_f32le.
   audio_track->set_bit_depth(32u);
