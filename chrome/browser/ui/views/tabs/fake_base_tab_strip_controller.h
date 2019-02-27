@@ -31,7 +31,7 @@ class FakeBaseTabStripController : public TabStripController {
   int GetActiveIndex() const override;
   bool IsTabSelected(int index) const override;
   bool IsTabPinned(int index) const override;
-  void SelectTab(int index) override;
+  void SelectTab(int index, const ui::Event& event) override;
   void ExtendSelectionTo(int index) override;
   void ToggleSelected(int index) override;
   void AddSelectionFromAnchorTo(int index) override;

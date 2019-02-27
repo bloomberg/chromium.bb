@@ -203,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(InstantThemeTest, ThemeAppliedToExistingTab) {
       instant_test_utils::GetStringFromJS(active_tab, helper_js, &css_text));
 
   // Switch to the previous tab.
-  browser()->tab_strip_model()->ActivateTabAt(1, false);
+  browser()->tab_strip_model()->ActivateTabAt(1);
   ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
   observer.WaitForThemeApplied(true);
 

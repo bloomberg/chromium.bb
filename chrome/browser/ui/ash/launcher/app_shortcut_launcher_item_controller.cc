@@ -238,7 +238,7 @@ void AppShortcutLauncherItemController::ExecuteCommand(bool from_context_menu,
     } else {
       multi_user_util::MoveWindowToCurrentDesktop(
           browser->window()->GetNativeWindow());
-      tab_strip->ActivateTabAt(index, false);
+      tab_strip->ActivateTabAt(index);
       browser->window()->Show();
       browser->window()->Activate();
     }
@@ -332,7 +332,7 @@ ash::ShelfAction AppShortcutLauncherItemController::ActivateContent(
 
   int old_index = tab_strip->active_index();
   if (index != old_index)
-    tab_strip->ActivateTabAt(index, false);
+    tab_strip->ActivateTabAt(index);
   return ChromeLauncherController::instance()->ActivateWindowOrMinimizeIfActive(
       browser->window(),
       index == old_index && GetRunningApplications().size() == 1);

@@ -121,7 +121,7 @@ TEST_F(TabMetricsTest, Basic) {
   content::WebContents* fg_contents =
       tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
                                                         GURL(kTestUrls[0]));
-  tab_strip_model->ActivateTabAt(0, false);
+  tab_strip_model->ActivateTabAt(0);
   WebContentsTester::For(fg_contents)->TestSetIsLoading(false);
 
   // Adding, loading and activating a foreground tab doesn't trigger logging.
@@ -164,7 +164,7 @@ TEST_F(TabMetricsTest, TabEvents) {
   content::WebContents* test_contents_1 =
       tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
                                                         GURL(kTestUrls[0]));
-  tab_strip_model->ActivateTabAt(0, false);
+  tab_strip_model->ActivateTabAt(0);
 
   // Opening the background tab triggers logging once the page finishes loading.
   content::WebContents* test_contents_2 =
@@ -224,7 +224,7 @@ TEST_F(TabMetricsTest, TabMetrics) {
   content::WebContents* test_contents_1 =
       tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
                                                         GURL(kTestUrls[0]));
-  tab_strip_model->ActivateTabAt(0, false);
+  tab_strip_model->ActivateTabAt(0);
 
   // Expected metrics for tab event.
   UkmMetricMap expected_metrics(kBasicMetricValues);
@@ -300,7 +300,7 @@ TEST_F(TabMetricsTest, InputEvents) {
   // RunUntilIdle is needed because the widget input handler is initialized
   // asynchronously via mojo (see SetupWidgetInputHandler).
   base::RunLoop().RunUntilIdle();
-  tab_strip_model->ActivateTabAt(0, false);
+  tab_strip_model->ActivateTabAt(0);
 
   UkmMetricMap expected_metrics_1(kBasicMetricValues);
   UkmMetricMap expected_metrics_2(kBasicMetricValues);
@@ -375,7 +375,7 @@ TEST_F(TabMetricsTest, DISABLED_HideWebContents) {
   content::WebContents* test_contents =
       tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
                                                         GURL(kTestUrls[0]));
-  tab_strip_model->ActivateTabAt(0, false);
+  tab_strip_model->ActivateTabAt(0);
 
   // Hiding the window doesn't trigger a log entry, unless the window was
   // minimized.
@@ -398,7 +398,7 @@ TEST_F(TabMetricsTest, Navigations) {
   // Set up first tab.
   tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
                                                     GURL(kTestUrls[0]));
-  tab_strip_model->ActivateTabAt(0, false);
+  tab_strip_model->ActivateTabAt(0);
 
   // Expected metrics for tab event.
   UkmMetricMap expected_metrics(kBasicMetricValues);
@@ -524,7 +524,7 @@ TEST_F(TabMetricsTest, ReplaceForegroundTab) {
   content::WebContents* orig_contents =
       tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
                                                         GURL(kTestUrls[0]));
-  tab_strip_model->ActivateTabAt(0, false);
+  tab_strip_model->ActivateTabAt(0);
   WebContentsTester::For(orig_contents)->TestSetIsLoading(false);
 
   // Build the replacement contents.
@@ -613,7 +613,7 @@ TEST_F(ForegroundedOrClosedTest, MultipleTabs) {
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
                                                     GURL(kTestUrls[0]));
-  tab_strip_model->ActivateTabAt(0, false);
+  tab_strip_model->ActivateTabAt(0);
   tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
                                                     GURL(kTestUrls[1]));
   AdvanceClock();
@@ -687,7 +687,7 @@ TEST_F(ForegroundedOrClosedTest, MRUIndex) {
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
                                                     GURL(kTestUrls[0]));
-  tab_strip_model->ActivateTabAt(0, false);
+  tab_strip_model->ActivateTabAt(0);
   AdvanceClock();
 
   tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
@@ -850,7 +850,7 @@ TEST_F(ForegroundedOrClosedTest, MRUIndexMultipleBrowser) {
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
                                                     GURL(kTestUrls[0]));
-  tab_strip_model->ActivateTabAt(0, false);
+  tab_strip_model->ActivateTabAt(0);
   AdvanceClock();
 
   tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
@@ -863,7 +863,7 @@ TEST_F(ForegroundedOrClosedTest, MRUIndexMultipleBrowser) {
   TabStripModel* tab_strip_model2 = browser2->tab_strip_model();
   tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model2,
                                                     GURL(kTestUrls[2]));
-  tab_strip_model2->ActivateTabAt(0, false);
+  tab_strip_model2->ActivateTabAt(0);
   AdvanceClock();
 
   tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model2,

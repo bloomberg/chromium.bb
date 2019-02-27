@@ -19,8 +19,11 @@ FakeBaseTabStripController::~FakeBaseTabStripController() {
 void FakeBaseTabStripController::AddTab(int index, bool is_active) {
   num_tabs_++;
   tab_strip_->AddTabAt(index, TabRendererData(), is_active);
+  ui::MouseEvent fake_event =
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::PointF(), gfx::PointF(),
+                     base::TimeTicks::Now(), 0, 0);
   if (is_active)
-    SelectTab(index);
+    SelectTab(index, fake_event);
 }
 
 void FakeBaseTabStripController::AddPinnedTab(int index, bool is_active) {
@@ -75,7 +78,7 @@ bool FakeBaseTabStripController::IsTabPinned(int index) const {
   return false;
 }
 
-void FakeBaseTabStripController::SelectTab(int index) {
+void FakeBaseTabStripController::SelectTab(int index, const ui::Event& event) {
   if (!IsValidIndex(index) || active_index_ == index)
     return;
 

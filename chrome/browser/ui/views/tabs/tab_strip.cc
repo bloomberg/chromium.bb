@@ -914,10 +914,10 @@ bool TabStrip::MaySetClip() {
   return touch_layout_ || IsStackingDraggedTabs();
 }
 
-void TabStrip::SelectTab(Tab* tab) {
+void TabStrip::SelectTab(Tab* tab, const ui::Event& event) {
   int model_index = GetModelIndexOfTab(tab);
   if (IsValidModelIndex(model_index))
-    controller_->SelectTab(model_index);
+    controller_->SelectTab(model_index, event);
 }
 
 void TabStrip::ExtendSelectionTo(Tab* tab) {
@@ -1355,7 +1355,7 @@ bool TabStrip::OnMouseWheel(const ui::MouseWheelEvent& event) {
     new_active_index += tab_count();
 
   DCHECK(IsValidModelIndex(new_active_index));
-  controller_->SelectTab(new_active_index);
+  controller_->SelectTab(new_active_index, event);
   return true;
 }
 

@@ -20,6 +20,7 @@ class Point;
 }
 
 namespace ui {
+class Event;
 class ListSelectionModel;
 }
 
@@ -52,7 +53,8 @@ class TabStripController {
   virtual bool IsTabPinned(int index) const = 0;
 
   // Select the tab at the specified index in the model.
-  virtual void SelectTab(int index) = 0;
+  // |event| is the input event that triggers the tab selection.
+  virtual void SelectTab(int index, const ui::Event& event) = 0;
 
   // Extends the selection from the anchor to the specified index in the model.
   virtual void ExtendSelectionTo(int index) = 0;

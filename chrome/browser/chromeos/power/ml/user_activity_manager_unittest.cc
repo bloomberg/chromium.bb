@@ -301,7 +301,7 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
     content::WebContents* contents =
         tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model, url);
     if (is_active) {
-      tab_strip_model->ActivateTabAt(tab_strip_model->count() - 1, false);
+      tab_strip_model->ActivateTabAt(tab_strip_model->count() - 1);
     }
     if (!mime_type.empty())
       WebContentsTester::For(contents)->SetMainFrameMimeType(mime_type);

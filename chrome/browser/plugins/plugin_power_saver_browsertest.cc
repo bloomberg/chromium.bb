@@ -301,7 +301,7 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
   void ActivateTab(content::WebContents* contents) {
     browser()->tab_strip_model()->ActivateTabAt(
         browser()->tab_strip_model()->GetIndexOfWebContents(contents),
-        true /* user_gesture */);
+        {TabStripModel::GestureType::kOther});
   }
 
   content::WebContents* GetActiveWebContents() {

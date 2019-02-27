@@ -187,7 +187,8 @@ void ToolbarActionsBarUnitTest::TearDown() {
 
 void ToolbarActionsBarUnitTest::ActivateTab(int index) {
   ASSERT_NE(nullptr, browser()->tab_strip_model()->GetWebContentsAt(index));
-  browser()->tab_strip_model()->ActivateTabAt(index, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      index, {TabStripModel::GestureType::kOther});
 }
 
 scoped_refptr<const extensions::Extension>

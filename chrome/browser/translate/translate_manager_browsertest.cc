@@ -968,7 +968,8 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
 
   // Make restored tab active to (on some platforms) initiate language
   // detection.
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
 
   content::WebContents* restored_web_contents =
       browser()->tab_strip_model()->GetWebContentsAt(0);

@@ -1418,7 +1418,7 @@ void Browser::AddNewContents(WebContents* source,
 
 void Browser::ActivateContents(WebContents* contents) {
   tab_strip_model_->ActivateTabAt(
-      tab_strip_model_->GetIndexOfWebContents(contents), false);
+      tab_strip_model_->GetIndexOfWebContents(contents));
   window_->Activate();
 }
 

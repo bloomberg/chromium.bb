@@ -618,7 +618,7 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
 
   ExtensionTestMessageListener listener("done", false);
   AddTabAtIndex(0, GURL("chrome://newtab"), ui::PAGE_TRANSITION_LINK);
-  browser()->tab_strip_model()->ActivateTabAt(0, false);
+  browser()->tab_strip_model()->ActivateTabAt(0);
   content::WebContents* tab_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 

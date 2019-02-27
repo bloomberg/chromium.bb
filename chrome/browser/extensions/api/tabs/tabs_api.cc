@@ -671,7 +671,7 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
   if (!contents && urls.empty() && window_type != Browser::TYPE_POPUP) {
     chrome::NewTab(new_window);
   }
-  chrome::SelectNumberedTab(new_window, 0);
+  chrome::SelectNumberedTab(new_window, 0, {TabStripModel::GestureType::kNone});
 
   if (focused)
     new_window->window()->Show();
@@ -1320,7 +1320,7 @@ ExtensionFunction::ResponseAction TabsUpdateFunction::Run() {
 
   if (active) {
     if (tab_strip->active_index() != tab_index) {
-      tab_strip->ActivateTabAt(tab_index, false);
+      tab_strip->ActivateTabAt(tab_index);
       DCHECK_EQ(contents, tab_strip->GetActiveWebContents());
     }
   }

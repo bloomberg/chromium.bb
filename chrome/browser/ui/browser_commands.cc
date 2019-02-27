@@ -54,7 +54,6 @@
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_dialogs.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_view_state_transition.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/buildflags.h"
@@ -343,8 +342,8 @@ bool SupportsCommand(Browser* browser, int command) {
   return browser->command_controller()->SupportsCommand(command);
 }
 
-bool ExecuteCommand(Browser* browser, int command) {
-  return browser->command_controller()->ExecuteCommand(command);
+bool ExecuteCommand(Browser* browser, int command, base::TimeTicks time_stamp) {
+  return browser->command_controller()->ExecuteCommand(command, time_stamp);
 }
 
 bool ExecuteCommandWithDisposition(Browser* browser,
@@ -675,14 +674,16 @@ TabStripModelDelegate::RestoreTabType GetRestoreTabType(
   return TabStripModelDelegate::RESTORE_TAB;
 }
 
-void SelectNextTab(Browser* browser) {
+void SelectNextTab(Browser* browser,
+                   TabStripModel::UserGestureDetails gesture_detail) {
   base::RecordAction(UserMetricsAction("SelectNextTab"));
-  browser->tab_strip_model()->SelectNextTab();
+  browser->tab_strip_model()->SelectNextTab(gesture_detail);
 }
 
-void SelectPreviousTab(Browser* browser) {
+void SelectPreviousTab(Browser* browser,
+                       TabStripModel::UserGestureDetails gesture_detail) {
   base::RecordAction(UserMetricsAction("SelectPrevTab"));
-  browser->tab_strip_model()->SelectPreviousTab();
+  browser->tab_strip_model()->SelectPreviousTab(gesture_detail);
 }
 
 void MoveTabNext(Browser* browser) {
@@ -695,16 +696,19 @@ void MoveTabPrevious(Browser* browser) {
   browser->tab_strip_model()->MoveTabPrevious();
 }
 
-void SelectNumberedTab(Browser* browser, int index) {
+void SelectNumberedTab(Browser* browser,
+                       int index,
+                       TabStripModel::UserGestureDetails gesture_detail) {
   if (index < browser->tab_strip_model()->count()) {
     base::RecordAction(UserMetricsAction("SelectNumberedTab"));
-    browser->tab_strip_model()->ActivateTabAt(index, true);
+    browser->tab_strip_model()->ActivateTabAt(index, gesture_detail);
   }
 }
 
-void SelectLastTab(Browser* browser) {
+void SelectLastTab(Browser* browser,
+                   TabStripModel::UserGestureDetails gesture_detail) {
   base::RecordAction(UserMetricsAction("SelectLastTab"));
-  browser->tab_strip_model()->SelectLastTab();
+  browser->tab_strip_model()->SelectLastTab(gesture_detail);
 }
 
 void DuplicateTab(Browser* browser) {

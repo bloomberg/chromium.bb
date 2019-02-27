@@ -45,8 +45,8 @@ class TabController {
   // Returns true if ShouldPaintTab() could return a non-empty clip path.
   virtual bool MaySetClip() = 0;
 
-  // Selects the tab.
-  virtual void SelectTab(Tab* tab) = 0;
+  // Selects the tab. |event| is the event that causes |tab| to be selected.
+  virtual void SelectTab(Tab* tab, const ui::Event& event) = 0;
 
   // Extends the selection from the anchor to |tab|.
   virtual void ExtendSelectionTo(Tab* tab) = 0;

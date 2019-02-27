@@ -387,7 +387,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, TabSwitchClosesPopup) {
       extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
       content::NotificationService::AllSources());
   // Change active tabs, the extension popup should close.
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
   observer.Wait();
 
   EXPECT_FALSE(BrowserActionTestUtil::Create(browser())->HasPopup());

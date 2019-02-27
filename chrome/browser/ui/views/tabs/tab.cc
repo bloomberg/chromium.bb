@@ -373,7 +373,7 @@ void Tab::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 bool Tab::OnKeyPressed(const ui::KeyEvent& event) {
   controller_->UpdateHoverCard(this, false);
   if (event.key_code() == ui::VKEY_SPACE && !IsSelected()) {
-    controller_->SelectTab(this);
+    controller_->SelectTab(this, event);
     return true;
   }
 
@@ -416,11 +416,11 @@ bool Tab::OnMousePressed(const ui::MouseEvent& event) {
           return false;
         }
       } else if (!IsSelected()) {
-        controller_->SelectTab(this);
+        controller_->SelectTab(this, event);
         base::RecordAction(UserMetricsAction("SwitchTab_Click"));
       }
     } else if (!IsSelected()) {
-      controller_->SelectTab(this);
+      controller_->SelectTab(this, event);
       base::RecordAction(UserMetricsAction("SwitchTab_Click"));
     }
     ui::MouseEvent cloned_event(event_in_parent, parent(),
@@ -468,7 +468,7 @@ void Tab::OnMouseReleased(const ui::MouseEvent& event) {
     // If the tab was already selected mouse pressed doesn't change the
     // selection. Reset it now to handle the case where multiple tabs were
     // selected.
-    controller_->SelectTab(this);
+    controller_->SelectTab(this, event);
   }
 }
 
@@ -510,7 +510,7 @@ void Tab::OnGestureEvent(ui::GestureEvent* event) {
       original_selection = controller_->GetSelectionModel();
       tab_activated_with_last_tap_down_ = !IsActive();
       if (!IsSelected())
-        controller_->SelectTab(this);
+        controller_->SelectTab(this, *event);
       gfx::Point loc(event->location());
       views::View::ConvertPointToScreen(this, &loc);
       ui::GestureEvent cloned_event(event_in_parent, parent(),

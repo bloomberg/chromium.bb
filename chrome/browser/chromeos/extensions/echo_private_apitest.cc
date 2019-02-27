@@ -102,7 +102,8 @@ class ExtensionEchoPrivateApiTest : public extensions::ExtensionApiTest {
   // tab.
   int OpenAndActivateTab() {
     AddTabAtIndex(0, GURL("about:blank"), ui::PAGE_TRANSITION_LINK);
-    browser()->tab_strip_model()->ActivateTabAt(0, true);
+    browser()->tab_strip_model()->ActivateTabAt(
+        0, {TabStripModel::GestureType::kOther});
     return extensions::ExtensionTabUtil::GetTabId(
         browser()->tab_strip_model()->GetActiveWebContents());
   }

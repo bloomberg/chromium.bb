@@ -265,14 +265,14 @@ TEST_F(TabLifecycleUnitTest, SetFocused) {
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 
   tab_lifecycle_unit.SetFocused(true);
-  tab_strip_model_->ActivateTabAt(0, false);
+  tab_strip_model_->ActivateTabAt(0);
   web_contents_->WasShown();
   EXPECT_EQ(base::TimeTicks::Max(), tab_lifecycle_unit.GetLastFocusedTime());
   ExpectCanDiscardFalseAllReasons(&tab_lifecycle_unit,
                                   DecisionFailureReason::LIVE_STATE_VISIBLE);
 
   tab_lifecycle_unit.SetFocused(false);
-  tab_strip_model_->ActivateTabAt(1, false);
+  tab_strip_model_->ActivateTabAt(1);
   web_contents_->WasHidden();
   EXPECT_EQ(test_clock_.NowTicks(), tab_lifecycle_unit.GetLastFocusedTime());
   // Advance time enough that the tab is urgent discardable.
@@ -320,7 +320,7 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardActive) {
                                       usage_clock_.get(), web_contents_,
                                       tab_strip_model_.get());
 
-  tab_strip_model_->ActivateTabAt(0, false);
+  tab_strip_model_->ActivateTabAt(0);
 
   // Advance time enough that the tab is urgent discardable.
   test_clock_.Advance(kBackgroundUrgentProtectionTime);

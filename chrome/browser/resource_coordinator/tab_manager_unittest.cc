@@ -502,7 +502,7 @@ TEST_F(TabManagerTest, ActivateTabResetPurgeState) {
   EXPECT_TRUE(tab_manager_->GetWebContentsData(raw_tab2)->is_purged());
 
   // Activate tab2. Tab2's PurgeAndSuspend state should be NOT_PURGED.
-  tabstrip->ActivateTabAt(1, true /* user_gesture */);
+  tabstrip->ActivateTabAt(1, {TabStripModel::GestureType::kOther});
   EXPECT_FALSE(tab_manager_->GetWebContentsData(raw_tab2)->is_purged());
 
   // Tabs with a committed URL must be closed explicitly to avoid DCHECK errors.

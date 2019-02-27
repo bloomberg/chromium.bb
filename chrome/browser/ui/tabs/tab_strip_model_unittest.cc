@@ -527,7 +527,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
 
   // Test ActivateTabAt
   {
-    tabstrip.ActivateTabAt(2, true);
+    tabstrip.ActivateTabAt(2, {TabStripModel::GestureType::kOther});
     EXPECT_EQ(3, observer.GetStateCount());
     State s1(raw_contents2, 1, MockTabStripModelObserver::DEACTIVATE);
     EXPECT_TRUE(observer.StateEquals(0, s1));
@@ -649,7 +649,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
   // Test SelectNextTab, SelectPreviousTab, SelectLastTab
   {
     // Make sure the second of the two tabs is selected first...
-    tabstrip.ActivateTabAt(1, true);
+    tabstrip.ActivateTabAt(1, {TabStripModel::GestureType::kOther});
     tabstrip.SelectPreviousTab();
     EXPECT_EQ(0, tabstrip.active_index());
     tabstrip.SelectLastTab();
@@ -879,9 +879,10 @@ TEST_F(TabStripModelTest, TestInsertionIndexDetermination) {
   // We break the opener relationship...
   tabstrip.InsertWebContentsAt(insert_index, std::move(fg_nonlink_contents),
                                TabStripModel::ADD_NONE);
-  // Now select it, so that user_gesture == true causes the opener relationship
-  // to be forgotten...
-  tabstrip.ActivateTabAt(tabstrip.count() - 1, true);
+  // Now select it, so that GestureType != kNone causes the opener
+  // relationship to be forgotten...
+  tabstrip.ActivateTabAt(tabstrip.count() - 1,
+                         {TabStripModel::GestureType::kOther});
   EXPECT_EQ(tabstrip.count() - 1, tabstrip.active_index());
   EXPECT_EQ(raw_fg_nonlink_contents, tabstrip.GetActiveWebContents());
 
@@ -931,7 +932,7 @@ TEST_F(TabStripModelTest, TestInsertionIndexDeterminationAfterDragged) {
   EXPECT_EQ(raw_opener1, tabstrip.GetOpenerOfWebContentsAt(2));
 
   // Activate the parent tab again.
-  tabstrip.ActivateTabAt(0, true /* user_gesture */);
+  tabstrip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   EXPECT_EQ(1, GetID(tabstrip.GetActiveWebContents()));
 
   // Open another link in a new background tab.
@@ -973,7 +974,7 @@ TEST_F(TabStripModelTest, TestInsertionIndexDeterminationNestedOpener) {
   EXPECT_EQ(1, tabstrip.GetIndexOfLastWebContentsOpenedBy(raw_opener1, 0));
 
   // Activate the child tab:
-  tabstrip.ActivateTabAt(1, true /* user_gesture */);
+  tabstrip.ActivateTabAt(1, {TabStripModel::GestureType::kOther});
   EXPECT_EQ(11, GetID(tabstrip.GetActiveWebContents()));
 
   // Open a link in a new background grandchild tab.
@@ -988,7 +989,7 @@ TEST_F(TabStripModelTest, TestInsertionIndexDeterminationNestedOpener) {
   EXPECT_EQ(2, tabstrip.GetIndexOfLastWebContentsOpenedBy(raw_child11, 1));
 
   // Activate the parent tab again:
-  tabstrip.ActivateTabAt(0, true /* user_gesture */);
+  tabstrip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   EXPECT_EQ(1, GetID(tabstrip.GetActiveWebContents()));
 
   // Open another link in a new background child tab (a sibling of child11).
@@ -1061,7 +1062,7 @@ TEST_F(TabStripModelTest, TestSelectOnClose) {
   EXPECT_EQ(0, tabstrip.active_index());
 
   tabstrip.ForgetAllOpeners();
-  tabstrip.ActivateTabAt(1, true);
+  tabstrip.ActivateTabAt(1, {TabStripModel::GestureType::kOther});
   EXPECT_EQ(1, tabstrip.active_index());
   contentses[0] = tabstrip.DetachWebContentsAt(1);
   EXPECT_EQ(1, tabstrip.active_index());
@@ -1077,7 +1078,7 @@ TEST_F(TabStripModelTest, TestSelectOnClose) {
   InsertWebContentses(&tabstrip, std::move(contentses[0]),
                       std::move(contentses[1]), std::move(contentses[2]));
   EXPECT_EQ(0, tabstrip.active_index());
-  tabstrip.ActivateTabAt(2, false);
+  tabstrip.ActivateTabAt(2, {TabStripModel::GestureType::kOther});
   EXPECT_EQ(2, tabstrip.active_index());
   tabstrip.CloseWebContentsAt(2, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(2, tabstrip.active_index());
@@ -1310,7 +1311,7 @@ TEST_F(TabStripModelTest, TestContextMenuCloseCommands) {
   EXPECT_EQ(5, tabstrip.count());
 
   int dummy_index = tabstrip.count() - 1;
-  tabstrip.ActivateTabAt(dummy_index, true);
+  tabstrip.ActivateTabAt(dummy_index, {TabStripModel::GestureType::kOther});
   EXPECT_EQ(raw_dummy, tabstrip.GetActiveWebContents());
 
   tabstrip.ExecuteContextMenuCommand(dummy_index,
@@ -1397,7 +1398,7 @@ TEST_F(TabStripModelTest, AddWebContents_MiddleClickLinksAndClose) {
   EXPECT_EQ(2, tabstrip.count());
 
   // Re-select the home page.
-  tabstrip.ActivateTabAt(0, true);
+  tabstrip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
 
   // Open a bunch of tabs by simulating middle clicking on links on the home
   // page.
@@ -1427,7 +1428,7 @@ TEST_F(TabStripModelTest, AddWebContents_MiddleClickLinksAndClose) {
   // is constructed to start at the middle WebContents in the tree to make sure
   // the cursor wraps around to the first WebContents in the tree before
   // closing the opener or any other WebContents.
-  tabstrip.ActivateTabAt(2, true);
+  tabstrip.ActivateTabAt(2, {TabStripModel::GestureType::kOther});
   tabstrip.CloseSelectedTabs();
   EXPECT_EQ(raw_middle_click_contents3, tabstrip.GetActiveWebContents());
   tabstrip.CloseSelectedTabs();
@@ -1467,7 +1468,7 @@ TEST_F(TabStripModelTest, AddWebContents_LeftClickPopup) {
   EXPECT_EQ(2, tabstrip.count());
 
   // Re-select the home page.
-  tabstrip.ActivateTabAt(0, true);
+  tabstrip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
 
   // Open a tab by simulating a left click on a link that opens in a new tab.
   std::unique_ptr<WebContents> left_click_contents = CreateWebContents();
@@ -1519,7 +1520,7 @@ TEST_F(TabStripModelTest, AddWebContents_CreateNewBlankTab) {
   EXPECT_EQ(2, tabstrip.count());
 
   // Re-select the home page.
-  tabstrip.ActivateTabAt(0, true);
+  tabstrip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
 
   // Open a new blank tab in the foreground.
   std::unique_ptr<WebContents> new_blank_contents = CreateWebContents();
@@ -1579,7 +1580,7 @@ TEST_F(TabStripModelTest, AddWebContents_ForgetOpeners) {
   EXPECT_EQ(2, tabstrip.count());
 
   // Re-select the first tab (home page).
-  tabstrip.ActivateTabAt(0, true);
+  tabstrip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
 
   // Open a bunch of tabs by simulating middle clicking on links on the home
   // page.
@@ -1602,7 +1603,7 @@ TEST_F(TabStripModelTest, AddWebContents_ForgetOpeners) {
   EXPECT_EQ(raw_typed_page_contents, tabstrip.GetActiveWebContents());
 
   // Step back into the context by selecting a tab inside it.
-  tabstrip.ActivateTabAt(2, true);
+  tabstrip.ActivateTabAt(2, {TabStripModel::GestureType::kOther});
   EXPECT_EQ(raw_middle_click_contents2, tabstrip.GetActiveWebContents());
 
   // Now test that closing tabs selects to the right until there are no more,
@@ -1675,7 +1676,7 @@ TEST_F(TabStripModelTest, ReselectionConsidersChildrenTest) {
                        ui::PAGE_TRANSITION_LINK, TabStripModel::ADD_NONE);
 
   // Select page A.A
-  strip.ActivateTabAt(1, true);
+  strip.ActivateTabAt(1, {TabStripModel::GestureType::kOther});
   EXPECT_EQ(raw_page_a_a_contents, strip.GetActiveWebContents());
 
   // Simulate a middle click to open page A.A.A
@@ -1724,7 +1725,7 @@ TEST_F(TabStripModelTest, AddWebContents_NewTabAtEndOfStripInheritsOpener) {
   }
 
   // Switch to page B's tab.
-  strip.ActivateTabAt(1, true);
+  strip.ActivateTabAt(1, {TabStripModel::GestureType::kOther});
 
   // Open a New Tab at the end of the strip (simulate Ctrl+T)
   std::unique_ptr<WebContents> new_contents = CreateWebContents();
@@ -1811,7 +1812,7 @@ TEST_F(TabStripModelTest, NavigationForgetsOpeners) {
                        TabStripModel::ADD_NONE);
 
   // Tell the TabStripModel that we are navigating page D via a link click.
-  strip.ActivateTabAt(3, true);
+  strip.ActivateTabAt(3, {TabStripModel::GestureType::kOther});
   strip.TabNavigating(raw_page_d_contents, ui::PAGE_TRANSITION_LINK);
 
   // Close page D, page C should be selected. (part of same opener tree).
@@ -1853,7 +1854,7 @@ TEST_F(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
   strip.AddWebContents(std::move(page_d_contents), -1, ui::PAGE_TRANSITION_LINK,
                        TabStripModel::ADD_NONE);
 
-  strip.ActivateTabAt(2, true);
+  strip.ActivateTabAt(2, {TabStripModel::GestureType::kOther});
 
   // TEST 1: A tab in the middle of a bunch of tabs is active and the user opens
   // a new tab at the end of the strip. Closing that new tab will select the tab
@@ -1886,10 +1887,10 @@ TEST_F(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
                        TabStripModel::ADD_ACTIVE);
 
   // Now select the first tab.
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
 
   // Now select the last tab.
-  strip.ActivateTabAt(strip.count() - 1, true);
+  strip.ActivateTabAt(strip.count() - 1, {TabStripModel::GestureType::kOther});
 
   // Now close the last tab. The next adjacent should be selected.
   strip.CloseWebContentsAt(strip.count() - 1, TabStripModel::CLOSE_NONE);
@@ -1897,7 +1898,7 @@ TEST_F(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
 
   // TEST 3: As above, but the user does multiple navigations and thus the tab's
   // opener relationship is forgotten.
-  strip.ActivateTabAt(2, true);
+  strip.ActivateTabAt(2, {TabStripModel::GestureType::kOther});
 
   // Open a new tab but navigate away from the new tab page.
   new_tab_contents = CreateWebContents();
@@ -2340,7 +2341,7 @@ TEST_F(TabStripModelTest, MoveSelectedTabsTo_ForgetOpeners) {
   EXPECT_EQ(raw_page_b1_contents, strip.GetWebContentsAt(4));
 
   // Switch to A.
-  strip.ActivateTabAt(2, true);
+  strip.ActivateTabAt(2, {TabStripModel::GestureType::kOther});
   EXPECT_EQ(raw_page_a_contents, strip.GetActiveWebContents());
 
   // Open page A2 in the background from A. It should end up after A1.
@@ -2387,7 +2388,7 @@ TEST_F(TabStripModelTest, MultipleSelection) {
   strip.AddObserver(&observer);
 
   // Selection and active tab change.
-  strip.ActivateTabAt(3, true);
+  strip.ActivateTabAt(3, {TabStripModel::GestureType::kOther});
   ASSERT_EQ(2, observer.GetStateCount());
   ASSERT_EQ(observer.GetStateAt(0).action, MockTabStripModelObserver::ACTIVATE);
   State s1(raw_contents3, 3, MockTabStripModelObserver::SELECT);
@@ -2485,7 +2486,7 @@ TEST_F(TabStripModelTest, MultipleToSingle) {
   strip.AddObserver(&observer);
   // This changes the selection (0 is no longer selected) but the selected_index
   // still remains at 1.
-  strip.ActivateTabAt(1, true);
+  strip.ActivateTabAt(1, {TabStripModel::GestureType::kOther});
   ASSERT_EQ(1, observer.GetStateCount());
   State s(raw_contents2, 1, MockTabStripModelObserver::SELECT);
   s.src_index = 1;
@@ -2564,7 +2565,7 @@ TEST_F(TabStripModelTest, LinkClicksWithPinnedTabOrdering) {
                        TabStripModel::ADD_ACTIVE | TabStripModel::ADD_PINNED);
 
   // Activate the first tab (a).
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
 
   // Open two more tabs as link clicks. The first tab, c, should appear after
   // the pinned tabs followed by the second tab (d).
@@ -2596,7 +2597,7 @@ TEST_F(TabStripModelTest, MoveWebContentsAt) {
   strip.AppendWebContents(CreateWebContents(), false);
   strip.AddObserver(&observer);
 
-  strip.ActivateTabAt(1, true);
+  strip.ActivateTabAt(1, {TabStripModel::GestureType::kOther});
   EXPECT_EQ(1, strip.active_index());
 
   strip.MoveWebContentsAt(2, 3, true);
@@ -2612,7 +2613,7 @@ TEST_F(TabStripModelTest, NewTabsUngrouped) {
 
   EXPECT_EQ(strip.GetTabGroupForTab(0), nullptr);
 
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
 
@@ -2625,7 +2626,7 @@ TEST_F(TabStripModelTest, AddTabToNewGroup) {
 
   EXPECT_NE(strip.GetTabGroupForTab(0), nullptr);
 
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
 
@@ -2653,7 +2654,7 @@ TEST_F(TabStripModelTest, AddTabToNewGroupMiddleOfExistingGroup) {
   EXPECT_EQ(strip.GetWebContentsAt(2), orig[1]);
   EXPECT_EQ(strip.GetWebContentsAt(3), orig[2]);
 
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
 
@@ -2676,7 +2677,7 @@ TEST_F(TabStripModelTest, AddTabToNewGroupReorders) {
   EXPECT_NE(strip.GetTabGroupForTab(0), nullptr);
   EXPECT_EQ(strip.GetTabGroupForTab(2), nullptr);
 
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
 
@@ -2694,7 +2695,7 @@ TEST_F(TabStripModelTest, AddTabToNewGroupPins) {
   EXPECT_EQ(strip.GetWebContentsAt(0), orig[0]);
   EXPECT_EQ(strip.GetWebContentsAt(1), orig[1]);
 
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
 
@@ -2715,7 +2716,7 @@ TEST_F(TabStripModelTest, AddTabToNewGroupPinsAndReorders) {
   EXPECT_EQ(strip.GetWebContentsAt(1), orig[2]);
   EXPECT_EQ(strip.GetWebContentsAt(2), orig[1]);
 
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
 
@@ -2741,7 +2742,7 @@ TEST_F(TabStripModelTest, AddTabToNewGroupMovePinnedTabRight) {
   EXPECT_EQ(strip.GetWebContentsAt(2), orig[1]);
   EXPECT_EQ(strip.GetWebContentsAt(3), orig[3]);
 
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
 
@@ -2771,7 +2772,7 @@ TEST_F(TabStripModelTest, AddTabToNewGroupMovePinnedTabLeft) {
   EXPECT_EQ(strip.GetWebContentsAt(3), orig[3]);
   EXPECT_EQ(strip.GetWebContentsAt(4), orig[4]);
 
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
 
@@ -2786,7 +2787,7 @@ TEST_F(TabStripModelTest, AddTabToExistingGroupIdempotent) {
 
   EXPECT_EQ(strip.GetTabGroupForTab(0), group);
 
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
 
@@ -2806,7 +2807,7 @@ TEST_F(TabStripModelTest, AddTabToExistingGroup) {
   EXPECT_EQ(strip.GetWebContentsAt(0), in[0]);
   EXPECT_EQ(strip.GetWebContentsAt(1), in[1]);
 
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
 
@@ -2827,7 +2828,7 @@ TEST_F(TabStripModelTest, AddTabToExistingGroupReordersToTheRight) {
   EXPECT_EQ(strip.GetWebContentsAt(0), orig[1]);
   EXPECT_EQ(strip.GetWebContentsAt(1), orig[0]);
 
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
 
@@ -2852,7 +2853,7 @@ TEST_F(TabStripModelTest, AddTabToExistingGroupReordersToTheLeft) {
   EXPECT_EQ(strip.GetWebContentsAt(1), orig[2]);
   EXPECT_EQ(strip.GetWebContentsAt(2), orig[1]);
 
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
 
@@ -2880,7 +2881,7 @@ TEST_F(TabStripModelTest, AddTabToExistingGroupReorders) {
   EXPECT_EQ(strip.GetWebContentsAt(2), orig[3]);
   EXPECT_EQ(strip.GetWebContentsAt(3), orig[2]);
 
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
 
@@ -2902,7 +2903,7 @@ TEST_F(TabStripModelTest, AddTabToExistingGroupPins) {
   EXPECT_EQ(strip.GetWebContentsAt(0), orig[0]);
   EXPECT_EQ(strip.GetWebContentsAt(1), orig[1]);
 
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
 
@@ -2924,7 +2925,7 @@ TEST_F(TabStripModelTest, AddTabToExistingGroupUnpins) {
   EXPECT_EQ(strip.GetWebContentsAt(0), orig[1]);
   EXPECT_EQ(strip.GetWebContentsAt(1), orig[0]);
 
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
 
@@ -2935,7 +2936,7 @@ TEST_F(TabStripModelTest, RemoveTabFromGroupNoopForUngroupedTab) {
 
   strip.RemoveFromGroup({0});
 
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
 
@@ -2949,7 +2950,7 @@ TEST_F(TabStripModelTest, RemoveTabFromGroup) {
 
   EXPECT_EQ(strip.GetTabGroupForTab(0), nullptr);
 
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
 
@@ -2969,7 +2970,7 @@ TEST_F(TabStripModelTest, RemoveTabFromGroupReorders) {
   EXPECT_EQ(strip.GetWebContentsAt(0), orig[1]);
   EXPECT_EQ(strip.GetWebContentsAt(1), orig[0]);
 
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
 
@@ -2996,7 +2997,7 @@ TEST_F(TabStripModelTest, RemoveTabFromGroupMaintainsOrderOfSelectedTabs) {
   EXPECT_EQ(strip.GetWebContentsAt(2), orig[0]);
   EXPECT_EQ(strip.GetWebContentsAt(3), orig[2]);
 
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
 
@@ -3028,7 +3029,7 @@ TEST_F(TabStripModelTest, RemoveTabFromGroupMixtureOfGroups) {
   EXPECT_EQ(strip.GetWebContentsAt(3), orig[3]);
   EXPECT_EQ(strip.GetWebContentsAt(4), orig[4]);
 
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
 
@@ -3043,7 +3044,7 @@ TEST_F(TabStripModelTest, RemoveTabFromGroupDeletesGroup) {
 
   EXPECT_EQ(strip.ListTabGroups().size(), 0U);
 
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
 
@@ -3060,7 +3061,7 @@ TEST_F(TabStripModelTest, AddToNewGroupDeletesGroup) {
   EXPECT_EQ(strip.ListTabGroups().size(), 1U);
   EXPECT_NE(strip.GetTabGroupForTab(0), group);
 
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }
 
@@ -3079,6 +3080,6 @@ TEST_F(TabStripModelTest, AddToExistingGroupDeletesGroup) {
   EXPECT_EQ(strip.ListTabGroups().size(), 1U);
   EXPECT_NE(strip.ListTabGroups()[0], group);
 
-  strip.ActivateTabAt(0, true);
+  strip.ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   strip.CloseAllTabs();
 }

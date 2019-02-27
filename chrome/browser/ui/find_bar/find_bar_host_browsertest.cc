@@ -1120,7 +1120,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
   FindInPageASCII(web_contents_2, "given", kFwd, kIgnoreCase, &ordinal);
 
   // Switch back to first tab.
-  browser()->tab_strip_model()->ActivateTabAt(0, false);
+  browser()->tab_strip_model()->ActivateTabAt(0);
   browser()->GetFindBarController()->EndFindSession(
       FindBarController::kKeepSelectionOnPage,
       FindBarController::kKeepResultsInFindBox);
@@ -1244,7 +1244,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
 
   // Go back to the first tab and make sure we have NOT switched the prepopulate
   // text to "text".
-  browser()->tab_strip_model()->ActivateTabAt(0, false);
+  browser()->tab_strip_model()->ActivateTabAt(0);
 
   // Open the Find box.
   EnsureFindBoxOpen();
@@ -1468,7 +1468,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 
   // Go back to the first tab and verify that the match text is cleared.
   // text to "text".
-  browser()->tab_strip_model()->ActivateTabAt(0, false);
+  browser()->tab_strip_model()->ActivateTabAt(0);
   EXPECT_TRUE(GetMatchCountText().empty());
 }
 

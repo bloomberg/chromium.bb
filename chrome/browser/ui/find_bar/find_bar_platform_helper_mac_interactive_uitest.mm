@@ -168,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(FindBarPlatformHelperMacInteractiveUITest,
                                            ->GetMatchCountText());
 
   // Go back to the first tab and verify that the match text is cleared.
-  browser()->tab_strip_model()->ActivateTabAt(0, false);
+  browser()->tab_strip_model()->ActivateTabAt(0);
   EXPECT_EQ(base::ASCIIToUTF16(""), find_bar_controller->find_bar()
                                         ->GetFindBarTesting()
                                         ->GetMatchCountText());
@@ -255,7 +255,7 @@ IN_PROC_BROWSER_TEST_F(FindBarPlatformHelperMacInteractiveUITest,
                                               false, false, false));
 
   // Go back to the first tab and end the search.
-  browser()->tab_strip_model()->ActivateTabAt(0, false);
+  browser()->tab_strip_model()->ActivateTabAt(0);
   find_bar_controller->EndFindSession(FindBarController::kKeepSelectionOnPage,
                                       FindBarController::kKeepResultsInFindBox);
   // Simulate F3.

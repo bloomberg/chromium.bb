@@ -412,7 +412,7 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
   ASSERT_EQ(1, tab_strip->active_index());
 
   ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
-  tab_strip->ActivateTabAt(0, false);
+  tab_strip->ActivateTabAt(0);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(ProfileChooserView::IsShowing());
 }

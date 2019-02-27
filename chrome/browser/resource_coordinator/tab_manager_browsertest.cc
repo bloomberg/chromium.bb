@@ -417,7 +417,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabManagerBasics) {
   EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(2)));
 
   // Kill the third tab after making second tab active.
-  tsm()->ActivateTabAt(1, true);
+  tsm()->ActivateTabAt(1, {TabStripModel::GestureType::kOther});
 
   // Advance time so everything is urgent discardable again.
   test_clock_.Advance(kBackgroundUrgentProtectionTime);
@@ -621,7 +621,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
   EXPECT_TRUE(tab_manager->DiscardTabImpl(LifecycleUnitDiscardReason::URGENT));
 
   // Activate the 2nd tab.
-  tsm->ActivateTabAt(1, true);
+  tsm->ActivateTabAt(1, {TabStripModel::GestureType::kOther});
   EXPECT_EQ(1, tsm->active_index());
 
   // Advance the clock for less than the protection time.
@@ -1212,7 +1212,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTestWithTwoTabs,
   // PENDING_FREEZE, to indicate that there is a freeze on its way to the
   // renderer but that no discard should happen if the renderer freezes the page
   // before being notified that it became visible.
-  tsm()->ActivateTabAt(1, true);
+  tsm()->ActivateTabAt(1, {TabStripModel::GestureType::kOther});
   GetWebContentsAt(1)->WasShown();
   EXPECT_EQ(LifecycleUnitState::PENDING_FREEZE,
             GetLifecycleUnitAt(1)->GetState());
@@ -1248,7 +1248,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTestWithTwoTabs,
   }
 
   // When the tab is focused and made visible, it transitions to ACTIVE.
-  tsm()->ActivateTabAt(1, true);
+  tsm()->ActivateTabAt(1, {TabStripModel::GestureType::kOther});
   GetWebContentsAt(1)->WasShown();
   EXPECT_EQ(LifecycleUnitState::ACTIVE, GetLifecycleUnitAt(1)->GetState());
 }

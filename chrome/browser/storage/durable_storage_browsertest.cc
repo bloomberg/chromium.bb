@@ -162,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, FirstTabSeesResult) {
 
   EXPECT_TRUE(RequestPermission());
 
-  browser()->tab_strip_model()->ActivateTabAt(0, false);
+  browser()->tab_strip_model()->ActivateTabAt(0);
   EXPECT_TRUE(CheckPermission());
   EXPECT_EQ("granted", CheckPermissionUsingPermissionApi());
 }

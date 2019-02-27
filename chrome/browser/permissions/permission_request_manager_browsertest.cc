@@ -354,11 +354,11 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest, MultipleTabs) {
   EXPECT_FALSE(bubble_factory_0->is_visible());
   EXPECT_TRUE(bubble_factory_1->is_visible());
 
-  tab_strip_model->ActivateTabAt(0, false);
+  tab_strip_model->ActivateTabAt(0);
   EXPECT_FALSE(bubble_factory_0->is_visible());
   EXPECT_FALSE(bubble_factory_1->is_visible());
 
-  tab_strip_model->ActivateTabAt(1, false);
+  tab_strip_model->ActivateTabAt(1);
   EXPECT_EQ(2, bubble_factory_1->show_count());
   EXPECT_FALSE(bubble_factory_0->is_visible());
   EXPECT_TRUE(bubble_factory_1->is_visible());
@@ -370,7 +370,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest, MultipleTabs) {
   EXPECT_FALSE(bubble_factory_0->is_visible());
   EXPECT_EQ(2, bubble_factory_1->show_count());
 
-  tab_strip_model->ActivateTabAt(0, false);
+  tab_strip_model->ActivateTabAt(0);
   EXPECT_TRUE(bubble_factory_0->is_visible());
   EXPECT_EQ(1, bubble_factory()->show_count());
   EXPECT_EQ(2, bubble_factory_1->show_count());
@@ -413,7 +413,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
   observer.Wait();
   EXPECT_FALSE(bubble_factory()->is_visible());
 
-  browser()->tab_strip_model()->ActivateTabAt(0, false);
+  browser()->tab_strip_model()->ActivateTabAt(0);
   EXPECT_FALSE(bubble_factory()->is_visible());
   EXPECT_EQ(1, bubble_factory()->show_count());
 }

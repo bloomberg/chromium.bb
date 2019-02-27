@@ -807,7 +807,8 @@ void DevToolsWindow::Show(const DevToolsToggleAction& action) {
     main_web_contents_->SetDelegate(this);
 
     TabStripModel* tab_strip_model = inspected_browser->tab_strip_model();
-    tab_strip_model->ActivateTabAt(inspected_tab_index, true);
+    tab_strip_model->ActivateTabAt(inspected_tab_index,
+                                   {TabStripModel::GestureType::kOther});
 
     inspected_window->UpdateDevTools();
     main_web_contents_->SetInitialFocus();

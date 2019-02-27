@@ -172,7 +172,7 @@ void CaptivePortalTabHelper::OpenLoginTabForWebContents(
         CaptivePortalTabHelper::FromWebContents(contents);
     if (captive_portal_tab_helper->IsLoginTab()) {
       if (focus)
-        browser->tab_strip_model()->ActivateTabAt(i, false);
+        browser->tab_strip_model()->ActivateTabAt(i);
       return;
     }
   }

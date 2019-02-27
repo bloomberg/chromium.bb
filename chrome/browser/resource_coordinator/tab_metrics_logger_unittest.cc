@@ -39,7 +39,7 @@ TEST_F(TabMetricsLoggerTest, GetTabFeatures) {
   // Add a foreground tab.
   tab_activity_simulator.AddWebContentsAndNavigate(tab_strip_model,
                                                    GURL("about://blank"));
-  tab_strip_model->ActivateTabAt(0, false);
+  tab_strip_model->ActivateTabAt(0);
 
   // Add a background tab to test.
   content::WebContents* bg_contents =

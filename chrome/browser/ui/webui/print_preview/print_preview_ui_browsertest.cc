@@ -137,12 +137,14 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewBrowserTest,
       browser(), GURL("about:blank"), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
 
   // Navigate main tab to hide print preview.
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
 
-  browser()->tab_strip_model()->ActivateTabAt(1, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      1, {TabStripModel::GestureType::kOther});
 }
 #endif  // defined(OS_WIN)
 
