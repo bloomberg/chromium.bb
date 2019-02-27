@@ -13,6 +13,7 @@ namespace perfetto {
 namespace protos {
 namespace pbzero {
 class ChromeTraceEvent_Arg;
+class DebugAnnotation;
 }  // namespace pbzero
 }  // namespace protos
 }  // namespace perfetto
@@ -24,6 +25,8 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoProtoAppender
  public:
   explicit PerfettoProtoAppender(
       perfetto::protos::pbzero::ChromeTraceEvent_Arg* proto);
+  explicit PerfettoProtoAppender(
+      perfetto::protos::pbzero::DebugAnnotation* proto);
   ~PerfettoProtoAppender() override;
 
   // ProtoAppender implementation
@@ -32,10 +35,13 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoProtoAppender
 
  private:
   std::vector<protozero::ContiguousMemoryRange> ranges_;
-  perfetto::protos::pbzero::ChromeTraceEvent_Arg* proto_;
+  perfetto::protos::pbzero::ChromeTraceEvent_Arg* arg_proto_;
+  perfetto::protos::pbzero::DebugAnnotation* annotation_proto_;
 };
 
-void COMPONENT_EXPORT(TRACING_CPP) RegisterTracedValueProtoWriter(bool enable);
+void COMPONENT_EXPORT(TRACING_CPP)
+    RegisterTracedValueProtoWriter(bool enable, bool use_chrome_proto = true);
+
 }  // namespace tracing
 
 #endif  // SERVICES_TRACING_PUBLIC_CPP_PERFETTO_TRACED_VALUE_PROTO_WRITER_H_
