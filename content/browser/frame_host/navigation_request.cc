@@ -894,8 +894,13 @@ void NavigationRequest::OnRequestRedirected(
           redirect_info.new_url)) {
     DVLOG(1) << "Denied redirect for "
              << redirect_info.new_url.possibly_invalid_spec();
-    navigation_handle_->set_net_error_code(net::ERR_UNSAFE_REDIRECT);
-    frame_tree_node_->ResetNavigationRequest(false, true);
+    // Show an error page rather than leaving the previous page in place.
+    OnRequestFailedInternal(
+        network::URLLoaderCompletionStatus(net::ERR_UNSAFE_REDIRECT),
+        false /* skip_throttles */, base::nullopt /* error_page_content */,
+        false /* collapse_frame */);
+    // DO NOT ADD CODE after this. The previous call to OnRequestFailedInternal
+    // has destroyed the NavigationRequest.
     return;
   }
 
@@ -908,8 +913,13 @@ void NavigationRequest::OnRequestRedirected(
           redirect_info.new_url)) {
     DVLOG(1) << "Denied unauthorized redirect for "
              << redirect_info.new_url.possibly_invalid_spec();
-    navigation_handle_->set_net_error_code(net::ERR_UNSAFE_REDIRECT);
-    frame_tree_node_->ResetNavigationRequest(false, true);
+    // Show an error page rather than leaving the previous page in place.
+    OnRequestFailedInternal(
+        network::URLLoaderCompletionStatus(net::ERR_UNSAFE_REDIRECT),
+        false /* skip_throttles */, base::nullopt /* error_page_content */,
+        false /* collapse_frame */);
+    // DO NOT ADD CODE after this. The previous call to OnRequestFailedInternal
+    // has destroyed the NavigationRequest.
     return;
   }
 
