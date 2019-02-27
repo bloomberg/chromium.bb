@@ -4,6 +4,7 @@
 
 import logging
 import os
+import tempfile
 import sys
 import unittest
 
@@ -32,6 +33,12 @@ class _RunCtsTest(unittest.TestCase):
             'skip_expected_failures': False}
     args.update(kwargs)
     return mock.Mock(**args)
+
+  def _getSkipString(self, skip_known_failures):
+    skips = [self._EXCLUDED_TEST.replace('#', '.')]
+    if skip_known_failures:
+      skips += [f.replace('#', '.') for f in run_cts.GetExpectedFailures()]
+    return ':'.join(skips)
 
   def testDetermineArch_arm64(self):
     logging_mock = mock.Mock()
@@ -80,80 +87,117 @@ class _RunCtsTest(unittest.TestCase):
                   msg='Should recommend the highest supported CTS release')
 
   def testNoFilter_SkipExpectedFailures(self):
-    mock_args = self._getArgsMock(skip_expected_failures=True)
-    skips = run_cts.GetExpectedFailures()
-    skips.append(self._EXCLUDED_TEST)
-    self.assertEqual([run_cts.TEST_FILTER_OPT + '=-' + ':'.join(skips)],
+    skip_expected_failures = True
+    mock_args = self._getArgsMock(skip_expected_failures=skip_expected_failures)
+    skip = self._getSkipString(skip_expected_failures)
+    self.assertEqual([run_cts.TEST_FILTER_OPT + '=-' + skip],
                      run_cts.GetTestRunFilterArg(mock_args, self._CTS_RUN))
 
   def testNoFilter_ExcludedMatches(self):
-    mock_args = self._getArgsMock(skip_expected_failures=False)
-    self.assertEqual([run_cts.TEST_FILTER_OPT + '=-' + self._EXCLUDED_TEST],
+    skip_expected_failures = False
+    mock_args = self._getArgsMock(skip_expected_failures=skip_expected_failures)
+    skip = self._getSkipString(skip_expected_failures)
+    self.assertEqual([run_cts.TEST_FILTER_OPT + '=-' + skip],
                      run_cts.GetTestRunFilterArg(mock_args, self._CTS_RUN))
 
-  def testFilter_OverridesExcludedMatches(self):
+  def testFilter_CombinesExcludedMatches(self):
+    skip_expected_failures = False
     mock_args = self._getArgsMock(test_filter='good#test',
-                                  skip_expected_failures=False)
-    self.assertEqual([run_cts.TEST_FILTER_OPT + '=good#test'],
+                                  skip_expected_failures=skip_expected_failures)
+    skip = self._getSkipString(skip_expected_failures)
+    self.assertEqual([run_cts.TEST_FILTER_OPT + '=good.test-' + skip],
                      run_cts.GetTestRunFilterArg(mock_args, self._CTS_RUN))
 
-  def testFilter_OverridesAll(self):
+  def testFilter_CombinesAll(self):
+    skip_expected_failures = True
     mock_args = self._getArgsMock(test_filter='good#test',
-                                  skip_expected_failures=True)
-    self.assertEqual([run_cts.TEST_FILTER_OPT + '=good#test'],
+                                  skip_expected_failures=skip_expected_failures)
+    skip = self._getSkipString(skip_expected_failures)
+    self.assertEqual([run_cts.TEST_FILTER_OPT + '=good.test-' + skip],
                      run_cts.GetTestRunFilterArg(mock_args, self._CTS_RUN))
 
   def testFilter_ForMultipleTests(self):
+    skip_expected_failures = True
     mock_args = self._getArgsMock(test_filter='good#t1:good#t2',
-                                  skip_expected_failures=True)
-    self.assertEqual([run_cts.TEST_FILTER_OPT + '=good#t1:good#t2'],
+                                  skip_expected_failures=skip_expected_failures)
+    skip = self._getSkipString(skip_expected_failures)
+    self.assertEqual([run_cts.TEST_FILTER_OPT + '=good.t1:good.t2-' + skip],
                      run_cts.GetTestRunFilterArg(mock_args, self._CTS_RUN))
 
-  def testIsolatedFilter_OverridesExcludedMatches(self):
+  def testIsolatedFilter_CombinesExcludedMatches(self):
+    skip_expected_failures = False
     mock_args = self._getArgsMock(isolated_script_test_filter='good#test',
-                                  skip_expected_failures=False)
-    self.assertEqual([run_cts.ISOLATED_FILTER_OPT + '=good#test'],
+                                  skip_expected_failures=skip_expected_failures)
+    skip = self._getSkipString(skip_expected_failures)
+    self.assertEqual([run_cts.TEST_FILTER_OPT + '=good.test-' + skip],
                      run_cts.GetTestRunFilterArg(mock_args, self._CTS_RUN))
 
-  def testIsolatedFilter_OverridesAll(self):
+  def testIsolatedFilter_CombinesAll(self):
+    skip_expected_failures = True
     mock_args = self._getArgsMock(isolated_script_test_filter='good#test',
-                                  skip_expected_failures=True)
-    self.assertEqual([run_cts.ISOLATED_FILTER_OPT + '=good#test'],
+                                  skip_expected_failures=skip_expected_failures)
+    skip = self._getSkipString(skip_expected_failures)
+    self.assertEqual([run_cts.TEST_FILTER_OPT + '=good.test-' + skip],
                      run_cts.GetTestRunFilterArg(mock_args, self._CTS_RUN))
 
   def testIsolatedFilter_ForMultipleTests(self):
+    skip_expected_failures = True
     # Isolated test filters use :: to separate matches
     mock_args = self._getArgsMock(
         isolated_script_test_filter='good#t1::good#t2',
-        skip_expected_failures=True)
-    self.assertEqual([run_cts.ISOLATED_FILTER_OPT + '=good#t1::good#t2'],
+        skip_expected_failures=skip_expected_failures)
+    skip = self._getSkipString(skip_expected_failures)
+    self.assertEqual([run_cts.TEST_FILTER_OPT + '=good.t1:good.t2-' + skip],
                      run_cts.GetTestRunFilterArg(mock_args, self._CTS_RUN))
 
-  def testFilterFile_OverridesExcludedMatches(self):
-    mock_args = self._getArgsMock(test_filter_file='test.filter',
-                                  skip_expected_failures=False)
-    self.assertEqual([run_cts.FILE_FILTER_OPT + '=test.filter'],
-                     run_cts.GetTestRunFilterArg(mock_args, self._CTS_RUN))
+  def testFilterFile_CombinesExcludedMatches(self):
+    skip_expected_failures = False
+    with tempfile.NamedTemporaryFile(prefix='cts_run_test') as filter_file:
+      filter_file.write('suite.goodtest')
+      filter_file.seek(0)
+      mock_args = self._getArgsMock(
+          test_filter_file=filter_file.name,
+          skip_expected_failures=skip_expected_failures)
+      skip = self._getSkipString(skip_expected_failures)
+      self.assertEqual([run_cts.TEST_FILTER_OPT + '=suite.goodtest-' + skip],
+                       run_cts.GetTestRunFilterArg(mock_args, self._CTS_RUN))
 
-  def testFilterFile_OverridesAll(self):
-    mock_args = self._getArgsMock(test_filter_file='test.filter',
-                                  skip_expected_failures=True)
-    self.assertEqual([run_cts.FILE_FILTER_OPT + '=test.filter'],
-                     run_cts.GetTestRunFilterArg(mock_args, self._CTS_RUN))
+  def testFilterFile_CombinesAll(self):
+    skip_expected_failures = True
+    with tempfile.NamedTemporaryFile(prefix='cts_run_test') as filter_file:
+      filter_file.write('suite.goodtest')
+      filter_file.seek(0)
+      mock_args = self._getArgsMock(
+          test_filter_file=filter_file.name,
+          skip_expected_failures=skip_expected_failures)
+      skip = self._getSkipString(skip_expected_failures)
+      self.assertEqual([run_cts.TEST_FILTER_OPT + '=suite.goodtest-' + skip],
+                       run_cts.GetTestRunFilterArg(mock_args, self._CTS_RUN))
 
   def testNegative_Filter(self):
+    skip_expected_failures = True
     mock_args = self._getArgsMock(test_filter='-good#t1:good#t2',
-                                  skip_expected_failures=True)
-    self.assertEqual([run_cts.TEST_FILTER_OPT + '=-good#t1:good#t2'],
+                                  skip_expected_failures=skip_expected_failures)
+    skip = self._getSkipString(skip_expected_failures)
+    self.assertEqual([run_cts.TEST_FILTER_OPT + '=-good.t1:good.t2:' + skip],
                      run_cts.GetTestRunFilterArg(mock_args, self._CTS_RUN))
 
   def testNegative_IsolatedFilter(self):
+    skip_expected_failures = True
     mock_args = self._getArgsMock(
         isolated_script_test_filter='-good#t1::good#t2',
-        skip_expected_failures=True)
-    self.assertEqual([run_cts.ISOLATED_FILTER_OPT + '=-good#t1::good#t2'],
+        skip_expected_failures=skip_expected_failures)
+    skip = self._getSkipString(skip_expected_failures)
+    self.assertEqual([run_cts.TEST_FILTER_OPT + '=-good.t1:good.t2:' + skip],
                      run_cts.GetTestRunFilterArg(mock_args, self._CTS_RUN))
 
+  def testFilter_OverridesInclusion(self):
+    skip_expected_failures = False
+    mock_args = self._getArgsMock(test_filter='good#test1',
+                                  skip_expected_failures=skip_expected_failures)
+    cts_run = {'apk': 'module.apk', 'includes': [{'match': 'good#test2'}]}
+    self.assertEqual([run_cts.TEST_FILTER_OPT + '=good.test1'],
+                     run_cts.GetTestRunFilterArg(mock_args, cts_run))
 
 if __name__ == '__main__':
   unittest.main()

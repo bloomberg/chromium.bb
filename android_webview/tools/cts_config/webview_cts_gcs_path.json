@@ -1,7 +1,7 @@
 {
   "_usage":
   {
-    " The format of this file is as follows.  The excludes and includes lists under test_runs are mutually exclusive, if not specified, all tests in apk will run.":
+    " The format of this file is as follows.  If includes nor excludes are specified, all tests in apk will run.":
     {
       "<android SDK Code, such as L, M, N, ...>": {
         "arch": {
