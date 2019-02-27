@@ -446,6 +446,8 @@ HRESULT DirectManipulationHandler::OnViewportStatusChanged(
 
 HRESULT DirectManipulationHandler::OnViewportUpdated(
     IDirectManipulationViewport* viewport) {
+  if (LoggingEnabled())
+    DebugLogging("OnViewportUpdated", S_OK);
   // Nothing to do here.
   return S_OK;
 }
@@ -477,15 +479,18 @@ HRESULT DirectManipulationHandler::OnContentUpdated(
   DCHECK(viewport);
   DCHECK(content);
 
-  HRESULT hr = S_OK;
+  if (LoggingEnabled())
+    DebugLogging("OnContentUpdated", S_OK);
 
   // Windows should not call this when event_target_ is null since we do not
   // pass the DM_POINTERHITTEST to DirectManipulation.
-  if (!event_target_)
-    return hr;
+  if (!event_target_) {
+    DebugLogging("OnContentUpdated event_target_ is null.", S_OK);
+    return S_OK;
+  }
 
   float xform[6];
-  hr = content->GetContentTransform(xform, ARRAYSIZE(xform));
+  HRESULT hr = content->GetContentTransform(xform, ARRAYSIZE(xform));
   if (!SUCCEEDED(hr)) {
     DebugLogging("DirectManipulationContent get transform failed.", hr);
     return hr;
@@ -510,6 +515,16 @@ HRESULT DirectManipulationHandler::OnContentUpdated(
   if (FloatEquals(scale, last_scale_) &&
       DifferentLessThanOne(x_offset, last_x_offset_) &&
       DifferentLessThanOne(y_offset, last_y_offset_)) {
+    if (LoggingEnabled()) {
+      std::string s =
+          "OnContentUpdated ignored. scale=" + std::to_string(scale) +
+          ", last_scale=" + std::to_string(last_scale_) +
+          ", x_offset=" + std::to_string(x_offset) +
+          ", last_x_offset=" + std::to_string(last_x_offset_) +
+          ", y_offset=" + std::to_string(y_offset) +
+          ", last_y_offset=" + std::to_string(last_y_offset_);
+      DebugLogging(s, S_OK);
+    }
     return hr;
   }
 
