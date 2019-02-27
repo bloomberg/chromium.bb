@@ -10,7 +10,7 @@
 
 /**
  * Languages/keyboard descriptor to display
- * @type {!OobeTypes.LanguageDsc|!OobeTypes.IMEDsc}
+ * @type {!OobeTypes.LanguageDsc|!OobeTypes.IMEDsc|!OobeTypes.DemoCountryDsc}
  */
 var I18nMenuItem;
 

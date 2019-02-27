@@ -15,6 +15,7 @@
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
 #include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
@@ -205,6 +206,8 @@ void WelcomeScreenHandler::GetAdditionalParameters(
             GetAndActivateLoginKeyboardLayouts(
                 application_locale, selected_input_method, enable_layouts));
   dict->Set("timezoneList", GetTimezoneList());
+  dict->Set("demoModeCountryList",
+            base::Value::ToUniquePtrValue(DemoSession::GetCountryList()));
 }
 
 void WelcomeScreenHandler::Initialize() {

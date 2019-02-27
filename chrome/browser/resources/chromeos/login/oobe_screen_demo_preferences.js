@@ -9,6 +9,7 @@
 login.createScreen('DemoPreferencesScreen', 'demo-preferences', function() {
   var CONTEXT_KEY_LOCALE = 'locale';
   var CONTEXT_KEY_INPUT_METHOD = 'input-method';
+  var CONTEXT_KEY_COUNTRY = 'demo-mode-country';
 
   var demoPreferencesModule = null;
 
@@ -51,6 +52,15 @@ login.createScreen('DemoPreferencesScreen', 'demo-preferences', function() {
      */
     onKeyboardSelected_: function(inputMethodId) {
       this.context.set(CONTEXT_KEY_INPUT_METHOD, inputMethodId);
+      this.commitContextChanges();
+    },
+
+    /**
+     * Called when country was selected.
+     * @param {string} countryId Id of the selected country.
+     */
+    onCountrySelected_: function(countryId) {
+      this.context.set(CONTEXT_KEY_COUNTRY, countryId);
       this.commitContextChanges();
     },
   };

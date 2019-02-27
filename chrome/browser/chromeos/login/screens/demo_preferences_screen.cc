@@ -4,11 +4,14 @@
 
 #include "chrome/browser/chromeos/login/screens/demo_preferences_screen.h"
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/demo_preferences_screen_view.h"
 #include "chrome/browser/chromeos/login/screens/screen_exit_code.h"
 #include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 
 namespace chromeos {
@@ -20,6 +23,7 @@ constexpr char kUserActionClose[] = "close-setup";
 
 constexpr char kContextKeyLocale[] = "locale";
 constexpr char kContextKeyInputMethod[] = "input-method";
+constexpr char kContextKeyDemoModeCountry[] = "demo-mode-country";
 
 WelcomeScreen* GetWelcomeScreen() {
   const WizardController* wizard_controller =
@@ -97,11 +101,12 @@ void DemoPreferencesScreen::OnUserAction(const std::string& action_id) {
 void DemoPreferencesScreen::OnContextKeyUpdated(
     const ::login::ScreenContext::KeyType& key) {
   if (key == kContextKeyLocale) {
-    SetApplicationLocaleAndInputMethod(context_.GetString(kContextKeyLocale),
-                                       std::string());
+    SetApplicationLocaleAndInputMethod(context_.GetString(key), std::string());
   } else if (key == kContextKeyInputMethod) {
-    SetApplicationLocaleAndInputMethod(
-        std::string(), context_.GetString(kContextKeyInputMethod));
+    SetApplicationLocaleAndInputMethod(std::string(), context_.GetString(key));
+  } else if (key == kContextKeyDemoModeCountry) {
+    g_browser_process->local_state()->SetString(prefs::kDemoModeCountry,
+                                                context_.GetString(key));
   } else {
     BaseScreen::OnContextKeyUpdated(key);
   }
