@@ -8,13 +8,17 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cicerone_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
+#include "components/account_id/account_id.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "device/usb/public/cpp/fake_usb_device_manager.h"
 #include "storage/browser/fileapi/external_mount_points.h"
@@ -191,13 +195,19 @@ class CrostiniManagerTest : public testing::Test {
   ~CrostiniManagerTest() override { chromeos::DBusThreadManager::Shutdown(); }
 
   void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kCrostini);
     run_loop_ = std::make_unique<base::RunLoop>();
     profile_ = std::make_unique<TestingProfile>();
     crostini_manager_ = std::make_unique<CrostiniManager>(profile_.get());
 
-    // Link gaia user for DriveFS.
-    user_manager_.AddUser(AccountId::FromUserEmailGaiaId(
-        profile_->GetProfileUserName(), "12345"));
+    // Login user for crostini, link gaia for DriveFS.
+    auto user_manager = std::make_unique<chromeos::FakeChromeUserManager>();
+    AccountId account_id = AccountId::FromUserEmailGaiaId(
+        profile()->GetProfileUserName(), "12345");
+    user_manager->AddUser(account_id);
+    user_manager->LoginUser(account_id);
+    scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::move(user_manager));
 
     device::mojom::UsbDeviceManagerPtr fake_usb_manager_ptr_;
     fake_usb_manager_.AddBinding(mojo::MakeRequest(&fake_usb_manager_ptr_));
@@ -207,6 +217,7 @@ class CrostiniManagerTest : public testing::Test {
 
   void TearDown() override {
     crostini_manager_.reset();
+    scoped_user_manager_.reset();
     profile_.reset();
     run_loop_.reset();
   }
@@ -229,7 +240,8 @@ class CrostiniManagerTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
-  chromeos::FakeChromeUserManager user_manager_;
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(CrostiniManagerTest);
 };
 

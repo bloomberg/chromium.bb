@@ -74,6 +74,7 @@ enum class CrostiniResult {
   CONTAINER_EXPORT_FAILED,
   CONTAINER_IMPORT_IMPORTING,
   CONTAINER_IMPORT_FAILED,
+  NOT_ALLOWED,
 };
 
 enum class InstallLinuxPackageProgressStatus {

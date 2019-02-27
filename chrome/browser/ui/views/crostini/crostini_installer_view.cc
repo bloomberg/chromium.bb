@@ -91,6 +91,11 @@ void RecordTimeFromDeviceSetupToInstallMetric() {
 void crostini::ShowCrostiniInstallerView(
     Profile* profile,
     crostini::CrostiniUISurface ui_surface) {
+  // Defensive check to prevent showing the installer when crostini is not
+  // allowed.
+  if (!IsCrostiniUIAllowedForProfile(profile)) {
+    return;
+  }
   base::UmaHistogramEnumeration(kCrostiniSetupSourceHistogram, ui_surface,
                                 crostini::CrostiniUISurface::kCount);
   return CrostiniInstallerView::Show(profile);
