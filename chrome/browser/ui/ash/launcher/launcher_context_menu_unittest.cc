@@ -526,6 +526,8 @@ TEST_F(LauncherContextMenuTest, InternalAppShelfContextMenuOptionsNumber) {
 TEST_F(LauncherContextMenuTest, CrostiniTerminalApp) {
   crostini::CrostiniTestHelper crostini_helper(profile());
   const std::string app_id = crostini::kCrostiniTerminalId;
+  crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
+      crostini::kCrostiniDefaultVmName);
 
   controller()->PinAppWithID(app_id);
   const ash::ShelfItem* item = controller()->GetItem(ash::ShelfID(app_id));
@@ -544,6 +546,51 @@ TEST_F(LauncherContextMenuTest, CrostiniTerminalApp) {
     EXPECT_TRUE(menu->GetIconAt(i, &icon));
     EXPECT_FALSE(icon.IsEmpty());
   }
+
+  // When crostini is running, the terminal should have an option to kill the
+  // vm.
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::STOP_APP));
+}
+
+// Checks the context menu for a "normal" crostini app (i.e. a registered one).
+// Particularly, we ensure that the density changing option exists.
+TEST_F(LauncherContextMenuTest, CrostiniNormalApp) {
+  crostini::CrostiniTestHelper crostini_helper(profile());
+
+  const std::string app_name = "foo";
+  crostini_helper.AddApp(crostini::CrostiniTestHelper::BasicApp(app_name));
+  const std::string app_id =
+      crostini::CrostiniTestHelper::GenerateAppId(app_name);
+  crostini::CrostiniRegistryServiceFactory::GetForProfile(profile())
+      ->AppLaunched(app_id);
+
+  controller()->PinAppWithID(app_id);
+  const ash::ShelfItem* item = controller()->GetItem(ash::ShelfID(app_id));
+  ASSERT_TRUE(item);
+
+  ash::ShelfItemDelegate* item_delegate =
+      model()->GetShelfItemDelegate(ash::ShelfID(app_id));
+  ASSERT_TRUE(item_delegate);
+  int64_t primary_id = GetPrimaryDisplay().id();
+
+  // We force a scale factor of 2.0, to check that the normal app has a menu
+  // option to change the dpi settings.
+  UpdateDisplay("1920x1080*2.0");
+
+  std::unique_ptr<ui::MenuModel> menu =
+      GetContextMenu(item_delegate, primary_id);
+
+  // Check that every menu item has an icon
+  for (int i = 0; i < menu->GetItemCount(); ++i) {
+    gfx::Image icon;
+    EXPECT_TRUE(menu->GetIconAt(i, &icon));
+    EXPECT_FALSE(icon.IsEmpty());
+  }
+
+  // Precisely which density option is shown is not important to us, we only
+  // care that one is shown.
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::CROSTINI_USE_LOW_DENSITY) ||
+              IsItemEnabledInMenu(menu.get(), ash::CROSTINI_USE_HIGH_DENSITY));
 }
 
 // Confirms the menu items for unregistered crostini apps (i.e. apps that do not
