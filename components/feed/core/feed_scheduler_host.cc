@@ -327,6 +327,23 @@ NativeRequestBehavior FeedSchedulerHost::ShouldSessionRequestData(
     } else {
       profile_prefs_->ClearPref(prefs::kLastFetchAttemptTime);
     }
+  } else if (has_content) {  // && scheduler_thinks_has_content
+    // Split into two histograms so the difference is always positive.
+    base::Time last_attempt =
+        profile_prefs_->GetTime(prefs::kLastFetchAttemptTime);
+    if (content_creation_date_time > last_attempt) {
+      base::TimeDelta difference = (content_creation_date_time - last_attempt);
+      UMA_HISTOGRAM_CUSTOM_TIMES(
+          "ContentSuggestions.Feed.Scheduler.ContentAgeDifference.FeedIsOlder",
+          difference, base::TimeDelta::FromMilliseconds(1),
+          base::TimeDelta::FromDays(7), 100);
+    } else {
+      base::TimeDelta difference = (last_attempt - content_creation_date_time);
+      UMA_HISTOGRAM_CUSTOM_TIMES(
+          "ContentSuggestions.Feed.Scheduler.ContentAgeDifference.HostIsOlder",
+          difference, base::TimeDelta::FromMilliseconds(1),
+          base::TimeDelta::FromDays(7), 100);
+    }
   }
 
   NativeRequestBehavior behavior;
