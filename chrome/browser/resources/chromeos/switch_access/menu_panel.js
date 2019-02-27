@@ -19,7 +19,7 @@ class Panel {
    * Initialize the panel and buttons.
    */
   init() {
-    const div = document.getElementById(Panel.MENU_ID);
+    const div = document.getElementById(SAConstants.MENU_ID);
     for (const button of div.children)
       this.setupButton_(button);
 
@@ -60,7 +60,7 @@ class Panel {
    * @param {boolean} enable
    */
   setFocusRing(id, enable) {
-    this.updateClass_(id, Panel.FOCUS_CLASS, enable);
+    this.updateClass_(id, SAConstants.FOCUS_CLASS, enable);
     return;
   }
 
@@ -69,7 +69,7 @@ class Panel {
    * @param {!Array<string>} actions
    */
   setActions(actions) {
-    const div = document.getElementById(Panel.MENU_ID);
+    const div = document.getElementById(SAConstants.MENU_ID);
     for (const button of div.children)
       button.hidden = !actions.includes(button.id);
 
@@ -104,20 +104,9 @@ class Panel {
     const maxCols = 3;
     const numRows = Math.ceil(numActions / maxCols);
     const height = 60 * numRows;
-    document.getElementById(Panel.MENU_ID).style.height = height + 'px';
+    document.getElementById(SAConstants.MENU_ID).style.height = height + 'px';
   }
 }
-
-/**
- * This must be kept in sync with the div ID in menu_panel.html.
- * @type {string}
- */
-Panel.MENU_ID = 'switchaccess_menu_actions';
-/**
- * This must be kept in sync with the class name in menu_panel.css.
- * @type {string}
- */
-Panel.FOCUS_CLASS = 'focus';
 
 let switchAccessMenuPanel = new Panel();
 

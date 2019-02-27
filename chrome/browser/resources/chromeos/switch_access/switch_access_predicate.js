@@ -168,7 +168,7 @@ const SwitchAccessPredicate = {
    * @param {!chrome.automation.AutomationNode} node
    * @return {boolean}
    */
-  isSwitchAccessMenu: (node) => node.htmlAttributes.id === MenuManager.MenuId,
+  isSwitchAccessMenu: (node) => node.htmlAttributes.id === SAConstants.MENU_ID,
 
   /**
    * Returns a Restrictions object ready to be passed to AutomationTreeWalker.

@@ -56,6 +56,7 @@ run_jsbundler("switch_access_copied_files") {
     "options.js",
     "prefs.js",
     "switch_access.js",
+    "switch_access_constants.js",
     "switch_access_predicate.js",
     "text_input_manager.js",
   ]
@@ -162,6 +163,7 @@ js_type_check("closure_compile") {
     ":options",
     ":prefs",
     ":switch_access",
+    ":switch_access_constants",
     ":switch_access_interface",
     ":switch_access_predicate",
     ":text_input_manager",
@@ -181,6 +183,7 @@ js_library("navigation_manager") {
   deps = [
     ":menu_manager",
     ":menu_panel_interface",
+    ":switch_access_constants",
     ":switch_access_predicate",
     ":text_input_manager",
     "../chromevox:constants",
@@ -250,6 +253,9 @@ js_library("switch_access") {
     "$externs_path/automation.js",
     "$externs_path/chrome_extensions.js",
   ]
+}
+
+js_library("switch_access_constants") {
 }
 
 js_library("switch_access_interface") {
