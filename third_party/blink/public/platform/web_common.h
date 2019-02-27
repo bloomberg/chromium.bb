@@ -78,7 +78,7 @@ typedef int32_t WebUChar32;
 #if defined(WIN32)
 typedef wchar_t WebUChar;
 #else
-typedef unsigned short WebUChar;
+typedef uint16_t WebUChar;
 #endif
 
 // Latin-1 character type
