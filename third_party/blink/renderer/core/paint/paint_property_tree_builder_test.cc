@@ -6394,6 +6394,28 @@ TEST_P(PaintPropertyTreeBuilderTest, TableColOpacity) {
   EXPECT_EQ(nullptr, PaintPropertiesForElement("col"));
 }
 
+// Test the WebView API that allows rendering the whole page. In this case, we
+// shouldn't create a clip node for the main frame.
+TEST_P(PaintPropertyTreeBuilderTest, MainFrameDoesntClipContent) {
+  GetPage().GetSettings().SetMainFrameClipsContent(false);
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body,html {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  )HTML");
+
+  EXPECT_FALSE(GetDocument()
+                   .GetLayoutView()
+                   ->FirstFragment()
+                   .PaintProperties()
+                   ->OverflowClip());
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, SVGRootCompositedClipPath) {
   SetBodyInnerHTML(R"HTML(
     <svg id='svg' style='clip-path: circle(); will-change: transform'></svg>
