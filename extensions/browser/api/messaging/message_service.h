@@ -137,9 +137,8 @@ class MessageService : public BrowserContextKeyedAPI,
 
   // A map of channel ID to information about the extension that is waiting
   // for that channel to open. Used for lazy background pages.
-  using PendingLazyBackgroundPageChannel = LazyContextId;
   using PendingLazyBackgroundPageChannelMap =
-      std::map<ChannelId, PendingLazyBackgroundPageChannel>;
+      std::map<ChannelId, LazyContextId>;
 
   // Common implementation for opening a channel configured by |params|.
   //
