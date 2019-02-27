@@ -112,6 +112,7 @@ jumbo_component("views") {
     "controls/button/toggle_button.h",
     "controls/combobox/combobox.h",
     "controls/combobox/combobox_listener.h",
+    "controls/editable_combobox/editable_combobox_listener.h",
     "controls/focus_ring.h",
     "controls/focusable_border.h",
     "controls/image_view.h",
@@ -760,8 +761,12 @@ jumbo_component("views") {
   }
 
   if (is_mac) {
+    # TODO(edinkadric): Add EditableCombobox support on other OSes and move
+    # editable_combobox_unittest.h and .cc to be included for them as well.
+    public += [ "controls/editable_combobox/editable_combobox.h" ]
     sources -= [ "controls/views_text_services_context_menu.cc" ]
     sources += [
+      "controls/editable_combobox/editable_combobox.cc",
       "controls/menu/menu_pre_target_handler_mac.h",
       "controls/menu/menu_pre_target_handler_mac.mm",
     ]
@@ -1156,6 +1161,10 @@ test("views_unittests") {
   if (is_mac) {
     # views_unittests not yet compiling on Mac. http://crbug.com/378134
     sources -= [ "controls/native/native_view_host_unittest.cc" ]
+
+    # TODO(edinkadric): Add EditableCombobox support on other OSes and enable
+    # editable_combobox_unittest.cc on them.
+    sources += [ "controls/editable_combobox/editable_combobox_unittest.cc" ]
     public_deps = [
       "//ui/accelerated_widget_mac",
       "//ui/views_bridge_mac:views_bridge_mac",

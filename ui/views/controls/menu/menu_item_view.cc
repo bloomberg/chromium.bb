@@ -1321,7 +1321,7 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
 
 void MenuItemView::ApplyMinimumDimensions(MenuItemDimensions* dims) const {
   // Don't apply minimums to menus without controllers or to comboboxes.
-  if (!GetMenuController() || GetMenuController()->is_combobox())
+  if (!GetMenuController() || GetMenuController()->IsCombobox())
     return;
 
   // TODO(nicolaso): PaintBackground() doesn't cover the whole area in footnotes

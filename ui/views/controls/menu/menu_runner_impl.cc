@@ -125,7 +125,14 @@ void MenuRunnerImpl::RunMenuAt(Widget* parent,
     controller = new MenuController(for_drop_, this);
     owns_controller_ = true;
   }
-  controller->set_is_combobox((run_types & MenuRunner::COMBOBOX) != 0);
+  DCHECK((run_types & MenuRunner::COMBOBOX) == 0 ||
+         (run_types & MenuRunner::EDITABLE_COMBOBOX) == 0);
+  if (run_types & MenuRunner::COMBOBOX)
+    controller->set_combobox_type(MenuController::kReadonlyCombobox);
+  else if (run_types & MenuRunner::EDITABLE_COMBOBOX)
+    controller->set_combobox_type(MenuController::kEditableCombobox);
+  else
+    controller->set_combobox_type(MenuController::kNotACombobox);
   controller->set_send_gesture_events_to_owner(
       (run_types & MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER) != 0);
   controller->set_use_touchable_layout(
