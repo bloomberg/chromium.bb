@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/arc/connection_observer.h"
@@ -105,10 +106,7 @@ class ArcApps : public KeyedService,
   std::vector<base::OnceCallback<void(AppConnectionHolder*)>>
       pending_load_icon_calls_;
 
-  // |next_u_key_| is incremented every time Convert returns a valid AppPtr, so
-  // that when an app's icon has changed, this apps::mojom::Publisher sends a
-  // different IconKey even though the IconKey's s_key hasn't changed.
-  uint64_t next_u_key_;
+  apps_util::IncrementingIconKeyFactory icon_key_factory_;
 
   base::WeakPtrFactory<ArcApps> weak_ptr_factory_{this};
 

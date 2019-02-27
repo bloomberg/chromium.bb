@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -101,14 +102,11 @@ class ExtensionApps : public apps::mojom::Publisher,
 
   Profile* profile_;
 
-  // |next_u_key_| is incremented every time Convert returns a valid AppPtr, so
-  // that when an app's icon has changed, this apps::mojom::Publisher sends a
-  // different IconKey even though the IconKey's s_key hasn't changed.
-  uint64_t next_u_key_;
-
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
       observer_;
+
+  apps_util::IncrementingIconKeyFactory icon_key_factory_;
 
   apps::mojom::AppType app_type_;
 

@@ -21,8 +21,7 @@
 
 namespace apps {
 
-CrostiniApps::CrostiniApps()
-    : binding_(this), registry_(nullptr), next_u_key_(1) {}
+CrostiniApps::CrostiniApps() : binding_(this), registry_(nullptr) {}
 
 CrostiniApps::~CrostiniApps() {
   if (registry_) {
@@ -217,8 +216,6 @@ apps::mojom::AppPtr CrostiniApps::Convert(
 }
 
 apps::mojom::IconKeyPtr CrostiniApps::NewIconKey(const std::string& app_id) {
-  auto icon_key = apps::mojom::IconKey::New();
-
   // Treat the Crostini Terminal as a special case, loading an icon defined by
   // a resource instead of asking the Crostini VM (or the cache of previous
   // responses from the Crostini VM). Presumably this is for bootstrapping: the
@@ -226,15 +223,14 @@ apps::mojom::IconKeyPtr CrostiniApps::NewIconKey(const std::string& app_id) {
   // should be showable even before the user has installed their first Crostini
   // app and before bringing up an Crostini VM for the first time.
   if (app_id == crostini::kCrostiniTerminalId) {
+    auto icon_key = apps::mojom::IconKey::New();
     icon_key->icon_type = apps::mojom::IconType::kResource;
     icon_key->u_key = IDR_LOGO_CROSTINI_TERMINAL;
-  } else {
-    icon_key->icon_type = apps::mojom::IconType::kCrostini;
-    icon_key->s_key = app_id;
-    icon_key->u_key = next_u_key_++;
+    return icon_key;
   }
 
-  return icon_key;
+  return icon_key_factory_.MakeIconKey(apps::mojom::IconType::kCrostini,
+                                       app_id);
 }
 
 void CrostiniApps::PublishAppID(const std::string& app_id,

@@ -62,7 +62,6 @@ namespace apps {
 ExtensionApps::ExtensionApps()
     : binding_(this),
       profile_(nullptr),
-      next_u_key_(1),
       observer_(this),
       app_type_(apps::mojom::AppType::kUnknown) {}
 
@@ -426,10 +425,8 @@ apps::mojom::AppPtr ExtensionApps::Convert(
   app->name = extension->name();
   app->short_name = extension->short_name();
 
-  app->icon_key = apps::mojom::IconKey::New();
-  app->icon_key->icon_type = apps::mojom::IconType::kExtension;
-  app->icon_key->s_key = extension->id();
-  app->icon_key->u_key = next_u_key_++;
+  app->icon_key = icon_key_factory_.MakeIconKey(
+      apps::mojom::IconType::kExtension, extension->id());
 
   if (profile_) {
     auto* prefs = extensions::ExtensionPrefs::Get(profile_);
