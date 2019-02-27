@@ -26,6 +26,7 @@ import android.os.ConditionVariable;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.support.annotation.IntDef;
 import android.util.Range;
 import android.util.Size;
 import android.util.SparseIntArray;
@@ -36,6 +37,8 @@ import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.JNINamespace;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -922,7 +925,15 @@ public class VideoCaptureCamera2 extends VideoCapture {
         COLOR_TEMPERATURES_MAP.append(7000, CameraMetadata.CONTROL_AWB_MODE_SHADE);
     };
 
-    private static enum CameraState { OPENING, CONFIGURING, STARTED, STOPPED }
+    @IntDef({CameraState.OPENING, CameraState.CONFIGURING, CameraState.STARTED,
+            CameraState.STOPPED})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface CameraState {
+        int OPENING = 0;
+        int CONFIGURING = 1;
+        int STARTED = 2;
+        int STOPPED = 3;
+    }
 
     private final Object mCameraStateLock = new Object();
 
@@ -940,7 +951,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private ConditionVariable mWaitForDeviceClosedConditionVariable = new ConditionVariable();
 
     private Range<Integer> mAeFpsRange;
-    private CameraState mCameraState = CameraState.STOPPED;
+    private @CameraState int mCameraState = CameraState.STOPPED;
     private float mMaxZoom = 1.0f;
     private Rect mCropRect = new Rect();
     private int mPhotoWidth;
@@ -1195,7 +1206,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
         }
     }
 
-    private void changeCameraStateAndNotify(CameraState state) {
+    private void changeCameraStateAndNotify(@CameraState int state) {
         synchronized (mCameraStateLock) {
             mCameraState = state;
             mCameraStateLock.notifyAll();
