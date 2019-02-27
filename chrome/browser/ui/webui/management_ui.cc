@@ -23,21 +23,11 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIManagementHost);
   source->AddLocalizedString("title", IDS_MANAGEMENT_TITLE);
+#if defined(OS_CHROMEOS)
   source->AddLocalizedString("deviceReporting",
                              IDS_MANAGEMENT_DEVICE_REPORTING);
-  source->AddLocalizedString("browserReporting",
-                             IDS_MANAGEMENT_BROWSER_REPORTING);
-  source->AddLocalizedString("browserReportingExplanation",
-                             IDS_MANAGEMENT_BROWSER_REPORTING_EXPLANATION);
   source->AddLocalizedString("deviceConfiguration",
                              IDS_MANAGEMENT_DEVICE_CONFIGURATION);
-  source->AddLocalizedString("extensionReporting",
-                             IDS_MANAGEMENT_EXTENSION_REPORTING);
-  source->AddLocalizedString("extensionsInstalled",
-                             IDS_MANAGEMENT_EXTENSIONS_INSTALLED);
-  source->AddLocalizedString("extensionName", IDS_MANAGEMENT_EXTENSIONS_NAME);
-  source->AddLocalizedString("extensionPermissions",
-                             IDS_MANAGEMENT_EXTENSIONS_PERMISSIONS);
   source->AddLocalizedString(kManagementLogUploadEnabled,
                              IDS_MANAGEMENT_LOG_UPLOAD_ENABLED);
   source->AddLocalizedString(kManagementReportActivityTimes,
@@ -48,6 +38,18 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
                              IDS_MANAGEMENT_REPORT_DEVICE_NETWORK_INTERFACES);
   source->AddLocalizedString(kManagementReportUsers,
                              IDS_MANAGEMENT_REPORT_DEVICE_USERS);
+#endif
+  source->AddLocalizedString("browserReporting",
+                             IDS_MANAGEMENT_BROWSER_REPORTING);
+  source->AddLocalizedString("browserReportingExplanation",
+                             IDS_MANAGEMENT_BROWSER_REPORTING_EXPLANATION);
+  source->AddLocalizedString("extensionReporting",
+                             IDS_MANAGEMENT_EXTENSION_REPORTING);
+  source->AddLocalizedString("extensionsInstalled",
+                             IDS_MANAGEMENT_EXTENSIONS_INSTALLED);
+  source->AddLocalizedString("extensionName", IDS_MANAGEMENT_EXTENSIONS_NAME);
+  source->AddLocalizedString("extensionPermissions",
+                             IDS_MANAGEMENT_EXTENSIONS_PERMISSIONS);
   source->AddLocalizedString("localTrustRoots",
                              IDS_MANAGEMENT_LOCAL_TRUST_ROOTS);
   source->AddLocalizedString("managementTrustRootsNotConfigured",
@@ -94,6 +96,7 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
                           IDR_MANAGEMENT_BROWSER_PROXY_JS);
   source->AddResourcePath("management_ui.html", IDR_MANAGEMENT_UI_HTML);
   source->AddResourcePath("management_ui.js", IDR_MANAGEMENT_UI_JS);
+  source->AddResourcePath("icons.html", IDR_MANAGEMENT_ICONS_HTML);
   source->SetDefaultResource(IDR_MANAGEMENT_HTML);
   source->UseGzip();
   return source;

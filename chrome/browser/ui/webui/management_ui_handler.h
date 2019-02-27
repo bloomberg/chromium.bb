@@ -103,21 +103,15 @@ class ManagementUIHandler : public content::WebUIMessageHandler {
 
   void HandleGetDeviceManagementStatus(const base::ListValue* args);
 
+#if defined(OS_CHROMEOS)
+  void HandleGetDeviceReportingInfo(const base::ListValue* args);
+#endif  // defined(OS_CHROMEOS)
+
   void HandleGetExtensions(const base::ListValue* args);
 
 #if defined(OS_CHROMEOS)
   void HandleGetLocalTrustRootsInfo(const base::ListValue* args);
 #endif  // defined(OS_CHROMEOS)
-
-  void HandleGetReportingDevice(const base::ListValue* args);
-
-  void HandleGetReportingInfo(const base::ListValue* args);
-
-  void HandleGetReportingSecurity(const base::ListValue* args);
-
-  void HandleGetReportingUserActivity(const base::ListValue* args);
-
-  void HandleGetReportingWeb(const base::ListValue* args);
 
   void HandleInitBrowserReportingInfo(const base::ListValue* args);
 

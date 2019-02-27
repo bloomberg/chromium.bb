@@ -41,33 +41,30 @@
     Your account is managed by <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph>. This means your administrator may remotely configure your account.
   </message>
 
-  <message name="IDS_MANAGEMENT_DEVICE_REPORTING" desc="Title of the types of device reporting section of the page">
-    Reporting
-  </message>
-  <message name="IDS_MANAGEMENT_BROWSER_REPORTING" desc="Title of the types of browser reporting section of the page">
-    Browser reporting
-  </message>
-  <message name="IDS_MANAGEMENT_BROWSER_REPORTING_EXPLANATION" desc="Message explaining browser reporting">
-    Your browser has been configured to report
-  </message>
-  <message name="IDS_MANAGEMENT_DEVICE_CONFIGURATION" desc="Message telling users that their administrator has set some specific policies on their device">
-    Your device has been configured to:
-  </message>
-  <message name="IDS_MANAGEMENT_LOG_UPLOAD_ENABLED" desc="Message stating that administrators have access to system logs on user's device.">
-    send system logs to the management server
-  </message>
-  <message name="IDS_MANAGEMENT_REPORT_DEVICE_ACTIVITY_TIMES" desc="Message stating that administrators see device activity times.">
-    report time periods when a user is active on the device
-  </message>
-  <message name="IDS_MANAGEMENT_REPORT_DEVICE_HARDWARE_STATUS" desc="Message stating that administrators see device hardware status.">
-    report hardware statistics such as CPU/RAM usage
-  </message>
-  <message name="IDS_MANAGEMENT_REPORT_DEVICE_NETWORK_INTERFACES" desc="Message stating that administrators see device network interfaces.">
-    report list of network interfaces with their types and hardware addresses
-  </message>
-  <message name="IDS_MANAGEMENT_REPORT_DEVICE_USERS" desc="Message stating that administrators see all users that have used the device recently.">
-    report list of device users that have recently logged in
-  </message>
+  <if expr="chromeos">
+    <!-- Strings related to device reporting section of the management page -->
+    <message name="IDS_MANAGEMENT_DEVICE_REPORTING" desc="Title of the types of device reporting section of the page">
+      Device
+    </message>
+    <message name="IDS_MANAGEMENT_DEVICE_CONFIGURATION" desc="Message telling users that their administrator has set some specific policies on their device">
+      Your administrator can see:
+    </message>
+    <message name="IDS_MANAGEMENT_REPORT_DEVICE_USERS" desc="Message stating that administrators see all users that have used the device recently.">
+      Who has used the device recently
+    </message>
+    <message name="IDS_MANAGEMENT_REPORT_DEVICE_ACTIVITY_TIMES" desc="Message stating that administrators see device activity times.">
+      Who has used the device recently and when
+    </message>
+    <message name="IDS_MANAGEMENT_REPORT_DEVICE_HARDWARE_STATUS" desc="Message stating that administrators see device hardware status.">
+      Device statistics such as CPU/RAM usage
+    </message>
+    <message name="IDS_MANAGEMENT_LOG_UPLOAD_ENABLED" desc="Message stating that administrators have access to system logs on user's device.">
+      Detailed system logs
+    </message>
+    <message name="IDS_MANAGEMENT_REPORT_DEVICE_NETWORK_INTERFACES" desc="Message stating that administrators see device network interfaces.">
+      Network addresses
+    </message>
+  </if>
 
   <message name="IDS_MANAGEMENT_EXTENSION_REPORTING" desc="Title of the force installed extensions section of the page">
     Extension reporting
@@ -87,6 +84,14 @@
   </message>
   <message name="IDS_MANAGEMENT_TRUST_ROOTS_NOT_CONFIGURED" desc="Message describing that the administrators have not installed certificates">
     The contents of websites that you visit is not seen by your administrators
+  </message>
+
+
+  <message name="IDS_MANAGEMENT_BROWSER_REPORTING" desc="Title of the types of browser reporting section of the page">
+    Browser
+  </message>
+  <message name="IDS_MANAGEMENT_BROWSER_REPORTING_EXPLANATION" desc="Message explaining browser reporting">
+    Your administrator can see:
   </message>
   <message name="IDS_MANAGEMENT_EXTENSION_REPORT_MACHINE_NAME" desc="Message explaining that an extension currently reports the user's machine name">
     Your machine's name

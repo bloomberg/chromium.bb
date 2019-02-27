@@ -4,8 +4,10 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="icons.html">
 <link rel="import" href="management_browser_proxy.html">
 
 <dom-module id="management-ui">
@@ -81,6 +83,26 @@
         min-height: var(--cr-section-three-line-min-height);
       }
 
+<if expr="chromeos">
+      .device-reporting div {
+        align-items: center;
+        display: flex;
+      }
+
+      .device-reporting div + div {
+        margin-top: 2em;
+      }
+
+      .device-reporting iron-icon {
+        margin-inline-end: 10px;
+        width: 24px;
+      }
+
+      .device-reporting {
+        margin-bottom: 2em;
+      }
+</if>
+
       .extension-name {
         align-items: center;
         display: flex;
@@ -129,6 +151,27 @@
     <main id="mainContent">
       <div class="sections-container">
         <div class="card">
+<if expr="chromeos">
+          <template is="dom-if"
+              if="[[showDeviceReportingInfo_(deviceReportingInfo_)]]">
+            <section class="three-line single-column">
+              <h2>$i18n{deviceReporting}</h2>
+              <div class="content-indented subtitle">
+                  $i18n{deviceConfiguration}
+              </div>
+              <template is="dom-repeat" items="[[deviceReportingInfo_]]">
+                <div class="content-indented device-reporting">
+                  <span>
+                    <iron-icon icon="[[getIconForDeviceReportingType_(
+                        item.reportingType)]]"></iron-icon>
+                    [[i18n(item.messageId)]]
+                  </span>
+                </div>
+              </template>
+            </section>
+          </template>
+</if>
+
           <template is="dom-if"
               if="[[showBrowserReportingInfo_(browserReportingInfo_)]]">
             <section class="three-line single-column">
