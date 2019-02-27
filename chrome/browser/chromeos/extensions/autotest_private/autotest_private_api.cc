@@ -98,7 +98,9 @@ std::unique_ptr<base::ListValue> GetHostPermissions(const Extension* ext,
   const PermissionsData* permissions_data = ext->permissions_data();
   const URLPatternSet& pattern_set =
       effective_perm ? static_cast<const URLPatternSet&>(
-                           permissions_data->GetEffectiveHostPermissions())
+                           permissions_data->GetEffectiveHostPermissions(
+                               PermissionsData::EffectiveHostPermissionsMode::
+                                   kIncludeTabSpecific))
                      : permissions_data->active_permissions().explicit_hosts();
 
   auto permissions = std::make_unique<base::ListValue>();

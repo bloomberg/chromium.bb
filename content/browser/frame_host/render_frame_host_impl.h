@@ -268,6 +268,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void FlushNetworkAndNavigationInterfacesForTesting() override;
   void PrepareForInnerWebContentsAttach(
       PrepareForInnerWebContentsAttachCallback callback) override;
+  void UpdateSubresourceLoaderFactories() override;
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
@@ -823,11 +824,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Returns the current size for this frame.
   const base::Optional<gfx::Size>& frame_size() const { return frame_size_; }
-
-  // Re-creates loader factories and pushes them to |RenderFrame|.
-  // Used in case we need to add or remove intercepting proxies to the
-  // running renderer, or in case of Network Service connection errors.
-  void UpdateSubresourceLoaderFactories();
 
   // Allow tests to override the timeout used to keep subframe processes alive
   // for unload handler processing.

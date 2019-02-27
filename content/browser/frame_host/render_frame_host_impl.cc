@@ -2875,6 +2875,34 @@ void RenderFrameHostImpl::PrepareForInnerWebContentsAttach(
       std::move(callback));
 }
 
+void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
+  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+  // We only send loader factory bundle upon navigation, so
+  // bail out if the frame hasn't committed any yet.
+  if (!has_committed_any_navigation_)
+    return;
+  DCHECK(!IsOutOfProcessNetworkService() ||
+         network_service_connection_error_handler_holder_.is_bound());
+
+  network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
+  bool bypass_redirect_checks = false;
+  if (recreate_default_url_loader_factory_after_network_service_crash_) {
+    bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
+        last_committed_origin_, mojo::MakeRequest(&default_factory_info));
+  }
+
+  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+      subresource_loader_factories =
+          std::make_unique<blink::URLLoaderFactoryBundleInfo>(
+              std::move(default_factory_info),
+              blink::URLLoaderFactoryBundleInfo::SchemeMap(),
+              CreateInitiatorSpecificURLLoaderFactories(
+                  initiators_requiring_separate_url_loader_factory_),
+              bypass_redirect_checks);
+  GetNavigationControl()->UpdateSubresourceLoaderFactories(
+      std::move(subresource_loader_factories));
+}
+
 void RenderFrameHostImpl::OnDidAccessInitialDocument() {
   delegate_->DidAccessInitialDocument();
 }
@@ -5320,34 +5348,6 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
   // called from ResourceDispatcherHostImpl::BeginRequest).
   if (common_params.post_data)
     GrantFileAccessFromResourceRequestBody(*common_params.post_data);
-}
-
-void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
-  // We only send loader factory bundle upon navigation, so
-  // bail out if the frame hasn't committed any yet.
-  if (!has_committed_any_navigation_)
-    return;
-  DCHECK(!IsOutOfProcessNetworkService() ||
-         network_service_connection_error_handler_holder_.is_bound());
-
-  network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
-  bool bypass_redirect_checks = false;
-  if (recreate_default_url_loader_factory_after_network_service_crash_) {
-    bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
-        last_committed_origin_, mojo::MakeRequest(&default_factory_info));
-  }
-
-  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-      subresource_loader_factories =
-          std::make_unique<blink::URLLoaderFactoryBundleInfo>(
-              std::move(default_factory_info),
-              blink::URLLoaderFactoryBundleInfo::SchemeMap(),
-              CreateInitiatorSpecificURLLoaderFactories(
-                  initiators_requiring_separate_url_loader_factory_),
-              bypass_redirect_checks);
-  GetNavigationControl()->UpdateSubresourceLoaderFactories(
-      std::move(subresource_loader_factories));
 }
 
 std::set<int> RenderFrameHostImpl::GetNavigationEntryIdsPendingCommit() {

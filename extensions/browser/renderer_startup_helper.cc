@@ -243,7 +243,9 @@ void RendererStartupHelper::OnExtensionLoaded(const Extension& extension) {
   // asynchronously.
   url::Origin extension_origin = url::Origin::Create(extension.url());
   std::vector<network::mojom::CorsOriginPatternPtr> allow_list =
-      CreateCorsOriginAccessAllowList(extension);
+      CreateCorsOriginAccessAllowList(
+          extension,
+          PermissionsData::EffectiveHostPermissionsMode::kOmitTabSpecific);
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     ExtensionsClient::Get()->AddOriginAccessPermissions(extension, true,
                                                         &allow_list);

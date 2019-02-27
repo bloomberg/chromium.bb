@@ -2557,7 +2557,9 @@ WebRequestInternalAddEventListenerFunction::Run() {
     // webRequests initiated by a regular extension.
     if (!(ArePublicSessionRestrictionsEnabled() && extension->is_extension()) &&
         extension->permissions_data()
-            ->GetEffectiveHostPermissions()
+            ->GetEffectiveHostPermissions(
+                PermissionsData::EffectiveHostPermissionsMode::
+                    kIncludeTabSpecific)
             .is_empty() &&
         extension->permissions_data()
             ->withheld_permissions()

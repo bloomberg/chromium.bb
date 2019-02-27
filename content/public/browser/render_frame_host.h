@@ -374,6 +374,11 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual void PrepareForInnerWebContentsAttach(
       PrepareForInnerWebContentsAttachCallback callback) = 0;
 
+  // Re-creates loader factories and pushes them to |RenderFrame|.
+  // Used in case we need to add or remove intercepting proxies to the
+  // running renderer, or in case of Network Service connection errors.
+  virtual void UpdateSubresourceLoaderFactories() = 0;
+
  private:
   // This interface should only be implemented inside content.
   friend class RenderFrameHostImpl;
