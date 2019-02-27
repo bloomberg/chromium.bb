@@ -10,12 +10,14 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/trace_event/trace_event.h"
+#include "components/tracing/common/tracing_switches.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/perfetto/include/perfetto/protozero/scattered_stream_null_delegate.h"
@@ -61,6 +63,8 @@ class MockProducerClient : public ProducerClient {
       } else if (proto->has_chrome_events() &&
                  proto->chrome_events().metadata().size() > 0) {
         metadata_packets_.push_back(std::move(proto));
+      } else {
+        new_protos_packets_.push_back(std::move(proto));
       }
     }
 
@@ -87,6 +91,18 @@ class MockProducerClient : public ProducerClient {
     auto event_bundle = finalized_packets_[packet_index]->chrome_events();
     PopulateStringTable(event_bundle);
     return event_bundle.trace_events();
+  }
+
+  size_t GetNewProtosPacketCount() {
+    FlushPacketIfPossible();
+    return new_protos_packets_.size();
+  }
+
+  const perfetto::protos::TracePacket* GetNewProtosPacket(
+      size_t packet_index = 0) {
+    FlushPacketIfPossible();
+    EXPECT_GT(new_protos_packets_.size(), packet_index);
+    return new_protos_packets_[packet_index].get();
   }
 
   const google::protobuf::RepeatedPtrField<perfetto::protos::ChromeMetadata>
@@ -119,6 +135,8 @@ class MockProducerClient : public ProducerClient {
   std::map<int, std::string> string_table_;
   std::vector<std::unique_ptr<perfetto::protos::TracePacket>>
       finalized_packets_;
+  std::vector<std::unique_ptr<perfetto::protos::TracePacket>>
+      new_protos_packets_;
   std::vector<std::unique_ptr<perfetto::protos::TracePacket>> metadata_packets_;
   perfetto::protos::pbzero::TracePacket trace_packet_;
   protozero::ScatteredStreamWriterNullDelegate delegate_;
@@ -224,6 +242,7 @@ class TraceEventDataSourceTest : public testing::Test {
     producer_client_ = std::make_unique<MockProducerClient>(
         scoped_task_environment_.GetMainThreadTaskRunner());
 
+    TraceEventDataSource::ResetForTesting();
     TraceEventDataSource::GetInstance()->StartTracing(
         producer_client(), perfetto::DataSourceConfig());
   }
@@ -601,6 +620,545 @@ TEST_F(TraceEventDataSourceTest, UpdateDurationOfCompleteEvent) {
 
   auto new_events = producer_client()->GetChromeTraceEvents(0);
   EXPECT_EQ(new_events.size(), 1);
+}
+
+class TraceEventDataSourceNewProtosTest : public TraceEventDataSourceTest {
+ public:
+  void SetUp() override {
+    TraceEventDataSourceTest::SetUp();
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kPerfettoUseNewProtos);
+
+    CreateTraceEventDataSource();
+  }
+
+  void ExpectThreadDescriptor(const perfetto::protos::TracePacket* packet,
+                              int64_t min_timestamp = 1u,
+                              int64_t min_thread_time = 1u) {
+    EXPECT_TRUE(packet->has_thread_descriptor());
+    EXPECT_NE(packet->thread_descriptor().pid(), 0);
+    EXPECT_NE(packet->thread_descriptor().tid(), 0);
+    EXPECT_GE(packet->thread_descriptor().reference_timestamp_us(),
+              last_timestamp_);
+    EXPECT_GE(packet->thread_descriptor().reference_thread_time_us(),
+              last_thread_time_);
+    EXPECT_LE(packet->thread_descriptor().reference_timestamp_us(),
+              TRACE_TIME_TICKS_NOW().since_origin().InMicroseconds());
+    if (base::ThreadTicks::IsSupported()) {
+      EXPECT_LE(packet->thread_descriptor().reference_thread_time_us(),
+                base::ThreadTicks::Now().since_origin().InMicroseconds());
+    }
+
+    last_timestamp_ = packet->thread_descriptor().reference_timestamp_us();
+    last_thread_time_ = packet->thread_descriptor().reference_thread_time_us();
+
+    EXPECT_EQ(packet->interned_data().event_categories_size(), 0);
+    EXPECT_EQ(packet->interned_data().legacy_event_names_size(), 0);
+
+    // ThreadDescriptor is only emitted when incremental state was reset, and
+    // thus also always serves as indicator for the state reset to the consumer.
+    EXPECT_TRUE(packet->incremental_state_cleared());
+  }
+
+  void ExpectTraceEvent(const perfetto::protos::TracePacket* packet,
+                        uint32_t category_iid,
+                        uint32_t name_iid,
+                        char phase,
+                        uint32_t flags = 0,
+                        uint64_t id = 0,
+                        int64_t absolute_timestamp = 0,
+                        int32_t tid_override = 0,
+                        int32_t pid_override = 0,
+                        int64_t duration = 0) {
+    EXPECT_TRUE(packet->has_track_event());
+
+    if (absolute_timestamp > 0) {
+      EXPECT_TRUE(packet->track_event().has_timestamp_absolute_us());
+      EXPECT_EQ(packet->track_event().timestamp_absolute_us(),
+                absolute_timestamp);
+    } else {
+      EXPECT_TRUE(packet->track_event().has_timestamp_delta_us());
+      EXPECT_GE(packet->track_event().timestamp_delta_us(), 0);
+      EXPECT_LE(last_timestamp_ + packet->track_event().timestamp_delta_us(),
+                TRACE_TIME_TICKS_NOW().since_origin().InMicroseconds());
+      last_timestamp_ += packet->track_event().timestamp_delta_us();
+    }
+    if (packet->track_event().has_thread_time_delta_us()) {
+      EXPECT_LE(
+          last_thread_time_ + packet->track_event().thread_time_delta_us(),
+          TRACE_TIME_TICKS_NOW().since_origin().InMicroseconds());
+      last_thread_time_ += packet->track_event().thread_time_delta_us();
+    }
+
+    EXPECT_EQ(packet->track_event().category_iids_size(), 1);
+    EXPECT_EQ(packet->track_event().category_iids(0), category_iid);
+    EXPECT_TRUE(packet->track_event().has_legacy_event());
+    EXPECT_EQ(packet->track_event().legacy_event().name_iid(), name_iid);
+    EXPECT_EQ(packet->track_event().legacy_event().phase(), phase);
+    EXPECT_EQ(packet->track_event().legacy_event().flags(), flags);
+    EXPECT_EQ(packet->track_event().legacy_event().id(), id);
+    EXPECT_EQ(packet->track_event().legacy_event().duration(), duration);
+
+    EXPECT_EQ(packet->track_event().legacy_event().tid_override(),
+              tid_override);
+    EXPECT_EQ(packet->track_event().legacy_event().pid_override(),
+              pid_override);
+  }
+
+  void ExpectEventCategories(
+      const perfetto::protos::TracePacket* packet,
+      std::initializer_list<std::pair<uint32_t, std::string>> entries) {
+    ExpectInternedNames(packet->interned_data().event_categories(), entries);
+  }
+
+  void ExpectEventNames(
+      const perfetto::protos::TracePacket* packet,
+      std::initializer_list<std::pair<uint32_t, std::string>> entries) {
+    ExpectInternedNames(packet->interned_data().legacy_event_names(), entries);
+  }
+
+  void ExpectDebugAnnotationNames(
+      const perfetto::protos::TracePacket* packet,
+      std::initializer_list<std::pair<uint32_t, std::string>> entries) {
+    ExpectInternedNames(packet->interned_data().debug_annotation_names(),
+                        entries);
+  }
+
+  template <typename T>
+  void ExpectInternedNames(
+      const google::protobuf::RepeatedPtrField<T>& field,
+      std::initializer_list<std::pair<uint32_t, std::string>> entries) {
+    EXPECT_EQ(field.size(), static_cast<int>(entries.size()));
+    int i = 0;
+    for (const auto& entry : entries) {
+      EXPECT_EQ(field[i].iid(), entry.first);
+      EXPECT_EQ(field[i].name(), entry.second);
+      i++;
+    }
+  }
+
+ protected:
+  int64_t last_timestamp_ = 0;
+  int64_t last_thread_time_ = 0;
+};
+
+TEST_F(TraceEventDataSourceNewProtosTest, BasicTraceEvent) {
+  TRACE_EVENT_BEGIN0(kCategoryGroup, "bar");
+
+  EXPECT_EQ(producer_client()->GetNewProtosPacketCount(), 2u);
+
+  auto* td_packet = producer_client()->GetNewProtosPacket();
+  ExpectThreadDescriptor(td_packet);
+
+  auto* e_packet = producer_client()->GetNewProtosPacket(1);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_BEGIN);
+
+  ExpectEventCategories(e_packet, {{1u, kCategoryGroup}});
+  ExpectEventNames(e_packet, {{1u, "bar"}});
+}
+
+TEST_F(TraceEventDataSourceNewProtosTest, TraceLogMetadataEvents) {
+  base::RunLoop wait_for_flush;
+  TraceEventDataSource::GetInstance()->StopTracing(
+      wait_for_flush.QuitClosure());
+  wait_for_flush.Run();
+
+  bool has_process_uptime_event = false;
+  for (size_t i = 0; i < producer_client()->GetNewProtosPacketCount(); ++i) {
+    auto* packet = producer_client()->GetNewProtosPacket(i);
+    for (auto& event_name : packet->interned_data().legacy_event_names()) {
+      if (event_name.name() == "process_uptime_seconds") {
+        has_process_uptime_event = true;
+        break;
+      }
+    }
+  }
+
+  EXPECT_TRUE(has_process_uptime_event);
+}
+
+TEST_F(TraceEventDataSourceNewProtosTest, TimestampedTraceEvent) {
+  TRACE_EVENT_BEGIN_WITH_ID_TID_AND_TIMESTAMP0(
+      kCategoryGroup, "bar", 42, 4242,
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(424242));
+
+  EXPECT_EQ(producer_client()->GetNewProtosPacketCount(), 2u);
+
+  auto* td_packet = producer_client()->GetNewProtosPacket();
+  ExpectThreadDescriptor(td_packet);
+
+  auto* e_packet = producer_client()->GetNewProtosPacket(1);
+  ExpectTraceEvent(
+      e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+      TRACE_EVENT_PHASE_ASYNC_BEGIN,
+      TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP | TRACE_EVENT_FLAG_HAS_ID, /*id=*/42u,
+      /*absolute_timestamp=*/424242, /*tid_override=*/4242);
+
+  ExpectEventCategories(e_packet, {{1u, kCategoryGroup}});
+  ExpectEventNames(e_packet, {{1u, "bar"}});
+}
+
+TEST_F(TraceEventDataSourceNewProtosTest, InstantTraceEvent) {
+  TRACE_EVENT_INSTANT0(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD);
+
+  EXPECT_EQ(producer_client()->GetNewProtosPacketCount(), 2u);
+
+  auto* td_packet = producer_client()->GetNewProtosPacket();
+  ExpectThreadDescriptor(td_packet);
+
+  auto* e_packet = producer_client()->GetNewProtosPacket(1);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
+
+  ExpectEventCategories(e_packet, {{1u, kCategoryGroup}});
+  ExpectEventNames(e_packet, {{1u, "bar"}});
+}
+
+TEST_F(TraceEventDataSourceNewProtosTest, EventWithStringArgs) {
+  TRACE_EVENT_INSTANT2(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD,
+                       "arg1_name", "arg1_val", "arg2_name", "arg2_val");
+
+  EXPECT_EQ(producer_client()->GetNewProtosPacketCount(), 2u);
+
+  auto* td_packet = producer_client()->GetNewProtosPacket();
+  ExpectThreadDescriptor(td_packet);
+
+  auto* e_packet = producer_client()->GetNewProtosPacket(1);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
+
+  const auto& annotations = e_packet->track_event().debug_annotations();
+  EXPECT_EQ(annotations.size(), 2);
+  EXPECT_EQ(annotations[0].name_iid(), 1u);
+  EXPECT_EQ(annotations[0].string_value(), "arg1_val");
+  EXPECT_EQ(annotations[1].name_iid(), 2u);
+  EXPECT_EQ(annotations[1].string_value(), "arg2_val");
+
+  ExpectEventCategories(e_packet, {{1u, kCategoryGroup}});
+  ExpectEventNames(e_packet, {{1u, "bar"}});
+  ExpectDebugAnnotationNames(e_packet, {{1u, "arg1_name"}, {2u, "arg2_name"}});
+}
+
+TEST_F(TraceEventDataSourceNewProtosTest, EventWithCopiedStrings) {
+  TRACE_EVENT_INSTANT2(kCategoryGroup, "bar",
+                       TRACE_EVENT_SCOPE_THREAD | TRACE_EVENT_FLAG_COPY,
+                       "arg1_name", "arg1_val", "arg2_name", "arg2_val");
+
+  EXPECT_EQ(producer_client()->GetNewProtosPacketCount(), 2u);
+
+  auto* td_packet = producer_client()->GetNewProtosPacket();
+  ExpectThreadDescriptor(td_packet);
+
+  auto* e_packet = producer_client()->GetNewProtosPacket(1);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_INSTANT,
+                   TRACE_EVENT_SCOPE_THREAD | TRACE_EVENT_FLAG_COPY);
+
+  const auto& annotations = e_packet->track_event().debug_annotations();
+  EXPECT_EQ(annotations.size(), 2);
+  EXPECT_EQ(annotations[0].name_iid(), 1u);
+  EXPECT_EQ(annotations[0].string_value(), "arg1_val");
+  EXPECT_EQ(annotations[1].name_iid(), 2u);
+  EXPECT_EQ(annotations[1].string_value(), "arg2_val");
+
+  ExpectEventCategories(e_packet, {{1u, kCategoryGroup}});
+  ExpectEventNames(e_packet, {{1u, "bar"}});
+  ExpectDebugAnnotationNames(e_packet, {{1u, "arg1_name"}, {2u, "arg2_name"}});
+}
+
+TEST_F(TraceEventDataSourceNewProtosTest, EventWithUIntArgs) {
+  TRACE_EVENT_INSTANT2(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD, "foo",
+                       42u, "bar", 4242u);
+
+  EXPECT_EQ(producer_client()->GetNewProtosPacketCount(), 2u);
+  auto* e_packet = producer_client()->GetNewProtosPacket(1);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
+
+  const auto& annotations = e_packet->track_event().debug_annotations();
+  EXPECT_EQ(annotations.size(), 2);
+  EXPECT_EQ(annotations[0].uint_value(), 42u);
+  EXPECT_EQ(annotations[1].uint_value(), 4242u);
+}
+
+TEST_F(TraceEventDataSourceNewProtosTest, EventWithIntArgs) {
+  TRACE_EVENT_INSTANT2(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD, "foo",
+                       42, "bar", 4242);
+
+  EXPECT_EQ(producer_client()->GetNewProtosPacketCount(), 2u);
+  auto* e_packet = producer_client()->GetNewProtosPacket(1);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
+
+  const auto& annotations = e_packet->track_event().debug_annotations();
+  EXPECT_EQ(annotations.size(), 2);
+  EXPECT_EQ(annotations[0].int_value(), 42);
+  EXPECT_EQ(annotations[1].int_value(), 4242);
+}
+
+TEST_F(TraceEventDataSourceNewProtosTest, EventWithBoolArgs) {
+  TRACE_EVENT_INSTANT2(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD, "foo",
+                       true, "bar", false);
+
+  EXPECT_EQ(producer_client()->GetNewProtosPacketCount(), 2u);
+  auto* e_packet = producer_client()->GetNewProtosPacket(1);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
+
+  const auto& annotations = e_packet->track_event().debug_annotations();
+  EXPECT_EQ(annotations.size(), 2);
+  EXPECT_TRUE(annotations[0].has_bool_value());
+  EXPECT_EQ(annotations[0].bool_value(), true);
+  EXPECT_TRUE(annotations[1].has_bool_value());
+  EXPECT_EQ(annotations[1].int_value(), false);
+}
+
+TEST_F(TraceEventDataSourceNewProtosTest, EventWithDoubleArgs) {
+  TRACE_EVENT_INSTANT2(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD, "foo",
+                       42.42, "bar", 4242.42);
+
+  EXPECT_EQ(producer_client()->GetNewProtosPacketCount(), 2u);
+  auto* e_packet = producer_client()->GetNewProtosPacket(1);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
+
+  const auto& annotations = e_packet->track_event().debug_annotations();
+  EXPECT_EQ(annotations.size(), 2);
+  EXPECT_EQ(annotations[0].double_value(), 42.42);
+  EXPECT_EQ(annotations[1].double_value(), 4242.42);
+}
+
+TEST_F(TraceEventDataSourceNewProtosTest, EventWithPointerArgs) {
+  TRACE_EVENT_INSTANT2(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD, "foo",
+                       reinterpret_cast<void*>(0xBEEF), "bar",
+                       reinterpret_cast<void*>(0xF00D));
+
+  EXPECT_EQ(producer_client()->GetNewProtosPacketCount(), 2u);
+  auto* e_packet = producer_client()->GetNewProtosPacket(1);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
+
+  const auto& annotations = e_packet->track_event().debug_annotations();
+  EXPECT_EQ(annotations.size(), 2);
+  EXPECT_EQ(annotations[0].pointer_value(), static_cast<uintptr_t>(0xBEEF));
+  EXPECT_EQ(annotations[1].pointer_value(), static_cast<uintptr_t>(0xF00D));
+}
+
+TEST_F(TraceEventDataSourceNewProtosTest, EventWithConvertableArgs) {
+  static const char kArgValue1[] = "\"conv_value1\"";
+  static const char kArgValue2[] = "\"conv_value2\"";
+
+  int num_calls = 0;
+
+  class Convertable : public base::trace_event::ConvertableToTraceFormat {
+   public:
+    explicit Convertable(int* num_calls, const char* arg_value)
+        : num_calls_(num_calls), arg_value_(arg_value) {}
+    ~Convertable() override = default;
+
+    void AppendAsTraceFormat(std::string* out) const override {
+      (*num_calls_)++;
+      out->append(arg_value_);
+    }
+
+   private:
+    int* num_calls_;
+    const char* arg_value_;
+  };
+
+  std::unique_ptr<Convertable> conv1(new Convertable(&num_calls, kArgValue1));
+  std::unique_ptr<Convertable> conv2(new Convertable(&num_calls, kArgValue2));
+
+  TRACE_EVENT_INSTANT2(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD,
+                       "foo_arg1", std::move(conv1), "foo_arg2",
+                       std::move(conv2));
+
+  EXPECT_EQ(2, num_calls);
+
+  EXPECT_EQ(producer_client()->GetNewProtosPacketCount(), 2u);
+  auto* e_packet = producer_client()->GetNewProtosPacket(1);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
+
+  const auto& annotations = e_packet->track_event().debug_annotations();
+  EXPECT_EQ(annotations.size(), 2);
+  EXPECT_EQ(annotations[0].legacy_json_value(), kArgValue1);
+  EXPECT_EQ(annotations[1].legacy_json_value(), kArgValue2);
+}
+
+TEST_F(TraceEventDataSourceNewProtosTest, UpdateDurationOfCompleteEvent) {
+  static const char kEventName[] = "bar";
+
+  auto* category_group_enabled =
+      TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(kCategoryGroup);
+
+  trace_event_internal::TraceID trace_event_trace_id =
+      trace_event_internal::kNoId;
+
+  auto handle = trace_event_internal::AddTraceEventWithThreadIdAndTimestamp(
+      TRACE_EVENT_PHASE_COMPLETE, category_group_enabled, kEventName,
+      trace_event_trace_id.scope(), trace_event_trace_id.raw_id(),
+      1 /* thread_id */,
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(10),
+      trace_event_trace_id.id_flags() | TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP,
+      trace_event_internal::kNoId);
+
+  base::trace_event::TraceLog::GetInstance()->UpdateTraceEventDurationExplicit(
+      category_group_enabled, kEventName, handle,
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(30),
+      base::ThreadTicks() + base::TimeDelta::FromMicroseconds(50));
+
+  // The call to UpdateTraceEventDurationExplicit should have successfully
+  // updated the duration of the event which was added in the
+  // AddTraceEventWithThreadIdAndTimestamp call.
+  EXPECT_EQ(producer_client()->GetNewProtosPacketCount(), 2u);
+  auto* e_packet = producer_client()->GetNewProtosPacket(1);
+  ExpectTraceEvent(
+      e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+      TRACE_EVENT_PHASE_COMPLETE,
+      TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP | TRACE_EVENT_FLAG_HAS_ID, /*id=*/0u,
+      /*absolute_timestamp=*/10, /*tid_override=*/1, /*pid_override=*/0,
+      /*duration=*/20);
+
+  // Updating the duration of an invalid event should cause no further events to
+  // be emitted.
+  handle.event_index = 0;
+
+  base::trace_event::TraceLog::GetInstance()->UpdateTraceEventDurationExplicit(
+      category_group_enabled, kEventName, handle,
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(30),
+      base::ThreadTicks() + base::TimeDelta::FromMicroseconds(50));
+
+  // No further packets should have been emitted.
+  EXPECT_EQ(producer_client()->GetNewProtosPacketCount(), 2u);
+}
+
+// TODO(eseckler): Add a test with multiple events + same strings (cat, name,
+// arg names).
+
+// TODO(eseckler): Add a test with multiple events + same strings with reset.
+
+TEST_F(TraceEventDataSourceNewProtosTest, InternedStrings) {
+  for (size_t i = 0; i < 2; i++) {
+    TRACE_EVENT_INSTANT1("cat1", "e1", TRACE_EVENT_SCOPE_THREAD, "arg1", 4);
+    TRACE_EVENT_INSTANT1("cat1", "e1", TRACE_EVENT_SCOPE_THREAD, "arg1", 2);
+    TRACE_EVENT_INSTANT1("cat2", "e2", TRACE_EVENT_SCOPE_THREAD, "arg2", 1);
+
+    EXPECT_EQ(producer_client()->GetNewProtosPacketCount(), 4u * (i + 1));
+
+    auto* td_packet = producer_client()->GetNewProtosPacket(4 * i);
+    ExpectThreadDescriptor(td_packet);
+
+    // First packet needs to emit new interning entries
+    auto* e_packet1 = producer_client()->GetNewProtosPacket(1 + (4 * i));
+    ExpectTraceEvent(e_packet1, /*category_iid=*/1u, /*name_iid=*/1u,
+                     TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
+
+    const auto& annotations1 = e_packet1->track_event().debug_annotations();
+    EXPECT_EQ(annotations1.size(), 1);
+    EXPECT_EQ(annotations1[0].name_iid(), 1u);
+    EXPECT_EQ(annotations1[0].int_value(), 4);
+
+    ExpectEventCategories(e_packet1, {{1u, "cat1"}});
+    ExpectEventNames(e_packet1, {{1u, "e1"}});
+    ExpectDebugAnnotationNames(e_packet1, {{1u, "arg1"}});
+
+    // Second packet refers to the interning entries from packet 1.
+    auto* e_packet2 = producer_client()->GetNewProtosPacket(2 + (4 * i));
+    ExpectTraceEvent(e_packet2, /*category_iid=*/1u, /*name_iid=*/1u,
+                     TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
+
+    const auto& annotations2 = e_packet2->track_event().debug_annotations();
+    EXPECT_EQ(annotations2.size(), 1);
+    EXPECT_EQ(annotations2[0].name_iid(), 1u);
+    EXPECT_EQ(annotations2[0].int_value(), 2);
+
+    ExpectEventCategories(e_packet2, {});
+    ExpectEventNames(e_packet2, {});
+    ExpectDebugAnnotationNames(e_packet2, {});
+
+    // Third packet uses different names, so emits new entries.
+    auto* e_packet3 = producer_client()->GetNewProtosPacket(3 + (4 * i));
+    ExpectTraceEvent(e_packet3, /*category_iid=*/2u, /*name_iid=*/2u,
+                     TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
+
+    const auto& annotations3 = e_packet3->track_event().debug_annotations();
+    EXPECT_EQ(annotations3.size(), 1);
+    EXPECT_EQ(annotations3[0].name_iid(), 2u);
+    EXPECT_EQ(annotations3[0].int_value(), 1);
+
+    ExpectEventCategories(e_packet3, {{2u, "cat2"}});
+    ExpectEventNames(e_packet3, {{2u, "e2"}});
+    ExpectDebugAnnotationNames(e_packet3, {{2u, "arg2"}});
+
+    // Resetting the interning state causes ThreadDescriptor and interning
+    // entries to be emitted again, with the same interning IDs.
+    TraceEventDataSource::GetInstance()->ResetIncrementalStateForTesting();
+  }
+}
+
+class TraceEventDataSourceNewProtosNoInterningTest
+    : public TraceEventDataSourceNewProtosTest {
+ public:
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kPerfettoDisableInterning);
+    TraceEventDataSourceNewProtosTest::SetUp();
+  }
+};
+
+TEST_F(TraceEventDataSourceNewProtosNoInterningTest, InterningScopedToPackets) {
+  TRACE_EVENT_INSTANT1("cat1", "e1", TRACE_EVENT_SCOPE_THREAD, "arg1", 4);
+  TRACE_EVENT_INSTANT1("cat1", "e1", TRACE_EVENT_SCOPE_THREAD, "arg1", 2);
+  TRACE_EVENT_INSTANT1("cat2", "e2", TRACE_EVENT_SCOPE_THREAD, "arg2", 1);
+
+  EXPECT_EQ(producer_client()->GetNewProtosPacketCount(), 4u);
+
+  auto* td_packet = producer_client()->GetNewProtosPacket(0);
+  ExpectThreadDescriptor(td_packet);
+
+  // First packet needs to emit new interning entries
+  auto* e_packet1 = producer_client()->GetNewProtosPacket(1);
+  ExpectTraceEvent(e_packet1, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
+
+  const auto& annotations1 = e_packet1->track_event().debug_annotations();
+  EXPECT_EQ(annotations1.size(), 1);
+  EXPECT_EQ(annotations1[0].name_iid(), 1u);
+  EXPECT_EQ(annotations1[0].int_value(), 4);
+
+  ExpectEventCategories(e_packet1, {{1u, "cat1"}});
+  ExpectEventNames(e_packet1, {{1u, "e1"}});
+  ExpectDebugAnnotationNames(e_packet1, {{1u, "arg1"}});
+
+  // Second packet reemits the entries the same way.
+  auto* e_packet2 = producer_client()->GetNewProtosPacket(2);
+  ExpectTraceEvent(e_packet2, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
+
+  const auto& annotations2 = e_packet2->track_event().debug_annotations();
+  EXPECT_EQ(annotations2.size(), 1);
+  EXPECT_EQ(annotations2[0].name_iid(), 1u);
+  EXPECT_EQ(annotations2[0].int_value(), 2);
+
+  ExpectEventCategories(e_packet1, {{1u, "cat1"}});
+  ExpectEventNames(e_packet1, {{1u, "e1"}});
+  ExpectDebugAnnotationNames(e_packet1, {{1u, "arg1"}});
+
+  // Third packet emits entries with the same IDs but different strings.
+  auto* e_packet3 = producer_client()->GetNewProtosPacket(3);
+  ExpectTraceEvent(e_packet3, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
+
+  const auto& annotations3 = e_packet3->track_event().debug_annotations();
+  EXPECT_EQ(annotations3.size(), 1);
+  EXPECT_EQ(annotations3[0].name_iid(), 1u);
+  EXPECT_EQ(annotations3[0].int_value(), 1);
+
+  ExpectEventCategories(e_packet3, {{1u, "cat2"}});
+  ExpectEventNames(e_packet3, {{1u, "e2"}});
+  ExpectDebugAnnotationNames(e_packet3, {{1u, "arg2"}});
 }
 
 // TODO(eseckler): Add startup tracing unittests.

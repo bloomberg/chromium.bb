@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #include "services/tracing/public/cpp/perfetto/traced_value_proto_writer.h"
 
+#include <memory>
 #include <stack>
 
 #include "base/hash.h"
@@ -14,18 +15,21 @@
 #include "third_party/perfetto/include/perfetto/protozero/scattered_heap_buffer.h"
 #include "third_party/perfetto/include/perfetto/protozero/scattered_stream_writer.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/debug_annotation.pbzero.h"
 
-using TracedValue = base::trace_event::TracedValue;
 using ChromeTracedValue = perfetto::protos::pbzero::ChromeTracedValue;
-using TracedValueHandle =
-    protozero::MessageHandle<perfetto::protos::pbzero::ChromeTracedValue>;
+using DebugAnnotation = perfetto::protos::pbzero::DebugAnnotation;
+using TracedValue = base::trace_event::TracedValue;
 using TraceEvent = base::trace_event::TraceEvent;
 
 namespace tracing {
 
 PerfettoProtoAppender::PerfettoProtoAppender(
     perfetto::protos::pbzero::ChromeTraceEvent_Arg* proto)
-    : proto_(proto) {}
+    : arg_proto_(proto), annotation_proto_(nullptr) {}
+
+PerfettoProtoAppender::PerfettoProtoAppender(DebugAnnotation* proto)
+    : arg_proto_(nullptr), annotation_proto_(proto) {}
 
 PerfettoProtoAppender::~PerfettoProtoAppender() = default;
 
@@ -36,23 +40,31 @@ void PerfettoProtoAppender::AddBuffer(uint8_t* begin, uint8_t* end) {
 }
 
 size_t PerfettoProtoAppender::Finalize(uint32_t field_id) {
-  return proto_->AppendScatteredBytes(field_id, ranges_.data(), ranges_.size());
+  if (arg_proto_) {
+    return arg_proto_->AppendScatteredBytes(field_id, ranges_.data(),
+                                            ranges_.size());
+  }
+  return annotation_proto_->AppendScatteredBytes(field_id, ranges_.data(),
+                                                 ranges_.size());
 }
 
 namespace {
 
 constexpr size_t kDefaultSliceSize = 128;
 
+template <typename ProtoValue, int FieldNumber>
 class ProtoWriter final : public TracedValue::Writer {
  public:
+  using ProtoValueHandle = protozero::MessageHandle<ProtoValue>;
+
   explicit ProtoWriter(size_t initial_slice_size_bytes)
       : buffer_(initial_slice_size_bytes ? initial_slice_size_bytes
                                          : kDefaultSliceSize),
         stream_(&buffer_) {
     proto_.Reset(&stream_);
     buffer_.set_writer(&stream_);
-    node_stack_.emplace(TracedValueHandle(&proto_));
-    proto_.set_nested_type(perfetto::protos::pbzero::ChromeTracedValue::DICT);
+    node_stack_.emplace(ProtoValueHandle(&proto_));
+    proto_.set_nested_type(ProtoValue::DICT);
   }
 
   ~ProtoWriter() override {
@@ -117,8 +129,7 @@ class ProtoWriter final : public TracedValue::Writer {
     }
 
     size_t appended_size = node_stack_.top()->AppendScatteredBytes(
-        perfetto::protos::pbzero::ChromeTracedValue::kDictValuesFieldNumber,
-        ranges.data(), ranges.size());
+        ProtoValue::kDictValuesFieldNumber, ranges.data(), ranges.size());
     DCHECK_EQ(full_child_size, appended_size);
   }
 
@@ -127,39 +138,33 @@ class ProtoWriter final : public TracedValue::Writer {
   }
 
   void BeginArray() override {
-    node_stack_.emplace(TracedValueHandle(AddArrayEntry()));
-    node_stack_.top()->set_nested_type(
-        perfetto::protos::pbzero::ChromeTracedValue::ARRAY);
+    node_stack_.emplace(ProtoValueHandle(AddArrayEntry()));
+    node_stack_.top()->set_nested_type(ProtoValue::ARRAY);
   }
 
   void BeginDictionary() override {
-    node_stack_.emplace(TracedValueHandle(AddArrayEntry()));
-    node_stack_.top()->set_nested_type(
-        perfetto::protos::pbzero::ChromeTracedValue::DICT);
+    node_stack_.emplace(ProtoValueHandle(AddArrayEntry()));
+    node_stack_.top()->set_nested_type(ProtoValue::DICT);
   }
 
   void BeginDictionary(const char* name) override {
-    node_stack_.emplace(TracedValueHandle(AddDictEntry(name)));
-    node_stack_.top()->set_nested_type(
-        perfetto::protos::pbzero::ChromeTracedValue::DICT);
+    node_stack_.emplace(ProtoValueHandle(AddDictEntry(name)));
+    node_stack_.top()->set_nested_type(ProtoValue::DICT);
   }
 
   void BeginDictionaryWithCopiedName(base::StringPiece name) override {
-    node_stack_.emplace(TracedValueHandle(AddDictEntry(name)));
-    node_stack_.top()->set_nested_type(
-        perfetto::protos::pbzero::ChromeTracedValue::DICT);
+    node_stack_.emplace(ProtoValueHandle(AddDictEntry(name)));
+    node_stack_.top()->set_nested_type(ProtoValue::DICT);
   }
 
   void BeginArray(const char* name) override {
-    node_stack_.emplace(TracedValueHandle(AddDictEntry(name)));
-    node_stack_.top()->set_nested_type(
-        perfetto::protos::pbzero::ChromeTracedValue::ARRAY);
+    node_stack_.emplace(ProtoValueHandle(AddDictEntry(name)));
+    node_stack_.top()->set_nested_type(ProtoValue::ARRAY);
   }
 
   void BeginArrayWithCopiedName(base::StringPiece name) override {
-    node_stack_.emplace(TracedValueHandle(AddDictEntry(name)));
-    node_stack_.top()->set_nested_type(
-        perfetto::protos::pbzero::ChromeTracedValue::ARRAY);
+    node_stack_.emplace(ProtoValueHandle(AddDictEntry(name)));
+    node_stack_.top()->set_nested_type(ProtoValue::ARRAY);
   }
 
   void EndDictionary() override {
@@ -211,9 +216,7 @@ class ProtoWriter final : public TracedValue::Writer {
                           slice.start() + slice.size() - slice.unused_bytes());
     }
 
-    size_t appended_size =
-        appender->Finalize(perfetto::protos::pbzero::ChromeTraceEvent_Arg::
-                               kTracedValueFieldNumber);
+    size_t appended_size = appender->Finalize(FieldNumber);
     DCHECK_EQ(full_size, appended_size);
     return true;
   }
@@ -233,39 +236,55 @@ class ProtoWriter final : public TracedValue::Writer {
   }
 
  private:
-  ChromeTracedValue* AddDictEntry(const char* name) {
+  ProtoValue* AddDictEntry(const char* name) {
     DCHECK(!node_stack_.empty() && !node_stack_.top()->is_finalized());
     node_stack_.top()->add_dict_keys(name);
     return node_stack_.top()->add_dict_values();
   }
 
-  ChromeTracedValue* AddDictEntry(base::StringPiece name) {
+  ProtoValue* AddDictEntry(base::StringPiece name) {
     DCHECK(!node_stack_.empty() && !node_stack_.top()->is_finalized());
     node_stack_.top()->add_dict_keys(name.data(), name.length());
     return node_stack_.top()->add_dict_values();
   }
 
-  ChromeTracedValue* AddArrayEntry() {
+  ProtoValue* AddArrayEntry() {
     DCHECK(!node_stack_.empty() && !node_stack_.top()->is_finalized());
     return node_stack_.top()->add_array_values();
   }
 
-  std::stack<TracedValueHandle> node_stack_;
+  std::stack<ProtoValueHandle> node_stack_;
 
-  perfetto::protos::pbzero::ChromeTracedValue proto_;
+  ProtoValue proto_;
   protozero::ScatteredHeapBuffer buffer_;
   protozero::ScatteredStreamWriter stream_;
 };
 
-std::unique_ptr<TracedValue::Writer> CreateProtoWriter(
+std::unique_ptr<TracedValue::Writer> CreateChromeProtoWriter(
     size_t initial_slice_size_bytes) {
-  return std::make_unique<ProtoWriter>(initial_slice_size_bytes);
+  return std::make_unique<ProtoWriter<
+      perfetto::protos::pbzero::ChromeTracedValue,
+      perfetto::protos::pbzero::ChromeTraceEvent_Arg::kTracedValueFieldNumber>>(
+      initial_slice_size_bytes);
+}
+
+std::unique_ptr<TracedValue::Writer> CreateNestedValueProtoWriter(
+    size_t initial_slice_size_bytes) {
+  return std::make_unique<ProtoWriter<
+      DebugAnnotation::NestedValue, DebugAnnotation::kNestedValueFieldNumber>>(
+      initial_slice_size_bytes);
 }
 
 }  // namespace
 
-void RegisterTracedValueProtoWriter(bool enable) {
-  TracedValue::SetWriterFactoryCallback(enable ? &CreateProtoWriter : nullptr);
+void RegisterTracedValueProtoWriter(bool enable, bool use_chrome_proto) {
+  if (!enable) {
+    TracedValue::SetWriterFactoryCallback(nullptr);
+    return;
+  }
+  TracedValue::SetWriterFactoryCallback(use_chrome_proto
+                                            ? &CreateChromeProtoWriter
+                                            : &CreateNestedValueProtoWriter);
 }
 
 }  // namespace tracing

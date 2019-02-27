@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_base.h"
 #include "base/threading/thread_local.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_config.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 
@@ -24,6 +25,8 @@ class TraceWriter;
 }
 
 namespace tracing {
+
+class ThreadLocalEventSink;
 
 // This class is a data source that clients can use to provide
 // global metadata in dictionary form, by registering callbacks.
@@ -63,9 +66,10 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventMetadataSource
 class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
     : public ProducerClient::DataSourceBase {
  public:
-  class ThreadLocalEventSink;
-
   static TraceEventDataSource* GetInstance();
+
+  // Destroys and recreates the global instance for testing.
+  static void ResetForTesting();
 
   // Flushes and deletes the TraceWriter for the current thread, if any.
   static void FlushCurrentThread();
@@ -88,6 +92,15 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   void StopTracing(base::OnceClosure stop_complete_callback) override;
   void Flush(base::RepeatingClosure flush_complete_callback) override;
 
+  // Resets emitted incremental state on the current thread and causes
+  // incremental data (e.g. interning index entries and a ThreadDescriptor) to
+  // be emitted again.
+  void ResetIncrementalStateForTesting();
+
+  // Deletes TraceWriter safely on behalf of a ThreadLocalEventSink.
+  void ReturnTraceWriter(
+      std::unique_ptr<perfetto::StartupTraceWriter> trace_writer);
+
  private:
   friend class base::NoDestructor<TraceEventDataSource>;
 
@@ -107,10 +120,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
                                const base::TimeTicks& now,
                                const base::ThreadTicks& thread_now);
 
-  // Deletes TraceWriter safely on behalf of a ThreadLocalEventSink.
-  void ReturnTraceWriter(
-      std::unique_ptr<perfetto::StartupTraceWriter> trace_writer);
-
   // Extracts UMA histogram names that should be logged in traces and logs their
   // starting values.
   void ResetHistograms(const base::trace_event::TraceConfig& trace_config);
@@ -119,6 +128,8 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   // Logs a given histogram in traces.
   void LogHistogram(base::HistogramBase* histogram);
 
+  bool use_chrome_proto_;
+  bool disable_interning_;
   base::OnceClosure stop_complete_callback_;
 
   // Incremented and accessed atomically but without memory order guarantees.

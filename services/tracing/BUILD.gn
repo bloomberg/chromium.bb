@@ -111,6 +111,8 @@ source_set("tests") {
       "//third_party/perfetto/protos/perfetto/common:lite",
       "//third_party/perfetto/protos/perfetto/trace:lite",
       "//third_party/perfetto/protos/perfetto/trace/chrome:lite",
+      "//third_party/perfetto/protos/perfetto/trace/interned_data:lite",
+      "//third_party/perfetto/protos/perfetto/trace/track_event:lite",
     ]
   }
 

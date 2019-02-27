@@ -61,11 +61,20 @@ const char kTraceStartupRecordMode[] = "trace-startup-record-mode";
 // --disable-perfetto for legacy startup tracing support.
 const char kEnablePerfetto[] = "enable-perfetto";
 
+// Repeat internable data for each TraceEvent in the perfetto proto format.
+const char kPerfettoDisableInterning[] = "perfetto-disable-interning";
+
 // If supplied, will enable Perfetto startup tracing and stream the
 // output to the given file.
 // TODO(oysteine): Remove once Perfetto starts early enough after
 // process startup to be able to replace the legacy startup tracing.
 const char kPerfettoOutputFile[] = "perfetto-output-file";
+
+// If enabled (and perfetto is enabled), the data sources will write trace
+// events in the new TraceEvent proto format instead of the ChromeEventBundle
+// format.
+// TODO(eseckler): Remove this when we remove ChromeEventBundle support.
+const char kPerfettoUseNewProtos[] = "perfetto-use-new-protos";
 
 // Sends a pretty-printed version of tracing info to the console.
 const char kTraceToConsole[]                = "trace-to-console";
