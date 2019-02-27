@@ -141,7 +141,7 @@ class NavigationManager {
 
   /**
    * Scrolls the current node in the direction indicated by |scrollAction|.
-   * @param {!MenuManager.Action} scrollAction
+   * @param {!SAConstants.MenuAction} scrollAction
    */
   scroll(scrollAction) {
     // Find the closest ancestor to the current node that is scrollable.
@@ -151,17 +151,17 @@ class NavigationManager {
     if (!scrollNode)
       return;
 
-    if (scrollAction === MenuManager.Action.SCROLL_DOWN)
+    if (scrollAction === SAConstants.MenuAction.SCROLL_DOWN)
       scrollNode.scrollDown(() => {});
-    else if (scrollAction === MenuManager.Action.SCROLL_UP)
+    else if (scrollAction === SAConstants.MenuAction.SCROLL_UP)
       scrollNode.scrollUp(() => {});
-    else if (scrollAction === MenuManager.Action.SCROLL_LEFT)
+    else if (scrollAction === SAConstants.MenuAction.SCROLL_LEFT)
       scrollNode.scrollLeft(() => {});
-    else if (scrollAction === MenuManager.Action.SCROLL_RIGHT)
+    else if (scrollAction === SAConstants.MenuAction.SCROLL_RIGHT)
       scrollNode.scrollRight(() => {});
-    else if (scrollAction === MenuManager.Action.SCROLL_FORWARD)
+    else if (scrollAction === SAConstants.MenuAction.SCROLL_FORWARD)
       scrollNode.scrollForward(() => {});
-    else if (scrollAction === MenuManager.Action.SCROLL_BACKWARD)
+    else if (scrollAction === SAConstants.MenuAction.SCROLL_BACKWARD)
       scrollNode.scrollBackward(() => {});
     else
       console.log('Unrecognized scroll action: ', scrollAction);
@@ -217,7 +217,7 @@ class NavigationManager {
 
   /**
    * Performs |action| on the current node, if an appropriate action exists.
-   * @param {!MenuManager.Action} action
+   * @param {!SAConstants.MenuAction} action
    */
   performActionOnCurrentNode(action) {
     if (action in chrome.automation.ActionType)
