@@ -30,8 +30,7 @@ typedef uint32_t MojoPlatformHandleType;
 // usable on POSIX host systems (e.g. Android, Linux, Chrome OS, Mac).
 #define MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR ((MojoPlatformHandleType)1)
 
-// The |MojoPlatformHandle| value represents a Mach port right (e.g. a value
-// opaquely of type |mach_port_t|). Only usable on Mac OS X hosts.
+// Deprecated. TYPE_MACH_PORT is equivalent to TYPE_MACH_SEND_RIGHT.
 #define MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT ((MojoPlatformHandleType)2)
 
 // The |MojoPlatformHandle| value represents a Windows HANDLE value. Only usable
@@ -41,6 +40,15 @@ typedef uint32_t MojoPlatformHandleType;
 // The |MojoPlatformHandle| value represents a Fuchsia system handle. Only
 // usable on Fuchsia hosts.
 #define MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE ((MojoPlatformHandleType)4)
+
+// The |MojoPlatformHandle| value represents a Mach send right (e.g. a value
+// opaquely of type |mach_port_t|). Only usable on macOS hosts.
+#define MOJO_PLATFORM_HANDLE_TYPE_MACH_SEND_RIGHT \
+  MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT
+
+// The |MojoPlatformHandle| value represents a Mach receive right (e.g. a value
+// opaquely of type |mach_port_t|). Only usable on macOS hosts.
+#define MOJO_PLATFORM_HANDLE_TYPE_MACH_RECEIVE_RIGHT ((MojoPlatformHandleType)5)
 
 // |MojoPlatformHandle|: A handle to a native platform object.
 //

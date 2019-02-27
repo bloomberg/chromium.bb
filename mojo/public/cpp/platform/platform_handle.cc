@@ -95,7 +95,9 @@ PlatformHandle::PlatformHandle(zx::handle handle)
     : type_(Type::kHandle), handle_(std::move(handle)) {}
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 PlatformHandle::PlatformHandle(base::mac::ScopedMachSendRight mach_port)
-    : type_(Type::kMachPort), mach_port_(std::move(mach_port)) {}
+    : type_(Type::kMachSend), mach_send_(std::move(mach_port)) {}
+PlatformHandle::PlatformHandle(base::mac::ScopedMachReceiveRight mach_port)
+    : type_(Type::kMachReceive), mach_receive_(std::move(mach_port)) {}
 #endif
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
@@ -118,7 +120,8 @@ PlatformHandle& PlatformHandle::operator=(PlatformHandle&& other) {
 #elif defined(OS_FUCHSIA)
   handle_ = std::move(other.handle_);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
-  mach_port_ = std::move(other.mach_port_);
+  mach_send_ = std::move(other.mach_send_);
+  mach_receive_ = std::move(other.mach_receive_);
 #endif
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
@@ -152,10 +155,14 @@ void PlatformHandle::ToMojoPlatformHandle(PlatformHandle handle,
       break;
     }
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
-    if (handle.is_mach_port()) {
-      out_handle->type = MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT;
+    if (handle.is_mach_send()) {
+      out_handle->type = MOJO_PLATFORM_HANDLE_TYPE_MACH_SEND_RIGHT;
+      out_handle->value = static_cast<uint64_t>(handle.ReleaseMachSendRight());
+      break;
+    } else if (handle.is_mach_receive()) {
+      out_handle->type = MOJO_PLATFORM_HANDLE_TYPE_MACH_RECEIVE_RIGHT;
       out_handle->value =
-          static_cast<uint64_t>(handle.TakeMachPort().release());
+          static_cast<uint64_t>(handle.ReleaseMachReceiveRight());
       break;
     }
 #endif
@@ -188,8 +195,11 @@ PlatformHandle PlatformHandle::FromMojoPlatformHandle(
   if (handle->type == MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE)
     return PlatformHandle(zx::handle(handle->value));
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
-  if (handle->type == MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT) {
+  if (handle->type == MOJO_PLATFORM_HANDLE_TYPE_MACH_SEND_RIGHT) {
     return PlatformHandle(base::mac::ScopedMachSendRight(
+        static_cast<mach_port_t>(handle->value)));
+  } else if (handle->type == MOJO_PLATFORM_HANDLE_TYPE_MACH_RECEIVE_RIGHT) {
+    return PlatformHandle(base::mac::ScopedMachReceiveRight(
         static_cast<mach_port_t>(handle->value)));
   }
 #endif
@@ -209,7 +219,8 @@ void PlatformHandle::reset() {
 #elif defined(OS_FUCHSIA)
   handle_.reset();
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
-  mach_port_.reset();
+  mach_send_.reset();
+  mach_receive_.reset();
 #endif
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
@@ -225,7 +236,8 @@ void PlatformHandle::release() {
 #elif defined(OS_FUCHSIA)
   ignore_result(handle_.release());
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
-  ignore_result(mach_port_.release());
+  ignore_result(mach_send_.release());
+  ignore_result(mach_receive_.release());
 #endif
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
@@ -241,8 +253,9 @@ PlatformHandle PlatformHandle::Clone() const {
     return PlatformHandle(CloneHandle(handle_));
   return PlatformHandle(CloneFD(fd_));
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
-  if (is_valid_mach_port())
-    return PlatformHandle(CloneMachPort(mach_port_));
+  if (is_valid_mach_send())
+    return PlatformHandle(CloneMachPort(mach_send_));
+  CHECK(!is_valid_mach_receive()) << "Cannot clone Mach receive rights";
   return PlatformHandle(CloneFD(fd_));
 #elif defined(OS_POSIX)
   return PlatformHandle(CloneFD(fd_));
