@@ -116,14 +116,16 @@
       }
 
       #banner {
-        background-color: rgb(248, 249, 250);
-        background-image: url(../images/sync_banner.svg);
-        background-repeat: no-repeat;
+        background: url(../images/sync_banner.svg) no-repeat;
         background-size: 100% auto;
         display: none;
         padding-top: calc(120 / 680 * 100%); /* Keep background ratio. */
 
         @apply --promo-banner;
+      }
+
+      :host-context([dark]) #banner {
+        background-image: url(../images/sync_banner_dark.svg);
       }
 
       :host([showing-promo]) #banner {
