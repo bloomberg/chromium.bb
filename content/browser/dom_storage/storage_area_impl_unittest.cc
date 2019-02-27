@@ -264,6 +264,7 @@ class StorageAreaImplTest : public testing::Test,
   const std::vector<uint8_t> test_key2_bytes_ = ToBytes(test_key2_);
   const std::vector<uint8_t> test_value1_bytes_ = ToBytes(test_value1_);
   const std::vector<uint8_t> test_value2_bytes_ = ToBytes(test_value2_);
+  leveldb::mojom::LevelDBDatabasePtr level_db_database_ptr_;
 
  private:
   // LevelDBObserver:
@@ -300,7 +301,6 @@ class StorageAreaImplTest : public testing::Test,
   TestBrowserThreadBundle thread_bundle_;
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;
   FakeLevelDBDatabase db_;
-  leveldb::mojom::LevelDBDatabasePtr level_db_database_ptr_;
   MockDelegate delegate_;
   std::unique_ptr<StorageAreaImpl> storage_area_;
   blink::mojom::StorageAreaPtr storage_area_ptr_;
@@ -1298,6 +1298,48 @@ TEST_F(StorageAreaImplTest, PrefixForkingPsuedoFuzzer) {
 
     EXPECT_FALSE(areas[i]->has_pending_load_tasks()) << i;
   }
+}
+
+TEST_P(StorageAreaImplParamTest, EmptyMapIgnoresDisk) {
+  const std::string kValue = "foo";
+  const std::vector<uint8_t> kValueVec = ToBytes(kValue);
+
+  // Set fake data to ensure that our shortcut doesn't read it.
+  set_mock_data(test_copy_prefix1_ + test_key1_, kValue);
+
+  // Create an empty map that will have no data in it.
+  StorageAreaImpl::Options options =
+      GetDefaultTestingOptions(CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
+  auto empty_storage_area = std::make_unique<StorageAreaImpl>(
+      level_db_database_ptr_.get(), test_copy_prefix1_, delegate(), options);
+  empty_storage_area->InitializeAsEmpty();
+
+  // Check the forked state, which should be empty.
+  EXPECT_EQ("", GetSyncStrUsingGetAll(empty_storage_area.get(), test_key1_));
+}
+
+TEST_P(StorageAreaImplParamTest, ForkFromEmptyMap) {
+  const std::string kValue = "foo";
+  const std::vector<uint8_t> kValueVec = ToBytes(kValue);
+
+  // Set fake data to ensure that our shortcut doesn't read it.
+  set_mock_data(test_copy_prefix1_ + test_key1_, kValue);
+
+  // Create an empty map that will have no data in it.
+  StorageAreaImpl::Options options =
+      GetDefaultTestingOptions(CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
+  auto empty_storage_area = std::make_unique<StorageAreaImpl>(
+      level_db_database_ptr_.get(), test_copy_prefix1_, delegate(), options);
+  empty_storage_area->InitializeAsEmpty();
+
+  // Execute the fork, which should shortcut disk and just be empty.
+  MockDelegate fork1_delegate;
+  std::unique_ptr<StorageAreaImpl> fork =
+      empty_storage_area->ForkToNewPrefix(test_copy_prefix1_, &fork1_delegate,
+                                          GetDefaultTestingOptions(GetParam()));
+
+  // Check the forked state, which should be empty.
+  EXPECT_EQ("", GetSyncStrUsingGetAll(fork.get(), test_key1_));
 }
 
 }  // namespace content

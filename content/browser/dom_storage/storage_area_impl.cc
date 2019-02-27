@@ -94,6 +94,13 @@ StorageAreaImpl::~StorageAreaImpl() {
     CommitChanges();
 }
 
+void StorageAreaImpl::InitializeAsEmpty() {
+  DCHECK_EQ(map_state_, MapState::UNLOADED);
+  map_state_ = MapState::LOADING_FROM_DATABASE;
+  OnMapLoaded(leveldb::mojom::DatabaseError::OK,
+              std::vector<leveldb::mojom::KeyValuePtr>());
+}
+
 void StorageAreaImpl::Bind(blink::mojom::StorageAreaRequest request) {
   bindings_.AddBinding(this, std::move(request));
   // If the number of bindings is more than 1, then the |client_old_value| sent
@@ -122,7 +129,11 @@ std::unique_ptr<StorageAreaImpl> StorageAreaImpl::ForkToNewPrefix(
     const Options& options) {
   auto forked_area = std::make_unique<StorageAreaImpl>(
       database_, std::move(new_prefix), delegate, options);
-
+  // If the source map is empty, don't bother hitting disk.
+  if (IsMapLoadedAndEmpty()) {
+    forked_area->InitializeAsEmpty();
+    return forked_area;
+  }
   forked_area->map_state_ = MapState::LOADING_FROM_FORK;
 
   if (IsMapLoaded()) {
@@ -487,6 +498,17 @@ void StorageAreaImpl::Get(const std::vector<uint8_t>& key,
 void StorageAreaImpl::GetAll(
     blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo complete_callback,
     GetAllCallback callback) {
+  // If the map is keys-only and empty, then no loading is necessary.
+  if (IsMapLoadedAndEmpty()) {
+    std::move(callback).Run(true, std::vector<blink::mojom::KeyValuePtr>());
+    if (complete_callback.is_valid()) {
+      blink::mojom::StorageAreaGetAllCallbackAssociatedPtr complete_ptr;
+      complete_ptr.Bind(std::move(complete_callback));
+      complete_ptr->Complete(true);
+    }
+    return;
+  }
+
   // The map must always be loaded for the KEYS_ONLY_WHEN_POSSIBLE mode.
   if (map_state_ != MapState::LOADED_KEYS_AND_VALUES) {
     LoadMap(base::BindOnce(&StorageAreaImpl::GetAll,

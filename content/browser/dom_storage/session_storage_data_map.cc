@@ -12,12 +12,21 @@
 namespace content {
 
 // static
-scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::Create(
+scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::CreateFromDisk(
+    Listener* listener,
+    scoped_refptr<SessionStorageMetadata::MapData> map_data,
+    leveldb::mojom::LevelDBDatabase* database) {
+  return base::WrapRefCounted(new SessionStorageDataMap(
+      listener, std::move(map_data), database, false));
+}
+
+// static
+scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::CreateEmpty(
     Listener* listener,
     scoped_refptr<SessionStorageMetadata::MapData> map_data,
     leveldb::mojom::LevelDBDatabase* database) {
   return base::WrapRefCounted(
-      new SessionStorageDataMap(listener, std::move(map_data), database));
+      new SessionStorageDataMap(listener, std::move(map_data), database, true));
 }
 
 // static
@@ -41,7 +50,8 @@ void SessionStorageDataMap::DidCommit(leveldb::mojom::DatabaseError error) {
 SessionStorageDataMap::SessionStorageDataMap(
     Listener* listener,
     scoped_refptr<SessionStorageMetadata::MapData> map_data,
-    leveldb::mojom::LevelDBDatabase* database)
+    leveldb::mojom::LevelDBDatabase* database,
+    bool is_empty)
     : listener_(listener),
       map_data_(std::move(map_data)),
       storage_area_impl_(
@@ -50,6 +60,8 @@ SessionStorageDataMap::SessionStorageDataMap(
                                             this,
                                             GetOptions())),
       storage_area_ptr_(storage_area_impl_.get()) {
+  if (is_empty)
+    storage_area_impl_->InitializeAsEmpty();
   DCHECK(listener_);
   DCHECK(map_data_);
   listener_->OnDataMapCreation(map_data_->MapNumberAsBytes(), this);
