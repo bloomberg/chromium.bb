@@ -87,6 +87,7 @@ blink_core_sources("loader") {
     "navigation_policy.h",
     "navigation_scheduler.cc",
     "navigation_scheduler.h",
+    "network_hints_interface.cc",
     "network_hints_interface.h",
     "ping_loader.cc",
     "ping_loader.h",

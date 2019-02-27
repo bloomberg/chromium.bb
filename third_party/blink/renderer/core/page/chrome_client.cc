@@ -30,12 +30,12 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/loader/network_hints_interface.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
-#include "third_party/blink/renderer/platform/network/network_hints.h"
 
 namespace blink {
 
@@ -183,8 +183,10 @@ void ChromeClient::MouseDidMoveOverElement(LocalFrame& frame,
                                            const HitTestLocation& location,
                                            const HitTestResult& result) {
   if (!result.GetScrollbar() && result.InnerNode() &&
-      result.InnerNode()->GetDocument().IsDNSPrefetchEnabled())
-    PrefetchDNS(result.AbsoluteLinkURL().Host());
+      result.InnerNode()->GetDocument().IsDNSPrefetchEnabled()) {
+    NetworkHintsInterfaceImpl().DnsPrefetchHost(
+        result.AbsoluteLinkURL().Host());
+  }
 
   ShowMouseOverURL(result);
 
