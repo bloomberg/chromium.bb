@@ -314,10 +314,6 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
 #endif
   source->AddBoolean("isEnterpriseManaged", enterprise_managed);
 
-  bool nup_printing_enabled =
-      base::FeatureList::IsEnabled(features::kNupPrinting);
-  source->AddBoolean("pagesPerSheetEnabled", nup_printing_enabled);
-
   bool cloud_printer_handler_enabled =
       base::FeatureList::IsEnabled(features::kCloudPrinterHandler);
   source->AddBoolean("cloudPrinterHandlerEnabled",

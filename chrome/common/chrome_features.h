@@ -321,7 +321,6 @@ extern const base::Feature kPreferHtmlOverPlugins;
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kCloudPrinterHandler;
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNupPrinting;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)

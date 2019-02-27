@@ -146,13 +146,11 @@
               hidden$="[[!settings.mediaSize.available]]"
               class="settings-section">
           </print-preview-media-size-settings>
-          <template is="dom-if" if="[[showPagesPerSheet_]]">
-            <print-preview-pages-per-sheet-settings settings="{{settings}}"
-                disabled="[[controlsDisabled_]]"
-                hidden$="[[!settings.pagesPerSheet.available]]"
-                class="settings-section">
-            </print-preview-pages-per-sheet-settings>
-          </template>
+          <print-preview-pages-per-sheet-settings settings="{{settings}}"
+              disabled="[[controlsDisabled_]]"
+              hidden$="[[!settings.pagesPerSheet.available]]"
+              class="settings-section">
+          </print-preview-pages-per-sheet-settings>
           <print-preview-margins-settings settings="{{settings}}"
               disabled="[[controlsDisabled_]]"
               hidden$="[[!settings.margins.available]]"

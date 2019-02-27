@@ -482,8 +482,6 @@ const base::Feature kPreferHtmlOverPlugins{"PreferHtmlOverPlugins",
 // https://crbug.com/829414.
 const base::Feature kCloudPrinterHandler{"CloudPrinterHandler",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kNupPrinting{"NupPrinting",
-                                 base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Enables or disables push subscriptions keeping Chrome running in the

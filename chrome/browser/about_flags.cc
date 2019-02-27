@@ -2559,9 +2559,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExpensiveBackgroundTimerThrottlingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kExpensiveBackgroundTimerThrottling)},
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-    {"enable-nup-printing", flag_descriptions::kEnableNupPrintingName,
-     flag_descriptions::kEnableNupPrintingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kNupPrinting)},
     {"enable-cloud-printer-handler",
      flag_descriptions::kCloudPrinterHandlerName,
      flag_descriptions::kCloudPrinterHandlerDescription, kOsDesktop,

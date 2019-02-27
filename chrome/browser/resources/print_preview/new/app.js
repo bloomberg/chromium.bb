@@ -141,17 +141,6 @@ Polymer({
           'settings.otherOptions.available, settings.vendorItems.available)',
     },
 
-    /**
-     * Whether to show pages per sheet feature or not.
-     * @private {boolean}
-     */
-    showPagesPerSheet_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('pagesPerSheetEnabled');
-      },
-    },
-
     /** @private {!Array<string>} */
     users_: Array,
   },
