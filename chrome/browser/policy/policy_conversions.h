@@ -23,6 +23,15 @@ struct PolicyStringMap {
 
 extern const PolicyStringMap kPolicySources[policy::POLICY_SOURCE_COUNT];
 
+// Returns an array with the values of all set policies, with some values
+// converted to be shown in javascript, if it is specified.
+// |with_user_policies| governs if values with POLICY_SCOPE_USER are included.
+base::Value GetAllPolicyValuesAsArray(content::BrowserContext* context,
+                                      bool with_user_policies,
+                                      bool convert_values,
+                                      bool with_device_data,
+                                      bool is_pretty_print);
+
 // Returns a dictionary with the values of all set policies, with some values
 // converted to be shown in javascript, if it is specified.
 // |with_user_policies| governs if values with POLICY_SCOPE_USER are included.

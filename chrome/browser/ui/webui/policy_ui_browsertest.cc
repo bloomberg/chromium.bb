@@ -105,6 +105,15 @@ std::vector<std::string> PopulateExpectedPolicy(
     bool unknown) {
   std::vector<std::string> expected_policy;
 
+  // Populate expected policy name.
+  expected_policy.push_back(name);
+
+  // Populate expected policy value.
+  expected_policy.push_back(value);
+
+  // Populate expected source name.
+  expected_policy.push_back(source);
+
   // Populate expected scope.
   if (policy_map_entry) {
     expected_policy.push_back(l10n_util::GetStringUTF8(
@@ -124,25 +133,13 @@ std::vector<std::string> PopulateExpectedPolicy(
   } else {
     expected_policy.push_back(std::string());
   }
-  // Populate expected source name.
-  expected_policy.push_back(source);
-
-  // Populate expected policy name.
-  expected_policy.push_back(name);
-
-  // Populate expected policy value.
-  expected_policy.push_back(value);
 
   // Populate expected status.
   if (unknown)
-    expected_policy.push_back(l10n_util::GetStringUTF8(IDS_POLICY_UNKNOWN));
-  else if (policy_map_entry)
-    expected_policy.push_back(l10n_util::GetStringUTF8(IDS_POLICY_OK));
+    expected_policy.push_back(
+        l10n_util::GetStringUTF8(IDS_POLICY_LABEL_MESSAGES));
   else
-    expected_policy.push_back(l10n_util::GetStringUTF8(IDS_POLICY_UNSET));
-
-  // Populate expected expanded policy value.
-  expected_policy.push_back(value);
+    expected_policy.push_back(std::string());
 
   return expected_policy;
 }
@@ -271,27 +268,19 @@ void PolicyUITest::VerifyPolicies(
 
   // Retrieve the text contents of the policy table cells for all policies.
   const std::string javascript =
-      "var entries = document.querySelectorAll("
-      "    'section.policy-table-section > * > tbody');"
+      "var entries = document.getElementById('policy-ui')"
+      "  .querySelectorAll('.policy-table');"
       "var policies = [];"
       "for (var i = 0; i < entries.length; ++i) {"
-      "  var items = "
-      "entries[i].querySelectorAll('tr:not(.expanded-status-container) > td');"
-      "  var values = [];"
+      "  var items = entries[i].querySelectorAll('.policy.row');"
       "  for (var j = 0; j < items.length; ++j) {"
-      "    var item = items[j];"
-      "    var children = item.getElementsByTagName('div');"
-      "    if (children.length == 1)"
-      "      item = children[0];"
-      "    children = item.getElementsByTagName('span');"
-      "    if (children.length == 1)"
-      "      item = children[0];"
-      "    children = item.getElementsByClassName('name-link');"
-      "    if (children.length == 1)"
-      "      item = children[0];"
-      "    values.push(item.textContent);"
+      "    var children = items[j].querySelectorAll('div');"
+      "    var values = [];"
+      "    for(var k = 0; k < children.length; ++k) {"
+      "      values.push(children[k].textContent.trim());"
+      "    }"
+      "    policies.push(values);"
       "  }"
-      "  policies.push(values);"
       "}"
       "domAutomationController.send(JSON.stringify(policies));";
   content::WebContents* contents =
@@ -330,7 +319,7 @@ void PolicyUITest::VerifyExportingPolicies(
 
   // Click on 'save policies' button.
   const std::string javascript =
-      "document.getElementById(\"export-policies\").click()";
+      "document.getElementById('export-policies').click()";
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();

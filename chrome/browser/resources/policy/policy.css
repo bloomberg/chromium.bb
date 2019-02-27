@@ -2,7 +2,98 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-@import 'policy_common.css';
+html {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+body > header {
+  flex-shrink: 0;
+}
+
+body > main {
+  overflow: auto;
+  padding: 12px;
+}
+
+.row:not([hidden]) {
+  display: flex;
+}
+
+.row > * {
+  box-sizing: border-box;
+  flex: 0 0 10%;
+  overflow: hidden;
+  padding: 12px;
+  text-align: start;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.policy-table {
+  margin-bottom: 5px;
+  margin-top: 17px;
+  position: relative;
+  width: 100%;
+}
+
+.policy-table .main {
+  border: 1px solid rgba(0, 0, 0, .06);
+}
+
+.name {
+  border-inline-end: 1px solid rgba(0, 0, 0, .06);
+  flex: 0 0 20%;
+}
+
+.value {
+  flex: 0 0 40%;
+}
+
+.row.header {
+  background-color: rgb(240, 240, 240);
+  border-bottom: 1px solid rgba(0, 0, 0, .06);
+}
+
+.value.row .value {
+  font-family: monospace;
+}
+
+.policy.row .value {
+  font-family: monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.expanded,
+.policy.row:hover {
+  background-color: rgb(250, 250, 250);
+  cursor: pointer;
+}
+
+.messages.row .value,
+.value.row .value {
+  flex-grow: 1;
+  max-height: 200px;
+  overflow: auto;
+  text-overflow: unset;
+  white-space: pre;
+}
+
+.messages.row .name,
+.value.row .name {
+  text-align: end;
+}
 
 #status-box-container {
   display: flex;
@@ -19,7 +110,7 @@ fieldset + fieldset {
   margin-inline-start: 20px;
 }
 
-div.status-entry {
+div.status-entry:not([hidden]) {
   display: flex;
   margin-bottom: .8em;
 }
@@ -28,18 +119,59 @@ div.status-entry:last-child {
   margin-bottom: 0;
 }
 
-div.left-aligned-button {
-  float: left;
+body > header {
+  padding: 12px;
 }
 
-html[dir='rtl'] div.left-aligned-button {
-  float: right;
+body > header,
+.reload-show-unset-section {
+  align-items: center;
+  display: flex;
+  height: 56px;
 }
 
-section.status-box-section {
-  clear: both;
+.sshow-unset-checkbox,
+.search-field-container {
+  margin-inline-start: auto;
 }
 
-div.preformatted {
-  white-space: pre;
+.no-policy:not([hidden]) {
+  display: flex;
+  justify-content: center;
+  padding: 12px;
 }
+
+.no-help-link .name-link {
+  color: inherit;
+  pointer-events: none;
+  text-decoration: none;
+}
+
+<if expr="android">
+.name {
+  flex: 0 0 50%;
+}
+
+.messages {
+  flex: 0 0 25%;
+}
+
+.source {
+  flex: 0 0 25%
+}
+
+.messages.row .name,
+.value.row .name {
+  flex: 0 0 25%;
+}
+
+.reload-show-unset-section {
+  flex-wrap: wrap;
+}
+
+.messages.row .value,
+.value.row .value {
+  display: block;
+  flex: 0 0 25%;
+}
+</if>
