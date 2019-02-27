@@ -177,8 +177,8 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
   // It's possible to detach the context's frame from the DOM or navigate to a
   // new page without initializing the WindowProxy, however, there is no
   // transition to |kFrameIsDetached| or |kGlobalObjectIsDetached| or
-  // |kForciblyPurgeV8Memory| because |DisposeContext| does not change the state
-  // if the state is |kContextIsUninitialized|. In either case of a) the
+  // |kV8MemoryIsForciblyPurged| because |DisposeContext| does not change the
+  // state if the state is |kContextIsUninitialized|. In either case of a) the
   // browsing context container is detached from the DOM or b) the page is
   // navigated away, there must be no way for author script to access the
   // context of |kContextIsUninitialized| because |kContextIsUninitialized|
@@ -188,16 +188,19 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
   // * kContextIsInitialized
   // The context is initialized and its frame is still attached to the DOM.
   // - Possible next states: kFrameIsDetached, kGlobalObjectIsDetached,
-  // kForciblyPurgeV8Memory
+  // kV8MemoryIsForciblyPurged
   //
-  // * kForciblyPurgeV8Memory
+  // * kV8MemoryIsForciblyPurged
   // The context is initialized and its frame is still attached to the DOM, but
   // the global object is detached from the global proxy in order to drop all
   // references to v8, hopefully causing all JS objects to be collected for
   // memory reduction.
-  // - Possible next states: kGlobalObjectIsDetached
+  // - Possible next states: kGlobalObjectIsDetached,
+  // kFrameIsDetachedAndV8MemoryIsPurged
   // Navigation can occur after V8 memory purge, and the state will transition
-  // to kGlobalObjectIsDetached in that case.
+  // to kGlobalObjectIsDetached in that case. When frame is detached after V8
+  // memory purge, the global proxy will be a weak reference and will transition
+  // to kFrameIsDetachedAndV8MemoryIsPurged.
   //
   // * kGlobalObjectIsDetached
   // The context is initialized and its frame is still attached to the DOM, but
@@ -225,6 +228,12 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
   // weak reference so that it's collectable when author script has no
   // reference.
   // - Possible next states: n/a
+  //
+  // * kFrameIsDetachedAndV8MemoryIsPurged
+  // V8 memory is purged for memory reduction and thus global object is detached
+  // from the global proxy, and also frame is detached from the DOM. Like
+  // kFrameIsDetached, |global_proxy_| becomes a weak reference.
+  // - Possible next states: n/a
   enum class Lifecycle {
     // v8::Context is not yet initialized.
     kContextIsUninitialized,
@@ -232,12 +241,15 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
     kContextIsInitialized,
     // The global object (inner global) is detached from the global proxy (outer
     // global). Could transition to kGlobalObjectIsDetached.
-    kForciblyPurgeV8Memory,
+    kV8MemoryIsForciblyPurged,
     // The global object (inner global) is detached from the global proxy (outer
     // global).
     kGlobalObjectIsDetached,
     // The context's frame is detached from the DOM.
     kFrameIsDetached,
+    // The context's frame is detached from the DOM, and global object is
+    // detached from the global proxy.
+    kFrameIsDetachedAndV8MemoryIsPurged,
   };
 
   WindowProxy(v8::Isolate*, Frame&, scoped_refptr<DOMWrapperWorld>);

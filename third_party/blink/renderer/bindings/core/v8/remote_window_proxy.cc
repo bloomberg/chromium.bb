@@ -51,15 +51,20 @@ RemoteWindowProxy::RemoteWindowProxy(v8::Isolate* isolate,
 
 void RemoteWindowProxy::DisposeContext(Lifecycle next_status,
                                        FrameReuseStatus) {
-  DCHECK(next_status == Lifecycle::kForciblyPurgeV8Memory ||
+  DCHECK(next_status == Lifecycle::kV8MemoryIsForciblyPurged ||
          next_status == Lifecycle::kGlobalObjectIsDetached ||
-         next_status == Lifecycle::kFrameIsDetached);
+         next_status == Lifecycle::kFrameIsDetached ||
+         next_status == Lifecycle::kFrameIsDetachedAndV8MemoryIsPurged);
 
-  // If the current lifecycle is kForciblyPurgeV8Memory, the next state should
-  // be kGlobalObjectIsDetached. The necessary operations are already done in
-  // kForciblyPurgeMemory and thus can return here.
-  if (lifecycle_ == Lifecycle::kForciblyPurgeV8Memory) {
-    DCHECK(next_status == Lifecycle::kGlobalObjectIsDetached);
+  // If the current lifecycle is kV8MemoryIsForciblyPurged, next status should
+  // be either kFrameIsDetachedAndV8MemoryIsPurged, or kGlobalObjectIsDetached.
+  // If the former, |global_proxy_| should become weak, and if the latter, the
+  // necessary operations are already done so can return here.
+  if (lifecycle_ == Lifecycle::kV8MemoryIsForciblyPurged) {
+    DCHECK(next_status == Lifecycle::kGlobalObjectIsDetached ||
+           next_status == Lifecycle::kFrameIsDetachedAndV8MemoryIsPurged);
+    if (next_status == Lifecycle::kFrameIsDetachedAndV8MemoryIsPurged)
+      global_proxy_.SetPhantom();
     lifecycle_ = next_status;
     return;
   }
@@ -67,7 +72,7 @@ void RemoteWindowProxy::DisposeContext(Lifecycle next_status,
   if (lifecycle_ != Lifecycle::kContextIsInitialized)
     return;
 
-  if ((next_status == Lifecycle::kForciblyPurgeV8Memory ||
+  if ((next_status == Lifecycle::kV8MemoryIsForciblyPurged ||
        next_status == Lifecycle::kGlobalObjectIsDetached) &&
       !global_proxy_.IsEmpty()) {
     global_proxy_.Get().SetWrapperClassId(0);
