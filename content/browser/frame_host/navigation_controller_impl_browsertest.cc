@@ -7733,6 +7733,26 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
             controller.GetLastCommittedEntry()->GetVirtualURL());
 }
 
+// Verifies that unsafe redirects to javascript: or other URLs create an error
+// page and don't make a spoof possible. See https://crbug.com/935175.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       UnsafeRedirectCreatesErrorPage) {
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  GURL start_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+
+  // Navigating to URLs with unsafe redirects should create an error page so
+  // that the pending URL is not left in the address bar.
+  GURL redirect_to_unsafe_url(
+      embedded_test_server()->GetURL("/server-redirect?javascript:Hello!"));
+  EXPECT_FALSE(NavigateToURL(shell(), redirect_to_unsafe_url));
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(PAGE_TYPE_ERROR, controller.GetLastCommittedEntry()->GetPageType());
+}
+
 // Verifies that redirecting to a blocked URL and going back does not allow a
 // URL spoof.  See https://crbug.com/777419.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,

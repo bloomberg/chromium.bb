@@ -630,18 +630,6 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   content::WaitForLoadStop(web_contents);
   EXPECT_EQ(url, web_contents->GetLastCommittedURL());
 
-  // Now try navigating to a URL that tries to redirect to the error page URL,
-  // and make sure the redirect is blocked.  Note that DidStopLoading will
-  // still fire after the redirect is canceled, so TestNavigationObserver can
-  // be used to wait for it.
-  GURL redirect_to_error_url(
-      embedded_test_server()->GetURL("/server-redirect?" + error_url.spec()));
-  content::TestNavigationObserver observer(web_contents);
-  EXPECT_TRUE(ExecuteScript(
-      web_contents, "location.href = '" + redirect_to_error_url.spec() + "';"));
-  observer.Wait();
-  EXPECT_EQ(url, web_contents->GetLastCommittedURL());
-
   // Also ensure that a page can't embed an iframe for an error page URL.
   EXPECT_TRUE(ExecuteScript(web_contents,
                             "var frame = document.createElement('iframe');\n"
@@ -652,6 +640,22 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
       ChildFrameAt(web_contents->GetMainFrame(), 0);
   // The new subframe should remain blank without a committed URL.
   EXPECT_TRUE(subframe_host->GetLastCommittedURL().is_empty());
+
+  // Now try navigating to a URL that tries to redirect to the error page URL
+  // and make sure the redirect is blocked, resulting in an error page for the
+  // redirect URL and not the error_url destination. Note that DidStopLoading
+  // will still fire after the redirect causes its own error page, so
+  // TestNavigationObserver can be used to wait for it.
+  GURL redirect_to_error_url(
+      embedded_test_server()->GetURL("/server-redirect?" + error_url.spec()));
+  content::TestNavigationObserver observer(web_contents);
+  EXPECT_TRUE(ExecuteScript(
+      web_contents, "location.href = '" + redirect_to_error_url.spec() + "';"));
+  observer.Wait();
+  EXPECT_EQ(redirect_to_error_url, web_contents->GetLastCommittedURL());
+  EXPECT_EQ(
+      content::PAGE_TYPE_ERROR,
+      web_contents->GetController().GetLastCommittedEntry()->GetPageType());
 }
 
 // This test ensures that navigating to a page that returns an error code and
