@@ -14,21 +14,49 @@ from decorators import ChromeVersionEqualOrAfterM
 
 from selenium.common.exceptions import TimeoutException
 
-def enableLitePageServerPreviews(t):
-  t.AddChromeArg('--enable-spdy-proxy-auth')
-  t.AddChromeArg('--enable-features=Previews,'
-                 'LitePageServerPreviews<DummyTrialGroup')
-  t.AddChromeArg('--dont-require-litepage-redirect-infobar')
-  t.AddChromeArg('--ignore-previews-blacklist')
-  t.AddChromeArg('--force-effective-connection-type=2G')
-  t.AddChromeArg('--force-fieldtrials=DummyTrialGroup/Enabled')
-  t.AddChromeArg(
-      '--force-fieldtrial-params=DummyTrialGroup.Enabled:'
-      'lite_page_preview_experiment/external_chrome_integration_test')
+NAV_THROTTLE_VERSION = "v1_NavThrottle"
+URL_LOADER_VERSION = "v2_URLLoader"
 
 # These are integration tests for server provided previews and the
-# protocol that supports them.
-class HttpsPreviews(IntegrationTest):
+# protocol that supports them. This class is intended as an abstract base class
+# to allow the two versions of this feature implementation to reuse the same
+# tests.
+class HttpsPreviewsBaseClass():
+  # Abstract function for subclasses to override.
+  def getVersion(self):
+    raise Exception( "Please override this method")
+
+  def EnableLitePageServerPreviews(self, t):
+    version = self.getVersion()
+
+    # These feature flags are common to both versions.
+    features = [
+      "Previews",
+      "LitePageServerPreviews",
+      # Just in case NetworkService is on. Has no effect otherwise.
+      "DataReductionProxyEnabledWithNetworkService",
+    ]
+
+    if version == NAV_THROTTLE_VERSION:
+      # No additional flags here, but explicitly check it given the else below.
+      pass
+    elif version == URL_LOADER_VERSION:
+      features += [
+        "HTTPSServerPreviewsUsingURLLoader",
+        "NetworkService",
+      ]
+    else:
+      raise Exception('"%s" is not a valid version' % version)
+
+    t.AddChromeArg('--enable-features=' + ','.join(features))
+
+    t.AddChromeArg('--enable-spdy-proxy-auth')
+    t.AddChromeArg('--dont-require-litepage-redirect-infobar')
+    t.AddChromeArg('--ignore-previews-blacklist')
+    t.AddChromeArg('--force-effective-connection-type=2G')
+    t.AddChromeArg('--data-reduction-proxy-experiment='
+      'external_chrome_integration_test')
+
   def _AssertShowingLitePage(self, t, expectedText, expectedImages):
     """Asserts that Chrome has loaded a Lite Page from the litepages server.
 
@@ -78,28 +106,28 @@ class HttpsPreviews(IntegrationTest):
     self.assertEqual(1, html_responses)
 
   # Verifies that a Lite Page is not served when the server returns a bypass.
-  @ChromeVersionEqualOrAfterM(72)
+  @ChromeVersionEqualOrAfterM(74)
   def testServerReturnsBypass(self):
     with TestDriver() as t:
-      enableLitePageServerPreviews(t)
+      self.EnableLitePageServerPreviews(t)
       url = 'https://mobilespeed-test.appspot.com/static/litepagetests/bypass.html'
       t.LoadURL(url)
       self._AssertShowingOriginalPage(t, url, 200)
 
   # Verifies that a Lite Page is not served when the server returns a 404.
-  @ChromeVersionEqualOrAfterM(72)
+  @ChromeVersionEqualOrAfterM(74)
   def testServerReturns404(self):
     with TestDriver() as t:
-      enableLitePageServerPreviews(t)
+      self.EnableLitePageServerPreviews(t)
       url = 'https://mobilespeed-test.appspot.com/404'
       t.LoadURL(url)
       self._AssertShowingOriginalPage(t, url, 404)
 
   # Verifies that a Lite Page is served when enabled and not blacklisted.
-  @ChromeVersionEqualOrAfterM(72)
+  @ChromeVersionEqualOrAfterM(74)
   def testServerReturnsLitePage(self):
     with TestDriver() as t:
-      enableLitePageServerPreviews(t)
+      self.EnableLitePageServerPreviews(t)
       t.LoadURL('https://mobilespeed-test.appspot.com/static/litepagetests/simple.html')
       self._AssertShowingLitePage(t, 'Hello world', 1)
 
@@ -108,7 +136,7 @@ class HttpsPreviews(IntegrationTest):
   @ChromeVersionEqualOrAfterM(74)
   def testPingbackSent(self):
     with TestDriver() as t:
-      enableLitePageServerPreviews(t)
+      self.EnableLitePageServerPreviews(t)
       t.AddChromeArg('--enable-data-reduction-proxy-force-pingback')
 
       # Navigate twice so that the first page sends a pingback. The second page
@@ -127,19 +155,19 @@ class HttpsPreviews(IntegrationTest):
 
   # Verifies that a Lite Page is served when the main frame response is a
   # redirect to a URL that is not blacklisted.
-  @ChromeVersionEqualOrAfterM(72)
+  @ChromeVersionEqualOrAfterM(74)
   def testServerReturnsLitePageAfterRedirect(self):
     with TestDriver() as t:
-      enableLitePageServerPreviews(t)
+      self.EnableLitePageServerPreviews(t)
       t.LoadURL('https://mobilespeed-test.appspot.com/redirect-to/static/litepagetests/simple.html')
       self._AssertShowingLitePage(t, 'Hello world', 1)
 
   # Verifies that a bad SSL interstitial is shown (instead of a Lite Page) when
   # the origin server has bad certificates.
-  @ChromeVersionEqualOrAfterM(72)
+  @ChromeVersionEqualOrAfterM(74)
   def testServerShowsBadSSLInterstitial(self):
     with TestDriver() as t:
-      enableLitePageServerPreviews(t)
+      self.EnableLitePageServerPreviews(t)
       url = 'https://expired.badssl.com/'
       t.LoadURL(url)
       self._AssertShowingOriginalPage(t, url, 200)
@@ -153,10 +181,10 @@ class HttpsPreviews(IntegrationTest):
   # Verifies that a safebrowsing interstitial is shown (instead of a Lite Page)
   # when the URL is marked as malware by safebrowsing.
   @AndroidOnly
-  @ChromeVersionEqualOrAfterM(72)
+  @ChromeVersionEqualOrAfterM(74)
   def testServerShowsSafebrowsingInterstitial(self):
     with TestDriver() as t:
-      enableLitePageServerPreviews(t)
+      self.EnableLitePageServerPreviews(t)
       try :
         # LoadURL will timeout when the interstital appears.
         t.LoadURL('https://testsafebrowsing.appspot.com/s/malware.html')
@@ -169,10 +197,10 @@ class HttpsPreviews(IntegrationTest):
   # Verifies that a Lite Page is served, an intervention report has been
   # sent to the correct reporting endpoint, and the content of this report
   # is expected.
-  @ChromeVersionEqualOrAfterM(72)
+  @ChromeVersionEqualOrAfterM(74)
   def testLitePageWebReport(self):
     with TestDriver() as t:
-      enableLitePageServerPreviews(t)
+      self.EnableLitePageServerPreviews(t)
       t.AddChromeArg('--short-reporting-delay')
       t.UseNetLog()
 
@@ -217,6 +245,14 @@ class HttpsPreviews(IntegrationTest):
             if ":status: 200" in value:
               ok_responses += 1
       self.assertNotEqual(0, ok_responses)
+
+class HttpsPreviewsNavigationThrottle(HttpsPreviewsBaseClass, IntegrationTest):
+  def getVersion(self):
+    return NAV_THROTTLE_VERSION
+
+class HttpsPreviewsURLLoader(HttpsPreviewsBaseClass, IntegrationTest):
+  def getVersion(self):
+    return URL_LOADER_VERSION
 
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()
