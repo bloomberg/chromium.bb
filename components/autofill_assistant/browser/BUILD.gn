@@ -144,8 +144,6 @@ source_set("unit_tests") {
     "element_area_unittest.cc",
     "fake_script_executor_delegate.cc",
     "fake_script_executor_delegate.h",
-    "mock_client_memory.cc",
-    "mock_client_memory.h",
     "mock_run_once_callback.h",
     "mock_service.cc",
     "mock_service.h",

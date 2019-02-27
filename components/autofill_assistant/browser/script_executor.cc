@@ -70,6 +70,15 @@ std::ostream& operator<<(std::ostream& out,
     case ProcessedActionStatusProto::USER_ABORTED_ACTION:
       out << "USER_ABORTED_ACTION";
       break;
+
+    case ProcessedActionStatusProto::GET_FULL_CARD_FAILED:
+      out << "GET_FULL_CARD_FAILED";
+      break;
+
+    case ProcessedActionStatusProto::PRECONDITION_FAILED:
+      out << "PRECONDITION_FAILED";
+      break;
+
       // Intentionally no default case to make compilation fail if a new value
       // was added to the enum but not to this list.
   }
@@ -386,15 +395,6 @@ void ScriptExecutor::Close() {
 
 void ScriptExecutor::Restart() {
   at_end_ = RESTART;
-}
-
-void ScriptExecutor::StopCurrentScriptAndShutdown(const std::string& message) {
-  // Use a default message when |message| is empty.
-  delegate_->SetStatusMessage(
-      message.empty() ? l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP)
-                      : message);
-  at_end_ = SHUTDOWN_GRACEFULLY;
-  should_stop_script_ = true;
 }
 
 ClientMemory* ScriptExecutor::GetClientMemory() {

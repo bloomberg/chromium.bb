@@ -92,8 +92,6 @@ class AutofillAction : public Action {
   std::string name_;
   std::string prompt_;
   Selector selector_;
-  std::string fill_form_message_;
-  std::string check_form_message_;
 
   // True if autofilling a card, otherwise we are autofilling an address.
   bool is_autofill_card_;

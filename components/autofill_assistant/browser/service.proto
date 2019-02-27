@@ -333,6 +333,23 @@ enum ProcessedActionStatusProto {
   // affect any action. It is a signal that the action or script ran in an
   // abnormal situation and its outcome cannot be trusted.
   USER_ABORTED_ACTION = 8;
+
+  // The Autofill Action failed to get the full card information.
+  //
+  // Possible causes:
+  // - the user filled in the wrong CVC number.
+  // - the card has expired
+  GET_FULL_CARD_FAILED = 9;
+
+  // The action did not have what it needs. This is generally a bug in the
+  // script.
+  //
+  // This is currently returned by the autofill action, when it could not find
+  // the credit card or the address it needs in the client memory. This is
+  // usually the sign that the Get Payment Information action was not run or
+  // failed.
+  //
+  PRECONDITION_FAILED = 10;
 }
 
 // The pseudo type values come from
@@ -423,14 +440,6 @@ message ElementAreaProto {
   repeated Rectangle rectangles = 1;
 }
 
-message AutofillStrings {
-  optional string fill_manually = 1;
-
-  optional string fill_form = 2;
-
-  optional string check_form = 3;
-}
-
 // Fill a form with an address if there is, otherwise fail this action.
 message UseAddressProto {
   // Message used to indicate what form fields should be filled with what
@@ -474,8 +483,6 @@ message UseAddressProto {
 
   // An optional list of fields that should be filled by this action.
   repeated RequiredField required_fields = 6;
-
-  optional AutofillStrings strings = 8;
 }
 
 // Fill a form with a credit card if there is, otherwise fail this action.
@@ -486,8 +493,6 @@ message UseCreditCardProto {
 
   // A reference to the card number field in the form that should be filled.
   optional ElementReferenceProto form_field_element = 3;
-
-  optional AutofillStrings strings = 8;
 }
 
 // Ask Chrome to wait for an element in the DOM. This can be used to only
