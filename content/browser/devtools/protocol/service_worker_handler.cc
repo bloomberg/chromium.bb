@@ -10,7 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "content/browser/background_sync/background_sync_context.h"
+#include "content/browser/background_sync/background_sync_context_impl.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
@@ -113,7 +113,7 @@ Response CreateInvalidVersionIdErrorResponse() {
 }
 
 void DidFindRegistrationForDispatchSyncEventOnIO(
-    scoped_refptr<BackgroundSyncContext> sync_context,
+    scoped_refptr<BackgroundSyncContextImpl> sync_context,
     const std::string& tag,
     bool last_chance,
     blink::ServiceWorkerStatusCode status,
@@ -134,12 +134,13 @@ void DidFindRegistrationForDispatchSyncEventOnIO(
                      std::move(registration)));
 }
 
-void DispatchSyncEventOnIO(scoped_refptr<ServiceWorkerContextWrapper> context,
-                           scoped_refptr<BackgroundSyncContext> sync_context,
-                           const GURL& origin,
-                           int64_t registration_id,
-                           const std::string& tag,
-                           bool last_chance) {
+void DispatchSyncEventOnIO(
+    scoped_refptr<ServiceWorkerContextWrapper> context,
+    scoped_refptr<BackgroundSyncContextImpl> sync_context,
+    const GURL& origin,
+    int64_t registration_id,
+    const std::string& tag,
+    bool last_chance) {
   context->FindReadyRegistrationForId(
       registration_id, origin,
       base::BindOnce(&DidFindRegistrationForDispatchSyncEventOnIO, sync_context,
@@ -336,7 +337,7 @@ Response ServiceWorkerHandler::DispatchSyncEvent(
   if (!base::StringToInt64(registration_id, &id))
     return CreateInvalidVersionIdErrorResponse();
 
-  BackgroundSyncContext* sync_context =
+  BackgroundSyncContextImpl* sync_context =
       storage_partition_->GetBackgroundSyncContext();
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},

@@ -116,6 +116,11 @@ class CONTENT_EXPORT BackgroundSyncManager
   // Called from DevTools to toggle service worker "offline" status
   void EmulateServiceWorkerOffline(int64_t service_worker_id, bool is_offline);
 
+  // Scans the list of available events and fires those that are
+  // ready to fire. For those that can't yet be fired, wakeup alarms are set.
+  // Once all of this is done, invokes |callback|.
+  void FireReadyEventsThenRunCallback(base::OnceClosure callback);
+
  protected:
   explicit BackgroundSyncManager(
       scoped_refptr<ServiceWorkerContextWrapper> context);
@@ -250,6 +255,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   // FireReadyEvents scans the list of available events and fires those that are
   // ready to fire. For those that can't yet be fired, wakeup alarms are set.
   void FireReadyEvents();
+
   void FireReadyEventsImpl(base::OnceClosure callback);
   void FireReadyEventsDidFindRegistration(
       int64_t service_worker_id,

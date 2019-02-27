@@ -51,6 +51,10 @@ AppCacheService* TestStoragePartition::GetAppCacheService() {
   return app_cache_service_;
 }
 
+BackgroundSyncContext* TestStoragePartition::GetBackgroundSyncContext() {
+  return background_sync_context_;
+}
+
 storage::FileSystemContext* TestStoragePartition::GetFileSystemContext() {
   return file_system_context_;
 }

@@ -2062,7 +2062,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(
-          &BackgroundSyncContext::CreateService,
+          &BackgroundSyncContextImpl::CreateService,
           base::Unretained(
               storage_partition_impl_->GetBackgroundSyncContext())));
   AddUIThreadInterface(

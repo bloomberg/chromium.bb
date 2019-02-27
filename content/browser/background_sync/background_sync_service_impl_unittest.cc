@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
-#include "content/browser/background_sync/background_sync_context.h"
+#include "content/browser/background_sync/background_sync_context_impl.h"
 #include "content/browser/background_sync/background_sync_network_observer.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -106,8 +106,8 @@ class BackgroundSyncServiceImplTest : public testing::Test {
 
   void TearDown() override {
     // This must be explicitly destroyed here to ensure that destruction
-    // of both the BackgroundSyncContext and the BackgroundSyncManager occurs on
-    // the correct thread.
+    // of both the BackgroundSyncContextImpl and the BackgroundSyncManager
+    // occurs on the correct thread.
     background_sync_context_->Shutdown();
     base::RunLoop().RunUntilIdle();
     background_sync_context_ = nullptr;
@@ -211,7 +211,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
   std::unique_ptr<EmbeddedWorkerTestHelper> embedded_worker_helper_;
   std::unique_ptr<StoragePartitionImpl> storage_partition_impl_;
-  scoped_refptr<BackgroundSyncContext> background_sync_context_;
+  scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
   int64_t sw_registration_id_;
   scoped_refptr<ServiceWorkerRegistration> sw_registration_;
   blink::mojom::BackgroundSyncServicePtr service_ptr_;

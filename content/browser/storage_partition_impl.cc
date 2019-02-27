@@ -699,7 +699,7 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
           partition->cache_storage_context_, quota_manager_proxy);
 
   partition->background_sync_context_ =
-      base::MakeRefCounted<BackgroundSyncContext>();
+      base::MakeRefCounted<BackgroundSyncContextImpl>();
   partition->background_sync_context_->Init(partition->service_worker_context_);
 
   partition->payment_app_context_ = new PaymentAppContextImpl();
@@ -826,6 +826,10 @@ ChromeAppCacheService* StoragePartitionImpl::GetAppCacheService() {
   return appcache_service_.get();
 }
 
+BackgroundSyncContextImpl* StoragePartitionImpl::GetBackgroundSyncContext() {
+  return background_sync_context_.get();
+}
+
 storage::FileSystemContext* StoragePartitionImpl::GetFileSystemContext() {
   return filesystem_context_.get();
 }
@@ -885,10 +889,6 @@ StoragePartitionImpl::GetPlatformNotificationContext() {
 
 BackgroundFetchContext* StoragePartitionImpl::GetBackgroundFetchContext() {
   return background_fetch_context_.get();
-}
-
-BackgroundSyncContext* StoragePartitionImpl::GetBackgroundSyncContext() {
-  return background_sync_context_.get();
 }
 
 PaymentAppContextImpl* StoragePartitionImpl::GetPaymentAppContext() {

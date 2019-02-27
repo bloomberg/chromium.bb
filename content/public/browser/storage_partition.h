@@ -50,6 +50,7 @@ class DatabaseTracker;
 namespace content {
 
 class AppCacheService;
+class BackgroundSyncContext;
 class BrowserContext;
 class CacheStorageContext;
 class DOMStorageContext;
@@ -101,6 +102,7 @@ class CONTENT_EXPORT StoragePartition {
   GetCookieManagerForBrowserProcess() = 0;
   virtual storage::QuotaManager* GetQuotaManager() = 0;
   virtual AppCacheService* GetAppCacheService() = 0;
+  virtual BackgroundSyncContext* GetBackgroundSyncContext() = 0;
   virtual storage::FileSystemContext* GetFileSystemContext() = 0;
   virtual storage::DatabaseTracker* GetDatabaseTracker() = 0;
   virtual DOMStorageContext* GetDOMStorageContext() = 0;

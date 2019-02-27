@@ -815,7 +815,7 @@ class BackgroundSyncRestorer {
     }
     scoped_refptr<ServiceWorkerDevToolsAgentHost> service_worker_host =
         static_cast<ServiceWorkerDevToolsAgentHost*>(host.get());
-    scoped_refptr<BackgroundSyncContext> sync_context =
+    scoped_refptr<BackgroundSyncContextImpl> sync_context =
         static_cast<StoragePartitionImpl*>(storage_partition_)
             ->GetBackgroundSyncContext();
     base::PostTaskWithTraits(
@@ -828,7 +828,7 @@ class BackgroundSyncRestorer {
   }
 
   static void SetServiceWorkerOfflineOnIO(
-      scoped_refptr<BackgroundSyncContext> sync_context,
+      scoped_refptr<BackgroundSyncContextImpl> sync_context,
       scoped_refptr<ServiceWorkerContextWrapper> swcontext,
       int64_t version_id,
       bool offline) {

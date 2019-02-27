@@ -17,7 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_handle.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
-#include "content/browser/background_sync/background_sync_context.h"
+#include "content/browser/background_sync/background_sync_context_impl.h"
 #include "content/browser/bluetooth/bluetooth_allowed_devices_map.h"
 #include "content/browser/broadcast_channel/broadcast_channel_provider.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
@@ -95,6 +95,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   network::mojom::CookieManager* GetCookieManagerForBrowserProcess() override;
   storage::QuotaManager* GetQuotaManager() override;
   ChromeAppCacheService* GetAppCacheService() override;
+  BackgroundSyncContextImpl* GetBackgroundSyncContext() override;
   storage::FileSystemContext* GetFileSystemContext() override;
   storage::DatabaseTracker* GetDatabaseTracker() override;
   DOMStorageContextWrapper* GetDOMStorageContext() override;
@@ -145,7 +146,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   void WaitForDeletionTasksForTesting() override;
 
   BackgroundFetchContext* GetBackgroundFetchContext();
-  BackgroundSyncContext* GetBackgroundSyncContext();
   PaymentAppContextImpl* GetPaymentAppContext();
   BroadcastChannelProvider* GetBroadcastChannelProvider();
   BluetoothAllowedDevicesMap* GetBluetoothAllowedDevicesMap();
@@ -332,7 +332,7 @@ class CONTENT_EXPORT StoragePartitionImpl
 #endif  // !defined(OS_ANDROID)
   scoped_refptr<PlatformNotificationContextImpl> platform_notification_context_;
   scoped_refptr<BackgroundFetchContext> background_fetch_context_;
-  scoped_refptr<BackgroundSyncContext> background_sync_context_;
+  scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
   scoped_refptr<PaymentAppContextImpl> payment_app_context_;
   scoped_refptr<BroadcastChannelProvider> broadcast_channel_provider_;
   scoped_refptr<BluetoothAllowedDevicesMap> bluetooth_allowed_devices_map_;

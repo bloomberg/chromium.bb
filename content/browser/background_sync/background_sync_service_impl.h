@@ -19,13 +19,13 @@
 
 namespace content {
 
-class BackgroundSyncContext;
+class BackgroundSyncContextImpl;
 
 class CONTENT_EXPORT BackgroundSyncServiceImpl
     : public blink::mojom::BackgroundSyncService {
  public:
   BackgroundSyncServiceImpl(
-      BackgroundSyncContext* background_sync_context,
+      BackgroundSyncContextImpl* background_sync_context,
       mojo::InterfaceRequest<blink::mojom::BackgroundSyncService> request);
 
   ~BackgroundSyncServiceImpl() override;
@@ -53,8 +53,8 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
   // Called when an error is detected on binding_.
   void OnConnectionError();
 
-  // background_sync_context_ owns this.
-  BackgroundSyncContext* background_sync_context_;
+  // |background_sync_context_| owns |this|.
+  BackgroundSyncContextImpl* background_sync_context_;
 
   mojo::Binding<blink::mojom::BackgroundSyncService> binding_;
 
