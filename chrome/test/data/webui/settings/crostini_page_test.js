@@ -215,12 +215,11 @@ suite('CrostiniPageTests', function() {
     });
 
     test('USB devices are shown', function() {
-      assertEquals(
-          3, subpage.shadowRoot.querySelectorAll('.settings-box').length);
+      assertEquals(3, subpage.shadowRoot.querySelectorAll('.toggle').length);
     });
 
     test('USB shared pref is updated by toggling', function() {
-      assertTrue(!!subpage.$$('.settings-box .toggle'));
+      assertTrue(!!subpage.$$('.toggle'));
       subpage.$$('.toggle').click();
       return flushAsync()
           .then(() => {

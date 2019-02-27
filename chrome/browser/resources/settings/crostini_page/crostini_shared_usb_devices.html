@@ -15,13 +15,21 @@
         justify-content: space-between;
       }
     </style>
-    <template is="dom-repeat"
-      items="{{prefs.crostini.shared_usb_devices.value}}" as="usb">
-      <div class="toggle-container settings-box">
-        <div class="label">[[usb.name]]</div>
-        <cr-toggle class="toggle" checked="{{usb.shared}}"></cr-toggle>
-      </div>
-    </template>
+    <div class="settings-box first">
+      <div>$i18n{crostiniSharedUsbDevicesDescription}</div>
+    </div>
+    <div class="settings-box continuation">
+      <h2 class="start">$i18n{crostiniSharedUsbDevicesListHeading}</h2>
+    </div>
+    <div class="list-frame vertical-list">
+      <template is="dom-repeat"
+        items="{{prefs.crostini.shared_usb_devices.value}}" as="device">
+        <div class="toggle-container settings-box">
+          <div class="label">[[device.name]]</div>
+          <cr-toggle class="toggle" checked="{{device.shared}}"></cr-toggle>
+        </div>
+      </template>
+    </div>
   </template>
   <script src="crostini_shared_usb_devices.js"></script>
 </dom-module>
