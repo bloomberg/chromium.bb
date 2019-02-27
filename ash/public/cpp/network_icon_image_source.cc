@@ -22,7 +22,7 @@ namespace {
 
 // TODO(estade): share this alpha with other things in ash (battery, etc.).
 // See https://crbug.com/623987 and https://crbug.com/632827
-// For now, this value should match the one used in kTrayIconBackgroundColor
+// For now, this value should match the one used in kTrayIconBackgroundAlpha
 // in ash/system/tray/tray_constants.cc
 constexpr int kSignalStrengthImageBgAlpha = 0x4D;
 

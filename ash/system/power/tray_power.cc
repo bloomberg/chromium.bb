@@ -109,9 +109,11 @@ void PowerTrayView::UpdateImage() {
   info_ = info;
   icon_session_state_color_ = session_state;
 
+  // Note: The icon color (both fg and bg) changes when the UI in in OOBE mode.
+  SkColor icon_fg_color = TrayIconColor(session_state);
+  SkColor icon_bg_color = SkColorSetA(icon_fg_color, kTrayIconBackgroundAlpha);
   image_view()->SetImage(PowerStatus::GetBatteryImage(
-      info, kUnifiedTrayIconSize, kTrayIconBackgroundColor,
-      TrayIconColor(session_state)));
+      info, kUnifiedTrayIconSize, icon_bg_color, icon_fg_color));
 }
 
 }  // namespace tray
