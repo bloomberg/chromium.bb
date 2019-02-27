@@ -137,6 +137,8 @@ class FlexLayoutTest : public testing::Test {
   static const FlexSpecification kUnboundedSnapToMinimum;
   static const FlexSpecification kUnboundedScaleToMinimumSnapToZero;
   static const FlexSpecification kUnboundedScaleToZero;
+  static const FlexSpecification kUnboundedScaleToMinimum;
+  static const FlexSpecification kUnboundedScaleToMinimumHighPriority;
 
   // Custom flex which scales step-wise.
   static const FlexSpecification kCustomFlex;
@@ -184,6 +186,11 @@ const FlexSpecification FlexLayoutTest::kUnboundedScaleToZero =
     FlexSpecification::ForSizeRule(MinimumFlexSizeRule::kScaleToZero,
                                    MaximumFlexSizeRule::kUnbounded)
         .WithOrder(2);
+const FlexSpecification FlexLayoutTest::kUnboundedScaleToMinimumHighPriority =
+    FlexSpecification::ForSizeRule(MinimumFlexSizeRule::kScaleToMinimum,
+                                   MaximumFlexSizeRule::kUnbounded);
+const FlexSpecification FlexLayoutTest::kUnboundedScaleToMinimum =
+    kUnboundedScaleToMinimumHighPriority.WithOrder(2);
 
 const FlexSpecification FlexLayoutTest::kCustomFlex =
     FlexSpecification::ForCustomRule(
@@ -1437,6 +1444,146 @@ TEST_F(FlexLayoutTest, Layout_FlexRule_UnboundedScaleToZero) {
   host_->SetSize(Size(9, 14));
   host_->Layout();
   EXPECT_FALSE(child->visible());
+}
+
+// A higher priority view which can expand past its maximum size should displace
+// a lower priority view up to the first view's preferred size.
+TEST_F(FlexLayoutTest,
+       Layout_FlexRule_TwoPassScaling_PreferredSizeTakesPrecedence) {
+  constexpr Size kLargeSize(10, 10);
+  constexpr Size kSmallSize(5, 5);
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetCollapseMargins(true);
+  layout_->SetMainAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  View* child1 = AddChild(kLargeSize, kSmallSize);
+  layout_->SetFlexForView(child1, kUnboundedScaleToMinimumHighPriority);
+  View* child2 = AddChild(kSmallSize);
+  layout_->SetFlexForView(child2, kDropOut);
+
+  // When there is no room for the second view, it drops out.
+  host_->SetSize(Size(4, 5));
+  host_->Layout();
+  EXPECT_EQ(kSmallSize, child1->size());
+  EXPECT_FALSE(child2->visible());
+
+  // When the first view has less room than its preferred size, it should still
+  // take up all of the space.
+  constexpr Size kIntermediateSize(8, 7);
+  host_->SetSize(kIntermediateSize);
+  host_->Layout();
+  EXPECT_EQ(kIntermediateSize, child1->size());
+  EXPECT_FALSE(child2->visible());
+
+  // When the first view has more room than its preferred size, but not enough
+  // to make room for the second view, the second view still drops out.
+  constexpr Size kLargerSize(13, 8);
+  host_->SetSize(kLargerSize);
+  host_->Layout();
+  EXPECT_EQ(kLargerSize, child1->size());
+  EXPECT_FALSE(child2->visible());
+}
+
+// When a view is allowed to flex above its preferred size, it will still yield
+// that additional space to a lower-priority view, if there is space for the
+// second view.
+TEST_F(FlexLayoutTest, Layout_FlexRule_TwoPassScaling_StopAtPreferredSize) {
+  constexpr Size kLargeSize(10, 10);
+  constexpr Size kSmallSize(5, 5);
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetCollapseMargins(true);
+  layout_->SetMainAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  View* child1 = AddChild(kLargeSize, kSmallSize);
+  layout_->SetFlexForView(child1, kUnboundedScaleToMinimumHighPriority);
+  View* child2 = AddChild(kSmallSize);
+  layout_->SetFlexForView(child2, kDropOut);
+
+  constexpr Size kEnoughSpace(kSmallSize.width() + kLargeSize.width(),
+                              kLargeSize.height());
+  host_->SetSize(kEnoughSpace);
+  host_->Layout();
+  EXPECT_EQ(kLargeSize, child1->size());
+  EXPECT_EQ(kSmallSize, child2->size());
+}
+
+// Once lower-priority views have reached their preferred sizes, a
+// higher-priority view which can expand past its preferred size should start to
+// consume the remaining space.
+TEST_F(FlexLayoutTest, Layout_FlexRule_TwoPassScaling_GrowPastPreferredSize) {
+  constexpr Size kLargeSize(10, 10);
+  constexpr Size kSmallSize(5, 5);
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetCollapseMargins(true);
+  layout_->SetMainAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  View* child1 = AddChild(kLargeSize, kSmallSize);
+  layout_->SetFlexForView(child1, kUnboundedScaleToMinimumHighPriority);
+  View* child2 = AddChild(kSmallSize);
+  layout_->SetFlexForView(child2, kDropOut);
+
+  constexpr int kExtra = 7;
+  constexpr Size kExtraSpace(kSmallSize.width() + kLargeSize.width() + kExtra,
+                             kLargeSize.height() + kExtra);
+  host_->SetSize(kExtraSpace);
+  EXPECT_EQ(Size(kLargeSize.width() + kExtra, kLargeSize.height()),
+            child1->size());
+  EXPECT_EQ(kSmallSize, child2->size());
+}
+
+// If two views can both scale past their preferred size with the same priority,
+// once space has been allocated for each's preferred size, additional space
+// will be divided according to flex weight.
+TEST_F(FlexLayoutTest,
+       Layout_FlexRule_GrowPastPreferredSize_TwoViews_SamePriority) {
+  constexpr Size kLargeSize(10, 10);
+  constexpr Size kSmallSize(5, 5);
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetCollapseMargins(true);
+  layout_->SetMainAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  // Because we are using a flex rule that scales all the way to zero, ensure
+  // that the child view's minimum size is *not* respected.
+  View* child1 = AddChild(kLargeSize, kSmallSize);
+  layout_->SetFlexForView(child1, kUnboundedScaleToMinimumHighPriority);
+  View* child2 = AddChild(kLargeSize, kSmallSize);
+  layout_->SetFlexForView(child2, kUnboundedScaleToMinimumHighPriority);
+
+  constexpr int kExtra = 8;
+  constexpr Size kExtraSpace(2 * kLargeSize.width() + kExtra,
+                             kLargeSize.height());
+  host_->SetSize(kExtraSpace);
+  EXPECT_EQ(Size(kLargeSize.width() + kExtra / 2, kLargeSize.height()),
+            child1->size());
+  EXPECT_EQ(Size(kLargeSize.width() + kExtra / 2, kLargeSize.height()),
+            child2->size());
+}
+
+// If two views can both scale past their preferred size once space has been
+// allocated for each's preferred size, additional space will be given to the
+// higher-precedence view.
+TEST_F(FlexLayoutTest,
+       Layout_FlexRule_GrowPastPreferredSize_TwoViews_DifferentPriority) {
+  constexpr Size kLargeSize(10, 10);
+  constexpr Size kSmallSize(5, 5);
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetCollapseMargins(true);
+  layout_->SetMainAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  // Because we are using a flex rule that scales all the way to zero, ensure
+  // that the child view's minimum size is *not* respected.
+  View* child1 = AddChild(kLargeSize, kSmallSize);
+  layout_->SetFlexForView(child1, kUnboundedScaleToMinimumHighPriority);
+  View* child2 = AddChild(kLargeSize, kSmallSize);
+  layout_->SetFlexForView(child2, kUnboundedScaleToMinimum);
+
+  constexpr int kExtra = 8;
+  constexpr Size kExtraSpace(2 * kLargeSize.width() + kExtra,
+                             kLargeSize.height());
+  host_->SetSize(kExtraSpace);
+  EXPECT_EQ(Size(kLargeSize.width() + kExtra, kLargeSize.height()),
+            child1->size());
+  EXPECT_EQ(kLargeSize, child2->size());
 }
 
 TEST_F(FlexLayoutTest, Layout_FlexRule_CustomFlexRule) {
