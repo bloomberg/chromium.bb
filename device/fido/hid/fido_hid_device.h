@@ -57,6 +57,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
   // Use a string identifier to compare to other devices.
   std::string GetId() const final;
   FidoTransportProtocol DeviceTransport() const final;
+  void DiscoverSupportedProtocolAndDeviceInfo(base::OnceClosure done) override;
 
   // Get a string identifier for a given device info.
   static std::string GetIdForDevice(

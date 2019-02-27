@@ -69,7 +69,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   // Sends a speculative AuthenticatorGetInfo request to determine whether the
   // device supports the CTAP2 protocol, and initializes supported_protocol_
   // and device_info_ according to the result.
-  void DiscoverSupportedProtocolAndDeviceInfo(base::OnceClosure done);
+  virtual void DiscoverSupportedProtocolAndDeviceInfo(base::OnceClosure done);
+
   // Returns whether supported_protocol has been correctly initialized (usually
   // by calling DiscoverSupportedProtocolAndDeviceInfo).
   bool SupportedProtocolIsInitialized();
