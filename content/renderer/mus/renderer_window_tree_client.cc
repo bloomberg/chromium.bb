@@ -387,4 +387,8 @@ void RendererWindowTreeClient::OnOcclusionStatesChanged(
 
 void RendererWindowTreeClient::CleanupGestureState(ws::Id window_id) {}
 
+void RendererWindowTreeClient::OnWindowResizeLoopStarted(ws::Id window_id) {}
+
+void RendererWindowTreeClient::OnWindowResizeLoopEnded(ws::Id window_id) {}
+
 }  // namespace content

@@ -228,7 +228,6 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
         window_, context->GetRootWindow(), window_bounds);
   }
 
-  // Start observing property changes.
   window_->AddObserver(this);
 
   // Wait to set the bounds until we have a parent. That way we can know our
@@ -922,6 +921,14 @@ void NativeWidgetAura::OnWindowPropertyChanged(aura::Window* window,
                                                intptr_t old) {
   if (key == aura::client::kShowStateKey)
     delegate_->OnNativeWidgetWindowShowStateChanged();
+}
+
+void NativeWidgetAura::OnResizeLoopStarted(aura::Window* window) {
+  delegate_->OnNativeWidgetBeginUserBoundsChange();
+}
+
+void NativeWidgetAura::OnResizeLoopEnded(aura::Window* window) {
+  delegate_->OnNativeWidgetEndUserBoundsChange();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

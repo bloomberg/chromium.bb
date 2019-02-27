@@ -177,6 +177,14 @@ class AURA_EXPORT WindowObserver : public base::CheckedObserver {
   // Called when the occlusion state of |window| changes.
   virtual void OnWindowOcclusionChanged(Window* window) {}
 
+  // Called when the window manager potentially starts an interactive resize
+  // loop.
+  virtual void OnResizeLoopStarted(Window* window) {}
+
+  // Called when the window manager ends an interactive resize loop. This is not
+  // called if the window is destroyed during the loop.
+  virtual void OnResizeLoopEnded(Window* window) {}
+
  protected:
   ~WindowObserver() override;
 };

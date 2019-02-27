@@ -22,6 +22,7 @@ namespace ws {
 namespace mojom {
 enum class WindowType;
 }
+class TopLevelProxyWindow;
 }  // namespace ws
 
 namespace ash {
@@ -30,6 +31,7 @@ namespace ash {
 // aura::Window is owned by its parent. A value of null is returned if invalid
 // poarameters are supplied.
 ASH_EXPORT aura::Window* CreateAndParentTopLevelWindow(
+    ws::TopLevelProxyWindow* top_level_proxy_window,
     ws::mojom::WindowType window_type,
     aura::PropertyConverter* property_converter,
     std::map<std::string, std::vector<uint8_t>>* properties);

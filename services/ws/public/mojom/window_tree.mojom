@@ -673,6 +673,15 @@ interface WindowTreeClient {
   // Cancels the ongoing touch gesture recognitions and clears related gesture
   // recognition state of the window of |window_id| in the client.
   CleanupGestureState(uint64 window_id);
+
+  // Called when the window manager may start resizing a window by a user
+  // gesture. For example, if the user clicks on a window-resize handle this may
+  // be called. This is followed by OnWindowResizeLoopEnded() when the loop is
+  // done. This function is only called for top-levels.
+  // OnWindowResizeLoopEnded() may not be called if the window is destroyed
+  // during the loop.
+  OnWindowResizeLoopStarted(uint64 window_id);
+  OnWindowResizeLoopEnded(uint64 window_id);
 };
 
 // Mus provides this interface as a way for clients to connect and obtain a

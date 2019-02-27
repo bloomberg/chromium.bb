@@ -5,6 +5,7 @@
 #ifndef SERVICES_WS_PROXY_WINDOW_H_
 #define SERVICES_WS_PROXY_WINDOW_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -33,6 +34,7 @@ namespace ws {
 
 class DragDropDelegate;
 class Embedding;
+class TopLevelProxyWindowImpl;
 class WindowTree;
 
 // Tracks any state associated with an aura::Window for the WindowService.
@@ -140,6 +142,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ProxyWindow {
   void SetDragDropDelegate(
       std::unique_ptr<DragDropDelegate> drag_drop_delegate);
 
+  void SetTopLevelProxyWindow(std::unique_ptr<TopLevelProxyWindowImpl> window);
+
   // Returns an id useful for debugging. This returns the id from the client
   // that created the window, otherwise |frame_sink_id_|.
   std::string GetIdForDebugging();
@@ -210,6 +214,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ProxyWindow {
 
   // FrameSinkId set by way of mojom::WindowTree::AttachFrameSinkId().
   viz::FrameSinkId attached_frame_sink_id_;
+
+  std::unique_ptr<TopLevelProxyWindowImpl> top_level_proxy_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyWindow);
 };

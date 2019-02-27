@@ -1175,6 +1175,16 @@ bool Window::RequiresDoubleTapGestureEvents() const {
   return delegate_ && delegate_->RequiresDoubleTapGestureEvents();
 }
 
+void Window::NotifyResizeLoopStarted() {
+  for (auto& observer : observers_)
+    observer.OnResizeLoopStarted(this);
+}
+
+void Window::NotifyResizeLoopEnded() {
+  for (auto& observer : observers_)
+    observer.OnResizeLoopEnded(this);
+}
+
 #if DCHECK_IS_ON()
 // static
 void Window::SetEnvArgRequired(const char* error_string) {

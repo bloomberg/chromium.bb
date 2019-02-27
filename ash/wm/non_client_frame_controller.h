@@ -32,6 +32,7 @@ namespace ws {
 namespace mojom {
 enum class WindowType;
 }
+class TopLevelProxyWindow;
 }  // namespace ws
 
 namespace ash {
@@ -49,6 +50,7 @@ class ASH_EXPORT NonClientFrameController : public views::WidgetDelegate,
   // null for now. |bounds| is screen coordinates when |parent| is null,
   // otherwise local coordinates, see views::Widget::InitParams::bounds.
   NonClientFrameController(
+      ws::TopLevelProxyWindow* top_level_proxy_window,
       aura::Window* parent,
       aura::Window* context,
       const gfx::Rect& bounds,
@@ -86,6 +88,8 @@ class ASH_EXPORT NonClientFrameController : public views::WidgetDelegate,
   const views::Widget* GetWidget() const override;
   views::View* GetContentsView() override;
   views::ClientView* CreateClientView(views::Widget* widget) override;
+  void OnWindowBeginUserBoundsChange() override;
+  void OnWindowEndUserBoundsChange() override;
 
   // aura::WindowObserver:
   void OnWindowPropertyChanged(aura::Window* window,
@@ -98,10 +102,12 @@ class ASH_EXPORT NonClientFrameController : public views::WidgetDelegate,
 
   views::Widget* widget_;
   views::View* contents_view_ = nullptr;
+  // Owned by the window-service.
+  ws::TopLevelProxyWindow* top_level_proxy_window_;
 
   // WARNING: as widget delays destruction there is a portion of time when this
   // is null.
-  aura::Window* window_;
+  aura::Window* window_ = nullptr;
 
   bool did_init_native_widget_ = false;
 

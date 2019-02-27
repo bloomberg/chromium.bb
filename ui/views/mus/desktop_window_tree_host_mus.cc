@@ -188,6 +188,12 @@ class DesktopWindowTreeHostMus::WindowTreeHostWindowObserver
     if (key == aura::client::kShowStateKey)
       is_waiting_for_restore_ = false;
   }
+  void OnResizeLoopStarted(aura::Window* window) override {
+    host_->native_widget_delegate_->OnNativeWidgetBeginUserBoundsChange();
+  }
+  void OnResizeLoopEnded(aura::Window* window) override {
+    host_->native_widget_delegate_->OnNativeWidgetEndUserBoundsChange();
+  }
 
  private:
   DesktopWindowTreeHostMus* host_;

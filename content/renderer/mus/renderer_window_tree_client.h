@@ -206,6 +206,8 @@ class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
       const base::flat_map<ws::Id, ws::mojom::OcclusionState>&
           occlusion_changes) override;
   void CleanupGestureState(ws::Id window_id) override;
+  void OnWindowResizeLoopStarted(ws::Id window_id) override;
+  void OnWindowResizeLoopEnded(ws::Id window_id) override;
 
   const int routing_id_;
   ws::Id root_window_id_ = 0u;

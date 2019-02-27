@@ -11,6 +11,7 @@
 #include "services/ws/client_root.h"
 #include "services/ws/drag_drop_delegate.h"
 #include "services/ws/embedding.h"
+#include "services/ws/top_level_proxy_window_impl.h"
 #include "services/ws/window_tree.h"
 #include "services/ws/window_utils.h"
 #include "ui/aura/client/capture_client_observer.h"
@@ -524,6 +525,11 @@ void ProxyWindow::AttachCompositorFrameSink(
 void ProxyWindow::SetDragDropDelegate(
     std::unique_ptr<DragDropDelegate> drag_drop_delegate) {
   drag_drop_delegate_ = std::move(drag_drop_delegate);
+}
+
+void ProxyWindow::SetTopLevelProxyWindow(
+    std::unique_ptr<TopLevelProxyWindowImpl> window) {
+  top_level_proxy_window_ = std::move(window);
 }
 
 std::string ProxyWindow::GetIdForDebugging() {

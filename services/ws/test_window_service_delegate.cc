@@ -27,6 +27,7 @@ TestWindowServiceDelegate::TakeDragLoopCallback() {
 }
 
 std::unique_ptr<aura::Window> TestWindowServiceDelegate::NewTopLevel(
+    TopLevelProxyWindow* top_level_proxy_window,
     aura::PropertyConverter* property_converter,
     const base::flat_map<std::string, std::vector<uint8_t>>& properties) {
   std::unique_ptr<aura::Window> window =

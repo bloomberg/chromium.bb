@@ -454,6 +454,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   Env* env() { return env_; }
   const Env* env() const { return env_; }
 
+  // Notifies observers of the state of a resize loop.
+  void NotifyResizeLoopStarted();
+  void NotifyResizeLoopEnded();
+
 #if DCHECK_IS_ON()
   // If passed a non-null value then a non-null aura::Env must be supplied to
   // the constructor. |error_string| is the string supplied to the DCHECK
