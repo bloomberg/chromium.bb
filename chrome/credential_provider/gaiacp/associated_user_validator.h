@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_CREDENTIAL_PROVIDER_GAIACP_TOKEN_HANDLE_VALIDATOR_H_
-#define CHROME_CREDENTIAL_PROVIDER_GAIACP_TOKEN_HANDLE_VALIDATOR_H_
+#ifndef CHROME_CREDENTIAL_PROVIDER_GAIACP_ASSOCIATED_USER_VALIDATOR_H_
+#define CHROME_CREDENTIAL_PROVIDER_GAIACP_ASSOCIATED_USER_VALIDATOR_H_
 
 #include <credentialprovider.h>
 
@@ -20,7 +20,7 @@ namespace credential_provider {
 
 // Caches the current validity of token handles and updates the validity if
 // it is older than a specified validity lifetime.
-class TokenHandleValidator {
+class AssociatedUserValidator {
  public:
   // Default timeout when querying token info for token handles. If a timeout
   // occurs the token handle is assumed to be valid.
@@ -34,7 +34,7 @@ class TokenHandleValidator {
   // Default URL used to fetch token info for token handles.
   static const char kTokenInfoUrl[];
 
-  static TokenHandleValidator* Get();
+  static AssociatedUserValidator* Get();
 
   // Get all the token handles for all associated users and start queries
   // for their validity. The queries are fired in separate threads but
@@ -71,8 +71,8 @@ class TokenHandleValidator {
   void GetAssociatedSids(std::set<base::string16>* associated_sids);
 
  protected:
-  explicit TokenHandleValidator(base::TimeDelta validation_timeout);
-  virtual ~TokenHandleValidator();
+  explicit AssociatedUserValidator(base::TimeDelta validation_timeout);
+  virtual ~AssociatedUserValidator();
 
   bool HasInternetConnection();
   void CheckTokenHandleValidity(
@@ -82,7 +82,7 @@ class TokenHandleValidator {
                                base::TimeDelta timeout);
 
   // Returns the storage used for the instance pointer.
-  static TokenHandleValidator** GetInstanceStorage();
+  static AssociatedUserValidator** GetInstanceStorage();
 
   // Stores information about the current state of a user's token handle.
   // This information includes:
@@ -122,4 +122,4 @@ class TokenHandleValidator {
 
 }  // namespace credential_provider
 
-#endif  // CHROME_CREDENTIAL_PROVIDER_GAIACP_TOKEN_HANDLE_VALIDATOR_H_
+#endif  // CHROME_CREDENTIAL_PROVIDER_GAIACP_ASSOCIATED_USER_VALIDATOR_H_

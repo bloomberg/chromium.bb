@@ -60,6 +60,8 @@ config("common_config") {
 
 source_set("gaiacp_lib") {
   sources = [
+    "associated_user_validator.cc",
+    "associated_user_validator.h",
     "auth_utils.cc",
     "auth_utils.h",
     "gaia_credential.cc",
@@ -95,8 +97,6 @@ source_set("gaiacp_lib") {
     "scoped_user_profile.cc",
     "scoped_user_profile.h",
     "stdafx.h",
-    "token_handle_validator.cc",
-    "token_handle_validator.h",
     "win_http_url_fetcher.cc",
     "win_http_url_fetcher.h",
   ]

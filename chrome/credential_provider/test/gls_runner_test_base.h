@@ -38,7 +38,7 @@ class GlsRunnerTestBase : public ::testing::Test {
   registry_util::RegistryOverrideManager registry_override_;
   FakeGlsRunHelper run_helper_;
   FakeInternetAvailabilityChecker fake_internet_checker_;
-  FakeTokenHandleValidator fake_token_handle_validator_;
+  FakeAssociatedUserValidator fake_associated_user_validator_;
   FakeWinHttpUrlFetcherFactory fake_http_url_fetcher_factory_;
 };
 

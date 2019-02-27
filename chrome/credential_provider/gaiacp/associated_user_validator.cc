@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/credential_provider/gaiacp/token_handle_validator.h"
+#include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 
 #include <ntstatus.h>
 #include <process.h>
@@ -25,13 +25,13 @@
 namespace credential_provider {
 
 const base::TimeDelta
-    TokenHandleValidator::kDefaultTokenHandleValidationTimeout =
+    AssociatedUserValidator::kDefaultTokenHandleValidationTimeout =
         base::TimeDelta::FromMilliseconds(3000);
 
-const base::TimeDelta TokenHandleValidator::kTokenHandleValidityLifetime =
+const base::TimeDelta AssociatedUserValidator::kTokenHandleValidityLifetime =
     base::TimeDelta::FromSeconds(30);
 
-const char TokenHandleValidator::kTokenInfoUrl[] =
+const char AssociatedUserValidator::kTokenInfoUrl[] =
     "https://www.googleapis.com/oauth2/v2/tokeninfo";
 
 namespace {
@@ -49,7 +49,7 @@ unsigned __stdcall CheckReauthStatus(void* param) {
       reinterpret_cast<CheckReauthParams*>(param));
 
   auto fetcher =
-      WinHttpUrlFetcher::Create(GURL(TokenHandleValidator::kTokenInfoUrl));
+      WinHttpUrlFetcher::Create(GURL(AssociatedUserValidator::kTokenInfoUrl));
 
   if (fetcher) {
     fetcher->SetRequestHeader("Content-Type",
@@ -94,7 +94,7 @@ unsigned __stdcall CheckReauthStatus(void* param) {
 
 bool TokenHandleNeedsUpdate(const base::Time& last_refresh) {
   return (base::Time::Now() - last_refresh) >
-         TokenHandleValidator::kTokenHandleValidityLifetime;
+         AssociatedUserValidator::kTokenHandleValidityLifetime;
 }
 
 bool WaitForQueryResult(const base::win::ScopedHandle& thread_handle,
@@ -204,14 +204,14 @@ HRESULT ModifyUserAccess(const std::unique_ptr<ScopedLsaPolicy>& policy,
 
 }  // namespace
 
-TokenHandleValidator::TokenHandleInfo::TokenHandleInfo() = default;
-TokenHandleValidator::TokenHandleInfo::~TokenHandleInfo() = default;
+AssociatedUserValidator::TokenHandleInfo::TokenHandleInfo() = default;
+AssociatedUserValidator::TokenHandleInfo::~TokenHandleInfo() = default;
 
-TokenHandleValidator::TokenHandleInfo::TokenHandleInfo(
+AssociatedUserValidator::TokenHandleInfo::TokenHandleInfo(
     const base::string16& token_handle)
     : queried_token_handle(token_handle), last_update(base::Time::Now()) {}
 
-TokenHandleValidator::TokenHandleInfo::TokenHandleInfo(
+AssociatedUserValidator::TokenHandleInfo::TokenHandleInfo(
     const base::string16& token_handle,
     base::Time update_time,
     base::win::ScopedHandle::Handle thread_handle)
@@ -220,28 +220,29 @@ TokenHandleValidator::TokenHandleInfo::TokenHandleInfo(
       pending_query_thread(thread_handle) {}
 
 // static
-TokenHandleValidator* TokenHandleValidator::Get() {
+AssociatedUserValidator* AssociatedUserValidator::Get() {
   return *GetInstanceStorage();
 }
 
 // static
-TokenHandleValidator** TokenHandleValidator::GetInstanceStorage() {
-  static TokenHandleValidator instance(kDefaultTokenHandleValidationTimeout);
-  static TokenHandleValidator* instance_storage = &instance;
+AssociatedUserValidator** AssociatedUserValidator::GetInstanceStorage() {
+  static AssociatedUserValidator instance(kDefaultTokenHandleValidationTimeout);
+  static AssociatedUserValidator* instance_storage = &instance;
 
   return &instance_storage;
 }
 
-TokenHandleValidator::TokenHandleValidator(base::TimeDelta validation_timeout)
+AssociatedUserValidator::AssociatedUserValidator(
+    base::TimeDelta validation_timeout)
     : validation_timeout_(validation_timeout) {}
 
-TokenHandleValidator::~TokenHandleValidator() = default;
+AssociatedUserValidator::~AssociatedUserValidator() = default;
 
-bool TokenHandleValidator::HasInternetConnection() {
+bool AssociatedUserValidator::HasInternetConnection() {
   return InternetAvailabilityChecker::Get()->HasInternetConnection();
 }
 
-void TokenHandleValidator::GetAssociatedSids(
+void AssociatedUserValidator::GetAssociatedSids(
     std::set<base::string16>* associated_sids) {
   DCHECK(associated_sids);
 
@@ -250,7 +251,7 @@ void TokenHandleValidator::GetAssociatedSids(
     associated_sids->insert(it.first);
 }
 
-bool TokenHandleValidator::IsUserAccessBlockingEnforced(
+bool AssociatedUserValidator::IsUserAccessBlockingEnforced(
     CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus) const {
   if (!MdmEnrollmentEnabled())
     return false;
@@ -261,7 +262,7 @@ bool TokenHandleValidator::IsUserAccessBlockingEnforced(
   return true;
 }
 
-void TokenHandleValidator::DenySigninForUsersWithInvalidTokenHandles(
+void AssociatedUserValidator::DenySigninForUsersWithInvalidTokenHandles(
     CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus) {
   if (!IsUserAccessBlockingEnforced(cpus))
     return;
@@ -293,7 +294,7 @@ void TokenHandleValidator::DenySigninForUsersWithInvalidTokenHandles(
   }
 }
 
-HRESULT TokenHandleValidator::RestoreUserAccess(const base::string16& sid) {
+HRESULT AssociatedUserValidator::RestoreUserAccess(const base::string16& sid) {
   if (locked_user_sids_.erase(sid)) {
     auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
     return ModifyUserAccess(policy, sid, true);
@@ -302,7 +303,7 @@ HRESULT TokenHandleValidator::RestoreUserAccess(const base::string16& sid) {
   return S_OK;
 }
 
-void TokenHandleValidator::AllowSigninForUsersWithInvalidTokenHandles() {
+void AssociatedUserValidator::AllowSigninForUsersWithInvalidTokenHandles() {
   LOGFN(INFO);
   auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
   for (auto& sid : locked_user_sids_) {
@@ -313,7 +314,7 @@ void TokenHandleValidator::AllowSigninForUsersWithInvalidTokenHandles() {
   locked_user_sids_.clear();
 }
 
-void TokenHandleValidator::StartRefreshingTokenHandleValidity() {
+void AssociatedUserValidator::StartRefreshingTokenHandleValidity() {
   std::map<base::string16, base::string16> sid_to_handle;
   HRESULT hr = CleanupStaleUsersAndGetTokenHandles(&sid_to_handle);
 
@@ -327,7 +328,7 @@ void TokenHandleValidator::StartRefreshingTokenHandleValidity() {
   CheckTokenHandleValidity(sid_to_handle);
 }
 
-void TokenHandleValidator::CheckTokenHandleValidity(
+void AssociatedUserValidator::CheckTokenHandleValidity(
     const std::map<base::string16, base::string16>& handles_to_verify) {
   for (auto it = handles_to_verify.cbegin(); it != handles_to_verify.cend();
        ++it) {
@@ -375,7 +376,7 @@ void TokenHandleValidator::CheckTokenHandleValidity(
   }
 }
 
-void TokenHandleValidator::StartTokenValidityQuery(
+void AssociatedUserValidator::StartTokenValidityQuery(
     const base::string16& sid,
     const base::string16& token_handle,
     base::TimeDelta timeout) {
@@ -404,7 +405,7 @@ void TokenHandleValidator::StartTokenValidityQuery(
       token_handle, max_end_time, reinterpret_cast<HANDLE>(wait_thread));
 }
 
-bool TokenHandleValidator::IsTokenHandleValidForUser(
+bool AssociatedUserValidator::IsTokenHandleValidForUser(
     const base::string16& sid) {
   // All token handles are valid when no internet connection is available.
   if (!HasInternetConnection())

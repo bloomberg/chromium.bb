@@ -552,25 +552,26 @@ HRESULT FakeWinHttpUrlFetcher::Close() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-FakeTokenHandleValidator::FakeTokenHandleValidator()
-    : TokenHandleValidator(
-          TokenHandleValidator::kDefaultTokenHandleValidationTimeout),
+FakeAssociatedUserValidator::FakeAssociatedUserValidator()
+    : AssociatedUserValidator(
+          AssociatedUserValidator::kDefaultTokenHandleValidationTimeout),
       original_validator_(*GetInstanceStorage()) {
   *GetInstanceStorage() = this;
 }
 
-FakeTokenHandleValidator::FakeTokenHandleValidator(
+FakeAssociatedUserValidator::FakeAssociatedUserValidator(
     base::TimeDelta validation_timeout)
-    : TokenHandleValidator(validation_timeout),
+    : AssociatedUserValidator(validation_timeout),
       original_validator_(*GetInstanceStorage()) {
   *GetInstanceStorage() = this;
 }
 
-FakeTokenHandleValidator::~FakeTokenHandleValidator() {
+FakeAssociatedUserValidator::~FakeAssociatedUserValidator() {
   *GetInstanceStorage() = original_validator_;
 }
 
-bool FakeTokenHandleValidator::IsUserLocked(const base::string16& sid) const {
+bool FakeAssociatedUserValidator::IsUserAccessBlocked(
+    const base::string16& sid) const {
   return locked_user_sids_.find(sid) != locked_user_sids_.end();
 }
 

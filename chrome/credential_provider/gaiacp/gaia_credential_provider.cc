@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
+#include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_other_user.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
@@ -25,7 +26,6 @@
 #include "chrome/credential_provider/gaiacp/reauth_credential.h"
 #include "chrome/credential_provider/gaiacp/reauth_credential_anonymous.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
-#include "chrome/credential_provider/gaiacp/token_handle_validator.h"
 
 namespace credential_provider {
 
@@ -109,7 +109,7 @@ void CGaiaCredentialProvider::FinalRelease() {
   ClearTransient();
   // Unlock all the users that had their access locked due to invalid token
   // handles.
-  TokenHandleValidator::Get()->AllowSigninForUsersWithInvalidTokenHandles();
+  AssociatedUserValidator::Get()->AllowSigninForUsersWithInvalidTokenHandles();
 }
 
 bool CGaiaCredentialProvider::ShouldCreateAnonymousCredential() {
@@ -139,7 +139,7 @@ bool CGaiaCredentialProvider::ShouldCreateAnonymousReauthCredential(
     bool other_user_credential_exists) {
   // If user lockout is not enforced, no need to create anonymous reauth
   // credential.
-  if (!TokenHandleValidator::Get()->IsUserAccessBlockingEnforced(cpus_))
+  if (!AssociatedUserValidator::Get()->IsUserAccessBlockingEnforced(cpus_))
     return false;
 
   // TODO(crbug.com/935695): On domain joined machines, the "Other User" tile
@@ -278,7 +278,7 @@ HRESULT CGaiaCredentialProvider::CreateReauthCredentials(
 
     // If the token handle is valid, no need to create a reauth credential.
     // The user can just sign in using their password.
-    if (TokenHandleValidator::Get()->IsTokenHandleValidForUser(sid))
+    if (AssociatedUserValidator::Get()->IsTokenHandleValidForUser(sid))
       continue;
 
     CComPtr<IGaiaCredential> cred;
@@ -309,7 +309,7 @@ HRESULT CGaiaCredentialProvider::CreateAnonymousReauthCredentialsIfNeeded(
     return S_OK;
 
   std::set<base::string16> associated_sids;
-  TokenHandleValidator::Get()->GetAssociatedSids(&associated_sids);
+  AssociatedUserValidator::Get()->GetAssociatedSids(&associated_sids);
 
   OSUserManager* manager = OSUserManager::Get();
 
@@ -326,7 +326,8 @@ HRESULT CGaiaCredentialProvider::CreateAnonymousReauthCredentialsIfNeeded(
     // TODO(crbug.com/935697).
     if (reauth_sids.find(associated_sid) != reauth_sids.end())
       continue;
-    if (TokenHandleValidator::Get()->IsTokenHandleValidForUser(associated_sid))
+    if (AssociatedUserValidator::Get()->IsTokenHandleValidForUser(
+            associated_sid))
       continue;
 
     wchar_t username[kWindowsUsernameBufferLength];

@@ -10,13 +10,13 @@
 #include "base/macros.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/credential_provider/eventlog/gcp_eventlog_messages.h"
+#include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_base.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_filter.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/gcp_crash_reporting.h"
 #include "chrome/credential_provider/gaiacp/grit/gaia_static_resources.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
-#include "chrome/credential_provider/gaiacp/token_handle_validator.h"
 #include "components/crash/content/app/crash_switches.h"
 #include "content/public/common/content_switches.h"
 
@@ -76,7 +76,7 @@ CGaiaCredentialProviderModule::UpdateRegistryAppId(BOOL do_register) throw() {
 
 void CGaiaCredentialProviderModule::RefreshTokenHandleValidity() {
   if (!token_handle_validity_refreshed_) {
-    credential_provider::TokenHandleValidator::Get()
+    credential_provider::AssociatedUserValidator::Get()
         ->StartRefreshingTokenHandleValidity();
     token_handle_validity_refreshed_ = true;
   }
