@@ -58,6 +58,7 @@ class GLOutputSurfaceBufferQueue : public GLOutputSurface {
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
+  void SetDrawRectangle(const gfx::Rect& damage) override;
 
   // GLOutputSurface:
   void DidReceiveSwapBuffersAck(gfx::SwapResult result) override;

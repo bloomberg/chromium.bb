@@ -110,9 +110,7 @@ void OffscreenBrowserCompositorOutputSurface::DiscardBackbuffer() {
 }
 
 void OffscreenBrowserCompositorOutputSurface::SetDrawRectangle(
-    const gfx::Rect& draw_rectangle) {
-  NOTREACHED();
-}
+    const gfx::Rect& draw_rectangle) {}
 
 void OffscreenBrowserCompositorOutputSurface::Reshape(
     const gfx::Size& size,

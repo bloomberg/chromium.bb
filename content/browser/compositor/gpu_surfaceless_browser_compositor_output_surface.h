@@ -49,6 +49,7 @@ class GpuSurfacelessBrowserCompositorOutputSurface
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
   unsigned UpdateGpuFence() override;
+  void SetDrawRectangle(const gfx::Rect& damage) override;
 
   // BrowserCompositorOutputSurface implementation.
   void OnGpuSwapBuffersCompleted(

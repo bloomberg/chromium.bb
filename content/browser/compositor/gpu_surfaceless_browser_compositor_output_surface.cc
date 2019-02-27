@@ -147,4 +147,10 @@ unsigned GpuSurfacelessBrowserCompositorOutputSurface::UpdateGpuFence() {
   return gpu_fence_id_;
 }
 
+void GpuSurfacelessBrowserCompositorOutputSurface::SetDrawRectangle(
+    const gfx::Rect& damage) {
+  GpuBrowserCompositorOutputSurface::SetDrawRectangle(damage);
+  buffer_queue_->CopyDamageForCurrentSurface(damage);
+}
+
 }  // namespace content

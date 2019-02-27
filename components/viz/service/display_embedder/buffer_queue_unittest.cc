@@ -187,15 +187,18 @@ class BufferQueueTest : public ::testing::Test {
     }
   }
 
-  void SwapBuffers() {
-    output_surface_->SwapBuffers(gfx::Rect(output_surface_->size_));
+  void SwapBuffers(const gfx::Rect& damage) {
+    output_surface_->CopyDamageForCurrentSurface(damage);
+    output_surface_->SwapBuffers(damage);
   }
+
+  void SwapBuffers() { SwapBuffers(gfx::Rect(output_surface_->size_)); }
 
   void SendDamagedFrame(const gfx::Rect& damage) {
     // We don't care about the GL-level implementation here, just how it uses
     // damage rects.
     output_surface_->BindFramebuffer();
-    output_surface_->SwapBuffers(damage);
+    SwapBuffers(damage);
     if (doublebuffering_ || !first_frame_)
       output_surface_->PageFlipComplete();
     first_frame_ = false;
@@ -348,9 +351,11 @@ TEST(BufferQueueStandaloneTest, CheckBoundFramebuffer) {
   output_surface->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false);
   // Trigger a sub-buffer copy to exercise all paths.
   output_surface->BindFramebuffer();
+  output_surface->CopyDamageForCurrentSurface(screen_rect);
   output_surface->SwapBuffers(screen_rect);
   output_surface->PageFlipComplete();
   output_surface->BindFramebuffer();
+  output_surface->CopyDamageForCurrentSurface(small_damage);
   output_surface->SwapBuffers(small_damage);
 
   int current_fbo = 0;
@@ -682,13 +687,13 @@ TEST_F(BufferQueueTest, AllocateFails) {
   // Succeed in the two swaps.
   output_surface_->BindFramebuffer();
   EXPECT_TRUE(current_frame());
-  output_surface_->SwapBuffers(screen_rect);
+  SwapBuffers(screen_rect);
 
   // Fail the next surface allocation.
   gpu_memory_buffer_manager_->set_allocate_succeeds(false);
   output_surface_->BindFramebuffer();
   EXPECT_FALSE(current_frame());
-  output_surface_->SwapBuffers(screen_rect);
+  SwapBuffers(screen_rect);
   EXPECT_FALSE(current_frame());
 
   // Try another swap. It should copy the buffer damage from the back
@@ -701,7 +706,7 @@ TEST_F(BufferQueueTest, AllocateFails) {
   EXPECT_CALL(*mock_output_surface_,
               CopyBufferDamage(target_texture, source_texture, small_damage, _))
       .Times(1);
-  output_surface_->SwapBuffers(small_damage);
+  SwapBuffers(small_damage);
   testing::Mock::VerifyAndClearExpectations(mock_output_surface_);
 
   // Destroy the just-created buffer, and try another swap. The copy should
@@ -721,7 +726,7 @@ TEST_F(BufferQueueTest, AllocateFails) {
   EXPECT_CALL(*mock_output_surface_,
               CopyBufferDamage(target_texture, source_texture, small_damage, _))
       .Times(1);
-  output_surface_->SwapBuffers(small_damage);
+  SwapBuffers(small_damage);
   testing::Mock::VerifyAndClearExpectations(mock_output_surface_);
 }
 
