@@ -910,6 +910,10 @@ void WebMediaPlayerMS::OnPause() {
   // TODO(perkj, magjed): See TODO in OnPlay().
 }
 
+void WebMediaPlayerMS::OnMuted(bool muted) {
+  client_->RequestMuted(muted);
+}
+
 void WebMediaPlayerMS::OnSeekForward(double seconds) {
   // TODO(perkj, magjed): See TODO in OnPlay().
 }

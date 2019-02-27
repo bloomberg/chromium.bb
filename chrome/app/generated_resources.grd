@@ -5676,6 +5676,12 @@ the Bookmarks menu.">
       <message name="IDS_PICTURE_IN_PICTURE_BACK_TO_TAB_CONTROL_TEXT" desc="Text label of the back to tab control button. The button appears when the user hovers over the Picture-in-Picture window.">
         Back to tab
       </message>
+      <message name="IDS_PICTURE_IN_PICTURE_MUTE_CONTROL_TEXT" desc="Text label of the mute control button. The button appears when the user hovers over the Picture-in-Picture window and the video is currently unmuted.">
+        Mute
+      </message>
+      <message name="IDS_PICTURE_IN_PICTURE_UNMUTE_CONTROL_TEXT" desc="Text label of the mute control button. The button appears when the user hovers over the Picture-in-Picture window and the video is currently muted.">
+        Unmute
+      </message>
       <message name="IDS_PICTURE_IN_PICTURE_SKIP_AD_CONTROL_TEXT" desc="Text label of the skip ad control button. The button appears when the user hovers over the Picture-in-Picture window.">
         Skip Ad
       </message>
@@ -5687,6 +5693,9 @@ the Bookmarks menu.">
       </message>
       <message name="IDS_PICTURE_IN_PICTURE_PLAY_PAUSE_CONTROL_ACCESSIBLE_TEXT" desc="Accessible text label used for the controls button in the Picture-in-Picture window. The button toggles between play and pause controls.">
         Toggle video to play or pause
+      </message>
+      <message name="IDS_PICTURE_IN_PICTURE_MUTE_CONTROL_ACCESSIBLE_TEXT" desc="Accessible text label used for the controls button in the Picture-in-Picture window. The button toggles mute state.">
+        Toggle mute
       </message>
       <message name="IDS_PICTURE_IN_PICTURE_NEXT_TRACK_CONTROL_ACCESSIBLE_TEXT" desc="Accessible text label used for the controls button in the Picture-in-Picture window. The button invokes next track action.">
         Next track

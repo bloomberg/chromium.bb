@@ -869,6 +869,12 @@
       name: "MovementXYInBlink",
     },
     {
+      name: "MuteButton",
+      depends_on: ["PictureInPictureAPI"],
+      origin_trial_feature_name: "MuteButton",
+      status: "experimental",
+    },
+    {
       name: "NativeStreams",
     },
     {

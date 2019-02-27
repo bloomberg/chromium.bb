@@ -122,5 +122,12 @@
   function unsetMediaSessionActionHandler(name) {
     navigator.mediaSession.setActionHandler(name, null);
   }
+
+  function addVolumeChangeEventListener() {
+    video.addEventListener('volumechange', () => {
+      document.title = 'muted: ' + video.muted;
+    });
+  }
+
 </script>
 </html>

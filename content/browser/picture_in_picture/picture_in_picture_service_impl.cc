@@ -31,6 +31,7 @@ void PictureInPictureServiceImpl::StartSession(
     const base::Optional<viz::SurfaceId>& surface_id,
     const gfx::Size& natural_size,
     bool show_play_pause_button,
+    bool show_mute_button,
     StartSessionCallback callback) {
   player_id_ = MediaPlayerId(render_frame_host_, player_id);
 
@@ -41,8 +42,10 @@ void PictureInPictureServiceImpl::StartSession(
   gfx::Size window_size = web_contents_impl()->EnterPictureInPicture(
       surface_id.value(), natural_size);
 
-  if (pip_controller)
+  if (pip_controller) {
     pip_controller->SetAlwaysHidePlayPauseButton(show_play_pause_button);
+    pip_controller->SetAlwaysHideMuteButton(show_mute_button);
+  }
 
   std::move(callback).Run(window_size);
 }
@@ -59,7 +62,8 @@ void PictureInPictureServiceImpl::UpdateSession(
     uint32_t player_id,
     const base::Optional<viz::SurfaceId>& surface_id,
     const gfx::Size& natural_size,
-    bool show_play_pause_button) {
+    bool show_play_pause_button,
+    bool show_mute_button) {
   player_id_ = MediaPlayerId(render_frame_host_, player_id);
 
   // The PictureInPictureWindowController instance may not have been created by
@@ -67,6 +71,7 @@ void PictureInPictureServiceImpl::UpdateSession(
   if (auto* pip_controller = GetController()) {
     pip_controller->EmbedSurface(surface_id.value(), natural_size);
     pip_controller->SetAlwaysHidePlayPauseButton(show_play_pause_button);
+    pip_controller->SetAlwaysHideMuteButton(show_mute_button);
     pip_controller->set_service(this);
   }
 }

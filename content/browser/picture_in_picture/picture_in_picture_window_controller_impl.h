@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_WINDOW_CONTROLLER_IMPL_H_
 #define CONTENT_BROWSER_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_WINDOW_CONTROLLER_IMPL_H_
 
+#include <map>
+#include <set>
+
 #include "base/memory/weak_ptr.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
@@ -39,6 +42,9 @@ class PictureInPictureWindowControllerImpl
 
   ~PictureInPictureWindowControllerImpl() override;
 
+  using PlayerSet = std::set<int>;
+  using MutedMediaPlayerMap = std::map<RenderFrameHost*, PlayerSet>;
+
   // PictureInPictureWindowController:
   CONTENT_EXPORT gfx::Size Show() override;
   CONTENT_EXPORT void Close(bool should_pause_video,
@@ -50,11 +56,15 @@ class PictureInPictureWindowControllerImpl
   CONTENT_EXPORT OverlayWindow* GetWindowForTesting() override;
   CONTENT_EXPORT void UpdateLayerBounds() override;
   CONTENT_EXPORT bool IsPlayerActive() override;
+  CONTENT_EXPORT bool IsPlayerMuted() override;
   CONTENT_EXPORT WebContents* GetInitiatorWebContents() override;
   CONTENT_EXPORT bool TogglePlayPause() override;
+  CONTENT_EXPORT bool ToggleMute() override;
   CONTENT_EXPORT void UpdatePlaybackState(bool is_playing,
                                           bool reached_end_of_stream) override;
+  CONTENT_EXPORT void UpdateMutedState() override;
   CONTENT_EXPORT void SetAlwaysHidePlayPauseButton(bool is_visible) override;
+  CONTENT_EXPORT void SetAlwaysHideMuteButton(bool is_visible) override;
   CONTENT_EXPORT void SkipAd() override;
   CONTENT_EXPORT void NextTrack() override;
   CONTENT_EXPORT void PreviousTrack() override;
@@ -68,6 +78,7 @@ class PictureInPictureWindowControllerImpl
   void MediaStoppedPlaying(const MediaPlayerInfo&,
                            const MediaPlayerId&,
                            WebContentsObserver::MediaStoppedReason) override;
+  void MediaMutedStatusChanged(const MediaPlayerId&, bool muted) override;
 
   // TODO(mlamouri): temporary method used because of the media player id is
   // stored in a different location from the one that is used to update the
@@ -101,6 +112,10 @@ class PictureInPictureWindowControllerImpl
   // always_hide_play_pause_button_ is false.
   void UpdatePlayPauseButtonVisibility();
 
+  // Used to add/remove a muted player entry to |muted_players_|.
+  void AddMutedPlayerEntry(const MediaPlayerId& id);
+  bool RemoveMutedPlayerEntry(const MediaPlayerId& id);
+
   std::unique_ptr<OverlayWindow> window_;
   std::unique_ptr<OverlaySurfaceEmbedder> embedder_;
   // TODO(929156): remove this as it should be accessible via `web_contents()`.
@@ -112,6 +127,9 @@ class PictureInPictureWindowControllerImpl
   base::Optional<WebContentsObserver::MediaPlayerId> media_player_id_;
 
   viz::SurfaceId surface_id_;
+
+  // Used to track the muted state of all players.
+  MutedMediaPlayerMap muted_players_;
 
   // Used to show/hide some actions in Picture-in-Picture window. These are set
   // to true when website handles some Media Session actions.
@@ -125,6 +143,10 @@ class PictureInPictureWindowControllerImpl
   // duration. Play/pause button visibility can be overridden by the Media
   // Session API in UpdatePlayPauseButtonVisibility().
   bool always_hide_play_pause_button_ = false;
+
+  // Used to hide mute button if video has no audio track or if MuteButton
+  // origin trial is disabled.
+  bool always_hide_mute_button_ = false;
 
   // Service currently associated with the Picture-in-Picture window. The
   // service makes the bridge with the renderer process by sending enter/exit
