@@ -396,7 +396,7 @@ void ComputedStyle::InheritFrom(const ComputedStyle& inherit_parent,
 
   ComputedStyleBase::InheritFrom(inherit_parent, is_at_shadow_boundary);
   if (svg_style_ != inherit_parent.svg_style_)
-    svg_style_.Access()->InheritFrom(inherit_parent.svg_style_.Get());
+    svg_style_.Access()->InheritFrom(*inherit_parent.svg_style_);
 
   if (is_at_shadow_boundary == kAtShadowBoundary) {
     // Even if surrounding content is user-editable, shadow DOM should act as a
@@ -441,7 +441,7 @@ void ComputedStyle::CopyNonInheritedFromCached(const ComputedStyle& other) {
   // m_isLink
 
   if (svg_style_ != other.svg_style_)
-    svg_style_.Access()->CopyNonInheritedFromCached(other.svg_style_.Get());
+    svg_style_.Access()->CopyNonInheritedFromCached(*other.svg_style_);
 }
 
 bool ComputedStyle::operator==(const ComputedStyle& o) const {
@@ -529,7 +529,7 @@ StyleDifference ComputedStyle::VisualInvalidationDiff(
 
   StyleDifference diff;
   if (svg_style_.Get() != other.svg_style_.Get())
-    diff = svg_style_->Diff(other.svg_style_.Get());
+    diff = svg_style_->Diff(*other.svg_style_);
 
   if ((!diff.NeedsFullLayout() || !diff.NeedsFullPaintInvalidation()) &&
       DiffNeedsFullLayoutAndPaintInvalidation(other)) {
