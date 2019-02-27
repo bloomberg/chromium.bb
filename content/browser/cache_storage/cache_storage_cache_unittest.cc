@@ -24,6 +24,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage_cache.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
@@ -2289,7 +2290,13 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
   EXPECT_EQ(2, sequence_out);
 }
 
-TEST_P(CacheStorageCacheTestP, KeysWithManyCacheEntries) {
+#if defined(OS_WIN)
+// TODO(crbug.com/936129): Flaky on Windows.
+#define MAYBE_KeysWithManyCacheEntries DISABLED_KeysWithManyCacheEntries
+#else
+#define MAYBE_KeysWithManyCacheEntries KeysWithManyCacheEntries
+#endif
+TEST_P(CacheStorageCacheTestP, MAYBE_KeysWithManyCacheEntries) {
   constexpr int kNumEntries = 1000;
 
   std::vector<std::string> expected_keys;
