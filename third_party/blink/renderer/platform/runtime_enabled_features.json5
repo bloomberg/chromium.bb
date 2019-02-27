@@ -1035,6 +1035,10 @@
       name: "PaymentRequestHasEnrolledInstrument",
     },
     {
+      name: "PaymentRequestMerchantValidationEvent",
+      status: "experimental",
+    },
+    {
       name: "PaymentRetry",
       status: "experimental",
     },

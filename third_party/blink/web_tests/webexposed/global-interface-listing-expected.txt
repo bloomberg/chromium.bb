@@ -4611,6 +4611,12 @@ interface MediaStreamTrackEvent : Event
     attribute @@toStringTag
     getter track
     method constructor
+interface MerchantValidationEvent : Event
+    attribute @@toStringTag
+    getter methodName
+    getter validationURL
+    method complete
+    method constructor
 interface MessageChannel
     attribute @@toStringTag
     getter port1

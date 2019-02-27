@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/modules/payments/payer_errors.h"
 #include "third_party/blink/renderer/modules/payments/payment_validation_errors.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 
 namespace blink {
@@ -129,6 +130,26 @@ bool PaymentsValidators::IsValidPaymentValidationErrorsFormat(
          (!errors->hasShippingAddress() ||
           IsValidAddressErrorsFormat(errors->shippingAddress(),
                                      optional_error_message));
+}
+
+bool PaymentsValidators::IsValidMethodFormat(const String& identifier) {
+  KURL url(NullURL(), identifier);
+  if (url.IsValid()) {
+    // Allow localhost payment method for test.
+    if (SecurityOrigin::Create(url)->IsLocalhost())
+      return true;
+
+    // URL PMI validation rules:
+    // https://www.w3.org/TR/payment-method-id/#dfn-validate-a-url-based-payment-method-identifier
+    return url.Protocol() == "https" && url.User().IsEmpty() &&
+           url.Pass().IsEmpty();
+  } else {
+    // Syntax for a valid standardized PMI:
+    // https://www.w3.org/TR/payment-method-id/#dfn-syntax-of-a-standardized-payment-method-identifier
+    return ScriptRegexp("^[a-z]+[0-9a-z]*(-[a-z]+[0-9a-z]*)*$",
+                        kTextCaseSensitive)
+               .Match(identifier) == 0;
+  }
 }
 
 }  // namespace blink

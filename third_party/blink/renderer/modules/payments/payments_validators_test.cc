@@ -325,6 +325,28 @@ INSTANTIATE_TEST_SUITE_P(
                                     LongString2049(),
                                     false)));
 
+TEST(PaymentMethodValidatorTest, IsValidPaymentMethod) {
+  const struct {
+    const char* payment_method;
+    bool expected_valid;
+  } kTestCases[] = {{"basic-card", true},
+                    {"https://bobpay.com", true},
+                    {"https://pay.bobpay.com", true},
+                    {"https://pay.bobpay.com/pay", true},
+                    {"https://pay.bobpay.com/pay?version=1", true},
+                    {"https://pay.bobpay.com/pay#", true},
+                    {"http://bobpay.com", false},
+                    {"https://username:password@bobpay.com", false},
+                    {"https://username@bobpay.com", false},
+                    {"unknown://bobpay.com", false},
+                    {"1card", false},
+                    {"Basic-card", false}};
+
+  for (const auto& test_case : kTestCases) {
+    EXPECT_EQ(test_case.expected_valid, PaymentsValidators::IsValidMethodFormat(
+                                            test_case.payment_method));
+  }
+}
 }  // namespace
 
 }  // namespace blink
