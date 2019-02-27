@@ -420,11 +420,11 @@ views::MenuButton* ToolbarView::GetOverflowReferenceView() {
 
 base::Optional<int> ToolbarView::GetMaxBrowserActionsWidth() const {
   // The browser actions container is allowed to grow, but only up until the
-  // omnibox reaches its minimum size. So its maximum allowed width is its
+  // omnibox reaches its preferred size. So its maximum allowed width is its
   // current size, plus any that the omnibox could give up.
-  return std::max(
-      0, browser_actions_->width() + (location_bar_->width() -
-                                      location_bar_->GetMinimumSize().width()));
+  return std::max(0, browser_actions_->width() +
+                         (location_bar_->width() -
+                          location_bar_->GetPreferredSize().width()));
 }
 
 std::unique_ptr<ToolbarActionsBar> ToolbarView::CreateToolbarActionsBar(
