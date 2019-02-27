@@ -66,7 +66,7 @@
 
       .error-item {
         @apply --cr-section;
-        padding-left: 0;
+        padding-inline-start: 0;
       }
 
       .error-item paper-icon-button-light {
@@ -202,12 +202,9 @@
                         </template>
                       </ul>
                     </template>
-                    <template is="dom-if"
-                        if="[[isOpened_(index, selectedEntry_)]]">
-                      <extensions-code-section code="[[code_]]"
-                          could-not-display-code="$i18n{noErrorsToShow}">
-                      </extensions-code-section>
-                    </template>
+                    <extensions-code-section code="[[code_]]"
+                        could-not-display-code="$i18n{noErrorsToShow}">
+                    </extensions-code-section>
                   </div>
                 </iron-collapse>
               </div>
