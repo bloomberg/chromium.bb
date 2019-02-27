@@ -463,7 +463,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
         signing_key.get(), PolicyBuilder::GetTestSigningKeySignature()));
     signing_key.reset();
     test_server_.RegisterClient(PolicyBuilder::kFakeToken,
-                                PolicyBuilder::kFakeDeviceId);
+                                PolicyBuilder::kFakeDeviceId,
+                                {} /* state_keys */);
     ASSERT_TRUE(test_server_.Start());
 
     BrowserList::AddObserver(this);
