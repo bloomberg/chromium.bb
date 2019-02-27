@@ -22,6 +22,15 @@ class FileManagerUITest : public InProcessBrowserTest {
     // --disable-web-security required to load resources from
     // files and from chrome://resources/... urls.
     command_line->AppendSwitch(switches::kDisableWebSecurity);
+
+    // TODO(yoichio): This is temporary switch to support chrome internal
+    // components migration from the old web APIs.
+    // After completion of the migration, we should remove this.
+    // See crbug.com/924873 for detail.
+    command_line->AppendSwitchASCII("disable-blink-features", "ShadowDOMV0");
+    command_line->AppendSwitchASCII("disable-blink-features",
+                                    "CustomElementsV0");
+    command_line->AppendSwitchASCII("disable-blink-features", "HTMLImports");
   }
 
   void RunTest(std::string test_scope) {
