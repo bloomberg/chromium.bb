@@ -5898,6 +5898,9 @@ crbug.com/936165 media/autoplay-muted.html [ Timeout Pass ]
 crbug.com/936165 virtual/video-surface-layer/media/autoplay-muted.html [ Timeout Pass ]
 crbug.com/936108 virtual/streams-native/http/tests/streams/transferable/readable-stream.html [ Failure Pass ]
 
+# Sheriff 2019-02-27
+crbug.com/936279 external/wpt/import-maps/fallback-disallowed.sub.tentative.html [ Failure Pass ]
+
 # Device Sensor Events are being restricted to secure browsing contexts, but the change is still gated on a runtime flag.
 crbug.com/932078 http/tests/security/powerfulFeatureRestrictions/device-orientation-future-behavior-on-insecure-origin.html [ Skip ]
 crbug.com/932078 virtual/secure-device-sensor-events/http/tests/security/powerfulFeatureRestrictions/device-orientation-on-insecure-origin.html [ Skip ]
