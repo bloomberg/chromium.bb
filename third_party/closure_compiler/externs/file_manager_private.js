@@ -425,7 +425,8 @@ chrome.fileManagerPrivate.SearchMetadataParams;
 /**
  * @typedef {{
  *   entry: Entry,
- *   highlightedBaseName: string
+ *   highlightedBaseName: string,
+ *   availableOffline: (boolean|undefined)
  * }}
  */
 chrome.fileManagerPrivate.SearchResult;
