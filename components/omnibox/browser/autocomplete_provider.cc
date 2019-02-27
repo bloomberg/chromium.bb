@@ -53,6 +53,8 @@ const char* AutocompleteProvider::TypeToString(Type type) {
       return "ZeroSuggest";
     case TYPE_CLIPBOARD:
       return "Clipboard";
+    case TYPE_ON_DEVICE_HEAD:
+      return "OnDeviceHead";
     default:
       NOTREACHED() << "Unhandled AutocompleteProvider::Type " << type;
       return "Unknown";

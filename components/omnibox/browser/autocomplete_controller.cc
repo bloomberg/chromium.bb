@@ -64,16 +64,24 @@ void AutocompleteMatchToAssistedQuery(
   // Default value, indicating no subtype.
   *subtype = base::string16::npos;
 
-  // If provider is TYPE_ZERO_SUGGEST, set the subtype accordingly.
-  // Type will be set in the switch statement below where we'll enter one of
-  // SEARCH_SUGGEST or NAVSUGGEST. This subtype indicates context-aware zero
-  // suggest.
-  if (provider &&
-      (provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST) &&
-      (match != AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED)) {
-    DCHECK((match == AutocompleteMatchType::SEARCH_SUGGEST) ||
-           (match == AutocompleteMatchType::NAVSUGGEST));
-    *subtype = 66;
+  // If provider is TYPE_ZERO_SUGGEST or TYPE_ON_DEVICE_HEAD, set the subtype
+  // accordingly. Type will be set in the switch statement below where we'll
+  // enter one of SEARCH_SUGGEST or NAVSUGGEST.
+  if (provider) {
+    if (provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST &&
+        (match != AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED)) {
+      DCHECK((match == AutocompleteMatchType::SEARCH_SUGGEST) ||
+             (match == AutocompleteMatchType::NAVSUGGEST));
+      // We abuse this subtype and use it to for zero-suggest suggestions that
+      // aren't personalized by the server. That is, it indicates either
+      // client-side most-likely URL suggestions or server-side suggestions
+      // that depend only on the URL as context.
+      *subtype = 66;
+    } else if (provider->type() == AutocompleteProvider::TYPE_ON_DEVICE_HEAD) {
+      DCHECK(match == AutocompleteMatchType::SEARCH_SUGGEST);
+      // This subtype indicates a match from an on-device head provider.
+      *subtype = 271;
+    }
   }
 
   switch (match) {
