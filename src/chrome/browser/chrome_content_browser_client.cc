@@ -1265,7 +1265,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
   host->AddFilter(new cast::CastTransportHostFilter(profile));
 #endif
 #if BUILDFLAG(ENABLE_PRINTING)
-  host->AddFilter(new printing::PrintingMessageFilter(id, profile));
+  host->AddFilter(new printing::PrintingMessageFilter(id));
 #endif
   host->AddFilter(new prerender::PrerenderMessageFilter(id, profile));
   host->AddFilter(new TtsMessageFilter(host->GetBrowserContext()));

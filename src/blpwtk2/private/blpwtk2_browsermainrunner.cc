@@ -40,6 +40,10 @@
 #include <ui/display/screen.h>
 #include <base/threading/thread_restrictions.h>
 
+namespace printing {
+extern PrintJobManager* g_print_job_manager;
+}
+
 namespace blpwtk2 {
 
                         // -----------------------
@@ -65,10 +69,12 @@ BrowserMainRunner::BrowserMainRunner(
 
     display::Screen::SetScreenInstance(views::CreateDesktopScreen());
     d_viewsDelegate.reset(new ViewsDelegateImpl());
+    printing::g_print_job_manager = new printing::PrintJobManager();
 }
 
 BrowserMainRunner::~BrowserMainRunner()
 {
+    delete printing::g_print_job_manager;
     Statics::browserMainMessageLoop = 0;
     d_impl->Shutdown();
 }
