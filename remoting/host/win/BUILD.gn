@@ -221,7 +221,16 @@ config("MIDL_config") {
 }
 
 static_library("remoting_lib_ps") {
-  configs += [ ":MIDL_config" ]
+  sources = [
+    "$root_gen_dir/remoting/host/win/chromoting_lib.dlldata.c",
+    "$root_gen_dir/remoting/host/win/chromoting_lib_p.c",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    ":MIDL_config",
+    "//build/config/compiler:no_chromium_code",
+  ]
 
   defines = [
     "ENTRY_PREFIX=Ps",
@@ -230,11 +239,6 @@ static_library("remoting_lib_ps") {
 
   deps = [
     ":remoting_lib_idl",
-  ]
-
-  sources = [
-    "$root_gen_dir/remoting/host/win/chromoting_lib.dlldata.c",
-    "$root_gen_dir/remoting/host/win/chromoting_lib_p.c",
   ]
 }
 
