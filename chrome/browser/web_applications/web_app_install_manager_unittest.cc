@@ -616,6 +616,7 @@ TEST_F(WebAppInstallManagerTest, FinalizerMethodsCalled) {
   EXPECT_EQ(1, install_finalizer_->num_create_os_shortcuts_calls());
   EXPECT_EQ(1, install_finalizer_->num_reparent_tab_calls());
   EXPECT_EQ(1, install_finalizer_->num_reveal_appshim_calls());
+  EXPECT_EQ(1, install_finalizer_->num_pin_app_to_shelf_calls());
 }
 
 TEST_F(WebAppInstallManagerTest, FinalizerMethodsNotCalled) {
@@ -631,6 +632,7 @@ TEST_F(WebAppInstallManagerTest, FinalizerMethodsNotCalled) {
   EXPECT_EQ(0, install_finalizer_->num_create_os_shortcuts_calls());
   EXPECT_EQ(0, install_finalizer_->num_reparent_tab_calls());
   EXPECT_EQ(0, install_finalizer_->num_reveal_appshim_calls());
+  EXPECT_EQ(0, install_finalizer_->num_pin_app_to_shelf_calls());
 }
 
 // TODO(loyso): Convert more tests from bookmark_app_helper_unittest.cc

@@ -28,10 +28,19 @@
 
 namespace extensions {
 
+bool CanBookmarkAppCreateOsShortcuts() {
+#if defined(OS_CHROMEOS)
+  return false;
+#else
+  return true;
+#endif
+}
+
 void BookmarkAppCreateOsShortcuts(
     Profile* profile,
     const Extension* extension,
     base::OnceCallback<void(bool created_shortcuts)> callback) {
+  DCHECK(CanBookmarkAppCreateOsShortcuts());
 #if !defined(OS_CHROMEOS)
   web_app::ShortcutLocations creation_locations;
 #if defined(OS_LINUX) || defined(OS_WIN)
@@ -47,13 +56,26 @@ void BookmarkAppCreateOsShortcuts(
   web_app::CreateShortcuts(web_app::SHORTCUT_CREATION_BY_USER,
                            creation_locations, current_profile, extension,
                            std::move(callback));
+#endif  // !defined(OS_CHROMEOS)
+}
+
+bool CanBookmarkAppBePinnedToShelf() {
+#if defined(OS_CHROMEOS)
+  return true;
 #else
+  return false;
+#endif
+}
+
+void BookmarkAppPinToShelf(const Extension* extension) {
+  DCHECK(CanBookmarkAppBePinnedToShelf());
+#if defined(OS_CHROMEOS)
   // ChromeLauncherController does not exist in unit tests.
   if (ChromeLauncherController::instance()) {
     ChromeLauncherController::instance()->shelf_model()->PinAppWithID(
         extension->id());
   }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS)
 }
 
 void BookmarkAppReparentTab(content::WebContents* contents,

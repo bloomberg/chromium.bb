@@ -17,17 +17,19 @@ namespace extensions {
 
 class Extension;
 
+bool CanBookmarkAppCreateOsShortcuts();
 void BookmarkAppCreateOsShortcuts(
     Profile* profile,
     const Extension* extension,
     base::OnceCallback<void(bool created_shortcuts)> callback);
 
+bool CanBookmarkAppBePinnedToShelf();
+void BookmarkAppPinToShelf(const Extension* extension);
+
 void BookmarkAppReparentTab(content::WebContents* contents,
                             const Extension* extension);
 
-// Returns true if OS supports AppShim revealing,
 bool CanBookmarkAppRevealAppShim();
-// Reveals AppShim in Finder for a given app,
 void BookmarkAppRevealAppShim(Profile* profile, const Extension* extension);
 
 }  // namespace extensions

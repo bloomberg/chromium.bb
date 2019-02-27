@@ -471,8 +471,11 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
 
   web_app::RecordAppBanner(contents_, web_app_info_.app_url);
 
-  if (create_shortcuts_)
+  if (create_shortcuts_ && CanBookmarkAppCreateOsShortcuts())
     BookmarkAppCreateOsShortcuts(profile_, extension, base::DoNothing());
+
+  if (create_shortcuts_ && CanBookmarkAppBePinnedToShelf())
+    BookmarkAppPinToShelf(extension);
 
   // If there is a browser, it means that the app is being installed in the
   // foreground: window reparenting needed.
