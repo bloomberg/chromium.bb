@@ -22,7 +22,8 @@ def SymbolizerFilter(input_fd, build_ids_file):
                                       'llvm-symbolizer')
   symbolizer = os.path.join(SDK_ROOT, 'tools', 'symbolize')
   symbolizer_cmd = [symbolizer, '-ids', build_ids_file,
-                    '-ids-rel', '-llvm-symbolizer', llvm_symbolizer_path]
+                    '-ids-rel', '-llvm-symbolizer', llvm_symbolizer_path,
+                    '-build-id-dir', os.path.join(SDK_ROOT, '.build-id')]
 
   logging.info('Running "%s".' % ' '.join(symbolizer_cmd))
   symbolizer_proc = subprocess.Popen(

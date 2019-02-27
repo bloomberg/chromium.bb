@@ -96,9 +96,14 @@ def _WriteBuildIdsTxt(binary_paths, ids_txt_path):
         assert binary_shortname in unprocessed_binary_paths
 
       elif line.startswith(READELF_BUILD_ID_PREFIX):
+        # Paths to the unstripped executables listed in "ids.txt" are specified
+        # as relative paths to that file.
+        unstripped_rel_path = os.path.relpath(
+            os.path.abspath(unprocessed_binary_paths[binary_shortname]),
+            os.path.dirname(os.path.abspath(ids_txt_path)))
+
         build_id = line[len(READELF_BUILD_ID_PREFIX):]
-        ids_file.write(build_id + ' ' +
-                       unprocessed_binary_paths[binary_shortname])
+        ids_file.write(build_id + ' ' + unstripped_rel_path + '\n')
         del unprocessed_binary_paths[binary_shortname]
 
   # Did readelf forget anything? Make sure that all binaries are accounted for.
