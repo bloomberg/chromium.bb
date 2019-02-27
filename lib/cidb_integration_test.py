@@ -600,7 +600,8 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
                                   _random(),
                                   'build_config',
                                   'bot_hostname',
-                                  master_build_id=master_build_id)
+                                  master_build_id=master_build_id,
+                                  buildbucket_id=123)
 
     build_stage_id = bot_db.InsertBuildStage(build_id,
                                              'My Stage',
@@ -630,14 +631,15 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
       bot_db.InsertFailure(build_stage_id, type(e).__name__, str(e), category)
       self.assertTrue(bot_db.HasFailureMsgForStage(build_stage_id))
 
-    child_ids = [c['id'] for c in bot_db.GetSlaveStatuses(master_build_id)]
+    child_ids = [c['buildbucket_id']
+                 for c in bot_db.GetSlaveStatuses(master_build_id)]
     failures = bot_db.GetBuildsFailures(child_ids)
     self.assertEqual(len(failures),
                      len(constants.EXCEPTION_CATEGORY_ALL_CATEGORIES))
     for f in failures:
       self.assertEqual(f.build_id, build_id)
 
-    slave_stages = bot_db.GetBuildsStages(child_ids)
+    slave_stages = bot_db.GetBuildsStagesWithBuildbucketIds(child_ids)
     self.assertEqual(len(slave_stages), 1)
     self.assertEqual(slave_stages[0]['status'], 'pass')
     self.assertEqual(slave_stages[0]['build_config'], 'build_config')
