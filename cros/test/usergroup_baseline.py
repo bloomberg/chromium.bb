@@ -42,7 +42,7 @@ USER_BASELINE = dict((e.user, e) for e in (
     UserEntry(user='chronos', encpasswd='x', uid=1000, gid=1000,
               home='/home/chronos/user', shell=_VALID_LOGIN_SHELLS),
     UserEntry(user='chronos-access', uid=1001, gid=1001),
-    UserEntry(user='sshd', uid=204, gid=204, home={'/var/empty', '/dev/null'}),
+    UserEntry(user='sshd', uid=204, gid=204),
     UserEntry(user='tss', uid=207, gid=207, home='/var/lib/tpm'),
     UserEntry(user='dhcp', uid=224, gid=224,
               home={'/var/lib/dhcp', '/dev/null'}),
