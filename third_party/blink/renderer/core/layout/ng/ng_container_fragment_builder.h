@@ -149,6 +149,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   }
   bool IsPushedByFloats() const { return is_pushed_by_floats_; }
 
+  bool HasFloatingDescendants() const { return has_floating_descendants_; }
+
   NGContainerFragmentBuilder& ResetAdjoiningFloatTypes() {
     adjoining_floats_ = kFloatTypeNone;
     return *this;
@@ -239,6 +241,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   bool is_pushed_by_floats_ = false;
   bool is_old_layout_root_ = false;
 
+  bool has_floating_descendants_ = false;
   bool has_orthogonal_flow_roots_ = false;
   bool has_child_that_depends_on_percentage_block_size_ = false;
   bool has_block_fragmentation_ = false;

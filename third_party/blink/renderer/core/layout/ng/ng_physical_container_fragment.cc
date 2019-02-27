@@ -35,6 +35,8 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
     unsigned sub_type)
     : NGPhysicalFragment(builder, type, sub_type),
       num_children_(builder->children_.size()) {
+  has_floating_descendants_ = builder->HasFloatingDescendants();
+
   DCHECK_EQ(builder->children_.size(), builder->offsets_.size());
   // Because flexible arrays need to be the last member in a class, we need to
   // have the buffer passed as a constructor argument and have the actual

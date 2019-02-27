@@ -254,6 +254,7 @@ NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
       type_(type),
       sub_type_(sub_type),
       style_variant_((unsigned)builder->style_variant_),
+      has_floating_descendants_(false),
       is_fieldset_container_(false),
       is_old_layout_root_(false) {}
 
@@ -269,6 +270,7 @@ NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
       type_(type),
       sub_type_(sub_type),
       style_variant_((unsigned)style_variant),
+      has_floating_descendants_(false),
       is_fieldset_container_(false),
       is_old_layout_root_(false) {}
 

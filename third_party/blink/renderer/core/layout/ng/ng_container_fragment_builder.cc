@@ -115,6 +115,16 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     }
   }
 
+  // Compute |has_floating_descendants_| to optimize tree traversal in paint.
+  if (!has_floating_descendants_) {
+    if (child->IsFloating()) {
+      has_floating_descendants_ = true;
+    } else if (child->IsContainer() && !child->IsBlockFormattingContextRoot() &&
+               ToNGPhysicalContainerFragment(*child).HasFloatingDescendants()) {
+      has_floating_descendants_ = true;
+    }
+  }
+
   if (!IsParallelWritingMode(child->Style().GetWritingMode(),
                              Style().GetWritingMode()))
     has_orthogonal_flow_roots_ = true;
