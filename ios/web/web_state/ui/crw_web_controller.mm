@@ -4800,7 +4800,6 @@ GURL URLEscapedForHistory(const GURL& url) {
           self.navigationManagerImpl, context->GetNavigationItemUniqueID());
       if (!web::wk_navigation_util::IsWKInternalUrl(webViewURL)) {
         if (item) {
-          item->SetVirtualURL(webViewURL);
           item->SetURL(webViewURL);
         }
         context->SetUrl(webViewURL);
