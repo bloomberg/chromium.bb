@@ -80,7 +80,7 @@ MenuConfig::~MenuConfig() {}
 int MenuConfig::CornerRadiusForMenu(const MenuController* controller) const {
   if (controller && controller->use_touchable_layout())
     return touchable_corner_radius;
-  if (controller && (controller->is_combobox() || controller->IsContextMenu()))
+  if (controller && (controller->IsCombobox() || controller->IsContextMenu()))
     return auxiliary_corner_radius;
   return corner_radius;
 }

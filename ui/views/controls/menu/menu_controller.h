@@ -84,6 +84,13 @@ class VIEWS_EXPORT MenuController
     EXIT_DESTROYED
   };
 
+  // Types of comboboxes.
+  enum ComboboxType {
+    kNotACombobox,
+    kEditableCombobox,
+    kReadonlyCombobox,
+  };
+
   // If a menu is currently active, this returns the controller for it.
   static MenuController* GetActiveInstance();
 
@@ -141,8 +148,13 @@ class VIEWS_EXPORT MenuController
   // Returns the time from the event which closed the menu - or 0.
   base::TimeTicks closing_event_time() const { return closing_event_time_; }
 
-  void set_is_combobox(bool is_combobox) { is_combobox_ = is_combobox; }
-  bool is_combobox() const { return is_combobox_; }
+  // Set/Get combobox type.
+  void set_combobox_type(ComboboxType combobox_type) {
+    combobox_type_ = combobox_type;
+  }
+  bool IsCombobox() const;
+  bool IsEditableCombobox() const;
+  bool IsReadonlyCombobox() const;
 
   bool IsContextMenu() const;
 
@@ -730,7 +742,7 @@ class VIEWS_EXPORT MenuController
 
   // Controls behavior differences between a combobox and other types of menu
   // (like a context menu).
-  bool is_combobox_ = false;
+  ComboboxType combobox_type_ = kNotACombobox;
 
   // Whether the menu |owner_| needs gesture events. When set to true, the menu
   // will preserve the gesture events of the |owner_| and MenuController will

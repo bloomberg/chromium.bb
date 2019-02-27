@@ -5,9 +5,11 @@
 #include "ui/views/controls/menu/menu_controller.h"
 
 #include <algorithm>
+#include <set>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/flat_set.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
@@ -562,6 +564,18 @@ void MenuController::AddNestedDelegate(
     internal::MenuControllerDelegate* delegate) {
   delegate_stack_.push_back(delegate);
   delegate_ = delegate;
+}
+
+bool MenuController::IsCombobox() const {
+  return IsEditableCombobox() || IsReadonlyCombobox();
+}
+
+bool MenuController::IsEditableCombobox() const {
+  return combobox_type_ == kEditableCombobox;
+}
+
+bool MenuController::IsReadonlyCombobox() const {
+  return combobox_type_ == kReadonlyCombobox;
 }
 
 bool MenuController::IsContextMenu() const {
@@ -1123,8 +1137,6 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
     return ui::POST_DISPATCH_PERFORM_DEFAULT;
   }
 
-  event->StopPropagation();
-
   if (event->type() == ui::ET_KEY_PRESSED) {
     base::WeakPtr<MenuController> this_ref = AsWeakPtr();
 #if defined(OS_MACOSX)
@@ -1145,19 +1157,25 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
     OnKeyDown(event->key_code());
 #endif
     // Key events can lead to this being deleted.
-    if (!this_ref)
+    if (!this_ref) {
+      event->StopPropagation();
       return ui::POST_DISPATCH_NONE;
+    }
 
-    // Do not check mnemonics if the Alt or Ctrl modifiers are pressed. For
-    // example Ctrl+<T> is an accelerator, but <T> only is a mnemonic.
-    const int kKeyFlagsMask = ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN;
-    const int flags = event->flags();
-    if (exit_type() == EXIT_NONE && (flags & kKeyFlagsMask) == 0) {
-      base::char16 c = event->GetCharacter();
-      SelectByChar(c);
-      // SelectByChar can lead to this being deleted.
-      if (!this_ref)
-        return ui::POST_DISPATCH_NONE;
+    if (!IsEditableCombobox()) {
+      // Do not check mnemonics if the Alt or Ctrl modifiers are pressed. For
+      // example Ctrl+<T> is an accelerator, but <T> only is a mnemonic.
+      const int kKeyFlagsMask = ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN;
+      const int flags = event->flags();
+      if (exit_type() == EXIT_NONE && (flags & kKeyFlagsMask) == 0) {
+        base::char16 c = event->GetCharacter();
+        SelectByChar(c);
+        // SelectByChar can lead to this being deleted.
+        if (!this_ref) {
+          event->StopPropagation();
+          return ui::POST_DISPATCH_NONE;
+        }
+      }
     }
   }
 
@@ -1167,6 +1185,16 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
           accelerator);
   if (result == ViewsDelegate::ProcessMenuAcceleratorResult::CLOSE_MENU)
     CancelAll();
+
+  if (IsEditableCombobox()) {
+    const base::flat_set<ui::KeyboardCode> kKeysThatDontPropagate = {
+        ui::VKEY_DOWN, ui::VKEY_UP, ui::VKEY_ESCAPE, ui::VKEY_F4,
+        ui::VKEY_RETURN};
+    if (kKeysThatDontPropagate.find(event->key_code()) ==
+        kKeysThatDontPropagate.end())
+      return ui::POST_DISPATCH_PERFORM_DEFAULT;
+  }
+  event->StopPropagation();
   return ui::POST_DISPATCH_NONE;
 }
 
@@ -1383,10 +1411,14 @@ void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
 
   switch (key_code) {
     case ui::VKEY_HOME:
+      if (IsEditableCombobox())
+        break;
       MoveSelectionToFirstOrLastItem(INCREMENT_SELECTION_DOWN);
       break;
 
     case ui::VKEY_END:
+      if (IsEditableCombobox())
+        break;
       MoveSelectionToFirstOrLastItem(INCREMENT_SELECTION_UP);
       break;
 
@@ -1401,6 +1433,8 @@ void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
     // Handling of VK_RIGHT and VK_LEFT is different depending on the UI
     // layout.
     case ui::VKEY_RIGHT:
+      if (IsEditableCombobox())
+        break;
       if (base::i18n::IsRTL())
         CloseSubmenu();
       else
@@ -1408,6 +1442,8 @@ void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
       break;
 
     case ui::VKEY_LEFT:
+      if (IsEditableCombobox())
+        break;
       if (base::i18n::IsRTL())
         OpenSubmenuChangeSelectionIfCan();
       else
@@ -1422,7 +1458,7 @@ void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
 #endif
 
     case ui::VKEY_F4:
-      if (!is_combobox_)
+      if (!IsCombobox())
         break;
       // Fallthrough to accept or dismiss combobox menus on F4, like windows.
       FALLTHROUGH;
@@ -1441,7 +1477,8 @@ void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
       }
       if (pending_state_.item) {
         if (pending_state_.item->HasSubmenu()) {
-          if (key_code == ui::VKEY_F4 &&
+          if ((key_code == ui::VKEY_F4 ||
+               (key_code == ui::VKEY_RETURN && IsEditableCombobox())) &&
               pending_state_.item->GetSubmenu()->IsShowing())
             Cancel(EXIT_ALL);
           else
@@ -1962,7 +1999,7 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
                                       &resulting_direction)
           : CalculateMenuBounds(item, prefer_leading, &resulting_direction);
   state_.open_leading.push_back(resulting_direction);
-  bool do_capture = (!did_capture_ && !for_drop_);
+  bool do_capture = (!did_capture_ && !for_drop_ && !IsEditableCombobox());
   showing_submenu_ = true;
 
   // Register alerted MenuItemViews so we can animate them. We do this here to
@@ -2094,7 +2131,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
   const gfx::Rect& anchor_bounds = state_.initial_bounds;
 
   // For comboboxes, ensure the menu is at least as wide as the anchor.
-  if (is_combobox_)
+  if (IsCombobox())
     menu_bounds.set_width(std::max(menu_bounds.width(), anchor_bounds.width()));
 
   // Don't let the menu go too wide or too tall.
@@ -2683,7 +2720,8 @@ void MenuController::SelectByChar(base::char16 character) {
     return;
   }
 
-  if (is_combobox_ || MenuConfig::instance().all_menus_use_prefix_selection) {
+  if (IsReadonlyCombobox() ||
+      MenuConfig::instance().all_menus_use_prefix_selection) {
     item->GetSubmenu()->GetPrefixSelector()->InsertText(char_array);
   } else {
     // If no mnemonics found, look at first character of titles.

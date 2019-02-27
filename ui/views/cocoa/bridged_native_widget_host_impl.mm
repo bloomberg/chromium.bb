@@ -766,7 +766,9 @@ bool BridgedNativeWidgetHostImpl::GetHasMenuController(
     bool* has_menu_controller) {
   MenuController* menu_controller = MenuController::GetActiveInstance();
   *has_menu_controller = menu_controller && root_view_ &&
-                         menu_controller->owner() == root_view_->GetWidget();
+                         menu_controller->owner() == root_view_->GetWidget() &&
+                         // The editable combobox menu does not swallow keys.
+                         !menu_controller->IsEditableCombobox();
   return true;
 }
 

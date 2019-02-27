@@ -24,6 +24,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_controller_delegate.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/menu/menu_host.h"
@@ -604,8 +605,8 @@ class MenuControllerTest : public ViewsTestBase {
     menu_controller_->SetDropMenuItem(target, position);
   }
 
-  void SetIsCombobox(bool is_combobox) {
-    menu_controller_->set_is_combobox(is_combobox);
+  void SetComboboxType(MenuController::ComboboxType combobox_type) {
+    menu_controller_->set_combobox_type(combobox_type);
   }
 
   void SetSelectionOnPointerDown(SubmenuView* source,
@@ -1020,7 +1021,7 @@ TEST_F(MenuControllerTest, PreviousSelectedItem) {
 
 // Tests that opening menu and calling SelectByChar works correctly.
 TEST_F(MenuControllerTest, SelectByChar) {
-  SetIsCombobox(true);
+  SetComboboxType(MenuController::kReadonlyCombobox);
 
   // Handle null character should do nothing.
   SelectByChar(0);

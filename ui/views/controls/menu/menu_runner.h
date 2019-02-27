@@ -99,6 +99,11 @@ class VIEWS_EXPORT MenuRunner {
 
     // Whether to use the touchable layout for this context menu.
     USE_TOUCHABLE_LAYOUT = 1 << 8,
+
+    // Similar to COMBOBOX, but does not capture the mouse and lets some keys
+    // propagate back to the parent so the combobox content can be edited even
+    // while the menu is open.
+    EDITABLE_COMBOBOX = 1 << 9,
   };
 
   // Creates a new MenuRunner, which may use a native menu if available.
