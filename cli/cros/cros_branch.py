@@ -168,6 +168,7 @@ class ManifestRepository(object):
     # related functions because they read the project remote, which may not
     # be defined in the current manifest file.
     for project in manifest.Projects():
+      self._checkout.EnsureProject(project)
       path = project.Path()
 
       # If project path is in the dict, the project must've been branched
@@ -319,6 +320,23 @@ class CrosCheckout(object):
     new_version.IncrementVersion()
     remote_ref = git.RemoteRef(remote, ref)
     new_version.UpdateVersionFile(message, dry_run=dry_run, push_to=remote_ref)
+
+  def EnsureProject(self, project):
+    """Checks that the project exists in the checkout.
+
+    Args:
+      project: The repo_manifest.Project in question.
+
+    Raises:
+      BranchError if project does not exist in checkout.
+    """
+    path = self.AbsoluteProjectPath(project)
+    if not os.path.exists(path):
+      raise BranchError(
+          'Project %s does not exist at path %s in checkout. '
+          'This likely means that manifest-internal is out of sync '
+          'with manifest, and the manifest file you are branching from '
+          'is corrupted.' % (project.name, path))
 
   def AbsolutePath(self, *args):
     """Joins the path components with the repo root.

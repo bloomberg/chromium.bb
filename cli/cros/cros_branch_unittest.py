@@ -459,6 +459,7 @@ class ManifestRepositoryTest(ManifestTestCase, cros_test_lib.MockTestCase):
 
   def setUp(self):
     self.PatchObject(CrosCheckout, 'GitRevision', self.GitRevisionMock)
+    self.PatchObject(CrosCheckout, 'EnsureProject')
     self.PatchObject(repo_manifest.Manifest, 'FromFile', self.FromFileMock)
     self.PatchObject(os.path, 'exists', self.PathExistsMock)
 
@@ -689,6 +690,21 @@ class CrosCheckoutTest(ManifestTestCase, cros_test_lib.MockTestCase):
     project = self.ProjectFor(PROJECTS.MANIFEST)
     actual = checkout.AbsoluteProjectPath(project, 'bar')
     self.assertEqual(actual, '/foo/manifest/bar')
+
+  def testEnsureProjectBadProject(self):
+    """Test EnsurePath raises error if project does not exist."""
+    self.PatchObject(os.path, 'exists', return_value=False)
+    checkout = CrosCheckout('/foo')
+    project = self.ProjectFor(PROJECTS.MANIFEST)
+    with self.assertRaises(BranchError):
+      checkout.EnsureProject(project)
+
+  def testEnsureProjectGoodProject(self):
+    """Test EnsurePath raises error if project does not exist."""
+    self.PatchObject(os.path, 'exists', return_value=True)
+    checkout = CrosCheckout('/foo')
+    project = self.ProjectFor(PROJECTS.MANIFEST)
+    checkout.EnsureProject(project)
 
   def testReadVersion(self):
     """Test ReadVersion does not modify VersionInfo."""
