@@ -724,16 +724,8 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetDemoAccount) {
   EXPECT_FALSE(auth_instance().account_info()->is_managed);
 }
 
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_GetOfflineDemoAccountViaDeprecatedApi \
-  DISABLED_GetOfflineDemoAccountViaDeprecatedApi
-#else
-#define MAYBE_GetOfflineDemoAccountViaDeprecatedApi \
-  GetOfflineDemoAccountViaDeprecatedApi
-#endif
-// TODO(crbug.com/934796) The test is flaky on ChromeOs MSan.
 IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
-                       MAYBE_GetOfflineDemoAccountViaDeprecatedApi) {
+                       GetOfflineDemoAccountViaDeprecatedApi) {
   chromeos::DemoSession::SetDemoConfigForTesting(
       chromeos::DemoSession::DemoModeConfig::kOffline);
   chromeos::DemoSession::StartIfInDemoMode();
@@ -753,14 +745,7 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
   EXPECT_TRUE(auth_instance().account_info()->is_managed);
 }
 
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_GetOfflineDemoAccount DISABLED_GetOfflineDemoAccount
-#else
-#define MAYBE_GetOfflineDemoAccount GetOfflineDemoAccount
-#endif
-// TODO(crbug.com/934796) The test is flaky on ChromeOS MSan.
-IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
-                       MAYBE_GetOfflineDemoAccount) {
+IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetOfflineDemoAccount) {
   chromeos::DemoSession::SetDemoConfigForTesting(
       chromeos::DemoSession::DemoModeConfig::kOffline);
   chromeos::DemoSession::StartIfInDemoMode();
@@ -780,17 +765,8 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
   EXPECT_TRUE(auth_instance().account_info()->is_managed);
 }
 
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_GetDemoAccountOnAuthTokenFetchFailureViaDeprecatedApi \
-  DISABLED_GetDemoAccountOnAuthTokenFetchFailureViaDeprecatedApi
-#else
-#define MAYBE_GetDemoAccountOnAuthTokenFetchFailureViaDeprecatedApi \
-  GetDemoAccountOnAuthTokenFetchFailureViaDeprecatedApi
-#endif
-// TODO(crbug.com/934796) The test is flaky on ChromeOS MSan.
-IN_PROC_BROWSER_TEST_F(
-    ArcRobotAccountAuthServiceTest,
-    MAYBE_GetDemoAccountOnAuthTokenFetchFailureViaDeprecatedApi) {
+IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
+                       GetDemoAccountOnAuthTokenFetchFailureViaDeprecatedApi) {
   chromeos::DemoSession::SetDemoConfigForTesting(
       chromeos::DemoSession::DemoModeConfig::kOnline);
   chromeos::DemoSession::StartIfInDemoMode();
@@ -863,16 +839,8 @@ class ArcAuthServiceChildAccountTest : public ArcAuthServiceTest {
 // Tests that when ARC requests account info for a child account, via
 // |RequestAccountInfoDeprecated| and Chrome supplies the info configured in
 // SetAccountAndProfile() above.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_ChildAccountFetchViaDeprecatedApi \
-  DISABLED_ChildAccountFetchViaDeprecatedApi
-#else
-#define MAYBE_ChildAccountFetchViaDeprecatedApi \
-  ChildAccountFetchViaDeprecatedApi
-#endif
-// TODO(crbug.com/934796) The test is flaky on ChromeOS MSan.
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceChildAccountTest,
-                       MAYBE_ChildAccountFetchViaDeprecatedApi) {
+                       ChildAccountFetchViaDeprecatedApi) {
   SetAccountAndProfile(user_manager::USER_TYPE_CHILD);
   EXPECT_TRUE(profile()->IsChild());
   test_url_loader_factory().AddResponse(arc::kAuthTokenExchangeEndPoint,
@@ -894,14 +862,7 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceChildAccountTest,
 
 // Tests that when ARC requests account info for a child account and
 // Chrome supplies the info configured in SetAccountAndProfile() above.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_ChildAccountFetch DISABLED_ChildAccountFetch
-#else
-#define MAYBE_ChildAccountFetch ChildAccountFetch
-#endif
-// TODO(crbug.com/934796) The test is flaky on ChromeOS MSan.
-IN_PROC_BROWSER_TEST_F(ArcAuthServiceChildAccountTest,
-                       MAYBE_ChildAccountFetch) {
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceChildAccountTest, ChildAccountFetch) {
   SetAccountAndProfile(user_manager::USER_TYPE_CHILD);
   EXPECT_TRUE(profile()->IsChild());
   test_url_loader_factory().AddResponse(arc::kAuthTokenExchangeEndPoint,
