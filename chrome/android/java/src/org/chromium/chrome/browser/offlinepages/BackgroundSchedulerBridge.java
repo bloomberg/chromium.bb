@@ -10,6 +10,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.browser.DeviceConditions;
 
 /**
  * Provides Java scheduling support from native offlining code as

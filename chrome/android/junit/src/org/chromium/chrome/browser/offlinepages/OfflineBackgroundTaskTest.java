@@ -39,6 +39,8 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.SysUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.DeviceConditions;
+import org.chromium.chrome.browser.ShadowDeviceConditions;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.chrome.test.support.DisableHistogramsRule;
 import org.chromium.components.background_task_scheduler.BackgroundTask;

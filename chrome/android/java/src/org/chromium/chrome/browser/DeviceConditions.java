@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.offlinepages;
+package org.chromium.chrome.browser;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -51,8 +51,7 @@ public class DeviceConditions {
     }
 
     @VisibleForTesting
-    DeviceConditions() {
-    }
+    DeviceConditions() {}
 
     /**
      * Returns the current device conditions if the device supports obtaining battery status.
