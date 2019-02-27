@@ -6,6 +6,8 @@
 
 #include <Windows.h>
 
+#include <atlbase.h>
+
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/registry.h"
@@ -25,36 +27,77 @@ const wchar_t kGcpRootKeyName[] = CREDENTIAL_PROVIDER_REGISTRY_KEY;
 const wchar_t kGcpUsersRootKeyName[] =
     CREDENTIAL_PROVIDER_REGISTRY_KEY L"\\Users";
 
+const wchar_t kWinlogonUserListRegKey[] =
+    L"SOFTWARE\\Microsoft\\Windows NT"
+    L"\\CurrentVersion\\Winlogon\\SpecialAccounts\\UserList";
+
+const wchar_t kLogonUiUserTileRegKey[] =
+    L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Authentication\\LogonUI"
+    L"\\UserTile";
+
 namespace {
 
-const wchar_t kAccountPicturesRootRegKey[] =
+constexpr wchar_t kAccountPicturesRootRegKey[] =
     L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AccountPicture\\Users";
-const wchar_t kImageRegKey[] = L"Image";
+constexpr wchar_t kImageRegKey[] = L"Image";
 
-HRESULT GetRegDWORD(const base::string16& key_name,
-                    const base::string16& name,
-                    DWORD* value) {
-  base::win::RegKey key;
-  LONG sts = key.Open(HKEY_LOCAL_MACHINE, key_name.c_str(), KEY_READ);
-  if (sts != ERROR_SUCCESS)
-    return HRESULT_FROM_WIN32(sts);
-
-  sts = key.ReadValueDW(name.c_str(), value);
-  if (sts != ERROR_SUCCESS)
-    return HRESULT_FROM_WIN32(sts);
-
-  return S_OK;
-}
-
-HRESULT SetRegDWORD(const base::string16& key_name,
-                    const base::string16& name,
-                    DWORD value) {
+HRESULT SetMachineRegDWORD(const base::string16& key_name,
+                           const base::string16& name,
+                           DWORD value) {
   base::win::RegKey key;
   LONG sts = key.Create(HKEY_LOCAL_MACHINE, key_name.c_str(), KEY_WRITE);
   if (sts != ERROR_SUCCESS)
     return HRESULT_FROM_WIN32(sts);
 
   sts = key.WriteValue(name.c_str(), value);
+  if (sts != ERROR_SUCCESS)
+    return HRESULT_FROM_WIN32(sts);
+
+  return S_OK;
+}
+
+HRESULT SetMachineRegString(const base::string16& key_name,
+                            const base::string16& name,
+                            const base::string16& value) {
+  base::win::RegKey key;
+  LONG sts = key.Create(HKEY_LOCAL_MACHINE, key_name.c_str(), KEY_WRITE);
+  if (sts != ERROR_SUCCESS)
+    return HRESULT_FROM_WIN32(sts);
+
+  if (value.empty()) {
+    sts = key.DeleteValue(name.c_str());
+    if (sts == ERROR_FILE_NOT_FOUND)
+      sts = ERROR_SUCCESS;
+  } else {
+    sts = key.WriteValue(name.c_str(), value.c_str());
+  }
+
+  if (sts != ERROR_SUCCESS)
+    return HRESULT_FROM_WIN32(sts);
+
+  return S_OK;
+}
+
+base::string16 GetImageRegKeyForSpecificSize(int image_size) {
+  return base::StringPrintf(L"%ls%i", kImageRegKey, image_size);
+}
+
+base::string16 GetAccountPictureRegPathForUSer(const base::string16& user_sid) {
+  return base::StringPrintf(L"%ls\\%ls", kAccountPicturesRootRegKey,
+                            user_sid.c_str());
+}
+
+}  // namespace
+
+HRESULT GetMachineRegDWORD(const base::string16& key_name,
+                           const base::string16& name,
+                           DWORD* value) {
+  base::win::RegKey key;
+  LONG sts = key.Open(HKEY_LOCAL_MACHINE, key_name.c_str(), KEY_READ);
+  if (sts != ERROR_SUCCESS)
+    return HRESULT_FROM_WIN32(sts);
+
+  sts = key.ReadValueDW(name.c_str(), value);
   if (sts != ERROR_SUCCESS)
     return HRESULT_FROM_WIN32(sts);
 
@@ -98,54 +141,6 @@ HRESULT GetMachineRegString(const base::string16& key_name,
   return S_OK;
 }
 
-HRESULT SetMachineRegString(const base::string16& key_name,
-                            const base::string16& name,
-                            const base::string16& value) {
-  base::win::RegKey key;
-  LONG sts = key.Create(HKEY_LOCAL_MACHINE, key_name.c_str(), KEY_WRITE);
-  if (sts != ERROR_SUCCESS)
-    return HRESULT_FROM_WIN32(sts);
-
-  if (value.empty()) {
-    sts = key.DeleteValue(name.c_str());
-    if (sts == ERROR_FILE_NOT_FOUND)
-      sts = ERROR_SUCCESS;
-  } else {
-    sts = key.WriteValue(name.c_str(), value.c_str());
-  }
-
-  if (sts != ERROR_SUCCESS)
-    return HRESULT_FROM_WIN32(sts);
-
-  return S_OK;
-}
-
-HRESULT SetMachineRegDWORD(const base::string16& key_name,
-                           const base::string16& name,
-                           DWORD value) {
-  base::win::RegKey key;
-  LONG sts = key.Create(HKEY_LOCAL_MACHINE, key_name.c_str(), KEY_WRITE);
-  if (sts != ERROR_SUCCESS)
-    return HRESULT_FROM_WIN32(sts);
-
-  sts = key.WriteValue(name.c_str(), value);
-  if (sts != ERROR_SUCCESS)
-    return HRESULT_FROM_WIN32(sts);
-
-  return S_OK;
-}
-
-base::string16 GetImageRegKeyForSpecificSize(int image_size) {
-  return base::StringPrintf(L"%ls%i", kImageRegKey, image_size);
-}
-
-base::string16 GetAccountPictureRegPathForUSer(const base::string16& user_sid) {
-  return base::StringPrintf(L"%ls\\%ls", kAccountPicturesRootRegKey,
-                            user_sid.c_str());
-}
-
-}  // namespace
-
 HRESULT GetAccountPictureRegString(const base::string16& user_sid,
                                    int image_size,
                                    wchar_t* value,
@@ -164,7 +159,7 @@ HRESULT SetAccountPictureRegString(const base::string16& user_sid,
 }
 
 HRESULT GetGlobalFlag(const base::string16& name, DWORD* value) {
-  return GetRegDWORD(kGcpRootKeyName, name, value);
+  return GetMachineRegDWORD(kGcpRootKeyName, name, value);
 }
 
 HRESULT GetGlobalFlag(const base::string16& name,
@@ -199,7 +194,7 @@ HRESULT GetUserProperty(const base::string16& sid,
   wchar_t key_name[128];
   swprintf_s(key_name, base::size(key_name), L"%s\\%s", kGcpUsersRootKeyName,
              sid.c_str());
-  return GetRegDWORD(key_name, name, value);
+  return GetMachineRegDWORD(key_name, name, value);
 }
 
 HRESULT GetUserProperty(const base::string16& sid,
@@ -218,7 +213,7 @@ HRESULT SetUserProperty(const base::string16& sid,
   wchar_t key_name[128];
   swprintf_s(key_name, base::size(key_name), L"%s\\%s", kGcpUsersRootKeyName,
              sid.c_str());
-  return SetRegDWORD(key_name, name, value);
+  return SetMachineRegDWORD(key_name, name, value);
 }
 
 HRESULT SetUserProperty(const base::string16& sid,
@@ -305,6 +300,38 @@ HRESULT GetIdFromSid(const wchar_t* sid, base::string16* id) {
     }
   }
   return HRESULT_FROM_WIN32(ERROR_NONE_MAPPED);
+}
+
+HRESULT SetUserWinlogonUserListEntry(const base::string16& username,
+                                     DWORD visible) {
+  // Sets the value of the key that will hide the user from all credential
+  // providers.
+  base::win::RegKey key;
+  LONG sts = key.Create(HKEY_LOCAL_MACHINE, kWinlogonUserListRegKey, KEY_WRITE);
+  if (sts != ERROR_SUCCESS)
+    return HRESULT_FROM_WIN32(sts);
+
+  // The key is only set if we want to make a user invisible. The default
+  // behavior is for the user to be visible so delete the key in this case.
+  if (!visible) {
+    sts = key.WriteValue(username.c_str(), visible);
+  } else {
+    sts = key.DeleteValue(username.c_str());
+    if (sts == ERROR_FILE_NOT_FOUND)
+      sts = ERROR_SUCCESS;
+  }
+
+  if (sts != ERROR_SUCCESS)
+    return HRESULT_FROM_WIN32(sts);
+
+  return S_OK;
+}
+
+HRESULT SetLogonUiUserTileEntry(const base::string16& sid, CLSID cp_guid) {
+  wchar_t guid_in_wchar[64];
+  ::StringFromGUID2(cp_guid, guid_in_wchar, base::size(guid_in_wchar));
+  return SetMachineRegString(kLogonUiUserTileRegKey, sid.c_str(),
+                             guid_in_wchar);
 }
 
 }  // namespace credential_provider

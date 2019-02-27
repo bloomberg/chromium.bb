@@ -10,6 +10,8 @@
 #include "base/test/test_reg_util_win.h"
 #include "base/time/time_override.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
+#include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
+#include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/gaiacp/token_handle_validator.h"
 #include "chrome/credential_provider/test/gcp_fakes.h"
@@ -86,8 +88,6 @@ TEST_F(TokenHandleValidatorTest, CleanupStaleUsers) {
   ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
                       L"username", L"password", L"Full Name", L"Comment",
                       L"gaia-id", L"foo@gmail.com", &sid_good));
-  ASSERT_EQ(S_OK,
-            SetUserProperty(OLE2W(sid_good), kUserTokenHandle, L"good-th"));
 
   // Simulate a user created by GCPW that was deleted from the machine.
   CComBSTR sid_bad;
@@ -160,14 +160,13 @@ TEST_F(TokenHandleValidatorTest, ValidTokenHandle) {
   ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
                       L"username", L"password", L"fullname", L"comment",
                       L"gaia-id", base::string16(), &sid));
-  ASSERT_EQ(S_OK, SetUserProperty(OLE2W(sid), kUserTokenHandle, L"th"));
-
-  validator.StartRefreshingTokenHandleValidity();
 
   // Valid token fetch result.
   fake_http_url_fetcher_factory()->SetFakeResponse(
       GURL(TokenHandleValidator::kTokenInfoUrl),
       FakeWinHttpUrlFetcher::Headers(), "{\"expires_in\":1}");
+
+  validator.StartRefreshingTokenHandleValidity();
 
   EXPECT_TRUE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
   EXPECT_EQ(1u, fake_http_url_fetcher_factory()->requests_created());
@@ -179,14 +178,13 @@ TEST_F(TokenHandleValidatorTest, InvalidTokenHandle) {
   ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
                       L"username", L"password", L"fullname", L"comment",
                       L"gaia-id", base::string16(), &sid));
-  ASSERT_EQ(S_OK, SetUserProperty(OLE2W(sid), kUserTokenHandle, L"th"));
-
-  validator.StartRefreshingTokenHandleValidity();
 
   // Invalid token fetch result.
   fake_http_url_fetcher_factory()->SetFakeResponse(
       GURL(TokenHandleValidator::kTokenInfoUrl),
       FakeWinHttpUrlFetcher::Headers(), "{}");
+
+  validator.StartRefreshingTokenHandleValidity();
 
   EXPECT_FALSE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
   EXPECT_EQ(1u, fake_http_url_fetcher_factory()->requests_created());
@@ -201,7 +199,6 @@ TEST_F(TokenHandleValidatorTest, InvalidTokenHandleNoInternet) {
   ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
                       L"username", L"password", L"fullname", L"comment",
                       L"gaia-id", base::string16(), &sid));
-  ASSERT_EQ(S_OK, SetUserProperty(OLE2W(sid), kUserTokenHandle, L"th"));
 
   validator.StartRefreshingTokenHandleValidity();
   EXPECT_TRUE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
@@ -210,19 +207,18 @@ TEST_F(TokenHandleValidatorTest, InvalidTokenHandleNoInternet) {
 
 TEST_F(TokenHandleValidatorTest, InvalidTokenHandleTimeout) {
   FakeTokenHandleValidator validator(base::TimeDelta::FromMilliseconds(50));
+  FakeInternetAvailabilityChecker internet_checker;
   CComBSTR sid;
   ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
                       L"username", L"password", L"fullname", L"comment",
                       L"gaia-id", base::string16(), &sid));
-  ASSERT_EQ(S_OK, SetUserProperty(OLE2W(sid), kUserTokenHandle, L"th"));
-
-  validator.StartRefreshingTokenHandleValidity();
 
   base::WaitableEvent http_fetcher_event;
   // Invalid token fetch result.
   fake_http_url_fetcher_factory()->SetFakeResponse(
       GURL(TokenHandleValidator::kTokenInfoUrl),
       FakeWinHttpUrlFetcher::Headers(), "{}", http_fetcher_event.handle());
+  validator.StartRefreshingTokenHandleValidity();
 
   EXPECT_TRUE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
   EXPECT_EQ(1u, fake_http_url_fetcher_factory()->requests_created());
@@ -232,12 +228,12 @@ TEST_F(TokenHandleValidatorTest, InvalidTokenHandleTimeout) {
 
 TEST_F(TokenHandleValidatorTest, TokenHandleValidityStillFresh) {
   FakeTokenHandleValidator validator;
+  FakeInternetAvailabilityChecker internet_checker;
 
   CComBSTR sid;
   ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
                       L"username", L"password", L"fullname", L"comment",
                       L"gaia-id", base::string16(), &sid));
-  ASSERT_EQ(S_OK, SetUserProperty(OLE2W(sid), kUserTokenHandle, L"th"));
 
   validator.StartRefreshingTokenHandleValidity();
 
@@ -250,6 +246,71 @@ TEST_F(TokenHandleValidatorTest, TokenHandleValidityStillFresh) {
   EXPECT_TRUE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
   EXPECT_EQ(1u, fake_http_url_fetcher_factory()->requests_created());
 }
+
+class TokenHandleValidatorUserLockingTest
+    : public TokenHandleValidatorTest,
+      public ::testing::WithParamInterface<
+          std::tuple<CREDENTIAL_PROVIDER_USAGE_SCENARIO, bool>> {
+ private:
+  FakeScopedLsaPolicyFactory fake_scoped_lsa_policy_factory_;
+};
+
+TEST_P(TokenHandleValidatorUserLockingTest, LockUserWithInvalidTokenHandle) {
+  const CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus = std::get<0>(GetParam());
+  const bool mdm_url_set = std::get<1>(GetParam());
+  FakeTokenHandleValidator validator;
+  FakeInternetAvailabilityChecker internet_checker;
+
+  if (mdm_url_set)
+    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+
+  bool should_user_locking_be_enabled =
+      mdm_url_set && CGaiaCredentialProvider::IsUsageScenarioSupported(cpus);
+
+  EXPECT_EQ(should_user_locking_be_enabled,
+            validator.IsUserAccessBlockingEnforced(cpus));
+
+  CComBSTR sid;
+  constexpr wchar_t username[] = L"username";
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      username, L"password", L"fullname", L"comment",
+                      L"gaia-id", base::string16(), &sid));
+
+  // Invalid token fetch result.
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(TokenHandleValidator::kTokenInfoUrl),
+      FakeWinHttpUrlFetcher::Headers(), "{}");
+
+  validator.StartRefreshingTokenHandleValidity();
+  validator.DenySigninForUsersWithInvalidTokenHandles(cpus);
+
+  DWORD reg_value = 0;
+
+  EXPECT_FALSE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
+  EXPECT_EQ(should_user_locking_be_enabled, validator.IsUserLocked(OLE2W(sid)));
+  if (should_user_locking_be_enabled) {
+    EXPECT_EQ(S_OK, GetMachineRegDWORD(kWinlogonUserListRegKey, username,
+                                       &reg_value));
+    EXPECT_EQ(0u, reg_value);
+  }
+
+  // Unlock the user.
+  validator.AllowSigninForUsersWithInvalidTokenHandles();
+
+  EXPECT_EQ(false, validator.IsUserLocked(OLE2W(sid)));
+  EXPECT_NE(S_OK,
+            GetMachineRegDWORD(kWinlogonUserListRegKey, username, &reg_value));
+}
+
+INSTANTIATE_TEST_CASE_P(
+    ,
+    TokenHandleValidatorUserLockingTest,
+    ::testing::Combine(::testing::Values(CPUS_INVALID,
+                                         CPUS_LOGON,
+                                         CPUS_UNLOCK_WORKSTATION,
+                                         CPUS_CHANGE_PASSWORD,
+                                         CPUS_CREDUI),
+                       ::testing::Bool()));
 
 class TimeClockOverrideValue {
  public:
@@ -271,7 +332,6 @@ TEST_F(TokenHandleValidatorTest, ValidTokenHandle_Refresh) {
   ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
                       L"username", L"password", L"fullname", L"comment",
                       L"gaia-id", base::string16(), &sid));
-  ASSERT_EQ(S_OK, SetUserProperty(OLE2W(sid), kUserTokenHandle, L"th"));
 
   validator.StartRefreshingTokenHandleValidity();
 

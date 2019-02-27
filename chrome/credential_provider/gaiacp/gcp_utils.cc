@@ -49,6 +49,7 @@
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+#include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 
 namespace credential_provider {
@@ -694,8 +695,8 @@ HRESULT EnrollToGoogleMdmIfNeeded(const base::DictionaryValue& properties) {
   // Only enroll with MDM if configured.
   wchar_t mdm_url[256];
   ULONG mdm_length = base::size(mdm_url);
-  HRESULT hr = credential_provider::GetGlobalFlag(
-      credential_provider::kRegMdmUrl, mdm_url, &mdm_length);
+  HRESULT hr =
+      credential_provider::GetGlobalFlag(kRegMdmUrl, mdm_url, &mdm_length);
   if (FAILED(hr) || mdm_length == 0)
     return S_OK;
 

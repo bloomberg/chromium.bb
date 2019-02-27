@@ -4,6 +4,7 @@
 
 #include "chrome/credential_provider/gaiacp/token_handle_validator.h"
 
+#include <ntstatus.h>
 #include <process.h>
 
 #include "base/json/json_reader.h"
@@ -12,9 +13,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
+#include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/internet_availability_checker.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+#include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/gaiacp/win_http_url_fetcher.h"
@@ -152,6 +155,53 @@ HRESULT CleanupStaleUsersAndGetTokenHandles(
   return S_OK;
 }
 
+HRESULT ModifyUserAccess(const std::unique_ptr<ScopedLsaPolicy>& policy,
+                         const base::string16& sid,
+                         bool allow) {
+  OSUserManager* manager = OSUserManager::Get();
+  wchar_t username[kWindowsUsernameBufferLength];
+
+  HRESULT hr = manager->FindUserBySID(sid.c_str(), username,
+                                      base::size(username), nullptr, 0);
+
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "FindUserBySID sid=" << sid << " hr=" << putHR(hr);
+    return hr;
+  }
+
+  PSID psid;
+  if (!::ConvertStringSidToSidW(sid.c_str(), &psid)) {
+    HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
+    LOGFN(ERROR) << "ConvertStringSidToSidW sid=" << sid << " hr=" << putHR(hr);
+    return hr;
+  }
+
+  bool should_write_user_list_reg_key = true;
+  if (allow) {
+    hr = policy->RemoveAccountRights(psid, SE_DENY_INTERACTIVE_LOGON_NAME);
+    if (FAILED(hr) && hr != HRESULT_FROM_NT(STATUS_OBJECT_NAME_NOT_FOUND))
+      LOGFN(ERROR) << "RemoveAccountRights sid=" << sid << " hr=" << putHR(hr);
+  } else {
+    hr = policy->AddAccountRights(psid, SE_DENY_INTERACTIVE_LOGON_NAME);
+    if (FAILED(hr)) {
+      should_write_user_list_reg_key = false;
+      LOGFN(ERROR) << "AddAccountRights sid=" << sid << " hr=" << putHR(hr);
+    }
+  }
+
+  ::LocalFree(psid);
+
+  if (should_write_user_list_reg_key) {
+    hr = SetUserWinlogonUserListEntry(username, allow);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "SetUserWinlogonUserListEntry username=" << username
+                   << " hr=" << putHR(hr);
+    }
+  }
+
+  return hr;
+}
+
 }  // namespace
 
 TokenHandleValidator::TokenHandleInfo::TokenHandleInfo() = default;
@@ -189,6 +239,78 @@ TokenHandleValidator::~TokenHandleValidator() = default;
 
 bool TokenHandleValidator::HasInternetConnection() {
   return InternetAvailabilityChecker::Get()->HasInternetConnection();
+}
+
+void TokenHandleValidator::GetAssociatedSids(
+    std::set<base::string16>* associated_sids) {
+  DCHECK(associated_sids);
+
+  associated_sids->clear();
+  for (const auto& it : user_to_token_handle_info_)
+    associated_sids->insert(it.first);
+}
+
+bool TokenHandleValidator::IsUserAccessBlockingEnforced(
+    CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus) const {
+  if (!MdmEnrollmentEnabled())
+    return false;
+
+  if (!CGaiaCredentialProvider::IsUsageScenarioSupported(cpus))
+    return false;
+
+  return true;
+}
+
+void TokenHandleValidator::DenySigninForUsersWithInvalidTokenHandles(
+    CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus) {
+  if (!IsUserAccessBlockingEnforced(cpus))
+    return;
+
+  std::map<base::string16, UserTokenHandleInfo> sids_to_association;
+
+  HRESULT hr = GetUserTokenHandles(&sids_to_association);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "GetUserAssociationInfo hr=" << putHR(hr);
+    return;
+  }
+
+  auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
+
+  for (const auto& sid_to_association : sids_to_association) {
+    const base::string16& sid = sid_to_association.first;
+    if (locked_user_sids_.find(sid) != locked_user_sids_.end())
+      continue;
+
+    if (!IsTokenHandleValidForUser(sid)) {
+      LOGFN(INFO) << "Revoking access for sid=" << sid;
+      HRESULT hr = ModifyUserAccess(policy, sid, false);
+      if (FAILED(hr)) {
+        LOGFN(ERROR) << "ModifyUserAccess sid=" << sid << " hr=" << putHR(hr);
+      } else {
+        locked_user_sids_.insert(sid);
+      }
+    }
+  }
+}
+
+HRESULT TokenHandleValidator::RestoreUserAccess(const base::string16& sid) {
+  if (locked_user_sids_.erase(sid)) {
+    auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
+    return ModifyUserAccess(policy, sid, true);
+  }
+
+  return S_OK;
+}
+
+void TokenHandleValidator::AllowSigninForUsersWithInvalidTokenHandles() {
+  LOGFN(INFO);
+  auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
+  for (auto& sid : locked_user_sids_) {
+    HRESULT hr = ModifyUserAccess(policy, sid, true);
+    if (FAILED(hr))
+      LOGFN(ERROR) << "ModifyUserAccess sid=" << sid << " hr=" << putHR(hr);
+  }
+  locked_user_sids_.clear();
 }
 
 void TokenHandleValidator::StartRefreshingTokenHandleValidity() {
@@ -314,6 +436,15 @@ bool TokenHandleValidator::IsTokenHandleValidForUser(
     validity_it->second->is_valid =
         WaitForQueryResult(validity_it->second->pending_query_thread,
                            validity_it->second->last_update);
+    if (!validity_it->second->is_valid) {
+      // Clear the token handle to delete it. At this point we know it is
+      // definetely invalid so if we remove the handle completely we will
+      // no longer need to query it and can just assume immediately that
+      // the user needs to be reauthorized.
+      HRESULT hr = SetUserProperty(sid, kUserTokenHandle, L"");
+      if (FAILED(hr))
+        LOGFN(ERROR) << "SetUserProperty hr=" << putHR(hr);
+    }
     validity_it->second->pending_query_thread.Close();
     base::Time now = base::Time::Now();
     // NOTE: Don't always update |last_update| because the result of this query

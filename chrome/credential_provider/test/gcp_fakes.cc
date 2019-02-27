@@ -271,6 +271,23 @@ HRESULT FakeOSUserManager::RemoveUser(const wchar_t* username,
   return S_OK;
 }
 
+HRESULT FakeOSUserManager::GetUserFullname(const wchar_t* domain,
+                                           const wchar_t* username,
+                                           base::string16* fullname) {
+  DCHECK(domain);
+  DCHECK(username);
+  DCHECK(fullname);
+  if (username_to_info_.count(username) > 0) {
+    const UserInfo& info = username_to_info_[username];
+    if (info.domain == domain) {
+      *fullname = info.fullname;
+      return S_OK;
+    }
+  }
+
+  return HRESULT_FROM_WIN32(NERR_UserNotFound);
+}
+
 FakeOSUserManager::UserInfo::UserInfo(const wchar_t* domain,
                                       const wchar_t* password,
                                       const wchar_t* fullname,
@@ -391,6 +408,11 @@ HRESULT FakeScopedLsaPolicy::RetrievePrivateData(const wchar_t* key,
 }
 
 HRESULT FakeScopedLsaPolicy::AddAccountRights(PSID sid, const wchar_t* right) {
+  return S_OK;
+}
+
+HRESULT FakeScopedLsaPolicy::RemoveAccountRights(PSID sid,
+                                                 const wchar_t* right) {
   return S_OK;
 }
 
@@ -546,6 +568,10 @@ FakeTokenHandleValidator::FakeTokenHandleValidator(
 
 FakeTokenHandleValidator::~FakeTokenHandleValidator() {
   *GetInstanceStorage() = original_validator_;
+}
+
+bool FakeTokenHandleValidator::IsUserLocked(const base::string16& sid) const {
+  return locked_user_sids_.find(sid) != locked_user_sids_.end();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
