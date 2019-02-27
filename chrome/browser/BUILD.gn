@@ -1826,6 +1826,7 @@ jumbo_split_static_library("browser") {
     "//chrome/browser/metrics:expired_histograms_array",
     "//chrome/browser/metrics/variations:chrome_ui_string_overrider_factory",
     "//chrome/browser/net:probe_message_proto",
+    "//chrome/browser/notifications",
     "//chrome/browser/profiling_host",
     "//chrome/browser/push_messaging:budget_proto",
     "//chrome/browser/resource_coordinator:mojo_bindings",
