@@ -148,6 +148,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSmbProviderClient
   // Adds |share| to the list of shares for |server_url| in |shares_|.
   void AddToShares(const std::string& server_url, const std::string& share);
 
+  // Adds a failure to get shares for |server_url|.
+  void AddGetSharesFailure(const std::string& server_url,
+                           smbprovider::ErrorType error);
+
   // Clears |shares_|.
   void ClearShares();
 
@@ -155,6 +159,15 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSmbProviderClient
   void RunStoredReadDirCallback();
 
  private:
+  // Result of a GetShares() call.
+  struct ShareResult {
+    ShareResult();
+    ~ShareResult();
+
+    smbprovider::ErrorType error = smbprovider::ErrorType::ERROR_OK;
+    std::vector<std::string> shares;
+  };
+
   // Controls whether |stored_readdir_callback_| should run synchronously.
   bool should_run_synchronously_ = true;
 
@@ -163,7 +176,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSmbProviderClient
   std::map<uint8_t, std::vector<std::string>> netbios_parse_results_;
 
   // Mapping of a server url to its shares.
-  std::map<std::string, std::vector<std::string>> shares_;
+  std::map<std::string, ShareResult> shares_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSmbProviderClient);
 };
