@@ -131,6 +131,8 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
     {"history.js", IDR_HISTORY_HISTORY_JS},
     {"images/100/sign_in_promo.jpg", IDR_HISTORY_IMAGES_100_SIGN_IN_PROMO_JPG},
     {"images/200/sign_in_promo.jpg", IDR_HISTORY_IMAGES_200_SIGN_IN_PROMO_JPG},
+    {"images/sign_in_promo_dark.svg",
+     IDR_HISTORY_IMAGES_SIGN_IN_PROMO_DARK_SVG},
     {"strings.html", IDR_HISTORY_STRINGS_HTML},
 #if !BUILDFLAG(OPTIMIZE_WEBUI)
     {"app.html", IDR_HISTORY_APP_HTML},
