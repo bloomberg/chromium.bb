@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
+#include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
@@ -197,6 +198,9 @@ class WizardController : public BaseScreenDelegate,
   // Exit handlers:
   void OnUpdateScreenExit(UpdateScreen::Result result);
   void OnUpdateCompleted();
+  void OnAutoEnrollmentCheckScreenExit();
+  void OnEnrollmentScreenExit(EnrollmentScreen::Result result);
+  void OnEnrollmentDone();
   void OnHIDDetectionCompleted();
   void OnWelcomeContinued();
   void OnNetworkBack();
@@ -206,7 +210,6 @@ class WizardController : public BaseScreenDelegate,
   void OnEulaAccepted();
   void OnEulaBack();
   void OnUserImageSelected();
-  void OnEnrollmentDone();
   void OnDeviceModificationCanceled();
   void OnKioskAutolaunchCanceled();
   void OnKioskAutolaunchConfirmed();
@@ -223,7 +226,6 @@ class WizardController : public BaseScreenDelegate,
   void OnRecommendAppsSkipped();
   void OnRecommendAppsSelected();
   void OnAppDownloadingFinished();
-  void OnAutoEnrollmentCheckCompleted();
   void OnDemoSetupFinished();
   void OnDemoSetupCanceled();
   void OnDemoPreferencesContinued();

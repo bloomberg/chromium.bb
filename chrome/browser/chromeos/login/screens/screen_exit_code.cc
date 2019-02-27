@@ -30,11 +30,11 @@ std::string ExitCodeToString(ScreenExitCode code) {
       return "EULA_ACCEPTED";
     case ScreenExitCode::EULA_BACK:
       return "EULA_BACK";
-    case ScreenExitCode::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED:
+    case ScreenExitCode::DEPRECATED_ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED:
       return "ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED";
-    case ScreenExitCode::ENTERPRISE_ENROLLMENT_COMPLETED:
+    case ScreenExitCode::DEPRECATED_ENTERPRISE_ENROLLMENT_COMPLETED:
       return "ENTERPRISE_ENROLLMENT_COMPLETED";
-    case ScreenExitCode::ENTERPRISE_ENROLLMENT_BACK:
+    case ScreenExitCode::DEPRECATED_ENTERPRISE_ENROLLMENT_BACK:
       return "ENTERPRISE_ENROLLMENT_BACK";
     case ScreenExitCode::RESET_CANCELED:
       return "RESET_CANCELED";

@@ -8,13 +8,18 @@ namespace chromeos {
 
 MockAutoEnrollmentCheckScreen::MockAutoEnrollmentCheckScreen(
     BaseScreenDelegate* base_screen_delegate,
-    AutoEnrollmentCheckScreenView* view)
-    : AutoEnrollmentCheckScreen(base_screen_delegate, view) {}
+    AutoEnrollmentCheckScreenView* view,
+    const base::RepeatingClosure& exit_callback)
+    : AutoEnrollmentCheckScreen(base_screen_delegate, view, exit_callback) {}
 
 MockAutoEnrollmentCheckScreen::~MockAutoEnrollmentCheckScreen() {}
 
 void MockAutoEnrollmentCheckScreen::RealShow() {
   AutoEnrollmentCheckScreen::Show();
+}
+
+void MockAutoEnrollmentCheckScreen::ExitScreen() {
+  RunExitCallback();
 }
 
 MockAutoEnrollmentCheckScreenView::MockAutoEnrollmentCheckScreenView() =

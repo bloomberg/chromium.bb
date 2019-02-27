@@ -45,10 +45,12 @@ AutoEnrollmentCheckScreen* AutoEnrollmentCheckScreen::Get(
 
 AutoEnrollmentCheckScreen::AutoEnrollmentCheckScreen(
     BaseScreenDelegate* base_screen_delegate,
-    AutoEnrollmentCheckScreenView* view)
+    AutoEnrollmentCheckScreenView* view,
+    const base::RepeatingClosure& exit_callback)
     : BaseScreen(base_screen_delegate,
                  OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK),
       view_(view),
+      exit_callback_(exit_callback),
       auto_enrollment_controller_(nullptr),
       captive_portal_status_(
           NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN),
@@ -246,13 +248,11 @@ void AutoEnrollmentCheckScreen::SignalCompletion() {
   auto_enrollment_progress_subscription_.reset();
   connect_request_subscription_.reset();
 
-  // Calling Finish() can cause |this| destruction, so let other methods finish
-  // their work before.
+  // Running exit callback can cause |this| destruction, so let other methods
+  // finish their work before.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &AutoEnrollmentCheckScreen::Finish, weak_ptr_factory_.GetWeakPtr(),
-          ScreenExitCode::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED));
+      FROM_HERE, base::BindOnce(&AutoEnrollmentCheckScreen::RunExitCallback,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool AutoEnrollmentCheckScreen::IsCompleted() const {

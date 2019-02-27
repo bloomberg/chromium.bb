@@ -383,7 +383,9 @@ std::unique_ptr<BaseScreen> WizardController::CreateScreen(OobeScreen screen) {
     return std::make_unique<EulaScreen>(this, this, oobe_ui->GetEulaView());
   } else if (screen == OobeScreen::SCREEN_OOBE_ENROLLMENT) {
     return std::make_unique<EnrollmentScreen>(
-        this, oobe_ui->GetEnrollmentScreenView());
+        this, oobe_ui->GetEnrollmentScreenView(),
+        base::BindRepeating(&WizardController::OnEnrollmentScreenExit,
+                            weak_factory_.GetWeakPtr()));
   } else if (screen == OobeScreen::SCREEN_OOBE_RESET) {
     return std::make_unique<chromeos::ResetScreen>(this,
                                                    oobe_ui->GetResetView());
@@ -425,7 +427,9 @@ std::unique_ptr<BaseScreen> WizardController::CreateScreen(OobeScreen screen) {
         this, oobe_ui->GetHIDDetectionView());
   } else if (screen == OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK) {
     return std::make_unique<AutoEnrollmentCheckScreen>(
-        this, oobe_ui->GetAutoEnrollmentCheckScreenView());
+        this, oobe_ui->GetAutoEnrollmentCheckScreenView(),
+        base::BindRepeating(&WizardController::OnAutoEnrollmentCheckScreenExit,
+                            weak_factory_.GetWeakPtr()));
   } else if (screen == OobeScreen::SCREEN_DEVICE_DISABLED) {
     return std::make_unique<DeviceDisabledScreen>(
         this, oobe_ui->GetDeviceDisabledScreenView());
@@ -711,7 +715,9 @@ void WizardController::SkipUpdateEnrollAfterEula() {
 }
 
 void WizardController::OnScreenExit(OobeScreen screen) {
-  DCHECK_EQ(screen, current_screen_->screen_id());
+  DCHECK(current_screen_->screen_id() == screen ||
+         (current_screen_->screen_id() == OobeScreen::SCREEN_ERROR_MESSAGE &&
+          previous_screen_->screen_id() == screen));
 
   if (IsOOBEStepToTrack(screen)) {
     RecordUMAHistogramForOOBEStepCompletionTime(
@@ -743,6 +749,54 @@ void WizardController::OnUpdateScreenExit(UpdateScreen::Result result) {
 
 void WizardController::OnUpdateCompleted() {
   ShowAutoEnrollmentCheckScreen();
+}
+
+void WizardController::OnAutoEnrollmentCheckScreenExit() {
+  VLOG(1) << "Auto enrollment check screen exit.";
+  OnScreenExit(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
+
+  // Check whether the device is disabled. OnDeviceDisabledChecked() will be
+  // invoked when the result of this check is known. Until then, the current
+  // screen will remain visible and will continue showing a spinner.
+  g_browser_process->platform_part()
+      ->device_disabling_manager()
+      ->CheckWhetherDeviceDisabledDuringOOBE(
+          base::BindRepeating(&WizardController::OnDeviceDisabledChecked,
+                              weak_factory_.GetWeakPtr()));
+}
+
+void WizardController::OnEnrollmentScreenExit(EnrollmentScreen::Result result) {
+  VLOG(1) << "Enrollment screen exit: " << static_cast<int>(result);
+  OnScreenExit(OobeScreen::SCREEN_OOBE_ENROLLMENT);
+
+  switch (result) {
+    case EnrollmentScreen::Result::COMPLETED:
+      OnEnrollmentDone();
+      break;
+    case EnrollmentScreen::Result::BACK:
+      retry_auto_enrollment_check_ = true;
+      ShowAutoEnrollmentCheckScreen();
+      break;
+  }
+}
+
+void WizardController::OnEnrollmentDone() {
+  PerformOOBECompletedActions();
+
+  // Restart to make the login page pick up the policy changes resulting from
+  // enrollment recovery.  (Not pretty, but this codepath is rarely exercised.)
+  if (prescribed_enrollment_config_.mode ==
+          policy::EnrollmentConfig::MODE_RECOVERY ||
+      prescribed_enrollment_config_.mode ==
+          policy::EnrollmentConfig::MODE_ENROLLED_ROLLBACK) {
+    chrome::AttemptRestart();
+    return;
+  }
+
+  if (KioskAppManager::Get()->IsAutoLaunchEnabled())
+    AutoLaunchKioskApp();
+  else
+    ShowLoginScreen(LoginScreenContext());
 }
 
 void WizardController::OnHIDDetectionCompleted() {
@@ -853,26 +907,6 @@ void WizardController::OnChangedMetricsReportingState(bool enabled) {
 
 void WizardController::OnUserImageSelected() {
   OnOobeFlowFinished();
-}
-
-void WizardController::OnEnrollmentDone() {
-  PerformOOBECompletedActions();
-
-  // Restart to make the login page pick up the policy changes resulting from
-  // enrollment recovery.  (Not pretty, but this codepath is rarely exercised.)
-  if (prescribed_enrollment_config_.mode ==
-          policy::EnrollmentConfig::MODE_RECOVERY ||
-      prescribed_enrollment_config_.mode ==
-          policy::EnrollmentConfig::MODE_ENROLLED_ROLLBACK) {
-    chrome::AttemptRestart();
-  }
-
-  // TODO(mnissler): Unify the logic for auto-login for Public Sessions and
-  // Kiosk Apps and make this code cover both cases: http://crbug.com/234694.
-  if (KioskAppManager::Get()->IsAutoLaunchEnabled())
-    AutoLaunchKioskApp();
-  else
-    ShowLoginScreen(LoginScreenContext());
 }
 
 void WizardController::OnDeviceModificationCanceled() {
@@ -994,17 +1028,6 @@ void WizardController::OnAssistantOptInFlowFinished() {
 
 void WizardController::OnMultiDeviceSetupFinished() {
   OnOobeFlowFinished();
-}
-
-void WizardController::OnAutoEnrollmentCheckCompleted() {
-  // Check whether the device is disabled. OnDeviceDisabledChecked() will be
-  // invoked when the result of this check is known. Until then, the current
-  // screen will remain visible and will continue showing a spinner.
-  g_browser_process->platform_part()
-      ->device_disabling_manager()
-      ->CheckWhetherDeviceDisabledDuringOOBE(
-          base::Bind(&WizardController::OnDeviceDisabledChecked,
-                     weak_factory_.GetWeakPtr()));
 }
 
 void WizardController::OnDemoSetupFinished() {
@@ -1414,16 +1437,6 @@ void WizardController::OnExit(ScreenExitCode exit_code) {
       break;
     case ScreenExitCode::ENABLE_DEBUGGING_FINISHED:
       OnDeviceModificationCanceled();
-      break;
-    case ScreenExitCode::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED:
-      OnAutoEnrollmentCheckCompleted();
-      break;
-    case ScreenExitCode::ENTERPRISE_ENROLLMENT_COMPLETED:
-      OnEnrollmentDone();
-      break;
-    case ScreenExitCode::ENTERPRISE_ENROLLMENT_BACK:
-      retry_auto_enrollment_check_ = true;
-      ShowAutoEnrollmentCheckScreen();
       break;
     case ScreenExitCode::RESET_CANCELED:
       OnDeviceModificationCanceled();
