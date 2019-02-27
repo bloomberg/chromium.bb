@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/bind.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/ParentMap.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
