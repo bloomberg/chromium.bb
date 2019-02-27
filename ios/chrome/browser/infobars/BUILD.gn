@@ -34,6 +34,21 @@ source_set("infobars") {
   ]
 }
 
+source_set("badge") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "infobar_badge_tab_helper.h",
+    "infobar_badge_tab_helper.mm",
+    "infobar_badge_tab_helper_delegate.h",
+  ]
+  deps = [
+    ":infobars",
+    "//ios/chrome/browser/ui/infobars:feature_flags",
+    "//ios/chrome/browser/ui/infobars:infobars_ui",
+    "//ios/web",
+  ]
+}
+
 source_set("public") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
