@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/optional.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -35,8 +36,11 @@ class EnrollmentScreenUnitTest : public testing::Test {
 
   // Creates the EnrollmentScreen and sets required parameters.
   virtual void SetUpEnrollmentScreen() {
-    enrollment_screen_.reset(
-        new EnrollmentScreen(&mock_delegate_, &mock_view_));
+    enrollment_screen_ = std::make_unique<EnrollmentScreen>(
+        &mock_delegate_, &mock_view_,
+        base::BindRepeating(&EnrollmentScreenUnitTest::HandleScreenExit,
+                            base::Unretained(this)));
+
     enrollment_screen_->SetEnrollmentConfig(enrollment_config_);
   }
 
@@ -62,9 +66,17 @@ class EnrollmentScreenUnitTest : public testing::Test {
  protected:
   std::unique_ptr<EnrollmentScreen> enrollment_screen_;
 
+  // The last result reported by |enrollment_screen_|.
+  base::Optional<EnrollmentScreen::Result> last_screen_result_;
+
   policy::EnrollmentConfig enrollment_config_;
 
  private:
+  void HandleScreenExit(EnrollmentScreen::Result screen_result) {
+    EXPECT_FALSE(last_screen_result_.has_value());
+    last_screen_result_ = screen_result;
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   // Replace main thread's task runner with a mock for duration of test.
   base::ScopedMockTimeMessageLoopTaskRunner runner_;
@@ -180,16 +192,12 @@ class ZeroTouchEnrollmentScreenUnitTest : public EnrollmentScreenUnitTest {
 
     SetUpEnrollmentScreen();
 
-    // Set up expectation for BaseScreenDelegate::OnExit to be called
-    // with BaseScreenDelegate::ENTERPRISE_ENROLLMENT_COMPLETED
-    // This is how we check that the code finishes and cleanly exits
-    // the enterprise enrollment flow.
-    EXPECT_CALL(*GetBaseScreenDelegate(),
-                OnExit(ScreenExitCode::ENTERPRISE_ENROLLMENT_COMPLETED))
-        .Times(1);
-
     // Start zero-touch enrollment.
     enrollment_screen_->Show();
+
+    // Verify that enrollment flow finished and exited cleanly.
+    ASSERT_TRUE(last_screen_result_.has_value());
+    EXPECT_EQ(EnrollmentScreen::Result::COMPLETED, last_screen_result_.value());
   }
 
   void TestFallback() {

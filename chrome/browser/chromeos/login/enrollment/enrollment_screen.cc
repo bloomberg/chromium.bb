@@ -94,9 +94,11 @@ EnrollmentScreen* EnrollmentScreen::Get(ScreenManager* manager) {
 }
 
 EnrollmentScreen::EnrollmentScreen(BaseScreenDelegate* base_screen_delegate,
-                                   EnrollmentScreenView* view)
+                                   EnrollmentScreenView* view,
+                                   const ScreenExitCallback& exit_callback)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_ENROLLMENT),
       view_(view),
+      exit_callback_(exit_callback),
       weak_ptr_factory_(this) {
   retry_policy_.num_errors_to_ignore = 0;
   retry_policy_.initial_delay_ms = kInitialDelayMS;
@@ -308,16 +310,19 @@ void EnrollmentScreen::OnCancel() {
   if (authpolicy_login_helper_)
     authpolicy_login_helper_->CancelRequestsAndRestart();
 
-  const ScreenExitCode exit_code =
-      config_.is_forced() ? ScreenExitCode::ENTERPRISE_ENROLLMENT_BACK
-                          : ScreenExitCode::ENTERPRISE_ENROLLMENT_COMPLETED;
-  ClearAuth(
-      base::Bind(&EnrollmentScreen::Finish, base::Unretained(this), exit_code));
+  // The callback passed to ClearAuth is called either immediately or gets
+  // wrapped in a callback bound to a weak pointer from |weak_factory_| - in
+  // either case, passing exit_callback_ directly should be safe.
+  ClearAuth(base::BindRepeating(
+      exit_callback_, config_.is_forced() ? Result::BACK : Result::COMPLETED));
 }
 
 void EnrollmentScreen::OnConfirmationClosed() {
-  ClearAuth(base::Bind(&EnrollmentScreen::Finish, base::Unretained(this),
-                       ScreenExitCode::ENTERPRISE_ENROLLMENT_COMPLETED));
+  // The callback passed to ClearAuth is called either immediately or gets
+  // wrapped in a callback bound to a weak pointer from |weak_factory_| - in
+  // either case, passing exit_callback_ directly should be safe.
+  ClearAuth(base::BindRepeating(exit_callback_, Result::COMPLETED));
+
   // Restart browser to switch from DeviceCloudPolicyManagerChromeOS to
   // DeviceActiveDirectoryPolicyManager.
   if (g_browser_process->platform_part()

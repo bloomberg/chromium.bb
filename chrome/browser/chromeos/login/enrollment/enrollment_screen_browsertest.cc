@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/mock_enrollment_screen.h"
@@ -47,6 +48,8 @@ class EnrollmentScreenTest : public InProcessBrowserTest {
               enrollment_screen());
     static_cast<BaseScreen*>(enrollment_screen())->base_screen_delegate_ =
         &mock_base_screen_delegate_;
+    enrollment_screen()->set_exit_callback_for_testing(base::BindRepeating(
+        &EnrollmentScreenTest::HandleScreenExit, base::Unretained(this)));
   }
   void TearDownOnMainThread() override {
     static_cast<BaseScreen*>(enrollment_screen())->base_screen_delegate_ =
@@ -66,30 +69,51 @@ class EnrollmentScreenTest : public InProcessBrowserTest {
     return &mock_base_screen_delegate_;
   }
 
+  // Runs loop until the enrollment screen reports exit. It will return the
+  // last result returned by the enrollment screen.
+  // NOTE: This will not work if the screen is expected to be shown more than
+  // once - to support that use case, screen_result_ would have to be reset
+  // before showing another EnrollmentScreen.
+  EnrollmentScreen::Result WaitForScreenExit() {
+    if (screen_result_.has_value())
+      return screen_result_.value();
+    if (!screen_exit_waiter_)
+      screen_exit_waiter_ = std::make_unique<base::RunLoop>();
+    screen_exit_waiter_->Run();
+    return screen_result_.value();
+  }
+
  private:
+  void HandleScreenExit(EnrollmentScreen::Result result) {
+    EXPECT_FALSE(screen_result_.has_value());
+    screen_result_ = result;
+    if (screen_exit_waiter_)
+      screen_exit_waiter_->Quit();
+  }
+
   MockBaseScreenDelegate mock_base_screen_delegate_;
+  base::Optional<EnrollmentScreen::Result> screen_result_;
+
+  // Created lazily in WaitForScreenExit().
+  // Note: unique_ptr because RunLoops cannot be created without a thread
+  // context, which does not exist in the test ctor.
+  std::unique_ptr<base::RunLoop> screen_exit_waiter_;
 
   DISALLOW_COPY_AND_ASSIGN(EnrollmentScreenTest);
 };
 
 IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, TestCancel) {
-  base::RunLoop run_loop;
-  EXPECT_CALL(*mock_base_screen_delegate(),
-              OnExit(ScreenExitCode::ENTERPRISE_ENROLLMENT_COMPLETED))
-      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   enrollment_screen()->OnCancel();
-  run_loop.Run();
+  EnrollmentScreen::Result screen_result = WaitForScreenExit();
+  EXPECT_EQ(EnrollmentScreen::Result::COMPLETED, screen_result);
 }
 
 IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, TestSuccess) {
   WizardController::SkipEnrollmentPromptsForTesting();
-  base::RunLoop run_loop;
-  EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
-  EXPECT_CALL(*mock_base_screen_delegate(),
-              OnExit(ScreenExitCode::ENTERPRISE_ENROLLMENT_COMPLETED))
-      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   enrollment_screen()->OnDeviceAttributeUpdatePermission(false /* granted */);
-  run_loop.Run();
+  EnrollmentScreen::Result screen_result = WaitForScreenExit();
+  EXPECT_EQ(EnrollmentScreen::Result::COMPLETED, screen_result);
+
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
@@ -109,14 +133,10 @@ class AttestationAuthEnrollmentScreenTest : public EnrollmentScreenTest {
 };
 
 IN_PROC_BROWSER_TEST_F(AttestationAuthEnrollmentScreenTest, TestCancel) {
-  base::RunLoop run_loop;
-
-  EXPECT_CALL(*mock_base_screen_delegate(),
-              OnExit(ScreenExitCode::ENTERPRISE_ENROLLMENT_COMPLETED))
-      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   ASSERT_FALSE(enrollment_screen()->AdvanceToNextAuth());
   enrollment_screen()->OnCancel();
-  run_loop.Run();
+  EnrollmentScreen::Result screen_result = WaitForScreenExit();
+  EXPECT_EQ(EnrollmentScreen::Result::COMPLETED, screen_result);
 }
 
 IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, EnrollmentSpinner) {
@@ -161,13 +181,10 @@ class ForcedAttestationAuthEnrollmentScreenTest : public EnrollmentScreenTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ForcedAttestationAuthEnrollmentScreenTest, TestCancel) {
-  base::RunLoop run_loop;
-  EXPECT_CALL(*mock_base_screen_delegate(),
-              OnExit(ScreenExitCode::ENTERPRISE_ENROLLMENT_BACK))
-      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   ASSERT_FALSE(enrollment_screen()->AdvanceToNextAuth());
   enrollment_screen()->OnCancel();
-  run_loop.Run();
+  EnrollmentScreen::Result screen_result = WaitForScreenExit();
+  EXPECT_EQ(EnrollmentScreen::Result::BACK, screen_result);
 }
 
 class MultiAuthEnrollmentScreenTest : public EnrollmentScreenTest {
@@ -193,13 +210,10 @@ class MultiAuthEnrollmentScreenTest : public EnrollmentScreenTest {
 };
 
 IN_PROC_BROWSER_TEST_F(MultiAuthEnrollmentScreenTest, TestCancel) {
-  base::RunLoop run_loop;
-  EXPECT_CALL(*mock_base_screen_delegate(),
-              OnExit(ScreenExitCode::ENTERPRISE_ENROLLMENT_BACK))
-      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   ASSERT_TRUE(enrollment_screen()->AdvanceToNextAuth());
   enrollment_screen()->OnCancel();
-  run_loop.Run();
+  EnrollmentScreen::Result screen_result = WaitForScreenExit();
+  EXPECT_EQ(EnrollmentScreen::Result::BACK, screen_result);
 }
 
 class ProvisionedEnrollmentScreenTest : public EnrollmentScreenTest {
@@ -223,12 +237,9 @@ class ProvisionedEnrollmentScreenTest : public EnrollmentScreenTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ProvisionedEnrollmentScreenTest, TestBackButton) {
-  base::RunLoop run_loop;
-  EXPECT_CALL(*mock_base_screen_delegate(),
-              OnExit(ScreenExitCode::ENTERPRISE_ENROLLMENT_BACK))
-      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   enrollment_screen()->OnCancel();
-  run_loop.Run();
+  EnrollmentScreen::Result screen_result = WaitForScreenExit();
+  EXPECT_EQ(EnrollmentScreen::Result::BACK, screen_result);
 }
 
 }  // namespace chromeos

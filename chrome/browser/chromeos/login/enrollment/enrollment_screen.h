@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -45,8 +45,12 @@ class EnrollmentScreen
       public EnrollmentScreenView::Controller,
       public ActiveDirectoryJoinDelegate {
  public:
+  enum class Result { COMPLETED, BACK };
+
+  using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   EnrollmentScreen(BaseScreenDelegate* base_screen_delegate,
-                   EnrollmentScreenView* view);
+                   EnrollmentScreenView* view,
+                   const ScreenExitCallback& exit_callback);
   ~EnrollmentScreen() override;
 
   static EnrollmentScreen* Get(ScreenManager* manager);
@@ -91,6 +95,14 @@ class EnrollmentScreen
 
   // Used for testing.
   EnrollmentScreenView* GetView() { return view_; }
+
+  void set_exit_callback_for_testing(const ScreenExitCallback& callback) {
+    exit_callback_ = callback;
+  }
+
+ protected:
+  // Expose the exit_callback to test screen overrides.
+  ScreenExitCallback* exit_callback() { return &exit_callback_; }
 
  private:
   friend class MultiLicenseEnrollmentScreenUnitTest;
@@ -175,6 +187,7 @@ class EnrollmentScreen
                                const std::string& machine_domain);
 
   EnrollmentScreenView* view_;
+  ScreenExitCallback exit_callback_;
   policy::EnrollmentConfig config_;
   policy::EnrollmentConfig enrollment_config_;
   Auth current_auth_ = AUTH_OAUTH;
