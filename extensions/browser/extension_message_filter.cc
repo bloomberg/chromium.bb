@@ -21,6 +21,7 @@
 #include "extensions/browser/process_map.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/api/messaging/messaging_endpoint.h"
+#include "extensions/common/api/messaging/port_context.h"
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
@@ -384,7 +385,7 @@ void ExtensionMessageFilter::OnExtensionWakeEventPage(
 }
 
 void ExtensionMessageFilter::OnOpenChannelToExtension(
-    int routing_id,
+    const PortContext& source_context,
     const ExtensionMsg_ExternalConnectionInfo& info,
     const std::string& channel_name,
     const PortId& port_id) {
@@ -396,64 +397,75 @@ void ExtensionMessageFilter::OnOpenChannelToExtension(
         this, bad_message::EMF_INVALID_CHANNEL_SOURCE_TYPE);
     return;
   }
+  // TODO(crbug.com/925918): Support messages from Service Worker.
+  DCHECK(source_context.is_for_render_frame());
   if (browser_context_) {
     MessageService::Get(browser_context_)
-        ->OpenChannelToExtension(render_process_id_, routing_id, port_id,
-                                 info.source_endpoint,
-                                 nullptr /* opener_port */, info.target_id,
-                                 info.source_url, channel_name);
+        ->OpenChannelToExtension(
+            render_process_id_, source_context.frame->routing_id, port_id,
+            info.source_endpoint, nullptr /* opener_port */, info.target_id,
+            info.source_url, channel_name);
   }
 }
 
 void ExtensionMessageFilter::OnOpenChannelToNativeApp(
-    int routing_id,
+    const PortContext& source_context,
     const std::string& native_app_name,
     const PortId& port_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // TODO(crbug.com/925918): Support messages from Service Worker.
+  DCHECK(source_context.is_for_render_frame());
   if (!browser_context_)
     return;
 
   MessageService::Get(browser_context_)
-      ->OpenChannelToNativeApp(render_process_id_, routing_id, port_id,
+      ->OpenChannelToNativeApp(render_process_id_,
+                               source_context.frame->routing_id, port_id,
                                native_app_name);
 }
 
 void ExtensionMessageFilter::OnOpenChannelToTab(
-    int routing_id,
+    const PortContext& source_context,
     const ExtensionMsg_TabTargetConnectionInfo& info,
     const std::string& extension_id,
     const std::string& channel_name,
     const PortId& port_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // TODO(crbug.com/925918): Support messages from Service Worker.
+  DCHECK(source_context.is_for_render_frame());
   if (!browser_context_)
     return;
 
   MessageService::Get(browser_context_)
-      ->OpenChannelToTab(render_process_id_, routing_id, port_id, info.tab_id,
-                         info.frame_id, extension_id, channel_name);
+      ->OpenChannelToTab(render_process_id_, source_context.frame->routing_id,
+                         port_id, info.tab_id, info.frame_id, extension_id,
+                         channel_name);
 }
 
-void ExtensionMessageFilter::OnOpenMessagePort(
-    int routing_id,
-    const PortId& port_id) {
+void ExtensionMessageFilter::OnOpenMessagePort(const PortContext& source,
+                                               const PortId& port_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // TODO(crbug.com/925918): Support messages from Service Worker.
+  DCHECK(source.is_for_render_frame());
   if (!browser_context_)
     return;
 
   MessageService::Get(browser_context_)
-      ->OpenPort(port_id, render_process_id_, routing_id);
+      ->OpenPort(port_id, render_process_id_, source.frame->routing_id);
 }
 
-void ExtensionMessageFilter::OnCloseMessagePort(
-    int routing_id,
-    const PortId& port_id,
-    bool force_close) {
+void ExtensionMessageFilter::OnCloseMessagePort(const PortContext& port_context,
+                                                const PortId& port_id,
+                                                bool force_close) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // TODO(crbug.com/925918): Support messages from Service Worker.
+  DCHECK(port_context.is_for_render_frame());
   if (!browser_context_)
     return;
 
   MessageService::Get(browser_context_)
-      ->ClosePort(port_id, render_process_id_, routing_id, force_close);
+      ->ClosePort(port_id, render_process_id_, port_context.frame->routing_id,
+                  force_close);
 }
 
 void ExtensionMessageFilter::OnPostMessage(const PortId& port_id,

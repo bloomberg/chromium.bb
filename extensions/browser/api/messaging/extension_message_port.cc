@@ -202,9 +202,11 @@ void ExtensionMessagePort::RevalidatePort() {
   DCHECK(!extension_process_);
   DCHECK_LE(frames_.size(), 1U);
 
+  // TODO(crbug.com/925918): Support messages to Service Worker.
+  const int thread_id = kMainThreadId;
   // If the port is unknown, the renderer will respond by closing the port.
   SendToPort(std::make_unique<ExtensionMsg_ValidateMessagePort>(
-      MSG_ROUTING_NONE, port_id_));
+      MSG_ROUTING_NONE, thread_id, port_id_));
 }
 
 void ExtensionMessagePort::DispatchOnConnect(
@@ -228,19 +230,25 @@ void ExtensionMessagePort::DispatchOnConnect(
   info.guest_process_id = guest_process_id;
   info.guest_render_frame_routing_id = guest_render_frame_routing_id;
 
+  // TODO(crbug.com/925918): Support messages to Service Worker.
+  const int thread_id = kMainThreadId;
   SendToPort(std::make_unique<ExtensionMsg_DispatchOnConnect>(
-      MSG_ROUTING_NONE, port_id_, channel_name, source, info));
+      MSG_ROUTING_NONE, thread_id, port_id_, channel_name, source, info));
 }
 
 void ExtensionMessagePort::DispatchOnDisconnect(
     const std::string& error_message) {
+  // TODO(crbug.com/925918): Support messages to Service Worker.
+  const int thread_id = kMainThreadId;
   SendToPort(std::make_unique<ExtensionMsg_DispatchOnDisconnect>(
-      MSG_ROUTING_NONE, port_id_, error_message));
+      MSG_ROUTING_NONE, thread_id, port_id_, error_message));
 }
 
 void ExtensionMessagePort::DispatchOnMessage(const Message& message) {
-  SendToPort(std::make_unique<ExtensionMsg_DeliverMessage>(MSG_ROUTING_NONE,
-                                                           port_id_, message));
+  // TODO(crbug.com/925918): Support messages to Service Worker.
+  const int thread_id = kMainThreadId;
+  SendToPort(std::make_unique<ExtensionMsg_DeliverMessage>(
+      MSG_ROUTING_NONE, thread_id, port_id_, message));
 }
 
 void ExtensionMessagePort::IncrementLazyKeepaliveCount() {

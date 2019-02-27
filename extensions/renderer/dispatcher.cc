@@ -903,7 +903,8 @@ void Dispatcher::OnCancelSuspend(const std::string& extension_id) {
                 nullptr);
 }
 
-void Dispatcher::OnDeliverMessage(const PortId& target_port_id,
+void Dispatcher::OnDeliverMessage(int worker_thread_id,
+                                  const PortId& target_port_id,
                                   const Message& message) {
   bindings_system_->GetMessagingService()->DeliverMessage(
       *script_context_set_, target_port_id, message,
@@ -911,10 +912,12 @@ void Dispatcher::OnDeliverMessage(const PortId& target_port_id,
 }
 
 void Dispatcher::OnDispatchOnConnect(
+    int worker_thread_id,
     const PortId& target_port_id,
     const std::string& channel_name,
     const ExtensionMsg_TabConnectionInfo& source,
     const ExtensionMsg_ExternalConnectionInfo& info) {
+  DCHECK_EQ(kMainThreadId, worker_thread_id);
   DCHECK(!target_port_id.is_opener);
 
   bindings_system_->GetMessagingService()->DispatchOnConnect(
@@ -922,8 +925,10 @@ void Dispatcher::OnDispatchOnConnect(
       NULL);  // All render frames.
 }
 
-void Dispatcher::OnDispatchOnDisconnect(const PortId& port_id,
+void Dispatcher::OnDispatchOnDisconnect(int worker_thread_id,
+                                        const PortId& port_id,
                                         const std::string& error_message) {
+  DCHECK_EQ(kMainThreadId, worker_thread_id);
   bindings_system_->GetMessagingService()->DispatchOnDisconnect(
       *script_context_set_, port_id, error_message,
       NULL);  // All render frames.

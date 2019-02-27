@@ -27,6 +27,7 @@ class BrowserContext;
 namespace extensions {
 class EventRouter;
 struct Message;
+struct PortContext;
 struct PortId;
 
 // This class filters out incoming extension-specific IPC messages from the
@@ -99,20 +100,21 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
   void OnExtensionWakeEventPage(int request_id,
                                 const std::string& extension_id);
 
-  void OnOpenChannelToExtension(int routing_id,
+  void OnOpenChannelToExtension(const PortContext& source_context,
                                 const ExtensionMsg_ExternalConnectionInfo& info,
                                 const std::string& channel_name,
                                 const extensions::PortId& port_id);
-  void OnOpenChannelToNativeApp(int routing_id,
+  void OnOpenChannelToNativeApp(const PortContext& source_context,
                                 const std::string& native_app_name,
                                 const extensions::PortId& port_id);
-  void OnOpenChannelToTab(int routing_id,
+  void OnOpenChannelToTab(const PortContext& source_context,
                           const ExtensionMsg_TabTargetConnectionInfo& info,
                           const std::string& extension_id,
                           const std::string& channel_name,
                           const extensions::PortId& port_id);
-  void OnOpenMessagePort(int routing_id, const extensions::PortId& port_id);
-  void OnCloseMessagePort(int routing_id,
+  void OnOpenMessagePort(const PortContext& port_context,
+                         const extensions::PortId& port_id);
+  void OnCloseMessagePort(const PortContext& context,
                           const extensions::PortId& port_id,
                           bool force_close);
   void OnPostMessage(const extensions::PortId& port_id,

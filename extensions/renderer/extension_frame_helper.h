@@ -133,15 +133,18 @@ class ExtensionFrameHelper
   void DraggableRegionsChanged() override;
 
   // IPC handlers.
-  void OnExtensionValidateMessagePort(const PortId& id);
+  void OnExtensionValidateMessagePort(int worker_thread_id, const PortId& id);
   void OnExtensionDispatchOnConnect(
+      int worker_thread_id,
       const PortId& target_port_id,
       const std::string& channel_name,
       const ExtensionMsg_TabConnectionInfo& source,
       const ExtensionMsg_ExternalConnectionInfo& info);
-  void OnExtensionDeliverMessage(const PortId& target_port_id,
+  void OnExtensionDeliverMessage(int worker_thread_id,
+                                 const PortId& target_port_id,
                                  const Message& message);
-  void OnExtensionDispatchOnDisconnect(const PortId& id,
+  void OnExtensionDispatchOnDisconnect(int worker_thread_id,
+                                       const PortId& id,
                                        const std::string& error_message);
   void OnExtensionSetTabId(int tab_id);
   void OnUpdateBrowserWindowId(int browser_window_id);
