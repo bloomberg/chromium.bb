@@ -457,7 +457,7 @@ class PageLoadMetricsObserver {
   // Invoked when a media element starts playing.
   virtual void MediaStartedPlaying(
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
-      bool is_in_main_frame) {}
+      content::RenderFrameHost* render_frame_host) {}
 
   // Invoked when the UMA metrics subsystem is persisting metrics as the
   // application goes into the background, on platforms where the browser

@@ -586,6 +586,11 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="Timeout during installability check, site status unknown"/>
 </enum>
 
+<enum name="AdFrameMediaStatus">
+  <int value="0" label="Media not played"/>
+  <int value="1" label="Media played"/>
+</enum>
+
 <enum name="AdFrameSizeInterventionStatus">
   <int value="0" label="None"/>
   <int value="1" label="Triggered"/>

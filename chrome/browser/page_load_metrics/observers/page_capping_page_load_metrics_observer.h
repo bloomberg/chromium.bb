@@ -84,7 +84,7 @@ class PageCappingPageLoadMetricsObserver
       content::NavigationHandle* navigation_handle) override;
   void MediaStartedPlaying(
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
-      bool is_in_main_frame) override;
+      content::RenderFrameHost* render_frame_host) override;
   ObservePolicy FlushMetricsOnAppEnterBackground(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;

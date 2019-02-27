@@ -620,9 +620,9 @@ void PageLoadTracker::UpdatePageEndInternal(
 
 void PageLoadTracker::MediaStartedPlaying(
     const content::WebContentsObserver::MediaPlayerInfo& video_type,
-    bool is_in_main_frame) {
+    content::RenderFrameHost* render_frame_host) {
   for (const auto& observer : observers_)
-    observer->MediaStartedPlaying(video_type, is_in_main_frame);
+    observer->MediaStartedPlaying(video_type, render_frame_host);
 }
 
 void PageLoadTracker::OnTimingChanged() {

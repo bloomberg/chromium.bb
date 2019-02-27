@@ -158,8 +158,7 @@ void MetricsWebContentsObserver::MediaStartedPlaying(
     return;
   }
   if (committed_load_)
-    committed_load_->MediaStartedPlaying(
-        video_type, id.render_frame_host == web_contents()->GetMainFrame());
+    committed_load_->MediaStartedPlaying(video_type, id.render_frame_host);
 }
 
 void MetricsWebContentsObserver::WillStartNavigationRequest(

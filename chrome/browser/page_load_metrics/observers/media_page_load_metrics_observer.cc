@@ -61,7 +61,7 @@ void MediaPageLoadMetricsObserver::OnComplete(
 
 void MediaPageLoadMetricsObserver::MediaStartedPlaying(
     const content::WebContentsObserver::MediaPlayerInfo& video_type,
-    bool is_in_main_frame) {
+    content::RenderFrameHost* render_frame_host) {
   if (played_media_)
     return;
   // Track media (audio or video) in all frames of the page load.

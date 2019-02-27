@@ -64,6 +64,10 @@ const char kAdFrameSizeInterventionHistogramId[] =
     "PageLoad.Clients.Ads.FrameCounts.AdFrames.PerFrame."
     "SizeIntervention";
 
+const char kAdFrameSizeInterventionMediaStatusHistogramId[] =
+    "PageLoad.Clients.Ads.FrameCounts.AdFrames.PerFrame."
+    "SizeIntervention.MediaStatus";
+
 enum class Origin {
   kNavigation,
   kAnchorAttribute,
@@ -827,6 +831,73 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       kAdFrameSizeInterventionHistogramId,
       FrameData::FrameSizeInterventionStatus::kTriggered, 1);
   histogram_tester.ExpectBucketCount(
+      kAdFrameSizeInterventionMediaStatusHistogramId,
+      FrameData::MediaStatus::kNotPlayed, 1);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kAdFrameSizeIntervention, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+                       AdFrameSizeInterventionMediaStatusPlayed) {
+  base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  embedded_test_server()->ServeFilesFromSourceDirectory(
+      "chrome/test/data/ad_tagging");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+
+  const char kHttpResponseHeader[] =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n";
+  auto resource_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/style.css",
+          true /*relative_url_is_prefix*/);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL url = embedded_test_server()->GetURL("foo.com", "/frame_factory.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // This page will load an autoplay video.
+  contents->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::ASCIIToUTF16("createAdFrame('multiple_mimes.html', 'test');"));
+
+  // Intercept one of the resources loaded by "multiple_mimes.html" and load
+  // enough bytes to trigger the intervention.
+  resource_response->WaitForRequest();
+  resource_response->Send(kHttpResponseHeader);
+  resource_response->Send(
+      std::string(FrameData::kFrameSizeInterventionByteThreshold, ' '));
+  resource_response->Done();
+
+  waiter->AddMinimumAdResourceExpectation(8);
+  waiter->Wait();
+
+  // Wait for the video to play.
+  content::RenderFrameHost* ad_frame =
+      ChildFrameAt(contents->GetMainFrame(), 0);
+  EXPECT_EQ("true", content::EvalJsWithManualReply(
+                        ad_frame,
+                        "var video = document.getElementsByTagName('video')[0];"
+                        "video.onplaying = () => { "
+                        "window.domAutomationController.send('true'); };"
+                        "video.play();"));
+
+  // Close all tabs to report metrics.
+  browser()->tab_strip_model()->CloseAllTabs();
+
+  histogram_tester.ExpectBucketCount(
+      kAdFrameSizeInterventionHistogramId,
+      FrameData::FrameSizeInterventionStatus::kTriggered, 1);
+  histogram_tester.ExpectBucketCount(
+      kAdFrameSizeInterventionMediaStatusHistogramId,
+      FrameData::MediaStatus::kPlayed, 1);
+  histogram_tester.ExpectBucketCount(
       "Blink.UseCounter.Features",
       blink::mojom::WebFeature::kAdFrameSizeIntervention, 1);
 }
@@ -883,6 +954,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   histogram_tester.ExpectBucketCount(
       kAdFrameSizeInterventionHistogramId,
       FrameData::FrameSizeInterventionStatus::kNone, 1);
+  histogram_tester.ExpectTotalCount(
+      kAdFrameSizeInterventionMediaStatusHistogramId, 0);
   histogram_tester.ExpectBucketCount(
       "Blink.UseCounter.Features",
       blink::mojom::WebFeature::kAdFrameSizeIntervention, 0);

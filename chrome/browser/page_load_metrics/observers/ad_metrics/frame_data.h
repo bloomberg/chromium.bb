@@ -62,6 +62,15 @@ class FrameData {
     kMaxValue = kOther,
   };
 
+  // Whether or not media has been played in this frame. These values are
+  // persisted to logs. Entries should not be renumbered and numeric values
+  // should never be reused.
+  enum class MediaStatus {
+    kNotPlayed = 0,
+    kPlayed = 1,
+    kMaxValue = kPlayed,
+  };
+
   // Maximum number of bytes allowed to be loaded by a frame.
   static const int kFrameSizeInterventionByteThreshold = 1050 * 1024;
 
@@ -136,6 +145,12 @@ class FrameData {
     return size_intervention_status_;
   }
 
+  MediaStatus media_status() const { return media_status_; }
+
+  void set_media_status(MediaStatus media_status) {
+    media_status_ = media_status;
+  }
+
  private:
   // Updates whether or not this frame meets the criteria for visibility.
   void UpdateFrameVisibility();
@@ -165,6 +180,7 @@ class FrameData {
   FrameVisibility visibility_;
   gfx::Size frame_size_;
   url::Origin origin_;
+  MediaStatus media_status_ = MediaStatus::kNotPlayed;
 
   // Indicates whether or not this frame would have triggered a size
   // intervention.
