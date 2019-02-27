@@ -160,5 +160,21 @@ class ProcessPerfResultsIntegrationTest(unittest.TestCase):
           "speedometer.reference": True
         })
 
+
+class ProcessPerfResults_HardenedUnittest(unittest.TestCase):
+  def test_handle_perf_json_test_results_IOError(self):
+    directory_map = {
+        'benchmark.example': ['directory_that_does_not_exist']}
+    test_results_list = []
+    ppr_module._handle_perf_json_test_results(directory_map, test_results_list)
+    self.assertEqual(test_results_list, [])
+
+  def test_merge_perf_results_IOError(self):
+    results_filename = None
+    directories = ['directory_that_does_not_exist']
+    ppr_module._merge_perf_results('benchmark.example', results_filename,
+                                   directories)
+
+
 if __name__ == '__main__':
   unittest.main()

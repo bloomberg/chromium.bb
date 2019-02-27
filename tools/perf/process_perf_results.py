@@ -188,24 +188,30 @@ def _handle_perf_json_test_results(
       # Obtain the test name we are running
       is_ref = '.reference' in benchmark_name
       enabled = True
-      with open(join(directory, 'test_results.json')) as json_data:
-        json_results = json.load(json_data)
-        if not json_results:
-          # Output is null meaning the test didn't produce any results.
-          # Want to output an error and continue loading the rest of the
-          # test results.
-          print 'No results produced for %s, skipping upload' % directory
-          continue
-        if json_results.get('version') == 3:
-          # Non-telemetry tests don't have written json results but
-          # if they are executing then they are enabled and will generate
-          # chartjson results.
-          if not bool(json_results.get('tests')):
-            enabled = False
-        if not is_ref:
-          # We don't need to upload reference build data to the
-          # flakiness dashboard since we don't monitor the ref build
-          test_results_list.append(json_results)
+      try:
+        with open(join(directory, 'test_results.json')) as json_data:
+          json_results = json.load(json_data)
+          if not json_results:
+            # Output is null meaning the test didn't produce any results.
+            # Want to output an error and continue loading the rest of the
+            # test results.
+            print 'No results produced for %s, skipping upload' % directory
+            continue
+          if json_results.get('version') == 3:
+            # Non-telemetry tests don't have written json results but
+            # if they are executing then they are enabled and will generate
+            # chartjson results.
+            if not bool(json_results.get('tests')):
+              enabled = False
+          if not is_ref:
+            # We don't need to upload reference build data to the
+            # flakiness dashboard since we don't monitor the ref build
+            test_results_list.append(json_results)
+      except IOError as e:
+        # TODO(crbug.com/936602): Figure out how to surface these errors. Should
+        # we have a non-zero exit code if we error out?
+        logging.error('Failed to obtain test results for %s: %s',
+                      benchmark_name, e)
       if not enabled:
         # We don't upload disabled benchmarks or tests that are run
         # as a smoke test
@@ -375,8 +381,18 @@ def _merge_perf_results(benchmark_name, results_filename, directories):
   collected_results = []
   for directory in directories:
     filename = join(directory, 'perf_results.json')
-    with open(filename) as pf:
-      collected_results.append(json.load(pf))
+    try:
+      with open(filename) as pf:
+        collected_results.append(json.load(pf))
+    except IOError as e:
+      # TODO(crbug.com/936602): Figure out how to surface these errors. Should
+      # we have a non-zero exit code if we error out?
+      logging.error('Failed to obtain perf results from %s: %s',
+                    directory, e)
+  if not collected_results:
+    logging.error('Failed to obtain any perf results from %s.',
+                  benchmark_name)
+    return
 
   # Assuming that multiple shards will only be chartjson or histogram set
   # Non-telemetry benchmarks only ever run on one shard
