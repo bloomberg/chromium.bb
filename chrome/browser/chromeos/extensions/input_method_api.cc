@@ -219,9 +219,8 @@ InputMethodPrivateGetEncryptSyncEnabledFunction::Run() {
 #if !defined(OS_CHROMEOS)
   EXTENSION_FUNCTION_VALIDATE(false);
 #else
-  syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(
-          Profile::FromBrowserContext(browser_context()));
+  syncer::SyncService* sync_service = ProfileSyncServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(browser_context()));
   if (!sync_service)
     return RespondNow(Error("Sync service is not ready for current profile."));
   std::unique_ptr<base::Value> ret(new base::Value(

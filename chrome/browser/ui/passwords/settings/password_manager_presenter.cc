@@ -313,8 +313,7 @@ void PasswordManagerPresenter::RequestShowPassword(
   DCHECK(!it->second.empty());
   const auto& form = *it->second[0];
   syncer::SyncService* sync_service = nullptr;
-  if (ProfileSyncServiceFactory::HasProfileSyncService(
-          password_view_->GetProfile())) {
+  if (ProfileSyncServiceFactory::HasSyncService(password_view_->GetProfile())) {
     sync_service =
         ProfileSyncServiceFactory::GetForProfile(password_view_->GetProfile());
   }

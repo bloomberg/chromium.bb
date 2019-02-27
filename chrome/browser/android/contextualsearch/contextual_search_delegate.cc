@@ -380,7 +380,7 @@ bool ContextualSearchDelegate::CanSendPageURL(
     return false;
 
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
+      ProfileSyncServiceFactory::GetForProfile(profile);
   if (!sync_service)
     return false;
 

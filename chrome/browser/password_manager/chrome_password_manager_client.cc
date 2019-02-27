@@ -120,8 +120,8 @@ typedef autofill::SavePasswordProgressLogger Logger;
 namespace {
 
 const syncer::SyncService* GetSyncService(Profile* profile) {
-  if (ProfileSyncServiceFactory::HasProfileSyncService(profile))
-    return ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
+  if (ProfileSyncServiceFactory::HasSyncService(profile))
+    return ProfileSyncServiceFactory::GetForProfile(profile);
   return nullptr;
 }
 
@@ -564,7 +564,7 @@ ChromePasswordManagerClient::GetPasswordStore() const {
 password_manager::SyncState ChromePasswordManagerClient::GetPasswordSyncState()
     const {
   const syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   return password_manager_util::GetPasswordSyncState(sync_service);
 }
 
@@ -799,7 +799,7 @@ bool ChromePasswordManagerClient::ShouldAnnotateNavigationEntries(
     return false;
 
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
+      ProfileSyncServiceFactory::GetForProfile(profile);
   if (!sync_service || !sync_service->IsSyncFeatureActive() ||
       sync_service->GetUserSettings()->IsUsingSecondaryPassphrase()) {
     return false;

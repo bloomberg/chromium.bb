@@ -267,7 +267,7 @@ MessageType GetStatusLabels(Profile* profile,
                             ActionType* action_type) {
   DCHECK(profile);
   syncer::SyncService* service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
+      ProfileSyncServiceFactory::GetForProfile(profile);
   const bool is_user_signout_allowed =
       signin_util::IsUserSignoutAllowedForProfile(profile);
   GoogleServiceAuthError auth_error =
@@ -288,7 +288,7 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
     int* content_string_id,
     int* button_string_id) {
   const syncer::SyncService* service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
+      ProfileSyncServiceFactory::GetForProfile(profile);
 
   // The order or priority is going to be: 1. Unrecoverable errors.
   // 2. Auth errors. 3. Protocol errors. 4. Passphrase errors.

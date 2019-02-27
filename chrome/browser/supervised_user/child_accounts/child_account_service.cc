@@ -218,7 +218,7 @@ bool ChildAccountService::SetActive(bool active) {
   // Trigger a sync reconfig to enable/disable the right SU data types.
   // The logic to do this lives in the SupervisedUserSyncDataTypeController.
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   if (sync_service->GetUserSettings()->IsFirstSetupComplete()) {
     // Trigger a reconfig by grabbing a SyncSetupInProgressHandle and
     // immediately releasing it again (via the temporary unique_ptr going away).

@@ -80,7 +80,7 @@ base::string16 PasswordDialogControllerImpl::GetAutoSigninText() const {
 
 bool PasswordDialogControllerImpl::ShouldShowFooter() const {
   const syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   return password_bubble_experiment::IsSmartLockUser(sync_service);
 }
 

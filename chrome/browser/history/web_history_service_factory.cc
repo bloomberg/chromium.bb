@@ -16,8 +16,7 @@ namespace {
 // Returns true if the user is signed in and full history sync is enabled,
 // and false otherwise.
 bool IsHistorySyncEnabled(Profile* profile) {
-  syncer::SyncService* sync =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
+  syncer::SyncService* sync = ProfileSyncServiceFactory::GetForProfile(profile);
   return sync && sync->IsSyncFeatureActive() && !sync->IsLocalSyncEnabled() &&
          sync->GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES);
 }

@@ -90,8 +90,7 @@ ChromeAutocompleteProviderClient::ChromeAutocompleteProviderClient(
       url_consent_helper_(
           unified_consent::UrlKeyedDataCollectionConsentHelper::
               NewPersonalizedDataCollectionConsentHelper(
-                  ProfileSyncServiceFactory::GetSyncServiceForProfile(
-                      profile_))),
+                  ProfileSyncServiceFactory::GetForProfile(profile_))),
       storage_partition_(nullptr) {
   if (OmniboxFieldTrial::IsPedalSuggestionsEnabled())
     pedal_provider_ = std::make_unique<OmniboxPedalProvider>(*this);
@@ -290,7 +289,7 @@ bool ChromeAutocompleteProviderClient::IsAuthenticated() const {
 
 bool ChromeAutocompleteProviderClient::IsSyncActive() const {
   syncer::SyncService* sync =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   return sync && sync->IsSyncFeatureActive();
 }
 

@@ -38,7 +38,7 @@ bool AppSyncUIState::ShouldObserveAppSyncForProfile(Profile* profile) {
   if (!profile || profile->IsOffTheRecord())
     return false;
 
-  if (!ProfileSyncServiceFactory::HasProfileSyncService(profile))
+  if (!ProfileSyncServiceFactory::HasSyncService(profile))
     return false;
 
   return profile->IsNewProfile();

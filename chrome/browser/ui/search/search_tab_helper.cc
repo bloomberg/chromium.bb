@@ -98,8 +98,7 @@ void RecordNewTabLoadTime(content::WebContents* contents) {
 // disable a feature that should not be shown to users who prefer not to sync
 // their history.
 bool IsHistorySyncEnabled(Profile* profile) {
-  syncer::SyncService* sync =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
+  syncer::SyncService* sync = ProfileSyncServiceFactory::GetForProfile(profile);
   return sync && sync->IsSyncFeatureEnabled() &&
          sync->GetUserSettings()->GetChosenDataTypes().Has(syncer::TYPED_URLS);
 }

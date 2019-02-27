@@ -269,11 +269,11 @@ void ChromeInternalLogSource::Fetch(SysLogsSourceCallback callback) {
 void ChromeInternalLogSource::PopulateSyncLogs(SystemLogsResponse* response) {
   // We are only interested in sync logs for the primary user profile.
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
-  if (!profile || !ProfileSyncServiceFactory::HasProfileSyncService(profile))
+  if (!profile || !ProfileSyncServiceFactory::HasSyncService(profile))
     return;
 
   syncer::SyncService* service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
+      ProfileSyncServiceFactory::GetForProfile(profile);
   std::unique_ptr<base::DictionaryValue> sync_logs(
       syncer::sync_ui_util::ConstructAboutInformation(service,
                                                       chrome::GetChannel()));

@@ -282,7 +282,7 @@ void WallpaperPrivateGetSyncSettingFunction::CheckSyncServiceStatus() {
 
   Profile* profile =  Profile::FromBrowserContext(browser_context());
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
+      ProfileSyncServiceFactory::GetForProfile(profile);
   if (!sync_service || !sync_service->CanSyncFeatureStart()) {
     // Sync as a whole is disabled.
     dict->SetBoolean(kSyncThemes, false);

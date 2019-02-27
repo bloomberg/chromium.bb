@@ -37,7 +37,7 @@ AuthSyncObserver::~AuthSyncObserver() {}
 
 void AuthSyncObserver::StartObserving() {
   syncer::SyncService* const sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   if (sync_service)
     sync_service->AddObserver(this);
 
@@ -51,7 +51,7 @@ void AuthSyncObserver::StartObserving() {
 
 void AuthSyncObserver::Shutdown() {
   syncer::SyncService* const sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   if (sync_service)
     sync_service->RemoveObserver(this);
 

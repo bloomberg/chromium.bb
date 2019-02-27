@@ -269,7 +269,7 @@ void SyncFileSystemService::Shutdown() {
   remote_service_.reset();
 
   syncer::SyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   if (profile_sync_service)
     profile_sync_service->RemoveObserver(this);
 
@@ -475,7 +475,7 @@ void SyncFileSystemService::Initialize(
   remote_sync_runners_.push_back(std::move(remote_syncer));
 
   syncer::SyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   if (profile_sync_service) {
     UpdateSyncEnabledStatus(profile_sync_service);
     profile_sync_service->AddObserver(this);

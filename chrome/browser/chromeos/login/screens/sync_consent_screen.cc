@@ -34,8 +34,8 @@ constexpr base::TimeDelta kSyncConsentSettingsShowDelay =
     base::TimeDelta::FromSeconds(3);
 
 syncer::SyncService* GetSyncService(Profile* profile) {
-  if (ProfileSyncServiceFactory::HasProfileSyncService(profile))
-    return ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
+  if (ProfileSyncServiceFactory::HasSyncService(profile))
+    return ProfileSyncServiceFactory::GetForProfile(profile);
   return nullptr;
 }
 

@@ -56,7 +56,7 @@ bool SameDomainOrHost(const GURL& gurl1, const GURL& gurl2) {
 
 bool IsSignedInAndSyncingPasswordsNormally(Profile* profile) {
   return password_manager_util::IsSyncingWithNormalEncryption(
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile));
+      ProfileSyncServiceFactory::GetForProfile(profile));
 }
 
 bool IsGooglePasswordManagerEnabled() {
@@ -170,7 +170,7 @@ base::string16 GetDisplayFederation(const autofill::PasswordForm& form) {
 
 bool IsSyncingAutosignSetting(Profile* profile) {
   const syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
+      ProfileSyncServiceFactory::GetForProfile(profile);
   return (sync_service &&
           sync_service->GetUserSettings()->IsFirstSetupComplete() &&
           sync_service->IsSyncFeatureActive() &&
