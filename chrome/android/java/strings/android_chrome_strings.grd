@@ -4074,6 +4074,17 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Opened tabs closed
       </message>
 
+      <message name="IDS_BOTTOM_TAB_GRID_TITLE_PLACEHOLDER" desc="Placeholder string for the BottomTabGrid toolbar title.">
+        <!-- <ph name="TABS_COUNT">%1$d<ex>5</ex></ph> tabs -->
+        {TABS_COUNT, plural,
+            =1 {<ph name="TABS_COUNT_ONE">%1$d<ex>1</ex></ph> tab}
+            other {<ph name="TABS_COUNT_MANY">%1$d<ex>8</ex></ph> tabs}
+        }
+      </message>
+
+      <message name="IDS_BOTTOM_TAB_GRID_NEW_TAB" desc="Accessibility string for BottomTabGridToolbar option 'create new tab in group' indicated visually by the '+' sign.">
+        Create new tab in group
+      </message>
     </messages>
   </release>
 </grit>

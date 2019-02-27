@@ -15,14 +15,18 @@ import javax.inject.Inject;
 /** A {@link BottomSheetContent} that displays tab grid. **/
 public class BottomTabGridSheetContent implements BottomSheetContent {
     private final TabListRecyclerView mRecyclerView;
+    private final BottomTabGridSheetToolbarCoordinator mToolbarCoordinator;
 
     /**
      * Construct a new {@link ContextualSuggestionsBottomSheetContent}.
      * @param recyclerView The {@link TabListRecyclerView} holding the tab grid.
+     * @param toolbarCoordinator instance of {@link BottomTabGridSheetToolbarCoordinator}
      */
     @Inject
-    BottomTabGridSheetContent(TabListRecyclerView recyclerView) {
+    BottomTabGridSheetContent(TabListRecyclerView recyclerView,
+            BottomTabGridSheetToolbarCoordinator toolbarCoordinator) {
         mRecyclerView = recyclerView;
+        mToolbarCoordinator = toolbarCoordinator;
     }
 
     @Override
@@ -32,7 +36,7 @@ public class BottomTabGridSheetContent implements BottomSheetContent {
 
     @Override
     public View getToolbarView() {
-        return null;
+        return mToolbarCoordinator.getView();
     }
 
     @Override

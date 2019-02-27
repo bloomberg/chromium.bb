@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -118,5 +119,10 @@ public class ChromeActivityCommonsModule {
     @Provides
     public CompositorViewHolder provideCompositorViewHolder() {
         return mActivity.getCompositorViewHolder();
+    }
+
+    @Provides
+    public TabCreatorManager provideTabCreatorManager() {
+        return (TabCreatorManager) mActivity;
     }
 }
