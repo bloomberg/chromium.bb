@@ -67,6 +67,7 @@ class CONTENT_EXPORT DevToolsRendererChannel
   void ChildWorkerCreated(blink::mojom::DevToolsAgentPtr worker_devtools_agent,
                           blink::mojom::DevToolsAgentHostRequest host_request,
                           const GURL& url,
+                          const std::string& name,
                           const base::UnguessableToken& devtools_worker_token,
                           bool waiting_for_debugger) override;
   void ChildWorkerDestroyed(DevToolsAgentHostImpl*);

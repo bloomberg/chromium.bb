@@ -54,6 +54,8 @@ class CORE_EXPORT DedicatedWorkerThread : public WorkerThread {
     return worker_object_proxy_;
   }
 
+  String name() const override;
+
  private:
   friend class DedicatedWorkerThreadForTest;
 

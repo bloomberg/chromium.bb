@@ -74,6 +74,10 @@ void DedicatedWorkerThread::ClearWorkerBackingThread() {
   worker_backing_thread_ = nullptr;
 }
 
+String DedicatedWorkerThread::name() const {
+  return name_;
+}
+
 WorkerOrWorkletGlobalScope* DedicatedWorkerThread::CreateWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params) {
   return MakeGarbageCollected<DedicatedWorkerGlobalScope>(

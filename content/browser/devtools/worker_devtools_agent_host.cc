@@ -17,12 +17,14 @@ WorkerDevToolsAgentHost::WorkerDevToolsAgentHost(
     blink::mojom::DevToolsAgentPtr agent_ptr,
     blink::mojom::DevToolsAgentHostRequest host_request,
     const GURL& url,
+    const std::string& name,
     const base::UnguessableToken& devtools_worker_token,
     const std::string& parent_id,
     base::OnceCallback<void(DevToolsAgentHostImpl*)> destroyed_callback)
     : DevToolsAgentHostImpl(devtools_worker_token.ToString()),
       process_id_(process_id),
       url_(url),
+      name_(name),
       parent_id_(parent_id),
       destroyed_callback_(std::move(destroyed_callback)) {
   DCHECK(agent_ptr);
@@ -55,7 +57,7 @@ std::string WorkerDevToolsAgentHost::GetType() {
 }
 
 std::string WorkerDevToolsAgentHost::GetTitle() {
-  return url_.spec();
+  return name_.empty() ? url_.spec() : name_;
 }
 
 std::string WorkerDevToolsAgentHost::GetParentId() {

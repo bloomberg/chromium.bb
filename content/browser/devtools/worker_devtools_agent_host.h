@@ -20,6 +20,7 @@ class WorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
       blink::mojom::DevToolsAgentPtr agent_ptr,
       blink::mojom::DevToolsAgentHostRequest host_request,
       const GURL& url,
+      const std::string& name,
       const base::UnguessableToken& devtools_worker_token,
       const std::string& parent_id,
       base::OnceCallback<void(DevToolsAgentHostImpl*)> destroyed_callback);
@@ -44,6 +45,7 @@ class WorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
 
   const int process_id_;
   const GURL url_;
+  const std::string name_;
   const std::string parent_id_;
   base::OnceCallback<void(DevToolsAgentHostImpl*)> destroyed_callback_;
 
