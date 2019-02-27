@@ -28,12 +28,6 @@
 
 namespace {
 
-// Relaunches the current executable as a Context process.
-base::Process LaunchContextProcess(const base::CommandLine& launch_command,
-                                   const base::LaunchOptions& launch_options) {
-  return base::LaunchProcess(launch_command, launch_options);
-}
-
 // Returns the underlying channel if |directory| is a client endpoint for a
 // |fuchsia::io::Directory| protocol. Otherwise, returns an empty channel.
 zx::channel ValidateDirectoryAndTakeChannel(
@@ -54,29 +48,9 @@ zx::channel ValidateDirectoryAndTakeChannel(
 
 }  // namespace
 
-ContextProviderImpl::ContextProviderImpl() : ContextProviderImpl(false) {}
-
-ContextProviderImpl::ContextProviderImpl(bool use_shared_tmp)
-    : launch_(base::BindRepeating(&LaunchContextProcess)),
-      use_shared_tmp_(use_shared_tmp) {}
+ContextProviderImpl::ContextProviderImpl() = default;
 
 ContextProviderImpl::~ContextProviderImpl() = default;
-
-// static
-std::unique_ptr<ContextProviderImpl> ContextProviderImpl::CreateForTest() {
-  // Bind the unique_ptr in a two step process.
-  // std::make_unique<> doesn't work well with private constructors,
-  // and the unique_ptr(raw_ptr*) constructor format isn't permitted as per
-  // PRESUBMIT.py policy.
-  std::unique_ptr<ContextProviderImpl> provider;
-  provider.reset(new ContextProviderImpl(true));
-  return provider;
-}
-
-void ContextProviderImpl::SetLaunchCallbackForTests(
-    const LaunchContextProcessCallback& launch) {
-  launch_ = launch;
-}
 
 void ContextProviderImpl::Create(
     chromium::web::CreateContextParams params,
@@ -117,9 +91,6 @@ void ContextProviderImpl::Create2(
       std::move(*params.mutable_service_directory()));
   sandbox_policy.UpdateLaunchOptionsForSandbox(&launch_options);
 
-  if (use_shared_tmp_)
-    launch_options.paths_to_clone.push_back(base::FilePath("/tmp"));
-
   // Transfer the ContextRequest handle to a well-known location in the child
   // process' handle table.
   zx::channel context_handle(context_request.TakeChannel());
@@ -157,13 +128,23 @@ void ContextProviderImpl::Create2(
   }
   launch_options.job_handle = job.get();
 
-  ignore_result(launch_.Run(std::move(*base::CommandLine::ForCurrentProcess()),
-                            launch_options));
+  const base::CommandLine* launch_command =
+      base::CommandLine::ForCurrentProcess();
+  if (launch_for_test_)
+    launch_for_test_.Run(*launch_command, launch_options);
+  else
+    base::LaunchProcess(*launch_command, launch_options);
 
+  // |context_handle| was transferred (not copied) to the Context process.
   ignore_result(context_handle.release());
 }
 
 void ContextProviderImpl::Bind(
     fidl::InterfaceRequest<chromium::web::ContextProvider> request) {
   bindings_.AddBinding(this, std::move(request));
+}
+
+void ContextProviderImpl::SetLaunchCallbackForTest(
+    LaunchCallbackForTest launch) {
+  launch_for_test_ = std::move(launch);
 }
