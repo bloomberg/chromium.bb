@@ -67,7 +67,7 @@ class LayoutUnit {
  public:
   constexpr LayoutUnit() : value_(0) {}
   explicit LayoutUnit(int value) { SetValue(value); }
-  explicit LayoutUnit(unsigned short value) { SetValue(value); }
+  explicit LayoutUnit(uint16_t value) { SetValue(value); }
   explicit LayoutUnit(unsigned value) { SetValue(value); }
   explicit LayoutUnit(unsigned long value) {
     value_ = base::saturated_cast<int>(value * kFixedPointDenominator);
@@ -417,7 +417,7 @@ inline LayoutUnit operator*(const LayoutUnit& a, int b) {
   return a * LayoutUnit(b);
 }
 
-inline LayoutUnit operator*(const LayoutUnit& a, unsigned short b) {
+inline LayoutUnit operator*(const LayoutUnit& a, uint16_t b) {
   return a * LayoutUnit(b);
 }
 
@@ -433,7 +433,7 @@ inline LayoutUnit operator*(const LayoutUnit& a, unsigned long long b) {
   return a * LayoutUnit(b);
 }
 
-inline LayoutUnit operator*(unsigned short a, const LayoutUnit& b) {
+inline LayoutUnit operator*(uint16_t a, const LayoutUnit& b) {
   return LayoutUnit(a) * b;
 }
 
@@ -481,7 +481,7 @@ inline LayoutUnit operator/(const LayoutUnit& a, int b) {
   return a / LayoutUnit(b);
 }
 
-inline LayoutUnit operator/(const LayoutUnit& a, unsigned short b) {
+inline LayoutUnit operator/(const LayoutUnit& a, uint16_t b) {
   return a / LayoutUnit(b);
 }
 
@@ -509,7 +509,7 @@ inline LayoutUnit operator/(const int a, const LayoutUnit& b) {
   return LayoutUnit(a) / b;
 }
 
-inline LayoutUnit operator/(unsigned short a, const LayoutUnit& b) {
+inline LayoutUnit operator/(uint16_t a, const LayoutUnit& b) {
   return LayoutUnit(a) / b;
 }
 
