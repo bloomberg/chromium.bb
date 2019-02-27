@@ -308,7 +308,12 @@ class MenuManager {
 
     if (!this.inMenu_ || !this.node_)
       return;
-    const id = this.node_.htmlAttributes.id;
+    let id = this.node_.htmlAttributes.id;
+
+    // If the selection will close the menu, highlight the back button.
+    if (id === SAConstants.MENU_ID)
+      id = SAConstants.BACK_ID;
+
     const enable = !opt_clear;
     this.menuPanel_.setFocusRing(id, enable);
   }

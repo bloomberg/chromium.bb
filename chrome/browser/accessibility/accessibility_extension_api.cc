@@ -396,7 +396,7 @@ AccessibilityPrivateSetSwitchAccessMenuStateFunction::Run() {
 
   int item_count = params->item_count;
 
-  int padding = 16;
+  int padding = 40;
   int item_width = 88;
   int item_height = 60;
   // TODO(anastasi): This should be a preference that the user can change.

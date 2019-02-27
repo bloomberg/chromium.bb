@@ -5,14 +5,16 @@
  */
 
 body {
-  background-color: #131313;
-  border: 1px solid #2C2C2C;
-  margin: 0;
-  padding: 7px;
+  background: none;
+  margin: 10px;
+  padding: 0;
 }
-div#switchaccess-menu-actions {
+#switchaccess_menu_actions {
+  background-color: #131313;
+  border: 2px solid #2C2C2C;
+  border-radius: 4px;
   margin: auto;
-  padding: 2px;
+  padding: 7px;
 }
 .action {
   color: white;
@@ -31,7 +33,8 @@ button.action {
 .action p {
   margin: 0;
 }
-.focus {
+.focus,
+#back.focus {
   outline: solid thick #78e428;  /** light green from automation_manager.js */
 }
 div.focus {
@@ -44,4 +47,13 @@ img {
   margin-inline-end: auto;
   margin-inline-start: auto;
 }
-
+#back {
+  position: fixed;
+  right: 4px;
+  top: 4px;
+}
+button#back {
+  background: #131313;
+  border: solid 1px white;
+  border-radius: 4px;
+}
