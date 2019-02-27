@@ -24,19 +24,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_NETWORK_HINTS_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_NETWORK_HINTS_H_
+#include "third_party/blink/renderer/core/loader/network_hints_interface.h"
 
-#include "third_party/blink/renderer/platform/loader/fetch/cross_origin_attribute_value.h"
-#include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_prescient_networking.h"
 
 namespace blink {
 
-PLATFORM_EXPORT void PrefetchDNS(const String& hostname);
-PLATFORM_EXPORT void Preconnect(const KURL&, const CrossOriginAttributeValue);
+void NetworkHintsInterfaceImpl::DnsPrefetchHost(const String& hostname) const {
+  if (WebPrescientNetworking* prescient_networking =
+          Platform::Current()->PrescientNetworking())
+    prescient_networking->PrefetchDNS(hostname);
+}
+
+void NetworkHintsInterfaceImpl::PreconnectHost(
+    const KURL& url,
+    const CrossOriginAttributeValue cross_origin) const {
+  if (WebPrescientNetworking* prescient_networking =
+          Platform::Current()->PrescientNetworking()) {
+    bool allow_credentials = (cross_origin != kCrossOriginAttributeAnonymous);
+    prescient_networking->Preconnect(url, allow_credentials);
+  }
+}
 
 }  // namespace blink
-
-#endif

@@ -5,7 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_NETWORK_HINTS_INTERFACE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_NETWORK_HINTS_INTERFACE_H_
 
-#include "third_party/blink/renderer/platform/network/network_hints.h"
+#include "third_party/blink/renderer/platform/loader/fetch/cross_origin_attribute_value.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
@@ -17,13 +18,12 @@ class NetworkHintsInterface {
 };
 
 class NetworkHintsInterfaceImpl : public NetworkHintsInterface {
-  void DnsPrefetchHost(const String& host) const override { PrefetchDNS(host); }
+ public:
+  void DnsPrefetchHost(const String& host) const override;
 
   void PreconnectHost(
       const KURL& host,
-      const CrossOriginAttributeValue cross_origin) const override {
-    Preconnect(host, cross_origin);
-  }
+      const CrossOriginAttributeValue cross_origin) const override;
 };
 
 }  // namespace blink
