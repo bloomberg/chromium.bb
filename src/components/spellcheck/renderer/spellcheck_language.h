@@ -67,10 +67,14 @@ class SpellcheckLanguage {
       int tag,
       int* skip_or_misspelling_start,
       int* skip_or_misspelling_len,
+      bool checkForContractions,
       std::vector<base::string16>* optional_suggestions);
 
   // Initialize |spellcheck_| if that hasn't happened yet.
   bool InitializeIfNeeded();
+
+  // Returns the script code the language is based on
+  UScriptCode GetScriptCode() const;
 
   // Return true if the underlying spellcheck engine is enabled.
   bool IsEnabled();

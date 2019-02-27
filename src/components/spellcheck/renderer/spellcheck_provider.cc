@@ -143,6 +143,18 @@ void SpellCheckProvider::RequestTextChecking(
 #endif  // !USE_BROWSER_SPELLCHECKER
 }
 
+void SpellCheckProvider::DidFinishLoad() {
+  if (spellcheck_->IsSpellcheckEnabled()) {
+    blink::WebDocument document = render_frame()->GetWebFrame()->GetDocument();
+    if (document.IsNull())
+      return;
+    blink::WebElement documentElement = document.DocumentElement();
+    if (documentElement.IsNull())
+      return;
+    documentElement.requestSpellCheck();
+  }
+}
+
 void SpellCheckProvider::FocusedNodeChanged(const blink::WebNode& unused) {
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   WebLocalFrame* frame = render_frame()->GetWebFrame();
@@ -168,7 +180,7 @@ void SpellCheckProvider::CheckSpelling(
   std::vector<base::string16> suggestions;
   const int kWordStart = 0;
   spellcheck_->SpellCheckWord(word.c_str(), kWordStart, word.size(),
-                              routing_id(), &offset, &length,
+                              routing_id(), &offset, &length, true,
                               optional_suggestions ? &suggestions : nullptr);
   if (optional_suggestions) {
     WebVector<WebString> web_suggestions(suggestions.size());
@@ -188,7 +200,8 @@ void SpellCheckProvider::CheckSpelling(
 void SpellCheckProvider::RequestCheckingOfText(
     const WebString& text,
     WebTextCheckingCompletion* completion) {
-  RequestTextChecking(text.Utf16(), completion);
+  //RequestTextChecking(text.Utf16(), completion);
+  spellcheck_->RequestTextChecking(text.Utf16(), completion);
   UMA_HISTOGRAM_COUNTS("SpellCheck.api.async", text.length());
 }
 
@@ -274,6 +287,19 @@ void SpellCheckProvider::OnRespondTextCheck(
   last_results_.Swap(textcheck_results);
 }
 #endif
+
+void SpellCheckProvider::RequestSpellcheck() {
+  WebLocalFrame* frame = render_frame()->GetWebFrame();
+  DCHECK(frame);
+  DCHECK(IsSpellCheckingEnabled());
+  blink::WebDocument document = frame->GetDocument();
+  if (document.IsNull())
+    return;
+  blink::WebElement documentElement = document.DocumentElement();
+  if (documentElement.IsNull())
+    return;
+  documentElement.requestSpellCheck();
+}
 
 bool SpellCheckProvider::SatisfyRequestFromCache(
     const base::string16& text,

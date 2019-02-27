@@ -37,6 +37,8 @@
 #include "third_party/blink/public/web/web_text_checking_completion.h"
 #include "third_party/blink/public/web/web_text_checking_result.h"
 #include "third_party/blink/public/web/web_text_decoration_type.h"
+#include "third_party/blink/public/web/web_document.h"
+#include "third_party/blink/public/web/web_element.h"
 
 using blink::WebVector;
 using blink::WebString;
@@ -62,6 +64,29 @@ bool UpdateSpellcheckEnabled::Visit(content::RenderFrame* render_frame) {
     if (render_frame && render_frame->GetWebFrame())
       render_frame->GetWebFrame()->RemoveSpellingMarkers();
   }
+  else {
+    blink::WebDocument document = render_frame->GetWebFrame()->GetDocument();
+    if (!document.IsNull()) {
+      blink::WebElement documentElement = document.DocumentElement();
+      if (!documentElement.IsNull())
+        documentElement.requestSpellCheck();
+    }
+  }
+  return true;
+}
+
+class RequestSpellCheckForFrame : public content::RenderFrameVisitor {
+ public:
+  RequestSpellCheckForFrame() {}
+  bool Visit(content::RenderFrame* render_frame) override;
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RequestSpellCheckForFrame);
+};
+
+bool RequestSpellCheckForFrame::Visit(content::RenderFrame* render_frame) {
+  SpellCheckProvider* provider = SpellCheckProvider::Get(render_frame);
+  DCHECK(provider);
+  provider->RequestSpellcheck();
   return true;
 }
 
@@ -231,6 +256,12 @@ void SpellCheck::CustomDictionaryChanged(
   NotifyDictionaryObservers(ConvertToWebStringFromUtf8(added));
   custom_dictionary_.OnCustomDictionaryChanged(
       added, std::set<std::string>(words_removed.begin(), words_removed.end()));
+
+  // blpwtk2: Request a full spellcheck of all the RenderViews in the process.
+  if (spellcheck_enabled_) {
+    RequestSpellCheckForFrame requestor;
+    content::RenderFrame::ForEach(&requestor);
+  }
 }
 
 // TODO(groby): Make sure we always have a spelling engine, even before
@@ -249,6 +280,7 @@ bool SpellCheck::SpellCheckWord(
     int tag,
     int* misspelling_start,
     int* misspelling_len,
+    bool checkForContractions,
     std::vector<base::string16>* optional_suggestions) {
   DCHECK(text_length >= position_in_text);
   DCHECK(misspelling_start && misspelling_len) << "Out vars must be given.";
@@ -288,6 +320,7 @@ bool SpellCheck::SpellCheckWord(
           (*language)->SpellCheckWord(
               text_begin, position_in_text, text_length, tag,
               &possible_misspelling_start, &possible_misspelling_len,
+              checkForContractions,
               optional_suggestions ? &language_suggestions : nullptr);
 
       switch (result) {
@@ -370,7 +403,7 @@ bool SpellCheck::SpellCheckParagraph(
   int misspelling_length = 0;
   while (position_in_text <= length) {
     if (SpellCheckWord(text.c_str(), position_in_text, length, kNoTag,
-                       &misspelling_start, &misspelling_length, nullptr)) {
+                       &misspelling_start, &misspelling_length, true, nullptr)) {
       results->Assign(textcheck_results);
       return true;
     }
@@ -501,7 +534,7 @@ void SpellCheck::CreateTextCheckingResults(
           SpellCheckWord(misspelled_word.c_str(), kNoOffset,
                          misspelled_word.length(), kNoTag,
                          &unused_misspelling_start, &unused_misspelling_length,
-                         nullptr)) {
+                         true, nullptr)) {
         decoration = SpellCheckResult::GRAMMAR;
       }
     }

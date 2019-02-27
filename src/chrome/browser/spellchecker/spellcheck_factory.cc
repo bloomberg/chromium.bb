@@ -6,7 +6,12 @@
 
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
+
+// SHEZ: Remove dependency on chrome's grit.
+#if 0
 #include "chrome/grit/locale_settings.h"
+#endif
+
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -75,7 +80,7 @@ void SpellcheckServiceFactory::RegisterProfilePrefs(
   // TODO(estade): remove: crbug.com/751275
   user_prefs->RegisterStringPref(
       spellcheck::prefs::kSpellCheckDictionary,
-      l10n_util::GetStringUTF8(IDS_SPELLCHECK_DICTIONARY));
+      "en-US");
   user_prefs->RegisterBooleanPref(
       spellcheck::prefs::kSpellCheckUseSpellingService, false);
 #if defined(OS_ANDROID)
@@ -89,7 +94,7 @@ void SpellcheckServiceFactory::RegisterProfilePrefs(
 
 content::BrowserContext* SpellcheckServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
+  return context;
 }
 
 bool SpellcheckServiceFactory::ServiceIsNULLWhileTesting() const {

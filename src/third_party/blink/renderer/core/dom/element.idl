@@ -115,6 +115,9 @@ interface Element : Node {
     [Affects=Nothing] readonly attribute long clientWidth;
     [Affects=Nothing] readonly attribute long clientHeight;
 
+    // Bloomberg-specific extensions
+    void bbRequestSpellCheck();
+
     // Scroll Customization API. See crbug.com/410974 for details.
     [RuntimeEnabled=ScrollCustomization] void setApplyScroll(ScrollStateCallback scrollStateCallback, NativeScrollBehavior nativeScrollBehavior);
     [RuntimeEnabled=ScrollCustomization] void setDistributeScroll(ScrollStateCallback scrollStateCallback, NativeScrollBehavior nativeScrollBehavior);

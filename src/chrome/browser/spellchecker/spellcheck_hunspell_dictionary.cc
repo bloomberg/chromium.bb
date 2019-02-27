@@ -21,7 +21,12 @@
 #include "build/build_config.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/common/chrome_paths.h"
+
+// SHEZ: Remove dependency on data_use_measurement
+#if 0
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#endif
+
 #include "components/spellcheck/browser/spellcheck_platform.h"
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
