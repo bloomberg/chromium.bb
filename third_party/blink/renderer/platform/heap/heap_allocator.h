@@ -630,6 +630,9 @@ class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
   template <wtf_size_t otherCapacity>
   HeapVector(const HeapVector<T, otherCapacity>& other)
       : Vector<T, inlineCapacity, HeapAllocator>(other) {}
+
+  HeapVector(std::initializer_list<T> elements)
+      : Vector<T, inlineCapacity, HeapAllocator>(elements) {}
 };
 
 template <typename T, wtf_size_t inlineCapacity = 0>
