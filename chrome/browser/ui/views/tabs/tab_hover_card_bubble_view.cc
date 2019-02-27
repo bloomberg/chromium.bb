@@ -105,9 +105,7 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
   views::BubbleDialogDelegateView::SetAnchorView(tab);
 
   // Start trigger timer if necessary.
-  if (widget_->IsVisible()) {
-    ShowImmediately();
-  } else {
+  if (!widget_->IsVisible()) {
     // Note that this will restart the timer if it is already running. If the
     // hover cards are not yet visible, moving the cursor within the tabstrip
     // will not trigger the hover cards.
