@@ -24,6 +24,9 @@ enum class BrowsingDataRemoveMask;
 // Mask of the data to be cleared.
 @property(nonatomic, assign) BrowsingDataRemoveMask dataTypeMask;
 
+// Pref name associated with the item.
+@property(nonatomic, assign) const char* prefName;
+
 @end
 
 // TableViewClearBrowsingDataCell implements an TableViewCell subclass
