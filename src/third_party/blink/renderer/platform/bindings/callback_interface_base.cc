@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/bindings/callback_interface_base.h"
+#include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 
 namespace blink {
 
@@ -10,6 +11,16 @@ CallbackInterfaceBase::CallbackInterfaceBase(
     v8::Local<v8::Object> callback_object,
     SingleOperationOrNot single_op_or_not) {
   DCHECK(!callback_object.IsEmpty());
+
+  v8::Local<v8::Context> creation_context =
+      callback_object->CreationContext();
+  if (!ScriptState::AccessCheck(creation_context)) {
+      const String& message =
+        "callback created in invalid context";
+      V8ThrowException::ThrowAccessError(
+        v8::Isolate::GetCurrent(), message);
+      return;
+  }
 
   callback_relevant_script_state_ =
       ScriptState::From(callback_object->CreationContext());
