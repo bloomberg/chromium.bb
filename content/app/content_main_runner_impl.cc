@@ -29,6 +29,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_base.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -37,6 +38,7 @@
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -158,6 +160,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "base/android/build_info.h"
 #include "content/browser/android/browser_startup_controller.h"
 #endif
 
@@ -174,6 +177,12 @@ extern int UtilityMain(const MainFunctionParams&);
 namespace content {
 
 namespace {
+
+#if defined(OS_ANDROID)
+// Finch parameter key value for devices to always run in process.
+const base::FeatureParam<std::string> kDevicesForceInProcessParam{
+    &network::features::kNetworkService, "devices_force_in_process", ""};
+#endif
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA) && defined(OS_ANDROID)
 #if defined __LP64__
@@ -920,10 +929,30 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
       should_start_service_manager_only = false;
     }
 
-    if (should_start_service_manager_only &&
-        base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      // This must be called before creating the ServiceManagerContext.
-      ForceInProcessNetworkService(true);
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      bool force_in_process = false;
+      if (should_start_service_manager_only) {
+        force_in_process = true;
+      } else {
+#if defined(OS_ANDROID)
+        auto finch_value = kDevicesForceInProcessParam.Get();
+        auto devices = base::SplitString(
+            finch_value, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+        auto current_device =
+            std::string(base::android::BuildInfo::GetInstance()->model());
+        for (auto device : devices) {
+          if (device == current_device) {
+            force_in_process = true;
+            break;
+          }
+        }
+#endif
+      }
+
+      if (force_in_process) {
+        // This must be called before creating the ServiceManagerContext.
+        ForceInProcessNetworkService(true);
+      }
     }
 
     // The thread used to start the ServiceManager is handed-off to
