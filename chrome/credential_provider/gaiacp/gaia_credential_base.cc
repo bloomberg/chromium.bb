@@ -7,6 +7,8 @@
 
 #include "chrome/credential_provider/gaiacp/gaia_credential_base.h"
 
+#include <ntstatus.h>
+
 #include <algorithm>
 #include <memory>
 #include <utility>
@@ -35,11 +37,13 @@
 #include "chrome/credential_provider/gaiacp/grit/gaia_static_resources.h"
 #include "chrome/credential_provider/gaiacp/internet_availability_checker.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+#include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/os_process_manager.h"
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/gaiacp/scoped_lsa_policy.h"
 #include "chrome/credential_provider/gaiacp/scoped_user_profile.h"
+#include "chrome/credential_provider/gaiacp/token_handle_validator.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "content/public/common/content_switches.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -700,6 +704,7 @@ void CGaiaCredentialBase::DisplayErrorInUI(LONG status,
 HRESULT CGaiaCredentialBase::HandleAutologon(
     CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE* cpgsr,
     CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* cpcs) {
+  USES_CONVERSION;
   LOGFN(INFO) << "user-sid=" << get_sid().m_str;
   DCHECK(cpgsr);
   DCHECK(cpcs);
@@ -742,11 +747,18 @@ HRESULT CGaiaCredentialBase::HandleAutologon(
     }
   }
 
+  // Restore user's access so that they can sign in.
+  HRESULT hr = TokenHandleValidator::Get()->RestoreUserAccess(OLE2W(get_sid()));
+  if (FAILED(hr) && hr != HRESULT_FROM_NT(STATUS_OBJECT_NAME_NOT_FOUND)) {
+    LOGFN(ERROR) << "RestoreUserAccess hr=" << putHR(hr);
+    return hr;
+  }
+
   // The OS user has already been created, so return all the information
   // needed to log them in.
   DWORD cpus = 0;
   provider()->GetUsageScenario(&cpus);
-  HRESULT hr = BuildCredPackAuthenticationBuffer(
+  hr = BuildCredPackAuthenticationBuffer(
       domain_, get_username(), get_password(),
       static_cast<CREDENTIAL_PROVIDER_USAGE_SCENARIO>(cpus), cpcs);
   if (FAILED(hr)) {
@@ -1533,6 +1545,18 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(
     *sid = ::SysAllocString(found_sid);
 
     return S_OK;
+  }
+
+  DWORD cpus = 0;
+  provider()->GetUsageScenario(&cpus);
+
+  // New users creation is not allowed during work station unlock. This code
+  // prevents users from being created when the "Other User" tile appears on the
+  // lock screen through a combination of system policy. In this situation only
+  // the user who locked the computer is allowed to sign in.
+  if (cpus == CPUS_UNLOCK_WORKSTATION) {
+    *error_text = AllocErrorString(IDS_INVALID_UNLOCK_WORKSTATION_USER_BASE);
+    return HRESULT_FROM_WIN32(ERROR_LOGON_TYPE_NOT_GRANTED);
   }
 
   base::string16 local_fullname = GetDictString(result, kKeyFullname);

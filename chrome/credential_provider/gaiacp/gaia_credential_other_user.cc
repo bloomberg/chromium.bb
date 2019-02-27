@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/credential_provider/gaiacp/gaia_credential.h"
+#include "chrome/credential_provider/gaiacp/gaia_credential_other_user.h"
 
 #include "chrome/credential_provider/gaiacp/logging.h"
 
 namespace credential_provider {
 
-CGaiaCredential::CGaiaCredential() = default;
+COtherUserGaiaCredential::COtherUserGaiaCredential() = default;
 
-CGaiaCredential::~CGaiaCredential() = default;
+COtherUserGaiaCredential::~COtherUserGaiaCredential() = default;
 
-HRESULT CGaiaCredential::FinalConstruct() {
+HRESULT COtherUserGaiaCredential::FinalConstruct() {
   LOGFN(INFO);
   return S_OK;
 }
 
-void CGaiaCredential::FinalRelease() {
+void COtherUserGaiaCredential::FinalRelease() {
   LOGFN(INFO);
 }
 

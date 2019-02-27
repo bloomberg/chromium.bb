@@ -15,6 +15,7 @@
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
+#include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/gaiacp/token_handle_validator.h"
 #include "chrome/credential_provider/test/com_fakes.h"
@@ -24,7 +25,7 @@
 namespace credential_provider {
 
 class GcpCredentialProviderTest : public ::testing::Test {
- public:
+ protected:
   void CreateGCPWUser(const wchar_t* username,
                       const wchar_t* email,
                       const wchar_t* password,
@@ -38,13 +39,17 @@ class GcpCredentialProviderTest : public ::testing::Test {
   }
 
   FakeOSUserManager* fake_os_user_manager() { return &fake_os_user_manager_; }
+  FakeWinHttpUrlFetcherFactory* fake_http_url_fetcher_factory() {
+    return &fake_http_url_fetcher_factory_;
+  }
 
- private:
   void SetUp() override;
 
+ private:
   registry_util::RegistryOverrideManager registry_override_;
   FakeOSUserManager fake_os_user_manager_;
   FakeScopedLsaPolicyFactory fake_scoped_lsa_policy_factory_;
+  FakeWinHttpUrlFetcherFactory fake_http_url_fetcher_factory_;
 };
 
 void GcpCredentialProviderTest::SetUp() {
@@ -148,19 +153,16 @@ TEST_F(GcpCredentialProviderTest, CpusUnlock) {
   FakeCredentialProviderEvents events;
   ASSERT_EQ(S_OK, provider->Advise(&events, 0));
 
-  // Check credentials.
+  // Check credentials. None should be available because the anonymous
+  // credential is not allowed during an unlock scenario.
   DWORD count;
   DWORD default_index;
   BOOL autologon;
   ASSERT_EQ(S_OK,
             provider->GetCredentialCount(&count, &default_index, &autologon));
-  ASSERT_EQ(1u, count);
+  ASSERT_EQ(0u, count);
   EXPECT_EQ(CREDENTIAL_PROVIDER_NO_DEFAULT, default_index);
   EXPECT_FALSE(autologon);
-  CComPtr<ICredentialProviderCredential> cred;
-  ASSERT_EQ(S_OK, provider->GetCredentialAt(0, &cred));
-  CComPtr<IGaiaCredential> gaia_cred;
-  EXPECT_EQ(S_OK, cred.QueryInterface(&gaia_cred));
 
   // Get fields.
   DWORD field_count;
@@ -193,6 +195,12 @@ TEST_F(GcpCredentialProviderTest, AddPersonAfterUserRemove) {
                   nullptr, IID_ICredentialProvider, (void**)&provider));
     ASSERT_EQ(S_OK, provider->SetUsageScenario(CPUS_LOGON, 0));
 
+    // Empty user array.
+    CComPtr<ICredentialProviderSetUserArray> user_array;
+    ASSERT_EQ(S_OK, provider.QueryInterface(&user_array));
+    FakeCredentialProviderUserArray array;
+    ASSERT_EQ(S_OK, user_array->SetUserArray(&array));
+
     // In this case no credential should be returned.
     DWORD count;
     DWORD default_index;
@@ -217,6 +225,12 @@ TEST_F(GcpCredentialProviderTest, AddPersonAfterUserRemove) {
                   nullptr, IID_ICredentialProvider, (void**)&provider));
     ASSERT_EQ(S_OK, provider->SetUsageScenario(CPUS_LOGON, 0));
 
+    // Empty user array.
+    CComPtr<ICredentialProviderSetUserArray> user_array;
+    ASSERT_EQ(S_OK, provider.QueryInterface(&user_array));
+    FakeCredentialProviderUserArray array;
+    ASSERT_EQ(S_OK, user_array->SetUserArray(&array));
+
     // This time a credential should be returned.
     DWORD count;
     DWORD default_index;
@@ -240,6 +254,9 @@ class GcpCredentialProviderMdmTest
       public testing::WithParamInterface<std::tuple<bool, int, bool>> {};
 
 TEST_P(GcpCredentialProviderMdmTest, Basic) {
+  FakeTokenHandleValidator token_handle_validator;
+  FakeInternetAvailabilityChecker internet_checker;
+
   const bool config_mdm_url = std::get<0>(GetParam());
   const int supports_multi_users = std::get<1>(GetParam());
   const bool user_exists = std::get<2>(GetParam());
@@ -260,6 +277,11 @@ TEST_P(GcpCredentialProviderMdmTest, Basic) {
                    L"Comment", L"gaia-id", &sid);
   }
 
+  // Valid token fetch result.
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(TokenHandleValidator::kTokenInfoUrl),
+      FakeWinHttpUrlFetcher::Headers(), "{\"expires_in\":1}");
+
   CComPtr<ICredentialProvider> provider;
   ASSERT_EQ(S_OK,
             CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
@@ -267,6 +289,12 @@ TEST_P(GcpCredentialProviderMdmTest, Basic) {
 
   // Start process for logon screen.
   ASSERT_EQ(S_OK, provider->SetUsageScenario(CPUS_LOGON, 0));
+
+  // Empty user array.
+  CComPtr<ICredentialProviderSetUserArray> user_array;
+  ASSERT_EQ(S_OK, provider.QueryInterface(&user_array));
+  FakeCredentialProviderUserArray array;
+  ASSERT_EQ(S_OK, user_array->SetUserArray(&array));
 
   DWORD count;
   DWORD default_index;
@@ -292,15 +320,7 @@ INSTANTIATE_TEST_SUITE_P(GcpCredentialProviderMdmTest,
 
 class GcpCredentialProviderWithGaiaUsersTest
     : public GcpCredentialProviderTest,
-      public ::testing::WithParamInterface<std::tuple<bool, bool, bool>> {
- public:
-  FakeWinHttpUrlFetcherFactory* fake_http_url_fetcher_factory() {
-    return &fake_http_url_fetcher_factory_;
-  }
-
- private:
-  FakeWinHttpUrlFetcherFactory fake_http_url_fetcher_factory_;
-};
+      public ::testing::WithParamInterface<std::tuple<bool, bool, bool>> {};
 
 TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
   const bool has_token_handle = std::get<0>(GetParam());
@@ -333,12 +353,14 @@ TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
       CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
           nullptr, IID_ICredentialProviderSetUserArray, (void**)&user_array));
 
+  CComPtr<ICredentialProvider> provider;
+  ASSERT_EQ(S_OK, user_array.QueryInterface(&provider));
+
+  ASSERT_EQ(S_OK, provider->SetUsageScenario(CPUS_LOGON, 0));
+
   FakeCredentialProviderUserArray array;
   array.AddUser(OLE2CW(sid), L"username");
   ASSERT_EQ(S_OK, user_array->SetUserArray(&array));
-
-  CComPtr<ICredentialProvider> provider;
-  ASSERT_EQ(S_OK, user_array.QueryInterface(&provider));
 
   bool should_reauth_user =
       has_internet && (!has_token_handle || !valid_token_handle);
@@ -348,18 +370,17 @@ TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
   DWORD count;
   DWORD default_index;
   BOOL autologon;
+  // There should always be the anonymous credential and potentially a reauth
+  // credential.
   ASSERT_EQ(S_OK,
             provider->GetCredentialCount(&count, &default_index, &autologon));
-  // Since SetUsageScenario was not called on the provider, only the user
-  // associated credentials will be created so only expect 0 or 1 credentials
-  // in this test depending on if the user needs to reauth.
-  ASSERT_EQ(should_reauth_user ? 1u : 0u, count);
+  ASSERT_EQ(should_reauth_user ? 2u : 1u, count);
   EXPECT_EQ(CREDENTIAL_PROVIDER_NO_DEFAULT, default_index);
   EXPECT_FALSE(autologon);
 
   if (should_reauth_user) {
     CComPtr<ICredentialProviderCredential> cred;
-    ASSERT_EQ(S_OK, provider->GetCredentialAt(0, &cred));
+    ASSERT_EQ(S_OK, provider->GetCredentialAt(1, &cred));
     CComPtr<IReauthCredential> reauth;
     EXPECT_EQ(S_OK, cred.QueryInterface(&reauth));
   }
@@ -370,5 +391,170 @@ INSTANTIATE_TEST_CASE_P(,
                         ::testing::Combine(::testing::Bool(),
                                            ::testing::Bool(),
                                            ::testing::Bool()));
+
+// Check that the correct reauth credential type is created based on various
+// policy settings as well as usage scenarios.
+// Parameters are:
+// 1. bool - are the users' token handles still valid.
+// 2. CREDENTIAL_PROVIDER_USAGE_SCENARIO - the usage scenario.
+// 3. bool - is the other user tile available.
+// 4. bool - is the second user locking the system.
+class GcpCredentialProviderAvailableCredentialsTest
+    : public GcpCredentialProviderTest,
+      public ::testing::WithParamInterface<
+          std::tuple<bool, CREDENTIAL_PROVIDER_USAGE_SCENARIO, bool, bool>> {
+ protected:
+  void SetUp() override;
+};
+
+void GcpCredentialProviderAvailableCredentialsTest::SetUp() {
+  GcpCredentialProviderTest::SetUp();
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 0));
+}
+
+TEST_P(GcpCredentialProviderAvailableCredentialsTest, AvailableCredentials) {
+  FakeTokenHandleValidator token_handle_validator;
+  FakeInternetAvailabilityChecker internet_checker;
+  FakeCredentialProviderUserArray array;
+
+  const bool valid_token_handles = std::get<0>(GetParam());
+  const CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus = std::get<1>(GetParam());
+  const bool other_user_tile_available = std::get<2>(GetParam());
+  const bool second_user_locking_system = std::get<3>(GetParam());
+
+  if (other_user_tile_available)
+    array.SetAccountOptions(CPAO_EMPTY_LOCAL);
+
+  CComBSTR first_sid;
+  constexpr wchar_t first_username[] = L"username";
+  CreateGCPWUser(first_username, L"foo@gmail.com", L"password", L"Full Name",
+                 L"Comment", L"gaia-id", &first_sid);
+
+  CComBSTR second_sid;
+  constexpr wchar_t second_username[] = L"username2";
+  CreateGCPWUser(second_username, L"foo2@gmail.com", L"password", L"Full Name",
+                 L"Comment", L"gaia-id2", &second_sid);
+
+  // Token fetch result.
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(TokenHandleValidator::kTokenInfoUrl),
+      FakeWinHttpUrlFetcher::Headers(),
+      valid_token_handles ? "{\"expires_in\":1}" : "{}");
+
+  // Start token handle refresh threads.
+  token_handle_validator.StartRefreshingTokenHandleValidity();
+
+  // Lock users as needed based on the validity of their token handles.
+  token_handle_validator.DenySigninForUsersWithInvalidTokenHandles(cpus);
+
+  CComPtr<ICredentialProviderSetUserArray> user_array;
+  ASSERT_EQ(
+      S_OK,
+      CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
+          nullptr, IID_ICredentialProviderSetUserArray, (void**)&user_array));
+  CComPtr<ICredentialProvider> provider;
+  ASSERT_EQ(S_OK, user_array.QueryInterface(&provider));
+
+  ASSERT_EQ(S_OK, provider->SetUsageScenario(cpus, 0));
+
+  // If other user tile is available, no users are passed to the provider
+  if (!other_user_tile_available) {
+    // All users are shown if the usage is not for unlocking the workstation or
+    // if fast user switching is enabled.
+    bool all_users_shown = cpus != CPUS_UNLOCK_WORKSTATION;
+    // Normally, the user with invalid token handles would be removed from
+    // the user array except if not all the users are shown. In this case,
+    // the user that locked the system is always sent in the user array.
+    if (!token_handle_validator.IsUserLocked(OLE2W(first_sid)) ||
+        (!all_users_shown && !second_user_locking_system)) {
+      array.AddUser(OLE2CW(first_sid), first_username);
+    }
+    if (!token_handle_validator.IsUserLocked(OLE2W(first_sid)) ||
+        (!all_users_shown && second_user_locking_system)) {
+      array.AddUser(OLE2CW(second_sid), second_username);
+    }
+  }
+
+  ASSERT_EQ(S_OK, user_array->SetUserArray(&array));
+
+  // Check the correct number of credentials are created.
+  DWORD count;
+  DWORD default_index;
+  BOOL autologon;
+  ASSERT_EQ(S_OK,
+            provider->GetCredentialCount(&count, &default_index, &autologon));
+
+  DWORD expected_credentials = 0;
+  if (other_user_tile_available) {
+    expected_credentials = 1;
+  } else if (cpus != CPUS_UNLOCK_WORKSTATION) {
+    expected_credentials = valid_token_handles ? 0 : 2;
+  } else {
+    expected_credentials = valid_token_handles ? 0 : 1;
+  }
+
+  ASSERT_EQ(expected_credentials, count);
+  EXPECT_EQ(CREDENTIAL_PROVIDER_NO_DEFAULT, default_index);
+  EXPECT_FALSE(autologon);
+
+  if (expected_credentials == 0)
+    return;
+
+  CComPtr<ICredentialProviderCredential> cred;
+  CComPtr<ICredentialProviderCredential2> cred2;
+  CComPtr<IReauthCredential> reauth;
+  // Other user tile is shown, we should only create the anonymous tile as a
+  // ICredentialProviderCredential2 so that it is added to the "Other User"
+  // tile.
+  if (other_user_tile_available) {
+    EXPECT_EQ(S_OK, provider->GetCredentialAt(0, &cred));
+    EXPECT_EQ(S_OK, cred.QueryInterface(&cred2));
+    // Not unlocking workstation: all the credentials should be shown as
+    // anonymous reauth credentials (i.e. must not expose
+    // ICredentialProviderCredential2) since they all the users have expired
+    // token handles and need to reauth.
+  } else if (cpus != CPUS_UNLOCK_WORKSTATION) {
+    EXPECT_EQ(S_OK, provider->GetCredentialAt(0, &cred));
+    EXPECT_EQ(S_OK, cred.QueryInterface(&reauth));
+    EXPECT_NE(S_OK, cred.QueryInterface(&cred2));
+
+    EXPECT_EQ(S_OK, provider->GetCredentialAt(1, &cred));
+    EXPECT_EQ(S_OK, cred.QueryInterface(&reauth));
+    EXPECT_NE(S_OK, cred.QueryInterface(&cred2));
+  } else {
+    // Only the user who locked the computer should be returned as a credential
+    // and it should be a ICredentialProviderCredential2 with the correct sid.
+    EXPECT_EQ(S_OK, provider->GetCredentialAt(0, &cred));
+    EXPECT_EQ(S_OK, cred.QueryInterface(&reauth));
+    EXPECT_EQ(S_OK, cred.QueryInterface(&cred2));
+
+    wchar_t* sid;
+    EXPECT_EQ(S_OK, cred2->GetUserSid(&sid));
+    EXPECT_EQ(second_user_locking_system ? second_sid : first_sid,
+              CComBSTR(W2COLE(sid)));
+
+    // In the case that a real CReauthCredential is created, we expect that this
+    // credential will set the default credential provider for the user tile.
+    wchar_t guid_in_wchar[64];
+    ::StringFromGUID2(CLSID_GaiaCredentialProvider, guid_in_wchar,
+                      base::size(guid_in_wchar));
+
+    wchar_t guid_in_registry[64];
+    ULONG length = base::size(guid_in_registry) * sizeof(guid_in_registry[0]);
+    EXPECT_EQ(S_OK, GetMachineRegString(kLogonUiUserTileRegKey, sid,
+                                        guid_in_registry, &length));
+    EXPECT_EQ(base::string16(guid_in_wchar), base::string16(guid_in_registry));
+    ::CoTaskMemFree(sid);
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(
+    ,
+    GcpCredentialProviderAvailableCredentialsTest,
+    ::testing::Combine(::testing::Bool(),
+                       ::testing::Values(CPUS_UNLOCK_WORKSTATION, CPUS_LOGON),
+                       ::testing::Bool(),
+                       ::testing::Bool()));
 
 }  // namespace credential_provider

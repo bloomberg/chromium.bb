@@ -72,8 +72,10 @@ HRESULT FakeCredentialProviderUserArray::SetProviderFilter(
 }
 
 HRESULT FakeCredentialProviderUserArray::GetAccountOptions(
-    CREDENTIAL_PROVIDER_ACCOUNT_OPTIONS* credentialProviderAccountOptions) {
-  return E_NOTIMPL;
+    CREDENTIAL_PROVIDER_ACCOUNT_OPTIONS* cpao) {
+  DCHECK(cpao);
+  *cpao = cpao_;
+  return S_OK;
 }
 
 HRESULT FakeCredentialProviderUserArray::GetCount(DWORD* count) {
@@ -112,7 +114,7 @@ FakeGaiaCredentialProvider::~FakeGaiaCredentialProvider() {}
 
 HRESULT FakeGaiaCredentialProvider::GetUsageScenario(DWORD* cpus) {
   DCHECK(cpus);
-  *cpus = static_cast<DWORD>(CPUS_LOGON);
+  *cpus = static_cast<DWORD>(cpus_);
   return S_OK;
 }
 

@@ -197,6 +197,35 @@ HRESULT OSUserManager::GenerateRandomPassword(wchar_t* password, int length) {
   return S_OK;
 }
 
+HRESULT OSUserManager::GetUserFullname(const wchar_t* domain,
+                                       const wchar_t* username,
+                                       base::string16* fullname) {
+  DCHECK(fullname);
+  LPBYTE domain_server_buffer = nullptr;
+  HRESULT hr =
+      GetDomainControllerServerForDomain(domain, &domain_server_buffer);
+  if (FAILED(hr))
+    return hr;
+
+  std::unique_ptr<wchar_t, void (*)(wchar_t*)> domain_to_query(
+      reinterpret_cast<wchar_t*>(domain_server_buffer), [](wchar_t* p) {
+        if (p)
+          ::NetApiBufferFree(p);
+      });
+
+  LPBYTE buffer = nullptr;
+  NET_API_STATUS nsts =
+      ::NetUserGetInfo(domain_to_query.get(), username, 11, &buffer);
+  if (nsts != NERR_Success) {
+    LOGFN(ERROR) << "NetUserGetInfo(get full name) nsts=" << nsts;
+    return HRESULT_FROM_WIN32(nsts);
+  }
+
+  USER_INFO_11* user_info = reinterpret_cast<USER_INFO_11*>(buffer);
+  *fullname = user_info->usri11_full_name;
+  return S_OK;
+}
+
 HRESULT OSUserManager::AddUser(const wchar_t* username,
                                const wchar_t* password,
                                const wchar_t* fullname,
@@ -352,7 +381,23 @@ HRESULT OSUserManager::IsWindowsPasswordValid(const wchar_t* domain,
     base::win::ScopedHandle handle;
     hr = CreateLogonToken(domain, username, password, /*interactive=*/true,
                           &handle);
-    return hr == HRESULT_FROM_WIN32(ERROR_LOGON_FAILURE) ? S_FALSE : hr;
+    if (SUCCEEDED(hr))
+      return hr;
+
+    if (hr == HRESULT_FROM_WIN32(ERROR_LOGON_FAILURE)) {
+      return S_FALSE;
+      // The following error codes represent sign in restrictions for the user
+      // that are returned if the user's password is valid. In these cases we
+      // don't want to return that the password is not valid. This is used to
+      // make sure that we don't think we need to update the user's password
+      // when in fact it is valid but they just can't sign in.
+    } else if (hr == HRESULT_FROM_WIN32(ERROR_ACCOUNT_RESTRICTION) ||
+               hr == HRESULT_FROM_WIN32(ERROR_INVALID_LOGON_HOURS) ||
+               hr == HRESULT_FROM_WIN32(ERROR_INVALID_WORKSTATION) ||
+               hr == HRESULT_FROM_WIN32(ERROR_ACCOUNT_DISABLED) ||
+               hr == HRESULT_FROM_WIN32(ERROR_LOGON_TYPE_NOT_GRANTED)) {
+      return S_OK;
+    }
   }
 
   return hr;

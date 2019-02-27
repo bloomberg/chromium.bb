@@ -72,6 +72,10 @@ class [[clang::lto_visibility_public]] OSUserManager {
   // Removes the user from the machine.
   virtual HRESULT RemoveUser(const wchar_t* username, const wchar_t* password);
 
+  // Gets the full name of the user from their user info.
+  virtual HRESULT GetUserFullname(
+      const wchar_t* domain, const wchar_t* username, base::string16* fullname);
+
   static base::string16 GetLocalDomain();
 
   // This method is called from dllmain.cc when setting fakes from one modul

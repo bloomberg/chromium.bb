@@ -5,7 +5,10 @@
 #ifndef CHROME_CREDENTIAL_PROVIDER_GAIACP_TOKEN_HANDLE_VALIDATOR_H_
 #define CHROME_CREDENTIAL_PROVIDER_GAIACP_TOKEN_HANDLE_VALIDATOR_H_
 
+#include <credentialprovider.h>
+
 #include <map>
+#include <set>
 
 #include <base/strings/string16.h>
 #include <base/time/time.h>
@@ -44,6 +47,28 @@ class TokenHandleValidator {
   // This function is blocking and may fire off a query for a token handle that
   // needs to complete before the function returns.
   bool IsTokenHandleValidForUser(const base::string16& sid);
+
+  // Checks if user access blocking is enforced given the usage scenario (and
+  // other registry based checks).
+  bool IsUserAccessBlockingEnforced(
+      CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus) const;
+
+  // Goes through all associated users found and denies their access to sign
+  // in to the system based on the validity of their token handle.
+  void DenySigninForUsersWithInvalidTokenHandles(
+      CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus);
+
+  // Restores the access for a user that was denied access (if applicable).
+  // Returns S_OK on success, failure otherwise.
+  HRESULT RestoreUserAccess(const base::string16& sid);
+
+  // Allows access for all users that have had their access denied by this
+  // token validator.
+  void AllowSigninForUsersWithInvalidTokenHandles();
+
+  // Fills |associated_sids| with the sids of all valid associated users
+  // found on this system.
+  void GetAssociatedSids(std::set<base::string16>* associated_sids);
 
  protected:
   explicit TokenHandleValidator(base::TimeDelta validation_timeout);
@@ -92,6 +117,7 @@ class TokenHandleValidator {
   std::map<base::string16, std::unique_ptr<TokenHandleInfo>>
       user_to_token_handle_info_;
   base::TimeDelta validation_timeout_;
+  std::set<base::string16> locked_user_sids_;
 };
 
 }  // namespace credential_provider

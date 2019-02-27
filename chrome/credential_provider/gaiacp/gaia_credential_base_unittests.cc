@@ -6,6 +6,7 @@
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_base.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
+#include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/test/gls_runner_test_base.h"
 #include "chrome/credential_provider/test/test_credential.h"
@@ -481,6 +482,109 @@ TEST_F(GcpGaiaCredentialBaseTest, StripEmailTLD) {
   EXPECT_EQ(test->GetFinalEmail(), email);
 
   ASSERT_EQ(S_OK, gaia_cred->Terminate());
+}
+
+TEST_F(GcpGaiaCredentialBaseTest, NewUserDisabledThroughUsageScenario) {
+  USES_CONVERSION;
+  FakeGaiaCredentialProvider provider;
+
+  // Start logon.
+  CComPtr<IGaiaCredential> gaia_cred;
+  CComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
+
+  provider.SetUsageScenario(CPUS_UNLOCK_WORKSTATION);
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
+  ASSERT_EQ(S_OK, run_helper()->StartLogonProcessAndWait(cred));
+
+  ASSERT_EQ(S_OK, gaia_cred->Terminate());
+
+  // Check that values were not propagated to the provider.
+  EXPECT_EQ(0u, provider.username().Length());
+  EXPECT_EQ(0u, provider.password().Length());
+  EXPECT_EQ(0u, provider.sid().Length());
+  EXPECT_EQ(FALSE, provider.credentials_changed_fired());
+
+  // Sign in should fail with an error stating that no new users can be created.
+  ASSERT_STREQ(
+      test->GetErrorText(),
+      GetStringResource(IDS_INVALID_UNLOCK_WORKSTATION_USER_BASE).c_str());
+}
+
+TEST_F(GcpGaiaCredentialBaseTest, InvalidUserUnlockedAfterSignin) {
+  // Enforce token handle verification with user locking when the token handle
+  // is not valid.
+  FakeTokenHandleValidator validator;
+  FakeInternetAvailabilityChecker internet_checker;
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  GoogleMdmEnrollmentStatusForTesting force_success(true);
+
+  USES_CONVERSION;
+  // Create a fake user that has the same gaia id as the test gaia id.
+  CComBSTR sid;
+  base::string16 username(L"foo");
+  ASSERT_EQ(S_OK,
+            fake_os_user_manager()->CreateTestOSUser(
+                username, L"password", L"name", L"comment",
+                base::UTF8ToUTF16(kDefaultGaiaId), base::string16(), &sid));
+  ASSERT_EQ(2ul, fake_os_user_manager()->GetUserCount());
+
+  // Invalid token fetch result.
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(TokenHandleValidator::kTokenInfoUrl),
+      FakeWinHttpUrlFetcher::Headers(), "{}");
+
+  // Lock the user through their token handle.
+  validator.StartRefreshingTokenHandleValidity();
+  validator.DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON);
+
+  // User should have invalid token handle and be locked.
+  DWORD reg_value = 0;
+  EXPECT_FALSE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
+  EXPECT_EQ(true, validator.IsUserLocked(OLE2W(sid)));
+  EXPECT_EQ(S_OK,
+            GetMachineRegDWORD(kWinlogonUserListRegKey, username, &reg_value));
+  EXPECT_EQ(0u, reg_value);
+
+  FakeGaiaCredentialProvider provider;
+
+  // Start logon.
+  CComPtr<IGaiaCredential> gaia_cred;
+  CComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
+  ASSERT_EQ(S_OK, run_helper()->StartLogonProcessAndWait(cred));
+
+  // Now finish the logon, this should unlock the user.
+  CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
+  CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION cpcs;
+  wchar_t* status_text;
+  CREDENTIAL_PROVIDER_STATUS_ICON status_icon;
+  ASSERT_EQ(S_OK,
+            cred->GetSerialization(&cpgsr, &cpcs, &status_text, &status_icon));
+  EXPECT_EQ(nullptr, status_text);
+  EXPECT_EQ(CPSI_SUCCESS, status_icon);
+  EXPECT_EQ(CPGSR_RETURN_CREDENTIAL_FINISHED, cpgsr);
+  EXPECT_LT(0u, cpcs.cbSerialization);
+  EXPECT_NE(nullptr, cpcs.rgbSerialization);
+
+  // User should have been associated.
+  EXPECT_EQ(test->GetFinalUsername(), username);
+  // Email should be the same as the default one.
+  EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
+
+  EXPECT_EQ(false, validator.IsUserLocked(OLE2W(sid)));
+  EXPECT_NE(S_OK,
+            GetMachineRegDWORD(kWinlogonUserListRegKey, username, &reg_value));
+
+  // No new user should be created.
+  EXPECT_EQ(2ul, fake_os_user_manager()->GetUserCount());
 }
 
 TEST_F(GcpGaiaCredentialBaseTest, StripEmailTLD_Gmail) {

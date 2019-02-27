@@ -19,6 +19,22 @@ extern const wchar_t kGcpRootKeyName[];
 // Root registry key where all user association information for GCPW is stored.
 extern const wchar_t kGcpUsersRootKeyName[];
 
+// User list registry key that Windows reads to disable users from credential
+// providers.
+extern const wchar_t kWinlogonUserListRegKey[];
+
+// Registry key used to determine a user's default credential provider tile.
+extern const wchar_t kLogonUiUserTileRegKey[];
+
+// Gets any HKLM registry key on the system.
+HRESULT GetMachineRegDWORD(const base::string16& key_name,
+                           const base::string16& name,
+                           DWORD* value);
+HRESULT GetMachineRegString(const base::string16& key_name,
+                            const base::string16& name,
+                            wchar_t* value,
+                            ULONG* length);
+
 // Gets global DWORD flag.
 HRESULT GetGlobalFlag(const base::string16& name, DWORD* value);
 
@@ -61,6 +77,17 @@ HRESULT SetUserProperty(const base::string16& sid,
 HRESULT SetUserProperty(const base::string16& sid,
                         const base::string16& name,
                         const base::string16& value);
+
+// Sets the value of a particular user name under the UserList key of WinLogon.
+// This value allows hiding the user from all credential provider related
+// operations including sign on, unlock, password change and cred ui. This
+// function will only set the registry value if visible == 0. Otherwise it will
+// delete the registry value so that the default behavior is possible.
+HRESULT SetUserWinlogonUserListEntry(const base::string16& username,
+                                     DWORD visible);
+
+// Sets the default credential provider for a user tile.
+HRESULT SetLogonUiUserTileEntry(const base::string16& sid, CLSID cp_guid);
 
 // Removes all properties for the user.
 HRESULT RemoveAllUserProperties(const base::string16& sid);

@@ -112,6 +112,9 @@
       <message name="IDS_MDM_ENROLLMENT_FAILED" desc="">
         Unable to enroll this computer for enterprise management.  Please sign in with a different Google Account.
       </message>
+      <message name="IDS_INVALID_UNLOCK_WORKSTATION_USER" desc="">
+        Only the user that locked this workstation is currently allowed sign in to the system.
+      </message>
     </messages>
   </release>
 </grit>

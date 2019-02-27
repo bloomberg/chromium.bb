@@ -7,6 +7,7 @@
 
 #include <limits>
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "chrome/credential_provider/gaiacp/gaia_credential.h"
@@ -45,13 +46,38 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
   static bool IsUsageScenarioSupported(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus);
 
  private:
-  HRESULT CreateGaiaCredential();
+  // Checks whether an anonymous credential (CGaiaCredential) should be created.
+  bool ShouldCreateAnonymousCredential();
+
+  // Checks whether anonymous reauth credentials should be created given the
+  // usage scenario and also whether an "Other User" tile exists on the sign on
+  // screen.
+  bool ShouldCreateAnonymousReauthCredential(bool other_user_credential_exists);
+
   HRESULT DestroyCredentials();
+
+  // Functions to create credentials during the processing of SetUserArray.
+
+  // Creates necessary anonymous credentials given the state of the sign in
+  // screen (currently only whether |showing_other_user| set influences this
+  // behavior.
+  HRESULT CreateAnonymousCredentialIfNeeded(bool showing_other_user);
+
+  // Creates all the reauth credentials from the users that is returned from
+  // |users|. Fills |reauth_sids| with the list of user sids for which a reauth
+  // credential was created.
+  HRESULT CreateReauthCredentials(ICredentialProviderUserArray* users,
+                                  std::set<base::string16>* reauth_sids);
+
+  // If needed, creates anonymous reauth credentials for any users that have had
+  // their sign permissions revoked and thus do not appear in the users list
+  // passed into SetUserArray.
+  HRESULT CreateAnonymousReauthCredentialsIfNeeded(
+      bool showing_other_user,
+      const std::set<base::string16>& reauth_sids);
+
   void ClearTransient();
   void CleanupOlderVersions();
-
-  // Checks of any of the Google account users need to re-auth.
-  static unsigned __stdcall CheckReauthStatus(void* param);
 
   // IGaiaCredentialProvider
   IFACEMETHODIMP GetUsageScenario(DWORD* cpus) override;
