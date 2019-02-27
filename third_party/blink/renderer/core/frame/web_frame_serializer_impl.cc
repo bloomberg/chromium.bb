@@ -446,7 +446,7 @@ WebFrameSerializerImpl::WebFrameSerializerImpl(
       xml_entities_(true) {
   // Must specify available webframe.
   DCHECK(frame);
-  specified_web_local_frame_impl_ = ToWebLocalFrameImpl(frame);
+  specified_web_local_frame_impl_ = To<WebLocalFrameImpl>(frame);
   // Make sure we have non null client and delegate.
   DCHECK(client);
   DCHECK(delegate);

@@ -399,8 +399,7 @@ WebThreadSafeData WebFrameSerializer::GenerateMHTMLHeader(
   DCHECK(frame);
   DCHECK(delegate);
 
-  WebLocalFrameImpl* web_local_frame = ToWebLocalFrameImpl(frame);
-  DCHECK(web_local_frame);
+  auto* web_local_frame = To<WebLocalFrameImpl>(frame);
 
   Document* document = web_local_frame->GetFrame()->GetDocument();
 
@@ -420,7 +419,7 @@ WebThreadSafeData WebFrameSerializer::GenerateMHTMLParts(
   DCHECK(web_delegate);
 
   // Translate arguments from public to internal blink APIs.
-  LocalFrame* frame = ToWebLocalFrameImpl(web_frame)->GetFrame();
+  LocalFrame* frame = To<WebLocalFrameImpl>(web_frame)->GetFrame();
   MHTMLArchive::EncodingPolicy encoding_policy =
       web_delegate->UseBinaryEncoding()
           ? MHTMLArchive::EncodingPolicy::kUseBinaryEncoding

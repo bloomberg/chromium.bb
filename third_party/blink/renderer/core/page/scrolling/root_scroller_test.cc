@@ -870,7 +870,7 @@ TEST_F(RootScrollerTest, NonMainLocalRootLifecycle) {
 
     WebRemoteFrameImpl* remote_frame = frame_test_helpers::CreateRemote();
     WebLocalFrameImpl* child =
-        ToWebLocalFrameImpl(helper_.LocalMainFrame()->FirstChild());
+        To<WebLocalFrameImpl>(helper_.LocalMainFrame()->FirstChild());
     child->Swap(remote_frame);
     remote_frame->SetReplicatedOrigin(
         WebSecurityOrigin(SecurityOrigin::CreateUniqueOpaque()), false);

@@ -1992,7 +1992,7 @@ void WebViewImpl::SetFocusedFrame(WebFrame* frame) {
       focused_local_frame->Selection().SetFrameIsFocused(false);
     return;
   }
-  LocalFrame* core_frame = ToWebLocalFrameImpl(frame)->GetFrame();
+  LocalFrame* core_frame = To<WebLocalFrameImpl>(frame)->GetFrame();
   core_frame->GetPage()->GetFocusController().SetFocusedFrame(core_frame);
 }
 
@@ -2265,7 +2265,7 @@ void WebViewImpl::AdvanceFocusAcrossFrames(WebFocusType type,
   // TODO(alexmos): Pass in proper with sourceCapabilities.
   GetPage()->GetFocusController().AdvanceFocusAcrossFrames(
       type, ToWebRemoteFrameImpl(from)->GetFrame(),
-      ToWebLocalFrameImpl(to)->GetFrame());
+      To<WebLocalFrameImpl>(to)->GetFrame());
 }
 
 double WebViewImpl::ZoomLevel() {

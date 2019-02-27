@@ -113,7 +113,7 @@ WebFrameWidget* WebFrameWidget::CreateForMainFrame(WebWidgetClient* client,
   // |main_frame|'s WebViewImpl.
   // Note: this can't DCHECK that the view's main frame points to
   // |main_frame|, as provisional frames violate this precondition.
-  WebLocalFrameImpl& main_frame_impl = ToWebLocalFrameImpl(*main_frame);
+  WebLocalFrameImpl& main_frame_impl = To<WebLocalFrameImpl>(*main_frame);
   DCHECK(main_frame_impl.ViewImpl());
   WebViewImpl& web_view_impl = *main_frame_impl.ViewImpl();
 

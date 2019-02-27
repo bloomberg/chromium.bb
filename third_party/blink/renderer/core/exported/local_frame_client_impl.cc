@@ -118,10 +118,11 @@ Frame* ToCoreFrame(WebFrame* frame) {
 // parent or when the parent is a remote frame.
 LocalFrame* GetLocalParentFrame(WebLocalFrameImpl* frame) {
   WebFrame* parent = frame->Parent();
-  if (!parent || !parent->IsWebLocalFrame())
+  auto* parent_web_local_frame = DynamicTo<WebLocalFrameImpl>(parent);
+  if (!parent_web_local_frame)
     return nullptr;
 
-  return ToWebLocalFrameImpl(parent)->GetFrame();
+  return parent_web_local_frame->GetFrame();
 }
 
 // Returns whether the |local_frame| has been loaded using an MHTMLArchive. When

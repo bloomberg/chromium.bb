@@ -117,7 +117,7 @@ class AudioContextAutoplayTest
   }
 
   Document& ChildDocument() {
-    return *ToWebLocalFrameImpl(helper_.LocalMainFrame()->FirstChild())
+    return *To<WebLocalFrameImpl>(helper_.LocalMainFrame()->FirstChild())
                 ->GetFrame()
                 ->GetDocument();
   }

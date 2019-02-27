@@ -67,9 +67,9 @@ WebDOMFileSystem WebDOMFileSystem::Create(WebLocalFrame* frame,
                                           const WebURL& root_url,
                                           SerializableType serializable_type) {
   DCHECK(frame);
-  DCHECK(ToWebLocalFrameImpl(frame)->GetFrame());
+  DCHECK(To<WebLocalFrameImpl>(frame)->GetFrame());
   DOMFileSystem* dom_file_system = DOMFileSystem::Create(
-      ToWebLocalFrameImpl(frame)->GetFrame()->GetDocument(), name,
+      To<WebLocalFrameImpl>(frame)->GetFrame()->GetDocument(), name,
       static_cast<mojom::blink::FileSystemType>(type), root_url);
   if (serializable_type == kSerializableTypeSerializable)
     dom_file_system->MakeClonable();

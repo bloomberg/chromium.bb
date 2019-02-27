@@ -302,9 +302,7 @@ void WebRemoteFrameImpl::SetReplicatedInsecureNavigationsSet(
 
 void WebRemoteFrameImpl::ForwardResourceTimingToParent(
     const WebResourceTimingInfo& info) {
-  DCHECK(Parent()->IsWebLocalFrame());
-  WebLocalFrameImpl* parent_frame =
-      ToWebLocalFrameImpl(Parent()->ToWebLocalFrame());
+  auto* parent_frame = To<WebLocalFrameImpl>(Parent()->ToWebLocalFrame());
   HTMLFrameOwnerElement* owner_element =
       To<HTMLFrameOwnerElement>(frame_->Owner());
   DCHECK(owner_element);

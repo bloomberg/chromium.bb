@@ -47,10 +47,11 @@ bool WebFrame::Swap(WebFrame* frame) {
   // during the detach phase of this swap. Suppress its completion until swap is
   // over, at which point its completion will be correctly dependent on its
   // newly swapped-in child.
+  auto* parent_web_local_frame = DynamicTo<WebLocalFrameImpl>(parent_);
   std::unique_ptr<IncrementLoadEventDelayCount> delay_parent_load =
-      parent_ && parent_->IsWebLocalFrame()
+      parent_web_local_frame
           ? IncrementLoadEventDelayCount::Create(
-                *ToWebLocalFrameImpl(parent_)->GetFrame()->GetDocument())
+                *parent_web_local_frame->GetFrame()->GetDocument())
           : nullptr;
 
   if (parent_) {
@@ -96,14 +97,14 @@ bool WebFrame::Swap(WebFrame* frame) {
   // Clone the state of the current Frame into the one being swapped in.
   // FIXME: This is a bit clunky; this results in pointless decrements and
   // increments of connected subframes.
-  if (frame->IsWebLocalFrame()) {
+  if (auto* web_local_frame = DynamicTo<WebLocalFrameImpl>(frame)) {
     // TODO(dcheng): in an ideal world, both branches would just use
     // WebFrame's initializeCoreFrame() helper. However, Blink
     // currently requires a 'provisional' local frame to serve as a
     // placeholder for loading state when swapping to a local frame.
     // In this case, the core LocalFrame is already initialized, so just
     // update a bit of state.
-    LocalFrame& local_frame = *ToWebLocalFrameImpl(frame)->GetFrame();
+    LocalFrame& local_frame = *web_local_frame->GetFrame();
     DCHECK_EQ(owner, local_frame.Owner());
     if (owner) {
       owner->SetContentFrame(local_frame);
@@ -340,8 +341,8 @@ void WebFrame::TraceFrame(Visitor* visitor, WebFrame* frame) {
   if (!frame)
     return;
 
-  if (frame->IsWebLocalFrame())
-    visitor->Trace(ToWebLocalFrameImpl(frame));
+  if (auto* web_local_frame = DynamicTo<WebLocalFrameImpl>(frame))
+    visitor->Trace(web_local_frame);
   else
     visitor->Trace(ToWebRemoteFrameImpl(frame));
 }
@@ -372,8 +373,8 @@ void WebFrame::DetachFromParent() {
 }
 
 Frame* WebFrame::ToCoreFrame(const WebFrame& frame) {
-  if (frame.IsWebLocalFrame())
-    return ToWebLocalFrameImpl(frame).GetFrame();
+  if (auto* web_local_frame = DynamicTo<WebLocalFrameImpl>(&frame))
+    return web_local_frame->GetFrame();
   if (frame.IsWebRemoteFrame())
     return ToWebRemoteFrameImpl(frame).GetFrame();
   NOTREACHED();

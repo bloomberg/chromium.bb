@@ -90,7 +90,7 @@ class CreateWindowTest : public testing::Test {
 
 TEST_F(CreateWindowTest, CreateWindowFromPausedPage) {
   ScopedPagePauser pauser;
-  LocalFrame* frame = ToWebLocalFrameImpl(main_frame_)->GetFrame();
+  LocalFrame* frame = To<WebLocalFrameImpl>(main_frame_)->GetFrame();
   FrameLoadRequest request(frame->GetDocument());
   WebWindowFeatures features;
   EXPECT_EQ(nullptr,

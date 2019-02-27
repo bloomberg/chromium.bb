@@ -64,9 +64,10 @@ class LayoutGeometryMapTest : public testing::Test {
     WebFrame* iframe =
         static_cast<WebViewImpl*>(web_view)->MainFrameImpl()->FindFrameByName(
             WebString::FromUTF8(iframe_name));
-    if (!iframe || !iframe->IsWebLocalFrame())
+    auto* web_local_frame = DynamicTo<WebLocalFrameImpl>(iframe);
+    if (!web_local_frame)
       return nullptr;
-    LocalFrame* frame = ToWebLocalFrameImpl(iframe)->GetFrame();
+    LocalFrame* frame = web_local_frame->GetFrame();
     Document* doc = frame->GetDocument();
     Element* element = doc->getElementById(element_id);
     if (!element)

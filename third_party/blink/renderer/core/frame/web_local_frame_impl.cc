@@ -1842,7 +1842,7 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
   // element might not have the attribute, and there might be other attributes
   // which can identify the element.
   WebLocalFrameImpl* webframe_child =
-      ToWebLocalFrameImpl(client_->CreateChildFrame(
+      To<WebLocalFrameImpl>(client_->CreateChildFrame(
           this, scope, name,
           owner_element->getAttribute(
               owner_element->SubResourceAttributeName()),
@@ -1938,7 +1938,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::FromFrame(LocalFrame& frame) {
   LocalFrameClient* client = frame.Client();
   if (!client || !client->IsLocalFrameClientImpl())
     return nullptr;
-  return ToWebLocalFrameImpl(client->GetWebFrame());
+  return To<WebLocalFrameImpl>(client->GetWebFrame());
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::FromFrameOwnerElement(Element* element) {
@@ -2023,8 +2023,9 @@ WebLocalFrameImpl* WebLocalFrameImpl::LocalRoot() {
   // when the WebLocalFrame exists but the core LocalFrame does not.
   // TODO(alexmos, dcheng): Clean this up to only calculate this in one place.
   WebLocalFrameImpl* local_root = this;
-  while (local_root->Parent() && local_root->Parent()->IsWebLocalFrame())
-    local_root = ToWebLocalFrameImpl(local_root->Parent());
+  while (auto* web_local_frame =
+             DynamicTo<WebLocalFrameImpl>(local_root->Parent()))
+    local_root = web_local_frame;
   return local_root;
 }
 

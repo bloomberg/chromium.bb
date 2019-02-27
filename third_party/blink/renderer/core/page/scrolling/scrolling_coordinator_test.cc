@@ -898,8 +898,8 @@ TEST_P(ScrollingCoordinatorTest, touchActionOnScrollingElement) {
 TEST_P(ScrollingCoordinatorTest, IframeWindowTouchHandler) {
   LoadHTML(
       R"(<iframe style="width: 275px; height: 250px;"></iframe>)");
-  WebLocalFrameImpl* child_frame =
-      ToWebLocalFrameImpl(GetWebView()->MainFrameImpl()->FirstChild());
+  auto* child_frame =
+      To<WebLocalFrameImpl>(GetWebView()->MainFrameImpl()->FirstChild());
   frame_test_helpers::LoadHTMLString(child_frame, R"HTML(
       <p style="margin: 1000px"> Hello </p>
       <script>

@@ -197,7 +197,7 @@ NSAttributedString* WebSubstringUtil::AttributedSubstringInRange(
     size_t location,
     size_t length,
     WebPoint* baseline_point) {
-  LocalFrame* frame = ToWebLocalFrameImpl(web_frame)->GetFrame();
+  LocalFrame* frame = To<WebLocalFrameImpl>(web_frame)->GetFrame();
   if (frame->View()->NeedsLayout())
     frame->View()->UpdateLayout();
 

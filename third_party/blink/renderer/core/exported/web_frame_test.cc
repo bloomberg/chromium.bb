@@ -5142,7 +5142,7 @@ TEST_F(WebFrameTest, FindInPageMatchRects) {
   main_frame->EnsureTextFinder().ResetMatchCount();
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
-       frame = ToWebLocalFrameImpl(frame->TraverseNext())) {
+       frame = To<WebLocalFrameImpl>(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
                                                         search_text, *options);
   }
@@ -5214,7 +5214,7 @@ TEST_F(WebFrameTest, FindInPageActiveIndex) {
   main_frame->EnsureTextFinder().ResetMatchCount();
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
-       frame = ToWebLocalFrameImpl(frame->TraverseNext())) {
+       frame = To<WebLocalFrameImpl>(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
                                                         search_text, *options);
   }
@@ -5226,7 +5226,7 @@ TEST_F(WebFrameTest, FindInPageActiveIndex) {
       mojom::StopFindAction::kStopFindActionClearSelection);
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
-       frame = ToWebLocalFrameImpl(frame->TraverseNext())) {
+       frame = To<WebLocalFrameImpl>(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
                                                         search_text, *options);
   }
@@ -5243,7 +5243,7 @@ TEST_F(WebFrameTest, FindInPageActiveIndex) {
   main_frame->EnsureTextFinder().ResetMatchCount();
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
-       frame = ToWebLocalFrameImpl(frame->TraverseNext())) {
+       frame = To<WebLocalFrameImpl>(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(
         kFindIdentifier, search_text_new, *options);
   }
@@ -5274,8 +5274,7 @@ TEST_F(WebFrameTest, FindOnDetachedFrame) {
   TestFindInPageClient main_find_in_page_client;
   main_find_in_page_client.SetFrame(main_frame);
 
-  WebLocalFrameImpl* second_frame =
-      ToWebLocalFrameImpl(main_frame->TraverseNext());
+  auto* second_frame = To<WebLocalFrameImpl>(main_frame->TraverseNext());
 
   // Detach the frame before finding.
   RemoveElementById(main_frame, "frame");
@@ -5291,7 +5290,7 @@ TEST_F(WebFrameTest, FindOnDetachedFrame) {
   main_frame->EnsureTextFinder().ResetMatchCount();
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
-       frame = ToWebLocalFrameImpl(frame->TraverseNext())) {
+       frame = To<WebLocalFrameImpl>(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
                                                         search_text, *options);
   }
@@ -5322,7 +5321,7 @@ TEST_F(WebFrameTest, FindDetachFrameBeforeScopeStrings) {
   find_in_page_client.SetFrame(main_frame);
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
-       frame = ToWebLocalFrameImpl(frame->TraverseNext())) {
+       frame = To<WebLocalFrameImpl>(frame->TraverseNext())) {
     EXPECT_TRUE(frame->GetFindInPage()->FindInternal(
         kFindIdentifier, search_text, *options, false));
   }
@@ -5335,7 +5334,7 @@ TEST_F(WebFrameTest, FindDetachFrameBeforeScopeStrings) {
   main_frame->EnsureTextFinder().ResetMatchCount();
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
-       frame = ToWebLocalFrameImpl(frame->TraverseNext())) {
+       frame = To<WebLocalFrameImpl>(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
                                                         search_text, *options);
   }
@@ -5366,7 +5365,7 @@ TEST_F(WebFrameTest, FindDetachFrameWhileScopingStrings) {
   find_in_page_client.SetFrame(main_frame);
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
-       frame = ToWebLocalFrameImpl(frame->TraverseNext())) {
+       frame = To<WebLocalFrameImpl>(frame->TraverseNext())) {
     EXPECT_TRUE(frame->GetFindInPage()->FindInternal(
         kFindIdentifier, search_text, *options, false));
   }
@@ -5376,7 +5375,7 @@ TEST_F(WebFrameTest, FindDetachFrameWhileScopingStrings) {
   main_frame->EnsureTextFinder().ResetMatchCount();
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
-       frame = ToWebLocalFrameImpl(frame->TraverseNext())) {
+       frame = To<WebLocalFrameImpl>(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
                                                         search_text, *options);
   }
@@ -5386,7 +5385,7 @@ TEST_F(WebFrameTest, FindDetachFrameWhileScopingStrings) {
   RemoveElementById(main_frame, "frame");
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
-       frame = ToWebLocalFrameImpl(frame->TraverseNext())) {
+       frame = To<WebLocalFrameImpl>(frame->TraverseNext())) {
     frame->EnsureTextFinder().StartScopingStringMatches(kFindIdentifier,
                                                         search_text, *options);
   }
@@ -5418,7 +5417,7 @@ TEST_F(WebFrameTest, ResetMatchCount) {
   EXPECT_TRUE(!!main_frame->TraverseNext());
 
   for (WebLocalFrameImpl* frame = main_frame; frame;
-       frame = ToWebLocalFrameImpl(frame->TraverseNext())) {
+       frame = To<WebLocalFrameImpl>(frame->TraverseNext())) {
     EXPECT_FALSE(frame->GetFindInPage()->FindInternal(
         kFindIdentifier, search_text, *options, false));
   }
@@ -7189,7 +7188,7 @@ class TestScrolledFrameClient : public frame_test_helpers::TestWebFrameClient {
     if (Frame()->Parent())
       return;
     EXPECT_FALSE(did_scroll_frame_);
-    LocalFrameView* view = ToWebLocalFrameImpl(Frame())->GetFrameView();
+    LocalFrameView* view = To<WebLocalFrameImpl>(Frame())->GetFrameView();
     // LocalFrameView can be scrolled in
     // LocalFrameView::SetFixedVisibleContentRect which is called from
     // LocalFrame::CreateView (before the frame is associated with the the
@@ -7508,8 +7507,7 @@ TEST_F(WebFrameTest, ReloadIframe) {
   ASSERT_EQ(1U, main_frame_client.ChildFrameCreationCount());
   TestCachePolicyWebFrameClient* child_client =
       &main_frame_client.ChildClient(0);
-  WebLocalFrameImpl* child_frame =
-      ToWebLocalFrameImpl(main_frame->FirstChild());
+  auto* child_frame = To<WebLocalFrameImpl>(main_frame->FirstChild());
   EXPECT_EQ(child_client, child_frame->Client());
   EXPECT_EQ(1u, main_frame->GetFrame()->Tree().ScopedChildCount());
   EXPECT_EQ(1, child_client->BeginNavigationCallCount());
@@ -7521,8 +7519,7 @@ TEST_F(WebFrameTest, ReloadIframe) {
   ASSERT_EQ(2U, main_frame_client.ChildFrameCreationCount());
   TestCachePolicyWebFrameClient* new_child_client =
       &main_frame_client.ChildClient(1);
-  WebLocalFrameImpl* new_child_frame =
-      ToWebLocalFrameImpl(main_frame->FirstChild());
+  auto* new_child_frame = To<WebLocalFrameImpl>(main_frame->FirstChild());
   EXPECT_EQ(new_child_client, new_child_frame->Client());
   ASSERT_NE(child_client, new_child_client);
   ASSERT_NE(child_frame, new_child_frame);
@@ -7826,7 +7823,7 @@ TEST_F(WebFrameTest, FirstBlankSubframeNavigation) {
   frame->ExecuteScript(WebScriptSource(WebString::FromUTF8(
       "document.body.appendChild(document.createElement('iframe'))")));
 
-  WebLocalFrameImpl* iframe = ToWebLocalFrameImpl(frame->FirstChild());
+  auto* iframe = To<WebLocalFrameImpl>(frame->FirstChild());
   ASSERT_EQ(&client.ChildClient(), iframe->Client());
 
   std::string url1 = base_url_ + "history.html";
@@ -8290,7 +8287,7 @@ TEST_F(WebFrameTest, FullscreenSubframe) {
   UpdateAllLifecyclePhases(web_view_impl);
 
   LocalFrame* frame =
-      ToWebLocalFrameImpl(
+      To<WebLocalFrameImpl>(
           web_view_helper.GetWebView()->MainFrame()->FirstChild())
           ->GetFrame();
   Document* document = frame->GetDocument();
@@ -9601,7 +9598,7 @@ TEST_F(WebFrameSwapTest, WindowOpenOnRemoteFrame) {
 
   ASSERT_TRUE(MainFrame()->FirstChild()->IsWebRemoteFrame());
   LocalDOMWindow* main_window =
-      ToWebLocalFrameImpl(MainFrame())->GetFrame()->DomWindow();
+      To<WebLocalFrameImpl>(MainFrame())->GetFrame()->DomWindow();
 
   String destination = "data:text/html:destination";
   NonThrowableExceptionState exception_state;
@@ -11113,7 +11110,7 @@ TEST_F(WebFrameTest, ChangeResourcePriority) {
       base_url_ + "promote_img_in_viewport_priority.html");
 
   // Ensure the image in the viewport got promoted after the request was sent.
-  Resource* image = ToWebLocalFrameImpl(helper.GetWebView()->MainFrame())
+  Resource* image = To<WebLocalFrameImpl>(helper.GetWebView()->MainFrame())
                         ->GetFrame()
                         ->GetDocument()
                         ->Fetcher()
@@ -11464,7 +11461,7 @@ TEST_F(WebFrameSimTest, TickmarksDocumentRelative) {
 
   Compositor().BeginFrame();
 
-  WebLocalFrameImpl* frame = ToWebLocalFrameImpl(WebView().MainFrame());
+  auto* frame = To<WebLocalFrameImpl>(WebView().MainFrame());
   auto* frame_view = To<LocalFrame>(WebView().GetPage()->MainFrame())->View();
 
   frame_view->GetScrollableArea()->SetScrollOffset(ScrollOffset(3000, 1000),
@@ -11520,7 +11517,7 @@ TEST_F(WebFrameSimTest, FindInPageSelectNextMatch) {
 
   Compositor().BeginFrame();
 
-  WebLocalFrameImpl* frame = ToWebLocalFrameImpl(WebView().MainFrame());
+  auto* frame = To<WebLocalFrameImpl>(WebView().MainFrame());
   auto* local_frame = To<LocalFrame>(WebView().GetPage()->MainFrame());
   auto* frame_view = local_frame->View();
 
@@ -12603,7 +12600,7 @@ TEST_F(WebFrameTest, FallbackForNonexistentProvisionalNavigation) {
   // caller won't attempt to replace the correctly empty frame with an error
   // page.
   EXPECT_EQ(WebNavigationControl::NoLoadInProgress,
-            ToWebLocalFrameImpl(child)->MaybeRenderFallbackContent(
+            To<WebLocalFrameImpl>(child)->MaybeRenderFallbackContent(
                 ResourceError::Failure(request.Url())));
 }
 
@@ -12768,14 +12765,14 @@ TEST_F(WebFrameTest, PrintDetachedIframe) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "print-detached-iframe.html");
   TestFramePrinting(
-      ToWebLocalFrameImpl(web_view_helper.LocalMainFrame()->FirstChild()));
+      To<WebLocalFrameImpl>(web_view_helper.LocalMainFrame()->FirstChild()));
 }
 
 TEST_F(WebFrameTest, PrintIframeUnderDetached) {
   RegisterMockedHttpURLLoad("print-detached-iframe.html");
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "print-detached-iframe.html");
-  TestFramePrinting(ToWebLocalFrameImpl(
+  TestFramePrinting(To<WebLocalFrameImpl>(
       web_view_helper.LocalMainFrame()->FirstChild()->FirstChild()));
 }
 
