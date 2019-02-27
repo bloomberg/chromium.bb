@@ -24,6 +24,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 namespace content {
@@ -238,6 +239,15 @@ AppCacheRequestHandler::InitializeForMainResourceNetworkService(
           request.should_reset_appcache);
   handler->appcache_host_ = std::move(appcache_host);
   return handler;
+}
+
+// static
+bool AppCacheRequestHandler::IsMainResourceType(ResourceType type) {
+  // When PlzDedicatedWorker is enabled, a dedicated worker script is considered
+  // to be a main resource.
+  if (type == RESOURCE_TYPE_WORKER)
+    return blink::features::IsPlzDedicatedWorkerEnabled();
+  return IsResourceTypeFrame(type) || type == RESOURCE_TYPE_SHARED_WORKER;
 }
 
 void AppCacheRequestHandler::OnDestructionImminent(AppCacheHost* host) {

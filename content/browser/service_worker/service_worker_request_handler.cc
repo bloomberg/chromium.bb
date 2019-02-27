@@ -188,10 +188,13 @@ ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
 
 // static
 std::unique_ptr<NavigationLoaderInterceptor>
-ServiceWorkerRequestHandler::InitializeForSharedWorker(
+ServiceWorkerRequestHandler::InitializeForWorker(
     const network::ResourceRequest& resource_request,
     base::WeakPtr<ServiceWorkerProviderHost> host) {
   DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
+  DCHECK(resource_request.resource_type == RESOURCE_TYPE_WORKER ||
+         resource_request.resource_type == RESOURCE_TYPE_SHARED_WORKER)
+      << resource_request.resource_type;
 
   // Create the handler even for insecure HTTP since it's used in the
   // case of redirect to HTTPS.
@@ -206,8 +209,10 @@ ServiceWorkerRequestHandler::InitializeForSharedWorker(
           resource_request.fetch_credentials_mode,
           resource_request.fetch_redirect_mode,
           resource_request.fetch_integrity, resource_request.keepalive,
-          RESOURCE_TYPE_SHARED_WORKER,
-          blink::mojom::RequestContextType::SHARED_WORKER,
+          static_cast<ResourceType>(resource_request.resource_type),
+          resource_request.resource_type == RESOURCE_TYPE_WORKER
+              ? blink::mojom::RequestContextType::WORKER
+              : blink::mojom::RequestContextType::SHARED_WORKER,
           resource_request.fetch_frame_type,
           nullptr /* blob_storage_context: unused in S13n */,
           resource_request.request_body, resource_request.skip_service_worker));

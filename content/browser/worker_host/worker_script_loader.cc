@@ -44,7 +44,7 @@ WorkerScriptLoader::WorkerScriptLoader(
 
   if (service_worker_provider_host_) {
     std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor =
-        ServiceWorkerRequestHandler::InitializeForSharedWorker(
+        ServiceWorkerRequestHandler::InitializeForWorker(
             resource_request_, service_worker_provider_host_);
     if (service_worker_interceptor)
       interceptors_.push_back(std::move(service_worker_interceptor));

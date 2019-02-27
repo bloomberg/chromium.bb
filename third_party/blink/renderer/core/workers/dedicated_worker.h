@@ -129,7 +129,7 @@ class CORE_EXPORT DedicatedWorker final
       const KURL& script_url,
       OffMainThreadWorkerScriptFetchOption,
       network::mojom::ReferrerPolicy);
-
+  scoped_refptr<WebWorkerFetchContext> CreateWebWorkerFetchContext();
   WorkerClients* CreateWorkerClients();
 
   // Callbacks for |classic_script_loader_|.

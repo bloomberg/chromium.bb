@@ -113,9 +113,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
       const network::ResourceRequest& request,
       base::WeakPtr<AppCacheHost> appcache_host);
 
-  static bool IsMainResourceType(ResourceType type) {
-    return IsResourceTypeFrame(type) || type == RESOURCE_TYPE_SHARED_WORKER;
-  }
+  static bool IsMainResourceType(ResourceType type);
 
   // Called by unittests to indicate that we are in test mode.
   static void SetRunningInTests(bool in_tests);

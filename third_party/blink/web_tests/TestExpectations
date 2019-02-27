@@ -4137,11 +4137,6 @@ crbug.com/835717 virtual/omt-worker-fetch/external/wpt/workers/opaque-origin.htm
 # This fails because off-the-main-thread script loading goes through different
 # loading path. Although we could remove this test. disable it for now.
 crbug.com/835717 virtual/omt-worker-fetch/fast/workers/chromium/worker-crash-with-invalid-location.html [ Skip ]
-# Looks like calling |URL.revokeObjectURL(blob_url)| immediately after
-# |new Worker(blob_url)| fails worker start because off-the-main-thread worker
-# script loading changes the order of url revocation and script fetch.
-# See also crbug.com/800898.
-crbug.com/835717 virtual/omt-worker-fetch/external/wpt/workers/dedicated-worker-from-blob-url.window.html [ Timeout ]
 
 # This fails because AllowedByNoSniff::MimeTypeAsScript() blocks the nested worker's
 # worker script, because the script url has a .html file extension.
