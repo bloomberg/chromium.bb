@@ -72,10 +72,9 @@ PrefetchRequestStatus PrefetchRequestFetcherTest::RunFetcher(
     base::OnceCallback<void(void)> respond_callback,
     std::string* data_received) {
   base::MockCallback<PrefetchRequestFetcher::FinishedCallback> callback;
-  bool send_prefetch_testing_header = false;
   std::unique_ptr<PrefetchRequestFetcher> fetcher =
       PrefetchRequestFetcher::CreateForPost(
-          kTestURL, kTestMessage, send_prefetch_testing_header,
+          kTestURL, kTestMessage, /*testing_header_value=*/"",
           shared_url_loader_factory(), callback.Get());
 
   PrefetchRequestStatus status;

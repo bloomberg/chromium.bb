@@ -132,6 +132,28 @@
           Enable limitless prefetching
       </input>
     </div>
+    <div>
+      <form id="testing-header-form">
+        <fieldset id="testing-header-fieldset">
+          <legend>Testing header value:</legend>
+          <label>
+            <input type="radio" id="testing-header-default"
+                   name="testing-header" value="">
+            Default
+          </label>
+          <label>
+            <input type="radio" id="testing-header-enable" name="testing-header"
+                   value="ForceEnable">
+            Force enable
+          </label>
+          <label>
+            <input type="radio" id="testing-header-disable"
+                   name="testing-header" value="ForceDisable">
+            Force disable
+          </label>
+        </fieldset>
+      </form>
+    </div>
     <div id="prefetch-actions-info" class="dump"></div>
   </body>
 </html>

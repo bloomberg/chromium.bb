@@ -39,13 +39,13 @@ const int kTestMaxBundleSize = 100000;
 class GeneratePageBundleRequestTest : public PrefetchRequestTestBase {
  public:
   std::unique_ptr<GeneratePageBundleRequest> CreateRequest(
-      bool testing_header,
+      const std::string& testing_header_value,
       PrefetchRequestFinishedCallback callback) {
     std::vector<std::string> page_urls = {kTestURL, kTestURL2};
     return std::unique_ptr<GeneratePageBundleRequest>(
         new GeneratePageBundleRequest(
             kTestUserAgent, kTestGCMID, kTestMaxBundleSize, page_urls,
-            kTestChannel, testing_header, shared_url_loader_factory(),
+            kTestChannel, testing_header_value, shared_url_loader_factory(),
             std::move(callback)));
   }
 };
@@ -53,7 +53,7 @@ class GeneratePageBundleRequestTest : public PrefetchRequestTestBase {
 TEST_F(GeneratePageBundleRequestTest, RequestData) {
   base::MockCallback<PrefetchRequestFinishedCallback> callback;
   std::unique_ptr<GeneratePageBundleRequest> request(
-      CreateRequest(false, callback.Get()));
+      CreateRequest("", callback.Get()));
 
   EXPECT_EQ(2UL, request->requested_urls().size());
   EXPECT_THAT(request->requested_urls(), Contains(kTestURL));
@@ -96,7 +96,7 @@ TEST_F(GeneratePageBundleRequestTest, ExperimentHeaderInRequestData) {
 
   base::MockCallback<PrefetchRequestFinishedCallback> callback;
   std::unique_ptr<GeneratePageBundleRequest> request(
-      CreateRequest(false, callback.Get()));
+      CreateRequest("", callback.Get()));
   network::TestURLLoaderFactory::PendingRequest* pending_request =
       GetPendingRequest();
   DCHECK(pending_request);
@@ -110,7 +110,7 @@ TEST_F(GeneratePageBundleRequestTest, NoTestingHeaderInRequestData) {
   base::MockCallback<PrefetchRequestFinishedCallback> callback;
   // Make a request without the header.
   std::unique_ptr<GeneratePageBundleRequest> request(
-      CreateRequest(false, callback.Get()));
+      CreateRequest("", callback.Get()));
 
   std::string testing_header;
   bool has_header = GetPendingRequest()->request.headers.GetHeader(
@@ -122,18 +122,18 @@ TEST_F(GeneratePageBundleRequestTest, TestingHeaderInRequestData) {
   base::MockCallback<PrefetchRequestFinishedCallback> callback;
   // Make a request with the header.
   std::unique_ptr<GeneratePageBundleRequest> request(
-      CreateRequest(true, callback.Get()));
+      CreateRequest("ForceEnable", callback.Get()));
   std::string testing_header;
   bool has_header = GetPendingRequest()->request.headers.GetHeader(
       "X-Offline-Prefetch-Testing", &testing_header);
   EXPECT_TRUE(has_header);
-  EXPECT_EQ("true", testing_header);
+  EXPECT_EQ("ForceEnable", testing_header);
 }
 
 TEST_F(GeneratePageBundleRequestTest, EmptyResponse) {
   base::MockCallback<PrefetchRequestFinishedCallback> callback;
   std::unique_ptr<GeneratePageBundleRequest> request(
-      CreateRequest(false, callback.Get()));
+      CreateRequest("", callback.Get()));
 
   PrefetchRequestStatus status;
   std::string operation_name;
@@ -152,7 +152,7 @@ TEST_F(GeneratePageBundleRequestTest, EmptyResponse) {
 TEST_F(GeneratePageBundleRequestTest, InvalidResponse) {
   base::MockCallback<PrefetchRequestFinishedCallback> callback;
   std::unique_ptr<GeneratePageBundleRequest> request(
-      CreateRequest(false, callback.Get()));
+      CreateRequest("", callback.Get()));
 
   PrefetchRequestStatus status;
   std::string operation_name;

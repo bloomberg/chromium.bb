@@ -106,6 +106,20 @@ cr.define('offlineInternals', function() {
     getLimitlessPrefetchingEnabled: function() {},
 
     /**
+     * Sets the value to be sent with the prefetch testing header for
+     * GeneratePageBundle requests.
+     * @param {string} value Value to send with X-Offline-Prefetch-Testing.
+     */
+    setPrefetchTestingHeaderValue: function(value) {},
+
+    /**
+     * Gets the value of the prefetch testing header to be sent with
+     * GeneratePageBundle requests.
+     * @return {!Promise<string>} Header value.
+     */
+    getPrefetchTestingHeaderValue: function() {},
+
+    /**
      * Gets the currently recorded logs.
      * @return {!Promise<!Array<string>>} A promise firing when the
      *     logs are retrieved.
@@ -228,6 +242,16 @@ cr.define('offlineInternals', function() {
     /** @override */
     getLimitlessPrefetchingEnabled: function() {
       return cr.sendWithPromise('getLimitlessPrefetchingEnabled');
+    },
+
+    /** @override */
+    setPrefetchTestingHeaderValue: function(value) {
+      chrome.send('setPrefetchTestingHeader', [value]);
+    },
+
+    /** @override */
+    getPrefetchTestingHeaderValue: function() {
+      return cr.sendWithPromise('getPrefetchTestingHeader');
     },
 
     /** @override */

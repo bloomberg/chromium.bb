@@ -426,6 +426,48 @@ void OfflineInternalsUIMessageHandler::HandleGetLimitlessPrefetchingEnabled(
   ResolveJavascriptCallback(*callback_id, base::Value(enabled));
 }
 
+void OfflineInternalsUIMessageHandler::HandleSetPrefetchTestingHeader(
+    const base::ListValue* args) {
+  AllowJavascript();
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+
+  if (args->GetList().size() != 1) {
+    DLOG(ERROR) << "Expected 1 argument to setPrefetchTesting header but got "
+                << args->GetList().size();
+    return;
+  }
+  if (!args->GetList()[0].is_string()) {
+    DLOG(ERROR) << "Expected argument to be string but got "
+                << base::Value::GetTypeName(args->GetList()[0].type());
+    return;
+  }
+
+  offline_pages::prefetch_prefs::SetPrefetchTestingHeader(
+      prefs, args->GetList()[0].GetString());
+}
+
+void OfflineInternalsUIMessageHandler::HandleGetPrefetchTestingHeader(
+    const base::ListValue* args) {
+  AllowJavascript();
+  if (args->GetList().size() != 1) {
+    DLOG(ERROR) << "Expected 1 argument to getPrefetchTestingHeader but got "
+                << args->GetList().size();
+    return;
+  }
+  if (!args->GetList()[0].is_string()) {
+    DLOG(ERROR) << "Expected callback_id to be a string but got "
+                << base::Value::GetTypeName(args->GetList()[0].type());
+    return;
+  }
+
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  ResolveJavascriptCallback(
+      args->GetList()[0],
+      base::Value(offline_pages::prefetch_prefs::GetPrefetchTestingHeader(prefs)
+
+                      ));
+}
+
 void OfflineInternalsUIMessageHandler::HandleGetLoggingState(
     const base::ListValue* args) {
   AllowJavascript();
@@ -556,6 +598,16 @@ void OfflineInternalsUIMessageHandler::RegisterMessages() {
       base::BindRepeating(&OfflineInternalsUIMessageHandler::
                               HandleGetLimitlessPrefetchingEnabled,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setPrefetchTestingHeader",
+      base::BindRepeating(
+          &OfflineInternalsUIMessageHandler::HandleSetPrefetchTestingHeader,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getPrefetchTestingHeader",
+      base::BindRepeating(
+          &OfflineInternalsUIMessageHandler::HandleGetPrefetchTestingHeader,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getLoggingState",
       base::BindRepeating(

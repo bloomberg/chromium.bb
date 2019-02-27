@@ -29,7 +29,7 @@ class GeneratePageBundleRequest {
       int max_bundle_size_bytes,
       const std::vector<std::string>& page_urls,
       version_info::Channel channel,
-      bool send_testing_header,
+      const std::string& testing_header_value,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       PrefetchRequestFinishedCallback callback);
   ~GeneratePageBundleRequest();

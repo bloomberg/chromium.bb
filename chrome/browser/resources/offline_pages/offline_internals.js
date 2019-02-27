@@ -106,6 +106,18 @@ cr.define('offlineInternals', function() {
     browserProxy.getLimitlessPrefetchingEnabled().then(function(enabled) {
       $('limitless-prefetching-checkbox').checked = enabled;
     });
+    browserProxy.getPrefetchTestingHeaderValue().then(function(value) {
+      switch (value) {
+        case 'ForceEnable':
+          $('testing-header-enable').checked = true;
+          break;
+        case 'ForceDisable':
+          $('testing-header-disable').checked = true;
+          break;
+        default:
+          $('testing-header-default').checked = true;
+      }
+    });
     refreshLog();
   }
 
@@ -303,6 +315,13 @@ cr.define('offlineInternals', function() {
     $('limitless-prefetching-checkbox').onchange = (evt) => {
       browserProxy.setLimitlessPrefetchingEnabled(evt.target.checked);
     };
+    // Helper for setting prefetch testing header from a radio button.
+    const setPrefetchTestingHeader = function(evt) {
+      browserProxy.setPrefetchTestingHeaderValue(evt.target.value);
+    };
+    $('testing-header-default').onchange = setPrefetchTestingHeader;
+    $('testing-header-enable').onchange = setPrefetchTestingHeader;
+    $('testing-header-disable').onchange = setPrefetchTestingHeader;
     if (!incognito) {
       refreshAll();
     }
