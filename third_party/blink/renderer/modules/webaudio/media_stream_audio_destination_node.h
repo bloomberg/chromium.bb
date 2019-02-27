@@ -43,8 +43,6 @@ class MediaStreamAudioDestinationHandler final
       uint32_t number_of_channels);
   ~MediaStreamAudioDestinationHandler() override;
 
-  MediaStream* Stream() { return stream_.Get(); }
-
   // AudioHandler.
   void Process(uint32_t frames_to_process) override;
   void SetChannelCount(unsigned, ExceptionState&) override;
@@ -58,12 +56,11 @@ class MediaStreamAudioDestinationHandler final
   // As an audio source, we will never propagate silence.
   bool PropagatesSilence() const override { return false; }
 
-  // This Persistent doesn't make a reference cycle.
-  Persistent<MediaStream> stream_;
+  // MediaStreamSource is held alive by MediaStreamAudioDestinationNode.
   // Accessed by main thread and during audio thread processing.
   //
   // TODO: try to avoid such access during audio thread processing.
-  CrossThreadPersistent<MediaStreamSource> source_;
+  CrossThreadWeakPersistent<MediaStreamSource> source_;
 
   // This synchronizes dynamic changes to the channel count with
   // process() to manage the mix bus.
@@ -87,7 +84,14 @@ class MediaStreamAudioDestinationNode final : public AudioBasicInspectorNode {
 
   MediaStreamAudioDestinationNode(AudioContext&, uint32_t number_of_channels);
 
-  MediaStream* stream() const;
+  MediaStream* stream() const { return stream_; }
+  MediaStreamSource* source() const { return source_; }
+
+  void Trace(Visitor*) final;
+
+ private:
+  const Member<MediaStreamSource> source_;
+  const Member<MediaStream> stream_;
 };
 
 }  // namespace blink
