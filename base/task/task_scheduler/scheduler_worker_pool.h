@@ -8,6 +8,8 @@
 #include "base/base_export.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/task_scheduler/can_schedule_sequence_observer.h"
+#include "base/task/task_scheduler/priority_queue.h"
+#include "base/task/task_scheduler/scheduler_lock.h"
 #include "base/task/task_scheduler/sequence.h"
 #include "base/task/task_scheduler/task.h"
 #include "base/task/task_scheduler/tracked_ref.h"
@@ -75,6 +77,15 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
  protected:
   SchedulerWorkerPool(TrackedRef<TaskTracker> task_tracker,
                       TrackedRef<Delegate> delegate);
+
+  // Synchronizes accesses to all members of this class which are neither const,
+  // atomic, nor immutable after start. Since this lock is a bottleneck to post
+  // and schedule work, only simple data structure manipulations are allowed
+  // within its scope (no thread creation or wake up).
+  mutable SchedulerLock lock_;
+
+  // PriorityQueue from which all threads of this worker pool get work.
+  PriorityQueue priority_queue_ GUARDED_BY(lock_);
 
   const TrackedRef<TaskTracker> task_tracker_;
   const TrackedRef<Delegate> delegate_;

@@ -23,8 +23,6 @@
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/task_scheduler/priority_queue.h"
-#include "base/task/task_scheduler/scheduler_lock.h"
 #include "base/task/task_scheduler/scheduler_worker.h"
 #include "base/task/task_scheduler/scheduler_worker_pool.h"
 #include "base/task/task_scheduler/scheduler_worker_stack.h"
@@ -305,15 +303,6 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   const std::string pool_label_;
   const ThreadPriority priority_hint_;
-
-  // Synchronizes accesses to all members of this class which are neither const,
-  // atomic, nor InitializedInStart. Since this lock is a bottleneck to post and
-  // schedule work, only simple data structure manipulations are allowed within
-  // its scope (no thread creation or wake up).
-  mutable SchedulerLock lock_;
-
-  // PriorityQueue from which all threads of this worker pool get work.
-  PriorityQueue priority_queue_ GUARDED_BY(lock_);
 
   // All workers owned by this worker pool.
   std::vector<scoped_refptr<SchedulerWorker>> workers_ GUARDED_BY(lock_);
