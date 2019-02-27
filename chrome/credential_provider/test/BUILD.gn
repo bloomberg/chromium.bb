@@ -6,12 +6,12 @@ import("//testing/test.gni")
 
 test("gcp_unittests") {
   sources = [
+    "../gaiacp/associated_user_validator_unittests.cc",
     "../gaiacp/gaia_credential_base_unittests.cc",
     "../gaiacp/gaia_credential_provider_unittests.cc",
     "../gaiacp/gaia_credential_unittests.cc",
     "../gaiacp/gcp_utils_unittests.cc",
     "../gaiacp/reauth_credential_unittests.cc",
-    "../gaiacp/token_handle_validator_unittests.cc",
     "com_fakes.cc",
     "com_fakes.h",
     "fake_gls_run_helper.cc",

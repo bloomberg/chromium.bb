@@ -517,7 +517,7 @@ TEST_F(GcpGaiaCredentialBaseTest, NewUserDisabledThroughUsageScenario) {
 TEST_F(GcpGaiaCredentialBaseTest, InvalidUserUnlockedAfterSignin) {
   // Enforce token handle verification with user locking when the token handle
   // is not valid.
-  FakeTokenHandleValidator validator;
+  FakeAssociatedUserValidator validator;
   FakeInternetAvailabilityChecker internet_checker;
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
   GoogleMdmEnrollmentStatusForTesting force_success(true);
@@ -534,7 +534,7 @@ TEST_F(GcpGaiaCredentialBaseTest, InvalidUserUnlockedAfterSignin) {
 
   // Invalid token fetch result.
   fake_http_url_fetcher_factory()->SetFakeResponse(
-      GURL(TokenHandleValidator::kTokenInfoUrl),
+      GURL(AssociatedUserValidator::kTokenInfoUrl),
       FakeWinHttpUrlFetcher::Headers(), "{}");
 
   // Lock the user through their token handle.
@@ -544,7 +544,7 @@ TEST_F(GcpGaiaCredentialBaseTest, InvalidUserUnlockedAfterSignin) {
   // User should have invalid token handle and be locked.
   DWORD reg_value = 0;
   EXPECT_FALSE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
-  EXPECT_EQ(true, validator.IsUserLocked(OLE2W(sid)));
+  EXPECT_EQ(true, validator.IsUserAccessBlocked(OLE2W(sid)));
   EXPECT_EQ(S_OK,
             GetMachineRegDWORD(kWinlogonUserListRegKey, username, &reg_value));
   EXPECT_EQ(0u, reg_value);
@@ -579,7 +579,7 @@ TEST_F(GcpGaiaCredentialBaseTest, InvalidUserUnlockedAfterSignin) {
   // Email should be the same as the default one.
   EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
 
-  EXPECT_EQ(false, validator.IsUserLocked(OLE2W(sid)));
+  EXPECT_EQ(false, validator.IsUserAccessBlocked(OLE2W(sid)));
   EXPECT_NE(S_OK,
             GetMachineRegDWORD(kWinlogonUserListRegKey, username, &reg_value));
 

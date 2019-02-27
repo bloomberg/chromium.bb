@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_filter.h"
+
+#include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
-#include "chrome/credential_provider/gaiacp/token_handle_validator.h"
 
 namespace credential_provider {
 
@@ -29,7 +30,8 @@ HRESULT CGaiaCredentialProviderFilter::Filter(
     DWORD providers_count) {
   // Check to see if any users need to have their access to this system
   // using the normal credential providers revoked.
-  TokenHandleValidator::Get()->DenySigninForUsersWithInvalidTokenHandles(cpus);
+  AssociatedUserValidator::Get()->DenySigninForUsersWithInvalidTokenHandles(
+      cpus);
   return S_OK;
 }
 

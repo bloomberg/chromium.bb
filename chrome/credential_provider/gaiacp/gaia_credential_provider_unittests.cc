@@ -13,11 +13,11 @@
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
+#include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
-#include "chrome/credential_provider/gaiacp/token_handle_validator.h"
 #include "chrome/credential_provider/test/com_fakes.h"
 #include "chrome/credential_provider/test/gcp_fakes.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -174,7 +174,7 @@ TEST_F(GcpCredentialProviderTest, CpusUnlock) {
 }
 
 TEST_F(GcpCredentialProviderTest, AddPersonAfterUserRemove) {
-  FakeTokenHandleValidator token_handle_validator;
+  FakeAssociatedUserValidator associated_user_validator;
   FakeInternetAvailabilityChecker internet_checker;
 
   // Set up such that MDM is enabled, mulit-users is not, and a user already
@@ -217,7 +217,7 @@ TEST_F(GcpCredentialProviderTest, AddPersonAfterUserRemove) {
             fake_os_user_manager()->RemoveUser(kDummyUsername, kDummyPassword));
 
   // Start token handle refresh threads.
-  token_handle_validator.StartRefreshingTokenHandleValidity();
+  associated_user_validator.StartRefreshingTokenHandleValidity();
   {
     CComPtr<ICredentialProvider> provider;
     ASSERT_EQ(S_OK,
@@ -254,7 +254,7 @@ class GcpCredentialProviderMdmTest
       public testing::WithParamInterface<std::tuple<bool, int, bool>> {};
 
 TEST_P(GcpCredentialProviderMdmTest, Basic) {
-  FakeTokenHandleValidator token_handle_validator;
+  FakeAssociatedUserValidator associated_user_validator;
   FakeInternetAvailabilityChecker internet_checker;
 
   const bool config_mdm_url = std::get<0>(GetParam());
@@ -279,7 +279,7 @@ TEST_P(GcpCredentialProviderMdmTest, Basic) {
 
   // Valid token fetch result.
   fake_http_url_fetcher_factory()->SetFakeResponse(
-      GURL(TokenHandleValidator::kTokenInfoUrl),
+      GURL(AssociatedUserValidator::kTokenInfoUrl),
       FakeWinHttpUrlFetcher::Headers(), "{\"expires_in\":1}");
 
   CComPtr<ICredentialProvider> provider;
@@ -326,7 +326,7 @@ TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
   const bool has_token_handle = std::get<0>(GetParam());
   const bool valid_token_handle = std::get<1>(GetParam());
   const bool has_internet = std::get<2>(GetParam());
-  FakeTokenHandleValidator token_handle_validator;
+  FakeAssociatedUserValidator associated_user_validator;
   FakeInternetAvailabilityChecker internet_checker(
       has_internet ? FakeInternetAvailabilityChecker::kHicForceYes
                    : FakeInternetAvailabilityChecker::kHicForceNo);
@@ -340,12 +340,12 @@ TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
 
   // Token fetch result.
   fake_http_url_fetcher_factory()->SetFakeResponse(
-      GURL(TokenHandleValidator::kTokenInfoUrl),
+      GURL(AssociatedUserValidator::kTokenInfoUrl),
       FakeWinHttpUrlFetcher::Headers(),
       valid_token_handle ? "{\"expires_in\":1}" : "{}");
 
   // Start token handle refresh threads.
-  token_handle_validator.StartRefreshingTokenHandleValidity();
+  associated_user_validator.StartRefreshingTokenHandleValidity();
 
   CComPtr<ICredentialProviderSetUserArray> user_array;
   ASSERT_EQ(
@@ -414,7 +414,7 @@ void GcpCredentialProviderAvailableCredentialsTest::SetUp() {
 }
 
 TEST_P(GcpCredentialProviderAvailableCredentialsTest, AvailableCredentials) {
-  FakeTokenHandleValidator token_handle_validator;
+  FakeAssociatedUserValidator associated_user_validator;
   FakeInternetAvailabilityChecker internet_checker;
   FakeCredentialProviderUserArray array;
 
@@ -438,15 +438,15 @@ TEST_P(GcpCredentialProviderAvailableCredentialsTest, AvailableCredentials) {
 
   // Token fetch result.
   fake_http_url_fetcher_factory()->SetFakeResponse(
-      GURL(TokenHandleValidator::kTokenInfoUrl),
+      GURL(AssociatedUserValidator::kTokenInfoUrl),
       FakeWinHttpUrlFetcher::Headers(),
       valid_token_handles ? "{\"expires_in\":1}" : "{}");
 
   // Start token handle refresh threads.
-  token_handle_validator.StartRefreshingTokenHandleValidity();
+  associated_user_validator.StartRefreshingTokenHandleValidity();
 
   // Lock users as needed based on the validity of their token handles.
-  token_handle_validator.DenySigninForUsersWithInvalidTokenHandles(cpus);
+  associated_user_validator.DenySigninForUsersWithInvalidTokenHandles(cpus);
 
   CComPtr<ICredentialProviderSetUserArray> user_array;
   ASSERT_EQ(
@@ -466,11 +466,11 @@ TEST_P(GcpCredentialProviderAvailableCredentialsTest, AvailableCredentials) {
     // Normally, the user with invalid token handles would be removed from
     // the user array except if not all the users are shown. In this case,
     // the user that locked the system is always sent in the user array.
-    if (!token_handle_validator.IsUserLocked(OLE2W(first_sid)) ||
+    if (!associated_user_validator.IsUserAccessBlocked(OLE2W(first_sid)) ||
         (!all_users_shown && !second_user_locking_system)) {
       array.AddUser(OLE2CW(first_sid), first_username);
     }
-    if (!token_handle_validator.IsUserLocked(OLE2W(first_sid)) ||
+    if (!associated_user_validator.IsUserAccessBlocked(OLE2W(first_sid)) ||
         (!all_users_shown && second_user_locking_system)) {
       array.AddUser(OLE2CW(second_sid), second_username);
     }

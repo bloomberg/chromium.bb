@@ -30,6 +30,7 @@
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
+#include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/auth_utils.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
@@ -43,7 +44,6 @@
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/gaiacp/scoped_lsa_policy.h"
 #include "chrome/credential_provider/gaiacp/scoped_user_profile.h"
-#include "chrome/credential_provider/gaiacp/token_handle_validator.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "content/public/common/content_switches.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -748,7 +748,8 @@ HRESULT CGaiaCredentialBase::HandleAutologon(
   }
 
   // Restore user's access so that they can sign in.
-  HRESULT hr = TokenHandleValidator::Get()->RestoreUserAccess(OLE2W(get_sid()));
+  HRESULT hr =
+      AssociatedUserValidator::Get()->RestoreUserAccess(OLE2W(get_sid()));
   if (FAILED(hr) && hr != HRESULT_FROM_NT(STATUS_OBJECT_NAME_NOT_FOUND)) {
     LOGFN(ERROR) << "RestoreUserAccess hr=" << putHR(hr);
     return hr;

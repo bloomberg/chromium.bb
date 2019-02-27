@@ -12,12 +12,12 @@
 
 #include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"
+#include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/internet_availability_checker.h"
 #include "chrome/credential_provider/gaiacp/os_process_manager.h"
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
 #include "chrome/credential_provider/gaiacp/scoped_lsa_policy.h"
 #include "chrome/credential_provider/gaiacp/scoped_user_profile.h"
-#include "chrome/credential_provider/gaiacp/token_handle_validator.h"
 #include "chrome/credential_provider/gaiacp/win_http_url_fetcher.h"
 
 namespace base {
@@ -279,18 +279,18 @@ class FakeWinHttpUrlFetcher : public WinHttpUrlFetcher {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class FakeTokenHandleValidator : public TokenHandleValidator {
+class FakeAssociatedUserValidator : public AssociatedUserValidator {
  public:
-  FakeTokenHandleValidator();
-  explicit FakeTokenHandleValidator(base::TimeDelta validation_timeout);
-  ~FakeTokenHandleValidator() override;
+  FakeAssociatedUserValidator();
+  explicit FakeAssociatedUserValidator(base::TimeDelta validation_timeout);
+  ~FakeAssociatedUserValidator() override;
 
   // Returns whether the user should be locked out of sign in (only used in
   // tests).
-  bool IsUserLocked(const base::string16& sid) const;
+  bool IsUserAccessBlocked(const base::string16& sid) const;
 
  private:
-  TokenHandleValidator* original_validator_ = nullptr;
+  AssociatedUserValidator* original_validator_ = nullptr;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
