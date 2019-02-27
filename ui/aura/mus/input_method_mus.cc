@@ -260,6 +260,9 @@ void InputMethodMus::OnDidChangeFocusedClient(
     details->caret_bounds = focused->GetCaretBounds();
     details->data = GetTextInputClientData(focused);
     last_sent_text_input_client_data_ = details->data->Clone();
+    details->focus_reason = focused->GetFocusReason();
+    details->client_source_for_metrics = focused->GetClientSourceForMetrics();
+    details->should_do_learning = focused->ShouldDoLearning();
     ime_driver_->StartSession(MakeRequest(&input_method_ptr_),
                               text_input_client_->CreateInterfacePtrAndBind(),
                               std::move(details));
