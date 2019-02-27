@@ -232,6 +232,7 @@ function getNodeRootThroughAnyShadows(node) {
 function getPageCache(opt_doc, opt_w3c) {
   var doc = opt_doc || document;
   var w3c = opt_w3c || false;
+  // |key| is a long random string, unlikely to conflict with anything else.
   var key = '$cdc_asdjflasutopfhvcZLmcfl_';
   if (w3c) {
     if (!(key in doc))
@@ -323,8 +324,6 @@ function unwrap(value, cache) {
  * between cached object reference IDs and actual JS objects. The cache will
  * automatically be pruned each call to remove stale references.
  *
- * @param  {Array<string>} shadowHostIds The host ids of the nested shadow
- *     DOMs the function should be executed in the context of.
  * @param {function(...[*]) : *} func The function to invoke.
  * @param {!Array<*>} args The array of arguments to supply to the function,
  *     which will be unwrapped before invoking the function.
@@ -336,7 +335,7 @@ function unwrap(value, cache) {
  *     unwrapped return was specified, this will be the function's pure return
  *     value.
  */
-function callFunction(shadowHostIds, func, args, w3c, opt_unwrappedReturn) {
+function callFunction(func, args, w3c, opt_unwrappedReturn) {
   if (w3c) {
     w3cEnabled = true;
     ELEMENT_KEY = 'element-6066-11e4-a52e-4f735466cecf';
@@ -344,15 +343,6 @@ function callFunction(shadowHostIds, func, args, w3c, opt_unwrappedReturn) {
   }
   var cache = getPageCache(null, w3cEnabled);
   cache.clearStale();
-  if (shadowHostIds && SHADOW_DOM_ENABLED) {
-    for (var i = 0; i < shadowHostIds.length; i++) {
-      var host = cache.retrieveItem(shadowHostIds[i]);
-      // TODO(zachconrad): Use the olderShadowRoot API when available to check
-      // all of the shadow roots.
-      cache = getPageCache(host.webkitShadowRoot, w3cEnabled);
-      cache.clearStale();
-    }
-  }
 
   if (opt_unwrappedReturn)
     return func.apply(null, unwrap(args, cache));
