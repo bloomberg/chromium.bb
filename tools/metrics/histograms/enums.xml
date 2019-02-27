@@ -3686,6 +3686,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="17" label="Explore Sites refresh task"/>
   <int value="18" label="Download auto-resumption task"/>
   <int value="19" label="One shot Background Sync wake up task"/>
+  <int value="20" label="Notification scheduler task"/>
 </enum>
 
 <enum name="BackgroundTracingState">
