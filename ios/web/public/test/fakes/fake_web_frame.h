@@ -5,6 +5,9 @@
 #ifndef IOS_WEB_PUBLIC_TEST_FAKES_FAKE_WEB_FRAME_H_
 #define IOS_WEB_PUBLIC_TEST_FAKES_FAKE_WEB_FRAME_H_
 
+#include <map>
+#include <memory>
+
 #include "ios/web/public/web_state/web_frame.h"
 
 namespace web {
@@ -24,8 +27,9 @@ class FakeWebFrame : public WebFrame {
   bool CallJavaScriptFunction(
       const std::string& name,
       const std::vector<base::Value>& parameters) override;
-  // This method will not call JavaScript and immediately return false.
-  // |callback| will not be called.
+  // This method will not call JavaScript and will return the value of
+  // |can_call_function_|. Will execute callback with value passed in to
+  // AddJsResultForFunctionCall(). If no such value exists, will pass null.
   bool CallJavaScriptFunction(
       std::string name,
       const std::vector<base::Value>& parameters,
@@ -33,7 +37,22 @@ class FakeWebFrame : public WebFrame {
       base::TimeDelta timeout) override;
   std::string last_javascript_call() { return last_javascript_call_; }
 
+  // Sets |js_result| that will be passed into callback for |name| function
+  // call. The same result will be pass regardless of call arguments.
+  void AddJsResultForFunctionCall(std::unique_ptr<base::Value> js_result,
+                                  const std::string& function_name);
+
+  // Sets return value |can_call_function_| of CanCallJavaScriptFunction(),
+  // which defaults to true.
+  void set_can_call_function(bool can_call_function) {
+    can_call_function_ = can_call_function;
+  }
+
  private:
+  // Map holding values to be passed in CallJavaScriptFunction() callback. Keyed
+  // by JavaScript function |name| expected to be passed into
+  // CallJavaScriptFunction().
+  std::map<std::string, std::unique_ptr<base::Value>> result_map_;
   // The frame identifier which uniquely identifies this frame across the
   // application's lifetime.
   std::string frame_id_;
@@ -43,6 +62,8 @@ class FakeWebFrame : public WebFrame {
   GURL security_origin_;
   // The last Javascript script that was called, converted as a string.
   std::string last_javascript_call_;
+  // The return value of CanCallJavaScriptFunction().
+  bool can_call_function_ = true;
 };
 
 }  // namespace web
