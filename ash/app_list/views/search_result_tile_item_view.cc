@@ -488,9 +488,14 @@ void SearchResultTileItemView::LogAppLaunch() const {
   if (!IsSuggestedAppTile())
     return;
 
-  UMA_HISTOGRAM_BOOLEAN(kAppListAppLaunchedFullscreen,
-                        true /* suggested app */);
-  base::RecordAction(base::UserMetricsAction("AppList_OpenSuggestedApp"));
+  // We only need to record opening the installed app in zero state, no need to
+  // record the opening of a fast re-installed app, since the latter is already
+  // recorded in ArcAppReinstallAppResult::Open.
+  if (result()->result_type() !=
+      ash::SearchResultType::kPlayStoreReinstallApp) {
+    base::RecordAction(
+        base::UserMetricsAction("AppList_ZeroStateOpenInstalledApp"));
+  }
 }
 
 void SearchResultTileItemView::UpdateBackgroundColor() {
