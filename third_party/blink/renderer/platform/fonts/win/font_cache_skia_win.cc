@@ -91,7 +91,8 @@ sk_sp<SkTypeface> FindUniqueFontNameFromSideloadedFonts(
   for (auto& sideloaded_font : sideloaded_fonts->Values()) {
     // Open ttc index zero as we can assume that we do not sideload TrueType
     // collections.
-    SkStreamAsset* typeface_stream = sideloaded_font->openStream(0);
+    std::unique_ptr<SkStreamAsset> typeface_stream(
+        sideloaded_font->openStream(nullptr));
     CHECK(typeface_stream->getMemoryBase());
     std::string font_family_name;
     FT_Face font_face;
