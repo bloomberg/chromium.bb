@@ -85,6 +85,13 @@ LayoutUnit ResolveHeight(const NGConstraintSpace& space,
                             computed_height, type, LengthResolvePhase::kLayout);
 }
 
+inline LayoutUnit ResolveMargin(const NGConstraintSpace& space,
+                                const Length& length) {
+  DCHECK(!length.IsAuto());
+  return MinimumValueForLength(
+      length, space.PercentageResolutionInlineSizeForParentWritingMode());
+}
+
 // Available size can is maximum length Element can have without overflowing
 // container bounds. The position of Element's edges will determine
 // how much space there is available.
@@ -153,16 +160,16 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
 
   base::Optional<LayoutUnit> margin_left;
   if (!style.MarginLeft().IsAuto())
-    margin_left = ResolveMarginPaddingLength(space, style.MarginLeft());
+    margin_left = ResolveMargin(space, style.MarginLeft());
   base::Optional<LayoutUnit> margin_right;
   if (!style.MarginRight().IsAuto())
-    margin_right = ResolveMarginPaddingLength(space, style.MarginRight());
+    margin_right = ResolveMargin(space, style.MarginRight());
   base::Optional<LayoutUnit> left;
   if (!style.Left().IsAuto())
-    left = ValueForLength(style.Left(), percentage_width);
+    left = MinimumValueForLength(style.Left(), percentage_width);
   base::Optional<LayoutUnit> right;
   if (!style.Right().IsAuto())
-    right = ValueForLength(style.Right(), percentage_width);
+    right = MinimumValueForLength(style.Right(), percentage_width);
   base::Optional<LayoutUnit> width = incoming_width;
   NGPhysicalSize container_size =
       ToNGPhysicalSize(space.AvailableSize(), space.GetWritingMode());
@@ -323,16 +330,16 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
 
   base::Optional<LayoutUnit> margin_top;
   if (!style.MarginTop().IsAuto())
-    margin_top = ResolveMarginPaddingLength(space, style.MarginTop());
+    margin_top = ResolveMargin(space, style.MarginTop());
   base::Optional<LayoutUnit> margin_bottom;
   if (!style.MarginBottom().IsAuto())
-    margin_bottom = ResolveMarginPaddingLength(space, style.MarginBottom());
+    margin_bottom = ResolveMargin(space, style.MarginBottom());
   base::Optional<LayoutUnit> top;
   if (!style.Top().IsAuto())
-    top = ValueForLength(style.Top(), percentage_height);
+    top = MinimumValueForLength(style.Top(), percentage_height);
   base::Optional<LayoutUnit> bottom;
   if (!style.Bottom().IsAuto())
-    bottom = ValueForLength(style.Bottom(), percentage_height);
+    bottom = MinimumValueForLength(style.Bottom(), percentage_height);
   base::Optional<LayoutUnit> height = incoming_height;
 
   NGPhysicalSize container_size =

@@ -105,16 +105,18 @@ NGStaticPosition LayoutBoxUtils::ComputeStaticPositionFromLegacy(
   if (parent_style->IsLeftToRightDirection()) {
     if (!logical_left.IsAuto()) {
       static_inline =
-          ValueForLength(logical_left, containing_block_logical_width);
+          MinimumValueForLength(logical_left, containing_block_logical_width);
     }
   } else {
     if (!logical_right.IsAuto()) {
       static_inline =
-          ValueForLength(logical_right, containing_block_logical_width);
+          MinimumValueForLength(logical_right, containing_block_logical_width);
     }
   }
-  if (!logical_top.IsAuto())
-    static_block = ValueForLength(logical_top, containing_block_logical_height);
+  if (!logical_top.IsAuto()) {
+    static_block =
+        MinimumValueForLength(logical_top, containing_block_logical_height);
+  }
 
   // Legacy static position is relative to padding box. Convert to border box.
   // Also flip offsets as necessary to make them relative to to the left/top

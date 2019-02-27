@@ -92,18 +92,6 @@ CORE_EXPORT LayoutUnit ResolveBlockLength(
     const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
         nullptr);
 
-// Convert margin/border/padding length to a layout unit using the
-// given constraint space.
-LayoutUnit ResolveMarginPaddingLength(LayoutUnit percentage_resolution_size,
-                                      const Length&);
-inline LayoutUnit ResolveMarginPaddingLength(
-    const NGConstraintSpace& constraint_space,
-    const Length& length) {
-  LayoutUnit percentage_resolution_size =
-      constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
-  return ResolveMarginPaddingLength(percentage_resolution_size, length);
-}
-
 // For the given style and min/max content sizes, computes the min and max
 // content contribution (https://drafts.csswg.org/css-sizing/#contributions).
 // This is similar to ComputeInlineSizeForFragment except that it does not
