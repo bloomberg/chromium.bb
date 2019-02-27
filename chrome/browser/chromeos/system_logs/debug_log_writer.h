@@ -16,7 +16,8 @@ class DebugLogWriter {
   // Called once StoreDebugLogs is complete. Takes two parameters:
   // - log_path: where the log file was saved in the case of success;
   // - succeeded: was the log file saved successfully.
-  typedef base::Callback<void(const base::FilePath& log_path, bool succeeded)>
+  typedef base::OnceCallback<void(const base::FilePath& log_path,
+                                  bool succeeded)>
       StoreLogsCallback;
 
   // Stores debug logs in either .tgz or .tar archive (depending on value of
@@ -26,14 +27,11 @@ class DebugLogWriter {
   // pool, prior to calling |callback|.
   static void StoreLogs(const base::FilePath& fileshelf,
                         bool should_compress,
-                        const StoreLogsCallback& callback);
+                        StoreLogsCallback callback);
 
   // Stores both system and user logs in .tgz archive on the |fileshelf|.
-  // |sequence_token_name| defines named sequence for task running on
-  // blocking pool (file operations).
   static void StoreCombinedLogs(const base::FilePath& fileshelf,
-                                const std::string& sequence_token_name,
-                                const StoreLogsCallback& callback);
+                                StoreLogsCallback callback);
 
  private:
   DebugLogWriter();
