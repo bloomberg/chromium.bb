@@ -245,7 +245,6 @@ void CleanUpQueue(MainThreadTaskQueue* queue) {
   queue->DetachFromMainThreadScheduler();
   queue->DetachFromFrameScheduler();
   queue->SetBlameContext(nullptr);
-  queue->SetQueuePriority(TaskQueue::QueuePriority::kLowPriority);
 }
 
 }  // namespace
