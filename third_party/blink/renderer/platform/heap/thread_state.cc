@@ -41,6 +41,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/bindings/active_script_wrappable_base.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/address_cache.h"
@@ -1762,6 +1763,12 @@ void ThreadState::MarkPhaseVisitRoots() {
   if (!IsUnifiedGCMarkingInProgress() &&
       current_gc_data_.reason != BlinkGC::GCReason::kThreadTerminationGC) {
     VisitDOMWrappers(visitor);
+  }
+
+  // For unified garbage collections any active ScriptWrappable objects are
+  // considered as roots.
+  if (IsUnifiedGCMarkingInProgress()) {
+    ActiveScriptWrappableBase::TraceActiveScriptWrappables(isolate_, visitor);
   }
 
   if (current_gc_data_.stack_state == BlinkGC::kHeapPointersOnStack) {

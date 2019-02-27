@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/platform/heap/unified_heap_controller.h"
 
-#include "third_party/blink/renderer/platform/bindings/active_script_wrappable_base.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -54,14 +53,6 @@ void UnifiedHeapController::EnterFinalPause(EmbedderStackState stack_state) {
   ThreadHeapStatsCollector::Scope stats_scope(
       thread_state_->Heap().stats_collector(),
       ThreadHeapStatsCollector::kAtomicPhase);
-
-  // ActiveScriptWrappable may not have persistents keeping them alive but rely
-  // on explicit tracing to be kept alive.
-  // TODO(mlippautz): Move to root scanning after stabilizing unified garbage
-  // collection.
-  ActiveScriptWrappableBase::TraceActiveScriptWrappables(
-      isolate_, thread_state_->CurrentVisitor());
-
   thread_state_->EnterAtomicPause();
   thread_state_->EnterGCForbiddenScope();
   thread_state_->AtomicPauseMarkPrologue(ToBlinkGCStackState(stack_state),
