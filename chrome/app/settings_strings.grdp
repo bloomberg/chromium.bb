@@ -795,12 +795,6 @@
   <message name="IDS_SETTINGS_MIGRATABLE_CARDS_LABEL" desc="Label for the field to migrate the locally cached credit card to Google Payments. Clicking this will upload migratable credit cards to Google Payments.">
     Save cards in your Google Account
   </message>
-  <message name="IDS_SETTINGS_SINGLE_MIGRATABLE_CARD_LABEL_V2" desc="The label for the field to migrate one locally cached credit card to Google Payments. Clicking this will show a dialog to upload migratable credit cards to Google Payments.">
-    To use this card on all your devices, save it in your Google Account
-  </message>
-  <message name="IDS_SETTINGS_MULTIPLE_MIGRATABLE_CARD_LABEL_V2" desc="The label for the field to migrate multiple locally cached credit cards to Google Payments. Clicking this will show a dialog to upload migratable credit cards to Google Payments.">
-    To use these cards on all your devices, save them in your Google Account
-  </message>
   <message name="IDS_SETTINGS_SINGLE_MIGRATABLE_CARD_INFO" desc="Display text under the save cards to Google Pay label. This text indicates one of local cards can only be used on this device.">
     Right now, you have one card that can only be used on this device
   </message>
