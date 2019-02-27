@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -22,9 +23,11 @@
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "chromeos/dbus/fake_seneschal_client.h"
 #include "chromeos/dbus/seneschal/seneschal_service.pb.h"
+#include "components/account_id/account_id.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -208,8 +211,11 @@ class CrostiniSharePathTest : public testing::Test {
     crostini_share_path_ = std::make_unique<CrostiniSharePath>(profile());
 
     // Setup for DriveFS.
-    user_manager.AddUser(AccountId::FromUserEmailGaiaId(
-        profile()->GetProfileUserName(), "12345"));
+    scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::make_unique<chromeos::FakeChromeUserManager>());
+    account_id_ = AccountId::FromUserEmailGaiaId(
+        profile()->GetProfileUserName(), "12345");
+    GetFakeUserManager()->AddUser(account_id_);
     profile()->GetPrefs()->SetString(drive::prefs::kDriveFsProfileSalt, "a");
     drivefs_ =
         base::FilePath("/media/fuse/drivefs-84675c855b63e12f384d45f033826980");
@@ -222,7 +228,13 @@ class CrostiniSharePathTest : public testing::Test {
 
   void TearDown() override {
     run_loop_.reset();
+    scoped_user_manager_.reset();
     profile_.reset();
+  }
+
+  chromeos::FakeChromeUserManager* GetFakeUserManager() const {
+    return static_cast<chromeos::FakeChromeUserManager*>(
+        user_manager::UserManager::Get());
   }
 
  protected:
@@ -246,7 +258,8 @@ class CrostiniSharePathTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<CrostiniSharePath> crostini_share_path_;
   base::test::ScopedFeatureList features_;
-  chromeos::FakeChromeUserManager user_manager;
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
+  AccountId account_id_;
 
  private:
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
@@ -476,7 +489,9 @@ TEST_F(CrostiniSharePathTest, FailRemovableRoot) {
 }
 
 TEST_F(CrostiniSharePathTest, SharePathErrorSeneschal) {
-  features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
+  features_.InitWithFeatures(
+      {chromeos::features::kMyFilesVolume, features::kCrostini}, {});
+  GetFakeUserManager()->LoginUser(account_id_);
   SetUpVolume();
   vm_tools::concierge::StartVmResponse start_vm_response;
   start_vm_response.set_status(vm_tools::concierge::VM_STATUS_RUNNING);
@@ -535,7 +550,9 @@ TEST_F(CrostiniSharePathTest, SharePathErrorNotUnderDownloads) {
 }
 
 TEST_F(CrostiniSharePathTest, SharePathVmToBeRestarted) {
-  features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
+  features_.InitWithFeatures(
+      {chromeos::features::kMyFilesVolume, features::kCrostini}, {});
+  GetFakeUserManager()->LoginUser(account_id_);
   SetUpVolume();
   crostini_share_path()->SharePath(
       "vm-to-be-started", share_path_, PERSIST_YES,

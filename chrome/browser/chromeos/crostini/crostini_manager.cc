@@ -128,6 +128,12 @@ class CrostiniManager::CrostiniRestarter
 
   void Restart() {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (!IsCrostiniUIAllowedForProfile(profile_)) {
+      LOG(ERROR) << "Crostini UI not allowed for profile "
+                 << profile_->GetProfileUserName();
+      std::move(callback_).Run(CrostiniResult::NOT_ALLOWED);
+      return;
+    }
     if (is_aborted_) {
       std::move(abort_callback_).Run();
       return;
