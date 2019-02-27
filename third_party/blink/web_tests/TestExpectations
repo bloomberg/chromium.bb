@@ -5894,6 +5894,7 @@ crbug.com/936108 virtual/streams-native/http/tests/streams/transferable/readable
 # Sheriff 2019-02-27
 crbug.com/936279 external/wpt/import-maps/fallback-disallowed.sub.tentative.html [ Failure Pass ]
 crbug.com/936479 [ Mac10.13 ] http/tests/devtools/sources/debugger/async-callstack-fetch.js [ Failure Crash Pass ]
+crbug.com/936615 [ Win7 ] external/wpt/kv-storage/values.https.html [ Timeout Pass ]
 
 # Device Sensor Events were restricted to secure browsing contexts in M74, with a flag available until M76 to undo the change in case of an emergency.
 crbug.com/932078 http/tests/security/powerfulFeatureRestrictions/device-orientation-on-insecure-origin.html [ Skip ]
