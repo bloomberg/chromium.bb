@@ -40,8 +40,8 @@ class AccountManagerUIHandler : public ::settings::SettingsPageUIHandler,
   // |AccountManager::Observer| overrides.
   // |AccountManager| is considered to be the source of truth for account
   // information.
-  void OnTokenUpserted(const AccountManager::AccountKey& account_key) override;
-  void OnAccountRemoved(const AccountManager::AccountKey& account_key) override;
+  void OnTokenUpserted(const AccountManager::Account& account) override;
+  void OnAccountRemoved(const AccountManager::Account& account) override;
 
   // |identity::IdentityManager::Observer| overrides.
   void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
@@ -63,9 +63,9 @@ class AccountManagerUIHandler : public ::settings::SettingsPageUIHandler,
   void HandleShowWelcomeDialogIfRequired(const base::ListValue* args);
 
   // |AccountManager::GetAccounts| callback.
-  void GetAccountsCallbackHandler(
+  void OnGetAccounts(
       base::Value callback_id,
-      std::vector<AccountManager::AccountKey> account_keys);
+      const std::vector<AccountManager::Account>& stored_accounts);
 
   // Refreshes the UI.
   void RefreshUI();

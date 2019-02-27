@@ -150,8 +150,12 @@ class AccountMigrationBaseStep : public AccountMigrationRunner::Step {
         &AccountMigrationBaseStep::OnGetAccounts, weak_factory_.GetWeakPtr()));
   }
 
-  void OnGetAccounts(std::vector<AccountManager::AccountKey> accounts) {
-    account_manager_accounts_ = std::move(accounts);
+  void OnGetAccounts(const std::vector<AccountManager::Account>& accounts) {
+    account_manager_accounts_.clear();
+    account_manager_accounts_.reserve(accounts.size());
+    for (const AccountManager::Account& account : accounts) {
+      account_manager_accounts_.emplace_back(account.key);
+    }
     StartMigration();
   }
 

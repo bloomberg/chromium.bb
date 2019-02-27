@@ -72,8 +72,18 @@ class CHROMEOS_EXPORT AccountManager {
     bool operator!=(const AccountKey& other) const;
   };
 
+  // Publicly viewable information about an account.
+  struct Account {
+    // A unique identifier for this account.
+    AccountKey key;
+
+    // The raw, un-canonicalized email id for this account.
+    std::string raw_email;
+  };
+
   // Callback used for the (asynchronous) GetAccounts() call.
-  using AccountListCallback = base::OnceCallback<void(std::vector<AccountKey>)>;
+  using AccountListCallback =
+      base::OnceCallback<void(const std::vector<Account>&)>;
 
   using DelayNetworkCallRunner =
       base::RepeatingCallback<void(base::OnceClosure)>;
@@ -83,7 +93,7 @@ class CHROMEOS_EXPORT AccountManager {
     Observer();
     virtual ~Observer();
 
-    // Called when the token for |account_key| is updated/inserted.
+    // Called when the token for |account| is updated/inserted.
     // Use |AccountManager::AddObserver| to add an |Observer|.
     // Note: |Observer|s which register with |AccountManager| before its
     // initialization is complete will get notified when |AccountManager| is
@@ -91,13 +101,13 @@ class CHROMEOS_EXPORT AccountManager {
     // Note: |Observer|s which register with |AccountManager| after its
     // initialization is complete will not get an immediate
     // notification-on-registration.
-    virtual void OnTokenUpserted(const AccountKey& account_key) = 0;
+    virtual void OnTokenUpserted(const Account& account) = 0;
 
     // Called when an account has been removed from AccountManager.
     // Observers that may have cached access tokens (fetched via
     // |AccountManager::CreateAccessTokenFetcher|), must clear their cache entry
-    // for this |account_key| on receiving this callback.
-    virtual void OnAccountRemoved(const AccountKey& account_key) = 0;
+    // for this |account| on receiving this callback.
+    virtual void OnAccountRemoved(const Account& account) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);
@@ -272,14 +282,14 @@ class CHROMEOS_EXPORT AccountManager {
   // Gets a serialized representation of accounts.
   std::string GetSerializedAccounts();
 
-  // Gets the |AccountKey|s stored in |accounts_|.
-  std::vector<AccountManager::AccountKey> GetAccountKeys();
+  // Gets the publicly viewable information stored in |accounts_|.
+  std::vector<Account> GetAccounts();
 
-  // Notify |Observer|s about a token update.
-  void NotifyTokenObservers(const AccountKey& account_key);
+  // Notifies |Observer|s about a token update for |account|.
+  void NotifyTokenObservers(const Account& account);
 
-  // Notify |Observer|s about an account removal.
-  void NotifyAccountRemovalObservers(const AccountKey& account_key);
+  // Notifies |Observer|s about an |account| removal.
+  void NotifyAccountRemovalObservers(const Account& account);
 
   // Revokes |account_key|'s token on the relevant backend.
   // Note: Does not do anything if the |account_manager::AccountType|

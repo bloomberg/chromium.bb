@@ -200,7 +200,7 @@ void ChromeOSOAuth2TokenServiceDelegate::LoadCredentials(
   DCHECK(account_manager_);
   account_manager_->AddObserver(this);
   account_manager_->GetAccounts(
-      base::BindOnce(&ChromeOSOAuth2TokenServiceDelegate::GetAccountsCallback,
+      base::BindOnce(&ChromeOSOAuth2TokenServiceDelegate::OnGetAccounts,
                      weak_factory_.GetWeakPtr()));
 }
 
@@ -259,8 +259,8 @@ ChromeOSOAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
   return account_manager_->GetUrlLoaderFactory();
 }
 
-void ChromeOSOAuth2TokenServiceDelegate::GetAccountsCallback(
-    std::vector<AccountManager::AccountKey> account_keys) {
+void ChromeOSOAuth2TokenServiceDelegate::OnGetAccounts(
+    const std::vector<AccountManager::Account>& accounts) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // This callback should only be triggered during |LoadCredentials|, which
@@ -269,27 +269,26 @@ void ChromeOSOAuth2TokenServiceDelegate::GetAccountsCallback(
   DCHECK_EQ(LOAD_CREDENTIALS_IN_PROGRESS, load_credentials_state());
 
   set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
-
   // The typical order of |OAuth2TokenService::Observer| callbacks is:
   // 1. OnRefreshTokenAvailable
   // 2. OnEndBatchChanges
   // 3. OnRefreshTokensLoaded
   {
     ScopedBatchChange batch(this);
-    for (const auto& account_key : account_keys) {
-      OnTokenUpserted(account_key);
+    for (const auto& account : accounts) {
+      OnTokenUpserted(account);
     }
   }
   FireRefreshTokensLoaded();
 }
 
 void ChromeOSOAuth2TokenServiceDelegate::OnTokenUpserted(
-    const AccountManager::AccountKey& account_key) {
+    const AccountManager::Account& account) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  account_keys_.insert(account_key);
+  account_keys_.insert(account.key);
 
   std::string account_id =
-      account_mapper_util_->AccountKeyToOAuthAccountId(account_key);
+      account_mapper_util_->AccountKeyToOAuthAccountId(account.key);
   if (account_id.empty()) {
     return;
   }
@@ -306,7 +305,7 @@ void ChromeOSOAuth2TokenServiceDelegate::OnTokenUpserted(
   // However, if we know that |account_key| has a dummy token, store a
   // persistent error against it, so that we can pre-emptively reject access
   // token requests for it.
-  if (account_manager_->HasDummyGaiaToken(account_key)) {
+  if (account_manager_->HasDummyGaiaToken(account.key)) {
     error = GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
         GoogleServiceAuthError::InvalidGaiaCredentialsReason::
             CREDENTIALS_REJECTED_BY_CLIENT);
@@ -322,18 +321,18 @@ void ChromeOSOAuth2TokenServiceDelegate::OnTokenUpserted(
 }
 
 void ChromeOSOAuth2TokenServiceDelegate::OnAccountRemoved(
-    const AccountManager::AccountKey& account_key) {
+    const AccountManager::Account& account) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state());
 
-  auto it = account_keys_.find(account_key);
+  auto it = account_keys_.find(account.key);
   if (it == account_keys_.end()) {
     return;
   }
 
   account_keys_.erase(it);
   std::string account_id =
-      account_mapper_util_->AccountKeyToOAuthAccountId(account_key);
+      account_mapper_util_->AccountKeyToOAuthAccountId(account.key);
   if (account_id.empty()) {
     return;
   }

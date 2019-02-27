@@ -221,8 +221,9 @@ void AccountManager::InsertAccountsAndRunInitializationCallbacks(
   }
   initialization_callbacks_.clear();
 
-  for (const auto& token : accounts_) {
-    NotifyTokenObservers(token.first);
+  for (const auto& account : accounts_) {
+    NotifyTokenObservers(
+        Account{account.first /* key */, account.second.raw_email});
   }
 
   RecordNumAccountsMetric(accounts_.size());
@@ -255,7 +256,7 @@ void AccountManager::GetAccountsInternal(AccountListCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(init_state_, InitializationState::kInitialized);
 
-  std::move(callback).Run(GetAccountKeys());
+  std::move(callback).Run(GetAccounts());
 }
 
 void AccountManager::GetAccountEmail(
@@ -301,10 +302,11 @@ void AccountManager::RemoveAccountInternal(const AccountKey& account_key) {
     return;
   }
 
+  const std::string raw_email = it->second.raw_email;
   MaybeRevokeTokenOnServer(account_key);
   accounts_.erase(it);
   PersistAccountsAsync();
-  NotifyAccountRemovalObservers(account_key);
+  NotifyAccountRemovalObservers(Account{account_key, raw_email});
 }
 
 void AccountManager::UpsertAccount(const AccountKey& account_key,
@@ -362,7 +364,7 @@ void AccountManager::UpsertAccountInternal(const AccountKey& account_key,
     // New account. Insert it.
     accounts_.emplace(account_key, account);
     PersistAccountsAsync();
-    NotifyTokenObservers(account_key);
+    NotifyTokenObservers(Account{account_key, account.raw_email});
     return;
   }
 
@@ -376,7 +378,7 @@ void AccountManager::UpsertAccountInternal(const AccountKey& account_key,
   PersistAccountsAsync();
 
   if (did_token_change) {
-    NotifyTokenObservers(account_key);
+    NotifyTokenObservers(Account{account_key, account.raw_email});
   }
 }
 
@@ -399,31 +401,30 @@ std::string AccountManager::GetSerializedAccounts() {
   return accounts_proto.SerializeAsString();
 }
 
-std::vector<AccountManager::AccountKey> AccountManager::GetAccountKeys() {
-  std::vector<AccountManager::AccountKey> accounts;
+std::vector<AccountManager::Account> AccountManager::GetAccounts() {
+  std::vector<Account> accounts;
   accounts.reserve(accounts_.size());
 
   for (const auto& key_val : accounts_) {
-    accounts.emplace_back(key_val.first);
+    accounts.emplace_back(Account{key_val.first, key_val.second.raw_email});
   }
 
   return accounts;
 }
 
-void AccountManager::NotifyTokenObservers(const AccountKey& account_key) {
+void AccountManager::NotifyTokenObservers(const Account& account) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   for (auto& observer : observers_) {
-    observer.OnTokenUpserted(account_key);
+    observer.OnTokenUpserted(account);
   }
 }
 
-void AccountManager::NotifyAccountRemovalObservers(
-    const AccountKey& account_key) {
+void AccountManager::NotifyAccountRemovalObservers(const Account& account) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   for (auto& observer : observers_) {
-    observer.OnAccountRemoved(account_key);
+    observer.OnAccountRemoved(account);
   }
 }
 
