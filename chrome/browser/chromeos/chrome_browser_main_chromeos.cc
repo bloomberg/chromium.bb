@@ -519,8 +519,7 @@ class SystemTokenCertDBInitializer {
 ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
     const content::MainFunctionParams& parameters,
     ChromeFeatureListCreator* chrome_feature_list_creator)
-    : ChromeBrowserMainPartsLinux(parameters, chrome_feature_list_creator),
-      is_dbus_initialized_(chrome_feature_list_creator != nullptr) {}
+    : ChromeBrowserMainPartsLinux(parameters, chrome_feature_list_creator) {}
 
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
   // To be precise, logout (browser shutdown) is not yet done, but the
@@ -562,8 +561,8 @@ int ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
                         .value();
   }
 
-  if (!is_dbus_initialized_)
-    PreEarlyInitDBus();
+  // DBus is initialized in ChromeMainDelegate::PostEarlyInitialization().
+  CHECK(DBusThreadManager::IsInitialized());
 
   if (!base::SysInfo::IsRunningOnChromeOS() &&
       parsed_command_line().HasSwitch(

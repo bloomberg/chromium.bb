@@ -112,9 +112,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<NetworkThrottlingObserver> network_throttling_observer_;
   std::unique_ptr<NetworkChangeManagerClient> network_change_manager_client_;
 
-  // Indicates whether the DBus has been initialized before. It is possible that
-  // the DBus has been initialized in ChromeFeatureListCreator.
-  bool is_dbus_initialized_ = false;
   std::unique_ptr<internal::DBusServices> dbus_services_;
 
   std::unique_ptr<internal::SystemTokenCertDBInitializer>
