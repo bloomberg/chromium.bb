@@ -396,11 +396,32 @@ gfx::Size LocationBarView::GetMinimumSize() const {
 }
 
 gfx::Size LocationBarView::CalculatePreferredSize() const {
-  // Since the location bar can become arbitrarily large, there is no real
-  // preferred size distinct from the minimum size. The layout manager will
-  // still call this method when getting its preferred size, however, so return
-  // a sane value.
-  return GetMinimumSize();
+  const int height = GetLayoutConstant(LOCATION_BAR_HEIGHT);
+  if (!IsInitialized())
+    return gfx::Size(0, height);
+
+  const int inset_width = GetInsets().width();
+  const int padding = GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING);
+  const int leading_width = GetMinimumLeadingWidth();
+  const int omnibox_width = omnibox_view_->GetMinimumSize().width();
+  const int trailing_width = GetMinimumTrailingWidth();
+
+  // The preferred size (unlike the minimum size) of the location bar is roughly
+  // the combined size of all child views including the omnibox/location field.
+  // While the location bar can scale down to its minimum size, it will continue
+  // to displace lower-priority views such as visible extensions if it cannot
+  // achieve its preferred size.
+  //
+  // It might be useful to track the preferred size of the location bar to see
+  // how much visual clutter users are experiencing on a regular basis,
+  // especially as we add more indicators to the bar.
+  int width = inset_width + omnibox_width;
+  if (leading_width > 0)
+    width += leading_width + padding;
+  if (trailing_width > 0)
+    width += trailing_width + padding;
+
+  return gfx::Size(width, height);
 }
 
 void LocationBarView::Layout() {
