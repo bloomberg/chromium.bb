@@ -21,11 +21,6 @@
 
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 
-#include <string>
-
-#include "base/feature_list.h"
-#include "base/metrics/field_trial_params.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/web/blink.h"
@@ -57,7 +52,6 @@
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
 #include "third_party/blink/renderer/platform/fonts/string_truncator.h"
-#include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
@@ -69,36 +63,6 @@
 // The methods in this file are shared by all themes on every platform.
 
 namespace blink {
-
-namespace {
-
-void GetAutofillPreviewColorsFromFieldTrial(std::string* color,
-                                            std::string* background_color) {
-  constexpr char kAutofillDefaultBackgroundColor[] = "#FAFFBD";
-  constexpr char kAutofillDefaultColor[] = "#000000";
-
-  if (base::FeatureList::IsEnabled(features::kAutofillPreviewStyleExperiment)) {
-    std::string bg_color_param = base::GetFieldTrialParamValueByFeature(
-        features::kAutofillPreviewStyleExperiment,
-        features::kAutofillPreviewStyleExperimentBgColorParameterName);
-    std::string color_param = base::GetFieldTrialParamValueByFeature(
-        features::kAutofillPreviewStyleExperiment,
-        features::kAutofillPreviewStyleExperimentColorParameterName);
-    if (Color().SetFromString(bg_color_param.c_str()) &&
-        Color().SetFromString(color_param.c_str())) {
-      *background_color = bg_color_param;
-      *color = color_param;
-      return;
-    }
-  }
-
-  // Fallback to the default colors if the experiment is not enabled or if a
-  // color param is invalid.
-  *background_color = std::string(kAutofillDefaultBackgroundColor);
-  *color = std::string(kAutofillDefaultColor);
-}
-
-}  // namespace
 
 // Wrapper function defined in WebKit.h
 void SetMockThemeEnabledForTest(bool value) {
@@ -299,23 +263,7 @@ void LayoutTheme::AdjustStyle(ComputedStyle& style, Element* e) {
 }
 
 String LayoutTheme::ExtraDefaultStyleSheet() {
-  std::string color, background_color;
-  GetAutofillPreviewColorsFromFieldTrial(&color, &background_color);
-  // TODO(crbug.com/880258): Use different styles for
-  // `-internal-autofill-previewed` and `-internal-autofill-selected`.
-  constexpr char const format[] =
-      "input:-internal-autofill-previewed,"
-      "input:-internal-autofill-selected,"
-      "textarea:-internal-autofill-previewed,"
-      "textarea:-internal-autofill-selected,"
-      "select:-internal-autofill-previewed,"
-      "select:-internal-autofill-selected "
-      "{"
-      "  background-color: %s !important;"
-      "  background-image:none !important;"
-      "  color: %s !important;"
-      "}";
-  return String::Format(format, background_color.c_str(), color.c_str());
+  return g_empty_string;
 }
 
 String LayoutTheme::ExtraQuirksStyleSheet() {
