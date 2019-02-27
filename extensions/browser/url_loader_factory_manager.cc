@@ -25,6 +25,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/cors_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extension_set.h"
@@ -211,6 +212,13 @@ network::mojom::URLLoaderFactoryPtrInfo CreateURLLoaderFactory(
   // Compute relaxed CORB config to be used by |extension|.
   network::mojom::URLLoaderFactoryParamsPtr params =
       network::mojom::URLLoaderFactoryParams::New();
+
+  // Setup factory bound allow list that overwrites per-profile common list
+  // to allow tab specific permissions only for this newly created factory.
+  params->factory_bound_allow_patterns = CreateCorsOriginAccessAllowList(
+      extension,
+      PermissionsData::EffectiveHostPermissionsMode::kIncludeTabSpecific);
+
   if (header_client)
     params->header_client = std::move(*header_client);
   params->process_id = process->GetID();

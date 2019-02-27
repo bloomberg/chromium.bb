@@ -197,7 +197,9 @@ TEST(PermissionsTest, EffectiveHostPermissions) {
     const PermissionSet& permissions =
         extension->permissions_data()->active_permissions();
     EXPECT_EQ(0u, extension->permissions_data()
-                      ->GetEffectiveHostPermissions()
+                      ->GetEffectiveHostPermissions(
+                          PermissionsData::EffectiveHostPermissionsMode::
+                              kIncludeTabSpecific)
                       .patterns()
                       .size());
     EXPECT_FALSE(

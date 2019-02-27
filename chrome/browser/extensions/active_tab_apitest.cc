@@ -30,6 +30,7 @@
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/cpp/features.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/extension_tab_util_delegate_chromeos.h"
@@ -39,20 +40,34 @@
 namespace extensions {
 namespace {
 
+enum class TestMode {
+  kWithoutAny,
+  kWithRuntimeHostPermissions,
+  kWithOutOfBlinkCors,
+  kWithOutOfBlinkCorsAndRuntimeHostPermissions,
+};
+
 class ExtensionActiveTabTest : public ExtensionApiTest,
-                               public testing::WithParamInterface<bool> {
+                               public testing::WithParamInterface<TestMode> {
  public:
   ExtensionActiveTabTest() = default;
 
   // ExtensionApiTest override:
   void SetUp() override {
-    if (ShouldEnableRuntimeHostPermissions()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          extensions_features::kRuntimeHostPermissions);
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features;
+    if (ShouldEnableRuntimeHostPermissions())
+      enabled_features.push_back(extensions_features::kRuntimeHostPermissions);
+    else
+      disabled_features.push_back(extensions_features::kRuntimeHostPermissions);
+    if (ShouldEnableOutOfBlinkCors()) {
+      enabled_features.push_back(network::features::kOutOfBlinkCors);
+      enabled_features.push_back(network::features::kNetworkService);
     } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          extensions_features::kRuntimeHostPermissions);
+      disabled_features.push_back(network::features::kOutOfBlinkCors);
+      disabled_features.push_back(network::features::kNetworkService);
     }
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
     ExtensionApiTest::SetUp();
   }
 
@@ -65,10 +80,25 @@ class ExtensionActiveTabTest : public ExtensionApiTest,
     ASSERT_EQ(ShouldEnableRuntimeHostPermissions(),
               base::FeatureList::IsEnabled(
                   extensions_features::kRuntimeHostPermissions));
+
+    ASSERT_EQ(ShouldEnableOutOfBlinkCors(),
+              base::FeatureList::IsEnabled(network::features::kOutOfBlinkCors));
+    ASSERT_EQ(ShouldEnableOutOfBlinkCors(),
+              base::FeatureList::IsEnabled(network::features::kNetworkService));
   }
 
  private:
-  bool ShouldEnableRuntimeHostPermissions() const { return GetParam(); }
+  bool ShouldEnableRuntimeHostPermissions() const {
+    TestMode mode = GetParam();
+    return mode == TestMode::kWithRuntimeHostPermissions ||
+           mode == TestMode::kWithOutOfBlinkCorsAndRuntimeHostPermissions;
+  }
+
+  bool ShouldEnableOutOfBlinkCors() const {
+    TestMode mode = GetParam();
+    return mode == TestMode::kWithOutOfBlinkCors ||
+           mode == TestMode::kWithOutOfBlinkCorsAndRuntimeHostPermissions;
+  }
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -168,9 +198,20 @@ IN_PROC_BROWSER_TEST_P(ExtensionActiveTabTest, ActiveTab) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(ExtensionActiveTabTest,
+INSTANTIATE_TEST_SUITE_P(WithoutAny,
                          ExtensionActiveTabTest,
-                         testing::Bool());
+                         testing::Values(TestMode::kWithoutAny));
+INSTANTIATE_TEST_SUITE_P(
+    WithRuntimeHostPermissions,
+    ExtensionActiveTabTest,
+    testing::Values(TestMode::kWithRuntimeHostPermissions));
+INSTANTIATE_TEST_SUITE_P(WithOutOtBlinkCors,
+                         ExtensionActiveTabTest,
+                         testing::Values(TestMode::kWithOutOfBlinkCors));
+INSTANTIATE_TEST_SUITE_P(
+    WithAll,
+    ExtensionActiveTabTest,
+    testing::Values(TestMode::kWithOutOfBlinkCorsAndRuntimeHostPermissions));
 
 // Tests the behavior of activeTab and its relation to an extension's ability to
 // xhr file urls and inject scripts in file frames.
