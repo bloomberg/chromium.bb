@@ -170,7 +170,7 @@ class RunTests(cros_test_lib.RunCommandTestCase):
 
     # Ensure we clean, as expected.
     self.assertEqual(mock_clean.mock_calls, [
-        mock.call('/root', mock_repo,
+        mock.call('/root', mock_repo, '/root/repository/.cache',
                   expected_build_state)])
 
     # Ensure we checkout, as expected.
@@ -184,6 +184,9 @@ class RunTests(cros_test_lib.RunCommandTestCase):
             'config',
             '-r', '/root/repository',
             '--workspace', '/root/workspace',
+            '--cache-dir', '/root/repository/.cache',
+            # The duplication is a bug, but not harmful.
+            '--cache-dir', '/root/repository/.cache',
             '--ts-mon-task-num', '1',
         ],
         extra_env={'PATH': mock.ANY},
@@ -233,6 +236,7 @@ class RunTests(cros_test_lib.RunCommandTestCase):
     argv = ['--buildroot', '/root',
             '--branch', 'branch',
             '--git-cache-dir', '/git-cache',
+            '--cache-dir', '/cache',
             '--remote-trybot',
             '--master-build-id', '123456789',
             '--buildnumber', '314',
@@ -253,6 +257,7 @@ class RunTests(cros_test_lib.RunCommandTestCase):
     self.assertEqual(mock_clean.mock_calls, [
         mock.call('/root',
                   mock_repo,
+                  '/cache',
                   build_summary.BuildSummary(
                       build_number=314,
                       master_build_id=123456789,
@@ -273,6 +278,7 @@ class RunTests(cros_test_lib.RunCommandTestCase):
             '--buildroot', '/root/repository',
             '--branch', 'branch',
             '--git-cache-dir', '/git-cache',
+            '--cache-dir', '/cache',
             '--remote-trybot',
             '--master-build-id', '123456789',
             '--buildnumber', '314',
@@ -281,6 +287,7 @@ class RunTests(cros_test_lib.RunCommandTestCase):
             'MsICJidWlsZF9udW1iZXIiOiAzMTMsICJidWlsZHJvb3RfbGF5b3V0IjogMiwg'
             'ImJyYW5jaCI6ICJicmFuY2gifQ==',
             '--workspace', '/root/workspace',
+            '--cache-dir', '/cache',
             '--ts-mon-task-num', '1',
         ],
         extra_env={'PATH': mock.ANY},
@@ -339,7 +346,7 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
         buildroot_layout=cbuildbot_launch.BUILDROOT_BUILDROOT_LAYOUT,
         branch='master')
     cbuildbot_launch.CleanBuildRoot(
-        self.root, self.mock_repo, build_state)
+        self.root, self.mock_repo, self.cache, build_state)
 
     new_summary = cbuildbot_launch.GetLastBuildState(self.root)
     self.assertEqual(new_summary.buildroot_layout, 2)
@@ -359,7 +366,7 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
         buildroot_layout=cbuildbot_launch.BUILDROOT_BUILDROOT_LAYOUT,
         branch='master')
     cbuildbot_launch.CleanBuildRoot(
-        self.root, self.mock_repo, build_state)
+        self.root, self.mock_repo, self.cache, build_state)
 
     new_summary = cbuildbot_launch.GetLastBuildState(self.root)
     self.assertEqual(new_summary.buildroot_layout, 2)
@@ -387,7 +394,7 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
         buildroot_layout=cbuildbot_launch.BUILDROOT_BUILDROOT_LAYOUT,
         branch='master')
     cbuildbot_launch.CleanBuildRoot(
-        self.root, self.mock_repo, build_state)
+        self.root, self.mock_repo, self.cache, build_state)
 
     new_summary = cbuildbot_launch.GetLastBuildState(self.root)
     self.assertEqual(new_summary.buildroot_layout, 2)
@@ -416,7 +423,7 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
         buildroot_layout=cbuildbot_launch.BUILDROOT_BUILDROOT_LAYOUT,
         branch='branchB')
     cbuildbot_launch.CleanBuildRoot(
-        self.root, self.mock_repo, build_state)
+        self.root, self.mock_repo, self.cache, build_state)
 
     new_summary = cbuildbot_launch.GetLastBuildState(self.root)
     self.assertEqual(new_summary.buildroot_layout, 2)
@@ -444,7 +451,7 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
         buildroot_layout=cbuildbot_launch.BUILDROOT_BUILDROOT_LAYOUT,
         branch='branchA')
     cbuildbot_launch.CleanBuildRoot(
-        self.root, self.mock_repo, build_state)
+        self.root, self.mock_repo, self.cache, build_state)
 
     new_summary = cbuildbot_launch.GetLastBuildState(self.root)
     self.assertEqual(new_summary.buildroot_layout, 2)
@@ -472,7 +479,7 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
         buildroot_layout=cbuildbot_launch.BUILDROOT_BUILDROOT_LAYOUT,
         branch='branchA')
     cbuildbot_launch.CleanBuildRoot(
-        self.root, self.mock_repo, build_state)
+        self.root, self.mock_repo, self.cache, build_state)
 
     self.assertEqual(
         self.mock_repo.mock_calls, [
@@ -494,7 +501,7 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
         buildroot_layout=cbuildbot_launch.BUILDROOT_BUILDROOT_LAYOUT,
         branch='branchA')
     cbuildbot_launch.CleanBuildRoot(
-        self.root, self.mock_repo, build_state)
+        self.root, self.mock_repo, self.cache, build_state)
 
     self.assertEqual(
         self.mock_repo.mock_calls, [
@@ -516,7 +523,7 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
         buildroot_layout=cbuildbot_launch.BUILDROOT_BUILDROOT_LAYOUT,
         branch='branchA')
     cbuildbot_launch.CleanBuildRoot(
-        self.root, self.mock_repo, build_state)
+        self.root, self.mock_repo, self.cache, build_state)
 
 
     self.assertEqual(
@@ -542,7 +549,7 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
         buildroot_layout=cbuildbot_launch.BUILDROOT_BUILDROOT_LAYOUT,
         branch='branchA')
     cbuildbot_launch.CleanBuildRoot(
-        self.root, self.mock_repo, build_state)
+        self.root, self.mock_repo, self.cache, build_state)
 
     new_summary = cbuildbot_launch.GetLastBuildState(self.root)
     self.assertEqual(new_summary.buildroot_layout, 2)
@@ -572,12 +579,45 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
         buildroot_layout=cbuildbot_launch.BUILDROOT_BUILDROOT_LAYOUT,
         branch='branchA')
     cbuildbot_launch.CleanBuildRoot(
-        self.root, self.mock_repo, build_state)
+        self.root, self.mock_repo, self.cache, build_state)
 
     new_summary = cbuildbot_launch.GetLastBuildState(self.root)
     self.assertEqual(new_summary.buildroot_layout, 2)
     self.assertEqual(new_summary.branch, 'branchA')
     self.assertIsNotNone(new_summary.distfiles_ts)
+    self.assertEqual(new_summary, build_state)
+
+    self.assertExists(self.repo)
+    self.assertExists(self.chroot)
+    self.assertExists(self.general)
+    self.assertNotExists(self.distfiles)
+    self.assertExists(self.previous_build_state)
+
+  def testRootOwnedCache(self):
+    """Test CleanBuildRoot with no history."""
+    seed_distfiles_ts = time.time() - 60
+    old_build_state = build_summary.BuildSummary(
+        status=constants.BUILDER_STATUS_PASSED,
+        buildroot_layout=2,
+        branch='branchA',
+        distfiles_ts=seed_distfiles_ts)
+    self.populateBuildroot(previous_build_state=old_build_state.to_json())
+    self.mock_repo.branch = 'branchA'
+
+    osutils.Chown(self.cache, 'root', 'root')
+
+    build_state = build_summary.BuildSummary(
+        status=constants.BUILDER_STATUS_INFLIGHT,
+        buildroot_layout=cbuildbot_launch.BUILDROOT_BUILDROOT_LAYOUT,
+        branch='branchA')
+    cbuildbot_launch.CleanBuildRoot(
+        self.root, self.mock_repo, self.cache, build_state)
+
+    new_summary = cbuildbot_launch.GetLastBuildState(self.root)
+    self.assertEqual(new_summary.buildroot_layout, 2)
+    self.assertEqual(new_summary.branch, 'branchA')
+    # Same cache creation timestamp is rewritten to state.
+    self.assertEqual(new_summary.distfiles_ts, seed_distfiles_ts)
     self.assertEqual(new_summary, build_state)
 
     self.assertExists(self.repo)
@@ -601,7 +641,7 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
         buildroot_layout=cbuildbot_launch.BUILDROOT_BUILDROOT_LAYOUT,
         branch='branchA')
     cbuildbot_launch.CleanBuildRoot(
-        self.root, self.mock_repo, build_state)
+        self.root, self.mock_repo, self.cache, build_state)
 
     new_summary = cbuildbot_launch.GetLastBuildState(self.root)
     self.assertEqual(new_summary.buildroot_layout, 2)
