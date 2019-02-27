@@ -203,6 +203,12 @@ void AssistantWebView::DidAutoResizeView(const gfx::Size& new_size) {
 }
 
 void AssistantWebView::DidStopLoading() {
+  // We should only respond to the |DidStopLoading| event the first time, to add
+  // the view for the navigable contents to our view hierarchy and perform other
+  // one-time view initializations.
+  if (contents_->GetView()->view()->parent() == this)
+    return;
+
   AddChildView(contents_->GetView()->view());
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
