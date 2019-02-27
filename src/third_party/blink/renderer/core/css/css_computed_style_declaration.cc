@@ -180,6 +180,7 @@ const CSSPropertyID kComputedPropertyArray[] = {
 
 
     // patch section: rubberband
+    CSSPropertyRubberbandable,
 
 
 
