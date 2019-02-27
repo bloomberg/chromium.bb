@@ -319,22 +319,6 @@ std::unique_ptr<base::Value> NetLogDnsTaskFailedCallback(
   return std::move(dict);
 }
 
-// Creates NetLog parameters containing the information in a RequestInfo object,
-// along with the associated NetLogSource. Use NetLogRequestCallback() if the
-// request information is not specified via RequestInfo.
-std::unique_ptr<base::Value> NetLogRequestInfoCallback(
-    const HostResolver::RequestInfo* info,
-    NetLogCaptureMode /* capture_mode */) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-
-  dict->SetString("host", info->host_port_pair().ToString());
-  dict->SetInteger("address_family",
-                   static_cast<int>(info->address_family()));
-  dict->SetBoolean("allow_cached_response", info->allow_cached_response());
-  dict->SetBoolean("is_speculative", info->is_speculative());
-  return std::move(dict);
-}
-
 // Creates NetLog parameters containing the information of the request. Use
 // NetLogRequestInfoCallback if the request is specified via RequestInfo.
 std::unique_ptr<base::Value> NetLogRequestCallback(
@@ -394,11 +378,6 @@ std::unique_ptr<base::Value> NetLogIPv6AvailableCallback(
 
 // Logs when a request has just been started. Overloads for whether or not the
 // request information is specified via a RequestInfo object.
-void LogStartRequest(const NetLogWithSource& source_net_log,
-                     const HostResolver::RequestInfo& info) {
-  source_net_log.BeginEvent(NetLogEventType::HOST_RESOLVER_IMPL_REQUEST,
-                            base::Bind(&NetLogRequestInfoCallback, &info));
-}
 void LogStartRequest(const NetLogWithSource& source_net_log,
                      const HostPortPair& host) {
   source_net_log.BeginEvent(NetLogEventType::HOST_RESOLVER_IMPL_REQUEST,
@@ -2260,87 +2239,6 @@ HostResolverImpl::CreateRequest(
     const base::Optional<ResolveHostParameters>& optional_parameters) {
   return std::make_unique<RequestImpl>(net_log, host, optional_parameters,
                                        weak_ptr_factory_.GetWeakPtr());
-}
-
-int HostResolverImpl::Resolve(const RequestInfo& info,
-                              RequestPriority priority,
-                              AddressList* addresses,
-                              CompletionOnceCallback callback,
-                              std::unique_ptr<Request>* out_req,
-                              const NetLogWithSource& source_net_log) {
-  DCHECK(addresses);
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(callback);
-  DCHECK(out_req);
-
-  auto request = std::make_unique<RequestImpl>(
-      source_net_log, info.host_port_pair(),
-      RequestInfoToResolveHostParameters(info, priority),
-      weak_ptr_factory_.GetWeakPtr());
-  return LegacyResolve(std::move(request), info.is_speculative(), addresses,
-                       std::move(callback), out_req);
-}
-
-int HostResolverImpl::ResolveFromCache(const RequestInfo& info,
-                                       AddressList* addresses,
-                                       const NetLogWithSource& source_net_log) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(addresses);
-
-  // Update the net log and notify registered observers.
-  LogStartRequest(source_net_log, info);
-
-  Key unused_key;
-  base::Optional<HostCache::EntryStaleness> unused_stale_info;
-  HostCache::Entry results = ResolveLocally(
-      info.host_port_pair().host(),
-      AddressFamilyToDnsQueryType(info.address_family()),
-      FlagsToSource(info.host_resolver_flags()), info.host_resolver_flags(),
-      info.allow_cached_response()
-          ? ResolveHostParameters::CacheUsage::ALLOWED
-          : ResolveHostParameters::CacheUsage::DISALLOWED,
-      source_net_log, &unused_key, &unused_stale_info);
-
-  if (results.addresses()) {
-    *addresses = AddressList::CopyWithPort(results.addresses().value(),
-                                           info.host_port_pair().port());
-  }
-
-  LogFinishRequest(source_net_log, results.error());
-  return results.error();
-}
-
-int HostResolverImpl::ResolveStaleFromCache(
-    const RequestInfo& info,
-    AddressList* addresses,
-    HostCache::EntryStaleness* stale_info,
-    const NetLogWithSource& source_net_log) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(addresses);
-  DCHECK(stale_info);
-
-  // Update the net log and notify registered observers.
-  LogStartRequest(source_net_log, info);
-
-  Key unused_key;
-  base::Optional<HostCache::EntryStaleness> optional_stale_info;
-  HostCache::Entry results = ResolveLocally(
-      info.host_port_pair().host(),
-      AddressFamilyToDnsQueryType(info.address_family()),
-      FlagsToSource(info.host_resolver_flags()), info.host_resolver_flags(),
-      info.allow_cached_response()
-          ? ResolveHostParameters::CacheUsage::STALE_ALLOWED
-          : ResolveHostParameters::CacheUsage::DISALLOWED,
-      source_net_log, &unused_key, &optional_stale_info);
-
-  if (results.addresses()) {
-    *addresses = AddressList::CopyWithPort(results.addresses().value(),
-                                           info.host_port_pair().port());
-    *stale_info = std::move(optional_stale_info).value_or(HostCache::kNotStale);
-  }
-
-  LogFinishRequest(source_net_log, results.error());
-  return results.error();
 }
 
 std::unique_ptr<HostResolver::MdnsListener>
