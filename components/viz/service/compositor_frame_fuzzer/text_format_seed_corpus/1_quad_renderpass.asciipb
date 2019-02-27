@@ -1,0 +1,28 @@
+output_rect: {
+  x: 0
+  y: 0
+  width: 620
+  height: 400
+}
+damage_rect: {
+  x: 0
+  y: 0
+  width: 620
+  height: 400
+}
+draw_quad: {
+  rect: {
+    x: 0
+    y: 0
+    width: 620
+    height: 400
+  }
+  visible_rect: {
+    x: 0
+    y: 0
+    width: 620
+    height: 400
+  }
+  color: 0xffffffff
+  force_anti_aliasing_off: false
+}
