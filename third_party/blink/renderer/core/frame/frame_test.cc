@@ -8,6 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/testing/document_interface_broker_test_helpers.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
@@ -212,6 +213,25 @@ TEST_F(FrameTest, UserActivationHistograms) {
   histograms.ExpectTotalCount("UserActivation.AvailabilityCheck.FrameResult",
                               3);
   histograms.ExpectTotalCount("UserActivation.Consumption.FrameResult", 3);
+}
+
+TEST_F(FrameTest, TestDocumentInterfaceBrokerOverride) {
+  mojom::blink::DocumentInterfaceBrokerPtr doc;
+  FrameHostTestDocumentInterfaceBroker frame_interface_broker(
+      &GetDocument().GetFrame()->GetDocumentInterfaceBroker(),
+      mojo::MakeRequest(&doc));
+  GetDocument().GetFrame()->SetDocumentInterfaceBrokerForTesting(
+      doc.PassInterface().PassHandle());
+
+  mojom::blink::FrameHostTestInterfacePtr frame_test;
+  GetDocument()
+      .GetFrame()
+      ->GetDocumentInterfaceBroker()
+      .GetFrameHostTestInterface(mojo::MakeRequest(&frame_test));
+  frame_test->GetName(base::BindOnce([](const WTF::String& result) {
+    EXPECT_EQ(result, kGetNameTestResponse);
+  }));
+  frame_interface_broker.Flush();
 }
 
 }  // namespace blink
