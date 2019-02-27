@@ -323,7 +323,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("imageOpenGalleryOpenDrive").EnableDriveFs()));
 
 // NaCl fails to compile zip plugin.pexe too often on ASAN, crbug.com/867738
-#if defined(ADDRESS_SANITIZER)
+// The tests are flaky on the debug bot and always time out first and then pass
+// on retry. Disabled for debug as per crbug.com/936429.
+#if defined(ADDRESS_SANITIZER) || defined(DEBUG)
 #define MAYBE_ZipFiles DISABLED_ZipFiles
 #else
 #define MAYBE_ZipFiles ZipFiles
