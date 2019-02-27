@@ -4,6 +4,9 @@
 
 #include "remoting/signaling/ftl_client.h"
 
+#include <utility>
+
+#include "base/bind.h"
 #include "base/guid.h"
 #include "build/build_config.h"
 #include "google_apis/google_api_keys.h"
@@ -26,21 +29,23 @@ FtlClient::FtlClient() {
   peer_to_peer_stub_ = PeerToPeer::NewStub(channel);
 }
 
-FtlClient::~FtlClient() {}
+FtlClient::~FtlClient() = default;
 
-grpc::Status FtlClient::GetIceServer(ftl::GetICEServerResponse* response) {
-  grpc::ClientContext context;
-  FillClientContextMetadata(&context);
-
+void FtlClient::GetIceServer(RpcCallback<ftl::GetICEServerResponse> callback) {
   ftl::GetICEServerRequest request;
   request.set_allocated_header(BuildRequestHeader().release());
 
-  return peer_to_peer_stub_->GetICEServer(&context, request, response);
+  dispatcher_.ExecuteAsyncRpc(
+      base::BindOnce(&PeerToPeer::Stub::AsyncGetICEServer,
+                     base::Unretained(peer_to_peer_stub_.get())),
+      CreateClientContext(), request, std::move(callback));
 }
 
 // static
-void FtlClient::FillClientContextMetadata(grpc::ClientContext* context) {
+std::unique_ptr<grpc::ClientContext> FtlClient::CreateClientContext() {
+  auto context = std::make_unique<grpc::ClientContext>();
   context->AddMetadata("x-goog-api-key", google_apis::GetRemotingFtlAPIKey());
+  return context;
 }
 
 // static
