@@ -26,7 +26,11 @@ WMHelperCastShell::WMHelperCastShell(
     chromecast::CastScreen* cast_screen)
     : cast_window_manager_aura_(cast_window_manager_aura),
       env_(env),
-      cast_screen_(cast_screen) {
+      cast_screen_(cast_screen),
+      vsync_manager_(cast_window_manager_aura->GetRootWindow()
+                         ->layer()
+                         ->GetCompositor()
+                         ->vsync_manager()) {
   cast_screen_->AddObserver(&display_observer_);
 }
 
@@ -76,12 +80,12 @@ void WMHelperCastShell::ResetDragDropDelegate(aura::Window* window) {
 
 void WMHelperCastShell::AddVSyncObserver(
     ui::CompositorVSyncManager::Observer* observer) {
-  NOTIMPLEMENTED();
+  vsync_manager_->AddObserver(observer);
 }
 
 void WMHelperCastShell::RemoveVSyncObserver(
     ui::CompositorVSyncManager::Observer* observer) {
-  NOTIMPLEMENTED();
+  vsync_manager_->RemoveObserver(observer);
 }
 
 void WMHelperCastShell::OnDragEntered(const ui::DropTargetEvent& event) {}

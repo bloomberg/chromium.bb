@@ -132,6 +132,7 @@ class WMHelperCastShell : public WMHelper {
   chromecast::CastScreen* cast_screen_;
   CastDisplayObserver display_observer_;
   LifetimeManager lifetime_manager_;
+  scoped_refptr<ui::CompositorVSyncManager> vsync_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WMHelperCastShell);
 };
