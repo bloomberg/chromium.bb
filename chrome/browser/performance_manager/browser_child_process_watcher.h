@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "chrome/browser/performance_manager/process_resource_coordinator.h"
 #include "content/public/browser/browser_child_process_observer.h"
@@ -35,11 +36,17 @@ class BrowserChildProcessWatcher : public content::BrowserChildProcessObserver {
       const content::ChildProcessData& data,
       const content::ChildProcessTerminationInfo& info) override;
 
-  void GPUProcessStopped();
+  void GPUProcessExited(int id, int exit_code);
 
   performance_manager::ProcessResourceCoordinator browser_node_;
-  std::unique_ptr<performance_manager::ProcessResourceCoordinator>
-      gpu_process_resource_coordinator_;
+
+  // Apparently more than one GPU process can be existent at a time, though
+  // secondaries are very transient. This map keeps track of all GPU processes
+  // by their unique ID from |content::ChildProcessData|.
+  base::flat_map<
+      int,
+      std::unique_ptr<performance_manager::ProcessResourceCoordinator>>
+      gpu_process_nodes_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserChildProcessWatcher);
 };
