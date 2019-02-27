@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateStatus;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.ui.widget.Toast;
 
 /** Helper class that creates infobars based on {@link UpdateState} changes. */
 public class UpdateInfoBarController implements Destroyable {
@@ -51,6 +52,9 @@ public class UpdateInfoBarController implements Destroyable {
                 break;
             case UpdateState.INLINE_UPDATE_FAILED:
                 showFailedInfobar();
+                break;
+            case UpdateState.INLINE_UPDATE_DOWNLOADING:
+                showDownloadingToast();
                 break;
         }
     }
@@ -122,5 +126,14 @@ public class UpdateInfoBarController implements Destroyable {
                 mActivity.getString(R.string.try_again) /* primaryText */,
                 mActivity.getString(R.string.cancel) /* secondaryText */, null /* linkText */,
                 false /* autoExpire */);
+    }
+
+    private void showDownloadingToast() {
+        if (mActivity == null) return;
+
+        Toast.makeText(mActivity,
+                     mActivity.getString(R.string.inline_update_toast_downloading_message),
+                     Toast.LENGTH_LONG)
+                .show();
     }
 }
