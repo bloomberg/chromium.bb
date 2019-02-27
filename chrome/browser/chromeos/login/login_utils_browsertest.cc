@@ -14,7 +14,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
-#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -67,8 +66,7 @@ void GetAccessPointRlzInBackgroundThread(rlz_lib::AccessPoint point,
 
 class LoginUtilsTest : public OobeBaseTest {
  public:
-  LoginUtilsTest() = default;
-  ~LoginUtilsTest() override = default;
+  LoginUtilsTest() {}
 
   void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
 
@@ -90,8 +88,6 @@ class LoginUtilsTest : public OobeBaseTest {
   }
 
  private:
-  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
-
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsTest);
 };
 

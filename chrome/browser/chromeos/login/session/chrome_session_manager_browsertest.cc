@@ -14,8 +14,6 @@
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
-#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
@@ -75,9 +73,7 @@ class UserAddingScreenWaiter : public UserAddingScreen::Observer {
 
 class ChromeSessionManagerTest : public LoginManagerTest {
  public:
-  ChromeSessionManagerTest()
-      : LoginManagerTest(true, true),
-        fake_gaia_{&mixin_host_, embedded_test_server()} {}
+  ChromeSessionManagerTest() : LoginManagerTest(true, true) {}
   ~ChromeSessionManagerTest() override {}
 
   // LoginManagerTest:
@@ -95,9 +91,6 @@ class ChromeSessionManagerTest : public LoginManagerTest {
     OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
   }
 
- protected:
-  FakeGaiaMixin fake_gaia_;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeSessionManagerTest);
 };
@@ -110,9 +103,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSessionManagerTest, OobeNewUser) {
   EXPECT_EQ(0u, manager->sessions().size());
 
   // Login via fake gaia to add a new user.
-  fake_gaia_.SetupFakeGaiaForLoginManager();
-  fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(kTestUsers[0].email,
-                                                    "fake_sid", "fake_lsid");
+  fake_gaia_.SetFakeMergeSessionParams(kTestUsers[0].email, "fake_sid",
+                                       "fake_lsid");
   StartSignInScreen();
 
   content::WindowedNotificationObserver session_start_waiter(
@@ -198,9 +190,8 @@ class ChromeSessionManagerRlzTest : public ChromeSessionManagerTest {
     EXPECT_EQ(0u, manager->sessions().size());
 
     // Login via fake gaia to add a new user.
-    fake_gaia_.SetupFakeGaiaForLoginManager();
-    fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(kTestUsers[0].email,
-                                                      "fake_sid", "fake_lsid");
+    fake_gaia_.SetFakeMergeSessionParams(kTestUsers[0].email, "fake_sid",
+                                         "fake_lsid");
     StartSignInScreen();
 
     content::WindowedNotificationObserver session_start_waiter(

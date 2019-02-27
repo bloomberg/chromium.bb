@@ -10,7 +10,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
-#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
@@ -35,8 +34,8 @@ namespace chromeos {
 
 class OobeTest : public OobeBaseTest {
  public:
-  OobeTest() = default;
-  ~OobeTest() override = default;
+  OobeTest() {}
+  ~OobeTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kOobeSkipPostLogin);
@@ -65,8 +64,6 @@ class OobeTest : public OobeBaseTest {
   }
 
  private:
-  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
-
   DISALLOW_COPY_AND_ASSIGN(OobeTest);
 };
 
@@ -80,9 +77,9 @@ IN_PROC_BROWSER_TEST_F(OobeTest, NewUser) {
   LoginDisplayHost::default_host()
       ->GetOobeUI()
       ->GetGaiaScreenView()
-      ->ShowSigninScreenForTest(FakeGaiaMixin::kFakeUserEmail,
-                                FakeGaiaMixin::kFakeUserPassword,
-                                FakeGaiaMixin::kEmptyUserServices);
+      ->ShowSigninScreenForTest(OobeBaseTest::kFakeUserEmail,
+                                OobeBaseTest::kFakeUserPassword,
+                                OobeBaseTest::kEmptyUserServices);
 
   session_start_waiter.Wait();
 }
