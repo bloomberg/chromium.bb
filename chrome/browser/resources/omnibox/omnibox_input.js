@@ -80,11 +80,16 @@ class OmniboxInput extends OmniboxElement {
         .addEventListener('click', this.onCopyText_.bind(this));
     this.$$('#download-json')
         .addEventListener('click', this.onDownloadJson_.bind(this));
-    this.setupDragListeners_(this.$$('#import-json'));
-    this.$$('#import-json')
-        .addEventListener('drop', this.onImportDropped_.bind(this));
+
+    ['#import-json', '#import-clipboard'].forEach(query => {
+      this.setupDragListeners_(this.$$(query));
+      this.$$(query).addEventListener('drop', this.onImportDropped_.bind(this));
+    });
+
     this.$$('#import-json-input')
         .addEventListener('input', this.onImportFileSelected_.bind(this));
+    this.$$('#import-clipboard')
+        .addEventListener('click', this.onImportClipboard_.bind(this));
   }
 
   /**
@@ -264,6 +269,10 @@ class OmniboxInput extends OmniboxElement {
       }
     };
     reader.readAsText(file);
+  }
+
+  async onImportClipboard_() {
+    this.import_(await navigator.clipboard.readText());
   }
 
   /** @private @param {string} importString */
