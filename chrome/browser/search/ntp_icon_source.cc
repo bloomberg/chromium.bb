@@ -89,6 +89,9 @@ struct ParsedNtpIconPath {
 
   // The device scale factor of the requested icon.
   float device_scale_factor = 1.0;
+
+  // True if a dark mode icon should be used.
+  bool is_dark_mode = false;
 };
 
 // Returns true if |search| is a substring of |path| which starts at
@@ -135,9 +138,10 @@ const ParsedNtpIconPath ParseNtpIconPath(const std::string& path) {
 
   parsed_index = slash + 1;
 
-  // Parse the dark mode spec (e.g. "dark"), if available. The value is not
-  // used, but is required to generate a new icon for dark mode.
+  // Parse the dark mode spec (e.g. "dark"). If present, render a dark mode
+  // icon.
   if (HasSubstringAt(path, parsed_index, kDarkModeParameter)) {
+    parsed.is_dark_mode = true;
     slash = path.find("/", parsed_index);
     if (slash == std::string::npos)
       return parsed;
@@ -216,12 +220,13 @@ SkColor GetBackgroundColorForUrl(const GURL& icon_url) {
 }
 
 // For the given |icon_url|, will render |favicon| within a gray, circular
-// background. If |favicon| is not specifed, will use a colored circular
-// monogram instead.
+// background (dark gray if |is_dark_mode|). If |favicon| is not specifed, will
+// use a colored circular monogram instead.
 std::vector<unsigned char> RenderIconBitmap(const GURL& icon_url,
                                             const SkBitmap& favicon,
                                             int icon_size,
-                                            int fallback_size) {
+                                            int fallback_size,
+                                            bool is_dark_mode) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(icon_size, icon_size, false);
   cc::SkiaPaintCanvas paint_canvas(bitmap);
@@ -229,10 +234,7 @@ std::vector<unsigned char> RenderIconBitmap(const GURL& icon_url,
   canvas.DrawColor(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
 
   // Draw the gray background.
-  SkColor favicon_bg =
-      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()
-          ? gfx::kGoogleGrey900
-          : gfx::kGoogleGrey100;
+  SkColor favicon_bg = is_dark_mode ? gfx::kGoogleGrey900 : gfx::kGoogleGrey100;
   DrawCircleInCanvas(&canvas, icon_size, /*offset=*/0,
                      /*background_color=*/favicon_bg);
   DrawFavicon(favicon, &canvas, icon_size);
@@ -259,11 +261,13 @@ struct NtpIconSource::NtpIconRequest {
   NtpIconRequest(const content::URLDataSource::GotDataCallback& cb,
                  const GURL& path,
                  int icon_size_in_pixels,
-                 float scale)
+                 float scale,
+                 bool is_dark_mode)
       : callback(cb),
         path(path),
         icon_size_in_pixels(icon_size_in_pixels),
-        device_scale_factor(scale) {}
+        device_scale_factor(scale),
+        is_dark_mode(is_dark_mode) {}
   NtpIconRequest(const NtpIconRequest& other) = default;
   ~NtpIconRequest() {}
 
@@ -271,6 +275,7 @@ struct NtpIconSource::NtpIconRequest {
   GURL path;
   int icon_size_in_pixels;
   float device_scale_factor;
+  bool is_dark_mode;
 };
 
 NtpIconSource::NtpIconSource(Profile* profile)
@@ -301,7 +306,7 @@ void NtpIconSource::StartDataRequest(
     int icon_size_in_pixels =
         std::ceil(parsed.size_in_dip * parsed.device_scale_factor);
     NtpIconRequest request(callback, parsed.url, icon_size_in_pixels,
-                           parsed.device_scale_factor);
+                           parsed.device_scale_factor, parsed.is_dark_mode);
 
     // Check if the requested URL is part of the prepopulated pages (currently,
     // only the Web Store).
@@ -471,6 +476,6 @@ void NtpIconSource::ReturnRenderedIconForRequest(const NtpIconRequest& request,
       std::round(kFallbackSizeDip * request.device_scale_factor * 0.5) * 2.0;
   std::vector<unsigned char> bitmap_data =
       RenderIconBitmap(request.path, bitmap, desired_overall_size_in_pixel,
-                       desired_fallback_size_in_pixel);
+                       desired_fallback_size_in_pixel, request.is_dark_mode);
   request.callback.Run(base::RefCountedBytes::TakeVector(&bitmap_data));
 }

@@ -267,6 +267,13 @@ let isDarkModeEnabled = false;
 
 
 /**
+ * True if dark colored chips should be used instead of light mode chips when
+ * dark mode is enabled.
+ * @type {boolean}
+ */
+let useDarkChips = false;
+
+/**
  * Returns a timeout that can be executed early.
  * @param {!Function} timeout The timeout function.
  * @param {number} delay The timeout delay.
@@ -341,6 +348,21 @@ function getIsThemeDark() {
   return luminance >= 128;
 }
 
+
+/**
+ * Determine whether dark chips should be used if dark mode is enabled. This is
+ * is the case when dark mode is enabled and a background image (from a custom
+ * background or user theme) is not set.
+ *
+ * @param {ThemeBackgroundInfo|undefined} info Theme background information.
+ * @return {boolean} Whether the chips should be dark.
+ * @private
+ */
+function getUseDarkChips(info) {
+  return info.usingDarkMode && !info.imageUrl;
+}
+
+
 /**
  * Updates the NTP based on the current theme.
  * @private
@@ -353,11 +375,11 @@ function renderTheme() {
     return;
   }
 
-  const useDarkMode = !!info.usingDarkMode;
-  if (isDarkModeEnabled != useDarkMode) {
-    document.documentElement.setAttribute('darkmode', useDarkMode);
-    isDarkModeEnabled = useDarkMode;
-  }
+  // Update dark mode styling.
+  isDarkModeEnabled = info.usingDarkMode;
+  useDarkChips = getUseDarkChips(info);
+  document.documentElement.setAttribute('darkmode', isDarkModeEnabled);
+  document.body.classList.toggle('light-chip', !useDarkChips);
 
   var background = [
     convertToRGBAColor(info.backgroundColorRgba), info.imageUrl,
@@ -451,7 +473,7 @@ function sendThemeInfoToMostVisitedIframe() {
   var message = {cmd: 'updateTheme'};
   message.isThemeDark = isThemeDark;
   message.isUsingTheme = !info.usingDefaultTheme;
-  message.isDarkMode = !!info.usingDarkMode;
+  message.isDarkMode = getUseDarkChips(info);
 
   var titleColor = NTP_DESIGN.titleColor;
   if (!info.usingDefaultTheme && info.textColorRgba) {
@@ -480,7 +502,7 @@ function sendThemeInfoToEditCustomLinkIframe() {
   }
 
   let message = {cmd: 'updateTheme'};
-  message.isDarkMode = !!info.usingDarkMode;
+  message.isDarkMode = info.usingDarkMode;
 
   $(IDS.CUSTOM_LINKS_EDIT_IFRAME).contentWindow.postMessage(message, '*');
 }
@@ -515,7 +537,7 @@ function renderOneGoogleBarTheme() {
  */
 function onThemeChange() {
   // Save the current dark mode state to check if dark mode has changed.
-  const usingDarkMode = isDarkModeEnabled;
+  const usingDarkChips = useDarkChips;
 
   renderTheme();
   renderOneGoogleBarTheme();
@@ -524,7 +546,7 @@ function onThemeChange() {
 
   // If dark mode has been changed, refresh the MV tiles to render the
   // appropriate icon.
-  if (usingDarkMode != isDarkModeEnabled) {
+  if (usingDarkChips != useDarkChips) {
     reloadTiles();
   }
 }
@@ -636,7 +658,7 @@ function reloadTiles() {
   let maxNumTiles = configData.isGooglePage ? MAX_NUM_TILES_CUSTOM_LINKS :
                                               MAX_NUM_TILES_MOST_VISITED;
   for (var i = 0; i < Math.min(maxNumTiles, pages.length); ++i) {
-    cmds.push({cmd: 'tile', rid: pages[i].rid, darkMode: isDarkModeEnabled});
+    cmds.push({cmd: 'tile', rid: pages[i].rid, darkMode: useDarkChips});
   }
   cmds.push({cmd: 'show'});
 
