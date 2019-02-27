@@ -56,6 +56,7 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
   void ClosePersistentNotification(const std::string& notification_id) override;
   void GetNotifications(int64_t service_worker_registration_id,
                         const std::string& filter_tag,
+                        bool include_triggered,
                         GetNotificationsCallback callback) override;
 
  private:
@@ -90,6 +91,7 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
 
   void DidGetNotifications(
       const std::string& filter_tag,
+      bool include_triggered,
       GetNotificationsCallback callback,
       bool success,
       const std::vector<NotificationDatabaseData>& notifications);

@@ -200,9 +200,10 @@ void NotificationManager::ClosePersistentNotification(
 void NotificationManager::GetNotifications(
     int64_t service_worker_registration_id,
     const WebString& filter_tag,
+    bool include_triggered,
     ScriptPromiseResolver* resolver) {
   GetNotificationService()->GetNotifications(
-      service_worker_registration_id, filter_tag,
+      service_worker_registration_id, filter_tag, include_triggered,
       WTF::Bind(&NotificationManager::DidGetNotifications, WrapPersistent(this),
                 WrapPersistent(resolver)));
 }

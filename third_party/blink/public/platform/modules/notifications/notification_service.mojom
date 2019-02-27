@@ -70,21 +70,22 @@ interface NotificationService {
   // the notification ID can be calculated, as per non-persistent notifications,
   ClosePersistentNotification(string notification_id);
 
-  // Retrieves currently-displayed persistent notifications for a given
-  // service worker registration (i.e. notifications shown via
+  // Retrieves currently-displayed or scheduled persistent notifications for a
+  // given service worker registration (i.e. notifications shown via
   // DisplayPersistentNotification which were not yet closed or replaced).
   //
   // If |filter_tag| is non-empty an exact-match filter is applied against
   // the notification tag, so 0 or 1 notifications will be returned (because
   // notifications with the same tag replace each other).
   //
-  // If |filter_tag| is empty no filtering is applied, so multiple
-  // notifications may be returned.
+  // If |include_triggered| is true the returned list of notifications will
+  // include matching notifications that are still scheduled to be shown.
   //
   // Returns parallel lists of notification ids and their corresponding data.
   GetNotifications(
         int64 service_worker_registration_id,
-        string filter_tag)
+        string filter_tag,
+        bool include_triggered)
                 => (array<string> notification_ids,
                     array<NotificationData> notification_datas);
 };

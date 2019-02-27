@@ -70,9 +70,11 @@ class NotificationManager final
 
   // Asynchronously gets the persistent notifications belonging to the Service
   // Worker Registration. If |filter_tag| is not an empty string, only the
-  // notification with the given tag will be considered.
+  // notification with the given tag will be considered. If |include_triggered|
+  // is true, this will include scheduled notifications.
   void GetNotifications(int64_t service_worker_registration_id,
                         const WebString& filter_tag,
+                        bool include_triggered,
                         ScriptPromiseResolver* resolver);
 
   void Trace(blink::Visitor* visitor) override;
