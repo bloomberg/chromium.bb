@@ -21,7 +21,7 @@
     "all"
   ],
   "configuration": "Debug",
-  "expiration_time": 10800,
+  "expiration_time": 14400,
   "tests": [
     {
       "xcode parallelization": true,
