@@ -20,14 +20,12 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/account_mapper_util.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/auth/arc_auth_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -38,7 +36,6 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "services/identity/public/cpp/accounts_in_cookie_jar_info.h"
@@ -181,12 +178,10 @@ class DeviceAccountMigration : public AccountMigrationBaseStep,
   DeviceAccountMigration(AccountManager::AccountKey device_account,
                          AccountManager* account_manager,
                          identity::IdentityManager* identity_manager,
-                         AccountTrackerService* account_tracker_service,
                          scoped_refptr<TokenWebData> token_web_data)
       : AccountMigrationBaseStep(kDeviceAccountMigration,
                                  account_manager,
                                  identity_manager),
-        account_mapper_util_(account_tracker_service),
         token_web_data_(token_web_data),
         device_account_(device_account) {}
   ~DeviceAccountMigration() override = default;
@@ -239,9 +234,8 @@ class DeviceAccountMigration : public AccountMigrationBaseStep,
 
     bool is_success = false;
     for (auto it = token_map.begin(); it != token_map.end(); ++it) {
-      std::string account_id = RemoveAccountIdPrefix(it->first);
-      if (device_account_ !=
-          account_mapper_util_.OAuthAccountIdToAccountKey(account_id)) {
+      const std::string account_id = RemoveAccountIdPrefix(it->first);
+      if (identity_manager()->GetPrimaryAccountId() != account_id) {
         continue;
       }
 
@@ -260,10 +254,6 @@ class DeviceAccountMigration : public AccountMigrationBaseStep,
       FinishWithFailure();
     }
   }
-
-  // For translating between OAuth account ids and
-  // |AccountManager::AccountKey|.
-  AccountMapperUtil account_mapper_util_;
 
   // Current storage of LSTs.
   scoped_refptr<TokenWebData> token_web_data_;
@@ -539,7 +529,6 @@ void AccountManagerMigrator::AddMigrationSteps() {
 
   migration_runner_.AddStep(std::make_unique<DeviceAccountMigration>(
       GetDeviceAccount(profile_), account_manager, identity_manager,
-      AccountTrackerServiceFactory::GetForProfile(profile_),
       WebDataServiceFactory::GetTokenWebDataForProfile(
           profile_, ServiceAccessType::EXPLICIT_ACCESS) /* token_web_data */));
   migration_runner_.AddStep(std::make_unique<ContentAreaAccountsMigration>(
@@ -622,8 +611,6 @@ AccountManagerMigratorFactory::AccountManagerMigratorFactory()
           BrowserContextDependencyManager::GetInstance()) {
   // Stores the LSTs, that need to be copied over to |AccountManager|.
   DependsOn(WebDataServiceFactory::GetInstance());
-  // For translating between account identifiers.
-  DependsOn(AccountTrackerServiceFactory::GetInstance());
   // Account reconciliation is paused for the duration of migration and needs to
   // be re-enabled once migration is done.
   DependsOn(AccountReconcilorFactory::GetInstance());
