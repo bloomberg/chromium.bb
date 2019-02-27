@@ -66,7 +66,7 @@ class Device(object):
       result = retry_util.RetryException(
           exception=remote_access.SSHConnectionError,
           max_retry=10,
-          functor=lambda: self.RemoteCommand(cmd=['echo']),
+          functor=lambda: self.RemoteCommand(cmd=['true']),
           sleep=5)
     except remote_access.SSHConnectionError:
       raise DeviceError(
