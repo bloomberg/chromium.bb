@@ -40,6 +40,11 @@ namespace ash {
 
 namespace {
 
+enum ClearAllButtonTag {
+  kStackingBarClearAllButtonTag,
+  kBottomClearAllButtonTag,
+};
+
 constexpr int kClearAllButtonRowHeight = 3 * kUnifiedNotificationCenterSpacing;
 
 class ScrollerContentsView : public views::View {
@@ -65,6 +70,7 @@ class ScrollerContentsView : public views::View {
                       IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_LABEL));
     clear_all_button->SetTooltipText(l10n_util::GetStringUTF16(
         IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_TOOLTIP));
+    clear_all_button->set_tag(kBottomClearAllButtonTag);
     button_container->AddChildView(clear_all_button);
     AddChildView(button_container);
   }
@@ -86,6 +92,7 @@ class StackingBarClearAllButton : public views::LabelButton {
   StackingBarClearAllButton(views::ButtonListener* listener,
                             const base::string16& text)
       : views::LabelButton(listener, text) {
+    set_tag(kStackingBarClearAllButtonTag);
     SetEnabledTextColors(kUnifiedMenuButtonColorActive);
     SetHorizontalAlignment(gfx::ALIGN_CENTER);
     SetBorder(views::CreateEmptyBorder(gfx::Insets()));
@@ -361,8 +368,19 @@ void UnifiedMessageCenterView::OnMessageCenterScrolled() {
 
 void UnifiedMessageCenterView::ButtonPressed(views::Button* sender,
                                              const ui::Event& event) {
-  base::RecordAction(
-      base::UserMetricsAction("StatusArea_Notifications_ClearAll"));
+  if (sender) {
+    switch (sender->tag()) {
+      case kStackingBarClearAllButtonTag:
+        base::RecordAction(base::UserMetricsAction(
+            "StatusArea_Notifications_StackingBarClearAll"));
+        break;
+      case kBottomClearAllButtonTag:
+        base::RecordAction(
+            base::UserMetricsAction("StatusArea_Notifications_ClearAll"));
+        break;
+    }
+  }
+
   message_list_view_->ClearAllWithAnimation();
 }
 
