@@ -23,8 +23,11 @@ class TestInstallFinalizer final : public InstallFinalizer {
   // InstallFinalizer:
   void FinalizeInstall(const WebApplicationInfo& web_app_info,
                        InstallFinalizedCallback callback) override;
+  bool CanCreateOsShortcuts() const override;
   void CreateOsShortcuts(const AppId& app_id,
                          CreateOsShortcutsCallback callback) override;
+  bool CanPinAppToShelf() const override;
+  void PinAppToShelf(const AppId& app_id) override;
   void ReparentTab(const AppId& app_id,
                    content::WebContents* web_contents) override;
   bool CanRevealAppShim() const override;
@@ -40,6 +43,7 @@ class TestInstallFinalizer final : public InstallFinalizer {
   int num_create_os_shortcuts_calls() { return num_create_os_shortcuts_calls_; }
   int num_reparent_tab_calls() { return num_reparent_tab_calls_; }
   int num_reveal_appshim_calls() { return num_reveal_appshim_calls_; }
+  int num_pin_app_to_shelf_calls() { return num_pin_app_to_shelf_calls_; }
 
  private:
   std::unique_ptr<WebApplicationInfo> web_app_info_copy_;
@@ -50,6 +54,7 @@ class TestInstallFinalizer final : public InstallFinalizer {
   int num_create_os_shortcuts_calls_ = 0;
   int num_reparent_tab_calls_ = 0;
   int num_reveal_appshim_calls_ = 0;
+  int num_pin_app_to_shelf_calls_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestInstallFinalizer);
 };

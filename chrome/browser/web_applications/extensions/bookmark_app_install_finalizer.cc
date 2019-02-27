@@ -95,11 +95,24 @@ void BookmarkAppInstallFinalizer::OnExtensionInstalled(
                           web_app::InstallResultCode::kSuccess);
 }
 
+bool BookmarkAppInstallFinalizer::CanCreateOsShortcuts() const {
+  return CanBookmarkAppCreateOsShortcuts();
+}
+
 void BookmarkAppInstallFinalizer::CreateOsShortcuts(
     const web_app::AppId& app_id,
     CreateOsShortcutsCallback callback) {
   const Extension* app = GetExtensionById(profile_, app_id);
   BookmarkAppCreateOsShortcuts(profile_, app, std::move(callback));
+}
+
+bool BookmarkAppInstallFinalizer::CanPinAppToShelf() const {
+  return CanBookmarkAppBePinnedToShelf();
+}
+
+void BookmarkAppInstallFinalizer::PinAppToShelf(const web_app::AppId& app_id) {
+  const Extension* app = GetExtensionById(profile_, app_id);
+  BookmarkAppPinToShelf(app);
 }
 
 void BookmarkAppInstallFinalizer::ReparentTab(

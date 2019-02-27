@@ -40,6 +40,10 @@ void TestInstallFinalizer::FinalizeInstall(
       FROM_HERE, base::BindOnce(std::move(callback), app_id, code));
 }
 
+bool TestInstallFinalizer::CanCreateOsShortcuts() const {
+  return true;
+}
+
 void TestInstallFinalizer::CreateOsShortcuts(
     const AppId& app_id,
     CreateOsShortcutsCallback callback) {
@@ -47,6 +51,14 @@ void TestInstallFinalizer::CreateOsShortcuts(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), true /* shortcuts_created */));
+}
+
+bool TestInstallFinalizer::CanPinAppToShelf() const {
+  return true;
+}
+
+void TestInstallFinalizer::PinAppToShelf(const AppId& app_id) {
+  ++num_pin_app_to_shelf_calls_;
 }
 
 void TestInstallFinalizer::ReparentTab(const AppId& app_id,
