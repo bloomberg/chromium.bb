@@ -126,8 +126,24 @@ DocumentLoader* EmptyLocalFrameClient::CreateDocumentLoader(
 
 mojom::blink::DocumentInterfaceBroker*
 EmptyLocalFrameClient::GetDocumentInterfaceBroker() {
-  mojo::MakeRequest(&document_interface_broker_);
+  if (!document_interface_broker_.is_bound())
+    mojo::MakeRequest(&document_interface_broker_);
   return document_interface_broker_.get();
+}
+
+mojo::ScopedMessagePipeHandle
+EmptyLocalFrameClient::SetDocumentInterfaceBrokerForTesting(
+    mojo::ScopedMessagePipeHandle blink_handle) {
+  mojom::blink::DocumentInterfaceBrokerPtr test_broker(
+      mojom::blink::DocumentInterfaceBrokerPtrInfo(
+          std::move(blink_handle),
+          mojom::blink::DocumentInterfaceBroker::Version_));
+
+  mojo::ScopedMessagePipeHandle real_handle =
+      document_interface_broker_.PassInterface().PassHandle();
+  document_interface_broker_ = std::move(test_broker);
+
+  return real_handle;
 }
 
 LocalFrame* EmptyLocalFrameClient::CreateFrame(const AtomicString&,
