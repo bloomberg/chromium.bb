@@ -32,6 +32,7 @@
 <translation id="1930711995431081526">статус</translation>
 <translation id="1938124657309484470">Вредност мора да буде <ph name="MAXIMUM_DATE_OR_TIME" /> или старија.</translation>
 <translation id="1946271899482435442">Прикажи бирач датума</translation>
+<translation id="1982354452682152483">Није доступан опис.</translation>
 <translation id="1993104285338243655">Пребачено је на пресликавање</translation>
 <translation id="2060505056492490888">„<ph name="DOT" />“ је стављено на погрешно место у „<ph name="INVALIDDOMAIN" />“.</translation>
 <translation id="2148716181193084225">Данас</translation>
@@ -73,6 +74,7 @@
 <translation id="3450233048674729344">Вредност сме да буде највише <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">дефиниција</translation>
 <translation id="3557673793733683882">заглавље <ph name="HEADING_LEVEL" /></translation>
+<translation id="3685101356851116974">Неозначена слика</translation>
 <translation id="3706100364254443312">прекидач</translation>
 <translation id="3732799496749320381">мм</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
@@ -153,6 +155,7 @@
 <translation id="6453774872122745852">признања</translation>
 <translation id="648732519525291180">бирач времена</translation>
 <translation id="6550675742724504774">Опције</translation>
+<translation id="6572309429103589720">Нетачна граматика</translation>
 <translation id="658823671542763450">пређите на режим целог екрана</translation>
 <translation id="663493177488814956">фид</translation>
 <translation id="6637586476836377253">log</translation>
@@ -175,6 +178,7 @@
 <translation id="7139483182332611405">предговор</translation>
 <translation id="7263440858009898357">Изаберите ставку са листе.</translation>
 <translation id="727747134524199931">заглавље колоне</translation>
+<translation id="7336527682887843386">Нисмо успели да нађемо опис.</translation>
 <translation id="7353453495576941748">заслуга</translation>
 <translation id="7364796246159120393">Одабери датотеку</translation>
 <translation id="739024184232394898">Друго...</translation>
@@ -183,22 +187,28 @@
 <translation id="7491962110804786152">tab</translation>
 <translation id="7514365320538308">Преузми</translation>
 <translation id="7529102961911894712">повратни линк</translation>
+<translation id="7533959249147584474">Неозначена слика</translation>
 <translation id="7647456547678091388">савет</translation>
 <translation id="7661956066982048809">графички документ</translation>
 <translation id="7673697353781729403">Сати</translation>
 <translation id="7681220483256441252">индекс</translation>
 <translation id="7740050170769002709">HTML садржај</translation>
+<translation id="7745230546936012372">Да бисте добили описе слика који недостају, отворите контекстуални мени.</translation>
 <translation id="7750228210027921155">Слика у слици</translation>
+<translation id="775297008183122718">Неважећи унос</translation>
 <translation id="7789962463072032349">паузирај</translation>
 <translation id="7802800022689234070">троугао за откривање</translation>
 <translation id="7888071071722539607">Уврстите „<ph name="ATSIGN" />“ у имејл адресу. У адреси е-поште „<ph name="INVALIDADDRESS" />“ недостаје „<ph name="ATSIGN" />“.</translation>
 <translation id="7891486169920085145">разделник</translation>
 <translation id="795667975304826397">Није одабрано</translation>
+<translation id="8042519864538898414">Изгледа да је садржај за одрасле.</translation>
 <translation id="8053789581856978548">поље за текст претраге</translation>
 <translation id="8057695513531652401">обавештење</translation>
 <translation id="8105797009065549151">референца напомене</translation>
+<translation id="811583516810654505">Преузима се опис...</translation>
 <translation id="8117451130807776954">Ова недеља</translation>
 <translation id="8199524924445686405">гггг</translation>
+<translation id="8261464734335370856">Нетачан правопис</translation>
 <translation id="8284326494547611709">Титл</translation>
 <translation id="835897206747267392">Неважећа вредност.</translation>
 <translation id="8403857369060869934">протекло време: <ph name="ELAPSED_TIME" /></translation>

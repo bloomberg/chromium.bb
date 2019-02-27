@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">VR માં દાખલ થાઓ</translation>
 <translation id="116280672541001035">વપરાયેલ</translation>
 <translation id="1172593791219290334">સ્ટાર્ટઅપ પેજ</translation>
+<translation id="1173894706177603556">નામ બદલો</translation>
 <translation id="1175310183703641346">તમારા બુકમાર્ક, ઇતિહાસ, પાસવર્ડ અને અન્ય બાબતો હવેથી Google એકાઉન્ટ પર સિંક થશે નહીં</translation>
 <translation id="1178581264944972037">થોભો</translation>
 <translation id="1181037720776840403">કાઢી નાખો</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">શોધવા માટે ટેપ કરો</translation>
 <translation id="2079545284768500474">છેલ્લો ફેરફાર રદ કરો</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> માંથી <ph name="RESULT_NUMBER" /> પરિણામ</translation>
-<translation id="208586643495776849">કૃપા કરીને ફરી પ્રયાસ કરો</translation>
 <translation id="2086652334978798447">Google દ્વારા સૂચવેલ વ્યક્તિગત કરેલ કન્ટેન્ટ મેળવવા માટે, Chrome માં સાઇન ઇન કરો.</translation>
 <translation id="2091887806945687916">ધ્વનિ</translation>
 <translation id="2096012225669085171">સમગ્ર ઉપકરણો પર સિંક કરો અને વ્યક્તિગત બનાવો</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">ફાઇલ સિસ્ટમ ભૂલોના કારણે <ph name="FILE_NAME" /> ડાઉનલોડ નિષ્ફળ થયું.</translation>
 <translation id="3398320232533725830">બુકમાર્ક્સ સંચાલક ખોલો</translation>
 <translation id="3414952576877147120">કદ:</translation>
-<translation id="3434611491093664205">VR માટે તૈયાર થાય છે…</translation>
 <translation id="3443221991560634068">વર્તમાન પૃષ્ઠ ફરીથી લોડ કરો</translation>
 <translation id="3445014427084483498">હમણાં જ</translation>
 <translation id="3452612588551937789">તમારા બુકમાર્ક, ઇતિહાસ, પાસવર્ડ અને બીજા સેટિંગને તમારા તમામ ડિવાઇસ પર મેળવવા માટે તમારા Google એકાઉન્ટ સાથે સાઇન ઇન કરો.</translation>
@@ -929,7 +928,6 @@
 <translation id="7929962904089429003">મેનૂ ખોલો</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> જૂનું થઈ ગયું છે.</translation>
 <translation id="7947953824732555851">સ્વીકારો અને સાઇન ઇન કરો</translation>
-<translation id="7960977077911686065">આગળ વધીને, તમે સંમત થાઓ છો કે આ સેવા પૂરી પાડવા માટે, Chromeનો ઑટોમૅટિક રીતે ભરવાનો ડેટા, સાઇટની URL અને તેનું કન્ટેન્ટ Chrome, Googleને મોકલશે. તમે એ બાબત સાથે પણ સંમત થાઓ છો કે Chrome તમે પસંદ કરેલો વ્યક્તિગત ડેટા Chromeની ઑટોમૅટિક રીતે ભરવાની સુવિધા મારફતે વેબસાઇટને મોકલશે. \n\nChrome અને Chromeની ઑટોમૅટિક રીતે ભરવાની સુવિધામાં Google આસિસ્ટંટને બંધ કરવા માટે Chrome સેટિંગની મુલાકાત લો.  <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">વિક્રેતા:</translation>
 <translation id="7975379999046275268">પેજને પ્રીવ્યૂ કરો <ph name="BEGIN_NEW" />નવું<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">ઝડપી બ્રાઉઝિંગ અને શોધ માટે પેજને પહેલેથી લોડ કરો</translation>
@@ -987,7 +985,6 @@
 <translation id="8339163506404995330"><ph name="LANGUAGE" />માં છે તે પેજનો અનુવાદ થશે નહીં</translation>
 <translation id="8349013245300336738">વપરાયેલ ડેટાના પ્રમાણ અનુસાર સૉર્ટ કરો</translation>
 <translation id="8372893542064058268">ચોક્કસ સાઇટ માટે પૃષ્ઠભૂમિ સમન્વયનની મંજૂરી આપો.</translation>
-<translation id="8373513848523649558">તમે ગમે ત્યારે <ph name="BEGIN_LINK1" />આ સેટિંગને કસ્ટમાઇઝ<ph name="END_LINK1" /> કરી શકો છો</translation>
 <translation id="8374821112118309944">તમારે TalkBack ને નવા વર્ઝન પર અપડેટ કરવાની જરૂર છે.</translation>
 <translation id="8378714024927312812">તમારી સંસ્થા દ્વારા મેનેજ કરેલ</translation>
 <translation id="8380167699614421159">આ સાઇટ ઘૃણાસ્પદ અથવા ભ્રામક જાહેરાતો બતાવે છે</translation>

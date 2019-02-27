@@ -82,6 +82,7 @@
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909791450649380159">Cắ&amp;t</translation>
 <translation id="3990502903496589789">Cạnh bên Phải</translation>
+<translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 thông báo chưa đọc}other{# thông báo chưa đọc}}</translation>
 <translation id="4202807286478387388">chuyển</translation>
 <translation id="4250229828105606438">Ảnh chụp màn hình</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 tháng trước}other{# tháng trước}}</translation>
@@ -102,7 +103,7 @@
 <translation id="5266161281976477809">Tam giác hiển thị</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5329858601952122676">&amp;Xoá</translation>
-<translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> được kéo lên trên <ph name="IN_PLACE_APP" />, hãy thả để tạo thư mục.</translation>
+<translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> nằm trên <ph name="IN_PLACE_APP" />, thả để tạo thư mục.</translation>
 <translation id="5463830097259460683">Các ký hiệu &amp;&amp; biểu tượng cảm xúc</translation>
 <translation id="5476505524087279545">bỏ chọn</translation>
 <translation id="547979256943495781">Giá ở bên phải</translation>
@@ -170,7 +171,7 @@
 <translation id="8131263257437993507">{SECONDS,plural, =1{Còn 1 giây}other{Còn # giây}}</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, Tự động hoàn thành</translation>
 <translation id="815598010540052116">Cuộn Xuống</translation>
-<translation id="8170087467028567933">Nếu bạn xóa nội dung đề xuất này, thì nội dung đề xuất này sẽ ẩn khỏi tài khoản của bạn trên tất cả các thiết bị.</translation>
+<translation id="8170087467028567933">Nếu bạn xóa nội dung đề xuất này, thì nội dung đề xuất này sẽ ẩn khỏi tài khoản của bạn trên tất cả thiết bị.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Trang Dưới</translation>
 <translation id="8245914219290430011">Tab</translation>
@@ -203,4 +204,5 @@
 <translation id="9161053988251441839">ỨNG DỤNG ĐỀ XUẤT</translation>
 <translation id="9170848237812810038">H&amp;oàn tác</translation>
 <translation id="932327136139879170">Trang chủ</translation>
+<translation id="944069440740578670">Các thông báo chưa đọc</translation>
 </translationbundle>

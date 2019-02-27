@@ -24,6 +24,7 @@
       Ha a házirend értéke hamis, vagy ha nincs beállítva, akkor az IdP által beállított cookie-k csak az eszközön történő első bejelentkezéskor kerülnek át a felhasználó profiljába.
 
       Ez a házirend csak azokat a felhasználókat érinti, akiknek a domainje egyezik az eszköz regisztrációs domainjével. Minden más felhasználó esetében az IdP által beállított cookie-k csak az eszközön történő első bejelentkezéskor kerülnek át az adott felhasználó profiljába.</translation>
+<translation id="1029052664284722254">Az eszköz újraindításának kényszerítése a felhasználó kijelentkezésekor</translation>
 <translation id="1030120600562044329">A <ph name="PRODUCT_NAME" /> használati és összeomlásokkal kapcsolatos adatainak a Google részére történő névtelen jelentésének engedélyezése, és a beállítás módosíthatóságának letiltása.
 
       Ha ez a beállítás aktiválva van, a böngésző névtelenül elküldi a használati és az összeomlásokkal kapcsolatos adatokat a Google-nak.  Ha le van tiltva, a Google nem kapja meg ezeket az adatokat.  A felhasználók egyik esetben sem módosíthatják ezt a beállítást.
@@ -150,13 +151,6 @@
 <translation id="1307454923744766368">Eredetek vagy gazdagépnévminták, melyekre nem érvényesek
       a nem biztonságos eredetekre vonatkozó korlátozások</translation>
 <translation id="1312799700549720683">A megjelenítési beállítások kezelésére szolgál.</translation>
-<translation id="1313457536529613143">Azt a százalékot adja meg, amelynek alapján a képernyő-elsötétítési késleltetés skálázódik, ha az elsötétedés során, vagy röviddel a képernyő kikapcsolódása után felhasználói tevékenység történik.
-
-          Ha a házirend be van állítva, megadja azt a százalékos értéket, amelynek alapján a képernyő-elsötétítési késleltetés skálázódik, ha az elsötétedés során, vagy röviddel a képernyő kikapcsolódása után felhasználói tevékenység történik. Az elsötétedési késleltetés skálázása esetén a képernyő-kikapcsolási, képernyő-zárolási és tétlenségi késleltetések is módosulnak, hogy ugyanannyi idő teljen el köztük a képernyő-elsötétítési késleltetéstől számítva, mint ami eredetileg be lett állítva.
-
-          Ha a házirend nincs beállítva, akkor a rendszer az alapértelmezett skálázási tényezőt használja.
-
-          A skálázási tényezőnek 100%-nak vagy többnek kell lennie.</translation>
 <translation id="131353325527891113">Felhasználónevek megjelenítése a bejelentkezési képernyőn</translation>
 <translation id="1327466551276625742">Hálózati konfigurációs értesítés offline állapotban való megjelenítésének engedélyezése</translation>
 <translation id="1330145147221172764">Képernyő-billentyűzet engedélyezése</translation>
@@ -369,6 +363,17 @@
 
           A házirend csak akkor érvényesül, ha a „DefaultSearchProviderEnabled” házirend engedélyezve van.</translation>
 <translation id="1852294065645015766">A médiatartalmak automatikus lejátszásának engedélyezése</translation>
+<translation id="1857152770025485173">Ez a házirend megakadályozza, hogy a felhasználó betöltse a tiltólistán szereplő URL-ekhez tartozó weboldalakat. A tiltólistán lévő URL-eket a böngésző letiltja.
+
+      Az URL-eket a következő oldalon leírtak szerint kell formázni: https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Kivételeket az URL-ek engedélyezőlistájára vonatkozó házirendben lehet megadni. Ezekben a házirendekben legfeljebb ezer bejegyzés szerepelhet. A további bejegyzéseket figyelmen kívül hagyja a böngésző.
+
+      A belső használatú „chrome://*” URL-séma letiltása nem javasolt, ez ugyanis váratlan hibákhoz vezethet.
+
+      Az M73-as verziótól kezdve letilthatja a „javascript://*” karakterláncot tartalmazó URL-címeket. Ez azonban csak a címsávba gépelt JavaScript-URL-ekre van hatással (vagy például a könyvjelző-alkalmazásokra). Felhívjuk figyelmét, hogy az oldalon belüli JavaScript-URL-ek nem tartoznak a házirend hatókörébe, amennyiben dinamikusan betöltött adatokat tartalmaznak. Ha például letiltja az „example.com/abc” URL-címet, az „example.com” oldal továbbra is képes az „example.com/abc” cím XMLHTTPRequest útján való betöltésére.
+
+      Ha a házirend nincs beállítva, egyetlen URL sem kerül tiltólistára a böngészőben.</translation>
 <translation id="1859859319036806634">Figyelmeztetés: A TLS-tartalékverziót eltávolítjuk a <ph name="PRODUCT_NAME" /> böngészőből az 52-es verzió után (körülbelül 2016 szeptemberében), és onnantól kezdve ez a házirend nem fog működni.
 
       Amikor a TLS-kapcsolatfelvétel sikertelen, a <ph name="PRODUCT_NAME" /> korábban újrapróbálta a kapcsolódást a TLS egy korábbi verziójával a HTTPS-szerverek hibáinak kiküszöbölése érdekében. Ez a beállítás azt a verziót konfigurálja, amelynél a tartalékfolyamat leáll. Ha a szerver helyesen (azaz a kapcsolat megszakítása nélkül) hajtja végre a verzióegyeztetést, akkor a böngésző nem alkalmazza ezt a beállítást. Mindettől függetlenül az ennek eredményeként létrejövő kapcsolatnak meg kell felelnie az SSLVersionMin paraméternek.
@@ -635,6 +640,7 @@
       Ha a házirend nincs beállítva, illetve amennyiben igaz érték esetén eszközszintű fiók van konfigurálva a késleltetésmentes automatikus bejelentkezéshez, akkor a <ph name="PRODUCT_OS_NAME" /> figyelembe veszi a Ctrl+Alt+S billentyűparancsot az automatikus bejelentkezés átlépéséhez és a bejelentkezési képernyő megjelenítéséhez.
 
       Ha a házirend értéke hamis, akkor a késleltetésmentes automatikus bejelentkezés (ha konfigurálva van) nem léphető át.</translation>
+<translation id="2454228136871844693">Stabilitásközpontú optimalizálás.</translation>
 <translation id="2463365186486772703">Alkalmazás nyelv- és országkódja</translation>
 <translation id="2466131534462628618">A hitelesítési portál a hitelesítéskor figyelmen kívül hagyja a proxyt</translation>
 <translation id="2482676533225429905">Natív üzenetküldő</translation>
@@ -826,6 +832,31 @@
 
       Ha használatban van a házirend, csak a házirendben lévő értékeknek megfelelő azonosítójú nyomtatók állnak a felhasználó rendelkezésére. Az azonosítóknak meg kell felelniük a(z) <ph name="DEVICE_PRINTERS_POLICY" /> házirend fájljában meghatározott „id” vagy „guid” mezőknek.
       </translation>
+<translation id="2842152347010310843">Azon URL-minták engedélyezőlistáját szabályozza, amelyeken mindig engedélyezve van az automatikus lejátszás.
+
+      Ha engedélyezve van az automatikus lejátszás, akkor a videók (felhasználói engedély nélkül) hangtartalommal együtt automatikusan lefutnak a <ph name="PRODUCT_NAME" /> böngészőben.
+
+      Az URL-minták érvényes jellemzői a következők:
+
+      - [*.]domain.tld (megfelel a domain.tld-nek és az összes aldomainnek)
+
+      - host (megfelel a pontos gazdagépnévnek)
+
+      - scheme://host:port (támogatott sémák: http, https)
+
+      - scheme://[*.]domain.tld:port (támogatott sémák: http, https)
+
+      - file://path (az elérési útnak abszolút elérési útnak kell lennie, és „/” jellel kell kezdődnie)
+
+      - a.b.c.d (pontosan megfelel egy IPv4 IP-címnek)
+
+      - [a:b:c:d:e:f:g:h] (pontosan megfelel egy IPv6 IP-címnek)
+
+      Ha az AutoplayAllowed házirend beállítása Igaz, akkor ez a házirend hatástalan.
+
+      Ha az AutoplayAllowed házirend beállítása Hamis, akkor az ebben a házirendben megadott összes URL-mintán engedélyezett lesz a lejátszás.
+
+      Vegye figyelembe, hogy amennyiben fut a <ph name="PRODUCT_NAME" />, és a házirend módosul, akkor a változás csak az újonnan megnyitott lapokon érvényesül. Emiatt egyes lapokon továbbra is a korábbi viselkedés tapasztalható.</translation>
 <translation id="285480231336205327">Nagy kontrasztú mód engedélyezése</translation>
 <translation id="2854919890879212089">Azt eredményezi, hogy a(z) <ph name="PRODUCT_NAME" /> a rendszer alapértelmezett nyomtatóját használja alapértelmezett választásként a nyomtatási előnézetben a legutóbb használt nyomtató helyett.
 
@@ -945,6 +976,7 @@
       Ha aktiválva van, vagy ha nincs beállítva, a Chrome-tisztogatás rendszeresen ellenőrizi a rendszert nem kívánt szoftvereket keresve, és ha talál ilyet, megkérdezi a felhasználót, hogy el szeretné-e távolítani. A Chrome-tisztogatás chrome://settings címről történő manuális elindítása engedélyezve van.
 
       Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
+<translation id="3159375329008977062">A felhasználó számára engedélyezett a Crostini-tárolók exportálása és importálása a kezelőfelületen keresztül</translation>
 <translation id="3165808775394012744">Ezek a házirendek azért kerültek ide, hogy egyszerűen el lehessen őket távolítani.</translation>
 <translation id="316778957754360075">Ez a házirend többé nincs jelen a <ph name="PRODUCT_NAME" /> 29-es verziójától kezdve. A szervezet által tárolt bővítmény- és alkalmazásgyűjtemények beállításához azt javasoljuk, hogy a CRX-csomagokat tartalmazó webhelyet vegye fel az ExtensionInstallSources házirendbe, és helyezzen el a csomagokra mutató közvetlen letöltési linkeket egy weboldalon. A weboldalhoz az ExtensionInstallForcelist házirend használatával lehet indítót létrehozni.</translation>
 <translation id="3171369832001535378">Eszköz hálózatának gazdagépnévsablonja</translation>
@@ -1226,6 +1258,11 @@
 <translation id="3851039766298741586">Információk (például alkalmazásazonosító és -verzió) jelentése az aktív kioszkmunkamenetről.
 
 Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet információit. Ha igaz, illetve ha nincs beállítva, a böngésző jelenti ezeket az információkat.</translation>
+<translation id="3852924591079583104">
+      Az ArcSession beállítás kiválasztása esetén ez a házirend arra kényszeríti az eszközt, hogy újrainduljon, amikor a felhasználó kijelentkezik (ha az Android rendszer fut).
+      Ha a beállítás értéke Mindig, akkor az eszköz minden felhasználói kijelentkezéskor újraindul.
+      Ha nincs beállítva a házirend, akkor nincs hatása, és nem kényszeríti újraindulásra az eszközt a felhasználói kijelentkezések esetén. Ugyanez érvényes a Soha beállítás esetén is.
+      </translation>
 <translation id="3858658082795336534">Alapértelmezett kétoldalas nyomtatási mód</translation>
 <translation id="3859780406608282662">Hozzáad egy paramétert a <ph name="PRODUCT_OS_NAME" /> rendszer változatainak lekéréséhez.
 
@@ -1517,6 +1554,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4555850956567117258">A felhasználó távoli tanúsításának engedélyezése</translation>
 <translation id="4557134566541205630">Alapértelmezett keresőszolgáltató új lap oldal URL-címe</translation>
 <translation id="4567137030726189378">A Fejlesztői eszközök használatának engedélyezése</translation>
+<translation id="4578265298946081589">Ne legyen újraindítás a felhasználó kijelentkezésekor.</translation>
 <translation id="4600786265870346112">Nagy egérmutató engedélyezése</translation>
 <translation id="4604931264910482931">Natív üzenetkezelő tiltólista konfigurálása</translation>
 <translation id="4613508646038788144">Ha a házirend értéke „hamis”, akkor a harmadik felek szoftverei számára engedélyezve lesz a futtatható kódok Chrome-folyamatokba történő beszúrása. Ha a házirend nincs beállítva, vagy értéke „igaz”, akkor a harmadik felek szoftverei nem tudnak beszúrni futtatható kódot a Chrome-folyamatokba.</translation>
@@ -1566,11 +1604,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4725528134735324213">Az Android Backup Service engedélyezése</translation>
 <translation id="4725801978265372736">Annak megkövetelése, hogy egyezzen a helyi felhasználónak és a távoli hozzáférésű gazdagép tulajdonosának a neve</translation>
 <translation id="4733471537137819387">Az integrált HTTP-hitelesítéssel kapcsolatos szabályok.</translation>
-<translation id="4744190513568488164">Szerverek, amelyekre a <ph name="PRODUCT_NAME" /> delegálhat.
-
-          Több szervernév megadása esetén azokat vesszővel válassza el. A helyettesítő karakterek (*) engedélyezettek.
-
-          Ha nem állítja be ezt a házirendet, a <ph name="PRODUCT_NAME" /> még akkor sem delegál felhasználói hitelesítési adatokat, ha a szervert az intraneten lévőnek érzékeli.</translation>
 <translation id="4752880493649142945">Klienstanúsítvány a RemoteAccessHostTokenValidationUrl címhez történő csatlakozáshoz</translation>
 <translation id="4757671984625088193">Ha értéke igaz, vagy ha nincs beállítva, a <ph name="PRODUCT_NAME" /> megjeleníti az aktuális oldalhoz kapcsolódó javasolt oldalakat.
       Ezeket a javaslatokat a rendszer a Google szervereiről kéri le távolról.
@@ -1591,6 +1624,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
           Ha nem állítja be ezt a házirendet, akkor a nagy egérmutató kezdetben le lesz tiltva, de a felhasználó bármikor engedélyezheti.</translation>
 <translation id="4802905909524200151"><ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware frissítési szokásainak beállítása</translation>
+<translation id="4804828344300125154">Mindig legyen újraindítás a felhasználó kijelentkezésekor.</translation>
 <translation id="4807950475297505572">A legrégebben használt felhasználók eltávolítása, amíg elegendő szabad terület nem lesz</translation>
 <translation id="4815725774537609998">Ez a szabály elavult, használja helyette a ProxyMode-ot.
 
@@ -1636,6 +1670,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4917385247580444890">Erős</translation>
 <translation id="4923806312383904642">A nem kompatibilis házirendek felülbírálásának engedélyezése a WebDriver számára</translation>
 <translation id="494613465159630803">Cast-erősítő</translation>
+<translation id="494924690085329212">Újraindítás a felhasználó kijelentkezésekor, ha az Android rendszer fut.</translation>
 <translation id="4962262530309732070">Ha a házirend értéke igaz, vagy ha nincs beállítva, akkor a(z) <ph name="PRODUCT_NAME" /> lehetővé teszi személyek hozzáadását a felhasználókezelőből.
 
       Ha a házirend értéke hamis, akkor a(z) <ph name="PRODUCT_NAME" /> nem teszi lehetővé új profilok létrehozását a felhasználókezelőből.</translation>
@@ -2004,6 +2039,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           Ha nem állítja be ezt a házirendet, akkor a hangos visszajelzés le lesz tiltva a bejelentkezési képernyő első megjelenítésekor. A felhasználók bármikor engedélyezhetik vagy letilthatják a hangos visszajelzést, és annak állapota mindegyik felhasználó esetében megmarad a bejelentkezési képernyőn.</translation>
 <translation id="5868414965372171132">Felhasználói szintű hálózatbeállítás</translation>
 <translation id="5879014913445067283">A megosztott hálózati fájlok felfedezésének vezérlése a <ph name="NETBIOS_NAME" /> protokoll segítségével</translation>
+<translation id="5882345429632338713">Késleltetés másik böngésző indítása előtt (ezredmásodperc)</translation>
 <translation id="5883015257301027298">Alapértelmezett cookie-beállítások</translation>
 <translation id="5887414688706570295">Beállítja a távoli hozzáférésű gazdagépek által használt TalkGadget előtagot, és megakadályozza, hogy a felhasználók megváltoztassák azt.
 
@@ -2193,6 +2229,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       A bővítmények csak akkor használhatnak bármilyen vállalati felhasználásra szánt platformkulcsot tetszőleges adatok aláírására, ha az allowCorporateKeyUsage igaz értékre van állítva az adott bővítménynél. Ezt az engedélyt csak akkor szabad megadni, ha a bővítmény megbízható, és képes a kulcs biztonságos elérésére (hogy a támadók ne használhassák ki).</translation>
 <translation id="6208896993204286313">A <ph name="PRODUCT_NAME" /> házirendadatainak jelentése</translation>
 <translation id="6210259502936598222">Az operációs rendszer és a <ph name="PRODUCT_NAME" /> verzióadatainak jelentése</translation>
+<translation id="6210610748361191729">Ha a házirend beállítása hamis, akkor az exportálásra és importálásra használható kezelőfelület nem áll a felhasználók rendelkezésére, azonban továbbra is lehetséges a tárolóképek exportálása és importálása az „lxc” parancsok közvetlenül a virtuális gépen való használatával.</translation>
 <translation id="6211428344788340116">Az eszköz aktív idejének jelentése.
 
       Ha a beállítás nincs megadva, vagy az értéke igaz, akkor a regisztrált eszközök jelentik azokat az időszakokat, amikor a felhasználó aktív az eszközön. Ha a beállítás értéke hamis, akkor az eszköz aktív ideje nem lesz rögzítve, illetve jelentésére nem kerül sor.</translation>
@@ -2243,6 +2280,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           Ez a házirend csak akkor működik, ha a „RestoreOnStartup” házirend beállítása „RestoreOnStartupIsURLs”.
 
           Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
+<translation id="6417265370957905582">Google Segéd</translation>
 <translation id="6426205278746959912">Az Android-alkalmazások nem kényszeríthetők proxy használatára. A proxybeállítások bizonyos része hozzáférhető az Android-alkalmazások számára is, amelyeket azután saját belátásuk szerint vesznek figyelembe:
 
           Ha úgy dönt, hogy soha nem használ proxyszervert, az Android-alkalmazások azt a tájékoztatást kapják, hogy nincs beállítva proxy.
@@ -2512,6 +2550,7 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 
       Amikor a képernyő elsötétítésére kerül sor, az intelligens elsötétítési modell megállapítja, hogy el kell-e halasztani az elsötétítést. Ha a halasztás mellett dönt, meghosszabbítja az elsötétítésig hátralévő időt. Ebben az esetben a képernyő kikapcsolását és lezárását, illetve az üresjárati késleltetést úgy korrigálja, hogy megtartsa a képernyő elsötétítésénél eredetileg beállított időtávolságot.
       Ha a házirend értéke Igaz, vagy ha nincs beállítva, akkor az intelligens elsötétítési modell aktiválódik, és lehetővé teszi a képernyő elsötétítéséig hátralévő idő növelését. Ha a házirend értéke Hamis, akkor az intelligens elsötétítési modell nem befolyásolja a képernyő elsötétítését.</translation>
+<translation id="6972540544240464302">Feladatkezelő-beállítás kiválasztása</translation>
 <translation id="6994082778848658360">Meghatározza, hogyan használható az integrált biztonságos hardverelem a kétlépcsős azonosítás biztosítására, amennyiben kompatibilis ezzel a funkcióval. A készülék bekapcsológombja használható a felhasználó fizikai jelenlétének észlelésére.
 
       A „Letiltva” érték kiválasztása esetén nincs használatban kétlépcsős azonosítás.
@@ -2588,6 +2627,11 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
       Ha nincs beállítva, akkor a felhasználó módosíthatja az indítóban rögzített alkalmazások listáját.</translation>
 <translation id="7132877481099023201">Azon URL-ek, amelyek rákérdezés nélkül hozzáférést kapnak a videorögzítő eszközökhöz</translation>
 <translation id="7138678301420049075">Egyéb</translation>
+<translation id="7140629953254369759">Utasítja a <ph name="PRODUCT_OS_NAME" /> operációs rendszert, hogy a meghatározott nevű feladatütemező-beállítást használja.
+
+      A házirendet „conservative” (konzervatív) vagy „performance” (teljesítmény) értékre lehet beállítani, amivel a stabilitásra vagy a maximális teljesítményre finomhangolt feladatütemező-beállításokat választhatja ki.
+
+      Ha a házirend nincs beállítva, akkor a felhasználó választhatja ki a kívánt beállítást.</translation>
 <translation id="7158064522994309072">Ez a házirend vezérli, hogy milyen parancsot használjon a rendszer az URL-ek alternatív böngészőben való megnyitásához.
 
       Ha a házirend nincs beállítva, a rendszer platformspecifikus alapértelmezést használ: Windows esetén ez az Internet Explorer, Mac OS X esetén a Safari. Linux rendszeren az alternatív böngésző indítása hibához vezet, ha nincs beállítva a házirend.
@@ -2783,6 +2827,11 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
       Felhívjuk figyelmét arra, hogy ez az irányelv az SHA-1-aláírásokat engedélyező operációs rendszer tanúsítványhitelesítési készletétől függ. Ha az operációs rendszer valamelyik frissítése módosítja az SHA-1-tanúsítványok kezelésének módját, akkor előfordulhat, hogy ez az irányelv a továbbiakban nem fog működni.  Továbbá ez az irányelv csak ideiglenes megoldásként szolgál, hogy a vállalatoknak több idejük legyen áttérni az SHA-1-ről.  Ez az irányelv 2019. január 1-jén eltávolításra kerül.
 
       Ha az irányelv nincs beállítva, vagy „hamis” értékre van állítva, akkor a(z) <ph name="PRODUCT_NAME" /> követi az SHA-1 nyilvánosan közzétett megszüntetési időpontját.</translation>
+<translation id="7578049687634719313">Ez a házirend vezérli, hogy a rendszer mennyi ideig várjon másik böngésző megnyitásáig (ezredmásodpercben).
+
+      Ha a házirend beállítatlanul marad, vagy a beállított értéke 0, akkor a kijelölt URL-eket a rendszer azonnal másik böngészőben nyitja meg.
+
+      Ha a házirend valamilyen számra van állítva, akkor a Chrome az üzenetet a beállított értéknek megfelelő ezredmásodpercig jeleníti meg, majd megnyitja a másik böngészőt.</translation>
 <translation id="7593523670408385997">Konfigurálja a gyorsítótár méretét, amelyet a(z) <ph name="PRODUCT_NAME" /> arra használ, hogy a gyorsítótárazott fájlokat a merevlemezen tárolja.
 
       Ha beállítja ezt a házirendet, a(z) <ph name="PRODUCT_NAME" /> attól függetlenül használni fogja a megadott méretű gyorsítótárat, hogy a felhasználó megadta-e a „--disk-cache-size” jelölőt. A házirendben meghatározott érték nem abszolút határ, inkább egy javaslat a gyorsítótárazó rendszer számára. A néhány megabájt alatti, túl kicsi értékeket a rendszer automatikusan felkerekíti egy használható minimumra.
@@ -2831,6 +2880,7 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
       Ha további információt szeretne kapni a Biztonságos Böngészésről, látogasson el a https://developers.google.com/safe-browsing oldalra.</translation>
 <translation id="7643883929273267746">A <ph name="PRODUCT_NAME" /> böngészőben látható fiókok korlátozása</translation>
 <translation id="7651739109954974365">Meghatározza, hogy engedélyezett legyen-e az adatbarangolás az eszköz esetében. Ha a beállítás igaz, akkor az adatbarangolás engedélyezett. Ha nincs beállítva, vagy a beállítás hamis, akkor az adatbarangolás nem érhető el.</translation>
+<translation id="7657261947024629645">Teljesítményalapú optimalizálás.</translation>
 <translation id="7673194325208122247">Időtartam (ezredmásodperc)</translation>
 <translation id="7676708657861783864">A jelen URL-mintákkal egyező oldalak által beállított cookie-k az aktuális munkamenetre lesznek korlátozva, azaz törlődnek a böngésző bezárásakor.
 
@@ -3308,13 +3358,6 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
       A beállítás engedélyezése esetén a jelszóvédelmi szolgáltatás erre az URL-re küldi a felhasználókat jelszómódosítás céljából, miután figyelmeztetés jelenik meg számukra a böngészőben.
       Ha a beállítás le van tiltva, vagy ha nincs konfigurálva, akkor a jelszóvédelmi szolgáltatás a https://myaccounts.google.com webhelyre küldi a felhasználókat jelszómódosítás céljából.
       Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
-<translation id="8782750230688364867">Megadja azt a százalékot, amelynek alapján a képernyő-elsötétítési késleltetés skálázódik, amikor az eszköz prezentációs módban van.
-
-          Ha a házirend be van állítva, megadja azt a százalékos értéket, amelynek alapján a képernyő-elsötétítési késleltetés skálázódik, ha az eszköz prezentációs módban van. Az elsötétedési késleltetés skálázása esetén a képernyő-kikapcsolási, képernyő-zárolási és tétlenségi késleltetések is módosulnak, hogy ugyanannyi idő teljen el köztük a képernyő-elsötétítési késleltetéstől számítva, mint ami eredetileg be lett állítva.
-
-          Ha a házirend nincs beállítva, akkor a rendszer az alapértelmezett skálázási tényezőt használja.
-
-          A skálázási tényezőnek 100%-nak vagy többnek kell lennie. Nem lehet olyan értékeket beállítani, amelyek révén a képernyő-elsötétítési késleltetés prezentációs módban rövidebb lenne, mint a rendes képernyő-elsötétítési késleltetés.</translation>
 <translation id="8798099450830957504">Alapértelmezett</translation>
 <translation id="8801680448782904838">A felhasználó értesítése arról, hogy ajánlott, illetve szükséges a böngésző vagy az eszköz újraindítása</translation>
 <translation id="8818173863808665831">Az eszköz földrajzi helyének jelentése.

@@ -32,6 +32,7 @@
 <translation id="1930711995431081526">statuss</translation>
 <translation id="1938124657309484470">Vērtībai ir jābūt “<ph name="MAXIMUM_DATE_OR_TIME" />” vai agrākam datumam vai laikam.</translation>
 <translation id="1946271899482435442">Rādīt datumu atlasītāju</translation>
+<translation id="1982354452682152483">Apraksts nav pieejams</translation>
 <translation id="1993104285338243655">Mainīts uz spoguļošanu</translation>
 <translation id="2060505056492490888">Punkts (<ph name="DOT" />) atrodas nepareizā vietā (<ph name="INVALIDDOMAIN" />).</translation>
 <translation id="2148716181193084225">Šodien</translation>
@@ -73,6 +74,7 @@
 <translation id="3450233048674729344">Vērtībai ir jābūt mazākai vai vienādai ar <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definīcija</translation>
 <translation id="3557673793733683882"><ph name="HEADING_LEVEL" />. virsraksts</translation>
+<translation id="3685101356851116974">Attēls bez iezīmes</translation>
 <translation id="3706100364254443312">slēdzis</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
@@ -153,6 +155,7 @@
 <translation id="6453774872122745852">pateicības</translation>
 <translation id="648732519525291180">laika atlasītājs</translation>
 <translation id="6550675742724504774">Opcijas</translation>
+<translation id="6572309429103589720">Nederīga gramatika</translation>
 <translation id="658823671542763450">atvērt pilnekrāna režīmā</translation>
 <translation id="663493177488814956">plūsma</translation>
 <translation id="6637586476836377253">žurnāls</translation>
@@ -175,6 +178,7 @@
 <translation id="7139483182332611405">ievadraksts</translation>
 <translation id="7263440858009898357">Atlasiet vienumu sarakstā.</translation>
 <translation id="727747134524199931">slejas virsraksts</translation>
+<translation id="7336527682887843386">Nevar iegūt aprakstu.</translation>
 <translation id="7353453495576941748">pateicība</translation>
 <translation id="7364796246159120393">Izvēlēties failu</translation>
 <translation id="739024184232394898">Cits...</translation>
@@ -183,22 +187,28 @@
 <translation id="7491962110804786152">cilne</translation>
 <translation id="7514365320538308">Lejupielādēt</translation>
 <translation id="7529102961911894712">atpakaļsaite</translation>
+<translation id="7533959249147584474">Grafika bez atzīmes</translation>
 <translation id="7647456547678091388">padoms</translation>
 <translation id="7661956066982048809">grafikas dokuments</translation>
 <translation id="7673697353781729403">Stundas</translation>
 <translation id="7681220483256441252">rādītājs</translation>
 <translation id="7740050170769002709">HTML saturs</translation>
+<translation id="7745230546936012372">Lai iegūtu trūkstošos attēlu aprakstus, atveriet kontekstizvēlni.</translation>
 <translation id="7750228210027921155">Attēls attēlā</translation>
+<translation id="775297008183122718">Nederīgs ieraksts</translation>
 <translation id="7789962463072032349">pauzēt</translation>
 <translation id="7802800022689234070">satura atklāšanas trijstūris</translation>
 <translation id="7888071071722539607">E-pasta adresē ietveriet zīmi <ph name="ATSIGN" />. Adresē “<ph name="INVALIDADDRESS" />” trūkst zīmes <ph name="ATSIGN" />.</translation>
 <translation id="7891486169920085145">sadalītājs</translation>
 <translation id="795667975304826397">Nav izvēlēts neviens fails</translation>
+<translation id="8042519864538898414">Šķiet, ka šis ir pieaugušajiem paredzēts saturs.</translation>
 <translation id="8053789581856978548">meklēšanas teksta lauks</translation>
 <translation id="8057695513531652401">paziņojums</translation>
 <translation id="8105797009065549151">vēres atsauce</translation>
+<translation id="811583516810654505">Notiek apraksta iegūšana...</translation>
 <translation id="8117451130807776954">Šī nedēļa</translation>
 <translation id="8199524924445686405">gggg</translation>
+<translation id="8261464734335370856">Nederīga pareizrakstība</translation>
 <translation id="8284326494547611709">Paraksti</translation>
 <translation id="835897206747267392">Nederīga vērtība.</translation>
 <translation id="8403857369060869934">pagājušais laiks: <ph name="ELAPSED_TIME" /></translation>

@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">Увійти у VR-режим</translation>
 <translation id="116280672541001035">Використано</translation>
 <translation id="1172593791219290334">Стартова сторінка</translation>
+<translation id="1173894706177603556">Перейменувати</translation>
 <translation id="1175310183703641346">Закладки, історія, паролі тощо більше не синхронізуватимуться з обліковим записом Google</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1181037720776840403">Видалити</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">Торкніться, щоб шукати</translation>
 <translation id="2079545284768500474">Відмінити</translation>
 <translation id="2082238445998314030">Результат <ph name="RESULT_NUMBER" /> з <ph name="TOTAL_RESULTS" /></translation>
-<translation id="208586643495776849">Повторіть спробу</translation>
 <translation id="2086652334978798447">Щоб отримувати персоналізовані пропозиції від Google, увійдіть в обліковий запис Chrome.</translation>
 <translation id="2091887806945687916">Сигнал</translation>
 <translation id="2096012225669085171">Синхронізація та персоналізація на всіх пристроях</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">Файл <ph name="FILE_NAME" /> не завантажено через помилки файлової системи.</translation>
 <translation id="3398320232533725830">Відкрити Диспетчер закладок</translation>
 <translation id="3414952576877147120">Розмір:</translation>
-<translation id="3434611491093664205">Підготовка до VR…</translation>
 <translation id="3443221991560634068">Оновити поточну сторінку</translation>
 <translation id="3445014427084483498">Щойно</translation>
 <translation id="3452612588551937789">Увійдіть в обліковий запис Google, щоб мати доступ до закладок, паролів, історії й інших налаштувань на всіх своїх пристроях.</translation>
@@ -929,7 +928,6 @@
 <translation id="7929962904089429003">Відкрити меню</translation>
 <translation id="7942131818088350342">Застаріла версія <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7947953824732555851">Прийняти й увійти</translation>
-<translation id="7960977077911686065">Продовжуючи, ви дозволяєте Chrome надсилати дані Автозаповнення, а також URL-адресу та вміст сайту в Google. Ви також дозволяєте Chrome надсилати вибрані персональні дані на веб-сайт через Автозаповнення. \n\nЩоб вимкнути Google Асистент у Chrome і Автозаповненні, перейдіть у налаштування веб-переглядача.  <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Постачальник:</translation>
 <translation id="7975379999046275268">Переглянути сторінку <ph name="BEGIN_NEW" />Нове<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Попередньо завантажувати сторінки, щоб швидше переглядати та шукати</translation>
@@ -987,7 +985,6 @@
 <translation id="8339163506404995330">Сторінки цією мовою (<ph name="LANGUAGE" />) не перекладатимуться</translation>
 <translation id="8349013245300336738">Сортувати за кількістю використаного трафіку</translation>
 <translation id="8372893542064058268">сайті.</translation>
-<translation id="8373513848523649558">Ви можете будь-коли <ph name="BEGIN_LINK1" />змінити ці налаштування<ph name="END_LINK1" /></translation>
 <translation id="8374821112118309944">Потрібно оновити додаток TalkBack до новішої версії.</translation>
 <translation id="8378714024927312812">Профілем керує ваша організація</translation>
 <translation id="8380167699614421159">Цей сайт показує нав’язливі чи оманливі оголошення</translation>

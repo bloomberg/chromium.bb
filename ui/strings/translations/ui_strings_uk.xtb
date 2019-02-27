@@ -82,6 +82,7 @@
 <translation id="3897092660631435901">Меню</translation>
 <translation id="3909791450649380159">Вирізат&amp;и</translation>
 <translation id="3990502903496589789">Правий край</translation>
+<translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 непрочитане сповіщення}one{# непрочитане сповіщення}few{# непрочитані сповіщення}many{# непрочитаних сповіщень}other{# непрочитаного сповіщення}}</translation>
 <translation id="4202807286478387388">перейти</translation>
 <translation id="4250229828105606438">Знімок екрана</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 місяць тому}one{# місяць тому}few{# місяці тому}many{# місяців тому}other{# місяця тому}}</translation>
@@ -203,4 +204,5 @@
 <translation id="9161053988251441839">ПРОПОНОВАНІ ДОДАТКИ</translation>
 <translation id="9170848237812810038">&amp;Скасувати</translation>
 <translation id="932327136139879170">Домашня сторінка</translation>
+<translation id="944069440740578670">Непрочитані сповіщення</translation>
 </translationbundle>

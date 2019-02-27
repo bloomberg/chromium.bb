@@ -24,6 +24,7 @@
       Jos käytännön arvo on Epätosi tai sitä ei aseteta, tunnistuspalvelun asettamat evästeet siirretään käyttäjän profiiliin vain hänen kirjautuessaan laitteelle ensimmäisen kerran.
 
       Tämä käytäntö vaikuttaa vain käyttäjiin, joiden verkkotunnus vastaa verkkotunnusta, johon laite on rekisteröity. Muiden käyttäjien osalta tunnistuspalvelun asettamat evästeet siirretään käyttäjän profiiliin vain käyttäjän kirjautuessa laitteelle ensimmäisen kerran.</translation>
+<translation id="1029052664284722254">Pakota laitteen uudelleenkäynnistys käyttäjän kirjautuessa ulos</translation>
 <translation id="1030120600562044329">Määrittää, saako <ph name="PRODUCT_NAME" /> lähettää Googlelle anonyymejä käyttö- ja virhetietoja, ja estää käyttäjiä muuttamasta tätä asetusta.
 
       Jos tämä asetus on käytössä, Googlelle lähetetään anonyymejä
@@ -151,13 +152,6 @@
 <translation id="1307454923744766368">Alkuperät tai isäntänimimallit, joihin ei sovelleta
       suojaamattomien alkuperien rajoituksia</translation>
 <translation id="1312799700549720683">Määrittää näytön asetukset</translation>
-<translation id="1313457536529613143">Määrittää prosenttimäärän, jolla näytön himmennyksen viive skaalataan, kun käyttäjän toimia huomataan näytön ollessa himmennettynä tai pian näytön sammuttamisen jälkeen.
-
-          Jos tämä käytäntö on asetettu, se määrittää prosenttimäärän, jolla näytön himmennyksen viive skaalataan, kun käyttäjän toimia huomataan näytön ollessa himmennettynä tai pian näytön sammuttamisen jälkeen. Kun himmennyksen viive on skaalattu, näytön sammutus-, lukitus- ja käyttämättömyysviiveet säädetään ylläpitämään samoja etäisyyksiä näytön himmennyksen viiveestä kuin alunperin määritettiin.
-
-          Jos tätä käytäntöä ei ole määritetty, oletusskaalauskerrointa käytetään.
-
-          Skaalauskertoimen on oltava vähintään 100 %.</translation>
 <translation id="131353325527891113">Näytä käyttäjänimet kirjautumisruudulla</translation>
 <translation id="1327466551276625742">Ota käyttöön verkon määrityskehote offline-tilassa</translation>
 <translation id="1330145147221172764">Ota ruutunäppäimistö käyttöön</translation>
@@ -372,6 +366,17 @@
 
           Käytäntö on voimassa vain, jos käytäntö DefaultSearchProviderEnabled on käytössä.</translation>
 <translation id="1852294065645015766">Salli mediasisällön automaattinen toisto</translation>
+<translation id="1857152770025485173">Tämä käytäntö estää käyttäjää lataamasta verkkosivuja, joiden URL-osoitteet on lisätty mustalle listalle. Musta lista sisältää URL-osoitemalleja, joita käytetään estettävien URL-osoitteiden määrittämiseen.
+
+      URL-osoitemallit tulee muotoilla täällä olevien ohjeiden mukaisesti: https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Voit määritellä poikkeuksia käyttämällä sallittujen URL-osoitteiden luettelon käytäntöä. Voit lisätä näihin käytäntöihin enintään 1 000 merkintää, ja tämän rajan ylittävät merkinnät ohitetaan.
+
+      Huomaa, että sisäisten chrome://*-osoitteiden estämistä ei suositella, sillä se voi aiheuttaa odottamattomia virheitä.
+
+      M73-versiosta alkaen voit estää 'javascript://*' ‑osoitteet. Se vaikuttaa kuitenkin vain osoitepalkkiin kirjoitettuun JavaScriptiin (tai esimerkiksi aktiivisiin kirjanmerkkeihin). Käytäntö ei koska sivulla olevia JavaScript-osoitteita, jos ne ladataan dynaamisesti. Jos estät esimerkiksi osoitteen example.com/abc, käyttäjät voivat silti siirtyä osoitteeseen example.com ja ladata example.com/abc-linkin XMLHTTP-pyynnöllä.
+
+      Jos tätä käytäntöä ei ole määritetty, selaimen mustalle listalle ei lisätä URL-osoitteita.</translation>
 <translation id="1859859319036806634">Varoitus: <ph name="PRODUCT_NAME" /> ei enää versiosta 52 alkaen tue TLS:n aiempien versioiden käyttöä varatoimenpiteenä. Version arvioitu julkaisupäivä on syyskuussa 2016, ja muutoksen jälkeen tämä käytäntö ei enää toimi.
 
       TLS-kättelyn epäonnistuessa <ph name="PRODUCT_NAME" /> yritti aiemmin kiertää HTTPS-palvelimien virheet muodostamalla yhteyden uudelleen aiempaa TLS-versiota käyttämällä. Tämä asetus määrittää version, jota vanhempia versioita ei kokeilla. Jos palvelin suorittaa versioneuvottelun oikein (eli se ei katkaise yhteyttä), tätä asetusta ei käytetä. Muodostetun yhteyden täytyy joka tapauksessa noudattaa käytäntöä SSLVersionMin.
@@ -637,6 +642,7 @@
       Jos tätä käytäntöä ei ole asetettu tai sen arvo on tosi ja laitteelle on määritetty paikallinen tili viiveettömällä automaattisella kirjautumisella, <ph name="PRODUCT_OS_NAME" /> hyväksyy pikanäppäimen Ctrl+Alt+S, jolla ohitetaan automaattinen kirjautuminen ja tuodaan näkyviin kirjautumisruutu.
 
       Jos käytännön asetus on epätosi, viiveetöntä automaattista kirjautumista ei voi ohittaa (jos sellainen on määritetty).</translation>
+<translation id="2454228136871844693">Optimoi vakaus</translation>
 <translation id="2463365186486772703">Sovelluksen kieli</translation>
 <translation id="2466131534462628618">Captive portal -todennus ohittaa välityspalvelimen</translation>
 <translation id="2482676533225429905">Laitteen oma viestijärjestelmä</translation>
@@ -828,6 +834,31 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 
       Jos tämä käytäntö on käytössä, käyttäjän saatavilla ovat vain tulostimet, joiden tunnukset vastaavat tässä käytännössä määritettyjä arvoja. Tunnusten on vastattava kohteessa <ph name="DEVICE_PRINTERS_POLICY" /> määritetyn tiedoston id- tai guid-kenttiä.
       </translation>
+<translation id="2842152347010310843">Hallinnoi sellaisten URL-osoitemallien sallittujen luetteloa, joiden automaattinen toisto on aina käytössä.
+
+      Jos automaattinen toisto on käytössä, <ph name="PRODUCT_NAME" /> voi toistaa automaattisesti, eli ilman käyttäjän hyväksyntää, videot ja niiden äänisisällön.
+
+      URL-osoitemallen vaihtoehdot:
+
+      - [*.]domain.tld (vastaa tunnusta domain.tld ja kaikkia aliverkkotunnuksia)
+
+      – isäntä (vastaa isäntänimeä tarkalleen)
+
+      – scheme://host:port (tuetut vaihtoehdot: http, https)
+
+      – scheme://[*.]domain.tld:port (tuetut vaihtoehdot: http,https)
+
+      – file://path (polun tulee olla absoluuttinen polku, jonka alussa on '/')
+
+      – a.b.c.d (vastaa IPv4-osoitetta tarkalleen)
+
+      – [a:b:c:d:e:f:g:h] (vastaa IPv6-osoitetta tarkalleen)
+
+      Jos AutoplayAllowed-käytännön arvoksi on määritetty tosi, tällä käytännöllä ei ole vaikutusta.
+
+      Jos AutoplayAllowed-käytännön arvoksi on määritetty epätosi, kaikki tässä käytännössä määritetyt URL-mallit voidaan silti toistaa.
+
+      Huomaa, että jos <ph name="PRODUCT_NAME" /> on käytössä ja tämä käytäntö muuttuu, sitä sovelletaan vain uusiin avattuihin välilehtiin. Tämän vuoksi jotkin välilehdet saattavat edelleen noudattaa edellistä käytäntöä.</translation>
 <translation id="285480231336205327">Ota suuri kontrasti -tila käyttöön</translation>
 <translation id="2854919890879212089">Kun tämä asetus on käytössä, <ph name="PRODUCT_NAME" /> valitsee Tulostuksen esikatselu ‑ikkunassa lähtökohtaisesti järjestelmän oletustulostimen viimeksi käytetyn tulostimen sijaan.
 
@@ -947,6 +978,7 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
       Jos tämä käytäntö on käytössä tai sitä ei ole määritetty, Chrome Cleanup tarkistaa järjestelmän ajoittain ei-toivottujen ohjelmistojen varalta. Jos tällaisia ohjelmistoja löytyy, käyttäjältä kysytään, poistetaanko ne. Chrome Cleanup voidaan käynnistää manuaalisesti osoitteessa chrome://settings.
 
       Tämä käytäntö on käytettävissä vain Windows-esiintymissä, jotka on yhdistetty <ph name="MS_AD_NAME" /> ‑verkkotunnukseen, tai Windows 10 Pro- ja Enterprise ‑esiintymissä, jotka on rekisteröity laitteiden hallinnointiohjelmaan.</translation>
+<translation id="3159375329008977062">Käyttäjä voi viedä tai tuoda Crostini-säilöjä käyttöliittymän avulla</translation>
 <translation id="3165808775394012744">Nämä käytännöt on lisätty tähän niiden poistamisen helpottamiseksi.</translation>
 <translation id="316778957754360075">Tämä asetus on poistettu käytöstä tuotteen <ph name="PRODUCT_NAME" /> versiosta 29 lähtien. Suositeltu tapa määrittää organisaation isännöimiä laajennuksia tai sovelluskokoelmia on sisällyttää CRX-paketteja sisältävä sivusto ExtensionInstallSources-luetteloon ja lisätä suorat latauslinkit paketteihin verkkosivulle. Kyseisen verkkosivun käynnistysohjelma voidaan luoda ExtensionInstallForcelist-käytännön avulla.</translation>
 <translation id="3171369832001535378">Laitteen verkon isäntänimimalli</translation>
@@ -1233,6 +1265,11 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       Jos käytännön arvo on Epätosi, käyttökertatietoja ei
       raportoida. Jos arvo on Tosi tai sitä ei aseteta, käyttökertatiedot
       raportoidaan.</translation>
+<translation id="3852924591079583104">
+      Kun käytännön arvoksi asetetaan ArcSession, se pakottaa laitteen käynnistymään uudelleen käyttäjän uloskirjautumisen yhteydessä, jos Android on käynnistynyt.
+      Kun arvo on Aina, se pakottaa laitteen käynnistymään uudelleen aina uloskirjautumisen yhteydessä.
+      Jos sitä ei aseteta, käytännöllä ei ole vaikutusta eikä uudelleenkäynnistys ole pakollinen uloskirjautumisen yhteydessä. Sama pätee myös Ei koskaan ‑valintaan.
+      </translation>
 <translation id="3858658082795336534">Kaksipuolisen tulostuksen oletustila</translation>
 <translation id="3859780406608282662">Lisää parametri muunnelmasiemenarvon noutamiseen tuotteessa <ph name="PRODUCT_OS_NAME" />.
 
@@ -1526,6 +1563,7 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 <translation id="4555850956567117258">Ota käyttöön etätodennus käyttäjälle</translation>
 <translation id="4557134566541205630">Oletusarvoisen hakujen tarjoajan uusi välilehti -sivun URL-osoite</translation>
 <translation id="4567137030726189378">Salli kehittäjätyökalujen käyttö</translation>
+<translation id="4578265298946081589">Älä käynnistä uudelleen käyttäjän kirjautuessa ulos</translation>
 <translation id="4600786265870346112">Ota suuri osoitin käyttöön</translation>
 <translation id="4604931264910482931">Määritä kiellettyjen luettelo laitteen omalle viestijärjestelmälle</translation>
 <translation id="4613508646038788144">Jos käytännön arvo on epätosi, kolmannen osapuolen ohjelmistot voivat lisätä suoritettavaa koodia Chromen prosesseihin. Jos käytännölle ei ole määritetty arvoa tai sen arvo on tosi, kolmannen osapuolen ohjelmistoja estetään lisäämästä suoritettavaa koodia Chromen prosesseihin.</translation>
@@ -1575,11 +1613,6 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 <translation id="4725528134735324213">Ota käyttöön Android Backup Service</translation>
 <translation id="4725801978265372736">Edellytä, että paikallisen käyttäjän ja etäkäytön isännän omistajan nimet täsmäävät</translation>
 <translation id="4733471537137819387">Integroituun HTTP-todennukseen liittyvät käytännöt.</translation>
-<translation id="4744190513568488164">Palvelimet, joille <ph name="PRODUCT_NAME" /> voi siirtää käyttöoikeustietoja.
-
-          Erota palvelinten nimet pilkuilla. Jokerimerkit (*) sallitaan.
-
-          Jos et määritä käytäntöä, <ph name="PRODUCT_NAME" /> ei siirrä käyttöoikeustietoja, vaikka palvelin sijaitsisi sisäverkossa.</translation>
 <translation id="4752880493649142945">Asiakasvarmenne yhteyden muodostamiseksi osoitteeseen RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">Jos käytännön arvoksi on asetettu Tosi tai sille ei aseteta mitään arvoa, <ph name="PRODUCT_NAME" /> ehdottaa nykyiseen sivuun liittyviä sivuja.
       Ehdotukset haetaan Googlen palvelimilta.
@@ -1599,6 +1632,7 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 
           Jos tätä käytäntöä ei ole määritetty, suuri osoitin ei ole käytössä aluksi, mutta käyttäjä voi ottaa sen käyttöön milloin tahansa.</translation>
 <translation id="4802905909524200151">Määritä <ph name="TPM_FIRMWARE_UPDATE_TPM" />-laiteohjelmiston päivittäminen</translation>
+<translation id="4804828344300125154">Käynnistä aina uudelleen käyttäjän kirjautuessa ulos</translation>
 <translation id="4807950475297505572">Kauimmin käyttämättä olleet käyttäjät poistetaan, kunnes vapaata tilaa on riittävästi</translation>
 <translation id="4815725774537609998">Tämä käytäntö on vanhentunut. Käytä tämän käytännön sijaan ProxyModea.
 
@@ -1644,6 +1678,7 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 <translation id="4917385247580444890">Vahva</translation>
 <translation id="4923806312383904642">Salli WebDriverin ohittaa yhteensopimattomia käytäntöjä</translation>
 <translation id="494613465159630803">Cast-vastaanotin</translation>
+<translation id="494924690085329212">Käynnistä uudelleen käyttäjän kirjautuessa ulos, jos Android käynnistyi</translation>
 <translation id="4962262530309732070">Jos tämän käytännön arvoksi on määritetty tosi tai sitä ei ole määritetty, <ph name="PRODUCT_NAME" /> sallii käyttäjien hallinnan lisätä henkilöitä.
 
       Jos tämän käytännön arvoksi on määritetty epätosi, <ph name="PRODUCT_NAME" /> ei salli käyttäjien hallinnan luovan uusia profiileja.</translation>
@@ -2012,6 +2047,7 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
           Jos tätä käytäntöä ei määritetä, äänipalaute ei ole käytössä kirjautumisnäytön ensimmäisellä näyttökerralla. Käyttäjät voivat ottaa äänipalautteen käyttöön tai pois käytöstä milloin tahansa, ja sen tila kirjautumisnäytössä pysyy samana, vaikka käyttäjä vaihtuisi.</translation>
 <translation id="5868414965372171132">Käyttäjätason verkkoasetukset</translation>
 <translation id="5879014913445067283">Määrittää verkon tiedostonjakojen löytämisen (<ph name="NETBIOS_NAME" />)</translation>
+<translation id="5882345429632338713">Viive ennen toisen selaimen käynnistämistä (ms)</translation>
 <translation id="5883015257301027298">Evästeiden oletusasetus</translation>
 <translation id="5887414688706570295">Määrittää etäisäntien käyttämän TalkGadget-etuliitteen ja estää käyttäjiä muuttamasta sitä.
 
@@ -2197,6 +2233,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
       Ainoastaan siinä tapauksessa, että laajennuksen allowCorporateKeyUsage-arvoksi on asetettu Tosi, kyseinen laajennus voi käyttää mitä tahansa yrityskäyttöön merkittyä käyttöympäristöavainta tietojen allekirjoittamiseen. Tämä käyttöoikeus tulee myöntää vain, jos laajennus pystyy luotettavasti suojaamaan avainta hyökkääjiltä.</translation>
 <translation id="6208896993204286313">Käytäntötietojen ilmoittaminen: <ph name="PRODUCT_NAME" /></translation>
 <translation id="6210259502936598222">Käyttöjärjestelmä- ja versiotietojen ilmoittaminen: <ph name="PRODUCT_NAME" /></translation>
+<translation id="6210610748361191729">Jos käytännön arvo on epätosi, käyttäjät eivät näe viennin ja tuonnin käyttöliittymää. Säiliökuvien vieminen ja tuominen on silti mahdollista käyttämällä lxc-komentoja suoraan virtuaalikoneessa.</translation>
 <translation id="6211428344788340116">Ilmoita laitteen käyttöajat.
 
       Jos tätä asetusta ei ole määritetty tai sen arvo on tosi, laitteet ilmoittavat ajat, jolloin käyttäjä on käyttänyt laitetta. Jos arvo on epätosi, laitteen käyttöaikoja ei tallenneta tai ilmoiteta.</translation>
@@ -2247,6 +2284,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
           Tämä käytäntö toimii vain, jos RestoreOnStartup-käytännön arvo on RestoreOnStartupIsURLs.
 
           Tämä käytäntö on käytettävissä vain Windows-esiintymissä, jotka on yhdistetty <ph name="MS_AD_NAME" /> ‑verkkotunnukseen, tai Windows 10 Pro- ja Enterprise ‑esiintymissä, jotka on rekisteröity laitteiden hallinnointiohjelmaan.</translation>
+<translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6426205278746959912">Et voi pakottaa Android-sovelluksia käyttämään välityspalvelinta. Android-sovellusten käytettävissä on joukko välityspalvelinasetuksia, joiden noudattaminen on vapaaehtoista:
 
           Jos välityspalvelinta ei käytetä koskaan, Android-sovelluksille ilmoitetaan, että välityspalvelinta ei ole määritetty.
@@ -2514,6 +2552,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
       Kun näyttöä ollaan himmentämässä, älykäs himmennysmalli arvioi, pitäisikö näytön himmennystä viivästyttää. Jos älykäs himmennysmalli viivästyttää näytön himmennystä, se pidentää sen myötä näytön himmennysaikaa. Tässä tapauksessa näytön sammuttamisen, näytön lukituksen ja käyttämättömyysajan viivästykset säädetään niin, että niissä pysyy samat etäisyydet näytön himmennysviiveeseen kuin alkuperäisissä asetuksissa.
       Jos käytännön arvoksi on merkitty tosi tai sitä ei ole määritetty, älykäs himmennysmalli otetaan käyttöö ja sen annetaan pidentää näytön himmennysaikaa. Jos käytännön arvoksi on merkitty epätosi, älykäs himmennysmalli ei vaikuta näytön himmennykseen.</translation>
+<translation id="6972540544240464302">Valitse tehtävien ajoitusmääritys</translation>
 <translation id="6994082778848658360">Määrittää laitteen Secure Element ‑komponentin tarjoaman monitasoisen todennuksen käytön, jos se on yhteensopiva tämän ominaisuuden kanssa. Käyttäjän läsnäolo havaitaan laitteen virtapainikkeen avulla.
 
       Jos valittuna on Ei käytössä, toista todennustasoa ei käytetä.
@@ -2590,6 +2629,11 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos käytäntöä ei ole määritetty, käyttäjä voi vaihtaa käynnistyspalkkiin kiinnitettyjä sovelluksia.</translation>
 <translation id="7132877481099023201">URL-osoitteet, joille sallitaan pääsy videon kaappauslaitteisiin erikseen lupaa kysymättä</translation>
 <translation id="7138678301420049075">Muu</translation>
+<translation id="7140629953254369759"><ph name="PRODUCT_OS_NAME" /> saa ohjeen käyttää tietyn nimistä tehtävien ajoitusmääritystä.
+
+      Käytännön arvo voi olla "konservatiivinen" tai "tehokkuus", joilla valitaan tietty tehtävien ajoitusmääritys korostaen joko vakautta tai tehokkuutta.
+
+      Jos käytännölle ei ole määritetty arvoa, käyttäjä voi valita määrityksen itse.</translation>
 <translation id="7158064522994309072">Käytännöllä valitaan, millä komennolla avataan URL-osoitteita vaihtoehtoisessa selaimessa.
 
       Jos käytäntöä ei ole määritetty, käytetään käyttöjärjestelmän oletusvaihtoehtoa, joka on Windowsissa Internet Explorer ja Mac OS X:ssä Safari. Linuxissa vaihtoehtoisen selaimen käynnistys ei onnistu, jos käytäntöä ei ole määritetty.
@@ -2784,6 +2828,11 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Huom. Tämän käytännön toiminta riippuu siitä, salliiko käyttöjärjestelmän varmennepino SHA-1-allekirjoitukset. Jos käyttöjärjestelmän päivitys muuttaa tapaa, jolla käyttöjärjestelmä käsittelee SHA-1-varmenteita, tämän käytännön toiminta voi päättyä. Käytäntö on tarkoitettu väliaikaiseksi ratkaisuksi, joka antaa yrityksille lisäaikaa SHA-1:n käytön lopettamiseen. Käytäntö poistetaan 1.1.2019 tai sen tienoilla.
 
       Jos tätä käytäntöä ei määritetä tai sen arvo on epätosi, <ph name="PRODUCT_NAME" /> noudattaa aiemmin julkaistua SHA-1:n käytöstä poistamisen aikataulua.</translation>
+<translation id="7578049687634719313">Tämä käytäntö määrittää, montako millisekuntia odotetaan ennen toisen selaimen käynnistystä.
+
+      Jos tätä käytäntöä ei ole määritetty tai sen arvo on 0, määrättyyn URL-osoitteeseen siirtyminen avaa osoitteen heti toisessa selaimessa.
+
+      Kun tämän käytännön arvo on luku, Chrome näyttää viestin luvun millisekuntien ajan ja avaa sitten toisen selaimen.</translation>
 <translation id="7593523670408385997">Määrittää sen välimuistin koon, jota <ph name="PRODUCT_NAME" /> käyttää välimuistiin tallennettujen tiedostojen tallentamiseen.
 
       Jos asetat tämän käytännön, <ph name="PRODUCT_NAME" /> käyttää määritettyä välimuistin kokoa riippumatta siitä, onko käyttäjä määrittänyt levyn välimuistin kokoon liittyvän merkinnän (--disk-cache-size). Tässä käytännössä määritetty arvo ei ole tiukka raja, vaan suositus välimuistijärjestelmälle. Paria megatavua pienempi arvo on liian pieni, joten se pyöristetään ylöspäin pienimpään sallittuun arvoon.
@@ -2832,6 +2881,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Saat lisätietoja Selaussuojasta osoitteesta https://developers.google.com/safe-browsing.</translation>
 <translation id="7643883929273267746">Rajoita tilejä, jotka <ph name="PRODUCT_NAME" /> näyttää</translation>
 <translation id="7651739109954974365">Määrittää, onko mobiilitiedonsiirto roaming-tilassa käytössä laitteessa. Jos arvo on tosi, mobiilitiedonsiirto roaming-tilassa on sallittu. Jos arvoa ei määritetä tai määritetty arvo on epätosi, mobiilitiedonsiirto roaming-tilassa ei ole käytettävissä.</translation>
+<translation id="7657261947024629645">Optimoi tehokkuus</translation>
 <translation id="7673194325208122247">Ajanjakso (millisekunteina)</translation>
 <translation id="7676708657861783864">Näitä URL-malleja vastaavien sivujen evästeet rajoitetaan nykyiseen käyttökertaan eli ne poistetaan selaimen sulkeutuessa.
 
@@ -3308,13 +3358,6 @@ Jos tämän käytännön arvoksi on määritetty Tosi, käyttäjän on suoritett
       Jos tämä asetus on käytössä ja selain näyttää käyttäjälle varoituksen, salasanojen suojauspalvelu siirtää käyttäjän tässä määritettyyn URL-osoitteeseen salasanan vaihtamista varten.
       Jos tämä asetus on poistettu käytöstä tai sitä ei ole määritetty, salasanojen suojauspalvelu siirtää käyttäjän osoitteeseen https://myaccounts.google.com salasanan vaihtamista varten.
       Tämä käytäntö on käytettävissä vain Windows-esiintymissä, jotka on yhdistetty <ph name="MS_AD_NAME" /> ‑verkkotunnukseen, tai Windows 10 Pro- ja Enterprise ‑esiintymissä, jotka on rekisteröity laitteiden hallinnointiohjelmaan.</translation>
-<translation id="8782750230688364867">Määrittää prosenttimäärän, jolla näytön himmennyksen viive skaalataan, kun laite on esitystilassa.
-
-          Jos tämä käytäntö on asetettu, se määrittää prosenttimäärän, jonka mukaan näytön himmennyksen viive skaalataan, kun laite on esitystilassa. Kun himmennyksen viive on skaalattu, näytön sammutus-, lukitus- ja käyttämättömyysviiveet säädetään ylläpitämään samoja etäisyyksiä näytön himmennyksen viiveestä kuin alun perin määritettiin.
-
-          Jos tätä käytäntöä ei ole määritetty, oletusskaalauskerrointa käytetään.
-
-          Skaalauskertoimen on oltava vähintään 100 %. Sellaiset arvot eivät ole sallittuja, jotka tekisivät näytön himmennyksen viiveestä esitystilassa lyhyemmän kuin normaalitilassa.</translation>
 <translation id="8798099450830957504">Oletus</translation>
 <translation id="8801680448782904838">Ilmoita käyttäjälle, että selaimen tai laitteen uudelleenkäynnistystä suositellaan tai vaaditaan</translation>
 <translation id="8818173863808665831">Ilmoita laitteen maantieteellinen sijainti.

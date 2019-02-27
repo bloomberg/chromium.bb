@@ -153,6 +153,7 @@
 <translation id="6453774872122745852">reconocimientos</translation>
 <translation id="648732519525291180">selector de hora</translation>
 <translation id="6550675742724504774">Opciones</translation>
+<translation id="6572309429103589720">Gramática no válida</translation>
 <translation id="658823671542763450">ingresar a pantalla completa</translation>
 <translation id="663493177488814956">feed</translation>
 <translation id="6637586476836377253">rgstr</translation>
@@ -189,6 +190,7 @@
 <translation id="7681220483256441252">índice</translation>
 <translation id="7740050170769002709">Contenido HTML</translation>
 <translation id="7750228210027921155">Pantalla en pantalla</translation>
+<translation id="775297008183122718">Entrada no válida</translation>
 <translation id="7789962463072032349">pausa</translation>
 <translation id="7802800022689234070">triángulo desplegable</translation>
 <translation id="7888071071722539607">Incluye un signo "<ph name="ATSIGN" />" en la dirección de correo electrónico. La dirección "<ph name="INVALIDADDRESS" />" no incluye el signo "<ph name="ATSIGN" />".</translation>
@@ -199,6 +201,7 @@
 <translation id="8105797009065549151">nota de referencia</translation>
 <translation id="8117451130807776954">Esta semana</translation>
 <translation id="8199524924445686405">aaaa</translation>
+<translation id="8261464734335370856">Ortografía no válida</translation>
 <translation id="8284326494547611709">Subtítulos</translation>
 <translation id="835897206747267392">Valor no válido.</translation>
 <translation id="8403857369060869934">tiempo transcurrido: <ph name="ELAPSED_TIME" /></translation>

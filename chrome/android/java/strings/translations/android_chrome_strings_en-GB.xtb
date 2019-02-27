@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">Enter VR</translation>
 <translation id="116280672541001035">Used</translation>
 <translation id="1172593791219290334">Startup Page</translation>
+<translation id="1173894706177603556">Rename</translation>
 <translation id="1175310183703641346">Your bookmarks, history, passwords and more will no longer be synced to your Google account</translation>
 <translation id="1178581264944972037">Pause</translation>
 <translation id="1181037720776840403">Remove</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">Tap to Search</translation>
 <translation id="2079545284768500474">Undo</translation>
 <translation id="2082238445998314030">Result <ph name="RESULT_NUMBER" /> of <ph name="TOTAL_RESULTS" /></translation>
-<translation id="208586643495776849">Please try again</translation>
 <translation id="2086652334978798447">To get personalised content suggested by Google, sign in to Chrome.</translation>
 <translation id="2091887806945687916">Sound</translation>
 <translation id="2096012225669085171">Sync and personalise across devices</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359"><ph name="FILE_NAME" /> download failed due to file system errors.</translation>
 <translation id="3398320232533725830">Open the bookmarks manager</translation>
 <translation id="3414952576877147120">Size:</translation>
-<translation id="3434611491093664205">Getting ready for VR…</translation>
 <translation id="3443221991560634068">Reload the current page</translation>
 <translation id="3445014427084483498">Just now</translation>
 <translation id="3452612588551937789">Sign in with your Google Account to get your bookmarks, history, passwords and other settings on all your devices.</translation>
@@ -929,7 +928,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7929962904089429003">Opening the menu</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> is out of date.</translation>
 <translation id="7947953824732555851">Accept and sign in</translation>
-<translation id="7960977077911686065">By continuing, you agree that Chrome will send data from Chrome Auto-fill, the site’s URL and its content to Google to provide this service. You also agree that Chrome will send personal data that you selected to the website via Chrome Auto-fill. \n\nVisit Chrome settings to turn off Google Assistant in Chrome and Chrome Auto-fill.  <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Vendor:</translation>
 <translation id="7975379999046275268">Preview page <ph name="BEGIN_NEW" />New<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Preload pages for faster browsing and searching</translation>
@@ -987,7 +985,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8339163506404995330">Pages in <ph name="LANGUAGE" /> will not be translated</translation>
 <translation id="8349013245300336738">Sort by amount of data used</translation>
 <translation id="8372893542064058268">Allow Background Sync for a specific site.</translation>
-<translation id="8373513848523649558">You can <ph name="BEGIN_LINK1" />customise these settings<ph name="END_LINK1" /> at any time</translation>
 <translation id="8374821112118309944">You need to update TalkBack to a newer version.</translation>
 <translation id="8378714024927312812">Managed by your organisation</translation>
 <translation id="8380167699614421159">This site shows intrusive or misleading ads</translation>

@@ -82,6 +82,7 @@
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909791450649380159">&amp;Recortar</translation>
 <translation id="3990502903496589789">Borda direita</translation>
+<translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 notificação não lida}one{# notificação não lida}other{# notificações não lidas}}</translation>
 <translation id="4202807286478387388">pular</translation>
 <translation id="4250229828105606438">Captura de tela</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 mês atrás}one{# mês atrás}other{# meses atrás}}</translation>
@@ -203,4 +204,5 @@
 <translation id="9161053988251441839">APPS SUGERIDOS</translation>
 <translation id="9170848237812810038">&amp;Desfazer</translation>
 <translation id="932327136139879170">Início</translation>
+<translation id="944069440740578670">Notificações não lidas</translation>
 </translationbundle>

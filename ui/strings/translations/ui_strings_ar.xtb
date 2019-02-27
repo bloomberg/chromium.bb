@@ -82,6 +82,7 @@
 <translation id="3897092660631435901">قائمة</translation>
 <translation id="3909791450649380159">&amp;قص</translation>
 <translation id="3990502903496589789">الحافة اليسرى</translation>
+<translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{إشعار واحد غير مقروء}zero{# إشعار غير مقروء}two{إشعاران غير مقروءين (#)}few{# إشعارات غير مقروءة}many{# إشعارًا غير مقروء}other{# إشعار غير مقروء}}</translation>
 <translation id="4202807286478387388">الدخول</translation>
 <translation id="4250229828105606438">لقطة شاشة</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{قبل شهر واحد}zero{قبل # شهر}two{قبل شهرين (#)}few{قبل # أشهر}many{قبل # شهرًا}other{قبل # شهر}}</translation>
@@ -170,7 +171,7 @@
 <translation id="8131263257437993507">{SECONDS,plural, =1{يتبقى ثانية واحدة}zero{يتبقى # من الثواني}two{يتبقى ثانيتان (#)}few{يتبقى # ثوانٍ}many{يتبقى # ثانية}other{يتبقى # من الثواني}}</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />، الإكمال التلقائي</translation>
 <translation id="815598010540052116">التمرير إلى أسفل</translation>
-<translation id="8170087467028567933">ستؤدي إزالة هذا الاقتراح إلى إخفائه من حسابك عبر جميع أجهزتك.</translation>
+<translation id="8170087467028567933">ستؤدي إزالة هذا الاقتراح إلى إخفائه من حسابك على جميع أجهزتك.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">صفحة  إلى أسفل</translation>
 <translation id="8245914219290430011">علامة تبويب</translation>
@@ -203,4 +204,5 @@
 <translation id="9161053988251441839">التطبيقات المُقترحَة</translation>
 <translation id="9170848237812810038">&amp;إلغاء</translation>
 <translation id="932327136139879170">الصفحة الرئيسية</translation>
+<translation id="944069440740578670">إشعارات غير مقروءة</translation>
 </translationbundle>

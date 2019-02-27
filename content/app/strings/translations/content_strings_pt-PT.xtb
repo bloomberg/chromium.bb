@@ -32,6 +32,7 @@
 <translation id="1930711995431081526">estado</translation>
 <translation id="1938124657309484470">O valor tem de ser <ph name="MAXIMUM_DATE_OR_TIME" /> ou anterior.</translation>
 <translation id="1946271899482435442">Mostrar selecionador de data</translation>
+<translation id="1982354452682152483">Nenhuma descrição disponível.</translation>
 <translation id="1993104285338243655">Alterado para espelhamento.</translation>
 <translation id="2060505056492490888">"<ph name="DOT" />" está a ser utilizado numa posição errada em "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Hoje</translation>
@@ -73,6 +74,7 @@
 <translation id="3450233048674729344">O valor tem de ser inferior ou igual a <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definição</translation>
 <translation id="3557673793733683882">título <ph name="HEADING_LEVEL" /></translation>
+<translation id="3685101356851116974">Imagem sem etiqueta</translation>
 <translation id="3706100364254443312">alternar</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
@@ -153,6 +155,7 @@
 <translation id="6453774872122745852">agradecimentos</translation>
 <translation id="648732519525291180">selecionador de hora</translation>
 <translation id="6550675742724504774">Opções</translation>
+<translation id="6572309429103589720">Gramática inválida.</translation>
 <translation id="658823671542763450">entrar no modo de ecrã inteiro</translation>
 <translation id="663493177488814956">feed</translation>
 <translation id="6637586476836377253">log</translation>
@@ -175,6 +178,7 @@
 <translation id="7139483182332611405">prefácio</translation>
 <translation id="7263440858009898357">Seleccione um item na lista.</translation>
 <translation id="727747134524199931">cabeçalho da coluna</translation>
+<translation id="7336527682887843386">Não é possível obter uma descrição.</translation>
 <translation id="7353453495576941748">crédito</translation>
 <translation id="7364796246159120393">Escolher ficheiro</translation>
 <translation id="739024184232394898">Outra...</translation>
@@ -183,22 +187,28 @@
 <translation id="7491962110804786152">tab</translation>
 <translation id="7514365320538308">Transferir</translation>
 <translation id="7529102961911894712">backlink</translation>
+<translation id="7533959249147584474">Gráfico sem etiqueta</translation>
 <translation id="7647456547678091388">sugestão</translation>
 <translation id="7661956066982048809">documento de gráficos</translation>
 <translation id="7673697353781729403">Horas</translation>
 <translation id="7681220483256441252">índice</translation>
 <translation id="7740050170769002709">Conteúdo HTML</translation>
+<translation id="7745230546936012372">Para obter descrições de imagens em falta, abra o menu de contexto.</translation>
 <translation id="7750228210027921155">Ecrã no ecrã</translation>
+<translation id="775297008183122718">Entrada inválida</translation>
 <translation id="7789962463072032349">pausa</translation>
 <translation id="7802800022689234070">triângulo de divulgação</translation>
 <translation id="7888071071722539607">Inclua um "<ph name="ATSIGN" />" no endereço de email. Falta um "<ph name="ATSIGN" />" em "<ph name="INVALIDADDRESS" />".</translation>
 <translation id="7891486169920085145">divisor</translation>
 <translation id="795667975304826397">Nenhum ficheiro selecionado</translation>
+<translation id="8042519864538898414">Parece ser conteúdo para adultos.</translation>
 <translation id="8053789581856978548">campo de texto de pesquisa</translation>
 <translation id="8057695513531652401">aviso</translation>
 <translation id="8105797009065549151">referência de nota</translation>
+<translation id="811583516810654505">A obter descrição…</translation>
 <translation id="8117451130807776954">Esta semana</translation>
 <translation id="8199524924445686405">aaaa</translation>
+<translation id="8261464734335370856">Ortografia inválida.</translation>
 <translation id="8284326494547611709">Legendas</translation>
 <translation id="835897206747267392">Valor inválido.</translation>
 <translation id="8403857369060869934">tempo decorrido: <ph name="ELAPSED_TIME" /></translation>

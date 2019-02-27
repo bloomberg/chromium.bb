@@ -82,6 +82,7 @@
 <translation id="3897092660631435901">Menü</translation>
 <translation id="3909791450649380159">&amp;Ausschneiden</translation>
 <translation id="3990502903496589789">Rechter Rand</translation>
+<translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 ungelesene Benachrichtigung}other{# ungelesene Benachrichtigungen}}</translation>
 <translation id="4202807286478387388">springen</translation>
 <translation id="4250229828105606438">Screenshot</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{vor 1 Monat}other{vor # Monaten}}</translation>
@@ -196,11 +197,12 @@
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">Ablage immer ausgeblendet</translation>
 <translation id="9002566407876343676">Öffnen</translation>
-<translation id="9039076430527029379">Zu Seite <ph name="PAGE_NUMBER" />, Zeile <ph name="ROW_NUMBER" />, Spalte <ph name="COLUMN_NUMBER" /> wechseln.</translation>
+<translation id="9039076430527029379">Zu Seite <ph name="PAGE_NUMBER" />, Zeile <ph name="ROW_NUMBER" />, Spalte <ph name="COLUMN_NUMBER" /> verschieben.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 Sek.}other{# Sek.}}</translation>
 <translation id="9059834730836941392">Benachrichtigung minimieren</translation>
 <translation id="9150735707954472829">Tab</translation>
 <translation id="9161053988251441839">VORGESCHLAGENE APPS</translation>
 <translation id="9170848237812810038">&amp;Rückgängig</translation>
 <translation id="932327136139879170">Privat</translation>
+<translation id="944069440740578670">Ungelesene Benachrichtigungen</translation>
 </translationbundle>

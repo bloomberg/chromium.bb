@@ -82,6 +82,7 @@
 <translation id="3897092660631435901">Ponuka</translation>
 <translation id="3909791450649380159">&amp;Vystrihnúť</translation>
 <translation id="3990502903496589789">Pravý okraj</translation>
+<translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 neprečítané upozornenie}few{# neprečítané upozornenia}many{# Unread Notifications}other{# neprečítaných upozornení}}</translation>
 <translation id="4202807286478387388">skok</translation>
 <translation id="4250229828105606438">Snímka obrazovky</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{pred mesiacom}few{pred # mesiacmi}many{pred # mesiacom}other{pred # mesiacmi}}</translation>
@@ -203,4 +204,5 @@
 <translation id="9161053988251441839">ODPORÚČANÉ APLIKÁCIE</translation>
 <translation id="9170848237812810038">&amp;Naspäť</translation>
 <translation id="932327136139879170">Domov</translation>
+<translation id="944069440740578670">Neprečítané upozornenia</translation>
 </translationbundle>

@@ -228,6 +228,7 @@
 <translation id="4585337515783392668">Casten naar een onbekende ontvanger stopzetten</translation>
 <translation id="4628757576491864469">Apparaten</translation>
 <translation id="4659419629803378708">ChromeVox ingeschakeld</translation>
+<translation id="4696813013609194136">Apparaat ontgrendelen met oudercode</translation>
 <translation id="4734965478015604180">Horizontaal</translation>
 <translation id="4774338217796918551">Kom morgen terug om <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Wachtwoord voor <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -308,6 +309,7 @@
 <translation id="615957422585914272">Schermtoetsenbord weergeven</translation>
 <translation id="6164005077879661055">Alle bestanden en lokale gegevens gekoppeld aan de gebruiker met beperkte rechten worden permanent verwijderd zodra de gebruiker met beperkte rechten is verwijderd. Bezochte websites en instellingen voor deze gebruiker met beperkte rechten kunnen nog steeds zichtbaar zijn voor de beheerder op <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Meer informatie</translation>
+<translation id="6226658484809055840">De apparaatbeheerder heeft toegang tot alle activiteit, inclusief wachtwoorden en communicatie.</translation>
 <translation id="6254629735336163724">Vergrendeld in horizontale stand</translation>
 <translation id="6259254695169772643">Gebruik je stylus om te selecteren</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: activeren...</translation>
@@ -376,6 +378,7 @@
 <translation id="7377169924702866686">Caps Lock is ingeschakeld.</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" />s</translation>
 <translation id="7398254312354928459">Overgeschakeld naar andere netwerkverbinding</translation>
+<translation id="7405710164030118432">Geef je Family Link-toegangscode voor ouders op om het apparaat te ontgrendelen</translation>
 <translation id="742594950370306541">Camera is in gebruik.</translation>
 <translation id="743058460480092004">Camera en microfoon zijn in gebruik.</translation>
 <translation id="7497767806359279797">Taal en toetsenbord kiezen</translation>

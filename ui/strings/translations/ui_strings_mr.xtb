@@ -67,7 +67,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 दिवस}one{# दिवस}other{# दिवस}}</translation>
 <translation id="335581015389089642">भाषण</translation>
 <translation id="3479552764303398839">सध्या नाही</translation>
-<translation id="348799646910989694">आपोआप लपवले</translation>
+<translation id="348799646910989694">शेल्फ आपोआप लपवले</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 दिवस शिल्लक}one{# दिवस शिल्लक}other{# दिवस शिल्लक}}</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />” पहा</translation>
@@ -82,6 +82,7 @@
 <translation id="3897092660631435901">मेनू</translation>
 <translation id="3909791450649380159">क&amp;ट करा</translation>
 <translation id="3990502903496589789">उजवा काठ</translation>
+<translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{एक न वाचलेली सूचना}one{# न वाचलेली सूचना}other{# न वाचलेल्या सूचना}}</translation>
 <translation id="4202807286478387388">जंप करा</translation>
 <translation id="4250229828105606438">स्क्रीनशॉट</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 महिन्यापूर्वी}one{# महिन्यापूर्वी}other{# महिन्यांपूर्वी}}</translation>
@@ -203,4 +204,5 @@
 <translation id="9161053988251441839">सुचवलेले अ‍ॅप्स</translation>
 <translation id="9170848237812810038">&amp;पूर्ववत करा</translation>
 <translation id="932327136139879170">घर</translation>
+<translation id="944069440740578670">न वाचलेल्या सूचना</translation>
 </translationbundle>

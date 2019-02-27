@@ -32,6 +32,7 @@
 <translation id="1930711995431081526">상태</translation>
 <translation id="1938124657309484470">값은 <ph name="MAXIMUM_DATE_OR_TIME" /> 이전이어야 합니다.</translation>
 <translation id="1946271899482435442">날짜 선택도구 표시</translation>
+<translation id="1982354452682152483">설명이 없습니다.</translation>
 <translation id="1993104285338243655">미러링으로 전환됨</translation>
 <translation id="2060505056492490888">'<ph name="INVALIDDOMAIN" />'에서 '<ph name="DOT" />'의 위치가 잘못되었습니다.</translation>
 <translation id="2148716181193084225">오늘</translation>
@@ -73,6 +74,7 @@
 <translation id="3450233048674729344">값은 <ph name="MAXIMUM" /> 이하여야 합니다.</translation>
 <translation id="3486220673238053218">정의</translation>
 <translation id="3557673793733683882">제목 <ph name="HEADING_LEVEL" /></translation>
+<translation id="3685101356851116974">라벨이 없는 이미지</translation>
 <translation id="3706100364254443312">전환</translation>
 <translation id="3732799496749320381">월</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" />GB</translation>
@@ -153,6 +155,7 @@
 <translation id="6453774872122745852">감사의 말</translation>
 <translation id="648732519525291180">시간 선택기</translation>
 <translation id="6550675742724504774">옵션</translation>
+<translation id="6572309429103589720">문법이 잘못되었습니다.</translation>
 <translation id="658823671542763450">전체화면 열기</translation>
 <translation id="663493177488814956">피드</translation>
 <translation id="6637586476836377253">log</translation>
@@ -175,6 +178,7 @@
 <translation id="7139483182332611405">머리말</translation>
 <translation id="7263440858009898357">목록에서 항목을 선택하세요.</translation>
 <translation id="727747134524199931">열 헤더</translation>
+<translation id="7336527682887843386">설명을 가져올 수 없습니다.</translation>
 <translation id="7353453495576941748">크레딧</translation>
 <translation id="7364796246159120393">파일 선택</translation>
 <translation id="739024184232394898">다른 주...</translation>
@@ -183,22 +187,28 @@
 <translation id="7491962110804786152">tab</translation>
 <translation id="7514365320538308">다운로드</translation>
 <translation id="7529102961911894712">뒤로 링크</translation>
+<translation id="7533959249147584474">라벨이 없는 그래픽</translation>
 <translation id="7647456547678091388">도움말</translation>
 <translation id="7661956066982048809">그래픽 문서</translation>
 <translation id="7673697353781729403">시간</translation>
 <translation id="7681220483256441252">색인</translation>
 <translation id="7740050170769002709">HTML 콘텐츠</translation>
+<translation id="7745230546936012372">누락된 이미지 설명을 확인하려면 컨텍스트 메뉴를 여세요.</translation>
 <translation id="7750228210027921155">PIP 모드</translation>
+<translation id="775297008183122718">입력값이 잘못되었습니다.</translation>
 <translation id="7789962463072032349">일시중지</translation>
 <translation id="7802800022689234070">펼치기/접기 삼각형</translation>
 <translation id="7888071071722539607">이메일 주소에 '<ph name="ATSIGN" />'를 포함해 주세요. '<ph name="INVALIDADDRESS" />'에 '<ph name="ATSIGN" />'가 없습니다.</translation>
 <translation id="7891486169920085145">분할선</translation>
 <translation id="795667975304826397">선택된 파일 없음</translation>
+<translation id="8042519864538898414">성인용 콘텐츠로 보입니다.</translation>
 <translation id="8053789581856978548">검색어 입력란</translation>
 <translation id="8057695513531652401">안내문</translation>
 <translation id="8105797009065549151">참고 자료</translation>
+<translation id="811583516810654505">설명 가져오는 중...</translation>
 <translation id="8117451130807776954">이번 주</translation>
 <translation id="8199524924445686405">연도</translation>
+<translation id="8261464734335370856">맞춤법이 잘못되었습니다.</translation>
 <translation id="8284326494547611709">자막</translation>
 <translation id="835897206747267392">값이 잘못되었습니다.</translation>
 <translation id="8403857369060869934">경과 시간: <ph name="ELAPSED_TIME" /></translation>

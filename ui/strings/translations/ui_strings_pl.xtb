@@ -82,6 +82,7 @@
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909791450649380159">Wy&amp;tnij</translation>
 <translation id="3990502903496589789">Krawędź po prawej</translation>
+<translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 nieprzeczytane powiadomienia}few{# nieprzeczytane powiadomienia}many{# nieprzeczytanych powiadomień}other{# nieprzeczytanego powiadomienia}}</translation>
 <translation id="4202807286478387388">przejdź</translation>
 <translation id="4250229828105606438">Zrzut ekranu</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{miesiąc temu}few{# miesiące temu}many{# miesięcy temu}other{# miesiąca temu}}</translation>
@@ -203,4 +204,5 @@
 <translation id="9161053988251441839">SUGEROWANE APLIKACJE</translation>
 <translation id="9170848237812810038">&amp;Cofnij</translation>
 <translation id="932327136139879170">Strona główna</translation>
+<translation id="944069440740578670">Nieprzeczytane powiadomienia</translation>
 </translationbundle>

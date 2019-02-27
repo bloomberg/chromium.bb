@@ -32,6 +32,7 @@
 <translation id="1930711995431081526">status</translation>
 <translation id="1938124657309484470">Value must be <ph name="MAXIMUM_DATE_OR_TIME" /> or earlier.</translation>
 <translation id="1946271899482435442">Show date picker</translation>
+<translation id="1982354452682152483">No description is available.</translation>
 <translation id="1993104285338243655">Switched to mirroring</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' is used at a wrong position in '<ph name="INVALIDDOMAIN" />'.</translation>
 <translation id="2148716181193084225">Today</translation>
@@ -73,6 +74,7 @@
 <translation id="3450233048674729344">Value must be less than or equal to <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definition</translation>
 <translation id="3557673793733683882">heading <ph name="HEADING_LEVEL" /></translation>
+<translation id="3685101356851116974">Unlabelled image</translation>
 <translation id="3706100364254443312">switch</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
@@ -153,6 +155,7 @@
 <translation id="6453774872122745852">acknowledgements</translation>
 <translation id="648732519525291180">time picker</translation>
 <translation id="6550675742724504774">Options</translation>
+<translation id="6572309429103589720">Invalid grammar</translation>
 <translation id="658823671542763450">enter full screen</translation>
 <translation id="663493177488814956">feed</translation>
 <translation id="6637586476836377253">log</translation>
@@ -175,6 +178,7 @@
 <translation id="7139483182332611405">preface</translation>
 <translation id="7263440858009898357">Please select an item in the list.</translation>
 <translation id="727747134524199931">column header</translation>
+<translation id="7336527682887843386">Unable to get a description.</translation>
 <translation id="7353453495576941748">credit</translation>
 <translation id="7364796246159120393">Choose file</translation>
 <translation id="739024184232394898">Other...</translation>
@@ -183,22 +187,28 @@
 <translation id="7491962110804786152">tab</translation>
 <translation id="7514365320538308">Download</translation>
 <translation id="7529102961911894712">back link</translation>
+<translation id="7533959249147584474">Unlabelled graphic</translation>
 <translation id="7647456547678091388">tip</translation>
 <translation id="7661956066982048809">graphics document</translation>
 <translation id="7673697353781729403">Hours</translation>
 <translation id="7681220483256441252">index</translation>
 <translation id="7740050170769002709">HTML content</translation>
+<translation id="7745230546936012372">To get missing image descriptions, open the context menu.</translation>
 <translation id="7750228210027921155">Picture-in-picture</translation>
+<translation id="775297008183122718">Invalid entry</translation>
 <translation id="7789962463072032349">pause</translation>
 <translation id="7802800022689234070">disclosure triangle</translation>
 <translation id="7888071071722539607">Please include an '<ph name="ATSIGN" />' in the email address. '<ph name="INVALIDADDRESS" />' is missing an '<ph name="ATSIGN" />'.</translation>
 <translation id="7891486169920085145">splitter</translation>
 <translation id="795667975304826397">No file chosen</translation>
+<translation id="8042519864538898414">Appears to be adult content.</translation>
 <translation id="8053789581856978548">search text field</translation>
 <translation id="8057695513531652401">notice</translation>
 <translation id="8105797009065549151">note reference</translation>
+<translation id="811583516810654505">Getting description...</translation>
 <translation id="8117451130807776954">This week</translation>
 <translation id="8199524924445686405">yyyy</translation>
+<translation id="8261464734335370856">Invalid spelling</translation>
 <translation id="8284326494547611709">Captions</translation>
 <translation id="835897206747267392">Invalid value.</translation>
 <translation id="8403857369060869934">elapsed time: <ph name="ELAPSED_TIME" /></translation>

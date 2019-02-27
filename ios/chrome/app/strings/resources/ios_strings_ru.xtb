@@ -70,6 +70,7 @@
 <translation id="1952728750904661634">Вход в управляемый аккаунт</translation>
 <translation id="1974060860693918893">Дополнительные</translation>
 <translation id="1989112275319619282">Выбрать</translation>
+<translation id="2000419248597011803">Отправлять некоторые файлы cookie и поисковые запросы из адресной строки в поисковую систему по умолчанию</translation>
 <translation id="2015722694326466240">Чтобы просматривать пароли, настройте на устройстве код доступа.</translation>
 <translation id="2068952045031577364">За прошлую неделю</translation>
 <translation id="2079545284768500474">Отмена</translation>
@@ -125,7 +126,6 @@
 <translation id="2871695793448672541">Скрытый пароль</translation>
 <translation id="288655811176831528">Закрыть вкладку</translation>
 <translation id="2898963176829412617">Новая папка</translation>
-<translation id="2916171785467530738">Включить автозаполнение для поисковых запросов и URL</translation>
 <translation id="291754862089661335">Поместите QR-код или штрихкод в эту рамку</translation>
 <translation id="2921219216347069551">Ошибка</translation>
 <translation id="2923448633003185837">Вставить и перейти</translation>
@@ -152,7 +152,6 @@
 <translation id="3329904751041170572">Не удалось установить соединение с сервером.</translation>
 <translation id="3335947283844343239">Открыть закрытую вкладку</translation>
 <translation id="3393920035788932672">Вспл. окна разрешены</translation>
-<translation id="3424059454230285158">Вы можете <ph name="BEGIN_LINK" />изменить эти настройки<ph name="END_LINK" /> в любое время.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> мин.</translation>
 <translation id="3448016392200048164">Режим Split View</translation>
 <translation id="345565170154308620">Настроить пароли</translation>
@@ -354,6 +353,7 @@
 <translation id="6656103420185847513">Редактировать папку</translation>
 <translation id="6657585470893396449">Пароль</translation>
 <translation id="667999046851023355">Документ</translation>
+<translation id="6691331417640343772">Управление синхронизированными данными в Личном кабинете Google</translation>
 <translation id="6709334795756764830">Изменить закладку</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Не удалось экспортировать пароли</translation>
@@ -412,6 +412,7 @@
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="766891008101699113">Чтобы просматривать веб-страницы анонимно, откройте новую вкладку.</translation>
 <translation id="7671141431838911305">УСТАНОВИТЬ</translation>
+<translation id="7704317875155739195">Заполнять поисковые запросы и URL автоматически</translation>
 <translation id="7765158879357617694">Переместить</translation>
 <translation id="7769602470925380267">Принять и выйти</translation>
 <translation id="7772032839648071052">Подтвердите кодовую фразу</translation>
@@ -439,7 +440,6 @@
 <translation id="8073670137947914548">Скачивание завершено</translation>
 <translation id="8076014560081431679">Настройки сайтов не изменятся, поэтому данные о вашей работе в Интернете сохранятся. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Файл доступен для скачивания. Параметры указаны в нижней части экрана.</translation>
-<translation id="8160722851663543621">Отправлять поисковые запросы из адресной строки и окна поиска, а также файлы cookie в поисковую систему по умолчанию</translation>
 <translation id="8205564605687841303">Отмена</translation>
 <translation id="8225985093977202398">Файлы, сохраненные в кеше</translation>
 <translation id="8261506727792406068">Удалить</translation>

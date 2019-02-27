@@ -82,6 +82,7 @@
 <translation id="3897092660631435901">Menüü</translation>
 <translation id="3909791450649380159">Lõ&amp;ika</translation>
 <translation id="3990502903496589789">Parem serv</translation>
+<translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 lugemata märguanne}other{# lugemata märguannet}}</translation>
 <translation id="4202807286478387388">liigu</translation>
 <translation id="4250229828105606438">Ekraanipilt</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 kuu tagasi}other{# kuud tagasi}}</translation>
@@ -203,4 +204,5 @@
 <translation id="9161053988251441839">SOOVITATUD RAKENDUSED</translation>
 <translation id="9170848237812810038">&amp;Võta tagasi</translation>
 <translation id="932327136139879170">Kodu</translation>
+<translation id="944069440740578670">Lugemata märguanded</translation>
 </translationbundle>

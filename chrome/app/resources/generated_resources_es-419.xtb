@@ -173,7 +173,6 @@
 <translation id="1225177025209879837">Procesando la solicitud...</translation>
 <translation id="1227507814927581609">Error de autenticación al establecer la conexión con "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1231733316453485619">¿Quieres activar la sincronización?</translation>
-<translation id="123186018454553812">Probar una llave diferente</translation>
 <translation id="1232569758102978740">Sin título</translation>
 <translation id="1233721473400465416">Configuración regional</translation>
 <translation id="1234808891666923653">Trabajadores de servicios</translation>
@@ -488,7 +487,6 @@
 <translation id="1718835860248848330">Última hora</translation>
 <translation id="1719312230114180055">Nota: La huella digital puede ser menos segura que un PIN o una contraseña eficaz.</translation>
 <translation id="1720318856472900922">Autenticación de servidor TLS WWW</translation>
-<translation id="1720421759229874">Puedes personalizar estas opciones de configuración en cualquier momento</translation>
 <translation id="1721937473331968728">Puedes agregar a <ph name="CLOUD_PRINT_NAME" /> impresoras clásicas que estén conectadas a tu computadora.</translation>
 <translation id="1722487484194605434">Comprimiendo <ph name="NUMBER_OF_ITEMS" /> elementos…</translation>
 <translation id="1723824996674794290">&amp;Nueva ventana</translation>
@@ -1174,12 +1172,11 @@
 <translation id="2740393541869613458">revisar sitios web que visitó el usuario supervisado; y</translation>
 <translation id="2743387203779672305">Copiar al portapapeles</translation>
 <translation id="2745080116229976798">Subordinación certificada de Microsoft</translation>
-<translation id="2745305015456260872"><ph name="ENROLLMENT_DOMAIN" /> administra este dispositivo y tiene acceso a toda la actividad del usuario, incluidos el correo electrónico, las páginas web que visitó, las contraseñas. Obtén más información.</translation>
+<translation id="2745305015456260872"><ph name="ENROLLMENT_DOMAIN" /> administra este dispositivo y tiene acceso a toda la actividad del usuario, incluidos el correo electrónico, las páginas web que visitó y las contraseñas. Obtén más información.</translation>
 <translation id="2749756011735116528">Iniciar sesión en <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">Controlar la gramática con la ortografía</translation>
 <translation id="2751739896257479635">Autenticación de fase 2 EAP</translation>
 <translation id="2755367719610958252">Administrar funciones de accesibilidad</translation>
-<translation id="2755628026949580719">Si no encuentras tu llave de seguridad en la lista, presiona el botón de la llave durante al menos 5 segundos.</translation>
 <translation id="275662540872599901">Pantalla apagada</translation>
 <translation id="2761898608071930085">Usar otra cuenta</translation>
 <translation id="2762441749940182211">Cámara bloqueada</translation>
@@ -1365,7 +1362,6 @@
 <translation id="3031557471081358569">Selecciona elementos para importar:</translation>
 <translation id="3031601332414921114">Reanudar la impresión</translation>
 <translation id="303198083543495566">Geografía</translation>
-<translation id="3033999583152214331">Ejecuta IDE, editores y herramientas de Linux en tu Chromebook. &lt;a target="_blank" href="<ph name="URL" />"&gt;Más información&lt;/a&gt;</translation>
 <translation id="3036546437875325427">Habilitar Flash</translation>
 <translation id="3037754279345160234">No se puede analizar la configuración para vincular el dominio. Comunícate con el administrador.</translation>
 <translation id="3038612606416062604">Agregar una impresora manualmente</translation>
@@ -1655,7 +1651,6 @@
 <translation id="3497560059572256875">Compartir doodle</translation>
 <translation id="3505030558724226696">Revocar el acceso al dispositivo</translation>
 <translation id="3507421388498836150">Permisos actuales para "<ph name="EXTENSION_NAME" />"</translation>
-<translation id="3507547268929739059">Quitar las apps de Linux para la Chromebook</translation>
 <translation id="3507888235492474624">Vuelve a buscar dispositivos Bluetooth</translation>
 <translation id="3508920295779105875">Elegir otra carpeta...</translation>
 <translation id="3510797500218907545">WiMAX</translation>
@@ -2058,7 +2053,6 @@
 <translation id="407520071244661467">Escala</translation>
 <translation id="4075639477629295004">No se puede transmitir <ph name="FILE_NAME" />.</translation>
 <translation id="4077917118009885966">Anuncios bloqueados en este sitio</translation>
-<translation id="4079799245038595838">Se envió una notificación a tu teléfono. Sigue los mensajes para confirmar que eres tú.</translation>
 <translation id="4081242589061676262">No se puede transmitir el archivo</translation>
 <translation id="4084682180776658562">Marcador</translation>
 <translation id="4084835346725913160">Cerrar <ph name="TAB_NAME" /></translation>
@@ -2371,7 +2365,6 @@
 <translation id="4611114513649582138">Conexión de datos disponible</translation>
 <translation id="4613271546271159013">Una extensión cambió la página que se muestra al abrir una nueva pestaña.</translation>
 <translation id="4615586811063744755">no se seleccionaron cookies</translation>
-<translation id="4615618657481886098">Ya registraste esta llave. No es necesario que vuelvas a registrarla.</translation>
 <translation id="4617270414136722281">Opciones de las extensiones</translation>
 <translation id="4619615317237390068">Pestañas de otros dispositivos</translation>
 <translation id="4620809267248568679">Una extensión administra esta configuración.</translation>
@@ -2461,7 +2454,6 @@
 <translation id="4756378406049221019">Detener/volver a cargar</translation>
 <translation id="4756388243121344051">&amp;Historial</translation>
 <translation id="4759238208242260848">Descargas</translation>
-<translation id="4761016275844545177">Administrar contraseñas…</translation>
 <translation id="4761104368405085019">Usar tu micrófono</translation>
 <translation id="4762718786438001384">Hay muy poco espacio en el disco del dispositivo</translation>
 <translation id="4763408175235639573">Se configuraron las siguientes cookies cuando visitaste esta página</translation>
@@ -2547,14 +2539,12 @@
 <translation id="4882312758060467256">Tiene acceso a este sitio</translation>
 <translation id="4882831918239250449">Controlar cómo se usa tu historial de navegación para personalizar la Búsqueda, los anuncios y mucho más</translation>
 <translation id="4883178195103750615">Exportar favoritos a un archivo HTML...</translation>
-<translation id="4883274597792587930">Busca el nombre impreso en la parte posterior de la llave</translation>
 <translation id="4883436287898674711">Todos los sitios de <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">Adminis&amp;trador de tareas</translation>
 <translation id="4884987973312178454">6x</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4887424188275796356">Abrir con el lector del sistema</translation>
 <translation id="488785315393301722">Mostrar detalles</translation>
-<translation id="4890242622846228088">El Asistente usa estas grabaciones y tus solicitudes de voz para crear y actualizar tu modelo de voz, que solo se almacenará en los dispositivos en los que hayas activado Voice Match. Puedes consultar o borrar la actividad de voz en tus Controles de actividad de Google.</translation>
 <translation id="4890773143211625964">Mostrar opciones de impresión avanzadas</translation>
 <translation id="4891089016822695758">Foro de la versión Beta</translation>
 <translation id="4892969127351273348">No se puede abrir con <ph name="APP_NAME" /></translation>
@@ -3288,7 +3278,6 @@
 <translation id="5958529069007801266">Usuario supervisado</translation>
 <translation id="5959471481388474538">Red no disponible</translation>
 <translation id="595959584676692139">Vuelve a cargar la página para usar esta extensión</translation>
-<translation id="5962207703002684882">Tu Asistente usa estas grabaciones para crear tu modelo de voz, que se almacena en tu dispositivo. Borra o conserva el modelo en la configuración del Asistente. En los Controles de actividad de Google, podrás ver o borrar los comandos por voz.</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> máximo)</translation>
 <translation id="5965661248935608907">También controla qué página se muestra al hacer clic en el botón de página principal o al realizar búsquedas desde el cuadro multifunción.</translation>
 <translation id="5971037678316050792">Controlar el estado y la sincronización del adaptador Bluetooth</translation>
@@ -3525,7 +3514,6 @@
 <translation id="6308937455967653460">Guardar &amp;enlace como...</translation>
 <translation id="6311220991371174222">No se puede iniciar Chrome porque se produjo un error al abrir tu perfil. Intenta reiniciar Chrome.</translation>
 <translation id="6312403991423642364">Error de red desconocido</translation>
-<translation id="6313320178014547270">Estás usando una llave que no se registró con este sitio web</translation>
 <translation id="6313641880021325787">SALIR DE RV</translation>
 <translation id="6314819609899340042">Habilitaste correctamente las funciones de depuración en este dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="6315493146179903667">Traer todo adelante</translation>
@@ -3572,6 +3560,7 @@
 <translation id="6388429472088318283">Buscar idiomas</translation>
 <translation id="6390799748543157332">Las páginas a las que accedas desde esta ventana no aparecerán en el historial del navegador ni dejarán rastros (por ejemplo, cookies) en la computadora después de cerrar todas las ventanas abiertas de la sesión de invitado. Los archivos descargados permanecerán intactos.</translation>
 <translation id="6390994422085833176">Después de establecer la configuración, revisa las funciones de sincronización y personalización</translation>
+<translation id="6393156038355142111">Sugerir contraseña segura</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> elementos</translation>
 <translation id="6397094776139756010">Opciones de personalización y sincronización</translation>
 <translation id="6397592254427394018">Abrir todos los favoritos en una ventana de &amp;incógnito</translation>
@@ -3579,7 +3568,6 @@
 <translation id="6398765197997659313">Salir de pantalla completa</translation>
 <translation id="6399774419735315745">Espía</translation>
 <translation id="6404511346730675251">Editar marcador</translation>
-<translation id="6405510437656969977">Continúa cuando estés listo para ingresar el PIN</translation>
 <translation id="6406303162637086258">Simular reinicio de navegador</translation>
 <translation id="6406506848690869874">Sincronización</translation>
 <translation id="6406708970972405507">Configuración: <ph name="SECTION_TITLE" /></translation>
@@ -4390,7 +4378,6 @@
 <translation id="7663719505383602579">Receptor: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">Dispositivo Bluetooth no compatible: "<ph name="DEVICE_NAME" />"</translation>
 <translation id="7665369617277396874">Agregar cuenta</translation>
-<translation id="7667248760110172428">Almacenamiento externo</translation>
 <translation id="7671130400130574146">Usar la barra de título y los bordes del sistema</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, en <ph name="PAGE_TITLE" /></translation>
 <translation id="7676867886086876795">Envía tu voz a Google para habilitar el dictado en cualquier campo de texto.</translation>
@@ -4545,7 +4532,6 @@
 <translation id="7853747251428735">&amp;Más herramientas</translation>
 <translation id="7857117644404132472">Agregar excepción</translation>
 <translation id="7857949311770343000">¿Esta es la página Nueva pestaña que esperabas ver?</translation>
-<translation id="7859183520363892678">Enséñale al Asistente a reconocer tu voz</translation>
 <translation id="786073089922909430">Servicio: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;Descargas</translation>
 <translation id="7864662577698025113">Agregar un servicio nuevo</translation>
@@ -4884,7 +4870,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8353683614194668312">Puede:</translation>
 <translation id="8356197132883132838"><ph name="TITLE" /> (<ph name="COUNT" />)</translation>
 <translation id="8358685469073206162">¿Restaurar las páginas?</translation>
-<translation id="8362993567435070757">Busca el PIN de seis dígitos que se encuentra en la parte posterior de la llave</translation>
 <translation id="8363095875018065315">estable</translation>
 <translation id="8363142353806532503">Micrófono bloqueado</translation>
 <translation id="8366396658833131068">Se restauró la conexión de red. Selecciona una red distinta o presiona el botón "Continuar" para iniciar la aplicación de kiosco.</translation>
@@ -5351,7 +5336,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="9066773882585798925">Escucha el texto leído en voz alta</translation>
 <translation id="9066782832737749352">Texto a voz</translation>
 <translation id="9073281213608662541">PAP</translation>
-<translation id="90737709606140813">Sincroniza la llave con este dispositivo y podrás usarla para acceder a tu cuenta</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9074836595010225693">Mouse USB conectado</translation>
 <translation id="9076523132036239772">Lo sentimos, no pudimos verificar tu correo electrónico o contraseña. Intenta conectándote a una red.</translation>
@@ -5475,7 +5459,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="971774202801778802">URL del marcador</translation>
 <translation id="973473557718930265">Salir</translation>
 <translation id="974555521953189084">Ingresa tu frase de contraseña para iniciar la sincronización</translation>
-<translation id="977640333593638907">Para usar la mayoría de las llaves, solo debes presionar el botón</translation>
 <translation id="981121421437150478">Sin conexión</translation>
 <translation id="983511809958454316">Esta función no es compatible con RV</translation>
 <translation id="984275831282074731">Formas de pago</translation>

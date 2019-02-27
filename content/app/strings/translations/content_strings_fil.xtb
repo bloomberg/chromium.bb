@@ -32,6 +32,7 @@
 <translation id="1930711995431081526">katayuan</translation>
 <translation id="1938124657309484470">Dapat <ph name="MAXIMUM_DATE_OR_TIME" /> o mas nauna ang value.</translation>
 <translation id="1946271899482435442">Ipakita ang picker ng petsa</translation>
+<translation id="1982354452682152483">Walang available na paglalarawan.</translation>
 <translation id="1993104285338243655">Lumipat sa pag-mirror</translation>
 <translation id="2060505056492490888">Ginamit ang '<ph name="DOT" />' sa maling posisyon sa '<ph name="INVALIDDOMAIN" />.'</translation>
 <translation id="2148716181193084225">Ngayon</translation>
@@ -73,6 +74,7 @@
 <translation id="3450233048674729344">Dapat mas mababa kaysa sa o katumbas ng <ph name="MAXIMUM" /> ang halaga.</translation>
 <translation id="3486220673238053218">kahulugan</translation>
 <translation id="3557673793733683882">heading <ph name="HEADING_LEVEL" /></translation>
+<translation id="3685101356851116974">Walang label na larawan</translation>
 <translation id="3706100364254443312">lumipat</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> (na) GB</translation>
@@ -153,6 +155,7 @@
 <translation id="6453774872122745852">mga pagkilala</translation>
 <translation id="648732519525291180">picker ng petsa</translation>
 <translation id="6550675742724504774">Mga Pagpipilian</translation>
+<translation id="6572309429103589720">Invalid na grammar</translation>
 <translation id="658823671542763450">mag-full screen</translation>
 <translation id="663493177488814956">feed</translation>
 <translation id="6637586476836377253">log</translation>
@@ -175,6 +178,7 @@
 <translation id="7139483182332611405">preface</translation>
 <translation id="7263440858009898357">Mangyaring pumili ng item sa listahan.</translation>
 <translation id="727747134524199931">header ng column</translation>
+<translation id="7336527682887843386">Hindi makakuha ng paglalarawan.</translation>
 <translation id="7353453495576941748">credit</translation>
 <translation id="7364796246159120393">Pumili ng File</translation>
 <translation id="739024184232394898">Iba pa...</translation>
@@ -183,22 +187,28 @@
 <translation id="7491962110804786152">tab</translation>
 <translation id="7514365320538308">I-download</translation>
 <translation id="7529102961911894712">back link</translation>
+<translation id="7533959249147584474">Walang label na graphic</translation>
 <translation id="7647456547678091388">tip</translation>
 <translation id="7661956066982048809">dokumento ng graphics</translation>
 <translation id="7673697353781729403">Oras</translation>
 <translation id="7681220483256441252">index</translation>
 <translation id="7740050170769002709">HTML na nilalaman</translation>
+<translation id="7745230546936012372">Para kunin ang mga paglalarawan ng larawan, buksan ang menu ng konteksto.</translation>
 <translation id="7750228210027921155">Picture in picture</translation>
+<translation id="775297008183122718">Di-wastong entry</translation>
 <translation id="7789962463072032349">i-pause</translation>
 <translation id="7802800022689234070">disclosure triangle</translation>
 <translation id="7888071071722539607">Mangyaring magsama ng '<ph name="ATSIGN" />' sa email address. Kulang ng '<ph name="ATSIGN" />' ang '<ph name="INVALIDADDRESS" />.'</translation>
 <translation id="7891486169920085145">splitter</translation>
 <translation id="795667975304826397">Walang napiling file</translation>
+<translation id="8042519864538898414">Lumalabas na pang-adultong content.</translation>
 <translation id="8053789581856978548">text field ng paghahanap</translation>
 <translation id="8057695513531652401">paunawa</translation>
 <translation id="8105797009065549151">sanggunian sa tala</translation>
+<translation id="811583516810654505">Kinukuha ang paglalarawan...</translation>
 <translation id="8117451130807776954">Linggong ito</translation>
 <translation id="8199524924445686405">yyyy</translation>
+<translation id="8261464734335370856">Invalid na spelling</translation>
 <translation id="8284326494547611709">Mga Caption</translation>
 <translation id="835897206747267392">Di-wastong halaga.</translation>
 <translation id="8403857369060869934">lumipas na oras: <ph name="ELAPSED_TIME" /></translation>

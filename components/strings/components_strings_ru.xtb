@@ -192,7 +192,7 @@
 <translation id="1981206234434200693">Удалить данные о работе в браузере Chrome</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{и ещё 1}one{и ещё #}few{и ещё #}many{и ещё #}other{и ещё #}}</translation>
 <translation id="2003709556000175978">Сброс пароля</translation>
-<translation id="20053308747750172">Ко всем запросам, отправляемым на сервер <ph name="ORIGIN" />, применяется политика безопасности. Однако сервер доставил недействительную политику, поэтому браузер не может выполнить ваш запрос для сайта <ph name="SITE" />.</translation>
+<translation id="20053308747750172">Ко всем запросам, отправляемым на сервер <ph name="ORIGIN" />, применяются правила безопасности. Однако сервер отправил недействительные правила, поэтому браузер не может выполнить ваш запрос для сайта <ph name="SITE" />.</translation>
 <translation id="2025186561304664664">Прокси-сервер настраивается автоматически.</translation>
 <translation id="2030481566774242610">Возможно, вы имели в виду <ph name="LINK" />.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Проверьте настройки прокси-сервера и брандмауэра<ph name="END_LINK" />.</translation>
@@ -239,7 +239,7 @@
 <translation id="2270484714375784793">Номер телефона</translation>
 <translation id="2283340219607151381">Сохранять и автоматически подставлять адреса</translation>
 <translation id="2292556288342944218">Доступ в Интернет закрыт</translation>
-<translation id="2294558542833290837">Указанный вами адрес похож на другой.</translation>
+<translation id="2294558542833290837">Первоначально открытая вами ссылка выглядит необычно</translation>
 <translation id="2297722699537546652">B5 (конверт)</translation>
 <translation id="2310021320168182093">Chou2 (конверт)</translation>
 <translation id="2316887270356262533">Освободится менее 1 МБ пространства. После этого некоторые веб-страницы могут загружаться дольше обычного.</translation>
@@ -266,7 +266,7 @@
 <translation id="2396249848217231973">&amp;Отменить удаление</translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности может быть отозван. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
-<translation id="2418081434543109369">Ко всем запросам, отправляемым на сервер <ph name="ORIGIN" />, применяется политика безопасности. Однако серверу не удалось доставить политику, поэтому браузер не может выполнить ваш запрос для сайта <ph name="SITE" />.</translation>
+<translation id="2418081434543109369">Ко всем запросам, отправляемым на сервер <ph name="ORIGIN" />, применяются . Однако серверу не удалось отправить правила, поэтому браузер не может выполнить ваш запрос для сайта <ph name="SITE" />.</translation>
 <translation id="244665789865330679">Ваше устройство и аккаунт находятся под управлением домена <ph name="ENROLLMENT_DOMAIN" />. Администратор этого домена может удаленно изменять настройки вашего устройства и аккаунта.</translation>
 <translation id="2463193859425327265">Изменить главную страницу</translation>
 <translation id="2463739503403862330">Заполнить</translation>
@@ -942,6 +942,7 @@
 <translation id="6417515091412812850">Не удается проверить, был ли отозван сертификат.</translation>
 <translation id="6433490469411711332">Изменить контактную информацию</translation>
 <translation id="6433595998831338502">Сайт <ph name="HOST_NAME" /> не позволяет установить соединение.</translation>
+<translation id="6434309073475700221">Отменить передачу</translation>
 <translation id="6446163441502663861">Kahu (конверт)</translation>
 <translation id="6446608382365791566">Укажите дополнительную информацию</translation>
 <translation id="6447842834002726250">Файлы сookie</translation>
@@ -1051,7 +1052,7 @@
 <translation id="7158980942472052083">Недопустимый URL. Используйте стандартную схему.</translation>
 <translation id="717330890047184534">Идентификатор GAIA:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> вариант доставки}one{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> вариант доставки}few{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> варианта доставки}many{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> вариантов доставки}other{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> варианта доставки}}</translation>
-<translation id="7177397715882417099">Ко всем запросам, отправляемым на сервер <ph name="ORIGIN" />, применяется политика безопасности. Однако вместо того, чтобы доставить политику, сервер перенаправил браузер по другому адресу, поэтому браузер не может выполнить ваш запрос для сайта <ph name="SITE" />.</translation>
+<translation id="7177397715882417099">Ко всем запросам, отправляемым на сервер <ph name="ORIGIN" />, применяются правила безопасности. Однако вместо того, чтобы передать правила, сервер перенаправил браузер по другому адресу, поэтому браузер не может выполнить ваш запрос для сайта <ph name="SITE" />.</translation>
 <translation id="7179323680825933600">Сохранять и автоматически подставлять платежные данные</translation>
 <translation id="7180611975245234373">Обновить</translation>
 <translation id="7182878459783632708">Правила не заданы</translation>
@@ -1241,7 +1242,6 @@
 <translation id="8103161714697287722">Способ оплаты</translation>
 <translation id="8118489163946903409">Способ оплаты</translation>
 <translation id="8127301229239896662">Программа "<ph name="SOFTWARE_NAME" />" была установлена неправильно. Обратитесь за помощью к системному администратору.</translation>
-<translation id="8130693978878176684">Больше я ничем не могу вам помочь. Продолжите ввод самостоятельно.</translation>
 <translation id="8131740175452115882">Подтвердить</translation>
 <translation id="8149426793427495338">Ваш компьютер перешел в спящий режим.</translation>
 <translation id="8150722005171944719">Файл по адресу <ph name="URL" /> недоступен. Возможно, он был удален или перемещен либо права доступа к нему ограничены.</translation>
@@ -1368,7 +1368,6 @@
 <translation id="8978053250194585037">Функция "Google Безопасный просмотр" недавно <ph name="BEGIN_LINK" />обнаружила попытку фишинга<ph name="END_LINK" /> на сайте <ph name="SITE" />. Будьте внимательны! Мошенники часто создают веб-страницы, похожие на знакомые вам сайты.</translation>
 <translation id="8983003182662520383">Способы оплаты и адреса из Google Pay</translation>
 <translation id="8987927404178983737">Месяц</translation>
-<translation id="8988408250700415532">Произошла ошибка. Завершите оформление заказа на сайте.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Сайт содержит нежелательное ПО</translation>
 <translation id="8997023839087525404">Предоставленный сервером сертификат не проходил проверку безопасности. Она необходима в некоторых случаях, чтобы доказать, что сертификат надежен и защищает от злоумышленников.</translation>

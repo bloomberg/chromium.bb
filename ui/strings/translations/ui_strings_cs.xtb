@@ -82,6 +82,7 @@
 <translation id="3897092660631435901">Nabídka</translation>
 <translation id="3909791450649380159">Vyjmou&amp;t</translation>
 <translation id="3990502903496589789">Pravý okraj</translation>
+<translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 nepřečtené oznámení}few{# nepřečtená oznámení}many{# nepřečteného oznámení}other{# nepřečtených oznámení}}</translation>
 <translation id="4202807286478387388">přejít</translation>
 <translation id="4250229828105606438">Snímek obrazovky</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{před 1 měsícem}few{před # měsíci}many{před # měsíce}other{před # měsíci}}</translation>
@@ -203,4 +204,5 @@
 <translation id="9161053988251441839">NAVRHOVANÉ APLIKACE</translation>
 <translation id="9170848237812810038">Z&amp;pět</translation>
 <translation id="932327136139879170">Domovská stránka</translation>
+<translation id="944069440740578670">Nepřečtená oznámení</translation>
 </translationbundle>

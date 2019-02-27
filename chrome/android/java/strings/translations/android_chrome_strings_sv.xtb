@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">Kliv in i VR</translation>
 <translation id="116280672541001035">Använd</translation>
 <translation id="1172593791219290334">Startflik</translation>
+<translation id="1173894706177603556">Ändra namn</translation>
 <translation id="1175310183703641346">Bokmärken, historik, lösenord med mera synkroniseras inte längre med ditt Google-konto</translation>
 <translation id="1178581264944972037">Paus</translation>
 <translation id="1181037720776840403">Ta bort</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">Tryck för att söka</translation>
 <translation id="2079545284768500474">Ångra</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> av <ph name="TOTAL_RESULTS" /></translation>
-<translation id="208586643495776849">Försök igen</translation>
 <translation id="2086652334978798447">Logga in i Chrome om du vill få förslag på anpassat innehåll från Google.</translation>
 <translation id="2091887806945687916">Ljud</translation>
 <translation id="2096012225669085171">Synkronisera och anpassa på alla enheter</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">Det gick inte att ladda ned <ph name="FILE_NAME" /> på grund av filsystemfel.</translation>
 <translation id="3398320232533725830">Öppna bokmärkeshanteraren</translation>
 <translation id="3414952576877147120">Storlek:</translation>
-<translation id="3434611491093664205">Förbereds för VR …</translation>
 <translation id="3443221991560634068">Läs in den aktuella sidan igen</translation>
 <translation id="3445014427084483498">Alldeles nyss</translation>
 <translation id="3452612588551937789">Logga in med ditt Google-konto så att du kan använda bokmärken, lösenord, historik med mera på alla dina enheter.</translation>
@@ -929,7 +928,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7929962904089429003">Öppna menyn</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> är inaktuell.</translation>
 <translation id="7947953824732555851">Godkänn och logga in</translation>
-<translation id="7960977077911686065">Genom att fortsätta godkänner du att Chrome skickar webbplatsens webbadress och innehåll samt data från Chrome Autofyll till Google för att tillhandahålla tjänsten. Du godkänner även att personlig data du valt skickas till webbplatsen via Chrome Autofyll. \n\nÖppna inställningarna för Chrome om du vill inaktivera Google-assistenten i Chrome och Chrome Autofyll.  <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Leverantör:</translation>
 <translation id="7975379999046275268">Förhandsgranska sida <ph name="BEGIN_NEW" />Nyhet<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Läs in sidor i förväg så att det går snabbare att surfa och söka</translation>
@@ -987,7 +985,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8339163506404995330">Sidor på <ph name="LANGUAGE" /> översätts inte</translation>
 <translation id="8349013245300336738">Sortera efter dataförbrukning</translation>
 <translation id="8372893542064058268">Tillåt bakgrundssynkronisering för en specifik webbplats.</translation>
-<translation id="8373513848523649558">Du kan när som helst <ph name="BEGIN_LINK1" />anpassa inställningarna<ph name="END_LINK1" /></translation>
 <translation id="8374821112118309944">Du måste uppdatera till en senare version av TalkBack.</translation>
 <translation id="8378714024927312812">Hanteras av organisationen</translation>
 <translation id="8380167699614421159">Påträngande eller vilseledande annonser visas på den här webbplatsen</translation>

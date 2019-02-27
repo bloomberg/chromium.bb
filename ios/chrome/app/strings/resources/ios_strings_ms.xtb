@@ -27,6 +27,7 @@
 <translation id="1323735185997015385">Padam</translation>
 <translation id="132683371494960526">Ketik dua kali untuk menukar folder induk.</translation>
 <translation id="1340643665687018190">Tutup Menu</translation>
+<translation id="1358214951266274152">Lawati Pautan yang Disalin</translation>
 <translation id="1360432990279830238">Log keluar dan matikan penyegerakan?</translation>
 <translation id="1375321115329958930">Kata Laluan Disimpan</translation>
 <translation id="1377255359165588604">Penyegerakan telah berhenti berfungsi.</translation>
@@ -45,6 +46,7 @@
 <translation id="1580783302095112590">Mel dihantar.</translation>
 <translation id="1582732959743469162">Ini akan menghentikan semua kemajuan bagi muat turun semasa anda.</translation>
 <translation id="1605658421715042784">Salin Imej</translation>
+<translation id="1608337082864370066">Cari Imej yang Disalin</translation>
 <translation id="1612730193129642006">Tunjukkan Grid Tab</translation>
 <translation id="1644574205037202324">Sejarah</translation>
 <translation id="1650222530560417226">Ketik butang "Hentikan Pengelogan" untuk mengumpulkan log konsol JavaScript yang akan datang dan ralat daripada semua tab. Log akan dikumpulkan (dan disimpan dalam memori sahaja) hingga halaman ini ditutup atau "Hentikan Pengelogan" diketik.</translation>
@@ -70,6 +72,7 @@
 <translation id="1952728750904661634">Log masuk dengan akaun terurus</translation>
 <translation id="1974060860693918893">Lanjutan</translation>
 <translation id="1989112275319619282">Semak Imbas</translation>
+<translation id="2000419248597011803">Menghantar beberapa kuki dan carian daripada bar alamat dan kotak carian ke enjin carian lalai anda</translation>
 <translation id="2015722694326466240">Untuk melihat kata laluan, mula-mula anda mesti menetapkan kod laluan pada peranti anda.</translation>
 <translation id="2068952045031577364">Minggu Yang Lalu</translation>
 <translation id="2079545284768500474">Buat asal</translation>
@@ -78,6 +81,7 @@
 <translation id="2103075008456228677">Buka history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> item dialihkan</translation>
 <translation id="213900355088104901">Untuk menyemak imbas secara tertutup, buka tab inkognito</translation>
+<translation id="2139867232736819575">Cari Teks yang Anda Salin</translation>
 <translation id="2149973817440762519">Edit Penanda Halaman</translation>
 <translation id="2198757192731523470">Google boleh menggunakan sejarah anda untuk memperibadikan Carian, iklan dan perkhidmatan Google yang lain.</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> artikel Senarai Bacaan yang belum dibaca.</translation>
@@ -87,6 +91,7 @@
 <translation id="2267753748892043616">Tambahkan Akaun</translation>
 <translation id="2268044343513325586">Perhalusi</translation>
 <translation id="2273327106802955778">Lagi menu</translation>
+<translation id="2316709634732130529">Gunakan Kata Laluan yang Dicadangkan</translation>
 <translation id="2320166752086256636">Sembunyikan papan kekunci</translation>
 <translation id="2339560363438331454">Segerak dan Perkhidmatan Google</translation>
 <translation id="2351097562818989364">Tetapan terjemahan anda telah ditetapkan semula.</translation>
@@ -125,7 +130,6 @@
 <translation id="2871695793448672541">Disembunyikan, Kata Laluan</translation>
 <translation id="288655811176831528">Tutup Tab</translation>
 <translation id="2898963176829412617">Folder Baharu…</translation>
-<translation id="2916171785467530738">Autolengkap Carian dan URL</translation>
 <translation id="291754862089661335">Letakkan kod QR atau kod bar dalam bingkai ini</translation>
 <translation id="2921219216347069551">Tidak Boleh Berkongsi Halaman</translation>
 <translation id="2923448633003185837">Tampal dan Pergi</translation>
@@ -152,7 +156,6 @@
 <translation id="3329904751041170572">Tidak dapat menyambung ke pelayan.</translation>
 <translation id="3335947283844343239">Buka Semula Tab Yang Ditutup</translation>
 <translation id="3393920035788932672">Pop Timbul Dibenarkn</translation>
-<translation id="3424059454230285158">Anda boleh <ph name="BEGIN_LINK" />menyesuaikan tetapan ini<ph name="END_LINK" /> pada bila-bila masa</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Paparan Pisah</translation>
 <translation id="345565170154308620">Urus Kata Laluan...</translation>
@@ -183,6 +186,7 @@
 <translation id="385051799172605136">Kembali</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3915450441834151894">Maklumat Tapak</translation>
+<translation id="3922310737605261887">Cari Teks yang Disalin</translation>
 <translation id="3928666092801078803">Gabungkan data saya</translation>
 <translation id="3929457972718048006">Alamat</translation>
 <translation id="3943492037546055397">Kata laluan</translation>
@@ -257,6 +261,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5083464117946352670">Tidak dapat menentukan saiz fail.</translation>
 <translation id="5094827893301452931">Tweet selesai.</translation>
 <translation id="5132942445612118989">Segerakkan kata laluan, sejarah &amp; pelbagai lagi pada semua peranti</translation>
+<translation id="5140288047769711648">Chrome akan mengingat kata laluan ini untuk anda. Anda tidak perlu mengingatnya.</translation>
 <translation id="5181140330217080051">Memuat turun</translation>
 <translation id="5186185447130319458">Peribadi</translation>
 <translation id="5190835502935405962">Bar Penanda Halaman</translation>
@@ -293,6 +298,7 @@ Serah mestilah turut didayakan dalam bahagian Umum pada Tetapan dan peranti anda
 <translation id="5865733239029070421">Menghantar perangkaan penggunaan dan laporan ranap sistem secara automatik kepada Google</translation>
 <translation id="5869029295770560994">OK, Faham</translation>
 <translation id="5871497086027727873">1 item dialihkan</translation>
+<translation id="5897956970858271241">Lawati Pautan Disalin</translation>
 <translation id="5911030830365207728">Google Terjemah</translation>
 <translation id="5916664084637901428">Hidupkan</translation>
 <translation id="5938160824633642847">Peranti anda hampir penuh. Kosongkan ruang dan cuba lagi.</translation>
@@ -347,6 +353,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="6445981559479772097">Mesej dihantar.</translation>
 <translation id="6464071786529933911">Buka dalam Tab Inkognito Baharu</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> item dipadamkan</translation>
+<translation id="6513773942555305766">Kata laluan yang Dicadangkan oleh Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Sejam Yang Lalu</translation>
 <translation id="6548479190262846511">Tiada kata laluan ditemui untuk tapak ini</translation>
 <translation id="6642362222295953972">Beralih ke tab yang sedia ada</translation>
@@ -354,6 +361,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="6656103420185847513">Edit Folder</translation>
 <translation id="6657585470893396449">Kata laluan</translation>
 <translation id="667999046851023355">Dokumen</translation>
+<translation id="6691331417640343772">Urus data disegerak pada Papan Pemuka Google</translation>
 <translation id="6709334795756764830">Edit Penanda Halaman</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Tidak Dapat Mengeskport Kata Laluan</translation>
@@ -366,6 +374,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="6851516051005285358">Minta Tapak Versi Komputer</translation>
 <translation id="6896758677409633944">Salin</translation>
 <translation id="6903907808598579934">Hidupkan penyegerakan</translation>
+<translation id="6914583639806229067">Cari Imej yang Anda Salin</translation>
 <translation id="6914783257214138813">Kata laluan anda akan kelihatan kepada sesiapa yang dapat melihat fail yang dieksport.</translation>
 <translation id="6945221475159498467">Pilih</translation>
 <translation id="6973630695168034713">Folder</translation>
@@ -412,6 +421,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="7658239707568436148">Batal</translation>
 <translation id="766891008101699113">Untuk menyemak imbas web secara sulit, tambahkan tab baharu.</translation>
 <translation id="7671141431838911305">PASANG</translation>
+<translation id="7704317875155739195">Autolengkap carian dan URL</translation>
 <translation id="7765158879357617694">Alih</translation>
 <translation id="7769602470925380267">Terima dan log keluar</translation>
 <translation id="7772032839648071052">Sahkan frasa laluan</translation>
@@ -439,7 +449,6 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="8073670137947914548">Muat turun selesai</translation>
 <translation id="8076014560081431679">Tetapan tapak yang disimpan tidak akan dipadamkan dan mungkin mencerminkan tabiat semak imbas anda. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Muat turun fail tersedia. Pilihan tersedia di bahagian bawah skrin.</translation>
-<translation id="8160722851663543621">Menghantar carian daripada bar alamat dan kotak carian serta beberapa kuki ke enjin carian lalai anda</translation>
 <translation id="8205564605687841303">Batal</translation>
 <translation id="8225985093977202398">Imej dan Fail Dicache</translation>
 <translation id="8261506727792406068">Padam</translation>

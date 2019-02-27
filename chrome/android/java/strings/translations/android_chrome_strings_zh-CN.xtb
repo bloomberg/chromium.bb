@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">进入 VR</translation>
 <translation id="116280672541001035">已耗用</translation>
 <translation id="1172593791219290334">启动页</translation>
+<translation id="1173894706177603556">重命名</translation>
 <translation id="1175310183703641346">您的书签、历史记录、密码和其他设置将不再同步到您的 Google 帐号中</translation>
 <translation id="1178581264944972037">暂停</translation>
 <translation id="1181037720776840403">删除</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">点按搜索</translation>
 <translation id="2079545284768500474">撤消</translation>
 <translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 条结果，共 <ph name="TOTAL_RESULTS" /> 条</translation>
-<translation id="208586643495776849">请重试</translation>
 <translation id="2086652334978798447">要获取 Google 推荐的个性化内容，请登录 Chrome。</translation>
 <translation id="2091887806945687916">声音</translation>
 <translation id="2096012225669085171">在所有设备上保持同步并进行个性化设置</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">未能成功下载 <ph name="FILE_NAME" />，因为文件系统出现了错误。</translation>
 <translation id="3398320232533725830">打开书签管理器</translation>
 <translation id="3414952576877147120">大小：</translation>
-<translation id="3434611491093664205">正在准备 VR…</translation>
 <translation id="3443221991560634068">重新加载当前网页</translation>
 <translation id="3445014427084483498">刚刚</translation>
 <translation id="3452612588551937789">在任意设备上登录 Google 帐号后，您即可获取自己的书签、历史记录、密码及其他设置。</translation>
@@ -929,7 +928,6 @@
 <translation id="7929962904089429003">打开菜单</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> 不是最新版本。</translation>
 <translation id="7947953824732555851">接受并登录</translation>
-<translation id="7960977077911686065">继续操作即表示您同意：Chrome 可将 Chrome 自动填充功能所保存的数据以及相应网站的网址和内容发送给 Google，以便为您提供此项服务。您也同意：Chrome 可通过 Chrome 自动填充功能将您选择的个人数据发送给相应网站。\n\n若想关闭 Chrome 中的 Google 助理和 Chrome 自动填充功能，请访问 Chrome 设置。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">供应商：</translation>
 <translation id="7975379999046275268">预览网页<ph name="BEGIN_NEW" />新<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">预加载网页，以便实现更快速的浏览和搜索</translation>
@@ -987,7 +985,6 @@
 <translation id="8339163506404995330">系统不会自动翻译源语言为<ph name="LANGUAGE" />的网页</translation>
 <translation id="8349013245300336738">按已使用的数据流量排序</translation>
 <translation id="8372893542064058268">允许特定网站进行后台同步。</translation>
-<translation id="8373513848523649558">您可以随时<ph name="BEGIN_LINK1" />自定义这些设置<ph name="END_LINK1" /></translation>
 <translation id="8374821112118309944">您需要将 TalkBack 更新到更高版本。</translation>
 <translation id="8378714024927312812">由贵单位管理</translation>
 <translation id="8380167699614421159">此网站会展示侵扰性或误导性广告</translation>

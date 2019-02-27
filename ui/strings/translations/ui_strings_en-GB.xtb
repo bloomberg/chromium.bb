@@ -82,6 +82,7 @@
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909791450649380159">Cu&amp;t</translation>
 <translation id="3990502903496589789">Right Edge</translation>
+<translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 unread notification}other{# unread notifications}}</translation>
 <translation id="4202807286478387388">jump</translation>
 <translation id="4250229828105606438">Screenshot</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 month ago}other{# months ago}}</translation>
@@ -203,4 +204,5 @@
 <translation id="9161053988251441839">SUGGESTED APPS</translation>
 <translation id="9170848237812810038">&amp;Undo</translation>
 <translation id="932327136139879170">Home</translation>
+<translation id="944069440740578670">Unread notifications</translation>
 </translationbundle>

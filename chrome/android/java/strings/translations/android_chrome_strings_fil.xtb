@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">Pumasok sa VR</translation>
 <translation id="116280672541001035">Nagamit</translation>
 <translation id="1172593791219290334">Page sa Pagsisimula</translation>
+<translation id="1173894706177603556">Pangalanang muli</translation>
 <translation id="1175310183703641346">Hindi na isi-sync sa Google Account mo ang iyong mga bookmark, history, password, at higit pa</translation>
 <translation id="1178581264944972037">I-pause</translation>
 <translation id="1181037720776840403">Alisin</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">Mag-tap upang Maghanap</translation>
 <translation id="2079545284768500474">I-undo</translation>
 <translation id="2082238445998314030">Resulta <ph name="RESULT_NUMBER" /> sa <ph name="TOTAL_RESULTS" /></translation>
-<translation id="208586643495776849">Pakisubukang muli</translation>
 <translation id="2086652334978798447">Upang makakuha ng naka-personalize na content na iminumungkahi ng Google, mag-sign in sa Chrome.</translation>
 <translation id="2091887806945687916">Tunog</translation>
 <translation id="2096012225669085171">Mag-sync at mag-personalize sa lahat ng device</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">Hindi na-download ang <ph name="FILE_NAME" /> dahil sa mga error sa file system.</translation>
 <translation id="3398320232533725830">Buksan ang bookmarks manager</translation>
 <translation id="3414952576877147120">Laki:</translation>
-<translation id="3434611491093664205">Naghahanda para sa VR…</translation>
 <translation id="3443221991560634068">I-reload ang kasalukuyang page</translation>
 <translation id="3445014427084483498">Ngayon Lang</translation>
 <translation id="3452612588551937789">Mag-sign in sa iyong Google Account upang makuha ang iyong mga bookmark, history, password at iba pang mga setting sa lahat ng iyong device.</translation>
@@ -929,7 +928,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7929962904089429003">Buksan ang menu</translation>
 <translation id="7942131818088350342">Luma na ang <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7947953824732555851">I-accept, mag-sign in</translation>
-<translation id="7960977077911686065">Kapag nagpatuloy, sumasang-ayon kang magpapadala ang Chrome ng data mula sa Chrome Autofill, URL ng site, at content nito sa Google para maibigay ang serbisyong ito. Sumasang-ayon ka ring ipapadala ng Chrome ang personal na data na pinili mo sa website sa pamamagitan ng Chrome Autofill. \n\nBisitahin ang mga setting ng Chrome para i-off ang Google Assistant sa Chrome at Chrome Autofill.  <ph name="BEGIN_LINK" />Matuto pa<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">Vendor:</translation>
 <translation id="7975379999046275268">I-preview ang page na <ph name="BEGIN_NEW" />Bago<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">I-preload ang mga page para sa mas mabilis na pag-browse at paghahanap</translation>
@@ -987,7 +985,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8339163506404995330">Hindi isasalin ang mga page na nasa <ph name="LANGUAGE" /></translation>
 <translation id="8349013245300336738">Pagbukud-bukurin ayon sa dami ng data na nagamit</translation>
 <translation id="8372893542064058268">Payagan ang Pag-sync sa Background para sa isang partikular na site.</translation>
-<translation id="8373513848523649558">Maaari mong <ph name="BEGIN_LINK1" />i-customize ang mga setting na ito<ph name="END_LINK1" /> anumang oras</translation>
 <translation id="8374821112118309944">Kailangan mong i-update ang TalkBack sa isang mas bagong bersyon.</translation>
 <translation id="8378714024927312812">Pinapamahalaan ng iyong organisasyon</translation>
 <translation id="8380167699614421159">Nagpapakita ang site na ito ng mga nakakasagabal o nakakapanlinlang na ad</translation>

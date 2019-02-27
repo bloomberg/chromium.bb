@@ -32,6 +32,7 @@
 <translation id="1930711995431081526">స్థితి</translation>
 <translation id="1938124657309484470">విలువ తప్పనిసరిగా <ph name="MAXIMUM_DATE_OR_TIME" /> లేదా అంతకంటే మునుపటిది అయి ఉండాలి.</translation>
 <translation id="1946271899482435442">తేదీ ఎంపికను చూపుతుంది</translation>
+<translation id="1982354452682152483">వివరణ ఏదీ లేదు.</translation>
 <translation id="1993104285338243655">మిర్రరింగ్‌కు మార్చబడింది</translation>
 <translation id="2060505056492490888">'<ph name="INVALIDDOMAIN" />'లో '<ph name="DOT" />' తప్పు స్థానంలో ఉపయోగించబడింది.</translation>
 <translation id="2148716181193084225">ఈ రోజు</translation>
@@ -73,6 +74,7 @@
 <translation id="3450233048674729344">విలువ ఖచ్చితంగా <ph name="MAXIMUM" /> కంటే తగ్గువగా లేదా సమానంగా ఉండాలి.</translation>
 <translation id="3486220673238053218">నిర్వచనం</translation>
 <translation id="3557673793733683882">ముఖ్య శీర్షిక <ph name="HEADING_LEVEL" /></translation>
+<translation id="3685101356851116974">లేబుల్ లేని చిత్రం</translation>
 <translation id="3706100364254443312">మార్పు</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
@@ -153,6 +155,7 @@
 <translation id="6453774872122745852">గుర్తింపులు</translation>
 <translation id="648732519525291180">సమయం ఎంపిక</translation>
 <translation id="6550675742724504774">ఎంపికలు</translation>
+<translation id="6572309429103589720">చెల్లని వ్యాకరణం</translation>
 <translation id="658823671542763450">పూర్తి స్క్రీన్‌లోకి ప్రవేశించు</translation>
 <translation id="663493177488814956">ఫీడ్</translation>
 <translation id="6637586476836377253">log</translation>
@@ -175,6 +178,7 @@
 <translation id="7139483182332611405">ముందుమాట</translation>
 <translation id="7263440858009898357">దయచేసి జాబితాలోని ఒక అంశాన్ని ఎంచుకోండి.</translation>
 <translation id="727747134524199931">నిలువు వరుస శీర్షిక</translation>
+<translation id="7336527682887843386">వివరణను పొందడం సాధ్యపడలేదు.</translation>
 <translation id="7353453495576941748">సహకారి</translation>
 <translation id="7364796246159120393">ఫైల్‌ను ఎంచుకోండి</translation>
 <translation id="739024184232394898">ఇతర...</translation>
@@ -183,22 +187,28 @@
 <translation id="7491962110804786152">tab</translation>
 <translation id="7514365320538308">డౌన్‌లోడ్ చేయి</translation>
 <translation id="7529102961911894712">వెనుకకు తీసుకువెళ్లే లింక్‌</translation>
+<translation id="7533959249147584474">లేబుల్ లేని గ్రాఫిక్</translation>
 <translation id="7647456547678091388">చిట్కా</translation>
 <translation id="7661956066982048809">గ్రాఫిక్స్ పత్రం</translation>
 <translation id="7673697353781729403">గంటలు</translation>
 <translation id="7681220483256441252">సూచిక</translation>
 <translation id="7740050170769002709">HTML కంటెంట్</translation>
+<translation id="7745230546936012372">అందించలేకపోయిన చిత్ర వివరణలను పొందడానికి, సందర్భ మెనూని తెరవండి.</translation>
 <translation id="7750228210027921155">చిత్రంలో చిత్రం</translation>
+<translation id="775297008183122718">నమోదు చెల్లదు</translation>
 <translation id="7789962463072032349">నిలిపివేయి</translation>
 <translation id="7802800022689234070">కంటెంట్‌ను విస్తరింపజేసే లేదా కుదించే త్రిభుజం</translation>
 <translation id="7888071071722539607">దయచేసి ఇమెయిల్ చిరునామాలో '<ph name="ATSIGN" />'ని చేర్చండి. '<ph name="INVALIDADDRESS" />'లో '<ph name="ATSIGN" />' లేదు.</translation>
 <translation id="7891486169920085145">విభజన</translation>
 <translation id="795667975304826397">ఫైల్ ఏదీ ఎంచుకోలేదు</translation>
+<translation id="8042519864538898414">పెద్దలకు మాత్రమే తగిన విషయాలుగా కనిపిస్తున్నాయి.</translation>
 <translation id="8053789581856978548">శోధన వచనం ఫీల్డ్</translation>
 <translation id="8057695513531652401">గమనిక</translation>
 <translation id="8105797009065549151">గమనిక సూచన</translation>
+<translation id="811583516810654505">వివరణను పొందుతోంది...</translation>
 <translation id="8117451130807776954">ఈ వారం</translation>
 <translation id="8199524924445686405">yyyy</translation>
+<translation id="8261464734335370856">చెల్లని అక్షరక్రమం</translation>
 <translation id="8284326494547611709">ఉపశీర్షికలు</translation>
 <translation id="835897206747267392">చెల్లని విలువ.</translation>
 <translation id="8403857369060869934">గడిచిన సమయం: <ph name="ELAPSED_TIME" /></translation>

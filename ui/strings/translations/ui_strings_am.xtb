@@ -82,6 +82,7 @@
 <translation id="3897092660631435901">ምናሌ</translation>
 <translation id="3909791450649380159">&amp;ቁረጥ</translation>
 <translation id="3990502903496589789">የቀኝ ጠርዝ</translation>
+<translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 ያልተነበበ ማሳወቂያ}one{# ያልተነበቡ ማሳወቂያዎች}other{# ያልተነበቡ ማሳወቂያዎች}}</translation>
 <translation id="4202807286478387388">ዝለል</translation>
 <translation id="4250229828105606438">ቅጽበታዊ ገጽ እይታ</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{ከ1 ወር በፊት}one{ከ# ወሮች በፊት}other{ከ# ወሮች በፊት}}</translation>
@@ -203,4 +204,5 @@
 <translation id="9161053988251441839">በአስተያየት የተጠቆሙ መተግበሪያዎች</translation>
 <translation id="9170848237812810038">&amp;ቀልብስ</translation>
 <translation id="932327136139879170">መነሻ</translation>
+<translation id="944069440740578670">ያልተነበቡ ማሳወቂያዎች</translation>
 </translationbundle>

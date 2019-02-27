@@ -32,6 +32,7 @@
 <translation id="1930711995431081526">estat</translation>
 <translation id="1938124657309484470">El valor ha de ser <ph name="MAXIMUM_DATE_OR_TIME" /> o anterior.</translation>
 <translation id="1946271899482435442">Mostra el selector de dates</translation>
+<translation id="1982354452682152483">No hi ha cap descripció disponible.</translation>
 <translation id="1993104285338243655">S'ha canviat a projecció</translation>
 <translation id="2060505056492490888">"<ph name="DOT" />" s'ha utilitzat en una posició incorrecta a "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Avui</translation>
@@ -73,6 +74,7 @@
 <translation id="3450233048674729344">El valor ha de ser més petit o igual que <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definició</translation>
 <translation id="3557673793733683882">capçalera <ph name="HEADING_LEVEL" /></translation>
+<translation id="3685101356851116974">Imatge sense etiquetar</translation>
 <translation id="3706100364254443312">commutador</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
@@ -153,6 +155,7 @@
 <translation id="6453774872122745852">agraïments</translation>
 <translation id="648732519525291180">selector d'hora</translation>
 <translation id="6550675742724504774">Opcions</translation>
+<translation id="6572309429103589720">La gramàtica no és vàlida</translation>
 <translation id="658823671542763450">passa a pantalla completa</translation>
 <translation id="663493177488814956">El meu tauler</translation>
 <translation id="6637586476836377253">registre</translation>
@@ -175,6 +178,7 @@
 <translation id="7139483182332611405">prefaci</translation>
 <translation id="7263440858009898357">Seleccioneu un element de la llista.</translation>
 <translation id="727747134524199931">capçalera de columna</translation>
+<translation id="7336527682887843386">No s'ha pogut obtenir cap descripció.</translation>
 <translation id="7353453495576941748">crèdit</translation>
 <translation id="7364796246159120393">Tria un fitxer</translation>
 <translation id="739024184232394898">Altres...</translation>
@@ -183,22 +187,28 @@
 <translation id="7491962110804786152">pestanya</translation>
 <translation id="7514365320538308">Baixa</translation>
 <translation id="7529102961911894712">enllaç d'entrada</translation>
+<translation id="7533959249147584474">Gràfic sense etiqueta</translation>
 <translation id="7647456547678091388">consell</translation>
 <translation id="7661956066982048809">document gràfic</translation>
 <translation id="7673697353781729403">Hores</translation>
 <translation id="7681220483256441252">índex</translation>
 <translation id="7740050170769002709">Contingut HTML</translation>
+<translation id="7745230546936012372">Per obtenir les descripcions que falten de les imatges, obre el menú contextual.</translation>
 <translation id="7750228210027921155">Pantalla en pantalla</translation>
+<translation id="775297008183122718">Entrada no vàlida</translation>
 <translation id="7789962463072032349">posa en pausa</translation>
 <translation id="7802800022689234070">triangle desplegable</translation>
 <translation id="7888071071722539607">Incloeu el símbol "<ph name="ATSIGN" />" a l'adreça electrònica. Al camp "<ph name="INVALIDADDRESS" />" falta el símbol "<ph name="ATSIGN" />".</translation>
 <translation id="7891486169920085145">divisor</translation>
 <translation id="795667975304826397">No s'ha triat cap fitxer</translation>
+<translation id="8042519864538898414">Sembla que és contingut per a adults.</translation>
 <translation id="8053789581856978548">camp de text de la cerca</translation>
 <translation id="8057695513531652401">avís</translation>
 <translation id="8105797009065549151">referència de la nota</translation>
+<translation id="811583516810654505">S'està obtenint la descripció...</translation>
 <translation id="8117451130807776954">Aquesta setmana</translation>
 <translation id="8199524924445686405">aaaa</translation>
+<translation id="8261464734335370856">L'ortografia no és vàlida</translation>
 <translation id="8284326494547611709">Subtítols</translation>
 <translation id="835897206747267392">Valor no vàlid.</translation>
 <translation id="8403857369060869934">temps transcorregut: <ph name="ELAPSED_TIME" /></translation>

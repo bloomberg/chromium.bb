@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">進入 VR</translation>
 <translation id="116280672541001035">使用量</translation>
 <translation id="1172593791219290334">起始網頁</translation>
+<translation id="1173894706177603556">重新命名</translation>
 <translation id="1175310183703641346">系統會將你的書籤、歷史記錄、密碼和其他設定與你的 Google 帳戶保持同步。</translation>
 <translation id="1178581264944972037">暫停</translation>
 <translation id="1181037720776840403">移除</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">輕觸搜尋</translation>
 <translation id="2079545284768500474">復原</translation>
 <translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 個結果，共 <ph name="TOTAL_RESULTS" /> 個</translation>
-<translation id="208586643495776849">請再試一次</translation>
 <translation id="2086652334978798447">如要取得個人化的 Google 推薦內容，請登入 Chrome。</translation>
 <translation id="2091887806945687916">音訊</translation>
 <translation id="2096012225669085171">讓多部裝置保持同步，並提供人化體驗</translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">檔案系統發生錯誤，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="3398320232533725830">開啟書籤管理員</translation>
 <translation id="3414952576877147120">空間大小：</translation>
-<translation id="3434611491093664205">正在準備使用 VR…</translation>
 <translation id="3443221991560634068">重新載入目前網頁</translation>
 <translation id="3445014427084483498">剛剛</translation>
 <translation id="3452612588551937789">只要使用 Google 帳戶登入，您就可以在所有裝置上存取自己的書籤、密碼、歷史記錄、密碼和其他設定。</translation>
@@ -929,7 +928,6 @@
 <translation id="7929962904089429003">開啟選單</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> 版本過舊。</translation>
 <translation id="7947953824732555851">接受並登入</translation>
-<translation id="7960977077911686065">選擇繼續即表示您同意 Chrome 將 Chrome 自動填入功能取得的資料、網站的網址及內容傳送給 Google，讓 Google 為您提供這項服務。您也同意 Chrome 將您所選的個人資料透過 Chrome 自動填入功能傳送給該網站。\n\n如要關閉 Chrome 版 Google 助理和 Chrome 自動填入功能，請前往 Chrome 設定。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">供應商：</translation>
 <translation id="7975379999046275268">預覽網頁 <ph name="BEGIN_NEW" />新功能<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">預先載入網頁，以加快瀏覽及搜尋速度</translation>
@@ -987,7 +985,6 @@
 <translation id="8339163506404995330">系統將不會翻譯<ph name="LANGUAGE" />網頁</translation>
 <translation id="8349013245300336738">依使用資料量排序</translation>
 <translation id="8372893542064058268">允許特定網站執行背景同步處理作業。</translation>
-<translation id="8373513848523649558">你隨時可以<ph name="BEGIN_LINK1" />自訂這些設定<ph name="END_LINK1" /></translation>
 <translation id="8374821112118309944">請更新至新版 TalkBack。</translation>
 <translation id="8378714024927312812">由貴機構管理</translation>
 <translation id="8380167699614421159">這個網站會顯示干擾性或誤導性的廣告</translation>

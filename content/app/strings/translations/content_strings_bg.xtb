@@ -32,6 +32,7 @@
 <translation id="1930711995431081526">състояние</translation>
 <translation id="1938124657309484470">Стойността трябва да е <ph name="MAXIMUM_DATE_OR_TIME" /> или по-рано.</translation>
 <translation id="1946271899482435442">Показване на инструмента за избор на дата</translation>
+<translation id="1982354452682152483">Няма налично описание.</translation>
 <translation id="1993104285338243655">Превключихте към дублиране</translation>
 <translation id="2060505056492490888">„<ph name="DOT" />“ се използва на неправилна позиция в/ъв „<ph name="INVALIDDOMAIN" />“.</translation>
 <translation id="2148716181193084225">Днес</translation>
@@ -73,6 +74,7 @@
 <translation id="3450233048674729344">Стойността трябва да е по-малка или равна на <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">дефиниция</translation>
 <translation id="3557673793733683882">заглавие от ниво <ph name="HEADING_LEVEL" /></translation>
+<translation id="3685101356851116974">Изображение без етикет</translation>
 <translation id="3706100364254443312">превключвател</translation>
 <translation id="3732799496749320381">мм</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> ГБ</translation>
@@ -153,6 +155,7 @@
 <translation id="6453774872122745852">признания</translation>
 <translation id="648732519525291180">инструмент за избор на час</translation>
 <translation id="6550675742724504774">Опции</translation>
+<translation id="6572309429103589720">Невалидна граматика</translation>
 <translation id="658823671542763450">вход за цял екран</translation>
 <translation id="663493177488814956">емисия</translation>
 <translation id="6637586476836377253">регистрационен файл</translation>
@@ -175,6 +178,7 @@
 <translation id="7139483182332611405">предисловие</translation>
 <translation id="7263440858009898357">Моля, изберете елемент в списъка.</translation>
 <translation id="727747134524199931">заглавка на колона</translation>
+<translation id="7336527682887843386">Не може да бъде изтеглено описание.</translation>
 <translation id="7353453495576941748">признание за източника</translation>
 <translation id="7364796246159120393">Избор на файл</translation>
 <translation id="739024184232394898">Други...</translation>
@@ -183,22 +187,28 @@
 <translation id="7491962110804786152">раздел</translation>
 <translation id="7514365320538308">Изтегляне</translation>
 <translation id="7529102961911894712">препратка</translation>
+<translation id="7533959249147584474">Графика без етикет</translation>
 <translation id="7647456547678091388">съвет</translation>
 <translation id="7661956066982048809">графичен документ</translation>
 <translation id="7673697353781729403">Часове</translation>
 <translation id="7681220483256441252">показалец</translation>
 <translation id="7740050170769002709">HTML съдържание</translation>
+<translation id="7745230546936012372">За да изтеглите липсващите описания на изображения, отворете контекстното меню.</translation>
 <translation id="7750228210027921155">Картина в картината</translation>
+<translation id="775297008183122718">Въведеното е невалидно</translation>
 <translation id="7789962463072032349">поставяне на пауза</translation>
 <translation id="7802800022689234070">триъгълник за разкриване на съдържание</translation>
 <translation id="7888071071722539607">Моля, включете „<ph name="ATSIGN" />“ в имейл адреса. В/ъв „<ph name="INVALIDADDRESS" />“ липсва „<ph name="ATSIGN" />“.</translation>
 <translation id="7891486169920085145">разделител</translation>
 <translation id="795667975304826397">Няма избран файл</translation>
+<translation id="8042519864538898414">Съдържанието изглежда е за пълнолетни.</translation>
 <translation id="8053789581856978548">текстово поле за търсене</translation>
 <translation id="8057695513531652401">известие</translation>
 <translation id="8105797009065549151">препратка към бележка</translation>
+<translation id="811583516810654505">Описанието се изтегля...</translation>
 <translation id="8117451130807776954">Тази седмица</translation>
 <translation id="8199524924445686405">гггг</translation>
+<translation id="8261464734335370856">Невалиден правопис</translation>
 <translation id="8284326494547611709">Надписи</translation>
 <translation id="835897206747267392">Невалидна стойност.</translation>
 <translation id="8403857369060869934">изминало време: <ph name="ELAPSED_TIME" /></translation>

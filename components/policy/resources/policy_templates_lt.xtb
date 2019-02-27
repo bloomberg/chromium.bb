@@ -24,6 +24,7 @@
       Kai ši politika nustatyta kaip „netiesa“ arba nenustatyta, IdP nustatyti slapukai perkeliami į naudotojo profilį, tik kai naudotojas pirmą kartą prisijungia įrenginyje.
 
       Ši politika paveikia tik tuos naudotojus, kurių domenas sutampa su įrenginio registracijos domenu. Kitų naudotojų atvejais IdP nustatyti slapukai perkeliami į naudotojo profilį, tik kai naudotojas pirmą kartą prisijungia įrenginyje.</translation>
+<translation id="1029052664284722254">Priverstinis įrenginio paleidimas iš naujo naudotojui atsijungus</translation>
 <translation id="1030120600562044329">Įgalinamas anonimiškų „Google“ skirtų „<ph name="PRODUCT_NAME" />“ naudojimo ir su strigtimis susijusių duomenų ataskaitų kūrimas; naudotojams šio nustatymo keisti neleidžiama.
 
       Jei įgalinsite šį nustatymą, „Google“ bus siunčiamos anonimiškos naudojimo ir su strigtimis
@@ -153,13 +154,6 @@
 <translation id="1307454923744766368">Šaltiniai arba prieglobos serverio pavadinimo šablonai, kuriems netaikomi
       nesaugių šaltinių apribojimai</translation>
 <translation id="1312799700549720683">Valdomi pateikties nustatymai.</translation>
-<translation id="1313457536529613143">Nurodomas ekrano užtemdymo delsos mastelio keitimo procentas, kai aptinkama naudotojo veikla ekranui esant užtemdytam ar iškart po to, kai ekranas išjungiamas.
-
-         Jei ši politika nustatyta, ji nurodo ekrano užtemdymo delsos mastelio keitimo procentą, kai aptinkama naudotojo veikla ekranui esant užtemdytam ar iškart po to, kai ekranas išjungiamas. Kai užtemdymo delsa nustatyta, ekrano išjungimo, užrakinimo ir neveikos būsenos delsos koreguojamos siekiant išlaikyti vienodą laiką nuo pirminės sukonfigūruotos užtemdymo delsos.
-
-          Jei ši politika nenustatyta, naudojamas numatytasis skalės mastelio faktorius.
-
-          Skalės mastelio faktorius turi būti 100 proc. arba daugiau.</translation>
 <translation id="131353325527891113">Rodyti naudotojų vardus prisijungimo ekrane</translation>
 <translation id="1327466551276625742">Įgalinti tinklo konfigūracijos raginimą, kai esate neprisijungę</translation>
 <translation id="1330145147221172764">Įgalinti ekrano klaviatūrą</translation>
@@ -375,6 +369,17 @@
 
           Šios politikos laikomasi, tik jei įgalinta politika „DefaultSearchProviderEnabled“.</translation>
 <translation id="1852294065645015766">Leisti automatiškai leisti mediją</translation>
+<translation id="1857152770025485173">Naudojant šią politiką naudotojams neleidžiama įkelti tinklalapių iš juodojo URL sąrašo. Juodajame sąraše pateikiami URL šablonai, nurodantys, kurie URL bus įtraukti į juodąjį sąrašą.
+
+      URL šablonas turi būti suformatuotas atsižvelgiant į gaires, pateikiamas adresu https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Išimtis galima nurodyti URL baltojo sąrašo politikoje. Į politiką galima įtraukti iki 1000 įrašų – į kitus nebus atsižvelgiama.
+
+      Atminkite, kad nerekomenduojama blokuoti vidinių chrome://* URL, nes gali atsirasti netikėtų klaidų.
+
+      Iš M73 galite blokuoti javascript://* URL. Tačiau tai daro poveikį tik adreso juostoje įrašytam „JavaScript“ (arba, pvz., žymelėms). Atminkite, kad puslapio „JavaScript“ URL netaikoma ši politika (jei duomenys įkeliami dinamiškai). Pavyzdžiui, užblokavus example.com/abc, puslapis example.com vis tiek galės įkelti example.com/abc naudojant „XMLHTTPRequest“.
+
+      Jei ši politika nenustatyta, į naršyklės juodąjį sąrašą nebus įtrauktas nė vienas URL.</translation>
 <translation id="1859859319036806634">Įspėjimas: atsarginės TLS versijos naudojimas bus pašalintas iš „<ph name="PRODUCT_NAME" />“ įdiegus 52 versiją (maždaug 2016 m. rugsėjo mėn.), tada ši politika nustos veikti.
 
       Įvykus TLS išankstinio suderinimo klaidai, „<ph name="PRODUCT_NAME" />“ anksčiau iš naujo bandydavo užmegzti ryšį su senesnės versijos TLS, kad išvengtų riktų HTTPS serveriuose. Nustačius šį nustatymą konfigūruojama versija, kurią pasiekus šis surogato procesas bus sustabdytas. Jei serveris tinkamai suderina versiją (t. y. nenutraukdamas ryšio), šis nustatymas netaikomas. Nepaisant to, užmegztas ryšys vis tiek turi atitikti „SSLVersionMin“.
@@ -653,6 +658,7 @@
       Jei ši politika nenustatyta arba nustatyta kaip „Tiesa“ ir įrenginio vietinė paskyra sukonfigūruota automatiškai prisijungti be delsos, „<ph name="PRODUCT_OS_NAME" />“ leidžiami spartieji klavišai „Ctrl“ + „Alt“ + S, skirti apeiti automatinį prisijungimą ir parodyti prisijungimo ekraną.
 
       Jei ši politika nustatyta kaip „Netiesa“, automatinio prisijungimo be delsos (jei sukonfigūruota) apeiti negalima.</translation>
+<translation id="2454228136871844693">Optimizuoti, kad veiktų stabiliai.</translation>
 <translation id="2463365186486772703">Programos lokalė</translation>
 <translation id="2466131534462628618">Fiksuotojo portalo autentifikavimas nepaiso tarpinio serverio</translation>
 <translation id="2482676533225429905">Savoji susirašinėjimo pranešimais programa</translation>
@@ -854,6 +860,31 @@
 
       Jei ši politika naudojama, naudotojui pasiekiami tik spausdintuvai, kurių ID atitinka šioje politikoje nurodytas vertes. ID turi atitikti laukus „id“ arba „guid“ faile, kuris nurodytas „<ph name="DEVICE_PRINTERS_POLICY" />“.
       </translation>
+<translation id="2842152347010310843">Valdo į baltąjį sąrašą įtrauktus URL šablonus, kuriuose automatinis paleidimas bus visada įgalintas.
+
+      Jei automatinis paleidimas įgalintas, sistemoje „<ph name="PRODUCT_NAME" />“ vaizdo įrašus galima leisti automatiškai (be naudotojo sutikimo) su garso turiniu.
+
+      Toliau pateiktos tinkamo URL šablono specifikacijos.
+
+      - [*.]domain.tld (atitinka domain.tld ir visus padomenius)
+
+      - host (atitinka konkretų prieglobos serverio pavadinimą)
+
+      - scheme://host:port (palaikomos schemos: http,https)
+
+      - scheme://[*.]domain.tld:port (palaikomos schemos: http,https)
+
+      - file://path (kelias turi būti tikrasis kelias ir prasidėti simboliu „/“)
+
+      - a.b.c.d (atitinka tikslų „IPv4“ IP)
+
+      - [a:b:c:d:e:f:g:h] (atitinka tikslų „IPv6“ IP)
+
+      Jei politika „AutoplayAllowed“ nustatyta į „True“, ši politika neturės jokio poveikio.
+
+      Jei politika „AutoplayAllowed“ nustatyta į „False“, bus galima leisti turinį, atitinkantį šioje politikoje nustatytus URL šablonus.
+
+      Atminkite, kad pakeitus šią politiką veikiant „<ph name="PRODUCT_NAME" />“, ji bus taikoma tik naujai atidarytuose skirtukuose. Todėl kai kuriuose skirtukuose gali išlikti ankstesnė elgsena.</translation>
 <translation id="285480231336205327">Įgalinti didelio kontrasto būseną</translation>
 <translation id="2854919890879212089">Kaip numatytoji funkcijos „Spaudinio peržiūra“ parinktis „<ph name="PRODUCT_NAME" />“ naudojamas sistemos numatytasis spausdintuvas, o ne pastarasis naudotas spausdintuvas.
 
@@ -973,6 +1004,7 @@
       Jei šis nustatymas įgalintas arba nenustatytas, „Chrome“ valymo funkcija periodiškai nuskaitys sistemą ieškodama nepageidaujamos programinės įrangos, o radus tokios įrangos naudotojo bus klausiama, ar jis nori ją pašalinti. Neautomatinis „Chrome“ valymo funkcijos suaktyvinimas apsilankius adresu chrome://settings įgalintas.
 
       Ši politika pasiekiama tik „Windows“ objektuose, kurie susieti su „<ph name="MS_AD_NAME" />“ domenu, arba „Windows 10 Pro“ ar „Enterprise“ objektuose, kurie užregistruoti naudoti įrenginių tvarkymo funkciją.</translation>
+<translation id="3159375329008977062">Naudotojai gali importuoti / eksportuoti „Crostini“ sudėtinius rodinius naudodami NS</translation>
 <translation id="3165808775394012744">Šios politikos nuostatos pateikiamos čia, kad būtų galima lengvai jas pašalinti.</translation>
 <translation id="316778957754360075">Šis nustatymas nebenaudojamas 29 ir naujesnėse „<ph name="PRODUCT_NAME" />“ versijose. Rekomenduojamas būdas nustatyti organizacijos valdomą plėtinių / programų rinkinius yra įtraukti svetaines priglobiančius CRX paketus į politiką „ExtensionInstallSources“ ir nuorodas įdėti tiesiogiai į tinklalapio paketus. Tam tinklalapiui skirtą paleidimo priemonę galima sukurti naudojant politiką „ExtensionInstallForcelist“.</translation>
 <translation id="3171369832001535378">Įrenginio tinklo prieglobos serverio pavadinimo šablonas</translation>
@@ -1265,6 +1297,11 @@
       Nustačius politiką kaip „False“, viešojo terminalo sesijos informacija
       nepranešama. Nustačius kaip „True“ arba nenustačius, viešojo terminalo sesijos informacija
       pranešama.</translation>
+<translation id="3852924591079583104">
+      Kai ši politika nustatyta kaip „ArcSession“, įrenginys priverstinai paleidžiamas iš naujo naudotojui atsijungus (jei „Android“ paleista).
+      Kai nustatyta „Visada“, įrenginys priverstinai paleidžiamas iš naujo kiekvieną kartą naudotojui atsijungus.
+      Jei politika nenustatyta, ji nedaro jokio poveikio ir naudotojui atsijungus įrenginys iš naujo nepaleidžiamas. Tas pats taikoma, jei nustatyta „Niekada“.
+      </translation>
 <translation id="3858658082795336534">Numatytasis spausdinimas dvipusiu režimu</translation>
 <translation id="3859780406608282662">Pridėti parametrą prie atsitiktinio varianto gavimo „<ph name="PRODUCT_OS_NAME" />“.
 
@@ -1566,6 +1603,7 @@
 <translation id="4555850956567117258">Įgalinti nuotolinį naudotojo patvirtinimą</translation>
 <translation id="4557134566541205630">Numatytojo paieškos teikėjo naujo skirtuko puslapio URL</translation>
 <translation id="4567137030726189378">Leidimas naudoti kūrėjo įrankius</translation>
+<translation id="4578265298946081589">Nepaleisti iš naujo naudotojui atsijungus.</translation>
 <translation id="4600786265870346112">Įgalinti didelį žymeklį</translation>
 <translation id="4604931264910482931">Savosios susirašinėjimo pranešimais programos juodojo sąrašo konfigūravimas</translation>
 <translation id="4613508646038788144">Jei politika nustatyta į „false“, trečiosios šalies programinei įrangai bus leidžiama įdėti vykdomąjį kodą į „Chrome“ procesus. Jei politika nenustatyta arba nustatyta į „true“, trečiosios šalies programinei įrangai nebus leidžiama įdėti vykdomojo kodo į „Chrome“ procesus.</translation>
@@ -1615,11 +1653,6 @@
 <translation id="4725528134735324213">„Android“ atsarginio kopijavimo paslaugos įgalinimas</translation>
 <translation id="4725801978265372736">Reikalauti, kad atitiktų vietinio naudotojo ir nuotolinės prieigos prieglobos serverio savininko vardai</translation>
 <translation id="4733471537137819387">Politika, susijusi su integruotuoju HTTP tapatumo nustatymu.</translation>
-<translation id="4744190513568488164">Serveriai, į kuriuos „<ph name="PRODUCT_NAME" />“ gali pervesti.
-
-          Kelis serverių pavadinimus atskirkite kableliais. Leidžiama naudoti pakaitos simbolius (*).
-
-          Jei nenustatysite šios politikos, „<ph name="PRODUCT_NAME" />“ neperduos naudotojo prisijungimo duomenų, net jei aptinkama, kad serveris yra intranete.</translation>
 <translation id="4752880493649142945">Kliento sertifikatas, skirtas prisijungti prie „RemoteAccessHostTokenValidationUrl“</translation>
 <translation id="4757671984625088193">Jei šis nustatymas nustatytas kaip „true“ arba nenustatytas, „<ph name="PRODUCT_NAME" />“ siūlys puslapius, susijusius su dabartiniu.
       Šie siūlymai gaunami nuotoliniu būdu iš „Google“ serverių.
@@ -1639,6 +1672,7 @@
           Jei nustatysite šią politiką, naudotojai negalės jos keisti arba nepaisyti.
           Jei ši politika nenustatyta, didelis žymeklis bus išjungtas, bet naudotojas galės jį bet kuriuo metu įgalinti.</translation>
 <translation id="4802905909524200151"><ph name="TPM_FIRMWARE_UPDATE_TPM" /> programinės aparatinės įrangos atnaujinimo elgsenos konfigūravimas</translation>
+<translation id="4804828344300125154">Visada paleisti iš naujo naudotojui atsijungus.</translation>
 <translation id="4807950475297505572">Naudotojai, kurie jungėsi seniausiai, šalinami, kol atsiras pakankamai laisvos vietos</translation>
 <translation id="4815725774537609998">Ši politika nebenaudojama, vietoj jos naudokite „ProxyMode“.
 
@@ -1684,6 +1718,7 @@
 <translation id="4917385247580444890">Stiprus</translation>
 <translation id="4923806312383904642">Leisti „WebDriver“ perrašyti nesuderinamas politikos nuostatas</translation>
 <translation id="494613465159630803">Cast Receiver</translation>
+<translation id="494924690085329212">Paleisti iš naujo naudotojui atsijungus (jei „Android“ paleista).</translation>
 <translation id="4962262530309732070">Jei ši politika nustatyta į „true“ arba yra nesukonfigūruota, „<ph name="PRODUCT_NAME" />“ leis „Pridėti asmenį“ naudojant naudotojų tvarkytuvę.
 
       Jei ši politika nustatyta į „false“, „<ph name="PRODUCT_NAME" />“ neleis kurti naujų profilių naudojant naudotojų tvarkytuvę.</translation>
@@ -2083,6 +2118,7 @@
           Jei ši politika nenustatyta, ekrano skaitymas balsu bus išjungtas, kai pirmą kartą bus rodomas prisijungimo ekranas. Naudotojai galės bet kada įgalinti arba išjungti ekrano skaitymą balsu, o jų būsena prisijungimo ekrane bus vienoda skirtingiems naudotojams.</translation>
 <translation id="5868414965372171132">Naudotojo lygio tinklo konfigūracija</translation>
 <translation id="5879014913445067283">Valdo tinklo failų bendrinimo įrenginio atradimus per „<ph name="NETBIOS_NAME" />“</translation>
+<translation id="5882345429632338713">Atidėjimas prieš paleidžiant kitą naršyklę (milisekundėmis)</translation>
 <translation id="5883015257301027298">Numatytasis slapukų nustatymas</translation>
 <translation id="5887414688706570295">Konfigūruojamas „TalkGadget“ (Pokalbių programėlės) kodas, kuris bus naudojamas nuotolinės prieigos prieglobų, ir neleidžiama naudotojams jo keisti.
 
@@ -2272,6 +2308,7 @@
       Tik jei plėtinio parinktis „allowCorporateKeyUsage“ nustatyta į „true“, jame galima pasirašyti pasirenkamus duomenis naudojant bet kurios platformos raktą, skirtą naudoti įmonėje. Šis leidimas turėtų būti suteiktas, tik jei plėtinys patikimas, kad būtų galima apsaugoti raktą nuo užgrobėjų.</translation>
 <translation id="6208896993204286313">„<ph name="PRODUCT_NAME" />“ politikos informacijos pranešimas</translation>
 <translation id="6210259502936598222">OS ir „<ph name="PRODUCT_NAME" />“ versijos informacijos pranešimas</translation>
+<translation id="6210610748361191729">Jei politika nustatyta į „False“, eksportavimo / importavimo NS naudotojams nebus pasiekiama, tačiau vis tiek bus galima naudoti komandas „lxc“ tiesiai virtualiame įrenginyje norint eksportuoti ir importuoti sudėtinio rodinio vaizdus.</translation>
 <translation id="6211428344788340116">Pateikti įrenginio veiklos laiką.
 
       Jei šis nustatymas nenustatytas arba nustatytas kaip „True“, užregistruoti įrenginiai pateiks įrenginio naudotojo veiklos laikotarpio informaciją. Jei nustatymas nustatytas kaip „False“, įrenginio veiklos laikas nebus įrašomas ar pateikiamas.</translation>
@@ -2326,6 +2363,7 @@
           Ši politika veikia, tik jei politika „RestoreOnStartup“ nustatyta kaip „RestoreOnStartupIsURLs“.
 
           Ši politika pasiekiama tik „Windows“ objektuose, kurie susieti su „<ph name="MS_AD_NAME" />“ domenu, arba „Windows 10 Pro“ ar „Enterprise“ objektuose, kurie užregistruoti naudoti įrenginių tvarkymo funkciją.</translation>
+<translation id="6417265370957905582">„Google“ padėjėjas</translation>
 <translation id="6426205278746959912">Negalite priversti „Android“ programų naudoti tarpinio serverio. „Android“ programos gali pasiekti dalį tarpinio serverio nustatymų, į kuriuos gali savanoriškai atsižvelgti.
 
           Jei pasirinksite niekada nenaudoti tarpinio serverio, „Android“ programoms bus pranešta, kad nesukonfigūruotas joks tarpinis serveris.
@@ -2595,6 +2633,7 @@
 
       Kai ekranas turėtų būti pritemdomas, išmanusis pritemdymo modelis įvertina, ar ekrano pritemdymo nereikia atidėti. Jei išmanusis pritemdymo modelis atideda ekrano pritemdymą, jis veiksmingai pratęsia laiką iki ekrano pritemdymo. Tokiu atveju ekrano išjungimo, ekrano užrakto ir neveikos būsenos delsos koreguojamos siekiant išlaikyti vienodą laiką nuo pirminės sukonfigūruotos pritemdymo delsos.
       Jei ši politika nustatyta kaip „True“ arba paliekama nenustatyta, išmanusis pritemdymo modelis bus įgalintas ir jam bus leista pratęsti laiką iki ekrano pritemdymo. Jei ši politika nustatyta kaip „False“, išmanusis pritemdymo modelis neturės įtakos ekrano pritemdymui.</translation>
+<translation id="6972540544240464302">Pasirinkite užduočių planuoklio konfigūraciją</translation>
 <translation id="6994082778848658360">Nurodoma, kaip vidinė saugi elemento aparatinė įranga gali būti naudojama teikiant tapatybės nustatymą dviem veiksniais, jei ji suderinama su šia funkcija. Įrenginio maitinimo mygtukas naudojamas naudotojo buvimo vietai aptikti.
 
       Jei pasirinkta „Išjungta“, neteikiamas joks antras veiksnys.
@@ -2683,6 +2722,11 @@
       Jei ši politika paliekama nenustatyta, naudotojas gali pakeisti paleidimo priemonėje prisegtų programų sąrašą.</translation>
 <translation id="7132877481099023201">URL, kuriems bus suteikta prieiga prie vaizdo įrašų užfiksavimo įrenginių be paraginimo</translation>
 <translation id="7138678301420049075">Kitas</translation>
+<translation id="7140629953254369759">Nurodo „<ph name="PRODUCT_OS_NAME" />“ naudoti užduočių planuoklio konfigūraciją, įvardytą nurodytu pavadinimu.
+
+      Šią politiką galima nustatyti kaip konservatyvią arba našumo. Pagal tai parenkamos užduočių planuoklio konfigūracijos, kurios atitinkamai suderintos užtikrinti stabilumą arba siekti maksimalaus našumo.
+
+      Jei politika nenustatyta, naudotojai gali pasirinkti patys.</translation>
 <translation id="7158064522994309072">Ši politika valdo, kuri komanda turi būti naudojama norint atidaryti URL alternatyvioje naršyklėje.
 
       Kai ši politika nenustatyta, naudojamas konkrečios platformos numatytasis nustatymas: „Internet Explorer“, skirta „Windows“, arba „Safari“, skirta „Mac OS X“. Jei šis nustatymas nenustatytas, sistemoje „Linux“ nepavyks paleisti alternatyvios naršyklės.
@@ -2881,6 +2925,11 @@
       Atminkite, kad ši politika pagrįsta operacinės sistemos sertifikatu, kuriuo leidžiami SHA-1 parašai. Jei atnaujinus OS pasikeičia OS SHA-1 sertifikatų apdorojimo būdas, ši politika gali nebegalioti.  Be to, ši politika teikiama kaip laikinas sprendimo būdas, kuris įmonėms suteikia daugiau laiko pereiti nuo SHA-1.  Ši politika bus pašalinta 2019 m. sausio 1 d. arba šiek tiek vėliau / anksčiau.
 
       Jei ši politika nenustatyta arba nustatyta į „false“, „<ph name="PRODUCT_NAME" />“ vykdys viešai paskelbtą SHA-1 naudojimo nutraukimo tvarkaraštį.</translation>
+<translation id="7578049687634719313">Ši politika valdo, kiek laiko laukti prieš paleidžiant kitą naršyklę (milisekundėmis).
+
+      Kai ši politika nenustatyta arba nustatyta kaip 0, einant į priskirtą URL jis bus nedelsiant atidarytas kitoje naršyklėje.
+
+      Kai ši politika nustatyta kaip skaičius, naršyklėje „Chrome“ nustatytą milisekundžių skaičių rodomas pranešimas, o tada atidaroma alternatyvi naršyklė.</translation>
 <translation id="7593523670408385997">Konfigūruojamas talpyklos, kurią „<ph name="PRODUCT_NAME" />“ naudos talpyklos failams diske saugoti, dydį.
 
       Jei nustatysite šią politiką, „<ph name="PRODUCT_NAME" />“ naudos nurodyto dydžio talpyklą nepaisydama to, ar naudotojas nurodė, ar nenurodė parametro „--disk-cache-size“. Šioje politikoje nurodyta vertė nėra griežta riba, bet tiesiog pasiūlymas talpyklos sistemai. Mažesnė nei kelių megabaitų vertė yra per maža ir bus suapvalinta iki įprastos minimalios vertės.
@@ -2933,6 +2982,7 @@
       Daugiau informacijos apie Saugų naršymą pateikiama adresu https://developers.google.com/safe-browsing.</translation>
 <translation id="7643883929273267746">„<ph name="PRODUCT_NAME" />“ matomų paskyrų ribojimas</translation>
 <translation id="7651739109954974365">Nustatoma, ar įrenginyje turėtų būti įgalintas duomenų tarptinklinis ryšys. Jei nustatyta į „true“ (tiesa), leidžiamas duomenų tarptinklinis ryšys. Jei nesukonfigūruojama ar nustatoma į „false“, duomenų tarptinklinis ryšys nepasiekiamas.</translation>
+<translation id="7657261947024629645">Optimizuoti, kad veiktų našiai.</translation>
 <translation id="7673194325208122247">Laikotarpis (milisekundėmis)</translation>
 <translation id="7676708657861783864">Pagal puslapius, atitinkančius šiuos URL šablonus, nustatyti slapukai bus ribojami ir taikomi tik dabartinei sesijai, t. y. išėjus iš naršyklės jie bus ištrinti.
 
@@ -3423,13 +3473,6 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
       Jei šis nustatymas įgalintas, naudojant slaptažodžio apsaugos paslaugą naudotojai bus siunčiami šiuo URL, kad pakeistų slaptažodžius, jei buvo rodomas įspėjimas naršyklėje.
       Jei šis nustatymas išjungtas arba nenustatytas, naudojant slaptažodžio apsaugos paslaugą naudotojai bus siunčiami adresu https://myaccounts.google.com, kad pakeistų slaptažodį.
       Ši politika pasiekiama tik „Windows“ objektuose, kurie susieti su „<ph name="MS_AD_NAME" />“ domenu, arba „Windows 10 Pro“ ar „Enterprise“ objektuose, kurie užregistruoti naudoti įrenginių tvarkymo funkciją.</translation>
-<translation id="8782750230688364867">Nurodomas procentas, pagal kurį bus keičiamas ekrano užtemdymo delsos mastelis, kai įrenginyje veikia pristatymo režimas.
-
-          Jei ši politika nustatyta, ji nurodo procentą, pagal kurį keičiamas ekrano užtemdymo delsos mastelis, kai įrenginyje veikia pristatymo režimas. Kai nustatomas užtemdymo delsos mastelis, reguliuojamas ekrano išjungimas ar užrakinimas, kad būtų palaikomos vienodos ekrano užtemdymo delsos trukmės, kurios buvo sukonfigūruotos iš pradžių.
-
-          Jei ši politika nenustatyta, naudojamas numatytasis skalės mastelio faktorius.
-
-          Skalės mastelio faktorius turi būti 100 proc. ar daugiau. Vertės, dėl kurių ekrano užtemdymo delsos laikas dirbant pristatymo režimu būtų trumpesnis nei įprastos ekrano užtemdymo delsos laikas, neleidžiamos.</translation>
 <translation id="8798099450830957504">Numatytasis</translation>
 <translation id="8801680448782904838">Pranešimas naudotojui apie rekomenduojamą ar būtiną naršyklės arba įrenginio paleidimą iš naujo</translation>
 <translation id="8818173863808665831">Pranešti geografinę šio įrenginio vietą.

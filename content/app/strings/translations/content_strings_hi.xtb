@@ -42,6 +42,7 @@
 <translation id="2291999235780842123">चेकबॉक्स</translation>
 <translation id="2311842470354187719">नया पेज</translation>
 <translation id="2335594187091864976">दिनांक और समय पिकर</translation>
+<translation id="245932805758469625">बचे हुए वीडियो का कुल समय सेकंड में</translation>
 <translation id="248395913932153421">दिन</translation>
 <translation id="2507943997699731163">कृपया इस फ़ील्ड को भरें.</translation>
 <translation id="2508569020611168319">टैब सूची</translation>
@@ -111,6 +112,7 @@
 <translation id="4992066212339426712">अनम्यूट करें</translation>
 <translation id="49969490063480558">कृपया '<ph name="ATSIGN" />' के बाद आने वाला भाग डालें. '<ph name="INVALIDADDRESS" />' अधूरा है.</translation>
 <translation id="5034860022980953847">प्रगति संकेतक</translation>
+<translation id="5090250355906949916">वीडियो टाइम स्क्रबर</translation>
 <translation id="5093189678851173835">इपिग्राफ़</translation>
 <translation id="5117590920725113268">अगला माह दिखाएं</translation>
 <translation id="512758898067543763">पंक्ति शीर्षलेख</translation>
@@ -151,6 +153,7 @@
 <translation id="6453774872122745852">धन्यवाद</translation>
 <translation id="648732519525291180">समय पिकर</translation>
 <translation id="6550675742724504774">विकल्प</translation>
+<translation id="6572309429103589720">गलत व्याकरण</translation>
 <translation id="658823671542763450">पूर्ण स्क्रीन में प्रवेश करें</translation>
 <translation id="663493177488814956">फ़ीड</translation>
 <translation id="6637586476836377253">लॉग</translation>
@@ -187,6 +190,7 @@
 <translation id="7681220483256441252">इंडेक्स</translation>
 <translation id="7740050170769002709">HTML सामग्री</translation>
 <translation id="7750228210027921155">पिक्चर में पिक्चर</translation>
+<translation id="775297008183122718">अमान्य प्रविष्टि</translation>
 <translation id="7789962463072032349">पॉज़ करें</translation>
 <translation id="7802800022689234070">प्रकटीकरण त्रिकोण</translation>
 <translation id="7888071071722539607">कृपया ईमेल पते में '<ph name="ATSIGN" />' शामिल करें. '<ph name="INVALIDADDRESS" />' में '<ph name="ATSIGN" />' नहीं है.</translation>
@@ -197,6 +201,7 @@
 <translation id="8105797009065549151">नोट संदर्भ</translation>
 <translation id="8117451130807776954">इस सप्ताह</translation>
 <translation id="8199524924445686405">yyyy</translation>
+<translation id="8261464734335370856">गलत स्पेलिंग</translation>
 <translation id="8284326494547611709">कैप्शन</translation>
 <translation id="835897206747267392">अमान्य मान.</translation>
 <translation id="8403857369060869934">बीता हुआ समय: <ph name="ELAPSED_TIME" /></translation>

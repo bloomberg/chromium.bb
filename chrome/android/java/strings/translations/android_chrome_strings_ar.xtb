@@ -21,6 +21,7 @@
 <translation id="1146678959555564648">‏إدخال VR</translation>
 <translation id="116280672541001035">المستخدَمة</translation>
 <translation id="1172593791219290334">صفحة بدء التشغيل</translation>
+<translation id="1173894706177603556">إعادة تسمية</translation>
 <translation id="1175310183703641346">‏لن تتم مزامنة الإشارات المرجعية والسِجلّ وكلمات المرور والمزيد مع حسابك على Google بعد الآن.</translation>
 <translation id="1178581264944972037">تعليق</translation>
 <translation id="1181037720776840403">إزالة</translation>
@@ -146,7 +147,6 @@
 <translation id="2063713494490388661">انقر للبحث</translation>
 <translation id="2079545284768500474">تراجع</translation>
 <translation id="2082238445998314030">النتيجة <ph name="RESULT_NUMBER" /> من <ph name="TOTAL_RESULTS" /></translation>
-<translation id="208586643495776849">يُرجى إعادة المحاولة</translation>
 <translation id="2086652334978798447">‏للحصول على محتوى مخصص اقترحته Google، سجِّلْ الدخول إلى Chrome.</translation>
 <translation id="2091887806945687916">الصوت</translation>
 <translation id="2096012225669085171">المزامنة والتخصيص على الأجهزة</translation>
@@ -288,7 +288,7 @@
 <translation id="3166827708714933426">اختصارات علامات التبويب والنوافذ</translation>
 <translation id="3190152372525844641">‏تشغيل الأذونات لـ Chrome في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> من البيانات المخزنة</translation>
-<translation id="3205824638308738187">أوشك الانتهاء.</translation>
+<translation id="3205824638308738187">أوشك التحديث على الانتهاء.</translation>
 <translation id="3207960819495026254">محدد بعلامة متابعة القراءة</translation>
 <translation id="3211426585530211793">تم حذف العنصر <ph name="ITEM_TITLE" /></translation>
 <translation id="321773570071367578">إذا نسيت عبارة المرور أو رغبت في تغيير هذا الإعداد، يمكنك <ph name="BEGIN_LINK" />إعادة تعيين المزامنة<ph name="END_LINK" /></translation>
@@ -321,7 +321,6 @@
 <translation id="3387650086002190359">تعذّر تنزيل الملف <ph name="FILE_NAME" /> بسبب أخطاء في نظام الملف.</translation>
 <translation id="3398320232533725830">فتح مدير الإشارات المرجعية</translation>
 <translation id="3414952576877147120">الحجم:</translation>
-<translation id="3434611491093664205">‏جارٍ الاستعداد لـ VR...</translation>
 <translation id="3443221991560634068">إعادة تحميل الصفحة الحالية</translation>
 <translation id="3445014427084483498">للتو</translation>
 <translation id="3452612588551937789">‏سجّل الدخول إلى حسابك في Google للحصول على الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى على جميع أجهزتك.</translation>
@@ -754,7 +753,7 @@
 <translation id="6643016212128521049">محو</translation>
 <translation id="6643649862576733715">الترتيب حسب مقدار البيانات التي تم توفيرها</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{‏<ph name="CONTACT_PREVIEW" />\u2026 وجهة اتصال إضافية واحدة <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}zero{‏<ph name="CONTACT_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> جهة اتصال إضافية}two{‏<ph name="CONTACT_PREVIEW" />\u2026 وجهتا اتصال إضافيتان (<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />)}few{‏<ph name="CONTACT_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> جهات اتصال إضافية}many{‏<ph name="CONTACT_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> جهة اتصال إضافية}other{‏<ph name="CONTACT_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> جهة اتصال إضافية}}</translation>
-<translation id="6649642165559792194">معاينة صورة <ph name="BEGIN_NEW" />جديدة<ph name="END_NEW" /></translation>
+<translation id="6649642165559792194">معاينة صورة <ph name="BEGIN_NEW" />ميزة جديدة<ph name="END_NEW" /></translation>
 <translation id="6656545060687952787">‏يحتاج Chrome للوصول إلى المواقع للبحث عن الأجهزة. <ph name="BEGIN_LINK" />تحديث الأذونات<ph name="END_LINK" />.</translation>
 <translation id="6657585470893396449">كلمة المرور</translation>
 <translation id="6659594942844771486">علامة تبويب</translation>
@@ -929,9 +928,8 @@
 <translation id="7929962904089429003">فتح القائمة</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> قديم.</translation>
 <translation id="7947953824732555851">قبول وتسجيل الدخول</translation>
-<translation id="7960977077911686065">‏تشير المتابعة إلى موافقتك على إرسال Chrome بيانات من ميزة الملء التلقائي في Chrome وعنوان URL لموقعك الإلكتروني ومحتواه إلى Google لتوفير هذه الخدمة. وتوافق أيضًا على إرسال Chrome البيانات الشخصية التي حدَّدتها إلى موقع الويب عبر ميزة الملء التلقائي في Chrome. \n\nيمكنك الانتقال إلى إعدادات Chrome لإيقاف "مساعد Google" على Chrome وميزة الملء التلقائي من Chrome.  <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="7963646190083259054">المورّد:</translation>
-<translation id="7975379999046275268">معاينة صفحة <ph name="BEGIN_NEW" />جديدة<ph name="END_NEW" /></translation>
+<translation id="7975379999046275268">معاينة صفحة <ph name="BEGIN_NEW" />ميزة جديدة<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">التحميل المُسبق للصفحات للحصول على أداء أسرع أثناء التصفّح والبحث</translation>
 <translation id="79859296434321399">‏لعرض محتوى الواقع المُعزَّز، يُرجى تثبيت ARCore</translation>
 <translation id="7986741934819883144">اختيار جهة اتصال</translation>
@@ -987,7 +985,6 @@
 <translation id="8339163506404995330">لن تتم ترجمة الصفحات باللغة <ph name="LANGUAGE" /></translation>
 <translation id="8349013245300336738">الترتيب حسب مقدار البيانات المُستخدَمة</translation>
 <translation id="8372893542064058268">السماح بتشغيل "مزامنة الخلفية" لموقع ويب معين.</translation>
-<translation id="8373513848523649558">يمكنك <ph name="BEGIN_LINK1" />تخصيص هذه الإعدادات<ph name="END_LINK1" /> في أي وقت</translation>
 <translation id="8374821112118309944">‏يلزمك تحديث TalkBack إلى إصدار جديد.</translation>
 <translation id="8378714024927312812">بإدارة مؤسستك</translation>
 <translation id="8380167699614421159">يعرض هذا الموقع الإلكتروني إعلانات مضلِّلة أو غير مرغوب فيها</translation>

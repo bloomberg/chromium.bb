@@ -24,6 +24,7 @@
       Kada se pravilo postavi na "false" ili se ne postavi, kolačići koje postavi IdP prenose se na profil korisnika samo prilikom prve prijave na uređaj.
 
       To pravilo utječe samo na korisnike čija se domena podudara s domenom upisa uređaja. Za sve ostale korisnike kolačići koje postavi IdP prenose se na profil korisnika samo prilikom prve prijave na uređaj.</translation>
+<translation id="1029052664284722254">Prisilno ponovo pokreni uređaj nakon odjave korisnika</translation>
 <translation id="1030120600562044329">Omogućuje slanje anonimnih podataka o upotrebi i rušenjima programa <ph name="PRODUCT_NAME" /> Googleu i sprječava korisnike da promijene tu postavku.
 
       Ako je postavka omogućena, slanje anonimnih podataka o upotrebi i rušenjima
@@ -140,13 +141,6 @@
 <translation id="1304973015437969093">ID-jevi proširenja/aplikacija i URL-ovi ažuriranja koja će se instalirati u pozadini</translation>
 <translation id="1307454923744766368">Uzorci polazišta ili naziva hosta na koje se ograničenja o nesigurnim polazištima ne bi trebala primjenjivati</translation>
 <translation id="1312799700549720683">Upravlja postavkama prikaza.</translation>
-<translation id="1313457536529613143">Određuje postotak odgode skaliranja zatamnjivanja zaslona kada se uoči aktivnosti korisnika dok se zaslon zatamnjuje ili ubrzo nakon što se zaslon isključi.
-
-          Ako se to pravilo postavi, ono određuje postotak odgode skaliranja zatamnjivanja zaslona kada se uoči aktivnosti korisnika dok se zaslon zatamnjuje ili ubrzo nakon što se zaslon isključi. Kada se odgoda zatamnjivanja skalira, odgode isključivanja zaslona, zaključavanja zaslona i mirovanja podešavaju se kako bi se zadržali isti vremenski odmaci za odgodu zatamnjivanja zaslona koji su izvorno konfigurirani.
-
-          Ako se to pravilo ne postavi, upotrebljava se zadani faktor skaliranja.
-
-          Faktor skaliranja mora biti 100% ili više.</translation>
 <translation id="131353325527891113">Prikaži korisnička imena na zaslonu prijave</translation>
 <translation id="1327466551276625742">Omogući odzivnu poruku za konfiguraciju mreže tijekom izvanmrežnog rada</translation>
 <translation id="1330145147221172764">Omogući tipkovnicu na zaslonu</translation>
@@ -360,6 +354,17 @@
 
           To se pravilo poštuje samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="1852294065645015766">Dopusti automatsku reprodukciju medija</translation>
+<translation id="1857152770025485173">Ovo pravilo korisnicima onemogućuje preuzimanje web-stranica s URL-ova koji se nalaze na popisu nedopuštenih. Na tom se popisu nalaze uzorci URL-ova koji određuju URL-ove koji neće biti dopušteni.
+
+      Uzorak URL-ova mora se oblikovati prema uputama na https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Iznimke se mogu definirati u pravilu za popis dopuštenih URL-ova. Ta su pravila ograničena na 1000 unosa, a daljnji će se unosi zanemariti.
+
+      Ne preporučuje se blokiranje internih "chrome://*" URL-ova jer to može dovesti do neočekivanih pogrešaka.
+
+      'javascript://*' možete blokirati putem M73-a URL-ovi. Međutim, to utječe samo na JavaScript u adresnoj traci (ili, primjerice, opcije označavanja). URL-ovi JavaScripta unutar stranice dugački kao dinamički učitani podaci nisu podložni ovom pravilu. Na primjer, ako blokirate 'example.com/abc', stranica 'example.com' i dalje će moći učitavati 'example.com/abc' putem zahtjeva XMLHTTPRequest.
+
+      Ako se pravilo ne postavi, nijedan URL u pregledniku neće biti zabranjen.</translation>
 <translation id="1859859319036806634">Upozorenje: rezervni postupak za verziju TLS-a uklonit će se iz preglednika <ph name="PRODUCT_NAME" /> nakon verzije 52 (otprilike u rujnu 2016.) i ovo će pravilo tada prestati funkcionirati.
 
       U slučaju neuspjelog rukovanja TLS-a <ph name="PRODUCT_NAME" /> prije je ponovo isprobavao vezu sa starijom verzijom TLS-a da bi zaobišao programske pogreške na HTTPS poslužiteljima. Ta postavka konfigurira verziju na kojoj će se rezervni postupak zaustaviti. Ako poslužitelj ispravno dogovori verziju (tj., bez prekidanja veze), ta se postavka neće primijeniti. Neovisno o tome, postignuta veza mora i dalje biti u skladu s pravilom SSLVersionMin.
@@ -626,6 +631,7 @@
       Ako to pravilo nije postavljeno ili ako je postavljeno na točno, a račun na uređaju konfiguriran je za automatsku prijavu bez odgode, proizvod <ph name="PRODUCT_OS_NAME" /> primjenjivat će tipkovni prečac Ctrl + Alt + S za izbjegavanje automatske prijave i prikazivanje zaslona za prijavu.
 
       Ako je to pravilo postavljeno na netočno, automatska prijava bez odgode (ako je konfigurirana) ne može se izbjeći.</translation>
+<translation id="2454228136871844693">Optimizirati za stabilnost.</translation>
 <translation id="2463365186486772703">Oznaka zemlje/jezika aplikacije</translation>
 <translation id="2466131534462628618">Autentifikacija putem obaveznog portala zanemaruje proxy</translation>
 <translation id="2482676533225429905">Lokalno slanje poruka</translation>
@@ -817,6 +823,31 @@
 
       Ako se to pravilo upotrebljava, korisniku su dostupni samo pisači s ID-ovima podudarnim s vrijednostima u tom pravilu. ID-ovi se moraju podudarati s poljima "id" ili "guid" u datoteci navedenoj u pravilu <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
+<translation id="2842152347010310843">Određuje hoće li popis dopuštenih uzoraka URL-a koji se automatski reproduciraju uvijek biti omogućen.
+
+      Ako je automatska reprodukcija omogućena, videozapisi se mogu automatski reproducirati (bez pristanka korisnika) s audiosadržajem u pregledniku <ph name="PRODUCT_NAME" />.
+
+      Važeće specifikacije uzoraka URL-ova su:
+
+      - [*.]domain.tld (podudara se sa domain.tld i svim poddomenama)
+
+      - host (podudara se s točnim nazivom hosta)
+
+      - scheme://host:port (podržane sheme: http,https)
+
+      - scheme://[*.]domain.tld:port (podržane sheme: http,https)
+
+      - file://path (put mora biti apsolutan i počinjati sa '/')
+
+      - a.b.c.d (podudara se s točnom IPv4 ip adresom)
+
+      - [a:b:c:d:e:f:g:h] (podudara se s točnom IPv6 ip adresom)
+
+      Ako je pravilo AutoplayAllowed postavljeno na True, ovo pravilo neće imati učinka.
+
+      Ako je pravilo AutoplayAllowed postavljeno na False, svi uzorci URL-a postavljeni u ovom pravilu i dalje će se moći reproducirati.
+
+      Ako se <ph name="PRODUCT_NAME" /> izvodi, a pravilo se promijeni, pravilo će se primjenjivati samo na nove otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s prethodnim pravilom.</translation>
 <translation id="285480231336205327">Omogućavanje načina visokog kontrasta</translation>
 <translation id="2854919890879212089">Određuje da <ph name="PRODUCT_NAME" /> u Pregledu ispisa upotrebljava zadani pisač sustava, a ne pisač koji je upotrijebljen zadnji put.
 
@@ -936,6 +967,7 @@
       Ako se pravilo omogući ili se ne postavi, Chromeov alat za čišćenje povremeno će tražiti neželjeni softver u sustavu i ako ga pronađe, korisniku će postaviti upit za uklanjanje. Omogućeno je i ručno aktiviranje Chromeovog alata za čišćenje putem stranice chrome://settings.
 
       Pravilo je dostupno samo na instancama Windowsa koje su pridružene domeni <ph name="MS_AD_NAME" /> ili instancama Windowsa 10 Pro ili Enterprise prijavljenim za upravljanje uređajima.</translation>
+<translation id="3159375329008977062">Korisniku omogućuje izvoz/uvoz spremnika za Crostini putem korisničkog sučelja</translation>
 <translation id="3165808775394012744">Ta su pravila uključena ovdje radi jednostavnijeg uklanjanja.</translation>
 <translation id="316778957754360075">To se pravilo ne upotrebljava od verzije 29 sustava <ph name="PRODUCT_NAME" />. Preporučuje se da se pri postavljanju zbirki proširenja ili aplikacija koje hostira određena organizacija web-lokacija koja hostira CRX pakete uključi u pravilo ExtensionInstallSources te da se u pakete na web-stanici postave izravne veze za preuzimanje. Pokretač za tu web-stranicu može se izraditi pomoću pravila ExtensionInstallForcelist.</translation>
 <translation id="3171369832001535378">Predložak mrežnog naziva hosta uređaja</translation>
@@ -1219,6 +1251,11 @@
       Ako se pravilo postavi na "false", informacije sesije kioska neće se
       prijavljivati. Ako se postavi na "true" ili se ne postavi, prijavljivat će se
       informacije sesije kioska.</translation>
+<translation id="3852924591079583104">
+      Kada se postavi na ArcSession, to pravilo prisilno ponovo pokreće uređaj nakon što se korisnik odjavi, a Android je pokrenut.
+      Kada se postavi na Always, pravilo prisilno ponovo pokreće uređaj nakon svake odjave korisnika.
+      Ako se ne postavi, pravilo nema učinka i uređaj se neće prisilno ponovo pokrenuti nakon što se korisnik odjavi. Isto vrijedi i ako se pravilo postavi na Never (Nikad).
+      </translation>
 <translation id="3858658082795336534">Dvostrani način zadanog ispisa</translation>
 <translation id="3859780406608282662">Dodaje parametar dohvaćanju početne vrijednosti Varijacija u proizvodu <ph name="PRODUCT_OS_NAME" />.
 
@@ -1510,6 +1547,7 @@
 <translation id="4555850956567117258">Omogući daljinsku ovjeru za korisnika</translation>
 <translation id="4557134566541205630">URL web-stranice nove kartice zadanog davatelja usluge pretraživanja</translation>
 <translation id="4567137030726189378">Dopusti upotrebu Alata za razvojne programere</translation>
+<translation id="4578265298946081589">Ne pokreći ponovo nakon odjave korisnika.</translation>
 <translation id="4600786265870346112">Omogućivanje velikog pokazivača</translation>
 <translation id="4604931264910482931">Konfiguriraj popis nedopuštenih za lokalno slanje poruka</translation>
 <translation id="4613508646038788144">Ako je pravilo postavljeno na False, softver treće strane moći će ubaciti izvršni kôd u Chromeove procese. Ako pravilo nije postavljeno ili je postavljeno na True, softver treće strane neće moći ubaciti izvršni kôd u Chromeove procese.</translation>
@@ -1559,11 +1597,6 @@
 <translation id="4725528134735324213">Omogući Androidovu uslugu sigurnosnog kopiranja</translation>
 <translation id="4725801978265372736">Zahtijevaj podudaranje imena lokalnog korisnika i vlasnika hosta daljinskog pristupa</translation>
 <translation id="4733471537137819387">Pravila koja se odnose na integriranu HTTP autentifikaciju.</translation>
-<translation id="4744190513568488164">Poslužitelji koje <ph name="PRODUCT_NAME" /> može ovlastiti.
-
-          Razdvojite više poslužitelja zarezima. Zamjenski su znakovi (*) dopušteni.
-
-          Ako ne postavite ovo pravilo, <ph name="PRODUCT_NAME" /> neće dodijeliti vjerodajnice korisnika čak ni ako otkrije da je poslužitelj na intranetu.</translation>
 <translation id="4752880493649142945">Klijentski certifikat za povezivanje s pravilom RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">Ako se pravilo postavi na True ili se ne postavi, <ph name="PRODUCT_NAME" /> predlagat će stranice koje su povezane s trenutačnom stranicom.
       Ti se prijedlozi dohvaćaju daljinski s Googleovih poslužitelja.
@@ -1584,6 +1617,7 @@
 
           Ako se to pravilo ne postavi, veliki će pokazivač u početku biti onemogućen, ali korisnici ga mogu omogućiti u bilo kojem trenutku.</translation>
 <translation id="4802905909524200151">Konfiguriranje ponašanja ažuriranja <ph name="TPM_FIRMWARE_UPDATE_TPM" /> opreme</translation>
+<translation id="4804828344300125154">Uvijek ponovo pokreni uređaj nakon odjave korisnika.</translation>
 <translation id="4807950475297505572">Uklanjaju se korisnici koji najdulje nisu upotrebljavani dok se ne oslobodi dovoljno prostora</translation>
 <translation id="4815725774537609998">Pravilo je obustavljeno, upotrijebite ProxyMode.
 
@@ -1631,6 +1665,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="4917385247580444890">Jak</translation>
 <translation id="4923806312383904642">Dopusti WebDriveru da nadjača nekompatibilna pravila</translation>
 <translation id="494613465159630803">Cast prijemnik</translation>
+<translation id="494924690085329212">Ponovo pokreni nakon odjave korisnika ako je pokrenut Android.</translation>
 <translation id="4962262530309732070">Ako se pravilo postavi na točno ili se ne konfigurira, <ph name="PRODUCT_NAME" /> dopustit će dodavanje osoba iz upravitelja korisnika.
 
       Ako se pravilo postavi na netočno, <ph name="PRODUCT_NAME" /> neće dopustiti izradu novih profila iz upravitelja profila.</translation>
@@ -1999,6 +2034,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
           Ako se to pravilo ne postavi, izgovaranje povratnih informacija onemogućeno je pri prvom prikazivanju zaslona za prijavu. Korisnici mogu omogućiti ili onemogućiti izgovaranje povratnih informacija u bilo kojem trenutku, a status te značajke na zaslonu za prijavu zadržat će se i za sljedeće korisnike.</translation>
 <translation id="5868414965372171132">Mrežna konfiguracija na razini korisnika</translation>
 <translation id="5879014913445067283">Upravlja otkrićem mrežnog dijeljenja datoteka putem <ph name="NETBIOS_NAME" /></translation>
+<translation id="5882345429632338713">Odgoda prije pokretanja zamjenskog preglednika (milisekunde)</translation>
 <translation id="5883015257301027298">Zadana postavka kolačića</translation>
 <translation id="5887414688706570295">Konfigurira prefiks za TalkGadget koji će upotrebljavati hostovi daljinskog pristupa i sprječava korisnike da ga mijenjaju.
 
@@ -2187,6 +2223,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
       Samo ako se allowCorporateKeyUsage postavi na istinito za određeno proširenje, ono može upotrebljavati ključ bilo koje platforme označen za korporacijsku upotrebu za potpisivanje arbitrarnih podataka. To bi se dopuštenje trebalo odobriti samo ako proširenje pouzdano može zaštititi pristup ključu od napadača.</translation>
 <translation id="6208896993204286313">Prijavljuj informacije o pravilima za <ph name="PRODUCT_NAME" /></translation>
 <translation id="6210259502936598222">Prijavljuj informacije o OS-u i verziji preglednika <ph name="PRODUCT_NAME" /></translation>
+<translation id="6210610748361191729">Ako se pravilo postavi na False, izvoz/uvoz korisničkog sučelja neće biti dostupno korisnicima. Međutim i dalje je moguće upotrebljavati naredbe 'lxc' izravno u virtualno računalo kako bi se izvezle i uvezle slike spremnika.</translation>
 <translation id="6211428344788340116">Generira izvješće o vremenima aktivnosti uređaja.
 
       Ako se ta postavka ne postavi ili se postavi na istinito, registrirani uređaji izvješćivat će o razdobljima aktivnosti korisnika na uređaju. Ako se postavka postavi na neistinito, vremena aktivnosti uređaja neće se bilježiti niti će se o njima izvješćivati.</translation>
@@ -2237,6 +2274,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
           To se pravilo primjenjuje samo ako je pravilo "RestoreOnStartup" postavljeno na "RestoreOnStartupIsURLs".
 
           Pravilo je dostupno samo na instancama Windowsa koje su pridružene domeni <ph name="MS_AD_NAME" /> ili instancama Windowsa 10 Pro ili Enterprise prijavljenim za upravljanje uređajima.</translation>
+<translation id="6417265370957905582">Google asistent</translation>
 <translation id="6426205278746959912">Android aplikacijama ne može se nametnuti upotreba proxyja. Podskup postavki proxyja dostupan je Android aplikacijama i one ga mogu primjenjivati prema želji:
 
           Ako odaberete da se proxy poslužitelj ne upotrebljava nikad, Android aplikacije dobivaju informaciju da nije konfiguriran nijedan proxy.
@@ -2504,6 +2542,7 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 
       Prije nego što se zaslon zatamni, model pametnog zatamnjenja procjenjuje treba li odgoditi zatamnjenje zaslona. Ako model pametnog zatamnjenja odgodi zatamnjenje zaslona, on učinkovito produljuje vrijeme dok zaslon ne bude zatamnjen. U tom se slučaju isključivanje zaslona, zaključavanje zaslona i odgode  mirovanja prilagođavaju kako bi zadržale jednaku udaljenost od odgode zatamnjenja zaslona kako je izvorno konfigurirano.
       Ako je ovo pravilo postavljeno na True ili nije postavljeno, bit će omogućen model pametnog zatamnjenja te će biti dopušteno produljiti vrijeme dok zaslon ne bude zatamnjen. Ako je ovo pravilo postavljeno na False, model pametnog zatamnjenja neće utjecati na zatamnjenje zaslona.</translation>
+<translation id="6972540544240464302">Odaberite konfiguraciju alata za zakazivanje zadataka</translation>
 <translation id="6994082778848658360">Određuje način na koji se hardver s ugrađenim sigurnosnim elementom može upotrebljavati za pružanje dvostruke autentifikacije ako je kompatibilan s ovom značajkom. Tipka za uključivanje/isključivanje uređaja upotrebljava se za otkrivanje korisnikove fizičke prisutnosti.
 
       Ako se odabere "Onemogućeno", dvostruka se autentifikacija ne upotrebljava.
@@ -2580,6 +2619,11 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
       Ako se to pravilo ne postavi, korisnik može mijenjati popis prikvačenih aplikacija u pokretaču.</translation>
 <translation id="7132877481099023201">URL-ovi koji će dobiti pristup uređajima za videosnimanje bez postavljanja upita</translation>
 <translation id="7138678301420049075">Ostalo</translation>
+<translation id="7140629953254369759">Upućuje <ph name="PRODUCT_OS_NAME" /> na korištenje konfiguracije alata za zakazivanje zadataka koji se prepoznaje po navedenom imenu.
+
+      Ovo pravilo može se postaviti na "zaštita" i "izvedba", čime se odabiru konfiguracije alata za zakazivanje zadataka koji su ugođeni za stabilnost odnosno maksimalnu izvedbu.
+
+      Ako se pravilo ne postavi, korisnik sam može odlučivati.</translation>
 <translation id="7158064522994309072">To pravilo određuje naredbu koja se treba upotrijebiti za otvaranje URL-ova u zamjenskom pregledniku.
 
       Ako se pravilo ne postavi, upotrebljava se zadana postavka platforme: Internet Explorer za Windows odnosno Safari za Mac OS X. Na Linuxu zamjenski se preglednik neće pokrenuti ako to pravilo nije postavljeno.
@@ -2641,7 +2685,7 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 <translation id="7249828445670652637">Omogući <ph name="PRODUCT_OS_NAME" /> CA certifikate za ARC aplikacije</translation>
 <translation id="7252681704926980614">Korisničko ime i naziv datoteke šalju se poslužitelju nativnih pisača sa svakim zadatkom ispisa. Prema zadanim se postavkama ne šalju.
 
-      Postavljanjem tog pravila na True onemogućuju se i pisači koji ne upotrebljavaju protokole IPPS, USB ili IPP putem USB-a, već neke druge jer se korisničko ime i naziv datoteke ne smiju otvoreno slati putem mreže.</translation>
+      Postavljanjem tog pravila na True onemogućuju se i pisači koji upotrebljavaju druge protokole osim IPPS, USB ili IPP putem USB-a jer se korisničko ime i naziv datoteke ne smiju otvoreno slati putem mreže.</translation>
 <translation id="7258823566580374486">Omogući skrivanje hosta za daljinski pristup</translation>
 <translation id="7260277299188117560">Omogućeno je automatsko ažuriranje p2p</translation>
 <translation id="7261252191178797385">Slika pozadine uređaja</translation>
@@ -2771,6 +2815,11 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
       Napominjemo da to pravilo ovisi o tome dopušta li snop za potvrdu certifikata operativnog sustava SHA-1 potpise. Ako se ažuriranjem OS-a promijeni njegovo rukovanje SHA-1 certifikatima, to pravilo možda više neće imati utjecaja. Nadalje, to je pravilo predviđeno kao privremeno rješenje kako bi organizacije imale više vremena za napuštanje algoritma SHA-1. Pravilo će se ukloniti 1. siječnja 2019. ili oko tog datuma.
 
       Ako se to pravilo ne postavi ili se postavi na False, <ph name="PRODUCT_NAME" /> slijedi javno najavljeni raspored ukidanja algoritma SHA-1.</translation>
+<translation id="7578049687634719313">Pravilo određuje vrijeme čekanja prije pokretanja zamjenskog preglednika, u milisekundama.
+
+      Ako se to pravilo ne postavi ili se postavi na 0, navigacijom do označenog URL-a on se odmah otvara u zamjenskom pregledniku.
+
+      Kada se to pravilo postavi na neki broj, Chrome će prikazati poruku na toliko milisekunda, a zatim će otvoriti zamjenski preglednik.</translation>
 <translation id="7593523670408385997">Konfigurira veličinu predmemorije koju će <ph name="PRODUCT_NAME" /> upotrebljavati za pohranu predmemoriranih datoteka na disku.
 
       Ako postavite ovo pravilo, <ph name="PRODUCT_NAME" /> upotrebljavat će ponuđenu veličinu predmemorije, bez obzira je li korisnik označio "--disk-cache-size". Vrijednost navedena u ovom pravilu nije čvrsto postavljena granica, već prijedlog za sustav predmemoriranja; svaka vrijednost ispod nekoliko megabajta premala je i zaokružit će se na prihvatljivi minimum.
@@ -2819,6 +2868,7 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
       Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.</translation>
 <translation id="7643883929273267746">Ograniči račune koji su vidljivi u pregledniku <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Utvrđuje treba li roaming podataka biti omogućen za uređaj. Ako je to pravilo postavljeno na "istinito", roaming podataka bit će dopušten. Ako to pravilo nije konfigurirano ili je postavljeno na "lažno", roaming podataka neće biti dostupan.</translation>
+<translation id="7657261947024629645">Optimizirati za izvedbu.</translation>
 <translation id="7673194325208122247">Razdoblje (milisekunde)</translation>
 <translation id="7676708657861783864">Kolačići koje postavljaju stranice koje odgovaraju tim uzorcima URL-ova bit će ograničeni na trenutačnu sesiju, odnosno bit će izbrisani nakon zatvaranja preglednika.
 
@@ -3296,13 +3346,6 @@ za preglednike imaju isti raspored.
       Ako se ta postavka omogući, usluga za zaštitu zaporke slat će korisnike na taj URL da promijene zaporku nakon što se u pregledniku prikaže upozorenje.
       Ako se ta postavka onemogući ili ne postavi, usluga za zaštitu zaporke slat će korisnike na https://myaccounts.google.com da promijene zaporku.
       Pravilo je dostupno samo na instancama Windowsa koje su pridružene domeni <ph name="MS_AD_NAME" /> ili instancama Windowsa 10 Pro ili Enterprise prijavljenim za upravljanje uređajima.</translation>
-<translation id="8782750230688364867">Određuje postotak skaliranja odgode zatamnjivanja zaslona kada je uređaj u načinu prezentacije.
-
-          Ako se postavi, pravilo određuje postotak skaliranja odgode zatamnjivanja zaslona kada je uređaj u načinu prezentacije. Kada se odgoda zatamnjivanja skalira, odgode isključivanja zaslona, zaključavanja zaslona i mirovanja podešavaju se kako bi se zadržali isti vremenski odmaci za odgodu zatamnjivanja zaslona koji su izvorno konfigurirani.
-
-          Ako se to pravilo ne postavi, upotrebljava se zadani faktor skaliranja.
-
-          Faktor skaliranja mora biti 100% ili više. Vrijednosti koje bi učinile odgodu zatamnjivanja zaslona u načinu prezentacije kraćom od uobičajene odgode zatamnjivanja zaslona nisu dopuštene.</translation>
 <translation id="8798099450830957504">Zadano</translation>
 <translation id="8801680448782904838">Obavijesti korisnika o obaveznom ili preporučenom ponovnom pokretanju preglednika ili uređaja</translation>
 <translation id="8818173863808665831">Prijavljuje geografsku lokaciju uređaja.
