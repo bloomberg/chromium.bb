@@ -111,6 +111,8 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_MENU_BUTTON;
     case WebLocalizedString::kAXMediaHideClosedCaptionsMenuButton:
       return IDS_AX_MEDIA_HIDE_CLOSED_CAPTIONS_MENU_BUTTON;
+    case WebLocalizedString::kAXMediaLoadingPanel:
+      return IDS_AX_MEDIA_LOADING_PANEL;
     case WebLocalizedString::kAXMediaCastOffButton:
       return IDS_AX_MEDIA_CAST_OFF_BUTTON;
     case WebLocalizedString::kAXMediaCastOnButton:

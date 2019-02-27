@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_resource_loader.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace {
 
@@ -34,6 +35,10 @@ MediaControlLoadingPanelElement::MediaControlLoadingPanelElement(
     MediaControlsImpl& media_controls)
     : MediaControlDivElement(media_controls, kMediaIgnore) {
   SetShadowPseudoId(AtomicString("-internal-media-controls-loading-panel"));
+  setAttribute(html_names::kAriaLabelAttr,
+               WTF::AtomicString(GetLocale().QueryString(
+                   WebLocalizedString::kAXMediaLoadingPanel)));
+  setAttribute(html_names::kAriaLiveAttr, "polite");
   CreateUserAgentShadowRoot();
 
   // The loading panel should always start hidden.
