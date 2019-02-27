@@ -11,11 +11,26 @@ package login_manager;
 // ARC start options sent from Chrome to session manager. This message is used
 // in the SessionManagerInterface.StartArcMiniContainer method.
 message StartArcMiniContainerRequest {
+  enum PlayStoreAutoUpdate {
+    // Play Store auto-update is left unchanged.
+    AUTO_UPDATE_DEFAULT = 0;
+    // Play Store auto-update is forced to on.
+    AUTO_UPDATE_ON = 1;
+    // Play Store auto-update is forced to off.
+    AUTO_UPDATE_OFF = 2;
+  }
+
   optional bool native_bridge_experiment = 1 [default = false];
   // The density value passed to "ro.sf.lcd_density" property.
   optional int32 lcd_density = 2 [default = -1];
   // Experiment flag for go/arc-file-picker.
   optional bool arc_file_picker_experiment = 3 [default = false];
+
+  // Optional mode for play store auto-update.
+  optional PlayStoreAutoUpdate play_store_auto_update = 4
+      [default = AUTO_UPDATE_DEFAULT];
+
+  // Next ID to use: 5
 }
 
 // ARC upgrade options sent from Chrome to session manager. This message is used
