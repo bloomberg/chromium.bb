@@ -1129,7 +1129,8 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
         self.pool.ApplyPoolIntoRepo()
       except cros_build_lib.RunCommandError:
         logging.error('Possible git error on ApplyPoolIntoRepo. Retrying after'
-                      ' a `git fetch --all`.', exc_info=True)
+                      ' a git cleanup and `fetch --all`.', exc_info=True)
+        self.repo.BuildRootGitCleanup(prune_all=True)
         self.repo.FetchAll()
         self.pool.ApplyPoolIntoRepo()
 
