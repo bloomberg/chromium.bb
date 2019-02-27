@@ -5,6 +5,10 @@
 #include "ui/ozone/common/linux/gbm_wrapper.h"
 
 #include <gbm.h>
+#if !defined(MINIGBM)
+#include <fcntl.h>
+#include <xf86drm.h>
+#endif
 
 #include "base/posix/eintr_wrapper.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -14,6 +18,66 @@
 #include "ui/ozone/common/linux/gbm_device.h"
 
 namespace gbm_wrapper {
+
+namespace {
+
+int GetPlaneFdForBo(gbm_bo* bo, size_t plane) {
+#if defined(MINIGBM)
+  return gbm_bo_get_plane_fd(bo, plane);
+#else
+  const int plane_count = gbm_bo_get_plane_count(bo);
+  DCHECK(plane_count > 0 && plane < static_cast<size_t>(plane_count));
+
+  // System linux gbm (or Mesa gbm) does not provide fds per plane basis. Thus,
+  // get plane handle and use drm ioctl to get a prime fd out of it avoid having
+  // two different branches for minigbm and Mesa gbm here.
+  gbm_device* gbm_dev = gbm_bo_get_device(bo);
+  int dev_fd = gbm_device_get_fd(gbm_dev);
+  DCHECK_GE(dev_fd, 0);
+
+  const uint32_t plane_handle = gbm_bo_get_handle_for_plane(bo, plane).u32;
+  int fd = -1;
+  int ret;
+  // Use DRM_RDWR to allow the fd to be mappable in another process.
+  ret = drmPrimeHandleToFD(dev_fd, plane_handle, DRM_CLOEXEC | DRM_RDWR, &fd);
+
+  // Older DRM implementations blocked DRM_RDWR, but gave a read/write mapping
+  // anyways
+  if (ret)
+    ret = drmPrimeHandleToFD(dev_fd, plane_handle, DRM_CLOEXEC, &fd);
+
+  return ret ? ret : fd;
+#endif
+}
+
+size_t GetSizeOfPlane(gbm_bo* bo,
+                      uint32_t format,
+                      const gfx::Size& size,
+                      size_t plane) {
+#if defined(MINIGBM)
+  return gbm_bo_get_plane_size(bo, plane);
+#else
+  DCHECK(!size.IsEmpty());
+
+  // Get row size of the plane, stride and subsampled height to finally get the
+  // size of a plane in bytes.
+  const gfx::BufferFormat buffer_format =
+      ui::GetBufferFormatFromFourCCFormat(format);
+  const base::CheckedNumeric<size_t> stride_for_plane =
+      gbm_bo_get_stride_for_plane(bo, plane);
+  const base::CheckedNumeric<size_t> subsampled_height =
+      size.height() /
+      gfx::SubsamplingFactorForBufferFormat(buffer_format, plane);
+
+  // Apply subsampling factor to get size in bytes.
+  const base::CheckedNumeric<size_t> checked_plane_size =
+      subsampled_height * stride_for_plane;
+
+  return checked_plane_size.ValueOrDie();
+#endif
+}
+
+}  // namespace
 
 class Buffer final : public ui::GbmBuffer {
  public:
@@ -77,7 +141,7 @@ class Buffer final : public ui::GbmBuffer {
   }
   uint32_t GetPlaneHandle(size_t plane) const override {
     DCHECK_LT(plane, planes_.size());
-    return gbm_bo_get_plane_handle(bo_, plane).u32;
+    return gbm_bo_get_handle_for_plane(bo_, plane).u32;
   }
   uint32_t GetHandle() const override { return gbm_bo_get_handle(bo_).u32; }
   gfx::NativePixmapHandle ExportHandle() const override {
@@ -103,8 +167,14 @@ class Buffer final : public ui::GbmBuffer {
     DCHECK(!mmap_data_);
     uint32_t stride;
     void* addr;
-    addr = gbm_bo_map(bo_, 0, 0, gbm_bo_get_width(bo_), gbm_bo_get_height(bo_),
-                      GBM_BO_TRANSFER_READ_WRITE, &stride, &mmap_data_, 0);
+    addr =
+#if defined(MINIGBM)
+        gbm_bo_map(bo_, 0, 0, gbm_bo_get_width(bo_), gbm_bo_get_height(bo_),
+                   GBM_BO_TRANSFER_READ_WRITE, &stride, &mmap_data_, 0);
+#else
+        gbm_bo_map(bo_, 0, 0, gbm_bo_get_width(bo_), gbm_bo_get_height(bo_),
+                   GBM_BO_TRANSFER_READ_WRITE, &stride, &mmap_data_);
+#endif
 
     if (!addr)
       return nullptr;
@@ -145,11 +215,18 @@ std::unique_ptr<Buffer> CreateBufferForBO(struct gbm_bo* bo,
   std::vector<base::ScopedFD> fds;
   std::vector<gfx::NativePixmapPlane> planes;
 
-  const uint64_t modifier = gbm_bo_get_format_modifier(bo);
-  for (size_t i = 0; i < gbm_bo_get_num_planes(bo); ++i) {
+  const uint64_t modifier = gbm_bo_get_modifier(bo);
+  const int plane_count = gbm_bo_get_plane_count(bo);
+  // The Mesa's gbm implementation explicitly checks whether plane count <= and
+  // returns 1 if the condition is true. Nevertheless, use a DCHECK here to make
+  // sure the condition is not broken there.
+  DCHECK_GT(plane_count, 0);
+  // Ensure there are no differences in integer signs by casting any possible
+  // values to size_t.
+  for (size_t i = 0; i < static_cast<size_t>(plane_count); ++i) {
     // The fd returned by gbm_bo_get_fd is not ref-counted and need to be
     // kept open for the lifetime of the buffer.
-    base::ScopedFD fd(gbm_bo_get_plane_fd(bo, i));
+    base::ScopedFD fd(GetPlaneFdForBo(bo, i));
 
     if (!fd.is_valid()) {
       PLOG(ERROR) << "Failed to export buffer to dma_buf";
@@ -158,9 +235,9 @@ std::unique_ptr<Buffer> CreateBufferForBO(struct gbm_bo* bo,
     }
     fds.emplace_back(std::move(fd));
 
-    planes.emplace_back(gbm_bo_get_plane_stride(bo, i),
-                        gbm_bo_get_plane_offset(bo, i),
-                        gbm_bo_get_plane_size(bo, i), modifier);
+    planes.emplace_back(gbm_bo_get_stride_for_plane(bo, i),
+                        gbm_bo_get_offset(bo, i),
+                        GetSizeOfPlane(bo, format, size, i), modifier);
   }
   return std::make_unique<Buffer>(bo, format, flags, modifier, std::move(fds),
                                   size, std::move(planes));
@@ -207,7 +284,10 @@ class Device final : public ui::GbmDevice {
     DCHECK_EQ(planes[0].offset, 0);
 
     // Try to use scanout if supported.
-    int gbm_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING;
+    int gbm_flags = GBM_BO_USE_SCANOUT;
+#if defined(MINIGBM)
+    gbm_flags |= GBM_BO_USE_TEXTURING;
+#endif
     if (!gbm_device_is_format_supported(device_, format, gbm_flags))
       gbm_flags &= ~GBM_BO_USE_SCANOUT;
 
@@ -217,22 +297,25 @@ class Device final : public ui::GbmDevice {
       return nullptr;
     }
 
-    struct gbm_import_fd_planar_data fd_data;
+    struct gbm_import_fd_modifier_data fd_data;
     fd_data.width = size.width();
     fd_data.height = size.height();
     fd_data.format = format;
+    fd_data.num_fds = planes.size();
+    fd_data.modifier = planes[0].modifier;
 
     DCHECK_LE(planes.size(), 3u);
     for (size_t i = 0; i < planes.size(); ++i) {
       fd_data.fds[i] = fds[i < fds.size() ? i : 0].get();
       fd_data.strides[i] = planes[i].stride;
       fd_data.offsets[i] = planes[i].offset;
-      fd_data.format_modifiers[i] = planes[i].modifier;
+      // Make sure the modifier is the same for all the planes.
+      DCHECK_EQ(fd_data.modifier, planes[i].modifier);
     }
 
     // The fd passed to gbm_bo_import is not ref-counted and need to be
     // kept open for the lifetime of the buffer.
-    bo = gbm_bo_import(device_, GBM_BO_IMPORT_FD_PLANAR, &fd_data, gbm_flags);
+    bo = gbm_bo_import(device_, GBM_BO_IMPORT_FD_MODIFIER, &fd_data, gbm_flags);
     if (!bo) {
       LOG(ERROR) << "nullptr returned from gbm_bo_import";
       return nullptr;
