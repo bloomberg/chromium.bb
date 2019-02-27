@@ -36,9 +36,8 @@ class FakeSyncedPrintersManager : public SyncedPrintersManager {
   }
 
   // Returns printers from enterprise policy.
-  bool GetEnterprisePrinters(std::vector<Printer>& printers) const override {
-    printers = enterprise_printers_;
-    return true;
+  std::vector<Printer> GetEnterprisePrinters() const override {
+    return enterprise_printers_;
   }
 
   // Attach |observer| for notification of events.  |observer| is expected to
@@ -129,7 +128,7 @@ class FakeSyncedPrintersManager : public SyncedPrintersManager {
     enterprise_printers_.insert(enterprise_printers_.end(), printers.begin(),
                                 printers.end());
     for (Observer& observer : observers_) {
-      observer.OnEnterprisePrintersChanged(enterprise_printers_, true);
+      observer.OnEnterprisePrintersChanged(enterprise_printers_);
     }
   }
 
@@ -138,7 +137,7 @@ class FakeSyncedPrintersManager : public SyncedPrintersManager {
   void RemoveEnterprisePrinters(const std::unordered_set<std::string>& ids) {
     RemovePrinters(ids, &enterprise_printers_);
     for (Observer& observer : observers_) {
-      observer.OnEnterprisePrintersChanged(enterprise_printers_, true);
+      observer.OnEnterprisePrintersChanged(enterprise_printers_);
     }
   }
 

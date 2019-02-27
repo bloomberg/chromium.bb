@@ -1063,49 +1063,23 @@ void AutotestPrivateTakeScreenshotFunction::ScreenshotTaken(
 // AutotestPrivateGetPrinterListFunction
 ///////////////////////////////////////////////////////////////////////////////
 
-AutotestPrivateGetPrinterListFunction::AutotestPrivateGetPrinterListFunction() {
-}
-
 AutotestPrivateGetPrinterListFunction::
-    ~AutotestPrivateGetPrinterListFunction() {
-  printers_manager_->RemoveObserver(this);
-}
+    ~AutotestPrivateGetPrinterListFunction() = default;
 
 ExtensionFunction::ResponseAction AutotestPrivateGetPrinterListFunction::Run() {
   DVLOG(1) << "AutotestPrivateGetPrinterListFunction";
 
-  Profile* profile = Profile::FromBrowserContext(browser_context());
-  printers_manager_ = chromeos::CupsPrintersManager::Create(profile);
-  printers_manager_->AddObserver(this);
-
-  // Set up a timer to finish waiting after 10 seconds
-  timeout_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(10),
-      base::BindOnce(
-          &AutotestPrivateGetPrinterListFunction::TerminateWithTimeoutError,
-          this));
-
-  return RespondLater();
-}
-
-void AutotestPrivateGetPrinterListFunction::TerminateWithTimeoutError() {
-  if (did_respond())
-    return;
-  Respond(Error("Timeout occured before Enterprise printers were initialized"));
-}
-
-void AutotestPrivateGetPrinterListFunction::OnEnterprisePrintersInitialized() {
-  if (did_respond())
-    return;
-  // We are ready to get the list of printers and finish.
   auto values = std::make_unique<base::ListValue>();
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  std::unique_ptr<chromeos::CupsPrintersManager> printers_manager =
+      chromeos::CupsPrintersManager::Create(profile);
   std::vector<chromeos::CupsPrintersManager::PrinterClass> printer_type = {
       chromeos::CupsPrintersManager::PrinterClass::kConfigured,
       chromeos::CupsPrintersManager::PrinterClass::kEnterprise,
       chromeos::CupsPrintersManager::PrinterClass::kAutomatic};
   for (const auto& type : printer_type) {
     std::vector<chromeos::Printer> printer_list =
-        printers_manager_->GetPrinters(type);
+        printers_manager->GetPrinters(type);
     for (const auto& printer : printer_list) {
       auto result = std::make_unique<base::DictionaryValue>();
       result->SetString("printerName", printer.display_name());
@@ -1114,8 +1088,7 @@ void AutotestPrivateGetPrinterListFunction::OnEnterprisePrintersInitialized() {
       values->Append(std::move(result));
     }
   }
-  Respond(OneArgument(std::move(values)));
-  timeout_timer_.AbandonAndStop();
+  return RespondNow(OneArgument(std::move(values)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
