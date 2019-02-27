@@ -8,7 +8,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/mojom/nfc.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/bindings/modules/v8/string_or_array_buffer_or_nfc_message.h"
+#include "third_party/blink/renderer/bindings/modules/v8/string_or_array_buffer_or_ndef_message.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_message_callback.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
@@ -18,7 +18,7 @@
 namespace blink {
 
 class NFCPushOptions;
-using NFCPushMessage = StringOrArrayBufferOrNFCMessage;
+using NFCPushMessage = StringOrArrayBufferOrNDEFMessage;
 class NFCWatchOptions;
 class ScriptPromiseResolver;
 
@@ -83,7 +83,7 @@ class NFC final : public ScriptWrappable,
 
   // device::mojom::blink::NFCClient implementation.
   void OnWatch(const Vector<uint32_t>& ids,
-               device::mojom::blink::NFCMessagePtr) override;
+               device::mojom::blink::NDEFMessagePtr) override;
 
  private:
   device::mojom::blink::NFCPtr nfc_;

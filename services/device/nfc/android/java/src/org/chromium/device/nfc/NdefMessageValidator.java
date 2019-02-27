@@ -4,21 +4,21 @@
 
 package org.chromium.device.nfc;
 
-import org.chromium.device.mojom.NfcMessage;
-import org.chromium.device.mojom.NfcRecord;
-import org.chromium.device.mojom.NfcRecordType;
+import org.chromium.device.mojom.NdefMessage;
+import org.chromium.device.mojom.NdefRecord;
+import org.chromium.device.mojom.NdefRecordType;
 
 /**
- * Utility class that provides validation of NfcMessage.
+ * Utility class that provides validation of NdefMessage.
  */
-public final class NfcMessageValidator {
+public final class NdefMessageValidator {
     /**
-     * Validates NfcMessage.
+     * Validates NdefMessage.
      *
      * @param message to be validated.
      * @return true if message is valid, false otherwise.
      */
-    public static boolean isValid(NfcMessage message) {
+    public static boolean isValid(NdefMessage message) {
         if (message == null || message.data == null || message.data.length == 0) {
             return false;
         }
@@ -30,12 +30,12 @@ public final class NfcMessageValidator {
     }
 
     /**
-     * Checks that NfcRecord#data and NfcRecord#mediaType fields are valid. NfcRecord#data and
-     * NfcRecord#mediaType fields are omitted for the record with EMPTY type.
+     * Checks that NdefRecord#data and NdefRecord#mediaType fields are valid. NdefRecord#data and
+     * NdefRecord#mediaType fields are omitted for the record with EMPTY type.
      */
-    private static boolean isValid(NfcRecord record) {
+    private static boolean isValid(NdefRecord record) {
         if (record == null) return false;
-        if (record.recordType == NfcRecordType.EMPTY) return true;
+        if (record.recordType == NdefRecordType.EMPTY) return true;
         return record.data != null && record.mediaType != null && !record.mediaType.isEmpty();
     }
 }

@@ -62,7 +62,7 @@ nfc_test(async () => {
   let messageCallback;
   let promise = new Promise(resolve => {
     messageCallback = receivedMessage => {
-      assertWebNFCMessagesEqual(message, receivedMessage);
+      assertWebNDEFMessagesEqual(message, receivedMessage);
       resolve();
     }
   });
@@ -70,7 +70,7 @@ nfc_test(async () => {
   let id = await navigator.nfc.watch(messageCallback);
   mockNFC.triggerWatchCallback(id, message);
   return promise;
-}, 'Test that watch callback is triggered with valid NFCMessage.');
+}, 'Test that watch callback is triggered with valid NDEFMessage.');
 
 nfc_test(() => {
   return assertRejectsWithError(navigator.nfc.watch(noop, {url:"www.a.com"}),
