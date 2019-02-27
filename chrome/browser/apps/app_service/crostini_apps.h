@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -86,10 +87,7 @@ class CrostiniApps : public KeyedService,
 
   crostini::CrostiniRegistryService* registry_;
 
-  // |next_u_key_| is incremented every time Convert returns a valid AppPtr, so
-  // that when an app's icon has changed, this apps::mojom::Publisher sends a
-  // different IconKey even though the IconKey's s_key hasn't changed.
-  uint64_t next_u_key_;
+  apps_util::IncrementingIconKeyFactory icon_key_factory_;
 
   base::WeakPtrFactory<CrostiniApps> weak_ptr_factory_{this};
 

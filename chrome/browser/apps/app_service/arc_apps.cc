@@ -130,7 +130,7 @@ ArcApps* ArcApps::Get(Profile* profile) {
 }
 
 ArcApps::ArcApps(Profile* profile)
-    : binding_(this), profile_(profile), prefs_(nullptr), next_u_key_(1) {
+    : binding_(this), profile_(profile), prefs_(nullptr) {
   if (!arc::IsArcAllowedForProfile(profile_) ||
       (arc::ArcServiceManager::Get() == nullptr)) {
     return;
@@ -476,11 +476,7 @@ apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
 }
 
 apps::mojom::IconKeyPtr ArcApps::NewIconKey(const std::string& app_id) {
-  auto icon_key = apps::mojom::IconKey::New();
-  icon_key->icon_type = apps::mojom::IconType::kArc;
-  icon_key->s_key = app_id;
-  icon_key->u_key = next_u_key_++;
-  return icon_key;
+  return icon_key_factory_.MakeIconKey(apps::mojom::IconType::kArc, app_id);
 }
 
 void ArcApps::Publish(apps::mojom::AppPtr app) {
