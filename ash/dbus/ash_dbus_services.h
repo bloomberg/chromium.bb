@@ -27,7 +27,6 @@ class AshDBusServices {
   void EmitAshInitialized();
 
  private:
-  bool initialized_dbus_thread_{false};
   std::unique_ptr<chromeos::CrosDBusService> display_service_;
   std::unique_ptr<chromeos::CrosDBusService> liveness_service_;
   std::unique_ptr<chromeos::CrosDBusService> url_handler_service_;

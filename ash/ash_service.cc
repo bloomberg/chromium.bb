@@ -18,6 +18,7 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/dbus/system_clock_client.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -83,14 +84,11 @@ AshService::~AshService() {
   chromeos::CrasAudioHandler::Shutdown();
   chromeos::NetworkConnect::Shutdown();
   network_connect_delegate_.reset();
-  // We may not have started the NetworkHandler.
-  if (network_handler_initialized_)
-    chromeos::NetworkHandler::Shutdown();
+  chromeos::NetworkHandler::Shutdown();
   device::BluetoothAdapterFactory::Shutdown();
   bluez::BluezDBusManager::Shutdown();
   chromeos::PowerPolicyController::Shutdown();
-  if (dbus_thread_manager_initialized_)
-    chromeos::DBusThreadManager::Shutdown();
+  chromeos::DBusThreadManager::Shutdown();
 
   // |gpu_host_| must be completely destroyed before Env as GpuHost depends on
   // Ozone, which Env owns.
@@ -125,25 +123,7 @@ void AshService::InitForMash() {
 
   // Must occur after mojo::ApplicationRunner has initialized AtExitManager, but
   // before WindowManager::Init(). Tests might initialize their own instance.
-  if (!chromeos::DBusThreadManager::IsInitialized()) {
-    chromeos::DBusThreadManager::Initialize(
-        chromeos::DBusThreadManager::kShared);
-    dbus_thread_manager_initialized_ = true;
-  }
-  chromeos::PowerPolicyController::Initialize(
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
-
-  // The initialization matches that in ChromeBrowserMainPartsChromeos.
-
-  bluez::BluezDBusManager::Initialize();
-  if (!chromeos::NetworkHandler::IsInitialized()) {
-    chromeos::NetworkHandler::Initialize();
-    network_handler_initialized_ = true;
-  }
-  network_connect_delegate_ = std::make_unique<NetworkConnectDelegateMus>();
-  chromeos::NetworkConnect::Initialize(network_connect_delegate_.get());
-  // TODO(jamescook): Initialize real audio handler.
-  chromeos::CrasAudioHandler::InitializeForTesting();
+  InitializeDBusClients();
 
   // TODO(jamescook): Refactor StatisticsProvider so we can get just the data
   // we need in ash. Right now StatisticsProviderImpl launches the crossystem
@@ -164,6 +144,32 @@ void AshService::InitForMash() {
           gpu_host_.get(), discardable_shared_memory_manager_.get());
   Shell::CreateInstance(std::move(shell_init_params));
   Shell::GetPrimaryRootWindow()->GetHost()->Show();
+}
+
+void AshService::InitializeDBusClients() {
+  CHECK(!chromeos::DBusThreadManager::IsInitialized());
+
+  // TODO(stevenjb): Eliminate use of DBusThreadManager and initialize
+  // dbus::Thread, dbus::Bus and required clients directly.
+  chromeos::DBusThreadManager::Initialize(chromeos::DBusThreadManager::kShared);
+  dbus::Bus* bus = chromeos::DBusThreadManager::Get()->GetSystemBus();
+  bool use_fakes = chromeos::DBusThreadManager::Get()->IsUsingFakes();
+  CHECK(bus || use_fakes);
+
+  chromeos::PowerPolicyController::Initialize(
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
+
+  // TODO(ortuno): Eliminate BluezDBusManager code from Ash, crbug.com/830893.
+  bluez::BluezDBusManager::Initialize();
+
+  // TODO(stevenjb): Eliminate NetworkHandler code from Ash, crbug.com/644355.
+  CHECK(!chromeos::NetworkHandler::IsInitialized());
+  chromeos::NetworkHandler::Initialize();
+  network_connect_delegate_ = std::make_unique<NetworkConnectDelegateMus>();
+  chromeos::NetworkConnect::Initialize(network_connect_delegate_.get());
+
+  // TODO(jamescook): Initialize real audio handler.
+  chromeos::CrasAudioHandler::InitializeForTesting();
 }
 
 void AshService::OnStart() {

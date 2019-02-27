@@ -17,14 +17,8 @@
 namespace ash {
 
 AshDBusServices::AshDBusServices() {
-  // TODO(stevenjb): Figure out where else the D-Bus thread is getting
-  // initialized and then always init it here when we have the MASH
-  // config after the contention is sorted out.
-  if (!chromeos::DBusThreadManager::IsInitialized()) {
-    chromeos::DBusThreadManager::Initialize(
-        chromeos::DBusThreadManager::kShared);
-    initialized_dbus_thread_ = true;
-  }
+  // DBusThreadManager is initialized in Chrome or in AshService::InitForMash().
+  CHECK(chromeos::DBusThreadManager::IsInitialized());
 
   dbus::Bus* system_bus =
       chromeos::DBusThreadManager::Get()->IsUsingFakes()
@@ -57,9 +51,6 @@ AshDBusServices::~AshDBusServices() {
   display_service_.reset();
   liveness_service_.reset();
   url_handler_service_.reset();
-  if (initialized_dbus_thread_) {
-    chromeos::DBusThreadManager::Shutdown();
-  }
 }
 
 }  // namespace ash
