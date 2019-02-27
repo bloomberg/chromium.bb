@@ -112,6 +112,7 @@ source_set("settings") {
     "//components/strings",
     "//components/translate/core/browser",
     "//components/translate/core/common",
+    "//components/ukm/ios:features",
     "//components/unified_consent",
     "//components/url_formatter",
     "//components/version_info",
