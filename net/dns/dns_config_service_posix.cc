@@ -366,7 +366,7 @@ class DnsConfigServicePosix::HostsReader : public SerialWorker {
   void DoWork() override {
     base::TimeTicks start_time = base::TimeTicks::Now();
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
     success_ = ParseHostsFile(file_path_hosts_, &hosts_);
     UMA_HISTOGRAM_BOOLEAN("AsyncDNS.HostParseResult", success_);
     UMA_HISTOGRAM_TIMES("AsyncDNS.HostsParseDuration",

@@ -62,7 +62,7 @@ class HidConnectionLinux::BlockingTaskHelper {
              WriteCallback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     ssize_t result =
         HANDLE_EINTR(write(fd_.get(), buffer->front(), buffer->size()));
@@ -85,7 +85,7 @@ class HidConnectionLinux::BlockingTaskHelper {
                         ReadCallback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     int result = HANDLE_EINTR(
         ioctl(fd_.get(), HIDIOCGFEATURE(buffer->size()), buffer->front()));
@@ -115,7 +115,7 @@ class HidConnectionLinux::BlockingTaskHelper {
                          WriteCallback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     int result = HANDLE_EINTR(
         ioctl(fd_.get(), HIDIOCSFEATURE(buffer->size()), buffer->front()));

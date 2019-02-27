@@ -339,7 +339,7 @@ class NSSInitSingleton {
     // increments the thread pool capacity for the duration of the TPM
     // initialization.
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::WILL_BLOCK);
+        FROM_HERE, base::BlockingType::WILL_BLOCK);
 
     if (!tpm_args->chaps_module) {
       ScopedChapsLoadFixup chaps_loader;

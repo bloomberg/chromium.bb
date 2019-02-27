@@ -53,7 +53,7 @@ void SaveToDiskOnWorkerThread(const base::FilePath& predictor_filename,
   bool write_result;
   {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
     write_result = base::ImportantFileWriter::WriteFileAtomically(
         predictor_filename, proto_str, "AppSearchResultRanker");
   }

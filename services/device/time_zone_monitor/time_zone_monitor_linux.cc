@@ -94,7 +94,7 @@ class TimeZoneMonitorLinuxImpl
                             base::RetainedRef(this));
 
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     // There is no true standard for where time zone information is actually
     // stored. glibc uses /etc/localtime, uClibc uses /etc/TZ, and some older

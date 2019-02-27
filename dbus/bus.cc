@@ -473,7 +473,7 @@ void Bus::ShutdownAndBlock() {
   // Private connection should be closed.
   if (connection_) {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     // Remove Disconnected watcher.
     ScopedDBusError error;

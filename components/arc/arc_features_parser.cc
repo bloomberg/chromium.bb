@@ -116,7 +116,7 @@ base::Optional<ArcFeatures> ReadOnFileThread(const base::FilePath& file_path) {
   std::string input_json;
   {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
     if (!base::ReadFileToString(file_path, &input_json)) {
       PLOG(ERROR) << "Cannot read file " << file_path.value()
                   << " into string.";

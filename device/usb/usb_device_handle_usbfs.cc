@@ -338,7 +338,7 @@ void UsbDeviceHandleUsbfs::BlockingTaskHelper::OnFileCanWriteWithoutBlocking() {
   urbs.reserve(MAX_URBS_PER_EVENT);
   for (size_t i = 0; i < MAX_URBS_PER_EVENT; ++i) {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
     usbdevfs_urb* urb;
     int rc = HANDLE_EINTR(ioctl(fd_.get(), USBDEVFS_REAPURBNDELAY, &urb));
     if (rc) {

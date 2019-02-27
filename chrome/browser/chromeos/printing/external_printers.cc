@@ -94,7 +94,7 @@ class Restrictions {
   std::unique_ptr<PrinterView> SetData(std::unique_ptr<std::string> data) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
     printers_cache_ = ParsePrinters(std::move(data));
     return ComputePrinters();
   }
