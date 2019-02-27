@@ -13,6 +13,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -30,6 +31,7 @@ class AssistantViewDelegate;
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantNotificationView
     : public views::View,
       public views::ButtonListener,
+      public ui::ImplicitAnimationObserver,
       public AssistantNotificationModelObserver {
  public:
   AssistantNotificationView(AssistantViewDelegate* delegate,
@@ -38,12 +40,16 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantNotificationView
 
   // views::View:
   const char* GetClassName() const override;
+  void AddedToWidget() override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
-  // views::Button:
+  // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override;
 
   // AssistantNotificationModelObserver:
   void OnNotificationUpdated(
@@ -54,6 +60,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantNotificationView
  private:
   void InitLayout(const AssistantNotification* notification);
   void UpdateBackground();
+  void UpdateVisibility(bool visible);
 
   AssistantViewDelegate* const delegate_;  // Owned by AssistantController.
   const std::string notification_id_;
