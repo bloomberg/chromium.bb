@@ -34,7 +34,8 @@ bool MessagePumpFuchsia::ZxHandleWatchController::WaitBegin() {
   zx_status_t status =
       async_begin_wait(weak_pump_->async_loop_->dispatcher(), this);
   if (status != ZX_OK) {
-    ZX_DLOG(ERROR, status) << "async_begin_wait() failed";
+    ZX_DLOG(ERROR, status) << "async_begin_wait():"
+                           << created_from_location_.ToString();
     async_wait_t::handler = nullptr;
     return false;
   }
@@ -66,7 +67,8 @@ bool MessagePumpFuchsia::ZxHandleWatchController::StopWatchingZxHandle() {
 
   zx_status_t result =
       async_cancel_wait(weak_pump_->async_loop_->dispatcher(), this);
-  ZX_DLOG_IF(ERROR, result != ZX_OK, result) << "async_cancel_wait failed";
+  ZX_DLOG_IF(ERROR, result != ZX_OK, result)
+      << "async_cancel_wait(): " << created_from_location_.ToString();
   return result == ZX_OK;
 }
 
@@ -78,14 +80,16 @@ void MessagePumpFuchsia::ZxHandleWatchController::HandleSignal(
     const zx_packet_signal_t* signal) {
   TRACE_EVENT0("toplevel", "ZxHandleSignal");
 
-  if (status != ZX_OK) {
-    ZX_LOG(WARNING, status) << "async wait failed";
-    return;
-  }
-
   ZxHandleWatchController* controller =
       static_cast<ZxHandleWatchController*>(wait);
   DCHECK_EQ(controller->handler, &HandleSignal);
+
+  if (status != ZX_OK) {
+    ZX_DLOG(WARNING, status) << "async wait failed: "
+                             << controller->created_from_location_.ToString();
+    return;
+  }
+
   controller->handler = nullptr;
 
   // |signal| can include other spurious things, in particular, that an fd
@@ -150,7 +154,8 @@ bool MessagePumpFuchsia::FdWatchController::WaitBegin() {
   // their current state, so we must do this every time we begin to wait.
   fdio_unsafe_wait_begin(io_, desired_events_, &object, &trigger);
   if (async_wait_t::object == ZX_HANDLE_INVALID) {
-    DLOG(ERROR) << "fdio_wait_begin failed";
+    DLOG(ERROR) << "fdio_wait_begin failed: "
+                << ZxHandleWatchController::created_from_location_.ToString();
     return false;
   }
 

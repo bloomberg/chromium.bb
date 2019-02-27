@@ -154,11 +154,19 @@ class OzonePlatformScenic
   }
 
  private:
-  // Performs graceful cleanup tasks on main message loop teardown.
-  void Shutdown() { window_manager_.reset(); }
-
   // base::MessageLoopCurrent::DestructionObserver implementation.
-  void WillDestroyCurrentMessageLoop() override { Shutdown(); }
+  void WillDestroyCurrentMessageLoop() override {
+    // We must ensure to destroy any resources which rely on the MessageLoop's
+    // async_dispatcher.
+    scenic_gpu_host_ptr_ = nullptr;
+    surface_factory_ = nullptr;
+    scenic_gpu_host_ = nullptr;
+    overlay_manager_ = nullptr;
+    input_controller_ = nullptr;
+    cursor_factory_ozone_ = nullptr;
+    platform_event_source_ = nullptr;
+    window_manager_ = nullptr;
+  }
 
   std::unique_ptr<ScenicWindowManager> window_manager_;
 
