@@ -92,10 +92,10 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
     return UnzoomedLength(Length::Fixed(1));
   }
   static float InitialStopOpacity() { return 1; }
-  static Color InitialStopColor() { return Color(0, 0, 0); }
+  static Color InitialStopColor() { return Color::kBlack; }
   static float InitialFloodOpacity() { return 1; }
-  static Color InitialFloodColor() { return Color(0, 0, 0); }
-  static Color InitialLightingColor() { return Color(255, 255, 255); }
+  static Color InitialFloodColor() { return Color::kBlack; }
+  static Color InitialLightingColor() { return Color::kWhite; }
   static StyleSVGResource* InitialMaskerResource() { return nullptr; }
   static StyleSVGResource* InitialMarkerStartResource() { return nullptr; }
   static StyleSVGResource* InitialMarkerMidResource() { return nullptr; }
