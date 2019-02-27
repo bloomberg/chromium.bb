@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/platform/animation/compositor_target_property.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace cc {
 class KeyframeModel;
@@ -25,6 +26,8 @@ class CompositorFloatAnimationCurve;
 
 // A compositor driven animation.
 class PLATFORM_EXPORT CompositorKeyframeModel {
+  USING_FAST_MALLOC(CompositorKeyframeModel);
+
  public:
   using Direction = cc::KeyframeModel::Direction;
   using FillMode = cc::KeyframeModel::FillMode;
