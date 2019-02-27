@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -17,11 +18,13 @@ namespace autofill {
 
 CardExpirationDateFixFlowViewDelegateMobile::
     CardExpirationDateFixFlowViewDelegateMobile(
+        const CreditCard& card,
         base::OnceCallback<void(const base::string16&, const base::string16&)>
             upload_save_card_callback)
     : upload_save_card_callback_(std::move(upload_save_card_callback)),
       shown_(false),
-      had_user_interaction_(false) {
+      had_user_interaction_(false),
+      card_label_(card.NetworkAndLastFourDigits()) {
   DCHECK(!upload_save_card_callback_.is_null());
 }
 

@@ -104,6 +104,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   void ConfirmAccountNameFixFlow(
       base::OnceCallback<void(const base::string16&)> callback) override;
   void ConfirmExpirationDateFixFlow(
+      const autofill::CreditCard& card,
       base::OnceCallback<void(const base::string16&, const base::string16&)>
           callback) override;
   void ConfirmSaveCreditCardToCloud(

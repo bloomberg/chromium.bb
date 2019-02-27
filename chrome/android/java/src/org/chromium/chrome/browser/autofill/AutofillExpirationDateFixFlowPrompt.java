@@ -10,9 +10,11 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.autofill.AutofillUiUtils.ErrorType;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -23,7 +25,6 @@ import java.util.Calendar;
 /**
  * Prompt that asks users to confirm the expiration date before saving card to Google.
  * TODO(crbug.com/848955)
- * - Display error message if validation fails.
  * - Confirm if the month and year needs to be pre-populated in case partial data is available.
  */
 public class AutofillExpirationDateFixFlowPrompt
@@ -52,25 +53,41 @@ public class AutofillExpirationDateFixFlowPrompt
     private final View mDialogView;
     private final EditText mMonthInput;
     private final EditText mYearInput;
+    private final TextView mErrorMessage;
+    private final TextView mCardDetailsMasked;
 
     private ModalDialogManager mModalDialogManager;
     private Context mContext;
+
+    private boolean mDidFocusOnMonth;
+    private boolean mDidFocusOnYear;
 
     /**
      * Fix flow prompt to confirm expiration date before saving the card to Google.
      */
     public AutofillExpirationDateFixFlowPrompt(Context context,
             AutofillExpirationDateFixFlowPromptDelegate delegate, String title,
-            String confirmButtonLabel, int drawableId) {
+            String confirmButtonLabel, int drawableId, String cardLabel) {
         mDelegate = delegate;
         LayoutInflater inflater = LayoutInflater.from(context);
         mDialogView = inflater.inflate(R.layout.autofill_expiration_date_fix_flow, null);
+        mErrorMessage = (TextView) mDialogView.findViewById(R.id.error_message);
+        mCardDetailsMasked = (TextView) mDialogView.findViewById(R.id.cc_details_masked);
+        mCardDetailsMasked.setText(cardLabel);
 
         mMonthInput = (EditText) mDialogView.findViewById(R.id.cc_month_edit);
         mMonthInput.addTextChangedListener(this);
+        mMonthInput.setOnFocusChangeListener((view, hasFocus) -> {
+            mDidFocusOnMonth |= hasFocus;
+            validate();
+        });
 
         mYearInput = (EditText) mDialogView.findViewById(R.id.cc_year_edit);
         mYearInput.addTextChangedListener(this);
+        mYearInput.setOnFocusChangeListener((view, hasFocus) -> {
+            mDidFocusOnYear |= hasFocus;
+            validate();
+        });
 
         mDialogModel = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
                                .with(ModalDialogProperties.CONTROLLER, this)
@@ -104,9 +121,7 @@ public class AutofillExpirationDateFixFlowPrompt
 
     @Override
     public void afterTextChanged(Editable s) {
-        mDialogModel.set(ModalDialogProperties.POSITIVE_BUTTON_DISABLED,
-                !isValidExpirationDate(
-                        mMonthInput.getText().toString(), mYearInput.getText().toString()));
+        validate();
     }
 
     @Override
@@ -163,5 +178,43 @@ public class AutofillExpirationDateFixFlowPrompt
             return month >= currentMonth;
         }
         return true;
+    }
+
+    /**
+     * Validates the values of the input fields to determine whether the submit button should be
+     * enabled. Also displays a detailed error message and highlights the fields for which the value
+     * is wrong. Finally checks whether the focus should move to the next field.
+     */
+    private void validate() {
+        @ErrorType
+        int errorType = AutofillUiUtils.getExpirationDateErrorType(
+                mMonthInput, mYearInput, mDidFocusOnMonth, mDidFocusOnYear);
+        mDialogModel.set(
+                ModalDialogProperties.POSITIVE_BUTTON_DISABLED, errorType != ErrorType.NONE);
+        AutofillUiUtils.showDetailedErrorMessage(errorType, mContext, mErrorMessage);
+        AutofillUiUtils.updateColorForInputs(
+                errorType, mContext, mMonthInput, mYearInput, /*cvcInput=*/null);
+        moveFocus(errorType);
+    }
+
+    /**
+     * Moves the focus to the next field based on the value of the fields and the specified type of
+     * error found for the expiration date field(s).
+     *
+     * @param errorType The type of error detected.
+     */
+    private void moveFocus(@ErrorType int errorType) {
+        if (errorType != ErrorType.NOT_ENOUGH_INFO) {
+            // There is an error or the month and year is filled and valid.
+            return;
+        }
+        if (mMonthInput.isFocused()
+                && mMonthInput.getText().length() == AutofillUiUtils.EXPIRATION_FIELDS_LENGTH) {
+            // The user just finished typing in the month field and there are no validation
+            // errors.
+            // Year was not filled, move focus there.
+            mYearInput.requestFocus();
+            mDidFocusOnYear = true;
+        }
     }
 }

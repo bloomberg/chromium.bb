@@ -822,16 +822,19 @@ void CreditCardSaveManager::OnUserDidDecideOnUploadSave(
     const AutofillClient::UserProvidedCardDetails& user_provided_card_details) {
   switch (user_decision) {
     case AutofillClient::ACCEPTED:
-// On Android, requesting cardholder name is a two step flow.
+// On Android, requesting cardholder name or expiration date is a two step
+// flow.
 #if defined(OS_ANDROID)
       if (should_request_name_from_user_) {
         client_->ConfirmAccountNameFixFlow(base::BindOnce(
             &CreditCardSaveManager::OnUserDidAcceptAccountNameFixFlow,
             weak_ptr_factory_.GetWeakPtr()));
       } else if (should_request_expiration_date_from_user_) {
-        client_->ConfirmExpirationDateFixFlow(base::BindOnce(
-            &CreditCardSaveManager::OnUserDidAcceptExpirationDateFixFlow,
-            weak_ptr_factory_.GetWeakPtr()));
+        client_->ConfirmExpirationDateFixFlow(
+            upload_request_.card,
+            base::BindOnce(
+                &CreditCardSaveManager::OnUserDidAcceptExpirationDateFixFlow,
+                weak_ptr_factory_.GetWeakPtr()));
       } else {
         OnUserDidAcceptUploadHelper(user_provided_card_details);
       }

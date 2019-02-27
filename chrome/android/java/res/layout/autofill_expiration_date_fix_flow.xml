@@ -14,51 +14,59 @@
     android:layout_marginBottom="32dp"
     android:paddingBottom="16dp"
     android:layout_marginTop="6dp"
-    android:orientation="horizontal"
-    android:gravity="center_vertical">
-
-    <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
-    <EditText
-        tools:ignore="Autofill,LabelFor"
-        android:id="@+id/cc_month_edit"
-        android:hint="@string/autofill_expiration_date_month_hint"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:maxLength="2"
-        android:imeOptions="actionDone"
-        android:inputType="number"/>
+    android:orientation="vertical">
 
     <TextView
+        android:id="@+id/cc_details_masked"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:text="@string/autofill_expiration_date_separator"/>
+        android:textAppearance="@style/TextAppearance.BlackBodyDefault"
+        android:layout_marginBottom="10dp"/>
 
-    <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
-    <EditText
-        tools:ignore="Autofill,LabelFor"
-        android:id="@+id/cc_year_edit"
-        android:hint="@string/autofill_expiration_date_year_hint"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:imeOptions="actionDone"
-        android:maxLength="2"
-        android:inputType="number"/>
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+        
+        <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
+        <EditText
+            tools:ignore="Autofill,LabelFor"
+            android:id="@+id/cc_month_edit"
+            android:hint="@string/autofill_expiration_date_month_hint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:width="50sp"
+            android:gravity="center_horizontal"
+            android:maxLength="2"
+            android:imeOptions="actionNext"
+            android:inputType="number"/>
 
-    <View
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:layout_width="0dp"/>
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:text="@string/autofill_expiration_date_separator"/>
 
-    <ImageView
-        android:id="@+id/cc_name_tooltip_icon"
-        android:layout_width="wrap_content"
+        <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
+        <EditText
+            tools:ignore="Autofill,LabelFor"
+            android:id="@+id/cc_year_edit"
+            android:hint="@string/autofill_expiration_date_year_hint"
+            android:layout_width="wrap_content"
+            android:width="50sp"
+            android:gravity="center_horizontal"
+            android:layout_height="wrap_content"
+            android:imeOptions="actionDone"
+            android:maxLength="2"
+            android:inputType="number"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/error_message"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:src="@drawable/btn_info"
-        android:layout_gravity="center"
-        android:contentDescription="@string/learn_more" />
-
-<!-- TODO(crbug.com/926316) Confirm the placement with UX and add a error text -->
-
+        android:gravity="start"
+        android:textAppearance="@style/TextAppearance.AutofillCardErrorMessage"
+        android:visibility="gone" />
 </LinearLayout>
-

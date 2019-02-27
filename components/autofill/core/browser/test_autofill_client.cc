@@ -137,6 +137,7 @@ void TestAutofillClient::ConfirmAccountNameFixFlow(
 }
 
 void TestAutofillClient::ConfirmExpirationDateFixFlow(
+    const CreditCard& card,
     base::OnceCallback<void(const base::string16&, const base::string16&)>
         callback) {
   credit_card_name_fix_flow_bubble_was_shown_ = true;

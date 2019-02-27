@@ -92,6 +92,7 @@ class ChromeAutofillClient
   void ConfirmAccountNameFixFlow(
       base::OnceCallback<void(const base::string16&)> callback) override;
   void ConfirmExpirationDateFixFlow(
+      const CreditCard& card,
       base::OnceCallback<void(const base::string16&, const base::string16&)>
           callback) override;
 #endif  // defined(OS_ANDROID)

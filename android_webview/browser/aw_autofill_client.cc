@@ -163,6 +163,7 @@ void AwAutofillClient::ConfirmAccountNameFixFlow(
 }
 
 void AwAutofillClient::ConfirmExpirationDateFixFlow(
+    const autofill::CreditCard& card,
     base::OnceCallback<void(const base::string16&, const base::string16&)>
         callback) {
   NOTIMPLEMENTED();
