@@ -26,8 +26,6 @@ AutofillAction::AutofillAction(const ActionProto& proto)
     prompt_ = proto.use_address().prompt();
     name_ = proto.use_address().name();
     selector_ = Selector(proto.use_address().form_field_element());
-    fill_form_message_ = proto.use_address().strings().fill_form();
-    check_form_message_ = proto.use_address().strings().check_form();
     required_fields_value_status_.resize(
         proto_.use_address().required_fields_size(), UNKNOWN);
   } else {
@@ -36,8 +34,6 @@ AutofillAction::AutofillAction(const ActionProto& proto)
     prompt_ = proto.use_card().prompt();
     name_ = "";
     selector_ = Selector(proto.use_card().form_field_element());
-    fill_form_message_ = proto.use_card().strings().fill_form();
-    check_form_message_ = proto.use_card().strings().check_form();
   }
   DCHECK(!selector_.empty());
 }
@@ -60,11 +56,7 @@ void AutofillAction::InternalProcessAction(
       (!is_autofill_card_ &&
        delegate->GetClientMemory()->selected_address(name_));
   if (!has_valid_data) {
-    // User selected 'Fill manually'.
-    // TODO(crbug.com/806868): Check whether it is still possible to reach this
-    // part of the code.
-    delegate->StopCurrentScriptAndShutdown(fill_form_message_);
-    EndAction(MANUAL_FALLBACK);
+    EndAction(PRECONDITION_FAILED);
     return;
   }
 
@@ -113,8 +105,7 @@ void AutofillAction::OnGetFullCard(ActionDelegate* delegate,
   if (!card) {
     // Gracefully shutdown the script. The empty message forces the use of the
     // default message.
-    delegate->StopCurrentScriptAndShutdown("");
-    EndAction(MANUAL_FALLBACK);
+    EndAction(GET_FULL_CARD_FAILED);
     return;
   }
 
@@ -194,9 +185,7 @@ void AutofillAction::OnCheckRequiredFieldsDone(ActionDelegate* delegate,
   }
 
   if (!allow_fallback) {
-    // Validation failed and we don't want to try the fallback, so we stop
-    // the script.
-    delegate->StopCurrentScriptAndShutdown(check_form_message_);
+    // Validation failed and we don't want to try the fallback.
     EndAction(MANUAL_FALLBACK);
     return;
   }
@@ -216,7 +205,6 @@ void AutofillAction::OnCheckRequiredFieldsDone(ActionDelegate* delegate,
     }
   }
   if (!has_fallbacks) {
-    delegate->StopCurrentScriptAndShutdown(check_form_message_);
     EndAction(MANUAL_FALLBACK);
     return;
   }
@@ -272,7 +260,6 @@ void AutofillAction::OnSetFallbackFieldValue(ActionDelegate* delegate,
                                              bool successful) {
   if (!successful) {
     // Fallback failed: we stop the script without checking the fields.
-    delegate->StopCurrentScriptAndShutdown(check_form_message_);
     EndAction(MANUAL_FALLBACK);
     return;
   }
