@@ -617,12 +617,10 @@ void TouchSelectionControllerImpl::RunContextMenu() {
 }
 
 bool TouchSelectionControllerImpl::ShouldShowQuickMenu() {
-  NOTREACHED();
   return false;
 }
 
 base::string16 TouchSelectionControllerImpl::GetSelectedText() {
-  NOTREACHED();
   return base::string16();
 }
 
