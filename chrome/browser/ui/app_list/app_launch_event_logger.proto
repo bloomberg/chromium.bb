@@ -35,3 +35,27 @@ message AppLaunchEvent {
   // The URL for PWA apps.
   optional string pwa_url = 6;
 }
+
+// The App features used for training and inference.
+message AppLaunchFeatures {
+  // The id of the app as a 32 character string. e.g.
+  // "pjkljhegncpnkpknbcohdijeoejaedia".
+  optional string app_id = 1;
+  optional AppLaunchEvent.AppType app_type = 2;
+  optional string arc_package_name = 3;
+  optional string pwa_url = 4;
+  optional int32 sequence_number = 5;
+  optional int32 most_recently_used_index = 6;
+  // Not logged in UKM.
+  optional int64 time_of_last_click_sec = 7;
+  optional int32 time_since_last_click_sec = 8;
+  optional int32 clicks_last_hour = 9;
+  optional int32 clicks_last_24_hours = 10;
+  optional int32 total_clicks = 11;
+  repeated int32 clicks_each_hour = 12;
+  optional AppLaunchEvent.LaunchedFrom last_launched_from = 13;
+  // Used when checking app for compliance. Should always be true outside of the
+  // checking procedure, which removes apps with |is_policy_compliant| false.
+  // Not logged in UKM.
+  optional bool is_policy_compliant = 14;
+}

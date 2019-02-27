@@ -165,6 +165,20 @@ be describing additional metrics about the same event.
     the app id, for Play apps the keys are based upon a hash of the package name
     and for PWAs the keys are the urls associated with the PWA.
   </summary>
+  <metric name="AllClicksLast24Hours">
+    <summary>
+      Total number of clicks launching logged apps in the last 24 hours.
+      Accurate to the nearest 15 minutes. Bucketing: values above 20 rounded
+      down to the nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="AllClicksLastHour">
+    <summary>
+      Total number of clicks launching logged apps in the last hour. Accurate to
+      the nearest minute. Bucketing: values above 20 rounded down to the nearest
+      10. Maximum value of 200.
+    </summary>
+  </metric>
   <metric name="AppType">
     <summary>
       The type of app. 1: CHROME, 2: PLAY, 3: PWA.
@@ -208,6 +222,249 @@ be describing additional metrics about the same event.
     <summary>
       The position of the app within the grid/suggested apps/shelf. 0 is the
       first position.
+    </summary>
+  </metric>
+  <metric name="TotalHours">
+    <summary>
+      Number of hours in the current session up to this event. Bucketing:
+      exponential buckets, increasing in size by 25%, rounded to the nearest
+      integer. i.e. 0, 1, 2, 3, 4, 5, 6, 7, 9, 12, 15, 18, 23, 28, 36, 44...
+    </summary>
+  </metric>
+</event>
+
+<event name="AppListAppClickData">
+  <owner>pdyson@chromium.org</owner>
+  <summary>
+    AppListAppClickData events contain click history metrics for an app. These
+    events are recorded when an app is launched from the launcher on ChromeOS,
+    but may be for an app different from the app launched. See event
+    AppListAppLaunch for more detail on the keys used.
+  </summary>
+  <metric name="AppLaunchId">
+    <summary>
+      The ID of the app launch event.
+    </summary>
+  </metric>
+  <metric name="AppType">
+    <summary>
+      The type of app. 1: CHROME, 2: PLAY, 3: PWA.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour00">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 12:00am and 1:00am. Bucketing: values above 20 rounded down to the
+      nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour01">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 1:00am and 2:00am. Bucketing: values above 20 rounded down to the
+      nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour02">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 2:00am and 3:00am. Bucketing: values above 20 rounded down to the
+      nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour03">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 3:00am and 4:00am. Bucketing: values above 20 rounded down to the
+      nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour04">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 4:00am and 5:00am. Bucketing: values above 20 rounded down to the
+      nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour05">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 5:00am and 6:00am. Bucketing: values above 20 rounded down to the
+      nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour06">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 6:00am and 7:00am. Bucketing: values above 20 rounded down to the
+      nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour07">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 7:00am and 8:00am. Bucketing: values above 20 rounded down to the
+      nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour08">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 8:00am and 9:00am. Bucketing: values above 20 rounded down to the
+      nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour09">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 9:00am and 10:00am. Bucketing: values above 20 rounded down to the
+      nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour10">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 10:00am and 11:00am. Bucketing: values above 20 rounded down to
+      the nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour11">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 11:00am and 12:00pm. Bucketing: values above 20 rounded down to
+      the nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour12">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 12:00pm and 1:00pm. Bucketing: values above 20 rounded down to the
+      nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour13">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 1:00pm and 2:00pm. Bucketing: values above 20 rounded down to the
+      nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour14">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 2:00pm and 3:00pm. Bucketing: values above 20 rounded down to the
+      nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour15">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 3:00pm and 4:00pm. Bucketing: values above 20 rounded down to the
+      nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour16">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 4:00pm and 5:00pm. Bucketing: values above 20 rounded down to the
+      nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour17">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 5:00pm and 6:00pm. Bucketing: values above 20 rounded down to the
+      nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour18">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 6:00pm and 7:00pm. Bucketing: values above 20 rounded down to the
+      nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour19">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 7:00pm and 8:00pm. Bucketing: values above 20 rounded down to the
+      nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour20">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 8:00pm and 9:00pm. Bucketing: values above 20 rounded down to the
+      nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour21">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 9:00pm and 10:00pm. Bucketing: values above 20 rounded down to the
+      nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour22">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 10:00pm and 11:00pm. Bucketing: values above 20 rounded down to
+      the nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksEachHour23">
+    <summary>
+      The number of clicks on this app in the current session that occurred
+      between 11:00pm and 12:00am. Bucketing: values above 20 rounded down to
+      the nearest 10. Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksLast24Hours">
+    <summary>
+      The number of clicks on this app in the last 24 hours. Accurate to 15
+      minutes. Bucketing: values above 20 rounded down to the nearest 10.
+      Maximum value of 200.
+    </summary>
+  </metric>
+  <metric name="ClicksLastHour">
+    <summary>
+      The number of clicks on this app in the last hour. Accurate to one minute.
+      Bucketing: values above 20 rounded down to the nearest 10. Maximum value
+      of 200.
+    </summary>
+  </metric>
+  <metric name="LastLaunchedFrom">
+    <summary>
+      Where the app was last launched from. 1: GRID, 2: SUGGESTED, 3: SHELF.
+    </summary>
+  </metric>
+  <metric name="MostRecentlyUsedIndex">
+    <summary>
+      Index recording when in the sequence of app launch clicks the app was last
+      clicked on. 0: most recent app clicked on, 1: app clicked immediately
+      before the most recent, etc.
+    </summary>
+  </metric>
+  <metric name="SequenceNumber">
+    <summary>
+      The sequence number of the AppListAppLaunch event that corresponds to this
+      AppListAppClickData event. There will be six AppListAppClickData events
+      for each sequence number.
+    </summary>
+  </metric>
+  <metric name="TimeSinceLastClick">
+    <summary>
+      Time since this app was last clicked on to launch. In seconds, bucketed:
+      [1, 59] to the nearest second, [60, 599] to the nearest minute, [600,
+      1199] to the nearest 5 minutes, [1200, 3599] to the nearest 10 minutes,
+      [3600, 17999] to the nearest 30 minutes, [18000, 86400] to the nearest
+      hour.
+    </summary>
+  </metric>
+  <metric name="TotalClicks">
+    <summary>
+      Total number of clicks launching this app in this sesion. Bucketing:
+      values above 20 rounded down to the nearest 10. Maximum value of 200.
     </summary>
   </metric>
 </event>

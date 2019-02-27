@@ -4,14 +4,20 @@
 
 #include "chrome/browser/ui/app_list/app_launch_event_logger.h"
 
+#include <cmath>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
-#include "base/task/task_traits.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/power/ml/recent_events_counter.h"
+#include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger_helpers.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -35,8 +41,39 @@ const char AppLaunchEventLogger::kShouldSync[] = "should_sync";
 
 namespace {
 
+constexpr int kNumRandomAppsToLog = 5;
 const char kArcScheme[] = "arc://";
 const char kExtensionSchemeWithDelimiter[] = "chrome-extension://";
+
+constexpr base::TimeDelta kHourDuration = base::TimeDelta::FromHours(1);
+constexpr base::TimeDelta kDayDuration = base::TimeDelta::FromDays(1);
+constexpr int kMinutesInAnHour = 60;
+constexpr int kQuarterHoursInADay = 24 * 4;
+constexpr float kTotalHoursBucketSizeMultiplier = 1.25;
+
+constexpr std::array<chromeos::power::ml::Bucket, 2> kClickBuckets = {
+    {{20, 1}, {200, 10}}};
+constexpr std::array<chromeos::power::ml::Bucket, 6>
+    kTimeSinceLastClickBuckets = {{{60, 1},
+                                   {600, 60},
+                                   {1200, 300},
+                                   {3600, 600},
+                                   {18000, 1800},
+                                   {86400, 3600}}};
+
+// Returns the nearest bucket for |value|, where bucket sizes are determined
+// exponentially, with each bucket size increasing by a factor of |base|.
+// The return value is rounded to the nearest integer.
+int ExponentialBucket(int value, float base) {
+  if (base <= 0) {
+    LOG(DFATAL) << "Base of exponential must be positive.";
+    return 0;
+  }
+  if (value <= 0) {
+    return 0;
+  }
+  return round(pow(base, round(log(value) / log(base))));
+}
 
 int HourOfDay(base::Time time) {
   base::Time::Exploded exploded;
@@ -52,7 +89,17 @@ int DayOfWeek(base::Time time) {
 
 }  // namespace
 
-AppLaunchEventLogger::AppLaunchEventLogger() : weak_factory_(this) {
+AppLaunchEventLogger::AppLaunchEventLogger()
+    : start_time_(base::Time::Now()),
+      all_clicks_last_hour_(
+          std::make_unique<chromeos::power::ml::RecentEventsCounter>(
+              kHourDuration,
+              kMinutesInAnHour)),
+      all_clicks_last_24_hours_(
+          std::make_unique<chromeos::power::ml::RecentEventsCounter>(
+              kDayDuration,
+              kQuarterHoursInADay)),
+      weak_factory_(this) {
   task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
@@ -70,7 +117,8 @@ void AppLaunchEventLogger::OnSuggestionChipClicked(const std::string& id,
   event.set_launched_from(AppLaunchEvent_LaunchedFrom_SUGGESTED);
   event.set_app_id(RemoveScheme(id));
   event.set_index(suggestion_index);
-  SetAppInfo(&event);
+  EnforceLoggingPolicy();
+
   task_runner_->PostTask(FROM_HERE,
                          base::BindOnce(&AppLaunchEventLogger::Log,
                                         weak_factory_.GetWeakPtr(), event));
@@ -83,7 +131,8 @@ void AppLaunchEventLogger::OnGridClicked(const std::string& id) {
   AppLaunchEvent event;
   event.set_launched_from(AppLaunchEvent_LaunchedFrom_GRID);
   event.set_app_id(id);
-  SetAppInfo(&event);
+  EnforceLoggingPolicy();
+
   task_runner_->PostTask(FROM_HERE,
                          base::BindOnce(&AppLaunchEventLogger::Log,
                                         weak_factory_.GetWeakPtr(), event));
@@ -99,7 +148,7 @@ void AppLaunchEventLogger::SetAppDataForTesting(
   arc_packages_ = arc_packages;
 }
 
-std::string AppLaunchEventLogger::RemoveScheme(const std ::string& id) {
+std::string AppLaunchEventLogger::RemoveScheme(const std::string& id) {
   std::string app_id(id);
   if (!app_id.compare(0, strlen(kExtensionSchemeWithDelimiter),
                       kExtensionSchemeWithDelimiter)) {
@@ -130,119 +179,352 @@ const std::string& AppLaunchEventLogger::GetPwaUrl(const std::string& id) {
   return base::EmptyString();
 }
 
-void AppLaunchEventLogger::SetAppInfo(AppLaunchEvent* event) {
-  LoadInstalledAppInformation();
-  if (IsChromeAppFromWebstore(event->app_id())) {
-    event->set_app_type(AppLaunchEvent_AppType_CHROME);
-    return;
+void AppLaunchEventLogger::OkApp(AppLaunchEvent_AppType app_type,
+                                 const std::string& app_id,
+                                 const std::string& arc_package_name,
+                                 const std::string& pwa_url) {
+  if (app_features_map_.find(app_id) == app_features_map_.end()) {
+    AppLaunchFeatures app_launch_features;
+    app_launch_features.set_app_id(app_id);
+    app_launch_features.set_app_type(app_type);
+    if (app_type == AppLaunchEvent_AppType_PWA) {
+      app_launch_features.set_pwa_url(pwa_url);
+    } else if (app_type == AppLaunchEvent_AppType_PLAY) {
+      app_launch_features.set_arc_package_name(arc_package_name);
+    }
+    app_features_map_[app_id] = app_launch_features;
   }
-  const std::string& pwa_url = GetPwaUrl(event->app_id());
-  if (pwa_url != base::EmptyString()) {
-    event->set_app_type(AppLaunchEvent_AppType_PWA);
-    event->set_pwa_url(pwa_url);
-    return;
-  }
-  const std::string& arc_package_name(GetSyncedArcPackage(event->app_id()));
-  if (arc_package_name != base::EmptyString()) {
-    event->set_app_type(AppLaunchEvent_AppType_PLAY);
-    event->set_arc_package_name(arc_package_name);
-    return;
-  }
-  event->set_app_type(AppLaunchEvent_AppType_OTHER);
+  app_features_map_[app_id].set_is_policy_compliant(true);
 }
 
-void AppLaunchEventLogger::LoadInstalledAppInformation() {
+void AppLaunchEventLogger::EnforceLoggingPolicy() {
   // Tests provide installed app information, so don't overwrite that.
-  if (testing_)
+  if (!testing_) {
+    Profile* profile = ProfileManager::GetLastUsedProfile();
+    if (!profile) {
+      LOG(DFATAL) << "No profile";
+      return;
+    }
+    registry_ = extensions::ExtensionRegistry::Get(profile);
+
+    PrefService* pref_service = profile->GetPrefs();
+    if (pref_service) {
+      arc_apps_ = pref_service->GetDictionary(arc::prefs::kArcApps);
+      arc_packages_ = pref_service->GetDictionary(arc::prefs::kArcPackages);
+    }
+  }
+
+  for (auto& app : app_features_map_) {
+    app.second.set_is_policy_compliant(false);
+  }
+
+  // Store all Chrome and PWA apps.
+  // registry_ can be nullptr in tests.
+  if (registry_) {
+    std::unique_ptr<extensions::ExtensionSet> extensions =
+        registry_->GenerateInstalledExtensionsSet();
+    for (const auto& extension : *extensions) {
+      // Only allow Chrome apps that are from the webstore.
+      if (extension->from_webstore()) {
+        OkApp(AppLaunchEvent_AppType_CHROME, extension->id(),
+              base::EmptyString(), base::EmptyString());
+      } else {
+        // Only allow PWA apps on the whitelist.
+        auto search = pwa_id_url_map_.find(extension->id());
+        if (search != pwa_id_url_map_.end()) {
+          OkApp(AppLaunchEvent_AppType_PWA, extension->id(),
+                base::EmptyString(), search->second);
+        }
+      }
+    }
+  }
+
+  // Store all Arc apps.
+  // arc_apps_ and arc_packages_ can be nullptr in tests.
+  if (arc_apps_ && arc_packages_) {
+    for (const auto& app : arc_apps_->DictItems()) {
+      const base::Value* package_name_value = app.second.FindKey(kPackageName);
+      if (!package_name_value) {
+        continue;
+      }
+      const base::Value* package =
+          arc_packages_->FindKey(package_name_value->GetString());
+      // Only allow Arc apps with sync enabled.
+      if (!package || !package->FindKey(kShouldSync)->GetBool()) {
+        continue;
+      }
+      OkApp(AppLaunchEvent_AppType_PLAY, app.first,
+            package_name_value->GetString(), base::EmptyString());
+    }
+  }
+  // Remove any apps that are no longer installed or no longer satisfy logging
+  // policy.
+  base::EraseIf(app_features_map_,
+                [](const std::pair<std::string, AppLaunchFeatures>& pair) {
+                  return !pair.second.is_policy_compliant();
+                });
+}
+
+void AppLaunchEventLogger::ProcessClick(const AppLaunchEvent& event,
+                                        const base::Time& now) {
+  auto search = app_features_map_.find(event.app_id());
+  if (search == app_features_map_.end()) {
     return;
-
-  Profile* profile = ProfileManager::GetLastUsedProfile();
-  if (!profile) {
-    LOG(DFATAL) << "No profile";
-    return;
   }
-  registry_ = extensions::ExtensionRegistry::Get(profile);
-
-  PrefService* pref_service = profile->GetPrefs();
-  if (pref_service) {
-    arc_apps_ = pref_service->GetDictionary(arc::prefs::kArcApps);
-    arc_packages_ = pref_service->GetDictionary(arc::prefs::kArcPackages);
+  for (auto& app : app_features_map_) {
+    // Advance mru index for apps previously clicked on.
+    if (app.second.has_most_recently_used_index()) {
+      app.second.set_most_recently_used_index(
+          app.second.most_recently_used_index() + 1);
+    }
   }
+  const base::TimeDelta duration = now - start_time_;
+  AppLaunchFeatures* app_launch_features = &search->second;
+  if (!app_launch_features->has_most_recently_used_index()) {
+    // Handle first click on an id.
+    app_clicks_last_hour_[event.app_id()] =
+        std::make_unique<chromeos::power::ml::RecentEventsCounter>(
+            kHourDuration, kMinutesInAnHour);
+    app_clicks_last_24_hours_[event.app_id()] =
+        std::make_unique<chromeos::power::ml::RecentEventsCounter>(
+            kDayDuration, kQuarterHoursInADay);
+    for (int hour = 0; hour < 24; hour++) {
+      app_launch_features->add_clicks_each_hour(0);
+    }
+  }
+  app_launch_features->set_most_recently_used_index(0);
+  app_launch_features->set_last_launched_from(event.launched_from());
+  app_launch_features->set_total_clicks(app_launch_features->total_clicks() +
+                                        1);
+  app_launch_features->set_time_of_last_click_sec(
+      now.ToDeltaSinceWindowsEpoch().InSeconds());
+  const int hour = HourOfDay(now);
+  app_launch_features->set_clicks_each_hour(
+      hour, app_launch_features->clicks_each_hour(hour) + 1);
+  app_clicks_last_hour_[event.app_id()]->Log(duration);
+  app_clicks_last_24_hours_[event.app_id()]->Log(duration);
+  app_launch_features->set_clicks_last_hour(
+      app_clicks_last_hour_[event.app_id()]->GetTotal(duration));
+  app_launch_features->set_clicks_last_24_hours(
+      app_clicks_last_24_hours_[event.app_id()]->GetTotal(duration));
 }
 
-std::string AppLaunchEventLogger::GetSyncedArcPackage(const std::string& id) {
-  if (!arc_apps_ || !arc_packages_)
-    return base::EmptyString();
-
-  const base::Value* app = arc_apps_->FindKey(id);
-  if (!app) {
-    // App with |id| is not in the list of installed Arc apps.
-    return base::EmptyString();
-  }
-  const base::Value* package_name_value = app->FindKey(kPackageName);
-  if (!package_name_value) {
-    return base::EmptyString();
-  }
-  const base::Value* package =
-      arc_packages_->FindKey(package_name_value->GetString());
-  if (!package) {
-    return base::EmptyString();
-  }
-  if (!package->FindKey(kShouldSync)->GetBool()) {
-    return base::EmptyString();
-  }
-  return package_name_value->GetString();
-}
-
-bool AppLaunchEventLogger::IsChromeAppFromWebstore(const std::string& id) {
-  if (!registry_)
-    return false;
-  const extensions::Extension* extension =
-      registry_->GetExtensionById(id, extensions::ExtensionRegistry::ENABLED);
-  if (!extension) {
-    // App with |id| is not in the list of Chrome extensions.
-    return false;
-  }
-  return extension->from_webstore();
-}
-
-void AppLaunchEventLogger::Log(AppLaunchEvent app_launch_event) {
-  UMA_HISTOGRAM_ENUMERATION("Apps.AppListAppTypeClicked",
-                            app_launch_event.app_type(),
-                            AppLaunchEvent_AppType_AppType_ARRAYSIZE);
-
-  ukm::SourceId source_id = 0;
-  // SetAppInfo performed the checks to enforce logging policy. Apps that are
-  // not to be logged were assigned an |app_type| of OTHER and so are not logged
-  // here.
-  if (app_launch_event.app_type() == AppLaunchEvent_AppType_CHROME) {
-    source_id = ukm::AppSourceUrlRecorder::GetSourceIdForChromeApp(
-        app_launch_event.app_id());
-  } else if (app_launch_event.app_type() == AppLaunchEvent_AppType_PWA) {
-    source_id = ukm::AppSourceUrlRecorder::GetSourceIdForPWA(
-        GURL(app_launch_event.pwa_url()));
-  } else if (app_launch_event.app_type() == AppLaunchEvent_AppType_PLAY) {
-    source_id = ukm::AppSourceUrlRecorder::GetSourceIdForArc(
-        app_launch_event.arc_package_name());
+ukm::SourceId AppLaunchEventLogger::GetSourceId(
+    AppLaunchEvent_AppType app_type,
+    const std::string& app_id,
+    const std::string& arc_package_name,
+    const std::string& pwa_url) {
+  if (app_type == AppLaunchEvent_AppType_CHROME) {
+    return ukm::AppSourceUrlRecorder::GetSourceIdForChromeApp(app_id);
+  } else if (app_type == AppLaunchEvent_AppType_PWA) {
+    return ukm::AppSourceUrlRecorder::GetSourceIdForPWA(GURL(pwa_url));
+  } else if (app_type == AppLaunchEvent_AppType_PLAY) {
+    return ukm::AppSourceUrlRecorder::GetSourceIdForArc(arc_package_name);
   } else {
     // Either app is Crostini; or Chrome but not in app store; or Arc but not
     // syncable; or PWA but not in whitelist.
+    return ukm::kInvalidSourceId;
+  }
+}
+
+std::vector<std::string> AppLaunchEventLogger::ChooseAppsToLog(
+    const std::string clicked_app_id) {
+  int index = 0;
+  bool has_clicked_app = false;
+  std::vector<std::string> apps;
+
+  // Reservoir sampling, but must also include clicked_app_id if it is
+  // present.
+  for (auto& app : app_features_map_) {
+    if (app.first == clicked_app_id) {
+      has_clicked_app = true;
+      continue;
+    }
+    if (index < kNumRandomAppsToLog) {
+      apps.push_back(app.first);
+    } else {
+      const uint64_t r = base::RandGenerator(index + 1);
+      if (r < kNumRandomAppsToLog) {
+        apps[r] = app.first;
+      }
+    }
+    index++;
+  }
+  if (has_clicked_app) {
+    apps.push_back(clicked_app_id);
+  }
+  return apps;
+}
+
+void AppLaunchEventLogger::RecordAppTypeClicked(
+    AppLaunchEvent_AppType app_type) {
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppListAppTypeClicked", app_type,
+                            AppLaunchEvent_AppType_AppType_ARRAYSIZE);
+}
+
+void AppLaunchEventLogger::LogClicksEachHour(
+    const AppLaunchFeatures& app_launch_features,
+    ukm::builders::AppListAppClickData* const app_click_data) {
+  int bucketized_clicks_each_hour[24];
+  for (int hour = 0; hour < 24; hour++) {
+    bucketized_clicks_each_hour[hour] =
+        Bucketize(app_launch_features.clicks_each_hour(hour), kClickBuckets);
+  }
+  if (bucketized_clicks_each_hour[0] != 0) {
+    app_click_data->SetClicksEachHour00(bucketized_clicks_each_hour[0]);
+  }
+  if (bucketized_clicks_each_hour[1] != 0) {
+    app_click_data->SetClicksEachHour01(bucketized_clicks_each_hour[1]);
+  }
+  if (bucketized_clicks_each_hour[2] != 0) {
+    app_click_data->SetClicksEachHour02(bucketized_clicks_each_hour[2]);
+  }
+  if (bucketized_clicks_each_hour[3] != 0) {
+    app_click_data->SetClicksEachHour03(bucketized_clicks_each_hour[3]);
+  }
+  if (bucketized_clicks_each_hour[4] != 0) {
+    app_click_data->SetClicksEachHour04(bucketized_clicks_each_hour[4]);
+  }
+  if (bucketized_clicks_each_hour[5] != 0) {
+    app_click_data->SetClicksEachHour05(bucketized_clicks_each_hour[5]);
+  }
+  if (bucketized_clicks_each_hour[6] != 0) {
+    app_click_data->SetClicksEachHour06(bucketized_clicks_each_hour[6]);
+  }
+  if (bucketized_clicks_each_hour[7] != 0) {
+    app_click_data->SetClicksEachHour07(bucketized_clicks_each_hour[7]);
+  }
+  if (bucketized_clicks_each_hour[8] != 0) {
+    app_click_data->SetClicksEachHour08(bucketized_clicks_each_hour[8]);
+  }
+  if (bucketized_clicks_each_hour[9] != 0) {
+    app_click_data->SetClicksEachHour09(bucketized_clicks_each_hour[9]);
+  }
+  if (bucketized_clicks_each_hour[10] != 0) {
+    app_click_data->SetClicksEachHour10(bucketized_clicks_each_hour[10]);
+  }
+  if (bucketized_clicks_each_hour[11] != 0) {
+    app_click_data->SetClicksEachHour11(bucketized_clicks_each_hour[11]);
+  }
+  if (bucketized_clicks_each_hour[12] != 0) {
+    app_click_data->SetClicksEachHour12(bucketized_clicks_each_hour[12]);
+  }
+  if (bucketized_clicks_each_hour[13] != 0) {
+    app_click_data->SetClicksEachHour13(bucketized_clicks_each_hour[13]);
+  }
+  if (bucketized_clicks_each_hour[14] != 0) {
+    app_click_data->SetClicksEachHour14(bucketized_clicks_each_hour[14]);
+  }
+  if (bucketized_clicks_each_hour[15] != 0) {
+    app_click_data->SetClicksEachHour15(bucketized_clicks_each_hour[15]);
+  }
+  if (bucketized_clicks_each_hour[16] != 0) {
+    app_click_data->SetClicksEachHour16(bucketized_clicks_each_hour[16]);
+  }
+  if (bucketized_clicks_each_hour[17] != 0) {
+    app_click_data->SetClicksEachHour17(bucketized_clicks_each_hour[17]);
+  }
+  if (bucketized_clicks_each_hour[18] != 0) {
+    app_click_data->SetClicksEachHour18(bucketized_clicks_each_hour[18]);
+  }
+  if (bucketized_clicks_each_hour[19] != 0) {
+    app_click_data->SetClicksEachHour19(bucketized_clicks_each_hour[19]);
+  }
+  if (bucketized_clicks_each_hour[20] != 0) {
+    app_click_data->SetClicksEachHour20(bucketized_clicks_each_hour[20]);
+  }
+  if (bucketized_clicks_each_hour[21] != 0) {
+    app_click_data->SetClicksEachHour21(bucketized_clicks_each_hour[21]);
+  }
+  if (bucketized_clicks_each_hour[22] != 0) {
+    app_click_data->SetClicksEachHour22(bucketized_clicks_each_hour[22]);
+  }
+  if (bucketized_clicks_each_hour[23] != 0) {
+    app_click_data->SetClicksEachHour23(bucketized_clicks_each_hour[23]);
+  }
+}
+
+void AppLaunchEventLogger::Log(AppLaunchEvent app_launch_event) {
+  auto app = app_features_map_.find(app_launch_event.app_id());
+  if (app == app_features_map_.end()) {
+    RecordAppTypeClicked(AppLaunchEvent_AppType_OTHER);
     return;
   }
+  RecordAppTypeClicked(app->second.app_type());
+  ukm::SourceId launch_source_id =
+      GetSourceId(app->second.app_type(), app_launch_event.app_id(),
+                  app->second.arc_package_name(), app->second.pwa_url());
+  if (launch_source_id == ukm::kInvalidSourceId) {
+    return;
+  }
+  ukm::builders::AppListAppLaunch app_launch(launch_source_id);
 
-  ukm::builders::AppListAppLaunch app_launch(source_id);
   base::Time now(base::Time::Now());
+  const base::TimeDelta duration = now - start_time_;
+  all_clicks_last_hour_->Log(duration);
+  all_clicks_last_24_hours_->Log(duration);
 
   if (app_launch_event.launched_from() ==
       AppLaunchEvent_LaunchedFrom_SUGGESTED) {
     app_launch.SetPositionIndex(app_launch_event.index());
   }
-
-  app_launch.SetAppType(app_launch_event.app_type())
+  app_launch.SetAppType(app->second.app_type())
       .SetLaunchedFrom(app_launch_event.launched_from())
       .SetDayOfWeek(DayOfWeek(now))
       .SetHourOfDay(HourOfDay(now))
+      .SetAllClicksLastHour(
+          Bucketize(all_clicks_last_hour_->GetTotal(duration), kClickBuckets))
+      .SetAllClicksLast24Hours(Bucketize(
+          all_clicks_last_24_hours_->GetTotal(duration), kClickBuckets))
+      .SetTotalHours(ExponentialBucket(duration.InHours(),
+                                       kTotalHoursBucketSizeMultiplier))
       .Record(ukm::UkmRecorder::Get());
+
+  // Log click data about the app clicked on and up to five other apps chosen at
+  // random. This represents the state of the data immediately before the click.
+  const std::vector<std::string> apps_to_log =
+      ChooseAppsToLog(app_launch_event.app_id());
+
+  for (std::string app_id : apps_to_log) {
+    auto app = app_features_map_.find(app_id);
+    if (app == app_features_map_.end()) {
+      continue;
+    }
+    ukm::SourceId click_data_source_id =
+        GetSourceId(app->second.app_type(), app->first,
+                    app->second.arc_package_name(), app->second.pwa_url());
+    if (click_data_source_id == ukm::kInvalidSourceId) {
+      continue;
+    }
+    ukm::builders::AppListAppClickData app_click_data(click_data_source_id);
+    if (!app->second.has_most_recently_used_index()) {
+      // This app has not been clicked on this session, so log fewer metrics.
+      app_click_data.SetAppType(app->second.app_type())
+          .SetAppLaunchId(launch_source_id)
+          .Record(ukm::UkmRecorder::Get());
+      continue;
+    }
+    app->second.set_time_since_last_click_sec(
+        now.ToDeltaSinceWindowsEpoch().InSeconds() -
+        app->second.time_of_last_click_sec());
+
+    LogClicksEachHour(app->second, &app_click_data);
+
+    app_click_data.SetAppType(app->second.app_type())
+        .SetAppLaunchId(launch_source_id)
+        .SetMostRecentlyUsedIndex(app->second.most_recently_used_index())
+        .SetTimeSinceLastClick(
+            Bucketize(app->second.time_since_last_click_sec(),
+                      kTimeSinceLastClickBuckets))
+        .SetClicksLastHour(
+            Bucketize(app->second.clicks_last_hour(), kClickBuckets))
+        .SetClicksLast24Hours(
+            Bucketize(app->second.clicks_last_24_hours(), kClickBuckets))
+        .SetTotalClicks(Bucketize(app->second.total_clicks(), kClickBuckets))
+        .SetLastLaunchedFrom(app->second.last_launched_from())
+        .Record(ukm::UkmRecorder::Get());
+  }
+  ProcessClick(app_launch_event, now);
 }
 
 }  // namespace app_list
