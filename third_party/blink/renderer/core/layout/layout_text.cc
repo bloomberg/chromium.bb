@@ -2126,6 +2126,15 @@ LayoutRect LayoutText::LocalSelectionRect() const {
       fragment_rect.offset += fragment->InlineOffsetToContainerBox();
       rect.Unite(fragment_rect.ToLayoutRect());
     }
+
+    if (!HasFlippedBlocksWritingMode())
+      return rect;
+    // Since legacy requires LocalSelectionRect return flipped block direction,
+    // we need to convert physical coordinates into physical coordinates in
+    // flipped block direction.
+    NGPaintFragment* container = NGPaintFragment::GetForInlineContainer(this);
+    DCHECK(container);
+    ToLayoutBox(container->GetLayoutObject())->FlipForWritingMode(rect);
     return rect;
   }
 

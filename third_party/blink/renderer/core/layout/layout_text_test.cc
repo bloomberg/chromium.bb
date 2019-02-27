@@ -676,21 +676,21 @@ TEST_P(ParameterizedLayoutTextTest, LocalSelectionRectVertical) {
       LayoutRect(0, 0, 20, 40),
       GetSelectionRectFor("<div style='writing-mode: vertical-lr; height: 2em'>"
                           "f^oo ba|r baz</div>"));
-  // TODO(yoichio): This is caused by mixing lrt between vertical and logical.
   EXPECT_EQ(
-      LayoutNGEnabled() ? LayoutRect(10, 0, 20, 40) : LayoutRect(0, 0, 20, 40),
+      LayoutRect(0, 0, 20, 40),
       GetSelectionRectFor("<div style='writing-mode: vertical-rl; height: 2em'>"
                           "f^oo ba|r baz</div>"));
 }
 
 TEST_P(ParameterizedLayoutTextTest, LocalSelectionRectVerticalRTL) {
   LoadAhem();
+  // TODO(yoichio): Investigate diff (maybe soft line break treatment).
   EXPECT_EQ(LayoutNGEnabled() ? LayoutRect(0, -10, 20, 30)
                               : LayoutRect(0, -10, 20, 40),
             GetSelectionRectFor(
                 "<div style='writing-mode: vertical-lr; height: 2em' dir=rtl>"
                 "f^oo ba|r baz</div>"));
-  EXPECT_EQ(LayoutNGEnabled() ? LayoutRect(10, -10, 20, 30)
+  EXPECT_EQ(LayoutNGEnabled() ? LayoutRect(0, -10, 20, 30)
                               : LayoutRect(0, -10, 20, 40),
             GetSelectionRectFor(
                 "<div style='writing-mode: vertical-rl; height: 2em' dir=rtl>"
