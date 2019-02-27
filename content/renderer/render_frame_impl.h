@@ -641,6 +641,9 @@ class CONTENT_EXPORT RenderFrameImpl
   CreateWorkerContentSettingsClient() override;
   scoped_refptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext()
       override;
+  scoped_refptr<blink::WebWorkerFetchContext>
+  CreateWorkerFetchContextForPlzDedicatedWorker(
+      blink::WebDedicatedWorkerHostFactoryClient* factory_client) override;
   blink::WebExternalPopupMenu* CreateExternalPopupMenu(
       const blink::WebPopupMenuInfo& popup_menu_info,
       blink::WebExternalPopupMenuClient* popup_menu_client) override;

@@ -17,6 +17,7 @@
 #include "net/http/http_byte_range.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
 namespace content {
@@ -41,6 +42,15 @@ bool PathContainsDisallowedCharacter(const GURL& url) {
 }
 
 }  // namespace
+
+// static
+bool ServiceWorkerUtils::IsMainResourceType(ResourceType type) {
+  // When PlzDedicatedWorker is enabled, a dedicated worker script is considered
+  // to be a main resource.
+  if (type == RESOURCE_TYPE_WORKER)
+    return blink::features::IsPlzDedicatedWorkerEnabled();
+  return IsResourceTypeFrame(type) || type == RESOURCE_TYPE_SHARED_WORKER;
+}
 
 // static
 bool ServiceWorkerUtils::ScopeMatches(const GURL& scope, const GURL& url) {

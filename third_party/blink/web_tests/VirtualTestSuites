@@ -615,7 +615,7 @@
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/workers",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker,OffMainThreadSharedWorkerScriptFetch"]
   },
   {
     "prefix": "omt-worker-fetch",
@@ -625,7 +625,7 @@
   {
     "prefix": "omt-worker-fetch",
     "base": "http/tests/workers",
-    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker,OffMainThreadSharedWorkerScriptFetch"]
   },
   {
     "prefix": "webrtc-wpt-plan-b",

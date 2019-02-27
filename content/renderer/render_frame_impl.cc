@@ -150,6 +150,7 @@
 #include "content/renderer/v8_value_converter_impl.h"
 #include "content/renderer/web_ui_extension.h"
 #include "content/renderer/web_ui_extension_data.h"
+#include "content/renderer/worker/dedicated_worker_host_factory_client.h"
 #include "crypto/sha2.h"
 #include "media/blink/webmediaplayer_util.h"
 #include "net/base/data_url.h"
@@ -167,6 +168,7 @@
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
@@ -3991,6 +3993,38 @@ RenderFrameImpl::CreateWorkerFetchContext() {
           provider->context(), render_view_->renderer_preferences(),
           std::move(watcher_request), GetLoaderFactoryBundle()->Clone(),
           GetLoaderFactoryBundle()->CloneWithoutAppCacheFactory());
+
+  worker_fetch_context->set_ancestor_frame_id(routing_id_);
+  worker_fetch_context->set_frame_request_blocker(frame_request_blocker_);
+  worker_fetch_context->set_site_for_cookies(
+      frame_->GetDocument().SiteForCookies());
+  worker_fetch_context->set_top_frame_origin(
+      frame_->GetDocument().TopFrameOrigin());
+  worker_fetch_context->set_is_secure_context(
+      frame_->GetDocument().IsSecureContext());
+  worker_fetch_context->set_origin_url(
+      GURL(frame_->GetDocument().Url()).GetOrigin());
+
+  for (auto& observer : observers_)
+    observer.WillCreateWorkerFetchContext(worker_fetch_context.get());
+  return worker_fetch_context;
+}
+
+scoped_refptr<blink::WebWorkerFetchContext>
+RenderFrameImpl::CreateWorkerFetchContextForPlzDedicatedWorker(
+    blink::WebDedicatedWorkerHostFactoryClient* factory_client) {
+  DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
+  DCHECK(factory_client);
+
+  blink::mojom::RendererPreferenceWatcherPtr watcher;
+  blink::mojom::RendererPreferenceWatcherRequest watcher_request =
+      mojo::MakeRequest(&watcher);
+  render_view()->RegisterRendererPreferenceWatcherForWorker(std::move(watcher));
+
+  scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
+      static_cast<DedicatedWorkerHostFactoryClient*>(factory_client)
+          ->CreateWorkerFetchContext(render_view_->renderer_preferences(),
+                                     std::move(watcher_request));
 
   worker_fetch_context->set_ancestor_frame_id(routing_id_);
   worker_fetch_context->set_frame_request_blocker(frame_request_blocker_);

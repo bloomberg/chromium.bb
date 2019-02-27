@@ -93,6 +93,7 @@ class WebApplicationCacheHostClient;
 class WebComputedAXTree;
 class WebContentDecryptionModule;
 class WebCookieJar;
+class WebDedicatedWorkerHostFactoryClient;
 class WebDocumentLoader;
 class WebEncryptedMediaClient;
 class WebExternalPopupMenu;
@@ -169,9 +170,17 @@ class BLINK_EXPORT WebLocalFrameClient {
     return nullptr;
   }
 
-  // Returns a new WebWorkerFetchContext for a dedicated worker. Ownership of
-  // the returned object is transferred to the caller.
+  // Returns a new WebWorkerFetchContext for a dedicated worker (in the
+  // non-PlzDedicatedWorker case) or worklet.
   virtual scoped_refptr<WebWorkerFetchContext> CreateWorkerFetchContext() {
+    return nullptr;
+  }
+
+  // Returns a new WebWorkerFetchContext for PlzDedicatedWorker.
+  // (https://crbug.com/906991)
+  virtual scoped_refptr<WebWorkerFetchContext>
+  CreateWorkerFetchContextForPlzDedicatedWorker(
+      WebDedicatedWorkerHostFactoryClient*) {
     return nullptr;
   }
 

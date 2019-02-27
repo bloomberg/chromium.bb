@@ -117,6 +117,27 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
         &DedicatedWorkerHost::CreateDedicatedWorker, base::Unretained(this)));
   }
 
+  // Called from WorkerScriptFetchInitiator. Continues starting the dedicated
+  // worker in the renderer process.
+  //
+  // |service_worker_provider_info| is sent to the renderer process and contains
+  // information about its ServiceWorkerProviderHost, the browser-side host for
+  // supporting the dedicated worker as a service worker client.
+  //
+  // |main_script_loader_factory| is not used when NetworkService is enabled.
+  //
+  // |main_script_load_params| is sent to the renderer process and to be used to
+  // load the dedicated worker main script pre-requested by the browser process.
+  //
+  // |subresource_loader_factories| is sent to the renderer process and is to be
+  // used to request subresources where applicable. For example, this allows the
+  // dedicated worker to load chrome-extension:// URLs which the renderer's
+  // default loader factory can't load.
+  //
+  // NetworkService (PlzWorker):
+  // |controller| contains information about the service worker controller. Once
+  // a ServiceWorker object about the controller is prepared, it is registered
+  // to |controller_service_worker_object_host|.
   void DidStartScriptLoad(
       blink::mojom::DedicatedWorkerHostFactoryClientPtr client,
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
@@ -184,13 +205,6 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
     }
   }
 
-  // This is similar to
-  // RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve, but this
-  // host doesn't observe network service crashes. Instead, the renderer detects
-  // the connection error and terminates the worker.
-  // TODO(nhiroki): Implement this mechanism. See EmbeddedSharedWorkerStub's
-  // |default_factory_connection_error_handler_holder_| for reference.
-  // (https://crbug.com/906991)
   void CreateNetworkFactory(network::mojom::URLLoaderFactoryRequest request,
                             RenderProcessHost* process) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);

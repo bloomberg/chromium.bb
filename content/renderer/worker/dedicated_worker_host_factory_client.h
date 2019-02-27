@@ -8,6 +8,8 @@
 #include <memory>
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
 
@@ -16,6 +18,11 @@ class WebDedicatedWorker;
 }  // namespace blink
 
 namespace content {
+
+class ChildURLLoaderFactoryBundle;
+class ServiceWorkerProviderContext;
+class WebWorkerFetchContextImpl;
+struct NavigationResponseOverrideParameters;
 
 // PlzDedicatedWorker:
 // DedicatedWorkerHostFactoryClient intermediates between
@@ -37,6 +44,10 @@ class DedicatedWorkerHostFactoryClient final
                         const blink::WebSecurityOrigin& script_origin,
                         mojo::ScopedMessagePipeHandle blob_url_token) override;
 
+  scoped_refptr<WebWorkerFetchContextImpl> CreateWorkerFetchContext(
+      blink::mojom::RendererPreferences renderer_preference,
+      blink::mojom::RendererPreferenceWatcherRequest watcher_request);
+
  private:
   // Implements blink::mojom::DedicatedWorkerHostFactoryClient.
   void OnWorkerHostCreated(
@@ -52,6 +63,11 @@ class DedicatedWorkerHostFactoryClient final
 
   // |worker_| owns |this|.
   blink::WebDedicatedWorker* worker_;
+
+  scoped_refptr<ChildURLLoaderFactoryBundle> subresource_loader_factory_bundle_;
+  scoped_refptr<ServiceWorkerProviderContext> service_worker_provider_context_;
+  std::unique_ptr<NavigationResponseOverrideParameters>
+      response_override_for_main_script_;
 
   blink::mojom::DedicatedWorkerHostFactoryPtr factory_;
   mojo::Binding<blink::mojom::DedicatedWorkerHostFactoryClient> binding_;

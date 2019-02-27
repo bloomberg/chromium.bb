@@ -1203,6 +1203,14 @@ LocalFrameClientImpl::CreateWorkerFetchContext() {
   return web_frame_->Client()->CreateWorkerFetchContext();
 }
 
+scoped_refptr<WebWorkerFetchContext>
+LocalFrameClientImpl::CreateWorkerFetchContextForPlzDedicatedWorker(
+    WebDedicatedWorkerHostFactoryClient* factory_client) {
+  DCHECK(web_frame_->Client());
+  return web_frame_->Client()->CreateWorkerFetchContextForPlzDedicatedWorker(
+      factory_client);
+}
+
 std::unique_ptr<WebContentSettingsClient>
 LocalFrameClientImpl::CreateWorkerContentSettingsClient() {
   DCHECK(web_frame_->Client());

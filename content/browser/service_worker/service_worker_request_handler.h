@@ -84,7 +84,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       base::RepeatingCallback<WebContents*()> web_contents_getter,
       base::WeakPtr<ServiceWorkerProviderHost>* out_provider_host);
 
-  static std::unique_ptr<NavigationLoaderInterceptor> InitializeForSharedWorker(
+  static std::unique_ptr<NavigationLoaderInterceptor> InitializeForWorker(
       const network::ResourceRequest& resource_request,
       base::WeakPtr<ServiceWorkerProviderHost> host);
 

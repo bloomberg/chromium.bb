@@ -376,9 +376,12 @@ void WebWorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
         ancestor_frame_id_, request, WebURLRequestToResourceType(request)));
   }
   if (response_override_) {
-    DCHECK(blink::features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
-    DCHECK_EQ(blink::mojom::RequestContextType::SHARED_WORKER,
-              request.GetRequestContext());
+    DCHECK(blink::features::IsPlzDedicatedWorkerEnabled() ||
+           blink::features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
+    using RequestContextType = blink::mojom::RequestContextType;
+    DCHECK(request.GetRequestContext() == RequestContextType::WORKER ||
+           request.GetRequestContext() == RequestContextType::SHARED_WORKER)
+        << request.GetRequestContext();
     extra_data->set_navigation_response_override(std::move(response_override_));
   }
   request.SetExtraData(std::move(extra_data));

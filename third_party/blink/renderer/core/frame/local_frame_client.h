@@ -103,6 +103,7 @@ class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebContentCaptureClient;
 class WebCookieJar;
+class WebDedicatedWorkerHostFactoryClient;
 class WebLayerTreeView;
 class WebLocalFrame;
 class WebMediaPlayer;
@@ -475,8 +476,17 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
     return v8::Local<v8::Object>();
   }
 
-  // Returns a new WebWorkerFetchContext for a dedicated worker or worklet.
+  // Returns a new WebWorkerFetchContext for a dedicated worker (in the
+  // non-PlzDedicatedWorker case) or worklet.
   virtual scoped_refptr<WebWorkerFetchContext> CreateWorkerFetchContext() {
+    return nullptr;
+  }
+
+  // Returns a new WebWorkerFetchContext for PlzDedicatedWorker.
+  // (https://crbug.com/906991)
+  virtual scoped_refptr<WebWorkerFetchContext>
+  CreateWorkerFetchContextForPlzDedicatedWorker(
+      WebDedicatedWorkerHostFactoryClient*) {
     return nullptr;
   }
 

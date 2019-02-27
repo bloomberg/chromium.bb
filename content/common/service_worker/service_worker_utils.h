@@ -25,10 +25,7 @@ namespace content {
 
 class ServiceWorkerUtils {
  public:
-
-  static bool IsMainResourceType(ResourceType type) {
-    return IsResourceTypeFrame(type) || type == RESOURCE_TYPE_SHARED_WORKER;
-  }
+  static bool IsMainResourceType(ResourceType type);
 
   // Returns true if |scope| matches |url|.
   CONTENT_EXPORT static bool ScopeMatches(const GURL& scope, const GURL& url);

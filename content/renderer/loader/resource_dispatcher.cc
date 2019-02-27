@@ -533,14 +533,16 @@ int ResourceDispatcher::StartAsync(
       request->referrer, pending_request->resource_type);
 
   if (override_url_loader) {
+    DCHECK(request->resource_type == RESOURCE_TYPE_WORKER ||
+           request->resource_type == RESOURCE_TYPE_SHARED_WORKER)
+        << request->resource_type;
+
     // Redirect checks are handled by NavigationURLLoaderImpl, so it's safe to
     // pass true for |bypass_redirect_checks|.
     pending_request->url_loader_client = std::make_unique<URLLoaderClientImpl>(
         request_id, this, loading_task_runner,
         true /* bypass_redirect_checks */, request->url);
 
-    DCHECK_EQ(RESOURCE_TYPE_SHARED_WORKER, request->resource_type);
-    // TODO(nhiroki): it would be nice to get rid of response override.
     loading_task_runner->PostTask(
         FROM_HERE, base::BindOnce(&ResourceDispatcher::ContinueForNavigation,
                                   weak_factory_.GetWeakPtr(), request_id));
