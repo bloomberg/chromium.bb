@@ -636,8 +636,7 @@ void MessageService::ClosePortImpl(const PortId& port_id,
   if (it == channels_.end()) {
     auto pending = pending_lazy_background_page_channels_.find(channel_id);
     if (pending != pending_lazy_background_page_channels_.end()) {
-      const LazyContextId context_id(pending->second.browser_context(),
-                                     pending->second.extension_id());
+      const LazyContextId& context_id = pending->second;
       context_id.GetTaskQueue()->AddPendingTask(
           context_id,
           base::BindOnce(&MessageService::PendingLazyBackgroundPageClosePort,
@@ -726,8 +725,7 @@ void MessageService::EnqueuePendingMessageForLazyBackgroundLoad(
 
   auto pending = pending_lazy_background_page_channels_.find(channel_id);
   if (pending != pending_lazy_background_page_channels_.end()) {
-    const LazyContextId context_id(pending->second.browser_context(),
-                                   pending->second.extension_id());
+    const LazyContextId& context_id = pending->second;
     context_id.GetTaskQueue()->AddPendingTask(
         context_id,
         base::BindOnce(&MessageService::PendingLazyBackgroundPagePostMessage,
@@ -770,8 +768,7 @@ bool MessageService::MaybeAddPendingLazyBackgroundPageOpenChannelTask(
     return false;
 
   ChannelId channel_id = (*params)->receiver_port_id.GetChannelId();
-  pending_lazy_background_page_channels_.insert(std::make_pair(
-      channel_id, PendingLazyBackgroundPageChannel(context, extension->id())));
+  pending_lazy_background_page_channels_.emplace(channel_id, context_id);
   int source_id = (*params)->source_process_id;
   task_queue->AddPendingTask(
       context_id,
