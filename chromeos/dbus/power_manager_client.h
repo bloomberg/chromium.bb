@@ -234,6 +234,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) PowerManagerClient : public DBusClient {
   // includes whether or not the containing window for the video is fullscreen.
   virtual void NotifyVideoActivity(bool is_fullscreen) = 0;
 
+  // Notifies the power manager that a wake notification, i.e. a notification
+  // that is allowed to wake up the device from suspend, was just created or
+  // updated.
+  virtual void NotifyWakeNotification() = 0;
+
   // Tells the power manager to begin using |policy|.
   virtual void SetPolicy(
       const power_manager::PowerManagementPolicy& policy) = 0;
