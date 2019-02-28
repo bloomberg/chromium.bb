@@ -182,7 +182,7 @@ void ArcScreenCaptureSession::SetOutputBuffer(
     std::move(callback).Run();
     return;
   }
-  gpu::gles2::GLES2Interface* gl = aura::Env::GetInstance()
+  gpu::gles2::GLES2Interface* gl = display_root_window_->env()
                                        ->context_factory()
                                        ->SharedMainThreadContextProvider()
                                        ->ContextGL();
@@ -254,7 +254,7 @@ void ArcScreenCaptureSession::QueryCompleted(
     SetOutputBufferCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::move(callback).Run();
-  gpu::gles2::GLES2Interface* gl = aura::Env::GetInstance()
+  gpu::gles2::GLES2Interface* gl = display_root_window_->env()
                                        ->context_factory()
                                        ->SharedMainThreadContextProvider()
                                        ->ContextGL();
@@ -272,7 +272,7 @@ void ArcScreenCaptureSession::QueryCompleted(
 void ArcScreenCaptureSession::OnDesktopCaptured(
     std::unique_ptr<viz::CopyOutputResult> result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  gpu::gles2::GLES2Interface* gl = aura::Env::GetInstance()
+  gpu::gles2::GLES2Interface* gl = display_root_window_->env()
                                        ->context_factory()
                                        ->SharedMainThreadContextProvider()
                                        ->ContextGL();
@@ -308,7 +308,7 @@ void ArcScreenCaptureSession::OnDesktopCaptured(
 void ArcScreenCaptureSession::CopyDesktopTextureToGpuBuffer(
     std::unique_ptr<DesktopTexture> desktop_texture,
     std::unique_ptr<PendingBuffer> pending_buffer) {
-  gpu::gles2::GLES2Interface* gl = aura::Env::GetInstance()
+  gpu::gles2::GLES2Interface* gl = display_root_window_->env()
                                        ->context_factory()
                                        ->SharedMainThreadContextProvider()
                                        ->ContextGL();
@@ -327,7 +327,7 @@ void ArcScreenCaptureSession::CopyDesktopTextureToGpuBuffer(
   if (desktop_texture->release_callback_) {
     desktop_texture->release_callback_->Run(gpu::SyncToken(), false);
   }
-  aura::Env::GetInstance()
+  display_root_window_->env()
       ->context_factory()
       ->SharedMainThreadContextProvider()
       ->ContextSupport()
