@@ -7,8 +7,10 @@ package org.chromium.chrome.browser.widget;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -17,6 +19,7 @@ import android.view.ViewGroup.MarginLayoutParams;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.ui.UiUtils;
@@ -56,9 +59,32 @@ public class ScrimView extends View implements View.OnClickListener {
 
         /**
          * The background color for the {@link ScrimView}. If null, a default color will be set as
-         * the background.
+         * the background, unless {@link #backgroundDrawable} is set.
          */
+        @Nullable
         public Integer backgroundColor;
+
+        /**
+         * Background of the {@link ScrimView}.
+         *
+         * <p>When this is set, no default background color applies and {@link #backgroundColor} is
+         * ignored.
+         *
+         * <p>The drawable is responsible for filling in the background with the appropriate color.
+         * When the scrim should cover the status bar, the background color drawn by this drawable
+         * must be consistent with the status bar's color.
+         */
+        @Nullable
+        public Drawable backgroundDrawable;
+
+        /**
+         * A filter for touch event that happen on this view.
+         *
+         * <p>The filter intercepts click events, which means that {@link
+         * ScrimObserver#onScrimClick} will not be called when an event filter is set.
+         */
+        @Nullable
+        public EventFilter eventFilter;
 
         /**
          * Build a new set of params to control the scrim.
@@ -137,6 +163,9 @@ public class ScrimView extends View implements View.OnClickListener {
     /** The duration for the fading animation. This can be overridden for testing. */
     private int mFadeDurationMs;
 
+    /** If true, {@code mActiveParams.eventFilter} is set, but was never called. */
+    private boolean mIsNewEventFilter;
+
     /**
      * @param context An Android {@link Context} for creating the view.
      * @param scrimDelegate A means of changing the scrim over the status bar.
@@ -201,9 +230,13 @@ public class ScrimView extends View implements View.OnClickListener {
     private void onParamsChanged(ScrimParams params) {
         mActiveParams = params;
         UiUtils.removeViewFromParent(this);
-        setBackgroundColor(params != null && params.backgroundColor != null
-                        ? params.backgroundColor
-                        : mDefaultBackgroundColor);
+        if (params != null && params.backgroundDrawable != null) {
+            setBackgroundDrawable(params.backgroundDrawable);
+        } else {
+            setBackgroundColor(params != null && params.backgroundColor != null
+                            ? params.backgroundColor
+                            : mDefaultBackgroundColor);
+        }
         if (params == null || params.anchorView == null) return;
 
         placeScrimInHierarchy(params.anchorView, params.showInFrontOfAnchorView);
@@ -211,6 +244,7 @@ public class ScrimView extends View implements View.OnClickListener {
         getLayoutParams().height = LayoutParams.MATCH_PARENT;
         assert getLayoutParams() instanceof MarginLayoutParams;
         ((MarginLayoutParams) getLayoutParams()).topMargin = params.topMargin;
+        mIsNewEventFilter = params.eventFilter != null;
     }
 
     @Override
@@ -293,6 +327,22 @@ public class ScrimView extends View implements View.OnClickListener {
         }
         mOverlayAnimator = fadeAnimation;
         mOverlayAnimator.start();
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent e) {
+        EventFilter eventFilter = mActiveParams == null ? null : mActiveParams.eventFilter;
+        if (eventFilter == null) return super.onTouchEvent(e);
+
+        // Make sure the first event that goes through the filter is an ACTION_DOWN, even in the
+        // case where the filter is added while a gesture is already in progress.
+        if (mIsNewEventFilter && e.getActionMasked() != MotionEvent.ACTION_DOWN) {
+            MotionEvent downEvent = MotionEvent.obtain(e);
+            downEvent.setAction(MotionEvent.ACTION_DOWN);
+            if (!eventFilter.onTouchEvent(downEvent)) return false;
+        }
+        mIsNewEventFilter = false;
+        return eventFilter.onTouchEvent(e);
     }
 
     @Override
