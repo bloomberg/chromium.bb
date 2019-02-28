@@ -154,10 +154,6 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ProvidersModel) {
   RunGeneratedTest("/foreground/js/providers_model_unittest.html");
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesTooltip) {
-  RunGeneratedTest("/foreground/elements/files_tooltip_unittest.html");
-}
-
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, SpinnerController) {
   RunGeneratedTest("/foreground/js/spinner_controller_unittest.html");
 }
