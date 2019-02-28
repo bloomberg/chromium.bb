@@ -16,14 +16,14 @@
       <div slot="controls">
         <select class="md-select" aria-labelledby="scaling-label"
             disabled$="[[dropdownDisabled_]]" value="{{selectedValue::change}}">
-          <option value="[[scalingValueEnum_.DEFAULT]]">
+          <option value="[[ScalingValue.DEFAULT]]">
             $i18n{optionDefaultScaling}
           </option>
-          <option value="[[scalingValueEnum_.FIT_TO_PAGE]]"
+          <option value="[[ScalingValue.FIT_TO_PAGE]]"
               hidden$="[[!settings.fitToPage.available]]">
             $i18n{optionFitToPage}
           </option>
-          <option value="[[scalingValueEnum_.CUSTOM]]">
+          <option value="[[ScalingValue.CUSTOM]]">
             $i18n{optionCustomScaling}
           </option>
         </select>

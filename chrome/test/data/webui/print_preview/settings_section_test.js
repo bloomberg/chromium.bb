@@ -5,18 +5,9 @@
 cr.define('settings_sections_tests', function() {
   /** @enum {string} */
   const TestNames = {
-    Copies: 'copies',
-    Layout: 'layout',
-    Color: 'color',
-    ColorSaveToDrive: 'color save to drive',
-    MediaSize: 'media size',
+    SettingsSectionsVisibilityChange: 'settings sections visibility change',
     MediaSizeCustomNames: 'media size custom names',
-    Margins: 'margins',
-    Dpi: 'dpi',
-    Scaling: 'scaling',
     Other: 'other',
-    HeaderFooter: 'header footer',
-    SetPages: 'set pages',
     SetCopies: 'set copies',
     SetLayout: 'set layout',
     SetColor: 'set color',
@@ -103,208 +94,21 @@ cr.define('settings_sections_tests', function() {
       moreSettingsElement.$.label.click();
     }
 
-    test(assert(TestNames.Copies), function() {
-      const copiesElement = page.$$('print-preview-copies-settings');
-      assertFalse(copiesElement.hidden);
-
-      // Remove copies capability.
-      let capabilities =
-          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
-      delete capabilities.printer.copies;
-
-      // Copies section should now be hidden.
-      page.set('destination_.capabilities', capabilities);
-      assertTrue(copiesElement.hidden);
-    });
-
-    test(assert(TestNames.Layout), function() {
-      const layoutElement = page.$$('print-preview-layout-settings');
-
-      // Set up with HTML document. No selection.
-      initDocumentInfo(false, false);
-      assertFalse(layoutElement.hidden);
-
-      // Remove layout capability.
-      let capabilities =
-          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
-      delete capabilities.printer.page_orientation;
-
-      // Each of these settings should not show the capability.
-      [null, {option: [{type: 'PORTRAIT', is_default: true}]},
-       {option: [{type: 'LANDSCAPE', is_default: true}]},
-      ].forEach(layoutCap => {
-        capabilities =
-            print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
-        capabilities.printer.page_orientation = layoutCap;
-        // Layout section should now be hidden.
-        page.set('destination_.capabilities', capabilities);
-        assertTrue(layoutElement.hidden);
-      });
-
-      // Reset full capabilities
-      capabilities =
-          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
-      page.set('destination_.capabilities', capabilities);
-      assertFalse(layoutElement.hidden);
-
-      // Test with PDF - should be hidden.
-      initDocumentInfo(true, false);
-      assertTrue(layoutElement.hidden);
-    });
-
-    test(assert(TestNames.Color), function() {
-      const colorElement = page.$$('print-preview-color-settings');
-      assertFalse(colorElement.hidden);
-
-      // Remove color capability.
-      let capabilities =
-          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
-      delete capabilities.printer.color;
-
-      // Each of these settings should not show the capability. The value should
-      // be the default for settings with multiple options and the only
-      // available option otherwise.
-      [{
-        colorCap: null,
-        expectedValue: false,
-      },
-       {
-         colorCap: {option: [{type: 'STANDARD_COLOR', is_default: true}]},
-         expectedValue: true,
-       },
-       {
-         colorCap: {
-           option: [
-             {type: 'STANDARD_COLOR', is_default: true},
-             {type: 'CUSTOM_COLOR'}
-           ]
-         },
-         expectedValue: true,
-       },
-       {
-         colorCap: {
-           option: [
-             {type: 'STANDARD_MONOCHROME', is_default: true},
-             {type: 'CUSTOM_MONOCHROME'}
-           ]
-         },
-         expectedValue: false,
-       },
-       {
-         colorCap: {option: [{type: 'STANDARD_MONOCHROME'}]},
-         expectedValue: false,
-       },
-       {
-         colorCap: {option: [{type: 'CUSTOM_MONOCHROME', vendor_id: '42'}]},
-         expectedValue: false,
-       },
-       {
-         colorCap: {option: [{type: 'CUSTOM_COLOR', vendor_id: '42'}]},
-         expectedValue: true,
-       }].forEach(capabilityAndValue => {
-        capabilities =
-            print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
-        capabilities.printer.color = capabilityAndValue.colorCap;
-        // Layout section should now be hidden.
-        page.set('destination_.capabilities', capabilities);
-        assertTrue(colorElement.hidden);
-        assertEquals(
-            capabilityAndValue.expectedValue, page.getSettingValue('color'));
-      });
-
-      // Each of these settings should show the capability with the default
-      // value given by expectedValue.
-      [{
-        colorCap: {
-          option: [
-            {type: 'STANDARD_MONOCHROME', is_default: true},
-            {type: 'STANDARD_COLOR'}
-          ]
-        },
-        expectedValue: false,
-      },
-       {
-         colorCap: {
-           option: [
-             {type: 'STANDARD_MONOCHROME'},
-             {type: 'STANDARD_COLOR', is_default: true}
-           ]
-         },
-         expectedValue: true,
-       },
-       {
-         colorCap: {
-           option: [
-             {type: 'CUSTOM_MONOCHROME', vendor_id: '42'},
-             {type: 'CUSTOM_COLOR', is_default: true, vendor_id: '43'}
-           ]
-         },
-         expectedValue: true,
-       }].forEach(capabilityAndValue => {
-        capabilities =
-            print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
-        capabilities.printer.color = capabilityAndValue.colorCap;
-        page.set('destination_.capabilities', capabilities);
-        const selectElement = colorElement.$$('select');
-        assertFalse(colorElement.hidden);
-        assertEquals(
-            capabilityAndValue.expectedValue ? 'color' : 'bw',
-            selectElement.value);
-        assertEquals(
-            capabilityAndValue.expectedValue, page.getSettingValue('color'));
-        assertFalse(selectElement.disabled);
-      });
-    });
-
-    test(assert(TestNames.ColorSaveToDrive), function() {
-      // Check that the Save to Google Drive printer does not show the color
-      // capability, but sets the value as true by default.
-      const colorElement = page.$$('print-preview-color-settings');
-      page.set(
-          'destination_',
-          print_preview_test_utils.getGoogleDriveDestination(
-              'foo@chromium.org'));
-      const capabilities =
-          print_preview_test_utils
-              .getCddTemplate(print_preview.Destination.GooglePromotedId.DOCS)
-              .capabilities;
-      delete capabilities.printer.color;
-      page.set('destination_.capabilities', capabilities);
-      assertTrue(colorElement.hidden);
-      assertEquals(true, page.getSettingValue('color'));
-    });
-
-    test(assert(TestNames.MediaSize), function() {
-      const mediaSizeElement = page.$$('print-preview-media-size-settings');
-
+    test(assert(TestNames.SettingsSectionsVisibilityChange), function() {
       toggleMoreSettings();
-      assertFalse(mediaSizeElement.hidden);
-
-      // Remove capability.
-      let capabilities =
-          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
-      delete capabilities.printer.media_size;
-
-      // Section should now be hidden.
-      page.set('destination_.capabilities', capabilities);
-      assertTrue(mediaSizeElement.hidden);
-
-      // Reset
-      capabilities =
-          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
-      page.set('destination_.capabilities', capabilities);
-
-      // Set PDF document type.
-      initDocumentInfo(true, false);
-      assertFalse(mediaSizeElement.hidden);
-
-      // Set save as PDF. This should hide the settings section.
-      setPdfDestination();
-      assertTrue(mediaSizeElement.hidden);
-
-      // Set HTML document type, should now show the section.
-      initDocumentInfo(false, false);
-      assertFalse(mediaSizeElement.hidden);
+      const camelToKebab = s => s.replace(/([A-Z])/g, '-$1').toLowerCase();
+      ['copies', 'layout', 'color', 'mediaSize', 'margins', 'dpi', 'scaling',
+       'otherOptions']
+          .forEach(setting => {
+            const element =
+                page.$$(`print-preview-${camelToKebab(setting)}-settings`);
+            // Show, hide and reset.
+            [true, false, true].forEach(value => {
+              page.set(`settings.${setting}.available`, value);
+              // Element expected to be visible when available.
+              assertEquals(!value, element.hidden);
+            });
+          });
     });
 
     test(assert(TestNames.MediaSizeCustomNames), function() {
@@ -332,75 +136,6 @@ cr.define('settings_sections_tests', function() {
       assertEquals('mediaSize', settingsSelect.settingName);
     });
 
-    test(assert(TestNames.Margins), function() {
-      const marginsElement = page.$$('print-preview-margins-settings');
-
-      // Section is available for HTML (modifiable) documents
-      initDocumentInfo(false, false);
-
-      toggleMoreSettings();
-      assertFalse(marginsElement.hidden);
-
-      // Unavailable for PDFs.
-      initDocumentInfo(true, false);
-      assertTrue(marginsElement.hidden);
-    });
-
-    test(assert(TestNames.Dpi), function() {
-      const dpiElement = page.$$('print-preview-dpi-settings');
-
-      // Expand more settings to reveal the element.
-      toggleMoreSettings();
-      assertFalse(dpiElement.hidden);
-
-      // Remove capability.
-      let capabilities =
-          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
-      delete capabilities.printer.dpi;
-
-      // Section should now be hidden.
-      page.set('destination_.capabilities', capabilities);
-      assertTrue(dpiElement.hidden);
-
-      // Does not show up for only 1 option.
-      capabilities =
-          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
-      capabilities.printer.dpi.option.pop();
-      page.set('destination_.capabilities', capabilities);
-      assertTrue(dpiElement.hidden);
-    });
-
-    test(assert(TestNames.Scaling), function() {
-      const scalingElement = page.$$('print-preview-scaling-settings');
-
-      toggleMoreSettings();
-      assertFalse(scalingElement.hidden);
-
-      // HTML to non-PDF destination -> No fit to page option.
-      initDocumentInfo(false, false);
-      assertFalse(scalingElement.hidden);
-      const fitToPageOption = scalingElement.$$(
-          `[value="${scalingElement.scalingValueEnum_.FIT_TO_PAGE}"]`);
-      const defaultOption = scalingElement.$$(
-          `[value="${scalingElement.scalingValueEnum_.DEFAULT}"]`);
-      const customOption = scalingElement.$$(
-          `[value="${scalingElement.scalingValueEnum_.CUSTOM}"]`);
-      assertTrue(fitToPageOption.hidden);
-      assertFalse(defaultOption.hidden);
-      assertFalse(customOption.hidden);
-
-      // PDF to non-PDF destination -> All 3 options.
-      initDocumentInfo(true, false);
-      assertFalse(scalingElement.hidden);
-      assertFalse(fitToPageOption.hidden);
-      assertFalse(defaultOption.hidden);
-      assertFalse(customOption.hidden);
-
-      // PDF to PDF destination -> section disappears.
-      setPdfDestination();
-      assertTrue(scalingElement.hidden);
-    });
-
     /**
      * @param {!CrCheckboxElement} checkbox The checkbox to check
      * @return {boolean} Whether the checkbox's parent section is hidden.
@@ -411,162 +146,15 @@ cr.define('settings_sections_tests', function() {
 
     test(assert(TestNames.Other), function() {
       const optionsElement = page.$$('print-preview-other-options-settings');
-      const headerFooter = optionsElement.$$('#headerFooter');
-      const duplex = optionsElement.$$('#duplex');
-      const cssBackground = optionsElement.$$('#cssBackground');
-      const rasterize = optionsElement.$$('#rasterize');
-      const selectionOnly = optionsElement.$$('#selectionOnly');
+      ['headerFooter', 'duplex', 'cssBackground', 'rasterize', 'selectionOnly']
+          .forEach(setting => {
+            page.set(`settings.${setting}.available`, true);
+            const section = optionsElement.$$(`#${setting}`);
+            assertFalse(isSectionHidden(section));
 
-      // Start with HTML + duplex capability.
-      initDocumentInfo(false, false);
-      let capabilities =
-          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
-      page.set('destination_.capabilities', capabilities);
-
-      // Expanding more settings will show the section.
-      toggleMoreSettings();
-      assertFalse(isSectionHidden(headerFooter));
-      assertFalse(isSectionHidden(duplex));
-      assertFalse(isSectionHidden(cssBackground));
-      assertTrue(isSectionHidden(rasterize));
-      assertTrue(isSectionHidden(selectionOnly));
-
-      // Add a selection - should show selection only.
-      initDocumentInfo(false, true);
-      assertFalse(optionsElement.hidden);
-      assertFalse(isSectionHidden(selectionOnly));
-
-      // Remove duplex capability.
-      capabilities =
-          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
-      delete capabilities.printer.duplex;
-      page.set('destination_.capabilities', capabilities);
-      Polymer.dom.flush();
-      assertFalse(optionsElement.hidden);
-      assertTrue(isSectionHidden(duplex));
-
-      // Set a duplex capability with only 1 type, no duplex.
-      capabilities =
-          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
-      delete capabilities.printer.duplex;
-      capabilities.printer.duplex = {
-        option:
-            [{type: print_preview_new.DuplexType.NO_DUPLEX, is_default: true}]
-      };
-      page.set('destination_.capabilities', capabilities);
-      Polymer.dom.flush();
-      assertFalse(optionsElement.hidden);
-      assertTrue(isSectionHidden(duplex));
-
-      // PDF
-      initDocumentInfo(true, false);
-      Polymer.dom.flush();
-      if (cr.isWindows || cr.isMac) {
-        // No options
-        assertTrue(optionsElement.hidden);
-      } else {
-        // All sections hidden except rasterize
-        assertTrue(isSectionHidden(headerFooter));
-        assertTrue(isSectionHidden(duplex));
-        assertTrue(isSectionHidden(cssBackground));
-        assertEquals(cr.isWindows || cr.isMac, isSectionHidden(rasterize));
-        assertTrue(isSectionHidden(selectionOnly));
-      }
-
-      // Add a selection - should do nothing for PDFs.
-      initDocumentInfo(true, true);
-      assertEquals(cr.isWindows || cr.isMac, optionsElement.hidden);
-      assertTrue(isSectionHidden(selectionOnly));
-
-      // Add duplex.
-      capabilities =
-          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
-      page.set('destination_.capabilities', capabilities);
-      Polymer.dom.flush();
-      assertFalse(optionsElement.hidden);
-      assertFalse(isSectionHidden(duplex));
-    });
-
-    test(assert(TestNames.HeaderFooter), function() {
-      const optionsElement = page.$$('print-preview-other-options-settings');
-      const headerFooter = optionsElement.$$('#headerFooter');
-
-      // HTML page to show Header/Footer option.
-      initDocumentInfo(false, false);
-      let capabilities =
-          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
-      page.set('destination_.capabilities', capabilities);
-
-      toggleMoreSettings();
-      assertFalse(optionsElement.hidden);
-      assertFalse(isSectionHidden(headerFooter));
-
-      // Set margins to NONE
-      page.set(
-          'settings.margins.value',
-          print_preview.ticket_items.MarginsTypeValue.NO_MARGINS);
-      assertTrue(isSectionHidden(headerFooter));
-
-      // Custom margins of 0.
-      page.set(
-          'settings.margins.value',
-          print_preview.ticket_items.MarginsTypeValue.CUSTOM);
-      page.set(
-          'settings.customMargins.vaue',
-          {marginTop: 0, marginLeft: 0, marginRight: 0, marginBottom: 0});
-      assertTrue(isSectionHidden(headerFooter));
-
-      // Custom margins of 36 -> header/footer available
-      page.set(
-          'settings.customMargins.value',
-          {marginTop: 36, marginLeft: 36, marginRight: 36, marginBottom: 36});
-      assertFalse(isSectionHidden(headerFooter));
-
-      // Zero top and bottom -> header/footer unavailable
-      page.set(
-          'settings.customMargins.value',
-          {marginTop: 0, marginLeft: 36, marginRight: 36, marginBottom: 0});
-      assertTrue(isSectionHidden(headerFooter));
-
-      // Zero top and nonzero bottom -> header/footer available
-      page.set(
-          'settings.customMargins.value',
-          {marginTop: 0, marginLeft: 36, marginRight: 36, marginBottom: 36});
-      assertFalse(isSectionHidden(headerFooter));
-
-      // Small paper sizes
-      capabilities =
-          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
-      capabilities.printer.media_size = {
-        'option': [
-          {
-            'name': 'SmallLabel',
-            'width_microns': 38100,
-            'height_microns': 12700,
-            'is_default': false
-          },
-          {
-            'name': 'BigLabel',
-            'width_microns': 50800,
-            'height_microns': 76200,
-            'is_default': true
-          }
-        ]
-      };
-      page.set('destination_.capabilities', capabilities);
-      page.set(
-          'settings.margins.value',
-          print_preview.ticket_items.MarginsTypeValue.DEFAULT);
-
-      // Header/footer should be available for default big label
-      assertFalse(isSectionHidden(headerFooter));
-
-      page.set(
-          'settings.mediaSize.value',
-          capabilities.printer.media_size.option[0]);
-
-      // Header/footer should not be available for small label
-      assertTrue(isSectionHidden(headerFooter));
+            page.set(`settings.${setting}.available`, false);
+            assertTrue(isSectionHidden(section));
+          });
     });
 
     test(assert(TestNames.SetCopies), function() {

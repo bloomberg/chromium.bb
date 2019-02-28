@@ -85,7 +85,7 @@ cr.define('system_dialog_browsertest', function() {
 
       // Set scaling settings to custom.
       scalingSettings.$$('.md-select').value =
-          scalingSettings.scalingValueEnum_.CUSTOM;
+          scalingSettings.ScalingValue.CUSTOM;
       scalingSettings.$$('.md-select').dispatchEvent(new CustomEvent('change'));
 
       // Set an invalid input.
