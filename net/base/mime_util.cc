@@ -303,6 +303,9 @@ bool MimeUtil::GetMimeTypeFromExtensionHelper(
     const base::FilePath::StringType& ext,
     bool include_platform_types,
     string* result) const {
+  DCHECK(ext.empty() || ext[0] != '.')
+      << "extension passed in must not include leading dot";
+
   // Avoids crash when unable to handle a long file path. See crbug.com/48733.
   const unsigned kMaxFilePathSize = 65536;
   if (ext.length() > kMaxFilePathSize)
