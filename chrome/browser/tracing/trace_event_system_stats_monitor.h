@@ -5,16 +5,11 @@
 #ifndef CHROME_BROWSER_TRACING_TRACE_EVENT_SYSTEM_STATS_MONITOR_H_
 #define CHROME_BROWSER_TRACING_TRACE_EVENT_SYSTEM_STATS_MONITOR_H_
 
-#include <string>
-
-#include <memory>
-
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_metrics.h"
-#include "base/timer/timer.h"
 #include "base/trace_event/trace_log.h"
+#include "chrome/browser/performance_monitor/system_monitor.h"
 
 namespace tracing {
 
@@ -22,7 +17,8 @@ namespace tracing {
 // enabled, also enables system events profiling. This class is the preferred
 // way to turn system tracing on and off.
 class TraceEventSystemStatsMonitor
-    : public base::trace_event::TraceLog::EnabledStateObserver {
+    : public base::trace_event::TraceLog::AsyncEnabledStateObserver,
+      public performance_monitor::SystemMonitor::SystemObserver {
  public:
   TraceEventSystemStatsMonitor();
   ~TraceEventSystemStatsMonitor() override;
@@ -31,10 +27,7 @@ class TraceEventSystemStatsMonitor
   void OnTraceLogEnabled() override;
   void OnTraceLogDisabled() override;
 
-  // Retrieves system profiling at the current time.
-  void DumpSystemStats();
-
-  bool IsTimerRunningForTesting() const;
+  bool is_profiling_for_testing() const { return is_profiling_; }
 
   void StartProfilingForTesting() { StartProfiling(); }
   void StopProfilingForTesting() { StopProfiling(); }
@@ -44,11 +37,12 @@ class TraceEventSystemStatsMonitor
 
   void StopProfiling();
 
-  // Ensures the observer starts and stops tracing on the primary thread.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  // performance_monitor::SystemMonitor::SystemObserver:
+  void OnSystemMetricsStruct(
+      const base::SystemMetrics& system_metrics) override;
 
-  // Timer to schedule system profile dumps.
-  base::RepeatingTimer dump_timer_;
+  // Indicates if profiling has started.
+  bool is_profiling_ = false;
 
   base::WeakPtrFactory<TraceEventSystemStatsMonitor> weak_factory_;
 

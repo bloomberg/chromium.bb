@@ -85,6 +85,11 @@ void SystemMonitor::SystemObserver::OnDiskIdleTimePercent(
   NOTREACHED();
 }
 
+void SystemMonitor::SystemObserver::OnSystemMetricsStruct(
+    const base::SystemMetrics& system_metrics) {
+  NOTREACHED();
+}
+
 void SystemMonitor::AddOrUpdateObserver(
     SystemMonitor::SystemObserver* observer,
     MetricRefreshFrequencies metrics_and_frequencies) {
@@ -126,13 +131,12 @@ SystemMonitor::MetricVector SystemMonitor::EvaluateMetrics(
 }
 
 SystemMonitor::MetricMetadataArray SystemMonitor::CreateMetricMetadataArray() {
-#define CREATE_METRIC_METADATA(metric_type, metric_value_type,           \
-                               helper_function, notify_function,         \
-                               metric_freq_field)                        \
+#define CREATE_METRIC_METADATA(metric_type, value_type, helper_function, \
+                               notify_function, metric_freq_field)       \
   MetricMetadata(                                                        \
       [](MetricEvaluatorsHelper* helper) {                               \
         std::unique_ptr<MetricEvaluator> metric =                        \
-            base::WrapUnique(new MetricEvaluatorImpl<metric_value_type>( \
+            base::WrapUnique(new MetricEvaluatorImpl<value_type>(        \
                 MetricEvaluator::Type::metric_type,                      \
                 base::BindOnce(&MetricEvaluatorsHelper::helper_function, \
                                base::Unretained(helper)),                \
@@ -143,6 +147,7 @@ SystemMonitor::MetricMetadataArray SystemMonitor::CreateMetricMetadataArray() {
              metric_refresh_frequencies) {                               \
         return metric_refresh_frequencies.metric_freq_field;             \
       })
+
   return {
       CREATE_METRIC_METADATA(kFreeMemoryMb, int, GetFreePhysicalMemoryMb,
                              OnFreePhysicalMemoryMbSample,
@@ -150,7 +155,11 @@ SystemMonitor::MetricMetadataArray SystemMonitor::CreateMetricMetadataArray() {
       CREATE_METRIC_METADATA(kDiskIdleTimePercent, float,
                              GetDiskIdleTimePercent, OnDiskIdleTimePercent,
                              disk_idle_time_percent_frequency),
+      CREATE_METRIC_METADATA(kSystemMetricsStruct, base::SystemMetrics,
+                             GetSystemMetricsStruct, OnSystemMetricsStruct,
+                             system_metrics_sampling_frequency),
   };
+
 #undef CREATE_METRIC_METADATA
 }  // namespace performance_monitor
 
@@ -222,7 +231,7 @@ template <typename T>
 SystemMonitor::MetricEvaluatorImpl<T>::MetricEvaluatorImpl(
     Type type,
     base::OnceCallback<base::Optional<T>()> evaluate_function,
-    void (SystemObserver::*notify_function)(T))
+    void (SystemObserver::*notify_function)(ObserverArgType))
     : MetricEvaluator(type),
       evaluate_function_(std::move(evaluate_function)),
       notify_function_(notify_function) {}
@@ -249,6 +258,11 @@ template <typename T>
 void SystemMonitor::MetricEvaluatorImpl<T>::Evaluate() {
   DCHECK(evaluate_function_);
   value_ = std::move(evaluate_function_).Run();
+}
+
+base::Optional<base::SystemMetrics>
+MetricEvaluatorsHelper::GetSystemMetricsStruct() {
+  return base::SystemMetrics::Sample();
 }
 
 }  // namespace performance_monitor
