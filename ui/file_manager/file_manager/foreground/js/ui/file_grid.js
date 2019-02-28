@@ -969,15 +969,6 @@ function FileGridSelectionController(selectionModel, grid) {
   cr.ui.GridSelectionController.call(this, selectionModel, grid);
 
   /**
-   * Whether to allow touch-specific interaction.
-   * @private {boolean}
-   */
-  this.enableTouchMode_ = false;
-  util.isTouchModeEnabled().then(enabled => {
-    this.enableTouchMode_ = enabled;
-  });
-
-  /**
    * @type {!FileTapHandler}
    * @const
    */
@@ -995,9 +986,6 @@ FileGridSelectionController.prototype.handlePointerDownUp = function(e, index) {
 
 /** @override */
 FileGridSelectionController.prototype.handleTouchEvents = function(e, index) {
-  if (!this.enableTouchMode_) {
-    return;
-  }
   if (this.tapHandler_.handleTouchEvents(
           e, index, filelist.handleTap.bind(this))) {
     filelist.focusParentList(e);

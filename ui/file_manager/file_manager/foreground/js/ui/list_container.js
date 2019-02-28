@@ -124,12 +124,27 @@ function ListContainer(element, table, grid) {
   this.element.addEventListener(
       'contextmenu', this.onContextMenu_.bind(this), /* useCapture */ true);
 
-  util.isTouchModeEnabled().then(enabled => {
-    if (!enabled) {
-      return;
+  this.element.addEventListener('touchstart', function(e) {
+    if (e.touches.length > 1) {
+      this.allowContextMenuByTouch_ = true;
     }
-    this.disableContextMenuByLongTapDuringCheckSelect_();
-  });
+  }.bind(this), {passive: true});
+  this.element.addEventListener('touchend', function(e) {
+    if (e.touches.length == 0) {
+      // contextmenu event will be sent right after touchend.
+      setTimeout(function() {
+        this.allowContextMenuByTouch_ = false;
+      }.bind(this));
+    }
+  }.bind(this));
+  this.element.addEventListener('contextmenu', function(e) {
+    // Block context menu triggered by touch event unless it is right after
+    // multi-touch, or we are currently selecting a file.
+    if (this.currentList.selectedItem && !this.allowContextMenuByTouch_ &&
+        e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) {
+      e.stopPropagation();
+    }
+  }.bind(this), true);
 }
 
 /**
@@ -263,36 +278,6 @@ ListContainer.prototype.setCurrentListType = function(listType) {
       break;
   }
   this.endBatchUpdates();
-};
-
-/**
- * Disables context menu by long-tap when at least one file/folder is selected,
- * while still enabling two-finger tap.
- * @private
- */
-ListContainer.prototype.disableContextMenuByLongTapDuringCheckSelect_ =
-    function() {
-  this.element.addEventListener('touchstart', e => {
-    if (e.touches.length > 1) {
-      this.allowContextMenuByTouch_ = true;
-    }
-  });
-  this.element.addEventListener('touchend', e => {
-    if (e.touches.length == 0) {
-      // contextmenu event will be sent right after touchend.
-      setTimeout(() => {
-        this.allowContextMenuByTouch_ = false;
-      });
-    }
-  });
-  this.element.addEventListener('contextmenu', e => {
-    // Block context menu triggered by touch event unless it is right after
-    // multi-touch, or we are currently selecting a file.
-    if (this.currentList.selectedItem && !this.allowContextMenuByTouch_ &&
-        e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) {
-      e.stopPropagation();
-    }
-  }, true);
 };
 
 /**

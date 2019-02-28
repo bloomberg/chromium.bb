@@ -154,12 +154,6 @@ function FileManager() {
    */
   this.launchParams_ = null;
 
-  /**
-   * Whether to allow touch-specific interaction.
-   * @type {boolean}
-   */
-  this.enableTouchMode_ = false;
-
   // --------------------------------------------------------------------------
   // Controllers.
 
@@ -678,12 +672,8 @@ FileManager.prototype = /** @struct */ {
 
     this.ui_.decorateFilesMenuItems();
 
-    util.isTouchModeEnabled().then(function(isEnabled) {
-      if (isEnabled) {
-        this.ui_.selectionMenuButton.hidden = false;
-        this.enableTouchMode_ = true;
-      }
-    }.bind(this));
+    this.ui_.selectionMenuButton.hidden = false;
+
     console.warn('Files app sync startup finished.');
   };
 

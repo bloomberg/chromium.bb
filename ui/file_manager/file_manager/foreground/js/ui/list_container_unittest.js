@@ -51,6 +51,14 @@ function setUp() {
       (queryRequiredElement('#file-grid', undefined));
   listContainer = new ListContainer(
       queryRequiredElement('#list-container', undefined), table, grid);
+  // Hook up enough ListContainer internals to handle touch tests
+  table.startBatchUpdates = table.endBatchUpdates = () => {};
+  table.setListThumbnailLoader = () => {};
+  grid.startBatchUpdates = grid.endBatchUpdates = () => {};
+  grid.setListThumbnailLoader = () => {};
+  listContainer.dataModel = /** @type {!FileListModel} */ ({});
+  listContainer.selectionModel = new cr.ui.ListSelectionModel();
+  listContainer.setCurrentListType(ListContainer.ListType.DETAIL);
 
   cr.ui.contextMenuHandler.setContextMenu(table, contextMenu);
 }
