@@ -59,21 +59,59 @@ runTests([
 
   function testSpecialResponseHeadersVisible() {
     var url = getSetCookieUrl('foo', 'bar');
+    var extraHeadersListenerCalledCount = 0;
+    function extraHeadersListener(details) {
+      extraHeadersListenerCalledCount++;
+      checkHeaders(details.responseHeaders, ['set-cookie'], []);
+    }
+    chrome.webRequest.onHeadersReceived.addListener(extraHeadersListener,
+        {urls: [url]}, ['responseHeaders', 'extraHeaders']);
+    chrome.webRequest.onResponseStarted.addListener(extraHeadersListener,
+        {urls: [url]}, ['responseHeaders', 'extraHeaders']);
+    chrome.webRequest.onCompleted.addListener(extraHeadersListener,
+        {urls: [url]}, ['responseHeaders', 'extraHeaders']);
+
+    var standardListenerCalledCount = 0;
+    function standardListener(details) {
+      standardListenerCalledCount++;
+      checkHeaders(details.responseHeaders, [], ['set-cookie']);
+    }
+    chrome.webRequest.onHeadersReceived.addListener(standardListener,
+        {urls: [url]}, ['responseHeaders']);
+    chrome.webRequest.onResponseStarted.addListener(standardListener,
+        {urls: [url]}, ['responseHeaders']);
+    chrome.webRequest.onCompleted.addListener(standardListener,
+        {urls: [url]}, ['responseHeaders']);
+
+    navigateAndWait(url, function() {
+      chrome.test.assertEq(3, standardListenerCalledCount);
+      chrome.test.assertEq(3, extraHeadersListenerCalledCount);
+      chrome.webRequest.onHeadersReceived.removeListener(extraHeadersListener);
+      chrome.webRequest.onResponseStarted.removeListener(extraHeadersListener);
+      chrome.webRequest.onCompleted.removeListener(extraHeadersListener);
+      chrome.webRequest.onHeadersReceived.removeListener(standardListener);
+      chrome.webRequest.onResponseStarted.removeListener(standardListener);
+      chrome.webRequest.onCompleted.removeListener(standardListener);
+    });
+  },
+
+  function testSpecialResponseHeadersVisibleForAuth() {
+    var url = getServerURL('auth-basic?set-cookie-if-challenged');
     var extraHeadersListener = callbackPass(function(details) {
       checkHeaders(details.responseHeaders, ['set-cookie'], []);
     });
-    chrome.webRequest.onHeadersReceived.addListener(extraHeadersListener,
+    chrome.webRequest.onAuthRequired.addListener(extraHeadersListener,
         {urls: [url]}, ['responseHeaders', 'extraHeaders']);
 
     var standardListener = callbackPass(function(details) {
       checkHeaders(details.responseHeaders, [], ['set-cookie']);
     });
-    chrome.webRequest.onHeadersReceived.addListener(standardListener,
+    chrome.webRequest.onAuthRequired.addListener(standardListener,
         {urls: [url]}, ['responseHeaders']);
 
     navigateAndWait(url, function() {
-      chrome.webRequest.onHeadersReceived.removeListener(extraHeadersListener);
-      chrome.webRequest.onHeadersReceived.removeListener(standardListener);
+      chrome.webRequest.onAuthRequired.removeListener(extraHeadersListener);
+      chrome.webRequest.onAuthRequired.removeListener(standardListener);
     });
   },
 
@@ -97,6 +135,36 @@ runTests([
               'Header not removed.');
         }));
       });
+    });
+  },
+
+  function testModifySpecialResponseHeaders() {
+    var url = getSetCookieUrl('foo', 'bar');
+    var headersListener = callbackPass(function(details) {
+      checkHeaders(details.responseHeaders, ['set-cookie'], []);
+      details.responseHeaders.push({name: 'X-New-Header',
+                                    value: 'Foo'});
+      return {responseHeaders: details.responseHeaders};
+    });
+    chrome.webRequest.onHeadersReceived.addListener(headersListener,
+        {urls: [url]}, ['responseHeaders', 'blocking', 'extraHeaders']);
+
+    var responseListener = callbackPass(function(details) {
+      checkHeaders(details.responseHeaders, ['set-cookie', 'x-new-header'], []);
+    });
+    chrome.webRequest.onResponseStarted.addListener(responseListener,
+        {urls: [url]}, ['responseHeaders', 'extraHeaders']);
+
+    var completedListener = callbackPass(function(details) {
+      checkHeaders(details.responseHeaders, ['set-cookie', 'x-new-header'], []);
+    });
+    chrome.webRequest.onCompleted.addListener(completedListener,
+        {urls: [url]}, ['responseHeaders', 'extraHeaders']);
+
+    navigateAndWait(url, function(tab) {
+      chrome.webRequest.onHeadersReceived.removeListener(headersListener);
+      chrome.webRequest.onResponseStarted.removeListener(responseListener);
+      chrome.webRequest.onCompleted.removeListener(completedListener);
     });
   },
 

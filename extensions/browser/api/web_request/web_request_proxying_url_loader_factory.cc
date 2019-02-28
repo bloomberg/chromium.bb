@@ -184,11 +184,16 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveResponse(
     const network::ResourceResponseHead& head) {
-  current_response_ = head;
   on_receive_response_received_ = true;
   if (current_request_uses_header_client_) {
+    // Use the headers we got from OnHeadersReceived as that'll contain
+    // Set-Cookie if it existed.
+    auto saved_headers = current_response_.headers;
+    current_response_ = head;
+    current_response_.headers = saved_headers;
     ContinueToResponseStarted(net::OK);
   } else {
+    current_response_ = head;
     HandleResponseOrRedirectHeaders(
         base::BindRepeating(&InProgressRequest::ContinueToResponseStarted,
                             weak_factory_.GetWeakPtr()));
@@ -205,10 +210,15 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveRedirect(
     return;
   }
 
-  current_response_ = head;
   if (current_request_uses_header_client_) {
+    // Use the headers we got from OnHeadersReceived as that'll contain
+    // Set-Cookie if it existed.
+    auto saved_headers = current_response_.headers;
+    current_response_ = head;
+    current_response_.headers = saved_headers;
     ContinueToBeforeRedirect(redirect_info, net::OK);
   } else {
+    current_response_ = head;
     HandleResponseOrRedirectHeaders(
         base::BindRepeating(&InProgressRequest::ContinueToBeforeRedirect,
                             weak_factory_.GetWeakPtr(), redirect_info));
@@ -267,11 +277,17 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::HandleAuthRequest(
     WebRequestAPI::AuthRequestCallback callback) {
   DCHECK(!auth_credentials_);
 
+  // If |current_request_uses_header_client_| is true, |current_response_|
+  // should already hold the correct set of response headers (including
+  // Set-Cookie). So we don't use |response_headers| since it won't have the
+  // Set-Cookie headers.
+  if (!current_request_uses_header_client_) {
+    network::ResourceResponseHead head;
+    head.headers = response_headers;
+    current_response_ = head;
+  }
   // We first need to simulate |onHeadersReceived| for the response headers
   // which indicated a need to authenticate.
-  network::ResourceResponseHead head;
-  head.headers = response_headers;
-  current_response_ = head;
   HandleResponseOrRedirectHeaders(base::BindRepeating(base::BindRepeating(
       &InProgressRequest::ContinueAuthRequest, weak_factory_.GetWeakPtr(),
       base::RetainedRef(auth_info), base::Passed(&callback))));
@@ -556,8 +572,15 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
   DCHECK(on_headers_received_callback_);
   base::Optional<std::string> headers;
-  if (override_headers_)
+  if (override_headers_) {
     headers = override_headers_->raw_headers();
+    if (current_request_uses_header_client_) {
+      // Make sure to update current_response_,  since when OnReceiveResponse
+      // is called we will not use its headers as it might be missing the
+      // Set-Cookie line (as that gets stripped over IPC).
+      current_response_.headers = override_headers_;
+    }
+  }
   std::move(on_headers_received_callback_).Run(net::OK, headers, redirect_url_);
   override_headers_ = nullptr;
 
