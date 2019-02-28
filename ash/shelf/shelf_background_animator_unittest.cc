@@ -316,37 +316,12 @@ TEST_F(ShelfBackgroundTargetColorTest,
           ->background_animator_for_testing());
 
   NotifySessionStateChanged(session_manager::SessionState::LOGIN_PRIMARY);
-  EXPECT_EQ(GetBaseColor(test_api.shelf_background_target_color()),
-            GetBaseColor(SK_ColorTRANSPARENT));
+  EXPECT_EQ(test_api.shelf_background_target_color(), SK_ColorTRANSPARENT);
 
   SimulateUserLogin("user1@test.com");
 
-  NotifySessionStateChanged(
-      session_manager::SessionState::LOGGED_IN_NOT_ACTIVE);
-  EXPECT_EQ(GetBaseColor(test_api.shelf_background_target_color()),
-            GetBaseColor(SK_ColorTRANSPARENT));
-
   // The shelf has a non-transparent background only when session state is
   // active.
-  NotifySessionStateChanged(session_manager::SessionState::ACTIVE);
-  EXPECT_EQ(GetBaseColor(test_api.shelf_background_target_color()),
-            GetBaseColor(kShelfDefaultBaseColor));
-
-  NotifySessionStateChanged(session_manager::SessionState::LOCKED);
-  EXPECT_EQ(GetBaseColor(test_api.shelf_background_target_color()),
-            GetBaseColor(SK_ColorTRANSPARENT));
-
-  // Ensure the shelf background color is correct after unlocking.
-  NotifySessionStateChanged(session_manager::SessionState::ACTIVE);
-  EXPECT_EQ(GetBaseColor(test_api.shelf_background_target_color()),
-            GetBaseColor(kShelfDefaultBaseColor));
-
-  NotifySessionStateChanged(session_manager::SessionState::LOGIN_SECONDARY);
-  EXPECT_EQ(GetBaseColor(test_api.shelf_background_target_color()),
-            GetBaseColor(SK_ColorTRANSPARENT));
-
-  // Ensure the shelf background color is correct after closing the user adding
-  // screen.
   NotifySessionStateChanged(session_manager::SessionState::ACTIVE);
   EXPECT_EQ(GetBaseColor(test_api.shelf_background_target_color()),
             GetBaseColor(kShelfDefaultBaseColor));
@@ -366,15 +341,13 @@ TEST_F(ShelfBackgroundTargetColorTest,
           ->background_animator_for_testing());
 
   NotifySessionStateChanged(session_manager::SessionState::OOBE);
-  EXPECT_EQ(GetBaseColor(test_api.shelf_background_target_color()),
-            GetBaseColor(SK_ColorTRANSPARENT));
+  EXPECT_EQ(test_api.shelf_background_target_color(), SK_ColorTRANSPARENT);
 
   SimulateUserLogin("user1@test.com");
 
   NotifySessionStateChanged(
       session_manager::SessionState::LOGGED_IN_NOT_ACTIVE);
-  EXPECT_EQ(GetBaseColor(test_api.shelf_background_target_color()),
-            GetBaseColor(SK_ColorTRANSPARENT));
+  EXPECT_EQ(test_api.shelf_background_target_color(), SK_ColorTRANSPARENT);
 
   NotifySessionStateChanged(session_manager::SessionState::ACTIVE);
   EXPECT_EQ(GetBaseColor(test_api.shelf_background_target_color()),
