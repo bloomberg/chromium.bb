@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "build/build_config.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_trace_implementation.h"
@@ -145,10 +146,18 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
     return bind_result_;
   }
 
-  bool allow_raster_decoder =
-      !command_buffer_->channel()->gpu_info().passthrough_cmd_decoder ||
+  // TODO(enne): remove the kEnablePassthroughRasterDecoder flag and
+  // assume it is always available.
+  bool enable_passthrough_raster_decoder =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePassthroughRasterDecoder);
+#if defined(OS_WIN)
+  enable_passthrough_raster_decoder = true;
+#endif
+
+  bool allow_raster_decoder =
+      !command_buffer_->channel()->gpu_info().passthrough_cmd_decoder ||
+      enable_passthrough_raster_decoder;
   if (attributes_.context_type == gpu::CONTEXT_TYPE_WEBGPU) {
     DCHECK(!attributes_.enable_raster_interface);
     DCHECK(!attributes_.enable_gles2_interface);
