@@ -452,10 +452,6 @@
 #include "components/services/patch/public/interfaces/constants.mojom.h"
 #endif
 
-#if defined(OS_LINUX) || defined(OS_WIN)
-#include "chrome/browser/webshare/share_service_impl.h"
-#endif
-
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 #include "chrome/browser/browser_switcher/browser_switcher_navigation_throttle.h"
@@ -4447,8 +4443,6 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
 #if defined(OS_ANDROID)
   frame_interfaces_parameterized_->AddInterface(base::Bind(
       &ForwardToJavaWebContentsRegistry<blink::mojom::ShareService>));
-#elif defined(OS_LINUX) || defined(OS_WIN)
-  frame_interfaces_->AddInterface(base::Bind(&ShareServiceImpl::Create));
 #endif
 
 #if !defined(OS_ANDROID)

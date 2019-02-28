@@ -1745,10 +1745,6 @@ jumbo_split_static_library("browser") {
     "webauthn/chrome_authenticator_request_delegate.h",
     "webauthn/observable_authenticator_list.cc",
     "webauthn/observable_authenticator_list.h",
-    "webshare/share_target_pref_helper.cc",
-    "webshare/share_target_pref_helper.h",
-    "webshare/webshare_target.cc",
-    "webshare/webshare_target.h",
     "win/app_icon.cc",
     "win/app_icon.h",
     "win/automation_controller.cc",
@@ -3686,8 +3682,6 @@ jumbo_split_static_library("browser") {
     sources += [
       "renderer_context_menu/spelling_options_submenu_observer.cc",
       "renderer_context_menu/spelling_options_submenu_observer.h",
-      "webshare/share_service_impl.cc",
-      "webshare/share_service_impl.h",
     ]
   }
 

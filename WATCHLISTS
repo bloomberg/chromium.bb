@@ -1727,8 +1727,6 @@
     'web_share': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/webshare/'\
                   '|chrome/android/javatests/src/org/chromium/chrome/browser/WebShare.*'\
-                  '|chrome/browser/ui/views/webshare/'\
-                  '|chrome/browser/webshare/'\
                   '|third_party/blink/web_tests/webshare/'\
                   '|third_party/blink/web_tests/external/wpt/web-share/'\
                   '|third_party/blink/public/platform/modules/webshare/'\
