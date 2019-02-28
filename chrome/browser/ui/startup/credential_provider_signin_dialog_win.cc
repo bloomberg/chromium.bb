@@ -378,6 +378,7 @@ views::WebDialogView* ShowCredentialProviderSigninDialog(
       context, delegate.release(), new ChromeWebContentsHandler);
   views::Widget::InitParams init_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  init_params.keep_on_top = true;
   views::WebDialogView* web_view = view.release();
   init_params.name = "GCPW";  // Used for debugging only.
   init_params.delegate = web_view;
