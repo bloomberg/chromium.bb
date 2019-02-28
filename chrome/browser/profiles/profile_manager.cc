@@ -908,7 +908,7 @@ void ProfileManager::CleanUpEphemeralProfiles() {
   // ephemeral, set a new one.
   if (last_active_profile_deleted ||
       (entries.size() == profiles_to_delete.size() &&
-       profiles_to_delete.size() > 0)) {
+       !profiles_to_delete.empty())) {
     if (new_profile_path.empty())
       new_profile_path = GenerateNextProfileDirectoryPath();
 

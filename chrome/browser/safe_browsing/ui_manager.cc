@@ -214,7 +214,7 @@ void SafeBrowsingUIManager::OnBlockingPageDone(
     const GURL& main_frame_url) {
   BaseUIManager::OnBlockingPageDone(resources, proceed, web_contents,
                                     main_frame_url);
-  if (proceed && resources.size() > 0) {
+  if (proceed && !resources.empty()) {
     MaybeTriggerSecurityInterstitialProceededEvent(
         web_contents, main_frame_url,
         GetThreatTypeStringForInterstitial(resources[0].threat_type),

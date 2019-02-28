@@ -240,7 +240,7 @@ std::string GetAllowedDomain(std::string signin_pattern) {
   std::string domain = splitted_signin_pattern[1];
 
   // Trims tailing '$' if existed.
-  if (domain.size() > 0 && domain.back() == '$')
+  if (!domain.empty() && domain.back() == '$')
     domain.pop_back();
 
   // Trims tailing '\E' if existed.

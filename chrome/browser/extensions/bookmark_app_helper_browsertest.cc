@@ -107,7 +107,7 @@ class BookmarkAppHelperTest : public DialogBrowserTest,
   void OnExtensionInstalled(content::BrowserContext* browser_context,
                             const Extension* extension,
                             bool is_update) override {
-    if (expected_app_title_.size())
+    if (!expected_app_title_.empty())
       EXPECT_EQ(expected_app_title_, extension->name());
     quit_closure_.Run();
   }

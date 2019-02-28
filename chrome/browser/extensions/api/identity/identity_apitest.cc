@@ -2369,7 +2369,7 @@ class OnSignInChangedEventTest : public IdentityTestWithSignin {
                                 std::move(args), browser()->profile()));
   }
 
-  bool HasExpectedEvent() { return expected_events_.size(); }
+  bool HasExpectedEvent() { return !expected_events_.empty(); }
 
  private:
   void OnSignInEventChanged(Event* event) {

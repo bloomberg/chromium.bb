@@ -305,7 +305,7 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(const OmniboxLog& log) {
       }
     }
   }
-  if (rows_to_add.size() > 0 || rows_to_update.size() > 0)
+  if (!rows_to_add.empty() || !rows_to_update.empty())
     AddAndUpdateRows(rows_to_add, rows_to_update);
 
   std::vector<AutocompleteActionPredictorTable::Row::Id> ids_to_delete;

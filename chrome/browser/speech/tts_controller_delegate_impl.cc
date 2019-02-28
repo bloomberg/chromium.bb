@@ -123,7 +123,7 @@ int TtsControllerDelegateImpl::GetMatchingVoice(
     }
 
     // Next, prefer required event types.
-    if (utterance->GetRequiredEventTypes().size() > 0) {
+    if (!utterance->GetRequiredEventTypes().empty()) {
       bool has_all_required_event_types = true;
       for (auto iter = utterance->GetRequiredEventTypes().begin();
            iter != utterance->GetRequiredEventTypes().end(); ++iter) {

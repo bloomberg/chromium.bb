@@ -405,7 +405,7 @@ void ShippingAddressEditorViewController::UpdateCountries(
     // default country based on the locale.
     if (chosen_country_index_ >= countries_.size() || chosen_country.empty()) {
       // But only if there is at least one country.
-      if (countries_.size() > 0) {
+      if (!countries_.empty()) {
         LOG(ERROR) << "Unexpected country: " << chosen_country;
         chosen_country_index_ = 0;
         temporary_profile_.SetInfo(autofill::ADDRESS_HOME_COUNTRY,
@@ -416,7 +416,7 @@ void ShippingAddressEditorViewController::UpdateCountries(
         chosen_country_index_ = kInvalidCountryIndex;
       }
     }
-  } else if (countries_.size() > 0) {
+  } else if (!countries_.empty()) {
     chosen_country_index_ = 0;
   }
 }

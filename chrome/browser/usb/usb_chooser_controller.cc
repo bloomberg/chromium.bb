@@ -162,7 +162,7 @@ void UsbChooserController::Select(const std::vector<size_t>& indices) {
 }
 
 void UsbChooserController::Cancel() {
-  RecordWebUsbChooserClosure(devices_.size() == 0
+  RecordWebUsbChooserClosure(devices_.empty()
                                  ? WEBUSB_CHOOSER_CLOSED_CANCELLED_NO_DEVICES
                                  : WEBUSB_CHOOSER_CLOSED_CANCELLED);
 }

@@ -148,7 +148,7 @@ bool ProfilesMatchImpl(
     autofill_profiles_a_map.erase(p->guid());
   }
 
-  if (autofill_profiles_a_map.size()) {
+  if (!autofill_profiles_a_map.empty()) {
     DVLOG(1) << "Entries present in Profile " << profile_a << " but not in "
              << profile_b << ".";
     return false;

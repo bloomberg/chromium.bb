@@ -636,7 +636,7 @@ PortForwardingController::DeviceListChanged(
       continue;
     auto rit = registry_.find(remote_device->serial());
     if (rit == registry_.end()) {
-      if (remote_device->browsers().size() > 0) {
+      if (!remote_device->browsers().empty()) {
         new Connection(profile_, &registry_, device,
                        remote_device->browsers()[0], forwarding_map_);
       }

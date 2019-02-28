@@ -560,7 +560,7 @@ base::TimeDelta SiteEngagementService::GetStalePeriod() const {
 
 double SiteEngagementService::GetMedianEngagementFromSortedDetails(
     const std::vector<mojom::SiteEngagementDetails>& details) const {
-  if (details.size() == 0)
+  if (details.empty())
     return 0;
 
   // Calculate the median as the middle value of the sorted engagement scores

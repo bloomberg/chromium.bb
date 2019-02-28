@@ -254,7 +254,7 @@ const std::string SSLErrorAssistant::MatchKnownMITMSoftware(
   // Ignore if the certificate doesn't have an issuer common name or an
   // organization name.
   if (cert->issuer().common_name.empty() &&
-      cert->issuer().organization_names.size() == 0) {
+      cert->issuer().organization_names.empty()) {
     return std::string();
   }
 

@@ -311,7 +311,7 @@ void PageNodeImpl::OnNumFrozenFramesStateChange(int num_frozen_frames_delta) {
       GetPropertyOrDefault(
           resource_coordinator::mojom::PropertyType::kLifecycleState,
           kRunning) == kFrozen;
-  bool is_fully_frozen = frame_coordination_units_.size() > 0 &&
+  bool is_fully_frozen = !frame_coordination_units_.empty() &&
                          num_frozen_frames_ == frame_coordination_units_.size();
   if (was_fully_frozen == is_fully_frozen)
     return;

@@ -164,7 +164,7 @@ bool WebRequestActionWithThreadsTest::ActionWorksOnRequest(
                                              false /*crosses_incognito*/,
                                              &deltas, &ignored_tags };
   action_set->Apply(extension_id, base::Time(), &apply_info);
-  return (1u == deltas.size() || 0u < ignored_tags.size());
+  return (1u == deltas.size() || !ignored_tags.empty());
 }
 
 void WebRequestActionWithThreadsTest::CheckActionNeedsAllUrls(

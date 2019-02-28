@@ -148,7 +148,7 @@ void DevToolsFileWatcher::SharedFileWatcher::DirectoryChanged(
 
 void DevToolsFileWatcher::SharedFileWatcher::DispatchNotifications() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!pending_paths_.size())
+  if (pending_paths_.empty())
     return;
   base::Time start = base::Time::Now();
   std::vector<std::string> added_paths;

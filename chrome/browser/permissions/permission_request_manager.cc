@@ -391,7 +391,7 @@ void PermissionRequestManager::FinalizeBubble(
     RequestFinishedIncludingDuplicates(*requests_iter);
   }
   requests_.clear();
-  if (queued_requests_.size())
+  if (!queued_requests_.empty())
     DequeueRequestsAndShowBubble();
 }
 

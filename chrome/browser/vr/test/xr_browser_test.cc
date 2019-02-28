@@ -270,7 +270,7 @@ void XrBrowserTestBase::WaitOnJavaScriptStep(
 
     std::string result_string =
         RunJavaScriptAndExtractStringOrFail("resultString", web_contents);
-    if (result_string == "") {
+    if (result_string.empty()) {
       reason +=
           " Did not obtain specific failure reason from JavaScript "
           "testharness.";
@@ -299,7 +299,7 @@ XrBrowserTestBase::TestStatus XrBrowserTestBase::CheckTestStatus(
       RunJavaScriptAndExtractBoolOrFail("testPassed", web_contents);
   if (test_passed) {
     return XrBrowserTestBase::TestStatus::STATUS_PASSED;
-  } else if (!test_passed && result_string == "") {
+  } else if (!test_passed && result_string.empty()) {
     return XrBrowserTestBase::TestStatus::STATUS_RUNNING;
   }
   // !test_passed && result_string != ""

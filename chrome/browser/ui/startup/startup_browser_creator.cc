@@ -792,7 +792,7 @@ bool StartupBrowserCreator::ProcessLastOpenedProfiles(
   base::debug::Alias(&last_opened_profiles);
   const Profile* DEBUG_profile_0 = nullptr;
   const Profile* DEBUG_profile_1 = nullptr;
-  if (last_opened_profiles.size() > 0)
+  if (!last_opened_profiles.empty())
     DEBUG_profile_0 = last_opened_profiles[0];
   if (last_opened_profiles.size() > 1)
     DEBUG_profile_1 = last_opened_profiles[1];

@@ -216,7 +216,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     else if (decision == CONTENT_SETTING_ASK)
       decision_string = "Dismissed";
 
-    if (decision_string.size()) {
+    if (!decision_string.empty()) {
       histograms.ExpectUniqueSample(
           "Permissions.Prompt." + decision_string + ".PriorDismissCount." +
               PermissionUtil::GetPermissionString(content_settings_type),

@@ -1002,7 +1002,7 @@ class TestBrowserClientForSpellCheck : public ChromeContentBrowserClient {
   }
 
   void RunUntilBind() {
-    if (spell_check_hosts_.size())
+    if (!spell_check_hosts_.empty())
       return;
 
     base::RunLoop run_loop;
@@ -1011,7 +1011,7 @@ class TestBrowserClientForSpellCheck : public ChromeContentBrowserClient {
   }
 
   void RunUntilBindOrTimeout() {
-    if (spell_check_hosts_.size())
+    if (!spell_check_hosts_.empty())
       return;
 
     auto ui_task_runner = base::CreateSingleThreadTaskRunnerWithTraits(

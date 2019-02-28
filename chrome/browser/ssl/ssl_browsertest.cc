@@ -7322,7 +7322,7 @@ class SSLUIDynamicInterstitialTest : public CertVerifierBrowserTest {
     scoped_refptr<net::X509Certificate> cert = https_server_.GetCertificate();
     filter->set_issuer_common_name_regex(cert.get()->issuer().common_name);
 
-    if (cert.get()->issuer().organization_names.size()) {
+    if (!cert.get()->issuer().organization_names.empty()) {
       filter->set_issuer_organization_regex(
           cert.get()->issuer().organization_names[0]);
     }

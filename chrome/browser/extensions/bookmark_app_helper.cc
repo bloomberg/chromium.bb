@@ -81,7 +81,7 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
         urls_to_download_.push_back(icon.url);
     }
 
-    if (urls_to_download_.size()) {
+    if (!urls_to_download_.empty()) {
       // Matched in OnIconsDownloaded.
       AddRef();
       SetupWebContents();

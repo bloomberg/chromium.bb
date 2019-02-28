@@ -333,7 +333,7 @@ bool NotificationsApiFunction::CreateNotification(
   }
 
   // We should have list items if and only if the type is a multiple type.
-  bool has_list_items = options->items.get() && options->items->size() > 0;
+  bool has_list_items = options->items.get() && !options->items->empty();
   if (has_list_items != (type == message_center::NOTIFICATION_TYPE_MULTIPLE)) {
     SetError(kExtraListItemsProvided);
     return false;
@@ -508,7 +508,7 @@ bool NotificationsApiFunction::UpdateNotification(
     notification->set_progress(progress);
   }
 
-  if (options->items.get() && options->items->size() > 0) {
+  if (options->items.get() && !options->items->empty()) {
     // We should have list items if and only if the type is a multiple type.
     if (notification->type() != message_center::NOTIFICATION_TYPE_MULTIPLE) {
       SetError(kExtraListItemsProvided);

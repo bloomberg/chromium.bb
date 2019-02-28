@@ -435,7 +435,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
       bool close_active_tab =
           clobber_existing_tab_ && i == windows->begin() &&
           (*i)->type == sessions::SessionWindow::TYPE_TABBED && active_tab &&
-          browser == browser_ && (*i)->tabs.size() > 0;
+          browser == browser_ && !(*i)->tabs.empty();
       if (close_active_tab)
         --initial_tab_count;
       int selected_tab_index =
