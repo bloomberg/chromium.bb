@@ -5,8 +5,10 @@
 #include "media/mojo/clients/mojo_renderer_factory.h"
 
 #include <memory>
+#include <string>
 
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
 #include "media/mojo/clients/mojo_renderer.h"
 #include "media/renderers/decrypting_renderer.h"
 #include "media/renderers/video_overlay_factory.h"
@@ -61,11 +63,23 @@ mojom::RendererPtr MojoRendererFactory::GetRendererPtr() {
   mojom::RendererPtr renderer_ptr;
 
   if (interface_factory_) {
-    interface_factory_->CreateRenderer(hosted_renderer_type_,
-                                       get_type_specific_id_.is_null()
-                                           ? std::string()
-                                           : get_type_specific_id_.Run(),
-                                       mojo::MakeRequest(&renderer_ptr));
+    switch (hosted_renderer_type_) {
+      case mojom::HostedRendererType::kDefault:
+        interface_factory_->CreateDefaultRenderer(
+            std::string(), mojo::MakeRequest(&renderer_ptr));
+        break;
+#if defined(OS_ANDROID)
+      case mojom::HostedRendererType::kMediaPlayer:
+        interface_factory_->CreateMediaPlayerRenderer(
+            mojo::MakeRequest(&renderer_ptr));
+        break;
+      case mojom::HostedRendererType::kFlinging:
+        DCHECK(get_type_specific_id_);
+        interface_factory_->CreateFlingingRenderer(
+            get_type_specific_id_.Run(), mojo::MakeRequest(&renderer_ptr));
+        break;
+#endif  // defined(OS_ANDROID)
+    }
   } else {
     NOTREACHED();
   }

@@ -12,23 +12,20 @@ import "media/mojo/interfaces/renderer.mojom";
 import "media/mojo/interfaces/video_decoder.mojom";
 import "mojo/public/mojom/base/token.mojom";
 
+// DEPRECATED: This will be cleaned up as part of https://crbug.com/936528.
+// It is currently left in to prevent breaking the ChromeCast build, and will
+// be removed before M74 branch.
 // Defines the types of renderers that can be hosted by a mojo Renderer.
 enum HostedRendererType {
   // media::DefaultRenderer: Used to offload normal rendering scenarios to a
   // different process, for stability or performance reasons.
   kDefault,
 
-  // content::MediaPlayerRenderer: Used to handle HLS videos on Android. Also
-  // used on older Android devices, that don't have platform decode support, and
-  // are better off using the native Android MediaPlayer.
+  // DEPRECATED: Use CreateMediaPlayerRenderer() instead.
   [EnableIf=is_android]
   kMediaPlayer,
 
-  // content::FlingingRenderer: Used to control a CastSession, in the context
-  // of RemotePlayback. The CastSession must have already been started via the
-  // PresentationService. This renderer does not actually render anything on the
-  // local device, but instead serves as a link to/from media content playing on
-  // a cast device.
+  // DEPRECATED: Use CreateFlingingRenderer() instead.
   [EnableIf=is_android]
   kFlinging,
 };
@@ -39,21 +36,24 @@ interface InterfaceFactory {
   CreateAudioDecoder(AudioDecoder& audio_decoder);
   CreateVideoDecoder(VideoDecoder& video_decoder);
 
-  // Creates a Renderer, using |type| to choose which concrete media::Renderer
-  // implementation to host. Different values of |type| might affect how the
-  // request is ultimately routed (i.e. |type| will determine in which process
-  // the mojom::Renderer is created).
-  // |type_specific_id| represents a different kind of ID, based off of |type|.
-  // The usage of |type_specific_id| per |type| is defined as follows:
-  // - kDefault: represents an audio device ID, which is defined in
-  //   media/audio/audio_device_description.h.
-  //   If |type_specific_id| is empty, kDefaultDeviceId will be used.
-  // - kMediaPlayer: unused.
-  // - kFlinging: represents a PresentationID for a session that has already
-  //   been started. If the ID cannot be found (e.g. the session has already
-  //   ended), CreateRenderer will be a no-op.
-  CreateRenderer(HostedRendererType type, string type_specific_id,
+  // DEPRECATED: This will be cleaned up as part of https://crbug.com/936528.
+  // It is currently left in to prevent breaking the ChromeCast build, and will
+  // be removed before M74 branch.
+  CreateRenderer(HostedRendererType type, string audio_device_id,
                  Renderer& renderer);
+
+  // Creates a regular media::Renderer (DefaultRendererFactory).
+  CreateDefaultRenderer(string audio_device_id, Renderer& renderer);
+
+  [EnableIf=is_android]
+  // Creates a MediaPlayerRenderer (MediaPlayerRendererFactory).
+  CreateMediaPlayerRenderer(Renderer& renderer);
+
+  [EnableIf=is_android]
+  // Creates a FlingingRenderer (FlingingRendererFactory).
+  // The |presentation_id| is used to find an already set-up RemotePlayback
+  // session (see blink::RemotePlayback).
+  CreateFlingingRenderer(string presentation_id, Renderer& renderer);
 
   // Creates a CDM based on the |key_system| provided. A |key_system| is a
   // generic term for a decryption mechanism and/or content protection provider.
