@@ -466,7 +466,10 @@ TEST_F(PreviewsHintsTest, IsWhitelistedOutParams) {
 }
 
 TEST_F(PreviewsHintsTest,
-       IsWhitelistedForNoScriptInPageHintsWithResourceLoadingHintsDisabled) {
+       IsWhitelistedForSecondOptimizationNoScriptWithFirstDisabled) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitWithFeatures({features::kNoScriptPreviews},
+                               {features::kResourceLoadingHints});
   optimization_guide::proto::Configuration config;
 
   optimization_guide::proto::Hint* hint1 = config.add_hints();
@@ -475,11 +478,14 @@ TEST_F(PreviewsHintsTest,
 
   // Page hint with NOSCRIPT optimization
   optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
-  page_hint1->set_page_pattern("/has_noscript/");
-  optimization_guide::proto::Optimization* optimization_with_inflation_percent =
+  page_hint1->set_page_pattern("/has_multiple_optimizations/");
+  optimization_guide::proto::Optimization* optimization1 =
       page_hint1->add_whitelisted_optimizations();
-  optimization_with_inflation_percent->set_optimization_type(
-      optimization_guide::proto::NOSCRIPT);
+  optimization1->set_optimization_type(
+      optimization_guide::proto::RESOURCE_LOADING);
+  optimization_guide::proto::Optimization* optimization2 =
+      page_hint1->add_whitelisted_optimizations();
+  optimization2->set_optimization_type(optimization_guide::proto::NOSCRIPT);
 
   ParseConfig(config);
 
@@ -487,8 +493,48 @@ TEST_F(PreviewsHintsTest,
   net::EffectiveConnectionType ect_threshold =
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
   EXPECT_TRUE(MaybeLoadHintAndCheckIsWhitelisted(
-      GURL("https://www.somedomain.org/has_noscript/"), PreviewsType::NOSCRIPT,
-      &inflation_percent, &ect_threshold));
+      GURL("https://www.somedomain.org/has_multiple_optimizations/"),
+      PreviewsType::NOSCRIPT, &inflation_percent, &ect_threshold));
+  EXPECT_FALSE(MaybeLoadHintAndCheckIsWhitelisted(
+      GURL("https://www.somedomain.org/has_multiple_optimizations/"),
+      PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent,
+      &ect_threshold));
+}
+
+TEST_F(PreviewsHintsTest,
+       IsWhitelistedForSecondOptimizationResourceLoadingWithFirstDisabled) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitWithFeatures({features::kResourceLoadingHints},
+                               {features::kNoScriptPreviews});
+  optimization_guide::proto::Configuration config;
+
+  optimization_guide::proto::Hint* hint1 = config.add_hints();
+  hint1->set_key("somedomain.org");
+  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+
+  // Page hint with NOSCRIPT optimization
+  optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
+  page_hint1->set_page_pattern("/has_multiple_optimizations/");
+  optimization_guide::proto::Optimization* optimization1 =
+      page_hint1->add_whitelisted_optimizations();
+  optimization1->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+  optimization_guide::proto::Optimization* optimization2 =
+      page_hint1->add_whitelisted_optimizations();
+  optimization2->set_optimization_type(
+      optimization_guide::proto::RESOURCE_LOADING);
+
+  ParseConfig(config);
+
+  int inflation_percent = 0;
+  net::EffectiveConnectionType ect_threshold =
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+  EXPECT_TRUE(MaybeLoadHintAndCheckIsWhitelisted(
+      GURL("https://www.somedomain.org/has_multiple_optimizations/"),
+      PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent,
+      &ect_threshold));
+  EXPECT_FALSE(MaybeLoadHintAndCheckIsWhitelisted(
+      GURL("https://www.somedomain.org/has_multiple_optimizations/"),
+      PreviewsType::NOSCRIPT, &inflation_percent, &ect_threshold));
 }
 
 TEST_F(PreviewsHintsTest, IsWhitelistedForExperimentalPreview) {
