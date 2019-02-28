@@ -93,6 +93,8 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
 
  private:
   class MarkingDequeItem {
+    DISALLOW_NEW();
+
    public:
     explicit MarkingDequeItem(const TraceDescriptor& descriptor)
         : raw_object_pointer_(descriptor.base_object_payload),
