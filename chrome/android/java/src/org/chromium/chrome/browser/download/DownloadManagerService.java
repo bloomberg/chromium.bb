@@ -33,7 +33,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.base.task.BackgroundOnlyAsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.download.DownloadMetrics.DownloadOpenSource;
@@ -1144,13 +1145,9 @@ public class DownloadManagerService
             removeDownloadProgress(downloadGuid);
         });
 
-        new BackgroundOnlyAsyncTask<Void>() {
-            @Override
-            public Void doInBackground() {
-                mDownloadManagerDelegate.removeCompletedDownload(downloadGuid, externallyRemoved);
-                return null;
-            }
-        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
+            mDownloadManagerDelegate.removeCompletedDownload(downloadGuid, externallyRemoved);
+        });
     }
 
     /**
