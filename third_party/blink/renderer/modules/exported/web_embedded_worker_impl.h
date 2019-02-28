@@ -48,6 +48,7 @@
 
 namespace blink {
 
+class FetchClientSettingsObjectSnapshot;
 class ServiceWorkerInstalledScriptsManager;
 class WorkerClassicScriptLoader;
 class WorkerThread;
@@ -89,6 +90,10 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
 
   void OnScriptLoaderFinished();
   void StartWorkerThread();
+
+  // Creates an outside settings object from the worker shadow page for
+  // top-level worker script fetch.
+  FetchClientSettingsObjectSnapshot* CreateFetchClientSettingsObject();
 
   WebEmbeddedWorkerStartData worker_start_data_;
 

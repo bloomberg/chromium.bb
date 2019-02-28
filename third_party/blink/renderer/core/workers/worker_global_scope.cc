@@ -383,6 +383,8 @@ void WorkerGlobalScope::ImportClassicScript(
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(base::FeatureList::IsEnabled(
              features::kOffMainThreadDedicatedWorkerScriptFetch) ||
+         base::FeatureList::IsEnabled(
+             features::kOffMainThreadServiceWorkerScriptFetch) ||
          features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
   DCHECK(!IsContextPaused());
 
@@ -390,6 +392,7 @@ void WorkerGlobalScope::ImportClassicScript(
   // destination, and inside settings."
   mojom::RequestContextType destination = GetDestinationForMainScript();
   DCHECK(destination == mojom::RequestContextType::WORKER ||
+         destination == mojom::RequestContextType::SERVICE_WORKER ||
          destination == mojom::RequestContextType::SHARED_WORKER)
       << "A wrong destination (" << destination << ") is specified.";
 
@@ -419,6 +422,8 @@ void WorkerGlobalScope::DidReceiveResponseForClassicScript(
   DCHECK(IsContextThread());
   DCHECK(base::FeatureList::IsEnabled(
              features::kOffMainThreadDedicatedWorkerScriptFetch) ||
+         base::FeatureList::IsEnabled(
+             features::kOffMainThreadServiceWorkerScriptFetch) ||
          features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
   probe::didReceiveScriptResponse(this, classic_script_loader->Identifier());
 }
@@ -430,6 +435,8 @@ void WorkerGlobalScope::DidImportClassicScript(
   DCHECK(IsContextThread());
   DCHECK(base::FeatureList::IsEnabled(
              features::kOffMainThreadDedicatedWorkerScriptFetch) ||
+         base::FeatureList::IsEnabled(
+             features::kOffMainThreadServiceWorkerScriptFetch) ||
          features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
 
   // Step 12. "If the algorithm asynchronously completes with null, then:"

@@ -817,6 +817,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                  GetClientCallback callback,
                                  bool success);
 
+  void InitializeGlobalScope();
+
   const int64_t version_id_;
   const int64_t registration_id_;
   const GURL script_url_;
@@ -986,6 +988,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // when ServiceWorkerImportedScriptUpdateCheck is enabled.
   std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
       compared_script_info_map_;
+
+  // This holds a mojo interface pointer info to this instance until
+  // InitializeGlobalScope() is called.
+  blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host_;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
 

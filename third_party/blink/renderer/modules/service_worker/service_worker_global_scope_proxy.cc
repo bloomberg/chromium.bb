@@ -669,6 +669,16 @@ void ServiceWorkerGlobalScopeProxy::DidFailToLoadClassicScript() {
   Client().FailedToLoadClassicScript();
 }
 
+void ServiceWorkerGlobalScopeProxy::DidFetchScript() {
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
+  Client().WorkerScriptLoadedOnWorkerThread();
+}
+
+void ServiceWorkerGlobalScopeProxy::DidFailToFetchClassicScript() {
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
+  Client().FailedToLoadClassicScript();
+}
+
 void ServiceWorkerGlobalScopeProxy::DidFailToFetchModuleScript() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   Client().FailedToFetchModuleScript();

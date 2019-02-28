@@ -87,6 +87,9 @@ class WebServiceWorkerContextClient {
   virtual void WorkerScriptLoadedOnMainThread() {}
 
   // The worker script was successfully loaded on the worker thread.
+  // When off-the-main-thread script fetch is on, this is called for both
+  // new-script and installed-script cases. If off-the-main-thread script fetch
+  // is off, this is called for only the installed-script case.
   //
   // This is called after WorkerContextStarted(). Script evaluation does not
   // start until WillEvaluateScript().

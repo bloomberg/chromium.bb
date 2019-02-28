@@ -408,7 +408,7 @@ void ServiceWorkerContextClient::WorkerScriptLoadedOnMainThread() {
 
 void ServiceWorkerContextClient::WorkerScriptLoadedOnWorkerThread() {
   CHECK(worker_task_runner_->RunsTasksInCurrentSequence());
-  CHECK(is_starting_installed_worker_);
+  (*instance_host_)->OnScriptLoaded();
   TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "LOAD_SCRIPT", this);
 }
 
