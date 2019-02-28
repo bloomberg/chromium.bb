@@ -147,11 +147,10 @@ class EncryptionMigrationScreenHandlerTest : public testing::Test {
     user_context_.SetKey(
         Key(Key::KeyType::KEY_TYPE_SALTED_SHA256, "salt", "secret"));
 
-    JSCallsContainer js_calls_container;
-    js_calls_container.ExecuteDeferredJSCalls();
+    js_calls_container_.ExecuteDeferredJSCalls();
     encryption_migration_screen_handler_ =
         std::make_unique<TestEncryptionMigrationScreenHandler>(
-            &js_calls_container);
+            &js_calls_container_);
     encryption_migration_screen_handler_->set_test_web_ui(&test_web_ui_);
     encryption_migration_screen_handler_->SetContinueLoginCallback(
         base::BindOnce(&EncryptionMigrationScreenHandlerTest::OnContinueLogin,
@@ -179,6 +178,7 @@ class EncryptionMigrationScreenHandlerTest : public testing::Test {
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_enabler_;
   FakeCryptohomeClient* fake_cryptohome_client_ = nullptr;
   cryptohome::MockAsyncMethodCaller* mock_async_method_caller_ = nullptr;
+  JSCallsContainer js_calls_container_;
   std::unique_ptr<TestEncryptionMigrationScreenHandler>
       encryption_migration_screen_handler_;
   content::TestWebUI test_web_ui_;

@@ -112,18 +112,15 @@ void DiscoverModulePinSetupHandler::RegisterMessages() {
 
 void DiscoverModulePinSetupHandler::HandleGetUserPassword(
     const std::string& callbackId) {
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "window.discoverReturn", base::Value(callbackId),
-      base::Value(module_->ConsumePrimaryUserPassword()));
+  CallJS("window.discoverReturn", callbackId,
+         module_->ConsumePrimaryUserPassword());
   return;
 }
 
 void DiscoverModulePinSetupHandler::OnPinLoginAvailable(
     const std::string& callbackId,
     bool is_available) {
-  web_ui()->CallJavascriptFunctionUnsafe("window.discoverReturn",
-                                         base::Value(callbackId),
-                                         base::Value(is_available));
+  CallJS("window.discoverReturn", callbackId, is_available);
 }
 
 void DiscoverModulePinSetupHandler::HandleGetHasLoginSupport(
