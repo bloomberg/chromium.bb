@@ -281,11 +281,11 @@ InvalidationSet& RuleFeatureSet::EnsureMutableInvalidationSet(
     return *invalidation_set;
 
   if (type == InvalidationType::kInvalidateDescendants)
-    return ToSiblingInvalidationSet(*invalidation_set).EnsureDescendants();
+    return To<SiblingInvalidationSet>(*invalidation_set).EnsureDescendants();
 
   scoped_refptr<InvalidationSet> descendants = invalidation_set;
   invalidation_set = SiblingInvalidationSet::Create(
-      ToDescendantInvalidationSet(descendants.get()));
+      To<DescendantInvalidationSet>(descendants.get()));
   return *invalidation_set;
 }
 
@@ -346,13 +346,14 @@ void ExtractInvalidationSets(InvalidationSet* invalidation_set,
                              DescendantInvalidationSet*& descendants,
                              SiblingInvalidationSet*& siblings) {
   CHECK(invalidation_set->IsAlive());
-  if (invalidation_set->IsDescendantInvalidationSet()) {
-    descendants = ToDescendantInvalidationSet(invalidation_set);
+  if (auto* descendant =
+          DynamicTo<DescendantInvalidationSet>(invalidation_set)) {
+    descendants = descendant;
     siblings = nullptr;
     return;
   }
 
-  siblings = ToSiblingInvalidationSet(invalidation_set);
+  siblings = To<SiblingInvalidationSet>(invalidation_set);
   descendants = siblings->Descendants();
 }
 
@@ -812,8 +813,8 @@ void RuleFeatureSet::AddFeaturesToInvalidationSetsForSimpleSelector(
       return;
     }
 
-    SiblingInvalidationSet* sibling_invalidation_set =
-        ToSiblingInvalidationSet(invalidation_set);
+    auto* sibling_invalidation_set =
+        To<SiblingInvalidationSet>(invalidation_set);
     sibling_invalidation_set->UpdateMaxDirectAdjacentSelectors(
         sibling_features->max_direct_adjacent_selectors);
     AddFeaturesToInvalidationSet(*invalidation_set, *sibling_features);
@@ -1055,12 +1056,10 @@ void RuleFeatureSet::CollectSiblingInvalidationSetForClass(
   if (it == class_invalidation_sets_.end())
     return;
 
-  InvalidationSet* invalidation_set = it->value.get();
-  if (invalidation_set->IsDescendantInvalidationSet())
+  auto* sibling_set = DynamicTo<SiblingInvalidationSet>(it->value.get());
+  if (!sibling_set)
     return;
 
-  SiblingInvalidationSet* sibling_set =
-      ToSiblingInvalidationSet(invalidation_set);
   if (sibling_set->MaxDirectAdjacentSelectors() < min_direct_adjacent)
     return;
 
@@ -1101,12 +1100,10 @@ void RuleFeatureSet::CollectSiblingInvalidationSetForId(
   if (it == id_invalidation_sets_.end())
     return;
 
-  InvalidationSet* invalidation_set = it->value.get();
-  if (invalidation_set->IsDescendantInvalidationSet())
+  auto* sibling_set = DynamicTo<SiblingInvalidationSet>(it->value.get());
+  if (!sibling_set)
     return;
 
-  SiblingInvalidationSet* sibling_set =
-      ToSiblingInvalidationSet(invalidation_set);
   if (sibling_set->MaxDirectAdjacentSelectors() < min_direct_adjacent)
     return;
 
@@ -1150,12 +1147,10 @@ void RuleFeatureSet::CollectSiblingInvalidationSetForAttribute(
   if (it == attribute_invalidation_sets_.end())
     return;
 
-  InvalidationSet* invalidation_set = it->value.get();
-  if (invalidation_set->IsDescendantInvalidationSet())
+  auto* sibling_set = DynamicTo<SiblingInvalidationSet>(it->value.get());
+  if (!sibling_set)
     return;
 
-  SiblingInvalidationSet* sibling_set =
-      ToSiblingInvalidationSet(invalidation_set);
   if (sibling_set->MaxDirectAdjacentSelectors() < min_direct_adjacent)
     return;
 

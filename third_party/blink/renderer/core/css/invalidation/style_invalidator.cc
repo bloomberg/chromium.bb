@@ -193,7 +193,7 @@ void StyleInvalidator::PushInvalidationSetsForContainerNode(
   for (const auto& invalidation_set : pending_invalidations.Siblings()) {
     CHECK(invalidation_set->IsAlive());
     sibling_data.PushInvalidationSet(
-        ToSiblingInvalidationSet(*invalidation_set));
+        To<SiblingInvalidationSet>(*invalidation_set));
   }
 
   if (node.GetStyleChangeType() >= kSubtreeStyleChange)
