@@ -88,6 +88,14 @@ const BOOL kDefaultStatsCheckboxValue = YES;
   // Record metrics reporting as opt-in/opt-out only once.
   static dispatch_once_t once;
   dispatch_once(&once, ^{
+    // Don't call RecordMetricsReportingDefaultState twice.  This can happen
+    // if the app is quit before accepting the TOS, or via experiment settings.
+    if (metrics::GetMetricsReportingDefaultState(
+            GetApplicationContext()->GetLocalState()) !=
+        metrics::EnableMetricsDefault::DEFAULT_UNKNOWN) {
+      return;
+    }
+
     metrics::RecordMetricsReportingDefaultState(
         GetApplicationContext()->GetLocalState(),
         kDefaultStatsCheckboxValue ? metrics::EnableMetricsDefault::OPT_OUT
