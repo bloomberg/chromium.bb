@@ -13,6 +13,9 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
+
 /**
  * Test case to instrument DummyUiActivity for UI testing scenarios.
  * Recommend to use setUpTest() and tearDownTest() to setup and tear down instead of @Before and
@@ -40,6 +43,7 @@ public class DummyUiActivityTestCase {
             return new Statement() {
                 @Override
                 public void evaluate() throws Throwable {
+                    mActivity = mActivityTestRule.getActivity();
                     setUpTest();
                     try {
                         base.evaluate();
@@ -53,11 +57,15 @@ public class DummyUiActivityTestCase {
 
     // Override this to setup before test.
     public void setUpTest() throws Exception {
-        mActivity = mActivityTestRule.getActivity();
+        RecordHistogram.setDisabledForTests(true);
+        RecordUserAction.setDisabledForTests(true);
     }
 
     // Override this to tear down after test.
-    public void tearDownTest() throws Exception {}
+    public void tearDownTest() throws Exception {
+        RecordHistogram.setDisabledForTests(false);
+        RecordUserAction.setDisabledForTests(false);
+    }
 
     public DummyUiActivity getActivity() {
         return mActivity;
