@@ -170,7 +170,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
 
   SetTestingFactories(task.get(), app_url);
 
-  task->InstallWebAppOrShortcutFromWebContents(
+  task->Install(
       web_contents(),
       base::BindOnce(&BookmarkAppInstallationTaskTest::OnInstallationTaskResult,
                      base::Unretained(this), base::DoNothing().Once()));
@@ -206,7 +206,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
 
   SetTestingFactories(task.get(), app_url);
 
-  task->InstallWebAppOrShortcutFromWebContents(
+  task->Install(
       web_contents(),
       base::BindOnce(&BookmarkAppInstallationTaskTest::OnInstallationTaskResult,
                      base::Unretained(this), base::DoNothing().Once()));
@@ -239,7 +239,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
 
   SetTestingFactories(task.get(), app_url);
 
-  task->InstallWebAppOrShortcutFromWebContents(
+  task->Install(
       web_contents(),
       base::BindOnce(&BookmarkAppInstallationTaskTest::OnInstallationTaskResult,
                      base::Unretained(this), base::DoNothing().Once()));
@@ -263,7 +263,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
       profile(), std::move(app_info));
   SetTestingFactories(task.get(), app_url);
 
-  task->InstallWebAppOrShortcutFromWebContents(
+  task->Install(
       web_contents(),
       base::BindOnce(&BookmarkAppInstallationTaskTest::OnInstallationTaskResult,
                      base::Unretained(this), base::DoNothing().Once()));
@@ -286,7 +286,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
       profile(), std::move(app_info));
   SetTestingFactories(task.get(), app_url);
 
-  task->InstallWebAppOrShortcutFromWebContents(
+  task->Install(
       web_contents(),
       base::BindOnce(&BookmarkAppInstallationTaskTest::OnInstallationTaskResult,
                      base::Unretained(this), base::DoNothing().Once()));
@@ -309,7 +309,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
       profile(), std::move(app_info));
   SetTestingFactories(task.get(), app_url);
 
-  task->InstallWebAppOrShortcutFromWebContents(
+  task->Install(
       web_contents(),
       base::BindOnce(&BookmarkAppInstallationTaskTest::OnInstallationTaskResult,
                      base::Unretained(this), base::DoNothing().Once()));
@@ -332,7 +332,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
       profile(), std::move(app_info));
   SetTestingFactories(task.get(), app_url);
 
-  task->InstallWebAppOrShortcutFromWebContents(
+  task->Install(
       web_contents(),
       base::BindOnce(&BookmarkAppInstallationTaskTest::OnInstallationTaskResult,
                      base::Unretained(this), base::DoNothing().Once()));

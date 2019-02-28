@@ -129,9 +129,8 @@ class TestBookmarkAppInstallationTask : public BookmarkAppInstallationTask {
         extension_ids_map_(profile_->GetPrefs()) {}
   ~TestBookmarkAppInstallationTask() override = default;
 
-  void InstallWebAppOrShortcutFromWebContents(
-      content::WebContents* web_contents,
-      BookmarkAppInstallationTask::ResultCallback callback) override {
+  void Install(content::WebContents* web_contents,
+               BookmarkAppInstallationTask::ResultCallback callback) override {
     auto result_code = web_app::InstallResultCode::kFailedUnknownReason;
     std::string app_id;
     if (succeeds_) {

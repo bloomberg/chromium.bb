@@ -284,7 +284,7 @@ void PendingBookmarkAppManager::DidFinishLoad(
   }
 
   Observe(nullptr);
-  current_task_and_callback_->task->InstallWebAppOrShortcutFromWebContents(
+  current_task_and_callback_->task->Install(
       web_contents_.get(),
       base::BindOnce(&PendingBookmarkAppManager::OnInstalled,
                      // Safe because the installation task will not run its
