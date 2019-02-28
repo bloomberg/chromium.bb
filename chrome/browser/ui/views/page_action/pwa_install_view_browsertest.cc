@@ -112,3 +112,25 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
   ASSERT_EQ(non_installable_web_contents, GetCurrentTab());
   EXPECT_FALSE(pwa_install_view->visible());
 }
+
+// Tests that the plus icon updates its visibiliy once the installability check
+// completes.
+IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
+                       IconVisibilityAfterInstallabilityCheck) {
+  PageActionIconView* pwa_install_view = GetPwaInstallView();
+  EXPECT_FALSE(pwa_install_view->visible());
+
+  content::WebContents* web_contents = GetCurrentTab();
+  auto* app_banner_manager =
+      banners::TestAppBannerManagerDesktop::CreateForWebContents(web_contents);
+
+  ui_test_utils::NavigateToURL(browser(), GetInstallableAppURL());
+  EXPECT_FALSE(pwa_install_view->visible());
+  ASSERT_TRUE(app_banner_manager->WaitForInstallableCheck());
+  EXPECT_TRUE(pwa_install_view->visible());
+
+  ui_test_utils::NavigateToURL(browser(), GetNonInstallableAppURL());
+  EXPECT_FALSE(pwa_install_view->visible());
+  ASSERT_FALSE(app_banner_manager->WaitForInstallableCheck());
+  EXPECT_FALSE(pwa_install_view->visible());
+}

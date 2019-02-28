@@ -52,6 +52,16 @@ InstallableParams ParamsToGetManifest() {
 
 namespace banners {
 
+AppBannerManager::Observer::Observer() = default;
+AppBannerManager::Observer::~Observer() = default;
+
+void AppBannerManager::Observer::ObserveAppBannerManager(
+    AppBannerManager* manager) {
+  scoped_observer_.RemoveAll();
+  if (manager)
+    scoped_observer_.Add(manager);
+}
+
 // static
 base::Time AppBannerManager::GetCurrentTime() {
   return base::Time::Now() +
@@ -215,6 +225,14 @@ base::WeakPtr<AppBannerManager> AppBannerManager::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
+void AppBannerManager::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void AppBannerManager::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 AppBannerManager::AppBannerManager(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       SiteEngagementObserver(SiteEngagementService::Get(
@@ -339,9 +357,9 @@ void AppBannerManager::OnDidPerformInstallableCheck(
   if (data.has_worker && data.valid_manifest)
     TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_REQUESTED);
 
-  installable_ = data.error_code == NO_ERROR_DETECTED
+  SetInstallable(data.error_code == NO_ERROR_DETECTED
                      ? Installable::INSTALLABLE_YES
-                     : Installable::INSTALLABLE_NO;
+                     : Installable::INSTALLABLE_NO);
 
   if (data.error_code != NO_ERROR_DETECTED) {
     if (data.error_code == NO_MATCHING_SERVICE_WORKER)
@@ -404,7 +422,7 @@ void AppBannerManager::ResetCurrentPageData() {
   manifest_ = blink::Manifest();
   manifest_url_ = GURL();
   validated_url_ = GURL();
-  installable_ = Installable::UNKNOWN;
+  SetInstallable(Installable::UNKNOWN);
 }
 
 void AppBannerManager::Terminate() {
@@ -439,6 +457,25 @@ InstallableStatusCode AppBannerManager::TerminationCode() const {
       break;
   }
   return NO_ERROR_DETECTED;
+}
+
+void AppBannerManager::SetInstallable(Installable installable) {
+  if (installable_ == installable)
+    return;
+
+  installable_ = installable;
+  for (Observer& observer : observer_list_)
+    observer.OnInstallabilityUpdated();
+}
+
+void AppBannerManager::MigrateObserverListForTesting(
+    content::WebContents* web_contents) {
+  AppBannerManager* existing_manager = FromWebContents(web_contents);
+  for (Observer& observer : existing_manager->observer_list_)
+    observer.ObserveAppBannerManager(this);
+  DCHECK(existing_manager->observer_list_.begin() ==
+         existing_manager->observer_list_.end())
+      << "Old observer list must be empty after transfer to test instance.";
 }
 
 void AppBannerManager::Stop(InstallableStatusCode code) {

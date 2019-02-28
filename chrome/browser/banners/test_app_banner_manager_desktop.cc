@@ -15,7 +15,9 @@ namespace banners {
 
 TestAppBannerManagerDesktop::TestAppBannerManagerDesktop(
     content::WebContents* web_contents)
-    : AppBannerManagerDesktop(web_contents) {}
+    : AppBannerManagerDesktop(web_contents) {
+  MigrateObserverListForTesting(web_contents);
+}
 
 TestAppBannerManagerDesktop::~TestAppBannerManagerDesktop() = default;
 
