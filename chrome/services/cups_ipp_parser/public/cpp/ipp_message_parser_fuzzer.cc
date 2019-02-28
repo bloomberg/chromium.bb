@@ -19,7 +19,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   static Environment env;
 
   auto ipp = ipp_converter::ParseIppMessage({data, size});
-  ipp_converter::ConvertIppToMojo(ipp.release());
+  ipp_converter::ConvertIppToMojo(ipp.get());
 
   return 0;
 }
