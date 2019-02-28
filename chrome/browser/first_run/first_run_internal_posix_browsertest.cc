@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/base/in_process_browser_test.h"
-
 #include <signal.h>
 
 #include "base/bind.h"
@@ -65,7 +63,7 @@ class FirstRunInternalPosixTest : public InProcessBrowserTest {
     // Send a signal to myself. This should post a task for the next run loop
     // iteration to set browser_shutdown::IsTryingToQuit(), and interrupt the
     // RunLoop.
-    raise(SIGTERM);
+    raise(SIGINT);
     inspected_state_ = true;
   }
 
@@ -77,7 +75,7 @@ class FirstRunInternalPosixTest : public InProcessBrowserTest {
 // Test the first run flow for showing the modal dialog that surfaces the first
 // run dialog. Ensure browser startup safely handles a signal while the modal
 // RunLoop is running.
-IN_PROC_BROWSER_TEST_F(FirstRunInternalPosixTest, HandleSigterm) {
+IN_PROC_BROWSER_TEST_F(FirstRunInternalPosixTest, HandleSigint) {
   // Never reached. PreMainMessageLoopRunImpl() should return before this task
   // is run.
   ADD_FAILURE() << "Should never be called";
