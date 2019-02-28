@@ -70,9 +70,6 @@ class ParentAccessViewTest : public LoginTestBase {
   const AccountId account_id_;
   std::unique_ptr<MockLoginScreenClient> login_client_;
 
-  // Submitted access code.
-  base::Optional<std::string> code_;
-
   // Number of times the view was dismissed with back button.
   int back_action_ = 0;
 
@@ -136,6 +133,64 @@ TEST_F(ParentAccessViewTest, Numpad) {
       .Times(1);
 
   SimulateButtonPress(test_api.submit_button());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, successful_validation_);
+}
+
+// Tests that access code can be submitted with press of 'enter' key.
+TEST_F(ParentAccessViewTest, SubmitWithEnter) {
+  ParentAccessView::TestApi test_api(view_);
+  EXPECT_FALSE(test_api.submit_button()->enabled());
+
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  for (int i = 0; i < 6; ++i) {
+    generator->PressKey(ui::KeyboardCode(ui::KeyboardCode::VKEY_0 + i),
+                        ui::EF_NONE);
+  }
+  EXPECT_TRUE(test_api.submit_button()->enabled());
+
+  login_client_->set_validate_parent_access_code_result(true);
+  EXPECT_CALL(*login_client_,
+              ValidateParentAccessCode_(account_id_, "012345", testing::_))
+      .Times(1);
+
+  generator->PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EF_NONE);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, successful_validation_);
+}
+
+// Tests that 'enter' key does not submit incomplete code.
+TEST_F(ParentAccessViewTest, PressEnterOnIncompleteCode) {
+  ParentAccessView::TestApi test_api(view_);
+  EXPECT_FALSE(test_api.submit_button()->enabled());
+
+  // Enter incomplete code.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  for (int i = 0; i < 5; ++i) {
+    generator->PressKey(ui::KeyboardCode(ui::KeyboardCode::VKEY_0 + i),
+                        ui::EF_NONE);
+  }
+  EXPECT_FALSE(test_api.submit_button()->enabled());
+
+  login_client_->set_validate_parent_access_code_result(true);
+  EXPECT_CALL(*login_client_, ValidateParentAccessCode_).Times(0);
+
+  // Pressing enter should not submit incomplete code.
+  generator->PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EF_NONE);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, successful_validation_);
+
+  // Fill in last digit of the code.
+  generator->PressKey(ui::KeyboardCode(ui::KeyboardCode::VKEY_9), ui::EF_NONE);
+  EXPECT_TRUE(test_api.submit_button()->enabled());
+
+  login_client_->set_validate_parent_access_code_result(true);
+  EXPECT_CALL(*login_client_,
+              ValidateParentAccessCode_(account_id_, "012349", testing::_))
+      .Times(1);
+
+  // Now the code should be submitted with enter key.
+  generator->PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EF_NONE);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, successful_validation_);
 }
