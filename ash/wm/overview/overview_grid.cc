@@ -976,6 +976,12 @@ void OverviewGrid::OnStartingAnimationComplete() {
 }
 
 bool OverviewGrid::ShouldAnimateWallpaper() const {
+  // Never animate when doing app dragging.
+  if (overview_session_->enter_exit_overview_type() ==
+      OverviewSession::EnterExitOverviewType::kWindowDragged) {
+    return false;
+  }
+
   // If one of the windows covers the workspace, we do not need to animate.
   for (const auto& overview_item : window_list_) {
     if (CanCoverAvailableWorkspace(overview_item->GetWindow()))
