@@ -347,10 +347,6 @@ struct NetworkContextParams {
   // Specifies the initial set of allowed and blocked origins for the
   // URLLoaderFactory consumers to access beyond the same-origin-policy.
   array<CorsOriginAccessPatterns> cors_origin_access_list;
-
-  // Specifies header keys that are allowed to be used in
-  // network::url_request.cors_exempt_headers.
-  array<string> cors_exempt_header_list;
 };
 
 struct NetworkConditions {

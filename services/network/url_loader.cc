@@ -376,14 +376,19 @@ URLLoader::URLLoader(
   url_request_->set_attach_same_site_cookies(request.attach_same_site_cookies);
   url_request_->SetReferrer(ComputeReferrer(request.referrer));
   url_request_->set_referrer_policy(request.referrer_policy);
+  url_request_->SetExtraRequestHeaders(request.headers);
+  // X-Requested-With and X-Client-Data header must be set here to avoid
+  // breaking CORS checks. They are non-empty when the values are given by the
+  // UA code, therefore they should be ignored by CORS checks.
+  if (!request.requested_with_header.empty()) {
+    url_request_->SetExtraRequestHeaderByName(
+        "X-Requested-With", request.requested_with_header, true);
+  }
+  if (!request.client_data_header.empty()) {
+    url_request_->SetExtraRequestHeaderByName("X-Client-Data",
+                                              request.client_data_header, true);
+  }
   url_request_->set_upgrade_if_insecure(request.upgrade_if_insecure);
-
-  // |cors_excempt_headers| must be merged here to avoid breaking CORS checks.
-  // They are non-empty when the values are given by the UA code, therefore
-  // they should be ignored by CORS checks.
-  net::HttpRequestHeaders merged_headers = request.headers;
-  merged_headers.MergeFrom(request.cors_exempt_headers);
-  url_request_->SetExtraRequestHeaders(merged_headers);
 
   url_request_->SetUserData(kUserDataKey,
                             std::make_unique<UnownedPointer>(this));
