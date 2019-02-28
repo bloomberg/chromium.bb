@@ -744,7 +744,7 @@ jumbo_split_static_library("ui") {
       ]
     }
     deps += [
-      "//chrome/browser:jni_headers",
+      "//chrome/android:jni_headers",
       "//components/embedder_support/android:web_contents_delegate",
       "//components/navigation_interception",
       "//components/subresource_filter/core/browser:browser",
