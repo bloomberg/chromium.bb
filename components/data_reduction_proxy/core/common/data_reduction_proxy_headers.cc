@@ -474,7 +474,8 @@ int64_t GetDataReductionProxyOFCL(const net::HttpResponseHeaders* headers) {
 double EstimateCompressionRatioFromHeaders(
     const network::ResourceResponseHead* response_head) {
   if (!response_head->network_accessed || !response_head->headers ||
-      response_head->headers->GetContentLength() <= 0) {
+      response_head->headers->GetContentLength() <= 0 ||
+      response_head->proxy_server.is_direct()) {
     return 1.0;  // No compression
   }
 
