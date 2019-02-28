@@ -95,6 +95,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
     return main_task_runner_;
   }
 
+  bool is_signed_out_mode() const { return is_signed_out_mode_; }
+
   void RequestAccessToken();
 
   void SetIdentityAccessorForTesting(
@@ -187,6 +189,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   bool locked_ = false;
   // Whether the power source is connected.
   bool power_source_connected_ = false;
+  // In the signed-out mode, we are going to run Assistant service without
+  // using user's signed in account information.
+  bool is_signed_out_mode_ = false;
 
   base::Optional<std::string> access_token_;
 

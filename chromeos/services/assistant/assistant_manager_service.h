@@ -31,10 +31,11 @@ class AssistantManagerService : public mojom::Assistant {
 
   ~AssistantManagerService() override = default;
 
-  // Start the assistant in the background with |access_token|. When the service
-  // is fully started |callback| will be called on the thread where ctor was
-  // run.
-  virtual void Start(const std::string& access_token,
+  // Start the assistant in the background with |access_token|, where the
+  // token can be nullopt when the service is being started under the signed
+  // out mode. When the service is fully started |callback| will be called on
+  // the thread where ctor was run.
+  virtual void Start(const base::Optional<std::string>& access_token,
                      bool enable_hotword,
                      base::OnceClosure callback) = 0;
 

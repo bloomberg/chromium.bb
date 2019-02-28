@@ -130,9 +130,10 @@ AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {
   background_thread_.Stop();
 }
 
-void AssistantManagerServiceImpl::Start(const std::string& access_token,
-                                        bool enable_hotword,
-                                        base::OnceClosure post_init_callback) {
+void AssistantManagerServiceImpl::Start(
+    const base::Optional<std::string>& access_token,
+    bool enable_hotword,
+    base::OnceClosure post_init_callback) {
   DCHECK(!assistant_manager_);
   DCHECK_EQ(state_, State::STOPPED);
 
@@ -178,6 +179,8 @@ void AssistantManagerServiceImpl::SetAccessToken(
     const std::string& access_token) {
   if (!assistant_manager_)
     return;
+
+  DCHECK(!access_token.empty());
 
   VLOG(1) << "Set access token.";
   // Push the |access_token| we got as an argument into AssistantManager before
@@ -747,7 +750,7 @@ void AssistantManagerServiceImpl::OnCommunicationError(int error_code) {
 }
 
 void AssistantManagerServiceImpl::StartAssistantInternal(
-    const std::string& access_token) {
+    const base::Optional<std::string>& access_token) {
   DCHECK(background_thread_.task_runner()->BelongsToCurrentThread());
 
   base::AutoLock lock(new_assistant_manager_lock_);
@@ -772,8 +775,10 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
   if (server_experiment_ids.size() > 0)
     assistant_manager_internal->AddExtraExperimentIds(server_experiment_ids);
 
-  new_assistant_manager_->SetAuthTokens(
-      {std::pair<std::string, std::string>(kUserID, access_token)});
+  if (!service_->is_signed_out_mode()) {
+    new_assistant_manager_->SetAuthTokens(
+        {std::pair<std::string, std::string>(kUserID, access_token.value())});
+  }
   new_assistant_manager_->Start();
 }
 
@@ -894,6 +899,11 @@ void AssistantManagerServiceImpl::UpdateInternalOptions(
 
   internal_options->SetClientControlEnabled(
       assistant::features::IsRoutinesEnabled());
+
+  if (service_->is_signed_out_mode()) {
+    internal_options->SetUserCredentialMode(
+        assistant_client::InternalOptions::UserCredentialMode::SIGNED_OUT);
+  }
 
   if (base::FeatureList::IsEnabled(assistant::features::kAssistantVoiceMatch) &&
       assistant_settings_manager_->speaker_id_enrollment_done()) {
