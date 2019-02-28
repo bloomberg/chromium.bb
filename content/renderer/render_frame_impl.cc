@@ -1350,6 +1350,11 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   // by RenderViewImpl, so this is surely redundant?
   render_widget->UpdateWebViewWithDeviceScaleFactor();
 
+  // The WebFrame created here was already attached to the Page as its
+  // main frame, and the WebFrameWidget has been initialized, so we can call
+  // WebViewImpl's DidAttachLocalMainFrame().
+  render_view->webview()->DidAttachLocalMainFrame(render_widget);
+
   render_frame->render_widget_ = render_widget;
   render_frame->in_frame_tree_ = true;
   render_frame->Initialize();
@@ -1502,6 +1507,10 @@ void RenderFrameImpl::CreateFrame(
     // initialized by RenderViewImpl, so this is surely redundant? It will be
     // pulling the device scale factor off the WebView itself.
     render_widget->UpdateWebViewWithDeviceScaleFactor();
+
+    // Note that we do *not* call WebViewImpl's DidAttachLocalMainFrame() here
+    // yet because this frame is provisional and not attached to the Page yet.
+    // We will tell WebViewImpl about it once it is swapped in.
 
     // It may be questionable, since we create un-frozen RenderWidgets at this
     // point for subframes, but we don't un-freeze the main frame's RenderWidget
@@ -6146,6 +6155,12 @@ bool RenderFrameImpl::SwapIn() {
       render_view_->GetWidget()->SetIsFrozen(false);
     }
     render_view_->GetWidget()->UpdateWebViewWithDeviceScaleFactor();
+
+    // The WebFrame being swapped in here has now been attached to the Page as
+    // its main frame, and the WebFrameWidget was previously initialized when
+    // the frame was created, so we can call WebViewImpl's
+    // DidAttachLocalMainFrame().
+    render_view_->webview()->DidAttachLocalMainFrame(render_view_->GetWidget());
   }
 
   return true;

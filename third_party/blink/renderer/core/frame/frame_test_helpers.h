@@ -203,8 +203,12 @@ class TestWebWidgetClient : public WebWidgetClient {
   void SetRootLayer(scoped_refptr<cc::Layer> layer) override;
   void RegisterViewportLayers(const cc::ViewportLayers& layOAers) override;
   void RegisterSelection(const cc::LayerSelection& selection) override;
+  void SetBackgroundColor(SkColor color) override;
 
   content::LayerTreeView* layer_tree_view() { return layer_tree_view_; }
+  cc::LayerTreeHost* layer_tree_host() {
+    return layer_tree_view_->layer_tree_host();
+  }
   cc::AnimationHost* animation_host() { return animation_host_; }
 
   bool AnimationScheduled() { return animation_scheduled_; }

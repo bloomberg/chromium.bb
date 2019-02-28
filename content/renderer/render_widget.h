@@ -381,6 +381,7 @@ class CONTENT_EXPORT RenderWidget
   void SetShowDebugBorders(bool) override;
   void SetShowScrollBottleneckRects(bool) override;
   void SetShowHitTestBorders(bool) override;
+  void SetBackgroundColor(SkColor color) override;
   void IntrinsicSizingInfoChanged(
       const blink::WebIntrinsicSizingInfo&) override;
   void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;

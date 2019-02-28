@@ -496,13 +496,10 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
                       /*is_hidden=*/false,
                       /*compositing_enabled=*/true, nullptr));
   EXPECT_NE(SK_ColorBLUE, web_view->BackgroundColor());
-  // webView does not have a frame yet, but we should still be able to set the
+  // WebView does not have a frame yet, but we should still be able to set the
   // background color.
   web_view->SetBaseBackgroundColor(SK_ColorBLUE);
   EXPECT_EQ(SK_ColorBLUE, web_view->BackgroundColor());
-
-  // TODO(danakj): Make this part of attaching the main frame's WebFrameWidget.
-  web_view->SetWebWidgetClient(&web_widget_client);
 
   frame_test_helpers::TestWebFrameClient web_frame_client;
   mojom::blink::DocumentInterfaceBrokerPtrInfo document_interface_broker;
@@ -510,6 +507,17 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
       web_view, &web_frame_client, nullptr,
       mojo::MakeRequest(&document_interface_broker).PassMessagePipe(), nullptr);
   web_frame_client.Bind(frame);
+
+  // We inform the WebView when it has a local main frame attached once the
+  // WebFrame it fully set up and the WebWidgetClient is initialized (which is
+  // the case by this point).
+  web_view->DidAttachLocalMainFrame(&web_widget_client);
+
+  // The color should be passed to the compositor.
+  cc::LayerTreeHost* host = web_widget_client.layer_tree_host();
+  EXPECT_EQ(SK_ColorBLUE, web_view->BackgroundColor());
+  EXPECT_EQ(SK_ColorBLUE, host->background_color());
+
   // This closes the WebView also.
   web_view->MainFrameWidget()->Close();
 }

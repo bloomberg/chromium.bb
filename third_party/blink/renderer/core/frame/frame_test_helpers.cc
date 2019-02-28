@@ -349,6 +349,10 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
   // TODO(dcheng): The main frame widget currently has a special case.
   // Eliminate this once WebView is no longer a WebWidget.
   blink::WebFrameWidget::CreateForMainFrame(test_web_widget_client_, frame);
+  // We inform the WebView when it has a local main frame attached once the
+  // WebFrame it fully set up and the WebWidgetClient is initialized (which is
+  // the case by this point).
+  web_view_->DidAttachLocalMainFrame(test_web_widget_client_);
 
   // Set an initial size for subframes.
   if (frame->Parent())
@@ -409,13 +413,12 @@ WebViewImpl* WebViewHelper::InitializeRemote(
 
   test_web_widget_client_ = CreateDefaultClientIfNeeded(
       web_widget_client, owned_test_web_widget_client_);
-  // TODO(danakj): Remove this! Make WebViewImpl not need a WebWidgetClient when
-  // the main frame is remote.
-  web_view_->SetWebWidgetClient(test_web_widget_client_);
-  // TODO(danakj): Make this part of attaching the main frame's WebFrameWidget.
   web_view_->MainFrameWidget()->SetLayerTreeView(
       test_web_widget_client_->layer_tree_view(),
       test_web_widget_client_->animation_host());
+  // TODO(danakj): Remove this! Make WebViewImpl not need a WebWidgetClient when
+  // the main frame is remote.
+  web_view_->DidAttachRemoteMainFrame(test_web_widget_client_);
 
   return web_view_;
 }
@@ -628,17 +631,21 @@ TestWebWidgetClient::TestWebWidgetClient(
 }
 
 void TestWebWidgetClient::SetRootLayer(scoped_refptr<cc::Layer> layer) {
-  layer_tree_view_->layer_tree_host()->SetRootLayer(std::move(layer));
+  layer_tree_host()->SetRootLayer(std::move(layer));
+}
+
+void TestWebWidgetClient::SetBackgroundColor(SkColor color) {
+  layer_tree_host()->set_background_color(color);
 }
 
 void TestWebWidgetClient::RegisterViewportLayers(
     const cc::ViewportLayers& layers) {
-  layer_tree_view_->layer_tree_host()->RegisterViewportLayers(layers);
+  layer_tree_host()->RegisterViewportLayers(layers);
 }
 
 void TestWebWidgetClient::RegisterSelection(
     const cc::LayerSelection& selection) {
-  layer_tree_view_->layer_tree_host()->RegisterSelection(selection);
+  layer_tree_host()->RegisterSelection(selection);
 }
 
 void TestWebWidgetClient::DidMeaningfulLayout(
