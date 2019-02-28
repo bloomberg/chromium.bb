@@ -64,6 +64,8 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
           OffMainThreadWorkerScriptFetchOption::kEnabled) {
         DCHECK(base::FeatureList::IsEnabled(
                    features::kOffMainThreadDedicatedWorkerScriptFetch) ||
+               base::FeatureList::IsEnabled(
+                   features::kOffMainThreadServiceWorkerScriptFetch) ||
                features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
       }
       break;

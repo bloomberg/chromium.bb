@@ -834,8 +834,17 @@ void ServiceWorkerVersion::SetToNotPauseAfterDownload() {
 }
 
 void ServiceWorkerVersion::OnMainScriptLoaded() {
+  // If this startup isn't paused the service worker after the script load,
+  // there is nothing to do. We already called InitializeGlobalScope() in
+  // StartWorkerInternal().
   if (!pause_after_download_callback_)
     return;
+  // If the script load was successful, unpause the worker by calling
+  // InitializeGlobalScope(). Otherwise, keep it paused and the original
+  // caller of StartWorker() is expected to terminate the worker.
+  net::URLRequestStatus status = script_cache_map()->main_script_status();
+  if (status.is_success())
+    InitializeGlobalScope();
   // The callback can destroy |this|, so protect it first.
   auto protect = base::WrapRefCounted(this);
   std::move(pause_after_download_callback_).Run();
@@ -1647,16 +1656,12 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   CHECK(params->service_worker_request.is_pending());
   service_worker_ptr_.set_connection_error_handler(
       base::BindOnce(&OnConnectionError, embedded_worker_->AsWeakPtr()));
-  blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host;
   binding_.Close();
-  binding_.Bind(mojo::MakeRequest(&service_worker_host));
-  ServiceWorkerRegistration* registration =
-      context_->GetLiveRegistration(registration_id_);
-  DCHECK(registration);
-  service_worker_ptr_->InitializeGlobalScope(
-      std::move(service_worker_host),
-      provider_host_->CreateServiceWorkerRegistrationObjectInfo(
-          base::WrapRefCounted(registration)));
+  binding_.Bind(mojo::MakeRequest(&service_worker_host_));
+  // Initialize the global scope now if the worker won't be paused. Otherwise,
+  // delay initialization until the main script is loaded.
+  if (!pause_after_download())
+    InitializeGlobalScope();
 
   // S13nServiceWorker:
   if (!controller_request_.is_pending()) {
@@ -2180,6 +2185,19 @@ bool ServiceWorkerVersion::ShouldRequireForegroundPriority(
       return true;
   }
   return false;
+}
+
+void ServiceWorkerVersion::InitializeGlobalScope() {
+  DCHECK(service_worker_host_);
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      base::WrapRefCounted(context_->GetLiveRegistration(registration_id_));
+  // The registration must exist since we keep a reference to it during
+  // service worker startup.
+  DCHECK(registration);
+  service_worker_ptr_->InitializeGlobalScope(
+      std::move(service_worker_host_),
+      provider_host_->CreateServiceWorkerRegistrationObjectInfo(
+          std::move(registration)));
 }
 
 }  // namespace content

@@ -31,8 +31,11 @@
 #include "third_party/blink/renderer/modules/exported/web_embedded_worker_impl.h"
 
 #include <memory>
+#include <utility>
+#include "base/feature_list.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
@@ -242,8 +245,17 @@ void WebEmbeddedWorkerImpl::TerminateWorkerContext() {
 
 void WebEmbeddedWorkerImpl::ResumeAfterDownload() {
   DCHECK(!asked_to_terminate_);
-  DCHECK_EQ(pause_after_download_state_, kIsPausedAfterDownload);
 
+  if (base::FeatureList::IsEnabled(
+          features::kOffMainThreadServiceWorkerScriptFetch)) {
+    // Do nothing. ServiceWorkerGlobalScope suspends worker execution
+    // until ReadyToEvaluateScript() is called.
+    // TODO(bashi): Don't call ResumeAfterDownload() in the browser side
+    // as we do nothing here.
+    return;
+  }
+
+  DCHECK_EQ(pause_after_download_state_, kIsPausedAfterDownload);
   pause_after_download_state_ = kDontPauseAfterDownload;
   StartWorkerThread();
 }
@@ -318,6 +330,13 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
     return;
   }
 
+  // Bypass main script loading on the main thread.
+  if (base::FeatureList::IsEnabled(
+          features::kOffMainThreadServiceWorkerScriptFetch)) {
+    StartWorkerThread();
+    return;
+  }
+
   // Note: We only get here if this is a new (i.e., not installed) service
   // worker.
   DCHECK(!main_script_loader_);
@@ -364,7 +383,12 @@ void WebEmbeddedWorkerImpl::OnScriptLoaderFinished() {
 }
 
 void WebEmbeddedWorkerImpl::StartWorkerThread() {
-  DCHECK_EQ(pause_after_download_state_, kDontPauseAfterDownload);
+  // The mechanism of pause-after-download in this class isn't used when
+  // off-the-main-thread script fetch is enabled. The browser process delays
+  // initializing the global scope to pause the worker when needed.
+  DCHECK(base::FeatureList::IsEnabled(
+             features::kOffMainThreadServiceWorkerScriptFetch) ||
+         pause_after_download_state_ == kDontPauseAfterDownload);
   DCHECK(!asked_to_terminate_);
 
   Document* document = shadow_page_->GetDocument();
@@ -397,10 +421,10 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   String source_code;
   std::unique_ptr<Vector<uint8_t>> cached_meta_data;
 
-  // TODO(nhiroki): Implement off-the-main-thread worker script fetch for
-  // service workers (https://crbug.com/835717).
   const OffMainThreadWorkerScriptFetchOption off_main_thread_fetch_option =
-      worker_start_data_.script_type == mojom::ScriptType::kModule
+      (base::FeatureList::IsEnabled(
+           features::kOffMainThreadServiceWorkerScriptFetch) ||
+       worker_start_data_.script_type == mojom::ScriptType::kModule)
           ? OffMainThreadWorkerScriptFetchOption::kEnabled
           : OffMainThreadWorkerScriptFetchOption::kDisabled;
 
@@ -453,6 +477,10 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   global_scope_creation_params->v8_cache_options =
       kV8CacheOptionsFullCodeWithoutHeatCheck;
 
+  bool is_script_installed = installed_scripts_manager_ &&
+                             installed_scripts_manager_->IsScriptInstalled(
+                                 worker_start_data_.script_url);
+
   worker_thread_ = std::make_unique<ServiceWorkerThread>(
       ServiceWorkerGlobalScopeProxy::Create(*this, *worker_context_client_),
       std::move(installed_scripts_manager_), std::move(cache_storage_info_));
@@ -468,36 +496,66 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
                         std::move(devtools_params),
                         ParentExecutionContextTaskRunners::Create());
 
+  // If this is a new script (not installed), we are in the Update algorithm
+  // here:
   // > Switching on job’s worker type, run these substeps with the following
   // > options:
   // https://w3c.github.io/ServiceWorker/#update-algorithm
+  //
+  // If this is an installed script, there is no corresponding algorithm steps
+  // about fetching the script. The installed script is read from storage.
   if (worker_start_data_.script_type == mojom::ScriptType::kClassic) {
     // > "classic": Fetch a classic worker script given job’s serialized script
     // > url, job’s client, "serviceworker", and the to-be-created environment
     // > settings object for this service worker.
-    worker_thread_->EvaluateClassicScript(
-        worker_start_data_.script_url, source_code, std::move(cached_meta_data),
-        v8_inspector::V8StackTraceId());
+
+    // The script is ready to evaluate in following cases:
+    // - Installed script: ServiceWorkerGlobalScope will get the script from
+    //   InstalledScriptsManager in EvaluateClassicScript().
+    // - OMT fetch is disabled: the script was already fetched and is in
+    //   |source_code|.
+    if (is_script_installed ||
+        off_main_thread_fetch_option ==
+            OffMainThreadWorkerScriptFetchOption::kDisabled) {
+      worker_thread_->EvaluateClassicScript(
+          worker_start_data_.script_url, source_code,
+          std::move(cached_meta_data), v8_inspector::V8StackTraceId());
+    } else {
+      // When OMT fetch is enabled and this is a new script, fetch the script
+      // now using ImportClassicScript().
+      auto* outside_settings_object = CreateFetchClientSettingsObject();
+      worker_thread_->ImportClassicScript(worker_start_data_.script_url,
+                                          *outside_settings_object,
+                                          v8_inspector::V8StackTraceId());
+    }
   } else {
     // > "module": Fetch a module worker script graph given job’s serialized
     // > script url, job’s client, "serviceworker", "omit", and the
     // > to-be-created environment settings object for this service worker.
 
-    // TODO(asamidoi): Currently, we use the shadow page's Document as an
-    // outside_settings_object as a workaround. This should be the Document that
-    // called navigator.ServiceWorker.register(). To do it, we need to make a
-    // way to pass the settings object over mojo IPCs.
-    auto* outside_settings_object =
-        MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-            document->Fetcher()
-                ->GetProperties()
-                .GetFetchClientSettingsObject());
+    auto* outside_settings_object = CreateFetchClientSettingsObject();
     network::mojom::FetchCredentialsMode credentials_mode =
         network::mojom::FetchCredentialsMode::kOmit;
     worker_thread_->ImportModuleScript(worker_start_data_.script_url,
                                        *outside_settings_object,
                                        credentials_mode);
   }
+}
+
+FetchClientSettingsObjectSnapshot*
+WebEmbeddedWorkerImpl::CreateFetchClientSettingsObject() {
+  DCHECK(shadow_page_->WasInitialized());
+  // TODO(crbug.com/924043): Currently, we use the shadow page's Document as an
+  // outside_settings_object as a workaround. For new worker case, this should
+  // be the Document that called navigator.serviceWorker.register(). For
+  // ServiceWorkerRegistration#update() case, it should be the Document that
+  // called update(). For soft update case, it seems to be 'null' document.
+  //
+  // To get a correct settings, we need to make a way to pass the settings
+  // object over mojo IPCs.
+  Document* document = shadow_page_->GetDocument();
+  return MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+      document->Fetcher()->GetProperties().GetFetchClientSettingsObject());
 }
 
 }  // namespace blink

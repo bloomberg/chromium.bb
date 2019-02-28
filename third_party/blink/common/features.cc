@@ -70,6 +70,11 @@ const base::Feature kOffMainThreadDedicatedWorkerScriptFetch{
     "OffMainThreadDedicatedWorkerScriptFetch",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable off-the-main-thread service worker script fetch.
+// (https://crbug.com/924043)
+const base::Feature kOffMainThreadServiceWorkerScriptFetch{
+    "OffMainThreadServiceWorkerScriptFetch", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable off-the-main-thread shared worker script fetch.
 // (https://crbug.com/924041)
 const base::Feature kOffMainThreadSharedWorkerScriptFetch{
