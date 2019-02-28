@@ -33,7 +33,8 @@ import java.util.concurrent.TimeoutException;
  * app or a credit card. This user does not have a complete credit card on file.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        "enable-features=PaymentRequestHasEnrolledInstrument"})
 public class PaymentRequestCanMakePaymentQueryNoCardTest implements MainActivityStartCallback {
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule =
@@ -57,6 +58,10 @@ public class PaymentRequestCanMakePaymentQueryNoCardTest implements MainActivity
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(
                 mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"true"});
+
+        mPaymentRequestTestRule.clickNodeAndWait("hasEnrolledInstrument",
+                mPaymentRequestTestRule.getHasEnrolledInstrumentQueryResponded());
         mPaymentRequestTestRule.expectResultContains(new String[] {"false"});
     }
 
@@ -68,6 +73,10 @@ public class PaymentRequestCanMakePaymentQueryNoCardTest implements MainActivity
         mPaymentRequestTestRule.installPaymentApp(NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(
                 mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"true"});
+
+        mPaymentRequestTestRule.clickNodeAndWait("hasEnrolledInstrument",
+                mPaymentRequestTestRule.getHasEnrolledInstrumentQueryResponded());
         mPaymentRequestTestRule.expectResultContains(new String[] {"false"});
     }
 
@@ -79,6 +88,10 @@ public class PaymentRequestCanMakePaymentQueryNoCardTest implements MainActivity
         mPaymentRequestTestRule.installPaymentApp(NO_INSTRUMENTS, DELAYED_RESPONSE);
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(
                 mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"true"});
+
+        mPaymentRequestTestRule.clickNodeAndWait("hasEnrolledInstrument",
+                mPaymentRequestTestRule.getHasEnrolledInstrumentQueryResponded());
         mPaymentRequestTestRule.expectResultContains(new String[] {"false"});
     }
 

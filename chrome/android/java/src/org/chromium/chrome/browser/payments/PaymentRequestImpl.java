@@ -1602,6 +1602,7 @@ public class PaymentRequestImpl
         mIsCanMakePaymentResponsePending = false;
 
         boolean response = legacyMode ? mHasEnrolledInstrument : mArePaymentMethodsSupported;
+        response &= PrefServiceBridge.getInstance().getBoolean(Pref.CAN_MAKE_PAYMENT_ENABLED);
 
         // Only need to enforce query quota in legacy mode. Per-method quota not supported.
         if (legacyMode

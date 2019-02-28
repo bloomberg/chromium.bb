@@ -7,22 +7,37 @@
 /* global PaymentRequest:false */
 /* global print:false */
 
+// Global variable. Used by abort().
 var request;
+
+const bobPayMethod = Object.freeze({
+  supportedMethods: 'https://bobpay.com',
+});
+
+const visaMethod = Object.freeze({
+  supportedMethods: 'basic-card',
+  data: {
+    supportedNetworks: ['visa'],
+  },
+});
+
+const defaultDetails = Object.freeze({
+  total: {
+    label: 'Total',
+    amount: {
+      currency: 'USD',
+      value: '5.00',
+    },
+  },
+});
+
 
 /**
  * Do not query CanMakePayment before showing the Payment Request.
  */
 function noQueryShow() {  // eslint-disable-line no-unused-vars
   try {
-    request = new PaymentRequest(
-        [
-          {supportedMethods: 'https://bobpay.com'},
-          {
-            supportedMethods: 'basic-card',
-            data: {supportedNetworks: ['visa']},
-          },
-        ],
-        {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}});
+    request = new PaymentRequest([bobPayMethod, visaMethod], defaultDetails);
     request.show()
         .then(function(resp) {
           resp.complete('success')
@@ -44,30 +59,16 @@ function noQueryShow() {  // eslint-disable-line no-unused-vars
 /**
  * Queries CanMakePayment and the shows the PaymentRequest after.
  */
-function queryShow() {  // eslint-disable-line no-unused-vars
+async function queryShow() {  // eslint-disable-line no-unused-vars
   try {
-    request = new PaymentRequest(
-        [
-          {supportedMethods: 'https://bobpay.com'},
-          {
-            supportedMethods: 'basic-card',
-            data: {supportedNetworks: ['visa']},
-          },
-        ],
-        {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}});
-    request.canMakePayment()
-        .then(function(result) {
-          print(result);
-
-          request.show()
-              .then(function(resp) {
-                resp.complete('success')
-                    .then(function() {
-                      print(JSON.stringify(resp, undefined, 2));
-                    })
-                    .catch(function(error) {
-                      print(error);
-                    });
+    request = new PaymentRequest([bobPayMethod, visaMethod], defaultDetails);
+    print(await request.canMakePayment());
+    print(await request.hasEnrolledInstrument());
+    request.show()
+        .then(function(resp) {
+          resp.complete('success')
+              .then(function() {
+                print(JSON.stringify(resp, undefined, 2));
               })
               .catch(function(error) {
                 print(error);
@@ -84,24 +85,11 @@ function queryShow() {  // eslint-disable-line no-unused-vars
 /**
  * Queries CanMakePayment but does not show the PaymentRequest after.
  */
-function queryNoShow() {  // eslint-disable-line no-unused-vars
+async function queryNoShow() {  // eslint-disable-line no-unused-vars
   try {
-    request = new PaymentRequest(
-        [
-          {supportedMethods: 'https://bobpay.com'},
-          {
-            supportedMethods: 'basic-card',
-            data: {supportedNetworks: ['visa']},
-          },
-        ],
-        {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}});
-    request.canMakePayment()
-        .then(function(result) {
-          print(result);
-        })
-        .catch(function(error) {
-          print(error);
-        });
+    request = new PaymentRequest([bobPayMethod, visaMethod], defaultDetails);
+    print(await request.canMakePayment());
+    print(await request.hasEnrolledInstrument());
   } catch (error) {
     print(error.message);
   }
