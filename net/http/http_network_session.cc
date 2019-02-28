@@ -128,6 +128,7 @@ HttpNetworkSession::Params::Params()
       quic_migrate_sessions_on_network_change_v2(false),
       quic_migrate_sessions_early_v2(false),
       quic_retry_on_alternate_network_before_handshake(false),
+      quic_migrate_idle_sessions(false),
       quic_idle_session_migration_period(base::TimeDelta::FromSeconds(
           kDefaultIdleSessionMigrationPeriodSeconds)),
       quic_max_time_on_non_default_network(
@@ -231,6 +232,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
           params.quic_migrate_sessions_on_network_change_v2,
           params.quic_migrate_sessions_early_v2,
           params.quic_retry_on_alternate_network_before_handshake,
+          params.quic_migrate_idle_sessions,
           params.quic_idle_session_migration_period,
           params.quic_max_time_on_non_default_network,
           params.quic_max_migrations_to_non_default_network_on_write_error,
@@ -393,6 +395,7 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
                    params_.quic_retransmittable_on_wire_timeout_milliseconds);
   dict->SetBoolean("retry_on_alternate_network_before_handshake",
                    params_.quic_retry_on_alternate_network_before_handshake);
+  dict->SetBoolean("migrate_idle_sessions", params_.quic_migrate_idle_sessions);
   dict->SetInteger("idle_session_migration_period_seconds",
                    params_.quic_idle_session_migration_period.InSeconds());
   dict->SetInteger("max_time_on_non_default_network_seconds",

@@ -66,6 +66,7 @@ const char kQuicGoAwaySessionsOnIpChange[] = "goaway_sessions_on_ip_change";
 const char kQuicAllowServerMigration[] = "allow_server_migration";
 const char kQuicMigrateSessionsOnNetworkChangeV2[] =
     "migrate_sessions_on_network_change_v2";
+const char kQuicMigrateIdleSessions[] = "migrate_idle_sessions";
 const char kQuicRetransmittableOnWireTimeoutMilliseconds[] =
     "retransmittable_on_wire_timeout_milliseconds";
 const char kQuicIdleSessionMigrationPeriodSeconds[] =
@@ -436,7 +437,6 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       }
 
       bool quic_migrate_sessions_on_network_change_v2 = false;
-      int quic_idle_session_migration_period_seconds = 0;
       int quic_max_time_on_non_default_network_seconds = 0;
       int quic_max_migrations_to_non_default_network_on_write_error = 0;
       int quic_max_migrations_to_non_default_network_on_path_degrading = 0;
@@ -444,13 +444,6 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
                                 &quic_migrate_sessions_on_network_change_v2)) {
         session_params->quic_migrate_sessions_on_network_change_v2 =
             quic_migrate_sessions_on_network_change_v2;
-        if (quic_args->GetInteger(
-                kQuicIdleSessionMigrationPeriodSeconds,
-                &quic_idle_session_migration_period_seconds)) {
-          session_params->quic_idle_session_migration_period =
-              base::TimeDelta::FromSeconds(
-                  quic_idle_session_migration_period_seconds);
-        }
         if (quic_args->GetInteger(
                 kQuicMaxTimeOnNonDefaultNetworkSeconds,
                 &quic_max_time_on_non_default_network_seconds)) {
@@ -471,6 +464,19 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
           session_params
               ->quic_max_migrations_to_non_default_network_on_path_degrading =
               quic_max_migrations_to_non_default_network_on_path_degrading;
+        }
+      }
+      bool quic_migrate_idle_sessions = false;
+      int quic_idle_session_migration_period_seconds = 0;
+      if (quic_args->GetBoolean(kQuicMigrateIdleSessions,
+                                &quic_migrate_idle_sessions)) {
+        session_params->quic_migrate_idle_sessions = quic_migrate_idle_sessions;
+        if (quic_args->GetInteger(
+                kQuicIdleSessionMigrationPeriodSeconds,
+                &quic_idle_session_migration_period_seconds)) {
+          session_params->quic_idle_session_migration_period =
+              base::TimeDelta::FromSeconds(
+                  quic_idle_session_migration_period_seconds);
         }
       }
 

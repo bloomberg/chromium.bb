@@ -1025,6 +1025,7 @@ QuicStreamFactory::QuicStreamFactory(
     bool migrate_sessions_on_network_change_v2,
     bool migrate_sessions_early_v2,
     bool retry_on_alternate_network_before_handshake,
+    bool migrate_idle_sessions,
     base::TimeDelta idle_session_migration_period,
     base::TimeDelta max_time_on_non_default_network,
     int max_migrations_to_non_default_network_on_write_error,
@@ -1086,6 +1087,8 @@ QuicStreamFactory::QuicStreamFactory(
           retry_on_alternate_network_before_handshake &&
           migrate_sessions_on_network_change_v2_),
       default_network_(NetworkChangeNotifier::kInvalidNetworkHandle),
+      migrate_idle_sessions_(migrate_idle_sessions &&
+                             migrate_sessions_on_network_change_v2_),
       idle_session_migration_period_(idle_session_migration_period),
       max_time_on_non_default_network_(max_time_on_non_default_network),
       max_migrations_to_non_default_network_on_write_error_(
@@ -1842,7 +1845,8 @@ int QuicStreamFactory::CreateSession(
       std::move(server_info), key.session_key(), require_confirmation,
       migrate_sessions_early_v2_, migrate_sessions_on_network_change_v2_,
       default_network_, retransmittable_on_wire_timeout_,
-      idle_session_migration_period_, max_time_on_non_default_network_,
+      migrate_idle_sessions_, idle_session_migration_period_,
+      max_time_on_non_default_network_,
       max_migrations_to_non_default_network_on_write_error_,
       max_migrations_to_non_default_network_on_path_degrading_,
       yield_after_packets_, yield_after_duration_, go_away_on_path_degrading_,

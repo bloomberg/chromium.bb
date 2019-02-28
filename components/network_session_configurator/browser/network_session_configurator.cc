@@ -337,6 +337,12 @@ int GetQuicMaxTimeOnNonDefaultNetworkSeconds(
   return 0;
 }
 
+bool ShouldQuicMigrateIdleSessions(
+    const VariationParameters& quic_trial_params) {
+  return base::LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params, "migrate_idle_sessions"), "true");
+}
+
 int GetQuicRetransmittableOnWireTimeoutMilliseconds(
     const VariationParameters& quic_trial_params) {
   int value;
@@ -500,6 +506,8 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
       params->quic_retransmittable_on_wire_timeout_milliseconds =
           retransmittable_on_wire_timeout_milliseconds;
     }
+    params->quic_migrate_idle_sessions =
+        ShouldQuicMigrateIdleSessions(quic_trial_params);
     int idle_session_migration_period_seconds =
         GetQuicIdleSessionMigrationPeriodSeconds(quic_trial_params);
     if (idle_session_migration_period_seconds > 0) {

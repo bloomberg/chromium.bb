@@ -282,6 +282,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
         test_params_.quic_migrate_sessions_on_network_change_v2,
         test_params_.quic_migrate_sessions_early_v2,
         test_params_.quic_retry_on_alternate_network_before_handshake,
+        test_params_.quic_migrate_idle_sessions,
         test_params_.quic_idle_session_migration_period,
         test_params_.quic_max_time_on_non_default_network,
         test_params_.quic_max_migrations_to_non_default_network_on_write_error,
@@ -804,7 +805,8 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   void OnFailedOnDefaultNetwork(int rv) { failed_on_default_network_ = true; }
 
   // Helper methods for tests of connection migration on write error.
-  void TestMigrationOnWriteErrorNonMigratableStream(IoMode write_error_mode);
+  void TestMigrationOnWriteErrorNonMigratableStream(IoMode write_error_mode,
+                                                    bool migrate_idle_sessions);
   // Migratable stream triggers write error.
   void TestMigrationOnWriteErrorMixedStreams(IoMode write_error_mode);
   // Non-migratable stream triggers write error.
@@ -831,6 +833,11 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   void TestNoAlternateNetworkBeforeHandshake(quic::QuicErrorCode error);
   void TestNewConnectionOnAlternateNetworkBeforeHandshake(
       quic::QuicErrorCode error);
+  void TestOnNetworkMadeDefaultNonMigratableStream(bool migrate_idle_sessions);
+  void TestMigrateSessionEarlyNonMigratableStream(bool migrate_idle_sessions);
+  void TestOnNetworkDisconnectedNoOpenStreams(bool migrate_idle_sessions);
+  void TestOnNetworkMadeDefaultNoOpenStreams(bool migrate_idle_sessions);
+  void TestOnNetworkDisconnectedNonMigratableStream(bool migrate_idle_sessions);
 
   QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   std::unique_ptr<MockHostResolverBase> host_resolver_;
@@ -2683,7 +2690,23 @@ TEST_P(QuicStreamFactoryTest, MigrationTimeoutWithNoNewNetwork) {
 // This test verifies that connectivity probes will be sent even if there is
 // a non-migratable stream. However, when connection migrates to the
 // successfully probed path, any non-migratable streams will be reset.
-TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNonMigratableStream) {
+TEST_P(QuicStreamFactoryTest,
+       OnNetworkMadeDefaultNonMigratableStream_MigrateIdleSessions) {
+  TestOnNetworkMadeDefaultNonMigratableStream(true);
+}
+
+// This test verifies that connectivity probes will be sent even if there is
+// a non-migratable stream. However, when connection migrates to the
+// successfully probed path, any non-migratable stream will be reset. And if
+// the connection becomes idle then, close the connection.
+TEST_P(QuicStreamFactoryTest,
+       OnNetworkMadeDefaultNonMigratableStream_DoNotMigrateIdleSessions) {
+  TestOnNetworkMadeDefaultNonMigratableStream(false);
+}
+
+void QuicStreamFactoryTestBase::TestOnNetworkMadeDefaultNonMigratableStream(
+    bool migrate_idle_sessions) {
+  test_params_.quic_migrate_idle_sessions = migrate_idle_sessions;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -2692,6 +2715,16 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNonMigratableStream) {
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
+  if (!migrate_idle_sessions) {
+    socket_data.AddWrite(
+        SYNCHRONOUS,
+        client_maker_.MakeRstAckAndConnectionClosePacket(
+            3, false, GetNthClientInitiatedBidirectionalStreamId(0),
+            quic::QUIC_STREAM_CANCELLED,
+            quic::QuicTime::Delta::FromMilliseconds(0), 1, 1, 1,
+            quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS,
+            "net error"));
+  }
 
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -2704,15 +2737,18 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNonMigratableStream) {
   // Connectivity probe to receive from the server.
   quic_data1.AddRead(ASYNC,
                      server_maker_.MakeConnectivityProbingPacket(1, false));
-  quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read.
-  // A RESET will be sent to the peer to cancel the non-migratable stream.
-  quic_data1.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeRstPacket(
-                       3, false, GetNthClientInitiatedBidirectionalStreamId(0),
-                       quic::QUIC_STREAM_CANCELLED));
-  // Ping packet to send after migration is completed.
-  quic_data1.AddWrite(SYNCHRONOUS,
-                      client_maker_.MakeAckAndPingPacket(4, false, 1, 1, 1));
+  if (migrate_idle_sessions) {
+    quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read.
+    // A RESET will be sent to the peer to cancel the non-migratable stream.
+    quic_data1.AddWrite(
+        SYNCHRONOUS,
+        client_maker_.MakeRstPacket(
+            3, false, GetNthClientInitiatedBidirectionalStreamId(0),
+            quic::QUIC_STREAM_CANCELLED));
+    // Ping packet to send after migration is completed.
+    quic_data1.AddWrite(SYNCHRONOUS,
+                        client_maker_.MakeAckAndPingPacket(4, false, 1, 1, 1));
+  }
   quic_data1.AddSocketDataToFactory(socket_factory_.get());
 
   // Create request and QuicHttpStream.
@@ -2754,7 +2790,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNonMigratableStream) {
   // non-migtable streams to be closed.
   quic_data1.Resume();
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
-  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(migrate_idle_sessions, HasActiveSession(host_port_pair_));
   EXPECT_EQ(0u, session->GetNumActiveStreams());
 
   base::RunLoop().RunUntilIdle();
@@ -2824,31 +2860,53 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultConnectionMigrationDisabled) {
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
-TEST_P(QuicStreamFactoryTest, OnNetworkDisconnectedNonMigratableStream) {
+TEST_P(QuicStreamFactoryTest,
+       OnNetworkDisconnectedNonMigratableStream_DoNotMigrateIdleSessions) {
+  TestOnNetworkDisconnectedNonMigratableStream(false);
+}
+
+TEST_P(QuicStreamFactoryTest,
+       OnNetworkDisconnectedNonMigratableStream_MigrateIdleSessions) {
+  TestOnNetworkDisconnectedNonMigratableStream(true);
+}
+
+void QuicStreamFactoryTestBase::TestOnNetworkDisconnectedNonMigratableStream(
+    bool migrate_idle_sessions) {
+  test_params_.quic_migrate_idle_sessions = migrate_idle_sessions;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  quic::QuicStreamOffset header_stream_offset = 0;
   MockQuicData failed_socket_data;
-  failed_socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  failed_socket_data.AddWrite(
-      SYNCHRONOUS, ConstructInitialSettingsPacket(1, &header_stream_offset));
-  // A RESET will be sent to the peer to cancel the non-migratable stream.
-  failed_socket_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeRstPacket(
-                       2, true, GetNthClientInitiatedBidirectionalStreamId(0),
-                       quic::QUIC_STREAM_CANCELLED));
-  failed_socket_data.AddSocketDataToFactory(socket_factory_.get());
-
-  // Set up second socket data provider that is used after migration.
   MockQuicData socket_data;
-  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read.
-  // Ping packet to send after migration.
-  socket_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakePingPacket(3, /*include_version=*/true));
-  socket_data.AddSocketDataToFactory(socket_factory_.get());
+  if (migrate_idle_sessions) {
+    quic::QuicStreamOffset header_stream_offset = 0;
+    failed_socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+    failed_socket_data.AddWrite(
+        SYNCHRONOUS, ConstructInitialSettingsPacket(1, &header_stream_offset));
+    // A RESET will be sent to the peer to cancel the non-migratable stream.
+    failed_socket_data.AddWrite(
+        SYNCHRONOUS, client_maker_.MakeRstPacket(
+                         2, true, GetNthClientInitiatedBidirectionalStreamId(0),
+                         quic::QUIC_STREAM_CANCELLED));
+    failed_socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+    // Set up second socket data provider that is used after migration.
+    socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read.
+    // Ping packet to send after migration.
+    socket_data.AddWrite(
+        SYNCHRONOUS, client_maker_.MakePingPacket(3, /*include_version=*/true));
+    socket_data.AddSocketDataToFactory(socket_factory_.get());
+  } else {
+    socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+    socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
+    socket_data.AddWrite(
+        SYNCHRONOUS, client_maker_.MakeRstPacket(
+                         2, true, GetNthClientInitiatedBidirectionalStreamId(0),
+                         quic::QUIC_STREAM_CANCELLED));
+    socket_data.AddSocketDataToFactory(socket_factory_.get());
+  }
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -2878,18 +2936,22 @@ TEST_P(QuicStreamFactoryTest, OnNetworkDisconnectedNonMigratableStream) {
   // Trigger connection migration. Since there is a non-migratable stream,
   // this should cause a RST_STREAM frame to be emitted with
   // quic::QUIC_STREAM_CANCELLED error code.
-  // The connection will then be migrated to the alternate network.
+  // If migate idle session, the connection will then be migrated to the
+  // alternate network. Otherwise, the connection will be closed.
   scoped_mock_network_change_notifier_->mock_network_change_notifier()
       ->NotifyNetworkDisconnected(kDefaultNetworkForTests);
 
-  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
-  EXPECT_TRUE(HasActiveSession(host_port_pair_));
-  EXPECT_EQ(0u, session->GetNumActiveStreams());
+  EXPECT_EQ(migrate_idle_sessions,
+            QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_EQ(migrate_idle_sessions, HasActiveSession(host_port_pair_));
 
-  base::RunLoop().RunUntilIdle();
+  if (migrate_idle_sessions) {
+    EXPECT_EQ(0u, session->GetNumActiveStreams());
+    base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(failed_socket_data.AllReadDataConsumed());
-  EXPECT_TRUE(failed_socket_data.AllWriteDataConsumed());
+    EXPECT_TRUE(failed_socket_data.AllReadDataConsumed());
+    EXPECT_TRUE(failed_socket_data.AllWriteDataConsumed());
+  }
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
@@ -2952,7 +3014,19 @@ TEST_P(QuicStreamFactoryTest,
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
-TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNoOpenStreams) {
+TEST_P(QuicStreamFactoryTest,
+       OnNetworkMadeDefaultNoOpenStreams_DoNotMigrateIdleSessions) {
+  TestOnNetworkMadeDefaultNoOpenStreams(false);
+}
+
+TEST_P(QuicStreamFactoryTest,
+       OnNetworkMadeDefaultNoOpenStreams_MigrateIdleSessions) {
+  TestOnNetworkMadeDefaultNoOpenStreams(true);
+}
+
+void QuicStreamFactoryTestBase::TestOnNetworkMadeDefaultNoOpenStreams(
+    bool migrate_idle_sessions) {
+  test_params_.quic_migrate_idle_sessions = migrate_idle_sessions;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -2961,22 +3035,31 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNoOpenStreams) {
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
+  if (!migrate_idle_sessions) {
+    socket_data.AddWrite(
+        SYNCHRONOUS,
+        client_maker_.MakeConnectionClosePacket(
+            2, true, quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS,
+            "net error"));
+  }
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
-  // Set up the second socket data provider that is used for probing.
   MockQuicData quic_data1;
-  // Connectivity probe to be sent on the new path.
-  quic_data1.AddWrite(SYNCHRONOUS,
-                      client_maker_.MakeConnectivityProbingPacket(2, true));
-  quic_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
-  // Connectivity probe to receive from the server.
-  quic_data1.AddRead(ASYNC,
-                     server_maker_.MakeConnectivityProbingPacket(1, false));
-  quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read.
-  // Ping packet to send after migration is completed.
-  quic_data1.AddWrite(SYNCHRONOUS,
-                      client_maker_.MakeAckAndPingPacket(3, false, 1, 1, 1));
-  quic_data1.AddSocketDataToFactory(socket_factory_.get());
+  if (migrate_idle_sessions) {
+    // Set up the second socket data provider that is used for probing.
+    // Connectivity probe to be sent on the new path.
+    quic_data1.AddWrite(SYNCHRONOUS,
+                        client_maker_.MakeConnectivityProbingPacket(2, true));
+    quic_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
+    // Connectivity probe to receive from the server.
+    quic_data1.AddRead(ASYNC,
+                       server_maker_.MakeConnectivityProbingPacket(1, false));
+    quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read.
+    // Ping packet to send after migration is completed.
+    quic_data1.AddWrite(SYNCHRONOUS,
+                        client_maker_.MakeAckAndPingPacket(3, false, 1, 1, 1));
+    quic_data1.AddSocketDataToFactory(socket_factory_.get());
+  }
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -3000,19 +3083,31 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNoOpenStreams) {
   // Trigger connection migration.
   scoped_mock_network_change_notifier_->mock_network_change_notifier()
       ->NotifyNetworkMadeDefault(kNewNetworkForTests);
-  // Verify that the session is still active.
-  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(migrate_idle_sessions, HasActiveSession(host_port_pair_));
 
-  quic_data1.Resume();
-  base::RunLoop().RunUntilIdle();
-
+  if (migrate_idle_sessions) {
+    quic_data1.Resume();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(quic_data1.AllReadDataConsumed());
+    EXPECT_TRUE(quic_data1.AllWriteDataConsumed());
+  }
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
-  EXPECT_TRUE(quic_data1.AllReadDataConsumed());
-  EXPECT_TRUE(quic_data1.AllWriteDataConsumed());
 }
 
-TEST_P(QuicStreamFactoryTest, OnNetworkDisconnectedNoOpenStreams) {
+TEST_P(QuicStreamFactoryTest,
+       OnNetworkDisconnectedNoOpenStreams_DoNotMigateIdleSessions) {
+  TestOnNetworkDisconnectedNoOpenStreams(false);
+}
+
+TEST_P(QuicStreamFactoryTest,
+       OnNetworkDisconnectedNoOpenStreams_MigateIdleSessions) {
+  TestOnNetworkDisconnectedNoOpenStreams(true);
+}
+
+void QuicStreamFactoryTestBase::TestOnNetworkDisconnectedNoOpenStreams(
+    bool migrate_idle_sessions) {
+  test_params_.quic_migrate_idle_sessions = migrate_idle_sessions;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -3023,13 +3118,16 @@ TEST_P(QuicStreamFactoryTest, OnNetworkDisconnectedNoOpenStreams) {
   default_socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   default_socket_data.AddSocketDataToFactory(socket_factory_.get());
 
-  // Set up second socket data provider that is used after migration.
   MockQuicData alternate_socket_data;
-  alternate_socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read.
-  // Ping packet to send after migration.
-  alternate_socket_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakePingPacket(2, /*include_version=*/true));
-  alternate_socket_data.AddSocketDataToFactory(socket_factory_.get());
+  if (migrate_idle_sessions) {
+    // Set up second socket data provider that is used after migration.
+    alternate_socket_data.AddRead(SYNCHRONOUS,
+                                  ERR_IO_PENDING);  // Hanging read.
+    // Ping packet to send after migration.
+    alternate_socket_data.AddWrite(
+        SYNCHRONOUS, client_maker_.MakePingPacket(2, /*include_version=*/true));
+    alternate_socket_data.AddSocketDataToFactory(socket_factory_.get());
+  }
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -3051,12 +3149,14 @@ TEST_P(QuicStreamFactoryTest, OnNetworkDisconnectedNoOpenStreams) {
   scoped_mock_network_change_notifier_->mock_network_change_notifier()
       ->NotifyNetworkDisconnected(kDefaultNetworkForTests);
 
-  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(migrate_idle_sessions, HasActiveSession(host_port_pair_));
 
   EXPECT_TRUE(default_socket_data.AllReadDataConsumed());
   EXPECT_TRUE(default_socket_data.AllWriteDataConsumed());
-  EXPECT_TRUE(alternate_socket_data.AllReadDataConsumed());
-  EXPECT_TRUE(alternate_socket_data.AllWriteDataConsumed());
+  if (migrate_idle_sessions) {
+    EXPECT_TRUE(alternate_socket_data.AllReadDataConsumed());
+    EXPECT_TRUE(alternate_socket_data.AllWriteDataConsumed());
+  }
 }
 
 // This test verifies session migrates to the alternate network immediately when
@@ -4430,7 +4530,19 @@ TEST_P(QuicStreamFactoryTest, MigrateOnPathDegradingWithNoNewNetwork) {
 // This test verifies that session with non-migratable stream will probe the
 // alternate network on path degrading, and close the non-migratable streams
 // when probe is successful.
-TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNonMigratableStream) {
+TEST_P(QuicStreamFactoryTest,
+       MigrateSessionEarlyNonMigratableStream_DoNotMigrateIdleSessions) {
+  TestMigrateSessionEarlyNonMigratableStream(false);
+}
+
+TEST_P(QuicStreamFactoryTest,
+       MigrateSessionEarlyNonMigratableStream_MigrateIdleSessions) {
+  TestMigrateSessionEarlyNonMigratableStream(true);
+}
+
+void QuicStreamFactoryTestBase::TestMigrateSessionEarlyNonMigratableStream(
+    bool migrate_idle_sessions) {
+  test_params_.quic_migrate_idle_sessions = migrate_idle_sessions;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -4439,6 +4551,16 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNonMigratableStream) {
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
+  if (!migrate_idle_sessions) {
+    socket_data.AddWrite(
+        SYNCHRONOUS,
+        client_maker_.MakeRstAckAndConnectionClosePacket(
+            3, false, GetNthClientInitiatedBidirectionalStreamId(0),
+            quic::QUIC_STREAM_CANCELLED,
+            quic::QuicTime::Delta::FromMilliseconds(0), 1, 1, 1,
+            quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS,
+            "net error"));
+  }
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
   // Set up the second socket data provider that is used for probing.
@@ -4450,15 +4572,18 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNonMigratableStream) {
   // Connectivity probe to receive from the server.
   quic_data1.AddRead(ASYNC,
                      server_maker_.MakeConnectivityProbingPacket(1, false));
-  quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read.
-  // A RESET will be sent to the peer to cancel the non-migratable stream.
-  quic_data1.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeRstPacket(
-                       3, false, GetNthClientInitiatedBidirectionalStreamId(0),
-                       quic::QUIC_STREAM_CANCELLED));
-  // Ping packet to send after migration is completed.
-  quic_data1.AddWrite(SYNCHRONOUS,
-                      client_maker_.MakeAckAndPingPacket(4, false, 1, 1, 1));
+  if (migrate_idle_sessions) {
+    quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read.
+    // A RESET will be sent to the peer to cancel the non-migratable stream.
+    quic_data1.AddWrite(
+        SYNCHRONOUS,
+        client_maker_.MakeRstPacket(
+            3, false, GetNthClientInitiatedBidirectionalStreamId(0),
+            quic::QUIC_STREAM_CANCELLED));
+    // Ping packet to send after migration is completed.
+    quic_data1.AddWrite(SYNCHRONOUS,
+                        client_maker_.MakeAckAndPingPacket(4, false, 1, 1, 1));
+  }
   quic_data1.AddSocketDataToFactory(socket_factory_.get());
 
   // Create request and QuicHttpStream.
@@ -4500,9 +4625,10 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNonMigratableStream) {
   // Resume the data to read the connectivity probing response to declare probe
   // as successful. Non-migratable streams will be closed.
   quic_data1.Resume();
-  base::RunLoop().RunUntilIdle();
+  if (migrate_idle_sessions)
+    base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(migrate_idle_sessions, HasActiveSession(host_port_pair_));
   EXPECT_EQ(0u, session->GetNumActiveStreams());
 
   EXPECT_TRUE(quic_data1.AllReadDataConsumed());
@@ -5958,39 +6084,49 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorMixedStreams2(
 // This test verifies that when a connection encounters a packet write error, it
 // will cancel non-migratable streams, and migrate to the alternate network.
 void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorNonMigratableStream(
-    IoMode write_error_mode) {
+    IoMode write_error_mode,
+    bool migrate_idle_sessions) {
   DVLOG(1) << "Write error mode: "
            << ((write_error_mode == SYNCHRONOUS) ? "SYNCHRONOUS" : "ASYNC");
+  DVLOG(1) << "Migrate idle sessions: " << migrate_idle_sessions;
+  test_params_.quic_migrate_idle_sessions = migrate_idle_sessions;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  quic::QuicStreamOffset header_stream_offset = 0;
-  // The socket data provider for the original socket before migration.
   MockQuicData failed_socket_data;
-  failed_socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  failed_socket_data.AddWrite(
-      SYNCHRONOUS, ConstructInitialSettingsPacket(1, &header_stream_offset));
-  failed_socket_data.AddWrite(write_error_mode, ERR_ADDRESS_UNREACHABLE);
-  failed_socket_data.AddSocketDataToFactory(socket_factory_.get());
-
-  // Set up second socket data provider that is used after migration.
   MockQuicData socket_data;
-  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read.
-  // Although the write error occurs when writing a packet for the
-  // non-migratable stream and the stream will be cancelled during migration,
-  // the packet will still be retransimitted at the connection level.
-  socket_data.AddWrite(
-      SYNCHRONOUS, ConstructGetRequestPacket(
-                       2, GetNthClientInitiatedBidirectionalStreamId(0), true,
-                       true, &header_stream_offset));
-  // A RESET will be sent to the peer to cancel the non-migratable stream.
-  socket_data.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeRstPacket(
-                       3, true, GetNthClientInitiatedBidirectionalStreamId(0),
-                       quic::QUIC_STREAM_CANCELLED));
-  socket_data.AddSocketDataToFactory(socket_factory_.get());
+  if (migrate_idle_sessions) {
+    quic::QuicStreamOffset header_stream_offset = 0;
+    // The socket data provider for the original socket before migration.
+    failed_socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+    failed_socket_data.AddWrite(
+        SYNCHRONOUS, ConstructInitialSettingsPacket(1, &header_stream_offset));
+    failed_socket_data.AddWrite(write_error_mode, ERR_ADDRESS_UNREACHABLE);
+    failed_socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+    // Set up second socket data provider that is used after migration.
+    socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read.
+    // Although the write error occurs when writing a packet for the
+    // non-migratable stream and the stream will be cancelled during migration,
+    // the packet will still be retransimitted at the connection level.
+    socket_data.AddWrite(
+        SYNCHRONOUS, ConstructGetRequestPacket(
+                         2, GetNthClientInitiatedBidirectionalStreamId(0), true,
+                         true, &header_stream_offset));
+    // A RESET will be sent to the peer to cancel the non-migratable stream.
+    socket_data.AddWrite(
+        SYNCHRONOUS, client_maker_.MakeRstPacket(
+                         3, true, GetNthClientInitiatedBidirectionalStreamId(0),
+                         quic::QUIC_STREAM_CANCELLED));
+    socket_data.AddSocketDataToFactory(socket_factory_.get());
+  } else {
+    socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+    socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
+    socket_data.AddWrite(write_error_mode, ERR_ADDRESS_UNREACHABLE);
+    socket_data.AddSocketDataToFactory(socket_factory_.get());
+  }
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -6029,25 +6165,41 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorNonMigratableStream(
   // Run message loop to execute migration attempt.
   base::RunLoop().RunUntilIdle();
 
-  // Migration closes the non-migratable stream and then migrates to the
-  // alternate network successfully..
-  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
-  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  // Migration closes the non-migratable stream and:
+  // if migrate idle session is enabled, it migrates to the alternate network
+  // successfully; otherwise the connection is closed.
+  EXPECT_EQ(migrate_idle_sessions,
+            QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_EQ(migrate_idle_sessions, HasActiveSession(host_port_pair_));
 
-  EXPECT_TRUE(failed_socket_data.AllReadDataConsumed());
-  EXPECT_TRUE(failed_socket_data.AllWriteDataConsumed());
+  if (migrate_idle_sessions) {
+    EXPECT_TRUE(failed_socket_data.AllReadDataConsumed());
+    EXPECT_TRUE(failed_socket_data.AllWriteDataConsumed());
+  }
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
-TEST_P(QuicStreamFactoryTest,
-       MigrateSessionOnWriteErrorNonMigratableStreamSynchronous) {
-  TestMigrationOnWriteErrorNonMigratableStream(SYNCHRONOUS);
+TEST_P(
+    QuicStreamFactoryTest,
+    MigrateSessionOnWriteErrorNonMigratableStreamSync_DoNotMigrateIdleSessions) {
+  TestMigrationOnWriteErrorNonMigratableStream(SYNCHRONOUS, false);
+}
+
+TEST_P(
+    QuicStreamFactoryTest,
+    MigrateSessionOnWriteErrorNonMigratableStreamAsync_DoNotMigrateIdleSessions) {
+  TestMigrationOnWriteErrorNonMigratableStream(ASYNC, false);
 }
 
 TEST_P(QuicStreamFactoryTest,
-       MigrateSessionOnWriteErrorNonMigratableStreamAsync) {
-  TestMigrationOnWriteErrorNonMigratableStream(ASYNC);
+       MigrateSessionOnWriteErrorNonMigratableStreamSync_MigrateIdleSessions) {
+  TestMigrationOnWriteErrorNonMigratableStream(SYNCHRONOUS, true);
+}
+
+TEST_P(QuicStreamFactoryTest,
+       MigrateSessionOnWriteErrorNonMigratableStreamAsync_MigrateIdleSessions) {
+  TestMigrationOnWriteErrorNonMigratableStream(ASYNC, true);
 }
 
 void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorMigrationDisabled(
@@ -7329,6 +7481,7 @@ void QuicStreamFactoryTestBase::
 // default network or the idle migration period threshold is exceeded.
 // The default threshold is 30s.
 TEST_P(QuicStreamFactoryTest, DefaultIdleMigrationPeriod) {
+  test_params_.quic_migrate_idle_sessions = true;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -7445,6 +7598,7 @@ TEST_P(QuicStreamFactoryTest, DefaultIdleMigrationPeriod) {
 
 TEST_P(QuicStreamFactoryTest, CustomIdleMigrationPeriod) {
   // The customized threshold is 15s.
+  test_params_.quic_migrate_idle_sessions = true;
   test_params_.quic_idle_session_migration_period =
       base::TimeDelta::FromSeconds(15);
   InitializeConnectionMigrationV2Test(
