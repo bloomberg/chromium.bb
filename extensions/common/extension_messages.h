@@ -1058,15 +1058,19 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_EventAckWorker,
 //     straightforward as it changes SW IPC ordering with respect of rest of
 //     Chrome.
 // See https://crbug.com/879015#c4 for details.
-IPC_MESSAGE_CONTROL2(ExtensionHostMsg_DidStartServiceWorkerContext,
+IPC_MESSAGE_CONTROL4(ExtensionHostMsg_DidStartServiceWorkerContext,
                      std::string /* extension_id */,
-                     int64_t /* service_worker_version_id */)
+                     GURL /* service_worker_scope */,
+                     int64_t /* service_worker_version_id */,
+                     int /* worker_thread_id */)
 
 // Tells the browser that an extension service worker context has been
 // destroyed.
-IPC_MESSAGE_CONTROL2(ExtensionHostMsg_DidStopServiceWorkerContext,
+IPC_MESSAGE_CONTROL4(ExtensionHostMsg_DidStopServiceWorkerContext,
                      std::string /* extension_id */,
-                     int64_t /* service_worker_version_id */)
+                     GURL /* service_worker_scope */,
+                     int64_t /* service_worker_version_id */,
+                     int /* worker_thread_id */)
 
 IPC_STRUCT_TRAITS_BEGIN(ui::AXNodeData)
   IPC_STRUCT_TRAITS_MEMBER(id)

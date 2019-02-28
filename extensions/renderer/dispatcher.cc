@@ -498,7 +498,8 @@ void Dispatcher::DidStartServiceWorkerContextOnWorkerThread(
     return;
 
   DCHECK_NE(content::WorkerThread::GetCurrentId(), kMainThreadId);
-  WorkerThreadDispatcher::Get()->DidStartContext(service_worker_version_id);
+  WorkerThreadDispatcher::Get()->DidStartContext(service_worker_scope,
+                                                 service_worker_version_id);
 }
 
 // static
@@ -519,7 +520,8 @@ void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
     ExtensionBindingsSystem* worker_bindings_system =
         WorkerThreadDispatcher::GetBindingsSystem();
     worker_bindings_system->WillReleaseScriptContext(script_context);
-    WorkerThreadDispatcher::Get()->DidStopContext(service_worker_version_id);
+    WorkerThreadDispatcher::Get()->DidStopContext(service_worker_scope,
+                                                  service_worker_version_id);
     // Note: we have to remove the context (and thus perform invalidation on
     // the native handlers) prior to removing the worker data, which destroys
     // the associated bindings system.

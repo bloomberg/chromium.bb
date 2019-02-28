@@ -104,28 +104,44 @@ void ExtensionServiceWorkerMessageFilter::OnEventAckWorker(
 
 void ExtensionServiceWorkerMessageFilter::OnDidStartServiceWorkerContext(
     const std::string& extension_id,
-    int64_t service_worker_version_id) {
+    const GURL& service_worker_scope,
+    int64_t service_worker_version_id,
+    int thread_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_NE(kMainThreadId, thread_id);
   if (!ProcessMap::Get(browser_context_)
            ->Contains(extension_id, render_process_id_)) {
     // We can legitimately get here if the extension was already unloaded.
     return;
   }
+  CHECK(service_worker_scope.SchemeIs(kExtensionScheme) &&
+        extension_id == service_worker_scope.host_piece());
+
   ServiceWorkerTaskQueue::Get(browser_context_)
-      ->DidStartServiceWorkerContext(extension_id, service_worker_version_id);
+      ->DidStartServiceWorkerContext(render_process_id_, extension_id,
+                                     service_worker_scope,
+                                     service_worker_version_id, thread_id);
 }
 
 void ExtensionServiceWorkerMessageFilter::OnDidStopServiceWorkerContext(
     const std::string& extension_id,
-    int64_t service_worker_version_id) {
+    const GURL& service_worker_scope,
+    int64_t service_worker_version_id,
+    int thread_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_NE(kMainThreadId, thread_id);
   if (!ProcessMap::Get(browser_context_)
            ->Contains(extension_id, render_process_id_)) {
     // We can legitimately get here if the extension was already unloaded.
     return;
   }
+  CHECK(service_worker_scope.SchemeIs(kExtensionScheme) &&
+        extension_id == service_worker_scope.host_piece());
+
   ServiceWorkerTaskQueue::Get(browser_context_)
-      ->DidStopServiceWorkerContext(extension_id, service_worker_version_id);
+      ->DidStopServiceWorkerContext(render_process_id_, extension_id,
+                                    service_worker_scope,
+                                    service_worker_version_id, thread_id);
 }
 
 void ExtensionServiceWorkerMessageFilter::DidFailDecrementInflightEvent() {
