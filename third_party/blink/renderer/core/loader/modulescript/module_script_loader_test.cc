@@ -184,10 +184,10 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
   reporting_proxy_ = std::make_unique<MockWorkerReportingProxy>();
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
       url_, mojom::ScriptType::kModule,
-      OffMainThreadWorkerScriptFetchOption::kEnabled, "UserAgent",
-      nullptr /* web_worker_fetch_context */, Vector<CSPHeaderAndType>(),
-      network::mojom::ReferrerPolicy::kDefault, security_origin_.get(),
-      true /* is_secure_context */, HttpsState::kModern,
+      OffMainThreadWorkerScriptFetchOption::kEnabled, "GlobalScopeName",
+      "UserAgent", nullptr /* web_worker_fetch_context */,
+      Vector<CSPHeaderAndType>(), network::mojom::ReferrerPolicy::kDefault,
+      security_origin_.get(), true /* is_secure_context */, HttpsState::kModern,
       nullptr /* worker_clients */, mojom::IPAddressSpace::kLocal,
       nullptr /* origin_trial_token */, base::UnguessableToken::Create(),
       nullptr /* worker_settings */, kV8CacheOptionsDefault,

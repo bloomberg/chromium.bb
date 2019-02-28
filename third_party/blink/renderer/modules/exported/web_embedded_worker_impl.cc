@@ -393,6 +393,9 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
 
   Document* document = shadow_page_->GetDocument();
 
+  // For now we don't use global scope name for service workers.
+  const String global_scope_name = g_empty_string;
+
   // FIXME: this document's origin is pristine and without any extra privileges.
   // (crbug.com/254993)
   const SecurityOrigin* starter_origin = document->GetSecurityOrigin();
@@ -442,8 +445,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     }
     global_scope_creation_params = std::make_unique<GlobalScopeCreationParams>(
         worker_start_data_.script_url, worker_start_data_.script_type,
-        off_main_thread_fetch_option, worker_start_data_.user_agent,
-        std::move(web_worker_fetch_context),
+        off_main_thread_fetch_option, global_scope_name,
+        worker_start_data_.user_agent, std::move(web_worker_fetch_context),
         content_security_policy ? content_security_policy->Headers()
                                 : Vector<CSPHeaderAndType>(),
         referrer_policy, starter_origin, starter_secure_context,
@@ -462,12 +465,13 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     // served by the installed scripts manager on the worker thread.
     global_scope_creation_params = std::make_unique<GlobalScopeCreationParams>(
         worker_start_data_.script_url, worker_start_data_.script_type,
-        off_main_thread_fetch_option, worker_start_data_.user_agent,
-        std::move(web_worker_fetch_context), Vector<CSPHeaderAndType>(),
-        network::mojom::ReferrerPolicy::kDefault, starter_origin,
-        starter_secure_context, starter_https_state, worker_clients,
-        worker_start_data_.address_space, nullptr /* OriginTrialTokens */,
-        devtools_worker_token_, std::move(worker_settings),
+        off_main_thread_fetch_option, global_scope_name,
+        worker_start_data_.user_agent, std::move(web_worker_fetch_context),
+        Vector<CSPHeaderAndType>(), network::mojom::ReferrerPolicy::kDefault,
+        starter_origin, starter_secure_context, starter_https_state,
+        worker_clients, worker_start_data_.address_space,
+        nullptr /* OriginTrialTokens */, devtools_worker_token_,
+        std::move(worker_settings),
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),
         nullptr /* worklet_module_respones_map */,
         std::move(interface_provider_info_));
@@ -486,7 +490,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
       std::move(installed_scripts_manager_), std::move(cache_storage_info_));
 
   auto devtools_params = DevToolsAgent::WorkerThreadCreated(
-      document, worker_thread_.get(), worker_start_data_.script_url);
+      document, worker_thread_.get(), worker_start_data_.script_url,
+      global_scope_name);
 
   // We have a dummy document here for loading but it doesn't really represent
   // the document/frame of associated document(s) for this worker. Here we

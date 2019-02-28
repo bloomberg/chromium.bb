@@ -65,8 +65,8 @@ class MainThreadWorkletTest : public PageTestBase {
         std::make_unique<MainThreadWorkletReportingProxyForTest>(document);
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
         document->Url(), mojom::ScriptType::kModule,
-        OffMainThreadWorkerScriptFetchOption::kEnabled, document->UserAgent(),
-        nullptr /* web_worker_fetch_context */,
+        OffMainThreadWorkerScriptFetchOption::kEnabled, "MainThreadWorklet",
+        document->UserAgent(), nullptr /* web_worker_fetch_context */,
         document->GetContentSecurityPolicy()->Headers(),
         document->GetReferrerPolicy(), document->GetSecurityOrigin(),
         document->IsSecureContext(), document->GetHttpsState(),

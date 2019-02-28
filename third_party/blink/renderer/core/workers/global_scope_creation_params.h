@@ -43,6 +43,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       const KURL& script_url,
       mojom::ScriptType script_type,
       OffMainThreadWorkerScriptFetchOption,
+      const String& global_scope_name,
       const String& user_agent,
       scoped_refptr<WebWorkerFetchContext>,
       const Vector<CSPHeaderAndType>& content_security_policy_parsed_headers,
@@ -81,6 +82,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   mojom::ScriptType script_type;
   OffMainThreadWorkerScriptFetchOption off_main_thread_fetch_option;
 
+  String global_scope_name;
   String user_agent;
 
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context;

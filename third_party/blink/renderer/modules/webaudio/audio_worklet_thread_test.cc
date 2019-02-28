@@ -53,7 +53,7 @@ class AudioWorkletThreadTest : public PageTestBase {
     thread->Start(
         std::make_unique<GlobalScopeCreationParams>(
             document->Url(), mojom::ScriptType::kModule,
-            OffMainThreadWorkerScriptFetchOption::kEnabled,
+            OffMainThreadWorkerScriptFetchOption::kEnabled, "AudioWorklet",
             document->UserAgent(), nullptr /* web_worker_fetch_context */,
             Vector<CSPHeaderAndType>(), document->GetReferrerPolicy(),
             document->GetSecurityOrigin(), document->IsSecureContext(),

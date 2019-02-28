@@ -43,6 +43,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   using SecurityContext::GetContentSecurityPolicy;
 
   WorkerOrWorkletGlobalScope(v8::Isolate*,
+                             const String& name,
                              V8CacheOptions,
                              WorkerClients*,
                              scoped_refptr<WebWorkerFetchContext>,
@@ -111,6 +112,8 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   ResourceFetcher* CreateOutsideSettingsFetcher(
       const FetchClientSettingsObject&);
 
+  const String Name() const { return name_; }
+
   WorkerClients* Clients() const { return worker_clients_.Get(); }
 
   WorkerOrWorkletScriptController* ScriptController() {
@@ -148,6 +151,8 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
                                          ContentSecurityPolicy&);
 
   bool web_fetch_context_initialized_ = false;
+
+  const String name_;
 
   CrossThreadPersistent<WorkerClients> worker_clients_;
 

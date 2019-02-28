@@ -113,8 +113,8 @@ ThreadPoolThread* ThreadPool::CreateNewThread() {
   // ThreadedMessagingProxyBase::InitializeWorkerThread().
   proxy->StartWorker(std::make_unique<GlobalScopeCreationParams>(
       context->Url(), mojom::ScriptType::kClassic,
-      OffMainThreadWorkerScriptFetchOption::kDisabled, context->UserAgent(),
-      nullptr /* web_worker_fetch_context */,
+      OffMainThreadWorkerScriptFetchOption::kDisabled, "ThreadPool",
+      context->UserAgent(), nullptr /* web_worker_fetch_context */,
       context->GetContentSecurityPolicy()->Headers(),
       network::mojom::ReferrerPolicy::kDefault, context->GetSecurityOrigin(),
       context->IsSecureContext(), context->GetHttpsState(),

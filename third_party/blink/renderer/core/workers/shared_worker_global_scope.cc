@@ -42,12 +42,10 @@
 namespace blink {
 
 SharedWorkerGlobalScope::SharedWorkerGlobalScope(
-    const String& name,
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     SharedWorkerThread* thread,
     base::TimeTicks time_origin)
-    : WorkerGlobalScope(std::move(creation_params), thread, time_origin),
-      name_(name) {}
+    : WorkerGlobalScope(std::move(creation_params), thread, time_origin) {}
 
 SharedWorkerGlobalScope::~SharedWorkerGlobalScope() = default;
 
@@ -70,6 +68,10 @@ void SharedWorkerGlobalScope::ImportModuleScript(
   // TODO(nhiroki): Implement module loading for shared workers.
   // (https://crbug.com/824646)
   NOTREACHED();
+}
+
+const String SharedWorkerGlobalScope::name() const {
+  return Name();
 }
 
 void SharedWorkerGlobalScope::Connect(MessagePortChannel channel) {

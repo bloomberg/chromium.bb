@@ -336,10 +336,6 @@ void DedicatedWorker::DispatchErrorEventForScriptFetchFailure() {
   DispatchEvent(*Event::CreateCancelable(event_type_names::kError));
 }
 
-const String DedicatedWorker::Name() const {
-  return options_->name();
-}
-
 WorkerClients* DedicatedWorker::CreateWorkerClients() {
   WorkerClients* worker_clients = WorkerClients::Create();
   CoreInitializer::GetInstance().ProvideLocalFileSystemToWorker(
@@ -442,7 +438,7 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
                                       : mojom::ScriptType::kModule;
 
   return std::make_unique<GlobalScopeCreationParams>(
-      script_url, script_type, off_main_thread_fetch_option,
+      script_url, script_type, off_main_thread_fetch_option, options_->name(),
       GetExecutionContext()->UserAgent(), CreateWebWorkerFetchContext(),
       GetExecutionContext()->GetContentSecurityPolicy()->Headers(),
       referrer_policy, GetExecutionContext()->GetSecurityOrigin(),

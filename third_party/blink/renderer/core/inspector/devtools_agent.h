@@ -44,7 +44,8 @@ class CORE_EXPORT DevToolsAgent
   static std::unique_ptr<WorkerDevToolsParams> WorkerThreadCreated(
       ExecutionContext* parent_context,
       WorkerThread*,
-      const KURL&);
+      const KURL&,
+      const String& global_scope_name);
   static void WorkerThreadTerminated(ExecutionContext* parent_context,
                                      WorkerThread*);
 

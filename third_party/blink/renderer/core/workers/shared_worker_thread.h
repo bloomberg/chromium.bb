@@ -40,8 +40,7 @@ struct GlobalScopeCreationParams;
 
 class CORE_EXPORT SharedWorkerThread : public WorkerThread {
  public:
-  SharedWorkerThread(const String& name,
-                     WorkerReportingProxy&);
+  explicit SharedWorkerThread(WorkerReportingProxy&);
   ~SharedWorkerThread() override;
 
   WorkerBackingThread& GetWorkerBackingThread() override {
@@ -58,7 +57,6 @@ class CORE_EXPORT SharedWorkerThread : public WorkerThread {
   }
 
   std::unique_ptr<WorkerBackingThread> worker_backing_thread_;
-  String name_;
 };
 
 }  // namespace blink

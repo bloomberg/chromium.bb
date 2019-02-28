@@ -26,8 +26,7 @@ class CORE_EXPORT LayoutWorkletGlobalScope final : public WorkletGlobalScope {
       LocalFrame*,
       std::unique_ptr<GlobalScopeCreationParams>,
       WorkerReportingProxy&,
-      PendingLayoutRegistry*,
-      size_t global_scope_number);
+      PendingLayoutRegistry*);
 
   LayoutWorkletGlobalScope(LocalFrame*,
                            std::unique_ptr<GlobalScopeCreationParams>,

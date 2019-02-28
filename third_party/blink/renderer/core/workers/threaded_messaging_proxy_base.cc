@@ -68,7 +68,8 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
   worker_thread_ = CreateWorkerThread();
 
   auto devtools_params = DevToolsAgent::WorkerThreadCreated(
-      execution_context_.Get(), worker_thread_.get(), script_url);
+      execution_context_.Get(), worker_thread_.get(), script_url,
+      global_scope_creation_params->global_scope_name.IsolatedCopy());
 
   worker_thread_->Start(std::move(global_scope_creation_params),
                         thread_startup_data, std::move(devtools_params),

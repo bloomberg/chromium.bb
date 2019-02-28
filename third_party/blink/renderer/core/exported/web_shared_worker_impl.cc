@@ -350,9 +350,9 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
     // not updated after worker script fetch. Update them.
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
         script_request_url_, script_type,
-        OffMainThreadWorkerScriptFetchOption::kEnabled, document->UserAgent(),
-        std::move(web_worker_fetch_context), Vector<CSPHeaderAndType>(),
-        network::mojom::ReferrerPolicy::kDefault,
+        OffMainThreadWorkerScriptFetchOption::kEnabled, name_,
+        document->UserAgent(), std::move(web_worker_fetch_context),
+        Vector<CSPHeaderAndType>(), network::mojom::ReferrerPolicy::kDefault,
         outside_settings_object->GetSecurityOrigin(),
         document->IsSecureContext(), outside_settings_object->GetHttpsState(),
         CreateWorkerClients(), creation_address_space_,
@@ -384,8 +384,8 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
 
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
       script_response_url, script_type,
-      OffMainThreadWorkerScriptFetchOption::kDisabled, document->UserAgent(),
-      std::move(web_worker_fetch_context),
+      OffMainThreadWorkerScriptFetchOption::kDisabled, name_,
+      document->UserAgent(), std::move(web_worker_fetch_context),
       content_security_policy ? content_security_policy->Headers()
                               : Vector<CSPHeaderAndType>(),
       referrer_policy, outside_settings_object->GetSecurityOrigin(),
@@ -409,14 +409,14 @@ void WebSharedWorkerImpl::StartWorkerThread(
   DCHECK(IsMainThread());
   reporting_proxy_ = MakeGarbageCollected<SharedWorkerReportingProxy>(
       this, parent_execution_context_task_runners_);
-  worker_thread_ =
-      std::make_unique<SharedWorkerThread>(name_, *reporting_proxy_);
+  worker_thread_ = std::make_unique<SharedWorkerThread>(*reporting_proxy_);
 
   auto thread_startup_data = WorkerBackingThreadStartupData::CreateDefault();
   thread_startup_data.atomics_wait_mode =
       WorkerBackingThreadStartupData::AtomicsWaitMode::kAllow;
   auto devtools_params = DevToolsAgent::WorkerThreadCreated(
-      shadow_page_->GetDocument(), GetWorkerThread(), script_response_url);
+      shadow_page_->GetDocument(), GetWorkerThread(), script_response_url,
+      name_);
 
   GetWorkerThread()->Start(std::move(global_scope_creation_params),
                            thread_startup_data, std::move(devtools_params),

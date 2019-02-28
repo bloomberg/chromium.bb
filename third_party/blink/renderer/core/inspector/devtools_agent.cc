@@ -141,7 +141,8 @@ void DevToolsAgent::ReportChildWorkers(bool report,
 std::unique_ptr<WorkerDevToolsParams> DevToolsAgent::WorkerThreadCreated(
     ExecutionContext* parent_context,
     WorkerThread* worker_thread,
-    const KURL& url) {
+    const KURL& url,
+    const String& global_scope_name) {
   auto result = std::make_unique<WorkerDevToolsParams>();
   result->devtools_worker_token = base::UnguessableToken::Create();
 
@@ -155,7 +156,7 @@ std::unique_ptr<WorkerDevToolsParams> DevToolsAgent::WorkerThreadCreated(
   data->host_request = mojo::MakeRequest(&result->agent_host_ptr_info);
   data->devtools_worker_token = result->devtools_worker_token;
   data->waiting_for_debugger = agent->pause_child_workers_on_start_;
-  data->name = worker_thread->name().IsolatedCopy();
+  data->name = global_scope_name;
   result->wait_for_debugger = agent->pause_child_workers_on_start_;
 
   if (agent->report_child_workers_) {
