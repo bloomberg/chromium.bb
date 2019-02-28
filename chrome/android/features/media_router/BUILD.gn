@@ -8,7 +8,7 @@ import("//chrome/common/features.gni")
 
 android_library("java") {
   deps = [
-    ":media_router_resources",
+    ":resources",
     "$google_play_services_package:google_play_services_base_java",
     "$google_play_services_package:google_play_services_basement_java",
     "$google_play_services_package:google_play_services_cast_framework_java",
@@ -116,17 +116,17 @@ junit_binary("media_router_junit_tests") {
 }
 
 # TODO(wnwen): Rename these to be more generic once https://crbug.com/935576 is fixed.
-android_resources("media_router_resources") {
+android_resources("resources") {
   resource_dirs = [ "res" ]
   deps = [
-    ":media_router_strings_grd",
+    ":strings_grd",
     "//chrome/android:chrome_app_java_resources",
     "//third_party/android_media:android_media_resources",
   ]
   custom_package = "org.chromium.chrome.media.router"
 }
 
-java_strings_grd("media_router_strings_grd") {
+java_strings_grd("strings_grd") {
   defines = chrome_grit_defines
   grd_file = "strings/android_chrome_media_router_strings.grd"
   outputs = [
