@@ -251,15 +251,17 @@ scoped_refptr<blink::WebWorkerFetchContext>
 WebWorkerFetchContextImpl::CloneForNestedWorker(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   blink::mojom::ServiceWorkerWorkerClientRequest service_worker_client_request;
-  blink::mojom::ServiceWorkerWorkerClientPtr service_worker_client_ptr;
-  service_worker_client_request = mojo::MakeRequest(&service_worker_client_ptr);
-  service_worker_worker_client_registry_->RegisterWorkerClient(
-      std::move(service_worker_client_ptr));
-
   blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
       service_worker_worker_client_registry_ptr_info;
-  service_worker_worker_client_registry_->CloneWorkerClientRegistry(
-      mojo::MakeRequest(&service_worker_worker_client_registry_ptr_info));
+  if (service_worker_worker_client_registry_) {
+    blink::mojom::ServiceWorkerWorkerClientPtr service_worker_client_ptr;
+    service_worker_client_request =
+        mojo::MakeRequest(&service_worker_client_ptr);
+    service_worker_worker_client_registry_->RegisterWorkerClient(
+        std::move(service_worker_client_ptr));
+    service_worker_worker_client_registry_->CloneWorkerClientRegistry(
+        mojo::MakeRequest(&service_worker_worker_client_registry_ptr_info));
+  }
 
   blink::mojom::ServiceWorkerContainerHostPtrInfo host_ptr_info;
   if (service_worker_container_host_) {
@@ -310,8 +312,10 @@ void WebWorkerFetchContextImpl::InitializeOnWorkerThread(
   if (service_worker_client_request_.is_pending())
     binding_.Bind(std::move(service_worker_client_request_));
 
-  service_worker_worker_client_registry_.Bind(
-      std::move(service_worker_worker_client_registry_info_));
+  if (service_worker_worker_client_registry_info_) {
+    service_worker_worker_client_registry_.Bind(
+        std::move(service_worker_worker_client_registry_info_));
+  }
 
   if (preference_watcher_request_.is_pending())
     preference_watcher_binding_.Bind(std::move(preference_watcher_request_));
