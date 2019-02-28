@@ -893,8 +893,11 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
   // use the old web APIs.
   // After completion of the migration, we should remove this.
   // See crbug.com/924031 for detail.
-  if (extension_id == extension_misc::kPdfExtensionId)
+  if (extension_id == extension_misc::kPdfExtensionId) {
+    blink::WebRuntimeFeatures::EnableShadowDOMV0(true);
+    blink::WebRuntimeFeatures::EnableCustomElementsV0(true);
     blink::WebRuntimeFeatures::EnableHTMLImports(true);
+  }
 
   InitOriginPermissions(extension);
 
