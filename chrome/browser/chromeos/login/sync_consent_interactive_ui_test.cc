@@ -77,17 +77,6 @@ class ConsentRecordedWaiter
   base::RunLoop run_loop_;
 };
 
-// Waits for js condition to be fulfilled.
-void WaitForJsCondition(const std::string& js_condition) {
-  return test::TestConditionWaiter(base::BindRepeating(
-                                       [](const std::string& js_condition) {
-                                         return test::OobeJS().GetBool(
-                                             js_condition);
-                                       },
-                                       js_condition))
-      .Wait();
-}
-
 std::string GetLocalizedConsentString(const int id) {
   std::string sanitized_string =
       base::UTF16ToUTF8(l10n_util::GetStringUTF16(id));
@@ -128,7 +117,7 @@ class SyncConsentTest : public OobeBaseTest {
                             "');");
     const std::string condition =
         base::StringPrintf("%s > %d", get_num_reloads, prev_reloads);
-    WaitForJsCondition(condition);
+    test::OobeJS().CreateWaiter(condition)->Wait();
   }
 
   void LoginToSyncConsentScreen() {
@@ -142,7 +131,9 @@ class SyncConsentTest : public OobeBaseTest {
                                   OobeBaseTest::kFakeUserPassword,
                                   OobeBaseTest::kEmptyUserServices);
 
-    WaitForJsCondition("Oobe.getInstance().currentScreen.id == 'sync-consent'");
+    test::OobeJS()
+        .CreateWaiter("Oobe.getInstance().currentScreen.id == 'sync-consent'")
+        ->Wait();
   }
 
  protected:
@@ -159,7 +150,7 @@ class SyncConsentTest : public OobeBaseTest {
     screen->SetProfileSyncEngineInitializedForTesting(true);
     screen->OnStateChanged(nullptr);
 
-    WaitForJsCondition("!$('sync-consent-impl').hidden");
+    test::OobeJS().CreateWaiter("!$('sync-consent-impl').hidden")->Wait();
     test::OobeJS().ExpectTrue(
         "!$('sync-consent-impl').$.syncConsentOverviewDialog.hidden");
     test::OobeJS().Evaluate(
@@ -279,7 +270,9 @@ IN_PROC_BROWSER_TEST_P(SyncConsenPolicyDisabledTest,
   screen->OnStateChanged(nullptr);
 
   // Expect to see "user image selection" or some other screen here.
-  WaitForJsCondition("Oobe.getInstance().currentScreen.id != 'sync-consent'");
+  test::OobeJS()
+      .CreateWaiter("Oobe.getInstance().currentScreen.id != 'sync-consent'")
+      ->Wait();
 }
 
 INSTANTIATE_TEST_SUITE_P(/* no prefix */,
