@@ -100,6 +100,16 @@ public class DownloadCollectionBridge {
     }
 
     /**
+     * Renames a download Uri with a display name.
+     * @param downloadUri Uri of the download.
+     * @param displayName New display name for the download.
+     * @return whether rename was successful.
+     */
+    protected boolean rename(final String downloadUri, final String displayName) {
+        return false;
+    }
+
+    /**
      * Creates an intermediate URI for download to be written into. On completion, call
      * nativeOnCreateIntermediateUriResult() with |callbackId|.
      * @param fileName Name of the file.
@@ -181,5 +191,16 @@ public class DownloadCollectionBridge {
     @CalledByNative
     private static boolean fileNameExists(final String fileName) {
         return getDownloadCollectionBridge().checkFileNameExists(fileName);
+    }
+
+    /**
+     * Renames a download Uri with a display name.
+     * @param downloadUri Uri of the download.
+     * @param displayName New display name for the download.
+     * @return whether rename was successful.
+     */
+    @CalledByNative
+    private static boolean renameDownloadUri(final String downloadUri, final String displayName) {
+        return getDownloadCollectionBridge().rename(downloadUri, displayName);
     }
 }

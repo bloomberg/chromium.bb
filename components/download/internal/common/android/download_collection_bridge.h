@@ -46,6 +46,12 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadCollectionBridge {
   // Checks whether a file name exists.
   static bool FileNameExists(const base::FilePath& file_name);
 
+  // Renames a content URI download to |new_display_name|. Returns true on
+  // success, and false otherwise.
+  // Called on non UI thread.
+  static bool renameDownloadUri(const base::FilePath& download_uri,
+                                const base::FilePath& new_display_name);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadCollectionBridge);
 };
