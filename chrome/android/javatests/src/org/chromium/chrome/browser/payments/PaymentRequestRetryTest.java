@@ -65,7 +65,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
     @Feature({"Payments"})
     public void testRetryWithShippingAddressErrors()
             throws InterruptedException, ExecutionException, TimeoutException {
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
@@ -97,7 +97,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
     @Feature({"Payments"})
     public void testRetryWithPayerErrors()
             throws InterruptedException, ExecutionException, TimeoutException {
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
@@ -117,7 +117,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
 
         mPaymentRequestTestRule.setTextInEditorAndWait(
                 new String[] {"Jane Doe", "650-253-0000", "jon.doe@gmail.com"},
-                mPaymentRequestTestRule.getEditorTextUpdate());
+                mPaymentRequestTestRule.getReadyToEdit());
         mPaymentRequestTestRule.clickInEditorAndWait(
                 R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
     }
@@ -130,7 +130,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
     @Feature({"Payments"})
     public void testRetryWithShippingAddressErrorsAndPayerErrors()
             throws InterruptedException, ExecutionException, TimeoutException {
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
@@ -154,14 +154,54 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
 
         mPaymentRequestTestRule.setTextInEditorAndWait(
                 new String[] {"Jane Doe", "Edge Corp.", "111 Wall St.", "New York", "NY"},
-                mPaymentRequestTestRule.getEditorTextUpdate());
+                mPaymentRequestTestRule.getReadyToEdit());
         mPaymentRequestTestRule.clickInEditorAndWait(
                 R.id.editor_dialog_done_button, mPaymentRequestTestRule.getEditorValidationError());
 
         mPaymentRequestTestRule.setTextInEditorAndWait(
                 new String[] {"Jane Doe", "650-253-0000", "jon.doe@gmail.com"},
+                mPaymentRequestTestRule.getReadyToEdit());
+        mPaymentRequestTestRule.clickInEditorAndWait(
+                R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
+    }
+
+    /**
+     * Test for onpayerdetailchange event after retry().
+     */
+    @Test
+    @MediumTest
+    @Feature({"Payments"})
+    public void testRetryAndPayerDetailChangeEvent()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
+        mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
+                R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
+        mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
+                ModalDialogProperties.ButtonType.POSITIVE,
+                mPaymentRequestTestRule.getPaymentResponseReady());
+
+        mPaymentRequestTestRule.retryPaymentRequest("{}", mPaymentRequestTestRule.getReadyToPay());
+
+        mPaymentRequestTestRule.clickInContactInfoAndWait(
+                R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickInContactInfoAndWait(
+                R.id.payments_open_editor_pencil_button, mPaymentRequestTestRule.getReadyToEdit());
+        mPaymentRequestTestRule.setTextInEditorAndWait(
+                new String[] {"Jane Doe", "650-253-0000", "jane.doe@gmail.com"},
                 mPaymentRequestTestRule.getEditorTextUpdate());
         mPaymentRequestTestRule.clickInEditorAndWait(
                 R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
+
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
+        mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
+                R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
+        mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
+                ModalDialogProperties.ButtonType.POSITIVE, mPaymentRequestTestRule.getDismissed());
+
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"Jane Doe", "6502530000", "jane.doe@gmail.com"});
     }
 }
