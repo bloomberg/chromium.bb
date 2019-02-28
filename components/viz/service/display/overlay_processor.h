@@ -112,6 +112,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
   void UpdateDamageRect(OverlayCandidateList* candidates,
                         const gfx::Rect& previous_frame_underlay_rect,
                         bool previous_frame_underlay_was_unoccluded,
+                        const QuadList* quad_list,
                         gfx::Rect* damage_rect);
 
   DCLayerOverlayProcessor dc_processor_;

@@ -1943,6 +1943,46 @@ TEST_F(UnderlayTest, UpdateDamageRectWhenNoPromotion) {
   }
 }
 
+// Tests that no damage occurs due to unchanged elements on top of HW underlays
+TEST_F(UnderlayTest, DamageSubtractedWhenElementsOnHwUnderlayNotChanged) {
+  for (int i = 0; i < 2; ++i) {
+    std::unique_ptr<RenderPass> pass = CreateRenderPass();
+
+    gfx::Rect rect(2, 3);
+    SharedQuadState* non_damaged_quad_state =
+        pass->shared_quad_state_list.AllocateAndCopyFrom(
+            pass->shared_quad_state_list.back());
+    // Element on top has not changed (no damage caused by this quad)
+    non_damaged_quad_state->has_surface_damage = false;
+    CreateSolidColorQuadAt(non_damaged_quad_state, SK_ColorBLACK, pass.get(),
+                           rect);
+
+    CreateFullscreenCandidateQuad(
+        resource_provider_.get(), child_resource_provider_.get(),
+        child_provider_.get(), pass->shared_quad_state_list.front(),
+        pass.get());
+
+    damage_rect_ = kOverlayRect;
+
+    OverlayCandidateList candidate_list;
+    OverlayProcessor::FilterOperationsMap render_pass_filters;
+    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
+    RenderPassList pass_list;
+    pass_list.push_back(std::move(pass));
+    overlay_processor_->ProcessForOverlays(
+        resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
+        render_pass_filters, render_pass_backdrop_filters, &candidate_list,
+        nullptr, nullptr, &damage_rect_, &content_bounds_);
+
+    // The damage rect should not be subtracted on the first frame
+    if (i == 0)
+      EXPECT_FALSE(damage_rect_.IsEmpty());
+  }
+  // As the  UI on top of the underlay persists and does not change, damage
+  // should be subtracted.
+  EXPECT_TRUE(damage_rect_.IsEmpty());
+}
+
 TEST_F(UnderlayCastTest, NoOverlayContentBounds) {
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
 

@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/service/display/dc_layer_overlay.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/output_surface.h"
@@ -175,15 +176,16 @@ void OverlayProcessor::ProcessForOverlays(
   // Only if that fails, attempt hardware overlay strategies.
   Strategy* successful_strategy = nullptr;
   for (const auto& strategy : strategies_) {
-    if (!strategy->Attempt(output_color_matrix, render_pass_backdrop_filters,
-                           resource_provider, render_passes, candidates,
-                           content_bounds)) {
-      continue;
+    if (strategy->Attempt(output_color_matrix, render_pass_backdrop_filters,
+                          resource_provider, render_passes, candidates,
+                          content_bounds)) {
+      successful_strategy = strategy.get();
+
+      UpdateDamageRect(candidates, previous_frame_underlay_rect,
+                       previous_frame_underlay_was_unoccluded,
+                       &render_pass->quad_list, damage_rect);
+      break;
     }
-    successful_strategy = strategy.get();
-    UpdateDamageRect(candidates, previous_frame_underlay_rect,
-                     previous_frame_underlay_was_unoccluded, damage_rect);
-    break;
   }
 
   if (!successful_strategy && !previous_frame_underlay_rect.IsEmpty())
@@ -209,6 +211,7 @@ void OverlayProcessor::UpdateDamageRect(
     OverlayCandidateList* candidates,
     const gfx::Rect& previous_frame_underlay_rect,
     bool previous_frame_underlay_was_unoccluded,
+    const QuadList* quad_list,
     gfx::Rect* damage_rect) {
   gfx::Rect output_surface_overlay_damage_rect;
   gfx::Rect this_frame_underlay_rect;
@@ -224,24 +227,47 @@ void OverlayProcessor::UpdateDamageRect(
         if (overlay.is_opaque)
           damage_rect->Subtract(overlay_display_rect);
       }
-    } else if (this_frame_underlay_rect.IsEmpty()) {
+    } else {
       // Process underlay candidates:
-      // Track the underlay_rect from frame to frame.  If it is the same
-      // and nothing is on top of it then that rect doesn't need to
-      // be damaged because the drawing is occurring on a different plane.
-      // If it is different then that indicates that a different underlay
-      // has been chosen and the previous underlay rect should be damaged
-      // because it has changed planes from the underlay plane to the
-      // main plane.
+      // Track the underlay_rect from frame to frame. If it is the same and
+      // nothing is on top of it then that rect doesn't need to be damaged
+      // because the drawing is occurring on a different plane. If it is
+      // different then that indicates that a different underlay has been chosen
+      // and the previous underlay rect should be damaged because it has changed
+      // planes from the underlay plane to the main plane.
+      // It then checks that this is not a transition from occluded to
+      // unoccluded.
       //
       // We also insist that the underlay is unoccluded for at leat one frame,
       // else when content above the overlay transitions from not fully
       // transparent to fully transparent, we still need to erase it from the
       // framebuffer.  Otherwise, the last non-transparent frame will remain.
       // https://crbug.com/875879
+      // However, if the underlay is unoccluded, we check if the damage is due
+      // to a solid-opaque-transparent quad. If so, then we subtract this
+      // damage.
       this_frame_underlay_rect = ToEnclosedRect(overlay.display_rect);
-      if ((this_frame_underlay_rect == previous_frame_underlay_rect) &&
-          overlay.is_unoccluded && previous_frame_underlay_was_unoccluded) {
+
+      bool same_underlay_rect =
+          this_frame_underlay_rect == previous_frame_underlay_rect;
+      bool transition_from_occluded_to_unoccluded =
+          overlay.is_unoccluded && !previous_frame_underlay_was_unoccluded;
+      bool always_unoccluded =
+          overlay.is_unoccluded && previous_frame_underlay_was_unoccluded;
+      bool has_damage = std::any_of(
+          quad_list->begin(), quad_list->end(), [](const auto& quad) {
+            bool solid_opaque_tranparent =
+                !quad->ShouldDrawWithBlending() &&
+                quad->material == DrawQuad::SOLID_COLOR &&
+                SolidColorDrawQuad::MaterialCast(quad)->color ==
+                    SK_ColorTRANSPARENT;
+
+            return !solid_opaque_tranparent &&
+                   quad->shared_quad_state->has_surface_damage;
+          });
+
+      if (same_underlay_rect && !transition_from_occluded_to_unoccluded &&
+          (always_unoccluded || !has_damage)) {
         damage_rect->Subtract(this_frame_underlay_rect);
       }
       previous_frame_underlay_was_unoccluded_ = overlay.is_unoccluded;
