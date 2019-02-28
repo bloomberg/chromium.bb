@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/metrics/pip_uma.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -15,6 +16,7 @@
 #include "ash/wm/wm_event.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -67,6 +69,8 @@ class FakeWindowState : public wm::WindowState::State {
 
 }  // namespace
 
+using Sample = base::HistogramBase::Sample;
+
 class PipWindowResizerTest : public AshTestBase {
  public:
   PipWindowResizerTest() = default;
@@ -97,6 +101,7 @@ class PipWindowResizerTest : public AshTestBase {
   views::Widget* widget() { return widget_.get(); }
   aura::Window* window() { return window_; }
   FakeWindowState* test_state() { return test_state_; }
+  base::HistogramTester& histograms() { return histograms_; }
 
   std::unique_ptr<views::Widget> CreateWidgetForTest(const gfx::Rect& bounds) {
     return CreateTestWidget(nullptr, kShellWindowId_AlwaysOnTopContainer,
@@ -148,6 +153,7 @@ class PipWindowResizerTest : public AshTestBase {
   std::unique_ptr<views::Widget> widget_;
   aura::Window* window_;
   FakeWindowState* test_state_;
+  base::HistogramTester histograms_;
 
   DISALLOW_COPY_AND_ASSIGN(PipWindowResizerTest);
 };
@@ -561,6 +567,22 @@ TEST_F(PipWindowResizerTest, PipRestoreBoundsSetOnFling) {
   EXPECT_TRUE(window_state->HasRestoreBounds());
   EXPECT_EQ(gfx::Rect(292, 292, 100, 100),
             window_state->GetRestoreBoundsInScreen());
+}
+
+TEST_F(PipWindowResizerTest, PipFreeResizeUmaMetrics) {
+  UpdateWorkArea("400x400");
+  PreparePipWindow(gfx::Rect(200, 200, 100, 100));
+  std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTBOTTOM));
+  ASSERT_TRUE(resizer.get());
+
+  EXPECT_EQ(1, histograms().GetBucketCount(kAshPipEventsHistogramName,
+                                           Sample(AshPipEvents::FREE_RESIZE)));
+  histograms().ExpectTotalCount(kAshPipEventsHistogramName, 1);
+
+  resizer->Drag(CalculateDragPoint(*resizer, 100, 0), 0);
+  resizer->CompleteDrag();
+
+  histograms().ExpectTotalCount(kAshPipEventsHistogramName, 1);
 }
 
 }  // namespace wm

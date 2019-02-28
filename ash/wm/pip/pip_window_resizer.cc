@@ -4,10 +4,12 @@
 
 #include "ash/wm/pip/pip_window_resizer.h"
 
+#include "ash/metrics/pip_uma.h"
 #include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/widget_finder.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "base/metrics/histogram_macros.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
@@ -60,8 +62,11 @@ PipWindowResizer::PipWindowResizer(wm::WindowState* window_state)
   window_state->OnDragStarted(details().window_component);
 
   bool is_resize = details().bounds_change & kBoundsChange_Resizes;
-  // Don't allow swipe-to-dismiss for resizes.
-  if (!is_resize) {
+  if (is_resize) {
+    UMA_HISTOGRAM_ENUMERATION(kAshPipEventsHistogramName,
+                              AshPipEvents::FREE_RESIZE, AshPipEvents::COUNT);
+  } else {
+    // Don't allow swipe-to-dismiss for resizes.
     gfx::Rect area = PipPositioner::GetMovementArea(window_state->GetDisplay());
     // Check in which directions we can dismiss. Usually this is only in one
     // direction, except when the PIP window is in the corner. In that case,

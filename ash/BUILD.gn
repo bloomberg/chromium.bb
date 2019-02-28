@@ -452,6 +452,7 @@ component("ash") {
     "metrics/desktop_task_switch_metric_recorder.h",
     "metrics/login_metrics_recorder.cc",
     "metrics/login_metrics_recorder.h",
+    "metrics/pip_uma.h",
     "metrics/pointer_metrics_recorder.cc",
     "metrics/pointer_metrics_recorder.h",
     "metrics/task_switch_metrics_recorder.cc",
