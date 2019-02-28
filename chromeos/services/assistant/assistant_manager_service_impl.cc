@@ -160,6 +160,12 @@ void AssistantManagerServiceImpl::Stop() {
 
   state_ = State::STOPPED;
 
+  // When user disables the feature, we also deletes all data.
+  if (!service_->assistant_state()->settings_enabled().value() &&
+      assistant_manager_) {
+    assistant_manager_->ResetAllDataAndShutdown();
+  }
+
   assistant_manager_internal_ = nullptr;
   assistant_manager_.reset(nullptr);
 }
