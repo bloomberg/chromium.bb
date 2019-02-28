@@ -87,6 +87,11 @@ crbug.com/922725 fullscreen/full-screen-iframe-zIndex.html [ Timeout ]
 crbug.com/922725 virtual/android/fullscreen/full-screen-iframe-zIndex.html [ Timeout ]
 crbug.com/922725 virtual/user-activation-v2/fullscreen/full-screen-iframe-zIndex.html [ Timeout ]
 
+# The following tests would pass with User Activation Delegation.
+crbug.com/928838 external/wpt/html/user-activation/activation-transfer-with-click.tentative.html [ Failure ]
+crbug.com/928838 external/wpt/html/user-activation/activation-transfer-without-click.tentative.html [ Failure ]
+crbug.com/928838 external/wpt/html/user-activation/activation-transfer-cross-origin-with-click.sub.tentative.html [ Failure ]
+
 # The following fail only on Mac.
 crbug.com/891427 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
