@@ -2814,8 +2814,9 @@
   },
   {
     "name": "show-autofill-type-predictions",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "ftirelo", "mathp" ],
+    // This is used by autofill devs to debug on Android.
+    "expiry_milestone": -1
   },
   {
     "name": "show-managed-ui",
