@@ -645,14 +645,18 @@ MediaDrmStorageImpl::MediaDrmStorageImpl(
     content::RenderFrameHost* render_frame_host,
     PrefService* pref_service,
     GetOriginIdCB get_origin_id_cb,
+    AllowEmptyOriginIdCB allow_empty_origin_id_cb,
     media::mojom::MediaDrmStorageRequest request)
     : FrameServiceBase(render_frame_host, std::move(request)),
       pref_service_(pref_service),
       get_origin_id_cb_(get_origin_id_cb),
+      allow_empty_origin_id_cb_(allow_empty_origin_id_cb),
       weak_factory_(this) {
   DVLOG(1) << __func__ << ": origin = " << origin();
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(pref_service_);
+  DCHECK(get_origin_id_cb_);
+  DCHECK(allow_empty_origin_id_cb_);
   DCHECK(!origin().opaque());
 }
 
@@ -690,10 +694,22 @@ void MediaDrmStorageImpl::OnOriginIdObtained(
     bool success,
     const MediaDrmOriginId& origin_id) {
   is_initialized_ = true;
-  if (success)
-    origin_id_ = origin_id;
 
+  if (!success) {
+    // Unable to get a pre-provisioned origin ID, so call
+    // |allow_empty_origin_id_cb_| to see if the empty origin ID is allowed.
+    allow_empty_origin_id_cb_.Run(
+        base::BindOnce(&MediaDrmStorageImpl::OnEmptyOriginIdAllowed,
+                       weak_factory_.GetWeakPtr()));
+    return;
+  }
+
+  origin_id_ = origin_id;
   std::move(init_cb_).Run(success, origin_id_);
+}
+
+void MediaDrmStorageImpl::OnEmptyOriginIdAllowed(bool allowed) {
+  std::move(init_cb_).Run(allowed, base::nullopt);
 }
 
 void MediaDrmStorageImpl::OnProvisioned(OnProvisionedCallback callback) {

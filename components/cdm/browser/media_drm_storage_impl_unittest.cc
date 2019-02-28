@@ -46,12 +46,21 @@ void CreateOriginId(MediaDrmStorageImpl::OriginIdObtainedCB callback) {
 }
 
 void CreateEmptyOriginId(MediaDrmStorageImpl::OriginIdObtainedCB callback) {
-  std::move(callback).Run(true, base::nullopt);
+  // |callback| has to fail in order to check if empty origin ID allowed.
+  std::move(callback).Run(false, base::nullopt);
 }
 
 void CreateOriginIdAsync(MediaDrmStorageImpl::OriginIdObtainedCB callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&CreateOriginId, std::move(callback)));
+}
+
+void AllowEmptyOriginId(base::OnceCallback<void(bool)> callback) {
+  std::move(callback).Run(true);
+}
+
+void DisallowEmptyOriginId(base::OnceCallback<void(bool)> callback) {
+  std::move(callback).Run(false);
 }
 
 }  // namespace
@@ -81,7 +90,9 @@ class MediaDrmStorageImplTest : public content::RenderViewHostTestHarness {
 
   std::unique_ptr<media::MediaDrmStorage> CreateMediaDrmStorage(
       content::RenderFrameHost* rfh,
-      MediaDrmStorageImpl::GetOriginIdCB get_origin_id_cb) {
+      MediaDrmStorageImpl::GetOriginIdCB get_origin_id_cb,
+      MediaDrmStorageImpl::AllowEmptyOriginIdCB allow_empty_cb =
+          base::BindRepeating(&AllowEmptyOriginId)) {
     media::mojom::MediaDrmStoragePtr media_drm_storage_ptr;
     auto request = mojo::MakeRequest(&media_drm_storage_ptr);
 
@@ -90,7 +101,8 @@ class MediaDrmStorageImplTest : public content::RenderViewHostTestHarness {
 
     // The created object will be destroyed on connection error.
     new MediaDrmStorageImpl(rfh, pref_service_.get(),
-                            std::move(get_origin_id_cb), std::move(request));
+                            std::move(get_origin_id_cb),
+                            std::move(allow_empty_cb), std::move(request));
 
     return std::move(media_drm_storage);
   }
@@ -393,6 +405,20 @@ TEST_F(MediaDrmStorageImplTest, AllowEmptyOriginId) {
 
   MediaDrmOriginId origin_id;
   storage->Initialize(base::BindOnce(OnMediaDrmStorageInit, true, &origin_id));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(origin_id);
+}
+
+TEST_F(MediaDrmStorageImplTest, DisallowEmptyOriginId) {
+  content::RenderFrameHost* rfh = SimulateNavigation(GURL(kTestOrigin2));
+
+  std::unique_ptr<media::MediaDrmStorage> storage =
+      CreateMediaDrmStorage(rfh, base::BindRepeating(&CreateEmptyOriginId),
+                            base::BindRepeating(&DisallowEmptyOriginId));
+
+  MediaDrmOriginId origin_id;
+  storage->Initialize(base::BindOnce(OnMediaDrmStorageInit, false, &origin_id));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(origin_id);

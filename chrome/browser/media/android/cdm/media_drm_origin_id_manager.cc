@@ -183,10 +183,6 @@ void AddOriginId(base::Value* origin_id_dict,
 // (successfully or not).
 class MediaDrmProvisionHelper {
  public:
-  using ProvisioningCompleteCallback =
-      base::OnceCallback<void(bool success,
-                              const base::UnguessableToken& origin_id)>;
-
   MediaDrmProvisionHelper() {
     DVLOG(1) << __func__;
     DCHECK(media::MediaDrmBridge::IsPerOriginProvisioningSupported());
@@ -197,7 +193,7 @@ class MediaDrmProvisionHelper {
                                 ->GetSharedURLLoaderFactory());
   }
 
-  void Provision(ProvisioningCompleteCallback callback) {
+  void Provision(MediaDrmOriginIdManager::ProvisionedOriginIdCB callback) {
     DVLOG(1) << __func__;
 
     complete_callback_ = std::move(callback);
@@ -257,12 +253,12 @@ class MediaDrmProvisionHelper {
     LOG_IF(WARNING, !success) << "Failed to provision origin ID";
     std::move(complete_callback_)
         .Run(success,
-             success ? std::move(origin_id_) : base::UnguessableToken::Null());
+             success ? base::make_optional(origin_id_) : base::nullopt);
     delete this;
   }
 
   media::CreateFetcherCB create_fetcher_cb_;
-  ProvisioningCompleteCallback complete_callback_;
+  MediaDrmOriginIdManager::ProvisionedOriginIdCB complete_callback_;
   base::UnguessableToken origin_id_;
   scoped_refptr<media::MediaDrmBridge> media_drm_bridge_;
 };
@@ -319,7 +315,14 @@ MediaDrmOriginIdManager::MediaDrmOriginIdManager(PrefService* pref_service)
   DCHECK(pref_service_);
 }
 
-MediaDrmOriginIdManager::~MediaDrmOriginIdManager() = default;
+MediaDrmOriginIdManager::~MediaDrmOriginIdManager() {
+  // Reject any pending requests.
+  while (!pending_provisioned_origin_id_cbs_.empty()) {
+    std::move(pending_provisioned_origin_id_cbs_.front())
+        .Run(false, base::nullopt);
+    pending_provisioned_origin_id_cbs_.pop();
+  }
+}
 
 void MediaDrmOriginIdManager::PreProvisionIfNecessary() {
   DVLOG(1) << __func__;
@@ -408,8 +411,9 @@ void MediaDrmOriginIdManager::StartProvisioning() {
 
 void MediaDrmOriginIdManager::OriginIdProvisioned(
     bool success,
-    const base::UnguessableToken& origin_id) {
-  DVLOG(1) << __func__ << " origin_id: " << origin_id.ToString()
+    const MediaDrmOriginId& origin_id) {
+  DVLOG(1) << __func__
+           << " origin_id: " << (origin_id ? origin_id->ToString() : "null")
            << ", success: " << success;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(is_provisioning_);
@@ -430,15 +434,11 @@ void MediaDrmOriginIdManager::OriginIdProvisioned(
       // pre-provisioning having been started).
       SetExpirableTokenIfNeeded(pref_service_);
 
-      // As this failed, satisfy all pending requests by returning an
-      // unprovisioned origin ID.
-      // TODO(crbug.com/917527): Return an empty origin ID once calling code
-      // can handle it.
+      // As this failed, satisfy all pending requests by returning false.
       base::queue<ProvisionedOriginIdCB> pending_requests;
       pending_requests.swap(pending_provisioned_origin_id_cbs_);
       while (!pending_requests.empty()) {
-        std::move(pending_requests.front())
-            .Run(true, base::UnguessableToken::Create());
+        std::move(pending_requests.front()).Run(false, base::nullopt);
         pending_requests.pop();
       }
     }
@@ -450,12 +450,13 @@ void MediaDrmOriginIdManager::OriginIdProvisioned(
   // Success, for at least one level. Pass |origin_id| to the first requestor if
   // somebody is waiting for it. Otherwise add it to the list of available
   // origin IDs in the preference.
+  DCHECK(origin_id);
   if (!pending_provisioned_origin_id_cbs_.empty()) {
     std::move(pending_provisioned_origin_id_cbs_.front()).Run(true, origin_id);
     pending_provisioned_origin_id_cbs_.pop();
   } else {
     DictionaryPrefUpdate update(pref_service_, kMediaDrmOriginIds);
-    AddOriginId(update.Get(), origin_id);
+    AddOriginId(update.Get(), origin_id.value());
 
     // If we already have enough pre-provisioned origin IDs, we're done.
     // Stop watching for network change events.
