@@ -84,6 +84,8 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // Otherwise, this function computes |NGOffsetMapping| and store in |storage|
   // as well as returning the pointer. The caller is responsible for keeping
   // |storage| for the life cycle of the returned |NGOffsetMapping|.
+  // TODO(yosin): We should get rid of |storage| parameter, since it is no
+  // longer used.
   static const NGOffsetMapping* GetOffsetMapping(
       LayoutBlockFlow* layout_block_flow,
       std::unique_ptr<NGOffsetMapping>* storage);

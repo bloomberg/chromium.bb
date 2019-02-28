@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/core/layout/line/line_width.h"
 #include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_absolute_utils.h"
@@ -445,6 +446,9 @@ void LayoutBlockFlow::UpdateBlockLayout(bool relayout_children) {
 
   if (RuntimeEnabledFeatures::TrackLayoutPassesPerBlockEnabled())
     IncrementLayoutPassCount();
+
+  if (rare_data_)
+    ClearOffsetMapping();
 
   if (!relayout_children && SimplifiedLayout())
     return;
@@ -4904,6 +4908,39 @@ void LayoutBlockFlow::IncrementLayoutPassCount() {
 
 int LayoutBlockFlow::GetLayoutPassCountForTesting() {
   return GetLayoutPassCountMap().find(this)->value;
+}
+
+LayoutBlockFlow::LayoutBlockFlowRareData::LayoutBlockFlowRareData(
+    const LayoutBlockFlow* block)
+    : margins_(PositiveMarginBeforeDefault(block),
+               NegativeMarginBeforeDefault(block),
+               PositiveMarginAfterDefault(block),
+               NegativeMarginAfterDefault(block)),
+      break_before_(static_cast<unsigned>(EBreakBetween::kAuto)),
+      break_after_(static_cast<unsigned>(EBreakBetween::kAuto)),
+      line_break_to_avoid_widow_(-1),
+      did_break_at_line_to_avoid_widow_(false),
+      discard_margin_before_(false),
+      discard_margin_after_(false) {}
+
+LayoutBlockFlow::LayoutBlockFlowRareData::~LayoutBlockFlowRareData() = default;
+
+void LayoutBlockFlow::ClearOffsetMapping() {
+  DCHECK(!IsLayoutNGObject());
+  DCHECK(rare_data_);
+  rare_data_->offset_mapping_.reset();
+}
+
+const NGOffsetMapping* LayoutBlockFlow::GetOffsetMapping() const {
+  DCHECK(!IsLayoutNGObject());
+  return rare_data_ ? rare_data_->offset_mapping_.get() : nullptr;
+}
+
+void LayoutBlockFlow::SetOffsetMapping(
+    std::unique_ptr<NGOffsetMapping> offset_mapping) {
+  DCHECK(!IsLayoutNGObject());
+  DCHECK(offset_mapping);
+  EnsureRareData().offset_mapping_ = std::move(offset_mapping);
 }
 
 }  // namespace blink
