@@ -532,7 +532,8 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   }
 
   if (response.IsLegacyTLSVersion()) {
-    UseCounter::Count(GetFrame(), WebFeature::kLegacyTLSVersionInSubresource);
+    UseCounter::Count(frame_or_imported_document_->GetDocument(),
+                      WebFeature::kLegacyTLSVersionInSubresource);
     GetLocalFrameClient()->ReportLegacyTLSVersion(response.CurrentRequestUrl());
   }
 
