@@ -51,4 +51,9 @@ void BaseAgent::RequestBufferStatus(
   std::move(callback).Run(0 /* capacity */, 0 /* count */);
 }
 
+void BaseAgent::WaitForTracingEnabled(
+    Agent::WaitForTracingEnabledCallback callback) {
+  std::move(callback).Run();
+}
+
 }  // namespace tracing
