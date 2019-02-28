@@ -2578,6 +2578,86 @@ TEST_F(DCLayerOverlayTest, DamageRectWithoutVideoDamage) {
   }
 }
 
+TEST_F(DCLayerOverlayTest, DamageRectWithNonRootOverlay) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({features::kDirectCompositionUnderlays,
+                                 features::kDirectCompositionNonrootOverlays},
+                                {});
+  {
+    // A root solid quad
+    std::unique_ptr<RenderPass> root_pass = CreateRenderPass();
+    CreateOpaqueQuadAt(
+        resource_provider_.get(), root_pass->shared_quad_state_list.back(),
+        root_pass.get(), gfx::Rect(210, 0, 20, 20), SK_ColorWHITE);
+
+    // A non-root video quad
+    std::unique_ptr<RenderPass> nonroot_pass = CreateRenderPass();
+    auto* video_quad = CreateFullscreenCandidateYUVVideoQuad(
+        resource_provider_.get(), child_resource_provider_.get(),
+        child_provider_.get(), nonroot_pass->shared_quad_state_list.back(),
+        nonroot_pass.get());
+    video_quad->rect = gfx::Rect(0, 0, 200, 200);
+    video_quad->visible_rect = video_quad->rect;
+
+    DCLayerOverlayList dc_layer_list;
+    OverlayCandidateList overlay_list;
+    OverlayProcessor::FilterOperationsMap render_pass_filters;
+    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
+    // Damage rect fully outside video quad
+    damage_rect_ = gfx::Rect(210, 0, 20, 20);
+    RenderPassList pass_list;
+    pass_list.push_back(std::move(nonroot_pass));
+    pass_list.push_back(std::move(root_pass));
+    overlay_processor_->ProcessForOverlays(
+        resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
+        render_pass_filters, render_pass_backdrop_filters, &overlay_list,
+        nullptr, &dc_layer_list, &damage_rect_, &content_bounds_);
+    EXPECT_EQ(0U, overlay_list.size());
+    EXPECT_EQ(1U, dc_layer_list.size());
+    EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
+    EXPECT_EQ(-1, dc_layer_list.back().z_order);
+    // damage_rect returned from ProcessForOverlays() is for root render pass
+    // only. Non-root damage rect is not included.
+    EXPECT_EQ(gfx::Rect(210, 0, 20, 20), damage_rect_);
+  }
+  {
+    // A root solid quad
+    std::unique_ptr<RenderPass> root_pass = CreateRenderPass();
+    CreateOpaqueQuadAt(
+        resource_provider_.get(), root_pass->shared_quad_state_list.back(),
+        root_pass.get(), gfx::Rect(210, 0, 20, 20), SK_ColorWHITE);
+
+    // A non-root video quad
+    std::unique_ptr<RenderPass> nonroot_pass = CreateRenderPass();
+    auto* video_quad = CreateFullscreenCandidateYUVVideoQuad(
+        resource_provider_.get(), child_resource_provider_.get(),
+        child_provider_.get(), nonroot_pass->shared_quad_state_list.back(),
+        nonroot_pass.get());
+    video_quad->rect = gfx::Rect(0, 0, 200, 200);
+    video_quad->visible_rect = video_quad->rect;
+
+    DCLayerOverlayList dc_layer_list;
+    OverlayCandidateList overlay_list;
+    OverlayProcessor::FilterOperationsMap render_pass_filters;
+    OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
+    // Damage rect fully outside video quad
+    damage_rect_ = gfx::Rect(210, 0, 20, 20);
+    RenderPassList pass_list;
+    pass_list.push_back(std::move(nonroot_pass));
+    pass_list.push_back(std::move(root_pass));
+    overlay_processor_->ProcessForOverlays(
+        resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
+        render_pass_filters, render_pass_backdrop_filters, &overlay_list,
+        nullptr, &dc_layer_list, &damage_rect_, &content_bounds_);
+    EXPECT_EQ(0U, overlay_list.size());
+    EXPECT_EQ(1U, dc_layer_list.size());
+    EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
+    EXPECT_EQ(-1, dc_layer_list.back().z_order);
+    // Nonroot damage_rect from the previous frame should be added to this frame
+    EXPECT_EQ(gfx::Rect(0, 0, 230, 200), damage_rect_);
+  }
+}
+
 TEST_F(DCLayerOverlayTest, DamageRect) {
   for (int i = 0; i < 2; i++) {
     std::unique_ptr<RenderPass> pass = CreateRenderPass();
