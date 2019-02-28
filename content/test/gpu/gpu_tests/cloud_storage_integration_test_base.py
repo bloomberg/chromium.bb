@@ -135,6 +135,12 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       '--buildbucket-build-id',
       help='For Skia Gold integration. Buildbucket build ID.',
       default='')
+    parser.add_option(
+      '--no-skia-gold-failure',
+      action='store_true', default=False,
+      help='For Skia Gold integration. Always report that the test passed even '
+           'if the Skia Gold image comparison reported a failure, but '
+           'otherwise perform the same steps as usual.')
 
   def _CompareScreenshotSamples(self, tab, screenshot, expected_colors,
                                 tolerance, device_pixel_ratio,
@@ -443,7 +449,7 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     try:
       if not self.GetParsedCommandLineOptions().no_luci_auth:
         subprocess.check_output([goldctl_bin, 'auth', '--luci',
-                                 '--workdir', self._skia_gold_temp_dir],
+                                 '--work-dir', self._skia_gold_temp_dir],
             stderr=subprocess.STDOUT)
       cmd = ([goldctl_bin, 'imgtest', 'add'] + mode +
                             ['--test-name', image_name,
@@ -463,7 +469,8 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
         logging.error('Failed to read contents of goldctl failure file')
       logging.error('goldctl failed with output: %s', e.output)
       self._MaybeOutputSkiaGoldLink()
-      raise Exception('goldctl command failed: ' + contents)
+      if not self.GetParsedCommandLineOptions().no_skia_gold_failure:
+        raise Exception('goldctl command failed: ' + contents)
 
   def _ValidateScreenshotSamplesWithSkiaGold(self, tab, page, screenshot,
                                              expectations, tolerance,
