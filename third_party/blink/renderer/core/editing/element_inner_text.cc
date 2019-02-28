@@ -85,12 +85,6 @@ class ElementInnerTextCollector final {
   // Result character buffer.
   Result result_;
 
-  // Remember last |NGOffsetMapping| to avoid repeated offset mapping
-  // computation.
-  const LayoutBlockFlow* last_offset_mapping_block_flow_ = nullptr;
-  const NGOffsetMapping* last_offset_mapping_ = nullptr;
-  std::unique_ptr<NGOffsetMapping> offset_mapping_storage_;
-
   DISALLOW_COPY_AND_ASSIGN(ElementInnerTextCollector);
 };
 
@@ -220,14 +214,7 @@ const NGOffsetMapping* ElementInnerTextCollector::GetOffsetMapping(
   LayoutBlockFlow* const block_flow =
       NGOffsetMapping::GetInlineFormattingContextOf(layout_text);
   DCHECK(block_flow) << layout_text;
-  if (block_flow == last_offset_mapping_block_flow_)
-    return last_offset_mapping_;
-  const NGOffsetMapping* const mapping =
-      NGInlineNode::GetOffsetMapping(block_flow, &offset_mapping_storage_);
-  DCHECK(mapping) << layout_text;
-  last_offset_mapping_block_flow_ = block_flow;
-  last_offset_mapping_ = mapping;
-  return mapping;
+  return NGInlineNode::GetOffsetMapping(block_flow);
 }
 
 void ElementInnerTextCollector::ProcessChildren(const Node& container) {

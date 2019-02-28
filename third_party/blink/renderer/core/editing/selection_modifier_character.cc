@@ -528,8 +528,7 @@ PositionWithAffinityTemplate<Strategy> TraverseWithBidiCaretAffinity(
   }
 
   DCHECK(context->IsLayoutNGMixin());
-  const NGOffsetMapping* mapping =
-      NGInlineNode::GetOffsetMapping(context, nullptr);
+  const NGOffsetMapping* mapping = NGInlineNode::GetOffsetMapping(context);
   DCHECK(mapping);
 
   const base::Optional<unsigned> start_offset =

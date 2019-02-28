@@ -360,7 +360,6 @@ void FindBuffer::CollectTextUntilBlockBoundary(
       mapping_needs_recalc_ = true;
       node = first_traversed_node;
       last_block_flow = nullptr;
-      offset_mapping_storage_ = nullptr;
       buffer_.clear();
       invisible_layout_scope_.EnsureRecalc(block_ancestor);
       continue;
@@ -398,7 +397,6 @@ void FindBuffer::CollectTextUntilBlockBoundary(
         break;
       }
       if (!last_block_flow) {
-        DCHECK(!offset_mapping_storage_);
         last_block_flow = &block_flow;
       }
       AddTextToBuffer(text_node, block_flow, range);
@@ -458,8 +456,7 @@ void FindBuffer::AddTextToBuffer(const Text& text_node,
                                  LayoutBlockFlow& block_flow,
                                  const EphemeralRangeInFlatTree& range) {
   if (!offset_mapping_ || mapping_needs_recalc_) {
-    offset_mapping_ =
-        NGInlineNode::GetOffsetMapping(&block_flow, &offset_mapping_storage_);
+    offset_mapping_ = NGInlineNode::GetOffsetMapping(&block_flow);
     mapping_needs_recalc_ = false;
   }
 

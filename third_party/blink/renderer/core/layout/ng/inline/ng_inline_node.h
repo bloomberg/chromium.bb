@@ -76,19 +76,10 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // This funciton must be called with clean layout.
   const NGOffsetMapping* ComputeOffsetMappingIfNeeded();
 
-  // Get |NGOffsetMapping| for the |layout_block_flow|. If |layout_block_flow|
-  // is LayoutNG and it is already laid out, this function is the same as
-  // |ComputeOffsetMappingIfNeeded|. |storage| is not used in this case, and can
-  // be null.
-  //
-  // Otherwise, this function computes |NGOffsetMapping| and store in |storage|
-  // as well as returning the pointer. The caller is responsible for keeping
-  // |storage| for the life cycle of the returned |NGOffsetMapping|.
-  // TODO(yosin): We should get rid of |storage| parameter, since it is no
-  // longer used.
+  // Get |NGOffsetMapping| for the |layout_block_flow|. |layout_block_flow|
+  // should be laid out. This function works for both new and legacy layout.
   static const NGOffsetMapping* GetOffsetMapping(
-      LayoutBlockFlow* layout_block_flow,
-      std::unique_ptr<NGOffsetMapping>* storage);
+      LayoutBlockFlow* layout_block_flow);
 
   bool IsBidiEnabled() const { return Data().is_bidi_enabled_; }
   TextDirection BaseDirection() const { return Data().BaseDirection(); }

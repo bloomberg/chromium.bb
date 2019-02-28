@@ -201,7 +201,7 @@ const NGOffsetMapping* NGOffsetMapping::GetFor(const Position& position) {
   LayoutBlockFlow* context = NGInlineFormattingContextOf(position);
   if (!context)
     return nullptr;
-  return NGInlineNode::GetOffsetMapping(context, nullptr);
+  return NGInlineNode::GetOffsetMapping(context);
 }
 
 // static
@@ -214,7 +214,7 @@ const NGOffsetMapping* NGOffsetMapping::GetFor(
   LayoutBlockFlow* context = layout_object->ContainingNGBlockFlow();
   if (!context)
     return nullptr;
-  return NGInlineNode::GetOffsetMapping(context, nullptr);
+  return NGInlineNode::GetOffsetMapping(context);
 }
 
 // static

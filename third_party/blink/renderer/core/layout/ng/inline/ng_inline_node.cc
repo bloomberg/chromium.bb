@@ -459,8 +459,7 @@ void NGInlineNode::ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
 }
 
 const NGOffsetMapping* NGInlineNode::GetOffsetMapping(
-    LayoutBlockFlow* layout_block_flow,
-    std::unique_ptr<NGOffsetMapping>* storage) {
+    LayoutBlockFlow* layout_block_flow) {
   DCHECK(!layout_block_flow->GetDocument().NeedsLayoutTreeUpdate());
 
   // If |layout_block_flow| is LayoutNG, compute from |NGInlineNode|.
@@ -474,7 +473,6 @@ const NGOffsetMapping* NGInlineNode::GetOffsetMapping(
   // |LayoutBlockFlowRateData|.
   if (const NGOffsetMapping* mapping = layout_block_flow->GetOffsetMapping())
     return mapping;
-  DCHECK(storage);
   NGInlineNodeData data;
   ComputeOffsetMapping(layout_block_flow, &data);
   NGOffsetMapping* const mapping = data.offset_mapping.get();
