@@ -101,8 +101,8 @@ class InstantService : public KeyedService,
   bool UndoCustomLinkAction();
   // Invoked when the Instant page wants to delete all custom links and use Most
   // Visited sites instead. Returns false and does nothing if the profile is
-  // using a non-Google search provider. Marked virtual for mocking in tests.
-  virtual bool ResetCustomLinks();
+  // using a non-Google search provider.
+  bool ResetCustomLinks();
 
   // Invoked by the InstantController to update theme information for NTP.
   //
@@ -145,10 +145,6 @@ class InstantService : public KeyedService,
 
   // Check if a custom background has been set by the user.
   bool IsCustomBackgroundSet();
-
-  // Reset all NTP customizations to default. Marked virtual for mocking in
-  // tests.
-  virtual void ResetToDefault();
 
  private:
   class SearchProviderObserver;
@@ -194,8 +190,7 @@ class InstantService : public KeyedService,
 
   void ApplyCustomBackgroundThemeInfo();
 
-  // Marked virtual for mocking in tests.
-  virtual void ResetCustomBackgroundThemeInfo();
+  void ResetCustomBackgroundThemeInfo();
 
   void FallbackToDefaultThemeInfo();
 
