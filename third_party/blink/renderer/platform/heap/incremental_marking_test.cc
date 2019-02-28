@@ -38,7 +38,7 @@ class BackingVisitor : public Visitor {
     header->Unmark();
     GCInfoTable::Get()
         .GCInfoFromIndex(header->GcInfoIndex())
-        ->trace_(this, header->Payload());
+        ->trace(this, header->Payload());
   }
 
   void Visit(void* obj, TraceDescriptor desc) final {

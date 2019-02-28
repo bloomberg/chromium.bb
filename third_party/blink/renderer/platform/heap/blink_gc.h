@@ -25,7 +25,6 @@ using MarkingVisitorCallback = void (*)(MarkingVisitor*, void*);
 using TraceCallback = VisitorCallback;
 using WeakCallback = VisitorCallback;
 using EphemeronCallback = VisitorCallback;
-using NameCallback = const char* (*)(const void* self);
 
 // Simple alias to avoid heap compaction type signatures turning into
 // a sea of generic |void*|s.

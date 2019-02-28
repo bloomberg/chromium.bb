@@ -26,7 +26,8 @@ class ScriptWrappableVisitorVerifier final : public ScriptWrappableVisitor {
         HeapObjectHeader::FromPayload(descriptor.base_object_payload);
     const char* name = GCInfoTable::Get()
                            .GCInfoFromIndex(header->GcInfoIndex())
-                           ->name_(descriptor.base_object_payload);
+                           ->name(descriptor.base_object_payload)
+                           .value;
     // If this FATAL is hit, it means that a white (not discovered by
     // Trace) object was assigned as a member to a black object (already
     // processed by Trace). The black object will not be processed anymore

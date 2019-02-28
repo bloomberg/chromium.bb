@@ -37,7 +37,7 @@ TEST(NameTraitTest, InternalNamesHiddenInOfficialBuild) {
 
 TEST(NameTraitTest, DefaultName) {
   ClassWithoutName no_name;
-  const char* name = NameTrait<ClassWithoutName>::GetName(&no_name);
+  const char* name = NameTrait<ClassWithoutName>::GetName(&no_name).value;
   if (NameTrait<ClassWithoutName>::HideInternalName()) {
     EXPECT_EQ(0, strcmp(name, "InternalNode"));
   } else {
@@ -47,7 +47,7 @@ TEST(NameTraitTest, DefaultName) {
 
 TEST(NameTraitTest, CustomName) {
   ClassWithName with_name("CustomName");
-  const char* name = NameTrait<ClassWithName>::GetName(&with_name);
+  const char* name = NameTrait<ClassWithName>::GetName(&with_name).value;
   EXPECT_EQ(0, strcmp(name, "CustomName"));
 }
 

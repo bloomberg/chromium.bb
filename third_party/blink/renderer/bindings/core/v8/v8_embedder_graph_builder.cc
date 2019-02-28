@@ -166,7 +166,8 @@ void V8EmbedderGraphBuilder::VisitWithWrappers(
       GCInfoTable::Get()
           .GCInfoFromIndex(
               HeapObjectHeader::FromPayload(traceable)->GcInfoIndex())
-          ->name_(traceable);
+          ->name(traceable)
+          .value;
   EmbedderNode* graph_node =
       GraphNode(traceable, name, nullptr, current_parent_->GetDomTreeState());
   graph_->AddEdge(current_parent_, graph_node);
