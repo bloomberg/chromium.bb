@@ -370,17 +370,26 @@ void CanvasRenderingContext2D::ScrollPathIntoViewInternal(const Path& path) {
   // Then we clip the bounding box to the canvas visible range.
   path_rect.Intersect(canvas_rect);
 
+  // Horizontal text is aligned at the top of the screen
+  ScrollAlignment horizontal_scroll_mode =
+      ScrollAlignment::kAlignToEdgeIfNeeded;
+  ScrollAlignment vertical_scroll_mode = ScrollAlignment::kAlignTopAlways;
+
+  // Vertical text needs be aligned horizontally on the screen
   bool is_horizontal_writing_mode =
       canvas()->EnsureComputedStyle()->IsHorizontalWritingMode();
-
+  if (!is_horizontal_writing_mode) {
+    bool is_right_to_left =
+        canvas()->EnsureComputedStyle()->IsFlippedBlocksWritingMode();
+    horizontal_scroll_mode =
+        (is_right_to_left ? ScrollAlignment::kAlignRightAlways
+                          : ScrollAlignment::kAlignLeftAlways);
+    vertical_scroll_mode = ScrollAlignment::kAlignToEdgeIfNeeded;
+  }
   renderer->ScrollRectToVisible(
       path_rect,
-      WebScrollIntoViewParams(
-          is_horizontal_writing_mode ? ScrollAlignment::kAlignToEdgeIfNeeded
-                                     : ScrollAlignment::kAlignLeftAlways,
-          !is_horizontal_writing_mode ? ScrollAlignment::kAlignToEdgeIfNeeded
-                                      : ScrollAlignment::kAlignTopAlways,
-          kProgrammaticScroll, false, kScrollBehaviorAuto));
+      WebScrollIntoViewParams(horizontal_scroll_mode, vertical_scroll_mode,
+                              kProgrammaticScroll, false, kScrollBehaviorAuto));
 }
 
 void CanvasRenderingContext2D::clearRect(double x,
