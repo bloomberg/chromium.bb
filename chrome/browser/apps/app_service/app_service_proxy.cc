@@ -55,7 +55,7 @@ apps::mojom::AppServicePtr& AppServiceProxy::AppService() {
   return app_service_;
 }
 
-AppRegistryCache& AppServiceProxy::Cache() {
+apps::AppRegistryCache& AppServiceProxy::AppRegistryCache() {
   return cache_;
 }
 

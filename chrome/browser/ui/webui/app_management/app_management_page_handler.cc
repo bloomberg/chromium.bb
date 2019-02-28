@@ -55,7 +55,7 @@ AppManagementPageHandler::AppManagementPageHandler(
   if (!proxy)
     return;
 
-  Observe(&proxy->Cache());
+  Observe(&proxy->AppRegistryCache());
 }
 
 AppManagementPageHandler::~AppManagementPageHandler() {}
@@ -71,10 +71,11 @@ void AppManagementPageHandler::OnPinnedChanged(const std::string& app_id,
 
   app_management::mojom::AppPtr app;
 
-  proxy->Cache().ForOneApp(app_id, [this, &app](const apps::AppUpdate& update) {
-    if (update.Readiness() == apps::mojom::Readiness::kReady)
-      app = CreateUIAppPtr(update);
-  });
+  proxy->AppRegistryCache().ForOneApp(
+      app_id, [this, &app](const apps::AppUpdate& update) {
+        if (update.Readiness() == apps::mojom::Readiness::kReady)
+          app = CreateUIAppPtr(update);
+      });
 
   // If an app with this id is not already installed, do nothing.
   if (!app)
@@ -94,11 +95,12 @@ void AppManagementPageHandler::GetApps(GetAppsCallback callback) {
     return;
 
   std::vector<app_management::mojom::AppPtr> apps;
-  proxy->Cache().ForEachApp([this, &apps](const apps::AppUpdate& update) {
-    if (update.ShowInManagement() == apps::mojom::OptionalBool::kTrue) {
-      apps.push_back(CreateUIAppPtr(update));
-    }
-  });
+  proxy->AppRegistryCache().ForEachApp(
+      [this, &apps](const apps::AppUpdate& update) {
+        if (update.ShowInManagement() == apps::mojom::OptionalBool::kTrue) {
+          apps.push_back(CreateUIAppPtr(update));
+        }
+      });
 
   std::move(callback).Run(std::move(apps));
 }
