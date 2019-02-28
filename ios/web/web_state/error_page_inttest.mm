@@ -11,8 +11,11 @@
 #include "ios/web/public/features.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/reload_type.h"
+#include "ios/web/public/security_style.h"
+#include "ios/web/public/ssl_status.h"
 #include "ios/web/public/test/element_selector.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
+#include "ios/web/public/test/fakes/test_web_state_observer.h"
 #import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
@@ -99,13 +102,20 @@ class ErrorPageTest
 
   void SetUp() override {
     WebTestWithWebState::SetUp();
+
+    web_state_observer_ = std::make_unique<TestWebStateObserver>(web_state());
     ASSERT_TRUE(server_.Start());
+  }
+
+  TestDidChangeVisibleSecurityStateInfo* security_state_info() {
+    return web_state_observer_->did_change_visible_security_state_info();
   }
 
   net::EmbeddedTestServer server_;
   bool server_responds_with_content_ = false;
 
  private:
+  std::unique_ptr<TestWebStateObserver> web_state_observer_;
   base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(ErrorPageTest);
 };
@@ -119,6 +129,7 @@ TEST_P(ErrorPageTest, ReloadErrorPage) {
       web_state(), GetErrorText(web_state(), server_.GetURL("/echo-query?foo"),
                                 "NSURLErrorDomain", /*error_code*/ -1005,
                                 /*is_post*/ false, /*is_otr*/ false)));
+  ASSERT_FALSE(security_state_info());
 
   // Reload the page, which should load without errors.
   server_responds_with_content_ = true;
@@ -142,6 +153,10 @@ TEST_P(ErrorPageTest, ReloadPageAfterServerIsDown) {
       web_state(), GetErrorText(web_state(), server_.GetURL("/echo-query?foo"),
                                 "NSURLErrorDomain", /*error_code*/ -1005,
                                 /*is_post*/ false, /*is_otr*/ false)));
+  ASSERT_TRUE(security_state_info());
+  ASSERT_TRUE(security_state_info()->visible_ssl_status);
+  EXPECT_EQ(SECURITY_STYLE_UNKNOWN,
+            security_state_info()->visible_ssl_status->security_style);
 }
 
 // Sucessfully loads the page, goes back, stops the server, goes forward and
@@ -175,6 +190,10 @@ TEST_P(ErrorPageTest, GoForwardAfterServerIsDownAndReload) {
       web_state(), GetErrorText(web_state(), server_.GetURL("/echo-query?foo"),
                                 "NSURLErrorDomain", /*error_code*/ -1005,
                                 /*is_post*/ false, /*is_otr*/ false)));
+  ASSERT_TRUE(security_state_info());
+  ASSERT_TRUE(security_state_info()->visible_ssl_status);
+  EXPECT_EQ(SECURITY_STYLE_UNKNOWN,
+            security_state_info()->visible_ssl_status->security_style);
 #endif  // TARGET_IPHONE_SIMULATOR
 }
 
@@ -203,6 +222,10 @@ TEST_P(ErrorPageTest, GoBackFromErrorPageAndForwardToErrorPage) {
       web_state(), GetErrorText(web_state(), server_.GetURL("/close-socket"),
                                 "NSURLErrorDomain", /*error_code*/ -1005,
                                 /*is_post*/ false, /*is_otr*/ false)));
+  ASSERT_TRUE(security_state_info());
+  ASSERT_TRUE(security_state_info()->visible_ssl_status);
+  EXPECT_EQ(SECURITY_STYLE_UNKNOWN,
+            security_state_info()->visible_ssl_status->security_style);
 }
 
 // Sucessfully loads the page, then loads the URL which fails to load, then
@@ -236,6 +259,10 @@ TEST_P(ErrorPageTest,
       web_state(), GetErrorText(web_state(), server_.GetURL("/close-socket"),
                                 "NSURLErrorDomain", /*error_code*/ -1005,
                                 /*is_post*/ false, /*is_otr*/ false)));
+  ASSERT_TRUE(security_state_info());
+  ASSERT_TRUE(security_state_info()->visible_ssl_status);
+  EXPECT_EQ(SECURITY_STYLE_UNKNOWN,
+            security_state_info()->visible_ssl_status->security_style);
 }
 
 // Loads the URL which redirects to unresponsive server.
