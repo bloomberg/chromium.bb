@@ -235,12 +235,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
       deps += [ ":$_unwind_asset" ]
     }
 
-    # This is a list of all our base module library dependencies. New features
-    # should be added to this list.
-    deps += [
-      "//chrome/android:chrome_java",
-      "//chrome/android/features/media_router:java",
-    ]
+    deps += [ "//chrome/android:chrome_all_java" ]
 
     if (enable_vr && (_target_type == "android_apk" || !modularize_vr)) {
       deps += [ "//chrome/browser/android/vr:java" ]
