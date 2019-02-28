@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.download;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -21,6 +20,7 @@ import android.text.TextUtils;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
+import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
@@ -570,7 +570,7 @@ public class DownloadUtils {
      * @return URI that points at that file, either as a content:// URI or a file:// URI.
      */
     public static Uri getUriForItem(String filePath) {
-        if (isContentUri(filePath)) return Uri.parse(filePath);
+        if (ContentUriUtils.isContentUri(filePath)) return Uri.parse(filePath);
 
         Uri uri = null;
 
@@ -588,7 +588,7 @@ public class DownloadUtils {
 
     @CalledByNative
     private static String getUriStringForPath(String filePath) {
-        if (isContentUri(filePath)) return filePath;
+        if (ContentUriUtils.isContentUri(filePath)) return filePath;
         Uri uri = getUriForItem(filePath);
         return uri != null ? uri.toString() : new String();
     }
@@ -633,7 +633,7 @@ public class DownloadUtils {
             // Share URIs use the content:// scheme when able, which looks bad when displayed
             // in the URL bar.
             Uri fileUri = contentUri;
-            if (!isContentUri(filePath)) {
+            if (!ContentUriUtils.isContentUri(filePath)) {
                 File file = new File(filePath);
                 fileUri = Uri.fromFile(file);
             }
@@ -650,7 +650,7 @@ public class DownloadUtils {
         try {
             // TODO(qinmin): Move this to an AsyncTask so we don't need to temper with strict mode.
             StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-            Uri uri = isContentUri(filePath)
+            Uri uri = ContentUriUtils.isContentUri(filePath)
                     ? contentUri
                     : ApiCompatibilityUtils.getUriForDownloadedFile(new File(filePath));
             StrictMode.setThreadPolicy(oldPolicy);
@@ -1209,15 +1209,6 @@ public class DownloadUtils {
             }
         }
         return originalUri;
-    }
-
-    /**
-     * @return whether a Uri has content scheme.
-     */
-    public static boolean isContentUri(String uri) {
-        if (uri == null) return false;
-        Uri parsedUri = Uri.parse(uri);
-        return parsedUri != null && ContentResolver.SCHEME_CONTENT.equals(parsedUri.getScheme());
     }
 
     private static native String nativeGetFailStateMessage(@FailState int failState);

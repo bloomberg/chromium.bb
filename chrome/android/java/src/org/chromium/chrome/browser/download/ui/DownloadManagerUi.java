@@ -50,7 +50,6 @@ import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.download.R;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -126,15 +125,14 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
             List<DownloadHistoryItemWrapper> items = (List<DownloadHistoryItemWrapper>) actionData;
 
             // Deletion was not undone. Remove downloads from backend.
-            final ArrayList<File> filesToDelete = new ArrayList<>();
+            final ArrayList<String> filesToDelete = new ArrayList<>();
 
             // Some types of DownloadHistoryItemWrappers delete their own files when #remove()
             // is called. Determine which files are not deleted by the #remove() call.
             // TODO(qinmin): handle the case wrappedItem.getFilePath() returns a content Uri.
             for (int i = 0; i < items.size(); i++) {
                 DownloadHistoryItemWrapper wrappedItem  = items.get(i);
-                if (!wrappedItem.removePermanently())
-                    filesToDelete.add(new File(wrappedItem.getFilePath()));
+                if (!wrappedItem.removePermanently()) filesToDelete.add(wrappedItem.getFilePath());
             }
 
             // Delete the files associated with the download items (if necessary) using a single

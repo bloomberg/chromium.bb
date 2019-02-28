@@ -8,6 +8,7 @@
 #include "base/format_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_interrupt_reasons_utils.h"
 #include "components/download/public/common/download_save_info.h"
@@ -18,6 +19,10 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/resource_request.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/content_uri_utils.h"
+#endif
 
 namespace download {
 
@@ -532,7 +537,12 @@ bool IsDownloadDone(const GURL& url,
 
 bool DeleteDownloadedFile(const base::FilePath& path) {
   DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
-
+#if defined(OS_ANDROID)
+  if (path.IsContentUri()) {
+    base::DeleteContentUri(path);
+    return true;
+  }
+#endif
   // Make sure we only delete files.
   if (base::DirectoryExists(path))
     return true;
