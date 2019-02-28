@@ -104,7 +104,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableFileSystem(bool);
   BLINK_PLATFORM_EXPORT static void EnableFirstContentfulPaintPlusPlus(bool);
   BLINK_PLATFORM_EXPORT static void EnableForceTallerSelectPopup(bool);
-  BLINK_PLATFORM_EXPORT static void EnableGamepadVibration(bool);
   BLINK_PLATFORM_EXPORT static void EnableGenericSensor(bool);
   BLINK_PLATFORM_EXPORT static void EnableGenericSensorExtraClasses(bool);
   BLINK_PLATFORM_EXPORT static void EnableHeapCompaction(bool);

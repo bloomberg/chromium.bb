@@ -184,10 +184,6 @@ const base::Feature kFramebustingNeedsSameOriginOrUserGesture{
 const base::Feature kFreezeFramesOnVisibility{
     "FreezeFramesOnVisibility", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables haptic vibration effects on supported gamepads.
-const base::Feature kGamepadVibration{"GamepadVibration",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Puts network quality estimate related Web APIs in the holdback mode. When the
 // holdback is enabled the related Web APIs return network quality estimate
 // set by the experiment (regardless of the actual quality).

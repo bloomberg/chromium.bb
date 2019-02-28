@@ -641,9 +641,6 @@ extern const char kForceUiDirectionDescription[];
 extern const char kFramebustingName[];
 extern const char kFramebustingDescription[];
 
-extern const char kGamepadVibrationName[];
-extern const char kGamepadVibrationDescription[];
-
 extern const char kGpuRasterizationName[];
 extern const char kGpuRasterizationDescription[];
 extern const char kForceGpuRasterization[];
