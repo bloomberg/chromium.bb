@@ -152,34 +152,59 @@ void MediaInterfaceProxy::CreateVideoDecoder(
     factory->CreateVideoDecoder(std::move(request));
 }
 
+// TODO(https://crbug.com/936528) : remove this method.
 void MediaInterfaceProxy::CreateRenderer(
     media::mojom::HostedRendererType type,
-    const std::string& type_specific_id,
+    const std::string& audio_device_id,
+    media::mojom::RendererRequest renderer) {
+  DCHECK_EQ(type, media::mojom::HostedRendererType::kDefault);
+  CreateDefaultRenderer(audio_device_id, std::move(renderer));
+}
+
+void MediaInterfaceProxy::CreateDefaultRenderer(
+    const std::string& audio_device_id,
     media::mojom::RendererRequest request) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-#if defined(OS_ANDROID)
-  if (type == media::mojom::HostedRendererType::kMediaPlayer) {
-    CreateMediaPlayerRenderer(std::move(request));
-    return;
-  }
-
-  if (type == media::mojom::HostedRendererType::kFlinging) {
-    std::unique_ptr<FlingingRenderer> renderer =
-        FlingingRenderer::Create(render_frame_host_, type_specific_id);
-
-    media::MojoRendererService::Create(
-        nullptr, std::move(renderer),
-        media::MojoRendererService::InitiateSurfaceRequestCB(),
-        std::move(request));
-    return;
-  }
-#endif
-
   InterfaceFactory* factory = GetMediaInterfaceFactory();
   if (factory)
-    factory->CreateRenderer(type, type_specific_id, std::move(request));
+    factory->CreateDefaultRenderer(audio_device_id, std::move(request));
 }
+
+#if defined(OS_ANDROID)
+void MediaInterfaceProxy::CreateFlingingRenderer(
+    const std::string& presentation_id,
+    media::mojom::RendererRequest request) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  std::unique_ptr<FlingingRenderer> renderer =
+      FlingingRenderer::Create(render_frame_host_, presentation_id);
+
+  media::MojoRendererService::Create(
+      nullptr, std::move(renderer),
+      media::MojoRendererService::InitiateSurfaceRequestCB(),
+      std::move(request));
+}
+
+void MediaInterfaceProxy::CreateMediaPlayerRenderer(
+    media::mojom::RendererRequest request) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  auto renderer = std::make_unique<MediaPlayerRenderer>(
+      render_frame_host_->GetProcess()->GetID(),
+      render_frame_host_->GetRoutingID(),
+      static_cast<RenderFrameHostImpl*>(render_frame_host_)
+          ->delegate()
+          ->GetAsWebContents());
+
+  // base::Unretained is safe here because the lifetime of the MediaPlayerRender
+  // is tied to the lifetime of the MojoRendererService.
+  media::MojoRendererService::InitiateSurfaceRequestCB surface_request_cb =
+      base::BindRepeating(&MediaPlayerRenderer::InitiateScopedSurfaceRequest,
+                          base::Unretained(renderer.get()));
+
+  media::MojoRendererService::Create(nullptr, std::move(renderer),
+                                     surface_request_cb, std::move(request));
+}
+#endif
 
 void MediaInterfaceProxy::CreateCdm(
     const std::string& key_system,
@@ -385,26 +410,4 @@ void MediaInterfaceProxy::CreateCdmProxyInternal(
     factory->CreateCdmProxy(cdm_guid, std::move(request));
 }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
-
-#if defined(OS_ANDROID)
-void MediaInterfaceProxy::CreateMediaPlayerRenderer(
-    media::mojom::RendererRequest request) {
-  auto renderer = std::make_unique<MediaPlayerRenderer>(
-      render_frame_host_->GetProcess()->GetID(),
-      render_frame_host_->GetRoutingID(),
-      static_cast<RenderFrameHostImpl*>(render_frame_host_)
-          ->delegate()
-          ->GetAsWebContents());
-
-  // base::Unretained is safe here because the lifetime of the MediaPlayerRender
-  // is tied to the lifetime of the MojoRendererService.
-  media::MojoRendererService::InitiateSurfaceRequestCB surface_request_cb =
-      base::BindRepeating(&MediaPlayerRenderer::InitiateScopedSurfaceRequest,
-                          base::Unretained(renderer.get()));
-
-  media::MojoRendererService::Create(nullptr, std::move(renderer),
-                                     surface_request_cb, std::move(request));
-}
-#endif  // defined(OS_ANDROID)
-
 }  // namespace content

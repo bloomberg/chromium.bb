@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "url/gurl.h"
@@ -32,9 +33,17 @@ class CONTENT_EXPORT MediaInterfaceFactory
   // media::mojom::InterfaceFactory implementation.
   void CreateAudioDecoder(media::mojom::AudioDecoderRequest request) final;
   void CreateVideoDecoder(media::mojom::VideoDecoderRequest request) final;
+  void CreateDefaultRenderer(const std::string& audio_device_id,
+                             media::mojom::RendererRequest request) final;
+  // TODO(https://crbug.com/936528) : remove this method.
   void CreateRenderer(media::mojom::HostedRendererType type,
-                      const std::string& type_specific_id,
-                      media::mojom::RendererRequest request) final;
+                      const std::string& audio_device_id,
+                      media::mojom::RendererRequest renderer) final;
+#if defined(OS_ANDROID)
+  void CreateFlingingRenderer(const std::string& presentation_id,
+                              media::mojom::RendererRequest request) final;
+  void CreateMediaPlayerRenderer(media::mojom::RendererRequest request) final;
+#endif  // defined(OS_ANDROID)
   void CreateCdm(const std::string& key_system,
                  media::mojom::ContentDecryptionModuleRequest request) final;
   void CreateDecryptor(int cdm_id,

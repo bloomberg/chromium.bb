@@ -95,22 +95,20 @@ void InterfaceFactoryImpl::CreateVideoDecoder(
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
 }
 
+// TODO(https://crbug.com/936528) : remove this method.
 void InterfaceFactoryImpl::CreateRenderer(
-    media::mojom::HostedRendererType type,
-    const std::string& type_specific_id,
+    mojom::HostedRendererType type,
+    const std::string& audio_device_id,
+    media::mojom::RendererRequest renderer) {
+  DCHECK_EQ(type, mojom::HostedRendererType::kDefault);
+  CreateDefaultRenderer(audio_device_id, std::move(renderer));
+}
+
+void InterfaceFactoryImpl::CreateDefaultRenderer(
+    const std::string& audio_device_id,
     mojo::InterfaceRequest<mojom::Renderer> request) {
   DVLOG(2) << __func__;
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
-  // Creation requests for non default renderers should have already been
-  // handled by now, in a different layer.
-  if (type != media::mojom::HostedRendererType::kDefault) {
-    DLOG(ERROR) << "Creation of specialized renderers is not supported.";
-    return;
-  }
-
-  // For HostedRendererType::kDefault type, |type_specific_id| represents an
-  // audio device ID. See interface_factory.mojom.
-  const std::string& audio_device_id = type_specific_id;
   auto renderer = mojo_media_client_->CreateRenderer(
       interfaces_.get(), base::ThreadTaskRunnerHandle::Get(), &media_log_,
       audio_device_id);
@@ -137,6 +135,19 @@ void InterfaceFactoryImpl::CreateRenderer(
                  base::Unretained(&renderer_bindings_), binding_id));
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
 }
+
+#if defined(OS_ANDROID)
+void InterfaceFactoryImpl::CreateMediaPlayerRenderer(
+    mojo::InterfaceRequest<mojom::Renderer> request) {
+  NOTREACHED();
+}
+
+void InterfaceFactoryImpl::CreateFlingingRenderer(
+    const std::string& audio_device_id,
+    mojo::InterfaceRequest<mojom::Renderer> request) {
+  NOTREACHED();
+}
+#endif  // defined(OS_ANDROID)
 
 void InterfaceFactoryImpl::CreateCdm(
     const std::string& /* key_system */,
