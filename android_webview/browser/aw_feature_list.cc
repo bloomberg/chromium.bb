@@ -25,6 +25,7 @@ namespace {
 const base::Feature* kFeaturesExposedToJava[] = {
     &features::kWebViewConnectionlessSafeBrowsing,
     &features::kWebViewPageStartedOnCommit,
+    &features::kWebViewWideColorGamutSupport,
 };
 
 const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
@@ -56,6 +57,11 @@ const base::Feature kWebViewPageStartedOnCommit{
 // Whether the application package name is logged in UMA.
 const base::Feature kWebViewUmaLogAppPackageName{
     "WebViewUmaLogAppPackageName", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enable raster in wide color gamut for apps that use webview in a wide color
+// gamut activity.
+const base::Feature kWebViewWideColorGamutSupport{
+    "WebViewWideColorGamutSupport", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 

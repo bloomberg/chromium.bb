@@ -27,6 +27,7 @@ import android.view.accessibility.AccessibilityManager;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -52,6 +53,15 @@ import java.util.HashSet;
 @JNINamespace("ui")
 public class WindowAndroid implements AndroidPermissionDelegate {
     private static final String TAG = "WindowAndroid";
+
+    // Allow client to control whether wide gamut is enabled.
+    private static boolean sEnableWideColorGamut;
+
+    public static void enableWideColorGamut() {
+        assert !sEnableWideColorGamut;
+        sEnableWideColorGamut = true;
+    }
+
     private KeyboardVisibilityDelegate mKeyboardVisibilityDelegate =
             KeyboardVisibilityDelegate.getInstance();
 
@@ -681,7 +691,8 @@ public class WindowAndroid implements AndroidPermissionDelegate {
     // gamut (on supported hardware and os). However it is important for embedders like WebView
     // which do not make the wide gamut decision to check this at run time.
     private boolean getWindowIsWideColorGamut() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O_MR1) return false;
+        if (!sEnableWideColorGamut) return false;
+        if (!BuildInfo.isAtLeastQ()) return false;
         Window window = getWindow();
         if (window == null) return false;
         return ApiHelperForOMR1.isWideColorGamut(window);
