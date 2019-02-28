@@ -5904,12 +5904,12 @@ crbug.com/935027 http/tests/devtools/animation/animation-transition-setTiming-cr
 # Sheriff 2019-02-25
 crbug.com/935587 [ Mac ] virtual/video-surface-layer/media/stable/video-object-fit-stable.html [ Failure Pass ]
 crbug.com/935638 fast/dom/rtl-scroll-to-leftmost-and-resize.html [ Timeout Pass ]
-crbug.com/935689 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/symbols-function-invalid.html [ Failure ]
-crbug.com/935689 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-additive-invalid.html [ Failure ]
-crbug.com/935689 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-fixed-invalid.html [ Failure ]
-crbug.com/935689 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-numeric-invalid.html [ Failure ]
-crbug.com/935689 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-symbolic-invalid.html [ Failure ]
-crbug.com/935690 [ Mac ] virtual/video-surface-layer/media/video-played-ranges-1.html [ Failure ]
+crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/symbols-function-invalid.html [ Failure Pass ]
+crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-additive-invalid.html [ Failure Pass ]
+crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-fixed-invalid.html [ Failure Pass ]
+crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-numeric-invalid.html [ Failure Pass ]
+crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-symbolic-invalid.html [ Failure Pass ]
+crbug.com/935690 virtual/video-surface-layer/media/video-played-ranges-1.html [ Failure ]
 
 # Sheriff 2019-02-26
 crbug.com/935689 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-alphabetic-invalid.html [ Failure ]
