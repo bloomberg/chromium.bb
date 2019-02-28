@@ -17,6 +17,8 @@
 #include "ash/app_list/pagination_model_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
 
@@ -51,6 +53,13 @@ class SearchResultTileItemListView;
 class APP_LIST_EXPORT ContentsView : public views::View,
                                      public PaginationModelObserver {
  public:
+  // This class observes the search box Updates.
+  class SearchBoxUpdateObserver : public base::CheckedObserver {
+   public:
+    // Called when search box bounds is updated.
+    virtual void OnSearchBoxBoundsUpdated() = 0;
+  };
+
   explicit ContentsView(AppListView* app_list_view);
   ~ContentsView() override;
 
@@ -182,6 +191,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // and tablet mode is enabled.
   void SetExpandArrowViewVisibility(bool show);
 
+  void AddSearchBoxUpdateObserver(SearchBoxUpdateObserver* observer);
+  void RemoveSearchBoxUpdateObserver(SearchBoxUpdateObserver* observer);
+
  private:
   // Sets the active launcher page, accounting for whether the change is for
   // search results.
@@ -270,6 +282,8 @@ class APP_LIST_EXPORT ContentsView : public views::View,
 
   // Manages the pagination for the launcher pages.
   PaginationModel pagination_model_;
+
+  base::ObserverList<SearchBoxUpdateObserver> search_box_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentsView);
 };
