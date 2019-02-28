@@ -22,7 +22,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -82,7 +81,6 @@ ProfileResetter::ProfileResetter(Profile* profile)
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile_)),
       pending_reset_flags_(0),
       cookies_remover_(nullptr),
-      ntp_service_(InstantServiceFactory::GetForProfile(profile)),
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(profile_);
@@ -130,7 +128,6 @@ void ProfileResetter::Reset(
       {STARTUP_PAGES, &ProfileResetter::ResetStartupPages},
       {PINNED_TABS, &ProfileResetter::ResetPinnedTabs},
       {SHORTCUTS, &ProfileResetter::ResetShortcuts},
-      {NTP_CUSTOMIZATIONS, &ProfileResetter::ResetNtpCustomizations},
   };
 
   ResettableFlags reset_triggered_for_flags = 0;
@@ -335,11 +332,6 @@ void ProfileResetter::ResetShortcuts() {
 #else
   MarkAsDone(SHORTCUTS);
 #endif
-}
-
-void ProfileResetter::ResetNtpCustomizations() {
-  ntp_service_->ResetToDefault();
-  MarkAsDone(NTP_CUSTOMIZATIONS);
 }
 
 void ProfileResetter::OnTemplateURLServiceLoaded() {

@@ -19,7 +19,6 @@
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
-#include "chrome/browser/search/instant_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browsing_data_remover.h"
 
@@ -27,10 +26,6 @@ class Profile;
 
 namespace base {
 class CancellationFlag;
-}
-
-namespace {
-FORWARD_DECLARE_TEST(ProfileResetterTest, ResetNTPCustomizationsTest);
 }
 
 // This class allows resetting certain aspects of a profile to default values.
@@ -48,12 +43,11 @@ class ProfileResetter : public content::BrowsingDataRemover::Observer {
     STARTUP_PAGES = 1 << 5,
     PINNED_TABS = 1 << 6,
     SHORTCUTS = 1 << 7,
-    NTP_CUSTOMIZATIONS = 1 << 8,
     // Update ALL if you add new values and check whether the type of
     // ResettableFlags needs to be enlarged.
     ALL = DEFAULT_SEARCH_ENGINE | HOMEPAGE | CONTENT_SETTINGS |
           COOKIES_AND_SITE_DATA | EXTENSIONS | STARTUP_PAGES | PINNED_TABS |
-          SHORTCUTS | NTP_CUSTOMIZATIONS
+          SHORTCUTS
   };
 
   // Bit vector for Resettable enum.
@@ -75,8 +69,6 @@ class ProfileResetter : public content::BrowsingDataRemover::Observer {
   virtual bool IsActive() const;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(::ProfileResetterTest, ResetNTPCustomizationsTest);
-
   // Marks |resettable| as done and triggers |callback_| if all pending jobs
   // have completed.
   void MarkAsDone(Resettable resettable);
@@ -89,7 +81,6 @@ class ProfileResetter : public content::BrowsingDataRemover::Observer {
   void ResetStartupPages();
   void ResetPinnedTabs();
   void ResetShortcuts();
-  void ResetNtpCustomizations();
 
   // BrowsingDataRemover::Observer:
   void OnBrowsingDataRemoverDone() override;
@@ -115,9 +106,6 @@ class ProfileResetter : public content::BrowsingDataRemover::Observer {
   std::unique_ptr<TemplateURLService::Subscription> template_url_service_sub_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  // Used for resetting NTP customizations.
-  InstantService* ntp_service_;
 
   base::WeakPtrFactory<ProfileResetter> weak_ptr_factory_;
 
