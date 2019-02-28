@@ -38,7 +38,6 @@
 #include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
-#include "chrome/browser/webshare/share_target_pref_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -326,14 +325,6 @@ void BookmarkAppHelper::OnDidPerformInstallableCheck(
 
   web_app::UpdateWebAppInfoFromManifest(*data.manifest, &web_app_info_,
                                         for_installable_site_);
-
-  // TODO(mgiuca): Web Share Target should have its own flag, rather than using
-  // the experimental-web-platform-features flag. https://crbug.com/736178.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kEnableExperimentalWebPlatformFeatures)) {
-    UpdateShareTargetInPrefs(data.manifest_url, *data.manifest,
-                             profile_->GetPrefs());
-  }
 
   const std::vector<GURL> web_app_info_icon_urls =
       web_app::GetValidIconUrlsToDownload(data, web_app_info_);

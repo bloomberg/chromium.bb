@@ -2929,7 +2929,6 @@ test("unit_tests") {
     "../browser/vr/vr_tab_helper_unittest.cc",
     "../browser/webauthn/authenticator_request_scheduler_unittest.cc",
     "../browser/webauthn/chrome_authenticator_request_delegate_unittest.cc",
-    "../browser/webshare/share_target_pref_helper_unittest.cc",
     "../browser/win/chrome_elf_init_unittest.cc",
     "../browser/win/jumplist_file_util_unittest.cc",
     "../browser/win/jumplist_update_util_unittest.cc",
@@ -3635,10 +3634,6 @@ test("unit_tests") {
       "../browser/ui/in_product_help/reopen_tab_in_product_help_unittest.cc",
     ]
     deps += [ "//components/feature_engagement/test:test_support" ]
-  }
-
-  if (is_linux || is_win) {
-    sources += [ "../browser/webshare/share_service_impl_unittest.cc" ]
   }
 
   if (is_chromeos) {
@@ -4574,7 +4569,6 @@ test("unit_tests") {
       "../browser/ui/views/toolbar/toolbar_actions_bar_bubble_views_unittest.cc",
       "../browser/ui/views/toolbar/toolbar_button_unittest.cc",
       "../browser/ui/views/translate/translate_bubble_view_unittest.cc",
-      "../browser/ui/views/webshare/webshare_target_picker_view_unittest.cc",
     ]
     if (is_mac) {
       sources += [ "../browser/ui/views/frame/browser_non_client_frame_view_mac_unittest.mm" ]
