@@ -632,7 +632,7 @@ void ThreadHeap::WriteBarrier(void* value) {
   marking_worklist_->Push(
       WorklistTaskId::MainThread,
       {header->Payload(),
-       GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex())->trace_});
+       GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex())->trace});
 }
 
 ThreadHeap* ThreadHeap::main_thread_heap_ = nullptr;

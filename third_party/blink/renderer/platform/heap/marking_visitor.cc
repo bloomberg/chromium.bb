@@ -49,7 +49,7 @@ void MarkingVisitor::DynamicallyMarkAddress(Address address) {
   DCHECK(!header->IsInConstruction());
   const GCInfo* gc_info =
       GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex());
-  MarkHeader(header, gc_info->trace_);
+  MarkHeader(header, gc_info->trace);
 }
 
 void MarkingVisitor::ConservativelyMarkAddress(BasePage* page,
@@ -68,7 +68,7 @@ void MarkingVisitor::ConservativelyMarkAddress(BasePage* page,
   const GCInfo* gc_info =
       GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex());
   if (!header->IsInConstruction()) {
-    MarkHeader(header, gc_info->trace_);
+    MarkHeader(header, gc_info->trace);
     return;
   }
 
@@ -154,7 +154,7 @@ void MarkingVisitor::TraceMarkedBackingStoreSlow(void* value) {
   // strongifies them for the current cycle.
   GCInfoTable::Get()
       .GCInfoFromIndex(header->GcInfoIndex())
-      ->trace_(thread_state->CurrentVisitor(), value);
+      ->trace(thread_state->CurrentVisitor(), value);
 }
 
 }  // namespace blink

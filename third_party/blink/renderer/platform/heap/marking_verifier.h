@@ -25,10 +25,10 @@ class MarkingVerifier final : public Visitor {
     const GCInfo* info =
         GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex());
     const bool can_verify =
-        !info->HasVTable() || blink::VTableInitialized(header->Payload());
+        !info->has_v_table || blink::VTableInitialized(header->Payload());
     if (can_verify) {
       CHECK(header->IsValid());
-      info->trace_(this, header->Payload());
+      info->trace(this, header->Payload());
     }
   }
 
