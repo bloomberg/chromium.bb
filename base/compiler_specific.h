@@ -9,9 +9,6 @@
 
 #if defined(COMPILER_MSVC)
 
-// For _Printf_format_string_.
-#include <sal.h>
-
 // Macros for suppressing and disabling warnings on MSVC.
 //
 // Warning numbers are enumerated at:
@@ -33,7 +30,6 @@
 
 #else  // Not MSVC
 
-#define _Printf_format_string_
 #define MSVC_PUSH_DISABLE_WARNING(n)
 #define MSVC_POP_WARNING()
 #define MSVC_DISABLE_OPTIMIZE()
@@ -138,6 +134,7 @@
 // |dots_param| is the one-based index of the "..." parameter.
 // For v*printf functions (which take a va_list), pass 0 for dots_param.
 // (This is undocumented but matches what the system C headers do.)
+// For member functions, the implicit this parameter counts as index 1.
 #if defined(COMPILER_GCC) || defined(__clang__)
 #define PRINTF_FORMAT(format_param, dots_param) \
     __attribute__((format(printf, format_param, dots_param)))
