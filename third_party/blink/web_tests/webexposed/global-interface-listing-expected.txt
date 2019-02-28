@@ -1614,6 +1614,7 @@ interface Document : Node
     getter onmouseover
     getter onmouseup
     getter onmousewheel
+    getter onoverscroll
     getter onpaste
     getter onpause
     getter onplay
@@ -1636,6 +1637,7 @@ interface Document : Node
     getter onresize
     getter onresume
     getter onscroll
+    getter onscrollend
     getter onsearch
     getter onsecuritypolicyviolation
     getter onseeked
@@ -1802,6 +1804,7 @@ interface Document : Node
     setter onmouseover
     setter onmouseup
     setter onmousewheel
+    setter onoverscroll
     setter onpaste
     setter onpause
     setter onplay
@@ -1824,6 +1827,7 @@ interface Document : Node
     setter onresize
     setter onresume
     setter onscroll
+    setter onscrollend
     setter onsearch
     setter onsecuritypolicyviolation
     setter onseeked
@@ -2701,6 +2705,7 @@ interface HTMLElement : Element
     getter onmouseover
     getter onmouseup
     getter onmousewheel
+    getter onoverscroll
     getter onpaste
     getter onpause
     getter onplay
@@ -2719,6 +2724,7 @@ interface HTMLElement : Element
     getter onreset
     getter onresize
     getter onscroll
+    getter onscrollend
     getter onseeked
     getter onseeking
     getter onselect
@@ -2805,6 +2811,7 @@ interface HTMLElement : Element
     setter onmouseover
     setter onmouseup
     setter onmousewheel
+    setter onoverscroll
     setter onpaste
     setter onpause
     setter onplay
@@ -2823,6 +2830,7 @@ interface HTMLElement : Element
     setter onreset
     setter onresize
     setter onscroll
+    setter onscrollend
     setter onseeked
     setter onseeking
     setter onselect
@@ -5121,6 +5129,11 @@ interface OverconstrainedError
     getter message
     getter name
     method constructor
+interface OverscrollEvent : Event
+    attribute @@toStringTag
+    getter deltaX
+    getter deltaY
+    method constructor
 interface PageTransitionEvent : Event
     attribute @@toStringTag
     getter persisted
@@ -6176,6 +6189,7 @@ interface SVGElement : Element
     getter onmouseover
     getter onmouseup
     getter onmousewheel
+    getter onoverscroll
     getter onpaste
     getter onpause
     getter onplay
@@ -6194,6 +6208,7 @@ interface SVGElement : Element
     getter onreset
     getter onresize
     getter onscroll
+    getter onscrollend
     getter onseeked
     getter onseeking
     getter onselect
@@ -6266,6 +6281,7 @@ interface SVGElement : Element
     setter onmouseover
     setter onmouseup
     setter onmousewheel
+    setter onoverscroll
     setter onpaste
     setter onpause
     setter onplay
@@ -6284,6 +6300,7 @@ interface SVGElement : Element
     setter onreset
     setter onresize
     setter onscroll
+    setter onscrollend
     setter onseeked
     setter onseeking
     setter onselect
@@ -10876,6 +10893,7 @@ interface webkitURL
     getter onmousewheel
     getter onoffline
     getter ononline
+    getter onoverscroll
     getter onpagehide
     getter onpageshow
     getter onpause
@@ -10898,6 +10916,7 @@ interface webkitURL
     getter onreset
     getter onresize
     getter onscroll
+    getter onscrollend
     getter onsearch
     getter onseeked
     getter onseeking
@@ -11071,6 +11090,7 @@ interface webkitURL
     setter onmousewheel
     setter onoffline
     setter ononline
+    setter onoverscroll
     setter onpagehide
     setter onpageshow
     setter onpause
@@ -11093,6 +11113,7 @@ interface webkitURL
     setter onreset
     setter onresize
     setter onscroll
+    setter onscrollend
     setter onsearch
     setter onseeked
     setter onseeking

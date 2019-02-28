@@ -989,6 +989,7 @@
     {
       name: "OverscrollCustomization",
       settable_from_internals: true,
+      status: "experimental",
     },
     // This feature refers to the API that delivers notifications to pages on
     // lifecycle state changes.
