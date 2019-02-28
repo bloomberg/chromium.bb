@@ -11,8 +11,8 @@ button {
 }
 
 button.small {
-  font-size: 2em;
-  height: 3em;
+  font-size: 1em;
+  height: 2em;
   width: 100%;
 }
 

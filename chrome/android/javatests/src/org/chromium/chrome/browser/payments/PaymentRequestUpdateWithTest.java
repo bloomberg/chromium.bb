@@ -180,4 +180,19 @@ public class PaymentRequestUpdateWithTest implements MainActivityStartCallback {
                 ModalDialogProperties.ButtonType.POSITIVE, mRule.getDismissed());
         mRule.expectResultContains(new String[] {"freeShipping"});
     }
+
+    /**
+     * Show the shipping address validation error message even if the merchant provided some
+     * shipping options.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Payments"})
+    public void testUpdateWithError() throws Throwable {
+        mRule.triggerUIAndWait("updateWithError", mRule.getReadyToPay());
+        mRule.clickInShippingAddressAndWait(R.id.payments_section, mRule.getReadyToPay());
+        mRule.clickOnShippingAddressSuggestionOptionAndWait(1, mRule.getReadyForInput());
+        CharSequence actualString = mRule.getShippingAddressOptionRowAtIndex(0).getLabelText();
+        Assert.assertEquals("This is an error for a browsertest", actualString);
+    }
 }
