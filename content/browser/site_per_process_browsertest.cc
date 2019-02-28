@@ -14421,18 +14421,18 @@ IN_PROC_BROWSER_TEST_P(FeaturePolicyPropagationToAuxiliaryBrowsingContextTest,
   new_shell->Close();
 }
 
-INSTANTIATE_TEST_CASE_P(SitePerProcess,
-                        FeaturePolicyPropagationToAuxiliaryBrowsingContextTest,
-                        testing::Combine(
-                            /* iframe_type */
-                            testing::ValuesIn({"sandboxed", "notsandboxed",
-                                               "sandboxed-escaping"}),
-                            /* iframe_same_origin */
-                            testing::Bool(),
-                            /* window_same_origin */
-                            testing::Bool(),
-                            /* window feature */
-                            testing::ValuesIn({"", "noopener"})));
+INSTANTIATE_TEST_SUITE_P(SitePerProcess,
+                         FeaturePolicyPropagationToAuxiliaryBrowsingContextTest,
+                         testing::Combine(
+                             /* iframe_type */
+                             testing::ValuesIn({"sandboxed", "notsandboxed",
+                                                "sandboxed-escaping"}),
+                             /* iframe_same_origin */
+                             testing::Bool(),
+                             /* window_same_origin */
+                             testing::Bool(),
+                             /* window feature */
+                             testing::ValuesIn({"", "noopener"})));
 
 enum class InnerWebContentsAttachChildFrameOriginType {
   kSameOriginAboutBlank,
@@ -14577,7 +14577,7 @@ IN_PROC_BROWSER_TEST_P(InnerWebContentsAttachTest, PrepareFrame) {
     CreateAndAttachInnerContents(new_render_frame_host);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SitePerProcess,
     InnerWebContentsAttachTest,
     testing::Combine(
