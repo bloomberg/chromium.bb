@@ -21,7 +21,7 @@
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "services/identity/public/cpp/account_state.h"
 #include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/mojom/identity_manager.mojom.h"
+#include "services/identity/public/mojom/identity_accessor.mojom.h"
 
 namespace identity {
 class AccessTokenFetcher;
@@ -194,12 +194,12 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
 
   std::string GetOAuth2ClientId() const;
 
-  // Gets the Identity Manager, lazily binding it.
+  // Gets the IdentityAccessor mojo interface, lazily binding it.
   // TODO(https://crbug.com/913853): As of Dec 2018, the chrome.identity
   // API is the only client of the Identity Service. It should be migrated to
   // the IdentityManager soon after the IdentityManager is backed by the
   // Identity Service.
-  ::identity::mojom::IdentityManager* GetMojoIdentityManager();
+  ::identity::mojom::IdentityAccessor* GetMojoIdentityAccessor();
 
   // Returns true if extensions are restricted to the primary account.
   bool IsPrimaryAccountOnly() const;
@@ -225,7 +225,7 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   std::unique_ptr<base::CallbackList<void()>::Subscription>
       identity_api_shutdown_subscription_;
 
-  identity::mojom::IdentityManagerPtr mojo_identity_manager_;
+  identity::mojom::IdentityAccessorPtr mojo_identity_accessor_;
   ScopedObserver<identity::IdentityManager, identity::IdentityManager::Observer>
       scoped_identity_manager_observer_;
 

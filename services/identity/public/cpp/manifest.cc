@@ -6,7 +6,7 @@
 
 #include "base/no_destructor.h"
 #include "services/identity/public/mojom/constants.mojom.h"
-#include "services/identity/public/mojom/identity_manager.mojom.h"
+#include "services/identity/public/mojom/identity_accessor.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 namespace identity {
@@ -16,9 +16,9 @@ const service_manager::Manifest& GetManifest() {
       service_manager::ManifestBuilder()
           .WithServiceName(mojom::kServiceName)
           .WithDisplayName("Identity Service")
-          .ExposeCapability("identity_manager",
+          .ExposeCapability("identity_accessor",
                             service_manager::Manifest::InterfaceList<
-                                mojom::IdentityManager>())
+                                mojom::IdentityAccessor>())
           .Build()};
   return *manifest;
 }

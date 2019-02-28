@@ -27,7 +27,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "services/identity/public/mojom/identity_manager.mojom.h"
+#include "services/identity/public/mojom/identity_accessor.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
@@ -97,8 +97,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   void RequestAccessToken();
 
-  void SetIdentityManagerForTesting(
-      identity::mojom::IdentityManagerPtr identity_manager);
+  void SetIdentityAccessorForTesting(
+      identity::mojom::IdentityAccessorPtr identity_accessor);
 
   void SetAssistantManagerForTesting(
       std::unique_ptr<AssistantManagerService> assistant_manager_service);
@@ -137,7 +137,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void Init(mojom::ClientPtr client,
             mojom::DeviceActionsPtr device_actions) override;
 
-  identity::mojom::IdentityManager* GetIdentityManager();
+  identity::mojom::IdentityAccessor* GetIdentityAccessor();
 
   void GetPrimaryAccountInfoCallback(
       const base::Optional<AccountInfo>& account_info,
@@ -170,7 +170,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   mojom::ClientPtr client_;
   mojom::DeviceActionsPtr device_actions_;
 
-  identity::mojom::IdentityManagerPtr identity_manager_;
+  identity::mojom::IdentityAccessorPtr identity_accessor_;
 
   AccountId account_id_;
   std::unique_ptr<AssistantManagerService> assistant_manager_service_;

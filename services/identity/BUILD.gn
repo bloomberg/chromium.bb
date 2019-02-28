@@ -8,8 +8,8 @@ if (is_android) {
 
 source_set("lib") {
   sources = [
-    "identity_manager_impl.cc",
-    "identity_manager_impl.h",
+    "identity_accessor_impl.cc",
+    "identity_accessor_impl.h",
     "identity_service.cc",
     "identity_service.h",
   ]
@@ -49,7 +49,7 @@ source_set("tests") {
     "//testing/gtest",
   ]
   sources = [
-    "identity_manager_impl_unittest.cc",
+    "identity_accessor_impl_unittest.cc",
     "public/cpp/access_token_fetcher_unittest.cc",
     "public/cpp/identity_manager_unittest.cc",
     "public/cpp/identity_test_environment_unittest.cc",

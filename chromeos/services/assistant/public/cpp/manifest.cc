@@ -29,7 +29,7 @@ const service_manager::Manifest& GetManifest() {
           .RequireCapability("audio", "stream_factory")
           .RequireCapability("device", "device:battery_monitor")
           .RequireCapability("device", "device:wake_lock")
-          .RequireCapability("identity", "identity_manager")
+          .RequireCapability("identity", "identity_accessor")
           .RequireCapability("media_session", "app")
 
           .Build()};

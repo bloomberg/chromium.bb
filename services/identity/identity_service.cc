@@ -5,7 +5,7 @@
 #include "services/identity/identity_service.h"
 
 #include "base/bind.h"
-#include "services/identity/identity_manager_impl.h"
+#include "services/identity/identity_accessor_impl.h"
 
 namespace identity {
 
@@ -17,7 +17,7 @@ IdentityService::IdentityService(AccountTrackerService* account_tracker,
       account_tracker_(account_tracker),
       signin_manager_(signin_manager),
       token_service_(token_service) {
-  registry_.AddInterface<mojom::IdentityManager>(
+  registry_.AddInterface<mojom::IdentityAccessor>(
       base::Bind(&IdentityService::Create, base::Unretained(this)));
   signin_manager_shutdown_subscription_ =
       signin_manager_->RegisterOnShutdownCallback(
@@ -49,13 +49,13 @@ bool IdentityService::IsShutDown() {
   return (signin_manager_ == nullptr);
 }
 
-void IdentityService::Create(mojom::IdentityManagerRequest request) {
+void IdentityService::Create(mojom::IdentityAccessorRequest request) {
   // This instance cannot service requests if it has already been shut down.
   if (IsShutDown())
     return;
 
-  IdentityManagerImpl::Create(std::move(request), account_tracker_,
-                              signin_manager_, token_service_);
+  IdentityAccessorImpl::Create(std::move(request), account_tracker_,
+                               signin_manager_, token_service_);
 }
 
 }  // namespace identity
