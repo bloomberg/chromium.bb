@@ -5,6 +5,7 @@
 #include "content/browser/loader/navigation_url_loader_impl.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -134,13 +135,6 @@ bool IsLoaderInterceptionEnabled() {
   return base::FeatureList::IsEnabled(network::features::kNetworkService) ||
          blink::ServiceWorkerUtils::IsServicificationEnabled() ||
          signed_exchange_utils::IsSignedExchangeHandlingEnabled();
-}
-
-// Request ID for browser initiated requests. We start at -2 on the same lines
-// as ResourceDispatcherHostImpl.
-int g_next_request_id = -2;
-GlobalRequestID MakeGlobalRequestID() {
-  return GlobalRequestID(-1, g_next_request_id--);
 }
 
 size_t GetCertificateChainsSizeInKB(const net::SSLInfo& ssl_info) {
@@ -380,29 +374,6 @@ class AboutURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
   mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
 };
-
-// Creates a URLLoaderFactory that uses |header_client|. This should have the
-// same settings as the factory from the URLLoaderFactoryGetter.
-std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-CreateNetworkFactoryInfoWithHeaderClient(
-    network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
-    StoragePartitionImpl* partition) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  network::mojom::URLLoaderFactoryPtrInfo factory_info;
-  network::mojom::URLLoaderFactoryParamsPtr params =
-      network::mojom::URLLoaderFactoryParams::New();
-  params->header_client = std::move(header_client);
-  params->process_id = network::mojom::kBrowserProcessId;
-  params->is_corb_enabled = false;
-  params->disable_web_security =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableWebSecurity);
-
-  partition->GetNetworkContext()->CreateURLLoaderFactory(
-      mojo::MakeRequest(&factory_info), std::move(params));
-  return std::make_unique<network::WrapperSharedURLLoaderFactoryInfo>(
-      std::move(factory_info));
-}
 
 }  // namespace
 
@@ -1741,8 +1712,12 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       partition->url_loader_factory_getter()->GetNetworkFactoryInfo();
   if (header_client) {
     needs_loader_factory_interceptor = true;
-    network_factory_info = CreateNetworkFactoryInfoWithHeaderClient(
-        std::move(header_client), partition);
+    network::mojom::URLLoaderFactoryPtrInfo factory_info;
+    CreateURLLoaderFactoryWithHeaderClient(
+        std::move(header_client), mojo::MakeRequest(&factory_info), partition);
+    network_factory_info =
+        std::make_unique<network::WrapperSharedURLLoaderFactoryInfo>(
+            std::move(factory_info));
   }
 
   DCHECK(!request_controller_);
@@ -1838,6 +1813,7 @@ void NavigationURLLoaderImpl::OnComplete(
   delegate_->OnRequestFailed(status);
 }
 
+// static
 void NavigationURLLoaderImpl::SetBeginNavigationInterceptorForTesting(
     const BeginNavigationInterceptor& interceptor) {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::IO) ||
@@ -1846,12 +1822,40 @@ void NavigationURLLoaderImpl::SetBeginNavigationInterceptorForTesting(
   g_interceptor.Get() = interceptor;
 }
 
+// static
 void NavigationURLLoaderImpl::SetURLLoaderFactoryInterceptorForTesting(
     const URLLoaderFactoryInterceptor& interceptor) {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::IO) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   g_loader_factory_interceptor.Get() = interceptor;
+}
+
+// static
+void NavigationURLLoaderImpl::CreateURLLoaderFactoryWithHeaderClient(
+    network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+    network::mojom::URLLoaderFactoryRequest factory_request,
+    StoragePartitionImpl* partition) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  network::mojom::URLLoaderFactoryParamsPtr params =
+      network::mojom::URLLoaderFactoryParams::New();
+  params->header_client = std::move(header_client);
+  params->process_id = network::mojom::kBrowserProcessId;
+  params->is_corb_enabled = false;
+  params->disable_web_security =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableWebSecurity);
+
+  partition->GetNetworkContext()->CreateURLLoaderFactory(
+      std::move(factory_request), std::move(params));
+}
+
+// static
+GlobalRequestID NavigationURLLoaderImpl::MakeGlobalRequestID() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Start at -2 on the same lines as ResourceDispatcherHostImpl.
+  static int s_next_request_id = -2;
+  return GlobalRequestID(-1, s_next_request_id--);
 }
 
 void NavigationURLLoaderImpl::OnRequestStarted(base::TimeTicks timestamp) {

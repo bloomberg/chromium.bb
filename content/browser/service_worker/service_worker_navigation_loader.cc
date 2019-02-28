@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_navigation_loader.h"
 
 #include <sstream>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -14,6 +15,8 @@
 #include "base/optional.h"
 #include "base/strings/strcat.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
@@ -227,6 +230,14 @@ void ServiceWorkerNavigationLoader::StartRequest(
     return;
   }
 
+  base::WeakPtr<ServiceWorkerContextCore> core = active_worker->context();
+  if (!core) {
+    CommitCompleted(net::ERR_ABORTED, "No service worker context");
+    return;
+  }
+  scoped_refptr<ServiceWorkerContextWrapper> context = core->wrapper();
+  DCHECK(context);
+
   // Dispatch the fetch event.
   fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
       blink::mojom::FetchAPIRequest::From(resource_request_),
@@ -242,6 +253,7 @@ void ServiceWorkerNavigationLoader::StartRequest(
   did_navigation_preload_ =
       fetch_dispatcher_->MaybeStartNavigationPreloadWithURLLoader(
           resource_request_, url_loader_factory_getter_.get(),
+          std::move(context), provider_host_->web_contents_getter(),
           base::DoNothing(/* TODO(crbug/762357): metrics? */));
 
   // Record worker start time here as |fetch_dispatcher_| will start a service

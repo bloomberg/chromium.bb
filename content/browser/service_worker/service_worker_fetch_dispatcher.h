@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_FETCH_DISPATCHER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -52,6 +53,7 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
                               blink::mojom::ServiceWorkerStreamHandlePtr,
                               blink::mojom::ServiceWorkerFetchEventTimingPtr,
                               scoped_refptr<ServiceWorkerVersion>)>;
+  using WebContentsGetter = base::RepeatingCallback<WebContents*()>;
 
   ServiceWorkerFetchDispatcher(blink::mojom::FetchAPIRequestPtr request,
                                ResourceType resource_type,
@@ -72,6 +74,8 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
   bool MaybeStartNavigationPreloadWithURLLoader(
       const network::ResourceRequest& original_request,
       URLLoaderFactoryGetter* url_loader_factory_getter,
+      scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
+      const WebContentsGetter& web_contents_getter,
       base::OnceClosure on_response);
 
   // Dispatches a fetch event to the |version| given in ctor, and fires

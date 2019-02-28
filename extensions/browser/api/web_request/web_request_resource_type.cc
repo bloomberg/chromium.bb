@@ -78,6 +78,8 @@ WebRequestResourceType ToWebRequestResourceType(content::ResourceType type) {
       return WebRequestResourceType::CSP_REPORT;
     case content::RESOURCE_TYPE_PLUGIN_RESOURCE:
       return WebRequestResourceType::OBJECT;
+    case content::RESOURCE_TYPE_NAVIGATION_PRELOAD:
+      return WebRequestResourceType::OTHER;
     case content::RESOURCE_TYPE_LAST_TYPE:
       return WebRequestResourceType::OTHER;
   }

@@ -54,6 +54,7 @@ flat_rule::ElementType GetElementType(content::ResourceType type) {
     case content::RESOURCE_TYPE_LAST_TYPE:
     case content::RESOURCE_TYPE_PREFETCH:
     case content::RESOURCE_TYPE_SUB_RESOURCE:
+    case content::RESOURCE_TYPE_NAVIGATION_PRELOAD:
       return flat_rule::ElementType_OTHER;
     case content::RESOURCE_TYPE_MAIN_FRAME:
       return flat_rule::ElementType_MAIN_FRAME;

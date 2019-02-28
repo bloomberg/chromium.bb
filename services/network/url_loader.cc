@@ -1052,6 +1052,10 @@ void URLLoader::SetAllowReportingRawHeaders(bool allow) {
   report_raw_headers_ = want_raw_headers_ && allow;
 }
 
+uint32_t URLLoader::GetResourceType() const {
+  return resource_type_;
+}
+
 // static
 URLLoader* URLLoader::ForRequest(const net::URLRequest& request) {
   auto* pointer =

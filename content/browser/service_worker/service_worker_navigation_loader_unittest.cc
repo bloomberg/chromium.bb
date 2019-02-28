@@ -83,103 +83,6 @@ blink::mojom::FetchAPIResponsePtr RedirectResponse(
   return response;
 }
 
-// NavigationPreloadLoaderClient mocks the renderer-side URLLoaderClient for the
-// navigation preload network request performed by the browser. In production
-// code, this is ServiceWorkerContextClient::NavigationPreloadRequest,
-// which it forwards the response to FetchEvent#preloadResponse. Here, it
-// simulates passing the response to FetchEvent#respondWith.
-//
-// The navigation preload test is quite involved. The flow of data is:
-// 1. ServiceWorkerNavigationLoader asks ServiceWorkerFetchDispatcher to start
-//    navigation preload.
-// 2. ServiceWorkerFetchDispatcher starts the network request which is mocked
-//    by EmbeddedWorkerTestHelper's default network loader factory. The
-//    response is sent to
-//    ServiceWorkerFetchDispatcher::DelegatingURLLoaderClient.
-// 3. DelegatingURLLoaderClient sends the response to the |preload_handle|
-//    that was passed to Helper::OnFetchEvent().
-// 4. Helper::OnFetchEvent() creates NavigationPreloadLoaderClient, which
-//    receives the response.
-// 5. NavigationPreloadLoaderClient calls OnFetchEvent()'s callbacks
-//    with the response.
-// 6. Like all FetchEvent responses, the response is sent to
-//    ServiceWorkerNavigationLoader::DidDispatchFetchEvent, and the
-//    RequestHandler is returned.
-class NavigationPreloadLoaderClient final
-    : public network::mojom::URLLoaderClient {
- public:
-  NavigationPreloadLoaderClient(
-      blink::mojom::FetchEventPreloadHandlePtr preload_handle,
-      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
-      : url_loader_(std::move(preload_handle->url_loader)),
-        binding_(this, std::move(preload_handle->url_loader_client_request)),
-        response_callback_(std::move(response_callback)),
-        finish_callback_(std::move(finish_callback)) {
-    binding_.set_connection_error_handler(
-        base::BindOnce(&NavigationPreloadLoaderClient::OnConnectionError,
-                       base::Unretained(this)));
-  }
-  ~NavigationPreloadLoaderClient() override = default;
-
-  // network::mojom::URLLoaderClient implementation
-  void OnReceiveResponse(
-      const network::ResourceResponseHead& response_head) override {
-    response_head_ = response_head;
-  }
-  void OnStartLoadingResponseBody(
-      mojo::ScopedDataPipeConsumerHandle body) override {
-    body_ = std::move(body);
-    // We could call OnResponseStream() here, but for simplicity, don't do
-    // anything until OnComplete().
-  }
-  void OnComplete(const network::URLLoaderCompletionStatus& status) override {
-    blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
-    auto stream_handle = blink::mojom::ServiceWorkerStreamHandle::New();
-    stream_handle->callback_request = mojo::MakeRequest(&stream_callback);
-    stream_handle->stream = std::move(body_);
-
-    // Simulate passing the navigation preload response to
-    // FetchEvent#respondWith.
-    auto response = blink::mojom::FetchAPIResponse::New();
-    response->url_list =
-        std::vector<GURL>(response_head_.url_list_via_service_worker);
-    response->status_code = response_head_.headers->response_code();
-    response->status_text = response_head_.headers->GetStatusText();
-    response->response_type = response_head_.response_type;
-    response_callback_->OnResponseStream(
-        std::move(response), std::move(stream_handle),
-        blink::mojom::ServiceWorkerFetchEventTiming::New());
-    std::move(finish_callback_)
-        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
-    stream_callback->OnCompleted();
-    delete this;
-  }
-  void OnReceiveRedirect(
-      const net::RedirectInfo& redirect_info,
-      const network::ResourceResponseHead& response_head) override {}
-  void OnUploadProgress(int64_t current_position,
-                        int64_t total_size,
-                        OnUploadProgressCallback ack_callback) override {}
-  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override {}
-  void OnTransferSizeUpdated(int32_t transfer_size_diff) override {}
-
-  void OnConnectionError() { delete this; }
-
- private:
-  network::mojom::URLLoaderPtr url_loader_;
-  mojo::Binding<network::mojom::URLLoaderClient> binding_;
-
-  network::ResourceResponseHead response_head_;
-  mojo::ScopedDataPipeConsumerHandle body_;
-
-  // Callbacks that complete Helper::OnFetchEvent().
-  blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_;
-  blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(NavigationPreloadLoaderClient);
-};
-
 // Simulates a service worker handling fetch events. The response can be
 // customized via RespondWith* functions.
 class FetchEventServiceWorker : public FakeServiceWorker {
@@ -215,13 +118,6 @@ class FetchEventServiceWorker : public FakeServiceWorker {
 
   // Tells this worker to respond to fetch events with an error response.
   void RespondWithError() { response_mode_ = ResponseMode::kErrorResponse; }
-
-  // Tells this worker to respond to fetch events with
-  // FetchEvent#preloadResponse. See NavigationPreloadLoaderClient's
-  // documentation for details.
-  void RespondWithNavigationPreloadResponse() {
-    response_mode_ = ResponseMode::kNavigationPreloadResponse;
-  }
 
   // Tells this worker to respond to fetch events with the redirect response.
   void RespondWithRedirectResponse(const GURL& new_url) {
@@ -326,12 +222,6 @@ class FetchEventServiceWorker : public FakeServiceWorker {
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::REJECTED);
         break;
-      case ResponseMode::kNavigationPreloadResponse:
-        // Deletes itself when done.
-        new NavigationPreloadLoaderClient(std::move(params->preload_handle),
-                                          std::move(response_callback),
-                                          std::move(finish_callback));
-        break;
       case ResponseMode::kFailFetchEventDispatch:
         // Simulate failure by stopping the worker before the event finishes.
         // This causes ServiceWorkerVersion::StartRequest() to call its error
@@ -380,7 +270,6 @@ class FetchEventServiceWorker : public FakeServiceWorker {
     kStream,
     kFallbackResponse,
     kErrorResponse,
-    kNavigationPreloadResponse,
     kFailFetchEventDispatch,
     kDeferredResponse,
     kEarlyResponse,
@@ -1061,32 +950,6 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FallbackToNetwork) {
       "ServiceWorker.LoadTiming.MainFrame.MainResource."
       "StartToForwardServiceWorker",
       0);
-}
-
-// Test responding to the fetch event with the navigation preload response.
-TEST_F(ServiceWorkerNavigationLoaderTest, NavigationPreload) {
-  registration_->EnableNavigationPreload(true);
-  service_worker_->RespondWithNavigationPreloadResponse();
-
-  // Perform the request
-  LoaderResult result = StartRequest(CreateRequest());
-  ASSERT_EQ(LoaderResult::kHandledRequest, result);
-  client_.RunUntilComplete();
-
-  EXPECT_EQ(net::OK, client_.completion_status().error_code);
-  const network::ResourceResponseHead& info = client_.response_head();
-  EXPECT_EQ(200, info.headers->response_code());
-
-  std::unique_ptr<network::ResourceResponseHead> expected_info =
-      CreateResponseInfoFromServiceWorker();
-  expected_info->did_service_worker_navigation_preload = true;
-  ExpectResponseInfo(info, *expected_info);
-
-  std::string response;
-  EXPECT_TRUE(client_.response_body().is_valid());
-  EXPECT_TRUE(
-      mojo::BlockingCopyToString(client_.response_body_release(), &response));
-  EXPECT_EQ("this body came from the network", response);
 }
 
 // Test responding to the fetch event with a redirect response.
