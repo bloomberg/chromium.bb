@@ -353,11 +353,6 @@ const char kDisallowUnsafeHttpDownloadsNameDescription[] =
     "code), where the final download origin or any origin in the redirect "
     "chain is insecure.";
 
-const char kDriveSearchInChromeLauncherName[] =
-    "Drive Search in Chrome App Launcher";
-const char kDriveSearchInChromeLauncherDescription[] =
-    "Files from Drive will show up when searching the Chrome App Launcher.";
-
 const char kEmbeddedExtensionOptionsName[] = "Embedded extension options";
 const char kEmbeddedExtensionOptionsDescription[] =
     "Display extension options as an embedded element in chrome://extensions "

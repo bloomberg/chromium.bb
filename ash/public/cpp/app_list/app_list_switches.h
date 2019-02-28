@@ -26,8 +26,6 @@ bool ASH_PUBLIC_EXPORT IsFolderUIEnabled();
 // Determines whether the app list should not be dismissed on focus loss.
 bool ASH_PUBLIC_EXPORT ShouldNotDismissOnBlur();
 
-bool ASH_PUBLIC_EXPORT IsDriveSearchInChromeLauncherEnabled();
-
 }  // namespace switches
 }  // namespace app_list
 

@@ -103,10 +103,9 @@ std::unique_ptr<SearchController> CreateSearchController(
                                 profile, model_updater, list_controller));
   }
 
-  // LauncherSearchProvider is added only when flag is enabled, not in guest
+  // LauncherSearchProvider is added only when not in guest
   // session and running on Chrome OS.
-  if (app_list::switches::IsDriveSearchInChromeLauncherEnabled() &&
-      !profile->IsGuestSession()) {
+  if (!profile->IsGuestSession()) {
     size_t search_api_group_id =
         controller->AddGroup(kMaxLauncherSearchResults, 1.0, 0.0);
     controller->AddProvider(search_api_group_id,
