@@ -147,6 +147,11 @@ void WebGPUImplementation::OnSwapBufferPresented(
     const gfx::PresentationFeedback& feedback) {
   NOTIMPLEMENTED();
 }
+void WebGPUImplementation::OnGpuControlReturnData(
+    base::span<const uint8_t> data) {
+  // TODO: Handle return commands
+  NOTIMPLEMENTED();
+}
 
 void WebGPUImplementation::Dummy() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();

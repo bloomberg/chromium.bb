@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/containers/span.h"
 #include "gpu/gpu_export.h"
 #include "url/gurl.h"
 
@@ -48,6 +49,9 @@ class GPU_EXPORT DecoderClient {
   virtual void ScheduleGrContextCleanup() = 0;
 
   virtual void SetActiveURL(GURL url) {}
+
+  // Called by the decoder to pass a variable-size block of data to the client.
+  virtual void HandleReturnData(base::span<const uint8_t> data) = 0;
 };
 
 }  // namespace gpu

@@ -312,4 +312,10 @@ IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_GetGpuFenceHandleComplete,
                     uint32_t /* gpu_fence_id */,
                     gfx::GpuFenceHandle)
 
+// Returns a block of data from the GPU process to the renderer.
+// This contains server->client messages produced by dawn_wire and is used to
+// remote WebGPU.
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_ReturnData,
+                    std::vector<uint8_t> /* data */)
+
 #endif  // GPU_IPC_COMMON_GPU_MESSAGES_H_

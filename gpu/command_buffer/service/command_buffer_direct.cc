@@ -103,4 +103,8 @@ scoped_refptr<Buffer> CommandBufferDirect::CreateTransferBufferWithId(
   return service_.CreateTransferBufferWithId(size, id);
 }
 
+void CommandBufferDirect::HandleReturnData(base::span<const uint8_t> data) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace gpu

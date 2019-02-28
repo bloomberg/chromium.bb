@@ -184,6 +184,7 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
                          const gfx::PresentationFeedback& feedback);
   void OnGetGpuFenceHandleComplete(uint32_t gpu_fence_id,
                                    const gfx::GpuFenceHandle&);
+  void OnReturnData(const std::vector<uint8_t>& data);
 
   // Try to read an updated copy of the state from shared memory, and calls
   // OnGpuStateError() if the new state has an error.

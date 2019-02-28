@@ -102,6 +102,7 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   void OnDescheduleUntilFinished() override;
   void OnRescheduleAfterFinished() override;
   void ScheduleGrContextCleanup() override;
+  void HandleReturnData(base::span<const uint8_t> data) override;
 
   using MemoryTrackerFactory =
       base::RepeatingCallback<std::unique_ptr<MemoryTracker>(

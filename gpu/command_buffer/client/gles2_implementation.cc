@@ -420,6 +420,11 @@ void GLES2Implementation::OnSwapBufferPresented(
   pending_presentation_callbacks_.erase(found);
 }
 
+void GLES2Implementation::OnGpuControlReturnData(
+    base::span<const uint8_t> data) {
+  NOTIMPLEMENTED();
+}
+
 void GLES2Implementation::FreeSharedMemory(void* mem) {
   mapped_memory_->FreePendingToken(mem, helper_->InsertToken());
 }

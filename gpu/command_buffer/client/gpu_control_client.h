@@ -7,6 +7,7 @@
 
 #include <cstdint>
 
+#include "base/containers/span.h"
 #include "ui/gfx/presentation_feedback.h"
 
 namespace gpu {
@@ -30,6 +31,8 @@ class GpuControlClient {
   virtual void OnSwapBufferPresented(
       uint64_t swap_id,
       const gfx::PresentationFeedback& feedback) = 0;
+  // Sent by the WebGPUDecoder
+  virtual void OnGpuControlReturnData(base::span<const uint8_t> data) = 0;
 };
 
 }  // namespace gpu

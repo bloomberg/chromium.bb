@@ -384,6 +384,11 @@ void RasterImplementation::OnSwapBufferPresented(
   NOTREACHED();
 }
 
+void RasterImplementation::OnGpuControlReturnData(
+    base::span<const uint8_t> data) {
+  NOTIMPLEMENTED();
+}
+
 void RasterImplementation::SetAggressivelyFreeResources(
     bool aggressively_free_resources) {
   TRACE_EVENT1("gpu", "RasterImplementation::SetAggressivelyFreeResources",

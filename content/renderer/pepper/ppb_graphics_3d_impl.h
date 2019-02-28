@@ -94,6 +94,7 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared,
       const gpu::SwapBuffersCompleteParams& params) final;
   void OnSwapBufferPresented(uint64_t swap_id,
                              const gfx::PresentationFeedback& feedback) final {}
+  void OnGpuControlReturnData(base::span<const uint8_t> data) final;
 
   // Other notifications from the GPU process.
   void OnSwapBuffers();
