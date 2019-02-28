@@ -98,9 +98,10 @@ base::Optional<ValueType> ValueTagToType(const int value_tag) {
       return ValueType::STRING;
 
     default:
-      NOTREACHED();
+      break;
   }
 
+  // Fail to convert any unrecognized types.
   return base::nullopt;
 }
 
