@@ -1827,9 +1827,8 @@ void LoginDatabase::InitializeStatementStrings(const SQLTableBuilder& builder) {
                            all_column_names + ") VALUES " +
                            right_amount_of_placeholders;
   DCHECK(update_statement_.empty());
-  update_statement_ = "UPDATE OR REPLACE logins SET " +
-                      all_nonunique_key_column_names + " WHERE " +
-                      all_unique_key_column_names;
+  update_statement_ = "UPDATE logins SET " + all_nonunique_key_column_names +
+                      " WHERE " + all_unique_key_column_names;
   DCHECK(delete_statement_.empty());
   delete_statement_ = "DELETE FROM logins WHERE " + all_unique_key_column_names;
   DCHECK(delete_by_id_statement_.empty());
