@@ -12,7 +12,7 @@ import "services/identity/public/mojom/google_service_auth_error.mojom";
 import "services/identity/public/mojom/scope_set.mojom";
 
 // Gives access to information about the user's Google accounts.
-interface IdentityManager {
+interface IdentityAccessor {
   // Returns the AccountInfo for the Google account that serves as the user's
   // primary account, or null if the user has no primary account (e.g., if they
   // are not signed in). |account_state| gives the current state of the account

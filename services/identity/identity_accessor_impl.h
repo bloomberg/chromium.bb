@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_IDENTITY_IDENTITY_MANAGER_IMPL_H_
-#define SERVICES_IDENTITY_IDENTITY_MANAGER_IMPL_H_
+#ifndef SERVICES_IDENTITY_IDENTITY_ACCESSOR_IMPL_H_
+#define SERVICES_IDENTITY_IDENTITY_ACCESSOR_IMPL_H_
 
 #include "base/callback_list.h"
 #include "components/signin/core/browser/account_info.h"
@@ -12,26 +12,26 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/identity/public/cpp/account_state.h"
 #include "services/identity/public/cpp/scope_set.h"
-#include "services/identity/public/mojom/identity_manager.mojom.h"
+#include "services/identity/public/mojom/identity_accessor.mojom.h"
 
 class AccountTrackerService;
 
 namespace identity {
 
-class IdentityManagerImpl : public mojom::IdentityManager,
-                            public OAuth2TokenService::Observer,
-                            public SigninManagerBase::Observer {
+class IdentityAccessorImpl : public mojom::IdentityAccessor,
+                             public OAuth2TokenService::Observer,
+                             public SigninManagerBase::Observer {
  public:
-  static void Create(mojom::IdentityManagerRequest request,
+  static void Create(mojom::IdentityAccessorRequest request,
                      AccountTrackerService* account_tracker,
                      SigninManagerBase* signin_manager,
                      ProfileOAuth2TokenService* token_service);
 
-  IdentityManagerImpl(mojom::IdentityManagerRequest request,
-                      AccountTrackerService* account_tracker,
-                      SigninManagerBase* signin_manager,
-                      ProfileOAuth2TokenService* token_service);
-  ~IdentityManagerImpl() override;
+  IdentityAccessorImpl(mojom::IdentityAccessorRequest request,
+                       AccountTrackerService* account_tracker,
+                       SigninManagerBase* signin_manager,
+                       ProfileOAuth2TokenService* token_service);
+  ~IdentityAccessorImpl() override;
 
  private:
   // Makes an access token request to the OAuth2TokenService on behalf of a
@@ -43,7 +43,7 @@ class IdentityManagerImpl : public mojom::IdentityManager,
                        const std::string& consumer_id,
                        GetAccessTokenCallback consumer_callback,
                        ProfileOAuth2TokenService* token_service,
-                       IdentityManagerImpl* manager);
+                       IdentityAccessorImpl* manager);
     ~AccessTokenRequest() override;
 
    private:
@@ -63,12 +63,12 @@ class IdentityManagerImpl : public mojom::IdentityManager,
     ProfileOAuth2TokenService* token_service_;
     std::unique_ptr<OAuth2TokenService::Request> token_service_request_;
     GetAccessTokenCallback consumer_callback_;
-    IdentityManagerImpl* manager_;
+    IdentityAccessorImpl* manager_;
   };
   using AccessTokenRequests =
       std::map<AccessTokenRequest*, std::unique_ptr<AccessTokenRequest>>;
 
-  // mojom::IdentityManager:
+  // mojom::IdentityAccessor:
   void GetPrimaryAccountInfo(GetPrimaryAccountInfoCallback callback) override;
   void GetPrimaryAccountWhenAvailable(
       GetPrimaryAccountWhenAvailableCallback callback) override;
@@ -98,7 +98,7 @@ class IdentityManagerImpl : public mojom::IdentityManager,
 
   // Called when |signin_manager_| is shutting down. Destroys this instance,
   // since this instance can't outlive the signin classes that it is depending
-  // on. Note that once IdentityManagerImpl manages the lifetime of its
+  // on. Note that once IdentityAccessorImpl manages the lifetime of its
   // dependencies internally, this will no longer be necessary.
   void OnSigninManagerShutdown();
 
@@ -106,7 +106,7 @@ class IdentityManagerImpl : public mojom::IdentityManager,
   // since it's no longer needed.
   void OnConnectionError();
 
-  mojo::Binding<mojom::IdentityManager> binding_;
+  mojo::Binding<mojom::IdentityAccessor> binding_;
   AccountTrackerService* account_tracker_;
   SigninManagerBase* signin_manager_;
   ProfileOAuth2TokenService* token_service_;
@@ -125,4 +125,4 @@ class IdentityManagerImpl : public mojom::IdentityManager,
 
 }  // namespace identity
 
-#endif  // SERVICES_IDENTITY_IDENTITY_MANAGER_IMPL_H_
+#endif  // SERVICES_IDENTITY_IDENTITY_ACCESSOR_IMPL_H_

@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/time/clock.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
-#include "services/identity/public/mojom/identity_manager.mojom.h"
+#include "services/identity/public/mojom/identity_accessor.mojom.h"
 
 class AccountId;
 
@@ -75,15 +75,15 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsAuth {
 
   void UpdateCachedToken(const std::string& token, base::Time expiry);
 
-  identity::mojom::IdentityManager& GetIdentityManager();
+  identity::mojom::IdentityAccessor& GetIdentityAccessor();
 
   SEQUENCE_CHECKER(sequence_checker_);
   const base::Clock* const clock_;
   const base::FilePath profile_path_;
   Delegate* const delegate_;
 
-  // The connection to the identity service. Access via |GetIdentityManager()|.
-  identity::mojom::IdentityManagerPtr identity_manager_;
+  // The connection to the identity service. Access via |GetIdentityAccessor()|.
+  identity::mojom::IdentityAccessorPtr identity_accessor_;
 
   // Pending callback for an in-flight GetAccessToken request.
   mojom::DriveFsDelegate::GetAccessTokenCallback get_access_token_callback_;

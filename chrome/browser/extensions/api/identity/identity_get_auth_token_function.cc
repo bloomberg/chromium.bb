@@ -152,7 +152,7 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
             weak_ptr_factory_.GetWeakPtr(), gaia_id));
   } else {
     // Get the AccountInfo for the account that the extension wishes to use.
-    GetMojoIdentityManager()->GetAccountInfoFromGaiaId(
+    GetMojoIdentityAccessor()->GetAccountInfoFromGaiaId(
         gaia_id,
         base::BindOnce(
             &IdentityGetAuthTokenFunction::OnReceivedExtensionAccountInfo, this,
@@ -261,7 +261,7 @@ void IdentityGetAuthTokenFunction::OnAccountsInCookieUpdated(
     // If the account is in auth error, it won't be in the identity manager.
     // Save the email now to use as email hint for the login prompt.
     email_for_default_web_account_ = account.email;
-    GetMojoIdentityManager()->GetAccountInfoFromGaiaId(
+    GetMojoIdentityAccessor()->GetAccountInfoFromGaiaId(
         account.gaia_id,
         base::BindOnce(
             &IdentityGetAuthTokenFunction::OnReceivedExtensionAccountInfo, this,
@@ -729,7 +729,7 @@ void IdentityGetAuthTokenFunction::OnIdentityAPIShutdown() {
   gaia_web_auth_flow_.reset();
   device_access_token_request_.reset();
   token_key_account_access_token_fetcher_.reset();
-  mojo_identity_manager_.reset();
+  mojo_identity_accessor_.reset();
   scoped_identity_manager_observer_.RemoveAll();
   extensions::IdentityAPI::GetFactoryInstance()
       ->Get(GetProfile())
@@ -873,14 +873,14 @@ std::string IdentityGetAuthTokenFunction::GetOAuth2ClientId() const {
   return client_id;
 }
 
-::identity::mojom::IdentityManager*
-IdentityGetAuthTokenFunction::GetMojoIdentityManager() {
-  if (!mojo_identity_manager_.is_bound()) {
+::identity::mojom::IdentityAccessor*
+IdentityGetAuthTokenFunction::GetMojoIdentityAccessor() {
+  if (!mojo_identity_accessor_.is_bound()) {
     content::BrowserContext::GetConnectorFor(GetProfile())
         ->BindInterface(::identity::mojom::kServiceName,
-                        mojo::MakeRequest(&mojo_identity_manager_));
+                        mojo::MakeRequest(&mojo_identity_accessor_));
   }
-  return mojo_identity_manager_.get();
+  return mojo_identity_accessor_.get();
 }
 
 bool IdentityGetAuthTokenFunction::IsPrimaryAccountOnly() const {

@@ -47,13 +47,13 @@ void DriveFsAuth::GetAccessToken(
   }
 
   get_access_token_callback_ = std::move(callback);
-  GetIdentityManager().GetPrimaryAccountWhenAvailable(
+  GetIdentityAccessor().GetPrimaryAccountWhenAvailable(
       base::BindOnce(&DriveFsAuth::AccountReady, base::Unretained(this)));
 }
 
 void DriveFsAuth::AccountReady(const AccountInfo& info,
                                const identity::AccountState& state) {
-  GetIdentityManager().GetAccessToken(
+  GetIdentityAccessor().GetAccessToken(
       delegate_->GetAccountId().GetUserEmail(),
       {"https://www.googleapis.com/auth/drive"}, kIdentityConsumerId,
       base::BindOnce(&DriveFsAuth::GotChromeAccessToken,
@@ -91,13 +91,13 @@ void DriveFsAuth::UpdateCachedToken(const std::string& token,
   last_token_expiry_ = expiry;
 }
 
-identity::mojom::IdentityManager& DriveFsAuth::GetIdentityManager() {
+identity::mojom::IdentityAccessor& DriveFsAuth::GetIdentityAccessor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!identity_manager_) {
+  if (!identity_accessor_) {
     delegate_->GetConnector()->BindInterface(
-        identity::mojom::kServiceName, mojo::MakeRequest(&identity_manager_));
+        identity::mojom::kServiceName, mojo::MakeRequest(&identity_accessor_));
   }
-  return *identity_manager_;
+  return *identity_accessor_;
 }
 
 }  // namespace drivefs

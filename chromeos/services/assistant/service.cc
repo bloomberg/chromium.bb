@@ -84,13 +84,13 @@ Service::~Service() = default;
 
 void Service::RequestAccessToken() {
   VLOG(1) << "Start requesting access token.";
-  GetIdentityManager()->GetPrimaryAccountInfo(base::BindOnce(
+  GetIdentityAccessor()->GetPrimaryAccountInfo(base::BindOnce(
       &Service::GetPrimaryAccountInfoCallback, base::Unretained(this)));
 }
 
-void Service::SetIdentityManagerForTesting(
-    identity::mojom::IdentityManagerPtr identity_manager) {
-  identity_manager_ = std::move(identity_manager);
+void Service::SetIdentityAccessorForTesting(
+    identity::mojom::IdentityAccessorPtr identity_accessor) {
+  identity_accessor_ = std::move(identity_accessor);
 }
 
 void Service::SetAssistantManagerForTesting(
@@ -240,12 +240,12 @@ void Service::Init(mojom::ClientPtr client,
   RequestAccessToken();
 }
 
-identity::mojom::IdentityManager* Service::GetIdentityManager() {
-  if (!identity_manager_) {
+identity::mojom::IdentityAccessor* Service::GetIdentityAccessor() {
+  if (!identity_accessor_) {
     service_binding_.GetConnector()->BindInterface(
-        identity::mojom::kServiceName, mojo::MakeRequest(&identity_manager_));
+        identity::mojom::kServiceName, mojo::MakeRequest(&identity_accessor_));
   }
-  return identity_manager_.get();
+  return identity_accessor_.get();
 }
 
 void Service::GetPrimaryAccountInfoCallback(
@@ -264,7 +264,7 @@ void Service::GetPrimaryAccountInfoCallback(
   scopes.insert(kScopeAuthGcm);
   if (features::IsClearCutLogEnabled())
     scopes.insert(kScopeClearCutLog);
-  identity_manager_->GetAccessToken(
+  identity_accessor_->GetAccessToken(
       account_info.value().account_id, scopes, "cros_assistant",
       base::BindOnce(&Service::GetAccessTokenCallback, base::Unretained(this)));
 }

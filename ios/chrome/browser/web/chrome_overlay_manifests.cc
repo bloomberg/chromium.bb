@@ -14,7 +14,7 @@
 const service_manager::Manifest& GetChromeWebBrowserOverlayManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest{
       service_manager::ManifestBuilder()
-          .RequireCapability(identity::mojom::kServiceName, "identity_manager")
+          .RequireCapability(identity::mojom::kServiceName, "identity_accessor")
           .RequireCapability(unzip::mojom::kServiceName, "unzip_file")
           .PackageService(identity::GetManifest())
           .Build()};

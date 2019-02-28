@@ -152,7 +152,7 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
             .RequireCapability("file_util", "zip_file")
             .RequireCapability("heap_profiling", "heap_profiler")
             .RequireCapability("heap_profiling", "profiling")
-            .RequireCapability("identity", "identity_manager")
+            .RequireCapability("identity", "identity_accessor")
             .RequireCapability(image_annotation::mojom::kServiceName,
                                image_annotation::mojom::kAnnotationCapability)
             .RequireCapability("ime", "input_engine")
