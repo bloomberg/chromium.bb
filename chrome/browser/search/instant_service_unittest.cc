@@ -20,7 +20,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/ntp_tiles/constants.h"
 #include "components/ntp_tiles/ntp_tile.h"
-#include "components/ntp_tiles/pref_names.cc"
+#include "components/ntp_tiles/pref_names.h"
 #include "components/ntp_tiles/section_type.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
