@@ -266,7 +266,7 @@ void BlobData::AppendDataInternal(base::span<const char> data,
   DCHECK_EQ(file_composition_, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
   // Skip zero-byte items, as they don't matter for the contents of the blob.
-  if (data.size() == 0)
+  if (data.empty())
     return;
   bool should_embed_bytes = current_memory_population_ + data.size() <=
                             DataElementBytes::kMaximumEmbeddedDataSize;

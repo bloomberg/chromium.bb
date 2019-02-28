@@ -858,7 +858,7 @@ StringOrStringSequence ConvertStringSequence(
     for (const auto& scanner : input)
       buffer.push_back(scanner);
     the_strings.SetStringSequence(buffer);
-  } else if (input.size() > 0) {
+  } else if (!input.empty()) {
     the_strings.SetString(input[0]);
   }
   return the_strings;
@@ -876,7 +876,7 @@ StringOrStringSequenceOrConstrainDOMStringParameters ConvertString(
       for (const auto& scanner : input_buffer)
         buffer.push_back(scanner);
       output_union.SetStringSequence(buffer);
-    } else if (input_buffer.size() > 0) {
+    } else if (!input_buffer.empty()) {
       output_union.SetString(input_buffer[0]);
     }
   } else if (!input.IsEmpty()) {

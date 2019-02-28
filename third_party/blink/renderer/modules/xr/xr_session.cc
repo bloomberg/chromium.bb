@@ -702,7 +702,7 @@ void XRSession::OnInputStateChange(
     }
   }
 
-  if (inactive_sources.size()) {
+  if (!inactive_sources.empty()) {
     for (uint32_t source_id : inactive_sources) {
       input_sources_.erase(source_id);
     }

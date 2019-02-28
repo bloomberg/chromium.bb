@@ -280,10 +280,10 @@ RTCRtpCodecParameters* ToRtpCodecParameters(
     codec->setClockRate(webrtc_codec.clock_rate.value());
   if (webrtc_codec.num_channels)
     codec->setChannels(webrtc_codec.num_channels.value());
-  if (webrtc_codec.parameters.size()) {
+  if (!webrtc_codec.parameters.empty()) {
     std::string sdp_fmtp_line;
     for (const auto& parameter : webrtc_codec.parameters) {
-      if (sdp_fmtp_line.size())
+      if (!sdp_fmtp_line.empty())
         sdp_fmtp_line += ";";
       sdp_fmtp_line += parameter.first + "=" + parameter.second;
     }
@@ -527,10 +527,10 @@ RTCRtpCapabilities* RTCRtpSender::getCapabilities(const String& kind) {
       codec->setClockRate(rtc_codec.clock_rate.value());
     if (rtc_codec.num_channels)
       codec->setChannels(rtc_codec.num_channels.value());
-    if (rtc_codec.parameters.size()) {
+    if (!rtc_codec.parameters.empty()) {
       std::string sdp_fmtp_line;
       for (const auto& parameter : rtc_codec.parameters) {
-        if (sdp_fmtp_line.size())
+        if (!sdp_fmtp_line.empty())
           sdp_fmtp_line += ";";
         sdp_fmtp_line += parameter.first + "=" + parameter.second;
       }

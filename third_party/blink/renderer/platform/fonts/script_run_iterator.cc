@@ -214,7 +214,7 @@ void ScriptRunIterator::OpenBracket(UChar32 ch) {
 }
 
 void ScriptRunIterator::CloseBracket(UChar32 ch) {
-  if (brackets_.size() > 0) {
+  if (!brackets_.empty()) {
     UChar32 target = script_data_->GetPairedBracket(ch);
     for (auto it = brackets_.rbegin(); it != brackets_.rend(); ++it) {
       if (it->ch == target) {

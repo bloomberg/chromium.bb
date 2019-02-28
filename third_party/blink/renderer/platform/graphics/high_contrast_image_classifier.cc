@@ -179,7 +179,7 @@ void HighContrastImageClassifier::GetSamples(
 
   // If samples are too few, resample foreground blocks.
   if (sampled_pixels->size() < kPixelsToSample / 2 &&
-      foreground_blocks.size()) {
+      !foreground_blocks.empty()) {
     pixels_per_block = static_cast<int>(
         ceil((kPixelsToSample - static_cast<float>(sampled_pixels->size())) /
              static_cast<float>(foreground_blocks.size())));

@@ -900,7 +900,7 @@ bool SourceBuffer::InitializationSegmentReceived(
   // 2. If the initialization segment has no audio, video, or text tracks, then
   //    run the append error algorithm with the decode error parameter set to
   //    true and abort these steps.
-  if (new_tracks.size() == 0) {
+  if (new_tracks.empty()) {
     DVLOG(3) << __func__ << " this=" << this
              << " failed: no tracks found in the init segment.";
     // The append error algorithm will be called at the top level after we

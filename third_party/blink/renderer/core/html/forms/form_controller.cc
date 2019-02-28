@@ -298,7 +298,7 @@ FormControlState SavedFormState::TakeControlState(const AtomicString& name,
   DCHECK_GT(it->value.size(), 0u);
   FormControlState state = it->value.TakeFirst();
   control_state_count_--;
-  if (!it->value.size())
+  if (it->value.empty())
     state_for_new_form_elements_.erase(it);
   return state;
 }

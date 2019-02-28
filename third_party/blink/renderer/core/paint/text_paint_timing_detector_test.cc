@@ -68,7 +68,7 @@ class TextPaintTimingDetectorTest
         DocumentLifecycle::LifecycleUpdateReason::kTest);
     TextPaintTimingDetector& detector =
         GetPaintTimingDetector().GetTextPaintTimingDetector();
-    if (detector.texts_to_record_swap_time_.size() > 0) {
+    if (!detector.texts_to_record_swap_time_.empty()) {
       detector.ReportSwapTime(WebLayerTreeView::SwapResult::kDidSwap,
                               CurrentTimeTicks());
     }

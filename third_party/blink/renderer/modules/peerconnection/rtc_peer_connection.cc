@@ -677,7 +677,7 @@ RTCPeerConnection* RTCPeerConnection::Create(
     return nullptr;
 
   // Make sure no certificates have expired.
-  if (configuration.certificates.size() > 0) {
+  if (!configuration.certificates.empty()) {
     DOMTimeStamp now = ConvertSecondsToDOMTimeStamp(CurrentTime());
     for (const rtc::scoped_refptr<rtc::RTCCertificate>& certificate :
          configuration.certificates) {

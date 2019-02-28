@@ -371,8 +371,8 @@ void FrameSchedulerImpl::InitializeTaskTypeQueueTraitsMap(
     TaskType type = static_cast<TaskType>(i);
     base::Optional<QueueTraits> queue_traits =
         CreateQueueTraitsForTaskType(type);
-    if (queue_traits && (throttleable_task_type_names.size() ||
-                         freezable_task_type_names.size())) {
+    if (queue_traits && (!throttleable_task_type_names.empty() ||
+                         !freezable_task_type_names.empty())) {
       const char* task_type_name = TaskTypeNames::TaskTypeToString(type);
       if (throttleable_task_type_names.erase(task_type_name))
         queue_traits->SetCanBeThrottled(true);

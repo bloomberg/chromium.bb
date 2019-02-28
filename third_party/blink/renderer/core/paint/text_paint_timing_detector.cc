@@ -111,7 +111,7 @@ void TextPaintTimingDetector::Analyze() {
 }
 
 void TextPaintTimingDetector::OnPaintFinished() {
-  if (texts_to_record_swap_time_.size() > 0) {
+  if (!texts_to_record_swap_time_.empty()) {
     // Start repeating timer only once after the first text paint.
     if (!timer_.IsActive()) {
       timer_.StartRepeating(kTimerDelay, FROM_HERE);
@@ -166,7 +166,7 @@ void TextPaintTimingDetector::ReportSwapTime(
   // consumed in a callback earlier than this one. That violates the assumption
   // that only one or zero callback will be called after one OnPaintFinished.
   DCHECK_GT(texts_to_record_swap_time_.size(), 0UL);
-  while (texts_to_record_swap_time_.size() > 0) {
+  while (!texts_to_record_swap_time_.empty()) {
     DOMNodeId node_id = texts_to_record_swap_time_.front();
     DCHECK(id_record_map_.Contains(node_id));
     TextRecord* record = id_record_map_.at(node_id);
