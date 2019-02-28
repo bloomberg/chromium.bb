@@ -29,6 +29,7 @@
 #endif
 
 class BrowserContextDependencyManager;
+class SimpleDependencyManager;
 class ExtensionSpecialStoragePolicy;
 class HostContentSettingsMap;
 
@@ -436,6 +437,7 @@ class TestingProfile : public Profile {
   // We keep a weak pointer to the dependency manager we want to notify on our
   // death. Defaults to the Singleton implementation but overridable for
   // testing.
+  SimpleDependencyManager* simple_dependency_manager_;
   BrowserContextDependencyManager* browser_context_dependency_manager_;
 
   // Owned, but must be deleted on the IO thread so not placing in a

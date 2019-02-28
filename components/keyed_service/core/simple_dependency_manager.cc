@@ -5,6 +5,7 @@
 #include "components/keyed_service/core/simple_dependency_manager.h"
 
 #include "base/no_destructor.h"
+#include "base/trace_event/trace_event.h"
 #include "components/keyed_service/core/simple_factory_key.h"
 
 #ifndef NDEBUG
@@ -28,6 +29,19 @@ void SimpleDependencyManager::DestroyKeyedServices(SimpleFactoryKey* key) {
 SimpleDependencyManager* SimpleDependencyManager::GetInstance() {
   static base::NoDestructor<SimpleDependencyManager> factory;
   return factory.get();
+}
+
+void SimpleDependencyManager::RegisterProfilePrefsForServices(
+    SimpleFactoryKey* key,
+    user_prefs::PrefRegistrySyncable* pref_registry) {
+  TRACE_EVENT0("browser",
+               "SimpleDependencyManager::RegisterProfilePrefsForServices");
+  RegisterPrefsForServices(key, pref_registry);
+}
+
+void SimpleDependencyManager::CreateServicesForTest(SimpleFactoryKey* key) {
+  TRACE_EVENT0("browser", "SimpleDependencyManager::CreateServices");
+  DependencyManager::CreateContextServices(key, true);
 }
 
 SimpleDependencyManager::SimpleDependencyManager() = default;
