@@ -37,7 +37,10 @@ import subprocess
 import sys
 
 # Flags used to enable coverage instrumentation.
-_COVERAGE_FLAGS = ['-fprofile-instr-generate', '-fcoverage-mapping']
+_COVERAGE_FLAGS = [
+    '-fprofile-instr-generate', '-fcoverage-mapping', '-mllvm',
+    '-limited-coverage-experimental=true'
+]
 
 
 def main():
