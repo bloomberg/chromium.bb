@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/uuid.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -1216,6 +1217,7 @@ void PaymentRequest::OnShippingOptionChange(const String& shipping_option_id) {
 
 void PaymentRequest::OnPayerDetailChange(
     payments::mojom::blink::PayerDetailPtr detail) {
+  CHECK(RuntimeEnabledFeatures::PaymentRetryEnabled());
   DCHECK(payment_response_);
   DCHECK(GetPendingAcceptPromiseResolver());
   DCHECK(!complete_resolver_);
@@ -1226,6 +1228,8 @@ void PaymentRequest::OnPayerDetailChange(
   event->SetPaymentDetailsUpdater(this);
   payment_response_->UpdatePayerDetail(std::move(detail));
   payment_response_->DispatchEvent(*event);
+  if (!event->is_waiting_for_update())
+    payment_provider_->NoUpdatedPaymentDetails();
 }
 
 void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {

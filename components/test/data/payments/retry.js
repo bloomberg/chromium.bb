@@ -5,6 +5,7 @@
  */
 
 var gPaymentResponse = null;
+var gRetryPromise = null;
 
 /**
  * Launches the PaymentRequest UI
@@ -19,7 +20,15 @@ function buy() {  // eslint-disable-line no-unused-vars
   getPaymentResponse(options)
       .then(function(response) {
         gPaymentResponse = response;
-        print(JSON.stringify(gPaymentResponse, undefined, 2));
+        var eventPromise = new Promise(function(resolve) {
+          gPaymentResponse.addEventListener('payerdetailchange', resolve);
+        });
+        eventPromise.then(function() {
+          gRetryPromise.then(function() {
+            print(JSON.stringify(gPaymentResponse, undefined, 2));
+            gPaymentResponse.complete('success');
+          });
+        });
       });
 }
 
@@ -33,5 +42,5 @@ function retry(validationErrors) {  // eslint-disable-line no-unused-vars
     return;
   }
 
-  gPaymentResponse.retry(validationErrors);
+  gRetryPromise = gPaymentResponse.retry(validationErrors);
 }

@@ -58,6 +58,7 @@ import org.chromium.mojo.system.MojoException;
 import org.chromium.payments.mojom.AddressErrors;
 import org.chromium.payments.mojom.CanMakePaymentQueryResult;
 import org.chromium.payments.mojom.HasEnrolledInstrumentQueryResult;
+import org.chromium.payments.mojom.PayerDetail;
 import org.chromium.payments.mojom.PayerErrors;
 import org.chromium.payments.mojom.PaymentComplete;
 import org.chromium.payments.mojom.PaymentCurrencyAmount;
@@ -232,6 +233,7 @@ public class PaymentRequestImpl
     private boolean mIsHasEnrolledInstrumentResponsePending;
     private boolean mHasEnrolledInstrumentUsesPerMethodQuota;
     private boolean mIsCurrentPaymentRequestShowing;
+    private boolean mWasRetryCalled;
     private final Queue<Runnable> mRetryQueue = new LinkedList<>();
 
     /**
@@ -807,7 +809,7 @@ public class PaymentRequestImpl
             mShippingAddressesSection.setErrorMessage(details.error);
         }
 
-        enableUserInterfaceAfterShippingAddressOrOptionUpdateEvent();
+        enableUserInterfaceAfterPaymentRequestUpdateEvent();
     }
 
     /**
@@ -825,10 +827,10 @@ public class PaymentRequestImpl
             return;
         }
 
-        enableUserInterfaceAfterShippingAddressOrOptionUpdateEvent();
+        enableUserInterfaceAfterPaymentRequestUpdateEvent();
     }
 
-    private void enableUserInterfaceAfterShippingAddressOrOptionUpdateEvent() {
+    private void enableUserInterfaceAfterPaymentRequestUpdateEvent() {
         if (mPaymentInformationCallback != null) {
             providePaymentInformation();
         } else {
@@ -1131,10 +1133,14 @@ public class PaymentRequestImpl
             AutofillContact contact = (AutofillContact) option;
             if (contact.isComplete()) {
                 mContactSection.setSelectedItem(option);
+                if (!mWasRetryCalled) return PaymentRequestUI.SelectionResult.NONE;
+                dispatchPayerDetailChangeEventIfNeeded(contact.toPayerDetail());
             } else {
                 editContact(contact);
-                return PaymentRequestUI.SelectionResult.EDITOR_LAUNCH;
+                if (!mWasRetryCalled) return PaymentRequestUI.SelectionResult.EDITOR_LAUNCH;
             }
+            mPaymentInformationCallback = callback;
+            return PaymentRequestUI.SelectionResult.ASYNCHRONOUS_VALIDATION;
         } else if (optionType == PaymentRequestUI.DataType.PAYMENT_METHODS) {
             PaymentInstrument paymentInstrument = (PaymentInstrument) option;
             if (paymentInstrument instanceof AutofillPaymentInstrument) {
@@ -1280,6 +1286,8 @@ public class PaymentRequestImpl
                         // Contact is complete and we were in the "Add flow": add an item to the
                         // list.
                         mContactSection.addAndSelectItem(editedContact);
+                    } else {
+                        dispatchPayerDetailChangeEventIfNeeded(editedContact.toPayerDetail());
                     }
                     // If contact is complete and (toEdit != null), no action needed: the contact
                     // was already selected in the UI.
@@ -1465,6 +1473,8 @@ public class PaymentRequestImpl
             disconnectFromClientWithDebugMessage("Invalid payment validation errors");
             return;
         }
+
+        mWasRetryCalled = true;
 
         // Go back to the payment sheet
         mUI.onPayButtonProcessingCancelled();
@@ -2003,6 +2013,11 @@ public class PaymentRequestImpl
     private void closeClient() {
         if (mClient != null) mClient.close();
         mClient = null;
+    }
+
+    private void dispatchPayerDetailChangeEventIfNeeded(PayerDetail detail) {
+        if (mClient == null || !mWasRetryCalled) return;
+        mClient.onPayerDetailChange(detail);
     }
 
     /**

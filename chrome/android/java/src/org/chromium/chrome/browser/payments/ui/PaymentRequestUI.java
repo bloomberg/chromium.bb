@@ -383,7 +383,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                     updateSection(DataType.CONTACT_DETAILS, result.getContactDetails());
                 }
                 updateSection(DataType.PAYMENT_METHODS, result.getPaymentMethods());
-                if (mShippingAddressSectionInformation.getSelectedItem() == null) {
+                if (mShippingAddressSectionInformation != null
+                        && mShippingAddressSectionInformation.getSelectedItem() == null) {
                     expand(mShippingAddressSection);
                 } else {
                     expand(null);
@@ -699,7 +700,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                     DataType.SHIPPING_OPTIONS, option, mUpdateSectionsCallback);
         } else if (section == mContactDetailsSection) {
             mContactDetailsSectionInformation.setSelectedItem(option);
-            result = mClient.onSectionOptionSelected(DataType.CONTACT_DETAILS, option, null);
+            result = mClient.onSectionOptionSelected(
+                    DataType.CONTACT_DETAILS, option, mUpdateSectionsCallback);
         } else if (section == mPaymentMethodSection) {
             mPaymentMethodSectionInformation.setSelectedItem(option);
             result = mClient.onSectionOptionSelected(DataType.PAYMENT_METHODS, option, null);
