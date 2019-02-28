@@ -151,6 +151,10 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
     // TraceLog::IsEnabled() is false at this point.
     virtual void OnTraceLogDisabled() = 0;
   };
+  // TODO(oysteine): This API originally needed to use WeakPtrs as the observer
+  // list was copied under the global trace lock, but iterated over outside of
+  // that lock so that observers could add tracing. The list is now protected by
+  // its own lock, so this can be changed to a raw ptr.
   void AddAsyncEnabledStateObserver(
       WeakPtr<AsyncEnabledStateObserver> listener);
   void RemoveAsyncEnabledStateObserver(AsyncEnabledStateObserver* listener);

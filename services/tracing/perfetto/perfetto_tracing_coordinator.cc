@@ -256,15 +256,15 @@ void PerfettoTracingCoordinator::PingAgent(
   // system as a fallback when using Perfetto, rather than
   // the browser directly using a Consumer interface, we have to
   // attempt to linearize with newly connected agents so we only
-  // call the BeginTracing callback when we can be fairly sure
+  // call the BeginTracing callback when we can be sure
   // that all current agents have registered with Perfetto and
   // started tracing if requested. We do this linearization
-  // by calling RequestBufferStatus but just throwing away the
-  // result.
+  // explicitly using WaitForTracingEnabled() which will wait
+  // for the TraceLog to be enabled before calling its provided
+  // callback.
   auto closure = base::BindRepeating(
       [](base::WeakPtr<PerfettoTracingCoordinator> coordinator,
-         AgentRegistry::AgentEntry* agent_entry, uint32_t capacity,
-         uint32_t count) {
+         AgentRegistry::AgentEntry* agent_entry) {
         bool removed =
             agent_entry->RemoveDisconnectClosure(GetStartTracingClosureName());
         DCHECK(removed);
@@ -275,10 +275,9 @@ void PerfettoTracingCoordinator::PingAgent(
       },
       weak_factory_.GetWeakPtr(), base::Unretained(agent_entry));
 
-  agent_entry->AddDisconnectClosure(GetStartTracingClosureName(),
-                                    base::BindOnce(closure, 0, 0));
+  agent_entry->AddDisconnectClosure(GetStartTracingClosureName(), closure);
 
-  agent_entry->agent()->RequestBufferStatus(closure);
+  agent_entry->agent()->WaitForTracingEnabled(closure);
   RemoveExpectedPID(agent_entry->pid());
 }
 
