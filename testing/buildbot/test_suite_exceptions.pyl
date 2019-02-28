@@ -1229,6 +1229,9 @@
       # crbug.com/934885
       'Linux Tests (dbg)(1)',
       'Linux Tests (dbg)(1)(32)',
+      # crbug.com/936540
+      'Mac10.10 Tests',
+      'Mac10.11 Tests',
       'Mac10.13 Tests',
       'Mac10.13 Tests (dbg)',
       # client.v8.chromium
