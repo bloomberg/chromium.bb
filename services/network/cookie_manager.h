@@ -114,6 +114,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
   scoped_refptr<SessionCleanupChannelIDStore> session_cleanup_channel_id_store_;
   mojo::BindingSet<mojom::CookieManager> bindings_;
   std::vector<std::unique_ptr<ListenerRegistration>> listener_registrations_;
+  // Note: RestrictedCookieManager stores pointers to |cookie_settings_|.
   CookieSettings cookie_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieManager);

@@ -19,6 +19,7 @@
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
 #include "services/network/cookie_managers_shared.h"
+#include "services/network/cookie_settings.h"
 
 namespace network {
 
@@ -75,9 +76,14 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
   DISALLOW_COPY_AND_ASSIGN(Listener);
 };
 
-RestrictedCookieManager::RestrictedCookieManager(net::CookieStore* cookie_store,
-                                                 const url::Origin& origin)
-    : cookie_store_(cookie_store), origin_(origin), weak_ptr_factory_(this) {
+RestrictedCookieManager::RestrictedCookieManager(
+    net::CookieStore* cookie_store,
+    const CookieSettings* cookie_settings,
+    const url::Origin& origin)
+    : cookie_store_(cookie_store),
+      cookie_settings_(cookie_settings),
+      origin_(origin),
+      weak_ptr_factory_(this) {
   DCHECK(cookie_store);
 }
 
@@ -101,6 +107,13 @@ void RestrictedCookieManager::GetAllForUrl(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!ValidateAccessToCookiesAt(url)) {
+    std::move(callback).Run({});
+    return;
+  }
+
+  // TODO(morlovich): Try to validate site_for_cookies as well.
+
+  if (!cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies)) {
     std::move(callback).Run({});
     return;
   }
@@ -133,9 +146,6 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
     const net::CookieList& cookie_list,
     const net::CookieStatusList& excluded_cookies) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // TODO(pwnall): Call NetworkDelegate::CanGetCookies() on a NetworkDelegate
-  //               associated with the NetworkContext.
 
   std::vector<net::CanonicalCookie> result;
   result.reserve(cookie_list.size());
@@ -172,10 +182,14 @@ void RestrictedCookieManager::SetCanonicalCookie(
     return;
   }
 
+  // TODO(morlovich): Try to validate site_for_cookies as well.
+  if (!cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies)) {
+    std::move(callback).Run(false);
+    return;
+  }
+
   // TODO(pwnall): Validate the CanonicalCookie fields.
 
-  // TODO(pwnall): Call NetworkDelegate::CanSetCookie() on a NetworkDelegate
-  //               associated with the NetworkContext.
   base::Time now = base::Time::NowFromSystemTime();
   auto sanitized_cookie = std::make_unique<net::CanonicalCookie>(
       cookie.Name(), cookie.Value(), cookie.Domain(), cookie.Path(), now,

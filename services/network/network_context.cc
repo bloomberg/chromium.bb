@@ -724,7 +724,8 @@ void NetworkContext::GetRestrictedCookieManager(
     const url::Origin& origin) {
   restricted_cookie_manager_bindings_.AddBinding(
       std::make_unique<RestrictedCookieManager>(
-          url_request_context_->cookie_store(), origin),
+          url_request_context_->cookie_store(),
+          &cookie_manager_->cookie_settings(), origin),
       std::move(request));
 }
 

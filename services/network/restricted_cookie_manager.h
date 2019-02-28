@@ -27,6 +27,8 @@ class CookieStore;
 
 namespace network {
 
+class CookieSettings;
+
 // RestrictedCookieManager implementation.
 //
 // Instances of this class must be created and used on the sequence that hosts
@@ -34,7 +36,9 @@ namespace network {
 class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
     : public mojom::RestrictedCookieManager {
  public:
+  // |*cookie_store|, |*cookie_settings| must outlive this.
   RestrictedCookieManager(net::CookieStore* cookie_store,
+                          const CookieSettings* cookie_settings,
                           const url::Origin& origin);
   ~RestrictedCookieManager() override;
 
@@ -79,6 +83,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   bool ValidateAccessToCookiesAt(const GURL& url);
 
   net::CookieStore* const cookie_store_;
+  const CookieSettings* const cookie_settings_;
   const url::Origin origin_;
 
   base::LinkedList<Listener> listeners_;

@@ -508,6 +508,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   mojo::StrongBindingSet<mojom::NetLogExporter> net_log_exporter_bindings_;
 
+  // Ordering: this must be after |cookie_manager_| since it points to its
+  // CookieSettings object.
   mojo::StrongBindingSet<mojom::RestrictedCookieManager>
       restricted_cookie_manager_bindings_;
 
