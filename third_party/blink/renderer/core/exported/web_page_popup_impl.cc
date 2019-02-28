@@ -352,7 +352,7 @@ AXObject* WebPagePopupImpl::RootAXObject() {
   // and the AXObjectCache doesn't already exist. It's called when trying
   // to attach the accessibility tree of the pop-up to the host page.
   DCHECK(cache);
-  return ToAXObjectCacheBase(cache)->GetOrCreate(document->GetLayoutView());
+  return To<AXObjectCacheBase>(cache)->GetOrCreate(document->GetLayoutView());
 }
 
 void WebPagePopupImpl::SetWindowRect(const IntRect& rect_in_screen) {
