@@ -19,6 +19,7 @@
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
+#include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
@@ -713,15 +714,14 @@ void AppListControllerImpl::OnUiVisibilityChanged(
       if (!IsShowingEmbeddedAssistantUI())
         break;
 
-      if (exit_point == AssistantExitPoint::kBackInLauncher) {
-        presenter_.ShowEmbeddedAssistantUI(false);
-      } else if (!IsTabletMode()) {
-        DismissAppList();
-      }
+      // Reset model state.
+      presenter_.ShowEmbeddedAssistantUI(false);
       if (IsTabletMode()) {
         presenter_.GetView()->app_list_main_view()->ResetForShow();
         presenter_.GetView()->SetState(
             app_list::AppListViewState::FULLSCREEN_ALL_APPS);
+      } else if (exit_point != AssistantExitPoint::kBackInLauncher) {
+        DismissAppList();
       }
       break;
   }
@@ -902,7 +902,11 @@ void AppListControllerImpl::SearchResultContextMenuItemSelected(
 }
 
 void AppListControllerImpl::ViewShown(int64_t display_id) {
-  CloseAssistantUi(AssistantExitPoint::kLauncherOpen);
+  if (app_list_features::IsEmbeddedAssistantUIEnabled() &&
+      GetAssistantViewDelegate()->GetUiModel()->ui_mode() !=
+          ash::AssistantUiMode::kLauncherEmbeddedUi) {
+    CloseAssistantUi(AssistantExitPoint::kLauncherOpen);
+  }
   if (client_)
     client_->ViewShown(display_id);
 }
