@@ -107,23 +107,9 @@ EasyUnlockServiceRegular::EasyUnlockServiceRegular(
     multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client)
     : EasyUnlockService(profile, secure_channel_client),
       lock_screen_last_shown_timestamp_(base::TimeTicks::Now()),
-      deferring_device_load_(false),
       notification_controller_(std::move(notification_controller)),
       device_sync_client_(device_sync_client),
-      multidevice_setup_client_(multidevice_setup_client),
-      shown_pairing_changed_notification_(false),
-      weak_ptr_factory_(this) {
-  // If |device_sync_client_| is not ready yet, wait for it to call back on
-  // OnReady().
-  if (device_sync_client_->is_ready())
-    OnReady();
-
-  device_sync_client_->AddObserver(this);
-
-  OnFeatureStatesChanged(multidevice_setup_client_->GetFeatureStates());
-
-  multidevice_setup_client_->AddObserver(this);
-}
+      multidevice_setup_client_(multidevice_setup_client) {}
 
 EasyUnlockServiceRegular::~EasyUnlockServiceRegular() = default;
 
@@ -347,6 +333,17 @@ void EasyUnlockServiceRegular::RecordPasswordLoginEvent(
 }
 
 void EasyUnlockServiceRegular::InitializeInternal() {
+  // If |device_sync_client_| is not ready yet, wait for it to call back on
+  // OnReady().
+  if (device_sync_client_->is_ready())
+    OnReady();
+
+  device_sync_client_->AddObserver(this);
+
+  OnFeatureStatesChanged(multidevice_setup_client_->GetFeatureStates());
+
+  multidevice_setup_client_->AddObserver(this);
+
   proximity_auth::ScreenlockBridge::Get()->AddObserver(this);
 
   pref_manager_.reset(new proximity_auth::ProximityAuthProfilePrefManager(

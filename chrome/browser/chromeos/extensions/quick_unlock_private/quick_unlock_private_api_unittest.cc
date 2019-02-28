@@ -135,9 +135,8 @@ class QuickUnlockPrivateUnitTest
     : public ExtensionApiUnittest,
       public ::testing::WithParamInterface<TestType> {
  public:
-  QuickUnlockPrivateUnitTest()
-      : fake_user_manager_(new FakeChromeUserManager()),
-        scoped_user_manager_(base::WrapUnique(fake_user_manager_)) {}
+  QuickUnlockPrivateUnitTest() = default;
+  ~QuickUnlockPrivateUnitTest() override = default;
 
  protected:
   void SetUp() override {
@@ -151,6 +150,10 @@ class QuickUnlockPrivateUnitTest
     DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
         std::move(cryptohome_client));
     SystemSaltGetter::Initialize();
+
+    fake_user_manager_ = new FakeChromeUserManager();
+    scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
+        base::WrapUnique(fake_user_manager_));
 
     ExtensionApiUnittest::SetUp();
 
@@ -190,10 +193,13 @@ class QuickUnlockPrivateUnitTest
 
     base::RunLoop().RunUntilIdle();
 
-    fake_user_manager_ = nullptr;
-
     ExtensionApiUnittest::TearDown();
+
+    fake_user_manager_ = nullptr;
+    scoped_user_manager_.reset();
+
     SystemSaltGetter::Shutdown();
+    DBusThreadManager::Shutdown();
     cryptohome::HomedirMethods::Shutdown();
   }
 
@@ -501,8 +507,8 @@ class QuickUnlockPrivateUnitTest
     expect_modes_changed_ = false;
   }
 
-  FakeChromeUserManager* fake_user_manager_;
-  user_manager::ScopedUserManager scoped_user_manager_;
+  FakeChromeUserManager* fake_user_manager_ = nullptr;
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   QuickUnlockPrivateSetModesFunction::ModesChangedEventHandler
       modes_changed_handler_;
   bool expect_modes_changed_ = false;
