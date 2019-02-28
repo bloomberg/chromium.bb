@@ -770,7 +770,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Basic) {
 
   // Check that all the modules are valid.
   for (const auto& frame : frames)
-    EXPECT_TRUE(frame.module->is_valid);
+    EXPECT_NE(nullptr, frame.module);
 
   // Check that the stack contains a frame for
   // TargetThread::SignalAndWaitUntilSignaled().

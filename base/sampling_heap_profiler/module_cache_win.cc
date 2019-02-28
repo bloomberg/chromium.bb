@@ -7,7 +7,6 @@
 #include <objbase.h>
 #include <psapi.h>
 
-#include "base/no_destructor.h"
 #include "base/process/process_handle.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -74,7 +73,7 @@ std::unique_ptr<ModuleCache::Module> ModuleCache::CreateModuleForAddress(
                            reinterpret_cast<LPCTSTR>(address),
                            &module_handle)) {
     DCHECK_EQ(ERROR_MOD_NOT_FOUND, static_cast<int>(::GetLastError()));
-    return std::make_unique<Module>();
+    return nullptr;
   }
   std::unique_ptr<Module> module = CreateModuleForHandle(module_handle);
   ::CloseHandle(module_handle);
@@ -83,10 +82,8 @@ std::unique_ptr<ModuleCache::Module> ModuleCache::CreateModuleForAddress(
 
 const ModuleCache::Module* ModuleCache::GetModuleForHandle(
     HMODULE module_handle) {
-  static NoDestructor<ModuleCache::Module> invalid_module;
-
   if (!module_handle)
-    return invalid_module.get();
+    return nullptr;
 
   auto loc = win_module_cache_.find(module_handle);
   if (loc != win_module_cache_.end())
@@ -94,12 +91,12 @@ const ModuleCache::Module* ModuleCache::GetModuleForHandle(
 
   std::unique_ptr<ModuleCache::Module> module =
       ModuleCache::CreateModuleForHandle(module_handle);
-  if (module->is_valid) {
-    const auto result = win_module_cache_.insert(
-        std::make_pair(module_handle, std::move(module)));
-    return result.first->second.get();
-  }
-  return invalid_module.get();
+  if (!module)
+    return nullptr;
+
+  const auto result = win_module_cache_.insert(
+      std::make_pair(module_handle, std::move(module)));
+  return result.first->second.get();
 }
 
 // static
@@ -109,12 +106,12 @@ std::unique_ptr<ModuleCache::Module> ModuleCache::CreateModuleForHandle(
   std::string build_id;
   GetDebugInfoForModule(module_handle, &build_id, &pdb_name);
   if (build_id.empty())
-    return std::make_unique<Module>();
+    return nullptr;
 
   MODULEINFO module_info;
   if (!::GetModuleInformation(GetCurrentProcessHandle(), module_handle,
                               &module_info, sizeof(module_info))) {
-    return std::make_unique<Module>();
+    return nullptr;
   }
 
   return std::make_unique<Module>(
