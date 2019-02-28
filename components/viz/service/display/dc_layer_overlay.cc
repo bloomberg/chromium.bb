@@ -394,11 +394,11 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
     // Quad is always promoted to either an underlay or an overlay after this
     // point. It should not fail.
 
-    // If the current overlay has changed in size/position from the
-    // previous frame, we have to add the overlay quads from the previous frame
-    // to the damage rect for GL compositor. It's hard to optimize the case with
-    // multiple overlays. So always add the overlay rects back in this case.
-    // This is only done once at the first overlay/underlay.
+    // If the current overlay has changed in size/position from the previous
+    // frame, we have to add the overlay quads from the previous frame to the
+    // damage rect for GL compositor. It's hard to optimize multiple overlays or
+    // an overlay in non-root render pass. So always add the overlay rects back
+    // in these two cases. This is only done once at the first overlay/underlay.
     if (current_frame_processed_overlay_count_ == 0 && is_root &&
         !previous_frame_overlay_rect_union_.IsEmpty()) {
       if (quad_rectangle_in_target_space !=
@@ -570,8 +570,6 @@ void DCLayerOverlayProcessor::ProcessForUnderlay(
     // Entire replacement quad must be redrawn.
     // TODO(sunnyps): We should avoid this extra damage if we knew that the
     // video was the only thing damaging this render surface.
-    // TODO(magchen): non-root quad_rectangle should be transformed to root
-    // target space
     damage_rect->Union(quad_rectangle);
   }
 
