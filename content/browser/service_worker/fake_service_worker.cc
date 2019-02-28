@@ -190,7 +190,7 @@ void FakeServiceWorker::Ping(PingCallback callback) {
 }
 
 void FakeServiceWorker::SetIdleTimerDelayToZero() {
-  helper_->OnSetIdleTimerDelayToZero(0 /* embedded_worker_id_ */);
+  is_zero_idle_timer_delay_ = true;
 }
 
 void FakeServiceWorker::OnConnectionError() {

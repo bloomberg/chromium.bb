@@ -182,7 +182,6 @@ class EmbeddedWorkerTestHelper {
       blink::mojom::BackgroundFetchRegistrationPtr registration,
       blink::mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
           callback);
-  virtual void OnSetIdleTimerDelayToZero(int embedded_worker_id);
 
   EmbeddedWorkerRegistry* registry();
 

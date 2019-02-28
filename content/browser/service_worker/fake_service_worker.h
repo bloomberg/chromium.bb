@@ -34,6 +34,8 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
   // Returns after InitializeGlobalScope() is called.
   void RunUntilInitializeGlobalScope();
 
+  bool is_zero_idle_timer_delay() const { return is_zero_idle_timer_delay_; }
+
  protected:
   // blink::mojom::ServiceWorker overrides:
   void InitializeGlobalScope(
@@ -113,6 +115,8 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
   base::OnceClosure quit_closure_for_initialize_global_scope_;
 
   mojo::Binding<blink::mojom::ServiceWorker> binding_;
+
+  bool is_zero_idle_timer_delay_ = false;
 };
 
 }  // namespace content
