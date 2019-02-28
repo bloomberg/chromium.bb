@@ -8,6 +8,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/checked_math.h"
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
@@ -971,8 +972,8 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
       ParseOptions(options, crop_rect, image->BitmapSourceSize());
   if (DstBufferSizeHasOverflow(parsed_options)) {
     resolver->Reject(
-        ScriptValue(resolver->GetScriptState(),
-                    v8::Null(resolver->GetScriptState()->GetIsolate())));
+        DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                             "The ImageBitmap could not be allocated."));
     return promise;
   }
 
@@ -990,8 +991,8 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
       resolver->Resolve(bitmap);
     } else {
       resolver->Reject(
-          ScriptValue(resolver->GetScriptState(),
-                      v8::Null(resolver->GetScriptState()->GetIsolate())));
+          DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                               "The ImageBitmap could not be allocated."));
     }
     return promise;
   }
