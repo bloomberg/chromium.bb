@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
@@ -25,14 +26,14 @@ class CONTENT_EXPORT IdleMonitor : public base::LinkNode<IdleMonitor> {
  public:
   IdleMonitor(blink::mojom::IdleMonitorPtr monitor,
               blink::mojom::IdleStatePtr last_state,
-              uint32_t threshold);
+              base::TimeDelta threshold);
   ~IdleMonitor();
 
   const blink::mojom::IdleState& last_state() const {
     return *last_state_.get();
   }
-  uint32_t threshold() const { return threshold_; }
-  void set_threshold(uint32_t threshold) { threshold_ = threshold; }
+  base::TimeDelta threshold() const { return threshold_; }
+  void set_threshold(base::TimeDelta threshold) { threshold_ = threshold; }
 
   void SetLastState(blink::mojom::IdleStatePtr state);
   void SetErrorHandler(base::OnceCallback<void(content::IdleMonitor*)> handler);
@@ -40,7 +41,7 @@ class CONTENT_EXPORT IdleMonitor : public base::LinkNode<IdleMonitor> {
  private:
   blink::mojom::IdleMonitorPtr client_;
   blink::mojom::IdleStatePtr last_state_;
-  uint32_t threshold_;
+  base::TimeDelta threshold_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

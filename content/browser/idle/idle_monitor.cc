@@ -17,7 +17,7 @@ namespace content {
 
 IdleMonitor::IdleMonitor(blink::mojom::IdleMonitorPtr monitor,
                          blink::mojom::IdleStatePtr last_state,
-                         uint32_t threshold)
+                         base::TimeDelta threshold)
     : client_(std::move(monitor)),
       last_state_(std::move(last_state)),
       threshold_(threshold) {}

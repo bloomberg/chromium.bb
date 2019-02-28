@@ -18,7 +18,7 @@
 namespace blink {
 
 IdleStatus* IdleStatus::Create(ExecutionContext* context,
-                               uint32_t threshold,
+                               base::TimeDelta threshold,
                                mojom::blink::IdleMonitorRequest request) {
   auto* status =
       MakeGarbageCollected<IdleStatus>(context, threshold, std::move(request));
@@ -27,7 +27,7 @@ IdleStatus* IdleStatus::Create(ExecutionContext* context,
 }
 
 IdleStatus::IdleStatus(ExecutionContext* context,
-                       uint32_t threshold,
+                       base::TimeDelta threshold,
                        mojom::blink::IdleMonitorRequest request)
     : ContextLifecycleStateObserver(context),
       threshold_(threshold),

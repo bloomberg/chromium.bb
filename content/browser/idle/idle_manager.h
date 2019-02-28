@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/browser/idle/idle_monitor.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -37,8 +38,9 @@ class CONTENT_EXPORT IdleManager : public blink::mojom::IdleManager {
     // See ui/base/idle/idle.h for the semantics of these methods.
     // TODO(goto): should this be made private? Doesn't seem to be necessary
     // as part of a public interface.
-    virtual ui::IdleState CalculateIdleState(int idle_threshold) = 0;
-    virtual int CalculateIdleTime() = 0;
+    virtual ui::IdleState CalculateIdleState(
+        base::TimeDelta idle_threshold) = 0;
+    virtual base::TimeDelta CalculateIdleTime() = 0;
     virtual bool CheckIdleStateIsLocked() = 0;
 
    private:
@@ -53,7 +55,7 @@ class CONTENT_EXPORT IdleManager : public blink::mojom::IdleManager {
                      const url::Origin& origin);
 
   // blink.mojom.IdleManager:
-  void AddMonitor(uint32_t threshold,
+  void AddMonitor(base::TimeDelta threshold,
                   blink::mojom::IdleMonitorPtr monitor_ptr,
                   AddMonitorCallback callback) override;
 
@@ -84,7 +86,7 @@ class CONTENT_EXPORT IdleManager : public blink::mojom::IdleManager {
   // Callback for the async state query. Updates monitors as needed.
   void UpdateIdleStateCallback(int idle_time);
 
-  blink::mojom::IdleStatePtr CheckIdleState(int threshold);
+  blink::mojom::IdleStatePtr CheckIdleState(base::TimeDelta threshold);
 
   base::RepeatingTimer poll_timer_;
   std::unique_ptr<IdleTimeProvider> idle_time_provider_;

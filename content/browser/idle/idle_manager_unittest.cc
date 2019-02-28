@@ -4,10 +4,13 @@
 
 #include "content/browser/idle/idle_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/time/time.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
@@ -36,7 +39,7 @@ namespace content {
 
 namespace {
 
-const uint32_t kTresholdInSecs = 10;
+constexpr base::TimeDelta kTreshold = base::TimeDelta::FromSeconds(10);
 
 class MockIdleMonitor : public blink::mojom::IdleMonitor {
  public:
@@ -48,8 +51,8 @@ class MockIdleTimeProvider : public IdleManager::IdleTimeProvider {
   MockIdleTimeProvider() = default;
   ~MockIdleTimeProvider() override = default;
 
-  MOCK_METHOD1(CalculateIdleState, ui::IdleState(int));
-  MOCK_METHOD0(CalculateIdleTime, int());
+  MOCK_METHOD1(CalculateIdleState, ui::IdleState(base::TimeDelta));
+  MOCK_METHOD0(CalculateIdleTime, base::TimeDelta());
   MOCK_METHOD0(CheckIdleStateIsLocked, bool());
 
  private:
@@ -90,12 +93,13 @@ TEST_F(IdleManagerTest, AddMonitor) {
   }));
 
   // Initial state of the system.
-  EXPECT_CALL(*mock, CalculateIdleTime()).WillRepeatedly(testing::Return(0));
+  EXPECT_CALL(*mock, CalculateIdleTime())
+      .WillRepeatedly(testing::Return(base::TimeDelta::FromSeconds(0)));
   EXPECT_CALL(*mock, CheckIdleStateIsLocked())
       .WillRepeatedly(testing::Return(false));
 
   service_ptr->AddMonitor(
-      kTresholdInSecs, std::move(monitor_ptr),
+      kTreshold, std::move(monitor_ptr),
       base::BindOnce(
           [](base::OnceClosure callback, blink::mojom::IdleStatePtr state) {
             // The initial state of the status of the user is to be active.
@@ -128,10 +132,11 @@ TEST_F(IdleManagerTest, Idle) {
   {
     base::RunLoop loop;
     // Initial state of the system.
-    EXPECT_CALL(*mock, CalculateIdleTime()).WillRepeatedly(testing::Return(0));
+    EXPECT_CALL(*mock, CalculateIdleTime())
+        .WillRepeatedly(testing::Return(base::TimeDelta::FromSeconds(0)));
 
     service_ptr->AddMonitor(
-        kTresholdInSecs, std::move(monitor_ptr),
+        kTreshold, std::move(monitor_ptr),
         base::BindLambdaForTesting([&](blink::mojom::IdleStatePtr state) {
           EXPECT_EQ(blink::mojom::UserIdleState::kActive, state->user);
           loop.Quit();
@@ -143,7 +148,8 @@ TEST_F(IdleManagerTest, Idle) {
   {
     base::RunLoop loop;
     // Simulates a user going idle.
-    EXPECT_CALL(*mock, CalculateIdleTime()).WillRepeatedly(testing::Return(10));
+    EXPECT_CALL(*mock, CalculateIdleTime())
+        .WillRepeatedly(testing::Return(base::TimeDelta::FromSeconds(10)));
 
     // Expects Update to be notified about the change to idle.
     EXPECT_CALL(monitor, Update(_))
@@ -157,7 +163,8 @@ TEST_F(IdleManagerTest, Idle) {
   {
     base::RunLoop loop;
     // Simulates a user going active, calling a callback under the threshold.
-    EXPECT_CALL(*mock, CalculateIdleTime()).WillRepeatedly(testing::Return(0));
+    EXPECT_CALL(*mock, CalculateIdleTime())
+        .WillRepeatedly(testing::Return(base::TimeDelta::FromSeconds(0)));
 
     // Expects Update to be notified about the change to active.
     // auto quit = loop.QuitClosure();
@@ -196,7 +203,7 @@ TEST_F(IdleManagerTest, UnlockingScreen) {
         .WillRepeatedly(testing::Return(true));
 
     service_ptr->AddMonitor(
-        kTresholdInSecs, std::move(monitor_ptr),
+        kTreshold, std::move(monitor_ptr),
         base::BindLambdaForTesting([&](blink::mojom::IdleStatePtr state) {
           EXPECT_EQ(blink::mojom::ScreenIdleState::kLocked, state->screen);
           loop.Quit();
@@ -248,7 +255,7 @@ TEST_F(IdleManagerTest, LockingScreen) {
         .WillRepeatedly(testing::Return(false));
 
     service_ptr->AddMonitor(
-        kTresholdInSecs, std::move(monitor_ptr),
+        kTreshold, std::move(monitor_ptr),
         base::BindLambdaForTesting([&](blink::mojom::IdleStatePtr state) {
           EXPECT_EQ(blink::mojom::ScreenIdleState::kUnlocked, state->screen);
           loop.Quit();
@@ -300,7 +307,7 @@ TEST_F(IdleManagerTest, LockingScreenThenIdle) {
         .WillRepeatedly(testing::Return(false));
 
     service_ptr->AddMonitor(
-        kTresholdInSecs, std::move(monitor_ptr),
+        kTreshold, std::move(monitor_ptr),
         base::BindLambdaForTesting([&](blink::mojom::IdleStatePtr state) {
           EXPECT_EQ(blink::mojom::UserIdleState::kActive, state->user);
           EXPECT_EQ(blink::mojom::ScreenIdleState::kUnlocked, state->screen);
@@ -332,7 +339,8 @@ TEST_F(IdleManagerTest, LockingScreenThenIdle) {
     base::RunLoop loop;
 
     // Simulates a user going idle, whilte the screen is still locked.
-    EXPECT_CALL(*mock, CalculateIdleTime()).WillRepeatedly(testing::Return(10));
+    EXPECT_CALL(*mock, CalculateIdleTime())
+        .WillRepeatedly(testing::Return(base::TimeDelta::FromSeconds(10)));
     EXPECT_CALL(*mock, CheckIdleStateIsLocked())
         .WillRepeatedly(testing::Return(true));
 
@@ -370,12 +378,13 @@ TEST_F(IdleManagerTest, LockingScreenAfterIdle) {
     base::RunLoop loop;
 
     // Simulates a user going idle, but with the screen still unlocked.
-    EXPECT_CALL(*mock, CalculateIdleTime()).WillRepeatedly(testing::Return(0));
+    EXPECT_CALL(*mock, CalculateIdleTime())
+        .WillRepeatedly(testing::Return(base::TimeDelta::FromSeconds(0)));
     EXPECT_CALL(*mock, CheckIdleStateIsLocked())
         .WillRepeatedly(testing::Return(false));
 
     service_ptr->AddMonitor(
-        kTresholdInSecs, std::move(monitor_ptr),
+        kTreshold, std::move(monitor_ptr),
         base::BindLambdaForTesting([&](blink::mojom::IdleStatePtr state) {
           EXPECT_EQ(blink::mojom::UserIdleState::kActive, state->user);
           EXPECT_EQ(blink::mojom::ScreenIdleState::kUnlocked, state->screen);
@@ -388,7 +397,8 @@ TEST_F(IdleManagerTest, LockingScreenAfterIdle) {
   {
     base::RunLoop loop;
     // Simulates a user going idle, but with the screen still unlocked.
-    EXPECT_CALL(*mock, CalculateIdleTime()).WillRepeatedly(testing::Return(10));
+    EXPECT_CALL(*mock, CalculateIdleTime())
+        .WillRepeatedly(testing::Return(base::TimeDelta::FromSeconds(10)));
     EXPECT_CALL(*mock, CheckIdleStateIsLocked())
         .WillRepeatedly(testing::Return(false));
 
@@ -408,7 +418,8 @@ TEST_F(IdleManagerTest, LockingScreenAfterIdle) {
     // Simulates the screeng getting locked by the system after the user goes
     // idle (e.g. screensaver kicks in first, throwing idleness, then getting
     // locked).
-    EXPECT_CALL(*mock, CalculateIdleTime()).WillRepeatedly(testing::Return(10));
+    EXPECT_CALL(*mock, CalculateIdleTime())
+        .WillRepeatedly(testing::Return(base::TimeDelta::FromSeconds(10)));
     EXPECT_CALL(*mock, CheckIdleStateIsLocked())
         .WillRepeatedly(testing::Return(true));
 
@@ -448,7 +459,7 @@ TEST_F(IdleManagerTest, RemoveMonitorStopsPolling) {
     base::RunLoop loop;
 
     service_ptr->AddMonitor(
-        kTresholdInSecs, std::move(monitor_ptr),
+        kTreshold, std::move(monitor_ptr),
         base::BindLambdaForTesting(
             [&](blink::mojom::IdleStatePtr state) { loop.Quit(); }));
 
@@ -486,12 +497,13 @@ TEST_F(IdleManagerTest, Threshold) {
   base::RunLoop loop;
 
   // Initial state of the system.
-  EXPECT_CALL(*mock, CalculateIdleTime()).WillRepeatedly(testing::Return(6));
+  EXPECT_CALL(*mock, CalculateIdleTime())
+      .WillRepeatedly(testing::Return(base::TimeDelta::FromSeconds(6)));
   EXPECT_CALL(*mock, CheckIdleStateIsLocked())
       .WillRepeatedly(testing::Return(false));
 
   service_ptr->AddMonitor(
-      5, std::move(monitor_ptr),
+      base::TimeDelta::FromSeconds(5), std::move(monitor_ptr),
       base::BindLambdaForTesting([&](blink::mojom::IdleStatePtr state) {
         EXPECT_EQ(blink::mojom::UserIdleState::kIdle, state->user);
         loop.Quit();

@@ -4,6 +4,8 @@
 
 module blink.mojom;
 
+import "mojo/public/mojom/base/time.mojom";
+
 // Implementation of the proposed "Idle Detection API".
 //
 // Proposal: https://github.com/inexorabletash/idle-detection
@@ -32,5 +34,6 @@ interface IdleManager {
   // initial state. It will be notified by calls to Update() per the threshold
   // registered for this instance. It can be unregistered by simply closing
   // the pipe.
-  AddMonitor(uint32 threshold, IdleMonitor monitor) => (IdleState state);
+  AddMonitor(mojo_base.mojom.TimeDelta threshold, IdleMonitor monitor)
+      => (IdleState state);
 };
