@@ -75,7 +75,7 @@
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/fake_shill_manager_client.h"
-#include "chromeos/dbus/fake_system_clock_client.h"
+#include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -1535,13 +1535,6 @@ class WizardControllerDeviceStateWithInitialEnrollmentTest
                                                   "AABC");
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    auto system_clock_client = std::make_unique<FakeSystemClockClient>();
-    system_clock_client_ = system_clock_client.get();
-    DBusThreadManager::GetSetterForTesting()->SetSystemClockClient(
-        std::move(system_clock_client));
-  }
-
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WizardControllerDeviceStateTest::SetUpCommandLine(command_line);
 
@@ -1550,12 +1543,11 @@ class WizardControllerDeviceStateWithInitialEnrollmentTest
         chromeos::AutoEnrollmentController::kInitialEnrollmentAlways);
   }
 
-  FakeSystemClockClient* system_clock_client() { return system_clock_client_; }
+  SystemClockClient::TestInterface* system_clock_client() {
+    return SystemClockClient::Get()->GetTestInterface();
+  }
 
  private:
-  // Unowned pointer - owned by DBusThreadManager.
-  FakeSystemClockClient* system_clock_client_ = nullptr;
-
   DISALLOW_COPY_AND_ASSIGN(
       WizardControllerDeviceStateWithInitialEnrollmentTest);
 };
@@ -1725,7 +1717,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
 
 IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
                        ControlFlowNoInitialEnrollmentDuringEmbargoPeriod) {
-  system_clock_client()->set_network_synchronized(true);
+  system_clock_client()->SetNetworkSynchronized(true);
   system_clock_client()->NotifyObserversSystemClockUpdated();
 
   fake_statistics_provider_.ClearMachineStatistic(system::kActivateDateKey);
@@ -1809,7 +1801,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   EXPECT_EQ(AutoEnrollmentController::AutoEnrollmentCheckType::kNone,
             auto_enrollment_controller()->auto_enrollment_check_type());
 
-  system_clock_client()->set_network_synchronized(true);
+  system_clock_client()->SetNetworkSynchronized(true);
   system_clock_client()->NotifyObserversSystemClockUpdated();
 
   base::RunLoop().RunUntilIdle();
@@ -1932,7 +1924,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   g_browser_process->local_state()->Set(prefs::kServerBackedDeviceState,
                                         device_state);
 
-  system_clock_client()->set_network_synchronized(true);
+  system_clock_client()->SetNetworkSynchronized(true);
   system_clock_client()->NotifyObserversSystemClockUpdated();
 
   policy::FakeAutoEnrollmentClient* fake_auto_enrollment_client =

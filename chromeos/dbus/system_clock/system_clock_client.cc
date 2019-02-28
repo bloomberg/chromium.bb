@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/system_clock_client.h"
+#include "chromeos/dbus/system_clock/system_clock_client.h"
 
 #include <stdint.h>
 
@@ -12,12 +12,14 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "chromeos/dbus/system_clock/fake_system_clock_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
+
 namespace {
 
 // Handles replies to D-Bus calls made by GetLastSyncInfo.
@@ -39,16 +41,21 @@ void OnGetLastSyncInfo(SystemClockClient::GetLastSyncInfoCallback callback,
   std::move(callback).Run(network_synchronized);
 }
 
+SystemClockClient* g_instance = nullptr;
+
 }  // namespace
 
 // The SystemClockClient implementation used in production.
 class SystemClockClientImpl : public SystemClockClient {
  public:
-  SystemClockClientImpl()
+  explicit SystemClockClientImpl(dbus::Bus* bus)
       : can_set_time_(false),
         can_set_time_initialized_(false),
         system_clock_proxy_(nullptr),
-        weak_ptr_factory_(this) {}
+        weak_ptr_factory_(this) {
+    CHECK(bus);
+    InitDBus(bus);
+  }
 
   ~SystemClockClientImpl() override = default;
 
@@ -91,8 +98,10 @@ class SystemClockClientImpl : public SystemClockClient {
     system_clock_proxy_->WaitForServiceToBeAvailable(std::move(callback));
   }
 
- protected:
-  void Init(dbus::Bus* bus) override {
+  TestInterface* GetTestInterface() override { return nullptr; }
+
+ private:
+  void InitDBus(dbus::Bus* bus) {
     system_clock_proxy_ = bus->GetObjectProxy(
         system_clock::kSystemClockServiceName,
         dbus::ObjectPath(system_clock::kSystemClockServicePath));
@@ -107,7 +116,6 @@ class SystemClockClientImpl : public SystemClockClient {
                        weak_ptr_factory_.GetWeakPtr()));
   }
 
- private:
   // Called once when the service initially becomes available (or immediately if
   // it's already available).
   void ServiceInitiallyAvailable(bool service_is_available) {
@@ -132,8 +140,7 @@ class SystemClockClientImpl : public SystemClockClient {
   void TimeUpdatedConnected(const std::string& interface_name,
                             const std::string& signal_name,
                             bool success) {
-    LOG_IF(ERROR, !success)
-        << "Failed to connect to TimeUpdated signal.";
+    LOG_IF(ERROR, !success) << "Failed to connect to TimeUpdated signal.";
   }
 
   // Callback for CanSetTime method.
@@ -184,11 +191,29 @@ class SystemClockClientImpl : public SystemClockClient {
   DISALLOW_COPY_AND_ASSIGN(SystemClockClientImpl);
 };
 
+SystemClockClient::SystemClockClient() = default;
+
+SystemClockClient::~SystemClockClient() = default;
+
 // static
-SystemClockClient* SystemClockClient::Create() {
-  return new SystemClockClientImpl();
+void SystemClockClient::Initialize(dbus::Bus* bus) {
+  CHECK(!g_instance);
+  if (bus)
+    g_instance = new SystemClockClientImpl(bus);
+  else
+    g_instance = new FakeSystemClockClient();
 }
 
-SystemClockClient::SystemClockClient() = default;
+// static
+void SystemClockClient::Shutdown() {
+  CHECK(g_instance);
+  delete g_instance;
+  g_instance = nullptr;
+}
+
+// static
+SystemClockClient* SystemClockClient::Get() {
+  return g_instance;
+}
 
 }  // namespace chromeos

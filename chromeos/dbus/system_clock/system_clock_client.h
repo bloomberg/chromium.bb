@@ -2,21 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_SYSTEM_CLOCK_CLIENT_H_
-#define CHROMEOS_DBUS_SYSTEM_CLOCK_CLIENT_H_
+#ifndef CHROMEOS_DBUS_SYSTEM_CLOCK_SYSTEM_CLOCK_CLIENT_H_
+#define CHROMEOS_DBUS_SYSTEM_CLOCK_SYSTEM_CLOCK_CLIENT_H_
 
 #include <stdint.h>
 
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/dbus/dbus_client.h"
 #include "dbus/object_proxy.h"
+
+namespace dbus {
+class Bus;
+}
 
 namespace chromeos {
 
-// SystemClockClient is used to communicate with the system clock.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) SystemClockClient : public DBusClient {
+// SystemClockClient is used to communicate with the system clock. This class is
+// safe to use from multiple processes (e.g. Chrome + Ash).
+class COMPONENT_EXPORT(SYSTEM_CLOCK) SystemClockClient {
  public:
   using GetLastSyncInfoCallback = base::OnceCallback<void(bool synchronized)>;
 
@@ -33,6 +37,25 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) SystemClockClient : public DBusClient {
    protected:
     virtual ~Observer() {}
   };
+
+  // Interface for testing. Only implemented in the fake implementation.
+  class TestInterface {
+   public:
+    // Sets the |synchronized| value passed to GetLastSyncInfo().
+    virtual void SetNetworkSynchronized(bool network_synchronized) = 0;
+
+    // Calls SystemClockUpdated for observers.
+    virtual void NotifyObserversSystemClockUpdated() = 0;
+  };
+
+  // Creates the global instance. If |bus| is null, a fake client is created.
+  static void Initialize(dbus::Bus* bus);
+
+  // Destroys the global instance.
+  static void Shutdown();
+
+  // Returns the global instance which may be null if not initialized.
+  static SystemClockClient* Get();
 
   // Adds the given observer.
   virtual void AddObserver(Observer* observer) = 0;
@@ -55,12 +78,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) SystemClockClient : public DBusClient {
   virtual void WaitForServiceToBeAvailable(
       dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) = 0;
 
-  // Creates the instance.
-  static SystemClockClient* Create();
+  virtual TestInterface* GetTestInterface() = 0;
 
  protected:
-  // Create() should be used instead.
+  // Initialize/Shutdown should be used instead.
   SystemClockClient();
+  virtual ~SystemClockClient();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemClockClient);
@@ -68,4 +91,4 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) SystemClockClient : public DBusClient {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_SYSTEM_CLOCK_CLIENT_H_
+#endif  // CHROMEOS_DBUS_SYSTEM_CLOCK_SYSTEM_CLOCK_CLIENT_H_

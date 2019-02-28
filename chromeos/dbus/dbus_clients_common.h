@@ -34,7 +34,6 @@ class ShillProfileClient;
 class ShillServiceClient;
 class ShillThirdPartyVpnDriverClient;
 class SMSClient;
-class SystemClockClient;
 class UpdateEngineClient;
 class UpstartClient;
 
@@ -70,7 +69,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusClientsCommon {
       shill_third_party_vpn_driver_client_;
   std::unique_ptr<PermissionBrokerClient> permission_broker_client_;
   std::unique_ptr<SMSClient> sms_client_;
-  std::unique_ptr<SystemClockClient> system_clock_client_;
   std::unique_ptr<PowerManagerClient> power_manager_client_;
   std::unique_ptr<SessionManagerClient> session_manager_client_;
   std::unique_ptr<UpdateEngineClient> update_engine_client_;

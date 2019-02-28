@@ -1309,6 +1309,7 @@ component("ash") {
     "//chromeos/dbus",
     "//chromeos/dbus:power_manager_proto",
     "//chromeos/dbus/services:services",
+    "//chromeos/dbus/system_clock",
 
     # TODO(stevenjb): Remove this dependency, https://crbug.com/644355.
     "//chromeos/network",
@@ -2153,6 +2154,7 @@ static_library("test_support") {
     # TODO(stevenjb): Investigate whether this is OK. https://crbug.com/644336.
     "//chromeos/audio",
     "//chromeos/dbus:test_support",
+    "//chromeos/dbus/system_clock",
 
     # TODO(stevenjb): Remove this dependency, https://crbug.com/644355.
     "//chromeos/network:test_support",

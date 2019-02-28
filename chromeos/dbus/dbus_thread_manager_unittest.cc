@@ -45,7 +45,6 @@ TEST(DBusThreadManagerTest, Initialize) {
   EXPECT_TRUE(manager->GetShillProfileClient());
   EXPECT_TRUE(manager->GetShillThirdPartyVpnDriverClient());
   EXPECT_TRUE(manager->GetSMSClient());
-  EXPECT_TRUE(manager->GetSystemClockClient());
   EXPECT_TRUE(manager->GetUpdateEngineClient());
 
   DBusThreadManager::Shutdown();
@@ -73,7 +72,6 @@ TEST(DBusThreadManagerTest, InitializeForBrowser) {
   EXPECT_TRUE(manager->GetShillServiceClient());
   EXPECT_TRUE(manager->GetShillThirdPartyVpnDriverClient());
   EXPECT_TRUE(manager->GetSMSClient());
-  EXPECT_TRUE(manager->GetSystemClockClient());
   EXPECT_TRUE(manager->GetUpdateEngineClient());
 
   // Clients for the browser were created.
@@ -113,7 +111,6 @@ TEST(DBusThreadManagerTest, InitializeForAsh) {
   EXPECT_TRUE(manager->GetShillServiceClient());
   EXPECT_TRUE(manager->GetShillThirdPartyVpnDriverClient());
   EXPECT_TRUE(manager->GetSMSClient());
-  EXPECT_TRUE(manager->GetSystemClockClient());
   EXPECT_TRUE(manager->GetUpdateEngineClient());
 
   // Clients for other processes were not created.
