@@ -2507,6 +2507,9 @@ doOpcode:
 		break;
 	}
 	case CTO_Locale:
+		compileWarning(nested,
+				"The locale opcode is not implemented. Use the locale meta data "
+				"instead.");
 		break;
 	case CTO_Undefined:
 		tmp_offset = (*table)->undefined;
