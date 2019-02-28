@@ -177,12 +177,9 @@ TabletModeWindowState::TabletModeWindowState(aura::Window* window,
       animate_bounds_on_attach_(animate_bounds_on_attach) {
   wm::WindowState* state = wm::GetWindowState(window);
   current_state_type_ = state->GetStateType();
-  // The /*target_state=*/current_state_type_ part is because if |snap| is true,
-  // then we are carrying over a snapped state from desktop mode to tablet mode.
-  state_type_on_attach_ = snap
-                              ? GetSnappedWindowStateType(
-                                    state, /*target_state=*/current_state_type_)
-                              : GetMaximizedOrCenteredWindowType(state);
+  DCHECK(!snap || CanSnapInSplitview(window));
+  state_type_on_attach_ =
+      snap ? current_state_type_ : GetMaximizedOrCenteredWindowType(state);
   old_state_.reset(
       state->SetStateObject(std::unique_ptr<State>(this)).release());
 }

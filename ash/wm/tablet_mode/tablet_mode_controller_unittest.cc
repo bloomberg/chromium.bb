@@ -18,9 +18,11 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/wm_event.h"
 #include "base/command_line.h"
@@ -32,6 +34,7 @@
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/test/test_window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
@@ -1319,6 +1322,136 @@ TEST_F(TabletModeControllerTest,
   EXPECT_EQ(snapped_window.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
   EXPECT_FALSE(GetDeferBoundsUpdates(snapped_window.get()));
+}
+
+// Test that if before tablet mode, the active window is snapped on the left but
+// does not meet the requirements to be snapped in split view, and the previous
+// window is snapped on the right, then split view is not activated.
+TEST_F(TabletModeControllerTest,
+       StartTabletActiveDesktopOnlyLeftSnapPreviousRightSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  aura::test::TestWindowDelegate left_window_delegate;
+  std::unique_ptr<aura::Window> left_window(CreateTestWindowInShellWithDelegate(
+      &left_window_delegate, /*id=*/-1, /*bounds=*/gfx::Rect(0, 0, 400, 400)));
+  const gfx::Rect display_bounds =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          left_window.get());
+  left_window_delegate.set_minimum_size(
+      gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
+  wm::WindowState* left_window_state = wm::GetWindowState(left_window.get());
+  ASSERT_TRUE(left_window_state->CanSnap());
+  ASSERT_FALSE(CanSnapInSplitview(left_window.get()));
+  wm::WMEvent snap_to_left(wm::WM_EVENT_CYCLE_SNAP_LEFT);
+  left_window_state->OnWMEvent(&snap_to_left);
+  std::unique_ptr<aura::Window> right_window =
+      CreateDesktopWindowSnappedRight();
+  ::wm::ActivateWindow(right_window.get());
+  ::wm::ActivateWindow(left_window.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::NO_SNAP, split_view_controller->state());
+  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
+  EXPECT_FALSE(GetDeferBoundsUpdates(left_window.get()));
+  EXPECT_FALSE(GetDeferBoundsUpdates(right_window.get()));
+}
+
+// Test that if before tablet mode, the active window is snapped on the right
+// but does not meet the requirements to be snapped in split view, and the
+// previous window is snapped on the left, then split view is not activated.
+TEST_F(TabletModeControllerTest,
+       StartTabletActiveDesktopOnlyRightSnapPreviousLeftSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> left_window = CreateDesktopWindowSnappedLeft();
+  aura::test::TestWindowDelegate right_window_delegate;
+  std::unique_ptr<aura::Window> right_window(
+      CreateTestWindowInShellWithDelegate(
+          &right_window_delegate, /*id=*/-1,
+          /*bounds=*/gfx::Rect(0, 0, 400, 400)));
+  const gfx::Rect display_bounds =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          right_window.get());
+  right_window_delegate.set_minimum_size(
+      gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
+  wm::WindowState* right_window_state = wm::GetWindowState(right_window.get());
+  ASSERT_TRUE(right_window_state->CanSnap());
+  ASSERT_FALSE(CanSnapInSplitview(right_window.get()));
+  wm::WMEvent snap_to_right(wm::WM_EVENT_CYCLE_SNAP_RIGHT);
+  right_window_state->OnWMEvent(&snap_to_right);
+  ::wm::ActivateWindow(left_window.get());
+  ::wm::ActivateWindow(right_window.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::NO_SNAP, split_view_controller->state());
+  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
+  EXPECT_FALSE(GetDeferBoundsUpdates(left_window.get()));
+  EXPECT_FALSE(GetDeferBoundsUpdates(right_window.get()));
+}
+
+// Test that if before tablet mode, the active window is snapped on the left and
+// the previous window is snapped on the right but does not meet the
+// requirements to be snapped in split view, then split view is activated with
+// the active window on the left.
+TEST_F(TabletModeControllerTest,
+       StartTabletActiveLeftSnapPreviousDesktopOnlyRightSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> left_window = CreateDesktopWindowSnappedLeft();
+  aura::test::TestWindowDelegate right_window_delegate;
+  std::unique_ptr<aura::Window> right_window(
+      CreateTestWindowInShellWithDelegate(
+          &right_window_delegate, /*id=*/-1,
+          /*bounds=*/gfx::Rect(0, 0, 400, 400)));
+  const gfx::Rect display_bounds =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          right_window.get());
+  right_window_delegate.set_minimum_size(
+      gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
+  wm::WindowState* right_window_state = wm::GetWindowState(right_window.get());
+  ASSERT_TRUE(right_window_state->CanSnap());
+  ASSERT_FALSE(CanSnapInSplitview(right_window.get()));
+  wm::WMEvent snap_to_right(wm::WM_EVENT_CYCLE_SNAP_RIGHT);
+  right_window_state->OnWMEvent(&snap_to_right);
+  ::wm::ActivateWindow(right_window.get());
+  ::wm::ActivateWindow(left_window.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
+  EXPECT_EQ(left_window.get(), split_view_controller->left_window());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+  EXPECT_FALSE(GetDeferBoundsUpdates(left_window.get()));
+  EXPECT_TRUE(GetDeferBoundsUpdates(right_window.get()));
+}
+
+// Test that if before tablet mode, the active window is snapped on the right
+// and the previous window is snapped on the left but does not meet the
+// requirements to be snapped in split view, then split view is activated with
+// the active window on the right.
+TEST_F(TabletModeControllerTest,
+       StartTabletActiveRightSnapPreviousDesktopOnlyLeftSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  aura::test::TestWindowDelegate left_window_delegate;
+  std::unique_ptr<aura::Window> left_window(CreateTestWindowInShellWithDelegate(
+      &left_window_delegate, /*id=*/-1, /*bounds=*/gfx::Rect(0, 0, 400, 400)));
+  const gfx::Rect display_bounds =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          left_window.get());
+  left_window_delegate.set_minimum_size(
+      gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
+  wm::WindowState* left_window_state = wm::GetWindowState(left_window.get());
+  ASSERT_TRUE(left_window_state->CanSnap());
+  ASSERT_FALSE(CanSnapInSplitview(left_window.get()));
+  wm::WMEvent snap_to_left(wm::WM_EVENT_CYCLE_SNAP_LEFT);
+  left_window_state->OnWMEvent(&snap_to_left);
+  std::unique_ptr<aura::Window> right_window =
+      CreateDesktopWindowSnappedRight();
+  ::wm::ActivateWindow(left_window.get());
+  ::wm::ActivateWindow(right_window.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::RIGHT_SNAPPED, split_view_controller->state());
+  EXPECT_EQ(right_window.get(), split_view_controller->right_window());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+  EXPECT_TRUE(GetDeferBoundsUpdates(left_window.get()));
+  EXPECT_FALSE(GetDeferBoundsUpdates(right_window.get()));
 }
 
 // Test that if overview is triggered on entering tablet mode, then the app list
