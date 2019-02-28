@@ -57,7 +57,6 @@ void ShadowRoot::Distribute() {
 
 struct SameSizeAsShadowRoot : public DocumentFragment, public TreeScope {
   Member<void*> member[3];
-  uint16_t counter;
   unsigned flags[1];
 };
 
