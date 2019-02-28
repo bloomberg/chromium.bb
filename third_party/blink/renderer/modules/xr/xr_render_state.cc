@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_render_state.h"
 
 #include "third_party/blink/renderer/modules/xr/xr_layer.h"
+#include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
 #include "third_party/blink/renderer/modules/xr/xr_render_state_init.h"
 
 namespace blink {
@@ -19,10 +20,18 @@ void XRRenderState::Update(const XRRenderStateInit* init) {
   if (init->hasBaseLayer()) {
     base_layer_ = init->baseLayer();
   }
+  if (init->hasOutputContext()) {
+    output_context_ = init->outputContext();
+  }
+}
+
+void XRRenderState::removeOutputContext() {
+  output_context_ = nullptr;
 }
 
 void XRRenderState::Trace(blink::Visitor* visitor) {
   visitor->Trace(base_layer_);
+  visitor->Trace(output_context_);
   ScriptWrappable::Trace(visitor);
 }
 

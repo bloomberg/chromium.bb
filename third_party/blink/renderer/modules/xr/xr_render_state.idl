@@ -11,4 +11,5 @@
   readonly attribute double depthNear;
   readonly attribute double depthFar;
   readonly attribute XRLayer? baseLayer;
+  readonly attribute XRPresentationContext? outputContext;
 };

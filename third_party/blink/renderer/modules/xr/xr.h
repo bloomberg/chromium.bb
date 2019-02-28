@@ -84,11 +84,8 @@ class XR final : public EventTargetWithInlineData,
 
     Member<ScriptPromiseResolver> resolver;
     const XRSession::SessionMode mode;
-    Member<XRPresentationContext> output_context;
     bool has_user_activation = false;
   };
-
-  const char* checkSessionSupport(const XRSessionCreationOptions*) const;
 
   void OnRequestDeviceReturned(device::mojom::blink::XRDevicePtr device);
   void DispatchPendingSessionCalls();

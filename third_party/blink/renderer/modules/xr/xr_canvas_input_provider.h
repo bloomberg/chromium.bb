@@ -28,6 +28,7 @@ class XRCanvasInputProvider
   virtual ~XRCanvasInputProvider();
 
   XRSession* session() const { return session_; }
+  HTMLCanvasElement* canvas() const { return canvas_; }
 
   // Remove all event listeners.
   void Stop();

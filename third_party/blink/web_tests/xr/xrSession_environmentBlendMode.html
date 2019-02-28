@@ -15,7 +15,7 @@ let testName = "environmentBlendMode is correct for a VR device";
 let fakeDeviceInitParams = { supportsImmersive:true };
 
 let requestSessionOptions = [
-  { outputContext: getOutputContext() },
+  { mode: 'inline' },
   { mode: 'immersive-vr' },
 ];
 

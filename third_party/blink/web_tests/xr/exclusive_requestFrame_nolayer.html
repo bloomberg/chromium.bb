@@ -15,7 +15,7 @@ let fakeDeviceInitParams = { supportsImmersive:true };
 
 let requestSessionOptions = [
   { mode: 'immersive-vr' },
-  { outputContext: getOutputContext() }
+  { mode: 'inline' }
 ];
 
 let testFunction = (session) => new Promise((resolve, reject) => {
@@ -37,7 +37,10 @@ let testFunction = (session) => new Promise((resolve, reject) => {
   // Wait for a bit and set the baseLayer.
   setTimeout(() => {
     // Once the base layer is set the previously registered callback should run.
-    session.updateRenderState({ baseLayer: webglLayer });
+    session.updateRenderState({
+        baseLayer: webglLayer,
+        outputContext: getOutputContext()
+    });
   }, 300);
 });
 

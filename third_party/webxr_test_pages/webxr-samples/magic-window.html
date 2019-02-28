@@ -97,32 +97,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             xrButton.enabled = true;
           });
 
-          // In order for a non-immersive session to be used we must provide
-          // an outputContext, which indicates the canvas that will contain
-          // results of the session's rendering.
-          let outputCanvas = document.createElement('canvas');
-          let ctx = outputCanvas.getContext('xrpresent');
-
           // Pick an arbitrary device for the magic window content and start
           // up a non-immersive session if possible.
-          navigator.xr.requestSession({outputContext: ctx})
-              .then((session) => {
-                // Add the canvas to the document once we know that it will be
-                // rendered to.
-                document.body.appendChild(outputCanvas);
-                onSessionStarted(session);
-              });
+          navigator.xr.requestSession().then(onSessionStarted);
         }
       }
 
       function onRequestSession() {
-        // Set up a mirror canvas
-        let mirrorCanvas = document.createElement('canvas');
-        let ctx = mirrorCanvas.getContext('xrpresent');
-        mirrorCanvas.setAttribute('id', 'mirror-canvas');
-        document.body.appendChild(mirrorCanvas);
-
-        navigator.xr.requestSession({mode: 'immersive-vr', outputContext: ctx}).then((session) => {
+        navigator.xr.requestSession({ mode: 'immersive-vr' }).then((session) => {
           xrButton.setSession(session);
           onSessionStarted(session);
         });
@@ -141,7 +123,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           scene.setRenderer(renderer);
         }
 
-        session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
+        // In order for a non-immersive session to be used we must provide
+        // an outputContext, which indicates the canvas that will contain
+        // results of the session's rendering.
+        let outputCanvas = document.createElement('canvas');
+
+        // Add the canvas to the document.
+        document.body.appendChild(outputCanvas);
+
+        session.updateRenderState({
+          baseLayer: new XRWebGLLayer(session, gl),
+          outputContext: outputCanvas.getContext('xrpresent')
+        });
 
         session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' }).then((refSpace) => {
           // Since we're dealing with multple sessions now we need to track
@@ -162,9 +155,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       function onSessionEnded(event) {
         // Only reset the button when the immersive session ends.
         if (event.session.mode.startsWith('immersive')) {
-          // Remove the mirroring canvas.
-          document.body.removeChild(document.querySelector('#mirror-canvas'));
           xrButton.setSession(null);
+        }
+
+        // Remove the output canvas from the document.
+        if (event.session.renderState.outputContext) {
+          document.body.removeChild(event.session.renderState.outputContext.canvas);
         }
       }
 

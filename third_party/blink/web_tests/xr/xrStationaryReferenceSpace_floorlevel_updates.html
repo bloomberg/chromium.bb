@@ -16,13 +16,16 @@ let testName =
 let fakeDeviceInitParams = { supportsImmersive:true };
 
 let requestSessionOptions = [
-  { outputContext: getOutputContext() },
+  { mode: 'inline' },
   { mode: 'immersive-vr' },
 ];
 
 let testFunction = function(session, t, fakeDeviceController) {
   // Session must have a baseLayer or else frame requests will be ignored.
-  session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
+  session.updateRenderState({
+    baseLayer: new XRWebGLLayer(session, gl),
+    outputContext: getOutputContext()
+  });
 
   fakeDeviceController.setStageTransform(null);
   fakeDeviceController.setXRPresentationFrameData(ORIGIN_POSE, [{

@@ -103,11 +103,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           });
 
           outputCanvas = document.createElement('canvas');
-          let ctx = outputCanvas.getContext('xrpresent');
 
-          navigator.xr.requestSession({ outputContext: ctx })
+          navigator.xr.requestSession()
               .then((session) => {
                 document.body.appendChild(outputCanvas);
+                session.updateRenderState({
+                  outputContext: outputCanvas.getContext('xrpresent')
+                });
+
                 onSessionStarted(session);
               });
         } else {

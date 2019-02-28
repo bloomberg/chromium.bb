@@ -18,13 +18,16 @@ let watcherDone = new Event("watcherdone");
 let fakeDeviceInitParams = { supportsImmersive:true };
 
 let requestSessionOptions = [
-  { outputContext: getOutputContext() },
+  { mode: 'inline' },
   { mode: 'immersive-vr' },
 ];
 
 let testFunction = function(session, t, fakeDeviceController) {
   // Session must have a baseLayer or frame requests will be ignored.
-  session.baseLayer = new XRWebGLLayer(session, gl);
+  session.updateRenderState({
+    baseLayer: new XRWebGLLayer(session, gl),
+    outputContext: getOutputContext()
+  });
 
   let eventWatcher = new EventWatcher(
     t, session, ["resetpose", "watcherdone"]);

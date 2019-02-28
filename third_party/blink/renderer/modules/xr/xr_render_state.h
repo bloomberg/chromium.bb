@@ -11,6 +11,7 @@
 namespace blink {
 
 class XRLayer;
+class XRPresentationContext;
 class XRRenderStateInit;
 
 class XRRenderState : public ScriptWrappable {
@@ -25,8 +26,13 @@ class XRRenderState : public ScriptWrappable {
   double depthNear() const { return depth_near_; }
   double depthFar() const { return depth_far_; }
   XRLayer* baseLayer() const { return base_layer_; }
+  XRPresentationContext* outputContext() const { return output_context_; }
 
   void Update(const XRRenderStateInit* init);
+
+  // Only used when removing an outputContext from the session because it was
+  // bound to a different session.
+  void removeOutputContext();
 
   void Trace(blink::Visitor*) override;
 
@@ -34,6 +40,7 @@ class XRRenderState : public ScriptWrappable {
   double depth_near_ = 0.1;
   double depth_far_ = 1000.0;
   Member<XRLayer> base_layer_;
+  Member<XRPresentationContext> output_context_;
 };
 
 }  // namespace blink

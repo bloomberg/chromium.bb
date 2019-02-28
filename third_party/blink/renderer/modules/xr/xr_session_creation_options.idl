@@ -5,5 +5,4 @@
 // https://immersive-web.github.io/webxr/#xrsessioncreationoptions-interface
 dictionary XRSessionCreationOptions {
   XRSessionMode mode = "inline";
-  XRPresentationContext outputContext;
 };

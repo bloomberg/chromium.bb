@@ -66,14 +66,12 @@ class XRSession final : public EventTargetWithInlineData,
   XRSession(XR*,
             device::mojom::blink::XRSessionClientRequest client_request,
             SessionMode mode,
-            XRPresentationContext* output_context,
             EnvironmentBlendMode environment_blend_mode);
   ~XRSession() override = default;
 
   XR* xr() const { return xr_; }
   const String& mode() const { return mode_string_; }
   bool environmentIntegration() const { return environment_integration_; }
-  XRPresentationContext* outputContext() const { return output_context_; }
   const String& environmentBlendMode() const { return blend_mode_string_; }
   XRRenderState* renderState() const { return render_state_; }
 
@@ -124,6 +122,8 @@ class XRSession final : public EventTargetWithInlineData,
   // Reports the size of the output context's, if one is available. If not
   // reports (0, 0);
   DoubleSize OutputCanvasSize() const;
+  XRPresentationContext* outputContext() const;
+  void DetachOutputContext(XRPresentationContext* output_context);
 
   void LogGetPose() const;
 
@@ -179,6 +179,7 @@ class XRSession final : public EventTargetWithInlineData,
 
   XRFrame* CreatePresentationFrame();
   void UpdateCanvasDimensions(Element*);
+  void ApplyPendingRenderState();
 
   void UpdateInputSourceState(
       XRInputSource*,
@@ -203,7 +204,6 @@ class XRSession final : public EventTargetWithInlineData,
   const SessionMode mode_;
   const String mode_string_;
   const bool environment_integration_;
-  const Member<XRPresentationContext> output_context_;
   String blend_mode_string_;
   Member<XRRenderState> render_state_;
   HeapVector<Member<XRRenderStateInit>> pending_render_state_;

@@ -23,15 +23,21 @@ let outputCanvasRatio = outputCanvas.width / outputCanvas.height;
 
 let fakeDeviceInitParams = { supportsImmersive: true };
 
-let requestSessionOptions = [{ outputContext: outputContext }];
+let requestSessionOptions = [{ }];
 
 let testFunction = (session, t) => new Promise((resolve, reject) => {
+  console.log("Test start");
   let webglLayer = new XRWebGLLayer(session, gl);
-  session.updateRenderState({ baseLayer: webglLayer });
+  session.updateRenderState({
+    baseLayer: webglLayer,
+    outputContext: outputContext
+  });
+  console.log("renderState updated");
 
   // Changes to the baseLayer, and thus the baseLayer's framebuffer size, won't
   // take effect until the next frame is processed.
   session.requestAnimationFrame((time, xrFrame) => {
+    console.log("First rAF");
     t.step(() => {
       // The layer's framebuffer should be smaller than the requested size.
       assert_true(webglLayer.framebufferWidth < outputCanvas.width);
@@ -48,6 +54,7 @@ let testFunction = (session, t) => new Promise((resolve, reject) => {
 
     // Give the UA a chance to respond to the resize.
     session.requestAnimationFrame((time, xrFrame) => {
+      console.log("Second rAF");
       // Check to ensure the framebuffer resized to match the new canvas dimensions.
       t.step(() => {
         assert_equals(webglLayer.framebufferWidth, outputCanvas.width);
