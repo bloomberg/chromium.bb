@@ -123,10 +123,13 @@ class NativeWindowOcclusionTrackerTest : public test::AuraTestBase {
                        GetWindowLong(hwnd, GWL_EXSTYLE));
 
     // Make sure to keep the window onscreen, as AdjustWindowRectEx() may have
-    // moved part of it offscreen.
+    // moved part of it offscreen. But, if the original requested bounds are
+    // offscreen, don't adjust the position.
     gfx::Rect window_bounds(wr);
-    window_bounds.set_x(std::max(0, window_bounds.x()));
-    window_bounds.set_y(std::max(0, window_bounds.y()));
+    if (bounds.x() >= 0)
+      window_bounds.set_x(std::max(0, window_bounds.x()));
+    if (bounds.y() >= 0)
+      window_bounds.set_y(std::max(0, window_bounds.y()));
     SetWindowPos(hwnd, HWND_TOP, window_bounds.x(), window_bounds.y(),
                  window_bounds.width(), window_bounds.height(),
                  SWP_NOREPOSITION);
@@ -187,6 +190,38 @@ TEST_F(NativeWindowOcclusionTrackerTest, SimpleOcclusion) {
   CreateTrackedAuraWindowWithBounds(&observer, gfx::Rect(0, 0, 100, 100));
   observer.set_expectation(Window::OcclusionState::OCCLUDED);
   CreateNativeWindowWithBounds(gfx::Rect(0, 0, 100, 100));
+  run_loop.Run();
+  EXPECT_FALSE(observer.is_expecting_call());
+}
+
+// Simple test partially covering an aura window with a native window.
+TEST_F(NativeWindowOcclusionTrackerTest, PartialOcclusion) {
+  base::RunLoop run_loop;
+
+  MockWindowTreeHostObserver observer(run_loop.QuitClosure());
+  CreateTrackedAuraWindowWithBounds(&observer, gfx::Rect(0, 0, 100, 100));
+  observer.set_expectation(Window::OcclusionState::VISIBLE);
+  CreateNativeWindowWithBounds(gfx::Rect(0, 0, 50, 50));
+  run_loop.Run();
+  EXPECT_FALSE(observer.is_expecting_call());
+}
+
+// Simple test that a partly off screen aura window, with the on screen part
+// occluded by a native window, is considered occluded.
+TEST_F(NativeWindowOcclusionTrackerTest, OffscreenOcclusion) {
+  base::RunLoop run_loop;
+
+  MockWindowTreeHostObserver observer(run_loop.QuitClosure());
+  CreateTrackedAuraWindowWithBounds(&observer, gfx::Rect(0, 0, 100, 100));
+
+  // Move the tracked window 50 pixels offscreen to the left.
+  int screen_left = GetSystemMetrics(SM_XVIRTUALSCREEN);
+  SetWindowPos(host()->GetAcceleratedWidget(), HWND_TOP, screen_left - 50, 0,
+               100, 100, SWP_NOZORDER | SWP_NOSIZE);
+
+  // Create a native window that covers the onscreen part of the tracked window.
+  CreateNativeWindowWithBounds(gfx::Rect(screen_left, 0, 50, 100));
+  observer.set_expectation(Window::OcclusionState::OCCLUDED);
   run_loop.Run();
   EXPECT_FALSE(observer.is_expecting_call());
 }

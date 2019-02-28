@@ -302,6 +302,15 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
     return;
   // Set up initial conditions for occlusion calculation.
   bool all_minimized = true;
+
+  // Compute the SkRegion for the screen.
+  int screen_left = GetSystemMetrics(SM_XVIRTUALSCREEN);
+  int screen_top = GetSystemMetrics(SM_YVIRTUALSCREEN);
+  SkRegion screen_region = SkRegion(
+      SkIRect::MakeLTRB(screen_left, screen_top,
+                        screen_left + GetSystemMetrics(SM_CXVIRTUALSCREEN),
+                        screen_top + GetSystemMetrics(SM_CYVIRTUALSCREEN)));
+
   for (auto& root_window_pair : root_window_hwnds_occlusion_state_) {
     root_window_pair.second.unoccluded_region.setEmpty();
     HWND hwnd = root_window_pair.first;
@@ -317,6 +326,10 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
         root_window_pair.second.unoccluded_region =
             SkRegion(SkIRect::MakeLTRB(window_rect.left, window_rect.top,
                                        window_rect.right, window_rect.bottom));
+        // Clip the unoccluded region by the screen dimensions, to handle the
+        // case of the app window being partly off screen.
+        root_window_pair.second.unoccluded_region.op(screen_region,
+                                                     SkRegion::kIntersect_Op);
       }
       // If call to GetWindowRect fails, window will be treated as occluded,
       // because unoccluded_region will be empty.
