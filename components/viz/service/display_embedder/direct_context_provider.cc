@@ -140,10 +140,12 @@ void DirectContextProvider::SetGLRendererCopierRequiredState(
   // Get into known state (see
   // SkiaOutputSurfaceImplOnGpu::ScopedUseContextProvider).
   gles2_implementation_->BindFramebuffer(GL_FRAMEBUFFER, 0);
-  gles2_implementation_->Disable(GL_SCISSOR_TEST);
-  gles2_implementation_->Disable(GL_STENCIL_TEST);
-  gles2_implementation_->Disable(GL_BLEND);
-  gles2_implementation_->ActiveTexture(GL_TEXTURE0);
+
+  decoder_->RestoreActiveTexture();
+  decoder_->RestoreProgramBindings();
+  decoder_->RestoreAllAttributes();
+  decoder_->RestoreGlobalState();
+  decoder_->RestoreBufferBindings();
 
   if (texture_client_id) {
     if (!framebuffer_id_)

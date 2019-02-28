@@ -82,10 +82,6 @@ class SkiaOutputSurfaceImplOnGpu::ScopedUseContextProvider {
     // side consistent with that.
     auto* api = impl_on_gpu_->api_;
     api->glBindFramebufferEXTFn(GL_FRAMEBUFFER, 0);
-    api->glDisableFn(GL_SCISSOR_TEST);
-    api->glDisableFn(GL_STENCIL_TEST);
-    api->glDisableFn(GL_BLEND);
-    api->glActiveTextureFn(GL_TEXTURE0);
     impl_on_gpu_->context_provider_->SetGLRendererCopierRequiredState(
         texture_client_id);
   }
