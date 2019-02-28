@@ -741,7 +741,8 @@ void WindowState::UpdatePipState(mojom::WindowStateType old_window_state_type) {
 void WindowState::UpdatePipBounds() {
   gfx::Rect new_bounds =
       PipPositioner::GetPositionAfterMovementAreaChange(this);
-  if (window()->GetBoundsInScreen() != new_bounds) {
+  ::wm::ConvertRectFromScreen(window()->GetRootWindow(), &new_bounds);
+  if (window()->bounds() != new_bounds) {
     wm::SetBoundsEvent event(wm::WM_EVENT_SET_BOUNDS, new_bounds,
                              /*animate=*/true);
     OnWMEvent(&event);
