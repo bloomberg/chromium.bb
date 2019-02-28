@@ -223,6 +223,8 @@ def main(args=None):
   parser.add_argument('--no_fetch', '--no-fetch', '-n',
                       action='store_true',
                       help='Skip fetching remotes.')
+  parser.add_argument(
+      '--current', action='store_true', help='Only rebase the current branch.')
   parser.add_argument('branches', nargs='*',
                       help='Branches to be rebased. All branches are assumed '
                            'if none specified.')
@@ -257,9 +259,13 @@ def main(args=None):
   else:
     git.freeze()  # just in case there are any local changes.
 
+  branches_to_rebase = set(opts.branches)
+  if opts.current:
+    branches_to_rebase.add(git.current_branch())
+
   skipped, branch_tree = git.get_branch_tree()
-  if opts.branches:
-    skipped = set(skipped).intersection(set(opts.branches))
+  if branches_to_rebase:
+    skipped = set(skipped).intersection(branches_to_rebase)
   for branch in skipped:
     print 'Skipping %s: No upstream specified' % branch
 
@@ -279,7 +285,7 @@ def main(args=None):
   # towards the leaves.
   for branch, parent in git.topo_iter(branch_tree):
     # Only rebase specified branches, unless none specified.
-    if opts.branches and branch not in opts.branches:
+    if branches_to_rebase and branch not in branches_to_rebase:
       continue
     if git.is_dormant(branch):
       print 'Skipping dormant branch', branch
