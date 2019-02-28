@@ -51,6 +51,10 @@ class SendTabToSelfEntry {
   // The name of the device that originated the sent tab.
   const std::string& GetDeviceName() const;
 
+  // The state of this entry's notification: if it has been |dismissed|.
+  void SetNotificationDismissed(bool notification_dismissed);
+  bool GetNotificationDismissed() const;
+
   // Returns a protobuf encoding the content of this SendTabToSelfEntry for
   // local storage.
   SendTabToSelfLocal AsLocalProto() const;
@@ -74,6 +78,7 @@ class SendTabToSelfEntry {
   std::string device_name_;
   base::Time shared_time_;
   base::Time original_navigation_time_;
+  bool notification_dismissed_;
 
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfEntry);
 };

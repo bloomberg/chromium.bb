@@ -17,4 +17,7 @@ package send_tab_to_self;
 message SendTabToSelfLocal {
   // The Send tab to self specifics proto.
   optional sync_pb.SendTabToSelfSpecifics specifics = 1;
+
+  // Has the notification for this proto been dismissed.
+  optional bool notification_dismissed = 2;
 }

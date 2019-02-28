@@ -252,13 +252,18 @@ void SendTabToSelfBridge::DeleteEntry(const std::string& guid) {
 }
 
 void SendTabToSelfBridge::DismissEntry(const std::string& guid) {
+  SendTabToSelfEntry* entry = GetMutableEntryByGUID(guid);
   // Assure that an entry with that guid exists.
-  if (GetEntryByGUID(guid) == nullptr) {
+  if (!entry) {
     return;
   }
+  entry->SetNotificationDismissed(true);
 
-  NOTIMPLEMENTED();
-  // TODO(jeffreycohen) Implement once there is local storage.
+  std::unique_ptr<ModelTypeStore::WriteBatch> batch =
+      store_->CreateWriteBatch();
+
+  batch->WriteData(guid, entry->AsLocalProto().SerializeAsString());
+  Commit(std::move(batch));
 }
 
 // static
@@ -365,6 +370,15 @@ void SendTabToSelfBridge::Commit(
   store_->CommitWriteBatch(std::move(batch),
                            base::BindOnce(&SendTabToSelfBridge::OnCommit,
                                           weak_ptr_factory_.GetWeakPtr()));
+}
+
+SendTabToSelfEntry* SendTabToSelfBridge::GetMutableEntryByGUID(
+    const std::string& guid) const {
+  auto it = entries_.find(guid);
+  if (it == entries_.end()) {
+    return nullptr;
+  }
+  return it->second.get();
 }
 
 }  // namespace send_tab_to_self

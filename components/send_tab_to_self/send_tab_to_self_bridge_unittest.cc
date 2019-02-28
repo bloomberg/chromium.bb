@@ -284,7 +284,7 @@ TEST_F(SendTabToSelfBridgeTest, AddEntryAndRestartBridge) {
   InitializeBridge();
 
   std::vector<std::string> guids = bridge()->GetAllGuids();
-  EXPECT_EQ(1ul, guids.size());
+  ASSERT_EQ(1ul, guids.size());
   EXPECT_EQ(specifics.url(),
             bridge()->GetEntryByGUID(guids[0])->GetURL().spec());
 }
@@ -327,6 +327,31 @@ TEST_F(SendTabToSelfBridgeTest, ApplyDeleteNonexistent) {
       bridge()->ApplySyncChanges(std::move(metadata_changes),
                                  {syncer::EntityChange::CreateDelete("guid")});
   EXPECT_FALSE(error);
+}
+
+TEST_F(SendTabToSelfBridgeTest, PreserveDissmissalAfterRestartBridge) {
+  InitializeBridge();
+
+  const sync_pb::SendTabToSelfSpecifics specifics = CreateSpecifics(1);
+  std::unique_ptr<syncer::MetadataChangeList> metadata_changes =
+      bridge()->CreateMetadataChangeList();
+
+  auto error = bridge()->ApplySyncChanges(std::move(metadata_changes),
+                                          EntityAddList({specifics}));
+  ASSERT_FALSE(error);
+
+  EXPECT_CALL(*processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(*processor(), Delete(_, _)).Times(0);
+
+  bridge()->DismissEntry(specifics.guid());
+
+  ShutdownBridge();
+
+  InitializeBridge();
+
+  std::vector<std::string> guids = bridge()->GetAllGuids();
+  ASSERT_EQ(1ul, guids.size());
+  EXPECT_TRUE(bridge()->GetEntryByGUID(guids[0])->GetNotificationDismissed());
 }
 
 }  // namespace

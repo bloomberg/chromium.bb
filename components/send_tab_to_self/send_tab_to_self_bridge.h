@@ -108,6 +108,10 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   // Persists the changes in the given aggregators
   void Commit(std::unique_ptr<syncer::ModelTypeStore::WriteBatch> batch);
 
+  // Returns a specific entry for editing. Returns null if the entry does not
+  // exist.
+  SendTabToSelfEntry* GetMutableEntryByGUID(const std::string& guid) const;
+
   // |entries_| is keyed by GUIDs.
   SendTabToSelfEntries entries_;
 
