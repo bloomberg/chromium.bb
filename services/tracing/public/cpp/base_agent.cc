@@ -56,4 +56,8 @@ void BaseAgent::WaitForTracingEnabled(
   std::move(callback).Run();
 }
 
+bool BaseAgent::IsBoundForTesting() const {
+  return binding_.is_bound();
+}
+
 }  // namespace tracing
