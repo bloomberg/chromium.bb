@@ -17,8 +17,12 @@ const base::Feature kDoubleTapToZoomInTabletMode{
 // Whether to enable "dark mode" enhancements in Mac Mojave or Windows 10 for
 // UIs implemented with web technologies.
 const base::Feature kWebUIDarkMode{"WebUIDarkMode",
+#if defined(OS_MACOSX)
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
+#else
                                    base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
+#endif  // defined(OS_MACOSX)
+#endif  // !defined(OS_ANDROID)
 
 // Enables grouping tabs together in the tab strip. https://crbug.com/905491
 const base::Feature kTabGroups{"TabGroups", base::FEATURE_DISABLED_BY_DEFAULT};
