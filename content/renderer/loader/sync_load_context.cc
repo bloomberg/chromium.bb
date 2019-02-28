@@ -308,6 +308,7 @@ void SyncLoadContext::OnTimeout() {
 void SyncLoadContext::CompleteRequest() {
   DCHECK(blob_finished_ || (mode_ != Mode::kBlob));
   DCHECK(!body_handle_.is_valid());
+  body_watcher_.Cancel();
   signals_->SignalRedirectOrResponseComplete();
   signals_ = nullptr;
   response_ = nullptr;
