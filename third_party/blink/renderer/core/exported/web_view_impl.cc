@@ -1481,6 +1481,11 @@ void WebViewImpl::BeginFrame(base::TimeTicks last_frame_time,
                last_frame_time);
   DCHECK(!last_frame_time.is_null());
 
+  if (needs_hover_update_at_begin_frame_) {
+    MainFrameImpl()->GetFrame()->GetEventHandler().RecomputeMouseHoverState();
+    needs_hover_update_at_begin_frame_ = false;
+  }
+
   if (!MainFrameImpl())
     return;
 
@@ -3305,9 +3310,9 @@ void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
                                    args.elastic_overscroll_delta.y());
   UpdateBrowserControlsConstraint(args.browser_controls_constraint);
 
-  if (RuntimeEnabledFeatures::NoHoverDuringScrollEnabled() &&
-      args.scroll_gesture_did_end)
-    MainFrameImpl()->GetFrame()->GetEventHandler().RecomputeMouseHoverState();
+  needs_hover_update_at_begin_frame_ =
+      args.scroll_gesture_did_end &&
+      RuntimeEnabledFeatures::NoHoverDuringScrollEnabled();
 }
 
 void WebViewImpl::RecordWheelAndTouchScrollingCount(
