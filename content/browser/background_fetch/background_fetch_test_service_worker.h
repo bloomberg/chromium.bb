@@ -1,10 +1,11 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_EMBEDDED_WORKER_TEST_HELPER_H_
-#define CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_EMBEDDED_WORKER_TEST_HELPER_H_
+#ifndef CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_TEST_SERVICE_WORKER_H_
+#define CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_TEST_SERVICE_WORKER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -15,14 +16,13 @@
 
 namespace content {
 
-// Extension of the EmbeddedWorkerTestHelper that enables instrumentation of the
+// Extension of the FakeServiceWorker that enables instrumentation of the
 // events related to the Background Fetch API. Storage for these tests will
 // always be kept in memory, as data persistence is tested elsewhere.
-class BackgroundFetchEmbeddedWorkerTestHelper
-    : public EmbeddedWorkerTestHelper {
+class BackgroundFetchTestServiceWorker : public FakeServiceWorker {
  public:
-  BackgroundFetchEmbeddedWorkerTestHelper();
-  ~BackgroundFetchEmbeddedWorkerTestHelper() override;
+  explicit BackgroundFetchTestServiceWorker(EmbeddedWorkerTestHelper* helper);
+  ~BackgroundFetchTestServiceWorker() override;
 
   // Toggles whether the named Service Worker event should fail.
   void set_fail_abort_event(bool fail) { fail_abort_event_ = fail; }
@@ -50,20 +50,23 @@ class BackgroundFetchEmbeddedWorkerTestHelper
   }
 
  protected:
-  // EmbeddedWorkerTestHelper overrides:
-  void OnBackgroundFetchAbortEvent(
+  // FakeServiceWorker overrides:
+  void DispatchBackgroundFetchAbortEvent(
       blink::mojom::BackgroundFetchRegistrationPtr registration,
       blink::mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback
           callback) override;
-  void OnBackgroundFetchClickEvent(
+
+  void DispatchBackgroundFetchClickEvent(
       blink::mojom::BackgroundFetchRegistrationPtr registration,
       blink::mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback
           callback) override;
-  void OnBackgroundFetchFailEvent(
+
+  void DispatchBackgroundFetchFailEvent(
       blink::mojom::BackgroundFetchRegistrationPtr registration,
       blink::mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback
           callback) override;
-  void OnBackgroundFetchSuccessEvent(
+
+  void DispatchBackgroundFetchSuccessEvent(
       blink::mojom::BackgroundFetchRegistrationPtr registration,
       blink::mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
           callback) override;
@@ -81,7 +84,7 @@ class BackgroundFetchEmbeddedWorkerTestHelper
 
   blink::mojom::BackgroundFetchRegistrationPtr last_registration_;
 
-  DISALLOW_COPY_AND_ASSIGN(BackgroundFetchEmbeddedWorkerTestHelper);
+  DISALLOW_COPY_AND_ASSIGN(BackgroundFetchTestServiceWorker);
 };
 
 }  // namespace content

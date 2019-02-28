@@ -22,7 +22,6 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
-#include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/renderer.mojom.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
@@ -329,34 +328,6 @@ void EmbeddedWorkerTestHelper::PopulateScriptCacheMap(
     std::move(callback).Run();
 }
 
-void EmbeddedWorkerTestHelper::OnBackgroundFetchAbortEvent(
-    blink::mojom::BackgroundFetchRegistrationPtr registration,
-    blink::mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback
-        callback) {
-  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
-}
-
-void EmbeddedWorkerTestHelper::OnBackgroundFetchClickEvent(
-    blink::mojom::BackgroundFetchRegistrationPtr registration,
-    blink::mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback
-        callback) {
-  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
-}
-
-void EmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent(
-    blink::mojom::BackgroundFetchRegistrationPtr registration,
-    blink::mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback
-        callback) {
-  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
-}
-
-void EmbeddedWorkerTestHelper::OnBackgroundFetchSuccessEvent(
-    blink::mojom::BackgroundFetchRegistrationPtr registration,
-    blink::mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
-        callback) {
-  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
-}
-
 std::unique_ptr<FakeEmbeddedWorkerInstanceClient>
 EmbeddedWorkerTestHelper::CreateInstanceClient() {
   return std::make_unique<FakeEmbeddedWorkerInstanceClient>(this);
@@ -365,50 +336,6 @@ EmbeddedWorkerTestHelper::CreateInstanceClient() {
 std::unique_ptr<FakeServiceWorker>
 EmbeddedWorkerTestHelper::CreateServiceWorker() {
   return std::make_unique<FakeServiceWorker>(this);
-}
-
-void EmbeddedWorkerTestHelper::OnBackgroundFetchAbortEventStub(
-    blink::mojom::BackgroundFetchRegistrationPtr registration,
-    blink::mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback
-        callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&EmbeddedWorkerTestHelper::OnBackgroundFetchAbortEvent,
-                     AsWeakPtr(), std::move(registration),
-                     std::move(callback)));
-}
-
-void EmbeddedWorkerTestHelper::OnBackgroundFetchClickEventStub(
-    blink::mojom::BackgroundFetchRegistrationPtr registration,
-    blink::mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback
-        callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&EmbeddedWorkerTestHelper::OnBackgroundFetchClickEvent,
-                     AsWeakPtr(), std::move(registration),
-                     std::move(callback)));
-}
-
-void EmbeddedWorkerTestHelper::OnBackgroundFetchFailEventStub(
-    blink::mojom::BackgroundFetchRegistrationPtr registration,
-    blink::mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback
-        callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&EmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent,
-                     AsWeakPtr(), std::move(registration),
-                     std::move(callback)));
-}
-
-void EmbeddedWorkerTestHelper::OnBackgroundFetchSuccessEventStub(
-    blink::mojom::BackgroundFetchRegistrationPtr registration,
-    blink::mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
-        callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&EmbeddedWorkerTestHelper::OnBackgroundFetchSuccessEvent,
-                     AsWeakPtr(), std::move(registration),
-                     std::move(callback)));
 }
 
 EmbeddedWorkerRegistry* EmbeddedWorkerTestHelper::registry() {

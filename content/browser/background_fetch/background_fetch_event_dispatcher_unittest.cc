@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "content/browser/background_fetch/background_fetch_embedded_worker_test_helper.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_test_base.h"
+#include "content/browser/background_fetch/background_fetch_test_service_worker.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
@@ -64,6 +64,10 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchInvalidRegistration) {
 }
 
 TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
+  auto* worker =
+      embedded_worker_test_helper()
+          ->AddNewPendingServiceWorker<BackgroundFetchTestServiceWorker>(
+              embedded_worker_test_helper());
   int64_t service_worker_registration_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
             service_worker_registration_id);
@@ -90,19 +94,17 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_registration());
-  EXPECT_EQ(kExampleDeveloperId,
-            embedded_worker_test_helper()->last_registration()->developer_id);
-  EXPECT_EQ(kExampleUniqueId,
-            embedded_worker_test_helper()->last_registration()->unique_id);
+  ASSERT_TRUE(worker->last_registration());
+  EXPECT_EQ(kExampleDeveloperId, worker->last_registration()->developer_id);
+  EXPECT_EQ(kExampleUniqueId, worker->last_registration()->unique_id);
   EXPECT_EQ(blink::mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI,
-            embedded_worker_test_helper()->last_registration()->failure_reason);
+            worker->last_registration()->failure_reason);
 
   histogram_tester_.ExpectUniqueSample(
       "BackgroundFetch.EventDispatchResult.AbortEvent",
       BackgroundFetchEventDispatcher::DISPATCH_RESULT_SUCCESS, 1);
 
-  embedded_worker_test_helper()->set_fail_abort_event(true);
+  worker->set_fail_abort_event(true);
 
   BackgroundFetchRegistrationId second_registration_id(
       service_worker_registration_id, origin(), kExampleDeveloperId2,
@@ -121,11 +123,9 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_registration());
-  EXPECT_EQ(kExampleDeveloperId2,
-            embedded_worker_test_helper()->last_registration()->developer_id);
-  EXPECT_EQ(kExampleUniqueId2,
-            embedded_worker_test_helper()->last_registration()->unique_id);
+  ASSERT_TRUE(worker->last_registration());
+  EXPECT_EQ(kExampleDeveloperId2, worker->last_registration()->developer_id);
+  EXPECT_EQ(kExampleUniqueId2, worker->last_registration()->unique_id);
 
   histogram_tester_.ExpectBucketCount(
       "BackgroundFetch.EventDispatchResult.AbortEvent",
@@ -139,6 +139,10 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
 }
 
 TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
+  auto* worker =
+      embedded_worker_test_helper()
+          ->AddNewPendingServiceWorker<BackgroundFetchTestServiceWorker>(
+              embedded_worker_test_helper());
   int64_t service_worker_registration_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
             service_worker_registration_id);
@@ -159,17 +163,16 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_registration());
-  EXPECT_EQ(kExampleDeveloperId,
-            embedded_worker_test_helper()->last_registration()->developer_id);
+  ASSERT_TRUE(worker->last_registration());
+  EXPECT_EQ(kExampleDeveloperId, worker->last_registration()->developer_id);
   EXPECT_EQ(blink::mojom::BackgroundFetchResult::UNSET,
-            embedded_worker_test_helper()->last_registration()->result);
+            worker->last_registration()->result);
 
   histogram_tester_.ExpectUniqueSample(
       "BackgroundFetch.EventDispatchResult.ClickEvent",
       BackgroundFetchEventDispatcher::DISPATCH_RESULT_SUCCESS, 1);
 
-  embedded_worker_test_helper()->set_fail_click_event(true);
+  worker->set_fail_click_event(true);
 
   BackgroundFetchRegistrationId second_registration_id(
       service_worker_registration_id, origin(), kExampleDeveloperId2,
@@ -188,11 +191,10 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_registration());
-  EXPECT_EQ(kExampleDeveloperId2,
-            embedded_worker_test_helper()->last_registration()->developer_id);
+  ASSERT_TRUE(worker->last_registration());
+  EXPECT_EQ(kExampleDeveloperId2, worker->last_registration()->developer_id);
   EXPECT_EQ(blink::mojom::BackgroundFetchResult::FAILURE,
-            embedded_worker_test_helper()->last_registration()->result);
+            worker->last_registration()->result);
 
   histogram_tester_.ExpectBucketCount(
       "BackgroundFetch.EventDispatchResult.ClickEvent",
@@ -206,6 +208,10 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
 }
 
 TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
+  auto* worker =
+      embedded_worker_test_helper()
+          ->AddNewPendingServiceWorker<BackgroundFetchTestServiceWorker>(
+              embedded_worker_test_helper());
   int64_t service_worker_registration_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
             service_worker_registration_id);
@@ -226,15 +232,14 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_registration());
-  EXPECT_EQ(kExampleDeveloperId,
-            embedded_worker_test_helper()->last_registration()->developer_id);
+  ASSERT_TRUE(worker->last_registration());
+  EXPECT_EQ(kExampleDeveloperId, worker->last_registration()->developer_id);
 
   histogram_tester_.ExpectUniqueSample(
       "BackgroundFetch.EventDispatchResult.FailEvent",
       BackgroundFetchEventDispatcher::DISPATCH_RESULT_SUCCESS, 1);
 
-  embedded_worker_test_helper()->set_fail_fetch_fail_event(true);
+  worker->set_fail_fetch_fail_event(true);
 
   BackgroundFetchRegistrationId second_registration_id(
       service_worker_registration_id, origin(), kExampleDeveloperId2,
@@ -252,9 +257,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_registration());
-  EXPECT_EQ(kExampleDeveloperId2,
-            embedded_worker_test_helper()->last_registration()->developer_id);
+  ASSERT_TRUE(worker->last_registration());
+  EXPECT_EQ(kExampleDeveloperId2, worker->last_registration()->developer_id);
 
   histogram_tester_.ExpectBucketCount(
       "BackgroundFetch.EventDispatchResult.FailEvent",
@@ -268,6 +272,10 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
 }
 
 TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchSuccessEvent) {
+  auto* worker =
+      embedded_worker_test_helper()
+          ->AddNewPendingServiceWorker<BackgroundFetchTestServiceWorker>(
+              embedded_worker_test_helper());
   int64_t service_worker_registration_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
             service_worker_registration_id);
@@ -288,18 +296,16 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchSuccessEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_registration());
-  EXPECT_EQ(kExampleDeveloperId,
-            embedded_worker_test_helper()->last_registration()->developer_id);
+  ASSERT_TRUE(worker->last_registration());
+  EXPECT_EQ(kExampleDeveloperId, worker->last_registration()->developer_id);
 
-  EXPECT_EQ(kExampleUniqueId,
-            embedded_worker_test_helper()->last_registration()->unique_id);
+  EXPECT_EQ(kExampleUniqueId, worker->last_registration()->unique_id);
 
   histogram_tester_.ExpectUniqueSample(
       "BackgroundFetch.EventDispatchResult.SuccessEvent",
       BackgroundFetchEventDispatcher::DISPATCH_RESULT_SUCCESS, 1);
 
-  embedded_worker_test_helper()->set_fail_fetched_event(true);
+  worker->set_fail_fetched_event(true);
 
   BackgroundFetchRegistrationId second_registration_id(
       service_worker_registration_id, origin(), kExampleDeveloperId2,
@@ -318,11 +324,9 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchSuccessEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_registration());
-  EXPECT_EQ(kExampleDeveloperId2,
-            embedded_worker_test_helper()->last_registration()->developer_id);
-  EXPECT_EQ(kExampleUniqueId2,
-            embedded_worker_test_helper()->last_registration()->unique_id);
+  ASSERT_TRUE(worker->last_registration());
+  EXPECT_EQ(kExampleDeveloperId2, worker->last_registration()->developer_id);
+  EXPECT_EQ(kExampleUniqueId2, worker->last_registration()->unique_id);
 
   histogram_tester_.ExpectBucketCount(
       "BackgroundFetch.EventDispatchResult.SuccessEvent",
