@@ -12,6 +12,10 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 
+namespace gfx {
+class ImageSkia;
+}  // namespace gfx
+
 namespace media_session {
 struct MediaMetadata;
 }  // namespace media_session
@@ -25,6 +29,7 @@ class NotificationHeaderView;
 }  // namespace message_center
 
 namespace views {
+class ImageView;
 class ToggleImageButton;
 class View;
 }  // namespace views
@@ -50,6 +55,7 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   void SetExpanded(bool expanded) override;
 
   // views::View:
+  gfx::Size CalculatePreferredSize() const override;
   void OnMouseEvent(ui::MouseEvent* event) override;
 
   // views::ButtonListener:
@@ -60,6 +66,7 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   void UpdateWithMediaMetadata(const media_session::MediaMetadata& metadata);
   void UpdateWithMediaActions(
       const std::set<media_session::mojom::MediaSessionAction>& actions);
+  void UpdateWithMediaArtwork(const gfx::ImageSkia& image);
 
  private:
   friend class MediaNotificationViewTest;
@@ -95,7 +102,9 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   views::View* title_artist_row_ = nullptr;
   views::Label* title_label_ = nullptr;
   views::Label* artist_label_ = nullptr;
+  views::View* layout_row_ = nullptr;
   views::View* main_row_ = nullptr;
+  views::ImageView* artwork_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationView);
 };
