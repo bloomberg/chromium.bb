@@ -28,9 +28,6 @@ class BASE_EXPORT ModuleCache {
    public:
     Module(uintptr_t base_address,
            const std::string& id,
-           const FilePath& filename);
-    Module(uintptr_t base_address,
-           const std::string& id,
            const FilePath& filename,
            size_t size);
     ~Module();

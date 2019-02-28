@@ -10,11 +10,6 @@ namespace base {
 
 ModuleCache::Module::Module(uintptr_t base_address,
                             const std::string& id,
-                            const FilePath& filename)
-    : Module(base_address, id, filename, 0) {}
-
-ModuleCache::Module::Module(uintptr_t base_address,
-                            const std::string& id,
                             const FilePath& filename,
                             size_t size)
     : base_address_(base_address), id_(id), filename_(filename), size_(size) {}
