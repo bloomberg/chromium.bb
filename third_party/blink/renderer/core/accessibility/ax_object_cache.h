@@ -142,10 +142,10 @@ class CORE_EXPORT AXObjectCache
   // Static helper functions.
   static bool IsInsideFocusableElementOrARIAWidget(const Node&);
 
- protected:
+ private:
+  friend class AXObjectCacheBase;
   AXObjectCache(Document&);
 
- private:
   static AXObjectCacheCreateFunction create_function_;
   DISALLOW_COPY_AND_ASSIGN(AXObjectCache);
 };

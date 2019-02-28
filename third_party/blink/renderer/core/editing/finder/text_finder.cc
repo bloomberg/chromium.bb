@@ -322,8 +322,8 @@ void TextFinder::ReportFindInPageResultToAccessibility(int identifier) {
   if (!active_match_)
     return;
 
-  AXObjectCacheBase* ax_object_cache = ToAXObjectCacheBase(
-      OwnerFrame().GetFrame()->GetDocument()->ExistingAXObjectCache());
+  auto* ax_object_cache =
+      OwnerFrame().GetFrame()->GetDocument()->ExistingAXObjectCache();
   if (!ax_object_cache)
     return;
 
