@@ -34,7 +34,8 @@ import java.util.concurrent.TimeoutException;
  * A payment integration test for supported payment methods.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        "enable-features=PaymentRequestHasEnrolledInstrument"})
 public class PaymentRequestPaymentMethodIdentifierTest implements MainActivityStartCallback {
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule =
@@ -91,7 +92,7 @@ public class PaymentRequestPaymentMethodIdentifierTest implements MainActivitySt
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.openPageAndClickNodeAndWait(
                 "checkBasicMasterCard", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"false"});
+        mPaymentRequestTestRule.expectResultContains(new String[] {"true"});
 
         mPaymentRequestTestRule.reTriggerUIAndWait(
                 "buyBasicMasterCard", mPaymentRequestTestRule.getReadyForInput());
@@ -108,8 +109,7 @@ public class PaymentRequestPaymentMethodIdentifierTest implements MainActivitySt
 
         mPaymentRequestTestRule.clickNodeAndWait(
                 "checkBasicMasterCard", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
-        mPaymentRequestTestRule.expectResultContains(
-                new String[] {"Not allowed to check whether can make payment"});
+        mPaymentRequestTestRule.expectResultContains(new String[] {"true"});
 
         mPaymentRequestTestRule.clickNodeAndWait(
                 "checkBasicVisa", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
@@ -127,8 +127,7 @@ public class PaymentRequestPaymentMethodIdentifierTest implements MainActivitySt
 
         mPaymentRequestTestRule.clickNodeAndWait(
                 "checkBasicDebit", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
-        mPaymentRequestTestRule.expectResultContains(
-                new String[] {"Not allowed to check whether can make payment"});
+        mPaymentRequestTestRule.expectResultContains(new String[] {"true"});
 
         mPaymentRequestTestRule.clickNodeAndWait(
                 "checkBasicVisa", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());

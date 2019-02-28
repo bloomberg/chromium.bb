@@ -30,7 +30,8 @@ import java.util.concurrent.TimeoutException;
  * depending on whether Google Pay cards are returned in basic-card.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        "enable-features=PaymentRequestHasEnrolledInstrument"})
 public class PaymentRequestCanMakePaymentGooglePayTest implements MainActivityStartCallback {
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule =
@@ -61,6 +62,10 @@ public class PaymentRequestCanMakePaymentGooglePayTest implements MainActivitySt
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(
                 mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
         mPaymentRequestTestRule.expectResultContains(new String[] {"true"});
+
+        mPaymentRequestTestRule.clickNodeAndWait("hasEnrolledInstrument",
+                mPaymentRequestTestRule.getHasEnrolledInstrumentQueryResponded());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"true"});
     }
 
     @Test
@@ -72,6 +77,10 @@ public class PaymentRequestCanMakePaymentGooglePayTest implements MainActivitySt
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(
                 mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"true"});
+
+        mPaymentRequestTestRule.clickNodeAndWait("hasEnrolledInstrument",
+                mPaymentRequestTestRule.getHasEnrolledInstrumentQueryResponded());
         mPaymentRequestTestRule.expectResultContains(new String[] {"false"});
     }
 }

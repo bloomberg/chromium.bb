@@ -65,3 +65,19 @@ function canMakePayment() {  // eslint-disable-line no-unused-vars
     print(error);
   }
 }
+
+/** Checks whether an active debit card is ready for payment. */
+function hasEnrolledInstrument() {  // eslint-disable-line no-unused-vars
+  try {
+    buildPaymentRequest()
+        .hasEnrolledInstrument()
+        .then(function(result) {
+          print(result);
+        })
+        .catch(function(error) {
+          print(error);
+        });
+  } catch (error) {
+    print(error);
+  }
+}
