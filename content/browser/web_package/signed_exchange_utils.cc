@@ -58,6 +58,10 @@ bool ShouldHandleAsSignedHTTPExchange(
     return false;
   if (!SignedExchangeRequestHandler::IsSupportedMimeType(head.mime_type))
     return false;
+  // Do not handle responses without HttpResponseHeaders.
+  // (Example: data:application/signed-exchange,)
+  if (!head.headers.get())
+    return false;
   if (download_utils::MustDownload(request_url, head.headers.get(),
                                    head.mime_type)) {
     return false;

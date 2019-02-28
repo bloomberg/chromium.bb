@@ -455,6 +455,27 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerDownloadBrowserTest,
             observer->observed_content_disposition());
 }
 
+IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerDownloadBrowserTest,
+                       DataURLDownload) {
+  const GURL sxg_url = GURL("data:application/signed-exchange,");
+  std::unique_ptr<DownloadObserver> observer =
+      std::make_unique<DownloadObserver>(BrowserContext::GetDownloadManager(
+          shell()->web_contents()->GetBrowserContext()));
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/empty.html"));
+
+  const std::string load_sxg = base::StringPrintf(
+      "const iframe = document.createElement('iframe');"
+      "iframe.src = '%s';"
+      "document.body.appendChild(iframe);",
+      sxg_url.spec().c_str());
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), load_sxg));
+  observer->WaitUntilDownloadCreated();
+  EXPECT_EQ(sxg_url, observer->observed_url());
+}
+
 class SignedExchangeRequestHandlerRealCertVerifierBrowserTest
     : public SignedExchangeRequestHandlerBrowserTestBase {
  public:
