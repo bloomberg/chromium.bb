@@ -288,7 +288,8 @@ void ContentsView::ShowEmbeddedAssistantUI(bool show) {
   GetPageView(search_results_page)->SetVisible(!show);
   SetActiveStateInternal(show ? assistant_page : search_results_page,
                          /*show_search_or_assistant_results=*/true,
-                         !AppListView::ShortAnimationsForTesting());
+                         /*animate=*/false);
+  expand_arrow_view_->layer()->SetOpacity(0.0f);
 }
 
 bool ContentsView::IsShowingEmbeddedAssistantUI() const {
