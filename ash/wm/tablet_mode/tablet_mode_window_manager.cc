@@ -301,64 +301,76 @@ TabletModeWindowManager::TabletModeWindowManager() {
 }
 
 void TabletModeWindowManager::ArrangeWindowsForTabletMode() {
-  // We want the build mru list to include windows on the lock screen.
+  // |split_view_eligible_windows| is for determining split view layout.
+  // |activatable_windows| includes all windows to be tracked, and that includes
+  // windows on the lock screen via |scoped_skip_user_session_blocked_check|.
+  MruWindowTracker::WindowList split_view_eligible_windows =
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
   ScopedSkipUserSessionBlockedCheck scoped_skip_user_session_blocked_check;
-
-  MruWindowTracker::WindowList windows =
+  MruWindowTracker::WindowList activatable_windows =
       Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
 
-  // Specifically check for the case of no windows, so that subsequent logic can
-  // refer to the active window and assume it exists.
-  if (windows.empty())
-    return;
-
-  const mojom::WindowStateType active_window_state_type =
-      wm::GetWindowState(windows[0])->GetStateType();
-
-  // If the active window is ARC or not snapped, then just maximize all windows.
-  if (static_cast<ash::AppType>(windows[0]->GetProperty(
+  // If split_view_eligible_windows[0] does not exist or is ARC or not snapped,
+  // then just maximize all windows.
+  if (split_view_eligible_windows.empty() ||
+      static_cast<ash::AppType>(split_view_eligible_windows[0]->GetProperty(
           aura::client::kAppType)) == AppType::ARC_APP ||
-      (active_window_state_type != mojom::WindowStateType::LEFT_SNAPPED &&
-       active_window_state_type != mojom::WindowStateType::RIGHT_SNAPPED)) {
-    for (auto* window : windows)
+      !wm::GetWindowState(split_view_eligible_windows[0])->IsSnapped()) {
+    for (auto* window : activatable_windows)
       TrackWindow(window);
     return;
   }
 
-  // Carry over the snapped active window to split view, along with the previous
-  // window if it exists, is snapped on the opposite side, and is not ARC.
+  // Carry over split_view_eligible_windows[0] to split view, along with
+  // split_view_eligible_windows[1] if it exists, is snapped on the opposite
+  // side, and is not ARC.
   const bool prev_win_not_arc =
-      windows.size() > 1u && static_cast<ash::AppType>(windows[1]->GetProperty(
-                                 aura::client::kAppType)) != AppType::ARC_APP;
+      split_view_eligible_windows.size() > 1u &&
+      static_cast<ash::AppType>(split_view_eligible_windows[1]->GetProperty(
+          aura::client::kAppType)) != AppType::ARC_APP;
   std::vector<SplitViewController::SnapPosition> snap_positions;
-  if (active_window_state_type == mojom::WindowStateType::LEFT_SNAPPED) {
-    // The active window snapped on the left shall go there in split view.
+  if (wm::GetWindowState(split_view_eligible_windows[0])->GetStateType() ==
+      mojom::WindowStateType::LEFT_SNAPPED) {
+    // split_view_eligible_windows[0] goes on the left.
     snap_positions.push_back(SplitViewController::LEFT);
 
-    if (prev_win_not_arc && wm::GetWindowState(windows[1])->GetStateType() ==
-                                mojom::WindowStateType::RIGHT_SNAPPED) {
-      // The previous window snapped on the right shall go there in split view.
+    if (prev_win_not_arc &&
+        wm::GetWindowState(split_view_eligible_windows[1])->GetStateType() ==
+            mojom::WindowStateType::RIGHT_SNAPPED) {
+      // split_view_eligible_windows[1] goes on the right.
       snap_positions.push_back(SplitViewController::RIGHT);
     }
   } else {
-    DCHECK_EQ(mojom::WindowStateType::RIGHT_SNAPPED, active_window_state_type);
+    DCHECK_EQ(
+        mojom::WindowStateType::RIGHT_SNAPPED,
+        wm::GetWindowState(split_view_eligible_windows[0])->GetStateType());
 
-    // The active window snapped on the right shall go there in split view.
+    // split_view_eligible_windows[0] goes on the right.
     snap_positions.push_back(SplitViewController::RIGHT);
 
-    if (prev_win_not_arc && wm::GetWindowState(windows[1])->GetStateType() ==
-                                mojom::WindowStateType::LEFT_SNAPPED) {
-      // The previous window snapped on the left shall go there in split view.
+    if (prev_win_not_arc &&
+        wm::GetWindowState(split_view_eligible_windows[1])->GetStateType() ==
+            mojom::WindowStateType::LEFT_SNAPPED) {
+      // split_view_eligible_windows[1] goes on the left.
       snap_positions.push_back(SplitViewController::LEFT);
     }
   }
+
+  for (auto* window : activatable_windows) {
+    bool snap = false;
+    for (size_t i = 0u; i < snap_positions.size(); ++i) {
+      if (window == split_view_eligible_windows[i]) {
+        snap = true;
+        break;
+      }
+    }
+    TrackWindow(window, snap, /*animate_bounds_on_attach=*/false);
+  }
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
-  for (size_t i = 0u; i < windows.size(); ++i) {
-    const bool snap = i < snap_positions.size();
-    TrackWindow(windows[i], snap, /*animate_bounds_on_attach=*/false);
-    if (snap)
-      split_view_controller->SnapWindow(windows[i], snap_positions[i]);
+  for (size_t i = 0u; i < snap_positions.size(); ++i) {
+    split_view_controller->SnapWindow(split_view_eligible_windows[i],
+                                      snap_positions[i]);
   }
 }
 
