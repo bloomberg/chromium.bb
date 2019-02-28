@@ -172,7 +172,6 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       }
 
       gesture_sequence_.append("U");
-      if (!compositor_touch_action_enabled_)
       // Scrolls restricted to a specific axis shouldn't permit movement
       // in the perpendicular axis.
       //
