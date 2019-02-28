@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
@@ -26,7 +27,26 @@
 #include "content/public/test/browser_test_base.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+// Return a plaintext response.
+std::unique_ptr<net::test_server::HttpResponse>
+HandleResourceRequestWithPlaintextMimeType(
+    const net::test_server::HttpRequest& request) {
+  std::unique_ptr<net::test_server::BasicHttpResponse> response =
+      std::make_unique<net::test_server::BasicHttpResponse>();
+
+  response->set_code(net::HttpStatusCode::HTTP_OK);
+  response->set_content("Some non-HTML content.");
+  response->set_content_type("text/plain");
+
+  return response;
+}
+
+}  // namespace
 
 class DataSaverSiteBreakdownMetricsObserverBrowserTest
     : public InProcessBrowserTest {
@@ -53,15 +73,14 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTest
   }
 
   // Gets the data usage recorded against the host the embedded server runs on.
-  uint64_t GetDataUsage() {
+  uint64_t GetDataUsage(const std::string& host) {
     const auto& data_usage_map =
         DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
             browser()->profile())
             ->data_reduction_proxy_service()
             ->compression_stats()
             ->DataUsageMapForTesting();
-    const auto& it =
-        data_usage_map.find(embedded_test_server()->host_port_pair().host());
+    const auto& it = data_usage_map.find(host);
     if (it != data_usage_map.end())
       return it->second->data_used();
     return 0;
@@ -88,7 +107,9 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
 
   EnableDataSaver();
   for (const auto& test : tests) {
-    uint64_t data_usage_before_navigation = GetDataUsage();
+    GURL test_url(embedded_test_server()->GetURL(test.url));
+    uint64_t data_usage_before_navigation =
+        GetDataUsage(test_url.HostNoBrackets());
     ui_test_utils::NavigateToURL(browser(),
                                  embedded_test_server()->GetURL(test.url));
 
@@ -96,9 +117,41 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
     // Navigate away to force the histogram recording.
     ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
 
-    EXPECT_LE(test.expected_min_page_size,
-              GetDataUsage() - data_usage_before_navigation);
-    EXPECT_GE(test.expected_max_page_size,
-              GetDataUsage() - data_usage_before_navigation);
+    EXPECT_LE(
+        test.expected_min_page_size,
+        GetDataUsage(test_url.HostNoBrackets()) - data_usage_before_navigation);
+    EXPECT_GE(
+        test.expected_max_page_size,
+        GetDataUsage(test_url.HostNoBrackets()) - data_usage_before_navigation);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
+                       NavigateToPlaintext) {
+  std::unique_ptr<net::EmbeddedTestServer> plaintext_server =
+      std::make_unique<net::EmbeddedTestServer>(
+          net::EmbeddedTestServer::TYPE_HTTPS);
+  plaintext_server->RegisterRequestHandler(
+      base::BindRepeating(&HandleResourceRequestWithPlaintextMimeType));
+  ASSERT_TRUE(plaintext_server->Start());
+
+  EnableDataSaver();
+
+  GURL test_url(plaintext_server->GetURL("/page"));
+
+  uint64_t data_usage_before_navigation =
+      GetDataUsage(test_url.HostNoBrackets());
+
+  ui_test_utils::NavigateToURL(browser(), test_url);
+  base::RunLoop().RunUntilIdle();
+
+  // Navigate away to force the histogram recording.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  // Choose reasonable minimum (10 is the content length).
+  EXPECT_LE(10u, GetDataUsage(test_url.HostNoBrackets()) -
+                     data_usage_before_navigation);
+  // Choose reasonable maximum (500 is the most we expect from headers).
+  EXPECT_GE(500u, GetDataUsage(test_url.HostNoBrackets()) -
+                      data_usage_before_navigation);
 }
