@@ -3045,22 +3045,22 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       </message>
 
       <message desc="Spoken when a user navigates to the beginning of a font family's text, e.g. 'Arial start'" name="IDS_CHROMEVOX_FONT_FAMILY_START">
-        <ph name="font_family">$1</ph> start
+        <ph name="font_family">$1<ex>Arial</ex></ph> start
       </message>
       <message desc="Spoken when a user navigates to the end of a font family's text, e.g. 'Arial end'" name="IDS_CHROMEVOX_FONT_FAMILY_END">
-        <ph name="font_family">$1</ph> end
+        <ph name="font_family">$1<ex>Arial</ex></ph> end
       </message>
       <message desc="Spoken when a user navigates to the beginning of a font size's text, e.g. 'Size 12 start'" name="IDS_CHROMEVOX_FONT_SIZE_START">
-        Size <ph name="font_size">$1</ph> start
+        Size <ph name="font_size">$1<ex>12</ex></ph> start
       </message>
       <message desc="Spoken when a user navigates to the end of a font size's text, e.g. 'Size 12 end'" name="IDS_CHROMEVOX_FONT_SIZE_END">
-        Size <ph name="font_size">$1</ph> end
+        Size <ph name="font_size">$1<ex>12</ex></ph> end
       </message>
-      <message desc="Spoken when a user navigates to the beginning of a font color's text, e.g. 'Red start'" name="IDS_CHROMEVOX_FONT_COLOR_START">
-        <ph name="font_color">$1</ph> start
+      <message desc="Spoken when a user navigates to the beginning of a font color's text, e.g. 'Red, 100% opacity. start'" name="IDS_CHROMEVOX_FONT_COLOR_START">
+        <ph name="font_color">$1<ex>Red, 100% opacity.</ex></ph> start
       </message>
-      <message desc="Spoken when a user navigates to the end of a font color's text, e.g. 'Red end'" name="IDS_CHROMEVOX_FONT_COLOR_END">
-        <ph name="font_color">$1</ph> end
+      <message desc="Spoken when a user navigates to the end of a font color's text, e.g. 'Red, 100% opacity. end'" name="IDS_CHROMEVOX_FONT_COLOR_END">
+        <ph name="font_color">$1<ex>Red, 100% opacity.</ex></ph> end
       </message>
 
       <message desc="Shown to a user when they press a braille keyboard command that requires on screen keyboard to be enabled." name="IDS_CHROMEVOX_ENABLE_VIRTUAL_KEYBOARD">
@@ -3248,18 +3248,18 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
 
       <message desc="Spoken to describe all rich text attributes of a node." name="IDS_CHROMEVOX_RICH_TEXT_ATTRIBUTES">
         Text formatting.
-        <ph name="font_size_string">$1</ph>
-        <ph name="color_string">$2</ph>
-        <ph name="bold_string">$3</ph>
-        <ph name="italic_string">$4</ph>
-        <ph name="underline_string">$5</ph>
-        <ph name="line_through_string">$6</ph>
-        <ph name="font_family_string">$7</ph>
+        <ph name="font_size_string">$1<ex>Size 12</ex></ph>
+        <ph name="color_string">$2<ex>Red, 100% opacity.</ex></ph>
+        <ph name="bold_string">$3<ex>Bold</ex></ph>
+        <ph name="italic_string">$4<ex>Italic</ex></ph>
+        <ph name="underline_string">$5<ex>Unerline</ex></ph>
+        <ph name="line_through_string">$6<ex>Line through</ex></ph>
+        <ph name="font_family_string">$7<ex>Arial</ex></ph>
       </message>
 
       <!-- Colors -->
       <message desc="Spoken to describe color and opacity of text" name="IDS_CHROMEVOX_COLOR_DESCRIPTION">
-        <ph name="color">$1</ph>, <ph name="opacity_percentage">$2</ph>% opacity.
+        <ph name="color">$1<ex>Red</ex></ph>, <ph name="opacity_percentage">$2<ex>50</ex></ph>% opacity.
       </message>
       <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_BLACK">
         Black
