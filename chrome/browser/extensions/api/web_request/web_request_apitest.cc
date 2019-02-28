@@ -1817,7 +1817,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   content::RenderFrameHost* frame = temp_web_contents->GetMainFrame();
   EXPECT_TRUE(api->MaybeProxyURLLoaderFactory(
       frame->GetProcess()->GetBrowserContext(), frame,
-      frame->GetProcess()->GetID(), false, &request, nullptr));
+      frame->GetProcess()->GetID(), false, false, &request, nullptr));
   temp_web_contents.reset();
   auto params = network::mojom::URLLoaderFactoryParams::New();
   params->process_id = 0;

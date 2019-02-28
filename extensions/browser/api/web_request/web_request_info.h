@@ -78,6 +78,7 @@ struct WebRequestInfo {
                  int32_t routing_id,
                  content::ResourceContext* resource_context,
                  const network::ResourceRequest& request,
+                 bool is_download,
                  bool is_async);
 
   ~WebRequestInfo();

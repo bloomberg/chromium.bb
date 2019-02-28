@@ -308,6 +308,7 @@ WebRequestInfo::WebRequestInfo(
     int32_t routing_id,
     content::ResourceContext* resource_context,
     const network::ResourceRequest& request,
+    bool is_download,
     bool is_async)
     : id(request_id),
       url(request.url),
@@ -325,6 +326,8 @@ WebRequestInfo::WebRequestInfo(
       resource_context(resource_context) {
   if (url.SchemeIsWSOrWSS())
     web_request_type = WebRequestResourceType::WEB_SOCKET;
+  else if (is_download)
+    web_request_type = WebRequestResourceType::OTHER;
   else
     web_request_type = ToWebRequestResourceType(type.value());
 

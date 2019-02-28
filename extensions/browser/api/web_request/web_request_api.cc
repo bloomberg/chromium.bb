@@ -643,6 +643,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
     content::RenderFrameHost* frame,
     int render_process_id,
     bool is_navigation,
+    bool is_download,
     network::mojom::URLLoaderFactoryRequest* factory_request,
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -702,7 +703,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
                      browser_context, browser_context->GetResourceContext(),
                      // Match the behavior of the WebRequestInfo constructor
                      // which takes a net::URLRequest*.
-                     is_navigation ? -1 : render_process_id,
+                     is_navigation ? -1 : render_process_id, is_download,
                      request_id_generator_, std::move(navigation_ui_data),
                      base::Unretained(info_map_), std::move(proxied_request),
                      std::move(target_factory_info),

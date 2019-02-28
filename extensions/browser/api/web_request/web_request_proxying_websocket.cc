@@ -78,7 +78,8 @@ void WebRequestProxyingWebSocket::AddChannelRequest(
   uint64_t request_id = request_id_generator_->Generate();
   int routing_id = MSG_ROUTING_NONE;
   info_.emplace(request_id, process_id_, render_frame_id_, nullptr, routing_id,
-                resource_context_, request_, true /* is_async */);
+                resource_context_, request_, false /* is_download */,
+                true /* is_async */);
 
   forwarding_client_ = std::move(client);
 
