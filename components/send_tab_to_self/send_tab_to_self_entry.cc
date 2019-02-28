@@ -4,6 +4,8 @@
 
 #include "components/send_tab_to_self/send_tab_to_self_entry.h"
 
+#include <memory>
+
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -39,7 +41,8 @@ SendTabToSelfEntry::SendTabToSelfEntry(const std::string& guid,
       title_(title),
       device_name_(device_name),
       shared_time_(shared_time),
-      original_navigation_time_(original_navigation_time) {
+      original_navigation_time_(original_navigation_time),
+      notification_dismissed_(false) {
   DCHECK(!guid_.empty());
   DCHECK(url_.is_valid());
 }
@@ -70,6 +73,14 @@ const std::string& SendTabToSelfEntry::GetDeviceName() const {
   return device_name_;
 }
 
+void SendTabToSelfEntry::SetNotificationDismissed(bool notification_dismissed) {
+  notification_dismissed_ = notification_dismissed;
+}
+
+bool SendTabToSelfEntry::GetNotificationDismissed() const {
+  return notification_dismissed_;
+}
+
 SendTabToSelfLocal SendTabToSelfEntry::AsLocalProto() const {
   SendTabToSelfLocal local_entry;
   auto* pb_entry = local_entry.mutable_specifics();
@@ -81,6 +92,8 @@ SendTabToSelfLocal SendTabToSelfEntry::AsLocalProto() const {
   pb_entry->set_navigation_time_usec(
       TimeToProtoTime(GetOriginalNavigationTime()));
   pb_entry->set_device_name(GetDeviceName());
+
+  local_entry.set_notification_dismissed(GetNotificationDismissed());
 
   return local_entry;
 }
@@ -112,7 +125,10 @@ std::unique_ptr<SendTabToSelfEntry> SendTabToSelfEntry::FromProto(
 std::unique_ptr<SendTabToSelfEntry> SendTabToSelfEntry::FromLocalProto(
     const SendTabToSelfLocal& local_entry,
     base::Time now) {
-  return FromProto(local_entry.specifics(), now);
+  std::unique_ptr<SendTabToSelfEntry> to_return =
+      FromProto(local_entry.specifics(), now);
+  to_return->SetNotificationDismissed(local_entry.notification_dismissed());
+  return to_return;
 }
 
 }  // namespace send_tab_to_self
