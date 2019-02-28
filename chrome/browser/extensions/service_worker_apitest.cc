@@ -309,6 +309,13 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest, StorageNoPermissions) {
       << message_;
 }
 
+// Tests chrome.tabs APIs.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest, TabsBasic) {
+  ASSERT_TRUE(
+      RunExtensionTest("service_worker/worker_based_background/tabs_basic"))
+      << message_;
+}
+
 // Tests chrome.tabs events.
 IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest, TabsEvents) {
   ASSERT_TRUE(
