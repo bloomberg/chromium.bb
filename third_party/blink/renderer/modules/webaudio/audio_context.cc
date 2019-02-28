@@ -503,6 +503,12 @@ void AudioContext::ContextDestroyed(ExecutionContext*) {
   Uninitialize();
 }
 
+bool AudioContext::HasPendingActivity() const {
+  // There's activity only if the context is running.  Suspended contexts are
+  // basically idle with nothing going on.
+  return (ContextState() == kRunning) && BaseAudioContext::HasPendingActivity();
+}
+
 bool AudioContext::HandlePreRenderTasks(const AudioIOPosition* output_position,
                                         const AudioIOCallbackMetric* metric) {
   DCHECK(IsAudioThread());
