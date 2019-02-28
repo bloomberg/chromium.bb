@@ -13,24 +13,17 @@
 #include "base/macros.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/avatar_menu_observer.h"
-#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
-#include "chrome/browser/ui/views/close_bubble_on_tab_activation_helper.h"
 #include "chrome/browser/ui/views/profiles/dice_accounts_menu.h"
+#include "chrome/browser/ui/views/profiles/profile_menu_view_base.h"
 #include "components/signin/core/browser/signin_header_helper.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "services/identity/public/cpp/identity_manager.h"
-#include "ui/views/bubble/bubble_dialog_delegate_view.h"
-#include "ui/views/controls/button/button.h"
-#include "ui/views/controls/link_listener.h"
-#include "ui/views/controls/styled_label_listener.h"
 
 namespace views {
 class GridLayout;
 class ImageButton;
-class Link;
 class LabelButton;
 }
 
@@ -38,14 +31,16 @@ class Browser;
 class DiceSigninButtonView;
 class HoverButton;
 
+// TODO(https://crbug.com/934689): Separation of providing content for different
+// menus and the UI effort to view it between this class and
+// |ProfileMenuViewBase| is in progress.
+
 // This bubble view is displayed when the user clicks on the avatar button.
 // It displays a list of profiles and allows users to switch between profiles.
-class ProfileChooserView : public content::WebContentsDelegate,
-                           public views::BubbleDialogDelegateView,
+class ProfileChooserView : public ProfileMenuViewBase,
+                           public AvatarMenuObserver,
                            public views::ButtonListener,
                            public views::LinkListener,
-                           public views::StyledLabelListener,
-                           public AvatarMenuObserver,
                            public identity::IdentityManager::Observer {
  public:
   // Shows the bubble if one is not already showing.  This allows us to easily
@@ -68,8 +63,6 @@ class ProfileChooserView : public content::WebContentsDelegate,
   static bool IsShowing();
   static void Hide();
 
-  const Browser* browser() const { return browser_; }
-
  private:
   friend class ProfileChooserViewExtensionsTest;
 
@@ -78,36 +71,27 @@ class ProfileChooserView : public content::WebContentsDelegate,
   typedef std::map<views::Button*, std::string> AccountButtonIndexes;
 
   ProfileChooserView(views::Button* anchor_button,
+                     const gfx::Rect& anchor_rect,
+                     gfx::NativeView parent_window,
                      Browser* browser,
                      profiles::BubbleViewMode view_mode,
                      signin::GAIAServiceType service_type,
-                     signin_metrics::AccessPoint access_point);
+                     signin_metrics::AccessPoint access_point,
+                     bool is_source_keyboard);
   ~ProfileChooserView() override;
 
   // views::BubbleDialogDelegateView:
   void Init() override;
-  void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
   void WindowClosing() override;
   void OnWidgetClosing(views::Widget* widget) override;
-  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   views::View* GetInitiallyFocusedView() override;
-  int GetDialogButtons() const override;
   base::string16 GetAccessibleWindowTitle() const override;
-
-  // content::WebContentsDelegate:
-  bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
-                         const content::ContextMenuParams& params) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::LinkListener:
   void LinkClicked(views::Link* sender, int event_flags) override;
-
-  // views::StyledLabelListener:
-  void StyledLabelLinkClicked(views::StyledLabel* label,
-                              const gfx::Range& range,
-                              int event_flags) override;
 
   // AvatarMenuObserver:
   void OnAvatarMenuChanged(AvatarMenu* avatar_menu) override;
@@ -181,10 +165,6 @@ class ProfileChooserView : public content::WebContentsDelegate,
 
   bool ShouldShowGoIncognito() const;
 
-  // Return maximal height for the view after which it becomes scrollable.
-  // TODO(crbug.com/870303): remove when a general solution is available.
-  int GetMaxHeight() const;
-
   // Clean-up done after an action was performed in the ProfileChooser.
   void PostActionPerformed(ProfileMetrics::ProfileDesktopMenu action_performed);
 
@@ -198,8 +178,6 @@ class ProfileChooserView : public content::WebContentsDelegate,
   void IncrementDiceSigninPromoShowCount();
 
   std::unique_ptr<AvatarMenu> avatar_menu_;
-  Browser* const browser_;
-  views::Button* const anchor_button_;
 
   // Other profiles used in the "fast profile switcher" view.
   ButtonIndexes open_other_profile_indexes_map_;
@@ -257,8 +235,6 @@ class ProfileChooserView : public content::WebContentsDelegate,
   // The current access point of sign in.
   const signin_metrics::AccessPoint access_point_;
 
-  CloseBubbleOnTabActivationHelper close_bubble_helper_;
-
   // Accounts that are presented in the enable sync promo.
   std::vector<AccountInfo> dice_sync_promo_accounts_;
 
@@ -267,8 +243,6 @@ class ProfileChooserView : public content::WebContentsDelegate,
   std::unique_ptr<DiceAccountsMenu> dice_accounts_menu_;
 
   const bool dice_enabled_;
-
-  const int menu_width_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileChooserView);
 };
