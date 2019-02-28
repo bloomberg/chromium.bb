@@ -19,8 +19,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/system_clock_client.h"
+#include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "content/public/browser/web_contents.h"
@@ -38,14 +37,12 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
  public:
   SetTimeMessageHandler() {
     system::TimezoneSettings::GetInstance()->AddObserver(this);
-    chromeos::DBusThreadManager::Get()->GetSystemClockClient()->AddObserver(
-        this);
+    SystemClockClient::Get()->AddObserver(this);
   }
 
   ~SetTimeMessageHandler() override {
     system::TimezoneSettings::GetInstance()->RemoveObserver(this);
-    chromeos::DBusThreadManager::Get()->GetSystemClockClient()->RemoveObserver(
-        this);
+    SystemClockClient::Get()->RemoveObserver(this);
   }
 
   // WebUIMessageHandler:
@@ -61,7 +58,7 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
   }
 
  private:
-  // system::SystemClockClient::Observer:
+  // SystemClockClient::Observer:
   void SystemClockUpdated() override {
     web_ui()->CallJavascriptFunctionUnsafe("settime.TimeSetter.updateTime");
   }
@@ -87,8 +84,7 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
       return;
     }
 
-    chromeos::DBusThreadManager::Get()->GetSystemClockClient()->SetTime(
-        static_cast<int64_t>(seconds));
+    SystemClockClient::Get()->SetTime(static_cast<int64_t>(seconds));
   }
 
   // Handler for Javascript call to change the system time zone when the user

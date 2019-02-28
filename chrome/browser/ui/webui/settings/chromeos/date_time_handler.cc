@@ -13,8 +13,7 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/system_clock_client.h"
+#include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_service.h"
@@ -101,8 +100,7 @@ void DateTimeHandler::RegisterMessages() {
 }
 
 void DateTimeHandler::OnJavascriptAllowed() {
-  SystemClockClient* system_clock_client =
-      DBusThreadManager::Get()->GetSystemClockClient();
+  SystemClockClient* system_clock_client = SystemClockClient::Get();
   scoped_observer_.Add(system_clock_client);
   SystemClockCanSetTimeChanged(system_clock_client->CanSetTime());
 
@@ -152,7 +150,7 @@ void DateTimeHandler::HandleGetTimeZones(const base::ListValue* args) {
 
 void DateTimeHandler::HandleShowSetDateTimeUI(const base::ListValue* args) {
   // Make sure the clock status hasn't changed since the button was clicked.
-  if (!DBusThreadManager::Get()->GetSystemClockClient()->CanSetTime())
+  if (!SystemClockClient::Get()->CanSetTime())
     return;
   SetTimeDialog::ShowDialog(
       web_ui()->GetWebContents()->GetTopLevelNativeWindow());

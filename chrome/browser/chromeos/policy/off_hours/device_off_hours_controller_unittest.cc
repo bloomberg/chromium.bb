@@ -17,7 +17,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
-#include "chromeos/dbus/fake_system_clock_client.h"
+#include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 
 namespace em = enterprise_management;
@@ -109,8 +109,7 @@ class DeviceOffHoursControllerSimpleTest
 
   void SetUp() override {
     chromeos::DeviceSettingsTestBase::SetUp();
-    system_clock_client_ = new chromeos::FakeSystemClockClient();
-    dbus_setter_->SetSystemClockClient(base::WrapUnique(system_clock_client_));
+    chromeos::SystemClockClient::Initialize(nullptr /* bus */);
     power_manager_client_ = new chromeos::FakePowerManagerClient();
     dbus_setter_->SetPowerManagerClient(
         base::WrapUnique(power_manager_client_));
@@ -120,6 +119,8 @@ class DeviceOffHoursControllerSimpleTest
     device_off_hours_controller_ =
         device_settings_service_.device_off_hours_controller();
   }
+
+  void TearDown() override { chromeos::SystemClockClient::Shutdown(); }
 
   void UpdateDeviceSettings() {
     device_policy_.Build();
@@ -141,8 +142,8 @@ class DeviceOffHoursControllerSimpleTest
   // = Monday etc.)
   int NextDayOfWeek(int day_of_week) { return day_of_week % 7 + 1; }
 
-  chromeos::FakeSystemClockClient* system_clock_client() {
-    return system_clock_client_;
+  chromeos::SystemClockClient::TestInterface* system_clock_client() {
+    return chromeos::SystemClockClient::Get()->GetTestInterface();
   }
 
   chromeos::FakePowerManagerClient* power_manager() {
@@ -159,9 +160,6 @@ class DeviceOffHoursControllerSimpleTest
 
  private:
   // The object is owned by DeviceSettingsTestBase class.
-  chromeos::FakeSystemClockClient* system_clock_client_;
-
-  // The object is owned by DeviceSettingsTestBase class.
   chromeos::FakePowerManagerClient* power_manager_client_;
 
   // The object is owned by DeviceSettingsService class.
@@ -174,7 +172,7 @@ class DeviceOffHoursControllerSimpleTest
 };
 
 TEST_F(DeviceOffHoursControllerSimpleTest, CheckOffHoursUnset) {
-  system_clock_client()->set_network_synchronized(true);
+  system_clock_client()->SetNetworkSynchronized(true);
   system_clock_client()->NotifyObserversSystemClockUpdated();
   em::ChromeDeviceSettingsProto& proto(device_policy_.payload());
   proto.mutable_guest_mode_enabled()->set_guest_mode_enabled(false);
@@ -190,7 +188,7 @@ TEST_F(DeviceOffHoursControllerSimpleTest, CheckOffHoursUnset) {
 }
 
 TEST_F(DeviceOffHoursControllerSimpleTest, CheckOffHoursModeOff) {
-  system_clock_client()->set_network_synchronized(true);
+  system_clock_client()->SetNetworkSynchronized(true);
   system_clock_client()->NotifyObserversSystemClockUpdated();
   em::ChromeDeviceSettingsProto& proto(device_policy_.payload());
   proto.mutable_guest_mode_enabled()->set_guest_mode_enabled(false);
@@ -215,7 +213,7 @@ TEST_F(DeviceOffHoursControllerSimpleTest, CheckOffHoursModeOff) {
 }
 
 TEST_F(DeviceOffHoursControllerSimpleTest, CheckOffHoursModeOn) {
-  system_clock_client()->set_network_synchronized(true);
+  system_clock_client()->SetNetworkSynchronized(true);
   system_clock_client()->NotifyObserversSystemClockUpdated();
   em::ChromeDeviceSettingsProto& proto(device_policy_.payload());
   proto.mutable_guest_mode_enabled()->set_guest_mode_enabled(false);
@@ -239,7 +237,7 @@ TEST_F(DeviceOffHoursControllerSimpleTest, CheckOffHoursModeOn) {
 }
 
 TEST_F(DeviceOffHoursControllerSimpleTest, NoNetworkSynchronization) {
-  system_clock_client()->set_network_synchronized(false);
+  system_clock_client()->SetNetworkSynchronized(false);
   system_clock_client()->NotifyObserversSystemClockUpdated();
   em::ChromeDeviceSettingsProto& proto(device_policy_.payload());
   proto.mutable_guest_mode_enabled()->set_guest_mode_enabled(false);
@@ -266,7 +264,7 @@ TEST_F(DeviceOffHoursControllerSimpleTest,
   EXPECT_FALSE(
       device_off_hours_controller()->IsCurrentSessionAllowedOnlyForOffHours());
 
-  system_clock_client()->set_network_synchronized(true);
+  system_clock_client()->SetNetworkSynchronized(true);
   system_clock_client()->NotifyObserversSystemClockUpdated();
 
   EXPECT_FALSE(
@@ -302,7 +300,7 @@ class DeviceOffHoursControllerFakeClockTest
 
   void SetUp() override {
     DeviceOffHoursControllerSimpleTest::SetUp();
-    system_clock_client()->set_network_synchronized(true);
+    system_clock_client()->SetNetworkSynchronized(true);
     system_clock_client()->NotifyObserversSystemClockUpdated();
     // Clocks are set to 1970-01-01 00:00:00 UTC, Thursday.
     test_clock_.SetNow(base::Time::UnixEpoch());

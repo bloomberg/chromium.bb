@@ -49,7 +49,6 @@
 #include "chromeos/dbus/shill_third_party_vpn_driver_client.h"
 #include "chromeos/dbus/smb_provider_client.h"
 #include "chromeos/dbus/sms_client.h"
-#include "chromeos/dbus/system_clock_client.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/dbus/upstart_client.h"
 #include "dbus/bus.h"
@@ -281,10 +280,6 @@ SmbProviderClient* DBusThreadManager::GetSmbProviderClient() {
 
 SMSClient* DBusThreadManager::GetSMSClient() {
   return clients_common_->sms_client_.get();
-}
-
-SystemClockClient* DBusThreadManager::GetSystemClockClient() {
-  return clients_common_->system_clock_client_.get();
 }
 
 UpdateEngineClient* DBusThreadManager::GetUpdateEngineClient() {
@@ -523,12 +518,6 @@ void DBusThreadManagerSetter::SetSessionManagerClient(
 void DBusThreadManagerSetter::SetSmbProviderClient(
     std::unique_ptr<SmbProviderClient> client) {
   DBusThreadManager::Get()->clients_browser_->smb_provider_client_ =
-      std::move(client);
-}
-
-void DBusThreadManagerSetter::SetSystemClockClient(
-    std::unique_ptr<SystemClockClient> client) {
-  DBusThreadManager::Get()->clients_common_->system_clock_client_ =
       std::move(client);
 }
 

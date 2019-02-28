@@ -18,7 +18,7 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
-#include "chromeos/dbus/system_clock_client.h"
+#include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -153,8 +153,7 @@ void AshService::InitializeDBusClients() {
   // dbus::Thread, dbus::Bus and required clients directly.
   chromeos::DBusThreadManager::Initialize(chromeos::DBusThreadManager::kShared);
   dbus::Bus* bus = chromeos::DBusThreadManager::Get()->GetSystemBus();
-  bool use_fakes = chromeos::DBusThreadManager::Get()->IsUsingFakes();
-  CHECK(bus || use_fakes);
+  chromeos::SystemClockClient::Initialize(bus);
 
   chromeos::PowerPolicyController::Initialize(
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient());

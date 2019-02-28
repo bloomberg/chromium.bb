@@ -20,7 +20,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
-#include "chromeos/dbus/fake_system_clock_client.h"
+#include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -92,8 +92,7 @@ class EventBasedStatusReportingServiceTest : public testing::Test {
         DBusThreadManager::GetSetterForTesting();
     dbus_setter->SetPowerManagerClient(
         std::make_unique<FakePowerManagerClient>());
-    dbus_setter->SetSystemClockClient(
-        std::make_unique<FakeSystemClockClient>());
+    SystemClockClient::Initialize(nullptr /* bus */);
     profile_ = std::make_unique<TestingProfile>();
     profile_.get()->SetSupervisedUserId(supervised_users::kChildAccountSUID);
     arc_test_.SetUp(profile());

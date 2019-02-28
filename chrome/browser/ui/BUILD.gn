@@ -1761,6 +1761,7 @@ jumbo_split_static_library("ui") {
       "//chromeos/cryptohome",
       "//chromeos/dbus",
       "//chromeos/dbus:cryptohome_proto",
+      "//chromeos/dbus/system_clock",
       "//chromeos/login/auth",
       "//chromeos/login/login_state",
       "//chromeos/network",

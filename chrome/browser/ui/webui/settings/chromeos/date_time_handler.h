@@ -12,7 +12,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
-#include "chromeos/dbus/system_clock_client.h"
+#include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "components/prefs/pref_change_registrar.h"
 
 namespace base {

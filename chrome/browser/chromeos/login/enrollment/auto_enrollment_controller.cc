@@ -21,7 +21,7 @@
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/system_clock_client.h"
+#include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/system/factory_ping_embargo_check.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -158,13 +158,11 @@ class AutoEnrollmentController::SystemClockSyncWaiter
     : public chromeos::SystemClockClient::Observer {
  public:
   SystemClockSyncWaiter() : weak_ptr_factory_(this) {
-    chromeos::DBusThreadManager::Get()->GetSystemClockClient()->AddObserver(
-        this);
+    chromeos::SystemClockClient::Get()->AddObserver(this);
   }
 
   ~SystemClockSyncWaiter() override {
-    chromeos::DBusThreadManager::Get()->GetSystemClockClient()->RemoveObserver(
-        this);
+    chromeos::SystemClockClient::Get()->RemoveObserver(this);
   }
 
   // Waits for the system clock to be synchronized. If it already is
@@ -188,11 +186,9 @@ class AutoEnrollmentController::SystemClockSyncWaiter
                          base::BindRepeating(&SystemClockSyncWaiter::OnTimeout,
                                              weak_ptr_factory_.GetWeakPtr()));
 
-    chromeos::DBusThreadManager::Get()
-        ->GetSystemClockClient()
-        ->WaitForServiceToBeAvailable(base::BindOnce(
-            &SystemClockSyncWaiter::OnGotSystemClockServiceAvailable,
-            weak_ptr_factory_.GetWeakPtr()));
+    chromeos::SystemClockClient::Get()->WaitForServiceToBeAvailable(
+        base::BindOnce(&SystemClockSyncWaiter::OnGotSystemClockServiceAvailable,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -204,7 +200,7 @@ class AutoEnrollmentController::SystemClockSyncWaiter
       return;
     }
 
-    chromeos::DBusThreadManager::Get()->GetSystemClockClient()->GetLastSyncInfo(
+    chromeos::SystemClockClient::Get()->GetLastSyncInfo(
         base::BindOnce(&SystemClockSyncWaiter::OnGotLastSyncInfo,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -237,7 +233,7 @@ class AutoEnrollmentController::SystemClockSyncWaiter
 
   // chromeos::SystemClockClient::Observer:
   void SystemClockUpdated() override {
-    chromeos::DBusThreadManager::Get()->GetSystemClockClient()->GetLastSyncInfo(
+    chromeos::SystemClockClient::Get()->GetLastSyncInfo(
         base::BindOnce(&SystemClockSyncWaiter::OnGotLastSyncInfo,
                        weak_ptr_factory_.GetWeakPtr()));
   }

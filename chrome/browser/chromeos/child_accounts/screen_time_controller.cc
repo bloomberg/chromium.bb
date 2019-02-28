@@ -68,7 +68,7 @@ ScreenTimeController::ScreenTimeController(content::BrowserContext* context)
     UsageTimeStateNotifier::GetInstance()->AddObserver(this);
 
   system::TimezoneSettings::GetInstance()->AddObserver(this);
-  chromeos::DBusThreadManager::Get()->GetSystemClockClient()->AddObserver(this);
+  chromeos::SystemClockClient::Get()->AddObserver(this);
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
       prefs::kUsageTimeLimit,
@@ -95,8 +95,7 @@ ScreenTimeController::~ScreenTimeController() {
     UsageTimeStateNotifier::GetInstance()->RemoveObserver(this);
 
   system::TimezoneSettings::GetInstance()->RemoveObserver(this);
-  chromeos::DBusThreadManager::Get()->GetSystemClockClient()->RemoveObserver(
-      this);
+  SystemClockClient::Get()->RemoveObserver(this);
 }
 
 void ScreenTimeController::AddObserver(Observer* observer) {

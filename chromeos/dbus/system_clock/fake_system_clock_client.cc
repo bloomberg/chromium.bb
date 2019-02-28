@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/fake_system_clock_client.h"
+#include "chromeos/dbus/system_clock/fake_system_clock_client.h"
 #include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 
@@ -12,12 +12,13 @@ FakeSystemClockClient::FakeSystemClockClient() = default;
 
 FakeSystemClockClient::~FakeSystemClockClient() = default;
 
+void FakeSystemClockClient::SetNetworkSynchronized(bool network_synchronized) {
+  network_synchronized_ = network_synchronized;
+}
+
 void FakeSystemClockClient::NotifyObserversSystemClockUpdated() {
   for (auto& observer : observers_)
     observer.SystemClockUpdated();
-}
-
-void FakeSystemClockClient::Init(dbus::Bus* bus) {
 }
 
 void FakeSystemClockClient::AddObserver(Observer* observer) {
@@ -47,6 +48,10 @@ void FakeSystemClockClient::WaitForServiceToBeAvailable(
     dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) {
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
+SystemClockClient::TestInterface* FakeSystemClockClient::GetTestInterface() {
+  return this;
 }
 
 }  // namespace chromeos
