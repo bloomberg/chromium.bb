@@ -58,22 +58,14 @@ class TestScreenTimeControllerObserver : public ScreenTimeController::Observer {
 
 namespace utils = time_limit_test_utils;
 
-// TODO(crbug.com/936407): Most of this suite is flaky.
-#if defined(DEBUG) || defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
-#define MAYBE_ScreenTimeControllerTest DISABLED_ScreenTimeControllerTest
-#else
-#define MAYBE_ScreenTimeControllertest ScreenTimeControllerTest
-#endif
-
 // Allows testing ScreenTimeController with UsageTimeStateNotifier enabled
 // (instantiated with |true|) or disabled (instantiated with |false|).
-class MAYBE_ScreenTimeControllerTest
-    : public policy::LoginPolicyTestBase,
-      public testing::WithParamInterface<bool> {
+class ScreenTimeControllerTest : public policy::LoginPolicyTestBase,
+                                 public testing::WithParamInterface<bool> {
  public:
-  MAYBE_ScreenTimeControllerTest() = default;
+  ScreenTimeControllerTest() = default;
 
-  ~MAYBE_ScreenTimeControllerTest() override = default;
+  ~ScreenTimeControllerTest() override = default;
 
   // policy::LoginPolicyTestBase:
   void SetUp() override {
@@ -148,11 +140,11 @@ class MAYBE_ScreenTimeControllerTest
   bool is_feature_enabled_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MAYBE_ScreenTimeControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(ScreenTimeControllerTest);
 };
 
 // Tests a simple lock override.
-IN_PROC_BROWSER_TEST_P(MAYBE_ScreenTimeControllerTest, LockOverride) {
+IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, LockOverride) {
   SetupTaskRunnerWithTime(utils::TimeFromString("1 Jan 2018 10:00:00 GMT"));
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword, test::kChildAccountServiceFlags);
@@ -182,7 +174,7 @@ IN_PROC_BROWSER_TEST_P(MAYBE_ScreenTimeControllerTest, LockOverride) {
 }
 
 // Tests an unlock override on a bedtime.
-IN_PROC_BROWSER_TEST_P(MAYBE_ScreenTimeControllerTest, UnlockBedtime) {
+IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, UnlockBedtime) {
   SetupTaskRunnerWithTime(utils::TimeFromString("5 Jan 2018 22:00:00 BRT"));
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword, test::kChildAccountServiceFlags);
@@ -232,7 +224,7 @@ IN_PROC_BROWSER_TEST_P(MAYBE_ScreenTimeControllerTest, UnlockBedtime) {
 }
 
 // Tests the default time window limit.
-IN_PROC_BROWSER_TEST_P(MAYBE_ScreenTimeControllerTest, DefaultBedtime) {
+IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, DefaultBedtime) {
   SetupTaskRunnerWithTime(utils::TimeFromString("1 Jan 2018 10:00:00 GMT"));
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword, test::kChildAccountServiceFlags);
@@ -298,7 +290,7 @@ IN_PROC_BROWSER_TEST_P(MAYBE_ScreenTimeControllerTest, DefaultBedtime) {
 }
 
 // Tests the default time window limit.
-IN_PROC_BROWSER_TEST_P(MAYBE_ScreenTimeControllerTest, DefaultDailyLimit) {
+IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, DefaultDailyLimit) {
   SetupTaskRunnerWithTime(utils::TimeFromString("1 Jan 2018 10:00:00 GMT"));
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword, test::kChildAccountServiceFlags);
@@ -367,7 +359,7 @@ IN_PROC_BROWSER_TEST_P(MAYBE_ScreenTimeControllerTest, DefaultDailyLimit) {
 }
 
 // Tests that the bedtime locks an active session when it is reached.
-IN_PROC_BROWSER_TEST_P(MAYBE_ScreenTimeControllerTest, ActiveSessionBedtime) {
+IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, ActiveSessionBedtime) {
   SetupTaskRunnerWithTime(utils::TimeFromString("1 Jan 2018 10:00:00 PST"));
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword, test::kChildAccountServiceFlags);
@@ -408,8 +400,7 @@ IN_PROC_BROWSER_TEST_P(MAYBE_ScreenTimeControllerTest, ActiveSessionBedtime) {
 }
 
 // Tests that the daily limit locks the device when it is reached.
-IN_PROC_BROWSER_TEST_P(MAYBE_ScreenTimeControllerTest,
-                       ActiveSessionDailyLimit) {
+IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, ActiveSessionDailyLimit) {
   SetupTaskRunnerWithTime(utils::TimeFromString("1 Jan 2018 10:00:00 PST"));
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword, test::kChildAccountServiceFlags);
@@ -448,8 +439,7 @@ IN_PROC_BROWSER_TEST_P(MAYBE_ScreenTimeControllerTest,
 }
 
 // Tests bedtime during timezone changes.
-IN_PROC_BROWSER_TEST_P(MAYBE_ScreenTimeControllerTest,
-                       BedtimeOnTimezoneChange) {
+IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, BedtimeOnTimezoneChange) {
   SetupTaskRunnerWithTime(
       utils::TimeFromString("3 Jan 2018 10:00:00 GMT-0600"));
   SkipToLoginScreen();
@@ -504,7 +494,7 @@ IN_PROC_BROWSER_TEST_P(MAYBE_ScreenTimeControllerTest,
 }
 
 // Tests bedtime during timezone changes that make the clock go back in time.
-IN_PROC_BROWSER_TEST_P(MAYBE_ScreenTimeControllerTest,
+IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest,
                        BedtimeOnEastToWestTimezoneChanges) {
   SetupTaskRunnerWithTime(utils::TimeFromString("3 Jan 2018 8:00:00 GMT+1300"));
   SkipToLoginScreen();
@@ -552,7 +542,7 @@ IN_PROC_BROWSER_TEST_P(MAYBE_ScreenTimeControllerTest,
 }
 
 // Tests if call the observers for usage time limit warning.
-IN_PROC_BROWSER_TEST_P(MAYBE_ScreenTimeControllerTest, CallObservers) {
+IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, CallObservers) {
   if (!is_feature_enabled_)
     return;
   SetupTaskRunnerWithTime(utils::TimeFromString("1 Jan 2018 10:00:00 PST"));
@@ -637,7 +627,12 @@ IN_PROC_BROWSER_TEST_P(MAYBE_ScreenTimeControllerTest, CallObservers) {
       ->RemoveObserver(&observer);
 }
 
+// TODO(crbug.com/936407): Most of this suite is flaky.
+#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
 // Run all ScreenTimeControllerTest with UsageTimeStateNotifier feature enabled
 // and disabled.
-INSTANTIATE_TEST_SUITE_P(, MAYBE_ScreenTimeControllerTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(DISABLED_, ScreenTimeControllerTest, testing::Bool());
+#else
+INSTANTIATE_TEST_SUITE_P(, ScreenTimeControllerTest, testing::Bool());
+#endif
 }  // namespace chromeos
