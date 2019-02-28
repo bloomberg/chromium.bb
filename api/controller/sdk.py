@@ -44,3 +44,25 @@ def Create(input_proto, output_proto):
     # This should be very rare, if ever used, but worth noting.
     cros_build_lib.Die('No chroot version could be found. There was likely an'
                        'error creating the chroot that was not detected.')
+
+
+def Update(input_proto, output_proto):
+  """Update the chroot.
+
+  Args:
+    input_proto (UpdateRequest): The input proto.
+    output_proto (UpdateResponse): The output proto.
+  """
+  build_source = input_proto.flags.build_source
+  targets = [target.name for target in input_proto.toolchain_targets]
+
+  args = sdk.UpdateArguments(build_source=build_source,
+                             toolchain_targets=targets)
+  version = sdk.Update(args)
+
+  if version:
+    output_proto.version.version = version
+  else:
+    # This should be very rare, if ever used, but worth noting.
+    cros_build_lib.Die('No chroot version could be found. There was likely an'
+                       'error creating the chroot that was not detected.')

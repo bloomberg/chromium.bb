@@ -69,6 +69,24 @@ class CreateArgumentsTest(cros_test_lib.MockTestCase):
       self.assertIn(arg, result)
 
 
+class UpdateArgumentsTest(cros_test_lib.TestCase):
+  """UpdateArguments tests."""
+
+  def _GetArgList(self, **kwargs):
+    """Helper to simplify getting the argument list."""
+    instance = sdk.UpdateArguments(**kwargs)
+    return instance.GetArgList()
+
+  def testGetArgList(self):
+    """Test the GetArgList method."""
+    self.assertIn('--nousepkg', self._GetArgList(build_source=True))
+
+    expected = ['--toolchain_boards', 'board1,board2']
+    result = self._GetArgList(toolchain_targets=['board1', 'board2'])
+    for arg in expected:
+      self.assertIn(arg, result)
+
+
 class CreateTest(cros_test_lib.RunCommandTestCase):
   """Create function tests."""
 
@@ -93,3 +111,24 @@ class CreateTest(cros_test_lib.RunCommandTestCase):
     arguments = sdk.CreateArguments()
     with self.assertRaises(cros_build_lib.DieSystemExit):
       sdk.Create(arguments)
+
+
+class UpdateTest(cros_test_lib.RunCommandTestCase):
+  """Update function tests."""
+
+  def setUp(self):
+    # Needs to be run inside the chroot right now.
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
+
+  def testUpdate(self):
+    """Test the update method."""
+    arguments = sdk.UpdateArguments()
+    expected_args = ['--arg', '--other', '--with-value', 'value']
+    expected_version = 1
+    self.PatchObject(arguments, 'GetArgList', return_value=expected_args)
+    self.PatchObject(sdk, 'GetChrootVersion', return_value=expected_version)
+
+    version = sdk.Update(arguments)
+
+    self.assertCommandContains(expected_args)
+    self.assertEqual(expected_version, version)

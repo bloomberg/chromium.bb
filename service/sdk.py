@@ -92,6 +92,36 @@ class CreateArguments(object):
     return args
 
 
+class UpdateArguments(object):
+  """Value object to handle the update arguments."""
+
+  def __init__(self, build_source=False, toolchain_targets=None):
+    """Update arguments init.
+
+    Args:
+      build_source (bool): Whether to build the source or use prebuilts.
+      toolchain_targets (list): The list of build targets whose toolchains
+        should be updated.
+    """
+    self.build_source = build_source
+    self.toolchain_targets = toolchain_targets
+
+  def GetArgList(self):
+    """Get the list of the corresponding command line arguments.
+
+    Returns:
+      list - The list of the corresponding command line arguments.
+    """
+    args = []
+
+    if self.build_source:
+      args.append('--nousepkg')
+
+    if self.toolchain_targets:
+      args.extend(['--toolchain_boards', ','.join(self.toolchain_targets)])
+
+    return args
+
 def Create(arguments):
   """Create or replace the chroot.
 
@@ -118,3 +148,23 @@ def GetChrootVersion():
     int|None - The version of the chroot if the chroot is valid, else None.
   """
   return cros_sdk_lib.GetChrootVersion(constants.DEFAULT_CHROOT_PATH)
+
+
+def Update(arguments):
+  """Update the chroot.
+
+  Args:
+    arguments (UpdateArguments): The various arguments for updating a chroot.
+
+  Returns:
+    int - The version of the chroot after the update.
+  """
+  # TODO: This should be able to be run either in or out of the chroot.
+  cros_build_lib.AssertInsideChroot()
+
+  cmd = [os.path.join(constants.CROSUTILS_DIR, 'update_chroot')]
+  cmd.extend(arguments.GetArgList())
+
+  cros_build_lib.RunCommand(cmd)
+
+  return GetChrootVersion()

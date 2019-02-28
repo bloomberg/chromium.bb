@@ -1,6 +1,7 @@
 syntax = 'proto3';
 package chromite.api;
 import "build_api.proto";
+import "common.proto";
 
 
 // Contains some common cros_sdk path arguments.
@@ -44,6 +45,27 @@ message CreateResponse {
   ChrootVersion version = 1;
 }
 
+// Chroot update request message.
+// Example json:
+// {"toolchain_targets": [{"name": "eve"}]}
+message UpdateRequest {
+  // Update flag arguments.
+  message Flags {
+    // Whether to build from source or use prebuilt packages.
+    bool build_source = 1;
+  }
+
+  // The flags.
+  Flags flags = 1;
+  // The targets whose toolchains should be updated in the chroot.
+  repeated BuildTarget toolchain_targets = 2;
+}
+
+// Chroot update response message.
+message UpdateResponse {
+  // The chroot version after update is complete.
+  ChrootVersion version = 1;
+}
 
 // SDK operations.
 service SdkService {
@@ -55,4 +77,11 @@ service SdkService {
 
   // Create method, supports replacing an existing chroot.
   rpc Create(CreateRequest) returns (CreateResponse);
+
+  // Update the chroot.
+  rpc Update(UpdateRequest) returns (UpdateResponse) {
+    option (method_options) = {
+      method_chroot_assert: INSIDE,
+    };
+  }
 }

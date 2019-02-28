@@ -91,3 +91,58 @@ class SdkCreateTest(cros_test_lib.MockTestCase):
     sdk_controller.Create(request, response)
     paths_patch.assert_called_with(cache_dir=cache_dir, chrome_root=chrome_root,
                                    chroot_path=chroot_path)
+
+
+class SdkUpdateTest(cros_test_lib.MockTestCase):
+  """Update tests."""
+
+  def setUp(self):
+    """Setup method."""
+    # We need to run the command inside the chroot.
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
+
+  def _GetRequest(self, build_source=False, targets=None):
+    """Helper to simplify building a request instance."""
+    request = sdk_pb2.UpdateRequest()
+    request.flags.build_source = build_source
+
+    for target in targets or []:
+      added = request.toolchain_targets.add()
+      added.name = target
+
+    return request
+
+  def _GetResponse(self):
+    """Helper to build an empty response instance."""
+    return sdk_pb2.UpdateResponse()
+
+  def testSuccess(self):
+    """Successful call output handling test."""
+    expected_version = 1
+    self.PatchObject(sdk_service, 'Update', return_value=expected_version)
+    request = self._GetRequest()
+    response = self._GetResponse()
+
+    sdk_controller.Update(request, response)
+
+    self.assertEqual(expected_version, response.version.version)
+
+  def testArgumentHandling(self):
+    """Test the proto argument handling."""
+    args = sdk_service.UpdateArguments()
+    self.PatchObject(sdk_service, 'Update', return_value=1)
+    args_patch = self.PatchObject(sdk_service, 'UpdateArguments',
+                                  return_value=args)
+
+    response = self._GetResponse()
+
+    # No boards and flags False.
+    request = self._GetRequest(build_source=False)
+    sdk_controller.Update(request, response)
+    args_patch.assert_called_with(build_source=False, toolchain_targets=[])
+
+    # Multiple boards and flags True.
+    targets = ['board1', 'board2']
+    request = self._GetRequest(build_source=True, targets=targets)
+    sdk_controller.Update(request, response)
+    args_patch.assert_called_with(build_source=True, toolchain_targets=targets)
