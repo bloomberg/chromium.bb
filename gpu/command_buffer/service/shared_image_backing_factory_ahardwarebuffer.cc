@@ -353,9 +353,10 @@ class SharedImageRepresentationSkiaVkAHB
 
       // Submit wait semaphore to the queue. Note that Skia uses the same queue
       // exposed by vk_queue(), so this will work due to Vulkan queue ordering.
-      if (!vk_implementation()->SubmitWaitSemaphore(vk_queue(), semaphore))
+      if (!vk_implementation()->SubmitWaitSemaphore(vk_queue(), semaphore)) {
         vkDestroySemaphore(vk_device(), semaphore, nullptr);
-      return nullptr;
+        return nullptr;
+      }
     }
 
     // Create a VkImage and import AHB.
