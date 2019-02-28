@@ -88,48 +88,19 @@ PrintPreviewSettingsSectionsTest = class extends NewPrintPreviewTest {
   }
 };
 
-TEST_F('PrintPreviewSettingsSectionsTest', 'Copies', function() {
-  this.runMochaTest(settings_sections_tests.TestNames.Copies);
-});
-
-TEST_F('PrintPreviewSettingsSectionsTest', 'Layout', function() {
-  this.runMochaTest(settings_sections_tests.TestNames.Layout);
-});
-
-TEST_F('PrintPreviewSettingsSectionsTest', 'Color', function() {
-  this.runMochaTest(settings_sections_tests.TestNames.Color);
-});
-
-TEST_F('PrintPreviewSettingsSectionsTest', 'ColorSaveToDrive', function() {
-  this.runMochaTest(settings_sections_tests.TestNames.ColorSaveToDrive);
-});
-
-TEST_F('PrintPreviewSettingsSectionsTest', 'MediaSize', function() {
-  this.runMochaTest(settings_sections_tests.TestNames.MediaSize);
-});
+TEST_F(
+    'PrintPreviewSettingsSectionsTest', 'SettingsSectionsVisibilityChange',
+    function() {
+      this.runMochaTest(
+          settings_sections_tests.TestNames.SettingsSectionsVisibilityChange);
+    });
 
 TEST_F('PrintPreviewSettingsSectionsTest', 'MediaSizeCustomNames', function() {
   this.runMochaTest(settings_sections_tests.TestNames.MediaSizeCustomNames);
 });
 
-TEST_F('PrintPreviewSettingsSectionsTest', 'Margins', function() {
-  this.runMochaTest(settings_sections_tests.TestNames.Margins);
-});
-
-TEST_F('PrintPreviewSettingsSectionsTest', 'Dpi', function() {
-  this.runMochaTest(settings_sections_tests.TestNames.Dpi);
-});
-
-TEST_F('PrintPreviewSettingsSectionsTest', 'Scaling', function() {
-  this.runMochaTest(settings_sections_tests.TestNames.Scaling);
-});
-
 TEST_F('PrintPreviewSettingsSectionsTest', 'Other', function() {
   this.runMochaTest(settings_sections_tests.TestNames.Other);
-});
-
-TEST_F('PrintPreviewSettingsSectionsTest', 'HeaderFooter', function() {
-  this.runMochaTest(settings_sections_tests.TestNames.HeaderFooter);
 });
 
 TEST_F('PrintPreviewSettingsSectionsTest', 'SetCopies', function() {
@@ -157,7 +128,6 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'SetMargins', function() {
 });
 
 TEST_F('PrintPreviewSettingsSectionsTest', 'SetPagesPerSheet', function() {
-  loadTimeData.overrideValues({pagesPerSheetEnabled: true});
   this.runMochaTest(settings_sections_tests.TestNames.SetPagesPerSheet);
 });
 
@@ -186,7 +156,6 @@ GEN('#endif');
 TEST_F(
     'PrintPreviewSettingsSectionsTest', 'DisableMarginsByPagesPerSheet',
     function() {
-      loadTimeData.overrideValues({pagesPerSheetEnabled: true});
       this.runMochaTest(
           settings_sections_tests.TestNames.DisableMarginsByPagesPerSheet);
     });
@@ -415,6 +384,26 @@ TEST_F('PrintPreviewModelTest', 'GetCloudPrintTicket', function() {
 
 TEST_F('PrintPreviewModelTest', 'UpdateRecentDestinations', function() {
   this.runMochaTest(model_test.TestNames.UpdateRecentDestinations);
+});
+
+PrintPreviewModelSettingsAvailabilityTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/model.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      'print_preview_test_utils.js',
+      'model_settings_availability_test.js',
+    ]);
+  }
+};
+
+TEST_F('PrintPreviewModelSettingsAvailabilityTest', 'All', function() {
+  mocha.run();
 });
 
 PrintPreviewPreviewGenerationTest = class extends NewPrintPreviewTest {
@@ -1302,6 +1291,13 @@ PrintPreviewScalingSettingsTest = class extends NewPrintPreviewTest {
     return scaling_settings_test.suiteName;
   }
 };
+
+TEST_F(
+    'PrintPreviewScalingSettingsTest', 'ShowCorrectDropdownOptions',
+    function() {
+      this.runMochaTest(
+          scaling_settings_test.TestNames.ShowCorrectDropdownOptions);
+    });
 
 TEST_F('PrintPreviewScalingSettingsTest', 'SetScaling', function() {
   this.runMochaTest(scaling_settings_test.TestNames.SetScaling);

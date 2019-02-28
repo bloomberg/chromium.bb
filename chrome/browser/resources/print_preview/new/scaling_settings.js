@@ -51,14 +51,8 @@ Polymer({
       value: false,
     },
 
-    /**
-     * Mirroring the enum so that it can be used from HTML bindings.
-     * @private
-     */
-    scalingValueEnum_: {
-      type: Object,
-      value: ScalingValue,
-    },
+    /** Mirroring the enum so that it can be used from HTML bindings. */
+    ScalingValue: Object,
   },
 
   observers: [
@@ -69,6 +63,11 @@ Polymer({
 
   /** @private {string} */
   lastValidScaling_: '',
+
+  /** @override */
+  ready: function() {
+    this.ScalingValue = ScalingValue;
+  },
 
   onProcessSelectChange: function(value) {
     if (value === ScalingValue.FIT_TO_PAGE.toString()) {

@@ -388,7 +388,6 @@ Polymer({
   updateSettingsAvailabilityFromDestination_: function(caps) {
     this.set('settings.copies.available', !!caps && !!caps.copies);
     this.set('settings.collate.available', !!caps && !!caps.collate);
-    this.set('settings.layout.available', this.isLayoutAvailable_(caps));
     this.set('settings.color.available', this.destination.hasColorCapability);
 
     this.set(

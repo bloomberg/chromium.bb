@@ -5,6 +5,7 @@
 cr.define('scaling_settings_test', function() {
   /** @enum {string} */
   const TestNames = {
+    ShowCorrectDropdownOptions: 'show correct dropdown options',
     SetScaling: 'set scaling',
     InputNotDisabledOnValidityChange: 'input not disabled on validity change',
   };
@@ -43,6 +44,25 @@ cr.define('scaling_settings_test', function() {
       };
       scalingSection.disabled = false;
       document.body.appendChild(scalingSection);
+    });
+
+    test(assert(TestNames.ShowCorrectDropdownOptions), function() {
+      // Fit to page unavailable -> No fit to page option.
+      const fitToPageOption = scalingSection.$$(
+          `[value="${scalingSection.ScalingValue.FIT_TO_PAGE}"]`);
+      const defaultOption =
+          scalingSection.$$(`[value="${scalingSection.ScalingValue.DEFAULT}"]`);
+      const customOption =
+          scalingSection.$$(`[value="${scalingSection.ScalingValue.CUSTOM}"]`);
+      assertTrue(fitToPageOption.hidden);
+      assertFalse(defaultOption.hidden);
+      assertFalse(customOption.hidden);
+
+      // Fit to page available -> All 3 options.
+      scalingSection.set('settings.fitToPage.available', true);
+      assertFalse(fitToPageOption.hidden);
+      assertFalse(defaultOption.hidden);
+      assertFalse(customOption.hidden);
     });
 
     /**
@@ -87,7 +107,7 @@ cr.define('scaling_settings_test', function() {
 
       // Select custom
       await print_preview_test_utils.selectOption(
-          scalingSection, scalingSection.scalingValueEnum_.CUSTOM.toString());
+          scalingSection, scalingSection.ScalingValue.CUSTOM.toString());
       validateState('100', true, true, false, '100');
 
       await print_preview_test_utils.triggerInputEvent(
@@ -96,13 +116,12 @@ cr.define('scaling_settings_test', function() {
 
       // Change to fit to page.
       await print_preview_test_utils.selectOption(
-          scalingSection,
-          scalingSection.scalingValueEnum_.FIT_TO_PAGE.toString());
+          scalingSection, scalingSection.ScalingValue.FIT_TO_PAGE.toString());
       validateState('105', true, true, true, '105');
 
       // Go back to custom. Restores 105 value.
       await print_preview_test_utils.selectOption(
-          scalingSection, scalingSection.scalingValueEnum_.CUSTOM.toString());
+          scalingSection, scalingSection.ScalingValue.CUSTOM.toString());
       validateState('105', true, true, false, '105');
 
       // Set scaling to something invalid. Should change setting validity
@@ -113,13 +132,12 @@ cr.define('scaling_settings_test', function() {
 
       // Select fit to page. Should clear the invalid value.
       await print_preview_test_utils.selectOption(
-          scalingSection,
-          scalingSection.scalingValueEnum_.FIT_TO_PAGE.toString());
+          scalingSection, scalingSection.ScalingValue.FIT_TO_PAGE.toString());
       validateState('105', true, true, true, '105');
 
       // Custom scaling should set to last valid.
       await print_preview_test_utils.selectOption(
-          scalingSection, scalingSection.scalingValueEnum_.CUSTOM.toString());
+          scalingSection, scalingSection.ScalingValue.CUSTOM.toString());
       validateState('105', true, true, false, '105');
 
       // Set scaling to something invalid. Should change setting validity
@@ -130,12 +148,12 @@ cr.define('scaling_settings_test', function() {
 
       // Pick default scaling. This should clear the error.
       await print_preview_test_utils.selectOption(
-          scalingSection, scalingSection.scalingValueEnum_.DEFAULT.toString());
+          scalingSection, scalingSection.ScalingValue.DEFAULT.toString());
       validateState('105', true, false, false, '105');
 
       // Custom scaling should set to last valid.
       await print_preview_test_utils.selectOption(
-          scalingSection, scalingSection.scalingValueEnum_.CUSTOM.toString());
+          scalingSection, scalingSection.ScalingValue.CUSTOM.toString());
       validateState('105', true, true, false, '105');
 
       // Enter a blank value in the scaling field. This should not
@@ -164,7 +182,7 @@ cr.define('scaling_settings_test', function() {
       });
 
       await print_preview_test_utils.selectOption(
-          scalingSection, scalingSection.scalingValueEnum_.CUSTOM.toString());
+          scalingSection, scalingSection.ScalingValue.CUSTOM.toString());
       await print_preview_test_utils.triggerInputEvent(
           input, '90', scalingSection);
       validateState('90', true, true, false, '90');
