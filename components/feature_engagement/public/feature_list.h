@@ -77,7 +77,7 @@ DEFINE_VARIATION_PARAM(kIPHHomepageTileFeature, "IPH_HomepageTile");
 DEFINE_VARIATION_PARAM(kIPHNewTabPageButtonFeature, "IPH_NewTabPageButton");
 DEFINE_VARIATION_PARAM(kIPHPreviewsOmniboxUIFeature, "IPH_PreviewsOmniboxUI");
 DEFINE_VARIATION_PARAM(kIPHTabGroupsQuicklyComparePagesFeature,
-                       "IPH_IPH_TabGroupsQuicklyComparePages");
+                       "IPH_TabGroupsQuicklyComparePages");
 DEFINE_VARIATION_PARAM(kIPHTabGroupsTapToSeeAnotherTabFeature,
                        "IPH_TabGroupsTapToSeeAnotherTab");
 DEFINE_VARIATION_PARAM(kIPHTabGroupsYourTabsAreTogetherFeature,
