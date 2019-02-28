@@ -688,6 +688,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   FloatSize elastic_overscroll_;
 
+  bool needs_hover_update_at_begin_frame_ = false;
+
   Persistent<EventListener> popup_mouse_wheel_event_listener_;
 
   // The local root whose document has |popup_mouse_wheel_event_listener_|
