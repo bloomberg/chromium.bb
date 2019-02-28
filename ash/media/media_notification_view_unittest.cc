@@ -30,6 +30,7 @@
 #include "ui/message_center/views/message_view_factory.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/notification_header_view.h"
+#include "ui/views/controls/image_view.h"
 
 namespace ash {
 
@@ -187,6 +188,8 @@ class MediaNotificationViewTest : public AshTestBase {
   views::View* button_row() const { return view_->button_row_; }
 
   views::View* title_artist_row() const { return view_->title_artist_row_; }
+
+  views::ImageView* artwork() const { return view_->artwork_; }
 
   views::Label* title_label() const { return view_->title_label_; }
 
@@ -660,6 +663,47 @@ TEST_F(MediaNotificationViewTest, ActionButtonsToggleVisbility) {
   DisableAction(MediaSessionAction::kNextTrack);
 
   EXPECT_FALSE(IsActionButtonVisible(MediaSessionAction::kNextTrack));
+}
+
+TEST_F(MediaNotificationViewTest, ArtworkHeightWhenCollapsedOrExpanded) {
+  EXPECT_TRUE(is_expanded());
+
+  // Ensure that the notification and the artwork are the same height.
+  int height = view()->height();
+  EXPECT_EQ(height, artwork()->height());
+
+  view()->SetExpanded(false);
+
+  // Ensure that the notification reduced in height and the artwork is the same
+  // height.
+  EXPECT_FALSE(is_expanded());
+  EXPECT_GT(height, view()->height());
+  EXPECT_EQ(view()->height(), artwork()->height());
+}
+
+TEST_F(MediaNotificationViewTest, UpdateArtworkFromItem) {
+  gfx::Size size = view()->size();
+
+  SkBitmap image;
+  image.allocN32Pixels(10, 10);
+
+  EXPECT_TRUE(artwork()->GetImage().isNull());
+
+  GetItem()->MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType::kArtwork, image);
+
+  // Ensure that the image is displayed in |artwork| and that the size of the
+  // notification was not affected.
+  EXPECT_FALSE(artwork()->GetImage().isNull());
+  EXPECT_EQ(gfx::Size(10, 10), artwork()->GetImage().size());
+  EXPECT_EQ(size, view()->size());
+
+  GetItem()->MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType::kArtwork, SkBitmap());
+
+  // Ensure that |artwork| was reset and the size was still not affected.
+  EXPECT_TRUE(artwork()->GetImage().isNull());
+  EXPECT_EQ(size, view()->size());
 }
 
 }  // namespace ash
