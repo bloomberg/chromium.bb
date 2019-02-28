@@ -202,6 +202,8 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   virtual void Restore() = 0;
   virtual void SetFullscreen(bool fullscreen) = 0;
   virtual bool IsFullscreen() const = 0;
+  virtual void SetCanAppearInExistingFullscreenSpaces(
+      bool can_appear_in_existing_fullscreen_spaces) = 0;
   virtual void SetOpacity(float opacity) = 0;
   virtual void SetAspectRatio(const gfx::SizeF& aspect_ratio) = 0;
   virtual void FlashFrame(bool flash) = 0;

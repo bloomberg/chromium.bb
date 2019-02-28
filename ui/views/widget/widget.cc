@@ -728,6 +728,12 @@ bool Widget::IsFullscreen() const {
   return native_widget_->IsFullscreen();
 }
 
+void Widget::SetCanAppearInExistingFullscreenSpaces(
+    bool can_appear_in_existing_fullscreen_spaces) {
+  native_widget_->SetCanAppearInExistingFullscreenSpaces(
+      can_appear_in_existing_fullscreen_spaces);
+}
+
 void Widget::SetOpacity(float opacity) {
   DCHECK(opacity >= 0.0f);
   DCHECK(opacity <= 1.0f);

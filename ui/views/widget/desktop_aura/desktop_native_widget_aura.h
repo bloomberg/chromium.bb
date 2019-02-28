@@ -162,6 +162,8 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   void Restore() override;
   void SetFullscreen(bool fullscreen) override;
   bool IsFullscreen() const override;
+  void SetCanAppearInExistingFullscreenSpaces(
+      bool can_appear_in_existing_fullscreen_spaces) override;
   void SetOpacity(float opacity) override;
   void SetAspectRatio(const gfx::SizeF& aspect_ratio) override;
   void FlashFrame(bool flash_frame) override;

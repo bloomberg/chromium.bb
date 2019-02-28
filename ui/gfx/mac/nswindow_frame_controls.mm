@@ -34,6 +34,8 @@ namespace gfx {
 
 void SetNSWindowCanFullscreen(NSWindow* window, bool allow_fullscreen) {
   NSWindowCollectionBehavior behavior = [window collectionBehavior];
+  if (behavior & NSWindowCollectionBehaviorFullScreenAuxiliary)
+    return;
   if (allow_fullscreen)
     behavior |= NSWindowCollectionBehaviorFullScreenPrimary;
   else

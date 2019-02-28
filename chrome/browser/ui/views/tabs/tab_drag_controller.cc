@@ -1282,6 +1282,7 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
 
   Detach(can_release_capture_ ? RELEASE_CAPTURE : DONT_RELEASE_CAPTURE);
 
+  dragged_widget->SetCanAppearInExistingFullscreenSpaces(true);
   dragged_widget->SetVisibilityChangedAnimationsEnabled(false);
   Attach(dragged_browser_view->tabstrip(), gfx::Point());
   AdjustBrowserAndTabBoundsForDrag(last_tabstrip_width,
@@ -1441,6 +1442,7 @@ void TabDragController::EndDragImpl(EndDragType type) {
         RestoreFocus();
       }
 
+      GetAttachedBrowserWidget()->SetCanAppearInExistingFullscreenSpaces(false);
       if (type == CANCELED)
         RevertDrag();
       else
@@ -1669,6 +1671,10 @@ void TabDragController::CompleteDrag() {
 
 void TabDragController::MaximizeAttachedWindow() {
   GetAttachedBrowserWidget()->Maximize();
+#if defined(OS_MACOSX)
+  if (was_source_fullscreen_)
+    GetAttachedBrowserWidget()->SetFullscreen(true);
+#endif
 #if defined(OS_CHROMEOS)
   if (was_source_fullscreen_) {
     // In fullscreen mode it is only possible to get here if the source

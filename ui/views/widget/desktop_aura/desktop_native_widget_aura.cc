@@ -876,6 +876,9 @@ bool DesktopNativeWidgetAura::IsFullscreen() const {
   return content_window_ && desktop_window_tree_host_->IsFullscreen();
 }
 
+void DesktopNativeWidgetAura::SetCanAppearInExistingFullscreenSpaces(
+    bool can_appear_in_existing_fullscreen_spaces) {}
+
 void DesktopNativeWidgetAura::SetOpacity(float opacity) {
   if (content_window_)
     desktop_window_tree_host_->SetOpacity(opacity);

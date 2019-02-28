@@ -506,6 +506,14 @@ bool NativeWidgetMac::IsFullscreen() const {
   return bridge_host_ && bridge_host_->target_fullscreen_state();
 }
 
+void NativeWidgetMac::SetCanAppearInExistingFullscreenSpaces(
+    bool can_appear_in_existing_fullscreen_spaces) {
+  if (!bridge())
+    return;
+  bridge()->SetCanAppearInExistingFullscreenSpaces(
+      can_appear_in_existing_fullscreen_spaces);
+}
+
 void NativeWidgetMac::SetOpacity(float opacity) {
   if (!bridge())
     return;

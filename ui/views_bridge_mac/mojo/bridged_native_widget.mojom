@@ -153,6 +153,11 @@ interface BridgedNativeWidget {
   // fullscreen state.
   SetFullscreen(bool fullscreen);
 
+  // Called by NativeWidgetMac; sets whether the window can share fullscreen
+  // windows' spaces by changing the NSWindow's collectionBehavior.
+  SetCanAppearInExistingFullscreenSpaces(
+      bool can_appear_in_existing_fullscreen_spaces);
+
   // Miniaturize or deminiaturize the window.
   SetMiniaturized(bool miniaturized);
 

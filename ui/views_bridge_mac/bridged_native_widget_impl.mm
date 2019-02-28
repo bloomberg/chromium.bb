@@ -1114,6 +1114,19 @@ void BridgedNativeWidgetImpl::SetFullscreen(bool fullscreen) {
   ToggleDesiredFullscreenState();
 }
 
+void BridgedNativeWidgetImpl::SetCanAppearInExistingFullscreenSpaces(
+    bool can_appear_in_existing_fullscreen_spaces) {
+  NSWindow* window = window_.get();
+  NSWindowCollectionBehavior collectionBehavior = window.collectionBehavior;
+  if (can_appear_in_existing_fullscreen_spaces) {
+    collectionBehavior |= NSWindowCollectionBehaviorFullScreenAuxiliary;
+    collectionBehavior &= ~NSWindowCollectionBehaviorFullScreenPrimary;
+  } else {
+    collectionBehavior &= ~NSWindowCollectionBehaviorFullScreenAuxiliary;
+  }
+  window.collectionBehavior = collectionBehavior;
+}
+
 void BridgedNativeWidgetImpl::SetMiniaturized(bool miniaturized) {
   if (miniaturized) {
     // Calling performMiniaturize: will momentarily highlight the button, but
