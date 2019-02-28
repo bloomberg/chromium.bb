@@ -29,7 +29,8 @@ ImageAnnotationService::ImageAnnotationService(
                  base::TimeDelta::FromMilliseconds(kThrottleMs.Get()),
                  kBatchSize.Get(),
                  kMinOcrConfidence.Get(),
-                 shared_url_loader_factory) {}
+                 shared_url_loader_factory,
+                 service_binding_.GetConnector()) {}
 
 ImageAnnotationService::~ImageAnnotationService() = default;
 

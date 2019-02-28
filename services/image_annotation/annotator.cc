@@ -11,13 +11,14 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/stl_util.h"
 #include "components/google/core/common/google_util.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/data_decoder/public/mojom/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
 
 namespace image_annotation {
@@ -153,18 +154,13 @@ std::tuple<bool, std::vector<mojom::AnnotationPtr>> ParseJsonDescAnnotations(
 
 // Attempts to extract annotation results from the server response, returning a
 // map from each source ID to its annotations (if successfully extracted).
-std::map<std::string, mojom::AnnotateImageResultPtr> ParseJsonResponse(
-    const std::string* const json_response,
+std::map<std::string, mojom::AnnotateImageResultPtr> UnpackJsonResponse(
+    const base::Value& json_data,
     const double min_ocr_confidence) {
-  if (!json_response)
+  if (!json_data.is_dict())
     return {};
 
-  const base::Optional<base::Value> response =
-      base::JSONReader::Read(*json_response);
-  if (!response.has_value() || !response->is_dict())
-    return {};
-
-  const base::Value* const results = response->FindKey("results");
+  const base::Value* const results = json_data.FindKey("results");
   if (!results || !results->is_list())
     return {};
 
@@ -240,8 +236,10 @@ Annotator::Annotator(
     const base::TimeDelta throttle,
     const int batch_size,
     const double min_ocr_confidence,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    service_manager::Connector* const connector)
     : url_loader_factory_(std::move(url_loader_factory)),
+      connector_(connector),
       http_request_timer_(
           FROM_HERE,
           throttle,
@@ -250,7 +248,9 @@ Annotator::Annotator(
       server_url_(std::move(server_url)),
       api_key_(std::move(api_key)),
       batch_size_(batch_size),
-      min_ocr_confidence_(min_ocr_confidence) {}
+      min_ocr_confidence_(min_ocr_confidence) {
+  DCHECK(connector_);
+}
 
 Annotator::~Annotator() {}
 
@@ -465,10 +465,37 @@ void Annotator::OnServerResponseReceived(
     const std::unique_ptr<std::string> json_response) {
   http_requests_.erase(http_request_it);
 
-  // Extract annotation results for each source ID with valid results.
-  const std::map<std::string, mojom::AnnotateImageResultPtr> results =
-      ParseJsonResponse(json_response.get(), min_ocr_confidence_);
+  if (!json_response) {
+    DVLOG(1) << "HTTP request to image annotation server failed.";
+    ProcessResults(source_ids, {});
+    return;
+  }
 
+  // Send JSON string to a dedicated service for safe parsing.
+  GetJsonParser().Parse(*json_response,
+                        base::BindOnce(&Annotator::OnResponseJsonParsed,
+                                       base::Unretained(this), source_ids));
+}
+
+void Annotator::OnResponseJsonParsed(
+    const std::set<std::string>& source_ids,
+    const base::Optional<base::Value> json_data,
+    const base::Optional<std::string>& error) {
+  // Extract annotation results for each source ID with valid results.
+  std::map<std::string, mojom::AnnotateImageResultPtr> results;
+  if (!json_data.has_value() || error.has_value()) {
+    DVLOG(1) << "Parsing server response JSON failed with error: "
+             << error.value_or("No reason reported.");
+    ProcessResults(source_ids, {});
+  } else {
+    ProcessResults(source_ids,
+                   UnpackJsonResponse(*json_data, min_ocr_confidence_));
+  }
+}
+
+void Annotator::ProcessResults(
+    const std::set<std::string>& source_ids,
+    const std::map<std::string, mojom::AnnotateImageResultPtr>& results) {
   // Process each source ID for which we expect to have results.
   for (const std::string& source_id : source_ids) {
     pending_source_ids_.erase(source_id);
@@ -500,6 +527,18 @@ void Annotator::OnServerResponseReceived(
     }
     request_infos_.erase(request_info_it);
   }
+}
+
+data_decoder::mojom::JsonParser& Annotator::GetJsonParser() {
+  if (!json_parser_) {
+    connector_->BindInterface(data_decoder::mojom::kServiceName,
+                              mojo::MakeRequest(&json_parser_));
+    json_parser_.set_connection_error_handler(base::BindOnce(
+        [](Annotator* const annotator) { annotator->json_parser_.reset(); },
+        base::Unretained(this)));
+  }
+
+  return *json_parser_;
 }
 
 void Annotator::RemoveRequestInfo(

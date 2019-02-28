@@ -18,10 +18,15 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/data_decoder/public/mojom/json_parser.mojom.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
+
+namespace service_manager {
+class Connector;
+}  // namespace service_manager
 
 namespace image_annotation {
 
@@ -61,7 +66,8 @@ class Annotator : public mojom::Annotator {
             base::TimeDelta throttle,
             int batch_size,
             double min_ocr_confidence,
-            scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+            scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+            service_manager::Connector* connector);
   ~Annotator() override;
 
   // Start providing behavior for the given Mojo request.
@@ -101,6 +107,10 @@ class Annotator : public mojom::Annotator {
       HttpRequestQueue::iterator begin_it,
       HttpRequestQueue::iterator end_it);
 
+  // Create or reuse a connection to the data decoder service for safe JSON
+  // parsing.
+  data_decoder::mojom::JsonParser& GetJsonParser();
+
   // Removes the given request, reassigning local processing if its associated
   // image processor had some ongoing.
   void RemoveRequestInfo(const std::string& source_id,
@@ -122,6 +132,17 @@ class Annotator : public mojom::Annotator {
   void OnServerResponseReceived(const std::set<std::string>& source_ids,
                                 UrlLoaderList::iterator http_request_it,
                                 std::unique_ptr<std::string> json_response);
+
+  // Called when the data decoder service provides parsed JSON data for a server
+  // response.
+  void OnResponseJsonParsed(const std::set<std::string>& source_ids,
+                            base::Optional<base::Value> json_data,
+                            const base::Optional<std::string>& error);
+
+  // Adds the given results to the cache (if successful) and notifies clients.
+  void ProcessResults(
+      const std::set<std::string>& source_ids,
+      const std::map<std::string, mojom::AnnotateImageResultPtr>& results);
 
   // Maps from source ID to previously-obtained annotation results.
   // TODO(crbug.com/916420): periodically clear entries from this cache.
@@ -150,7 +171,12 @@ class Annotator : public mojom::Annotator {
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
+  service_manager::Connector* const connector_;
+
   mojo::BindingSet<mojom::Annotator> bindings_;
+
+  // Should not be used directly; GetJsonParser() should be called instead.
+  data_decoder::mojom::JsonParserPtr json_parser_;
 
   // A timer used to throttle HTTP request frequency.
   base::RepeatingTimer http_request_timer_;
