@@ -25,7 +25,7 @@
 #include "content/public/common/window_container_type.mojom-forward.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
-#include "third_party/blink/public/mojom/color_chooser/color_chooser.mojom-forward.h"
+#include "third_party/blink/public/mojom/choosers/color_chooser.mojom-forward.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_security_style.h"
 #include "third_party/blink/public/web/web_fullscreen_options.h"
