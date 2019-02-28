@@ -254,9 +254,6 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/797998
     "race:content::SandboxIPCHandler::HandleLocaltime\n"
 
-    // http://crbug.com/910524
-    "race:base::subtle::ScopedTimeClockOverrides::ScopedTimeClockOverrides\n"
-
     // End of suppressions.
     ;  // Please keep this semicolon.
 
