@@ -117,32 +117,42 @@ static double EnforceRange(double x,
 }
 
 template <typename T>
+struct IntTypeNumberOfValues {
+  static constexpr unsigned value =
+      1 << (std::numeric_limits<T>::digits + std::is_signed<T>::value);
+};
+
+template <typename T>
 struct IntTypeLimits {};
 
 template <>
 struct IntTypeLimits<int8_t> {
-  static const int8_t kMinValue = -128;
-  static const int8_t kMaxValue = 127;
-  static const unsigned kNumberOfValues = 256;  // 2^8
+  static constexpr int8_t kMinValue = std::numeric_limits<int8_t>::min();
+  static constexpr int8_t kMaxValue = std::numeric_limits<int8_t>::max();
+  static constexpr unsigned kNumberOfValues =
+      IntTypeNumberOfValues<int8_t>::value;  // 2^8
 };
 
 template <>
 struct IntTypeLimits<uint8_t> {
-  static const uint8_t kMaxValue = 255;
-  static const unsigned kNumberOfValues = 256;  // 2^8
+  static constexpr uint8_t kMaxValue = std::numeric_limits<uint8_t>::max();
+  static constexpr unsigned kNumberOfValues =
+      IntTypeNumberOfValues<uint8_t>::value;  // 2^8
 };
 
 template <>
 struct IntTypeLimits<int16_t> {
-  static const short kMinValue = -32768;
-  static const short kMaxValue = 32767;
-  static const unsigned kNumberOfValues = 65536;  // 2^16
+  static constexpr int16_t kMinValue = std::numeric_limits<int16_t>::min();
+  static constexpr int16_t kMaxValue = std::numeric_limits<int16_t>::max();
+  static constexpr unsigned kNumberOfValues =
+      IntTypeNumberOfValues<int16_t>::value;  // 2^16
 };
 
 template <>
 struct IntTypeLimits<uint16_t> {
-  static const unsigned short kMaxValue = 65535;
-  static const unsigned kNumberOfValues = 65536;  // 2^16
+  static constexpr uint16_t kMaxValue = std::numeric_limits<uint16_t>::max();
+  static constexpr unsigned kNumberOfValues =
+      IntTypeNumberOfValues<uint16_t>::value;  // 2^16
 };
 
 template <typename T>
