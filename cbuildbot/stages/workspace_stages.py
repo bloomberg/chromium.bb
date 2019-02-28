@@ -272,7 +272,6 @@ class WorkspaceSyncStage(WorkspaceStageBase):
 
 class WorkspaceSyncChromeStage(WorkspaceStageBase):
   """Stage that syncs Chrome sources if needed."""
-  option_name = 'managed_chrome'
   category = constants.PRODUCT_CHROME_STAGE
 
   def DetermineChromeVersion(self):

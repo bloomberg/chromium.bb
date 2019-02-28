@@ -19,6 +19,7 @@ from chromite.cbuildbot.stages import workspace_stages
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
+from chromite.lib import portage_util
 
 # pylint: disable=too-many-ancestors
 # pylint: disable=protected-access
@@ -345,7 +346,53 @@ class WorkspaceSyncStageTest(WorkspaceStageBase):
         [])
 
 
-# TODO(dgarret): Test WorkspaceSyncChromeStage,
+class WorkspaceSyncChromeStageTest(WorkspaceStageBase):
+  """Test the WorkspaceSyncChromeStage."""
+
+  def setUp(self):
+    # Fake portage_util.CPV with the only field we need set.
+    fake_cpv = mock.Mock()
+    fake_cpv.version_no_rev = '0.0.1'
+    self.mock_best_visible = self.PatchObject(
+        portage_util, 'PortageqBestVisible',
+        return_value=fake_cpv)
+
+  def ConstructStage(self):
+    return workspace_stages.WorkspaceSyncChromeStage(
+        self._run, self.buildstore, build_root=self.workspace)
+
+  def testNormal(self):
+    """Test SyncChrome with normal usage."""
+    self._Prepare(
+        'test-factorybranch',
+        site_config=workspace_builders_unittest.CreateMockSiteConfig(),
+        extra_cmd_args=['--chrome_root', '/chrome'])
+
+    self.RunStage()
+
+    self.assertEqual(
+        self.mock_best_visible.call_args_list,
+        [
+            mock.call('chromeos-base/chromeos-chrome', cwd=self.workspace)
+        ])
+
+    self.assertEqual(
+        self.rc.call_args_list,
+        [
+            mock.call([os.path.join(self.build_root,
+                                    'chromite/bin/sync_chrome'),
+                       '--reset', '--ignore_locks',
+                       '--gclient', os.path.join(
+                           self.workspace,
+                           'chromium/tools/depot_tools/gclient'),
+                       '--tag', '0.0.1',
+                       '--git_cache_dir', mock.ANY,
+                       '--internal',
+                       '/chrome'],
+                      cwd=self.workspace),
+        ])
+
+
 # TODO(dgarret): Test WorkspaceUprevAndPublishStage
 # TODO(dgarret): Test WorkspacePublishBuildspecStage
 # TODO(dgarret): Test WorkspaceScheduleChildrenStage
