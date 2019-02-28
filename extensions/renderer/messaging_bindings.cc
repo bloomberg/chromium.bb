@@ -30,6 +30,7 @@
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "extensions/renderer/v8_helpers.h"
+#include "extensions/renderer/worker_thread_util.h"
 #include "gin/converter.h"
 #include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "v8/include/v8.h"
@@ -51,10 +52,6 @@ namespace {
 // A global map between ScriptContext and MessagingBindings.
 base::LazyInstance<std::map<ScriptContext*, MessagingBindings*>>::
     DestructorAtExit g_messaging_map = LAZY_INSTANCE_INITIALIZER;
-
-bool IsWorkerThread() {
-  return content::WorkerThread::GetCurrentId() != kMainThreadId;
-}
 
 }  // namespace
 
@@ -181,7 +178,7 @@ void MessagingBindings::BindToGC(
 void MessagingBindings::OpenChannelToExtension(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   // TODO(crbug.com/925918): Support messaging from a Service Worker.
-  DCHECK(!IsWorkerThread());
+  DCHECK(!worker_thread_util::IsWorkerThread());
 
   content::RenderFrame* render_frame = context()->GetRenderFrame();
   if (!render_frame)
@@ -238,7 +235,7 @@ void MessagingBindings::OpenChannelToNativeApp(
   CHECK(context()->GetAvailability("runtime.connectNative").is_available());
 
   // TODO(crbug.com/925918): Support native messaging for Service Workers.
-  DCHECK(!IsWorkerThread());
+  DCHECK(!worker_thread_util::IsWorkerThread());
 
   content::RenderFrame* render_frame = context()->GetRenderFrame();
   if (!render_frame)
@@ -265,7 +262,7 @@ void MessagingBindings::OpenChannelToNativeApp(
 void MessagingBindings::OpenChannelToTab(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   // TODO(crbug.com/925918): Support Service worker to tab messaging.
-  DCHECK(!IsWorkerThread());
+  DCHECK(!worker_thread_util::IsWorkerThread());
 
   content::RenderFrame* render_frame = context()->GetRenderFrame();
   if (!render_frame)

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "extensions/renderer/script_context.h"
+#include "extensions/renderer/worker_thread_util.h"
 
 namespace extensions {
 
@@ -35,7 +36,7 @@ WorkerScriptContextSet::WorkerScriptContextSet() {}
 WorkerScriptContextSet::~WorkerScriptContextSet() {}
 
 void WorkerScriptContextSet::Insert(std::unique_ptr<ScriptContext> context) {
-  DCHECK_GT(content::WorkerThread::GetCurrentId(), 0)
+  DCHECK(worker_thread_util::IsWorkerThread())
       << "Must be called on a worker thread";
   ContextVector* contexts = contexts_tls_.Get();
   if (!contexts) {
@@ -52,7 +53,7 @@ void WorkerScriptContextSet::Insert(std::unique_ptr<ScriptContext> context) {
 
 void WorkerScriptContextSet::Remove(v8::Local<v8::Context> v8_context,
                                     const GURL& url) {
-  DCHECK_GT(content::WorkerThread::GetCurrentId(), 0)
+  DCHECK(worker_thread_util::IsWorkerThread())
       << "Must be called on a worker thread";
   ContextVector* contexts = contexts_tls_.Get();
   if (!contexts) {

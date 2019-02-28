@@ -322,6 +322,8 @@ jumbo_source_set("renderer") {
     "worker_script_context_set.h",
     "worker_thread_dispatcher.cc",
     "worker_thread_dispatcher.h",
+    "worker_thread_util.cc",
+    "worker_thread_util.h",
   ]
 
   configs += [

@@ -99,6 +99,7 @@
 #include "extensions/renderer/wake_event_page.h"
 #include "extensions/renderer/worker_script_context_set.h"
 #include "extensions/renderer/worker_thread_dispatcher.h"
+#include "extensions/renderer/worker_thread_util.h"
 #include "gin/converter.h"
 #include "mojo/public/js/grit/mojo_bindings_resources.h"
 #include "services/network/public/mojom/cors.mojom.h"
@@ -497,7 +498,7 @@ void Dispatcher::DidStartServiceWorkerContextOnWorkerThread(
   if (!ExtensionsClient::Get()->ExtensionAPIEnabledInExtensionServiceWorkers())
     return;
 
-  DCHECK_NE(content::WorkerThread::GetCurrentId(), kMainThreadId);
+  DCHECK(worker_thread_util::IsWorkerThread());
   WorkerThreadDispatcher::Get()->DidStartContext(service_worker_scope,
                                                  service_worker_version_id);
 }
