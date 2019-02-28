@@ -47,7 +47,7 @@
                 style="@style/HorizontalDivider"
                 android:layout_below="@id/tab_title"/>
     </RelativeLayout>
-    <ImageView
+    <org.chromium.ui.widget.ChromeImageView
         android:id="@+id/close_button"
         android:layout_width="48dp"
         android:layout_height="48dp"
