@@ -1307,12 +1307,13 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewLoaded();
 
+  base::RunLoop().RunUntilIdle();
+
   // Navigate to an untracked (no preview) page before checking reported savings
   // to reduce flakiness.
-  ui_test_utils::NavigateToURL(browser(), GURL("http://www.google.com"));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
 
   EXPECT_EQ(GetTotalOriginalContentLength() - GetTotalDataUsage(), 40U);
-  EXPECT_EQ(GetDataUsage(), 20U);
 }
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
