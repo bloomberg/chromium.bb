@@ -148,10 +148,13 @@ void AwFeatureListCreator::SetUpFieldTrials() {
   variations_field_trial_creator_->OverrideVariationsPlatform(
       variations::Study::PLATFORM_ANDROID_WEBVIEW);
 
-  // Unused by WebView, but required by
-  // VariationsFieldTrialCreator::SetupFieldTrials().
-  // TODO(isherman): We might want a more genuine SafeSeedManager:
-  // https://crbug.com/801771
+  // Safe Mode is a feature which reverts to a previous variations seed if the
+  // current one is suspected to be causing crashes, or preventing new seeds
+  // from being downloaded. It's not implemented for WebView because 1) it's
+  // difficult for WebView to implement Safe Mode's crash detection, and 2)
+  // downloading and disseminating seeds is handled by the WebView service,
+  // which itself doesn't support variations; therefore a bad seed shouldn't be
+  // able to break seed downloads. See https://crbug.com/801771 for more info.
   std::set<std::string> unforceable_field_trials;
   variations::SafeSeedManager ignored_safe_seed_manager(true,
                                                         local_state_.get());
