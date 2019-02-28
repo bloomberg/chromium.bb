@@ -11,10 +11,13 @@
 #include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/accelerometer/accelerometer_types.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/app_list/views/app_list_view.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/tablet_mode.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -29,6 +32,7 @@
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/base/hit_test.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -1232,6 +1236,89 @@ TEST_F(TabletModeControllerTest,
   EXPECT_FALSE(GetDeferBoundsUpdates(left_window.get()));
   EXPECT_TRUE(GetDeferBoundsUpdates(right_window.get()));
   EXPECT_TRUE(GetDeferBoundsUpdates(extra_right_window.get()));
+}
+
+// Test that if before tablet mode, the active window is a transient child of a
+// window snapped on the left, then split view is activated with the parent
+// snapped on the left.
+TEST_F(TabletModeControllerTest, StartTabletActiveTransientChildOfLeftSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> parent = CreateDesktopWindowSnappedLeft();
+  std::unique_ptr<aura::Window> child =
+      CreateTestWindow(gfx::Rect(), aura::client::WINDOW_TYPE_POPUP);
+  ::wm::AddTransientChild(parent.get(), child.get());
+  ::wm::ActivateWindow(parent.get());
+  ::wm::ActivateWindow(child.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
+  EXPECT_EQ(parent.get(), split_view_controller->left_window());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+  EXPECT_FALSE(GetDeferBoundsUpdates(parent.get()));
+}
+
+// Test that if before tablet mode, the active window is the app list and the
+// previous window is snapped on the left, then split view is activated with the
+// previous window on the left.
+TEST_F(TabletModeControllerTest, StartTabletActiveAppListPreviousLeftSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> window = CreateDesktopWindowSnappedLeft();
+  ::wm::ActivateWindow(window.get());
+  Shell::Get()->app_list_controller()->ShowAppList();
+  ASSERT_TRUE(::wm::IsActiveWindow(
+      GetAppListTestHelper()->GetAppListView()->GetWidget()->GetNativeView()));
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
+  EXPECT_EQ(window.get(), split_view_controller->left_window());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+  EXPECT_FALSE(GetDeferBoundsUpdates(window.get()));
+}
+
+// Test that if before tablet mode, the active window is being dragged and the
+// previous window is snapped on the left, then split view is activated with the
+// previous window on the left.
+TEST_F(TabletModeControllerTest, StartTabletActiveDraggedPreviousLeftSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> dragged_window = CreateTestWindow();
+  wm::WindowState* dragged_window_state =
+      wm::GetWindowState(dragged_window.get());
+  dragged_window_state->CreateDragDetails(
+      gfx::Point(), HTNOWHERE,
+      ::wm::WindowMoveSource::WINDOW_MOVE_SOURCE_MOUSE);
+  dragged_window_state->OnDragStarted(HTNOWHERE);
+  ASSERT_TRUE(dragged_window_state->is_dragged());
+  std::unique_ptr<aura::Window> snapped_window =
+      CreateDesktopWindowSnappedLeft();
+  ::wm::ActivateWindow(snapped_window.get());
+  ::wm::ActivateWindow(dragged_window.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
+  EXPECT_EQ(snapped_window.get(), split_view_controller->left_window());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+  EXPECT_FALSE(GetDeferBoundsUpdates(snapped_window.get()));
+}
+
+// Test that if before tablet mode, the active window is hidden from overview
+// and the previous window is snapped on the left, then split view is activated
+// with the previous window on the left.
+TEST_F(TabletModeControllerTest,
+       StartTabletActiveHiddenFromOverviewPreviousLeftSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> window_hidden_from_overview =
+      CreateTestWindow();
+  window_hidden_from_overview->SetProperty(kHideInOverviewKey, true);
+  std::unique_ptr<aura::Window> snapped_window =
+      CreateDesktopWindowSnappedLeft();
+  ::wm::ActivateWindow(snapped_window.get());
+  ::wm::ActivateWindow(window_hidden_from_overview.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
+  EXPECT_EQ(snapped_window.get(), split_view_controller->left_window());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+  EXPECT_FALSE(GetDeferBoundsUpdates(snapped_window.get()));
 }
 
 // Test that if overview is triggered on entering tablet mode, then the app list
