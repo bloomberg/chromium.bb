@@ -17,17 +17,17 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation ShellMatchers
+namespace web {
 
-+ (id<GREYMatcher>)webView {
-  return WebViewInWebState(web::shell_test_util::GetCurrentWebState());
+id<GREYMatcher> WebView() {
+  return WebViewInWebState(shell_test_util::GetCurrentWebState());
 }
 
-+ (id<GREYMatcher>)webViewScrollView {
-  return WebViewScrollView(web::shell_test_util::GetCurrentWebState());
+id<GREYMatcher> WebViewScrollView() {
+  return WebViewScrollView(shell_test_util::GetCurrentWebState());
 }
 
-+ (id<GREYMatcher>)addressFieldWithText:(NSString*)text {
+id<GREYMatcher> AddressFieldText(std::string text) {
   MatchesBlock matches = ^BOOL(UIView* view) {
     if (![view isKindOfClass:[UITextField class]]) {
       return NO;
@@ -39,12 +39,12 @@
     UITextField* text_field = base::mac::ObjCCastStrict<UITextField>(view);
     NSString* error_message = [NSString
         stringWithFormat:
-            @"Address field text did not match. expected: %@, actual: %@", text,
-            text_field.text];
+            @"Address field text did not match. expected: %@, actual: %@",
+            base::SysUTF8ToNSString(text), text_field.text];
     GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
                    base::test::ios::kWaitForUIElementTimeout,
                    ^{
-                     return [text_field.text isEqualToString:text];
+                     return base::SysNSStringToUTF8(text_field.text) == text;
                    }),
                error_message);
     return YES;
@@ -52,23 +52,23 @@
 
   DescribeToBlock describe = ^(id<GREYDescription> description) {
     [description appendText:@"address field containing "];
-    [description appendText:text];
+    [description appendText:base::SysUTF8ToNSString(text)];
   };
 
   return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
                                               descriptionBlock:describe];
 }
 
-+ (id<GREYMatcher>)backButton {
+id<GREYMatcher> BackButton() {
   return grey_accessibilityLabel(kWebShellBackButtonAccessibilityLabel);
 }
 
-+ (id<GREYMatcher>)forwardButton {
+id<GREYMatcher> ForwardButton() {
   return grey_accessibilityLabel(kWebShellForwardButtonAccessibilityLabel);
 }
 
-+ (id<GREYMatcher>)addressField {
+id<GREYMatcher> AddressField() {
   return grey_accessibilityLabel(kWebShellAddressFieldAccessibilityLabel);
 }
 
-@end
+}  // namespace web
