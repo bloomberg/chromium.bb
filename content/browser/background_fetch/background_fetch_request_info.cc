@@ -60,6 +60,12 @@ void BackgroundFetchRequestInfo::SetResult(
     PopulateWithResponse(std::move(result_->response));
   else
     result_->response.reset();
+
+  // Get the response size.
+  if (result_->blob_handle)
+    response_size_ = result_->blob_handle->size();
+  else
+    response_size_ = result_->file_size;
 }
 
 void BackgroundFetchRequestInfo::SetEmptyResultWithFailureReason(
@@ -127,7 +133,6 @@ void BackgroundFetchRequestInfo::CreateResponseBlobDataHandle(
     blob_data_handle_ =
         std::make_unique<storage::BlobDataHandle>(*result_->blob_handle);
     result_->blob_handle.reset();
-    response_size_ = blob_data_handle_->size();
     return;
   }
 
@@ -141,8 +146,7 @@ void BackgroundFetchRequestInfo::CreateResponseBlobDataHandle(
 
   blob_data_handle_ = GetBlobStorageContext(blob_storage_context)
                           ->AddFinishedBlob(std::move(blob_builder));
-  if (blob_data_handle_)
-    response_size_ = blob_data_handle_->size();
+  DCHECK_EQ(response_size_, blob_data_handle_ ? blob_data_handle_->size() : 0);
 }
 
 storage::BlobDataHandle*
@@ -161,7 +165,7 @@ BackgroundFetchRequestInfo::TakeResponseBlobDataHandle() {
 
 uint64_t BackgroundFetchRequestInfo::GetResponseSize() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
+  DCHECK(result_);
   return response_size_;
 }
 
