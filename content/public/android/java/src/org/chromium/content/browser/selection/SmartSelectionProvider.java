@@ -30,12 +30,12 @@ import java.util.Locale;
 public class SmartSelectionProvider {
     private static final String TAG = "SmartSelProvider";
 
-    @IntDef({CLASSIFY, SUGGEST_AND_CLASSIFY})
+    @IntDef({RequestType.CLASSIFY, RequestType.SUGGEST_AND_CLASSIFY})
     @Retention(RetentionPolicy.SOURCE)
-    private @interface RequestType {}
-
-    private static final int CLASSIFY = 0;
-    private static final int SUGGEST_AND_CLASSIFY = 1;
+    private @interface RequestType {
+        int CLASSIFY = 0;
+        int SUGGEST_AND_CLASSIFY = 1;
+    }
 
     private SelectionClient.ResultCallback mResultCallback;
     private WindowAndroid mWindowAndroid;
@@ -60,11 +60,11 @@ public class SmartSelectionProvider {
 
     public void sendSuggestAndClassifyRequest(
             CharSequence text, int start, int end, Locale[] locales) {
-        sendSmartSelectionRequest(SUGGEST_AND_CLASSIFY, text, start, end, locales);
+        sendSmartSelectionRequest(RequestType.SUGGEST_AND_CLASSIFY, text, start, end, locales);
     }
 
     public void sendClassifyRequest(CharSequence text, int start, int end, Locale[] locales) {
-        sendSmartSelectionRequest(CLASSIFY, text, start, end, locales);
+        sendSmartSelectionRequest(RequestType.CLASSIFY, text, start, end, locales);
     }
 
     public void cancelAllRequests() {
@@ -118,7 +118,7 @@ public class SmartSelectionProvider {
     @TargetApi(Build.VERSION_CODES.O)
     private class ClassificationTask extends AsyncTask<SelectionClient.Result> {
         private final TextClassifier mTextClassifier;
-        private final int mRequestType;
+        private final @RequestType int mRequestType;
         private final CharSequence mText;
         private final int mOriginalStart;
         private final int mOriginalEnd;
@@ -141,7 +141,7 @@ public class SmartSelectionProvider {
 
             TextSelection textSelection = null;
 
-            if (mRequestType == SUGGEST_AND_CLASSIFY) {
+            if (mRequestType == RequestType.SUGGEST_AND_CLASSIFY) {
                 textSelection = mTextClassifier.suggestSelection(
                         mText, start, end, makeLocaleList(mLocales));
                 start = Math.max(0, textSelection.getSelectionStartIndex());

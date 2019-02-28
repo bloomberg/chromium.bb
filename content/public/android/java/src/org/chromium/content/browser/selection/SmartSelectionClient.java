@@ -27,17 +27,17 @@ import java.lang.annotation.RetentionPolicy;
  */
 @JNINamespace("content")
 public class SmartSelectionClient implements SelectionClient {
-    @IntDef({CLASSIFY, SUGGEST_AND_CLASSIFY})
+    @IntDef({RequestType.CLASSIFY, RequestType.SUGGEST_AND_CLASSIFY})
     @Retention(RetentionPolicy.SOURCE)
-    private @interface RequestType {}
+    private @interface RequestType {
+        // Request to obtain the type (e.g. phone number, e-mail address) and the most
+        // appropriate operation for the selected text.
+        int CLASSIFY = 0;
 
-    // Request to obtain the type (e.g. phone number, e-mail address) and the most
-    // appropriate operation for the selected text.
-    private static final int CLASSIFY = 0;
-
-    // Request to obtain the type (e.g. phone number, e-mail address), the most
-    // appropriate operation for the selected text and a better selection boundaries.
-    private static final int SUGGEST_AND_CLASSIFY = 1;
+        // Request to obtain the type (e.g. phone number, e-mail address), the most
+        // appropriate operation for the selected text and a better selection boundaries.
+        int SUGGEST_AND_CLASSIFY = 1;
+    }
 
     // The maximal number of characters on the left and on the right from the current selection.
     // Used for surrounding text request.
@@ -88,7 +88,8 @@ public class SmartSelectionClient implements SelectionClient {
 
     @Override
     public boolean requestSelectionPopupUpdates(boolean shouldSuggest) {
-        requestSurroundingText(shouldSuggest ? SUGGEST_AND_CLASSIFY : CLASSIFY);
+        requestSurroundingText(
+                shouldSuggest ? RequestType.SUGGEST_AND_CLASSIFY : RequestType.CLASSIFY);
         return true;
     }
 
@@ -139,11 +140,11 @@ public class SmartSelectionClient implements SelectionClient {
         }
 
         switch (callbackData) {
-            case SUGGEST_AND_CLASSIFY:
+            case RequestType.SUGGEST_AND_CLASSIFY:
                 mProvider.sendSuggestAndClassifyRequest(text, start, end, null);
                 break;
 
-            case CLASSIFY:
+            case RequestType.CLASSIFY:
                 mProvider.sendClassifyRequest(text, start, end, null);
                 break;
 
