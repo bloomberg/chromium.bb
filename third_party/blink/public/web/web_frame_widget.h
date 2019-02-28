@@ -132,6 +132,13 @@ class WebFrameWidget : public WebWidget {
   // This function provides zooming for find in page results when browsing with
   // page autosize.
   virtual void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) = 0;
+
+ private:
+  // This private constructor and the class/friend declaration ensures that
+  // WebFrameWidgetBase is the only concrete subclass that implements
+  // WebFrameWidget, so that it is safe to downcast to WebFrameWidgetBase.
+  friend class WebFrameWidgetBase;
+  WebFrameWidget() = default;
 };
 
 }  // namespace blink

@@ -214,7 +214,7 @@ class PagePopupChromeClient final : public EmptyChromeClient {
     WebFrameWidget* widget = web_frame->LocalRoot()->FrameWidget();
     if (!widget)
       return;
-    if (WebWidgetClient* client = ToWebFrameWidgetBase(widget)->Client())
+    if (WebWidgetClient* client = To<WebFrameWidgetBase>(widget)->Client())
       client->SetTouchAction(static_cast<WebTouchAction>(touch_action));
   }
 
