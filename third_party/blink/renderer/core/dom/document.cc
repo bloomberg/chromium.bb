@@ -3501,9 +3501,6 @@ void Document::ImplicitClose() {
       View()->UpdateLayout();
   }
 
-  if (View())
-    View()->InvokeFragmentAnchor();
-
   load_event_progress_ = kLoadEventCompleted;
 
   if (GetFrame() && GetLayoutView()) {
