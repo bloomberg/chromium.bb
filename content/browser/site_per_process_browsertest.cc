@@ -90,6 +90,7 @@
 #include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/navigation_policy.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/test/browser_test_utils.h"
@@ -11502,6 +11503,17 @@ class CommitMessageOrderReverser : public FrameHostInterceptor {
 // browser-side processing of the response to it, of DidCommitProvisionalLoad.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        InterfaceProviderRequestIsOptionalForRaceyFirstCommits) {
+  // This test does not make sense anymore for the new NavigationClient way
+  // of doing navigations. The first iframe navigation will get instantly
+  // destroyed by the NavigationClient disconnection handle
+  // NavigationRequest::OnRendererAbortedNavigation.
+  // The pipe gets closed in the renderer when the javascript starts the
+  // second navigation.
+  // TODO(ahemery): Remove this test when IsPerNavigationMojoInterfaceEnabled
+  // is on by default.
+  if (IsPerNavigationMojoInterfaceEnabled())
+    return;
+
   const GURL kMainFrameUrl(
       embedded_test_server()->GetURL("a.com", "/empty.html"));
   const GURL kSubframeSameSiteUrl(
