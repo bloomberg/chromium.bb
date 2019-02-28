@@ -360,11 +360,47 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   float last_device_scale_factor_;
 
   int active_touches_;
-  // Keep track of when we are between GesturePinchBegin and GesturePinchEnd
-  // inclusive, as we need to route these events (and anything in between) to
-  // the main frame.
-  bool in_touchscreen_gesture_pinch_;
-  bool gesture_pinch_did_send_scroll_begin_;
+
+  // Touchscreen gesture pinch events must be routed to the main frame. This
+  // keeps track of ongoing scroll and pinch gestures so we know when to divert
+  // gesture events to the main frame and whether additional scroll begin/end
+  // events are needed to wrap the pinch.
+  class TouchscreenPinchState {
+   public:
+    TouchscreenPinchState();
+
+    bool IsInPinch() const;
+    bool NeedsWrappingScrollSequence() const;
+
+    void DidStartBubblingToRoot();
+    void DidStopBubblingToRoot();
+    void DidStartPinchInRoot();
+    void DidStartPinchInChild();
+    void DidStopPinch();
+
+   private:
+    enum class PinchState {
+      NONE,
+      // We have touchscreen scroll bubbling to the root before a gesture pinch
+      // starts.
+      EXISTING_BUBBLING_TO_ROOT,
+
+      // We are in a pinch gesture and the root is already the touchscreen
+      // gesture target.
+      PINCH_WITH_ROOT_GESTURE_TARGET,
+
+      // We are in a pinch gesture that is happening while we're also bubbling
+      // scroll to the root.
+      PINCH_WHILE_BUBBLING_TO_ROOT,
+
+      // We are in a pinch gesture that is happening while the child is the
+      // gesture target and it has not bubbled scroll to the root.
+      PINCH_DURING_CHILD_GESTURE
+    };
+    PinchState state_;
+  };
+  TouchscreenPinchState touchscreen_pinch_state_;
+
   std::unordered_map<viz::SurfaceId, HittestData, viz::SurfaceIdHash>
       hittest_data_;
 
