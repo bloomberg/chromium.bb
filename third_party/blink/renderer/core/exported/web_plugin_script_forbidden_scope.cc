@@ -4,7 +4,7 @@
 
 #include "third_party/blink/public/web/web_plugin_script_forbidden_scope.h"
 
-#include "third_party/blink/renderer/platform/plugins/plugin_script_forbidden_scope.h"
+#include "third_party/blink/renderer/core/page/plugin_script_forbidden_scope.h"
 
 namespace blink {
 

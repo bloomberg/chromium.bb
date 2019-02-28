@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/plugins/plugin_script_forbidden_scope.h"
+#include "third_party/blink/renderer/core/page/plugin_script_forbidden_scope.h"
 
 #include "base/logging.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"

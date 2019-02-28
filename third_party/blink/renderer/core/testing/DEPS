@@ -8,3 +8,9 @@ include_rules = [
     "+content/test",
     "+gpu/command_buffer/client/gles2_interface.h",
 ]
+
+specific_include_rules = {
+    'scoped_fake_plugin_registry\.cc': [
+        "+base/files/file_path.h",
+    ],
+}

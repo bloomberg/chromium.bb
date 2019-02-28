@@ -2128,6 +2128,7 @@ jumbo_source_set("unit_tests") {
     "page/drag_image_test.cc",
     "page/focus_controller_test.cc",
     "page/page_popup_client_test.cc",
+    "page/plugin_data_test.cc",
     "page/print_context_test.cc",
     "page/scrolling/element_fragment_anchor_test.cc",
     "page/scrolling/main_thread_scrolling_reasons_test.cc",
@@ -2318,6 +2319,8 @@ jumbo_source_set("unit_test_support") {
     "testing/core_unit_test_helper.h",
     "testing/page_test_base.cc",
     "testing/page_test_base.h",
+    "testing/scoped_fake_plugin_registry.cc",
+    "testing/scoped_fake_plugin_registry.h",
   ]
 
   configs += [

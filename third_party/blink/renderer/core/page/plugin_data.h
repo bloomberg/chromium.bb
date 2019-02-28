@@ -18,13 +18,13 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLUGINS_PLUGIN_DATA_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLUGINS_PLUGIN_DATA_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PLUGIN_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PLUGIN_DATA_H_
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -33,7 +33,7 @@ namespace blink {
 
 class PluginInfo;
 
-class PLATFORM_EXPORT MimeClassInfo final
+class CORE_EXPORT MimeClassInfo final
     : public GarbageCollectedFinalized<MimeClassInfo> {
  public:
   void Trace(blink::Visitor*);
@@ -55,7 +55,7 @@ class PLATFORM_EXPORT MimeClassInfo final
   Member<PluginInfo> plugin_;
 };
 
-class PLATFORM_EXPORT PluginInfo final
+class CORE_EXPORT PluginInfo final
     : public GarbageCollectedFinalized<PluginInfo> {
  public:
   void Trace(blink::Visitor*);
@@ -89,7 +89,7 @@ class PLATFORM_EXPORT PluginInfo final
   HeapVector<Member<MimeClassInfo>> mimes_;
 };
 
-class PLATFORM_EXPORT PluginData final
+class CORE_EXPORT PluginData final
     : public GarbageCollectedFinalized<PluginData> {
  public:
   void Trace(blink::Visitor*);

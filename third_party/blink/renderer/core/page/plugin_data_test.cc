@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/plugins/plugin_data.h"
+#include "third_party/blink/renderer/core/page/plugin_data.h"
 
-#include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,11 +34,11 @@ class MockPluginRegistry : public mojom::blink::PluginRegistry {
 
 // Regression test for https://crbug.com/862282
 TEST(PluginDataTest, NonStandardUrlSchemeRequestsPluginsWithUniqueOrigin) {
+  ScopedTestingPlatformSupport<TestingPlatformSupport> support;
   // Create a scheme that's local but nonstandard, as in bug 862282.
   url::AddLocalScheme("nonstandard-862282");
   SchemeRegistry::RegisterURLSchemeAsLocal("nonstandard-862282");
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
   MockPluginRegistry mock_plugin_registry;
   mojo::Binding<mojom::blink::PluginRegistry> registry_binding(
       &mock_plugin_registry);

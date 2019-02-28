@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/testing/scoped_fake_plugin_registry.h"
+#include "third_party/blink/renderer/core/testing/scoped_fake_plugin_registry.h"
 
 #include "base/files/file_path.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
