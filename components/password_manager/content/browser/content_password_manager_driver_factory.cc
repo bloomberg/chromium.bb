@@ -104,8 +104,8 @@ void ContentPasswordManagerDriverFactory::DidFinishNavigation(
   if (!navigation_handle->HasCommitted())
     return;
 
-  frame_driver_map_.find(navigation_handle->GetRenderFrameHost())
-      ->second->DidNavigateFrame(navigation_handle);
+  if (auto* driver = GetDriverForFrame(navigation_handle->GetRenderFrameHost()))
+    driver->DidNavigateFrame(navigation_handle);
 }
 
 void ContentPasswordManagerDriverFactory::RequestSendLoggingAvailability() {
