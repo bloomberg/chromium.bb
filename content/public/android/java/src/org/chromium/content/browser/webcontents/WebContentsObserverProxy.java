@@ -197,6 +197,14 @@ class WebContentsObserverProxy extends WebContentsObserver {
 
     @Override
     @CalledByNative
+    public void navigationEntriesChanged() {
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
+            mObserversIterator.next().navigationEntriesChanged();
+        }
+    }
+
+    @Override
+    @CalledByNative
     public void didAttachInterstitialPage() {
         for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
             mObserversIterator.next().didAttachInterstitialPage();

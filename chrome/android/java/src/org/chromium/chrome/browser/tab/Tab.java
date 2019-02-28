@@ -1957,15 +1957,6 @@ public class Tab
     }
 
     /**
-     * Called when the navigation entry containing the history item changed,
-     * for example because of a scroll offset or form field change.
-     */
-    @CalledByNative
-    private void onNavEntryChanged() {
-        mIsTabStateDirty = true;
-    }
-
-    /**
      * Called when navigation entries were removed.
      */
     void notifyNavigationEntriesDeleted() {
