@@ -2599,7 +2599,7 @@
             ]
         }
     ],
-    "MediaCapabilitiesParams": [
+    "MediaCapabilitiesWithParameters": [
         {
             "platforms": [
                 "android",
@@ -2610,7 +2610,7 @@
             ],
             "experiments": [
                 {
-                    "name": "DBWindow5000Frames_20190211"
+                    "name": "DBWindow5000Frames_20190225"
                 }
             ]
         }
