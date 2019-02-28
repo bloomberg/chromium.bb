@@ -20,18 +20,17 @@ namespace gles2 {
 class GPU_GLES2_EXPORT MultiDrawManager {
  public:
   enum class DrawFunction {
-    None,
     DrawArrays,
     DrawArraysInstanced,
     DrawElements,
     DrawElementsInstanced,
   };
 
-  struct ResultData {
+  struct GPU_GLES2_EXPORT ResultData {
     DrawFunction draw_function;
-    GLsizei drawcount;
-    GLenum mode;
-    GLenum type;
+    GLsizei drawcount = 0;
+    GLenum mode = 0;
+    GLenum type = 0;
     std::vector<GLint> firsts;
     std::vector<GLsizei> counts;
     std::vector<GLsizei> offsets;
@@ -39,9 +38,9 @@ class GPU_GLES2_EXPORT MultiDrawManager {
     std::vector<GLsizei> instance_counts;
 
     ResultData();
+    ~ResultData();
     ResultData(ResultData&& rhs);
     ResultData& operator=(ResultData&& rhs);
-    ~ResultData();
   };
 
   enum class IndexStorageType {
@@ -76,11 +75,22 @@ class GPU_GLES2_EXPORT MultiDrawManager {
 
  private:
   void ResizeArrays();
-  bool EnsureDrawArraysFunction(DrawFunction draw_function, GLenum mode);
+  bool ValidateDrawcount(GLsizei drawcount) const;
+  bool EnsureDrawArraysFunction(DrawFunction draw_function,
+                                GLenum mode,
+                                GLsizei drawcount);
   bool EnsureDrawElementsFunction(DrawFunction draw_function,
                                   GLenum mode,
-                                  GLenum type);
+                                  GLenum type,
+                                  GLsizei drawcount);
 
+  enum class DrawState {
+    Begin,
+    Draw,
+    End,
+  };
+
+  DrawState draw_state_;
   GLsizei current_draw_offset_;
   IndexStorageType index_type_;
   ResultData result_;
