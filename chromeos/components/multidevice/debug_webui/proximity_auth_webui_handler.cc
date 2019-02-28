@@ -527,6 +527,10 @@ void ProximityAuthWebUIHandler::OnFindEligibleDevices(
 
 void ProximityAuthWebUIHandler::OnGetDebugInfo(
     device_sync::mojom::DebugInfoPtr debug_info_ptr) {
+  // If enrollment is not yet complete, no debug information is available.
+  if (!debug_info_ptr)
+    return;
+
   if (enrollment_update_waiting_for_debug_info_) {
     enrollment_update_waiting_for_debug_info_ = false;
     NotifyOnEnrollmentFinished(
