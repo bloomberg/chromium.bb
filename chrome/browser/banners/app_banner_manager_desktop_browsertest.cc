@@ -29,7 +29,9 @@ namespace {
 class FakeAppBannerManagerDesktop : public banners::AppBannerManagerDesktop {
  public:
   explicit FakeAppBannerManagerDesktop(content::WebContents* web_contents)
-      : AppBannerManagerDesktop(web_contents) {}
+      : AppBannerManagerDesktop(web_contents) {
+    MigrateObserverListForTesting(web_contents);
+  }
 
   static FakeAppBannerManagerDesktop* CreateForWebContents(
       content::WebContents* web_contents) {

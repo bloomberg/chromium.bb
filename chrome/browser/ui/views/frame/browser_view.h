@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_commands_global_registry.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
@@ -106,7 +107,8 @@ class BrowserView : public BrowserWindow,
                     public ExclusiveAccessContext,
                     public ExclusiveAccessBubbleViewsContext,
                     public extensions::ExtensionKeybindingRegistry::Delegate,
-                    public ImmersiveModeController::Observer {
+                    public ImmersiveModeController::Observer,
+                    public banners::AppBannerManager::Observer {
  public:
   // The browser view's class name.
   static const char kViewClassName[];
@@ -531,6 +533,9 @@ class BrowserView : public BrowserWindow,
   void OnImmersiveRevealEnded() override;
   void OnImmersiveFullscreenExited() override;
   void OnImmersiveModeControllerDestroyed() override;
+
+  // banners::AppBannerManager::Observer:
+  void OnInstallabilityUpdated() override;
 
   // Creates an accessible tab label for screen readers that includes the tab
   // status for the given tab index. This takes the form of

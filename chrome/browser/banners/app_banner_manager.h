@@ -11,6 +11,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/engagement/site_engagement_observer.h"
 #include "chrome/browser/installable/installable_ambient_badge_infobar_delegate.h"
@@ -58,6 +60,19 @@ class AppBannerManager : public content::WebContentsObserver,
                          public InstallableAmbientBadgeInfoBarDelegate::Client,
                          public SiteEngagementObserver {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    Observer();
+    ~Observer() override;
+
+    void ObserveAppBannerManager(AppBannerManager* manager);
+
+    virtual void OnInstallabilityUpdated() = 0;
+
+   private:
+    ScopedObserver<AppBannerManager, Observer> scoped_observer_{this};
+  };
+
   // A StatusReporter handles the reporting of |InstallableStatusCode|s.
   class StatusReporter;
 
@@ -104,6 +119,10 @@ class AppBannerManager : public content::WebContentsObserver,
   // requirements.
   enum class Installable { INSTALLABLE_YES, INSTALLABLE_NO, UNKNOWN };
 
+  // Retrieves the platform specific instance of AppBannerManager from
+  // |web_contents|.
+  static AppBannerManager* FromWebContents(content::WebContents* web_contents);
+
   // Returns the current time.
   static base::Time GetCurrentTime();
 
@@ -148,6 +167,9 @@ class AppBannerManager : public content::WebContentsObserver,
   // Returns a WeakPtr to this object. Exposed so subclasses/infobars may
   // may bind callbacks without needing their own WeakPtrFactory.
   base::WeakPtr<AppBannerManager> GetWeakPtr();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Overridden and passed through base::Bind on desktop platforms. Called when
   // the bookmark app install initiated by a banner has completed. Not used on
@@ -283,6 +305,11 @@ class AppBannerManager : public content::WebContentsObserver,
   State state() const { return state_; }
   bool IsRunning() const;
 
+  // Used by test subclasses that replace the existing AppBannerManager
+  // instance. The observer list must be transferred over to avoid dangling
+  // pointers in the observers.
+  void MigrateObserverListForTesting(content::WebContents* web_contents);
+
   // The URL for which the banner check is being conducted.
   GURL validated_url_;
 
@@ -303,10 +330,6 @@ class AppBannerManager : public content::WebContentsObserver,
 
  private:
   friend class AppBannerManagerTest;
-
-  // Retrieves the platform specific instance of AppBannerManager from
-  // |web_contents|.
-  static AppBannerManager* FromWebContents(content::WebContents* web_contents);
 
   // Record that the banner could be shown at this point, if the triggering
   // heuristic allowed.
@@ -338,6 +361,8 @@ class AppBannerManager : public content::WebContentsObserver,
   // Returns a status code based on the current state, to log when terminating.
   InstallableStatusCode TerminationCode() const;
 
+  void SetInstallable(Installable installable);
+
   // Fetches the data required to display a banner for the current page.
   InstallableManager* manager_;
 
@@ -360,6 +385,8 @@ class AppBannerManager : public content::WebContentsObserver,
 
   std::unique_ptr<StatusReporter> status_reporter_;
   Installable installable_;
+
+  base::ObserverList<Observer, true> observer_list_;
 
   // The concrete subclasses of this class are expected to have their lifetimes
   // scoped to the WebContents which they are observing. This allows us to use

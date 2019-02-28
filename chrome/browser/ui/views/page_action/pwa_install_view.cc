@@ -28,6 +28,9 @@ bool PwaInstallView::Update() {
       web_app::WebAppTabHelperBase::FromWebContents(web_contents)
           ->HasAssociatedApp();
   bool show_install_button = is_installable && !is_installed;
+  // TODO(crbug.com/907351): When installability is unknown and we're still in
+  // the scope of a previously-determined installable site, display it as still
+  // being installable.
 
   bool was_visible = visible();
   SetVisible(show_install_button);

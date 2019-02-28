@@ -24,6 +24,7 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -903,6 +904,9 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
   infobar_container_->ChangeInfoBarManager(
       InfoBarService::FromWebContents(new_contents));
 
+  ObserveAppBannerManager(
+      banners::AppBannerManager::FromWebContents(new_contents));
+
   UpdateUIForContents(new_contents);
   RevealTabStripIfNeeded();
 
@@ -957,6 +961,7 @@ void BrowserView::OnTabDetached(content::WebContents* contents,
     web_contents_close_handler_->ActiveTabChanged();
     contents_web_view_->SetWebContents(nullptr);
     infobar_container_->ChangeInfoBarManager(nullptr);
+    ObserveAppBannerManager(nullptr);
     UpdateDevToolsForContents(nullptr, true);
   }
 }
@@ -3183,4 +3188,11 @@ void BrowserView::OnImmersiveFullscreenExited() {
 
 void BrowserView::OnImmersiveModeControllerDestroyed() {
   ReparentTopContainerForEndOfImmersive();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// BrowserView, banners::AppBannerManager::Observer implementation:
+void BrowserView::OnInstallabilityUpdated() {
+  GetPageActionIconContainer()->UpdatePageActionIcon(
+      PageActionIconType::kPwaInstall);
 }
