@@ -21,7 +21,6 @@ ios_eg_test("ios_web_shell_egtests") {
     "context_menu_egtest.mm",
     "meta_tags_egtest.mm",
     "page_state_egtest.mm",
-    "plugin_placeholder_egtest.mm",
     "redirect_egtest.mm",
     "service_manager_egtest.mm",
   ]

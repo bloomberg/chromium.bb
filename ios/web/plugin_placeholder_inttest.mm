@@ -1,90 +1,84 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <map>
-#include <string>
-
-#import <EarlGrey/EarlGrey.h>
-
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
-#import "base/test/ios/wait_util.h"
-#include "ios/web/public/test/element_selector.h"
-#import "ios/web/public/test/http_server/http_server.h"
-#include "ios/web/public/test/http_server/http_server_util.h"
-#import "ios/web/shell/test/earl_grey/shell_earl_grey.h"
-#import "ios/web/shell/test/earl_grey/shell_matchers.h"
-#import "ios/web/shell/test/earl_grey/web_shell_test_case.h"
+#include "ios/testing/embedded_test_server_handlers.h"
+#import "ios/web/public/test/navigation_test_util.h"
+#import "ios/web/public/test/web_test_with_web_state.h"
+#import "ios/web/public/test/web_view_content_test_util.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-namespace {
+namespace web {
 
-using web::test::ElementSelector;
+// Tests that web page shows a placeholder for unsupported plugins.
+class PluginPlaceholderTest : public WebTestWithWebState {
+ protected:
+  // Sets up |server_| with |html| as response content.
+  bool SetUpServer(const std::string& html) WARN_UNUSED_RESULT {
+    server_.RegisterDefaultHandler(
+        base::BindRepeating(&testing::HandlePageWithHtml, html));
+    return server_.Start();
+  }
 
-// Loads a web page with given content.
-void LoadPage(const std::string& page_content) {
-  const GURL url = web::test::HttpServer::MakeUrl("http://plugin");
-  std::map<GURL, std::string> responses{{url, page_content}};
-  web::test::SetUpSimpleHttpServer(responses);
-  [ShellEarlGrey loadURL:url];
-}
-
-}  // namespace
-
-// Plugin placeholder test cases for the web shell. These tests verify that web
-// page shows a placeholder for unsupported plugins.
-@interface PluginPlaceholderTestCase : WebShellTestCase
-@end
-
-@implementation PluginPlaceholderTestCase
+  net::test_server::EmbeddedTestServer server_;
+};
 
 // Tests that a large <applet> with text fallback is untouched.
-- (void)testPluginPlaceholderAppletFallback {
+TEST_F(PluginPlaceholderTest, AppletFallback) {
   const char kPageDescription[] = "Applet, text fallback";
   const char kFallbackText[] = "Java? On iOS? C'mon.";
-  const std::string page = base::StringPrintf(
-      "<html><body width='800' height='600'>"
-      "<p>%s</p>"
-      "<applet code='Some.class' width='550' height='550'>"
-      "  <p>%s</p>"
-      "</applet>"
-      "</body></html>",
-      kPageDescription, kFallbackText);
-  LoadPage(page);
+  const std::string page =
+      base::StringPrintf("<html><body width='800' height='600'>"
+                         "<p>%s</p>"
+                         "<applet code='Some.class' width='550' height='550'>"
+                         "  <p>%s</p>"
+                         "</applet>"
+                         "</body></html>",
+                         kPageDescription, kFallbackText);
+  ASSERT_TRUE(SetUpServer(page));
+  test::LoadUrl(web_state(), server_.GetURL("/"));
 
   // Verify that placeholder image is not displayed.
-  [ShellEarlGrey waitForWebViewContainingText:kPageDescription];
-  [ShellEarlGrey waitForWebViewContainingText:kFallbackText];
-  [ShellEarlGrey
-      waitForWebViewNotContainingElement:ElementSelector::ElementSelectorCss(
-                                             "img")];
+  EXPECT_TRUE(
+      test::WaitForWebViewContainingText(web_state(), kPageDescription));
+  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state(), kFallbackText));
+  EXPECT_TRUE(test::WaitForWebViewNotContainingElement(
+      web_state(), test::ElementSelector::ElementSelectorCss("img")));
 }
 
 // Tests placeholder for a large <applet> with no fallback.
-- (void)testPluginPlaceholderAppletOnly {
+TEST_F(PluginPlaceholderTest, AppletOnly) {
   const char kPageDescription[] = "Applet, no fallback";
-  const std::string page = base::StringPrintf(
-      "<html><body width='800' height='600'>"
-      "<p>%s</p>"
-      "<applet code='Some.class' width='550' height='550'>"
-      "</applet>"
-      "</body></html>",
-      kPageDescription);
-  LoadPage(page);
+  const std::string page =
+      base::StringPrintf("<html><body width='800' height='600'>"
+                         "<p>%s</p>"
+                         "<applet code='Some.class' width='550' height='550'>"
+                         "</applet>"
+                         "</body></html>",
+                         kPageDescription);
+  ASSERT_TRUE(SetUpServer(page));
+  test::LoadUrl(web_state(), server_.GetURL("/"));
 
   // Verify that plugin object is replaced with placeholder image.
-  [ShellEarlGrey waitForWebViewContainingText:kPageDescription];
-  [ShellEarlGrey
-      waitForWebViewContainingElement:ElementSelector::ElementSelectorCss(
-                                          "img[src*='data']")];
+  EXPECT_TRUE(
+      test::WaitForWebViewContainingText(web_state(), kPageDescription));
+  EXPECT_TRUE(test::WaitForWebViewContainingElement(
+      web_state(),
+      test::ElementSelector::ElementSelectorCss("img[src*='data']")));
 }
 
 // Tests placeholder for a large <object> with a flash embed fallback.
-- (void)testPluginPlaceholderObjectFlashEmbedFallback {
+TEST_F(PluginPlaceholderTest, ObjectFlashEmbedFallback) {
   const char kPageDescription[] = "Object, embed fallback";
   const std::string page = base::StringPrintf(
       "<html><body width='800' height='600'>"
@@ -98,18 +92,20 @@ void LoadPage(const std::string& page_content) {
       "</object>"
       "</body></html>",
       kPageDescription);
-  LoadPage(page);
+  ASSERT_TRUE(SetUpServer(page));
+  test::LoadUrl(web_state(), server_.GetURL("/"));
 
   // Verify that plugin object is replaced with placeholder image.
-  [ShellEarlGrey waitForWebViewContainingText:kPageDescription];
-  [ShellEarlGrey
-      waitForWebViewContainingElement:ElementSelector::ElementSelectorCss(
-                                          "img[src*='data']")];
+  EXPECT_TRUE(
+      test::WaitForWebViewContainingText(web_state(), kPageDescription));
+  EXPECT_TRUE(test::WaitForWebViewContainingElement(
+      web_state(),
+      test::ElementSelector::ElementSelectorCss("img[src*='data']")));
 }
 
 // Tests that a large <object> with an embed fallback of unspecified type is
 // untouched.
-- (void)testPluginPlaceholderObjectUndefinedEmbedFallback {
+TEST_F(PluginPlaceholderTest, ObjectUndefinedEmbedFallback) {
   const char kPageDescription[] = "Object, embed fallback";
   const std::string page = base::StringPrintf(
       "<html><body width='800' height='600'>"
@@ -122,17 +118,18 @@ void LoadPage(const std::string& page_content) {
       "</object>"
       "</body></html>",
       kPageDescription);
-  LoadPage(page);
+  ASSERT_TRUE(SetUpServer(page));
+  test::LoadUrl(web_state(), server_.GetURL("/"));
 
   // Verify that placeholder image is not displayed.
-  [ShellEarlGrey waitForWebViewContainingText:kPageDescription];
-  [ShellEarlGrey
-      waitForWebViewNotContainingElement:ElementSelector::ElementSelectorCss(
-                                             "img")];
+  EXPECT_TRUE(
+      test::WaitForWebViewContainingText(web_state(), kPageDescription));
+  EXPECT_TRUE(test::WaitForWebViewNotContainingElement(
+      web_state(), test::ElementSelector::ElementSelectorCss("img")));
 }
 
 // Tests that a large <object> with text fallback is untouched.
-- (void)testPluginPlaceholderObjectFallback {
+TEST_F(PluginPlaceholderTest, ObjectFallback) {
   const char kPageDescription[] = "Object, text fallback";
   const char kFallbackText[] = "You don't have Flash. Tough luck!";
   const std::string page = base::StringPrintf(
@@ -145,18 +142,19 @@ void LoadPage(const std::string& page_content) {
       "</object>"
       "</body></html>",
       kPageDescription, kFallbackText);
-  LoadPage(page);
+  ASSERT_TRUE(SetUpServer(page));
+  test::LoadUrl(web_state(), server_.GetURL("/"));
 
   // Verify that placeholder image is not displayed.
-  [ShellEarlGrey waitForWebViewContainingText:kPageDescription];
-  [ShellEarlGrey waitForWebViewContainingText:kFallbackText];
-  [ShellEarlGrey
-      waitForWebViewNotContainingElement:ElementSelector::ElementSelectorCss(
-                                             "img")];
+  EXPECT_TRUE(
+      test::WaitForWebViewContainingText(web_state(), kPageDescription));
+  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state(), kFallbackText));
+  EXPECT_TRUE(test::WaitForWebViewNotContainingElement(
+      web_state(), test::ElementSelector::ElementSelectorCss("img")));
 }
 
 // Tests placeholder for a large <object> with no fallback.
-- (void)testPluginPlaceholderObjectOnly {
+TEST_F(PluginPlaceholderTest, ObjectOnly) {
   const char kPageDescription[] = "Object, no fallback";
   const std::string page = base::StringPrintf(
       "<html><body width='800' height='600'>"
@@ -166,17 +164,19 @@ void LoadPage(const std::string& page_content) {
       "</object>"
       "</body></html>",
       kPageDescription);
-  LoadPage(page);
+  ASSERT_TRUE(SetUpServer(page));
+  test::LoadUrl(web_state(), server_.GetURL("/"));
 
   // Verify that plugin object is replaced with placeholder image.
-  [ShellEarlGrey waitForWebViewContainingText:kPageDescription];
-  [ShellEarlGrey
-      waitForWebViewContainingElement:ElementSelector::ElementSelectorCss(
-                                          "img[src*='data']")];
+  EXPECT_TRUE(
+      test::WaitForWebViewContainingText(web_state(), kPageDescription));
+  EXPECT_TRUE(test::WaitForWebViewContainingElement(
+      web_state(),
+      test::ElementSelector::ElementSelectorCss("img[src*='data']")));
 }
 
 // Tests that a large png <object> is untouched.
-- (void)testPluginPlaceholderPNGObject {
+TEST_F(PluginPlaceholderTest, PNGObject) {
   const char kPageDescription[] = "PNG object";
   const std::string page = base::StringPrintf(
       "<html><body width='800' height='600'>"
@@ -185,17 +185,18 @@ void LoadPage(const std::string& page_content) {
       "</object>"
       "</body></html>",
       kPageDescription);
-  LoadPage(page);
+  ASSERT_TRUE(SetUpServer(page));
+  test::LoadUrl(web_state(), server_.GetURL("/"));
 
   // Verify that placeholder image is not displayed.
-  [ShellEarlGrey waitForWebViewContainingText:kPageDescription];
-  [ShellEarlGrey
-      waitForWebViewNotContainingElement:ElementSelector::ElementSelectorCss(
-                                             "img")];
+  EXPECT_TRUE(
+      test::WaitForWebViewContainingText(web_state(), kPageDescription));
+  EXPECT_TRUE(test::WaitForWebViewNotContainingElement(
+      web_state(), test::ElementSelector::ElementSelectorCss("img")));
 }
 
 // Test that non-major plugins (e.g., top/side ads) don't get placeholders.
-- (void)testPluginPlaceholderSmallFlash {
+TEST_F(PluginPlaceholderTest, SmallFlash) {
   const char kPageDescription[] = "Flash ads";
   const std::string page = base::StringPrintf(
       "<html><body width='800' height='600'>"
@@ -223,13 +224,14 @@ void LoadPage(const std::string& page_content) {
       "</object>"
       "</body></html>",
       kPageDescription);
-  LoadPage(page);
+  ASSERT_TRUE(SetUpServer(page));
+  test::LoadUrl(web_state(), server_.GetURL("/"));
 
   // Verify that placeholder image is not displayed.
-  [ShellEarlGrey waitForWebViewContainingText:kPageDescription];
-  [ShellEarlGrey
-      waitForWebViewNotContainingElement:ElementSelector::ElementSelectorCss(
-                                             "img")];
+  EXPECT_TRUE(
+      test::WaitForWebViewContainingText(web_state(), kPageDescription));
+  EXPECT_TRUE(test::WaitForWebViewNotContainingElement(
+      web_state(), test::ElementSelector::ElementSelectorCss("img")));
 }
 
-@end
+}  // namespace web

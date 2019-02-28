@@ -594,6 +594,7 @@ test("ios_web_inttests") {
     "find_in_page/find_in_page_manager_inttest.mm",
     "navigation/history_state_operations_inttest.mm",
     "navigation/window_location_inttest.mm",
+    "plugin_placeholder_inttest.mm",
     "public/test/http_server_inttest.mm",
     "test/run_all_unittests.cc",
     "url_loader_inttest.mm",

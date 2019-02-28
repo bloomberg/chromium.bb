@@ -24,7 +24,7 @@ using base::test::ios::WaitUntilConditionOrTimeout;
 
 // A helper delegate class that allows downloading responses with invalid
 // SSL certs.
-@interface TestURLSessionDelegate : NSObject<NSURLSessionDelegate>
+@interface TestURLSessionDelegate : NSObject <NSURLSessionDelegate>
 @end
 
 @implementation TestURLSessionDelegate
@@ -121,15 +121,14 @@ bool WaitForWebViewContainingImage(std::string image_id,
 
   return WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
     NSString* const kGetElementAttributesScript =
-        [NSString stringWithFormat:
-                      @"var image = document.getElementById('%@');"
-                      @"var imageHeight = image.height;"
-                      @"var imageWidth = image.width;"
-                      @"JSON.stringify({"
-                      @"  height:imageHeight,"
-                      @"  width:imageWidth"
-                      @"});",
-                      base::SysUTF8ToNSString(image_id)];
+        [NSString stringWithFormat:@"var image = document.getElementById('%@');"
+                                   @"var imageHeight = image.height;"
+                                   @"var imageWidth = image.width;"
+                                   @"JSON.stringify({"
+                                   @"  height:imageHeight,"
+                                   @"  width:imageWidth"
+                                   @"});",
+                                   base::SysUTF8ToNSString(image_id)];
     std::unique_ptr<base::Value> value = web::test::ExecuteJavaScript(
         web_state, base::SysNSStringToUTF8(kGetElementAttributesScript));
     std::string result;
@@ -167,6 +166,26 @@ bool IsWebViewContainingElement(web::WebState* web_state,
     value->GetAsBoolean(&did_succeed);
   }
   return did_succeed;
+}
+
+bool WaitForWebViewContainingElement(
+    web::WebState* web_state,
+    const web::test::ElementSelector& selector) {
+  web::test::ElementSelector selector_in_block = selector;
+  return WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return IsWebViewContainingElement(web_state, selector_in_block);
+  });
+}
+
+bool WaitForWebViewNotContainingElement(
+    web::WebState* web_state,
+    const web::test::ElementSelector& selector) {
+  web::test::ElementSelector selector_in_block = selector;
+  return WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return !IsWebViewContainingElement(web_state, selector_in_block);
+  });
 }
 
 }  // namespace test
