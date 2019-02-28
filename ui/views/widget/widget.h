@@ -555,6 +555,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   void SetFullscreen(bool fullscreen);
   bool IsFullscreen() const;
 
+  // macOS: Sets whether the window can share fullscreen windows' spaces.
+  void SetCanAppearInExistingFullscreenSpaces(
+      bool can_appear_in_existing_fullscreen_spaces);
+
   // Sets the opacity of the widget. This may allow widgets behind the widget
   // in the Z-order to become visible, depending on the capabilities of the
   // underlying windowing system.

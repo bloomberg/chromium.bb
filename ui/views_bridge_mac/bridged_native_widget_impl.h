@@ -221,6 +221,8 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
       views_bridge_mac::mojom::VisibilityTransition transitions) override;
   void SetVisibleOnAllSpaces(bool always_visible) override;
   void SetFullscreen(bool fullscreen) override;
+  void SetCanAppearInExistingFullscreenSpaces(
+      bool can_appear_in_existing_fullscreen_spaces) override;
   void SetMiniaturized(bool miniaturized) override;
   void SetSizeConstraints(const gfx::Size& min_size,
                           const gfx::Size& max_size,

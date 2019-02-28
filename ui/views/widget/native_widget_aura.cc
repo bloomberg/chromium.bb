@@ -663,6 +663,9 @@ bool NativeWidgetAura::IsFullscreen() const {
       ui::SHOW_STATE_FULLSCREEN;
 }
 
+void NativeWidgetAura::SetCanAppearInExistingFullscreenSpaces(
+    bool can_appear_in_existing_fullscreen_spaces) {}
+
 void NativeWidgetAura::SetOpacity(float opacity) {
   if (window_)
     window_->layer()->SetOpacity(opacity);
