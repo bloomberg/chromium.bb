@@ -86,6 +86,8 @@ source_set("earl_grey_test_support") {
     "earl_grey/shell_earl_grey.mm",
     "earl_grey/shell_matchers.h",
     "earl_grey/shell_matchers.mm",
+    "earl_grey/shell_matchers_shorthand.h",
+    "earl_grey/shell_matchers_shorthand.mm",
     "earl_grey/web_shell_test_case.h",
     "earl_grey/web_shell_test_case.mm",
   ]

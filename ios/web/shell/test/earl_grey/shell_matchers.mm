@@ -17,17 +17,17 @@
 #error "This file requires ARC support."
 #endif
 
-namespace web {
+@implementation ShellMatchers
 
-id<GREYMatcher> WebView() {
-  return WebViewInWebState(shell_test_util::GetCurrentWebState());
++ (id<GREYMatcher>)webView {
+  return WebViewInWebState(web::shell_test_util::GetCurrentWebState());
 }
 
-id<GREYMatcher> WebViewScrollView() {
-  return WebViewScrollView(shell_test_util::GetCurrentWebState());
++ (id<GREYMatcher>)webViewScrollView {
+  return WebViewScrollView(web::shell_test_util::GetCurrentWebState());
 }
 
-id<GREYMatcher> AddressFieldText(std::string text) {
++ (id<GREYMatcher>)addressFieldWithText:(NSString*)text {
   MatchesBlock matches = ^BOOL(UIView* view) {
     if (![view isKindOfClass:[UITextField class]]) {
       return NO;
@@ -39,12 +39,12 @@ id<GREYMatcher> AddressFieldText(std::string text) {
     UITextField* text_field = base::mac::ObjCCastStrict<UITextField>(view);
     NSString* error_message = [NSString
         stringWithFormat:
-            @"Address field text did not match. expected: %@, actual: %@",
-            base::SysUTF8ToNSString(text), text_field.text];
+            @"Address field text did not match. expected: %@, actual: %@", text,
+            text_field.text];
     GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
                    base::test::ios::kWaitForUIElementTimeout,
-                   ^{
-                     return base::SysNSStringToUTF8(text_field.text) == text;
+                   ^bool {
+                     return [text_field.text isEqualToString:text];
                    }),
                error_message);
     return YES;
@@ -52,23 +52,23 @@ id<GREYMatcher> AddressFieldText(std::string text) {
 
   DescribeToBlock describe = ^(id<GREYDescription> description) {
     [description appendText:@"address field containing "];
-    [description appendText:base::SysUTF8ToNSString(text)];
+    [description appendText:text];
   };
 
   return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
                                               descriptionBlock:describe];
 }
 
-id<GREYMatcher> BackButton() {
++ (id<GREYMatcher>)backButton {
   return grey_accessibilityLabel(kWebShellBackButtonAccessibilityLabel);
 }
 
-id<GREYMatcher> ForwardButton() {
++ (id<GREYMatcher>)forwardButton {
   return grey_accessibilityLabel(kWebShellForwardButtonAccessibilityLabel);
 }
 
-id<GREYMatcher> AddressField() {
++ (id<GREYMatcher>)addressField {
   return grey_accessibilityLabel(kWebShellAddressFieldAccessibilityLabel);
 }
 
-}  // namespace web
+@end
