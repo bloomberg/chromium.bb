@@ -8,6 +8,8 @@
 #include <utility>
 
 #include "ash/focus_cycler.h"
+#include "ash/metrics/pip_uma.h"
+#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/public/cpp/window_properties.h"
@@ -27,6 +29,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/auto_reset.h"
+#include "base/metrics/histogram_macros.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/layout_manager.h"
@@ -155,6 +158,26 @@ void MoveAllTransientChildrenToNewRoot(aura::Window* window) {
   // Move transient children of the child windows if any.
   for (aura::Window* child : window->children())
     MoveAllTransientChildrenToNewRoot(child);
+}
+
+void CollectPipEnterExitMetrics(aura::Window* window, bool enter) {
+  const bool is_android = window->GetProperty(aura::client::kAppType) ==
+                          static_cast<int>(ash::AppType::ARC_APP);
+  if (enter) {
+    UMA_HISTOGRAM_ENUMERATION(kAshPipEventsHistogramName,
+                              AshPipEvents::PIP_START, AshPipEvents::COUNT);
+    UMA_HISTOGRAM_ENUMERATION(kAshPipEventsHistogramName,
+                              is_android ? AshPipEvents::ANDROID_PIP_START
+                                         : AshPipEvents::CHROME_PIP_START,
+                              AshPipEvents::COUNT);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(kAshPipEventsHistogramName, AshPipEvents::PIP_END,
+                              AshPipEvents::COUNT);
+    UMA_HISTOGRAM_ENUMERATION(kAshPipEventsHistogramName,
+                              is_android ? AshPipEvents::ANDROID_PIP_END
+                                         : AshPipEvents::CHROME_PIP_END,
+                              AshPipEvents::COUNT);
+  }
 }
 
 }  // namespace
@@ -701,6 +724,8 @@ void WindowState::UpdatePipState(mojom::WindowStateType old_window_state_type) {
       window()->SetProperty(ash::kPrePipWindowStateTypeKey,
                             old_window_state_type);
     }
+
+    CollectPipEnterExitMetrics(window(), /*enter=*/true);
   } else if (old_window_state_type == mojom::WindowStateType::PIP) {
     if (widget) {
       widget->widget_delegate()->SetCanActivate(true);
@@ -708,6 +733,8 @@ void WindowState::UpdatePipState(mojom::WindowStateType old_window_state_type) {
     }
     ::wm::SetWindowVisibilityAnimationType(
         window(), ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
+
+    CollectPipEnterExitMetrics(window(), /*enter=*/false);
   }
 }
 
@@ -805,6 +832,11 @@ void WindowState::OnWindowAddedToRootWindow(aura::Window* window) {
 
 void WindowState::OnWindowDestroying(aura::Window* window) {
   DCHECK_EQ(window_, window);
+
+  // If the window is destroyed during PIP, count that as exiting.
+  if (IsPip())
+    CollectPipEnterExitMetrics(window, /*enter=*/false);
+
   auto* widget = views::Widget::GetWidgetForNativeWindow(window);
   if (widget)
     Shell::Get()->focus_cycler()->RemoveWidget(widget);
