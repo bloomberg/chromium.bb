@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 
 #include <utility>
 
@@ -32,12 +33,22 @@ void ContainedShellController::BindRequest(
 }
 
 bool ContainedShellController::IsEnabled() {
-  // TODO(ltenorio): Also check the ash.contained_shell.enabled pref here when
-  // it's available.
-  return base::FeatureList::IsEnabled(features::kContainedShell);
+  if (!base::FeatureList::IsEnabled(features::kContainedShell))
+    return false;
+
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetPrimaryUserPrefService();
+
+  DCHECK(prefs) << "PrefService should not be null when reading Contained "
+                   "Shell pref. This usually happens when calling "
+                   "ContainedShellController::IsEnabled() before sign in.";
+  return prefs->GetBoolean(prefs::kContainedShellEnabled);
 }
 
-void ContainedShellController::LaunchContainedShell() {
+void ContainedShellController::LaunchContainedShellIfEnabled() {
+  if (!IsEnabled())
+    return;
+
   contained_shell_client_->LaunchContainedShell(Shell::Get()
                                                     ->session_controller()
                                                     ->GetPrimaryUserSession()

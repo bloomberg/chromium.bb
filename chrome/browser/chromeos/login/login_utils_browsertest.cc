@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
@@ -41,6 +42,7 @@
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "apps/test/app_window_waiter.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -99,6 +101,24 @@ class LoginUtilsContainedShellTest : public LoginUtilsTest {
     LoginUtilsTest::SetUp();
   }
 
+  void LoginAndSetContainedShellPref(bool contained_shell_pref_value) {
+    extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
+
+    WaitForSigninScreen();
+
+    Login("username");
+
+    // Take some time to finish login and register user prefs.
+    base::RunLoop().RunUntilIdle();
+
+    // Update the now registered Contained Shell pref.
+    ProfileHelper::Get()
+        ->GetProfileByUser(user_manager::UserManager::Get()->GetActiveUser())
+        ->GetPrefs()
+        ->SetBoolean(ash::prefs::kContainedShellEnabled,
+                     contained_shell_pref_value);
+  }
+
  private:
   base::test::ScopedFeatureList feature_list_;
 };
@@ -138,8 +158,12 @@ class FullscreenWindowEnvObserver : public aura::EnvObserver,
   DISALLOW_COPY_AND_ASSIGN(FullscreenWindowEnvObserver);
 };
 
+IN_PROC_BROWSER_TEST_F(LoginUtilsContainedShellTest, PRE_ContainedShellLaunch) {
+  LoginAndSetContainedShellPref(true);
+}
+
 // Checks that the Contained Experience window is launched on sign-in when the
-// feature is enabled.
+// feature is enabled and its pref allows it.
 IN_PROC_BROWSER_TEST_F(LoginUtilsContainedShellTest, ContainedShellLaunch) {
   // Enable all component extensions.
   extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
@@ -150,16 +174,39 @@ IN_PROC_BROWSER_TEST_F(LoginUtilsContainedShellTest, ContainedShellLaunch) {
 
   Login("username");
 
-  base::RunLoop().RunUntilIdle();
-
   // Wait for the app to launch before verifying it is fullscreen.
   apps::AppWindowWaiter waiter(
       extensions::AppWindowRegistry::Get(ProfileHelper::Get()->GetProfileByUser(
           user_manager::UserManager::Get()->GetActiveUser())),
       extension_misc::kContainedHomeAppId);
-  waiter.WaitForShown();
-
+  EXPECT_NE(nullptr,
+            waiter.WaitForShownWithTimeout(TestTimeouts::action_timeout()));
   EXPECT_TRUE(fullscreen_observer.did_fullscreen_window_launch());
+}
+
+IN_PROC_BROWSER_TEST_F(LoginUtilsContainedShellTest,
+                       PRE_ContainedShellDoesntLaunchWhenPrefIsDisabled) {
+  LoginAndSetContainedShellPref(false);
+}
+
+// Checks that the Contained Experience window does not launch in sign-in when
+// its pref is disabled
+IN_PROC_BROWSER_TEST_F(LoginUtilsContainedShellTest,
+                       ContainedShellDoesntLaunchWhenPrefIsDisabled) {
+  // Enable all component extensions.
+  extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
+
+  WaitForSigninScreen();
+
+  Login("username");
+
+  // Wait for the app to launch before verifying that it didn't.
+  apps::AppWindowWaiter waiter(
+      extensions::AppWindowRegistry::Get(ProfileHelper::Get()->GetProfileByUser(
+          user_manager::UserManager::Get()->GetActiveUser())),
+      extension_misc::kContainedHomeAppId);
+  EXPECT_EQ(nullptr,
+            waiter.WaitForShownWithTimeout(TestTimeouts::action_timeout()));
 }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 

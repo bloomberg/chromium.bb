@@ -1431,10 +1431,8 @@ void Shell::OnSessionStateChanged(session_manager::SessionState state) {
   // the controller when the session is active. https://crbug.com/464118
   drag_drop_controller_->set_enabled(is_session_active);
 
-  if (base::FeatureList::IsEnabled(features::kContainedShell) &&
-      is_session_active) {
-    contained_shell_controller_->LaunchContainedShell();
-  }
+  if (is_session_active)
+    contained_shell_controller_->LaunchContainedShellIfEnabled();
 }
 
 void Shell::OnLoginStatusChanged(LoginStatus login_status) {
