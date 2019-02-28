@@ -30,6 +30,8 @@ const char kFakePolicyName[] = "fake-policy-name";
 int kFakePolicyVersion = 100;
 constexpr base::TimeDelta kFakeRefreshPeriod = base::TimeDelta::FromDays(100);
 constexpr base::TimeDelta kFakeRetryPeriod = base::TimeDelta::FromHours(100);
+constexpr base::TimeDelta kFakeImmediateRetryDelay =
+    base::TimeDelta::FromMinutes(5);
 const int kFakeMaxImmediateRetries = 2;
 
 // The time set on the scheduler's clock during set-up.
@@ -272,7 +274,7 @@ TEST_F(DeviceSyncPersistentEnrollmentSchedulerTest, HandleFailures) {
     EXPECT_EQ(base::TimeDelta::FromMilliseconds(
                   fake_client_directive().checkin_delay_millis()),
               scheduler()->GetRefreshPeriod());
-    EXPECT_EQ(base::TimeDelta::FromMilliseconds(0),
+    EXPECT_EQ(kFakeImmediateRetryDelay,
               scheduler()->GetTimeToNextEnrollmentRequest());
     VerifyLastEnrollmentAttemptTimePref(kFakeTimeNow);
   }
@@ -344,7 +346,7 @@ TEST_F(DeviceSyncPersistentEnrollmentSchedulerTest, HandlePersistedFailures) {
   CreateScheduler();
 
   EXPECT_EQ(1u, scheduler()->GetNumConsecutiveFailures());
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(0),
+  EXPECT_EQ(kFakeImmediateRetryDelay,
             scheduler()->GetTimeToNextEnrollmentRequest());
   VerifyLastEnrollmentAttemptTimePref(kFakeTimeLaterBeforeRetryPeriod);
 }
