@@ -111,14 +111,14 @@ bool ImageData::ValidateConstructorArguments(
 
     if (!data->byteLength()) {
       return RaiseDOMExceptionAndReturnFalse(
-          exception_state, DOMExceptionCode::kIndexSizeError,
+          exception_state, DOMExceptionCode::kInvalidStateError,
           "The input data has zero elements.");
     }
 
     data_length = data->byteLength() / data->TypeSize();
     if (data_length % 4) {
       return RaiseDOMExceptionAndReturnFalse(
-          exception_state, DOMExceptionCode::kIndexSizeError,
+          exception_state, DOMExceptionCode::kInvalidStateError,
           "The input data length is not a multiple of 4.");
     }
 
