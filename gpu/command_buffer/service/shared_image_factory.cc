@@ -8,6 +8,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "build/build_config.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
@@ -27,6 +28,8 @@
 
 #if defined(USE_X11) && BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/command_buffer/service/external_vk_image_factory.h"
+#elif defined(OS_ANDROID) && BUILDFLAG(ENABLE_VULKAN)
+#include "gpu/command_buffer/service/shared_image_backing_factory_ahardwarebuffer.h"
 #endif
 
 namespace gpu {
@@ -69,6 +72,11 @@ SharedImageFactory::SharedImageFactory(
 #if defined(USE_X11) && BUILDFLAG(ENABLE_VULKAN)
       interop_backing_factory_(
           std::make_unique<ExternalVkImageFactory>(context_state)),
+#elif defined(OS_ANDROID) && BUILDFLAG(ENABLE_VULKAN)
+      interop_backing_factory_(
+          std::make_unique<SharedImageBackingFactoryAHB>(workarounds,
+                                                         gpu_feature_info,
+                                                         context_state)),
 #endif
       wrapped_sk_image_factory_(
           gpu_preferences.enable_raster_to_sk_image
