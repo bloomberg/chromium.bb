@@ -230,7 +230,7 @@ GenerateChromeDesktopReportRequest(const base::DictionaryValue& report,
           report.FindKeyOfType(kBrowserReport, base::Value::Type::DICTIONARY)) {
     if (const base::Value* profile_reports = browser_report->FindKeyOfType(
             kChromeUserProfileReport, base::Value::Type::LIST)) {
-      if (profile_reports->GetList().size() > 0) {
+      if (!profile_reports->GetList().empty()) {
         DCHECK_EQ(1u, profile_reports->GetList().size());
         // Currently, profile send their browser reports individually.
         std::unique_ptr<em::ChromeUserProfileReport> profile_report_request =

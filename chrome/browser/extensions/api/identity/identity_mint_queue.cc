@@ -54,7 +54,7 @@ void IdentityMintRequestQueue::RequestComplete(
   RequestQueue& request_queue = GetRequestQueueMap(type)[key];
   CHECK_EQ(request_queue.front(), request);
   request_queue.pop_front();
-  if (request_queue.size() > 0)
+  if (!request_queue.empty())
     RunRequest(type, request_queue);
 }
 

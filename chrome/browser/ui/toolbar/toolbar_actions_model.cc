@@ -694,7 +694,7 @@ bool ToolbarActionsModel::HighlightActions(
 
   // If we have any actions in |highlighted_action_ids_|, then we entered
   // highlighting mode.
-  if (highlighted_action_ids_.size()) {
+  if (!highlighted_action_ids_.empty()) {
     // It's important that |highlight_type_| is changed immediately before the
     // observers are notified since it changes the result of action_ids().
     highlight_type_ = highlight_type;

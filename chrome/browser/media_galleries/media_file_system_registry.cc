@@ -130,9 +130,7 @@ class RPHReferenceManager {
 
     void AddWebContentsObserver(WebContents* web_contents);
     void RemoveWebContentsObserver(WebContents* web_contents);
-    bool HasWebContentsObservers() {
-      return observed_web_contentses_.size() > 0;
-    }
+    bool HasWebContentsObservers() { return !observed_web_contentses_.empty(); }
 
    private:
     void RenderProcessHostDestroyed(RenderProcessHost* host) override;
@@ -419,7 +417,7 @@ class ExtensionGalleriesHost
       pref_id_map_[pref_id] = new_entry;
     }
 
-    if (result.size() == 0) {
+    if (result.empty()) {
       rph_refs_.Reset();
       CleanUp();
     }

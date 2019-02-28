@@ -131,7 +131,7 @@ bool TabContentsSyncedTabDelegate::ShouldSync(
     return false;
 
   // Is there a valid NavigationEntry?
-  if (ProfileIsSupervised() && GetBlockedNavigations()->size() > 0)
+  if (ProfileIsSupervised() && !GetBlockedNavigations()->empty())
     return true;
 
   if (IsInitialBlankNavigation())

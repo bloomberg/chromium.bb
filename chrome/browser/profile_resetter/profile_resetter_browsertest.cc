@@ -77,7 +77,7 @@ bool RemoveCookieTester::GetCookie(const std::string& host,
                      base::Unretained(this)));
   BlockUntilNotified();
   DCHECK_GE(1u, last_cookies_.size());
-  if (0u == last_cookies_.size())
+  if (last_cookies_.empty())
     return false;
   *cookie = last_cookies_[0];
   return true;

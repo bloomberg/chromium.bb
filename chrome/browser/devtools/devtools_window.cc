@@ -1065,7 +1065,7 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
       url = kDefaultFrontendURL + remote_base;
       if (can_dock)
         url += "&can_dock=true";
-      if (panel.size())
+      if (!panel.empty())
         url += "&panel=" + panel;
       break;
     case kFrontendWorker:

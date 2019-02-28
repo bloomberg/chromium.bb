@@ -88,7 +88,7 @@ signin_metrics::PromoAction GetPromoActionForNewAccount(
   if (account_consistency != signin::AccountConsistencyMethod::kDice)
     return signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT_PRE_DICE;
 
-  return identity_manager->GetAccountsWithRefreshTokens().size() > 0
+  return !identity_manager->GetAccountsWithRefreshTokens().empty()
              ? signin_metrics::PromoAction::
                    PROMO_ACTION_NEW_ACCOUNT_EXISTING_ACCOUNT
              : signin_metrics::PromoAction::

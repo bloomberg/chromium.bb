@@ -293,7 +293,7 @@ SyncMergeResult SupervisedUserSettingsService::MergeDataAndStartSyncing(
 
   SyncMergeResult result(SUPERVISED_USER_SETTINGS);
   // Process all the accumulated changes from the queued items.
-  if (change_list.size() > 0) {
+  if (!change_list.empty()) {
     store_->ReportValueChanged(kQueuedItems,
                                WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     result.set_error(

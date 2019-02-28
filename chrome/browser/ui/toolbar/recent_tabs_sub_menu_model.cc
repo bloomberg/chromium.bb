@@ -399,7 +399,7 @@ void RecentTabsSubMenuModel::BuildLocalEntries() {
   sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser_->profile());
 
-  if (!service || service->entries().size() == 0) {
+  if (!service || service->entries().empty()) {
     // This is to show a disabled restore tab entry with the accelerator to
     // teach users about this command.
     InsertItemWithStringIdAt(++last_local_model_index_,

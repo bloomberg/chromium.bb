@@ -265,7 +265,7 @@ bool UiElement::DoBeginFrame(const gfx::Transform& head_pose,
   // Animation::Tick return a boolean. Similarly, the bindings update may have
   // had no visual effect and dirtiness should be related to setting properties
   // that do indeed cause visual updates.
-  bool keyframe_models_updated = animation_.keyframe_models().size() > 0;
+  bool keyframe_models_updated = !animation_.keyframe_models().empty();
   if (force_animations_to_completion) {
     animation_.FinishAll();
   } else {

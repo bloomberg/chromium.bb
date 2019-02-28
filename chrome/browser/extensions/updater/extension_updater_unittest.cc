@@ -2120,12 +2120,13 @@ class ExtensionUpdaterTest : public testing::Test {
     if (num_enabled > 0)
       service.CreateTestExtensions(
           1, num_enabled, &enabled_extensions, &update_url, Manifest::INTERNAL);
-    if (disabled.size() > 0)
+    if (!disabled.empty()) {
       service.CreateTestExtensions(2,
                                    disabled.size(),
                                    &disabled_extensions,
                                    &update_url,
                                    Manifest::INTERNAL);
+    }
 
     service.set_extensions(enabled_extensions, disabled_extensions);
 

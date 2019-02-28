@@ -390,7 +390,7 @@ void CookiesViewHandler::SendLocalDataList(const CookieTreeNode* parent) {
     const CookieTreeNode* site = parent->GetChild(sorted_sites_[i].second);
     base::string16 description;
     for (int k = 0; k < site->child_count(); ++k) {
-      if (description.size()) {
+      if (!description.empty()) {
         description += base::ASCIIToUTF16(", ");
       }
       const CookieTreeNode* category = site->GetChild(k);

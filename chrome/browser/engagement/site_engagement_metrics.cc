@@ -81,7 +81,7 @@ void SiteEngagementMetrics::RecordMedianEngagement(double median_engagement) {
 
 void SiteEngagementMetrics::RecordEngagementScores(
     const std::vector<mojom::SiteEngagementDetails>& details) {
-  if (details.size() == 0)
+  if (details.empty())
     return;
 
   std::map<int, int> score_buckets;

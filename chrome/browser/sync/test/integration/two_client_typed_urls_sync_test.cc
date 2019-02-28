@@ -74,7 +74,7 @@ class TwoClientTypedUrlsSyncTest : public SyncTest {
 
   int GetVisitCountForFirstURL(int index) {
     history::URLRows urls = GetTypedUrlsFromClient(index);
-    if (urls.size() == 0)
+    if (urls.empty())
       return 0;
     else
       return urls[0].visit_count();

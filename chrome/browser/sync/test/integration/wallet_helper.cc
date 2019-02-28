@@ -96,7 +96,7 @@ bool ListsMatch(int profile_a,
     list_a_map.erase(item->server_id());
   }
 
-  if (list_a_map.size()) {
+  if (!list_a_map.empty()) {
     DVLOG(1) << "Entries present in profile " << profile_a
              << " but not in profile" << profile_b << ".";
     return false;

@@ -145,7 +145,7 @@ std::map<int, BitmapAndSource> ConstrainBitmapsToSizes(
     ordered_bitmaps[bitmap.width()] = bitmap_and_source;
   }
 
-  if (ordered_bitmaps.size() > 0) {
+  if (!ordered_bitmaps.empty()) {
     for (const auto& size : sizes) {
       // Find the closest not-smaller bitmap, or failing that use the largest
       // icon available.
@@ -199,7 +199,7 @@ std::map<int, BitmapAndSource> ResizeIconsAndGenerateMissing(
 
   // Determine the color that will be used for the icon's background. For this
   // the dominant color of the first icon found is used.
-  if (resized_bitmaps.size()) {
+  if (!resized_bitmaps.empty()) {
     color_utils::GridSampler sampler;
     *generated_icon_color = color_utils::CalculateKMeanColorOfBitmap(
         resized_bitmaps.begin()->second.bitmap);

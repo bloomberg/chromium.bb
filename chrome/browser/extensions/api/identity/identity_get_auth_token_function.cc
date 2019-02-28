@@ -131,7 +131,7 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
     }
   }
 
-  if (scopes.size() == 0) {
+  if (scopes.empty()) {
     error_ = identity_constants::kInvalidScopes;
     return false;
   }

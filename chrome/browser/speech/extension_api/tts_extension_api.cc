@@ -122,7 +122,7 @@ void TtsExtensionEventHandler::OnTtsEvent(content::TtsUtterance* utterance,
 
   const std::set<content::TtsEventType>& desired_event_types =
       utterance->GetDesiredEventTypes();
-  if (desired_event_types.size() > 0 &&
+  if (!desired_event_types.empty() &&
       desired_event_types.find(event_type) == desired_event_types.end()) {
     if (utterance->IsFinished())
       delete this;

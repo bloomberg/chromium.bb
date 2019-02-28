@@ -562,7 +562,6 @@ class MockListListener : public DevToolsAndroidBridge::DeviceListListener {
 
   void DeviceListChanged(
       const DevToolsAndroidBridge::RemoteDevices& devices) override {
-    if (devices.size() > 0) {
       for (const auto& device : devices) {
         if (device->is_connected()) {
           ASSERT_EQ(kDeviceModel, device->model());
@@ -571,7 +570,6 @@ class MockListListener : public DevToolsAndroidBridge::DeviceListListener {
           callback_.Run();
           break;
         }
-      }
     }
   }
 

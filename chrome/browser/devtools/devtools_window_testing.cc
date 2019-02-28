@@ -191,7 +191,7 @@ DevToolsWindowCreationObserver::~DevToolsWindowCreationObserver() {
 }
 
 void DevToolsWindowCreationObserver::Wait() {
-  if (devtools_windows_.size())
+  if (!devtools_windows_.empty())
     return;
   runner_ = new content::MessageLoopRunner();
   runner_->Run();

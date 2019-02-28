@@ -946,7 +946,7 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
     line_number++;
   }
 
-  if (rows_.size()) {
+  if (!rows_.empty()) {
     // Create a container to wrap the "regular" (non-footer) rows.
     views::View* body_container = new views::View();
     views::BoxLayout* body_layout = body_container->SetLayoutManager(

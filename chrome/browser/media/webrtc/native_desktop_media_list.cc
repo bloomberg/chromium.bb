@@ -322,7 +322,7 @@ void NativeDesktopMediaList::RefreshForAuraWindows(
     native_ids.push_back(source.id);
   }
 
-  if (native_ids.size() > 0) {
+  if (!native_ids.empty()) {
 #if defined(USE_AURA)
     pending_native_thumbnail_capture_ = true;
 #endif

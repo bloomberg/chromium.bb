@@ -296,7 +296,7 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgWriteData(
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   ui::ClipboardType type = ConvertClipboardType(clipboard_type);
   // If no formats are passed in clear the clipboard.
-  if (formats.size() == 0) {
+  if (formats.empty()) {
     clipboard->Clear(type);
     return PP_OK;
   }
@@ -338,7 +338,7 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgWriteData(
       break;
   }
 
-  if (custom_data_map.size() > 0) {
+  if (!custom_data_map.empty()) {
     base::Pickle pickle;
     WriteDataToPickle(custom_data_map, &pickle);
     scw.WritePickledData(pickle,

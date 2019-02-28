@@ -327,7 +327,7 @@ std::unique_ptr<views::View> DeviceChooserContentView::CreateExtraView() {
     extra_views.push_back(bluetooth_status_container_);
   }
 
-  if (extra_views.size() == 0)
+  if (extra_views.empty())
     return nullptr;
   if (extra_views.size() == 1)
     return std::unique_ptr<views::View>(extra_views.at(0));

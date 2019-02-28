@@ -219,7 +219,7 @@ std::size_t NavigationEventList::CleanUpNavigationEvents() {
   // Remove any stale NavigationEnvent, if it is older than
   // kNavigationFootprintTTLInSecond.
   std::size_t removal_count = 0;
-  while (navigation_events_.size() > 0 &&
+  while (!navigation_events_.empty() &&
          IsEventExpired(navigation_events_[0]->last_updated,
                         kNavigationFootprintTTLInSecond)) {
     navigation_events_.pop_front();

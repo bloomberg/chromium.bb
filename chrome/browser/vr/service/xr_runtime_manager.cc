@@ -292,7 +292,7 @@ bool XRRuntimeManager::IsOtherDevicePresenting(XRDeviceImpl* device) {
 }
 
 bool XRRuntimeManager::HasAnyRuntime() {
-  return runtimes_.size() > 0;
+  return !runtimes_.empty();
 }
 
 void XRRuntimeManager::SupportsSession(

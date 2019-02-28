@@ -33,7 +33,7 @@ base::Optional<base::TimeDelta> GetTimeoutFromFieldTrialParam(
   std::string str = base::GetFieldTrialParamValueByFeature(
       feature_engagement::kIPHReopenTabFeature, name);
   int timeout_seconds = 0;
-  if (str.size() > 0) {
+  if (!str.empty()) {
     base::StringToInt(str, &timeout_seconds);
     DCHECK_GT(timeout_seconds, 0);
     return base::TimeDelta::FromSeconds(timeout_seconds);
