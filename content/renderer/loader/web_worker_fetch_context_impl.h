@@ -53,8 +53,9 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
  public:
   // Creates a new fetch context for a worker.
   //
-  // |provider_context| is used to route requests to the worker's controller
-  // service worker.
+  // |provider_context| is used to set up information for using service workers.
+  // It can be null if the worker is not allowed to use service workers due to
+  // security reasons like sandboxed iframes, insecure origins etc.
   // |loader_factory_info| is used for regular loading by the worker.
   //
   // S13nServiceWorker:
@@ -179,6 +180,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // Implements blink::mojom::RendererPreferenceWatcher.
   void NotifyUpdate(blink::mojom::RendererPreferencesPtr new_prefs) override;
 
+  // |binding_| and |service_worker_worker_client_registry_| may be null if this
+  // context can't use service workers. See comments for Create().
   mojo::Binding<blink::mojom::ServiceWorkerWorkerClient> binding_;
   blink::mojom::ServiceWorkerWorkerClientRegistryPtr
       service_worker_worker_client_registry_;
@@ -203,8 +206,9 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
 
   // S13nServiceWorker:
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
-  // May be nullptr if the creating context was already being destructed, see
-  // ServiceWorkerProviderContext::OnNetworkProviderDestroyed().
+  // This can be null if the |provider_context| passed to Create() was null or
+  // already being destructed (see
+  // ServiceWorkerProviderContext::OnNetworkProviderDestroyed()).
   blink::mojom::ServiceWorkerContainerHostPtr service_worker_container_host_;
 
   // S13nServiceWorker:
