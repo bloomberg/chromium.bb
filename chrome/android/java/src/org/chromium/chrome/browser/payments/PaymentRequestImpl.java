@@ -800,7 +800,8 @@ public class PaymentRequestImpl
 
         if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
 
-        if (mUiShippingOptions.isEmpty() && mShippingAddressesSection.getSelectedItem() != null) {
+        if ((mUiShippingOptions.isEmpty() || !TextUtils.isEmpty(details.error))
+                && mShippingAddressesSection.getSelectedItem() != null) {
             mShippingAddressesSection.getSelectedItem().setInvalid();
             mShippingAddressesSection.setSelectedItemIndex(SectionInformation.INVALID_SELECTION);
             mShippingAddressesSection.setErrorMessage(details.error);

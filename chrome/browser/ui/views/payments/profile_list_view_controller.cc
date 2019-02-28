@@ -178,8 +178,10 @@ class ShippingProfileViewController : public ProfileListViewController,
   // | Warning icon | Warning message            |
   // ---------------------------------------------
   std::unique_ptr<views::View> CreateHeaderView() override {
-    if (!spec()->GetShippingOptions().empty())
+    if (!spec()->GetShippingOptions().empty() &&
+        spec()->selected_shipping_option_error().empty()) {
       return nullptr;
+    }
 
     auto header_view = std::make_unique<views::View>();
     // 8 pixels between the warning icon view (if present) and the text.

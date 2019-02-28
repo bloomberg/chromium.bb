@@ -157,3 +157,20 @@ function updateWithModifiers() {  // eslint-disable-line no-unused-vars
   });
   showPaymentRequest(pr);
 }
+
+/**
+ * Calls updateWith() with an error.
+ */
+function updateWithError() {  // eslint-disable-line no-unused-vars
+  var pr = buildPaymentRequest();
+  var errorDetails = {
+    error: 'This is an error for a browsertest',
+  };
+  pr.addEventListener('shippingaddresschange', function(e) {
+    e.updateWith(errorDetails);
+  });
+  pr.addEventListener('shippingoptionchange', function(e) {
+    e.updateWith(errorDetails);
+  });
+  showPaymentRequest(pr);
+}

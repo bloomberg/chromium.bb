@@ -358,7 +358,7 @@ void PaymentRequestSpec::UpdateSelectedShippingOption(bool after_update) {
 
   selected_shipping_option_ = nullptr;
   selected_shipping_option_error_.clear();
-  if (details_->shipping_options->empty()) {
+  if (details_->shipping_options->empty() || !details_->error.empty()) {
     // No options are provided by the merchant.
     if (after_update) {
       // This is after an update, which means that the selected address is not
