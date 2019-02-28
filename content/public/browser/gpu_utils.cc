@@ -116,8 +116,7 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
   gpu_preferences.enable_passthrough_raster_decoder =
       command_line->HasSwitch(switches::kEnablePassthroughRasterDecoder);
 #if defined(OS_WIN)
-  if (gpu_preferences.enable_oop_rasterization)
-    gpu_preferences.enable_passthrough_raster_decoder = true;
+  gpu_preferences.enable_passthrough_raster_decoder = true;
 #endif
 
   gpu_preferences.enable_vulkan =
