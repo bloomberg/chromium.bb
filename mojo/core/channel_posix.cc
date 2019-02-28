@@ -85,10 +85,17 @@ class MessageView {
     handles_ = std::move(handles);
   }
 
+  size_t num_handles_sent() { return num_handles_sent_; }
+
+  void set_num_handles_sent(size_t num_handles_sent) {
+    num_handles_sent_ = num_handles_sent;
+  }
+
  private:
   Channel::MessagePtr message_;
   size_t offset_;
   std::vector<PlatformHandleInTransit> handles_;
+  size_t num_handles_sent_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MessageView);
 };
@@ -514,17 +521,21 @@ class ChannelPosix : public Channel,
       return true;
     }
     size_t bytes_written = 0;
+    std::vector<PlatformHandleInTransit> handles = message_view.TakeHandles();
+    size_t num_handles = handles.size();
+    size_t handles_written = message_view.num_handles_sent();
     do {
       message_view.advance_data_offset(bytes_written);
 
       ssize_t result;
-      std::vector<PlatformHandleInTransit> handles = message_view.TakeHandles();
-      if (!handles.empty()) {
+      if (handles_written < num_handles) {
         iovec iov = {const_cast<void*>(message_view.data()),
                      message_view.data_num_bytes()};
-        std::vector<base::ScopedFD> fds(handles.size());
-        for (size_t i = 0; i < handles.size(); ++i)
-          fds[i] = handles[i].TakeHandle().TakeFD();
+        size_t num_handles_to_send =
+            std::min(num_handles - handles_written, kMaxSendmsgHandles);
+        std::vector<base::ScopedFD> fds(num_handles_to_send);
+        for (size_t i = 0; i < num_handles_to_send; ++i)
+          fds[i] = handles[i + handles_written].TakeHandle().TakeFD();
         // TODO: Handle lots of handles.
         result = SendmsgWithHandles(socket_.get(), &iov, 1, fds);
         if (result >= 0) {
@@ -549,11 +560,14 @@ class ChannelPosix : public Channel,
               fds_to_close_.emplace_back(std::move(fd));
           }
 #endif  // defined(OS_MACOSX)
+          handles_written += num_handles_to_send;
+          DCHECK_LE(handles_written, num_handles);
+          message_view.set_num_handles_sent(handles_written);
         } else {
           // Message transmission failed, so pull the FDs back into |handles|
           // so they can be held by the Message again.
           for (size_t i = 0; i < fds.size(); ++i) {
-            handles[i] =
+            handles[i + handles_written] =
                 PlatformHandleInTransit(PlatformHandle(std::move(fds[i])));
           }
         }
@@ -591,7 +605,8 @@ class ChannelPosix : public Channel,
       }
 
       bytes_written = static_cast<size_t>(result);
-    } while (bytes_written < message_view.data_num_bytes());
+    } while (handles_written < num_handles ||
+             bytes_written < message_view.data_num_bytes());
 
     return FlushOutgoingMessagesNoLock();
   }
