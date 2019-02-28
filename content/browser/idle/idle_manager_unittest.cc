@@ -99,8 +99,8 @@ TEST_F(IdleManagerTest, AddMonitor) {
       base::BindOnce(
           [](base::OnceClosure callback, blink::mojom::IdleStatePtr state) {
             // The initial state of the status of the user is to be active.
-            EXPECT_EQ(blink::mojom::UserIdleState::ACTIVE, state->user);
-            EXPECT_EQ(blink::mojom::ScreenIdleState::UNLOCKED, state->screen);
+            EXPECT_EQ(blink::mojom::UserIdleState::kActive, state->user);
+            EXPECT_EQ(blink::mojom::ScreenIdleState::kUnlocked, state->screen);
             std::move(callback).Run();
           },
           loop.QuitClosure()));
@@ -133,7 +133,7 @@ TEST_F(IdleManagerTest, Idle) {
     service_ptr->AddMonitor(
         kTresholdInSecs, std::move(monitor_ptr),
         base::BindLambdaForTesting([&](blink::mojom::IdleStatePtr state) {
-          EXPECT_EQ(blink::mojom::UserIdleState::ACTIVE, state->user);
+          EXPECT_EQ(blink::mojom::UserIdleState::kActive, state->user);
           loop.Quit();
         }));
 
@@ -148,7 +148,7 @@ TEST_F(IdleManagerTest, Idle) {
     // Expects Update to be notified about the change to idle.
     EXPECT_CALL(monitor, Update(_))
         .WillOnce(Invoke([&](blink::mojom::IdleStatePtr state) {
-          EXPECT_EQ(blink::mojom::UserIdleState::IDLE, state->user);
+          EXPECT_EQ(blink::mojom::UserIdleState::kIdle, state->user);
           loop.Quit();
         }));
     loop.Run();
@@ -163,7 +163,7 @@ TEST_F(IdleManagerTest, Idle) {
     // auto quit = loop.QuitClosure();
     EXPECT_CALL(monitor, Update(_))
         .WillOnce(Invoke([&](blink::mojom::IdleStatePtr state) {
-          EXPECT_EQ(blink::mojom::UserIdleState::ACTIVE, state->user);
+          EXPECT_EQ(blink::mojom::UserIdleState::kActive, state->user);
           // Ends the test.
           loop.Quit();
         }));
@@ -198,7 +198,7 @@ TEST_F(IdleManagerTest, UnlockingScreen) {
     service_ptr->AddMonitor(
         kTresholdInSecs, std::move(monitor_ptr),
         base::BindLambdaForTesting([&](blink::mojom::IdleStatePtr state) {
-          EXPECT_EQ(blink::mojom::ScreenIdleState::LOCKED, state->screen);
+          EXPECT_EQ(blink::mojom::ScreenIdleState::kLocked, state->screen);
           loop.Quit();
         }));
 
@@ -215,7 +215,7 @@ TEST_F(IdleManagerTest, UnlockingScreen) {
     // Expects Update to be notified about the change to unlocked.
     EXPECT_CALL(monitor, Update(_))
         .WillOnce(Invoke([&](blink::mojom::IdleStatePtr state) {
-          EXPECT_EQ(blink::mojom::ScreenIdleState::UNLOCKED, state->screen);
+          EXPECT_EQ(blink::mojom::ScreenIdleState::kUnlocked, state->screen);
           loop.Quit();
         }));
 
@@ -250,7 +250,7 @@ TEST_F(IdleManagerTest, LockingScreen) {
     service_ptr->AddMonitor(
         kTresholdInSecs, std::move(monitor_ptr),
         base::BindLambdaForTesting([&](blink::mojom::IdleStatePtr state) {
-          EXPECT_EQ(blink::mojom::ScreenIdleState::UNLOCKED, state->screen);
+          EXPECT_EQ(blink::mojom::ScreenIdleState::kUnlocked, state->screen);
           loop.Quit();
         }));
 
@@ -267,7 +267,7 @@ TEST_F(IdleManagerTest, LockingScreen) {
     // Expects Update to be notified about the change to unlocked.
     EXPECT_CALL(monitor, Update(_))
         .WillOnce(Invoke([&](blink::mojom::IdleStatePtr state) {
-          EXPECT_EQ(blink::mojom::ScreenIdleState::LOCKED, state->screen);
+          EXPECT_EQ(blink::mojom::ScreenIdleState::kLocked, state->screen);
           loop.Quit();
         }));
 
@@ -302,8 +302,8 @@ TEST_F(IdleManagerTest, LockingScreenThenIdle) {
     service_ptr->AddMonitor(
         kTresholdInSecs, std::move(monitor_ptr),
         base::BindLambdaForTesting([&](blink::mojom::IdleStatePtr state) {
-          EXPECT_EQ(blink::mojom::UserIdleState::ACTIVE, state->user);
-          EXPECT_EQ(blink::mojom::ScreenIdleState::UNLOCKED, state->screen);
+          EXPECT_EQ(blink::mojom::UserIdleState::kActive, state->user);
+          EXPECT_EQ(blink::mojom::ScreenIdleState::kUnlocked, state->screen);
           loop.Quit();
         }));
 
@@ -320,8 +320,8 @@ TEST_F(IdleManagerTest, LockingScreenThenIdle) {
     // Expects Update to be notified about the change to locked.
     EXPECT_CALL(monitor, Update(_))
         .WillOnce(Invoke([&](blink::mojom::IdleStatePtr state) {
-          EXPECT_EQ(blink::mojom::ScreenIdleState::LOCKED, state->screen);
-          EXPECT_EQ(blink::mojom::UserIdleState::ACTIVE, state->user);
+          EXPECT_EQ(blink::mojom::ScreenIdleState::kLocked, state->screen);
+          EXPECT_EQ(blink::mojom::UserIdleState::kActive, state->user);
           loop.Quit();
         }));
 
@@ -339,8 +339,8 @@ TEST_F(IdleManagerTest, LockingScreenThenIdle) {
     // Expects Update to be notified about the change to active.
     EXPECT_CALL(monitor, Update(_))
         .WillOnce(Invoke([&](blink::mojom::IdleStatePtr state) {
-          EXPECT_EQ(blink::mojom::UserIdleState::IDLE, state->user);
-          EXPECT_EQ(blink::mojom::ScreenIdleState::LOCKED, state->screen);
+          EXPECT_EQ(blink::mojom::UserIdleState::kIdle, state->user);
+          EXPECT_EQ(blink::mojom::ScreenIdleState::kLocked, state->screen);
           // Ends the test.
           loop.Quit();
         }));
@@ -377,8 +377,8 @@ TEST_F(IdleManagerTest, LockingScreenAfterIdle) {
     service_ptr->AddMonitor(
         kTresholdInSecs, std::move(monitor_ptr),
         base::BindLambdaForTesting([&](blink::mojom::IdleStatePtr state) {
-          EXPECT_EQ(blink::mojom::UserIdleState::ACTIVE, state->user);
-          EXPECT_EQ(blink::mojom::ScreenIdleState::UNLOCKED, state->screen);
+          EXPECT_EQ(blink::mojom::UserIdleState::kActive, state->user);
+          EXPECT_EQ(blink::mojom::ScreenIdleState::kUnlocked, state->screen);
           loop.Quit();
         }));
 
@@ -395,8 +395,8 @@ TEST_F(IdleManagerTest, LockingScreenAfterIdle) {
     // Expects Update to be notified about the change to idle.
     EXPECT_CALL(monitor, Update(_))
         .WillOnce(Invoke([&](blink::mojom::IdleStatePtr state) {
-          EXPECT_EQ(blink::mojom::UserIdleState::IDLE, state->user);
-          EXPECT_EQ(blink::mojom::ScreenIdleState::UNLOCKED, state->screen);
+          EXPECT_EQ(blink::mojom::UserIdleState::kIdle, state->user);
+          EXPECT_EQ(blink::mojom::ScreenIdleState::kUnlocked, state->screen);
           loop.Quit();
         }));
 
@@ -415,8 +415,8 @@ TEST_F(IdleManagerTest, LockingScreenAfterIdle) {
     // Expects Update to be notified about the change to locked.
     EXPECT_CALL(monitor, Update(_))
         .WillOnce(Invoke([&](blink::mojom::IdleStatePtr state) {
-          EXPECT_EQ(blink::mojom::ScreenIdleState::LOCKED, state->screen);
-          EXPECT_EQ(blink::mojom::UserIdleState::IDLE, state->user);
+          EXPECT_EQ(blink::mojom::ScreenIdleState::kLocked, state->screen);
+          EXPECT_EQ(blink::mojom::UserIdleState::kIdle, state->user);
           // Ends the test.
           loop.Quit();
         }));
@@ -493,7 +493,7 @@ TEST_F(IdleManagerTest, Threshold) {
   service_ptr->AddMonitor(
       5, std::move(monitor_ptr),
       base::BindLambdaForTesting([&](blink::mojom::IdleStatePtr state) {
-        EXPECT_EQ(blink::mojom::UserIdleState::IDLE, state->user);
+        EXPECT_EQ(blink::mojom::UserIdleState::kIdle, state->user);
         loop.Quit();
       }));
 

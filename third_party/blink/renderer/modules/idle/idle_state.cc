@@ -24,18 +24,18 @@ const mojom::blink::IdleState IdleState::state() const {
 
 String IdleState::user() const {
   switch (state_->user) {
-    case mojom::blink::UserIdleState::ACTIVE:
+    case mojom::blink::UserIdleState::kActive:
       return "active";
-    case mojom::blink::UserIdleState::IDLE:
+    case mojom::blink::UserIdleState::kIdle:
       return "idle";
   }
 }
 
 String IdleState::screen() const {
   switch (state_->screen) {
-    case mojom::blink::ScreenIdleState::LOCKED:
+    case mojom::blink::ScreenIdleState::kLocked:
       return "locked";
-    case mojom::blink::ScreenIdleState::UNLOCKED:
+    case mojom::blink::ScreenIdleState::kUnlocked:
       return "unlocked";
   }
 }
