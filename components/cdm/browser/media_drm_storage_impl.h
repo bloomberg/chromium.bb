@@ -48,6 +48,10 @@ class MediaDrmStorageImpl final
       base::OnceCallback<void(bool success, const MediaDrmOriginId& origin_id)>;
   using GetOriginIdCB = base::RepeatingCallback<void(OriginIdObtainedCB)>;
 
+  // |callback| returns true if an empty origin ID is allowed, false if not.
+  using AllowEmptyOriginIdCB =
+      base::RepeatingCallback<void(base::OnceCallback<void(bool)> callback)>;
+
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Get a list of origins that have persistent storage on the device.
@@ -72,9 +76,14 @@ class MediaDrmStorageImpl final
       base::Time end,
       const base::RepeatingCallback<bool(const GURL&)>& filter);
 
+  // |get_origin_id_cb| must be provided and is used to obtain an origin ID.
+  // |allow_empty_origin_id_cb| is used to determine if an empty origin ID is
+  // allowed or not. It is called if |get_origin_id_cb| is unable to return an
+  // origin ID.
   MediaDrmStorageImpl(content::RenderFrameHost* render_frame_host,
                       PrefService* pref_service,
                       GetOriginIdCB get_origin_id_cb,
+                      AllowEmptyOriginIdCB allow_empty_origin_id_cb,
                       media::mojom::MediaDrmStorageRequest request);
 
   // media::mojom::MediaDrmStorage implementation.
@@ -96,8 +105,12 @@ class MediaDrmStorageImpl final
   // of Initialize().
   void OnOriginIdObtained(bool success, const MediaDrmOriginId& origin_id);
 
+  // Called after checking if an empty origin ID is allowed.
+  void OnEmptyOriginIdAllowed(bool allowed);
+
   PrefService* const pref_service_;
   GetOriginIdCB get_origin_id_cb_;
+  AllowEmptyOriginIdCB allow_empty_origin_id_cb_;
 
   // ID for the current origin. Per EME spec on individualization,
   // implementation should not expose application-specific information.

@@ -18,6 +18,7 @@
 #include "base/unguessable_token.h"
 #include "jni/MediaDrmStorageBridge_jni.h"
 #include "media/base/android/android_util.h"
+#include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_drm_key_type.h"
 
 using base::android::AttachCurrentThread;
@@ -150,17 +151,28 @@ void MediaDrmStorageBridge::OnInitialized(
     InitCB init_cb,
     bool success,
     const MediaDrmStorage::MediaDrmOriginId& origin_id) {
-  // Note: It's possible that |success| is true but |origin_id| is empty,
-  // to indicate per-device provisioning. In this case, we cannot use
-  // ToString() which would be the string 0000000000000000. Instead, do
-  // not set |origin_id_| so that it remains empty.
-  if (success && origin_id && origin_id.value()) {
-    origin_id_ = origin_id->ToString();
-  } else {
+  if (!success) {
     DCHECK(!origin_id);
+    std::move(init_cb).Run(false);
+    return;
   }
 
-  std::move(init_cb).Run(success);
+  // Note: It's possible that |success| is true but |origin_id| is empty,
+  // to indicate per-device provisioning. If so, do not set |origin_id_|
+  // so that it remains the empty string.
+  if (origin_id && origin_id.value()) {
+    origin_id_ = origin_id->ToString();
+  } else {
+    // |origin_id| is empty. However, if per-application provisioning is
+    // supported, the empty string is not allowed.
+    DCHECK(origin_id_.empty());
+    if (MediaDrmBridge::IsPerApplicationProvisioningSupported()) {
+      std::move(init_cb).Run(false);
+      return;
+    }
+  }
+
+  std::move(init_cb).Run(true);
 }
 
 void MediaDrmStorageBridge::OnSessionDataLoaded(

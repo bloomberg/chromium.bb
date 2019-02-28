@@ -14,6 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/unguessable_token.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "media/base/android/media_drm_storage.h"
 
 class MediaDrmOriginIdManagerFactory;
 class PrefRegistrySimple;
@@ -31,11 +32,12 @@ class PrefService;
 // destroyed when the Profile goes away.
 class MediaDrmOriginIdManager : public KeyedService {
  public:
+  using MediaDrmOriginId = media::MediaDrmStorage::MediaDrmOriginId;
+
   // |success| is true if an origin ID was obtained and |origin_id| is
   // not null, false otherwise.
-  using ProvisionedOriginIdCB = base::OnceCallback<void(
-      bool success,
-      const base::Optional<base::UnguessableToken>& origin_id)>;
+  using ProvisionedOriginIdCB =
+      base::OnceCallback<void(bool success, const MediaDrmOriginId& origin_id)>;
   using ProvisioningResultCB = base::RepeatingCallback<bool()>;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -74,8 +76,7 @@ class MediaDrmOriginIdManager : public KeyedService {
 
   // Called when provisioning of |origin_id| is done. The provisioning of
   // |origin_id| was successful if |success| is true.
-  void OriginIdProvisioned(bool success,
-                           const base::UnguessableToken& origin_id);
+  void OriginIdProvisioned(bool success, const MediaDrmOriginId& origin_id);
 
   PrefService* const pref_service_;
 

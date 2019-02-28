@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "chrome/browser/media/android/cdm/media_drm_origin_id_manager.h"
 #include "chrome/browser/media/android/cdm/media_drm_origin_id_manager_factory.h"
+#include "chrome/browser/media/android/cdm/per_device_provisioning_permission.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"
 #include "components/prefs/pref_service.h"
@@ -37,6 +38,22 @@ void CreateOriginId(Profile* profile,
   }
 
   origin_id_manager->GetOriginId(std::move(callback));
+}
+
+void AllowEmptyOriginId(content::RenderFrameHost* render_frame_host,
+                        base::OnceCallback<void(bool)> callback) {
+  DCHECK(media::MediaDrmBridge::IsPerOriginProvisioningSupported());
+
+  if (media::MediaDrmBridge::IsPerApplicationProvisioningSupported()) {
+    // If per-application provisioning is supported by the device, use of the
+    // empty origin ID won't work so don't allow it.
+    std::move(callback).Run(false);
+    return;
+  }
+
+  // Check if the user will allow use of the per-device identifier.
+  RequestPerDeviceProvisioningPermission(render_frame_host,
+                                         std::move(callback));
 }
 
 }  // namespace
@@ -67,7 +84,9 @@ void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
 
   // The object will be deleted on connection error, or when the frame navigates
   // away. See FrameServiceBase for details.
-  new cdm::MediaDrmStorageImpl(render_frame_host, pref_service,
-                               base::BindRepeating(&CreateOriginId, profile),
-                               std::move(request));
+  new cdm::MediaDrmStorageImpl(
+      render_frame_host, pref_service,
+      base::BindRepeating(&CreateOriginId, profile),
+      base::BindRepeating(&AllowEmptyOriginId, render_frame_host),
+      std::move(request));
 }

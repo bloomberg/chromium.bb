@@ -30,6 +30,7 @@
 namespace {
 
 using testing::Return;
+using MediaDrmOriginId = MediaDrmOriginIdManager::MediaDrmOriginId;
 
 // These values must match the values specified for the implementation
 // in media_drm_origin_id_manager.cc.
@@ -39,8 +40,6 @@ const char kAvailableOriginIds[] = "origin_ids";
 constexpr size_t kExpectedPreferenceListSize = 5;
 constexpr base::TimeDelta kExpirationDelta = base::TimeDelta::FromHours(24);
 constexpr size_t kConnectionAttempts = 5;
-
-using MediaDrmOriginId = base::Optional<base::UnguessableToken>;
 
 }  // namespace
 
@@ -65,7 +64,9 @@ class MediaDrmOriginIdManagerTest : public testing::Test {
     origin_id_manager_->GetOriginId(base::BindOnce(
         [](base::OnceClosure callback, MediaDrmOriginId* result, bool success,
            const MediaDrmOriginId& origin_id) {
-          EXPECT_TRUE(success);
+          // If |success| = true, then |origin_id| should be not null.
+          // If |success| = false, then |origin_id| should be null.
+          EXPECT_EQ(success, origin_id.has_value());
           *result = origin_id;
           std::move(callback).Run();
         },
@@ -196,11 +197,9 @@ TEST_F(MediaDrmOriginIdManagerTest, OriginIdNotInList) {
 }
 
 TEST_F(MediaDrmOriginIdManagerTest, ProvisioningFail) {
-  // TODO(crbug.com/917527): Currently the code returns an origin ID even if
-  // provisioning fails. Update this once it returns an empty origin ID when
-  // pre-provisioning fails.
+  // Provisioning fails, so GetOriginId() returns an empty origin ID.
   EXPECT_CALL(*this, GetProvisioningResult()).WillOnce(testing::Return(false));
-  EXPECT_TRUE(GetOriginId());
+  EXPECT_FALSE(GetOriginId());
 
   // After failure the preference should contain |kExpireableToken| only if
   // per-application provisioning is not supported.
@@ -215,13 +214,11 @@ TEST_F(MediaDrmOriginIdManagerTest, ProvisioningFail) {
 }
 
 TEST_F(MediaDrmOriginIdManagerTest, ProvisioningSuccessAfterFail) {
-  // TODO(crbug.com/917527): Currently the code returns an origin ID even if
-  // provisioning fails. Update this once it returns an empty origin ID when
-  // pre-provisioning fails.
+  // Provisioning fails, so GetOriginId() returns an empty origin ID.
   EXPECT_CALL(*this, GetProvisioningResult())
       .WillOnce(Return(false))
       .WillRepeatedly(Return(true));
-  EXPECT_TRUE(GetOriginId());
+  EXPECT_FALSE(GetOriginId());
   EXPECT_TRUE(GetOriginId());  // Provisioning will succeed on the second call.
 
   // Let pre-provisioning of other origin IDs finish.
@@ -235,14 +232,12 @@ TEST_F(MediaDrmOriginIdManagerTest, ProvisioningSuccessAfterFail) {
 }
 
 TEST_F(MediaDrmOriginIdManagerTest, ProvisioningAfterExpiration) {
-  // TODO(crbug.com/917527): Currently the code returns an origin ID even if
-  // provisioning fails. Update this once it returns an empty origin ID when
-  // pre-provisioning fails.
+  // Provisioning fails, so GetOriginId() returns an empty origin ID.
   DVLOG(1) << "Current time: " << base::Time::Now();
   EXPECT_CALL(*this, GetProvisioningResult())
       .WillOnce(Return(false))
       .WillRepeatedly(Return(true));
-  EXPECT_TRUE(GetOriginId());
+  EXPECT_FALSE(GetOriginId());
   test_browser_thread_bundle_.RunUntilIdle();
 
   // Check that |kAvailableOriginIds| in the preference is empty.
@@ -303,7 +298,7 @@ TEST_F(MediaDrmOriginIdManagerTest, NetworkChange) {
   EXPECT_CALL(*this, GetProvisioningResult())
       .WillOnce(Return(false))
       .WillRepeatedly(Return(true));
-  EXPECT_TRUE(GetOriginId());
+  EXPECT_FALSE(GetOriginId());
   test_browser_thread_bundle_.RunUntilIdle();
 
   // Check that |kAvailableOriginIds| in the preference is empty.
@@ -350,7 +345,7 @@ TEST_F(MediaDrmOriginIdManagerTest, NetworkChangeFails) {
   EXPECT_CALL(*this, GetProvisioningResult())
       .Times(kConnectionAttempts + 1)
       .WillOnce(Return(false));
-  EXPECT_TRUE(GetOriginId());
+  EXPECT_FALSE(GetOriginId());
   test_browser_thread_bundle_.RunUntilIdle();
 
   // Check that |kAvailableOriginIds| in the preference is empty.
