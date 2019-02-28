@@ -114,8 +114,9 @@ std::unique_ptr<blink::URLLoaderFactoryBundleInfo> CreateFactoryBundle(
     // See if the default factory needs to be tweaked by the embedder.
     GetContentClient()->browser()->WillCreateURLLoaderFactory(
         rph->GetBrowserContext(), nullptr /* frame_host */, rph->GetID(),
-        false /* is_navigation */, origin, &default_factory_request,
-        &default_header_client, &bypass_redirect_checks);
+        false /* is_navigation */, false /* is_download */, origin,
+        &default_factory_request, &default_header_client,
+        &bypass_redirect_checks);
   }
 
   if (!GetNetworkFactoryCallbackForTest()) {

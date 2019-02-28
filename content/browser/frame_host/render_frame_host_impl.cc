@@ -4699,7 +4699,7 @@ void RenderFrameHostImpl::CommitNavigation(
       auto factory_request = mojo::MakeRequest(&factory_proxy_info);
       GetContentClient()->browser()->WillCreateURLLoaderFactory(
           browser_context, this, GetProcess()->GetID(),
-          false /* is_navigation */,
+          false /* is_navigation */, false /* is_download */,
           GetOriginForURLLoaderFactory(common_params), &factory_request,
           nullptr /* header_client */, nullptr /* bypass_redirect_checks */);
       // Keep DevTools proxy last, i.e. closest to the network.
@@ -5409,8 +5409,8 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     GetContentClient()->browser()->WillCreateURLLoaderFactory(
         context, this, GetProcess()->GetID(), false /* is_navigation */,
-        origin.value_or(url::Origin()), &default_factory_request,
-        &header_client, &bypass_redirect_checks);
+        false /* is_download */, origin.value_or(url::Origin()),
+        &default_factory_request, &header_client, &bypass_redirect_checks);
   }
 
   // Keep DevTools proxy last, i.e. closest to the network.

@@ -58,6 +58,7 @@ class WebRequestProxyingURLLoaderFactory
         int32_t network_service_request_id,
         uint32_t options,
         const network::ResourceRequest& request,
+        bool is_download,
         const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
         network::mojom::URLLoaderRequest loader_request,
         network::mojom::URLLoaderClientPtr client);
@@ -123,6 +124,7 @@ class WebRequestProxyingURLLoaderFactory
 
     WebRequestProxyingURLLoaderFactory* const factory_;
     network::ResourceRequest request_;
+    const bool is_download_;
     const uint64_t request_id_;
     const int32_t network_service_request_id_;
     const int32_t routing_id_;
@@ -178,6 +180,7 @@ class WebRequestProxyingURLLoaderFactory
       void* browser_context,
       content::ResourceContext* resource_context,
       int render_process_id,
+      bool is_download,
       scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
       std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
       InfoMap* info_map,
@@ -192,6 +195,7 @@ class WebRequestProxyingURLLoaderFactory
       void* browser_context,
       content::ResourceContext* resource_context,
       int render_process_id,
+      bool is_download,
       scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
       std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
       InfoMap* info_map,
@@ -232,6 +236,7 @@ class WebRequestProxyingURLLoaderFactory
   void* const browser_context_;
   content::ResourceContext* const resource_context_;
   const int render_process_id_;
+  const bool is_download_;
   scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator_;
   std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data_;
   InfoMap* const info_map_;

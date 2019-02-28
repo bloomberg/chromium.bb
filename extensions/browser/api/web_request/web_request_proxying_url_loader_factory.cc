@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/web_request/web_request_proxying_url_loader_factory.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -29,11 +30,13 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
     int32_t routing_id,
     uint32_t options,
     const network::ResourceRequest& request,
+    bool is_download,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     network::mojom::URLLoaderRequest loader_request,
     network::mojom::URLLoaderClientPtr client)
     : factory_(factory),
       request_(request),
+      is_download_(is_download),
       request_id_(request_id),
       network_service_request_id_(network_service_request_id),
       routing_id_(routing_id),
@@ -80,7 +83,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::Restart() {
       request_id_, factory_->render_process_id_, request_.render_frame_id,
       factory_->navigation_ui_data_ ? factory_->navigation_ui_data_->DeepCopy()
                                     : nullptr,
-      routing_id_, factory_->resource_context_, request_,
+      routing_id_, factory_->resource_context_, request_, is_download_,
       !(options_ & network::mojom::kURLLoadOptionSynchronous));
 
   current_request_uses_header_client_ =
@@ -732,6 +735,7 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
     void* browser_context,
     content::ResourceContext* resource_context,
     int render_process_id,
+    bool is_download,
     scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
     InfoMap* info_map,
@@ -742,6 +746,7 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
     : browser_context_(browser_context),
       resource_context_(resource_context),
       render_process_id_(render_process_id),
+      is_download_(is_download),
       request_id_generator_(std::move(request_id_generator)),
       navigation_ui_data_(std::move(navigation_ui_data)),
       info_map_(info_map),
@@ -766,6 +771,7 @@ void WebRequestProxyingURLLoaderFactory::StartProxying(
     void* browser_context,
     content::ResourceContext* resource_context,
     int render_process_id,
+    bool is_download,
     scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
     InfoMap* info_map,
@@ -777,7 +783,7 @@ void WebRequestProxyingURLLoaderFactory::StartProxying(
       WebRequestAPI::ProxySet::GetFromResourceContext(resource_context);
 
   auto proxy = std::make_unique<WebRequestProxyingURLLoaderFactory>(
-      browser_context, resource_context, render_process_id,
+      browser_context, resource_context, render_process_id, is_download,
       std::move(request_id_generator), std::move(navigation_ui_data), info_map,
       std::move(loader_request), std::move(target_factory_info),
       std::move(header_client_request), proxies);
@@ -815,10 +821,10 @@ void WebRequestProxyingURLLoaderFactory::CreateLoaderAndStart(
   }
 
   auto result = requests_.emplace(
-      web_request_id,
-      std::make_unique<InProgressRequest>(
-          this, web_request_id, request_id, routing_id, options, request,
-          traffic_annotation, std::move(loader_request), std::move(client)));
+      web_request_id, std::make_unique<InProgressRequest>(
+                          this, web_request_id, request_id, routing_id, options,
+                          request, is_download_, traffic_annotation,
+                          std::move(loader_request), std::move(client)));
   result.first->second->Restart();
 }
 

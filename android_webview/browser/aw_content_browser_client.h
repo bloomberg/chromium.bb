@@ -220,6 +220,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       content::RenderFrameHost* frame,
       int render_process_id,
       bool is_navigation,
+      bool is_download,
       const url::Origin& request_initiator,
       network::mojom::URLLoaderFactoryRequest* factory_request,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
