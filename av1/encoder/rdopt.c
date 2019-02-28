@@ -11141,28 +11141,51 @@ static const MV_REFERENCE_FRAME reduced_ref_combos[][2] = {
   { ALTREF_FRAME, INTRA_FRAME },  { BWDREF_FRAME, INTRA_FRAME },
 };
 
-static void default_skip_mask(mode_skip_mask_t *mask,
-                              int enable_reduced_reference_set) {
-  if (enable_reduced_reference_set) {
+static const MV_REFERENCE_FRAME real_time_ref_combos[][2] = {
+  { LAST_FRAME, NONE_FRAME },
+  { ALTREF_FRAME, NONE_FRAME },
+  { GOLDEN_FRAME, NONE_FRAME },
+  { INTRA_FRAME, NONE_FRAME },
+  { BWDREF_FRAME, NONE_FRAME }
+};
+
+typedef enum { REF_SET_FULL, REF_SET_REDUCED, REF_SET_REALTIME } REF_SET;
+
+static void default_skip_mask(mode_skip_mask_t *mask, REF_SET ref_set) {
+  if (ref_set == REF_SET_FULL) {
+    // Everything available by default.
+    memset(mask, 0, sizeof(*mask));
+  } else {
     // All modes available by default.
     memset(mask->pred_modes, 0, sizeof(mask->pred_modes));
-
     // All references disabled first.
     for (MV_REFERENCE_FRAME ref1 = INTRA_FRAME; ref1 < REF_FRAMES; ++ref1) {
       for (MV_REFERENCE_FRAME ref2 = NONE_FRAME; ref2 < REF_FRAMES; ++ref2) {
         mask->ref_combo[ref1][ref2 + 1] = true;
       }
     }
+    const MV_REFERENCE_FRAME(*ref_set_combos)[2];
+    int num_ref_combos;
+
     // Then enable reduced set of references explicitly.
-    const int num_reduced_ref_combos =
-        (int)sizeof(reduced_ref_combos) / sizeof(reduced_ref_combos[0]);
-    for (int i = 0; i < num_reduced_ref_combos; ++i) {
-      const MV_REFERENCE_FRAME *const this_combo = reduced_ref_combos[i];
+    switch (ref_set) {
+      case REF_SET_REDUCED:
+        ref_set_combos = reduced_ref_combos;
+        num_ref_combos =
+            (int)sizeof(reduced_ref_combos) / sizeof(reduced_ref_combos[0]);
+        break;
+      case REF_SET_REALTIME:
+        ref_set_combos = real_time_ref_combos;
+        num_ref_combos =
+            (int)sizeof(real_time_ref_combos) / sizeof(real_time_ref_combos[0]);
+        break;
+      default: assert(0); num_ref_combos = 0;
+    }
+
+    for (int i = 0; i < num_ref_combos; ++i) {
+      const MV_REFERENCE_FRAME *const this_combo = ref_set_combos[i];
       mask->ref_combo[this_combo[0]][this_combo[1] + 1] = false;
     }
-  } else {
-    // Everything available by default.
-    memset(mask, 0, sizeof(*mask));
   }
 }
 
@@ -11174,8 +11197,14 @@ static void init_mode_skip_mask(mode_skip_mask_t *mask, const AV1_COMP *cpi,
   MB_MODE_INFO *const mbmi = xd->mi[0];
   unsigned char segment_id = mbmi->segment_id;
   const SPEED_FEATURES *const sf = &cpi->sf;
+  REF_SET ref_set = REF_SET_FULL;
 
-  default_skip_mask(mask, cpi->oxcf.enable_reduced_reference_set);
+  if (sf->use_real_time_ref_set)
+    ref_set = REF_SET_REALTIME;
+  else if (cpi->oxcf.enable_reduced_reference_set)
+    ref_set = REF_SET_REDUCED;
+
+  default_skip_mask(mask, ref_set);
 
   int min_pred_mv_sad = INT_MAX;
   MV_REFERENCE_FRAME ref_frame;
@@ -13157,14 +13186,14 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   CompoundTypeRdBuffers rd_buffers;
   alloc_compound_type_rd_buffers(cm, &rd_buffers);
 
-  for (int midx = 0; midx < LAST_SINGLE_REF_MODES + 1; ++midx) {
+  for (int midx = 0; midx < MAX_MODES; ++midx) {
     const MODE_DEFINITION *mode_order = &av1_mode_order[midx];
     this_mode = mode_order->mode;
     const MV_REFERENCE_FRAME ref_frame = mode_order->ref_frame[0];
     const MV_REFERENCE_FRAME second_ref_frame = mode_order->ref_frame[1];
     const int comp_pred = second_ref_frame > INTRA_FRAME;
 
-    if (ref_frame > LAST_FRAME) continue;
+    if (second_ref_frame != NONE_FRAME) continue;
 
     // When single ref motion search ends:
     // 1st pass: To evaluate single ref RD results and rewind to the beginning;
@@ -13178,7 +13207,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         motion_mode_skip_mask = analyze_simple_trans_states(cpi, x);
         continue;
       }
-      if (!comp_pred) {  // single ref mode
+      if (!comp_pred && ref_frame != INTRA_FRAME) {  // single ref mode
         if (args.single_ref_first_pass) {
           // clear stats
           for (int k = 0; k < MAX_REF_MV_SERCH; ++k) {

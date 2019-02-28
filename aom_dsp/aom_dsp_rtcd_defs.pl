@@ -847,6 +847,18 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   add_proto qw/void aom_minmax_8x8/, "const uint8_t *s, int p, const uint8_t *d, int dp, int *min, int *max";
   specialize qw/aom_minmax_8x8 sse2/;
 
+  add_proto qw/void aom_int_pro_row/, "int16_t *hbuf, const uint8_t *ref, const int ref_stride, const int height";
+  # TODO(kyslov@) bring back SSE2 by extending it to 128 block size
+  #specialize qw/aom_int_pro_row sse2/;
+
+  add_proto qw/int16_t aom_int_pro_col/, "const uint8_t *ref, const int width";
+  # TODO(kyslov@) bring back SSE2 by extending it to 128 block size
+  #specialize qw/aom_int_pro_col sse2/;
+
+  add_proto qw/int aom_vector_var/, "const int16_t *ref, const int16_t *src, const int bwl";
+  # TODO(kyslov@) bring back SSE2 by extending it to 128 block size
+  #specialize qw/aom_vector_var sse2/;
+
   #
   # hamadard transform and satd for implmenting temporal dependency model
   #

@@ -83,6 +83,11 @@ int av1_refining_search_sad(struct macroblock *x, MV *ref_mv, int sad_per_bit,
                             int distance, const aom_variance_fn_ptr_t *fn_ptr,
                             const MV *center_mv);
 
+unsigned int av1_int_pro_motion_estimation(const struct AV1_COMP *cpi,
+                                           MACROBLOCK *x, BLOCK_SIZE bsize,
+                                           int mi_row, int mi_col,
+                                           const MV *ref_mv);
+
 // Runs sequence of diamond searches in smaller steps for RD.
 int av1_full_pixel_diamond(const struct AV1_COMP *cpi, MACROBLOCK *x,
                            MV *mvp_full, int step_param, int sadpb,

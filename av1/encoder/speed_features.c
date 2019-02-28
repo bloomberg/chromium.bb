@@ -234,6 +234,7 @@ static void set_good_speed_features_framesize_independent(
   sf->prune_motion_mode_level = 1;
   sf->cb_pred_filter_search = 0;
   sf->use_nonrd_pick_mode = 0;
+  sf->use_real_time_ref_set = 0;
 
   if (speed >= 1) {
     sf->gm_erroradv_type = GM_ERRORADV_TR_1;
@@ -456,6 +457,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->prune_motion_mode_level = 1;
   sf->cb_pred_filter_search = 0;
   sf->use_nonrd_pick_mode = 0;
+  sf->use_real_time_ref_set = 0;
 
   if (speed >= 1) {
     sf->gm_erroradv_type = GM_ERRORADV_TR_1;
@@ -612,6 +614,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->default_max_partition_size = BLOCK_128X128;
     sf->default_min_partition_size = BLOCK_8X8;
     sf->partition_search_type = VAR_BASED_PARTITION;
+    sf->use_real_time_ref_set = 1;
     // Can't use LARGEST TX mode with pre-calculated partition
     // and disabled TX64
     if (!cpi->oxcf.enable_tx64) sf->tx_size_search_method = USE_FAST_RD;

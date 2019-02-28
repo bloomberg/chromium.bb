@@ -2095,6 +2095,216 @@ static int is_exhaustive_allowed(const AV1_COMP *const cpi, MACROBLOCK *x) {
   return is_allowed;
 }
 
+static int vector_match(int16_t *ref, int16_t *src, int bwl) {
+  int best_sad = INT_MAX;
+  int this_sad;
+  int d;
+  int center, offset = 0;
+  int bw = 4 << bwl;  // redundant variable, to be changed in the experiments.
+  for (d = 0; d <= bw; d += 16) {
+    this_sad = aom_vector_var(&ref[d], src, bwl);
+    if (this_sad < best_sad) {
+      best_sad = this_sad;
+      offset = d;
+    }
+  }
+  center = offset;
+
+  for (d = -8; d <= 8; d += 16) {
+    int this_pos = offset + d;
+    // check limit
+    if (this_pos < 0 || this_pos > bw) continue;
+    this_sad = aom_vector_var(&ref[this_pos], src, bwl);
+    if (this_sad < best_sad) {
+      best_sad = this_sad;
+      center = this_pos;
+    }
+  }
+  offset = center;
+
+  for (d = -4; d <= 4; d += 8) {
+    int this_pos = offset + d;
+    // check limit
+    if (this_pos < 0 || this_pos > bw) continue;
+    this_sad = aom_vector_var(&ref[this_pos], src, bwl);
+    if (this_sad < best_sad) {
+      best_sad = this_sad;
+      center = this_pos;
+    }
+  }
+  offset = center;
+
+  for (d = -2; d <= 2; d += 4) {
+    int this_pos = offset + d;
+    // check limit
+    if (this_pos < 0 || this_pos > bw) continue;
+    this_sad = aom_vector_var(&ref[this_pos], src, bwl);
+    if (this_sad < best_sad) {
+      best_sad = this_sad;
+      center = this_pos;
+    }
+  }
+  offset = center;
+
+  for (d = -1; d <= 1; d += 2) {
+    int this_pos = offset + d;
+    // check limit
+    if (this_pos < 0 || this_pos > bw) continue;
+    this_sad = aom_vector_var(&ref[this_pos], src, bwl);
+    if (this_sad < best_sad) {
+      best_sad = this_sad;
+      center = this_pos;
+    }
+  }
+
+  return (center - (bw >> 1));
+}
+
+static const MV search_pos[4] = {
+  { -1, 0 },
+  { 0, -1 },
+  { 0, 1 },
+  { 1, 0 },
+};
+
+unsigned int av1_int_pro_motion_estimation(const AV1_COMP *cpi, MACROBLOCK *x,
+                                           BLOCK_SIZE bsize, int mi_row,
+                                           int mi_col, const MV *ref_mv) {
+  MACROBLOCKD *xd = &x->e_mbd;
+  MB_MODE_INFO *mi = xd->mi[0];
+  struct buf_2d backup_yv12[MAX_MB_PLANE] = { { 0, 0, 0, 0, 0 } };
+  DECLARE_ALIGNED(16, int16_t, hbuf[256]);
+  DECLARE_ALIGNED(16, int16_t, vbuf[256]);
+  DECLARE_ALIGNED(16, int16_t, src_hbuf[128]);
+  DECLARE_ALIGNED(16, int16_t, src_vbuf[128]);
+  int idx;
+  const int bw = 4 << mi_size_wide_log2[bsize];
+  const int bh = 4 << mi_size_high_log2[bsize];
+  const int search_width = bw << 1;
+  const int search_height = bh << 1;
+  const int src_stride = x->plane[0].src.stride;
+  const int ref_stride = xd->plane[0].pre[0].stride;
+  uint8_t const *ref_buf, *src_buf;
+  MV *tmp_mv = &xd->mi[0]->mv[0].as_mv;
+  unsigned int best_sad, tmp_sad, this_sad[4];
+  MV this_mv;
+  const int norm_factor = 3 + (bw >> 5);
+  const YV12_BUFFER_CONFIG *scaled_ref_frame =
+      av1_get_scaled_ref_frame(cpi, mi->ref_frame[0]);
+  MvLimits subpel_mv_limits;
+
+  if (scaled_ref_frame) {
+    int i;
+    // Swap out the reference frame for a version that's been scaled to
+    // match the resolution of the current frame, allowing the existing
+    // motion search code to be used without additional modifications.
+    for (i = 0; i < MAX_MB_PLANE; i++) backup_yv12[i] = xd->plane[i].pre[0];
+    av1_setup_pre_planes(xd, 0, scaled_ref_frame, mi_row, mi_col, NULL,
+                         MAX_MB_PLANE);
+  }
+
+  if (xd->bd != 8) {
+    unsigned int sad;
+    tmp_mv->row = 0;
+    tmp_mv->col = 0;
+    sad = cpi->fn_ptr[bsize].sdf(x->plane[0].src.buf, src_stride,
+                                 xd->plane[0].pre[0].buf, ref_stride);
+
+    if (scaled_ref_frame) {
+      int i;
+      for (i = 0; i < MAX_MB_PLANE; i++) xd->plane[i].pre[0] = backup_yv12[i];
+    }
+    return sad;
+  }
+
+  // Set up prediction 1-D reference set
+  ref_buf = xd->plane[0].pre[0].buf - (bw >> 1);
+  for (idx = 0; idx < search_width; idx += 16) {
+    aom_int_pro_row(&hbuf[idx], ref_buf, ref_stride, bh);
+    ref_buf += 16;
+  }
+
+  ref_buf = xd->plane[0].pre[0].buf - (bh >> 1) * ref_stride;
+  for (idx = 0; idx < search_height; ++idx) {
+    vbuf[idx] = aom_int_pro_col(ref_buf, bw) >> norm_factor;
+    ref_buf += ref_stride;
+  }
+
+  // Set up src 1-D reference set
+  for (idx = 0; idx < bw; idx += 16) {
+    src_buf = x->plane[0].src.buf + idx;
+    aom_int_pro_row(&src_hbuf[idx], src_buf, src_stride, bh);
+  }
+
+  src_buf = x->plane[0].src.buf;
+  for (idx = 0; idx < bh; ++idx) {
+    src_vbuf[idx] = aom_int_pro_col(src_buf, bw) >> norm_factor;
+    src_buf += src_stride;
+  }
+
+  // Find the best match per 1-D search
+  tmp_mv->col = vector_match(hbuf, src_hbuf, mi_size_wide_log2[bsize]);
+  tmp_mv->row = vector_match(vbuf, src_vbuf, mi_size_high_log2[bsize]);
+
+  this_mv = *tmp_mv;
+  src_buf = x->plane[0].src.buf;
+  ref_buf = xd->plane[0].pre[0].buf + this_mv.row * ref_stride + this_mv.col;
+  best_sad = cpi->fn_ptr[bsize].sdf(src_buf, src_stride, ref_buf, ref_stride);
+
+  {
+    const uint8_t *const pos[4] = {
+      ref_buf - ref_stride,
+      ref_buf - 1,
+      ref_buf + 1,
+      ref_buf + ref_stride,
+    };
+
+    cpi->fn_ptr[bsize].sdx4df(src_buf, src_stride, pos, ref_stride, this_sad);
+  }
+
+  for (idx = 0; idx < 4; ++idx) {
+    if (this_sad[idx] < best_sad) {
+      best_sad = this_sad[idx];
+      tmp_mv->row = search_pos[idx].row + this_mv.row;
+      tmp_mv->col = search_pos[idx].col + this_mv.col;
+    }
+  }
+
+  if (this_sad[0] < this_sad[3])
+    this_mv.row -= 1;
+  else
+    this_mv.row += 1;
+
+  if (this_sad[1] < this_sad[2])
+    this_mv.col -= 1;
+  else
+    this_mv.col += 1;
+
+  ref_buf = xd->plane[0].pre[0].buf + this_mv.row * ref_stride + this_mv.col;
+
+  tmp_sad = cpi->fn_ptr[bsize].sdf(src_buf, src_stride, ref_buf, ref_stride);
+  if (best_sad > tmp_sad) {
+    *tmp_mv = this_mv;
+    best_sad = tmp_sad;
+  }
+
+  tmp_mv->row *= 8;
+  tmp_mv->col *= 8;
+
+  set_subpel_mv_search_range(
+      &x->mv_limits, &subpel_mv_limits.col_min, &subpel_mv_limits.col_max,
+      &subpel_mv_limits.row_min, &subpel_mv_limits.row_max, ref_mv);
+  clamp_mv(tmp_mv, subpel_mv_limits.col_min, subpel_mv_limits.col_max,
+           subpel_mv_limits.row_min, subpel_mv_limits.row_max);
+
+  if (scaled_ref_frame) {
+    int i;
+    for (i = 0; i < MAX_MB_PLANE; i++) xd->plane[i].pre[0] = backup_yv12[i];
+  }
+
+  return best_sad;
+}
+
 int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
                           MV *mvp_full, int step_param, int method,
                           int run_mesh_search, int error_per_bit,
