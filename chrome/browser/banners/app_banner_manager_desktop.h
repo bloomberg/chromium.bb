@@ -36,9 +36,11 @@ class AppBannerManagerDesktop
   explicit AppBannerManagerDesktop(content::WebContents* web_contents);
 
   // AppBannerManager overrides.
+  void CreateBookmarkApp(WebappInstallSource install_source) override;
   void DidFinishCreatingBookmarkApp(
       const extensions::Extension* extension,
       const WebApplicationInfo& web_app_info) override;
+  void ResetCurrentPageData() override;
 
  private:
   friend class content::WebContentsUserData<AppBannerManagerDesktop>;

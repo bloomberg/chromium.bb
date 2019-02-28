@@ -47,6 +47,21 @@ AppBannerManagerDesktop::AppBannerManagerDesktop(
 
 AppBannerManagerDesktop::~AppBannerManagerDesktop() { }
 
+void AppBannerManagerDesktop::CreateBookmarkApp(
+    WebappInstallSource install_source) {
+  content::WebContents* contents = web_contents();
+  DCHECK(contents);
+
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  WebApplicationInfo web_app_info;
+
+  bookmark_app_helper_.reset(new extensions::BookmarkAppHelper(
+      profile, web_app_info, contents, install_source));
+
+  bookmark_app_helper_->Create(base::BindRepeating(
+      &AppBannerManager::DidFinishCreatingBookmarkApp, GetWeakPtr()));
+}
+
 void AppBannerManagerDesktop::DidFinishCreatingBookmarkApp(
     const extensions::Extension* extension,
     const WebApplicationInfo& web_app_info) {
@@ -76,6 +91,11 @@ void AppBannerManagerDesktop::DidFinishCreatingBookmarkApp(
       contents, GetAppIdentifier(), AppBannerSettingsHelper::WEB);
 }
 
+void AppBannerManagerDesktop::ResetCurrentPageData() {
+  bookmark_app_helper_.reset();
+  AppBannerManager::ResetCurrentPageData();
+}
+
 bool AppBannerManagerDesktop::IsWebAppConsideredInstalled(
     content::WebContents* web_contents,
     const GURL& validated_url,
@@ -86,31 +106,24 @@ bool AppBannerManagerDesktop::IsWebAppConsideredInstalled(
 }
 
 void AppBannerManagerDesktop::ShowBannerUi(WebappInstallSource install_source) {
-  content::WebContents* contents = web_contents();
-  DCHECK(contents && !manifest_.IsEmpty());
-
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  WebApplicationInfo web_app_info;
-
-  bookmark_app_helper_.reset(new extensions::BookmarkAppHelper(
-      profile, web_app_info, contents, install_source));
-
   if (IsExperimentalAppBannersEnabled()) {
     RecordDidShowBanner("AppBanner.WebApp.Shown");
     TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
     TrackUserResponse(USER_RESPONSE_WEB_APP_ACCEPTED);
     ReportStatus(SHOWING_APP_INSTALLATION_DIALOG);
-    bookmark_app_helper_->Create(base::Bind(
-        &AppBannerManager::DidFinishCreatingBookmarkApp, GetWeakPtr()));
+    CreateBookmarkApp(install_source);
     return;
   }
+
+  content::WebContents* contents = web_contents();
+  DCHECK(contents && !manifest_.IsEmpty());
 
   // This differs from Android, where there is a concrete
   // AppBannerInfoBarAndroid class to interface with Java, and the manager calls
   // the InfoBarService to show the banner. On desktop, an InfoBar class
   // is not required, and the delegate calls the InfoBarService.
   infobars::InfoBar* infobar = AppBannerInfoBarDelegateDesktop::Create(
-      contents, GetWeakPtr(), bookmark_app_helper_.get(), manifest_);
+      contents, GetWeakPtr(), install_source, manifest_);
   if (infobar) {
     RecordDidShowBanner("AppBanner.WebApp.Shown");
     TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
