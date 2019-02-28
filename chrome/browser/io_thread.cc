@@ -30,7 +30,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_use_measurement/chrome_data_use_ascriber.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
-#include "chrome/browser/net/dns_probe_service.h"
 #include "chrome/browser/net/failing_url_request_interceptor.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/common/chrome_content_client.h"
@@ -283,9 +282,6 @@ void IOThread::Init() {
 
   globals_->data_use_ascriber =
       std::make_unique<data_use_measurement::ChromeDataUseAscriber>();
-
-  globals_->dns_probe_service =
-      std::make_unique<chrome_browser_net::DnsProbeService>();
 
   if (command_line.HasSwitch(network::switches::kIgnoreUrlFetcherCertRequests))
     net::URLFetcher::SetIgnoreCertificateRequests(true);

@@ -36,10 +36,6 @@ class PrefRegistrySimple;
 class PrefService;
 class SystemNetworkContextManager;
 
-namespace chrome_browser_net {
-class DnsProbeService;
-}
-
 namespace data_use_measurement {
 class ChromeDataUseAscriber;
 }
@@ -117,10 +113,6 @@ class IOThread : public content::BrowserThreadDelegate {
     scoped_refptr<extensions::EventRouterForwarder>
         extension_event_router_forwarder;
 #endif
-    // NetErrorTabHelper uses |dns_probe_service| to send DNS probes when a
-    // main frame load fails with a DNS error in order to provide more useful
-    // information to the renderer so it can show a more specific error page.
-    std::unique_ptr<chrome_browser_net::DnsProbeService> dns_probe_service;
   };
 
   // |net_log| must either outlive the IOThread or be NULL.

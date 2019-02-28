@@ -139,9 +139,6 @@ source_set("host_resolver") {
   friend = [
     # chrome/browser/io_thread.cc
     # Used to build in-process HostResolver when network service disabled.
-    #
-    # chrome/browser/net/dns_probe_service.cc
-    # TODO(crbug.com/874660): Remove once migrated to network service IPC.
     "//chrome/browser",
 
     # chromecast/browser/url_request_context_factory.cc
@@ -261,11 +258,6 @@ source_set("dns_client") {
     # chrome/browser/local_discovery/service_discovery_client_impl.cc
     # Result parsing utilities for parsing results read through MdnsClient.
     # TODO(crbug.com/874662): Remove once migrated to network service.
-    #
-    # chrome/browser/net/dns_probe_runner.cc
-    # chrome/browser/net/dns_probe_service.cc
-    # DNS lookups using DnsClient.
-    # TODO(crbug.com/874660): Remove once migrated to network service.
     "//chrome/browser",
 
     # chrome/browser/chromeos/smb_client/discovery/mdns_host_locator.cc

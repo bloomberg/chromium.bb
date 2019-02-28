@@ -6,10 +6,8 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/task/post_task.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/dns_probe_service.h"
+#include "chrome/browser/net/dns_probe_service_factory.h"
 #include "chrome/browser/net/net_error_diagnostics_dialog.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -47,28 +45,6 @@ namespace {
 
 static NetErrorTabHelper::TestingState testing_state_ =
     NetErrorTabHelper::TESTING_DEFAULT;
-
-void OnDnsProbeFinishedOnIOThread(
-    const base::Callback<void(DnsProbeStatus)>& callback,
-    DnsProbeStatus result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(callback, result));
-}
-
-// Can only access g_browser_process->io_thread() from the browser thread,
-// so have to pass it in to the callback instead of dereferencing it here.
-void StartDnsProbeOnIOThread(
-    const base::Callback<void(DnsProbeStatus)>& callback,
-    IOThread* io_thread) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  DnsProbeService* probe_service =
-      io_thread->globals()->dns_probe_service.get();
-
-  probe_service->ProbeDns(base::Bind(&OnDnsProbeFinishedOnIOThread, callback));
-}
 
 }  // namespace
 
@@ -193,12 +169,10 @@ void NetErrorTabHelper::StartDnsProbe() {
 
   DVLOG(1) << "Starting DNS probe.";
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&StartDnsProbeOnIOThread,
-                     base::Bind(&NetErrorTabHelper::OnDnsProbeFinished,
-                                weak_factory_.GetWeakPtr()),
-                     g_browser_process->io_thread()));
+  DnsProbeService* probe_service = DnsProbeServiceFactory::GetForContext(
+      web_contents()->GetBrowserContext());
+  probe_service->ProbeDns(base::BindOnce(&NetErrorTabHelper::OnDnsProbeFinished,
+                                         weak_factory_.GetWeakPtr()));
 }
 
 void NetErrorTabHelper::OnDnsProbeFinished(DnsProbeStatus result) {
