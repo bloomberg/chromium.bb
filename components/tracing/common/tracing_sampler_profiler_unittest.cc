@@ -6,6 +6,7 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/profiler/stack_sampling_profiler.h"
@@ -174,6 +175,27 @@ TEST_F(TracingSampleProfilerTest, SamplingChildThread) {
   WaitForEvents();
   EndTracing();
   ValidateReceivedEvents();
+}
+
+TEST(TracingProfileBuilderTest, ValidModule) {
+#if defined(OS_WIN)
+  base::FilePath module_path(L"c:\\some\\path\\to\\chrome.exe");
+#else
+  base::FilePath module_path("/some/path/to/chrome");
+#endif
+
+  base::ModuleCache::Module module(0x1000, "ID", module_path, 0x2000);
+  TracingSamplerProfiler::TracingProfileBuilder profile_builder(
+      (base::PlatformThreadId()));
+  profile_builder.OnSampleCompleted(
+      {base::StackSamplingProfiler::Frame(0x1010, &module)});
+}
+
+TEST(TracingProfileBuilderTest, InvalidModule) {
+  TracingSamplerProfiler::TracingProfileBuilder profile_builder(
+      (base::PlatformThreadId()));
+  profile_builder.OnSampleCompleted(
+      {base::StackSamplingProfiler::Frame(0x1010, nullptr)});
 }
 
 }  // namespace tracing

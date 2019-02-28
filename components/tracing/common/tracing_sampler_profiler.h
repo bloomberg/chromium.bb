@@ -7,14 +7,11 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/profiler/stack_sampling_profiler.h"
 #include "base/sequence_checker.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_log.h"
 #include "components/tracing/tracing_export.h"
-
-namespace base {
-class StackSamplingProfiler;
-}
 
 namespace tracing {
 
@@ -30,6 +27,25 @@ namespace tracing {
 class TRACING_EXPORT TracingSamplerProfiler
     : public base::trace_event::TraceLog::EnabledStateObserver {
  public:
+  // This class will receive the sampling profiler stackframes and output them
+  // to the chrome trace via an event. Exposed for testing.
+  class TRACING_EXPORT TracingProfileBuilder
+      : public base::StackSamplingProfiler::ProfileBuilder {
+   public:
+    TracingProfileBuilder(base::PlatformThreadId sampled_thread_id);
+
+    // base::StackSamplingProfiler::ProfileBuilder
+    base::ModuleCache* GetModuleCache() override;
+    void OnSampleCompleted(
+        std::vector<base::StackSamplingProfiler::Frame> frames) override;
+    void OnProfileCompleted(base::TimeDelta profile_duration,
+                            base::TimeDelta sampling_period) override {}
+
+   private:
+    base::ModuleCache module_cache_;
+    base::PlatformThreadId sampled_thread_id_;
+  };
+
   // Creates sampling profiler on main thread. Since the message loop might not
   // be setup when creating this profiler, the client must call
   // OnMessageLoopStarted() when setup.

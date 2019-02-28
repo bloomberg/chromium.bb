@@ -38,51 +38,53 @@ std::string GetFrameNameFromOffsetAddr(uintptr_t offset_from_module_base) {
   return base::StringPrintf("off:0x%" PRIxPTR, offset_from_module_base);
 }
 
-// This class will receive the sampling profiler stackframes and output them
-// to the chrome trace via an event.
-class TracingProfileBuilder
-    : public base::StackSamplingProfiler::ProfileBuilder {
- public:
-  TracingProfileBuilder(base::PlatformThreadId sampled_thread_id)
-      : sampled_thread_id_(sampled_thread_id) {}
+}  // namespace
 
-  base::ModuleCache* GetModuleCache() override { return &module_cache_; }
+TracingSamplerProfiler::TracingProfileBuilder::TracingProfileBuilder(
+    base::PlatformThreadId sampled_thread_id)
+    : sampled_thread_id_(sampled_thread_id) {}
 
-  void OnSampleCompleted(
-      std::vector<base::StackSamplingProfiler::Frame> frames) override {
-    int process_priority = base::Process::Current().GetPriority();
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
-                         "ProcessPriority", TRACE_EVENT_SCOPE_THREAD,
-                         "priority", process_priority);
+base::ModuleCache*
+TracingSamplerProfiler::TracingProfileBuilder::GetModuleCache() {
+  return &module_cache_;
+}
 
-    if (frames.empty()) {
-      TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
-                           "StackCpuSampling", TRACE_EVENT_SCOPE_THREAD,
-                           "frames", "empty", "thread_id", sampled_thread_id_);
+void TracingSamplerProfiler::TracingProfileBuilder::OnSampleCompleted(
+    std::vector<base::StackSamplingProfiler::Frame> frames) {
+  int process_priority = base::Process::Current().GetPriority();
+  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+                       "ProcessPriority", TRACE_EVENT_SCOPE_THREAD, "priority",
+                       process_priority);
 
-      return;
-    }
-    // Insert an event with the frames rendered as a string with the following
-    // formats:
-    //   offset - module [debugid]
-    //  [OR]
-    //   symbol - module []
-    // The offset is difference between the load module address and the
-    // frame address.
-    //
-    // Example:
-    //
-    //   "malloc             - libc.so    []
-    //    std::string::alloc - stdc++.so  []
-    //    off:7ffb3f991b2d   - USER32.dll [2103C0950C7DEC7F7AAA44348EDC1DDD1]
-    //    off:7ffb3d439164   - win32u.dll [B3E4BE89CA7FB42A2AC1E1C475284CA11]
-    //    off:7ffaf3e26201   - chrome.dll [8767EB7E1C77DD10014E8152A34786B812]
-    //    off:7ffaf3e26008   - chrome.dll [8767EB7E1C77DD10014E8152A34786B812]
-    //    [...] "
-    std::string result;
-    for (const auto& frame : frames) {
-      std::string frame_name;
-      std::string module_name;
+  if (frames.empty()) {
+    TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+                         "StackCpuSampling", TRACE_EVENT_SCOPE_THREAD, "frames",
+                         "empty", "thread_id", sampled_thread_id_);
+
+    return;
+  }
+  // Insert an event with the frames rendered as a string with the following
+  // formats:
+  //   offset - module [debugid]
+  //  [OR]
+  //   symbol - module []
+  // The offset is difference between the load module address and the
+  // frame address.
+  //
+  // Example:
+  //
+  //   "malloc             - libc.so    []
+  //    std::string::alloc - stdc++.so  []
+  //    off:7ffb3f991b2d   - USER32.dll [2103C0950C7DEC7F7AAA44348EDC1DDD1]
+  //    off:7ffb3d439164   - win32u.dll [B3E4BE89CA7FB42A2AC1E1C475284CA11]
+  //    off:7ffaf3e26201   - chrome.dll [8767EB7E1C77DD10014E8152A34786B812]
+  //    off:7ffaf3e26008   - chrome.dll [8767EB7E1C77DD10014E8152A34786B812]
+  //    [...] "
+  std::string result;
+  for (const auto& frame : frames) {
+    std::string frame_name;
+    std::string module_name;
+    std::string module_id;
 #if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
     defined(OFFICIAL_BUILD)
       Dl_info info = {};
@@ -110,28 +112,24 @@ class TracingProfileBuilder
       if (frame_name.empty())
         frame_name = "Unknown";
 #else
+    if (frame.module) {
       module_name = frame.module->filename.BaseName().MaybeAsASCII();
+      module_id = frame.module->id;
       frame_name = GetFrameNameFromOffsetAddr(frame.instruction_pointer -
                                               frame.module->base_address);
+    } else {
+      module_name = module_id = "";
+      frame_name = "Unknown";
+    }
 #endif
       base::StringAppendF(&result, "%s - %s [%s]\n", frame_name.c_str(),
-                          module_name.c_str(), frame.module->id.c_str());
-    }
+                          module_name.c_str(), module_id.c_str());
+  }
 
     TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
                          "StackCpuSampling", TRACE_EVENT_SCOPE_THREAD, "frames",
                          result, "thread_id", sampled_thread_id_);
-  }
-
-  void OnProfileCompleted(base::TimeDelta profile_duration,
-                          base::TimeDelta sampling_period) override {}
-
- private:
-  base::ModuleCache module_cache_;
-  base::PlatformThreadId sampled_thread_id_;
-};
-
-}  // namespace
+}
 
 // static
 std::unique_ptr<TracingSamplerProfiler>
