@@ -23,8 +23,6 @@
 -android.webkit.cts.WebChromeClientTest.testOnJsBeforeUnloadIsCalled
 -android.webkit.cts.WebViewClientTest.testOnReceivedError
 -android.webkit.cts.WebViewClientTest.testShouldOverrideUrlLoading
--android.webkit.cts.WebViewSslTest.testSecureServerRequestingClientCertDoesNotCancelRequest
--android.webkit.cts.WebViewSslTest.testSecureServerRequiringClientCertDoesCancelRequest
 -android.webkit.cts.WebViewTest.testSetDownloadListener
 -com.android.cts.webkit.WebViewDeviceSideStartupTest.testCookieManagerBlockingUiThread
 
