@@ -32,7 +32,13 @@ constexpr base::TimeDelta kDefaultRefreshPeriod = base::TimeDelta::FromDays(30);
 // retry_period_millis sent by CryptAuth in SyncKeysResponse.
 constexpr base::TimeDelta kDefaultRetryPeriod = base::TimeDelta::FromHours(12);
 
-// The default number of immediate retries after a failed enrollment attempt.
+// The time to wait before an "immediate" retry attempt after a failed
+// enrollment attempt. Note: SyncKeys requests are throttled by CryptAuth if
+// more than one is sent within a five-minute window.
+constexpr base::TimeDelta kImmediateRetryDelay =
+    base::TimeDelta::FromMinutes(5);
+
+// The default number of "immediate" retries after a failed enrollment attempt.
 // Superseded by the ClientDirective's retry_attempts sent by CryptAuth in the
 // SyncKeysResponse.
 const int kDefaultMaxImmediateRetries = 3;
@@ -264,7 +270,7 @@ PersistentEnrollmentScheduler::CalculateTimeBetweenEnrollmentRequests() const {
     return GetRefreshPeriod();
 
   if (num_consecutive_failures <= (size_t)client_directive_.retry_attempts())
-    return base::TimeDelta::FromMilliseconds(0);
+    return kImmediateRetryDelay;
 
   return base::TimeDelta::FromMilliseconds(
       client_directive_.retry_period_millis());
