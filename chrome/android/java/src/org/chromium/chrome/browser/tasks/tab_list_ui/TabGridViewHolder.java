@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tasks.tab_list_ui;
 
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
 /**
@@ -30,6 +32,8 @@ class TabGridViewHolder extends RecyclerView.ViewHolder {
         this.title = itemView.findViewById(R.id.tab_title);
         this.favicon = itemView.findViewById(R.id.tab_favicon);
         this.closeButton = itemView.findViewById(R.id.close_button);
+        DrawableCompat.setTint(this.closeButton.getDrawable(),
+                ApiCompatibilityUtils.getColor(itemView.getResources(), R.color.light_icon_color));
     }
 
     public static TabGridViewHolder create(ViewGroup parent, int itemViewType) {

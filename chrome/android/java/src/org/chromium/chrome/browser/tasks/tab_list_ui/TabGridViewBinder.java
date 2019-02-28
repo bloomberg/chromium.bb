@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tasks.tab_list_ui;
 
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.InsetDrawable;
 import android.support.annotation.Nullable;
@@ -12,6 +13,7 @@ import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.widget.FrameLayout;
 
+import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -58,7 +60,16 @@ class TabGridViewBinder {
         } else if (TabProperties.FAVICON == propertyKey) {
             holder.favicon.setImageBitmap(item.get(TabProperties.FAVICON));
         } else if (TabProperties.THUMBNAIL_FETCHER == propertyKey) {
-            item.get(TabProperties.THUMBNAIL_FETCHER).fetch(holder.thumbnail::setImageBitmap);
+            TabListMediator.ThumbnailFetcher fetcher = item.get(TabProperties.THUMBNAIL_FETCHER);
+            if (fetcher == null) return;
+            Callback<Bitmap> callback = result -> {
+                if (result == null) {
+                    holder.thumbnail.setImageResource(0);
+                } else {
+                    holder.thumbnail.setImageBitmap(result);
+                }
+            };
+            fetcher.fetch(callback);
         } else if (TabProperties.TAB_ID == propertyKey) {
             holder.setTabId(item.get(TabProperties.TAB_ID));
         }

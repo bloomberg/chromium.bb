@@ -44,7 +44,7 @@ class TabListMediator {
      * The object to set to TabProperties.THUMBNAIL_FETCHER for the TabGridViewBinder to obtain
      * the thumbnail asynchronously.
      */
-    class ThumbnailFetcher {
+    static class ThumbnailFetcher {
         private ThumbnailProvider mThumbnailProvider;
         private Tab mTab;
 
