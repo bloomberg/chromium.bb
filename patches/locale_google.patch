@@ -7330,3 +7330,186 @@ index 063fd1e5..a7a205e4 100644
          }
          "meta:Kosrae"{
              ls{"코스라에섬 시간"}
+diff --git a/source/data/region/lt.txt b/source/data/region/lt.txt
+index 02aa1f60..047c201e 100644
+--- a/source/data/region/lt.txt
++++ b/source/data/region/lt.txt
+@@ -110,7 +110,7 @@ lt{
+         EZ{"euro zona"}
+         FI{"Suomija"}
+         FJ{"Fidžis"}
+-        FK{"Folklando Salos"}
++        FK{"Folklando (Malvinų) Salos"}
+         FM{"Mikronezija"}
+         FO{"Farerų Salos"}
+         FR{"Prancūzija"}
+@@ -133,7 +133,7 @@ lt{
+         GU{"Guamas"}
+         GW{"Bisau Gvinėja"}
+         GY{"Gajana"}
+-        HK{"Ypatingasis Administracinis Kinijos Regionas Honkongas"}
++        HK{"Honkongas"}
+         HM{"Herdo ir Makdonaldo Salos"}
+         HN{"Hondūras"}
+         HR{"Kroatija"}
+@@ -183,11 +183,11 @@ lt{
+         MF{"Sen Martenas"}
+         MG{"Madagaskaras"}
+         MH{"Maršalo Salos"}
+-        MK{"Makedonija"}
++        MK{"Makedonijos Respublika"}
+         ML{"Malis"}
+         MM{"Mianmaras (Birma)"}
+         MN{"Mongolija"}
+-        MO{"Ypatingasis Administracinis Kinijos Regionas Makao"}
++        MO{"Makao"}
+         MP{"Marianos Šiaurinės Salos"}
+         MQ{"Martinika"}
+         MR{"Mauritanija"}
+@@ -222,7 +222,7 @@ lt{
+         PM{"Sen Pjeras ir Mikelonas"}
+         PN{"Pitkerno salos"}
+         PR{"Puerto Rikas"}
+-        PS{"Palestinos teritorija"}
++        PS{"Palestina"}
+         PT{"Portugalija"}
+         PW{"Palau"}
+         PY{"Paragvajus"}
+@@ -297,9 +297,6 @@ lt{
+     }
+     Countries%short{
+         GB{"JK"}
+-        HK{"Honkongas"}
+-        MO{"Makao"}
+-        PS{"Palestina"}
+         UN{"JT"}
+         US{"JAV"}
+     }
+@@ -308,8 +305,6 @@ lt{
+         CG{"Kongo Respublika"}
+         CI{"Dramblio Kaulo Kranto Respublika"}
+         CZ{"Čekijos Respublika"}
+-        FK{"Folklando (Malvinų) Salos"}
+-        MK{"Makedonijos Respublika"}
+     }
+     Version{"2.1.44.91"}
+ }
+diff --git a/source/data/region/lv.txt b/source/data/region/lv.txt
+index 2d82c4f3..9215a6a4 100644
+--- a/source/data/region/lv.txt
++++ b/source/data/region/lv.txt
+@@ -110,7 +110,7 @@ lv{
+         EZ{"Eirozona"}
+         FI{"Somija"}
+         FJ{"Fidži"}
+-        FK{"Folklenda salas"}
++        FK{"Folklenda (Malvinu) salas"}
+         FM{"Mikronēzija"}
+         FO{"Fēru salas"}
+         FR{"Francija"}
+@@ -133,7 +133,7 @@ lv{
+         GU{"Guama"}
+         GW{"Gvineja-Bisava"}
+         GY{"Gajāna"}
+-        HK{"Ķīnas īpašās pārvaldes apgabals Honkonga"}
++        HK{"Honkonga"}
+         HM{"Hērda sala un Makdonalda salas"}
+         HN{"Hondurasa"}
+         HR{"Horvātija"}
+@@ -183,11 +183,11 @@ lv{
+         MF{"Senmartēna"}
+         MG{"Madagaskara"}
+         MH{"Māršala salas"}
+-        MK{"Maķedonija"}
++        MK{"bijusī Dienvidslāvijas Maķedonijas Republika"}
+         ML{"Mali"}
+         MM{"Mjanma (Birma)"}
+         MN{"Mongolija"}
+-        MO{"Ķīnas īpašās pārvaldes apgabals Makao"}
++        MO{"Makao"}
+         MP{"Ziemeļu Marianas salas"}
+         MQ{"Martinika"}
+         MR{"Mauritānija"}
+@@ -297,9 +297,6 @@ lv{
+     }
+     Countries%short{
+         GB{"Apvienotā Karaliste"}
+-        HK{"Honkonga"}
+-        MO{"Makao"}
+-        PS{"Palestīna"}
+         UN{"ANO"}
+         US{"ASV"}
+     }
+@@ -308,8 +305,6 @@ lv{
+         CG{"Kongo (Republika)"}
+         CI{"Ziloņkaula krasts"}
+         CZ{"Čehijas Republika"}
+-        FK{"Folklenda (Malvinu) salas"}
+-        MK{"bijusī Dienvidslāvijas Maķedonijas Republika"}
+     }
+     Version{"2.1.44.91"}
+ }
+diff --git a/source/data/region/zh_Hant.txt b/source/data/region/zh_Hant.txt
+index 8af4f241..24f94fdb 100644
+--- a/source/data/region/zh_Hant.txt
++++ b/source/data/region/zh_Hant.txt
+@@ -111,7 +111,7 @@ zh_Hant{
+         EZ{"歐元區"}
+         FI{"芬蘭"}
+         FJ{"斐濟"}
+-        FK{"福克蘭群島"}
++        FK{"福克蘭群島（馬爾維納斯群島）"}
+         FM{"密克羅尼西亞"}
+         FO{"法羅群島"}
+         FR{"法國"}
+@@ -134,7 +134,7 @@ zh_Hant{
+         GU{"關島"}
+         GW{"幾內亞比索"}
+         GY{"蓋亞那"}
+-        HK{"中國香港特別行政區"}
++        HK{"香港"}
+         HM{"赫德島及麥唐納群島"}
+         HN{"宏都拉斯"}
+         HR{"克羅埃西亞"}
+@@ -184,11 +184,11 @@ zh_Hant{
+         MF{"法屬聖馬丁"}
+         MG{"馬達加斯加"}
+         MH{"馬紹爾群島"}
+-        MK{"馬其頓"}
++        MK{"前南斯拉夫馬其頓共和國"}
+         ML{"馬利"}
+         MM{"緬甸"}
+         MN{"蒙古"}
+-        MO{"中國澳門特別行政區"}
++        MO{"澳門"}
+         MP{"北馬利安納群島"}
+         MQ{"馬丁尼克"}
+         MR{"茅利塔尼亞"}
+@@ -223,7 +223,7 @@ zh_Hant{
+         PM{"聖皮埃與密克隆群島"}
+         PN{"皮特肯群島"}
+         PR{"波多黎各"}
+-        PS{"巴勒斯坦自治區"}
++        PS{"巴勒斯坦"}
+         PT{"葡萄牙"}
+         PW{"帛琉"}
+         PY{"巴拉圭"}
+@@ -298,9 +298,6 @@ zh_Hant{
+     }
+     Countries%short{
+         GB{"英國"}
+-        HK{"香港"}
+-        MO{"澳門"}
+-        PS{"巴勒斯坦"}
+         UN{"聯合國"}
+         US{"美國"}
+     }
+@@ -308,8 +305,6 @@ zh_Hant{
+         CD{"剛果民主共和國"}
+         CG{"剛果共和國"}
+         CZ{"捷克共和國"}
+-        FK{"福克蘭群島（馬爾維納斯群島）"}
+-        MK{"前南斯拉夫馬其頓共和國"}
+     }
+     Version{"2.1.44.91"}
+ }
