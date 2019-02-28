@@ -123,7 +123,7 @@ Polymer({
     if (this.error_) {
       return this.i18n(this.error_, getUrlHostname(this.url_));
     }
-    return this.i18n('description');
+    return this.i18n('description', getUrlHostname(this.url_));
   },
 });
 

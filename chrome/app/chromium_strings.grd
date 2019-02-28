@@ -692,7 +692,7 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
       <!-- about:browser-switch strings -->
       <if expr="is_win or is_macosx or (is_linux and not is_chromeos)">
         <message name="IDS_ABOUT_BROWSER_SWITCH_DESCRIPTION" desc="Description shown while waiting for an alternative browser to open">
-          Your system administrator has configured Chromium to open an alternate browser.
+          Your system administrator has configured Chromium to open an alternative browser to access <ph name="TARGET_URL_HOSTNAME">$1<ex>example.com</ex></ph>.
         </message>
       </if>
 
