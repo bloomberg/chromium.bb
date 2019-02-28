@@ -7,6 +7,7 @@
 #include "third_party/blink/public/platform/web_http_header_visitor.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -15,6 +16,8 @@ namespace blink {
 
 class WebServiceWorkerResponsePrivate
     : public RefCounted<WebServiceWorkerResponsePrivate> {
+  USING_FAST_MALLOC(WebServiceWorkerResponsePrivate);
+
  public:
   WebServiceWorkerResponsePrivate()
       : status(0),
