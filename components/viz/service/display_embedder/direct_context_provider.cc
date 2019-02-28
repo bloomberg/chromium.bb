@@ -51,6 +51,9 @@ DirectContextProvider::DirectContextProvider(
                                        command_buffer->service(), &outputter_,
                                        group.get()));
 
+  if (gpu_preferences.enable_gpu_service_logging)
+    decoder->SetLogCommands(true);
+
   command_buffer->set_handler(decoder.get());
 
   gpu::ContextCreationAttribs attribs;
@@ -100,6 +103,10 @@ DirectContextProvider::DirectContextProvider(
 
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "viz::DirectContextProvider", base::ThreadTaskRunnerHandle::Get());
+
+  // TraceEndCHROMIUM is implicit when the context is destroyed
+  gles2_implementation_->TraceBeginCHROMIUM("VizCompositor",
+                                            "DisplayCompositor");
 }
 
 DirectContextProvider::~DirectContextProvider() {

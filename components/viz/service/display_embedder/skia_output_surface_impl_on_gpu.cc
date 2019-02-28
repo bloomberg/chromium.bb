@@ -7,6 +7,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -22,6 +23,7 @@
 #include "gpu/command_buffer/service/gr_shader_cache.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/scheduler.h"
+#include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
@@ -535,6 +537,12 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
                         ->GetSurfaceFactoryOzone()
                         ->CreatePlatformWindowSurface(surface_handle);
 #endif
+  if (gpu_service) {
+    gpu_preferences_ = gpu_service->gpu_channel_manager()->gpu_preferences();
+  } else {
+    auto* command_line = base::CommandLine::ForCurrentProcess();
+    gpu_preferences_ = gpu::gles2::ParseGpuPreferences(command_line);
+  }
 
   if (is_using_vulkan())
     InitializeForVulkan(gpu_service);
