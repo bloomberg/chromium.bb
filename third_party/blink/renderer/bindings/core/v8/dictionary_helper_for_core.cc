@@ -137,8 +137,8 @@ bool DictionaryHelper::Get(const Dictionary& dictionary,
 template <>
 CORE_EXPORT bool DictionaryHelper::Get(const Dictionary& dictionary,
                                        const StringView& key,
-                                       unsigned short& value) {
-  return GetNumericType<unsigned short>(dictionary, key, value);
+                                       uint16_t& value) {
+  return GetNumericType<uint16_t>(dictionary, key, value);
 }
 
 template <>
