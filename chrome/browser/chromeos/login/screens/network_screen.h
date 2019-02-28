@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -28,8 +29,12 @@ class NetworkStateHelper;
 // Controls network selection screen shown during OOBE.
 class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
  public:
+  enum class Result { CONNECTED, OFFLINE_DEMO_SETUP, BACK };
+
+  using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   NetworkScreen(BaseScreenDelegate* base_screen_delegate,
-                NetworkScreenView* view);
+                NetworkScreenView* view,
+                const ScreenExitCallback& exit_callback);
   ~NetworkScreen() override;
 
   // Returns instance of NetworkScreen.
@@ -38,6 +43,14 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
   // Called when |view| has been destroyed. If this instance is destroyed before
   // the |view| it should call view->Unbind().
   void OnViewDestroyed(NetworkScreenView* view);
+
+  void set_exit_callback_for_testing(const ScreenExitCallback& exit_callback) {
+    exit_callback_ = exit_callback;
+  }
+
+ protected:
+  // Give test overrides access to the exit callback.
+  ScreenExitCallback* exit_callback() { return &exit_callback_; }
 
  private:
   friend class NetworkScreenTest;
@@ -118,6 +131,7 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
   base::OneShotTimer connection_timer_;
 
   NetworkScreenView* view_ = nullptr;
+  ScreenExitCallback exit_callback_;
   std::unique_ptr<login::NetworkStateHelper> network_state_helper_;
 
   base::WeakPtrFactory<NetworkScreen> weak_ptr_factory_;

@@ -15,11 +15,14 @@ namespace chromeos {
 class MockNetworkScreen : public NetworkScreen {
  public:
   MockNetworkScreen(BaseScreenDelegate* base_screen_delegate,
-                    NetworkScreenView* view);
+                    NetworkScreenView* view,
+                    const ScreenExitCallback& exit_callback);
   ~MockNetworkScreen() override;
 
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
+
+  void ExitScreen(NetworkScreen::Result result);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockNetworkScreen);

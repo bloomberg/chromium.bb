@@ -370,8 +370,10 @@ std::unique_ptr<BaseScreen> WizardController::CreateScreen(OobeScreen screen) {
     return std::make_unique<WelcomeScreen>(this, this,
                                            oobe_ui->GetWelcomeView());
   } else if (screen == OobeScreen::SCREEN_OOBE_NETWORK) {
-    return std::make_unique<NetworkScreen>(this,
-                                           oobe_ui->GetNetworkScreenView());
+    return std::make_unique<NetworkScreen>(
+        this, oobe_ui->GetNetworkScreenView(),
+        base::BindRepeating(&WizardController::OnNetworkScreenExit,
+                            weak_factory_.GetWeakPtr()));
   } else if (screen == OobeScreen::SCREEN_OOBE_UPDATE) {
     return std::make_unique<UpdateScreen>(
         this, oobe_ui->GetUpdateView(),
@@ -727,6 +729,74 @@ void WizardController::OnScreenExit(OobeScreen screen) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, ExitHandlers:
+void WizardController::OnNetworkScreenExit(NetworkScreen::Result result) {
+  VLOG(1) << "Network screen exit: " << static_cast<int>(result);
+  OnScreenExit(OobeScreen::SCREEN_OOBE_NETWORK);
+
+  if (result == NetworkScreen::Result::BACK) {
+    if (demo_setup_controller_) {
+      ShowDemoModePreferencesScreen();
+    } else {
+      ShowWelcomeScreen();
+    }
+    return;
+  }
+
+  // Update the demo setup config for demo setup flow.
+  if (demo_setup_controller_) {
+    switch (result) {
+      case NetworkScreen::Result::CONNECTED:
+        demo_setup_controller_->set_demo_config(
+            DemoSession::DemoModeConfig::kOnline);
+        break;
+      case NetworkScreen::Result::OFFLINE_DEMO_SETUP:
+        demo_setup_controller_->set_demo_config(
+            DemoSession::DemoModeConfig::kOffline);
+        break;
+      case NetworkScreen::Result::BACK:
+        NOTREACHED();
+    }
+  }
+
+  if (ShowEulaOrArcTosAfterNetworkScreen())
+    return;
+
+  switch (result) {
+    case NetworkScreen::Result::CONNECTED:
+      InitiateOOBEUpdate();
+      break;
+    case NetworkScreen::Result::OFFLINE_DEMO_SETUP:
+      // TODO(agawronska): Maybe check if device is connected to the network
+      // and attempt system update. It is possible to initiate offline demo
+      // setup on the device that is connected, although it is probably not
+      // common.
+      ShowDemoModeSetupScreen();
+      break;
+    case NetworkScreen::Result::BACK:
+      NOTREACHED();
+  }
+}
+
+bool WizardController::ShowEulaOrArcTosAfterNetworkScreen() {
+  if (!is_official_build_)
+    return false;
+
+  if (!StartupUtils::IsEulaAccepted()) {
+    ShowEulaScreen();
+    return true;
+  }
+  if (arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
+    ShowArcTermsOfServiceScreen();
+    return true;
+  }
+
+  // This is reachable in case of a reboot during previous OOBE flow after EULA
+  // was accepted and ARC terms of service handled - for example due to a forced
+  // update (which is the next step, with the exception of offline demo mode
+  // setup).
+  return false;
+}
+
 void WizardController::OnUpdateScreenExit(UpdateScreen::Result result) {
   VLOG(1) << "Update screen exit: " << static_cast<int>(result);
   OnScreenExit(OobeScreen::SCREEN_OOBE_UPDATE);
@@ -807,58 +877,6 @@ void WizardController::OnHIDDetectionCompleted() {
 
 void WizardController::OnWelcomeContinued() {
   ShowNetworkScreen();
-}
-
-void WizardController::OnNetworkBack() {
-  if (demo_setup_controller_) {
-    ShowDemoModePreferencesScreen();
-  } else {
-    ShowWelcomeScreen();
-  }
-}
-
-void WizardController::OnNetworkConnected() {
-  if (demo_setup_controller_) {
-    demo_setup_controller_->set_demo_config(
-        DemoSession::DemoModeConfig::kOnline);
-  }
-
-  if (is_official_build_) {
-    if (!StartupUtils::IsEulaAccepted()) {
-      ShowEulaScreen();
-    } else if (arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
-      ShowArcTermsOfServiceScreen();
-    } else {
-      // Possible cases:
-      // 1. EULA was accepted, forced shutdown/reboot during update.
-      // 2. EULA was accepted, planned reboot after update.
-      // Make sure that device is up to date.
-      InitiateOOBEUpdate();
-    }
-  } else {
-    InitiateOOBEUpdate();
-  }
-}
-
-void WizardController::OnOfflineDemoModeSetup() {
-  DCHECK(demo_setup_controller_);
-  demo_setup_controller_->set_demo_config(
-      DemoSession::DemoModeConfig::kOffline);
-
-  if (is_official_build_) {
-    if (!StartupUtils::IsEulaAccepted()) {
-      ShowEulaScreen();
-    } else if (arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
-      ShowArcTermsOfServiceScreen();
-    } else {
-      ShowDemoModeSetupScreen();
-    }
-  } else {
-    // TODO(agawronska): Maybe check if device is connected to the network and
-    // attempt system update. It is possible to initiate offline demo setup on
-    // the device that is connected, although it is probably not common.
-    ShowDemoModeSetupScreen();
-  }
 }
 
 void WizardController::OnConnectionFailed() {
@@ -1410,15 +1428,6 @@ void WizardController::OnExit(ScreenExitCode exit_code) {
       break;
     case ScreenExitCode::WELCOME_CONTINUED:
       OnWelcomeContinued();
-      break;
-    case ScreenExitCode::NETWORK_BACK:
-      OnNetworkBack();
-      break;
-    case ScreenExitCode::NETWORK_CONNECTED:
-      OnNetworkConnected();
-      break;
-    case ScreenExitCode::NETWORK_OFFLINE_DEMO_SETUP:
-      OnOfflineDemoModeSetup();
       break;
     case ScreenExitCode::CONNECTION_FAILED:
       OnConnectionFailed();

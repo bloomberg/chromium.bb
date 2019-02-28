@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
+#include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
 #include "chrome/browser/chromeos/login/screens/welcome_screen.h"
@@ -196,6 +197,8 @@ class WizardController : public BaseScreenDelegate,
   void OnScreenExit(OobeScreen screen);
 
   // Exit handlers:
+  void OnNetworkScreenExit(NetworkScreen::Result result);
+  bool ShowEulaOrArcTosAfterNetworkScreen();
   void OnUpdateScreenExit(UpdateScreen::Result result);
   void OnUpdateCompleted();
   void OnAutoEnrollmentCheckScreenExit();
@@ -203,9 +206,6 @@ class WizardController : public BaseScreenDelegate,
   void OnEnrollmentDone();
   void OnHIDDetectionCompleted();
   void OnWelcomeContinued();
-  void OnNetworkBack();
-  void OnNetworkConnected();
-  void OnOfflineDemoModeSetup();
   void OnConnectionFailed();
   void OnEulaAccepted();
   void OnEulaBack();

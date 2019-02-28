@@ -80,11 +80,11 @@ std::string ExitCodeToString(ScreenExitCode code) {
       return "ARC_TERMS_OF_SERVICE_BACK";
     case ScreenExitCode::DISCOVER_FINISHED:
       return "DISCOVER_FINISHED";
-    case ScreenExitCode::NETWORK_BACK:
+    case ScreenExitCode::DEPRECATED_NETWORK_BACK:
       return "NETWORK_BACK";
-    case ScreenExitCode::NETWORK_CONNECTED:
+    case ScreenExitCode::DEPRECATED_NETWORK_CONNECTED:
       return "NETWORK_CONNECTED";
-    case ScreenExitCode::NETWORK_OFFLINE_DEMO_SETUP:
+    case ScreenExitCode::DEPRECATED_NETWORK_OFFLINE_DEMO_SETUP:
       return "NETWORK_OFFLINE_DEMO_SETUP";
     case ScreenExitCode::FINGERPRINT_SETUP_FINISHED:
       return "FINGERPRINT_SETUP_FINISHED";

@@ -6,8 +6,10 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -69,6 +71,8 @@ class NetworkScreenTest : public InProcessBrowserTest {
     ASSERT_EQ(WizardController::default_controller()->current_screen(),
               network_screen_);
     network_screen_->base_screen_delegate_ = mock_base_screen_delegate_.get();
+    network_screen_->set_exit_callback_for_testing(base::BindRepeating(
+        &NetworkScreenTest::HandleScreenExit, base::Unretained(this)));
     ASSERT_TRUE(network_screen_->view_ != nullptr);
 
     mock_network_state_helper_ = new login::MockNetworkStateHelper;
@@ -77,12 +81,12 @@ class NetworkScreenTest : public InProcessBrowserTest {
   }
 
   void EmulateContinueButtonExit(NetworkScreen* network_screen) {
-    EXPECT_CALL(*mock_base_screen_delegate_,
-                OnExit(ScreenExitCode::NETWORK_CONNECTED))
-        .Times(1);
     EXPECT_CALL(*network_state_helper(), IsConnected()).WillOnce(Return(true));
     network_screen->OnContinueButtonClicked();
     base::RunLoop().RunUntilIdle();
+
+    ASSERT_TRUE(last_screen_result_.has_value());
+    EXPECT_EQ(NetworkScreen::Result::CONNECTED, last_screen_result_.value());
   }
 
   void SetDefaultNetworkStateHelperExpectations() {
@@ -103,9 +107,15 @@ class NetworkScreenTest : public InProcessBrowserTest {
   NetworkScreen* network_screen() { return network_screen_; }
 
  private:
+  void HandleScreenExit(NetworkScreen::Result result) {
+    EXPECT_FALSE(last_screen_result_.has_value());
+    last_screen_result_ = result;
+  }
+
   std::unique_ptr<MockBaseScreenDelegate> mock_base_screen_delegate_;
   login::MockNetworkStateHelper* mock_network_state_helper_;
   NetworkScreen* network_screen_;
+  base::Optional<NetworkScreen::Result> last_screen_result_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkScreenTest);
 };
