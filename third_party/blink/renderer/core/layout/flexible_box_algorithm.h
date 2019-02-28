@@ -133,8 +133,8 @@ class FlexItem {
   const LayoutUnit main_axis_margin;
   LayoutUnit flexed_content_size;
 
+  // When set by the caller, this should be the size pre-stretching.
   LayoutUnit cross_axis_size;
-  LayoutUnit cross_axis_intrinsic_size;
   LayoutPoint desired_location;
 
   bool frozen;

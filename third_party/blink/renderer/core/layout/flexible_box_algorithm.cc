@@ -352,8 +352,8 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_offset,
 
       child_cross_axis_margin_box_extent = max_ascent + max_descent;
     } else {
-      child_cross_axis_margin_box_extent = flex_item.cross_axis_intrinsic_size +
-                                           flex_item.CrossAxisMarginExtent();
+      child_cross_axis_margin_box_extent =
+          flex_item.cross_axis_size + flex_item.CrossAxisMarginExtent();
     }
     max_child_cross_axis_extent = std::max(max_child_cross_axis_extent,
                                            child_cross_axis_margin_box_extent);

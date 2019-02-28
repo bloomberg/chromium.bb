@@ -534,7 +534,7 @@ LayoutUnit LayoutFlexibleBox::ChildIntrinsicLogicalWidth(
   return child.LogicalWidth();
 }
 
-LayoutUnit LayoutFlexibleBox::CrossAxisIntrinsicExtentForChild(
+LayoutUnit LayoutFlexibleBox::CrossAxisUnstretchedExtentForChild(
     const LayoutBox& child) const {
   return MainAxisIsInlineAxis(child) ? ChildIntrinsicLogicalHeight(child)
                                      : ChildIntrinsicLogicalWidth(child);
@@ -1437,9 +1437,7 @@ void LayoutFlexibleBox::LayoutLineItems(FlexLine* current_line,
     // to re-check the size so that we place the flex item correctly.
     flex_item.flexed_content_size =
         MainAxisExtentForChild(*child) - flex_item.main_axis_border_and_padding;
-    flex_item.cross_axis_size = CrossAxisExtentForChild(*child);
-    flex_item.cross_axis_intrinsic_size =
-        CrossAxisIntrinsicExtentForChild(*child);
+    flex_item.cross_axis_size = CrossAxisUnstretchedExtentForChild(*child);
   }
 }
 
