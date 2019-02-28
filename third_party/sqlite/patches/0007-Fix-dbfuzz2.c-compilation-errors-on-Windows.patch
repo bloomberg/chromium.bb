@@ -20,7 +20,7 @@ index c964ad4f018f..dd1ed061717b 100644
  #include <sys/resource.h>
 +#endif
  #include "sqlite3.h"
-
+ 
  /*
 @@ -261,6 +263,7 @@ int LLVMFuzzerInitialize(int *pArgc, char ***pArgv){
          szMax = strtol(argv[++i], 0, 0);
@@ -38,6 +38,6 @@ index c964ad4f018f..dd1ed061717b 100644
      }
      argv[j++] = argv[i];
    }
---
-2.20.0
+-- 
+2.21.0.rc2.261.ga7da99ff1b-goog
 

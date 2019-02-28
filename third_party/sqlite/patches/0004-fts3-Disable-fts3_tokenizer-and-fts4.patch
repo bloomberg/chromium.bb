@@ -22,7 +22,7 @@ index 823e1b6a81fe..c371d3e8f0b5 100644
  ** older data.
  */
 +#define CHROMIUM_FTS3_CHANGES 1
-
+ 
  #include "fts3Int.h"
  #if !defined(SQLITE_CORE) || defined(SQLITE_ENABLE_FTS3)
 @@ -4016,7 +4017,11 @@ int sqlite3Fts3Init(sqlite3 *db){
@@ -54,7 +54,7 @@ index 823e1b6a81fe..c371d3e8f0b5 100644
 +#endif
      return rc;
    }
-
---
-2.20.0
+ 
+-- 
+2.21.0.rc2.261.ga7da99ff1b-goog
 
