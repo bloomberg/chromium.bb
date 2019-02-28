@@ -823,7 +823,7 @@ TEST_F(PreviewsDeciderImplTest, MissingHostDisallowed) {
       &user_data, GURL("file:///sdcard"), false, PreviewsType::LOFI));
 }
 
-TEST_F(PreviewsDeciderImplTest, ClientLoFiAllowedOnReload) {
+TEST_F(PreviewsDeciderImplTest, ClientLoFiDisallowedOnReload) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kClientLoFi}, {});
@@ -836,11 +836,11 @@ TEST_F(PreviewsDeciderImplTest, ClientLoFiAllowedOnReload) {
   PreviewsUserData user_data(kDefaultPageId);
 
   base::HistogramTester histogram_tester;
-  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+  EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
       &user_data, GURL("https://www.google.com"), true, PreviewsType::LOFI));
   histogram_tester.ExpectUniqueSample(
       "Previews.EligibilityReason.LoFi",
-      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
+      static_cast<int>(PreviewsEligibilityReason::RELOAD_DISALLOWED), 1);
 }
 
 TEST_F(PreviewsDeciderImplTest, NoScriptFeatureDefaultBehavior) {

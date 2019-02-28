@@ -3738,21 +3738,6 @@
             ]
         }
     ],
-    "PreviewsDisallowedOnReloads": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PreviewsDisallowedOnReloads"
-                    ]
-                }
-            ]
-        }
-    ],
     "PreviewsLitePageRedirect": [
         {
             "platforms": [
