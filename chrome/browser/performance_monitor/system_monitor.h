@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/process/process_metrics.h"
 #include "base/sequence_checker.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
@@ -71,6 +72,9 @@ class SystemMonitor {
 
       SamplingFrequency disk_idle_time_percent_frequency =
           SamplingFrequency::kNoSampling;
+
+      SamplingFrequency system_metrics_sampling_frequency =
+          SamplingFrequency::kNoSampling;
     };
 
     ~SystemObserver() override = default;
@@ -81,6 +85,10 @@ class SystemMonitor {
     // Reports the disk idle time during the last observation interval, in
     // percent (between 0.0 and 1.0).
     virtual void OnDiskIdleTimePercent(float disk_idle_time_percent);
+
+    // Called when a new |base::SystemMetrics| sample is available.
+    virtual void OnSystemMetricsStruct(
+        const base::SystemMetrics& system_metrics);
   };
   using ObserverToFrequenciesMap =
       base::flat_map<SystemObserver*, SystemObserver::MetricRefreshFrequencies>;
@@ -113,8 +121,14 @@ class SystemMonitor {
   class MetricEvaluator {
    public:
     enum class Type : size_t {
+      // The amount of free physical memory, in megabytes.
       kFreeMemoryMb,
+      // The percentage of time the disk has been idle since the sample.
       kDiskIdleTimePercent,
+      // A |base::SystemMetrics| instance.
+      // TODO(sebmarchand): Split this struct into some smaller ones.
+      kSystemMetricsStruct,
+
       kMax,
     };
 
@@ -144,10 +158,13 @@ class SystemMonitor {
   template <typename T>
   class MetricEvaluatorImpl : public MetricEvaluator {
    public:
+    using ObserverArgType =
+        typename std::conditional<std::is_scalar<T>::value, T, const T&>::type;
+
     MetricEvaluatorImpl<T>(
         Type type,
         base::OnceCallback<base::Optional<T>()> evaluate_function,
-        void (SystemObserver::*notify_function)(T));
+        void (SystemObserver::*notify_function)(ObserverArgType));
     virtual ~MetricEvaluatorImpl();
 
     // Called when the metrics needs to be refreshed.
@@ -167,7 +184,7 @@ class SystemMonitor {
 
     // A function pointer to the SystemObserver function that should be called
     // to notify of a value refresh.
-    void (SystemObserver::*notify_function_)(T);
+    void (SystemObserver::*notify_function_)(ObserverArgType);
 
     // The value, initialized in |Evaluate|.
     base::Optional<T> value_;
@@ -285,6 +302,12 @@ class MetricEvaluatorsHelper {
   // Return the disk idle time, in percentage of time since the last call to
   // this function (returns nullopt on the first call).
   virtual base::Optional<float> GetDiskIdleTimePercent() = 0;
+
+  // Return a |base::SystemMetrics| snapshot.
+  //
+  // NOTE: This function doesn't have to be virtual, the base::SystemMetrics
+  // struct is an abstraction that already has a per-platform definition.
+  base::Optional<base::SystemMetrics> GetSystemMetricsStruct();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MetricEvaluatorsHelper);

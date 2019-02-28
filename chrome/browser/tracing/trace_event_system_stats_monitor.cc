@@ -5,85 +5,60 @@
 #include "chrome/browser/tracing/trace_event_system_stats_monitor.h"
 
 #include <memory>
+#include <string>
+#include <utility>
 
-#include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/process/process_metrics.h"
-#include "base/task/post_task.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 
 namespace tracing {
 
 namespace {
 
-// Length of time interval between stat profiles.
-static const int kSamplingIntervalMilliseconds = 2000;
-
-// Converts system memory profiling stats in |input| to trace event compatible
-// JSON and appends to |output|.
-void AppendSystemProfileAsTraceFormat(const base::SystemMetrics& system_metrics,
-                                      std::string* output) {
-  std::string tmp;
-  base::JSONWriter::Write(*system_metrics.ToValue(), &tmp);
-  *output += tmp;
-}
+using SamplingFrequency = performance_monitor::SystemMonitor::SamplingFrequency;
 
 /////////////////////////////////////////////////////////////////////////////
 // Holds profiled system stats until the tracing system needs to serialize it.
 class SystemStatsHolder : public base::trace_event::ConvertableToTraceFormat {
  public:
-  SystemStatsHolder() = default;
+  explicit SystemStatsHolder(const base::SystemMetrics& system_metrics)
+      : system_metrics_(system_metrics) {}
   ~SystemStatsHolder() override = default;
-
-  // Fills system_metrics_ with profiled system memory and disk stats.
-  // Uses the previous stats to compute rates if this is not the first profile.
-  void GetSystemProfilingStats();
 
   // base::trace_event::ConvertableToTraceFormat overrides:
   void AppendAsTraceFormat(std::string* out) const override {
-    AppendSystemProfileAsTraceFormat(system_stats_, out);
+    std::string tmp;
+    base::JSONWriter::Write(*system_metrics_.ToValue(), &tmp);
+    *out += tmp;
   }
 
  private:
-  base::SystemMetrics system_stats_;
+  const base::SystemMetrics system_metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemStatsHolder);
 };
-
-void SystemStatsHolder::GetSystemProfilingStats() {
-  system_stats_ = base::SystemMetrics::Sample();
-}
-
-void DumpSystemStatsImpl(TraceEventSystemStatsMonitor* stats_monitor) {
-  std::unique_ptr<SystemStatsHolder> dump_holder =
-      std::make_unique<SystemStatsHolder>();
-  dump_holder->GetSystemProfilingStats();
-
-  TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("system_stats"),
-      "base::TraceEventSystemStatsMonitor::SystemStats", stats_monitor,
-      std::move(dump_holder));
-}
 
 }  // namespace
 
 //////////////////////////////////////////////////////////////////////////////
 
 TraceEventSystemStatsMonitor::TraceEventSystemStatsMonitor()
-    : task_runner_(base::ThreadTaskRunnerHandle::Get()), weak_factory_(this) {
+    : weak_factory_(this) {
   // Force the "system_stats" category to show up in the trace viewer.
   base::trace_event::TraceLog::GetCategoryGroupEnabled(
       TRACE_DISABLED_BY_DEFAULT("system_stats"));
 
   // Allow this to be instantiated on unsupported platforms, but don't run.
-  base::trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(this);
+  base::trace_event::TraceLog::GetInstance()->AddAsyncEnabledStateObserver(
+      weak_factory_.GetWeakPtr());
 }
 
 TraceEventSystemStatsMonitor::~TraceEventSystemStatsMonitor() {
-  if (dump_timer_.IsRunning())
+  if (is_profiling_)
     StopProfiling();
-  base::trace_event::TraceLog::GetInstance()->RemoveEnabledStateObserver(this);
+  base::trace_event::TraceLog::GetInstance()->RemoveAsyncEnabledStateObserver(
+      this);
 }
 
 void TraceEventSystemStatsMonitor::OnTraceLogEnabled() {
@@ -94,48 +69,43 @@ void TraceEventSystemStatsMonitor::OnTraceLogEnabled() {
                                      &enabled);
   if (!enabled)
     return;
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&TraceEventSystemStatsMonitor::StartProfiling,
-                                weak_factory_.GetWeakPtr()));
+  StartProfiling();
 }
 
 void TraceEventSystemStatsMonitor::OnTraceLogDisabled() {
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&TraceEventSystemStatsMonitor::StopProfiling,
-                                weak_factory_.GetWeakPtr()));
+  StopProfiling();
 }
 
 void TraceEventSystemStatsMonitor::StartProfiling() {
   // Watch for the tracing framework sending enabling more than once.
-  if (dump_timer_.IsRunning())
+  if (is_profiling_)
     return;
 
-  dump_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kSamplingIntervalMilliseconds),
-      base::BindRepeating(&TraceEventSystemStatsMonitor::DumpSystemStats,
-                          weak_factory_.GetWeakPtr()));
+  is_profiling_ = true;
+  DCHECK(performance_monitor::SystemMonitor::Get());
+  performance_monitor::SystemMonitor::Get()->AddOrUpdateObserver(
+      this, {.system_metrics_sampling_frequency =
+                 SamplingFrequency::kDefaultFrequency});
 }
 
-void TraceEventSystemStatsMonitor::DumpSystemStats() {
-  // Calls to |DumpSystemStatsImpl| might be blocking.
-  //
-  // TODO(sebmarchand): Ideally the timer that calls this function should use a
-  // thread with the MayBlock trait to avoid having to use a trampoline here.
-  // This isn't currently possible due to https://crbug.com/896990.
-  base::PostTaskWithTraits(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(&DumpSystemStatsImpl, base::Unretained(this)));
+void TraceEventSystemStatsMonitor::OnSystemMetricsStruct(
+    const base::SystemMetrics& system_metrics) {
+  std::unique_ptr<SystemStatsHolder> dump_holder =
+      std::make_unique<SystemStatsHolder>(system_metrics);
+
+  TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
+      TRACE_DISABLED_BY_DEFAULT("system_stats"),
+      "base::TraceEventSystemStatsMonitor::SystemStats",
+      static_cast<void*>(this), std::move(dump_holder));
 }
 
 void TraceEventSystemStatsMonitor::StopProfiling() {
-  dump_timer_.Stop();
-}
-
-bool TraceEventSystemStatsMonitor::IsTimerRunningForTesting() const {
-  return dump_timer_.IsRunning();
+  // Watch for the tracing framework sending disabling more than once.
+  if (is_profiling_) {
+    is_profiling_ = false;
+    if (auto* sys_monitor = performance_monitor::SystemMonitor::Get())
+      sys_monitor->RemoveObserver(this);
+  }
 }
 
 }  // namespace tracing

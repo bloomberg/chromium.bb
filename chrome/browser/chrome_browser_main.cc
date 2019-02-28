@@ -79,6 +79,7 @@
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 #include "chrome/browser/performance_monitor/process_monitor.h"
+#include "chrome/browser/performance_monitor/system_monitor.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/prefs/chrome_command_line_pref_store.h"
@@ -837,6 +838,8 @@ void ChromeBrowserMainParts::PostMainMessageLoopStart() {
       base::ThreadTaskRunnerHandle::Get());
 
   heap_profiler_controller_->StartIfEnabled();
+
+  system_monitor_ = performance_monitor::SystemMonitor::Create();
 
   // TODO(sebmarchand): Allow this to be created earlier if startup tracing is
   // enabled.
