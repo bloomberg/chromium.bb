@@ -189,13 +189,13 @@ static void MeasureStricterVersionOfIsMixedContent(Frame& frame,
   if (MixedContentChecker::IsMixedContent(origin, url)) {
     if (origin->Protocol() != "https") {
       UseCounter::Count(
-          source,
+          source->GetDocument(),
           WebFeature::kMixedContentInNonHTTPSFrameThatRestrictsMixedContent);
     }
   } else if (!SecurityOrigin::IsSecure(url) &&
              SchemeRegistry::ShouldTreatURLSchemeAsSecure(origin->Protocol())) {
     UseCounter::Count(
-        source,
+        source->GetDocument(),
         WebFeature::kMixedContentInSecureFrameThatDoesNotRestrictMixedContent);
   }
 }
@@ -297,7 +297,7 @@ ConsoleMessage* MixedContentChecker::CreateConsoleMessageAboutFetch(
 void MixedContentChecker::Count(Frame* frame,
                                 mojom::RequestContextType request_context,
                                 const LocalFrame* source) {
-  UseCounter::Count(source, WebFeature::kMixedContentPresent);
+  UseCounter::Count(source->GetDocument(), WebFeature::kMixedContentPresent);
 
   // Roll blockable content up into a single counter, count unblocked types
   // individually so we can determine when they can be safely moved to the
@@ -307,7 +307,8 @@ void MixedContentChecker::Count(Frame* frame,
           request_context,
           frame->GetSettings()->GetStrictMixedContentCheckingForPlugin());
   if (context_type == WebMixedContentContextType::kBlockable) {
-    UseCounter::Count(source, WebFeature::kMixedContentBlockable);
+    UseCounter::Count(source->GetDocument(),
+                      WebFeature::kMixedContentBlockable);
     return;
   }
 
@@ -342,7 +343,7 @@ void MixedContentChecker::Count(Frame* frame,
       NOTREACHED();
       return;
   }
-  UseCounter::Count(source, feature);
+  UseCounter::Count(source->GetDocument(), feature);
 }
 
 // static
@@ -425,7 +426,7 @@ bool MixedContentChecker::ShouldBlockFetch(
           RequestIsSubframeSubresource(effective_frame, frame_type) &&
           IsMixedContent(frame->GetSecurityContext()->GetSecurityOrigin(),
                          url)) {
-        UseCounter::Count(frame,
+        UseCounter::Count(frame->GetDocument(),
                           WebFeature::kBlockableMixedContentInSubframeBlocked);
         allowed = false;
         break;
@@ -444,7 +445,8 @@ bool MixedContentChecker::ShouldBlockFetch(
       }
       if (allowed) {
         client->DidRunInsecureContent(security_origin, url);
-        UseCounter::Count(frame, WebFeature::kMixedContentBlockableAllowed);
+        UseCounter::Count(frame->GetDocument(),
+                          WebFeature::kMixedContentBlockableAllowed);
       }
       break;
     }
@@ -637,7 +639,7 @@ bool MixedContentChecker::IsMixedFormAction(
   if (!mixed_frame)
     return false;
 
-  UseCounter::Count(frame, WebFeature::kMixedContentPresent);
+  UseCounter::Count(frame->GetDocument(), WebFeature::kMixedContentPresent);
 
   // Use the current local frame's client; the embedder doesn't distinguish
   // mixed content signals from different frames on the same page.

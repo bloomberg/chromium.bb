@@ -40,11 +40,13 @@ FrameClientHintsPreferencesContext::FrameClientHintsPreferencesContext(
 
 void FrameClientHintsPreferencesContext::CountClientHints(
     mojom::WebClientHintsType type) {
-  UseCounter::Count(frame_, kWebFeatureMapping[static_cast<int32_t>(type)]);
+  UseCounter::Count(*frame_->GetDocument(),
+                    kWebFeatureMapping[static_cast<int32_t>(type)]);
 }
 
 void FrameClientHintsPreferencesContext::CountPersistentClientHintHeaders() {
-  UseCounter::Count(frame_, WebFeature::kPersistentClientHintHeader);
+  UseCounter::Count(*frame_->GetDocument(),
+                    WebFeature::kPersistentClientHintHeader);
 }
 
 }  // namespace blink

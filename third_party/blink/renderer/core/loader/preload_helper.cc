@@ -105,9 +105,9 @@ void PreloadHelper::DnsPrefetchIfNeeded(
     const NetworkHintsInterface& network_hints_interface,
     LinkCaller caller) {
   if (params.rel.IsDNSPrefetch()) {
-    UseCounter::Count(frame, WebFeature::kLinkRelDnsPrefetch);
+    UseCounter::Count(document, WebFeature::kLinkRelDnsPrefetch);
     if (caller == kLinkCalledFromHeader)
-      UseCounter::Count(frame, WebFeature::kLinkHeaderDnsPrefetch);
+      UseCounter::Count(document, WebFeature::kLinkHeaderDnsPrefetch);
     Settings* settings = frame ? frame->GetSettings() : nullptr;
     // FIXME: The href attribute of the link element can be in "//hostname"
     // form, and we shouldn't attempt to complete that as URL
@@ -134,9 +134,9 @@ void PreloadHelper::PreconnectIfNeeded(
     LinkCaller caller) {
   if (params.rel.IsPreconnect() && params.href.IsValid() &&
       params.href.ProtocolIsInHTTPFamily()) {
-    UseCounter::Count(frame, WebFeature::kLinkRelPreconnect);
+    UseCounter::Count(document, WebFeature::kLinkRelPreconnect);
     if (caller == kLinkCalledFromHeader)
-      UseCounter::Count(frame, WebFeature::kLinkHeaderPreconnect);
+      UseCounter::Count(document, WebFeature::kLinkHeaderPreconnect);
     Settings* settings = frame ? frame->GetSettings() : nullptr;
     if (settings && settings->GetLogDnsPrefetchAndPreconnect()) {
       SendMessageToConsoleForPossiblyNullDocument(
@@ -485,7 +485,7 @@ void PreloadHelper::LoadLinksFromHeader(
       ModulePreloadIfNeeded(params, *document, viewport_description, nullptr);
     }
     if (params.rel.IsServiceWorker()) {
-      UseCounter::Count(&frame, WebFeature::kLinkHeaderServiceWorker);
+      UseCounter::Count(document, WebFeature::kLinkHeaderServiceWorker);
     }
     // TODO(yoav): Add more supported headers as needed.
   }
