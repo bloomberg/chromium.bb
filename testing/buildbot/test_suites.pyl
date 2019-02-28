@@ -3494,6 +3494,7 @@
           '--test-machine-name',
           '${buildername}',
           '--use-skia-gold',
+          '--no-skia-gold-failure',
         ],
         'non_precommit_args': [
           '--upload-refimg-to-cloud-storage',
