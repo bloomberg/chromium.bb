@@ -24,6 +24,7 @@ source_set("manifest") {
 
   public_deps = [
     "//base",
+    "//services/data_decoder/public/mojom:constants",
     "//services/image_annotation/public/mojom",
     "//services/service_manager/public/cpp",
   ]
