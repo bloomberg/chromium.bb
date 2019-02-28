@@ -1281,6 +1281,27 @@
             ]
         }
     ],
+    "ContentCapture": [
+        {
+            "platforms": [
+                "android",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "ContentCaptureUseTextHolder",
+                    "params": {
+                        "task_long_delay_in_seconds": "5",
+                        "task_short_delay_in_milliseconds": "500",
+                        "use_node_id": "false"
+                    },
+                    "enable_features": [
+                        "ContentCapture"
+                    ]
+                }
+            ]
+        }
+    ],
     "ContextualSearch": [
         {
             "platforms": [
