@@ -92,5 +92,9 @@ const char kCCLayerTreeTestLongTimeout[] = "cc-layer-tree-test-long-timeout";
 // Makes pixel tests write their output instead of read it.
 const char kCCRebaselinePixeltests[] = "cc-rebaseline-pixeltests";
 
+// Controls the duration of the scroll animation curve.
+const char kCCScrollAnimationDurationForTesting[] =
+    "cc-scroll-animation-duration-in-seconds";
+
 }  // namespace switches
 }  // namespace cc

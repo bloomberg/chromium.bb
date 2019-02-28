@@ -55,6 +55,8 @@ class MutatorHost {
   virtual void PushPropertiesTo(MutatorHost* host_impl) = 0;
 
   virtual void SetSupportsScrollAnimations(bool supports_scroll_animations) = 0;
+  virtual void SetScrollAnimationDurationForTesting(
+      base::TimeDelta duration) = 0;
   virtual bool NeedsTickAnimations() const = 0;
 
   virtual bool ActivateAnimations() = 0;

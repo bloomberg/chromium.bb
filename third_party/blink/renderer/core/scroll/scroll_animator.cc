@@ -171,6 +171,16 @@ bool ScrollAnimator::WillAnimateToOffset(const ScrollOffset& target_offset) {
       animation_curve_->UpdateTarget(
           TimeDelta::FromSecondsD(time_function_() - start_time_),
           CompositorOffsetFromBlinkOffset(target_offset));
+
+      // Schedule an animation for this scrollable area even though we are
+      // updating the animation target - updating the animation will keep
+      // it going for another frame. This typically will happen at the
+      // beginning of a frame when coalesced input is dispatched.
+      // If we don't schedule an animation during the handling of the input
+      // event, the LatencyInfo associated with the input event will not be
+      // added as a swap promise and we won't get any swap results.
+      GetScrollableArea()->ScheduleAnimation();
+
       return true;
     }
 

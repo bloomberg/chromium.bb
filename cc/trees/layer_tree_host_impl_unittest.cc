@@ -11777,9 +11777,24 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
 
-  EXPECT_EQ(
-      InputHandler::SCROLL_ON_IMPL_THREAD,
-      host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 50)).thread);
+  {
+    // Creating the animation should set 'needs redraw'. This is required
+    // for LatencyInfo's to be propagated along with the CompositorFrame
+    int set_needs_commit_count = 0;
+    int set_needs_redraw_count = 0;
+    int forward_to_main_count = 0;
+    std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
+        new SimpleSwapPromiseMonitor(
+            nullptr, host_impl_.get(), &set_needs_commit_count,
+            &set_needs_redraw_count, &forward_to_main_count));
+    EXPECT_EQ(
+        InputHandler::SCROLL_ON_IMPL_THREAD,
+        host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 50)).thread);
+
+    EXPECT_EQ(0, set_needs_commit_count);
+    EXPECT_EQ(1, set_needs_redraw_count);
+    EXPECT_EQ(0, forward_to_main_count);
+  }
 
   LayerImpl* scrolling_layer = host_impl_->OuterViewportScrollLayer();
   EXPECT_EQ(scrolling_layer->scroll_tree_index(),
@@ -11804,10 +11819,26 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
   float y = scrolling_layer->CurrentScrollOffset().y();
   EXPECT_TRUE(y > 1 && y < 49);
 
-  // Update target.
-  EXPECT_EQ(
-      InputHandler::SCROLL_ON_IMPL_THREAD,
-      host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 50)).thread);
+  {
+    // Updating the animation should set 'needs redraw'. This is required
+    // for LatencyInfo's to be propagated along with the CompositorFrame
+    int set_needs_commit_count = 0;
+    int set_needs_redraw_count = 0;
+    int forward_to_main_count = 0;
+    std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
+        new SimpleSwapPromiseMonitor(
+            nullptr, host_impl_.get(), &set_needs_commit_count,
+            &set_needs_redraw_count, &forward_to_main_count));
+    // Update target.
+    EXPECT_EQ(
+        InputHandler::SCROLL_ON_IMPL_THREAD,
+        host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 50)).thread);
+
+    EXPECT_EQ(0, set_needs_commit_count);
+    EXPECT_EQ(1, set_needs_redraw_count);
+    EXPECT_EQ(0, forward_to_main_count);
+  }
+
   host_impl_->DidFinishImplFrame();
 
   begin_frame_args.frame_time =

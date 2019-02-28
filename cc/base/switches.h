@@ -52,6 +52,7 @@ CC_BASE_EXPORT extern const char kCompositedLayerBorders[];
 CC_BASE_EXPORT extern const char kCCLayerTreeTestNoTimeout[];
 CC_BASE_EXPORT extern const char kCCLayerTreeTestLongTimeout[];
 CC_BASE_EXPORT extern const char kCCRebaselinePixeltests[];
+CC_BASE_EXPORT extern const char kCCScrollAnimationDurationForTesting[];
 
 }  // namespace switches
 }  // namespace cc

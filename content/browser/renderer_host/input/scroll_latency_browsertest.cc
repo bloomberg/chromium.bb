@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "cc/base/switches.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_controller.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
@@ -18,6 +19,7 @@
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -32,8 +34,6 @@ const char kDataURL[] =
     "<html>"
     "<head>"
     "<title>Scroll latency histograms browsertests.</title>"
-    "<script src=\"../../resources/testharness.js\"></script>"
-    "<script src=\"../../resources/testharnessreport.js\"></script>"
     "<style>"
     "body {"
     "  height:3000px;"
@@ -56,7 +56,6 @@ const char kDataURL[] =
     "spin();"
     "</script>"
     "</html>";
-
 }  // namespace
 
 namespace content {
@@ -87,6 +86,18 @@ class ScrollLatencyBrowserTest : public ContentBrowserTest {
   }
 
  protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ContentBrowserTest::SetUpCommandLine(command_line);
+    if (disable_threaded_scrolling_) {
+      command_line->AppendSwitch(::switches::kDisableThreadedScrolling);
+    }
+    // Set the scroll animation duration to a large number so that
+    // we ensure secondary GestureScrollUpdates update the animation
+    // instead of starting a new one.
+    command_line->AppendSwitchASCII(
+        cc::switches::kCCScrollAnimationDurationForTesting, "10000000");
+  }
+
   void LoadURL() {
     const GURL data_url(kDataURL);
     NavigateToURL(shell(), data_url);
@@ -100,8 +111,9 @@ class ScrollLatencyBrowserTest : public ContentBrowserTest {
     observer.WaitForHitTestData();
   }
 
-  // Generate a single wheel tick, scrolling by |distance|. This will perform a
-  // smooth scroll on platforms which support it.
+  // Generate the gestures associated with kNumWheelScrolls ticks,
+  // scrolling by |distance|. This will perform a smooth scroll on platforms
+  // which support it.
   void DoSmoothWheelScroll(const gfx::Vector2d& distance) {
     blink::WebGestureEvent event =
         SyntheticWebGestureEventBuilder::BuildScrollBegin(
@@ -111,13 +123,54 @@ class ScrollLatencyBrowserTest : public ContentBrowserTest {
         blink::WebGestureEvent::ScrollUnits::kPixels;
     GetWidgetHost()->ForwardGestureEvent(event);
 
-    blink::WebGestureEvent event2 =
-        SyntheticWebGestureEventBuilder::BuildScrollUpdate(
-            distance.x(), -distance.y(), 0,
-            blink::WebGestureDevice::kWebGestureDeviceTouchpad);
-    event2.data.scroll_update.delta_units =
-        blink::WebGestureEvent::ScrollUnits::kPixels;
-    GetWidgetHost()->ForwardGestureEvent(event2);
+    const uint32_t kNumWheelScrolls = 2;
+    for (uint32_t i = 0; i < kNumWheelScrolls; i++) {
+      // Install a VisualStateCallback and wait for the callback in response
+      // to each GestureScrollUpdate before sending the next GSU. This will
+      // ensure the events are not coalesced (resulting in fewer end-to-end
+      // latency histograms being logged).
+      // We must install a callback for each gesture since they are one-shot
+      // callbacks.
+      shell()->web_contents()->GetMainFrame()->InsertVisualStateCallback(
+          base::BindOnce(&ScrollLatencyBrowserTest::InvokeVisualStateCallback,
+                         base::Unretained(this)));
+
+      blink::WebGestureEvent event2 =
+          SyntheticWebGestureEventBuilder::BuildScrollUpdate(
+              distance.x(), -distance.y(), 0,
+              blink::WebGestureDevice::kWebGestureDeviceTouchpad);
+      event2.data.scroll_update.delta_units =
+          blink::WebGestureEvent::ScrollUnits::kPixels;
+      GetWidgetHost()->ForwardGestureEvent(event2);
+
+      while (visual_state_callback_count_ <= i) {
+        // TODO: There's currently no way to block until a GPU swap
+        // completes. Until then we need to spin and wait. See
+        // crbug.com/897520 for more details.
+        GiveItSomeTime();
+      }
+    }
+  }
+
+  void InvokeVisualStateCallback(bool result) {
+    EXPECT_TRUE(result);
+    visual_state_callback_count_++;
+  }
+
+  void RunMultipleWheelScroll() {
+    DoSmoothWheelScroll(gfx::Vector2d(0, 100));
+    // We expect to see one ScrollBegin and two ScrollUpdate swap values.
+    while (!VerifyRecordedSamplesForHistogram(
+        1, "Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin4")) {
+      GiveItSomeTime();
+      FetchHistogramsFromChildProcesses();
+    }
+
+    while (!VerifyRecordedSamplesForHistogram(
+        1, "Event.Latency.ScrollUpdate.Wheel.TimeToScrollUpdateSwapBegin4")) {
+      GiveItSomeTime();
+      FetchHistogramsFromChildProcesses();
+    }
   }
 
   // Returns true if the given histogram has recorded the expected number of
@@ -130,24 +183,26 @@ class ScrollLatencyBrowserTest : public ContentBrowserTest {
   }
 
   std::unique_ptr<base::RunLoop> run_loop_;
+  bool disable_threaded_scrolling_ = false;
 
  private:
   base::HistogramTester histogram_tester_;
+  uint32_t visual_state_callback_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollLatencyBrowserTest);
 };
 
 // Perform a smooth wheel scroll, and verify that our end-to-end wheel latency
-// metric is recorded. See crbug.com/599910 for details.
-IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest, SmoothWheelScroll) {
+// metrics are recorded. See crbug.com/599910 for details.
+IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest, MultipleWheelScroll) {
   LoadURL();
+  RunMultipleWheelScroll();
+}
 
-  DoSmoothWheelScroll(gfx::Vector2d(0, 100));
-  while (!VerifyRecordedSamplesForHistogram(
-      1, "Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin4")) {
-    GiveItSomeTime();
-    FetchHistogramsFromChildProcesses();
-  }
+IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest, MultipleWheelScrollOnMain) {
+  disable_threaded_scrolling_ = true;
+  LoadURL();
+  RunMultipleWheelScroll();
 }
 
 // Do an upward wheel scroll, and verify that no scroll metrics is recorded when

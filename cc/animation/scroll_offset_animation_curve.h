@@ -73,6 +73,8 @@ class CC_ANIMATION_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
   std::unique_ptr<ScrollOffsetAnimationCurve>
   CloneToScrollOffsetAnimationCurve() const;
 
+  static void SetAnimationDurationForTesting(base::TimeDelta duration);
+
  private:
   ScrollOffsetAnimationCurve(const gfx::ScrollOffset& target_value,
                              std::unique_ptr<TimingFunction> timing_function,
@@ -89,6 +91,8 @@ class CC_ANIMATION_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
   DurationBehavior duration_behavior_;
 
   bool has_set_initial_value_;
+
+  static base::Optional<double> animation_duration_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollOffsetAnimationCurve);
 };
