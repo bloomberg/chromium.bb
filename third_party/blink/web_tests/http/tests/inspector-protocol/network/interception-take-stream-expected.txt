@@ -1,34 +1,29 @@
 Tests that resource bodies can be taken as streams.
 
 Running test: testBasicUsage
-data: The_quick_brown_fox_jumps_over_the_lazy_dog_0123456789The_quick_brown_fox_jumps_over_the_lazy_dog_01 (100) eof: false
-eof: true
+Error taking stream: Network.takeResponseBodyForInterceptionAsStream is only currently supported with --enable-features=NetworkService
 
 Running test: testLargeRead
-data: (100000) eof: false
-eof: true
+Error taking stream: Network.takeResponseBodyForInterceptionAsStream is only currently supported with --enable-features=NetworkService
 
 Running test: testSmallNonOverlappingReads
-data: (10000)
+Error taking stream: Network.takeResponseBodyForInterceptionAsStream is only currently supported with --enable-features=NetworkService
 
 Running test: testSmallOverlappingReads
-data: (100000)
+Error taking stream: Network.takeResponseBodyForInterceptionAsStream is only currently supported with --enable-features=NetworkService
 
 Running test: testRead0
-data:  (0) eof: false
-data: The_quick_brown_fox_jumps_over_the_lazy_dog_0123456789The_quick_brown_fox_jumps_over_the_lazy_dog_01 (100) eof: false
-eof: true
+Error taking stream: Network.takeResponseBodyForInterceptionAsStream is only currently supported with --enable-features=NetworkService
 
 Running test: testTakeTwice
-Trying to take stream twice: Can only get response body on requests captured after headers received.
+Error taking stream: Network.takeResponseBodyForInterceptionAsStream is only currently supported with --enable-features=NetworkService
 
 Running test: testReadAfterCancel
-data: The_quick_brown_fox_jumps_over_the_lazy_dog_0123456789The_quick_brown_fox_jumps_over_the_lazy_dog_01 (100) eof: false
-eof: true
+Error taking stream: Network.takeResponseBodyForInterceptionAsStream is only currently supported with --enable-features=NetworkService
 
 Running test: testContinueAfterBodyTaken
-Attempting to continue as is after taking request: Unable to continue request as is after body is taken
+Error taking stream: Network.takeResponseBodyForInterceptionAsStream is only currently supported with --enable-features=NetworkService
 
 Running test: testReadAfterClose
-Attempting read after close: Invalid stream handle
+Error taking stream: Network.takeResponseBodyForInterceptionAsStream is only currently supported with --enable-features=NetworkService
 
