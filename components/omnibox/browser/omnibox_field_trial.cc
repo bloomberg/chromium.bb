@@ -261,6 +261,10 @@ const base::Feature kUIExperimentWhiteBackgroundOnBlur{
 
 // Feature used to show a generic vector icon for omnibox search instead of the
 // search engine favicon.
+//
+// This feature flag's string has a typo: "Omnibox" => "Ominbox".
+// Do not correct this typo, because this misspelled string is being used
+// as-is in field trials.
 const base::Feature kUIExperimentUseGenericSearchEngineIcon{
     "OminboxUIExperimentUseGenericSearchEngineIcon",
     base::FEATURE_DISABLED_BY_DEFAULT};
