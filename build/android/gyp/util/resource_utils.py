@@ -520,8 +520,8 @@ def ExtractDeps(dep_zips, deps_dir):
 
   Args:
      dep_zips: A list of zip file paths, each one will be extracted to
-       a subdirectory of |deps_dir|, named after the zip file (e.g.
-       '/some/path/foo.zip' -> '{deps_dir}/foo/').
+       a subdirectory of |deps_dir|, named after the zip file's path (e.g.
+       '/some/path/foo.zip' -> '{deps_dir}/some_path_foo/').
     deps_dir: Top-level extraction directory.
   Returns:
     The list of all sub-directory paths, relative to |deps_dir|.
@@ -531,9 +531,10 @@ def ExtractDeps(dep_zips, deps_dir):
   """
   dep_subdirs = []
   for z in dep_zips:
-    subdir = os.path.join(deps_dir, os.path.basename(z))
+    subdirname = z.replace(os.path.sep, '_')
+    subdir = os.path.join(deps_dir, subdirname)
     if os.path.exists(subdir):
-      raise Exception('Resource zip name conflict: ' + os.path.basename(z))
+      raise Exception('Resource zip name conflict: ' + subdirname)
     build_utils.ExtractAll(z, path=subdir)
     dep_subdirs.append(subdir)
   return dep_subdirs
