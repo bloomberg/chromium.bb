@@ -96,7 +96,7 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
     resource_request.headers.SetHeader("Service-Worker", "script");
   }
 
-  // Bypass the browser cache if needed, e.g., updateViaCache demands it or 24
+  // Validate the browser cache if needed, e.g., updateViaCache demands it or 24
   // hours passed since the last update check that hit network.
   base::TimeDelta time_since_last_check =
       base::Time::Now() - registration->last_update_check();
@@ -104,7 +104,7 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
           is_main_script, registration->update_via_cache()) ||
       time_since_last_check > kServiceWorkerScriptMaxCacheAge ||
       version_->force_bypass_cache_for_scripts()) {
-    resource_request.load_flags |= net::LOAD_BYPASS_CACHE;
+    resource_request.load_flags |= net::LOAD_VALIDATE_CACHE;
   }
 
   ServiceWorkerStorage* storage = version_->context()->storage();
