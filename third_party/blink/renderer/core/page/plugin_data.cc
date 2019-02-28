@@ -21,7 +21,7 @@
     Boston, MA 02110-1301, USA.
 */
 
-#include "third_party/blink/renderer/platform/plugins/plugin_data.h"
+#include "third_party/blink/renderer/core/page/plugin_data.h"
 
 #include "third_party/blink/public/mojom/plugins/plugin_registry.mojom-blink.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"

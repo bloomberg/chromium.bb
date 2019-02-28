@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLUGINS_PLUGIN_SCRIPT_FORBIDDEN_SCOPE_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLUGINS_PLUGIN_SCRIPT_FORBIDDEN_SCOPE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PLUGIN_SCRIPT_FORBIDDEN_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PLUGIN_SCRIPT_FORBIDDEN_SCOPE_H_
 
 #include "base/macros.h"
-#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
@@ -38,7 +38,7 @@ namespace blink {
 // that will run the nested run loop, etc. This scoper is intended to block
 // those usages, with the eventual goal that Frame detach will never have to run
 // a nested run loop.
-class PLATFORM_EXPORT PluginScriptForbiddenScope final {
+class CORE_EXPORT PluginScriptForbiddenScope final {
   STACK_ALLOCATED();
 
  public:
@@ -53,4 +53,4 @@ class PLATFORM_EXPORT PluginScriptForbiddenScope final {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLUGINS_PLUGIN_SCRIPT_FORBIDDEN_SCOPE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PLUGIN_SCRIPT_FORBIDDEN_SCOPE_H_
