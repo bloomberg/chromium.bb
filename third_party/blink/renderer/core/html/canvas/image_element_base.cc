@@ -159,9 +159,6 @@ ScriptPromise ImageElementBase::CreateImageBitmap(
               "dimensions, and no resize options or crop region are "
               "specified."));
     }
-  }
-
-  if (IsSVGSource()) {
     return ImageBitmap::CreateAsync(this, crop_rect,
                                     event_target.ToLocalDOMWindow()->document(),
                                     script_state, options);
