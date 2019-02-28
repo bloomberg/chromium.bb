@@ -11,7 +11,6 @@
 namespace blink {
 namespace features {
 
-BLINK_COMMON_EXPORT extern const base::Feature kAutofillPreviewStyleExperiment;
 BLINK_COMMON_EXPORT extern const base::Feature kAvoidFlashBetweenNavigation;
 BLINK_COMMON_EXPORT extern const base::Feature
     kEagerCacheStorageSetupForServiceWorkers;
@@ -56,11 +55,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kWritableFilesAPI;
 BLINK_COMMON_EXPORT extern const base::Feature kForbidSyncXHRInPageDismissal;
 BLINK_COMMON_EXPORT extern const base::Feature
     kRestrictDeviceSensorEventsToSecureContexts;
-
-BLINK_COMMON_EXPORT extern const char
-    kAutofillPreviewStyleExperimentBgColorParameterName[];
-BLINK_COMMON_EXPORT extern const char
-    kAutofillPreviewStyleExperimentColorParameterName[];
 
 BLINK_COMMON_EXPORT extern const char kMixedContentAutoupgradeModeParamName[];
 BLINK_COMMON_EXPORT extern const char kMixedContentAutoupgradeModeBlockable[];
