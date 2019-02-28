@@ -667,7 +667,7 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Update_IdenticalScript) {
   EXPECT_EQ(0UL, version_->script_cache_map()->size());
 }
 
-// Tests cache bypassing behavior when updateViaCache is 'all'.
+// Tests cache validation behavior when updateViaCache is 'all'.
 TEST_F(ServiceWorkerNewScriptLoaderTest, UpdateViaCache_All) {
   std::unique_ptr<network::TestURLLoaderClient> client;
   std::unique_ptr<ServiceWorkerNewScriptLoader> loader;
@@ -680,37 +680,37 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, UpdateViaCache_All) {
   options.update_via_cache = blink::mojom::ServiceWorkerUpdateViaCache::kAll;
   SetUpRegistrationWithOptions(kScriptURL, options);
 
-  // Install the main script and imported script. The cache should be bypassed
+  // Install the main script and imported script. The cache should validate
   // since last update time is null.
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
   network::ResourceRequest request = mock_url_loader_factory_->last_request();
-  EXPECT_TRUE(request.load_flags & net::LOAD_BYPASS_CACHE);
+  EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   DoRequest(kImportedScriptURL, &client, &loader);
   client->RunUntilComplete();
   request = mock_url_loader_factory_->last_request();
-  EXPECT_TRUE(request.load_flags & net::LOAD_BYPASS_CACHE);
+  EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   // Promote to active and prepare to update.
   ActivateVersion();
   registration_->set_last_update_check(base::Time::Now());
 
-  // Attempt to update. The requests should not bypass cache since the last
-  // update was recent.
+  // Attempt to update. The requests should not validate the cache since the
+  // last update was recent.
   SetUpVersion(kScriptURL);
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
   request = mock_url_loader_factory_->last_request();
-  EXPECT_FALSE(request.load_flags & net::LOAD_BYPASS_CACHE);
+  EXPECT_FALSE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   DoRequest(kImportedScriptURL, &client, &loader);
   client->RunUntilComplete();
   request = mock_url_loader_factory_->last_request();
-  EXPECT_FALSE(request.load_flags & net::LOAD_BYPASS_CACHE);
+  EXPECT_FALSE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
-  // Set update check to far in the past and repeat. The requests should bypass
-  // cache.
+  // Set update check to far in the past and repeat. The requests should
+  // validate the cache.
   registration_->set_last_update_check(base::Time::Now() -
                                        base::TimeDelta::FromHours(24));
 
@@ -718,15 +718,15 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, UpdateViaCache_All) {
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
   request = mock_url_loader_factory_->last_request();
-  EXPECT_TRUE(request.load_flags & net::LOAD_BYPASS_CACHE);
+  EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   DoRequest(kImportedScriptURL, &client, &loader);
   client->RunUntilComplete();
   request = mock_url_loader_factory_->last_request();
-  EXPECT_TRUE(request.load_flags & net::LOAD_BYPASS_CACHE);
+  EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 }
 
-// Tests cache bypassing behavior when updateViaCache is 'imports'.
+// Tests cache validation behavior when updateViaCache is 'imports'.
 TEST_F(ServiceWorkerNewScriptLoaderTest, UpdateViaCache_Imports) {
   std::unique_ptr<network::TestURLLoaderClient> client;
   std::unique_ptr<ServiceWorkerNewScriptLoader> loader;
@@ -740,36 +740,36 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, UpdateViaCache_Imports) {
       blink::mojom::ServiceWorkerUpdateViaCache::kImports;
   SetUpRegistrationWithOptions(kScriptURL, options);
 
-  // Install the main script and imported script. The cache should be bypassed
+  // Install the main script and imported script. The cache should be validated
   // since last update time is null.
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
   network::ResourceRequest request = mock_url_loader_factory_->last_request();
-  EXPECT_TRUE(request.load_flags & net::LOAD_BYPASS_CACHE);
+  EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   DoRequest(kImportedScriptURL, &client, &loader);
   client->RunUntilComplete();
   request = mock_url_loader_factory_->last_request();
-  EXPECT_TRUE(request.load_flags & net::LOAD_BYPASS_CACHE);
+  EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   // Promote to active and prepare to update.
   ActivateVersion();
   registration_->set_last_update_check(base::Time::Now());
 
-  // Attempt to update. Only the imported script should bypass cache because
-  // kImports.
+  // Attempt to update. Only the imported script should validate the cache
+  // because kImports.
   SetUpVersion(kScriptURL);
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
   request = mock_url_loader_factory_->last_request();
-  EXPECT_TRUE(request.load_flags & net::LOAD_BYPASS_CACHE);
+  EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   DoRequest(kImportedScriptURL, &client, &loader);
   client->RunUntilComplete();
   request = mock_url_loader_factory_->last_request();
-  EXPECT_FALSE(request.load_flags & net::LOAD_BYPASS_CACHE);
+  EXPECT_FALSE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
-  // Set the time to far in the past and repeat. The requests should bypass
+  // Set the time to far in the past and repeat. The requests should validate
   // cache.
   registration_->set_last_update_check(base::Time::Now() -
                                        base::TimeDelta::FromHours(24));
@@ -778,15 +778,15 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, UpdateViaCache_Imports) {
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
   request = mock_url_loader_factory_->last_request();
-  EXPECT_TRUE(request.load_flags & net::LOAD_BYPASS_CACHE);
+  EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   DoRequest(kImportedScriptURL, &client, &loader);
   client->RunUntilComplete();
   request = mock_url_loader_factory_->last_request();
-  EXPECT_TRUE(request.load_flags & net::LOAD_BYPASS_CACHE);
+  EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 }
 
-// Tests cache bypassing behavior when updateViaCache is 'none'.
+// Tests cache validation behavior when updateViaCache is 'none'.
 TEST_F(ServiceWorkerNewScriptLoaderTest, UpdateViaCache_None) {
   const GURL kScriptURL(kNormalScriptURL);
   const GURL kImportedScriptURL(kNormalImportedScriptURL);
@@ -799,33 +799,33 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, UpdateViaCache_None) {
   options.update_via_cache = blink::mojom::ServiceWorkerUpdateViaCache::kNone;
   SetUpRegistrationWithOptions(kScriptURL, options);
 
-  // Install the main script and imported script. The cache should be bypassed
+  // Install the main script and imported script. The cache should be validated
   // since kNone (and the last update time is null anyway).
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
   network::ResourceRequest request = mock_url_loader_factory_->last_request();
-  EXPECT_TRUE(request.load_flags & net::LOAD_BYPASS_CACHE);
+  EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   DoRequest(kImportedScriptURL, &client, &loader);
   client->RunUntilComplete();
   request = mock_url_loader_factory_->last_request();
-  EXPECT_TRUE(request.load_flags & net::LOAD_BYPASS_CACHE);
+  EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   // Promote to active and prepare to update.
   ActivateVersion();
   registration_->set_last_update_check(base::Time::Now());
 
-  // Attempt to update. The requests should bypass cache because KNone.
+  // Attempt to update. The requests should validate the cache because KNone.
   SetUpVersion(kScriptURL);
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
   request = mock_url_loader_factory_->last_request();
-  EXPECT_TRUE(request.load_flags & net::LOAD_BYPASS_CACHE);
+  EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   DoRequest(kImportedScriptURL, &client, &loader);
   client->RunUntilComplete();
   request = mock_url_loader_factory_->last_request();
-  EXPECT_TRUE(request.load_flags & net::LOAD_BYPASS_CACHE);
+  EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 }
 
 // Tests respecting ServiceWorkerVersion's |force_bypass_cache_for_scripts|
@@ -843,27 +843,27 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, ForceBypassCache) {
   // should win.
   options.update_via_cache = blink::mojom::ServiceWorkerUpdateViaCache::kAll;
   SetUpRegistrationWithOptions(kScriptURL, options);
-  // Also set last_update_time to a recent time, so the 24 hour bypass doesn't
-  // kick in.
+  // Also set last_update_time to a recent time, so the 24 hour validation
+  // doesn't kick in.
   registration_->set_last_update_check(base::Time::Now());
 
   version_->set_force_bypass_cache_for_scripts(true);
 
-  // Install the main script and imported script. The cache should be bypassed.
+  // Install the main script and imported script. The cache should be validated.
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
   network::ResourceRequest request = mock_url_loader_factory_->last_request();
-  EXPECT_TRUE(request.load_flags & net::LOAD_BYPASS_CACHE);
+  EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   DoRequest(kImportedScriptURL, &client, &loader);
   client->RunUntilComplete();
   request = mock_url_loader_factory_->last_request();
-  EXPECT_TRUE(request.load_flags & net::LOAD_BYPASS_CACHE);
+  EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 }
 
 // Tests that EmbeddedWorkerInstance's |network_accessed_for_script_| flag is
 // set when the script loader accesses network. This flag is used to enforce the
-// 24 hour cache bypass.
+// 24 hour cache validation.
 TEST_F(ServiceWorkerNewScriptLoaderTest, AccessedNetwork) {
   const GURL kScriptURL(kNormalScriptURL);
   const GURL kImportedScriptURL(kNormalImportedScriptURL);
