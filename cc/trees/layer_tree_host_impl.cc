@@ -5492,11 +5492,22 @@ bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
   float scale_factor = active_tree()->page_scale_factor_for_scroll();
   gfx::Vector2dF scaled_delta =
       gfx::ScaleVector2d(scroll_delta, 1.f / scale_factor);
-  return mutator_host_->ImplOnlyScrollAnimationUpdateTarget(
+  bool animation_updated = mutator_host_->ImplOnlyScrollAnimationUpdateTarget(
       scroll_node->element_id, scaled_delta,
       active_tree_->property_trees()->scroll_tree.MaxScrollOffset(
           scroll_node->id),
       CurrentBeginFrameArgs().frame_time, delayed_by);
+  if (animation_updated) {
+    // Because we updated the animation target, notify the SwapPromiseMonitor
+    // to tell it that something happened that will cause a swap in the future.
+    // This will happen within the scope of the dispatch of a gesture scroll
+    // update input event. If we don't notify during the handling of the input
+    // event, the LatencyInfo associated with the input event will not be
+    // added as a swap promise and we won't get any swap results.
+    NotifySwapPromiseMonitorsOfSetNeedsRedraw();
+  }
+
+  return animation_updated;
 }
 
 bool LayerTreeHostImpl::IsElementInList(ElementId element_id,

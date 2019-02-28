@@ -98,6 +98,7 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   void PushPropertiesTo(MutatorHost* host_impl) override;
 
   void SetSupportsScrollAnimations(bool supports_scroll_animations) override;
+  void SetScrollAnimationDurationForTesting(base::TimeDelta duration) override;
   bool NeedsTickAnimations() const override;
 
   bool ActivateAnimations() override;

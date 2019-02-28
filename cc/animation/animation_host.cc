@@ -271,6 +271,11 @@ void AnimationHost::SetSupportsScrollAnimations(
   supports_scroll_animations_ = supports_scroll_animations;
 }
 
+void AnimationHost::SetScrollAnimationDurationForTesting(
+    base::TimeDelta duration) {
+  ScrollOffsetAnimationCurve::SetAnimationDurationForTesting(duration);
+}
+
 bool AnimationHost::SupportsScrollAnimations() const {
   return supports_scroll_animations_;
 }

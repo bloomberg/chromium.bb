@@ -2936,6 +2936,19 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
   settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(300);
   settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(300);
 
+  if (cmd.HasSwitch(cc::switches::kCCScrollAnimationDurationForTesting)) {
+    const int kMinScrollAnimationDuration = 0;
+    const int kMaxScrollAnimationDuration = INT_MAX;
+    int duration;
+    if (switch_value_as_int(cmd,
+                            cc::switches::kCCScrollAnimationDurationForTesting,
+                            kMinScrollAnimationDuration,
+                            kMaxScrollAnimationDuration, &duration)) {
+      settings.scroll_animation_duration_for_testing =
+          base::TimeDelta::FromSeconds(duration);
+    }
+  }
+
 #if defined(OS_ANDROID)
   bool using_synchronous_compositor =
       compositor_deps->UsingSynchronousCompositing();

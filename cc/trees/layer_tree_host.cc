@@ -499,6 +499,11 @@ LayerTreeHost::CreateLayerTreeHostImpl(
   std::unique_ptr<MutatorHost> mutator_host_impl =
       mutator_host_->CreateImplInstance(supports_impl_scrolling);
 
+  if (!settings_.scroll_animation_duration_for_testing.is_zero()) {
+    mutator_host_->SetScrollAnimationDurationForTesting(
+        settings_.scroll_animation_duration_for_testing);
+  }
+
   std::unique_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
       settings_, client, task_runner_provider_.get(),
       rendering_stats_instrumentation_.get(), task_graph_runner_,

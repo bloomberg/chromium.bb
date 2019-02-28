@@ -57,6 +57,9 @@ static std::unique_ptr<TimingFunction> EaseOutWithInitialVelocity(
 
 }  // namespace
 
+base::Optional<double>
+    ScrollOffsetAnimationCurve::animation_duration_for_testing_;
+
 std::unique_ptr<ScrollOffsetAnimationCurve> ScrollOffsetAnimationCurve::Create(
     const gfx::ScrollOffset& target_value,
     std::unique_ptr<TimingFunction> timing_function,
@@ -81,23 +84,28 @@ base::TimeDelta ScrollOffsetAnimationCurve::SegmentDuration(
     DurationBehavior behavior,
     base::TimeDelta delayed_by) {
   double duration = kConstantDuration;
-  switch (behavior) {
-    case DurationBehavior::CONSTANT:
-      duration = kConstantDuration;
-      break;
-    case DurationBehavior::DELTA_BASED:
-      duration = std::min(double(std::sqrt(std::abs(MaximumDimension(delta)))),
-                          kDeltaBasedMaxDuration);
-      break;
-    case DurationBehavior::INVERSE_DELTA:
-      duration = std::min(
-          std::max(kInverseDeltaOffset +
-                       std::abs(MaximumDimension(delta)) * kInverseDeltaSlope,
-                   kInverseDeltaMinDuration),
-          kInverseDeltaMaxDuration);
-      break;
-    default:
-      NOTREACHED();
+  if (!animation_duration_for_testing_) {
+    switch (behavior) {
+      case DurationBehavior::CONSTANT:
+        duration = kConstantDuration;
+        break;
+      case DurationBehavior::DELTA_BASED:
+        duration =
+            std::min(double(std::sqrt(std::abs(MaximumDimension(delta)))),
+                     kDeltaBasedMaxDuration);
+        break;
+      case DurationBehavior::INVERSE_DELTA:
+        duration = std::min(
+            std::max(kInverseDeltaOffset +
+                         std::abs(MaximumDimension(delta)) * kInverseDeltaSlope,
+                     kInverseDeltaMinDuration),
+            kInverseDeltaMaxDuration);
+        break;
+      default:
+        NOTREACHED();
+    }
+  } else {
+    duration = animation_duration_for_testing_.value();
   }
 
   base::TimeDelta time_delta = base::TimeDelta::FromMicroseconds(
@@ -173,6 +181,11 @@ ScrollOffsetAnimationCurve::CloneToScrollOffsetAnimationCurve() const {
   curve_clone->last_retarget_ = last_retarget_;
   curve_clone->has_set_initial_value_ = has_set_initial_value_;
   return curve_clone;
+}
+
+void ScrollOffsetAnimationCurve::SetAnimationDurationForTesting(
+    base::TimeDelta duration) {
+  animation_duration_for_testing_ = duration.InSecondsF() * kDurationDivisor;
 }
 
 static base::TimeDelta VelocityBasedDurationBound(
