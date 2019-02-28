@@ -33,7 +33,7 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 
 namespace blink {
 

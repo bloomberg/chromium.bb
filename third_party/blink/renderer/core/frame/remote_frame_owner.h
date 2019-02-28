@@ -9,7 +9,7 @@
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/frame_owner.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {

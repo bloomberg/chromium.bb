@@ -41,11 +41,11 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLL_ALIGNMENT_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLL_ALIGNMENT_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLL_ALIGNMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLL_ALIGNMENT_H_
 
-#include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
@@ -62,7 +62,7 @@ enum ScrollAlignmentBehavior {
 
 class LayoutRect;
 
-struct PLATFORM_EXPORT ScrollAlignment {
+struct CORE_EXPORT ScrollAlignment {
   STACK_ALLOCATED();
 
  public:
@@ -114,4 +114,4 @@ inline bool PLATFORM_EXPORT operator==(const ScrollAlignment& lhs,
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLL_ALIGNMENT_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLL_ALIGNMENT_H_

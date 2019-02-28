@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_alignment.h"
+#include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 
 namespace blink {
 
