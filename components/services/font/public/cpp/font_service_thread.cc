@@ -9,22 +9,22 @@
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/post_task.h"
 #include "components/services/font/public/cpp/mapped_font_file.h"
 
 namespace font_service {
 namespace internal {
 
-namespace {
-const char kFontThreadName[] = "Font_Proxy_Thread";
-}  // namespace
-
 FontServiceThread::FontServiceThread(mojom::FontServicePtr font_service)
-    : base::Thread(kFontThreadName),
-      font_service_info_(font_service.PassInterface()),
+    : font_service_info_(font_service.PassInterface()),
+      task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::TaskPriority::USER_VISIBLE, base::MayBlock()})),
       weak_factory_(this) {
-  DETACH_FROM_THREAD(thread_checker_);
-  Start();
+  task_runner_->PostTask(FROM_HERE, base::BindOnce(&FontServiceThread::Init,
+                                                   weak_factory_.GetWeakPtr()));
 }
+
+FontServiceThread::~FontServiceThread() {}
 
 bool FontServiceThread::MatchFamilyName(
     const char family_name[],
@@ -32,13 +32,12 @@ bool FontServiceThread::MatchFamilyName(
     SkFontConfigInterface::FontIdentity* out_font_identity,
     SkString* out_family_name,
     SkFontStyle* out_style) {
-  DCHECK_NE(GetThreadId(), base::PlatformThread::CurrentId());
-
+  DCHECK(!task_runner_->RunsTasksInCurrentSequence());
   bool out_valid = false;
   // This proxies to the other thread, which proxies to mojo. Only on the reply
   // from mojo do we return from this.
   base::WaitableEvent done_event;
-  task_runner()->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&FontServiceThread::MatchFamilyNameImpl, this, &done_event,
                      family_name, requested_style, &out_valid,
@@ -55,10 +54,10 @@ bool FontServiceThread::FallbackFontForCharacter(
     std::string* out_family_name,
     bool* out_is_bold,
     bool* out_is_italic) {
-  DCHECK_NE(GetThreadId(), base::PlatformThread::CurrentId());
+  DCHECK(!task_runner_->RunsTasksInCurrentSequence());
   bool out_valid = false;
   base::WaitableEvent done_event;
-  task_runner()->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&FontServiceThread::FallbackFontForCharacterImpl, this,
                      &done_event, character, std::move(locale), &out_valid,
@@ -76,10 +75,10 @@ bool FontServiceThread::FontRenderStyleForStrike(
     bool is_bold,
     float device_scale_factor,
     font_service::mojom::FontRenderStylePtr* out_font_render_style) {
-  DCHECK_NE(GetThreadId(), base::PlatformThread::CurrentId());
+  DCHECK(!task_runner_->RunsTasksInCurrentSequence());
   bool out_valid = false;
   base::WaitableEvent done_event;
-  task_runner()->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&FontServiceThread::FontRenderStyleForStrikeImpl, this,
                      &done_event, family, size, is_italic, is_bold,
@@ -91,10 +90,10 @@ bool FontServiceThread::FontRenderStyleForStrike(
 bool FontServiceThread::MatchFontByPostscriptNameOrFullFontName(
     std::string postscript_name_or_full_font_name,
     mojom::FontIdentityPtr* out_identity) {
-  DCHECK_NE(GetThreadId(), base::PlatformThread::CurrentId());
+  DCHECK(!task_runner_->RunsTasksInCurrentSequence());
   bool out_valid = false;
   base::WaitableEvent done_event;
-  task_runner()->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &FontServiceThread::MatchFontByPostscriptNameOrFullFontNameImpl, this,
@@ -111,9 +110,9 @@ void FontServiceThread::MatchFontWithFallback(
     uint32_t charset,
     uint32_t fallback_family_type,
     base::File* out_font_file_handle) {
-  DCHECK_NE(GetThreadId(), base::PlatformThread::CurrentId());
+  DCHECK(!task_runner_->RunsTasksInCurrentSequence());
   base::WaitableEvent done_event;
-  task_runner()->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&FontServiceThread::MatchFontWithFallbackImpl, this,
                      &done_event, std::move(family), is_bold, is_italic,
@@ -123,13 +122,13 @@ void FontServiceThread::MatchFontWithFallback(
 
 scoped_refptr<MappedFontFile> FontServiceThread::OpenStream(
     const SkFontConfigInterface::FontIdentity& identity) {
-  DCHECK_NE(GetThreadId(), base::PlatformThread::CurrentId());
+  DCHECK(!task_runner_->RunsTasksInCurrentSequence());
 
   base::File stream_file;
   // This proxies to the other thread, which proxies to mojo. Only on the
   // reply from mojo do we return from this.
   base::WaitableEvent done_event;
-  task_runner()->PostTask(
+  task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&FontServiceThread::OpenStreamImpl, this,
                                 &done_event, &stream_file, identity.fID));
   done_event.Wait();
@@ -148,10 +147,6 @@ scoped_refptr<MappedFontFile> FontServiceThread::OpenStream(
   return mapped_font_file;
 }
 
-FontServiceThread::~FontServiceThread() {
-  Stop();
-}
-
 void FontServiceThread::MatchFamilyNameImpl(
     base::WaitableEvent* done_event,
     const char family_name[],
@@ -160,7 +155,7 @@ void FontServiceThread::MatchFamilyNameImpl(
     SkFontConfigInterface::FontIdentity* out_font_identity,
     SkString* out_family_name,
     SkFontStyle* out_style) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   if (font_service_.encountered_error()) {
     *out_valid = false;
@@ -192,7 +187,8 @@ void FontServiceThread::OnMatchFamilyNameComplete(
     mojom::FontIdentityPtr font_identity,
     const std::string& family_name,
     mojom::TypefaceStylePtr style) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   pending_waitable_events_.erase(done_event);
 
   *out_valid = !font_identity.is_null();
@@ -214,7 +210,8 @@ void FontServiceThread::OnMatchFamilyNameComplete(
 void FontServiceThread::OpenStreamImpl(base::WaitableEvent* done_event,
                                        base::File* output_file,
                                        const uint32_t id_number) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   if (font_service_.encountered_error()) {
     done_event->Signal();
     return;
@@ -229,7 +226,8 @@ void FontServiceThread::OpenStreamImpl(base::WaitableEvent* done_event,
 void FontServiceThread::OnOpenStreamComplete(base::WaitableEvent* done_event,
                                              base::File* output_file,
                                              base::File file) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   pending_waitable_events_.erase(done_event);
   *output_file = std::move(file);
   done_event->Signal();
@@ -244,7 +242,7 @@ void FontServiceThread::FallbackFontForCharacterImpl(
     std::string* out_family_name,
     bool* out_is_bold,
     bool* out_is_italic) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   if (font_service_.encountered_error()) {
     *out_valid = false;
@@ -271,7 +269,8 @@ void FontServiceThread::OnFallbackFontForCharacterComplete(
     const std::string& family_name,
     bool is_bold,
     bool is_italic) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   pending_waitable_events_.erase(done_event);
 
   *out_valid = !font_identity.is_null();
@@ -293,7 +292,7 @@ void FontServiceThread::FontRenderStyleForStrikeImpl(
     float device_scale_factor,
     bool* out_valid,
     mojom::FontRenderStylePtr* out_font_render_style) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   if (font_service_.encountered_error()) {
     *out_valid = false;
@@ -313,7 +312,8 @@ void FontServiceThread::OnFontRenderStyleForStrikeComplete(
     bool* out_valid,
     mojom::FontRenderStylePtr* out_font_render_style,
     mojom::FontRenderStylePtr font_render_style) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   pending_waitable_events_.erase(done_event);
 
   *out_valid = !font_render_style.is_null();
@@ -328,7 +328,7 @@ void FontServiceThread::MatchFontByPostscriptNameOrFullFontNameImpl(
     bool* out_valid,
     std::string postscript_name_or_full_font_name,
     mojom::FontIdentityPtr* out_font_identity) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   if (font_service_.encountered_error()) {
     *out_valid = false;
@@ -349,7 +349,8 @@ void FontServiceThread::OnMatchFontByPostscriptNameOrFullFontNameComplete(
     bool* out_valid,
     mojom::FontIdentityPtr* out_font_identity,
     mojom::FontIdentityPtr font_identity) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   pending_waitable_events_.erase(done_event);
 
   *out_valid = !font_identity.is_null();
@@ -367,7 +368,8 @@ void FontServiceThread::MatchFontWithFallbackImpl(
     uint32_t charset,
     uint32_t fallback_family_type,
     base::File* out_font_file_handle) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   *out_font_file_handle = base::File();
   if (font_service_.encountered_error()) {
     done_event->Signal();
@@ -384,7 +386,8 @@ void FontServiceThread::OnMatchFontWithFallbackComplete(
     base::WaitableEvent* done_event,
     base::File* out_font_file_handle,
     base::File file) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
   pending_waitable_events_.erase(done_event);
 
   *out_font_file_handle = std::move(file);
@@ -403,10 +406,6 @@ void FontServiceThread::Init() {
   font_service_.set_connection_error_handler(
       base::BindOnce(&FontServiceThread::OnFontServiceConnectionError,
                      weak_factory_.GetWeakPtr()));
-}
-
-void FontServiceThread::CleanUp() {
-  font_service_.reset();
 }
 
 }  // namespace internal
