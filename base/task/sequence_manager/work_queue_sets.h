@@ -50,14 +50,15 @@ class BASE_EXPORT WorkQueueSets {
   void ChangeSetIndex(WorkQueue* queue, size_t set_index);
 
   // O(log num queues)
-  void OnFrontTaskChanged(WorkQueue* queue);
+  void OnQueuesFrontTaskChanged(WorkQueue* queue);
 
   // O(log num queues)
   void OnTaskPushedToEmptyQueue(WorkQueue* work_queue);
 
-  // If empty it's O(1) amortized, otherwise it's O(log num queues)
+  // If empty it's O(1) amortized, otherwise it's O(log num queues). Slightly
+  // faster on average than OnQueuesFrontTaskChanged.
   // Assumes |work_queue| contains the lowest enqueue order in the set.
-  void OnPopQueue(WorkQueue* work_queue);
+  void OnPopMinQueueInSet(WorkQueue* work_queue);
 
   // O(log num queues)
   void OnQueueBlocked(WorkQueue* work_queue);

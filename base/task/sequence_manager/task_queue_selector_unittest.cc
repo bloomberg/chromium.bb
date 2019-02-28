@@ -100,7 +100,8 @@ class TaskQueueSelectorTest : public testing::Test {
           queue_to_index_map_.find(chosen_work_queue->task_queue())->second;
       order.push_back(chosen_queue_index);
       chosen_work_queue->PopTaskForTesting();
-      chosen_work_queue->work_queue_sets()->OnPopQueue(chosen_work_queue);
+      chosen_work_queue->work_queue_sets()->OnPopMinQueueInSet(
+          chosen_work_queue);
     }
     return order;
   }
@@ -328,7 +329,7 @@ TEST_F(TaskQueueSelectorTest, ControlTasksDontTriggerAntiStarvationLogic) {
   // Simulate the control queue becoming empty.
   WorkQueue* chosen_work_queue = selector_.SelectWorkQueueToService();
   chosen_work_queue->PopTaskForTesting();
-  chosen_work_queue->work_queue_sets()->OnPopQueue(chosen_work_queue);
+  chosen_work_queue->work_queue_sets()->OnPopMinQueueInSet(chosen_work_queue);
 
   // Simulate posting a normal priority task.
   PushTask(2, 2);
