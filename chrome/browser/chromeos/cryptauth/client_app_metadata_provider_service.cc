@@ -34,7 +34,7 @@ namespace chromeos {
 
 namespace {
 
-const char kInstanceIdScope[] = "*";
+const char kInstanceIdScope[] = "GCM";
 
 const cryptauthv2::FeatureMetadata& GenerateFeatureMetadata() {
   static const base::NoDestructor<cryptauthv2::FeatureMetadata>
@@ -207,7 +207,8 @@ void ClientAppMetadataProviderService::OnInstanceIdFetched(
     const std::string& instance_id) {
   DCHECK(!instance_id.empty());
   instance_id_->GetToken(
-      device_sync::kCryptAuthGcmProjectId /* authorized_entity */,
+      device_sync::
+          kCryptAuthGcmInstanceIdAuthorizedEntity /* authorized_entity */,
       kInstanceIdScope /* scope */,
       std::map<std::string, std::string>() /* options */, false /* is_lazy */,
       base::Bind(&ClientAppMetadataProviderService::OnInstanceIdTokenFetched,
