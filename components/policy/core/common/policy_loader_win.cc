@@ -148,8 +148,7 @@ void FilterUntrustedPolicy(PolicyMap* policy) {
 
   for (size_t i = 0; i < base::size(kInsecurePolicies); ++i) {
     if (policy->Get(kInsecurePolicies[i])) {
-      // TODO(pastarmovj): Surface this issue in the about:policy page.
-      policy->Erase(kInsecurePolicies[i]);
+      policy->GetMutable(kInsecurePolicies[i])->SetBlocked();
       invalid_policies++;
       const PolicyDetails* details =
           GetChromePolicyDetails(kInsecurePolicies[i]);
