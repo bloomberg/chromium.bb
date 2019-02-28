@@ -11,7 +11,6 @@
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
-#include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/grit/generated_resources.h"
@@ -25,24 +24,24 @@ namespace banners {
 infobars::InfoBar* AppBannerInfoBarDelegateDesktop::Create(
     content::WebContents* web_contents,
     base::WeakPtr<AppBannerManager> weak_manager,
-    extensions::BookmarkAppHelper* bookmark_app_helper,
+    WebappInstallSource install_source,
     const blink::Manifest& manifest) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       std::unique_ptr<ConfirmInfoBarDelegate>(
-          new AppBannerInfoBarDelegateDesktop(weak_manager, bookmark_app_helper,
+          new AppBannerInfoBarDelegateDesktop(weak_manager, install_source,
                                               manifest))));
 }
 
 AppBannerInfoBarDelegateDesktop::AppBannerInfoBarDelegateDesktop(
     base::WeakPtr<AppBannerManager> weak_manager,
-    extensions::BookmarkAppHelper* bookmark_app_helper,
+    WebappInstallSource install_source,
     const blink::Manifest& manifest)
     : ConfirmInfoBarDelegate(),
       weak_manager_(weak_manager),
-      bookmark_app_helper_(bookmark_app_helper),
       manifest_(manifest),
+      install_source_(install_source),
       has_user_interaction_(false) {}
 
 AppBannerInfoBarDelegateDesktop::~AppBannerInfoBarDelegateDesktop() {
@@ -91,8 +90,9 @@ bool AppBannerInfoBarDelegateDesktop::Accept() {
   TrackUserResponse(USER_RESPONSE_WEB_APP_ACCEPTED);
   has_user_interaction_ = true;
 
-  bookmark_app_helper_->Create(base::Bind(
-      &AppBannerManager::DidFinishCreatingBookmarkApp, weak_manager_));
+  if (weak_manager_)
+    weak_manager_->CreateBookmarkApp(install_source_);
+
   return true;
 }
 

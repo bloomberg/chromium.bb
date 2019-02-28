@@ -11,12 +11,10 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 
+enum class WebappInstallSource;
+
 namespace content {
 class WebContents;
-}
-
-namespace extensions {
-class BookmarkAppHelper;
 }
 
 namespace infobars {
@@ -30,17 +28,15 @@ class AppBannerManager;
 class AppBannerInfoBarDelegateDesktop : public ConfirmInfoBarDelegate {
 
  public:
-  static infobars::InfoBar* Create(
-      content::WebContents* web_contents,
-      base::WeakPtr<AppBannerManager> weak_manager,
-      extensions::BookmarkAppHelper* bookmark_app_helper,
-      const blink::Manifest& manifest);
+  static infobars::InfoBar* Create(content::WebContents* web_contents,
+                                   base::WeakPtr<AppBannerManager> weak_manager,
+                                   WebappInstallSource install_source,
+                                   const blink::Manifest& manifest);
 
  private:
-  AppBannerInfoBarDelegateDesktop(
-      base::WeakPtr<AppBannerManager> weak_manager,
-      extensions::BookmarkAppHelper* bookmark_app_helper,
-      const blink::Manifest& manifest);
+  AppBannerInfoBarDelegateDesktop(base::WeakPtr<AppBannerManager> weak_manager,
+                                  WebappInstallSource install_source,
+                                  const blink::Manifest& manifest);
   ~AppBannerInfoBarDelegateDesktop() override;
 
   // ConfirmInfoBarDelegate:
@@ -53,8 +49,8 @@ class AppBannerInfoBarDelegateDesktop : public ConfirmInfoBarDelegate {
   bool Accept() override;
 
   base::WeakPtr<AppBannerManager> weak_manager_;
-  extensions::BookmarkAppHelper* bookmark_app_helper_;
   blink::Manifest manifest_;
+  WebappInstallSource install_source_;
   bool has_user_interaction_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerInfoBarDelegateDesktop);

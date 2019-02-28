@@ -18,12 +18,12 @@
 #include "chrome/browser/installable/installable_ambient_badge_infobar_delegate.h"
 #include "chrome/browser/installable/installable_logging.h"
 #include "chrome/browser/installable/installable_manager.h"
-#include "chrome/browser/installable/installable_metrics.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/platform/modules/app_banner/app_banner.mojom.h"
 
+enum class WebappInstallSource;
 class InstallableManager;
 class SkBitmap;
 struct WebApplicationInfo;
@@ -170,6 +170,10 @@ class AppBannerManager : public content::WebContentsObserver,
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+  // Overridden on desktop platforms. Called to initiate the bookmark app
+  // install. Not used on Android.
+  virtual void CreateBookmarkApp(WebappInstallSource install_source) {}
 
   // Overridden and passed through base::Bind on desktop platforms. Called when
   // the bookmark app install initiated by a banner has completed. Not used on

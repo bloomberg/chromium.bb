@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_observer.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
 #include "chrome/browser/plugins/hung_plugin_infobar_delegate.h"
 #include "chrome/browser/plugins/plugin_infobar_delegates.h"
@@ -239,7 +240,8 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
   switch (expected_identifiers_.back()) {
     case IBD::APP_BANNER_INFOBAR_DELEGATE:
       banners::AppBannerInfoBarDelegateDesktop::Create(
-          GetWebContents(), nullptr, nullptr, blink::Manifest());
+          GetWebContents(), nullptr,
+          WebappInstallSource::AUTOMATIC_PROMPT_BROWSER_TAB, blink::Manifest());
       break;
 
     case IBD::HUNG_PLUGIN_INFOBAR_DELEGATE:

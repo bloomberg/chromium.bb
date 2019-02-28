@@ -19,6 +19,7 @@
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
