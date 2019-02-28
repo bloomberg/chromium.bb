@@ -92,6 +92,18 @@ syncer::SyncAccountInfo SyncAuthManager::GetActiveAccountInfo() const {
   return sync_account_;
 }
 
+GoogleServiceAuthError SyncAuthManager::GetLastAuthError() const {
+  // TODO(crbug.com/921553): Which error should take precedence?
+  if (partial_token_status_.connection_status ==
+      syncer::CONNECTION_SERVER_ERROR) {
+    // TODO(crbug.com/921553): Verify whether CONNECTION_FAILED is really an
+    // appropriate auth error here; maybe SERVICE_ERROR would be better? Or
+    // maybe we shouldn't expose this case as an auth error at all?
+    return GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED);
+  }
+  return last_auth_error_;
+}
+
 syncer::SyncTokenStatus SyncAuthManager::GetSyncTokenStatus() const {
   DCHECK(partial_token_status_.next_token_request_time.is_null());
 
@@ -174,13 +186,11 @@ void SyncAuthManager::ConnectionStatusChanged(syncer::ConnectionStatus status) {
       if (!request_access_token_retry_timer_.IsRunning()) {
         request_access_token_backoff_.Reset();
       }
-      last_auth_error_ = GoogleServiceAuthError::AuthErrorNone();
       break;
     case syncer::CONNECTION_SERVER_ERROR:
-      // TODO(crbug.com/839834): Verify whether CONNECTION_FAILED is really an
-      // appropriate auth error here; maybe SERVICE_ERROR would be better?
-      last_auth_error_ =
-          GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED);
+      // Note: This case will be exposed as an auth error, due to the
+      // |connection_status| in |partial_token_error_|.
+      DCHECK(GetLastAuthError().IsTransientError());
       break;
     case syncer::CONNECTION_NOT_ATTEMPTED:
       // The connection status should never change to "not attempted".
@@ -220,11 +230,8 @@ void SyncAuthManager::ScheduleAccessTokenRequest() {
                           weak_ptr_factory_.GetWeakPtr()));
 }
 
-void SyncAuthManager::Clear() {
-  // TODO(crbug.com/839834): Clearing the auth error here isn't quite right.
-  // It makes sense to clear any auth error we got from the Sync server, but we
-  // should probably retain any errors from the identity manager.
-  last_auth_error_ = GoogleServiceAuthError::AuthErrorNone();
+void SyncAuthManager::ConnectionClosed() {
+  partial_token_status_ = syncer::SyncTokenStatus();
   ClearAccessTokenAndRequest();
 }
 
@@ -360,7 +367,8 @@ bool SyncAuthManager::UpdateSyncAccountIfNecessary() {
     sync_account_ = syncer::SyncAccountInfo();
     // Also clear any pending request or auth errors we might have, since they
     // aren't meaningful anymore.
-    Clear();
+    ConnectionClosed();
+    last_auth_error_ = GoogleServiceAuthError::AuthErrorNone();
     account_state_changed_callback_.Run();
   }
 
@@ -388,9 +396,6 @@ void SyncAuthManager::RequestAccessToken() {
     request_access_token_retry_timer_.Stop();
   }
 
-  const identity::ScopeSet kOAuth2ScopeSet{
-      GaiaConstants::kChromeSyncOAuth2Scope};
-
   // Invalidate any previous token, otherwise the token service will return the
   // same token again.
   InvalidateAccessToken();
@@ -401,7 +406,7 @@ void SyncAuthManager::RequestAccessToken() {
   ongoing_access_token_fetch_ =
       identity_manager_->CreateAccessTokenFetcherForAccount(
           sync_account_.account_info.account_id, kSyncOAuthConsumerName,
-          kOAuth2ScopeSet,
+          {GaiaConstants::kChromeSyncOAuth2Scope},
           base::BindOnce(&SyncAuthManager::AccessTokenFetched,
                          base::Unretained(this)),
           identity::AccessTokenFetcher::Mode::kWaitUntilRefreshTokenAvailable);

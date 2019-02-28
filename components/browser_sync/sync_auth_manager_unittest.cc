@@ -69,8 +69,8 @@ TEST_F(SyncAuthManagerTest, ProvidesNothingInLocalSyncMode) {
   EXPECT_TRUE(auth_manager->access_token().empty());
   // Note: Calling RegisterForAuthNotifications is illegal in local Sync mode,
   // so we don't test that.
-  // Calling Clear() does nothing, but shouldn't crash.
-  auth_manager->Clear();
+  // Calling ConnectionClosed() does nothing, but shouldn't crash.
+  auth_manager->ConnectionClosed();
 }
 
 // ChromeOS doesn't support sign-in/sign-out.
@@ -161,6 +161,33 @@ TEST_F(SyncAuthManagerTest, ClearsAuthErrorOnSignout) {
   // the auth error, since it's now not meaningful anymore.
   identity_env()->ClearPrimaryAccount();
   EXPECT_EQ(auth_manager->GetLastAuthError().state(),
+            GoogleServiceAuthError::NONE);
+}
+
+TEST_F(SyncAuthManagerTest, DoesNotClearAuthErrorOnSyncDisable) {
+  // Start out already signed in before the SyncAuthManager is created.
+  std::string account_id =
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
+
+  auto auth_manager = CreateAuthManager();
+
+  auth_manager->RegisterForAuthNotifications();
+
+  ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
+            account_id);
+  ASSERT_EQ(auth_manager->GetLastAuthError().state(),
+            GoogleServiceAuthError::NONE);
+
+  // Force an auth error by revoking the refresh token.
+  identity_env()->RemoveRefreshTokenForPrimaryAccount();
+  ASSERT_NE(auth_manager->GetLastAuthError().state(),
+            GoogleServiceAuthError::NONE);
+
+  // Now Sync gets turned off, e.g. because the user disabled it.
+  auth_manager->ConnectionClosed();
+
+  // Since the user is still signed in, the auth error should have remained.
+  EXPECT_NE(auth_manager->GetLastAuthError().state(),
             GoogleServiceAuthError::NONE);
 }
 #endif  // !OS_CHROMEOS
@@ -338,6 +365,37 @@ TEST_F(SyncAuthManagerTest, ExposesServerError) {
   // But the access token should still be there - this might just be some
   // non-auth-related problem with the server.
   EXPECT_EQ(auth_manager->GetCredentials().sync_token, "access_token");
+}
+
+TEST_F(SyncAuthManagerTest, ClearsServerErrorOnSyncDisable) {
+  std::string account_id =
+      identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
+  auto auth_manager = CreateAuthManager();
+  auth_manager->RegisterForAuthNotifications();
+  ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
+            account_id);
+
+  // During Sync startup, the SyncEngine attempts to connect to the server
+  // without an access token, resulting in a call to ConnectionStatusChanged
+  // with CONNECTION_AUTH_ERROR. This is what kicks off the initial access token
+  // fetch.
+  auth_manager->ConnectionStatusChanged(syncer::CONNECTION_AUTH_ERROR);
+  identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      "access_token", base::Time::Now() + base::TimeDelta::FromHours(1));
+  ASSERT_EQ(auth_manager->GetCredentials().sync_token, "access_token");
+
+  // A server error happens.
+  auth_manager->ConnectionStatusChanged(syncer::CONNECTION_SERVER_ERROR);
+  ASSERT_NE(auth_manager->GetLastAuthError(),
+            GoogleServiceAuthError::AuthErrorNone());
+
+  // Now Sync gets turned off, e.g. because the user disabled it.
+  auth_manager->ConnectionClosed();
+
+  // This should have cleared the auth error, because it was due to a server
+  // error which is now not meaningful anymore.
+  EXPECT_EQ(auth_manager->GetLastAuthError(),
+            GoogleServiceAuthError::AuthErrorNone());
 }
 
 TEST_F(SyncAuthManagerTest, RequestsNewAccessTokenOnExpiry) {
