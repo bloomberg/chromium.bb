@@ -63,6 +63,11 @@ namespace content {
 
 namespace {
 
+// Images smaller than this number, in CSS pixels, will never get annotated.
+// Note that OCR works on pretty small images, so this shouldn't be too large.
+const int kMinImageAnnotationWidth = 16;
+const int kMinImageAnnotationHeight = 16;
+
 void AddIntListAttributeFromWebObjects(ax::mojom::IntListAttribute attr,
                                        const WebVector<WebAXObject>& objects,
                                        AXContentNodeData* dst) {
@@ -1052,6 +1057,12 @@ void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject src,
         ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation);
     return;
   }
+
+  // Skip images that are too small to label. This also catches
+  // unloaded images where the size is unknown.
+  if (dst->relative_bounds.bounds.width() < kMinImageAnnotationWidth ||
+      dst->relative_bounds.bounds.height() < kMinImageAnnotationHeight)
+    return;
 
   if (!image_annotator_) {
     dst->SetImageAnnotationStatus(

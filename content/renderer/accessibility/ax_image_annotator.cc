@@ -183,25 +183,40 @@ void AXImageAnnotator::OnImageAnnotated(
     return;
   }
 
+  std::vector<base::string16> contextualized_strings;
   for (const auto& annotation : result->get_annotations()) {
-    if (annotation->type != image_annotation::mojom::AnnotationType::kOcr)
+    int message_id = 0;
+    switch (annotation->type) {
+      case image_annotation::mojom::AnnotationType::kOcr:
+        message_id = IDS_AX_IMAGE_ANNOTATION_OCR_CONTEXT;
+        break;
+      case image_annotation::mojom::AnnotationType::kCaption:
+      case image_annotation::mojom::AnnotationType::kLabel:
+        message_id = IDS_AX_IMAGE_ANNOTATION_DESCRIPTION_CONTEXT;
+        break;
+    }
+
+    // Skip unrecognized annotation types.
+    if (!message_id)
       continue;
 
     if (annotation->text.empty())
       return;
 
-    auto contextualized_string = GetContentClient()->GetLocalizedString(
-        IDS_AX_IMAGE_ANNOTATION_OCR_CONTEXT,
-        base::UTF8ToUTF16(annotation->text));
-
-    image_annotations_.at(image.AxID())
-        .set_annotation(base::UTF16ToUTF8(contextualized_string));
-    render_accessibility_->MarkWebAXObjectDirty(image, false /* subtree */);
-
-    return;
+    contextualized_strings.push_back(GetContentClient()->GetLocalizedString(
+        message_id, base::UTF8ToUTF16(annotation->text)));
   }
 
-  DLOG(WARNING) << "No OCR results.";
+  if (contextualized_strings.size() == 0)
+    return;
+
+  // TODO(accessibility): join two sentences together in a more i18n-friendly
+  // way. Since this is intended for a screen reader, though, a period
+  // probably works in almost all languages.
+  std::string contextualized_string = base::UTF16ToUTF8(
+      base::JoinString(contextualized_strings, base::ASCIIToUTF16(". ")));
+  image_annotations_.at(image.AxID()).set_annotation(contextualized_string);
+  render_accessibility_->MarkWebAXObjectDirty(image, false /* subtree */);
 }
 
 }  // namespace content
