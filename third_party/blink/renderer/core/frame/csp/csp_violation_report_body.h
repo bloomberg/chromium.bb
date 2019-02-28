@@ -43,7 +43,7 @@ class CORE_EXPORT CSPViolationReportBody : public ReportBody {
   String sourceFile() const { return source_file_; }
   String sample() const { return sample_; }
   String disposition() const { return disposition_; }
-  unsigned short statusCode() const { return status_code_; }
+  uint16_t statusCode() const { return status_code_; }
 
   uint32_t lineNumber(bool& is_null) const {
     is_null = !source_file_;
@@ -64,7 +64,7 @@ class CORE_EXPORT CSPViolationReportBody : public ReportBody {
   const String source_file_;
   const String sample_;
   const String disposition_;
-  const uint32_t status_code_;
+  const uint16_t status_code_;
   const uint32_t line_number_;
   const uint32_t column_number_;
 };

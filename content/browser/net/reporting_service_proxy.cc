@@ -85,7 +85,7 @@ class ReportingServiceProxyImpl : public blink::mojom::ReportingServiceProxy {
                                int line_number,
                                int column_number,
                                const base::Optional<std::string>& source_file,
-                               int status_code,
+                               uint16_t status_code,
                                const std::string& script_sample) override {
     auto body = std::make_unique<base::DictionaryValue>();
     body->SetString("document-uri", document_uri);
