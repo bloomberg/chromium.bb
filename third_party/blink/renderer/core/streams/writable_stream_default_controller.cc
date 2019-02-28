@@ -43,16 +43,6 @@ void WritableStreamDefaultController::error(ScriptState* script_state,
   Error(script_state, this, e.V8Value());
 }
 
-void WritableStreamDefaultController::Trace(Visitor* visitor) {
-  visitor->Trace(abort_algorithm_);
-  visitor->Trace(close_algorithm_);
-  visitor->Trace(controlled_writable_stream_);
-  visitor->Trace(queue_);
-  visitor->Trace(strategy_size_algorithm_);
-  visitor->Trace(write_algorithm_);
-  ScriptWrappable::Trace(visitor);
-}
-
 // Writable Stream Default Controller Internal Methods
 
 v8::Local<v8::Promise> WritableStreamDefaultController::AbortSteps(
@@ -278,22 +268,6 @@ void WritableStreamDefaultController::SetUpFromUnderlyingSink(
         exception_state);
 }
 
-void WritableStreamDefaultController::ClearAlgorithms(
-    WritableStreamDefaultController* controller) {
-  // https://streams.spec.whatwg.org/#writable-stream-default-controller-clear-algorithms
-  //  1. Set controller.[[writeAlgorithm]] to undefined.
-  controller->write_algorithm_ = nullptr;
-
-  //  2. Set controller.[[closeAlgorithm]] to undefined.
-  controller->close_algorithm_ = nullptr;
-
-  //  3. Set controller.[[abortAlgorithm]] to undefined.
-  controller->abort_algorithm_ = nullptr;
-
-  //  4. Set controller.[[strategySizeAlgorithm]] to undefined.
-  controller->strategy_size_algorithm_ = nullptr;
-}
-
 void WritableStreamDefaultController::Close(
     ScriptState* script_state,
     WritableStreamDefaultController* controller) {
@@ -398,6 +372,32 @@ void WritableStreamDefaultController::Write(
   //  6. Perform ! WritableStreamDefaultControllerAdvanceQueueIfNeeded(
   //     controller).
   AdvanceQueueIfNeeded(script_state, controller);
+}
+
+void WritableStreamDefaultController::Trace(Visitor* visitor) {
+  visitor->Trace(abort_algorithm_);
+  visitor->Trace(close_algorithm_);
+  visitor->Trace(controlled_writable_stream_);
+  visitor->Trace(queue_);
+  visitor->Trace(strategy_size_algorithm_);
+  visitor->Trace(write_algorithm_);
+  ScriptWrappable::Trace(visitor);
+}
+
+void WritableStreamDefaultController::ClearAlgorithms(
+    WritableStreamDefaultController* controller) {
+  // https://streams.spec.whatwg.org/#writable-stream-default-controller-clear-algorithms
+  //  1. Set controller.[[writeAlgorithm]] to undefined.
+  controller->write_algorithm_ = nullptr;
+
+  //  2. Set controller.[[closeAlgorithm]] to undefined.
+  controller->close_algorithm_ = nullptr;
+
+  //  3. Set controller.[[abortAlgorithm]] to undefined.
+  controller->abort_algorithm_ = nullptr;
+
+  //  4. Set controller.[[strategySizeAlgorithm]] to undefined.
+  controller->strategy_size_algorithm_ = nullptr;
 }
 
 void WritableStreamDefaultController::AdvanceQueueIfNeeded(

@@ -297,6 +297,27 @@ ScriptPromise WritableStreamDefaultWriter::write(ScriptState* script_state,
                        Write(script_state, this, chunk.V8Value()));
 }
 
+void WritableStreamDefaultWriter::EnsureReadyPromiseRejected(
+    ScriptState* script_state,
+    WritableStreamDefaultWriter* writer,
+    v8::Local<v8::Value> error) {
+  auto* isolate = script_state->GetIsolate();
+  // https://streams.spec.whatwg.org/#writable-stream-default-writer-ensure-ready-promise-rejected
+  //  1. If writer.[[readyPromise]].[[PromiseState]] is "pending", reject
+  //     writer.[[readyPromise]] with error.
+  if (writer->ready_promise_->State(isolate) == v8::Promise::kPending) {
+    writer->ready_promise_->Reject(script_state, error);
+  } else {
+    //  2. Otherwise, set writer.[[readyPromise]] to a promise rejected with
+    //     error.
+    writer->ready_promise_ =
+        StreamPromiseResolver::CreateRejected(script_state, error);
+  }
+
+  //  3. Set writer.[[readyPromise]].[[PromiseIsHandled]] to true.
+  writer->ready_promise_->MarkAsHandled(isolate);
+}
+
 void WritableStreamDefaultWriter::SetReadyPromise(
     StreamPromiseResolver* ready_promise) {
   ready_promise_ = ready_promise;
@@ -429,27 +450,6 @@ void WritableStreamDefaultWriter::EnsureClosedPromiseRejected(
 
   //  3. Set writer.[[closedPromise]].[[PromiseIsHandled]] to true.
   writer->closed_promise_->MarkAsHandled(isolate);
-}
-
-void WritableStreamDefaultWriter::EnsureReadyPromiseRejected(
-    ScriptState* script_state,
-    WritableStreamDefaultWriter* writer,
-    v8::Local<v8::Value> error) {
-  auto* isolate = script_state->GetIsolate();
-  // https://streams.spec.whatwg.org/#writable-stream-default-writer-ensure-ready-promise-rejected
-  //  1. If writer.[[readyPromise]].[[PromiseState]] is "pending", reject
-  //     writer.[[readyPromise]] with error.
-  if (writer->ready_promise_->State(isolate) == v8::Promise::kPending) {
-    writer->ready_promise_->Reject(script_state, error);
-  } else {
-    //  2. Otherwise, set writer.[[readyPromise]] to a promise rejected with
-    //     error.
-    writer->ready_promise_ =
-        StreamPromiseResolver::CreateRejected(script_state, error);
-  }
-
-  //  3. Set writer.[[readyPromise]].[[PromiseIsHandled]] to true.
-  writer->ready_promise_->MarkAsHandled(isolate);
 }
 
 v8::Local<v8::Value> WritableStreamDefaultWriter::GetDesiredSize(
