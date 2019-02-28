@@ -10,6 +10,10 @@
 namespace ash {
 
 constexpr char kAshPipEventsHistogramName[] = "Ash.Pip.Events";
+constexpr char kAshPipFreeResizeInitialAreaHistogramName[] =
+    "Ash.Pip.FreeResizeInitialArea";
+constexpr char kAshPipFreeResizeFinishAreaHistogramName[] =
+    "Ash.Pip.FreeResizeFinishArea";
 
 // This enum should be kept in sync with the AshPipEvents enum in
 // src/tools/metrics/histograms/enums.xml.

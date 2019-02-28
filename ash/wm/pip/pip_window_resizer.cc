@@ -9,6 +9,7 @@
 #include "ash/wm/widget_finder.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -55,6 +56,20 @@ bool IsPastLeftOrRightEdge(const gfx::Rect& bounds, const gfx::Rect& area) {
   return bounds.x() < area.x() || bounds.right() > area.right();
 }
 
+void CollectFreeResizeAreaMetric(const char* metric_name,
+                                 aura::Window* window) {
+  aura::Window* root_window = window->GetRootWindow();
+  const gfx::Rect bounds = window->GetBoundsInRootWindow();
+  const int root_window_area =
+      root_window->bounds().width() * root_window->bounds().height();
+  const int window_area = bounds.width() * bounds.height();
+  if (root_window_area != 0) {
+    const int percentage =
+        std::round(float(window_area) / float(root_window_area) * 100.f);
+    base::UmaHistogramPercentage(metric_name, percentage);
+  }
+}
+
 }  // namespace
 
 PipWindowResizer::PipWindowResizer(wm::WindowState* window_state)
@@ -65,6 +80,8 @@ PipWindowResizer::PipWindowResizer(wm::WindowState* window_state)
   if (is_resize) {
     UMA_HISTOGRAM_ENUMERATION(kAshPipEventsHistogramName,
                               AshPipEvents::FREE_RESIZE, AshPipEvents::COUNT);
+    CollectFreeResizeAreaMetric(kAshPipFreeResizeInitialAreaHistogramName,
+                                GetTarget());
   } else {
     // Don't allow swipe-to-dismiss for resizes.
     gfx::Rect area = PipPositioner::GetMovementArea(window_state->GetDisplay());
@@ -162,6 +179,11 @@ void PipWindowResizer::Drag(const gfx::Point& location_in_parent,
 }
 
 void PipWindowResizer::CompleteDrag() {
+  if (details().bounds_change & kBoundsChange_Resizes) {
+    CollectFreeResizeAreaMetric(kAshPipFreeResizeFinishAreaHistogramName,
+                                GetTarget());
+  }
+
   window_state()->OnCompleteDrag(last_location_in_screen_);
   window_state()->DeleteDragDetails();
   window_state()->ClearRestoreBounds();
