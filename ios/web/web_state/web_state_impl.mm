@@ -687,13 +687,16 @@ const GURL& WebStateImpl::GetLastCommittedURL() const {
 GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
   GURL result = [web_controller_ currentURLWithTrustLevel:trust_level];
 
-  web::NavigationItem* item = navigation_manager_->GetLastCommittedItem();
+  web::NavigationItemImpl* item =
+      navigation_manager_->GetLastCommittedItemImpl();
   GURL lastCommittedURL;
   if (item) {
     if ([web_controller_.nativeController
-            respondsToSelector:@selector(virtualURL)]) {
-      // For native content |currentURLWithTrustLevel:| returns virtual URL if
-      // one is available.
+            respondsToSelector:@selector(virtualURL)] ||
+        item->error_retry_state_machine().state() ==
+            ErrorRetryState::kReadyToDisplayErrorForFailedNavigation) {
+      // For native content, or when webView.URL is a placeholder URL,
+      // |currentURLWithTrustLevel:| returns virtual URL if one is available.
       lastCommittedURL = item->GetVirtualURL();
     } else {
       // Otherwise document URL is returned.
