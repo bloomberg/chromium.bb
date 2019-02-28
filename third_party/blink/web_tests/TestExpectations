@@ -352,15 +352,26 @@ crbug.com/846747 virtual/stable/http/tests/navigation/navigation-interrupted-by-
 
 crbug.com/849459 fragmentation/repeating-thead-under-repeating-thead.html [ Failure ]
 
-# As BlinkGenPropertyTrees launches, we do not need to run the non-BlinkGenPropertyTrees tests.
-# TODO(pdr): Remove the stable/{compositing,paint} directories once BlinkGenPropertyTrees has fully launched.
-crbug.com/836886 virtual/stable/compositing [ Skip ]
-crbug.com/836886 virtual/stable/paint [ Skip ]
-
-# These tests are no longer applicable with layer list mode (BGPT).
-# TODO(wangxianzhu): Remove them when we remove non-BGPT code.
+# These tests are no longer applicable in BlinkGenPropertyTree mode.
+# TODO(wangxianzhu): Remove them when we remove non-BlinkGenPropertyTree code.
 Bug(none) http/tests/devtools/layers/layer-sticky-position-constraint-get.js [ Skip ]
 Bug(none) inspector-protocol/layers/get-layers.js [ Skip ]
+
+# Before we fully launch BlinkGenPropertyTrees, run visual/disable-blink-gen-property-trees/ on Linux.
+crbug.com/836884 [ Android ] virtual/disable-blink-gen-property-trees/ [ Skip ]
+crbug.com/836884 [ Win ] virtual/disable-blink-gen-property-trees/ [ Skip ]
+crbug.com/836884 [ Mac ] virtual/disable-blink-gen-property-trees/ [ Skip ]
+crbug.com/836884 [ Fuchsia ] virtual/disable-blink-gen-property-trees/ [ Skip ]
+
+# Failures in non-BlinkGenPropertyTree mode.
+# TODO(wangxianzhu): Remove them when we remove non-BlinkGenPropertyTree code.
+crbug.com/836884 virtual/disable-blink-gen-property-trees/compositing/3d-cube.html [ Failure ]
+crbug.com/836884 virtual/disable-blink-gen-property-trees/compositing/composited-canvas-with-overflowing-object-fit.html [ Failure ]
+crbug.com/836884 virtual/disable-blink-gen-property-trees/compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
+crbug.com/836884 virtual/disable-blink-gen-property-trees/compositing/gestures/gesture-tapHighlight-with-filter.html [ Failure ]
+crbug.com/836884 virtual/disable-blink-gen-property-trees/compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Failure ]
+crbug.com/836884 virtual/disable-blink-gen-property-trees/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
+crbug.com/836884 virtual/disable-blink-gen-property-trees/compositing/video/video-controls-layer-creation-squashing.html [ Failure ]
 
 # ==== Regressions introduced by BlinkGenPropertyTrees =====
 # Reflection / mask ordering issue
@@ -5767,7 +5778,6 @@ crbug.com/922951 virtual/outofblink-cors/http/tests/security/offscreencanvas-pla
 crbug.com/922951 virtual/feature-policy-for-sandbox/http/tests/security/offscreencanvas-placeholder-read-blocked-no-crossorigin.html [ Skip ]
 crbug.com/922951 virtual/prefer_compositing_to_lcd_text/scrollbars/resize-scales-with-dpi-150.html [ Skip ]
 crbug.com/922951 virtual/scalefactor150/fast/events/synthetic-events/tap-on-scaled-screen.html [ Skip ]
-crbug.com/922951 virtual/stable/compositing/overflow/overflow-scroll-with-local-background.html [ Skip ]
 crbug.com/922951 virtual/threaded/animations/direction-and-fill/fill-mode-iteration-count-non-integer.html [ Skip ]
 crbug.com/922951 virtual/threaded/animations/direction-and-fill/fill-mode-missing-from-to-keyframes.html [ Skip ]
 crbug.com/922951 virtual/threaded/animations/direction-and-fill/fill-mode.html [ Skip ]

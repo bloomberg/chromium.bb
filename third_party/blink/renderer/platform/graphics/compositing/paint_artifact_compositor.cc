@@ -286,6 +286,10 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
 
 void PaintArtifactCompositor::UpdateTouchActionRects(
     cc::Layer* layer,
+    // TODO(wangxianzhu): Remove this parameter and use
+    // layer->offset_to_transform_parent() after we fully launch
+    // BlinkGenPropertyTrees.
+    const gfx::Vector2dF& layer_offset,
     const PropertyTreeState& layer_state,
     const PaintChunkSubset& paint_chunks) {
   Vector<HitTestRect> touch_action_rects_in_layer_space;
@@ -303,7 +307,6 @@ void PaintArtifactCompositor::UpdateTouchActionRects(
         continue;
       }
       LayoutRect layout_rect = LayoutRect(rect.Rect());
-      gfx::Vector2dF layer_offset = layer->offset_to_transform_parent();
       layout_rect.MoveBy(
           LayoutPoint(FloatPoint(-layer_offset.x(), -layer_offset.y())));
       touch_action_rects_in_layer_space.emplace_back(
@@ -849,7 +852,8 @@ void PaintArtifactCompositor::Update(
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       auto paint_chunks = paint_artifact->GetPaintChunkSubset(
           pending_layer.paint_chunk_indices);
-      UpdateTouchActionRects(layer.get(), property_state, paint_chunks);
+      UpdateTouchActionRects(layer.get(), layer->offset_to_transform_parent(),
+                             property_state, paint_chunks);
     }
 
     layer->SetLayerTreeHost(root_layer_->layer_tree_host());

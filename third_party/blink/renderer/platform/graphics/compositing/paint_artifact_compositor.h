@@ -25,6 +25,7 @@ class LayerTreeHost;
 }
 
 namespace gfx {
+class Vector2dF;
 class ScrollOffset;
 }
 
@@ -127,6 +128,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // Update the cc::Layer's touch action region from the touch action rects of
   // the paint chunks.
   static void UpdateTouchActionRects(cc::Layer*,
+                                     const gfx::Vector2dF& layer_offset,
                                      const PropertyTreeState& layer_state,
                                      const PaintChunkSubset& paint_chunks);
 

@@ -119,14 +119,14 @@
              "--force-raster-color-profile=color-spin-gamma24"]
   },
   {
-    "prefix": "stable",
+    "prefix": "disable-blink-gen-property-trees",
     "base": "compositing",
-    "args": ["--stable-release-mode"]
+    "args": ["--disable-blink-features=BlinkGenPropertyTrees"]
   },
   {
-    "prefix": "stable",
+    "prefix": "disable-blink-gen-property-trees",
     "base": "paint",
-    "args": ["--stable-release-mode"]
+    "args": ["--disable-blink-features=BlinkGenPropertyTrees"]
   },
   {
     "prefix": "stable",

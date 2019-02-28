@@ -509,6 +509,7 @@ crbug.com/591099 virtual/bidi-caret-affinity/editing/selection/modify_move/move_
 crbug.com/591099 virtual/bidi-caret-affinity/editing/selection/modify_move/move_right_word_05_rtl_multi_line.html [ Failure ]
 crbug.com/916511 virtual/composite-after-paint/paint/background/scrolling-background-with-negative-z-child.html [ Crash ]
 crbug.com/591099 virtual/composite-after-paint/paint/invalidation/box/margin.html [ Failure Pass ]
+Bug(none) virtual/disable-blink-gen-property-trees/ [ Skip ]
 crbug.com/591099 virtual/display-lock/display-lock/lock-after-append/measure-forced-layout-after-commit.html [ Failure ]
 crbug.com/591099 virtual/display-lock/display-lock/lock-after-append/measure-forced-layout.html [ Failure ]
 crbug.com/591099 virtual/display-lock/display-lock/lock-after-append/measure-updated-layout.html [ Failure ]
