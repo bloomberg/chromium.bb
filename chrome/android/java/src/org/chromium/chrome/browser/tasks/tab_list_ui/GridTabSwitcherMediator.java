@@ -28,7 +28,9 @@ import java.util.List;
  */
 class GridTabSwitcherMediator
         implements OverviewModeController, TabListRecyclerView.VisibilityListener {
-    private static final int INITIAL_SCROLL_INDEX_OFFSET = 3;
+    // This should be the same as TabListCoordinator.GRID_LAYOUT_SPAN_COUNT for the selected tab
+    // to be on the 2nd row.
+    private static final int INITIAL_SCROLL_INDEX_OFFSET = 2;
 
     private final GridTabSwitcherCoordinator mCoordinator;
     private final PropertyModel mContainerViewModel;
@@ -161,6 +163,7 @@ class GridTabSwitcherMediator
     @Override
     public void finishedHiding() {
         mCoordinator.resetWithTabModel(null);
+        mContainerViewModel.set(INITIAL_SCROLL_INDEX, 0);
         for (OverviewModeObserver observer : mObservers) {
             observer.onOverviewModeFinishedHiding();
         }
