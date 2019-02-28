@@ -534,7 +534,9 @@ class ScriptWrapperMainTest(cros_test_lib.MockTestCase):
 
   SYS_ARGV = ['/cmd', '/cmd', 'arg1', 'arg2']
   CMD_ARGS = ['/cmd', 'arg1', 'arg2']
-  CHROOT_ARGS = ['--workspace', '/work']
+  # The exact flags here don't matter as we don't invoke the underlying script.
+  # Lets pick something specifically invalid just in case we do.
+  CHROOT_ARGS = ['--some-option', 'foo']
 
   def testRestartInChrootPreserveArgs(self):
     """Verify args to ScriptWrapperMain are passed through to chroot.."""

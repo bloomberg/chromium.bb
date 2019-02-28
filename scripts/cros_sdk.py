@@ -222,8 +222,7 @@ def CleanupChroot(chroot_path):
 
 
 def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
-                workspace, goma_dir, goma_client_json, working_dir,
-                additional_args):
+                goma_dir, goma_client_json, working_dir, additional_args):
   """Enters an existing SDK chroot"""
   st = os.statvfs(os.path.join(chroot_path, 'usr', 'bin', 'sudo'))
   # The os.ST_NOSUID constant wasn't added until python-3.2.
@@ -235,8 +234,6 @@ def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
     cmd.extend(['--chrome_root', chrome_root])
   if chrome_root_mount:
     cmd.extend(['--chrome_root_mount', chrome_root_mount])
-  if workspace:
-    cmd.extend(['--workspace_root', workspace])
   if goma_dir:
     cmd.extend(['--goma_dir', goma_dir])
   if goma_client_json:
@@ -707,8 +704,6 @@ def _CreateParser(sdk_latest_version, bootstrap_latest_version):
                       help=('Use this sdk version.  For prebuilt, current is %r'
                             ', for bootstrapping it is %r.'
                             % (sdk_latest_version, bootstrap_latest_version)))
-  parser.add_argument('--workspace',
-                      help='Workspace directory to mount into the chroot.')
   parser.add_argument('--goma_dir', type='path',
                       help='Goma installed directory to mount into the chroot.')
   parser.add_argument('--goma_client_json', type='path',
@@ -1106,6 +1101,6 @@ snapshots will be unavailable).''' % ', '.join(missing_image_tools))
       if options.enter:
         lock.read_lock()
         EnterChroot(options.chroot, options.cache_dir, options.chrome_root,
-                    options.chrome_root_mount, options.workspace,
-                    options.goma_dir, options.goma_client_json,
-                    options.working_dir, chroot_command)
+                    options.chrome_root_mount, options.goma_dir,
+                    options.goma_client_json, options.working_dir,
+                    chroot_command)

@@ -24,7 +24,6 @@ def _FindSourceRoot():
 
 SOURCE_ROOT = _FindSourceRoot()
 CHROOT_SOURCE_ROOT = '/mnt/host/source'
-CHROOT_WORKSPACE_ROOT = '/mnt/host/workspace'
 CHROOT_CACHE_ROOT = '/var/cache/chromeos-cache'
 DEPOT_TOOLS_SUBPATH = 'chromium/tools/depot_tools'
 
