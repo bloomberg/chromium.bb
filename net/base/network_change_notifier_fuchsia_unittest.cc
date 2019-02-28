@@ -159,11 +159,20 @@ class NetworkChangeNotifierFuchsiaTest : public testing::Test {
 
   ~NetworkChangeNotifierFuchsiaTest() override {}
 
-  // Creates a NetworkChangeNotifier, which will be seeded with the list of
-  // interfaces which have already been added to |netstack_|.
+  // Creates a NetworkChangeNotifier and spins the MessageLoop to allow it to
+  // populate from the list of interfaces which have already been added to
+  // |netstack_|. |observer_| is registered last, so that tests need only
+  // express expectations on changes they make themselves.
   void CreateNotifier(uint32_t required_features = 0) {
     notifier_.reset(new NetworkChangeNotifierFuchsia(std::move(netstack_ptr_),
                                                      required_features));
+
+    // RunUntilIdle() is sufficient to populate the notifier from |netstack_|,
+    // since our fake netstack runs on the same MessageLoop.
+    ASSERT_EQ(notifier_->GetConnectionType(),
+              NetworkChangeNotifier::CONNECTION_UNKNOWN);
+    base::RunLoop().RunUntilIdle();
+
     NetworkChangeNotifier::AddNetworkChangeObserver(&observer_);
   }
 
