@@ -5,10 +5,12 @@
 #include "gpu/command_buffer/service/shared_image_backing_factory_ahardwarebuffer.h"
 
 #include <sync/sync.h>
+#include <unistd.h>
 
 #include <algorithm>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/android/android_hardware_buffer_compat.h"
 #include "base/android/scoped_hardware_buffer_handle.h"
@@ -43,6 +45,38 @@
 #include "ui/gl/gl_version_info.h"
 
 namespace gpu {
+namespace {
+
+bool InsertWriteFence(base::ScopedFD write_sync_fd) {
+  if (write_sync_fd.is_valid()) {
+    if (!InsertEglFenceAndWait(std::move(write_sync_fd)))
+      return false;
+  }
+
+  return true;
+}
+
+bool InsertReadFences(std::vector<base::ScopedFD> read_sync_fds) {
+  for (auto& fd : read_sync_fds) {
+    if (!InsertEglFenceAndWait(std::move(fd)))
+      return false;
+  }
+
+  return true;
+}
+
+bool InsertAllFencesForWriting(base::ScopedFD write_sync_fd,
+                               std::vector<base::ScopedFD> read_sync_fds) {
+  if (!InsertWriteFence(std::move(write_sync_fd)))
+    return false;
+
+  if (!InsertReadFences(std::move(read_sync_fds)))
+    return false;
+
+  return true;
+}
+
+}  // namespace
 
 // Implementation of SharedImageBacking that holds an AHardwareBuffer. This
 // can be used to create a GL texture or a VK Image from the AHardwareBuffer
@@ -66,11 +100,12 @@ class SharedImageBackingAHB : public SharedImageBacking {
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
   void Destroy() override;
   SharedContextState* GetContextState() const;
-  base::ScopedFD TakeGLWriteSyncFd();
-  base::ScopedFD TakeVkReadSyncFd();
+  base::ScopedFD GetWriteSyncFd() const;
+  std::vector<base::ScopedFD> GetReadSyncFds() const;
+  void ClearReadSyncFds();
   base::android::ScopedHardwareBufferHandle GetAhbHandle();
-  void SetGLWriteSyncFd(base::ScopedFD fd);
-  void SetVkReadSyncFd(base::ScopedFD fd);
+  void SetWriteSyncFd(base::ScopedFD fd);
+  void AddReadSyncFd(base::ScopedFD fd);
 
  protected:
   std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
@@ -87,16 +122,14 @@ class SharedImageBackingAHB : public SharedImageBacking {
 
   gles2::Texture* legacy_texture_ = nullptr;
 
-  // TODO(vikassoni): In future when we add begin/end write support, we will
-  // need to properly use this flag to pass the is_cleared_ information to
-  // the GL texture representation while begin write and back to this class from
-  // the GL texture represntation after end write. This is because this class
-  // will not know if SetCleared() arrives during begin write happening on GL
-  // texture representation.
   bool is_cleared_ = false;
   SharedContextState* context_state_ = nullptr;
-  base::ScopedFD gl_write_sync_fd_;
-  base::ScopedFD vk_read_sync_fd_;
+
+  // All reads and writes must wait for exiting writes to complete.
+  base::ScopedFD write_sync_fd_;
+
+  // All writes must wait for existing reads to complete.
+  std::vector<base::ScopedFD> read_sync_fds_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedImageBackingAHB);
 };
@@ -120,18 +153,12 @@ class SharedImageRepresentationGLTextureAHB
   gles2::Texture* GetTexture() override { return texture_; }
 
   bool BeginAccess(GLenum mode) override {
-    // TODO(vikassoni): Currently Skia Vk backing never does a write. So GL read
-    // do not need to wait for the Vk write to finish. Eventually when Vk starts
-    // writing, we will need to TakeVkWriteSyncFd() and wait on it for mode =
-    // GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM.
-
-    // Wait on Vk read if GL is going to write.
-    // TODO(vikassoni): GL writes should wait on both Vk read and Vk writes.
-    if (mode == GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM) {
-      base::ScopedFD sync_fd = ahb_backing()->TakeVkReadSyncFd();
-
-      // Create an egl fence sync and do a server side wait.
-      if (!InsertEglFenceAndWait(std::move(sync_fd)))
+    if (mode == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM) {
+      if (!InsertWriteFence(ahb_backing()->GetWriteSyncFd()))
+        return false;
+    } else if (mode == GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM) {
+      if (!InsertAllFencesForWriting(ahb_backing()->GetWriteSyncFd(),
+                                     ahb_backing()->GetReadSyncFds()))
         return false;
     }
     mode_ = mode;
@@ -139,17 +166,17 @@ class SharedImageRepresentationGLTextureAHB
   }
 
   void EndAccess() override {
-    // TODO(vikassoni): Currently Skia Vk backing never does a write. So Vk
-    // writes do not need to wait on GL to finish the read. Eventually when Vk
-    // starts writing, we will need to create and set a GLReadSyncFd for mode =
-    // GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM for Vk to wait on it.
-    if (mode_ == GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM) {
+    if (mode_ == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM) {
+      InsertReadFences(ahb_backing()->GetReadSyncFds());
+    } else if (mode_ == GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM) {
       base::ScopedFD sync_fd = CreateEglFenceAndExportFd();
       if (!sync_fd.is_valid())
         return;
 
       // Pass this fd to its backing.
-      ahb_backing()->SetGLWriteSyncFd(std::move(sync_fd));
+      ahb_backing()->SetWriteSyncFd(std::move(sync_fd));
+
+      ahb_backing()->ClearReadSyncFds();
 
       if (texture_) {
         if (texture_->IsLevelCleared(texture_->target(), 0))
@@ -203,13 +230,8 @@ class SharedImageRepresentationSkiaGLAHB
     if (write_surface_)
       return nullptr;
 
-    // Synchronise this access with the Vk reads.
-    // TODO(vikassoni): SkiaGL writes should wait on both Vk read and Vk writes.
-    base::ScopedFD sync_fd = ahb_backing()->TakeVkReadSyncFd();
-
-    // Create an egl fence sync and do a server side wait.
-    if (!InsertEglFenceAndWait(std::move(sync_fd)))
-      return nullptr;
+    InsertAllFencesForWriting(ahb_backing()->GetWriteSyncFd(),
+                              ahb_backing()->GetReadSyncFds());
 
     if (!promise_texture_) {
       return nullptr;
@@ -239,7 +261,9 @@ class SharedImageRepresentationSkiaGLAHB
       return;
 
     // Pass this fd to its backing.
-    ahb_backing()->SetGLWriteSyncFd(std::move(sync_fd));
+    ahb_backing()->SetWriteSyncFd(std::move(sync_fd));
+
+    ahb_backing()->ClearReadSyncFds();
 
     if (texture_) {
       if (texture_->IsLevelCleared(texture_->target(), 0))
@@ -249,18 +273,18 @@ class SharedImageRepresentationSkiaGLAHB
 
   sk_sp<SkPromiseImageTexture> BeginReadAccess(SkSurface* sk_surface) override {
     CheckContext();
-    // TODO(vikassoni): Currently Skia Vk backing never does a write. So this
-    // read do not need to wait for the Vk write to finish. Eventually when Vk
-    // starts writing, we might need to TakeVkWriteSyncFd() and wait on it.
+    if (!InsertWriteFence(ahb_backing()->GetWriteSyncFd()))
+      return nullptr;
     return promise_texture_;
   }
 
   void EndReadAccess() override {
     CheckContext();
-    // TODO(vikassoni): Currently Skia Vk backing never does a write. So Vk
-    // writes do not need to wait on this read to finish. Eventually when Vk
-    // starts writing, we will need to create and set a SkiaGLReadSyncFd.
-    // TODO(ericrk): Handle begin/end correctness checks.
+
+    base::ScopedFD sync_fd = CreateEglFenceAndExportFd();
+    if (!sync_fd.is_valid())
+      return;
+    ahb_backing()->AddReadSyncFd(std::move(sync_fd));
   }
 
  private:
@@ -316,7 +340,7 @@ class SharedImageRepresentationSkiaVkAHB
     DCHECK(sk_surface);
 
     // Synchronise the read access with the GL writes.
-    base::ScopedFD sync_fd = ahb_backing()->TakeGLWriteSyncFd();
+    base::ScopedFD sync_fd = ahb_backing()->GetWriteSyncFd();
 
     VkSemaphore semaphore = VK_NULL_HANDLE;
     // We need to wait only if there is a valid fd.
@@ -428,7 +452,7 @@ class SharedImageRepresentationSkiaVkAHB
     vk_implementation()->GetSemaphoreFdKHR(vk_device(), vk_semaphore, &sync_fd);
 
     // pass this sync fd to the backing.
-    ahb_backing()->SetVkReadSyncFd(std::move(sync_fd));
+    ahb_backing()->AddReadSyncFd(std::move(sync_fd));
 
     // TODO(vikassoni): We need to wait for the queue submission to complete
     // before we can destroy the semaphore. This will decrease the performance.
@@ -536,20 +560,33 @@ SharedContextState* SharedImageBackingAHB::GetContextState() const {
   return context_state_;
 }
 
-base::ScopedFD SharedImageBackingAHB::TakeGLWriteSyncFd() {
-  return std::move(gl_write_sync_fd_);
+base::ScopedFD SharedImageBackingAHB::GetWriteSyncFd() const {
+  base::ScopedFD dup_fd =
+      base::ScopedFD(HANDLE_EINTR(dup(write_sync_fd_.get())));
+  return dup_fd;
 }
 
-void SharedImageBackingAHB::SetGLWriteSyncFd(base::ScopedFD fd) {
-  gl_write_sync_fd_ = std::move(fd);
+void SharedImageBackingAHB::SetWriteSyncFd(base::ScopedFD fd) {
+  write_sync_fd_ = std::move(fd);
 }
 
-base::ScopedFD SharedImageBackingAHB::TakeVkReadSyncFd() {
-  return std::move(vk_read_sync_fd_);
+std::vector<base::ScopedFD> SharedImageBackingAHB::GetReadSyncFds() const {
+  std::vector<base::ScopedFD> dup_fds{read_sync_fds_.size()};
+  for (size_t i = 0; i < read_sync_fds_.size(); ++i) {
+    base::ScopedFD dup_fd =
+        base::ScopedFD(HANDLE_EINTR(dup(read_sync_fds_[i].get())));
+    dup_fds.emplace_back(std::move(dup_fd));
+  }
+  return dup_fds;
 }
 
-void SharedImageBackingAHB::SetVkReadSyncFd(base::ScopedFD fd) {
-  vk_read_sync_fd_ = std::move(fd);
+void SharedImageBackingAHB::AddReadSyncFd(base::ScopedFD fd) {
+  read_sync_fds_.emplace_back(std::move(fd));
+}
+
+void SharedImageBackingAHB::ClearReadSyncFds() {
+  // Swap with a new vector to release capacity.
+  std::vector<base::ScopedFD>().swap(read_sync_fds_);
 }
 
 base::android::ScopedHardwareBufferHandle
