@@ -36,6 +36,8 @@ ScriptPromise IdleManager::query(ScriptState* script_state,
     return ScriptPromise();
   }
 
+  base::TimeDelta threshold = base::TimeDelta::FromSeconds(threshold_seconds);
+
   // TODO: Permission check.
 
   if (!service_) {
@@ -51,12 +53,12 @@ ScriptPromise IdleManager::query(ScriptState* script_state,
 
   mojom::blink::IdleMonitorPtr monitor_ptr;
   IdleStatus* status =
-      IdleStatus::Create(ExecutionContext::From(script_state),
-                         threshold_seconds, mojo::MakeRequest(&monitor_ptr));
+      IdleStatus::Create(ExecutionContext::From(script_state), threshold,
+                         mojo::MakeRequest(&monitor_ptr));
 
   requests_.insert(resolver);
   service_->AddMonitor(
-      threshold_seconds, std::move(monitor_ptr),
+      threshold, std::move(monitor_ptr),
       WTF::Bind(&IdleManager::OnAddMonitor, WrapPersistent(this),
                 WrapPersistent(resolver), WrapPersistent(status)));
 

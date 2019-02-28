@@ -27,11 +27,13 @@ class DefaultIdleProvider : public IdleManager::IdleTimeProvider {
   DefaultIdleProvider() = default;
   ~DefaultIdleProvider() override = default;
 
-  ui::IdleState CalculateIdleState(int idle_threshold) override {
-    return ui::CalculateIdleState(idle_threshold);
+  ui::IdleState CalculateIdleState(base::TimeDelta idle_threshold) override {
+    return ui::CalculateIdleState(idle_threshold.InSeconds());
   }
 
-  int CalculateIdleTime() override { return ui::CalculateIdleTime(); }
+  base::TimeDelta CalculateIdleTime() override {
+    return base::TimeDelta::FromSeconds(ui::CalculateIdleTime());
+  }
 
   bool CheckIdleStateIsLocked() override {
     return ui::CheckIdleStateIsLocked();
@@ -39,8 +41,8 @@ class DefaultIdleProvider : public IdleManager::IdleTimeProvider {
 };
 
 blink::mojom::IdleStatePtr IdleTimeToIdleState(bool locked,
-                                               int idle_time,
-                                               int idle_threshold) {
+                                               base::TimeDelta idle_time,
+                                               base::TimeDelta idle_threshold) {
   blink::mojom::UserIdleState user;
   if (idle_time >= idle_threshold)
     user = blink::mojom::UserIdleState::kIdle;
@@ -78,11 +80,11 @@ void IdleManager::CreateService(blink::mojom::IdleManagerRequest request,
   bindings_.AddBinding(this, std::move(request));
 }
 
-void IdleManager::AddMonitor(uint32_t threshold,
+void IdleManager::AddMonitor(base::TimeDelta threshold,
                              blink::mojom::IdleMonitorPtr monitor_ptr,
                              AddMonitorCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (threshold == 0) {
+  if (threshold.is_zero()) {
     mojo::ReportBadMessage("Invalid threshold");
     return;
   }
@@ -138,8 +140,9 @@ void IdleManager::StopPolling() {
   poll_timer_.Stop();
 }
 
-blink::mojom::IdleStatePtr IdleManager::CheckIdleState(int threshold) {
-  int idle_time = idle_time_provider_->CalculateIdleTime();
+blink::mojom::IdleStatePtr IdleManager::CheckIdleState(
+    base::TimeDelta threshold) {
+  base::TimeDelta idle_time = idle_time_provider_->CalculateIdleTime();
   bool locked = idle_time_provider_->CheckIdleStateIsLocked();
 
   return IdleTimeToIdleState(locked, idle_time, threshold);

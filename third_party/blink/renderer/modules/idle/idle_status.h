@@ -32,11 +32,11 @@ class IdleStatus final : public EventTargetWithInlineData,
   // to script until the monitor has been registered by the service and
   // returned an initial state.
   static IdleStatus* Create(ExecutionContext* context,
-                            uint32_t threshold,
+                            base::TimeDelta threshold,
                             mojom::blink::IdleMonitorRequest request);
 
   IdleStatus(ExecutionContext*,
-             uint32_t threshold,
+             base::TimeDelta threshold,
              mojom::blink::IdleMonitorRequest);
   ~IdleStatus() override;
   void Dispose();
@@ -76,7 +76,7 @@ class IdleStatus final : public EventTargetWithInlineData,
 
   Member<blink::IdleState> state_;
 
-  const uint32_t threshold_;
+  const base::TimeDelta threshold_;
 
   // Holds a pipe which the service uses to notify this object
   // when the idle state has changed.
