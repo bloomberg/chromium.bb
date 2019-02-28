@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/metrics/pip_uma.h"
+#include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -71,7 +72,9 @@ class FakeWindowState : public wm::WindowState::State {
 
 using Sample = base::HistogramBase::Sample;
 
-class PipWindowResizerTest : public AshTestBase {
+class PipWindowResizerTest : public AshTestBase,
+                             public ::testing::WithParamInterface<
+                                 std::tuple<std::string, std::size_t>> {
  public:
   PipWindowResizerTest() = default;
   ~PipWindowResizerTest() override = default;
@@ -81,18 +84,17 @@ class PipWindowResizerTest : public AshTestBase {
         keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
     SetTouchKeyboardEnabled(true);
-  }
 
-  void PreparePipWindow(const gfx::Rect& bounds) {
-    widget_ = CreateWidgetForTest(bounds);
-    window_ = widget_->GetNativeWindow();
-    window_->SetProperty(aura::client::kAlwaysOnTopKey, true);
-    test_state_ = new FakeWindowState(mojom::WindowStateType::PIP);
-    wm::GetWindowState(window_)->SetStateObject(
-        std::unique_ptr<wm::WindowState::State>(test_state_));
+    const std::string& display_string = std::get<0>(GetParam());
+    const std::size_t root_window_index = std::get<1>(GetParam());
+    UpdateWorkArea(display_string);
+    ASSERT_LT(root_window_index, Shell::GetAllRootWindows().size());
+    scoped_root_.reset(new ScopedRootWindowForNewWindows(
+        Shell::GetAllRootWindows()[root_window_index]));
   }
 
   void TearDown() override {
+    scoped_root_.reset();
     SetTouchKeyboardEnabled(false);
     AshTestBase::TearDown();
   }
@@ -104,18 +106,36 @@ class PipWindowResizerTest : public AshTestBase {
   base::HistogramTester& histograms() { return histograms_; }
 
   std::unique_ptr<views::Widget> CreateWidgetForTest(const gfx::Rect& bounds) {
-    return CreateTestWidget(nullptr, kShellWindowId_AlwaysOnTopContainer,
-                            bounds);
+    auto* root_window = Shell::GetRootWindowForNewWindows();
+    gfx::Rect screen_bounds = bounds;
+    ::wm::ConvertRectToScreen(root_window, &screen_bounds);
+
+    std::unique_ptr<views::Widget> widget(new views::Widget);
+    views::Widget::InitParams params;
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.bounds = screen_bounds;
+    params.keep_on_top = true;
+    params.context = root_window;
+    widget->Init(params);
+    widget->Show();
+    return widget;
   }
 
   PipWindowResizer* CreateResizerForTest(int window_component) {
-    return CreateResizerForTest(window_component, window());
+    return CreateResizerForTest(window_component, window(),
+                                window()->bounds().CenterPoint());
   }
 
   PipWindowResizer* CreateResizerForTest(int window_component,
-                                         aura::Window* window) {
+                                         gfx::Point point_in_parent) {
+    return CreateResizerForTest(window_component, window(), point_in_parent);
+  }
+
+  PipWindowResizer* CreateResizerForTest(int window_component,
+                                         aura::Window* window,
+                                         gfx::Point point_in_parent) {
     wm::WindowState* window_state = wm::GetWindowState(window);
-    window_state->CreateDragDetails(gfx::Point(), window_component,
+    window_state->CreateDragDetails(point_in_parent, window_component,
                                     ::wm::WINDOW_MOVE_SOURCE_MOUSE);
     return new PipWindowResizer(window_state);
   }
@@ -143,10 +163,12 @@ class PipWindowResizerTest : public AshTestBase {
     resizer->FlingOrSwipe(&event);
   }
 
-  void UpdateWorkArea(const std::string& bounds) {
-    UpdateDisplay(bounds);
-    aura::Window* root = Shell::GetPrimaryRootWindow();
-    Shell::Get()->SetDisplayWorkAreaInsets(root, gfx::Insets());
+  void PreparePipWindow(const gfx::Rect& bounds) {
+    widget_ = CreateWidgetForTest(bounds);
+    window_ = widget_->GetNativeWindow();
+    test_state_ = new FakeWindowState(mojom::WindowStateType::PIP);
+    wm::GetWindowState(window_)->SetStateObject(
+        std::unique_ptr<wm::WindowState::State>(test_state_));
   }
 
  private:
@@ -154,13 +176,20 @@ class PipWindowResizerTest : public AshTestBase {
   aura::Window* window_;
   FakeWindowState* test_state_;
   base::HistogramTester histograms_;
+  std::unique_ptr<ScopedRootWindowForNewWindows> scoped_root_;
+
+  void UpdateWorkArea(const std::string& bounds) {
+    UpdateDisplay(bounds);
+    for (aura::Window* root : Shell::GetAllRootWindows())
+      Shell::Get()->SetDisplayWorkAreaInsets(root, gfx::Insets());
+  }
 
   DISALLOW_COPY_AND_ASSIGN(PipWindowResizerTest);
 };
 
-TEST_F(PipWindowResizerTest, PipWindowCanDrag) {
-  UpdateWorkArea("400x800");
+TEST_P(PipWindowResizerTest, PipWindowCanDrag) {
   PreparePipWindow(gfx::Rect(200, 200, 100, 100));
+
   std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
   ASSERT_TRUE(resizer.get());
 
@@ -168,8 +197,7 @@ TEST_F(PipWindowResizerTest, PipWindowCanDrag) {
   EXPECT_EQ(gfx::Rect(200, 210, 100, 100), test_state()->last_bounds());
 }
 
-TEST_F(PipWindowResizerTest, PipWindowCanResize) {
-  UpdateWorkArea("400x800");
+TEST_P(PipWindowResizerTest, PipWindowCanResize) {
   PreparePipWindow(gfx::Rect(200, 200, 100, 100));
   std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTBOTTOM));
   ASSERT_TRUE(resizer.get());
@@ -178,33 +206,35 @@ TEST_F(PipWindowResizerTest, PipWindowCanResize) {
   EXPECT_EQ(gfx::Rect(200, 200, 100, 110), test_state()->last_bounds());
 }
 
-TEST_F(PipWindowResizerTest, PipWindowDragIsRestrictedToWorkArea) {
-  UpdateWorkArea("400x400");
+TEST_P(PipWindowResizerTest, PipWindowDragIsRestrictedToWorkArea) {
   PreparePipWindow(gfx::Rect(200, 200, 100, 100));
-  std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
+  // Specify point in parent as center so the drag point does not leave the
+  // display. If the drag point is not in any display bounds, it causes the
+  // window to be moved to the default display.
+  std::unique_ptr<PipWindowResizer> resizer(
+      CreateResizerForTest(HTCAPTION, gfx::Point(250, 250)));
   ASSERT_TRUE(resizer.get());
 
   // Drag to the right.
-  resizer->Drag(CalculateDragPoint(*resizer, 800, 0), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, 250, 0), 0);
   EXPECT_EQ(gfx::Rect(292, 200, 100, 100), test_state()->last_bounds());
 
   // Drag down.
-  resizer->Drag(CalculateDragPoint(*resizer, 0, 800), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, 0, 250), 0);
   EXPECT_EQ(gfx::Rect(200, 292, 100, 100), test_state()->last_bounds());
 
   // Drag to the left.
-  resizer->Drag(CalculateDragPoint(*resizer, -800, 0), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, -250, 0), 0);
   EXPECT_EQ(gfx::Rect(8, 200, 100, 100), test_state()->last_bounds());
 
   // Drag up.
-  resizer->Drag(CalculateDragPoint(*resizer, 0, -800), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, 0, -250), 0);
   EXPECT_EQ(gfx::Rect(200, 8, 100, 100), test_state()->last_bounds());
 }
 
-TEST_F(PipWindowResizerTest, PipWindowCanBeDraggedInTabletMode) {
+TEST_P(PipWindowResizerTest, PipWindowCanBeDraggedInTabletMode) {
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
 
-  UpdateWorkArea("400x800");
   PreparePipWindow(gfx::Rect(200, 200, 100, 100));
   std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
   ASSERT_TRUE(resizer.get());
@@ -213,10 +243,9 @@ TEST_F(PipWindowResizerTest, PipWindowCanBeDraggedInTabletMode) {
   EXPECT_EQ(gfx::Rect(200, 210, 100, 100), test_state()->last_bounds());
 }
 
-TEST_F(PipWindowResizerTest, PipWindowCanBeResizedInTabletMode) {
+TEST_P(PipWindowResizerTest, PipWindowCanBeResizedInTabletMode) {
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
 
-  UpdateWorkArea("400x800");
   PreparePipWindow(gfx::Rect(200, 200, 100, 100));
   std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTBOTTOM));
   ASSERT_TRUE(resizer.get());
@@ -225,8 +254,7 @@ TEST_F(PipWindowResizerTest, PipWindowCanBeResizedInTabletMode) {
   EXPECT_EQ(gfx::Rect(200, 200, 100, 110), test_state()->last_bounds());
 }
 
-TEST_F(PipWindowResizerTest, PipWindowCanBeSwipeDismissed) {
-  UpdateWorkArea("400x400");
+TEST_P(PipWindowResizerTest, PipWindowCanBeSwipeDismissed) {
   PreparePipWindow(gfx::Rect(8, 8, 100, 100));
   std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
   ASSERT_TRUE(resizer.get());
@@ -239,8 +267,7 @@ TEST_F(PipWindowResizerTest, PipWindowCanBeSwipeDismissed) {
   EXPECT_TRUE(widget()->IsClosed());
 }
 
-TEST_F(PipWindowResizerTest, PipWindowPartiallySwipedDoesNotDismiss) {
-  UpdateWorkArea("400x400");
+TEST_P(PipWindowResizerTest, PipWindowPartiallySwipedDoesNotDismiss) {
   PreparePipWindow(gfx::Rect(8, 8, 100, 100));
   std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
   ASSERT_TRUE(resizer.get());
@@ -254,10 +281,10 @@ TEST_F(PipWindowResizerTest, PipWindowPartiallySwipedDoesNotDismiss) {
   EXPECT_EQ(gfx::Rect(8, 8, 100, 100), test_state()->last_bounds());
 }
 
-TEST_F(PipWindowResizerTest, PipWindowInSwipeToDismissGestureLocksToAxis) {
-  UpdateWorkArea("400x400");
+TEST_P(PipWindowResizerTest, PipWindowInSwipeToDismissGestureLocksToAxis) {
   PreparePipWindow(gfx::Rect(8, 8, 100, 100));
-  std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
+  std::unique_ptr<PipWindowResizer> resizer(
+      CreateResizerForTest(HTCAPTION, gfx::Point(50, 50)));
   ASSERT_TRUE(resizer.get());
 
   // Drag to the left, but only a little bit, to start a swipe-to-dismiss.
@@ -269,9 +296,8 @@ TEST_F(PipWindowResizerTest, PipWindowInSwipeToDismissGestureLocksToAxis) {
   EXPECT_EQ(gfx::Rect(-22, 8, 100, 100), test_state()->last_bounds());
 }
 
-TEST_F(PipWindowResizerTest,
+TEST_P(PipWindowResizerTest,
        PipWindowMovedAwayFromScreenEdgeNoLongerCanSwipeToDismiss) {
-  UpdateWorkArea("400x400");
   PreparePipWindow(gfx::Rect(8, 16, 100, 100));
   std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
   ASSERT_TRUE(resizer.get());
@@ -286,8 +312,7 @@ TEST_F(PipWindowResizerTest,
   EXPECT_EQ(gfx::Rect(8, 8, 100, 100), test_state()->last_bounds());
 }
 
-TEST_F(PipWindowResizerTest, PipWindowAtCornerLocksToOneAxisOnSwipeToDismiss) {
-  UpdateWorkArea("400x400");
+TEST_P(PipWindowResizerTest, PipWindowAtCornerLocksToOneAxisOnSwipeToDismiss) {
   PreparePipWindow(gfx::Rect(8, 8, 100, 100));
   std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
   ASSERT_TRUE(resizer.get());
@@ -298,10 +323,9 @@ TEST_F(PipWindowResizerTest, PipWindowAtCornerLocksToOneAxisOnSwipeToDismiss) {
   EXPECT_EQ(gfx::Rect(8, -32, 100, 100), test_state()->last_bounds());
 }
 
-TEST_F(
+TEST_P(
     PipWindowResizerTest,
     PipWindowMustBeDraggedMostlyInDirectionOfDismissToInitiateSwipeToDismiss) {
-  UpdateWorkArea("400x400");
   PreparePipWindow(gfx::Rect(8, 8, 100, 100));
   std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
   ASSERT_TRUE(resizer.get());
@@ -311,9 +335,8 @@ TEST_F(
   EXPECT_EQ(gfx::Rect(8, 58, 100, 100), test_state()->last_bounds());
 }
 
-TEST_F(PipWindowResizerTest,
+TEST_P(PipWindowResizerTest,
        PipWindowDoesNotMoveUntilStatusOfSwipeToDismissGestureIsKnown) {
-  UpdateWorkArea("400x400");
   PreparePipWindow(gfx::Rect(8, 8, 100, 100));
   std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
   ASSERT_TRUE(resizer.get());
@@ -324,8 +347,7 @@ TEST_F(PipWindowResizerTest,
   EXPECT_TRUE(test_state()->last_bounds().IsEmpty());
 }
 
-TEST_F(PipWindowResizerTest, PipWindowIsFlungToEdge) {
-  UpdateWorkArea("400x400");
+TEST_P(PipWindowResizerTest, PipWindowIsFlungToEdge) {
   PreparePipWindow(gfx::Rect(200, 200, 100, 100));
 
   {
@@ -373,8 +395,7 @@ TEST_F(PipWindowResizerTest, PipWindowIsFlungToEdge) {
   }
 }
 
-TEST_F(PipWindowResizerTest, PipWindowIsFlungDiagonally) {
-  UpdateWorkArea("400x400");
+TEST_P(PipWindowResizerTest, PipWindowIsFlungDiagonally) {
   PreparePipWindow(gfx::Rect(200, 200, 100, 100));
 
   {
@@ -477,14 +498,15 @@ TEST_F(PipWindowResizerTest, PipWindowIsFlungDiagonally) {
   }
 }
 
-TEST_F(PipWindowResizerTest, PipWindowFlungAvoidsFloatingKeyboard) {
-  PreparePipWindow(gfx::Rect(200, 200, 100, 100));
+TEST_P(PipWindowResizerTest, PipWindowFlungAvoidsFloatingKeyboard) {
+  PreparePipWindow(gfx::Rect(200, 200, 75, 75));
 
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   keyboard_controller->SetContainerType(
       keyboard::mojom::ContainerType::kFloating, gfx::Rect(0, 0, 1, 1),
       base::DoNothing());
-  keyboard_controller->ShowKeyboard(/*lock=*/true);
+  keyboard_controller->ShowKeyboardInDisplay(
+      wm::GetWindowState(window())->GetDisplay());
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
   aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
@@ -498,61 +520,30 @@ TEST_F(PipWindowResizerTest, PipWindowFlungAvoidsFloatingKeyboard) {
   Fling(std::move(resizer), -4000.f, 0.f);
 
   // Appear below the keyboard.
-  EXPECT_EQ(gfx::Rect(8, 258, 100, 100), test_state()->last_bounds());
+  EXPECT_EQ(gfx::Rect(8, 258, 75, 75), test_state()->last_bounds());
 }
 
-TEST_F(PipWindowResizerTest, PipWindowInsidePrimaryDisplay) {
-  UpdateWorkArea("400x400,400x400");
-
-  // Ensure the initial position is in the primary display.
-  const display::Display& primary_display =
-      Shell::Get()->display_manager()->GetDisplayAt(0);
+TEST_P(PipWindowResizerTest, PipWindowDoesNotChangeDisplayOnDrag) {
   PreparePipWindow(gfx::Rect(200, 200, 100, 100));
+  display::Display display = wm::GetWindowState(window())->GetDisplay();
   gfx::Rect rect_in_screen = window()->bounds();
   ::wm::ConvertRectToScreen(window()->parent(), &rect_in_screen);
-  EXPECT_TRUE(primary_display.bounds().Contains(rect_in_screen));
+  EXPECT_TRUE(display.bounds().Contains(rect_in_screen));
 
   // Drag inside the display.
   std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
   ASSERT_TRUE(resizer.get());
   resizer->Drag(CalculateDragPoint(*resizer, 10, 10), 0);
 
-  // Ensure the position is still in the primary display.
+  // Ensure the position is still in the display.
   EXPECT_EQ(gfx::Rect(210, 210, 100, 100), test_state()->last_bounds());
-  EXPECT_EQ(primary_display.id(),
-            test_state()->last_window_state()->GetDisplay().id());
+  EXPECT_EQ(display.id(), test_state()->last_window_state()->GetDisplay().id());
   rect_in_screen = window()->bounds();
   ::wm::ConvertRectToScreen(window()->parent(), &rect_in_screen);
-  EXPECT_TRUE(primary_display.bounds().Contains(rect_in_screen));
+  EXPECT_TRUE(display.bounds().Contains(rect_in_screen));
 }
 
-TEST_F(PipWindowResizerTest, PipWindowInsideExternalDisplay) {
-  UpdateWorkArea("400x400,400x400");
-
-  // Ensure the initial position is in the secondary display.
-  const display::Display& secondary_display =
-      Shell::Get()->display_manager()->GetDisplayAt(1);
-  PreparePipWindow(gfx::Rect(600, 200, 100, 100));
-  gfx::Rect rect_in_screen = window()->bounds();
-  ::wm::ConvertRectToScreen(window()->parent(), &rect_in_screen);
-  EXPECT_TRUE(secondary_display.bounds().Contains(rect_in_screen));
-
-  // Drag inside the display.
-  std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
-  ASSERT_TRUE(resizer.get());
-  resizer->Drag(CalculateDragPoint(*resizer, 10, 10), 0);
-
-  // Ensure the position is still in the secondary display.
-  EXPECT_EQ(gfx::Rect(210, 210, 100, 100), test_state()->last_bounds());
-  EXPECT_EQ(secondary_display.id(),
-            test_state()->last_window_state()->GetDisplay().id());
-  rect_in_screen = window()->bounds();
-  ::wm::ConvertRectToScreen(window()->parent(), &rect_in_screen);
-  EXPECT_TRUE(secondary_display.bounds().Contains(rect_in_screen));
-}
-
-TEST_F(PipWindowResizerTest, PipRestoreBoundsSetOnFling) {
-  UpdateWorkArea("400x400");
+TEST_P(PipWindowResizerTest, PipRestoreBoundsSetOnFling) {
   PreparePipWindow(gfx::Rect(200, 200, 100, 100));
 
   {
@@ -566,11 +557,10 @@ TEST_F(PipWindowResizerTest, PipRestoreBoundsSetOnFling) {
   wm::WindowState* window_state = wm::GetWindowState(window());
   EXPECT_TRUE(window_state->HasRestoreBounds());
   EXPECT_EQ(gfx::Rect(292, 292, 100, 100),
-            window_state->GetRestoreBoundsInScreen());
+            window_state->GetRestoreBoundsInParent());
 }
 
-TEST_F(PipWindowResizerTest, PipStartAndFinishFreeResizeUmaMetrics) {
-  UpdateWorkArea("400x400");
+TEST_P(PipWindowResizerTest, PipStartAndFinishFreeResizeUmaMetrics) {
   PreparePipWindow(gfx::Rect(200, 200, 100, 100));
   std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTBOTTOM));
   ASSERT_TRUE(resizer.get());
@@ -585,8 +575,7 @@ TEST_F(PipWindowResizerTest, PipStartAndFinishFreeResizeUmaMetrics) {
   histograms().ExpectTotalCount(kAshPipEventsHistogramName, 1);
 }
 
-TEST_F(PipWindowResizerTest, PipFreeResizeAreaUmaMetrics) {
-  UpdateWorkArea("400x400");
+TEST_P(PipWindowResizerTest, PipFreeResizeAreaUmaMetrics) {
   PreparePipWindow(gfx::Rect(200, 200, 100, 100));
   std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTBOTTOM));
   ASSERT_TRUE(resizer.get());
@@ -602,6 +591,19 @@ TEST_F(PipWindowResizerTest, PipFreeResizeAreaUmaMetrics) {
                    kAshPipFreeResizeFinishAreaHistogramName, Sample(12)));
   histograms().ExpectTotalCount(kAshPipFreeResizeFinishAreaHistogramName, 1);
 }
+
+// TODO: UpdateDisplay() doesn't support different layouts of multiple displays.
+// We should add some way to try multiple layouts.
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    PipWindowResizerTest,
+    testing::Values(std::make_tuple("400x400", 0u),
+                    std::make_tuple("400x400/r", 0u),
+                    std::make_tuple("400x400/u", 0u),
+                    std::make_tuple("400x400/l", 0u),
+                    std::make_tuple("800x800*2", 0u),
+                    std::make_tuple("400x400,400x400", 0u),
+                    std::make_tuple("400x400,400x400", 1u)));
 
 }  // namespace wm
 }  // namespace ash

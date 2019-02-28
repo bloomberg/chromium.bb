@@ -115,6 +115,9 @@ void PipWindowResizer::Drag(const gfx::Point& location_in_parent,
   }
 
   gfx::Rect new_bounds = CalculateBoundsForDrag(location_in_parent);
+  // We do everything in Screen coordinates, so convert here.
+  ::wm::ConvertRectToScreen(GetTarget()->parent(), &new_bounds);
+
   display::Display display = window_state()->GetDisplay();
   gfx::Rect area = PipPositioner::GetMovementArea(display);
 
@@ -133,14 +136,16 @@ void PipWindowResizer::Drag(const gfx::Point& location_in_parent,
   // window is no longer poking outside of the movement area, disable any
   // further swipe-to-dismiss gesture for this drag. Use the initial bounds
   // to decide the locked axis position.
+  gfx::Rect initial_bounds_in_screen = details().initial_bounds_in_parent;
+  ::wm::ConvertRectToScreen(GetTarget()->parent(), &initial_bounds_in_screen);
   if (may_dismiss_horizontally_) {
     if (IsPastLeftOrRightEdge(new_bounds, area))
-      new_bounds.set_y(details().initial_bounds_in_parent.y());
+      new_bounds.set_y(initial_bounds_in_screen.y());
     else if (!IsAtLeftOrRightEdge(new_bounds, area))
       may_dismiss_horizontally_ = false;
   } else if (may_dismiss_vertically_) {
     if (IsPastTopOrBottomEdge(new_bounds, area))
-      new_bounds.set_x(details().initial_bounds_in_parent.x());
+      new_bounds.set_x(initial_bounds_in_screen.x());
     else if (!IsAtTopOrBottomEdge(new_bounds, area))
       may_dismiss_vertically_ = false;
   }
@@ -149,9 +154,7 @@ void PipWindowResizer::Drag(const gfx::Point& location_in_parent,
   if (!may_dismiss_horizontally_ && !may_dismiss_vertically_) {
     // Reset opacity if it's not a dismiss gesture.
     GetTarget()->layer()->SetOpacity(1.f);
-    ::wm::ConvertRectToScreen(GetTarget()->parent(), &new_bounds);
     new_bounds = PipPositioner::GetBoundsForDrag(display, new_bounds);
-    ::wm::ConvertRectFromScreen(GetTarget()->parent(), &new_bounds);
   } else {
     gfx::Rect dismiss_bounds = new_bounds;
     dismiss_bounds.Intersect(area);
@@ -172,6 +175,8 @@ void PipWindowResizer::Drag(const gfx::Point& location_in_parent,
     may_dismiss_vertically_ = false;
   }
 
+  // Convert back to root window coordinates for setting bounds.
+  ::wm::ConvertRectFromScreen(GetTarget()->parent(), &new_bounds);
   if (new_bounds != GetTarget()->bounds()) {
     moved_or_resized_ = true;
     GetTarget()->SetBounds(new_bounds);

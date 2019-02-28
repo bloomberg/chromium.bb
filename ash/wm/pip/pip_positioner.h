@@ -19,8 +19,8 @@ namespace wm {
 class WindowState;
 }  // namespace wm
 
-class PipPositionerTest;
-
+// Computes resting and dragging positions for PIP windows. Note that this
+// class uses only Screen coordinates.
 class ASH_EXPORT PipPositioner {
  public:
   static const int kPipDismissTimeMs = 300;
@@ -36,20 +36,19 @@ class ASH_EXPORT PipPositioner {
   // this will be at a screen edge, not in the middle of the screen.
   // TODO(edcourtney): This should consider drag velocity for fling as well.
   static gfx::Rect GetRestingPosition(const display::Display& display,
-                                      const gfx::Rect& bounds);
+                                      const gfx::Rect& bounds_in_screen);
 
   // Adjusts bounds during a drag of a PIP window. For example, this will
   // ensure that the PIP window cannot leave the PIP movement area.
-  // |bounds| is in screen coordinates.
   static gfx::Rect GetBoundsForDrag(const display::Display& display,
-                                    const gfx::Rect& bounds);
+                                    const gfx::Rect& bounds_in_screen);
 
   // Based on the current PIP window position, finds a final location of where
   // the PIP window should be animated to to show a dismissal off the side
   // of the screen. Note that this may return somewhere not off-screen if
   // animating the PIP window off-screen would travel too far.
   static gfx::Rect GetDismissedPosition(const display::Display& display,
-                                        const gfx::Rect& bounds);
+                                        const gfx::Rect& bounds_in_screen);
 
   // Gets the position the PIP window should be moved to after a movement area
   // change. For example, if the shelf is changed from auto-hidden to always
@@ -58,12 +57,13 @@ class ASH_EXPORT PipPositioner {
       wm::WindowState* window_state);
 
  private:
-  friend class PipPositionerTest;
+  friend class PipPositionerDisplayTest;
+  friend class PipPositionerLogicTest;
 
   // Moves |bounds| such that it does not intersect with system ui areas, such
   // as the unified system tray or the floating keyboard.
   static gfx::Rect AvoidObstacles(const display::Display& display,
-                                  const gfx::Rect& bounds);
+                                  const gfx::Rect& bounds_in_screen);
 
   // Internal method for collision resolution. Returns a gfx::Rect with the
   // same size as |bounds|. That rectangle will not intersect any of the
@@ -72,7 +72,7 @@ class ASH_EXPORT PipPositioner {
   // closest such rectangle to |bounds|.
   static gfx::Rect AvoidObstaclesInternal(const gfx::Rect& work_area,
                                           const std::vector<gfx::Rect>& rects,
-                                          const gfx::Rect& bounds);
+                                          const gfx::Rect& bounds_in_screen);
 
   DISALLOW_COPY_AND_ASSIGN(PipPositioner);
 };
