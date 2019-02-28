@@ -79,12 +79,6 @@ function setUp() {
       new MockDirectoryEntry(driveFileSystem, '/Computers');
   fakeFileSystemURLEntries['filesystem:drive/team_drives'] =
       new MockDirectoryEntry(driveFileSystem, '/team_drives');
-
-  // The initial resolution for Drive roots will fail since the paths were not
-  // ready so trigger another attempt after adding populating
-  // fakeFileSystemURLEntries.
-  /** @type {VolumeInfoImpl} */ (volumeManager.volumeInfoList.item(0))
-      .restartResolveDisplayRootForTest();
 }
 
 /**
@@ -955,10 +949,6 @@ function testAriaExpanded(callback) {
   const downloadsFileSystem = volumeManager.volumeInfoList.item(1).fileSystem;
   fakeFileSystemURLEntries['filesystem:downloads/folder1'] =
       new MockDirectoryEntry(downloadsFileSystem, '/folder1');
-  // The initial resolution for Drive roots will fail since the paths were not
-  // ready so trigger another attempt after adding populating
-  // fakeFileSystemURLEntries.
-  /** @type {VolumeInfoImpl} */ (volumeManager.volumeInfoList.item(0)) .restartResolveDisplayRootForTest();
 
   // Populate the directory tree with the mock filesystem.
   let directoryTree = createElements();
