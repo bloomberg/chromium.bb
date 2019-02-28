@@ -968,7 +968,7 @@ void AXObjectCacheImpl::RadiobuttonRemovedFromGroup(
 }
 
 void AXObjectCacheImpl::ImageLoaded(LayoutObject* layout_object) {
-  AXObject* obj = GetOrCreate(layout_object);
+  AXObject* obj = Get(layout_object);
   if (!obj)
     return;
 
