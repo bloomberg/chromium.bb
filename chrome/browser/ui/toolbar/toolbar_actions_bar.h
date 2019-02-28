@@ -275,12 +275,15 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
   size_t WidthToIconCountUnclamped(int width) const;
 
   // ToolbarActionsModel::Observer:
-  void OnToolbarActionAdded(const ToolbarActionsModel::ToolbarItem& item,
+  void OnToolbarActionAdded(const ToolbarActionsModel::ActionId& action_id,
                             int index) override;
-  void OnToolbarActionRemoved(const std::string& action_id) override;
-  void OnToolbarActionMoved(const std::string& action_id, int index) override;
+  void OnToolbarActionRemoved(
+      const ToolbarActionsModel::ActionId& action_id) override;
+  void OnToolbarActionMoved(const ToolbarActionsModel::ActionId& action_id,
+                            int index) override;
   void OnToolbarActionLoadFailed() override;
-  void OnToolbarActionUpdated(const std::string& action_id) override;
+  void OnToolbarActionUpdated(
+      const ToolbarActionsModel::ActionId& action_id) override;
   void OnToolbarVisibleCountChanged() override;
   void OnToolbarHighlightModeChanged(bool is_highlighting) override;
   void OnToolbarModelInitialized() override;

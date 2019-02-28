@@ -1344,7 +1344,7 @@ TEST_F(ExtensionMessageBubbleTest, TestBubbleOutlivesBrowser) {
       new DevModeBubbleDelegate(browser()->profile()), browser());
   controller->SetIsActiveBubble();
   EXPECT_TRUE(controller->ShouldShow());
-  EXPECT_EQ(1u, model->toolbar_items().size());
+  EXPECT_EQ(1u, model->action_ids().size());
   controller->HighlightExtensionsIfNecessary();
   EXPECT_TRUE(model->is_highlighting());
   set_browser(nullptr);
@@ -1379,7 +1379,7 @@ TEST_F(ExtensionMessageBubbleTest,
       new DevModeBubbleDelegate(browser()->profile()), browser());
   controller->SetIsActiveBubble();
   EXPECT_TRUE(controller->ShouldShow());
-  EXPECT_EQ(1u, model->toolbar_items().size());
+  EXPECT_EQ(1u, model->action_ids().size());
   controller->HighlightExtensionsIfNecessary();
   EXPECT_TRUE(model->is_highlighting());
   set_browser(nullptr);
@@ -1406,7 +1406,7 @@ TEST_F(ExtensionMessageBubbleTest,
       new DevModeBubbleDelegate(browser()->profile()), browser());
   controller->SetIsActiveBubble();
   EXPECT_TRUE(controller->ShouldShow());
-  EXPECT_EQ(1u, model->toolbar_items().size());
+  EXPECT_EQ(1u, model->action_ids().size());
   controller->HighlightExtensionsIfNecessary();
   EXPECT_TRUE(model->is_highlighting());
   set_browser(nullptr);
