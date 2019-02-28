@@ -134,15 +134,15 @@ class AuthErrorLearnMoreButton : public views::Button,
   DISALLOW_COPY_AND_ASSIGN(AuthErrorLearnMoreButton);
 };
 
-// Returns the first or last focusable child of |root|. If |reverse| is false,
-// this returns the first focusable child. If |reverse| is true, this returns
+// Focuses the first or last focusable child of |root|. If |reverse| is false,
+// this focuses the first focusable child. If |reverse| is true, this focuses
 // the last focusable child.
-views::View* FindFirstOrLastFocusableChild(views::View* root, bool reverse) {
+void FocusFirstOrLastFocusableChild(views::View* root, bool reverse) {
   views::FocusSearch search(root, reverse /*cycle*/,
                             false /*accessibility_mode*/);
   views::FocusTraversable* dummy_focus_traversable;
   views::View* dummy_focus_traversable_view;
-  return search.FindNextFocusableView(
+  views::View* focusable_view = search.FindNextFocusableView(
       root,
       reverse ? views::FocusSearch::SearchDirection::kBackwards
               : views::FocusSearch::SearchDirection::kForwards,
@@ -150,6 +150,8 @@ views::View* FindFirstOrLastFocusableChild(views::View* root, bool reverse) {
       views::FocusSearch::StartingViewPolicy::kSkipStartingView,
       views::FocusSearch::AnchoredDialogPolicy::kCanGoIntoAnchoredDialog,
       &dummy_focus_traversable, &dummy_focus_traversable_view);
+  if (focusable_view)
+    focusable_view->RequestFocus();
 }
 
 // Make a section of the text bold.
@@ -1092,7 +1094,7 @@ void LockContentsView::OnFocusLeavingLockScreenApps(bool reverse) {
   if (!reverse || lock_screen_apps_active_)
     FocusNextWidget(reverse);
   else
-    FindFirstOrLastFocusableChild(this, reverse)->RequestFocus();
+    FocusFirstOrLastFocusableChild(this, reverse);
 }
 
 void LockContentsView::OnOobeDialogStateChanged(mojom::OobeDialogState state) {
@@ -1108,7 +1110,7 @@ void LockContentsView::OnFocusLeavingSystemTray(bool reverse) {
   // from the system shelf (or tray) - lock shelf view expect the focus to be
   // taken when it passes it to lock screen view, and can misbehave in case the
   // focus is kept in it.
-  FindFirstOrLastFocusableChild(this, reverse)->RequestFocus();
+  FocusFirstOrLastFocusableChild(this, reverse);
 
   if (lock_screen_apps_active_) {
     Shell::Get()->login_screen_controller()->FocusLockScreenApps(reverse);
