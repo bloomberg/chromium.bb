@@ -367,16 +367,15 @@ TEST_F(DelegatedFrameHostAndroidLegacyNonVizTest, TestBothCompositorLocks) {
 // Make sure frame evictor is notified of the newly embedded surface after
 // WasShown.
 TEST_F(DelegatedFrameHostAndroidVizTest, EmbedWhileHidden) {
-  {
-    EXPECT_CALL(client_, WasEvicted());
-    frame_host_->EvictDelegatedFrame();
-  }
+  // Ensure there is currently no frame.
+  frame_host_->WasHidden();
+  frame_host_->EvictDelegatedFrame();
   EXPECT_FALSE(frame_host_->HasSavedFrame());
+
   allocator_.GenerateId();
   viz::LocalSurfaceId id =
       allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
   gfx::Size size(100, 100);
-  frame_host_->WasHidden();
   frame_host_->EmbedSurface(id, size, cc::DeadlinePolicy::UseDefaultDeadline());
   EXPECT_FALSE(frame_host_->HasSavedFrame());
   frame_host_->WasShown(id, size);
