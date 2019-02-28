@@ -680,8 +680,16 @@ PositionTemplate<Strategy> FirstEditablePositionAfterPositionInRootAlgorithm(
   // sibling position. If not, we can't get the next paragraph in
   // InsertListCommand::doApply's while loop. See http://crbug.com/571420
   if (non_editable_node &&
-      non_editable_node->IsDescendantOf(editable_position.AnchorNode()))
-    editable_position = NextVisuallyDistinctCandidate(editable_position);
+      non_editable_node->IsDescendantOf(editable_position.AnchorNode())) {
+    // Make sure not to move out of |highest_root|
+    const PositionTemplate<Strategy> boundary =
+        PositionTemplate<Strategy>::LastPositionInNode(highest_root);
+    const PositionTemplate<Strategy> next_candidate =
+        NextVisuallyDistinctCandidate(editable_position);
+    editable_position = next_candidate.IsNotNull()
+                            ? std::min(boundary, next_candidate)
+                            : boundary;
+  }
   return editable_position;
 }
 
