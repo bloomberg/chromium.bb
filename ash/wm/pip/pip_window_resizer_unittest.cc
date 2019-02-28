@@ -569,7 +569,7 @@ TEST_F(PipWindowResizerTest, PipRestoreBoundsSetOnFling) {
             window_state->GetRestoreBoundsInScreen());
 }
 
-TEST_F(PipWindowResizerTest, PipFreeResizeUmaMetrics) {
+TEST_F(PipWindowResizerTest, PipStartAndFinishFreeResizeUmaMetrics) {
   UpdateWorkArea("400x400");
   PreparePipWindow(gfx::Rect(200, 200, 100, 100));
   std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTBOTTOM));
@@ -583,6 +583,24 @@ TEST_F(PipWindowResizerTest, PipFreeResizeUmaMetrics) {
   resizer->CompleteDrag();
 
   histograms().ExpectTotalCount(kAshPipEventsHistogramName, 1);
+}
+
+TEST_F(PipWindowResizerTest, PipFreeResizeAreaUmaMetrics) {
+  UpdateWorkArea("400x400");
+  PreparePipWindow(gfx::Rect(200, 200, 100, 100));
+  std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTBOTTOM));
+  ASSERT_TRUE(resizer.get());
+
+  EXPECT_EQ(1, histograms().GetBucketCount(
+                   kAshPipFreeResizeInitialAreaHistogramName, Sample(6)));
+  histograms().ExpectTotalCount(kAshPipFreeResizeInitialAreaHistogramName, 1);
+
+  window()->layer()->SetBounds(gfx::Rect(200, 200, 100, 190));
+  resizer->CompleteDrag();
+
+  EXPECT_EQ(1, histograms().GetBucketCount(
+                   kAshPipFreeResizeFinishAreaHistogramName, Sample(12)));
+  histograms().ExpectTotalCount(kAshPipFreeResizeFinishAreaHistogramName, 1);
 }
 
 }  // namespace wm
