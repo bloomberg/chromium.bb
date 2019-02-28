@@ -339,8 +339,18 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
     return;
   }
 
-  PaintLineBoxChildren(box_fragment_.Children(), paint_info.ForDescendants(),
-                       paint_offset);
+  DCHECK(layout_object->IsLayoutBlockFlow());
+  const LayoutBlock& layout_block = ToLayoutBlock(*layout_object);
+  if (layout_block.IsLayoutView() ||
+      !paint_info.SuppressPaintingDescendants()) {
+    DCHECK(layout_block.ChildrenInline());
+    if (ShouldPaintDescendantOutlines(paint_info.phase)) {
+      ObjectPainter(layout_block).PaintInlineChildrenOutlines(paint_info);
+    } else {
+      PaintLineBoxChildren(box_fragment_.Children(),
+                           paint_info.ForDescendants(), paint_offset);
+    }
+  }
 }
 
 void NGBoxFragmentPainter::PaintInlineChild(const NGPaintFragment& child,
