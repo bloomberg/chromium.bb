@@ -25,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_palette.h"
@@ -92,13 +93,16 @@ class ParentAccessView::AccessCodeInput : public views::View,
                                           public views::TextfieldController {
  public:
   using OnInputChange = base::RepeatingCallback<void(bool complete)>;
+  using OnEnter = base::RepeatingClosure;
 
   // Builds the view for an access code that consists out of |length| digits.
   // |on_input_change| will be called upon access code digit insertion, deletion
   // or change. True will be passed if the current code is complete (all digits
-  // have input values) and false otherwise.
-  AccessCodeInput(int length, OnInputChange on_input_change)
-      : on_input_change_(std::move(on_input_change)) {
+  // have input values) and false otherwise. |on_enter| will be called when code
+  // is complete and user presses enter to submit it for validation.
+  AccessCodeInput(int length, OnInputChange on_input_change, OnEnter on_enter)
+      : on_input_change_(std::move(on_input_change)),
+        on_enter_(std::move(on_enter)) {
     DCHECK_LT(0, length);
     DCHECK(on_input_change_);
 
@@ -200,6 +204,9 @@ class ParentAccessView::AccessCodeInput : public views::View,
         FocusNextField();
     } else if (key_code == ui::VKEY_BACK) {
       Backspace();
+    } else if (key_code == ui::VKEY_RETURN) {
+      if (GetCode().has_value())
+        on_enter_.Run();
     }
 
     return true;
@@ -268,6 +275,9 @@ class ParentAccessView::AccessCodeInput : public views::View,
   // updated). Passes true when code is complete (all digits have input value)
   // and false otherwise.
   OnInputChange on_input_change_;
+
+  // To be called when user pressed enter to submit.
+  OnEnter on_enter_;
 
   // An active/focused input field index. Incoming digit will be inserted here.
   int active_input_index_ = 0;
@@ -397,6 +407,8 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   access_code_view_ =
       new AccessCodeInput(kParentAccessCodePinLength,
                           base::BindRepeating(&ParentAccessView::OnInputChange,
+                                              base::Unretained(this)),
+                          base::BindRepeating(&ParentAccessView::SubmitCode,
                                               base::Unretained(this)));
   AddChildView(access_code_view_);
 
