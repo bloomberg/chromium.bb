@@ -340,14 +340,11 @@ void PreviewsLitePageDecider::ReportDataSavings(int64_t network_bytes,
   if (!drp_settings_ || !drp_settings_->data_reduction_proxy_service())
     return;
 
-  // The total data usage is tracked for all data in Chrome, so we only need to
-  // update the savings.
-  int64_t data_saved = original_bytes - network_bytes;
   drp_settings_->data_reduction_proxy_service()->UpdateDataUseForHost(
-      0, data_saved, host);
+      network_bytes, original_bytes, host);
 
   drp_settings_->data_reduction_proxy_service()->UpdateContentLengths(
-      0, data_saved, true /* data_reduction_proxy_enabled */,
+      network_bytes, original_bytes, true /* data_reduction_proxy_enabled */,
       data_reduction_proxy::DataReductionProxyRequestType::
           VIA_DATA_REDUCTION_PROXY,
       "text/html", true /* is_user_traffic */,
