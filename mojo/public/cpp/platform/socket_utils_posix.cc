@@ -73,8 +73,6 @@ constexpr int kSendmsgFlags = 0;
 constexpr int kSendmsgFlags = MSG_NOSIGNAL;
 #endif
 
-constexpr size_t kMaxSendmsgHandles = 128;
-
 }  // namespace
 
 ssize_t SocketWrite(base::PlatformFile socket,
@@ -107,7 +105,7 @@ ssize_t SendmsgWithHandles(base::PlatformFile socket,
   DCHECK(iov);
   DCHECK_GT(num_iov, 0u);
   DCHECK(!descriptors.empty());
-  DCHECK_LE(descriptors.size(), kMaxSendmsgHandles);
+  CHECK_LE(descriptors.size(), kMaxSendmsgHandles);
 
   char cmsg_buf[CMSG_SPACE(kMaxSendmsgHandles * sizeof(int))];
   struct msghdr msg = {};
