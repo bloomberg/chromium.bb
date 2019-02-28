@@ -27,7 +27,7 @@ NUM_RETRIES = 20
 # Namedtupe to store CIDB status info.
 CIDBStatusInfo = collections.namedtuple(
     'CIDBStatusInfo',
-    ['build_id', 'status', 'build_number'])
+    ['build_id', 'status', 'buildbucket_id'])
 
 
 def CancelBuilds(buildbucket_ids, buildbucket_client,
@@ -102,17 +102,16 @@ def GetSlavesAbortedBySelfDestructedMaster(master_build_id, buildstore):
   if not buildstore.AreClientsReady():
     return set()
 
-  messages = buildstore.GetCIDBHandle().GetBuildMessages(
-      master_build_id,
-      message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
-      message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION)
+  messages = buildstore.GetBuildMessages(
+      master_build_id)
   # tentative fix for crbug.com/890651
   if not messages:
     logging.warning('No build message retrieved for master_build_id=%s',
                     master_build_id)
     return set()
-  slave_build_ids = [int(m['message_value']) for m in messages]
-  build_statuses = buildstore.GetBuildStatuses(build_ids=slave_build_ids)
+  slave_buildbucket_ids = [long(m['message_value']) for m in messages]
+  build_statuses = buildstore.GetBuildStatuses(
+      buildbucket_ids=slave_buildbucket_ids)
   return set(b['build_config'] for b in build_statuses)
 
 
@@ -234,12 +233,13 @@ class BuilderStatusManager(object):
         msg_summary, failure_messages, internal, reason, build_config)
 
   @classmethod
-  def AbortedBySelfDestruction(cls, db, build_id, master_build_id):
-    """Check CIDB for whether a specified build was aborted by master.
+  def AbortedBySelfDestruction(cls, buildstore, buildbucket_id,
+                               master_build_id):
+    """Check BuildStore for whether a specified build was aborted by master.
 
     Args:
-      db: An instance of cidb.CIDBConnection.
-      build_id: The build ID (int) of the build to get status of
+      buildstore: A BuildStore instance to make DB calls.
+      buildbucket_id: The buildbucket ID (int) of the build to get status of
       master_build_id: The build ID (int) of the master build which may
         have aborted it.
 
@@ -251,10 +251,10 @@ class BuilderStatusManager(object):
       # Builds without master_build_id can't be aborted by self-destruction.
       return False
 
-    build_messages = db.GetBuildMessages(master_build_id)
+    build_messages = buildstore.GetBuildMessages(master_build_id)
     build_messages = (
         message for message in build_messages if message['message_value'] ==
-        str(build_id))
+        str(buildbucket_id))
     return any((
         message['message_type'] ==
         constants.MESSAGE_TYPE_IGNORED_REASON and
@@ -348,7 +348,8 @@ class SlaveBuilderStatus(object):
     return set(build_config
                for build_config, cidb_info in cidb_info_dict.iteritems()
                if BuilderStatusManager.AbortedBySelfDestruction(
-                   self.db, cidb_info.build_id, self.master_build_id))
+                   self.buildstore, cidb_info.buildbucket_id,
+                   self.master_build_id))
 
   def _InitSlaveInfo(self):
     """Init slave info including buildbucket info, cidb info and failures."""
@@ -541,7 +542,7 @@ class SlaveBuilderStatus(object):
           master_build_id, buildbucket_ids=buildbucket_ids)
 
       all_cidb_status_dict = {s['build_config']: CIDBStatusInfo(
-          s['id'], s['status'], s['build_number']) for s in slave_statuses}
+          s['id'], s['status'], s['buildbucket_id']) for s in slave_statuses}
 
     return all_cidb_status_dict
 

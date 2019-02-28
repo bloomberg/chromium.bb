@@ -150,6 +150,39 @@ class TestBuildStore(cros_test_lib.MockTestCase):
         critical=True)
     self.assertEqual(build_id, 0)
 
+  def testGetBuildMessages(self):
+    """Tests the redirect for GetBuildMessages function."""
+    init = self.PatchObject(BuildStore, 'InitializeClients',
+                            return_value=True)
+    bs = BuildStore()
+    bs.cidb_conn = mock.MagicMock()
+    build_id = 1234
+    # Test for buildbucket_ids.
+    bs.GetBuildMessages(build_id,
+                        message_type=constants.MESSAGE_TYPE_IGNORED_REASON)
+    bs.cidb_conn.GetBuildMessages.assert_called_once_with(
+        build_id, message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
+        message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION)
+    init.return_value = False
+    with self.assertRaises(buildstore.BuildStoreException):
+      bs.GetBuildsFailures(build_id)
+
+  def testInsertBuildMessage(self):
+    """Tests the redirect for InsertBuildMessage function."""
+    init = self.PatchObject(BuildStore, 'InitializeClients',
+                            return_value=True)
+    bs = BuildStore()
+    bs.cidb_conn = mock.MagicMock()
+    self.PatchObject(bs.cidb_conn, 'InsertBuildMessage')
+    bs.InsertBuildMessage(1234, message_value=8921795536486453568)
+    bs.cidb_conn.InsertBuildMessage.assert_called_once_with(
+        1234, message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
+        message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION,
+        message_value=8921795536486453568, board=None)
+    init.return_value = False
+    with self.assertRaises(buildstore.BuildStoreException):
+      bs.InsertBuildMessage(1234, message_value=8921795536486453568)
+
   def testGetBuildHistory(self):
     """Tests the redirect for GetBuildHistory function."""
     init = self.PatchObject(BuildStore, 'InitializeClients',

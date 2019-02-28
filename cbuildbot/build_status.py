@@ -645,11 +645,10 @@ class SlaveStatus(object):
         # ignored_reason message into the buildMessageTable.
         for build in uncompleted_important_builds:
           if build in self.all_cidb_status_dict:
-            self.db.InsertBuildMessage(
+            self.buildstore.InsertBuildMessage(
                 self.master_build_id,
-                message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
-                message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION,
-                message_value=str(self.all_cidb_status_dict[build].build_id))
+                message_value=str(
+                    self.all_cidb_status_dict[build].buildbucket_id))
         builder_status_lib.CancelBuilds(uncompleted_build_buildbucket_ids,
                                         self.buildbucket_client,
                                         self.dry_run,

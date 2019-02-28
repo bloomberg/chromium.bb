@@ -190,7 +190,9 @@ class BuildStore(object):
     if not self._read_from_bb:
       return self.cidb_conn.GetSlaveStatuses(master_build_id, buildbucket_ids)
 
-  def GetBuildMessages(self, build_id, message_type=None, message_subtype=None):
+  def GetBuildMessages(
+      self, build_id, message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
+      message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION):
     """Gets build messages for particular build_id.
 
     Args:
@@ -208,8 +210,9 @@ class BuildStore(object):
     if not self.InitializeClients():
       raise BuildStoreException('BuildStore clients could not be initialized.')
     if not self._read_from_bb:
-      return self.cidb_conn.GetBuildMessages(build_id, message_type,
-                                             message_subtype)
+      return self.cidb_conn.GetBuildMessages(build_id,
+                                             message_type=message_type,
+                                             message_subtype=message_subtype)
 
   def GetBuildHistory(
       self, build_config, num_results,
@@ -301,6 +304,26 @@ class BuildStore(object):
       return self.cidb_conn.InsertFailure(build_stage_id, exception_type,
                                           exception_message, exception_category,
                                           outer_failure_id, extra_info)
+
+  def InsertBuildMessage(
+      self, build_id, message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
+      message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION,
+      message_value=None, board=None):
+    """Insert a build message into database.
+
+    Args:
+      build_id: primary key of build recording this message.
+      message_type: Optional str name of message type.
+      message_subtype: Optional str name of message subtype.
+      message_value: Optional value of message.
+      board: Optional str name of the board.
+    """
+    if not self.InitializeClients():
+      raise BuildStoreException('BuildStore clients could not be initialized.')
+    if self._write_to_cidb:
+      return self.cidb_conn.InsertBuildMessage(
+          build_id, message_type=message_type, message_subtype=message_subtype,
+          message_value=message_value, board=board)
 
   def FinishBuild(self, build_id, status=None, summary=None, metadata_url=None,
                   strict=True):
@@ -551,6 +574,19 @@ class FakeBuildStore(object):
 
   def GetSlaveStatuses(self, master_build_id, buildbucket_ids=None):
     return self.fake_cidb.GetSlaveStatuses(master_build_id, buildbucket_ids)
+
+  def GetBuildMessages(
+      self, build_id, message_type=None, message_subtype=None):
+    return self.fake_cidb.GetBuildMessages(build_id, message_type=message_type,
+                                           message_subtype=message_subtype)
+
+  def InsertBuildMessage(
+      self, build_id, message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
+      message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION,
+      message_value=None, board=None):
+    return self.fake_cidb.InsertBuildMessage(
+        build_id, message_type=message_type, message_subtype=message_subtype,
+        message_value=message_value, board=board)
 
   def FinishBuild(self, build_id, status=None, summary=None, metadata_url=None,
                   strict=True):

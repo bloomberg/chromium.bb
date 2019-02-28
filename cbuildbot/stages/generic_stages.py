@@ -388,7 +388,8 @@ class BuilderStage(object):
     if stage_failures:
       master_build_id = stage_failures[0].master_build_id
     aborted = builder_status_lib.BuilderStatusManager.AbortedBySelfDestruction(
-        buildstore.GetCIDBHandle(), build_identifier.cidb_id, master_build_id)
+        buildstore, build_identifier.buildbucket_id,
+        master_build_id)
 
     return builder_status_lib.BuilderStatusManager.CreateBuildFailureMessage(
         self._run.config.name,

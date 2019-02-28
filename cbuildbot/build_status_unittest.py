@@ -118,60 +118,60 @@ class CIDBStatusInfos(object):
   """Helper methods to build CIDBStatusInfo."""
 
   @staticmethod
-  def GetInflightBuild(build_id=1, build_number=1):
+  def GetInflightBuild(build_id=1, buildbucket_id=1):
     return builder_status_lib.CIDBStatusInfo(
         build_id=build_id,
         status=constants.BUILDER_STATUS_INFLIGHT,
-        build_number=build_number)
+        buildbucket_id=buildbucket_id)
 
   @staticmethod
-  def GetPassedBuild(build_id=2, build_number=2):
+  def GetPassedBuild(build_id=2, buildbucket_id=2):
     return builder_status_lib.CIDBStatusInfo(
         build_id=build_id,
         status=constants.BUILDER_STATUS_PASSED,
-        build_number=build_number)
+        buildbucket_id=buildbucket_id)
 
   @staticmethod
-  def GetFailedBuild(build_id=3, build_number=3):
+  def GetFailedBuild(build_id=3, buildbucket_id=3):
     return builder_status_lib.CIDBStatusInfo(
         build_id=build_id,
         status=constants.BUILDER_STATUS_FAILED,
-        build_number=build_number)
+        buildbucket_id=buildbucket_id)
 
   @staticmethod
-  def GetPlannedBuild(build_id=4, build_number=4):
+  def GetPlannedBuild(build_id=4, buildbucket_id=4):
     return builder_status_lib.CIDBStatusInfo(
         build_id=build_id,
         status=constants.BUILDER_STATUS_PLANNED,
-        build_number=build_number)
+        buildbucket_id=buildbucket_id)
 
   @staticmethod
-  def GetForgivenBuild(build_id=5, build_number=5):
+  def GetForgivenBuild(build_id=5, buildbucket_id=5):
     return builder_status_lib.CIDBStatusInfo(
         build_id=build_id,
         status=constants.BUILDER_STATUS_FORGIVEN,
-        build_number=build_number)
+        buildbucket_id=buildbucket_id)
 
   @staticmethod
-  def GetAbortedBuild(build_id=6, build_number=6):
+  def GetAbortedBuild(build_id=6, buildbucket_id=6):
     return builder_status_lib.CIDBStatusInfo(
         build_id=build_id,
         status=constants.BUILDER_STATUS_ABORTED,
-        build_number=build_number)
+        buildbucket_id=buildbucket_id)
 
   @staticmethod
-  def GetMissingBuild(build_id=7, build_number=7):
+  def GetMissingBuild(build_id=7, buildbucket_id=7):
     return builder_status_lib.CIDBStatusInfo(
         build_id=build_id,
         status=constants.BUILDER_STATUS_MISSING,
-        build_number=build_number)
+        buildbucket_id=buildbucket_id)
 
   @staticmethod
-  def GetSkippedBuild(build_id=8, build_number=8):
+  def GetSkippedBuild(build_id=8, buildbucket_id=8):
     return builder_status_lib.CIDBStatusInfo(
         build_id=build_id,
         status=constants.BUILDER_STATUS_SKIPPED,
-        build_number=build_number)
+        buildbucket_id=buildbucket_id)
 
   @staticmethod
   def GetFullCIDBStatusInfo(exclude_builds=None):
@@ -465,7 +465,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         set())
 
     for _ in range(5):
-      self.db.InsertBuild('builder_name', 'build_number',
+      self.db.InsertBuild('builder_name', 'buildbucket_id',
                           'master-paladin', 'bot_hostname')
     self.db.InsertBuildStage(3, 'CommitQueueSync',
                              status=constants.BUILDER_STATUS_PASSED)
@@ -502,7 +502,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     self._MockForGetRetriableBuildsTests()
 
     for _ in range(5):
-      self.db.InsertBuild('builder_name', 'build_number',
+      self.db.InsertBuild('builder_name', 'buildbucket_id',
                           'master-paladin', 'bot_hostname')
     self.db.InsertBuildStage(3, 'CommitQueueSync',
                              status=constants.BUILDER_STATUS_FAILED)
@@ -531,7 +531,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     self._MockForGetRetriableBuildsTests()
 
     for _ in range(5):
-      self.db.InsertBuild('builder_name', 'build_number',
+      self.db.InsertBuild('builder_name', 'buildbucket_id',
                           'master-paladin', 'bot_hostname')
     self.db.InsertBuildStage(3, 'CommitQueueSync',
                              status=constants.BUILDER_STATUS_PLANNED)
@@ -1425,13 +1425,13 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     """
     slave_ids = ['build1', 'build2', 'build3', 'build4']
     cidb_status = [
-        {'id': 'build1', 'build_config': 'build1', 'build_number': 1,
+        {'id': 'build1', 'build_config': 'build1', 'buildbucket_id': 1,
          'status': constants.BUILDER_STATUS_FAILED},
-        {'id': 'build2', 'build_config': 'build2', 'build_number': 2,
+        {'id': 'build2', 'build_config': 'build2', 'buildbucket_id': 2,
          'status': constants.BUILDER_STATUS_PASSED},
-        {'id': 'build3', 'build_config': 'build3', 'build_number': 3,
+        {'id': 'build3', 'build_config': 'build3', 'buildbucket_id': 3,
          'status': constants.BUILDER_STATUS_INFLIGHT},
-        {'id': 'build4', 'build_config': 'build4', 'build_number': 4,
+        {'id': 'build4', 'build_config': 'build4', 'buildbucket_id': 4,
          'status': constants.BUILDER_STATUS_INFLIGHT},
     ]
     cidb_statuses = {
