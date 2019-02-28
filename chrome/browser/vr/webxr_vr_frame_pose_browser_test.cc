@@ -5,7 +5,7 @@
 #include "base/environment.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/vr/test/mock_openvr_device_hook_base.h"
+#include "chrome/browser/vr/test/mock_xr_device_hook_base.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
 
 #include <memory>
@@ -20,7 +20,7 @@ struct Frame {
   device_test::mojom::DeviceConfigPtr config;
 };
 
-class MyOpenVRMock : public MockOpenVRDeviceHookBase {
+class MyXRMock : public MockXRDeviceHookBase {
  public:
   void OnFrameSubmitted(
       device_test::mojom::SubmittedFrameDataPtr frame_data,
@@ -80,7 +80,7 @@ unsigned int ParseColorFrameId(const device_test::mojom::ColorPtr& color) {
   return frame_id;
 }
 
-void MyOpenVRMock::OnFrameSubmitted(
+void MyXRMock::OnFrameSubmitted(
     device_test::mojom::SubmittedFrameDataPtr frame_data,
     device_test::mojom::XRTestHook::OnFrameSubmittedCallback callback) {
   unsigned int frame_id = ParseColorFrameId(frame_data->color);
@@ -108,7 +108,7 @@ void MyOpenVRMock::OnFrameSubmitted(
   std::move(callback).Run();
 }
 
-void MyOpenVRMock::WaitGetMagicWindowPose(
+void MyXRMock::WaitGetMagicWindowPose(
     device_test::mojom::XRTestHook::WaitGetMagicWindowPoseCallback callback) {
   auto pose = device_test::mojom::PoseFrameData::New();
 
@@ -119,7 +119,7 @@ void MyOpenVRMock::WaitGetMagicWindowPose(
   std::move(callback).Run(std::move(pose));
 }
 
-void MyOpenVRMock::WaitGetPresentingPose(
+void MyXRMock::WaitGetPresentingPose(
     device_test::mojom::XRTestHook::WaitGetPresentingPoseCallback callback) {
   DLOG(ERROR) << "WaitGetPresentingPose: " << frame_id_;
 
@@ -161,7 +161,7 @@ std::string GetPoseAsString(const Frame& frame) {
 // out. Validates that submitted frames used expected pose.
 void TestPresentationPosesImpl(WebXrVrBrowserTestBase* t,
                                std::string filename) {
-  MyOpenVRMock my_mock;
+  MyXRMock my_mock;
 
   // Load the test page, and enter presentation.
   t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(filename));
@@ -178,8 +178,8 @@ void TestPresentationPosesImpl(WebXrVrBrowserTestBase* t,
   // Exit presentation.
   t->EndSessionOrFail();
 
-  // Stop hooking OpenVR, so we can safely analyze our cached data without
-  // incoming calls (there may be leftover mojo messages queued).
+  // Stop hooking the VR runtime so we can safely analyze our cached data
+  // without incoming calls (there may be leftover mojo messages queued).
   my_mock.StopHooking();
 
   // Analyze the submitted frames - check for a few things:

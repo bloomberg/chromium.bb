@@ -652,8 +652,8 @@ if (!is_android) {
 
     # Common infrastructure.
     sources = [
-      "test/mock_openvr_device_hook_base.cc",
-      "test/mock_openvr_device_hook_base.h",
+      "test/mock_xr_device_hook_base.cc",
+      "test/mock_xr_device_hook_base.h",
       "test/webvr_browser_test.cc",
       "test/webvr_browser_test.h",
       "test/webxr_browser_test.cc",

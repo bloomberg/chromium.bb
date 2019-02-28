@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
-#include "chrome/browser/vr/test/mock_openvr_device_hook_base.h"
+#include "chrome/browser/vr/test/mock_xr_device_hook_base.h"
 #include "chrome/browser/vr/test/webvr_browser_test.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
-#include "device/vr/openvr/test/test_hook.h"
 #include "device/vr/public/mojom/browser_test_interfaces.mojom.h"
 #include "third_party/openvr/src/headers/openvr.h"
 
@@ -33,7 +32,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestPresentationLocksFocus) {
   TestPresentationLocksFocusImpl(this, "webxr_test_presentation_locks_focus");
 }
 
-class WebXrControllerInputOpenVRMock : public MockOpenVRDeviceHookBase {
+class WebXrControllerInputMock : public MockXRDeviceHookBase {
  public:
   void OnFrameSubmitted(
       device_test::mojom::SubmittedFrameDataPtr frame_data,
@@ -73,7 +72,7 @@ class WebXrControllerInputOpenVRMock : public MockOpenVRDeviceHookBase {
   unsigned int target_submitted_frames_ = 0;
 };
 
-void WebXrControllerInputOpenVRMock::OnFrameSubmitted(
+void WebXrControllerInputMock::OnFrameSubmitted(
     device_test::mojom::SubmittedFrameDataPtr frame_data,
     device_test::mojom::XRTestHook::OnFrameSubmittedCallback callback) {
   num_submitted_frames_++;
@@ -88,7 +87,7 @@ void WebXrControllerInputOpenVRMock::OnFrameSubmitted(
 // WebXrVrInputTest#testControllerClicksRegisteredOnDaydream_WebXr.
 IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
                        TestControllerInputRegistered) {
-  WebXrControllerInputOpenVRMock my_mock;
+  WebXrControllerInputMock my_mock;
 
   // Connect a controller.
   auto controller_data = my_mock.CreateValidController(
@@ -120,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
 // WebXrVrInputTest#testControllerClicksRegisteredOnDaydream
 IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard,
                        TestControllerInputRegistered) {
-  WebXrControllerInputOpenVRMock my_mock;
+  WebXrControllerInputMock my_mock;
 
   // Connect a controller.
   auto controller_data = my_mock.CreateValidController(

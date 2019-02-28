@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/test/mock_openvr_device_hook_base.h"
+#include "chrome/browser/vr/test/mock_xr_device_hook_base.h"
 #include "content/public/common/service_manager_connection.h"
-#include "device/vr/openvr/test/test_hook.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -49,7 +48,7 @@ device_test::mojom::ControllerFrameDataPtr DeviceToMojoControllerFrameData(
   return ret;
 }
 
-MockOpenVRDeviceHookBase::MockOpenVRDeviceHookBase()
+MockXRDeviceHookBase::MockXRDeviceHookBase()
     : tracked_classes_{device_test::mojom::TrackedDeviceClass::
                            kTrackedDeviceInvalid},
       binding_(this) {
@@ -69,11 +68,11 @@ MockOpenVRDeviceHookBase::MockOpenVRDeviceHookBase()
   test_hook_registration_->SetTestHook(std::move(client));
 }
 
-MockOpenVRDeviceHookBase::~MockOpenVRDeviceHookBase() {
+MockXRDeviceHookBase::~MockXRDeviceHookBase() {
   StopHooking();
 }
 
-void MockOpenVRDeviceHookBase::StopHooking() {
+void MockXRDeviceHookBase::StopHooking() {
   // We don't call test_hook_registration_->SetTestHook(nullptr), since that
   // will potentially deadlock with reentrant or crossing synchronous mojo
   // calls.
@@ -81,13 +80,13 @@ void MockOpenVRDeviceHookBase::StopHooking() {
   test_hook_registration_ = nullptr;
 }
 
-void MockOpenVRDeviceHookBase::OnFrameSubmitted(
+void MockXRDeviceHookBase::OnFrameSubmitted(
     device_test::mojom::SubmittedFrameDataPtr frame_data,
     device_test::mojom::XRTestHook::OnFrameSubmittedCallback callback) {
   std::move(callback).Run();
 }
 
-void MockOpenVRDeviceHookBase::WaitGetDeviceConfig(
+void MockXRDeviceHookBase::WaitGetDeviceConfig(
     device_test::mojom::XRTestHook::WaitGetDeviceConfigCallback callback) {
   device_test::mojom::DeviceConfigPtr ret =
       device_test::mojom::DeviceConfig::New();
@@ -97,21 +96,21 @@ void MockOpenVRDeviceHookBase::WaitGetDeviceConfig(
   std::move(callback).Run(std::move(ret));
 }
 
-void MockOpenVRDeviceHookBase::WaitGetPresentingPose(
+void MockXRDeviceHookBase::WaitGetPresentingPose(
     device_test::mojom::XRTestHook::WaitGetPresentingPoseCallback callback) {
   auto pose = device_test::mojom::PoseFrameData::New();
   pose->device_to_origin = gfx::Transform();
   std::move(callback).Run(std::move(pose));
 }
 
-void MockOpenVRDeviceHookBase::WaitGetMagicWindowPose(
+void MockXRDeviceHookBase::WaitGetMagicWindowPose(
     device_test::mojom::XRTestHook::WaitGetMagicWindowPoseCallback callback) {
   auto pose = device_test::mojom::PoseFrameData::New();
   pose->device_to_origin = gfx::Transform();
   std::move(callback).Run(std::move(pose));
 }
 
-void MockOpenVRDeviceHookBase::WaitGetControllerRoleForTrackedDeviceIndex(
+void MockXRDeviceHookBase::WaitGetControllerRoleForTrackedDeviceIndex(
     unsigned int index,
     device_test::mojom::XRTestHook::
         WaitGetControllerRoleForTrackedDeviceIndexCallback callback) {
@@ -122,7 +121,7 @@ void MockOpenVRDeviceHookBase::WaitGetControllerRoleForTrackedDeviceIndex(
   std::move(callback).Run(role);
 }
 
-void MockOpenVRDeviceHookBase::WaitGetTrackedDeviceClass(
+void MockXRDeviceHookBase::WaitGetTrackedDeviceClass(
     unsigned int index,
     device_test::mojom::XRTestHook::WaitGetTrackedDeviceClassCallback
         callback) {
@@ -130,7 +129,7 @@ void MockOpenVRDeviceHookBase::WaitGetTrackedDeviceClass(
   std::move(callback).Run(tracked_classes_[index]);
 }
 
-void MockOpenVRDeviceHookBase::WaitGetControllerData(
+void MockXRDeviceHookBase::WaitGetControllerData(
     unsigned int index,
     device_test::mojom::XRTestHook::WaitGetControllerDataCallback callback) {
   if (tracked_classes_[index] ==
@@ -148,7 +147,7 @@ void MockOpenVRDeviceHookBase::WaitGetControllerData(
   std::move(callback).Run(DeviceToMojoControllerFrameData(data));
 }
 
-unsigned int MockOpenVRDeviceHookBase::ConnectController(
+unsigned int MockXRDeviceHookBase::ConnectController(
     const device::ControllerFrameData& initial_data) {
   // Find the first open tracked device slot and fill that.
   for (unsigned int i = 0; i < device::kMaxTrackedDevices; ++i) {
@@ -167,7 +166,7 @@ unsigned int MockOpenVRDeviceHookBase::ConnectController(
   return device::kMaxTrackedDevices;
 }
 
-void MockOpenVRDeviceHookBase::UpdateController(
+void MockXRDeviceHookBase::UpdateController(
     unsigned int index,
     const device::ControllerFrameData& updated_data) {
   auto iter = controller_data_map_.find(index);
@@ -175,7 +174,7 @@ void MockOpenVRDeviceHookBase::UpdateController(
   iter->second = updated_data;
 }
 
-void MockOpenVRDeviceHookBase::DisconnectController(unsigned int index) {
+void MockXRDeviceHookBase::DisconnectController(unsigned int index) {
   DCHECK(tracked_classes_[index] ==
          device_test::mojom::TrackedDeviceClass::kTrackedDeviceController);
   auto iter = controller_data_map_.find(index);
@@ -185,7 +184,7 @@ void MockOpenVRDeviceHookBase::DisconnectController(unsigned int index) {
       device_test::mojom::TrackedDeviceClass::kTrackedDeviceInvalid;
 }
 
-device::ControllerFrameData MockOpenVRDeviceHookBase::CreateValidController(
+device::ControllerFrameData MockXRDeviceHookBase::CreateValidController(
     device::ControllerRole role) {
   device::ControllerFrameData ret;
   // Because why shouldn't a 64 button controller exist?
