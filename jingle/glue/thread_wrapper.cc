@@ -280,15 +280,15 @@ void JingleThreadWrapper::RunTask(int task_id) {
   }
 }
 
+bool JingleThreadWrapper::IsQuitting() {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
+
 // All methods below are marked as not reached. See comments in the
 // header for more details.
 void JingleThreadWrapper::Quit() {
   NOTREACHED();
-}
-
-bool JingleThreadWrapper::IsQuitting() {
-  NOTREACHED();
-  return false;
 }
 
 void JingleThreadWrapper::Restart() {
