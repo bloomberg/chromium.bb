@@ -375,6 +375,7 @@ executable("demo") {
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gl",
     "//ui/gl/init",
   ]
 

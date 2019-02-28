@@ -124,6 +124,7 @@ executable("views_examples_exe") {
     "//ui/compositor",
     "//ui/compositor:test_support",
     "//ui/gfx",
+    "//ui/gl",
     "//ui/gl/init",
     "//ui/resources:ui_test_pak",
     "//ui/views",
