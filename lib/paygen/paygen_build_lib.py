@@ -1050,7 +1050,9 @@ def ScheduleAutotestTests(suite_name, board, model, build, skip_duts_check,
               value could be constants.ENV_SKYLAB, constants.ENV_AUTOTEST.
     job_keyvals: A dict of job keyvals to be injected to suite control file.
   """
-  timeout_mins = config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT / 60
+  # Double timeout for crbug.com/930256. Will change back once paygen
+  # suites been migrated to skylab.
+  timeout_mins = 2 * config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT / 60
   if test_env == constants.ENV_SKYLAB:
     tags = ['build:%s' % build,
             'suite:%s' % suite_name,
