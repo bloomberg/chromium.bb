@@ -16,9 +16,9 @@ AppServiceAppModelBuilder::~AppServiceAppModelBuilder() = default;
 void AppServiceAppModelBuilder::BuildModel() {
   apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile());
   if (proxy) {
-    proxy->Cache().ForEachApp(
+    proxy->AppRegistryCache().ForEachApp(
         [this](const apps::AppUpdate& update) { OnAppUpdate(update); });
-    Observe(&proxy->Cache());
+    Observe(&proxy->AppRegistryCache());
   } else {
     // TODO(crbug.com/826982): do we want apps in incognito mode? See the TODO
     // in AppServiceProxyFactory::GetForProfile about whether

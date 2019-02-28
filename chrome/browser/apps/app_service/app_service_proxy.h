@@ -25,7 +25,7 @@ namespace apps {
 // Singleton (per Profile) proxy and cache of an App Service's apps.
 //
 // Singleton-ness means that //chrome/browser code (e.g UI code) can find *the*
-// proxy for a given Profile, and therefore share the cache.
+// proxy for a given Profile, and therefore share its caches.
 //
 // See chrome/services/app_service/README.md.
 class AppServiceProxy : public KeyedService, public apps::mojom::Subscriber {
@@ -37,7 +37,7 @@ class AppServiceProxy : public KeyedService, public apps::mojom::Subscriber {
   ~AppServiceProxy() override;
 
   apps::mojom::AppServicePtr& AppService();
-  AppRegistryCache& Cache();
+  apps::AppRegistryCache& AppRegistryCache();
 
   void LoadIcon(const std::string& app_id,
                 apps::mojom::IconCompression icon_compression,
@@ -67,7 +67,7 @@ class AppServiceProxy : public KeyedService, public apps::mojom::Subscriber {
 
   apps::mojom::AppServicePtr app_service_;
   mojo::BindingSet<apps::mojom::Subscriber> bindings_;
-  AppRegistryCache cache_;
+  apps::AppRegistryCache cache_;
 
 #if defined(OS_CHROMEOS)
   BuiltInChromeOsApps built_in_chrome_os_apps_;

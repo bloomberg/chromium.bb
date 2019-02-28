@@ -265,7 +265,7 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
       : AppSearchProvider::DataSource(profile, owner) {
     apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile);
     if (proxy) {
-      Observe(&proxy->Cache());
+      Observe(&proxy->AppRegistryCache());
     }
   }
 
@@ -277,8 +277,8 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
     if (!proxy) {
       return;
     }
-    proxy->Cache().ForEachApp([this,
-                               apps_vector](const apps::AppUpdate& update) {
+    proxy->AppRegistryCache().ForEachApp([this, apps_vector](
+                                             const apps::AppUpdate& update) {
       if (update.ShowInSearch() != apps::mojom::OptionalBool::kTrue) {
         return;
       }

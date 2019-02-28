@@ -27,13 +27,14 @@ AppServiceAppResult::AppServiceAppResult(Profile* profile,
   apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile);
 
   if (proxy) {
-    proxy->Cache().ForOneApp(app_id, [this](const apps::AppUpdate& update) {
-      app_type_ = update.AppType();
-      is_platform_app_ =
-          update.IsPlatformApp() == apps::mojom::OptionalBool::kTrue;
-      show_in_launcher_ =
-          update.ShowInLauncher() == apps::mojom::OptionalBool::kTrue;
-    });
+    proxy->AppRegistryCache().ForOneApp(
+        app_id, [this](const apps::AppUpdate& update) {
+          app_type_ = update.AppType();
+          is_platform_app_ =
+              update.IsPlatformApp() == apps::mojom::OptionalBool::kTrue;
+          show_in_launcher_ =
+              update.ShowInLauncher() == apps::mojom::OptionalBool::kTrue;
+        });
 
     constexpr bool allow_placeholder_icon = true;
     CallLoadIcon(false, allow_placeholder_icon);
