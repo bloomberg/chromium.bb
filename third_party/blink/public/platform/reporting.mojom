@@ -43,7 +43,7 @@ interface ReportingServiceProxy {
                           int32 line_number,
                           int32 column_number,
                           string? source_file,
-                          int32 status_code,
+                          uint16 status_code,
                           string script_sample);
 
   // Attempts to queue a Feature Policy violation report using the Reporting API.

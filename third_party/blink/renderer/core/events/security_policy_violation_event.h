@@ -84,7 +84,7 @@ class SecurityPolicyViolationEvent final : public Event {
   String sample_;
   int line_number_;
   int column_number_;
-  int status_code_;
+  uint16_t status_code_;
 };
 
 }  // namespace blink
