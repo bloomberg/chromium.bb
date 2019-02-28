@@ -83,7 +83,7 @@ void PolicyMap::Entry::AddError(base::StringPiece error) {
 }
 
 void PolicyMap::Entry::AddError(int message_id) {
-  error_message_ids_.push_back(message_id);
+  error_message_ids_.insert(message_id);
 }
 
 void PolicyMap::Entry::AddConflictingPolicy(const Entry& conflict) {
@@ -114,6 +114,15 @@ base::string16 PolicyMap::Entry::GetLocalizedErrors(
   return error_string;
 }
 
+bool PolicyMap::Entry::IsBlocked() const {
+  return error_message_ids_.find(IDS_POLICY_BLOCKED) !=
+         error_message_ids_.end();
+}
+
+void PolicyMap::Entry::SetBlocked() {
+  error_message_ids_.insert(IDS_POLICY_BLOCKED);
+}
+
 PolicyMap::PolicyMap() {}
 
 PolicyMap::~PolicyMap() {
@@ -122,22 +131,39 @@ PolicyMap::~PolicyMap() {
 
 const PolicyMap::Entry* PolicyMap::Get(const std::string& policy) const {
   auto entry = map_.find(policy);
-  return entry == map_.end() ? nullptr : &entry->second;
+  return entry != map_.end() && !entry->second.IsBlocked() ? &entry->second
+                                                           : nullptr;
 }
 
 PolicyMap::Entry* PolicyMap::GetMutable(const std::string& policy) {
   auto entry = map_.find(policy);
-  return entry == map_.end() ? nullptr : &entry->second;
+  return entry != map_.end() && !entry->second.IsBlocked() ? &entry->second
+                                                           : nullptr;
 }
 
 const base::Value* PolicyMap::GetValue(const std::string& policy) const {
   auto entry = map_.find(policy);
-  return entry == map_.end() ? nullptr : entry->second.value.get();
+  return entry != map_.end() && !entry->second.IsBlocked()
+             ? entry->second.value.get()
+             : nullptr;
 }
 
 base::Value* PolicyMap::GetMutableValue(const std::string& policy) {
   auto entry = map_.find(policy);
-  return entry == map_.end() ? nullptr : entry->second.value.get();
+  return entry != map_.end() && !entry->second.IsBlocked()
+             ? entry->second.value.get()
+             : nullptr;
+}
+
+const PolicyMap::Entry* PolicyMap::GetUntrusted(
+    const std::string& policy) const {
+  auto entry = map_.find(policy);
+  return entry != map_.end() ? &entry->second : nullptr;
+}
+
+PolicyMap::Entry* PolicyMap::GetMutableUntrusted(const std::string& policy) {
+  auto entry = map_.find(policy);
+  return entry != map_.end() ? &entry->second : nullptr;
 }
 
 void PolicyMap::Set(
@@ -202,7 +228,7 @@ std::unique_ptr<PolicyMap> PolicyMap::DeepCopy() const {
 
 void PolicyMap::MergeFrom(const PolicyMap& other) {
   for (const auto& it : other) {
-    const Entry* entry = Get(it.first);
+    const Entry* entry = GetUntrusted(it.first);
     bool same_value = false;
     if (!entry) {
       Set(it.first, it.second.DeepCopy());
@@ -213,14 +239,14 @@ void PolicyMap::MergeFrom(const PolicyMap& other) {
         new_policy.AddConflictingPolicy(*entry);
         Set(it.first, std::move(new_policy));
       } else {
-        GetMutable(it.first)->AddConflictingPolicy(it.second);
+        GetMutableUntrusted(it.first)->AddConflictingPolicy(it.second);
       }
     }
 
     if (entry) {
-      GetMutable(it.first)->AddError(same_value
-                                         ? IDS_POLICY_CONFLICT_SAME_VALUE
-                                         : IDS_POLICY_CONFLICT_DIFF_VALUE);
+      GetMutableUntrusted(it.first)->AddError(
+          same_value ? IDS_POLICY_CONFLICT_SAME_VALUE
+                     : IDS_POLICY_CONFLICT_DIFF_VALUE);
     }
   }
 }
