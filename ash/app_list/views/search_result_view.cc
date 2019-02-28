@@ -479,13 +479,9 @@ void SearchResultView::OnSearchResultActionActivated(size_t index,
       RemoveQueryConfirmationDialog* dialog = new RemoveQueryConfirmationDialog(
           base::BindOnce(&SearchResultView::OnQueryRemovalAccepted,
                          weak_ptr_factory_.GetWeakPtr()),
-          event_flags);
+          event_flags, list_view_->app_list_main_view()->contents_view());
 
-      // Calculate confirmation dialog's origin in screen coordinates.
-      gfx::Rect search_box_rect = list_view_->app_list_main_view()
-                                      ->search_box_view()
-                                      ->GetBoundsInScreen();
-      dialog->Show(GetWidget()->GetNativeWindow(), search_box_rect);
+      dialog->Show(GetWidget()->GetNativeWindow());
     } else if (button_action ==
                ash::OmniBoxZeroStateAction::kAppendSuggestion) {
       RecordZeroStateSearchResultUserActionHistogram(
