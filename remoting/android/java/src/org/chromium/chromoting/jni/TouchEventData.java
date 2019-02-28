@@ -4,10 +4,14 @@
 
 package org.chromium.chromoting.jni;
 
+import android.support.annotation.IntDef;
 import android.view.MotionEvent;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * This class holds touch event data from a MotionEvent object which will be marshaled across
@@ -18,46 +22,38 @@ public class TouchEventData {
     /**
      * These values are mirrored in the 'EventType' enum in event.proto.
      */
-    public enum EventType {
-        TOUCH_EVENT_UNKNOWN(-1),
-        TOUCH_EVENT_START(1),
-        TOUCH_EVENT_MOVE(2),
-        TOUCH_EVENT_END(3),
-        TOUCH_EVENT_CANCEL(4);
+    @IntDef({EventType.UNKNOWN, EventType.START, EventType.MOVE, EventType.END, EventType.CANCEL})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface EventType {
+        int UNKNOWN = -1;
+        int START = 1;
+        int MOVE = 2;
+        int END = 3;
+        int CANCEL = 4;
+    }
 
-        private final int mValue;
+    /**
+     * Converts an Android MotionEvent masked action value into the corresponding
+     * native touch event value.
+     */
+    public static @EventType int eventTypeFromMaskedAction(int action) {
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_POINTER_DOWN:
+                return EventType.START;
 
-        EventType(int value) {
-            mValue = value;
-        }
+            case MotionEvent.ACTION_MOVE:
+                return EventType.MOVE;
 
-        public int value() {
-            return mValue;
-        }
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_POINTER_UP:
+                return EventType.END;
 
-        /**
-         * Converts an Android MotionEvent masked action value into the corresponding
-         * native touch event value.
-         */
-        public static EventType fromMaskedAction(int action) {
-            switch (action) {
-                case MotionEvent.ACTION_DOWN:
-                case MotionEvent.ACTION_POINTER_DOWN:
-                    return TOUCH_EVENT_START;
+            case MotionEvent.ACTION_CANCEL:
+                return EventType.CANCEL;
 
-                case MotionEvent.ACTION_MOVE:
-                    return TOUCH_EVENT_MOVE;
-
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_POINTER_UP:
-                    return TOUCH_EVENT_END;
-
-                case MotionEvent.ACTION_CANCEL:
-                    return TOUCH_EVENT_CANCEL;
-
-                default:
-                    return TOUCH_EVENT_UNKNOWN;
-            }
+            default:
+                return EventType.UNKNOWN;
         }
     }
 

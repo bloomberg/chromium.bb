@@ -6,6 +6,8 @@ package org.chromium.chromoting;
 
 import android.view.View;
 
+import org.chromium.chromoting.RenderStub.InputFeedbackType;
+
 /**
  * Helper class for mapping a feedback type to the max radius of the feedback animation circle.
  */
@@ -31,16 +33,15 @@ public final class InputFeedbackRadiusMapper {
      * @return the radius of the given feedback type. It may be 0, in which case nothing needs to
      *         be shown.
      */
-    public float getFeedbackRadius(RenderStub.InputFeedbackType feedbackToShow,
-                                   float scaleFactor) {
+    public float getFeedbackRadius(@InputFeedbackType int feedbackToShow, float scaleFactor) {
         switch (feedbackToShow) {
-            case NONE:
+            case InputFeedbackType.NONE:
                 return 0.0f;
-            case SHORT_TOUCH_ANIMATION:
+            case InputFeedbackType.SHORT_TOUCH_ANIMATION:
                 return mSmallFeedbackPixelRadius / scaleFactor;
-            case LONG_TOUCH_ANIMATION:
+            case InputFeedbackType.LONG_TOUCH_ANIMATION:
                 return mLargeFeedbackPixelRadius / scaleFactor;
-            case LONG_TRACKPAD_ANIMATION:
+            case InputFeedbackType.LONG_TRACKPAD_ANIMATION:
                 // The size of the longpress trackpad animation is supposed to be close to the
                 // size of the cursor so it doesn't need to be normalized and should be scaled
                 // with the canvas.

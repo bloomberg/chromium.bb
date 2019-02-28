@@ -57,14 +57,16 @@ public interface InputStrategyInterface {
      *
      * @return The feedback to display when a short press occurs.
      */
-    RenderStub.InputFeedbackType getShortPressFeedbackType();
+    @RenderStub.InputFeedbackType
+    int getShortPressFeedbackType();
 
     /**
      * Returns the feedback animation type to use for a long press.
      *
      * @return The feedback to display when a long press occurs.
      */
-    RenderStub.InputFeedbackType getLongPressFeedbackType();
+    @RenderStub.InputFeedbackType
+    int getLongPressFeedbackType();
 
     /**
      * Indicates whether this input mode is an indirect input mode.  Indirect input modes manipulate

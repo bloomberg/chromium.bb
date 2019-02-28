@@ -7,6 +7,8 @@ package org.chromium.chromoting;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -16,6 +18,8 @@ import org.chromium.base.Log;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -28,12 +32,15 @@ import java.util.Scanner;
 /** Helper for fetching and modifying the host list. */
 @SuppressWarnings("JavaLangClash")
 public class HostListManager {
-    public enum Error {
-        AUTH_FAILED,
-        NETWORK_ERROR,
-        SERVICE_UNAVAILABLE,
-        UNEXPECTED_RESPONSE,
-        UNKNOWN,
+    @IntDef({Error.AUTH_FAILED, Error.NETWORK_ERROR, Error.SERVICE_UNAVAILABLE,
+            Error.UNEXPECTED_RESPONSE, Error.UNKNOWN})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Error {
+        int AUTH_FAILED = 0;
+        int NETWORK_ERROR = 1;
+        int SERVICE_UNAVAILABLE = 2;
+        int UNEXPECTED_RESPONSE = 3;
+        int UNKNOWN = 4;
     }
 
     /** Callback for receiving the host list, or getting notified of an error. */
@@ -41,7 +48,7 @@ public class HostListManager {
         void onHostListReceived(HostInfo[] response);
         void onHostUpdated();
         void onHostDeleted();
-        void onError(Error error);
+        void onError(@Error int error);
     }
 
     /**
@@ -50,9 +57,9 @@ public class HostListManager {
      * If the request succeeds, |error| will be null and |body| will not be null.
      **/
     private static class Response {
-        public final Error error;
+        public final @Error Integer error;
         public final String body;
-        public Response(Error error, String body) {
+        public Response(@Nullable @Error Integer error, String body) {
             this.error = error;
             this.body = body;
         }
@@ -220,9 +227,9 @@ public class HostListManager {
     }
 
     /** Posts error to callback on main thread. */
-    private void postError(Callback callback, Error error) {
+    private void postError(Callback callback, @Error int error) {
         final Callback callbackFinal = callback;
-        final Error errorFinal = error;
+        final @Error int errorFinal = error;
         mMainThread.post(new Runnable() {
             @Override
             public void run() {
@@ -258,7 +265,9 @@ public class HostListManager {
     private static Response sendRequest(String authToken, String url, String method,
                                         String requestContentType, String requestBody) {
         HttpURLConnection link = null;
-        Error error = null;
+        @Nullable
+        @Error
+        Integer error = null;
         try {
             link = (HttpURLConnection) new URL(url).openConnection();
             link.setRequestMethod(method);

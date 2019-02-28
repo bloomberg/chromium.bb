@@ -40,5 +40,5 @@ public interface InputStub {
     void sendTextEvent(String text);
 
     /** Sends a set of {@link TouchEventData}. */
-    void sendTouchEvent(TouchEventData.EventType eventType, TouchEventData[] data);
+    void sendTouchEvent(@TouchEventData.EventType int eventType, TouchEventData[] data);
 }

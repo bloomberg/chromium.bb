@@ -5,8 +5,12 @@
 package org.chromium.chromoting;
 
 import android.content.Context;
+import android.support.annotation.IntDef;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * Helper class for disambiguating whether to treat a two-finger gesture as a swipe or a pinch.
@@ -15,12 +19,14 @@ import android.view.ViewConfiguration;
  */
 public class SwipePinchDetector {
     /** Current state of the gesture. */
-    private enum State {
-        UNKNOWN,
-        SWIPE,
-        PINCH
+    @IntDef({State.UNKNOWN, State.SWIPE, State.PINCH})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface State {
+        int UNKNOWN = 0;
+        int SWIPE = 1;
+        int PINCH = 2;
     }
-    private State mState = State.UNKNOWN;
+    private @State int mState = State.UNKNOWN;
 
     /** Initial coordinates of the two pointers in the current gesture. */
     private float mFirstX0;

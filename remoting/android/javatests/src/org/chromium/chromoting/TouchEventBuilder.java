@@ -11,7 +11,7 @@ import java.util.ArrayList;
 /** A helper class to build a {@link MockInputStub.TouchEvent}. */
 public final class TouchEventBuilder {
     private final ArrayList<TouchEventData> mData;
-    private TouchEventData.EventType mEventType;
+    private @TouchEventData.EventType int mEventType;
 
     // Following fields are the of the pending TouchEventData. They will be added to {@link #data}
     // by calling appendData().
@@ -28,7 +28,7 @@ public final class TouchEventBuilder {
         clear();
     }
 
-    public TouchEventBuilder withEventType(TouchEventData.EventType eventType) {
+    public TouchEventBuilder withEventType(@TouchEventData.EventType int eventType) {
         mEventType = eventType;
         return this;
     }
@@ -79,7 +79,7 @@ public final class TouchEventBuilder {
     }
 
     private void clear() {
-        mEventType = TouchEventData.EventType.TOUCH_EVENT_UNKNOWN;
+        mEventType = TouchEventData.EventType.UNKNOWN;
         mData.clear();
         resetPending();
     }

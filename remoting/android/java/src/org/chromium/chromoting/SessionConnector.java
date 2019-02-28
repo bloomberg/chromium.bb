@@ -81,12 +81,13 @@ public class SessionConnector implements ConnectionListener, HostListManager.Cal
     }
 
     @Override
-    public void onConnectionState(ConnectionListener.State state, ConnectionListener.Error error) {
+    public void onConnectionState(
+            @ConnectionListener.State int state, @ConnectionListener.Error int error) {
         switch (state) {
-            case CONNECTED:
+            case ConnectionListener.State.CONNECTED:
                 mWasConnected = true;
                 break;
-            case FAILED:
+            case ConnectionListener.State.FAILED:
                 // The host is offline, which may mean the JID is out of date, so refresh the host
                 // list and try to connect again.
                 if (error == ConnectionListener.Error.PEER_IS_OFFLINE && !mWasConnected
@@ -139,7 +140,7 @@ public class SessionConnector implements ConnectionListener, HostListManager.Cal
     }
 
     @Override
-    public void onError(HostListManager.Error error) {
+    public void onError(@HostListManager.Error int error) {
         // Connection failed and reloading the host list also failed, so report the connection
         // error.
         mConnectionListener.onConnectionState(ConnectionListener.State.FAILED,
