@@ -872,7 +872,7 @@ void DocumentMarkerController::RemoveMarkersFromList(
   }
 
   if (needs_repainting) {
-    const Node& node = *iterator->key;
+    const Text& node = *iterator->key;
     InvalidatePaintForNode(node);
     InvalidatePaintForTickmarks(node);
   }
@@ -927,22 +927,21 @@ bool DocumentMarkerController::SetTextMatchMarkersActive(
 
   bool marker_found = false;
   for (Node& node : range.Nodes()) {
+    if (!node.IsTextNode())
+      continue;
     int start_offset = node == start_container ? container_start_offset : 0;
     int end_offset = node == end_container ? container_end_offset : INT_MAX;
-    marker_found |=
-        SetTextMatchMarkersActive(&node, start_offset, end_offset, active);
+    marker_found |= SetTextMatchMarkersActive(ToText(node), start_offset,
+                                              end_offset, active);
   }
   return marker_found;
 }
 
-bool DocumentMarkerController::SetTextMatchMarkersActive(const Node* node,
+bool DocumentMarkerController::SetTextMatchMarkersActive(const Text& text,
                                                          unsigned start_offset,
                                                          unsigned end_offset,
                                                          bool active) {
-  // TODO(yoichio): Make this function to take Text instead of Node.
-  if (!node->IsTextNode())
-    return false;
-  MarkerLists* markers = markers_.at(ToText(node));
+  MarkerLists* markers = markers_.at(&text);
   if (!markers)
     return false;
 
@@ -956,7 +955,7 @@ bool DocumentMarkerController::SetTextMatchMarkersActive(const Node* node,
 
   if (!doc_dirty)
     return false;
-  InvalidatePaintForNode(*node);
+  InvalidatePaintForNode(text);
   return true;
 }
 

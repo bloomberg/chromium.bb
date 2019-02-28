@@ -92,9 +92,9 @@ class CORE_EXPORT DocumentMarkerController final
       DocumentMarker::MarkerTypes = DocumentMarker::MarkerTypes::All());
   // Returns true if markers within a range are found.
   bool SetTextMatchMarkersActive(const EphemeralRange&, bool);
-  // Returns true if markers within a range defined by a node, |startOffset| and
-  // |endOffset| are found.
-  bool SetTextMatchMarkersActive(const Node*,
+  // Returns true if markers within a range defined by a text node,
+  // |start_offset| and |end_offset| are found.
+  bool SetTextMatchMarkersActive(const Text&,
                                  unsigned start_offset,
                                  unsigned end_offset,
                                  bool);
