@@ -48,6 +48,9 @@ public class WebappCustomTabTimeSpentLogger {
             case LaunchSourceType.WEBAPK:
                 umaSuffix = ".WebApk";
                 break;
+            case LaunchSourceType.MEDIA_LAUNCHER_ACTIVITY:
+                umaSuffix = ".MediaLauncherActivity";
+                break;
             default:
                 umaSuffix = ".Other";
                 break;
