@@ -8,6 +8,8 @@ source_set("common") {
   sources = [
     "content_capture_data.cc",
     "content_capture_data.h",
+    "content_capture_features.cc",
+    "content_capture_features.h",
   ]
 
   deps = [
