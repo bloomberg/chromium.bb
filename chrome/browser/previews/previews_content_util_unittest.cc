@@ -339,7 +339,7 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
                 &user_data, GURL("https://www.google.com"),
                 content::SERVER_LITE_PAGE_ON | content::SERVER_LOFI_ON |
                     content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
-                enabled_previews_decider()));
+                enabled_previews_decider(), nullptr));
   histogram_tester.ExpectUniqueSample(
       "Previews.Triggered.EffectiveConnectionType2.LitePage",
       static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_2G), 1);
@@ -357,7 +357,7 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
       content::LITE_PAGE_REDIRECT_ON,
       previews::DetermineCommittedClientPreviewsState(
           &user_data, GURL("https://litepages.googlezip.net/?u=google.com"),
-          lite_page_redirect_enabled, enabled_previews_decider()));
+          lite_page_redirect_enabled, enabled_previews_decider(), nullptr));
   histogram_tester.ExpectUniqueSample(
       "Previews.Triggered.EffectiveConnectionType2.LitePageRedirect",
       static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_2G), 1);
@@ -365,10 +365,11 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
       "Previews.Triggered.EffectiveConnectionType2", 2);
 
   // Verify LITE_PAGE_REDIRECT_ON not committed for non-lite-page-sever URL.
-  EXPECT_NE(content::LITE_PAGE_REDIRECT_ON,
-            previews::DetermineCommittedClientPreviewsState(
-                &user_data, GURL("https://www.google.com"),
-                lite_page_redirect_enabled, enabled_previews_decider()));
+  EXPECT_NE(
+      content::LITE_PAGE_REDIRECT_ON,
+      previews::DetermineCommittedClientPreviewsState(
+          &user_data, GURL("https://www.google.com"),
+          lite_page_redirect_enabled, enabled_previews_decider(), nullptr));
   histogram_tester.ExpectUniqueSample(
       "Previews.Triggered.EffectiveConnectionType2.ResourceLoadingHints",
       static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_2G), 1);
@@ -380,7 +381,7 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
             previews::DetermineCommittedClientPreviewsState(
                 &user_data, GURL("https://www.google.com"),
                 content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
-                enabled_previews_decider()));
+                enabled_previews_decider(), nullptr));
   histogram_tester.ExpectUniqueSample(
       "Previews.Triggered.EffectiveConnectionType2.NoScript",
       static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_2G), 1);
@@ -396,7 +397,7 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
                 &user_data, GURL("https://www.google.com"),
                 content::CLIENT_LOFI_ON | content::NOSCRIPT_ON |
                     content::RESOURCE_LOADING_HINTS_ON,
-                enabled_previews_decider()));
+                enabled_previews_decider(), nullptr));
   histogram_tester.ExpectBucketCount(
       "Previews.Triggered.EffectiveConnectionType2.ResourceLoadingHints",
       static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G), 1);
@@ -409,7 +410,7 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
                 &user_data, GURL("http://www.google.com"),
                 content::CLIENT_LOFI_ON | content::NOSCRIPT_ON |
                     content::RESOURCE_LOADING_HINTS_ON,
-                enabled_previews_decider()));
+                enabled_previews_decider(), nullptr));
   histogram_tester.ExpectUniqueSample(
       "Previews.Triggered.EffectiveConnectionType2.LoFi",
       static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G), 1);
@@ -420,7 +421,7 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
   EXPECT_EQ(content::CLIENT_LOFI_ON,
             previews::DetermineCommittedClientPreviewsState(
                 &user_data, GURL("https://www.google.com"),
-                content::CLIENT_LOFI_ON, enabled_previews_decider()));
+                content::CLIENT_LOFI_ON, enabled_previews_decider(), nullptr));
   histogram_tester.ExpectUniqueSample(
       "Previews.Triggered.EffectiveConnectionType2.LoFi",
       static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G), 2);
@@ -431,7 +432,7 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
   EXPECT_EQ(content::NOSCRIPT_ON,
             previews::DetermineCommittedClientPreviewsState(
                 &user_data, GURL("https://www.google.com"),
-                content::NOSCRIPT_ON, enabled_previews_decider()));
+                content::NOSCRIPT_ON, enabled_previews_decider(), nullptr));
 }
 
 TEST_F(PreviewsContentUtilTest,
@@ -445,7 +446,7 @@ TEST_F(PreviewsContentUtilTest,
             previews::DetermineCommittedClientPreviewsState(
                 &user_data, GURL("https://www.google.com"),
                 content::CLIENT_LOFI_ON | content::NOSCRIPT_ON,
-                enabled_previews_decider()));
+                enabled_previews_decider(), nullptr));
 }
 
 TEST_F(PreviewsContentUtilTest, GetMainFramePreviewsType) {

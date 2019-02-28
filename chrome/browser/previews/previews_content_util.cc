@@ -4,11 +4,14 @@
 
 #include "chrome/browser/previews/previews_content_util.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
@@ -18,8 +21,10 @@
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_lite_page_redirect.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
@@ -27,6 +32,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/url_util.h"
 #include "net/nqe/effective_connection_type.h"
+#include "services/network/public/cpp/features.h"
 
 namespace previews {
 
@@ -150,6 +156,38 @@ bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
   return true;
 }
 
+std::unique_ptr<PreviewsUserData::ServerLitePageInfo>
+CreateServerLitePageInfoFromNavigationHandle(
+    content::NavigationHandle* navigation_handle) {
+  auto server_lite_page_info =
+      std::make_unique<PreviewsUserData::ServerLitePageInfo>();
+
+  server_lite_page_info->original_navigation_start =
+      navigation_handle->NavigationStart();
+
+  const net::HttpRequestHeaders& headers =
+      navigation_handle->GetRequestHeaders();
+
+  base::Optional<uint64_t> page_id = data_reduction_proxy::
+      DataReductionProxyRequestOptions::GetPageIdFromRequestHeaders(headers);
+  if (page_id) {
+    server_lite_page_info->page_id = page_id.value();
+  }
+
+  base::Optional<std::string> session_key =
+      data_reduction_proxy::DataReductionProxyRequestOptions::
+          GetSessionKeyFromRequestHeaders(headers);
+  if (session_key) {
+    server_lite_page_info->drp_session_key = session_key.value();
+  }
+
+  server_lite_page_info->status = ServerLitePageStatus::kSuccess;
+
+  server_lite_page_info->restart_count = 0;
+
+  return server_lite_page_info;
+}
+
 bool HasEnabledPreviews(content::PreviewsState previews_state) {
   return previews_state != content::PREVIEWS_UNSPECIFIED &&
          !(previews_state & content::PREVIEWS_OFF) &&
@@ -257,7 +295,8 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     previews::PreviewsUserData* previews_data,
     const GURL& url,
     content::PreviewsState previews_state,
-    const previews::PreviewsDecider* previews_decider) {
+    const previews::PreviewsDecider* previews_decider,
+    content::NavigationHandle* navigation_handle) {
   bool is_https = url.SchemeIs(url::kHttpsScheme);
 
   // Record whether the hint cache has a matching entry for this committed URL.
@@ -296,6 +335,13 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
   // Check if a LITE_PAGE_REDIRECT preview was actually served.
   if (previews_state & content::LITE_PAGE_REDIRECT_ON) {
     if (IsLitePageRedirectPreviewURL(url)) {
+      if (navigation_handle &&
+          base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+          base::FeatureList::IsEnabled(
+              previews::features::kHTTPSServerPreviewsUsingURLLoader)) {
+        previews_data->set_server_lite_page_info(
+            CreateServerLitePageInfoFromNavigationHandle(navigation_handle));
+      }
       LogCommittedPreview(previews_data, PreviewsType::LITE_PAGE_REDIRECT);
       return content::LITE_PAGE_REDIRECT_ON;
     }

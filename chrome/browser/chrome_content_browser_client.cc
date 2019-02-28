@@ -5384,7 +5384,8 @@ ChromeContentBrowserClient::DetermineCommittedPreviewsForURL(
     data_reduction_proxy::DataReductionProxyData* drp_data,
     previews::PreviewsUserData* previews_user_data,
     const previews::PreviewsDecider* previews_decider,
-    content::PreviewsState initial_state) {
+    content::PreviewsState initial_state,
+    content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!previews::HasEnabledPreviews(initial_state))
     return content::PREVIEWS_OFF;
@@ -5396,7 +5397,8 @@ ChromeContentBrowserClient::DetermineCommittedPreviewsForURL(
 
   // Check the various other client previews types.
   return previews::DetermineCommittedClientPreviewsState(
-      previews_user_data, url, previews_state, previews_decider);
+      previews_user_data, url, previews_state, previews_decider,
+      navigation_handle);
 }
 
 content::PreviewsState ChromeContentBrowserClient::DetermineCommittedPreviews(
@@ -5478,7 +5480,7 @@ content::PreviewsState ChromeContentBrowserClient::DetermineCommittedPreviews(
   // Determine effective PreviewsState for this committed main frame response.
   content::PreviewsState committed_state = DetermineCommittedPreviewsForURL(
       navigation_handle->GetURL(), drp_data.get(), previews_user_data,
-      previews_decider_impl, initial_state);
+      previews_decider_impl, initial_state, navigation_handle);
 
   // Double check that we never serve a preview when we have a
   // cache-control:no-transform directive.

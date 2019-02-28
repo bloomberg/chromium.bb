@@ -137,6 +137,7 @@ class PreviewsLitePageServerBrowserTest
     cmd->AppendSwitchASCII("force-effective-connection-type", "Slow-2G");
     cmd->AppendSwitchASCII("force-variation-ids", "42");
     cmd->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
+    cmd->AppendSwitch("enable-data-reduction-proxy-force-pingback");
   }
 
   void SetUp() override {
@@ -229,6 +230,14 @@ class PreviewsLitePageServerBrowserTest
     slow_http_url_ = slow_http_server_->GetURL(kOriginHost, "/");
     ASSERT_TRUE(slow_http_url_.SchemeIs(url::kHttpScheme));
 
+    pingback_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
+
+    pingback_server_->RegisterRequestHandler(base::BindRepeating(
+        &PreviewsLitePageServerBrowserTest::HandlePingbackRequest,
+        base::Unretained(this)));
+    ASSERT_TRUE(pingback_server_->Start());
+
     std::map<std::string, std::string> feature_parameters = {
         {"previews_host", previews_server_url().spec()},
         {"blacklisted_path_suffixes", ".mp4,.jpg"},
@@ -237,6 +246,10 @@ class PreviewsLitePageServerBrowserTest
         {"navigation_timeout_milliseconds",
          use_timeout ? base::NumberToString(kTimeoutMs) : "60000"},
         {"control_group", is_control ? "true" : "false"}};
+
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        "data-reduction-proxy-pingback-url",
+        pingback_server_->GetURL("pingback.com", "/").spec());
 
     scoped_parameterized_feature_list_.InitAndEnableFeatureWithParameters(
         previews::features::kLitePageServerPreviews, feature_parameters);
@@ -519,6 +532,12 @@ class PreviewsLitePageServerBrowserTest
   const GURL& subframe_url() const { return subframe_url_; }
   int subresources_requested() const { return subresources_requested_; }
 
+  void WaitForPingback() {
+    base::RunLoop run_loop;
+    waiting_for_pingback_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
  private:
   std::unique_ptr<net::test_server::HttpResponse> HandleRedirectRequest(
       const net::test_server::HttpRequest& request) {
@@ -527,6 +546,7 @@ class PreviewsLitePageServerBrowserTest
       std::unique_ptr<net::test_server::BasicHttpResponse> response =
           std::make_unique<net::test_server::BasicHttpResponse>();
       response->set_code(net::HTTP_TEMPORARY_REDIRECT);
+      response->set_content_type("text/html");
       response->AddCustomHeader("Location", https_url().spec());
       return std::move(response);
     }
@@ -546,6 +566,7 @@ class PreviewsLitePageServerBrowserTest
       std::unique_ptr<net::test_server::BasicHttpResponse> response =
           std::make_unique<net::test_server::BasicHttpResponse>();
       response->set_code(net::HTTP_TEMPORARY_REDIRECT);
+      response->set_content_type("text/html");
 
       if (request.GetURL().SchemeIsCryptographic()) {
         response->AddCustomHeader("Location", http_redirect_loop_url().spec());
@@ -576,6 +597,19 @@ class PreviewsLitePageServerBrowserTest
     return std::move(response);
   }
 
+  std::unique_ptr<net::test_server::HttpResponse> HandlePingbackRequest(
+      const net::test_server::HttpRequest& request) {
+    std::unique_ptr<net::test_server::BasicHttpResponse> response =
+        std::make_unique<net::test_server::BasicHttpResponse>();
+    response->set_code(net::HTTP_OK);
+
+    if (!waiting_for_pingback_closure_.is_null()) {
+      std::move(waiting_for_pingback_closure_).Run();
+    }
+
+    return response;
+  }
+
   std::unique_ptr<net::test_server::HttpResponse> HandleResourceRequest(
       const net::test_server::HttpRequest& request) {
     std::unique_ptr<net::test_server::BasicHttpResponse> response =
@@ -590,6 +624,8 @@ class PreviewsLitePageServerBrowserTest
       response->set_code(net::HTTP_OK);
       return response;
     }
+
+    response->set_content_type("text/html");
 
     std::string original_url_str;
 
@@ -651,6 +687,7 @@ class PreviewsLitePageServerBrowserTest
     if (delay_ms > 0) {
       response = std::make_unique<net::test_server::DelayedHttpResponse>(
           base::TimeDelta::FromMilliseconds(delay_ms));
+      response->set_content_type("text/html");
     }
 
     std::string code_query_param;
@@ -705,7 +742,6 @@ class PreviewsLitePageServerBrowserTest
         response->set_code(net::HTTP_SERVICE_UNAVAILABLE);
         break;
       case kSubresources:
-        response->set_content_type("text/html");
         response->set_content(subresource_body);
         break;
       default:
@@ -732,6 +768,7 @@ class PreviewsLitePageServerBrowserTest
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
   std::unique_ptr<net::EmbeddedTestServer> slow_http_server_;
+  std::unique_ptr<net::EmbeddedTestServer> pingback_server_;
   GURL https_url_;
   GURL base_https_lite_page_url_;
   GURL https_media_url_;
@@ -746,6 +783,7 @@ class PreviewsLitePageServerBrowserTest
   GURL previews_server_url_;
   GURL slow_http_url_;
   int subresources_requested_ = 0;
+  base::OnceClosure waiting_for_pingback_closure_;
 };
 
 // True if testing using the URLLoader Interceptor implementation.
@@ -1316,6 +1354,16 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
   // Navigate back again.
   GetWebContents()->GetController().GoBack();
   VerifyPreviewLoaded();
+}
+
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
+                       DISABLE_ON_WIN_MAC(LitePageCreatesPingback)) {
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+  VerifyPreviewLoaded();
+
+  // Starting a new page load will send a pingback for the previous page load.
+  GetWebContents()->GetController().Reload(content::ReloadType::NORMAL, false);
+  WaitForPingback();
 }
 
 class PreviewsLitePageServerTimeoutBrowserTest

@@ -576,7 +576,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       data_reduction_proxy::DataReductionProxyData* drp_data,
       previews::PreviewsUserData* previews_user_data,
       const previews::PreviewsDecider* previews_decider,
-      content::PreviewsState initial_state);
+      content::PreviewsState initial_state,
+      content::NavigationHandle* navigation_handle);
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);

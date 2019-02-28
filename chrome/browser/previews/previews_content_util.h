@@ -42,7 +42,8 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     previews::PreviewsUserData* previews_data,
     const GURL& url,
     content::PreviewsState previews_state,
-    const previews::PreviewsDecider* previews_decider);
+    const previews::PreviewsDecider* previews_decider,
+    content::NavigationHandle* navigation_handle);
 
 // Returns the effective PreviewsType known on a main frame basis given the
 // |previews_state| bitmask for the committed main frame. This uses the same
