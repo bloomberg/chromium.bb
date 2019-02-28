@@ -37,11 +37,7 @@ DataSaverSiteBreakdownMetricsObserver::OnCommit(
   // will be called is in MetricsWebContentsObserver's destructor, which is
   // called in WebContents destructor.
   browser_context_ = navigation_handle->GetWebContents()->GetBrowserContext();
-
-  // Use Virtual URL instead of actual host.
-  committed_host_ = navigation_handle->GetWebContents()
-                        ->GetLastCommittedURL()
-                        .HostNoBrackets();
+  committed_host_ = navigation_handle->GetURL().HostNoBrackets();
   return CONTINUE_OBSERVING;
 }
 

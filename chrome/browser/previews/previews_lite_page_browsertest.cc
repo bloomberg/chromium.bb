@@ -1312,8 +1312,7 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
   ui_test_utils::NavigateToURL(browser(), GURL("http://www.google.com"));
 
   EXPECT_EQ(GetTotalOriginalContentLength() - GetTotalDataUsage(), 40U);
-  // Headers, etc. will make data usage larger than content length.
-  EXPECT_LE(20U, GetDataUsage());
+  EXPECT_EQ(GetDataUsage(), 20U);
 }
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,

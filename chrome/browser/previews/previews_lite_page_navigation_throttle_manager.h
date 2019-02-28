@@ -38,8 +38,7 @@ class PreviewsLitePageNavigationThrottleManager {
   // Generates a new page id for a request to the previews server.
   virtual uint64_t GeneratePageID() = 0;
 
-  // Reports data savings to Data Saver. Only the difference in |original_bytes|
-  // and |network_bytes| will be updated in the data saver calls.
+  // Reports data savings to Data Saver.
   virtual void ReportDataSavings(int64_t network_bytes,
                                  int64_t original_bytes,
                                  const std::string& host) = 0;
