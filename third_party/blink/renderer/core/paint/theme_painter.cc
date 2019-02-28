@@ -193,14 +193,6 @@ bool ThemePainter::Paint(const LayoutObject& o,
     case kMediaTimeRemainingPart:
     case kMediaCurrentTimePart:
     case kMediaControlsBackgroundPart:
-    case kMediaCastOffButtonPart:
-    case kMediaOverlayCastOffButtonPart:
-    case kMediaTrackSelectionCheckmarkPart:
-    case kMediaClosedCaptionsIconPart:
-    case kMediaSubtitlesIconPart:
-    case kMediaOverflowMenuButtonPart:
-    case kMediaRemotingCastIconPart:
-    case kMediaDownloadIconPart:
       return true;
     case kMenulistButtonPart:
     case kTextFieldPart:

@@ -645,8 +645,10 @@
     "manual",
 
     // -webkit-appearance
-    // The order here must match the order in the ControlPart enum in ThemeTypes.h.
-    // All appearance values that should be accepted by the parser should be listed between 'checkbox' and 'textarea':
+    // The order here must match the order in the ControlPart enum in
+    // theme_types.h.
+    // All appearance values that should be accepted by the parser should be
+    // listed between 'checkbox' and 'textarea'.
     "checkbox",
     "radio",
     "push-button",
@@ -671,14 +673,6 @@
     "media-controls-fullscreen-background",
     "media-current-time-display",
     "media-time-remaining-display",
-    "-internal-media-cast-off-button",
-    "-internal-media-overlay-cast-off-button",
-    "-internal-media-track-selection-checkmark",
-    "-internal-media-closed-captions-icon",
-    "-internal-media-subtitles-icon",
-    "-internal-media-overflow-button",
-    "-internal-media-download-button",
-    "-internal-media-remoting-cast-icon",
     "-internal-media-control",
     "menulist",
     "menulist-button",
@@ -696,8 +690,6 @@
     "searchfield-cancel-button",
     "textfield",
     "textarea",
-    // An appearance value that should not be accepted by the parser:
-    "caps-lock-indicator",
 
     //
     // border-image
