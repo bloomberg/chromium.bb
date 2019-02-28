@@ -118,21 +118,19 @@ struct URLRequest {
   // Additional HTTP request headers.
   HttpRequestHeaders headers;
 
-  // HTTP request headers that has been internally added. Some consumers want to
-  // set additional HTTP headers, but such internal headers must be ignored by
-  // CORS check (which run inside Network Service), so the values are stored
-  // here (rather than in |headers|) and later merged into the |headers| after
-  // CORS check.
-  //
-  // *Warning*: Adding new headers to this list is strongly discouraged. What
-  // usually you need is to update the fetch spec, and add your custom headers
-  // to the CORS-safelisted header so to pass proper CORS checks. 'Proxy-' or
-  // 'Sec-' prefixes are also available. See cors::IsCORSSafelistedHeader and
-  // cors::IsForbiddenHeader for details.
-  //
-  // You should ask Loading and CORS OWNERS when you need to add your own
-  // headers to the list.
-  HttpRequestHeaders cors_exempt_headers;  // See Note above before using.
+  // 'X-Requested-With' header value. Some consumers want to set this header,
+  // but such internal headers must be ignored by CORS checks (which run inside
+  // Network Service), so the value is stored here (rather than in |headers|)
+  // and later populated in the headers after CORS check.
+  // TODO(toyoshim): Remove it once PPAPI is deprecated.
+  string requested_with_header;
+
+  // 'X-Client-Data' header value. See comments for |requested_with_header|
+  // above, too.
+  // TODO(toyoshim): Consider to rename this to have a chrome specific prefix
+  // such as 'Chrome-' instead of 'X-', and to add 'Chrome-' prefixed header
+  // names into the forbidden header name list.
+  string client_data_header;
 
   // net::URLRequest load flags.
   int32 load_flags;

@@ -57,7 +57,8 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
       net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN;
   original.is_prerendering = false;
   original.headers.SetHeader("Accept", "text/xml");
-  original.cors_exempt_headers.SetHeader("X-Requested-With", "ForTesting");
+  original.requested_with_header = "dummy_requested_with_header";
+  original.client_data_header = "dummy_client_data_header";
   original.load_flags = 3;
   original.allow_credentials = true;
   original.plugin_child_id = 5;

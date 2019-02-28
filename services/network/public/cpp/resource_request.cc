@@ -22,8 +22,8 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
          referrer_policy == request.referrer_policy &&
          is_prerendering == request.is_prerendering &&
          headers.ToString() == request.headers.ToString() &&
-         cors_exempt_headers.ToString() ==
-             request.cors_exempt_headers.ToString() &&
+         requested_with_header == request.requested_with_header &&
+         client_data_header == request.client_data_header &&
          load_flags == request.load_flags &&
          allow_credentials == request.allow_credentials &&
          plugin_child_id == request.plugin_child_id &&

@@ -47,7 +47,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
       net::URLRequest::NEVER_CLEAR_REFERRER;
   bool is_prerendering = false;
   net::HttpRequestHeaders headers;
-  net::HttpRequestHeaders cors_exempt_headers;
+  std::string requested_with_header;
+  std::string client_data_header;
   int load_flags = 0;
   bool allow_credentials = true;
   int plugin_child_id = -1;
