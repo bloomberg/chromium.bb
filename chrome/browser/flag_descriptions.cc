@@ -2707,9 +2707,9 @@ const char kThirdPartyDoodlesDescription[] =
 
 #if BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
 
-const char kAndroidNightModeName[] = "Enable night mode based on user settings";
+const char kAndroidNightModeName[] = "Android Chrome UI dark mode";
 const char kAndroidNightModeDescription[] =
-    "If enabled, user can enable night mode through settings.";
+    "If enabled, user can enable Android Chrome UI dark mode through settings.";
 
 #endif  // BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
 
