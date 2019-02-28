@@ -71,10 +71,10 @@ class FakeSecureMessageDelegateFactory
 
 }  // namespace
 
-class CryptAuthKeyProofComputerImplTest : public testing::Test {
+class DeviceSyncCryptAuthKeyProofComputerImplTest : public testing::Test {
  protected:
-  CryptAuthKeyProofComputerImplTest() = default;
-  ~CryptAuthKeyProofComputerImplTest() override = default;
+  DeviceSyncCryptAuthKeyProofComputerImplTest() = default;
+  ~DeviceSyncCryptAuthKeyProofComputerImplTest() override = default;
 
   void SetUp() override {
     fake_secure_message_delegate_factory_ =
@@ -143,10 +143,11 @@ class CryptAuthKeyProofComputerImplTest : public testing::Test {
 
   std::unique_ptr<CryptAuthKeyProofComputer> key_proof_computer_;
 
-  DISALLOW_COPY_AND_ASSIGN(CryptAuthKeyProofComputerImplTest);
+  DISALLOW_COPY_AND_ASSIGN(DeviceSyncCryptAuthKeyProofComputerImplTest);
 };
 
-TEST_F(CryptAuthKeyProofComputerImplTest, SuccessfulKeyProofComputation) {
+TEST_F(DeviceSyncCryptAuthKeyProofComputerImplTest,
+       SuccessfulKeyProofComputation) {
   std::vector<std::pair<CryptAuthKey, std::string>> key_payload_pairs = {
       {CryptAuthKey(kFakePublicKeyMaterial, kFakePrivateKeyMaterial,
                     CryptAuthKey::Status::kActive, cryptauthv2::KeyType::P256),

@@ -13,11 +13,11 @@ namespace chromeos {
 
 namespace device_sync {
 
-class CryptAuthKeyRegistryImplTest : public testing::Test {
+class DeviceSyncCryptAuthKeyRegistryImplTest : public testing::Test {
  protected:
-  CryptAuthKeyRegistryImplTest() = default;
+  DeviceSyncCryptAuthKeyRegistryImplTest() = default;
 
-  ~CryptAuthKeyRegistryImplTest() override = default;
+  ~DeviceSyncCryptAuthKeyRegistryImplTest() override = default;
 
   void SetUp() override {
     CryptAuthKeyRegistryImpl::RegisterPrefs(pref_service_.registry());
@@ -42,10 +42,10 @@ class CryptAuthKeyRegistryImplTest : public testing::Test {
 
   std::unique_ptr<CryptAuthKeyRegistry> key_registry_;
 
-  DISALLOW_COPY_AND_ASSIGN(CryptAuthKeyRegistryImplTest);
+  DISALLOW_COPY_AND_ASSIGN(DeviceSyncCryptAuthKeyRegistryImplTest);
 };
 
-TEST_F(CryptAuthKeyRegistryImplTest, GetActiveKey_NoActiveKey) {
+TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest, GetActiveKey_NoActiveKey) {
   CryptAuthKey sym_key("symmetric-key", CryptAuthKey::Status::kInactive,
                        cryptauthv2::KeyType::RAW256, "sym-handle");
   key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
@@ -55,7 +55,7 @@ TEST_F(CryptAuthKeyRegistryImplTest, GetActiveKey_NoActiveKey) {
       key_registry()->GetActiveKey(CryptAuthKeyBundle::Name::kUserKeyPair));
 }
 
-TEST_F(CryptAuthKeyRegistryImplTest, GetActiveKey) {
+TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest, GetActiveKey) {
   CryptAuthKey sym_key("symmetric-key", CryptAuthKey::Status::kInactive,
                        cryptauthv2::KeyType::RAW256, "sym-handle");
   CryptAuthKey asym_key("public-key", "private-key",
@@ -72,7 +72,7 @@ TEST_F(CryptAuthKeyRegistryImplTest, GetActiveKey) {
   EXPECT_EQ(asym_key, *key);
 }
 
-TEST_F(CryptAuthKeyRegistryImplTest, AddKey) {
+TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest, AddKey) {
   CryptAuthKey sym_key("symmetric-key", CryptAuthKey::Status::kActive,
                        cryptauthv2::KeyType::RAW256, "sym-handle");
   key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
@@ -117,7 +117,7 @@ TEST_F(CryptAuthKeyRegistryImplTest, AddKey) {
   VerifyPrefValue(expected_dict);
 }
 
-TEST_F(CryptAuthKeyRegistryImplTest, SetActiveKey) {
+TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest, SetActiveKey) {
   CryptAuthKey sym_key("symmetric-key", CryptAuthKey::Status::kInactive,
                        cryptauthv2::KeyType::RAW256, "sym-handle");
   CryptAuthKey asym_key("public-key", "private-key",
@@ -149,7 +149,7 @@ TEST_F(CryptAuthKeyRegistryImplTest, SetActiveKey) {
   VerifyPrefValue(expected_dict);
 }
 
-TEST_F(CryptAuthKeyRegistryImplTest, DeactivateKeys) {
+TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest, DeactivateKeys) {
   CryptAuthKey sym_key("symmetric-key", CryptAuthKey::Status::kInactive,
                        cryptauthv2::KeyType::RAW256, "sym-handle");
   CryptAuthKey asym_key("public-key", "private-key",
@@ -176,7 +176,7 @@ TEST_F(CryptAuthKeyRegistryImplTest, DeactivateKeys) {
   VerifyPrefValue(expected_dict);
 }
 
-TEST_F(CryptAuthKeyRegistryImplTest, DeleteKey) {
+TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest, DeleteKey) {
   CryptAuthKey sym_key("symmetric-key", CryptAuthKey::Status::kInactive,
                        cryptauthv2::KeyType::RAW256, "sym-handle");
   CryptAuthKey asym_key("public-key", "private-key",
@@ -208,7 +208,7 @@ TEST_F(CryptAuthKeyRegistryImplTest, DeleteKey) {
   VerifyPrefValue(expected_dict);
 }
 
-TEST_F(CryptAuthKeyRegistryImplTest, SetKeyDirective) {
+TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest, SetKeyDirective) {
   CryptAuthKey sym_key("symmetric-key", CryptAuthKey::Status::kInactive,
                        cryptauthv2::KeyType::RAW256, "sym-handle");
   key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
@@ -237,7 +237,8 @@ TEST_F(CryptAuthKeyRegistryImplTest, SetKeyDirective) {
   VerifyPrefValue(expected_dict);
 }
 
-TEST_F(CryptAuthKeyRegistryImplTest, ConstructorPopulatesBundlesUsingPref) {
+TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest,
+       ConstructorPopulatesBundlesUsingPref) {
   CryptAuthKey sym_key("symmetric-key", CryptAuthKey::Status::kInactive,
                        cryptauthv2::KeyType::RAW256, "sym-handle");
   key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,

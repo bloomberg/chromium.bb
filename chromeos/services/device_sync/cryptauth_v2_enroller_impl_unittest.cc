@@ -347,11 +347,11 @@ SyncKeysResponse BuildSyncKeysResponse(
 
 }  // namespace
 
-class CryptAuthV2EnrollerImplTest
+class DeviceSyncCryptAuthV2EnrollerImplTest
     : public testing::Test,
       public MockCryptAuthClientFactory::Observer {
  protected:
-  CryptAuthV2EnrollerImplTest()
+  DeviceSyncCryptAuthV2EnrollerImplTest()
       : client_factory_(std::make_unique<MockCryptAuthClientFactory>(
             MockCryptAuthClientFactory::MockType::MAKE_NICE_MOCKS)),
         fake_cryptauth_key_creator_factory_(
@@ -365,7 +365,7 @@ class CryptAuthV2EnrollerImplTest
     client_factory_->AddObserver(this);
   }
 
-  ~CryptAuthV2EnrollerImplTest() override {
+  ~DeviceSyncCryptAuthV2EnrollerImplTest() override {
     client_factory_->RemoveObserver(this);
   }
 
@@ -392,11 +392,12 @@ class CryptAuthV2EnrollerImplTest
   // MockCryptAuthClientFactory::Observer:
   void OnCryptAuthClientCreated(MockCryptAuthClient* client) override {
     ON_CALL(*client, SyncKeys(testing::_, testing::_, testing::_))
-        .WillByDefault(Invoke(this, &CryptAuthV2EnrollerImplTest::OnSyncKeys));
+        .WillByDefault(
+            Invoke(this, &DeviceSyncCryptAuthV2EnrollerImplTest::OnSyncKeys));
 
     ON_CALL(*client, EnrollKeys(testing::_, testing::_, testing::_))
         .WillByDefault(
-            Invoke(this, &CryptAuthV2EnrollerImplTest::OnEnrollKeys));
+            Invoke(this, &DeviceSyncCryptAuthV2EnrollerImplTest::OnEnrollKeys));
 
     ON_CALL(*client, GetAccessTokenUsed())
         .WillByDefault(testing::Return(kAccessTokenUsed));
@@ -408,8 +409,9 @@ class CryptAuthV2EnrollerImplTest
                       client_directive_policy_reference) {
     enroller()->Enroll(
         client_metadata, client_app_metadata, client_directive_policy_reference,
-        base::BindOnce(&CryptAuthV2EnrollerImplTest::OnEnrollmentComplete,
-                       base::Unretained(this)));
+        base::BindOnce(
+            &DeviceSyncCryptAuthV2EnrollerImplTest::OnEnrollmentComplete,
+            base::Unretained(this)));
   }
 
   void OnSyncKeys(const SyncKeysRequest& request,
@@ -554,10 +556,10 @@ class CryptAuthV2EnrollerImplTest
 
   std::unique_ptr<CryptAuthV2Enroller> enroller_;
 
-  DISALLOW_COPY_AND_ASSIGN(CryptAuthV2EnrollerImplTest);
+  DISALLOW_COPY_AND_ASSIGN(DeviceSyncCryptAuthV2EnrollerImplTest);
 };
 
-TEST_F(CryptAuthV2EnrollerImplTest, SuccessfulEnrollment) {
+TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest, SuccessfulEnrollment) {
   // Seed key registry.
   key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
                                  kOldActiveAsymmetricKey);
@@ -660,7 +662,8 @@ TEST_F(CryptAuthV2EnrollerImplTest, SuccessfulEnrollment) {
             *key_registry()->GetKeyBundle(bundle_name));
 }
 
-TEST_F(CryptAuthV2EnrollerImplTest, SuccessfulEnrollment_NoKeysCreated) {
+TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest,
+       SuccessfulEnrollment_NoKeysCreated) {
   key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
                                  kOldActiveAsymmetricKey);
   key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
@@ -696,7 +699,7 @@ TEST_F(CryptAuthV2EnrollerImplTest, SuccessfulEnrollment_NoKeysCreated) {
             enrollment_result());
 }
 
-TEST_F(CryptAuthV2EnrollerImplTest, Failure_ServerOverloaded) {
+TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest, Failure_ServerOverloaded) {
   CallEnroll(GetSampleClientMetadata(), GetSampleClientAppMetadata(),
              GetSamplePreviousClientDirectivePolicyReference());
 
@@ -711,7 +714,7 @@ TEST_F(CryptAuthV2EnrollerImplTest, Failure_ServerOverloaded) {
             enrollment_result());
 }
 
-TEST_F(CryptAuthV2EnrollerImplTest, Failure_MissingSessionId) {
+TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest, Failure_MissingSessionId) {
   CallEnroll(GetSampleClientMetadata(), GetSampleClientAppMetadata(),
              GetSamplePreviousClientDirectivePolicyReference());
 
@@ -727,7 +730,7 @@ TEST_F(CryptAuthV2EnrollerImplTest, Failure_MissingSessionId) {
             enrollment_result());
 }
 
-TEST_F(CryptAuthV2EnrollerImplTest, Failure_MissingClientDirective) {
+TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest, Failure_MissingClientDirective) {
   CallEnroll(GetSampleClientMetadata(), GetSampleClientAppMetadata(),
              GetSamplePreviousClientDirectivePolicyReference());
 
@@ -743,7 +746,8 @@ TEST_F(CryptAuthV2EnrollerImplTest, Failure_MissingClientDirective) {
             enrollment_result());
 }
 
-TEST_F(CryptAuthV2EnrollerImplTest, Failure_InvalidSyncSingleKeyResponsesSize) {
+TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest,
+       Failure_InvalidSyncSingleKeyResponsesSize) {
   CallEnroll(GetSampleClientMetadata(), GetSampleClientAppMetadata(),
              GetSamplePreviousClientDirectivePolicyReference());
 
@@ -759,7 +763,7 @@ TEST_F(CryptAuthV2EnrollerImplTest, Failure_InvalidSyncSingleKeyResponsesSize) {
       enrollment_result());
 }
 
-TEST_F(CryptAuthV2EnrollerImplTest, Failure_InvalidKeyActions_Size) {
+TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest, Failure_InvalidKeyActions_Size) {
   CallEnroll(GetSampleClientMetadata(), GetSampleClientAppMetadata(),
              GetSamplePreviousClientDirectivePolicyReference());
 
@@ -778,7 +782,8 @@ TEST_F(CryptAuthV2EnrollerImplTest, Failure_InvalidKeyActions_Size) {
       enrollment_result());
 }
 
-TEST_F(CryptAuthV2EnrollerImplTest, Failure_InvalidKeyActions_NoActiveKey) {
+TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest,
+       Failure_InvalidKeyActions_NoActiveKey) {
   key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
                                  kOldActiveAsymmetricKey);
 
@@ -803,7 +808,7 @@ TEST_F(CryptAuthV2EnrollerImplTest, Failure_InvalidKeyActions_NoActiveKey) {
       enrollment_result());
 }
 
-TEST_F(CryptAuthV2EnrollerImplTest,
+TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest,
        Failure_InvalidKeyCreationInstructions_UnsupportedKeyType) {
   CallEnroll(GetSampleClientMetadata(), GetSampleClientAppMetadata(),
              GetSamplePreviousClientDirectivePolicyReference());
@@ -824,7 +829,7 @@ TEST_F(CryptAuthV2EnrollerImplTest,
             enrollment_result());
 }
 
-TEST_F(CryptAuthV2EnrollerImplTest,
+TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest,
        Failure_InvalidKeyCreationInstructions_NoServerDiffieHellman) {
   CallEnroll(GetSampleClientMetadata(), GetSampleClientAppMetadata(),
              GetSamplePreviousClientDirectivePolicyReference());
@@ -847,7 +852,7 @@ TEST_F(CryptAuthV2EnrollerImplTest,
             enrollment_result());
 }
 
-TEST_F(CryptAuthV2EnrollerImplTest, Failure_SyncKeysApiCall) {
+TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest, Failure_SyncKeysApiCall) {
   CallEnroll(GetSampleClientMetadata(), GetSampleClientAppMetadata(),
              GetSamplePreviousClientDirectivePolicyReference());
 
@@ -860,7 +865,7 @@ TEST_F(CryptAuthV2EnrollerImplTest, Failure_SyncKeysApiCall) {
       enrollment_result());
 }
 
-TEST_F(CryptAuthV2EnrollerImplTest, Failure_EnrollKeysApiCall) {
+TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest, Failure_EnrollKeysApiCall) {
   CallEnroll(GetSampleClientMetadata(), GetSampleClientAppMetadata(),
              GetSamplePreviousClientDirectivePolicyReference());
 
@@ -889,7 +894,7 @@ TEST_F(CryptAuthV2EnrollerImplTest, Failure_EnrollKeysApiCall) {
             enrollment_result());
 }
 
-TEST_F(CryptAuthV2EnrollerImplTest,
+TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest,
        Failure_Timeout_WaitingForSyncKeysResponse) {
   CallEnroll(GetSampleClientMetadata(), GetSampleClientAppMetadata(),
              GetSamplePreviousClientDirectivePolicyReference());
@@ -905,7 +910,8 @@ TEST_F(CryptAuthV2EnrollerImplTest,
       enrollment_result());
 }
 
-TEST_F(CryptAuthV2EnrollerImplTest, Failure_Timeout_WaitingForKeyCreation) {
+TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest,
+       Failure_Timeout_WaitingForKeyCreation) {
   CallEnroll(GetSampleClientMetadata(), GetSampleClientAppMetadata(),
              GetSamplePreviousClientDirectivePolicyReference());
 
@@ -928,7 +934,7 @@ TEST_F(CryptAuthV2EnrollerImplTest, Failure_Timeout_WaitingForKeyCreation) {
             enrollment_result());
 }
 
-TEST_F(CryptAuthV2EnrollerImplTest,
+TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest,
        Failure_Timeout_WaitingForKeyProofComputation) {
   CallEnroll(GetSampleClientMetadata(), GetSampleClientAppMetadata(),
              GetSamplePreviousClientDirectivePolicyReference());
@@ -960,7 +966,7 @@ TEST_F(CryptAuthV2EnrollerImplTest,
       enrollment_result());
 }
 
-TEST_F(CryptAuthV2EnrollerImplTest,
+TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest,
        Failure_Timeout_WaitingForEnrollKeysResponse) {
   CallEnroll(GetSampleClientMetadata(), GetSampleClientAppMetadata(),
              GetSamplePreviousClientDirectivePolicyReference());
