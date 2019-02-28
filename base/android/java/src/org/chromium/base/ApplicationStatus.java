@@ -216,7 +216,7 @@ public class ApplicationStatus {
         }
     }
 
-    public static boolean isInitialized() {
+    private static boolean isInitialized() {
         synchronized (sActivityInfo) {
             return sCurrentApplicationState != ApplicationState.UNKNOWN;
         }
