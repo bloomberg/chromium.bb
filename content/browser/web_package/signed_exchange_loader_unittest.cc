@@ -118,7 +118,8 @@ TEST_F(SignedExchangeLoaderTest, Simple) {
           false /* should_redirect_to_fallback */, nullptr /* devtools_proxy */,
           nullptr /* reporter */, nullptr /* url_loader_factory */,
           SignedExchangeLoader::URLLoaderThrottlesGetter(),
-          base::RepeatingCallback<int(void)>(), nullptr /* metric_recorder */);
+          base::RepeatingCallback<int(void)>(), nullptr /* metric_recorder */,
+          std::string() /* accept_langs */);
 
   EXPECT_CALL(mock_loader, PauseReadingBodyFromNet());
   signed_exchange_loader->PauseReadingBodyFromNet();

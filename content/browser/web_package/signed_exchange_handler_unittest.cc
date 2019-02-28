@@ -15,6 +15,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/web_package/signed_exchange_cert_fetcher_factory.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
+#include "content/browser/web_package/signed_exchange_request_matcher.h"
 #include "content/browser/web_package/signed_exchange_signature_verifier.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
@@ -271,6 +272,8 @@ class SignedExchangeHandlerTest
         base::BindOnce(&SignedExchangeHandlerTest::OnHeaderFound,
                        base::Unretained(this)),
         std::move(cert_fetcher_factory_), net::LOAD_NORMAL,
+        std::make_unique<SignedExchangeRequestMatcher>(
+            net::HttpRequestHeaders(), std::string() /* accept_langs */),
         nullptr /* devtools_proxy */, nullptr /* reporter */,
         base::RepeatingCallback<int(void)>());
   }

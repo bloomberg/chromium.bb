@@ -41,6 +41,7 @@ constexpr char kSXGResultCertVerificationError[] =
     "sxg.cert_verification_error";
 constexpr char kSXGResultCertFetchError[] = "sxg.cert_fetch_error";
 constexpr char kSXGResultCertParseError[] = "sxg.cert_parse_error";
+constexpr char kSXGResultVariantMismatch[] = "sxg.variant_mismatch";
 
 const char* GetResultTypeString(SignedExchangeLoadResult result) {
   switch (result) {
@@ -75,6 +76,10 @@ const char* GetResultTypeString(SignedExchangeLoadResult result) {
       return kSXGResultParseError;
     case SignedExchangeLoadResult::kInvalidIntegrityHeader:
       return kSXGResultInvalidIntegrityHeader;
+    case SignedExchangeLoadResult::kVariantMismatch:
+      // TODO(crbug/910516): Need to update the spec to send the report in this
+      // case.
+      return kSXGResultVariantMismatch;
   }
   NOTREACHED();
   return kSXGResultFailed;

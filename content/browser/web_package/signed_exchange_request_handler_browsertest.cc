@@ -13,6 +13,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/loader/prefetch_url_loader_service.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_package/signed_exchange_handler.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/browser_context.h"
@@ -98,6 +100,17 @@ class AssertNavigationHandleFlagObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(AssertNavigationHandleFlagObserver);
 };
 
+class MockContentBrowserClient final : public ContentBrowserClient {
+ public:
+  std::string GetAcceptLangs(BrowserContext* context) override {
+    return accept_langs_;
+  }
+  void SetAcceptLangs(const std::string langs) { accept_langs_ = langs; }
+
+ private:
+  std::string accept_langs_ = "en";
+};
+
 }  // namespace
 
 class SignedExchangeRequestHandlerBrowserTestBase
@@ -116,8 +129,15 @@ class SignedExchangeRequestHandlerBrowserTestBase
     CertVerifierBrowserTest::SetUp();
   }
 
+  void SetUpOnMainThread() override {
+    original_client_ = SetBrowserClientForTesting(&client_);
+    CertVerifierBrowserTest::SetUpOnMainThread();
+  }
+
   void TearDownOnMainThread() override {
     sxg_test_helper_.TearDownOnMainThread();
+    if (original_client_)
+      SetBrowserClientForTesting(original_client_);
   }
 
  protected:
@@ -143,9 +163,20 @@ class SignedExchangeRequestHandlerBrowserTestBase
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
   }
 
+  void SetAcceptLangs(const std::string langs) {
+    client_.SetAcceptLangs(langs);
+    StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+        BrowserContext::GetDefaultStoragePartition(
+            shell()->web_contents()->GetBrowserContext()));
+    partition->GetPrefetchURLLoaderService()->SetAcceptLanguages(langs);
+  }
+
   const base::HistogramTester histogram_tester_;
 
  private:
+  ContentBrowserClient* original_client_ = nullptr;
+  MockContentBrowserClient client_;
+
   base::test::ScopedFeatureList feature_list_;
   SignedExchangeBrowserTestHelper sxg_test_helper_;
 
@@ -230,6 +261,55 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Simple) {
     histogram_tester_.ExpectUniqueSample(
         "SignedExchange.Prefetch.Recall.30Seconds", false, 1);
   }
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, VariantMatch) {
+  SetAcceptLangs("en-US,fr");
+  InstallUrlInterceptor(
+      GURL("https://cert.example.org/cert.msg"),
+      "content/test/data/sxg/test.example.org.public.pem.cbor");
+  InstallMockCert();
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url =
+      embedded_test_server()->GetURL("/sxg/test.example.org_fr_variant.sxg");
+  if (PrefetchIsEnabled())
+    TriggerPrefetch(url, true);
+
+  base::string16 title = base::ASCIIToUTF16("https://test.example.org/test/");
+  TitleWatcher title_watcher(shell()->web_contents(), title);
+  NavigateToURL(shell(), url);
+  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+  histogram_tester_.ExpectUniqueSample(kLoadResultHistogram,
+                                       SignedExchangeLoadResult::kSuccess,
+                                       PrefetchIsEnabled() ? 2 : 1);
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
+                       VariantMismatch) {
+  SetAcceptLangs("en-US,ja");
+  InstallUrlInterceptor(
+      GURL("https://cert.example.org/cert.msg"),
+      "content/test/data/sxg/test.example.org.public.pem.cbor");
+  InstallUrlInterceptor(GURL("https://test.example.org/test/"),
+                        "content/test/data/sxg/fallback.html");
+  InstallMockCert();
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url =
+      embedded_test_server()->GetURL("/sxg/test.example.org_fr_variant.sxg");
+  if (PrefetchIsEnabled())
+    TriggerPrefetch(url, false);
+
+  base::string16 title = base::ASCIIToUTF16("Fallback URL response");
+  TitleWatcher title_watcher(shell()->web_contents(), title);
+  NavigateToURL(shell(), url);
+  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+  histogram_tester_.ExpectUniqueSample(
+      kLoadResultHistogram, SignedExchangeLoadResult::kVariantMismatch,
+      PrefetchIsEnabled() ? 2 : 1);
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,

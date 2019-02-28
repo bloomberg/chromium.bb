@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_PREFETCH_HANDLER_H_
 #define CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_PREFETCH_HANDLER_H_
 
+#include <string>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -49,7 +51,8 @@ class SignedExchangePrefetchHandler final
       ResourceContext* resource_context,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       network::mojom::URLLoaderClient* forwarding_client,
-      scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder);
+      scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
+      const std::string& accept_langs);
 
   ~SignedExchangePrefetchHandler() override;
 

@@ -18,6 +18,7 @@
 #include "content/browser/web_package/signed_exchange_handler.h"
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_reporter.h"
+#include "content/browser/web_package/signed_exchange_request_matcher.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
@@ -121,7 +122,8 @@ SignedExchangeLoader::SignedExchangeLoader(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
     base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
-    scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder)
+    scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
+    const std::string& accept_langs)
     : outer_request_(outer_request),
       outer_response_timing_info_(
           std::make_unique<ResponseTimingInfo>(outer_response)),
@@ -136,6 +138,7 @@ SignedExchangeLoader::SignedExchangeLoader(
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
       frame_tree_node_id_getter_(frame_tree_node_id_getter),
       metric_recorder_(std::move(metric_recorder)),
+      accept_langs_(accept_langs),
       weak_factory_(this) {
   DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
   DCHECK(outer_request_.url.is_valid());
@@ -227,6 +230,8 @@ void SignedExchangeLoader::OnStartLoadingResponseBody(
       base::BindOnce(&SignedExchangeLoader::OnHTTPExchangeFound,
                      weak_factory_.GetWeakPtr()),
       std::move(cert_fetcher_factory), outer_request_.load_flags,
+      std::make_unique<SignedExchangeRequestMatcher>(outer_request_.headers,
+                                                     accept_langs_),
       std::move(devtools_proxy_), reporter_.get(), frame_tree_node_id_getter_);
 }
 

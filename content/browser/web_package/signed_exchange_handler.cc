@@ -24,6 +24,7 @@
 #include "content/browser/web_package/signed_exchange_envelope.h"
 #include "content/browser/web_package/signed_exchange_prologue.h"
 #include "content/browser/web_package/signed_exchange_reporter.h"
+#include "content/browser/web_package/signed_exchange_request_matcher.h"
 #include "content/browser/web_package/signed_exchange_signature_verifier.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -186,6 +187,7 @@ SignedExchangeHandler::SignedExchangeHandler(
     ExchangeHeadersCallback headers_callback,
     std::unique_ptr<SignedExchangeCertFetcherFactory> cert_fetcher_factory,
     int load_flags,
+    std::unique_ptr<SignedExchangeRequestMatcher> request_matcher,
     std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
     SignedExchangeReporter* reporter,
     base::RepeatingCallback<int(void)> frame_tree_node_id_getter)
@@ -195,6 +197,7 @@ SignedExchangeHandler::SignedExchangeHandler(
       source_(std::move(body)),
       cert_fetcher_factory_(std::move(cert_fetcher_factory)),
       load_flags_(load_flags),
+      request_matcher_(std::move(request_matcher)),
       devtools_proxy_(std::move(devtools_proxy)),
       reporter_(reporter),
       frame_tree_node_id_getter_(frame_tree_node_id_getter),
@@ -644,6 +647,15 @@ void SignedExchangeHandler::OnVerifyCert(
   response_head.headers = envelope_->BuildHttpResponseHeaders();
   response_head.headers->GetMimeTypeAndCharset(&response_head.mime_type,
                                                &response_head.charset);
+
+  if (!request_matcher_->MatchRequest(envelope_->response_headers())) {
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy_.get(),
+        "Signed Exchange's Variants / Variant-Key don't match the request.");
+    RunErrorCallback(SignedExchangeLoadResult::kVariantMismatch,
+                     net::ERR_INVALID_SIGNED_EXCHANGE);
+    return;
+  }
 
   // TODO(https://crbug.com/803774): Resource timing for signed exchange
   // loading is not speced yet. https://github.com/WICG/webpackage/issues/156

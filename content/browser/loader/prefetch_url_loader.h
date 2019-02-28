@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_LOADER_PREFETCH_URL_LOADER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -61,7 +62,8 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
       ResourceContext* resource_context,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<SignedExchangePrefetchMetricRecorder>
-          signed_exchange_prefetch_metric_recorder);
+          signed_exchange_prefetch_metric_recorder,
+      const std::string& accept_langs);
   ~PrefetchURLLoader() override;
 
  private:
@@ -122,6 +124,7 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
 
   scoped_refptr<SignedExchangePrefetchMetricRecorder>
       signed_exchange_prefetch_metric_recorder_;
+  const std::string accept_langs_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchURLLoader);
 };

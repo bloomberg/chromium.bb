@@ -45,6 +45,7 @@ class SignedExchangeCertFetcherFactory;
 class SignedExchangeCertificateChain;
 class SignedExchangeDevToolsProxy;
 class SignedExchangeReporter;
+class SignedExchangeRequestMatcher;
 
 // SignedExchangeHandler reads "application/signed-exchange" format from a
 // net::SourceStream, parses and verifies the signed exchange, and reports
@@ -92,6 +93,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
       ExchangeHeadersCallback headers_callback,
       std::unique_ptr<SignedExchangeCertFetcherFactory> cert_fetcher_factory,
       int load_flags,
+      std::unique_ptr<SignedExchangeRequestMatcher> request_matcher,
       std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
       SignedExchangeReporter* reporter,
       base::RepeatingCallback<int(void)> frame_tree_node_id_getter);
@@ -152,6 +154,8 @@ class CONTENT_EXPORT SignedExchangeHandler {
   const int load_flags_;
 
   std::unique_ptr<SignedExchangeCertificateChain> unverified_cert_chain_;
+
+  std::unique_ptr<SignedExchangeRequestMatcher> request_matcher_;
 
   std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy_;
 
