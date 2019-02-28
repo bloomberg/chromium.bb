@@ -535,7 +535,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,
 
   EXPECT_EQ(0, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(0, overflow_bar->VisibleBrowserActions());
-  EXPECT_EQ(0u, toolbar_model()->toolbar_items().size());
+  EXPECT_EQ(0u, toolbar_model()->action_ids().size());
 }
 
 // Test that page action popups work with the toolbar redesign.

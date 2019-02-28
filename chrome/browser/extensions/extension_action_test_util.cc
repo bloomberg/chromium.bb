@@ -33,23 +33,21 @@ size_t GetPageActionCount(content::WebContents* web_contents,
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   ToolbarActionsModel* toolbar_model = ToolbarActionsModel::Get(profile);
-  const std::vector<ToolbarActionsModel::ToolbarItem>& toolbar_items =
-      toolbar_model->toolbar_items();
+  const std::vector<ToolbarActionsModel::ActionId>& toolbar_action_ids =
+      toolbar_model->action_ids();
   ExtensionActionManager* action_manager =
       ExtensionActionManager::Get(web_contents->GetBrowserContext());
   const ExtensionSet& enabled_extensions =
       ExtensionRegistry::Get(profile)->enabled_extensions();
-  for (const ToolbarActionsModel::ToolbarItem& item : toolbar_items) {
-    if (item.type == ToolbarActionsModel::EXTENSION_ACTION) {
-      const Extension* extension = enabled_extensions.GetByID(item.id);
-      ExtensionAction* extension_action =
-          action_manager->GetPageAction(*extension);
-      if (extension_action &&
-          (!only_count_visible || extension_action->GetIsVisible(tab_id.id())))
-        ++count;
+  for (const ToolbarActionsModel::ActionId& action_id : toolbar_action_ids) {
+    const Extension* extension = enabled_extensions.GetByID(action_id);
+    ExtensionAction* extension_action =
+        action_manager->GetPageAction(*extension);
+    if (extension_action &&
+        (!only_count_visible || extension_action->GetIsVisible(tab_id.id()))) {
+      ++count;
     }
   }
-
   return count;
 }
 

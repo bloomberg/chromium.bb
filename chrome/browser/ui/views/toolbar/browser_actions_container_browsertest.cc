@@ -85,13 +85,13 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, DragBrowserActions) {
 
   const extensions::ExtensionSet& extension_set =
       extensions::ExtensionRegistry::Get(profile())->enabled_extensions();
-  const std::vector<ToolbarActionsModel::ToolbarItem>& toolbar_items =
-      toolbar_model()->toolbar_items();
+  const std::vector<ToolbarActionsModel::ActionId>& toolbar_action_ids =
+      toolbar_model()->action_ids();
 
   // This order should be reflected in the underlying model.
-  EXPECT_EQ(extension_b(), extension_set.GetByID(toolbar_items[0].id));
-  EXPECT_EQ(extension_a(), extension_set.GetByID(toolbar_items[1].id));
-  EXPECT_EQ(extension_c(), extension_set.GetByID(toolbar_items[2].id));
+  EXPECT_EQ(extension_b(), extension_set.GetByID(toolbar_action_ids[0]));
+  EXPECT_EQ(extension_a(), extension_set.GetByID(toolbar_action_ids[1]));
+  EXPECT_EQ(extension_c(), extension_set.GetByID(toolbar_action_ids[2]));
 
   // Simulate a drag and drop to the left.
   ui::OSExchangeData drop_data2;

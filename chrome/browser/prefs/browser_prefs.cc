@@ -150,7 +150,6 @@
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/extensions/ntp_overridden_bubble_delegate.h"
-#include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "extensions/browser/api/audio/audio_api.h"
@@ -408,7 +407,6 @@ const char kVoiceInteractionActivityControlAcceptedDeprecated[] =
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
-
 #if defined(OS_ANDROID)
   registry->RegisterListPref(kDismissedPhysicalWebPageSuggestions);
   registry->RegisterListPref(kDismissedRecentOfflineTabSuggestions);
