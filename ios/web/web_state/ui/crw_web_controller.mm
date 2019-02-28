@@ -3213,7 +3213,10 @@ GURL URLEscapedForHistory(const GURL& url) {
   if (lastCommittedItem) {
     // Reset SSL status for last committed navigation to avoid showing security
     // status for error pages.
-    lastCommittedItem->GetSSL() = web::SSLStatus();
+    if (!lastCommittedItem->GetSSL().Equals(web::SSLStatus())) {
+      lastCommittedItem->GetSSL() = web::SSLStatus();
+      _webStateImpl->DidChangeVisibleSecurityState();
+    }
   }
 
   web::NavigationItemImpl* item =
@@ -5116,6 +5119,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   // for placeholder page because the actual navigation item will not be
   // committed until the native content or WebUI is shown.
   if (context && !context->IsPlaceholderNavigation() &&
+      !context->IsLoadingErrorPage() &&
       !context->GetUrl().SchemeIs(url::kAboutScheme) &&
       !IsRestoreSessionUrl(context->GetUrl())) {
     [self updateSSLStatusForCurrentNavigationItem];

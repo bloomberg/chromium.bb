@@ -13,6 +13,7 @@
 namespace web {
 
 class NavigationContext;
+struct SSLStatus;
 class WebFrame;
 class WebState;
 
@@ -65,9 +66,16 @@ struct TestTitleWasSetInfo {
   WebState* web_state = nullptr;
 };
 
-// Arguments passed to |DidChangeVisibleSecurityState|.
+// Arguments passed to |DidChangeVisibleSecurityState| and SSLStatus of the
+// visible navigation item.
 struct TestDidChangeVisibleSecurityStateInfo {
+  TestDidChangeVisibleSecurityStateInfo();
+  ~TestDidChangeVisibleSecurityStateInfo();
   WebState* web_state = nullptr;
+
+  // SSLStatus of the visible navigation item when
+  // DidChangeVisibleSecurityState was called.
+  std::unique_ptr<SSLStatus> visible_ssl_status;
 };
 
 // Arguments passed to |FaviconUrlUpdated|.
