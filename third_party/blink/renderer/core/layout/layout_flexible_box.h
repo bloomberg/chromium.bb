@@ -122,7 +122,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   bool IsMultiline() const;
   Length FlexBasisForChild(const LayoutBox& child) const;
   LayoutUnit CrossAxisExtentForChild(const LayoutBox& child) const;
-  LayoutUnit CrossAxisIntrinsicExtentForChild(const LayoutBox& child) const;
+  LayoutUnit CrossAxisUnstretchedExtentForChild(const LayoutBox& child) const;
   LayoutUnit ChildIntrinsicLogicalHeight(const LayoutBox& child) const;
   LayoutUnit ChildIntrinsicLogicalWidth(const LayoutBox& child) const;
   LayoutUnit MainAxisExtentForChild(const LayoutBox& child) const;

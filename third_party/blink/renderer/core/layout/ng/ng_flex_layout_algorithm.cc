@@ -252,9 +252,6 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
           is_horizontal_flow
               ? flex_item.layout_result->PhysicalFragment()->Size().height
               : flex_item.layout_result->PhysicalFragment()->Size().width;
-      // TODO(dgrogan): Port logic from
-      // LayoutFlexibleBox::CrossAxisIntrinsicExtentForChild?
-      flex_item.cross_axis_intrinsic_size = flex_item.cross_axis_size;
     }
     // cross_axis_offset is updated in each iteration of the loop, for passing
     // in to the next iteration.
