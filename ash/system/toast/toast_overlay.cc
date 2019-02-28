@@ -247,9 +247,12 @@ ToastOverlay::ToastOverlay(Delegate* delegate,
   ::wm::SetWindowVisibilityAnimationDuration(
       overlay_window,
       base::TimeDelta::FromMilliseconds(kSlideAnimationDurationMs));
+
+  keyboard::KeyboardController::Get()->AddObserver(this);
 }
 
 ToastOverlay::~ToastOverlay() {
+  keyboard::KeyboardController::Get()->RemoveObserver(this);
   overlay_widget_->Close();
 }
 
@@ -296,6 +299,11 @@ void ToastOverlay::OnImplicitAnimationsScheduled() {}
 void ToastOverlay::OnImplicitAnimationsCompleted() {
   if (!overlay_widget_->GetLayer()->GetTargetVisibility())
     delegate_->OnClosed();
+}
+
+void ToastOverlay::OnKeyboardWorkspaceOccludedBoundsChanged(
+    const gfx::Rect& new_bounds) {
+  UpdateOverlayBounds();
 }
 
 views::Widget* ToastOverlay::widget_for_testing() {

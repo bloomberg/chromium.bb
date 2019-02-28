@@ -14,6 +14,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace gfx {
 class Rect;
@@ -29,7 +30,8 @@ class ToastManagerTest;
 class ToastOverlayView;
 class ToastOverlayButton;
 
-class ASH_EXPORT ToastOverlay : public ui::ImplicitAnimationObserver {
+class ASH_EXPORT ToastOverlay : public ui::ImplicitAnimationObserver,
+                                public keyboard::KeyboardControllerObserver {
  public:
   class ASH_EXPORT Delegate {
    public:
@@ -68,6 +70,10 @@ class ASH_EXPORT ToastOverlay : public ui::ImplicitAnimationObserver {
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsScheduled() override;
   void OnImplicitAnimationsCompleted() override;
+
+  // keyboard::KeyboardControllerObserver:
+  void OnKeyboardWorkspaceOccludedBoundsChanged(
+      const gfx::Rect& new_bounds) override;
 
   views::Widget* widget_for_testing();
   ToastOverlayButton* dismiss_button_for_testing();
