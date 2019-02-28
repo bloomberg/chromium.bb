@@ -9,8 +9,8 @@
 
 @protocol InfobarBannerDelegate;
 
-// TODO(crbug.com/911864): PLACEHOLDER Work in Progress class for the new
-// InfobarUI.
+// ViewController that manages an InfobarBanner. It consists of a leading icon,
+// a title and optional subtitle, and a trailing button.
 @interface InfobarBannerViewController : UIViewController
 
 - (instancetype)initWithDelegate:(id<InfobarBannerDelegate>)delegate
@@ -21,8 +21,14 @@
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
 
-// The message displayed by this InfobarBanner.
-@property(nonatomic, copy) NSString* messageText;
+// The icon displayed by this InfobarBanner.
+@property(nonatomic, strong) UIImage* iconImage;
+
+// The title displayed by this InfobarBanner.
+@property(nonatomic, copy) NSString* titleText;
+
+// The subtitle displayed by this InfobarBanner.
+@property(nonatomic, copy) NSString* subTitleText;
 
 // The button text displayed by this InfobarBanner.
 @property(nonatomic, copy) NSString* buttonText;

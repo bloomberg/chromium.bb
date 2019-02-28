@@ -10,10 +10,9 @@
 
 namespace {
 // Presented frame size and position.
-const CGFloat kContainerHeight = 75;
-const CGFloat kContainerHorizontalPadding = 20;
-const CGFloat kContainerTopPadding = 80;
-
+const CGFloat kContainerHeight = 70;
+const CGFloat kContainerHorizontalPadding = 8;
+const CGFloat kContainerTopPadding = 85;
 }
 
 @interface InfobarBannerPresentationController ()

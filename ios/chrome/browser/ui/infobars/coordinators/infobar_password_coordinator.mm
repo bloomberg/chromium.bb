@@ -54,11 +54,13 @@
   self.started = YES;
   self.bannerViewController =
       [[InfobarBannerViewController alloc] initWithDelegate:self];
-  self.bannerViewController.messageText =
+  self.bannerViewController.titleText =
       base::SysUTF16ToNSString(self.passwordInfoBarDelegate->GetMessageText());
   self.bannerViewController.buttonText =
       base::SysUTF16ToNSString(self.passwordInfoBarDelegate->GetButtonLabel(
           ConfirmInfoBarDelegate::BUTTON_OK));
+  self.bannerViewController.iconImage =
+      [UIImage imageNamed:@"infobar_passwords_icon"];
 }
 
 - (void)stop {
