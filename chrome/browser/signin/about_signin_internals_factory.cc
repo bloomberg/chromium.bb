@@ -6,7 +6,6 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
@@ -18,7 +17,6 @@ AboutSigninInternalsFactory::AboutSigninInternalsFactory()
     : BrowserContextKeyedServiceFactory(
         "AboutSigninInternals",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(AccountTrackerServiceFactory::GetInstance());
   DependsOn(ChromeSigninClientFactory::GetInstance());
   DependsOn(SigninErrorControllerFactory::GetInstance());
 }
@@ -46,7 +44,6 @@ KeyedService* AboutSigninInternalsFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   AboutSigninInternals* service = new AboutSigninInternals(
-      AccountTrackerServiceFactory::GetForProfile(profile),
       IdentityManagerFactory::GetForProfile(profile),
       SigninErrorControllerFactory::GetForProfile(profile),
       AccountConsistencyModeManager::GetMethodForProfile(profile));

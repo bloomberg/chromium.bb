@@ -26,7 +26,6 @@ namespace identity {
 struct AccountsInCookieJarInfo;
 }
 
-class AccountTrackerService;
 class PrefRegistrySimple;
 class SigninClient;
 
@@ -52,8 +51,7 @@ class AboutSigninInternals
     virtual void OnCookieAccountsFetched(const base::DictionaryValue* info) = 0;
   };
 
-  AboutSigninInternals(AccountTrackerService* account_tracker,
-                       identity::IdentityManager* identity_manager,
+  AboutSigninInternals(identity::IdentityManager* identity_manager,
                        SigninErrorController* signin_error_controller,
                        signin::AccountConsistencyMethod account_consistency);
   ~AboutSigninInternals() override;
@@ -177,7 +175,6 @@ class AboutSigninInternals
     //       }],
     //  }
     std::unique_ptr<base::DictionaryValue> ToValue(
-        AccountTrackerService* account_tracker,
         identity::IdentityManager* identity_manager,
         SigninErrorController* signin_error_controller,
         SigninClient* signin_client,
@@ -221,9 +218,6 @@ class AboutSigninInternals
 
   // SigninErrorController::Observer implementation
   void OnErrorChanged() override;
-
-  // Weak pointer to the account tracker.
-  AccountTrackerService* account_tracker_;
 
   // Weak pointer to the identity manager.
   identity::IdentityManager* identity_manager_;
