@@ -5,6 +5,7 @@
 #include "components/cloud_devices/common/printer_description.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -1033,17 +1034,16 @@ TEST(PrinterDescriptionTest, CddGetVendorCapability) {
     EXPECT_TRUE(vendor_capabilities.LoadFrom(description));
     EXPECT_EQ(3u, vendor_capabilities.size());
     EXPECT_TRUE(vendor_capabilities.Contains(VendorCapability(
-        VendorCapability::Type::RANGE, "id_1", "name_1",
+        "id_1", "name_1",
         RangeVendorCapability(RangeVendorCapability::ValueType::INTEGER, "1",
                               "10"))));
     SelectVendorCapability select_capability;
     select_capability.AddDefaultOption(
         SelectVendorCapabilityOption("value", "name"), true);
     EXPECT_TRUE(vendor_capabilities.Contains(
-        VendorCapability(VendorCapability::Type::SELECT, "id_2", "name_2",
-                         std::move(select_capability))));
+        VendorCapability("id_2", "name_2", std::move(select_capability))));
     EXPECT_TRUE(vendor_capabilities.Contains(VendorCapability(
-        VendorCapability::Type::TYPED_VALUE, "id_3", "name_3",
+        "id_3", "name_3",
         TypedValueVendorCapability(
             TypedValueVendorCapability::ValueType::INTEGER, "1"))));
   }
@@ -1065,17 +1065,16 @@ TEST(PrinterDescriptionTest, CddSetVendorCapability) {
 
   VendorCapabilities vendor_capabilities;
   vendor_capabilities.AddOption(VendorCapability(
-      VendorCapability::Type::RANGE, "id_1", "name_1",
+      "id_1", "name_1",
       RangeVendorCapability(RangeVendorCapability::ValueType::INTEGER, "1",
                             "10")));
   SelectVendorCapability select_capability;
   select_capability.AddDefaultOption(
       SelectVendorCapabilityOption("value", "name"), true);
-  vendor_capabilities.AddOption(VendorCapability(VendorCapability::Type::SELECT,
-                                                 "id_2", "name_2",
-                                                 std::move(select_capability)));
+  vendor_capabilities.AddOption(
+      VendorCapability("id_2", "name_2", std::move(select_capability)));
   vendor_capabilities.AddOption(VendorCapability(
-      VendorCapability::Type::TYPED_VALUE, "id_3", "name_3",
+      "id_3", "name_3",
       TypedValueVendorCapability(TypedValueVendorCapability::ValueType::INTEGER,
                                  "1")));
 
