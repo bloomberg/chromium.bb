@@ -144,7 +144,6 @@ void BackgroundFetchJobController::StartRequest(
   DCHECK(request_finished_callback);
   DCHECK(request);
 
-  active_request_downloaded_bytes_ = 0;
   active_request_finished_callbacks_.emplace(
       request->download_guid(), std::move(request_finished_callback));
 
@@ -186,23 +185,24 @@ void BackgroundFetchJobController::DidUpdateRequest(const std::string& guid,
   DCHECK(active_request_map_.count(guid));
   const auto& request = active_request_map_[guid];
   DCHECK(request);
+  InProgressRequestBytes& in_progress_bytes = active_bytes_map_[guid];
 
   // Don't send download updates so the size is not leaked.
   // Upload updates are fine since that information is already available.
   if (!request->can_populate_body() && bytes_downloaded > 0u)
     return;
 
-  if (active_request_downloaded_bytes_ == bytes_downloaded &&
-      active_request_uploaded_bytes_ == bytes_uploaded) {
+  if (in_progress_bytes.downloaded == bytes_downloaded &&
+      in_progress_bytes.uploaded == bytes_uploaded) {
     return;
   }
 
-  active_request_downloaded_bytes_ = bytes_downloaded;
-  active_request_uploaded_bytes_ = bytes_uploaded;
+  in_progress_bytes.downloaded = bytes_downloaded;
+  in_progress_bytes.uploaded = bytes_uploaded;
 
   auto registration = NewRegistration();
-  registration->downloaded += active_request_downloaded_bytes_;
-  registration->uploaded += active_request_uploaded_bytes_;
+  registration->downloaded += GetInProgressDownloadedBytes();
+  registration->uploaded += GetInProgressUploadedBytes();
   progress_callback_.Run(*registration);
 }
 
@@ -217,15 +217,13 @@ void BackgroundFetchJobController::DidCompleteRequest(
 
   request->SetResult(std::move(result));
 
-  if (request->can_populate_body()) {
+  if (request->can_populate_body())
     complete_requests_downloaded_bytes_cache_ += request->GetResponseSize();
-    active_request_downloaded_bytes_ -= request->GetResponseSize();
-  }
-
   complete_requests_uploaded_bytes_cache_ += request->request_body_size();
-  active_request_uploaded_bytes_ -= request->request_body_size();
 
   NotifyDownloadComplete(request);
+  active_bytes_map_.erase(guid);
+  active_request_map_.erase(guid);
 }
 
 blink::mojom::BackgroundFetchRegistrationPtr
@@ -238,11 +236,21 @@ BackgroundFetchJobController::NewRegistration() const {
 }
 
 uint64_t BackgroundFetchJobController::GetInProgressDownloadedBytes() {
-  return active_request_downloaded_bytes_;
+  uint64_t bytes = 0u;
+  for (const std::pair<std::string, InProgressRequestBytes>& in_progress_bytes :
+       active_bytes_map_) {
+    bytes += in_progress_bytes.second.downloaded;
+  }
+  return bytes;
 }
 
 uint64_t BackgroundFetchJobController::GetInProgressUploadedBytes() {
-  return active_request_uploaded_bytes_;
+  uint64_t bytes = 0u;
+  for (const std::pair<std::string, InProgressRequestBytes>& in_progress_bytes :
+       active_bytes_map_) {
+    bytes += in_progress_bytes.second.uploaded;
+  }
+  return bytes;
 }
 
 void BackgroundFetchJobController::AbortFromDelegate(

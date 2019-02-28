@@ -125,6 +125,11 @@ class CONTENT_EXPORT BackgroundFetchJobController
   int pending_downloads() const { return pending_downloads_; }
 
  private:
+  struct InProgressRequestBytes {
+    uint64_t uploaded = 0u;
+    uint64_t downloaded = 0u;
+  };
+
   // Called after the request is completely processed, and the next one can be
   // started.
   void DidMarkRequestAsComplete(blink::mojom::BackgroundFetchError error);
@@ -155,6 +160,9 @@ class CONTENT_EXPORT BackgroundFetchJobController
   std::map<std::string, scoped_refptr<BackgroundFetchRequestInfo>>
       active_request_map_;
 
+  // A map from the download GUID to the in-progress bytes.
+  std::map<std::string, InProgressRequestBytes> active_bytes_map_;
+
   // The registration ID of the fetch this controller represents.
   BackgroundFetchRegistrationId registration_id_;
 
@@ -163,10 +171,6 @@ class CONTENT_EXPORT BackgroundFetchJobController
 
   // Icon for the represented background fetch registration.
   SkBitmap icon_;
-
-  // Number of bytes downloaded/uploaded for the active request.
-  uint64_t active_request_downloaded_bytes_ = 0u;
-  uint64_t active_request_uploaded_bytes_ = 0u;
 
   // Finished callback to invoke when the active request has finished mapped by
   // its download GUID.

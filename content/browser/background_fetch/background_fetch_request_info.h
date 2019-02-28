@@ -112,10 +112,10 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   storage::BlobDataHandle* GetResponseBlobDataHandle();
 
   // Hands over ownership of the blob data handle.
+  // `CreateResponseBlobDataHandle` must have been called before this.
   std::unique_ptr<storage::BlobDataHandle> TakeResponseBlobDataHandle();
 
-  // Returns the size of the response. `CreateResponseBlobDataHandle` must have
-  // been called before this.
+  // Returns the size of the response.
   uint64_t GetResponseSize() const;
 
   // Returns the time at which the response was completed.
