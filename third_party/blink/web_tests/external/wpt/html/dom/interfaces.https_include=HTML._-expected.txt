@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 3595 tests; 3548 PASS, 47 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 3613 tests; 3566 PASS, 47 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS Partial interface mixin NavigatorID: original interface mixin defined
@@ -697,6 +697,12 @@ PASS HTMLSourceElement interface: document.createElement("source") must inherit 
 PASS HTMLImageElement interface: existence and properties of interface object
 PASS HTMLImageElement interface object length
 PASS HTMLImageElement interface object name
+PASS HTMLImageElement interface: named constructor
+PASS HTMLImageElement interface: named constructor object
+PASS HTMLImageElement interface: named constructor prototype property
+PASS HTMLImageElement interface: named constructor name
+PASS HTMLImageElement interface: named constructor length
+PASS HTMLImageElement interface: named constructor without 'new'
 PASS HTMLImageElement interface: existence and properties of interface prototype object
 PASS HTMLImageElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLImageElement interface: existence and properties of interface prototype object's @@unscopables property
@@ -968,6 +974,12 @@ PASS HTMLMediaElement interface: calling addTextTrack(TextTrackKind, DOMString, 
 PASS HTMLAudioElement interface: existence and properties of interface object
 PASS HTMLAudioElement interface object length
 PASS HTMLAudioElement interface object name
+PASS HTMLAudioElement interface: named constructor
+PASS HTMLAudioElement interface: named constructor object
+PASS HTMLAudioElement interface: named constructor prototype property
+PASS HTMLAudioElement interface: named constructor name
+PASS HTMLAudioElement interface: named constructor length
+PASS HTMLAudioElement interface: named constructor without 'new'
 PASS HTMLAudioElement interface: existence and properties of interface prototype object
 PASS HTMLAudioElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLAudioElement interface: existence and properties of interface prototype object's @@unscopables property
@@ -3148,6 +3160,12 @@ PASS HTMLOptGroupElement interface: document.createElement("optgroup") must inhe
 PASS HTMLOptionElement interface: existence and properties of interface object
 PASS HTMLOptionElement interface object length
 PASS HTMLOptionElement interface object name
+PASS HTMLOptionElement interface: named constructor
+PASS HTMLOptionElement interface: named constructor object
+PASS HTMLOptionElement interface: named constructor prototype property
+PASS HTMLOptionElement interface: named constructor name
+PASS HTMLOptionElement interface: named constructor length
+PASS HTMLOptionElement interface: named constructor without 'new'
 PASS HTMLOptionElement interface: existence and properties of interface prototype object
 PASS HTMLOptionElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLOptionElement interface: existence and properties of interface prototype object's @@unscopables property
