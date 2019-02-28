@@ -31,7 +31,8 @@ SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
     ResourceContext* resource_context,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     network::mojom::URLLoaderClient* forwarding_client,
-    scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder)
+    scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
+    const std::string& accept_langs)
     : loader_client_binding_(this), forwarding_client_(forwarding_client) {
   network::mojom::URLLoaderClientEndpointsPtr endpoints =
       network::mojom::URLLoaderClientEndpoints::New(
@@ -59,7 +60,7 @@ SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
                                           resource_request.referrer.spec(),
                                           response, frame_tree_node_id_getter),
       std::move(url_loader_factory), loader_throttles_getter,
-      frame_tree_node_id_getter, std::move(metric_recorder));
+      frame_tree_node_id_getter, std::move(metric_recorder), accept_langs);
 }
 
 SignedExchangePrefetchHandler::~SignedExchangePrefetchHandler() = default;

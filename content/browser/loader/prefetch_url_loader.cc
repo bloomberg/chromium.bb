@@ -37,7 +37,8 @@ PrefetchURLLoader::PrefetchURLLoader(
     ResourceContext* resource_context,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<SignedExchangePrefetchMetricRecorder>
-        signed_exchange_prefetch_metric_recorder)
+        signed_exchange_prefetch_metric_recorder,
+    const std::string& accept_langs)
     : frame_tree_node_id_getter_(frame_tree_node_id_getter),
       resource_request_(resource_request),
       network_loader_factory_(std::move(network_loader_factory)),
@@ -47,7 +48,8 @@ PrefetchURLLoader::PrefetchURLLoader(
       resource_context_(resource_context),
       request_context_getter_(std::move(request_context_getter)),
       signed_exchange_prefetch_metric_recorder_(
-          std::move(signed_exchange_prefetch_metric_recorder)) {
+          std::move(signed_exchange_prefetch_metric_recorder)),
+      accept_langs_(accept_langs) {
   DCHECK(network_loader_factory_);
 
   if (signed_exchange_utils::IsSignedExchangeHandlingEnabled()) {
@@ -129,7 +131,7 @@ void PrefetchURLLoader::OnReceiveResponse(
             std::move(loader_), client_binding_.Unbind(),
             network_loader_factory_, url_loader_throttles_getter_,
             resource_context_, request_context_getter_, this,
-            signed_exchange_prefetch_metric_recorder_);
+            signed_exchange_prefetch_metric_recorder_, accept_langs_);
     return;
   }
   forwarding_client_->OnReceiveResponse(response);

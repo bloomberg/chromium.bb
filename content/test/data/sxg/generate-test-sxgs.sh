@@ -3,6 +3,8 @@
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+variants_header=variants-04
+variant_key_header=variant-key-04
 
 set -e
 
@@ -125,6 +127,22 @@ gen-signedexchange \
   -responseHeader 'Content-Encoding: gzip' \
   -date 2018-03-12T05:53:20Z \
   -o test.example.org_test.html.gz.sxg
+
+# Generate the signed exchange with variants / variant-key headers.
+gen-signedexchange \
+  -version 1b3 \
+  -uri https://test.example.org/test/ \
+  -status 200 \
+  -content test.html \
+  -certificate prime256v1-sha256.public.pem \
+  -certUrl https://cert.example.org/cert.msg \
+  -validityUrl https://test.example.org/resource.validity.msg \
+  -privateKey prime256v1.key \
+  -date 2018-03-12T05:53:20Z \
+  -responseHeader "${variants_header}: accept-language;en;fr" \
+  -responseHeader "${variant_key_header}: fr" \
+  -o test.example.org_fr_variant.sxg \
+  -miRecordSize 100
 
 echo "Update the test signatures in "
 echo "signed_exchange_signature_verifier_unittest.cc with the followings:"

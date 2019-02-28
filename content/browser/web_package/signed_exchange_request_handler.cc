@@ -36,13 +36,15 @@ SignedExchangeRequestHandler::SignedExchangeRequestHandler(
     const base::UnguessableToken& devtools_navigation_token,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
-    scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder)
+    scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
+    std::string accept_langs)
     : url_loader_options_(url_loader_options),
       frame_tree_node_id_(frame_tree_node_id),
       devtools_navigation_token_(devtools_navigation_token),
       url_loader_factory_(url_loader_factory),
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
       metric_recorder_(std::move(metric_recorder)),
+      accept_langs_(std::move(accept_langs)),
       weak_factory_(this) {
   DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
 }
@@ -108,7 +110,7 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
       SignedExchangeReporter::MaybeCreate(request.url, request.referrer.spec(),
                                           response, frame_tree_node_id_getter),
       url_loader_factory_, url_loader_throttles_getter_,
-      frame_tree_node_id_getter, metric_recorder_);
+      frame_tree_node_id_getter, metric_recorder_, accept_langs_);
 
   *skip_other_interceptors = true;
   return true;

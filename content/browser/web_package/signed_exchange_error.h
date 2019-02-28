@@ -47,7 +47,9 @@ enum class SignedExchangeLoadResult {
   kMerkleIntegrityError,
   // Invalid integrity header error.
   kInvalidIntegrityHeader,
-  kMaxValue = kInvalidIntegrityHeader
+  // SXG has Variants / Variant-Key headers that don't match the request.
+  kVariantMismatch,
+  kMaxValue = kVariantMismatch
 };
 
 struct SignedExchangeError {

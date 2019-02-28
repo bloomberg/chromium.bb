@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "net/base/mime_util.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 
 namespace content {
@@ -280,13 +281,33 @@ base::Optional<http_structured_header::ListOfLists> ParseVariantKey(
 
 }  // namespace
 
+SignedExchangeRequestMatcher::SignedExchangeRequestMatcher(
+    const net::HttpRequestHeaders& request_headers,
+    const std::string& accept_langs)
+    : request_headers_(request_headers) {
+  request_headers_.SetHeaderIfMissing(
+      net::HttpRequestHeaders::kAcceptLanguage,
+      net::HttpUtil::GenerateAcceptLanguageHeader(
+          net::HttpUtil::ExpandLanguageList(accept_langs)));
+  // We accept only "mi-sha256-03" as the inner content encoding.
+  // TODO(ksakamoto): Revisit once
+  // https://github.com/WICG/webpackage/issues/390 is settled.
+  request_headers_.SetHeader(net::HttpRequestHeaders::kAcceptEncoding,
+                             "mi-sha256-03");
+}
+
+bool SignedExchangeRequestMatcher::MatchRequest(
+    const HeaderMap& response_headers) const {
+  return MatchRequest(request_headers_, response_headers);
+}
+
 // Implements "Cache Behaviour" [1] when "stored-responses" is a singleton list
 // containing a response that has "Variants" header whose value is |variants|.
 // [1] https://httpwg.org/http-extensions/draft-ietf-httpbis-variants.html#cache
 std::vector<std::vector<std::string>>
 SignedExchangeRequestMatcher::CacheBehavior(
     const http_structured_header::ListOfLists& variants,
-    const SignedExchangeRequestMatcher::HeaderMap& request_headers) {
+    const net::HttpRequestHeaders& request_headers) {
   // Step 1. If stored-responses is empty, return an empty list. [spec text]
   // The size of stored-responses is always 1.
 
@@ -324,9 +345,9 @@ SignedExchangeRequestMatcher::CacheBehavior(
       // Section 3.2.2 of [RFC7230]), or null if field-name is not in
       // incoming-request. [spec text]
       base::Optional<std::string> request_value;
-      auto found = request_headers.find(field_name);
-      if (found != request_headers.end())
-        request_value = found->second;
+      std::string header_value;
+      if (request_headers.GetHeader(field_name, &header_value))
+        request_value = header_value;
       // Step 4.2.1.2. Let sorted-values be the result of running the algorithm
       // defined by the content negotiation mechanism with request-value and
       // variant-axis' available-values. [spec text]
@@ -353,8 +374,8 @@ SignedExchangeRequestMatcher::CacheBehavior(
 // Implements step 3- of
 // https://wicg.github.io/webpackage/loading.html#request-matching
 bool SignedExchangeRequestMatcher::MatchRequest(
-    const SignedExchangeRequestMatcher::HeaderMap& request_headers,
-    const SignedExchangeRequestMatcher::HeaderMap& response_headers) {
+    const net::HttpRequestHeaders& request_headers,
+    const HeaderMap& response_headers) {
   auto variants_found = response_headers.find(kVariantsHeader);
   auto variant_key_found = response_headers.find(kVariantKeyHeader);
 

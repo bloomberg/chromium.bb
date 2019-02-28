@@ -4,6 +4,8 @@
 
 #include "content/browser/web_package/signed_exchange_request_matcher.h"
 
+#include "net/http/http_request_headers.h"
+#include "net/http/http_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -14,7 +16,7 @@ constexpr char kVariantKeyHeader[] = "variant-key-04";
 TEST(SignedExchangeRequestMatcherTest, CacheBehavior) {
   const struct TestCase {
     const char* name;
-    SignedExchangeRequestMatcher::HeaderMap req_headers;
+    std::map<std::string, std::string> req_headers;
     http_structured_header::ListOfLists variants;
     std::vector<std::vector<std::string>> expected;
   } cases[] = {
@@ -122,8 +124,11 @@ TEST(SignedExchangeRequestMatcherTest, CacheBehavior) {
        {{"en"}}},
   };
   for (const auto& c : cases) {
+    net::HttpRequestHeaders request_headers;
+    for (auto it = c.req_headers.begin(); it != c.req_headers.end(); ++it)
+      request_headers.SetHeader(it->first, it->second);
     EXPECT_EQ(c.expected, SignedExchangeRequestMatcher::CacheBehavior(
-                              c.variants, c.req_headers))
+                              c.variants, request_headers))
         << c.name;
   }
 }
@@ -131,7 +136,7 @@ TEST(SignedExchangeRequestMatcherTest, CacheBehavior) {
 TEST(SignedExchangeRequestMatcherTest, MatchRequest) {
   const struct TestCase {
     const char* name;
-    SignedExchangeRequestMatcher::HeaderMap req_headers;
+    std::map<std::string, std::string> req_headers;
     SignedExchangeRequestMatcher::HeaderMap res_headers;
     bool should_match;
   } cases[] = {
@@ -204,8 +209,11 @@ TEST(SignedExchangeRequestMatcherTest, MatchRequest) {
        false},
   };
   for (const auto& c : cases) {
+    net::HttpRequestHeaders request_headers;
+    for (auto it = c.req_headers.begin(); it != c.req_headers.end(); ++it)
+      request_headers.SetHeader(it->first, it->second);
     EXPECT_EQ(c.should_match, SignedExchangeRequestMatcher::MatchRequest(
-                                  c.req_headers, c.res_headers))
+                                  request_headers, c.res_headers))
         << c.name;
   }
 }

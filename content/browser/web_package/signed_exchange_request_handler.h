@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_REQUEST_HANDLER_H_
 #define CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_REQUEST_HANDLER_H_
 
+#include <string>
+
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
@@ -35,7 +37,8 @@ class SignedExchangeRequestHandler final : public NavigationLoaderInterceptor {
       const base::UnguessableToken& devtools_navigation_token,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
-      scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder);
+      scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
+      std::string accept_langs);
   ~SignedExchangeRequestHandler() override;
 
   // NavigationLoaderInterceptor implementation
@@ -69,6 +72,7 @@ class SignedExchangeRequestHandler final : public NavigationLoaderInterceptor {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
   scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder_;
+  const std::string accept_langs_;
 
   base::WeakPtrFactory<SignedExchangeRequestHandler> weak_factory_;
 

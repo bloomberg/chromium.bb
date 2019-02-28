@@ -589,7 +589,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       scoped_refptr<SignedExchangePrefetchMetricRecorder>
           signed_exchange_prefetch_metric_recorder,
       std::unique_ptr<NavigationRequestInfo> request_info,
-      std::unique_ptr<NavigationUIData> navigation_ui_data) {
+      std::unique_ptr<NavigationUIData> navigation_ui_data,
+      std::string accept_langs) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
     DCHECK(!started_);
@@ -617,7 +618,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     StartInternal(request_info_.get(), service_worker_navigation_handle_core,
                   nullptr /* appcache_handle_core */,
                   std::move(signed_exchange_prefetch_metric_recorder),
-                  {} /* factory_for_webui */, url_request_context_getter);
+                  {} /* factory_for_webui */, url_request_context_getter,
+                  std::move(accept_langs));
   }
 
   void Start(
@@ -632,7 +634,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       network::mojom::URLLoaderFactoryPtrInfo factory_for_webui,
       int frame_tree_node_id,
       bool needs_loader_factory_interceptor,
-      base::Time ui_post_time) {
+      base::Time ui_post_time,
+      std::string accept_langs) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
     DCHECK(!started_);
@@ -672,7 +675,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
                   appcache_handle_core,
                   std::move(signed_exchange_prefetch_metric_recorder),
                   std::move(factory_for_webui),
-                  nullptr /* url_request_context_getter */);
+                  nullptr /* url_request_context_getter */,
+                  std::move(accept_langs));
   }
 
   // Common setup routines, called by both StartWithoutNetworkService() and
@@ -690,7 +694,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       scoped_refptr<SignedExchangePrefetchMetricRecorder>
           signed_exchange_prefetch_metric_recorder,
       network::mojom::URLLoaderFactoryPtrInfo factory_for_webui,
-      net::URLRequestContextGetter* url_request_context_getter) {
+      net::URLRequestContextGetter* url_request_context_getter,
+      std::string accept_langs) {
     // NetworkService cases only.
     // Requests to WebUI scheme won't get redirected to/from other schemes
     // or be intercepted, so we just let it go here.
@@ -758,7 +763,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       }
       interceptors_.push_back(CreateSignedExchangeRequestHandler(
           *request_info, std::move(network_loader_factory),
-          std::move(signed_exchange_prefetch_metric_recorder)));
+          std::move(signed_exchange_prefetch_metric_recorder),
+          std::move(accept_langs)));
     }
 
     // See if embedders want to add interceptors.
@@ -1448,7 +1454,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       const NavigationRequestInfo& request_info,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       scoped_refptr<SignedExchangePrefetchMetricRecorder>
-          signed_exchange_prefetch_metric_recorder) {
+          signed_exchange_prefetch_metric_recorder,
+      std::string accept_langs) {
     // It is safe to pass the callback of CreateURLLoaderThrottles with the
     // unretained |this|, because the passed callback will be used by a
     // SignedExchangeHandler which is indirectly owned by |this| until its
@@ -1460,7 +1467,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         base::BindRepeating(
             &URLLoaderRequestController::CreateURLLoaderThrottles,
             base::Unretained(this)),
-        std::move(signed_exchange_prefetch_metric_recorder));
+        std::move(signed_exchange_prefetch_metric_recorder),
+        std::move(accept_langs));
   }
 
   std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptors_;
@@ -1610,6 +1618,9 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
           partition->GetPrefetchURLLoaderService()
               ->signed_exchange_prefetch_metric_recorder();
 
+  std::string accept_langs = GetContentClient()->browser()->GetAcceptLangs(
+      partition->browser_context());
+
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     DCHECK(!request_controller_);
     request_controller_ = std::make_unique<URLLoaderRequestController>(
@@ -1631,7 +1642,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
             base::Unretained(service_worker_navigation_handle_core),
             base::Unretained(appcache_handle_core),
             base::RetainedRef(signed_exchange_prefetch_metric_recorder),
-            std::move(request_info), std::move(navigation_ui_data)));
+            std::move(request_info), std::move(navigation_ui_data),
+            std::move(accept_langs)));
     return;
   }
 
@@ -1749,7 +1761,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
                      std::move(signed_exchange_prefetch_metric_recorder),
                      std::move(request_info), std::move(navigation_ui_data),
                      std::move(factory_for_webui), frame_tree_node_id,
-                     needs_loader_factory_interceptor, base::Time::Now()));
+                     needs_loader_factory_interceptor, base::Time::Now(),
+                     std::move(accept_langs)));
 }
 
 NavigationURLLoaderImpl::~NavigationURLLoaderImpl() {
