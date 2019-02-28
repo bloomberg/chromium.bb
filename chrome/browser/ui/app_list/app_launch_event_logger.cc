@@ -41,7 +41,7 @@ const char AppLaunchEventLogger::kShouldSync[] = "should_sync";
 
 namespace {
 
-constexpr int kNumRandomAppsToLog = 5;
+constexpr unsigned int kNumRandomAppsToLog = 5;
 const char kArcScheme[] = "arc://";
 const char kExtensionSchemeWithDelimiter[] = "chrome-extension://";
 
@@ -73,6 +73,26 @@ int ExponentialBucket(int value, float base) {
     return 0;
   }
   return round(pow(base, round(log(value) / log(base))));
+}
+
+// Selects a random sample of size |sample_size| from |population|.
+std::vector<std::string> Sample(const std::vector<std::string>& population,
+                                unsigned int sample_size) {
+  std::vector<std::string> sample;
+  unsigned int index = 0;
+  // Reservoir sampling.
+  for (const std::string& candidate : population) {
+    if (index < sample_size) {
+      sample.push_back(candidate);
+    } else {
+      const uint64_t r = base::RandGenerator(index + 1);
+      if (r < sample_size) {
+        sample[r] = candidate;
+      }
+    }
+    index++;
+  }
+  return sample;
 }
 
 int HourOfDay(base::Time time) {
@@ -329,26 +349,28 @@ ukm::SourceId AppLaunchEventLogger::GetSourceId(
 
 std::vector<std::string> AppLaunchEventLogger::ChooseAppsToLog(
     const std::string clicked_app_id) {
-  int index = 0;
   bool has_clicked_app = false;
-  std::vector<std::string> apps;
-
-  // Reservoir sampling, but must also include clicked_app_id if it is
-  // present.
+  std::vector<std::string> clicked_apps;
+  std::vector<std::string> unclicked_apps;
+  // Group apps by whether they have been clicked on. Do not include the
+  // currently clicked app.
   for (auto& app : app_features_map_) {
     if (app.first == clicked_app_id) {
       has_clicked_app = true;
       continue;
     }
-    if (index < kNumRandomAppsToLog) {
-      apps.push_back(app.first);
+    if (app.second.has_most_recently_used_index()) {
+      clicked_apps.push_back(app.first);
     } else {
-      const uint64_t r = base::RandGenerator(index + 1);
-      if (r < kNumRandomAppsToLog) {
-        apps[r] = app.first;
-      }
+      unclicked_apps.push_back(app.first);
     }
-    index++;
+  }
+
+  std::vector<std::string> apps(Sample(clicked_apps, kNumRandomAppsToLog));
+  if (apps.size() < kNumRandomAppsToLog) {
+    std::vector<std::string> unclicked_sample(
+        Sample(unclicked_apps, kNumRandomAppsToLog - apps.size()));
+    apps.insert(apps.end(), unclicked_sample.begin(), unclicked_sample.end());
   }
   if (has_clicked_app) {
     apps.push_back(clicked_app_id);
@@ -480,8 +502,8 @@ void AppLaunchEventLogger::Log(AppLaunchEvent app_launch_event) {
                                        kTotalHoursBucketSizeMultiplier))
       .Record(ukm::UkmRecorder::Get());
 
-  // Log click data about the app clicked on and up to five other apps chosen at
-  // random. This represents the state of the data immediately before the click.
+  // Log click data about the app clicked on and up to five other apps. This
+  // represents the state of the data immediately before the click.
   const std::vector<std::string> apps_to_log =
       ChooseAppsToLog(app_launch_event.app_id());
 
