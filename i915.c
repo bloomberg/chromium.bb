@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <unistd.h>
 #include <xf86drm.h>
 
 #include "drv_priv.h"
@@ -314,15 +315,16 @@ static int i915_bo_from_format(struct bo *bo, uint32_t width, uint32_t height, u
 {
 	uint32_t offset;
 	size_t plane;
-	int ret;
+	int ret, pagesize;
 
 	offset = 0;
+	pagesize = getpagesize();
 	for (plane = 0; plane < drv_num_planes_from_format(format); plane++) {
 		uint32_t stride = drv_stride_from_format(format, width, plane);
 		uint32_t plane_height = drv_height_from_format(format, height, plane);
 
 		if (bo->tiling != I915_TILING_NONE)
-			assert(IS_ALIGNED(offset, 4096));
+			assert(IS_ALIGNED(offset, pagesize));
 
 		ret = i915_align_dimensions(bo, bo->tiling, &stride, &plane_height);
 		if (ret)
@@ -334,7 +336,7 @@ static int i915_bo_from_format(struct bo *bo, uint32_t width, uint32_t height, u
 		offset += bo->sizes[plane];
 	}
 
-	bo->total_size = offset;
+	bo->total_size = ALIGN(offset, pagesize);
 
 	return 0;
 }
