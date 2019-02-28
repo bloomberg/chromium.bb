@@ -134,8 +134,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
                                  int64_t new_display_id) override;
   void OnDidMoveWindowToDisplay(aura::Window* window) override;
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
-  void OnWindowTransformed(aura::Window* window,
-                           ui::PropertyChangeReason reason) override;
 
   // aura::WindowTreeHostObserver:
   void OnHostResized(aura::WindowTreeHost* host) override;
