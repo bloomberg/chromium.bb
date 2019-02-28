@@ -58,8 +58,7 @@ namespace extensions {
 namespace {
 
 const char kCannotRequestAutomationOnPage[] =
-    "Cannot request automation tree on url \"*\". "
-    "Extension manifest must request permission to access this host.";
+    "Failed request of automation on a page";
 const char kRendererDestroyed[] = "The tab was closed.";
 const char kNoDocument[] = "No document.";
 const char kNodeDestroyed[] =
@@ -283,8 +282,7 @@ AutomationInternalEnableTabFunction::Run() {
     return RespondNow(Error("Could not enable accessibility for active tab"));
 
   if (!CanRequestAutomation(extension(), automation_info, contents)) {
-    return RespondNow(
-        Error(kCannotRequestAutomationOnPage, contents->GetURL().spec()));
+    return RespondNow(Error(kCannotRequestAutomationOnPage));
   }
 
   AutomationWebContentsObserver::CreateForWebContents(contents);
@@ -508,8 +506,7 @@ AutomationInternalPerformActionFunction::Run() {
       content::WebContents* contents =
           content::WebContents::FromRenderFrameHost(rfh);
       if (!CanRequestAutomation(extension(), automation_info, contents)) {
-        return RespondNow(
-            Error(kCannotRequestAutomationOnPage, contents->GetURL().spec()));
+        return RespondNow(Error(kCannotRequestAutomationOnPage));
       }
 
       // Handle internal actions.
