@@ -143,7 +143,6 @@ class CORE_EXPORT WritableStreamNative : public WritableStream {
   // https://streams.spec.whatwg.org/#writable-stream-mark-first-write-request-in-flight
   static void MarkFirstWriteRequestInFlight(WritableStreamNative*);
 
-
   // https://streams.spec.whatwg.org/#writable-stream-update-backpressure
   static void UpdateBackpressure(ScriptState*,
                                  WritableStreamNative*,

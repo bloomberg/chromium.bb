@@ -210,20 +210,6 @@ ScriptValue WritableStreamNative::getWriter(ScriptState* script_state,
 
 // General Writable Stream Abstract Operations
 
-WritableStreamDefaultWriter* WritableStreamNative::AcquireDefaultWriter(
-    ScriptState* script_state,
-    WritableStreamNative* stream,
-    ExceptionState& exception_state) {
-  // https://streams.spec.whatwg.org/#acquire-writable-stream-default-writer
-  //  1. Return ? Construct(WritableStreamDefaultWriter, « stream »).
-  auto* writer = MakeGarbageCollected<WritableStreamDefaultWriter>(
-      script_state, stream, exception_state);
-  if (exception_state.HadException()) {
-    return nullptr;
-  }
-  return writer;
-}
-
 WritableStreamNative* WritableStreamNative::Create(
     ScriptState* script_state,
     StreamStartAlgorithm* start_algorithm,
@@ -258,37 +244,6 @@ WritableStreamNative* WritableStreamNative::Create(
 
   //  8. Return stream.
   return stream;
-}
-
-v8::Local<v8::Value> WritableStreamNative::GetStoredError(
-    v8::Isolate* isolate) const {
-  return stored_error_.NewLocal(isolate);
-}
-
-void WritableStreamNative::SetCloseRequest(
-    StreamPromiseResolver* close_request) {
-  close_request_ = close_request;
-}
-
-void WritableStreamNative::SetController(
-    WritableStreamDefaultController* controller) {
-  writable_stream_controller_ = controller;
-}
-
-void WritableStreamNative::SetWriter(WritableStreamDefaultWriter* writer) {
-  writer_ = writer;
-}
-
-void WritableStreamNative::Trace(Visitor* visitor) {
-  visitor->Trace(close_request_);
-  visitor->Trace(in_flight_write_request_);
-  visitor->Trace(in_flight_close_request_);
-  visitor->Trace(pending_abort_request_);
-  visitor->Trace(stored_error_);
-  visitor->Trace(writable_stream_controller_);
-  visitor->Trace(writer_);
-  visitor->Trace(write_requests_);
-  WritableStream::Trace(visitor);
 }
 
 v8::Local<v8::Promise> WritableStreamNative::Abort(
@@ -362,6 +317,15 @@ v8::Local<v8::Promise> WritableStreamNative::AddWriteRequest(
 
   //  5. Return promise.
   return promise->V8Promise(script_state->GetIsolate());
+}
+
+bool WritableStreamNative::CloseQueuedOrInFlight(
+    const WritableStreamNative* stream) {
+  // https://streams.spec.whatwg.org/#writable-stream-close-queued-or-in-flight
+  //  1. If stream.[[closeRequest]] is undefined and
+  //     stream.[[inFlightCloseRequest]] is undefined, return false.
+  //  2. Return true.
+  return stream->close_request_ || stream->in_flight_close_request_;
 }
 
 void WritableStreamNative::DealWithRejection(ScriptState* script_state,
@@ -676,24 +640,6 @@ void WritableStreamNative::FinishInFlightCloseWithError(
   DealWithRejection(script_state, stream, error);
 }
 
-bool WritableStreamNative::CloseQueuedOrInFlight(
-    const WritableStreamNative* stream) {
-  // https://streams.spec.whatwg.org/#writable-stream-close-queued-or-in-flight
-  //  1. If stream.[[closeRequest]] is undefined and
-  //     stream.[[inFlightCloseRequest]] is undefined, return false.
-  //  2. Return true.
-  return stream->close_request_ || stream->in_flight_close_request_;
-}
-
-bool WritableStreamNative::HasOperationMarkedInFlight(
-    const WritableStreamNative* stream) {
-  // https://streams.spec.whatwg.org/#writable-stream-has-operation-marked-in-flight
-  //  1. If stream.[[inFlightWriteRequest]] is undefined and
-  //     controller.[[inFlightCloseRequest]] is undefined, return false.
-  //  2. Return true.
-  return stream->in_flight_write_request_ || stream->in_flight_close_request_;
-}
-
 void WritableStreamNative::MarkCloseRequestInFlight(
     WritableStreamNative* stream) {
   // https://streams.spec.whatwg.org/#writable-stream-mark-close-request-in-flight
@@ -728,6 +674,95 @@ void WritableStreamNative::MarkFirstWriteRequestInFlight(
 
   //  5. Set stream.[[inFlightWriteRequest]] to writeRequest.
   stream->in_flight_write_request_ = write_request;
+}
+
+void WritableStreamNative::UpdateBackpressure(ScriptState* script_state,
+                                              WritableStreamNative* stream,
+                                              bool backpressure) {
+  // https://streams.spec.whatwg.org/#writable-stream-update-backpressure
+  //  1. Assert: stream.[[state]] is "writable".
+  DCHECK_EQ(stream->state_, kWritable);
+
+  //  2. Assert: ! WritableStreamCloseQueuedOrInFlight(stream) is false.
+  DCHECK(!CloseQueuedOrInFlight(stream));
+
+  //  3. Let writer be stream.[[writer]].
+  WritableStreamDefaultWriter* writer = stream->writer_;
+
+  //  4. If writer is not undefined and backpressure is not
+  //     stream.[[backpressure]],
+  if (writer && backpressure != stream->has_backpressure_) {
+    //      a. If backpressure is true, set writer.[[readyPromise]] to a new
+    //         promise.
+    if (backpressure) {
+      writer->SetReadyPromise(
+          MakeGarbageCollected<StreamPromiseResolver>(script_state));
+    } else {
+      //      b. Otherwise,
+      //          i. Assert: backpressure is false.
+      DCHECK(!backpressure);
+
+      //         ii. Resolve writer.[[readyPromise]] with undefined.
+      writer->ReadyPromise()->ResolveWithUndefined(script_state);
+    }
+  }
+
+  //  5. Set stream.[[backpressure]] to backpressure.
+  stream->has_backpressure_ = backpressure;
+}
+
+v8::Local<v8::Value> WritableStreamNative::GetStoredError(
+    v8::Isolate* isolate) const {
+  return stored_error_.NewLocal(isolate);
+}
+
+void WritableStreamNative::SetCloseRequest(
+    StreamPromiseResolver* close_request) {
+  close_request_ = close_request;
+}
+
+void WritableStreamNative::SetController(
+    WritableStreamDefaultController* controller) {
+  writable_stream_controller_ = controller;
+}
+
+void WritableStreamNative::SetWriter(WritableStreamDefaultWriter* writer) {
+  writer_ = writer;
+}
+
+void WritableStreamNative::Trace(Visitor* visitor) {
+  visitor->Trace(close_request_);
+  visitor->Trace(in_flight_write_request_);
+  visitor->Trace(in_flight_close_request_);
+  visitor->Trace(pending_abort_request_);
+  visitor->Trace(stored_error_);
+  visitor->Trace(writable_stream_controller_);
+  visitor->Trace(writer_);
+  visitor->Trace(write_requests_);
+  WritableStream::Trace(visitor);
+}
+
+WritableStreamDefaultWriter* WritableStreamNative::AcquireDefaultWriter(
+    ScriptState* script_state,
+    WritableStreamNative* stream,
+    ExceptionState& exception_state) {
+  // https://streams.spec.whatwg.org/#acquire-writable-stream-default-writer
+  //  1. Return ? Construct(WritableStreamDefaultWriter, « stream »).
+  auto* writer = MakeGarbageCollected<WritableStreamDefaultWriter>(
+      script_state, stream, exception_state);
+  if (exception_state.HadException()) {
+    return nullptr;
+  }
+  return writer;
+}
+
+bool WritableStreamNative::HasOperationMarkedInFlight(
+    const WritableStreamNative* stream) {
+  // https://streams.spec.whatwg.org/#writable-stream-has-operation-marked-in-flight
+  //  1. If stream.[[inFlightWriteRequest]] is undefined and
+  //     controller.[[inFlightCloseRequest]] is undefined, return false.
+  //  2. Return true.
+  return stream->in_flight_write_request_ || stream->in_flight_close_request_;
 }
 
 void WritableStreamNative::RejectCloseAndClosedPromiseIfNeeded(
@@ -766,40 +801,6 @@ void WritableStreamNative::RejectCloseAndClosedPromiseIfNeeded(
   }
 }
 
-void WritableStreamNative::UpdateBackpressure(ScriptState* script_state,
-                                              WritableStreamNative* stream,
-                                              bool backpressure) {
-  // https://streams.spec.whatwg.org/#writable-stream-update-backpressure
-  //  1. Assert: stream.[[state]] is "writable".
-  DCHECK_EQ(stream->state_, kWritable);
-
-  //  2. Assert: ! WritableStreamCloseQueuedOrInFlight(stream) is false.
-  DCHECK(!CloseQueuedOrInFlight(stream));
-
-  //  3. Let writer be stream.[[writer]].
-  WritableStreamDefaultWriter* writer = stream->writer_;
-
-  //  4. If writer is not undefined and backpressure is not
-  //     stream.[[backpressure]],
-  if (writer && backpressure != stream->has_backpressure_) {
-    //      a. If backpressure is true, set writer.[[readyPromise]] to a new
-    //         promise.
-    if (backpressure) {
-      writer->SetReadyPromise(
-          MakeGarbageCollected<StreamPromiseResolver>(script_state));
-    } else {
-      //      b. Otherwise,
-      //          i. Assert: backpressure is false.
-      DCHECK(!backpressure);
-
-      //         ii. Resolve writer.[[readyPromise]] with undefined.
-      writer->ReadyPromise()->ResolveWithUndefined(script_state);
-    }
-  }
-
-  //  5. Set stream.[[backpressure]] to backpressure.
-  stream->has_backpressure_ = backpressure;
-}
 
 // TODO(ricea): Functions for transferable streams.
 
