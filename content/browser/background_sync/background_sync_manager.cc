@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
@@ -323,7 +322,7 @@ BackgroundSyncManager::BackgroundSyncManager(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
     : op_scheduler_(CacheStorageSchedulerClient::kBackgroundSync),
       service_worker_context_(service_worker_context),
-      parameters_(new BackgroundSyncParameters()),
+      parameters_(std::make_unique<BackgroundSyncParameters>()),
       disabled_(false),
       num_firing_registrations_(0),
       clock_(base::DefaultClock::GetInstance()),
@@ -333,13 +332,13 @@ BackgroundSyncManager::BackgroundSyncManager(
   service_worker_context_->AddObserver(this);
 
 #if defined(OS_ANDROID)
-  network_observer_.reset(new BackgroundSyncNetworkObserverAndroid(
+  network_observer_ = std::make_unique<BackgroundSyncNetworkObserverAndroid>(
       base::BindRepeating(&BackgroundSyncManager::OnNetworkChanged,
-                          weak_ptr_factory_.GetWeakPtr())));
+                          weak_ptr_factory_.GetWeakPtr()));
 #else
-  network_observer_.reset(new BackgroundSyncNetworkObserver(
+  network_observer_ = std::make_unique<BackgroundSyncNetworkObserver>(
       base::BindRepeating(&BackgroundSyncManager::OnNetworkChanged,
-                          weak_ptr_factory_.GetWeakPtr())));
+                          weak_ptr_factory_.GetWeakPtr()));
 #endif
 }
 
