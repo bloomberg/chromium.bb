@@ -285,8 +285,8 @@ TEST_F(ArcTimerTest, InvalidStartTimerArgsTest) {
 TEST_F(ArcTimerTest, CheckMultipleCreateTimersTest) {
   std::vector<clockid_t> clocks = {CLOCK_REALTIME_ALARM};
   EXPECT_TRUE(CreateTimers(clocks));
-  // The create implementation calls powerd's delete API before calling create.
-  // The second create should thus succeed.
+  // The power manager implicitly deletes old timers associated with a tag
+  // during a create call. Thus, consecutive create calls should succeed.
   EXPECT_TRUE(CreateTimers(clocks));
 }
 

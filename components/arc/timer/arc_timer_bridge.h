@@ -69,13 +69,6 @@ class ArcTimerBridge : public KeyedService,
   // Callback for (powerd API) call made in |DeleteArcTimers|.
   void OnDeleteArcTimers(bool result);
 
-  // Callback for delete timers (powerd API) call made in |CreateTimers|.
-  void OnDeleteBeforeCreateArcTimers(
-      std::vector<std::pair<clockid_t, base::ScopedFD>>
-          create_arc_timers_requests,
-      CreateTimersCallback callback,
-      bool result);
-
   // Callback for powerd's D-Bus API called in |CreateTimers|.
   void OnCreateArcTimers(std::vector<clockid_t> clock_ids,
                          CreateTimersCallback callback,
