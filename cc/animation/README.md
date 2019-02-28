@@ -16,28 +16,64 @@ cc/animation actually works: how animations are ticked, what animation curves
 are, what the ownership model is, etc. Later sections document how other parts
 of Chromium interact with cc/animation, most prominently Blink and ui/.
 
-## How cc/animation works
+## cc/animation terminology
 
-The root concept in cc/animation is an
-[keyframe model](https://codesearch.chromium.org/chromium/src/cc/animation/keyframe_model.h).
-Animations contain the state necessary to 'play' (interpolate values from) an
+[Animation](https://cs.chromium.org/chromium/src/cc/animation/animation.h)
+A cc::Animation is responsible for managing animating properties for a set of
+targets. Each target is represented by a [KeyframeEffect][] and can be animating
+multiple properties on that target; see KeyframeEffect below.
+
+A particular Animation may not own all the KeyframeEffects for a given
+target. Animation is only a grouping mechanism for related effects, and the
+grouping relationship is defined by the client. It is also the client's
+responsibility to deal with any conflicts that arise from animating the same
+property of the same target across multiple Animations.
+
+Each Animation has a copy on the impl thread, and will take care of
+synchronizing to/from the impl thread when requested.
+
+[SingleKeyframeEffectAnimation](https://cs.chromium.org/chromium/src/cc/animation/single_keyframe_effect_animation.h)
+It is a sub-class of Animation that serves as a bridge between the cc animation
+clients and cc because currently only a single keyframe effect per animation is
+supported.
+
+There is a 1:1 relationship between SingleKeyframeEffectAnimation and
+the KeyframeEffect.
+
+> NOTE: SingleKeyframeEffectAnimation is being deprecated.
+
+[Keyframe model](https://codesearch.chromium.org/chromium/src/cc/animation/keyframe_model.h)
+KeyframeModels contain the state necessary to 'play' (interpolate values from) an
+
 [animation curve](https://codesearch.chromium.org/chromium/src/cc/animation/animation_curve.h),
 which is a function that returns a value given an input time. Aside from the
-animation curve itself, an animation's state includes the run state (playing,
+animation curve itself, a keyframe model's state includes the run state (playing,
 paused, etc), the start time, the current direction (forwards, reverse), etc.
 An animation does not know or care what property is being animated, and holds
 only an opaque identifier for the property to allow clients to map output values
 to the correct properties.
 
-Targeting only a single property means that cc KeyframeModels are distinct from the
-Blink concept of an animation, which wraps the animation of multiple properties.
-To coordinate the playback of multiple cc/animations (e.g. those that are
-animating multiple properties on the same target), KeyframeModels have the concept
-of a group identifier. Animations that have the same group identifier and the
-same target are started together, and animation-finished notifications are only
-sent when all animations in the group have finished.
+[Keyframe effect][]
+A KeyframeEffect owns a group of KeyframeModels for a single target (identified
+by [PropertyToElementIdMap][]). It is responsible for managing the KeyframeModels'
+running states (starting, running, paused, etc), as well as ticking the
+KeyframeModels when it is requested to produce new outputs for a given time.
 
-Animations are grouped together based on their
+Note that a single KeyframeEffect may not own all the KeyframeModels for a
+given target. KeyframeEffect is only a grouping mechanism for related
+KeyframeModels. The commonality between keyframe models on the same target is
+found via ElementAnimations - there is only one ElementAnimations for a given
+target.
+
+Group:
+KeyframeModels that must be run together are called 'grouped' and have the same
+group id. Grouped KeyframeModels are guaranteed to start at the same time and no
+other KeyframeModels may animate any of the group's target properties until all
+KeyframeModels in the group have finished animating. It's also guaranteed that
+no two keyframe models within a keyframe effect that have both the same group id
+and property id.
+
+In general, KeyframeModels are grouped together based on their
 [animation target](https://codesearch.chromium.org/chromium/src/cc/animation/animation_target.h)
 (the entity whose property is being animated) and each such group is owned by an
 [animation](https://codesearch.chromium.org/chromium/src/cc/animation/animation.h).
@@ -192,6 +228,8 @@ The lifetime of a newly started cc::Animation is roughly the following:
 [cc::Animation::Tick]: https://cs.chromium.org/search?q=cc::Animation::Tick+file:%5C.cc
 [cc::AnimationHost::ActivateAnimations]: https://cs.chromium.org/search?q=cc::AnimationHost::ActivateAnimations+ActivateKeyframeEffects
 [cc::ElementAnimations::ElementRegistered]: https://cs.chromium.org/search?q=cc::ElementAnimations::ElementRegistered+file:%5C.cc
+[KeyframeEffect]: https://cs.chromium.org/chromium/src/cc/animation/keyframe_effect.h
+[PropertyToElementIdMap]: https://cs.chromium.org/chromium/src/cc/trees/target_property.h?type=cs&g=0&l=42
 
 `TODO(flackr): Document finishing / cancel / abort.`
 
