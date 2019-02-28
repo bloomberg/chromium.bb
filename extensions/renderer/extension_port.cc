@@ -11,16 +11,9 @@
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/script_context.h"
+#include "extensions/renderer/worker_thread_util.h"
 
 namespace extensions {
-
-namespace {
-
-bool IsWorkerThread() {
-  return content::WorkerThread::GetCurrentId() != kMainThreadId;
-}
-
-}  // namespace
 
 ExtensionPort::ExtensionPort(ScriptContext* script_context,
                              const PortId& id,
@@ -42,7 +35,7 @@ void ExtensionPort::PostExtensionMessage(std::unique_ptr<Message> message) {
 
 void ExtensionPort::Close(bool close_channel) {
   // TODO(crbug.com/925918): Support Service Worker.
-  DCHECK(!IsWorkerThread());
+  DCHECK(!worker_thread_util::IsWorkerThread());
 
   content::RenderFrame* render_frame = script_context_->GetRenderFrame();
   if (!render_frame)

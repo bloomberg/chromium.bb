@@ -11,6 +11,7 @@
 #include "extensions/common/value_counter.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/worker_thread_dispatcher.h"
+#include "extensions/renderer/worker_thread_util.h"
 
 namespace extensions {
 
@@ -37,7 +38,7 @@ EventBookkeeper::EventBookkeeper() {}
 
 // static
 EventBookkeeper* EventBookkeeper::Get() {
-  if (content::WorkerThread::GetCurrentId() == kMainThreadId)
+  if (!worker_thread_util::IsWorkerThread())
     return &g_main_thread_event_bookkeeper.Get();
   return WorkerThreadDispatcher::Get()->event_bookkeeper();
 }

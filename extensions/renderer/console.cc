@@ -12,11 +12,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/worker_thread.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "extensions/renderer/v8_helpers.h"
+#include "extensions/renderer/worker_thread_util.h"
 #include "gin/converter.h"
 #include "gin/per_isolate_data.h"
 
@@ -44,7 +44,7 @@ void BoundLogMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   // A worker's ScriptContext neither lives in ScriptContextSet nor it has a
   // RenderFrame associated with it, so early exit in this case.
   // TODO(lazyboy): Fix.
-  if (content::WorkerThread::GetCurrentId() > 0)
+  if (worker_thread_util::IsWorkerThread())
     return;
 
   v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
