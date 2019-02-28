@@ -288,6 +288,29 @@ class ExtensionWebRequestApiTest : public ExtensionApiTest {
       const char* expected_content_regular_window,
       const char* exptected_content_incognito_window);
 
+  void InstallRequestHeaderModifyingExtension() {
+    TestExtensionDir test_dir;
+    test_dir.WriteManifest(R"({
+        "name": "Web Request Header Modifying Extension",
+        "manifest_version": 2,
+        "version": "0.1",
+        "background": { "scripts": ["background.js"] },
+        "permissions": ["<all_urls>", "webRequest", "webRequestBlocking"]
+      })");
+    test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), R"(
+        chrome.webRequest.onBeforeSendHeaders.addListener(function(details) {
+          details.requestHeaders.push({name: 'foo', value: 'bar'});
+          return {requestHeaders: details.requestHeaders};
+        }, {urls: ['*://*/echoheader*']}, ['blocking', 'requestHeaders']);
+
+        chrome.test.sendMessage('ready');
+      )");
+
+    ExtensionTestMessageListener listener("ready", false);
+    ASSERT_TRUE(LoadExtension(test_dir.UnpackedPath()));
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+  }
+
   // Ensures requests made by the |worker_script_name| service worker can be
   // intercepted by extensions.
   void RunServiceWorkerFetchTest(const std::string& worker_script_name);
@@ -318,6 +341,18 @@ class ExtensionWebRequestApiTest : public ExtensionApiTest {
     dir->WriteManifest(base::StringPrintf(kManifest, name.c_str()));
     LoadExtension(dir->UnpackedPath());
     test_dirs_.push_back(std::move(dir));
+  }
+
+  void RegisterServiceWorker(const std::string& worker_path,
+                             const base::Optional<std::string>& scope) {
+    GURL url = embedded_test_server()->GetURL(
+        "/service_worker/create_service_worker.html");
+    EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+    std::string script = content::JsReplace("register($1, $2);", worker_path,
+                                            scope ? *scope : std::string());
+    EXPECT_EQ(
+        "DONE",
+        EvalJs(browser()->tab_strip_model()->GetActiveWebContents(), script));
   }
 
  private:
@@ -752,39 +787,21 @@ void ExtensionWebRequestApiTest::RunServiceWorkerFetchTest(
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  TestExtensionDir test_dir;
-  test_dir.WriteManifest(R"({
-        "name": "Web Request Service Worker Test",
-        "manifest_version": 2,
-        "version": "0.1",
-        "background": { "scripts": ["background.js"] },
-        "permissions": ["<all_urls>", "webRequest", "webRequestBlocking"]
-      })");
-  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), R"(
-        chrome.webRequest.onBeforeSendHeaders.addListener(function(details) {
-          details.requestHeaders.push({name: 'foo', value: 'bar'});
-          return {requestHeaders: details.requestHeaders};
-        }, {urls: ['*://*/echoheader*']}, ['blocking', 'requestHeaders']);
+  // Install the test extension.
+  InstallRequestHeaderModifyingExtension();
 
-        chrome.test.sendMessage('ready');
-      )");
-
-  ExtensionTestMessageListener listener("ready", false);
-  ASSERT_TRUE(LoadExtension(test_dir.UnpackedPath()));
-  EXPECT_TRUE(listener.WaitUntilSatisfied());
-
-  // Register the |worker_script_name| as a service worker.
-  EXPECT_TRUE(ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(
-                     "/service_worker/create_service_worker.html")));
-  EXPECT_EQ("DONE", EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
-                           "register('" + worker_script_name + "');"));
-
+  // Register a service worker and navigate to a page it controls.
+  RegisterServiceWorker(worker_script_name, base::nullopt);
   EXPECT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
       embedded_test_server()->GetURL("/service_worker/fetch_from_page.html")));
-  // Ensure the extension was able to intercept the service worker request and
-  // modify the request headers.
+
+  // Make a fetch from the controlled page. Depending on the worker script, the
+  // fetch might go to the service worker and be re-issued, or might fallback to
+  // network, or skip the worker, etc. In any case, this function expects a
+  // network request to happen, and that the extension modify the headers of the
+  // request before it goes to network. Verify that it was able to inject a
+  // header of "foo=bar".
   EXPECT_EQ("bar", EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
                           "fetch_from_page('/echoheader?foo');"));
 }
@@ -2525,6 +2542,43 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ServiceWorkerFallback) {
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        ServiceWorkerNoFetchHandler) {
   RunServiceWorkerFetchTest("empty.js");
+}
+
+// Ensure that extensions can intercept service worker navigation preload
+// requests.
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       ServiceWorkerNavigationPreload) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Install the test extension.
+  InstallRequestHeaderModifyingExtension();
+
+  // Register a service worker that uses navigation preload.
+  RegisterServiceWorker("/service_worker/navigation_preload_worker.js",
+                        "/echoheader");
+
+  // Navigate to "/echoheader". The browser will detect that the service worker
+  // above is registered with this scope and has navigation preload enabled.
+  // So it will send the navigation preload request to network while at the same
+  // time starting up the service worker. The service worker will get the
+  // response for the navigation preload request, and respond with it to create
+  // the page.
+  GURL url = embedded_test_server()->GetURL(
+      "/echoheader?foo&service-worker-navigation-preload");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Since the request was to "/echoheader", the response describes the request
+  // headers.
+  //
+  // The extension is expected to add a "foo: bar" header to the request
+  // before it goes to network. Verify that it did.
+  //
+  // The browser adds a "service-worker-navigation-preload: true" header for
+  // navigation preload requests, so also sanity check that header to prove
+  // that this test is really testing the navigation preload request.
+  EXPECT_EQ("bar\ntrue",
+            EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                   "document.body.textContent;"));
 }
 
 // Ensure we don't strip off initiator incorrectly in web request events when

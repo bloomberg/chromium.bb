@@ -18,18 +18,25 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader/resource_requester_info.h"
 #include "content/browser/loader/url_loader_factory_impl.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/navigation_policy.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -40,6 +47,8 @@
 #include "net/log/net_log_event_type.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/throttling/throttling_controller.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
@@ -319,6 +328,48 @@ void GrantFileAccessToProcess(int process_id,
   }
 }
 
+// Creates the network URLLoaderFactory for the navigation preload request.
+void CreateNetworkFactoryForNavigationPreloadOnUI(
+    const ServiceWorkerFetchDispatcher::WebContentsGetter& web_contents_getter,
+    scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
+    network::mojom::URLLoaderFactoryRequest request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+
+  WebContents* web_contents = web_contents_getter.Run();
+  StoragePartitionImpl* partition = context_wrapper->storage_partition();
+  if (!web_contents || !partition) {
+    // The navigation was cancelled or we are in shutdown. Just drop the
+    // request. Otherwise, we might go to network without consulting the
+    // embedder first, which would break guarantees.
+    return;
+  }
+
+  // Follow what NavigationURLLoaderImpl does for the initiator passed to
+  // WillCreateURLLoaderFactory():
+  // Navigation requests are not associated with any particular
+  // |network::ResourceRequest::request_initiator| origin - using an opaque
+  // origin instead.
+  url::Origin initiator = url::Origin();
+
+  // We ignore the value of |bypass_redirect_checks_unused| since a redirects is
+  // just relayed to the service worker where preloadResponse is resolved as
+  // redirect.
+  bool bypass_redirect_checks_unused;
+
+  // Consult the embedder.
+  network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client;
+  GetContentClient()->browser()->WillCreateURLLoaderFactory(
+      web_contents->GetBrowserContext(), web_contents->GetMainFrame(),
+      web_contents->GetMainFrame()->GetProcess()->GetID(),
+      true /* is_navigation */, false /* is_download */, initiator, &request,
+      &header_client, &bypass_redirect_checks_unused);
+
+  // Make the network factory.
+  NavigationURLLoaderImpl::CreateURLLoaderFactoryWithHeaderClient(
+      std::move(header_client), std::move(request), partition);
+}
+
 }  // namespace
 
 // ResponseCallback is owned by the callback that is passed to
@@ -405,10 +456,17 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
 class ServiceWorkerFetchDispatcher::URLLoaderAssets
     : public base::RefCounted<ServiceWorkerFetchDispatcher::URLLoaderAssets> {
  public:
+  // Non-NetworkService.
   URLLoaderAssets(
       std::unique_ptr<network::mojom::URLLoaderFactory> url_loader_factory,
       std::unique_ptr<DelegatingURLLoaderClient> url_loader_client)
       : url_loader_factory_(std::move(url_loader_factory)),
+        url_loader_client_(std::move(url_loader_client)) {}
+  // NetworkService.
+  URLLoaderAssets(
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+      std::unique_ptr<DelegatingURLLoaderClient> url_loader_client)
+      : shared_url_loader_factory_(std::move(shared_url_loader_factory)),
         url_loader_client_(std::move(url_loader_client)) {}
 
   void MaybeReportToDevTools(std::pair<int, int> worker_id,
@@ -420,7 +478,13 @@ class ServiceWorkerFetchDispatcher::URLLoaderAssets
   friend class base::RefCounted<URLLoaderAssets>;
   virtual ~URLLoaderAssets() {}
 
+  // Non-NetworkService:
   std::unique_ptr<network::mojom::URLLoaderFactory> url_loader_factory_;
+
+  // NetworkService:
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
+
+  // Both:
   std::unique_ptr<DelegatingURLLoaderClient> url_loader_client_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderAssets);
@@ -650,9 +714,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
       Referrer::ReferrerPolicyForUrlRequest(original_info->GetReferrerPolicy());
   request.is_prerendering = original_info->IsPrerendering();
   request.load_flags = original_request->load_flags();
-  // Set to SUB_RESOURCE because we shouldn't trigger NavigationResourceThrottle
-  // for the service worker navigation preload request.
-  request.resource_type = RESOURCE_TYPE_SUB_RESOURCE;
+  request.resource_type = RESOURCE_TYPE_NAVIGATION_PRELOAD;
   request.priority = original_request->priority();
   request.skip_service_worker = true;
   request.do_not_prompt_for_login = true;
@@ -704,6 +766,8 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
 bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreloadWithURLLoader(
     const network::ResourceRequest& original_request,
     URLLoaderFactoryGetter* url_loader_factory_getter,
+    scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
+    const WebContentsGetter& web_contents_getter,
     base::OnceClosure on_response) {
   if (resource_type_ != RESOURCE_TYPE_MAIN_FRAME &&
       resource_type_ != RESOURCE_TYPE_SUB_FRAME) {
@@ -716,9 +780,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreloadWithURLLoader(
     return false;
 
   network::ResourceRequest resource_request(original_request);
-  // Set to SUB_RESOURCE because we shouldn't trigger NavigationResourceThrottle
-  // for the service worker navigation preload request.
-  resource_request.resource_type = RESOURCE_TYPE_SUB_RESOURCE;
+  resource_request.resource_type = RESOURCE_TYPE_NAVIGATION_PRELOAD;
   resource_request.skip_service_worker = true;
   resource_request.do_not_prompt_for_login = true;
 
@@ -729,6 +791,28 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreloadWithURLLoader(
   resource_request.headers.SetHeader(
       "Service-Worker-Navigation-Preload",
       version_->navigation_preload_state().header);
+
+  // Create the network factory.
+  scoped_refptr<network::SharedURLLoaderFactory> factory;
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // In the network service case, create the factory on the UI thread.
+    network::mojom::URLLoaderFactoryPtr network_factory;
+    auto factory_request = mojo::MakeRequest(&network_factory);
+
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&CreateNetworkFactoryForNavigationPreloadOnUI,
+                       web_contents_getter, std::move(context_wrapper),
+                       mojo::MakeRequest(&network_factory)));
+    factory = base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
+        std::move(network_factory));
+  } else {
+    // In the non-network-service case, use |url_loader_factory_getter|. Unlike
+    // the network service case, we don't need to go to the UI thread to tell
+    // the embedder about the factory since the request will go to
+    // ResourceDispatcherHost which talks to the embedder then.
+    factory = url_loader_factory_getter->GetNetworkFactory();
+  }
 
   preload_handle_ = blink::mojom::FetchEventPreloadHandle::New();
 
@@ -741,26 +825,28 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreloadWithURLLoader(
       std::move(inner_url_loader_client), std::move(on_response),
       resource_request);
 
-  // Start the network request for the URL using the network loader.
-  // TODO(falken): What to do about routing_id, request_id?
+  // Use NavigationURLLoaderImpl to get a unique request id across
+  // browser-initiated navigations and navigation preloads.
+  int request_id = NavigationURLLoaderImpl::MakeGlobalRequestID().request_id;
+
+  // Start the network request for the URL using the network factory.
+  // TODO(falken): What to do about routing_id.
   network::mojom::URLLoaderClientPtr url_loader_client_to_pass;
   url_loader_client->Bind(&url_loader_client_to_pass);
   network::mojom::URLLoaderPtr url_loader;
-  url_loader_factory_getter->GetNetworkFactory()->CreateLoaderAndStart(
-      mojo::MakeRequest(&url_loader), -1 /* routing_id? */,
-      -1 /* request_id? */, network::mojom::kURLLoadOptionNone,
-      resource_request, std::move(url_loader_client_to_pass),
+
+  factory->CreateLoaderAndStart(
+      mojo::MakeRequest(&url_loader), -1 /* routing_id? */, request_id,
+      network::mojom::kURLLoadOptionNone, resource_request,
+      std::move(url_loader_client_to_pass),
       net::MutableNetworkTrafficAnnotationTag(
           kNavigationPreloadTrafficAnnotation));
 
   preload_handle_->url_loader = url_loader.PassInterface();
 
   DCHECK(!url_loader_assets_);
-  // Unlike the non-S13N code path, we don't own the URLLoaderFactory being used
-  // (it's the generic network factory), so we don't need to pass it to
-  // URLLoaderAssets to keep it alive.
   url_loader_assets_ = base::MakeRefCounted<URLLoaderAssets>(
-      nullptr /* url_loader_factory */, std::move(url_loader_client));
+      std::move(factory), std::move(url_loader_client));
   return true;
 }
 

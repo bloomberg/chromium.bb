@@ -40,6 +40,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
 namespace extensions {
@@ -76,19 +77,22 @@ std::unique_ptr<net::test_server::HttpResponse> HandleEchoHeaderRequest(
                         base::CompareCase::SENSITIVE))
     return nullptr;
 
-  size_t query_string_pos = request.relative_url.find('?');
-  std::string header_name =
-      request.relative_url.substr(query_string_pos + 1);
+  std::string content;
+  net::test_server::RequestQuery headers =
+      net::test_server::ParseQuery(request.GetURL());
+  for (const auto& header : headers) {
+    std::string header_name = header.first;
+    std::string header_value;
+    if (request.headers.find(header_name) != request.headers.end())
+      header_value = request.headers.at(header_name);
+    if (!content.empty())
+      content += "\n";
+    content += header_value;
+  }
 
-  std::string header_value;
-  auto it = request.headers.find(header_name);
-  if (it != request.headers.end())
-    header_value = it->second;
-
-  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
-      new net::test_server::BasicHttpResponse);
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
   http_response->set_code(net::HTTP_OK);
-  http_response->set_content(header_value);
+  http_response->set_content(content);
   return std::move(http_response);
 }
 
@@ -146,6 +150,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleSetHeaderRequest(
 
 }  // namespace
 
+// TODO(karandeepb): See if this custom handling can be removed.
 ExtensionApiTest::ExtensionApiTest() {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&HandleServerRedirectRequest));

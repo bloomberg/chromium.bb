@@ -8159,7 +8159,7 @@ Called by update_net_error_codes.py.-->
 
 <enum name="ContentResourceType">
   <obsolete>
-    Superseded by ContentResourceType in December 2015 when SUB_RESOURCE was
+    Superseded by ContentResourceType2 in December 2015 when SUB_RESOURCE was
     split into RESOURCE_TYPE_SUB_RESOURCE and RESOURCE_TYPE_PLUGIN_RESOURCE, and
     PING was split into RESOURCE_TYPE_PING and RESOURCE_TYPE_CSP_REPORT.
   </obsolete>
@@ -8200,6 +8200,7 @@ Called by update_net_error_codes.py.-->
   <int value="15" label="RESOURCE_TYPE_SERVICE_WORKER"/>
   <int value="16" label="RESOURCE_TYPE_CSP_REPORT"/>
   <int value="17" label="RESOURCE_TYPE_PLUGIN_RESOURCE"/>
+  <int value="18" label="RESOURCE_TYPE_NAVIGATION_PRELOAD"/>
 </enum>
 
 <enum name="ContentSetting">

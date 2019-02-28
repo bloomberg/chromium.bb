@@ -114,6 +114,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   uint32_t GetRenderFrameId() const;
   uint32_t GetProcessId() const;
+  uint32_t GetResourceType() const;
 
   const net::HttpRequestHeaders& custom_proxy_pre_cache_headers() const {
     return custom_proxy_pre_cache_headers_;
