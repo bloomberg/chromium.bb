@@ -123,8 +123,10 @@ int SearchResultTileItemListView::DoUpdate() {
     }
 
     if (i >= display_results.size()) {
-      if (is_play_store_app_search_enabled_)
+      if (is_app_reinstall_recommendation_enabled_ ||
+          is_play_store_app_search_enabled_) {
         separator_views_[i]->SetVisible(false);
+      }
 
       tile_views_[i]->SetResult(nullptr);
       continue;
