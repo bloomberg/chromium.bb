@@ -64,12 +64,6 @@ class CastSysInfo {
   virtual std::string GetWifiInterface() = 0;
   // Returns the name of the software AP interface.
   virtual std::string GetApInterface() = 0;
-
-  // The following three APIs are deprecated and never called.
-  // TODO(halliwell): Remove them in the next system update.
-  virtual std::string GetGlVendor() = 0;
-  virtual std::string GetGlRenderer() = 0;
-  virtual std::string GetGlVersion() = 0;
 };
 
 }  // namespace chromecast

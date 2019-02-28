@@ -130,19 +130,4 @@ std::string CastSysInfoAndroid::GetApInterface() {
   return "";
 }
 
-std::string CastSysInfoAndroid::GetGlVendor() {
-  NOTREACHED() << "GL information shouldn't be requested on Android.";
-  return "";
-}
-
-std::string CastSysInfoAndroid::GetGlRenderer() {
-  NOTREACHED() << "GL information shouldn't be requested on Android.";
-  return "";
-}
-
-std::string CastSysInfoAndroid::GetGlVersion() {
-  NOTREACHED() << "GL information shouldn't be requested on Android.";
-  return "";
-}
-
 }  // namespace chromecast
