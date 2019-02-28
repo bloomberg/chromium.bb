@@ -40,7 +40,7 @@ void SIGCHLDHandler(int signal) {
 class ExitHandler {
  public:
   // Invokes exit when appropriate.
-  static void ExitWhenPossibleOnUIThread();
+  static void ExitWhenPossibleOnUIThread(int signal);
 
  private:
   ExitHandler();
@@ -64,13 +64,38 @@ class ExitHandler {
 };
 
 // static
-void ExitHandler::ExitWhenPossibleOnUIThread() {
+void ExitHandler::ExitWhenPossibleOnUIThread(int signal) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (SessionRestore::IsRestoringSynchronously()) {
     // ExitHandler takes care of deleting itself.
     new ExitHandler();
   } else {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    switch (signal) {
+      case SIGINT:
+      case SIGHUP:
+        // SIGINT gets sent when the user types Ctrl+C, but the session is
+        // likely not going away, so try to exit gracefully.  SIGHUP is sent on
+        // most systems as a first warning of shutdown.  If the process takes
+        // too long to quit, the next signal is usually SIGTERM.
+        Exit();
+        break;
+      case SIGTERM:
+        // SIGTERM is usually sent instead of SIGKILL to gracefully shutdown
+        // processes.  But most systems use it as a shutdown warning, so
+        // conservatively assume that the session is ending.  If the process
+        // still doesn't quit within a bounded time, most systems will finally
+        // send SIGKILL, which we're unable to install a signal handler for.
+        // TODO(thomasanderson): Try to distinguish if the session is really
+        // ending or not.  Maybe there's a systemd or DBus API to query.
+        chrome::SessionEnding();
+        break;
+      default:
+        NOTREACHED();
+    }
+#else
     Exit();
+#endif
   }
 }
 
@@ -125,7 +150,7 @@ int ChromeBrowserMainPartsPosix::PreEarlyInitialization() {
   struct sigaction action;
   memset(&action, 0, sizeof(action));
   action.sa_handler = SIGCHLDHandler;
-  CHECK(sigaction(SIGCHLD, &action, NULL) == 0);
+  CHECK_EQ(0, sigaction(SIGCHLD, &action, NULL));
 
   return service_manager::RESULT_CODE_NORMAL_EXIT;
 }
@@ -135,7 +160,7 @@ void ChromeBrowserMainPartsPosix::PostMainMessageLoopStart() {
 
   // Exit in response to SIGINT, SIGTERM, etc.
   InstallShutdownSignalHandlers(
-      base::Bind(&ExitHandler::ExitWhenPossibleOnUIThread),
+      base::BindOnce(&ExitHandler::ExitWhenPossibleOnUIThread),
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
 }
 
