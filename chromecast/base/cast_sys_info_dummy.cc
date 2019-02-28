@@ -73,18 +73,6 @@ std::string CastSysInfoDummy::GetApInterface() {
   return ap_interface_;
 }
 
-std::string CastSysInfoDummy::GetGlVendor() {
-  return gl_vendor_;
-}
-
-std::string CastSysInfoDummy::GetGlRenderer() {
-  return gl_renderer_;
-}
-
-std::string CastSysInfoDummy::GetGlVersion() {
-  return gl_version_;
-}
-
 void CastSysInfoDummy::SetBuildTypeForTesting(
     CastSysInfo::BuildType build_type) {
   build_type_ = build_type;
@@ -147,18 +135,6 @@ void CastSysInfoDummy::SetWifiInterfaceForTesting(
 void CastSysInfoDummy::SetApInterfaceForTesting(
     const std::string& ap_interface) {
   ap_interface_ = ap_interface;
-}
-
-void CastSysInfoDummy::SetGlVendorForTesting(const std::string& gl_vendor) {
-  gl_vendor_ = gl_vendor;
-}
-
-void CastSysInfoDummy::SetGlRendererForTesting(const std::string& gl_renderer) {
-  gl_renderer_ = gl_renderer;
-}
-
-void CastSysInfoDummy::SetGlVersionForTesting(const std::string& gl_version) {
-  gl_version_ = gl_version;
 }
 
 }  // namespace chromecast
