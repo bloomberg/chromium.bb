@@ -9,6 +9,7 @@
 
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
@@ -16,6 +17,7 @@
 #include "build/buildflag.h"
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
@@ -83,6 +85,10 @@ Service::Service(service_manager::mojom::ServiceRequest request,
 Service::~Service() = default;
 
 void Service::RequestAccessToken() {
+  // Bypass access token fetching under signed out mode.
+  if (is_signed_out_mode_)
+    return;
+
   VLOG(1) << "Start requesting access token.";
   GetIdentityAccessor()->GetPrimaryAccountInfo(base::BindOnce(
       &Service::GetPrimaryAccountInfoCallback, base::Unretained(this)));
@@ -188,7 +194,8 @@ void Service::UpdateAssistantManagerState() {
   if (!assistant_state_.hotword_enabled().has_value() ||
       !assistant_state_.settings_enabled().has_value() ||
       !assistant_state_.hotword_always_on().has_value() ||
-      !assistant_state_.locale().has_value() || !access_token_.has_value()) {
+      !assistant_state_.locale().has_value() ||
+      (!access_token_.has_value() && !is_signed_out_mode_)) {
     // Assistant state has not finished initialization, let's wait.
     return;
   }
@@ -200,7 +207,8 @@ void Service::UpdateAssistantManagerState() {
     case AssistantManagerService::State::STOPPED:
       if (assistant_state_.settings_enabled().value()) {
         assistant_manager_service_->Start(
-            access_token_.value(), ShouldEnableHotword(),
+            is_signed_out_mode_ ? base::nullopt : access_token_,
+            ShouldEnableHotword(),
             base::BindOnce(
                 [](scoped_refptr<base::SequencedTaskRunner> task_runner,
                    base::OnceCallback<void()> callback) {
@@ -215,7 +223,8 @@ void Service::UpdateAssistantManagerState() {
     case AssistantManagerService::State::RUNNING:
     case AssistantManagerService::State::STARTED:
       if (assistant_state_.settings_enabled().value()) {
-        assistant_manager_service_->SetAccessToken(access_token_.value());
+        if (!is_signed_out_mode_)
+          assistant_manager_service_->SetAccessToken(access_token_.value());
         assistant_manager_service_->EnableHotword(ShouldEnableHotword());
       } else {
         StopAssistantManagerService();
@@ -237,6 +246,14 @@ void Service::Init(mojom::ClientPtr client,
   device_actions_ = std::move(device_actions);
   assistant_state_.Init(service_binding_.GetConnector());
   assistant_state_.AddObserver(this);
+
+  // Don't fetch token for test.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableGaiaServices)) {
+    is_signed_out_mode_ = true;
+    return;
+  }
+
   RequestAccessToken();
 }
 

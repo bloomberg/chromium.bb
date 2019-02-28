@@ -97,7 +97,7 @@ class AssistantManagerServiceImpl
   ~AssistantManagerServiceImpl() override;
 
   // assistant::AssistantManagerService overrides
-  void Start(const std::string& access_token,
+  void Start(const base::Optional<std::string>& access_token,
              bool enable_hotword,
              base::OnceClosure callback) override;
   void Stop() override;
@@ -181,7 +181,7 @@ class AssistantManagerServiceImpl
   }
 
  private:
-  void StartAssistantInternal(const std::string& access_token);
+  void StartAssistantInternal(const base::Optional<std::string>& access_token);
   void PostInitAssistant(base::OnceClosure post_init_callback);
 
   // Update device id, type and locale
