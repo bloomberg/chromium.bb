@@ -47,11 +47,9 @@ class BASE_EXPORT ModuleCache {
     //   GUID + AGE in the debug image headers of a module.
     std::string GetId() const;
 
-    // Gets the filename of the module.
-    // TODO(wittman): This is really the debug basename of the file, which is
-    // the pdb basename for Windows and the binary basename for other
-    // platforms. Update the method name accordingly.
-    FilePath GetFilename() const;
+    // Gets the debug basename of the module. This is the basename of the PDB
+    // file on Windows and the basename of the binary on other platforms.
+    FilePath GetDebugBasename() const;
 
     // Gets the size of the module.
     size_t GetSize() const;
@@ -59,7 +57,7 @@ class BASE_EXPORT ModuleCache {
    private:
     uintptr_t base_address_;
     std::string id_;
-    FilePath filename_;
+    FilePath debug_basename_;
     size_t size_;
   };
 

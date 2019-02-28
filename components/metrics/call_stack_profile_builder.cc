@@ -168,7 +168,8 @@ void CallStackProfileBuilder::OnProfileCompleted(
     CallStackProfile::ModuleIdentifier* module_id =
         call_stack_profile->add_module_id();
     module_id->set_build_id(module->GetId());
-    module_id->set_name_md5_prefix(HashModuleFilename(module->GetFilename()));
+    module_id->set_name_md5_prefix(
+        HashModuleFilename(module->GetDebugBasename()));
   }
 
   PassProfilesToMetricsProvider(std::move(sampled_profile_));

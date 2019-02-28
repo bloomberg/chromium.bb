@@ -113,7 +113,7 @@ void TracingSamplerProfiler::TracingProfileBuilder::OnSampleCompleted(
         frame_name = "Unknown";
 #else
     if (frame.module) {
-      module_name = frame.module->GetFilename().BaseName().MaybeAsASCII();
+      module_name = frame.module->GetDebugBasename().MaybeAsASCII();
       module_id = frame.module->GetId();
       frame_name = GetFrameNameFromOffsetAddr(frame.instruction_pointer -
                                               frame.module->GetBaseAddress());
