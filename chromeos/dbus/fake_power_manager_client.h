@@ -45,6 +45,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakePowerManagerClient
     return num_set_is_projecting_calls_;
   }
   int num_defer_screen_dim_calls() const { return num_defer_screen_dim_calls_; }
+  int num_wake_notification_calls() const {
+    return num_wake_notification_calls_;
+  }
   double screen_brightness_percent() const {
     return screen_brightness_percent_.value();
   }
@@ -95,6 +98,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakePowerManagerClient
                        const std::string& description) override;
   void NotifyUserActivity(power_manager::UserActivityType type) override;
   void NotifyVideoActivity(bool is_fullscreen) override;
+  void NotifyWakeNotification() override;
   void SetPolicy(const power_manager::PowerManagementPolicy& policy) override;
   void SetIsProjecting(bool is_projecting) override;
   void SetPowerSource(const std::string& id) override;
@@ -202,6 +206,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakePowerManagerClient
   int num_set_is_projecting_calls_ = 0;
   int num_set_backlights_forced_off_calls_ = 0;
   int num_defer_screen_dim_calls_ = 0;
+  int num_wake_notification_calls_ = 0;
 
   // Number of pending suspend readiness callbacks.
   int num_pending_suspend_readiness_callbacks_ = 0;

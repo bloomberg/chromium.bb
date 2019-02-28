@@ -319,6 +319,11 @@ class PowerManagerClientImpl : public PowerManagerClient {
                                      base::DoNothing());
   }
 
+  void NotifyWakeNotification() override {
+    SimpleMethodCallToPowerManager(
+        power_manager::kHandleWakeNotificationMethod);
+  }
+
   void SetPolicy(const power_manager::PowerManagementPolicy& policy) override {
     POWER_LOG(USER) << "SetPolicy";
     dbus::MethodCall method_call(power_manager::kPowerManagerInterface,

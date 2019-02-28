@@ -158,6 +158,7 @@ class PersistentWindowController;
 class PolicyRecommendationRestorer;
 class PowerButtonController;
 class PowerEventObserver;
+class NotificationReporter;
 class PowerPrefs;
 class ProjectingObserver;
 class ResizeShadowController;
@@ -875,6 +876,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   bool simulate_modal_window_open_for_test_ = false;
 
   std::unique_ptr<MessageCenterController> message_center_controller_;
+
+  std::unique_ptr<NotificationReporter> notification_reporter_;
 
   base::ObserverList<ShellObserver>::Unchecked shell_observers_;
 

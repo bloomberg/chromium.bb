@@ -165,6 +165,10 @@ void FakePowerManagerClient::NotifyVideoActivity(bool is_fullscreen) {
   video_activity_reports_.push_back(is_fullscreen);
 }
 
+void FakePowerManagerClient::NotifyWakeNotification() {
+  ++num_wake_notification_calls_;
+}
+
 void FakePowerManagerClient::SetPolicy(
     const power_manager::PowerManagementPolicy& policy) {
   policy_ = policy;
