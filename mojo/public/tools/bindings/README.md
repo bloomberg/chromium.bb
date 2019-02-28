@@ -699,7 +699,7 @@ ModuleStatement = AttributeSection "module" Identifier ";"
 ImportStatement = "import" StringLiteral ";"
 Definition = Struct Union Interface Enum Const
 
-AttributeSection = "[" AttributeList "]"
+AttributeSection = <empty> | "[" AttributeList "]"
 AttributeList = <empty> | NonEmptyAttributeList
 NonEmptyAttributeList = Attribute
                       | Attribute "," NonEmptyAttributeList
