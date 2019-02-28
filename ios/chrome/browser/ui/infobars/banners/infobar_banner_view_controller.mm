@@ -5,10 +5,41 @@
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_delegate.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+// Banner View constants.
+const CGFloat kBannerViewCornerRadius = 13.0;
+const CGFloat kBannerViewYShadowOffset = 5.0;
+const CGFloat kBannerViewShadowRadius = 3.0;
+const CGFloat kBannerViewShadowOpactiy = 0.08;
+
+// Bottom Grip constants.
+const CGFloat kBottomGripCornerRadius = 0.2;
+const CGFloat kBottomGripWidth = 44.0;
+const CGFloat kBottomGripHeight = 3.0;
+const CGFloat kBottomGripBottomPadding = 4.0;
+const int kBottomGripBackgroundColor = 0xD8D8D8;
+
+// Labels constants.
+const int kTitleLabelColor = 0x202124;
+const int kSubTitleLabelColor = 0x7F868C;
+
+// Button constants.
+const CGFloat kButtonWidth = 100.0;
+const CGFloat kButtonSeparatorWidth = 1.0;
+const int kButtonSeparatorColor = 0xF1F3F4;
+
+// Container Stack constants.
+const CGFloat kContainerStackSpacing = 18.0;
+
+// Icon constants.
+const CGFloat kIconWidth = 25.0;
+}  // namespace
 
 @interface InfobarBannerViewController ()
 
@@ -20,8 +51,6 @@
 
 @end
 
-// TODO(crbug.com/1372916): PLACEHOLDER Work in Progress class for the new
-// InfobarUI.
 @implementation InfobarBannerViewController
 
 - (instancetype)initWithDelegate:(id<InfobarBannerDelegate>)delegate {
@@ -37,44 +66,116 @@
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  UILabel* messageLabel = [[UILabel alloc] init];
-  messageLabel.text = self.messageText;
-  messageLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-  messageLabel.adjustsFontForContentSizeCategory = YES;
-  messageLabel.textColor = [UIColor blackColor];
-  messageLabel.translatesAutoresizingMaskIntoConstraints = NO;
-  messageLabel.numberOfLines = 0;
+  // BannerView setup.
+  self.view.backgroundColor = [UIColor whiteColor];
+  self.view.layer.cornerRadius = kBannerViewCornerRadius;
+  [self.view.layer setShadowColor:[UIColor blackColor].CGColor];
+  [self.view.layer setShadowOffset:CGSizeMake(0.0, kBannerViewYShadowOffset)];
+  [self.view.layer setShadowRadius:kBannerViewShadowRadius];
+  [self.view.layer setShadowOpacity:kBannerViewShadowOpactiy];
 
+  // Bottom Grip setup.
+  UIView* bottomGrip = [[UIView alloc] init];
+  bottomGrip.backgroundColor = UIColorFromRGB(kBottomGripBackgroundColor);
+  bottomGrip.layer.cornerRadius = kBottomGripCornerRadius;
+  bottomGrip.translatesAutoresizingMaskIntoConstraints = NO;
+  [self.view addSubview:bottomGrip];
+
+  // Icon setup.
+  self.iconImage = [self.iconImage
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  UIImageView* iconImageView =
+      [[UIImageView alloc] initWithImage:self.iconImage];
+  iconImageView.contentMode = UIViewContentModeScaleAspectFit;
+
+  // Labels setup.
+  UILabel* titleLabel = [[UILabel alloc] init];
+  titleLabel.text = self.titleText;
+  titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  titleLabel.adjustsFontForContentSizeCategory = YES;
+  titleLabel.textColor = UIColorFromRGB(kTitleLabelColor);
+  titleLabel.numberOfLines = 0;
+  titleLabel.baselineAdjustment = UIBaselineAdjustmentAlignCenters;
+
+  UILabel* subTitleLabel = [[UILabel alloc] init];
+  subTitleLabel.text = self.subTitleText;
+  subTitleLabel.font =
+      [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+  subTitleLabel.adjustsFontForContentSizeCategory = YES;
+  subTitleLabel.textColor = UIColorFromRGB(kSubTitleLabelColor);
+  subTitleLabel.numberOfLines = 0;
+  // If |self.subTitleText| hasn't been set or is empty, hide the label to keep
+  // the title label centered in the Y axis.
+  subTitleLabel.hidden = ![self.subTitleText length];
+
+  UIStackView* labelsStackView = [[UIStackView alloc]
+      initWithArrangedSubviews:@[ titleLabel, subTitleLabel ]];
+  labelsStackView.axis = UILayoutConstraintAxisVertical;
+  labelsStackView.alignment = UIStackViewAlignmentLeading;
+  labelsStackView.distribution = UIStackViewDistributionEqualCentering;
+  [labelsStackView setContentHuggingPriority:UILayoutPriorityRequired
+                                     forAxis:UILayoutConstraintAxisVertical];
+
+  // Button setup.
   UIButton* infobarButton = [UIButton buttonWithType:UIButtonTypeSystem];
   [infobarButton setTitle:self.buttonText forState:UIControlStateNormal];
+  infobarButton.titleLabel.font =
+      [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
   [infobarButton addTarget:self.delegate
                     action:@selector(bannerInfobarButtonWasPressed:)
           forControlEvents:UIControlEventTouchUpInside];
-  infobarButton.translatesAutoresizingMaskIntoConstraints = NO;
 
+  UIView* buttonSeparator = [[UIView alloc] init];
+  buttonSeparator.translatesAutoresizingMaskIntoConstraints = NO;
+  buttonSeparator.backgroundColor = UIColorFromRGB(kButtonSeparatorColor);
+  [infobarButton addSubview:buttonSeparator];
+
+  // Container Stack setup.
+  UIStackView* containerStack = [[UIStackView alloc] initWithArrangedSubviews:@[
+    iconImageView, labelsStackView, infobarButton
+  ]];
+  containerStack.axis = UILayoutConstraintAxisHorizontal;
+  containerStack.spacing = kContainerStackSpacing;
+  containerStack.distribution = UIStackViewDistributionFill;
+  containerStack.alignment = UIStackViewAlignmentFill;
+  containerStack.translatesAutoresizingMaskIntoConstraints = NO;
+  [self.view addSubview:containerStack];
+
+  // Constraints setup.
+  [NSLayoutConstraint activateConstraints:@[
+    // Container Stack.
+    [containerStack.leadingAnchor
+        constraintEqualToAnchor:self.view.leadingAnchor
+                       constant:kContainerStackSpacing],
+    [containerStack.trailingAnchor
+        constraintEqualToAnchor:self.view.trailingAnchor],
+    [containerStack.centerYAnchor
+        constraintEqualToAnchor:self.view.centerYAnchor],
+    // Icon.
+    [iconImageView.widthAnchor constraintEqualToConstant:kIconWidth],
+    // Button.
+    [infobarButton.widthAnchor constraintEqualToConstant:kButtonWidth],
+    [buttonSeparator.widthAnchor
+        constraintEqualToConstant:kButtonSeparatorWidth],
+    [buttonSeparator.leadingAnchor
+        constraintEqualToAnchor:infobarButton.leadingAnchor],
+    [buttonSeparator.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+    [buttonSeparator.bottomAnchor
+        constraintEqualToAnchor:self.view.bottomAnchor],
+    // Bottom Grip.
+    [bottomGrip.widthAnchor constraintEqualToConstant:kBottomGripWidth],
+    [bottomGrip.heightAnchor constraintEqualToConstant:kBottomGripHeight],
+    [bottomGrip.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
+    [bottomGrip.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor
+                                            constant:-kBottomGripBottomPadding],
+  ]];
+
+  // Gestures setup.
   UIPanGestureRecognizer* panGestureRecognizer =
       [[UIPanGestureRecognizer alloc] init];
   [panGestureRecognizer addTarget:self action:@selector(handlePanGesture:)];
   [panGestureRecognizer setMaximumNumberOfTouches:1];
   [self.view addGestureRecognizer:panGestureRecognizer];
-
-  [self.view addSubview:messageLabel];
-  [self.view addSubview:infobarButton];
-  self.view.backgroundColor = [UIColor lightGrayColor];
-
-  [NSLayoutConstraint activateConstraints:@[
-    [messageLabel.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor
-                                               constant:30],
-    [messageLabel.trailingAnchor
-        constraintEqualToAnchor:infobarButton.leadingAnchor],
-    [messageLabel.centerYAnchor
-        constraintEqualToAnchor:self.view.centerYAnchor],
-    [infobarButton.centerYAnchor
-        constraintEqualToAnchor:self.view.centerYAnchor],
-    [infobarButton.trailingAnchor
-        constraintEqualToAnchor:self.view.trailingAnchor],
-    [infobarButton.widthAnchor constraintEqualToConstant:100]
-  ]];
 }
 
 #pragma mark - Private Methods
@@ -83,6 +184,7 @@
   [self dismissViewControllerAnimated:YES completion:nil];
 }
 
+// TODO(crbug.com/911864): PLACEHOLDER Gesture handling for the new InfobarUI.
 - (void)handlePanGesture:(UIPanGestureRecognizer*)gesture {
   CGPoint translation = [gesture translationInView:self.view];
 
