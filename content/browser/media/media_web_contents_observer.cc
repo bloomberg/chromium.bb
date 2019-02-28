@@ -72,7 +72,12 @@ MediaWebContentsObserver::MediaWebContentsObserver(WebContents* web_contents)
 MediaWebContentsObserver::~MediaWebContentsObserver() = default;
 
 void MediaWebContentsObserver::WebContentsDestroyed() {
-  audible_metrics_->WebContentsDestroyed(web_contents());
+  AudioStreamMonitor* audio_stream_monitor =
+      web_contents_impl()->audio_stream_monitor();
+
+  audible_metrics_->WebContentsDestroyed(
+      web_contents(), audio_stream_monitor->WasRecentlyAudible() &&
+                          !web_contents()->IsAudioMuted());
 }
 
 void MediaWebContentsObserver::RenderFrameDeleted(
