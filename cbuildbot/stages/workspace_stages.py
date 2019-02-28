@@ -292,22 +292,24 @@ class WorkspaceSyncChromeStage(WorkspaceStageBase):
     gclient = os.path.join(
         self._build_root, 'chromium', 'tools', 'depot_tools', 'gclient')
 
-    # --reset tells sync_chrome to blow away local changes and to feel
-    # free to delete any directories that get in the way of syncing. This
-    # is needed for unattended operation.
-    # --ignore-locks tells sync_chrome to ignore git-cache locks.
-    cmd = [sync_chrome,
-           '--reset', '--ignore_locks',
-           '--gclient', gclient,
-           '--tag', chrome_version]
+    # Branched gclient can use git-cache incompatibly, so use a temp one.
+    with osutils.TempDir(prefix='dummy') as git_cache:
+      # --reset tells sync_chrome to blow away local changes and to feel
+      # free to delete any directories that get in the way of syncing. This
+      # is needed for unattended operation.
+      # --ignore-locks tells sync_chrome to ignore git-cache locks.
+      cmd = [sync_chrome,
+             '--reset', '--ignore_locks',
+             '--gclient', gclient,
+             '--tag', chrome_version,
+             '--git_cache_dir', git_cache]
 
-    if constants.USE_CHROME_INTERNAL in self._run.config.useflags:
-      cmd += ['--internal']
-    if self._run.options.git_cache_dir:
-      cmd += ['--git_cache_dir', self._run.options.git_cache_dir]
-    cmd += [self._run.options.chrome_root]
-    retry_util.RunCommandWithRetries(
-        constants.SYNC_RETRIES, cmd, cwd=self._build_root)
+      if constants.USE_CHROME_INTERNAL in self._run.config.useflags:
+        cmd += ['--internal']
+
+      cmd += [self._run.options.chrome_root]
+      retry_util.RunCommandWithRetries(
+          constants.SYNC_RETRIES, cmd, cwd=self._build_root)
 
 
 class WorkspaceUprevAndPublishStage(WorkspaceStageBase):
