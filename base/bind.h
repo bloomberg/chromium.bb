@@ -6,6 +6,7 @@
 #define BASE_BIND_H_
 
 #include <functional>
+#include <memory>
 #include <utility>
 
 #include "base/bind_internal.h"
@@ -384,6 +385,11 @@ inline std::reference_wrapper<const T> ConstRef(const T& o) {
 template <typename T>
 static inline internal::OwnedWrapper<T> Owned(T* o) {
   return internal::OwnedWrapper<T>(o);
+}
+
+template <typename T>
+static inline internal::OwnedWrapper<T> Owned(std::unique_ptr<T>&& ptr) {
+  return internal::OwnedWrapper<T>(std::move(ptr));
 }
 
 // Passed() is for transferring movable-but-not-copyable types (eg. unique_ptr)

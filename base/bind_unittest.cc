@@ -699,7 +699,7 @@ TEST_F(BindTest, ConstRefForOnce) {
 }
 
 // Test Owned() support.
-TEST_F(BindTest, OwnedForRepeating) {
+TEST_F(BindTest, OwnedForRepeatingRawPtr) {
   int deletes = 0;
   DeleteCounter* counter = new DeleteCounter(&deletes);
 
@@ -723,7 +723,7 @@ TEST_F(BindTest, OwnedForRepeating) {
   EXPECT_EQ(1, deletes);
 }
 
-TEST_F(BindTest, OwnedForOnce) {
+TEST_F(BindTest, OwnedForOnceRawPtr) {
   int deletes = 0;
   DeleteCounter* counter = new DeleteCounter(&deletes);
 
@@ -739,6 +739,52 @@ TEST_F(BindTest, OwnedForOnce) {
   counter = new DeleteCounter(&deletes);
   OnceClosure own_object_cb =
       BindOnce(&DeleteCounter::VoidMethod0, Owned(counter));
+  EXPECT_EQ(0, deletes);
+  own_object_cb.Reset();
+  EXPECT_EQ(1, deletes);
+}
+
+TEST_F(BindTest, OwnedForRepeatingUniquePtr) {
+  int deletes = 0;
+  auto counter = std::make_unique<DeleteCounter>(&deletes);
+  DeleteCounter* raw_counter = counter.get();
+
+  // If we don't capture, delete happens on Callback destruction/reset.
+  // return the same value.
+  RepeatingCallback<DeleteCounter*()> no_capture_cb = BindRepeating(
+      &PolymorphicIdentity<DeleteCounter*>, Owned(std::move(counter)));
+  ASSERT_EQ(raw_counter, no_capture_cb.Run());
+  ASSERT_EQ(raw_counter, no_capture_cb.Run());
+  EXPECT_EQ(0, deletes);
+  no_capture_cb.Reset();  // This should trigger a delete.
+  EXPECT_EQ(1, deletes);
+
+  deletes = 0;
+  counter = std::make_unique<DeleteCounter>(&deletes);
+  RepeatingClosure own_object_cb =
+      BindRepeating(&DeleteCounter::VoidMethod0, Owned(std::move(counter)));
+  own_object_cb.Run();
+  EXPECT_EQ(0, deletes);
+  own_object_cb.Reset();
+  EXPECT_EQ(1, deletes);
+}
+
+TEST_F(BindTest, OwnedForOnceUniquePtr) {
+  int deletes = 0;
+  auto counter = std::make_unique<DeleteCounter>(&deletes);
+
+  // If we don't capture, delete happens on Callback destruction/reset.
+  // return the same value.
+  OnceCallback<DeleteCounter*()> no_capture_cb =
+      BindOnce(&PolymorphicIdentity<DeleteCounter*>, Owned(std::move(counter)));
+  EXPECT_EQ(0, deletes);
+  no_capture_cb.Reset();  // This should trigger a delete.
+  EXPECT_EQ(1, deletes);
+
+  deletes = 0;
+  counter = std::make_unique<DeleteCounter>(&deletes);
+  OnceClosure own_object_cb =
+      BindOnce(&DeleteCounter::VoidMethod0, Owned(std::move(counter)));
   EXPECT_EQ(0, deletes);
   own_object_cb.Reset();
   EXPECT_EQ(1, deletes);
@@ -1468,10 +1514,20 @@ TEST_F(BindTest, UnwrapRetainedRef) {
 }
 
 TEST_F(BindTest, UnwrapOwned) {
-  int* p = new int;
-  auto owned = Owned(p);
-  EXPECT_EQ(p, internal::Unwrap(owned));
-  EXPECT_EQ(p, internal::Unwrap(std::move(owned)));
+  {
+    int* p = new int;
+    auto owned = Owned(p);
+    EXPECT_EQ(p, internal::Unwrap(owned));
+    EXPECT_EQ(p, internal::Unwrap(std::move(owned)));
+  }
+
+  {
+    auto p = std::make_unique<int>();
+    int* raw_p = p.get();
+    auto owned = Owned(std::move(p));
+    EXPECT_EQ(raw_p, internal::Unwrap(owned));
+    EXPECT_EQ(raw_p, internal::Unwrap(std::move(owned)));
+  }
 }
 
 TEST_F(BindTest, UnwrapPassed) {

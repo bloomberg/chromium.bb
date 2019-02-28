@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <functional>
+#include <memory>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -103,26 +104,15 @@ struct IgnoreResultHelper {
   T functor_;
 };
 
-// An alternate implementation is to avoid the destructive copy, and instead
-// specialize ParamTraits<> for OwnedWrapper<> to change the StorageType to
-// a class that is essentially a std::unique_ptr<>.
-//
-// The current implementation has the benefit though of leaving ParamTraits<>
-// fully in callback_internal.h as well as avoiding type conversions during
-// storage.
 template <typename T>
 class OwnedWrapper {
  public:
   explicit OwnedWrapper(T* o) : ptr_(o) {}
-  ~OwnedWrapper() { delete ptr_; }
-  T* get() const { return ptr_; }
-  OwnedWrapper(OwnedWrapper&& other) {
-    ptr_ = other.ptr_;
-    other.ptr_ = NULL;
-  }
+  explicit OwnedWrapper(std::unique_ptr<T>&& ptr) : ptr_(std::move(ptr)) {}
+  T* get() const { return ptr_.get(); }
 
  private:
-  mutable T* ptr_;
+  std::unique_ptr<T> ptr_;
 };
 
 // PassedWrapper is a copyable adapter for a scoper that ignores const.
