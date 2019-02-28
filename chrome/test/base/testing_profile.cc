@@ -252,6 +252,7 @@ TestingProfile::TestingProfile(const base::FilePath& path, Delegate* delegate)
       allows_browser_windows_(true),
       last_session_exited_cleanly_(true),
       profile_path_(path),
+      simple_dependency_manager_(SimpleDependencyManager::GetInstance()),
       browser_context_dependency_manager_(
           BrowserContextDependencyManager::GetInstance()),
       resource_context_(nullptr),
@@ -299,6 +300,7 @@ TestingProfile::TestingProfile(
       extension_special_storage_policy_(extension_policy),
 #endif
       profile_path_(path),
+      simple_dependency_manager_(SimpleDependencyManager::GetInstance()),
       browser_context_dependency_manager_(
           BrowserContextDependencyManager::GetInstance()),
       resource_context_(nullptr),
@@ -481,15 +483,19 @@ void TestingProfile::Init() {
 
   // Prefs for incognito profiles are set in CreateIncognitoPrefService() by
   // simulating ProfileImpl::GetOffTheRecordPrefs().
+  SimpleFactoryKey* key = Profile::GetSimpleFactoryKey(this);
   if (!IsOffTheRecord()) {
     DCHECK(!original_profile_);
     user_prefs::PrefRegistrySyncable* pref_registry =
         static_cast<user_prefs::PrefRegistrySyncable*>(
             prefs_->DeprecatedGetPrefRegistry());
+    simple_dependency_manager_->RegisterProfilePrefsForServices(key,
+                                                                pref_registry);
     browser_context_dependency_manager_->
         RegisterProfilePrefsForServices(this, pref_registry);
   }
 
+  simple_dependency_manager_->CreateServicesForTest(key);
   browser_context_dependency_manager_->CreateBrowserContextServicesForTest(
       this);
 }
@@ -528,7 +534,7 @@ TestingProfile::~TestingProfile() {
   browser_context_dependency_manager_->DestroyBrowserContextServices(this);
 
   SimpleFactoryKey* key = Profile::GetSimpleFactoryKey(this);
-  SimpleDependencyManager::GetInstance()->DestroyKeyedServices(key);
+  simple_dependency_manager_->DestroyKeyedServices(key);
 
   if (host_content_settings_map_.get())
     host_content_settings_map_->ShutdownOnUIThread();

@@ -554,6 +554,8 @@ ProfileImpl::ProfileImpl(
 #endif
     RegisterUserProfilePrefs(pref_registry_.get());
 
+  SimpleDependencyManager::GetInstance()->RegisterProfilePrefsForServices(
+      key_.get(), pref_registry_.get());
   BrowserContextDependencyManager::GetInstance()
       ->RegisterProfilePrefsForServices(this, pref_registry_.get());
 

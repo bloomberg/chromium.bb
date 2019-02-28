@@ -23,6 +23,18 @@ class KEYED_SERVICE_EXPORT SimpleDependencyManager : public DependencyManager {
 
   static SimpleDependencyManager* GetInstance();
 
+  // Registers profile-specific preferences for all services via |registry|.
+  // |key| is used to prevent multiple registrations on the same BrowserContext
+  // in tests.
+  void RegisterProfilePrefsForServices(
+      SimpleFactoryKey* key,
+      user_prefs::PrefRegistrySyncable* pref_registry);
+
+  // Create services for test BrowserContexts - these contexts will not create
+  // services for any SimpleKeyedBaseFactories that return true from
+  // ServiceIsNULLWhileTesting().
+  void CreateServicesForTest(SimpleFactoryKey* key);
+
  private:
   ~SimpleDependencyManager() override;
 
