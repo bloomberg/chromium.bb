@@ -10,11 +10,14 @@
 #include "net/http/http_response_headers.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
 class WebHTTPHeaderMap::WebHTTPHeaderMapImpl {
+  USING_FAST_MALLOC(WebHTTPHeaderMap::WebHTTPHeaderMapImpl);
+
  public:
   explicit WebHTTPHeaderMapImpl(const HTTPHeaderMap& map) : map_(map) {}
 
