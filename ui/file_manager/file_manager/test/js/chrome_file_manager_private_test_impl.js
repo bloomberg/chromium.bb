@@ -11,13 +11,6 @@
 
 const mockVolumeManager = new MockVolumeManager();
 
-// Create drive /root/ immediately.
-/** @type {MockFileSystem} */ (
-    mockVolumeManager
-        .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DRIVE)
-        .fileSystem)
-    .populate(['/root/', '/team_drives/', '/Computers/']);
-
 /**
  * Suppress compiler warning for overwriting chrome.fileManagerPrivate.
  * @suppress {checkTypes}

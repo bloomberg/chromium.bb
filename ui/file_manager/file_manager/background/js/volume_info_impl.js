@@ -335,13 +335,6 @@ VolumeInfoImpl.prototype.resolveDisplayRootImpl_ = function() {
 };
 
 /**
- * Restarts the process of resolving the display root for this volume.
- */
-VolumeInfoImpl.prototype.restartResolveDisplayRootForTest = function() {
-  this.displayRootPromise_ = this.resolveDisplayRootImpl_();
-};
-
-/**
  * @override
  */
 VolumeInfoImpl.prototype.resolveDisplayRoot = function(
