@@ -11,12 +11,12 @@
 #+grade:0
 #
 #  Copyright (C) 2005 ViewPlus Technologies, Inc. www.viewplus.com
-#  Copyright (C) 2009 Lars Bjørndal <lars@lamasti.net>
-#  Copyright (C) 2015 NLB Norwegian library of talking books and braille, http://www.nlb.no/
+#  Copyright (C) 2009-2019 Lars Bjørndal <lars@lamasti.net>
+#  Copyright (C) 2015-2018 NLB Norwegian library of talking books and braille, http://www.nlb.no/
 #
 #-copyright: 2005, ViewPlus Technologies, Inc. www.viewplus.com
-#-copyright: 2009, Lars Bjørndal
-#-copyright: 2015, Norwegian library of talking books and braille (NLB), http://www.nlb.no/
+#-copyright: 2009-2019, Lars Bjørndal
+#-copyright: 2015-2018, Norwegian library of talking books and braille (NLB), http://www.nlb.no/
 #-license: LGPLv2.1
 #
 # Created June 9, 2005 by Leon Ungier <Leon.Ungier@ViewPlus.com> with
@@ -61,6 +61,7 @@
 #  <http://www.gnu.org/licenses/>.
 #
 
+include no-no.dis
 include no-no-chardefs6.uti
 include litdigits6Dots.uti
 include braille-patterns.cti # unicode braille
@@ -71,7 +72,7 @@ include braille-patterns.cti # unicode braille
 numsign 3456
 capsletter 6                    # single capital letter indicator
 begcapsword 6-6                  # a block of consecutive capital letters indicator
-endcapsword 56                   # TODO
+noback endcapsword 56                   # TODO
 
 emphclass italic
 emphclass underline
@@ -81,7 +82,7 @@ begemph italic 23
 begemph bold 6-3
 begemph underline 456
 
-endemph italic 56
+noback endemph italic 56
 endemph bold 6-3
 endemph underline 456
 
@@ -116,6 +117,8 @@ noback always ;\s; 0
 begcomp 126
 endcomp 345
 
+# We have to redefine the letter æ here to prevent back translation of it to result in a space
+uplow \x00C6\x00E6 345       # æ x00C6 / 00E6
 # URLs
 compbrl ://
 compbrl www.

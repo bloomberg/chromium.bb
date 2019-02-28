@@ -79,6 +79,7 @@ EXTRA_DIST =					\
 	nl-NL-g0_harness.yaml			\
 	nl-g0_harness.yaml			\
 	no_8dot_harness.yaml			\
+	no_backward.yaml			\
 	no_g1_harness.yaml			\
 	no_g2_harness.yaml			\
 	no_harness.yaml				\
