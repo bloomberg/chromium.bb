@@ -105,7 +105,7 @@ void CallStackProfileBuilder::OnSampleCompleted(
     // Write CallStackProfile::Location protobuf message.
     ptrdiff_t module_offset =
         reinterpret_cast<const char*>(frame.instruction_pointer) -
-        reinterpret_cast<const char*>(frame.module->base_address);
+        reinterpret_cast<const char*>(frame.module->GetBaseAddress());
     DCHECK_GE(module_offset, 0);
     location->set_address(static_cast<uint64_t>(module_offset));
     location->set_module_id_index(module_loc->second);
@@ -167,8 +167,8 @@ void CallStackProfileBuilder::OnProfileCompleted(
   for (const auto* module : modules_) {
     CallStackProfile::ModuleIdentifier* module_id =
         call_stack_profile->add_module_id();
-    module_id->set_build_id(module->id);
-    module_id->set_name_md5_prefix(HashModuleFilename(module->filename));
+    module_id->set_build_id(module->GetId());
+    module_id->set_name_md5_prefix(HashModuleFilename(module->GetFilename()));
   }
 
   PassProfilesToMetricsProvider(std::move(sampled_profile_));

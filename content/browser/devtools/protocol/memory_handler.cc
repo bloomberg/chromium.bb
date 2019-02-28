@@ -59,14 +59,15 @@ Response MemoryHandler::GetBrowserSamplingProfile(
   std::unique_ptr<Array<Memory::Module>> modules =
       Array<Memory::Module>::create();
   for (const auto* module : module_cache.GetModules()) {
-    modules->addItem(Memory::Module::Create()
-                         .SetName(base::StringPrintf(
-                             "%" PRFilePath, module->filename.value().c_str()))
-                         .SetUuid(module->id)
-                         .SetBaseAddress(base::StringPrintf(
-                             "0x%" PRIxPTR, module->base_address))
-                         .SetSize(static_cast<double>(module->size))
-                         .Build());
+    modules->addItem(
+        Memory::Module::Create()
+            .SetName(base::StringPrintf("%" PRFilePath,
+                                        module->GetFilename().value().c_str()))
+            .SetUuid(module->GetId())
+            .SetBaseAddress(
+                base::StringPrintf("0x%" PRIxPTR, module->GetBaseAddress()))
+            .SetSize(static_cast<double>(module->GetSize()))
+            .Build());
   }
 
   *out_profile = Memory::SamplingProfile::Create()

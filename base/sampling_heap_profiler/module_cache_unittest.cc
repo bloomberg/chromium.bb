@@ -32,9 +32,9 @@ TEST_F(ModuleCacheTest, MAYBE_ModuleCache) {
   const ModuleCache::Module* module2 = cache.GetModuleForAddress(ptr2);
   EXPECT_EQ(module1, module2);
   EXPECT_NE(nullptr, module1);
-  EXPECT_GT(module1->size, 0u);
-  EXPECT_LE(module1->base_address, ptr1);
-  EXPECT_GT(module1->base_address + module1->size, ptr2);
+  EXPECT_GT(module1->GetSize(), 0u);
+  EXPECT_LE(module1->GetBaseAddress(), ptr1);
+  EXPECT_GT(module1->GetBaseAddress() + module1->GetSize(), ptr2);
 }
 
 TEST_F(ModuleCacheTest, MAYBE_ModulesList) {
