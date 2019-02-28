@@ -25,7 +25,7 @@ void AppListTestBase::SetUp() {
   extensions::ExtensionServiceTestBase::SetUp();
 
   // Load "app_list" extensions test profile.
-  // The test profile has 5 extensions:
+  // The test profile has 4 extensions:
   // - 1 dummy extension (which should not be visible in the launcher)
   // - 2 packaged extension apps
   // - 1 hosted extension app
