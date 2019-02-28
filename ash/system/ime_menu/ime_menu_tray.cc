@@ -520,7 +520,7 @@ void ImeMenuTray::UpdateTrayLabel() {
   if (chromeos::extension_ime_util::IsArcIME(current_ime.id)) {
     CreateImageView();
     image_view_->SetImage(
-        gfx::CreateVectorIcon(kShelfGlobeIcon, kTrayIconSize, kTrayIconColor));
+        gfx::CreateVectorIcon(kShelfGlobeIcon, kTrayIconColor));
     return;
   }
 
