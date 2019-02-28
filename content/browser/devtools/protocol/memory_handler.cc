@@ -61,8 +61,8 @@ Response MemoryHandler::GetBrowserSamplingProfile(
   for (const auto* module : module_cache.GetModules()) {
     modules->addItem(
         Memory::Module::Create()
-            .SetName(base::StringPrintf("%" PRFilePath,
-                                        module->GetFilename().value().c_str()))
+            .SetName(base::StringPrintf(
+                "%" PRFilePath, module->GetDebugBasename().value().c_str()))
             .SetUuid(module->GetId())
             .SetBaseAddress(
                 base::StringPrintf("0x%" PRIxPTR, module->GetBaseAddress()))
