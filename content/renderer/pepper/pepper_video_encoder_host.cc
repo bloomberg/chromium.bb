@@ -227,6 +227,11 @@ void PepperVideoEncoderHost::OnGpuControlLostContextMaybeReentrant() {
   // No internal state to update on lost context.
 }
 
+void PepperVideoEncoderHost::OnGpuControlReturnData(
+    base::span<const uint8_t> data) {
+  NOTIMPLEMENTED();
+}
+
 int32_t PepperVideoEncoderHost::OnHostMsgGetSupportedProfiles(
     ppapi::host::HostMessageContext* context) {
   std::vector<PP_VideoProfileDescription> pp_profiles;

@@ -235,6 +235,7 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
       const SwapBuffersCompleteParams& params) final;
   void OnSwapBufferPresented(uint64_t swap_id,
                              const gfx::PresentationFeedback& feedback) final;
+  void OnGpuControlReturnData(base::span<const uint8_t> data) final;
 
   // Gets the GLError through our wrapper.
   GLenum GetGLError();

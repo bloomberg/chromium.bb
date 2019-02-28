@@ -643,6 +643,13 @@ void CommandBufferStub::ScheduleGrContextCleanup() {
   channel_->gpu_channel_manager()->ScheduleGrContextCleanup();
 }
 
+void CommandBufferStub::HandleReturnData(base::span<const uint8_t> data) {
+  std::vector<uint8_t> vec(data.begin(), data.end());
+  IPC::Message* msg =
+      new GpuCommandBufferMsg_ReturnData(route_id_, std::move(vec));
+  Send(msg);
+}
+
 void CommandBufferStub::OnConsoleMessage(int32_t id,
                                          const std::string& message) {
   GPUCommandBufferConsoleMessage console_message;

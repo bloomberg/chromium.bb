@@ -390,6 +390,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
       const SwapBuffersCompleteParams& params) final;
   void OnSwapBufferPresented(uint64_t swap_id,
                              const gfx::PresentationFeedback& feedback) final;
+  void OnGpuControlReturnData(base::span<const uint8_t> data) final;
 
   void SendErrorMessage(std::string message, int32_t id);
   void CallDeferredErrorCallbacks();

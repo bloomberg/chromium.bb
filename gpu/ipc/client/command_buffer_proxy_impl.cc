@@ -150,6 +150,7 @@ bool CommandBufferProxyImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_BufferPresented, OnBufferPresented);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_GetGpuFenceHandleComplete,
                         OnGetGpuFenceHandleComplete);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_ReturnData, OnReturnData);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -630,6 +631,12 @@ void CommandBufferProxyImpl::OnGetGpuFenceHandleComplete(
   auto callback = std::move(it->second);
   get_gpu_fence_tasks_.erase(it);
   std::move(callback).Run(std::move(gpu_fence));
+}
+
+void CommandBufferProxyImpl::OnReturnData(const std::vector<uint8_t>& data) {
+  if (gpu_control_client_) {
+    gpu_control_client_->OnGpuControlReturnData(data);
+  }
 }
 
 void CommandBufferProxyImpl::TakeFrontBuffer(const gpu::Mailbox& mailbox) {

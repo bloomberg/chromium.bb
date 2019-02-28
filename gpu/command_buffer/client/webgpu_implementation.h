@@ -84,6 +84,7 @@ class WEBGPU_EXPORT WebGPUImplementation final : public WebGPUInterface,
       const SwapBuffersCompleteParams& params) final;
   void OnSwapBufferPresented(uint64_t swap_id,
                              const gfx::PresentationFeedback& feedback) final;
+  void OnGpuControlReturnData(base::span<const uint8_t> data) final;
 
  private:
   const char* GetLogPrefix() const { return "webgpu"; }

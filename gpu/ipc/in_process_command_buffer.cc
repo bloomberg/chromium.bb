@@ -1195,6 +1195,14 @@ void InProcessCommandBuffer::ScheduleGrContextCleanup() {
     gr_cache_controller_->ScheduleGrContextCleanup();
 }
 
+void InProcessCommandBuffer::HandleReturnData(base::span<const uint8_t> data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+  std::vector<uint8_t> vec(data.data(), data.data() + data.size());
+  PostOrRunClientCallback(base::BindOnce(
+      &InProcessCommandBuffer::HandleReturnDataOnOriginThread,
+      client_thread_weak_ptr_factory_.GetWeakPtr(), std::move(vec)));
+}
+
 void InProcessCommandBuffer::PostOrRunClientCallback(
     base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
@@ -1550,6 +1558,14 @@ void InProcessCommandBuffer::BufferPresentedOnOriginThread(
       ShouldUpdateVsyncParams(feedback)) {
     update_vsync_parameters_completion_callback_.Run(feedback.timestamp,
                                                      feedback.interval);
+  }
+}
+
+void InProcessCommandBuffer::HandleReturnDataOnOriginThread(
+    std::vector<uint8_t> data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+  if (gpu_control_client_) {
+    gpu_control_client_->OnGpuControlReturnData(data);
   }
 }
 
