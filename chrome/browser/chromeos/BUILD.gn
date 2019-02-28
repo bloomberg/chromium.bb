@@ -293,6 +293,8 @@ source_set("chromeos") {
     "accessibility/switch_access_panel.h",
     "account_manager/account_manager_migrator.cc",
     "account_manager/account_manager_migrator.h",
+    "account_manager/account_manager_util.cc",
+    "account_manager/account_manager_util.h",
     "account_manager/account_migration_runner.cc",
     "account_manager/account_migration_runner.h",
     "android_sms/android_sms_app_manager.cc",

@@ -59,6 +59,7 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/system/sys_info.h"
+#include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -1949,7 +1950,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   // Used to control the display of Chrome OS Account Manager submenu in the
   // People section.
   html_source->AddBoolean("isAccountManagerEnabled",
-                          chromeos::switches::IsAccountManagerEnabled());
+                          chromeos::IsAccountManagerAvailable(profile));
 #endif
 
   html_source->AddBoolean(

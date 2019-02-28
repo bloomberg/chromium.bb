@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/auth/arc_auth_service.h"
@@ -31,7 +32,6 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/account_manager/account_manager.h"
 #include "chromeos/account_manager/account_manager_factory.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_service.h"
@@ -472,7 +472,7 @@ AccountManagerMigrator::~AccountManagerMigrator() = default;
 void AccountManagerMigrator::Start() {
   DVLOG(1) << "AccountManagerMigrator::Start";
 
-  if (!chromeos::switches::IsAccountManagerEnabled())
+  if (!chromeos::IsAccountManagerAvailable(profile_))
     return;
 
   ran_migration_steps_ = false;
