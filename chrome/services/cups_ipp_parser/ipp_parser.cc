@@ -127,7 +127,7 @@ mojom::IppMessagePtr ExtractIppMessage(base::StringPiece request) {
     return nullptr;
   }
 
-  return ipp_converter::ConvertIppToMojo(ipp.release());
+  return ipp_converter::ConvertIppToMojo(ipp.get());
 }
 
 // Parse IPP request's |ipp_data|
