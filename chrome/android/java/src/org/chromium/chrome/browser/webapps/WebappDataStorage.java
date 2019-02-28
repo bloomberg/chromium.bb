@@ -16,7 +16,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.base.task.BackgroundOnlyAsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
@@ -547,15 +548,11 @@ public class WebappDataStorage {
         if (pendingUpdateFilePath == null) return;
 
         mPreferences.edit().remove(KEY_PENDING_UPDATE_FILE_PATH).apply();
-        new BackgroundOnlyAsyncTask<Void>() {
-            @Override
-            protected Void doInBackground() {
-                if (!new File(pendingUpdateFilePath).delete()) {
-                    Log.d(TAG, "Failed to delete file " + pendingUpdateFilePath);
-                }
-                return null;
+        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
+            if (!new File(pendingUpdateFilePath).delete()) {
+                Log.d(TAG, "Failed to delete file " + pendingUpdateFilePath);
             }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        });
     }
 
     /**
