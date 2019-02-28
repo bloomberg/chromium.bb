@@ -15,7 +15,9 @@ class NetworkChangeNotifierPosixTest : public testing::Test {
   NetworkChangeNotifierPosixTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
-        notifier_(new NetworkChangeNotifierPosix()) {}
+        notifier_(new NetworkChangeNotifierPosix(
+            NetworkChangeNotifier::CONNECTION_UNKNOWN,
+            NetworkChangeNotifier::SUBTYPE_UNKNOWN)) {}
 
   void FastForwardUntilIdle() {
     scoped_task_environment_.FastForwardUntilNoTasksRemain();

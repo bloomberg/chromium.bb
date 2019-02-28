@@ -84,14 +84,17 @@ net::NetLog* GetNetLog() {
 constexpr auto kUpdateLoadStatesInterval =
     base::TimeDelta::FromMilliseconds(250);
 
-std::unique_ptr<net::NetworkChangeNotifier>
-CreateNetworkChangeNotifierIfNeeded() {
+std::unique_ptr<net::NetworkChangeNotifier> CreateNetworkChangeNotifierIfNeeded(
+    net::NetworkChangeNotifier::ConnectionType initial_connection_type,
+    net::NetworkChangeNotifier::ConnectionSubtype initial_connection_subtype) {
   // There is a global singleton net::NetworkChangeNotifier if NetworkService
   // is running inside of the browser process.
   if (!net::NetworkChangeNotifier::HasNetworkChangeNotifier()) {
-#if defined(OS_ANDROID)
-    // On Android, network change events are synced from the browser process.
-    return std::make_unique<net::NetworkChangeNotifierPosix>();
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+    // On Android and ChromeOS, network change events are synced from the
+    // browser process.
+    return std::make_unique<net::NetworkChangeNotifierPosix>(
+        initial_connection_type, initial_connection_subtype);
 #elif defined(OS_IOS) || defined(OS_FUCHSIA)
     // iOS doesn't embed //content. Fuchsia doesn't have an implementation yet.
     // TODO(xunjieli): Figure out what to do for these 2 platforms.
@@ -218,7 +221,8 @@ NetworkService::NetworkService(
     std::unique_ptr<service_manager::BinderRegistry> registry,
     mojom::NetworkServiceRequest request,
     net::NetLog* net_log,
-    service_manager::mojom::ServiceRequest service_request)
+    service_manager::mojom::ServiceRequest service_request,
+    bool delay_initialization_until_set_client)
     : registry_(std::move(registry)), binding_(this) {
   DCHECK(!g_network_service);
   g_network_service = this;
@@ -238,6 +242,22 @@ NetworkService::NetworkService(
   } else if (request.is_pending()) {
     Bind(std::move(request));
   }
+
+  if (net_log) {
+    net_log_ = net_log;
+  } else {
+    net_log_ = GetNetLog();
+  }
+
+  if (!delay_initialization_until_set_client)
+    Initialize(mojom::NetworkServiceParams::New());
+}
+
+void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params) {
+  if (initialized_)
+    return;
+
+  initialized_ = true;
 
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
   // Make sure OpenSSL is initialized before using it to histogram data.
@@ -267,13 +287,11 @@ NetworkService::NetworkService(
       command_line->HasSwitch(switches::kIgnoreCertificateErrorsSPKIList));
 
   network_change_manager_ = std::make_unique<NetworkChangeManager>(
-      CreateNetworkChangeNotifierIfNeeded());
-
-  if (net_log) {
-    net_log_ = net_log;
-  } else {
-    net_log_ = GetNetLog();
-  }
+      CreateNetworkChangeNotifierIfNeeded(
+          net::NetworkChangeNotifier::ConnectionType(
+              params->initial_connection_type),
+          net::NetworkChangeNotifier::ConnectionSubtype(
+              params->initial_connection_subtype)));
 
   trace_net_log_observer_.WatchForTraceStart(net_log_);
 
@@ -390,8 +408,10 @@ void NetworkService::CreateNetLogEntriesForActiveObjects(
   return net::CreateNetLogEntriesForActiveObjects(contexts, observer);
 }
 
-void NetworkService::SetClient(mojom::NetworkServiceClientPtr client) {
+void NetworkService::SetClient(mojom::NetworkServiceClientPtr client,
+                               mojom::NetworkServiceParamsPtr params) {
   client_ = std::move(client);
+  Initialize(std::move(params));
 }
 
 void NetworkService::StartNetLog(base::File file,

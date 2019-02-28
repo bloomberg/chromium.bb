@@ -42,6 +42,18 @@ network::mojom::NetworkServicePtr* g_network_service_ptr = nullptr;
 network::NetworkConnectionTracker* g_network_connection_tracker;
 network::NetworkService* g_network_service;
 
+network::mojom::NetworkServiceParamsPtr CreateNetworkServiceParams() {
+  network::mojom::NetworkServiceParamsPtr network_service_params =
+      network::mojom::NetworkServiceParams::New();
+  network_service_params->initial_connection_type =
+      network::mojom::ConnectionType(
+          net::NetworkChangeNotifier::GetConnectionType());
+  network_service_params->initial_connection_subtype =
+      network::mojom::ConnectionSubtype(
+          net::NetworkChangeNotifier::GetConnectionSubtype());
+  return network_service_params;
+}
+
 void CreateNetworkServiceOnIO(network::mojom::NetworkServiceRequest request) {
   if (g_network_service) {
     // GetNetworkServiceImpl() was already called and created the object, so
@@ -114,9 +126,14 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
     }
 
     network::mojom::NetworkServiceClientPtr client_ptr;
+    auto client_request = mojo::MakeRequest(&client_ptr);
+    // Call SetClient before creating NetworkServiceClient, as the latter might
+    // make requests to NetworkService that depend on initialization.
+    (*g_network_service_ptr)
+        ->SetClient(std::move(client_ptr), CreateNetworkServiceParams());
+
     delete g_client;  // In case we're recreating the network service.
-    g_client = new NetworkServiceClient(mojo::MakeRequest(&client_ptr));
-    (*g_network_service_ptr)->SetClient(std::move(client_ptr));
+    g_client = new NetworkServiceClient(std::move(client_request));
 
       const base::CommandLine* command_line =
           base::CommandLine::ForCurrentProcess();

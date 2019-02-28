@@ -584,7 +584,8 @@ class SimpleURLLoaderTestBase {
     network::mojom::NetworkServiceClientPtr network_service_client_ptr;
     network_service_client_ = std::make_unique<TestNetworkServiceClient>(
         mojo::MakeRequest(&network_service_client_ptr));
-    network_service_ptr->SetClient(std::move(network_service_client_ptr));
+    network_service_ptr->SetClient(std::move(network_service_client_ptr),
+                                   network::mojom::NetworkServiceParams::New());
 
     mojom::URLLoaderFactoryParamsPtr params =
         mojom::URLLoaderFactoryParams::New();
