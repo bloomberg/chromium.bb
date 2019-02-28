@@ -7,7 +7,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/omnibox/browser/location_bar_model.h"
-#include "components/security_state/core/security_state_ui.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_consumer.h"
