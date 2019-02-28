@@ -16,9 +16,9 @@ declare_args() {
   # enable_basic_printing within the same declare_args() block.
   enable_print_preview = !is_android && !is_chromecast && !is_ios && !is_fuchsia
 
-  if (use_fuzzing_engine) {
+  if (use_fuzzing_engine && is_linux) {
     # For fuzzing, just restrict to chromeos and linux.
-    use_cups = is_linux
+    use_cups = true
   } else {
     use_cups = (is_desktop_linux || is_mac) && !is_chromecast && !is_fuchsia
   }
