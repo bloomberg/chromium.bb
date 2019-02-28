@@ -50,5 +50,6 @@ include_rules = [
     "-web",
 
     # Allowed only inside INSIDE_BLINK
+    "+third_party/blink/renderer/core",
     "+third_party/blink/renderer/platform",
 ]

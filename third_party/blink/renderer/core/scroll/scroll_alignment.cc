@@ -41,7 +41,7 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#include "third_party/blink/renderer/platform/scroll/scroll_alignment.h"
+#include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
