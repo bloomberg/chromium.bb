@@ -332,6 +332,11 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
         }
 
         @Override
+        public void navigationEntriesChanged() {
+            mTab.setIsTabStateDirty(true);
+        }
+
+        @Override
         public void viewportFitChanged(@WebContentsObserver.ViewportFitType int value) {
             DisplayCutoutController.from(mTab).setViewportFit(value);
         }

@@ -251,8 +251,6 @@ class TabAndroid : public favicon::FaviconDriverObserver,
   void AttachDetachedTab(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
 
-  void NavigationEntryChanged(
-      const content::EntryChangedDetails& change_details) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 

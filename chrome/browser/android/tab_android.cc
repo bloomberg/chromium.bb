@@ -826,12 +826,6 @@ void TabAndroid::ClearThumbnailPlaceholder(JNIEnv* env,
     tab_content_manager_->NativeRemoveTabThumbnail(GetAndroidId());
 }
 
-void TabAndroid::NavigationEntryChanged(
-    const content::EntryChangedDetails& change_details) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Tab_onNavEntryChanged(env, weak_java_tab_.get(env));
-}
-
 void TabAndroid::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   // Skip subframe, same-document, or non-committed navigations (downloads or
