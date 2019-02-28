@@ -43,15 +43,15 @@ blink::mojom::IdleStatePtr IdleTimeToIdleState(bool locked,
                                                int idle_threshold) {
   blink::mojom::UserIdleState user;
   if (idle_time >= idle_threshold)
-    user = blink::mojom::UserIdleState::IDLE;
+    user = blink::mojom::UserIdleState::kIdle;
   else
-    user = blink::mojom::UserIdleState::ACTIVE;
+    user = blink::mojom::UserIdleState::kActive;
 
   blink::mojom::ScreenIdleState screen;
   if (locked)
-    screen = blink::mojom::ScreenIdleState::LOCKED;
+    screen = blink::mojom::ScreenIdleState::kLocked;
   else
-    screen = blink::mojom::ScreenIdleState::UNLOCKED;
+    screen = blink::mojom::ScreenIdleState::kUnlocked;
 
   return blink::mojom::IdleState::New(user, screen);
 }

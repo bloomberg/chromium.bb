@@ -9,13 +9,13 @@ module blink.mojom;
 // Proposal: https://github.com/inexorabletash/idle-detection
 
 enum UserIdleState {
-  ACTIVE,
-  IDLE
+  kActive,
+  kIdle
 };
 
 enum ScreenIdleState {
-  LOCKED,
-  UNLOCKED
+  kLocked,
+  kUnlocked
 };
 
 struct IdleState {
