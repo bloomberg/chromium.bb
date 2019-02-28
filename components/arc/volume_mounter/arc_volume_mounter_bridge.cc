@@ -14,6 +14,8 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "third_party/re2/src/re2/re2.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 
 using chromeos::disks::DiskMountManager;
 
@@ -23,9 +25,9 @@ namespace {
 
 // TODO(crbug.com/929031): Move MyFiles constants to a common place.
 constexpr char kMyFilesPath[] = "/home/chronos/user/MyFiles";
-constexpr char kMyFilesVolumeName[] = "My files";
 // Dummy UUID for MyFiles volume.
 constexpr char kMyFilesUuid[] = "0000000000000000000000000000CAFEF00D2019";
+// Dummy UUID for testing.
 constexpr char kDummyUuid[] = "00000000000000000000000000000000DEADBEEF";
 
 // Singleton factory for ArcVolumeMounterBridge.
@@ -90,8 +92,8 @@ void ArcVolumeMounterBridge::SendMountEventForMyFiles() {
   if (!volume_mounter_instance)
     return;
 
-  // TODO(niwa): Send localized string for "My files".
-  std::string device_label = kMyFilesVolumeName;
+  std::string device_label =
+      l10n_util::GetStringUTF8(IDS_FILE_BROWSER_MY_FILES_ROOT_LABEL);
 
   // TODO(niwa): Add a new DeviceType enum value for MyFiles.
   chromeos::DeviceType device_type = chromeos::DeviceType::DEVICE_TYPE_SD;
