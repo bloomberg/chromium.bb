@@ -50,7 +50,7 @@ base::Optional<FontTableMatcher::MatchResult> FontTableMatcher::MatchName(
 
   const auto& found_font = font_table_.fonts()[find_result->font_index()];
 
-  if (!found_font.file_path().size())
+  if (found_font.file_path().empty())
     return {};
   return base::Optional<MatchResult>(
       {found_font.file_path(), found_font.ttc_index()});

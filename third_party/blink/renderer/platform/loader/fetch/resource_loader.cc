@@ -342,7 +342,7 @@ void ResourceLoader::CodeCacheRequest::MaybeSendCachedCode(
     return;
   }
 
-  if (cached_code.size() != 0) {
+  if (!cached_code.empty()) {
     resource_loader->SendCachedCodeToResource(
         reinterpret_cast<const char*>(cached_code.data()), cached_code.size());
   }

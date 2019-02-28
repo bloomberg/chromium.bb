@@ -150,7 +150,7 @@ static bool CanPropagate(const ScrollState& scroll_state, const Node& node) {
 void ScrollManager::RecomputeScrollChain(const Node& start_node,
                                          const ScrollState& scroll_state,
                                          std::deque<DOMNodeId>& scroll_chain) {
-  DCHECK(!scroll_chain.size());
+  DCHECK(scroll_chain.empty());
   scroll_chain.clear();
 
   DCHECK(start_node.GetLayoutObject());

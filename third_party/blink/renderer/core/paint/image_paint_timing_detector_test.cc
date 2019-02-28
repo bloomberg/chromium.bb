@@ -91,7 +91,7 @@ class ImagePaintTimingDetectorTest
 
   void UpdateAllLifecyclePhasesAndInvokeCallbackIfAny() {
     UpdateAllLifecyclePhasesForTest();
-    if (callback_queue_.size() > 0) {
+    if (!callback_queue_.empty()) {
       InvokeCallback();
     }
   }

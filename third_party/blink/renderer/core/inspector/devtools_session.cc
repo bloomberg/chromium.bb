@@ -207,7 +207,7 @@ void DevToolsSession::DispatchProtocolCommand(
 void DevToolsSession::DispatchProtocolCommandImpl(int call_id,
                                                   const String& method,
                                                   std::vector<uint8_t> data) {
-  bool binary_protocol = data.size() && data[0] == 0xD8;
+  bool binary_protocol = !data.empty() && data[0] == 0xD8;
   if (binary_protocol)
     uses_binary_protocol_.Set(true);
 

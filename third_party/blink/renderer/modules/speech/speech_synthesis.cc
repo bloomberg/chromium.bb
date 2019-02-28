@@ -192,7 +192,7 @@ void SpeechSynthesis::HandleSpeakingCompleted(
   // remove it from the queue and start speaking the next one.
   if (utterance == CurrentSpeechUtterance()) {
     utterance_queue_.pop_front();
-    should_start_speaking = !!utterance_queue_.size();
+    should_start_speaking = !utterance_queue_.empty();
   }
 
   // Always fire the event, because the platform may have asynchronously

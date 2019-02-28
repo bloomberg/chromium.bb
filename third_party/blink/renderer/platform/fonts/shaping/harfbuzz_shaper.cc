@@ -472,7 +472,7 @@ bool HarfBuzzShaper::CollectFallbackHintChars(
     const Deque<ReshapeQueueItem>& reshape_queue,
     bool needs_hint_list,
     Vector<UChar32>& hint) const {
-  if (!reshape_queue.size())
+  if (reshape_queue.empty())
     return false;
 
   // Clear without releasing the capacity to avoid reallocations.
@@ -837,7 +837,7 @@ void HarfBuzzShaper::ShapeSegment(
                                                range_data->start);
   }
   scoped_refptr<FontDataForRangeSet> current_font_data_for_range_set;
-  while (range_data->reshape_queue.size()) {
+  while (!range_data->reshape_queue.empty()) {
     ReshapeQueueItem current_queue_item = range_data->reshape_queue.TakeFirst();
 
     if (current_queue_item.action_ == kReshapeQueueNextFont) {
@@ -853,7 +853,7 @@ void HarfBuzzShaper::ShapeSegment(
       current_font_data_for_range_set =
           fallback_iterator->Next(fallback_chars_hint);
       if (!current_font_data_for_range_set->FontData()) {
-        DCHECK(!range_data->reshape_queue.size());
+        DCHECK(range_data->reshape_queue.empty());
         break;
       }
       font_cycle_queued = false;

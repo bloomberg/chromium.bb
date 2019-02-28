@@ -977,7 +977,7 @@ TEST_F(CSPDirectiveListTest, OperativeDirectiveGivenType) {
     // Start the tests with all directives present.
     directive_string = all_directives.str();
 
-    while (test.fallback_list.size()) {
+    while (!test.fallback_list.empty()) {
       directive_list = CreateList(directive_string.c_str(),
                                   kContentSecurityPolicyHeaderTypeEnforce);
 

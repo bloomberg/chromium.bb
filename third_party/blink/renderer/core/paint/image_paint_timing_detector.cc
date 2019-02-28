@@ -193,7 +193,7 @@ void ImagePaintTimingDetector::Analyze() {
 
 void ImagePaintTimingDetector::OnPaintFinished() {
   frame_index_++;
-  if (records_pending_timing_.size() <= 0)
+  if (records_pending_timing_.empty())
     return;
   // If the last frame index of queue has changed, it means there are new
   // records pending timing.
@@ -261,7 +261,7 @@ void ImagePaintTimingDetector::ReportSwapTime(
   DCHECK(ThreadState::Current()->IsMainThread());
   // Not guranteed to be non-empty, because records can be removed between
   // callback registration and invocation.
-  while (records_pending_timing_.size() > 0) {
+  while (!records_pending_timing_.empty()) {
     DOMNodeId node_id = records_pending_timing_.front();
     if (!id_record_map_.Contains(node_id)) {
       records_pending_timing_.pop();

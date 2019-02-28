@@ -577,7 +577,7 @@ bool Performance::IsEventTimingBufferFull() const {
 
 void Performance::CopySecondaryBuffer() {
   // https://w3c.github.io/resource-timing/#dfn-copy-secondary-buffer
-  while (resource_timing_secondary_buffer_.size() &&
+  while (!resource_timing_secondary_buffer_.empty() &&
          CanAddResourceTimingEntry()) {
     PerformanceEntry* entry = resource_timing_secondary_buffer_.front();
     DCHECK(entry);
@@ -588,7 +588,7 @@ void Performance::CopySecondaryBuffer() {
 
 void Performance::FireResourceTimingBufferFull(TimerBase*) {
   // https://w3c.github.io/resource-timing/#dfn-fire-a-buffer-full-event
-  while (resource_timing_secondary_buffer_.size()) {
+  while (!resource_timing_secondary_buffer_.empty()) {
     int excess_entries_before = resource_timing_secondary_buffer_.size();
     if (!CanAddResourceTimingEntry()) {
       DispatchEvent(

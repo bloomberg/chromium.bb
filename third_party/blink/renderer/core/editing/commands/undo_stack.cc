@@ -45,7 +45,7 @@ UndoStack* UndoStack::Create() {
 }
 
 void UndoStack::RegisterUndoStep(UndoStep* step) {
-  if (undo_stack_.size())
+  if (!undo_stack_.empty())
     DCHECK_GE(step->SequenceNumber(), undo_stack_.back()->SequenceNumber());
   if (undo_stack_.size() == kMaximumUndoStackDepth)
     undo_stack_.pop_front();  // drop oldest item off the far end
