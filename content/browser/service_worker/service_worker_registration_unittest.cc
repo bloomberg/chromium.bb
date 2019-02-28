@@ -96,22 +96,6 @@ void RequestTermination(
   (*host)->RequestTermination(base::DoNothing());
 }
 
-class ActivationTestServiceWorker : public FakeServiceWorker {
- public:
-  explicit ActivationTestServiceWorker(EmbeddedWorkerTestHelper* helper)
-      : FakeServiceWorker(helper) {}
-  ~ActivationTestServiceWorker() override = default;
-
-  bool is_zero_idle_timer_delay() const { return is_zero_idle_timer_delay_; }
-
-  void SetIdleTimerDelayToZero() override { is_zero_idle_timer_delay_ = true; }
-
- private:
-  bool is_zero_idle_timer_delay_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ActivationTestServiceWorker);
-};
-
 class MockServiceWorkerRegistrationObject
     : public blink::mojom::ServiceWorkerRegistrationObject {
  public:
@@ -198,19 +182,12 @@ class RegistrationTestHelper : public EmbeddedWorkerTestHelper {
     return will_be_terminated_;
   }
 
-  bool is_zero_idle_timer_delay() const { return is_zero_idle_timer_delay_; }
-
  protected:
-  void OnSetIdleTimerDelayToZero(int embedded_worker_id) override {
-    is_zero_idle_timer_delay_ = true;
-  }
-
   void OnRequestedTermination(bool will_be_terminated) {
     will_be_terminated_ = will_be_terminated;
   }
 
  private:
-  bool is_zero_idle_timer_delay_ = false;
   base::Optional<bool> will_be_terminated_;
   base::WeakPtrFactory<RegistrationTestHelper> weak_factory_;
 };
@@ -477,8 +454,7 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
         helper_->AddNewPendingInstanceClient<FakeEmbeddedWorkerInstanceClient>(
             helper_.get());
     version_1_service_worker_ =
-        helper_->AddNewPendingServiceWorker<ActivationTestServiceWorker>(
-            helper_.get());
+        helper_->AddNewPendingServiceWorker<FakeServiceWorker>(helper_.get());
 
     // Start the active version and give it an in-flight request.
     inflight_request_id_ = CreateInflightRequest(version_1.get());
@@ -506,8 +482,7 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
         helper_->AddNewPendingInstanceClient<FakeEmbeddedWorkerInstanceClient>(
             helper_.get());
     version_2_service_worker_ =
-        helper_->AddNewPendingServiceWorker<ActivationTestServiceWorker>(
-            helper_.get());
+        helper_->AddNewPendingServiceWorker<FakeServiceWorker>(helper_.get());
 
     // Start the worker.
     StartWorker(version_2.get(), ServiceWorkerMetrics::EventType::INSTALL);
@@ -572,10 +547,10 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
   FakeEmbeddedWorkerInstanceClient* version_2_client() {
     return version_2_client_;
   }
-  ActivationTestServiceWorker* version_1_service_worker() {
+  FakeServiceWorker* version_1_service_worker() {
     return version_1_service_worker_;
   }
-  ActivationTestServiceWorker* version_2_service_worker() {
+  FakeServiceWorker* version_2_service_worker() {
     return version_2_service_worker_;
   }
 
@@ -585,9 +560,9 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
   // Mojo implementation fakes for the renderer-side service workers. Their
   // lifetime is bound to the Mojo connection.
   FakeEmbeddedWorkerInstanceClient* version_1_client_ = nullptr;
-  ActivationTestServiceWorker* version_1_service_worker_ = nullptr;
+  FakeServiceWorker* version_1_service_worker_ = nullptr;
   FakeEmbeddedWorkerInstanceClient* version_2_client_ = nullptr;
-  ActivationTestServiceWorker* version_2_service_worker_ = nullptr;
+  FakeServiceWorker* version_2_service_worker_ = nullptr;
 
   std::unique_ptr<ServiceWorkerProviderHost> host_;
   ServiceWorkerRemoteProviderEndpoint remote_endpoint_;

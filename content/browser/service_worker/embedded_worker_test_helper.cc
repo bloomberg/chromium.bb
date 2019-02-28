@@ -357,11 +357,6 @@ void EmbeddedWorkerTestHelper::OnBackgroundFetchSuccessEvent(
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
-void EmbeddedWorkerTestHelper::OnSetIdleTimerDelayToZero(
-    int embedded_worker_id) {
-  // Subclasses may implement this method.
-}
-
 std::unique_ptr<FakeEmbeddedWorkerInstanceClient>
 EmbeddedWorkerTestHelper::CreateInstanceClient() {
   return std::make_unique<FakeEmbeddedWorkerInstanceClient>(this);
