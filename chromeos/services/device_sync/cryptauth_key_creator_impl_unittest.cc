@@ -72,10 +72,10 @@ class FakeSecureMessageDelegateFactory
 
 }  // namespace
 
-class CryptAuthKeyCreatorImplTest : public testing::Test {
+class DeviceSyncCryptAuthKeyCreatorImplTest : public testing::Test {
  protected:
-  CryptAuthKeyCreatorImplTest() = default;
-  ~CryptAuthKeyCreatorImplTest() override = default;
+  DeviceSyncCryptAuthKeyCreatorImplTest() = default;
+  ~DeviceSyncCryptAuthKeyCreatorImplTest() override = default;
 
   void SetUp() override {
     fake_secure_message_delegate_factory_ =
@@ -116,10 +116,10 @@ class CryptAuthKeyCreatorImplTest : public testing::Test {
 
   std::unique_ptr<CryptAuthKeyCreator> key_creator_;
 
-  DISALLOW_COPY_AND_ASSIGN(CryptAuthKeyCreatorImplTest);
+  DISALLOW_COPY_AND_ASSIGN(DeviceSyncCryptAuthKeyCreatorImplTest);
 };
 
-TEST_F(CryptAuthKeyCreatorImplTest, AsymmetricKeyCreation) {
+TEST_F(DeviceSyncCryptAuthKeyCreatorImplTest, AsymmetricKeyCreation) {
   base::flat_map<CryptAuthKeyBundle::Name, CryptAuthKeyCreator::CreateKeyData>
       keys_to_create = {
           {CryptAuthKeyBundle::Name::kUserKeyPair,
@@ -145,7 +145,7 @@ TEST_F(CryptAuthKeyCreatorImplTest, AsymmetricKeyCreation) {
                      base::nullopt /* expected_client_ephemeral_dh */));
 }
 
-TEST_F(CryptAuthKeyCreatorImplTest, SymmetricKeyCreation) {
+TEST_F(DeviceSyncCryptAuthKeyCreatorImplTest, SymmetricKeyCreation) {
   base::flat_map<CryptAuthKeyBundle::Name, CryptAuthKeyCreator::CreateKeyData>
       keys_to_create = {
           {CryptAuthKeyBundle::Name::kUserKeyPair,

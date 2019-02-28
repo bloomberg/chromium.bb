@@ -19,14 +19,14 @@ const char kFakePrivateKey[] = "fake-private-key";
 
 }  // namespace
 
-TEST(CryptAuthKeyBundleTest, CreateKeyBundle) {
+TEST(DeviceSyncCryptAuthKeyBundleTest, CreateKeyBundle) {
   CryptAuthKeyBundle bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   EXPECT_EQ(bundle.name(), CryptAuthKeyBundle::Name::kUserKeyPair);
   EXPECT_TRUE(bundle.handle_to_key_map().empty());
   EXPECT_FALSE(bundle.key_directive());
 }
 
-TEST(CryptAuthKeyBundleTest, SetKeyDirective) {
+TEST(DeviceSyncCryptAuthKeyBundleTest, SetKeyDirective) {
   CryptAuthKeyBundle bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   cryptauthv2::KeyDirective key_directive;
   bundle.set_key_directive(key_directive);
@@ -35,7 +35,7 @@ TEST(CryptAuthKeyBundleTest, SetKeyDirective) {
             key_directive.SerializeAsString());
 }
 
-TEST(CryptAuthKeyBundleTest, AddKey) {
+TEST(DeviceSyncCryptAuthKeyBundleTest, AddKey) {
   CryptAuthKeyBundle bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   CryptAuthKey key(kFakeSymmetricKey, CryptAuthKey::Status::kActive,
                    cryptauthv2::KeyType::RAW256, kFakeSymmetricKeyHandle);
@@ -48,7 +48,7 @@ TEST(CryptAuthKeyBundleTest, AddKey) {
   EXPECT_EQ(it->second, key);
 }
 
-TEST(CryptAuthKeyBundleTest, AddKey_Inactive) {
+TEST(DeviceSyncCryptAuthKeyBundleTest, AddKey_Inactive) {
   CryptAuthKeyBundle bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   CryptAuthKey symmetric_key(kFakeSymmetricKey, CryptAuthKey::Status::kActive,
                              cryptauthv2::KeyType::RAW256,
@@ -71,7 +71,7 @@ TEST(CryptAuthKeyBundleTest, AddKey_Inactive) {
             CryptAuthKey::Status::kInactive);
 }
 
-TEST(CryptAuthKeyBundleTest, AddKey_ActiveKeyDeactivatesOthers) {
+TEST(DeviceSyncCryptAuthKeyBundleTest, AddKey_ActiveKeyDeactivatesOthers) {
   CryptAuthKeyBundle bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   CryptAuthKey symmetric_key(kFakeSymmetricKey, CryptAuthKey::Status::kActive,
                              cryptauthv2::KeyType::RAW256,
@@ -94,7 +94,7 @@ TEST(CryptAuthKeyBundleTest, AddKey_ActiveKeyDeactivatesOthers) {
             CryptAuthKey::Status::kActive);
 }
 
-TEST(CryptAuthKeyBundleTest, AddKey_ReplaceKeyWithSameHandle) {
+TEST(DeviceSyncCryptAuthKeyBundleTest, AddKey_ReplaceKeyWithSameHandle) {
   CryptAuthKeyBundle bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   CryptAuthKey symmetric_key(kFakeSymmetricKey, CryptAuthKey::Status::kActive,
                              cryptauthv2::KeyType::RAW256, "same-handle");
@@ -110,7 +110,7 @@ TEST(CryptAuthKeyBundleTest, AddKey_ReplaceKeyWithSameHandle) {
             asymmetric_key);
 }
 
-TEST(CryptAuthKeyBundleTest, GetActiveKey_DoesNotExist) {
+TEST(DeviceSyncCryptAuthKeyBundleTest, GetActiveKey_DoesNotExist) {
   CryptAuthKeyBundle bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   EXPECT_FALSE(bundle.GetActiveKey());
 
@@ -121,7 +121,7 @@ TEST(CryptAuthKeyBundleTest, GetActiveKey_DoesNotExist) {
   EXPECT_FALSE(bundle.GetActiveKey());
 }
 
-TEST(CryptAuthKeyBundleTest, GetActiveKey_Exists) {
+TEST(DeviceSyncCryptAuthKeyBundleTest, GetActiveKey_Exists) {
   CryptAuthKeyBundle bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   CryptAuthKey symmetric_key(kFakeSymmetricKey, CryptAuthKey::Status::kInactive,
                              cryptauthv2::KeyType::RAW256,
@@ -136,7 +136,7 @@ TEST(CryptAuthKeyBundleTest, GetActiveKey_Exists) {
   EXPECT_EQ(*bundle.GetActiveKey(), asymmetric_key);
 }
 
-TEST(CryptAuthKeyBundleTest, SetActiveKey_InactiveToActive) {
+TEST(DeviceSyncCryptAuthKeyBundleTest, SetActiveKey_InactiveToActive) {
   CryptAuthKeyBundle bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   CryptAuthKey symmetric_key(kFakeSymmetricKey, CryptAuthKey::Status::kInactive,
                              cryptauthv2::KeyType::RAW256,
@@ -158,7 +158,7 @@ TEST(CryptAuthKeyBundleTest, SetActiveKey_InactiveToActive) {
             CryptAuthKey::Status::kInactive);
 }
 
-TEST(CryptAuthKeyBundleTest, SetActiveKey_ActiveToActive) {
+TEST(DeviceSyncCryptAuthKeyBundleTest, SetActiveKey_ActiveToActive) {
   CryptAuthKeyBundle bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   CryptAuthKey symmetric_key(kFakeSymmetricKey, CryptAuthKey::Status::kInactive,
                              cryptauthv2::KeyType::RAW256,
@@ -180,7 +180,7 @@ TEST(CryptAuthKeyBundleTest, SetActiveKey_ActiveToActive) {
             CryptAuthKey::Status::kActive);
 }
 
-TEST(CryptAuthKeyBundleTest, DeactivateKeys) {
+TEST(DeviceSyncCryptAuthKeyBundleTest, DeactivateKeys) {
   CryptAuthKeyBundle bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   CryptAuthKey symmetric_key(kFakeSymmetricKey, CryptAuthKey::Status::kInactive,
                              cryptauthv2::KeyType::RAW256,
@@ -202,7 +202,7 @@ TEST(CryptAuthKeyBundleTest, DeactivateKeys) {
             CryptAuthKey::Status::kInactive);
 }
 
-TEST(CryptAuthKeyBundleTest, DeleteKey) {
+TEST(DeviceSyncCryptAuthKeyBundleTest, DeleteKey) {
   CryptAuthKeyBundle bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   CryptAuthKey symmetric_key(kFakeSymmetricKey, CryptAuthKey::Status::kInactive,
                              cryptauthv2::KeyType::RAW256,
@@ -214,7 +214,7 @@ TEST(CryptAuthKeyBundleTest, DeleteKey) {
   EXPECT_TRUE(bundle.handle_to_key_map().empty());
 }
 
-TEST(CryptAuthKeyBundleTest, ToAndFromDictionary_Trivial) {
+TEST(DeviceSyncCryptAuthKeyBundleTest, ToAndFromDictionary_Trivial) {
   CryptAuthKeyBundle bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   base::Optional<CryptAuthKeyBundle> bundle_from_dict =
       CryptAuthKeyBundle::FromDictionary(bundle.AsDictionary());
@@ -222,7 +222,7 @@ TEST(CryptAuthKeyBundleTest, ToAndFromDictionary_Trivial) {
   EXPECT_EQ(*bundle_from_dict, bundle);
 }
 
-TEST(CryptAuthKeyBundleTest, ToAndFromDictionary) {
+TEST(DeviceSyncCryptAuthKeyBundleTest, ToAndFromDictionary) {
   CryptAuthKeyBundle bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   CryptAuthKey symmetric_key(kFakeSymmetricKey, CryptAuthKey::Status::kInactive,
                              cryptauthv2::KeyType::RAW256,
