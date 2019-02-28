@@ -126,6 +126,21 @@ base::Optional<PreviewsType> ConvertProtoOptimizationTypeToPreviewsType(
   }
 }
 
+// Returns whether the optimization type is enabled on this client.
+bool IsEnabledOptimizationType(
+    optimization_guide::proto::OptimizationType optimization_type) {
+  switch (optimization_type) {
+    case optimization_guide::proto::TYPE_UNSPECIFIED:
+      return false;
+    case optimization_guide::proto::NOSCRIPT:
+      return previews::params::IsNoScriptPreviewsEnabled();
+    case optimization_guide::proto::RESOURCE_LOADING:
+      return previews::params::IsResourceLoadingHintsEnabled();
+    case optimization_guide::proto::LITE_PAGE_REDIRECT:
+      return previews::params::IsLitePageServerPreviewsEnabled();
+  }
+}
+
 net::EffectiveConnectionType ConvertProtoEffectiveConnectionType(
     optimization_guide::proto::EffectiveConnectionType proto_ect) {
   switch (proto_ect) {
@@ -435,19 +450,25 @@ bool PreviewsHints::IsWhitelisted(
 
   for (const auto& optimization :
        matched_page_hint->whitelisted_optimizations()) {
-    if (ConvertProtoOptimizationTypeToPreviewsType(
-            optimization.optimization_type()) == type) {
-      if (IsDisabledExperimentalOptimization(optimization)) {
-        continue;
-      }
-      // Found whitelisted optimization.
-      *out_inflation_percent = optimization.inflation_percent();
-      if (matched_page_hint->has_max_ect_trigger()) {
-        *out_ect_threshold = ConvertProtoEffectiveConnectionType(
-            matched_page_hint->max_ect_trigger());
-      }
-      return true;
+    // Skip over any disabled experimental optimizations.
+    if (IsDisabledExperimentalOptimization(optimization)) {
+      continue;
     }
+    if (!IsEnabledOptimizationType(optimization.optimization_type())) {
+      continue;
+    }
+    // Client should use this first whitelisted optimization it has enabled.
+    if (ConvertProtoOptimizationTypeToPreviewsType(
+            optimization.optimization_type()) != type) {
+      return false;
+    }
+    // |type| is the first whitelisted optimization this client supports.
+    *out_inflation_percent = optimization.inflation_percent();
+    if (matched_page_hint->has_max_ect_trigger()) {
+      *out_ect_threshold = ConvertProtoEffectiveConnectionType(
+          matched_page_hint->max_ect_trigger());
+    }
+    return true;
   }
 
   return false;
