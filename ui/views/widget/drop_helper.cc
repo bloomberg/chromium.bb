@@ -4,12 +4,25 @@
 
 #include "ui/views/widget/drop_helper.h"
 
+#include "base/callback.h"
+#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
+
+namespace {
+
+const View* g_drag_entered_callback_view = nullptr;
+
+base::RepeatingClosure* GetDragEnteredCallback() {
+  static base::NoDestructor<base::RepeatingClosure> callback;
+  return callback.get();
+}
+
+}  // namespace
 
 DropHelper::DropHelper(View* root_view)
     : root_view_(root_view),
@@ -18,6 +31,14 @@ DropHelper::DropHelper(View* root_view)
 }
 
 DropHelper::~DropHelper() {
+}
+
+// static
+void DropHelper::SetDragEnteredCallbackForTesting(
+    const View* view,
+    base::RepeatingClosure callback) {
+  g_drag_entered_callback_view = view;
+  *GetDragEnteredCallback() = std::move(callback);
 }
 
 void DropHelper::ResetTargetViewIfEquals(View* view) {
@@ -30,14 +51,24 @@ void DropHelper::ResetTargetViewIfEquals(View* view) {
 int DropHelper::OnDragOver(const OSExchangeData& data,
                            const gfx::Point& root_view_location,
                            int drag_operation) {
+  const View* old_deepest_view = deepest_view_;
   View* view = CalculateTargetViewImpl(root_view_location, data, true,
                                        &deepest_view_);
 
   if (view != target_view_) {
-    // Target changed notify old drag exited, then new drag entered.
+    // Target changed. Notify old drag exited, then new drag entered.
     NotifyDragExit();
     target_view_ = view;
     NotifyDragEntered(data, root_view_location, drag_operation);
+  }
+
+  // Notify testing callback if the drag newly moved over the target view.
+  if (g_drag_entered_callback_view &&
+      g_drag_entered_callback_view->Contains(deepest_view_) &&
+      !g_drag_entered_callback_view->Contains(old_deepest_view)) {
+    auto* callback = GetDragEnteredCallback();
+    if (!callback->is_null())
+      callback->Run();
   }
 
   return NotifyDragOver(data, root_view_location, drag_operation);

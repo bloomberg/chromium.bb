@@ -5,8 +5,10 @@
 #ifndef UI_VIEWS_WIDGET_DROP_HELPER_H_
 #define UI_VIEWS_WIDGET_DROP_HELPER_H_
 
-#include "base/macros.h"
+#include <utility>
 
+#include "base/callback_forward.h"
+#include "base/macros.h"
 #include "ui/views/views_export.h"
 
 namespace gfx {
@@ -32,6 +34,11 @@ class VIEWS_EXPORT DropHelper {
  public:
   explicit DropHelper(View* root_view);
   ~DropHelper();
+
+  // Sets a callback that is run any time a drag enters |view|.  Only exposed
+  // for testing.
+  static void SetDragEnteredCallbackForTesting(const View* view,
+                                               base::RepeatingClosure callback);
 
   // Current view drop events are targeted at, may be NULL.
   View* target_view() const { return target_view_; }
