@@ -3,50 +3,50 @@
 // found in the LICENSE file.
 
 /** @type {string} */
-var currentVolumeType;
+let currentVolumeType;
 
 /** @type {!ListThumbnailLoader} */
-var listThumbnailLoader;
+let listThumbnailLoader;
 
 /** @type {!Object} */
-var getCallbacks;
+let getCallbacks;
 
 /** @type {!Array<Event>} */
-var thumbnailLoadedEvents;
+let thumbnailLoadedEvents;
 
 /** @type {!ThumbnailModel} */
-var thumbnailModel;
+let thumbnailModel;
 
 /** @type {!MetadataModel} */
-var metadataModel;
+let metadataModel;
 
 /** @type {!FileListModel} */
-var fileListModel;
+let fileListModel;
 
 /** @type {!DirectoryModel} */
-var directoryModel;
+let directoryModel;
 
 /** @type {boolean} */
-var isScanningForTest;
+let isScanningForTest;
 
 /** @type {!MockFileSystem} */
-var fileSystem = new MockFileSystem('volume-id');
+const fileSystem = new MockFileSystem('volume-id');
 
 /** @type {!MockDirectoryEntry} */
-var directory1 = new MockDirectoryEntry(fileSystem, '/TestDirectory');
+const directory1 = new MockDirectoryEntry(fileSystem, '/TestDirectory');
 
 /** @type {!MockEntry} */
-var entry1 = new MockEntry(fileSystem, '/Test1.jpg');
+const entry1 = new MockEntry(fileSystem, '/Test1.jpg');
 /** @type {!MockEntry} */
-var entry2 = new MockEntry(fileSystem, '/Test2.jpg');
+const entry2 = new MockEntry(fileSystem, '/Test2.jpg');
 /** @type {!MockEntry} */
-var entry3 = new MockEntry(fileSystem, '/Test3.jpg');
+const entry3 = new MockEntry(fileSystem, '/Test3.jpg');
 /** @type {!MockEntry} */
-var entry4 = new MockEntry(fileSystem, '/Test4.jpg');
+const entry4 = new MockEntry(fileSystem, '/Test4.jpg');
 /** @type {!MockEntry} */
-var entry5 = new MockEntry(fileSystem, '/Test5.jpg');
+const entry5 = new MockEntry(fileSystem, '/Test5.jpg');
 /** @type {!MockEntry} */
-var entry6 = new MockEntry(fileSystem, '/Test6.jpg');
+const entry6 = new MockEntry(fileSystem, '/Test6.jpg');
 
 function setUp() {
   currentVolumeType = ListThumbnailLoader.TEST_VOLUME_TYPE;
@@ -63,15 +63,15 @@ function setUp() {
   MockThumbnailLoader.testImageHeight = 160;
 
   // Create an image dataURL for testing.
-  var canvas = document.createElement('canvas');
+  const canvas = document.createElement('canvas');
   canvas.width = MockThumbnailLoader.testImageWidth;
   canvas.height = MockThumbnailLoader.testImageHeight;
-  var context = canvas.getContext('2d');
+  const context = canvas.getContext('2d');
   context.fillStyle = 'black';
   context.fillRect(0, 0, 80, 80);
   context.fillRect(80, 80, 80, 80);
   /** @const {string} */
-  var testImageDataUrl = canvas.toDataURL('image/jpeg', 0.5);
+  const testImageDataUrl = canvas.toDataURL('image/jpeg', 0.5);
 
   /** @suppress {const} */
   MockThumbnailLoader.testImageDataUrl = testImageDataUrl;
@@ -107,7 +107,7 @@ function setUp() {
     },
   });
 
-  var fakeVolumeManager = /** @type {!VolumeManager} */ ({
+  const fakeVolumeManager = /** @type {!VolumeManager} */ ({
     getVolumeInfo: function(entry) {
       return {
         volumeType: currentVolumeType,
@@ -131,7 +131,7 @@ function getKeyOfGetCallback_(entries) {
 }
 
 function resolveGetLatestCallback(entries) {
-  var key = getKeyOfGetCallback_(entries);
+  const key = getKeyOfGetCallback_(entries);
   assert(getCallbacks[key]);
   getCallbacks[key](entries.map(function() {
     return {thumbnail: {}};
@@ -144,7 +144,7 @@ function hasPendingGetLatestCallback(entries) {
 }
 
 function areEntriesInCache(entries) {
-  for (var i = 0; i < entries.length; i++) {
+  for (let i = 0; i < entries.length; i++) {
     if (null === listThumbnailLoader.getThumbnailFromCache(entries[i])) {
       return false;
     }
@@ -183,7 +183,7 @@ function testStory(callback) {
     // Assert that thumbnailLoaded event is fired for Test2.jpg.
     return thumbnailLoadedEvents.length === 1;
   }).then(function() {
-    var event = thumbnailLoadedEvents.shift();
+    const event = thumbnailLoadedEvents.shift();
     assertEquals('filesystem:volume-id/Test2.jpg', event.fileUrl);
     assertTrue(event.dataUrl.length > 0);
     assertEquals(160, event.width);
@@ -191,7 +191,7 @@ function testStory(callback) {
 
     // Since thumbnail of Test2.jpg is loaded into the cache,
     // getThumbnailFromCache returns thumbnail for the image.
-    var thumbnail = listThumbnailLoader.getThumbnailFromCache(entry2);
+    const thumbnail = listThumbnailLoader.getThumbnailFromCache(entry2);
     assertEquals('filesystem:volume-id/Test2.jpg', thumbnail.fileUrl);
     assertTrue(thumbnail.dataUrl.length > 0);
     assertEquals(160, thumbnail.width);
@@ -343,12 +343,12 @@ function testChangeEvent(callback) {
     return thumbnailLoadedEvents.length === 2;
   }).then(function() {
     // entry1 is changed.
-    var changeEvent = new Event('change');
+    const changeEvent = new Event('change');
     changeEvent.index = 1;
     fileListModel.dispatchEvent(changeEvent);
 
     // cache of entry1 should become invalid.
-    var thumbnail = listThumbnailLoader.getThumbnailFromCache(entry1);
+    const thumbnail = listThumbnailLoader.getThumbnailFromCache(entry1);
     assertTrue(thumbnail.outdated);
 
     resolveGetLatestCallback([entry1]);
@@ -396,7 +396,7 @@ function testDirectoryScanIsRunning() {
  * Test case for EXIF IO error and retrying logic.
  */
 function testExifIOError(callback) {
-  var task = new ListThumbnailLoader.Task(
+  const task = new ListThumbnailLoader.Task(
       entry1,
       /** @type {!VolumeManager} */ ({
         getVolumeInfo: function(entry) {

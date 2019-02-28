@@ -127,7 +127,7 @@ ActionsController.prototype.getContextFor_ = function(element) {
  * @private
  */
 ActionsController.prototype.updateUI_ = function() {
-  var actionsModel = this.getActionsModelForContext(this.menuContext_);
+  const actionsModel = this.getActionsModelForContext(this.menuContext_);
   // TODO(mtomasz): Prevent flickering somehow.
   this.ui_.actionsSubmenu.setActionsModel(actionsModel);
 };
@@ -157,17 +157,17 @@ ActionsController.prototype.onSelectionChanged_ = function() {
  */
 ActionsController.prototype.onSelectionChangeThrottled_ = function() {
   assert(!this.fileListActionsModel_);
-  var selection = this.selectionHandler_.selection;
+  const selection = this.selectionHandler_.selection;
 
-  var entries = selection.entries;
+  const entries = selection.entries;
   if (!entries) {
     return;
   }
 
-  var actionsModel = new ActionsModel(this.volumeManager_, this.metadataModel_,
+  const actionsModel = new ActionsModel(this.volumeManager_, this.metadataModel_,
         this.shortcutsModel_, this.driveSyncHandler_, this.ui_, entries);
 
-  var initializeAndUpdateUI =
+  const initializeAndUpdateUI =
       /** @type {function(Event=)} */ (function(opt_event) {
         if (selection !== this.selectionHandler_.selection) {
           return;
@@ -204,17 +204,17 @@ ActionsController.prototype.onNavigationListSelectionChanged_ = function() {
   }
   this.updateUI_();
 
-  var entry = this.ui_.directoryTree.selectedItem ?
+  const entry = this.ui_.directoryTree.selectedItem ?
       (this.ui_.directoryTree.selectedItem.entry || null) : null;
   if (!entry) {
     return;
   }
 
-  var sequence = ++this.navigationListSequence_;
-  var actionsModel = new ActionsModel(this.volumeManager_, this.metadataModel_,
+  const sequence = ++this.navigationListSequence_;
+  const actionsModel = new ActionsModel(this.volumeManager_, this.metadataModel_,
         this.shortcutsModel_, this.driveSyncHandler_, this.ui_, [entry]);
 
-  var initializeAndUpdateUI =
+  const initializeAndUpdateUI =
       /** @type {function(Event=)} */ (function(opt_event) {
         actionsModel.initialize().then(function() {
           if (this.navigationListSequence_ !== sequence) {
@@ -250,6 +250,6 @@ ActionsController.prototype.getActionsModelForContext = function(context) {
  * @return {ActionsModel} Actions model.
  */
 ActionsController.prototype.getActionsModelFor = function(target) {
-  var element = /** @type {Element} */ (target);
+  const element = /** @type {Element} */ (target);
   return this.getActionsModelForContext(this.getContextFor_(element));
 };

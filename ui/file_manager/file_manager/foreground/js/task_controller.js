@@ -179,7 +179,7 @@ TaskController.prototype.onTaskItemClicked_ = function(event) {
 
   // 'select' event from ComboButton has the item as event.item.
   // 'activate' event from cr.ui.MenuButton has the item as event.target.data.
-  var item = event.item || event.target.data;
+  const item = event.item || event.target.data;
   this.getFileTasks()
       .then(function(tasks) {
         switch (item.type) {
@@ -190,20 +190,20 @@ TaskController.prototype.onTaskItemClicked_ = function(event) {
             tasks.execute(item.task);
             break;
           case FileTasks.TaskMenuButtonItemType.ChangeDefaultTask:
-            var selection = this.selectionHandler_.selection;
-            var extensions = [];
+            const selection = this.selectionHandler_.selection;
+            const extensions = [];
 
-            for (var i = 0; i < selection.entries.length; i++) {
-              var match = /\.(\w+)$/g.exec(selection.entries[i].toURL());
+            for (let i = 0; i < selection.entries.length; i++) {
+              const match = /\.(\w+)$/g.exec(selection.entries[i].toURL());
               if (match) {
-                var ext = match[1].toUpperCase();
+                const ext = match[1].toUpperCase();
                 if (extensions.indexOf(ext) == -1) {
                   extensions.push(ext);
                 }
               }
             }
 
-            var format = '';
+            let format = '';
 
             if (extensions.length == 1) {
               format = extensions[0];
@@ -237,7 +237,7 @@ TaskController.prototype.onTaskItemClicked_ = function(event) {
  * @private
  */
 TaskController.prototype.changeDefaultTask_ = function(selection, task) {
-  var entries = selection.entries;
+  const entries = selection.entries;
 
   Promise.all(entries.map((entry) => this.getMimeType_(entry))).then(function(
       mimeTypes) {
@@ -272,7 +272,7 @@ TaskController.prototype.changeDefaultTask_ = function(selection, task) {
 TaskController.prototype.executeDefaultTask = function() {
   this.getFileTasks()
       .then(function(tasks) {
-        var task = {
+        const task = {
           taskId: this.ui_.fileContextMenu.defaultTaskMenuItem.taskId,
           title: this.ui_.fileContextMenu.defaultTaskMenuItem.label,
         };
@@ -317,7 +317,7 @@ TaskController.prototype.getMimeType_ = function(entry) {
  * @private
  */
 TaskController.prototype.onSelectionChanged_ = function() {
-  var selection = this.selectionHandler_.selection;
+  const selection = this.selectionHandler_.selection;
   // Caller of update context menu task items.
   // FileSelectionHandler.EventType.CHANGE
   if (this.dialogType_ === DialogType.FULL_PAGE &&
@@ -339,7 +339,7 @@ TaskController.prototype.onSelectionChanged_ = function() {
  * @private
  */
 TaskController.prototype.updateTasks_ = function() {
-  var selection = this.selectionHandler_.selection;
+  const selection = this.selectionHandler_.selection;
   if (this.dialogType_ === DialogType.FULL_PAGE &&
       (selection.directoryCount > 0 || selection.fileCount > 0)) {
     this.getFileTasks()
@@ -364,7 +364,7 @@ TaskController.prototype.updateTasks_ = function() {
  * @public
  */
 TaskController.prototype.getFileTasks = function() {
-  var selection = this.selectionHandler_.selection;
+  const selection = this.selectionHandler_.selection;
   if (this.tasks_ &&
       util.isSameEntries(this.tasksEntries_, selection.entries)) {
     return this.tasks_;
@@ -440,7 +440,7 @@ TaskController.prototype.canExecuteShowOverflow = function() {
  */
 TaskController.prototype.updateContextMenuTaskItems_ = function(
     openTasks, nonOpenTasks) {
-  var defaultTask = FileTasks.getDefaultTask(openTasks, this.taskHistory_);
+  const defaultTask = FileTasks.getDefaultTask(openTasks, this.taskHistory_);
   if (defaultTask) {
     if (defaultTask.iconType) {
       this.ui_.fileContextMenu.defaultTaskMenuItem.style.backgroundImage = '';

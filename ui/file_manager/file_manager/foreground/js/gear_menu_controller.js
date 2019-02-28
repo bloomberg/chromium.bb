@@ -133,13 +133,13 @@ GearMenuController.prototype.onDirectoryChanged_ = function(event) {
  */
 GearMenuController.prototype.refreshRemainingSpace_ = function(
     showLoadingCaption) {
-  var currentDirectory = this.directoryModel_.getCurrentDirEntry();
+  const currentDirectory = this.directoryModel_.getCurrentDirEntry();
   if (!currentDirectory || util.isRecentRoot(currentDirectory)) {
     this.gearMenu_.setSpaceInfo(null, false);
     return;
   }
 
-  var currentVolumeInfo = this.directoryModel_.getCurrentVolumeInfo();
+  const currentVolumeInfo = this.directoryModel_.getCurrentVolumeInfo();
   if (!currentVolumeInfo) {
     return;
   }

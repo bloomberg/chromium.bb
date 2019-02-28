@@ -8,7 +8,7 @@
  *   overrideCwsContainerOriginForTest: (string|undefined)
  * }}
  */
-var SuggestAppDialogState;
+let SuggestAppDialogState;
 
 /**
  * @param {!Object} unformatted Unformatted option.

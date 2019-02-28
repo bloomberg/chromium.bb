@@ -15,7 +15,7 @@ cr.ui.Command.prototype.setHidden = function(value) {
     return;
   }
 
-  var oldValue = this.hidden;
+  const oldValue = this.hidden;
   this.hidden = value;
   cr.dispatchPropertyChange(this, 'hidden', value, oldValue);
 };

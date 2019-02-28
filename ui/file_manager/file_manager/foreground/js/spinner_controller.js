@@ -43,7 +43,7 @@ function SpinnerController(element) {
  * Blinks the spinner for a short period of time. Hides automatically.
  */
 SpinnerController.prototype.blink = function() {
-  var hideCallback = this.show();
+  const hideCallback = this.show();
   setTimeout(hideCallback, this.blinkDuration_);
 };
 
@@ -63,7 +63,7 @@ SpinnerController.prototype.show = function() {
  * @return {function()} Hide callback.
  */
 SpinnerController.prototype.showWithDelay = function(delay, callback) {
-  var timerId = setTimeout(function() {
+  const timerId = setTimeout(function() {
     this.activeSpinners_++;
     if (this.activeSpinners_ === 1) {
       this.element_.hidden = false;

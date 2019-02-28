@@ -15,19 +15,19 @@ const recentFakeEntry =
  * Directory model.
  * @type {!DirectoryModel}
  */
-var directoryModel;
+let directoryModel;
 
 /**
  * Drive file system.
  * @type {!MockFileSystem}
  */
-var drive;
+let drive;
 
 /**
  * Removable volume file system.
  * @type {!MockFileSystem}
  */
-var hoge;
+let hoge;
 
 // Setup the test components.
 function setUp() {
@@ -62,19 +62,19 @@ function setUp() {
  * Tests model.
  */
 function testModel() {
-  var volumeManager = new MockVolumeManager();
+  const volumeManager = new MockVolumeManager();
 
-  var shortcutListModel = new MockFolderShortcutDataModel(
+  const shortcutListModel = new MockFolderShortcutDataModel(
       [new MockFileEntry(drive, '/root/shortcut')]);
-  var recentItem = new NavigationModelFakeItem(
+  const recentItem = new NavigationModelFakeItem(
       'recent-label', NavigationModelItemType.RECENT, recentFakeEntry);
 
-  var crostiniFakeItem = new NavigationModelFakeItem(
+  const crostiniFakeItem = new NavigationModelFakeItem(
       'linux-files-label', NavigationModelItemType.CROSTINI,
       new FakeEntry(
           'linux-files-label', VolumeManagerCommon.RootType.CROSTINI));
 
-  var model = new NavigationListModel(
+  const model = new NavigationListModel(
       volumeManager, shortcutListModel, recentItem, directoryModel);
   model.linuxFilesItem = crostiniFakeItem;
 
@@ -102,13 +102,13 @@ function testModel() {
  * Tests model with no Recents, Linux files, Play files.
  */
 function testNoRecentOrLinuxFiles() {
-  var volumeManager = new MockVolumeManager();
+  const volumeManager = new MockVolumeManager();
 
-  var shortcutListModel = new MockFolderShortcutDataModel(
+  const shortcutListModel = new MockFolderShortcutDataModel(
       [new MockFileEntry(drive, '/root/shortcut')]);
-  var recentItem = null;
+  const recentItem = null;
 
-  var model = new NavigationListModel(
+  const model = new NavigationListModel(
       volumeManager, shortcutListModel, recentItem, directoryModel);
 
   assertEquals(3, model.length);
@@ -125,13 +125,13 @@ function testNoRecentOrLinuxFiles() {
  * Tests adding and removing shortcuts.
  */
 function testAddAndRemoveShortcuts() {
-  var volumeManager = new MockVolumeManager();
+  const volumeManager = new MockVolumeManager();
 
-  var shortcutListModel = new MockFolderShortcutDataModel(
+  const shortcutListModel = new MockFolderShortcutDataModel(
       [new MockFileEntry(drive, '/root/shortcut')]);
-  var recentItem = null;
+  const recentItem = null;
 
-  var model = new NavigationListModel(
+  const model = new NavigationListModel(
       volumeManager, shortcutListModel, recentItem, directoryModel);
 
   assertEquals(3, model.length);
@@ -187,13 +187,13 @@ function testAddAndRemoveShortcuts() {
  * Tests adding and removing volumes.
  */
 function testAddAndRemoveVolumes() {
-  var volumeManager = new MockVolumeManager();
+  const volumeManager = new MockVolumeManager();
 
-  var shortcutListModel = new MockFolderShortcutDataModel(
+  const shortcutListModel = new MockFolderShortcutDataModel(
       [new MockFileEntry(drive, '/root/shortcut')]);
-  var recentItem = null;
+  const recentItem = null;
 
-  var model = new NavigationListModel(
+  const model = new NavigationListModel(
       volumeManager, shortcutListModel, recentItem, directoryModel);
 
   assertEquals(3, model.length);

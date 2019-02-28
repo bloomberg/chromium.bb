@@ -137,7 +137,7 @@ function DialogActionController(
  * @private
  */
 DialogActionController.prototype.processOKActionForSaveDialog_ = function() {
-  var selection = this.fileSelectionHandler_.selection;
+  const selection = this.fileSelectionHandler_.selection;
 
   // If OK action is clicked when a directory is selected, open the directory.
   if (selection.directoryCount === 1 && selection.fileCount === 0) {
@@ -148,7 +148,7 @@ DialogActionController.prototype.processOKActionForSaveDialog_ = function() {
 
   // Save-as doesn't require a valid selection from the list, since
   // we're going to take the filename from the text input.
-  var filename = this.dialogFooter_.filenameInput.value;
+  const filename = this.dialogFooter_.filenameInput.value;
   if (!filename) {
     throw new Error('Missing filename!');
   }
@@ -187,14 +187,14 @@ DialogActionController.prototype.processOKAction_ = function() {
     return;
   }
 
-  var files = [];
-  var selectedIndexes =
+  const files = [];
+  const selectedIndexes =
       this.directoryModel_.getFileListSelection().selectedIndexes;
 
   if (DialogType.isFolderDialog(this.dialogType_) &&
       selectedIndexes.length === 0) {
-    var url = this.directoryModel_.getCurrentDirEntry().toURL();
-    var singleSelection = {
+    const url = this.directoryModel_.getCurrentDirEntry().toURL();
+    const singleSelection = {
       urls: [url],
       multiple: false,
       filterIndex: this.dialogFooter_.selectedFilterIndex
@@ -210,9 +210,9 @@ DialogActionController.prototype.processOKAction_ = function() {
     throw new Error('Nothing selected!');
   }
 
-  var dm = this.directoryModel_.getFileList();
-  for (var i = 0; i < selectedIndexes.length; i++) {
-    var entry = dm.item(selectedIndexes[i]);
+  const dm = this.directoryModel_.getFileList();
+  for (let i = 0; i < selectedIndexes.length; i++) {
+    const entry = dm.item(selectedIndexes[i]);
     if (!entry) {
       console.error('Error locating selected file at index: ' + i);
       continue;
@@ -223,7 +223,7 @@ DialogActionController.prototype.processOKAction_ = function() {
 
   // Multi-file selection has no other restrictions.
   if (this.dialogType_ === DialogType.SELECT_OPEN_MULTI_FILE) {
-    var multipleSelection = {
+    const multipleSelection = {
       urls: files,
       multiple: true
     };
@@ -236,7 +236,7 @@ DialogActionController.prototype.processOKAction_ = function() {
     throw new Error('Too many files selected!');
   }
 
-  var selectedEntry = dm.item(selectedIndexes[0]);
+  const selectedEntry = dm.item(selectedIndexes[0]);
 
   if (DialogType.isFolderDialog(this.dialogType_)) {
     if (!selectedEntry.isDirectory) {
@@ -248,7 +248,7 @@ DialogActionController.prototype.processOKAction_ = function() {
     }
   }
 
-  var singleSelection = {
+  const singleSelection = {
     urls: [files[0]],
     multiple: false,
     filterIndex: this.dialogFooter_.selectedFilterIndex
@@ -289,9 +289,9 @@ DialogActionController.prototype.updateNewFolderButton_ = function() {
  * @private
  */
 DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
-  var currentRootType = this.directoryModel_.getCurrentRootType();
-  var callSelectFilesApiAndClose = function(callback) {
-    var onFileSelected = function() {
+  const currentRootType = this.directoryModel_.getCurrentRootType();
+  const callSelectFilesApiAndClose = function(callback) {
+    const onFileSelected = function() {
       callback();
       if (!chrome.runtime.lastError) {
         // Call next method on a timeout, as it's unsafe to
@@ -327,24 +327,24 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
     return;
   }
 
-  var shade = document.createElement('div');
+  const shade = document.createElement('div');
   shade.className = 'shade';
-  var footer = this.dialogFooter_.element;
-  var progress = footer.querySelector('.progress-track');
+  const footer = this.dialogFooter_.element;
+  const progress = footer.querySelector('.progress-track');
   progress.style.width = '0%';
-  var cancelled = false;
+  const cancelled = false;
 
-  var progressMap = {};
-  var filesStarted = 0;
-  var filesTotal = selection.urls.length;
-  for (var index = 0; index < selection.urls.length; index++) {
+  const progressMap = {};
+  let filesStarted = 0;
+  let filesTotal = selection.urls.length;
+  for (let index = 0; index < selection.urls.length; index++) {
     progressMap[selection.urls[index]] = -1;
   }
-  var lastPercent = 0;
-  var bytesTotal = 0;
-  var bytesDone = 0;
+  let lastPercent = 0;
+  let bytesTotal = 0;
+  let bytesDone = 0;
 
-  var onFileTransfersUpdated = function(status) {
+  const onFileTransfersUpdated = function(status) {
     if (!(status.fileUrl in progressMap)) {
       return;
     }
@@ -352,7 +352,7 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
       return;
     }
 
-    var old = progressMap[status.fileUrl];
+    let old = progressMap[status.fileUrl];
     if (old === -1) {
       // -1 means we don't know file size yet.
       bytesTotal += status.total;
@@ -362,7 +362,7 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
     bytesDone += status.processed - old;
     progressMap[status.fileUrl] = status.processed;
 
-    var percent = bytesTotal === 0 ? 0 : bytesDone / bytesTotal;
+    let percent = bytesTotal === 0 ? 0 : bytesDone / bytesTotal;
     // For files we don't have information about, assume the progress is zero.
     percent = percent * filesStarted / filesTotal * 100;
     // Do not decrease the progress. This may happen, if first downloaded
@@ -371,7 +371,7 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
     progress.style.width = lastPercent + '%';
   }.bind(this);
 
-  var setup = function() {
+  const setup = function() {
     document.querySelector('.dialog-container').appendChild(shade);
     setTimeout(function() {
       shade.setAttribute('fadein', 'fadein');
@@ -384,7 +384,7 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
         onFileTransfersUpdated);
   }.bind(this);
 
-  var cleanup = function() {
+  const cleanup = function() {
     shade.parentNode.removeChild(shade);
     footer.removeAttribute('progress');
     this.dialogFooter_.cancelButton.removeEventListener('click', onCancel);
@@ -394,7 +394,7 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
         onFileTransfersUpdated);
   }.bind(this);
 
-  var onCancel = function() {
+  const onCancel = function() {
     // According to API cancel may fail, but there is no proper UI to reflect
     // this. So, we just silently assume that everything is cancelled.
     util.URLsToEntries(selection.urls).then(function(entries) {
@@ -403,8 +403,8 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
     });
   }.bind(this);
 
-  var onProperties = function(properties) {
-    for (var i = 0; i < properties.length; i++) {
+  const onProperties = function(properties) {
+    for (let i = 0; i < properties.length; i++) {
       if (properties[i].present) {
         // For files already in GCache, we don't get any transfer updates.
         filesTotal--;
@@ -427,21 +427,21 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
  */
 DialogActionController.prototype.onFileTypeFilterChanged_ = function() {
   this.fileFilter_.removeFilter('fileType');
-  var selectedIndex = this.dialogFooter_.selectedFilterIndex;
+  const selectedIndex = this.dialogFooter_.selectedFilterIndex;
   if (selectedIndex > 0) { // Specific filter selected.
-    var regexp = new RegExp('\\.(' +
+    const regexp = new RegExp('\\.(' +
         this.fileTypes_[selectedIndex - 1].extensions.join('|') + ')$', 'i');
-    var filter = function(entry) {
+    const filter = function(entry) {
       return entry.isDirectory || regexp.test(entry.name);
     };
     this.fileFilter_.addFilter('fileType', filter);
 
     // In save dialog, update the destination name extension.
     if (this.dialogType_ === DialogType.SELECT_SAVEAS_FILE) {
-      var current = this.dialogFooter_.filenameInput.value;
-      var newExt = this.fileTypes_[selectedIndex - 1].extensions[0];
+      const current = this.dialogFooter_.filenameInput.value;
+      const newExt = this.fileTypes_[selectedIndex - 1].extensions[0];
       if (newExt && !regexp.test(current)) {
-        var i = current.lastIndexOf('.');
+        const i = current.lastIndexOf('.');
         if (i >= 0) {
           this.dialogFooter_.filenameInput.value =
               current.substr(0, i) + '.' + newExt;
@@ -460,7 +460,7 @@ DialogActionController.prototype.onFileTypeFilterChanged_ = function() {
 DialogActionController.prototype.onFileSelectionChanged_ = function() {
   // If this is a save-as dialog, copy the selected file into the filename
   // input text box.
-  var selection = this.fileSelectionHandler_.selection;
+  const selection = this.fileSelectionHandler_.selection;
   if (this.dialogType_ === DialogType.SELECT_SAVEAS_FILE &&
       selection.totalCount === 1 &&
       selection.entries[0].isFile &&
@@ -479,7 +479,7 @@ DialogActionController.prototype.onFileSelectionChanged_ = function() {
  * @private
  */
 DialogActionController.prototype.updateOkButton_ = function() {
-  var selection = this.fileSelectionHandler_.selection;
+  const selection = this.fileSelectionHandler_.selection;
 
   if (this.dialogType_ === DialogType.FULL_PAGE) {
     // No "select" buttons on the full page UI.

@@ -22,7 +22,7 @@ const TEST_METADATA = {
 
 function assertFileListModelElementNames(fileListModel, names) {
   assertEquals(fileListModel.length, names.length);
-  for (var i = 0; i < fileListModel.length; i++) {
+  for (let i = 0; i < fileListModel.length; i++) {
     assertEquals(fileListModel.item(i).name, names[i]);
   }
 }
@@ -33,8 +33,8 @@ function assertEntryArrayEquals(entryArray, names) {
 }
 
 function makeSimpleFileListModel(names) {
-  var fileListModel = new FileListModel(createFakeMetadataModel({}));
-  for (var i = 0; i < names.length; i++) {
+  const fileListModel = new FileListModel(createFakeMetadataModel({}));
+  for (let i = 0; i < names.length; i++) {
     fileListModel.push({name: names[i], isDirectory: false});
   }
   return fileListModel;
@@ -65,7 +65,7 @@ function createFakeMetadataModel(data) {
 }
 
 function testIsImageDominant() {
-  var fileListModel = new FileListModel(createFakeMetadataModel(TEST_METADATA));
+  const fileListModel = new FileListModel(createFakeMetadataModel(TEST_METADATA));
 
   assertEquals(fileListModel.isImageDominant(), false);
 
@@ -92,7 +92,7 @@ function testIsImageDominant() {
 }
 
 function testSortWithFolders() {
-  var fileListModel = new FileListModel(createFakeMetadataModel(TEST_METADATA));
+  const fileListModel = new FileListModel(createFakeMetadataModel(TEST_METADATA));
   fileListModel.push({ name: 'dirA', isDirectory: true });
   fileListModel.push({ name: 'dirB', isDirectory: true });
   fileListModel.push({ name: 'a.txt', isDirectory: false });
@@ -123,7 +123,7 @@ function testSortWithFolders() {
 }
 
 function testSplice() {
-  var fileListModel = makeSimpleFileListModel(['d', 'a', 'x', 'n']);
+  const fileListModel = makeSimpleFileListModel(['d', 'a', 'x', 'n']);
   fileListModel.sort('name', 'asc');
 
   fileListModel.addEventListener('splice', function(event) {
@@ -145,7 +145,7 @@ function testSplice() {
 }
 
 function testSpliceWithoutSortStatus() {
-  var fileListModel = makeSimpleFileListModel(['d', 'a', 'x', 'n']);
+  const fileListModel = makeSimpleFileListModel(['d', 'a', 'x', 'n']);
 
   fileListModel.addEventListener('splice', function(event) {
     assertEntryArrayEquals(event.added, ['p', 'b']);
@@ -169,7 +169,7 @@ function testSpliceWithoutSortStatus() {
 }
 
 function testSpliceWithoutAddingNewItems() {
-  var fileListModel = makeSimpleFileListModel(['d', 'a', 'x', 'n']);
+  const fileListModel = makeSimpleFileListModel(['d', 'a', 'x', 'n']);
   fileListModel.sort('name', 'asc');
 
   fileListModel.addEventListener('splice', function(event) {
@@ -190,7 +190,7 @@ function testSpliceWithoutAddingNewItems() {
 }
 
 function testSpliceWithoutDeletingItems() {
-  var fileListModel = makeSimpleFileListModel(['d', 'a', 'x', 'n']);
+  const fileListModel = makeSimpleFileListModel(['d', 'a', 'x', 'n']);
   fileListModel.sort('name', 'asc');
 
   fileListModel.addEventListener('splice', function(event) {

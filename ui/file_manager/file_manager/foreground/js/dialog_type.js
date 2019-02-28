@@ -11,7 +11,7 @@
  * @enum {string}
  * @const
  */
-var DialogType = {
+const DialogType = {
   SELECT_FOLDER: 'folder',
   SELECT_UPLOAD_FOLDER: 'upload-folder',
   SELECT_SAVEAS_FILE: 'saveas-file',

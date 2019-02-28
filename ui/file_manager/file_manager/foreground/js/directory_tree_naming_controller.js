@@ -98,7 +98,7 @@ DirectoryTreeNamingController.prototype.attachAndStart = function(
   this.currentDirectoryItem_ = directoryItem;
   this.currentDirectoryItem_.setAttribute('renaming', true);
 
-  var renameInputElementPlaceholder =
+  const renameInputElementPlaceholder =
       this.currentDirectoryItem_.firstElementChild.getElementsByClassName(
           'rename-placeholder');
 
@@ -126,8 +126,8 @@ DirectoryTreeNamingController.prototype.commitRename_ = function() {
   }
   this.editting_ = false;
 
-  var entry = this.currentDirectoryItem_.entry;
-  var newName = this.inputElement_.value;
+  const entry = this.currentDirectoryItem_.entry;
+  const newName = this.inputElement_.value;
 
   // If new name is the same as current name or empty, do nothing.
   if (newName === this.currentDirectoryItem_.label || newName.length == 0) {
@@ -167,7 +167,7 @@ DirectoryTreeNamingController.prototype.commitRename_ = function() {
  */
 DirectoryTreeNamingController.prototype.performRename_ = function(
     entry, newName) {
-  var renamingCurrentDirectory = util.isSameEntry(entry,
+  const renamingCurrentDirectory = util.isSameEntry(entry,
       this.directoryModel_.getCurrentDirEntry());
   if (renamingCurrentDirectory) {
     this.directoryModel_.setIgnoringCurrentDirectoryDeletion(true /* ignore */);
@@ -180,7 +180,7 @@ DirectoryTreeNamingController.prototype.performRename_ = function(
           function(newEntry) {
             // Show new name before detaching input element to prevent showing
             // old name.
-            var label =
+            const label =
                 this.currentDirectoryItem_.firstElementChild.querySelector(
                     '.label');
             label.textContent = newName;
@@ -221,7 +221,7 @@ DirectoryTreeNamingController.prototype.performExternalDriveRename_ = function(
   chrome.fileManagerPrivate.renameVolume(this.volumeInfo_.volumeId, newName);
   // Show new name before detaching input element to prevent showing old
   // name.
-  var label =
+  const label =
       this.currentDirectoryItem_.firstElementChild.querySelector('.label');
   label.textContent = newName;
 
@@ -248,7 +248,7 @@ DirectoryTreeNamingController.prototype.cancelRename_ = function() {
 DirectoryTreeNamingController.prototype.detach_ = function() {
   assert(!!this.currentDirectoryItem_);
 
-  var renameInputElementPlaceholder =
+  const renameInputElementPlaceholder =
       this.currentDirectoryItem_.firstElementChild.getElementsByClassName(
           'rename-placeholder');
 

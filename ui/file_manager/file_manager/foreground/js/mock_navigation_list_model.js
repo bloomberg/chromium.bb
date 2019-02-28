@@ -21,7 +21,7 @@ class MockNavigationListModel extends cr.EventTarget {
    * @return {NavigationModelItem} The item at the given index.
    */
   item(index) {
-    var volumeInfo = this.volumeManager_.volumeInfoList.item(index);
+    const volumeInfo = this.volumeManager_.volumeInfoList.item(index);
     return new NavigationModelVolumeItem(volumeInfo.label, volumeInfo);
   }
 

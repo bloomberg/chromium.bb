@@ -59,7 +59,7 @@ class TaskHistory extends cr.EventTarget {
    * @private
    */
   save_() {
-    var objectToSave = {};
+    const objectToSave = {};
     objectToSave[TaskHistory.STORAGE_KEY_LAST_EXECUTED_TIME] =
         this.lastExecutedTime_;
     chrome.storage.local.set(objectToSave);
@@ -76,7 +76,7 @@ class TaskHistory extends cr.EventTarget {
       return;
     }
 
-    for (var key in changes) {
+    for (const key in changes) {
       if (key == TaskHistory.STORAGE_KEY_LAST_EXECUTED_TIME) {
         this.lastExecutedTime_ = changes[key].newValue;
         cr.dispatchSimpleEvent(this, TaskHistory.EventType.UPDATE);
@@ -90,21 +90,21 @@ class TaskHistory extends cr.EventTarget {
    * @private
    */
   truncate_() {
-    var keys = Object.keys(this.lastExecutedTime_);
+    const keys = Object.keys(this.lastExecutedTime_);
     if (keys.length <= TaskHistory.LAST_EXECUTED_TIME_HISTORY_MAX) {
       return;
     }
 
-    var items = [];
-    for (var i = 0; i < keys.length; i++) {
+    let items = [];
+    for (let i = 0; i < keys.length; i++) {
       items.push({id: keys[i], timestamp: this.lastExecutedTime_[keys[i]]});
     }
 
     items.sort((a, b) => b.timestamp - a.timestamp);
     items = items.slice(0, TaskHistory.LAST_EXECUTED_TIME_HISTORY_MAX);
 
-    var newObject = {};
-    for (var i = 0; i < items.length; i++) {
+    const newObject = {};
+    for (let i = 0; i < items.length; i++) {
       newObject[items[i].id] = items[i].timestamp;
     }
 

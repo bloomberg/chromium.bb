@@ -6,7 +6,7 @@
  * The drive mount path used in the storage. It must be '/drive'.
  * @type {string}
  */
-var STORED_DRIVE_MOUNT_PATH = '/drive';
+const STORED_DRIVE_MOUNT_PATH = '/drive';
 
 /**
  * Model for the folder shortcuts. This object is cr.ui.ArrayDataModel-like
@@ -75,7 +75,7 @@ FolderShortcutsDataModel.prototype = {
     if (this.lastDriveRootURL_) {
       return;
     }
-    var volumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
+    const volumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
         VolumeManagerCommon.VolumeType.DRIVE);
     if (volumeInfo) {
       this.lastDriveRootURL_ = volumeInfo.fileSystem.root.toURL();
@@ -98,13 +98,13 @@ FolderShortcutsDataModel.prototype = {
     }.bind(this));
 
     this.queue_.run(function(queueCallback) {
-      var volumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
+      const volumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
           VolumeManagerCommon.VolumeType.DRIVE);
-      var changed = false;
-      var resolvedURLs = {};
+      let changed = false;
+      const resolvedURLs = {};
       this.rememberLastDriveURL_();  // Required for conversions.
 
-      var onResolveSuccess = function(path, entry) {
+      const onResolveSuccess = function(path, entry) {
         if (path in this.pendingPaths_) {
           delete this.pendingPaths_[path];
         }
@@ -119,11 +119,11 @@ FolderShortcutsDataModel.prototype = {
         resolvedURLs[entry.toURL()] = true;
       }.bind(this);
 
-      var onResolveFailure = function(path, url) {
+      const onResolveFailure = function(path, url) {
         if (path in this.pendingPaths_) {
           delete this.pendingPaths_[path];
         }
-        var existingIndex = this.getIndexByURL_(url);
+        const existingIndex = this.getIndexByURL_(url);
         if (existingIndex !== -1) {
           changed = true;
           this.removeInternal_(this.item(existingIndex));
@@ -145,10 +145,10 @@ FolderShortcutsDataModel.prototype = {
       }.bind(this);
 
       // Resolve the items all at once, in parallel.
-      var group = new AsyncUtil.Group();
+      const group = new AsyncUtil.Group();
       list.forEach(function(path) {
         group.add(function(path, callback) {
-          var url =
+          const url =
               this.lastDriveRootURL_ && this.convertStoredPathToUrl_(path);
           if (url && volumeInfo) {
             window.webkitResolveLocalFileSystemURL(
@@ -171,9 +171,9 @@ FolderShortcutsDataModel.prototype = {
       // Save the model after finishing.
       group.run(function() {
         // Remove all of those old entries, which were resolved by this method.
-        var index = 0;
+        let index = 0;
         while (index < this.length) {
-          var entry = this.item(index);
+          const entry = this.item(index);
           if (!resolvedURLs[entry.toURL()]) {
             this.removeInternal_(entry);
             changed = true;
@@ -203,7 +203,7 @@ FolderShortcutsDataModel.prototype = {
           callback();
           return;
         }
-        var shortcutPaths = value[FolderShortcutsDataModel.NAME] || [];
+        const shortcutPaths = value[FolderShortcutsDataModel.NAME] || [];
 
         // Record metrics.
         metrics.recordSmallCount('FolderShortcut.Count', shortcutPaths.length);
@@ -220,10 +220,10 @@ FolderShortcutsDataModel.prototype = {
    * @private
    */
   reload_: function() {
-    var shortcutPaths;
+    let shortcutPaths;
     this.queue_.run(function(callback) {
       chrome.storage.sync.get(FolderShortcutsDataModel.NAME, function(value) {
-        var shortcutPaths = value[FolderShortcutsDataModel.NAME] || [];
+        const shortcutPaths = value[FolderShortcutsDataModel.NAME] || [];
         this.processEntries_(shortcutPaths);  // Runs within a queue.
         callback();
       }.bind(this));
@@ -256,7 +256,7 @@ FolderShortcutsDataModel.prototype = {
    * @private
    */
   getIndexByURL_: function(value) {
-    for (var i = 0; i < this.length; i++) {
+    for (let i = 0; i < this.length; i++) {
       // Same item check: must be exact match.
       if (this.array_[i].toURL() === value) {
         return i;
@@ -270,7 +270,7 @@ FolderShortcutsDataModel.prototype = {
    * @return {number} Index of the element with the specified |value|.
    */
   getIndex: function(value) {
-    for (var i = 0; i < this.length; i++) {
+    for (let i = 0; i < this.length; i++) {
       // Same item check: must be exact match.
       if (util.isSameEntry(this.array_[i], value)) {
         return i;
@@ -301,7 +301,7 @@ FolderShortcutsDataModel.prototype = {
    * @return {number} Index in the list which the element added to.
    */
   add: function(value) {
-    var result = this.addInternal_(value);
+    const result = this.addInternal_(value);
     metrics.recordUserAction('FolderShortcut.Add');
     this.save_();
     return result;
@@ -319,9 +319,9 @@ FolderShortcutsDataModel.prototype = {
   addInternal_: function(value) {
     this.rememberLastDriveURL_();  // Required for saving.
 
-    var oldArray = this.array_.slice(0);  // Shallow copy.
-    var addedIndex = -1;
-    for (var i = 0; i < this.length; i++) {
+    const oldArray = this.array_.slice(0);  // Shallow copy.
+    let addedIndex = -1;
+    for (let i = 0; i < this.length; i++) {
       // Same item check: must be exact match.
       if (util.isSameEntry(this.array_[i], value)) {
         return i;
@@ -352,7 +352,7 @@ FolderShortcutsDataModel.prototype = {
    * @return {number} Index in the list which the element removed from.
    */
   remove: function(value) {
-    var result = this.removeInternal_(value);
+    const result = this.removeInternal_(value);
     if (result !== -1) {
       this.save_();
       metrics.recordUserAction('FolderShortcut.Remove');
@@ -368,9 +368,9 @@ FolderShortcutsDataModel.prototype = {
    * @private
    */
   removeInternal_: function(value) {
-    var removedIndex = -1;
-    var oldArray = this.array_.slice(0);  // Shallow copy.
-    for (var i = 0; i < this.length; i++) {
+    let removedIndex = -1;
+    const oldArray = this.array_.slice(0);  // Shallow copy.
+    for (let i = 0; i < this.length; i++) {
       // Same item check: must be exact match.
       if (util.isSameEntry(this.array_[i], value)) {
         this.array_.splice(i, 1);
@@ -395,7 +395,7 @@ FolderShortcutsDataModel.prototype = {
    *     otherwise.
    */
   exists: function(entry) {
-    var index = this.getIndex(entry);
+    const index = this.getIndex(entry);
     return (index >= 0);
   },
 
@@ -410,7 +410,7 @@ FolderShortcutsDataModel.prototype = {
     }
 
     // TODO(mtomasz): Migrate to URL.
-    var paths = this.array_
+    const paths = this.array_
                     .map(function(entry) {
                       return entry.toURL();
                     })
@@ -418,7 +418,7 @@ FolderShortcutsDataModel.prototype = {
                     .concat(Object.keys(this.pendingPaths_))
                     .concat(Object.keys(this.unresolvablePaths_));
 
-    var prefs = {};
+    const prefs = {};
     prefs[FolderShortcutsDataModel.NAME] = paths;
     chrome.storage.sync.set(prefs, function() {});
   },
@@ -433,11 +433,11 @@ FolderShortcutsDataModel.prototype = {
    * @private
    */
   calculatePermutation_: function(oldArray, newArray) {
-    var oldIndex = 0;  // Index of oldArray.
-    var newIndex = 0;  // Index of newArray.
+    let oldIndex = 0;  // Index of oldArray.
+    let newIndex = 0;  // Index of newArray.
 
     // Note that both new and old arrays are sorted.
-    var permutation = [];
+    const permutation = [];
     for (; oldIndex < oldArray.length; oldIndex++) {
       if (newIndex >= newArray.length) {
         // oldArray[oldIndex] is deleted, which is not in the new array.
@@ -473,7 +473,7 @@ FolderShortcutsDataModel.prototype = {
    * @param {Array<number>} permutation Permutation array.
    */
   firePermutedEvent_: function(permutation) {
-    var permutedEvent = new Event('permuted');
+    const permutedEvent = new Event('permuted');
     permutedEvent.newLength = this.length;
     permutedEvent.permutation = permutation;
     this.dispatchEvent(permutedEvent);
@@ -495,7 +495,7 @@ FolderShortcutsDataModel.prototype = {
     // delete from model and add to |unresolvablePaths_|.
     if (this.volumeManager_.getDriveConnectionState().type !==
         VolumeManagerCommon.DriveConnectionType.ONLINE) {
-      var path = this.convertUrlToStoredPath_(entry.toURL());
+      const path = this.convertUrlToStoredPath_(entry.toURL());
       // TODO(mtomasz): Add support for multi-profile.
       this.unresolvablePaths_[path] = true;
     }
