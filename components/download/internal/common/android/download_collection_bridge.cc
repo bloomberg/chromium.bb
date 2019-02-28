@@ -115,4 +115,18 @@ bool DownloadCollectionBridge::FileNameExists(const base::FilePath& file_name) {
       ConvertUTF8ToJavaString(env, file_name.value());
   return Java_DownloadCollectionBridge_fileNameExists(env, jfile_name);
 }
+
+// static
+bool DownloadCollectionBridge::renameDownloadUri(
+    const base::FilePath& download_uri,
+    const base::FilePath& new_display_name) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jdownload_uri =
+      ConvertUTF8ToJavaString(env, download_uri.value());
+  ScopedJavaLocalRef<jstring> jdisplay_name =
+      ConvertUTF8ToJavaString(env, new_display_name.value());
+  return Java_DownloadCollectionBridge_renameDownloadUri(env, jdownload_uri,
+                                                         jdisplay_name);
+}
+
 }  // namespace download
