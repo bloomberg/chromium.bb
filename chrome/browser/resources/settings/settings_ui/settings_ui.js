@@ -245,15 +245,7 @@ Polymer({
    * @private
    */
   onSearchChanged_: function(e) {
-    // Trim leading whitespace only, to prevent searching for empty string. This
-    // still allows the user to search for 'foo bar', while taking a long pause
-    // after typing 'foo '.
-    const query = e.detail.replace(/^\s+/, '');
-    // Prevent duplicate history entries.
-    if (query == this.lastSearchQuery_) {
-      return;
-    }
-
+    const query = e.detail;
     settings.navigateTo(
         settings.routes.BASIC,
         query.length > 0 ?

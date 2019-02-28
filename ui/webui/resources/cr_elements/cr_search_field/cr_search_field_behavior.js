@@ -106,7 +106,10 @@ const CrSearchFieldBehavior = {
    * @private
    */
   onValueChanged_: function(newValue, noEvent) {
-    const effectiveValue = newValue.replace(/\s+/g, ' ');
+    // Trim leading whitespace and replace consecutive whitespace with single
+    // space. This will prevent empty string searches and searches for
+    // effectively the same query.
+    const effectiveValue = newValue.replace(/\s+/g, ' ').replace(/^\s/, '');
     if (effectiveValue == this.lastValue_) {
       return;
     }
