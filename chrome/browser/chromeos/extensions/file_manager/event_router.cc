@@ -39,8 +39,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/disks/disk.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state_handler.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/drive_pref_names.h"
@@ -49,6 +47,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/event_router.h"
@@ -60,7 +59,6 @@
 
 using chromeos::disks::Disk;
 using chromeos::disks::DiskMountManager;
-using chromeos::NetworkHandler;
 using content::BrowserThread;
 using drive::DriveIntegrationService;
 using drive::DriveIntegrationServiceFactory;
@@ -483,10 +481,7 @@ void EventRouter::Shutdown() {
 
   pref_change_registrar_->RemoveAll();
 
-  if (NetworkHandler::IsInitialized()) {
-    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
-                                                                   FROM_HERE);
-  }
+  content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
 
   DriveIntegrationService* const integration_service =
       DriveIntegrationServiceFactory::FindForProfile(profile_);
@@ -555,10 +550,7 @@ void EventRouter::ObserveEvents() {
     }
   }
 
-  if (NetworkHandler::IsInitialized()) {
-    NetworkHandler::Get()->network_state_handler()->AddObserver(this,
-                                                                FROM_HERE);
-  }
+  content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
 
   pref_change_registrar_->Init(profile_->GetPrefs());
   base::Closure callback =
@@ -720,7 +712,7 @@ void EventRouter::OnWatcherManagerNotification(
                                false /* error */, extension_ids);
 }
 
-void EventRouter::DefaultNetworkChanged(const chromeos::NetworkState* network) {
+void EventRouter::OnConnectionChanged(network::mojom::ConnectionType type) {
   if (!profile_ || !extensions::EventRouter::Get(profile_)) {
     NOTREACHED();
     return;
