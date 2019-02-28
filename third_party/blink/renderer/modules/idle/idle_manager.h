@@ -45,7 +45,7 @@ class IdleManager final : public ScriptWrappable {
   void OnIdleManagerConnectionError();
   void OnAddMonitor(ScriptPromiseResolver*,
                     IdleStatus*,
-                    mojom::blink::IdleState);
+                    mojom::blink::IdleStatePtr);
 
   HeapHashSet<Member<ScriptPromiseResolver>> requests_;
   mojom::blink::IdleManagerPtr service_;

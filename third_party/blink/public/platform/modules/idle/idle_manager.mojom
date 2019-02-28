@@ -8,10 +8,19 @@ module blink.mojom;
 //
 // Proposal: https://github.com/inexorabletash/idle-detection
 
-enum IdleState {
+enum UserIdleState {
   ACTIVE,
-  IDLE,
-  LOCKED
+  IDLE
+};
+
+enum ScreenIdleState {
+  LOCKED,
+  UNLOCKED
+};
+
+struct IdleState {
+  UserIdleState user;
+  ScreenIdleState screen;
 };
 
 interface IdleMonitor {

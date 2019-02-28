@@ -29,6 +29,7 @@ using blink::mojom::IdleMonitorPtr;
 using ::testing::_;
 using ::testing::InSequence;
 using ::testing::Invoke;
+using ::testing::NiceMock;
 using ::testing::StrictMock;
 
 namespace content {
@@ -39,7 +40,7 @@ const uint32_t kTresholdInSecs = 10;
 
 class MockIdleMonitor : public blink::mojom::IdleMonitor {
  public:
-  MOCK_METHOD1(Update, void(blink::mojom::IdleState));
+  MOCK_METHOD1(Update, void(blink::mojom::IdleStatePtr));
 };
 
 class MockIdleTimeProvider : public IdleManager::IdleTimeProvider {
@@ -68,9 +69,9 @@ class IdleManagerTest : public RenderViewHostImplTestHarness {
 }  // namespace
 
 TEST_F(IdleManagerTest, AddMonitor) {
-  InSequence sequence;
-
   auto impl = std::make_unique<IdleManager>();
+  auto* mock = new NiceMock<MockIdleTimeProvider>();
+  impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
   blink::mojom::IdleManagerPtr service_ptr;
   GURL url("http://google.com");
   impl->CreateService(mojo::MakeRequest(&service_ptr),
@@ -88,12 +89,18 @@ TEST_F(IdleManagerTest, AddMonitor) {
     loop.Quit();
   }));
 
+  // Initial state of the system.
+  EXPECT_CALL(*mock, CalculateIdleTime()).WillRepeatedly(testing::Return(0));
+  EXPECT_CALL(*mock, CheckIdleStateIsLocked())
+      .WillRepeatedly(testing::Return(false));
+
   service_ptr->AddMonitor(
       kTresholdInSecs, std::move(monitor_ptr),
       base::BindOnce(
-          [](base::OnceClosure callback, blink::mojom::IdleState state) {
+          [](base::OnceClosure callback, blink::mojom::IdleStatePtr state) {
             // The initial state of the status of the user is to be active.
-            EXPECT_EQ(blink::mojom::IdleState::ACTIVE, state);
+            EXPECT_EQ(blink::mojom::UserIdleState::ACTIVE, state->user);
+            EXPECT_EQ(blink::mojom::ScreenIdleState::UNLOCKED, state->screen);
             std::move(callback).Run();
           },
           loop.QuitClosure()));
@@ -101,13 +108,11 @@ TEST_F(IdleManagerTest, AddMonitor) {
   loop.Run();
 }
 
-TEST_F(IdleManagerTest, Update) {
-  InSequence sequence;
-
+TEST_F(IdleManagerTest, Idle) {
   blink::mojom::IdleManagerPtr service_ptr;
 
   auto impl = std::make_unique<IdleManager>();
-  auto* mock = new StrictMock<MockIdleTimeProvider>();
+  auto* mock = new NiceMock<MockIdleTimeProvider>();
   impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
 
   GURL url("http://google.com");
@@ -120,45 +125,303 @@ TEST_F(IdleManagerTest, Update) {
   mojo::Binding<blink::mojom::IdleMonitor> monitor_binding(
       &monitor, std::move(monitor_request));
 
-  base::RunLoop loop;
+  {
+    base::RunLoop loop;
+    // Initial state of the system.
+    EXPECT_CALL(*mock, CalculateIdleTime()).WillRepeatedly(testing::Return(0));
 
-  service_ptr.set_connection_error_handler(base::BindLambdaForTesting([&]() {
-    ADD_FAILURE() << "Unexpected connection error";
+    service_ptr->AddMonitor(
+        kTresholdInSecs, std::move(monitor_ptr),
+        base::BindLambdaForTesting([&](blink::mojom::IdleStatePtr state) {
+          EXPECT_EQ(blink::mojom::UserIdleState::ACTIVE, state->user);
+          loop.Quit();
+        }));
 
-    loop.Quit();
-  }));
+    loop.Run();
+  }
 
-  // Simulates a user going idle.
-  EXPECT_CALL(*mock, CalculateIdleTime()).WillOnce(testing::Return(10));
+  {
+    base::RunLoop loop;
+    // Simulates a user going idle.
+    EXPECT_CALL(*mock, CalculateIdleTime()).WillRepeatedly(testing::Return(10));
 
-  EXPECT_CALL(*mock, CheckIdleStateIsLocked()).WillOnce(testing::Return(false));
+    // Expects Update to be notified about the change to idle.
+    EXPECT_CALL(monitor, Update(_))
+        .WillOnce(Invoke([&](blink::mojom::IdleStatePtr state) {
+          EXPECT_EQ(blink::mojom::UserIdleState::IDLE, state->user);
+          loop.Quit();
+        }));
+    loop.Run();
+  }
 
-  // Expects Update to be notified about the change to idle.
-  EXPECT_CALL(monitor, Update(_))
-      .WillOnce(Invoke([](blink::mojom::IdleState state) {
-        EXPECT_EQ(blink::mojom::IdleState::IDLE, state);
-      }));
+  {
+    base::RunLoop loop;
+    // Simulates a user going active, calling a callback under the threshold.
+    EXPECT_CALL(*mock, CalculateIdleTime()).WillRepeatedly(testing::Return(0));
 
-  // Simulates a user going active, calling a callback under the threshold.
-  EXPECT_CALL(*mock, CalculateIdleTime()).WillOnce(testing::Return(1));
+    // Expects Update to be notified about the change to active.
+    // auto quit = loop.QuitClosure();
+    EXPECT_CALL(monitor, Update(_))
+        .WillOnce(Invoke([&](blink::mojom::IdleStatePtr state) {
+          EXPECT_EQ(blink::mojom::UserIdleState::ACTIVE, state->user);
+          // Ends the test.
+          loop.Quit();
+        }));
+    loop.Run();
+  }
+}
 
-  EXPECT_CALL(*mock, CheckIdleStateIsLocked()).WillOnce(testing::Return(false));
+TEST_F(IdleManagerTest, UnlockingScreen) {
+  blink::mojom::IdleManagerPtr service_ptr;
 
-  // Expects Update to be notified about the change to active.
-  auto quit = loop.QuitClosure();
-  EXPECT_CALL(monitor, Update(_))
-      .WillOnce(Invoke([&quit](blink::mojom::IdleState state) {
-        EXPECT_EQ(blink::mojom::IdleState::ACTIVE, state);
-        // Ends the test.
-        quit.Run();
-      }));
+  auto impl = std::make_unique<IdleManager>();
+  auto* mock = new NiceMock<MockIdleTimeProvider>();
+  impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
 
-  service_ptr->AddMonitor(kTresholdInSecs, std::move(monitor_ptr),
-                          base::BindOnce([](blink::mojom::IdleState state) {
-                            EXPECT_EQ(blink::mojom::IdleState::ACTIVE, state);
-                          }));
+  GURL url("http://google.com");
+  impl->CreateService(mojo::MakeRequest(&service_ptr),
+                      url::Origin::Create(url));
 
-  loop.Run();
+  blink::mojom::IdleMonitorPtr monitor_ptr;
+  auto monitor_request = mojo::MakeRequest(&monitor_ptr);
+  MockIdleMonitor monitor;
+  mojo::Binding<blink::mojom::IdleMonitor> monitor_binding(
+      &monitor, std::move(monitor_request));
+
+  {
+    base::RunLoop loop;
+
+    // Initial state of the system.
+    EXPECT_CALL(*mock, CheckIdleStateIsLocked())
+        .WillRepeatedly(testing::Return(true));
+
+    service_ptr->AddMonitor(
+        kTresholdInSecs, std::move(monitor_ptr),
+        base::BindLambdaForTesting([&](blink::mojom::IdleStatePtr state) {
+          EXPECT_EQ(blink::mojom::ScreenIdleState::LOCKED, state->screen);
+          loop.Quit();
+        }));
+
+    loop.Run();
+  }
+
+  {
+    base::RunLoop loop;
+
+    // Simulates a user unlocking the screen.
+    EXPECT_CALL(*mock, CheckIdleStateIsLocked())
+        .WillRepeatedly(testing::Return(false));
+
+    // Expects Update to be notified about the change to unlocked.
+    EXPECT_CALL(monitor, Update(_))
+        .WillOnce(Invoke([&](blink::mojom::IdleStatePtr state) {
+          EXPECT_EQ(blink::mojom::ScreenIdleState::UNLOCKED, state->screen);
+          loop.Quit();
+        }));
+
+    loop.Run();
+  }
+}
+
+TEST_F(IdleManagerTest, LockingScreen) {
+  blink::mojom::IdleManagerPtr service_ptr;
+
+  auto impl = std::make_unique<IdleManager>();
+  auto* mock = new NiceMock<MockIdleTimeProvider>();
+  impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
+
+  GURL url("http://google.com");
+  impl->CreateService(mojo::MakeRequest(&service_ptr),
+                      url::Origin::Create(url));
+
+  blink::mojom::IdleMonitorPtr monitor_ptr;
+  auto monitor_request = mojo::MakeRequest(&monitor_ptr);
+  MockIdleMonitor monitor;
+  mojo::Binding<blink::mojom::IdleMonitor> monitor_binding(
+      &monitor, std::move(monitor_request));
+
+  {
+    base::RunLoop loop;
+
+    // Initial state of the system.
+    EXPECT_CALL(*mock, CheckIdleStateIsLocked())
+        .WillRepeatedly(testing::Return(false));
+
+    service_ptr->AddMonitor(
+        kTresholdInSecs, std::move(monitor_ptr),
+        base::BindLambdaForTesting([&](blink::mojom::IdleStatePtr state) {
+          EXPECT_EQ(blink::mojom::ScreenIdleState::UNLOCKED, state->screen);
+          loop.Quit();
+        }));
+
+    loop.Run();
+  }
+
+  {
+    base::RunLoop loop;
+
+    // Simulates a user locking the screen.
+    EXPECT_CALL(*mock, CheckIdleStateIsLocked())
+        .WillRepeatedly(testing::Return(true));
+
+    // Expects Update to be notified about the change to unlocked.
+    EXPECT_CALL(monitor, Update(_))
+        .WillOnce(Invoke([&](blink::mojom::IdleStatePtr state) {
+          EXPECT_EQ(blink::mojom::ScreenIdleState::LOCKED, state->screen);
+          loop.Quit();
+        }));
+
+    loop.Run();
+  }
+}
+
+TEST_F(IdleManagerTest, LockingScreenThenIdle) {
+  blink::mojom::IdleManagerPtr service_ptr;
+
+  auto impl = std::make_unique<IdleManager>();
+  auto* mock = new NiceMock<MockIdleTimeProvider>();
+  impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
+
+  GURL url("http://google.com");
+  impl->CreateService(mojo::MakeRequest(&service_ptr),
+                      url::Origin::Create(url));
+
+  blink::mojom::IdleMonitorPtr monitor_ptr;
+  auto monitor_request = mojo::MakeRequest(&monitor_ptr);
+  MockIdleMonitor monitor;
+  mojo::Binding<blink::mojom::IdleMonitor> monitor_binding(
+      &monitor, std::move(monitor_request));
+
+  {
+    base::RunLoop loop;
+
+    // Initial state of the system.
+    EXPECT_CALL(*mock, CheckIdleStateIsLocked())
+        .WillRepeatedly(testing::Return(false));
+
+    service_ptr->AddMonitor(
+        kTresholdInSecs, std::move(monitor_ptr),
+        base::BindLambdaForTesting([&](blink::mojom::IdleStatePtr state) {
+          EXPECT_EQ(blink::mojom::UserIdleState::ACTIVE, state->user);
+          EXPECT_EQ(blink::mojom::ScreenIdleState::UNLOCKED, state->screen);
+          loop.Quit();
+        }));
+
+    loop.Run();
+  }
+
+  {
+    base::RunLoop loop;
+
+    // Simulates a user locking screen.
+    EXPECT_CALL(*mock, CheckIdleStateIsLocked())
+        .WillRepeatedly(testing::Return(true));
+
+    // Expects Update to be notified about the change to locked.
+    EXPECT_CALL(monitor, Update(_))
+        .WillOnce(Invoke([&](blink::mojom::IdleStatePtr state) {
+          EXPECT_EQ(blink::mojom::ScreenIdleState::LOCKED, state->screen);
+          EXPECT_EQ(blink::mojom::UserIdleState::ACTIVE, state->user);
+          loop.Quit();
+        }));
+
+    loop.Run();
+  }
+
+  {
+    base::RunLoop loop;
+
+    // Simulates a user going idle, whilte the screen is still locked.
+    EXPECT_CALL(*mock, CalculateIdleTime()).WillRepeatedly(testing::Return(10));
+    EXPECT_CALL(*mock, CheckIdleStateIsLocked())
+        .WillRepeatedly(testing::Return(true));
+
+    // Expects Update to be notified about the change to active.
+    EXPECT_CALL(monitor, Update(_))
+        .WillOnce(Invoke([&](blink::mojom::IdleStatePtr state) {
+          EXPECT_EQ(blink::mojom::UserIdleState::IDLE, state->user);
+          EXPECT_EQ(blink::mojom::ScreenIdleState::LOCKED, state->screen);
+          // Ends the test.
+          loop.Quit();
+        }));
+
+    loop.Run();
+  }
+}
+
+TEST_F(IdleManagerTest, LockingScreenAfterIdle) {
+  blink::mojom::IdleManagerPtr service_ptr;
+
+  auto impl = std::make_unique<IdleManager>();
+  auto* mock = new NiceMock<MockIdleTimeProvider>();
+  impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
+
+  GURL url("http://google.com");
+  impl->CreateService(mojo::MakeRequest(&service_ptr),
+                      url::Origin::Create(url));
+
+  blink::mojom::IdleMonitorPtr monitor_ptr;
+  auto monitor_request = mojo::MakeRequest(&monitor_ptr);
+  MockIdleMonitor monitor;
+  mojo::Binding<blink::mojom::IdleMonitor> monitor_binding(
+      &monitor, std::move(monitor_request));
+
+  {
+    base::RunLoop loop;
+
+    // Simulates a user going idle, but with the screen still unlocked.
+    EXPECT_CALL(*mock, CalculateIdleTime()).WillRepeatedly(testing::Return(0));
+    EXPECT_CALL(*mock, CheckIdleStateIsLocked())
+        .WillRepeatedly(testing::Return(false));
+
+    service_ptr->AddMonitor(
+        kTresholdInSecs, std::move(monitor_ptr),
+        base::BindLambdaForTesting([&](blink::mojom::IdleStatePtr state) {
+          EXPECT_EQ(blink::mojom::UserIdleState::ACTIVE, state->user);
+          EXPECT_EQ(blink::mojom::ScreenIdleState::UNLOCKED, state->screen);
+          loop.Quit();
+        }));
+
+    loop.Run();
+  }
+
+  {
+    base::RunLoop loop;
+    // Simulates a user going idle, but with the screen still unlocked.
+    EXPECT_CALL(*mock, CalculateIdleTime()).WillRepeatedly(testing::Return(10));
+    EXPECT_CALL(*mock, CheckIdleStateIsLocked())
+        .WillRepeatedly(testing::Return(false));
+
+    // Expects Update to be notified about the change to idle.
+    EXPECT_CALL(monitor, Update(_))
+        .WillOnce(Invoke([&](blink::mojom::IdleStatePtr state) {
+          EXPECT_EQ(blink::mojom::UserIdleState::IDLE, state->user);
+          EXPECT_EQ(blink::mojom::ScreenIdleState::UNLOCKED, state->screen);
+          loop.Quit();
+        }));
+
+    loop.Run();
+  }
+
+  {
+    base::RunLoop loop;
+    // Simulates the screeng getting locked by the system after the user goes
+    // idle (e.g. screensaver kicks in first, throwing idleness, then getting
+    // locked).
+    EXPECT_CALL(*mock, CalculateIdleTime()).WillRepeatedly(testing::Return(10));
+    EXPECT_CALL(*mock, CheckIdleStateIsLocked())
+        .WillRepeatedly(testing::Return(true));
+
+    // Expects Update to be notified about the change to locked.
+    EXPECT_CALL(monitor, Update(_))
+        .WillOnce(Invoke([&](blink::mojom::IdleStatePtr state) {
+          EXPECT_EQ(blink::mojom::ScreenIdleState::LOCKED, state->screen);
+          EXPECT_EQ(blink::mojom::UserIdleState::IDLE, state->user);
+          // Ends the test.
+          loop.Quit();
+        }));
+    loop.Run();
+  }
 }
 
 TEST_F(IdleManagerTest, RemoveMonitorStopsPolling) {
@@ -166,6 +429,9 @@ TEST_F(IdleManagerTest, RemoveMonitorStopsPolling) {
   // that the polling stops for the idle detection.
 
   auto impl = std::make_unique<IdleManager>();
+  auto* mock = new NiceMock<MockIdleTimeProvider>();
+  impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
+
   blink::mojom::IdleManagerPtr service_ptr;
   GURL url("http://google.com");
   impl->CreateService(mojo::MakeRequest(&service_ptr),
@@ -184,7 +450,7 @@ TEST_F(IdleManagerTest, RemoveMonitorStopsPolling) {
     service_ptr->AddMonitor(
         kTresholdInSecs, std::move(monitor_ptr),
         base::BindLambdaForTesting(
-            [&](blink::mojom::IdleState state) { loop.Quit(); }));
+            [&](blink::mojom::IdleStatePtr state) { loop.Quit(); }));
 
     loop.Run();
   }
@@ -202,6 +468,36 @@ TEST_F(IdleManagerTest, RemoveMonitorStopsPolling) {
   }
 
   EXPECT_FALSE(impl->IsPollingForTest());
+}
+
+TEST_F(IdleManagerTest, Threshold) {
+  auto impl = std::make_unique<IdleManager>();
+  auto* mock = new NiceMock<MockIdleTimeProvider>();
+  impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
+  blink::mojom::IdleManagerPtr service_ptr;
+  GURL url("http://google.com");
+  impl->CreateService(mojo::MakeRequest(&service_ptr),
+                      url::Origin::Create(url));
+
+  blink::mojom::IdleMonitorPtr monitor_ptr;
+  blink::mojom::IdleMonitorRequest monitor_request =
+      mojo::MakeRequest(&monitor_ptr);
+
+  base::RunLoop loop;
+
+  // Initial state of the system.
+  EXPECT_CALL(*mock, CalculateIdleTime()).WillRepeatedly(testing::Return(6));
+  EXPECT_CALL(*mock, CheckIdleStateIsLocked())
+      .WillRepeatedly(testing::Return(false));
+
+  service_ptr->AddMonitor(
+      5, std::move(monitor_ptr),
+      base::BindLambdaForTesting([&](blink::mojom::IdleStatePtr state) {
+        EXPECT_EQ(blink::mojom::UserIdleState::IDLE, state->user);
+        loop.Quit();
+      }));
+
+  loop.Run();
 }
 
 }  // namespace content

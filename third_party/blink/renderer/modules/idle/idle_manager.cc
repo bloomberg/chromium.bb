@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "third_party/blink/renderer/modules/idle/idle_manager.h"
 
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -68,11 +70,11 @@ IdleManager* IdleManager::Create(ExecutionContext* context) {
 
 void IdleManager::OnAddMonitor(ScriptPromiseResolver* resolver,
                                IdleStatus* status,
-                               mojom::blink::IdleState state) {
+                               mojom::blink::IdleStatePtr state) {
   DCHECK(requests_.Contains(resolver));
   requests_.erase(resolver);
 
-  status->Init(state);
+  status->Init(std::move(state));
   resolver->Resolve(status);
 }
 

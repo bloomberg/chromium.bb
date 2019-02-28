@@ -167,6 +167,7 @@ modules_idl_files =
           "geolocation/position.idl",
           "geolocation/position_error.idl",
           "idle/idle_manager.idl",
+          "idle/idle_state.idl",
           "idle/idle_status.idl",
           "imagecapture/image_capture.idl",
           "imagecapture/media_settings_range.idl",
