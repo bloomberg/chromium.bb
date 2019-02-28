@@ -33,9 +33,13 @@ class ASH_EXPORT ContainedShellController
   // Returns if the Contained Shell is enabled for the current user.
   bool IsEnabled();
 
-  // Starts the ContainedShell feature by sending LaunchContainedShell
-  // request to ContainedShellClient.
-  void LaunchContainedShell();
+  // Tries to start the Contained Shell feature by sending a
+  // LaunchContainedShell command to the ContainedShellClient. We will only
+  // launch if |IsEnabled()| is true, so it's safe to call this every time a
+  // successful sign in happens.
+  // Warning: This method should not be called before sign in since the prefs
+  // would not be initialized.
+  void LaunchContainedShellIfEnabled();
 
   // mojom::ContainedShellController:
   void SetClient(mojom::ContainedShellClientPtr client) override;
