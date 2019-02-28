@@ -135,15 +135,55 @@ TEST(PaintWorkletImageCacheTest, MultipleRecordsInCache) {
       records = cache.GetRecordsForTest();
   EXPECT_EQ(records.size(), 2u);
 
+  cache.SetNumOfFramesToPurgeCacheEntryForTest(2u);
   PaintRecord* record1 =
       records[paint_image1.paint_worklet_input()].record.get();
   EXPECT_TRUE(record1);
+  // Test the |num_of_frames_not_accessed| for this cache entry.
+  EXPECT_EQ(
+      records[paint_image1.paint_worklet_input()].num_of_frames_not_accessed,
+      0u);
   TestPaintRecord(record1);
 
   PaintRecord* record2 =
       records[paint_image2.paint_worklet_input()].record.get();
   EXPECT_TRUE(record2);
+  // Test the |num_of_frames_not_accessed| for this cache entry.
+  EXPECT_EQ(
+      records[paint_image2.paint_worklet_input()].num_of_frames_not_accessed,
+      0u);
   TestPaintRecord(record2);
+
+  // NotifyDidPrepareTiles is called by TileManager::PrepareTiles() which is
+  // called at each new impl frame. Here we test that a paint record with
+  // |num_of_frames_not_accessed| >= 2 is purged from the cache.
+  cache.NotifyDidPrepareTiles();
+  records = cache.GetRecordsForTest();
+  EXPECT_EQ(
+      records[paint_image1.paint_worklet_input()].num_of_frames_not_accessed,
+      1u);
+  EXPECT_EQ(
+      records[paint_image2.paint_worklet_input()].num_of_frames_not_accessed,
+      1u);
+
+  std::pair<PaintRecord*, base::OnceCallback<void()>> pair =
+      cache.GetPaintRecordAndRef(paint_image1.paint_worklet_input());
+  // Run the callback to decrement the ref count.
+  std::move(pair.second).Run();
+  records = cache.GetRecordsForTest();
+  EXPECT_EQ(
+      records[paint_image1.paint_worklet_input()].num_of_frames_not_accessed,
+      0u);
+
+  cache.NotifyDidPrepareTiles();
+  cache.NotifyDidPrepareTiles();
+  records = cache.GetRecordsForTest();
+  // The cache entry for paint_image2 should have been purged because it was
+  // never accessed/updated in the last 2 frames.
+  EXPECT_EQ(records.size(), 1u);
+  EXPECT_EQ(
+      records[paint_image1.paint_worklet_input()].num_of_frames_not_accessed,
+      2u);
 }
 
 }  // namespace

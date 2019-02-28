@@ -33,7 +33,10 @@ class PaintWorkletTaskImpl : public TileTask {
 
 PaintWorkletImageCache::PaintWorkletImageCache() {}
 
-PaintWorkletImageCache::~PaintWorkletImageCache() {}
+PaintWorkletImageCache::~PaintWorkletImageCache() {
+  for (const auto& pair : records_)
+    DCHECK_EQ(pair.second.used_ref_count, 0u);
+}
 
 void PaintWorkletImageCache::SetPaintWorkletLayerPainter(
     std::unique_ptr<PaintWorkletLayerPainter> painter) {
@@ -59,6 +62,7 @@ void PaintWorkletImageCache::PaintImageInTask(const PaintImage& paint_image) {
 std::pair<PaintRecord*, base::OnceCallback<void()>>
 PaintWorkletImageCache::GetPaintRecordAndRef(PaintWorkletInput* input) {
   records_[input].used_ref_count++;
+  records_[input].num_of_frames_not_accessed = 0u;
   // The PaintWorkletImageCache object lives as long as the LayerTreeHostImpl,
   // and that ensures that this pointer and the input will be alive when this
   // callback is executed.
@@ -68,6 +72,11 @@ PaintWorkletImageCache::GetPaintRecordAndRef(PaintWorkletInput* input) {
   return std::make_pair(records_[input].record.get(), std::move(callback));
 }
 
+void PaintWorkletImageCache::SetNumOfFramesToPurgeCacheEntryForTest(
+    size_t num) {
+  num_of_frames_to_purge_cache_entry_ = num;
+}
+
 void PaintWorkletImageCache::DecrementCacheRefCount(PaintWorkletInput* input) {
   auto it = records_.find(input);
   DCHECK(it != records_.end());
@@ -75,6 +84,18 @@ void PaintWorkletImageCache::DecrementCacheRefCount(PaintWorkletInput* input) {
   auto& pair = it->second;
   DCHECK_GT(pair.used_ref_count, 0u);
   pair.used_ref_count--;
+}
+
+void PaintWorkletImageCache::NotifyDidPrepareTiles() {
+  base::EraseIf(
+      records_,
+      [this](
+          const std::pair<PaintWorkletInput*, PaintWorkletImageCacheValue>& t) {
+        return t.second.num_of_frames_not_accessed >=
+               num_of_frames_to_purge_cache_entry_;
+      });
+  for (auto& pair : records_)
+    pair.second.num_of_frames_not_accessed++;
 }
 
 PaintWorkletImageCache::PaintWorkletImageCacheValue::
