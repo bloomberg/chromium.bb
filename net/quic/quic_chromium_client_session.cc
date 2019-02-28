@@ -679,6 +679,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     bool migrate_sessions_on_network_change_v2,
     NetworkChangeNotifier::NetworkHandle default_network,
     quic::QuicTime::Delta retransmittable_on_wire_timeout,
+    bool migrate_idle_session,
     base::TimeDelta idle_migration_period,
     base::TimeDelta max_time_on_non_default_network,
     int max_migrations_to_non_default_network_on_write_error,
@@ -708,6 +709,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       migrate_session_early_v2_(migrate_session_early_v2),
       migrate_session_on_network_change_v2_(
           migrate_sessions_on_network_change_v2),
+      migrate_idle_session_(migrate_idle_session),
       idle_migration_period_(idle_migration_period),
       max_time_on_non_default_network_(max_time_on_non_default_network),
       max_migrations_to_non_default_network_on_write_error_(
@@ -1804,8 +1806,17 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(
 
   current_connection_migration_cause_ = ON_WRITE_ERROR;
 
-  if (CheckIdleTimeExceedsIdleMigrationPeriod())
+  if (migrate_idle_session_ && CheckIdleTimeExceedsIdleMigrationPeriod())
     return;
+
+  if (!migrate_idle_session_ && GetNumActiveStreams() == 0 &&
+      GetNumDrainingStreams() == 0) {
+    // connection close packet to be sent since socket may be borked.
+    connection()->CloseConnection(quic::QUIC_PACKET_WRITE_ERROR,
+                                  "Write error for non-migratable session",
+                                  quic::ConnectionCloseBehavior::SILENT_CLOSE);
+    return;
+  }
 
   // Do not migrate if connection migration is disabled.
   if (config()->DisableConnectionMigration()) {
@@ -1958,7 +1969,17 @@ void QuicChromiumClientSession::OnProbeNetworkSucceeded(
   // Close streams that are not migratable to the probed |network|.
   ResetNonMigratableStreams();
 
-  if (CheckIdleTimeExceedsIdleMigrationPeriod())
+  if (!migrate_idle_session_ && GetNumActiveStreams() == 0 &&
+      GetNumDrainingStreams() == 0) {
+    // If idle sessions won't be migrated, close the connection.
+    CloseSessionOnErrorLater(
+        ERR_NETWORK_CHANGED,
+        quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS,
+        quic::ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    return;
+  }
+
+  if (migrate_idle_session_ && CheckIdleTimeExceedsIdleMigrationPeriod())
     return;
 
   // Migrate to the probed socket immediately: socket, writer and reader will
@@ -2144,7 +2165,19 @@ void QuicChromiumClientSession::MigrateNetworkImmediately(
   // - otherwise, it's brought to default network, cancel the running timer to
   //   migrate back.
 
-  if (CheckIdleTimeExceedsIdleMigrationPeriod())
+  if (!migrate_idle_session_ && GetNumActiveStreams() == 0 &&
+      GetNumDrainingStreams() == 0) {
+    HistogramAndLogMigrationFailure(net_log_,
+                                    MIGRATION_STATUS_NO_MIGRATABLE_STREAMS,
+                                    connection_id(), "No active streams");
+    CloseSessionOnErrorLater(
+        ERR_NETWORK_CHANGED,
+        quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS,
+        quic::ConnectionCloseBehavior::SILENT_CLOSE);
+    return;
+  }
+
+  if (migrate_idle_session_ && CheckIdleTimeExceedsIdleMigrationPeriod())
     return;
 
   // Do not migrate if connection migration is disabled.
@@ -2428,7 +2461,19 @@ ProbingResult QuicChromiumClientSession::StartProbeNetwork(
 
   CHECK_NE(NetworkChangeNotifier::kInvalidNetworkHandle, network);
 
-  if (CheckIdleTimeExceedsIdleMigrationPeriod())
+  if (!migrate_idle_session_ && GetNumActiveStreams() == 0 &&
+      GetNumDrainingStreams() == 0) {
+    HistogramAndLogMigrationFailure(migration_net_log,
+                                    MIGRATION_STATUS_NO_MIGRATABLE_STREAMS,
+                                    connection_id(), "No active streams");
+    CloseSessionOnErrorLater(
+        ERR_NETWORK_CHANGED,
+        quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS,
+        quic::ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    return ProbingResult::DISABLED_WITH_IDLE_SESSION;
+  }
+
+  if (migrate_idle_session_ && CheckIdleTimeExceedsIdleMigrationPeriod())
     return ProbingResult::DISABLED_WITH_IDLE_SESSION;
 
   // Abort probing if connection migration is disabled by config.
@@ -2554,6 +2599,9 @@ void QuicChromiumClientSession::MaybeRetryMigrateBackToDefaultNetwork() {
 }
 
 bool QuicChromiumClientSession::CheckIdleTimeExceedsIdleMigrationPeriod() {
+  if (!migrate_idle_session_)
+    return false;
+
   if (GetNumActiveStreams() != 0 || GetNumDrainingStreams() != 0) {
     return false;
   }
@@ -2824,6 +2872,17 @@ MigrationResult QuicChromiumClientSession::Migrate(
   if (network != NetworkChangeNotifier::kInvalidNetworkHandle) {
     // This is a migration attempt from connection migration.
     ResetNonMigratableStreams();
+    if (!migrate_idle_session_ && GetNumActiveStreams() == 0 &&
+        GetNumDrainingStreams() == 0) {
+      // If idle sessions can not be migrated, close the session if needed.
+      if (close_session_on_error) {
+        CloseSessionOnErrorLater(
+            ERR_NETWORK_CHANGED,
+            quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS,
+            quic::ConnectionCloseBehavior::SILENT_CLOSE);
+      }
+      return MigrationResult::FAILURE;
+    }
   }
 
   // Create and configure socket on |network|.

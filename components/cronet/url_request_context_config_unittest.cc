@@ -204,6 +204,7 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   EXPECT_FALSE(params->quic_allow_server_migration);
   EXPECT_FALSE(params->quic_migrate_sessions_on_network_change_v2);
   EXPECT_FALSE(params->quic_migrate_sessions_early_v2);
+  EXPECT_FALSE(params->quic_migrate_idle_sessions);
   EXPECT_FALSE(params->quic_retry_on_alternate_network_before_handshake);
   EXPECT_FALSE(params->quic_race_stale_dns_on_connection);
 
@@ -654,6 +655,7 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {
       "{\"QUIC\":{\"migrate_sessions_on_network_change_v2\":true,"
       "\"migrate_sessions_early_v2\":true,"
       "\"retry_on_alternate_network_before_handshake\":true,"
+      "\"migrate_idle_sessions\":true,"
       "\"retransmittable_on_wire_timeout_milliseconds\":1000,"
       "\"idle_session_migration_period_seconds\":15,"
       "\"max_time_on_non_default_network_seconds\":10,"
@@ -683,6 +685,7 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {
   EXPECT_TRUE(params->quic_migrate_sessions_early_v2);
   EXPECT_TRUE(params->quic_retry_on_alternate_network_before_handshake);
   EXPECT_EQ(1000, params->quic_retransmittable_on_wire_timeout_milliseconds);
+  EXPECT_TRUE(params->quic_migrate_idle_sessions);
   EXPECT_EQ(base::TimeDelta::FromSeconds(15),
             params->quic_idle_session_migration_period);
   EXPECT_EQ(base::TimeDelta::FromSeconds(10),

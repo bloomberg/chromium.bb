@@ -516,6 +516,7 @@ class BidirectionalStreamQuicImplTest
         /*default_network=*/NetworkChangeNotifier::kInvalidNetworkHandle,
         quic::QuicTime::Delta::FromMilliseconds(
             kDefaultRetransmittableOnWireTimeoutMillisecs),
+        /*migrate_idle_session=*/false,
         base::TimeDelta::FromSeconds(kDefaultIdleSessionMigrationPeriodSeconds),
         base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
         kMaxMigrationsToNonDefaultNetworkOnWriteError,

@@ -122,6 +122,7 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params_.quic_migrate_sessions_on_network_change_v2);
   EXPECT_FALSE(params_.quic_migrate_sessions_early_v2);
   EXPECT_FALSE(params_.quic_retry_on_alternate_network_before_handshake);
+  EXPECT_FALSE(params_.quic_migrate_idle_sessions);
   EXPECT_FALSE(params_.quic_go_away_on_path_degrading);
   EXPECT_FALSE(params_.quic_allow_server_migration);
   EXPECT_TRUE(params_.quic_host_whitelist.empty());
@@ -403,12 +404,14 @@ TEST_F(NetworkSessionConfiguratorTest,
 TEST_F(NetworkSessionConfiguratorTest,
        QuicIdleSessionMigrationPeriodFromFieldTrialParams) {
   std::map<std::string, std::string> field_trial_params;
+  field_trial_params["migrate_idle_sessions"] = "true";
   field_trial_params["idle_session_migration_period_seconds"] = "15";
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
 
   ParseFieldTrials();
 
+  EXPECT_TRUE(params_.quic_migrate_idle_sessions);
   EXPECT_EQ(base::TimeDelta::FromSeconds(15),
             params_.quic_idle_session_migration_period);
 }

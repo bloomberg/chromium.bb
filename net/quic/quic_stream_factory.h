@@ -262,6 +262,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool migrate_sessions_on_network_change_v2,
       bool migrate_sessions_early_v2,
       bool retry_on_alternate_network_before_handshake,
+      bool migrate_idle_sessions,
       base::TimeDelta idle_session_migration_period,
       base::TimeDelta max_time_on_non_default_network,
       int max_migrations_to_non_default_network_on_write_error,
@@ -565,6 +566,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // network, and is updated OnNetworkMadeDefault.
   // Otherwise, always set to NetworkChangeNotifier::kInvalidNetwork.
   NetworkChangeNotifier::NetworkHandle default_network_;
+
+  // Set if idle sessions can be migrated within
+  // |idle_session_migration_period_| when connection migration is triggered.
+  const bool migrate_idle_sessions_;
 
   // Sessions can migrate if they have been idle for less than this period.
   const base::TimeDelta idle_session_migration_period_;
