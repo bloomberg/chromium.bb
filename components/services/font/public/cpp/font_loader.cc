@@ -22,11 +22,6 @@ FontLoader::FontLoader(service_manager::Connector* connector) {
 
 FontLoader::~FontLoader() {}
 
-void FontLoader::Shutdown() {
-  thread_->Stop();
-  thread_ = nullptr;
-}
-
 bool FontLoader::matchFamilyName(const char family_name[],
                                  SkFontStyle requested,
                                  FontIdentity* out_font_identifier,

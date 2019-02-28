@@ -12,8 +12,6 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread.h"
-#include "base/threading/thread_checker.h"
 #include "components/services/font/public/interfaces/font_service.mojom.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
@@ -31,8 +29,8 @@ class MappedFontFile;
 // of this mismatch, we create a thread which owns the mojo pipe, sends and
 // receives messages. The multiple threads which call through FontLoader class
 // do blocking message calls to this thread.
-class FontServiceThread : public base::Thread,
-                          public base::RefCountedThreadSafe<FontServiceThread> {
+// TODO(936569): Rename FontServiceThread since it's no longer a thread.
+class FontServiceThread : public base::RefCountedThreadSafe<FontServiceThread> {
  public:
   explicit FontServiceThread(mojom::FontServicePtr font_service);
 
@@ -72,7 +70,9 @@ class FontServiceThread : public base::Thread,
 
  private:
   friend class base::RefCountedThreadSafe<FontServiceThread>;
-  ~FontServiceThread() override;
+  virtual ~FontServiceThread();
+
+  void Init();
 
   // Methods which run on the FontServiceThread. The public MatchFamilyName
   // calls this method, this method calls the mojo interface, and sets up the
@@ -169,17 +169,13 @@ class FontServiceThread : public base::Thread,
   // thread.
   void OnFontServiceConnectionError();
 
-  // base::Thread
-  void Init() override;
-  void CleanUp() override;
-
   // This member is used to safely pass data from one thread to another. It is
   // set in the constructor and is consumed in Init().
-  mojo::InterfacePtrInfo<mojom::FontService> font_service_info_;
+  mojom::FontServicePtrInfo font_service_info_;
 
   // This member is set in Init(). It takes |font_service_info_|, which is
   // non-thread bound, and binds it to the newly created thread.
-  mojo::InterfacePtr<mojom::FontService> font_service_;
+  mojom::FontServicePtr font_service_;
 
   // All WaitableEvents supplied to OpenStreamImpl() and the other *Impl()
   // functions are added here while waiting on the response from the
@@ -190,8 +186,7 @@ class FontServiceThread : public base::Thread,
   // never received.
   std::set<base::WaitableEvent*> pending_waitable_events_;
 
-  THREAD_CHECKER(thread_checker_);
-
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::WeakPtrFactory<FontServiceThread> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FontServiceThread);

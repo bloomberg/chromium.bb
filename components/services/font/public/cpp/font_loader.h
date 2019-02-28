@@ -37,9 +37,6 @@ class FontLoader : public SkFontConfigInterface,
   explicit FontLoader(service_manager::Connector* connector);
   ~FontLoader() override;
 
-  // Shuts down the background thread.
-  void Shutdown();
-
   // SkFontConfigInterface:
   bool matchFamilyName(const char family_name[],
                        SkFontStyle requested,
