@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace cc {
 class AnimationHost;
@@ -200,7 +201,12 @@ class CORE_EXPORT WebFrameWidgetBase
   friend class WebViewImpl;
 };
 
-DEFINE_TYPE_CASTS(WebFrameWidgetBase, WebFrameWidget, widget, true, true);
+template <>
+struct DowncastTraits<WebFrameWidgetBase> {
+  // All concrete implementations of WebFrameWidget are derived from
+  // WebFrameWidgetBase.
+  static bool AllowFrom(const WebFrameWidget& widget) { return true; }
+};
 
 }  // namespace blink
 
