@@ -236,7 +236,7 @@ void AssistantUiController::OnDeepLinkReceived(
     return;
 
   // TODO(wutao): Behavior is not defined.
-  if (model_.ui_mode() == AssistantUiMode::kLauncherEmbeddedUi)
+  if (app_list_features::IsEmbeddedAssistantUIEnabled())
     return;
 
   ShowUi(AssistantEntryPoint::kDeepLink);
