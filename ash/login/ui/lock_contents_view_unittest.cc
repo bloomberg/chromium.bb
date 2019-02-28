@@ -2184,4 +2184,18 @@ TEST_F(LockContentsViewUnitTest, RightAndLeftAcceleratorsWithNoUser) {
   lock->AcceleratorPressed(ui::Accelerator(ui::VKEY_LEFT, 0));
 }
 
+TEST_F(LockContentsViewUnitTest, OnFocusLeavingSystemTrayWithNoUsers) {
+  auto* lock = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  SetWidget(CreateWidgetWithContent(lock));
+
+  // Check that there is always a focusable view after transitioning focus.
+  lock->OnFocusLeavingSystemTray(false /* reverse */);
+  EXPECT_TRUE(lock->GetFocusManager()->GetFocusedView());
+  lock->OnFocusLeavingSystemTray(true /* reverse */);
+  EXPECT_TRUE(lock->GetFocusManager()->GetFocusedView());
+}
+
 }  // namespace ash
