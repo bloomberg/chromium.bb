@@ -15,7 +15,7 @@
 namespace device {
 
 class OpenVRDevice;
-class OpenVRTestHook;
+class VRTestHook;
 
 class DEVICE_VR_EXPORT OpenVRDeviceProvider : public VRDeviceProvider {
  public:
@@ -34,7 +34,7 @@ class DEVICE_VR_EXPORT OpenVRDeviceProvider : public VRDeviceProvider {
 
   static void RecordRuntimeAvailability();
 
-  static void SetTestHook(OpenVRTestHook*);
+  static void SetTestHook(VRTestHook*);
 
  private:
   void CreateDevice();

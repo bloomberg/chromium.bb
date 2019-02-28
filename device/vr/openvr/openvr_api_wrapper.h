@@ -14,7 +14,7 @@ class SingleThreadTaskRunner;
 }
 
 namespace device {
-class OpenVRTestHook;
+class VRTestHook;
 class TestHookRegistration;
 
 class OpenVRWrapper {
@@ -29,7 +29,7 @@ class OpenVRWrapper {
   vr::IVRCompositor* GetCompositor();
   vr::IVRSystem* GetSystem();
 
-  static void DEVICE_VR_EXPORT SetTestHook(OpenVRTestHook* hook);
+  static void DEVICE_VR_EXPORT SetTestHook(VRTestHook* hook);
 
  private:
   bool Initialize(bool for_rendering);
@@ -41,7 +41,7 @@ class OpenVRWrapper {
   bool initialized_ = false;
 
   static TestHookRegistration* test_hook_registration_;
-  static OpenVRTestHook* test_hook_;
+  static VRTestHook* test_hook_;
   static bool any_initialized_;
 };
 

@@ -111,7 +111,7 @@ if (enable_vr) {
         "openvr/openvr_render_loop.h",
         "openvr/openvr_type_converters.cc",
         "openvr/openvr_type_converters.h",
-        "openvr/test/test_hook.h",
+        "test/test_hook.h",
       ]
     }
 
@@ -223,7 +223,7 @@ if (enable_openvr) {
       "openvr/test/fake_openvr_impl_api.cc",
       "openvr/test/test_helper.cc",
       "openvr/test/test_helper.h",
-      "openvr/test/test_hook.h",
+      "test/test_hook.h",
     ]
 
     libs = [

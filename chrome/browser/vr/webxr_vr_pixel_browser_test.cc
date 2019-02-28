@@ -7,7 +7,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/vr/test/mock_openvr_device_hook_base.h"
+#include "chrome/browser/vr/test/mock_xr_device_hook_base.h"
 #include "chrome/browser/vr/test/webvr_browser_test.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
 
@@ -15,7 +15,7 @@
 
 namespace vr {
 
-class MyOpenVRMock : public MockOpenVRDeviceHookBase {
+class MyXRMock : public MockXRDeviceHookBase {
  public:
   void OnFrameSubmitted(
       device_test::mojom::SubmittedFrameDataPtr frame_data,
@@ -39,7 +39,7 @@ class MyOpenVRMock : public MockOpenVRDeviceHookBase {
   base::RunLoop* wait_loop_ = nullptr;
 };
 
-void MyOpenVRMock::OnFrameSubmitted(
+void MyXRMock::OnFrameSubmitted(
     device_test::mojom::SubmittedFrameDataPtr frame_data,
     device_test::mojom::XRTestHook::OnFrameSubmittedCallback callback) {
   last_submitted_color_ = std::move(frame_data->color);
@@ -56,7 +56,7 @@ void MyOpenVRMock::OnFrameSubmitted(
 // out. Validates that a pixel was rendered with the expected color.
 void TestPresentationPixelsImpl(WebXrVrBrowserTestBase* t,
                                 std::string filename) {
-  MyOpenVRMock my_mock;
+  MyXRMock my_mock;
 
   // Load the test page, and enter presentation.
   t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(filename));

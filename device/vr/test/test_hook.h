@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_VR_OPENVR_TEST_TEST_HOOK_H_
-#define DEVICE_VR_OPENVR_TEST_TEST_HOOK_H_
+#ifndef DEVICE_VR_TEST_TEST_HOOK_H_
+#define DEVICE_VR_TEST_TEST_HOOK_H_
 
 #include <cstdint>
 
@@ -80,8 +80,8 @@ struct ControllerFrameData {
   bool is_valid = false;
 };
 
-// Tests may implement this, and register it to control behavior of OpenVR.
-class OpenVRTestHook {
+// Tests may implement this, and register it to control behavior of VR runtime.
+class VRTestHook {
  public:
   virtual void OnFrameSubmitted(SubmittedFrameData frame_data) = 0;
   virtual DeviceConfig WaitGetDeviceConfig() = 0;
@@ -98,9 +98,9 @@ class OpenVRTestHook {
 
 class TestHookRegistration {
  public:
-  virtual void SetTestHook(OpenVRTestHook*) = 0;
+  virtual void SetTestHook(VRTestHook*) = 0;
 };
 
 }  // namespace device
 
-#endif  // DEVICE_VR_OPENVR_TEST_TEST_HOOK_H_
+#endif  // DEVICE_VR_TEST_TEST_HOOK_H_

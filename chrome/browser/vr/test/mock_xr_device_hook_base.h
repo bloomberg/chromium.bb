@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_TEST_MOCK_OPENVR_DEVICE_HOOK_BASE_H_
-#define CHROME_BROWSER_VR_TEST_MOCK_OPENVR_DEVICE_HOOK_BASE_H_
+#ifndef CHROME_BROWSER_VR_TEST_MOCK_XR_DEVICE_HOOK_BASE_H_
+#define CHROME_BROWSER_VR_TEST_MOCK_XR_DEVICE_HOOK_BASE_H_
 
 #include "base/containers/flat_map.h"
-#include "device/vr/openvr/test/test_hook.h"
 #include "device/vr/public/mojom/browser_test_interfaces.mojom.h"
+#include "device/vr/test/test_hook.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-class MockOpenVRDeviceHookBase : public device_test::mojom::XRTestHook {
+class MockXRDeviceHookBase : public device_test::mojom::XRTestHook {
  public:
-  MockOpenVRDeviceHookBase();
-  ~MockOpenVRDeviceHookBase() override;
+  MockXRDeviceHookBase();
+  ~MockXRDeviceHookBase() override;
 
   // device_test::mojom::XRTestHook
   void OnFrameSubmitted(device_test::mojom::SubmittedFrameDataPtr frame_data,
@@ -41,7 +41,7 @@ class MockOpenVRDeviceHookBase : public device_test::mojom::XRTestHook {
       device_test::mojom::XRTestHook::WaitGetControllerDataCallback callback)
       override;
 
-  // MockOpenVRDeviceHookBase
+  // MockXRDeviceHookBase
   unsigned int ConnectController(
       const device::ControllerFrameData& initial_data);
   void UpdateController(unsigned int index,
@@ -62,4 +62,4 @@ class MockOpenVRDeviceHookBase : public device_test::mojom::XRTestHook {
   device_test::mojom::XRTestHookRegistrationPtr test_hook_registration_;
 };
 
-#endif  // CHROME_BROWSER_VR_TEST_MOCK_OPENVR_DEVICE_HOOK_BASE_H_
+#endif  // CHROME_BROWSER_VR_TEST_MOCK_XR_DEVICE_HOOK_BASE_H_
