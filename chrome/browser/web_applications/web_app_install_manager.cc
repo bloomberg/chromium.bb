@@ -214,27 +214,45 @@ void WebAppInstallManager::OnInstallFinalized(
   if (InstallInterrupted())
     return;
 
-  if (code == InstallResultCode::kSuccess) {
-    RecordAppBanner(web_contents(), web_app_info->app_url);
-
-    // TODO(loyso): Implement |create_shortcuts| to skip OS shortcuts creation.
-    // TODO(https://crbug.com/915571): Only re-parent tabs upon successful
-    // shortcut creation (at least on macOS).
-    if (install_finalizer_->CanCreateOsShortcuts())
-      install_finalizer_->CreateOsShortcuts(app_id, base::DoNothing());
-
-    if (install_finalizer_->CanPinAppToShelf())
-      install_finalizer_->PinAppToShelf(app_id);
-
-    // TODO(loyso): Implement |reparent_tab| to skip tab reparenting logic.
-    if (web_app_info->open_as_window)
-      install_finalizer_->ReparentTab(app_id, web_contents());
-
-    if (install_finalizer_->CanRevealAppShim())
-      install_finalizer_->RevealAppShim(app_id);
+  if (code != InstallResultCode::kSuccess) {
+    CallInstallCallback(app_id, code);
+    return;
   }
 
-  CallInstallCallback(app_id, code);
+  RecordAppBanner(web_contents(), web_app_info->app_url);
+
+  // TODO(loyso): Implement |create_shortcuts| to skip OS shortcuts creation.
+  auto create_shortcuts_callback = base::BindOnce(
+      &WebAppInstallManager::OnShortcutsCreated, weak_ptr_factory_.GetWeakPtr(),
+      std::move(web_app_info), app_id);
+  if (install_finalizer_->CanCreateOsShortcuts()) {
+    install_finalizer_->CreateOsShortcuts(app_id,
+                                          std::move(create_shortcuts_callback));
+  } else {
+    std::move(create_shortcuts_callback).Run(false /* created_shortcuts */);
+  }
+}
+
+void WebAppInstallManager::OnShortcutsCreated(
+    std::unique_ptr<WebApplicationInfo> web_app_info,
+    const AppId& app_id,
+    bool shortcut_created) {
+  if (InstallInterrupted())
+    return;
+
+  if (install_finalizer_->CanPinAppToShelf())
+    install_finalizer_->PinAppToShelf(app_id);
+
+  // TODO(loyso): Implement |reparent_tab| to skip tab reparenting logic.
+  if (web_app_info->open_as_window &&
+      install_finalizer_->CanReparentTab(shortcut_created)) {
+    install_finalizer_->ReparentTab(app_id, web_contents());
+  }
+
+  if (install_finalizer_->CanRevealAppShim())
+    install_finalizer_->RevealAppShim(app_id);
+
+  CallInstallCallback(app_id, InstallResultCode::kSuccess);
 }
 
 }  // namespace web_app

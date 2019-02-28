@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -152,6 +153,10 @@ class BookmarkAppHelper : public content::NotificationObserver {
   // Called when the installation of the app is complete to perform the final
   // installation steps.
   void FinishInstallation(const Extension* extension);
+
+  // Called when shortcut creation is complete.
+  void OnShortcutCreationCompleted(const std::string& extension_id,
+                                   bool shortcut_created);
 
   // Overridden from content::NotificationObserver:
   void Observe(int type,

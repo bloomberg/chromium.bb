@@ -26,6 +26,7 @@ void BookmarkAppCreateOsShortcuts(
 bool CanBookmarkAppBePinnedToShelf();
 void BookmarkAppPinToShelf(const Extension* extension);
 
+bool CanBookmarkAppReparentTab(bool shortcut_created);
 void BookmarkAppReparentTab(content::WebContents* contents,
                             const Extension* extension);
 

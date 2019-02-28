@@ -61,6 +61,10 @@ void TestInstallFinalizer::PinAppToShelf(const AppId& app_id) {
   ++num_pin_app_to_shelf_calls_;
 }
 
+bool TestInstallFinalizer::CanReparentTab(bool shortcut_created) const {
+  return true;
+}
+
 void TestInstallFinalizer::ReparentTab(const AppId& app_id,
                                        content::WebContents* web_contents) {
   ++num_reparent_tab_calls_;

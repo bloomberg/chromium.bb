@@ -50,6 +50,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/pref_names.h"
@@ -462,8 +463,28 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
 
   web_app::RecordAppBanner(contents_, web_app_info_.app_url);
 
-  if (create_shortcuts_ && CanBookmarkAppCreateOsShortcuts())
-    BookmarkAppCreateOsShortcuts(profile_, extension, base::DoNothing());
+  if (create_shortcuts_ && CanBookmarkAppCreateOsShortcuts()) {
+    BookmarkAppCreateOsShortcuts(
+        profile_, extension,
+        base::BindOnce(&BookmarkAppHelper::OnShortcutCreationCompleted,
+                       weak_factory_.GetWeakPtr(), extension->id()));
+  } else {
+    OnShortcutCreationCompleted(extension->id(), false /* shortcuts_created */);
+  }
+}
+
+void BookmarkAppHelper::OnShortcutCreationCompleted(
+    const std::string& extension_id,
+    bool shortcut_created) {
+  // Note that the extension may have been deleted since this task was posted,
+  // so use |extension_id| as a weak pointer.
+  const Extension* extension =
+      ExtensionRegistry::Get(profile_)->enabled_extensions().GetByID(
+          extension_id);
+  if (!extension) {
+    callback_.Run(nullptr, web_app_info_);
+    return;
+  }
 
   if (create_shortcuts_ && CanBookmarkAppBePinnedToShelf())
     BookmarkAppPinToShelf(extension);
@@ -474,7 +495,7 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
       (chrome::FindBrowserWithWebContents(contents_) != nullptr);
   // TODO(loyso): Reparenting must be implemented in
   // chrome/browser/ui/web_applications/ UI layer as a post-install step.
-  if (reparent_tab) {
+  if (reparent_tab && CanBookmarkAppReparentTab(shortcut_created)) {
     DCHECK(!profile_->IsOffTheRecord());
     BookmarkAppReparentTab(contents_, extension);
     if (CanBookmarkAppRevealAppShim())
