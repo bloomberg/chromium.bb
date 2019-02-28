@@ -31,6 +31,7 @@ import android.text.TextUtils;
 
 import com.google.ipc.invalidation.util.Preconditions;
 
+import org.chromium.base.ContentUriUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.media.MediaViewerUtils;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
@@ -244,7 +245,7 @@ public final class DownloadNotificationFactory {
                     if (LegacyHelpers.isLegacyDownload(downloadUpdate.getContentId())) {
                         Preconditions.checkNotNull(downloadUpdate.getContentId());
                         Preconditions.checkArgument(downloadUpdate.getSystemDownloadId() != -1
-                                || DownloadUtils.isContentUri(downloadUpdate.getFilePath()));
+                                || ContentUriUtils.isContentUri(downloadUpdate.getFilePath()));
 
                         intent = new Intent(ACTION_NOTIFICATION_CLICKED);
                         long[] idArray = {downloadUpdate.getSystemDownloadId()};

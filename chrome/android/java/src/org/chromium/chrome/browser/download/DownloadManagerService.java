@@ -23,6 +23,7 @@ import android.util.Pair;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
@@ -536,7 +537,8 @@ public class DownloadManagerService
         AsyncTask<Pair<Boolean, Boolean>> task = new AsyncTask<Pair<Boolean, Boolean>>() {
             @Override
             public Pair<Boolean, Boolean> doInBackground() {
-                boolean success = DownloadUtils.isContentUri(item.getDownloadInfo().getFilePath());
+                boolean success =
+                        ContentUriUtils.isContentUri(item.getDownloadInfo().getFilePath());
                 if (!success) {
                     success = addCompletedDownload(item);
                 }
@@ -830,7 +832,7 @@ public class DownloadManagerService
             long downloadId, boolean isSupportedMimeType, String originalUrl, String referrer) {
         assert !ThreadUtils.runningOnUiThread();
         if (downloadId == DownloadItem.INVALID_DOWNLOAD_ID) {
-            if (!DownloadUtils.isContentUri(filePath)) return null;
+            if (!ContentUriUtils.isContentUri(filePath)) return null;
             return getLaunchIntentFromDownloadUri(
                     context, filePath, isSupportedMimeType, originalUrl, referrer);
         }
@@ -861,7 +863,7 @@ public class DownloadManagerService
     private static Intent getLaunchIntentFromDownloadUri(Context context, String contentUri,
             boolean isSupportedMimeType, String originalUrl, String referrer) {
         assert !ThreadUtils.runningOnUiThread();
-        assert DownloadUtils.isContentUri(contentUri);
+        assert ContentUriUtils.isContentUri(contentUri);
 
         Uri uri = Uri.parse(contentUri);
         try (Cursor cursor = context.getContentResolver().query(uri, null, null, null, null)) {

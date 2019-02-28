@@ -40,14 +40,20 @@ public class FileUtils {
     }
 
     /**
-     * Delete the given files or directories by calling {@link #recursivelyDeleteFile(File)}.
-     * @param files The files to delete.
+     * Delete the given files or directories by calling {@link #recursivelyDeleteFile(File)}. This
+     * supports deletion of content URIs.
+     * @param filePaths The file paths or content URIs to delete.
      */
-    public static void batchDeleteFiles(List<File> files) {
+    public static void batchDeleteFiles(List<String> filePaths) {
         ThreadUtils.assertOnBackgroundThread();
 
-        for (File file : files) {
-            if (file.exists()) recursivelyDeleteFile(file);
+        for (String filePath : filePaths) {
+            if (ContentUriUtils.isContentUri(filePath)) {
+                ContentUriUtils.delete(filePath);
+            } else {
+                File file = new File(filePath);
+                if (file.exists()) recursivelyDeleteFile(file);
+            }
         }
     }
 

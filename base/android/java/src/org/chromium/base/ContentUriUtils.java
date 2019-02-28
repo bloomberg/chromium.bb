@@ -277,4 +277,24 @@ public abstract class ContentUriUtils {
         return index > -1
                 && (cursor.getLong(index) & DocumentsContract.Document.FLAG_VIRTUAL_DOCUMENT) != 0;
     }
+
+    /**
+     * @return whether a Uri has content scheme.
+     */
+    public static boolean isContentUri(String uri) {
+        if (uri == null) return false;
+        Uri parsedUri = Uri.parse(uri);
+        return parsedUri != null && ContentResolver.SCHEME_CONTENT.equals(parsedUri.getScheme());
+    }
+
+    /**
+     * Deletes a content uri from the system.
+     */
+    @CalledByNative
+    public static void delete(String uriString) {
+        assert isContentUri(uriString);
+        Uri parsedUri = Uri.parse(uriString);
+        ContentResolver resolver = ContextUtils.getApplicationContext().getContentResolver();
+        resolver.delete(parsedUri, null, null);
+    }
 }

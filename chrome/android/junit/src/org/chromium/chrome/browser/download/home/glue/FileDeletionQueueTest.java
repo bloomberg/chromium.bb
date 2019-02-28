@@ -25,7 +25,6 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
-import java.io.File;
 import java.util.concurrent.Semaphore;
 
 /** Unit tests for the FileDeletionQueue class. */
@@ -33,7 +32,7 @@ import java.util.concurrent.Semaphore;
 @Config(manifest = Config.NONE)
 public class FileDeletionQueueTest {
     @Mock
-    public Callback<File> mDeleter;
+    public Callback<String> mDeleter;
 
     @Rule
     public MockitoRule mMockitoRule = MockitoJUnit.rule();
@@ -53,58 +52,56 @@ public class FileDeletionQueueTest {
     @Test
     public void testSingleDeletion() {
         FileDeletionQueue queue = new FileDeletionQueue(mWrappedDeleter);
-        queue.delete(new File("test"));
+        queue.delete("test");
 
         mWrappedDeleter.waitFor(1);
-        verify(mDeleter, times(1)).onResult(new File("test"));
+        verify(mDeleter, times(1)).onResult("test");
     }
 
     @Test
     public void testMultipleDeletion() {
         FileDeletionQueue queue = new FileDeletionQueue(mWrappedDeleter);
-        queue.delete(new File("test1"));
-        queue.delete(new File("test2"));
-        queue.delete(new File("test3"));
+        queue.delete("test1");
+        queue.delete("test2");
+        queue.delete("test3");
 
         mWrappedDeleter.waitFor(3);
-        verify(mDeleter, times(1)).onResult(new File("test1"));
-        verify(mDeleter, times(1)).onResult(new File("test2"));
-        verify(mDeleter, times(1)).onResult(new File("test3"));
+        verify(mDeleter, times(1)).onResult("test1");
+        verify(mDeleter, times(1)).onResult("test2");
+        verify(mDeleter, times(1)).onResult("test3");
     }
 
     @Test
     public void testMultipleDeletionsAPI() {
         FileDeletionQueue queue = new FileDeletionQueue(mWrappedDeleter);
-        queue.delete(CollectionUtil.newArrayList(
-                new File("test1"), new File("test2"), new File("test3")));
+        queue.delete(CollectionUtil.newArrayList("test1", "test2", "test3"));
 
         mWrappedDeleter.waitFor(3);
-        verify(mDeleter, times(1)).onResult(new File("test1"));
-        verify(mDeleter, times(1)).onResult(new File("test2"));
-        verify(mDeleter, times(1)).onResult(new File("test3"));
+        verify(mDeleter, times(1)).onResult("test1");
+        verify(mDeleter, times(1)).onResult("test2");
+        verify(mDeleter, times(1)).onResult("test3");
     }
 
     @Test
     public void testOneDeletionHappensAtATime() {
         FileDeletionQueue queue = new FileDeletionQueue(mWrappedDeleter);
-        queue.delete(CollectionUtil.newArrayList(
-                new File("test1"), new File("test2"), new File("test3")));
+        queue.delete(CollectionUtil.newArrayList("test1", "test2", "test3"));
 
         mWrappedDeleter.waitFor(1);
-        verify(mDeleter, times(1)).onResult(new File("test1"));
+        verify(mDeleter, times(1)).onResult("test1");
 
         mWrappedDeleter.waitFor(1);
-        verify(mDeleter, times(1)).onResult(new File("test2"));
+        verify(mDeleter, times(1)).onResult("test2");
 
         mWrappedDeleter.waitFor(1);
-        verify(mDeleter, times(1)).onResult(new File("test3"));
+        verify(mDeleter, times(1)).onResult("test3");
     }
 
-    private static class CallbackWrapper implements Callback<File> {
-        private final Callback<File> mWrappedCallback;
+    private static class CallbackWrapper implements Callback<String> {
+        private final Callback<String> mWrappedCallback;
         private final Semaphore mDeletedSemaphore = new Semaphore(0);
 
-        public CallbackWrapper(Callback<File> wrappedCallback) {
+        public CallbackWrapper(Callback<String> wrappedCallback) {
             mWrappedCallback = wrappedCallback;
         }
 
@@ -118,9 +115,9 @@ public class FileDeletionQueueTest {
             }
         }
 
-        // Callback<File> implementation.
+        // Callback<String> implementation.
         @Override
-        public void onResult(File result) {
+        public void onResult(String result) {
             System.out.println("dtrainor: Releasing sempahore!");
             ThreadUtils.assertOnBackgroundThread();
             mWrappedCallback.onResult(result);
