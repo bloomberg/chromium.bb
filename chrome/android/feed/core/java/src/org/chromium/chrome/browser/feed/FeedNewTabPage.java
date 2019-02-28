@@ -212,8 +212,7 @@ public class FeedNewTabPage extends NewTabPage {
 
         @Override
         public boolean wasLastSideSwipeGestureConsumed() {
-            // TODO(jinsukkim): Get the correct info from mStream.
-            return true;
+            return mStream.willHandleHorizontalSwipe();
         }
     }
 
