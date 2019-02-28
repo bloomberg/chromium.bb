@@ -246,11 +246,15 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
         checked_other_types);
   }
 
-  // If Sync is running, prevent it from being paused during the operation.
-  // However, if Sync is in error, clearing cookies should pause it.
   std::unique_ptr<AccountReconcilor::ScopedSyncedDataDeletion>
       scoped_data_deletion;
-  if (sync_ui_util::GetStatus(profile_) == sync_ui_util::SYNCED) {
+
+  // If Sync is running, prevent it from being paused during the operation.
+  // However, if Sync is in error, clearing cookies should pause it.
+  if (!profile_->IsGuestSession() &&
+      sync_ui_util::GetStatus(profile_) == sync_ui_util::SYNCED) {
+    // Settings can not be opened in incognito windows.
+    DCHECK(!profile_->IsOffTheRecord());
     scoped_data_deletion = AccountReconcilorFactory::GetForProfile(profile_)
                                ->GetScopedSyncDataDeletion();
   }
