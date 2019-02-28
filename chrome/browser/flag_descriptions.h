@@ -246,9 +246,6 @@ extern const char kDisallowUnsafeHttpDownloadsNameDescription[];
 extern const char kDisplayList2dCanvasName[];
 extern const char kDisplayList2dCanvasDescription[];
 
-extern const char kDriveSearchInChromeLauncherName[];
-extern const char kDriveSearchInChromeLauncherDescription[];
-
 extern const char kEmbeddedExtensionOptionsName[];
 extern const char kEmbeddedExtensionOptionsDescription[];
 

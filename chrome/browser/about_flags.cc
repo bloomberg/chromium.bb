@@ -1954,16 +1954,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMediaRouterCastAllowAllIPsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(media_router::kCastAllowAllIPsFeature)},
 #endif  // !OS_ANDROID
-// Since Drive Search is not available when app list is disabled, flag guard
-// enable-drive-search-in-chrome-launcher flag.
-#if BUILDFLAG(ENABLE_APP_LIST)
-    {"enable-drive-search-in-app-launcher",
-     flag_descriptions::kDriveSearchInChromeLauncherName,
-     flag_descriptions::kDriveSearchInChromeLauncherDescription, kOsCrOS,
-     ENABLE_DISABLE_VALUE_TYPE(
-         app_list::switches::kEnableDriveSearchInChromeLauncher,
-         app_list::switches::kDisableDriveSearchInChromeLauncher)},
-#endif  // BUILDFLAG(ENABLE_APP_LIST)
 #if defined(OS_CHROMEOS)
     {"disable-mtp-write-support", flag_descriptions::kMtpWriteSupportName,
      flag_descriptions::kMtpWriteSupportDescription, kOsCrOS,

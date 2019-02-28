@@ -1069,11 +1069,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-drive-search-in-app-launcher",
-    "owners": [ "slangley", "adanilo" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-embedded-extension-options",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
