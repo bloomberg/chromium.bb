@@ -124,18 +124,6 @@ void PrintToPdfCallback(const scoped_refptr<base::RefCountedMemory>& data,
     pdf_file_saved_closure.Run();
 }
 
-// Returns a unique path for |path|, just like with downloads.
-base::FilePath GetUniquePath(const base::FilePath& path) {
-  base::FilePath unique_path = path;
-  int uniquifier =
-      base::GetUniquePathNumber(path, base::FilePath::StringType());
-  if (uniquifier > 0) {
-    unique_path = unique_path.InsertBeforeExtensionASCII(
-        base::StringPrintf(" (%d)", uniquifier));
-  }
-  return unique_path;
-}
-
 base::FilePath SelectSaveDirectory(const base::FilePath& path,
                                    const base::FilePath& default_path) {
   if (base::DirectoryExists(path))
@@ -327,7 +315,7 @@ void PdfPrinterHandler::SelectFile(const base::FilePath& default_filename,
   if (!prompt_user) {
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::Bind(&GetUniquePath, path.Append(default_filename)),
+        base::Bind(&base::GetUniquePath, path.Append(default_filename)),
         base::Bind(&PdfPrinterHandler::OnGotUniqueFileName,
                    weak_ptr_factory_.GetWeakPtr()));
     return;

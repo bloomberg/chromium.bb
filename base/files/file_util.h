@@ -396,6 +396,10 @@ BASE_EXPORT bool SetCurrentDirectory(const FilePath& path);
 BASE_EXPORT int GetUniquePathNumber(const FilePath& path,
                                     const FilePath::StringType& suffix);
 
+// If file at |path| already exists, modifies filename portion of |path| to
+// return unique path.
+BASE_EXPORT FilePath GetUniquePath(const FilePath& path);
+
 // Sets the given |fd| to non-blocking mode.
 // Returns true if it was able to set it in the non-blocking mode, otherwise
 // false.
