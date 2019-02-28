@@ -30,6 +30,7 @@ sys.exit(typ.main(tests=resolve(
    "../json_to_struct/struct_generator_test.py",
    '../variations/fieldtrial_to_struct_unittest.py',
    '../variations/fieldtrial_util_unittest.py',
+   '../variations/split_variations_cmd_unittest.py',
    '../../components/variations/service/'
        'generate_ui_string_overrider_unittest.py',
    )))
