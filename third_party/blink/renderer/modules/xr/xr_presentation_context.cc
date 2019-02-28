@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/bindings/modules/v8/rendering_context.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
+#include "third_party/blink/renderer/modules/xr/xr_session.h"
 
 namespace blink {
 
@@ -27,6 +28,19 @@ CanvasRenderingContext* XRPresentationContext::Factory::Create(
   if (!origin_trials::WebXREnabled(host->GetTopExecutionContext()))
     return nullptr;
   return MakeGarbageCollected<XRPresentationContext>(host, attrs);
+}
+
+void XRPresentationContext::BindToSession(XRSession* session) {
+  if (bound_session_) {
+    bound_session_->DetachOutputContext(this);
+  }
+
+  bound_session_ = session;
+}
+
+void XRPresentationContext::Trace(blink::Visitor* visitor) {
+  visitor->Trace(bound_session_);
+  ImageBitmapRenderingContextBase::Trace(visitor);
 }
 
 }  // namespace blink

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 215 tests; 198 PASS, 17 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 215 tests; 197 PASS, 18 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
 PASS Partial dictionary WebGLContextAttributes: original dictionary defined
@@ -27,7 +27,7 @@ PASS XRSession interface: existence and properties of interface prototype object
 PASS XRSession interface: existence and properties of interface prototype object's "constructor" property
 PASS XRSession interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRSession interface: attribute mode
-PASS XRSession interface: attribute outputContext
+FAIL XRSession interface: attribute outputContext assert_true: The prototype object must have a property "outputContext" expected true got false
 PASS XRSession interface: attribute environmentBlendMode
 PASS XRSession interface: attribute renderState
 FAIL XRSession interface: attribute viewerSpace assert_true: The prototype object must have a property "viewerSpace" expected true got false

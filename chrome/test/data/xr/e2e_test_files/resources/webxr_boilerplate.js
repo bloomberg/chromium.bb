@@ -97,11 +97,13 @@ function onRequestSession() {
         console.info('Immersive AR session request rejected with: ' + error);
         console.info('Attempting to fall back to legacy AR mode');
         let sessionOptions = {
-          mode: 'legacy-inline-ar',
-          outputContext: webglCanvas.getContext('xrpresent'),
+          mode: 'legacy-inline-ar'
         }
         navigator.xr.requestSession(sessionOptions).then(
             (session) => {
+          session.updateRenderState({
+              outputContext: webglCanvas.getContext('xrpresent')
+          });
           console.info('Legacy AR session request succeeded');
           sessionInfos[sessionTypes.AR].currentSession = session;
           onSessionStarted(session);
@@ -199,8 +201,11 @@ if (navigator.xr) {
   // inline session creation.
   if (typeof shouldAutoCreateNonImmersiveSession === 'undefined'
       || shouldAutoCreateNonImmersiveSession === true) {
-    navigator.xr.requestSession({outputContext: ctx})
+    navigator.xr.requestSession()
         .then((session) => {
+          session.updateRenderState({
+            outputContext: ctx
+          });
           onSessionStarted(session);
         }).then( () => {
           initializationSteps['magicWindowStarted'] = true;

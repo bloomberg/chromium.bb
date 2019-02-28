@@ -23,7 +23,6 @@ enum XREnvironmentBlendMode {
     OriginTrialEnabled=WebXR
 ] interface XRSession : EventTarget {
   readonly attribute XRSessionMode mode;
-  readonly attribute XRPresentationContext outputContext;
   readonly attribute XREnvironmentBlendMode environmentBlendMode;
   readonly attribute XRRenderState renderState;
 

@@ -10523,6 +10523,7 @@ interface XRRenderState
     getter baseLayer
     getter depthFar
     getter depthNear
+    getter outputContext
     method constructor
 interface XRRigidTransform
     attribute @@toStringTag
@@ -10538,7 +10539,6 @@ interface XRSession : EventTarget
     getter onend
     getter onfocus
     getter onresetpose
-    getter outputContext
     getter renderState
     method cancelAnimationFrame
     method constructor

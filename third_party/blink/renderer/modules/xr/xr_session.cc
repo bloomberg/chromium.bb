@@ -139,40 +139,18 @@ XRSession::XRSession(
     XR* xr,
     device::mojom::blink::XRSessionClientRequest client_request,
     XRSession::SessionMode mode,
-    XRPresentationContext* output_context,
     EnvironmentBlendMode environment_blend_mode)
     : xr_(xr),
       mode_(mode),
       mode_string_(sessionModeToString(mode)),
       environment_integration_(mode == kModeInlineAR ||
                                mode == kModeImmersiveAR),
-      output_context_(output_context),
       client_binding_(this, std::move(client_request)),
       callback_collection_(
           MakeGarbageCollected<XRFrameRequestCallbackCollection>(
               xr_->GetExecutionContext())) {
   render_state_ = MakeGarbageCollected<XRRenderState>();
   blurred_ = !HasAppropriateFocus();
-
-  // When an output context is provided, monitor it for resize events.
-  if (output_context_) {
-    HTMLCanvasElement* canvas = outputContext()->canvas();
-    if (canvas) {
-      resize_observer_ = ResizeObserver::Create(
-          canvas->GetDocument(),
-          MakeGarbageCollected<XRSessionResizeObserverDelegate>(this));
-      resize_observer_->observe(canvas);
-
-      // Begin processing input events on the output context's canvas.
-      if (!immersive()) {
-        canvas_input_provider_ =
-            MakeGarbageCollected<XRCanvasInputProvider>(this, canvas);
-      }
-
-      // Get the initial canvas dimensions
-      UpdateCanvasDimensions(canvas);
-    }
-  }
 
   switch (environment_blend_mode) {
     case kBlendModeOpaque:
@@ -231,6 +209,17 @@ void XRSession::updateRenderState(XRRenderStateInit* init,
     // If the baseLayer was previously null and there are outstanding rAF
     // callbacks, kick off a new frame request to flush them out.
     if (!render_state_->baseLayer() && !pending_frame_ &&
+        !callback_collection_->IsEmpty()) {
+      // Kick off a request for a new XR frame.
+      xr_->frameProvider()->RequestFrame(this);
+      pending_frame_ = true;
+    }
+  }
+
+  if (!immersive() && init->hasOutputContext() && init->outputContext()) {
+    // If the outputContext was previously null and there are outstanding rAF
+    // callbacks, kick off a new frame request to flush them out.
+    if (!render_state_->outputContext() && !pending_frame_ &&
         !callback_collection_->IsEmpty()) {
       // Kick off a request for a new XR frame.
       xr_->frameProvider()->RequestFrame(this);
@@ -505,11 +494,15 @@ DoubleSize XRSession::DefaultFramebufferSize() const {
 }
 
 DoubleSize XRSession::OutputCanvasSize() const {
-  if (!output_context_) {
+  if (!render_state_->outputContext()) {
     return DoubleSize();
   }
 
   return DoubleSize(output_width_, output_height_);
+}
+
+XRPresentationContext* XRSession::outputContext() const {
+  return render_state_->outputContext();
 }
 
 void XRSession::OnFocus() {
@@ -543,6 +536,79 @@ void XRSession::OnFocusChanged() {
   }
 }
 
+void XRSession::DetachOutputContext(XRPresentationContext* output_context) {
+  if (!output_context)
+    return;
+
+  // Remove anything in this session observing the given output context.
+  HTMLCanvasElement* canvas = output_context->canvas();
+  if (canvas) {
+    if (resize_observer_) {
+      resize_observer_->unobserve(canvas);
+    }
+
+    if (canvas_input_provider_ && canvas_input_provider_->canvas() == canvas) {
+      canvas_input_provider_->Stop();
+      canvas_input_provider_ = nullptr;
+    }
+  }
+
+  if (render_state_->outputContext() == output_context) {
+    render_state_->removeOutputContext();
+  }
+}
+
+void XRSession::ApplyPendingRenderState() {
+  if (pending_render_state_.size() > 0) {
+    XRLayer* prev_base_layer = render_state_->baseLayer();
+    XRPresentationContext* prev_output_context = render_state_->outputContext();
+    update_views_next_frame_ = true;
+
+    // Loop through each pending render state and apply it to the active one.
+    for (auto& init : pending_render_state_) {
+      render_state_->Update(init);
+    }
+    pending_render_state_.clear();
+
+    // If this is an inline session and the base layer has changed, give it an
+    // opportunity to update it's drawing buffer size.
+    if (!immersive() && render_state_->baseLayer() &&
+        render_state_->baseLayer() != prev_base_layer) {
+      render_state_->baseLayer()->OnResize();
+    }
+
+    // If the output context changed, remove listeners from the old one and add
+    // listeners to the new one as appropriate.
+    if (render_state_->outputContext() != prev_output_context) {
+      // If we had an output context previously remove anything observing it.
+      DetachOutputContext(prev_output_context);
+
+      // When a new output context is provided, monitor it for resize events.
+      if (render_state_->outputContext()) {
+        render_state_->outputContext()->BindToSession(this);
+        HTMLCanvasElement* canvas = render_state_->outputContext()->canvas();
+        if (canvas) {
+          if (!resize_observer_) {
+            resize_observer_ = ResizeObserver::Create(
+                canvas->GetDocument(),
+                MakeGarbageCollected<XRSessionResizeObserverDelegate>(this));
+          }
+          resize_observer_->observe(canvas);
+
+          // Begin processing input events on the output context's canvas.
+          if (!immersive()) {
+            canvas_input_provider_ =
+                MakeGarbageCollected<XRCanvasInputProvider>(this, canvas);
+          }
+
+          // Get the new canvas dimensions
+          UpdateCanvasDimensions(canvas);
+        }
+      }
+    }
+  }
+}
+
 void XRSession::OnFrame(
     double timestamp,
     std::unique_ptr<TransformationMatrix> base_pose_matrix,
@@ -558,22 +624,7 @@ void XRSession::OnFrame(
   base_pose_matrix_ = std::move(base_pose_matrix);
 
   // If there are pending render state changes, apply them now.
-  if (pending_render_state_.size() > 0) {
-    XRLayer* prev_base_layer = render_state_->baseLayer();
-    update_views_next_frame_ = true;
-
-    for (auto& init : pending_render_state_) {
-      render_state_->Update(init);
-    }
-    pending_render_state_.clear();
-
-    // If this is an inline session and the base layer has changed, give it an
-    // opportunity to update it's drawing buffer size.
-    if (!immersive() && render_state_->baseLayer() &&
-        render_state_->baseLayer() != prev_base_layer) {
-      render_state_->baseLayer()->OnResize();
-    }
-  }
+  ApplyPendingRenderState();
 
   if (pending_frame_) {
     pending_frame_ = false;
@@ -582,6 +633,11 @@ void XRSession::OnFrame(
     // session. That would allow tracking with no associated visuals.
     XRLayer* frame_base_layer = render_state_->baseLayer();
     if (!frame_base_layer)
+      return;
+
+    // Don't allow frames to be processed if an inline session doesn't have an
+    // output context.
+    if (!immersive() && !render_state_->outputContext())
       return;
 
     XRFrame* presentation_frame = CreatePresentationFrame();
@@ -931,7 +987,6 @@ bool XRSession::HasPendingActivity() const {
 
 void XRSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(xr_);
-  visitor->Trace(output_context_);
   visitor->Trace(render_state_);
   visitor->Trace(pending_render_state_);
   visitor->Trace(views_);

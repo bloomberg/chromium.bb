@@ -32,10 +32,8 @@ identity reference space
       let step = "supportsInline";
       navigator.xr.supportsSessionMode('inline')
       .then(()=> {
-        let outputCanvas = document.createElement('canvas');
-        let ctx = outputCanvas.getContext('xrpresent');
         step = "requestSession";
-        return navigator.xr.requestSession({ outputContext: ctx });
+        return navigator.xr.requestSession();
       })
       .then((xrSession) => {
         session = xrSession;
@@ -54,7 +52,11 @@ identity reference space
           throw 'Failed to get WebGL context';
         }
 
-        session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
+        let outputCanvas = document.createElement('canvas');
+        session.updateRenderState({
+            baseLayer: new XRWebGLLayer(session, gl),
+            outputContext: outputCanvas.getContext('xrpresent')
+        });
         session.requestAnimationFrame(onRequestAnimationFrame);
       })
       .catch((err) => {

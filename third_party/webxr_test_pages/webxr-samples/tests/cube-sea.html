@@ -278,13 +278,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
           // Set up "magic window" mode.
           if (appSettings.magicWindow) {
-            let outputCanvas = document.createElement('canvas');
-            let ctx = outputCanvas.getContext('xrpresent');
-            navigator.xr.requestSession({outputContext: ctx})
-                .then((session) => {
-                  document.body.appendChild(outputCanvas);
-                  onSessionStarted(session);
-                });
+            navigator.xr.requestSession().then(onSessionStarted);
           }
         } else {
           initFallback();
@@ -315,12 +309,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function onRequestSession() {
         let xrOptions = { mode: appSettings.arMode ? 'immersive-ar' : 'immersive-vr' };
-        if (appSettings.mirrorCanvas) {
-          let mirrorCanvas = document.createElement('canvas');
-          xrOptions.outputContext = mirrorCanvas.getContext('xrpresent');
-          mirrorCanvas.setAttribute('id', 'mirror-canvas');
-          document.body.appendChild(mirrorCanvas);
-        }
         navigator.xr.requestSession(xrOptions).then((session) => {
           xrButton.setSession(session);
           onSessionStarted(session);
@@ -332,9 +320,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         initGL();
 
-        session.renderState.baseLayer = new XRWebGLLayer(session, gl, {
+        let webglLayer = new XRWebGLLayer(session, gl, {
           framebufferScaleFactor: appSettings.framebufferScale,
           antialias: appSettings.antialias});
+        session.updateRenderState({ baseLayer: webglLayer });
+        
+        if (session.mode.startsWith('immersive') && appSettings.mirrorCanvas) {
+          let outputCanvas = document.createElement('canvas');
+          document.body.appendChild(outputCanvas);
+          session.updateRenderState({ outputContext: outputCanvas.getContext('xrpresent') });
+        }
 
         session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' }).then((refSpace) => {
           if (session.mode.startsWith('immersive')) {
@@ -351,10 +346,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function onSessionEnded(event) {
-        if (event.session.mode.startsWith('immersive') && appSettings.mirrorCanvas) {
-          document.body.removeChild(document.querySelector('#mirror-canvas'));
-        }
         xrButton.setSession(null);
+
+        if (event.session.renderState.outputContext) {
+          document.body.removeChild(event.session.renderState.outputContext.canvas);
+        }
       }
 
       let frameNum = 0;

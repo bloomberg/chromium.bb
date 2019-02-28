@@ -118,13 +118,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function onRequestSession() {
-        // Set up a mirror canvas
-        let mirrorCanvas = document.createElement('canvas');
-        let ctx = mirrorCanvas.getContext('xrpresent');
-        mirrorCanvas.setAttribute('id', 'mirror-canvas');
-        document.body.appendChild(mirrorCanvas);
-
-        navigator.xr.requestSession({ mode: 'immersive-vr', outputContext: ctx  }).then(onSessionStarted);
+        navigator.xr.requestSession({ mode: 'immersive-vr' }).then(onSessionStarted);
       }
 
       function onSessionStarted(session) {
@@ -146,6 +140,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           scene.inputRenderer.setControllerMesh(new Gltf2Node({url: '../media/gltf/controller/controller.gltf'}));
         }
 
+        let outputCanvas = document.createElement('canvas');
+        document.body.appendChild(outputCanvas);
+
         // This is the only meaningful change in this sample from xr-presentation.js.
         // It sets a requested scale to be applied to the framebuffer created
         // for the layer. The UA is allowed to ignore the request or adjust it
@@ -153,9 +150,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // layer is created, though the UA is allowed to resize the framebuffer
         // at any time.
         let scale = parseFloat(scaleSelect.value);
-        session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl, {
-          framebufferScaleFactor: scale
-        }) });
+        session.updateRenderState({
+            baseLayer: new XRWebGLLayer(session, gl, {
+              framebufferScaleFactor: scale
+            }),
+            outputContext: outputCanvas.getContext('xrpresent')
+        });
 
         session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' }).then((refSpace) => {
           xrRefSpace = refSpace;
@@ -169,8 +169,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function onSessionEnded(event) {
-        document.body.removeChild(document.querySelector('#mirror-canvas'));
         xrButton.setSession(null);
+
+        if (event.session.renderState.outputContext) {
+          document.body.removeChild(event.session.renderState.outputContext.canvas);
+        }
 
         gl = null;
       }
