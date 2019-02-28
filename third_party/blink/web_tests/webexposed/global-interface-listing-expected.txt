@@ -5217,6 +5217,7 @@ interface PaymentRequest : EventTarget
     method abort
     method canMakePayment
     method constructor
+    method hasEnrolledInstrument
     method show
     setter onpaymentmethodchange
     setter onshippingaddresschange

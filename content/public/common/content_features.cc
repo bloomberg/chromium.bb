@@ -334,7 +334,7 @@ const base::Feature kPassiveEventListenersDueToFling{
 
 // Whether PaymentRequest exposes hasEnrolledInstrument API.
 const base::Feature kPaymentRequestHasEnrolledInstrument = {
-    "PaymentRequestHasEnrolledInstrument", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PaymentRequestHasEnrolledInstrument", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Whether PDF files should be rendered in diffent processes based on origin.
 const base::Feature kPdfIsolation = {"PdfIsolation",
