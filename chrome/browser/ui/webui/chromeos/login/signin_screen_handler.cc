@@ -887,14 +887,14 @@ void SigninScreenHandler::OnWallpaperColorsChanged(
       dark_muted_color);
   SkColor scroll_color =
       SkColorSetA(base_color, ash::login_constants::kScrollTranslucentAlpha);
-  CallJSOrDefer("login.AccountPickerScreen.setOverlayColors",
-                color_utils::SkColorToRgbaString(dark_muted_color),
-                color_utils::SkColorToRgbaString(scroll_color));
+  CallJS("login.AccountPickerScreen.setOverlayColors",
+         color_utils::SkColorToRgbaString(dark_muted_color),
+         color_utils::SkColorToRgbaString(scroll_color));
 }
 
 void SigninScreenHandler::OnWallpaperBlurChanged(bool blurred) {
-  CallJSOrDefer("login.AccountPickerScreen.togglePodBackground",
-                !blurred /*show_pod_background=*/);
+  CallJS("login.AccountPickerScreen.togglePodBackground",
+         !blurred /*show_pod_background=*/);
 }
 
 void SigninScreenHandler::ClearAndEnablePassword() {
@@ -935,8 +935,7 @@ void SigninScreenHandler::OnUserRemoved(const AccountId& account_id,
 
 void SigninScreenHandler::OnUserImageChanged(const user_manager::User& user) {
   if (page_is_ready()) {
-    CallJSOrDefer("login.AccountPickerScreen.updateUserImage",
-                  user.GetAccountId());
+    CallJS("login.AccountPickerScreen.updateUserImage", user.GetAccountId());
   }
 }
 
@@ -1065,7 +1064,7 @@ void SigninScreenHandler::SuspendDone(const base::TimeDelta& sleep_duration) {
 }
 
 void SigninScreenHandler::OnTabletModeToggled(bool enabled) {
-  CallJSOrDefer("login.AccountPickerScreen.setTabletModeState", enabled);
+  CallJS("login.AccountPickerScreen.setTabletModeState", enabled);
 }
 
 bool SigninScreenHandler::ShouldLoadGaia() const {
@@ -1241,8 +1240,8 @@ void SigninScreenHandler::HandleToggleKioskAutolaunchScreen() {
 
 void SigninScreenHandler::LoadUsers(const user_manager::UserList& users,
                                     const base::ListValue& users_list) {
-  CallJSOrDefer("login.AccountPickerScreen.loadUsers", users_list,
-                delegate_->IsShowGuest());
+  CallJS("login.AccountPickerScreen.loadUsers", users_list,
+         delegate_->IsShowGuest());
 
   // Enable pin for any users who can use it.
   // TODO(jdufault): Cache pin state in BrowserProcess::local_state() so we

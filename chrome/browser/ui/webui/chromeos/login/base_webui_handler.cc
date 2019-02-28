@@ -78,10 +78,6 @@ void BaseWebUIHandler::CommitContextChanges(const base::DictionaryValue& diff) {
 
 void BaseWebUIHandler::GetAdditionalParameters(base::DictionaryValue* dict) {}
 
-void BaseWebUIHandler::CallJS(const std::string& method) {
-  web_ui()->CallJavascriptFunctionUnsafe(method);
-}
-
 void BaseWebUIHandler::ShowScreen(OobeScreen screen) {
   ShowScreenWithData(screen, nullptr);
 }
@@ -95,8 +91,7 @@ void BaseWebUIHandler::ShowScreenWithData(OobeScreen screen,
   if (data) {
     screen_params.SetKey("data", data->Clone());
   }
-  web_ui()->CallJavascriptFunctionUnsafe("cr.ui.Oobe.showScreen",
-                                         screen_params);
+  CallJS("cr.ui.Oobe.showScreen", screen_params);
 }
 
 OobeUI* BaseWebUIHandler::GetOobeUI() const {

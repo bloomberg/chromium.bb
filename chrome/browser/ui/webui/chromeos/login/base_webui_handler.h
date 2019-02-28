@@ -21,7 +21,7 @@
 namespace base {
 class DictionaryValue;
 class ListValue;
-}
+}  // namespace base
 
 namespace login {
 class LocalizedValuesBuilder;
@@ -120,57 +120,81 @@ class BaseWebUIHandler : public content::WebUIMessageHandler,
   // with Context at some point.
   virtual void GetAdditionalParameters(base::DictionaryValue* parameters);
 
-  // Shortcut for calling JS methods on WebUI side.
-  void CallJS(const std::string& method);
+  void CallJS(const std::string& function_name) {
+    if (js_calls_container_->is_initialized()) {
+      web_ui()->CallJavascriptFunctionUnsafe(function_name);
+    } else {
+      js_calls_container_->deferred_js_calls().push_back(
+          base::Bind(&BaseWebUIHandler::CallJavascriptFunctionImmediate<>,
+                     base::Unretained(this), function_name));
+    }
+  }
 
   template <typename A1>
-  void CallJS(const std::string& method, const A1& arg1) {
-    web_ui()->CallJavascriptFunctionUnsafe(method, ::login::MakeValue(arg1));
+  void CallJS(const std::string& function_name, const A1& arg1) {
+    if (js_calls_container_->is_initialized()) {
+      web_ui()->CallJavascriptFunctionUnsafe(function_name,
+                                             ::login::MakeValue(arg1));
+    } else {
+      js_calls_container_->deferred_js_calls().push_back(base::Bind(
+          &BaseWebUIHandler::CallJavascriptFunctionImmediate<base::Value>,
+          base::Unretained(this), function_name,
+          ::login::MakeValue(arg1).Clone()));
+    }
   }
 
   template <typename A1, typename A2>
-  void CallJS(const std::string& method, const A1& arg1, const A2& arg2) {
-    web_ui()->CallJavascriptFunctionUnsafe(method, ::login::MakeValue(arg1),
-                                           ::login::MakeValue(arg2));
+  void CallJS(const std::string& function_name,
+              const A1& arg1,
+              const A2& arg2) {
+    if (js_calls_container_->is_initialized()) {
+      web_ui()->CallJavascriptFunctionUnsafe(
+          function_name, ::login::MakeValue(arg1), ::login::MakeValue(arg2));
+    } else {
+      js_calls_container_->deferred_js_calls().push_back(base::Bind(
+          &BaseWebUIHandler::CallJavascriptFunctionImmediate<base::Value,
+                                                             base::Value>,
+          base::Unretained(this), function_name,
+          ::login::MakeValue(arg1).Clone(), ::login::MakeValue(arg2).Clone()));
+    }
   }
 
   template <typename A1, typename A2, typename A3>
-  void CallJS(const std::string& method,
+  void CallJS(const std::string& function_name,
               const A1& arg1,
               const A2& arg2,
               const A3& arg3) {
-    web_ui()->CallJavascriptFunctionUnsafe(method, ::login::MakeValue(arg1),
-                                           ::login::MakeValue(arg2),
-                                           ::login::MakeValue(arg3));
+    if (js_calls_container_->is_initialized()) {
+      web_ui()->CallJavascriptFunctionUnsafe(
+          function_name, ::login::MakeValue(arg1), ::login::MakeValue(arg2),
+          ::login::MakeValue(arg3));
+    } else {
+      js_calls_container_->deferred_js_calls().push_back(base::Bind(
+          &BaseWebUIHandler::CallJavascriptFunctionImmediate<
+              base::Value, base::Value, base::Value>,
+          base::Unretained(this), function_name,
+          ::login::MakeValue(arg1).Clone(), ::login::MakeValue(arg2).Clone(),
+          ::login::MakeValue(arg3).Clone()));
+    }
   }
 
   template <typename A1, typename A2, typename A3, typename A4>
-  void CallJS(const std::string& method,
+  void CallJS(const std::string& function_name,
               const A1& arg1,
               const A2& arg2,
               const A3& arg3,
               const A4& arg4) {
-    web_ui()->CallJavascriptFunctionUnsafe(
-        method, ::login::MakeValue(arg1), ::login::MakeValue(arg2),
-        ::login::MakeValue(arg3), ::login::MakeValue(arg4));
-  }
-
-  template <typename... Args>
-  void CallJSOrDefer(const std::string& function_name, const Args&... args) {
-    DCHECK(js_calls_container_);
     if (js_calls_container_->is_initialized()) {
-      CallJS(function_name, args...);
+      web_ui()->CallJavascriptFunctionUnsafe(
+          function_name, ::login::MakeValue(arg1), ::login::MakeValue(arg2),
+          ::login::MakeValue(arg3), ::login::MakeValue(arg4));
     } else {
-      // Note that std::conditional is used here in order to obtain a sequence
-      // of base::Value types with the length equal to sizeof...(Args); the C++
-      // template parameter pack expansion rules require that the name of the
-      // parameter pack appears in the pattern, even though the elements of the
-      // Args pack are not actually in this code.
       js_calls_container_->deferred_js_calls().push_back(base::Bind(
-          &BaseWebUIHandler::ExecuteDeferredJSCall<
-              typename std::conditional<true, base::Value, Args>::type...>,
+          &BaseWebUIHandler::CallJavascriptFunctionImmediate<
+              base::Value, base::Value, base::Value, base::Value>,
           base::Unretained(this), function_name,
-          base::Passed(::login::MakeValue(args).CreateDeepCopy())...));
+          ::login::MakeValue(arg1).Clone(), ::login::MakeValue(arg2).Clone(),
+          ::login::MakeValue(arg3).Clone(), ::login::MakeValue(arg4).Clone()));
     }
   }
 
@@ -217,14 +241,13 @@ class BaseWebUIHandler : public content::WebUIMessageHandler,
 
  private:
   friend class OobeUI;
-  // Calls Javascript method.
-  //
-  // Note that the Args template parameter pack should consist of types
-  // convertible to base::Value.
+
+  // This function provides a unique name for every overload of
+  // CallJavascriptFunctionUnsafe, allowing it to be used in base::Bind.
   template <typename... Args>
-  void ExecuteDeferredJSCall(const std::string& function_name,
-                             std::unique_ptr<Args>... args) {
-    CallJS(function_name, *args...);
+  void CallJavascriptFunctionImmediate(const std::string& function_name,
+                                       const Args&... args) {
+    web_ui()->CallJavascriptFunctionUnsafe(function_name, args...);
   }
 
   // Returns full name of JS method based on screen and method names.
