@@ -646,7 +646,7 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
   expect_sync_configuration_aborted_ = false;
   engine_initialized_ = false;
   last_snapshot_ = syncer::SyncCycleSnapshot();
-  auth_manager_->Clear();
+  auth_manager_->ConnectionClosed();
 
   NotifyObservers();
 

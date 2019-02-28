@@ -64,7 +64,9 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   // server. Note that this account may not be blessed for Sync-the-feature.
   syncer::SyncAccountInfo GetActiveAccountInfo() const;
 
-  GoogleServiceAuthError GetLastAuthError() const { return last_auth_error_; }
+  // Returns the last auth error that was encountered. The error could have come
+  // from the Sync server or from the IdentityManager.
+  GoogleServiceAuthError GetLastAuthError() const;
 
   // Returns the credentials to be passed to the SyncEngine.
   syncer::SyncCredentials GetCredentials() const;
@@ -76,12 +78,14 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   syncer::SyncTokenStatus GetSyncTokenStatus() const;
 
   // Called by ProfileSyncService when the status of the connection to the Sync
-  // server changed. Updates auth error state accordingly.
+  // server changed. Updates auth error state accordingly. During Sync startup,
+  // this is what initiates fetching an access token.
   void ConnectionStatusChanged(syncer::ConnectionStatus status);
 
-  // Clears all auth-related state (error, cached access token etc). Called
-  // when Sync is turned off.
-  void Clear();
+  // Called by ProfileSyncService when the connection to the Sync server is
+  // closed (due to Sync being shut down). Clears all related state (such as
+  // cached access token, error from the server, etc).
+  void ConnectionClosed();
 
   // identity::IdentityManager::Observer implementation.
   void OnPrimaryAccountSet(
@@ -142,12 +146,8 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   // delayed startup.
   syncer::SyncAccountInfo sync_account_;
 
-  // This is a cache of the last authentication response we received either
-  // from the sync server or from Chrome's identity/token management system.
-  // TODO(crbug.com/839834): Differentiate between these types of auth errors,
-  // since their semantics and lifetimes are quite different: e.g. the former
-  // can only exist while the Sync engine is initialized; the latter exists
-  // independent of Sync state, and probably shouldn't get reset in Clear().
+  // This is a cache of the last authentication response we received from
+  // Chrome's identity/token management system.
   GoogleServiceAuthError last_auth_error_;
 
   // The current access token. This is mutually exclusive with
@@ -167,7 +167,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
 
   // Info about the state of our access token, for display in the internals UI.
   // "Partial" because this instance is not fully populated - in particular,
-  // |have_token| and |next_token_request_time| get computed on demand.
+  // |has_token| and |next_token_request_time| get computed on demand.
   syncer::SyncTokenStatus partial_token_status_;
 
   base::WeakPtrFactory<SyncAuthManager> weak_ptr_factory_;
