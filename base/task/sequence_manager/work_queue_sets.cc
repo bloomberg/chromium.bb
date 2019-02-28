@@ -63,13 +63,21 @@ void WorkQueueSets::ChangeSetIndex(WorkQueue* work_queue, size_t set_index) {
     observer_->WorkQueueSetBecameNonEmpty(set_index);
 }
 
-void WorkQueueSets::OnFrontTaskChanged(WorkQueue* work_queue) {
+void WorkQueueSets::OnQueuesFrontTaskChanged(WorkQueue* work_queue) {
   EnqueueOrder enqueue_order;
-  bool has_enqueue_order = work_queue->GetFrontTaskEnqueueOrder(&enqueue_order);
-  DCHECK(has_enqueue_order);
-  size_t set = work_queue->work_queue_set_index();
-  work_queue_heaps_[set].ChangeKey(work_queue->heap_handle(),
-                                   {enqueue_order, work_queue});
+  size_t set_index = work_queue->work_queue_set_index();
+  if (work_queue->GetFrontTaskEnqueueOrder(&enqueue_order)) {
+    // O(log n)
+    work_queue_heaps_[set_index].ChangeKey(work_queue->heap_handle(),
+                                           {enqueue_order, work_queue});
+  } else {
+    // O(log n)
+    work_queue_heaps_[set_index].Pop();
+    DCHECK(work_queue_heaps_[set_index].empty() ||
+           work_queue_heaps_[set_index].Min().value != work_queue);
+    if (work_queue_heaps_[set_index].empty())
+      observer_->WorkQueueSetBecameEmpty(set_index);
+  }
 }
 
 void WorkQueueSets::OnTaskPushedToEmptyQueue(WorkQueue* work_queue) {
@@ -90,7 +98,7 @@ void WorkQueueSets::OnTaskPushedToEmptyQueue(WorkQueue* work_queue) {
     observer_->WorkQueueSetBecameNonEmpty(set_index);
 }
 
-void WorkQueueSets::OnPopQueue(WorkQueue* work_queue) {
+void WorkQueueSets::OnPopMinQueueInSet(WorkQueue* work_queue) {
   // Assume that |work_queue| contains the lowest enqueue_order.
   size_t set_index = work_queue->work_queue_set_index();
   DCHECK_EQ(this, work_queue->work_queue_sets());

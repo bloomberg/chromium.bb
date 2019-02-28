@@ -128,7 +128,44 @@ TEST_F(WorkQueueSetsTest, GetOldestQueueInSet_MultipleAgesInSet) {
   EXPECT_EQ(queue3, work_queue_sets_->GetOldestQueueInSet(set));
 }
 
-TEST_F(WorkQueueSetsTest, OnPopQueue) {
+TEST_F(WorkQueueSetsTest, OnQueuesFrontTaskChanged) {
+  WorkQueue* queue1 = NewTaskQueue("queue1");
+  WorkQueue* queue2 = NewTaskQueue("queue2");
+  WorkQueue* queue3 = NewTaskQueue("queue3");
+  queue1->Push(FakeTaskWithEnqueueOrder(6));
+  queue2->Push(FakeTaskWithEnqueueOrder(5));
+  queue3->Push(FakeTaskWithEnqueueOrder(4));
+  size_t set = 4;
+  work_queue_sets_->ChangeSetIndex(queue1, set);
+  work_queue_sets_->ChangeSetIndex(queue2, set);
+  work_queue_sets_->ChangeSetIndex(queue3, set);
+  EXPECT_EQ(queue3, work_queue_sets_->GetOldestQueueInSet(set));
+
+  // Make |queue1| now have a task with the lowest enqueue order.
+  *const_cast<Task*>(queue1->GetFrontTask()) = FakeTaskWithEnqueueOrder(1);
+  work_queue_sets_->OnQueuesFrontTaskChanged(queue1);
+  EXPECT_EQ(queue1, work_queue_sets_->GetOldestQueueInSet(set));
+}
+
+TEST_F(WorkQueueSetsTest, OnQueuesFrontTaskChanged_QueueBecomesEmpty) {
+  WorkQueue* queue1 = NewTaskQueue("queue1");
+  WorkQueue* queue2 = NewTaskQueue("queue2");
+  WorkQueue* queue3 = NewTaskQueue("queue3");
+  queue1->Push(FakeTaskWithEnqueueOrder(6));
+  queue2->Push(FakeTaskWithEnqueueOrder(5));
+  queue3->Push(FakeTaskWithEnqueueOrder(4));
+  size_t set = 4;
+  work_queue_sets_->ChangeSetIndex(queue1, set);
+  work_queue_sets_->ChangeSetIndex(queue2, set);
+  work_queue_sets_->ChangeSetIndex(queue3, set);
+  EXPECT_EQ(queue3, work_queue_sets_->GetOldestQueueInSet(set));
+
+  queue3->PopTaskForTesting();
+  work_queue_sets_->OnQueuesFrontTaskChanged(queue3);
+  EXPECT_EQ(queue2, work_queue_sets_->GetOldestQueueInSet(set));
+}
+
+TEST_F(WorkQueueSetsTest, OnPopMinQueueInSet) {
   WorkQueue* queue1 = NewTaskQueue("queue1");
   WorkQueue* queue2 = NewTaskQueue("queue2");
   WorkQueue* queue3 = NewTaskQueue("queue3");
@@ -143,11 +180,11 @@ TEST_F(WorkQueueSetsTest, OnPopQueue) {
   EXPECT_EQ(queue2, work_queue_sets_->GetOldestQueueInSet(set));
 
   queue2->PopTaskForTesting();
-  work_queue_sets_->OnPopQueue(queue2);
+  work_queue_sets_->OnPopMinQueueInSet(queue2);
   EXPECT_EQ(queue2, work_queue_sets_->GetOldestQueueInSet(set));
 }
 
-TEST_F(WorkQueueSetsTest, OnPopQueue_QueueBecomesEmpty) {
+TEST_F(WorkQueueSetsTest, OnPopMinQueueInSet_QueueBecomesEmpty) {
   WorkQueue* queue1 = NewTaskQueue("queue1");
   WorkQueue* queue2 = NewTaskQueue("queue2");
   WorkQueue* queue3 = NewTaskQueue("queue3");
@@ -161,7 +198,7 @@ TEST_F(WorkQueueSetsTest, OnPopQueue_QueueBecomesEmpty) {
   EXPECT_EQ(queue3, work_queue_sets_->GetOldestQueueInSet(set));
 
   queue3->PopTaskForTesting();
-  work_queue_sets_->OnPopQueue(queue3);
+  work_queue_sets_->OnPopMinQueueInSet(queue3);
   EXPECT_EQ(queue2, work_queue_sets_->GetOldestQueueInSet(set));
 }
 
@@ -237,7 +274,7 @@ TEST_F(WorkQueueSetsTest, IsSetEmpty_Work) {
   EXPECT_FALSE(work_queue_sets_->IsSetEmpty(set));
 
   work_queue->PopTaskForTesting();
-  work_queue_sets_->OnPopQueue(work_queue);
+  work_queue_sets_->OnPopMinQueueInSet(work_queue);
   EXPECT_TRUE(work_queue_sets_->IsSetEmpty(set));
 }
 
