@@ -672,30 +672,27 @@ void TypedValueVendorCapability::SaveTo(base::Value* dict) const {
 
 VendorCapability::VendorCapability() = default;
 
-VendorCapability::VendorCapability(Type type,
-                                   const std::string& id,
+VendorCapability::VendorCapability(const std::string& id,
                                    const std::string& display_name,
                                    RangeVendorCapability range_capability)
-    : type_(type),
+    : type_(Type::RANGE),
       id_(id),
       display_name_(display_name),
       range_capability_(std::move(range_capability)) {}
 
-VendorCapability::VendorCapability(Type type,
-                                   const std::string& id,
+VendorCapability::VendorCapability(const std::string& id,
                                    const std::string& display_name,
                                    SelectVendorCapability select_capability)
-    : type_(type),
+    : type_(Type::SELECT),
       id_(id),
       display_name_(display_name),
       select_capability_(std::move(select_capability)) {}
 
 VendorCapability::VendorCapability(
-    Type type,
     const std::string& id,
     const std::string& display_name,
     TypedValueVendorCapability typed_value_capability)
-    : type_(type),
+    : type_(Type::TYPED_VALUE),
       id_(id),
       display_name_(display_name),
       typed_value_capability_(std::move(typed_value_capability)) {}

@@ -148,16 +148,13 @@ class VendorCapability {
   };
 
   VendorCapability();
-  VendorCapability(Type type,
-                   const std::string& id,
+  VendorCapability(const std::string& id,
                    const std::string& display_name,
                    RangeVendorCapability range_capability);
-  VendorCapability(Type type,
-                   const std::string& id,
+  VendorCapability(const std::string& id,
                    const std::string& display_name,
                    SelectVendorCapability select_capability);
-  VendorCapability(Type type,
-                   const std::string& id,
+  VendorCapability(const std::string& id,
                    const std::string& display_name,
                    TypedValueVendorCapability typed_value_capability);
   VendorCapability(VendorCapability&& other);
