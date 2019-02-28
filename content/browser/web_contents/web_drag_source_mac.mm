@@ -364,7 +364,7 @@ void PromiseWriterHelper(const DropData& drop_data,
           dropData_->GetSafeFilenameForImageFileContents();
       if (suggestedFilename) {
         downloadFileName_ = std::move(*suggestedFilename);
-        net::GetMimeTypeFromExtension(downloadFileName_.Extension(), &mimeType);
+        net::GetMimeTypeFromFile(downloadFileName_, &mimeType);
       }
     } else {
       base::string16 mimeType16;
