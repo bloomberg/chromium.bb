@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.touchless;
 
-import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
@@ -17,7 +16,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.MockSafeBrowsingApiHandler;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -35,8 +33,6 @@ import org.chromium.net.test.EmbeddedTestServer;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, ChromeSwitches.NO_TOUCH_MODE})
-// These tests do not have onDestroy called on KitKat, due to what is likely a Android bug.
-@MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
 public class NoTouchActivityTest {
     private static final String TEST_PATH = "/chrome/test/data/android/simple.html";
 
