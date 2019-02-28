@@ -5,8 +5,14 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_WELCOME_WELCOME_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_WELCOME_WELCOME_UI_H_
 
+#include <memory>
+#include <string>
+
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/welcome/nux/ntp_background_fetcher.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "url/gurl.h"
 
 // The WebUI for chrome://welcome, the page which greets new Desktop users and
@@ -18,8 +24,14 @@ class WelcomeUI : public content::WebUIController {
   WelcomeUI(content::WebUI* web_ui, const GURL& url);
   ~WelcomeUI() override;
 
+  void CreateBackgroundFetcher(
+      size_t background_index,
+      const content::WebUIDataSource::GotDataCallback& callback);
+
  private:
   void StorePageSeen(Profile* profile);
+  std::unique_ptr<nux::NtpBackgroundFetcher> background_fetcher_;
+  base::WeakPtrFactory<WelcomeUI> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WelcomeUI);
 };
