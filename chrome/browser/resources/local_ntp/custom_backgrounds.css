@@ -88,6 +88,7 @@ html[darkmode=true] .ep-enhanced #edit-bg-icon {
 .ep-enhanced #edit-bg-text {
   color: rgb(var(--GB600-rgb));
   display: inline;
+  font-size: 14px;
   padding-inline-end: 12px;
   padding-inline-start: 8px;
 }
