@@ -2066,11 +2066,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "file-manager-touch-mode",
-    "owners": [ "slangley", "adanilo" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "fill-on-account-select",
     "owners": [ "jdoerrie" ],
     "expiry_milestone": 76

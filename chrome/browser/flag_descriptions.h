@@ -1946,9 +1946,6 @@ extern const char kExperimentalAccessibilityChromeVoxLanguageSwitchingName[];
 extern const char
     kExperimentalAccessibilityChromeVoxLanguageSwitchingDescription[];
 
-extern const char kFileManagerTouchModeName[];
-extern const char kFileManagerTouchModeDescription[];
-
 extern const char kFirstRunUiTransitionsName[];
 extern const char kFirstRunUiTransitionsDescription[];
 

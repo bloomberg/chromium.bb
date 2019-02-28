@@ -2673,11 +2673,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableTouchCalibrationSetting)},
 #endif  // defined(OS_CHROMEOS)
 #if defined(OS_CHROMEOS)
-    {"file-manager-touch-mode", flag_descriptions::kFileManagerTouchModeName,
-     flag_descriptions::kFileManagerTouchModeDescription, kOsCrOS,
-     ENABLE_DISABLE_VALUE_TYPE(
-         chromeos::switches::kEnableFileManagerTouchMode,
-         chromeos::switches::kDisableFileManagerTouchMode)},
     {"android-files-in-files-app",
      flag_descriptions::kShowAndroidFilesInFilesAppName,
      flag_descriptions::kShowAndroidFilesInFilesAppDescription, kOsCrOS,

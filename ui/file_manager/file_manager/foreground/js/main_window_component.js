@@ -140,15 +140,6 @@ function MainWindowComponent(
   window.addEventListener('focus', this.onWindowFocus_.bind(this));
 
   /**
-   * Whether to allow touch-specific interaction.
-   * @type {boolean}
-   */
-  this.enableTouchMode_ = false;
-  util.isTouchModeEnabled().then(function(enabled) {
-    this.enableTouchMode_ = enabled;
-  }.bind(this));
-
-  /**
    * @type {!FileTapHandler}
    * @private
    * @const
@@ -162,9 +153,6 @@ function MainWindowComponent(
  * @private
  */
 MainWindowComponent.prototype.handleTouchEvents_ = function(event) {
-  if (!this.enableTouchMode_) {
-    return false;
-  }
   // We only need to know that a tap is happend somewhere in the list.
   // Also the 2nd parameter of handleTouchEvents is just passed back to the
   // callback. Therefore we can pass a dummy value to it.

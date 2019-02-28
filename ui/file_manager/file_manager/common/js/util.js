@@ -1320,21 +1320,6 @@ util.timeoutPromise = (promise, ms, opt_message) => {
 };
 
 /**
- * Examines whether the touch-specific UI mode is enabled.
- * @return {Promise} Promise fulfilled with a boolean that indicate whether
-      the touch-specific UI mode is enabled. The promise is never rejected.
- */
-util.isTouchModeEnabled = () => {
-  return new Promise(resolve => {
-    chrome.commandLinePrivate.hasSwitch(
-        'disable-file-manager-touch-mode', isDisabled => {
-          // Enabled by default.
-          resolve(!isDisabled);
-        });
-  });
-};
-
-/**
  * Retrieves all entries inside the given |rootEntry|.
  * @param {!DirectoryEntry} rootEntry
  * @param {function(!Array<!Entry>)} entriesCallback Called when some chunk of

@@ -219,9 +219,6 @@ const char kDisableEncryptionMigration[] = "disable-encryption-migration";
 // Disables notification when device is in end of life status.
 const char kDisableEolNotification[] = "disable-eol-notification";
 
-// Touchscreen-specific interactions of the Files app.
-const char kDisableFileManagerTouchMode[] = "disable-file-manager-touch-mode";
-
 // Disables fine grained time zone detection.
 const char kDisableFineGrainedTimeZoneDetection[] =
     "disable-fine-grained-time-zone-detection";
@@ -308,9 +305,6 @@ const char kEnableEncryptionMigration[] = "enable-encryption-migration";
 
 // Enables sharing assets for installed default apps.
 const char kEnableExtensionAssetsSharing[] = "enable-extension-assets-sharing";
-
-// Touchscreen-specific interactions of the Files app.
-const char kEnableFileManagerTouchMode[] = "enable-file-manager-touch-mode";
 
 // Enables animated transitions during first-run tutorial.
 const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";

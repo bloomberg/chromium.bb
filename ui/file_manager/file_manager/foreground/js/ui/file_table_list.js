@@ -82,15 +82,6 @@ class FileListSelectionController extends cr.ui.ListSelectionController {
     super(selectionModel);
 
     /**
-     * Whether to allow touch-specific interaction.
-     * @type {boolean}
-     */
-    this.enableTouchMode_ = false;
-    util.isTouchModeEnabled().then(enabled => {
-      this.enableTouchMode_ = enabled;
-    });
-
-    /**
      * @type {!FileTapHandler}
      * @const
      */
@@ -104,9 +95,6 @@ class FileListSelectionController extends cr.ui.ListSelectionController {
 
   /** @override */
   handleTouchEvents(e, index) {
-    if (!this.enableTouchMode_) {
-      return;
-    }
     if (this.tapHandler_.handleTouchEvents(
             e, index, filelist.handleTap.bind(this))) {
       // If a tap event is processed, FileTapHandler cancels the event to
