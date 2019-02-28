@@ -121,9 +121,16 @@ class NativeMethod(object):
     self.static = kwargs['static']
     self.java_class_name = kwargs['java_class_name']
     self.return_type = kwargs['return_type']
-    self.name = kwargs['name']
     self.params = kwargs['params']
     self.is_proxy = kwargs.get('is_proxy', False)
+
+    self.name = kwargs['name']
+    if self.is_proxy:
+      # Proxy methods don't have a native prefix so the first letter is
+      # lowercase. But we still want the CPP declaration to use upper camel
+      # case for the method name.
+      self.name = self.name[0].upper() + self.name[1:]
+
     self.proxy_name = kwargs.get('proxy_name', self.name)
 
     has_jcaller = False
@@ -1207,14 +1214,7 @@ $METHOD_STUBS
       # Inner class
       class_name = native.java_class_name
 
-    method_name = native.name
-    if native.is_proxy:
-      # proxy methods don't have a native prefix so the first letter is
-      # lowercase. But we still want the CPP declaration to use upper camel case
-      # for the method name.
-      method_name = method_name[0].upper() + method_name[1:]
-
-    return 'JNI_%s_%s' % (class_name, method_name)
+    return 'JNI_%s_%s' % (class_name, native.name)
 
   def GetNativeStub(self, native):
     is_method = native.type == 'method'
