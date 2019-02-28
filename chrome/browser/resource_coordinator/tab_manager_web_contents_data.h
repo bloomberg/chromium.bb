@@ -50,13 +50,9 @@ class TabManager::WebContentsData
                         content::WebContents* new_contents);
 
   // Sets the current purge state.
-  // TODO(tasak): remove this after the logic is moved into
-  // MemoryCoordinator.
   void set_is_purged(bool state) { is_purged_ = state; }
 
   // Returns the current state of purge.
-  // TODO(tasak): remove this after the logic is moved into
-  // MemoryCoordinator.
   bool is_purged() const { return is_purged_; }
 
   // Sets the time to purge after the tab is backgrounded.
