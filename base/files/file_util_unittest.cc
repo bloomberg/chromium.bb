@@ -2438,6 +2438,45 @@ TEST_F(FileUtilTest, CreateAndOpenTemporaryFileTest) {
   }
 }
 
+TEST_F(FileUtilTest, GetUniquePathTest) {
+  // Create a unique temp directory and use it to generate a unique file path.
+  base::ScopedTempDir temp_dir;
+  EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
+  EXPECT_TRUE(temp_dir.IsValid());
+  FilePath base_name(FILE_PATH_LITERAL("Unique_Base_Name.txt"));
+  FilePath base_path = temp_dir.GetPath().Append(base_name);
+  EXPECT_FALSE(PathExists(base_path));
+
+  // GetUniquePath() should return unchanged path if file does not exist.
+  EXPECT_EQ(base_path, GetUniquePath(base_path));
+
+  // Create the file.
+  File file(base_path, File::FLAG_CREATE | File::FLAG_READ | File::FLAG_WRITE);
+  EXPECT_TRUE(PathExists(base_path));
+
+  static const FilePath::CharType* const kExpectedNames[] = {
+      FILE_PATH_LITERAL("Unique_Base_Name (1).txt"),
+      FILE_PATH_LITERAL("Unique_Base_Name (2).txt"),
+      FILE_PATH_LITERAL("Unique_Base_Name (3).txt"),
+  };
+
+  // Call GetUniquePath() three times against this existing file name.
+  for (const FilePath::CharType* expected_name : kExpectedNames) {
+    FilePath expected_path = temp_dir.GetPath().Append(expected_name);
+    FilePath path = GetUniquePath(base_path);
+    EXPECT_EQ(expected_path, path);
+
+    // Verify that a file with this path indeed does not exist on the file
+    // system.
+    EXPECT_FALSE(PathExists(path));
+
+    // Create the file so it exists for the next call to GetUniquePath() in the
+    // loop.
+    File file(path, File::FLAG_CREATE | File::FLAG_READ | File::FLAG_WRITE);
+    EXPECT_TRUE(PathExists(path));
+  }
+}
+
 #if defined(OS_FUCHSIA)
 // TODO(crbug.com/851747): Re-enable when the Fuchsia-side fix for fdopen has
 // been rolled into Chromium.

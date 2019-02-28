@@ -380,11 +380,7 @@ void DownloadFileImpl::RenameWithRetryInternal(
   base::FilePath new_path = parameters->new_path;
 
   if ((parameters->option & UNIQUIFY) && new_path != file_.full_path()) {
-    int uniquifier =
-        base::GetUniquePathNumber(new_path, base::FilePath::StringType());
-    if (uniquifier > 0)
-      new_path = new_path.InsertBeforeExtensionASCII(
-          base::StringPrintf(" (%d)", uniquifier));
+    new_path = base::GetUniquePath(new_path);
   }
 
   DownloadInterruptReason reason = file_.Rename(new_path);

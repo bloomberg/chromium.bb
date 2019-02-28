@@ -295,6 +295,16 @@ int GetUniquePathNumber(const FilePath& path,
 
   return -1;
 }
+
+FilePath GetUniquePath(const FilePath& path) {
+  FilePath unique_path = path;
+  int uniquifier = GetUniquePathNumber(path, FilePath::StringType());
+  if (uniquifier > 0) {
+    unique_path = unique_path.InsertBeforeExtensionASCII(
+        StringPrintf(" (%d)", uniquifier));
+  }
+  return unique_path;
+}
 #endif  // !defined(OS_NACL_NONSFI)
 
 }  // namespace base

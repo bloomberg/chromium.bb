@@ -129,14 +129,7 @@ base::FilePath GetDownloadFilePath(const base::FilePath& download_directory,
   base::FilePath file =
       download_directory.AppendASCII(id + "_" + random_number + ".crx");
 
-  int uniquifier =
-      base::GetUniquePathNumber(file, base::FilePath::StringType());
-  if (uniquifier > 0) {
-    file = file.InsertBeforeExtensionASCII(
-        base::StringPrintf(" (%d)", uniquifier));
-  }
-
-  return file;
+  return base::GetUniquePath(file);
 }
 
 void MaybeAppendAuthUserParameter(const std::string& authuser, GURL* url) {
