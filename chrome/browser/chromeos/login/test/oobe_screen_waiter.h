@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
+#include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 
 namespace content {
@@ -16,13 +17,12 @@ class MessageLoopRunner;
 namespace chromeos {
 
 // A waiter that blocks until the expected oobe screen is reached.
-class OobeScreenWaiter : public OobeUI::Observer {
+class OobeScreenWaiter : public OobeUI::Observer,
+                         public test::TestConditionWaiter {
  public:
   explicit OobeScreenWaiter(OobeScreen expected_screen);
   ~OobeScreenWaiter() override;
 
-  // Run message loop to wait for the expected_screen to become current screen.
-  void Wait();
 
   // Run message loop to wait for the expected_screen to be fully initialized.
   void WaitForInitialization();
@@ -36,6 +36,9 @@ class OobeScreenWaiter : public OobeUI::Observer {
   void OnCurrentScreenChanged(OobeScreen current_screen,
                               OobeScreen new_screen) override;
   void OnScreenInitialized(OobeScreen screen) override;
+
+  // TestConditionWaiter;
+  void Wait() override;
 
  private:
   OobeUI* GetOobeUI();
