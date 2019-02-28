@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "third_party/blink/renderer/modules/idle/idle_status.h"
 
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/platform/modules/idle/idle_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/modules/idle/idle_state.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
@@ -29,8 +33,8 @@ IdleStatus::IdleStatus(ExecutionContext* context,
       threshold_(threshold),
       binding_(this, std::move(request)) {}
 
-void IdleStatus::Init(IdleState state) {
-  state_ = state;
+void IdleStatus::Init(mojom::blink::IdleStatePtr state) {
+  state_ = MakeGarbageCollected<blink::IdleState>(std::move(state));
 }
 
 IdleStatus::~IdleStatus() = default;
@@ -73,42 +77,38 @@ void IdleStatus::StartMonitoring() {
   mojom::blink::IdleMonitorPtr monitor_ptr;
   binding_.Bind(mojo::MakeRequest(&monitor_ptr));
 
-  service->AddMonitor(threshold_, std::move(monitor_ptr),
-                      WTF::Bind(
-                          [](IdleStatus* status, IdleState state) {
-                            if (state != status->state_)
-                              status->Update(state);
-                          },
-                          WrapWeakPersistent(this)));
+  service->AddMonitor(
+      threshold_, std::move(monitor_ptr),
+      WTF::Bind(
+          [](IdleStatus* status, mojom::blink::IdleStatePtr state) {
+            if (state.get()->Equals(status->state_->state()))
+              status->Update(std::move(state));
+          },
+          WrapWeakPersistent(this)));
 }
 
 void IdleStatus::StopMonitoring() {
   binding_.Close();
 }
 
-String IdleStatus::state() const {
-  switch (state_) {
-    case IdleState::ACTIVE:
-      return "active";
-    case IdleState::IDLE:
-      return "idle";
-    case IdleState::LOCKED:
-      return "locked";
-  }
+blink::IdleState* IdleStatus::state() const {
+  return state_;
 }
 
-void IdleStatus::Update(IdleState state) {
+void IdleStatus::Update(mojom::blink::IdleStatePtr state) {
   DCHECK(binding_.is_bound());
   if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed())
     return;
 
-  state_ = state;
+  Init(std::move(state));
+
   DispatchEvent(*Event::Create(event_type_names::kChange));
 }
 
 void IdleStatus::Trace(blink::Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleStateObserver::Trace(visitor);
+  visitor->Trace(state_);
 }
 
 }  // namespace blink

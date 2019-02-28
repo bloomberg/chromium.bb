@@ -642,6 +642,11 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker]     method query
+[Worker] interface IdleState
+[Worker]     attribute @@toStringTag
+[Worker]     getter screen
+[Worker]     getter user
+[Worker]     method constructor
 [Worker] interface IdleStatus : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter onchange

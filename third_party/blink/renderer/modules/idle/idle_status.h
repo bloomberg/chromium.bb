@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/idle/idle_state.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -25,8 +26,6 @@ class IdleStatus final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(IdleStatus);
   DEFINE_WRAPPERTYPEINFO();
   USING_PRE_FINALIZER(IdleStatus, Dispose);
-
-  using IdleState = mojom::blink::IdleState;
 
  public:
   // Constructed by the IdleManager when queried by script, but not returned
@@ -43,7 +42,7 @@ class IdleStatus final : public EventTargetWithInlineData,
   void Dispose();
 
   // Called when the service has returned an initial state.
-  void Init(IdleState);
+  void Init(mojom::blink::IdleStatePtr);
 
   // EventTarget implementation.
   const AtomicString& InterfaceName() const override;
@@ -57,12 +56,12 @@ class IdleStatus final : public EventTargetWithInlineData,
   void ContextDestroyed(ExecutionContext*) override;
 
   // IdleStatus IDL interface.
-  String state() const;
+  blink::IdleState* state() const;
   DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange)
 
   // mojom::blink::IdleMonitor implementation. Invoked on a state change, and
   // causes an event to be dispatched.
-  void Update(IdleState state) override;
+  void Update(mojom::blink::IdleStatePtr state) override;
 
   void Trace(blink::Visitor*) override;
 
@@ -75,7 +74,7 @@ class IdleStatus final : public EventTargetWithInlineData,
   // destroyed.
   void StopMonitoring();
 
-  IdleState state_;
+  Member<blink::IdleState> state_;
 
   const uint32_t threshold_;
 

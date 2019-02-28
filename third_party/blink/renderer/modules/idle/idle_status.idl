@@ -4,11 +4,6 @@
 
 // https://github.com/inexorabletash/idle-detection
 
-enum IdleState {
-    "active",
-    "idle",
-    "locked"
-};
 
 [
   SecureContext,

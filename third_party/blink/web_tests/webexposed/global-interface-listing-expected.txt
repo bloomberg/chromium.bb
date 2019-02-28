@@ -4120,6 +4120,11 @@ interface IdleManager
     attribute @@toStringTag
     method constructor
     method query
+interface IdleState
+    attribute @@toStringTag
+    getter screen
+    getter user
+    method constructor
 interface IdleStatus : EventTarget
     attribute @@toStringTag
     getter onchange
