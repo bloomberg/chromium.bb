@@ -21,6 +21,12 @@ void ActiveScriptWrappableBase::TraceActiveScriptWrappables(
     return;
 
   for (const auto& active_wrappable : *active_script_wrappables) {
+    // Ignore objects that are currently under construction. They are kept alive
+    // via conservative stack scan.
+    if (active_wrappable->GetHeapObjectHeader() ==
+        BlinkGC::kNotFullyConstructedObject)
+      continue;
+
     if (!active_wrappable->DispatchHasPendingActivity())
       continue;
 
