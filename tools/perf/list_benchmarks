@@ -2,6 +2,7 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import optparse
 import sys
 
 from core import path_util
@@ -11,13 +12,27 @@ sys.path.insert(1, path_util.GetTelemetryDir())
 
 from telemetry import decorators
 
+def _CreateParser():
+  parser = optparse.OptionParser()
+  parser.add_option('--include-contrib', action='store_true', default=False,
+                    help="also list contrib (non-waterfall) benchmarks")
+  return parser
 
-def main():
-  all_benchmarks = benchmark_finders.GetAllPerfBenchmarks()
-  for b in all_benchmarks:
-    disabled_platforms = ', '.join(decorators.GetDisabledAttributes(b))
-    print '{:<60} {:<40}'.format(b.Name(), disabled_platforms)
+def main(args):
+  parser = _CreateParser()
+  options, extra_args = parser.parse_args(args)
+
+  if extra_args:
+    parser.error('Unexpected command line arguments')
+
+  if options.include_contrib:
+    benchmarks = benchmark_finders.GetAllBenchmarks()
+  else:
+    benchmarks = benchmark_finders.GetAllPerfBenchmarks()
+
+  for b in benchmarks:
+    print '{:<60}'.format(b.Name())
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv[1:]))
