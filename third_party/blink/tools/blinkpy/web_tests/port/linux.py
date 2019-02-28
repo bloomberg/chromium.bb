@@ -29,6 +29,7 @@
 import logging
 import tempfile
 
+from blinkpy.common.exit_codes import SYS_DEPS_EXIT_STATUS
 from blinkpy.web_tests.breakpad.dump_reader_multipart import DumpReaderLinux
 from blinkpy.web_tests.port import base
 from blinkpy.web_tests.port import win
@@ -47,7 +48,7 @@ class LinuxPort(base.Port):
 
     BUILD_REQUIREMENTS_URL = 'https://chromium.googlesource.com/chromium/src/+/master/docs/linux_build_instructions.md'
 
-    XVFB_START_TIMEOUT = 5.0  # Wait up to 5 seconds for Xvfb to start.
+    XVFB_START_STOP_TIMEOUT = 5.0  # Wait up to 5 seconds for Xvfb to start or stop.
 
     @classmethod
     def determine_full_port_name(cls, host, options, port_name):
@@ -109,7 +110,8 @@ class LinuxPort(base.Port):
 
     def setup_test_run(self):
         super(LinuxPort, self).setup_test_run()
-        self._start_xvfb()
+        if not self._start_xvfb():
+            return SYS_DEPS_EXIT_STATUS
         self._setup_dummy_home_dir()
 
     def clean_up_test_run(self):
@@ -161,7 +163,7 @@ class LinuxPort(base.Port):
         display = self._find_display()
         if not display:
             _log.critical('Failed to find a free display to start Xvfb.')
-            return
+            return False
 
         # Parts of Xvfb use a hard-coded "/tmp" for its temporary directory.
         # This can cause a failure when those parts expect to hardlink against
@@ -190,7 +192,7 @@ class LinuxPort(base.Port):
         # While xvfb is running, the poll() method will return None;
         # https://docs.python.org/2/library/subprocess.html#subprocess.Popen.poll
         start_time = self.host.time()
-        while self.host.time() - start_time < self.XVFB_START_TIMEOUT:
+        while self.host.time() - start_time < self.XVFB_START_STOP_TIMEOUT:
             if self._xvfb_process.poll() is not None:
                 break
             # We don't explicitly set the display, as we want to check the
@@ -199,13 +201,14 @@ class LinuxPort(base.Port):
                 ['xdpyinfo'], return_exit_code=True)
             if exit_code == 0:
                 _log.debug('Successfully started Xvfb with display "%s".', display)
-                return
+                return True
             _log.warn('xdpyinfo check failed with exit code %s while starting Xvfb on "%s".', exit_code, display)
             self.host.sleep(0.1)
 
         retcode = self._xvfb_process.poll()
         self._stop_xvfb(save_logs=True)
         _log.critical('Failed to start Xvfb on display "%s" (xvfb retcode: %r).', display, retcode)
+        return False
 
     def _find_display(self):
         """Tries to find a free X display, looping if necessary."""
@@ -228,9 +231,17 @@ class LinuxPort(base.Port):
         if self._xvfb_stderr:
             self._xvfb_stderr.close()
         if self._xvfb_process and self._xvfb_process.poll() is None:
-            _log.debug('Killing Xvfb process pid %d.', self._xvfb_process.pid)
-            self._xvfb_process.kill()
-            self._xvfb_process.wait()
+            self._xvfb_process.terminate()
+            start_time = self.host.time()
+            while self.host.time() - start_time < self.XVFB_START_STOP_TIMEOUT:
+                if self._xvfb_process.poll() is not None:
+                    _log.debug('Xvfb exited with code %d.', self._xvfb_process.poll())
+                    break
+                self.host.sleep(0.1)
+            else:
+                _log.debug('Killing Xvfb process pid %d.', self._xvfb_process.pid)
+                self._xvfb_process.kill()
+                self._xvfb_process.wait()
         if save_logs and self._xvfb_stdout and self.host.filesystem.exists(self._xvfb_stdout.name):
             for line in self.host.filesystem.read_text_file(self._xvfb_stdout.name).splitlines():
                 _log.warn('Xvfb stdout:  %s', line)

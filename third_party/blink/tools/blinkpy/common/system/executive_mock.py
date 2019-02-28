@@ -60,6 +60,9 @@ class MockProcess(object):
     def kill(self):
         return
 
+    def terminate(self):
+        return
+
 
 MockCall = collections.namedtuple(
     'MockCall', ('args', 'kwargs'))
