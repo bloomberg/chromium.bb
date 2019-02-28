@@ -952,8 +952,9 @@ TEST_F(NetworkStateHandlerTest, ServicePropertyChangedNotIneterstingActive) {
   EXPECT_EQ(11, wifi->signal_strength());
   // The change should trigger an additional properties updated event.
   EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(wifi1));
+  EXPECT_EQ(1u, test_observer_->active_network_change_count());
+  // Signal strength changes do not trigger a default network change.
   EXPECT_EQ(0u, test_observer_->default_network_change_count());
-  EXPECT_EQ(0u, test_observer_->active_network_change_count());
 }
 
 TEST_F(NetworkStateHandlerTest, ServicePropertyChangedNotIneterstingInactive) {
@@ -1628,6 +1629,22 @@ TEST_F(NetworkStateHandlerTest, NetworkActiveNetworksStateChanged) {
   expected_active_network_paths = {kShillManagerClientStubDefaultWifi};
   EXPECT_EQ(expected_active_network_paths,
             test_observer_->active_network_paths());
+
+  // Modify the wifi signal strength, an observer update should occur.
+  test_observer_->reset_change_counts();
+  service_test_->SetServiceProperty(kShillManagerClientStubDefaultWifi,
+                                    shill::kSignalStrengthProperty,
+                                    base::Value(100));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, test_observer_->active_network_change_count());
+
+  // A small change should not trigger an update.
+  test_observer_->reset_change_counts();
+  service_test_->SetServiceProperty(kShillManagerClientStubDefaultWifi,
+                                    shill::kSignalStrengthProperty,
+                                    base::Value(99));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0u, test_observer_->active_network_change_count());
 
   // Disconnect Wifi1.
   test_observer_->reset_change_counts();
