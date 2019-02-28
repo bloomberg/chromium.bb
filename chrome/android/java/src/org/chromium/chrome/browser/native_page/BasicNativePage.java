@@ -9,7 +9,6 @@ import android.content.res.Resources;
 import android.view.View;
 import android.widget.FrameLayout.LayoutParams;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -37,10 +36,8 @@ public abstract class BasicNativePage extends EmptyTabObserver implements Native
 
         Resources res = mActivity.getResources();
 
-        mTopMargin = 0;
         mBottomMargin = activity.getFullscreenManager().getBottomControlsHeight();
-        mTopMargin = res.getDimensionPixelSize(R.dimen.tab_strip_height)
-                + res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow);
+        mTopMargin = activity.getFullscreenManager().getTopControlsHeight();
 
         if (host.getActiveTab() != null) host.getActiveTab().addObserver(this);
 
