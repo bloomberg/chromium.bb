@@ -1185,7 +1185,6 @@ TEST_P(NGOffsetMappingGetterTest, Get) {
   const NGOffsetMapping* mapping =
       NGInlineNode::GetOffsetMapping(layout_block_flow, &storage);
   EXPECT_TRUE(mapping);
-  EXPECT_EQ(!storage, GetParam());  // |storage| is used only for legacy.
 
   const String& text_content = mapping->GetText();
   EXPECT_EQ(text_content, "Whitespaces in this text should be collapsed.");

@@ -466,22 +466,20 @@ const NGOffsetMapping* NGInlineNode::GetOffsetMapping(
   // If |layout_block_flow| is LayoutNG, compute from |NGInlineNode|.
   if (layout_block_flow->IsLayoutNGMixin()) {
     NGInlineNode node(layout_block_flow);
-    if (node.IsPrepareLayoutFinished())
-      return node.ComputeOffsetMappingIfNeeded();
-
-    // When this is not laid out yet, compute each time it is requested.
-    // TODO(kojii): We could still keep the result for later uses but it would
-    // add more states. Reconsider if this turned out to be needed.
+    CHECK(node.IsPrepareLayoutFinished());
+    return node.ComputeOffsetMappingIfNeeded();
   }
 
-  // If this is not LayoutNG, compute the offset mapping and store in |storage|.
-  // The caller is responsible to keep |storage| for the life cycle.
+  // If this is not LayoutNG, compute the offset mapping and store into
+  // |LayoutBlockFlowRateData|.
+  if (const NGOffsetMapping* mapping = layout_block_flow->GetOffsetMapping())
+    return mapping;
   DCHECK(storage);
   NGInlineNodeData data;
   ComputeOffsetMapping(layout_block_flow, &data);
-  *storage = std::move(data.offset_mapping);
-  DCHECK(*storage);
-  return storage->get();
+  NGOffsetMapping* const mapping = data.offset_mapping.get();
+  layout_block_flow->SetOffsetMapping(std::move(data.offset_mapping));
+  return mapping;
 }
 
 // Depth-first-scan of all LayoutInline and LayoutText nodes that make up this
