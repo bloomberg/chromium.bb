@@ -54,7 +54,7 @@ struct InternalThunk {
     ldr_x16_pc4 = kLdrX16Pc4;
     br_x16 = kBrX16;
     interceptor_function = 0;
-  };
+  }
   ULONG ldr_x16_pc4;
   ULONG br_x16;
   ULONG_PTR interceptor_function;
