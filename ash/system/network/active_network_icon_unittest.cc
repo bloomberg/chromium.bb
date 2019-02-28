@@ -76,7 +76,6 @@ class ActiveNetworkIconTest : public testing::Test {
                        base::Value(state));
     SetServiceProperty(cellular_path_, shill::kSignalStrengthProperty,
                        base::Value(100));
-    base::RunLoop().RunUntilIdle();
   }
 
   void SetCellularUninitialized(bool scanning) {
@@ -99,7 +98,8 @@ class ActiveNetworkIconTest : public testing::Test {
 
   gfx::ImageSkia ImageForNetwork(const chromeos::NetworkState* network) {
     return network_icon::GetImageForNonVirtualNetwork(
-        network, icon_type_, false /* show_vpn_badge */);
+        network_icon::NetworkIconState(network), icon_type_,
+        false /* show_vpn_badge */);
   }
 
   bool AreImagesEqual(const gfx::ImageSkia& image,
@@ -122,6 +122,9 @@ class ActiveNetworkIconTest : public testing::Test {
       const std::string& connection_state,
       int signal_strength = 100) {
     std::string id = base::StringPrintf("reference_%d", reference_count_++);
+    VLOG(1) << "CreateStandaloneNetworkState: " << id << " type: " << type
+            << " State: " << connection_state
+            << " Strength: " << signal_strength;
     return helper_.CreateStandaloneNetworkState(id, type, connection_state,
                                                 signal_strength);
   }
