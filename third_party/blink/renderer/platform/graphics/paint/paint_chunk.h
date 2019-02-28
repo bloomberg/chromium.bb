@@ -105,6 +105,8 @@ struct PLATFORM_EXPORT PaintChunk {
   // all clients of items in this chunk.
   float outset_for_raster_effects = 0;
 
+  SkColor safe_opaque_background_color = 0;
+
   // True if the bounds are filled entirely with opaque contents.
   bool known_to_be_opaque = false;
 

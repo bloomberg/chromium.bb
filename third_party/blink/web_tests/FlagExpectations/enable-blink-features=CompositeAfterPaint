@@ -431,3 +431,6 @@ Bug(none) http/tests/devtools/layers/layer-replay-scale.js [ Crash ]
 Bug(none) http/tests/devtools/layers/layer-compositing-reasons.js [ Failure ]
 # Missing WheelEventHandler
 Bug(none) http/tests/devtools/layers/layer-scroll-rects-get.js [ Failure ]
+
+# Other:
+crbug.com/935728 fast/frames/transparent-scrollbar.html [ Failure ]

@@ -158,6 +158,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // background_color(), but if the background_color() is opaque (and this layer
   // claims to not be), then SK_ColorTRANSPARENT is returned.
   SkColor SafeOpaqueBackgroundColor() const;
+  // For testing, return the actual stored value.
+  SkColor ActualSafeOpaqueBackgroundColorForTesting() const {
+    return safe_opaque_background_color_;
+  }
 
   // Set and get the position of this layer, relative to its parent. This is
   // specified in layer space, which excludes device scale and page scale
