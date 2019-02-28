@@ -15,21 +15,31 @@
         -webkit-appearance: none;
         align-items: center;
         background: white;
-        border: 1px solid transparent;
+        border: 1px solid var(--google-grey-refresh-300);
         border-radius: 8px;
-        box-shadow: 0 1px 2px 0 rgba(0, 36, 100, .3),
-                    0 3px 6px 2px rgba(0, 36, 100, .15);
         box-sizing: border-box;
         cursor: pointer;
         display: inline-flex;
         flex-direction: column;
         font-family: inherit;
-        height: 5.25rem;
+        height: 7.5rem;
         justify-content: center;
         outline: 0;
         position: relative;
+        transition-duration: 500ms;
+        transition-property: box-shadow;
         vertical-align: bottom;
-        width: 6.5rem;
+        width: 6.25rem;
+      }
+
+      .option:hover {
+        box-shadow: 0 3px 6px 2px rgba(0, 36, 100, .1);
+      }
+
+      .option[active] {
+        border: 1px solid var(--google-blue-600);
+        color: var(--google-blue-600);
+        font-weight: 500;
       }
 
       .option:not(:first-of-type) {
@@ -88,12 +98,6 @@
       .option:hover iron-icon[icon='cr:check'],
       .option[active] iron-icon[icon='cr:check'] {
         display: block;
-      }
-
-      .option[active] {
-        border: 1px solid var(--google-blue-600);
-        color: var(--google-blue-600);
-        font-weight: 500;
       }
 
       .option[active] iron-icon[icon='cr:check'] {
