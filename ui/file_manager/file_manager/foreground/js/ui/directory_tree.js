@@ -131,7 +131,7 @@ const TREE_ITEM_INNER_HTML = '<div class="tree-row">' +
     ' <span class="icon"></span>' +
     ' <span class="label entry-name"></span>' +
     '</div>' +
-    '<div class="tree-children"></div>';
+    '<div class="tree-children" role="group"></div>';
 
 ////////////////////////////////////////////////////////////////////////////////
 // DirectoryItem

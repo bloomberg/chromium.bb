@@ -29,6 +29,7 @@ let driveFileSystem;
  */
 window.metrics = {
   recordSmallCount: function() {},
+  recordEnum: function() {},
 };
 
 /**
@@ -943,4 +944,54 @@ function testEntryListItemSortEntriesEmpty() {
   const entryListItem = new EntryListItem(rootType, modelItem, directoryTree);
 
   assertEquals(0, entryListItem.sortEntries([]).length);
+}
+
+
+/** Test EntryListItem.sortEntries doesn't fail sorting empty array. */
+function testAriaExpanded(callback) {
+  // Setup My Drive and Downloads and one folder inside each of them.
+  fakeFileSystemURLEntries['filesystem:drive/root/folder1'] =
+      new MockDirectoryEntry(driveFileSystem, '/root/folder1');
+  const downloadsFileSystem = volumeManager.volumeInfoList.item(1).fileSystem;
+  fakeFileSystemURLEntries['filesystem:downloads/folder1'] =
+      new MockDirectoryEntry(downloadsFileSystem, '/folder1');
+  // The initial resolution for Drive roots will fail since the paths were not
+  // ready so trigger another attempt after adding populating
+  // fakeFileSystemURLEntries.
+  /** @type {VolumeInfoImpl} */ (volumeManager.volumeInfoList.item(0)) .restartResolveDisplayRootForTest();
+
+  // Populate the directory tree with the mock filesystem.
+  let directoryTree = createElements();
+  directoryTree.metadataModel = createMockMetadataModel();
+  const mockMetadata = createMockMetadataModel();
+  DirectoryTree.decorate(
+      directoryTree, directoryModel, volumeManager, mockMetadata,
+      fileOperationManager, true);
+  directoryTree.dataModel = new MockNavigationListModel(volumeManager);
+
+  // Coerce to DirectoryTree type and draw the tree.
+  directoryTree = /** @type {!DirectoryTree} */ (directoryTree);
+  directoryTree.redraw(true);
+
+  const driveItem = directoryTree.items[0];
+  const downloadsItem = directoryTree.items[1];
+  reportPromise(
+      waitUntil(() => {
+        if (!downloadsItem.expanded) {
+          // While downloads isn't expanded aria-expanded should be also false.
+          const ariaExpanded = downloadsItem.getAttribute('aria-expanded');
+          assertTrue(ariaExpanded === 'false' || ariaExpanded === null);
+          // Click has to be async to wait Downloads to reads its children.
+          downloadsItem.querySelector('.expand-icon').click();
+        }
+        // After clicking on expand-icon, aria-expanded should be set to true.
+        return downloadsItem.getAttribute('aria-expanded') === 'true';
+      }).then(() => {
+        // .tree-children should have role="group" otherwise Chromevox doesn't
+        // speak the depth level properly.
+        assertEquals(
+            'group',
+            downloadsItem.querySelector('.tree-children').getAttribute('role'));
+      }),
+      callback);
 }

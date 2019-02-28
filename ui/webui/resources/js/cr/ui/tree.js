@@ -554,7 +554,7 @@ cr.define('cr.ui', function() {
       rowItem.setAttribute('has-children', b);
       if (b) {
         this.mayHaveChildren_ = true;
-        this.setAttribute('aria-expanded', 'false');
+        this.setAttribute('aria-expanded', this.expanded);
       }
     },
 
