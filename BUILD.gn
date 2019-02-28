@@ -207,7 +207,7 @@ group("gn_all") {
       "//third_party/blink/renderer/platform/heap:blink_heap_unittests",
       "//third_party/catapult/telemetry:bitmaptools($host_toolchain)",
       "//third_party/smhasher:pmurhash",
-      "//tools/imagediff($host_toolchain)",
+      "//tools/imagediff",
       "//ui/display:display_unittests",
       "//ui/events:events_unittests",
       "//ui/latency:latency_unittests",
