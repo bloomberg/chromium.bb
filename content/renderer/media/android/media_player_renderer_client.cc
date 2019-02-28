@@ -12,10 +12,10 @@ namespace content {
 MediaPlayerRendererClient::MediaPlayerRendererClient(
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
-    media::MojoRenderer* mojo_renderer,
+    std::unique_ptr<media::MojoRenderer> mojo_renderer,
     media::ScopedStreamTextureWrapper stream_texture_wrapper,
     media::VideoRendererSink* sink)
-    : mojo_renderer_(mojo_renderer),
+    : mojo_renderer_(std::move(mojo_renderer)),
       stream_texture_wrapper_(std::move(stream_texture_wrapper)),
       client_(nullptr),
       sink_(sink),

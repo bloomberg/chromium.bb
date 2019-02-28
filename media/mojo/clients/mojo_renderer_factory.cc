@@ -4,8 +4,7 @@
 
 #include "media/mojo/clients/mojo_renderer_factory.h"
 
-#include <memory>
-#include <string>
+#include <utility>
 
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -19,21 +18,14 @@
 namespace media {
 
 MojoRendererFactory::MojoRendererFactory(
-    mojom::HostedRendererType type,
     const GetGpuFactoriesCB& get_gpu_factories_cb,
     media::mojom::InterfaceFactory* interface_factory)
     : get_gpu_factories_cb_(get_gpu_factories_cb),
-      interface_factory_(interface_factory),
-      hosted_renderer_type_(type) {
+      interface_factory_(interface_factory) {
   DCHECK(interface_factory_);
 }
 
 MojoRendererFactory::~MojoRendererFactory() = default;
-
-void MojoRendererFactory::SetGetTypeSpecificIdCB(
-    const GetTypeSpecificIdCB& get_type_specific_id) {
-  get_type_specific_id_ = get_type_specific_id;
-}
 
 std::unique_ptr<Renderer> MojoRendererFactory::CreateRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
@@ -42,49 +34,46 @@ std::unique_ptr<Renderer> MojoRendererFactory::CreateRenderer(
     VideoRendererSink* video_renderer_sink,
     const RequestOverlayInfoCB& /* request_overlay_info_cb */,
     const gfx::ColorSpace& /* target_color_space */) {
-  std::unique_ptr<VideoOverlayFactory> overlay_factory;
+  DCHECK(interface_factory_);
 
-  // |get_gpu_factories_cb_| can be null in the HLS/MediaPlayerRenderer case,
-  // when we do not need to create video overlays.
-  if (get_gpu_factories_cb_) {
-    overlay_factory =
-        std::make_unique<VideoOverlayFactory>(get_gpu_factories_cb_.Run());
-  }
+  DCHECK(get_gpu_factories_cb_);
+  auto overlay_factory =
+      std::make_unique<VideoOverlayFactory>(get_gpu_factories_cb_.Run());
 
-  // MediaPlayerRendererClientFactory depends on |this| always returning a MR,
-  // since it uses a static_cast to use some MojoRenderer specific interfaces.
-  // Therefore, |this| should never return anything else than a MojoRenderer.
-  return std::make_unique<MojoRenderer>(media_task_runner,
-                                        std::move(overlay_factory),
-                                        video_renderer_sink, GetRendererPtr());
-}
-
-mojom::RendererPtr MojoRendererFactory::GetRendererPtr() {
   mojom::RendererPtr renderer_ptr;
+  interface_factory_->CreateDefaultRenderer(std::string(),
+                                            mojo::MakeRequest(&renderer_ptr));
 
-  if (interface_factory_) {
-    switch (hosted_renderer_type_) {
-      case mojom::HostedRendererType::kDefault:
-        interface_factory_->CreateDefaultRenderer(
-            std::string(), mojo::MakeRequest(&renderer_ptr));
-        break;
-#if defined(OS_ANDROID)
-      case mojom::HostedRendererType::kMediaPlayer:
-        interface_factory_->CreateMediaPlayerRenderer(
-            mojo::MakeRequest(&renderer_ptr));
-        break;
-      case mojom::HostedRendererType::kFlinging:
-        DCHECK(get_type_specific_id_);
-        interface_factory_->CreateFlingingRenderer(
-            get_type_specific_id_.Run(), mojo::MakeRequest(&renderer_ptr));
-        break;
-#endif  // defined(OS_ANDROID)
-    }
-  } else {
-    NOTREACHED();
-  }
-
-  return renderer_ptr;
+  return std::make_unique<MojoRenderer>(
+      media_task_runner, std::move(overlay_factory), video_renderer_sink,
+      std::move(renderer_ptr));
 }
+
+#if defined(OS_ANDROID)
+std::unique_ptr<MojoRenderer> MojoRendererFactory::CreateFlingingRenderer(
+    const std::string& presentation_id,
+    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+    VideoRendererSink* video_renderer_sink) {
+  DCHECK(interface_factory_);
+  mojom::RendererPtr renderer_ptr;
+  interface_factory_->CreateFlingingRenderer(presentation_id,
+                                             mojo::MakeRequest(&renderer_ptr));
+
+  return std::make_unique<MojoRenderer>(
+      media_task_runner, nullptr, video_renderer_sink, std::move(renderer_ptr));
+}
+
+std::unique_ptr<MojoRenderer> MojoRendererFactory::CreateMediaPlayerRenderer(
+    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+    VideoRendererSink* video_renderer_sink) {
+  DCHECK(interface_factory_);
+  mojom::RendererPtr renderer_ptr;
+  interface_factory_->CreateMediaPlayerRenderer(
+      mojo::MakeRequest(&renderer_ptr));
+
+  return std::make_unique<MojoRenderer>(
+      media_task_runner, nullptr, video_renderer_sink, std::move(renderer_ptr));
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace media
