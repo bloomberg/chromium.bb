@@ -145,7 +145,7 @@ class EasyUnlockServiceRegular
   // loading the RemoteDevice until the screen is unlocked. For security,
   // this deferment prevents the lock screen from being changed by a network
   // event.
-  bool deferring_device_load_;
+  bool deferring_device_load_ = false;
 
   // Responsible for showing all the notifications used for EasyUnlock.
   std::unique_ptr<EasyUnlockNotificationController> notification_controller_;
@@ -170,12 +170,12 @@ class EasyUnlockServiceRegular
   // True if the pairing changed notification was shown, so that the next time
   // the Chromebook is unlocked, we can show the subsequent 'pairing applied'
   // notification.
-  bool shown_pairing_changed_notification_;
+  bool shown_pairing_changed_notification_ = false;
 
   // Listens to pref changes.
   PrefChangeRegistrar registrar_;
 
-  base::WeakPtrFactory<EasyUnlockServiceRegular> weak_ptr_factory_;
+  base::WeakPtrFactory<EasyUnlockServiceRegular> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockServiceRegular);
 };
