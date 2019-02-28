@@ -249,6 +249,8 @@ def SanitizeCacheDir(cache_dir):
     osutils.RmDir(cache_dir, sudo=True)
     osutils.Touch(os.path.join(cache_dir, '.cbuildbot_launch'), makedirs=True)
 
+  osutils.RmDir(os.path.join(cache_dir, 'paygen_cache'),
+                ignore_missing=True, sudo=True)
   logging.info('Finished cleaning cache_dir.')
 
 
