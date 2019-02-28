@@ -171,13 +171,13 @@ InspectorMemoryAgent::GetSamplingProfileById(uint32_t id) {
   std::unique_ptr<protocol::Array<protocol::Memory::Module>> modules =
       protocol::Array<protocol::Memory::Module>::create();
   for (const auto* module : module_cache.GetModules()) {
-    modules->addItem(
-        protocol::Memory::Module::create()
-            .setName(module->filename.value().c_str())
-            .setUuid(module->id.c_str())
-            .setBaseAddress(String::Format("0x%" PRIxPTR, module->base_address))
-            .setSize(static_cast<double>(module->size))
-            .build());
+    modules->addItem(protocol::Memory::Module::create()
+                         .setName(module->GetFilename().value().c_str())
+                         .setUuid(module->GetId().c_str())
+                         .setBaseAddress(String::Format(
+                             "0x%" PRIxPTR, module->GetBaseAddress()))
+                         .setSize(static_cast<double>(module->GetSize()))
+                         .build());
   }
 
   return protocol::Memory::SamplingProfile::create()

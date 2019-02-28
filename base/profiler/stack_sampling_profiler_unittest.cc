@@ -562,7 +562,7 @@ std::string FormatSampleForDiagnosticOutput(const Frames& frames) {
   for (const auto& frame : frames) {
     output += StringPrintf(
         "0x%p %s\n", reinterpret_cast<const void*>(frame.instruction_pointer),
-        frame.module->filename.AsUTF8Unsafe().c_str());
+        frame.module->GetFilename().AsUTF8Unsafe().c_str());
   }
   return output;
 }

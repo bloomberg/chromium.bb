@@ -17,12 +17,25 @@ ModuleCache::Module::Module(uintptr_t base_address,
                             const std::string& id,
                             const FilePath& filename,
                             size_t size)
-    : base_address(base_address),
-      id(id),
-      filename(filename),
-      size(size) {}
+    : base_address_(base_address), id_(id), filename_(filename), size_(size) {}
 
 ModuleCache::Module::~Module() = default;
+
+uintptr_t ModuleCache::Module::GetBaseAddress() const {
+  return base_address_;
+}
+
+std::string ModuleCache::Module::GetId() const {
+  return id_;
+}
+
+FilePath ModuleCache::Module::GetFilename() const {
+  return filename_;
+}
+
+size_t ModuleCache::Module::GetSize() const {
+  return size_;
+}
 
 ModuleCache::ModuleCache() = default;
 ModuleCache::~ModuleCache() = default;
@@ -33,14 +46,14 @@ const ModuleCache::Module* ModuleCache::GetModuleForAddress(uintptr_t address) {
     DCHECK(!modules_cache_map_.empty());
     --it;
     const Module* module = it->second.get();
-    if (address < module->base_address + module->size)
+    if (address < module->GetBaseAddress() + module->GetSize())
       return module;
   }
 
   std::unique_ptr<Module> module = CreateModuleForAddress(address);
   if (!module)
     return nullptr;
-  return modules_cache_map_.emplace(module->base_address, std::move(module))
+  return modules_cache_map_.emplace(module->GetBaseAddress(), std::move(module))
       .first->second.get();
 }
 
