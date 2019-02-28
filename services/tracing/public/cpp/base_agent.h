@@ -30,6 +30,8 @@ class COMPONENT_EXPORT(TRACING_CPP) BaseAgent : public mojom::Agent {
             mojom::TraceDataType type,
             base::ProcessId pid);
 
+  bool IsBoundForTesting() const;
+
  private:
   void Disconnect();
 

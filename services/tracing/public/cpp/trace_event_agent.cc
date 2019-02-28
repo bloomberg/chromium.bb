@@ -80,7 +80,7 @@ void TraceEventAgent::AddMetadataGeneratorFunction(
 void TraceEventAgent::StartTracing(const std::string& config,
                                    base::TimeTicks coordinator_time,
                                    StartTracingCallback callback) {
-  DCHECK(!TracingUsesPerfettoBackend());
+  DCHECK(!IsBoundForTesting() || !TracingUsesPerfettoBackend());
   DCHECK(!recorder_);
   DCHECK(!tracing_enabled_callback_);
 #if defined(__native_client__)
@@ -100,7 +100,7 @@ void TraceEventAgent::StartTracing(const std::string& config,
 }
 
 void TraceEventAgent::StopAndFlush(mojom::RecorderPtr recorder) {
-  DCHECK(!TracingUsesPerfettoBackend());
+  DCHECK(!IsBoundForTesting() || !TracingUsesPerfettoBackend());
   DCHECK(!recorder_);
 
   recorder_ = std::move(recorder);
@@ -119,7 +119,7 @@ void TraceEventAgent::StopAndFlush(mojom::RecorderPtr recorder) {
 
 void TraceEventAgent::RequestBufferStatus(
     RequestBufferStatusCallback callback) {
-  DCHECK(!TracingUsesPerfettoBackend());
+  DCHECK(!IsBoundForTesting() || !TracingUsesPerfettoBackend());
   base::trace_event::TraceLogStatus status =
       base::trace_event::TraceLog::GetInstance()->GetStatus();
   std::move(callback).Run(status.event_capacity, status.event_count);
