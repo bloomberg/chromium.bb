@@ -66,7 +66,10 @@ static_library("app") {
   }
 
   if (is_android) {
-    deps += [ "//components/crash/android:jni_headers" ]
+    deps += [
+      "//components/crash/android:jni_headers",
+      "//third_party/crashpad/crashpad/handler",
+    ]
   }
 
   if (is_android || is_linux) {
