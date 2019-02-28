@@ -458,6 +458,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   DeferState defers_loading_;
   int request_id_;
   bool in_two_phase_read_ = false;
+  bool is_in_on_body_available_ = false;
 
   // Used when ResponseLoadViaDataPipe is enabled and
   // |pass_response_pipe_to_client_| is false.
@@ -1037,9 +1038,12 @@ bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally(
 void WebURLLoaderImpl::Context::OnBodyAvailable(
     MojoResult,
     const mojo::HandleSignalsState&) {
+  DCHECK(!is_in_on_body_available_);
   // Cancel may happen so that we need to protect |this|.
   scoped_refptr<Context> protect(this);
   uint32_t read_bytes = 0;
+  base::AutoReset<bool> auto_reset(&is_in_on_body_available_, true);
+
   // |client_| is nullptr when the request is canceled.
   while (client_ && defers_loading_ == NOT_DEFERRING && !in_two_phase_read_) {
     const void* buffer = nullptr;
@@ -1094,7 +1098,7 @@ void WebURLLoaderImpl::Context::OnBodyHasBeenRead(uint32_t read_bytes) {
     body_handle_.reset();
     body_watcher_.Cancel();
   }
-  if (defers_loading_ == NOT_DEFERRING)
+  if (defers_loading_ == NOT_DEFERRING && !is_in_on_body_available_)
     body_watcher_.ArmOrNotify();
 }
 
