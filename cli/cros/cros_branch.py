@@ -197,11 +197,12 @@ class ManifestRepository(object):
     Args:
       branches: List a ProjectBranches for each branched project.
     """
+    logging.notice('Repairing manifest project %s.', self._project.name)
     manifest_paths = self._ListManifests(
         [constants.DEFAULT_MANIFEST, constants.OFFICIAL_MANIFEST])
     branches_by_path = {project.Path(): branch for project, branch in branches}
     for manifest_path in manifest_paths:
-      logging.info('Repairing manifest file %s', manifest_path)
+      logging.notice('Repairing manifest file %s', manifest_path)
       manifest = self.RepairManifest(manifest_path, branches_by_path)
       manifest.Write(manifest_path)
 
@@ -240,8 +241,11 @@ class CrosCheckout(object):
     """
     osutils.SafeMakedirs(root)
     if git.FindRepoCheckoutRoot(root) is None:
+      logging.notice('Will initialize checkout %s for this run.', root)
       repo_util.Repository.Initialize(
           root, manifest_url, repo_url=repo_url, repo_branch=repo_branch)
+    else:
+      logging.notice('Will use existing checkout %s for this run.', root)
     return cls(root, manifest_url=manifest_url, repo_url=repo_url)
 
   def _Sync(self, manifest_args):
@@ -265,6 +269,7 @@ class CrosCheckout(object):
     Args:
       branch: Name of branch to sync to.
     """
+    logging.notice('Syncing checkout %s to branch %s.', self.root, branch)
     self._Sync(['--branch', branch])
 
   def SyncVersion(self, version):
@@ -273,6 +278,7 @@ class CrosCheckout(object):
     Args:
       version: Version string to sync to.
     """
+    logging.notice('Syncing checkout %s to version %s.', self.root, version)
     site_params = config_lib.GetSiteParams()
     self._Sync([
         '--manifest-versions-int',
@@ -288,6 +294,7 @@ class CrosCheckout(object):
     Args:
       path: Path to the manifest file.
     """
+    logging.notice('Syncing checkout %s to manifest %s.', self.root, path)
     self._Sync(['--manifest-file', path])
 
   def ReadVersion(self, **kwargs):
@@ -305,7 +312,7 @@ class CrosCheckout(object):
       dry_run: Whether to use git --dry-run.
       fetch: Whether to fetch and checkout to the given branch.
     """
-    logging.info(message)
+    logging.notice(message)
 
     chromiumos_overlay = self.manifest.GetUniqueProject(
         'chromiumos/overlays/chromiumos-overlay')
@@ -468,6 +475,7 @@ class Branch(object):
     Raises:
       BranchError if any branch exists.
     """
+    logging.notice('Validating branch does not already exist.')
     for project, branch in branches:
       if self.checkout.BranchExists(project, branch):
         raise BranchError(
@@ -503,6 +511,8 @@ class Branch(object):
       force: Whether or not to overwrite existing branches on the remote.
       dry_run: Whether or not to set --dry-run.
     """
+    logging.notice('Pushing branches to remote (%s --dry-run).',
+                   'with' if dry_run else 'without')
     for project, branch in branches:
       branch = git.NormalizeRef(branch)
 
@@ -525,6 +535,8 @@ class Branch(object):
       branches: List of ProjectBranches for which to push delete.
       dry_run: Whether or not to set --dry-run.
     """
+    logging.notice('Deleting old branches on remote (%s --dry-run).',
+                   'with' if dry_run else 'without')
     for project, branch in branches:
       branch = git.NormalizeRef(branch)
       cmd = ['push', project.Remote().GitName(), '--delete', branch]
@@ -869,9 +881,9 @@ Delete Examples:
         default=False)
     if proceed:
       branch.Create(push=self.options.push, force=self.options.force)
-      logging.info('Successfully created branch %s.', branch.name)
+      logging.notice('Successfully created branch %s.', branch.name)
     else:
-      logging.info('Aborted branch creation.')
+      logging.notice('Aborted branch creation.')
 
   def _HandleRename(self, checkout):
     """Sync to the branch and rename it.
@@ -883,8 +895,8 @@ Delete Examples:
     branch = Branch(checkout, self.options.new)
     branch.Rename(self.options.old, push=self.options.push,
                   force=self.options.force)
-    logging.info('Successfully renamed branch %s to %s.',
-                 self.options.old, self.options.new)
+    logging.notice('Successfully renamed branch %s to %s.',
+                   self.options.old, self.options.new)
 
   def _HandleDelete(self, checkout):
     """Sync to the branch and delete it.
@@ -895,7 +907,7 @@ Delete Examples:
     checkout.SyncBranch(self.options.branch)
     branch = Branch(checkout, self.options.branch)
     branch.Delete(push=self.options.push, force=self.options.force)
-    logging.info('Successfully deleted branch %s.', self.options.branch)
+    logging.notice('Successfully deleted branch %s.', self.options.branch)
 
   def _RunInCheckout(self, root):
     """Run cros branch in a checkout at the given root.
@@ -919,3 +931,4 @@ Delete Examples:
     else:
       with CrosCheckout.TempRoot() as root:
         self._RunInCheckout(root)
+        logging.notice('Cleaning up...')
