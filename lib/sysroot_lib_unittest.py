@@ -173,12 +173,6 @@ class SysrootLibToolchainUpdateTest(cros_test_lib.RunCommandTempDirTestCase):
     self.sysroot.UpdateToolchain('board')
     self.assertCommandContains(['emerge-board', '--getbinpkg', '--usepkg'])
 
-  def testNoInitUpdateToolchain(self):
-    """Test the no pkg init case."""
-    self.sysroot.UpdateToolchain('board', pkg_init=False)
-    self.assertCommandContains(['emerge-board', '--getbinpkg', '--usepkg'],
-                               expected=False)
-
   def testNoLocalInitUpdateToolchain(self):
     """Test the nousepkg and not local case."""
     self.sysroot.UpdateToolchain('board', local_init=False)
@@ -191,5 +185,5 @@ class SysrootLibToolchainUpdateTest(cros_test_lib.RunCommandTempDirTestCase):
     # GetCachedField uses RunCommand, so we need to mock it rather than setting
     # the config that's used to check for the installation.
     self.PatchObject(self.sysroot, 'GetCachedField', return_value='yes')
-    self.sysroot.UpdateToolchain('board', pkg_init=True)
+    self.sysroot.UpdateToolchain('board')
     self.assertCommandContains(['emerge-board'], expected=False)

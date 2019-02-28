@@ -588,7 +588,7 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
                             os.path.basename(filename))
       osutils.SafeSymlink(filename, linkpath, sudo=True)
 
-  def UpdateToolchain(self, board, pkg_init=True, local_init=True):
+  def UpdateToolchain(self, board, local_init=True):
     """Updates the toolchain packages.
 
     This will install both the toolchains and the packages that are implicitly
@@ -596,13 +596,12 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
 
     Args:
       board (str): The name of the board.
-      pkg_init (bool): Whether to install the implicit dependencies.
       local_init (bool): Whether to use local packages to bootstrap the
         implicit dependencies.
     """
     toolchain.InstallToolchain(self)
 
-    if pkg_init and not self.GetCachedField(_IMPLICIT_SYSROOT_DEPS):
+    if not self.GetCachedField(_IMPLICIT_SYSROOT_DEPS):
       # Emerge the implicit dependencies.
       emerge = ['emerge-%s' % board, '--root-deps=rdeps', '--select', '--quiet']
 

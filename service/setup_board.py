@@ -196,11 +196,11 @@ def SetupBoard(board, accept_licenses=None, run_configs=None):
 
   # Step 4: Install toolchain and packages.
   # Dependencies: Portage configs and wrappers have been installed.
-  logging.info('Updating toolchain.')
-  # Use the local packages if we're doing a local only build or usepkg is set.
-  local_init = run_configs.usepkg or run_configs.local_build
-  InstallToolchain(sysroot, board, pkg_init=run_configs.init_board_pkgs,
-                   local_init=local_init)
+  if run_configs.init_board_pkgs:
+    logging.info('Updating toolchain.')
+    # Use the local packages if we're doing a local only build or usepkg is set.
+    local_init = run_configs.usepkg or run_configs.local_build
+    InstallToolchain(sysroot, board, local_init=local_init)
 
 
 def CreateSysrootSkeleton(sysroot):
@@ -251,7 +251,7 @@ def InstallPortageConfigs(sysroot, board, accept_licenses, local_build):
                                local_only=local_build)
 
 
-def InstallToolchain(sysroot, board, pkg_init=True, local_init=True):
+def InstallToolchain(sysroot, board, local_init=True):
   """Install toolchain and packages.
 
   Dependencies: Portage configs and wrappers have been installed
@@ -261,12 +261,10 @@ def InstallToolchain(sysroot, board, pkg_init=True, local_init=True):
   Args:
     sysroot (sysroot_lib.Sysroot): The sysroot to install to.
     board (Board): The board whose toolchain is being installed.
-    pkg_init (bool): Whether to emerge the implicit dependencies.
     local_init (bool): Whether to use local packages to bootstrap implicit
       dependencies.
   """
-  sysroot.UpdateToolchain(board.board_variant, pkg_init=pkg_init,
-                          local_init=local_init)
+  sysroot.UpdateToolchain(board.board_variant, local_init=local_init)
 
 
 def _RefreshWorkonSymlinks(board, sysroot):
