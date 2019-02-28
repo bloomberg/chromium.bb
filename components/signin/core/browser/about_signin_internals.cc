@@ -19,7 +19,6 @@
 #include "build/build_config.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
@@ -178,12 +177,10 @@ std::string GetAccountConsistencyDescription(
 }  // anonymous namespace
 
 AboutSigninInternals::AboutSigninInternals(
-    AccountTrackerService* account_tracker,
     identity::IdentityManager* identity_manager,
     SigninErrorController* signin_error_controller,
     signin::AccountConsistencyMethod account_consistency)
-    : account_tracker_(account_tracker),
-      identity_manager_(identity_manager),
+    : identity_manager_(identity_manager),
       client_(nullptr),
       signin_error_controller_(signin_error_controller),
       account_consistency_(account_consistency) {}
@@ -309,18 +306,16 @@ void AboutSigninInternals::NotifyObservers() {
     return;
 
   std::unique_ptr<base::DictionaryValue> signin_status_value =
-      signin_status_.ToValue(account_tracker_, identity_manager_,
-                             signin_error_controller_, client_,
-                             account_consistency_);
+      signin_status_.ToValue(identity_manager_, signin_error_controller_,
+                             client_, account_consistency_);
 
   for (auto& observer : signin_observers_)
     observer.OnSigninStateChanged(signin_status_value.get());
 }
 
 std::unique_ptr<base::DictionaryValue> AboutSigninInternals::GetSigninStatus() {
-  return signin_status_.ToValue(account_tracker_, identity_manager_,
-                                signin_error_controller_, client_,
-                                account_consistency_);
+  return signin_status_.ToValue(identity_manager_, signin_error_controller_,
+                                client_, account_consistency_);
 }
 
 void AboutSigninInternals::OnAccessTokenRequested(
@@ -566,7 +561,6 @@ void AboutSigninInternals::SigninStatus::AddRefreshTokenEvent(
 
 std::unique_ptr<base::DictionaryValue>
 AboutSigninInternals::SigninStatus::ToValue(
-    AccountTrackerService* account_tracker,
     identity::IdentityManager* identity_manager,
     SigninErrorController* signin_error_controller,
     SigninClient* signin_client,
@@ -595,9 +589,11 @@ AboutSigninInternals::SigninStatus::ToValue(
     AddSectionEntry(basic_info,
                     SigninStatusFieldToLabel(signin_internals_util::ACCOUNT_ID),
                     account_id);
-    AddSectionEntry(basic_info,
-                    SigninStatusFieldToLabel(signin_internals_util::GAIA_ID),
-                    account_tracker->GetAccountInfo(account_id).gaia);
+    AddSectionEntry(
+        basic_info, SigninStatusFieldToLabel(signin_internals_util::GAIA_ID),
+        identity_manager
+            ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+            ->gaia);
     AddSectionEntry(basic_info,
                     SigninStatusFieldToLabel(signin_internals_util::USERNAME),
                     identity_manager->GetPrimaryAccountInfo().email);
@@ -605,7 +601,10 @@ AboutSigninInternals::SigninStatus::ToValue(
       const std::string error_account_id =
           signin_error_controller->error_account_id();
       const std::string error_username =
-          account_tracker->GetAccountInfo(error_account_id).email;
+          identity_manager
+              ->FindAccountInfoForAccountWithRefreshTokenByAccountId(
+                  error_account_id)
+              ->email;
       AddSectionEntry(basic_info, "Auth Error",
           signin_error_controller->auth_error().ToString());
       AddSectionEntry(basic_info, "Auth Error Account Id", error_account_id);
