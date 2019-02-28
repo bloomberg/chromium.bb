@@ -34,7 +34,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   // return true by default, as a workaround for tests not setting up an
   // authenticated account and IsSyncFeatureEnabled() therefore returning false.
   bool IsAuthenticatedAccountPrimary() const override;
-  MOCK_CONST_METHOD0(GetAuthError, const GoogleServiceAuthError&());
+  MOCK_CONST_METHOD0(GetAuthError, GoogleServiceAuthError());
 
   MOCK_METHOD0(GetSetupInProgressHandle,
                std::unique_ptr<syncer::SyncSetupInProgressHandle>());

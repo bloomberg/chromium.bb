@@ -51,7 +51,6 @@ using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::Return;
-using ::testing::ReturnRef;
 using ::testing::Values;
 using browser_sync::ProfileSyncService;
 using browser_sync::ProfileSyncServiceMock;
@@ -192,10 +191,10 @@ class TestWebUIProvider
 // /ClientLogin enabled or not.
 class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
  public:
-  PeopleHandlerTest() : error_(GoogleServiceAuthError::NONE) {}
+  PeopleHandlerTest() = default;
+
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    error_ = GoogleServiceAuthError::AuthErrorNone();
 
     // Sign in the user.
     identity_test_env_adaptor_ =
@@ -208,7 +207,6 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
     mock_pss_ = static_cast<ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile(), base::BindRepeating(&BuildMockProfileSyncService)));
-    ON_CALL(*mock_pss_, GetAuthError()).WillByDefault(ReturnRef(error_));
     ON_CALL(*mock_pss_->GetUserSettingsMock(), GetPassphraseType())
         .WillByDefault(Return(syncer::PassphraseType::IMPLICIT_PASSPHRASE));
     ON_CALL(*mock_pss_->GetUserSettingsMock(), GetExplicitPassphraseTime())
@@ -336,7 +334,6 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
   }
 
   ProfileSyncServiceMock* mock_pss_;
-  GoogleServiceAuthError error_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_env_adaptor_;
   content::TestWebUI web_ui_;
@@ -416,7 +413,6 @@ TEST_F(PeopleHandlerTest, DisplayConfigureWithEngineDisabledAndCancel) {
       .WillByDefault(Return(true));
   ON_CALL(*mock_pss_->GetUserSettingsMock(), IsFirstSetupComplete())
       .WillByDefault(Return(false));
-  error_ = GoogleServiceAuthError::AuthErrorNone();
   ON_CALL(*mock_pss_, GetTransportState())
       .WillByDefault(Return(syncer::SyncService::TransportState::INITIALIZING));
   EXPECT_CALL(*mock_pss_->GetUserSettingsMock(), SetSyncRequested(true));
@@ -445,7 +441,6 @@ TEST_F(PeopleHandlerTest,
       .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
   ON_CALL(*mock_pss_->GetUserSettingsMock(), IsSyncRequested())
       .WillByDefault(Return(true));
-  error_ = GoogleServiceAuthError::AuthErrorNone();
   // Sync engine is stopped initially, and will start up.
   ON_CALL(*mock_pss_, GetTransportState())
       .WillByDefault(Return(
@@ -463,8 +458,6 @@ TEST_F(PeopleHandlerTest,
   SetDefaultExpectationsForConfigPage();
   ON_CALL(*mock_pss_, GetTransportState())
       .WillByDefault(Return(syncer::SyncService::TransportState::ACTIVE));
-  error_ = GoogleServiceAuthError::AuthErrorNone();
-  ON_CALL(*mock_pss_, GetAuthError()).WillByDefault(ReturnRef(error_));
   handler_->SyncStartupCompleted();
 
   EXPECT_EQ(2U, web_ui_.call_data().size());
@@ -489,7 +482,6 @@ TEST_F(PeopleHandlerTest,
       .WillByDefault(Return(true));
   ON_CALL(*mock_pss_->GetUserSettingsMock(), IsFirstSetupComplete())
       .WillByDefault(Return(false));
-  error_ = GoogleServiceAuthError::AuthErrorNone();
   EXPECT_CALL(*mock_pss_, GetTransportState())
       .WillOnce(Return(syncer::SyncService::TransportState::INITIALIZING))
       .WillRepeatedly(Return(syncer::SyncService::TransportState::ACTIVE));
@@ -516,7 +508,6 @@ TEST_F(PeopleHandlerTest, DisplayConfigureWithEngineDisabledAndSigninFailed) {
       .WillByDefault(Return(true));
   ON_CALL(*mock_pss_->GetUserSettingsMock(), IsFirstSetupComplete())
       .WillByDefault(Return(false));
-  error_ = GoogleServiceAuthError::AuthErrorNone();
   ON_CALL(*mock_pss_, GetTransportState())
       .WillByDefault(Return(syncer::SyncService::TransportState::INITIALIZING));
   EXPECT_CALL(*mock_pss_->GetUserSettingsMock(), SetSyncRequested(true));
@@ -524,9 +515,9 @@ TEST_F(PeopleHandlerTest, DisplayConfigureWithEngineDisabledAndSigninFailed) {
   handler_->HandleShowSetupUI(nullptr);
   ExpectPageStatusChanged(PeopleHandler::kSpinnerPageStatus);
   Mock::VerifyAndClearExpectations(mock_pss_);
-  error_ = GoogleServiceAuthError(
-      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  ON_CALL(*mock_pss_, GetAuthError()).WillByDefault(ReturnRef(error_));
+  ON_CALL(*mock_pss_, GetAuthError())
+      .WillByDefault(Return(GoogleServiceAuthError(
+          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS)));
   NotifySyncListeners();
 
   // On failure, the dialog will be closed.
@@ -870,8 +861,9 @@ TEST_F(PeopleHandlerTest, ShowSyncSetup) {
 // We do not display signin on chromeos in the case of auth error.
 TEST_F(PeopleHandlerTest, ShowSigninOnAuthError) {
   // Initialize the system to a signed in state, but with an auth error.
-  error_ = GoogleServiceAuthError(
-      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+  ON_CALL(*mock_pss_, GetAuthError())
+      .WillByDefault(Return(GoogleServiceAuthError(
+          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS)));
 
   SetupInitializedProfileSyncService();
 
@@ -889,7 +881,8 @@ TEST_F(PeopleHandlerTest, ShowSigninOnAuthError) {
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
 
   identity::UpdatePersistentErrorOfRefreshTokenForAccount(
-      identity_manager, primary_account_info.account_id, error_);
+      identity_manager, primary_account_info.account_id,
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 
   ON_CALL(*mock_pss_, GetDisableReasons())
       .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));

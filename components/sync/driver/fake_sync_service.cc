@@ -97,8 +97,8 @@ bool FakeSyncService::IsSetupInProgress() const {
   return false;
 }
 
-const GoogleServiceAuthError& FakeSyncService::GetAuthError() const {
-  return error_;
+GoogleServiceAuthError FakeSyncService::GetAuthError() const {
+  return GoogleServiceAuthError();
 }
 
 UserShare* FakeSyncService::GetUserShare() const {

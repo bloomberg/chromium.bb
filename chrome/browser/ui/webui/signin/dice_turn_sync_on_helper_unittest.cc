@@ -44,7 +44,6 @@
 
 using ::testing::AtLeast;
 using ::testing::Return;
-using ::testing::ReturnRef;
 using namespace unified_consent;
 
 class DiceTurnSyncOnHelperTestBase;
@@ -285,8 +284,6 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
     ON_CALL(*sync_service_mock, GetTransportState())
         .WillByDefault(
             Return(syncer::SyncService::TransportState::INITIALIZING));
-    ON_CALL(*sync_service_mock, GetAuthError())
-        .WillByDefault(ReturnRef(kNoAuthError));
   }
 
   void CheckDelegateCalls() {
@@ -421,10 +418,6 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
   bool switched_to_new_profile_ = false;
   bool sync_confirmation_shown_ = false;
   bool sync_settings_shown_ = false;
-
-  // Note: This needs to be a member variable for testing::ReturnRef.
-  const GoogleServiceAuthError kNoAuthError =
-      GoogleServiceAuthError::AuthErrorNone();
 };
 
 // Test class with only DiceMigration enabled.
