@@ -159,29 +159,6 @@ ContentLayerClientImpl::TakeDebugInfo(cc::Layer* layer) {
   return traced_value;
 }
 
-static SkColor DisplayItemBackgroundColor(const DisplayItem& item) {
-  if (item.GetType() != DisplayItem::kBoxDecorationBackground &&
-      item.GetType() != DisplayItem::kDocumentBackground)
-    return SK_ColorTRANSPARENT;
-
-  const auto& drawing_item = static_cast<const DrawingDisplayItem&>(item);
-  const auto record = drawing_item.GetPaintRecord();
-  if (!record)
-    return SK_ColorTRANSPARENT;
-
-  for (cc::PaintOpBuffer::Iterator it(record.get()); it; ++it) {
-    const auto* op = *it;
-    if (op->GetType() == cc::PaintOpType::DrawRect ||
-        op->GetType() == cc::PaintOpType::DrawRRect) {
-      const auto& flags = static_cast<const cc::PaintOpWithFlags*>(op)->flags;
-      // Skip op with looper which may modify the color.
-      if (!flags.getLooper() && flags.getStyle() == cc::PaintFlags::kFill_Style)
-        return flags.getColor();
-    }
-  }
-  return SK_ColorTRANSPARENT;
-}
-
 scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
     scoped_refptr<const PaintArtifact> paint_artifact,
     const PaintChunkSubset& paint_chunks,
@@ -234,11 +211,14 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
       display_item_list, cc::DisplayItemList::kTopLevelDisplayItemList,
       base::OptionalOrNullptr(params));
 
-  if (paint_chunks[0].size()) {
-    cc_picture_layer_->SetBackgroundColor(DisplayItemBackgroundColor(
-        display_item_list[paint_chunks[0].begin_index]));
-  }
-
+  cc_picture_layer_->SetSafeOpaqueBackgroundColor(
+      paint_chunks[0].safe_opaque_background_color);
+  // TODO(masonfreed): We don't need to set the background color here; only the
+  // safe opaque background color matters. But making that change would require
+  // rebaselining 787 tests to remove the "background_color" property from the
+  // layer dumps.
+  cc_picture_layer_->SetBackgroundColor(
+      paint_chunks[0].safe_opaque_background_color);
   return cc_picture_layer_;
 }
 

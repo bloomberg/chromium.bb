@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "build/build_config.h"
+#include "cc/layers/picture_layer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_script_source.h"
@@ -11,6 +12,8 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -660,6 +663,82 @@ TEST_P(WebLayerListSimTest, LayerSubtreeOverflowClipPropertyChanged) {
   Compositor().BeginFrame();
   EXPECT_FALSE(outer_element_layer->subtree_property_changed());
   EXPECT_FALSE(inner_element_layer->subtree_property_changed());
+}
+
+TEST_P(WebLayerListSimTest, SafeOpaqueBackgroundColorGetsSet) {
+  // TODO(crbug.com/765003): CAP may make different layerization decisions and
+  // we cannot guarantee that both divs will be composited in this test. When
+  // CAP gets closer to launch, this test should be updated to pass.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+      div {
+        position: absolute;
+        z-index: 1;
+        width: 20px;
+        height: 20px;
+      }
+      #behind {
+        top: 12px;
+        left: 12px;
+        background: blue;
+        will-change: transform; /* Composited */
+      }
+      #topleft {
+        top: 0px;
+        left: 0px;
+        background: lime;
+      }
+      #bottomright {
+        top: 24px;
+        left: 24px;
+        background: cyan;
+      }
+      </style>
+      <div id="behind"></div>
+      <div id="topleft"></div>
+      <div id="bottomright"></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  auto* behind_element = GetElementById("behind");
+  auto* behind_layer = ContentLayerAt(ContentLayerCount() - 2);
+  EXPECT_EQ(behind_layer->element_id(),
+            CompositorElementIdFromUniqueObjectId(
+                behind_element->GetLayoutObject()->UniqueId(),
+                CompositorElementIdNamespace::kPrimary));
+  EXPECT_EQ(behind_layer->SafeOpaqueBackgroundColor(), SK_ColorBLUE);
+
+  auto* grouped_mapping =
+      GetElementById("topleft")->GetLayoutBox()->Layer()->GroupedMapping();
+  auto* squashed_layer = grouped_mapping->SquashingLayer()->CcLayer();
+  ASSERT_NE(nullptr, squashed_layer);
+
+  // Top left and bottom right are squashed.
+  // This squashed layer should not be opaque, as it is squashing two squares
+  // with some gaps between them.
+  EXPECT_FALSE(squashed_layer->contents_opaque());
+  // This shouldn't DCHECK.
+  squashed_layer->SafeOpaqueBackgroundColor();
+  // Because contents_opaque is false, the SafeOpaqueBackgroundColor() getter
+  // will return SK_ColorTRANSPARENT. So we need to grab the actual color,
+  // to make sure it's right.
+  SkColor squashed_bg_color =
+      squashed_layer->ActualSafeOpaqueBackgroundColorForTesting();
+  // The squashed layer should have a non-transparent safe opaque background
+  // color, that isn't blue. Exactly which color it is depends on heuristics,
+  // but it should be one of the two colors of the elements that created it.
+  EXPECT_NE(squashed_bg_color, SK_ColorBLUE);
+  EXPECT_EQ(SkColorGetA(squashed_bg_color), SK_AlphaOPAQUE);
+  // #behind is blue, which is SK_ColorBLUE
+  // #topleft is lime, which is SK_ColorGREEN
+  // #bottomright is cyan, which is SK_ColorCYAN
+  EXPECT_TRUE((squashed_bg_color == SK_ColorGREEN) ||
+              (squashed_bg_color == SK_ColorCYAN));
 }
 
 }  // namespace blink

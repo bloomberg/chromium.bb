@@ -2519,6 +2519,18 @@ void LocalFrameView::PerformScrollAnchoringAdjustments() {
 static void RecordGraphicsLayerAsForeignLayer(
     GraphicsContext& context,
     const GraphicsLayer* graphics_layer) {
+  // Copy the first chunk's safe opaque background color over to the cc::Layer
+  // in the foreign layer wrapper.
+  if (graphics_layer->DrawsContent()) {
+    auto& chunks =
+        graphics_layer->GetPaintController().GetPaintArtifact().PaintChunks();
+    SkColor safe_background_color = SK_ColorWHITE;
+    if (chunks.size()) {
+      safe_background_color = chunks[0].safe_opaque_background_color;
+    }
+    graphics_layer->CcLayer()->SetSafeOpaqueBackgroundColor(
+        safe_background_color);
+  }
   // TODO(trchen): Currently the GraphicsLayer hierarchy is still built during
   // CompositingUpdate, and we have to clear them here to ensure no extraneous
   // layers are still attached. In future we will disable all those layer

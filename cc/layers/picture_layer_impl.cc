@@ -516,7 +516,7 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
       if (mask_type_ == Layer::LayerMaskType::NOT_MASK &&
           ShowDebugBorders(DebugBorderType::LAYER)) {
         // Fill the whole tile with the missing tile color.
-        color = DebugColors::OOMTileBorderColor();
+        color = DebugColors::DefaultCheckerboardColor();
       }
       auto* quad =
           render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();

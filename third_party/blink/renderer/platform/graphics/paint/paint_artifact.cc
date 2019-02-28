@@ -18,6 +18,29 @@ namespace blink {
 
 namespace {
 
+static SkColor DisplayItemBackgroundColor(const DisplayItem& item) {
+  if (item.GetType() != DisplayItem::kBoxDecorationBackground &&
+      item.GetType() != DisplayItem::kDocumentBackground)
+    return SK_ColorTRANSPARENT;
+
+  const auto& drawing_item = static_cast<const DrawingDisplayItem&>(item);
+  const auto record = drawing_item.GetPaintRecord();
+  if (!record)
+    return SK_ColorTRANSPARENT;
+
+  for (cc::PaintOpBuffer::Iterator it(record.get()); it; ++it) {
+    const auto* op = *it;
+    if (op->GetType() == cc::PaintOpType::DrawRect ||
+        op->GetType() == cc::PaintOpType::DrawRRect) {
+      const auto& flags = static_cast<const cc::PaintOpWithFlags*>(op)->flags;
+      // Skip op with looper which may modify the color.
+      if (!flags.getLooper() && flags.getStyle() == cc::PaintFlags::kFill_Style)
+        return flags.getColor();
+    }
+  }
+  return SK_ColorTRANSPARENT;
+}
+
 void ComputeChunkDerivedData(const DisplayItemList& display_items,
                              PaintChunk& chunk) {
   // This happens in tests testing paint chunks without display items.
@@ -25,7 +48,8 @@ void ComputeChunkDerivedData(const DisplayItemList& display_items,
     return;
 
   SkRegion known_to_be_opaque_region;
-  for (const DisplayItem& item : display_items.ItemsInPaintChunk(chunk)) {
+  auto items = display_items.ItemsInPaintChunk(chunk);
+  for (const DisplayItem& item : items) {
     chunk.bounds.Unite(item.VisualRect());
     chunk.outset_for_raster_effects = std::max(chunk.outset_for_raster_effects,
                                                item.OutsetForRasterEffects());
@@ -50,6 +74,11 @@ void ComputeChunkDerivedData(const DisplayItemList& display_items,
 
   if (known_to_be_opaque_region.contains(EnclosingIntRect(chunk.bounds)))
     chunk.known_to_be_opaque = true;
+
+  if (items.begin() != items.end()) {
+    chunk.safe_opaque_background_color =
+        DisplayItemBackgroundColor(*items.begin());
+  }
 }
 
 // For PaintArtifact::AppendDebugDrawing().

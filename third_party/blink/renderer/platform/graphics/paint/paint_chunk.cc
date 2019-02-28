@@ -10,14 +10,15 @@
 namespace blink {
 
 struct SameSizeAsPaintChunk {
-  size_t begin;
-  size_t end;
+  size_t begin_index;
+  size_t end_index;
   PaintChunk::Id id;
   PropertyTreeState properties;
-  unsigned bools;
-  float extend;
   FloatRect bounds;
-  void* pointers[1];
+  float outset_for_raster_effects;
+  SkColor safe_opaque_background_color;
+  unsigned bools;  // known_to_be_opaque, is_cacheable, client_is_just_created
+  void* pointers[1];  // hit_test_data
 };
 
 static_assert(sizeof(PaintChunk) == sizeof(SameSizeAsPaintChunk),
