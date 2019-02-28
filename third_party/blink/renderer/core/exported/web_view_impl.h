@@ -109,7 +109,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   static bool UseExternalPopupMenus();
 
   // WebView methods:
-  void SetWebWidgetClient(WebWidgetClient*) override;
+  void DidAttachLocalMainFrame(WebWidgetClient*) override;
+  void DidAttachRemoteMainFrame(WebWidgetClient*) override;
   void SetPrerendererClient(WebPrerendererClient*) override;
   WebSettings* GetSettings() override;
   WebString PageEncoding() const override;
@@ -238,8 +239,11 @@ class CORE_EXPORT WebViewImpl final : public WebView,
     return dev_tools_emulator_.Get();
   }
 
-  // Returns the main frame associated with this view. This may be null when
-  // the page is shutting down, but will be valid at all other times.
+  // Returns the main frame associated with this view. This will be null when
+  // the main frame is remote.
+  // Internally during startup/shutdown this can be null when no main frame
+  // (local or remote) is attached, but this should not generally matter to code
+  // outside this class.
   WebLocalFrameImpl* MainFrameImpl() const;
 
   // Event related methods:
@@ -501,7 +505,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void DoComposite();
   void ReallocateRenderer();
   void UpdateLayerTreeViewPageScale();
-  void UpdateLayerTreeBackgroundColor();
   void UpdateDeviceEmulationTransform();
 
   // Helper function: Widens the width of |source| by the specified margins

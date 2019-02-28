@@ -978,10 +978,6 @@ void WebFrameWidgetImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view,
   // be moved from WebViewImpl into WebFrameWidget and used for all local
   // frame roots. https://crbug.com/712794
   layer_tree_view_->HeuristicsForGpuRasterizationUpdated(true);
-
-  // WebFrameWidgetImpl is used for child frames, which always have a
-  // transparent background color.
-  layer_tree_view_->SetBackgroundColor(SK_ColorTRANSPARENT);
 }
 
 void WebFrameWidgetImpl::SetIsAcceleratedCompositingActive(bool active) {
@@ -1016,6 +1012,10 @@ void WebFrameWidgetImpl::SetRootGraphicsLayer(GraphicsLayer* layer) {
   if (!layer_tree_view_)
     return;
 
+  // WebFrameWidgetImpl is used for child frames, which always have a
+  // transparent background color.
+  Client()->SetBackgroundColor(SK_ColorTRANSPARENT);
+
   // TODO(danakj): SetIsAcceleratedCompositingActive() also sets the root layer
   // if it's not null..
   Client()->SetRootLayer(root_layer_);
@@ -1029,6 +1029,10 @@ void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   // TODO(danakj): Is this called after Close?? (With a null layer?)
   if (!layer_tree_view_)
     return;
+
+  // WebFrameWidgetImpl is used for child frames, which always have a
+  // transparent background color.
+  Client()->SetBackgroundColor(SK_ColorTRANSPARENT);
 
   // TODO(danakj): SetIsAcceleratedCompositingActive() also sets the root layer
   // if it's not null..

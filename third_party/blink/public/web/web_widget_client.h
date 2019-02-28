@@ -85,6 +85,11 @@ class WebWidgetClient {
   virtual void SetShowScrollBottleneckRects(bool) {}
   virtual void SetShowHitTestBorders(bool) {}
 
+  // Sets the background color to be filled in as gutter behind/around the
+  // painted content. Non-composited WebViews need not implement this, as they
+  // paint into another widget which has a background color of its own.
+  virtual void SetBackgroundColor(SkColor color) {}
+
   // A notification callback for when the intrinsic sizing of the
   // widget changed. This is only called for SVG within a remote frame.
   virtual void IntrinsicSizingInfoChanged(const WebIntrinsicSizingInfo&) {}

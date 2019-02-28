@@ -94,12 +94,26 @@ class WebView {
                                       bool compositing_enabled,
                                       WebView* opener);
 
-  // Called on WebView when a WebFrameWidget is created for a local main frame,
-  // and can be set back to null when the WebWidgetClient is removed due to the
-  // main frame being detached.
-  // TODO(danakj): Move this to WebWidget and merge with SetLayerTreeView, have
-  // it be null/not set when the main frame is remote.
-  virtual void SetWebWidgetClient(WebWidgetClient*) = 0;
+  // Called to inform WebViewImpl that a local main frame has been attached.
+  // After this call MainFrameImpl() will return a valid frame until it is
+  // detached. It receives the WebWidgetClient* that provides input/compositing
+  // services for the attached main frame.
+  // This is only called for composited WebViews. Non-composited WebViews do not
+  // have a WebWidgetClient.
+  virtual void DidAttachLocalMainFrame(WebWidgetClient*) = 0;
+
+  // Called to inform WebViewImpl that it has an initial remote main frame. This
+  // is a hack to just get a WebWidgetClient to WebViewImpl since it expects to
+  // always have one at this time.
+  // This does *NOT* need to be called every time a remote main frame exists,
+  // but is meant to be called when WebViewImpl is initialized with a remote
+  // main frame, since it will not receive a WebWidgetClient otherwise.
+  // TODO(danakj): Remove this method when WebViewImpl does not need a
+  // WebWidgetClient without a local main frame. At that point it should
+  // also drop the WebWidgetClient when a local main frame is detached.
+  // This is only called for composited WebViews. Non-composited WebViews do not
+  // have a WebWidgetClient.
+  virtual void DidAttachRemoteMainFrame(WebWidgetClient*) = 0;
 
   // Initializes the various client interfaces.
   virtual void SetPrerendererClient(WebPrerendererClient*) = 0;
@@ -379,6 +393,8 @@ class WebView {
   // Overrides the page's background and base background color. You
   // can use this to enforce a transparent background, which is useful if you
   // want to have some custom background rendered behind the widget.
+  //
+  // These may are only called for composited WebViews.
   virtual void SetBackgroundColorOverride(SkColor) {}
   virtual void ClearBackgroundColorOverride() {}
   virtual void SetBaseBackgroundColorOverride(SkColor) {}

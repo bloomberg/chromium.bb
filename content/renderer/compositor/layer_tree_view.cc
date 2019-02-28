@@ -309,10 +309,6 @@ void LayerTreeView::SetNonBlinkManagedRootLayer(
   layer_tree_host_->SetNonBlinkManagedRootLayer(std::move(layer));
 }
 
-void LayerTreeView::SetBackgroundColor(SkColor color) {
-  layer_tree_host_->set_background_color(color);
-}
-
 void LayerTreeView::SetPageScaleFactorAndLimits(float page_scale_factor,
                                                 float minimum,
                                                 float maximum) {

@@ -133,7 +133,6 @@ class LayerTreeView : public blink::WebLayerTreeView,
   // blink::WebLayerTreeView implementation.
   viz::FrameSinkId GetFrameSinkId() override;
   void SetNonBlinkManagedRootLayer(scoped_refptr<cc::Layer> layer);
-  void SetBackgroundColor(SkColor color) override;
   void SetPageScaleFactorAndLimits(float page_scale_factor,
                                    float minimum,
                                    float maximum) override;

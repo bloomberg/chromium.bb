@@ -330,21 +330,9 @@ WebViewImpl::~WebViewImpl() {
   DCHECK(!AsView().page);
 }
 
-void WebViewImpl::SetWebWidgetClient(WebWidgetClient* client) {
-  AsWidget().client = client;
-}
-
 WebDevToolsAgentImpl* WebViewImpl::MainFrameDevToolsAgentImpl() {
   WebLocalFrameImpl* main_frame = MainFrameImpl();
   return main_frame ? main_frame->DevToolsAgentImpl() : nullptr;
-}
-
-WebLocalFrameImpl* WebViewImpl::MainFrameImpl() const {
-  Page* page = AsView().page.Get();
-  if (!page || !IsA<LocalFrame>(page->MainFrame()))
-    return nullptr;
-
-  return WebLocalFrameImpl::FromFrame(page->DeprecatedLocalMainFrame());
 }
 
 bool WebViewImpl::TabKeyCyclesThroughElements() const {
@@ -1566,7 +1554,9 @@ void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update,
   if (requested_update == LifecycleUpdate::kLayout)
     return;
 
-  UpdateLayerTreeBackgroundColor();
+  // There is no background color for non-composited WebViews (eg printing).
+  if (does_composite_)
+    AsWidget().client->SetBackgroundColor(BackgroundColor());
 
   if (requested_update == LifecycleUpdate::kPrePaint)
     return;
@@ -1974,6 +1964,28 @@ WebString WebViewImpl::PageEncoding() const {
 WebFrame* WebViewImpl::MainFrame() {
   Page* page = AsView().page.Get();
   return WebFrame::FromFrame(page ? page->MainFrame() : nullptr);
+}
+
+WebLocalFrameImpl* WebViewImpl::MainFrameImpl() const {
+  Page* page = AsView().page.Get();
+  if (!page)
+    return nullptr;
+  return WebLocalFrameImpl::FromFrame(DynamicTo<LocalFrame>(page->MainFrame()));
+}
+
+void WebViewImpl::DidAttachLocalMainFrame(WebWidgetClient* client) {
+  DCHECK(does_composite_);
+  DCHECK(MainFrameImpl());
+
+  AsWidget().client = client;
+  // When attaching a local main frame, set up any state on the compositor.
+  AsWidget().client->SetBackgroundColor(BackgroundColor());
+}
+
+void WebViewImpl::DidAttachRemoteMainFrame(WebWidgetClient* client) {
+  DCHECK(does_composite_);
+  DCHECK(!MainFrameImpl());
+  AsWidget().client = client;
 }
 
 WebLocalFrame* WebViewImpl::FocusedFrame() {
@@ -3048,14 +3060,20 @@ void WebViewImpl::MainFrameScrollOffsetChanged() {
 }
 
 void WebViewImpl::SetBackgroundColorOverride(SkColor color) {
+  DCHECK(does_composite_);
+
   background_color_override_enabled_ = true;
   background_color_override_ = color;
-  UpdateLayerTreeBackgroundColor();
+  if (MainFrameImpl())
+    AsWidget().client->SetBackgroundColor(BackgroundColor());
 }
 
 void WebViewImpl::ClearBackgroundColorOverride() {
+  DCHECK(does_composite_);
+
   background_color_override_enabled_ = false;
-  UpdateLayerTreeBackgroundColor();
+  if (MainFrameImpl())
+    AsWidget().client->SetBackgroundColor(BackgroundColor());
 }
 
 void WebViewImpl::SetZoomFactorOverride(float zoom_factor) {
@@ -3363,12 +3381,6 @@ void WebViewImpl::UpdateLayerTreeViewPageScale() {
 
   layer_tree_view_->SetPageScaleFactorAndLimits(
       PageScaleFactor(), MinimumPageScaleFactor(), MaximumPageScaleFactor());
-}
-
-void WebViewImpl::UpdateLayerTreeBackgroundColor() {
-  if (!layer_tree_view_)
-    return;
-  layer_tree_view_->SetBackgroundColor(BackgroundColor());
 }
 
 void WebViewImpl::UpdateDeviceEmulationTransform() {

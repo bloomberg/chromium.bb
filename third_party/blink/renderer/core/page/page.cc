@@ -276,7 +276,7 @@ void Page::SetMainFrame(Frame* main_frame) {
   // FIXME: Unfortunately we can't assert on this at the moment, because this
   // is called in the base constructor for both LocalFrame and RemoteFrame,
   // when the vtables for the derived classes have not yet been setup. Once this
-  // is fixed, also call  page_scheduler_->SetIsMainFrameLocal() from here
+  // is fixed, also call page_scheduler_->SetIsMainFrameLocal(true) from here
   // instead of from the callers of this method.
   main_frame_ = main_frame;
 }

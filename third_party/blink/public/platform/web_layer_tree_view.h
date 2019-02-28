@@ -75,9 +75,6 @@ class WebLayerTreeView {
 
   // View properties ---------------------------------------------------
 
-  // Sets the background color for the viewport.
-  virtual void SetBackgroundColor(SkColor) {}
-
   // Sets the current page scale factor and minimum / maximum limits. Both
   // limits are initially 1 (no page scale allowed).
   virtual void SetPageScaleFactorAndLimits(float page_scale_factor,

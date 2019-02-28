@@ -36,11 +36,8 @@ void SimCompositor::SetWebView(
     frame_test_helpers::TestWebWidgetClient& widget_client) {
   web_view_ = &web_view;
   layer_tree_view_ = &layer_tree_view;
-  DCHECK_EQ(&layer_tree_view, web_view_->LayerTreeView());
   test_web_view_client_ = &view_client;
-  DCHECK_EQ(test_web_view_client_, web_view_->Client());
   test_web_widget_client_ = &widget_client;
-  DCHECK_EQ(test_web_widget_client_, web_view_->WidgetClient());
 
   // SimCompositor starts with defer commits enabled, but uses synchronous
   // compositing which does not use defer commits anyhow, it only uses it for

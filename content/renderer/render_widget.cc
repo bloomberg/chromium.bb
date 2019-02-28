@@ -1238,6 +1238,10 @@ void RenderWidget::SetShowHitTestBorders(bool show) {
   host->SetDebugState(debug_state);
 }
 
+void RenderWidget::SetBackgroundColor(SkColor color) {
+  layer_tree_view_->layer_tree_host()->set_background_color(color);
+}
+
 void RenderWidget::UpdateVisualState() {
   if (!GetWebWidget())
     return;
