@@ -282,6 +282,9 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   void ElementSizeChangedTimerFired(TimerBase*);
 
+  // Update any visible indicators of the current time.
+  void UpdateTimeIndicators();
+
   // Hide elements that don't fit, and show those things that we want which
   // do fit.  This requires that m_effectiveWidth and m_effectiveHeight are
   // current.
@@ -338,6 +341,8 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void OnPlay();
   void OnPlaying();
   void OnPause();
+  void OnSeeking();
+  void OnSeeked();
   void OnTextTracksAddedOrRemoved();
   void OnTextTracksChanged();
   void OnError();
