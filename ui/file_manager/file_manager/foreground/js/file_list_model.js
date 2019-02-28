@@ -127,22 +127,22 @@ class FileListModel extends cr.ui.ArrayDataModel {
    * @override
    */
   splice(index, deleteCount, var_args) {
-    var insertPos = Math.max(0, Math.min(index, this.indexes_.length));
+    const insertPos = Math.max(0, Math.min(index, this.indexes_.length));
     deleteCount = Math.min(deleteCount, this.indexes_.length - insertPos);
 
-    for (var i = insertPos; i < insertPos + deleteCount; i++) {
+    for (let i = insertPos; i < insertPos + deleteCount; i++) {
       this.onRemoveEntryFromList_(this.array_[this.indexes_[i]]);
     }
-    for (var i = 2; i < arguments.length; i++) {
+    for (let i = 2; i < arguments.length; i++) {
       this.onAddEntryToList_(arguments[i]);
     }
 
     // Prepare a comparison function to sort the list.
-    var comp = null;
+    let comp = null;
     if (this.sortStatus.field && this.compareFunctions_) {
-      var compareFunction = this.compareFunctions_[this.sortStatus.field];
+      const compareFunction = this.compareFunctions_[this.sortStatus.field];
       if (compareFunction) {
-        var dirMultiplier = this.sortStatus.direction === 'desc' ? -1 : 1;
+        const dirMultiplier = this.sortStatus.direction === 'desc' ? -1 : 1;
         comp = function(a, b) {
           return compareFunction(a, b) * dirMultiplier;
         };
@@ -151,8 +151,8 @@ class FileListModel extends cr.ui.ArrayDataModel {
 
     // Store the given new items in |newItems| and sort it before marge them to
     // the existing list.
-    var newItems = [];
-    for (var i = 0; i < arguments.length - 2; i++) {
+    const newItems = [];
+    for (let i = 0; i < arguments.length - 2; i++) {
       newItems.push(arguments[i + 2]);
     }
     if (comp) {
@@ -161,10 +161,10 @@ class FileListModel extends cr.ui.ArrayDataModel {
 
     // Creating a list of existing items.
     // This doesn't include items which should be deleted by this splice() call.
-    var deletedItems = [];
-    var currentItems = [];
-    for (var i = 0; i < this.indexes_.length; i++) {
-      var item = this.array_[this.indexes_[i]];
+    const deletedItems = [];
+    const currentItems = [];
+    for (let i = 0; i < this.indexes_.length; i++) {
+      const item = this.array_[this.indexes_[i]];
       if (insertPos <= i && i < insertPos + deleteCount) {
         deletedItems.push(item);
       } else {
@@ -174,23 +174,23 @@ class FileListModel extends cr.ui.ArrayDataModel {
 
     // Initialize splice permutation with -1s.
     // Values of undeleted items will be filled in following merge step.
-    var permutation = new Array(this.indexes_.length);
-    for (var i = 0; i < permutation.length; i++) {
+    const permutation = new Array(this.indexes_.length);
+    for (let i = 0; i < permutation.length; i++) {
       permutation[i] = -1;
     }
 
     // Merge the list of existing item and the list of new items.
     this.indexes_ = [];
     this.array_ = [];
-    var p = 0;
-    var q = 0;
+    let p = 0;
+    let q = 0;
     while (p < currentItems.length || q < newItems.length) {
-      var currentIndex = p + q;
+      const currentIndex = p + q;
       this.indexes_.push(currentIndex);
       // Determine which should be inserted to the resulting list earlier, the
       // smallest item of unused current items or the smallest item of unused
       // new items.
-      var shouldPushCurrentItem;
+      let shouldPushCurrentItem;
       if (q === newItems.length) {
         shouldPushCurrentItem = true;
       } else if (p === currentItems.length) {
@@ -223,9 +223,9 @@ class FileListModel extends cr.ui.ArrayDataModel {
     // If no item is inserted, it is simply the insertion/deletion position.
     // If at least one item is inserted, it should be the resulting index of the
     // item which is inserted first.
-    var spliceIndex = insertPos;
+    let spliceIndex = insertPos;
     if (arguments.length > 2) {
-      for (var i = 0; i < this.indexes_.length; i++) {
+      for (let i = 0; i < this.indexes_.length; i++) {
         if (this.array_[this.indexes_[i]] === arguments[2]) {
           spliceIndex = i;
           break;
@@ -236,7 +236,7 @@ class FileListModel extends cr.ui.ArrayDataModel {
     // Dispatch permute/splice event.
     this.dispatchPermutedEvent_(permutation);
     // TODO(arv): Maybe unify splice and change events?
-    var spliceEvent = new Event('splice');
+    const spliceEvent = new Event('splice');
     spliceEvent.removed = deletedItems;
     spliceEvent.added = Array.prototype.slice.call(arguments, 2);
     spliceEvent.index = spliceIndex;
@@ -300,7 +300,7 @@ class FileListModel extends cr.ui.ArrayDataModel {
       this.numFiles_++;
     }
 
-    var mimeType = this.metadataModel_.getCache([entry], ['contentMimeType'])[0]
+    const mimeType = this.metadataModel_.getCache([entry], ['contentMimeType'])[0]
                        .contentMimeType;
     if (FileType.isImage(entry, mimeType) || FileType.isRaw(entry, mimeType)) {
       this.numImageFiles_++;
@@ -319,7 +319,7 @@ class FileListModel extends cr.ui.ArrayDataModel {
       this.numFiles_--;
     }
 
-    var mimeType = this.metadataModel_.getCache([entry], ['contentMimeType'])[0]
+    const mimeType = this.metadataModel_.getCache([entry], ['contentMimeType'])[0]
                        .contentMimeType;
     if (FileType.isImage(entry, mimeType) || FileType.isRaw(entry, mimeType)) {
       this.numImageFiles_--;
@@ -376,10 +376,10 @@ class FileListModel extends cr.ui.ArrayDataModel {
       return a.isDirectory === this.isDescendingOrder_ ? 1 : -1;
     }
 
-    var properties = this.metadataModel_.getCache(
+    const properties = this.metadataModel_.getCache(
         [a, b], ['modificationTime', 'modificationByMeTime']);
-    var aTime = this.getMtime_(properties[0]);
-    var bTime = this.getMtime_(properties[1]);
+    const aTime = this.getMtime_(properties[0]);
+    const bTime = this.getMtime_(properties[1]);
 
     if (aTime > bTime) {
       return 1;
@@ -421,9 +421,9 @@ class FileListModel extends cr.ui.ArrayDataModel {
       return a.isDirectory === this.isDescendingOrder_ ? 1 : -1;
     }
 
-    var properties = this.metadataModel_.getCache([a, b], ['size']);
-    var aSize = properties[0].size || 0;
-    var bSize = properties[1].size || 0;
+    const properties = this.metadataModel_.getCache([a, b], ['size']);
+    const aSize = properties[0].size || 0;
+    const bSize = properties[1].size || 0;
 
     return aSize !== bSize ? aSize - bSize : util.compareName(a, b);
   }
@@ -441,13 +441,13 @@ class FileListModel extends cr.ui.ArrayDataModel {
       return a.isDirectory === this.isDescendingOrder_ ? 1 : -1;
     }
 
-    var properties = this.metadataModel_.getCache([a, b], ['contentMimeType']);
-    var aType = FileListModel.getFileTypeString(
+    const properties = this.metadataModel_.getCache([a, b], ['contentMimeType']);
+    const aType = FileListModel.getFileTypeString(
         FileType.getType(a, properties[0].contentMimeType));
-    var bType = FileListModel.getFileTypeString(
+    const bType = FileListModel.getFileTypeString(
         FileType.getType(b, properties[1].contentMimeType));
 
-    var result = util.collator.compare(aType, bType);
+    const result = util.collator.compare(aType, bType);
     return result !== 0 ? result : util.compareName(a, b);
   }
 

@@ -78,7 +78,7 @@ function NamingController(
  */
 NamingController.prototype.validateFileName = function(
     parentEntry, name, onDone) {
-  var fileNameErrorPromise = util.validateFileName(
+  const fileNameErrorPromise = util.validateFileName(
       parentEntry, name, !this.fileFilter_.isHiddenFilesVisible());
   fileNameErrorPromise.then(onDone.bind(null, true), function(message) {
     this.alertDialog_.show(message, onDone.bind(null, false));
@@ -92,10 +92,10 @@ NamingController.prototype.validateFileName = function(
  * @return {Promise<string>}
  */
 NamingController.prototype.validateFileNameForSaving = function(filename) {
-  var directory = /** @type {DirectoryEntry} */ (
+  const directory = /** @type {DirectoryEntry} */ (
       this.directoryModel_.getCurrentDirEntry());
-  var currentDirUrl = directory.toURL().replace(/\/?$/, '/');
-  var fileUrl = currentDirUrl + encodeURIComponent(filename);
+  const currentDirUrl = directory.toURL().replace(/\/?$/, '/');
+  const fileUrl = currentDirUrl + encodeURIComponent(filename);
 
   return new Promise(this.validateFileName.bind(this, directory, filename))
       .then(function(isValid) {
@@ -151,13 +151,13 @@ NamingController.prototype.isRenamingInProgress = function() {
 };
 
 NamingController.prototype.initiateRename = function() {
-  var item = this.listContainer_.currentList.ensureLeadItemExists();
+  const item = this.listContainer_.currentList.ensureLeadItemExists();
   if (!item) {
     return;
   }
-  var label = item.querySelector('.filename-label');
-  var input = this.listContainer_.renameInput;
-  var currentEntry =
+  const label = item.querySelector('.filename-label');
+  const input = this.listContainer_.renameInput;
+  const currentEntry =
       this.listContainer_.currentList.dataModel.item(item.listIndex);
 
   input.value = label.textContent;
@@ -165,7 +165,7 @@ NamingController.prototype.initiateRename = function() {
   label.parentNode.appendChild(input);
   input.focus();
 
-  var selectionEnd = input.value.lastIndexOf('.');
+  const selectionEnd = input.value.lastIndexOf('.');
   if (currentEntry.isFile && selectionEnd !== -1) {
     input.selectionStart = 0;
     input.selectionEnd = selectionEnd;
@@ -192,19 +192,19 @@ NamingController.prototype.restoreItemBeingRenamed = function() {
     return;
   }
 
-  var dm = this.directoryModel_;
-  var leadIndex = dm.getFileListSelection().leadIndex;
+  const dm = this.directoryModel_;
+  const leadIndex = dm.getFileListSelection().leadIndex;
   if (leadIndex < 0) {
     return;
   }
 
-  var leadEntry = /** @type {Entry} */ (dm.getFileList().item(leadIndex));
+  const leadEntry = /** @type {Entry} */ (dm.getFileList().item(leadIndex));
   if (!util.isSameEntry(
           this.listContainer_.renameInput.currentEntry, leadEntry)) {
     return;
   }
 
-  var leadListItem = this.listContainer_.findListItemForNode(
+  const leadListItem = this.listContainer_.findListItemForNode(
       this.listContainer_.renameInput);
   if (this.listContainer_.currentListType == ListContainer.ListType.DETAIL) {
     this.listContainer_.table.updateFileMetadata(leadListItem, leadEntry);
@@ -260,21 +260,21 @@ NamingController.prototype.onRenameInputBlur_ = function(event) {
  * @private
  */
 NamingController.prototype.commitRename_ = function() {
-  var input = this.listContainer_.renameInput;
-  var entry = input.currentEntry;
-  var newName = input.value;
+  const input = this.listContainer_.renameInput;
+  const entry = input.currentEntry;
+  const newName = input.value;
 
   if (!newName || newName == entry.name) {
     this.cancelRename_();
     return;
   }
 
-  var renamedItemElement = this.listContainer_.findListItemForNode(
+  const renamedItemElement = this.listContainer_.findListItemForNode(
       this.listContainer_.renameInput);
-  var nameNode = renamedItemElement.querySelector('.filename-label');
+  const nameNode = renamedItemElement.querySelector('.filename-label');
 
   input.validation_ = true;
-  var validationDone = function(valid) {
+  const validationDone = function(valid) {
     input.validation_ = false;
 
     if (!valid) {
@@ -322,7 +322,7 @@ NamingController.prototype.commitRename_ = function() {
           this.listContainer_.endBatchUpdates();
 
           // Show error dialog.
-          var message = util.getRenameErrorMessage(error, entry, newName);
+          const message = util.getRenameErrorMessage(error, entry, newName);
           this.alertDialog_.show(message);
         }.bind(this));
   }.bind(this);
@@ -342,13 +342,13 @@ NamingController.prototype.commitRename_ = function() {
 NamingController.prototype.cancelRename_ = function() {
   this.listContainer_.renameInput.currentEntry = null;
 
-  var item = this.listContainer_.findListItemForNode(
+  const item = this.listContainer_.findListItemForNode(
       this.listContainer_.renameInput);
   if (item) {
     item.removeAttribute('renaming');
   }
 
-  var parent = this.listContainer_.renameInput.parentNode;
+  const parent = this.listContainer_.renameInput.parentNode;
   if (parent) {
     parent.removeChild(this.listContainer_.renameInput);
   }

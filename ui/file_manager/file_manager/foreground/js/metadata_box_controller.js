@@ -100,8 +100,8 @@ MetadataBoxController.prototype.updateView_ = function() {
   if (!this.quickView_.metadataBoxActive) {
     return;
   }
-  var entry = this.quickViewModel_.getSelectedEntry();
-  var isSameEntry = util.isSameEntry(entry, this.previousEntry_);
+  const entry = this.quickViewModel_.getSelectedEntry();
+  const isSameEntry = util.isSameEntry(entry, this.previousEntry_);
   this.previousEntry_ = entry;
   // Do not clear isSizeLoading and size fields when the entry is not changed.
   this.metadataBox_.clear(isSameEntry);
@@ -127,8 +127,8 @@ MetadataBoxController.prototype.updateView_ = function() {
  */
 MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
     entry, isSameEntry, items) {
-  var type = FileType.getType(entry).type;
-  var item = items[0];
+  const type = FileType.getType(entry).type;
+  const item = items[0];
 
   this.metadataBox_.type = type;
   // For directory, item.size is always -1.
@@ -147,12 +147,12 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
 
   if (item.externalFileUrl || item.alternateUrl) {
     this.metadataModel_.get([entry], ['contentMimeType']).then(function(items) {
-      var item = items[0];
+      const item = items[0];
       this.metadataBox_.mediaMimeType = item.contentMimeType;
     }.bind(this));
   } else {
     this.metadataModel_.get([entry], ['mediaMimeType']).then(function(items) {
-      var item = items[0];
+      const item = items[0];
       this.metadataBox_.mediaMimeType = item.mediaMimeType;
     }.bind(this));
   }
@@ -161,7 +161,7 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
     if (item.externalFileUrl || item.alternateUrl) {
       this.metadataModel_.get([entry], ['imageHeight', 'imageWidth'])
           .then(function(items) {
-            var item = items[0];
+            const item = items[0];
             this.metadataBox_.imageHeight = item.imageHeight;
             this.metadataBox_.imageWidth = item.imageWidth;
           }.bind(this));
@@ -182,7 +182,7 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
                 'mediaYearRecorded',
               ])
           .then(function(items) {
-            var item = items[0];
+            const item = items[0];
             this.metadataBox_.ifd = item.ifd || null;
             this.metadataBox_.imageHeight = item.imageHeight || 0;
             this.metadataBox_.imageWidth = item.imageWidth || 0;

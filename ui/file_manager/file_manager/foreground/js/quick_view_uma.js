@@ -75,7 +75,7 @@ QuickViewUma.VolumeType = [
  * @private
  */
 QuickViewUma.prototype.exportFileType_ = function(entry, name) {
-  var extension = FileType.getExtension(entry).toLowerCase();
+  let extension = FileType.getExtension(entry).toLowerCase();
   if (entry.isDirectory) {
     extension = 'directory';
   } else if (extension === '') {
@@ -106,7 +106,7 @@ QuickViewUma.prototype.onOpened = function(entry, wayToOpen) {
   metrics.recordEnum(
       'QuickView.WayToOpen', wayToOpen, QuickViewUma.WayToOpenValues_);
 
-  var volumeType = this.volumeManager_.getVolumeInfo(entry).volumeType;
+  const volumeType = this.volumeManager_.getVolumeInfo(entry).volumeType;
   if (QuickViewUma.VolumeType.includes(volumeType)) {
     metrics.recordEnum(
         'QuickView.VolumeType', volumeType, QuickViewUma.VolumeType);

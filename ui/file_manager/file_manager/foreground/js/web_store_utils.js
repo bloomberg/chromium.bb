@@ -6,7 +6,7 @@
  * Namespace for web store utility functions.
  * @namespace
  */
-var webStoreUtils = {};
+const webStoreUtils = {};
 
 /**
  * Location of the Chrome Web Store.
@@ -44,7 +44,7 @@ webStoreUtils.createWebStoreLink = function(extension, mimeType) {
     console.warn('Please pass an extension with a dot to createWebStoreLink.');
   }
 
-  var url = webStoreUtils.WEB_STORE_HANDLER_BASE_URL;
+  let url = webStoreUtils.WEB_STORE_HANDLER_BASE_URL;
   url += '?_fe=' + extension.toLowerCase().replace(/[^\w]/g, '');
 
   // If a mime is given, add it into the URL.

@@ -539,9 +539,9 @@ FileManager.prototype = /** @struct */ {
     this.initFileList_();
     this.setupCurrentDirectory_();
 
-    var self = this;
+    const self = this;
 
-    var listBeingUpdated = null;
+    let listBeingUpdated = null;
     this.directoryModel_.addEventListener('begin-update-files', function() {
       self.ui_.listContainer.currentList.startBatchUpdates();
       // Remember the list which was used when updating files started, so
@@ -614,11 +614,11 @@ FileManager.prototype = /** @struct */ {
         this.ui_.listContainer.table, this.directoryModel_);
 
     this.quickViewModel_ = new QuickViewModel();
-    var fileListSelectionModel = /** @type {!cr.ui.ListSelectionModel} */ (
+    const fileListSelectionModel = /** @type {!cr.ui.ListSelectionModel} */ (
         this.directoryModel_.getFileListSelection());
     this.quickViewUma_ =
         new QuickViewUma(assert(this.volumeManager_), assert(this.dialogType));
-    var metadataBoxController = new MetadataBoxController(
+    const metadataBoxController = new MetadataBoxController(
         this.metadataModel_, this.quickViewModel_, this.fileMetadataFormatter_);
     this.quickViewController_ = new QuickViewController(
         assert(this.metadataModel_), assert(this.selectionHandler_),
@@ -710,12 +710,12 @@ FileManager.prototype = /** @struct */ {
         new CommandHandler(this, assert(this.selectionHandler_));
 
     // TODO(hirono): Move the following block to the UI part.
-    var commandButtons = this.dialogDom_.querySelectorAll('button[command]');
-    for (var j = 0; j < commandButtons.length; j++) {
+    const commandButtons = this.dialogDom_.querySelectorAll('button[command]');
+    for (let j = 0; j < commandButtons.length; j++) {
       CommandButton.decorate(commandButtons[j]);
     }
 
-    var inputs = this.getDomInputs_();
+    const inputs = this.getDomInputs_();
 
     for (let input of inputs) {
       this.setContextMenuForInput_(input);
@@ -744,7 +744,7 @@ FileManager.prototype = /** @struct */ {
    * @private
    */
   FileManager.prototype.setContextMenuForInput_ = function(input) {
-    var touchInduced = false;
+    let touchInduced = false;
 
     // stop contextmenu propagation for touch-induced events.
     input.addEventListener('touchstart', (e) => {
@@ -776,7 +776,7 @@ FileManager.prototype = /** @struct */ {
     CommandUtil.forceDefaultHandler(node, 'paste');
     CommandUtil.forceDefaultHandler(node, 'delete');
     node.addEventListener('keydown', function(e) {
-      var key = util.getKeyModifiers(e) + e.keyCode;
+      const key = util.getKeyModifiers(e) + e.keyCode;
       if (key === '190' /* '/' */ || key === '191' /* '.' */) {
         // If this key event is propagated, this is handled search command,
         // which calls 'preventDefault' method.
@@ -835,17 +835,17 @@ FileManager.prototype = /** @struct */ {
     // TODO(mtomasz): Unify window.appState with location.search format.
     console.warn('Files app starting up.');
     if (window.appState) {
-      var params = {};
-      for (var name in window.appState) {
+      const params = {};
+      for (let name in window.appState) {
         params[name] = window.appState[name];
       }
-      for (var name in window.appState.params) {
+      for (let name in window.appState.params) {
         params[name] = window.appState.params[name];
       }
       this.launchParams_ = new LaunchParam(params);
     } else {
       // Used by the select dialog only.
-      var json = location.search ?
+      const json = location.search ?
           JSON.parse(decodeURIComponent(location.search.substr(1))) : {};
       this.launchParams_ = new LaunchParam(json instanceof Object ? json : {});
     }
@@ -896,8 +896,8 @@ FileManager.prototype = /** @struct */ {
    * @private
    */
   FileManager.prototype.initVolumeManager_ = function() {
-    var allowedPaths = this.getAllowedPaths_();
-    var writableOnly =
+    const allowedPaths = this.getAllowedPaths_();
+    const writableOnly =
         this.launchParams_.type === DialogType.SELECT_SAVEAS_FILE;
 
     // FilteredVolumeManager hides virtual file system related event and data
@@ -959,17 +959,17 @@ FileManager.prototype = /** @struct */ {
     assert(this.dialogDom_);
 
     // Cache nodes we'll be manipulating.
-    var dom = this.dialogDom_;
+    const dom = this.dialogDom_;
     assert(dom);
 
-    var table = queryRequiredElement('.detail-table', dom);
+    const table = queryRequiredElement('.detail-table', dom);
     FileTable.decorate(
         table,
         this.metadataModel_,
         this.volumeManager_,
         this.historyLoader_,
         this.dialogType == DialogType.FULL_PAGE);
-    var grid = queryRequiredElement('.thumbnail-grid', dom);
+    const grid = queryRequiredElement('.thumbnail-grid', dom);
     FileGrid.decorate(
         grid,
         this.metadataModel_,
@@ -1064,7 +1064,7 @@ FileManager.prototype = /** @struct */ {
    * @private
    */
   FileManager.prototype.initFileList_ = function() {
-    var singleSelection =
+    const singleSelection =
         this.dialogType == DialogType.SELECT_OPEN_FILE ||
         this.dialogType == DialogType.SELECT_FOLDER ||
         this.dialogType == DialogType.SELECT_UPLOAD_FOLDER ||
@@ -1167,9 +1167,9 @@ FileManager.prototype = /** @struct */ {
    * @private
    */
   FileManager.prototype.initDirectoryTree_ = function() {
-    var directoryTree = /** @type {DirectoryTree} */
+    const directoryTree = /** @type {DirectoryTree} */
         (this.dialogDom_.querySelector('#directory-tree'));
-    var fakeEntriesVisible =
+    const fakeEntriesVisible =
         this.dialogType !== DialogType.SELECT_SAVEAS_FILE;
     this.navigationUma_ = new NavigationUma(assert(this.volumeManager_));
     DirectoryTree.decorate(directoryTree,
@@ -1518,11 +1518,11 @@ FileManager.prototype = /** @struct */ {
       this.volumeManager_.dispose();
     }
     if (this.fileTransferController_) {
-      for (var i = 0;
+      for (let i = 0;
            i < this.fileTransferController_.pendingTaskIds.length;
            i++) {
-        var taskId = this.fileTransferController_.pendingTaskIds[i];
-        var item =
+        const taskId = this.fileTransferController_.pendingTaskIds[i];
+        const item =
             this.fileBrowserBackground_.progressCenter.getItemById(taskId);
         item.message = '';
         item.state = ProgressItemState.CANCELED;
@@ -1543,7 +1543,7 @@ FileManager.prototype = /** @struct */ {
    * @returns {AllowedPaths}
    */
   FileManager.prototype.getAllowedPaths_ = function() {
-    var allowedPaths = this.launchParams_.allowedPaths;
+    let allowedPaths = this.launchParams_.allowedPaths;
     // The native implementation of the Files app creates snapshot files for
     // non-native files. But it does not work for folders (e.g., dialog for
     // loading unpacked extensions).
@@ -1566,7 +1566,7 @@ FileManager.prototype = /** @struct */ {
    * @returns {chrome.fileManagerPrivate.SourceRestriction}
    */
   FileManager.prototype.getSourceRestriction_ = function() {
-    var allowedPaths = this.getAllowedPaths_();
+    const allowedPaths = this.getAllowedPaths_();
     if (allowedPaths == AllowedPaths.NATIVE_PATH) {
       return chrome.fileManagerPrivate.SourceRestriction.NATIVE_SOURCE;
     }

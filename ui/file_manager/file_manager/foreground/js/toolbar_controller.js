@@ -108,10 +108,10 @@ function ToolbarController(toolbar,
       'relayout', this.onNavigationListRelayout_.bind(this));
 
   // Watch visibility of toolbar buttons to update the width of location line.
-  var observer = new MutationObserver(this.onToolbarButtonsMutated_.bind(this));
-  var toolbarButtons =
+  const observer = new MutationObserver(this.onToolbarButtonsMutated_.bind(this));
+  const toolbarButtons =
       this.toolbar_.querySelectorAll('.icon-button, .combobutton');
-  for (var i = 0; i < toolbarButtons.length; i++) {
+  for (let i = 0; i < toolbarButtons.length; i++) {
     observer.observe(toolbarButtons[i],
                      /** @type MutationObserverInit */({attributes: true}));
   }
@@ -122,10 +122,10 @@ function ToolbarController(toolbar,
  * @private
  */
 ToolbarController.prototype.onSelectionChanged_ = function() {
-  var selection = this.selectionHandler_.selection;
+  const selection = this.selectionHandler_.selection;
 
   // Update the label "x files selected." on the header.
-  var text;
+  let text;
   if (selection.totalCount === 0) {
     text = '';
   } else if (selection.totalCount === 1) {
@@ -160,7 +160,7 @@ ToolbarController.prototype.onSelectionChanged_ = function() {
   // controller which controls whole app window. Or, both toolbar and FileGrid
   // should listen to the FileSelectionHandler.
   if (this.directoryModel_.getFileListSelection().multiple) {
-    var bodyClassList = this.filesSelectedLabel_.ownerDocument.body.classList;
+    const bodyClassList = this.filesSelectedLabel_.ownerDocument.body.classList;
     bodyClassList.toggle('selecting', selection.totalCount > 0);
     if (bodyClassList.contains('check-select') !=
         /** @type {!FileListSelectionModel} */
@@ -197,7 +197,7 @@ ToolbarController.prototype.onDeleteButtonClicked_ = function() {
  */
 ToolbarController.prototype.onNavigationListRelayout_ = function() {
   // Make the width of spacer same as the width of navigation list.
-  var navWidth = parseFloat(
+  const navWidth = parseFloat(
       window.getComputedStyle(this.navigationList_).width);
   this.cancelSelectionButtonWrapper_.style.width = navWidth + 'px';
 };

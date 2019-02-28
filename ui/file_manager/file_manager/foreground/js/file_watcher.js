@@ -39,8 +39,8 @@ FileWatcher.prototype.dispose = function() {
  * @private
  */
 FileWatcher.prototype.onDirectoryChanged_ = function(event) {
-  var fireWatcherDirectoryChanged = function(changedFiles) {
-    var e = new Event('watcher-directory-changed');
+  const fireWatcherDirectoryChanged = function(changedFiles) {
+    const e = new Event('watcher-directory-changed');
 
     if (changedFiles) {
       e.changedFiles = changedFiles;
@@ -50,8 +50,8 @@ FileWatcher.prototype.onDirectoryChanged_ = function(event) {
   }.bind(this);
 
   if (this.watchedDirectoryEntry_) {
-    var eventURL = event.entry.toURL();
-    var watchedDirURL = this.watchedDirectoryEntry_.toURL();
+    const eventURL = event.entry.toURL();
+    const watchedDirURL = this.watchedDirectoryEntry_.toURL();
 
     if (eventURL === watchedDirURL) {
       fireWatcherDirectoryChanged(event.changedFiles);
@@ -123,7 +123,7 @@ FileWatcher.prototype.resetWatchedEntry_ = function() {
  */
 FileWatcher.prototype.changeWatchedEntry_ = function(entry) {
   return new Promise(function(fulfill, reject) {
-    var setEntryClosure = function() {
+    const setEntryClosure = function() {
       // Run the tasks in the queue to avoid races.
       this.queue_.run(function(callback) {
         chrome.fileManagerPrivate.addFileWatch(

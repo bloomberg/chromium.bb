@@ -5,16 +5,16 @@
 /**
  * @type {Element}
  */
-var spinner;
+let spinner;
 
 /**
  * @type {SpinnerController}
  */
-var controller;
+let controller;
 
 function waitForMutation(target) {
   return new Promise(function(fulfill, reject) {
-    var observer = new MutationObserver(function(mutations) {
+    const observer = new MutationObserver(function(mutations) {
       observer.disconnect();
       fulfill();
     });
@@ -48,7 +48,7 @@ function testBlink(callback) {
 
 function testShow(callback) {
   assertTrue(spinner.hidden);
-  var hideCallback = controller.show();
+  const hideCallback = controller.show();
 
   return reportPromise(
     waitForMutation(spinner).then(function() {
@@ -69,7 +69,7 @@ function testShow(callback) {
 function testShowDuringBlink(callback) {
   assertTrue(spinner.hidden);
   controller.blink();
-  var hideCallback = controller.show();
+  const hideCallback = controller.show();
 
   return reportPromise(
     waitForMutation(spinner).then(function() {
@@ -94,7 +94,7 @@ function testShowDuringBlink(callback) {
 function testStackedShows(callback) {
   assertTrue(spinner.hidden);
 
-  var hideCallbacks = [];
+  const hideCallbacks = [];
   hideCallbacks.push(controller.show());
   hideCallbacks.push(controller.show());
 

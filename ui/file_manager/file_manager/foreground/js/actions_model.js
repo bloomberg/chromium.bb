@@ -36,7 +36,7 @@ Action.prototype.getTitle = function() {
  *  listContainer: ListContainer,
  * }}
  */
-var ActionModelUI;
+let ActionModelUI;
 
 /**
  * @param {!Entry} entry
@@ -200,11 +200,11 @@ DriveToggleOfflineAction.create = function(
     }
   }
 
-  var actionableEntries = entries.filter(function(entry) {
+  const actionableEntries = entries.filter(function(entry) {
     if (entry.isDirectory && !loadTimeData.getBoolean('DRIVE_FS_ENABLED')) {
       return false;
     }
-    var metadata = metadataModel.getCache(
+    const metadata = metadataModel.getCache(
         [entry], ['hosted', 'pinned'])[0];
     if (metadata.hosted) {
       return false;
@@ -227,15 +227,15 @@ DriveToggleOfflineAction.create = function(
  * @override
  */
 DriveToggleOfflineAction.prototype.execute = function() {
-  var entries = this.entries_;
+  const entries = this.entries_;
   if (entries.length == 0) {
     return;
   }
 
-  var currentEntry;
-  var error = false;
+  let currentEntry;
+  let error = false;
 
-  var steps = {
+  const steps = {
     // Pick an entry and pin it.
     start: function() {
       // Check if all the entries are pinned or not.
@@ -344,7 +344,7 @@ DriveCreateFolderShortcutAction.create = function(
   if (entries.length !== 1 || entries[0].isFile) {
     return null;
   }
-  var locationInfo = volumeManager.getLocationInfo(entries[0]);
+  const locationInfo = volumeManager.getLocationInfo(entries[0]);
   if (!locationInfo || locationInfo.isSpecialSearchRoot ||
       locationInfo.isRootEntry) {
     return null;
@@ -713,7 +713,7 @@ ActionsModel.prototype.initialize = function() {
     }
     this.initializePromiseReject_ = reject;
 
-    var volumeInfo = this.entries_.length >= 1 &&
+    const volumeInfo = this.entries_.length >= 1 &&
         this.volumeManager_.getVolumeInfo(this.entries_[0]);
     if (!volumeInfo) {
       fulfill({});
@@ -722,8 +722,8 @@ ActionsModel.prototype.initialize = function() {
     // All entries need to be on the same volume to execute ActionsModel
     // commands.
     // TODO(sashab): Move this to util.js.
-    for (var i = 1; i < this.entries_.length; i++) {
-      var volumeInfoToCompare =
+    for (let i = 1; i < this.entries_.length; i++) {
+      const volumeInfoToCompare =
           this.volumeManager_.getVolumeInfo(this.entries_[i]);
       if (!volumeInfoToCompare ||
           volumeInfoToCompare.volumeId != volumeInfo.volumeId) {
@@ -732,17 +732,17 @@ ActionsModel.prototype.initialize = function() {
       }
     }
 
-    var actions = {};
+    const actions = {};
     switch (volumeInfo.volumeType) {
       // For Drive, actions are constructed directly in the Files app code.
       case VolumeManagerCommon.VolumeType.DRIVE:
-        var shareAction = DriveShareAction.create(
+        const shareAction = DriveShareAction.create(
             this.entries_, this.metadataModel_, this.volumeManager_, this.ui_);
         if (shareAction) {
           actions[ActionsModel.CommonActionId.SHARE] = shareAction;
         }
 
-        var saveForOfflineAction = DriveToggleOfflineAction.create(
+        const saveForOfflineAction = DriveToggleOfflineAction.create(
             this.entries_, this.metadataModel_, this.driveSyncHandler_,
             this.ui_, true, this.invalidate_.bind(this));
         if (saveForOfflineAction) {
@@ -750,7 +750,7 @@ ActionsModel.prototype.initialize = function() {
               saveForOfflineAction;
         }
 
-        var offlineNotNecessaryAction = DriveToggleOfflineAction.create(
+        const offlineNotNecessaryAction = DriveToggleOfflineAction.create(
             this.entries_, this.metadataModel_, this.driveSyncHandler_,
             this.ui_, false, this.invalidate_.bind(this));
         if (offlineNotNecessaryAction) {
@@ -758,7 +758,7 @@ ActionsModel.prototype.initialize = function() {
               offlineNotNecessaryAction;
         }
 
-        var createFolderShortcutAction =
+        const createFolderShortcutAction =
             DriveCreateFolderShortcutAction.create(this.entries_,
                 this.volumeManager_, this.shortcutsModel_,
                 this.invalidate_.bind(this));
@@ -767,7 +767,7 @@ ActionsModel.prototype.initialize = function() {
               createFolderShortcutAction;
         }
 
-        var removeFolderShortcutAction =
+        const removeFolderShortcutAction =
             DriveRemoveFolderShortcutAction.create(this.entries_,
                 this.shortcutsModel_, this.invalidate_.bind(this));
         if (removeFolderShortcutAction) {
@@ -775,7 +775,7 @@ ActionsModel.prototype.initialize = function() {
               removeFolderShortcutAction;
         }
 
-        var manageInDriveAction = DriveManageAction.create(
+        const manageInDriveAction = DriveManageAction.create(
             this.entries_, this.volumeManager_, this.ui_);
         if (manageInDriveAction) {
           actions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE] =
@@ -834,7 +834,7 @@ ActionsModel.prototype.getAction = function(id) {
 ActionsModel.prototype.destroy = function() {
   this.destroyed_ = true;
   if (this.initializePromiseReject_ !== null) {
-    var reject = this.initializePromiseReject_;
+    const reject = this.initializePromiseReject_;
     this.initializePromiseReject_ = null;
     reject();
   }
@@ -849,7 +849,7 @@ ActionsModel.prototype.destroy = function() {
  */
 ActionsModel.prototype.invalidate_ = function() {
   if (this.initializePromiseReject_ !== null) {
-    var reject = this.initializePromiseReject_;
+    const reject = this.initializePromiseReject_;
     this.initializePromiseReject_ = null;
     this.initializePromise_ = null;
     reject();

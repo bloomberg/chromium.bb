@@ -20,7 +20,7 @@
  */
 function ThumbnailLoader(entry, opt_loaderType, opt_metadata, opt_mediaType,
     opt_loadTargets, opt_priority) {
-  var loadTargets = opt_loadTargets || [
+  const loadTargets = opt_loadTargets || [
     ThumbnailLoader.LoadTarget.CONTENT_METADATA,
     ThumbnailLoader.LoadTarget.EXTERNAL_METADATA,
     ThumbnailLoader.LoadTarget.FILE_ENTRY
@@ -65,9 +65,9 @@ function ThumbnailLoader(entry, opt_loaderType, opt_metadata, opt_mediaType,
   if (opt_metadata.external && opt_metadata.external.customIconUrl) {
     this.fallbackUrl_ = opt_metadata.external.customIconUrl;
   }
-  var mimeType = opt_metadata && opt_metadata.contentMimeType;
+  const mimeType = opt_metadata && opt_metadata.contentMimeType;
 
-  for (var i = 0; i < loadTargets.length; i++) {
+  for (let i = 0; i < loadTargets.length; i++) {
     switch (loadTargets[i]) {
       case ThumbnailLoader.LoadTarget.CONTENT_METADATA:
         if (opt_metadata.thumbnail && opt_metadata.thumbnail.url) {
@@ -219,8 +219,8 @@ ThumbnailLoader.prototype.load = function(
   }
 
   // TODO(mtomasz): Smarter calculation of the requested size.
-  var wasAttached = box.ownerDocument.contains(box);
-  var modificationTime = this.metadata_ &&
+  const wasAttached = box.ownerDocument.contains(box);
+  const modificationTime = this.metadata_ &&
                          this.metadata_.filesystem &&
                          this.metadata_.filesystem.modificationTime &&
                          this.metadata_.filesystem.modificationTime.getTime();
@@ -260,7 +260,7 @@ ThumbnailLoader.prototype.loadAsDataUrl = function(fillMode) {
 
   return new Promise(function(resolve, reject) {
     // Load by using ImageLoaderClient.
-    var modificationTime = this.metadata_ &&
+    const modificationTime = this.metadata_ &&
                            this.metadata_.filesystem &&
                            this.metadata_.filesystem.modificationTime &&
                            this.metadata_.filesystem.modificationTime.getTime();
@@ -348,7 +348,7 @@ ThumbnailLoader.prototype.loadDetachedImage = function(callback) {
   this.image_.onerror = callback.bind(null, false);
 
   // TODO(mtomasz): Smarter calculation of the requested size.
-  var modificationTime = this.metadata_ &&
+  const modificationTime = this.metadata_ &&
                          this.metadata_.filesystem &&
                          this.metadata_.filesystem.modificationTime &&
                          this.metadata_.filesystem.modificationTime.getTime();
@@ -387,7 +387,7 @@ ThumbnailLoader.prototype.renderMedia_ = function() {
   if (!this.canvasUpToDate_) {
     this.canvas_.width = this.image_.width;
     this.canvas_.height = this.image_.height;
-    var context = this.canvas_.getContext('2d');
+    const context = this.canvas_.getContext('2d');
     context.drawImage(this.image_, 0, 0);
     this.canvasUpToDate_ = true;
   }
@@ -411,7 +411,7 @@ ThumbnailLoader.prototype.attachImage_ = function(
   }
 
   this.renderMedia_();
-  var attachableMedia = this.loaderType_ === ThumbnailLoader.LoaderType.CANVAS ?
+  const attachableMedia = this.loaderType_ === ThumbnailLoader.LoaderType.CANVAS ?
       this.canvas_ : this.image_;
 
   ThumbnailLoader.centerImage_(
@@ -456,13 +456,13 @@ ThumbnailLoader.prototype.getImage = function() {
  */
 ThumbnailLoader.centerImage_ = function(
     box, img, fillMode, autoFillThreshold, boxWidth, boxHeight) {
-  var imageWidth = img.width;
-  var imageHeight = img.height;
+  const imageWidth = img.width;
+  const imageHeight = img.height;
 
-  var fractionX;
-  var fractionY;
+  let fractionX;
+  let fractionY;
 
-  var fill;
+  let fill;
   switch (fillMode) {
     case ThumbnailLoader.FillMode.FILL:
     case ThumbnailLoader.FillMode.OVER_FILL:
@@ -472,13 +472,13 @@ ThumbnailLoader.centerImage_ = function(
       fill = false;
       break;
     case ThumbnailLoader.FillMode.AUTO:
-      var imageRatio = imageWidth / imageHeight;
-      var boxRatio = 1.0;
+      const imageRatio = imageWidth / imageHeight;
+      let boxRatio = 1.0;
       if (boxWidth && boxHeight) {
         boxRatio = boxWidth / boxHeight;
       }
       // Cropped area in percents.
-      var ratioFactor = boxRatio / imageRatio;
+      const ratioFactor = boxRatio / imageRatio;
       fill = (ratioFactor >= 1.0 - autoFillThreshold) &&
              (ratioFactor <= 1.0 + autoFillThreshold);
       break;
@@ -487,10 +487,10 @@ ThumbnailLoader.centerImage_ = function(
   if (boxWidth && boxHeight) {
     // When we know the box size we can position the image correctly even
     // in a non-square box.
-    var fitScaleX = boxWidth / imageWidth;
-    var fitScaleY = boxHeight / imageHeight;
+    const fitScaleX = boxWidth / imageWidth;
+    const fitScaleY = boxHeight / imageHeight;
 
-    var scale = fill ?
+    let scale = fill ?
         Math.max(fitScaleX, fitScaleY) :
         Math.min(fitScaleX, fitScaleY);
 

@@ -140,7 +140,7 @@ ProvidersModel.prototype.getInstalledProviders = function() {
         reject(chrome.runtime.lastError.message);
         return;
       }
-      var results = [];
+      const results = [];
       providers.forEach(function(provider) {
         results.push(new ProvidersModelItem(
             provider.providerId, provider.iconSet, provider.name,
@@ -157,9 +157,9 @@ ProvidersModel.prototype.getInstalledProviders = function() {
  */
 ProvidersModel.prototype.getMountableProviders = function() {
   return this.getInstalledProviders().then(function(providers) {
-    var mountedProviders = {};
-    for (var i = 0; i < this.volumeManager_.volumeInfoList.length; i++) {
-      var volumeInfo = this.volumeManager_.volumeInfoList.item(i);
+    const mountedProviders = {};
+    for (let i = 0; i < this.volumeManager_.volumeInfoList.length; i++) {
+      const volumeInfo = this.volumeManager_.volumeInfoList.item(i);
       if (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.PROVIDED) {
         mountedProviders[volumeInfo.providerId] = true;
       }

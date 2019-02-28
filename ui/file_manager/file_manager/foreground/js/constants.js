@@ -6,7 +6,7 @@
  * Namespace for common constnats used in Files app.
  * @namespace
  */
-var constants = {};
+const constants = {};
 
 /**
  * @const {!Array<string>}

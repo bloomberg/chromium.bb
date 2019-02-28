@@ -31,7 +31,7 @@ function LastModifiedController(fileTable, directoryModel) {
 LastModifiedController.prototype.onScanStarted_ = function() {
   // If the current directory is Recent root, request FileTable to use
   // modificationByMeTime instead of modificationTime in last modified column.
-  var useModificationByMeTime = this.directoryModel_.getCurrentRootType() ===
+  const useModificationByMeTime = this.directoryModel_.getCurrentRootType() ===
       VolumeManagerCommon.RootType.RECENT;
   this.fileTable_.setUseModificationByMeTime(useModificationByMeTime);
   this.directoryModel_.getFileList().setUseModificationByMeTime(

@@ -39,7 +39,7 @@ function SortMenuController(sortButton, toggleRipple, fileListModel) {
  */
 SortMenuController.prototype.updateCheckmark_ = function() {
   this.toggleRipple_.activated = true;
-  var sortField = this.fileListModel_.sortStatus.field;
+  const sortField = this.fileListModel_.sortStatus.field;
 
   this.setCheckStatus_(this.sortByNameButton_, sortField === 'name');
   this.setCheckStatus_(this.sortBySizeButton_, sortField === 'size');

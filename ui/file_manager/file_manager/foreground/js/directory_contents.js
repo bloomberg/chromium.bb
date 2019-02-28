@@ -59,8 +59,8 @@ class DirectoryContentScanner extends ContentScanner {
     }
 
     metrics.startInterval('DirectoryScan');
-    var reader = this.entry_.createReader();
-    var readEntries = function() {
+    const reader = this.entry_.createReader();
+    const readEntries = function() {
       reader.readEntries(function(entries) {
         if (this.cancelled_) {
           errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
@@ -215,7 +215,7 @@ class DriveMetadataSearchContentScanner extends ContentScanner {
             return;
           }
 
-          var entries = results.map(function(result) {
+          const entries = results.map(function(result) {
             return result.entry;
           });
           if (entries.length > 0) {
@@ -469,7 +469,7 @@ class FileFilter extends cr.EventTarget {
    * @return {boolean} True if the file should be shown, false otherwise.
    */
   filter(entry) {
-    for (var name in this.filters_) {
+    for (const name in this.filters_) {
       if (!this.filters_[name](entry)) {
         return false;
       }
@@ -527,18 +527,18 @@ class FileListContext {
    * @private
    */
   static createPrefetchPropertyNames_() {
-    var set = {};
-    for (var i = 0;
+    const set = {};
+    for (let i = 0;
          i < constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES.length;
          i++) {
       set[constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES[i]] = true;
     }
-    for (var i = 0;
+    for (let i = 0;
          i < constants.ACTIONS_MODEL_METADATA_PREFETCH_PROPERTY_NAMES.length;
          i++) {
       set[constants.ACTIONS_MODEL_METADATA_PREFETCH_PROPERTY_NAMES[i]] = true;
     }
-    for (var i = 0;
+    for (let i = 0;
          i < constants.FILE_SELECTION_METADATA_PREFETCH_PROPERTY_NAMES.length;
          i++) {
       set[constants.FILE_SELECTION_METADATA_PREFETCH_PROPERTY_NAMES[i]] = true;
@@ -621,11 +621,11 @@ class DirectoryContents extends cr.EventTarget {
    * @return {!Object} Metadata snapshot of current directory contents.
    */
   createMetadataSnapshot() {
-    var snapshot = {};
-    var entries = /** @type {!Array<!Entry>} */ (this.fileList_.slice());
-    var metadata =
+    const snapshot = {};
+    const entries = /** @type {!Array<!Entry>} */ (this.fileList_.slice());
+    const metadata =
         this.context_.metadataModel.getCache(entries, ['modificationTime']);
-    for (var i = 0; i < entries.length; i++) {
+    for (let i = 0; i < entries.length; i++) {
       snapshot[entries[i].toURL()] = metadata[i];
     }
     return snapshot;
@@ -651,22 +651,22 @@ class DirectoryContents extends cr.EventTarget {
       // items, splice of array data model is expensive since it always runs
       // sort and we replace the list in this way to reduce the number of splice
       // calls.
-      var spliceArgs = this.fileList_.slice();
-      var fileList = this.context_.fileList;
+      const spliceArgs = this.fileList_.slice();
+      const fileList = this.context_.fileList;
       spliceArgs.unshift(0, fileList.length);
       fileList.splice.apply(fileList, spliceArgs);
       this.fileList_ = fileList;
 
       // Check updated files and dispatch change events.
       if (this.metadataSnapshot_) {
-        var updatedIndexes = [];
-        var entries = /** @type {!Array<!Entry>} */ (this.fileList_.slice());
-        var newMetadatas =
+        const updatedIndexes = [];
+        const entries = /** @type {!Array<!Entry>} */ (this.fileList_.slice());
+        const newMetadatas =
             this.context_.metadataModel.getCache(entries, ['modificationTime']);
 
-        for (var i = 0; i < entries.length; i++) {
-          var url = entries[i].toURL();
-          var newMetadata = newMetadatas[i];
+        for (let i = 0; i < entries.length; i++) {
+          const url = entries[i].toURL();
+          const newMetadata = newMetadatas[i];
           // If the Files app fails to obtain both old and new modificationTime,
           // regard the entry as not updated.
           if ((this.metadataSnapshot_[url] &&
@@ -749,25 +749,25 @@ class DirectoryContents extends cr.EventTarget {
    * @param {Array<string>} removedUrls URLs of removed files.
    */
   update(updatedEntries, removedUrls) {
-    var removedMap = {};
-    for (var i = 0; i < removedUrls.length; i++) {
+    const removedMap = {};
+    for (let i = 0; i < removedUrls.length; i++) {
       removedMap[removedUrls[i]] = true;
     }
 
-    var updatedMap = {};
-    for (var i = 0; i < updatedEntries.length; i++) {
+    const updatedMap = {};
+    for (let i = 0; i < updatedEntries.length; i++) {
       updatedMap[updatedEntries[i].toURL()] = updatedEntries[i];
     }
 
-    var updatedList = [];
-    var updatedIndexes = [];
-    for (var i = 0; i < this.fileList_.length; i++) {
-      var url = this.fileList_.item(i).toURL();
+    const updatedList = [];
+    const updatedIndexes = [];
+    for (let i = 0; i < this.fileList_.length; i++) {
+      const url = this.fileList_.item(i).toURL();
 
       if (url in removedMap) {
         // Find the maximum range in which all items need to be removed.
-        var begin = i;
-        var end = i + 1;
+        const begin = i;
+        let end = i + 1;
         while (end < this.fileList_.length &&
                this.fileList_.item(end).toURL() in removedMap) {
           end++;
@@ -789,8 +789,8 @@ class DirectoryContents extends cr.EventTarget {
       this.fileList_.updateIndexes(updatedIndexes);
     }
 
-    var addedList = [];
-    for (var url in updatedMap) {
+    const addedList = [];
+    for (let url in updatedMap) {
       addedList.push(updatedMap[url]);
     }
 
@@ -865,7 +865,7 @@ class DirectoryContents extends cr.EventTarget {
       // Call callback first, so isScanning() returns false in the event
       // handlers.
       callback();
-      var event = new Event('scan-failed');
+      const event = new Event('scan-failed');
       event.error = error;
       this.dispatchEvent(event);
     }.bind(this));
@@ -896,19 +896,19 @@ class DirectoryContents extends cr.EventTarget {
     }
 
     // Enlarge the cache size into the new filelist size.
-    var newListSize = this.fileList_.length + entries.length;
+    const newListSize = this.fileList_.length + entries.length;
 
     this.processNewEntriesQueue_.run(function(callbackOuter) {
-      var finish = function() {
+      const finish = function() {
         if (!this.scanCancelled_) {
-          var entriesFiltered = [].filter.call(
+          let entriesFiltered = [].filter.call(
               entries,
               this.context_.fileFilter.filter.bind(this.context_.fileFilter));
 
           // Just before inserting entries into the file list, check and avoid
           // duplication.
-          var currentURLs = {};
-          for (var i = 0; i < this.fileList_.length; i++) {
+          const currentURLs = {};
+          for (let i = 0; i < this.fileList_.length; i++) {
             currentURLs[this.fileList_.item(i).toURL()] = true;
           }
           entriesFiltered = entriesFiltered.filter(function(entry) {
@@ -923,14 +923,14 @@ class DirectoryContents extends cr.EventTarget {
       // Because the prefetchMetadata can be slow, throttling by splitting
       // entries into smaller chunks to reduce UI latency.
       // TODO(hidehiko,mtomasz): This should be handled in MetadataCache.
-      var MAX_CHUNK_SIZE = 25;
-      var prefetchMetadataQueue = new AsyncUtil.ConcurrentQueue(4);
-      for (var i = 0; i < entries.length; i += MAX_CHUNK_SIZE) {
+      const MAX_CHUNK_SIZE = 25;
+      const prefetchMetadataQueue = new AsyncUtil.ConcurrentQueue(4);
+      for (let i = 0; i < entries.length; i += MAX_CHUNK_SIZE) {
         if (prefetchMetadataQueue.isCancelled()) {
           break;
         }
 
-        var chunk = entries.slice(i, i + MAX_CHUNK_SIZE);
+        const chunk = entries.slice(i, i + MAX_CHUNK_SIZE);
         prefetchMetadataQueue.run(function(chunk, callbackInner) {
           this.prefetchMetadata(chunk, refresh, function() {
             if (!prefetchMetadataQueue.isCancelled()) {

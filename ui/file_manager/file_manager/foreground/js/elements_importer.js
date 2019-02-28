@@ -7,9 +7,9 @@
  *   elements for file manager UI are loaded.
  */
 window.importElementsPromise = new Promise(function(resolve, reject) {
-  var startTime = Date.now();
+  const startTime = Date.now();
 
-  var link = document.createElement('link');
+  const link = document.createElement('link');
   link.rel = 'import';
   link.href = 'foreground/elements/elements_bundle.html';
   link.setAttribute('async', '');
