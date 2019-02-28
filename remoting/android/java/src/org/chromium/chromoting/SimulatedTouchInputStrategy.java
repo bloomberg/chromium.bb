@@ -137,12 +137,12 @@ public class SimulatedTouchInputStrategy implements InputStrategyInterface {
     }
 
     @Override
-    public RenderStub.InputFeedbackType getShortPressFeedbackType() {
+    public @RenderStub.InputFeedbackType int getShortPressFeedbackType() {
         return RenderStub.InputFeedbackType.SHORT_TOUCH_ANIMATION;
     }
 
     @Override
-    public RenderStub.InputFeedbackType getLongPressFeedbackType() {
+    public @RenderStub.InputFeedbackType int getLongPressFeedbackType() {
         return RenderStub.InputFeedbackType.LONG_TOUCH_ANIMATION;
     }
 

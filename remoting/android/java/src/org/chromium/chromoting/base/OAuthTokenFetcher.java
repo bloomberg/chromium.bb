@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.IntDef;
 
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
@@ -20,6 +21,8 @@ import org.chromium.base.task.TaskRunner;
 import org.chromium.base.task.TaskTraits;
 
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * This helper class fetches an OAuth token on a separate thread, and properly handles the various
@@ -43,18 +46,20 @@ public class OAuthTokenFetcher {
         /**
          * Called if an unrecoverable error prevents fetching a token.
          */
-        void onError(Error error);
+        void onError(@Error int error);
     }
 
     /** Error types that can be returned from the token-fetcher. */
-    public enum Error {
-        NETWORK,
-        UI,  // When a user-recoverable exception occurs and |mContext| is not an activity.
+    @IntDef({Error.NETWORK, Error.UI, Error.INTERRUPTED, Error.UNEXPECTED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Error {
+        int NETWORK = 0;
+        int UI = 1; // When a user-recoverable exception occurs and |mContext| is not an activity.
 
         // When a user-recoverable exception occurs and a new activity is launched prompting user
         // for input.
-        INTERRUPTED,
-        UNEXPECTED
+        int INTERRUPTED = 2;
+        int UNEXPECTED = 3;
     }
 
     /** Request code used for starting the OAuth recovery activity. */
@@ -129,7 +134,7 @@ public class OAuthTokenFetcher {
         });
     }
 
-    private void handleError(final Error error) {
+    private void handleError(final @Error int error) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {

@@ -45,16 +45,16 @@ public class JniOAuthTokenGetter {
                     }
 
                     @Override
-                    public void onError(Error error) {
+                    public void onError(@Error int error) {
                         Log.e(TAG, "Failed to fetch token. Error: ", error);
                         int status;
                         switch (error) {
-                            case NETWORK:
+                            case Error.NETWORK:
                                 status = OAuthTokenStatus.NETWORK_ERROR;
                                 break;
-                            case UI:
-                            case UNEXPECTED:
-                            case INTERRUPTED:
+                            case Error.UI:
+                            case Error.UNEXPECTED:
+                            case Error.INTERRUPTED:
                                 status = OAuthTokenStatus.AUTH_ERROR;
                                 break;
                             default:
@@ -82,7 +82,7 @@ public class JniOAuthTokenGetter {
                     }
 
                     @Override
-                    public void onError(Error error) {
+                    public void onError(@Error int error) {
                         Log.e(TAG, "Failed to clear token. Error: ", error);
                     }
                 })

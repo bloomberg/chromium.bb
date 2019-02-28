@@ -203,12 +203,12 @@ public class TouchInputStrategyTest {
         mInputInjector.assertEmpty();
 
         Assert.assertTrue(mInputStrategy.onPressAndHold(InputStub.BUTTON_LEFT));
-        mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_START,
-                TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX);
+        mInputInjector.assertTouchEventInjected(
+                TouchEventData.EventType.START, TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX);
 
         injectUpEvent(0);
         mInputInjector.assertTouchEventInjected(
-                TouchEventData.EventType.TOUCH_EVENT_END, TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX);
+                TouchEventData.EventType.END, TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX);
         mInputInjector.assertEmpty();
     }
 
@@ -220,18 +220,18 @@ public class TouchInputStrategyTest {
         mInputInjector.assertEmpty();
 
         Assert.assertTrue(mInputStrategy.onPressAndHold(InputStub.BUTTON_LEFT));
-        mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_START,
-                TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX);
+        mInputInjector.assertTouchEventInjected(
+                TouchEventData.EventType.START, TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX);
 
         final int panEventCount = 50;
         for (int i = 0; i <= panEventCount; i++) {
             injectMoveEvent(0, 0, i);
-            mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_MOVE);
+            mInputInjector.assertTouchEventInjected(TouchEventData.EventType.MOVE);
         }
 
         injectUpEvent(0);
-        mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_END,
-                TRANSLATE_OFFSET_PX, TRANSLATE_OFFSET_PX + panEventCount);
+        mInputInjector.assertTouchEventInjected(TouchEventData.EventType.END, TRANSLATE_OFFSET_PX,
+                TRANSLATE_OFFSET_PX + panEventCount);
         mInputInjector.assertEmpty();
     }
 
@@ -294,17 +294,17 @@ public class TouchInputStrategyTest {
         // Verify events are sent in realtime now.
         for (int i = eventNum; i < eventNum + 5; i++) {
             injectMoveEvent(0, fingerOnePosX, i);
-            mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_MOVE);
+            mInputInjector.assertTouchEventInjected(TouchEventData.EventType.MOVE);
 
             injectMoveEvent(1, fingerTwoPosX, i);
-            mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_MOVE);
+            mInputInjector.assertTouchEventInjected(TouchEventData.EventType.MOVE);
         }
 
         injectUpEvent(0);
-        mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_END);
+        mInputInjector.assertTouchEventInjected(TouchEventData.EventType.END);
 
         injectUpEvent(1);
-        mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_END);
+        mInputInjector.assertTouchEventInjected(TouchEventData.EventType.END);
         mInputInjector.assertEmpty();
     }
 
@@ -335,17 +335,17 @@ public class TouchInputStrategyTest {
         // Verify events are sent in realtime now.
         for (int i = eventNum; i < eventNum + 5; i++) {
             injectMoveEvent(0, i, fingerOnePosY);
-            mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_MOVE);
+            mInputInjector.assertTouchEventInjected(TouchEventData.EventType.MOVE);
 
             injectMoveEvent(1, i, fingerTwoPosY);
-            mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_MOVE);
+            mInputInjector.assertTouchEventInjected(TouchEventData.EventType.MOVE);
         }
 
         injectUpEvent(0);
-        mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_END);
+        mInputInjector.assertTouchEventInjected(TouchEventData.EventType.END);
 
         injectUpEvent(1);
-        mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_END);
+        mInputInjector.assertTouchEventInjected(TouchEventData.EventType.END);
         mInputInjector.assertEmpty();
     }
 
@@ -376,10 +376,10 @@ public class TouchInputStrategyTest {
         // Verify events are sent in realtime now.
         for (int i = eventNum; i < eventNum + 5; i++) {
             injectMoveEvent(0, fingerOnePosX, i);
-            mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_MOVE);
+            mInputInjector.assertTouchEventInjected(TouchEventData.EventType.MOVE);
 
             injectMoveEvent(1, fingerTwoPosX, i);
-            mInputInjector.assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_MOVE);
+            mInputInjector.assertTouchEventInjected(TouchEventData.EventType.MOVE);
         }
 
         // Once a third finger goes down, no more events should be sent.

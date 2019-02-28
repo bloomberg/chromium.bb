@@ -4,18 +4,25 @@
 
 package org.chromium.chromoting.help;
 
+import android.support.annotation.IntDef;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * Enumeration of contexts from which the user could request help in the application. The
  * HelpAndFeedback implementation is responsible for displaying an appropriate Help article for
  * each context.
  */
-public enum HelpContext {
-  // Help for the host-list screen.
-  HOST_LIST,
+@IntDef({HelpContext.HOST_LIST, HelpContext.HOST_SETUP, HelpContext.DESKTOP})
+@Retention(RetentionPolicy.SOURCE)
+public @interface HelpContext {
+    // Help for the host-list screen.
+    int HOST_LIST = 0;
 
-  // Help on setting up a new host.
-  HOST_SETUP,
+    // Help on setting up a new host.
+    int HOST_SETUP = 1;
 
-  // Help for the connected desktop screen, including touch gestures.
-  DESKTOP,
+    // Help for the connected desktop screen, including touch gestures.
+    int DESKTOP = 2;
 }

@@ -4,6 +4,11 @@
 
 package org.chromium.chromoting;
 
+import android.support.annotation.IntDef;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * A state machine to indicate user input actions. It stores the start action (tap or long tap),
  * finger count, detected action, etc.
@@ -21,40 +26,46 @@ public class InputState {
             }
         }
 
-        public void setStartAction(StartAction startAction) {
+        public void setStartAction(@StartAction int startAction) {
             Preconditions.isTrue(startAction != StartAction.UNDEFINED);
             mStartAction = startAction;
         }
 
-        public void setDetectedAction(DetectedAction detectedAction) {
+        public void setDetectedAction(@DetectedAction int detectedAction) {
             Preconditions.isTrue(detectedAction != DetectedAction.UNDEFINED);
             mDetectedAction = detectedAction;
         }
     }
 
-    public enum StartAction {
-        UNDEFINED,
+    @IntDef({StartAction.UNDEFINED, StartAction.LONG_PRESS})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface StartAction {
+        int UNDEFINED = 0;
         // The action started from a long press. Note, a tap won't need to impact InputState.
-        LONG_PRESS,
+        int LONG_PRESS = 1;
     }
 
-    public enum DetectedAction {
-        UNDEFINED,
-        SCROLL,
-        SCROLL_FLING,
+    @IntDef({DetectedAction.UNDEFINED, DetectedAction.SCROLL, DetectedAction.SCROLL_FLING,
+            DetectedAction.AFTER_SCROLL_FLING, DetectedAction.FLING, DetectedAction.SCALE,
+            DetectedAction.SWIPE, DetectedAction.MOVE, DetectedAction.SCROLL_EDGE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface DetectedAction {
+        int UNDEFINED = 0;
+        int SCROLL = 1;
+        int SCROLL_FLING = 2;
         // AFTER_SCROLL_FLING is a fake action to indicate the state after a scroll fling has been
         // performed.
-        AFTER_SCROLL_FLING,
-        FLING,
-        SCALE,
-        SWIPE,
-        MOVE,
-        SCROLL_EDGE,
+        int AFTER_SCROLL_FLING = 3;
+        int FLING = 4;
+        int SCALE = 5;
+        int SWIPE = 6;
+        int MOVE = 7;
+        int SCROLL_EDGE = 8;
     }
 
     protected int mFingerCount;
-    protected StartAction mStartAction;
-    protected DetectedAction mDetectedAction;
+    protected @StartAction int mStartAction;
+    protected @DetectedAction int mDetectedAction;
 
     public InputState() {
         mStartAction = StartAction.UNDEFINED;
@@ -66,11 +77,11 @@ public class InputState {
         return mFingerCount;
     }
 
-    public StartAction getStartAction() {
+    public @StartAction int getStartAction() {
         return mStartAction;
     }
 
-    public DetectedAction getDetectedAction() {
+    public @DetectedAction int getDetectedAction() {
         return mDetectedAction;
     }
 

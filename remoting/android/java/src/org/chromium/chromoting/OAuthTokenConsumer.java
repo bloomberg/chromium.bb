@@ -67,7 +67,7 @@ public class OAuthTokenConsumer {
             }
 
             @Override
-            public void onError(OAuthTokenFetcher.Error error) {
+            public void onError(@OAuthTokenFetcher.Error int error) {
                 mWaitingForAuthToken = false;
                 if (error != OAuthTokenFetcher.Error.INTERRUPTED) {
                     callback.onError(error);
@@ -119,8 +119,8 @@ public class OAuthTokenConsumer {
         });
     }
 
-    private void handleErrorOnMainThread(final OAuthTokenFetcher.Callback callback,
-                                         final OAuthTokenFetcher.Error error) {
+    private void handleErrorOnMainThread(
+            final OAuthTokenFetcher.Callback callback, final @OAuthTokenFetcher.Error int error) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
