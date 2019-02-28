@@ -2,36 +2,45 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_RENDERERS_FLINGING_RENDERER_CLIENT_FACTORY_H_
-#define MEDIA_RENDERERS_FLINGING_RENDERER_CLIENT_FACTORY_H_
+#ifndef CONTENT_RENDERER_MEDIA_ANDROID_FLINGING_RENDERER_CLIENT_FACTORY_H_
+#define CONTENT_RENDERER_MEDIA_ANDROID_FLINGING_RENDERER_CLIENT_FACTORY_H_
 
-#include "media/base/media_export.h"
+#include <memory>
+#include <string>
+
+#include "content/common/content_export.h"
 #include "media/base/renderer_factory.h"
 #include "media/renderers/remote_playback_client_wrapper.h"
 
 namespace media {
+class MojoRendererFactory;
+}
+
+namespace content {
 
 // Creates a renderer for media flinging.
 // The FRCF uses a MojoRendererFactory to create a FlingingRenderer in the
 // browser process. The actual renderer returned by the FRCF is a MojoRenderer
 // directly (as opposed to a dedicated FlingingRendererClient), because all the
 // renderer needs to do is forward calls to the FlingingRenderer in the browser.
-class MEDIA_EXPORT FlingingRendererClientFactory : public RendererFactory {
+class CONTENT_EXPORT FlingingRendererClientFactory
+    : public media::RendererFactory {
  public:
   // |mojo_flinging_factory| should be created using
   // HostedRendererType::kFlinging, and GetActivePresentationId()
   // should be given to it through SetGetTypeSpecificIdCB().
   FlingingRendererClientFactory(
-      std::unique_ptr<RendererFactory> mojo_flinging_factory,
-      std::unique_ptr<RemotePlaybackClientWrapper> remote_playback_client);
+      std::unique_ptr<media::MojoRendererFactory> mojo_renderer_factory,
+      std::unique_ptr<media::RemotePlaybackClientWrapper>
+          remote_playback_client);
   ~FlingingRendererClientFactory() override;
 
-  std::unique_ptr<Renderer> CreateRenderer(
+  std::unique_ptr<media::Renderer> CreateRenderer(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
-      AudioRendererSink* audio_renderer_sink,
-      VideoRendererSink* video_renderer_sink,
-      const RequestOverlayInfoCB& request_overlay_info_cb,
+      media::AudioRendererSink* audio_renderer_sink,
+      media::VideoRendererSink* video_renderer_sink,
+      const media::RequestOverlayInfoCB& request_overlay_info_cb,
       const gfx::ColorSpace& target_color_space) override;
 
   // Returns whether media flinging has started, based off of whether the
@@ -39,17 +48,15 @@ class MEDIA_EXPORT FlingingRendererClientFactory : public RendererFactory {
   // RendererFactorySelector to determine when to create a FlingingRenderer.
   bool IsFlingingActive();
 
-  // Used by the |mojo_flinging_factory_| to retrieve the latest presentation ID
-  // when CreateRenderer() is called.
+ private:
   std::string GetActivePresentationId();
 
- private:
-  std::unique_ptr<RendererFactory> mojo_flinging_factory_;
-  std::unique_ptr<RemotePlaybackClientWrapper> remote_playback_client_;
+  std::unique_ptr<media::MojoRendererFactory> mojo_flinging_factory_;
+  std::unique_ptr<media::RemotePlaybackClientWrapper> remote_playback_client_;
 
   DISALLOW_COPY_AND_ASSIGN(FlingingRendererClientFactory);
 };
 
-}  // namespace media
+}  // namespace content
 
-#endif  // MEDIA_RENDERERS_FLINGING_RENDERER_CLIENT_FACTORY_H_
+#endif  // CONTENT_RENDERER_MEDIA_ANDROID_FLINGING_RENDERER_CLIENT_FACTORY_H_

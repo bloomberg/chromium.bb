@@ -53,11 +53,11 @@
 #include "url/origin.h"
 
 #if defined(OS_ANDROID)
+#include "content/renderer/media/android/flinging_renderer_client_factory.h"
 #include "content/renderer/media/android/media_player_renderer_client_factory.h"
 #include "content/renderer/media/android/stream_texture_wrapper_impl.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/media.h"
-#include "media/renderers/flinging_renderer_client_factory.h"
 #include "url/gurl.h"
 #endif
 
@@ -432,7 +432,6 @@ MediaFactory::CreateRendererFactorySelector(
   // MediaPlayerRendererClientFactory setup.
   auto mojo_media_player_renderer_factory =
       std::make_unique<media::MojoRendererFactory>(
-          media::mojom::HostedRendererType::kMediaPlayer,
           media::MojoRendererFactory::GetGpuFactoriesCB(),
           GetMediaInterfaceFactory());
 
@@ -452,30 +451,16 @@ MediaFactory::CreateRendererFactorySelector(
 
   // FlingingRendererClientFactory (FRCF) setup.
   auto mojo_flinging_factory = std::make_unique<media::MojoRendererFactory>(
-      media::mojom::HostedRendererType::kFlinging,
       media::MojoRendererFactory::GetGpuFactoriesCB(),
       GetMediaInterfaceFactory());
 
-  // Save a temp copy of the pointer, before moving it into the FRCF.
-  // The FRCF cannot be aware of the MojoRendererFactory directly, due to
-  // layering issues.
-  media::MojoRendererFactory* temp_mojo_flinging_factory =
-      mojo_flinging_factory.get();
-
-  auto flinging_factory =
-      std::make_unique<media::FlingingRendererClientFactory>(
-          std::move(mojo_flinging_factory), std::move(client_wrapper));
-
-  // base::Unretained is safe here because the FRCF owns the MojoRendererFactory
-  // and is guaranteed to outlive it.
-  temp_mojo_flinging_factory->SetGetTypeSpecificIdCB(base::BindRepeating(
-      &media::FlingingRendererClientFactory::GetActivePresentationId,
-      base::Unretained(flinging_factory.get())));
+  auto flinging_factory = std::make_unique<FlingingRendererClientFactory>(
+      std::move(mojo_flinging_factory), std::move(client_wrapper));
 
   // base::Unretained is safe here because |factory_selector| owns
   // |flinging_factory|.
   factory_selector->SetQueryIsFlingingActiveCB(
-      base::Bind(&media::FlingingRendererClientFactory::IsFlingingActive,
+      base::Bind(&FlingingRendererClientFactory::IsFlingingActive,
                  base::Unretained(flinging_factory.get())));
 
   factory_selector->AddFactory(
@@ -494,7 +479,6 @@ MediaFactory::CreateRendererFactorySelector(
 #endif  // BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
   if (use_mojo_renderer_factory) {
     auto mojo_renderer_factory = std::make_unique<media::MojoRendererFactory>(
-        media::mojom::HostedRendererType::kDefault,
         base::Bind(&RenderThreadImpl::GetGpuFactories,
                    base::Unretained(render_thread)),
         GetMediaInterfaceFactory());
