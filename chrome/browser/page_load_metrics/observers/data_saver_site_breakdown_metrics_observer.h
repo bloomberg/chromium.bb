@@ -34,6 +34,8 @@ class DataSaverSiteBreakdownMetricsObserver
       FrameTreeNodeId frame_tree_node_id,
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources) override;
+  ObservePolicy ShouldObserveMimeType(
+      const std::string& mime_type) const override;
 
   std::string committed_host_;
 

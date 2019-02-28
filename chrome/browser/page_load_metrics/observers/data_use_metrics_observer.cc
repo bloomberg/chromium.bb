@@ -45,6 +45,15 @@ DataUseMetricsObserver::OnShown() {
   return CONTINUE_OBSERVING;
 }
 
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+DataUseMetricsObserver::ShouldObserveMimeType(
+    const std::string& mime_type) const {
+  // Observe all MIME types. We still only use actual data usage, so strange
+  // cases (e.g., data:// URLs) will still record the right amount of data
+  // usage.
+  return CONTINUE_OBSERVING;
+}
+
 void DataUseMetricsObserver::OnResourceDataUseObserved(
     FrameTreeNodeId frame_tree_node_id,
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&

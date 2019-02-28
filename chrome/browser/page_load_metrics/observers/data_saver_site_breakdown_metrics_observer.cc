@@ -84,3 +84,12 @@ void DataSaverSiteBreakdownMetricsObserver::OnResourceDataUseObserved(
     }
   }
 }
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+DataSaverSiteBreakdownMetricsObserver::ShouldObserveMimeType(
+    const std::string& mime_type) const {
+  // Observe all MIME types. We still only use actual data usage, so strange
+  // cases (e.g., data:// URLs) will still record the right amount of data
+  // usage.
+  return CONTINUE_OBSERVING;
+}

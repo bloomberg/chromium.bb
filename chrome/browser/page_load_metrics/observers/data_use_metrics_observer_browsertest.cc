@@ -13,8 +13,27 @@
 #include "content/public/test/browser_test_base.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+// Return a plaintext response.
+std::unique_ptr<net::test_server::HttpResponse>
+HandleResourceRequestWithPlaintextMimeType(
+    const net::test_server::HttpRequest& request) {
+  std::unique_ptr<net::test_server::BasicHttpResponse> response =
+      std::make_unique<net::test_server::BasicHttpResponse>();
+
+  response->set_code(net::HttpStatusCode::HTTP_OK);
+  response->set_content("Some non-HTML content.");
+  response->set_content_type("text/plain");
+
+  return response;
+}
+
+}  // namespace
 
 class DataUseMetricsObserverBrowserTest : public InProcessBrowserTest {
  protected:
@@ -88,4 +107,39 @@ IN_PROC_BROWSER_TEST_F(DataUseMetricsObserverBrowserTest, TestContentType) {
   // Verify that some bytes are recorded for the main frame html and image.
   EXPECT_LE(1, main_frame_html_data_use);
   EXPECT_LE(1, image_data_use);
+}
+
+IN_PROC_BROWSER_TEST_F(DataUseMetricsObserverBrowserTest, NavigateToPlaintext) {
+  std::unique_ptr<net::EmbeddedTestServer> plaintext_server =
+      std::make_unique<net::EmbeddedTestServer>(
+          net::EmbeddedTestServer::TYPE_HTTPS);
+  plaintext_server->RegisterRequestHandler(
+      base::BindRepeating(&HandleResourceRequestWithPlaintextMimeType));
+  ASSERT_TRUE(plaintext_server->Start());
+
+  base::HistogramTester histogram_tester;
+  GURL test_url(plaintext_server->GetURL("/page"));
+
+  ui_test_utils::NavigateToURL(browser(), test_url);
+  base::RunLoop().RunUntilIdle();
+
+  // Navigate away to force the histogram recording.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  uint64_t total_usage = 0, total_apptabstate_usage = 0;
+  for (const auto& sample : histogram_tester.GetAllSamples(
+           "DataUse.TrafficSize.User.Downstream.Foreground.NotCellular")) {
+    total_usage += sample.min * sample.count;
+  }
+  for (const auto& sample : histogram_tester.GetAllSamples(
+           "DataUse.AppTabState.Downstream.AppForeground.TabForeground")) {
+    total_apptabstate_usage += sample.min * sample.count;
+  }
+
+  // Choose reasonable minimums (10 is the content length).
+  EXPECT_LE(10u, total_usage);
+  EXPECT_LE(10u, total_apptabstate_usage);
+  // Choose reasonable maximums, 500 is the most we expect from headers.
+  EXPECT_GE(500u, total_usage);
+  EXPECT_GE(500u, total_apptabstate_usage);
 }
