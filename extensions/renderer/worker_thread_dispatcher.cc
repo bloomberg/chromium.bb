@@ -169,18 +169,26 @@ void WorkerThreadDispatcher::AddWorkerData(
 }
 
 void WorkerThreadDispatcher::DidStartContext(
+    const GURL& service_worker_scope,
     int64_t service_worker_version_id) {
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
   DCHECK_EQ(service_worker_version_id, data->service_worker_version_id());
+  const int thread_id = content::WorkerThread::GetCurrentId();
+  DCHECK_NE(thread_id, kMainThreadId);
   Send(new ExtensionHostMsg_DidStartServiceWorkerContext(
-      data->context()->GetExtensionID(), service_worker_version_id));
+      data->context()->GetExtensionID(), service_worker_scope,
+      service_worker_version_id, thread_id));
 }
 
-void WorkerThreadDispatcher::DidStopContext(int64_t service_worker_version_id) {
+void WorkerThreadDispatcher::DidStopContext(const GURL& service_worker_scope,
+                                            int64_t service_worker_version_id) {
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
+  const int thread_id = content::WorkerThread::GetCurrentId();
+  DCHECK_NE(thread_id, kMainThreadId);
   DCHECK_EQ(service_worker_version_id, data->service_worker_version_id());
   Send(new ExtensionHostMsg_DidStopServiceWorkerContext(
-      data->context()->GetExtensionID(), service_worker_version_id));
+      data->context()->GetExtensionID(), service_worker_scope,
+      service_worker_version_id, thread_id));
 }
 
 void WorkerThreadDispatcher::RemoveWorkerData(
