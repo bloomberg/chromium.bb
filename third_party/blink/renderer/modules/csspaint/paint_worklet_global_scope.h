@@ -30,8 +30,7 @@ class MODULES_EXPORT PaintWorkletGlobalScope final : public WorkletGlobalScope {
       LocalFrame*,
       std::unique_ptr<GlobalScopeCreationParams>,
       WorkerReportingProxy&,
-      PaintWorkletPendingGeneratorRegistry*,
-      size_t global_scope_number);
+      PaintWorkletPendingGeneratorRegistry*);
 
   // Creates an worklet-thread bound PaintWorkletGlobalScope.
   static PaintWorkletGlobalScope* Create(

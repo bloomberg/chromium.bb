@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/workers/shared_worker_thread.h"
 
 #include <memory>
+#include <utility>
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/shared_worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
@@ -38,12 +39,10 @@
 namespace blink {
 
 SharedWorkerThread::SharedWorkerThread(
-    const String& name,
     WorkerReportingProxy& worker_reporting_proxy)
     : WorkerThread(worker_reporting_proxy),
       worker_backing_thread_(
-          WorkerBackingThread::Create(ThreadCreationParams(GetThreadType()))),
-      name_(name.IsolatedCopy()) {}
+          WorkerBackingThread::Create(ThreadCreationParams(GetThreadType()))) {}
 
 SharedWorkerThread::~SharedWorkerThread() = default;
 
@@ -54,7 +53,7 @@ void SharedWorkerThread::ClearWorkerBackingThread() {
 WorkerOrWorkletGlobalScope* SharedWorkerThread::CreateWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params) {
   return MakeGarbageCollected<SharedWorkerGlobalScope>(
-      name_, std::move(creation_params), this, time_origin_);
+      std::move(creation_params), this, time_origin_);
 }
 
 }  // namespace blink

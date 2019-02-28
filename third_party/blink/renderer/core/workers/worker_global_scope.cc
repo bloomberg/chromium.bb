@@ -527,6 +527,7 @@ WorkerGlobalScope::WorkerGlobalScope(
     base::TimeTicks time_origin)
     : WorkerOrWorkletGlobalScope(
           thread->GetIsolate(),
+          creation_params->global_scope_name,
           creation_params->v8_cache_options,
           creation_params->worker_clients,
           std::move(creation_params->web_worker_fetch_context),

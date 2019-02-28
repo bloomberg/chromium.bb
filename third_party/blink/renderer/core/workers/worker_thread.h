@@ -229,8 +229,6 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   void ChildThreadStartedOnWorkerThread(WorkerThread*);
   void ChildThreadTerminatedOnWorkerThread(WorkerThread*);
 
-  virtual String name() const { return g_empty_string; }
-
  protected:
   explicit WorkerThread(WorkerReportingProxy&);
 

@@ -111,9 +111,6 @@ class CORE_EXPORT DedicatedWorker final
 
   void DispatchErrorEventForScriptFetchFailure();
 
-  // Returns the name specified by WorkerOptions.
-  const String Name() const;
-
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage)
 
   void Trace(blink::Visitor*) override;

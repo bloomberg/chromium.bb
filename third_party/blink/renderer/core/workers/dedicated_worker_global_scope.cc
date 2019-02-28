@@ -52,12 +52,10 @@
 namespace blink {
 
 DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
-    const String& name,
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     DedicatedWorkerThread* thread,
     base::TimeTicks time_origin)
-    : WorkerGlobalScope(std::move(creation_params), thread, time_origin),
-      name_(name) {}
+    : WorkerGlobalScope(std::move(creation_params), thread, time_origin) {}
 
 DedicatedWorkerGlobalScope::~DedicatedWorkerGlobalScope() = default;
 
@@ -86,7 +84,7 @@ void DedicatedWorkerGlobalScope::ImportModuleScript(
 }
 
 const String DedicatedWorkerGlobalScope::name() const {
-  return name_;
+  return Name();
 }
 
 void DedicatedWorkerGlobalScope::postMessage(ScriptState* script_state,

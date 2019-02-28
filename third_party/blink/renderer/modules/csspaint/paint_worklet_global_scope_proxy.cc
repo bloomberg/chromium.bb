@@ -36,14 +36,17 @@ PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(
   reporting_proxy_ =
       std::make_unique<MainThreadWorkletReportingProxy>(document);
 
+  String global_scope_name = "PaintWorklet #";
+  global_scope_name.append(String::Number(global_scope_number));
+
   WorkerClients* worker_clients = WorkerClients::Create();
   ProvideContentSettingsClientToWorker(
       worker_clients, frame->Client()->CreateWorkerContentSettingsClient());
 
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
       document->Url(), mojom::ScriptType::kModule,
-      OffMainThreadWorkerScriptFetchOption::kEnabled, document->UserAgent(),
-      frame->Client()->CreateWorkerFetchContext(),
+      OffMainThreadWorkerScriptFetchOption::kEnabled, global_scope_name,
+      document->UserAgent(), frame->Client()->CreateWorkerFetchContext(),
       document->GetContentSecurityPolicy()->Headers(),
       document->GetReferrerPolicy(), document->GetSecurityOrigin(),
       document->IsSecureContext(), document->GetHttpsState(), worker_clients,
@@ -52,7 +55,7 @@ PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(
       kV8CacheOptionsDefault, module_responses_map);
   global_scope_ = PaintWorkletGlobalScope::Create(
       frame, std::move(creation_params), *reporting_proxy_,
-      pending_generator_registry, global_scope_number);
+      pending_generator_registry);
 }
 
 void PaintWorkletGlobalScopeProxy::FetchAndInvokeScript(
