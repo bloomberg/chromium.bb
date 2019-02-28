@@ -201,12 +201,11 @@ def MergeApk(args, tmp_apk, tmp_dir_32, tmp_dir_64):
   assets_path = 'base/assets' if args.bundle else 'assets'
   exclude_files_64 = ['%s/snapshot_blob_32.bin' % assets_path,
                       GetTargetAbiPath(args.apk_32bit, args.shared_library)]
+  # TODO(benmason): Remove when libcrashpad_handler.so
+  # is no longer a separate lib.
   if 'libcrashpad_handler.so' in expected_files:
     exclude_files_64.append(
         GetTargetAbiPath(args.apk_32bit, 'libcrashpad_handler.so'))
-  if 'libcrashpad_handler_trampoline.so' in expected_files:
-    exclude_files_64.append(
-        GetTargetAbiPath(args.apk_32bit, 'libcrashpad_handler_trampoline.so'))
   UnpackApk(args.apk_64bit, tmp_dir_64, exclude_files_64)
   UnpackApk(args.apk_32bit, tmp_dir_32)
 
