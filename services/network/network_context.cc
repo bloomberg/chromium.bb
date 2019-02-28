@@ -1094,6 +1094,10 @@ void NetworkContext::SetEnableReferrers(bool enable_referrers) {
 #if defined(OS_CHROMEOS)
 void NetworkContext::UpdateAdditionalCertificates(
     mojom::AdditionalCertificatesPtr additional_certificates) {
+  if (!cert_verifier_with_trust_anchors_) {
+    CHECK(g_cert_verifier_for_testing || params_->username_hash.empty());
+    return;
+  }
   if (!additional_certificates) {
     nss_temp_certs_cache_.reset();
     cert_verifier_with_trust_anchors_->SetTrustAnchors(net::CertificateList());
