@@ -272,12 +272,6 @@ inline CSSIdentifierValue::CSSIdentifierValue(ControlPart e)
     case kMediaToggleClosedCaptionsButtonPart:
       value_id_ = CSSValueMediaToggleClosedCaptionsButton;
       break;
-    case kMediaCastOffButtonPart:
-      value_id_ = CSSValueInternalMediaCastOffButton;
-      break;
-    case kMediaOverlayCastOffButtonPart:
-      value_id_ = CSSValueInternalMediaOverlayCastOffButton;
-      break;
     case kMediaSliderPart:
       value_id_ = CSSValueMediaSlider;
       break;
@@ -304,21 +298,6 @@ inline CSSIdentifierValue::CSSIdentifierValue(ControlPart e)
       break;
     case kMediaTimeRemainingPart:
       value_id_ = CSSValueMediaTimeRemainingDisplay;
-      break;
-    case kMediaTrackSelectionCheckmarkPart:
-      value_id_ = CSSValueInternalMediaTrackSelectionCheckmark;
-      break;
-    case kMediaClosedCaptionsIconPart:
-      value_id_ = CSSValueInternalMediaClosedCaptionsIcon;
-      break;
-    case kMediaSubtitlesIconPart:
-      value_id_ = CSSValueInternalMediaSubtitlesIcon;
-      break;
-    case kMediaOverflowMenuButtonPart:
-      value_id_ = CSSValueInternalMediaOverflowButton;
-      break;
-    case kMediaDownloadIconPart:
-      value_id_ = CSSValueInternalMediaDownloadButton;
       break;
     case kMediaControlPart:
       value_id_ = CSSValueInternalMediaControl;
@@ -370,12 +349,6 @@ inline CSSIdentifierValue::CSSIdentifierValue(ControlPart e)
       break;
     case kTextAreaPart:
       value_id_ = CSSValueTextarea;
-      break;
-    case kCapsLockIndicatorPart:
-      value_id_ = CSSValueCapsLockIndicator;
-      break;
-    case kMediaRemotingCastIconPart:
-      value_id_ = CSSValueInternalMediaRemotingCastIcon;
       break;
   }
 }

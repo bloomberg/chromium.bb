@@ -71,14 +71,6 @@ enum ControlPart {
   kMediaControlsFullscreenBackgroundPart,
   kMediaCurrentTimePart,
   kMediaTimeRemainingPart,
-  kMediaCastOffButtonPart,
-  kMediaOverlayCastOffButtonPart,
-  kMediaTrackSelectionCheckmarkPart,
-  kMediaClosedCaptionsIconPart,
-  kMediaSubtitlesIconPart,
-  kMediaOverflowMenuButtonPart,
-  kMediaDownloadIconPart,
-  kMediaRemotingCastIconPart,
   kMediaControlPart,
   kMenulistPart,
   kMenulistButtonPart,
@@ -96,7 +88,6 @@ enum ControlPart {
   kSearchFieldCancelButtonPart,
   kTextFieldPart,
   kTextAreaPart,
-  kCapsLockIndicatorPart
 };
 
 enum SelectionPart { kSelectionBackground, kSelectionForeground };
