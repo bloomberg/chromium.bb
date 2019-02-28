@@ -145,6 +145,8 @@ ChromeKeyboardWebContents::ChromeKeyboardWebContents(
   DCHECK(context);
   content::WebContents::CreateParams web_contents_params(
       context, content::SiteInstance::CreateForURL(context, url));
+  // The WebContents is initially hidden and shown later on.
+  web_contents_params.initially_hidden = true;
   web_contents_ = content::WebContents::Create(web_contents_params);
   web_contents_->SetDelegate(new ChromeKeyboardContentsDelegate());
 
