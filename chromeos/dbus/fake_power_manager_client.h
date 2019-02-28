@@ -191,6 +191,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakePowerManagerClient
   // Notifies |observers_| that |props_| has been updated.
   void NotifyObservers();
 
+  // Deletes all timers, if any, associated with |tag|.
+  void DeleteArcTimersInternal(const std::string& tag);
+
   base::ObserverList<Observer>::Unchecked observers_;
 
   // Last policy passed to SetPolicy().

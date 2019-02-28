@@ -263,12 +263,9 @@ void FakePowerManagerClient::CreateArcTimers(
     return;
   }
 
-  // Check if client tag already exists. Return error iff it does.
-  if (base::ContainsKey(client_timer_ids_, tag)) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), std::vector<TimerId>()));
-    return;
-  }
+  // Just like the real implementation, delete any old timers associated with
+  // |tag|.
+  DeleteArcTimersInternal(tag);
 
   // First, ensure that there are no duplicate clocks in the arguments. Return
   // error if there are.
@@ -323,19 +320,7 @@ void FakePowerManagerClient::StartArcTimer(
 
 void FakePowerManagerClient::DeleteArcTimers(const std::string& tag,
                                              VoidDBusMethodCallback callback) {
-  // Retrieve all timer ids associated with |tag|. Delete all timers associated
-  // with these timer ids. Return true even if |tag| isn't found.
-  auto it = client_timer_ids_.find(tag);
-  if (it == client_timer_ids_.end()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), true));
-    return;
-  }
-
-  for (auto timer_id : it->second)
-    timer_expiration_fds_.erase(timer_id);
-
-  client_timer_ids_.erase(it);
+  DeleteArcTimersInternal(tag);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));
 }
@@ -438,6 +423,19 @@ void FakePowerManagerClient::HandleSuspendReadiness() {
   CHECK_GT(num_pending_suspend_readiness_callbacks_, 0);
 
   --num_pending_suspend_readiness_callbacks_;
+}
+
+void FakePowerManagerClient::DeleteArcTimersInternal(const std::string& tag) {
+  // Retrieve all timer ids associated with |tag|. Delete all timers associated
+  // with these timer ids.
+  auto it = client_timer_ids_.find(tag);
+  if (it == client_timer_ids_.end())
+    return;
+
+  for (auto timer_id : it->second)
+    timer_expiration_fds_.erase(timer_id);
+
+  client_timer_ids_.erase(it);
 }
 
 void FakePowerManagerClient::SetPowerPolicyQuitClosure(
