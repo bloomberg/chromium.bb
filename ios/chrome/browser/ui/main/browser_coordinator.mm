@@ -274,10 +274,7 @@
       initWithBaseViewController:self.viewController
                     browserState:self.browserState];
   self.pageInfoCoordinator.dispatcher = self.dispatcher;
-  self.pageInfoCoordinator.loader =
-      UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-          ->GetUrlLoader();
-  ;
+
   self.pageInfoCoordinator.presentationProvider = self.viewController;
   self.pageInfoCoordinator.tabModel = self.tabModel;
 
@@ -362,10 +359,7 @@
 - (void)showReadingList {
   self.readingListCoordinator = [[ReadingListCoordinator alloc]
       initWithBaseViewController:self.viewController
-                    browserState:self.browserState
-                          loader:UrlLoadingServiceFactory::GetForBrowserState(
-                                     self.browserState)
-                                     ->GetUrlLoader()];
+                    browserState:self.browserState];
   [self.readingListCoordinator start];
 }
 

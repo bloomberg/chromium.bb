@@ -31,8 +31,9 @@
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/table_view/table_view_presentation_controller.h"
-#import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_service.h"
+#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/referrer.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -50,8 +51,6 @@
 
 // Whether the coordinator is started.
 @property(nonatomic, assign, getter=isStarted) BOOL started;
-// The URL loader used to load pages that have been added to the reading list.
-@property(nonatomic, strong) id<UrlLoader> loader;
 // The mediator that updates the table for model changes.
 @property(nonatomic, strong) ReadingListMediator* mediator;
 // The navigation controller displaying self.tableViewController.
@@ -68,7 +67,6 @@
 
 @implementation ReadingListCoordinator
 @synthesize started = _started;
-@synthesize loader = _loader;
 @synthesize mediator = _mediator;
 @synthesize navigationController = _navigationController;
 @synthesize tableViewController = _tableViewController;
@@ -76,13 +74,9 @@
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:
-                                  (ios::ChromeBrowserState*)browserState
-                                    loader:(id<UrlLoader>)loader {
+                                  (ios::ChromeBrowserState*)browserState {
   self = [super initWithBaseViewController:viewController
                               browserState:browserState];
-  if (self) {
-    _loader = loader;
-  }
   return self;
 }
 
@@ -375,14 +369,16 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
                                    inIncognito:incognito
                                   inBackground:NO
                                       appendTo:kLastTab];
-    [self.loader webPageOrderedOpen:command];
+    UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
+        ->OpenUrlInNewTab(command);
   } else {
     web::NavigationManager::WebLoadParams params(loadURL);
     params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
     params.referrer = web::Referrer(GURL(kReadingListReferrerURL),
                                     web::ReferrerPolicyDefault);
     ChromeLoadParams chromeParams(params);
-    [self.loader loadURLWithParams:chromeParams];
+    UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
+        ->LoadUrlInCurrentTab(chromeParams);
   }
 
   [self stop];

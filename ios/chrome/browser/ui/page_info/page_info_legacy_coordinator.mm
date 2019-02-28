@@ -21,7 +21,8 @@
 #import "ios/chrome/browser/ui/page_info/page_info_view_controller.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_reloading.h"
-#import "ios/chrome/browser/ui/url_loader.h"
+#import "ios/chrome/browser/url_loading/url_loading_service.h"
+#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
@@ -49,7 +50,6 @@ NSString* const kPageInfoWillHideNotification =
 @implementation PageInfoLegacyCoordinator
 
 @synthesize dispatcher = _dispatcher;
-@synthesize loader = _loader;
 @synthesize pageInfoViewController = _pageInfoViewController;
 @synthesize presentationProvider = _presentationProvider;
 @synthesize tabModel = _tabModel;
@@ -62,7 +62,6 @@ NSString* const kPageInfoWillHideNotification =
   DCHECK(!self.pageInfoViewController);
   [self.dispatcher stopDispatchingToTarget:self];
   self.dispatcher = nil;
-  self.loader = nil;
   self.presentationProvider = nil;
   self.tabModel = nil;
 }
@@ -157,7 +156,8 @@ NSString* const kPageInfoWillHideNotification =
                                 inBackground:NO
                                     appendTo:kLastTab];
 
-  [self.loader webPageOrderedOpen:command];
+  UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
+      ->OpenUrlInNewTab(command);
   [self hidePageInfo];
 }
 
