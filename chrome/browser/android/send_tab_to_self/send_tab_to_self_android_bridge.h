@@ -22,23 +22,23 @@ class SendTabToSelfAndroidBridge {
                              const base::android::JavaRef<jobject>& obj,
                              const base::android::JavaRef<jobject>& j_profile);
 
-  void destroy(JNIEnv*, const base::android::JavaParamRef<jobject>&);
+  void Destroy(JNIEnv*, const base::android::JavaParamRef<jobject>&);
 
   // Populates a list of GUIDs in the model.
-  void getAllGuids(JNIEnv* env,
+  void GetAllGuids(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
                    const base::android::JavaParamRef<jobject>& j_guid_list_obj);
 
   // Returns the entry associated with a GUID. May return nullptr if none is
   // found.
-  base::android::ScopedJavaLocalRef<jobject> getEntryByGUID(
+  base::android::ScopedJavaLocalRef<jobject> GetEntryByGUID(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_guid);
 
   // Adds a new entry with the specified parameters. Returns the persisted
   // version which contains additional information such as GUID.
-  base::android::ScopedJavaLocalRef<jobject> addEntry(
+  base::android::ScopedJavaLocalRef<jobject> AddEntry(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_url,
@@ -46,7 +46,7 @@ class SendTabToSelfAndroidBridge {
       jlong j_navigation_time);
 
   // Deletes all entries in the model.
-  void deleteAllEntries(JNIEnv* env,
+  void DeleteAllEntries(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj);
 
  protected:

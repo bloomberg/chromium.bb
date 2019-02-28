@@ -65,12 +65,12 @@ static jlong JNI_SendTabToSelfAndroidBridge_Init(
   return reinterpret_cast<intptr_t>(send_tab_to_self_android_bridge);
 }
 
-void SendTabToSelfAndroidBridge::destroy(JNIEnv*,
+void SendTabToSelfAndroidBridge::Destroy(JNIEnv*,
                                          const JavaParamRef<jobject>&) {
   delete this;
 }
 
-void SendTabToSelfAndroidBridge::getAllGuids(
+void SendTabToSelfAndroidBridge::GetAllGuids(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_guid_list_obj) {
@@ -86,13 +86,13 @@ void SendTabToSelfAndroidBridge::getAllGuids(
   }
 }
 
-void SendTabToSelfAndroidBridge::deleteAllEntries(
+void SendTabToSelfAndroidBridge::DeleteAllEntries(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   send_tab_to_self_model_->DeleteAllEntries();
 }
 
-ScopedJavaLocalRef<jobject> SendTabToSelfAndroidBridge::addEntry(
+ScopedJavaLocalRef<jobject> SendTabToSelfAndroidBridge::AddEntry(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_url,
@@ -111,7 +111,7 @@ ScopedJavaLocalRef<jobject> SendTabToSelfAndroidBridge::addEntry(
   return CreateJavaSendTabToSelfEntry(env, persisted_entry);
 }
 
-ScopedJavaLocalRef<jobject> SendTabToSelfAndroidBridge::getEntryByGUID(
+ScopedJavaLocalRef<jobject> SendTabToSelfAndroidBridge::GetEntryByGUID(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_guid) {
