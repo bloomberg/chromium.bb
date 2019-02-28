@@ -79,6 +79,9 @@ class WebAppInstallManager final : public InstallManager,
   void OnInstallFinalized(std::unique_ptr<WebApplicationInfo> web_app_info,
                           const AppId& app_id,
                           InstallResultCode code);
+  void OnShortcutsCreated(std::unique_ptr<WebApplicationInfo> web_app_info,
+                          const AppId& app_id,
+                          bool shortcut_created);
 
   // TODO(loyso): Extract these parameters as a struct and reset it on every
   // installation task:

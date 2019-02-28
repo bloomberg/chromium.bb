@@ -78,15 +78,21 @@ void BookmarkAppPinToShelf(const Extension* extension) {
 #endif  // defined(OS_CHROMEOS)
 }
 
+bool CanBookmarkAppReparentTab(bool shortcut_created) {
+#if defined(OS_MACOSX)
+  // On macOS it is only possible to reparent the window when the shortcut (app
+  // shim) was created.  See https://crbug.com/915571.
+  return shortcut_created;
+#else
+  return true;
+#endif
+}
+
 void BookmarkAppReparentTab(content::WebContents* contents,
                             const Extension* extension) {
-#if !defined(OS_MACOSX)
   // Reparent the tab into an app window immediately when opening as a window.
-  // TODO(https://crbug.com/915571): Reparent the tab on Mac just like the
-  // other platforms.
   if (base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing))
     ReparentWebContentsIntoAppBrowser(contents, extension);
-#endif  // !defined(OS_MACOSX)
 }
 
 bool CanBookmarkAppRevealAppShim() {

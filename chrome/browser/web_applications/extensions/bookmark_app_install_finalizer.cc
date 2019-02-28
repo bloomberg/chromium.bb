@@ -115,6 +115,10 @@ void BookmarkAppInstallFinalizer::PinAppToShelf(const web_app::AppId& app_id) {
   BookmarkAppPinToShelf(app);
 }
 
+bool BookmarkAppInstallFinalizer::CanReparentTab(bool shortcut_created) const {
+  return CanBookmarkAppReparentTab(shortcut_created);
+}
+
 void BookmarkAppInstallFinalizer::ReparentTab(
     const web_app::AppId& app_id,
     content::WebContents* web_contents) {

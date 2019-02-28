@@ -95,6 +95,9 @@ class BookmarkAppHelperTest : public DialogBrowserTest,
     // ~WebAppReadyMsgWatcher() is called on the IO thread, but
     // |bookmark_app_helper_| must be destroyed on the UI thread.
     bookmark_app_helper_.reset();
+    // Web contents reparenting happens only after shortcut creation has
+    // completed.
+    quit_closure_.Run();
   }
 
   void Wait() {
@@ -109,7 +112,6 @@ class BookmarkAppHelperTest : public DialogBrowserTest,
                             bool is_update) override {
     if (!expected_app_title_.empty())
       EXPECT_EQ(expected_app_title_, extension->name());
-    quit_closure_.Run();
   }
 
   // DialogBrowserTest:
@@ -184,12 +186,9 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, CreateWindowedPWAIntoAppWindow) {
                                           bookmark_app_helper_->web_app_info_);
   Wait();  // Quits when the extension install completes.
 
-#if !defined(OS_MACOSX)
-  // We do not reparent the tab on OS X.
   Browser* app_browser = chrome::FindBrowserWithWebContents(web_contents());
   EXPECT_TRUE(app_browser->is_app());
   EXPECT_NE(app_browser, browser());
-#endif  // defined(OS_MACOSX)
 }
 
 }  // namespace extensions
