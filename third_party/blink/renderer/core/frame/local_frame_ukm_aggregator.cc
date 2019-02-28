@@ -91,7 +91,7 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
     absolute_record.average_metric_name = metric_name;
     absolute_record.average_metric_name.append(".Average");
     absolute_record.reset();
-    auto uma_name = uma_preamble;
+    String uma_name = uma_preamble;
     uma_name.append(metric_name);
     uma_name.append(uma_postscript);
     absolute_record.uma_counter.reset(
@@ -107,13 +107,13 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
     percentage_record.average_metric_name.append(".AverageRatio");
     percentage_record.reset();
     for (auto bucket_substring : threshold_substrings) {
-      String uma_name = uma_percentage_preamble;
-      uma_name.append(metric_name);
-      uma_name.append(uma_percentage_postscript);
-      uma_name.append(bucket_substring);
+      String uma_percentage_name = uma_percentage_preamble;
+      uma_percentage_name.append(metric_name);
+      uma_percentage_name.append(uma_percentage_postscript);
+      uma_percentage_name.append(bucket_substring);
       percentage_record.uma_counters_per_bucket.push_back(
-          std::make_unique<CustomCountHistogram>(uma_name.Utf8().data(), 0,
-                                                 10000000, 50));
+          std::make_unique<CustomCountHistogram>(
+              uma_percentage_name.Utf8().data(), 0, 10000000, 50));
     }
   }
 }

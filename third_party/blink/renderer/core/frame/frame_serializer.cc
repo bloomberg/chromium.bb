@@ -298,21 +298,21 @@ void FrameSerializer::SerializeFrame(const LocalFrame& frame) {
     }
 
     if (const auto* image = ToHTMLImageElementOrNull(element)) {
-      KURL url =
+      KURL image_url =
           document.CompleteURL(image->getAttribute(html_names::kSrcAttr));
       ImageResourceContent* cached_image = image->CachedImage();
-      AddImageToResources(cached_image, url);
+      AddImageToResources(cached_image, image_url);
     } else if (const auto* input = ToHTMLInputElementOrNull(element)) {
       if (input->type() == input_type_names::kImage && input->ImageLoader()) {
-        KURL url = input->Src();
+        KURL image_url = input->Src();
         ImageResourceContent* cached_image = input->ImageLoader()->GetContent();
-        AddImageToResources(cached_image, url);
+        AddImageToResources(cached_image, image_url);
       }
     } else if (const auto* link = ToHTMLLinkElementOrNull(element)) {
       if (CSSStyleSheet* sheet = link->sheet()) {
-        KURL url =
+        KURL sheet_url =
             document.CompleteURL(link->getAttribute(html_names::kHrefAttr));
-        SerializeCSSStyleSheet(*sheet, url);
+        SerializeCSSStyleSheet(*sheet, sheet_url);
       }
     } else if (const auto* style = ToHTMLStyleElementOrNull(element)) {
       if (CSSStyleSheet* sheet = style->sheet())
