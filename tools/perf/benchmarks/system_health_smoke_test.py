@@ -134,6 +134,9 @@ _DISABLED_TESTS = frozenset({
 
   # crbug.com/903849
   'system_health.memory_mobile/browse:news:cnn:2018',
+
+  # crbug.com/937006
+  'system_health.memory_mobile/browse:news:toi',
 })
 
 
