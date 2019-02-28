@@ -84,7 +84,8 @@ class TabListMediator {
         @Override
         public void run(int tabId) {
             mTabModelSelector.getCurrentModel().closeTab(
-                    TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId));
+                    TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId), false,
+                    false, true);
             RecordUserAction.record("MobileStackViewCloseTab");
         }
     };
@@ -144,14 +145,23 @@ class TabListMediator {
             }
 
             @Override
-            public void didAddTab(Tab tab, int type) {
-                addTabInfoToModel(tab, false);
+            public void tabClosureUndone(Tab tab) {
+                int index = TabModelUtils.getTabIndexById(
+                        mTabModelSelector.getCurrentModel(), tab.getId());
+                addTabInfoToModel(tab, index, mTabModelSelector.getCurrentModel().index() == index);
             }
 
             @Override
-            public void didCloseTab(int tabId, boolean incognito) {
-                if (mModel.indexFromId(tabId) == TabModel.INVALID_TAB_INDEX) return;
-                mModel.removeAt(mModel.indexFromId(tabId));
+            public void didAddTab(Tab tab, int type) {
+                int index = TabModelUtils.getTabIndexById(
+                        mTabModelSelector.getCurrentModel(), tab.getId());
+                addTabInfoToModel(tab, index, mTabModelSelector.getCurrentModel().index() == index);
+            }
+
+            @Override
+            public void willCloseTab(Tab tab, boolean animate) {
+                if (mModel.indexFromId(tab.getId()) == TabModel.INVALID_TAB_INDEX) return;
+                mModel.removeAt(mModel.indexFromId(tab.getId()));
             }
         };
     }
@@ -166,7 +176,7 @@ class TabListMediator {
         }
         int selectedIndex = tabModel.index();
         for (int i = 0; i < tabModel.getCount(); i++) {
-            addTabInfoToModel(tabModel.getTabAt(i), i == selectedIndex);
+            addTabInfoToModel(tabModel.getTabAt(i), i, i == selectedIndex);
         }
     }
 
@@ -183,18 +193,21 @@ class TabListMediator {
         mTabModelObserver.destroy();
     }
 
-    private void addTabInfoToModel(final Tab tab, boolean isSelected) {
+    private void addTabInfoToModel(final Tab tab, int index, boolean isSelected) {
         PropertyModel tabInfo =
                 new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
                         .with(TabProperties.TAB_ID, tab.getId())
                         .with(TabProperties.TITLE, tab.getTitle())
                         .with(TabProperties.FAVICON, tab.getFavicon())
                         .with(TabProperties.IS_SELECTED, isSelected)
-                        .with(TabProperties.THUMBNAIL_FETCHER, null)
                         .with(TabProperties.TAB_SELECTED_LISTENER, mTabSelectedListener)
                         .with(TabProperties.TAB_CLOSED_LISTENER, mTabClosedListener)
                         .build();
-        mModel.add(tabInfo);
+        if (index >= mModel.size()) {
+            mModel.add(tabInfo);
+        } else {
+            mModel.add(index, tabInfo);
+        }
         mFaviconHelper.getLocalFaviconImageForURL(Profile.getLastUsedProfile().getOriginalProfile(),
                 tab.getUrl(), mFaviconSize, (image, iconUrl) -> {
                     if (mModel.indexFromId(tab.getId()) == Tab.INVALID_TAB_ID) return;
