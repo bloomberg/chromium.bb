@@ -53,8 +53,6 @@ blink::mojom::IdleStatePtr IdleTimeToIdleState(bool locked,
   else
     screen = blink::mojom::ScreenIdleState::UNLOCKED;
 
-  blink::mojom::IdleState state(user, screen);
-
   return blink::mojom::IdleState::New(user, screen);
 }
 
@@ -92,6 +90,8 @@ void IdleManager::AddMonitor(uint32_t threshold,
   auto monitor = std::make_unique<IdleMonitor>(
       std::move(monitor_ptr), CheckIdleState(threshold), threshold);
 
+  // This unretained reference is safe because IdleManager owns all IdleMonitor
+  // instances.
   monitor->SetErrorHandler(
       base::BindOnce(&IdleManager::RemoveMonitor, base::Unretained(this)));
 
