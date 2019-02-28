@@ -160,6 +160,9 @@ cr.define('print_preview', function() {
     /** @override */
     print(printTicket) {
       this.methodCalled('print', printTicket);
+      if (JSON.parse(printTicket).printWithCloudPrint) {
+        return Promise.resolve('sample data');
+      }
       return Promise.resolve();
     }
 

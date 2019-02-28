@@ -527,7 +527,7 @@ Polymer({
     const destination = assert(this.destinationStore_.selectedDestination);
     this.cloudPrintInterface_.submit(
         destination, this.$.model.createCloudJobTicket(destination),
-        this.$.documentInfo.title, data);
+        this.documentSettings_.title, data);
   },
 
   // <if expr="not chromeos">
