@@ -52,7 +52,6 @@
 #include "content/shell/test_runner/pixel_dump.h"
 #include "content/shell/test_runner/web_test_interfaces.h"
 #include "content/shell/test_runner/web_test_runner.h"
-#include "content/shell/test_runner/web_widget_test_proxy.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_parameters.h"
 #include "media/capture/video_capturer_source.h"
@@ -723,22 +722,19 @@ void BlinkTestRunner::Reset(bool for_new_test) {
   prefs_.Reset();
   waiting_for_reset_ = false;
 
-  WebFrame* main_frame = render_view()->GetWebView()->MainFrame();
-
   render_view()->ClearEditCommands();
   if (for_new_test) {
-    if (main_frame->IsWebLocalFrame()) {
-      WebLocalFrame* local_main_frame = main_frame->ToWebLocalFrame();
-      local_main_frame->SetName(WebString());
-      GetWebWidgetTestProxy(local_main_frame)->EndSyntheticGestures();
-    }
-    main_frame->ClearOpener();
+    if (render_view()->GetWebView()->MainFrame()->IsWebLocalFrame())
+      render_view()->GetWebView()->MainFrame()->ToWebLocalFrame()->SetName(
+          WebString());
+    render_view()->GetWebView()->MainFrame()->ClearOpener();
   }
 
   // Resetting the internals object also overrides the WebPreferences, so we
   // have to sync them to WebKit again.
-  if (main_frame->IsWebLocalFrame()) {
-    WebTestingSupport::ResetInternalsObject(main_frame->ToWebLocalFrame());
+  if (render_view()->GetWebView()->MainFrame()->IsWebLocalFrame()) {
+    WebTestingSupport::ResetInternalsObject(
+        render_view()->GetWebView()->MainFrame()->ToWebLocalFrame());
     render_view()->SetWebkitPreferences(render_view()->GetWebkitPreferences());
   }
 }
