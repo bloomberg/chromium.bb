@@ -856,7 +856,7 @@ public class PaymentRequestImpl
             mRawTotal = details.total;
         }
 
-        if (details.displayItems.length != 0) {
+        if (mRawLineItems == null || details.displayItems.length != 0) {
             mRawLineItems = Collections.unmodifiableList(Arrays.asList(details.displayItems));
         }
 
