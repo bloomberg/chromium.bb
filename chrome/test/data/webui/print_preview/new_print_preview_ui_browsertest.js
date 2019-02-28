@@ -35,6 +35,35 @@ const NewPrintPreviewTest = class extends PolymerTest {
   }
 };
 
+PrintPreviewAppTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/app.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      '../test_browser_proxy.js',
+      'cloud_print_interface_stub.js',
+      'native_layer_stub.js',
+      'plugin_stub.js',
+      'print_preview_test_utils.js',
+      'print_preview_app_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return print_preview_app_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewAppTest', 'PrintToGoogleDrive', function() {
+  this.runMochaTest(print_preview_app_test.TestNames.PrintToGoogleDrive);
+});
+
 PrintPreviewSettingsSectionsTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
