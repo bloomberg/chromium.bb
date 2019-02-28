@@ -45,10 +45,10 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/modules/filesystem/async_file_system_callbacks.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_client.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_dispatcher.h"
-#include "third_party/blink/renderer/platform/async_file_system_callbacks.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
