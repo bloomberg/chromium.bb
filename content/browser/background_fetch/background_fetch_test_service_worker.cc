@@ -1,8 +1,11 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/background_fetch/background_fetch_embedded_worker_test_helper.h"
+#include "content/browser/background_fetch/background_fetch_test_service_worker.h"
+
+#include <memory>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/time/time.h"
@@ -11,14 +14,13 @@
 
 namespace content {
 
-BackgroundFetchEmbeddedWorkerTestHelper::
-    BackgroundFetchEmbeddedWorkerTestHelper()
-    : EmbeddedWorkerTestHelper(base::FilePath() /* in memory */) {}
+BackgroundFetchTestServiceWorker::BackgroundFetchTestServiceWorker(
+    EmbeddedWorkerTestHelper* helper)
+    : FakeServiceWorker(helper) {}
 
-BackgroundFetchEmbeddedWorkerTestHelper::
-    ~BackgroundFetchEmbeddedWorkerTestHelper() = default;
+BackgroundFetchTestServiceWorker::~BackgroundFetchTestServiceWorker() = default;
 
-void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchAbortEvent(
+void BackgroundFetchTestServiceWorker::DispatchBackgroundFetchAbortEvent(
     blink::mojom::BackgroundFetchRegistrationPtr registration,
     blink::mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback
         callback) {
@@ -34,7 +36,7 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchAbortEvent(
     abort_event_closure_.Run();
 }
 
-void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchClickEvent(
+void BackgroundFetchTestServiceWorker::DispatchBackgroundFetchClickEvent(
     blink::mojom::BackgroundFetchRegistrationPtr registration,
     blink::mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback
         callback) {
@@ -50,7 +52,7 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchClickEvent(
     click_event_closure_.Run();
 }
 
-void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent(
+void BackgroundFetchTestServiceWorker::DispatchBackgroundFetchFailEvent(
     blink::mojom::BackgroundFetchRegistrationPtr registration,
     blink::mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback
         callback) {
@@ -66,7 +68,7 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent(
     fetch_fail_event_closure_.Run();
 }
 
-void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchSuccessEvent(
+void BackgroundFetchTestServiceWorker::DispatchBackgroundFetchSuccessEvent(
     blink::mojom::BackgroundFetchRegistrationPtr registration,
     blink::mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
         callback) {

@@ -17,12 +17,12 @@
 #include "build/build_config.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/background_fetch/background_fetch_data_manager_observer.h"
-#include "content/browser/background_fetch/background_fetch_embedded_worker_test_helper.h"
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
 #include "content/browser/background_fetch/background_fetch_test_base.h"
 #include "content/browser/background_fetch/background_fetch_test_data_manager.h"
+#include "content/browser/background_fetch/background_fetch_test_service_worker.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/background_fetch/background_fetch_types.h"
@@ -546,6 +546,10 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
   // `backgroundfetchsuccess` event will be dispatched with the expected
   // contents.
 
+  auto* worker =
+      embedded_worker_test_helper()
+          ->AddNewPendingServiceWorker<BackgroundFetchTestServiceWorker>(
+              embedded_worker_test_helper());
   int64_t service_worker_registration_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
             service_worker_registration_id);
@@ -553,8 +557,7 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
   // base::RunLoop that we'll run until the event has been dispatched. If this
   // test times out, it means that the event could not be dispatched.
   base::RunLoop event_dispatched_loop;
-  embedded_worker_test_helper()->set_fetched_event_closure(
-      event_dispatched_loop.QuitClosure());
+  worker->set_fetched_event_closure(event_dispatched_loop.QuitClosure());
 
   std::vector<blink::mojom::FetchAPIRequestPtr> requests;
 
@@ -603,7 +606,7 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
   // Spin the |event_dispatched_loop| to wait for the dispatched event.
   event_dispatched_loop.Run();
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_registration());
+  ASSERT_TRUE(worker->last_registration());
   EXPECT_EQ(kExampleDeveloperId, registration.developer_id);
 
   // Get all the settled fetches and test properties.
@@ -665,6 +668,10 @@ TEST_F(BackgroundFetchServiceTest, FetchFailEventDispatch) {
   // This test verifies that the fail event will be fired when a response either
   // has a non-OK status code, or the response cannot be accessed due to CORS.
 
+  auto* worker =
+      embedded_worker_test_helper()
+          ->AddNewPendingServiceWorker<BackgroundFetchTestServiceWorker>(
+              embedded_worker_test_helper());
   int64_t service_worker_registration_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
             service_worker_registration_id);
@@ -672,8 +679,7 @@ TEST_F(BackgroundFetchServiceTest, FetchFailEventDispatch) {
   // base::RunLoop that we'll run until the event has been dispatched. If this
   // test times out, it means that the event could not be dispatched.
   base::RunLoop event_dispatched_loop;
-  embedded_worker_test_helper()->set_fetch_fail_event_closure(
-      event_dispatched_loop.QuitClosure());
+  worker->set_fetch_fail_event_closure(event_dispatched_loop.QuitClosure());
 
   std::vector<blink::mojom::FetchAPIRequestPtr> requests;
 
@@ -710,7 +716,7 @@ TEST_F(BackgroundFetchServiceTest, FetchFailEventDispatch) {
   // Spin the |event_dispatched_loop| to wait for the dispatched event.
   event_dispatched_loop.Run();
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_registration());
+  ASSERT_TRUE(worker->last_registration());
   EXPECT_EQ(kExampleDeveloperId, registration.developer_id);
 
   // Get all the settled fetches and test properties.
@@ -885,6 +891,10 @@ TEST_F(BackgroundFetchServiceTest, AbortEventDispatch) {
   // Tests that the `backgroundfetchabort` event will be fired when a Background
   // Fetch registration has been aborted by either the user or developer.
 
+  auto* worker =
+      embedded_worker_test_helper()
+          ->AddNewPendingServiceWorker<BackgroundFetchTestServiceWorker>(
+              embedded_worker_test_helper());
   int64_t service_worker_registration_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
             service_worker_registration_id);
@@ -892,8 +902,7 @@ TEST_F(BackgroundFetchServiceTest, AbortEventDispatch) {
   // base::RunLoop that we'll run until the event has been dispatched. If this
   // test times out, it means that the event could not be dispatched.
   base::RunLoop event_dispatched_loop;
-  embedded_worker_test_helper()->set_abort_event_closure(
-      event_dispatched_loop.QuitClosure());
+  worker->set_abort_event_closure(event_dispatched_loop.QuitClosure());
 
   constexpr int kResponseCode = 200;
 
@@ -931,9 +940,8 @@ TEST_F(BackgroundFetchServiceTest, AbortEventDispatch) {
 
   event_dispatched_loop.Run();
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_registration());
-  EXPECT_EQ(kExampleDeveloperId,
-            embedded_worker_test_helper()->last_registration()->developer_id);
+  ASSERT_TRUE(worker->last_registration());
+  EXPECT_EQ(kExampleDeveloperId, worker->last_registration()->developer_id);
 }
 
 TEST_F(BackgroundFetchServiceTest, UniqueId) {

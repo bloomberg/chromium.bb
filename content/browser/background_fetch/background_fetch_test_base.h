@@ -12,8 +12,8 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/browser/background_fetch/background_fetch_embedded_worker_test_helper.h"
 #include "content/browser/background_fetch/background_fetch_test_browser_context.h"
+#include "content/browser/background_fetch/background_fetch_test_service_worker.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -69,7 +69,7 @@ class BackgroundFetchTestBase : public ::testing::Test {
 
   // Returns the embedded worker test helper instance, which can be used to
   // influence the behavior of the Service Worker events.
-  BackgroundFetchEmbeddedWorkerTestHelper* embedded_worker_test_helper() {
+  EmbeddedWorkerTestHelper* embedded_worker_test_helper() {
     return &embedded_worker_test_helper_;
   }
 
@@ -90,7 +90,7 @@ class BackgroundFetchTestBase : public ::testing::Test {
 
   MockBackgroundFetchDelegate* delegate_;
 
-  BackgroundFetchEmbeddedWorkerTestHelper embedded_worker_test_helper_;
+  EmbeddedWorkerTestHelper embedded_worker_test_helper_;
 
   url::Origin origin_;
 

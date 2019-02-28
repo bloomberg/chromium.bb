@@ -74,29 +74,25 @@ void FakeServiceWorker::DispatchActivateEvent(
 void FakeServiceWorker::DispatchBackgroundFetchAbortEvent(
     blink::mojom::BackgroundFetchRegistrationPtr registration,
     DispatchBackgroundFetchAbortEventCallback callback) {
-  helper_->OnBackgroundFetchAbortEventStub(std::move(registration),
-                                           std::move(callback));
+  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
 void FakeServiceWorker::DispatchBackgroundFetchClickEvent(
     blink::mojom::BackgroundFetchRegistrationPtr registration,
     DispatchBackgroundFetchClickEventCallback callback) {
-  helper_->OnBackgroundFetchClickEventStub(std::move(registration),
-                                           std::move(callback));
+  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
 void FakeServiceWorker::DispatchBackgroundFetchFailEvent(
     blink::mojom::BackgroundFetchRegistrationPtr registration,
     DispatchBackgroundFetchFailEventCallback callback) {
-  helper_->OnBackgroundFetchFailEventStub(std::move(registration),
-                                          std::move(callback));
+  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
 void FakeServiceWorker::DispatchBackgroundFetchSuccessEvent(
     blink::mojom::BackgroundFetchRegistrationPtr registration,
     DispatchBackgroundFetchSuccessEventCallback callback) {
-  helper_->OnBackgroundFetchSuccessEventStub(std::move(registration),
-                                             std::move(callback));
+  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
 void FakeServiceWorker::DispatchCookieChangeEvent(

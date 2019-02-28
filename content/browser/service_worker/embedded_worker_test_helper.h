@@ -165,24 +165,6 @@ class EmbeddedWorkerTestHelper {
   /////////////////////////////////////////////////////////////////////////////
 
  protected:
-  // TODO(falken): Remove these and use FakeServiceWorker instead.
-  virtual void OnBackgroundFetchAbortEvent(
-      blink::mojom::BackgroundFetchRegistrationPtr registration,
-      blink::mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback
-          callback);
-  virtual void OnBackgroundFetchClickEvent(
-      blink::mojom::BackgroundFetchRegistrationPtr registration,
-      blink::mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback
-          callback);
-  virtual void OnBackgroundFetchFailEvent(
-      blink::mojom::BackgroundFetchRegistrationPtr registration,
-      blink::mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback
-          callback);
-  virtual void OnBackgroundFetchSuccessEvent(
-      blink::mojom::BackgroundFetchRegistrationPtr registration,
-      blink::mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
-          callback);
-
   EmbeddedWorkerRegistry* registry();
 
   blink::mojom::ServiceWorkerHost* GetServiceWorkerHost(
@@ -205,24 +187,6 @@ class EmbeddedWorkerTestHelper {
   friend FakeServiceWorker;
   class MockNetworkURLLoaderFactory;
   class MockRendererInterface;
-
-  // TODO(falken): Remove these and use FakeServiceWorker instead.
-  void OnBackgroundFetchAbortEventStub(
-      blink::mojom::BackgroundFetchRegistrationPtr registration,
-      blink::mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback
-          callback);
-  void OnBackgroundFetchClickEventStub(
-      blink::mojom::BackgroundFetchRegistrationPtr registration,
-      blink::mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback
-          callback);
-  void OnBackgroundFetchFailEventStub(
-      blink::mojom::BackgroundFetchRegistrationPtr registration,
-      blink::mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback
-          callback);
-  void OnBackgroundFetchSuccessEventStub(
-      blink::mojom::BackgroundFetchRegistrationPtr registration,
-      blink::mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
-          callback);
 
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<MockRenderProcessHost> render_process_host_;
