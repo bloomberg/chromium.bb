@@ -158,7 +158,7 @@ class SyncService : public KeyedService {
   // error can be either from Chrome's identity system (e.g. while trying to get
   // an access token), or from the Sync server. It gets cleared when the error
   // is resolved.
-  virtual const GoogleServiceAuthError& GetAuthError() const = 0;
+  virtual GoogleServiceAuthError GetAuthError() const = 0;
 
   //////////////////////////////////////////////////////////////////////////////
   // DERIVED STATE ACCESS

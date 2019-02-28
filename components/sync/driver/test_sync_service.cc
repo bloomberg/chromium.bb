@@ -146,7 +146,7 @@ bool TestSyncService::IsAuthenticatedAccountPrimary() const {
   return account_is_primary_;
 }
 
-const GoogleServiceAuthError& TestSyncService::GetAuthError() const {
+GoogleServiceAuthError TestSyncService::GetAuthError() const {
   return auth_error_;
 }
 

@@ -48,7 +48,7 @@ class FakeSyncService : public SyncService {
   std::unique_ptr<SyncSetupInProgressHandle> GetSetupInProgressHandle()
       override;
   bool IsSetupInProgress() const override;
-  const GoogleServiceAuthError& GetAuthError() const override;
+  GoogleServiceAuthError GetAuthError() const override;
   UserShare* GetUserShare() const override;
   void ReenableDatatype(ModelType type) override;
   void ReadyForStartChanged(syncer::ModelType type) override;
@@ -73,7 +73,6 @@ class FakeSyncService : public SyncService {
   void Shutdown() override;
 
  private:
-  GoogleServiceAuthError error_;
   GURL sync_service_url_;
   std::unique_ptr<UserShare> user_share_;
 };

@@ -18,7 +18,6 @@
 using ::testing::Mock;
 using ::testing::NiceMock;
 using ::testing::Return;
-using ::testing::ReturnRef;
 
 namespace {
 
@@ -30,9 +29,7 @@ class MockObserver : public SyncStartupTracker::Observer {
 
 class SyncStartupTrackerTest : public testing::Test {
  public:
-  SyncStartupTrackerTest() :
-      no_error_(GoogleServiceAuthError::NONE) {
-  }
+  SyncStartupTrackerTest() {}
 
   void SetUp() override {
     profile_ = std::make_unique<TestingProfile>();
@@ -40,7 +37,6 @@ class SyncStartupTrackerTest : public testing::Test {
         std::make_unique<NiceMock<browser_sync::ProfileSyncServiceMock>>(
             CreateProfileSyncServiceParamsForTest(profile_.get()));
 
-    ON_CALL(*mock_pss_, GetAuthError()).WillByDefault(ReturnRef(no_error_));
     ON_CALL(*mock_pss_, GetRegisteredDataTypes())
         .WillByDefault(Return(syncer::ModelTypeSet()));
     mock_pss_->Initialize();
@@ -53,7 +49,6 @@ class SyncStartupTrackerTest : public testing::Test {
   }
 
   void SetupNonInitializedPSS() {
-    ON_CALL(*mock_pss_, GetAuthError()).WillByDefault(ReturnRef(no_error_));
     ON_CALL(*mock_pss_, GetDisableReasons())
         .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
     ON_CALL(*mock_pss_, GetTransportState())
@@ -62,7 +57,6 @@ class SyncStartupTrackerTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  const GoogleServiceAuthError no_error_;
   std::unique_ptr<TestingProfile> profile_;
   // TODO(crbug.com/910518): Rewrite these tests in terms of TestSyncService.
   std::unique_ptr<browser_sync::ProfileSyncServiceMock> mock_pss_;
@@ -96,9 +90,9 @@ TEST_F(SyncStartupTrackerTest, SyncAuthError) {
       .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
   ON_CALL(*mock_pss_, GetTransportState())
       .WillByDefault(Return(syncer::SyncService::TransportState::INITIALIZING));
-  GoogleServiceAuthError error(
-      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  ON_CALL(*mock_pss_, GetAuthError()).WillByDefault(ReturnRef(error));
+  ON_CALL(*mock_pss_, GetAuthError())
+      .WillByDefault(Return(GoogleServiceAuthError(
+          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS)));
   EXPECT_CALL(observer_, SyncStartupFailed());
   SyncStartupTracker tracker(mock_pss_.get(), &observer_);
 }
@@ -131,9 +125,9 @@ TEST_F(SyncStartupTrackerTest, SyncDelayedAuthError) {
       .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
   ON_CALL(*mock_pss_, GetTransportState())
       .WillByDefault(Return(syncer::SyncService::TransportState::INITIALIZING));
-  GoogleServiceAuthError error(
-      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  ON_CALL(*mock_pss_, GetAuthError()).WillByDefault(ReturnRef(error));
+  ON_CALL(*mock_pss_, GetAuthError())
+      .WillByDefault(Return(GoogleServiceAuthError(
+          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS)));
   EXPECT_CALL(observer_, SyncStartupFailed());
   tracker.OnStateChanged(mock_pss_.get());
 }

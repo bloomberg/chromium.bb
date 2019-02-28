@@ -187,7 +187,7 @@ class ProfileSyncService : public syncer::SyncService,
   bool IsLocalSyncEnabled() const override;
   CoreAccountInfo GetAuthenticatedAccountInfo() const override;
   bool IsAuthenticatedAccountPrimary() const override;
-  const GoogleServiceAuthError& GetAuthError() const override;
+  GoogleServiceAuthError GetAuthError() const override;
   std::unique_ptr<syncer::SyncSetupInProgressHandle> GetSetupInProgressHandle()
       override;
   bool IsSetupInProgress() const override;

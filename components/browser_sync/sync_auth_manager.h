@@ -64,9 +64,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   // server. Note that this account may not be blessed for Sync-the-feature.
   syncer::SyncAccountInfo GetActiveAccountInfo() const;
 
-  const GoogleServiceAuthError& GetLastAuthError() const {
-    return last_auth_error_;
-  }
+  GoogleServiceAuthError GetLastAuthError() const { return last_auth_error_; }
 
   // Returns the credentials to be passed to the SyncEngine.
   syncer::SyncCredentials GetCredentials() const;

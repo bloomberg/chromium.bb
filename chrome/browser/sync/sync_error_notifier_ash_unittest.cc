@@ -26,7 +26,6 @@
 
 using ::testing::NiceMock;
 using ::testing::Return;
-using ::testing::ReturnRef;
 using ::testing::_;
 
 namespace {
@@ -101,8 +100,8 @@ class SyncErrorNotifierTest : public BrowserWithTestWindowTest {
     ON_CALL(*service_->GetUserSettingsMock(), IsFirstSetupComplete())
         .WillByDefault(Return(is_signed_in));
 
-    GoogleServiceAuthError auth_error(error_state);
-    ON_CALL(*service_, GetAuthError()).WillByDefault(ReturnRef(auth_error));
+    ON_CALL(*service_, GetAuthError())
+        .WillByDefault(Return(GoogleServiceAuthError(error_state)));
     ASSERT_EQ(is_error,
               sync_ui_util::ShouldShowPassphraseError(service_.get()));
 

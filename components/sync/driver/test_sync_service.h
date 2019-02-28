@@ -57,7 +57,7 @@ class TestSyncService : public SyncService {
   bool IsLocalSyncEnabled() const override;
   CoreAccountInfo GetAuthenticatedAccountInfo() const override;
   bool IsAuthenticatedAccountPrimary() const override;
-  const GoogleServiceAuthError& GetAuthError() const override;
+  GoogleServiceAuthError GetAuthError() const override;
 
   std::unique_ptr<SyncSetupInProgressHandle> GetSetupInProgressHandle()
       override;

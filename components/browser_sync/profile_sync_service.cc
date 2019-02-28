@@ -1182,7 +1182,7 @@ bool ProfileSyncService::QueryDetailedSyncStatus(
   return false;
 }
 
-const GoogleServiceAuthError& ProfileSyncService::GetAuthError() const {
+GoogleServiceAuthError ProfileSyncService::GetAuthError() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return auth_manager_->GetLastAuthError();
 }
