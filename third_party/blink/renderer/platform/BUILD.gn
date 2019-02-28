@@ -304,7 +304,6 @@ jumbo_component("platform") {
     "animation/compositor_transform_operations.h",
     "animation/timing_function.cc",
     "animation/timing_function.h",
-    "async_file_system_callbacks.h",
     "audio/android/fft_frame_open_maxdl_android.cc",
     "audio/audio_array.h",
     "audio/audio_bus.cc",
