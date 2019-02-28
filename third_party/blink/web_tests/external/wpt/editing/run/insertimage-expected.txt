@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 938 tests; 906 PASS, 32 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 947 tests; 915 PASS, 32 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS [["insertimage","/img/lion.svg"]] "foo[]bar": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["insertimage","/img/lion.svg"]] "foo[]bar" checks for modifications to non-editable content
 PASS [["insertimage","/img/lion.svg"]] "foo[]bar" compare innerHTML
@@ -938,5 +938,14 @@ PASS [["insertimage","/img/lion.svg"]] "<div>foo<p>bar[</p></div>]baz" queryComm
 PASS [["insertimage","/img/lion.svg"]] "<div>foo<p>bar[</p></div>]baz" queryCommandIndeterm("insertimage") after
 PASS [["insertimage","/img/lion.svg"]] "<div>foo<p>bar[</p></div>]baz" queryCommandState("insertimage") after
 PASS [["insertimage","/img/lion.svg"]] "<div>foo<p>bar[</p></div>]baz" queryCommandValue("insertimage") after
+PASS [["insertimage","/日本語パス/lion.svg"]] "foo[]bar": execCommand("insertimage", false, "/日本語パス/lion.svg") return value
+PASS [["insertimage","/日本語パス/lion.svg"]] "foo[]bar" checks for modifications to non-editable content
+PASS [["insertimage","/日本語パス/lion.svg"]] "foo[]bar" compare innerHTML
+PASS [["insertimage","/日本語パス/lion.svg"]] "foo[]bar" queryCommandIndeterm("insertimage") before
+PASS [["insertimage","/日本語パス/lion.svg"]] "foo[]bar" queryCommandState("insertimage") before
+PASS [["insertimage","/日本語パス/lion.svg"]] "foo[]bar" queryCommandValue("insertimage") before
+PASS [["insertimage","/日本語パス/lion.svg"]] "foo[]bar" queryCommandIndeterm("insertimage") after
+PASS [["insertimage","/日本語パス/lion.svg"]] "foo[]bar" queryCommandState("insertimage") after
+PASS [["insertimage","/日本語パス/lion.svg"]] "foo[]bar" queryCommandValue("insertimage") after
 Harness: the test ran to completion.
 
