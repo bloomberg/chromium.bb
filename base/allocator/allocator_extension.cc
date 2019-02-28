@@ -48,7 +48,7 @@ void GetHeapSample(std::string* writer) {
 }
 
 bool IsHeapProfilerRunning() {
-#if defined(USE_TCMALLOC)
+#if defined(USE_TCMALLOC) && defined(ENABLE_PROFILING)
   return ::IsHeapProfilerRunning();
 #endif
   return false;
