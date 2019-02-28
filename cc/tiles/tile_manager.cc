@@ -585,6 +585,8 @@ bool TileManager::PrepareTiles(
   // Schedule tile tasks.
   ScheduleTasks(std::move(prioritized_work));
 
+  image_controller_.paint_worklet_image_cache()->NotifyDidPrepareTiles();
+
   TRACE_EVENT_INSTANT1("cc", "DidPrepareTiles", TRACE_EVENT_SCOPE_THREAD,
                        "state", BasicStateAsValue());
   return true;

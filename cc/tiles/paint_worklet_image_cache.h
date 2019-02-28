@@ -30,6 +30,10 @@ class CC_EXPORT PaintWorkletImageCache {
 
     sk_sp<PaintRecord> record;
     size_t used_ref_count;
+    // Indicates how many continuous frames that this cache is never accessed or
+    // updated. A cache entry should be purged if this number is larger than
+    // |num_of_frames_to_purge_cache_entry_|.
+    size_t num_of_frames_not_accessed = 0u;
   };
 
   PaintWorkletImageCache();
@@ -43,6 +47,8 @@ class CC_EXPORT PaintWorkletImageCache {
 
   void PaintImageInTask(const PaintImage& paint_image);
 
+  void NotifyDidPrepareTiles();
+
   // Returns a callback to decrement the ref count for the corresponding entry.
   std::pair<PaintRecord*, base::OnceCallback<void()>> GetPaintRecordAndRef(
       PaintWorkletInput* input);
@@ -51,6 +57,8 @@ class CC_EXPORT PaintWorkletImageCache {
   GetRecordsForTest() {
     return records_;
   }
+
+  void SetNumOfFramesToPurgeCacheEntryForTest(size_t);
 
  private:
   void DecrementCacheRefCount(PaintWorkletInput* input);
@@ -64,6 +72,8 @@ class CC_EXPORT PaintWorkletImageCache {
   // life time as the LayerTreeHostImpl, that guarantees that the painter will
   // live as long as the LayerTreeHostImpl.
   std::unique_ptr<PaintWorkletLayerPainter> painter_;
+
+  size_t num_of_frames_to_purge_cache_entry_ = 5u;
 };
 
 }  // namespace cc
