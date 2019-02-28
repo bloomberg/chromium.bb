@@ -296,12 +296,6 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     if config_lib.IsCQType(self._run.config.build_type):
       self.ReportHWTestResults(cmd_result.json_dump_result, build_id, db)
 
-    if db:
-      db.InsertBuildMessage(
-          build_id,
-          message_type=constants.SUBSYSTEMS,
-          message_subtype=constants.SUBSYSTEM_UNUSED,
-          board=self._current_board)
     if cmd_result.to_raise:
       raise cmd_result.to_raise
 
