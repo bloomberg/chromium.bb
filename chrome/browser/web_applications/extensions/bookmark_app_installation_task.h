@@ -69,9 +69,8 @@ class BookmarkAppInstallationTask {
 
   virtual ~BookmarkAppInstallationTask();
 
-  virtual void InstallWebAppOrShortcutFromWebContents(
-      content::WebContents* web_contents,
-      ResultCallback callback);
+  virtual void Install(content::WebContents* web_contents,
+                       ResultCallback callback);
 
   const web_app::PendingAppManager::AppInfo& app_info() { return app_info_; }
 

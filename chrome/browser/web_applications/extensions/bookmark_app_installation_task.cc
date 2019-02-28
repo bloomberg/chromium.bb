@@ -65,11 +65,9 @@ BookmarkAppInstallationTask::BookmarkAppInstallationTask(
 
 BookmarkAppInstallationTask::~BookmarkAppInstallationTask() = default;
 
-void BookmarkAppInstallationTask::InstallWebAppOrShortcutFromWebContents(
-    content::WebContents* web_contents,
-    ResultCallback callback) {
+void BookmarkAppInstallationTask::Install(content::WebContents* web_contents,
+                                          ResultCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   data_retriever_->GetWebApplicationInfo(
       web_contents,
       base::BindOnce(&BookmarkAppInstallationTask::OnGetWebApplicationInfo,
