@@ -5919,3 +5919,6 @@ crbug.com/932078 virtual/outofblink-cors/http/tests/security/powerfulFeatureRest
 
 # Wasm threads enabled by default
 crbug.com/754910 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/wasm-threads-origin-trial-disabled.html [ Skip ]
+
+# Sheriff 2019-02-28
+crbug.com/936827 external/wpt/fullscreen/api/element-request-fullscreen-and-remove-manual.html [ Failure Pass ]
