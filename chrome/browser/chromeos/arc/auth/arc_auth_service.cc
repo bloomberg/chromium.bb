@@ -12,6 +12,7 @@
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -25,7 +26,6 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_data_removal_dialog.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_features.h"
@@ -454,7 +454,7 @@ void ArcAuthService::OnRefreshTokenUpdatedForAccount(
   // proper Profile independent entity once we have that.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!chromeos::switches::IsAccountManagerEnabled())
+  if (!chromeos::IsAccountManagerAvailable(profile_))
     return;
 
   // Ignore the update if ARC has not been provisioned yet.
@@ -482,7 +482,7 @@ void ArcAuthService::OnExtendedAccountInfoRemoved(
     const AccountInfo& account_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!chromeos::switches::IsAccountManagerEnabled())
+  if (!chromeos::IsAccountManagerAvailable(profile_))
     return;
 
   DCHECK(!IsPrimaryGaiaAccount(account_info.gaia));
@@ -687,7 +687,7 @@ void ArcAuthService::SkipMergeSessionForTesting() {
 }
 
 void ArcAuthService::TriggerAccountsPushToArc() {
-  if (!chromeos::switches::IsAccountManagerEnabled())
+  if (!chromeos::IsAccountManagerAvailable(profile_))
     return;
 
   const std::vector<AccountInfo> accounts =

@@ -21,7 +21,7 @@
 #include "google_apis/google_api_keys.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/constants/chromeos_switches.h"
+#include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #endif
 
 using signin::AccountConsistencyMethod;
@@ -210,11 +210,9 @@ AccountConsistencyModeManager::ComputeAccountConsistencyMethod(
       kAccountConsistencyFeature, kAccountConsistencyFeatureMethodParameter);
 
 #if defined(OS_CHROMEOS)
-  if (chromeos::switches::IsAccountManagerEnabled())
+  if (chromeos::IsAccountManagerAvailable(profile))
     return AccountConsistencyMethod::kMirror;
 
-  // TODO(sinhak): Clean this up. When Account Manager is released, Chrome OS
-  // will always have Mirror enabled for regular profiles.
   return (method_value == kAccountConsistencyFeatureMethodMirror ||
           profile->GetPrefs()->GetBoolean(
               prefs::kAccountConsistencyMirrorRequired))
