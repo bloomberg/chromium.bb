@@ -1222,8 +1222,8 @@ void Internals::setTextMatchMarkersActive(Node* node,
                                           unsigned end_offset,
                                           bool active) {
   DCHECK(node);
-  node->GetDocument().Markers().SetTextMatchMarkersActive(node, start_offset,
-                                                          end_offset, active);
+  node->GetDocument().Markers().SetTextMatchMarkersActive(
+      ToText(*node), start_offset, end_offset, active);
 }
 
 void Internals::setMarkedTextMatchesAreHighlighted(Document* document,
