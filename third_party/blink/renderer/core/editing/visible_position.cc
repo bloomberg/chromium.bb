@@ -121,8 +121,7 @@ VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::Create(
     DCHECK(context);
     DCHECK(context->IsLayoutNGMixin());
 
-    const NGOffsetMapping* mapping =
-        NGInlineNode::GetOffsetMapping(context, nullptr);
+    const NGOffsetMapping* mapping = NGInlineNode::GetOffsetMapping(context);
     DCHECK(mapping);
 
     const base::Optional<unsigned> offset =

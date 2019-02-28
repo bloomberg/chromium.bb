@@ -315,8 +315,7 @@ NGCaretPosition ComputeNGCaretPosition(const PositionWithAffinity& position) {
   if (!context)
     return NGCaretPosition();
 
-  const NGOffsetMapping* mapping =
-      NGInlineNode::GetOffsetMapping(context, nullptr);
+  const NGOffsetMapping* mapping = NGInlineNode::GetOffsetMapping(context);
   DCHECK(mapping);
   const base::Optional<unsigned> maybe_offset =
       mapping->GetTextContentOffset(position.GetPosition());

@@ -1181,9 +1181,8 @@ TEST_P(NGOffsetMappingGetterTest, Get) {
   // engine.
   DCHECK_EQ(layout_block_flow->IsLayoutNGMixin(), GetParam());
 
-  std::unique_ptr<NGOffsetMapping> storage;
   const NGOffsetMapping* mapping =
-      NGInlineNode::GetOffsetMapping(layout_block_flow, &storage);
+      NGInlineNode::GetOffsetMapping(layout_block_flow);
   EXPECT_TRUE(mapping);
 
   const String& text_content = mapping->GetText();
