@@ -17,6 +17,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_log.h"
 #include "base/values.h"
+#include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "services/tracing/public/mojom/tracing.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -82,6 +83,8 @@ class MockRecorder : public mojom::Recorder {
 
 class TraceEventAgentTest : public testing::Test {
  public:
+  void SetUp() override { ProducerClient::ResetTaskRunnerForTesting(); }
+
   void TearDown() override {
     base::trace_event::TraceLog::GetInstance()->SetDisabled();
     recorder_.reset();

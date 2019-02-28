@@ -79,6 +79,7 @@ base::SequencedTaskRunner* ProducerClient::GetTaskRunner() {
 
 // static
 void ProducerClient::ResetTaskRunnerForTesting() {
+  DETACH_FROM_SEQUENCE(ProducerClient::Get()->sequence_checker_);
   GetPerfettoTaskRunner()->ResetTaskRunnerForTesting(CreateTaskRunner());
 }
 
