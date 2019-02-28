@@ -185,7 +185,7 @@ void UtilityServiceFactory::RunNetworkServiceOnIOThread(
     scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner) {
   auto service = std::make_unique<network::NetworkService>(
       std::move(network_registry_), nullptr /* request */,
-      nullptr /* net_log */, std::move(service_request));
+      nullptr /* net_log */, std::move(service_request), true);
 
   // Transfer ownership of the service to itself, and have it post to the main
   // thread on self-termination to kill the process.

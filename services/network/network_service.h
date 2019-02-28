@@ -77,7 +77,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
       std::unique_ptr<service_manager::BinderRegistry> registry,
       mojom::NetworkServiceRequest request = nullptr,
       net::NetLog* net_log = nullptr,
-      service_manager::mojom::ServiceRequest service_request = nullptr);
+      service_manager::mojom::ServiceRequest service_request = nullptr,
+      bool delay_initialization_until_set_client = false);
 
   ~NetworkService() override;
 
@@ -111,6 +112,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // Allows late binding if the mojo request wasn't specified in the
   // constructor.
   void Bind(mojom::NetworkServiceRequest request);
+
+  // Allows the browser process to synchronously initialize the NetworkService.
+  // TODO(jam): remove this once the old path is gone.
+  void Initialize(mojom::NetworkServiceParamsPtr params);
 
   // Creates a NetworkService instance on the current thread, optionally using
   // the passed-in NetLog. Does not take ownership of |net_log|. Must be
@@ -147,7 +152,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
       net::NetLog::ThreadSafeObserver* observer);
 
   // mojom::NetworkService implementation:
-  void SetClient(mojom::NetworkServiceClientPtr client) override;
+  void SetClient(mojom::NetworkServiceClientPtr client,
+                 mojom::NetworkServiceParamsPtr params) override;
   void StartNetLog(base::File file,
                    mojom::NetLogCaptureMode capture_mode,
                    base::Value constants) override;
@@ -259,6 +265,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void AckUpdateLoadInfo();
 
   service_manager::ServiceBinding service_binding_{this};
+
+  bool initialized_ = false;
 
   net::NetLog* net_log_ = nullptr;
 

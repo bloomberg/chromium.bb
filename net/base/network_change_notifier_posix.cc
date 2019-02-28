@@ -64,12 +64,14 @@ void NetworkChangeNotifierPosix::NotifierThread::CleanUp() {
   dns_config_service_.reset();
 }
 
-NetworkChangeNotifierPosix::NetworkChangeNotifierPosix()
+NetworkChangeNotifierPosix::NetworkChangeNotifierPosix(
+    NetworkChangeNotifier::ConnectionType initial_connection_type,
+    NetworkChangeNotifier::ConnectionSubtype initial_connection_subtype)
     : NetworkChangeNotifier(NetworkChangeCalculatorParamsPosix()),
-      connection_type_(CONNECTION_UNKNOWN),
+      connection_type_(initial_connection_type),
       max_bandwidth_mbps_(
           NetworkChangeNotifier::GetMaxBandwidthMbpsForConnectionSubtype(
-              SUBTYPE_UNKNOWN)) {
+              initial_connection_subtype)) {
   notifier_thread_.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 }

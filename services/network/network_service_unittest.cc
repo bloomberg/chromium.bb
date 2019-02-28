@@ -1514,7 +1514,8 @@ TEST_F(NetworkServiceNetworkDelegateTest, ClearSiteDataNetworkServiceCient) {
   mojom::NetworkServiceClientPtr client_ptr;
   auto client_impl = std::make_unique<ClearSiteDataNetworkServiceClient>(
       mojo::MakeRequest(&client_ptr));
-  service()->SetClient(std::move(client_ptr));
+  service()->SetClient(std::move(client_ptr),
+                       network::mojom::NetworkServiceParams::New());
   url = https_server()->GetURL("/bar");
   url = AddQuery(url, "header", kClearCookiesHeader);
   EXPECT_EQ(0, client_impl->on_clear_site_data_counter());
@@ -1532,7 +1533,8 @@ TEST_F(NetworkServiceNetworkDelegateTest, HandleClearSiteDataHeaders) {
   mojom::NetworkServiceClientPtr client_ptr;
   auto client_impl = std::make_unique<ClearSiteDataNetworkServiceClient>(
       mojo::MakeRequest(&client_ptr));
-  service()->SetClient(std::move(client_ptr));
+  service()->SetClient(std::move(client_ptr),
+                       network::mojom::NetworkServiceParams::New());
 
   // |passed_header_value| are only checked if |should_call_client| is true.
   const struct TestCase {

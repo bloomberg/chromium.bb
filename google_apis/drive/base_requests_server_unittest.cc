@@ -52,7 +52,8 @@ class BaseRequestsServerTest : public testing::Test {
     network_service_client_ =
         std::make_unique<network::TestNetworkServiceClient>(
             mojo::MakeRequest(&network_service_client_ptr));
-    network_service_ptr->SetClient(std::move(network_service_client_ptr));
+    network_service_ptr->SetClient(std::move(network_service_client_ptr),
+                                   network::mojom::NetworkServiceParams::New());
 
     network::mojom::URLLoaderFactoryParamsPtr params =
         network::mojom::URLLoaderFactoryParams::New();

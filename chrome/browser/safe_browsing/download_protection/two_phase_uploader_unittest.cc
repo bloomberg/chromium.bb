@@ -76,7 +76,8 @@ class TwoPhaseUploaderTest : public testing::Test {
         std::make_unique<network::TestNetworkServiceClient>(
             mojo::MakeRequest(&network_service_client_ptr));
     network_service_ = network::NetworkService::CreateForTesting();
-    network_service_->SetClient(std::move(network_service_client_ptr));
+    network_service_->SetClient(std::move(network_service_client_ptr),
+                                network::mojom::NetworkServiceParams::New());
     shared_url_loader_factory_ =
         base::MakeRefCounted<network::TestSharedURLLoaderFactory>(
             network_service_.get());

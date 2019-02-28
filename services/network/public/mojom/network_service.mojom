@@ -235,12 +235,18 @@ struct CryptConfig {
   mojo_base.mojom.FilePath user_data_path;
 };
 
+// Parameters needed to initialize the network service.
+struct NetworkServiceParams {
+  ConnectionType initial_connection_type = CONNECTION_UNKNOWN;
+  ConnectionSubtype initial_connection_subtype = SUBTYPE_UNKNOWN;
+};
+
 // Browser interface to the network service.
 interface NetworkService {
   // Sets client used by all |NetworkContext|s creating by |NetworkService|.
   // Pending requests may hang if the |client| pipe is closed before they
   // complete.
-  SetClient(NetworkServiceClient client);
+  SetClient(NetworkServiceClient client, NetworkServiceParams params);
 
   // Starts observing the NetLog event stream and writing entries to |file|.
   // |constants| is a legend used for decoding constant values in the log; it

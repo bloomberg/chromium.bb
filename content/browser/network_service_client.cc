@@ -405,15 +405,6 @@ NetworkServiceClient::NetworkServiceClient(
     DCHECK(net::NetworkChangeNotifier::HasNetworkChangeNotifier());
     GetNetworkService()->GetNetworkChangeManager(
         mojo::MakeRequest(&network_change_manager_));
-    // Sync the initial network state.
-    network_change_manager_->OnNetworkChanged(
-        true /* dns_changed */, true /* ip_address_changed */,
-        true /* connection_type_changed */,
-        network::mojom::ConnectionType(
-            net::NetworkChangeNotifier::GetConnectionType()),
-        true /* connection_subtype_changed */,
-        network::mojom::ConnectionSubtype(
-            net::NetworkChangeNotifier::GetConnectionSubtype()));
     net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
     net::NetworkChangeNotifier::AddMaxBandwidthObserver(this);
     net::NetworkChangeNotifier::AddIPAddressObserver(this);

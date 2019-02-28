@@ -23,7 +23,9 @@ namespace net {
 // for network state changes.
 class NET_EXPORT NetworkChangeNotifierPosix : public NetworkChangeNotifier {
  public:
-  NetworkChangeNotifierPosix();
+  NetworkChangeNotifierPosix(
+      NetworkChangeNotifier::ConnectionType initial_connection_type,
+      NetworkChangeNotifier::ConnectionSubtype initial_connection_subtype);
   ~NetworkChangeNotifierPosix() override;
 
   // These methods are used to notify this object that a network property has
