@@ -36,8 +36,6 @@ void MediaControlsMediaEventListener::Attach() {
   GetMediaElement().addEventListener(event_type_names::kPause, this, false);
   GetMediaElement().addEventListener(event_type_names::kDurationchange, this,
                                      false);
-  GetMediaElement().addEventListener(event_type_names::kSeeking, this, false);
-  GetMediaElement().addEventListener(event_type_names::kSeeked, this, false);
   GetMediaElement().addEventListener(event_type_names::kError, this, false);
   GetMediaElement().addEventListener(event_type_names::kLoadedmetadata, this,
                                      false);
@@ -177,14 +175,6 @@ void MediaControlsMediaEventListener::Invoke(
   }
   if (event->type() == event_type_names::kPause) {
     media_controls_->OnPause();
-    return;
-  }
-  if (event->type() == event_type_names::kSeeking) {
-    media_controls_->OnSeeking();
-    return;
-  }
-  if (event->type() == event_type_names::kSeeked) {
-    media_controls_->OnSeeked();
     return;
   }
   if (event->type() == event_type_names::kError) {

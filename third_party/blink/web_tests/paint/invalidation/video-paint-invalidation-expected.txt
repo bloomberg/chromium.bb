@@ -24,7 +24,7 @@
       "drawsContent": false
     },
     {
-      "name": "LayoutFlexibleBox (relative positioned) DIV class='sizing-small test-mode phase-ready state-scrubbing'",
+      "name": "LayoutFlexibleBox (relative positioned) DIV class='sizing-small test-mode phase-ready state-stopped'",
       "position": [8, 8],
       "bounds": [320, 240]
     },

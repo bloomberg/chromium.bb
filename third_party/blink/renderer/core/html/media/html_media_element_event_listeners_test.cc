@@ -300,12 +300,8 @@ TEST_F(HTMLMediaElementWithMockSchedulerTest, OneTimeupdatePerSeek) {
   EXPECT_CALL(*timeupdate_handler, Invoke(_, _)).Times(0);
   platform_->RunForPeriodSeconds(1);
 
-  EXPECT_CALL(*timeupdate_handler, Invoke(_, _)).Times(1);
-  Video()->pause();
-  platform_->RunUntilIdle();
-
-  // Seek to some time in the past. A completed seek while paused should trigger
-  // a *single* timeupdate.
+  // Seek to some time in the past. A completed seek should trigger a *single*
+  // timeupdate.
   EXPECT_CALL(*timeupdate_handler, Invoke(_, _)).Times(1);
   ASSERT_GE(WebMediaPlayer()->CurrentTime(), 1);
   Video()->setCurrentTime(WebMediaPlayer()->CurrentTime() - 1);
@@ -358,14 +354,10 @@ TEST_F(HTMLMediaElementWithMockSchedulerTest, PeriodicTimeupdateAfterSeek) {
   ASSERT_GE(WebMediaPlayer()->CurrentTime(), 1);
   Video()->setCurrentTime(WebMediaPlayer()->CurrentTime() - 1);
   WebMediaPlayer()->FinishSeek();
-
-  // Expect another timeupdate after FinishSeek due to
-  // seeking -> begin scrubbing -> pause -> timeupdate.
-  EXPECT_CALL(*timeupdate_handler, Invoke(_, _)).Times(1);
   platform_->RunUntilIdle();
 
   // Advancing the remainder of the last periodic timeupdate interval should be
-  // insufficient to trigger a new timeupdate event because the seek's
+  // insufficient to triggger a new timeupdate event because the seek's
   // timeupdate occurred only 125ms ago. We desire to fire periodic timeupdates
   // exactly every 250ms from the last timeupdate, and the seek's timeupdate
   // should reset that 250ms ms countdown.
