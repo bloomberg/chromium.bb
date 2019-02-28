@@ -10775,9 +10775,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TouchEventAckQueueOrdering) {
 
 // This test verifies that the main-frame's page scale factor propagates to
 // the compositor layertrees in each of the child processes.
-// TODO(crbug.com/923226): Disabled due to flakiness.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       DISABLED_PageScaleFactorPropagatesToOOPIFs) {
+                       PageScaleFactorPropagatesToOOPIFs) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c),d)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
