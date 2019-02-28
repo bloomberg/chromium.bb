@@ -140,11 +140,6 @@ const char kAutofillShowFullDisclosureLabelDescription[] =
     "When enabled, the Autofill dropdown's labels are displayed in the full "
     "disclosure format.";
 
-const char kAutofillPreviewStyleExperimentName[] =
-    "Autofill Preview Style Experiment";
-const char kAutofillPreviewStyleExperimentDescription[] =
-    "Allows experimentation with the Autofill field preview's style.";
-
 const char kAutofillEnforceMinRequiredFieldsForHeuristicsName[] =
     "Autofill Enforce Min Required Fields For Heuristics";
 const char kAutofillEnforceMinRequiredFieldsForHeuristicsDescription[] =
