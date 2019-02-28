@@ -20,7 +20,7 @@ def AlreadyUpToDate():
   if not os.path.exists(LLD_LINK_PATH):
     return False
   lld_rev = subprocess.check_output([LLD_LINK_PATH, '--version'])
-  return (re.match(r'LLD.*\(trunk (\d+)\)', lld_rev).group(1) ==
+  return (re.match(r'LLD.*\(.*trunk (\d+)\)', lld_rev).group(1) ==
              update.CLANG_REVISION)
 
 
