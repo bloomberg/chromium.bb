@@ -136,10 +136,10 @@ void InvalidationSet::Combine(const InvalidationSet& other) {
 
   CHECK_NE(&other, this);
 
-  if (IsSiblingInvalidationSet()) {
-    SiblingInvalidationSet& siblings = ToSiblingInvalidationSet(*this);
+  if (auto* invalidation_set = DynamicTo<SiblingInvalidationSet>(this)) {
+    SiblingInvalidationSet& siblings = *invalidation_set;
     const SiblingInvalidationSet& other_siblings =
-        ToSiblingInvalidationSet(other);
+        To<SiblingInvalidationSet>(other);
 
     siblings.UpdateMaxDirectAdjacentSelectors(
         other_siblings.MaxDirectAdjacentSelectors());
@@ -195,10 +195,10 @@ void InvalidationSet::Combine(const InvalidationSet& other) {
 }
 
 void InvalidationSet::Destroy() const {
-  if (IsDescendantInvalidationSet())
-    delete ToDescendantInvalidationSet(this);
+  if (auto* invalidation_set = DynamicTo<DescendantInvalidationSet>(this))
+    delete invalidation_set;
   else
-    delete ToSiblingInvalidationSet(this);
+    delete To<SiblingInvalidationSet>(this);
 }
 
 void InvalidationSet::ClearAllBackings() {
