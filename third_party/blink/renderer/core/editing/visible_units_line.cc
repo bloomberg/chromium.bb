@@ -698,6 +698,8 @@ VisiblePosition PreviousLinePosition(const VisiblePosition& visible_position,
                                      EditableType editable_type) {
   DCHECK(visible_position.IsValid()) << visible_position;
 
+  // TODO(xiaochengh): Make all variables |const|.
+
   Position p = visible_position.DeepEquivalent();
   Node* node = p.AnchorNode();
 
@@ -765,6 +767,8 @@ VisiblePosition NextLinePosition(const VisiblePosition& visible_position,
                                  EditableType editable_type) {
   DCHECK(visible_position.IsValid()) << visible_position;
 
+  // TODO(xiaochengh): Make all variables |const|.
+
   Position p = visible_position.DeepEquivalent();
   Node* node = p.AnchorNode();
 
@@ -788,9 +792,10 @@ VisiblePosition NextLinePosition(const VisiblePosition& visible_position,
   if (!root) {
     // FIXME: We need do the same in previousLinePosition.
     Node* child = NodeTraversal::ChildAt(*node, p.ComputeEditingOffset());
-    node = child ? child : &NodeTraversal::LastWithinOrSelf(*node);
+    Node* search_start_node =
+        child ? child : &NodeTraversal::LastWithinOrSelf(*node);
     Position position = NextRootInlineBoxCandidatePosition(
-        node, visible_position, editable_type);
+        search_start_node, visible_position, editable_type);
     if (position.IsNotNull()) {
       const VisiblePosition candidate = CreateVisiblePosition(position);
       const InlineBox* inline_box =
