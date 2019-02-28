@@ -151,11 +151,6 @@ if (enable_vr) {
     }
 
     if (enable_oculus_vr) {
-      # TODO(crbug.com/936459): Move these files into their own target so this
-      # warning disablement is smaller.
-      configs += [ "//build/config/compiler:no_chromium_code" ]
-      configs -= [ "//build/config/compiler:chromium_code" ]
-
       deps += [
         "//device/gamepad",
         "//device/gamepad/public/cpp:shared_with_blink",
