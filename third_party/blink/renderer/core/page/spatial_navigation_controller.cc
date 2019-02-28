@@ -320,7 +320,8 @@ bool SpatialNavigationController::AdvanceWithinContainer(
 
 Node* SpatialNavigationController::StartingNode() {
   if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
-    if (interest_element_ && interest_element_->GetDocument().GetFrame()) {
+    if (interest_element_ && interest_element_->isConnected() &&
+        interest_element_->GetDocument().GetFrame()) {
       // If an iframe is interested, start the search from its document node.
       // This matches the behavior in the focus case below where focusing a
       // frame means the focused document doesn't have a focused element and so
