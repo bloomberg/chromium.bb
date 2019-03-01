@@ -29,12 +29,13 @@ namespace blink {
 class Path;
 class SVGPathByteStream;
 
-// String/SVGPathByteStream -> Path
-bool CORE_EXPORT BuildPathFromString(const String&, Path&);
+// StringView/SVGPathByteStream -> Path
+bool CORE_EXPORT BuildPathFromString(const StringView&, Path&);
 bool BuildPathFromByteStream(const SVGPathByteStream&, Path&);
 
-// String -> SVGPathByteStream
-SVGParsingError BuildByteStreamFromString(const String&, SVGPathByteStream&);
+// StringView -> SVGPathByteStream
+SVGParsingError BuildByteStreamFromString(const StringView&,
+                                          SVGPathByteStream&);
 
 // SVGPathByteStream -> String
 enum PathSerializationFormat { kNoTransformation, kTransformToAbsolute };

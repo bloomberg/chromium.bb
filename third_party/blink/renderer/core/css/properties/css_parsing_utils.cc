@@ -2156,9 +2156,7 @@ CSSValue* ConsumePath(CSSParserTokenRange& range) {
 
   if (function_args.Peek().GetType() != kStringToken)
     return nullptr;
-  String path_string =
-      function_args.ConsumeIncludingWhitespace().Value().ToString();
-
+  StringView path_string = function_args.ConsumeIncludingWhitespace().Value();
   std::unique_ptr<SVGPathByteStream> byte_stream = SVGPathByteStream::Create();
   if (BuildByteStreamFromString(path_string, *byte_stream) !=
           SVGParseStatus::kNoError ||

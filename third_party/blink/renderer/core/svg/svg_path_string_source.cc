@@ -25,18 +25,18 @@
 
 namespace blink {
 
-SVGPathStringSource::SVGPathStringSource(const String& string)
-    : is_8bit_source_(string.Is8Bit()),
+SVGPathStringSource::SVGPathStringSource(StringView source)
+    : is_8bit_source_(source.Is8Bit()),
       previous_command_(kPathSegUnknown),
-      string_(string) {
-  DCHECK(!string.IsNull());
+      source_(source) {
+  DCHECK(!source.IsNull());
 
   if (is_8bit_source_) {
-    current_.character8_ = string.Characters8();
-    end_.character8_ = current_.character8_ + string.length();
+    current_.character8_ = source.Characters8();
+    end_.character8_ = current_.character8_ + source.length();
   } else {
-    current_.character16_ = string.Characters16();
-    end_.character16_ = current_.character16_ + string.length();
+    current_.character16_ = source.Characters16();
+    end_.character16_ = current_.character16_ + source.length();
   }
   EatWhitespace();
 }
@@ -125,8 +125,8 @@ void SVGPathStringSource::SetErrorMark(SVGParseStatus status) {
   if (error_.Status() != SVGParseStatus::kNoError)
     return;
   size_t locus = is_8bit_source_
-                     ? current_.character8_ - string_.Characters8()
-                     : current_.character16_ - string_.Characters16();
+                     ? current_.character8_ - source_.Characters8()
+                     : current_.character16_ - source_.Characters16();
   error_ = SVGParsingError(status, locus);
 }
 
