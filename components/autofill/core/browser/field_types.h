@@ -169,9 +169,12 @@ enum ServerFieldType {
   // Search term fields are detected, but not filled.
   SEARCH_TERM = 97,
 
+  // Price fields are detected, but not filled.
+  PRICE = 98,
+
   // No new types can be added without a corresponding change to the Autofill
   // server.
-  MAX_VALID_FIELD_TYPE = 98,
+  MAX_VALID_FIELD_TYPE = 99,
 };
 
 // The list of all HTML autocomplete field type hints supported by Chrome.
