@@ -12,7 +12,6 @@
 #include "base/message_loop/message_pump.h"
 #include "base/message_loop/watchable_io_message_pump_posix.h"
 #include "base/threading/thread_checker.h"
-#include "base/time/time.h"
 
 // Declare structs we need from libevent.h rather than including it
 struct event_base;
@@ -99,9 +98,6 @@ class BASE_EXPORT MessagePumpLibevent : public MessagePump,
 
   // This flag is set if libevent has processed I/O events.
   bool processed_io_events_;
-
-  // The time at which we should call DoDelayedWork.
-  TimeTicks delayed_work_time_;
 
   // Libevent dispatcher.  Watches all sockets registered with it, and sends
   // readiness callbacks when a socket is ready for I/O.
