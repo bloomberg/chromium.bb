@@ -481,6 +481,9 @@ void SetIndividualRuntimeFeatures(
       base::FeatureList::IsEnabled(
           features::kMimeHandlerViewInCrossProcessFrame));
 
+  WebRuntimeFeatures::EnableFallbackCursorMode(
+      base::FeatureList::IsEnabled(features::kFallbackCursorMode));
+
   if (base::FeatureList::IsEnabled(features::kUserAgentClientHint))
     WebRuntimeFeatures::EnableFeatureFromString("UserAgentClientHint", true);
 }

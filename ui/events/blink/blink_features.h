@@ -37,6 +37,9 @@ extern const base::Feature kNoHoverDuringScroll;
 // Enables handling touch events in compositor using impl side touch action
 // knowledge.
 extern const base::Feature kCompositorTouchAction;
+
+// Enables fallback cursor mode for dpad devices.
+extern const base::Feature kFallbackCursorMode;
 }
 
 #endif  // UI_EVENTS_BLINK_BLINK_FEATURES_H_

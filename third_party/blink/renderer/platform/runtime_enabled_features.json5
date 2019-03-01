@@ -494,6 +494,9 @@
       name: "ExtraWebGLVideoTextureMetadata",
     },
     {
+      name: "FallbackCursorMode",
+    },
+    {
       name: "FastFlatTreeTraversal",
     },
     {
