@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/protobuf/proto_library.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
+import("//third_party/protobuf/proto_library.gni")
 
 proto_library("safebrowsing_proto") {
   sources = [
@@ -480,5 +480,16 @@ fuzzer_test("v4_get_hash_protocol_manager_fuzzer") {
   deps = [
     ":safebrowsing_proto",
     ":v4_get_hash_protocol_manager",
+  ]
+}
+
+fuzzer_test("v4_store_fuzzer") {
+  sources = [
+    "v4_store_fuzzer.cc",
+  ]
+  deps = [
+    ":v4_store",
+    ":v4_test_util",
+    "//base/test:test_support",
   ]
 }
