@@ -99,6 +99,7 @@ class ClientAndroid : public Client,
   std::unique_ptr<UiControllerAndroid> ui_controller_android_;
   base::OnceCallback<void(bool, const std::string&)>
       fetch_access_token_callback_;
+  std::string server_url_;
 
   base::WeakPtrFactory<ClientAndroid> weak_ptr_factory_;
 
