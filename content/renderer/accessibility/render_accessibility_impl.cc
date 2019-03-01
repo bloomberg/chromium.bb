@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/containers/queue.h"
@@ -23,6 +24,7 @@
 #include "content/renderer/accessibility/blink_ax_enum_conversion.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -130,7 +132,7 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
 
   const WebDocument& document = GetMainDocument();
   if (!document.IsNull()) {
-    ax_context_ = std::make_unique<blink::WebAXContext>(document);
+    ax_context_ = std::make_unique<WebAXContext>(document);
     StartOrStopLabelingImages(ui::AXMode(), mode);
 
     // It's possible that the webview has already loaded a webpage without
@@ -141,11 +143,12 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
   }
 }
 
-RenderAccessibilityImpl::~RenderAccessibilityImpl() {
-}
+RenderAccessibilityImpl::~RenderAccessibilityImpl() = default;
 
 void RenderAccessibilityImpl::DidCreateNewDocument() {
-  ax_context_.reset(new blink::WebAXContext(GetMainDocument()));
+  const WebDocument& document = GetMainDocument();
+  if (!document.IsNull())
+    ax_context_ = std::make_unique<WebAXContext>(document);
 }
 
 void RenderAccessibilityImpl::DidCommitProvisionalLoad(
@@ -223,14 +226,13 @@ bool RenderAccessibilityImpl::OnMessageReceived(const IPC::Message& message) {
 }
 
 void RenderAccessibilityImpl::HandleWebAccessibilityEvent(
-    const blink::WebAXObject& obj,
+    const WebAXObject& obj,
     ax::mojom::Event event) {
   HandleAXEvent(obj, event);
 }
 
-void RenderAccessibilityImpl::MarkWebAXObjectDirty(
-    const blink::WebAXObject& obj,
-    bool subtree) {
+void RenderAccessibilityImpl::MarkWebAXObjectDirty(const WebAXObject& obj,
+                                                   bool subtree) {
   DirtyObject dirty_object;
   dirty_object.obj = obj;
   dirty_object.event_from = GetEventFrom();
@@ -245,9 +247,9 @@ void RenderAccessibilityImpl::MarkWebAXObjectDirty(
 void RenderAccessibilityImpl::HandleAccessibilityFindInPageResult(
     int identifier,
     int match_index,
-    const blink::WebAXObject& start_object,
+    const WebAXObject& start_object,
     int start_offset,
-    const blink::WebAXObject& end_object,
+    const WebAXObject& end_object,
     int end_offset) {
   AccessibilityHostMsg_FindInPageResultParams params;
   params.request_id = identifier;
@@ -273,7 +275,7 @@ void RenderAccessibilityImpl::AccessibilityFocusedNodeChanged(
   }
 }
 
-void RenderAccessibilityImpl::HandleAXEvent(const blink::WebAXObject& obj,
+void RenderAccessibilityImpl::HandleAXEvent(const WebAXObject& obj,
                                             ax::mojom::Event event,
                                             int action_request_id) {
   const WebDocument& document = GetMainDocument();
@@ -350,7 +352,7 @@ void RenderAccessibilityImpl::ScheduleSendAccessibilityEventsIfNeeded() {
   // haven't committed yet).  Doing so might trigger layout, which may not work
   // correctly for those frames.  The events should be sent once such a frame
   // commits.
-  if (!render_frame_->in_frame_tree())
+  if (!render_frame_ || !render_frame_->in_frame_tree())
     return;
 
   if (!ack_pending_ && !weak_factory_.HasWeakPtrs()) {
@@ -416,7 +418,7 @@ void RenderAccessibilityImpl::OnPluginRootNodeUpdated() {
     }
 
     // Explore children of this object.
-    std::vector<blink::WebAXObject> children;
+    std::vector<WebAXObject> children;
     tree_source_.GetChildren(obj, &children);
     for (size_t i = 0; i < children.size(); ++i)
       objs_to_explore.push(children[i]);
@@ -424,7 +426,7 @@ void RenderAccessibilityImpl::OnPluginRootNodeUpdated() {
 }
 
 WebDocument RenderAccessibilityImpl::GetMainDocument() {
-  if (render_frame_->GetWebFrame())
+  if (render_frame_ && render_frame_->GetWebFrame())
     return render_frame_->GetWebFrame()->GetDocument();
   return WebDocument();
 }
@@ -609,7 +611,7 @@ void RenderAccessibilityImpl::SendLocationChanges() {
     new_locations[id] = new_location;
 
     // Explore children of this object.
-    std::vector<blink::WebAXObject> children;
+    std::vector<WebAXObject> children;
     tree_source_.GetChildren(obj, &children);
     for (size_t i = 0; i < children.size(); ++i)
       objs_to_explore.push(children[i]);
@@ -711,10 +713,8 @@ void RenderAccessibilityImpl::OnPerformAction(
     case ax::mojom::Action::kAnnotatePageImages:
       // Ensure we aren't already labeling images, in which case this should
       // not change.
-      if (!ax_image_annotator_) {
-        ax_image_annotator_ = std::make_unique<AXImageAnnotator>(this);
-        tree_source_.AddImageAnnotator(ax_image_annotator_.get());
-      }
+      if (!ax_image_annotator_)
+        CreateAXImageAnnotator();
       break;
   }
 }
@@ -769,8 +769,7 @@ void RenderAccessibilityImpl::OnHitTest(const gfx::Point& point,
   HandleAXEvent(obj, event_to_fire, action_request_id);
 }
 
-void RenderAccessibilityImpl::OnLoadInlineTextBoxes(
-    const blink::WebAXObject& obj) {
+void RenderAccessibilityImpl::OnLoadInlineTextBoxes(const WebAXObject& obj) {
   ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
   if (tree_source_.ShouldLoadInlineTextBoxes(obj))
     return;
@@ -789,8 +788,8 @@ void RenderAccessibilityImpl::OnLoadInlineTextBoxes(
   HandleAXEvent(obj, ax::mojom::Event::kTreeChanged);
 }
 
-void RenderAccessibilityImpl::OnGetImageData(
-    const blink::WebAXObject& obj, const gfx::Size& max_size) {
+void RenderAccessibilityImpl::OnGetImageData(const WebAXObject& obj,
+                                             const gfx::Size& max_size) {
   ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
   if (tree_source_.image_data_node_id() == obj.AxID())
     return;
@@ -824,6 +823,7 @@ void RenderAccessibilityImpl::OnReset(int reset_token) {
 }
 
 void RenderAccessibilityImpl::OnDestruct() {
+  render_frame_ = nullptr;
   delete this;
 }
 
@@ -853,12 +853,26 @@ void RenderAccessibilityImpl::AddPluginTreeToUpdate(
     update->has_tree_data = true;
 }
 
+void RenderAccessibilityImpl::CreateAXImageAnnotator() {
+  if (!render_frame_)
+    return;
+
+  image_annotation::mojom::AnnotatorPtr annotator_ptr;
+  render_frame()->GetRemoteInterfaces()->GetInterface(
+      mojo::MakeRequest(&annotator_ptr));
+  ax_image_annotator_ =
+      std::make_unique<AXImageAnnotator>(this, std::move(annotator_ptr));
+  tree_source_.AddImageAnnotator(ax_image_annotator_.get());
+}
+
 void RenderAccessibilityImpl::StartOrStopLabelingImages(ui::AXMode old_mode,
                                                         ui::AXMode new_mode) {
+  if (!render_frame_)
+    return;
+
   if (!old_mode.has_mode(ui::AXMode::kLabelImages) &&
       new_mode.has_mode(ui::AXMode::kLabelImages)) {
-    ax_image_annotator_ = std::make_unique<AXImageAnnotator>(this);
-    tree_source_.AddImageAnnotator(ax_image_annotator_.get());
+    CreateAXImageAnnotator();
   } else if (old_mode.has_mode(ui::AXMode::kLabelImages) &&
              !new_mode.has_mode(ui::AXMode::kLabelImages)) {
     tree_source_.RemoveImageAnnotator();

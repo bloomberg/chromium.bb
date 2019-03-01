@@ -111,7 +111,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   ax::mojom::TextPosition GetTextPosition() const final;
   int TextLength() const override;
   int32_t GetTextStyle() const final;
-  KURL Url() const override;
 
   // Inline text boxes.
   void LoadInlineTextBoxes() override;

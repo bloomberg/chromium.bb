@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_types.h"
 #include "base/optional.h"
+#include "content/common/content_export.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
 #include "services/image_annotation/public/cpp/image_processor.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
@@ -26,13 +27,16 @@ class WebAXObject;
 
 namespace content {
 
+class ContentClient;
+
 // This class gets notified that certain images have been added, removed or
 // updated on a page. This class is then responsible for retrieving the
 // automatic label for all images and notifying the RenderAccessibility that
 // owns it to update the relevant image annotations.
-class AXImageAnnotator final : public base::CheckedObserver {
+class CONTENT_EXPORT AXImageAnnotator : public base::CheckedObserver {
  public:
-  AXImageAnnotator(RenderAccessibilityImpl* const render_accessibility);
+  AXImageAnnotator(RenderAccessibilityImpl* const render_accessibility,
+                   image_annotation::mojom::AnnotatorPtr annotator_ptr);
   ~AXImageAnnotator() override;
 
   void Destroy();
@@ -67,14 +71,19 @@ class AXImageAnnotator final : public base::CheckedObserver {
     base::Optional<std::string> annotation_;
   };
 
-  // Given the URL of the main document and the src attribute of an image,
-  // generates a unique identifier for the image that could be provided to the
-  // image annotation service.
-  static std::string GenerateImageSourceId(const std::string& document_url,
-                                           const std::string& image_src);
-
   // Retrieves the image data from the renderer.
   static SkBitmap GetImageData(const blink::WebAXObject& image);
+
+  // Used by tests to override the content client.
+  virtual ContentClient* GetContentClient() const;
+
+  // Given a WebImage, it uses the URL of the main document and the src
+  // attribute of the image, generates a unique identifier for the image that
+  // could be provided to the image annotation service.
+  //
+  // This method is virtual to allow overriding it from tests.
+  virtual std::string GenerateImageSourceId(
+      const blink::WebAXObject& image) const;
 
   // Removes the automatic image annotations from all images.
   void MarkAllImagesDirty();
