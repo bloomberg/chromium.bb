@@ -191,7 +191,9 @@ void PropertyTreeManager::SetCurrentEffectState(
   } else if (previous_transform &&
              !current_.may_be_2d_axis_misaligned_to_render_surface) {
     current_.may_be_2d_axis_misaligned_to_render_surface =
-        !TransformsAre2dAxisAligned(current_.Transform(), *previous_transform);
+        !TransformsAre2dAxisAligned(current_.Transform(),
+                                    *previous_transform) ||
+        current_.Transform().Unalias().HasActiveTransformAnimation();
   }
 }
 
