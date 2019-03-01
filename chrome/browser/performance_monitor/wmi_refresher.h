@@ -22,8 +22,11 @@ namespace win {
 // Wrapper around an IWbemRefresher instance used to retrieve some system
 // performance counters.
 //
-// This object should live on a MayBlock() sequence. Concurrent calls to
-// RefreshAndGetDiskIdleTimeInPercent are not allowed.
+// The constructor and InitializeDiskIdleTimeConfig() don't have any sequencing
+// requirements. Calls to RefreshAndGetDiskIdleTimeInPercent() must happen on
+// the same sequence, after InitializeDiskIdleTimeConfig() has returned. All
+// methods except the constructor must be invoked in a context that accepts
+// blocking calls (e.g. a MayBlock() sequence).
 //
 // This class relies on the fact that by default all sequences are in a
 // multithreaded COM apartment.
@@ -33,8 +36,7 @@ class WMIRefresher {
   ~WMIRefresher();
 
   // Initialize everything needed to retrieve the disk idle time data via WMI.
-  // This should only be called once. This can be called on a sequence different
-  // than the one on which this object has been created.
+  // This should only be called once.
   //
   // Returns true on success, false otherwise.
   bool InitializeDiskIdleTimeConfig();

@@ -72,7 +72,9 @@ enum class WMIRefresher::RefreshStatus {
 };
 
 WMIRefresher::WMIRefresher() : initialized_called_(false) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // This object might be created on a sequence different than the one on which
+  // it'll be used.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 WMIRefresher::~WMIRefresher() = default;
