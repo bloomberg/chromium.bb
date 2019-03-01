@@ -109,6 +109,12 @@ public class TabModelImpl extends TabModelJniBridge {
     }
 
     @Override
+    public void broadcastSessionRestoreComplete() {
+        super.broadcastSessionRestoreComplete();
+        for (TabModelObserver observer : mObservers) observer.restoreCompleted();
+    }
+
+    @Override
     public void addObserver(TabModelObserver observer) {
         mObservers.addObserver(observer);
     }

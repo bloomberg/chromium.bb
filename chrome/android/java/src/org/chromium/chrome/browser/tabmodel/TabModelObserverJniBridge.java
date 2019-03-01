@@ -108,6 +108,9 @@ class TabModelObserverJniBridge implements TabModelObserver {
         nativeTabRemoved(mNativeTabModelObserverJniBridge, tab);
     }
 
+    @Override
+    public void restoreCompleted() {}
+
     /**
      * Creates an observer bridge for the given tab model. The native counterpart to this object
      * will hold a global reference to the Java endpoint and manage its lifetime. This is private as

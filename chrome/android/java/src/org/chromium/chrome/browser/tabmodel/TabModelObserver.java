@@ -104,4 +104,10 @@ public interface TabModelObserver {
      * @param tab The tab that has been removed.
      */
     void tabRemoved(Tab tab);
+
+    /**
+     * Called after all {@link org.chromium.chrome.browser.tab.TabState}s within {@link TabModel}
+     * are loaded from storage.
+     */
+    void restoreCompleted();
 }

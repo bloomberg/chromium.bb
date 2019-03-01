@@ -127,6 +127,11 @@ public class TabCountProvider {
             public void tabRemoved(Tab tab) {
                 updateTabCount();
             }
+
+            @Override
+            public void restoreCompleted() {
+                updateTabCount();
+            }
         };
 
         mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(
