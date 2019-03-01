@@ -187,11 +187,11 @@ void LogCursorSizeCounter(LocalFrame* frame, const Cursor& cursor) {
   IntSize scaled_size = image->Size();
   scaled_size.Scale(1 / cursor.ImageScaleFactor());
   if (scaled_size.Width() > 64 || scaled_size.Height() > 64) {
-    UseCounter::Count(frame, WebFeature::kCursorImageGT64x64);
+    UseCounter::Count(frame->GetDocument(), WebFeature::kCursorImageGT64x64);
   } else if (scaled_size.Width() > 32 || scaled_size.Height() > 32) {
-    UseCounter::Count(frame, WebFeature::kCursorImageGT32x32);
+    UseCounter::Count(frame->GetDocument(), WebFeature::kCursorImageGT32x32);
   } else {
-    UseCounter::Count(frame, WebFeature::kCursorImageLE32x32);
+    UseCounter::Count(frame->GetDocument(), WebFeature::kCursorImageLE32x32);
   }
 }
 

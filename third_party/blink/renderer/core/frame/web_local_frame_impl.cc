@@ -2216,7 +2216,8 @@ void WebLocalFrameImpl::BlinkFeatureUsageReport(const std::set<int>& features) {
   DCHECK(!features.empty());
   // Assimilate all features used/performed by the browser into UseCounter.
   for (int feature : features) {
-    UseCounter::Count(GetFrame(), static_cast<WebFeature>(feature));
+    UseCounter::Count(GetFrame()->GetDocument(),
+                      static_cast<WebFeature>(feature));
   }
 }
 
@@ -2272,11 +2273,13 @@ void WebLocalFrameImpl::SendOrientationChangeEvent() {
 }
 
 void WebLocalFrameImpl::DidCallAddSearchProvider() {
-  UseCounter::Count(GetFrame(), WebFeature::kExternalAddSearchProvider);
+  UseCounter::Count(GetFrame()->GetDocument(),
+                    WebFeature::kExternalAddSearchProvider);
 }
 
 void WebLocalFrameImpl::DidCallIsSearchProviderInstalled() {
-  UseCounter::Count(GetFrame(), WebFeature::kExternalIsSearchProviderInstalled);
+  UseCounter::Count(GetFrame()->GetDocument(),
+                    WebFeature::kExternalIsSearchProviderInstalled);
 }
 
 void WebLocalFrameImpl::DispatchMessageEventWithOriginCheck(
