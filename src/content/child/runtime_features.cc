@@ -203,6 +203,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 #endif
   WebRuntimeFeatures::EnableWebGLImageChromium(enable_web_gl_image_chromium);
 
+  if (command_line.HasSwitch(switches::kEnableCSS3Text))
+    WebRuntimeFeatures::EnableCSS3Text(true);
+
   if (command_line.HasSwitch(switches::kForceOverlayFullscreenVideo))
     WebRuntimeFeatures::ForceOverlayFullscreenVideo(true);
 

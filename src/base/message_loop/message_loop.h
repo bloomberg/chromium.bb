@@ -287,6 +287,16 @@ class BASE_EXPORT MessageLoop {
   // TODO(alexclarke): Make this const when MessageLoopImpl goes away.
   bool IsIdleForTesting();
 
+#if defined(OS_WIN)
+  void set_ipc_sync_messages_should_peek(bool ipc_sync_messages_should_peek) {
+    ipc_sync_messages_should_peek_ = ipc_sync_messages_should_peek;
+  }
+
+  bool ipc_sync_messages_should_peek() const {
+    return ipc_sync_messages_should_peek_;
+  }
+#endif  // OS_WIN
+
   MessageLoopBase* GetMessageLoopBase();
 
   enum class BackendType {
@@ -371,6 +381,11 @@ class BASE_EXPORT MessageLoop {
   std::unique_ptr<MessagePump> CreateMessagePump();
 
   const Type type_;
+
+#if defined(OS_WIN)
+  // Should be set to true if IPC sync messages should PeekMessage periodically.
+  bool ipc_sync_messages_should_peek_ = false;
+#endif
 
   // pump_factory_.Run() is called to create a message pump for this loop
   // if |type_| is TYPE_CUSTOM and |pump_| is null.

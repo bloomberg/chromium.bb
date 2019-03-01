@@ -36,7 +36,8 @@ class CORE_EXPORT ScriptStreamerThread {
   void TaskDone();
 
   static void RunScriptStreamingTask(
-      std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask>,
+      std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask,
+                      std::function<void(v8::ScriptCompiler::ScriptStreamingTask*)>>,
       ScriptStreamer*);
 
  private:

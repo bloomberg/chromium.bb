@@ -28,7 +28,7 @@
       <include name="IDR_UASTYLE_VIEWPORT_ANDROID_CSS" file="../renderer/core/css/viewportAndroid.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_VIEWPORT_TELEVISION_CSS" file="../renderer/core/css/viewportTelevision.css" type="BINDATA" compress="gzip"/>
 
-      <include name="IDR_INSPECTOR_OVERLAY_PAGE_HTML" file="../renderer/core/inspector/InspectorOverlayPage.html" type="BINDATA" compress="gzip"/>
+      <!-- All resources that begin with 'IDR_INSPECTOR' are moved to blink_inspector_resources.grd -->
       <include name="IDR_DOCUMENTXMLTREEVIEWER_CSS" file="../renderer/core/xml/DocumentXMLTreeViewer.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_DOCUMENTXMLTREEVIEWER_JS" file="../renderer/core/xml/DocumentXMLTreeViewer.js" type="BINDATA" compress="gzip"/>
       <include name="IDR_VALIDATION_BUBBLE_ICON" file="../renderer/core/html/forms/resources/input_alert.svg" type="BINDATA" compress="gzip"/>
