@@ -395,8 +395,10 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
       const auto mode = new_request.GetFetchRequestMode();
       DCHECK(mode == network::mojom::FetchRequestMode::kNoCors ||
              mode == network::mojom::FetchRequestMode::kNavigate);
-      scoped_refptr<SecurityOrigin> origin =
-          SecurityOrigin::CreateUniqueOpaque();
+      // Some callers, notablly flash, with |grant_universal_access| want to
+      // have an origin matching with referrer.
+      KURL referrer(request.HttpHeaderField(http_names::kReferer));
+      scoped_refptr<SecurityOrigin> origin = SecurityOrigin::Create(referrer);
       origin->GrantUniversalAccess();
       new_request.ToMutableResourceRequest().SetRequestorOrigin(origin);
     }
