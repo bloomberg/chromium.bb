@@ -134,18 +134,19 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
           active_touch_action_ = allowed_touch_action_;
           touch_action = allowed_touch_action_.value();
         } else {
-          touch_action = compositor_touch_action_enabled_
-                             ? white_listed_touch_action_
-                             : active_touch_action_.value();
+          if (compositor_touch_action_enabled_) {
+            touch_action = white_listed_touch_action_;
+          } else {
+            gesture_sequence_.append("B");
+            static auto* crash_key = base::debug::AllocateCrashKeyString(
+                "scrollbegin-gestures", base::debug::CrashKeySize::Size256);
+            base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
+            base::debug::DumpWithoutCrashing();
+            gesture_sequence_.clear();
+            SetTouchAction(cc::kTouchActionAuto);
+            touch_action = cc::kTouchActionAuto;
+          }
         }
-      }
-      gesture_sequence_.append("B");
-      if (!compositor_touch_action_enabled_ &&
-          !active_touch_action_.has_value()) {
-        static auto* crash_key = base::debug::AllocateCrashKeyString(
-            "scrollbegin-gestures", base::debug::CrashKeySize::Size256);
-        base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
-        gesture_sequence_.clear();
       }
       drop_scroll_events_ =
           ShouldSuppressScrolling(*gesture_event, touch_action);
