@@ -24,9 +24,6 @@ declare_args() {
 
   # Enable language splits in the Chrome bundles.
   enable_chrome_language_splits = android_channel == "default"
-
-  # Enable the chrome build for devices without touchscreens.
-  notouch_build = false
 }
 
 default_chrome_public_jinja_variables = [
