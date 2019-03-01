@@ -222,6 +222,9 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin : public WindowObserver {
   // Manages observation of Windows Session Change messages.
   ui::SessionChangeObserver session_change_observer_;
 
+  // If the screen is locked, windows are considered occluded.
+  bool screen_locked_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(NativeWindowOcclusionTrackerWin);
 };
 

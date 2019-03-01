@@ -179,23 +179,35 @@ void NativeWindowOcclusionTrackerWin::UpdateOcclusionState(
     if (it == hwnd_root_window_map_.end())
       continue;
     // Check Window::IsVisible here, on the UI thread, because it can't be
-    // checked on the occlusion calculation thread.
-    bool root_window_hidden = !it->second->IsVisible();
+    // checked on the occlusion calculation thread. Do this first before
+    // checking screen_locked_ so that hidden windows remain hidden.
+    if (!it->second->IsVisible()) {
+      it->second->GetHost()->SetNativeWindowOcclusionState(
+          Window::OcclusionState::HIDDEN);
+      continue;
+    }
+    // If the screen is locked, ignore occlusion state results and
+    // mark the window as occluded.
     it->second->GetHost()->SetNativeWindowOcclusionState(
-        root_window_hidden ? Window::OcclusionState::HIDDEN
-                           : root_window_pair.second);
-    if (!root_window_hidden)
-      num_visible_root_windows_++;
+        screen_locked_ ? Window::OcclusionState::OCCLUDED
+                       : root_window_pair.second);
+    num_visible_root_windows_++;
   }
 }
 
 void NativeWindowOcclusionTrackerWin::OnSessionChange(WPARAM status_code) {
   if (status_code == WTS_SESSION_LOCK) {
-    // Tell all root windows that they're occluded.
+    screen_locked_ = true;
+    // Set all visible root windows as occluded. If not visible,
+    // set them as hidden.
     for (const auto& root_window_hwnd_pair : hwnd_root_window_map_) {
       root_window_hwnd_pair.second->GetHost()->SetNativeWindowOcclusionState(
-          Window::OcclusionState::OCCLUDED);
+          root_window_hwnd_pair.second->IsVisible()
+              ? Window::OcclusionState::OCCLUDED
+              : Window::OcclusionState::HIDDEN);
     }
+  } else if (status_code == WTS_SESSION_UNLOCK) {
+    screen_locked_ = false;
   }
   // Other session changes don't need to trigger occlusion calculation. In
   // particular, UNLOCK will cause a foreground window change, which will
