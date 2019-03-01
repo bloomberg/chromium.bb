@@ -260,6 +260,9 @@ void NTPTilesInternalsMessageHandler::SendTiles(
     entry->SetInteger("source", static_cast<int>(tile.source));
     entry->SetString("whitelistIconPath",
                      tile.whitelist_icon_path.LossyDisplayName());
+    if (tile.source == TileSource::CUSTOM_LINKS) {
+      entry->SetBoolean("fromMostVisited", tile.from_most_visited);
+    }
 
     auto icon_list = std::make_unique<base::ListValue>();
     for (const auto& entry : kIconTypesAndNames) {

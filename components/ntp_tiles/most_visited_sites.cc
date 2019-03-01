@@ -718,6 +718,7 @@ void MostVisitedSites::BuildCustomLinks(
     tile.title = link.title;
     tile.url = link.url;
     tile.source = TileSource::CUSTOM_LINKS;
+    tile.from_most_visited = link.is_most_visited;
     tiles.push_back(std::move(tile));
   }
 

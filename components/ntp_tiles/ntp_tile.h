@@ -36,6 +36,10 @@ struct NTPTile {
   // a ranking algorithm).
   base::Time data_generation_time;
 
+  // True if this tile is a custom link and was initialized from a Most Visited
+  // item. Used for debugging.
+  bool from_most_visited = false;
+
   NTPTile();
   NTPTile(const NTPTile&);
   ~NTPTile();
