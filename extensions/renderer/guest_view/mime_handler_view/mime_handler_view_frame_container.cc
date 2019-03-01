@@ -43,7 +43,7 @@ MimeHandlerViewFrameContainer::RenderFrameLifetimeObserver::
     ~RenderFrameLifetimeObserver() {}
 
 void MimeHandlerViewFrameContainer::RenderFrameLifetimeObserver::OnDestruct() {
-  container_->OnDestroyFrameContainer(container_->element_instance_id_);
+  container_->DestroyFrameContainer();
 }
 
 // static.
@@ -136,19 +136,21 @@ void MimeHandlerViewFrameContainer::CreateMimeHandlerViewGuestIfNecessary() {
         content::RenderFrame::GetRoutingIdForWebFrame(frame);
   }
   if (plugin_frame_routing_id_ == MSG_ROUTING_NONE) {
-    OnDestroyFrameContainer(element_instance_id_);
+    DestroyFrameContainer();
     return;
   }
   MimeHandlerViewContainerBase::CreateMimeHandlerViewGuestIfNecessary();
 }
 
-void MimeHandlerViewFrameContainer::OnRetryCreatingMimeHandlerViewGuest(
-    int32_t element_instance_id) {
+void MimeHandlerViewFrameContainer::RetryCreatingMimeHandlerViewGuest() {
   CreateMimeHandlerViewGuestIfNecessary();
 }
 
-void MimeHandlerViewFrameContainer::OnDestroyFrameContainer(
-    int32_t element_instance_id) {
+void MimeHandlerViewFrameContainer::DidLoad() {
+  DidLoadInternal();
+}
+
+void MimeHandlerViewFrameContainer::DestroyFrameContainer() {
   delete this;
 }
 

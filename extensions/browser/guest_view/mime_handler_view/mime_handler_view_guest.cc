@@ -32,10 +32,11 @@
 #include "extensions/common/api/mime_handler_private.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
+#include "extensions/common/mojo/guest_view.mojom.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
-
 using content::WebContents;
 using guest_view::GuestViewBase;
 
@@ -109,8 +110,9 @@ MimeHandlerViewGuest::~MimeHandlerViewGuest() {
   if (content::MimeHandlerViewMode::UsesCrossProcessFrame() &&
       element_instance_id() != guest_view::kInstanceIDNone) {
     if (auto* embedder_frame = GetEmbedderFrame()) {
-      embedder_frame->Send(new ExtensionsGuestViewMsg_DestroyFrameContainer(
-          element_instance_id()));
+      mojom::MimeHandlerViewContainerManagerPtr container_manager;
+      embedder_frame->GetRemoteInterfaces()->GetInterface(&container_manager);
+      container_manager->DestroyFrameContainer(element_instance_id());
     }
   }
 }
@@ -148,7 +150,6 @@ void MimeHandlerViewGuest::SetEmbedderFrame(int process_id, int routing_id) {
     embedder_widget_routing_id_ =
         rfh->GetView()->GetRenderWidgetHost()->GetRoutingID();
   }
-
   DCHECK_NE(MSG_ROUTING_NONE, embedder_widget_routing_id_);
 }
 
@@ -425,6 +426,12 @@ void MimeHandlerViewGuest::DocumentOnLoadCompletedInMainFrame() {
   // If the guest is embedded inside a cross-process frame and the frame is
   // removed before the guest is properly loaded, then owner RenderWidgetHost
   // will be nullptr.
+  if (CanUseCrossProcessFrames()) {
+    mojom::MimeHandlerViewContainerManagerPtr container_manager;
+    GetEmbedderFrame()->GetRemoteInterfaces()->GetInterface(&container_manager);
+    container_manager->DidLoad(element_instance_id());
+    return;
+  }
   if (auto* rwh = GetOwnerRenderWidgetHost()) {
     rwh->Send(new ExtensionsGuestViewMsg_MimeHandlerViewGuestOnLoadCompleted(
         element_instance_id()));

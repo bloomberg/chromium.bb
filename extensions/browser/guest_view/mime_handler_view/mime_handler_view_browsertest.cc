@@ -33,11 +33,13 @@
 #include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
+#include "extensions/common/mojo/guest_view.mojom.h"
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "services/network/public/cpp/features.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "ui/base/ui_base_features.h"
 #include "url/url_constants.h"
 
@@ -296,8 +298,10 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
   render_frame_observer.WaitUntilDeleted();
   // Send the IPC. During destruction MHVFC would cause a UaF since it was not
   // removed from the global map.
-  embedder_web_contents->GetMainFrame()->Send(
-      new ExtensionsGuestViewMsg_DestroyFrameContainer(element_instance_id));
+  extensions::mojom::MimeHandlerViewContainerManagerPtr container_manager;
+  embedder_web_contents->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
+      &container_manager);
+  container_manager->DestroyFrameContainer(element_instance_id);
   // Running the following JS code fails if the renderer has crashed.
   ASSERT_TRUE(content::ExecJs(embedder_web_contents, "window.name = 'foo'"));
 }
