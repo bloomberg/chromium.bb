@@ -109,7 +109,8 @@ void FetchContext::DispatchDidFinishLoading(unsigned long,
                                             TimeTicks,
                                             int64_t,
                                             int64_t,
-                                            bool) {}
+                                            bool,
+                                            ResourceResponseType) {}
 
 void FetchContext::DispatchDidFail(const KURL&,
                                    unsigned long,
@@ -125,8 +126,6 @@ void FetchContext::RecordLoadingActivity(
     const ResourceRequest&,
     ResourceType,
     const AtomicString& fetch_initiator_name) {}
-
-void FetchContext::DidLoadResource(Resource*) {}
 
 void FetchContext::DidObserveLoadingBehavior(WebLoadingBehaviorFlag) {}
 

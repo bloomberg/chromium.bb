@@ -607,7 +607,7 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
 
   Context().DispatchDidFinishLoading(
       identifier, TimeTicks(), 0, resource->GetResponse().DecodedBodyLength(),
-      false);
+      false, FetchContext::ResourceResponseType::kFromMemoryCache);
 }
 
 Resource* ResourceFetcher::ResourceForStaticData(
@@ -1686,12 +1686,6 @@ ArchiveResource* ResourceFetcher::CreateArchive(
   return archive_->MainResource();
 }
 
-void ResourceFetcher::HandleLoadCompletion(Resource* resource) {
-  Context().DidLoadResource(resource);
-
-  resource->ReloadIfLoFiOrPlaceholderImage(this, Resource::kReloadIfNeeded);
-}
-
 void ResourceFetcher::HandleLoaderFinish(
     Resource* resource,
     TimeTicks finish_time,
@@ -1770,10 +1764,6 @@ void ResourceFetcher::HandleLoaderFinish(
   }
 
   resource->VirtualTimePauser().UnpauseVirtualTime();
-  Context().DispatchDidFinishLoading(
-      resource->Identifier(), finish_time, encoded_data_length,
-      resource->GetResponse().DecodedBodyLength(), should_report_corb_blocking);
-
   if (type == kDidFinishLoading) {
     resource->Finish(finish_time, task_runner_.get());
 
@@ -1804,8 +1794,11 @@ void ResourceFetcher::HandleLoaderFinish(
       context_->DidObserveLoadingBehavior(behavior);
     }
   }
-
-  HandleLoadCompletion(resource);
+  Context().DispatchDidFinishLoading(
+      resource->Identifier(), finish_time, encoded_data_length,
+      resource->GetResponse().DecodedBodyLength(), should_report_corb_blocking,
+      FetchContext::ResourceResponseType::kNotFromMemoryCache);
+  resource->ReloadIfLoFiOrPlaceholderImage(this, Resource::kReloadIfNeeded);
 }
 
 void ResourceFetcher::HandleLoaderError(Resource* resource,
@@ -1824,15 +1817,13 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
                              fetch_initiator_type_names::kInternal;
 
   resource->VirtualTimePauser().UnpauseVirtualTime();
-  Context().DispatchDidFail(
-      resource->LastResourceRequest().Url(), resource->Identifier(), error,
-      resource->GetResponse().EncodedDataLength(), is_internal_request);
-
   if (error.IsCancellation())
     RemovePreload(resource);
   resource->FinishAsError(error, task_runner_.get());
-
-  HandleLoadCompletion(resource);
+  Context().DispatchDidFail(
+      resource->LastResourceRequest().Url(), resource->Identifier(), error,
+      resource->GetResponse().EncodedDataLength(), is_internal_request);
+  resource->ReloadIfLoFiOrPlaceholderImage(this, Resource::kReloadIfNeeded);
 }
 
 void ResourceFetcher::MoveResourceLoaderToNonBlocking(ResourceLoader* loader) {

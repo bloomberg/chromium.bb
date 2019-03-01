@@ -115,7 +115,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
                                 TimeTicks finish_time,
                                 int64_t encoded_data_length,
                                 int64_t decoded_body_length,
-                                bool should_report_corb_blocking) override;
+                                bool should_report_corb_blocking,
+                                ResourceResponseType) override;
   void DispatchDidFail(const KURL&,
                        unsigned long identifier,
                        const ResourceError&,
@@ -125,7 +126,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   void RecordLoadingActivity(const ResourceRequest&,
                              ResourceType,
                              const AtomicString& fetch_initiator_name) override;
-  void DidLoadResource(Resource*) override;
   void DidObserveLoadingBehavior(WebLoadingBehaviorFlag) override;
 
   void AddResourceTiming(const ResourceTimingInfo&) override;

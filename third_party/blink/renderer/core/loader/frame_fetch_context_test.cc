@@ -1305,7 +1305,8 @@ TEST_F(FrameFetchContextTest, DispatchDidFinishLoadingWhenDetached) {
   dummy_page_holder = nullptr;
 
   GetFetchContext()->DispatchDidFinishLoading(
-      4, base::TimeTicks() + base::TimeDelta::FromSecondsD(0.3), 8, 10, false);
+      4, base::TimeTicks() + base::TimeDelta::FromSecondsD(0.3), 8, 10, false,
+      FetchContext::ResourceResponseType::kNotFromMemoryCache);
   // Should not crash.
 }
 
@@ -1336,17 +1337,6 @@ TEST_F(FrameFetchContextTest, RecordLoadingActivityWhenDetached) {
 
   GetFetchContext()->RecordLoadingActivity(
       request, ResourceType::kRaw, fetch_initiator_type_names::kDocument);
-  // Should not crash.
-}
-
-TEST_F(FrameFetchContextTest, DidLoadResourceWhenDetached) {
-  ResourceRequest request(KURL("https://www.example.com/"));
-  request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
-  Resource* resource = MockResource::Create(request);
-
-  dummy_page_holder = nullptr;
-
-  GetFetchContext()->DidLoadResource(resource);
   // Should not crash.
 }
 

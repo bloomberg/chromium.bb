@@ -91,6 +91,7 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -580,7 +581,8 @@ void FrameFetchContext::DispatchDidFinishLoading(
     TimeTicks finish_time,
     int64_t encoded_data_length,
     int64_t decoded_body_length,
-    bool should_report_corb_blocking) {
+    bool should_report_corb_blocking,
+    ResourceResponseType response_type) {
   if (GetResourceFetcherProperties().IsDetached())
     return;
 
@@ -588,12 +590,24 @@ void FrameFetchContext::DispatchDidFinishLoading(
   probe::didFinishLoading(Probe(), identifier, MasterDocumentLoader(),
                           finish_time, encoded_data_length, decoded_body_length,
                           should_report_corb_blocking);
-  if (frame_or_imported_document_->GetDocument()) {
-    InteractiveDetector* interactive_detector(
-        InteractiveDetector::From(*frame_or_imported_document_->GetDocument()));
-    if (interactive_detector) {
-      interactive_detector->OnResourceLoadEnd(finish_time);
+
+  Document* document = frame_or_imported_document_->GetDocument();
+  if (!document) {
+    return;
+  }
+
+  if (auto* interactive_detector = InteractiveDetector::From(*document)) {
+    interactive_detector->OnResourceLoadEnd(finish_time);
+  }
+
+  if (LocalFrame* frame = document->GetFrame()) {
+    if (IdlenessDetector* idleness_detector = frame->GetIdlenessDetector()) {
+      idleness_detector->OnDidLoadResource();
     }
+  }
+
+  if (response_type == ResourceResponseType::kNotFromMemoryCache) {
+    document->CheckCompleted();
   }
 }
 
@@ -616,21 +630,28 @@ void FrameFetchContext::DispatchDidFail(const KURL& url,
 
   GetFrame()->Loader().Progress().CompleteProgress(identifier);
   probe::didFailLoading(Probe(), identifier, MasterDocumentLoader(), error);
-  if (frame_or_imported_document_->GetDocument()) {
-    InteractiveDetector* interactive_detector(
-        InteractiveDetector::From(*frame_or_imported_document_->GetDocument()));
-    if (interactive_detector) {
-      // We have not yet recorded load_finish_time. Pass nullopt here; we will
-      // call CurrentTimeTicksInSeconds lazily when we need it.
-      interactive_detector->OnResourceLoadEnd(base::nullopt);
-    }
-  }
   // Notification to FrameConsole should come AFTER InspectorInstrumentation
   // call, DevTools front-end relies on this.
   if (!is_internal_request) {
     GetFrame()->Console().DidFailLoading(MasterDocumentLoader(), identifier,
                                          error);
   }
+  Document* document = frame_or_imported_document_->GetDocument();
+  if (!document) {
+    return;
+  }
+
+  if (auto* interactive_detector = InteractiveDetector::From(*document)) {
+    // We have not yet recorded load_finish_time. Pass nullopt here; we will
+    // call CurrentTimeTicksInSeconds lazily when we need it.
+    interactive_detector->OnResourceLoadEnd(base::nullopt);
+  }
+  if (LocalFrame* frame = document->GetFrame()) {
+    if (IdlenessDetector* idleness_detector = frame->GetIdlenessDetector()) {
+      idleness_detector->OnDidLoadResource();
+    }
+  }
+  document->CheckCompleted();
 }
 
 void FrameFetchContext::RecordLoadingActivity(
@@ -654,21 +675,6 @@ void FrameFetchContext::RecordLoadingActivity(
     argv.push_back(request.Url());
     activity_logger->LogEvent("blinkRequestResource", argv.size(), argv.data());
   }
-}
-
-void FrameFetchContext::DidLoadResource(Resource* resource) {
-  if (GetResourceFetcherProperties().IsDetached() ||
-      !frame_or_imported_document_->GetDocument())
-    return;
-  if (LocalFrame* local_frame =
-          frame_or_imported_document_->GetDocument()->GetFrame()) {
-    if (IdlenessDetector* idleness_detector =
-            local_frame->GetIdlenessDetector()) {
-      idleness_detector->OnDidLoadResource();
-    }
-  }
-
-  frame_or_imported_document_->GetDocument()->CheckCompleted();
 }
 
 void FrameFetchContext::DidObserveLoadingBehavior(
