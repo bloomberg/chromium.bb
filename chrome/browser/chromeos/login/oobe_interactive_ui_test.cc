@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
+#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/test_predicate_waiter.h"
@@ -24,6 +25,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/test_utils.h"
 
 namespace chromeos {
 namespace {
@@ -227,9 +229,9 @@ class OobeInteractiveUITest
     LoginDisplayHost::default_host()
         ->GetOobeUI()
         ->GetGaiaScreenView()
-        ->ShowSigninScreenForTest(OobeBaseTest::kFakeUserEmail,
-                                  OobeBaseTest::kFakeUserPassword,
-                                  OobeBaseTest::kEmptyUserServices);
+        ->ShowSigninScreenForTest(FakeGaiaMixin::kFakeUserEmail,
+                                  FakeGaiaMixin::kFakeUserPassword,
+                                  FakeGaiaMixin::kEmptyUserServices);
     LOG(INFO) << "OobeInteractiveUITest: Logged in.";
   }
 
@@ -324,7 +326,7 @@ class OobeInteractiveUITest
         "setup.hidden");
     EXPECT_TRUE(quick_unlock_private_get_auth_token_password_.has_value());
     EXPECT_EQ(quick_unlock_private_get_auth_token_password_,
-              OobeBaseTest::kFakeUserPassword);
+              FakeGaiaMixin::kFakeUserPassword);
   }
 
   void ExitDiscoverPinSetupScreen() {
@@ -354,6 +356,8 @@ class OobeInteractiveUITest
   base::Optional<Parameters> params_;
 
  private:
+  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+
   DISALLOW_COPY_AND_ASSIGN(OobeInteractiveUITest);
 };
 

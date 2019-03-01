@@ -32,7 +32,9 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/https_forwarder.h"
+#include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -327,27 +329,33 @@ void SecretInterceptingFakeCryptohomeClient::MountEx(
 class SamlTest : public OobeBaseTest {
  public:
   SamlTest() : cryptohome_client_(new SecretInterceptingFakeCryptohomeClient) {
-    set_initialize_fake_merge_session(false);
+    fake_gaia_.set_initialize_fake_merge_session(false);
   }
   ~SamlTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    OobeBaseTest::SetUpCommandLine(command_line);
+
     command_line->AppendSwitch(switches::kOobeSkipPostLogin);
     command_line->AppendSwitch(
         chromeos::switches::kAllowFailedPolicyFetchForTest);
 
-    const GURL gaia_url = gaia_https_forwarder_.GetURLForSSLHost("");
+    ASSERT_TRUE(saml_https_forwarder_.Initialize(
+        kIdPHost, embedded_test_server()->base_url()));
+    const GURL gaia_url =
+        fake_gaia_.gaia_https_forwarder()->GetURLForSSLHost("");
     const GURL saml_idp_url = saml_https_forwarder_.GetURLForSSLHost("SAML");
     fake_saml_idp_.SetUp(saml_idp_url.path(), gaia_url);
-    fake_gaia_->RegisterSamlUser(kFirstSAMLUserEmail, saml_idp_url);
-    fake_gaia_->RegisterSamlUser(kSecondSAMLUserEmail, saml_idp_url);
-    fake_gaia_->RegisterSamlUser(
+    fake_gaia_.fake_gaia()->RegisterSamlUser(kFirstSAMLUserEmail, saml_idp_url);
+    fake_gaia_.fake_gaia()->RegisterSamlUser(kSecondSAMLUserEmail,
+                                             saml_idp_url);
+    fake_gaia_.fake_gaia()->RegisterSamlUser(
         kHTTPSAMLUserEmail,
         embedded_test_server()->base_url().Resolve("/SAML"));
-    fake_gaia_->RegisterSamlUser(kDifferentDomainSAMLUserEmail, saml_idp_url);
-    fake_gaia_->RegisterSamlDomainRedirectUrl("corp.example.com", saml_idp_url);
-
-    OobeBaseTest::SetUpCommandLine(command_line);
+    fake_gaia_.fake_gaia()->RegisterSamlUser(kDifferentDomainSAMLUserEmail,
+                                             saml_idp_url);
+    fake_gaia_.fake_gaia()->RegisterSamlDomainRedirectUrl("corp.example.com",
+                                                          saml_idp_url);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -358,7 +366,7 @@ class SamlTest : public OobeBaseTest {
   }
 
   void SetUpOnMainThread() override {
-    fake_gaia_->SetFakeMergeSessionParams(
+    fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(
         kFirstSAMLUserEmail, kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
 
     embedded_test_server()->RegisterRequestHandler(base::Bind(
@@ -434,15 +442,11 @@ class SamlTest : public OobeBaseTest {
   FakeSamlIdp* fake_saml_idp() { return &fake_saml_idp_; }
 
  protected:
-  void InitHttpsForwarders() override {
-    ASSERT_TRUE(saml_https_forwarder_.Initialize(
-        kIdPHost, embedded_test_server()->base_url()));
-    OobeBaseTest::InitHttpsForwarders();
-  }
-
   HTTPSForwarder saml_https_forwarder_;
 
   SecretInterceptingFakeCryptohomeClient* cryptohome_client_;
+
+  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
 
  private:
   FakeSamlIdp fake_saml_idp_;
@@ -696,8 +700,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, FailToRetrieveAutenticatedUserEmailAddress) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
-  fake_gaia_->SetFakeMergeSessionParams("", kTestAuthSIDCookie1,
-                                        kTestAuthLSIDCookie1);
+  fake_gaia_.fake_gaia()->SetFakeMergeSessionParams("", kTestAuthSIDCookie1,
+                                                    kTestAuthLSIDCookie1);
   SetSignFormField("Email", "fake_user");
   SetSignFormField("Password", "fake_password");
   ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
@@ -910,7 +914,7 @@ void SAMLEnrollmentTest::SetUpOnMainThread() {
   token_info.scopes.insert(GaiaConstants::kOAuthWrapBridgeUserInfoScope);
   token_info.audience = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
   token_info.email = kFirstSAMLUserEmail;
-  fake_gaia_->IssueOAuthToken(kTestRefreshToken, token_info);
+  fake_gaia_.fake_gaia()->IssueOAuthToken(kTestRefreshToken, token_info);
 
   SamlTest::SetUpOnMainThread();
 }
@@ -937,7 +941,8 @@ void SAMLEnrollmentTest::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
   const GURL origin = validated_url.GetOrigin();
-  if (origin != gaia_https_forwarder_.GetURLForSSLHost(std::string()) &&
+  if (origin !=
+          fake_gaia_.gaia_https_forwarder()->GetURLForSSLHost(std::string()) &&
       origin != saml_https_forwarder_.GetURLForSSLHost(std::string())) {
     return;
   }
@@ -1262,9 +1267,9 @@ void SAMLPolicyTest::LogInWithSAML(const std::string& user_id,
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   StartSamlAndWaitForIdpPageLoad(user_id);
 
-  fake_gaia_->SetFakeMergeSessionParams(user_id, auth_sid_cookie,
-                                        auth_lsid_cookie);
-  SetupFakeGaiaForLogin(user_id, "", kTestRefreshToken);
+  fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(user_id, auth_sid_cookie,
+                                                    auth_lsid_cookie);
+  fake_gaia_.SetupFakeGaiaForLogin(user_id, "", kTestRefreshToken);
 
   SetSignFormField("Email", "fake_user");
   SetSignFormField("Password", "fake_password");
@@ -1308,9 +1313,10 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_NoSAML) {
 
   WaitForSigninScreen();
 
-  fake_gaia_->SetFakeMergeSessionParams(kNonSAMLUserEmail, kFakeSIDCookie,
-                                        kFakeLSIDCookie);
-  SetupFakeGaiaForLogin(kNonSAMLUserEmail, "", kTestRefreshToken);
+  fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(
+      kNonSAMLUserEmail, FakeGaiaMixin::kFakeSIDCookie,
+      FakeGaiaMixin::kFakeLSIDCookie);
+  fake_gaia_.SetupFakeGaiaForLogin(kNonSAMLUserEmail, "", kTestRefreshToken);
 
   // Log in without SAML.
   LoginDisplayHost::default_host()
@@ -1483,7 +1489,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLInterstitialChangeAccount) {
 // Disabled due to flakiness, see crbug.com/699228
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, DISABLED_SAMLInterstitialNext) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
-  fake_gaia_->SetFakeMergeSessionParams(
+  fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(
       kFirstSAMLUserEmail, kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
   SetLoginBehaviorPolicyToSAMLInterstitial();
   WaitForSigninScreen();

@@ -11,6 +11,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
+#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/test_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -127,9 +129,9 @@ class SyncConsentTest : public OobeBaseTest {
     LoginDisplayHost::default_host()
         ->GetOobeUI()
         ->GetGaiaScreenView()
-        ->ShowSigninScreenForTest(OobeBaseTest::kFakeUserEmail,
-                                  OobeBaseTest::kFakeUserPassword,
-                                  OobeBaseTest::kEmptyUserServices);
+        ->ShowSigninScreenForTest(FakeGaiaMixin::kFakeUserEmail,
+                                  FakeGaiaMixin::kFakeUserPassword,
+                                  FakeGaiaMixin::kEmptyUserServices);
 
     test::OobeJS()
         .CreateWaiter("Oobe.getInstance().currentScreen.id == 'sync-consent'")
