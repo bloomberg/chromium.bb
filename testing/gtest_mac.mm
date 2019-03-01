@@ -21,13 +21,14 @@ static std::string StringFromNSString(NSString* string) {
   // Note that -[NSString UTF8String] is banned in chromium code because
   // base::SysNSStringToUTF8() is safer, but //testing isn't allowed to depend
   // on //base, so deliberately ignore that function ban.
-  return std::string([string UTF8String]);
+  const char* utf_string = [string UTF8String];
+  return utf_string ? std::string(utf_string) : std::string("(nil nsstring)");
 }
 
 // Handles nil values for |obj| properly by using safe printing of %@ in
 // -stringWithFormat:.
-static std::string StringDescription(id<NSObject> obj) {
-  return StringFromNSString([obj description]);
+std::string StringDescription(id<NSObject> obj) {
+  return StringFromNSString([NSString stringWithFormat:@"%@", obj]);
 }
 
 // This overloaded version allows comparison between ObjC objects that conform
