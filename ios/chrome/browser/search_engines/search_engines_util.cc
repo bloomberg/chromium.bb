@@ -113,6 +113,9 @@ void UpdateSearchEnginesIfNeeded(PrefService* preferences,
 }
 
 bool SupportsSearchByImage(TemplateURLService* service) {
+  if (!service) {
+    return false;
+  }
   const TemplateURL* default_url = service->GetDefaultSearchProvider();
   return default_url && !default_url->image_url().empty() &&
          default_url->image_url_ref().IsValid(service->search_terms_data());

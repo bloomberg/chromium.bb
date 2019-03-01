@@ -159,6 +159,8 @@ const int kLocationAuthorizationStatusCount = 4;
   self.mediator = [[LocationBarMediator alloc]
       initWithLocationBarModel:[self locationBarModel]];
   self.mediator.webStateList = self.webStateList;
+  self.mediator.templateURLService =
+      ios::TemplateURLServiceFactory::GetForBrowserState(self.browserState);
   self.mediator.consumer = self;
 
   _fullscreenObserver =
@@ -369,6 +371,10 @@ const int kLocationAuthorizationStatusCount = 4;
 
 - (void)updateLocationShareable:(BOOL)shareable {
   [self.viewController setShareButtonEnabled:shareable];
+}
+
+- (void)updateSearchByImageSupported:(BOOL)searchByImageSupported {
+  self.viewController.searchByImageEnabled = searchByImageSupported;
 }
 
 #pragma mark - private
