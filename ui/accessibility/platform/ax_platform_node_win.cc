@@ -364,6 +364,22 @@ SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayForRelation(
   return propertyvalue;
 }
 
+SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayForReverseRelation(
+    const ax::mojom::IntListAttribute& attribute) {
+  std::set<AXPlatformNode*> reverse_relations =
+      GetDelegate()->GetReverseRelations(attribute);
+  std::vector<int32_t> ax_platform_node_ids;
+  ax_platform_node_ids.reserve(reverse_relations.size());
+  for (AXPlatformNode* ax_platform_node : reverse_relations) {
+    if (ax_platform_node) {
+      ax_platform_node_ids.push_back(
+          static_cast<AXPlatformNodeWin*>(ax_platform_node)->GetData().id);
+    }
+  }
+
+  return CreateUIAElementsArrayFromIdVector(ax_platform_node_ids);
+}
+
 SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayFromIdVector(
     std::vector<int32_t>& ids) {
   SAFEARRAY* uia_array = SafeArrayCreateVector(VT_UNKNOWN, 0, ids.size());
@@ -3646,6 +3662,12 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       result->parray = CreateUIAElementsArrayForRelation(relation_attribute);
       break;
 
+    case UIA_FlowsFromPropertyId:
+      V_VT(result) = VT_ARRAY | VT_UNKNOWN;
+      V_ARRAY(result) = CreateUIAElementsArrayForReverseRelation(
+          ax::mojom::IntListAttribute::kFlowtoIds);
+      break;
+
     case UIA_FlowsToPropertyId:
       result->vt = VT_ARRAY | VT_UNKNOWN;
       relation_attribute = ax::mojom::IntListAttribute::kFlowtoIds;
@@ -3864,7 +3886,6 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
     case UIA_CustomControlTypeId:
     case UIA_FillColorPropertyId:
     case UIA_FillTypePropertyId:
-    case UIA_FlowsFromPropertyId:
     case UIA_GroupControlTypeId:
     case UIA_HeadingLevelPropertyId:
     case UIA_LandmarkTypePropertyId:
