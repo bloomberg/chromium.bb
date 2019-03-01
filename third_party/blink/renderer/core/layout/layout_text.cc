@@ -28,6 +28,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
+#include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -80,6 +81,7 @@ struct SameSizeAsLayoutText : public LayoutObject {
   float widths[4];
   String text;
   void* pointers[2];
+  NodeHolder node_holder;
 };
 
 static_assert(sizeof(LayoutText) == sizeof(SameSizeAsLayoutText),
@@ -225,6 +227,13 @@ void LayoutText::WillBeDestroyed() {
   if (SecureTextTimer* secure_text_timer =
           g_secure_text_timers ? g_secure_text_timers->Take(this) : nullptr)
     delete secure_text_timer;
+
+  if (!node_holder_.is_empty) {
+    DCHECK(GetContentCaptureManager());
+    GetContentCaptureManager()->OnLayoutTextWillBeDestroyed(node_holder_);
+    node_holder_.text_holder.reset();
+    node_holder_.is_empty = true;
+  }
 
   RemoveAndDestroyTextBoxes();
   LayoutObject::WillBeDestroyed();
@@ -2482,6 +2491,23 @@ LayoutRect LayoutText::DebugRect() const {
     block->AdjustChildDebugRect(rect);
 
   return rect;
+}
+
+NodeHolder LayoutText::EnsureNodeHolder() {
+  if (node_holder_.is_empty) {
+    if (auto* content_capture_manager = GetContentCaptureManager())
+      node_holder_ = content_capture_manager->GetNodeHolder(*GetNode());
+  }
+  return node_holder_;
+}
+
+ContentCaptureManager* LayoutText::GetContentCaptureManager() {
+  if (auto* node = GetNode()) {
+    if (auto* frame = node->GetDocument().GetFrame()) {
+      return frame->LocalFrameRoot().GetContentCaptureManager();
+    }
+  }
+  return nullptr;
 }
 
 void LayoutText::SetInlineItems(NGInlineItem* begin, NGInlineItem* end) {

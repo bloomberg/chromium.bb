@@ -53,6 +53,7 @@
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
+#include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
 #include "third_party/blink/renderer/core/css/pseudo_style_request.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/node.h"
@@ -504,7 +505,10 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
       ShowOverlayScrollbars();
     GetScrollAnchor()->Clear();
   }
-
+  if (ContentCaptureManager* manager =
+          frame_view->GetFrame().LocalFrameRoot().GetContentCaptureManager()) {
+    manager->OnScrollPositionChanged();
+  }
   if (AXObjectCache* cache =
           GetLayoutBox()->GetDocument().ExistingAXObjectCache())
     cache->HandleScrollPositionChanged(GetLayoutBox());

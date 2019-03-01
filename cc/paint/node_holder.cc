@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/paint/node_holder.h"
+#include "base/no_destructor.h"
 
 namespace cc {
 
@@ -21,6 +22,12 @@ NodeHolder::NodeHolder(const NodeHolder& other) {
 }
 
 NodeHolder::~NodeHolder() = default;
+
+// static
+const NodeHolder& NodeHolder::EmptyNodeHolder() {
+  static const base::NoDestructor<NodeHolder> s;
+  return *s;
+}
 
 bool operator==(const NodeHolder& l, const NodeHolder& r) {
   if (l.is_empty != r.is_empty) {

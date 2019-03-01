@@ -209,7 +209,8 @@ void PaintDocumentMarkers(GraphicsContext& context,
         if (text_style.current_color == Color::kTransparent)
           break;
         text_painter->Paint(paint_start_offset, paint_end_offset,
-                            paint_end_offset - paint_start_offset, text_style);
+                            paint_end_offset - paint_start_offset, text_style,
+                            NodeHolder::EmptyNodeHolder());
       } break;
 
       case DocumentMarker::kComposition:
@@ -282,7 +283,8 @@ void NGTextFragmentPainter::PaintSymbol(const PaintInfo& paint_info,
 // This is copied from InlineTextBoxPainter::PaintSelection() but lacks of
 // ltr, expanding new line wrap or so which uses InlineTextBox functions.
 void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
-                                  const LayoutPoint& paint_offset) {
+                                  const LayoutPoint& paint_offset,
+                                  const NodeHolder& node_holder) {
   const NGPhysicalTextFragment& text_fragment =
       ToNGPhysicalTextFragment(fragment_.PhysicalFragment());
   const ComputedStyle& style = fragment_.Style();
@@ -438,14 +440,15 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
       // Paint only the text that is not selected.
       if (start_offset < selection_status->start) {
         text_painter.Paint(start_offset, selection_status->start, length,
-                           text_style);
+                           text_style, node_holder);
       }
       if (selection_status->end < end_offset) {
         text_painter.Paint(selection_status->end, end_offset, length,
-                           text_style);
+                           text_style, node_holder);
       }
     } else {
-      text_painter.Paint(start_offset, end_offset, length, text_style);
+      text_painter.Paint(start_offset, end_offset, length, text_style,
+                         node_holder);
     }
 
     // Paint line-through decoration if needed.
@@ -460,7 +463,7 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
       (paint_selected_text_only || paint_selected_text_separately)) {
     // Paint only the text that is selected.
     text_painter.Paint(selection_status->start, selection_status->end, length,
-                       selection_style);
+                       selection_style, node_holder);
   }
 
   if (paint_info.phase != PaintPhase::kForeground)

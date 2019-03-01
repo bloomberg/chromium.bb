@@ -465,7 +465,9 @@ void SVGInlineTextBoxPainter::PaintText(const PaintInfo& paint_info,
   text_run_paint_info.from = start_position;
   text_run_paint_info.to = end_position;
 
-  context.DrawText(scaled_font, text_run_paint_info, text_origin, flags);
+  // TODO(crbug.com/936994): Add NodeHolder on SVG text.
+  context.DrawText(scaled_font, text_run_paint_info, text_origin, flags,
+                   NodeHolder::EmptyNodeHolder());
   // TODO(npm): Check that there are non-whitespace characters. See
   // crbug.com/788444.
   context.GetPaintController().SetTextPainted();

@@ -45,6 +45,7 @@
 namespace cc {
 class PaintCanvas;
 class PaintFlags;
+struct NodeHolder;
 }  // namespace cc
 
 namespace blink {
@@ -90,9 +91,21 @@ class PLATFORM_EXPORT Font {
                 float device_scale_factor,
                 const cc::PaintFlags&) const;
   void DrawText(cc::PaintCanvas*,
+                const TextRunPaintInfo&,
+                const FloatPoint&,
+                float device_scale_factor,
+                const cc::NodeHolder&,
+                const cc::PaintFlags&) const;
+  void DrawText(cc::PaintCanvas*,
                 const NGTextFragmentPaintInfo&,
                 const FloatPoint&,
                 float device_scale_factor,
+                const cc::PaintFlags&) const;
+  void DrawText(cc::PaintCanvas*,
+                const NGTextFragmentPaintInfo&,
+                const FloatPoint&,
+                float device_scale_factor,
+                const cc::NodeHolder&,
                 const cc::PaintFlags&) const;
   bool DrawBidiText(cc::PaintCanvas*,
                     const TextRunPaintInfo&,

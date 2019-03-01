@@ -14,12 +14,20 @@ namespace cc {
 // This struct is used to hold the information of node that PaintOp associates
 // with, either the TextHolder or the Id could be set, but only one will finally
 // be supported base on the performance impact.
+// This is used for ContentCapture in blink to capture on-screen content, the
+// NodeHolder shall be set to DrawTextBlobOp when blink paints the main text
+// content of page; for ContentCapture, please refer to
+// third_party/blink/renderer/core/content_capture/README.md
 struct CC_PAINT_EXPORT NodeHolder {
   NodeHolder();
   explicit NodeHolder(scoped_refptr<TextHolder> text_holder);
   explicit NodeHolder(int id);
   NodeHolder(const NodeHolder& node_holder);
   virtual ~NodeHolder();
+
+  // Returns the empty NodeHolder, shall be used for content that is not
+  // considered part of the main text content of the page.
+  static const NodeHolder& EmptyNodeHolder();
 
   enum class Type : bool { kTextHolder = false, kID = true };
 

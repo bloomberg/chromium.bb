@@ -67,6 +67,7 @@ namespace blink {
 class AdTracker;
 class AssociatedInterfaceProvider;
 class Color;
+class ContentCaptureManager;
 class ContentSecurityPolicy;
 class Document;
 class Editor;
@@ -207,6 +208,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   CoreProbeSink* GetProbeSink() { return probe_sink_.Get(); }
   scoped_refptr<InspectorTaskRunner> GetInspectorTaskRunner();
+
+  // Returns ContentCaptureManager in LocalFrameRoot.
+  ContentCaptureManager* GetContentCaptureManager();
 
   // Activates the user activation states of the |LocalFrame| (provided it's
   // non-null) and all its ancestors.  Also creates a |UserGestureIndicator|
@@ -533,6 +537,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // SmoothScrollSequencer is only populated for local roots; all local frames
   // use the instance owned by their local root.
   Member<SmoothScrollSequencer> smooth_scroll_sequencer_;
+  Member<ContentCaptureManager> content_capture_manager_;
 
   InterfaceRegistry* const interface_registry_;
   // This is declared mutable so that the service endpoint can be cached by

@@ -768,26 +768,29 @@ template <typename TextPaintInfo>
 void GraphicsContext::DrawTextInternal(const Font& font,
                                        const TextPaintInfo& text_info,
                                        const FloatPoint& point,
-                                       const PaintFlags& flags) {
+                                       const PaintFlags& flags,
+                                       const cc::NodeHolder& node_holder) {
   if (ContextDisabled())
     return;
 
-  font.DrawText(canvas_, text_info, point, device_scale_factor_,
+  font.DrawText(canvas_, text_info, point, device_scale_factor_, node_holder,
                 HighContrastFlags(this, flags));
 }
 
 void GraphicsContext::DrawText(const Font& font,
                                const TextRunPaintInfo& text_info,
                                const FloatPoint& point,
-                               const PaintFlags& flags) {
-  DrawTextInternal(font, text_info, point, flags);
+                               const PaintFlags& flags,
+                               const cc::NodeHolder& node_holder) {
+  DrawTextInternal(font, text_info, point, flags, node_holder);
 }
 
 void GraphicsContext::DrawText(const Font& font,
                                const NGTextFragmentPaintInfo& text_info,
                                const FloatPoint& point,
-                               const PaintFlags& flags) {
-  DrawTextInternal(font, text_info, point, flags);
+                               const PaintFlags& flags,
+                               const cc::NodeHolder& node_holder) {
+  DrawTextInternal(font, text_info, point, flags, node_holder);
 }
 
 template <typename DrawTextFunc>
@@ -812,26 +815,30 @@ void GraphicsContext::DrawTextPasses(const DrawTextFunc& draw_text) {
 template <typename TextPaintInfo>
 void GraphicsContext::DrawTextInternal(const Font& font,
                                        const TextPaintInfo& text_info,
-                                       const FloatPoint& point) {
+                                       const FloatPoint& point,
+                                       const cc::NodeHolder& node_holder) {
   if (ContextDisabled())
     return;
 
-  DrawTextPasses([&font, &text_info, &point, this](const PaintFlags& flags) {
-    font.DrawText(canvas_, text_info, point, device_scale_factor_,
-                  HighContrastFlags(this, flags));
-  });
+  DrawTextPasses(
+      [&font, &text_info, &point, this, node_holder](const PaintFlags& flags) {
+        font.DrawText(canvas_, text_info, point, device_scale_factor_,
+                      node_holder, HighContrastFlags(this, flags));
+      });
 }
 
 void GraphicsContext::DrawText(const Font& font,
                                const TextRunPaintInfo& text_info,
-                               const FloatPoint& point) {
-  DrawTextInternal(font, text_info, point);
+                               const FloatPoint& point,
+                               const cc::NodeHolder& node_holder) {
+  DrawTextInternal(font, text_info, point, node_holder);
 }
 
 void GraphicsContext::DrawText(const Font& font,
                                const NGTextFragmentPaintInfo& text_info,
-                               const FloatPoint& point) {
-  DrawTextInternal(font, text_info, point);
+                               const FloatPoint& point,
+                               const cc::NodeHolder& node_holder) {
+  DrawTextInternal(font, text_info, point, node_holder);
 }
 
 template <typename TextPaintInfo>

@@ -25,6 +25,7 @@
 
 #include <iterator>
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/core/content_capture/content_holder.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -36,6 +37,7 @@
 namespace blink {
 
 class AbstractInlineTextBox;
+class ContentCaptureManager;
 class InlineTextBox;
 class NGInlineItem;
 class NGInlineItems;
@@ -313,6 +315,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   bool MapDOMOffsetToTextContentOffset(const NGOffsetMapping&,
                                        unsigned* start,
                                        unsigned* end) const;
+  NodeHolder EnsureNodeHolder();
+  bool HasNodeHolder() const { return !node_holder_.is_empty; }
 
   void SetInlineItems(NGInlineItem* begin, NGInlineItem* end);
   void ClearInlineItems();
@@ -390,6 +394,10 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   bool CanOptimizeSetText() const;
   void SetFirstTextBoxLogicalLeft(float text_width) const;
+
+ private:
+  ContentCaptureManager* GetContentCaptureManager();
+  NodeHolder node_holder_;
 
   // We put the bitfield first to minimize padding on 64-bit.
  protected:

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/ellipsis_box_painter.h"
 
+#include "third_party/blink/renderer/core/content_capture/content_holder.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
 #include "third_party/blink/renderer/core/layout/line/ellipsis_box.h"
 #include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
@@ -66,7 +67,8 @@ void EllipsisBoxPainter::PaintEllipsis(const PaintInfo& paint_info,
   TextPainter text_painter(context, font, text_run, text_origin, box_rect,
                            ellipsis_box_.IsHorizontal());
   text_painter.Paint(0, ellipsis_box_.EllipsisStr().length(),
-                     ellipsis_box_.EllipsisStr().length(), text_style);
+                     ellipsis_box_.EllipsisStr().length(), text_style,
+                     NodeHolder::EmptyNodeHolder());
   // TODO(npm): Check that there are non-whitespace characters. See
   // crbug.com/788444.
   context.GetPaintController().SetTextPainted();
