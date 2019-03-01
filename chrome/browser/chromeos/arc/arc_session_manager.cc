@@ -435,8 +435,8 @@ bool ArcSessionManager::IsAllowed() const {
 
 void ArcSessionManager::SetProfile(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(!profile || !profile_);
-  DCHECK(!profile || IsArcAllowedForProfile(profile));
+  DCHECK(!profile_);
+  DCHECK(IsArcAllowedForProfile(profile));
   profile_ = profile;
   UpdatePersistentUMAState();
 }
