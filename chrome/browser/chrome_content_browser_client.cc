@@ -4194,13 +4194,11 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   }
 #endif
 
-#if !defined(OS_ANDROID)
   std::unique_ptr<content::NavigationThrottle>
       lookalike_url_navigation_throttle =
           LookalikeUrlNavigationThrottle::MaybeCreateNavigationThrottle(handle);
   if (lookalike_url_navigation_throttle)
     throttles.push_back(std::move(lookalike_url_navigation_throttle));
-#endif
 
   std::unique_ptr<content::NavigationThrottle> pdf_iframe_throttle =
       PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(handle);

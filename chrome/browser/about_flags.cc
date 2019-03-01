@@ -3709,8 +3709,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"enable-lookalike-url-navigation-suggestions",
      flag_descriptions::kLookalikeUrlNavigationSuggestionsName,
-     flag_descriptions::kLookalikeUrlNavigationSuggestionsDescription,
-     kOsDesktop,
+     flag_descriptions::kLookalikeUrlNavigationSuggestionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kLookalikeUrlNavigationSuggestionsUI)},
 
     {"sync-standalone-transport",
