@@ -38,8 +38,12 @@ import sys
 
 # Flags used to enable coverage instrumentation.
 _COVERAGE_FLAGS = [
-    '-fprofile-instr-generate', '-fcoverage-mapping', '-mllvm',
-    '-limited-coverage-experimental=true'
+    '-fprofile-instr-generate', '-fcoverage-mapping',
+    # Following experimental flags remove unused header functions from the
+    # coverage mapping data embedded in the test binaries, and the reduction
+    # of binary size enables building Chrome's large unit test targets on
+    # MacOS. Please refer to crbug.com/796290 for more details.
+    '-mllvm', '-limited-coverage-experimental=true'
 ]
 
 
