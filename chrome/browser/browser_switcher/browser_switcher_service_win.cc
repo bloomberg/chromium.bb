@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -68,15 +69,31 @@ std::string SerializeCacheFile(const BrowserSwitcherPrefs& prefs) {
   return buffer.str();
 }
 
-// Does the I/O for the |SavePrefsToFile()|. Should be run in a worker thread to
-// avoid blocking the main thread.
-void DoSavePrefsToFile(std::string data) {
-  // Ensure the directory exists.
+std::string SerializeSitelistCacheFile(
+    const BrowserSwitcherSitelist* sitelist) {
+  const auto* ieem = sitelist->GetIeemSitelist();
+  const auto* external = sitelist->GetExternalSitelist();
+
+  std::ostringstream buffer;
+
+  buffer << kCurrentFileVersion << std::endl;
+
+  buffer << (ieem->sitelist.size() + external->sitelist.size()) << std::endl;
+  if (!ieem->sitelist.empty())
+    buffer << base::JoinString(ieem->sitelist, "\n") << std::endl;
+  if (!external->sitelist.empty())
+    buffer << base::JoinString(external->sitelist, "\n") << std::endl;
+
+  return buffer.str();
+}
+
+void SaveDataToFile(const std::string& data, base::StringPiece file_name) {
   base::FilePath dir = GetCacheDir();
 
   if (dir.empty())
     return;
 
+  // Ensure the directory exists.
   bool success = base::CreateDirectory(dir);
   UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.CacheFile.MkDirSuccess", success);
   if (!success) {
@@ -95,16 +112,9 @@ void DoSavePrefsToFile(std::string data) {
 
   base::WriteFile(tmp_path, data.c_str(), data.size());
 
-  base::FilePath dest_path = dir.AppendASCII("cache.dat");
+  base::FilePath dest_path = dir.AppendASCII(file_name);
   success = base::Move(tmp_path, dest_path);
   UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.CacheFile.MoveSuccess", success);
-}
-
-// URL to fetch the IEEM sitelist from. Only used for testing.
-base::Optional<std::string>* IeemSitelistUrlForTesting() {
-  static base::NoDestructor<base::Optional<std::string>>
-      ieem_sitelist_url_for_testing;
-  return ieem_sitelist_url_for_testing.get();
 }
 
 void DoRemovePrefsFile() {
@@ -118,35 +128,33 @@ void DoRemovePrefsFile() {
   base::DeleteFile(dest_path, false);
 }
 
+// URL to fetch the IEEM sitelist from. Only used for testing.
+base::Optional<std::string>* IeemSitelistUrlForTesting() {
+  static base::NoDestructor<base::Optional<std::string>>
+      ieem_sitelist_url_for_testing;
+  return ieem_sitelist_url_for_testing.get();
+}
+
 }  // namespace
 
 BrowserSwitcherServiceWin::BrowserSwitcherServiceWin(Profile* profile)
     : BrowserSwitcherService(profile), weak_ptr_factory_(this) {
-  if (prefs_.UseIeSitelist()) {
-    GURL sitelist_url = GetIeemSitelistUrl();
-    if (sitelist_url.is_valid()) {
-      ieem_downloader_ = std::make_unique<XmlDownloader>(
-          profile, std::move(sitelist_url), fetch_delay_,
-          base::BindOnce(&BrowserSwitcherServiceWin::OnIeemSitelistParsed,
-                         weak_ptr_factory_.GetWeakPtr()));
-    }
-  }
-
-  if (prefs_.IsEnabled())
+  if (prefs().IsEnabled())
     SavePrefsToFile();
   else
     DeletePrefsFile();
 
-  prefs_subscription_ = prefs_.RegisterPrefsChangedCallback(base::BindRepeating(
-      &BrowserSwitcherServiceWin::OnBrowserSwitcherPrefsChanged,
-      base::Unretained(this)));
+  prefs_subscription_ =
+      prefs().RegisterPrefsChangedCallback(base::BindRepeating(
+          &BrowserSwitcherServiceWin::OnBrowserSwitcherPrefsChanged,
+          base::Unretained(this)));
 }
 
 BrowserSwitcherServiceWin::~BrowserSwitcherServiceWin() = default;
 
 void BrowserSwitcherServiceWin::OnBrowserSwitcherPrefsChanged(
     BrowserSwitcherPrefs* prefs) {
-  if (prefs_.IsEnabled())
+  if (prefs->IsEnabled())
     SavePrefsToFile();
   else
     DeletePrefsFile();
@@ -156,6 +164,29 @@ void BrowserSwitcherServiceWin::OnBrowserSwitcherPrefsChanged(
 void BrowserSwitcherServiceWin::SetIeemSitelistUrlForTesting(
     const std::string& spec) {
   *IeemSitelistUrlForTesting() = spec;
+}
+
+std::vector<RulesetSource> BrowserSwitcherServiceWin::GetRulesetSources() {
+  auto sources = BrowserSwitcherService::GetRulesetSources();
+  if (!prefs().UseIeSitelist())
+    return sources;
+  GURL sitelist_url = GetIeemSitelistUrl();
+  if (!sitelist_url.is_valid())
+    return sources;
+  sources.emplace_back(
+      sitelist_url,
+      base::BindOnce(&BrowserSwitcherServiceWin::OnIeemSitelistParsed,
+                     weak_ptr_factory_.GetWeakPtr()));
+  return sources;
+}
+
+void BrowserSwitcherServiceWin::OnAllRulesetsParsed() {
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+      base::BindOnce(&SaveDataToFile, SerializeSitelistCacheFile(sitelist()),
+                     "sitelistcache.dat"));
 }
 
 // static
@@ -185,12 +216,13 @@ void BrowserSwitcherServiceWin::OnIeemSitelistParsed(ParsedXml xml) {
   ieem_downloader_.reset();
 }
 
-void BrowserSwitcherServiceWin::SavePrefsToFile() const {
+void BrowserSwitcherServiceWin::SavePrefsToFile() {
   base::PostTaskWithTraits(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::BindOnce(&DoSavePrefsToFile, SerializeCacheFile(prefs_)));
+      base::BindOnce(&SaveDataToFile, SerializeCacheFile(prefs()),
+                     "cache.dat"));
 }
 
 void BrowserSwitcherServiceWin::DeletePrefsFile() const {

@@ -175,6 +175,14 @@ void BrowserSwitcherSitelistImpl::SetExternalSitelist(ParsedXml&& parsed_xml) {
   external_sitelist_.greylist = std::move(parsed_xml.greylist);
 }
 
+const RuleSet* BrowserSwitcherSitelistImpl::GetIeemSitelist() const {
+  return &ieem_sitelist_;
+}
+
+const RuleSet* BrowserSwitcherSitelistImpl::GetExternalSitelist() const {
+  return &external_sitelist_;
+}
+
 bool BrowserSwitcherSitelistImpl::IsActive() const {
   if (!prefs_->IsEnabled())
     return false;
