@@ -339,13 +339,6 @@ void NGBlockNode::FinishLayout(
     }
   }
 
-  // If we have an overflow clip present, we need to check for paint
-  // invalidation for the subtree in case that the overflow clip changes.
-  // TODO(crbug.com/927903): Probably PrePaintTreeWalk is the better place to
-  // do this by invalidating descendant PaintLayers only.
-  if (box_->HasOverflowClip())
-    box_->SetSubtreeShouldCheckForPaintInvalidation();
-
   CopyFragmentDataToLayoutBox(constraint_space, *layout_result);
 }
 

@@ -71,6 +71,11 @@ class CORE_EXPORT PrePaintTreeWalk {
     // When the effective whitelisted touch action changes on an ancestor, the
     // entire subtree may need to update.
     bool effective_whitelisted_touch_action_changed = false;
+
+    // This is set to true once we see tree_builder_context->clip_changed is
+    // true. It will be propagated to descendant contexts even if we don't
+    // create tree_builder_context.
+    bool clip_changed = false;
   };
 
   const PrePaintTreeWalkContext& ContextAt(wtf_size_t index) {
@@ -87,11 +92,6 @@ class CORE_EXPORT PrePaintTreeWalk {
   // See https://crbug.com/781301 .
   NOINLINE void WalkInternal(const LayoutObject&, PrePaintTreeWalkContext&);
   void Walk(const LayoutObject&);
-
-  // Invalidates paint-layer painting optimizations, such as subsequence caching
-  // and empty paint phase optimizations if clips from the context have changed.
-  void InvalidatePaintLayerOptimizationsIfNeeded(const LayoutObject&,
-                                                 PrePaintTreeWalkContext&);
 
   bool NeedsTreeBuilderContextUpdate(const LocalFrameView&,
                                      const PrePaintTreeWalkContext&);

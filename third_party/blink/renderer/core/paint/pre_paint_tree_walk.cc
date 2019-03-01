@@ -240,20 +240,6 @@ void PrePaintTreeWalk::UpdateAuxiliaryObjectProperties(
     context.ancestor_overflow_paint_layer = paint_layer;
 }
 
-void PrePaintTreeWalk::InvalidatePaintLayerOptimizationsIfNeeded(
-    const LayoutObject& object,
-    PrePaintTreeWalkContext& context) {
-  if (!object.HasLayer())
-    return;
-
-  PaintLayer& paint_layer = *ToLayoutBoxModelObject(object).Layer();
-
-  if (!context.tree_builder_context->clip_changed)
-    return;
-
-  paint_layer.SetNeedsRepaint();
-}
-
 bool PrePaintTreeWalk::NeedsTreeBuilderContextUpdate(
     const LocalFrameView& frame_view,
     const PrePaintTreeWalkContext& context) {
@@ -342,7 +328,11 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
   if (context.tree_builder_context) {
     property_changed =
         std::max(property_changed, property_tree_builder->UpdateForChildren());
-    InvalidatePaintLayerOptimizationsIfNeeded(object, context);
+
+    // Save clip_changed flag in |context| so that all descendants will see it
+    // even if we don't creae tree_builder_context.
+    if (context.tree_builder_context->clip_changed)
+      context.clip_changed = true;
 
     if (property_changed > PaintPropertyChangedState::kUnchanged) {
       if (property_changed >
@@ -371,6 +361,11 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
       }
     }
   }
+
+  // When this or ancestor clip changed, the layer needs repaint because it
+  // may paint more or less results according to the changed clip.
+  if (context.clip_changed && object.HasLayer())
+    ToLayoutBoxModelObject(object).Layer()->SetNeedsRepaint();
 
   CompositingLayerPropertyUpdater::Update(object);
 
@@ -405,7 +400,8 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object) {
       !object.ShouldCheckForPaintInvalidation() &&
       !parent_context().paint_invalidator_context.NeedsSubtreeWalk() &&
       !NeedsEffectiveWhitelistedTouchActionUpdate(object, parent_context()) &&
-      !NeedsHitTestingPaintInvalidation(object, parent_context())) {
+      !NeedsHitTestingPaintInvalidation(object, parent_context()) &&
+      !parent_context().clip_changed) {
     return;
   }
 
@@ -424,8 +420,11 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object) {
   };
 
   // Ignore clip changes from ancestor across transform boundaries.
-  if (context().tree_builder_context && object.StyleRef().HasTransform())
-    context().tree_builder_context->clip_changed = false;
+  if (object.StyleRef().HasTransform()) {
+    context().clip_changed = false;
+    if (context().tree_builder_context)
+      context().tree_builder_context->clip_changed = false;
+  }
 
   WalkInternal(object, context());
 
