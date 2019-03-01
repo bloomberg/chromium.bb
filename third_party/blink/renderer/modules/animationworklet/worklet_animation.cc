@@ -164,29 +164,56 @@ double ToMilliseconds(base::Optional<base::TimeDelta> time) {
 
 // Calculates start time backwards from the current time and
 // timeline.currentTime.
-//
-// If this is a scroll-linked animation, we always consider start time to be
-// zero (i.e., scroll origin). This means the computed start time post this
-// calculation may not match the expected current time that was given as input.
-//
-// Changing this is under consideration here:
-// https://github.com/w3c/csswg-drafts/issues/2075
 base::Optional<base::TimeDelta> CalculateStartTime(
     base::TimeDelta current_time,
     double playback_rate,
     AnimationTimeline& timeline) {
-  if (timeline.IsScrollTimeline())
-    return base::TimeDelta();
-
   bool is_null;
   double time_ms = timeline.currentTime(is_null);
   // TODO(majidvp): Make it so that inactive timelines do not reach here
   // i.e., we should instead "hold" when timeline is inactive.
   // https://crbug.com/924159
-  if (is_null)
+  if (is_null) {
+    if (timeline.IsScrollTimeline()) {
+      // Currently start_time_ of scroll-linked animations must always be
+      // initialized, whether the timeline is active or not.
+      // Without the start_time_ being initialized, when the scroll-timeline
+      // becomes active, no logic kicks in to initialize the start_time_ and,
+      // as a result, the animation doesn't run.
+      // This is a temporary measure until https://crbug.com/924159
+      // is implemented.
+      return base::TimeDelta();
+    }
     return base::nullopt;
+  }
+
   auto timeline_time = base::TimeDelta::FromMillisecondsD(time_ms);
   return timeline_time - (current_time / playback_rate);
+}
+
+// Returns initial current time of an animation. This method is called when
+// calculating initial start time.
+// Document-linked animations are initialized with the current time of zero
+// and start time of the document timeline current time.
+// Scroll-linked animations are initialized with the start time of
+// zero (i.e., scroll origin) and the current time corresponding to the current
+// scroll position adjusted by the playback rate.
+//
+// Changing scroll-linked animation start_time initialization is under
+// consideration here: https://github.com/w3c/csswg-drafts/issues/2075.
+base::TimeDelta GetInitialCurrentTime(double playback_rate,
+                                      AnimationTimeline& timeline) {
+  if (timeline.IsScrollTimeline()) {
+    bool is_null;
+    double timeline_time_ms = timeline.currentTime(is_null);
+    // TODO(majidvp): Make it so that inactive timelines do not reach here
+    // i.e., we should instead "hold" when timeline is inactive.
+    // https://crbug.com/924159
+    if (is_null)
+      return base::TimeDelta();
+    return base::TimeDelta::FromMillisecondsD(timeline_time_ms) * playback_rate;
+  }
+  return base::TimeDelta();
 }
 
 }  // namespace
@@ -318,7 +345,7 @@ void WorkletAnimation::play(ExceptionState& exception_state) {
   // While animation is pending, it hold time at Zero, see:
   // https://drafts.csswg.org/web-animations-1/#playing-an-animation-section
   SetPlayState(Animation::kPending);
-  SetCurrentTime(base::TimeDelta());
+  SetCurrentTime(GetInitialCurrentTime(playback_rate_, *timeline_));
   has_started_ = true;
 
   for (auto& effect : effects_) {
@@ -360,7 +387,8 @@ void WorkletAnimation::pause(ExceptionState& exception_state) {
   // If animation is playing then we should hold the current time
   // otherwise hold zero.
   base::TimeDelta new_current_time =
-      Playing() ? CurrentTime().value() : base::TimeDelta();
+      Playing() ? CurrentTime().value()
+                : GetInitialCurrentTime(playback_rate_, *timeline_);
   SetPlayState(Animation::kPaused);
   SetCurrentTime(new_current_time);
 }
@@ -432,17 +460,6 @@ void WorkletAnimation::setPlaybackRate(ScriptState* script_state,
     return;
   }
 
-  // TODO(gerchiko): Implement support playback_rate for scroll-linked
-  // animations. http://crbug.com/852475.
-  if (timeline_->IsScrollTimeline()) {
-    if (document_->GetFrame() && ExecutionContext::From(script_state)) {
-      document_->GetFrame()->Console().AddMessage(
-          ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
-                                 "Scroll-linked WorkletAnimation currently "
-                                 "does not support setting playback rate."));
-    }
-    return;
-  }
   SetPlaybackRateInternal(playback_rate);
 }
 
@@ -450,7 +467,6 @@ void WorkletAnimation::SetPlaybackRateInternal(double playback_rate) {
   DCHECK(std::isfinite(playback_rate));
   DCHECK_NE(playback_rate, playback_rate_);
   DCHECK(playback_rate);
-  DCHECK(!timeline_->IsScrollTimeline());
 
   base::Optional<base::TimeDelta> previous_current_time = CurrentTime();
   playback_rate_ = playback_rate;
@@ -543,7 +559,8 @@ void WorkletAnimation::InvalidateCompositingState() {
 void WorkletAnimation::StartOnMain() {
   running_on_main_thread_ = true;
   // Start from existing current time in case one exists or zero.
-  base::TimeDelta current_time = CurrentTime().value_or(base::TimeDelta());
+  base::TimeDelta current_time =
+      CurrentTime().value_or(GetInitialCurrentTime(playback_rate_, *timeline_));
   SetPlayState(Animation::kRunning);
   SetCurrentTime(current_time);
 }
@@ -604,7 +621,7 @@ bool WorkletAnimation::StartOnCompositor() {
   // TODO(smcgruer): We need to start all of the effects, not just the first.
   StartEffectOnCompositor(compositor_animation_.get(), GetEffect());
   SetPlayState(Animation::kRunning);
-  SetCurrentTime(base::TimeDelta());
+  SetCurrentTime(GetInitialCurrentTime(playback_rate_, *timeline_));
   return true;
 }
 

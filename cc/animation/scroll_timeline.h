@@ -6,6 +6,7 @@
 #define CC_ANIMATION_SCROLL_TIMELINE_H_
 
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "cc/animation/animation_export.h"
 #include "cc/trees/element_id.h"
 
@@ -38,11 +39,13 @@ class CC_ANIMATION_EXPORT ScrollTimeline {
   // compositor.
   std::unique_ptr<ScrollTimeline> CreateImplInstance() const;
 
-  // Calculate the current time of the ScrollTimeline. This is either a double
-  // value or std::numeric_limits<double>::quiet_NaN() if the current time is
-  // unresolved.
-  virtual double CurrentTime(const ScrollTree& scroll_tree,
-                             bool is_active_tree) const;
+  // Calculate the current time of the ScrollTimeline. This is either a
+  // base::TimeTicks value or base::nullopt if the current time is unresolved.
+  // The internal calculations are performed using doubles and the result is
+  // converted to base::TimeTicks. This limits the precision to 1us.
+  virtual base::Optional<base::TimeTicks> CurrentTime(
+      const ScrollTree& scroll_tree,
+      bool is_active_tree) const;
 
   void SetScrollerId(base::Optional<ElementId> scroller_id);
   void UpdateStartAndEndScrollOffsets(
