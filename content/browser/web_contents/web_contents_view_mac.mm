@@ -80,7 +80,8 @@ WebContentsViewMac::WebContentsViewMac(WebContentsImpl* web_contents,
     : web_contents_(web_contents),
       delegate_(delegate),
       ns_view_id_(ui::NSViewIds::GetNewId()),
-      ns_view_client_binding_(this) {}
+      ns_view_client_binding_(this),
+      deferred_close_weak_ptr_factory_(this) {}
 
 WebContentsViewMac::~WebContentsViewMac() {
   if (views_host_)
@@ -395,19 +396,21 @@ void WebContentsViewMac::RenderViewHostChanged(RenderViewHost* old_host,
 void WebContentsViewMac::SetOverscrollControllerEnabled(bool enabled) {
 }
 
-bool WebContentsViewMac::IsEventTracking() const {
-  return base::MessagePumpMac::IsHandlingSendEvent();
-}
-
 // Arrange to call CloseTab() after we're back to the main event loop.
-// The obvious way to do this would be PostNonNestableTask(), but that
-// will fire when the event-tracking loop polls for events.  So we
-// need to bounce the message via Cocoa, instead.
-void WebContentsViewMac::CloseTabAfterEventTracking() {
-  [cocoa_view() cancelDeferredClose];
-  [cocoa_view() performSelector:@selector(closeTabAfterEvent)
-                     withObject:nil
-                     afterDelay:0.0];
+// The obvious way to do this would be to post a NonNestable task, but that
+// would fire when the event-tracking loop polls for events.  So we need to
+// bounce the message via Cocoa, instead.
+bool WebContentsViewMac::CloseTabAfterEventTrackingIfNeeded() {
+  if (!base::MessagePumpMac::IsHandlingSendEvent())
+    return false;
+
+  deferred_close_weak_ptr_factory_.InvalidateWeakPtrs();
+  auto weak_ptr = deferred_close_weak_ptr_factory_.GetWeakPtr();
+  CFRunLoopPerformBlock(CFRunLoopGetCurrent(), kCFRunLoopDefaultMode, ^{
+    if (weak_ptr)
+      weak_ptr->CloseTab();
+  });
+  return true;
 }
 
 void WebContentsViewMac::CloseTab() {

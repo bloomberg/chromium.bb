@@ -60,9 +60,7 @@ CONTENT_EXPORT
             dragOperationMask:(NSDragOperation)operationMask
                         image:(NSImage*)image
                        offset:(NSPoint)offset;
-- (void)cancelDeferredClose;
 - (void)clearWebContentsView;
-- (void)closeTabAfterEvent;
 - (void)updateWebContentsVisibility;
 - (void)viewDidBecomeFirstResponder:(NSNotification*)notification;
 - (content::WebContentsImpl*)webContents;

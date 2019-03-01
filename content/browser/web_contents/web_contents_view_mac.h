@@ -83,8 +83,7 @@ class WebContentsViewMac : public WebContentsView,
   void RenderViewHostChanged(RenderViewHost* old_host,
                              RenderViewHost* new_host) override;
   void SetOverscrollControllerEnabled(bool enabled) override;
-  bool IsEventTracking() const override;
-  void CloseTabAfterEventTracking() override;
+  bool CloseTabAfterEventTrackingIfNeeded() override;
 
   // RenderViewHostDelegateView:
   void StartDragging(const DropData& drop_data,
@@ -194,6 +193,9 @@ class WebContentsViewMac : public WebContentsView,
   mojom::WebContentsNSViewBridgeAssociatedPtr ns_view_bridge_remote_;
   mojo::AssociatedBinding<mojom::WebContentsNSViewClient>
       ns_view_client_binding_;
+
+  // Used by CloseTabAfterEventTrackingIfNeeded.
+  base::WeakPtrFactory<WebContentsViewMac> deferred_close_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewMac);
 };

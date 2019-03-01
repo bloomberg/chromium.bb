@@ -169,11 +169,8 @@ void WebContentsViewGuest::SetOverscrollControllerEnabled(bool enabled) {
 }
 
 #if defined(OS_MACOSX)
-bool WebContentsViewGuest::IsEventTracking() const {
+bool WebContentsViewGuest::CloseTabAfterEventTrackingIfNeeded() {
   return false;
-}
-
-void WebContentsViewGuest::CloseTabAfterEventTracking() {
 }
 #endif
 

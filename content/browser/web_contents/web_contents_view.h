@@ -123,13 +123,12 @@ class WebContentsView {
   virtual void SetOverscrollControllerEnabled(bool enabled) = 0;
 
 #if defined(OS_MACOSX)
-  // If we close the tab while a UI control is in an event-tracking
-  // loop, the control may message freed objects and crash.
-  // WebContents::Close() calls IsEventTracking(), and if it returns
-  // true CloseTabAfterEventTracking() is called and the close is not
-  // completed.
-  virtual bool IsEventTracking() const = 0;
-  virtual void CloseTabAfterEventTracking() = 0;
+  // If we close the tab while a UI control is in an event-tracking loop, the
+  // the control may message freed objects and crash. WebContents::Close will
+  // call this. If it returns true, then WebContents::Close will early-out, and
+  // it will be the responsibility of |this| to call CloseTab when the nested
+  // loop has ended.
+  virtual bool CloseTabAfterEventTrackingIfNeeded() = 0;
 #endif
 };
 
