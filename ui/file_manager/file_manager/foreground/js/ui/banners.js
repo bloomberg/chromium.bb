@@ -300,13 +300,13 @@ Banners.prototype.showLowDriveSpaceWarning_ = function(show, opt_sizeStats) {
     const close = this.document_.createElement('div');
     close.className = 'banner-close';
     box.appendChild(close);
-    close.addEventListener('click', total => {
+    close.addEventListener('click', ((total) => {
       const values = {};
       values[DRIVE_WARNING_DISMISSED_KEY] = total;
       chrome.storage.local.set(values);
       box.hidden = true;
       this.requestRelayout_(100);
-    });
+    }).bind(null, opt_sizeStats.totalSize));
   }
 
   if (box.hidden != !show) {
