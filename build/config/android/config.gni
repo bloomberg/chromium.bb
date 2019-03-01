@@ -228,6 +228,9 @@ if (is_android || is_chromeos) {
 
     # Enables instantiation of 64-bit browser targets.
     enable_64_bit_browser = true
+
+    # Enable the chrome build for devices without touchscreens.
+    notouch_build = false
   }
 
   assert(!(check_android_configuration && is_java_debug),

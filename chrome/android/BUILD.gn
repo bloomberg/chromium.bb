@@ -438,6 +438,10 @@ java_group("chrome_all_java") {
     ":chrome_java",
     "//chrome/android/features/media_router:java",
   ]
+
+  if (notouch_build) {
+    deps += [ "//chrome/android/features/touchless:java" ]
+  }
 }
 
 android_library("bundle_canary_java") {
@@ -1778,6 +1782,7 @@ chrome_test_apk_tmpl("chrome_public_test_apk") {
     ":chrome_test_apk_template_resources",
     ":chrome_test_java",
     "//chrome/android/features/media_router:test_java",
+    "//chrome/android/features/touchless:touchless_java_test",
     "//chrome/android/webapk/libs/runtime_library:runtime_library_javatests",
     "//chrome/android/webapk/shell_apk:shell_apk_javatests",
     "//chrome/browser/profiling_host:profiling_host_javatests",

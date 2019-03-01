@@ -44,7 +44,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.searchwidget.SearchActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
-import org.chromium.chrome.browser.touchless.NoTouchActivity;
 import org.chromium.chrome.browser.upgrade.UpgradeActivity;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -70,6 +69,9 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             "com.google.android.apps.chrome.EXTRA_LAUNCH_MODE";
 
     private static final String TAG = "ActivitiyDispatcher";
+
+    private static final String NO_TOUCH_ACTIVITY_NAME =
+            "org.chromium.chrome.browser.touchless.NoTouchActivity";
 
     /**
      * Timeout in ms for reading PartnerBrowserCustomizations provider. We do not trust third party
@@ -435,17 +437,20 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         maybePrefetchDnsInBackground();
 
         Intent newIntent = new Intent(mIntent);
-        Class<?> tabbedActivityClass = null;
+        String targetActivityClassName = null;
         if (FeatureUtilities.isNoTouchModeEnabled()) {
             // When in No Touch Mode we don't support tabs, and replace the TabbedActivity with the
             // NoTouchActivity.
-            tabbedActivityClass = NoTouchActivity.class;
+            // We can't depend on NoTouchActivity directly as it's not always compiled in, so
+            // refer to it by string.
+            targetActivityClassName = NO_TOUCH_ACTIVITY_NAME;
         } else {
-            tabbedActivityClass =
-                    MultiWindowUtils.getInstance().getTabbedActivityForIntent(newIntent, mActivity);
+            targetActivityClassName = MultiWindowUtils.getInstance()
+                                              .getTabbedActivityForIntent(newIntent, mActivity)
+                                              .getName();
         }
         newIntent.setClassName(
-                mActivity.getApplicationContext().getPackageName(), tabbedActivityClass.getName());
+                mActivity.getApplicationContext().getPackageName(), targetActivityClassName);
         newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             newIntent.addFlags(Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
