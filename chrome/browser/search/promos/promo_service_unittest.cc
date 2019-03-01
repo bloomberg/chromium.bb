@@ -57,15 +57,15 @@ class PromoServiceTest : public testing::Test {
             GoogleURLTracker::ALWAYS_DOT_COM_MODE,
             network::TestNetworkConnectionTracker::GetInstance()) {}
 
-  ~PromoServiceTest() override {
-    static_cast<KeyedService&>(google_url_tracker_).Shutdown();
-  }
-
   void SetUp() override {
     testing::Test::SetUp();
 
     service_ = std::make_unique<PromoService>(test_shared_loader_factory_,
                                               &google_url_tracker_);
+  }
+
+  void TearDown() override {
+    static_cast<KeyedService&>(google_url_tracker_).Shutdown();
   }
 
   void SetUpResponseWithData(const GURL& load_url,
@@ -100,8 +100,7 @@ class PromoServiceTest : public testing::Test {
   std::unique_ptr<PromoService> service_;
 };
 
-// Flaky on linux-chromeos-rel and win. See https://crbug.com/937041.
-TEST_F(PromoServiceTest, DISABLED_PromoDataNetworkError) {
+TEST_F(PromoServiceTest, PromoDataNetworkError) {
   SetUpResponseWithNetworkError(service()->GetLoadURLForTesting());
 
   ASSERT_EQ(service()->promo_data(), base::nullopt);
