@@ -39,7 +39,7 @@ namespace {
 // class used for maintaining a map of network state and images.
 class NetworkIconImpl {
  public:
-  NetworkIconImpl(const std::string& guid,
+  NetworkIconImpl(const std::string& path,
                   IconType icon_type,
                   NetworkType network_type);
 
@@ -106,14 +106,14 @@ NetworkIconMap* GetIconMap(IconType icon_type) {
 }
 
 void PurgeIconMap(IconType icon_type,
-                  const std::set<std::string>& network_guids) {
+                  const std::set<std::string>& network_paths) {
   NetworkIconMap* icon_map = GetIconMapInstance(icon_type, false);
   if (!icon_map)
     return;
   for (NetworkIconMap::iterator loop_iter = icon_map->begin();
        loop_iter != icon_map->end();) {
     NetworkIconMap::iterator cur_iter = loop_iter++;
-    if (network_guids.count(cur_iter->first) == 0) {
+    if (network_paths.count(cur_iter->first) == 0) {
       delete cur_iter->second;
       icon_map->erase(cur_iter);
     }
@@ -304,7 +304,7 @@ gfx::ImageSkia GetConnectingVpnImage(IconType icon_type) {
 }  // namespace
 
 NetworkIconState::NetworkIconState(const chromeos::NetworkState* network) {
-  guid = network->guid();
+  path = network->path();
   name = network->name();
 
   const std::string& network_type = network->type();
@@ -361,7 +361,7 @@ NetworkIconState::~NetworkIconState() = default;
 //------------------------------------------------------------------------------
 // NetworkIconImpl
 
-NetworkIconImpl::NetworkIconImpl(const std::string& guid,
+NetworkIconImpl::NetworkIconImpl(const std::string& path,
                                  IconType icon_type,
                                  NetworkType network_type)
     : icon_type_(icon_type) {
@@ -471,11 +471,11 @@ NetworkIconImpl* FindAndUpdateImageImpl(const NetworkIconState& network,
   // Find or add the icon.
   NetworkIconMap* icon_map = GetIconMap(icon_type);
   NetworkIconImpl* icon;
-  NetworkIconMap::iterator iter = icon_map->find(network.guid);
+  NetworkIconMap::iterator iter = icon_map->find(network.path);
   if (iter == icon_map->end()) {
     VLOG(1) << "new NetworkIconImpl: " << network.name;
-    icon = new NetworkIconImpl(network.guid, icon_type, network.type);
-    icon_map->insert(std::make_pair(network.guid, icon));
+    icon = new NetworkIconImpl(network.path, icon_type, network.type);
+    icon_map->insert(std::make_pair(network.path, icon));
   } else {
     VLOG(1) << "found NetworkIconImpl: " << network.name;
     icon = iter->second;
@@ -644,12 +644,12 @@ base::string16 GetLabelForNetwork(const NetworkIconState& network,
   return base::UTF8ToUTF16(network.name);
 }
 
-void PurgeNetworkIconCache(const std::set<std::string>& network_guids) {
-  PurgeIconMap(ICON_TYPE_TRAY_OOBE, network_guids);
-  PurgeIconMap(ICON_TYPE_TRAY_REGULAR, network_guids);
-  PurgeIconMap(ICON_TYPE_DEFAULT_VIEW, network_guids);
-  PurgeIconMap(ICON_TYPE_LIST, network_guids);
-  PurgeIconMap(ICON_TYPE_MENU_LIST, network_guids);
+void PurgeNetworkIconCache(const std::set<std::string>& network_paths) {
+  PurgeIconMap(ICON_TYPE_TRAY_OOBE, network_paths);
+  PurgeIconMap(ICON_TYPE_TRAY_REGULAR, network_paths);
+  PurgeIconMap(ICON_TYPE_DEFAULT_VIEW, network_paths);
+  PurgeIconMap(ICON_TYPE_LIST, network_paths);
+  PurgeIconMap(ICON_TYPE_MENU_LIST, network_paths);
 }
 
 SignalStrength GetSignalStrengthForNetwork(

@@ -46,7 +46,7 @@ struct ASH_EXPORT NetworkIconState {
   NetworkIconState& operator=(const NetworkIconState& other);
   ~NetworkIconState();
 
-  std::string guid;
+  std::string path;
   std::string name;
   NetworkType type;
   ConnectionStateType connection_state;
@@ -128,10 +128,10 @@ ASH_EXPORT gfx::ImageSkia GetImageForNewWifiNetwork(SkColor icon_color,
 ASH_EXPORT base::string16 GetLabelForNetwork(const NetworkIconState&,
                                              IconType icon_type);
 
-// Called periodically with the current list of network guids. Removes cached
+// Called periodically with the current list of network paths. Removes cached
 // entries that are no longer in the list.
 ASH_EXPORT void PurgeNetworkIconCache(
-    const std::set<std::string>& network_guids);
+    const std::set<std::string>& network_paths);
 
 // Called by ChromeVox to give a verbal indication of the network icon. Returns
 // the signal strength of |network|, if it is a network type with a signal

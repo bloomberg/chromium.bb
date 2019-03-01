@@ -21,12 +21,12 @@ void PurgeNetworkIconCache() {
   NetworkStateHandler::NetworkStateList networks;
   NetworkHandler::Get()->network_state_handler()->GetVisibleNetworkList(
       &networks);
-  std::set<std::string> network_guids;
+  std::set<std::string> network_paths;
   for (NetworkStateHandler::NetworkStateList::iterator iter = networks.begin();
        iter != networks.end(); ++iter) {
-    network_guids.insert((*iter)->guid());
+    network_paths.insert((*iter)->path());
   }
-  network_icon::PurgeNetworkIconCache(network_guids);
+  network_icon::PurgeNetworkIconCache(network_paths);
 }
 
 }  // namespace
