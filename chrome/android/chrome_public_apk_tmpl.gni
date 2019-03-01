@@ -83,6 +83,9 @@ template("chrome_public_common_apk_or_module_tmpl") {
 
       library_target = invoker.shared_library_for_unwind_asset
       deps = invoker.shared_libraries
+      if (build_apk_secondary_abi && defined(android_secondary_abi_cpu)) {
+        deps += [ "//chrome/android:${library_target}($android_secondary_abi_toolchain)" ]
+      }
     }
   }
 
