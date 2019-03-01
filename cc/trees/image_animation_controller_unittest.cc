@@ -821,7 +821,7 @@ TEST_F(ImageAnimationControllerTest, ImageWithNonVsyncAlignedDurations) {
 
   std::vector<base::TimeDelta> expected_delays = {
       base::TimeDelta::FromMilliseconds(2),
-      base::TimeDelta::FromMilliseconds(3),
+      base::TimeDelta::FromMilliseconds(4),
       base::TimeDelta::FromMilliseconds(4)};
   LoopOnceNoDelay(data.paint_image_id, frames, frames.size(), 0,
                   expected_delays);
@@ -846,43 +846,11 @@ TEST_F(ImageAnimationControllerTest, ImageWithLessThanIntervalDurations) {
   controller_->RegisterAnimationDriver(data.paint_image_id, &driver);
   controller_->UpdateStateFromDrivers();
 
-  // Since the animation hasn't started yet, it wants to advance immediately.
+  // Animation starts at 10s, we jump directly to the third frame.
   task_runner_->VerifyDelay(base::TimeDelta());
-  // The first pending tree is what starts the animation and will just snap to
-  // the next vsync.
   auto invalidated_images = controller_->AnimateForSyncTree(BeginFrameArgs());
   EXPECT_EQ(controller_->GetFrameIndexForImage(data.paint_image_id,
                                                WhichTree::PENDING_TREE),
-            0u);
-  controller_->DidActivate();
-  AdvanceNow(interval_);
-
-  // For the next frame, the catch up loop forces us to skip the second frame
-  // and jump directly to the third frame.
-  task_runner_->VerifyDelay(interval_);
-  invalidated_images = controller_->AnimateForSyncTree(BeginFrameArgs());
-  ASSERT_EQ(invalidated_images.size(), 1u);
-  EXPECT_EQ(invalidated_images.count(data.paint_image_id), 1u);
-  EXPECT_EQ(controller_->GetFrameIndexForImage(data.paint_image_id,
-                                               WhichTree::PENDING_TREE),
-            2u);
-  EXPECT_EQ(controller_->GetFrameIndexForImage(data.paint_image_id,
-                                               WhichTree::ACTIVE_TREE),
-            0u);
-  controller_->DidActivate();
-  AdvanceNow(interval_);
-
-  // The 4th and 5th frame add up to the duration of the |interval_|, so the
-  // catch up look jumps us to the 5th frame.
-  task_runner_->VerifyDelay(interval_);
-  invalidated_images = controller_->AnimateForSyncTree(BeginFrameArgs());
-  ASSERT_EQ(invalidated_images.size(), 1u);
-  EXPECT_EQ(invalidated_images.count(data.paint_image_id), 1u);
-  EXPECT_EQ(controller_->GetFrameIndexForImage(data.paint_image_id,
-                                               WhichTree::PENDING_TREE),
-            4u);
-  EXPECT_EQ(controller_->GetFrameIndexForImage(data.paint_image_id,
-                                               WhichTree::ACTIVE_TREE),
             2u);
   controller_->DidActivate();
 
