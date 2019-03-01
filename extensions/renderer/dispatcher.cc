@@ -423,6 +423,8 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
     // TODO(lazyboy): Get rid of RequireGuestViewModules() as this doesn't seem
     // necessary for Extension SW.
     RequireGuestViewModules(context);
+
+    worker_dispatcher->DidInitializeContext(service_worker_version_id);
   }
 
   g_worker_script_context_set.Get().Insert(base::WrapUnique(context));
