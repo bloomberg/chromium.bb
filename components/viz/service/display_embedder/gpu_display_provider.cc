@@ -187,8 +187,9 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
           synthetic_begin_frame_source, gpu_memory_buffer_manager_.get(),
           renderer_settings.allow_overlays);
 #elif defined(OS_ANDROID)
-      // TODO(khushalsagar): Use RGB_565 if specified by context provider.
-      auto buffer_format = gfx::BufferFormat::RGBA_8888;
+      auto buffer_format = context_provider->UseRGB565PixelFormat()
+                               ? gfx::BufferFormat::BGR_565
+                               : gfx::BufferFormat::RGBA_8888;
       output_surface = std::make_unique<GLOutputSurfaceBufferQueueAndroid>(
           std::move(context_provider), surface_handle,
           synthetic_begin_frame_source, gpu_memory_buffer_manager_.get(),
