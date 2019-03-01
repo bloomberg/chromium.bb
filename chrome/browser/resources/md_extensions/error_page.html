@@ -117,8 +117,12 @@
       .stack-trace-container li.selected,
       .stack-trace-container li:hover {
         background: var(--google-blue-100);
+        color: var(--google-grey-900);  /* Same in light & dark modes. */
       }
 
+      /* TODO(crbug.com/937159): all of the code shown in the errors page is
+       * themed for "light mode" and needs to be updated to co-exit with "dark
+       * mode" when specs are available. */
       extensions-code-section {
         background: white;
         height: 200px;
@@ -131,6 +135,10 @@
 
       .start:focus {
         outline: none;
+      }
+
+      .context-url {
+        word-wrap: break-word;
       }
     </style>
     <div class="page-container" id="container">
