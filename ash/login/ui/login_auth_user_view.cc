@@ -504,7 +504,8 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
   password_view_->UpdateForUser(user);
 
   pin_view_ =
-      new LoginPinView(base::BindRepeating(&LoginPasswordView::InsertNumber,
+      new LoginPinView(LoginPinView::Style::kAlphanumeric,
+                       base::BindRepeating(&LoginPasswordView::InsertNumber,
                                            base::Unretained(password_view_)),
                        base::BindRepeating(&LoginPasswordView::Backspace,
                                            base::Unretained(password_view_)));

@@ -60,8 +60,9 @@ constexpr int kLockIconSizeDp = 24;
 
 constexpr int kIconToTitleDistanceDp = 28;
 constexpr int kTitleToDescriptionDistanceDp = 14;
-constexpr int kDescriptionToAccessCodeDistanceDp = 38;
-constexpr int kAccessCodeToPinKeyboardDistanceDp = 20;
+constexpr int kDescriptionToAccessCodeDistanceDp = 28;
+constexpr int kAccessCodeToPinKeyboardDistanceDp = 5;
+constexpr int kSubmitButtonBottomMarginDp = 8;
 
 constexpr int kTitleFontSizeDeltaDp = 3;
 constexpr int kDescriptionFontSizeDeltaDp = -1;
@@ -416,6 +417,7 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
 
   // Pin keyboard.
   pin_keyboard_view_ = new LoginPinView(
+      LoginPinView::Style::kNumeric,
       base::BindRepeating(&AccessCodeInput::InsertDigit,
                           base::Unretained(access_code_view_)),
       base::BindRepeating(&AccessCodeInput::Backspace,
@@ -460,6 +462,8 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
       gfx::Size(kArrowButtonSizeDp, kArrowButtonSizeDp));
   submit_button_->SetEnabled(false);
   footer->AddChildView(submit_button_);
+
+  add_spacer(kSubmitButtonBottomMarginDp);
 
   // Pin keyboard is only shown in tablet mode.
   pin_keyboard_view_->SetVisible(IsTabletMode());
