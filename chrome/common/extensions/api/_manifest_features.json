@@ -140,17 +140,10 @@
     "channel": "stable",
     "extension_types": ["shared_module"]
   },
-  "file_browser_handlers": [
-    {
-      "channel": "stable",
-      "extension_types": ["extension", "legacy_packaged_app"]
-    },
-    {
-      "channel": "stable",
-      "extension_types": ["platform_app"],
-      "location": "component"
-    }
-  ],
+  "file_browser_handlers": {
+    "channel": "stable",
+    "extension_types": ["extension", "legacy_packaged_app"]
+  },
   "file_system_provider_capabilities": [{
     "channel": "stable",
     "extension_types": ["extension", "platform_app"]
