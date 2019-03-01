@@ -24,9 +24,18 @@
   <template>
     <style include="action-link cr-hidden-style cr-icons paper-button-style">
       :host {
+        --controlled-by-active-color: #333;
+        --controlled-by-active-link-color: var(--google-blue-600);
+        --controlled-by-inactive-color: #5a5a5a;
         display: flex;
         flex-direction: column;
         outline: none;
+      }
+
+      :host-context([dark]) {
+        --controlled-by-active-color: inherit;
+        --controlled-by-active-link-color: var(--cr-link-color);
+        --controlled-by-inactive-color: inherit;
       }
 
       paper-button {
@@ -218,21 +227,18 @@
         margin: .7em 0;
       }
 
-      #controlled-by {
-        margin-inline-start: 8px;
-      }
-
       #controlled-by,
       #controlled-by a {
-        color: #5a5a5a;
+        color: var(--controlled-by-inactive-color);
       }
 
       .is-active #controlled-by {
-        color: #333;
+        color: var(--controlled-by-active-color);
+        margin-inline-start: 8px;
       }
 
       .is-active #controlled-by a {
-        color: var(--google-blue-600);
+        color: var(--controlled-by-active-link-color);
       }
 
       #remove-wrapper {
