@@ -63,6 +63,8 @@ class NET_EXPORT ReportingContext {
   void NotifyCachedReportsUpdated();
   void NotifyCachedClientsUpdated();
 
+  void OnShutdown();
+
  protected:
   ReportingContext(const ReportingPolicy& policy,
                    base::Clock* clock,

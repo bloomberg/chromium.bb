@@ -75,6 +75,10 @@ void ReportingContext::NotifyCachedClientsUpdated() {
     observer.OnClientsUpdated();
 }
 
+void ReportingContext::OnShutdown() {
+  uploader_->OnShutdown();
+}
+
 ReportingContext::ReportingContext(const ReportingPolicy& policy,
                                    base::Clock* clock,
                                    const base::TickClock* tick_clock,

@@ -969,10 +969,17 @@ class MockReportingService : public net::ReportingService {
     last_origin_filter_ = base::RepeatingCallback<bool(const GURL&)>();
   }
 
+  void OnShutdown() override {}
+
   const net::ReportingPolicy& GetPolicy() const override {
     static net::ReportingPolicy dummy_policy_;
     NOTREACHED();
     return dummy_policy_;
+  }
+
+  net::ReportingContext* GetContextForTesting() const override {
+    NOTREACHED();
+    return nullptr;
   }
 
   int remove_calls() const { return remove_calls_; }

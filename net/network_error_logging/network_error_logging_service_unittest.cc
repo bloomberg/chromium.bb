@@ -96,9 +96,16 @@ class TestReportingService : public ReportingService {
 
   void RemoveAllBrowsingData(int data_type_mask) override { NOTREACHED(); }
 
+  void OnShutdown() override {}
+
   const ReportingPolicy& GetPolicy() const override {
     NOTREACHED();
     return dummy_policy_;
+  }
+
+  ReportingContext* GetContextForTesting() const override {
+    NOTREACHED();
+    return nullptr;
   }
 
  private:

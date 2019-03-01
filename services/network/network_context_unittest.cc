@@ -1651,15 +1651,15 @@ TEST_F(NetworkContextTest, LookupBasicAuthCredentials) {
 
 #if BUILDFLAG(ENABLE_REPORTING)
 TEST_F(NetworkContextTest, ClearReportingCacheReports) {
-  std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(CreateContextParams());
-
   auto reporting_context = std::make_unique<net::TestReportingContext>(
       base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
       net::ReportingPolicy());
   net::ReportingCache* reporting_cache = reporting_context->cache();
   std::unique_ptr<net::ReportingService> reporting_service =
       net::ReportingService::CreateForTesting(std::move(reporting_context));
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
   network_context->url_request_context()->set_reporting_service(
       reporting_service.get());
 
@@ -1681,15 +1681,15 @@ TEST_F(NetworkContextTest, ClearReportingCacheReports) {
 }
 
 TEST_F(NetworkContextTest, ClearReportingCacheReportsWithFilter) {
-  std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(CreateContextParams());
-
   auto reporting_context = std::make_unique<net::TestReportingContext>(
       base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
       net::ReportingPolicy());
   net::ReportingCache* reporting_cache = reporting_context->cache();
   std::unique_ptr<net::ReportingService> reporting_service =
       net::ReportingService::CreateForTesting(std::move(reporting_context));
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
   network_context->url_request_context()->set_reporting_service(
       reporting_service.get());
 
@@ -1720,15 +1720,15 @@ TEST_F(NetworkContextTest, ClearReportingCacheReportsWithFilter) {
 
 TEST_F(NetworkContextTest,
        ClearReportingCacheReportsWithNonRegisterableFilter) {
-  std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(CreateContextParams());
-
   auto reporting_context = std::make_unique<net::TestReportingContext>(
       base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
       net::ReportingPolicy());
   net::ReportingCache* reporting_cache = reporting_context->cache();
   std::unique_ptr<net::ReportingService> reporting_service =
       net::ReportingService::CreateForTesting(std::move(reporting_context));
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
   network_context->url_request_context()->set_reporting_service(
       reporting_service.get());
 
@@ -1758,15 +1758,15 @@ TEST_F(NetworkContextTest,
 }
 
 TEST_F(NetworkContextTest, ClearEmptyReportingCacheReports) {
-  std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(CreateContextParams());
-
   auto reporting_context = std::make_unique<net::TestReportingContext>(
       base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
       net::ReportingPolicy());
   net::ReportingCache* reporting_cache = reporting_context->cache();
   std::unique_ptr<net::ReportingService> reporting_service =
       net::ReportingService::CreateForTesting(std::move(reporting_context));
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
   network_context->url_request_context()->set_reporting_service(
       reporting_service.get());
 
@@ -1799,15 +1799,15 @@ TEST_F(NetworkContextTest, ClearReportingCacheReportsWithNoService) {
 }
 
 TEST_F(NetworkContextTest, ClearReportingCacheClients) {
-  std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(CreateContextParams());
-
   auto reporting_context = std::make_unique<net::TestReportingContext>(
       base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
       net::ReportingPolicy());
   net::ReportingCache* reporting_cache = reporting_context->cache();
   std::unique_ptr<net::ReportingService> reporting_service =
       net::ReportingService::CreateForTesting(std::move(reporting_context));
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
   network_context->url_request_context()->set_reporting_service(
       reporting_service.get());
 
@@ -1830,15 +1830,15 @@ TEST_F(NetworkContextTest, ClearReportingCacheClients) {
 }
 
 TEST_F(NetworkContextTest, ClearReportingCacheClientsWithFilter) {
-  std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(CreateContextParams());
-
   auto reporting_context = std::make_unique<net::TestReportingContext>(
       base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
       net::ReportingPolicy());
   net::ReportingCache* reporting_cache = reporting_context->cache();
   std::unique_ptr<net::ReportingService> reporting_service =
       net::ReportingService::CreateForTesting(std::move(reporting_context));
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
   network_context->url_request_context()->set_reporting_service(
       reporting_service.get());
 
@@ -1870,15 +1870,15 @@ TEST_F(NetworkContextTest, ClearReportingCacheClientsWithFilter) {
 }
 
 TEST_F(NetworkContextTest, ClearEmptyReportingCacheClients) {
-  std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(CreateContextParams());
-
   auto reporting_context = std::make_unique<net::TestReportingContext>(
       base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
       net::ReportingPolicy());
   net::ReportingCache* reporting_cache = reporting_context->cache();
   std::unique_ptr<net::ReportingService> reporting_service =
       net::ReportingService::CreateForTesting(std::move(reporting_context));
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
   network_context->url_request_context()->set_reporting_service(
       reporting_service.get());
 

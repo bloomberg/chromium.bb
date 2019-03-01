@@ -112,6 +112,14 @@ void TestReportingUploader::StartUpload(const url::Origin& report_origin,
       base::BindOnce(&ErasePendingUpload, &pending_uploads_)));
 }
 
+void TestReportingUploader::OnShutdown() {
+  pending_uploads_.clear();
+}
+
+int TestReportingUploader::GetPendingUploadCountForTesting() const {
+  return pending_uploads_.size();
+}
+
 TestReportingDelegate::TestReportingDelegate()
     : test_request_context_(std::make_unique<TestURLRequestContext>()) {}
 

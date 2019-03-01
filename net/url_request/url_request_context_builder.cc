@@ -150,15 +150,17 @@ class ContainerURLRequestContext final : public URLRequestContext {
 
   ~ContainerURLRequestContext() override {
 #if BUILDFLAG(ENABLE_REPORTING)
-    // Destroy the NetworkErrorLoggingService so that destroying the
+    // Shut down the NetworkErrorLoggingService so that destroying the
     // ReportingService (which might abort in-flight URLRequests, generating
     // network errors) won't recursively try to queue more network error
     // reports.
-    storage_.set_network_error_logging_service(nullptr);
+    if (network_error_logging_service())
+      network_error_logging_service()->OnShutdown();
 
-    // Destroy the ReportingService before the rest of the URLRequestContext, so
-    // it cancels any pending requests it may have.
-    storage_.set_reporting_service(nullptr);
+    // Shut down the ReportingService before the rest of the URLRequestContext,
+    // so it cancels any pending requests it may have.
+    if (reporting_service())
+      reporting_service()->OnShutdown();
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
     // Shut down the ProxyResolutionService, as it may have pending URLRequests
