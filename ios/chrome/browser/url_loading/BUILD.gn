@@ -13,6 +13,8 @@ source_set("url_loading") {
     "url_loading_notifier_factory.h",
     "url_loading_observer_bridge.h",
     "url_loading_observer_bridge.mm",
+    "url_loading_params.h",
+    "url_loading_params.mm",
     "url_loading_service.h",
     "url_loading_service.mm",
     "url_loading_service_factory.h",
