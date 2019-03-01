@@ -16,6 +16,9 @@ const char kGoogleDoodleUrl[] = "google-doodle-url";
 const char kSearchProviderLogoURL[] = "search-provider-logo-url";
 
 // Overrides the Doodle URL to use for third-party search engines.
+// Testing? Try:
+//   https://www.gstatic.com/chrome/ntp/doodle_test/third_party_simple.json
+//   https://www.gstatic.com/chrome/ntp/doodle_test/third_party_animated.json
 const char kThirdPartyDoodleURL[] = "third-party-doodle-url";
 
 }  // namespace switches

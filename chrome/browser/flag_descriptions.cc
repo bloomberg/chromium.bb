@@ -2709,12 +2709,6 @@ const char kInlineUpdateFlowDescription[] =
     "flow where they do not have to leave Chrome until the update is ready "
     "to install.";
 
-const char kThirdPartyDoodlesName[] =
-    "Enable Doodles for third-party search engines";
-const char kThirdPartyDoodlesDescription[] =
-    "Enables fetching and displaying Doodles on the NTP for third-party search "
-    "engines.";
-
 #if BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
 
 const char kAndroidNightModeName[] = "Android Chrome UI dark mode";

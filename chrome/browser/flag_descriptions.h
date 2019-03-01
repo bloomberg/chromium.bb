@@ -1587,9 +1587,6 @@ extern const char kUpdateMenuTypeInlineUpdateInstallFailed[];
 extern const char kInlineUpdateFlowName[];
 extern const char kInlineUpdateFlowDescription[];
 
-extern const char kThirdPartyDoodlesName[];
-extern const char kThirdPartyDoodlesDescription[];
-
 #if BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
 
 extern const char kAndroidNightModeName[];
