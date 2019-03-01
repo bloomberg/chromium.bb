@@ -29,6 +29,7 @@
 
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/picture_layer.h"
+#include "third_party/blink/renderer/core/accessibility/apply_high_contrast_check.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -3129,12 +3130,8 @@ void CompositedLayerMapping::DoPaintTask(
   context.SetDeviceScaleFactor(device_scale_factor);
 
   Settings* settings = GetLayoutObject().GetFrame()->GetSettings();
-  HighContrastSettings high_contrast_settings;
-  high_contrast_settings.mode = settings->GetHighContrastMode();
-  high_contrast_settings.grayscale = settings->GetHighContrastGrayscale();
-  high_contrast_settings.contrast = settings->GetHighContrastContrast();
-  high_contrast_settings.image_policy = settings->GetHighContrastImagePolicy();
-  context.SetHighContrast(high_contrast_settings);
+  context.SetHighContrast(
+      BuildHighContrastSettings(*settings, GetLayoutObject()));
 
   if (paint_info.paint_layer->GetCompositingState() !=
       kPaintsIntoGroupedBacking) {

@@ -4,9 +4,11 @@
 
 #include "third_party/blink/renderer/core/accessibility/apply_high_contrast_check.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/high_contrast_color_classifier.h"
+#include "third_party/blink/renderer/platform/graphics/high_contrast_settings.h"
 
 namespace blink {
 namespace {
@@ -28,6 +30,20 @@ bool HasLightBackground(const LayoutObject& layout_object) {
 }
 
 }  // namespace
+
+// TODO(https://crbug.com/925949): Call ShouldApplyHighContrastFilterToPage()
+// and return default HighContrastSettings if it returns false.
+HighContrastSettings BuildHighContrastSettings(
+    const Settings& frame_settings,
+    const LayoutObject& layout_object) {
+  HighContrastSettings high_contrast_settings;
+  high_contrast_settings.mode = frame_settings.GetHighContrastMode();
+  high_contrast_settings.grayscale = frame_settings.GetHighContrastGrayscale();
+  high_contrast_settings.contrast = frame_settings.GetHighContrastContrast();
+  high_contrast_settings.image_policy =
+      frame_settings.GetHighContrastImagePolicy();
+  return high_contrast_settings;
+}
 
 bool ShouldApplyHighContrastFilterToPage(
     HighContrastPagePolicy policy,

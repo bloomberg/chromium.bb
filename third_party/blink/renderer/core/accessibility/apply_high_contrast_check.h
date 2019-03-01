@@ -6,7 +6,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ACCESSIBILITY_APPLY_HIGH_CONTRAST_CHECK_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/platform/graphics/high_contrast_settings.h"
 
 namespace blink {
 
@@ -17,6 +19,12 @@ enum class HighContrastPagePolicy {
   // Apply high-contrast filter to frames based on background color.
   kFilterByBackground,
 };
+
+// Extract high contrast settings from |settings| and modify them as needed
+// based on |layout_object|.
+HighContrastSettings CORE_EXPORT
+BuildHighContrastSettings(const Settings& settings,
+                          const LayoutObject& layout_object);
 
 // Determine whether the page with the provided |root_layout_object| should have
 // its colors inverted, based on the provided |policy|.
