@@ -45,7 +45,7 @@ class DrmOverlayManagerHost : public DrmOverlayManager {
   // DrmOverlayManager:
   void SendOverlayValidationRequest(
       const OverlaySurfaceCandidateList& candidates,
-      gfx::AcceleratedWidget widget) const override;
+      gfx::AcceleratedWidget widget) override;
   bool CanHandleCandidate(const OverlaySurfaceCandidate& candidate,
                           gfx::AcceleratedWidget widget) const override;
 

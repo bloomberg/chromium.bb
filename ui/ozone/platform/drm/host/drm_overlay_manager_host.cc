@@ -37,7 +37,7 @@ void DrmOverlayManagerHost::GpuSentOverlayResult(
 
 void DrmOverlayManagerHost::SendOverlayValidationRequest(
     const OverlaySurfaceCandidateList& candidates,
-    gfx::AcceleratedWidget widget) const {
+    gfx::AcceleratedWidget widget) {
   if (!proxy_->IsConnected())
     return;
   TRACE_EVENT_ASYNC_BEGIN0(

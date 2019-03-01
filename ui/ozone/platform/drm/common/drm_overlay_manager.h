@@ -11,13 +11,16 @@
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #include "ui/ozone/public/overlay_manager_ozone.h"
 
 namespace ui {
 class OverlaySurfaceCandidate;
 
-// Ozone DRM extension of the OverlayManagerOzone interface.
+// Ozone DRM extension of the OverlayManagerOzone interface. It queries the
+// DrmDevice to see if an overlay configuration will work and keeps an MRU cache
+// of recent configurations.
 class DrmOverlayManager : public OverlayManagerOzone {
  public:
   DrmOverlayManager();
@@ -46,7 +49,7 @@ class DrmOverlayManager : public OverlayManagerOzone {
   // should call UpdateCacheForOverlayCandidates() with the response.
   virtual void SendOverlayValidationRequest(
       const std::vector<OverlaySurfaceCandidate>& candidates,
-      gfx::AcceleratedWidget widget) const = 0;
+      gfx::AcceleratedWidget widget) = 0;
 
   // Perform basic validation to see if |candidate| is a valid request.
   virtual bool CanHandleCandidate(const OverlaySurfaceCandidate& candidate,
