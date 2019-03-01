@@ -1,0 +1,196 @@
+<!--
+Copyright 2019 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<!doctype html>
+<head>
+<title>
+piex wasm raw image preview / thumbnail test page
+</title>
+<style>
+  canvas, img { margin: 0 9px 0 0; vertical-align: top }
+  pre { font-size: 18pt }
+  .zoom { width: 50% }
+</style>
+</head>
+
+<body>
+  <button onclick=runTest()>Run Test</button>
+</body>
+
+<script>
+  class ImageBuffer {
+    constructor(buffer) {
+      this.source = new Uint8Array(buffer);
+    }
+
+    process(done) {
+      const memory = Module._malloc(this.source.byteLength);
+
+      const callback = Module.addFunction((result) => {
+        this.result = result;
+        Module.removeFunction(callback);
+        Module._free(memory);
+        done(this);
+      }, 'vi');
+
+      // Process the image: blocks until |callback| is called.
+      Module.HEAP8.set(this.source, memory);
+      Module._image(memory, this.source.byteLength, callback);
+    }
+
+    preview() {
+      let preview = this.result ? this.result.preview : null;
+      if (!preview || this.result.error)
+        return null;
+
+      const offset = preview.offset;
+      const length = preview.length;
+      const view = new Uint8Array(this.source.buffer, offset, length);
+
+      if (preview.format != 0)
+        throw new Error('preview images should be JPEG format');
+      preview.data = new Uint8Array(view);
+      preview.type = 'preview';
+
+      return preview;
+    }
+
+    thumbnail() {
+      let thumbnail = this.result ? this.result.thumbnail : null;
+      if (!thumbnail || this.result.error)
+        return null;
+
+      const offset = thumbnail.offset;
+      const length = thumbnail.length;
+      const view = new Uint8Array(this.source.buffer, offset, length);
+
+      if (thumbnail.format == 1)  // RGB
+        thumbnail.size = thumbnail.width * thumbnail.height * 3;
+      thumbnail.data = new Uint8Array(view);
+      thumbnail.type = 'thumbnail';
+
+      return thumbnail;
+    }
+  }
+
+  function hashUint8Array(data, hash = ~0) {
+    for (let i = 0; i < data.byteLength; ++i)
+      hash = (hash << 5) - hash + data[i];
+    return Math.abs(hash).toString(16);
+  }
+
+  function renderJPG(name, image) {
+    // Large image.data here: save it then undefine it so we don't JSON.stringify it
+    // into the image logging. The hash is sufficient to uniquely id the image.data.
+    const hash = hashUint8Array(image.data);
+    const data = image.data;
+    image.data = undefined;
+
+    console.log('test:', name, image.type, 'hash', hash);
+    console.log('test:', JSON.stringify(image));
+
+    // Render the JPEG image.
+    let renderer = new Image();
+
+    renderer.onerror = renderer.onload = (event) => {
+      if (renderer.width > (window.screen.availWidth / 2))
+        renderer.classList.add('zoom');
+      document.body.appendChild(renderer);
+      URL.revokeObjectURL(renderer.src);
+      if (--window.images_ <= 0)
+        document.title = 'DONE';
+    };
+
+    renderer.src = URL.createObjectURL(new Blob([data]));
+    ++window.images_;
+  }
+
+  function renderRGB(name, image) {
+    // Large image.data here: save it then undefine it (for the reasons noted above).
+    const hash = hashUint8Array(image.data);
+    const data = image.data;
+    image.data = undefined;
+
+    console.log('test:', name, image.type, 'hash', hash);
+    console.log('test:', JSON.stringify(image));
+
+    let canvas = document.createElement('canvas');
+    Object.assign(canvas, { image.width, image.height });
+    if (image.width > (window.screen.availWidth / 2))
+      canvas.classList.add('zoom');
+
+    // Create imageData from the image RGB data.
+    let context = canvas.getContext('2d');
+    let imageData = context.createImageData(image.width, image.height);
+    for (let i = 0, j = 0; i < image.size; i += 3, j += 4) {
+      imageData.data[j + 0] = data[i + 0]; // R
+      imageData.data[j + 1] = data[i + 1]; // G
+      imageData.data[j + 2] = data[i + 2]; // B
+      imageData.data[j + 3] = 255;         // A
+    }
+
+    // Render the imageData.
+    context.putImageData(imageData, 0, 0);
+    document.body.appendChild(canvas);
+  }
+
+  function renderResult(name, image) {
+    if (image && image.format == 0)
+      renderJPG(name, image);
+    if (image && image.format == 1)
+      renderRGB(name, image);
+  }
+
+  self.Module = {
+    onRuntimeInitialized: () => {
+      piexModuleReady instanceof Function ? piexModuleReady() : undefined;
+    }
+  };
+
+  window.onload = () => {
+    // Load the wasm module, now the piexModuleReady handler is installed.
+    let script = document.createElement('script');
+    document.head.appendChild(script);
+    script.src = '/a.out.js';
+  };
+
+  function piexModuleReady() {
+    document.title = 'READY';
+  }
+
+  window.onerror = (error) => {
+    console.log('test: FAIL', error, '\n');
+    document.title = 'DONE';
+  };
+
+  async function runTest(image = 'images/SONY_A500_01.ARW') {
+    // Start the test of image.
+    document.title = image;
+    console.log('test:', image);
+    document.body.innerHTML = `<pre>${image}</pre>`;
+
+    // Fetch the image in an array buffer.
+    let time = performance.now();
+    const buffer = await fetch(image).then(r => r.arrayBuffer());
+    time = performance.now() - time;
+    console.log('test: fetch time', time.toFixed(3) + 'ms');
+
+    // Extract its preview and thumbnail images, render them.
+    time = performance.now();
+    new Promise(resolve => {
+      new ImageBuffer(buffer).process(resolve);
+    }).then((imageBuffer) => {
+      time = performance.now() - time;
+      console.log('test: result ' + JSON.stringify(imageBuffer.result));
+      window.images_ = 0;
+      renderResult(image, imageBuffer.preview());
+      renderResult(image, imageBuffer.thumbnail());
+      console.log('test: done', time.toFixed(3) + 'ms');
+      console.log('\n');
+      if (!window.images_)
+        document.title = 'DONE';
+    });
+  }
+</script>
