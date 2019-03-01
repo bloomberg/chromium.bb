@@ -40,14 +40,17 @@ class HidCollection {
 
   uint32_t GetCollectionType() const { return collection_type_; }
 
-  // Returns true if there are one or more report IDs associated with this
+  // Return true if there are one or more report IDs associated with this
   // collection.
   bool HasReportId() const { return !report_ids_.empty(); }
 
-  // Returns information about the collection.
-  mojom::HidCollectionInfoPtr GetDetails(size_t* max_input_report_bits,
-                                         size_t* max_output_report_bits,
-                                         size_t* max_feature_report_bits);
+  // Compute the maximum size of any input, output, or feature report described
+  // by this collection.
+  void GetMaxReportSizes(size_t* max_input_report_bits,
+                         size_t* max_output_report_bits,
+                         size_t* max_feature_report_bits) const;
+
+  mojom::HidCollectionInfoPtr ToMojo() const;
 
   const HidCollection* GetParent() const { return parent_; }
 

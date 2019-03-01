@@ -13,6 +13,7 @@
 
 #include "services/device/public/cpp/hid/hid_item_state_table.h"
 #include "services/device/public/cpp/hid/hid_report_descriptor_item.h"
+#include "services/device/public/mojom/hid.mojom.h"
 
 namespace device {
 
@@ -41,12 +42,6 @@ class HidReportItem {
   // Returns true if this item defines a usage range (minimum and maximum), or
   // false if it defines a list of usages.
   bool IsRange() const { return is_range_; }
-
-  // Returns true if the usage or usage range has one or more strings.
-  bool HasStrings() const { return has_strings_; }
-
-  // Returns true if the usage or usage range has one or more designators.
-  bool HasDesignators() const { return has_designators_; }
 
   // Returns true if the report item is an absolute type, or false if it is a
   // relative type.
@@ -103,6 +98,8 @@ class HidReportItem {
   int32_t GetPhysicalMinimum() const { return global_.physical_minimum; }
   int32_t GetPhysicalMaximum() const { return global_.physical_maximum; }
 
+  mojom::HidReportItemPtr ToMojo() const;
+
  private:
   // The tag of the main item that generated this report item. Must be
   // kItemInput, kItemOutput, or kItemFeature.
@@ -122,12 +119,6 @@ class HidReportItem {
   // If true, the usages for this item are defined by |local.usage_minimum| and
   // |local.usage_maximum|. If false, the usages are defomed by |local.usages|.
   bool is_range_;
-
-  // If true, one or more strings are associated with this item.
-  bool has_strings_;
-
-  // If true, one or more designators are associated with this item.
-  bool has_designators_;
 };
 
 }  // namespace device
