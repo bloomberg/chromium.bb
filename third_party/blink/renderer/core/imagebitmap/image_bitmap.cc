@@ -824,11 +824,16 @@ void ImageBitmap::UpdateImageBitmapMemoryUsage() {
   // but this is breaking some tests due to the repaint of the image.
   int bytes_per_pixel = 4;
 
-  base::CheckedNumeric<int32_t> memory_usage_checked = bytes_per_pixel;
-  memory_usage_checked *= image_->width();
-  memory_usage_checked *= image_->height();
-  int32_t new_memory_usage =
-      memory_usage_checked.ValueOrDefault(std::numeric_limits<int32_t>::max());
+  int32_t new_memory_usage = 0;
+
+  if (image_) {
+    base::CheckedNumeric<int32_t> memory_usage_checked = bytes_per_pixel;
+    memory_usage_checked *= image_->width();
+    memory_usage_checked *= image_->height();
+    new_memory_usage = memory_usage_checked.ValueOrDefault(
+        std::numeric_limits<int32_t>::max());
+  }
+
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
       new_memory_usage - memory_usage_);
   memory_usage_ = new_memory_usage;
