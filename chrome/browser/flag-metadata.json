@@ -2017,8 +2017,8 @@
   },
   {
     "name": "enable-zero-suggest-redirect-to-chrome",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "mpearson", "jdonnelly" ],
+    "expiry_milestone": 79
   },
   {
     "name": "use_messages_google_com_domain",
