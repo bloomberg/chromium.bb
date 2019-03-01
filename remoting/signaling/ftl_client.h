@@ -6,8 +6,11 @@
 #define REMOTING_SIGNALING_FTL_CLIENT_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "remoting/base/oauth_token_getter.h"
 #include "remoting/signaling/ftl_services.grpc.pb.h"
 #include "remoting/signaling/grpc_async_dispatcher.h"
 #include "third_party/grpc/src/include/grpcpp/support/status.h"
@@ -21,7 +24,7 @@ class FtlClient {
   using RpcCallback =
       base::OnceCallback<void(grpc::Status, const ResponseType&)>;
 
-  FtlClient();
+  explicit FtlClient(OAuthTokenGetter* token_getter);
   ~FtlClient();
 
   // Retrieves the ice server configs.
@@ -31,12 +34,29 @@ class FtlClient {
   using PeerToPeer =
       google::internal::communications::instantmessaging::v1::PeerToPeer;
 
+  template <typename RequestType, typename ResponseType>
+  void GetOAuthTokenAndExecuteRpc(
+      GrpcAsyncDispatcher::AsyncRpcFunction<RequestType, ResponseType> rpc,
+      const RequestType& request,
+      RpcCallback<ResponseType> callback);
+
+  template <typename RequestType, typename ResponseType>
+  void ExecuteRpcWithFetchedOAuthToken(
+      GrpcAsyncDispatcher::AsyncRpcFunction<RequestType, ResponseType> rpc,
+      const RequestType& request,
+      RpcCallback<ResponseType> callback,
+      OAuthTokenGetter::Status status,
+      const std::string& user_email,
+      const std::string& access_token);
+
   static std::unique_ptr<grpc::ClientContext> CreateClientContext();
   static std::unique_ptr<ftl::RequestHeader> BuildRequestHeader();
 
+  OAuthTokenGetter* token_getter_;
   std::unique_ptr<PeerToPeer::Stub> peer_to_peer_stub_;
   GrpcAsyncDispatcher dispatcher_;
 
+  base::WeakPtrFactory<FtlClient> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(FtlClient);
 };
 

@@ -180,9 +180,19 @@ if (enable_remoting_host && !is_android && !is_chromeos) {
 executable("ftl_signaling_playground") {
   sources = [
     "ftl_signaling_playground.cc",
+    "ftl_signaling_playground.h",
+    "ftl_signaling_playground_main.cc",
+    "test_oauth_token_factory.cc",
+    "test_oauth_token_factory.h",
   ]
   deps = [
+    "//google_apis",
+    "//mojo/core/embedder",
+    "//remoting/base",
+    "//remoting/base:authorization",
     "//remoting/signaling",
+    "//services/network:network_service",
+    "//services/network/public/mojom",
   ]
 }
 

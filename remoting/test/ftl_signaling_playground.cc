@@ -2,39 +2,100 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/at_exit.h"
+#include "remoting/test/ftl_signaling_playground.h"
+
+#include <utility>
+
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/macros.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
+#include "base/path_service.h"
+#include "base/strings/stringprintf.h"
+#include "remoting/base/oauth_token_getter_impl.h"
 #include "remoting/signaling/ftl_client.h"
+#include "remoting/test/test_oauth_token_factory.h"
+
+namespace {
+
+constexpr char kSwitchNameHelp[] = "help";
+constexpr char kSwitchNameAuthCode[] = "code";
+
+// Reads a newline-terminated string from stdin.
+std::string ReadString() {
+  const int kMaxLen = 1024;
+  std::string str(kMaxLen, 0);
+  char* result = fgets(&str[0], kMaxLen, stdin);
+  if (!result)
+    return std::string();
+  size_t newline_index = str.find('\n');
+  if (newline_index != std::string::npos)
+    str[newline_index] = '\0';
+  str.resize(strlen(&str[0]));
+  return str;
+}
+
+// Read the value of |switch_name| from command line if it exists, otherwise
+// read from stdin.
+std::string ReadStringFromCommandLineOrStdin(const std::string& switch_name,
+                                             const std::string& read_prompt) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switch_name)) {
+    return command_line->GetSwitchValueASCII(switch_name);
+  }
+  printf("%s", read_prompt.c_str());
+  return ReadString();
+}
+
+}  // namespace
 
 namespace remoting {
-
-class FtlSignalingPlayground {
- public:
-  FtlSignalingPlayground();
-  ~FtlSignalingPlayground();
-
-  void GetIceServer(base::OnceClosure on_done);
-
- private:
-  static void OnGetIceServerResponse(base::OnceClosure on_done,
-                                     grpc::Status status,
-                                     const ftl::GetICEServerResponse& response);
-
-  FtlClient client_;
-  DISALLOW_COPY_AND_ASSIGN(FtlSignalingPlayground);
-};
 
 FtlSignalingPlayground::FtlSignalingPlayground() = default;
 
 FtlSignalingPlayground::~FtlSignalingPlayground() = default;
 
+bool FtlSignalingPlayground::ShouldPrintHelp() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kSwitchNameHelp);
+}
+
+void FtlSignalingPlayground::PrintHelp() {
+  printf("Usage: %s [--code=<auth-code>]\n",
+         base::CommandLine::ForCurrentProcess()
+             ->GetProgram()
+             .MaybeAsASCII()
+             .c_str());
+}
+
+void FtlSignalingPlayground::StartAndAuthenticate() {
+  DCHECK(!token_getter_factory_);
+  DCHECK(!token_getter_);
+  DCHECK(!client_);
+
+  static const std::string read_auth_code_prompt = base::StringPrintf(
+      "Please authenticate at:\n\n"
+      "  %s\n\n"
+      "Enter the auth code: ",
+      TestOAuthTokenGetterFactory::GetAuthorizationCodeUri().c_str());
+  std::string auth_code = ReadStringFromCommandLineOrStdin(
+      kSwitchNameAuthCode, read_auth_code_prompt);
+
+  token_getter_factory_ = std::make_unique<TestOAuthTokenGetterFactory>();
+
+  // We can't get back the refresh token since we have first-party scope, so
+  // we are not trying to store it.
+  // TODO(yuweih): Consider storing the access token and reuse it until it is
+  // expired.
+  token_getter_ = token_getter_factory_->CreateFromIntermediateCredentials(
+      auth_code,
+      base::DoNothing::Repeatedly<const std::string&, const std::string&>());
+  client_ = std::make_unique<FtlClient>(token_getter_.get());
+}
+
 void FtlSignalingPlayground::GetIceServer(base::OnceClosure on_done) {
-  client_.GetIceServer(base::BindOnce(
+  DCHECK(client_);
+  client_->GetIceServer(base::BindOnce(
       &FtlSignalingPlayground::OnGetIceServerResponse, std::move(on_done)));
   VLOG(0) << "Running GetIceServer...";
 }
@@ -72,17 +133,3 @@ void FtlSignalingPlayground::OnGetIceServerResponse(
 }
 
 }  // namespace remoting
-
-int main(int argc, char const* argv[]) {
-  base::AtExitManager exitManager;
-  base::CommandLine::Init(argc, argv);
-
-  base::MessageLoopForIO message_loop;
-
-  remoting::FtlSignalingPlayground playground;
-  base::RunLoop run_loop;
-  playground.GetIceServer(run_loop.QuitClosure());
-  run_loop.Run();
-
-  return 0;
-}
