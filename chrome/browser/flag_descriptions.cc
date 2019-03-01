@@ -949,14 +949,6 @@ const char kEnableIncognitoWindowCounterDescription[] =
     "Shows the count of Incognito windows next to the Incognito icon on the "
     "toolbar.";
 
-const char kEnableZeroSuggestRedirectToChromeName[] =
-    "Experimental contextual omnibox suggestion";
-const char kEnableZeroSuggestRedirectToChromeDescription[] =
-    "Change omnibox contextual suggestions to an experimental source. Note "
-    "that this is not an on/off switch for contextual omnibox and it only "
-    "applies to suggestions provided before the user starts typing a URL or a "
-    "search query (i.e. zero suggest).";
-
 const char kEnableWasmBaselineName[] = "WebAssembly baseline compiler";
 const char kEnableWasmBaselineDescription[] =
     "Enables WebAssembly baseline compilation and tier up.";

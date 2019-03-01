@@ -2689,11 +2689,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(device::kNewUsbBackend)},
 #endif  // defined(OS_WIN)
 
-    {"enable-zero-suggest-redirect-to-chrome",
-     flag_descriptions::kEnableZeroSuggestRedirectToChromeName,
-     flag_descriptions::kEnableZeroSuggestRedirectToChromeDescription, kOsAll,
-     FEATURE_VALUE_TYPE(omnibox::kZeroSuggestRedirectToChrome)},
-
 #if defined(OS_ANDROID)
     {"omnibox-new-answer-layout",
      flag_descriptions::kOmniboxNewAnswerLayoutName,
