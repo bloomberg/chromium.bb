@@ -1759,28 +1759,30 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
 
       if (scrollable_area->VerticalScrollbar() ||
           scrollable_area->HasLayerForVerticalScrollbar()) {
-        EffectPaintPropertyNode::State state;
-        state.local_transform_space = context_.current.transform;
-        state.direct_compositing_reasons =
+        EffectPaintPropertyNode::State effect_state;
+        effect_state.local_transform_space = context_.current.transform;
+        effect_state.direct_compositing_reasons =
             CompositingReason::kActiveOpacityAnimation;
-        state.compositor_element_id = scrollable_area->GetScrollbarElementId(
-            ScrollbarOrientation::kVerticalScrollbar);
+        effect_state.compositor_element_id =
+            scrollable_area->GetScrollbarElementId(
+                ScrollbarOrientation::kVerticalScrollbar);
         OnUpdate(properties_->UpdateVerticalScrollbarEffect(
-            *context_.current_effect, std::move(state)));
+            *context_.current_effect, std::move(effect_state)));
       } else {
         OnClear(properties_->ClearVerticalScrollbarEffect());
       }
 
       if (scrollable_area->HorizontalScrollbar() ||
           scrollable_area->HasLayerForHorizontalScrollbar()) {
-        EffectPaintPropertyNode::State state;
-        state.local_transform_space = context_.current.transform;
-        state.direct_compositing_reasons =
+        EffectPaintPropertyNode::State effect_state;
+        effect_state.local_transform_space = context_.current.transform;
+        effect_state.direct_compositing_reasons =
             CompositingReason::kActiveOpacityAnimation;
-        state.compositor_element_id = scrollable_area->GetScrollbarElementId(
-            ScrollbarOrientation::kHorizontalScrollbar);
+        effect_state.compositor_element_id =
+            scrollable_area->GetScrollbarElementId(
+                ScrollbarOrientation::kHorizontalScrollbar);
         OnUpdate(properties_->UpdateHorizontalScrollbarEffect(
-            *context_.current_effect, std::move(state)));
+            *context_.current_effect, std::move(effect_state)));
       } else {
         OnClear(properties_->ClearHorizontalScrollbarEffect());
       }
