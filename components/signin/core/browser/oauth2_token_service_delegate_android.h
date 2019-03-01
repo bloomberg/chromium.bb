@@ -109,10 +109,9 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
     RT_LOADED
   };
 
-  // Return whether |signed_in_id| is valid and we have access
-  // to all the tokens in |curr_ids|. If |force_notifications| is true,
-  // TokenAvailable notifications will be sent anyway, even if the account was
-  // already known.
+  // Return whether accounts are valid and we have access to all the tokens in
+  // |curr_ids|. If |force_notifications| is true, TokenAvailable notifications
+  // will be sent anyway, even if the account was already known.
   bool ValidateAccounts(const std::string& signed_in_id,
                         const std::vector<std::string>& prev_ids,
                         const std::vector<std::string>& curr_ids,
