@@ -476,7 +476,8 @@ apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
 }
 
 apps::mojom::IconKeyPtr ArcApps::NewIconKey(const std::string& app_id) {
-  return icon_key_factory_.MakeIconKey(apps::mojom::IconType::kArc, app_id);
+  return icon_key_factory_.MakeIconKey(apps::mojom::AppType::kArc,
+                                       apps::mojom::IconType::kArc, app_id);
 }
 
 void ArcApps::Publish(apps::mojom::AppPtr app) {

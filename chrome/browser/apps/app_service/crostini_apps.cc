@@ -224,12 +224,14 @@ apps::mojom::IconKeyPtr CrostiniApps::NewIconKey(const std::string& app_id) {
   // app and before bringing up an Crostini VM for the first time.
   if (app_id == crostini::kCrostiniTerminalId) {
     auto icon_key = apps::mojom::IconKey::New();
+    icon_key->app_type = apps::mojom::AppType::kCrostini;
     icon_key->icon_type = apps::mojom::IconType::kResource;
     icon_key->u_key = IDR_LOGO_CROSTINI_TERMINAL;
     return icon_key;
   }
 
-  return icon_key_factory_.MakeIconKey(apps::mojom::IconType::kCrostini,
+  return icon_key_factory_.MakeIconKey(apps::mojom::AppType::kCrostini,
+                                       apps::mojom::IconType::kCrostini,
                                        app_id);
 }
 

@@ -39,6 +39,7 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
   }
 
   app->icon_key = apps::mojom::IconKey::New();
+  app->icon_key->app_type = apps::mojom::AppType::kBuiltIn;
   app->icon_key->icon_type = apps::mojom::IconType::kResource;
   app->icon_key->u_key = static_cast<uint64_t>(internal_app.icon_resource_id);
 

@@ -93,8 +93,10 @@ enum IconType {
 };
 
 struct IconKey {
+  AppType app_type;
+  // TODO(nigeltao): remove IconType enum and field; update README.md.
   IconType icon_type;
-  // The semantics of u_key and s_key depend on the icon_type.
+  // The semantics of u_key and s_key depend on the app_type.
   uint64 u_key;
   string s_key;
 };

@@ -76,9 +76,9 @@ void AppServiceProxy::LoadIcon(
         return;
       }
       found = true;
-      app_service_->LoadIcon(update.AppType(), std::move(icon_key),
-                             icon_compression, size_hint_in_dip,
-                             allow_placeholder_icon, std::move(callback));
+      app_service_->LoadIcon(std::move(icon_key), icon_compression,
+                             size_hint_in_dip, allow_placeholder_icon,
+                             std::move(callback));
     });
   }
 

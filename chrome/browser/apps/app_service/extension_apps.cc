@@ -426,7 +426,7 @@ apps::mojom::AppPtr ExtensionApps::Convert(
   app->short_name = extension->short_name();
 
   app->icon_key = icon_key_factory_.MakeIconKey(
-      apps::mojom::IconType::kExtension, extension->id());
+      app_type_, apps::mojom::IconType::kExtension, extension->id());
 
   if (profile_) {
     auto* prefs = extensions::ExtensionPrefs::Get(profile_);
