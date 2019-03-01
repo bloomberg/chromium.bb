@@ -867,17 +867,6 @@ const FeatureEntry::Choice kAsyncImageDecodingChoices[] = {
 };
 
 #if defined(OS_ANDROID)
-const FeatureEntry::Choice kThirdPartyDoodlesChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {"(force simple test doodle)",
-     search_provider_logos::switches::kThirdPartyDoodleURL,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/third_party_simple.json"},
-    {"(force animated test doodle)",
-     search_provider_logos::switches::kThirdPartyDoodleURL,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/"
-     "third_party_animated.json"},
-};
-
 const FeatureEntry::Choice kUseDdljsonApiChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {"(force test doodle 0)", search_provider_logos::switches::kGoogleDoodleUrl,
@@ -3085,12 +3074,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsWin | kOsMac | kOsLinux | kOsCrOS,
      FEATURE_VALUE_TYPE(features::kShowManagedUi)},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-
-#if defined(OS_ANDROID)
-    {"third-party-doodles", flag_descriptions::kThirdPartyDoodlesName,
-     flag_descriptions::kThirdPartyDoodlesDescription, kOsAndroid,
-     MULTI_VALUE_TYPE(kThirdPartyDoodlesChoices)},
-#endif  // defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
     {"doodles-on-local-ntp", flag_descriptions::kDoodlesOnLocalNtpName,
