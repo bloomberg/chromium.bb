@@ -25,7 +25,7 @@
       "ash/ash_strings.grd",
       "ash/components/ash_components_strings.grd",
       "chrome/android/java/strings/android_chrome_strings.grd",
-      "chrome/android/java/strings/android_chrome_vr_strings.grd",
+      "chrome/android/features/vr/strings/android_chrome_vr_strings.grd",
       "chrome/android/features/media_router/strings/android_chrome_media_router_strings.grd",
       "chrome/android/webapk/strings/android_webapk_strings.grd",
       "chrome/app/chromium_strings.grd",

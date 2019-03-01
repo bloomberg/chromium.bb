@@ -9,6 +9,7 @@ import("//build/config/python.gni")
 import("//build/util/process_version.gni")
 import("//chrome/android/chrome_common_shared_library.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
+import("//chrome/android/features/vr/public_vr_java_sources.gni")
 import("//chrome/android/feed/feed_java_sources.gni")
 import("//chrome/android/monochrome_android_manifest_jinja_variables.gni")
 import("//chrome/chrome_paks.gni")
@@ -124,12 +125,14 @@ android_resources("chrome_app_java_resources") {
 }
 
 if (enable_vr) {
+  # TODO(crbug.com/935982): Currently, adding multiple resource folders to a
+  # resource target may clobber some resources. Once that is fixed we should add
+  # the VR resurces to chrome_app_java_resources.
   android_resources("chrome_vr_java_resources") {
     resource_dirs = [ "//chrome/android/java/res_vr" ]
     deps = [
       ":chrome_app_java_resources",
     ]
-    custom_package = "org.chromium.chrome.vr.pub"
   }
 }
 
@@ -411,6 +414,8 @@ android_library("chrome_java") {
   # Include sources from feed_java_sources.gni.
   java_files += feed_java_sources
   srcjar_deps += feed_srcjar_deps
+
+  java_files += public_vr_java_sources
 
   if (enable_vr) {
     deps += [
@@ -818,7 +823,7 @@ if (enable_vr || (enable_arcore && package_arcore)) {
     "//base:base_java_test_support",
     "//chrome/android:app_hooks_java",
     "//chrome/android:chrome_java",
-    "//chrome/browser/android/vr:java",
+    "//chrome/android/features/vr:java",
     "//chrome/test/android:chrome_java_test_support",
     "//components/policy/android:policy_java",
     "//content/public/android:content_java",
@@ -1754,7 +1759,7 @@ template("chrome_test_apk_tmpl") {
            ]
     if (enable_vr) {
       # Contains VrFirstRunActivity, which is referenced by AndroidManifest.xml.
-      deps += [ "//chrome/browser/android/vr:java" ]
+      deps += [ "//chrome/android/features/vr:java" ]
     }
 
     additional_apks = [ "//net/android:net_test_support_apk" ]
