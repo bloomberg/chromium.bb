@@ -1061,8 +1061,9 @@ void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject src,
   // Skip images that are too small to label. This also catches
   // unloaded images where the size is unknown.
   if (dst->relative_bounds.bounds.width() < kMinImageAnnotationWidth ||
-      dst->relative_bounds.bounds.height() < kMinImageAnnotationHeight)
+      dst->relative_bounds.bounds.height() < kMinImageAnnotationHeight) {
     return;
+  }
 
   if (!image_annotator_) {
     dst->SetImageAnnotationStatus(
@@ -1076,6 +1077,7 @@ void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject src,
     dst->SetImageAnnotationStatus(
         ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded);
   } else if (image_annotator_->HasImageInCache(src)) {
+    image_annotator_->OnImageUpdated(src);
     dst->SetImageAnnotationStatus(
         ax::mojom::ImageAnnotationStatus::kAnnotationPending);
   } else if (!image_annotator_->HasImageInCache(src)) {

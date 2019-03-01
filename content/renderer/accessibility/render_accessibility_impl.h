@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/ax_content_node_data.h"
+#include "content/common/content_export.h"
 #include "content/public/renderer/render_accessibility.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/accessibility/blink_ax_tree_source.h"
@@ -139,6 +140,10 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void OnGetImageData(const blink::WebAXObject& obj, const gfx::Size& max_size);
   void AddPluginTreeToUpdate(AXContentTreeUpdate* update);
 
+  // Creates and takes ownership of an instance of the class that automatically
+  // labels images for accessibility.
+  void CreateAXImageAnnotator();
+
   // Automatically labels images for accessibility if the accessibility mode for
   // this feature is turned on, otherwise stops automatic labeling and removes
   // any automatic annotations that might have been added before.
@@ -152,7 +157,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void RecordImageMetrics(AXContentTreeUpdate* update);
 
   // The RenderFrameImpl that owns us.
-  RenderFrameImpl* const render_frame_;
+  RenderFrameImpl* render_frame_;
 
   // This keeps accessibility enabled as long as it lives.
   std::unique_ptr<blink::WebAXContext> ax_context_;
@@ -209,6 +214,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   // So we can queue up tasks to be executed later.
   base::WeakPtrFactory<RenderAccessibilityImpl> weak_factory_;
 
+  friend class AXImageAnnotatorTest;
   DISALLOW_COPY_AND_ASSIGN(RenderAccessibilityImpl);
 };
 

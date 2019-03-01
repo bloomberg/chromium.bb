@@ -1598,6 +1598,24 @@ bool AXNodeObject::StepValueForRange(float* out_value) const {
   return false;
 }
 
+KURL AXNodeObject::Url() const {
+  if (IsAnchor() && IsHTMLAnchorElement(GetNode())) {
+    if (HTMLAnchorElement* anchor = ToHTMLAnchorElementOrNull(AnchorElement()))
+      return anchor->Href();
+  }
+
+  if (IsWebArea() && GetDocument())
+    return GetDocument()->Url();
+
+  if (IsImage() && IsHTMLImageElement(GetNode()))
+    return ToHTMLImageElement(*GetNode()).Src();
+
+  if (IsInputImage())
+    return ToHTMLInputElement(GetNode())->Src();
+
+  return KURL();
+}
+
 String AXNodeObject::StringValue() const {
   Node* node = this->GetNode();
   if (!node)

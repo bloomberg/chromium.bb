@@ -149,6 +149,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool MaxValueForRange(float* out_value) const override;
   bool MinValueForRange(float* out_value) const override;
   bool StepValueForRange(float* out_value) const override;
+  KURL Url() const override;
   String StringValue() const override;
 
   // ARIA attributes.

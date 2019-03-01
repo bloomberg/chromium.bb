@@ -336,6 +336,7 @@ jumbo_static_library("test_support") {
     "//third_party/blink/public:blink",
     "//third_party/blink/public:test_support",
   ]
+
   deps = [
     ":content_test_mojo_bindings",
     "//base/third_party/dynamic_annotations",
@@ -1022,6 +1023,8 @@ test("content_browsertests") {
     "//services/device/public/cpp/test:test_support",
     "//services/device/public/mojom",
     "//services/device/public/mojom:generic_sensor",
+    "//services/image_annotation/public/cpp:cpp",
+    "//services/image_annotation/public/mojom:mojom",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/network:test_support",
     "//services/service_manager/public/cpp",

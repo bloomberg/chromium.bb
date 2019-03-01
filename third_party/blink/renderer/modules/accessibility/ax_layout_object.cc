@@ -1278,24 +1278,6 @@ int32_t AXLayoutObject::GetTextStyle() const {
   return text_style;
 }
 
-KURL AXLayoutObject::Url() const {
-  if (IsAnchor() && IsHTMLAnchorElement(layout_object_->GetNode())) {
-    if (HTMLAnchorElement* anchor = ToHTMLAnchorElement(AnchorElement()))
-      return anchor->Href();
-  }
-
-  if (IsWebArea())
-    return layout_object_->GetDocument().Url();
-
-  if (IsImage() && IsHTMLImageElement(layout_object_->GetNode()))
-    return ToHTMLImageElement(*layout_object_->GetNode()).Src();
-
-  if (IsInputImage())
-    return ToHTMLInputElement(layout_object_->GetNode())->Src();
-
-  return KURL();
-}
-
 //
 // Inline text boxes.
 //

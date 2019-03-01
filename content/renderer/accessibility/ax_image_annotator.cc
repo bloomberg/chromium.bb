@@ -4,6 +4,9 @@
 
 #include "content/renderer/accessibility/ax_image_annotator.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/base64.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -23,11 +26,12 @@
 namespace content {
 
 AXImageAnnotator::AXImageAnnotator(
-    RenderAccessibilityImpl* const render_accessibility)
-    : render_accessibility_(render_accessibility), weak_factory_(this) {
+    RenderAccessibilityImpl* const render_accessibility,
+    image_annotation::mojom::AnnotatorPtr annotator_ptr)
+    : render_accessibility_(render_accessibility),
+      annotator_ptr_(std::move(annotator_ptr)),
+      weak_factory_(this) {
   DCHECK(render_accessibility_);
-  render_accessibility_->render_frame()->GetRemoteInterfaces()->GetInterface(
-      mojo::MakeRequest(&annotator_ptr_));
 }
 
 AXImageAnnotator::~AXImageAnnotator() {}
@@ -60,10 +64,7 @@ bool AXImageAnnotator::HasImageInCache(const blink::WebAXObject& image) const {
 void AXImageAnnotator::OnImageAdded(blink::WebAXObject& image) {
   DCHECK(!image.IsDetached());
   DCHECK(!base::ContainsKey(image_annotations_, image.AxID()));
-  std::string document_url =
-      render_accessibility_->GetMainDocument().Url().GetString().Utf8();
-  std::string image_src = image.Url().GetString().Utf8();
-  std::string image_id = GenerateImageSourceId(document_url, image_src);
+  const std::string image_id = GenerateImageSourceId(image);
   if (image_id.empty())
     return;
 
@@ -81,10 +82,7 @@ void AXImageAnnotator::OnImageAdded(blink::WebAXObject& image) {
 void AXImageAnnotator::OnImageUpdated(blink::WebAXObject& image) {
   DCHECK(!image.IsDetached());
   DCHECK(base::ContainsKey(image_annotations_, image.AxID()));
-  std::string document_url =
-      render_accessibility_->GetMainDocument().Url().GetString().Utf8();
-  std::string image_src = image.Url().GetString().Utf8();
-  std::string image_id = GenerateImageSourceId(document_url, image_src);
+  const std::string image_id = GenerateImageSourceId(image);
   if (image_id.empty())
     return;
 
@@ -104,6 +102,46 @@ void AXImageAnnotator::OnImageRemoved(blink::WebAXObject& image) {
     return;
   }
   image_annotations_.erase(lookup);
+}
+
+#if defined(CONTENT_IMPLEMENTATION)
+ContentClient* AXImageAnnotator::GetContentClient() const {
+  return content::GetContentClient();
+}
+#else
+ContentClient* AXImageAnnotator::GetContentClient() const {
+  return nullptr;
+}
+#endif  // defined(CONTENT_IMPLEMENTATION)
+
+std::string AXImageAnnotator::GenerateImageSourceId(
+    const blink::WebAXObject& image) const {
+  DCHECK(render_accessibility_);
+  DCHECK(!image.IsDetached());
+  const std::string document_url =
+      render_accessibility_->GetMainDocument().Url().GetString().Utf8();
+  const std::string image_src = image.Url().GetString().Utf8();
+  if (document_url.empty() || image_src.empty())
+    return std::string();
+
+  // The |image_src| might be a URL that is relative to the document's URL.
+  const GURL image_url = GURL(document_url).Resolve(image_src);
+  if (!image_url.is_valid())
+    return std::string();
+
+  // If |image_url| appears to be publicly reachable, return the URL as the
+  // image source ID.
+  if (image_url.SchemeIsHTTPOrHTTPS())
+    return image_url.spec();
+
+  // If |image_url| is not publicly reachable, return a hash of |image_url|.
+  // Scheme could be "data", "javascript", "ftp", "file", etc.
+  const std::string& content = image_url.GetContent();
+  if (content.empty())
+    return std::string();
+  std::string source_id;
+  base::Base64Encode(crypto::SHA256HashString(content), &source_id);
+  return source_id;
 }
 
 void AXImageAnnotator::MarkAllImagesDirty() {
@@ -130,33 +168,6 @@ AXImageAnnotator::ImageInfo::GetImageProcessor() {
 
 bool AXImageAnnotator::ImageInfo::HasAnnotation() const {
   return annotation_.has_value();
-}
-
-// static
-std::string AXImageAnnotator::GenerateImageSourceId(
-    const std::string& document_url,
-    const std::string& image_src) {
-  if (document_url.empty() || image_src.empty())
-    return std::string();
-
-  // The |image_src| might be a URL that is relative to the document's URL.
-  const GURL image_url = GURL(document_url).Resolve(image_src);
-  if (!image_url.is_valid())
-    return std::string();
-
-  // If |image_url| appears to be publicly reachable, return the URL as the
-  // image source ID.
-  if (image_url.SchemeIsHTTPOrHTTPS())
-    return image_url.spec();
-
-  // If |image_url| is not publicly reachable, return a hash of |image_url|.
-  // Scheme could be "data", "javascript", "ftp", "file", etc.
-  const std::string& content = image_url.GetContent();
-  if (content.empty())
-    return std::string();
-  std::string source_id;
-  base::Base64Encode(crypto::SHA256HashString(content), &source_id);
-  return source_id;
 }
 
 // static
@@ -188,8 +199,9 @@ void AXImageAnnotator::OnImageAnnotated(
     return;
   }
 
-  std::vector<base::string16> contextualized_strings;
-  for (const auto& annotation : result->get_annotations()) {
+  std::vector<std::string> contextualized_strings;
+  for (const mojo::InlinedStructPtr<image_annotation::mojom::Annotation>&
+           annotation : result->get_annotations()) {
     int message_id = 0;
     switch (annotation->type) {
       case image_annotation::mojom::AnnotationType::kOcr:
@@ -202,24 +214,29 @@ void AXImageAnnotator::OnImageAnnotated(
     }
 
     // Skip unrecognized annotation types.
-    if (!message_id)
+    if (message_id == 0)
       continue;
 
     if (annotation->text.empty())
-      return;
+      continue;
 
-    contextualized_strings.push_back(GetContentClient()->GetLocalizedString(
-        message_id, base::UTF8ToUTF16(annotation->text)));
+    if (GetContentClient()) {
+      contextualized_strings.push_back(
+          base::UTF16ToUTF8(GetContentClient()->GetLocalizedString(
+              message_id, base::UTF8ToUTF16(annotation->text))));
+    } else {
+      contextualized_strings.emplace_back(annotation->text);
+    }
   }
 
-  if (contextualized_strings.size() == 0)
+  if (contextualized_strings.empty())
     return;
 
   // TODO(accessibility): join two sentences together in a more i18n-friendly
   // way. Since this is intended for a screen reader, though, a period
   // probably works in almost all languages.
-  std::string contextualized_string = base::UTF16ToUTF8(
-      base::JoinString(contextualized_strings, base::ASCIIToUTF16(". ")));
+  std::string contextualized_string =
+      base::JoinString(contextualized_strings, ". ");
   image_annotations_.at(image.AxID()).set_annotation(contextualized_string);
   render_accessibility_->MarkWebAXObjectDirty(image, false /* subtree */);
 
