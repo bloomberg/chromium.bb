@@ -4330,6 +4330,15 @@ _mm512_loadu_si512 (void const *__P)
 }
 
 static __inline __m512i __DEFAULT_FN_ATTRS512
+_mm512_loadu_epi32 (void const *__P)
+{
+  struct __loadu_epi32 {
+    __m512i __v;
+  } __attribute__((__packed__, __may_alias__));
+  return ((struct __loadu_epi32*)__P)->__v;
+}
+
+static __inline __m512i __DEFAULT_FN_ATTRS512
 _mm512_mask_loadu_epi32 (__m512i __W, __mmask16 __U, void const *__P)
 {
   return (__m512i) __builtin_ia32_loaddqusi512_mask ((const int *) __P,
@@ -4345,6 +4354,15 @@ _mm512_maskz_loadu_epi32(__mmask16 __U, void const *__P)
                                                      (__v16si)
                                                      _mm512_setzero_si512 (),
                                                      (__mmask16) __U);
+}
+
+static __inline __m512i __DEFAULT_FN_ATTRS512
+_mm512_loadu_epi64 (void const *__P)
+{
+  struct __loadu_epi64 {
+    __m512i __v;
+  } __attribute__((__packed__, __may_alias__));
+  return ((struct __loadu_epi64*)__P)->__v;
 }
 
 static __inline __m512i __DEFAULT_FN_ATTRS512
@@ -4483,6 +4501,15 @@ _mm512_load_epi64 (void const *__P)
 /* SIMD store ops */
 
 static __inline void __DEFAULT_FN_ATTRS512
+_mm512_storeu_epi64 (void *__P, __m512i __A)
+{
+  struct __storeu_epi64 {
+    __m512i __v;
+  } __attribute__((__packed__, __may_alias__));
+  ((struct __storeu_epi64*)__P)->__v = __A;
+}
+
+static __inline void __DEFAULT_FN_ATTRS512
 _mm512_mask_storeu_epi64(void *__P, __mmask8 __U, __m512i __A)
 {
   __builtin_ia32_storedqudi512_mask ((long long *)__P, (__v8di) __A,
@@ -4496,6 +4523,15 @@ _mm512_storeu_si512 (void *__P, __m512i __A)
     __m512i __v;
   } __attribute__((__packed__, __may_alias__));
   ((struct __storeu_si512*)__P)->__v = __A;
+}
+
+static __inline void __DEFAULT_FN_ATTRS512
+_mm512_storeu_epi32 (void *__P, __m512i __A)
+{
+  struct __storeu_epi32 {
+    __m512i __v;
+  } __attribute__((__packed__, __may_alias__));
+  ((struct __storeu_epi32*)__P)->__v = __A;
 }
 
 static __inline void __DEFAULT_FN_ATTRS512
@@ -8393,6 +8429,32 @@ _mm512_kxor (__mmask16 __A, __mmask16 __B)
 #define _kor_mask16 _mm512_kor
 #define _kxnor_mask16 _mm512_kxnor
 #define _kxor_mask16 _mm512_kxor
+
+#define _kshiftli_mask16(A, I) \
+  (__mmask16)__builtin_ia32_kshiftlihi((__mmask16)(A), (unsigned int)(I))
+
+#define _kshiftri_mask16(A, I) \
+  (__mmask16)__builtin_ia32_kshiftrihi((__mmask16)(A), (unsigned int)(I))
+
+static __inline__ unsigned int __DEFAULT_FN_ATTRS
+_cvtmask16_u32(__mmask16 __A) {
+  return (unsigned int)__builtin_ia32_kmovw((__mmask16)__A);
+}
+
+static __inline__ __mmask16 __DEFAULT_FN_ATTRS
+_cvtu32_mask16(unsigned int __A) {
+  return (__mmask16)__builtin_ia32_kmovw((__mmask16)__A);
+}
+
+static __inline__ __mmask16 __DEFAULT_FN_ATTRS
+_load_mask16(__mmask16 *__A) {
+  return (__mmask16)__builtin_ia32_kmovw(*(__mmask16 *)__A);
+}
+
+static __inline__ void __DEFAULT_FN_ATTRS
+_store_mask16(__mmask16 *__A, __mmask16 __B) {
+  *(__mmask16 *)__A = __builtin_ia32_kmovw((__mmask16)__B);
+}
 
 static __inline__ void __DEFAULT_FN_ATTRS512
 _mm512_stream_si512 (__m512i * __P, __m512i __A)

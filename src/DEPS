@@ -2085,6 +2085,7 @@ hooks = [
     'name': 'clang',
     'pattern': '.',
     'action': ['python', 'src/tools/clang/scripts/update.py', '--with-android={checkout_android}'],
+    'condition': 'not checkout_blpwtk2'
   },
   {
     # This is supposed to support the same set of platforms as 'clang' above.
