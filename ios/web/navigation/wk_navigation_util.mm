@@ -33,11 +33,12 @@ const char kRestoreSessionTargetUrlHashPrefix[] = "targetUrl=";
 const char kOriginalUrlKey[] = "for";
 
 namespace {
-// Returns begin and end iterators for the given navigation items. The length of
-// these iterators range will not exceed kMaxSessionSize. If |items.size()| is
-// greater than kMaxSessionSize, then this function will trim navigation items,
-// which are the furthest to |last_committed_item_index|.
-void GetSafeItemIterators(
+// Returns begin and end iterators and an updated last committed index for the
+// given navigation items. The length of these iterators range will not exceed
+// kMaxSessionSize. If |items.size()| is greater than kMaxSessionSize, then this
+// function will trim navigation items, which are the furthest to
+// |last_committed_item_index|.
+int GetSafeItemIterators(
     int last_committed_item_index,
     const std::vector<std::unique_ptr<NavigationItem>>& items,
     std::vector<std::unique_ptr<NavigationItem>>::const_iterator* begin,
@@ -46,7 +47,7 @@ void GetSafeItemIterators(
     // No need to trim anything.
     *begin = items.begin();
     *end = items.end();
-    return;
+    return last_committed_item_index;
   }
 
   if (last_committed_item_index < kMaxSessionSize / 2) {
@@ -54,7 +55,7 @@ void GetSafeItemIterators(
     // on the right side of the vector. Trim those.
     *begin = items.begin();
     *end = items.begin() + kMaxSessionSize;
-    return;
+    return last_committed_item_index;
   }
 
   if (items.size() - last_committed_item_index < kMaxSessionSize / 2) {
@@ -62,13 +63,14 @@ void GetSafeItemIterators(
     // on the left side of the vector. Trim those.
     *begin = items.end() - kMaxSessionSize;
     *end = items.end();
-    return;
+    return last_committed_item_index - kMaxSessionSize;
   }
 
   // Trim items from both sides of the vector. Keep the same number of items
   // on the left and right side of |last_committed_item_index|.
   *begin = items.begin() + last_committed_item_index - kMaxSessionSize / 2;
   *end = items.begin() + last_committed_item_index + kMaxSessionSize / 2 + 1;
+  return last_committed_item_index - (*begin - items.begin());
 }
 }
 
@@ -115,7 +117,8 @@ GURL CreateRestoreSessionUrl(
 
   std::vector<std::unique_ptr<NavigationItem>>::const_iterator begin;
   std::vector<std::unique_ptr<NavigationItem>>::const_iterator end;
-  GetSafeItemIterators(last_committed_item_index, items, &begin, &end);
+  int new_last_committed_item_index =
+      GetSafeItemIterators(last_committed_item_index, items, &begin, &end);
   size_t new_size = end - begin;
 
   // The URLs and titles of the restored entries are stored in two separate
@@ -136,7 +139,7 @@ GURL CreateRestoreSessionUrl(
     restored_titles.GetList().push_back(base::Value(item->GetTitle()));
   }
   base::Value session(base::Value::Type::DICTIONARY);
-  int offset = last_committed_item_index + 1 - new_size;
+  int offset = new_last_committed_item_index + 1 - new_size;
   session.SetKey("offset", base::Value(offset));
   session.SetKey("urls", std::move(restored_urls));
   session.SetKey("titles", std::move(restored_titles));
