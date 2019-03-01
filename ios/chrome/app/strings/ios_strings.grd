@@ -1845,6 +1845,15 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_TOOLS_MENU_VOICE_SEARCH" desc="The iOS menu item for opening Voice Search.">
         Voice Search
       </message>
+      <message name="IDS_IOS_TRANSLATE_INFOBAR_OPTIONS_ACCESSIBILITY_LABEL" desc="The accessibility label read by Voice Over for the gear icon in the translate infobar that opens the translate options menu. [Length: unlimited] [iOS only]">
+        Translate Options
+      </message>
+      <message name="IDS_IOS_TRANSLATE_INFOBAR_DEFAULT_ACCESSIBILITY_ANNOUNCEMENT" desc="The accessibility announcement read by Voice Over when the Translate Infobar UI is shown in default mode. [Length: unlimited] [iOS only]">
+        Translate is available. Options available near bottom of the screen.
+      </message>
+      <message name="IDS_IOS_TRANSLATE_INFOBAR_TRANSLATING_ACCESSIBILITY_ANNOUNCEMENT" desc="The accessibility announcement read by Voice Over when the Translate Infobar UI is shown in translating mode. [Length: unlimited] [iOS only]">
+        Translating the page to <ph name="language">$1<ex>French</ex></ph>. Options available near bottom of the screen.
+      </message>
       <message name="IDS_IOS_TRANSLATE_SETTING" desc="Title for the view and option in Settings for Translate. [Length: 25em] [iOS only]">
         Google Translate
       </message>
