@@ -15,6 +15,18 @@
 #error "This file requires ARC support."
 #endif
 
+// UIButton allowing the user to close the menu with VoiceOver.
+@interface PopupMenuCloseButton : UIButton
+@end
+
+@implementation PopupMenuCloseButton
+// If accessibilityActivate isn't overriden, VoiceOver isn't able to close the
+// menu.
+- (BOOL)accessibilityActivate {
+  return [super accessibilityActivate];
+}
+@end
+
 namespace {
 const CGFloat kImageMargin = 196;
 const CGFloat kBackgroundGreyScale = 0.98;
@@ -36,7 +48,8 @@ const CGFloat kBackgroundAlpha = 0.65;
 - (instancetype)init {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
-    UIButton* closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    UIButton* closeButton =
+        [PopupMenuCloseButton buttonWithType:UIButtonTypeCustom];
     [closeButton addTarget:self
                     action:@selector(dismissPopup)
           forControlEvents:UIControlEventTouchUpInside];
