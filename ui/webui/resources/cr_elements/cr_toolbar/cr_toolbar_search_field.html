@@ -74,6 +74,7 @@
         -webkit-font-smoothing: antialiased;
         flex: 1;
         line-height: 185%;
+        margin-inline-end: 2px;
         margin-inline-start: 2px;
         position: relative;
       }
@@ -105,10 +106,9 @@
         width: 100%;
       }
 
-      input[type='search']::-webkit-search-decoration,
-      input[type='search']::-webkit-search-cancel-button,
-      input[type='search']::-webkit-search-results-button {
+      input[type='search']::-webkit-search-cancel-button {
         -webkit-appearance: none;
+        margin: 0;
       }
 
       /** Wide layout. */
