@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/css/css_rule.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -44,7 +45,12 @@ class CSSFontFeatureValuesRule final : public CSSRule {
   Member<StyleRuleFontFeatureValues> font_feature_values_rule_;
 };
 
-DEFINE_CSS_RULE_TYPE_CASTS(CSSFontFeatureValuesRule, kFontFeatureValuesRule);
+template <>
+struct DowncastTraits<CSSFontFeatureValuesRule> {
+  static bool AllowFrom(const CSSRule& rule) {
+    return rule.type() == CSSRule::kFontFeatureValuesRule;
+  }
+};
 
 }  // namespace blink
 

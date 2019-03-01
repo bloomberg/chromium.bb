@@ -49,7 +49,7 @@ void CSSKeyframeRule::setKeyText(const String& key_text,
         DOMExceptionCode::kSyntaxError,
         "The key '" + key_text + "' is invalid and cannot be parsed");
 
-  ToCSSKeyframesRule(parentRule())->StyleChanged();
+  To<CSSKeyframesRule>(parentRule())->StyleChanged();
 }
 
 CSSStyleDeclaration* CSSKeyframeRule::style() const {

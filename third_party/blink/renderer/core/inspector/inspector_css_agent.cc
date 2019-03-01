@@ -122,7 +122,7 @@ String CreateShorthandValue(Document* document,
                         style_sheet_contents, text);
 
   CSSStyleSheet* style_sheet = CSSStyleSheet::Create(style_sheet_contents);
-  CSSStyleRule* rule = ToCSSStyleRule(style_sheet->item(0));
+  auto* rule = To<CSSStyleRule>(style_sheet->item(0));
   CSSStyleDeclaration* style = rule->style();
   DummyExceptionStateForTesting exception_state;
   style->setProperty(document, longhand, new_value,
@@ -135,11 +135,11 @@ HeapVector<Member<CSSStyleRule>> FilterDuplicateRules(CSSRuleList* rule_list) {
   HeapHashSet<Member<CSSRule>> uniq_rules_set;
   for (unsigned i = rule_list ? rule_list->length() : 0; i > 0; --i) {
     CSSRule* rule = rule_list->item(i - 1);
-    if (!rule || rule->type() != CSSRule::kStyleRule ||
-        uniq_rules_set.Contains(rule))
+    auto* style_rule = DynamicTo<CSSStyleRule>(rule);
+    if (!style_rule || uniq_rules_set.Contains(rule))
       continue;
     uniq_rules_set.insert(rule);
-    uniq_rules.push_back(ToCSSStyleRule(rule));
+    uniq_rules.push_back(style_rule);
   }
   uniq_rules.Reverse();
   return uniq_rules;
@@ -507,11 +507,10 @@ class InspectorCSSAgent::ModifyRuleAction final
     if (type_ != kSetStyleText)
       return nullptr;
     CSSRule* rule = TakeRule();
-    if (rule->type() == CSSRule::kStyleRule)
-      return style_sheet_->BuildObjectForStyle(ToCSSStyleRule(rule)->style());
-    if (rule->type() == CSSRule::kKeyframeRule)
-      return style_sheet_->BuildObjectForStyle(
-          ToCSSKeyframeRule(rule)->style());
+    if (auto* style_rule = DynamicTo<CSSStyleRule>(rule))
+      return style_sheet_->BuildObjectForStyle(style_rule->style());
+    if (auto* keyframe_rule = DynamicTo<CSSKeyframeRule>(rule))
+      return style_sheet_->BuildObjectForStyle(keyframe_rule->style());
     return nullptr;
   }
 
@@ -651,16 +650,12 @@ class InspectorCSSAgent::AddRuleAction final
 
 // static
 CSSStyleRule* InspectorCSSAgent::AsCSSStyleRule(CSSRule* rule) {
-  if (!rule || rule->type() != CSSRule::kStyleRule)
-    return nullptr;
-  return ToCSSStyleRule(rule);
+  return DynamicTo<CSSStyleRule>(rule);
 }
 
 // static
 CSSMediaRule* InspectorCSSAgent::AsCSSMediaRule(CSSRule* rule) {
-  if (!rule || rule->type() != CSSRule::kMediaRule)
-    return nullptr;
-  return ToCSSMediaRule(rule);
+  return DynamicTo<CSSMediaRule>(rule);
 }
 
 InspectorCSSAgent::InspectorCSSAgent(
@@ -1027,12 +1022,10 @@ static CSSKeyframesRule* FindKeyframesRule(CSSRuleCollection* css_rules,
   CSSKeyframesRule* result = nullptr;
   for (unsigned j = 0; css_rules && j < css_rules->length() && !result; ++j) {
     CSSRule* css_rule = css_rules->item(j);
-    if (css_rule->type() == CSSRule::kKeyframesRule) {
-      CSSKeyframesRule* css_style_rule = ToCSSKeyframesRule(css_rule);
+    if (auto* css_style_rule = DynamicTo<CSSKeyframesRule>(css_rule)) {
       if (css_style_rule->Keyframes() == keyframes_rule)
         result = css_style_rule;
-    } else if (css_rule->type() == CSSRule::kImportRule) {
-      CSSImportRule* css_import_rule = ToCSSImportRule(css_rule);
+    } else if (auto* css_import_rule = DynamicTo<CSSImportRule>(css_rule)) {
       result = FindKeyframesRule(css_import_rule->styleSheet(), keyframes_rule);
     } else {
       result = FindKeyframesRule(css_rule->cssRules(), keyframes_rule);
@@ -1378,7 +1371,7 @@ Response InspectorCSSAgent::setKeyframeKey(
       key_text);
   bool success = dom_agent_->History()->Perform(action, exception_state);
   if (success) {
-    CSSKeyframeRule* rule = ToCSSKeyframeRule(action->TakeRule());
+    auto* rule = To<CSSKeyframeRule>(action->TakeRule());
     InspectorStyleSheet* inspector_style_sheet =
         BindStyleSheet(rule->parentStyleSheet());
     if (!inspector_style_sheet)
@@ -1499,12 +1492,12 @@ Response InspectorCSSAgent::SetStyleText(
     bool success = dom_agent_->History()->Perform(action, exception_state);
     if (success) {
       CSSRule* rule = action->TakeRule();
-      if (rule->type() == CSSRule::kStyleRule) {
-        result = ToCSSStyleRule(rule)->style();
+      if (auto* style_rule = DynamicTo<CSSStyleRule>(rule)) {
+        result = style_rule->style();
         return Response::OK();
       }
-      if (rule->type() == CSSRule::kKeyframeRule) {
-        result = ToCSSKeyframeRule(rule)->style();
+      if (auto* keyframe_rule = DynamicTo<CSSKeyframeRule>(rule)) {
+        result = keyframe_rule->style();
         return Response::OK();
       }
     }
@@ -1768,12 +1761,10 @@ void InspectorCSSAgent::CollectMediaQueriesFromRule(
   String source_url;
   CSSStyleSheet* parent_style_sheet = nullptr;
   bool is_media_rule = true;
-  if (rule->type() == CSSRule::kMediaRule) {
-    CSSMediaRule* media_rule = ToCSSMediaRule(rule);
+  if (auto* media_rule = DynamicTo<CSSMediaRule>(rule)) {
     media_list = media_rule->media();
     parent_style_sheet = media_rule->parentStyleSheet();
-  } else if (rule->type() == CSSRule::kImportRule) {
-    CSSImportRule* import_rule = ToCSSImportRule(rule);
+  } else if (auto* import_rule = DynamicTo<CSSImportRule>(rule)) {
     media_list = import_rule->media();
     parent_style_sheet = import_rule->parentStyleSheet();
     is_media_rule = false;
@@ -1857,8 +1848,8 @@ void InspectorCSSAgent::CollectStyleSheets(
   result.push_back(style_sheet);
   for (unsigned i = 0, size = style_sheet->length(); i < size; ++i) {
     CSSRule* rule = style_sheet->item(i);
-    if (rule->type() == CSSRule::kImportRule) {
-      CSSStyleSheet* imported_style_sheet = ToCSSImportRule(rule)->styleSheet();
+    if (auto* import_rule = DynamicTo<CSSImportRule>(rule)) {
+      CSSStyleSheet* imported_style_sheet = import_rule->styleSheet();
       if (imported_style_sheet)
         InspectorCSSAgent::CollectStyleSheets(imported_style_sheet, result);
     }

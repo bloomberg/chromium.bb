@@ -980,7 +980,7 @@ TEST_F(StyleEngineTest, ModifyStyleRuleMatchedPropertiesCache) {
   DummyExceptionStateForTesting exception_state;
   ASSERT_TRUE(sheet->cssRules(exception_state));
   CSSStyleRule* style_rule =
-      ToCSSStyleRule(sheet->cssRules(exception_state)->item(0));
+      To<CSSStyleRule>(sheet->cssRules(exception_state)->item(0));
   ASSERT_FALSE(exception_state.HadException());
   ASSERT_TRUE(style_rule);
   ASSERT_TRUE(style_rule->style());
