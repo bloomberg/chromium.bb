@@ -164,6 +164,9 @@ class BrowserActionsContainer : public views::View,
     return resize_animation_ && resize_animation_->is_animating();
   }
 
+  // Is the view being resized?
+  bool resizing() const { return resize_starting_width_.has_value(); }
+
   // Returns the ID of the action represented by the view at |index|.
   std::string GetIdAt(size_t index) const;
 
