@@ -24,7 +24,6 @@
 #include "gin/interceptor.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
-#include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_sync_channel.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -213,32 +212,6 @@ MimeHandlerViewContainerBase::FromRenderFrame(
                                                     it->second.end());
 }
 
-// static
-bool MimeHandlerViewContainerBase::TryHandleMessage(
-    const IPC::Message& message) {
-  int element_instance_id = guest_view::kInstanceIDNone;
-  base::PickleIterator iter(message);
-  bool success = iter.ReadInt(&element_instance_id);
-  DCHECK(success);
-  MimeHandlerViewContainerBase* target_container = nullptr;
-  for (auto& pair : g_mime_handler_view_container_base_map.Get()) {
-    auto it = std::find_if(
-        pair.second.begin(), pair.second.end(),
-        [&element_instance_id](MimeHandlerViewContainerBase* container) {
-          return container->GetInstanceId() == element_instance_id;
-        });
-    if (it != pair.second.end()) {
-      target_container = *it;
-      break;
-    }
-  }
-
-  if (target_container)
-    target_container->OnHandleMessage(message);
-
-  return false;
-}
-
 std::unique_ptr<content::URLLoaderThrottle>
 MimeHandlerViewContainerBase::MaybeCreatePluginThrottle(const GURL& url) {
   if (!waiting_to_create_throttle_ || url != original_url_)
@@ -289,23 +262,6 @@ void MimeHandlerViewContainerBase::PostMessageFromValue(
   PostJavaScriptMessage(isolate,
                         content::V8ValueConverter::Create()->ToV8Value(
                             &message, frame->MainWorldScriptContext()));
-}
-
-bool MimeHandlerViewContainerBase::OnHandleMessage(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(MimeHandlerViewContainerBase, message)
-    IPC_MESSAGE_HANDLER(
-        ExtensionsGuestViewMsg_MimeHandlerViewGuestOnLoadCompleted,
-        OnMimeHandlerViewGuestOnLoadCompleted)
-    IPC_MESSAGE_HANDLER(
-        ExtensionsGuestViewMsg_RetryCreatingMimeHandlerViewGuest,
-        OnRetryCreatingMimeHandlerViewGuest)
-    IPC_MESSAGE_HANDLER(ExtensionsGuestViewMsg_DestroyFrameContainer,
-                        OnDestroyFrameContainer)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 void MimeHandlerViewContainerBase::DidReceiveData(const char* data,
@@ -385,18 +341,7 @@ void MimeHandlerViewContainerBase::CreateMimeHandlerViewGuestIfNecessary() {
   guest_created_ = true;
 }
 
-void MimeHandlerViewContainerBase::OnRetryCreatingMimeHandlerViewGuest(
-    int32_t element_instance_id) {
-  NOTREACHED();
-}
-
-void MimeHandlerViewContainerBase::OnDestroyFrameContainer(
-    int element_instance_id) {
-  NOTREACHED();
-}
-
-void MimeHandlerViewContainerBase::OnMimeHandlerViewGuestOnLoadCompleted(
-    int32_t /* element_instance_id */) {
+void MimeHandlerViewContainerBase::DidLoadInternal() {
   if (!GetEmbedderRenderFrame())
     return;
 

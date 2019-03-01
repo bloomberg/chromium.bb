@@ -29,9 +29,6 @@ class URLLoaderThrottle;
 struct WebPluginInfo;
 }  // namespace content
 
-namespace IPC {
-class Message;
-}
 
 namespace extensions {
 // A base class for MimeHandlerViewContainer which provides a way of reusing the
@@ -46,10 +43,10 @@ class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
 
   ~MimeHandlerViewContainerBase() override;
 
+  // TODO(ekaramad): Remove this and make MimeHandlerViewContainerManager of
+  // |render_frame| hold on to the list of MimeHandlerViewContainerBase.
   static std::vector<MimeHandlerViewContainerBase*> FromRenderFrame(
       content::RenderFrame* render_frame);
-
-  static bool TryHandleMessage(const IPC::Message& message);
 
   // If the URL matches the same URL that this object has created and it hasn't
   // added a throttle yet, it will return a new one for the purpose of
@@ -64,8 +61,6 @@ class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
   // Post |message| to the guest.
   void PostMessageFromValue(const base::Value& message);
 
-  bool OnHandleMessage(const IPC::Message& message);
-
   // WebAssociatedURLLoaderClient overrides.
   void DidReceiveData(const char* data, int data_length) override;
   void DidFinishLoading() override;
@@ -74,13 +69,11 @@ class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
   MimeHandlerViewContainerBase();
 
   virtual void CreateMimeHandlerViewGuestIfNecessary();
-  virtual void OnRetryCreatingMimeHandlerViewGuest(int32_t element_instance_id);
-  virtual void OnDestroyFrameContainer(int32_t element_instance_id);
   virtual blink::WebRemoteFrame* GetGuestProxyFrame() const = 0;
   virtual int32_t GetInstanceId() const = 0;
   virtual gfx::Size GetElementSize() const = 0;
 
-  void OnMimeHandlerViewGuestOnLoadCompleted(int32_t element_instance_id);
+  void DidLoadInternal();
   void SendResourceRequest();
   void EmbedderRenderFrameWillBeGone();
   v8::Local<v8::Object> GetScriptableObject(v8::Isolate* isolate);

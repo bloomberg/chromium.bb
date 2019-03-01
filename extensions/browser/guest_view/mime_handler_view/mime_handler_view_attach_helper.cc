@@ -219,9 +219,10 @@ void MimeHandlerViewAttachHelper::AttachToOuterWebContents(
     // destroying the proxy whose routing ID was sent here by the
     // MimeHandlerViewFrameContainer. We should ask the embedder to retry
     // creating the guest.
-    guest_view->GetEmbedderFrame()->Send(
-        new ExtensionsGuestViewMsg_RetryCreatingMimeHandlerViewGuest(
-            element_instance_id));
+    mojom::MimeHandlerViewContainerManagerPtr container_manager;
+    guest_view->GetEmbedderFrame()->GetRemoteInterfaces()->GetInterface(
+        &container_manager);
+    container_manager->RetryCreatingMimeHandlerViewGuest(element_instance_id);
     guest_view->Destroy(true);
     return;
   }
@@ -259,8 +260,10 @@ void MimeHandlerViewAttachHelper::ResumeAttachOrDestroy(
   auto* guest_view = pending_guests_[element_instance_id];
   pending_guests_.erase(element_instance_id);
   if (!plugin_rfh) {
-    guest_view->GetEmbedderFrame()->Send(
-        new ExtensionsGuestViewMsg_DestroyFrameContainer(element_instance_id));
+    mojom::MimeHandlerViewContainerManagerPtr container_manager;
+    guest_view->GetEmbedderFrame()->GetRemoteInterfaces()->GetInterface(
+        &container_manager);
+    container_manager->DestroyFrameContainer(element_instance_id);
     guest_view->Destroy(true);
     return;
   }

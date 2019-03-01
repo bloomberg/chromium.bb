@@ -54,4 +54,17 @@ interface MimeHandlerViewContainerManager {
   CreateFrameContainer(url.mojom.Url resource_url,
                        string mime_type,
                        string view_id);
+
+  // Asks the renderer to destroy the MimeHandlerViewFrameContainer associated
+  // with |element_instance_id|.
+  DestroyFrameContainer(int32 element_instance_id);
+
+  // Asks the renderer to restart MimeHandlerViewGuest creation process. This
+  // happens when an initial request fails because the browser cannot find the
+  // corresponding frame/proxy that was to be used for attaching a GuestView.
+  RetryCreatingMimeHandlerViewGuest(int32 element_instance_id);
+
+  // Notifies the renderer that the contents of MimeHandlerViewGuest has
+  // finished loading.
+  DidLoad(int32 element_instance_id);
 };
