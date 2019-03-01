@@ -32,6 +32,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -552,7 +553,9 @@ public class WebApkUpdateManagerUnitTest {
      * {@link WebApkUpdateManager#nativeStoreWebApkUpdateRequestToFile} creates the pending update
      * file but fails.
      */
-    @Test
+    // @Test
+    // This test is flaky. See https://crbug.com/937242.
+    @DisabledTest
     public void testFileDeletedIfStoreWebApkUpdateRequestToFileFails() {
         mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
 
