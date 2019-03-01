@@ -52,8 +52,8 @@ void HidReportDescriptor::GetDetails(
     size_t input_bits;
     size_t output_bits;
     size_t feature_bits;
-    top_level_collections->push_back(
-        collection->GetDetails(&input_bits, &output_bits, &feature_bits));
+    collection->GetMaxReportSizes(&input_bits, &output_bits, &feature_bits);
+    top_level_collections->push_back(collection->ToMojo());
     if (collection->HasReportId())
       *has_report_id = true;
     max_input_report_bits = std::max(max_input_report_bits, input_bits);

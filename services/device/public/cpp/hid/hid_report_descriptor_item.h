@@ -122,21 +122,6 @@ class HidReportDescriptorItem {
   static_assert(sizeof(ReportInfo) == sizeof(uint32_t),
                 "incorrect report info size");
 
-  // HID collection type.
-  // Can be retrieved from GetShortData()
-  // when item.tag() == HidReportDescriptorItem::kTagCollection
-  enum CollectionType {
-    kCollectionTypePhysical,
-    kCollectionTypeApplication,
-    kCollectionTypeLogical,
-    kCollectionTypeReport,
-    kCollectionTypeNamedArray,
-    kCollectionTypeUsageSwitch,
-    kCollectionTypeUsageModifier,
-    kCollectionTypeReserved,
-    kCollectionTypeVendor
-  };
-
  private:
   HidReportDescriptorItem(const uint8_t* bytes,
                           size_t size,
@@ -174,8 +159,6 @@ class HidReportDescriptorItem {
   uint32_t GetShortData() const;
   // Size of this item in bytes, including the header.
   size_t GetSize() const;
-
-  static CollectionType GetCollectionTypeFromValue(uint32_t value);
 
  private:
   size_t GetHeaderSize() const;

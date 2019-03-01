@@ -46,7 +46,7 @@ class HidItemStateTable {
 
     void Reset();
 
-    // Local items. See section 6.2.2.6 of the HID specifications.
+    // Local items. See section 6.2.2.8 of the HID specifications.
     std::vector<uint32_t> usages;
     uint32_t usage_minimum = 0;
     uint32_t usage_maximum = 0;

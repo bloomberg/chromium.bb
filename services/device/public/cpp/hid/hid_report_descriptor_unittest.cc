@@ -197,12 +197,10 @@ const HidReportDescriptorItem::Tag kOutput =
     HidReportDescriptorItem::kTagOutput;
 const HidReportDescriptorItem::Tag kFeature =
     HidReportDescriptorItem::kTagFeature;
-const HidReportDescriptorItem::CollectionType kCollectionTypeApplication =
-    HidReportDescriptorItem::kCollectionTypeApplication;
-const HidReportDescriptorItem::CollectionType kCollectionTypeLogical =
-    HidReportDescriptorItem::kCollectionTypeLogical;
-const HidReportDescriptorItem::CollectionType kCollectionTypePhysical =
-    kCollectionTypePhysical;
+const uint32_t kCollectionTypeApplication =
+    mojom::kHIDCollectionTypeApplication;
+const uint32_t kCollectionTypeLogical = mojom::kHIDCollectionTypeLogical;
+const uint32_t kCollectionTypePhysical = mojom::kHIDCollectionTypePhysical;
 
 }  // namespace
 
@@ -227,9 +225,7 @@ class HidReportDescriptorTest : public testing::Test {
   }
 
   // Create a new collection and append it to |expected_collections_|.
-  HidCollection* AddTopCollection(
-      uint32_t usage,
-      HidReportDescriptorItem::CollectionType collection_type) {
+  HidCollection* AddTopCollection(uint32_t usage, uint32_t collection_type) {
     uint16_t usage_page = (usage >> kUsageIdSizeBits) & kUsageIdMask;
     usage = usage & kUsageIdMask;
     expected_collections_.push_back(std::make_unique<HidCollection>(
@@ -238,10 +234,9 @@ class HidReportDescriptorTest : public testing::Test {
   }
 
   // Create a new collection as a child of |parent|.
-  HidCollection* AddChild(
-      HidCollection* parent,
-      uint32_t usage,
-      HidReportDescriptorItem::CollectionType collection_type) {
+  HidCollection* AddChild(HidCollection* parent,
+                          uint32_t usage,
+                          uint32_t collection_type) {
     uint16_t usage_page = (usage >> kUsageIdSizeBits) & kUsageIdMask;
     usage = usage & kUsageIdMask;
     parent->AddChildForTesting(std::make_unique<HidCollection>(

@@ -204,10 +204,9 @@ void HidCollection::AddReportItem(HidReportDescriptorItem::Tag tag,
   report->push_back(HidReportItem::Create(tag, report_info, state));
 }
 
-mojom::HidCollectionInfoPtr HidCollection::GetDetails(
-    size_t* max_input_report_bits,
-    size_t* max_output_report_bits,
-    size_t* max_feature_report_bits) {
+void HidCollection::GetMaxReportSizes(size_t* max_input_report_bits,
+                                      size_t* max_output_report_bits,
+                                      size_t* max_feature_report_bits) const {
   DCHECK(max_input_report_bits);
   DCHECK(max_output_report_bits);
   DCHECK(max_feature_report_bits);
@@ -253,7 +252,39 @@ mojom::HidCollectionInfoPtr HidCollection::GetDetails(
           std::max(entry.max_report_bits, size_t{report_bits});
     }
   }
-  return collection_info;
+}
+
+mojom::HidCollectionInfoPtr HidCollection::ToMojo() const {
+  auto collection = mojom::HidCollectionInfo::New();
+  struct {
+    const std::unordered_map<uint8_t, HidReport>& in;
+    std::vector<mojom::HidReportDescriptionPtr>& out;
+  } report_lists[]{
+      {input_reports_, collection->input_reports},
+      {output_reports_, collection->output_reports},
+      {feature_reports_, collection->feature_reports},
+  };
+
+  collection->usage =
+      mojom::HidUsageAndPage::New(usage_.usage, usage_.usage_page);
+  collection->report_ids.insert(collection->report_ids.end(),
+                                report_ids_.begin(), report_ids_.end());
+  collection->collection_type = collection_type_;
+
+  for (const auto& report_list : report_lists) {
+    for (const auto& report : report_list.in) {
+      auto report_description = mojom::HidReportDescription::New();
+      report_description->report_id = report.first;
+      for (const auto& item : report.second)
+        report_description->items.push_back(item->ToMojo());
+      report_list.out.push_back(std::move(report_description));
+    }
+  }
+
+  for (const auto& child : children_)
+    collection->children.push_back(child->ToMojo());
+
+  return collection;
 }
 
 }  // namespace device

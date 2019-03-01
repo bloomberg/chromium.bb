@@ -57,7 +57,9 @@ void PopulateHidDeviceInfo(hid::HidDeviceInfo* output,
     api_collection.usage_page = collection->usage->usage_page;
     api_collection.usage = collection->usage->usage;
 
-    api_collection.report_ids = collection->report_ids;
+    api_collection.report_ids.insert(api_collection.report_ids.begin(),
+                                     collection->report_ids.begin(),
+                                     collection->report_ids.end());
 
     output->collections.push_back(std::move(api_collection));
   }
