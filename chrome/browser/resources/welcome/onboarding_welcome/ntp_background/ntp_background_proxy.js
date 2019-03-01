@@ -18,6 +18,12 @@ cr.define('nux', function() {
     /** @return {!Promise<!Array<!nux.NtpBackgroundData>>} */
     getBackgrounds() {}
 
+    /**
+     * @param {string} url
+     * @return {!Promise<void>}
+     */
+    preloadImage(url) {}
+
     /** @param {number} id */
     setBackground(id) {}
   }
@@ -27,6 +33,16 @@ cr.define('nux', function() {
     /** @override */
     getBackgrounds() {
       return cr.sendWithPromise('getBackgrounds');
+    }
+
+    /** @override */
+    preloadImage(url) {
+      return new Promise((resolve, reject) => {
+        const preloadedImage = new Image();
+        preloadedImage.onerror = reject;
+        preloadedImage.onload = resolve;
+        preloadedImage.src = url;
+      });
     }
 
     /** @override */
