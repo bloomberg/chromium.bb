@@ -22,17 +22,17 @@
 #include "chrome/browser/ui/views/ime_driver/simple_input_method.h"
 #endif  // defined(OS_CHROMEOS)
 
-IMEDriver::IMEDriver() {
+IMEDriverMus::IMEDriverMus() {
   ui::IMEBridge::Initialize();
 }
 
-IMEDriver::~IMEDriver() {}
+IMEDriverMus::~IMEDriverMus() {}
 
 // static
-void IMEDriver::Register() {
+void IMEDriverMus::Register() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ws::mojom::IMEDriverPtr ime_driver_ptr;
-  mojo::MakeStrongBinding(std::make_unique<IMEDriver>(),
+  mojo::MakeStrongBinding(std::make_unique<IMEDriverMus>(),
                           MakeRequest(&ime_driver_ptr));
   ws::mojom::IMERegistrarPtr ime_registrar;
   content::ServiceManagerConnection::GetForProcess()
@@ -41,9 +41,10 @@ void IMEDriver::Register() {
   ime_registrar->RegisterDriver(std::move(ime_driver_ptr));
 }
 
-void IMEDriver::StartSession(ws::mojom::InputMethodRequest input_method_request,
-                             ws::mojom::TextInputClientPtr client,
-                             ws::mojom::SessionDetailsPtr details) {
+void IMEDriverMus::StartSession(
+    ws::mojom::InputMethodRequest input_method_request,
+    ws::mojom::TextInputClientPtr client,
+    ws::mojom::SessionDetailsPtr details) {
 #if defined(OS_CHROMEOS)
   std::unique_ptr<RemoteTextInputClient> remote_client =
       std::make_unique<RemoteTextInputClient>(std::move(client),

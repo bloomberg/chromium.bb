@@ -2946,9 +2946,11 @@ jumbo_split_static_library("ui") {
         "views/create_application_shortcut_view.h",
         "views/ssl_client_certificate_selector.cc",
         "views/ssl_client_certificate_selector.h",
+      ]
+    }
 
-        # TODO(ellyjones): Mus is not supported on Mac (there is no ui::Window
-        # apart from aura::Window, which is also not supported).
+    if (enable_mus) {
+      sources += [
         "views/ime_driver/ime_driver_mus.cc",
         "views/ime_driver/ime_driver_mus.h",
         "views/ime_driver/remote_text_input_client.cc",

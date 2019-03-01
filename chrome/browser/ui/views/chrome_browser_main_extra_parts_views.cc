@@ -29,7 +29,6 @@
 #include "services/ws/public/cpp/gpu/gpu.h"  // nogncheck
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/display/screen.h"
-#include "ui/views/mus/mus_client.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/wm/core/wm_state.h"
 #endif  // defined(USE_AURA)
