@@ -4,6 +4,7 @@
 
 #include "components/viz/service/compositor_frame_fuzzer/compositor_frame_fuzzer_util.h"
 
+#include <limits>
 #include <memory>
 #include <utility>
 
@@ -14,9 +15,40 @@ namespace viz {
 
 namespace {
 
+// Handles inf / NaN by setting to 0.
+double MakeNormal(double x) {
+  return isnormal(x) ? x : 0;
+}
+float MakeNormal(float x) {
+  return isnormal(x) ? x : 0;
+}
+
+// Normalizes value to a float in [0, 1]. Use to convert a fuzzed
+// uint32 into a percentage.
+float Normalize(uint32_t x) {
+  return static_cast<float>(x) / std::numeric_limits<uint32_t>::max();
+}
+
 gfx::Rect GetRectFromProtobuf(const content::fuzzing::proto::Rect& proto_rect) {
   return gfx::Rect(proto_rect.x(), proto_rect.y(), proto_rect.width(),
                    proto_rect.height());
+}
+
+gfx::Transform GetTransformFromProtobuf(
+    const content::fuzzing::proto::Transform& proto_transform) {
+  gfx::Transform transform = gfx::Transform();
+
+  // Note: There are no checks here that disallow a non-invertible transform
+  // (for instance, if |scale_x| or |scale_y| is 0).
+  transform.Scale(MakeNormal(proto_transform.scale_x()),
+                  MakeNormal(proto_transform.scale_y()));
+
+  transform.Rotate(MakeNormal(proto_transform.rotate()));
+
+  transform.Translate(MakeNormal(proto_transform.translate_x()),
+                      MakeNormal(proto_transform.translate_y()));
+
+  return transform;
 }
 
 // Mutates a gfx::Rect to ensure width and height are both at least min_size.
@@ -78,26 +110,30 @@ CompositorFrame GenerateFuzzedCompositorFrame(
 
   pass->SetNew(1, rp_output_rect, rp_damage_rect, gfx::Transform());
 
-  content::fuzzing::proto::SolidColorDrawQuad quad_spec =
-      render_pass_spec.draw_quad();
-  gfx::Rect quad_rect = GetRectFromProtobuf(quad_spec.rect());
-  gfx::Rect quad_visible_rect = GetRectFromProtobuf(quad_spec.visible_rect());
+  for (const auto& quad_spec : render_pass_spec.quad_list()) {
+    gfx::Rect quad_rect = GetRectFromProtobuf(quad_spec.rect());
+    gfx::Rect quad_visible_rect = GetRectFromProtobuf(quad_spec.visible_rect());
 
-  // Handle constraints on DrawQuad:
-  // Ensure that |quad_rect| has non-zero area and that |quad_visible_rect| is
-  // contained in |quad_rect|.
-  ExpandToMinSize(&quad_rect, 1);
-  quad_visible_rect.AdjustToFit(quad_rect);
+    // Handle constraints on DrawQuad:
+    // Ensure that |quad_rect| has non-zero area and that |quad_visible_rect| is
+    // contained in |quad_rect|.
+    ExpandToMinSize(&quad_rect, 1);
+    quad_visible_rect.AdjustToFit(quad_rect);
 
-  auto* shared_quad_state = pass->CreateAndAppendSharedQuadState();
-  shared_quad_state->SetAll(gfx::Transform(), gfx::Rect(quad_rect),
-                            gfx::Rect(quad_rect), gfx::Rect(quad_rect),
-                            /*is_clipped=*/false,
-                            /*are_contents_opaque=*/false, 1,
-                            SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
-  auto* color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-  color_quad->SetNew(shared_quad_state, quad_rect, quad_visible_rect,
-                     quad_spec.color(), quad_spec.force_anti_aliasing_off());
+    auto* shared_quad_state = pass->CreateAndAppendSharedQuadState();
+    shared_quad_state->SetAll(
+        GetTransformFromProtobuf(quad_spec.sqs().transform()),
+        GetRectFromProtobuf(quad_spec.sqs().layer_rect()),
+        GetRectFromProtobuf(quad_spec.sqs().visible_rect()),
+        GetRectFromProtobuf(quad_spec.sqs().clip_rect()),
+        quad_spec.sqs().is_clipped(), quad_spec.sqs().are_contents_opaque(),
+        Normalize(quad_spec.sqs().opacity()), SkBlendMode::kSrcOver,
+        quad_spec.sqs().sorting_context_id());
+    auto* color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    color_quad->SetNew(shared_quad_state, quad_rect, quad_visible_rect,
+                       quad_spec.quad().color(),
+                       quad_spec.quad().force_anti_aliasing_off());
+  }
 
   frame.render_pass_list.push_back(std::move(pass));
   return frame;
