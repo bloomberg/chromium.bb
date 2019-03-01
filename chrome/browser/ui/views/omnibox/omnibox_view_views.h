@@ -192,10 +192,11 @@ class OmniboxViewViews : public OmniboxView,
   // flip.)
   bool TextAndUIDirectionMatch() const;
 
-  // Returns true if the caret is completely at the end of the input, and if
-  // there's a tab match present. Helper function for MaybeFocusTabButton()
-  // and MaybeUnfocusTabButton().
-  bool AtEndWithTabMatch() const;
+  // Helper function for MaybeFocusTabButton() and MaybeUnfocusTabButton().
+  bool SelectedSuggestionHasTabMatch() const;
+
+  // Like SelectionAtEnd(), but accounts for RTL.
+  bool DirectionAwareSelectionAtEnd() const;
 
   // Attempts to either focus or unfocus the tab switch button (tests if all
   // conditions are met and makes necessary subroutine call) and returns
