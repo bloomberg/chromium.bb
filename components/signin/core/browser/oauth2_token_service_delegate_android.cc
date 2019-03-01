@@ -8,10 +8,12 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_info.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
@@ -310,16 +312,17 @@ void OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
 
   std::vector<std::string> refreshed_ids;
   std::vector<std::string> revoked_ids;
-  bool currently_signed_in =
+  bool keep_accounts =
       ValidateAccounts(signed_in_account_id, prev_ids, curr_ids, &refreshed_ids,
                        &revoked_ids, force_notifications);
 
   ScopedBatchChange batch(this);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> java_accounts;
-  if (currently_signed_in) {
+  if (keep_accounts) {
     java_accounts = base::android::ToJavaArrayOfStrings(env, curr_ids);
   } else {
+    DCHECK(!base::FeatureList::IsEnabled(signin::kMiceFeature));
     java_accounts =
         base::android::ToJavaArrayOfStrings(env, std::vector<std::string>());
   }
@@ -362,8 +365,9 @@ bool OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
     std::vector<std::string>* refreshed_ids,
     std::vector<std::string>* revoked_ids,
     bool force_notifications) {
-  bool currently_signed_in = base::ContainsValue(curr_ids, signed_in_id);
-  if (currently_signed_in) {
+  bool keep_accounts = base::FeatureList::IsEnabled(signin::kMiceFeature) ||
+                       base::ContainsValue(curr_ids, signed_in_id);
+  if (keep_accounts) {
     // Revoke token for ids that have been removed from the device.
     for (const std::string& prev_id : prev_ids) {
       if (prev_id == signed_in_id)
@@ -376,7 +380,8 @@ bool OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
     }
 
     // Refresh token for new ids or all ids if |force_notifications|.
-    if (force_notifications || !base::ContainsValue(prev_ids, signed_in_id)) {
+    if (!signed_in_id.empty() &&
+        (force_notifications || !base::ContainsValue(prev_ids, signed_in_id))) {
       // Always fire the primary signed in account first.
       DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ValidateAccounts:"
                << "refreshed=" << signed_in_id;
@@ -392,6 +397,7 @@ bool OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
       }
     }
   } else {
+    // Revoke all ids.
     if (base::ContainsValue(prev_ids, signed_in_id)) {
       DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ValidateAccounts:"
                << "revoked=" << signed_in_id;
@@ -405,7 +411,7 @@ bool OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
       revoked_ids->push_back(prev_id);
     }
   }
-  return currently_signed_in;
+  return keep_accounts;
 }
 
 void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenAvailable(
