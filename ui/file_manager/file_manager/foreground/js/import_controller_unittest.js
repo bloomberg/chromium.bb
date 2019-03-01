@@ -74,7 +74,7 @@ function testClickPanelToStartImport(callback) {
 }
 
 function testClickCancel(callback) {
-  const promise = startImport(importer.ClickSource.IMPORT).then(function(task) {
+  const promise = startImport(importer.ClickSource.IMPORT).then(task => {
     widget.click(importer.ClickSource.CANCEL);
     return task.whenCanceled;
   });
@@ -102,7 +102,7 @@ function testVolumeUnmount_InvalidatesScans(callback) {
 
   environment.directoryChangedListener(EMPTY_EVENT);
   const promise = widget.updateResolver.promise.then(
-      function() {
+      () => {
         // Reset the promise so we can wait on a second widget update.
         widget.resetPromises();
         environment.setCurrentDirectory(nonDcimDirectory);
@@ -115,7 +115,7 @@ function testVolumeUnmount_InvalidatesScans(callback) {
         // fire once the widget has been updated again.
         return widget.updateResolver.promise;
       }).then(
-          function() {
+          () => {
             mediaScanner.assertScanCount(2);
           });
 
@@ -154,13 +154,13 @@ function testDirectoryChange_CancelsScan(callback) {
 
   environment.directoryChangedListener(EMPTY_EVENT);
   const promise = widget.updateResolver.promise.then(
-      function() {
+      () => {
         // Reset the promise so we can wait on a second widget update.
         widget.resetPromises();
         environment.setCurrentDirectory(nonDcimDirectory);
         environment.directoryChangedListener(EMPTY_EVENT);
       }).then(
-          function() {
+          () => {
             mediaScanner.assertScanCount(1);
             mediaScanner.assertLastScanCanceled();
           });
@@ -185,12 +185,12 @@ function testWindowClose_CancelsScan(callback) {
 
   environment.directoryChangedListener(EMPTY_EVENT);
   const promise = widget.updateResolver.promise.then(
-      function() {
+      () => {
         // Reset the promise so we can wait on a second widget update.
         widget.resetPromises();
         environment.windowCloseListener();
       }).then(
-          function() {
+          () => {
             mediaScanner.assertScanCount(1);
             mediaScanner.assertLastScanCanceled();
           });
@@ -222,13 +222,13 @@ function testDirectoryChange_DetailsPanelVisibility_InitialChangeDir(callback) {
   environment.directoryChangedListener(event);
   assertFalse(widget.detailsVisible);
 
-  const promise = widget.updateResolver.promise.then(function() {
+  const promise = widget.updateResolver.promise.then(() => {
     // "scanning..."
     assertFalse(widget.detailsVisible);
     widget.resetPromises();
     mediaScanner.finalizeScans();
     return widget.updateResolver.promise;
-  }).then(function() {
+  }).then(() => {
     // "ready to update"
     // Details should pop up.
     assertTrue(widget.detailsVisible);
@@ -327,9 +327,9 @@ function testClickDestination_ShowsRootPriorToImport(callback) {
 function testClickDestination_ShowsDestinationAfterImportStarted(callback) {
   const promise = startImport(importer.ClickSource.MAIN)
       .then(
-          function() {
+          () => {
             return mediaImporter.importResolver.promise.then(
-                function() {
+                () => {
                   widget.click(importer.ClickSource.DESTINATION);
                   return environment.showImportDestinationResolver.promise;
                 });
@@ -361,11 +361,11 @@ function startImport(clickSource) {
   environment.directoryChangedListener(EMPTY_EVENT);
 
   return widget.updateResolver.promise.then(
-      function() {
+      () => {
         widget.resetPromises();
         mediaScanner.finalizeScans();
         return widget.updateResolver.promise.then(
-            function() {
+            () => {
               widget.resetPromises();
               widget.click(clickSource);
               return mediaImporter.importResolver.promise;
@@ -450,7 +450,7 @@ TestImportRunner.prototype.importFromScanResult = function(
  * @return {!importer.MediaImportHandler.ImportTask}
  * @private
  */
-TestImportRunner.prototype.toMediaImportTask_ = function(task) {
+TestImportRunner.prototype.toMediaImportTask_ = task => {
   return /** @type {!importer.MediaImportHandler.ImportTask} */ (task);
 };
 
@@ -567,7 +567,7 @@ TestControllerEnvironment.prototype.addSelectionChangedListener =
 };
 
 /** @override */
-TestControllerEnvironment.prototype.getImportDestination = function(date) {
+TestControllerEnvironment.prototype.getImportDestination = date => {
   const fileSystem = new MockFileSystem('testFs');
   const directoryEntry = new MockDirectoryEntry(fileSystem, '/abc/123');
   return Promise.resolve(directoryEntry);
@@ -641,10 +641,10 @@ importer.TestCommandWidget.prototype.update = function(
   this.updateResolver.resolve(activityState);
 };
 
-importer.TestCommandWidget.prototype.updateDetails = function(scan) {};
+importer.TestCommandWidget.prototype.updateDetails = scan => {};
 
 importer.TestCommandWidget.prototype.performMainButtonRippleAnimation =
-    function() {};
+    () => {};
 
 /** @override */
 importer.TestCommandWidget.prototype.toggleDetails = function() {
@@ -661,8 +661,7 @@ importer.TestCommandWidget.prototype.setDetailsVisible = function(visible) {
 };
 
 /** @override */
-importer.TestCommandWidget.prototype.setDetailsBannerVisible = function(
-    visible) {};
+importer.TestCommandWidget.prototype.setDetailsBannerVisible = visible => {};
 
 /**
  * @param {!VolumeManagerCommon.VolumeType} volumeType

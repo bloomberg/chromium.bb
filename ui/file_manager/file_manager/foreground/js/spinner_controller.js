@@ -52,7 +52,7 @@ SpinnerController.prototype.blink = function() {
  * @return {function()} Hide callback.
  */
 SpinnerController.prototype.show = function() {
-  return this.showWithDelay(0, function() {});
+  return this.showWithDelay(0, () => {});
 };
 
 /**
@@ -63,14 +63,14 @@ SpinnerController.prototype.show = function() {
  * @return {function()} Hide callback.
  */
 SpinnerController.prototype.showWithDelay = function(delay, callback) {
-  const timerId = setTimeout(function() {
+  const timerId = setTimeout(() => {
     this.activeSpinners_++;
     if (this.activeSpinners_ === 1) {
       this.element_.hidden = false;
     }
     delete this.pendingSpinnerTimerIds_[timerId];
     callback();
-  }.bind(this), delay);
+  }, delay);
 
   this.pendingSpinnerTimerIds_[timerId] = true;
   return this.maybeHide_.bind(this, timerId);

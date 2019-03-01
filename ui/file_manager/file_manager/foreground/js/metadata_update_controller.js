@@ -104,10 +104,10 @@ MetadataUpdateController.prototype.onCachedMetadataUpdate_ = function(event) {
 MetadataUpdateController.prototype.dailyUpdateModificationTime_ = function() {
   const entries = /** @type {!Array<!Entry>} */(
       this.directoryModel_.getFileList().slice());
-  this.metadataModel_.get(entries, ['modificationTime']).then(function() {
+  this.metadataModel_.get(entries, ['modificationTime']).then(() => {
     this.listContainer_.currentView.updateListItemsMetadata(
         'filesystem', entries);
-  }.bind(this));
+  });
   setTimeout(this.dailyUpdateModificationTime_.bind(this),
              MetadataUpdateController.MILLISECONDS_IN_DAY_);
 };
@@ -116,12 +116,12 @@ MetadataUpdateController.prototype.dailyUpdateModificationTime_ = function() {
  * @private
  */
 MetadataUpdateController.prototype.onPreferencesChanged_ = function() {
-  chrome.fileManagerPrivate.getPreferences(function(prefs) {
+  chrome.fileManagerPrivate.getPreferences(prefs => {
     const use12hourClock = !prefs.use24hourClock;
     this.fileMetadataFormatter_.setDateTimeFormat(use12hourClock);
     // TODO(oka): Remove these two lines, and add fileMetadataFormatter to
     // constructor for each field instead.
     this.listContainer_.table.setDateTimeFormat(use12hourClock);
     this.refreshCurrentDirectoryMetadata();
-  }.bind(this));
+  });
 };

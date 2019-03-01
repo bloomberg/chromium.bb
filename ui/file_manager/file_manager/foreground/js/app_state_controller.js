@@ -61,8 +61,8 @@ AppStateController.DEFAULT_SORT_DIRECTION = 'desc';
  */
 AppStateController.prototype.loadInitialViewOptions = function() {
   // Load initial view option.
-  return new Promise(function(fulfill, reject) {
-    chrome.storage.local.get(this.viewOptionStorageKey_, function(values) {
+  return new Promise((fulfill, reject) => {
+    chrome.storage.local.get(this.viewOptionStorageKey_, values => {
       if (chrome.runtime.lastError) {
         reject('Failed to load view options: ' +
             chrome.runtime.lastError.message);
@@ -70,7 +70,7 @@ AppStateController.prototype.loadInitialViewOptions = function() {
         fulfill(values);
       }
     });
-  }.bind(this)).then(function(values) {
+  }).then(values => {
     this.viewOptions_ = {};
     const value = values[this.viewOptionStorageKey_];
     if (!value) {
@@ -90,10 +90,10 @@ AppStateController.prototype.loadInitialViewOptions = function() {
         }
       }
     }
-  }.bind(this)).catch(function(error) {
+  }).catch(error => {
     this.viewOptions_ = {};
     console.error(error);
-  }.bind(this));
+  });
 };
 
 /**
@@ -153,7 +153,7 @@ AppStateController.prototype.saveViewOptions = function() {
   // Save the global default.
   const items = {};
   items[this.viewOptionStorageKey_] = JSON.stringify(prefs);
-  chrome.storage.local.set(items, function() {
+  chrome.storage.local.set(items, () => {
     if (chrome.runtime.lastError) {
       console.error(
           'Failed to save view options: ' + chrome.runtime.lastError.message);

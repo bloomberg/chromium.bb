@@ -39,7 +39,7 @@ FileWatcher.prototype.dispose = function() {
  * @private
  */
 FileWatcher.prototype.onDirectoryChanged_ = function(event) {
-  const fireWatcherDirectoryChanged = function(changedFiles) {
+  const fireWatcherDirectoryChanged = changedFiles => {
     const e = new Event('watcher-directory-changed');
 
     if (changedFiles) {
@@ -47,7 +47,7 @@ FileWatcher.prototype.onDirectoryChanged_ = function(event) {
     }
 
     this.dispatchEvent(e);
-  }.bind(this);
+  };
 
   if (this.watchedDirectoryEntry_) {
     const eventURL = event.entry.toURL();
@@ -60,7 +60,7 @@ FileWatcher.prototype.onDirectoryChanged_ = function(event) {
       // notify it as watcher directory changed.
       this.watchedDirectoryEntry_.getDirectory(
           this.watchedDirectoryEntry_.fullPath, {create: false}, null,
-          function() {
+          () => {
             fireWatcherDirectoryChanged(null);
           });
     }
@@ -90,13 +90,13 @@ FileWatcher.prototype.changeWatchedDirectory = function(entry) {
  */
 FileWatcher.prototype.resetWatchedEntry_ = function() {
   // Run the tasks in the queue to avoid races.
-  return new Promise(function(fulfill, reject) {
-    this.queue_.run(function(callback) {
+  return new Promise((fulfill, reject) => {
+    this.queue_.run(callback => {
       // Release the watched directory.
       if (this.watchedDirectoryEntry_) {
         chrome.fileManagerPrivate.removeFileWatch(
             this.watchedDirectoryEntry_,
-            function(result) {
+            result => {
               if (chrome.runtime.lastError) {
                 console.error('Failed to remove the watcher because of: ' +
                     chrome.runtime.lastError.message);
@@ -106,13 +106,13 @@ FileWatcher.prototype.resetWatchedEntry_ = function() {
               this.watchedDirectoryEntry_ = null;
               fulfill();
               callback();
-            }.bind(this));
+            });
       } else {
         fulfill();
         callback();
       }
-    }.bind(this));
-  }.bind(this));
+    });
+  });
 };
 
 /**
@@ -122,13 +122,13 @@ FileWatcher.prototype.resetWatchedEntry_ = function() {
  * @private
  */
 FileWatcher.prototype.changeWatchedEntry_ = function(entry) {
-  return new Promise(function(fulfill, reject) {
-    const setEntryClosure = function() {
+  return new Promise((fulfill, reject) => {
+    const setEntryClosure = () => {
       // Run the tasks in the queue to avoid races.
-      this.queue_.run(function(callback) {
+      this.queue_.run(callback => {
         chrome.fileManagerPrivate.addFileWatch(
             entry,
-            function(result) {
+            result => {
               if (chrome.runtime.lastError) {
                 // Most probably setting the watcher is not supported on the
                 // file system type.
@@ -141,13 +141,13 @@ FileWatcher.prototype.changeWatchedEntry_ = function(entry) {
                 fulfill();
               }
               callback();
-            }.bind(this));
-      }.bind(this));
-    }.bind(this);
+            });
+      });
+    };
 
     // Reset the watched directory first, then set the new watched directory.
     return this.resetWatchedEntry_().then(setEntryClosure);
-  }.bind(this));
+  });
 };
 
 /**

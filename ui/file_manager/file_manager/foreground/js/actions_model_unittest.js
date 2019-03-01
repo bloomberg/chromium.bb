@@ -131,11 +131,11 @@ function testDriveDirectoryEntry(callback) {
       driveSyncHandler, ui, [driveFileSystem.entries['/test']]);
 
   let invalidated = 0;
-  model.addEventListener('invalidated', function() {
+  model.addEventListener('invalidated', () => {
     invalidated++;
   });
 
-  return reportPromise(model.initialize().then(function() {
+  return reportPromise(model.initialize().then(() => {
     const actions = model.getActions();
     assertEquals(3, Object.keys(actions).length);
 
@@ -166,11 +166,11 @@ function testDriveDirectoryEntry(callback) {
     // the model and check that the actions are updated.
     model = new ActionsModel(volumeManager, metadataModel, shortcutsModel,
         driveSyncHandler, ui, [driveFileSystem.entries['/test']]);
-    model.addEventListener('invalidated', function() {
+    model.addEventListener('invalidated', () => {
       invalidated++;
     });
     return model.initialize();
-  }).then(function() {
+  }).then(() => {
     const actions = model.getActions();
     assertEquals(4, Object.keys(actions).length);
     assertTrue(!!actions[ActionsModel.CommonActionId.SHARE]);
@@ -202,7 +202,7 @@ function testDriveFileEntry(callback) {
       driveSyncHandler, ui, [driveFileSystem.entries['/test.txt']]);
   let invalidated = 0;
 
-  return reportPromise(model.initialize().then(function() {
+  return reportPromise(model.initialize().then(() => {
     const actions = model.getActions();
     assertEquals(3, Object.keys(actions).length);
     assertTrue(!!actions[ActionsModel.CommonActionId.SHARE]);
@@ -219,7 +219,7 @@ function testDriveFileEntry(callback) {
     assertTrue(!!manageInDriveAction);
     assertTrue(manageInDriveAction.canExecute());
 
-    chrome.fileManagerPrivate.pinDriveFile = function(entry, pin, callback) {
+    chrome.fileManagerPrivate.pinDriveFile = (entry, pin, callback) => {
       metadataModel.properties.pinned = true;
       assertEquals(driveFileSystem.entries['/test.txt'], entry);
       assertTrue(pin);
@@ -228,14 +228,14 @@ function testDriveFileEntry(callback) {
 
     // For pinning, invalidating is done asynchronously, so we need to wait
     // for it with a promise.
-    return new Promise(function(fulfill, reject) {
-      model.addEventListener('invalidated', function() {
+    return new Promise((fulfill, reject) => {
+      model.addEventListener('invalidated', () => {
         invalidated++;
         fulfill();
       });
       saveForOfflineAction.execute();
     });
-  }).then(function() {
+  }).then(() => {
     assertTrue(metadataModel.properties.pinned);
     assertEquals(1, invalidated);
 
@@ -244,7 +244,7 @@ function testDriveFileEntry(callback) {
     model = new ActionsModel(volumeManager, metadataModel, shortcutsModel,
         driveSyncHandler, ui, [driveFileSystem.entries['/test.txt']]);
     return model.initialize();
-  }).then(function() {
+  }).then(() => {
     const actions = model.getActions();
     assertEquals(3, Object.keys(actions).length);
     assertTrue(!!actions[ActionsModel.CommonActionId.SHARE]);
@@ -261,21 +261,21 @@ function testDriveFileEntry(callback) {
     assertTrue(!!manageInDriveAction);
     assertTrue(manageInDriveAction.canExecute());
 
-    chrome.fileManagerPrivate.pinDriveFile = function(entry, pin, callback) {
+    chrome.fileManagerPrivate.pinDriveFile = (entry, pin, callback) => {
       metadataModel.properties.pinned = false;
       assertEquals(driveFileSystem.entries['/test.txt'], entry);
       assertFalse(pin);
       callback();
     };
 
-    return new Promise(function(fulfill, reject) {
-      model.addEventListener('invalidated', function() {
+    return new Promise((fulfill, reject) => {
+      model.addEventListener('invalidated', () => {
         invalidated++;
         fulfill();
       });
       offlineNotNecessaryAction.execute();
     });
-  }).then(function() {
+  }).then(() => {
     assertFalse(metadataModel.properties.pinned);
     assertEquals(2, invalidated);
   }), callback);
@@ -297,7 +297,7 @@ function testTeamDriveRootEntry(callback) {
       [driveFileSystem.entries['/team_drives/ABC Team']]);
 
   return reportPromise(
-      model.initialize().then(function() {
+      model.initialize().then(() => {
         const actions = model.getActions();
         assertEquals(2, Object.keys(actions).length);
 
@@ -331,7 +331,7 @@ function testTeamDriveDirectoryEntry(callback) {
       [driveFileSystem.entries['/team_drives/ABC Team/Folder 1']]);
 
   return reportPromise(
-      model.initialize().then(function() {
+      model.initialize().then(() => {
         const actions = model.getActions();
         assertEquals(3, Object.keys(actions).length);
 
@@ -373,7 +373,7 @@ function testTeamDriveFileEntry(callback) {
       [driveFileSystem.entries['/team_drives/ABC Team/Folder 1/test.txt']]);
 
   return reportPromise(
-      model.initialize().then(function() {
+      model.initialize().then(() => {
         const actions = model.getActions();
         assertEquals(3, Object.keys(actions).length);
 
@@ -405,7 +405,7 @@ function testProvidedEntry(callback) {
   providedFileSystem.entries['/test'] =
       new MockDirectoryEntry(providedFileSystem, '/test');
 
-  chrome.fileManagerPrivate.getCustomActions = function(entries, callback) {
+  chrome.fileManagerPrivate.getCustomActions = (entries, callback) => {
     assertEquals(1, entries.length);
     assertEquals(providedFileSystem.entries['/test'], entries[0]);
     callback([
@@ -426,11 +426,11 @@ function testProvidedEntry(callback) {
       driveSyncHandler, ui, [providedFileSystem.entries['/test']]);
 
   let invalidated = 0;
-  model.addEventListener('invalidated', function() {
+  model.addEventListener('invalidated', () => {
     invalidated++;
   });
 
-  return reportPromise(model.initialize().then(function() {
+  return reportPromise(model.initialize().then(() => {
     const actions = model.getActions();
     assertEquals(2, Object.keys(actions).length);
 
@@ -444,8 +444,7 @@ function testProvidedEntry(callback) {
     assertTrue(shareAction.canExecute());
     assertEquals('Share it!', shareAction.getTitle());
 
-    chrome.fileManagerPrivate.executeCustomAction = function(entries, actionId,
-        callback) {
+    chrome.fileManagerPrivate.executeCustomAction = (entries, actionId, callback) => {
       assertEquals(1, entries.length);
       assertEquals(providedFileSystem.entries['/test'], entries[0]);
       assertEquals(ActionsModel.CommonActionId.SHARE, actionId);
@@ -459,8 +458,7 @@ function testProvidedEntry(callback) {
     assertEquals('Turn into chocolate!',
         actions['some-custom-id'].getTitle());
 
-    chrome.fileManagerPrivate.executeCustomAction = function(entries, actionId,
-        callback) {
+    chrome.fileManagerPrivate.executeCustomAction = (entries, actionId, callback) => {
       assertEquals(1, entries.length);
       assertEquals(providedFileSystem.entries['/test'], entries[0]);
       assertEquals('some-custom-id', actionId);
@@ -479,7 +477,7 @@ function testProvidedEntryWithError(callback) {
   providedFileSystem.entries['/test'] =
       new MockDirectoryEntry(providedFileSystem, '/test');
 
-  chrome.fileManagerPrivate.getCustomActions = function(entries, callback) {
+  chrome.fileManagerPrivate.getCustomActions = (entries, callback) => {
     chrome.runtime.lastError = {
       message: 'Failed to fetch custom actions.'
     };
@@ -491,7 +489,7 @@ function testProvidedEntryWithError(callback) {
   const model = new ActionsModel(volumeManager, metadataModel, shortcutsModel,
       driveSyncHandler, ui, [providedFileSystem.entries['/test']]);
 
-  return reportPromise(model.initialize().then(function() {
+  return reportPromise(model.initialize().then(() => {
     const actions = model.getActions();
     assertEquals(0, Object.keys(actions).length);
   }), callback);

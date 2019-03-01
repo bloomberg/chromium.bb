@@ -146,27 +146,27 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
   }
 
   if (item.externalFileUrl || item.alternateUrl) {
-    this.metadataModel_.get([entry], ['contentMimeType']).then(function(items) {
+    this.metadataModel_.get([entry], ['contentMimeType']).then(items => {
       const item = items[0];
       this.metadataBox_.mediaMimeType = item.contentMimeType || '';
-    }.bind(this));
+    });
   } else {
-    this.metadataModel_.get([entry], ['mediaMimeType']).then(function(items) {
+    this.metadataModel_.get([entry], ['mediaMimeType']).then(items => {
       const item = items[0];
       this.metadataBox_.mediaMimeType = item.mediaMimeType || '';
-    }.bind(this));
+    });
   }
 
   if (['image', 'video', 'audio'].includes(type)) {
     if (item.externalFileUrl || item.alternateUrl) {
       this.metadataModel_.get([entry], ['imageHeight', 'imageWidth'])
-          .then(function(items) {
+          .then(items => {
             const item = items[0];
             this.metadataBox_.imageHeight =
                 /** @type {number} */ (item.imageHeight);
             this.metadataBox_.imageWidth =
                 /** @type {number} */ (item.imageWidth);
-          }.bind(this));
+          });
     } else {
       this.metadataModel_
           .get(
@@ -183,7 +183,7 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
                 'mediaTrack',
                 'mediaYearRecorded',
               ])
-          .then(function(items) {
+          .then(items => {
             const item = items[0];
             this.metadataBox_.ifd = item.ifd || null;
             this.metadataBox_.imageHeight = item.imageHeight || 0;
@@ -195,7 +195,7 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
             this.metadataBox_.mediaTitle = item.mediaTitle || '';
             this.metadataBox_.mediaTrack = item.mediaTrack || '';
             this.metadataBox_.mediaYearRecorded = item.mediaYearRecorded || '';
-          }.bind(this));
+          });
     }
   }
 };
@@ -224,16 +224,16 @@ MetadataBoxController.prototype.setDirectorySize_ = function(
     }
 
     // Only retain the last setDirectorySize_ request.
-    this.onDirectorySizeLoaded_ = function(lastEntry) {
+    this.onDirectorySizeLoaded_ = lastEntry => {
       this.setDirectorySize_(entry, util.isSameEntry(entry, lastEntry));
-    }.bind(this);
+    };
     return;
   }
 
   // false if the entry is same. true if the entry is changed.
   this.metadataBox_.isSizeLoading = !isSameEntry;
   this.isDirectorySizeLoading_ = true;
-  chrome.fileManagerPrivate.getDirectorySize(entry, function(size) {
+  chrome.fileManagerPrivate.getDirectorySize(entry, size => {
     this.isDirectorySizeLoading_ = false;
     if (this.onDirectorySizeLoaded_) {
       setTimeout(this.onDirectorySizeLoaded_.bind(null, entry));
@@ -251,5 +251,5 @@ MetadataBoxController.prototype.setDirectorySize_ = function(
 
     this.metadataBox_.isSizeLoading = false;
     this.metadataBox_.size = this.fileMetadataFormatter_.formatSize(size, true);
-  }.bind(this));
+  });
 };

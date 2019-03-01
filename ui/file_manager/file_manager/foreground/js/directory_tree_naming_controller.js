@@ -60,7 +60,7 @@ function DirectoryTreeNamingController(
   this.inputElement_.spellcheck = false;
   this.inputElement_.addEventListener('keydown', this.onKeyDown_.bind(this));
   this.inputElement_.addEventListener('blur', this.commitRename_.bind(this));
-  this.inputElement_.addEventListener('click', function(event) {
+  this.inputElement_.addEventListener('click', event => {
     // Stop propagation of click event to prevent it being captured by directory
     // item and current directory is changed to editing item.
     event.stopPropagation();
@@ -140,26 +140,26 @@ DirectoryTreeNamingController.prototype.commitRename_ = function() {
     util.validateExternalDriveName(newName, assert(this.volumeInfo_))
         .then(
             this.performExternalDriveRename_.bind(this, entry, newName),
-            function(errorMessage) {
+            errorMessage => {
               this.alertDialog_.show(
                   /** @type {string} */ (errorMessage),
                   this.detach_.bind(this));
-            }.bind(this));
+            });
   } else {
     // Validate new name.
     new Promise(entry.getParent.bind(entry))
-        .then(function(parentEntry) {
+        .then(parentEntry => {
           return util.validateFileName(
               parentEntry, newName,
               !this.directoryModel_.getFileFilter().isHiddenFilesVisible());
-        }.bind(this))
+        })
         .then(
             this.performRename_.bind(this, entry, newName),
-            function(errorMessage) {
+            errorMessage => {
               this.alertDialog_.show(
                   /** @type {string} */ (errorMessage),
                   this.detach_.bind(this));
-            }.bind(this));
+            });
   }
 };
 
@@ -181,7 +181,7 @@ DirectoryTreeNamingController.prototype.performRename_ = function(
   // new name in the UI before actual rename is completed.
   new Promise(util.rename.bind(null, entry, newName))
       .then(
-          function(newEntry) {
+          newEntry => {
             // Show new name before detaching input element to prevent showing
             // old name.
             const label =
@@ -202,16 +202,15 @@ DirectoryTreeNamingController.prototype.performRename_ = function(
                   this.directoryModel_.setIgnoringCurrentDirectoryDeletion.bind(
                       this.directoryModel_, false /* not ignore */));
             }
-          }.bind(this),
-          function(error) {
+          },
+          error => {
             this.directoryModel_.setIgnoringCurrentDirectoryDeletion(
                 false /* not ignore*/);
             this.detach_();
 
-            this.alertDialog_.show(
-                util.getRenameErrorMessage(
-                    /** @type {DOMError} */ (error), entry, newName));
-          }.bind(this));
+            this.alertDialog_.show(util.getRenameErrorMessage(
+                /** @type {DOMError} */ (error), entry, newName));
+          });
 };
 
 /**

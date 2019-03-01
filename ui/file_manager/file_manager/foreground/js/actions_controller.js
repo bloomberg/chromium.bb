@@ -168,11 +168,11 @@ ActionsController.prototype.onSelectionChangeThrottled_ = function() {
         this.shortcutsModel_, this.driveSyncHandler_, this.ui_, entries);
 
   const initializeAndUpdateUI =
-      /** @type {function(Event=)} */ (function(opt_event) {
+      /** @type {function(Event=)} */ (opt_event => {
         if (selection !== this.selectionHandler_.selection) {
           return;
         }
-        actionsModel.initialize().then(function() {
+        actionsModel.initialize().then(() => {
           if (selection !== this.selectionHandler_.selection) {
             return;
           }
@@ -187,8 +187,8 @@ ActionsController.prototype.onSelectionChangeThrottled_ = function() {
           }
           this.updateUI_();
           this.menuContext_ = oldMenuContext;
-        }.bind(this));
-      }.bind(this));
+        });
+      });
 
   actionsModel.addEventListener('invalidated', initializeAndUpdateUI);
   initializeAndUpdateUI();
@@ -215,15 +215,15 @@ ActionsController.prototype.onNavigationListSelectionChanged_ = function() {
         this.shortcutsModel_, this.driveSyncHandler_, this.ui_, [entry]);
 
   const initializeAndUpdateUI =
-      /** @type {function(Event=)} */ (function(opt_event) {
-        actionsModel.initialize().then(function() {
+      /** @type {function(Event=)} */ (opt_event => {
+        actionsModel.initialize().then(() => {
           if (this.navigationListSequence_ !== sequence) {
             return;
           }
           this.navigationListActionsModel_ = actionsModel;
           this.updateUI_();
-        }.bind(this));
-      }.bind(this));
+        });
+      });
 
   actionsModel.addEventListener('invalidated', initializeAndUpdateUI);
   initializeAndUpdateUI();

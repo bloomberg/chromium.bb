@@ -157,7 +157,7 @@ MainWindowComponent.prototype.handleTouchEvents_ = function(event) {
   // Also the 2nd parameter of handleTouchEvents is just passed back to the
   // callback. Therefore we can pass a dummy value to it.
   // TODO(yamaguchi): Revise TapHandler.handleTouchEvents to delete the param.
-  this.tapHandler_.handleTouchEvents(event, -1, function(e, index, eventType) {
+  this.tapHandler_.handleTouchEvents(event, -1, (e, index, eventType) => {
     if (eventType == FileTapHandler.TapEvent.TAP) {
       if (e.target.classList.contains('detail-checkmark')) {
         // Tap on the checkmark should only toggle select the item just like a
@@ -172,7 +172,7 @@ MainWindowComponent.prototype.handleTouchEvents_ = function(event) {
           event, true /* clearSelectionAfterLaunch */);
     }
     return false;
-  }.bind(this));
+  });
 };
 
 /**
@@ -257,13 +257,13 @@ MainWindowComponent.prototype.acceptSelection_ = function(
   const selection = this.selectionHandler_.selection;
   if (this.dialogType_ == DialogType.FULL_PAGE) {
     this.taskController_.getFileTasks()
-        .then(function(tasks) {
+        .then(tasks => {
           tasks.executeDefault();
           if (clearSelectionAfterLaunch) {
             this.directoryModel_.clearSelection();
           }
-        }.bind(this))
-        .catch(function(error) {
+        })
+        .catch(error => {
           if (error) {
             console.error(error.stack || error);
           }

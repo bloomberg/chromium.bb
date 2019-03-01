@@ -13,14 +13,14 @@ const Command = function() {};
  * @param {!Event} event Command event.
  * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps.
  */
-Command.prototype.execute = function(event, fileManager) {};
+Command.prototype.execute = (event, fileManager) => {};
 
 /**
  * Handles the can execute event.
  * @param {!Event} event Can execute event.
  * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps.
  */
-Command.prototype.canExecute = function(event, fileManager) {};
+Command.prototype.canExecute = (event, fileManager) => {};
 
 /**
  * Utility for commands.
@@ -33,7 +33,7 @@ const CommandUtil = {};
  * @param {EventTarget} element Element which is the command event's target.
  * @return {Entry} Entry of the found node.
  */
-CommandUtil.getCommandEntry = function(element) {
+CommandUtil.getCommandEntry = element => {
   const entries = CommandUtil.getCommandEntries(element);
   return entries.length === 0 ? null : entries[0];
 };
@@ -44,7 +44,7 @@ CommandUtil.getCommandEntry = function(element) {
  * @param {EventTarget} element Element which is the command event's target.
  * @return {!Array<!Entry>} Entries of the found node.
  */
-CommandUtil.getCommandEntries = function(element) {
+CommandUtil.getCommandEntries = element => {
   if (element instanceof DirectoryTree) {
     // element is a DirectoryTree.
     return element.selectedItem ? [element.selectedItem.entry] : [];
@@ -56,7 +56,7 @@ CommandUtil.getCommandEntries = function(element) {
     // element is a normal List (eg. the file list on the right panel).
     const entries = element.selectedItems;
     // Check if it is Entry or not by checking for toURL().
-    return entries.some(function(entry) {
+    return entries.some(entry => {
       return !('toURL' in entry);
     }) ?
         [] :
@@ -74,7 +74,7 @@ CommandUtil.getCommandEntries = function(element) {
  * @param {DirectoryModel} directoryModel
  * @return {DirectoryEntry|FilesAppEntry} The extracted parent entry.
  */
-CommandUtil.getParentEntry = function(element, directoryModel) {
+CommandUtil.getParentEntry = (element, directoryModel) => {
   if (element instanceof DirectoryTree) {
     if (!element.selectedItem) {
       return null;
@@ -96,7 +96,7 @@ CommandUtil.getParentEntry = function(element, directoryModel) {
  * @param {!CommandHandlerDeps} fileManager
  * @return {VolumeInfo}
  */
-CommandUtil.getElementVolumeInfo = function(element, fileManager) {
+CommandUtil.getElementVolumeInfo = (element, fileManager) => {
   if (element instanceof DirectoryTree && element.selectedItem) {
     return CommandUtil.getElementVolumeInfo(element.selectedItem, fileManager);
   }
@@ -114,7 +114,7 @@ CommandUtil.getElementVolumeInfo = function(element, fileManager) {
  * @param {!CommandHandlerDeps} fileManager
  * @return {VolumeInfo}
  */
-CommandUtil.getCurrentVolumeInfo = function(fileManager) {
+CommandUtil.getCurrentVolumeInfo = fileManager => {
   const currentDirEntry = fileManager.directoryModel.getCurrentDirEntry();
   return currentDirEntry ? fileManager.volumeManager.getVolumeInfo(
       currentDirEntry) : null;
@@ -126,7 +126,7 @@ CommandUtil.getCurrentVolumeInfo = function(fileManager) {
  * @return {Entry} Related entry.
  * @private
  */
-CommandUtil.getEntryFromNavigationModelItem_ = function(item) {
+CommandUtil.getEntryFromNavigationModelItem_ = item => {
   switch (item.type) {
     case NavigationModelItemType.VOLUME:
       return /** @type {!NavigationModelVolumeItem} */ (
@@ -142,7 +142,7 @@ CommandUtil.getEntryFromNavigationModelItem_ = function(item) {
  * @param {!Event} event Command event to mark.
  * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
  */
-CommandUtil.canExecuteEnabledOnDriveOnly = function(event, fileManager) {
+CommandUtil.canExecuteEnabledOnDriveOnly = (event, fileManager) => {
   event.canExecute = fileManager.directoryModel.isOnDrive();
 };
 
@@ -152,8 +152,7 @@ CommandUtil.canExecuteEnabledOnDriveOnly = function(event, fileManager) {
  * @param {!Event} event Command event to mark.
  * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
  */
-CommandUtil.canExecuteVisibleOnDriveInNormalAppModeOnly = function(
-    event, fileManager) {
+CommandUtil.canExecuteVisibleOnDriveInNormalAppModeOnly = (event, fileManager) => {
   const enabled = fileManager.directoryModel.isOnDrive() &&
       !DialogType.isModal(fileManager.dialogType);
   event.canExecute = enabled;
@@ -164,7 +163,7 @@ CommandUtil.canExecuteVisibleOnDriveInNormalAppModeOnly = function(
  * Sets as the command as always enabled.
  * @param {!Event} event Command event to mark.
  */
-CommandUtil.canExecuteAlways = function(event) {
+CommandUtil.canExecuteAlways = event => {
   event.canExecute = true;
 };
 
@@ -176,25 +175,25 @@ CommandUtil.canExecuteAlways = function(event) {
  * @param {Node} node to register command handler on.
  * @param {string} commandId Command id to respond to.
  */
-CommandUtil.forceDefaultHandler = function(node, commandId) {
+CommandUtil.forceDefaultHandler = (node, commandId) => {
   const doc = node.ownerDocument;
   const command = /** @type {!cr.ui.Command} */ (
       doc.querySelector('command[id="' + commandId + '"]'));
-  node.addEventListener('keydown', function(e) {
+  node.addEventListener('keydown', e => {
     if (command.matchesEvent(e)) {
       // Prevent cr.ui.CommandManager of handling it and leave it
       // for the default handler.
       e.stopPropagation();
     }
   });
-  node.addEventListener('command', function(event) {
+  node.addEventListener('command', event => {
     if (event.command.id !== commandId) {
       return;
     }
     document.execCommand(event.command.id);
     event.cancelBubble = true;
   });
-  node.addEventListener('canExecute', function(event) {
+  node.addEventListener('canExecute', event => {
     if (event.command.id !== commandId) {
       return;
     }
@@ -208,7 +207,7 @@ CommandUtil.forceDefaultHandler = function(node, commandId) {
  * @param {number} index Volume index from 1 to 9.
  * @return {Command} Volume switch command.
  */
-CommandUtil.createVolumeSwitchCommand = function(index) {
+CommandUtil.createVolumeSwitchCommand = index => {
   return /** @type {Command} */ ({
     /**
      * @param {!Event} event Command event.
@@ -234,7 +233,7 @@ CommandUtil.createVolumeSwitchCommand = function(index) {
  * @param {FileSelection} selection Instance of FileSelection.
  * @return {?DirectoryEntry} Directory entry which is selected alone.
  */
-CommandUtil.getOnlyOneSelectedDirectory = function(selection) {
+CommandUtil.getOnlyOneSelectedDirectory = selection => {
   if (!selection) {
     return null;
   }
@@ -253,7 +252,7 @@ CommandUtil.getOnlyOneSelectedDirectory = function(selection) {
  * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
  * @return {boolean} True if the entry is a root entry.
  */
-CommandUtil.isRootEntry = function(volumeManager, entry) {
+CommandUtil.isRootEntry = (volumeManager, entry) => {
   if (!volumeManager || !entry) {
     return false;
   }
@@ -268,7 +267,7 @@ CommandUtil.isRootEntry = function(volumeManager, entry) {
  * @return {boolean} Ture if the event was triggered by the selection menu
  * button.
  */
-CommandUtil.isFromSelectionMenu = function(event) {
+CommandUtil.isFromSelectionMenu = event => {
   return event.target.id == 'selection-menu-button';
 };
 
@@ -278,7 +277,7 @@ CommandUtil.isFromSelectionMenu = function(event) {
  * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
  * @return {boolean} True if we should show the menu items for regular entries.
  */
-CommandUtil.shouldShowMenuItemsForEntry = function(volumeManager, entry) {
+CommandUtil.shouldShowMenuItemsForEntry = (volumeManager, entry) => {
   // If the entry is fake entry, hide context menu entries.
   if (util.isFakeEntry(entry)) {
     return false;
@@ -321,7 +320,7 @@ CommandUtil.shouldShowMenuItemsForEntry = function(volumeManager, entry) {
  * @param {!Array<Entry>} entries List of entries to check capabilities for.
  * @param {!string} capability Name of the capability to check for.
  */
-CommandUtil.hasCapability = function(entries, capability) {
+CommandUtil.hasCapability = (entries, capability) => {
   if (entries.length == 0) {
     return false;
   }
@@ -381,7 +380,7 @@ const CommandHandler = function(fileManager, selectionHandler) {
       'update', this.updateAvailability.bind(this));
 
   chrome.commandLinePrivate.hasSwitch(
-      'disable-zip-archiver-packer', function(disabled) {
+      'disable-zip-archiver-packer', disabled => {
         CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_ = !disabled;
       });
 };
@@ -465,7 +464,7 @@ console.assert(
  * Records the menu item as selected in UMA.
  * @param {CommandHandler.MenuCommandsForUMA} menuItem The selected menu item.
  */
-CommandHandler.recordMenuItemSelected = function(menuItem) {
+CommandHandler.recordMenuItemSelected = menuItem => {
   metrics.recordEnum(
       'MenuItemSelected', menuItem, CommandHandler.ValidMenuCommandsForUMA);
 };
@@ -545,7 +544,7 @@ CommandHandler.COMMANDS_['unmount'] = /** @type {Command} */ ({
    */
   execute: function(event, fileManager) {
     /** @param {VolumeManagerCommon.VolumeType=} opt_volumeType */
-    const errorCallback = function(opt_volumeType) {
+    const errorCallback = opt_volumeType => {
       if (opt_volumeType === VolumeManagerCommon.VolumeType.REMOVABLE) {
         fileManager.ui.alertDialog.showHtml(
             '', str('UNMOUNT_FAILED'), null, null, null);
@@ -685,7 +684,7 @@ CommandHandler.COMMANDS_['format'] = /** @type {Command} */ ({
  * Initiates new folder creation.
  * @type {Command}
  */
-CommandHandler.COMMANDS_['new-folder'] = (function() {
+CommandHandler.COMMANDS_['new-folder'] = (() => {
   /**
    * @constructor
    * @struct
@@ -788,9 +787,9 @@ CommandHandler.COMMANDS_['new-folder'] = (function() {
         defaultName + ' (' + index + ')';
 
     return new Promise(parentDirectory.getDirectory.bind(
-        parentDirectory, newName, {create: false})).then(function(newEntry) {
+        parentDirectory, newName, {create: false})).then(newEntry => {
       return this.generateNewDirectoryName_(parentDirectory, index + 1);
-    }.bind(this)).catch(function() {
+    }).catch(() => {
       return newName;
     });
   };
@@ -978,7 +977,7 @@ CommandHandler.COMMANDS_['drive-sync-settings'] = /** @type {Command} */ ({
  * Deletes selected files.
  * @type {Command}
  */
-CommandHandler.COMMANDS_['delete'] = (function() {
+CommandHandler.COMMANDS_['delete'] = (() => {
   /**
    * @constructor
    * @implements {Command}
@@ -1006,7 +1005,7 @@ CommandHandler.COMMANDS_['delete'] = (function() {
           strf('GALLERY_CONFIRM_DELETE_ONE', entries[0].name) :
           strf('GALLERY_CONFIRM_DELETE_SOME', entries.length);
 
-      fileManager.ui.deleteConfirmDialog.show(message, function() {
+      fileManager.ui.deleteConfirmDialog.show(message, () => {
         fileManager.fileOperationManager.deleteEntries(entries);
       }, null, null);
     },
@@ -1039,7 +1038,7 @@ CommandHandler.COMMANDS_['delete'] = (function() {
      * @return {boolean} True if entries contain read only entry.
      */
     containsReadOnlyEntry_: function(entries, fileManager) {
-      return entries.some(function(entry) {
+      return entries.some(entry => {
         const locationInfo = fileManager.volumeManager.getLocationInfo(entry);
         return locationInfo && locationInfo.isReadOnly;
       });
@@ -1125,7 +1124,7 @@ CommandHandler.COMMANDS_['paste-into-folder'] = /** @type {Command} */ ({
     // This handler tweaks the Event object for 'paste' event so that
     // the FileTransferController can distinguish this 'paste-into-folder'
     // command and know the destination directory.
-    const handler = function(inEvent) {
+    const handler = inEvent => {
       inEvent.destDirectory = entries[0];
     };
     fileManager.document.addEventListener('paste', handler, true);
@@ -1416,14 +1415,14 @@ CommandHandler.COMMANDS_['open-with'] = /** @type {Command} */ ({
    */
   execute: function(event, fileManager) {
     fileManager.taskController.getFileTasks()
-        .then(function(tasks) {
+        .then(tasks => {
           tasks.showTaskPicker(
               fileManager.ui.defaultTaskPicker, str('OPEN_WITH_BUTTON_LABEL'),
-              '', function(task) {
+              '', task => {
                 tasks.execute(task);
               }, FileTasks.TaskPickerType.OpenWith);
         })
-        .catch(function(error) {
+        .catch(error => {
           if (error) {
             console.error(error.stack || error);
           }
@@ -1451,14 +1450,14 @@ CommandHandler.COMMANDS_['more-actions'] = /** @type {Command} */ ({
    */
   execute: function(event, fileManager) {
     fileManager.taskController.getFileTasks()
-        .then(function(tasks) {
+        .then(tasks => {
           tasks.showTaskPicker(
               fileManager.ui.defaultTaskPicker,
-              str('MORE_ACTIONS_BUTTON_LABEL'), '', function(task) {
+              str('MORE_ACTIONS_BUTTON_LABEL'), '', task => {
                 tasks.execute(task);
               }, FileTasks.TaskPickerType.MoreActions);
         })
-        .catch(function(error) {
+        .catch(error => {
           if (error) {
             console.error(error.stack || error);
           }
@@ -1645,7 +1644,7 @@ CommandHandler.COMMANDS_['zip-selection'] = /** @type {Command} */ ({
 
     if (CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_) {
       fileManager.taskController.getFileTasks()
-          .then(function(tasks) {
+          .then(tasks => {
             if (fileManager.directoryModel.isOnDrive() ||
                 fileManager.directoryModel.isOnMTP()) {
               tasks.execute(/** @type {chrome.fileManagerPrivate.FileTask} */ (
@@ -1655,7 +1654,7 @@ CommandHandler.COMMANDS_['zip-selection'] = /** @type {Command} */ ({
                   {taskId: FileTasks.ZIP_ARCHIVER_ZIP_TASK_ID}));
             }
           })
-          .catch(function(error) {
+          .catch(error => {
             if (error) {
               console.error(error.stack || error);
             }
@@ -2138,7 +2137,7 @@ CommandHandler.COMMANDS_['install-new-extension'] = /** @type {Command} */ ({
    */
   execute: function(event, fileManager) {
     fileManager.ui.suggestAppsDialog.showProviders(
-        function(result, itemId) {
+        (result, itemId) => {
           // If a new provider is installed, then launch it so the configuration
           // dialog is shown (if it's available).
           if (result === SuggestAppsDialog.Result.SUCCESS) {
@@ -2276,26 +2275,26 @@ CommandHandler.COMMANDS_['set-wallpaper'] = /** @type {Command} */ ({
    */
   execute: function(event, fileManager) {
     const entry = fileManager.getSelection().entries[0];
-    new Promise(function(resolve, reject) {
+    new Promise((resolve, reject) => {
       entry.file(resolve, reject);
-    }).then(function(blob) {
+    }).then(blob => {
       const fileReader = new FileReader();
-      return new Promise(function(resolve, reject) {
-        fileReader.onload = function() {
+      return new Promise((resolve, reject) => {
+        fileReader.onload = () => {
           resolve(fileReader.result);
         };
-        fileReader.onerror = function() {
+        fileReader.onerror = () => {
           reject(fileReader.error);
         };
         fileReader.readAsArrayBuffer(blob);
       });
-    }).then(function(/** @type {!ArrayBuffer} */ arrayBuffer) {
-      return new Promise(function(resolve, reject) {
+    }).then((/** @type {!ArrayBuffer} */ arrayBuffer) => {
+      return new Promise((resolve, reject) => {
         chrome.wallpaper.setWallpaper({
             data: arrayBuffer,
             layout: chrome.wallpaper.WallpaperLayout.CENTER_CROPPED,
             filename: 'wallpaper'
-          }, function() {
+          }, () => {
             if (chrome.runtime.lastError) {
               reject(chrome.runtime.lastError);
             }else{
@@ -2303,7 +2302,7 @@ CommandHandler.COMMANDS_['set-wallpaper'] = /** @type {Command} */ ({
             }
           });
       });
-    }).catch(function() {
+    }).catch(() => {
       fileManager.ui.alertDialog.showHtml(
           '', str('ERROR_INVALID_WALLPAPER'), null, null, null);
     });

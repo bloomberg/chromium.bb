@@ -175,9 +175,9 @@ function testExecuteEntryTask(callback) {
   taskController.executeEntryTask(testEntry);
 
   reportPromise(
-      new Promise(function(resolve) {
+      new Promise(resolve => {
         mockChrome.fileManagerPrivate.executeTask = resolve;
-      }).then(function(taskId) {
+      }).then(taskId => {
         assertEquals('handler-extension-id|file|play', taskId);
       }),
       callback);
@@ -198,7 +198,7 @@ function testGetFileTasksShouldNotBeCalledMultipleTimes(callback) {
   assert(mockChrome.fileManagerPrivate.getFileTaskCalledCount_ === 0);
 
   taskController.getFileTasks()
-      .then(function(tasks) {
+      .then(tasks => {
         assert(mockChrome.fileManagerPrivate.getFileTaskCalledCount_ === 1);
         assert(util.isSameEntries(
             tasks.entries, selectionHandler.selection.entries));
@@ -207,13 +207,13 @@ function testGetFileTasksShouldNotBeCalledMultipleTimes(callback) {
             [new MockFileEntry(fileSystem, '/test.png')], ['image/png']);
         return taskController.getFileTasks();
       })
-      .then(function(tasks) {
+      .then(tasks => {
         assert(mockChrome.fileManagerPrivate.getFileTaskCalledCount_ === 1);
         assert(util.isSameEntries(
             tasks.entries, selectionHandler.selection.entries));
         callback();
       })
-      .catch(function(error) {
+      .catch(error => {
         assertNotReached(error.toString());
         callback();
       });
@@ -233,19 +233,19 @@ function testGetFileTasksShouldNotReturnObsoletePromise(callback) {
   const taskController = createTaskController(selectionHandler);
 
   taskController.getFileTasks()
-      .then(function(tasks) {
+      .then(tasks => {
         assert(util.isSameEntries(
             tasks.entries, selectionHandler.selection.entries));
         selectionHandler.updateSelection(
             [new MockFileEntry(fileSystem, '/testtest.jpg')], ['image/jpeg']);
         return taskController.getFileTasks();
       })
-      .then(function(tasks) {
+      .then(tasks => {
         assert(util.isSameEntries(
             tasks.entries, selectionHandler.selection.entries));
         callback();
       })
-      .catch(function(error) {
+      .catch(error => {
         assertNotReached(error.toString());
         callback();
       });
@@ -265,28 +265,28 @@ function testGetFileTasksShouldNotCacheRejectedPromise(callback) {
 
   // Setup the selection handler computeAdditionalCallback to change the file
   // selection during the getFileTasks() call.
-  selectionHandler.computeAdditionalCallback = function() {
+  selectionHandler.computeAdditionalCallback = () => {
     selectionHandler.updateSelection(
         [new MockFileEntry(fileSystem, '/test.png')], ['image/png']);
   };
 
   taskController.getFileTasks().then(
-      function(tasks) {
+      tasks => {
         assertNotReached('Fail: getFileTasks promise should be rejected');
         callback();
       },
-      function() {
+      () => {
         // Clears the selection handler computeAdditionalCallback so that the
         // promise won't be rejected during the getFileTasks() call.
-        selectionHandler.computeAdditionalCallback = function() {};
+        selectionHandler.computeAdditionalCallback = () => {};
 
         taskController.getFileTasks().then(
-            function(tasks) {
+            tasks => {
               assert(util.isSameEntries(
                   tasks.entries, selectionHandler.selection.entries));
               callback();
             },
-            function() {
+            () => {
               assertNotReached('Fail: getFileTasks promise was rejected');
               callback();
             });

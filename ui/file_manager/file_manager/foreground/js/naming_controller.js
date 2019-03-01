@@ -80,11 +80,16 @@ NamingController.prototype.validateFileName = function(
     parentEntry, name, onDone) {
   const fileNameErrorPromise = util.validateFileName(
       parentEntry, name, !this.fileFilter_.isHiddenFilesVisible());
-  fileNameErrorPromise.then(onDone.bind(null, true), function(message) {
-    this.alertDialog_.show(message, onDone.bind(null, false));
-  }.bind(this)).catch(function(error) {
-    console.error(error.stack || error);
-  });
+  fileNameErrorPromise
+      .then(
+          onDone.bind(null, true),
+          message => {
+            this.alertDialog_.show(
+                /** @type {string} */ (message), onDone.bind(null, false));
+          })
+      .catch(error => {
+        console.error(error.stack || error);
+      });
 };
 
 /**
@@ -98,7 +103,7 @@ NamingController.prototype.validateFileNameForSaving = function(filename) {
   const fileUrl = currentDirUrl + encodeURIComponent(filename);
 
   return new Promise(this.validateFileName.bind(this, directory, filename))
-      .then(function(isValid) {
+      .then(isValid => {
         if (!isValid) {
           return Promise.reject('Invalid filename.');
         }
@@ -112,17 +117,17 @@ NamingController.prototype.validateFileNameForSaving = function(filename) {
             directory.getFile.bind(directory, filename, {create: false}));
       })
       .then(
-          function() {
+          () => {
             // An existing file is found. Show confirmation dialog to
             // overwrite it. If the user select "OK" on the dialog, save it.
-            return new Promise(function(fulfill, reject) {
+            return new Promise((fulfill, reject) => {
               this.confirmDialog_.show(
                   strf('CONFIRM_OVERWRITE_FILE', filename),
                   fulfill.bind(null, fileUrl), reject.bind(null, 'Cancelled'),
-                  function() {});
-            }.bind(this));
-          }.bind(this),
-          function(error) {
+                  () => {});
+            });
+          },
+          error => {
             if (error.name == util.FileError.NOT_FOUND_ERR) {
               // The file does not exist, so it should be ok to create a
               // new file.
@@ -140,7 +145,7 @@ NamingController.prototype.validateFileNameForSaving = function(filename) {
             // Unexpected error.
             console.error('File save failed: ' + error.code);
             return Promise.reject(error);
-          }.bind(this));
+          });
 };
 
 /**
@@ -274,7 +279,7 @@ NamingController.prototype.commitRename_ = function() {
   const nameNode = renamedItemElement.querySelector('.filename-label');
 
   input.validation_ = true;
-  const validationDone = function(valid) {
+  const validationDone = valid => {
     input.validation_ = false;
 
     if (!valid) {
@@ -300,8 +305,8 @@ NamingController.prototype.commitRename_ = function() {
 
     util.rename(
         entry, newName,
-        function(newEntry) {
-          this.directoryModel_.onRenameEntry(entry, assert(newEntry), function() {
+        newEntry => {
+          this.directoryModel_.onRenameEntry(entry, assert(newEntry), () => {
             // Select new entry.
             this.listContainer_.currentList.selectionModel.selectedIndex =
                 this.directoryModel_.getFileList().indexOf(newEntry);
@@ -313,9 +318,9 @@ NamingController.prototype.commitRename_ = function() {
 
             // Focus may go out of the list. Back it to the list.
             this.listContainer_.currentList.focus();
-          }.bind(this));
-        }.bind(this),
-        function(error) {
+          });
+        },
+        error => {
           // Write back to the old name.
           nameNode.textContent = entry.name;
           renamedItemElement.removeAttribute('renaming');
@@ -324,8 +329,8 @@ NamingController.prototype.commitRename_ = function() {
           // Show error dialog.
           const message = util.getRenameErrorMessage(error, entry, newName);
           this.alertDialog_.show(message);
-        }.bind(this));
-  }.bind(this);
+        });
+  };
 
   // TODO(mtomasz): this.getCurrentDirectoryEntry() might not return the actual
   // parent if the directory content is a search result. Fix it to do proper

@@ -126,14 +126,14 @@ function testSplice() {
   const fileListModel = makeSimpleFileListModel(['d', 'a', 'x', 'n']);
   fileListModel.sort('name', 'asc');
 
-  fileListModel.addEventListener('splice', function(event) {
+  fileListModel.addEventListener('splice', event => {
     assertEntryArrayEquals(event.added, ['p', 'b']);
     assertEntryArrayEquals(event.removed, ['n']);
     // The first inserted item, 'p', should be at index:3 after splice.
     assertEquals(event.index, 3);
   });
 
-  fileListModel.addEventListener('permuted', function(event){
+  fileListModel.addEventListener('permuted', event => {
     assertArrayEquals(event.permutation, [0, 2, -1, 4]);
     assertEquals(event.newLength, 5);
   });
@@ -147,14 +147,14 @@ function testSplice() {
 function testSpliceWithoutSortStatus() {
   const fileListModel = makeSimpleFileListModel(['d', 'a', 'x', 'n']);
 
-  fileListModel.addEventListener('splice', function(event) {
+  fileListModel.addEventListener('splice', event => {
     assertEntryArrayEquals(event.added, ['p', 'b']);
     assertEntryArrayEquals(event.removed, ['x']);
     // The first inserted item, 'p', should be at index:2 after splice.
     assertEquals(event.index, 2);
   });
 
-  fileListModel.addEventListener('permuted', function(event){
+  fileListModel.addEventListener('permuted', event => {
     assertArrayEquals(event.permutation, [0, 1, -1, 4]);
     assertEquals(event.newLength, 5);
   });
@@ -172,7 +172,7 @@ function testSpliceWithoutAddingNewItems() {
   const fileListModel = makeSimpleFileListModel(['d', 'a', 'x', 'n']);
   fileListModel.sort('name', 'asc');
 
-  fileListModel.addEventListener('splice', function(event) {
+  fileListModel.addEventListener('splice', event => {
     assertEntryArrayEquals(event.added, []);
     assertEntryArrayEquals(event.removed, ['n']);
     // The first item after insertion/deletion point is 'x', which should be at
@@ -180,7 +180,7 @@ function testSpliceWithoutAddingNewItems() {
     assertEquals(event.index, 2);
   });
 
-  fileListModel.addEventListener('permuted', function(event){
+  fileListModel.addEventListener('permuted', event => {
     assertArrayEquals(event.permutation, [0, 1, -1, 2]);
     assertEquals(event.newLength, 3);
   });
@@ -193,13 +193,13 @@ function testSpliceWithoutDeletingItems() {
   const fileListModel = makeSimpleFileListModel(['d', 'a', 'x', 'n']);
   fileListModel.sort('name', 'asc');
 
-  fileListModel.addEventListener('splice', function(event) {
+  fileListModel.addEventListener('splice', event => {
     assertEntryArrayEquals(event.added, ['p', 'b']);
     assertEntryArrayEquals(event.removed, []);
     assertEquals(event.index, 4);
   });
 
-  fileListModel.addEventListener('permuted', function(event){
+  fileListModel.addEventListener('permuted', event => {
     assertArrayEquals(event.permutation, [0, 2, 3, 5]);
     assertEquals(event.newLength, 6);
   });

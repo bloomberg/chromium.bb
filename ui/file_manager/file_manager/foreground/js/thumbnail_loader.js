@@ -196,11 +196,11 @@ ThumbnailLoader.prototype.load = function(
   this.canvasUpToDate_ = false;
   this.image_ = new Image();
   this.image_.setAttribute('alt', this.entry_.name);
-  this.image_.onload = function() {
+  this.image_.onload = () => {
     this.attachImage_(box, fillMode, autoFillThreshold, boxWidth, boxHeight);
     onSuccess(this.image_);
-  }.bind(this);
-  this.image_.onerror = function() {
+  };
+  this.image_.onerror = () => {
     if (this.fallbackUrl_) {
       this.thumbnailUrl_ = this.fallbackUrl_;
       this.fallbackUrl_ = null;
@@ -211,7 +211,7 @@ ThumbnailLoader.prototype.load = function(
     } else {
       box.setAttribute('generic-thumbnail', this.mediaType_);
     }
-  }.bind(this);
+  };
 
   if (this.image_.src) {
     console.warn('Thumbnail already loaded: ' + this.thumbnailUrl_);
@@ -234,10 +234,10 @@ ThumbnailLoader.prototype.load = function(
         timestamp: modificationTime,
         orientation: this.transform_
       }),
-      this.image_, function() {},
-      function() {
+      this.image_, () => {},
+      () => {
         this.image_.onerror(new Event('load-error'));
-      }.bind(this));
+      });
 };
 
 /**
@@ -258,7 +258,7 @@ ThumbnailLoader.prototype.loadAsDataUrl = function(fillMode) {
   assert(fillMode === ThumbnailLoader.FillMode.FIT ||
       fillMode === ThumbnailLoader.FillMode.OVER_FILL);
 
-  return new Promise(function(resolve, reject) {
+  return new Promise((resolve, reject) => {
     // Load by using ImageLoaderClient.
     const modificationTime = this.metadata_ &&
                            this.metadata_.filesystem &&
@@ -286,14 +286,14 @@ ThumbnailLoader.prototype.loadAsDataUrl = function(fillMode) {
       request.crop = true;
     }
 
-    ImageLoaderClient.getInstance().load(request, function(result) {
+    ImageLoaderClient.getInstance().load(request, result => {
       if (result.status === LoadImageResponseStatus.SUCCESS) {
         resolve(result);
       } else {
         reject(result);
       }
     });
-  }.bind(this));
+  });
 };
 
 /**
@@ -301,8 +301,8 @@ ThumbnailLoader.prototype.loadAsDataUrl = function(fillMode) {
  */
 ThumbnailLoader.prototype.cancel = function() {
   if (this.taskId_) {
-    this.image_.onload = function() {};
-    this.image_.onerror = function() {};
+    this.image_.onload = () => {};
+    this.image_.onerror = () => {};
     ImageLoaderClient.getInstance().cancel(this.taskId_);
     this.taskId_ = null;
   }
@@ -362,10 +362,10 @@ ThumbnailLoader.prototype.loadDetachedImage = function(callback) {
         timestamp: modificationTime,
         orientation: this.transform_
       }),
-      this.image_, function() {},
-      function() {
+      this.image_, () => {},
+      () => {
         this.image_.onerror(new Event('load-error'));
-      }.bind(this));
+      });
 };
 
 /**
@@ -454,8 +454,7 @@ ThumbnailLoader.prototype.getImage = function() {
  * @param {number} boxHeight Container box's height.
  * @private
  */
-ThumbnailLoader.centerImage_ = function(
-    box, img, fillMode, autoFillThreshold, boxWidth, boxHeight) {
+ThumbnailLoader.centerImage_ = (box, img, fillMode, autoFillThreshold, boxWidth, boxHeight) => {
   const imageWidth = img.width;
   const imageHeight = img.height;
 
