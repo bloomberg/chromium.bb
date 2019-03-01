@@ -625,9 +625,7 @@ TEST_F(PreviewsDeciderImplTest, TestDisallowOfflineOnReload) {
 TEST_F(PreviewsDeciderImplTest, TestDisallowLoFiOnReloadWithExperiment) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {features::kPreviews, features::kClientLoFi,
-       features::kPreviewsDisallowedOnReloads},
-      {});
+      {features::kPreviews, features::kClientLoFi}, {});
   InitializeUIService();
 
   ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
@@ -643,28 +641,6 @@ TEST_F(PreviewsDeciderImplTest, TestDisallowLoFiOnReloadWithExperiment) {
   histogram_tester.ExpectUniqueSample(
       "Previews.EligibilityReason.LoFi",
       static_cast<int>(PreviewsEligibilityReason::RELOAD_DISALLOWED), 1);
-}
-
-TEST_F(PreviewsDeciderImplTest, TestAllowLoFiOnReloadWithoutExperiment) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {features::kPreviews, features::kClientLoFi},
-      {features::kPreviewsDisallowedOnReloads});
-  InitializeUIService();
-
-  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
-
-  PreviewsUserData user_data(kDefaultPageId);
-
-  base::HistogramTester histogram_tester;
-  previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
-      &user_data, GURL("https://www.google.com"), true, PreviewsType::LOFI);
-  histogram_tester.ExpectBucketCount(
-      "Previews.EligibilityReason",
-      static_cast<int>(PreviewsEligibilityReason::RELOAD_DISALLOWED), 0);
-  histogram_tester.ExpectBucketCount(
-      "Previews.EligibilityReason.LoFi",
-      static_cast<int>(PreviewsEligibilityReason::RELOAD_DISALLOWED), 0);
 }
 
 TEST_F(PreviewsDeciderImplTest, TestAllowOffline) {
