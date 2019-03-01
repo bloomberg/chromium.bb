@@ -225,6 +225,7 @@ public class ToolbarManager
 
     private boolean mToolbarInflationComplete;
     private boolean mInitializedWithNative;
+    private Runnable mOnInitializedRunnable;
 
     private boolean mShouldUpdateToolbarPrimaryColor = true;
     private int mCurrentThemeColor;
@@ -986,6 +987,11 @@ public class ToolbarManager
 
             onNativeLibraryReady();
             mInitializedWithNative = true;
+
+            if (mOnInitializedRunnable != null) {
+                mOnInitializedRunnable.run();
+                mOnInitializedRunnable = null;
+            }
         });
     }
 
@@ -1555,6 +1561,28 @@ public class ToolbarManager
         mLocationBar.setUrlBarFocus(focused);
         if (wasFocused && focused) {
             mLocationBar.selectAll();
+        }
+    }
+
+    /**
+     * See {@link #setUrlBarFocus}, but if native is not loaded it will queue the request instead
+     * of dropping it.
+     */
+    public void setUrlBarFocusOnceNativeInitialized(boolean focused) {
+        if (isInitialized()) {
+            setUrlBarFocus(focused);
+            return;
+        }
+
+        if (focused) {
+            // Remember requests to focus the Url bar and replay them once native has been
+            // initialized. This is important for the Launch to Incognito Tab flow (see
+            // IncognitoTabLauncher.
+            mOnInitializedRunnable = () -> {
+                setUrlBarFocus(focused);
+            };
+        } else {
+            mOnInitializedRunnable = null;
         }
     }
 

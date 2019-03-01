@@ -29,7 +29,6 @@ import org.chromium.chrome.browser.util.IntentUtils;
  *
  * No URL or search term can be entered in, the Incognito tab is started with a blank (but focused)
  * omnibox. This component will be disabled if incognito mode is disabled.
- * TODO(peconn): Focus the omnibox when the Incognito tab is opened.
  */
 public class IncognitoTabLauncher extends Activity {
     /** The Intent action used to launch the IncognitoTabLauncher. */

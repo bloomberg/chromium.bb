@@ -1295,6 +1295,7 @@ public class ChromeTabbedActivity
 
             boolean fromLauncherShortcut = IntentUtils.safeGetBooleanExtra(
                     intent, IntentHandler.EXTRA_INVOKED_FROM_SHORTCUT, false);
+            boolean focus = false;
 
             TabModel tabModel = getCurrentTabModel();
             switch (tabOpenType) {
@@ -1419,8 +1420,17 @@ public class ChromeTabbedActivity
                             recordLauncherShortcutAction(true);
                             reportNewTabShortcutUsed(true);
                         } else if (IncognitoTabLauncher.didCreateIntent(intent)) {
-                            getTabCreator(true).launchUrl(UrlConstants.NTP_URL,
+                            Tab tab = getTabCreator(true).launchUrl(UrlConstants.NTP_URL,
                                     TabLaunchType.FROM_LAUNCH_NEW_INCOGNITO_TAB);
+                            // Since the Tab is created in the foreground, its View will gain focus,
+                            // and since the Tab and the URL bar are not yet in the same View
+                            // hierarchy, setting the URL bar's focus here won't clear the Tab's
+                            // focus.
+                            // When the Tab is added to the hierarchy, we want the URL bar to retain
+                            // focus, so we clear the Tab's focus here.
+                            tab.getView().clearFocus();
+                            focus = true;
+
                             IncognitoTabLauncher.recordUse();
                         } else {
                             // Used by the Account management screen to open a new incognito tab.
@@ -1440,7 +1450,7 @@ public class ChromeTabbedActivity
                     assert false : "Unknown TabOpenType: " + tabOpenType;
                     break;
             }
-            getToolbarManager().setUrlBarFocus(false);
+            getToolbarManager().setUrlBarFocusOnceNativeInitialized(focus);
         }
 
         @Override
