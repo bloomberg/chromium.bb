@@ -51,6 +51,7 @@
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
+#include "storage/browser/quota/padding_key.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
@@ -1346,9 +1347,9 @@ TEST_F(CacheStorageManagerTest, PersistedCacheKeyUsed) {
   EXPECT_TRUE(FlushCacheStorageIndex(origin1_));
   DestroyStorageManager();
 
-  // GenerateNewKeyForTest isn't thread safe so
+  // ResetPaddingKeyForTesting isn't thread safe so
   base::RunLoop().RunUntilIdle();
-  CacheStorage::GenerateNewKeyForTesting();
+  storage::ResetPaddingKeyForTesting();
 
   // Create a new CacheStorageManager that hasn't yet loaded the origin.
   CreateStorageManager();
