@@ -284,11 +284,6 @@ bool StyleSheetContents::WrapperDeleteRule(unsigned index) {
 
   if (index < import_rules_.size()) {
     import_rules_[index]->ClearParentStyleSheet();
-    // TODO(tonikitoo): If |import_rules_| members are of type
-    // blink::StyleRuleImport, the if-check blink::StyleRuleBase::IsFontFaceRule
-    // is never going to resolve to true. Get rid of it altogether?
-    if (import_rules_[index]->IsFontFaceRule())
-      NotifyRemoveFontFaceRule(ToStyleRuleFontFace(import_rules_[index].Get()));
     import_rules_.EraseAt(index);
     return true;
   }
