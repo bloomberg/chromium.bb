@@ -35,7 +35,8 @@ CloudPolicyCore::CloudPolicyCore(
       settings_entity_id_(settings_entity_id),
       store_(store),
       task_runner_(task_runner),
-      network_connection_tracker_getter_(network_connection_tracker_getter) {}
+      network_connection_tracker_getter_(
+          std::move(network_connection_tracker_getter)) {}
 
 CloudPolicyCore::~CloudPolicyCore() {}
 

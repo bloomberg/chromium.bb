@@ -33,7 +33,7 @@ MachineLevelUserCloudPolicyManager::MachineLevelUserCloudPolicyManager(
                          std::string(),
                          store.get(),
                          task_runner,
-                         network_connection_tracker_getter),
+                         std::move(network_connection_tracker_getter)),
       store_(std::move(store)),
       external_data_manager_(std::move(external_data_manager)),
       policy_dir_(policy_dir) {}
@@ -66,6 +66,8 @@ bool MachineLevelUserCloudPolicyManager::IsClientRegistered() {
 
 void MachineLevelUserCloudPolicyManager::Init(SchemaRegistry* registry) {
   DVLOG(1) << "Machine level cloud policy manager initialized";
+  // Call to grand-parent's Init() instead of parent's is intentional.
+  // NOLINTNEXTLINE(bugprone-parent-virtual-call)
   ConfigurationPolicyProvider::Init(registry);
 
   store()->AddObserver(this);
