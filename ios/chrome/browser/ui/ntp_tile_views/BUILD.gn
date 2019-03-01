@@ -19,6 +19,7 @@ source_set("ntp_tile_views") {
     "resources:ntp_most_visited_tile",
     "resources:ntp_readinglist_icon",
     "resources:ntp_recent_icon",
+    "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/favicon",
     "//ios/chrome/common/ui_util",
     "//ios/third_party/material_components_ios",

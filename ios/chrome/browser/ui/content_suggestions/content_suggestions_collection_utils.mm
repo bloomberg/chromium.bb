@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_cell.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
+#import "ios/chrome/browser/ui/ntp_tile_views/ntp_tile_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/dynamic_type_util.h"
@@ -64,15 +65,12 @@ const CGFloat kNonGoogleSearchDoodleHeight = 60;
 // Height for the header view on tablet when Google is not the default search
 // engine.
 const CGFloat kNonGoogleSearchHeaderHeightIPad = 10;
-
 }
 
 namespace content_suggestions {
 
 const int kSearchFieldBackgroundColor = 0xF1F3F4;
 const CGFloat kHintTextScale = 0.15;
-
-const NSUInteger kMostVisitedItemsPerLine = 4;
 
 CGFloat horizontalSpacingBetweenTiles() {
   return (!IsCompactWidth() && !IsCompactHeight())
@@ -86,7 +84,7 @@ CGFloat verticalSpacingBetweenTiles() {
 
 CGFloat centeredTilesMarginForWidth(CGFloat width) {
   CGFloat horizontalSpace = horizontalSpacingBetweenTiles();
-  NSUInteger columns = kMostVisitedItemsPerLine;
+  NSUInteger columns = NumberOfTilesPerRow();
   CGFloat whitespace =
       width -
       (columns * [ContentSuggestionsMostVisitedCell defaultSize].width) -

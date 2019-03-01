@@ -73,7 +73,7 @@ const NSInteger kCollectionShortcutSection = 1;
   [super viewDidAppear:animated];
   // Calculate insets to center the items in the view.
   CGFloat widthInsets = (self.view.bounds.size.width -
-                         kMostVisitedCellSize.width * kNumberOfItemsPerRow -
+                         MostVisitedCellSize().width * NumberOfTilesPerRow() -
                          kItemSpacing * (kNumberOfItemsPerRow - 1)) /
                         2;
   self.layout.sectionInset =
@@ -109,7 +109,7 @@ const NSInteger kCollectionShortcutSection = 1;
 
   _layout = [[UICollectionViewFlowLayout alloc] init];
   _layout.minimumLineSpacing = kLineSpacing;
-  _layout.itemSize = kMostVisitedCellSize;
+  _layout.itemSize = MostVisitedCellSize();
   return _layout;
 }
 

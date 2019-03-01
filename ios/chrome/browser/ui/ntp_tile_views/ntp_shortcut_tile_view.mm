@@ -70,8 +70,8 @@ const CGFloat kIconSize = 56;
       [_countContainer.heightAnchor
           constraintEqualToAnchor:_countContainer.widthAnchor],
       [_countContainer.topAnchor constraintEqualToAnchor:self.topAnchor],
-      [_countContainer.trailingAnchor
-          constraintEqualToAnchor:self.trailingAnchor],
+      [_countContainer.centerXAnchor
+          constraintEqualToAnchor:self.imageContainerView.trailingAnchor],
       [_countLabel.widthAnchor constraintEqualToConstant:kCountWidth],
       [_countLabel.heightAnchor
           constraintEqualToAnchor:_countLabel.widthAnchor],
