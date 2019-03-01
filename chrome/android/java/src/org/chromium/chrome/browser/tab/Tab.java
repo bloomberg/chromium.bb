@@ -181,14 +181,8 @@ public class Tab
      */
     private int mRootId;
 
-    /**
-     * Whether the tab should be grouped with its parent tab.
-     */
-    private boolean mGroupedWithParent = true;
-
     private boolean mIsClosing;
     private boolean mIsShowingErrorPage;
-    private boolean mIsShowingTabModalDialog;
 
     private Bitmap mFavicon;
     private int mFaviconWidth;
@@ -600,13 +594,6 @@ public class Tab
      */
     public boolean isShowingInterstitialPage() {
         return getWebContents() != null && getWebContents().isShowingInterstitialPage();
-    }
-
-    /**
-     * @return Whether a tab modal dialog is showing.
-     */
-    public boolean isShowingTabModalDialog() {
-        return mIsShowingTabModalDialog;
     }
 
     /**
@@ -1836,23 +1823,6 @@ public class Tab
         return mParentId;
     }
 
-    /**
-     * @return Whether the tab should be grouped with its parent tab (true by default).
-     */
-    public boolean isGroupedWithParent() {
-        return mGroupedWithParent;
-    }
-
-    /**
-     * Sets whether the tab should be grouped with its parent tab.
-     *
-     * @param groupedWithParent The new value.
-     * @see #isGroupedWithParent
-     */
-    public void setGroupedWithParent(boolean groupedWithParent) {
-        mGroupedWithParent = groupedWithParent;
-    }
-
     private void destroyNativePageInternal(NativePage nativePage) {
         if (nativePage == null) return;
         assert nativePage != mNativePage : "Attempting to destroy active page.";
@@ -2604,14 +2574,6 @@ public class Tab
     public void enableEmbeddedMediaExperience(boolean enabled) {
         if (mNativeTabAndroid == 0) return;
         nativeEnableEmbeddedMediaExperience(mNativeTabAndroid, enabled);
-    }
-
-    /**
-     * Handle browser controls when a tab modal dialog is shown.
-     * @param isShowing Whether a tab modal dialog is showing.
-     */
-    public void onTabModalDialogStateChanged(boolean isShowing) {
-        mIsShowingTabModalDialog = isShowing;
     }
 
     /**

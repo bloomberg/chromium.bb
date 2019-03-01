@@ -22,6 +22,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabAttributeKeys;
+import org.chromium.chrome.browser.tab.TabAttributes;
 import org.chromium.chrome.browser.tab.TabBrowserControlsOffsetHelper;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
@@ -332,8 +334,12 @@ public class TabModalPresenter
         }
     }
 
+    public static boolean isDialogShowing(Tab tab) {
+        return TabAttributes.from(tab).get(TabAttributeKeys.MODAL_DIALOG_SHOWING, false);
+    }
+
     private void onTabModalDialogStateChanged(boolean isShowing) {
-        mActiveTab.onTabModalDialogStateChanged(isShowing);
+        TabAttributes.from(mActiveTab).set(TabAttributeKeys.MODAL_DIALOG_SHOWING, isShowing);
 
         // Also need to update browser control state after dismissal to refresh the constraints.
         TabBrowserControlsOffsetHelper offsetHelper = getControlsOffsetHelper();

@@ -10,6 +10,7 @@ import android.os.Message;
 
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.modaldialog.TabModalPresenter;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
@@ -152,7 +153,7 @@ public class TabStateBrowserControlsVisibilityDelegate
         enableHidingBrowserControls &= (mTab.getFullscreenManager() != null);
         enableHidingBrowserControls &= DeviceClassManager.enableFullscreen();
         enableHidingBrowserControls &= !mIsFullscreenWaitingForLoad;
-        enableHidingBrowserControls &= !mTab.isShowingTabModalDialog();
+        enableHidingBrowserControls &= !TabModalPresenter.isDialogShowing(mTab);
 
         return enableHidingBrowserControls;
     }
