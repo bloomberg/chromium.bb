@@ -53,7 +53,7 @@ void PaintTimingDetector::NotifyBackgroundImagePaint(
   if (!ImagePaintTimingDetector::HasBackgroundImage(*object))
     return;
   LocalFrameView* frame_view = object->GetFrameView();
-  if (!frame_view || !frame_view->GetFrame().IsMainFrame())
+  if (!frame_view)
     return;
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
   detector.GetImagePaintTimingDetector().RecordImage(
@@ -77,7 +77,7 @@ void PaintTimingDetector::NotifyImagePaint(
     const LayoutObject& object,
     const PropertyTreeState& current_paint_chunk_properties) {
   LocalFrameView* frame_view = object.GetFrameView();
-  if (!frame_view || !frame_view->GetFrame().IsMainFrame())
+  if (!frame_view)
     return;
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
   detector.GetImagePaintTimingDetector().RecordImage(
@@ -101,7 +101,7 @@ void PaintTimingDetector::NotifyTextPaint(
     const LayoutObject& object,
     const PropertyTreeState& current_paint_chunk_properties) {
   LocalFrameView* frame_view = object.GetFrameView();
-  if (!frame_view || !frame_view->GetFrame().IsMainFrame())
+  if (!frame_view)
     return;
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
   detector.GetTextPaintTimingDetector().RecordText(
@@ -169,16 +169,18 @@ uint64_t PaintTimingDetector::CalculateVisualSize(
   GeometryMapper::LocalToAncestorVisualRect(
       current_paint_chunk_properties, PropertyTreeState::Root(), visual_rect);
   FloatRect& visual_rect_float = visual_rect.Rect();
-
-  // A visual rect means the part of the rect that's visible within
-  // the viewport. We define the size of it as visual size.
-  ScrollableArea* scrollable_area = frame_view_->GetScrollableArea();
-  DCHECK(scrollable_area);
-  IntRect viewport = scrollable_area->VisibleContentRect();
-  // Use saturated rect to avoid integer-overflow.
-
-  visual_rect_float.Intersect(SaturatedRect(viewport));
-  return visual_rect_float.Size().Area();
+  if (frame_view_->GetFrame().LocalFrameRoot().IsMainFrame())
+    return visual_rect_float.Size().Area();
+  // OOPIF. The final rect lives in the iframe's root frame space. We need to
+  // project it to the top frame space.
+  LayoutRect layout_visual_rect(visual_rect_float);
+  frame_view_->GetFrame()
+      .LocalFrameRoot()
+      .View()
+      ->MapToVisualRectInTopFrameSpace(layout_visual_rect);
+  return (layout_visual_rect.Size().Width() *
+          layout_visual_rect.Size().Height())
+      .ToUnsigned();
 }
 
 void PaintTimingDetector::Dispose() {

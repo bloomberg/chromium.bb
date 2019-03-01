@@ -2712,10 +2712,9 @@ void LocalFrameView::PaintTree() {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kPaintClean);
     if (auto* layout_view = frame_view.GetLayoutView())
       layout_view->Layer()->ClearNeedsRepaintRecursively();
+    if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled())
+      frame_view.GetPaintTimingDetector().NotifyPaintFinished();
   });
-
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled())
-    GetPaintTimingDetector().NotifyPaintFinished();
 
   PaintController::ReportUMACounts();
 }

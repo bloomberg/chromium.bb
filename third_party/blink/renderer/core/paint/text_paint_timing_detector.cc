@@ -54,6 +54,9 @@ void TextPaintTimingDetector::PopulateTraceValue(
   value.SetInteger("candidateIndex", candidate_index);
   value.SetString("frame",
                   IdentifiersFactory::FrameId(&frame_view_->GetFrame()));
+  value.SetBoolean("isMainFrame", frame_view_->GetFrame().IsMainFrame());
+  value.SetBoolean("isOOPIF",
+                   !frame_view_->GetFrame().LocalFrameRoot().IsMainFrame());
 }
 
 void TextPaintTimingDetector::OnLargestTextDetected(

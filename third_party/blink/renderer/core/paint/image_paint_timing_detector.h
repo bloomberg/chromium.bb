@@ -78,6 +78,8 @@ class CORE_EXPORT ImagePaintTimingDetector final
   static bool IsBackgroundImageContentful(const LayoutObject&, const Image&);
   static bool HasBackgroundImage(const LayoutObject& object);
   void OnPaintFinished();
+  ImageRecord* FindLargestPaintCandidate();
+  ImageRecord* FindLastPaintCandidate();
   void NotifyNodeRemoved(DOMNodeId);
   base::TimeTicks LargestImagePaint() const {
     return !largest_image_paint_
@@ -105,8 +107,6 @@ class CORE_EXPORT ImagePaintTimingDetector final
   void Trace(blink::Visitor*);
 
  private:
-  ImageRecord* FindLargestPaintCandidate();
-  ImageRecord* FindLastPaintCandidate();
   ImageRecord* FindCandidate(ImageRecordSet&);
   void PopulateTraceValue(TracedValue&,
                           const ImageRecord& first_image_paint,

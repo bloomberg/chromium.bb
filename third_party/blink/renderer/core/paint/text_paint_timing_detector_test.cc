@@ -16,7 +16,8 @@ class TextPaintTimingDetectorTest
       private ScopedFirstContentfulPaintPlusPlusForTest {
  public:
   TextPaintTimingDetectorTest()
-      : ScopedFirstContentfulPaintPlusPlusForTest(true) {}
+      : RenderingTest(SingleChildLocalFrameClient::Create()),
+        ScopedFirstContentfulPaintPlusPlusForTest(true) {}
   void SetUp() override {
     RenderingTest::SetUp();
     RenderingTest::EnableCompositing();
@@ -28,6 +29,14 @@ class TextPaintTimingDetectorTest
     return GetFrameView().GetPaintTimingDetector();
   }
 
+  IntRect GetViewportRect(LocalFrameView& view) {
+    ScrollableArea* scrollable_area = view.GetScrollableArea();
+    DCHECK(scrollable_area);
+    return scrollable_area->VisibleContentRect();
+  }
+
+  LocalFrameView& GetChildFrameView() { return *ChildFrame().View(); }
+
   unsigned CountVisibleTexts() {
     return GetPaintTimingDetector()
                .GetTextPaintTimingDetector()
@@ -35,7 +44,6 @@ class TextPaintTimingDetectorTest
            GetPaintTimingDetector()
                .GetTextPaintTimingDetector()
                .detached_ids_.size();
-    ;
   }
 
   unsigned CountDetachedTexts() {
@@ -63,15 +71,29 @@ class TextPaintTimingDetectorTest
         .last_text_paint_;
   }
 
+  // This only triggers ReportSwapTime in main frame.
   void UpdateAllLifecyclePhasesAndSimulateSwapTime() {
-    GetFrameView().UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
+    UpdateAllLifecyclePhasesForTest();
     TextPaintTimingDetector& detector =
         GetPaintTimingDetector().GetTextPaintTimingDetector();
     if (!detector.texts_to_record_swap_time_.empty()) {
       detector.ReportSwapTime(WebLayerTreeView::SwapResult::kDidSwap,
                               CurrentTimeTicks());
     }
+  }
+
+  size_t CountPendingSwapTime(LocalFrameView& frame_view) {
+    TextPaintTimingDetector& detector =
+        frame_view.GetPaintTimingDetector().GetTextPaintTimingDetector();
+    return detector.texts_to_record_swap_time_.size();
+  }
+
+  void ChildFrameSwapTimeCallBack() {
+    GetChildFrameView()
+        .GetPaintTimingDetector()
+        .GetTextPaintTimingDetector()
+        .ReportSwapTime(WebLayerTreeView::SwapResult::kDidSwap,
+                        CurrentTimeTicks());
   }
 
   void SimulateAnalyze() {
@@ -498,6 +520,58 @@ TEST_F(TextPaintTimingDetectorTest, LastTextPaint_ReportLastNullCandidate) {
   SimulateAnalyze();
   EXPECT_FALSE(TextRecordOfLastTextPaint());
   EXPECT_EQ(LastPaintStoredResult(), base::TimeTicks());
+}
+
+// This is for comparison with the ClippedByViewport test.
+TEST_F(TextPaintTimingDetectorTest, NormalTextUnclipped) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='d'>text</div>
+  )HTML");
+  EXPECT_EQ(CountPendingSwapTime(GetFrameView()), 1u);
+  EXPECT_EQ(CountVisibleTexts(), 1u);
+}
+
+TEST_F(TextPaintTimingDetectorTest, ClippedByViewport) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #d { margin-top: 1234567px }
+    </style>
+    <div id='d'>text</div>
+  )HTML");
+  // Make sure the margin-top is larger than the viewport height.
+  DCHECK_LT(GetViewportRect(GetFrameView()).Height(), 1234567);
+  EXPECT_EQ(CountPendingSwapTime(GetFrameView()), 0u);
+  EXPECT_EQ(CountVisibleTexts(), 0u);
+}
+
+TEST_F(TextPaintTimingDetectorTest, Iframe) {
+  SetBodyInnerHTML(R"HTML(
+    <iframe width=100px height=100px></iframe>
+  )HTML");
+  SetChildFrameHTML("A");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(CountPendingSwapTime(GetChildFrameView()), 1u);
+  ChildFrameSwapTimeCallBack();
+  TextRecord* text = GetChildFrameView()
+                         .GetPaintTimingDetector()
+                         .GetTextPaintTimingDetector()
+                         .FindLargestPaintCandidate();
+  EXPECT_TRUE(text);
+}
+
+TEST_F(TextPaintTimingDetectorTest, Iframe_ClippedByViewport) {
+  SetBodyInnerHTML(R"HTML(
+    <iframe width=100px height=100px></iframe>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <style>
+      #d { margin-top: 200px }
+    </style>
+    <div id='d'>text</div>
+  )HTML");
+  DCHECK_EQ(GetViewportRect(GetChildFrameView()).Height(), 100);
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(CountPendingSwapTime(GetChildFrameView()), 0u);
 }
 
 }  // namespace blink
