@@ -3915,6 +3915,15 @@ def TryjobMirrors(site_config):
     if tryjob_config.build_type != constants.PAYLOADS_TYPE:
       tryjob_config.apply(paygen=False)
 
+    if tryjob_config.slave_configs:
+      new_children = []
+      for c in tryjob_config.slave_configs:
+        if not config_lib.isTryjobConfig(site_config[c]):
+          c = '%s-tryjob' % c
+        new_children.append(c)
+
+      tryjob_config.apply(slave_configs=new_children)
+
     # Save off the new config so we can insert into site_config.
     tryjob_configs[tryjob_name] = tryjob_config
 
