@@ -124,6 +124,9 @@ bool GetBlockdevmodeFromPolicy(
     }
   }
 
+  VLOG(1) << (block_devmode ? "Blocking" : "Allowing")
+          << " dev mode by device policy";
+
   return block_devmode;
 }
 
@@ -236,10 +239,11 @@ void EnrollmentHandlerChromeOS::HandleAvailableLicensesResult(
     return;
   } else if (status != DM_STATUS_SUCCESS) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&EnrollmentHandlerChromeOS::ReportResult,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              EnrollmentStatus::ForStatus(
-                                  EnrollmentStatus::LICENSE_REQUEST_FAILED)));
+        FROM_HERE,
+        base::BindOnce(&EnrollmentHandlerChromeOS::ReportResult,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       EnrollmentStatus::ForStatus(
+                           EnrollmentStatus::LICENSE_REQUEST_FAILED)));
     return;
   }
   if (available_licenses_callback_)
