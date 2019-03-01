@@ -129,9 +129,6 @@ class TabLayer : public Layer {
                             float saturation,
                             bool should_clip,
                             const gfx::Rect& clip,
-                            float width,
-                            float height,
-                            int inset_diff,
                             ui::NinePatchResource* inner_shadow_resource,
                             float inner_shadow_alpha);
 

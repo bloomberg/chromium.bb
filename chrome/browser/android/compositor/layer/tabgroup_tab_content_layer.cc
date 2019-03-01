@@ -6,14 +6,13 @@
 
 #include <vector>
 
-#include "base/lazy_instance.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/nine_patch_layer.h"
-#include "cc/paint/filter_operations.h"
-#include "chrome/browser/android/compositor/layer/thumbnail_layer.h"
+#include "chrome/browser/android/compositor/layer/content_layer.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
-#include "content/public/browser/android/compositor.h"
 #include "ui/android/resources/nine_patch_resource.h"
+#include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace android {
@@ -34,13 +33,16 @@ void TabGroupTabContentLayer::SetProperties(
     bool should_clip,
     const gfx::Rect& clip,
     ui::NinePatchResource* border_inner_shadow_resource,
-    float width,
-    float height,
     const std::vector<int>& tab_ids,
-    float border_inner_shadow_alpha,
-    int inset_diff) {
-  // TODO(meiliang) : should call content_->SetProperties() and create
-  // set border_inner_shadow to front_border_inner_shadow_.
+    float border_inner_shadow_alpha) {
+  content_->SetProperties(id, can_use_live_layer, static_to_view_blend,
+                          should_override_content_alpha, content_alpha_override,
+                          saturation, should_clip, clip);
+
+  setBorderProperties(border_inner_shadow_resource, clip,
+                      border_inner_shadow_alpha);
+
+  layer_->SetBounds(front_border_inner_shadow_->bounds());
 }
 
 scoped_refptr<cc::Layer> TabGroupTabContentLayer::layer() {
@@ -59,5 +61,38 @@ TabGroupTabContentLayer::TabGroupTabContentLayer(
 }
 
 TabGroupTabContentLayer::~TabGroupTabContentLayer() {}
+
+void TabGroupTabContentLayer::setBorderProperties(
+    ui::NinePatchResource* border_inner_shadow_resource,
+    const gfx::Rect& clip,
+    float border_inner_shadow_alpha) {
+  // precalculate helper values
+  const gfx::RectF border_inner_shadow_padding(
+      border_inner_shadow_resource->padding());
+
+  const gfx::Size border_inner_shadow_padding_size(
+      border_inner_shadow_resource->size().width() -
+          border_inner_shadow_padding.width(),
+      border_inner_shadow_resource->size().height() -
+          border_inner_shadow_padding.height());
+
+  gfx::Size border_inner_shadow_size(clip.size());
+  border_inner_shadow_size.Enlarge(border_inner_shadow_padding_size.width(),
+                                   border_inner_shadow_padding_size.height());
+
+  front_border_inner_shadow_->SetUIResourceId(
+      border_inner_shadow_resource->ui_resource()->id());
+  front_border_inner_shadow_->SetAperture(
+      border_inner_shadow_resource->aperture());
+  front_border_inner_shadow_->SetBorder(
+      border_inner_shadow_resource->Border(border_inner_shadow_size));
+
+  gfx::PointF border_inner_shadow_position(
+      ScalePoint(border_inner_shadow_padding.origin(), -1));
+
+  front_border_inner_shadow_->SetPosition(border_inner_shadow_position);
+  front_border_inner_shadow_->SetBounds(border_inner_shadow_size);
+  front_border_inner_shadow_->SetOpacity(border_inner_shadow_alpha);
+}
 
 }  //  namespace android

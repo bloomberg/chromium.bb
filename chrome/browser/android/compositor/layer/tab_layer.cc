@@ -439,7 +439,6 @@ void TabLayer::SetProperties(int id,
   close_button_->SetUIResourceId(close_btn_resource->ui_resource()->id());
 
   if (!back_visible) {
-    float inset_diff = inset_border ? border_padding.y() : 0.f;
     gfx::Rect rounded_descaled_content_area(
         round(descaled_local_content_area.x()),
         round(descaled_local_content_area.y()),
@@ -448,8 +447,8 @@ void TabLayer::SetProperties(int id,
 
     SetContentProperties(
         id, ids, can_use_live_layer, static_to_view_blend, true, alpha,
-        saturation, true, rounded_descaled_content_area, width, height,
-        inset_diff, border_inner_shadow_resource, border_inner_shadow_alpha);
+        saturation, true, rounded_descaled_content_area,
+        border_inner_shadow_resource, border_inner_shadow_alpha);
 
   } else if (back_logo_resource) {
     back_logo_->SetUIResourceId(back_logo_resource->ui_resource()->id());
@@ -694,9 +693,6 @@ void TabLayer::SetContentProperties(
     float saturation,
     bool should_clip,
     const gfx::Rect& clip,
-    float width,
-    float height,
-    int inset_diff,
     ui::NinePatchResource* inner_shadow_resource,
     float inner_shadow_alpha) {
   if (tab_ids.size() == 0) {
@@ -714,8 +710,7 @@ void TabLayer::SetContentProperties(
     tabgroup_content_layer->SetProperties(
         id, tab_ids, can_use_live_layer, static_to_view_blend,
         should_override_content_alpha, content_alpha_override, saturation,
-        should_clip, clip, width, height, inset_diff, inner_shadow_resource,
-        inner_shadow_alpha);
+        should_clip, clip, inner_shadow_resource, inner_shadow_alpha);
 
     front_border_inner_shadow_->SetIsDrawable(false);
   }

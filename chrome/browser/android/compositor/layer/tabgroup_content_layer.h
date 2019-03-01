@@ -10,15 +10,13 @@
 
 #include "base/macros.h"
 #include "chrome/browser/android/compositor/layer/content_layer.h"
-#include "chrome/browser/android/compositor/layer/layer.h"
-#include "chrome/browser/android/compositor/layer/tabgroup_tab_content_layer.h"
 #include "ui/android/resources/nine_patch_resource.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace android {
 
 class TabContentManager;
+class TabGroupTabContentLayer;
 
 // Sub layer tree representation of the contents of a
 // set of four tabs within the group.
@@ -36,9 +34,6 @@ class TabGroupContentLayer : public ContentLayer {
                      float saturation,
                      bool should_clip,
                      const gfx::Rect& clip,
-                     float width,
-                     float height,
-                     int inset_diff,
                      ui::NinePatchResource* inner_shadow_resource,
                      float inner_shadow_alpha);
 

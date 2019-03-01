@@ -9,14 +9,18 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/android/compositor/layer/content_layer.h"
 #include "chrome/browser/android/compositor/layer/layer.h"
 #include "ui/android/resources/nine_patch_resource.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/size.h"
+
+namespace cc {
+class Layer;
+class NinePatchLayer;
+}  // namespace cc
 
 namespace android {
 
+class ContentLayer;
 class TabContentManager;
 
 // Sub layer tree representation of the contents of a
@@ -35,11 +39,8 @@ class TabGroupTabContentLayer : public Layer {
                      bool should_clip,
                      const gfx::Rect& clip,
                      ui::NinePatchResource* border_inner_shadow_resource,
-                     float width,
-                     float height,
                      const std::vector<int>& tab_ids,
-                     float border_inner_shadow_alpha,
-                     int inset_diff);
+                     float border_inner_shadow_alpha);
 
   scoped_refptr<cc::Layer> layer() override;
 
@@ -48,6 +49,9 @@ class TabGroupTabContentLayer : public Layer {
   ~TabGroupTabContentLayer() override;
 
  private:
+  void setBorderProperties(ui::NinePatchResource* border_inner_shadow_resource,
+                           const gfx::Rect& clip,
+                           float border_inner_shadow_alpha);
   scoped_refptr<cc::Layer> layer_;
   scoped_refptr<ContentLayer> content_;
   scoped_refptr<cc::NinePatchLayer> front_border_inner_shadow_;
