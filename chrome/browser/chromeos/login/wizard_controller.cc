@@ -89,6 +89,7 @@
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -331,6 +332,12 @@ void WizardController::Init(OobeScreen first_screen) {
           base::BindOnce(&WizardController::OnLocalStateInitialized,
                          weak_factory_.GetWeakPtr()));
     }
+  }
+  if (CrosSettings::IsInitialized()) {
+    guest_mode_policy_subscription_ = CrosSettings::Get()->AddSettingsObserver(
+        kAccountsPrefAllowGuest,
+        base::BindRepeating(&WizardController::OnGuestModePolicyUpdated,
+                            weak_factory_.GetWeakPtr()));
   }
 
   // Use the saved screen preference from Local State.
@@ -1569,6 +1576,11 @@ void WizardController::OnAccessibilityStatusChanged(
   } else if (cras->GetOutputVolumePercent() < kMinAudibleOutputVolumePercent) {
     cras->SetOutputVolumePercent(kMinAudibleOutputVolumePercent);
   }
+}
+
+void WizardController::OnGuestModePolicyUpdated() {
+  LoginScreenClient::Get()->login_screen()->SetShowGuestButtonInOobe(
+      user_manager::UserManager::Get()->IsGuestSessionAllowed());
 }
 
 void WizardController::AutoLaunchKioskApp() {
