@@ -106,6 +106,18 @@ bool ItemTypeIsPinned(const ash::ShelfItem& item) {
          item.type == ash::TYPE_BROWSER_SHORTCUT;
 }
 
+// Returns the app_id of the crostini app that can handle the given web content.
+// Returns the empty string if crostini does not recognise the contents. This is
+// used to prevent crbug.com/855662.
+// TODO(crbug.com/846546): Remove this function when the crostini terminal is
+// less hacky
+std::string GetCrostiniAppIdFromContents(content::WebContents* web_contents) {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  base::Optional<std::string> app_id_opt =
+      crostini::CrostiniAppIdFromAppName(browser->app_name());
+  return app_id_opt.value_or("");
+}
+
 }  // namespace
 
 // A class to get events from ChromeOS when a user gets changed or added.
@@ -494,6 +506,8 @@ void ChromeLauncherController::UpdateAppState(content::WebContents* contents,
 ash::ShelfID ChromeLauncherController::GetShelfIDForWebContents(
     content::WebContents* contents) {
   std::string app_id = launcher_controller_helper_->GetAppID(contents);
+  if (app_id.empty() && crostini::IsCrostiniEnabled(profile()))
+    app_id = GetCrostiniAppIdFromContents(contents);
   if (app_id.empty() && ContentCanBeHandledByGmailApp(contents))
     app_id = kGmailAppId;
 

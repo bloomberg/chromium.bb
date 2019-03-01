@@ -4695,3 +4695,36 @@ TEST_F(ChromeLauncherControllerTest, CrostiniTerminalPinUnpin) {
   launcher_controller_->PinAppWithID(crostini::kCrostiniTerminalId);
   EXPECT_EQ("Back, AppList, Chrome, Terminal", GetPinnedAppStatus());
 }
+
+// TODO(crbug.com/846546) Recognising app id from the browser app_name is only
+// necessary because the crostini terminal is a little hacky. Pending a better
+// terminal implementation we should remove this test.
+TEST_F(ChromeLauncherControllerTest, CrostiniBrowserWindowsRecogniseShelfItem) {
+  InitLauncherController();
+  crostini::CrostiniTestHelper helper(profile());
+
+  // We want to match this shelf item.
+  ash::ShelfItem item;
+  item.id = ash::ShelfID("blah");
+  item.type = ash::ShelfItemType::TYPE_APP;
+  model_->Add(item);
+
+  // We manually create a browser window with the correct app_name, as this is
+  // how the app_id is communicated.
+  Browser::CreateParams params = Browser::CreateParams::CreateForApp(
+      crostini::AppNameFromCrostiniAppId(item.id.app_id),
+      true /* trusted_srouce */, browser()->window()->GetBounds(), profile(),
+      true /* user_gesture */);
+  params.window = browser()->window();
+  params.type = Browser::TYPE_TABBED;
+  Browser* b = new Browser(params);
+  set_browser(b);
+  chrome::NewTab(browser());
+  browser()->window()->Show();
+
+  EXPECT_EQ(launcher_controller_
+                ->GetShelfIDForWebContents(
+                    browser()->tab_strip_model()->GetActiveWebContents())
+                .app_id,
+            item.id.app_id);
+}
