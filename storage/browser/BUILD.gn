@@ -185,6 +185,8 @@ jumbo_component("browser") {
     "fileapi/watcher_manager.h",
     "quota/client_usage_tracker.cc",
     "quota/client_usage_tracker.h",
+    "quota/padding_key.cc",
+    "quota/padding_key.h",
     "quota/quota_callbacks.h",
     "quota/quota_client.cc",
     "quota/quota_client.h",
