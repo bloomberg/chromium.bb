@@ -226,12 +226,12 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
     owner()->GetShelfSpinnerController()->CloseCrostiniSpinners();
   }
 
-  RegisterAppWindow(window, shelf_app_id);
-
   // Prevent Crostini window from showing up after user switch.
   MultiUserWindowManagerClient::GetInstance()->SetWindowOwner(
       window,
-      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
+      user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId());
+
+  RegisterAppWindow(window, shelf_app_id);
 
   // Move the Crostini app window to the right display if necessary.
   int64_t display_id = crostini_app_display_.GetDisplayIdForAppId(shelf_app_id);
@@ -257,7 +257,16 @@ void CrostiniAppWindowShelfController::RegisterAppWindow(
   aura_window_to_app_window_[window] =
       std::make_unique<AppWindowBase>(shelf_id, widget);
   AppWindowBase* app_window = aura_window_to_app_window_[window].get();
-  AddToShelf(window, app_window);
+
+  const AccountId& current_user =
+      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
+  const AccountId& window_owner =
+      MultiUserWindowManagerClient::GetInstance()->GetWindowOwner(window);
+  // Only add an app to the shelf if it's associated with the currently active
+  // user (which should always be the primary user at this time).
+  if (current_user == window_owner) {
+    AddToShelf(window, app_window);
+  }
 }
 
 void CrostiniAppWindowShelfController::OnWindowDestroying(
