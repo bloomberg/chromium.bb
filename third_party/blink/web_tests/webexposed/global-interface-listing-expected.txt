@@ -10351,6 +10351,7 @@ interface Worklet
 interface WorkletAnimation
     attribute @@toStringTag
     getter currentTime
+    getter effect
     getter playState
     getter playbackRate
     getter startTime
