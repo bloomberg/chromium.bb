@@ -50,8 +50,7 @@ class WTF_EXPORT ArrayBufferBuilder final {
   // Creates an ArrayBufferBuilder using the default capacity.
   ArrayBufferBuilder();
 
-  ArrayBufferBuilder(unsigned capacity)
-      : bytes_used_(0), variable_capacity_(true) {
+  explicit ArrayBufferBuilder(unsigned capacity) : bytes_used_(0) {
     buffer_ = ArrayBuffer::Create(capacity, 1);
   }
 
@@ -60,14 +59,10 @@ class WTF_EXPORT ArrayBufferBuilder final {
   // Appending empty data is not allowed.
   unsigned Append(const char* data, unsigned length);
 
-  // Returns the accumulated data as an ArrayBuffer instance. If needed,
-  // creates a new ArrayBuffer instance and copies contents from the internal
-  // buffer to it. Otherwise, returns a RefPtr pointing to the internal
-  // buffer.
-  scoped_refptr<ArrayBuffer> ToArrayBuffer();
-
-  // Converts the accumulated data into a String using the default encoding.
-  String ToString();
+  // Returns the accumulated data as an ArrayBuffer instance. This transfers
+  // ownership of the internal buffer, making this ArrayBufferBuilder invalid
+  // for future use.
+  scoped_refptr<ArrayBuffer> PassArrayBuffer();
 
   // Number of bytes currently accumulated.
   unsigned ByteLength() const { return bytes_used_; }
@@ -79,10 +74,6 @@ class WTF_EXPORT ArrayBufferBuilder final {
 
   const void* Data() const { return buffer_->Data(); }
 
-  // If set to false, the capacity won't be expanded and when appended data
-  // overflows, the overflowed part will be dropped.
-  void SetVariableCapacity(bool value) { variable_capacity_ = value; }
-
  private:
   // Expands the size of m_buffer to size + m_bytesUsed bytes. Returns true
   // iff successful. If reallocation is needed, copies only data in
@@ -90,7 +81,6 @@ class WTF_EXPORT ArrayBufferBuilder final {
   bool ExpandCapacity(unsigned size);
 
   unsigned bytes_used_;
-  bool variable_capacity_;
   scoped_refptr<ArrayBuffer> buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(ArrayBufferBuilder);

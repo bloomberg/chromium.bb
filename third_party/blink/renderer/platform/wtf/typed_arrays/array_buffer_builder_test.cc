@@ -96,27 +96,7 @@ TEST(ArrayBufferBuilderTest, DefaultConstructorAndAppendRepeatedly) {
   }
 }
 
-TEST(ArrayBufferBuilderTest, AppendFixedCapacity) {
-  const char kData[] = "HelloWorld";
-  uint32_t data_size = sizeof(kData) - 1;
-
-  ArrayBufferBuilder builder(15);
-  builder.SetVariableCapacity(false);
-
-  EXPECT_EQ(data_size, builder.Append(kData, data_size));
-  EXPECT_EQ(data_size, builder.ByteLength());
-  EXPECT_EQ(15u, builder.Capacity());
-
-  EXPECT_EQ(5u, builder.Append(kData, data_size));
-  EXPECT_EQ(15u, builder.ByteLength());
-  EXPECT_EQ(15u, builder.Capacity());
-
-  EXPECT_EQ(0u, builder.Append(kData, data_size));
-  EXPECT_EQ(15u, builder.ByteLength());
-  EXPECT_EQ(15u, builder.Capacity());
-}
-
-TEST(ArrayBufferBuilderTest, ToArrayBuffer) {
+TEST(ArrayBufferBuilderTest, PassArrayBuffer) {
   const char kData1[] = "HelloWorld";
   uint32_t data1_size = sizeof(kData1) - 1;
 
@@ -130,42 +110,11 @@ TEST(ArrayBufferBuilderTest, ToArrayBuffer) {
   const char kExpected[] = "HelloWorldGoodbyeWorld";
   uint32_t expected_size = sizeof(kExpected) - 1;
 
-  scoped_refptr<ArrayBuffer> result = builder.ToArrayBuffer();
+  scoped_refptr<ArrayBuffer> result = builder.PassArrayBuffer();
+  EXPECT_FALSE(builder.IsValid());
   ASSERT_EQ(data1_size + data2_size, result->ByteLength());
   ASSERT_EQ(expected_size, result->ByteLength());
   EXPECT_EQ(0, memcmp(kExpected, result->Data(), expected_size));
-}
-
-TEST(ArrayBufferBuilderTest, ToArrayBufferSameAddressIfExactCapacity) {
-  const char kData[] = "HelloWorld";
-  uint32_t data_size = sizeof(kData) - 1;
-
-  ArrayBufferBuilder builder(data_size);
-  builder.Append(kData, data_size);
-
-  scoped_refptr<ArrayBuffer> result1 = builder.ToArrayBuffer();
-  scoped_refptr<ArrayBuffer> result2 = builder.ToArrayBuffer();
-  EXPECT_EQ(result1.get(), result2.get());
-}
-
-TEST(ArrayBufferBuilderTest, ToString) {
-  const char kData1[] = "HelloWorld";
-  uint32_t data1_size = sizeof(kData1) - 1;
-
-  const char kData2[] = "GoodbyeWorld";
-  uint32_t data2_size = sizeof(kData2) - 1;
-
-  ArrayBufferBuilder builder(1024);
-  builder.Append(kData1, data1_size);
-  builder.Append(kData2, data2_size);
-
-  const char kExpected[] = "HelloWorldGoodbyeWorld";
-  uint32_t expected_size = sizeof(kExpected) - 1;
-
-  String result = builder.ToString();
-  EXPECT_EQ(expected_size, result.length());
-  for (uint32_t i = 0; i < result.length(); ++i)
-    EXPECT_EQ(kExpected[i], result[i]);
 }
 
 TEST(ArrayBufferBuilderTest, ShrinkToFitNoAppend) {

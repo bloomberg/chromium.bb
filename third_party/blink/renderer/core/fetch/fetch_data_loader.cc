@@ -163,7 +163,7 @@ class FetchDataLoaderAsArrayBuffer final : public FetchDataLoader,
           return;
         case BytesConsumer::Result::kDone:
           client_->DidFetchDataLoadedArrayBuffer(
-              DOMArrayBuffer::Create(raw_data_->ToArrayBuffer()));
+              DOMArrayBuffer::Create(raw_data_->PassArrayBuffer()));
           return;
         case BytesConsumer::Result::kError:
           client_->DidFetchDataLoadFailed();

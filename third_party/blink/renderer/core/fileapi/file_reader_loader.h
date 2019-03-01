@@ -43,7 +43,7 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_builder.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer.h"
 
 namespace blink {
 
@@ -154,7 +154,7 @@ class CORE_EXPORT FileReaderLoader : public mojom::blink::BlobReaderClient {
   WTF::TextEncoding encoding_;
   String data_type_;
 
-  std::unique_ptr<ArrayBufferBuilder> raw_data_;
+  scoped_refptr<ArrayBuffer> raw_data_;
   bool is_raw_data_converted_ = false;
 
   Persistent<DOMArrayBuffer> array_buffer_result_;

@@ -31,14 +31,15 @@
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_builder.h"
 
 #include <limits>
+#include <utility>
+
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace WTF {
 
 static const int kDefaultBufferCapacity = 32768;
 
-ArrayBufferBuilder::ArrayBufferBuilder()
-    : bytes_used_(0), variable_capacity_(true) {
+ArrayBufferBuilder::ArrayBufferBuilder() : bytes_used_(0) {
   buffer_ = ArrayBuffer::Create(kDefaultBufferCapacity, 1);
 }
 
@@ -82,34 +83,18 @@ unsigned ArrayBufferBuilder::Append(const char* data, unsigned length) {
 
   size_t remaining_buffer_space = current_buffer_size - bytes_used_;
 
-  unsigned bytes_to_save = length;
+  if (length > remaining_buffer_space && !ExpandCapacity(length))
+    return 0;
 
-  if (length > remaining_buffer_space) {
-    if (variable_capacity_) {
-      if (!ExpandCapacity(length))
-        return 0;
-    } else {
-      bytes_to_save = static_cast<unsigned>(remaining_buffer_space);
-    }
-  }
+  memcpy(static_cast<char*>(buffer_->Data()) + bytes_used_, data, length);
+  bytes_used_ += length;
 
-  memcpy(static_cast<char*>(buffer_->Data()) + bytes_used_, data,
-         bytes_to_save);
-  bytes_used_ += bytes_to_save;
-
-  return bytes_to_save;
+  return length;
 }
 
-scoped_refptr<ArrayBuffer> ArrayBufferBuilder::ToArrayBuffer() {
-  // Fully used. Return m_buffer as-is.
-  if (buffer_->ByteLength() == bytes_used_)
-    return buffer_;
-
-  return buffer_->Slice(0, bytes_used_);
-}
-
-String ArrayBufferBuilder::ToString() {
-  return String(static_cast<const char*>(buffer_->Data()), bytes_used_);
+scoped_refptr<ArrayBuffer> ArrayBufferBuilder::PassArrayBuffer() {
+  ShrinkToFit();
+  return std::move(buffer_);
 }
 
 void ArrayBufferBuilder::ShrinkToFit() {
