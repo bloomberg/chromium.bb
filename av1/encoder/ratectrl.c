@@ -1009,6 +1009,18 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
       // as q.
       active_best_quality = cq_level;
       active_worst_quality = cq_level;
+    } else if (cm->current_frame.frame_type == KEY_FRAME &&
+               cpi->oxcf.fwd_kf_enabled) {
+      // Handle the special case for forward reference key frames.
+      // Increase the boost because this keyframe is used as a forward and
+      // backward reference.
+      const int qindex = rc->last_boosted_qindex;
+      const double last_boosted_q = av1_convert_qindex_to_q(qindex, bit_depth);
+      const int delta_qindex = av1_compute_qdelta(
+          rc, last_boosted_q, last_boosted_q * 0.25, bit_depth);
+      active_best_quality = AOMMAX(qindex + delta_qindex, rc->best_quality);
+      // Update the arf_q since the forward keyframe is replacing the ALTREF
+      *arf_q = active_best_quality;
     } else if (rc->this_key_frame_forced) {
       // Handle the special case for key frames forced when we have reached
       // the maximum key frame interval. Here force the Q to a range
@@ -1026,13 +1038,10 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
         active_worst_quality =
             AOMMIN(qindex + delta_qindex, active_worst_quality);
       } else {
-        // Increase the boost if the forced keyframe is a forward reference.
-        // These numbers were derived empirically.
-        const double boost_factor = cpi->oxcf.fwd_kf_enabled ? 0.25 : 0.50;
         qindex = rc->last_boosted_qindex;
         last_boosted_q = av1_convert_qindex_to_q(qindex, bit_depth);
-        delta_qindex = av1_compute_qdelta(
-            rc, last_boosted_q, last_boosted_q * boost_factor, bit_depth);
+        delta_qindex = av1_compute_qdelta(rc, last_boosted_q,
+                                          last_boosted_q * 0.50, bit_depth);
         active_best_quality = AOMMAX(qindex + delta_qindex, rc->best_quality);
       }
     } else {
