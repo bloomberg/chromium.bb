@@ -49,6 +49,8 @@ class SigninEmailConfirmationDialog : public ui::WebDialogDelegate {
                                  const std::string& email,
                                  const Callback& callback);
 
+  ~SigninEmailConfirmationDialog() override;
+
  private:
   class DialogWebContentsObserver;
 
@@ -57,7 +59,6 @@ class SigninEmailConfirmationDialog : public ui::WebDialogDelegate {
                                 const std::string& last_email,
                                 const std::string& new_email,
                                 const Callback& callback);
-  ~SigninEmailConfirmationDialog() override;
 
   // WebDialogDelegate implementation.
   ui::ModalType GetDialogModalType() const override;
@@ -72,8 +73,8 @@ class SigninEmailConfirmationDialog : public ui::WebDialogDelegate {
                        bool* out_close_dialog) override;
   bool ShouldShowDialogTitle() const override;
 
-  // Shows the dialog and releases ownership of this object. It will
-  // delete itself when the dialog is closed.
+  // Shows the dialog and releases ownership of this object. Another object will
+  // take ownership and delete this object.
   void ShowDialog();
 
   // Closes the dialog.

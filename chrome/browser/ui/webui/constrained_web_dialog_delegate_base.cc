@@ -25,22 +25,22 @@ using ui::WebDialogWebContentsDelegate;
 
 ConstrainedWebDialogDelegateBase::ConstrainedWebDialogDelegateBase(
     content::BrowserContext* browser_context,
-    WebDialogDelegate* delegate,
-    WebDialogWebContentsDelegate* tab_delegate)
+    std::unique_ptr<WebDialogDelegate> web_dialog_delegate,
+    std::unique_ptr<WebDialogWebContentsDelegate> tab_delegate)
     : WebDialogWebContentsDelegate(
           browser_context,
           std::make_unique<ChromeWebContentsHandler>()),
-      web_dialog_delegate_(delegate),
+      web_dialog_delegate_(std::move(web_dialog_delegate)),
       closed_via_webui_(false) {
-  CHECK(delegate);
+  DCHECK(web_dialog_delegate_);
   web_contents_holder_ =
       WebContents::Create(WebContents::CreateParams(browser_context));
   web_contents_ = web_contents_holder_.get();
   WebContentsObserver::Observe(web_contents_);
   zoom::ZoomController::CreateForWebContents(web_contents_);
   if (tab_delegate) {
-    override_tab_delegate_.reset(tab_delegate);
-    web_contents_->SetDelegate(tab_delegate);
+    override_tab_delegate_ = std::move(tab_delegate);
+    web_contents_->SetDelegate(override_tab_delegate_.get());
   } else {
     web_contents_->SetDelegate(this);
   }
@@ -54,10 +54,9 @@ ConstrainedWebDialogDelegateBase::ConstrainedWebDialogDelegateBase(
   // Set |this| as a delegate so the ConstrainedWebDialogUI can retrieve it.
   ConstrainedWebDialogUI::SetConstrainedDelegate(web_contents_, this);
 
-  web_contents_->GetController().LoadURL(delegate->GetDialogContentURL(),
-                                         content::Referrer(),
-                                         ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                                         std::string());
+  web_contents_->GetController().LoadURL(
+      web_dialog_delegate_->GetDialogContentURL(), content::Referrer(),
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
 }
 
 ConstrainedWebDialogDelegateBase::~ConstrainedWebDialogDelegateBase() {

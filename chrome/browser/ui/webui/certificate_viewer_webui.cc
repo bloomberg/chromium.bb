@@ -12,6 +12,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
@@ -132,22 +133,23 @@ CertificateViewerDialog* CertificateViewerDialog::ShowConstrained(
     net::ScopedCERTCertificateList certs,
     WebContents* web_contents,
     gfx::NativeWindow parent) {
-  CertificateViewerDialog* dialog =
+  CertificateViewerDialog* dialog_ptr =
       new CertificateViewerDialog(std::move(certs));
+  auto dialog = base::WrapUnique(dialog_ptr);
 
   // TODO(bshe): UI tweaks needed for Aura HTML Dialog, such as adding padding
   // on the title for Aura ConstrainedWebDialogUI.
-  dialog->delegate_ = ShowConstrainedWebDialog(
-      web_contents->GetBrowserContext(), dialog, web_contents);
+  dialog_ptr->delegate_ = ShowConstrainedWebDialog(
+      web_contents->GetBrowserContext(), std::move(dialog), web_contents);
 
   // Clear the zoom level for the dialog so that it is not affected by the page
   // zoom setting.
   content::WebContents* dialog_web_contents =
-      dialog->delegate_->GetWebContents();
-  const GURL dialog_url = dialog->GetDialogContentURL();
+      dialog_ptr->delegate_->GetWebContents();
+  const GURL dialog_url = dialog_ptr->GetDialogContentURL();
   content::HostZoomMap::Get(dialog_web_contents->GetSiteInstance())
       ->SetZoomLevelForHostAndScheme(dialog_url.scheme(), dialog_url.host(), 0);
-  return dialog;  // For tests.
+  return dialog_ptr;  // For tests.
 }
 
 gfx::NativeWindow CertificateViewerDialog::GetNativeWebContentsModalDialog() {

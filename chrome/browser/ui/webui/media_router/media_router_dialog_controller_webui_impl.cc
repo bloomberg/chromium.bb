@@ -182,10 +182,9 @@ void MediaRouterDialogControllerWebUIImpl::CreateMediaRouterDialog() {
       Profile::FromBrowserContext(initiator()->GetBrowserContext());
   DCHECK(profile);
 
-  // |web_dialog_delegate|'s owner is |constrained_delegate|.
-  // |constrained_delegate| is owned by the parent |views::View|.
-  WebDialogDelegate* web_dialog_delegate =
-      new MediaRouterDialogDelegate(weak_ptr_factory_.GetWeakPtr());
+  auto web_dialog_delegate = std::make_unique<MediaRouterDialogDelegate>(
+      weak_ptr_factory_.GetWeakPtr());
+  WebDialogDelegate* web_dialog_delegate_ptr = web_dialog_delegate.get();
 
   // |ShowConstrainedWebDialogWithAutoResize()| will end up creating
   // ConstrainedWebDialogDelegateViewViews containing a WebContents containing
@@ -193,9 +192,10 @@ void MediaRouterDialogControllerWebUIImpl::CreateMediaRouterDialog() {
   // view is shown as a modal dialog constrained to the |initiator| WebContents.
   // The dialog will resize between the given minimum and maximum size bounds
   // based on the currently rendered contents.
+  // |constrained_delegate| is owned by the parent |views::View|.
   ConstrainedWebDialogDelegate* constrained_delegate =
       ShowConstrainedWebDialogWithAutoResize(
-          profile, web_dialog_delegate, initiator(),
+          profile, std::move(web_dialog_delegate), initiator(),
           gfx::Size(kWidth, kMinHeight), gfx::Size(kWidth, kMaxHeight));
 
   WebContents* media_router_dialog = constrained_delegate->GetWebContents();
@@ -205,7 +205,7 @@ void MediaRouterDialogControllerWebUIImpl::CreateMediaRouterDialog() {
 
   // Clear the zoom level for the dialog so that it is not affected by the page
   // zoom setting.
-  const GURL dialog_url = web_dialog_delegate->GetDialogContentURL();
+  const GURL dialog_url = web_dialog_delegate_ptr->GetDialogContentURL();
   content::HostZoomMap::Get(media_router_dialog->GetSiteInstance())
       ->SetZoomLevelForHostAndScheme(dialog_url.scheme(), dialog_url.host(), 0);
 

@@ -86,6 +86,7 @@ void SigninEmailConfirmationDialog::AskForConfirmation(
     const std::string& email,
     const Callback& callback) {
   base::RecordAction(base::UserMetricsAction("Signin_Show_ImportDataPrompt"));
+  // ShowDialog() will take care of ownership.
   SigninEmailConfirmationDialog* dialog = new SigninEmailConfirmationDialog(
       contents, profile, last_email, email, callback);
   dialog->ShowDialog();
@@ -97,8 +98,8 @@ void SigninEmailConfirmationDialog::ShowDialog() {
   gfx::Size max_size(kSigninEmailConfirmationDialogWidth,
                      kSigninEmailConfirmationDialogMaxHeight);
   ConstrainedWebDialogDelegate* dialog_delegate =
-      ShowConstrainedWebDialogWithAutoResize(profile_, this, web_contents_,
-                                             min_size, max_size);
+      ShowConstrainedWebDialogWithAutoResize(profile_, base::WrapUnique(this),
+                                             web_contents_, min_size, max_size);
 
   content::WebContents* dialog_web_contents = dialog_delegate->GetWebContents();
 

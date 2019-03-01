@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -387,10 +388,9 @@ WebContents* PrintPreviewDialogController::CreatePrintPreviewDialog(
   base::AutoReset<bool> auto_reset(&is_creating_print_preview_dialog_, true);
 
   // The dialog delegates are deleted when the dialog is closed.
-  ConstrainedWebDialogDelegate* web_dialog_delegate =
-      ShowConstrainedWebDialog(initiator->GetBrowserContext(),
-                               new PrintPreviewDialogDelegate(initiator),
-                               initiator);
+  ConstrainedWebDialogDelegate* web_dialog_delegate = ShowConstrainedWebDialog(
+      initiator->GetBrowserContext(),
+      std::make_unique<PrintPreviewDialogDelegate>(initiator), initiator);
 
   WebContents* preview_dialog = web_dialog_delegate->GetWebContents();
 
