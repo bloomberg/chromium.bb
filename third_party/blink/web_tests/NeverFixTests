@@ -2139,18 +2139,30 @@ virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-s
 # MathML is not implemented.
 crbug.com/6606 external/wpt/mathml [ WontFix ]
 
-# ====== Tests incompatible with the default Site Isolation from here ======
-# See also third_party/blink/web_tests/virtual/not-site-per-process/README.md
+# ==== Tests incompatible with the default WPT Origin Isolation start here ==VV
+# The section below lists web tests that are incompatible with the WPT Origin
+# Isolation mode of Site Isolation (see
+# WebTestContentBrowserClient::GetOriginsRequiringDedicatedProcess).
+#
+# Note that test coverage offered by the tests WontFix-ed below is preserved by
+# the virtual/not-site-per-process test suite (see also
+# third_party/blink/web_tests/virtual/not-site-per-process/README.md).
 #
 # When modifying the list of files that behave differently with and without
 # OOPIFs, please consider modifying all the locations below:
 # - LayoutTests/NeverFixTests (the section here)
 # - LayoutTests/VirtualTestSuites (virtual/not-site-per-process suite)
 # - LayoutTests/virtual/not-site-per-process/README.md
-
-# Tests permanently disabled with Site Isolation (e.g. tests that use
-# document.domain are are therefore inherently incompatible with isolation of
-# WPT origins):
+#
+# --------------------------- document.domain -----------------------
+# To test OOPIF support in various web platform features, we isolate all WPT
+# *origins* (under assumptions that hopefully some WPT tests will exercise
+# cross-origin scenarios, but that cross-site test coverage is unlikely).
+# *Origin* isolation is incompatible with document.domain and this means that
+# tests exercising document.domain might fail - such tests are listed as
+# WontFix below.  Note that by default Site Isolation isolates *sites* rather
+# than *origin* and therefore avoids problems related to document.domain
+# compatibility.
 Bug(none) external/wpt/html/browsers/origin/relaxing-the-same-origin-restriction [ WontFix ]
 Bug(none) external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ WontFix ]
 Bug(none) external/wpt/dom/events/EventListener-incumbent-global-1.sub.html [ WontFix ]
@@ -2167,7 +2179,7 @@ Bug(none) virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passin
 Bug(none) virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html [ WontFix ]
 Bug(none) external/wpt/wasm/serialization/module/window-domain-success.sub.html [ WontFix ]
 Bug(none) external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html [ WontFix ]
-
+# --------------------------- code cache isolation -----------------------
 # Code cache isolation tests only make sense if either
 # 1) site isolation is disabled or
 #    (covered by virtual/not-site-per-process/.../isolated-code-cache)
@@ -2177,8 +2189,8 @@ Bug(none) external/wpt/wasm/serialization/module/window-similar-but-cross-origin
 # 3) site isolation is enabled without also enabling
 #    IsolatedCodeCache (tests disabled by the test expectation below).
 Bug(none) http/tests/devtools/isolated-code-cache/cross-origin-test.js [ WontFix ]
+# ==== Tests incompatible with the default WPT Origin Isolation end here ==^^
 
-# ====== Tests incompatible with the default Site Isolation until here ======
 external/wpt/css/css-overscroll-behavior/overscrollBehavior-manual.html [ WontFix ]
 external/wpt/html/semantics/forms/the-input-element/event-select-manual.html [ WontFix ]
 external/wpt/html/editing/dnd/the-datatransferitem-interface/getAsString-manual.html [ WontFix ]
