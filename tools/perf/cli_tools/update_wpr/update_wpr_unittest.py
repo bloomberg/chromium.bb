@@ -9,7 +9,11 @@ import unittest
 
 import mock
 
+from core import path_util
 from cli_tools.update_wpr import update_wpr
+
+path_util.AddSoundwaveToPath()
+from services import request  # pylint: disable=import-error
 
 
 WPR_UPDATER = 'cli_tools.update_wpr.update_wpr.'
@@ -25,6 +29,7 @@ class UpdateWprTest(unittest.TestCase):
     self._check_call = mock.patch('subprocess.check_call').start()
     self._info = mock.patch('core.cli_helpers.Info').start()
     self._comment = mock.patch('core.cli_helpers.Comment').start()
+    self._ask = mock.patch('core.cli_helpers.Ask').start()
     self._open = mock.patch('__builtin__.open').start()
     datetime = mock.patch('datetime.datetime').start()
     datetime.now.return_value.strftime.return_value = '<tstamp>'
@@ -163,6 +168,14 @@ class UpdateWprTest(unittest.TestCase):
                 '| sort -nr'),
     ])
 
+
+  @mock.patch('json.load', return_value={'issue_url': '<url>'})
+  def testGetBranchIssueUrl(self, json_load):
+    del json_load  # unused
+    self.assertEqual(self.wpr_updater._GetBranchIssueUrl(), '<url>')
+    self._check_output.assert_called_once_with([
+      'git', 'cl', 'issue', '--json', '/tmp/dir/git_cl_issue.json'])
+
   @mock.patch('os.remove')
   def testDeleteExistingWpr(self, os_remove):
     self._open.return_value.__enter__.return_value.read.return_value = (
@@ -227,6 +240,49 @@ class UpdateWprTest(unittest.TestCase):
         '--force', '--message-file', '/tmp/dir/commit_message.tmp'
       ], ok_fail=True),
     ])
+
+  def testStartPinPointJobsDesktop(self):
+    mock.patch(
+        WPR_UPDATER + 'WprUpdater._GetBranchIssueUrl',
+        return_value='<issue-url>').start()
+    new_job = mock.patch(
+        'services.pinpoint_service.NewJob',
+        return_value={'jobUrl': '<url>'}).start()
+    self.assertEqual(
+        self.wpr_updater.StartPinpointJobs(),
+        (['<url>', '<url>', '<url>'], []))
+    new_job.assert_called_with(
+        start_git_hash='HEAD',
+        end_git_hash='HEAD',
+        target='performance_test_suite',
+        patch='<issue-url>',
+        bug_id='',
+        story='<story>',
+        extra_test_args='--pageset-repeat=1',
+        configuration='mac-10_12_laptop_low_end-perf',
+        benchmark='system_health.common_desktop')
+    self.assertEqual(new_job.call_count, 3)
+
+  def testStartPinPointJobsMobileFail(self):
+    mock.patch(
+        WPR_UPDATER + 'WprUpdater._GetBranchIssueUrl',
+        return_value='<issue-url>').start()
+    self.wpr_updater.device_id = '<serial>'
+    new_job = mock.patch(
+        'services.pinpoint_service.NewJob', side_effect=request.ServerError(
+          mock.Mock(), mock.Mock(status=500), '')).start()
+    self.assertEqual(
+        self.wpr_updater.StartPinpointJobs(['<config>']), ([], ['<config>']))
+    new_job.assert_called_once_with(
+        start_git_hash='HEAD',
+        end_git_hash='HEAD',
+        target='performance_test_suite',
+        patch='<issue-url>',
+        bug_id='',
+        story='<story>',
+        extra_test_args='--pageset-repeat=1',
+        configuration='<config>',
+        benchmark='system_health.common_mobile')
 
 
 if __name__ == "__main__":

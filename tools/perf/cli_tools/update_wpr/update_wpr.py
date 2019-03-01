@@ -15,6 +15,12 @@ import subprocess
 import tempfile
 
 from core import cli_helpers
+from core import path_util
+
+path_util.AddSoundwaveToPath()
+from services import luci_auth  # pylint: disable=import-error
+from services import pinpoint_service  # pylint: disable=import-error
+from services import request  # pylint: disable=import-error
 
 
 SRC_ROOT = os.path.abspath(
@@ -214,6 +220,37 @@ class WprUpdater(object):
     cli_helpers.Run(['git', 'add', archive_sha1])
     return True
 
+  def _GetBranchIssueUrl(self):
+    output_file = os.path.join(self.output_dir, 'git_cl_issue.json')
+    subprocess.check_output(['git', 'cl', 'issue', '--json', output_file])
+    with open(output_file, 'r') as output_fd:
+      return json.load(output_fd)['issue_url']
+
+  def _StartPinpointJob(self, configuration):
+    """Creates, starts a Pinpoint job and returns its URL."""
+    try:
+      resp = pinpoint_service.NewJob(
+          start_git_hash='HEAD',
+          end_git_hash='HEAD',
+          target='performance_test_suite',
+          patch=self._GetBranchIssueUrl(),
+          bug_id=self.bug_id or '',
+          story=self.story,
+          extra_test_args='--pageset-repeat=%d' % self.repeat,
+          configuration=configuration,
+          benchmark='system_health.common_%s' % (
+            'desktop' if self._IsDesktop() else 'mobile'))
+    except request.RequestError as e:
+      cli_helpers.Comment(
+          'Failed to start a Pinpoint job for {config} automatically:\n {err}',
+          config=configuration, err=e.content)
+      return
+
+    cli_helpers.Info(
+        'Started a Pinpoint job for {configuration} at {url}',
+        configuration=configuration, url=resp['jobUrl'])
+    return resp['jobUrl']
+
   def LiveRun(self):
     cli_helpers.Step('LIVE RUN: %s' % self.story)
     out_file = self._RunSystemHealthMemoryBenchmark(
@@ -275,6 +312,22 @@ class WprUpdater(object):
       '--force',  # to prevent message editor from appearing
       '--message-file', commit_msg_file], ok_fail=True)
 
+  def StartPinpointJobs(self, configs=None):
+    job_urls = []
+    failed_configs = []
+    if not configs:
+      if self._IsDesktop():
+        configs = ['linux-perf', 'win-10-perf', 'mac-10_12_laptop_low_end-perf']
+      else:
+        configs = ['Android Nexus5 Perf']
+    for config in configs:
+      job_url = self._StartPinpointJob(config)
+      if not job_url:
+        failed_configs.append(config)
+      else:
+        job_urls.append(job_url)
+    return job_urls, failed_configs
+
 
 def Main(argv):
   parser = argparse.ArgumentParser()
@@ -299,7 +352,8 @@ def Main(argv):
       help='Path to the Chromium/Chrome binary relative to output directory. '
            'Defaults to default Chrome browser installed if not specified.')
   parser.add_argument(
-      'command', choices=['live', 'record', 'replay', 'upload', 'review'],
+      'command', choices=[
+        'live', 'record', 'replay', 'upload', 'review', 'pinpoint'],
       help='Mode in which to run this script.')
 
   args = parser.parse_args(argv)
@@ -315,4 +369,7 @@ def Main(argv):
     updater.UploadWpr()
   elif args.command == 'review':
     updater.UploadCL()
+  elif args.command == 'pinpoint':
+    luci_auth.CheckLoggedIn()
+    updater.StartPinpointJobs()
   updater.Cleanup()
