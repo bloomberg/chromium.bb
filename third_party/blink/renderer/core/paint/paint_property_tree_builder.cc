@@ -443,28 +443,34 @@ void FragmentPaintPropertyTreeBuilder::UpdateForPaintOffsetTranslation(
                                    full_context_.direct_compositing_reasons))
     return;
 
-  // We should use the same subpixel paint offset values for snapping
-  // regardless of whether a transform is present. If there is a transform
-  // we round the paint offset but keep around the residual fractional
-  // component for the transformed content to paint with.  In spv1 this was
-  // called "subpixel accumulation". For more information, see
-  // PaintLayer::subpixelAccumulation() and
-  // PaintLayerPainter::paintFragmentByApplyingTransform.
+  // We should use the same subpixel paint offset values for snapping regardless
+  // of paint offset translation. If we create a paint offset translation we
+  // round the paint offset but keep around the residual fractional component
+  // (i.e. subpixel accumulation) for the transformed content to paint with.
+  // In pre-CompositeAfterPaint, if the object has layer, this corresponds to
+  // PaintLayer::SubpixelAccumulation().
   paint_offset_translation = RoundedIntPoint(context_.current.paint_offset);
-  LayoutPoint fractional_paint_offset =
-      LayoutPoint(context_.current.paint_offset - *paint_offset_translation);
-  if (fractional_paint_offset != LayoutPoint()) {
-    // If the object has a non-translation transform, discard the fractional
-    // paint offset which can't be transformed by the transform.
-    TransformationMatrix matrix;
-    object_.StyleRef().ApplyTransform(
-        matrix, LayoutSize(), ComputedStyle::kExcludeTransformOrigin,
-        ComputedStyle::kIncludeMotionPath,
-        ComputedStyle::kIncludeIndependentTransformProperties);
-    if (!matrix.IsIdentityOrTranslation())
-      fractional_paint_offset = LayoutPoint();
+  LayoutPoint subpixel_accumulation;
+  // Don't propagate subpixel accumulation through paint isolation. In
+  // pre-CompositeAfterPaint we still need to keep consistence with the legacy
+  // compositing code.
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
+      !NeedsIsolationNodes(object_)) {
+    subpixel_accumulation =
+        LayoutPoint(context_.current.paint_offset - *paint_offset_translation);
+    if (subpixel_accumulation != LayoutPoint()) {
+      // If the object has a non-translation transform, discard the fractional
+      // paint offset which can't be transformed by the transform.
+      TransformationMatrix matrix;
+      object_.StyleRef().ApplyTransform(
+          matrix, LayoutSize(), ComputedStyle::kExcludeTransformOrigin,
+          ComputedStyle::kIncludeMotionPath,
+          ComputedStyle::kIncludeIndependentTransformProperties);
+      if (!matrix.IsIdentityOrTranslation())
+        subpixel_accumulation = LayoutPoint();
+    }
   }
-  context_.current.paint_offset = fractional_paint_offset;
+  context_.current.paint_offset = subpixel_accumulation;
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
@@ -2220,12 +2226,21 @@ void FragmentPaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
   UpdatePaintOffset();
   UpdateForPaintOffsetTranslation(paint_offset_translation);
 
-  if (fragment_data_.PaintOffset() != context_.current.paint_offset) {
+  LayoutSize paint_offset_delta =
+      fragment_data_.PaintOffset() - context_.current.paint_offset;
+  if (!paint_offset_delta.IsZero()) {
     // Many paint properties depend on paint offset so we force an update of
-    // the entire subtree on paint offset changes.
-    // However, they are blocked by isolation.
-    full_context_.force_subtree_update_reasons |=
-        PaintPropertyTreeBuilderContext::kSubtreeUpdateIsolationBlocked;
+    // the entire subtree on paint offset changes. However, they are blocked by
+    // isolation if subpixel accumulation doesn't change or CompositeAfterPaint
+    // is enabled.
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
+        paint_offset_delta == RoundedIntSize(paint_offset_delta)) {
+      full_context_.force_subtree_update_reasons |=
+          PaintPropertyTreeBuilderContext::kSubtreeUpdateIsolationBlocked;
+    } else {
+      full_context_.force_subtree_update_reasons |=
+          PaintPropertyTreeBuilderContext::kSubtreeUpdateIsolationPiercing;
+    }
 
     object_.GetMutableForPainting().SetShouldCheckForPaintInvalidation();
     fragment_data_.SetPaintOffset(context_.current.paint_offset);
