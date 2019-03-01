@@ -15,7 +15,7 @@ def _RunUmaHistogramChecks(input_api, output_api):  # pylint: disable=C0103
     original_sys_path = sys.path
     try:
         sys.path = sys.path + [input_api.os_path.join(
-            input_api.PresubmitLocalPath(), '..', '..', '..', '..',
+            input_api.PresubmitLocalPath(), '..', '..', '..', '..', '..',
             'tools', 'metrics', 'histograms')]
         import update_histogram_enum  # pylint: disable=F0401
     finally:
