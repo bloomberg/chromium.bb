@@ -146,7 +146,6 @@ include_rules = [
   "+third_party/blink/public/platform/modules/webauthn/virtual_authenticator.mojom.h",
   "+third_party/blink/public/platform/modules/webdatabase/web_database.mojom.h",
   "+third_party/blink/public/platform/modules/websockets/websocket.mojom.h",
-  "+third_party/blink/public/platform/reporting.mojom.h",
   "+third_party/blink/public/web/commit_result.mojom.h",
   "+third_party/blink/public/web/devtools_frontend.mojom.h",
 

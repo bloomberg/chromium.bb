@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//third_party/blink/public/public_features.gni")
 
 # This target includes all mojom interfaces which can be used from
 # renderer/platform. In particular these mojom interfaces can't use types that
@@ -70,6 +71,7 @@ mojom("mojom_platform") {
     "referrer.mojom",
     "renderer_preference_watcher.mojom",
     "renderer_preferences.mojom",
+    "reporting/reporting.mojom",
     "script/script_type.mojom",
     "serial/serial.mojom",
     "service_worker/dispatch_fetch_event_params.mojom",
@@ -82,10 +84,12 @@ mojom("mojom_platform") {
     "service_worker/service_worker_provider_type.mojom",
     "service_worker/service_worker_state.mojom",
     "service_worker/service_worker_stream_handle.mojom",
+    "site_engagement/site_engagement.mojom",
     "speech/speech_recognition_error.mojom",
     "speech/speech_recognition_grammar.mojom",
     "speech/speech_recognition_result.mojom",
     "speech/speech_recognizer.mojom",
+    "ukm/ukm.mojom",
     "use_counter/css_property_id.mojom",
     "user_agent/user_agent_metadata.mojom",
     "v8_cache_options.mojom",
@@ -159,6 +163,12 @@ mojom("android_mojo_bindings") {
   public_deps = [
     "//components/payments/mojom",
   ]
+
+  # This Android unhandled-tap feature uses another mojo source, add it in.
+  if (enable_unhandled_tap) {
+    sources += [ "unhandled_tap_notifier/unhandled_tap_notifier.mojom" ]
+    public_deps += [ "//ui/gfx/geometry/mojo" ]
+  }
 
   export_class_attribute = "BLINK_COMMON_EXPORT"
   export_define = "BLINK_COMMON_IMPLEMENTATION=1"

@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_REPORTING_SERVICE_PROXY_PTR_HOLDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_REPORTING_SERVICE_PROXY_PTR_HOLDER_H_
 
+#include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/reporting.mojom-blink.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
