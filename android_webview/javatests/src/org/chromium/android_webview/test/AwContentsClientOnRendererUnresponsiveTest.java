@@ -66,7 +66,6 @@ public class AwContentsClientOnRendererUnresponsiveTest {
 
         void transientlyBlockBlinkThread(final AwContents awContents) {
             ThreadUtils.runOnUiThread(() -> {
-                awContents.addJavascriptInterface(mBlocker, "blocker");
                 awContents.evaluateJavaScript("blocker.block();", null);
             });
         }
@@ -78,6 +77,10 @@ public class AwContentsClientOnRendererUnresponsiveTest {
             mResponsiveCallbackHelper.waitForCallback(
                     0, 1, AwActivityTestRule.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
             Assert.assertEquals(1, mResponsiveCallbackHelper.getCallCount());
+        }
+
+        JSBlocker getBlocker() {
+            return mBlocker;
         }
 
         @Override
@@ -101,17 +104,14 @@ public class AwContentsClientOnRendererUnresponsiveTest {
 
         private CallbackHelper mUnresponsiveCallbackHelper;
         private CallbackHelper mTerminatedCallbackHelper;
-        private JSBlocker mBlocker;
 
         public RendererUnresponsiveTestAwContentsClient() {
             mUnresponsiveCallbackHelper = new CallbackHelper();
             mTerminatedCallbackHelper = new CallbackHelper();
-            mBlocker = new JSBlocker();
         }
 
         void permanentlyBlockBlinkThread(final AwContents awContents) {
             ThreadUtils.runOnUiThread(() -> {
-                awContents.addJavascriptInterface(mBlocker, "blocker");
                 awContents.evaluateJavaScript("blocker.block();", null);
             });
         }
@@ -148,6 +148,10 @@ public class AwContentsClientOnRendererUnresponsiveTest {
         });
     }
 
+    private void addJsBlockerInterface(final AwContents awContents, final JSBlocker blocker) {
+        ThreadUtils.runOnUiThread(() -> { awContents.addJavascriptInterface(blocker, "blocker"); });
+    }
+
     // This test requires the ability to terminate the renderer in order to recover from a
     // permanently stuck blink main thread, so it can only run in multiprocess.
     @Test
@@ -162,6 +166,7 @@ public class AwContentsClientOnRendererUnresponsiveTest {
         final AwContents awContents = testView.getAwContents();
 
         AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        addJsBlockerInterface(awContents, new JSBlocker());
         mActivityTestRule.loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
@@ -183,6 +188,7 @@ public class AwContentsClientOnRendererUnresponsiveTest {
         final AwContents awContents = testView.getAwContents();
 
         AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        addJsBlockerInterface(awContents, contentsClient.getBlocker());
         mActivityTestRule.loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(),
                 ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         contentsClient.transientlyBlockBlinkThread(awContents);
