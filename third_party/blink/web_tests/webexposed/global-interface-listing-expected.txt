@@ -5710,7 +5710,6 @@ interface RTCPeerConnection : EventTarget
     getter currentRemoteDescription
     getter iceConnectionState
     getter iceGatheringState
-    getter id
     getter localDescription
     getter onaddstream
     getter onconnectionstatechange
@@ -10644,7 +10643,6 @@ interface webkitRTCPeerConnection : EventTarget
     getter currentRemoteDescription
     getter iceConnectionState
     getter iceGatheringState
-    getter id
     getter localDescription
     getter onaddstream
     getter onconnectionstatechange

@@ -375,10 +375,6 @@ WebRTCDataChannelHandler* MockWebRTCPeerConnectionHandler::CreateDataChannel(
 
 void MockWebRTCPeerConnectionHandler::Stop() {}
 
-WebString MockWebRTCPeerConnectionHandler::Id() const {
-  return WebString();
-}
-
 webrtc::PeerConnectionInterface*
 MockWebRTCPeerConnectionHandler::NativePeerConnection() {
   return nullptr;

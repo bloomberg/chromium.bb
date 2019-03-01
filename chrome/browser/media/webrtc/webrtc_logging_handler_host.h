@@ -141,14 +141,13 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
                    bool incoming);
 
   // Start remote-bound event logging for a specific peer connection
-  // (indicated by its peer connection ID), for which remote-bound event
-  // logging was not active.
+  // (indicated by its session description's ID).
   // The callback will be posted back, indicating |true| if and only if an
   // event log was successfully started, in which case the first of the string
   // arguments will be set to the log-ID. Otherwise, the second of the string
   // arguments will contain the error message.
   // This function must be called on the UI thread.
-  void StartEventLogging(const std::string& peer_connection_id,
+  void StartEventLogging(const std::string& session_id,
                          size_t max_log_size_bytes,
                          int output_period_ms,
                          size_t web_app_id,

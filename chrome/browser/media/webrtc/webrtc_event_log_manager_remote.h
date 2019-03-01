@@ -7,6 +7,7 @@
 
 #include <map>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
@@ -74,9 +75,14 @@ class WebRtcRemoteEventLogManager final
   // The return value of both methods indicates only the consistency of the
   // information with previously received information (e.g. can't remove a
   // peer connection that was never added, etc.).
-  bool PeerConnectionAdded(const PeerConnectionKey& key,
-                           const std::string& peer_connection_id);
+  bool PeerConnectionAdded(const PeerConnectionKey& key);
   bool PeerConnectionRemoved(const PeerConnectionKey& key);
+
+  // Called to inform |this| that a peer connection has been associated
+  // with |session_id|. After this, it is possible to refer to  that peer
+  // connection using StartRemoteLogging() by providing |session_id|.
+  bool PeerConnectionSessionIdSet(const PeerConnectionKey& key,
+                                  const std::string& session_id);
 
   // Attempt to start logging the WebRTC events of an active peer connection.
   // Logging is subject to several restrictions:
@@ -109,7 +115,7 @@ class WebRtcRemoteEventLogManager final
   // pending logs.
   bool StartRemoteLogging(int render_process_id,
                           BrowserContextId browser_context_id,
-                          const std::string& peer_connection_id,
+                          const std::string& session_id,
                           const base::FilePath& browser_context_dir,
                           size_t max_file_size_bytes,
                           int output_period_ms,
@@ -178,6 +184,8 @@ class WebRtcRemoteEventLogManager final
   void ShutDownForTesting(base::OnceClosure reply);
 
  private:
+  using PeerConnectionMap = std::map<PeerConnectionKey, std::string>;
+
   // Validates log parameters.
   // If valid, returns true. Otherwise, false, and |error_message| gets
   // a relevant error.
@@ -371,21 +379,20 @@ class WebRtcRemoteEventLogManager final
   void OnWebRtcEventLogUploadComplete(const base::FilePath& log_file,
                                       bool upload_successful);
 
-  // Given a renderer process ID and peer connection ID (a string naming the
-  // peer connection), find the peer connection to which they refer.
+  // Given a renderer process ID and peer connection's session ID, find the
+  // peer connection to which they refer.
   bool FindPeerConnection(int render_process_id,
-                          const std::string& peer_connection_id,
+                          const std::string& session_id,
                           PeerConnectionKey* key) const;
 
   // Find the next peer connection in a map to which the renderer process ID
-  // and peer connection ID refer.
+  // and session ID refer.
   // This helper allows FindPeerConnection() to DCHECK on uniqueness of the ID
   // without descending down a recursive rabbit hole.
-  std::map<PeerConnectionKey, const std::string>::const_iterator
-  FindNextPeerConnection(
-      std::map<PeerConnectionKey, const std::string>::const_iterator begin,
+  PeerConnectionMap::const_iterator FindNextPeerConnection(
+      PeerConnectionMap::const_iterator begin,
       int render_process_id,
-      const std::string& peer_connection_id) const;
+      const std::string& session_id) const;
 
   // Normally, uploading is suppressed while there are active peer connections.
   // This may be disabled from the command line.
@@ -414,10 +421,11 @@ class WebRtcRemoteEventLogManager final
   // the directory where each BrowserContext's remote-bound logs are stored.
   std::map<BrowserContextId, base::FilePath> enabled_browser_contexts_;
 
-  // Currently active peer connections, mapped to their ID (as per the
-  // RTCPeerConnection.id origin trial). PeerConnections which have been closed
-  // are not considered active, regardless of whether they have been torn down.
-  std::map<PeerConnectionKey, const std::string> active_peer_connections_;
+  // Currently active peer connections, mapped to their session IDs (once the
+  // session ID is set).
+  // PeerConnections which have been closed are not considered active,
+  // regardless of whether they have been torn down.
+  PeerConnectionMap active_peer_connections_;
 
   // Creates LogFileWriter instances (compressed/uncompressed, etc.).
   std::unique_ptr<LogFileWriter::Factory> log_file_writer_factory_;

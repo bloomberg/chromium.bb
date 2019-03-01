@@ -61,6 +61,7 @@ class MockPeerConnectionTrackerHost : public mojom::PeerConnectionTrackerHost {
   MOCK_METHOD3(UpdatePeerConnection,
                void(int, const std::string&, const std::string&));
   MOCK_METHOD1(RemovePeerConnection, void(int));
+  MOCK_METHOD2(OnPeerConnectionSessionIdSet, void(int, const std::string&));
   MOCK_METHOD5(GetUserMedia,
                void(const std::string&,
                     bool,
