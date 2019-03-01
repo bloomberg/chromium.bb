@@ -65,7 +65,7 @@
 #define DCHECK_CALLED_ON_VALID_THREAD(name) DCHECK((name).CalledOnValidThread())
 #define DETACH_FROM_THREAD(name) (name).DetachFromThread()
 #else  // DCHECK_IS_ON()
-#define THREAD_CHECKER(name)
+#define THREAD_CHECKER(name) static_assert(true, "")
 #define DCHECK_CALLED_ON_VALID_THREAD(name) EAT_STREAM_PARAMETERS
 #define DETACH_FROM_THREAD(name)
 #endif  // DCHECK_IS_ON()

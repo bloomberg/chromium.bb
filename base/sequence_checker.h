@@ -54,7 +54,7 @@
   DCHECK((name).CalledOnValidSequence())
 #define DETACH_FROM_SEQUENCE(name) (name).DetachFromSequence()
 #else  // DCHECK_IS_ON()
-#define SEQUENCE_CHECKER(name)
+#define SEQUENCE_CHECKER(name) static_assert(true, "")
 #define DCHECK_CALLED_ON_VALID_SEQUENCE(name) EAT_STREAM_PARAMETERS
 #define DETACH_FROM_SEQUENCE(name)
 #endif  // DCHECK_IS_ON()
