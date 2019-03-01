@@ -172,6 +172,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "ash-notification-stacking-bar-redesign",
+    "owners": [ "tengs" ],
+    "expiry_milestone": 75
+  },
+  {
     "name": "ash-shelf-color",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

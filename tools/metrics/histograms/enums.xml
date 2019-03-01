@@ -31487,6 +31487,7 @@ from previous Chrome versions.
   <int value="-1112782121" label="AndroidSigninPromos:disabled"/>
   <int value="-1107762575" label="enable-data-reduction-proxy-config-client"/>
   <int value="-1107103335" label="FsNosymfollow:enabled"/>
+  <int value="-1103099187" label="NotificationStackingBarRedesign:disabled"/>
   <int value="-1102212525" label="enable-tcp-fastopen"/>
   <int value="-1099142083" label="V8Ignition:disabled"/>
   <int value="-1099135056" label="AsyncDns:enabled"/>
@@ -32308,6 +32309,7 @@ from previous Chrome versions.
   <int value="331770879" label="CrostiniAppSearch:disabled"/>
   <int value="332391072" label="cs-contextual-cards-bar-integration"/>
   <int value="334802038" label="OfflinePreviews:disabled"/>
+  <int value="335976733" label="NotificationStackingBarRedesign:enabled"/>
   <int value="336429189" label="DisallowUnsafeHttpDownloads:disabled"/>
   <int value="339671131" label="disable-per-user-timezone"/>
   <int value="341152650" label="SoundContentSetting:enabled"/>
