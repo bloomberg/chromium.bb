@@ -3135,6 +3135,36 @@ def FactoryBuilders(site_config, boards_dict, ge_build_config):
       doc='https://goto.google.com/tot-for-firmware-branches',
   )
 
+  site_config.AddTemplate(
+      'old_factorybranch_packages',
+      packages=[
+          'virtual/target-os',
+          'virtual/target-os-dev',
+          'virtual/target-os-test',
+          'chromeos-base/chromeos-installshim',
+          'chromeos-base/chromeos-factory',
+          'chromeos-base/chromeos-hwid',
+          'chromeos-base/autotest-factory-install',
+          'chromeos-base/autotest-all',
+      ],
+  )
+
+  # These branches require a differnt list of packages to build.
+  old_package_branches = {
+      'factory-beltino-5140.14.B',
+      'factory-rambi-5517.B',
+      'factory-nyan-5772.B',
+      'factory-rambi-6420.B',
+      'factory-auron-6459.B',
+      'factory-whirlwind-6509.B',
+      'factory-veyron-6591.B',
+      'factory-samus-6658.B',
+      'factory-auron-6772.B',
+      'factory-whirlwind-6812.41.B',
+      'factory-arkham-7077.113.B',
+      'factory-strago-7458.B',
+  }
+
   for active, branch, boards in branch_builders:
     schedule = {}
     if active:
@@ -3153,13 +3183,15 @@ def FactoryBuilders(site_config, boards_dict, ge_build_config):
 
     # Define the per-board builders for the branch.
     for board in boards:
-      branch_master.AddSlave(
-          site_config.Add(
-              '%s-%s-factorybranch' % (board, branch),
-              site_config.templates.factorybranch,
-              boards=[board],
-              workspace_branch=branch,
-          ))
+      child = site_config.Add(
+          '%s-%s-factorybranch' % (board, branch),
+          site_config.templates.factorybranch,
+          boards=[board],
+          workspace_branch=branch,
+      )
+      if branch in old_package_branches:
+        child.apply(site_config.templates.old_factorybranch_packages)
+      branch_master.AddSlave(child)
 
 
 def ReleaseBuilders(site_config, boards_dict, ge_build_config):
