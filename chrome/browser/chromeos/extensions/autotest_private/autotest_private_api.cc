@@ -1533,6 +1533,33 @@ AutotestPrivateIsTabletModeEnabledFunction::Run() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSetTabletModeEnabledFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateSetTabletModeEnabledFunction::
+    ~AutotestPrivateSetTabletModeEnabledFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSetTabletModeEnabledFunction::Run() {
+  DVLOG(1) << "AutotestPrivateSetTabletModeEnabledFunction";
+
+  std::unique_ptr<api::autotest_private::SetTabletModeEnabled::Params> params(
+      api::autotest_private::SetTabletModeEnabled::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  TabletModeClient::Get()->SetTabletModeEnabledForTesting(
+      params->enabled,
+      base::BindOnce(
+          &AutotestPrivateSetTabletModeEnabledFunction::OnSetTabletModeEnabled,
+          this));
+  return RespondLater();
+}
+
+void AutotestPrivateSetTabletModeEnabledFunction::OnSetTabletModeEnabled(
+    bool enabled) {
+  Respond(OneArgument(std::make_unique<base::Value>(enabled)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateAPI
 ///////////////////////////////////////////////////////////////////////////////
 

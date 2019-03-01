@@ -203,6 +203,9 @@ class ASH_EXPORT TabletModeController
 
   // mojom::TabletModeController:
   void SetClient(mojom::TabletModeClientPtr client) override;
+  void SetTabletModeEnabledForTesting(
+      bool enabled,
+      SetTabletModeEnabledForTestingCallback callback) override;
 
   // Checks whether we want to allow change the current ui mode to tablet mode
   // or clamshell mode. This returns false if the user set a flag for the

@@ -4,6 +4,8 @@
 
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 
+#include <algorithm>
+#include <string>
 #include <utility>
 
 #include "ash/public/cpp/ash_switches.h"
@@ -598,6 +600,22 @@ TabletModeController::CurrentTabletModeIntervalType() {
 void TabletModeController::SetClient(mojom::TabletModeClientPtr client) {
   client_ = std::move(client);
   client_->OnTabletModeToggled(IsTabletModeWindowManagerEnabled());
+}
+
+// Used for testing. Called via Mojo.
+void TabletModeController::SetTabletModeEnabledForTesting(
+    bool enabled,
+    SetTabletModeEnabledForTestingCallback callback) {
+  // Disable Accelerometer and PowerManagerClient observers to prevent possible
+  // tablet mode overrides. It won't be possible to physically switch to/from
+  // tablet mode after calling this function. This is needed for tests that
+  // run on DUTs and require switching to/back tablet mode in runtime, like some
+  // ARC++ Tast tests.
+  AccelerometerReader::GetInstance()->RemoveObserver(this);
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
+      this);
+  EnableTabletModeWindowManager(enabled);
+  std::move(callback).Run(IsTabletModeWindowManagerEnabled());
 }
 
 bool TabletModeController::AllowUiModeChange() const {

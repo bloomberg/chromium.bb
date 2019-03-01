@@ -298,6 +298,22 @@ var defaultTests = [
           chrome.test.succeed();
         });
   },
+  // This test verifies that entering tablet mode works as expected.
+  function setTabletModeEnabled() {
+    chrome.autotestPrivate.setTabletModeEnabled(true, function(isEnabled){
+      chrome.test.assertTrue(isEnabled);
+      chrome.test.assertNoLastError();
+      chrome.test.succeed();
+    });
+  },
+  // This test verifies that leaving tablet mode works as expected.
+  function setTabletModeDisabled() {
+    chrome.autotestPrivate.setTabletModeEnabled(false, function(isEnabled){
+      chrome.test.assertFalse(isEnabled);
+      chrome.test.assertNoLastError();
+      chrome.test.succeed();
+    });
+  },
 ];
 
 var arcEnabledTests = [

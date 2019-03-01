@@ -15,4 +15,7 @@ interface TabletModeController {
   // Sets a client (e.g. chrome). Triggers OnTabletModeToggled() to provide
   // the initial state.
   SetClient(TabletModeClient client);
+
+  // Enables or disables tablet mode. For testing only.
+  SetTabletModeEnabledForTesting(bool enabled) => (bool enabled);
 };

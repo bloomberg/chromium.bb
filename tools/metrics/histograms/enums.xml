@@ -18033,6 +18033,7 @@ Called by update_net_error_codes.py.-->
   <int value="1320" label="DECLARATIVENETREQUEST_GETDYNAMICRULES"/>
   <int value="1321" label="AUTOTESTPRIVATE_GETARCSTATE"/>
   <int value="1322" label="AUTOTESTPRIVATE_ISTABLETMODEENABLED"/>
+  <int value="1323" label="AUTOTESTPRIVATE_SETTABLETMODEENABLED"/>
 </enum>
 
 <enum name="ExtensionIconState">
