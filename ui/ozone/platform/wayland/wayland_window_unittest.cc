@@ -24,11 +24,11 @@
 #include "ui/ozone/test/mock_platform_window_delegate.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
+using ::testing::_;
 using ::testing::Eq;
 using ::testing::Mock;
 using ::testing::SaveArg;
 using ::testing::StrEq;
-using ::testing::_;
 
 namespace ui {
 
@@ -118,6 +118,13 @@ class WaylandWindowTest : public WaylandTest {
     return states;
   }
 
+  ScopedWlArray MakeStateArray(const std::vector<int32_t> states) {
+    ScopedWlArray result;
+    for (const auto state : states)
+      AddStateToWlArray(state, result.get());
+    return result;
+  }
+
   std::unique_ptr<WaylandWindow> CreateWaylandWindowWithParams(
       PlatformWindowType type,
       gfx::AcceleratedWidget parent_widget,
@@ -147,6 +154,11 @@ class WaylandWindowTest : public WaylandTest {
     hit_tests->push_back(static_cast<int>(HTTOPRIGHT));
   }
 
+  void VerifyAndClearExpectations() {
+    Mock::VerifyAndClearExpectations(xdg_surface_);
+    Mock::VerifyAndClearExpectations(&delegate_);
+  }
+
   wl::MockXdgSurface* xdg_surface_;
 
   MouseEvent test_mouse_event_;
@@ -161,24 +173,62 @@ TEST_P(WaylandWindowTest, SetTitle) {
 }
 
 TEST_P(WaylandWindowTest, MaximizeAndRestore) {
-  ScopedWlArray states = InitializeWlArrayWithActivatedState();
+  const auto kNormalBounds = gfx::Rect{0, 0, 500, 300};
+  const auto kMaximizedBounds = gfx::Rect{0, 0, 800, 600};
 
+  // Make sure the window has normal state initially.
+  EXPECT_CALL(delegate_, OnBoundsChanged(kNormalBounds));
+  window_->SetBounds(kNormalBounds);
+  EXPECT_EQ(PLATFORM_WINDOW_STATE_NORMAL, window_->GetPlatformWindowState());
+  VerifyAndClearExpectations();
+
+  auto active_maximized = MakeStateArray(
+      {XDG_SURFACE_STATE_ACTIVATED, XDG_SURFACE_STATE_MAXIMIZED});
+  EXPECT_CALL(*GetXdgSurface(), SetMaximized());
+  EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, kMaximizedBounds.width(),
+                                               kMaximizedBounds.height()));
+  EXPECT_CALL(delegate_, OnActivationChanged(Eq(true)));
+  EXPECT_CALL(delegate_, OnBoundsChanged(kMaximizedBounds));
   EXPECT_CALL(delegate_,
               OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_MAXIMIZED)));
-  AddStateToWlArray(XDG_SURFACE_STATE_MAXIMIZED, states.get());
-
-  EXPECT_CALL(*GetXdgSurface(), SetMaximized());
   window_->Maximize();
-  SendConfigureEvent(0, 0, 1, states.get());
+  SendConfigureEvent(kMaximizedBounds.width(), kMaximizedBounds.height(), 1,
+                     active_maximized.get());
   Sync();
+  VerifyAndClearExpectations();
 
+  auto inactive_maximized = MakeStateArray({XDG_SURFACE_STATE_MAXIMIZED});
+  EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, kMaximizedBounds.width(),
+                                               kMaximizedBounds.height()));
+  EXPECT_CALL(delegate_, OnActivationChanged(Eq(false)));
+  EXPECT_CALL(delegate_, OnBoundsChanged(_)).Times(0);
+  SendConfigureEvent(kMaximizedBounds.width(), kMaximizedBounds.height(), 2,
+                     inactive_maximized.get());
+  Sync();
+  EXPECT_FALSE(window_->is_active());
+  VerifyAndClearExpectations();
+
+  EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, kMaximizedBounds.width(),
+                                               kMaximizedBounds.height()));
+  EXPECT_CALL(delegate_, OnActivationChanged(Eq(true)));
+  EXPECT_CALL(delegate_, OnBoundsChanged(_)).Times(0);
+  SendConfigureEvent(kMaximizedBounds.width(), kMaximizedBounds.height(), 3,
+                     active_maximized.get());
+  Sync();
+  EXPECT_TRUE(window_->is_active());
+  VerifyAndClearExpectations();
+
+  EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, kNormalBounds.width(),
+                                               kNormalBounds.height()));
   EXPECT_CALL(delegate_,
               OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_NORMAL)));
+  EXPECT_CALL(delegate_, OnActivationChanged(_)).Times(0);
+  EXPECT_CALL(delegate_, OnBoundsChanged(kNormalBounds));
   EXPECT_CALL(*GetXdgSurface(), UnsetMaximized());
   window_->Restore();
   // Reinitialize wl_array, which removes previous old states.
-  states = InitializeWlArrayWithActivatedState();
-  SendConfigureEvent(0, 0, 2, states.get());
+  auto active = InitializeWlArrayWithActivatedState();
+  SendConfigureEvent(0, 0, 4, active.get());
   Sync();
 }
 
@@ -287,32 +337,54 @@ TEST_P(WaylandWindowTest, StartWithFullscreen) {
 }
 
 TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
-  ScopedWlArray states = InitializeWlArrayWithActivatedState();
+  const auto kNormalBounds = gfx::Rect{0, 0, 500, 300};
+  const auto kMaximizedBounds = gfx::Rect{0, 0, 800, 600};
 
+  // Make sure the window has normal state initially.
+  EXPECT_CALL(delegate_, OnBoundsChanged(kNormalBounds));
+  window_->SetBounds(kNormalBounds);
+  EXPECT_EQ(PLATFORM_WINDOW_STATE_NORMAL, window_->GetPlatformWindowState());
+  VerifyAndClearExpectations();
+
+  auto active_maximized = MakeStateArray(
+      {XDG_SURFACE_STATE_ACTIVATED, XDG_SURFACE_STATE_MAXIMIZED});
   EXPECT_CALL(*GetXdgSurface(), SetMaximized());
+  EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, kMaximizedBounds.width(),
+                                               kMaximizedBounds.height()));
+  EXPECT_CALL(delegate_, OnActivationChanged(Eq(true)));
+  EXPECT_CALL(delegate_, OnBoundsChanged(kMaximizedBounds));
   EXPECT_CALL(delegate_,
               OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_MAXIMIZED)));
   window_->Maximize();
-  AddStateToWlArray(XDG_SURFACE_STATE_MAXIMIZED, states.get());
-  SendConfigureEvent(0, 0, 2, states.get());
+  SendConfigureEvent(kMaximizedBounds.width(), kMaximizedBounds.height(), 2,
+                     active_maximized.get());
   Sync();
+  VerifyAndClearExpectations();
 
   EXPECT_CALL(*GetXdgSurface(), SetFullscreen());
+  EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, kMaximizedBounds.width(),
+                                               kMaximizedBounds.height()));
+  EXPECT_CALL(delegate_, OnBoundsChanged(_)).Times(0);
   EXPECT_CALL(delegate_,
               OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_FULLSCREEN)));
   window_->ToggleFullscreen();
-  AddStateToWlArray(XDG_SURFACE_STATE_FULLSCREEN, states.get());
-  SendConfigureEvent(0, 0, 3, states.get());
+  AddStateToWlArray(XDG_SURFACE_STATE_FULLSCREEN, active_maximized.get());
+  SendConfigureEvent(kMaximizedBounds.width(), kMaximizedBounds.height(), 3,
+                     active_maximized.get());
   Sync();
+  VerifyAndClearExpectations();
 
+  EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, kNormalBounds.width(),
+                                               kNormalBounds.height()));
   EXPECT_CALL(*GetXdgSurface(), UnsetFullscreen());
   EXPECT_CALL(*GetXdgSurface(), UnsetMaximized());
+  EXPECT_CALL(delegate_, OnBoundsChanged(kNormalBounds));
   EXPECT_CALL(delegate_,
               OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_NORMAL)));
   window_->Restore();
   // Reinitialize wl_array, which removes previous old states.
-  states = InitializeWlArrayWithActivatedState();
-  SendConfigureEvent(0, 0, 4, states.get());
+  auto active = InitializeWlArrayWithActivatedState();
+  SendConfigureEvent(0, 0, 4, active.get());
   Sync();
 }
 

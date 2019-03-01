@@ -369,14 +369,6 @@ void WaylandWindow::ToggleFullscreen() {
     // DesktopWindowTreeHostPlatform::IsFullscreen, for example, and media
     // files can never be set to fullscreen.
     state_ = PlatformWindowState::PLATFORM_WINDOW_STATE_FULLSCREEN;
-    // Client might have requested a fullscreen state while the window was in
-    // a maximized state. Thus, |restored_bounds_| can contain the bounds of a
-    // "normal" state before the window was maximized. We don't override them
-    // unless they are empty, because |bounds_| can contain bounds of a
-    // maximized window instead.
-    if (restored_bounds_.IsEmpty())
-      SetRestoredBoundsInPixels(bounds_);
-
     xdg_surface_->SetFullscreen();
   } else {
     // Check the comment above. If it's not handled synchronously, media files
@@ -393,15 +385,6 @@ void WaylandWindow::Maximize() {
 
   if (IsFullscreen())
     ToggleFullscreen();
-
-  // Keeps track of the previous bounds, which are used to restore a window
-  // after unmaximize call. We don't override |restored_bounds_| if they have
-  // already had value, which means the previous state has been a fullscreen
-  // state. That is, the bounds can be stored during a change from a normal
-  // state to a maximize state, and then preserved to be the same, when changing
-  // from maximized to fullscreen and back to a maximized state.
-  if (restored_bounds_.IsEmpty())
-    SetRestoredBoundsInPixels(bounds_);
 
   xdg_surface_->SetMaximized();
   connection_->ScheduleFlush();
@@ -557,6 +540,8 @@ void WaylandWindow::HandleSurfaceConfigure(int32_t width,
   } else {
     state_ = PlatformWindowState::PLATFORM_WINDOW_STATE_NORMAL;
   }
+  const bool state_changed = old_state != state_;
+  const bool is_normal = !IsFullscreen() && !IsMaximized();
 
   // Update state before notifying delegate.
   const bool did_active_change = is_active_ != is_activated;
@@ -569,27 +554,36 @@ void WaylandWindow::HandleSurfaceConfigure(int32_t width,
   //
   // Width or height set to 0 means that we should decide on width and height by
   // ourselves, but we don't want to set them to anything else. Use restored
-  // bounds size or the current bounds.
+  // bounds size or the current bounds iff the current state is normal (neither
+  // maximized nor fullscreen).
   //
   // Note: if the browser was started with --start-fullscreen and a user exits
   // the fullscreen mode, wayland may set the width and height to be 1. Instead,
   // explicitly set the bounds to the current desired ones or the previous
   // bounds.
-  if (width <= 1 || height <= 1) {
+  if (width > 1 && height > 1) {
+    pending_bounds_ = gfx::Rect(0, 0, width, height);
+  } else if (is_normal) {
     pending_bounds_.set_size(restored_bounds_.IsEmpty()
                                  ? GetBounds().size()
                                  : restored_bounds_.size());
-  } else {
-    pending_bounds_ = gfx::Rect(0, 0, width, height);
   }
 
-  const bool is_normal = !IsFullscreen() && !IsMaximized();
-  const bool state_changed = old_state != state_;
-  if (is_normal && state_changed)
-    restored_bounds_ = gfx::Rect();
+  if (state_changed) {
+    // The |restored_bounds_| are used when the window gets back to normal
+    // state after it went maximized or fullscreen.  So we reset these if the
+    // window has just become normal and store the current bounds if it is
+    // either going out of normal state or simply changes the state and we don't
+    // have any meaningful value stored.
+    if (is_normal) {
+      SetRestoredBoundsInPixels({});
+    } else if (old_state == PlatformWindowState::PLATFORM_WINDOW_STATE_NORMAL ||
+               restored_bounds_.IsEmpty()) {
+      SetRestoredBoundsInPixels(bounds_);
+    }
 
-  if (state_changed)
     delegate_->OnWindowStateChanged(state_);
+  }
 
   if (did_active_change)
     delegate_->OnActivationChanged(is_active_);
