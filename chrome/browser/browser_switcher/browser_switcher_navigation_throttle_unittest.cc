@@ -42,6 +42,8 @@ class MockBrowserSwitcherSitelist : public BrowserSwitcherSitelist {
   MOCK_CONST_METHOD1(ShouldSwitch, bool(const GURL&));
   MOCK_METHOD1(SetIeemSitelist, void(ParsedXml&&));
   MOCK_METHOD1(SetExternalSitelist, void(ParsedXml&&));
+  MOCK_CONST_METHOD0(GetIeemSitelist, const RuleSet*());
+  MOCK_CONST_METHOD0(GetExternalSitelist, const RuleSet*());
 };
 
 }  // namespace

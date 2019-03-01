@@ -23,6 +23,11 @@ class BrowserSwitcherServiceWin : public BrowserSwitcherService {
 
   static void SetIeemSitelistUrlForTesting(const std::string& url);
 
+ protected:
+  // BrowserSwitcherService:
+  std::vector<RulesetSource> GetRulesetSources() override;
+  void OnAllRulesetsParsed() override;
+
  private:
   // Returns the URL to fetch to get Internet Explorer's Enterprise Mode
   // sitelist, based on policy. Returns an empty (invalid) URL if IE's SiteList
@@ -34,7 +39,7 @@ class BrowserSwitcherServiceWin : public BrowserSwitcherService {
   // Save the current prefs' state to the "cache.dat" file, to be read & used by
   // the Internet Explorer BHO. This call does not block, it only posts a task
   // to a worker thread.
-  void SavePrefsToFile() const;
+  void SavePrefsToFile();
   // Delete the "cache.dat" file created by |SavePrefsToFile()|. This call does
   // not block, it only posts a task to a worker thread.
   void DeletePrefsFile() const;

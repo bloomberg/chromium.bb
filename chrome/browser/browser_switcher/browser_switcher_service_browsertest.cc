@@ -24,6 +24,8 @@
 #include "url/gurl.h"
 
 #if defined(OS_WIN)
+#include "base/files/scoped_temp_dir.h"
+#include "base/path_service.h"
 #include "chrome/browser/browser_switcher/browser_switcher_service_win.h"
 #endif
 
@@ -74,6 +76,10 @@ class BrowserSwitcherServiceTest : public InProcessBrowserTest {
         .WillRepeatedly(testing::Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
     BrowserSwitcherService::SetFetchDelayForTesting(base::TimeDelta());
+#if defined(OS_WIN)
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    base::PathService::Override(base::DIR_LOCAL_APP_DATA, temp_dir_.GetPath());
+#endif
   }
 
   void SetUseIeSitelist(bool use_ie_sitelist) {
@@ -100,6 +106,10 @@ class BrowserSwitcherServiceTest : public InProcessBrowserTest {
 
  private:
   policy::MockConfigurationPolicyProvider provider_;
+
+#if defined(OS_WIN)
+  base::ScopedTempDir temp_dir_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserSwitcherServiceTest);
 };

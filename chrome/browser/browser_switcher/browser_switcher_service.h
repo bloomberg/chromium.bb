@@ -28,27 +28,47 @@ class AlternativeBrowserDriver;
 class BrowserSwitcherSitelist;
 class ParsedXml;
 
+// A definition of a source for an XML sitelist: a URL + what to do once it's
+// downloaded.
+struct RulesetSource {
+  RulesetSource(GURL url_,
+                base::OnceCallback<void(ParsedXml xml)> parsed_callback_);
+  RulesetSource(RulesetSource&&);
+  ~RulesetSource();
+
+  // URL to download the ruleset from.
+  GURL url;
+  // What to do once the URL download + parsing is complete (or failed).
+  base::OnceCallback<void(ParsedXml xml)> parsed_callback;
+
+  std::unique_ptr<network::SimpleURLLoader> url_loader;
+};
+
 class XmlDownloader {
  public:
-  // Posts a task to start downloading+parsing the rules after |delay|. Calls
-  // |done_callback| when done, so the caller can apply the parsed rules and
-  // clean up this object.
+  // Posts a task to start downloading+parsing the rulesets after |delay|. Calls
+  // each source's callback once they're done (or failed). In addition, calls
+  // |all_done_callback| once all the rulesets have been processed.
   XmlDownloader(Profile* profile,
-                GURL url,
-                base::TimeDelta delay,
-                base::OnceCallback<void(ParsedXml)> done_callback);
+                std::vector<RulesetSource> sources,
+                base::OnceCallback<void()> all_done_callback,
+                base::TimeDelta delay);
   virtual ~XmlDownloader();
 
  private:
   void FetchXml();
-  void ParseXml(std::unique_ptr<std::string> bytes);
-  void DoneParsing(ParsedXml xml);
+  void ParseXml(RulesetSource* source, std::unique_ptr<std::string> bytes);
+  void DoneParsing(RulesetSource* source, ParsedXml xml);
 
-  GURL url_;
   scoped_refptr<network::SharedURLLoaderFactory> factory_;
 
-  std::unique_ptr<network::SimpleURLLoader> url_loader_;
-  base::OnceCallback<void(ParsedXml)> done_callback_;
+  std::vector<RulesetSource> sources_;
+
+  base::OnceCallback<void()> all_done_callback_;
+
+  // Number of |RulesetSource|s that have finished processing. Used to
+  // trigger the callback once they've all been parsed.
+  unsigned int counter_ = 0;
 
   base::WeakPtrFactory<XmlDownloader> weak_ptr_factory_;
 };
@@ -64,7 +84,7 @@ class BrowserSwitcherService : public KeyedService {
 
   AlternativeBrowserDriver* driver();
   BrowserSwitcherSitelist* sitelist();
-  const BrowserSwitcherPrefs& prefs() const;
+  BrowserSwitcherPrefs& prefs();
 
   void SetDriverForTesting(std::unique_ptr<AlternativeBrowserDriver> driver);
   void SetSitelistForTesting(std::unique_ptr<BrowserSwitcherSitelist> sitelist);
@@ -72,15 +92,22 @@ class BrowserSwitcherService : public KeyedService {
   static void SetFetchDelayForTesting(base::TimeDelta delay);
 
  protected:
-  BrowserSwitcherPrefs prefs_;
+  // Return a platform-specific list of URLs to download 1 minute after startup,
+  // and what to do with each of them once their XML has been parsed.
+  virtual std::vector<RulesetSource> GetRulesetSources();
+
+  virtual void OnAllRulesetsParsed();
 
   // Delay for the IEEM/external XML fetch tasks, launched from the constructor.
   static base::TimeDelta fetch_delay_;
 
  private:
+  void StartDownload(Profile* profile);
   void OnExternalSitelistParsed(ParsedXml xml);
 
-  std::unique_ptr<XmlDownloader> external_sitelist_downloader_;
+  std::unique_ptr<XmlDownloader> sitelist_downloader_;
+
+  BrowserSwitcherPrefs prefs_;
 
   // Per-profile helpers.
   std::unique_ptr<AlternativeBrowserDriver> driver_;
