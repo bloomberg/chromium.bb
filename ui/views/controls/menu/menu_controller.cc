@@ -1183,8 +1183,11 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
   ViewsDelegate::ProcessMenuAcceleratorResult result =
       ViewsDelegate::GetInstance()->ProcessAcceleratorWhileMenuShowing(
           accelerator);
-  if (result == ViewsDelegate::ProcessMenuAcceleratorResult::CLOSE_MENU)
+  if (result == ViewsDelegate::ProcessMenuAcceleratorResult::CLOSE_MENU) {
     CancelAll();
+    event->StopPropagation();
+    return ui::POST_DISPATCH_NONE;
+  }
 
   if (IsEditableCombobox()) {
     const base::flat_set<ui::KeyboardCode> kKeysThatDontPropagate = {
