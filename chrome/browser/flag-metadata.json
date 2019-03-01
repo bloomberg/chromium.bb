@@ -2057,7 +2057,7 @@
   },
   {
     "name": "extension-apis",
-    // "owners": [ "your-team" ],
+    "owners": [ "rdevlin.cronin" ],
     "expiry_milestone": 76
   },
   {
