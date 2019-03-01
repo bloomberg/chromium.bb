@@ -1006,9 +1006,6 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsReloadDisabled)) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {previews::features::kPreviewsDisallowedOnReloads}, {});
   // Start with a non-preview load.
   g_browser_process->network_quality_tracker()
       ->ReportEffectiveConnectionTypeForTesting(

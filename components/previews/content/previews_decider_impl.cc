@@ -45,31 +45,6 @@ void LogPreviewsEligibilityReason(PreviewsEligibilityReason status,
       ->Add(static_cast<int>(status));
 }
 
-bool AllowedOnReload(PreviewsType type) {
-  if (base::FeatureList::IsEnabled(features::kPreviewsDisallowedOnReloads))
-    return false;
-
-  switch (type) {
-    // These types return new content on refresh.
-    case PreviewsType::LITE_PAGE:
-    case PreviewsType::LITE_PAGE_REDIRECT:
-    case PreviewsType::LOFI:
-    case PreviewsType::NOSCRIPT:
-    case PreviewsType::RESOURCE_LOADING_HINTS:
-      return true;
-    // Loading these types will always be stale when refreshed.
-    case PreviewsType::OFFLINE:
-      return false;
-    case PreviewsType::NONE:
-    case PreviewsType::UNSPECIFIED:
-    case PreviewsType::DEPRECATED_AMP_REDIRECTION:
-    case PreviewsType::LAST:
-      break;
-  }
-  NOTREACHED();
-  return false;
-}
-
 bool ShouldCheckOptimizationHints(PreviewsType type) {
   switch (type) {
     // These types may have server optimization hints.
@@ -346,11 +321,10 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
     passed_reasons->push_back(PreviewsEligibilityReason::NETWORK_NOT_SLOW);
   }
 
-  // LOAD_VALIDATE_CACHE or LOAD_BYPASS_CACHE mean the user reloaded the page.
-  // If this is a query for offline previews, reloads should be disallowed.
-  if (!AllowedOnReload(type) && is_reload) {
+  if (is_reload) {
     return PreviewsEligibilityReason::RELOAD_DISALLOWED;
   }
+
   passed_reasons->push_back(PreviewsEligibilityReason::RELOAD_DISALLOWED);
 
   // Check server whitelist/blacklist, if provided.
