@@ -292,20 +292,30 @@ enum AuthenticationState {
   _unifiedConsentCoordinator = nil;
 }
 
-- (void)acceptSignInAndCommitSyncChanges {
+// Starts the sync engine only if the user tapped on "YES, I'm in", and closes
+// the sign-in view.
+- (void)signinCompletedWithUnity {
   DCHECK(_didSignIn);
-  if (_unifiedConsentEnabled) {
-    // The consent has to be given as soon as the user is signed in. Even when
-    // they open the settings through the link.
-    unified_consent::UnifiedConsentService* unifiedConsentService =
-        UnifiedConsentServiceFactory::GetForBrowserState(_browserState);
-    // |unifiedConsentService| may be null in unit tests.
-    if (unifiedConsentService)
-      unifiedConsentService->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
+  DCHECK(_unifiedConsentEnabled);
+  // The consent has to be given as soon as the user is signed in. Even when
+  // they open the settings through the link.
+  unified_consent::UnifiedConsentService* unifiedConsentService =
+      UnifiedConsentServiceFactory::GetForBrowserState(_browserState);
+  // |unifiedConsentService| may be null in unit tests.
+  if (unifiedConsentService)
+    unifiedConsentService->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
+  if (!_unifiedConsentCoordinator.settingsLinkWasTapped) {
+    SyncSetupServiceFactory::GetForBrowserState(_browserState)->CommitChanges();
   }
-  SyncSetupServiceFactory::GetForBrowserState(_browserState)->CommitChanges();
   [self acceptSignInAndShowAccountsSettings:_unifiedConsentCoordinator
                                                 .settingsLinkWasTapped];
+}
+
+- (void)acceptSignInAndCommitSyncChanges {
+  DCHECK(_didSignIn);
+  DCHECK(!_unifiedConsentEnabled);
+  SyncSetupServiceFactory::GetForBrowserState(_browserState)->CommitChanges();
+  [self acceptSignInAndShowAccountsSettings:NO];
 }
 
 - (void)setPrimaryButtonStyling:(MDCButton*)button {
@@ -536,7 +546,7 @@ enum AuthenticationState {
     _didSignIn = YES;
     [_delegate didSignIn:self];
     if (_unifiedConsentEnabled) {
-      [self acceptSignInAndCommitSyncChanges];
+      [self signinCompletedWithUnity];
     } else {
       [self changeToState:IDENTITY_SELECTED_STATE];
     }
