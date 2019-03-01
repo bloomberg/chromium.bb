@@ -75,7 +75,7 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
      * @return An unmodifiable list of {@link Tab} that relate with the given tab id.
      */
     @NonNull
-    public List<Tab> getUnmodifiableRelatedTabList(int tabId) {
+    public List<Tab> getRelatedTabList(int tabId) {
         return sEmptyRelatedTabList;
     }
 
@@ -99,6 +99,11 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
      * @param tab {@link Tab} had selected.
      */
     protected abstract void selectTab(Tab tab);
+
+    /**
+     * Concrete class requires to define the ordering of each Tab within the filter.
+     */
+    protected abstract void reorder();
 
     // TabModelObserver implementation.
     @Override
@@ -186,6 +191,15 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
     public void tabRemoved(Tab tab) {
         for (TabModelObserver observer : mFilteredObservers) {
             observer.tabRemoved(tab);
+        }
+    }
+
+    @Override
+    public void restoreCompleted() {
+        if (getCount() != 0) reorder();
+
+        for (TabModelObserver observer : mFilteredObservers) {
+            observer.restoreCompleted();
         }
     }
 }
