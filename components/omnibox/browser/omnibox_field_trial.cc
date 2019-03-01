@@ -637,12 +637,6 @@ bool OmniboxFieldTrial::HQPAllowMatchInSchemeValue() {
       kHQPAllowMatchInSchemeRule) == "true";
 }
 
-bool OmniboxFieldTrial::DisableResultsCaching() {
-  return variations::GetVariationParamValue(
-      kBundledExperimentFieldTrialName,
-      kDisableResultsCachingRule) == "true";
-}
-
 void OmniboxFieldTrial::GetSuggestPollingStrategy(bool* from_last_keystroke,
                                                   int* polling_delay_ms) {
   *from_last_keystroke = variations::GetVariationParamValue(
@@ -901,8 +895,6 @@ const char OmniboxFieldTrial::kHQPAllowMatchInTLDRule[] = "HQPAllowMatchInTLD";
 const char OmniboxFieldTrial::kHQPAllowMatchInSchemeRule[] =
     "HQPAllowMatchInScheme";
 const char OmniboxFieldTrial::kZeroSuggestVariantRule[] = "ZeroSuggestVariant";
-const char OmniboxFieldTrial::kDisableResultsCachingRule[] =
-    "DisableResultsCaching";
 const char
 OmniboxFieldTrial::kMeasureSuggestPollingDelayFromLastKeystrokeRule[] =
     "MeasureSuggestPollingDelayFromLastKeystroke";
