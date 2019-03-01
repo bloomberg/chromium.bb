@@ -207,6 +207,8 @@ def MergeApk(args, tmp_apk, tmp_dir_32, tmp_dir_64):
   if 'libcrashpad_handler_trampoline.so' in expected_files:
     exclude_files_64.append(
         GetTargetAbiPath(args.apk_32bit, 'libcrashpad_handler_trampoline.so'))
+  if args.has_unwind_cfi:
+    exclude_files_64.append('%s/unwind_cfi_32' % assets_path)
   UnpackApk(args.apk_64bit, tmp_dir_64, exclude_files_64)
   UnpackApk(args.apk_32bit, tmp_dir_32)
 
