@@ -443,7 +443,6 @@ void ProtoDatabaseSelector::UpdateEntries(
 void ProtoDatabaseSelector::UpdateEntriesWithRemoveFilter(
     std::unique_ptr<KeyValueVector> entries_to_save,
     const KeyFilter& delete_key_filter,
-    const std::string& target_prefix,
     Callbacks::UpdateCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!db_) {
@@ -451,8 +450,7 @@ void ProtoDatabaseSelector::UpdateEntriesWithRemoveFilter(
     return;
   }
   db_->UpdateEntriesWithRemoveFilter(std::move(entries_to_save),
-                                     delete_key_filter, target_prefix,
-                                     std::move(callback));
+                                     delete_key_filter, std::move(callback));
 }
 
 void ProtoDatabaseSelector::LoadEntries(
@@ -515,14 +513,13 @@ void ProtoDatabaseSelector::LoadKeysAndEntriesInRange(
   db_->LoadKeysAndEntriesInRange(start, end, std::move(callback));
 }
 
-void ProtoDatabaseSelector::LoadKeys(const std::string& target_prefix,
-                                     Callbacks::LoadKeysCallback callback) {
+void ProtoDatabaseSelector::LoadKeys(Callbacks::LoadKeysCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!db_) {
     std::move(callback).Run(false, nullptr);
     return;
   }
-  db_->LoadKeys(target_prefix, std::move(callback));
+  db_->LoadKeys(std::move(callback));
 }
 
 void ProtoDatabaseSelector::GetEntry(const std::string& key,

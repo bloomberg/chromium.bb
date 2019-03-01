@@ -103,12 +103,6 @@ class ProtoDatabaseImpl : public ProtoDatabase<T> {
           entries_to_save,
       const KeyFilter& delete_key_filter,
       Callbacks::UpdateCallback callback) override;
-  void UpdateEntriesWithRemoveFilter(
-      std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector>
-          entries_to_save,
-      const KeyFilter& delete_key_filter,
-      const std::string& target_prefix,
-      Callbacks::UpdateCallback callback) override;
 
   void LoadEntries(
       typename Callbacks::Internal<T>::LoadCallback callback) override;
@@ -143,8 +137,6 @@ class ProtoDatabaseImpl : public ProtoDatabase<T> {
       override;
 
   void LoadKeys(Callbacks::LoadKeysCallback callback) override;
-  void LoadKeys(const std::string& target_prefix,
-                Callbacks::LoadKeysCallback callback) override;
 
   void GetEntry(const std::string& key,
                 typename Callbacks::Internal<T>::GetCallback callback) override;
@@ -208,7 +200,6 @@ template <typename T>
 void UpdateEntriesWithRemoveFilterFromTaskRunner(
     std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
     const KeyFilter& delete_key_filter,
-    const std::string& target_prefix,
     scoped_refptr<ProtoDatabaseSelector> db,
     Callbacks::UpdateCallback callback) {
   // Serialize the values from Proto to string before passing on to database.
@@ -219,7 +210,7 @@ void UpdateEntriesWithRemoveFilterFromTaskRunner(
   }
 
   db->UpdateEntriesWithRemoveFilter(std::move(pairs_to_save), delete_key_filter,
-                                    target_prefix, std::move(callback));
+                                    std::move(callback));
 }
 
 // Load transactions happen on background task runner. The loaded entries need
@@ -412,19 +403,9 @@ void ProtoDatabaseImpl<T>::UpdateEntriesWithRemoveFilter(
     std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
     const KeyFilter& delete_key_filter,
     Callbacks::UpdateCallback callback) {
-  UpdateEntriesWithRemoveFilter(std::move(entries_to_save), delete_key_filter,
-                                std::string(), std::move(callback));
-}
-
-template <typename T>
-void ProtoDatabaseImpl<T>::UpdateEntriesWithRemoveFilter(
-    std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
-    const KeyFilter& delete_key_filter,
-    const std::string& target_prefix,
-    Callbacks::UpdateCallback callback) {
   base::OnceClosure update_task = base::BindOnce(
       &UpdateEntriesWithRemoveFilterFromTaskRunner<T>,
-      std::move(entries_to_save), delete_key_filter, target_prefix, db_wrapper_,
+      std::move(entries_to_save), delete_key_filter, db_wrapper_,
       base::BindOnce(&RunUpdateCallback, base::SequencedTaskRunnerHandle::Get(),
                      std::move(callback)));
   PostTransaction(std::move(update_task));
@@ -504,17 +485,11 @@ void ProtoDatabaseImpl<T>::LoadKeysAndEntriesInRange(
 
 template <typename T>
 void ProtoDatabaseImpl<T>::LoadKeys(Callbacks::LoadKeysCallback callback) {
-  LoadKeys(std::string(), std::move(callback));
-}
-
-template <typename T>
-void ProtoDatabaseImpl<T>::LoadKeys(const std::string& target_prefix,
-                                    Callbacks::LoadKeysCallback callback) {
-  base::OnceClosure load_task = base::BindOnce(
-      &ProtoDatabaseSelector::LoadKeys, db_wrapper_, target_prefix,
-      base::BindOnce(&RunLoadKeysCallback,
-                     base::SequencedTaskRunnerHandle::Get(),
-                     std::move(callback)));
+  base::OnceClosure load_task =
+      base::BindOnce(&ProtoDatabaseSelector::LoadKeys, db_wrapper_,
+                     base::BindOnce(&RunLoadKeysCallback,
+                                    base::SequencedTaskRunnerHandle::Get(),
+                                    std::move(callback)));
   PostTransaction(std::move(load_task));
 }
 
