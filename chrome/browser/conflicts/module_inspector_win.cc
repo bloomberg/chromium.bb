@@ -75,7 +75,7 @@ void WriteInspectionResultCacheOnBackgroundSequence(
 }  // namespace
 
 // static
-constexpr base::Feature ModuleInspector::kEnableBackgroundModuleInspection;
+constexpr base::Feature ModuleInspector::kDisableBackgroundModuleInspection;
 
 // static
 constexpr base::Feature ModuleInspector::kWinOOPInspectModuleFeature;
@@ -93,8 +93,8 @@ ModuleInspector::ModuleInspector(
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       inspection_results_cache_read_(false),
       connection_error_retry_count_(kConnectionErrorRetryCount),
-      background_inspection_enabled_(
-          base::FeatureList::IsEnabled(kEnableBackgroundModuleInspection)),
+      background_inspection_disabled_(
+          base::FeatureList::IsEnabled(kDisableBackgroundModuleInspection)),
       test_connector_(nullptr),
       weak_ptr_factory_(this) {
   // Use AfterStartupTaskUtils to be notified when startup is finished.
@@ -131,10 +131,10 @@ void ModuleInspector::IncreaseInspectionPriority() {
   OnStartupFinished();
 
   // Special case where this instance could be ready to start inspecting but
-  // wasn't because the background inspection feature was disabled.
-  if (!background_inspection_enabled_ && inspection_results_cache_read_ &&
+  // wasn't because background inspection was disabled.
+  if (background_inspection_disabled_ && inspection_results_cache_read_ &&
       !queue_.empty()) {
-    background_inspection_enabled_ = true;
+    background_inspection_disabled_ = false;
     StartInspectingModule();
   }
 }
@@ -225,7 +225,7 @@ void ModuleInspector::StartInspectingModule() {
   DCHECK(inspection_results_cache_read_);
   DCHECK(!queue_.empty());
 
-  if (!background_inspection_enabled_)
+  if (background_inspection_disabled_)
     return;
 
   const ModuleInfoKey& module_key = queue_.front();
