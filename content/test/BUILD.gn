@@ -2149,6 +2149,7 @@ test("content_unittests") {
     deps += [
       "//base:base_java_unittest_support",
       "//build/config/freetype",
+      "//components/download/internal/common:internal_java",
       "//content/public/android:content_java",
       "//media/capture/content/android",
       "//media/capture/content/android:screen_capture_java",

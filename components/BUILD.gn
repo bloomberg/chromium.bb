@@ -556,6 +556,7 @@ if (!is_ios) {
       deps += [
         "//components/autofill_assistant/browser",
         "//components/autofill_assistant/browser:proto",
+        "//components/download/internal/common:internal_java",
         "//content/public/test/android:web_test_java_support",
         "//content/test:web_test_support",
         "//testing/android/native_test:native_test_support",
