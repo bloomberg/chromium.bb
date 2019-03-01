@@ -854,7 +854,9 @@ need to be translated for each locale.-->
       <message name="IDS_APP_ACCESSIBILITY_STAR_RATING_ARC" desc="Accessibility text for the star rating of a Play Store app.">
         Star rating <ph name="RATING_SCORE">$1<ex>5.0</ex></ph>
       </message>
-
+      <message name="IDS_APP_ACCESSIBILITY_APP_RECOMMENDATION_ARC" desc="Accessibility text to specify a search result is an app recommendation.">
+        App recommendation
+      </message>
       <!-- Strings describing the touch calibration UX -->
       <message name="IDS_DISPLAY_TOUCH_CALIBRATION_EXIT_LABEL" desc="A message to notify the user about using the escape key to exit the calibration mode.">
         To exit calibration press Esc.

@@ -229,6 +229,13 @@ void SearchResultTileItemView::OnResultChanged() {
   }
   if (price_ && price_->visible())
     accessible_name += base::UTF8ToUTF16(", ") + price_->text();
+
+  if (result()->result_type() ==
+      ash::SearchResultType::kPlayStoreReinstallApp) {
+    accessible_name +=
+        base::UTF8ToUTF16(", ") +
+        l10n_util::GetStringUTF16(IDS_APP_ACCESSIBILITY_APP_RECOMMENDATION_ARC);
+  }
   SetAccessibleName(accessible_name);
 }
 
