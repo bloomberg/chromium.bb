@@ -94,6 +94,8 @@ const char kHistogramLastTextPaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToLastTextPaint";
 const char kHistogramLargestContentPaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToLargestContentPaint";
+const char kHistogramLargestContentPaintContentType[] =
+    "PageLoad.Experimental.PaintTiming.LargestContentPaint.ContentType";
 const char kHistogramTimeToInteractive[] =
     "PageLoad.Experimental.NavigationToInteractive";
 const char kHistogramInteractiveToInteractiveDetection[] =
@@ -770,14 +772,17 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
   }
   base::Optional<base::TimeDelta> largest_content_paint_time;
   uint64_t largest_content_paint_size;
-  AssignTimeAndSizeForLargestContentfulPaint(largest_content_paint_time,
-                                             largest_content_paint_size,
-                                             timing.paint_timing);
-  if (largest_content_paint_size > 0 &&
+  PageLoadMetricsObserver::LargestContentType largest_content_type;
+  if (AssignTimeAndSizeForLargestContentfulPaint(
+          timing.paint_timing, &largest_content_paint_time,
+          &largest_content_paint_size, &largest_content_type) &&
       WasStartedInForegroundOptionalEventInForeground(
           largest_content_paint_time, info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestContentPaint,
                         largest_content_paint_time.value());
+    UMA_HISTOGRAM_ENUMERATION(
+        internal::kHistogramLargestContentPaintContentType,
+        largest_content_type);
   }
 
   if (timing.paint_timing->first_paint &&

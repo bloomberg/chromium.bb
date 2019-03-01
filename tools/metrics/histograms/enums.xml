@@ -30026,6 +30026,17 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Add Language"/>
 </enum>
 
+<enum name="LargestContentType">
+  <summary>
+    Whether the LargestContentPaint results from image or text. These are the
+    only content types currently tracked by the metric
+    PageLoad.Experimental.PaintTiming.NavigationToLargestContentPaint, so there
+    is no need for an 'Other' label.
+  </summary>
+  <int value="0" label="Image"/>
+  <int value="1" label="Text"/>
+</enum>
+
 <enum name="LastSettingParsed">
   <obsolete>
     Deprecated 2015-10-05 in Issue 433475. Histogram was used temorarily for
