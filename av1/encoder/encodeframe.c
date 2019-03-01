@@ -5538,7 +5538,7 @@ static void first_partition_search_pass(AV1_COMP *cpi, ThreadData *td,
 
   const SPEED_FEATURES *const sf = &cpi->sf;
   // Reset the stats tables.
-  if (sf->mode_pruning_based_on_two_pass_partition_search)
+  if (cpi->mode_pruning_based_on_two_pass_partition_search)
     av1_zero(x->first_partition_pass_stats);
 
   AV1_COMMON *const cm = &cpi->common;
@@ -5580,7 +5580,7 @@ static void first_partition_search_pass(AV1_COMP *cpi, ThreadData *td,
 
   x->use_cb_search_range = 1;
 
-  if (sf->mode_pruning_based_on_two_pass_partition_search) {
+  if (cpi->mode_pruning_based_on_two_pass_partition_search) {
     for (int i = 0; i < FIRST_PARTITION_PASS_STATS_TABLES; ++i) {
       FIRST_PARTITION_PASS_STATS *const stat =
           &x->first_partition_pass_stats[i];
@@ -5956,7 +5956,7 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
 #endif
       init_first_partition_pass_stats_tables(x->first_partition_pass_stats);
       // Do the first pass if we need two pass partition search
-      if (cpi->sf.two_pass_partition_search &&
+      if (cpi->two_pass_partition_search &&
           cpi->sf.use_square_partition_only_threshold > BLOCK_4X4 &&
           mi_row + mi_size_high[sb_size] < cm->mi_rows &&
           mi_col + mi_size_wide[sb_size] < cm->mi_cols &&
@@ -6438,6 +6438,9 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 
   av1_zero(*td->counts);
   av1_zero(rdc->comp_pred_diff);
+  // Two pass partition search can be enabled/disabled for different frames.
+  // Reset this data at frame level to avoid any incorrect usage.
+  init_first_partition_pass_stats_tables(x->first_partition_pass_stats);
 
   // Reset the flag.
   cpi->intrabc_used = 0;
@@ -7049,7 +7052,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   const int mi_height = mi_size_high[bsize];
   const int is_inter = is_inter_block(mbmi);
 
-  if (cpi->sf.mode_pruning_based_on_two_pass_partition_search &&
+  if (cpi->mode_pruning_based_on_two_pass_partition_search &&
       x->cb_partition_scan) {
     for (int row = mi_row; row < mi_row + mi_width;
          row += FIRST_PARTITION_PASS_SAMPLE_REGION) {

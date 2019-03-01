@@ -727,6 +727,10 @@ typedef struct AV1_COMP {
 
   // For a still frame, this flag is set to 1 to skip partition search.
   int partition_search_skippable_frame;
+  // The following 2 items correspond to 2 speed features.
+  int two_pass_partition_search;
+  int mode_pruning_based_on_two_pass_partition_search;
+
   double csm_rate_array[32];
   double m_rate_array[32];
   int rate_size;
