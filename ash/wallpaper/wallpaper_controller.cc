@@ -27,6 +27,7 @@
 #include "ash/wallpaper/wallpaper_window_state_manager.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
@@ -717,8 +718,15 @@ void WallpaperController::UpdateWallpaperBlur(bool blur) {
 }
 
 bool WallpaperController::ShouldApplyDimming() const {
-  return Shell::Get()->session_controller()->IsUserSessionBlocked() &&
-         !IsOneShotWallpaper();
+  // Dim the wallpaper in a blocked user session or in tablet mode unless during
+  // wallpaper preview.
+  const bool should_dim =
+      Shell::Get()->session_controller()->IsUserSessionBlocked() ||
+      (Shell::Get()
+           ->tablet_mode_controller()
+           ->IsTabletModeWindowManagerEnabled() &&
+       !confirm_preview_wallpaper_callback_);
+  return should_dim && !IsOneShotWallpaper();
 }
 
 bool WallpaperController::IsBlurAllowed() const {
@@ -1378,6 +1386,14 @@ void WallpaperController::OnLocalStatePrefServiceInitialized(
   }
 }
 
+void WallpaperController::OnShellInitialized() {
+  Shell::Get()->tablet_mode_controller()->AddObserver(this);
+}
+
+void WallpaperController::OnShellDestroying() {
+  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
+}
+
 void WallpaperController::OnWallpaperResized() {
   CalculateWallpaperColors();
   compositor_lock_.reset();
@@ -1421,6 +1437,14 @@ void WallpaperController::OnSessionStateChanged(
     MoveToUnlockedContainer();
   else
     MoveToLockedContainer();
+}
+
+void WallpaperController::OnTabletModeStarted() {
+  RepaintWallpaper();
+}
+
+void WallpaperController::OnTabletModeEnded() {
+  RepaintWallpaper();
 }
 
 void WallpaperController::CompositorLockTimedOut() {
@@ -1482,10 +1506,13 @@ void WallpaperController::InstallDesktopController(aura::Window* root_window) {
   if (is_wallpaper_blurred) {
     blur = session_blocked ? login_constants::kBlurSigma : kWallpaperBlurSigma;
   }
-  RootWindowController::ForWindow(root_window)
-      ->wallpaper_widget_controller()
-      ->SetWallpaperWidget(CreateWallpaperWidget(root_window, container_id),
-                           blur);
+  WallpaperView* wallpaper_view = nullptr;
+  auto* wallpaper_widget_controller =
+      RootWindowController::ForWindow(root_window)
+          ->wallpaper_widget_controller();
+  auto* widget =
+      CreateWallpaperWidget(root_window, container_id, &wallpaper_view);
+  wallpaper_widget_controller->SetWallpaperWidget(widget, wallpaper_view, blur);
 }
 
 void WallpaperController::InstallDesktopControllerForAllWindows() {
@@ -2157,6 +2184,15 @@ void WallpaperController::GetInternalDisplayCompositorLock() {
 
   compositor_lock_ = root_window->layer()->GetCompositor()->GetCompositorLock(
       this, kCompositorLockTimeout);
+}
+
+void WallpaperController::RepaintWallpaper() {
+  for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
+    auto* wallpaper_view =
+        root_window_controller->wallpaper_widget_controller()->wallpaper_view();
+    if (wallpaper_view)
+      wallpaper_view->SchedulePaint();
+  }
 }
 
 }  // namespace ash

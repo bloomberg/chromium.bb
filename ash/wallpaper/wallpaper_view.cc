@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
@@ -31,7 +32,7 @@ namespace {
 
 // The value used for alpha to apply a dark filter to the wallpaper in tablet
 // mode. A higher number up to 255 results in a darker wallpaper.
-constexpr int kWallpaperDimnessInTabletMode = 102;
+constexpr int kTabletModeWallpaperAlpha = 102;
 
 // A view that controls the child view's layer so that the layer always has the
 // same size as the display's original, un-scaled size in DIP. The layer is then
@@ -84,11 +85,15 @@ SkColor GetWallpaperDarkenColor() {
       SkColorSetA(login_constants::kDefaultBaseColor,
                   login_constants::kTranslucentColorDarkenAlpha),
       SkColorSetA(darken_color, 0xFF));
-  return SkColorSetA(darken_color, login_constants::kTranslucentAlpha);
-}
 
-SkColor GetWallpaperDarkenColorForTabletMode() {
-  return SkColorSetA(GetWallpaperDarkenColor(), kWallpaperDimnessInTabletMode);
+  int alpha = login_constants::kTranslucentAlpha;
+  if (Shell::Get()
+          ->tablet_mode_controller()
+          ->IsTabletModeWindowManagerEnabled()) {
+    alpha = kTabletModeWallpaperAlpha;
+  }
+
+  return SkColorSetA(darken_color, alpha);
 }
 
 }  // namespace
@@ -98,30 +103,9 @@ SkColor GetWallpaperDarkenColorForTabletMode() {
 
 WallpaperView::WallpaperView() {
   set_context_menu_controller(this);
-  tablet_mode_observer_.Add(Shell::Get()->tablet_mode_controller());
-  is_tablet_mode_ = Shell::Get()
-                        ->tablet_mode_controller()
-                        ->IsTabletModeWindowManagerEnabled();
 }
 
 WallpaperView::~WallpaperView() = default;
-
-void WallpaperView::OnTabletModeStarted() {
-  is_tablet_mode_ = true;
-  SchedulePaint();
-}
-
-void WallpaperView::OnTabletModeEnded() {
-  is_tablet_mode_ = false;
-  SchedulePaint();
-}
-
-void WallpaperView::OnTabletControllerDestroyed() {
-  tablet_mode_observer_.RemoveAll();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// WallpaperView, views::View overrides:
 
 void WallpaperView::OnPaint(gfx::Canvas* canvas) {
   // Scale the image while maintaining the aspect ratio, cropping as necessary
@@ -143,9 +127,6 @@ void WallpaperView::OnPaint(gfx::Canvas* canvas) {
   if (controller->ShouldApplyDimming()) {
     flags.setColorFilter(SkColorFilter::MakeModeFilter(
         GetWallpaperDarkenColor(), SkBlendMode::kDarken));
-  } else if (is_tablet_mode_) {
-    flags.setColorFilter(SkColorFilter::MakeModeFilter(
-        GetWallpaperDarkenColorForTabletMode(), SkBlendMode::kDarken));
   }
 
   switch (layout) {
@@ -220,7 +201,8 @@ void WallpaperView::ShowContextMenuForView(views::View* source,
 }
 
 views::Widget* CreateWallpaperWidget(aura::Window* root_window,
-                                     int container_id) {
+                                     int container_id,
+                                     WallpaperView** out_wallpaper_view) {
   WallpaperController* controller = Shell::Get()->wallpaper_controller();
 
   views::Widget* wallpaper_widget = new views::Widget;
@@ -233,6 +215,7 @@ views::Widget* CreateWallpaperWidget(aura::Window* root_window,
   wallpaper_widget->Init(params);
   WallpaperView* wallpaper_view = new WallpaperView();  // Owned by views.
   wallpaper_widget->SetContentsView(new LayerControlView(wallpaper_view));
+  *out_wallpaper_view = wallpaper_view;
   int animation_type =
       controller->ShouldShowInitialAnimation()
           ? wm::WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE
