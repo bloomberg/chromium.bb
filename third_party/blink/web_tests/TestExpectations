@@ -5954,3 +5954,7 @@ crbug.com/915352 virtual/threaded/external/wpt/animation-worklet/worklet-animati
 
 crbug.com/915352 [ Mac10.11 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Failure ]
 crbug.com/915352 [ Mac10.11 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-and-display-none.https.html [ Failure ]
+
+# Sheriff 2019-03-01
+crbug.com/937215 [ Linux ] media/controls/modern/doubletap-to-jump-forwards.html [ Pass Failure ]
+crbug.com/937215 [ Linux ] virtual/video-surface-layer/media/controls/modern/doubletap-to-jump-forwards.html [ Pass Failure ]
