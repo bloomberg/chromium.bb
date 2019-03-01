@@ -366,6 +366,11 @@ class MODULES_EXPORT AudioNode : public EventTargetWithInlineData {
   // This should be called in a constructor.
   void SetHandler(scoped_refptr<AudioHandler>);
 
+  // During construction time the handler may not be set properly. Since the
+  // garbage collector can call into HasPendingActivity() such calls need to be
+  // able to see whether a handle has been set.
+  bool ContainsHandler() const;
+
  private:
   void WarnIfContextClosed() const;
   void Dispose();

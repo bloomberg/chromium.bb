@@ -314,7 +314,8 @@ bool AudioScheduledSourceNode::HasPendingActivity() const {
 
   // If a node is scheduled or playing, do not collect the node prematurely
   // even its reference is out of scope. Then fire onended event if assigned.
-  return GetAudioScheduledSourceHandler().IsPlayingOrScheduled();
+  return ContainsHandler() &&
+         GetAudioScheduledSourceHandler().IsPlayingOrScheduled();
 }
 
 }  // namespace blink
