@@ -4,9 +4,14 @@
 
 #include "chrome/browser/browser_switcher/browser_switcher_service.h"
 
+#include <string.h>
+
 #include "base/bind.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "chrome/browser/browser_switcher/browser_switcher_service_factory.h"
@@ -20,6 +25,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
+#include "net/base/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -36,13 +42,14 @@ namespace {
 const char kAValidUrl[] = "http://example.com/";
 const char kAnInvalidUrl[] = "the quick brown fox jumps over the lazy dog";
 
+const char kSitelistXml[] =
+    "<rules version=\"1\"><docMode><domain docMode=\"9\">"
+    "docs.google.com</domain></docMode></rules>";
+
 bool ReturnValidXml(content::URLLoaderInterceptor::RequestParams* params) {
   std::string headers = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n";
-  std::string xml =
-      "<rules version=\"1\"><docMode><domain docMode=\"9\">"
-      "docs.google.com</domain></docMode></rules>";
-  content::URLLoaderInterceptor::WriteResponse(headers, xml,
-                                               params->client.get());
+  content::URLLoaderInterceptor::WriteResponse(
+      headers, std::string(kSitelistXml), params->client.get());
   return true;
 }
 
@@ -149,6 +156,33 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
 
   content::URLLoaderInterceptor interceptor(
       base::BindRepeating(ReturnValidXml));
+
+  // Execute everything and make sure the rules are applied correctly.
+  auto* service =
+      BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](BrowserSwitcherService* service, base::OnceClosure quit) {
+            EXPECT_FALSE(ShouldSwitch(service, GURL("http://google.com/")));
+            EXPECT_TRUE(ShouldSwitch(service, GURL("http://docs.google.com/")));
+            std::move(quit).Run();
+          },
+          service, run_loop.QuitClosure()),
+      TestTimeouts::action_timeout());
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, ExternalFileUrl) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  base::ScopedTempDir dir;
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  base::FilePath sitelist_path = dir.GetPath().AppendASCII("sitelist.xml");
+  base::WriteFile(sitelist_path, kSitelistXml, strlen(kSitelistXml));
+
+  SetExternalUrl(net::FilePathToFileURL(sitelist_path).spec());
 
   // Execute everything and make sure the rules are applied correctly.
   auto* service =

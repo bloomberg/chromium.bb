@@ -60,7 +60,10 @@ class XmlDownloader {
   void ParseXml(RulesetSource* source, std::unique_ptr<std::string> bytes);
   void DoneParsing(RulesetSource* source, ParsedXml xml);
 
-  scoped_refptr<network::SharedURLLoaderFactory> factory_;
+  network::mojom::URLLoaderFactory* GetURLLoaderFactoryForURL(const GURL& url);
+
+  std::unique_ptr<network::mojom::URLLoaderFactory> file_url_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> other_url_factory_;
 
   std::vector<RulesetSource> sources_;
 
