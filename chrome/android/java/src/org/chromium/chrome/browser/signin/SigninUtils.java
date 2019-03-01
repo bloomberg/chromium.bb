@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -35,6 +36,7 @@ public class SigninUtils {
         }
         Intent intent = new Intent(ACCOUNT_SETTINGS_ACTION);
         intent.putExtra(ACCOUNT_SETTINGS_ACCOUNT_KEY, account);
+        if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         return IntentUtils.safeStartActivity(context, intent);
     }
 
@@ -43,8 +45,9 @@ public class SigninUtils {
      * @param context Context to use when starting the Activity.
      * @return Whether or not Android accepted the Intent.
      */
-    private static boolean openSettingsForAllAccounts(Context context) {
+    public static boolean openSettingsForAllAccounts(Context context) {
         Intent intent = new Intent(Settings.ACTION_SYNC_SETTINGS);
+        if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         return IntentUtils.safeStartActivity(context, intent);
     }
 }
