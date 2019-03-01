@@ -60,6 +60,14 @@ TabletModeClient* TabletModeClient::Get() {
   return g_tablet_mode_client_instance;
 }
 
+void TabletModeClient::SetTabletModeEnabledForTesting(
+    bool enabled,
+    ash::mojom::TabletModeController::SetTabletModeEnabledForTestingCallback
+        callback) {
+  tablet_mode_controller_->SetTabletModeEnabledForTesting(enabled,
+                                                          std::move(callback));
+}
+
 void TabletModeClient::AddObserver(TabletModeClientObserver* observer) {
   observers_.AddObserver(observer);
 }

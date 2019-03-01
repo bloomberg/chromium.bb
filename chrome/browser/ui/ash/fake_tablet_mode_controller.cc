@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/fake_tablet_mode_controller.h"
 
+#include <utility>
+
 FakeTabletModeController::FakeTabletModeController() : binding_(this) {}
 
 FakeTabletModeController::~FakeTabletModeController() = default;
@@ -18,4 +20,10 @@ FakeTabletModeController::CreateInterfacePtr() {
 void FakeTabletModeController::SetClient(
     ash::mojom::TabletModeClientPtr client) {
   was_client_set_ = true;
+}
+
+void FakeTabletModeController::SetTabletModeEnabledForTesting(
+    bool enabled,
+    SetTabletModeEnabledForTestingCallback callback) {
+  std::move(callback).Run(enabled);
 }

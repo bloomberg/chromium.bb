@@ -606,6 +606,19 @@ class AutotestPrivateIsTabletModeEnabledFunction
   ResponseAction Run() override;
 };
 
+// Enables/Disables tablet mode.
+class AutotestPrivateSetTabletModeEnabledFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setTabletModeEnabled",
+                             AUTOTESTPRIVATE_SETTABLETMODEENABLED)
+
+ private:
+  void OnSetTabletModeEnabled(bool enabled);
+  ~AutotestPrivateSetTabletModeEnabledFunction() override;
+  ResponseAction Run() override;
+};
+
 template <>
 KeyedService*
 BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(

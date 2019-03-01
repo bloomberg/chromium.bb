@@ -1383,6 +1383,7 @@ enum HistogramValue {
   DECLARATIVENETREQUEST_GETDYNAMICRULES = 1320,
   AUTOTESTPRIVATE_GETARCSTATE = 1321,
   AUTOTESTPRIVATE_ISTABLETMODEENABLED = 1322,
+  AUTOTESTPRIVATE_SETTABLETMODEENABLED = 1323,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY
