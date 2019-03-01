@@ -1751,8 +1751,18 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityOffscreen) {
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityOffscreenIframe) {
+  RunHtmlTest(FILE_PATH_LITERAL("offscreen-iframe.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        AccessibilityOffscreenScroll) {
   RunHtmlTest(FILE_PATH_LITERAL("offscreen-scroll.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityOffscreenSelect) {
+  RunHtmlTest(FILE_PATH_LITERAL("offscreen-select.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityOptgroup) {

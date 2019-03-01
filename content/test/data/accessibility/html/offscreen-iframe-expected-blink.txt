@@ -1,0 +1,6 @@
+rootWebArea
+++genericContainer
+++++iframe
+++++++rootWebArea
+++++++++genericContainer name='iframe_onscreen'
+++++++++genericContainer offscreen name='iframe_offscreen'

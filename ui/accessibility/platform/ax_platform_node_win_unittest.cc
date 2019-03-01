@@ -3219,6 +3219,7 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertySimple) {
   EXPECT_UIA_BOOL_EQ(root_node, UIA_IsRequiredForFormPropertyId, false);
   EXPECT_UIA_BOOL_EQ(root_node, UIA_IsDataValidForFormPropertyId, true);
   EXPECT_UIA_BOOL_EQ(root_node, UIA_IsKeyboardFocusablePropertyId, false);
+  EXPECT_UIA_BOOL_EQ(root_node, UIA_IsOffscreenPropertyId, false);
   ComPtr<IRawElementProviderSimple> child_node1 =
       QueryInterfaceFromNode<IRawElementProviderSimple>(
           GetRootNode()->children()[0]);

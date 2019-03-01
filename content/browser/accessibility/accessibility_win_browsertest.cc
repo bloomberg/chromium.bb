@@ -98,7 +98,8 @@ class AccessibilityWinBrowserTest : public ContentBrowserTest {
   void SetUpSampleParagraphInScrollableEditable(
       Microsoft::WRL::ComPtr<IAccessibleText>* accessible_text,
       ui::AXMode accessibility_mode = ui::kAXModeComplete);
-  BrowserAccessibility* FindNode(ax::mojom::Role role, const std::string& name);
+  BrowserAccessibility* FindNode(ax::mojom::Role role,
+                                 const std::string& name_or_value);
   BrowserAccessibilityManager* GetManager();
   static Microsoft::WRL::ComPtr<IAccessible> GetAccessibleFromVariant(
       IAccessible* parent,
@@ -126,7 +127,7 @@ class AccessibilityWinBrowserTest : public ContentBrowserTest {
       Microsoft::WRL::ComPtr<IAccessibleText>* accessible_text);
   BrowserAccessibility* FindNodeInSubtree(BrowserAccessibility& node,
                                           ax::mojom::Role role,
-                                          const std::string& name);
+                                          const std::string& name_or_value);
   DISALLOW_COPY_AND_ASSIGN(AccessibilityWinBrowserTest);
 };
 
@@ -477,30 +478,41 @@ void AccessibilityWinBrowserTest::SetUpSampleParagraphHelper(
   ASSERT_HRESULT_SUCCEEDED(paragraph.CopyTo(accessible_text->GetAddressOf()));
 }
 
+// Retrieve the accessibility node, starting from the root node, that matches
+// the accessibility role, name or value.
 BrowserAccessibility* AccessibilityWinBrowserTest::FindNode(
     ax::mojom::Role role,
-    const std::string& name) {
+    const std::string& name_or_value) {
   BrowserAccessibility* root = GetManager()->GetRoot();
   CHECK(root);
-  return FindNodeInSubtree(*root, role, name);
+  return FindNodeInSubtree(*root, role, name_or_value);
 }
 
+// Retrieve the browser accessibility manager object for the current web
+// contents.
 BrowserAccessibilityManager* AccessibilityWinBrowserTest::GetManager() {
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
   return web_contents->GetRootBrowserAccessibilityManager();
 }
 
+// Retrieve the accessibility node in the subtree that matches the accessibility
+// role, name or value.
 BrowserAccessibility* AccessibilityWinBrowserTest::FindNodeInSubtree(
     BrowserAccessibility& node,
     ax::mojom::Role role,
-    const std::string& name) {
+    const std::string& name_or_value) {
+  const auto& name = node.GetStringAttribute(ax::mojom::StringAttribute::kName);
+  const auto& value =
+      node.GetStringAttribute(ax::mojom::StringAttribute::kValue);
   if (node.GetRole() == role &&
-      node.GetStringAttribute(ax::mojom::StringAttribute::kName) == name)
+      (name == name_or_value || value == name_or_value)) {
     return &node;
+  }
+
   for (unsigned int i = 0; i < node.PlatformChildCount(); ++i) {
     BrowserAccessibility* result =
-        FindNodeInSubtree(*node.PlatformGetChild(i), role, name);
+        FindNodeInSubtree(*node.PlatformGetChild(i), role, name_or_value);
     if (result)
       return result;
   }
