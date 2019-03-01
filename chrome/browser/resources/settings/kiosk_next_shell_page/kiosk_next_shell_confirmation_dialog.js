@@ -4,13 +4,13 @@
 
 /**
  * @fileoverview
- * 'settings-contained-shell-confirmation-dialog' is a dialog shown to confirm
- * if a Contained Shell change is really wanted. Since enabling/disabling the
+ * 'settings-kiosk-next-shell-confirmation-dialog' is a dialog shown to confirm
+ * if a Kiosk Next Shell change is really wanted. Since enabling/disabling the
  * shell requires a sign out, we need to provide this dialog to avoid surprising
  * users.
  */
 Polymer({
-  is: 'settings-contained-shell-confirmation-dialog',
+  is: 'settings-kiosk-next-shell-confirmation-dialog',
 
   behaviors: [I18nBehavior, PrefsBehavior],
 
@@ -51,28 +51,28 @@ Polymer({
    * @private
    * @return {string}
    */
-  getTitleText_: function(containedShellEnabled) {
-    return containedShellEnabled ?
-        this.i18n('containedShellEnabledDialogTitle') :
-        this.i18n('containedShellDisabledDialogTitle');
+  getTitleText_: function(kioskNextShellEnabled) {
+    return kioskNextShellEnabled ?
+        this.i18n('kioskNextShellEnabledDialogTitle') :
+        this.i18n('kioskNextShellDisabledDialogTitle');
   },
 
   /**
    * @private
    * @return {string}
    */
-  getBodyText_: function(containedShellEnabled) {
-    return containedShellEnabled ?
-        this.i18n('containedShellEnabledDialogBody') :
-        this.i18n('containedShellDisabledDialogBody');
+  getBodyText_: function(kioskNextShellEnabled) {
+    return kioskNextShellEnabled ?
+        this.i18n('kioskNextShellEnabledDialogBody') :
+        this.i18n('kioskNextShellDisabledDialogBody');
   },
 
   /**
    * @private
    * @return {string}
    */
-  getConfirmationText_: function(containedShellEnabled) {
-    return containedShellEnabled ? this.i18n('containedShellTurnOff') :
-                                   this.i18n('containedShellTurnOn');
+  getConfirmationText_: function(kioskNextShellEnabled) {
+    return kioskNextShellEnabled ? this.i18n('kioskNextShellTurnOff') :
+                                   this.i18n('kioskNextShellTurnOn');
   },
 });

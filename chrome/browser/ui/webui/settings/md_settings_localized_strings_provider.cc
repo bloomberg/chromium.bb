@@ -492,24 +492,24 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
       base::FeatureList::IsEnabled(chromeos::features::kCrostiniUsbSupport));
 }
 
-void AddContainedShellStrings(content::WebUIDataSource* html_source) {
+void AddKioskNextShellStrings(content::WebUIDataSource* html_source) {
   static constexpr LocalizedString kLocalizedStrings[] = {
-      {"containedShellPageTitle", IDS_SETTINGS_CONTAINED_SHELL_TITLE},
-      {"containedShellPageLabel", IDS_SETTINGS_CONTAINED_SHELL_LABEL},
-      {"containedShellPageSubtextEnable",
-       IDS_SETTINGS_CONTAINED_SHELL_SUBTEXT_ENABLE},
-      {"containedShellPageSubtextDisable",
-       IDS_SETTINGS_CONTAINED_SHELL_SUBTEXT_DISABLE},
-      {"containedShellTurnOn", IDS_SETTINGS_TURN_ON},
-      {"containedShellTurnOff", IDS_SETTINGS_CONTAINED_SHELL_TURN_OFF},
-      {"containedShellEnabledDialogTitle",
-       IDS_SETTINGS_CONTAINED_SHELL_ENABLED_DIALOG_TITLE},
-      {"containedShellDisabledDialogTitle",
-       IDS_SETTINGS_CONTAINED_SHELL_DISABLED_DIALOG_TITLE},
-      {"containedShellEnabledDialogBody",
-       IDS_SETTINGS_CONTAINED_SHELL_ENABLED_DIALOG_BODY},
-      {"containedShellDisabledDialogBody",
-       IDS_SETTINGS_CONTAINED_SHELL_DISABLED_DIALOG_BODY},
+      {"kioskNextShellPageTitle", IDS_SETTINGS_KIOSK_NEXT_SHELL_TITLE},
+      {"kioskNextShellPageLabel", IDS_SETTINGS_KIOSK_NEXT_SHELL_LABEL},
+      {"kioskNextShellPageSubtextEnable",
+       IDS_SETTINGS_KIOSK_NEXT_SHELL_SUBTEXT_ENABLE},
+      {"kioskNextShellPageSubtextDisable",
+       IDS_SETTINGS_KIOSK_NEXT_SHELL_SUBTEXT_DISABLE},
+      {"kioskNextShellTurnOn", IDS_SETTINGS_TURN_ON},
+      {"kioskNextShellTurnOff", IDS_SETTINGS_KIOSK_NEXT_SHELL_TURN_OFF},
+      {"kioskNextShellEnabledDialogTitle",
+       IDS_SETTINGS_KIOSK_NEXT_SHELL_ENABLED_DIALOG_TITLE},
+      {"kioskNextShellDisabledDialogTitle",
+       IDS_SETTINGS_KIOSK_NEXT_SHELL_DISABLED_DIALOG_TITLE},
+      {"kioskNextShellEnabledDialogBody",
+       IDS_SETTINGS_KIOSK_NEXT_SHELL_ENABLED_DIALOG_BODY},
+      {"kioskNextShellDisabledDialogBody",
+       IDS_SETTINGS_KIOSK_NEXT_SHELL_DISABLED_DIALOG_BODY},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
@@ -2860,7 +2860,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
 
 #if defined(OS_CHROMEOS)
   AddCrostiniStrings(html_source, profile);
-  AddContainedShellStrings(html_source);
+  AddKioskNextShellStrings(html_source);
   AddAndroidAppStrings(html_source);
   AddBluetoothStrings(html_source);
   AddChromeOSUserStrings(html_source, profile);
