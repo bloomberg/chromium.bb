@@ -53,9 +53,8 @@ def build(build_config, target_device, extra_gn_options, extra_ninja_options):
             'disable_file_support=true disable_ftp_support=true '
             'disable_brotli_filter=true ios_enable_code_signing=false '
             'enable_dsyms=true '
-            'target_cpu="%s" additional_target_cpus = ["%s"] %s %s' %
-            (target_cpu, additional_cpu, build_config_gn_args,
-             extra_gn_options))
+            'target_cpu="%s" %s %s' %
+            (target_cpu, build_config_gn_args, extra_gn_options))
 
   gn_command = 'gn gen %s --args=\'%s\'' % (build_dir, gn_args)
   print gn_command
