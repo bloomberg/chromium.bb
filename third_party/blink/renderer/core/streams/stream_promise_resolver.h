@@ -73,10 +73,14 @@ class CORE_EXPORT StreamPromiseResolver
   // Returns the state of the promise, one of pending, fulfilled or rejected.
   v8::Promise::PromiseState State(v8::Isolate*) const;
 
+  // Returns true if the the promise is not pending.
+  bool IsSettled() const { return is_settled_; }
+
   void Trace(Visitor*);
 
  private:
   TraceWrapperV8Reference<v8::Promise::Resolver> resolver_;
+  bool is_settled_ = false;
 };
 
 }  // namespace blink

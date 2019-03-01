@@ -305,7 +305,7 @@ void WritableStreamDefaultWriter::EnsureReadyPromiseRejected(
   // https://streams.spec.whatwg.org/#writable-stream-default-writer-ensure-ready-promise-rejected
   //  1. If writer.[[readyPromise]].[[PromiseState]] is "pending", reject
   //     writer.[[readyPromise]] with error.
-  if (writer->ready_promise_->State(isolate) == v8::Promise::kPending) {
+  if (!writer->ready_promise_->IsSettled()) {
     writer->ready_promise_->Reject(script_state, error);
   } else {
     //  2. Otherwise, set writer.[[readyPromise]] to a promise rejected with
@@ -439,7 +439,7 @@ void WritableStreamDefaultWriter::EnsureClosedPromiseRejected(
   // https://streams.spec.whatwg.org/#writable-stream-default-writer-ensure-closed-promise-rejected
   //  1. If writer.[[closedPromise]].[[PromiseState]] is "pending", reject
   //     writer.[[closedPromise]] with error.
-  if (writer->closed_promise_->State(isolate) == v8::Promise::kPending) {
+  if (!writer->closed_promise_->IsSettled()) {
     writer->closed_promise_->Reject(script_state, error);
   } else {
     //  2. Otherwise, set writer.[[closedPromise]] to a promise rejected with
