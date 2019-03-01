@@ -33,8 +33,10 @@
 #include <memory>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
@@ -311,6 +313,9 @@ void ServiceWorkerGlobalScope::EvaluateClassicScriptInternal(
   }
 
   // Receive the main script via script streaming if needed.
+  // TODO(nhiroki): Merge script loading from the installed script manager
+  // into regular off-the-main-thread script fetch path so that we can remove
+  // this special casing.
   InstalledScriptsManager* installed_scripts_manager =
       GetThread()->GetInstalledScriptsManager();
   if (installed_scripts_manager &&
@@ -324,6 +329,14 @@ void ServiceWorkerGlobalScope::EvaluateClassicScriptInternal(
       // ServiceWorkerGlobalScopeProxy::DidCloseWorkerGlobalScope() for details.
       close();
       return;
+    }
+
+    if (base::FeatureList::IsEnabled(
+            features::kOffMainThreadServiceWorkerScriptFetch)) {
+      // WorkerGlobalScope sets the URL in DidImportClassicScript() when
+      // off-the-main-thread fetch is enabled. Since we bypass calling
+      // DidImportClassicScript(), set the URL here.
+      InitializeURL(script_url);
     }
 
     DCHECK(source_code.IsEmpty());
