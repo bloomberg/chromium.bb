@@ -134,7 +134,8 @@ bool StructTraits<display::mojom::DisplaySnapshotDataView,
       data.has_color_correction_matrix(),
       data.color_correction_in_linear_space(), color_space, display_name,
       file_path, std::move(modes), std::move(edid), current_mode, native_mode,
-      data.product_code(), data.year_of_manufacture(), maximum_cursor_size);
+      data.product_code(), data.year_of_manufacture(), maximum_cursor_size,
+      data.has_associated_crtc());
   return true;
 }
 

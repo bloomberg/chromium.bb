@@ -27,17 +27,17 @@ std::unique_ptr<display::DisplaySnapshot> CreateTestDisplaySnapshot(
     const gfx::Size& size,
     display::DisplayConnectionType type) {
   return std::make_unique<display::DisplaySnapshot>(
-      id, gfx::Point(0, 0) /* origin */, size, type,
-      false /* is_aspect_preserving_scaling */, false /* has_overscan */,
-      false /* has_color_correction_matrix */,
-      false /* color_correction_in_linear_space */,
-      gfx::ColorSpace() /* color_space */, std::string() /* display_name */,
-      base::FilePath() /* sys_path */,
-      display::DisplaySnapshot::DisplayModeList() /* modes */,
-      std::vector<uint8_t>() /* edid */, nullptr /* current_mode */,
-      nullptr /* native_mode */, 0 /* product_id */,
-      display::kInvalidYearOfManufacture,
-      gfx::Size() /* maximum_cursor_size */);
+      id, /*origin=*/gfx::Point(0, 0), size, type,
+      /*is_aspect_preserving_scaling=*/false, /*has_overscan=*/false,
+      /*has_color_correction_matrix=*/false,
+      /*color_correction_in_linear_space=*/false,
+      /*color_space=*/gfx::ColorSpace(), /*display_name=*/std::string(),
+      /*sys_path=*/base::FilePath(),
+      /*modes=*/display::DisplaySnapshot::DisplayModeList(),
+      /*edid=*/std::vector<uint8_t>(), /*current_mode=*/nullptr,
+      /*native_mode=*/nullptr, /*product_id=*/0,
+      display::kInvalidYearOfManufacture, /*maximum_cursor_size=*/gfx::Size(),
+      /*has_associated_crtc=*/true);
 }
 
 }  // namespace

@@ -39,6 +39,10 @@ class DrmDisplay {
   scoped_refptr<DrmDevice> drm() const { return drm_; }
   uint32_t crtc() const { return crtc_; }
   uint32_t connector() const { return connector_; }
+  void UpdateForTesting(uint32_t connector_id, uint32_t crtc_id) {
+    connector_ = connector_id;
+    crtc_ = crtc_id;
+  }
   const std::vector<drmModeModeInfo>& modes() const { return modes_; }
 
   std::unique_ptr<display::DisplaySnapshot> Update(

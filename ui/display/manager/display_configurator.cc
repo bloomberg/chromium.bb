@@ -1167,6 +1167,16 @@ void DisplayConfigurator::OnConfigured(
   cached_displays_ = displays;
   has_unassociated_display_ = unassociated_displays.size();
 
+  if (has_unassociated_display_) {
+    std::string names;
+    for (const auto* unassociated_display : unassociated_displays) {
+      if (!names.empty())
+        names.push_back(',');
+      names += unassociated_display->display_name();
+    }
+    LOG(WARNING) << "Following displays have no associated crtc: " << names;
+  }
+
   if (success) {
     current_display_state_ = new_display_state;
     UpdatePowerState(new_power_state);

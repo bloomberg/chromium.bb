@@ -146,8 +146,8 @@ DrmDisplayHostManager::DrmDisplayHostManager(
   proxy_->RegisterHandlerForDrmDisplayHostManager(this);
   proxy_->AddGpuThreadObserver(this);
 
-  auto display_infos =
-      GetAvailableDisplayControllerInfos(primary_drm_device_handle_->fd());
+  const auto& display_infos = GetAvailableDisplayControllerInfos(
+      primary_drm_device_handle_->fd(), nullptr);
   has_dummy_display_ = !display_infos.empty();
   for (const auto& display_info : display_infos) {
     displays_.push_back(std::make_unique<DrmDisplayHost>(
