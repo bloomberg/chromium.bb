@@ -91,9 +91,8 @@ ws::mojom::TextInputClientDataPtr GetTextInputClientData(
 InputMethodMus::InputMethodMus(
     ui::internal::InputMethodDelegate* delegate,
     InputMethodMusDelegate* input_method_mus_delegate)
-    : input_method_mus_delegate_(input_method_mus_delegate) {
-  SetDelegate(delegate);
-}
+    : ui::InputMethodBase(delegate),
+      input_method_mus_delegate_(input_method_mus_delegate) {}
 
 InputMethodMus::~InputMethodMus() {
   // Mus won't dispatch the next key event until the existing one is acked. We
