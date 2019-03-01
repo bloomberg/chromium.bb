@@ -279,6 +279,9 @@ class WizardController : public BaseScreenDelegate,
   void OnAccessibilityStatusChanged(
       const AccessibilityStatusEventDetails& details);
 
+  // Notification of Guest Mode policy changes.
+  void OnGuestModePolicyUpdated();
+
   // Switches from one screen to another.
   void SetCurrentScreen(BaseScreen* screen);
 
@@ -421,6 +424,8 @@ class WizardController : public BaseScreenDelegate,
   friend class WizardControllerSupervisionTransitionOobeTest;
 
   std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
+  std::unique_ptr<CrosSettings::ObserverSubscription>
+      guest_mode_policy_subscription_;
 
   std::unique_ptr<SimpleGeolocationProvider> geolocation_provider_;
   std::unique_ptr<TimeZoneProvider> timezone_provider_;
