@@ -624,6 +624,8 @@ void GpuServiceImpl::SendCreatedChildWindow(gpu::SurfaceHandle parent_window,
 
 void GpuServiceImpl::SetActiveURL(const GURL& url) {
   DCHECK(main_runner_->BelongsToCurrentThread());
+  // Note that the url is intentionally excluded from webview crash dumps
+  // using a whitelist for privacy reasons. See kWebViewCrashKeyWhiteList.
   static crash_reporter::CrashKeyString<1024> crash_key("url-chunk");
   crash_key.Set(url.possibly_invalid_spec());
 }
