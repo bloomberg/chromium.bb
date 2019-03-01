@@ -349,6 +349,12 @@ cr.define('settings', function() {
      * @param {string} etldPlus1 The etld+1 to clear data from.
      */
     clearEtldPlus1DataAndCookies(etldPlus1) {}
+
+    /**
+     * Record All Sites Page action for metrics.
+     *  @param {number} action number.
+     */
+    recordAction(action) {}
   }
 
   /**
@@ -503,6 +509,11 @@ cr.define('settings', function() {
     /** @override */
     clearEtldPlus1DataAndCookies(etldPlus1) {
       chrome.send('clearEtldPlus1DataAndCookies', [etldPlus1]);
+    }
+
+    /** @override */
+    recordAction(action) {
+      chrome.send('recordAction', [action]);
     }
   }
 

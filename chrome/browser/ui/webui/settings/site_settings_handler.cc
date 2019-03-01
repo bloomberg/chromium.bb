@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -78,6 +79,16 @@ constexpr char kZoom[] = "zoom";
 // Placeholder value for ETLD+1 until a valid origin is added. If an ETLD+1
 // only has placeholder, then create an ETLD+1 origin.
 constexpr char kPlaceholder[] = "placeholder";
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class AllSitesAction {
+  kLoadPage = 0,
+  kResetPermissions = 1,
+  kClearData = 2,
+  kEnterSiteDetails = 3,
+  kMaxValue = kEnterSiteDetails,
+};
 
 // Return an appropriate API Permission ID for the given string name.
 extensions::APIPermission::APIPermission::ID APIPermissionFromGroupName(
@@ -289,6 +300,10 @@ void UpdateDataFromCookiesTree(
   CreateOrAppendSiteGroupEntry(all_sites_map, origin);
 }
 
+void LogAllSitesAction(AllSitesAction action) {
+  UMA_HISTOGRAM_ENUMERATION("WebsiteSettings.AllSitesAction", action);
+}
+
 }  // namespace
 
 SiteSettingsHandler::SiteSettingsHandler(Profile* profile)
@@ -397,6 +412,10 @@ void SiteSettingsHandler::RegisterMessages() {
       base::BindRepeating(
           &SiteSettingsHandler::HandleClearEtldPlus1DataAndCookies,
           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "recordAction",
+      base::BindRepeating(&SiteSettingsHandler::HandleRecordAction,
+                          base::Unretained(this)));
 }
 
 void SiteSettingsHandler::OnJavascriptAllowed() {
@@ -730,6 +749,8 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
   // Respond with currently available data.
   ConvertSiteGroupMapToListValue(all_sites_map_, origin_permission_set_,
                                  &result, profile);
+
+  LogAllSitesAction(AllSitesAction::kLoadPage);
 
   send_sites_list_ = true;
 
@@ -1435,6 +1456,18 @@ void SiteSettingsHandler::HandleClearEtldPlus1DataAndCookies(
   for (auto* node : nodes_to_delete) {
     cookies_tree_model_->DeleteCookieNode(node);
   }
+
+  LogAllSitesAction(AllSitesAction::kClearData);
+}
+
+void SiteSettingsHandler::HandleRecordAction(const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  int action;
+  CHECK(args->GetInteger(0, &action));
+  DCHECK_LE(action, static_cast<int>(AllSitesAction::kMaxValue));
+  DCHECK_GE(action, static_cast<int>(AllSitesAction::kLoadPage));
+
+  LogAllSitesAction(static_cast<AllSitesAction>(action));
 }
 
 void SiteSettingsHandler::SetCookiesTreeModelForTesting(

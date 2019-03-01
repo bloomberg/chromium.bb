@@ -56160,6 +56160,13 @@ Full version information for the fingerprint enum values:
   <int value="10" label="Security details opened"/>
 </enum>
 
+<enum name="WebSiteSettingsAllSitesAction">
+  <int value="0" label="All Sites Loaded"/>
+  <int value="1" label="Reset Permissions"/>
+  <int value="2" label="Clear Data"/>
+  <int value="3" label="Enter Site Details"/>
+</enum>
+
 <enum name="WebSocketHandshakeResult">
   <int value="0" label="Incomplete"/>
   <int value="1" label="Normal"/>

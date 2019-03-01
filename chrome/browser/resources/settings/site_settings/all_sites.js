@@ -432,6 +432,7 @@ Polymer({
   onResetSettings_: function(e) {
     const contentSettingsTypes = this.getCategoryList();
     const index = this.actionMenuModel_.index;
+    this.browserProxy.recordAction(settings.AllSitesAction.RESET_PERMISSIONS);
     if (this.actionMenuModel_.item.etldPlus1 !=
         this.filteredList_[index].etldPlus1) {
       return;
