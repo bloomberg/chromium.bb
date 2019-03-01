@@ -234,9 +234,9 @@ chrome.fileManagerPrivate.CrostiniSharedPathsChangedEventType = {
  *   taskId: string,
  *   title: string,
  *   verb: (!chrome.fileManagerPrivate.Verb|undefined),
- *   iconUrl: string,
- *   isDefault: boolean,
- *   isGenericFileHandler: boolean
+ *   iconUrl: (string|undefined),
+ *   isDefault: (boolean|undefined),
+ *   isGenericFileHandler: (boolean|undefined)
  * }}
  */
 chrome.fileManagerPrivate.FileTask;

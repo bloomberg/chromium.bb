@@ -108,7 +108,7 @@ DriveShareAction.prototype.execute = function() {
           console.error('getEntryProperties shareUrl is undefined');
           return;
         }
-        util.visitURL(results[0].shareUrl);
+        util.visitURL(assert(results[0].shareUrl));
       }.bind(this));
 };
 
@@ -511,7 +511,7 @@ DriveManageAction.prototype.execute = function() {
           console.error('getEntryProperties alternateUrl is undefined');
           return;
         }
-        util.visitURL(results[0].alternateUrl);
+        util.visitURL(assert(results[0].alternateUrl));
       }.bind(this));
 };
 

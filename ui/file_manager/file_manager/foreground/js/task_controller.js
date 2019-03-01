@@ -273,8 +273,10 @@ TaskController.prototype.executeDefaultTask = function() {
   this.getFileTasks()
       .then(function(tasks) {
         const task = {
-          taskId: this.ui_.fileContextMenu.defaultTaskMenuItem.taskId,
-          title: this.ui_.fileContextMenu.defaultTaskMenuItem.label,
+          taskId: /** @type {string} */ (
+              this.ui_.fileContextMenu.defaultTaskMenuItem.taskId),
+          title: /** @type {string} */ (
+              this.ui_.fileContextMenu.defaultTaskMenuItem.label),
         };
         tasks.execute(task);
       }.bind(this))

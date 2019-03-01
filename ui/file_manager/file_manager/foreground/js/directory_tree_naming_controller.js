@@ -141,7 +141,9 @@ DirectoryTreeNamingController.prototype.commitRename_ = function() {
         .then(
             this.performExternalDriveRename_.bind(this, entry, newName),
             function(errorMessage) {
-              this.alertDialog_.show(errorMessage, this.detach_.bind(this));
+              this.alertDialog_.show(
+                  /** @type {string} */ (errorMessage),
+                  this.detach_.bind(this));
             }.bind(this));
   } else {
     // Validate new name.
@@ -154,7 +156,9 @@ DirectoryTreeNamingController.prototype.commitRename_ = function() {
         .then(
             this.performRename_.bind(this, entry, newName),
             function(errorMessage) {
-              this.alertDialog_.show(errorMessage, this.detach_.bind(this));
+              this.alertDialog_.show(
+                  /** @type {string} */ (errorMessage),
+                  this.detach_.bind(this));
             }.bind(this));
   }
 };
@@ -205,7 +209,8 @@ DirectoryTreeNamingController.prototype.performRename_ = function(
             this.detach_();
 
             this.alertDialog_.show(
-                util.getRenameErrorMessage(error, entry, newName));
+                util.getRenameErrorMessage(
+                    /** @type {DOMError} */ (error), entry, newName));
           }.bind(this));
 };
 

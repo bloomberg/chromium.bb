@@ -670,7 +670,7 @@ FileTransferController.prototype.getMultiProfileShareEntries_ =
   // processEntries.
   return processEntries(entries.filter(function(entry) {
     // If the volumeInfo is found, the entry belongs to the current user.
-    return !this.volumeManager_.getVolumeInfo(entry);
+    return !this.volumeManager_.getVolumeInfo(/** @type {!Entry} */ (entry));
   }.bind(this)));
 };
 
@@ -791,7 +791,6 @@ FileTransferController.prototype.executePaste = function(pastePlan) {
   FileTransferController.URLsToEntriesWithAccess(sourceURLs)
       .then((/**
               * @param {Object} result
-              * @this {FileTransferController}
               */
              function(result) {
                failureUrls = result.failureUrls;
@@ -802,7 +801,6 @@ FileTransferController.prototype.executePaste = function(pastePlan) {
              }).bind(this))
       .then((/**
               * @param {!Array<Entry>} filteredEntries
-              * @this {FileTransferController}
               * @return {!Promise<Array<Entry>>}
               */
              function(filteredEntries) {
@@ -835,7 +833,6 @@ FileTransferController.prototype.executePaste = function(pastePlan) {
              }).bind(this))
       .then((/**
               * @param {Array<Entry>} inShareEntries
-              * @this {FileTransferController}
               * @return {!Promise<Array<Entry>>|!Promise<null>}
               */
              function(inShareEntries) {
@@ -877,8 +874,7 @@ FileTransferController.prototype.executePaste = function(pastePlan) {
             };
             return requestDriveShare(0);
           })
-      .then((/** @this {FileTransferController} */
-             function() {
+      .then((function() {
                // Start the pasting operation.
                this.fileOperationManager_.paste(
                    entries, destinationEntry, toMove, taskId);
@@ -1557,7 +1553,7 @@ FileTransferController.prototype.onBeforePaste_ = function(event) {
 };
 
 /**
- * @param {!ClipboardData} clipboardData Clipboard data object.
+ * @param {ClipboardData} clipboardData Clipboard data object.
  * @param {DirectoryEntry|FilesAppEntry} destinationEntry Destination
  *    entry.
  * @return {boolean} Returns true if items stored in {@code clipboardData} can
@@ -1566,6 +1562,9 @@ FileTransferController.prototype.onBeforePaste_ = function(event) {
  */
 FileTransferController.prototype.canPasteOrDrop_ = function(
     clipboardData, destinationEntry) {
+  if (!clipboardData) {
+    return false;
+  }
   if (!destinationEntry) {
     return false;
   }
@@ -1617,7 +1616,8 @@ FileTransferController.prototype.queryPasteCommandEnabled = function(
   // should be used.
   let result;
   this.simulateCommand_('paste', function(event) {
-    result = this.canPasteOrDrop_(event.clipboardData, destinationEntry);
+    result = this.canPasteOrDrop_(
+        assert(event.clipboardData), destinationEntry);
   }.bind(this));
   return result;
 };
