@@ -66,8 +66,6 @@ extern const char kChromeUIDownloadsURL[];
 extern const char kChromeUIDriveInternalsHost[];
 extern const char kChromeUIExtensionIconHost[];
 extern const char kChromeUIExtensionIconURL[];
-extern const char kChromeUIExtensionsFrameHost[];
-extern const char kChromeUIExtensionsFrameURL[];
 extern const char kChromeUIExtensionsHost[];
 extern const char kChromeUIExtensionsInternalsHost[];
 extern const char kChromeUIExtensionsURL[];
