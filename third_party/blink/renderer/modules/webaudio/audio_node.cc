@@ -651,6 +651,10 @@ void AudioNode::SetHandler(scoped_refptr<AudioHandler> handler) {
 #endif
 }
 
+bool AudioNode::ContainsHandler() const {
+  return handler_.get();
+}
+
 AudioHandler& AudioNode::Handler() const {
   return *handler_;
 }
