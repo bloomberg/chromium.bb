@@ -51,7 +51,6 @@ const CGFloat kButtonPadding = 12;
   // Create and add subviews the first time this moves to a superview.
   if (newSuperview && !self.subviews.count) {
     [self setupSubviews];
-
     // Delay updating visiblity of the subviews. Otherwise the activity
     // indicator will not animate in the loading state.
     dispatch_after(
@@ -113,6 +112,9 @@ const CGFloat kButtonPadding = 12;
 
 // Updates visibility of the subviews depending on |state|.
 - (void)updateSubviewsForState:(TranslateInfobarLanguageTabViewState)state {
+  // Clear UIAccessibilityTraitSelected from the accessibility traits, if any.
+  self.button.accessibilityTraits &= ~UIAccessibilityTraitSelected;
+
   if (state == TranslateInfobarLanguageTabViewStateLoading) {
     [self.activityIndicator startAnimating];
     self.activityIndicator.hidden = NO;
@@ -122,6 +124,7 @@ const CGFloat kButtonPadding = 12;
     self.activityIndicator.hidden = YES;
     [self.activityIndicator stopAnimating];
 
+    self.button.accessibilityTraits |= [self accessibilityTraits];
     [self.button setTitleColor:[self titleColor] forState:UIControlStateNormal];
   }
 }
@@ -131,6 +134,13 @@ const CGFloat kButtonPadding = 12;
   return self.state == TranslateInfobarLanguageTabViewStateSelected
              ? [[MDCPalette cr_bluePalette] tint500]
              : [[MDCPalette greyPalette] tint600];
+}
+
+// Returns the button's accessibility traits depending on the state.
+- (UIAccessibilityTraits)accessibilityTraits {
+  return self.state == TranslateInfobarLanguageTabViewStateSelected
+             ? UIAccessibilityTraitSelected
+             : UIAccessibilityTraitNone;
 }
 
 - (void)buttonWasTapped {
