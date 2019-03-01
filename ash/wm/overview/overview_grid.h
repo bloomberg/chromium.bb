@@ -139,11 +139,15 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
-  // TODO(flackr): Handle window bounds changed in OverviewItem.
+  // TODO(flackr): Handle window bounds changed in OverviewItem. See also
+  // OnWindowPropertyChanged() below.
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override;
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
 
   // wm::WindowStateObserver:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
