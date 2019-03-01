@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/feature_policy/iframe_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -271,39 +272,7 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
             "precedence.");
       }
     }
-
-    if ((sandbox_flags & kSandboxTopNavigation)) {
-      DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kTopNavigation,
-                                  container_policy);
-    }
-    if ((sandbox_flags & kSandboxForms)) {
-      DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kFormSubmission,
-                                  container_policy);
-    }
-    if ((sandbox_flags & kSandboxScripts)) {
-      DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kScript,
-                                  container_policy);
-    }
-    if ((sandbox_flags & kSandboxPopups)) {
-      DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kPopups,
-                                  container_policy);
-    }
-    if ((sandbox_flags & kSandboxPointerLock)) {
-      DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kPointerLock,
-                                  container_policy);
-    }
-    if ((sandbox_flags & kSandboxModals)) {
-      DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kModals,
-                                  container_policy);
-    }
-    if ((sandbox_flags & kSandboxOrientationLock)) {
-      DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kOrientationLock,
-                                  container_policy);
-    }
-    if ((sandbox_flags & kSandboxPresentationController)) {
-      DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kPresentation,
-                                  container_policy);
-    }
+    ApplySandboxFlagsToParsedFeaturePolicy(sandbox_flags, container_policy);
   }
 
   // Finally, process the allow* attribuets. Like sandbox attributes, they only
