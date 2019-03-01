@@ -44,8 +44,8 @@ class ModuleInspector : public ModuleDatabaseObserver {
   // background sequence. It will be used to assess the impact of this work on
   // Chrome's overall performance.
   // TODO(pmonette): Remove when no longer needed. See https://crbug.com/928846.
-  static constexpr base::Feature kEnableBackgroundModuleInspection = {
-      "EnableBackgroundModuleInspection", base::FEATURE_ENABLED_BY_DEFAULT};
+  static constexpr base::Feature kDisableBackgroundModuleInspection = {
+      "DisableBackgroundModuleInspection", base::FEATURE_DISABLED_BY_DEFAULT};
 
   // Controls whether or not module inspection is done out of process.
   static constexpr base::Feature kWinOOPInspectModuleFeature = {
@@ -146,10 +146,10 @@ class ModuleInspector : public ModuleDatabaseObserver {
   // service always fails to start and the restart cycle happens infinitely.
   int connection_error_retry_count_;
 
-  // Indicates if background inspection is enabled. Generally equal to the
-  // kBackgroundModuleInspection feature state, but will be set unconditionally
-  // to true if IncreaseInspectionPriority() is called.
-  bool background_inspection_enabled_;
+  // Indicates if background inspection is disabled. Generally equal to the
+  // kDisableBackgroundModuleInspection feature state, but will be set
+  // unconditionally to false if IncreaseInspectionPriority() is called.
+  bool background_inspection_disabled_;
 
   // Used to connect to the UtilWin service during tests.
   service_manager::Connector* test_connector_;

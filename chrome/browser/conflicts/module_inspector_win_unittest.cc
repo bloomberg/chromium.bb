@@ -94,8 +94,8 @@ TEST_F(ModuleInspectorTest, MultipleModules) {
 
 TEST_F(ModuleInspectorTest, DisableBackgroundInspection) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      ModuleInspector::kEnableBackgroundModuleInspection);
+  scoped_feature_list.InitAndEnableFeature(
+      ModuleInspector::kDisableBackgroundModuleInspection);
 
   ModuleInfoKey kTestCases[] = {
       {base::FilePath(), 0, 0},
