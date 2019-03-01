@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/contained_shell_client.h"
+#include "chrome/browser/ui/ash/kiosk_next_shell_client.h"
 
 #include <utility>
 
@@ -17,20 +17,20 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/connector.h"
 
-ContainedShellClient::ContainedShellClient() {
-  ash::mojom::ContainedShellControllerPtr contained_shell_controller;
+KioskNextShellClient::KioskNextShellClient() {
+  ash::mojom::KioskNextShellControllerPtr kiosk_next_shell_controller;
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &contained_shell_controller);
+      ->BindInterface(ash::mojom::kServiceName, &kiosk_next_shell_controller);
 
-  ash::mojom::ContainedShellClientPtr client;
+  ash::mojom::KioskNextShellClientPtr client;
   binding_.Bind(mojo::MakeRequest(&client));
-  contained_shell_controller->SetClient(std::move(client));
+  kiosk_next_shell_controller->SetClient(std::move(client));
 }
 
-ContainedShellClient::~ContainedShellClient() = default;
+KioskNextShellClient::~KioskNextShellClient() = default;
 
-void ContainedShellClient::LaunchContainedShell(const AccountId& account_id) {
+void KioskNextShellClient::LaunchKioskNextShell(const AccountId& account_id) {
   // TODO(michaelpg): Create a dummy app for non-internal builds.
 
 #if defined(GOOGLE_CHROME_BUILD)

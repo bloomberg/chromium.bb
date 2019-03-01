@@ -325,9 +325,10 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("hasInternalStylus",
                           ash::stylus_utils::HasInternalStylus());
 
+  // TODO(ltenorio): Rename showContainedShell to showKioskNextShell.
   html_source->AddBoolean(
       "showContainedShell",
-      base::FeatureList::IsEnabled(ash::features::kContainedShell));
+      base::FeatureList::IsEnabled(ash::features::kKioskNextShell));
 
   html_source->AddBoolean("showCrostini",
                           crostini::IsCrostiniUIAllowedForProfile(

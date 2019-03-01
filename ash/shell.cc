@@ -24,7 +24,6 @@
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/cast_config_controller.h"
 #include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"
-#include "ash/contained_shell/contained_shell_controller.h"
 #include "ash/custom_tab/arc_custom_tab_controller.h"
 #include "ash/dbus/ash_dbus_services.h"
 #include "ash/detachable_base/detachable_base_handler.h"
@@ -59,6 +58,7 @@
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_focus_handler.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/laser/laser_pointer_controller.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login_status.h"
@@ -250,8 +250,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   AccessibilityController::RegisterProfilePrefs(registry, for_test);
   AssistantController::RegisterProfilePrefs(registry);
   BluetoothPowerController::RegisterProfilePrefs(registry);
-  ContainedShellController::RegisterProfilePrefs(registry);
   DockedMagnifierController::RegisterProfilePrefs(registry, for_test);
+  KioskNextShellController::RegisterProfilePrefs(registry);
   LoginScreenController::RegisterProfilePrefs(registry, for_test);
   LogoutButtonTray::RegisterProfilePrefs(registry);
   MessageCenterController::RegisterProfilePrefs(registry);
@@ -640,13 +640,14 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
           std::make_unique<system::BrightnessControllerChromeos>()),
       cast_config_(std::make_unique<CastConfigController>()),
       connector_(connector),
-      contained_shell_controller_(std::make_unique<ContainedShellController>()),
       first_run_helper_(std::make_unique<FirstRunHelper>()),
       focus_cycler_(std::make_unique<FocusCycler>()),
       ime_controller_(std::make_unique<ImeController>()),
       immersive_context_(std::make_unique<ImmersiveContextAsh>()),
       keyboard_brightness_control_delegate_(
           std::make_unique<KeyboardBrightnessController>()),
+      kiosk_next_shell_controller_(
+          std::make_unique<KioskNextShellController>()),
       locale_update_controller_(std::make_unique<LocaleUpdateController>()),
       media_controller_(std::make_unique<MediaController>(connector)),
       new_window_controller_(std::make_unique<NewWindowController>()),
@@ -1432,7 +1433,7 @@ void Shell::OnSessionStateChanged(session_manager::SessionState state) {
   drag_drop_controller_->set_enabled(is_session_active);
 
   if (is_session_active)
-    contained_shell_controller_->LaunchContainedShellIfEnabled();
+    kiosk_next_shell_controller_->LaunchKioskNextShellIfEnabled();
 }
 
 void Shell::OnLoginStatusChanged(LoginStatus login_status) {

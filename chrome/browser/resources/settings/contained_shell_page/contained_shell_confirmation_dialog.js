@@ -41,7 +41,7 @@ Polymer({
    * @private
    */
   onConfirmTap_: function(event) {
-    const prefPath = 'ash.contained_shell.enabled';
+    const prefPath = 'ash.kiosk_next_shell.enabled';
     this.setPrefValue(prefPath, !this.getPref(prefPath).value);
     settings.LifetimeBrowserProxyImpl.getInstance().signOutAndRestart();
     event.stopPropagation();

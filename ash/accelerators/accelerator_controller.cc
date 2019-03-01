@@ -17,13 +17,13 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_ui_model.h"
-#include "ash/contained_shell/contained_shell_controller.h"
 #include "ash/debug.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_move_window_util.h"
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_switch_type.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/magnifier/docked_magnifier_controller.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/media/media_controller.h"
@@ -1176,9 +1176,9 @@ void AcceleratorController::Init() {
     actions_allowed_in_pinned_mode_.insert(
         kActionsAllowedInAppModeOrPinnedMode[i]);
   }
-  for (size_t i = 0; i < kActionsAllowedForContainedShellLength; i++) {
-    actions_allowed_for_contained_shell_.insert(
-        kActionsAllowedForContainedShell[i]);
+  for (size_t i = 0; i < kActionsAllowedForKioskNextShellLength; i++) {
+    actions_allowed_for_kiosk_next_shell_.insert(
+        kActionsAllowedForKioskNextShell[i]);
   }
   for (size_t i = 0; i < kActionsAllowedInPinnedModeLength; ++i)
     actions_allowed_in_pinned_mode_.insert(kActionsAllowedInPinnedMode[i]);
@@ -1729,8 +1729,8 @@ bool AcceleratorController::ShouldActionConsumeKeyEvent(
 
 AcceleratorController::AcceleratorProcessingRestriction
 AcceleratorController::GetAcceleratorProcessingRestriction(int action) const {
-  if (Shell::Get()->contained_shell_controller()->IsEnabled() &&
-      actions_allowed_for_contained_shell_.count(action) == 0) {
+  if (Shell::Get()->kiosk_next_shell_controller()->IsEnabled() &&
+      actions_allowed_for_kiosk_next_shell_.count(action) == 0) {
     return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
   }
   if (Shell::Get()->screen_pinning_controller()->IsPinned() &&

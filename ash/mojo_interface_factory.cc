@@ -16,7 +16,6 @@
 #include "ash/assistant/assistant_screen_context_controller.h"
 #include "ash/assistant/assistant_setup_controller.h"
 #include "ash/cast_config_controller.h"
-#include "ash/contained_shell/contained_shell_controller.h"
 #include "ash/custom_tab/arc_custom_tab_controller.h"
 #include "ash/display/ash_display_controller.h"
 #include "ash/display/cros_display_config.h"
@@ -26,6 +25,7 @@
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/magnifier/docked_magnifier_controller.h"
 #include "ash/media/media_controller.h"
@@ -143,11 +143,6 @@ void BindCastConfigOnMainThread(mojom::CastConfigRequest request) {
   Shell::Get()->cast_config()->BindRequest(std::move(request));
 }
 
-void BindContainedShellControllerRequestOnMainThread(
-    mojom::ContainedShellControllerRequest request) {
-  Shell::Get()->contained_shell_controller()->BindRequest(std::move(request));
-}
-
 void BindDisplayOutputProtectionRequestOnMainThread(
     mojom::DisplayOutputProtectionRequest request) {
   Shell::Get()->display_output_protection()->BindRequest(std::move(request));
@@ -180,6 +175,11 @@ void BindImeControllerRequestOnMainThread(mojom::ImeControllerRequest request) {
 void BindKeyboardControllerRequestOnMainThread(
     mojom::KeyboardControllerRequest request) {
   Shell::Get()->ash_keyboard_controller()->BindRequest(std::move(request));
+}
+
+void BindKioskNextShellControllerRequestOnMainThread(
+    mojom::KioskNextShellControllerRequest request) {
+  Shell::Get()->kiosk_next_shell_controller()->BindRequest(std::move(request));
 }
 
 void BindLocaleUpdateControllerOnMainThread(
@@ -317,9 +317,9 @@ void RegisterInterfaces(
       main_thread_task_runner);
   registry->AddInterface(base::BindRepeating(&BindCastConfigOnMainThread),
                          main_thread_task_runner);
-  if (base::FeatureList::IsEnabled(features::kContainedShell)) {
+  if (base::FeatureList::IsEnabled(features::kKioskNextShell)) {
     registry->AddInterface(
-        base::BindRepeating(&BindContainedShellControllerRequestOnMainThread),
+        base::BindRepeating(&BindKioskNextShellControllerRequestOnMainThread),
         main_thread_task_runner);
   }
   registry->AddInterface(

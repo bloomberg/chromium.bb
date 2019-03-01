@@ -554,7 +554,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
       EnableFileSystemInGuestMode(id);
     }
 
-    if (base::FeatureList::IsEnabled(ash::features::kContainedShell)) {
+    if (base::FeatureList::IsEnabled(ash::features::kKioskNextShell)) {
       Add(IDR_CONTAINED_HOME_MANIFEST,
           base::FilePath(FILE_PATH_LITERAL("chromeos/contained_home")));
     }
