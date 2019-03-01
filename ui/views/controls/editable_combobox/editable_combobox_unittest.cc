@@ -417,17 +417,40 @@ TEST_F(EditableComboboxTest, MenuCanAdaptToContentChange) {
   EXPECT_EQ(menu_runner1, menu_runner2);
 }
 
+TEST_F(EditableComboboxTest, RefocusingReopensMenuBasedOnLatestContent) {
+  std::vector<base::string16> items = {ASCIIToUTF16("abc"), ASCIIToUTF16("abd"),
+                                       ASCIIToUTF16("bac"), ASCIIToUTF16("bad"),
+                                       ASCIIToUTF16("bac2")};
+  InitEditableCombobox(items, /*filter_on_edit=*/true);
+  combobox_->GetTextfieldForTest()->RequestFocus();
+
+  SendKeyEvent(ui::VKEY_B);
+  ASSERT_EQ(3, combobox_->GetItemCountForTest());
+
+  SendKeyEvent(ui::VKEY_DOWN);
+  SendKeyEvent(ui::VKEY_RETURN);
+  WaitForMenuClosureAnimation();
+  EXPECT_FALSE(IsMenuOpen());
+  EXPECT_EQ(ASCIIToUTF16("bac"), combobox_->GetText());
+
+  // Blur then focus to make the menu reopen. It should only show completions of
+  // "bac", the selected item, instead of showing completions of "b", what we
+  // had typed.
+  dummy_focusable_view_->RequestFocus();
+  combobox_->GetTextfieldForTest()->RequestFocus();
+  EXPECT_TRUE(IsMenuOpen());
+  ASSERT_EQ(2, combobox_->GetItemCountForTest());
+}
+
 TEST_F(EditableComboboxTest, GetItemsWithoutFiltering) {
   std::vector<base::string16> items = {ASCIIToUTF16("item0"),
                                        ASCIIToUTF16("item1")};
   InitEditableCombobox(items, /*filter_on_edit=*/false, /*show_on_empty=*/true);
 
-  combobox_->SetText(ASCIIToUTF16("z"));
-  ASSERT_EQ(2, combobox_->GetMenuModelForTest()->GetItemCount());
-  ASSERT_EQ(ASCIIToUTF16("item0"),
-            combobox_->GetMenuModelForTest()->GetLabelAt(0));
-  ASSERT_EQ(ASCIIToUTF16("item1"),
-            combobox_->GetMenuModelForTest()->GetLabelAt(1));
+  combobox_->SetTextForTest(ASCIIToUTF16("z"));
+  ASSERT_EQ(2, combobox_->GetItemCountForTest());
+  ASSERT_EQ(ASCIIToUTF16("item0"), combobox_->GetItemForTest(0));
+  ASSERT_EQ(ASCIIToUTF16("item1"), combobox_->GetItemForTest(1));
 }
 
 TEST_F(EditableComboboxTest, FilteringEffectOnGetItems) {
@@ -436,36 +459,26 @@ TEST_F(EditableComboboxTest, FilteringEffectOnGetItems) {
                                        ASCIIToUTF16("bad")};
   InitEditableCombobox(items, /*filter_on_edit=*/true, /*show_on_empty=*/true);
 
-  ASSERT_EQ(4, combobox_->GetMenuModelForTest()->GetItemCount());
-  ASSERT_EQ(ASCIIToUTF16("abc"),
-            combobox_->GetMenuModelForTest()->GetLabelAt(0));
-  ASSERT_EQ(ASCIIToUTF16("abd"),
-            combobox_->GetMenuModelForTest()->GetLabelAt(1));
-  ASSERT_EQ(ASCIIToUTF16("bac"),
-            combobox_->GetMenuModelForTest()->GetLabelAt(2));
-  ASSERT_EQ(ASCIIToUTF16("bad"),
-            combobox_->GetMenuModelForTest()->GetLabelAt(3));
+  ASSERT_EQ(4, combobox_->GetItemCountForTest());
+  ASSERT_EQ(ASCIIToUTF16("abc"), combobox_->GetItemForTest(0));
+  ASSERT_EQ(ASCIIToUTF16("abd"), combobox_->GetItemForTest(1));
+  ASSERT_EQ(ASCIIToUTF16("bac"), combobox_->GetItemForTest(2));
+  ASSERT_EQ(ASCIIToUTF16("bad"), combobox_->GetItemForTest(3));
 
-  combobox_->SetText(ASCIIToUTF16("b"));
-  ASSERT_EQ(2, combobox_->GetMenuModelForTest()->GetItemCount());
-  ASSERT_EQ(ASCIIToUTF16("bac"),
-            combobox_->GetMenuModelForTest()->GetLabelAt(0));
-  ASSERT_EQ(ASCIIToUTF16("bad"),
-            combobox_->GetMenuModelForTest()->GetLabelAt(1));
+  combobox_->SetTextForTest(ASCIIToUTF16("b"));
+  ASSERT_EQ(2, combobox_->GetItemCountForTest());
+  ASSERT_EQ(ASCIIToUTF16("bac"), combobox_->GetItemForTest(0));
+  ASSERT_EQ(ASCIIToUTF16("bad"), combobox_->GetItemForTest(1));
 
-  combobox_->SetText(ASCIIToUTF16("bc"));
-  ASSERT_EQ(0, combobox_->GetMenuModelForTest()->GetItemCount());
+  combobox_->SetTextForTest(ASCIIToUTF16("bc"));
+  ASSERT_EQ(0, combobox_->GetItemCountForTest());
 
-  combobox_->SetText(base::string16());
-  ASSERT_EQ(4, combobox_->GetMenuModelForTest()->GetItemCount());
-  ASSERT_EQ(ASCIIToUTF16("abc"),
-            combobox_->GetMenuModelForTest()->GetLabelAt(0));
-  ASSERT_EQ(ASCIIToUTF16("abd"),
-            combobox_->GetMenuModelForTest()->GetLabelAt(1));
-  ASSERT_EQ(ASCIIToUTF16("bac"),
-            combobox_->GetMenuModelForTest()->GetLabelAt(2));
-  ASSERT_EQ(ASCIIToUTF16("bad"),
-            combobox_->GetMenuModelForTest()->GetLabelAt(3));
+  combobox_->SetTextForTest(base::string16());
+  ASSERT_EQ(4, combobox_->GetItemCountForTest());
+  ASSERT_EQ(ASCIIToUTF16("abc"), combobox_->GetItemForTest(0));
+  ASSERT_EQ(ASCIIToUTF16("abd"), combobox_->GetItemForTest(1));
+  ASSERT_EQ(ASCIIToUTF16("bac"), combobox_->GetItemForTest(2));
+  ASSERT_EQ(ASCIIToUTF16("bad"), combobox_->GetItemForTest(3));
 }
 
 TEST_F(EditableComboboxTest, FilteringWithMismatchedCase) {
@@ -473,27 +486,20 @@ TEST_F(EditableComboboxTest, FilteringWithMismatchedCase) {
       ASCIIToUTF16("AbCd"), ASCIIToUTF16("aBcD"), ASCIIToUTF16("xyz")};
   InitEditableCombobox(items, /*filter_on_edit=*/true, /*show_on_empty=*/true);
 
-  ASSERT_EQ(3, combobox_->GetMenuModelForTest()->GetItemCount());
-  ASSERT_EQ(ASCIIToUTF16("AbCd"),
-            combobox_->GetMenuModelForTest()->GetLabelAt(0));
-  ASSERT_EQ(ASCIIToUTF16("aBcD"),
-            combobox_->GetMenuModelForTest()->GetLabelAt(1));
-  ASSERT_EQ(ASCIIToUTF16("xyz"),
-            combobox_->GetMenuModelForTest()->GetLabelAt(2));
+  ASSERT_EQ(3, combobox_->GetItemCountForTest());
+  ASSERT_EQ(ASCIIToUTF16("AbCd"), combobox_->GetItemForTest(0));
+  ASSERT_EQ(ASCIIToUTF16("aBcD"), combobox_->GetItemForTest(1));
+  ASSERT_EQ(ASCIIToUTF16("xyz"), combobox_->GetItemForTest(2));
 
-  combobox_->SetText(ASCIIToUTF16("abcd"));
-  ASSERT_EQ(2, combobox_->GetMenuModelForTest()->GetItemCount());
-  ASSERT_EQ(ASCIIToUTF16("AbCd"),
-            combobox_->GetMenuModelForTest()->GetLabelAt(0));
-  ASSERT_EQ(ASCIIToUTF16("aBcD"),
-            combobox_->GetMenuModelForTest()->GetLabelAt(1));
+  combobox_->SetTextForTest(ASCIIToUTF16("abcd"));
+  ASSERT_EQ(2, combobox_->GetItemCountForTest());
+  ASSERT_EQ(ASCIIToUTF16("AbCd"), combobox_->GetItemForTest(0));
+  ASSERT_EQ(ASCIIToUTF16("aBcD"), combobox_->GetItemForTest(1));
 
-  combobox_->SetText(ASCIIToUTF16("ABCD"));
-  ASSERT_EQ(2, combobox_->GetMenuModelForTest()->GetItemCount());
-  ASSERT_EQ(ASCIIToUTF16("AbCd"),
-            combobox_->GetMenuModelForTest()->GetLabelAt(0));
-  ASSERT_EQ(ASCIIToUTF16("aBcD"),
-            combobox_->GetMenuModelForTest()->GetLabelAt(1));
+  combobox_->SetTextForTest(ASCIIToUTF16("ABCD"));
+  ASSERT_EQ(2, combobox_->GetItemCountForTest());
+  ASSERT_EQ(ASCIIToUTF16("AbCd"), combobox_->GetItemForTest(0));
+  ASSERT_EQ(ASCIIToUTF16("aBcD"), combobox_->GetItemForTest(1));
 }
 
 TEST_F(EditableComboboxTest, DontShowOnEmpty) {
@@ -502,13 +508,11 @@ TEST_F(EditableComboboxTest, DontShowOnEmpty) {
   InitEditableCombobox(items, /*filter_on_edit=*/false,
                        /*show_on_empty=*/false);
 
-  ASSERT_EQ(0, combobox_->GetMenuModelForTest()->GetItemCount());
-  combobox_->SetText(ASCIIToUTF16("a"));
-  ASSERT_EQ(2, combobox_->GetMenuModelForTest()->GetItemCount());
-  ASSERT_EQ(ASCIIToUTF16("item0"),
-            combobox_->GetMenuModelForTest()->GetLabelAt(0));
-  ASSERT_EQ(ASCIIToUTF16("item1"),
-            combobox_->GetMenuModelForTest()->GetLabelAt(1));
+  ASSERT_EQ(0, combobox_->GetItemCountForTest());
+  combobox_->SetTextForTest(ASCIIToUTF16("a"));
+  ASSERT_EQ(2, combobox_->GetItemCountForTest());
+  ASSERT_EQ(ASCIIToUTF16("item0"), combobox_->GetItemForTest(0));
+  ASSERT_EQ(ASCIIToUTF16("item1"), combobox_->GetItemForTest(1));
 }
 
 TEST_F(EditableComboboxTest, NoFilteringNotifiesListener) {
@@ -517,9 +521,9 @@ TEST_F(EditableComboboxTest, NoFilteringNotifiesListener) {
   InitEditableCombobox(items, /*filter_on_edit=*/false, /*show_on_empty=*/true);
 
   ASSERT_EQ(0, listener_->change_count());
-  combobox_->SetText(ASCIIToUTF16("a"));
+  combobox_->SetTextForTest(ASCIIToUTF16("a"));
   ASSERT_EQ(1, listener_->change_count());
-  combobox_->SetText(ASCIIToUTF16("ab"));
+  combobox_->SetTextForTest(ASCIIToUTF16("ab"));
   ASSERT_EQ(2, listener_->change_count());
 }
 
@@ -529,11 +533,11 @@ TEST_F(EditableComboboxTest, FilteringNotifiesListener) {
   InitEditableCombobox(items, /*filter_on_edit=*/true, /*show_on_empty=*/true);
 
   ASSERT_EQ(0, listener_->change_count());
-  combobox_->SetText(ASCIIToUTF16("i"));
+  combobox_->SetTextForTest(ASCIIToUTF16("i"));
   ASSERT_EQ(1, listener_->change_count());
-  combobox_->SetText(ASCIIToUTF16("ix"));
+  combobox_->SetTextForTest(ASCIIToUTF16("ix"));
   ASSERT_EQ(2, listener_->change_count());
-  combobox_->SetText(ASCIIToUTF16("ixy"));
+  combobox_->SetTextForTest(ASCIIToUTF16("ixy"));
   ASSERT_EQ(3, listener_->change_count());
 }
 

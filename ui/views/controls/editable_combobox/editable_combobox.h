@@ -23,7 +23,6 @@ class FontList;
 
 namespace ui {
 class ComboboxModel;
-class MenuModel;
 class NativeTheme;
 }  // namespace ui
 
@@ -60,9 +59,6 @@ class VIEWS_EXPORT EditableCombobox : public View,
   // Gets the text currently in the textfield.
   const base::string16& GetText() const;
 
-  // Sets the text in the textfield.
-  void SetText(const base::string16& text);
-
   const gfx::FontList& GetFontList() const;
 
   // Sets the listener that we will call when a selection is made.
@@ -80,9 +76,11 @@ class VIEWS_EXPORT EditableCombobox : public View,
 
   // Accessors of private members for tests.
   ui::ComboboxModel* GetComboboxModelForTest() { return combobox_model_.get(); }
-  ui::MenuModel* GetMenuModelForTest() { return menu_model_.get(); }
+  int GetItemCountForTest();
+  base::string16 GetItemForTest(int index);
   MenuRunner* GetMenuRunnerForTest() { return menu_runner_.get(); }
   Textfield* GetTextfieldForTest() { return textfield_; }
+  void SetTextForTest(const base::string16& text);
 
  private:
   class EditableComboboxMenuModel;
@@ -90,7 +88,7 @@ class VIEWS_EXPORT EditableCombobox : public View,
   // Called when an item is selected from the menu.
   void OnItemSelected(int index);
 
-  // Close/Open/Update the menu based on the new textfield content.
+  // Notifies listener of new content and updates the menu items to show.
   void HandleNewContent(const base::string16& new_content);
 
   // Cleans up after the menu is closed.
@@ -114,7 +112,7 @@ class VIEWS_EXPORT EditableCombobox : public View,
   std::unique_ptr<ui::ComboboxModel> combobox_model_;
 
   // The EditableComboboxMenuModel used by |menu_runner_|.
-  std::unique_ptr<ui::MenuModel> menu_model_;
+  std::unique_ptr<EditableComboboxMenuModel> menu_model_;
 
   // Typography context for the text written in the textfield and the options
   // shown in the drop-down menu.
