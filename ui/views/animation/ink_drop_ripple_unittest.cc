@@ -264,8 +264,8 @@ TEST_P(InkDropRippleTest, SnapToHiddenWithoutActiveAnimations) {
   EXPECT_FALSE(test_api_->HasActiveAnimations());
   EXPECT_EQ(views::InkDropState::HIDDEN,
             ink_drop_ripple_->target_ink_drop_state());
-  EXPECT_EQ(1, observer_.last_animation_started_ordinal());
-  EXPECT_EQ(2, observer_.last_animation_ended_ordinal());
+  EXPECT_EQ(3, observer_.last_animation_started_ordinal());
+  EXPECT_EQ(4, observer_.last_animation_ended_ordinal());
 
   EXPECT_EQ(InkDropRipple::kHiddenOpacity, test_api_->GetCurrentOpacity());
   EXPECT_FALSE(ink_drop_ripple_->IsVisible());
