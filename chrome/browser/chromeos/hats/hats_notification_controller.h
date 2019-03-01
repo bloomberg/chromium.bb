@@ -19,6 +19,7 @@ namespace chromeos {
 
 // Happiness tracking survey (HaTS) notification controller is responsible for
 // managing the HaTS notification that is displayed to the user.
+// This class lives on the UI thread.
 class HatsNotificationController : public message_center::NotificationDelegate,
                                    public NetworkPortalDetector::Observer {
  public:
@@ -57,7 +58,7 @@ class HatsNotificationController : public message_center::NotificationDelegate,
 
   void UpdateLastInteractionTime();
 
-  Profile* profile_;
+  Profile* const profile_;
   base::WeakPtrFactory<HatsNotificationController> weak_pointer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HatsNotificationController);
