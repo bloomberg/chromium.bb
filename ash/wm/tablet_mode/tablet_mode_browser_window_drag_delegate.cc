@@ -7,14 +7,15 @@
 #include <vector>
 
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/public/cpp/wallpaper_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
-#include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
@@ -23,6 +24,8 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/color_analysis.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -39,6 +42,29 @@ constexpr float kSourceWindowScale = 0.85;
 // Threshold of the fling velocity to keep the dragged window as a new separate
 // window after drag ends and do not try to merge it back into source window.
 constexpr float kFlingToStayAsNewWindowThreshold = 2000.f;
+
+// The color and opacity of the screen shield.
+constexpr SkColor kShieldColor = SkColorSetARGB(255, 0, 0, 0);
+
+// The base color which is mixed with the dark muted color from wallpaper to
+// form the shield widgets color.
+constexpr SkColor kShieldBaseColor = SkColorSetARGB(179, 0, 0, 0);
+
+// Returns the shield color that is used to darken the background.
+SkColor GetShieldColor() {
+  SkColor shield_color = kShieldColor;
+  // Extract the dark muted color from the wallpaper and mix it with
+  // |kShieldBaseColor|. Just use |kShieldBaseColor| if the dark muted color
+  // could not be extracted.
+  SkColor dark_muted_color =
+      Shell::Get()->wallpaper_controller()->GetProminentColor(
+          color_utils::ColorProfile());
+  if (dark_muted_color != ash::kInvalidWallpaperColor) {
+    shield_color =
+        color_utils::GetResultingPaintColor(kShieldBaseColor, dark_muted_color);
+  }
+  return shield_color;
+}
 
 // The class to observe the source window's bounds change animation. It's used
 // to prevent the dragged window to merge back into the source window during
@@ -155,6 +181,8 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
         ->SetWallpaperBlur(kWallpaperBlurSigma);
 
     // Darken the background.
+    // TODO: Do dimming in wallpaper to avoid creating another fullscreen
+    // widget.
     shield_widget_ = CreateBackgroundWidget(
         root_window, ui::LAYER_SOLID_COLOR, SK_ColorTRANSPARENT, 0, 0,
         SK_ColorTRANSPARENT, /*initial_opacity*/ 1.f, /*parent=*/nullptr,
@@ -164,7 +192,7 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
     widget_window->SetBounds(bounds);
     views::View* shield_view = new views::View();
     shield_view->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-    shield_view->layer()->SetColor(OverviewGrid::GetShieldColor());
+    shield_view->layer()->SetColor(GetShieldColor());
     shield_view->layer()->SetOpacity(kShieldOpacity);
     shield_widget_->SetContentsView(shield_view);
   }

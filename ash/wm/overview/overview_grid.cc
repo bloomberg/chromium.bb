@@ -11,7 +11,6 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/cpp/wallpaper_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/root_window_controller.h"
@@ -21,8 +20,6 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/wallpaper/wallpaper_controller.h"
-#include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/drop_target_view.h"
@@ -50,8 +47,6 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor_extra/shadow.h"
-#include "ui/gfx/color_analysis.h"
-#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/background.h"
@@ -65,19 +60,12 @@
 namespace ash {
 namespace {
 
-// The color and opacity of the screen shield in overview.
-constexpr SkColor kShieldColor = SkColorSetARGB(255, 0, 0, 0);
-
 // The color and opacity of the overview selector.
 constexpr SkColor kWindowSelectionColor = SkColorSetARGB(36, 255, 255, 255);
 
 // Corner radius and shadow applied to the overview selector border.
 constexpr int kWindowSelectionRadius = 9;
 constexpr int kWindowSelectionShadowElevation = 24;
-
-// The base color which is mixed with the dark muted color from wallpaper to
-// form the shield widgets color.
-constexpr SkColor kShieldBaseColor = SkColorSetARGB(179, 0, 0, 0);
 
 // Windows are not allowed to get taller than this.
 constexpr int kMaxHeight = 512;
@@ -195,16 +183,6 @@ gfx::Rect GetGridBoundsInScreenAfterDragging(aura::Window* dragged_window) {
 class OverviewGrid::ShieldView : public views::View {
  public:
   ShieldView() {
-    background_view_ = new views::View();
-    background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-    background_view_->layer()->SetColor(kShieldBaseColor);
-    background_view_->layer()->SetOpacity(
-        !Shell::Get()
-                ->tablet_mode_controller()
-                ->IsTabletModeWindowManagerEnabled()
-            ? kShieldOpacity
-            : 0.f);
-
     label_ = new views::Label(
         l10n_util::GetStringUTF16(IDS_ASH_OVERVIEW_NO_RECENT_ITEMS),
         views::style::CONTEXT_LABEL);
@@ -226,7 +204,6 @@ class OverviewGrid::ShieldView : public views::View {
     label_container_->layer()->SetOpacity(kNoItemsIndicatorBackgroundOpacity);
     label_container_->SetVisible(false);
 
-    AddChildView(background_view_);
     AddChildView(label_container_);
 
     if (features::IsVirtualDesksEnabled()) {
@@ -236,10 +213,6 @@ class OverviewGrid::ShieldView : public views::View {
   }
 
   ~ShieldView() override = default;
-
-  void SetBackgroundColor(SkColor color) {
-    background_view_->layer()->SetColor(color);
-  }
 
   void SetLabelVisibility(bool visible) {
     label_container_->SetVisible(visible);
@@ -268,7 +241,6 @@ class OverviewGrid::ShieldView : public views::View {
  protected:
   // views::View:
   void Layout() override {
-    background_view_->SetBoundsRect(GetLocalBounds());
     UpdateDesksBarBounds();
   }
 
@@ -319,7 +291,6 @@ class OverviewGrid::ShieldView : public views::View {
   }
 
   // Owned by views heirarchy.
-  views::View* background_view_ = nullptr;
   RoundedRectView* label_container_ = nullptr;
   views::Label* label_ = nullptr;
   DesksBarView* desks_bar_view_ = nullptr;
@@ -424,22 +395,6 @@ OverviewGrid::OverviewGrid(aura::Window* root_window,
 }
 
 OverviewGrid::~OverviewGrid() = default;
-
-// static
-SkColor OverviewGrid::GetShieldColor() {
-  SkColor shield_color = kShieldColor;
-  // Extract the dark muted color from the wallpaper and mix it with
-  // |kShieldBaseColor|. Just use |kShieldBaseColor| if the dark muted color
-  // could not be extracted.
-  SkColor dark_muted_color =
-      Shell::Get()->wallpaper_controller()->GetProminentColor(
-          color_utils::ColorProfile());
-  if (dark_muted_color != ash::kInvalidWallpaperColor) {
-    shield_color =
-        color_utils::GetResultingPaintColor(kShieldBaseColor, dark_muted_color);
-  }
-  return shield_color;
-}
 
 void OverviewGrid::Shutdown() {
   ScreenRotationAnimator::GetForRootWindow(root_window_)->RemoveObserver(this);
@@ -1297,7 +1252,6 @@ void OverviewGrid::InitShieldWidget(bool animate) {
   // Create |shield_view_| and animate its background and label if needed.
   shield_view_ = new ShieldView();
   shield_widget_->SetContentsView(shield_view_);
-  shield_view_->SetBackgroundColor(GetShieldColor());
   shield_view_->SetGridBounds(bounds_);
 
   if (animate) {

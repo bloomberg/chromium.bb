@@ -20,6 +20,7 @@
 #include "ash/wallpaper/wallpaper_info.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_color_calculator_observer.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resizer_observer.h"
+#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -68,6 +69,7 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
                                        public WallpaperResizerObserver,
                                        public WallpaperColorCalculatorObserver,
                                        public SessionObserver,
+                                       public TabletModeObserver,
                                        public ui::CompositorLockClient {
  public:
   enum WallpaperResolution {
@@ -294,6 +296,8 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // ShellObserver:
   void OnRootWindowAdded(aura::Window* root_window) override;
   void OnLocalStatePrefServiceInitialized(PrefService* pref_service) override;
+  void OnShellInitialized() override;
+  void OnShellDestroying() override;
 
   // WallpaperResizerObserver:
   void OnWallpaperResized() override;
@@ -303,6 +307,10 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
 
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
+
+  // TabletModeObserver:
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
 
   // CompositorLockClient:
   void CompositorLockTimedOut() override;
@@ -547,6 +555,10 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // When wallpaper resizes, we can check which displays will be affected. For
   // simplicity, we only lock the compositor for the internal display.
   void GetInternalDisplayCompositorLock();
+
+  // Schedules paint on all WallpaperViews owned by WallpaperWidgetControllers.
+  // This is used when we want to change wallpaper dimming.
+  void RepaintWallpaper();
 
   bool locked_;
 
