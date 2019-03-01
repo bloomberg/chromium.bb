@@ -18,7 +18,7 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
-#include "ui/views/view_properties.h"
+#include "ui/views/view_class_properties.h"
 
 // InfoBarService -------------------------------------------------------------
 

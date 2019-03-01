@@ -46,7 +46,7 @@
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/metrics.h"
 #include "ui/views/view.h"
-#include "ui/views/view_properties.h"
+#include "ui/views/view_class_properties.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"

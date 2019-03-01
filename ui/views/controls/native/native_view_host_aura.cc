@@ -19,8 +19,8 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/painter.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/view_constants_aura.h"
-#include "ui/views/view_properties.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
 

@@ -8,7 +8,7 @@
 
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"
-#include "ui/views/view_properties.h"
+#include "ui/views/view_class_properties.h"
 
 namespace views {
 
