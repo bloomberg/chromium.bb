@@ -243,11 +243,11 @@ class MonitoringWarningView : public NonAccessibleView {
     base::string16 label_text;
     if (warning_type == WarningType::kFullWarning) {
       label_text = l10n_util::GetStringUTF16(
-          IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_WARNING);
+          IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_FULL_WARNING);
       image_->SetVisible(true);
     } else if (warning_type == WarningType::kSoftWarning) {
       label_text = l10n_util::GetStringUTF16(
-          IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_WARNING);
+          IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_SOFT_WARNING);
       image_->SetVisible(false);
     }
     label_->SetText(label_text);
