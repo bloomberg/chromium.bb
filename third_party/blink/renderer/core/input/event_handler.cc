@@ -1090,16 +1090,12 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
   return event_result;
 }
 
-// TODO(jbroman): Simplify this method, given that it produces two values,
-// and the usage always checks both, even though the function returns true
-// if it produces a non-null value.
-static bool TargetIsFrame(Node* target, LocalFrame*& frame) {
+static LocalFrame* LocalFrameFromTargetNode(Node* target) {
   if (!IsHTMLFrameElementBase(target))
-    return false;
+    return nullptr;
 
   // Cross-process drag and drop is not yet supported.
-  frame = DynamicTo<LocalFrame>(ToHTMLFrameElementBase(target)->ContentFrame());
-  return !!frame;
+  return DynamicTo<LocalFrame>(ToHTMLFrameElementBase(target)->ContentFrame());
 }
 
 WebInputEventResult EventHandler::UpdateDragAndDrop(
@@ -1134,11 +1130,9 @@ WebInputEventResult EventHandler::UpdateDragAndDrop(
     //
     // Moreover, this ordering conforms to section 7.9.4 of the HTML 5 spec.
     // <http://dev.w3.org/html5/spec/Overview.html#drag-and-drop-processing-model>.
-    LocalFrame* target_frame;
-    if (TargetIsFrame(new_target, target_frame)) {
-      if (target_frame)
-        event_result = target_frame->GetEventHandler().UpdateDragAndDrop(
-            event, data_transfer);
+    if (auto* target_frame = LocalFrameFromTargetNode(new_target)) {
+      event_result = target_frame->GetEventHandler().UpdateDragAndDrop(
+          event, data_transfer);
     } else if (new_target) {
       // As per section 7.9.4 of the HTML 5 spec., we must always fire a drag
       // event before firing a dragenter, dragleave, or dragover event.
@@ -1153,10 +1147,9 @@ WebInputEventResult EventHandler::UpdateDragAndDrop(
           data_transfer);
     }
 
-    if (TargetIsFrame(drag_target_.Get(), target_frame)) {
-      if (target_frame)
-        event_result = target_frame->GetEventHandler().UpdateDragAndDrop(
-            event, data_transfer);
+    if (auto* target_frame = LocalFrameFromTargetNode(drag_target_.Get())) {
+      event_result = target_frame->GetEventHandler().UpdateDragAndDrop(
+          event, data_transfer);
     } else if (drag_target_) {
       mouse_event_manager_->DispatchDragEvent(event_type_names::kDragleave,
                                               drag_target_.Get(), new_target,
@@ -1171,11 +1164,9 @@ WebInputEventResult EventHandler::UpdateDragAndDrop(
       should_only_fire_drag_over_event_ = true;
     }
   } else {
-    LocalFrame* target_frame;
-    if (TargetIsFrame(new_target, target_frame)) {
-      if (target_frame)
-        event_result = target_frame->GetEventHandler().UpdateDragAndDrop(
-            event, data_transfer);
+    if (auto* target_frame = LocalFrameFromTargetNode(new_target)) {
+      event_result = target_frame->GetEventHandler().UpdateDragAndDrop(
+          event, data_transfer);
     } else if (new_target) {
       // Note, when dealing with sub-frames, we may need to fire only a dragover
       // event as a drag event may have been fired earlier.
@@ -1199,10 +1190,8 @@ WebInputEventResult EventHandler::UpdateDragAndDrop(
 
 void EventHandler::CancelDragAndDrop(const WebMouseEvent& event,
                                      DataTransfer* data_transfer) {
-  LocalFrame* target_frame;
-  if (TargetIsFrame(drag_target_.Get(), target_frame)) {
-    if (target_frame)
-      target_frame->GetEventHandler().CancelDragAndDrop(event, data_transfer);
+  if (auto* target_frame = LocalFrameFromTargetNode(drag_target_.Get())) {
+    target_frame->GetEventHandler().CancelDragAndDrop(event, data_transfer);
   } else if (drag_target_.Get()) {
     if (mouse_event_manager_->GetDragState().drag_src_) {
       mouse_event_manager_->DispatchDragSrcEvent(event_type_names::kDrag,
@@ -1218,12 +1207,10 @@ void EventHandler::CancelDragAndDrop(const WebMouseEvent& event,
 WebInputEventResult EventHandler::PerformDragAndDrop(
     const WebMouseEvent& event,
     DataTransfer* data_transfer) {
-  LocalFrame* target_frame;
   WebInputEventResult result = WebInputEventResult::kNotHandled;
-  if (TargetIsFrame(drag_target_.Get(), target_frame)) {
-    if (target_frame)
-      result = target_frame->GetEventHandler().PerformDragAndDrop(
-          event, data_transfer);
+  if (auto* target_frame = LocalFrameFromTargetNode(drag_target_.Get())) {
+    result = target_frame->GetEventHandler().PerformDragAndDrop(event,
+                                                                data_transfer);
   } else if (drag_target_.Get()) {
     result = mouse_event_manager_->DispatchDragEvent(
         event_type_names::kDrop, drag_target_.Get(), nullptr, event,
@@ -2105,12 +2092,9 @@ void EventHandler::DragSourceEndedAt(const WebMouseEvent& event,
   MouseEventWithHitTestResults mev =
       event_handling_util::PerformMouseEventHitTest(frame_, request, event);
 
-  LocalFrame* target_frame;
-  if (TargetIsFrame(mev.InnerNode(), target_frame)) {
-    if (target_frame) {
-      target_frame->GetEventHandler().DragSourceEndedAt(event, operation);
-      return;
-    }
+  if (auto* target_frame = LocalFrameFromTargetNode(mev.InnerNode())) {
+    target_frame->GetEventHandler().DragSourceEndedAt(event, operation);
+    return;
   }
 
   mouse_event_manager_->DragSourceEndedAt(event, operation);
