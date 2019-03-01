@@ -88,51 +88,16 @@ class CORE_EXPORT CSPDirectiveList
                        const KURL&,
                        SecurityViolationReportingPolicy) const;
 
-  bool AllowScriptFromSource(const KURL&,
-                             const String& nonce,
-                             const IntegrityMetadataSet& hashes,
-                             ParserDisposition,
-                             ResourceRequest::RedirectStatus,
-                             SecurityViolationReportingPolicy) const;
-  bool AllowStyleFromSource(const KURL&,
-                            const String& nonce,
-                            ResourceRequest::RedirectStatus,
-                            SecurityViolationReportingPolicy) const;
-
-  bool AllowObjectFromSource(const KURL&,
-                             ResourceRequest::RedirectStatus,
-                             SecurityViolationReportingPolicy) const;
-  bool AllowPrefetchFromSource(const KURL&,
-                               ResourceRequest::RedirectStatus,
-                               SecurityViolationReportingPolicy) const;
-  bool AllowFrameFromSource(const KURL&,
-                            ResourceRequest::RedirectStatus,
-                            SecurityViolationReportingPolicy) const;
-  bool AllowImageFromSource(const KURL&,
-                            ResourceRequest::RedirectStatus,
-                            SecurityViolationReportingPolicy) const;
-  bool AllowFontFromSource(const KURL&,
-                           ResourceRequest::RedirectStatus,
-                           SecurityViolationReportingPolicy) const;
-  bool AllowMediaFromSource(const KURL&,
-                            ResourceRequest::RedirectStatus,
-                            SecurityViolationReportingPolicy) const;
-  bool AllowManifestFromSource(const KURL&,
-                               ResourceRequest::RedirectStatus,
-                               SecurityViolationReportingPolicy) const;
-  bool AllowConnectToSource(const KURL&,
-                            ResourceRequest::RedirectStatus,
-                            SecurityViolationReportingPolicy) const;
-  bool AllowFormAction(const KURL&,
+  bool AllowFromSource(ContentSecurityPolicy::DirectiveType,
+                       const KURL&,
                        ResourceRequest::RedirectStatus,
-                       SecurityViolationReportingPolicy) const;
-  bool AllowBaseURI(const KURL&,
-                    ResourceRequest::RedirectStatus,
-                    SecurityViolationReportingPolicy) const;
+                       SecurityViolationReportingPolicy,
+                       const String& nonce = String(),
+                       const IntegrityMetadataSet& = IntegrityMetadataSet(),
+                       ParserDisposition = kParserInserted) const;
+
   bool AllowTrustedTypePolicy(const String& policy_name) const;
-  bool AllowWorkerFromSource(const KURL&,
-                             ResourceRequest::RedirectStatus,
-                             SecurityViolationReportingPolicy) const;
+
   // |allowAncestors| does not need to know whether the resource was a
   // result of a redirect. After a redirect, source paths are usually
   // ignored to stop a page from learning the path to which the

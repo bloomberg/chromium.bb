@@ -1533,21 +1533,36 @@ TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
   EXPECT_TRUE(csp->AllowPluginTypeForDocument(
       *document, "application/x-type-1", "application/x-type-1", example_url,
       SecurityViolationReportingPolicy::kSuppressReporting));
+
+  ContentSecurityPolicy::DirectiveType types_to_test[] = {
+      ContentSecurityPolicy::DirectiveType::kBaseURI,
+      ContentSecurityPolicy::DirectiveType::kConnectSrc,
+      ContentSecurityPolicy::DirectiveType::kFontSrc,
+      ContentSecurityPolicy::DirectiveType::kFormAction,
+      ContentSecurityPolicy::DirectiveType::kFrameSrc,
+      ContentSecurityPolicy::DirectiveType::kImgSrc,
+      ContentSecurityPolicy::DirectiveType::kManifestSrc,
+      ContentSecurityPolicy::DirectiveType::kMediaSrc,
+      ContentSecurityPolicy::DirectiveType::kObjectSrc,
+      ContentSecurityPolicy::DirectiveType::kPrefetchSrc,
+      ContentSecurityPolicy::DirectiveType::kScriptSrcElem,
+      ContentSecurityPolicy::DirectiveType::kStyleSrcElem,
+      ContentSecurityPolicy::DirectiveType::kWorkerSrc};
+  for (auto type : types_to_test) {
+    EXPECT_TRUE(csp->AllowFromSource(type, example_url));
+  }
+
   EXPECT_TRUE(csp->AllowObjectFromSource(example_url));
-  EXPECT_TRUE(csp->AllowPrefetchFromSource(example_url));
-  EXPECT_TRUE(csp->AllowFrameFromSource(example_url));
   EXPECT_TRUE(csp->AllowImageFromSource(example_url));
-  EXPECT_TRUE(csp->AllowFontFromSource(example_url));
   EXPECT_TRUE(csp->AllowMediaFromSource(example_url));
   EXPECT_TRUE(csp->AllowConnectToSource(example_url));
   EXPECT_TRUE(csp->AllowFormAction(example_url));
   EXPECT_TRUE(csp->AllowBaseURI(example_url));
-  EXPECT_TRUE(csp->AllowTrustedTypePolicy("somepolicy"));
   EXPECT_TRUE(csp->AllowWorkerContextFromSource(example_url));
-  EXPECT_TRUE(csp->AllowManifestFromSource(example_url));
   EXPECT_TRUE(csp->AllowScriptFromSource(
       example_url, nonce, IntegrityMetadataSet(), kParserInserted));
-  EXPECT_TRUE(csp->AllowStyleFromSource(example_url, nonce));
+
+  EXPECT_TRUE(csp->AllowTrustedTypePolicy("somepolicy"));
   EXPECT_TRUE(csp->AllowInlineScript(element, context_url, nonce,
                                      ordinal_number, source));
   EXPECT_TRUE(csp->AllowInlineStyle(element, context_url, nonce, ordinal_number,

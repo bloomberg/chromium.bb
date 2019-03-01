@@ -650,46 +650,6 @@ bool ContentSecurityPolicy::AllowPluginTypeForDocument(
   return true;
 }
 
-bool ContentSecurityPolicy::AllowScriptFromSource(
-    const KURL& url,
-    const String& nonce,
-    const IntegrityMetadataSet& hashes,
-    ParserDisposition parser_disposition,
-    RedirectStatus redirect_status,
-    SecurityViolationReportingPolicy reporting_policy,
-    CheckHeaderType check_header_type) const {
-  if (ShouldBypassContentSecurityPolicy(url)) {
-    Count(parser_disposition == kParserInserted
-              ? WebFeature::kScriptWithCSPBypassingSchemeParserInserted
-              : WebFeature::kScriptWithCSPBypassingSchemeNotParserInserted);
-
-    // If we're running experimental features, bypass CSP only for
-    // non-parser-inserted resources whose scheme otherwise bypasses CSP. If
-    // we're not running experimental features, bypass CSP for all resources
-    // regardless of parser state. Once we have more data via the
-    // 'ScriptWithCSPBypassingScheme*' metrics, make a decision about what
-    // behavior to ship. https://crbug.com/653521
-    if ((parser_disposition == kNotParserInserted ||
-         !ExperimentalFeaturesEnabled()) &&
-        // The schemes where javascript:-URLs are blocked are usually privileged
-        // pages, so do not allow the CSP to be bypassed either.
-        !SchemeRegistry::ShouldTreatURLSchemeAsNotAllowingJavascriptURLs(
-            delegate_->GetSecurityOrigin()->Protocol())) {
-      return true;
-    }
-  }
-
-  bool is_allowed = true;
-  for (const auto& policy : policies_) {
-    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
-      continue;
-    is_allowed &=
-        policy->AllowScriptFromSource(url, nonce, hashes, parser_disposition,
-                                      redirect_status, reporting_policy);
-  }
-  return is_allowed;
-}
-
 bool ContentSecurityPolicy::AllowRequestWithoutIntegrity(
     mojom::RequestContextType context,
     const KURL& url,
@@ -703,6 +663,71 @@ bool ContentSecurityPolicy::AllowRequestWithoutIntegrity(
       return false;
   }
   return true;
+}
+
+static base::Optional<ContentSecurityPolicy::DirectiveType>
+GetDirectiveTypeFromRequestContextType(mojom::RequestContextType context) {
+  switch (context) {
+    case mojom::RequestContextType::AUDIO:
+    case mojom::RequestContextType::TRACK:
+    case mojom::RequestContextType::VIDEO:
+      return ContentSecurityPolicy::DirectiveType::kMediaSrc;
+
+    case mojom::RequestContextType::BEACON:
+    case mojom::RequestContextType::EVENT_SOURCE:
+    case mojom::RequestContextType::FETCH:
+    case mojom::RequestContextType::PING:
+    case mojom::RequestContextType::XML_HTTP_REQUEST:
+    case mojom::RequestContextType::SUBRESOURCE:
+      return ContentSecurityPolicy::DirectiveType::kConnectSrc;
+
+    case mojom::RequestContextType::EMBED:
+    case mojom::RequestContextType::OBJECT:
+      return ContentSecurityPolicy::DirectiveType::kObjectSrc;
+
+    case mojom::RequestContextType::PREFETCH:
+      return ContentSecurityPolicy::DirectiveType::kPrefetchSrc;
+
+    case mojom::RequestContextType::FAVICON:
+    case mojom::RequestContextType::IMAGE:
+    case mojom::RequestContextType::IMAGE_SET:
+      return ContentSecurityPolicy::DirectiveType::kImgSrc;
+
+    case mojom::RequestContextType::FONT:
+      return ContentSecurityPolicy::DirectiveType::kFontSrc;
+
+    case mojom::RequestContextType::FORM:
+      return ContentSecurityPolicy::DirectiveType::kFormAction;
+
+    case mojom::RequestContextType::FRAME:
+    case mojom::RequestContextType::IFRAME:
+      return ContentSecurityPolicy::DirectiveType::kFrameSrc;
+
+    case mojom::RequestContextType::IMPORT:
+    case mojom::RequestContextType::SCRIPT:
+    case mojom::RequestContextType::XSLT:
+      return ContentSecurityPolicy::DirectiveType::kScriptSrcElem;
+
+    case mojom::RequestContextType::MANIFEST:
+      return ContentSecurityPolicy::DirectiveType::kManifestSrc;
+
+    case mojom::RequestContextType::SERVICE_WORKER:
+    case mojom::RequestContextType::SHARED_WORKER:
+    case mojom::RequestContextType::WORKER:
+      return ContentSecurityPolicy::DirectiveType::kWorkerSrc;
+
+    case mojom::RequestContextType::STYLE:
+      return ContentSecurityPolicy::DirectiveType::kStyleSrcElem;
+
+    case mojom::RequestContextType::CSP_REPORT:
+    case mojom::RequestContextType::DOWNLOAD:
+    case mojom::RequestContextType::HYPERLINK:
+    case mojom::RequestContextType::INTERNAL:
+    case mojom::RequestContextType::LOCATION:
+    case mojom::RequestContextType::PLUGIN:
+    case mojom::RequestContextType::UNSPECIFIED:
+      return base::nullopt;
+  }
 }
 
 bool ContentSecurityPolicy::AllowRequest(
@@ -720,70 +745,13 @@ bool ContentSecurityPolicy::AllowRequest(
     return false;
   }
 
-  switch (context) {
-    case mojom::RequestContextType::AUDIO:
-    case mojom::RequestContextType::TRACK:
-    case mojom::RequestContextType::VIDEO:
-      return AllowMediaFromSource(url, redirect_status, reporting_policy,
-                                  check_header_type);
-    case mojom::RequestContextType::BEACON:
-    case mojom::RequestContextType::EVENT_SOURCE:
-    case mojom::RequestContextType::FETCH:
-    case mojom::RequestContextType::PING:
-    case mojom::RequestContextType::XML_HTTP_REQUEST:
-    case mojom::RequestContextType::SUBRESOURCE:
-      return AllowConnectToSource(url, redirect_status, reporting_policy,
-                                  check_header_type);
-    case mojom::RequestContextType::EMBED:
-    case mojom::RequestContextType::OBJECT:
-      return AllowObjectFromSource(url, redirect_status, reporting_policy,
-                                   check_header_type);
-    case mojom::RequestContextType::PREFETCH:
-      return AllowPrefetchFromSource(url, redirect_status, reporting_policy,
-                                     check_header_type);
-    case mojom::RequestContextType::FAVICON:
-    case mojom::RequestContextType::IMAGE:
-    case mojom::RequestContextType::IMAGE_SET:
-      return AllowImageFromSource(url, redirect_status, reporting_policy,
-                                  check_header_type);
-    case mojom::RequestContextType::FONT:
-      return AllowFontFromSource(url, redirect_status, reporting_policy,
-                                 check_header_type);
-    case mojom::RequestContextType::FORM:
-      return AllowFormAction(url, redirect_status, reporting_policy,
-                             check_header_type);
-    case mojom::RequestContextType::FRAME:
-    case mojom::RequestContextType::IFRAME:
-      return AllowFrameFromSource(url, redirect_status, reporting_policy,
-                                  check_header_type);
-    case mojom::RequestContextType::IMPORT:
-    case mojom::RequestContextType::SCRIPT:
-    case mojom::RequestContextType::XSLT:
-      return AllowScriptFromSource(url, nonce, integrity_metadata,
-                                   parser_disposition, redirect_status,
-                                   reporting_policy, check_header_type);
-    case mojom::RequestContextType::MANIFEST:
-      return AllowManifestFromSource(url, redirect_status, reporting_policy,
-                                     check_header_type);
-    case mojom::RequestContextType::SERVICE_WORKER:
-    case mojom::RequestContextType::SHARED_WORKER:
-    case mojom::RequestContextType::WORKER:
-      return AllowWorkerContextFromSource(url, redirect_status,
-                                          reporting_policy, check_header_type);
-    case mojom::RequestContextType::STYLE:
-      return AllowStyleFromSource(url, nonce, redirect_status, reporting_policy,
-                                  check_header_type);
-    case mojom::RequestContextType::CSP_REPORT:
-    case mojom::RequestContextType::DOWNLOAD:
-    case mojom::RequestContextType::HYPERLINK:
-    case mojom::RequestContextType::INTERNAL:
-    case mojom::RequestContextType::LOCATION:
-    case mojom::RequestContextType::PLUGIN:
-    case mojom::RequestContextType::UNSPECIFIED:
-      return true;
-  }
-  NOTREACHED();
-  return true;
+  base::Optional<ContentSecurityPolicy::DirectiveType> type =
+      GetDirectiveTypeFromRequestContextType(context);
+  if (!type)
+    return true;
+  return AllowFromSource(*type, url, redirect_status, reporting_policy,
+                         check_header_type, nonce, integrity_metadata,
+                         parser_disposition);
 }
 
 void ContentSecurityPolicy::UsesScriptHashAlgorithms(uint8_t algorithms) {
@@ -794,137 +762,62 @@ void ContentSecurityPolicy::UsesStyleHashAlgorithms(uint8_t algorithms) {
   style_hash_algorithms_used_ |= algorithms;
 }
 
-bool ContentSecurityPolicy::AllowObjectFromSource(
+bool ContentSecurityPolicy::AllowFromSource(
+    ContentSecurityPolicy::DirectiveType type,
     const KURL& url,
     RedirectStatus redirect_status,
     SecurityViolationReportingPolicy reporting_policy,
-    CheckHeaderType check_header_type) const {
-  if (ShouldBypassContentSecurityPolicy(url))
-    return true;
-
-  bool is_allowed = true;
-  for (const auto& policy : policies_) {
-    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
-      continue;
-    is_allowed &=
-        policy->AllowObjectFromSource(url, redirect_status, reporting_policy);
-  }
-
-  return is_allowed;
-}
-
-bool ContentSecurityPolicy::AllowPrefetchFromSource(
-    const KURL& url,
-    RedirectStatus redirect_status,
-    SecurityViolationReportingPolicy reporting_policy,
-    CheckHeaderType check_header_type) const {
-  if (ShouldBypassContentSecurityPolicy(url))
-    return true;
-
-  bool is_allowed = true;
-  for (const auto& policy : policies_) {
-    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
-      continue;
-    is_allowed &=
-        policy->AllowPrefetchFromSource(url, redirect_status, reporting_policy);
-  }
-
-  return is_allowed;
-}
-
-bool ContentSecurityPolicy::AllowFrameFromSource(
-    const KURL& url,
-    RedirectStatus redirect_status,
-    SecurityViolationReportingPolicy reporting_policy,
-    CheckHeaderType check_header_type) const {
-  if (ShouldBypassContentSecurityPolicy(url))
-    return true;
-
-  bool is_allowed = true;
-  for (const auto& policy : policies_) {
-    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
-      continue;
-    is_allowed &=
-        policy->AllowFrameFromSource(url, redirect_status, reporting_policy);
-  }
-
-  return is_allowed;
-}
-
-bool ContentSecurityPolicy::AllowImageFromSource(
-    const KURL& url,
-    RedirectStatus redirect_status,
-    SecurityViolationReportingPolicy reporting_policy,
-    CheckHeaderType check_header_type) const {
-  if (ShouldBypassContentSecurityPolicy(url, SchemeRegistry::kPolicyAreaImage))
-    return true;
-
-  bool is_allowed = true;
-  for (const auto& policy : policies_) {
-    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
-      continue;
-    is_allowed &=
-        policy->AllowImageFromSource(url, redirect_status, reporting_policy);
-  }
-
-  return is_allowed;
-}
-
-bool ContentSecurityPolicy::AllowStyleFromSource(
-    const KURL& url,
+    CheckHeaderType check_header_type,
     const String& nonce,
-    RedirectStatus redirect_status,
-    SecurityViolationReportingPolicy reporting_policy,
-    CheckHeaderType check_header_type) const {
-  if (ShouldBypassContentSecurityPolicy(url, SchemeRegistry::kPolicyAreaStyle))
-    return true;
+    const IntegrityMetadataSet& hashes,
+    ParserDisposition parser_disposition) const {
+  SchemeRegistry::PolicyAreas area = SchemeRegistry::kPolicyAreaAll;
+  if (type == ContentSecurityPolicy::DirectiveType::kImgSrc)
+    area = SchemeRegistry::kPolicyAreaImage;
+  else if (type == ContentSecurityPolicy::DirectiveType::kStyleSrcElem)
+    area = SchemeRegistry::kPolicyAreaStyle;
 
-  bool is_allowed = true;
-  for (const auto& policy : policies_) {
-    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
-      continue;
-    is_allowed &= policy->AllowStyleFromSource(url, nonce, redirect_status,
-                                               reporting_policy);
+  if (ShouldBypassContentSecurityPolicy(url, area)) {
+    if (type != ContentSecurityPolicy::DirectiveType::kScriptSrcElem)
+      return true;
+
+    Count(parser_disposition == kParserInserted
+              ? WebFeature::kScriptWithCSPBypassingSchemeParserInserted
+              : WebFeature::kScriptWithCSPBypassingSchemeNotParserInserted);
+
+    // If we're running experimental features, bypass CSP only for
+    // non-parser-inserted resources whose scheme otherwise bypasses CSP. If
+    // we're not running experimental features, bypass CSP for all resources
+    // regardless of parser state. Once we have more data via the
+    // 'ScriptWithCSPBypassingScheme*' metrics, make a decision about what
+    // behavior to ship. https://crbug.com/653521
+    if ((parser_disposition == kNotParserInserted ||
+         !ExperimentalFeaturesEnabled()) &&
+        // The schemes where javascript:-URLs are blocked are usually
+        // privileged pages, so do not allow the CSP to be bypassed either.
+        !SchemeRegistry::ShouldTreatURLSchemeAsNotAllowingJavascriptURLs(
+            delegate_->GetSecurityOrigin()->Protocol())) {
+      return true;
+    }
   }
-  return is_allowed;
-}
-
-bool ContentSecurityPolicy::AllowFontFromSource(
-    const KURL& url,
-    RedirectStatus redirect_status,
-    SecurityViolationReportingPolicy reporting_policy,
-    CheckHeaderType check_header_type) const {
-  if (ShouldBypassContentSecurityPolicy(url))
-    return true;
-
-  bool is_allowed = true;
-  for (const auto& policy : policies_) {
-    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
-      continue;
-    is_allowed &=
-        policy->AllowFontFromSource(url, redirect_status, reporting_policy);
-  }
-
-  return is_allowed;
-}
-
-bool ContentSecurityPolicy::AllowMediaFromSource(
-    const KURL& url,
-    RedirectStatus redirect_status,
-    SecurityViolationReportingPolicy reporting_policy,
-    CheckHeaderType check_header_type) const {
-  if (ShouldBypassContentSecurityPolicy(url))
-    return true;
 
   bool is_allowed = true;
   for (const auto& policy : policies_) {
     if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
       continue;
     is_allowed &=
-        policy->AllowMediaFromSource(url, redirect_status, reporting_policy);
+        policy->AllowFromSource(type, url, redirect_status, reporting_policy,
+                                nonce, hashes, parser_disposition);
   }
 
   return is_allowed;
+}
+
+bool ContentSecurityPolicy::AllowBaseURI(const KURL& url) const {
+  // `base-uri` isn't affected by 'upgrade-insecure-requests', so we use
+  // CheckHeaderType::kCheckAll to check both report-only and enforce headers
+  // here.
+  return AllowFromSource(ContentSecurityPolicy::DirectiveType::kBaseURI, url);
 }
 
 bool ContentSecurityPolicy::AllowConnectToSource(
@@ -932,57 +825,48 @@ bool ContentSecurityPolicy::AllowConnectToSource(
     RedirectStatus redirect_status,
     SecurityViolationReportingPolicy reporting_policy,
     CheckHeaderType check_header_type) const {
-  if (ShouldBypassContentSecurityPolicy(url))
-    return true;
-
-  bool is_allowed = true;
-  for (const auto& policy : policies_) {
-    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
-      continue;
-    is_allowed &=
-        policy->AllowConnectToSource(url, redirect_status, reporting_policy);
-  }
-
-  return is_allowed;
+  return AllowFromSource(ContentSecurityPolicy::DirectiveType::kConnectSrc, url,
+                         redirect_status, reporting_policy, check_header_type);
 }
 
-bool ContentSecurityPolicy::AllowFormAction(
+bool ContentSecurityPolicy::AllowFormAction(const KURL& url) const {
+  return AllowFromSource(ContentSecurityPolicy::DirectiveType::kFormAction,
+                         url);
+}
+
+bool ContentSecurityPolicy::AllowImageFromSource(
     const KURL& url,
     RedirectStatus redirect_status,
     SecurityViolationReportingPolicy reporting_policy,
     CheckHeaderType check_header_type) const {
-  if (ShouldBypassContentSecurityPolicy(url))
-    return true;
-
-  bool is_allowed = true;
-  for (const auto& policy : policies_) {
-    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
-      continue;
-    is_allowed &=
-        policy->AllowFormAction(url, redirect_status, reporting_policy);
-  }
-
-  return is_allowed;
+  return AllowFromSource(ContentSecurityPolicy::DirectiveType::kImgSrc, url,
+                         redirect_status, reporting_policy, check_header_type);
 }
 
-bool ContentSecurityPolicy::AllowBaseURI(
+bool ContentSecurityPolicy::AllowMediaFromSource(const KURL& url) const {
+  return AllowFromSource(ContentSecurityPolicy::DirectiveType::kMediaSrc, url);
+}
+
+bool ContentSecurityPolicy::AllowObjectFromSource(const KURL& url) const {
+  return AllowFromSource(ContentSecurityPolicy::DirectiveType::kObjectSrc, url);
+}
+
+bool ContentSecurityPolicy::AllowScriptFromSource(
     const KURL& url,
+    const String& nonce,
+    const IntegrityMetadataSet& hashes,
+    ParserDisposition parser_disposition,
     RedirectStatus redirect_status,
-    SecurityViolationReportingPolicy reporting_policy) const {
-  // `base-uri` isn't affected by 'upgrade-insecure-requests', so we'll check
-  // both report-only and enforce headers here.
-  if (ShouldBypassContentSecurityPolicy(url))
-    return true;
+    SecurityViolationReportingPolicy reporting_policy,
+    CheckHeaderType check_header_type) const {
+  return AllowFromSource(ContentSecurityPolicy::DirectiveType::kScriptSrcElem,
+                         url, redirect_status, reporting_policy,
+                         check_header_type, nonce, hashes, parser_disposition);
+}
 
-  bool is_allowed = true;
-  for (const auto& policy : policies_) {
-    if (!CheckHeaderTypeMatches(CheckHeaderType::kCheckAll,
-                                policy->HeaderType()))
-      continue;
-    is_allowed &= policy->AllowBaseURI(url, redirect_status, reporting_policy);
-  }
-
-  return is_allowed;
+bool ContentSecurityPolicy::AllowWorkerContextFromSource(
+    const KURL& url) const {
+  return AllowFromSource(ContentSecurityPolicy::DirectiveType::kWorkerSrc, url);
 }
 
 bool ContentSecurityPolicy::AllowTrustedTypePolicy(
@@ -994,44 +878,6 @@ bool ContentSecurityPolicy::AllowTrustedTypePolicy(
       continue;
     }
     is_allowed &= policy->AllowTrustedTypePolicy(policy_name);
-  }
-
-  return is_allowed;
-}
-
-bool ContentSecurityPolicy::AllowWorkerContextFromSource(
-    const KURL& url,
-    RedirectStatus redirect_status,
-    SecurityViolationReportingPolicy reporting_policy,
-    CheckHeaderType check_header_type) const {
-  if (ShouldBypassContentSecurityPolicy(url))
-    return true;
-
-  bool is_allowed = true;
-  for (const auto& policy : policies_) {
-    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
-      continue;
-    is_allowed &=
-        policy->AllowWorkerFromSource(url, redirect_status, reporting_policy);
-  }
-
-  return is_allowed;
-}
-
-bool ContentSecurityPolicy::AllowManifestFromSource(
-    const KURL& url,
-    RedirectStatus redirect_status,
-    SecurityViolationReportingPolicy reporting_policy,
-    CheckHeaderType check_header_type) const {
-  if (ShouldBypassContentSecurityPolicy(url))
-    return true;
-
-  bool is_allowed = true;
-  for (const auto& policy : policies_) {
-    if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
-      continue;
-    is_allowed &=
-        policy->AllowManifestFromSource(url, redirect_status, reporting_policy);
   }
 
   return is_allowed;
