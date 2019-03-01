@@ -122,6 +122,7 @@ ClientSocketPoolBaseHelper::~ClientSocketPoolBaseHelper() {
   DCHECK(group_map_.empty());
   DCHECK(pending_callback_map_.empty());
   DCHECK_EQ(0, connecting_socket_count_);
+  DCHECK_EQ(0, handed_out_socket_count_);
   CHECK(higher_pools_.empty());
 
   NetworkChangeNotifier::RemoveIPAddressObserver(this);
@@ -492,11 +493,18 @@ void ClientSocketPoolBaseHelper::CancelRequest(
   }
 
   CHECK(base::ContainsKey(group_map_, group_name));
-
   Group* group = GetOrCreateGroup(group_name);
 
+  std::unique_ptr<Request> request = group->FindAndRemoveBoundRequest(handle);
+  if (request) {
+    --connecting_socket_count_;
+    OnAvailableSocketSlot(group_name, group);
+    CheckForStalledSocketGroups();
+    return;
+  }
+
   // Search pending_requests for matching handle.
-  std::unique_ptr<Request> request = group->FindAndRemovePendingRequest(handle);
+  request = group->FindAndRemovePendingRequest(handle);
   if (request) {
     request->net_log().AddEvent(NetLogEventType::CANCELLED);
     request->net_log().EndEvent(NetLogEventType::SOCKET_POOL);
@@ -569,6 +577,7 @@ LoadState ClientSocketPoolBaseHelper::GetLoadState(
 std::unique_ptr<base::DictionaryValue>
 ClientSocketPoolBaseHelper::GetInfoAsValue(const std::string& name,
                                            const std::string& type) const {
+  // TODO(mmenke): This currently doesn't return bound Requests or ConnectJobs.
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString("name", name);
   dict->SetString("type", type);
@@ -874,12 +883,44 @@ void ClientSocketPoolBaseHelper::OnConnectJobComplete(
   NetLogWithSource job_log = job->net_log();
   LoadTimingInfo::ConnectTiming connect_timing = job->connect_timing();
 
+  // Check if the ConnectJob is already bound to a Request. If so, complete the
+  // request.
+  //
+  // TODO(mmenke) this logic resembles the case where the job is assigned to a
+  // request below. Look into merging the logic.
+  int pending_result;
+  std::unique_ptr<Request> request =
+      group->FindAndRemoveBoundRequestForConnectJob(job, &pending_result);
+  if (request) {
+    --connecting_socket_count_;
+    bool handed_out_socket = false;
+    if (pending_result != OK) {
+      result = pending_result;
+    } else {
+      if (socket) {
+        handed_out_socket = true;
+        HandOutSocket(std::move(socket), ClientSocketHandle::UNUSED,
+                      connect_timing, request->handle(), base::TimeDelta(),
+                      group, request->net_log());
+      }
+    }
+    request->net_log().EndEventWithNetErrorCode(NetLogEventType::SOCKET_POOL,
+                                                result);
+    InvokeUserCallbackLater(request->handle(), request->release_callback(),
+                            result, request->socket_tag());
+    if (!handed_out_socket) {
+      OnAvailableSocketSlot(group_name, group);
+      CheckForStalledSocketGroups();
+    }
+    return;
+  }
+
   // RemoveConnectJob(job, _) must be called by all branches below;
   // otherwise, |job| will be leaked.
 
   if (result == OK) {
     DCHECK(socket.get());
-    std::unique_ptr<Request> request = group->PopNextPendingRequest();
+    request = group->PopNextPendingRequest();
     RemoveConnectJob(job, group);
     if (request) {
       LogBoundConnectJobToRequest(job_log.source(), *request);
@@ -921,6 +962,26 @@ void ClientSocketPoolBaseHelper::OnConnectJobComplete(
       CheckForStalledSocketGroups();
     }
   }
+}
+
+void ClientSocketPoolBaseHelper::OnNeedsProxyAuth(
+    const HttpResponseInfo& response,
+    HttpAuthController* auth_controller,
+    base::OnceClosure restart_with_auth_callback,
+    ConnectJob* job) {
+  auto group_it = group_map_.find(job->group_name());
+  CHECK(group_it != group_map_.end());
+
+  const Request* request = group_it->second->BindRequestToConnectJob(job);
+  // If can't bind the ConnectJob to a request, treat this as a ConnectJob
+  // failure.
+  if (!request) {
+    OnConnectJobComplete(ERR_PROXY_AUTH_REQUESTED, job);
+    return;
+  }
+
+  request->proxy_auth_callback().Run(response, auth_controller,
+                                     std::move(restart_with_auth_callback));
 }
 
 void ClientSocketPoolBaseHelper::OnIPAddressChanged() {
@@ -1043,7 +1104,6 @@ void ClientSocketPoolBaseHelper::CancelAllConnectJobs() {
       ++i;
     }
   }
-  DCHECK_EQ(0, connecting_socket_count_);
 }
 
 void ClientSocketPoolBaseHelper::CancelAllRequestsWithError(int error) {
@@ -1057,6 +1117,13 @@ void ClientSocketPoolBaseHelper::CancelAllRequestsWithError(int error) {
       InvokeUserCallbackLater(request->handle(), request->release_callback(),
                               error, request->socket_tag());
     }
+
+    // Mark bound connect jobs as needing to fail. Can't fail them immediately
+    // because they may have access to objects owned by the ConnectJob, and
+    // could access them if a user callback invocation is queued. It would also
+    // result in the consumer handling two messages at once, which in general
+    // isn't safe for a lot of code.
+    group->SetPendingErrorForAllBoundRequests(error);
 
     // Delete group if no longer needed.
     if (group->IsEmpty()) {
@@ -1169,6 +1236,7 @@ ClientSocketPoolBaseHelper::Group::~Group() {
   DCHECK_EQ(0u, unassigned_job_count());
   DCHECK(pending_requests_.empty());
   DCHECK(jobs_.empty());
+  DCHECK(bound_requests_.empty());
 }
 
 void ClientSocketPoolBaseHelper::Group::StartBackupJobTimer(
@@ -1211,7 +1279,8 @@ void ClientSocketPoolBaseHelper::Group::AddJob(std::unique_ptr<ConnectJob> job,
   SanityCheck();
 }
 
-void ClientSocketPoolBaseHelper::Group::RemoveJob(ConnectJob* job) {
+std::unique_ptr<ConnectJob> ClientSocketPoolBaseHelper::Group::RemoveJob(
+    ConnectJob* job) {
   SanityCheck();
 
   // Check that |job| is in the list.
@@ -1250,6 +1319,7 @@ void ClientSocketPoolBaseHelper::Group::RemoveJob(ConnectJob* job) {
   }
 
   SanityCheck();
+  return owned_job;
 }
 
 void ClientSocketPoolBaseHelper::Group::OnBackupJobTimerFired(
@@ -1365,6 +1435,12 @@ void ClientSocketPoolBaseHelper::Group::SanityCheck() const {
     for (auto it2 = std::next(it); it2 != unassigned_jobs_.end(); ++it2) {
       DCHECK_NE(job, *it2);
     }
+
+    // Check that no |unassigned_jobs_| are in |bound_requests_|.
+    DCHECK(std::find_if(bound_requests_.begin(), bound_requests_.end(),
+                        [job](const BoundRequest& bound_request) {
+                          return bound_request.connect_job.get() == job;
+                        }) == bound_requests_.end());
   }
 #endif
 }
@@ -1390,21 +1466,27 @@ void ClientSocketPoolBaseHelper::Group::RemoveAllJobs() {
   SanityCheck();
 }
 
-const ClientSocketPoolBaseHelper::Request*
-ClientSocketPoolBaseHelper::Group::GetNextPendingRequest() const {
-  return pending_requests_.empty() ? NULL
-                                   : pending_requests_.FirstMax().value().get();
+size_t ClientSocketPoolBaseHelper::Group::ConnectJobCount() const {
+  return bound_requests_.size() + jobs_.size();
 }
 
 bool ClientSocketPoolBaseHelper::Group::HasConnectJobForHandle(
     const ClientSocketHandle* handle) const {
-  // Search through the requests with a job for a request with |handle|.
+  // Search through bound requests for |handle|.
+  for (const auto& bound_pair : bound_requests_) {
+    if (handle == bound_pair.request->handle())
+      return true;
+  }
+
+  // Search through the unbound requests that have corresponding jobs for a
+  // request with |handle|.
   for (RequestQueue::Pointer pointer = pending_requests_.FirstMax();
        !pointer.is_null() && pointer.value()->job();
        pointer = pending_requests_.GetNextTowardsLastMin(pointer)) {
     if (pointer.value()->handle() == handle)
       return true;
   }
+
   return false;
 }
 
@@ -1435,6 +1517,12 @@ void ClientSocketPoolBaseHelper::Group::InsertPendingRequest(
   SanityCheck();
 }
 
+const ClientSocketPoolBaseHelper::Request*
+ClientSocketPoolBaseHelper::Group::GetNextPendingRequest() const {
+  return pending_requests_.empty() ? nullptr
+                                   : pending_requests_.FirstMax().value().get();
+}
+
 std::unique_ptr<ClientSocketPoolBaseHelper::Request>
 ClientSocketPoolBaseHelper::Group::PopNextPendingRequest() {
   if (pending_requests_.empty())
@@ -1456,6 +1544,72 @@ ClientSocketPoolBaseHelper::Group::FindAndRemovePendingRequest(
     }
   }
   return std::unique_ptr<ClientSocketPoolBaseHelper::Request>();
+}
+
+std::unique_ptr<ClientSocketPoolBaseHelper::Request>
+ClientSocketPoolBaseHelper::Group::FindAndRemoveBoundRequest(
+    ClientSocketHandle* client_socket_handle) {
+  for (auto bound_pair = bound_requests_.begin();
+       bound_pair != bound_requests_.end(); ++bound_pair) {
+    if (bound_pair->request->handle() != client_socket_handle)
+      continue;
+    std::unique_ptr<Request> request = std::move(bound_pair->request);
+    bound_requests_.erase(bound_pair);
+    return request;
+  }
+  return nullptr;
+}
+
+void ClientSocketPoolBaseHelper::Group::SetPendingErrorForAllBoundRequests(
+    int pending_error) {
+  for (auto bound_pair = bound_requests_.begin();
+       bound_pair != bound_requests_.end(); ++bound_pair) {
+    // Earlier errors take precedence.
+    if (bound_pair->pending_error == OK)
+      bound_pair->pending_error = pending_error;
+  }
+}
+
+const ClientSocketPoolBaseHelper::Request*
+ClientSocketPoolBaseHelper::Group::BindRequestToConnectJob(
+    ConnectJob* connect_job) {
+  // Check if |job| is already bound to a Request.
+  for (const auto& bound_pair : bound_requests_) {
+    if (bound_pair.connect_job.get() == connect_job)
+      return bound_pair.request.get();
+  }
+
+  // If not, try to bind it to a Request.
+  const Request* request = GetNextPendingRequest();
+  // If there are no pending requests, or the highest priority request has no
+  // callback to handle auth challenges, return nullptr.
+  if (!request || request->proxy_auth_callback().is_null())
+    return nullptr;
+
+  // Otherwise, bind the ConnectJob to the Request.
+  std::unique_ptr<Request> owned_request = PopNextPendingRequest();
+  DCHECK_EQ(owned_request.get(), request);
+  std::unique_ptr<ConnectJob> owned_connect_job = RemoveJob(connect_job);
+  LogBoundConnectJobToRequest(owned_connect_job->net_log().source(), *request);
+  bound_requests_.emplace_back(
+      BoundRequest(std::move(owned_connect_job), std::move(owned_request)));
+  return request;
+}
+
+std::unique_ptr<ClientSocketPoolBaseHelper::Request>
+ClientSocketPoolBaseHelper::Group::FindAndRemoveBoundRequestForConnectJob(
+    ConnectJob* connect_job,
+    int* pending_error) {
+  for (auto bound_pair = bound_requests_.begin();
+       bound_pair != bound_requests_.end(); ++bound_pair) {
+    if (bound_pair->connect_job.get() != connect_job)
+      continue;
+    std::unique_ptr<Request> request = std::move(bound_pair->request);
+    *pending_error = bound_pair->pending_error;
+    bound_requests_.erase(bound_pair);
+    return request;
+  }
+  return nullptr;
 }
 
 void ClientSocketPoolBaseHelper::Group::SetPriority(ClientSocketHandle* handle,
@@ -1487,15 +1641,39 @@ void ClientSocketPoolBaseHelper::Group::SetPriority(ClientSocketHandle* handle,
 bool ClientSocketPoolBaseHelper::Group::RequestWithHandleHasJobForTesting(
     const ClientSocketHandle* handle) const {
   SanityCheck();
+  if (HasConnectJobForHandle(handle))
+    return true;
+
+  // There's no corresponding ConnectJob. Verify that the handle is at least
+  // owned by a request.
   RequestQueue::Pointer pointer = pending_requests_.FirstMax();
   for (size_t i = 0; i < pending_requests_.size(); ++i) {
     if (pointer.value()->handle() == handle)
-      return pointer.value()->job() != nullptr;
+      return false;
     pointer = pending_requests_.GetNextTowardsLastMin(pointer);
   }
   NOTREACHED();
   return false;
 }
+
+ClientSocketPoolBaseHelper::Group::BoundRequest::BoundRequest()
+    : pending_error(OK) {}
+
+ClientSocketPoolBaseHelper::Group::BoundRequest::BoundRequest(
+    std::unique_ptr<ConnectJob> connect_job,
+    std::unique_ptr<Request> request)
+    : connect_job(std::move(connect_job)),
+      request(std::move(request)),
+      pending_error(OK) {}
+
+ClientSocketPoolBaseHelper::Group::BoundRequest::BoundRequest(
+    BoundRequest&& other) = default;
+
+ClientSocketPoolBaseHelper::Group::BoundRequest&
+ClientSocketPoolBaseHelper::Group::BoundRequest::operator=(
+    BoundRequest&& other) = default;
+
+ClientSocketPoolBaseHelper::Group::BoundRequest::~BoundRequest() = default;
 
 std::unique_ptr<ClientSocketPoolBaseHelper::Request>
 ClientSocketPoolBaseHelper::Group::RemovePendingRequest(

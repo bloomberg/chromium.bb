@@ -293,6 +293,7 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxy) {
   transport_params = nullptr;
 
   client_socket_wrapper_ = std::make_unique<HttpProxyClientSocketWrapper>(
+      HttpProxyClientSocketWrapper::OnProxyAuthChallengeCallback(),
       /*request_priority=*/DEFAULT_PRIORITY,
       /*connect_timeout_duration=*/base::TimeDelta::FromHours(1),
       /*proxy_negotiation_timeout_duration=*/base::TimeDelta::FromHours(1),
@@ -359,6 +360,7 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxySocketTag) {
   SocketTag tag(getuid(), 0x87654321);
 
   client_socket_wrapper_ = std::make_unique<HttpProxyClientSocketWrapper>(
+      HttpProxyClientSocketWrapper::OnProxyAuthChallengeCallback(),
       /*request_priority=*/DEFAULT_PRIORITY,
       /*connect_timeout_duration=*/base::TimeDelta::FromHours(1),
       /*proxy_negotiation_timeout_duration=*/base::TimeDelta::FromHours(1),

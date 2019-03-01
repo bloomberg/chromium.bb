@@ -92,6 +92,15 @@ void SOCKSConnectJob::OnConnectJobComplete(int result, ConnectJob* job) {
   OnIOComplete(result);
 }
 
+void SOCKSConnectJob::OnNeedsProxyAuth(
+    const HttpResponseInfo& response,
+    HttpAuthController* auth_controller,
+    base::OnceClosure restart_with_auth_callback,
+    ConnectJob* job) {
+  // A SOCKSConnectJob can't be on top of an HttpProxyConnectJob.
+  NOTREACHED();
+}
+
 int SOCKSConnectJob::DoLoop(int result) {
   DCHECK_NE(next_state_, STATE_NONE);
 

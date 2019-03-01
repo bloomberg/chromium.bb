@@ -4,9 +4,12 @@
 
 #include "net/socket/connect_job.h"
 
+#include <utility>
+
 #include "base/trace_event/trace_event.h"
 #include "net/base/net_errors.h"
 #include "net/base/trace_constants.h"
+#include "net/http/http_auth_controller.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/socket/client_socket_handle.h"
@@ -130,9 +133,18 @@ void ConnectJob::NotifyDelegateOfCompletion(int rv) {
   delegate->OnConnectJobComplete(rv, this);
 }
 
+void ConnectJob::NotifyDelegateOfProxyAuth(
+    const HttpResponseInfo& response,
+    HttpAuthController* auth_controller,
+    base::OnceClosure restart_with_auth_callback) {
+  delegate_->OnNeedsProxyAuth(response, auth_controller,
+                              std::move(restart_with_auth_callback), this);
+}
+
 void ConnectJob::ResetTimer(base::TimeDelta remaining_time) {
   timer_.Stop();
-  timer_.Start(FROM_HERE, remaining_time, this, &ConnectJob::OnTimeout);
+  if (!remaining_time.is_zero())
+    timer_.Start(FROM_HERE, remaining_time, this, &ConnectJob::OnTimeout);
 }
 
 void ConnectJob::LogConnectStart() {

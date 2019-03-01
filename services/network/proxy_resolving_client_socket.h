@@ -28,6 +28,8 @@
 
 namespace net {
 class ClientSocketHandle;
+class HttpAuthController;
+class HttpResponseInfo;
 class HttpNetworkSession;
 }  // namespace net
 
@@ -96,8 +98,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingClientSocket
     STATE_PROXY_RESOLVE_COMPLETE,
     STATE_INIT_CONNECTION,
     STATE_INIT_CONNECTION_COMPLETE,
-    STATE_RESTART_TUNNEL_AUTH,
-    STATE_RESTART_TUNNEL_AUTH_COMPLETE,
     STATE_DONE,
     STATE_NONE,
   };
@@ -114,8 +114,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingClientSocket
   int DoProxyResolveComplete(int result);
   int DoInitConnection();
   int DoInitConnectionComplete(int result);
-  int DoRestartTunnelAuth(int result);
-  int DoRestartTunnelAuthComplete(int result);
+
+  void OnProxyAuth(const net::HttpResponseInfo& response,
+                   net::HttpAuthController* auth_controller,
+                   base::OnceClosure restart_with_auth_callback);
 
   void CloseSocket(bool close_connection);
 

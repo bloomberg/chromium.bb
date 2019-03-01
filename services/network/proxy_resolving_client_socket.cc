@@ -231,12 +231,6 @@ int ProxyResolvingClientSocket::DoLoop(int result) {
       case STATE_INIT_CONNECTION_COMPLETE:
         rv = DoInitConnectionComplete(rv);
         break;
-      case STATE_RESTART_TUNNEL_AUTH:
-        rv = DoRestartTunnelAuth(rv);
-        break;
-      case STATE_RESTART_TUNNEL_AUTH_COMPLETE:
-        rv = DoRestartTunnelAuthComplete(rv);
-        break;
       default:
         NOTREACHED() << "bad state";
         rv = net::ERR_FAILED;
@@ -298,34 +292,22 @@ int ProxyResolvingClientSocket::DoInitConnection() {
         host_port_pair, network_session_, request_load_flags, request_priority,
         proxy_info_, ssl_config_, ssl_config_, net::PRIVACY_MODE_DISABLED,
         net_log_, socket_handle_.get(),
-        base::BindRepeating(&ProxyResolvingClientSocket::OnIOComplete,
-                            base::Unretained(this)),
-        net::ClientSocketPool::ProxyAuthCallback());
+        base::BindOnce(&ProxyResolvingClientSocket::OnIOComplete,
+                       base::Unretained(this)),
+        base::BindRepeating(&ProxyResolvingClientSocket::OnProxyAuth,
+                            base::Unretained(this)));
   }
   return net::InitSocketHandleForRawConnect(
       host_port_pair, network_session_, request_load_flags, request_priority,
       proxy_info_, ssl_config_, ssl_config_, net::PRIVACY_MODE_DISABLED,
       net_log_, socket_handle_.get(),
-      base::BindRepeating(&ProxyResolvingClientSocket::OnIOComplete,
-                          base::Unretained(this)),
-      net::ClientSocketPool::ProxyAuthCallback());
+      base::BindOnce(&ProxyResolvingClientSocket::OnIOComplete,
+                     base::Unretained(this)),
+      base::BindRepeating(&ProxyResolvingClientSocket::OnProxyAuth,
+                          base::Unretained(this)));
 }
 
 int ProxyResolvingClientSocket::DoInitConnectionComplete(int result) {
-  if (result == net::ERR_PROXY_AUTH_REQUESTED) {
-    if (use_tls_) {
-      // Put the in-progress HttpProxyClientSocket into |socket_handle_| to
-      // do tunnel auth. After auth completes, it's important to reset
-      // |socket_handle_|, so it doesn't have a HttpProxyClientSocket when the
-      // code expects an SSLClientSocket. The tunnel restart code is careful to
-      // put it back to the socket pool before returning control to the rest of
-      // this class.
-      socket_handle_ = socket_handle_->release_pending_http_proxy_connection();
-    }
-    next_state_ = STATE_RESTART_TUNNEL_AUTH;
-    return result;
-  }
-
   if (result != net::OK) {
     // ReconsiderProxyAfterError either returns an error (in which case it is
     // not reconsidering a proxy) or returns ERR_IO_PENDING if it is considering
@@ -337,42 +319,20 @@ int ProxyResolvingClientSocket::DoInitConnectionComplete(int result) {
   return net::OK;
 }
 
-int ProxyResolvingClientSocket::DoRestartTunnelAuth(int result) {
-  DCHECK_EQ(net::ERR_PROXY_AUTH_REQUESTED, result);
-
-  net::ProxyClientSocket* proxy_socket =
-      static_cast<net::ProxyClientSocket*>(socket_handle_->socket());
-
-  if (proxy_socket->GetAuthController() &&
-      proxy_socket->GetAuthController()->HaveAuth()) {
-    next_state_ = STATE_RESTART_TUNNEL_AUTH_COMPLETE;
-    // base::Unretained(this) is safe because |proxy_socket| is owned by this.
-    return proxy_socket->RestartWithAuth(base::BindRepeating(
-        &ProxyResolvingClientSocket::OnIOComplete, base::Unretained(this)));
+void ProxyResolvingClientSocket::OnProxyAuth(
+    const net::HttpResponseInfo& response,
+    net::HttpAuthController* auth_controller,
+    base::OnceClosure restart_with_auth_callback) {
+  DCHECK_EQ(next_state_, STATE_INIT_CONNECTION_COMPLETE);
+  // If there are credentials available to try and use, use them.
+  if (auth_controller->HaveAuth()) {
+    std::move(restart_with_auth_callback).Run();
+    return;
   }
-  // This socket is unusable if the underlying authentication handler doesn't
-  // already have credentials.  It is possible to overcome this hurdle and
-  // finish the handshake if this class exposes an interface for an embedder to
-  // supply credentials.
-  CloseSocket(true /*close_connection*/);
-  return result;
-}
 
-int ProxyResolvingClientSocket::DoRestartTunnelAuthComplete(int result) {
-  if (result == net::ERR_PROXY_AUTH_REQUESTED) {
-    // Handle multi-round auth challenge.
-    next_state_ = STATE_RESTART_TUNNEL_AUTH;
-    return result;
-  }
-  if (result == net::OK) {
-    CloseSocket(false /*close_connection*/);
-    // Now that the HttpProxyClientSocket is connected, release it as an idle
-    // socket into the pool and start the connection process from the beginning.
-    next_state_ = STATE_INIT_CONNECTION;
-    return net::OK;
-  }
-  CloseSocket(true /*close_connection*/);
-  return ReconsiderProxyAfterError(result);
+  // Otherwise, cancel the socket request and continue.
+  CloseSocket(false /* close_connection */);
+  OnIOComplete(net::ERR_PROXY_AUTH_REQUESTED);
 }
 
 void ProxyResolvingClientSocket::CloseSocket(bool close_connection) {

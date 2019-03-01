@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/no_destructor.h"
@@ -41,9 +42,11 @@ namespace {
 // HttpProxyConnectJobs will time out after this many seconds.  Note this is in
 // addition to the timeout for the transport socket.
 #if defined(OS_ANDROID) || defined(OS_IOS)
-const int kHttpProxyConnectJobTimeoutInSeconds = 10;
+constexpr base::TimeDelta kHttpProxyConnectJobTunnelTimeout =
+    base::TimeDelta::FromSeconds(10);
 #else
-const int kHttpProxyConnectJobTimeoutInSeconds = 30;
+constexpr base::TimeDelta kHttpProxyConnectJobTunnelTimeout =
+    base::TimeDelta::FromSeconds(30);
 #endif
 
 class HttpProxyTimeoutExperiments {
@@ -175,11 +178,13 @@ HttpProxyConnectJob::HttpProxyConnectJob(
                  NetLogSourceType::HTTP_PROXY_CONNECT_JOB,
                  NetLogEventType::HTTP_PROXY_CONNECT_JOB_CONNECT),
       client_socket_(std::make_unique<HttpProxyClientSocketWrapper>(
+          base::BindRepeating(&HttpProxyConnectJob::OnNeedsProxyAuth,
+                              base::Unretained(this)),
           priority,
           ConnectionTimeout(
               *params,
               common_connect_job_params.network_quality_estimator),
-          base::TimeDelta::FromSeconds(kHttpProxyConnectJobTimeoutInSeconds),
+          kHttpProxyConnectJobTunnelTimeout,
           common_connect_job_params,
           params->transport_params(),
           params->ssl_params(),
@@ -193,7 +198,8 @@ HttpProxyConnectJob::HttpProxyConnectJob(
           params->is_trusted_proxy(),
           params->tunnel(),
           params->traffic_annotation(),
-          this->net_log())) {}
+          this->net_log())),
+      params_(std::move(params)) {}
 
 HttpProxyConnectJob::~HttpProxyConnectJob() = default;
 
@@ -203,6 +209,14 @@ LoadState HttpProxyConnectJob::GetLoadState() const {
 
 bool HttpProxyConnectJob::HasEstablishedConnection() const {
   return client_socket_->HasEstablishedConnection();
+}
+
+void HttpProxyConnectJob::OnNeedsProxyAuth(
+    const HttpResponseInfo& response,
+    HttpAuthController* auth_controller,
+    base::OnceClosure restart_with_auth_callback) {
+  NotifyDelegateOfProxyAuth(response, auth_controller,
+                            std::move(restart_with_auth_callback));
 }
 
 void HttpProxyConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {
@@ -249,8 +263,11 @@ base::TimeDelta HttpProxyConnectJob::ConnectionTimeout(
   }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
-  return nested_job_timeout +
-         base::TimeDelta::FromSeconds(kHttpProxyConnectJobTimeoutInSeconds);
+  return nested_job_timeout + kHttpProxyConnectJobTunnelTimeout;
+}
+
+base::TimeDelta HttpProxyConnectJob::TunnelTimeoutForTesting() {
+  return kHttpProxyConnectJobTunnelTimeout;
 }
 
 void HttpProxyConnectJob::UpdateFieldTrialParametersForTesting() {
@@ -271,18 +288,22 @@ void HttpProxyConnectJob::ChangePriorityInternal(RequestPriority priority) {
 void HttpProxyConnectJob::OnConnectComplete(int result) {
   DCHECK_NE(ERR_IO_PENDING, result);
   result = HandleConnectResult(result);
-  NotifyDelegateOfCompletion(result);
-  // |this| will have been deleted at this point.
+  if (result != ERR_IO_PENDING) {
+    NotifyDelegateOfCompletion(result);
+    // |this| will have been deleted at this point.
+  }
 }
 
 int HttpProxyConnectJob::HandleConnectResult(int result) {
+  // Stop the timer. Only needed for the ERR_PROXY_AUTH_REQUESTED case, but
+  // shouldn't be returning a result more than once, anyways.
+  ResetTimer(base::TimeDelta());
+
   if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED)
     error_response_info_ = client_socket_->GetAdditionalErrorState();
 
-  if (result == OK || result == ERR_PROXY_AUTH_REQUESTED ||
-      result == ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT) {
+  if (result == OK || result == ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT)
     SetSocket(std::move(client_socket_));
-  }
   return result;
 }
 

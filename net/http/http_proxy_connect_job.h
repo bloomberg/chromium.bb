@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
@@ -111,6 +112,10 @@ class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob {
   LoadState GetLoadState() const override;
   bool HasEstablishedConnection() const override;
 
+  void OnNeedsProxyAuth(const HttpResponseInfo& response,
+                        HttpAuthController* auth_controller,
+                        base::OnceClosure restart_with_auth_callback);
+
   void GetAdditionalErrorState(ClientSocketHandle* handle) override;
 
   // Returns the connection timeout that will be used by a HttpProxyConnectJob
@@ -118,6 +123,10 @@ class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob {
   static base::TimeDelta ConnectionTimeout(
       const HttpProxySocketParams& params,
       const NetworkQualityEstimator* network_quality_estimator);
+
+  // Returns the timeout for establishing a tunnel after a connection has been
+  // established.
+  static base::TimeDelta TunnelTimeoutForTesting();
 
   // Updates the field trial parameters used in calculating timeouts.
   static void UpdateFieldTrialParametersForTesting();
@@ -139,6 +148,8 @@ class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob {
   int HandleConnectResult(int result);
 
   std::unique_ptr<HttpProxyClientSocketWrapper> client_socket_;
+
+  scoped_refptr<HttpProxySocketParams> params_;
 
   std::unique_ptr<HttpResponseInfo> error_response_info_;
 

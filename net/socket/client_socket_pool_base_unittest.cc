@@ -311,11 +311,19 @@ class TestConnectJob : public ConnectJob {
     kMockPendingJob,
     kMockPendingFailingJob,
     kMockWaitingJob,
-    kMockRecoverableJob,
-    kMockPendingRecoverableJob,
+
+    // Certificate errors return a socket in addition to an error code.
+    kMockCertErrorJob,
+    kMockPendingCertErrorJob,
+
     kMockAdditionalErrorStateJob,
     kMockPendingAdditionalErrorStateJob,
     kMockUnreadDataJob,
+
+    kMockAuthChallengeOnceJob,
+    kMockAuthChallengeTwiceJob,
+    kMockAuthChallengeOnceFailingJob,
+    kMockAuthChallengeTwiceFailingJob,
   };
 
   // The kMockPendingJob uses a slight delay before allowing the connect
@@ -392,15 +400,13 @@ class TestConnectJob : public ConnectJob {
     AddressList ignored;
     client_socket_factory_->CreateTransportClientSocket(ignored, NULL, NULL,
                                                         NetLogSource());
-    SetSocket(std::unique_ptr<StreamSocket>(
-        new MockClientSocket(net_log().net_log())));
     switch (job_type_) {
       case kMockJob:
         return DoConnect(true /* successful */, false /* sync */,
-                         false /* recoverable */);
+                         false /* cert_error */);
       case kMockFailingJob:
         return DoConnect(false /* error */, false /* sync */,
-                         false /* recoverable */);
+                         false /* cert_error */);
       case kMockPendingJob:
         set_load_state(LOAD_STATE_CONNECTING);
 
@@ -419,7 +425,7 @@ class TestConnectJob : public ConnectJob {
             FROM_HERE,
             base::BindOnce(base::IgnoreResult(&TestConnectJob::DoConnect),
                            weak_factory_.GetWeakPtr(), true /* successful */,
-                           true /* async */, false /* recoverable */),
+                           true /* async */, false /* cert_error */),
             base::TimeDelta::FromMilliseconds(kPendingConnectDelay));
         return ERR_IO_PENDING;
       case kMockPendingFailingJob:
@@ -428,7 +434,7 @@ class TestConnectJob : public ConnectJob {
             FROM_HERE,
             base::BindOnce(base::IgnoreResult(&TestConnectJob::DoConnect),
                            weak_factory_.GetWeakPtr(), false /* error */,
-                           true /* async */, false /* recoverable */),
+                           true /* async */, false /* cert_error */),
             base::TimeDelta::FromMilliseconds(2));
         return ERR_IO_PENDING;
       case kMockWaitingJob:
@@ -436,22 +442,22 @@ class TestConnectJob : public ConnectJob {
         client_socket_factory_->WaitForSignal(this);
         waiting_success_ = true;
         return ERR_IO_PENDING;
-      case kMockRecoverableJob:
+      case kMockCertErrorJob:
         return DoConnect(false /* error */, false /* sync */,
-                         true /* recoverable */);
-      case kMockPendingRecoverableJob:
+                         true /* cert_error */);
+      case kMockPendingCertErrorJob:
         set_load_state(LOAD_STATE_CONNECTING);
         base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
             FROM_HERE,
             base::BindOnce(base::IgnoreResult(&TestConnectJob::DoConnect),
                            weak_factory_.GetWeakPtr(), false /* error */,
-                           true /* async */, true /* recoverable */),
+                           true /* async */, true /* cert_error */),
             base::TimeDelta::FromMilliseconds(2));
         return ERR_IO_PENDING;
       case kMockAdditionalErrorStateJob:
         store_additional_error_state_ = true;
         return DoConnect(false /* error */, false /* sync */,
-                         false /* recoverable */);
+                         false /* cert_error */);
       case kMockPendingAdditionalErrorStateJob:
         set_load_state(LOAD_STATE_CONNECTING);
         store_additional_error_state_ = true;
@@ -459,15 +465,27 @@ class TestConnectJob : public ConnectJob {
             FROM_HERE,
             base::BindOnce(base::IgnoreResult(&TestConnectJob::DoConnect),
                            weak_factory_.GetWeakPtr(), false /* error */,
-                           true /* async */, false /* recoverable */),
+                           true /* async */, false /* cert_error */),
             base::TimeDelta::FromMilliseconds(2));
         return ERR_IO_PENDING;
       case kMockUnreadDataJob: {
         int ret = DoConnect(true /* successful */, false /* sync */,
-                            false /* recoverable */);
+                            false /* cert_error */);
         static_cast<MockClientSocket*>(socket())->set_has_unread_data(true);
         return ret;
       }
+      case kMockAuthChallengeOnceJob:
+        DoAdvanceAuthChallenge(1, true /* succeed_after_last_challenge */);
+        return ERR_IO_PENDING;
+      case kMockAuthChallengeTwiceJob:
+        DoAdvanceAuthChallenge(2, true /* succeed_after_last_challenge */);
+        return ERR_IO_PENDING;
+      case kMockAuthChallengeOnceFailingJob:
+        DoAdvanceAuthChallenge(1, false /* succeed_after_last_challenge */);
+        return ERR_IO_PENDING;
+      case kMockAuthChallengeTwiceFailingJob:
+        DoAdvanceAuthChallenge(2, false /* succeed_after_last_challenge */);
+        return ERR_IO_PENDING;
       default:
         NOTREACHED();
         SetSocket(std::unique_ptr<StreamSocket>());
@@ -477,13 +495,15 @@ class TestConnectJob : public ConnectJob {
 
   void ChangePriorityInternal(RequestPriority priority) override {}
 
-  int DoConnect(bool succeed, bool was_async, bool recoverable) {
+  int DoConnect(bool succeed, bool was_async, bool cert_error) {
     int result = OK;
     has_established_connection_ = true;
     if (succeed) {
+      SetSocket(std::make_unique<MockClientSocket>(net_log().net_log()));
       socket()->Connect(CompletionOnceCallback());
-    } else if (recoverable) {
-      result = ERR_PROXY_AUTH_REQUESTED;
+    } else if (cert_error) {
+      SetSocket(std::make_unique<MockClientSocket>(net_log().net_log()));
+      result = ERR_CERT_COMMON_NAME_INVALID;
     } else {
       result = ERR_CONNECTION_FAILED;
       SetSocket(std::unique_ptr<StreamSocket>());
@@ -492,6 +512,33 @@ class TestConnectJob : public ConnectJob {
     if (was_async)
       NotifyDelegateOfCompletion(result);
     return result;
+  }
+
+  void DoAdvanceAuthChallenge(int remaining_challenges,
+                              bool succeed_after_last_challenge) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&TestConnectJob::InvokeNextProxyAuthCallback,
+                       weak_factory_.GetWeakPtr(), remaining_challenges,
+                       succeed_after_last_challenge));
+  }
+
+  void InvokeNextProxyAuthCallback(int remaining_challenges,
+                                   bool succeed_after_last_challenge) {
+    if (remaining_challenges == 0) {
+      DoConnect(succeed_after_last_challenge, true /* was_async */,
+                false /* cert_error */);
+      return;
+    }
+
+    // Integration tests make sure HttpResponseInfo and HttpAuthController work.
+    // The auth tests here are just focused on ConnectJob bookkeeping.
+    HttpResponseInfo info;
+    NotifyDelegateOfProxyAuth(
+        info, nullptr /* http_auth_controller */,
+        base::BindOnce(&TestConnectJob::DoAdvanceAuthChallenge,
+                       weak_factory_.GetWeakPtr(), remaining_challenges - 1,
+                       succeed_after_last_challenge));
   }
 
   bool waiting_success_;
@@ -2245,14 +2292,14 @@ TEST_F(ClientSocketPoolBaseTest, LoadStatePoolLimit) {
   EXPECT_EQ(LOAD_STATE_CONNECTING, handle3.GetLoadState());
 }
 
-TEST_F(ClientSocketPoolBaseTest, Recoverable) {
+TEST_F(ClientSocketPoolBaseTest, CertError) {
   CreatePool(kDefaultMaxSockets, kDefaultMaxSocketsPerGroup);
-  connect_job_factory_->set_job_type(TestConnectJob::kMockRecoverableJob);
+  connect_job_factory_->set_job_type(TestConnectJob::kMockCertErrorJob);
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
   EXPECT_EQ(
-      ERR_PROXY_AUTH_REQUESTED,
+      ERR_CERT_COMMON_NAME_INVALID,
       handle.Init("a", params_, DEFAULT_PRIORITY, SocketTag(),
                   ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
                   ClientSocketPool::ProxyAuthCallback(), pool_.get(),
@@ -2261,11 +2308,10 @@ TEST_F(ClientSocketPoolBaseTest, Recoverable) {
   EXPECT_TRUE(handle.socket());
 }
 
-TEST_F(ClientSocketPoolBaseTest, AsyncRecoverable) {
+TEST_F(ClientSocketPoolBaseTest, AsyncCertError) {
   CreatePool(kDefaultMaxSockets, kDefaultMaxSocketsPerGroup);
 
-  connect_job_factory_->set_job_type(
-      TestConnectJob::kMockPendingRecoverableJob);
+  connect_job_factory_->set_job_type(TestConnectJob::kMockPendingCertErrorJob);
   ClientSocketHandle handle;
   TestCompletionCallback callback;
   EXPECT_EQ(
@@ -2275,7 +2321,7 @@ TEST_F(ClientSocketPoolBaseTest, AsyncRecoverable) {
                   ClientSocketPool::ProxyAuthCallback(), pool_.get(),
                   NetLogWithSource()));
   EXPECT_EQ(LOAD_STATE_CONNECTING, pool_->GetLoadState("a", &handle));
-  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_PROXY_AUTH_REQUESTED));
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_CERT_COMMON_NAME_INVALID));
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
 }
@@ -4649,6 +4695,479 @@ TEST_F(ClientSocketPoolBaseTest, IgnoreLimitsCancelOtherJob) {
 
   EXPECT_THAT(request(2)->WaitForResult(), IsOk());
   EXPECT_FALSE(request(1)->have_result());
+}
+
+TEST_F(ClientSocketPoolBaseTest, ProxyAuthNoAuthCallback) {
+  CreatePool(1, 1);
+
+  connect_job_factory_->set_job_type(TestConnectJob::kMockAuthChallengeOnceJob);
+
+  ClientSocketHandle handle;
+  TestCompletionCallback callback;
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      handle.Init("a", params_, DEFAULT_PRIORITY, SocketTag(),
+                  ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+                  ClientSocketPool::ProxyAuthCallback(), pool_.get(),
+                  NetLogWithSource()));
+
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_PROXY_AUTH_REQUESTED));
+  EXPECT_FALSE(handle.is_initialized());
+  EXPECT_FALSE(handle.socket());
+
+  // The group should now be empty, and thus be deleted.
+  EXPECT_FALSE(pool_->HasGroup("a"));
+}
+
+class TestAuthHelper {
+ public:
+  TestAuthHelper() = default;
+  ~TestAuthHelper() = default;
+
+  void InitHandle(scoped_refptr<TestSocketParams> params,
+                  TestClientSocketPool* pool,
+                  RequestPriority priority = DEFAULT_PRIORITY,
+                  ClientSocketPool::RespectLimits respect_limits =
+                      ClientSocketPool::RespectLimits::ENABLED,
+                  const char* group_name = "a") {
+    EXPECT_EQ(ERR_IO_PENDING,
+              handle_.Init(group_name, params.get(), priority, SocketTag(),
+                           respect_limits, callback_.callback(),
+                           base::BindRepeating(&TestAuthHelper::AuthCallback,
+                                               base::Unretained(this)),
+                           pool, NetLogWithSource()));
+  }
+
+  void WaitForAuth() {
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
+    run_loop_.reset();
+  }
+
+  void WaitForAuthAndRestartSync() {
+    restart_sync_ = true;
+    WaitForAuth();
+    restart_sync_ = false;
+  }
+
+  void WaitForAuthAndResetHandleSync() {
+    reset_handle_sync_ = true;
+    WaitForAuth();
+    reset_handle_sync_ = false;
+  }
+
+  void RestartWithAuth() {
+    DCHECK(restart_with_auth_callback_);
+    std::move(restart_with_auth_callback_).Run();
+  }
+
+  int WaitForResult() {
+    int result = callback_.WaitForResult();
+    // There shouldn't be any callback waiting to be invoked once the request is
+    // complete.
+    EXPECT_FALSE(restart_with_auth_callback_);
+    // The socket should only be initialized on success.
+    EXPECT_EQ(result == OK, handle_.is_initialized());
+    EXPECT_EQ(result == OK, handle_.socket() != nullptr);
+    return result;
+  }
+
+  ClientSocketHandle* handle() { return &handle_; }
+  int auth_count() const { return auth_count_; }
+  int have_result() const { return callback_.have_result(); }
+
+ private:
+  void AuthCallback(const HttpResponseInfo& response,
+                    HttpAuthController* auth_controller,
+                    base::OnceClosure restart_with_auth_callback) {
+    EXPECT_FALSE(restart_with_auth_callback_);
+    EXPECT_TRUE(restart_with_auth_callback);
+
+    // Once there's a result, this method shouldn't be invoked again.
+    EXPECT_FALSE(callback_.have_result());
+
+    ++auth_count_;
+    run_loop_->Quit();
+    if (restart_sync_) {
+      std::move(restart_with_auth_callback).Run();
+      return;
+    }
+
+    restart_with_auth_callback_ = std::move(restart_with_auth_callback);
+
+    if (reset_handle_sync_) {
+      handle_.Reset();
+      return;
+    }
+  }
+
+  std::unique_ptr<base::RunLoop> run_loop_;
+  base::OnceClosure restart_with_auth_callback_;
+
+  bool restart_sync_ = false;
+  bool reset_handle_sync_ = false;
+
+  ClientSocketHandle handle_;
+  int auth_count_ = 0;
+  TestCompletionCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestAuthHelper);
+};
+
+TEST_F(ClientSocketPoolBaseTest, ProxyAuthOnce) {
+  CreatePool(1, 1);
+  connect_job_factory_->set_job_type(TestConnectJob::kMockAuthChallengeOnceJob);
+
+  TestAuthHelper auth_helper;
+  auth_helper.InitHandle(params_, pool_.get());
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+
+  auth_helper.WaitForAuth();
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+
+  auth_helper.RestartWithAuth();
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+
+  EXPECT_THAT(auth_helper.WaitForResult(), IsOk());
+  EXPECT_EQ(1, auth_helper.auth_count());
+  EXPECT_EQ(0u, pool_->NumConnectJobsInGroup("a"));
+  EXPECT_EQ(1, pool_->NumActiveSocketsInGroup("a"));
+  EXPECT_EQ(0u, pool_->IdleSocketCountInGroup("a"));
+  EXPECT_EQ(0, pool_->IdleSocketCount());
+}
+
+TEST_F(ClientSocketPoolBaseTest, ProxyAuthOnceSync) {
+  CreatePool(1, 1);
+  connect_job_factory_->set_job_type(TestConnectJob::kMockAuthChallengeOnceJob);
+
+  TestAuthHelper auth_helper;
+  auth_helper.InitHandle(params_, pool_.get());
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+
+  auth_helper.WaitForAuthAndRestartSync();
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+
+  EXPECT_THAT(auth_helper.WaitForResult(), IsOk());
+  EXPECT_EQ(1, auth_helper.auth_count());
+  EXPECT_EQ(0u, pool_->NumConnectJobsInGroup("a"));
+  EXPECT_EQ(1, pool_->NumActiveSocketsInGroup("a"));
+  EXPECT_EQ(0u, pool_->IdleSocketCountInGroup("a"));
+  EXPECT_EQ(0, pool_->IdleSocketCount());
+}
+
+TEST_F(ClientSocketPoolBaseTest, ProxyAuthOnceFails) {
+  CreatePool(1, 1);
+  connect_job_factory_->set_job_type(
+      TestConnectJob::kMockAuthChallengeOnceFailingJob);
+
+  TestAuthHelper auth_helper;
+  auth_helper.InitHandle(params_, pool_.get());
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+
+  auth_helper.WaitForAuth();
+  auth_helper.RestartWithAuth();
+  EXPECT_THAT(auth_helper.WaitForResult(), IsError(ERR_CONNECTION_FAILED));
+
+  EXPECT_EQ(1, auth_helper.auth_count());
+  EXPECT_FALSE(pool_->HasGroup("a"));
+  EXPECT_EQ(0, pool_->IdleSocketCount());
+}
+
+TEST_F(ClientSocketPoolBaseTest, ProxyAuthOnceSyncFails) {
+  CreatePool(1, 1);
+  connect_job_factory_->set_job_type(
+      TestConnectJob::kMockAuthChallengeOnceFailingJob);
+
+  TestAuthHelper auth_helper;
+  auth_helper.InitHandle(params_, pool_.get());
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+
+  auth_helper.WaitForAuthAndRestartSync();
+  EXPECT_THAT(auth_helper.WaitForResult(), IsError(ERR_CONNECTION_FAILED));
+
+  EXPECT_EQ(1, auth_helper.auth_count());
+  EXPECT_FALSE(pool_->HasGroup("a"));
+  EXPECT_EQ(0, pool_->IdleSocketCount());
+}
+
+TEST_F(ClientSocketPoolBaseTest, ProxyAuthOnceDeleteHandle) {
+  CreatePool(1, 1);
+  connect_job_factory_->set_job_type(TestConnectJob::kMockAuthChallengeOnceJob);
+
+  TestAuthHelper auth_helper;
+  auth_helper.InitHandle(params_, pool_.get());
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+
+  auth_helper.WaitForAuth();
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+
+  auth_helper.handle()->Reset();
+
+  EXPECT_EQ(1, auth_helper.auth_count());
+  EXPECT_FALSE(pool_->HasGroup("a"));
+  EXPECT_EQ(0, pool_->IdleSocketCount());
+  EXPECT_FALSE(auth_helper.handle()->is_initialized());
+  EXPECT_FALSE(auth_helper.handle()->socket());
+}
+
+TEST_F(ClientSocketPoolBaseTest, ProxyAuthOnceDeleteHandleSync) {
+  CreatePool(1, 1);
+  connect_job_factory_->set_job_type(TestConnectJob::kMockAuthChallengeOnceJob);
+
+  TestAuthHelper auth_helper;
+  auth_helper.InitHandle(params_, pool_.get());
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+
+  auth_helper.WaitForAuthAndResetHandleSync();
+  EXPECT_EQ(1, auth_helper.auth_count());
+  EXPECT_FALSE(pool_->HasGroup("a"));
+  EXPECT_EQ(0, pool_->IdleSocketCount());
+  EXPECT_FALSE(auth_helper.handle()->is_initialized());
+  EXPECT_FALSE(auth_helper.handle()->socket());
+}
+
+TEST_F(ClientSocketPoolBaseTest, ProxyAuthOnceFlushWithError) {
+  CreatePool(1, 1);
+  connect_job_factory_->set_job_type(TestConnectJob::kMockAuthChallengeOnceJob);
+
+  TestAuthHelper auth_helper;
+  auth_helper.InitHandle(params_, pool_.get());
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+
+  auth_helper.WaitForAuth();
+
+  pool_->FlushWithError(ERR_FAILED);
+  base::RunLoop().RunUntilIdle();
+
+  // When flushing the socket pool, bound sockets should delay returning the
+  // error until completion.
+  EXPECT_FALSE(auth_helper.have_result());
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+  EXPECT_EQ(0, pool_->IdleSocketCount());
+
+  auth_helper.RestartWithAuth();
+  // The callback should be called asynchronously.
+  EXPECT_FALSE(auth_helper.have_result());
+
+  EXPECT_THAT(auth_helper.WaitForResult(), IsError(ERR_FAILED));
+  EXPECT_FALSE(pool_->HasGroup("a"));
+  EXPECT_EQ(0, pool_->IdleSocketCount());
+}
+
+TEST_F(ClientSocketPoolBaseTest, ProxyAuthTwice) {
+  CreatePool(1, 1);
+  connect_job_factory_->set_job_type(
+      TestConnectJob::kMockAuthChallengeTwiceJob);
+
+  TestAuthHelper auth_helper;
+  auth_helper.InitHandle(params_, pool_.get());
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+
+  auth_helper.WaitForAuth();
+  auth_helper.RestartWithAuth();
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+  EXPECT_EQ(1, auth_helper.auth_count());
+
+  auth_helper.WaitForAuth();
+  auth_helper.RestartWithAuth();
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+  EXPECT_EQ(2, auth_helper.auth_count());
+
+  EXPECT_THAT(auth_helper.WaitForResult(), IsOk());
+  EXPECT_EQ(2, auth_helper.auth_count());
+  EXPECT_EQ(0u, pool_->NumConnectJobsInGroup("a"));
+  EXPECT_EQ(1, pool_->NumActiveSocketsInGroup("a"));
+  EXPECT_EQ(0u, pool_->IdleSocketCountInGroup("a"));
+  EXPECT_EQ(0, pool_->IdleSocketCount());
+}
+
+TEST_F(ClientSocketPoolBaseTest, ProxyAuthTwiceFails) {
+  CreatePool(1, 1);
+  connect_job_factory_->set_job_type(
+      TestConnectJob::kMockAuthChallengeTwiceFailingJob);
+
+  TestAuthHelper auth_helper;
+  auth_helper.InitHandle(params_, pool_.get());
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+
+  auth_helper.WaitForAuth();
+  auth_helper.RestartWithAuth();
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+  EXPECT_EQ(1, auth_helper.auth_count());
+
+  auth_helper.WaitForAuth();
+  auth_helper.RestartWithAuth();
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+  EXPECT_EQ(2, auth_helper.auth_count());
+
+  EXPECT_THAT(auth_helper.WaitForResult(), IsError(ERR_CONNECTION_FAILED));
+  EXPECT_EQ(2, auth_helper.auth_count());
+  EXPECT_FALSE(pool_->HasGroup("a"));
+  EXPECT_EQ(0, pool_->IdleSocketCount());
+}
+
+// Makes sure that when a bound request is destroyed, a new ConnectJob is
+// created, if needed.
+TEST_F(ClientSocketPoolBaseTest,
+       ProxyAuthCreateNewConnectJobOnDestroyBoundRequest) {
+  CreatePool(1 /* max_sockets */, 1 /* max_sockets_per_group */);
+  connect_job_factory_->set_job_type(
+      TestConnectJob::kMockAuthChallengeOnceFailingJob);
+
+  // First request creates a ConnectJob.
+  TestAuthHelper auth_helper1;
+  auth_helper1.InitHandle(params_, pool_.get());
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+
+  // A second request come in, but no new ConnectJob is needed, since the limit
+  // has been reached.
+  TestAuthHelper auth_helper2;
+  auth_helper2.InitHandle(params_, pool_.get());
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+
+  // Run until the auth callback for the first request is invoked.
+  auth_helper1.WaitForAuth();
+  EXPECT_EQ(0, auth_helper2.auth_count());
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+  EXPECT_EQ(0, pool_->NumActiveSocketsInGroup("a"));
+  EXPECT_EQ(0u, pool_->IdleSocketCountInGroup("a"));
+
+  // Make connect jobs succeed, then cancel the first request, which should
+  // destroy the bound ConnectJob, and cause a new ConnectJob to start.
+  connect_job_factory_->set_job_type(TestConnectJob::kMockPendingJob);
+  auth_helper1.handle()->Reset();
+  EXPECT_EQ(0, auth_helper2.auth_count());
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+
+  // The second ConnectJob should succeed.
+  EXPECT_THAT(auth_helper2.WaitForResult(), IsOk());
+  EXPECT_EQ(0, auth_helper2.auth_count());
+  EXPECT_EQ(0u, pool_->NumConnectJobsInGroup("a"));
+}
+
+// Makes sure that when a bound request is destroyed, a new ConnectJob is
+// created for another group, if needed.
+TEST_F(ClientSocketPoolBaseTest,
+       ProxyAuthCreateNewConnectJobOnDestroyBoundRequestDifferentGroups) {
+  CreatePool(1 /* max_sockets */, 1 /* max_sockets_per_group */);
+  connect_job_factory_->set_job_type(
+      TestConnectJob::kMockAuthChallengeOnceFailingJob);
+
+  // First request creates a ConnectJob.
+  TestAuthHelper auth_helper1;
+  auth_helper1.InitHandle(params_, pool_.get(), DEFAULT_PRIORITY);
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+
+  // A second request come in, but no new ConnectJob is needed, since the limit
+  // has been reached.
+  TestAuthHelper auth_helper2;
+  auth_helper2.InitHandle(params_, pool_.get(), DEFAULT_PRIORITY,
+                          ClientSocketPool::RespectLimits::ENABLED, "b");
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+  EXPECT_EQ(0u, pool_->NumConnectJobsInGroup("b"));
+
+  // Run until the auth callback for the first request is invoked.
+  auth_helper1.WaitForAuth();
+  EXPECT_EQ(0, auth_helper2.auth_count());
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+  EXPECT_EQ(0, pool_->NumActiveSocketsInGroup("a"));
+  EXPECT_EQ(0u, pool_->IdleSocketCountInGroup("a"));
+  EXPECT_EQ(0u, pool_->NumConnectJobsInGroup("b"));
+  EXPECT_EQ(0, pool_->NumActiveSocketsInGroup("b"));
+  EXPECT_EQ(0u, pool_->IdleSocketCountInGroup("b"));
+
+  // Make connect jobs succeed, then cancel the first request, which should
+  // destroy the bound ConnectJob, and cause a new ConnectJob to start for the
+  // other group.
+  connect_job_factory_->set_job_type(TestConnectJob::kMockPendingJob);
+  auth_helper1.handle()->Reset();
+  EXPECT_EQ(0, auth_helper2.auth_count());
+  EXPECT_FALSE(pool_->HasGroup("a"));
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("b"));
+
+  // The second ConnectJob should succeed.
+  EXPECT_THAT(auth_helper2.WaitForResult(), IsOk());
+  EXPECT_EQ(0, auth_helper2.auth_count());
+  EXPECT_FALSE(pool_->HasGroup("a"));
+  EXPECT_EQ(0u, pool_->NumConnectJobsInGroup("b"));
+}
+
+// Test that once an auth challenge is bound, that's the request that gets all
+// subsequent calls and the socket itself.
+TEST_F(ClientSocketPoolBaseTest, ProxyAuthStaysBound) {
+  CreatePool(1, 1);
+  connect_job_factory_->set_job_type(
+      TestConnectJob::kMockAuthChallengeTwiceJob);
+
+  // First request creates a ConnectJob.
+  TestAuthHelper auth_helper1;
+  auth_helper1.InitHandle(params_, pool_.get(), LOWEST);
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+
+  // A second, higher priority request is made.
+  TestAuthHelper auth_helper2;
+  auth_helper2.InitHandle(params_, pool_.get(), LOW);
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+
+  // Run until the auth callback for the second request is invoked.
+  auth_helper2.WaitForAuth();
+  EXPECT_EQ(0, auth_helper1.auth_count());
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+  EXPECT_EQ(0, pool_->NumActiveSocketsInGroup("a"));
+  EXPECT_EQ(0u, pool_->IdleSocketCountInGroup("a"));
+
+  // Start a higher priority job. It shouldn't be able to steal |auth_helper2|'s
+  // ConnectJob.
+  TestAuthHelper auth_helper3;
+  auth_helper3.InitHandle(params_, pool_.get(), HIGHEST);
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+
+  // Start a higher job that ignores limits, creating a hanging socket. It
+  // shouldn't be able to steal |auth_helper2|'s ConnectJob.
+  connect_job_factory_->set_job_type(TestConnectJob::kMockWaitingJob);
+  TestAuthHelper auth_helper4;
+  auth_helper4.InitHandle(params_, pool_.get(), HIGHEST,
+                          ClientSocketPool::RespectLimits::DISABLED);
+  EXPECT_EQ(2u, pool_->NumConnectJobsInGroup("a"));
+
+  // Restart with auth, and |auth_helper2|'s auth method should be invoked
+  // again.
+  auth_helper2.RestartWithAuth();
+  auth_helper2.WaitForAuth();
+  EXPECT_EQ(0, auth_helper1.auth_count());
+  EXPECT_FALSE(auth_helper1.have_result());
+  EXPECT_EQ(2, auth_helper2.auth_count());
+  EXPECT_FALSE(auth_helper2.have_result());
+  EXPECT_EQ(0, auth_helper3.auth_count());
+  EXPECT_FALSE(auth_helper3.have_result());
+  EXPECT_EQ(0, auth_helper4.auth_count());
+  EXPECT_FALSE(auth_helper4.have_result());
+
+  // Advance auth again, and |auth_helper2| should get the socket.
+  auth_helper2.RestartWithAuth();
+  EXPECT_THAT(auth_helper2.WaitForResult(), IsOk());
+  // The hung ConnectJob for the RespectLimits::DISABLED request is still in the
+  // socket pool.
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+  EXPECT_EQ(1, pool_->NumActiveSocketsInGroup("a"));
+  EXPECT_EQ(0, auth_helper1.auth_count());
+  EXPECT_FALSE(auth_helper1.have_result());
+  EXPECT_EQ(0, auth_helper3.auth_count());
+  EXPECT_FALSE(auth_helper3.have_result());
+  EXPECT_EQ(0, auth_helper4.auth_count());
+  EXPECT_FALSE(auth_helper4.have_result());
+
+  // If the socket is returned to the socket pool, the RespectLimits::DISABLED
+  // socket request should be able to claim it.
+  auth_helper2.handle()->Reset();
+  EXPECT_THAT(auth_helper4.WaitForResult(), IsOk());
+  EXPECT_EQ(0, auth_helper1.auth_count());
+  EXPECT_FALSE(auth_helper1.have_result());
+  EXPECT_EQ(0, auth_helper3.auth_count());
+  EXPECT_FALSE(auth_helper3.have_result());
+  EXPECT_EQ(0, auth_helper4.auth_count());
 }
 
 }  // namespace

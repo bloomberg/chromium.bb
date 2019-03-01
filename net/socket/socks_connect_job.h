@@ -88,6 +88,10 @@ class NET_EXPORT_PRIVATE SOCKSConnectJob : public ConnectJob,
 
   // ConnectJob::Delegate methods.
   void OnConnectJobComplete(int result, ConnectJob* job) override;
+  void OnNeedsProxyAuth(const HttpResponseInfo& response,
+                        HttpAuthController* auth_controller,
+                        base::OnceClosure restart_with_auth_callback,
+                        ConnectJob* job) override;
 
   // Runs the state transition loop.
   int DoLoop(int result);
