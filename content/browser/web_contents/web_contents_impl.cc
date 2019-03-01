@@ -5726,10 +5726,8 @@ void WebContentsImpl::Close(RenderViewHost* rvh) {
   // TODO(shess): This could get more fine-grained.  For instance,
   // closing a tab in another window while selecting text in the
   // current window's Omnibox should be just fine.
-  if (view_->IsEventTracking()) {
-    view_->CloseTabAfterEventTracking();
+  if (view_->CloseTabAfterEventTrackingIfNeeded())
     return;
-  }
 #endif
 
   // Ignore this if it comes from a RenderViewHost that we aren't showing.

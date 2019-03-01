@@ -33,7 +33,6 @@ WebContentsNSViewBridge::~WebContentsNSViewBridge() {
   // while the user was operating a UI control which resulted in a
   // close.  In that case, the Cocoa view outlives the
   // WebContentsViewMac instance due to Cocoa retain count.
-  [cocoa_view_ cancelDeferredClose];
   [cocoa_view_ clearWebContentsView];
   [cocoa_view_ removeFromSuperview];
 }

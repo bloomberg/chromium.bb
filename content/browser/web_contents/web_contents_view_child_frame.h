@@ -50,8 +50,7 @@ class WebContentsViewChildFrame : public WebContentsView,
                              RenderViewHost* new_host) override;
   void SetOverscrollControllerEnabled(bool enabled) override;
 #if defined(OS_MACOSX)
-  bool IsEventTracking() const override;
-  void CloseTabAfterEventTracking() override;
+  bool CloseTabAfterEventTrackingIfNeeded() override;
 #endif
 
   // Backend implementation of RenderViewHostDelegateView.

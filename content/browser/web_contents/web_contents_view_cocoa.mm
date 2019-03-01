@@ -47,9 +47,6 @@ using content::WebContentsViewMac;
 }
 
 - (void)dealloc {
-  // Cancel any deferred tab closes, just in case.
-  [self cancelDeferredClose];
-
   // This probably isn't strictly necessary, but can't hurt.
   [self unregisterDraggedTypes];
 
@@ -235,22 +232,10 @@ using content::WebContentsViewMac;
   return result;
 }
 
-- (void)cancelDeferredClose {
-  SEL aSel = @selector(closeTabAfterEvent);
-  [NSObject cancelPreviousPerformRequestsWithTarget:self
-                                           selector:aSel
-                                             object:nil];
-}
-
 - (void)clearWebContentsView {
   webContentsView_ = nullptr;
   client_ = nullptr;
   [dragSource_ clearWebContentsView];
-}
-
-- (void)closeTabAfterEvent {
-  if (webContentsView_)
-    webContentsView_->CloseTab();
 }
 
 - (void)viewDidBecomeFirstResponder:(NSNotification*)notification {
