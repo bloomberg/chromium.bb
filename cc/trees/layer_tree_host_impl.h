@@ -157,6 +157,10 @@ class LayerTreeHostImplClient {
   virtual void DidGenerateLocalSurfaceIdAllocationOnImplThread(
       const viz::LocalSurfaceIdAllocation& allocation) = 0;
 
+  virtual void NotifyAnimationWorkletStateChange(
+      AnimationWorkletMutationState state,
+      ElementListType tree_type) = 0;
+
  protected:
   virtual ~LayerTreeHostImplClient() {}
 };
@@ -368,6 +372,9 @@ class CC_EXPORT LayerTreeHostImpl
   void ScrollOffsetAnimationFinished() override;
   gfx::ScrollOffset GetScrollOffsetForAnimation(
       ElementId element_id) const override;
+
+  void NotifyAnimationWorkletStateChange(AnimationWorkletMutationState state,
+                                         ElementListType tree_type) override;
 
   virtual bool PrepareTiles();
 

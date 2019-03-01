@@ -1432,13 +1432,6 @@ void SchedulerStateMachine::NotifyAnimationWorkletStateChange(
   if (tree == TreeType::ACTIVE) {
     processing_animation_worklets_for_active_tree_ =
         (state == AnimationWorkletState::PROCESSING);
-    // TODO(kevers): Determine when we should stop waiting for a mutation cycle
-    // to complete. For example, after pending tree activation, we can discard
-    // stale results for an active tree mutation cycle. Setting needs_redraw_
-    // after completion of each active tree mutation can lead to extra redraws
-    // that are unnecessary.
-    if (state == AnimationWorkletState::IDLE)
-      needs_redraw_ = true;
   } else {
     processing_animation_worklets_for_pending_tree_ =
         (state == AnimationWorkletState::PROCESSING);

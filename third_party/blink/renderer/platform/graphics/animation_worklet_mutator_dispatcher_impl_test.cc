@@ -374,11 +374,12 @@ class AnimationWorkletMutatorDispatcherImplAsyncTest
   }
 
   AnimationWorkletMutatorDispatcher::AsyncMutationCompleteCallback
-  CreateTestCompleteCallback() {
+  CreateTestCompleteCallback(
+      MutateStatus expected_result = MutateStatus::kCompletedWithUpdate) {
     return ConvertToBaseCallback(
         CrossThreadBind(&AnimationWorkletMutatorDispatcherImplAsyncTest ::
                             VerifyCompletedMutationResultAndFinish,
-                        CrossThreadUnretained(this)));
+                        CrossThreadUnretained(this), expected_result));
   }
 
   // Executes run loop until quit closure is called.
@@ -390,8 +391,9 @@ class AnimationWorkletMutatorDispatcherImplAsyncTest
     IntermediateResultCallbackRef();
   }
 
-  void VerifyCompletedMutationResultAndFinish(MutateStatus result) {
-    EXPECT_EQ(MutateStatus::kCompleted, result);
+  void VerifyCompletedMutationResultAndFinish(MutateStatus expectation,
+                                              MutateStatus result) {
+    EXPECT_EQ(expectation, result);
     run_loop_.QuitClosure().Run();
   }
 
@@ -480,9 +482,9 @@ TEST_F(AnimationWorkletMutatorDispatcherImplAsyncTest,
   EXPECT_CALL(*first_mutator, MutateRef(_)).Times(1).WillOnce(Return(nullptr));
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(0);
 
-  EXPECT_TRUE(mutator_->MutateAsynchronously(CreateTestMutatorInput(),
-                                             MutateQueuingStrategy::kDrop,
-                                             CreateTestCompleteCallback()));
+  EXPECT_TRUE(mutator_->MutateAsynchronously(
+      CreateTestMutatorInput(), MutateQueuingStrategy::kDrop,
+      CreateTestCompleteCallback(MutateStatus::kCompletedNoUpdate)));
 
   WaitForTestCompletion();
 }
@@ -659,7 +661,7 @@ TEST_F(AnimationWorkletMutatorDispatcherImplAsyncTest,
   // call is sent.
   EXPECT_TRUE(mutator_->MutateAsynchronously(
       CreateTestMutatorInput(), MutateQueuingStrategy::kDrop,
-      CreateIntermediateResultCallback(MutateStatus::kCompleted)));
+      CreateIntermediateResultCallback(MutateStatus::kCompletedWithUpdate)));
   // First request still processing, queue request.
   EXPECT_TRUE(mutator_->MutateAsynchronously(
       CreateTestMutatorInput(), MutateQueuingStrategy::kQueueAndReplace,

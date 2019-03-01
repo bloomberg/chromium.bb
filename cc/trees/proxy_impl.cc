@@ -515,6 +515,21 @@ void ProxyImpl::DidGenerateLocalSurfaceIdAllocationOnImplThread(
                                 proxy_main_weak_ptr_, allocation));
 }
 
+void ProxyImpl::NotifyAnimationWorkletStateChange(
+    AnimationWorkletMutationState state,
+    ElementListType element_list_type) {
+  DCHECK(IsImplThread());
+  Scheduler::AnimationWorkletState animation_worklet_state =
+      (state == AnimationWorkletMutationState::STARTED)
+          ? Scheduler::AnimationWorkletState::PROCESSING
+          : Scheduler::AnimationWorkletState::IDLE;
+  Scheduler::TreeType tree_type = (element_list_type == ElementListType::ACTIVE)
+                                      ? Scheduler::TreeType::ACTIVE
+                                      : Scheduler::TreeType::PENDING;
+  scheduler_->NotifyAnimationWorkletStateChange(animation_worklet_state,
+                                                tree_type);
+}
+
 bool ProxyImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   DCHECK(IsImplThread());
   return host_impl_->WillBeginImplFrame(args);

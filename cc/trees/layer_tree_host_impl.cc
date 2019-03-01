@@ -5620,6 +5620,21 @@ void LayerTreeHostImpl::ScrollOffsetAnimationFinished() {
   ScrollEnd(&scroll_state, !is_animating_for_snap_);
 }
 
+void LayerTreeHostImpl::NotifyAnimationWorkletStateChange(
+    AnimationWorkletMutationState state,
+    ElementListType tree_type) {
+  client_->NotifyAnimationWorkletStateChange(state, tree_type);
+  if (state != AnimationWorkletMutationState::CANCELED) {
+    // We have at least one active worklet animation. We need to request a new
+    // frame to keep the animation ticking.
+    SetNeedsOneBeginImplFrame();
+    if (state == AnimationWorkletMutationState::COMPLETED_WITH_UPDATE &&
+        tree_type == ElementListType::ACTIVE) {
+      SetNeedsRedraw();
+    }
+  }
+}
+
 gfx::ScrollOffset LayerTreeHostImpl::GetScrollOffsetForAnimation(
     ElementId element_id) const {
   if (active_tree()) {

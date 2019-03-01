@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -31,6 +32,24 @@
 
 namespace cc {
 
+namespace {
+
+AnimationWorkletMutationState ToAnimationWorkletMutationState(
+    MutateStatus status) {
+  switch (status) {
+    case MutateStatus::kCompletedWithUpdate:
+      return AnimationWorkletMutationState::COMPLETED_WITH_UPDATE;
+
+    case MutateStatus::kCompletedNoUpdate:
+      return AnimationWorkletMutationState::COMPLETED_NO_UPDATE;
+
+    case MutateStatus::kCanceled:
+      return AnimationWorkletMutationState::CANCELED;
+  }
+}
+
+}  // namespace
+
 std::unique_ptr<AnimationHost> AnimationHost::CreateMainInstance() {
   return base::WrapUnique(new AnimationHost(ThreadInstance::MAIN));
 }
@@ -50,7 +69,8 @@ AnimationHost::AnimationHost(ThreadInstance thread_instance)
       thread_instance_(thread_instance),
       supports_scroll_animations_(false),
       needs_push_properties_(false),
-      mutator_(nullptr) {
+      mutator_(nullptr),
+      weak_factory_(this) {
   if (thread_instance_ == ThreadInstance::IMPL) {
     scroll_offset_animations_impl_ =
         std::make_unique<ScrollOffsetAnimationsImpl>(this);
@@ -284,19 +304,40 @@ bool AnimationHost::NeedsTickAnimations() const {
   return !ticking_animations_.empty();
 }
 
-bool AnimationHost::TickMutator(base::TimeTicks monotonic_time,
+void AnimationHost::TickMutator(base::TimeTicks monotonic_time,
                                 const ScrollTree& scroll_tree,
                                 bool is_active_tree) {
   if (!mutator_ || !mutator_->HasMutators())
-    return false;
+    return;
 
   std::unique_ptr<MutatorInputState> state = CollectWorkletAnimationsState(
       monotonic_time, scroll_tree, is_active_tree);
   if (state->IsEmpty())
-    return false;
+    return;
 
-  mutator_->Mutate(std::move(state));
-  return true;
+  ElementListType tree_type =
+      is_active_tree ? ElementListType::ACTIVE : ElementListType::PENDING;
+
+  auto on_done = base::BindOnce(
+      [](base::WeakPtr<AnimationHost> animation_host, ElementListType tree_type,
+         MutateStatus status) {
+        if (animation_host->mutator_host_client_) {
+          animation_host->mutator_host_client_
+              ->NotifyAnimationWorkletStateChange(
+                  ToAnimationWorkletMutationState(status), tree_type);
+        }
+      },
+      weak_factory_.GetWeakPtr(), tree_type);
+
+  MutateQueuingStrategy queuing_strategy =
+      is_active_tree ? MutateQueuingStrategy::kDrop
+                     : MutateQueuingStrategy::kQueueAndReplace;
+  if (mutator_->Mutate(std::move(state), queuing_strategy,
+                       std::move(on_done))) {
+    mutator_host_client_->NotifyAnimationWorkletStateChange(
+        AnimationWorkletMutationState::STARTED, tree_type);
+  }
+  return;
 }
 
 bool AnimationHost::ActivateAnimations() {
@@ -353,10 +394,10 @@ bool AnimationHost::TickAnimations(base::TimeTicks monotonic_time,
   // trees similar to other animations. However our final goal is to only call
   // it once, ideally after activation, and only when the input
   // to an active timeline has changed. http://crbug.com/767210
-  // TODO(kevers): A return value of true signals that an impl frame and redraw
-  // are required.  Once worklet animations become asynchronous, we need to
-  // defer these requests until the update is complete.
-  animated |= TickMutator(monotonic_time, scroll_tree, is_active_tree);
+  // Note that the TickMutator does not set the animated flag since these
+  // mutations are processed asynchronously. Additional actions required to
+  // handle these mutations are performed on receiving the asynchronous results.
+  TickMutator(monotonic_time, scroll_tree, is_active_tree);
 
   return animated;
 }

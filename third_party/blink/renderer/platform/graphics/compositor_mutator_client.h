@@ -26,7 +26,9 @@ class PLATFORM_EXPORT CompositorMutatorClient : public cc::LayerTreeMutator,
 
   // cc::LayerTreeMutator
   void SetClient(cc::LayerTreeMutatorClient*) override;
-  void Mutate(std::unique_ptr<cc::MutatorInputState>) override;
+  bool Mutate(std::unique_ptr<cc::MutatorInputState>,
+              MutateQueuingStrategy,
+              DoneCallback) override;
   bool HasMutators() override;
 
  private:

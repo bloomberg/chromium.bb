@@ -182,7 +182,7 @@ void AnimationWorkletMutatorDispatcherImpl::AsyncMutationsDone(
     int async_mutation_id) {
   DCHECK(client_);
   DCHECK(host_queue_->BelongsToCurrentThread());
-  ApplyMutationsOnHostThread();
+  bool update_applied = ApplyMutationsOnHostThread();
   auto done_callback = std::move(on_async_mutation_complete_);
   if (queued_mutator_input_.get()) {
     mutator_input_map_ = CreateInputMap(*queued_mutator_input_);
@@ -193,7 +193,9 @@ void AnimationWorkletMutatorDispatcherImpl::AsyncMutationsDone(
   TRACE_EVENT_ASYNC_END0("cc",
                          "AnimationWorkletMutatorDispatcherImpl::MutateAsync",
                          async_mutation_id);
-  std::move(done_callback).Run(MutateStatus::kCompleted);
+  std::move(done_callback)
+      .Run(update_applied ? MutateStatus::kCompletedWithUpdate
+                          : MutateStatus::kCompletedNoUpdate);
   // TODO(kevers): Add UMA metric to track the asynchronous mutate duration.
 }
 
@@ -304,15 +306,19 @@ void AnimationWorkletMutatorDispatcherImpl::RequestMutations(
   }
 }
 
-void AnimationWorkletMutatorDispatcherImpl::ApplyMutationsOnHostThread() {
+bool AnimationWorkletMutatorDispatcherImpl::ApplyMutationsOnHostThread() {
   DCHECK(client_);
   DCHECK(host_queue_->BelongsToCurrentThread());
+  bool update_applied = false;
   for (auto& output : outputs_->get()) {
-    if (output)
+    if (output) {
       client_->SetMutationUpdate(std::move(output));
+      update_applied = true;
+    }
   }
   mutator_input_map_.clear();
   outputs_->get().clear();
+  return update_applied;
 }
 
 }  // namespace blink

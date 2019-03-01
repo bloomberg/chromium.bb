@@ -657,6 +657,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   gfx::ScrollOffset GetScrollOffsetForAnimation(
       ElementId element_id) const override;
 
+  void NotifyAnimationWorkletStateChange(AnimationWorkletMutationState state,
+                                         ElementListType tree_type) override {}
+
   void QueueImageDecode(const PaintImage& image,
                         base::OnceCallback<void(bool)> callback);
   void ImageDecodesFinished(const std::vector<std::pair<int, bool>>& results);
