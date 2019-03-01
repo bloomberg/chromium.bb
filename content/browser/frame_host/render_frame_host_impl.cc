@@ -2171,6 +2171,7 @@ void RenderFrameHostImpl::DidCommitPerNavigationMojoInterfaceNavigation(
         validated_params,
     mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params) {
   DCHECK(committing_navigation_request);
+  committing_navigation_request->IgnoreCommitInterfaceDisconnection();
   DidCommitNavigation(committing_navigation_request,
                       std::move(validated_params), std::move(interface_params));
 }
