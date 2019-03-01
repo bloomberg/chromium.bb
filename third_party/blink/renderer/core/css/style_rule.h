@@ -371,12 +371,6 @@ class CORE_EXPORT StyleRuleFontFeatureValues : public StyleRuleBase {
   Member<const CSSIdentifierValue> font_display_;
 };
 
-#define DEFINE_STYLE_RULE_TYPE_CASTS(Type)                \
-  DEFINE_TYPE_CASTS(StyleRule##Type, StyleRuleBase, rule, \
-                    rule->Is##Type##Rule(), rule.Is##Type##Rule())
-
-DEFINE_STYLE_RULE_TYPE_CASTS(FontFace);
-
 template <>
 struct DowncastTraits<StyleRule> {
   static bool AllowFrom(const StyleRuleBase& rule) {
