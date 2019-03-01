@@ -2521,11 +2521,8 @@ void WebMediaPlayerImpl::StartPipeline() {
   if (demuxer_found_hls_ ||
       renderer_factory_selector_->GetCurrentFactory()
               ->GetRequiredMediaResourceType() == MediaResource::Type::URL) {
-    // MediaPlayerRendererClient factory is the only factory that a
-    // MediaResource::Type::URL for the moment. This might no longer be true
-    // when we remove WebMediaPlayerCast.
-    //
-    // TODO(tguilbert/avayvod): Update this flag when removing |cast_impl_|.
+    // MediaPlayerRendererClientFactory is the only factory that a uses
+    // MediaResource::Type::URL for the moment.
     using_media_player_renderer_ = true;
 
     // MediaPlayerRenderer does not provide pipeline stats, so nuke capabilities
@@ -2767,15 +2764,6 @@ void WebMediaPlayerImpl::SetSuspendState(bool is_suspended) {
   }
 }
 
-// NOTE: |is_remote| and |is_flinging| both indicate that we are in a remote
-// playback session, with the following differences:
-//   - |is_remote| : we are using |cast_impl_|, and most of WMPI's functions
-//     are forwarded to it. This method of remote playback is scheduled
-//     for deprecation soon, in favor of the |is_flinging| path.
-//   - |is_flinging| : we are using the FlingingRenderer, and WMPI should
-//     behave exactly if we are using the DefaultRenderer, except for the
-//     disabling of certain optimizations.
-// See https://crbug.com/790766.
 WebMediaPlayerImpl::PlayState
 WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_flinging,
                                                      bool can_auto_suspend,
