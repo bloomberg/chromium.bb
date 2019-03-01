@@ -16,6 +16,7 @@
     MeasureAs=WorkletAnimationConstructor,
     OriginTrialEnabled=AnimationWorklet
 ] interface WorkletAnimation {
+  readonly attribute AnimationEffect? effect;
   readonly attribute AnimationTimeline? timeline;
   readonly attribute AnimationPlayState playState;
   readonly attribute double? currentTime;
