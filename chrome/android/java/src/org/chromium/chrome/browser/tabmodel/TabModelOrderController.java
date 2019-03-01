@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabAttributeKeys;
+import org.chromium.chrome.browser.tab.TabAttributes;
 
 /**
  * This class acts as a controller for determining where tabs should be inserted
@@ -95,7 +97,8 @@ public class TabModelOrderController {
         int count = currentModel.getCount();
         for (int i = count - 1; i >= startIndex; i--) {
             Tab tab = currentModel.getTabAt(i);
-            if (tab.getParentId() == openerId && tab.isGroupedWithParent()) {
+            if (tab.getParentId() == openerId
+                    && TabAttributes.from(tab).get(TabAttributeKeys.GROUPED_WITH_PARENT, true)) {
                 return i;
             }
         }
@@ -109,7 +112,8 @@ public class TabModelOrderController {
         TabModel currentModel = mTabModelSelector.getCurrentModel();
         int count = currentModel.getCount();
         for (int i = 0; i < count; i++) {
-            currentModel.getTabAt(i).setGroupedWithParent(false);
+            TabAttributes.from(currentModel.getTabAt(i))
+                    .set(TabAttributeKeys.GROUPED_WITH_PARENT, false);
         }
     }
 
