@@ -1050,6 +1050,11 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   SAFEARRAY* CreateUIAElementsArrayForRelation(
       const ax::mojom::IntListAttribute& attribute);
 
+  // Return an unordered array of automation elements which reference this node
+  // for the given attribute.
+  SAFEARRAY* CreateUIAElementsArrayForReverseRelation(
+      const ax::mojom::IntListAttribute& attribute);
+
   // Return an array of automation elements given a vector
   // of |AXNode| ids.
   SAFEARRAY* CreateUIAElementsArrayFromIdVector(std::vector<int32_t>& ids);

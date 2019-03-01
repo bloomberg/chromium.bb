@@ -11,6 +11,7 @@
 #include "base/win/atl.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -40,15 +41,15 @@ ScopedVariant SELF(CHILDID_SELF);
 // as the logic is specific to extracting and comparing UIA property
 // values.
 #define EXPECT_UIA_VALUE_EQ(node, property_id, expectedVariant) \
-  do {                                                          \
+  {                                                             \
     ScopedVariant actual;                                       \
     ASSERT_HRESULT_SUCCEEDED(                                   \
         node->GetPropertyValue(property_id, actual.Receive())); \
     EXPECT_EQ(0, expectedVariant.Compare(actual));              \
-  } while (false)
+  }
 
 #define EXPECT_UIA_BSTR_EQ(node, property_id, expected)                  \
-  do {                                                                   \
+  {                                                                      \
     ScopedVariant expectedVariant(expected);                             \
     ASSERT_EQ(VT_BSTR, expectedVariant.type());                          \
     ASSERT_NE(nullptr, expectedVariant.ptr()->bstrVal);                  \
@@ -58,58 +59,93 @@ ScopedVariant SELF(CHILDID_SELF);
     ASSERT_EQ(VT_BSTR, actual.type());                                   \
     ASSERT_NE(nullptr, actual.ptr()->bstrVal);                           \
     EXPECT_STREQ(expectedVariant.ptr()->bstrVal, actual.ptr()->bstrVal); \
-  } while (false)
+  }
 
 #define EXPECT_UIA_BOOL_EQ(node, property_id, expected)               \
-  do {                                                                \
+  {                                                                   \
     ScopedVariant expectedVariant(expected, VT_BOOL);                 \
     ASSERT_EQ(VT_BOOL, expectedVariant.type());                       \
     ScopedVariant actual;                                             \
     ASSERT_HRESULT_SUCCEEDED(                                         \
         node->GetPropertyValue(property_id, actual.Receive()));       \
     EXPECT_EQ(expectedVariant.ptr()->boolVal, actual.ptr()->boolVal); \
-  } while (false)
+  }
 
 #define EXPECT_UIA_INT_EQ(node, property_id, expected)              \
-  do {                                                              \
+  {                                                                 \
     ScopedVariant expectedVariant(expected, VT_I4);                 \
     ASSERT_EQ(VT_I4, expectedVariant.type());                       \
     ScopedVariant actual;                                           \
     ASSERT_HRESULT_SUCCEEDED(                                       \
         node->GetPropertyValue(property_id, actual.Receive()));     \
     EXPECT_EQ(expectedVariant.ptr()->intVal, actual.ptr()->intVal); \
-  } while (false)
+  }
 
 #define EXPECT_UIA_ELEMENT_ARRAY_BSTR_EQ(node, array_property_id,           \
                                          element_test_property_id,          \
                                          expected_property_values)          \
-  do {                                                                      \
+  {                                                                         \
     ScopedVariant array;                                                    \
     ASSERT_HRESULT_SUCCEEDED(                                               \
         node->GetPropertyValue(array_property_id, array.Receive()));        \
-    EXPECT_EQ(VT_ARRAY | VT_UNKNOWN, array.type());                         \
-    EXPECT_EQ(1u, SafeArrayGetDim(array.ptr()->parray));                    \
-    long array_lower_bound;                                                 \
-    EXPECT_HRESULT_SUCCEEDED(                                               \
+    ASSERT_EQ(VT_ARRAY | VT_UNKNOWN, array.type());                         \
+    ASSERT_EQ(1u, SafeArrayGetDim(array.ptr()->parray));                    \
+    LONG array_lower_bound;                                                 \
+    ASSERT_HRESULT_SUCCEEDED(                                               \
         SafeArrayGetLBound(array.ptr()->parray, 1, &array_lower_bound));    \
-    EXPECT_EQ(0, array_lower_bound);                                        \
-    long array_upper_bound;                                                 \
-    EXPECT_HRESULT_SUCCEEDED(                                               \
+    LONG array_upper_bound;                                                 \
+    ASSERT_HRESULT_SUCCEEDED(                                               \
         SafeArrayGetUBound(array.ptr()->parray, 1, &array_upper_bound));    \
-    EXPECT_EQ(1, array_upper_bound);                                        \
-    CComPtr<IUnknown>* array_data;                                          \
-    EXPECT_HRESULT_SUCCEEDED(::SafeArrayAccessData(                         \
+    IUnknown** array_data;                                                  \
+    ASSERT_HRESULT_SUCCEEDED(::SafeArrayAccessData(                         \
         array.ptr()->parray, reinterpret_cast<void**>(&array_data)));       \
     size_t count = array_upper_bound - array_lower_bound + 1;               \
-    ASSERT_EQ(count, expected_property_values.size());                      \
-    for (size_t i = 0; i < count; i++) {                                    \
+    ASSERT_EQ(expected_property_values.size(), count);                      \
+    for (size_t i = 0; i < count; ++i) {                                    \
       CComPtr<IRawElementProviderSimple> element;                           \
-      EXPECT_HRESULT_SUCCEEDED(array_data[i]->QueryInterface(&element));    \
+      ASSERT_HRESULT_SUCCEEDED(array_data[i]->QueryInterface(&element));    \
       EXPECT_UIA_BSTR_EQ(element, element_test_property_id,                 \
                          expected_property_values[i].c_str());              \
     }                                                                       \
-    EXPECT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(array.ptr()->parray)); \
-  } while (false)
+    ASSERT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(array.ptr()->parray)); \
+  }
+
+#define EXPECT_UIA_UNORDERED_ELEMENT_ARRAY_BSTR_EQ(node, array_property_id,    \
+                                                   element_test_property_id,   \
+                                                   expected_property_values)   \
+  {                                                                            \
+    ScopedVariant array;                                                       \
+    ASSERT_HRESULT_SUCCEEDED(                                                  \
+        node->GetPropertyValue(array_property_id, array.Receive()));           \
+    ASSERT_EQ(VT_ARRAY | VT_UNKNOWN, array.type());                            \
+    ASSERT_EQ(1u, SafeArrayGetDim(array.ptr()->parray));                       \
+    LONG array_lower_bound;                                                    \
+    ASSERT_HRESULT_SUCCEEDED(                                                  \
+        SafeArrayGetLBound(array.ptr()->parray, 1, &array_lower_bound));       \
+    LONG array_upper_bound;                                                    \
+    ASSERT_HRESULT_SUCCEEDED(                                                  \
+        SafeArrayGetUBound(array.ptr()->parray, 1, &array_upper_bound));       \
+    IUnknown** array_data;                                                     \
+    ASSERT_HRESULT_SUCCEEDED(::SafeArrayAccessData(                            \
+        array.ptr()->parray, reinterpret_cast<void**>(&array_data)));          \
+    size_t count = array_upper_bound - array_lower_bound + 1;                  \
+    ASSERT_EQ(expected_property_values.size(), count);                         \
+    std::vector<std::wstring> property_values;                                 \
+    for (size_t i = 0; i < count; ++i) {                                       \
+      CComPtr<IRawElementProviderSimple> element;                              \
+      ASSERT_HRESULT_SUCCEEDED(array_data[i]->QueryInterface(&element));       \
+      ScopedVariant actual;                                                    \
+      ASSERT_HRESULT_SUCCEEDED(element->GetPropertyValue(                      \
+          element_test_property_id, actual.Receive()));                        \
+      ASSERT_EQ(VT_BSTR, actual.type());                                       \
+      ASSERT_NE(nullptr, actual.ptr()->bstrVal);                               \
+      property_values.push_back(std::wstring(                                  \
+          V_BSTR(actual.ptr()), SysStringLen(V_BSTR(actual.ptr()))));          \
+    }                                                                          \
+    ASSERT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(array.ptr()->parray));    \
+    EXPECT_THAT(property_values,                                               \
+                testing::UnorderedElementsAreArray(expected_property_values)); \
+  }
 
 AXPlatformNodeWinTest::AXPlatformNodeWinTest() {}
 AXPlatformNodeWinTest::~AXPlatformNodeWinTest() {}
@@ -3288,6 +3324,80 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetFlowsToPropertyId) {
   std::vector<std::wstring> expected_names = {L"child1", L"child2"};
   EXPECT_UIA_ELEMENT_ARRAY_BSTR_EQ(root_node, UIA_FlowsToPropertyId,
                                    UIA_NamePropertyId, expected_names);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertyValueFlowsFromNone) {
+  AXNodeData root;
+  root.id = 0;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.SetName("root");
+
+  Init(root);
+
+  ComPtr<IRawElementProviderSimple> root_node =
+      GetRootIRawElementProviderSimple();
+  std::vector<std::wstring> expected_names = {};
+  EXPECT_UIA_ELEMENT_ARRAY_BSTR_EQ(root_node, UIA_FlowsFromPropertyId,
+                                   UIA_NamePropertyId, expected_names);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertyValueFlowsFromSingle) {
+  AXNodeData root;
+  root.id = 0;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.SetName("root");
+  root.AddIntListAttribute(ax::mojom::IntListAttribute::kFlowtoIds, {1});
+
+  AXNodeData child1;
+  child1.id = 1;
+  child1.role = ax::mojom::Role::kGenericContainer;
+  child1.SetName("child1");
+  root.child_ids.push_back(1);
+
+  Init(root, child1);
+  ASSERT_NE(nullptr,
+            TestAXNodeWrapper::GetOrCreate(tree_.get(), GetRootNode()));
+
+  ComPtr<IRawElementProviderSimple> child_node1 =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          GetRootNode()->children()[0]);
+  std::vector<std::wstring> expected_names = {L"root"};
+  EXPECT_UIA_ELEMENT_ARRAY_BSTR_EQ(child_node1, UIA_FlowsFromPropertyId,
+                                   UIA_NamePropertyId, expected_names);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertyValueFlowsFromMultiple) {
+  AXNodeData root;
+  root.id = 0;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.SetName("root");
+  root.AddIntListAttribute(ax::mojom::IntListAttribute::kFlowtoIds, {1, 2});
+
+  AXNodeData child1;
+  child1.id = 1;
+  child1.role = ax::mojom::Role::kGenericContainer;
+  child1.SetName("child1");
+  child1.AddIntListAttribute(ax::mojom::IntListAttribute::kFlowtoIds, {2});
+  root.child_ids.push_back(1);
+
+  AXNodeData child2;
+  child2.id = 2;
+  child2.role = ax::mojom::Role::kGenericContainer;
+  child2.SetName("child2");
+  root.child_ids.push_back(2);
+
+  Init(root, child1, child2);
+  ASSERT_NE(nullptr,
+            TestAXNodeWrapper::GetOrCreate(tree_.get(), GetRootNode()));
+  ASSERT_NE(nullptr, TestAXNodeWrapper::GetOrCreate(
+                         tree_.get(), GetRootNode()->children()[0]));
+
+  ComPtr<IRawElementProviderSimple> child_node2 =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          GetRootNode()->children()[1]);
+  std::vector<std::wstring> expected_names = {L"root", L"child1"};
+  EXPECT_UIA_UNORDERED_ELEMENT_ARRAY_BSTR_EQ(
+      child_node2, UIA_FlowsFromPropertyId, UIA_NamePropertyId, expected_names);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestGetPropertyValue_LabeledByTest) {

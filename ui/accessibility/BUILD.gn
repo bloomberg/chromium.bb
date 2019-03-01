@@ -254,6 +254,7 @@ test("accessibility_unittests") {
     "//mojo/core/test:test_support",
     "//mojo/public/cpp/test_support:test_utils",
     "//skia",
+    "//testing/gmock",
     "//testing/gtest",
     "//ui/accessibility/mojom",
     "//ui/base",
