@@ -327,6 +327,7 @@ Polymer({
    */
   onOriginTap_: function(e) {
     this.navigateToSiteDetails_(this.siteGroup.origins[e.model.index].origin);
+    this.browserProxy.recordAction(settings.AllSitesAction.ENTER_SITE_DETAILS);
   },
 
   /**
@@ -338,6 +339,8 @@ Polymer({
     // Individual origins don't expand - just go straight to Site Details.
     if (!this.grouped_(this.siteGroup)) {
       this.navigateToSiteDetails_(this.siteGroup.origins[0].origin);
+      this.browserProxy.recordAction(
+          settings.AllSitesAction.ENTER_SITE_DETAILS);
       return;
     }
     this.toggleCollapsible_();

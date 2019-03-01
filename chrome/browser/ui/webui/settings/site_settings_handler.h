@@ -226,6 +226,9 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   // Clear web storage data and cookies from cookies tree model for an ETLD+1.
   void HandleClearEtldPlus1DataAndCookies(const base::ListValue* args);
 
+  // Record metrics for actions on All Sites Page.
+  void HandleRecordAction(const base::ListValue* args);
+
   void SetCookiesTreeModelForTesting(
       std::unique_ptr<CookiesTreeModel> cookies_tree_model);
 
