@@ -384,7 +384,7 @@
     {
       name: "CustomElementsV0",
       origin_trial_feature_name: "WebComponentsV0",
-      status: "stable",
+      status: "test",
     },
     {
       name: "CustomUserTiming",
@@ -610,7 +610,7 @@
     {
       name: "HTMLImports",
       origin_trial_feature_name: "WebComponentsV0",
-      status: "stable",
+      status: "test",
     },
     // Allow import only chrome internal resources.
     {
@@ -1268,7 +1268,7 @@
     {
       name: "ShadowDOMV0",
       origin_trial_feature_name: "WebComponentsV0",
-      status: "stable",
+      status: "test",
     },
     {
       name: "ShadowPiercingDescendantCombinator",
