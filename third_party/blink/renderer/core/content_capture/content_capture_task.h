@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "cc/paint/node_holder.h"
+#include "third_party/blink/renderer/core/content_capture/task_session.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -17,7 +18,7 @@ namespace blink {
 
 class WebContentCaptureClient;
 class Document;
-class Node;
+class LocalFrame;
 
 // This class is used to capture the on-screen content and send them out
 // through WebContentCaptureClient.
@@ -25,18 +26,6 @@ class CORE_EXPORT ContentCaptureTask : public RefCounted<ContentCaptureTask> {
   USING_FAST_MALLOC(ContentCaptureTask);
 
  public:
-  // This class is used for DOMNodeIds.
-  class Delegate {
-   public:
-    // Return if the give |node| has been sent out.
-    virtual bool HasSent(const Node& node) = 0;
-    // Notify the |node| has been sent.
-    virtual void OnSent(const Node& node) = 0;
-
-   protected:
-    virtual ~Delegate() = default;
-  };
-
   enum class ScheduleReason {
     kFirstContentChange,
     kContentChange,
@@ -51,15 +40,12 @@ class CORE_EXPORT ContentCaptureTask : public RefCounted<ContentCaptureTask> {
     kStop,
   };
 
-  ContentCaptureTask(Document& document, Delegate& delegate);
+  ContentCaptureTask(LocalFrame& local_frame_root, TaskSession& task_session);
   virtual ~ContentCaptureTask();
 
   // Schedule the task if it hasn't been done.
   void Schedule(ScheduleReason reason);
   void Shutdown();
-
-  // Invoked when the |node| is detached from LayoutTree.
-  void OnNodeDetached(const Node& node);
 
   // Make those const public for testing purpose.
   static constexpr size_t kBatchSize = 5;
@@ -71,24 +57,24 @@ class CORE_EXPORT ContentCaptureTask : public RefCounted<ContentCaptureTask> {
 
   TaskState GetTaskStateForTesting() const { return task_state_; }
 
+  void RunTaskForTestingUntil(TaskState stop_state) {
+    task_stop_for_testing_ = stop_state;
+    Run(nullptr);
+  }
+
+  void SetCapturedContentForTesting(
+      const std::vector<cc::NodeHolder>& captured_content) {
+    captured_content_for_testing_ = captured_content;
+  }
+
  protected:
   // All protected data and methods are for testing purpose.
   // Return true if the task should pause.
+  // TODO(michaelbai): Uses RunTaskForTestingUntil().
   virtual bool ShouldPause();
-  virtual bool CaptureContent(std::vector<cc::NodeHolder>& data);
-  virtual WebContentCaptureClient* GetWebContentCaptureClient();
+  virtual WebContentCaptureClient* GetWebContentCaptureClient(const Document&);
 
  private:
-  struct Session {
-    // The list of the captured content.
-    std::vector<cc::NodeHolder> captured_content;
-    // The first NodeHolder in |captured_content| hasn't been sent.
-    std::vector<cc::NodeHolder>::iterator unsent = captured_content.end();
-    // The list of content id of node that has been detached from LayoutTree
-    // since the last running.
-    std::vector<int64_t> detached_nodes;
-  };
-
   // Callback method of delay_task_, runs the content capture task and
   // reschedule it if it necessary.
   void Run(TimerBase*);
@@ -102,23 +88,27 @@ class CORE_EXPORT ContentCaptureTask : public RefCounted<ContentCaptureTask> {
   // Runs the sub task to process the captured content and the detached nodes.
   bool ProcessSession();
 
+  // Processes |doc_session|, return True if |doc_session| has been processed,
+  // otherwise, the process was interrupted because the task has to pause.
+  bool ProcessDocumentSession(TaskSession::DocumentSession& doc_session);
+
   // Sends the captured content in batch.
-  void SendContent();
+  void SendContent(TaskSession::DocumentSession& doc_session);
 
   void ScheduleInternal(ScheduleReason reason);
+  bool CaptureContent(std::vector<cc::NodeHolder>& data);
 
-  std::unique_ptr<Session> session_;
   bool is_scheduled_ = false;
 
   // Indicates if there is content change since last run.
   bool has_content_change_ = false;
 
-  // Indicates if first data has been sent out.
-  bool has_first_data_sent_ = false;
-  UntracedMember<Document> document_;
-  Delegate* delegate_;
+  UntracedMember<LocalFrame> local_frame_root_;
+  UntracedMember<TaskSession> task_session_;
   std::unique_ptr<TaskRunnerTimer<ContentCaptureTask>> delay_task_;
   TaskState task_state_ = TaskState::kStop;
+  base::Optional<TaskState> task_stop_for_testing_;
+  base::Optional<std::vector<cc::NodeHolder>> captured_content_for_testing_;
 };
 
 }  // namespace blink

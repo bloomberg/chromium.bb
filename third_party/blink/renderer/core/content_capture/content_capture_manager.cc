@@ -5,13 +5,20 @@
 #include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
 
 #include "third_party/blink/renderer/core/content_capture/content_holder.h"
+#include "third_party/blink/renderer/core/content_capture/sent_nodes.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 
 namespace blink {
 
-ContentCaptureManager::ContentCaptureManager(Document& document,
+ContentCaptureManager::ContentCaptureManager(LocalFrame& local_frame_root,
                                              NodeHolder::Type type)
-    : document_(&document), node_holder_type_(type) {}
+    : local_frame_root_(&local_frame_root), node_holder_type_(type) {
+  DCHECK(local_frame_root.IsLocalRoot());
+  sent_nodes_ = MakeGarbageCollected<SentNodes>();
+  task_session_ = MakeGarbageCollected<TaskSession>(*sent_nodes_);
+}
 
 ContentCaptureManager::~ContentCaptureManager() = default;
 
@@ -37,23 +44,12 @@ void ContentCaptureManager::ScheduleTask(
 
 scoped_refptr<ContentCaptureTask>
 ContentCaptureManager::CreateContentCaptureTask() {
-  return base::MakeRefCounted<ContentCaptureTask>(*document_, *this);
+  return base::MakeRefCounted<ContentCaptureTask>(*local_frame_root_,
+                                                  *task_session_);
 }
 
 void ContentCaptureManager::NotifyNodeDetached(const NodeHolder& node_holder) {
-  if (node_holder.type == NodeHolder::Type::kID) {
-    Node* node = DOMNodeIds::NodeForId(node_holder.id);
-    if (node && HasSent(*node))
-      content_capture_idle_task_->OnNodeDetached(*node);
-  } else if (node_holder.type == NodeHolder::Type::kTextHolder) {
-    ContentHolder* content_holder =
-        static_cast<ContentHolder*>(node_holder.text_holder.get());
-    if (!content_holder || !content_holder->IsValid() ||
-        !content_holder->HasSent()) {
-      return;
-    }
-    content_capture_idle_task_->OnNodeDetached(*(content_holder->GetNode()));
-  }
+  task_session_->OnNodeDetached(node_holder);
 }
 
 void ContentCaptureManager::OnLayoutTextWillBeDestroyed(
@@ -73,16 +69,9 @@ void ContentCaptureManager::OnScrollPositionChanged() {
   ScheduleTask(ContentCaptureTask::ScheduleReason::kScrolling);
 }
 
-bool ContentCaptureManager::HasSent(const Node& node) {
-  return sent_nodes_.Contains(&node);
-}
-
-void ContentCaptureManager::OnSent(const Node& node) {
-  sent_nodes_.insert(WeakMember<const Node>(&node));
-}
-
 void ContentCaptureManager::Trace(Visitor* visitor) {
-  visitor->Trace(document_);
+  visitor->Trace(local_frame_root_);
+  visitor->Trace(task_session_);
   visitor->Trace(sent_nodes_);
 }
 

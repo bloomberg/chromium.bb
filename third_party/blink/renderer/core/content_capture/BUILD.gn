@@ -12,5 +12,9 @@ blink_core_sources("content_capture") {
     "content_capture_task.h",
     "content_holder.cc",
     "content_holder.h",
+    "sent_nodes.cc",
+    "sent_nodes.h",
+    "task_session.cc",
+    "task_session.h",
   ]
 }

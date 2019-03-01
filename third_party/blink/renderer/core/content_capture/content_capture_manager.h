@@ -9,21 +9,20 @@
 #include "third_party/blink/renderer/core/content_capture/content_capture_task.h"
 #include "third_party/blink/renderer/core/content_capture/content_holder.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 
 namespace blink {
 
-class Document;
+class LocalFrame;
 class Node;
+class SentNodes;
 
 // This class is used to create the NodeHolder, and start the ContentCaptureTask
-// when necessary. The ContentCaptureManager is owned by Document.
+// when necessary. The ContentCaptureManager is owned by main frame.
 class CORE_EXPORT ContentCaptureManager
-    : public GarbageCollectedFinalized<ContentCaptureManager>,
-      public ContentCaptureTask::Delegate {
+    : public GarbageCollectedFinalized<ContentCaptureManager> {
  public:
-  ContentCaptureManager(Document& document, NodeHolder::Type type);
-  ~ContentCaptureManager() override;
+  ContentCaptureManager(LocalFrame& local_frame_root, NodeHolder::Type type);
+  virtual ~ContentCaptureManager();
 
   // Creates and returns NodeHolder for the given |node|, and schedules
   // ContentCaptureTask if it isn't already scheduled.
@@ -37,31 +36,26 @@ class CORE_EXPORT ContentCaptureManager
   // Invokes when scroll position was changed.
   void OnScrollPositionChanged();
 
-  // Invokes when the document shutdown.
+  // Invokes when the local_frame_root shutdown.
   void Shutdown();
-
-  // ContentCaptureTask::Delegate, these methods have to be in this class
-  // because the node stores in HeapHashSet.
-  bool HasSent(const Node& node) override;
-  void OnSent(const Node& node) override;
-
-  void EnableContentCaptureTask() { should_capture_content_ = true; }
 
   virtual void Trace(blink::Visitor*);
 
+  ContentCaptureTask* GetContentCaptureTaskForTesting() const {
+    return content_capture_idle_task_.get();
+  }
+
  protected:
   virtual scoped_refptr<ContentCaptureTask> CreateContentCaptureTask();
+  TaskSession& GetTaskSessionForTesting() const { return *task_session_; }
 
  private:
   void NotifyNodeDetached(const NodeHolder& node_holder);
   void ScheduleTask(ContentCaptureTask::ScheduleReason reason);
 
-  // Indicates if the ContentCaptureTask should be started.
-  bool should_capture_content_ = false;
-
   scoped_refptr<ContentCaptureTask> content_capture_idle_task_;
 
-  Member<Document> document_;
+  Member<LocalFrame> local_frame_root_;
 
   // Indicates the NodeHolder::Type should be used.
   NodeHolder::Type node_holder_type_;
@@ -69,9 +63,10 @@ class CORE_EXPORT ContentCaptureManager
   // Indicates if the first NodeHolder is created.
   bool first_node_holder_created_ = false;
 
-  // The list of nodes that have been sent, only used when
-  // |node_identification_method| is kNodeID.
-  HeapHashSet<WeakMember<const Node>> sent_nodes_;
+  Member<TaskSession> task_session_;
+
+  // A set of weak reference of the node that has been sent.
+  Member<SentNodes> sent_nodes_;
 };
 
 }  // namespace blink

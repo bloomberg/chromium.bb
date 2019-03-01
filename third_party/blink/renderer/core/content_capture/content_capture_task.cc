@@ -19,119 +19,116 @@
 
 namespace blink {
 
-ContentCaptureTask::ContentCaptureTask(Document& document, Delegate& delegate)
-    : document_(&document), delegate_(&delegate) {}
+ContentCaptureTask::ContentCaptureTask(LocalFrame& local_frame_root,
+                                       TaskSession& task_session)
+    : local_frame_root_(&local_frame_root), task_session_(&task_session) {}
 
 ContentCaptureTask::~ContentCaptureTask() {}
 
 void ContentCaptureTask::Shutdown() {
-  DCHECK(document_);
-  document_ = nullptr;
-  delegate_ = nullptr;
-}
-
-void ContentCaptureTask::OnNodeDetached(const Node& node) {
-  if (!session_) {
-    session_ = std::make_unique<Session>();
-  }
-  // TODO(michaelbai): might limit the size of detached_nodes.
-  session_->detached_nodes.push_back(reinterpret_cast<int64_t>(&node));
+  DCHECK(local_frame_root_);
+  local_frame_root_ = nullptr;
 }
 
 bool ContentCaptureTask::CaptureContent(std::vector<cc::NodeHolder>& data) {
+  if (captured_content_for_testing_) {
+    data = captured_content_for_testing_.value();
+    return true;
+  }
   // Because this is called from a different task, the frame may be in any
   // lifecycle step so we need to early-out in many cases.
-  // TODO(michaelbai): runs task in main frame, and sends the captured content
-  // for each document separately.
-  if (const auto* frame = document_->GetFrame()) {
-    if (const auto* root_frame_view = frame->LocalFrameRoot().View()) {
-      if (const auto* cc_layer = root_frame_view->RootCcLayer()) {
-        if (auto* layer_tree_host = cc_layer->layer_tree_host())
-          return layer_tree_host->CaptureContent(&data);
-      }
+  if (const auto* root_frame_view = local_frame_root_->View()) {
+    if (const auto* cc_layer = root_frame_view->RootCcLayer()) {
+      if (auto* layer_tree_host = cc_layer->layer_tree_host())
+        return layer_tree_host->CaptureContent(&data);
     }
   }
   return false;
 }
 
 bool ContentCaptureTask::CaptureContent() {
-  DCHECK(session_);
-  bool success = CaptureContent(session_->captured_content);
-  session_->unsent = session_->captured_content.begin();
-  return success;
+  DCHECK(task_session_);
+  std::vector<cc::NodeHolder> buffer;
+  bool result = CaptureContent(buffer);
+  if (!buffer.empty())
+    task_session_->SetCapturedContent(buffer);
+  return result;
 }
 
-void ContentCaptureTask::SendContent() {
-  DCHECK(session_);
+void ContentCaptureTask::SendContent(
+    TaskSession::DocumentSession& doc_session) {
+  auto* document = doc_session.GetDocument();
+  DCHECK(document);
   std::vector<scoped_refptr<WebContentHolder>> content_batch;
   content_batch.reserve(kBatchSize);
-  for (; session_->unsent != session_->captured_content.end() &&
-         content_batch.size() < kBatchSize;
-       ++session_->unsent) {
-    scoped_refptr<ContentHolder> content_holder;
-    if (session_->unsent->type == cc::NodeHolder::Type::kID) {
-      Node* node = DOMNodeIds::NodeForId(session_->unsent->id);
-      if (node && node->GetLayoutObject() && !delegate_->HasSent(*node)) {
-        content_holder = base::MakeRefCounted<ContentHolder>(*node);
-        delegate_->OnSent(*node);
-        content_batch.push_back(
-            base::MakeRefCounted<WebContentHolder>(content_holder));
-      }
-    } else if (session_->unsent->type == cc::NodeHolder::Type::kTextHolder &&
-               session_->unsent->text_holder) {
-      content_holder = scoped_refptr<ContentHolder>(
-          static_cast<ContentHolder*>(session_->unsent->text_holder.get()));
-      if (content_holder && content_holder->IsValid() &&
-          !content_holder->HasSent()) {
-        content_holder->SetHasSent();
-        content_batch.push_back(
-            base::MakeRefCounted<WebContentHolder>(content_holder));
-      }
-    }
+  while (content_batch.size() < kBatchSize) {
+    scoped_refptr<ContentHolder> content_holder =
+        doc_session.GetNextUnsentContentHolder();
+    if (!content_holder)
+      break;
+    content_batch.push_back(
+        base::MakeRefCounted<WebContentHolder>(content_holder));
   }
   if (!content_batch.empty()) {
-    GetWebContentCaptureClient()->DidCaptureContent(content_batch,
-                                                    !has_first_data_sent_);
-    has_first_data_sent_ = true;
+    DCHECK(GetWebContentCaptureClient(*document));
+    GetWebContentCaptureClient(*document)->DidCaptureContent(
+        content_batch, !doc_session.FirstDataHasSent());
+    doc_session.SetFirstDataHasSent();
   }
-  if (session_->unsent == session_->captured_content.end())
-    session_->captured_content.clear();
 }
 
-WebContentCaptureClient* ContentCaptureTask::GetWebContentCaptureClient() {
-  // TODO(michaelbai): Enable this after integrate with document.
-  // return document_->GetFrame()->Client()->GetContentCaptureClient();
+WebContentCaptureClient* ContentCaptureTask::GetWebContentCaptureClient(
+    const Document& document) {
+  if (auto* frame = document.GetFrame())
+    return frame->Client()->GetWebContentCaptureClient();
   return nullptr;
 }
 
 bool ContentCaptureTask::ProcessSession() {
-  DCHECK(session_);
-  while (!session_->captured_content.empty()) {
-    SendContent();
+  DCHECK(task_session_);
+  while (auto* document_session =
+             task_session_->GetNextUnsentDocumentSession()) {
+    if (!ProcessDocumentSession(*document_session))
+      return false;
+    if (ShouldPause())
+      return !task_session_->HasUnsentData();
+  }
+  return true;
+}
+
+bool ContentCaptureTask::ProcessDocumentSession(
+    TaskSession::DocumentSession& doc_session) {
+  // If no client, we don't need to send it at all.
+  auto* content_capture_client =
+      GetWebContentCaptureClient(*doc_session.GetDocument());
+  if (!content_capture_client) {
+    doc_session.Reset();
+    return true;
+  }
+
+  while (doc_session.HasUnsentCapturedContent()) {
+    SendContent(doc_session);
     if (ShouldPause()) {
-      return session_->captured_content.empty() &&
-             session_->detached_nodes.empty();
+      return !doc_session.HasUnsentData();
     }
   }
   // Sent the detached nodes.
-  if (!session_->detached_nodes.empty()) {
-    GetWebContentCaptureClient()->DidRemoveContent(session_->detached_nodes);
-    session_->detached_nodes.clear();
-  }
-  session_.reset();
+  if (doc_session.HasUnsentDetachedNodes())
+    content_capture_client->DidRemoveContent(doc_session.MoveDetachedNodes());
+  DCHECK(!doc_session.HasUnsentData());
   return true;
 }
 
 bool ContentCaptureTask::RunInternal() {
   base::AutoReset<TaskState> state(&task_state_, TaskState::kProcessRetryTask);
   // Already shutdown.
-  if (!document_ || !GetWebContentCaptureClient())
+  if (!local_frame_root_)
     return true;
 
   do {
     switch (task_state_) {
       case TaskState::kProcessRetryTask:
-        if (session_) {
+        if (task_session_->HasUnsentData()) {
           if (!ProcessSession())
             return false;
         }
@@ -140,13 +137,12 @@ bool ContentCaptureTask::RunInternal() {
       case TaskState::kCaptureContent:
         if (!has_content_change_)
           return true;
-        session_ = std::make_unique<Session>();
         if (!CaptureContent()) {
           // Don't schedule task again in this case.
           return true;
         }
         has_content_change_ = false;
-        if (session_->captured_content.empty())
+        if (!task_session_->HasUnsentData())
           return true;
 
         task_state_ = TaskState::kProcessCurrentSession;
@@ -164,16 +160,13 @@ bool ContentCaptureTask::RunInternal() {
 void ContentCaptureTask::Run(TimerBase*) {
   TRACE_EVENT0("blink", "CaptureContentTask::Run");
   is_scheduled_ = false;
-  bool success = RunInternal();
-  if (success) {
-    session_.reset();
-  } else {
+  if (!RunInternal()) {
     ScheduleInternal(ScheduleReason::kRetryTask);
   }
 }
 
 void ContentCaptureTask::ScheduleInternal(ScheduleReason reason) {
-  DCHECK(document_);
+  DCHECK(local_frame_root_);
   if (is_scheduled_)
     return;
 
@@ -191,7 +184,7 @@ void ContentCaptureTask::ScheduleInternal(ScheduleReason reason) {
 
   if (!delay_task_) {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        document_->GetTaskRunner(TaskType::kInternalContentCapture);
+        local_frame_root_->GetTaskRunner(TaskType::kInternalContentCapture);
     delay_task_ = std::make_unique<TaskRunnerTimer<ContentCaptureTask>>(
         task_runner, this, &ContentCaptureTask::Run);
   }
@@ -202,12 +195,15 @@ void ContentCaptureTask::ScheduleInternal(ScheduleReason reason) {
 }
 
 void ContentCaptureTask::Schedule(ScheduleReason reason) {
-  DCHECK(document_);
+  DCHECK(local_frame_root_);
   has_content_change_ = true;
   ScheduleInternal(reason);
 }
 
 bool ContentCaptureTask::ShouldPause() {
+  if (task_stop_for_testing_) {
+    return task_state_ == task_stop_for_testing_.value();
+  }
   return ThreadScheduler::Current()->ShouldYieldForHighPriorityWork();
 }
 
