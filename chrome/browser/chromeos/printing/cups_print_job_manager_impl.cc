@@ -221,7 +221,7 @@ class CupsWrapper {
                  QueryResult* result) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     result->success = cups_connection_.GetJobs(printer_ids, &result->queues);
   }
@@ -230,7 +230,7 @@ class CupsWrapper {
   void CancelJobImpl(const std::string& printer_id, const int job_id) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     std::unique_ptr<::printing::CupsPrinter> printer =
         cups_connection_.GetPrinter(printer_id);

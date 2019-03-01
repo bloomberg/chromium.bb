@@ -67,7 +67,7 @@ enum class ReauthenticationStatus {
     NSFileManager* fileManager = [NSFileManager defaultManager];
 
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::WILL_BLOCK);
+        FROM_HERE, base::BlockingType::WILL_BLOCK);
     if (![fileManager createDirectoryAtURL:directoryURL
                withIntermediateDirectories:YES
                                 attributes:nil
@@ -352,7 +352,7 @@ enum class ReauthenticationStatus {
       base::BindOnce(^{
         NSFileManager* fileManager = [NSFileManager defaultManager];
         base::ScopedBlockingCall scoped_blocking_call(
-            base::BlockingType::WILL_BLOCK);
+            FROM_HERE, base::BlockingType::WILL_BLOCK);
         [fileManager removeItemAtURL:uniqueDirectoryURL error:nil];
       }));
 }
