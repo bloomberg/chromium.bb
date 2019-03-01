@@ -3375,7 +3375,7 @@ void Element::ActivateDisplayLockIfNeeded() {
       if (!context->IsActivatable())
         return;
       activatable_targets.push_back(std::make_pair(
-          &ToElement(ancestor), ancestor.GetTreeScope().Retarget(*this)));
+          &ToElement(ancestor), &ancestor.GetTreeScope().Retarget(*this)));
     }
   }
 
