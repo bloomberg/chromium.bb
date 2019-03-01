@@ -2,16 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "ash/autoclick/autoclick_drag_event_rewriter.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_rewriter.h"
+#include "ui/events/event_sink.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/events/test/test_event_source.h"
 
 namespace ash {
+
+namespace {
+
+// EventSink that saves a copy of the most recent event.
+class CopyingSink : public ui::EventSink {
+ public:
+  CopyingSink() {}
+  ~CopyingSink() override = default;
+  ui::Event* last_event() const { return last_event_.get(); }
+
+  // EventSink override:
+  ui::EventDispatchDetails OnEventFromSource(ui::Event* event) override {
+    last_event_ = ui::Event::Clone(*event);
+    return ui::EventDispatchDetails();
+  }
+
+ private:
+  std::unique_ptr<ui::Event> last_event_;
+};
+
+}  // anonymous namespace
 
 class EventRecorder : public ui::EventRewriter {
  public:
@@ -19,18 +44,12 @@ class EventRecorder : public ui::EventRewriter {
   ~EventRecorder() override = default;
 
   // ui::EventRewriter:
-  ui::EventRewriteStatus RewriteEvent(
+  ui::EventDispatchDetails RewriteEvent(
       const ui::Event& event,
-      std::unique_ptr<ui::Event>* new_event) override {
+      const Continuation continuation) override {
     recorded_event_count_++;
     last_recorded_event_type_ = event.type();
-    return ui::EVENT_REWRITE_CONTINUE;
-  }
-  ui::EventRewriteStatus NextDispatchEvent(
-      const ui::Event& last_event,
-      std::unique_ptr<ui::Event>* new_event) override {
-    NOTREACHED();
-    return ui::EVENT_REWRITE_CONTINUE;
+    return SendEvent(continuation, &event);
   }
 
   // Count of events sent to the rewriter.
@@ -141,10 +160,13 @@ TEST_F(AutoclickDragEventRewriterTest, RewritesMouseMovesToDrags) {
   int changed_button_flags = ui::EF_LEFT_MOUSE_BUTTON;  // Set a random flag.
   ui::MouseEvent event(ui::EventType::ET_MOUSE_MOVED, location, root_location,
                        time_stamp, flags, changed_button_flags);
-  std::unique_ptr<ui::Event> rewritten_event;
-  ui::EventRewriteStatus status =
-      drag_event_rewriter_.RewriteEvent(event, &rewritten_event);
-  EXPECT_EQ(ui::EVENT_REWRITE_REWRITTEN, status);
+  CopyingSink sink;
+  ui::test::TestEventSource source(&sink);
+  source.AddEventRewriter(&drag_event_rewriter_);
+  source.Send(&event);
+  source.RemoveEventRewriter(&drag_event_rewriter_);
+  ui::Event* rewritten_event = sink.last_event();
+
   // The type should be a drag.
   ASSERT_EQ(ui::ET_MOUSE_DRAGGED, rewritten_event->type());
 

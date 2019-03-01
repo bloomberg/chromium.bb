@@ -19,36 +19,10 @@
 #include "ui/events/event_rewriter.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/events/test/test_event_rewriter.h"
 
 namespace ash {
 namespace {
-
-// An event rewriter that simply records all events that it receives.
-class EventRecorder : public ui::EventRewriter {
- public:
-  EventRecorder() = default;
-  ~EventRecorder() override = default;
-
-  // ui::EventRewriter:
-  ui::EventRewriteStatus RewriteEvent(
-      const ui::Event& event,
-      std::unique_ptr<ui::Event>* new_event) override {
-    recorded_event_count_++;
-    return ui::EVENT_REWRITE_CONTINUE;
-  }
-  ui::EventRewriteStatus NextDispatchEvent(
-      const ui::Event& last_event,
-      std::unique_ptr<ui::Event>* new_event) override {
-    NOTREACHED();
-    return ui::EVENT_REWRITE_CONTINUE;
-  }
-
-  // Count of events sent to the rewriter.
-  size_t recorded_event_count_ = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(EventRecorder);
-};
 
 // A test implementation of the spoken feedback delegate interface.
 class TestDelegate : public mojom::SpokenFeedbackEventRewriterDelegate {
@@ -132,7 +106,8 @@ class SpokenFeedbackEventRewriterTest : public ash::AshTestBase {
   void ExpectCounts(size_t expected_recorded_count,
                     size_t expected_delegate_count,
                     size_t expected_captured_count) {
-    EXPECT_EQ(expected_recorded_count, event_recorder_.recorded_event_count_);
+    EXPECT_EQ(expected_recorded_count,
+              static_cast<size_t>(event_recorder_.events_seen()));
     EXPECT_EQ(expected_delegate_count, GetDelegateRecordedEventCount());
     EXPECT_EQ(expected_captured_count, GetDelegateCapturedEventCount());
   }
@@ -143,7 +118,7 @@ class SpokenFeedbackEventRewriterTest : public ash::AshTestBase {
   // Generates ui::Events from simulated user input.
   ui::test::EventGenerator* generator_ = nullptr;
   // Records events delivered to the next event rewriter after spoken feedback.
-  EventRecorder event_recorder_;
+  ui::test::TestEventRewriter event_recorder_;
 
   SpokenFeedbackEventRewriter spoken_feedback_event_rewriter_;
 
@@ -158,18 +133,18 @@ TEST_F(SpokenFeedbackEventRewriterTest, EventsNotConsumedWhenDisabled) {
   EXPECT_FALSE(controller->spoken_feedback_enabled());
 
   generator_->PressKey(ui::VKEY_A, ui::EF_NONE);
-  EXPECT_EQ(1U, event_recorder_.recorded_event_count_);
+  EXPECT_EQ(1, event_recorder_.events_seen());
   EXPECT_EQ(0U, GetDelegateRecordedEventCount());
   generator_->ReleaseKey(ui::VKEY_A, ui::EF_NONE);
-  EXPECT_EQ(2U, event_recorder_.recorded_event_count_);
+  EXPECT_EQ(2, event_recorder_.events_seen());
   EXPECT_EQ(0U, GetDelegateRecordedEventCount());
 
   generator_->ClickLeftButton();
-  EXPECT_EQ(4U, event_recorder_.recorded_event_count_);
+  EXPECT_EQ(4, event_recorder_.events_seen());
   EXPECT_EQ(0U, GetDelegateRecordedEventCount());
 
   generator_->GestureTapAt(gfx::Point());
-  EXPECT_EQ(6U, event_recorder_.recorded_event_count_);
+  EXPECT_EQ(6, event_recorder_.events_seen());
   EXPECT_EQ(0U, GetDelegateRecordedEventCount());
 }
 
@@ -181,35 +156,42 @@ TEST_F(SpokenFeedbackEventRewriterTest, KeyEventsConsumedWhenEnabled) {
   EXPECT_TRUE(controller->spoken_feedback_enabled());
 
   generator_->PressKey(ui::VKEY_A, ui::EF_NONE);
-  EXPECT_EQ(1U, event_recorder_.recorded_event_count_);
+  EXPECT_EQ(1, event_recorder_.events_seen());
   EXPECT_EQ(1U, GetDelegateRecordedEventCount());
   EXPECT_EQ(0U, GetDelegateCapturedEventCount());
   generator_->ReleaseKey(ui::VKEY_A, ui::EF_NONE);
-  EXPECT_EQ(2U, event_recorder_.recorded_event_count_);
+  EXPECT_EQ(2, event_recorder_.events_seen());
   EXPECT_EQ(2U, GetDelegateRecordedEventCount());
   EXPECT_EQ(0U, GetDelegateCapturedEventCount());
 
   generator_->ClickLeftButton();
-  EXPECT_EQ(4U, event_recorder_.recorded_event_count_);
+  EXPECT_EQ(4, event_recorder_.events_seen());
   EXPECT_EQ(2U, GetDelegateRecordedEventCount());
   EXPECT_EQ(0U, GetDelegateCapturedEventCount());
 
   generator_->GestureTapAt(gfx::Point());
-  EXPECT_EQ(6U, event_recorder_.recorded_event_count_);
+  EXPECT_EQ(6, event_recorder_.events_seen());
   EXPECT_EQ(2U, GetDelegateRecordedEventCount());
   EXPECT_EQ(0U, GetDelegateCapturedEventCount());
 }
 
 // Asynchronously unhandled events should be sent to subsequent rewriters.
 TEST_F(SpokenFeedbackEventRewriterTest, UnhandledEventsSentToOtherRewriters) {
+  // Before it can forward unhandled events, SpokenFeedbackEventRewriter
+  // must have seen at least one event in the first place.
+  generator_->PressKey(ui::VKEY_A, ui::EF_NONE);
+  EXPECT_EQ(1, event_recorder_.events_seen());
+  generator_->ReleaseKey(ui::VKEY_A, ui::EF_NONE);
+  EXPECT_EQ(2, event_recorder_.events_seen());
+
   spoken_feedback_event_rewriter_.OnUnhandledSpokenFeedbackEvent(
       std::make_unique<ui::KeyEvent>(ui::ET_KEY_PRESSED, ui::VKEY_A,
                                      ui::EF_NONE));
-  EXPECT_EQ(1U, event_recorder_.recorded_event_count_);
+  EXPECT_EQ(3, event_recorder_.events_seen());
   spoken_feedback_event_rewriter_.OnUnhandledSpokenFeedbackEvent(
       std::make_unique<ui::KeyEvent>(ui::ET_KEY_RELEASED, ui::VKEY_A,
                                      ui::EF_NONE));
-  EXPECT_EQ(2U, event_recorder_.recorded_event_count_);
+  EXPECT_EQ(4, event_recorder_.events_seen());
 }
 
 TEST_F(SpokenFeedbackEventRewriterTest, KeysNotEatenWithChromeVoxDisabled) {
@@ -219,26 +201,26 @@ TEST_F(SpokenFeedbackEventRewriterTest, KeysNotEatenWithChromeVoxDisabled) {
 
   // Send Search+Shift+Right.
   generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
-  EXPECT_EQ(1U, event_recorder_.recorded_event_count_);
+  EXPECT_EQ(1, event_recorder_.events_seen());
   generator_->PressKey(ui::VKEY_SHIFT, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN);
-  EXPECT_EQ(2U, event_recorder_.recorded_event_count_);
+  EXPECT_EQ(2, event_recorder_.events_seen());
 
   // Mock successful commands lookup and dispatch; shouldn't matter either way.
   generator_->PressKey(ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN);
-  EXPECT_EQ(3U, event_recorder_.recorded_event_count_);
+  EXPECT_EQ(3, event_recorder_.events_seen());
 
   // Released keys shouldn't get eaten.
   generator_->ReleaseKey(ui::VKEY_RIGHT,
                          ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN);
   generator_->ReleaseKey(ui::VKEY_SHIFT, ui::EF_COMMAND_DOWN);
   generator_->ReleaseKey(ui::VKEY_LWIN, 0);
-  EXPECT_EQ(6U, event_recorder_.recorded_event_count_);
+  EXPECT_EQ(6, event_recorder_.events_seen());
 
   // Try releasing more keys.
   generator_->ReleaseKey(ui::VKEY_RIGHT, 0);
   generator_->ReleaseKey(ui::VKEY_SHIFT, 0);
   generator_->ReleaseKey(ui::VKEY_LWIN, 0);
-  EXPECT_EQ(9U, event_recorder_.recorded_event_count_);
+  EXPECT_EQ(9, event_recorder_.events_seen());
 
   EXPECT_EQ(0U, GetDelegateRecordedEventCount());
 }

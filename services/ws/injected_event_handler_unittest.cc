@@ -5,6 +5,7 @@
 #include "services/ws/injected_event_handler.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -154,16 +155,11 @@ class DiscardingEventRewriter : public ui::EventRewriter {
   bool got_rewrite_event() const { return got_rewrite_event_; }
 
   // ui::EventRewriter:
-  ui::EventRewriteStatus RewriteEvent(
+  ui::EventDispatchDetails RewriteEvent(
       const ui::Event& event,
-      std::unique_ptr<ui::Event>* new_event) override {
+      const Continuation continuation) override {
     got_rewrite_event_ = true;
-    return ui::EVENT_REWRITE_DISCARD;
-  }
-  ui::EventRewriteStatus NextDispatchEvent(
-      const ui::Event& last_event,
-      std::unique_ptr<ui::Event>* new_event) override {
-    return ui::EVENT_REWRITE_DISPATCH_ANOTHER;
+    return DiscardEvent(continuation);
   }
 
  private:
