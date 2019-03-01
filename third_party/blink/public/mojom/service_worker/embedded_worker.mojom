@@ -21,7 +21,7 @@ import "third_party/blink/public/mojom/service_worker/service_worker_provider.mo
 import "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom";
 import "third_party/blink/public/mojom/v8_cache_options.mojom";
 import "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom";
-import "third_party/blink/public/platform/web_feature.mojom";
+import "third_party/blink/public/mojom/web_feature/web_feature.mojom";
 import "url/mojom/url.mojom";
 
 // Parameters to launch a service worker. This is passed from the browser to the

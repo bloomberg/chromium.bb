@@ -670,7 +670,6 @@ mojom("mojo_bindings") {
     ":android_mojo_bindings",
     ":authenticator_test_mojo_bindings",
     ":web_client_hints_types_mojo_bindings",
-    ":web_feature_mojo_bindings",
     "//components/services/font/public/interfaces",
     "//device/bluetooth/public/mojom",
     "//mojo/public/mojom/base",
@@ -818,18 +817,6 @@ group("generate_mojo_bindings") {
     ":mojo_bindings_blink_headers",
     ":mojo_bindings_headers",
   ]
-}
-
-# The web_feature_mojo_bindings is separated from the rest of the mojom files
-# because the chromium typemap for blink mojo_bindings has private content
-# dependencies.
-mojom_component("web_feature_mojo_bindings") {
-  sources = [
-    "platform/web_feature.mojom",
-  ]
-
-  macro_prefix = "WEB_FEATURE_MOJO_BINDINGS_MOJOM"
-  output_prefix = "web_feature_mojo_bindings_mojom"
 }
 
 # The web_feature_mojo_bindings is separated from the rest of the mojom files

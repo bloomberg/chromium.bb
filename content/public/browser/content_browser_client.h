@@ -54,7 +54,7 @@
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom-forward.h"
-#include "third_party/blink/public/platform/web_feature.mojom-forward.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-forward.h"
 #include "third_party/blink/public/web/window_features.mojom-forward.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/page_transition_types.h"

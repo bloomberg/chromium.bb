@@ -82,7 +82,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom.h"
-#include "third_party/blink/public/platform/web_feature.mojom.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "url/gurl.h"
 
 using page_load_metrics::PageLoadMetricsTestWaiter;

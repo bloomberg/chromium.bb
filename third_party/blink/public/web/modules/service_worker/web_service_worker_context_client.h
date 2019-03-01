@@ -35,8 +35,8 @@
 
 #include "base/time/time.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-shared.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_stream_handle.h"
-#include "third_party/blink/public/platform/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "v8/include/v8.h"

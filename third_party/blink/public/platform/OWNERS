@@ -1,10 +1,6 @@
 per-file *.mojom=set noparent
 per-file *.mojom=file://ipc/SECURITY_OWNERS
 
-# Extending enum WebFeature by adding new features is allowed without OWNERS
-# review, but you should add a security team OWNER if you are changing others.
-per-file web_feature.mojom=file://third_party/blink/renderer/core/OWNERS
-
 per-file *_enum_traits*.*=set noparent
 per-file *_enum_traits*.*=file://ipc/SECURITY_OWNERS
 per-file *_struct_traits*.*=set noparent

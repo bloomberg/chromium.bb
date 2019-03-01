@@ -20,7 +20,7 @@
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
-#include "third_party/blink/public/platform/web_feature.mojom.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 
 namespace content {
 

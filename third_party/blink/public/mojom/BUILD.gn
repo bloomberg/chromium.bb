@@ -109,6 +109,7 @@ mojom("mojom_platform") {
     ":android_mojo_bindings",
     ":mojom_mhtml_load_result",
     ":speech_recognition_error_code",
+    ":web_feature_mojo_bindings",
     "//components/payments/mojom",
     "//components/services/filesystem/public/interfaces",
     "//mojo/public/mojom/base",
@@ -117,7 +118,6 @@ mojom("mojom_platform") {
     "//services/service_manager/public/mojom",
     "//services/viz/public/interfaces",
     "//skia/public/interfaces",
-    "//third_party/blink/public:web_feature_mojo_bindings",
     "//third_party/blink/public/mojom/usb",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
@@ -214,12 +214,12 @@ mojom("mojom_core") {
 
   public_deps = [
     ":mojom_platform",
+    ":web_feature_mojo_bindings",
     "//components/payments/mojom",
     "//mojo/public/mojom/base",
     "//services/network/public/mojom",
     "//services/service_manager/public/mojom",
     "//skia/public/interfaces",
-    "//third_party/blink/public:web_feature_mojo_bindings",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]
@@ -282,4 +282,16 @@ mojom("mojom_mhtml_load_result") {
   export_class_attribute = "BLINK_COMMON_EXPORT"
   export_define = "BLINK_COMMON_IMPLEMENTATION=1"
   export_header = "third_party/blink/public/common/common_export.h"
+}
+
+# The web_feature_mojo_bindings is separated from the rest of the mojom files
+# because the chromium typemap for blink mojo_bindings has private content
+# dependencies.
+mojom_component("web_feature_mojo_bindings") {
+  sources = [
+    "web_feature/web_feature.mojom",
+  ]
+
+  macro_prefix = "WEB_FEATURE_MOJO_BINDINGS_MOJOM"
+  output_prefix = "web_feature_mojo_bindings_mojom"
 }
