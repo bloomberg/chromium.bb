@@ -13,6 +13,7 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/chromeos/diagnosticsd/diagnosticsd_messaging.h"
 #include "chrome/browser/chromeos/diagnosticsd/mojo_utils.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/diagnosticsd_client.h"
@@ -279,6 +280,37 @@ void DiagnosticsdBridge::PerformWebRequest(
   web_request_service_.PerformRequest(
       http_method, std::move(gurl), std::move(header_contents),
       std::move(request_body_content), std::move(callback));
+}
+
+void DiagnosticsdBridge::SendDiagnosticsProcessorMessageToUi(
+    mojo::ScopedHandle json_message,
+    SendDiagnosticsProcessorMessageToUiCallback callback) {
+  // Extract the string value of the received message.
+  DCHECK(json_message);
+  std::unique_ptr<base::SharedMemory> json_message_shared_memory;
+  base::StringPiece json_message_string = GetStringPieceFromMojoHandle(
+      std::move(json_message), &json_message_shared_memory);
+  if (json_message_string.empty()) {
+    LOG(ERROR) << "Failed to read data from mojo handle";
+    std::move(callback).Run(mojo::ScopedHandle() /* response_json_message */);
+    return;
+  }
+
+  DeliverDiagnosticsdUiMessageToExtensions(
+      json_message_string.as_string(),
+      base::BindOnce(
+          [](SendDiagnosticsProcessorMessageToUiCallback callback,
+             const std::string& response) {
+            mojo::ScopedHandle response_mojo_handle;
+            if (!response.empty()) {
+              response_mojo_handle =
+                  CreateReadOnlySharedMemoryMojoHandle(response);
+              if (!response_mojo_handle)
+                LOG(ERROR) << "Failed to create mojo handle for string";
+            }
+            std::move(callback).Run(std::move(response_mojo_handle));
+          },
+          std::move(callback)));
 }
 
 }  // namespace chromeos

@@ -98,6 +98,9 @@ class DiagnosticsdBridge final
       std::vector<mojo::ScopedHandle> headers,
       mojo::ScopedHandle request_body,
       PerformWebRequestCallback callback) override;
+  void SendDiagnosticsProcessorMessageToUi(
+      mojo::ScopedHandle json_message,
+      SendDiagnosticsProcessorMessageToUiCallback callback) override;
 
   std::unique_ptr<Delegate> delegate_;
 
