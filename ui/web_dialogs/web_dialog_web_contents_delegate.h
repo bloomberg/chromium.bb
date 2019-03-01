@@ -5,7 +5,8 @@
 #ifndef UI_WEB_DIALOGS_WEB_DIALOG_WEB_CONTENTS_DELEGATE_H_
 #define UI_WEB_DIALOGS_WEB_DIALOG_WEB_CONTENTS_DELEGATE_H_
 
-#include "base/compiler_specific.h"
+#include <memory>
+
 #include "base/macros.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/web_dialogs/web_dialogs_export.h"
@@ -41,11 +42,9 @@ class WEB_DIALOGS_EXPORT WebDialogWebContentsDelegate
         bool user_gesture) = 0;
   };
 
-  // context and handler must be non-NULL.
-  // Takes the ownership of handler.
+  // |context| and |handler| must be non-NULL.
   WebDialogWebContentsDelegate(content::BrowserContext* context,
-                               WebContentsHandler* handler);
-
+                               std::unique_ptr<WebContentsHandler> handler);
   ~WebDialogWebContentsDelegate() override;
 
   // The returned browser context is guaranteed to be original if non-NULL.
@@ -75,7 +74,7 @@ class WEB_DIALOGS_EXPORT WebDialogWebContentsDelegate
   // Weak pointer.  Always an original profile.
   content::BrowserContext* browser_context_;
 
-  std::unique_ptr<WebContentsHandler> handler_;
+  std::unique_ptr<WebContentsHandler> const handler_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDialogWebContentsDelegate);
 };

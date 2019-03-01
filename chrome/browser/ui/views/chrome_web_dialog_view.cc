@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/chrome_web_dialog_view.h"
 
+#include <memory>
+
+#include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "ui/views/controls/webview/web_dialog_view.h"
@@ -49,8 +52,8 @@ gfx::NativeWindow ShowWebDialogWithParams(
     content::BrowserContext* context,
     ui::WebDialogDelegate* delegate,
     const views::Widget::InitParams* extra_params) {
-  views::WebDialogView* view =
-      new views::WebDialogView(context, delegate, new ChromeWebContentsHandler);
+  views::WebDialogView* view = new views::WebDialogView(
+      context, delegate, std::make_unique<ChromeWebContentsHandler>());
   views::Widget::InitParams params;
   if (extra_params)
     params = *extra_params;

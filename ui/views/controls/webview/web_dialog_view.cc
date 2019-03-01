@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/webview/web_dialog_view.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
@@ -38,9 +39,9 @@ namespace views {
 
 WebDialogView::WebDialogView(content::BrowserContext* context,
                              WebDialogDelegate* delegate,
-                             WebContentsHandler* handler)
+                             std::unique_ptr<WebContentsHandler> handler)
     : ClientView(nullptr, nullptr),
-      WebDialogWebContentsDelegate(context, handler),
+      WebDialogWebContentsDelegate(context, std::move(handler)),
       delegate_(delegate),
       web_view_(new views::WebView(context)) {
   web_view_->set_allow_accelerators(true);

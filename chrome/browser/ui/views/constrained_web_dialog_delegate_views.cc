@@ -33,13 +33,12 @@ class ConstrainedWebDialogDelegateViews;
 // potential use after destruction.
 class InitiatorWebContentsObserver
     : public content::WebContentsObserver {
-  public:
-   explicit InitiatorWebContentsObserver(content::WebContents* web_contents)
-      : content::WebContentsObserver(web_contents) {
-   }
+ public:
+  explicit InitiatorWebContentsObserver(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents) {}
 
-  private:
-    DISALLOW_COPY_AND_ASSIGN(InitiatorWebContentsObserver);
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InitiatorWebContentsObserver);
 };
 
 gfx::Size RestrictToPlatformMinimumSize(const gfx::Size& min_size) {
@@ -110,11 +109,12 @@ class WebDialogWebContentsDelegateViews
   WebDialogWebContentsDelegateViews(content::BrowserContext* browser_context,
                                     InitiatorWebContentsObserver* observer,
                                     ConstrainedDialogWebView* web_view)
-      : ui::WebDialogWebContentsDelegate(browser_context,
-                                         new ChromeWebContentsHandler()),
+      : ui::WebDialogWebContentsDelegate(
+            browser_context,
+            std::make_unique<ChromeWebContentsHandler>()),
         initiator_observer_(observer),
         web_view_(web_view) {}
-  ~WebDialogWebContentsDelegateViews() override {}
+  ~WebDialogWebContentsDelegateViews() override = default;
 
   // ui::WebDialogWebContentsDelegate:
   bool HandleKeyboardEvent(

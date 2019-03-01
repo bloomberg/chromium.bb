@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/constrained_web_dialog_delegate_base.h"
 
 #include <string>
+#include <utility>
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
@@ -26,8 +27,9 @@ ConstrainedWebDialogDelegateBase::ConstrainedWebDialogDelegateBase(
     content::BrowserContext* browser_context,
     WebDialogDelegate* delegate,
     WebDialogWebContentsDelegate* tab_delegate)
-    : WebDialogWebContentsDelegate(browser_context,
-                                   new ChromeWebContentsHandler),
+    : WebDialogWebContentsDelegate(
+          browser_context,
+          std::make_unique<ChromeWebContentsHandler>()),
       web_dialog_delegate_(delegate),
       closed_via_webui_(false) {
   CHECK(delegate);
@@ -93,7 +95,7 @@ ConstrainedWebDialogDelegateBase::ReleaseWebContents() {
 
 gfx::NativeWindow ConstrainedWebDialogDelegateBase::GetNativeDialog() {
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 WebContents* ConstrainedWebDialogDelegateBase::GetWebContents() {

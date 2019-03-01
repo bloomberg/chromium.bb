@@ -4,6 +4,10 @@
 
 #include "chrome/browser/chromeos/login/ui/oobe_ui_dialog_delegate.h"
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "ash/public/cpp/shell_window_ids.h"
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_mojo.h"
@@ -43,8 +47,8 @@ class OobeWebDialogView : public views::WebDialogView {
  public:
   OobeWebDialogView(content::BrowserContext* context,
                     ui::WebDialogDelegate* delegate,
-                    WebContentsHandler* handler)
-      : views::WebDialogView(context, delegate, handler) {}
+                    std::unique_ptr<WebContentsHandler> handler)
+      : views::WebDialogView(context, delegate, std::move(handler)) {}
 
   // content::WebContentsDelegate:
   void RequestMediaAccessPermission(
@@ -89,8 +93,9 @@ class CaptivePortalDialogDelegate
   explicit CaptivePortalDialogDelegate(views::WebDialogView* host_dialog_view)
       : host_view_(host_dialog_view),
         web_contents_(host_dialog_view->web_contents()) {
-    view_ = new views::WebDialogView(ProfileHelper::GetSigninProfile(), this,
-                                     new ChromeWebContentsHandler);
+    view_ =
+        new views::WebDialogView(ProfileHelper::GetSigninProfile(), this,
+                                 std::make_unique<ChromeWebContentsHandler>());
     view_->SetVisible(false);
 
     views::Widget::InitParams params(
@@ -214,8 +219,9 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
   // Widget owns a root view which has |dialog_view_| as its child view.
   // Before the widget is destroyed, it will clean up the view hierarchy
   // starting from root view.
-  dialog_view_ = new OobeWebDialogView(ProfileHelper::GetSigninProfile(), this,
-                                       new ChromeWebContentsHandler);
+  dialog_view_ =
+      new OobeWebDialogView(ProfileHelper::GetSigninProfile(), this,
+                            std::make_unique<ChromeWebContentsHandler>());
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.delegate = dialog_view_;

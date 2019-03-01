@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/startup/credential_provider_signin_dialog_win.h"
-#include "chrome/browser/ui/startup/credential_provider_signin_info_fetcher_win.h"
+
+#include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -12,6 +15,7 @@
 #include "base/syslog_logging.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/startup/credential_provider_signin_info_fetcher_win.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
@@ -75,7 +79,7 @@ void HandleSigninCompleteForGcpwLogin(
     base::Value signin_result,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   DCHECK(signin_result.is_dict());
-  DCHECK(signin_result.DictSize() >= 1);
+  DCHECK(!signin_result.DictEmpty());
   int exit_code = signin_result
                       .FindKeyOfType(credential_provider::kKeyExitCode,
                                      base::Value::Type::INTEGER)
@@ -375,7 +379,8 @@ views::WebDialogView* ShowCredentialProviderSigninDialog(
   // This view will be automatically deleted by the widget that owns it when it
   // is closed.
   auto view = std::make_unique<views::WebDialogView>(
-      context, delegate.release(), new ChromeWebContentsHandler);
+      context, delegate.release(),
+      std::make_unique<ChromeWebContentsHandler>());
   views::Widget::InitParams init_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   init_params.keep_on_top = true;
