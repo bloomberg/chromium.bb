@@ -1714,6 +1714,23 @@
       "features": [
         "all"
       ]
+    },
+    {
+      "id": 161,
+      "cr_bugs": [890688],
+      "description": "Newer Mesa drivers experience visual corruption on very old hardware",
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x8086",
+      "device_id": ["0x2a42"],
+      "driver_version": {
+        "op": "=",
+        "value": "18.1.7"
+      },
+      "features": [
+        "all"
+      ]
     }
   ]
 }
