@@ -5960,3 +5960,4 @@ crbug.com/937215 [ Linux ] media/controls/modern/doubletap-to-jump-forwards.html
 crbug.com/937215 [ Linux ] virtual/video-surface-layer/media/controls/modern/doubletap-to-jump-forwards.html [ Pass Failure ]
 crbug.com/937170 [ Linux Win7 ] external/wpt/IndexedDB/interleaved-cursors-large.html [ Pass Timeout Crash ]
 crbug.com/937312 [ Win7 ] external/wpt/background-fetch/fetch.https.window.html [ Pass Timeout ]
+crbug.com/893659 [ Mac ] virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure Crash ]
