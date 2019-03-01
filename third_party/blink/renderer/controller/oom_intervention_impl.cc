@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/controller/oom_intervention_impl.h"
 
 #include "base/bind.h"
+#include "base/debug/crash_logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -18,6 +19,46 @@
 
 namespace blink {
 
+namespace {
+enum class OomInterventionState {
+  // Initial value for a variable.
+  None,
+  // Before the intervention has been triggered.
+  Before,
+  // While the intervention is active.
+  During,
+  // After the intervention has triggered at least once.
+  After
+};
+void UpdateStateCrashKey(OomInterventionState next_state) {
+  static OomInterventionState current_state = OomInterventionState::None;
+  // Once an intervention is trigger, the state shall never go back to the
+  // Before state.
+  if (next_state == OomInterventionState::Before &&
+      current_state != OomInterventionState::None)
+    return;
+  if (current_state == next_state)
+    return;
+  current_state = next_state;
+  static auto* crash_key = base::debug::AllocateCrashKeyString(
+      "oom_intervention_state", base::debug::CrashKeySize::Size32);
+  switch (current_state) {
+    case OomInterventionState::None:
+      base::debug::SetCrashKeyString(crash_key, "none");
+      break;
+    case OomInterventionState::Before:
+      base::debug::SetCrashKeyString(crash_key, "before");
+      break;
+    case OomInterventionState::During:
+      base::debug::SetCrashKeyString(crash_key, "during");
+      break;
+    case OomInterventionState::After:
+      base::debug::SetCrashKeyString(crash_key, "after");
+      break;
+  }
+}
+}  // namespace
+
 // static
 void OomInterventionImpl::Create(mojom::blink::OomInterventionRequest request) {
   mojo::MakeStrongBinding(std::make_unique<OomInterventionImpl>(),
@@ -27,9 +68,12 @@ void OomInterventionImpl::Create(mojom::blink::OomInterventionRequest request) {
 OomInterventionImpl::OomInterventionImpl()
     : delayed_report_timer_(Thread::MainThread()->GetTaskRunner(),
                             this,
-                            &OomInterventionImpl::TimerFiredUMAReport) {}
+                            &OomInterventionImpl::TimerFiredUMAReport) {
+  UpdateStateCrashKey(OomInterventionState::Before);
+}
 
 OomInterventionImpl::~OomInterventionImpl() {
+  UpdateStateCrashKey(OomInterventionState::After);
   MemoryUsageMonitorInstance().RemoveObserver(this);
 }
 
@@ -83,6 +127,8 @@ void OomInterventionImpl::Check(OomInterventionMetrics current_memory) {
   ReportMemoryStats(current_memory);
 
   if (oom_detected) {
+    UpdateStateCrashKey(OomInterventionState::During);
+
     if (navigate_ads_enabled_ || purge_v8_memory_enabled_) {
       for (const auto& page : Page::OrdinaryPages()) {
         for (Frame* frame = page->MainFrame(); frame;
