@@ -4,8 +4,12 @@
 
 #include "chrome/browser/chromeos/child_accounts/time_limit_test_utils.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/optional.h"
 
 namespace chromeos {
 namespace time_limit_test_utils {
@@ -15,6 +19,8 @@ namespace {
 constexpr char kOverrides[] = "overrides";
 constexpr char kOverrideAction[] = "action";
 constexpr char kOverrideActionCreatedAt[] = "created_at_millis";
+constexpr char kOverrideActionDuration[] = "duration_mins";
+constexpr char kOverrideActionSpecificData[] = "action_specific_data";
 constexpr char kTimeLimitLastUpdatedAt[] = "last_updated_millis";
 constexpr char kTimeWindowLimit[] = "time_window_limit";
 constexpr char kTimeUsageLimit[] = "time_usage_limit";
@@ -28,11 +34,21 @@ constexpr char kWindowLimitEntryTimeHour[] = "hour";
 constexpr char kWindowLimitEntryTimeMinute[] = "minute";
 
 // Creates a time limit override dictionary used on the Time Limit policy.
-base::Value CreateOverride(std::string action, base::Time created_at) {
+base::Value CreateOverride(std::string action,
+                           base::Time created_at,
+                           base::Optional<base::TimeDelta> duration) {
   base::Value time_limit_override(base::Value::Type::DICTIONARY);
   time_limit_override.SetKey(kOverrideAction, base::Value(action));
   time_limit_override.SetKey(kOverrideActionCreatedAt,
                              base::Value(CreatePolicyTimestamp(created_at)));
+  if (duration) {
+    base::Value action_specific_data(base::Value::Type::DICTIONARY);
+    action_specific_data.SetKey(kOverrideActionDuration,
+                                base::Value(duration.value().InMinutes()));
+
+    time_limit_override.SetKey(kOverrideActionSpecificData,
+                               std::move(action_specific_data));
+  }
   return time_limit_override;
 }
 
@@ -171,7 +187,21 @@ void AddOverride(base::DictionaryValue* policy,
         policy->SetKey(kOverrides, base::Value(base::Value::Type::LIST));
   }
 
-  overrides->GetList().push_back(CreateOverride(action, created_at));
+  overrides->GetList().push_back(
+      CreateOverride(action, created_at, base::nullopt));
+}
+
+void AddOverrideWithDuration(base::DictionaryValue* policy,
+                             std::string action,
+                             base::Time created_at,
+                             base::TimeDelta duration) {
+  base::Value* overrides = policy->FindKey(kOverrides);
+  if (!overrides) {
+    overrides =
+        policy->SetKey(kOverrides, base::Value(base::Value::Type::LIST));
+  }
+
+  overrides->GetList().push_back(CreateOverride(action, created_at, duration));
 }
 
 std::string PolicyToString(const base::DictionaryValue* policy) {
