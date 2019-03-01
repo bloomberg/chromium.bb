@@ -84,8 +84,14 @@ v8::Maybe<ScriptValue> V8AnyCallbackFunctionVariadicAnyArgs::Invoke(bindings::V8
   v8::Local<v8::Object> argument_creation_context =
       callback_relevant_script_state->GetContext()->Global();
   ALLOW_UNUSED_LOCAL(argument_creation_context);
+  // Secure one element at least in |argv| to avoid the following restriction.
+  //
+  // C++14 8.3.4 Arrays
+  // If the constant-expression (5.19) is present, it shall be a converted
+  // constant expression of type std::size_t and its value shall be greater than
+  // zero.
   const int argc = 0 + arguments.size();
-  v8::Local<v8::Value> argv[argc];
+  v8::Local<v8::Value> argv[std::max(1, argc)];
   for (wtf_size_t i = 0; i < arguments.size(); ++i) {
     argv[0 + i] = ToV8(arguments[i], argument_creation_context, GetIsolate());
   }
@@ -185,8 +191,14 @@ v8::Maybe<ScriptValue> V8AnyCallbackFunctionVariadicAnyArgs::Construct(const Vec
   v8::Local<v8::Object> argument_creation_context =
       callback_relevant_script_state->GetContext()->Global();
   ALLOW_UNUSED_LOCAL(argument_creation_context);
+  // Secure one element at least in |argv| to avoid the following restriction.
+  //
+  // C++14 8.3.4 Arrays
+  // If the constant-expression (5.19) is present, it shall be a converted
+  // constant expression of type std::size_t and its value shall be greater than
+  // zero.
   const int argc = 0 + arguments.size();
-  v8::Local<v8::Value> argv[argc];
+  v8::Local<v8::Value> argv[std::max(1, argc)];
   for (wtf_size_t i = 0; i < arguments.size(); ++i) {
     argv[0 + i] = ToV8(arguments[i], argument_creation_context, GetIsolate());
   }
