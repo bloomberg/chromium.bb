@@ -227,7 +227,7 @@ public class EarlyTraceEvent {
         }
         if (conflictingEvent != null) {
             throw new IllegalArgumentException(
-                    "Multiple pending trace events can't have the same name");
+                    "Multiple pending trace events can't have the same name: " + name);
         }
     }
 

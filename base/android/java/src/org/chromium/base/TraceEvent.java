@@ -35,6 +35,7 @@ public class TraceEvent implements AutoCloseable {
     private static class BasicLooperMonitor implements Printer {
         private static final String LOOPER_TASK_PREFIX = "Looper.dispatch: ";
         private static final int SHORTEST_LOG_PREFIX_LENGTH = "<<<<< Finished to ".length();
+        private String mCurrentTarget;
 
         @Override
         public void println(final String line) {
@@ -51,25 +52,25 @@ public class TraceEvent implements AutoCloseable {
             // will filter the event in this case.
             boolean earlyTracingActive = EarlyTraceEvent.isActive();
             if (sEnabled || earlyTracingActive) {
-                String target = getTraceEventName(line);
+                mCurrentTarget = getTraceEventName(line);
                 if (sEnabled) {
-                    nativeBeginToplevel(target);
+                    nativeBeginToplevel(mCurrentTarget);
                 } else {
-                    EarlyTraceEvent.begin(target);
+                    EarlyTraceEvent.begin(mCurrentTarget);
                 }
             }
         }
 
         void endHandling(final String line) {
             boolean earlyTracingActive = EarlyTraceEvent.isActive();
-            if (sEnabled || earlyTracingActive) {
-                String target = getTraceEventName(line);
+            if ((sEnabled || earlyTracingActive) && mCurrentTarget != null) {
                 if (sEnabled) {
-                    nativeEndToplevel(target);
+                    nativeEndToplevel(mCurrentTarget);
                 } else {
-                    EarlyTraceEvent.end(target);
+                    EarlyTraceEvent.end(mCurrentTarget);
                 }
             }
+            mCurrentTarget = null;
         }
 
         private static String getTraceEventName(String line) {
