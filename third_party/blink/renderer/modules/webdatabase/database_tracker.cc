@@ -234,8 +234,7 @@ void DatabaseTracker::CloseOneDatabaseImmediately(const String& origin_string,
     if (!database_set)
       return;
 
-    DatabaseSet::iterator found = database_set->find(database);
-    if (found == database_set->end())
+    if (!database_set->Contains(database))
       return;
   }
 

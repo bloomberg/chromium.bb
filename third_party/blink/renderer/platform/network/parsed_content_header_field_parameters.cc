@@ -85,7 +85,7 @@ bool ParsedContentHeaderFieldParameters::HasDuplicatedNames() const {
   HashSet<String> names;
   for (const auto& parameter : parameters_) {
     const String lowered_name = parameter.name.LowerASCII();
-    if (names.find(lowered_name) != names.end())
+    if (names.Contains(lowered_name))
       return true;
 
     names.insert(lowered_name);

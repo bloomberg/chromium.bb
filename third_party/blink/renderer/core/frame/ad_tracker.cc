@@ -164,7 +164,7 @@ bool AdTracker::IsKnownAdScript(ExecutionContext* execution_context,
   auto it = known_ad_scripts_.find(execution_context);
   if (it == known_ad_scripts_.end())
     return false;
-  return it->value.find(url) != it->value.end();
+  return it->value.Contains(url);
 }
 
 // This is a separate function for testing purposes.
