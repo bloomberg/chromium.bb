@@ -65,10 +65,6 @@
 #include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
 #endif
 
-#if defined(USE_X11)
-#include "ui/events/event_utils.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "ui/wm/core/ime_util_chromeos.h"
 #endif
@@ -136,21 +132,16 @@ class MockInputMethod : public ui::InputMethodBase {
 
   // Record call state of corresponding methods. They will be set to false
   // automatically before dispatching a key event.
-  bool untranslated_ime_message_called_;
-  bool text_input_type_changed_;
-  bool cancel_composition_called_;
+  bool untranslated_ime_message_called_ = false;
+  bool text_input_type_changed_ = false;
+  bool cancel_composition_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MockInputMethod);
 };
 
-MockInputMethod::MockInputMethod()
-    : untranslated_ime_message_called_(false),
-      text_input_type_changed_(false),
-      cancel_composition_called_(false) {
-}
+MockInputMethod::MockInputMethod() : ui::InputMethodBase(nullptr) {}
 
-MockInputMethod::~MockInputMethod() {
-}
+MockInputMethod::~MockInputMethod() = default;
 
 ui::EventDispatchDetails MockInputMethod::DispatchKeyEvent(ui::KeyEvent* key) {
 // On Mac, emulate InputMethodMac behavior for character events. Composition
@@ -3136,7 +3127,6 @@ class TextfieldTouchSelectionTest : public TextfieldTest {
         point.x(), point.y(), ui::GestureEventDetails(ui::ET_GESTURE_END));
     textfield_->OnGestureEvent(&end);
   }
-
 };
 
 // Touch selection and dragging currently only works for chromeos.

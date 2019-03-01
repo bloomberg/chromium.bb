@@ -19,9 +19,8 @@
 namespace ui {
 
 ui::IMEEngineHandlerInterface* InputMethodBase::GetEngine() {
-  if (ui::IMEBridge::Get())
-    return ui::IMEBridge::Get()->GetCurrentEngineHandler();
-  return nullptr;
+  auto* bridge = ui::IMEBridge::Get();
+  return bridge ? bridge->GetCurrentEngineHandler() : nullptr;
 }
 
 InputMethodBase::InputMethodBase(internal::InputMethodDelegate* delegate)
@@ -30,9 +29,7 @@ InputMethodBase::InputMethodBase(internal::InputMethodDelegate* delegate)
 InputMethodBase::InputMethodBase(
     internal::InputMethodDelegate* delegate,
     std::unique_ptr<InputMethodKeyboardController> keyboard_controller)
-    : sending_key_event_(false),
-      delegate_(delegate),
-      text_input_client_(nullptr),
+    : delegate_(delegate),
       keyboard_controller_(std::move(keyboard_controller)) {}
 
 InputMethodBase::~InputMethodBase() {
@@ -274,8 +271,7 @@ SurroundingTextInfo InputMethodBase::GetSurroundingTextInfo() {
 void InputMethodBase::SendKeyEvent(KeyEvent* event) {
   sending_key_event_ = true;
   if (track_key_events_for_testing_) {
-    key_events_for_testing_.push_back(
-        std::unique_ptr<ui::KeyEvent>(new KeyEvent(*event)));
+    key_events_for_testing_.push_back(std::make_unique<KeyEvent>(*event));
   }
   ui::EventDispatchDetails details = DispatchKeyEvent(event);
   DCHECK(!details.dispatcher_destroyed);
