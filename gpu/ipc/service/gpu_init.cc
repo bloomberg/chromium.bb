@@ -12,6 +12,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/viz/common/features.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/config/gpu_driver_bug_list.h"
@@ -222,6 +223,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
       features::IsOzoneDrmMojo() || ui::OzonePlatform::EnsureInstance()
                                         ->GetPlatformProperties()
                                         .requires_mojo;
+  params.viz_display_compositor = features::IsVizDisplayCompositorEnabled();
   ui::OzonePlatform::InitializeForGPU(params);
 #endif
 
@@ -419,6 +421,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
       features::IsOzoneDrmMojo() || ui::OzonePlatform::EnsureInstance()
                                         ->GetPlatformProperties()
                                         .requires_mojo;
+  params.viz_display_compositor = features::IsVizDisplayCompositorEnabled();
   ui::OzonePlatform::InitializeForGPU(params);
   ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
 #endif

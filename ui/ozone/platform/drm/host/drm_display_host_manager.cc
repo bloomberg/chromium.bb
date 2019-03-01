@@ -134,8 +134,10 @@ DrmDisplayHostManager::DrmDisplayHostManager(
       LOG(FATAL) << "Failed to open primary graphics card";
       return;
     }
-    overlay_manager->set_supports_overlays(
-        primary_drm_device_handle_->has_atomic_capabilities());
+    if (overlay_manager) {
+      overlay_manager->set_supports_overlays(
+          primary_drm_device_handle_->has_atomic_capabilities());
+    }
     drm_devices_[primary_graphics_card_path_] =
         primary_graphics_card_path_sysfs;
   }
@@ -402,7 +404,9 @@ void DrmDisplayHostManager::GpuConfiguredDisplay(int64_t display_id,
   DrmDisplayHost* display = GetDisplay(display_id);
   if (display) {
     display->OnDisplayConfigured(status);
-    overlay_manager_->ResetCache();
+
+    if (overlay_manager_)
+      overlay_manager_->ResetCache();
   } else {
     LOG(ERROR) << "Couldn't find display with id=" << display_id;
   }

@@ -219,7 +219,8 @@ void DrmWindowHost::SendBoundsChange() {
   cursor_->CommitBoundsChange(widget_, bounds_, GetCursorConfinedBounds());
   sender_->GpuWindowBoundsChanged(widget_, bounds_);
 
-  overlay_manager_->ResetCache();
+  if (overlay_manager_)
+    overlay_manager_->ResetCache();
 }
 
 }  // namespace ui
