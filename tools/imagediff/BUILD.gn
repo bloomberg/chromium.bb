@@ -20,7 +20,7 @@ import("//build/symlink.gni")
 # not provide it. Instead, determine it here.
 if (target_os == "win" && host_os != "win") {
   # When targeting Windows from not Windows, use the test target toolchain.
-  image_diff_toolchain = default_toolchain
+  imagediff_toolchain = default_toolchain
 } else if (target_os != host_os) {
   # In common cross-compilation scenarios, the build host matches the test host.
   # TODO: In chrome/android-on-mac cross builds, image_diff would still have to
