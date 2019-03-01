@@ -176,6 +176,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 // See chromium:913223, skia:6886.
 #define SK_DISABLE_DAA
 
+// Staging for lowp::bilerp_clamp_8888, and for planned misc. others.
+#define SK_DISABLE_LOWP_BILERP_CLAMP_CLAMP_STAGE
+#define SK_DISABLE_NEXT_BATCH_OF_LOWP_STAGES
+
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,
