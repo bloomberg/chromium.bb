@@ -9,6 +9,8 @@ import android.content.Context;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+import org.chromium.net.ConnectionType;
+
 /** Custom shadow for the OfflinePageUtils. */
 @Implements(DeviceConditions.class)
 public class ShadowDeviceConditions {
@@ -18,6 +20,14 @@ public class ShadowDeviceConditions {
     /** Sets device conditions that will be used in test. */
     public static void setCurrentConditions(DeviceConditions deviceConditions) {
         sDeviceConditions = deviceConditions;
+    }
+
+    /**
+     * Sets current connection type for the device conditions that will be
+     * used for tests.
+     */
+    public static void setCurrentNetworkConnectionType(@ConnectionType int connectionType) {
+        sDeviceConditions.setNetworkConnectionType(connectionType);
     }
 
     @Implementation

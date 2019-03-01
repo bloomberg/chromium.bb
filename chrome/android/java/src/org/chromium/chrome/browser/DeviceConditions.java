@@ -29,12 +29,12 @@ public class DeviceConditions {
     private boolean mPowerSaveOn;
 
     // Network related variables.
-    private int mNetConnectionType = ConnectionType.CONNECTION_NONE;
+    private @ConnectionType int mNetConnectionType = ConnectionType.CONNECTION_UNKNOWN;
     private boolean mActiveNetworkMetered;
 
     // If true, getCurrentNetConnectionType() will always return CONNECTION_NONE.
     @VisibleForTesting
-    public static boolean mForceNoConnectionForTesting;
+    public static boolean sForceNoConnectionForTesting;
 
     /**
      * Creates a DeviceConditions instance that stores a snapshot of the current set of device
@@ -122,7 +122,7 @@ public class DeviceConditions {
      */
     public static int getCurrentNetConnectionType(Context context) {
         int connectionType = ConnectionType.CONNECTION_NONE;
-        if (mForceNoConnectionForTesting) {
+        if (sForceNoConnectionForTesting) {
             return connectionType;
         }
 
@@ -201,6 +201,14 @@ public class DeviceConditions {
      */
     public int getNetConnectionType() {
         return mNetConnectionType;
+    }
+
+    /**
+     * Sets the network connection type.
+     */
+    @VisibleForTesting
+    void setNetworkConnectionType(@ConnectionType int netConnectionType) {
+        mNetConnectionType = netConnectionType;
     }
 
     /** Returns whether network connection is metered. */
