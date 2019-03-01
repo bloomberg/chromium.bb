@@ -63,6 +63,7 @@ class FormField {
   static const float kBaseTravelParserScore;
   static const float kBaseAddressParserScore;
   static const float kBaseCreditCardParserScore;
+  static const float kBasePriceParserScore;
   static const float kBaseNameParserScore;
   static const float kBaseSearchParserScore;
 

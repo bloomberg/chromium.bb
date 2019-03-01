@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/name_field.h"
 #include "components/autofill/core/browser/phone_field.h"
+#include "components/autofill/core/browser/price_field.h"
 #include "components/autofill/core/browser/search_field.h"
 #include "components/autofill/core/browser/travel_field.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -39,6 +40,7 @@ const float FormField::kBasePhoneParserScore = 1.3f;
 const float FormField::kBaseTravelParserScore = 1.2f;
 const float FormField::kBaseAddressParserScore = 1.1f;
 const float FormField::kBaseCreditCardParserScore = 1.0f;
+const float FormField::kBasePriceParserScore = 0.95f;
 const float FormField::kBaseNameParserScore = 0.9f;
 const float FormField::kBaseSearchParserScore = 0.8f;
 
@@ -81,6 +83,9 @@ FieldCandidatesMap FormField::ParseFormFields(
   // Credit card pass.
   ParseFormFieldsPass(CreditCardField::Parse, processed_fields,
                       &field_candidates);
+
+  // Price pass.
+  ParseFormFieldsPass(PriceField::Parse, processed_fields, &field_candidates);
 
   // Name pass.
   ParseFormFieldsPass(NameField::Parse, processed_fields, &field_candidates);

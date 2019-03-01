@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/search_field.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_scanner.h"
 #include "components/autofill/core/common/autofill_regex_constants.h"
 
@@ -14,7 +15,8 @@ namespace autofill {
 std::unique_ptr<FormField> SearchField::Parse(AutofillScanner* scanner) {
   AutofillField* field;
   if (ParseFieldSpecifics(scanner, base::UTF8ToUTF16(kSearchTermRe),
-                          MATCH_DEFAULT | MATCH_SEARCH, &field)) {
+                          MATCH_DEFAULT | MATCH_SEARCH | MATCH_TEXT_AREA,
+                          &field)) {
     return std::make_unique<SearchField>(field);
   }
 
