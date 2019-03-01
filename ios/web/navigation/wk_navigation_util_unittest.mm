@@ -157,6 +157,9 @@ TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrlForExtraLargeForwardList) {
   ASSERT_EQ("http:%2F%2Fwww.0.com%2F", urls_value->GetList()[0].GetString());
   ASSERT_EQ("http:%2F%2Fwww.74.com%2F",
             urls_value->GetList()[kMaxSessionSize - 1].GetString());
+
+  // Verify the offset is correct.
+  ASSERT_EQ(1 - kMaxSessionSize, session_value->FindKey("offset")->GetInt());
 }
 
 // Verifies that large session can be stored in NSURL and that extra items
@@ -193,6 +196,9 @@ TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrlForExtraLargeBackList) {
   ASSERT_EQ("http:%2F%2Fwww.75.com%2F", urls_value->GetList()[0].GetString());
   ASSERT_EQ("http:%2F%2Fwww.149.com%2F",
             urls_value->GetList()[kMaxSessionSize - 1].GetString());
+
+  // Verify the offset is correct.
+  ASSERT_EQ(0, session_value->FindKey("offset")->GetInt());
 }
 
 // Verifies that large session can be stored in NSURL and that extra items
@@ -230,6 +236,10 @@ TEST_F(WKNavigationUtilTest,
   ASSERT_EQ("http:%2F%2Fwww.38.com%2F", urls_value->GetList()[0].GetString());
   ASSERT_EQ("http:%2F%2Fwww.112.com%2F",
             urls_value->GetList()[kMaxSessionSize - 1].GetString());
+
+  // Verify the offset is correct.
+  ASSERT_EQ((1 - kMaxSessionSize) / 2,
+            session_value->FindKey("offset")->GetInt());
 }
 
 TEST_F(WKNavigationUtilTest, IsNotRestoreSessionUrl) {
