@@ -22,6 +22,7 @@ public class NavigationHandle {
     private boolean mIsDownload;
     private boolean mIsErrorPage;
     private boolean mIsFragmentNavigation;
+    private boolean mIsValidSearchFormUrl;
     private int mErrorCode;
     private int mHttpStatusCode;
 
@@ -49,13 +50,14 @@ public class NavigationHandle {
      */
     @CalledByNative
     public void didFinish(String url, boolean isErrorPage, boolean hasCommitted,
-            boolean isFragmentNavigation, boolean isDownload, int transition, int errorCode,
-            int httpStatuscode) {
+            boolean isFragmentNavigation, boolean isDownload, boolean isValidSearchFormUrl,
+            int transition, int errorCode, int httpStatuscode) {
         mUrl = url;
         mIsErrorPage = isErrorPage;
         mHasCommitted = hasCommitted;
         mIsFragmentNavigation = isFragmentNavigation;
         mIsDownload = isDownload;
+        mIsValidSearchFormUrl = isValidSearchFormUrl;
         mPageTransition = transition == -1 ? null : transition;
         mErrorCode = errorCode;
         mHttpStatusCode = httpStatuscode;
@@ -177,6 +179,13 @@ public class NavigationHandle {
      */
     public boolean isDownload() {
         return mIsDownload;
+    }
+
+    /**
+     * Returns true if the navigation is a search.
+     */
+    public boolean isValidSearchFormUrl() {
+        return mIsValidSearchFormUrl;
     }
 
     /**

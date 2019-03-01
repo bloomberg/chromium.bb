@@ -59,11 +59,16 @@ void NavigationHandleProxy::DidFinish() {
     is_fragment_navigation &= urls_same_ignoring_fragment;
   }
 
+  bool is_valid_search_form_url =
+      cpp_navigation_handle_->GetSearchableFormURL() != nullptr
+          ? cpp_navigation_handle_->GetSearchableFormURL().is_valid()
+          : false;
+
   Java_NavigationHandle_didFinish(
       env, java_navigation_handle_, jstring_url,
       cpp_navigation_handle_->IsErrorPage(),
       cpp_navigation_handle_->HasCommitted(), is_fragment_navigation,
-      cpp_navigation_handle_->IsDownload(),
+      cpp_navigation_handle_->IsDownload(), is_valid_search_form_url,
       cpp_navigation_handle_->HasCommitted()
           ? cpp_navigation_handle_->GetPageTransition()
           : -1,
