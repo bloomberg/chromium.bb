@@ -527,9 +527,7 @@ public class WebApkUpdateManagerUnitTest {
      * Test that the pending update file is deleted after update completes regardless of whether
      * update succeeded.
      */
-    // @Test
-    // Test flaky. See https://crbug.com/937109.
-    @DisabledTest
+    @Test
     public void testPendingUpdateFileDeletedAfterUpdateCompletion() {
         mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
 
