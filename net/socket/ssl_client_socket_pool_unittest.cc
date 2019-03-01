@@ -7,6 +7,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "net/base/auth.h"
@@ -211,52 +212,6 @@ TEST_F(SSLClientSocketPoolTest, DirectCertError) {
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_CERT_COMMON_NAME_INVALID));
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
-}
-
-TEST_F(SSLClientSocketPoolTest, NeedProxyAuth) {
-  MockWrite writes[] = {
-      MockWrite(
-          "CONNECT host:80 HTTP/1.1\r\n"
-          "Host: host:80\r\n"
-          "Proxy-Connection: keep-alive\r\n\r\n"),
-  };
-  MockRead reads[] = {
-      MockRead("HTTP/1.1 407 Proxy Authentication Required\r\n"),
-      MockRead("Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
-      MockRead("Content-Length: 10\r\n\r\n"),
-      MockRead("0123456789"),
-  };
-  StaticSocketDataProvider data(reads, writes);
-  socket_factory_.AddSocketDataProvider(&data);
-  SSLSocketDataProvider ssl(ASYNC, OK);
-  socket_factory_.AddSSLSocketDataProvider(&ssl);
-
-  CreatePool(true /* http proxy pool */);
-  scoped_refptr<SSLSocketParams> params = SSLParams(ProxyServer::SCHEME_HTTP);
-
-  ClientSocketHandle handle;
-  TestCompletionCallback callback;
-  int rv = handle.Init(
-      kGroupName,
-      TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
-          params),
-      MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
-      callback.callback(), ClientSocketPool::ProxyAuthCallback(), pool_.get(),
-      NetLogWithSource());
-  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-  EXPECT_FALSE(handle.is_initialized());
-  EXPECT_FALSE(handle.socket());
-
-  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_PROXY_AUTH_REQUESTED));
-  EXPECT_FALSE(handle.is_initialized());
-  EXPECT_FALSE(handle.socket());
-  EXPECT_FALSE(handle.is_ssl_error());
-  const HttpResponseInfo& tunnel_info = handle.ssl_error_response_info();
-  EXPECT_EQ(tunnel_info.headers->response_code(), 407);
-  std::unique_ptr<ClientSocketHandle> tunnel_handle =
-      handle.release_pending_http_proxy_connection();
-  EXPECT_TRUE(tunnel_handle->socket());
-  EXPECT_FALSE(tunnel_handle->socket()->IsConnected());
 }
 
 // It would be nice to also test the timeouts in SSLClientSocketPool.

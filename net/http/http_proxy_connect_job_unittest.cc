@@ -4,6 +4,7 @@
 
 #include "net/http/http_proxy_connect_job.h"
 
+#include <algorithm>
 #include <map>
 #include <string>
 #include <utility>
@@ -17,9 +18,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/test_proxy_delegate.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/http/http_network_session.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/socket/client_socket_handle.h"
@@ -28,7 +31,6 @@
 #include "net/socket/socks_connect_job.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/ssl_connect_job.h"
-#include "net/socket/transport_client_socket_pool.h"
 #include "net/socket/transport_connect_job.h"
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/test/gtest_util.h"
@@ -53,43 +55,20 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
                                 public WithScopedTaskEnvironment {
  protected:
   HttpProxyConnectJobTest()
-      : transport_socket_pool_(
-            32 /* max_sockets */,
-            6 /* max_sockets_pre_group */,
-            base::TimeDelta::FromSeconds(10) /* unused_idle_socket_timeout */,
-            &socket_factory_,
-            session_deps_.host_resolver.get(),
-            nullptr /* proxy_delegate */,
-            session_deps_.cert_verifier.get(),
-            session_deps_.channel_id_service.get(),
-            session_deps_.transport_security_state.get(),
-            session_deps_.cert_transparency_verifier.get(),
-            session_deps_.ct_policy_enforcer.get(),
-            nullptr /* ssl_client_session_cache */,
-            nullptr /* ssl_client_session_cache_privacy_mode */,
-            session_deps_.ssl_config_service.get(),
-            nullptr /* socket_performance_watcher_factory */,
-            nullptr /* network_quality_estimator */,
-            nullptr /* net_log */),
-        ssl_socket_pool_(
-            32 /* max_sockets */,
-            6 /* max_sockets_pre_group */,
-            base::TimeDelta::FromSeconds(10) /* unused_idle_socket_timeout */,
-            &socket_factory_,
-            session_deps_.host_resolver.get(),
-            nullptr /* proxy_delegate */,
-            session_deps_.cert_verifier.get(),
-            session_deps_.channel_id_service.get(),
-            session_deps_.transport_security_state.get(),
-            session_deps_.cert_transparency_verifier.get(),
-            session_deps_.ct_policy_enforcer.get(),
-            nullptr /* ssl_client_session_cache */,
-            nullptr /* ssl_client_session_cache_privacy_mode */,
-            session_deps_.ssl_config_service.get(),
-            nullptr /* socket_performance_watcher_factory */,
-            nullptr /* network_quality_estimator */,
-            nullptr /* net_log */),
+      : WithScopedTaskEnvironment(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::NowSource::
+                MAIN_THREAD_MOCK_TIME),
         field_trial_list_(nullptr) {
+    // Set an initial delay to ensure that calls to TimeTicks::Now() do not
+    // return a null value.
+    FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+    // Used a mock HostResolver that does not have a cache.
+    session_deps_.host_resolver = std::make_unique<MockHostResolver>();
+
+    network_quality_estimator_ =
+        std::make_unique<TestNetworkQualityEstimator>();
     session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
   }
 
@@ -199,7 +178,7 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
                 session_deps_.ct_policy_enforcer.get(),
                 nullptr /* ssl_session_cache_arg */),
             nullptr /* socket_performance_watcher_factory */,
-            &network_quality_estimator_, nullptr /* net_log */,
+            network_quality_estimator_.get(), nullptr /* net_log */,
             nullptr /* websocket_endpoint_lock_manager */),
         std::move(http_proxy_socket_params), delegate, nullptr /* net_log */);
   }
@@ -237,17 +216,12 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
     ssl_data->next_proto = kProtoHTTP2;
   }
 
-  TransportClientSocketPool* transport_socket_pool() {
-    return &transport_socket_pool_;
-  }
-  TransportClientSocketPool* ssl_socket_pool() { return &ssl_socket_pool_; }
-
   base::TimeDelta GetProxyConnectionTimeout() {
     // Doesn't actually matter whether or not this is for a tunnel - the
     // connection timeout is the same, though it probably shouldn't be the same,
     // since tunnels need an extra round trip.
     return HttpProxyConnectJob::ConnectionTimeout(
-        *CreateParams(true /* tunnel */), &network_quality_estimator_);
+        *CreateParams(true /* tunnel */), network_quality_estimator_.get());
   }
 
  protected:
@@ -258,10 +232,7 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
   MockClientSocketFactory socket_factory_;
   SpdySessionDependencies session_deps_;
 
-  TestNetworkQualityEstimator network_quality_estimator_;
-
-  TransportClientSocketPool transport_socket_pool_;
-  TransportClientSocketPool ssl_socket_pool_;
+  std::unique_ptr<TestNetworkQualityEstimator> network_quality_estimator_;
 
   std::unique_ptr<HttpNetworkSession> session_;
 
@@ -500,6 +471,319 @@ TEST_P(HttpProxyConnectJobTest, ProxyDelegateExtraHeaders) {
                                         false /* expect_sync_result */);
   proxy_delegate_->VerifyOnHttp1TunnelHeadersReceived(
       proxy_server, kResponseHeaderName, kResponseHeaderValue);
+}
+
+// Test the case where auth credentials are not cached.
+TEST_P(HttpProxyConnectJobTest, NeedAuth) {
+  for (IoMode io_mode : {SYNCHRONOUS, ASYNC}) {
+    SCOPED_TRACE(io_mode);
+
+    session_deps_.host_resolver->set_synchronous_mode(io_mode == SYNCHRONOUS);
+
+    MockWrite writes[] = {
+        MockWrite(io_mode, 0,
+                  "CONNECT www.endpoint.test:443 HTTP/1.1\r\n"
+                  "Host: www.endpoint.test:443\r\n"
+                  "Proxy-Connection: keep-alive\r\n\r\n"),
+        MockWrite(io_mode, 5,
+                  "CONNECT www.endpoint.test:443 HTTP/1.1\r\n"
+                  "Host: www.endpoint.test:443\r\n"
+                  "Proxy-Connection: keep-alive\r\n"
+                  "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+    };
+    MockRead reads[] = {
+        // No credentials.
+        MockRead(io_mode, 1, "HTTP/1.1 407 Proxy Authentication Required\r\n"),
+        MockRead(io_mode, 2,
+                 "Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
+        MockRead(io_mode, 3, "Content-Length: 10\r\n\r\n"),
+        MockRead(io_mode, 4, "0123456789"),
+        MockRead(io_mode, 6, "HTTP/1.1 200 Connection Established\r\n\r\n"),
+    };
+
+    SpdyTestUtil spdy_util;
+    spdy::SpdySerializedFrame connect(spdy_util.ConstructSpdyConnect(
+        NULL, 0, 1, DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
+    spdy::SpdySerializedFrame rst(
+        spdy_util.ConstructSpdyRstStream(1, spdy::ERROR_CODE_CANCEL));
+    spdy_util.UpdateWithStreamDestruction(1);
+
+    // After calling trans.RestartWithAuth(), this is the request we should
+    // be issuing -- the final header line contains the credentials.
+    const char* const kSpdyAuthCredentials[] = {
+        "proxy-authorization",
+        "Basic Zm9vOmJhcg==",
+    };
+    spdy::SpdySerializedFrame connect2(spdy_util.ConstructSpdyConnect(
+        kSpdyAuthCredentials, base::size(kSpdyAuthCredentials) / 2, 3,
+        DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
+
+    MockWrite spdy_writes[] = {
+        CreateMockWrite(connect, 0, io_mode),
+        CreateMockWrite(rst, 2, io_mode),
+        CreateMockWrite(connect2, 3, io_mode),
+    };
+
+    // The proxy responds to the connect with a 407, using a persistent
+    // connection.
+    const char kAuthStatus[] = "407";
+    const char* const kAuthChallenge[] = {
+        "proxy-authenticate",
+        "Basic realm=\"MyRealm1\"",
+    };
+    spdy::SpdySerializedFrame connect_auth_resp(
+        spdy_util.ConstructSpdyReplyError(kAuthStatus, kAuthChallenge,
+                                          base::size(kAuthChallenge) / 2, 1));
+
+    spdy::SpdySerializedFrame connect2_resp(
+        spdy_util.ConstructSpdyGetReply(nullptr, 0, 3));
+    MockRead spdy_reads[] = {
+        CreateMockRead(connect_auth_resp, 1, ASYNC),
+        CreateMockRead(connect2_resp, 4, ASYNC),
+        MockRead(ASYNC, OK, 5),
+    };
+
+    Initialize(reads, writes, spdy_reads, spdy_writes, io_mode);
+
+    TestConnectJobDelegate test_delegate;
+    std::unique_ptr<ConnectJob> connect_job =
+        CreateConnectJobForTunnel(&test_delegate);
+    ASSERT_EQ(ERR_IO_PENDING, connect_job->Connect());
+    // Auth callback is always invoked asynchronously when a challenge is
+    // observed.
+    EXPECT_EQ(0, test_delegate.num_auth_challenges());
+
+    test_delegate.WaitForAuthChallenge(1);
+    ASSERT_TRUE(test_delegate.auth_response_info().headers);
+    EXPECT_EQ(407, test_delegate.auth_response_info().headers->response_code());
+    std::string proxy_authenticate;
+    ASSERT_TRUE(test_delegate.auth_response_info().headers->EnumerateHeader(
+        nullptr, "Proxy-Authenticate", &proxy_authenticate));
+    EXPECT_EQ(proxy_authenticate, "Basic realm=\"MyRealm1\"");
+    ASSERT_TRUE(test_delegate.auth_controller());
+    EXPECT_FALSE(test_delegate.has_result());
+
+    test_delegate.auth_controller()->ResetAuth(
+        AuthCredentials(base::ASCIIToUTF16("foo"), base::ASCIIToUTF16("bar")));
+    test_delegate.RunAuthCallback();
+    // Per API contract, the request can not complete synchronously.
+    EXPECT_FALSE(test_delegate.has_result());
+
+    EXPECT_EQ(net::OK, test_delegate.WaitForResult());
+    EXPECT_EQ(1, test_delegate.num_auth_challenges());
+
+    // Close the H2 session to prevent reuse.
+    if (GetParam() == SPDY)
+      session_->CloseAllConnections();
+    // Also need to clear the auth cache before re-running the test.
+    session_->http_auth_cache()->ClearAllEntries();
+  }
+}
+
+// Test the case where auth credentials are not cached and the first time
+// credentials are sent, they are rejected.
+TEST_P(HttpProxyConnectJobTest, NeedAuthTwice) {
+  for (IoMode io_mode : {SYNCHRONOUS, ASYNC}) {
+    SCOPED_TRACE(io_mode);
+
+    session_deps_.host_resolver->set_synchronous_mode(io_mode == SYNCHRONOUS);
+
+    MockWrite writes[] = {
+        MockWrite(io_mode, 0,
+                  "CONNECT www.endpoint.test:443 HTTP/1.1\r\n"
+                  "Host: www.endpoint.test:443\r\n"
+                  "Proxy-Connection: keep-alive\r\n\r\n"),
+        MockWrite(io_mode, 2,
+                  "CONNECT www.endpoint.test:443 HTTP/1.1\r\n"
+                  "Host: www.endpoint.test:443\r\n"
+                  "Proxy-Connection: keep-alive\r\n"
+                  "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+        MockWrite(io_mode, 4,
+                  "CONNECT www.endpoint.test:443 HTTP/1.1\r\n"
+                  "Host: www.endpoint.test:443\r\n"
+                  "Proxy-Connection: keep-alive\r\n"
+                  "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+    };
+    MockRead reads[] = {
+        // No credentials.
+        MockRead(io_mode, 1,
+                 "HTTP/1.1 407 Proxy Authentication Required\r\n"
+                 "Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"
+                 "Content-Length: 0\r\n\r\n"),
+        MockRead(io_mode, 3,
+                 "HTTP/1.1 407 Proxy Authentication Required\r\n"
+                 "Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"
+                 "Content-Length: 0\r\n\r\n"),
+        MockRead(io_mode, 5, "HTTP/1.1 200 Connection Established\r\n\r\n"),
+    };
+
+    SpdyTestUtil spdy_util;
+    spdy::SpdySerializedFrame connect(spdy_util.ConstructSpdyConnect(
+        NULL, 0, 1, DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
+    spdy::SpdySerializedFrame rst(
+        spdy_util.ConstructSpdyRstStream(1, spdy::ERROR_CODE_CANCEL));
+    spdy_util.UpdateWithStreamDestruction(1);
+
+    // After calling trans.RestartWithAuth(), this is the request we should
+    // be issuing -- the final header line contains the credentials.
+    const char* const kSpdyAuthCredentials[] = {
+        "proxy-authorization",
+        "Basic Zm9vOmJhcg==",
+    };
+    spdy::SpdySerializedFrame connect2(spdy_util.ConstructSpdyConnect(
+        kSpdyAuthCredentials, base::size(kSpdyAuthCredentials) / 2, 3,
+        DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
+    spdy::SpdySerializedFrame rst2(
+        spdy_util.ConstructSpdyRstStream(3, spdy::ERROR_CODE_CANCEL));
+    spdy_util.UpdateWithStreamDestruction(3);
+
+    spdy::SpdySerializedFrame connect3(spdy_util.ConstructSpdyConnect(
+        kSpdyAuthCredentials, base::size(kSpdyAuthCredentials) / 2, 5,
+        DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
+    MockWrite spdy_writes[] = {
+        CreateMockWrite(connect, 0, io_mode),
+        CreateMockWrite(rst, 2, io_mode),
+        CreateMockWrite(connect2, 3, io_mode),
+        CreateMockWrite(rst2, 5, io_mode),
+        CreateMockWrite(connect3, 6, io_mode),
+    };
+
+    // The proxy responds to the connect with a 407, using a persistent
+    // connection.
+    const char kAuthStatus[] = "407";
+    const char* const kAuthChallenge[] = {
+        "proxy-authenticate",
+        "Basic realm=\"MyRealm1\"",
+    };
+    spdy::SpdySerializedFrame connect_auth_resp(
+        spdy_util.ConstructSpdyReplyError(kAuthStatus, kAuthChallenge,
+                                          base::size(kAuthChallenge) / 2, 1));
+    spdy::SpdySerializedFrame connect2_auth_resp(
+        spdy_util.ConstructSpdyReplyError(kAuthStatus, kAuthChallenge,
+                                          base::size(kAuthChallenge) / 2, 3));
+    spdy::SpdySerializedFrame connect3_resp(
+        spdy_util.ConstructSpdyGetReply(nullptr, 0, 5));
+    MockRead spdy_reads[] = {
+        CreateMockRead(connect_auth_resp, 1, ASYNC),
+        CreateMockRead(connect2_auth_resp, 4, ASYNC),
+        CreateMockRead(connect3_resp, 7, ASYNC),
+        MockRead(ASYNC, OK, 8),
+    };
+
+    Initialize(reads, writes, spdy_reads, spdy_writes, io_mode);
+
+    TestConnectJobDelegate test_delegate;
+    std::unique_ptr<ConnectJob> connect_job =
+        CreateConnectJobForTunnel(&test_delegate);
+    ASSERT_EQ(ERR_IO_PENDING, connect_job->Connect());
+    // Auth callback is always invoked asynchronously when a challenge is
+    // observed.
+    EXPECT_EQ(0, test_delegate.num_auth_challenges());
+
+    test_delegate.WaitForAuthChallenge(1);
+    ASSERT_TRUE(test_delegate.auth_response_info().headers);
+    EXPECT_EQ(407, test_delegate.auth_response_info().headers->response_code());
+    std::string proxy_authenticate;
+    ASSERT_TRUE(test_delegate.auth_response_info().headers->EnumerateHeader(
+        nullptr, "Proxy-Authenticate", &proxy_authenticate));
+    EXPECT_EQ(proxy_authenticate, "Basic realm=\"MyRealm1\"");
+    EXPECT_FALSE(test_delegate.has_result());
+
+    test_delegate.auth_controller()->ResetAuth(
+        AuthCredentials(base::ASCIIToUTF16("foo"), base::ASCIIToUTF16("bar")));
+    test_delegate.RunAuthCallback();
+    // Per API contract, the auth callback can't be invoked synchronously.
+    EXPECT_FALSE(test_delegate.auth_controller());
+    EXPECT_FALSE(test_delegate.has_result());
+
+    test_delegate.WaitForAuthChallenge(2);
+    ASSERT_TRUE(test_delegate.auth_response_info().headers);
+    EXPECT_EQ(407, test_delegate.auth_response_info().headers->response_code());
+    ASSERT_TRUE(test_delegate.auth_response_info().headers->EnumerateHeader(
+        nullptr, "Proxy-Authenticate", &proxy_authenticate));
+    EXPECT_EQ(proxy_authenticate, "Basic realm=\"MyRealm1\"");
+    EXPECT_FALSE(test_delegate.has_result());
+
+    test_delegate.auth_controller()->ResetAuth(
+        AuthCredentials(base::ASCIIToUTF16("foo"), base::ASCIIToUTF16("bar")));
+    test_delegate.RunAuthCallback();
+    // Per API contract, the request can't complete synchronously.
+    EXPECT_FALSE(test_delegate.has_result());
+
+    EXPECT_EQ(net::OK, test_delegate.WaitForResult());
+    EXPECT_EQ(2, test_delegate.num_auth_challenges());
+
+    // Close the H2 session to prevent reuse.
+    if (GetParam() == SPDY)
+      session_->CloseAllConnections();
+    // Also need to clear the auth cache before re-running the test.
+    session_->http_auth_cache()->ClearAllEntries();
+  }
+}
+
+// Test the case where auth credentials are cached.
+TEST_P(HttpProxyConnectJobTest, HaveAuth) {
+  // Prepopulate auth cache.
+  const base::string16 kFoo(base::ASCIIToUTF16("foo"));
+  const base::string16 kBar(base::ASCIIToUTF16("bar"));
+  GURL proxy_url(GetParam() == HTTP
+                     ? (std::string("http://") + kHttpProxyHost)
+                     : (std::string("https://") + kHttpsProxyHost));
+  session_->http_auth_cache()->Add(
+      proxy_url, "MyRealm1", HttpAuth::AUTH_SCHEME_BASIC,
+      "Basic realm=MyRealm1", AuthCredentials(kFoo, kBar), "/");
+
+  for (IoMode io_mode : {SYNCHRONOUS, ASYNC}) {
+    SCOPED_TRACE(io_mode);
+
+    session_deps_.host_resolver->set_synchronous_mode(io_mode == SYNCHRONOUS);
+
+    MockWrite writes[] = {
+        MockWrite(io_mode, 0,
+                  "CONNECT www.endpoint.test:443 HTTP/1.1\r\n"
+                  "Host: www.endpoint.test:443\r\n"
+                  "Proxy-Connection: keep-alive\r\n"
+                  "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+    };
+    MockRead reads[] = {
+        MockRead(io_mode, 1, "HTTP/1.1 200 Connection Established\r\n\r\n"),
+    };
+
+    const char* const kSpdyAuthCredentials[] = {
+        "proxy-authorization",
+        "Basic Zm9vOmJhcg==",
+    };
+    SpdyTestUtil spdy_util;
+    spdy::SpdySerializedFrame connect(spdy_util.ConstructSpdyConnect(
+        kSpdyAuthCredentials, base::size(kSpdyAuthCredentials) / 2, 1,
+        DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
+
+    MockWrite spdy_writes[] = {
+        CreateMockWrite(connect, 0, ASYNC),
+    };
+
+    spdy::SpdySerializedFrame connect_resp(
+        spdy_util.ConstructSpdyGetReply(nullptr, 0, 1));
+    MockRead spdy_reads[] = {
+        // SpdySession starts trying to read from the socket as soon as it's
+        // created, so this cannot be SYNCHRONOUS.
+        CreateMockRead(connect_resp, 1, ASYNC),
+        MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
+    };
+
+    Initialize(reads, writes, spdy_reads, spdy_writes, io_mode);
+
+    TestConnectJobDelegate test_delegate;
+    std::unique_ptr<ConnectJob> connect_job =
+        CreateConnectJobForTunnel(&test_delegate);
+    // SPDY operations always complete asynchronously.
+    test_delegate.StartJobExpectingResult(
+        connect_job.get(), OK, io_mode == SYNCHRONOUS && GetParam() != SPDY);
+
+    // Close the H2 session to prevent reuse.
+    if (GetParam() == SPDY)
+      session_->CloseAllConnections();
+  }
 }
 
 TEST_P(HttpProxyConnectJobTest, RequestPriority) {
@@ -771,10 +1055,391 @@ TEST_P(HttpProxyConnectJobTest, TunnelSetupError) {
   }
 }
 
+// Test timeouts in the case of an auth challenge and response.
+TEST_P(HttpProxyConnectJobTest, TestTimeoutsAuthChallenge) {
+  // Wait until this amount of time before something times out.
+  const base::TimeDelta kTinyTime = base::TimeDelta::FromMicroseconds(1);
+
+  enum class TimeoutPhase {
+    CONNECT,
+    PROXY_HANDSHAKE,
+    SECOND_PROXY_HANDSHAKE,
+
+    NONE,
+  };
+
+  const TimeoutPhase kTimeoutPhases[] = {
+      TimeoutPhase::CONNECT,
+      TimeoutPhase::PROXY_HANDSHAKE,
+      TimeoutPhase::SECOND_PROXY_HANDSHAKE,
+      TimeoutPhase::NONE,
+  };
+
+  session_deps_.host_resolver->set_ondemand_mode(true);
+
+  MockWrite writes[] = {
+      MockWrite(ASYNC, 0,
+                "CONNECT www.endpoint.test:443 HTTP/1.1\r\n"
+                "Host: www.endpoint.test:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite(ASYNC, 3,
+                "CONNECT www.endpoint.test:443 HTTP/1.1\r\n"
+                "Host: www.endpoint.test:443\r\n"
+                "Proxy-Connection: keep-alive\r\n"
+                "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+  };
+  MockRead reads[] = {
+      // Pause before first response is read.
+      MockRead(ASYNC, ERR_IO_PENDING, 1),
+      MockRead(ASYNC, 2,
+               "HTTP/1.1 407 Proxy Authentication Required\r\n"
+               "Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"
+               "Content-Length: 0\r\n\r\n"),
+
+      // Pause again before second response is read.
+      MockRead(ASYNC, ERR_IO_PENDING, 4),
+      MockRead(ASYNC, 5, "HTTP/1.1 200 Connection Established\r\n\r\n"),
+  };
+
+  SpdyTestUtil spdy_util;
+  spdy::SpdySerializedFrame connect(spdy_util.ConstructSpdyConnect(
+      NULL, 0, 1, DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
+  spdy::SpdySerializedFrame rst(
+      spdy_util.ConstructSpdyRstStream(1, spdy::ERROR_CODE_CANCEL));
+  spdy_util.UpdateWithStreamDestruction(1);
+
+  // After calling trans.RestartWithAuth(), this is the request we should
+  // be issuing -- the final header line contains the credentials.
+  const char* const kSpdyAuthCredentials[] = {
+      "proxy-authorization",
+      "Basic Zm9vOmJhcg==",
+  };
+  spdy::SpdySerializedFrame connect2(spdy_util.ConstructSpdyConnect(
+      kSpdyAuthCredentials, base::size(kSpdyAuthCredentials) / 2, 3,
+      DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
+  // This may be sent in some tests, either when tearing down a successful
+  // connection, or on timeout.
+  spdy::SpdySerializedFrame rst2(
+      spdy_util.ConstructSpdyRstStream(3, spdy::ERROR_CODE_CANCEL));
+  MockWrite spdy_writes[] = {
+      CreateMockWrite(connect, 0, ASYNC),
+      CreateMockWrite(rst, 3, ASYNC),
+      CreateMockWrite(connect2, 4, ASYNC),
+      CreateMockWrite(rst2, 8, ASYNC),
+  };
+
+  // The proxy responds to the connect with a 407, using a persistent
+  // connection.
+  const char kAuthStatus[] = "407";
+  const char* const kAuthChallenge[] = {
+      "proxy-authenticate",
+      "Basic realm=\"MyRealm1\"",
+  };
+  spdy::SpdySerializedFrame connect_auth_resp(spdy_util.ConstructSpdyReplyError(
+      kAuthStatus, kAuthChallenge, base::size(kAuthChallenge) / 2, 1));
+  spdy::SpdySerializedFrame connect2_resp(
+      spdy_util.ConstructSpdyGetReply(nullptr, 0, 3));
+  MockRead spdy_reads[] = {
+      // Pause before first response is read.
+      MockRead(ASYNC, ERR_IO_PENDING, 1),
+      CreateMockRead(connect_auth_resp, 2, ASYNC),
+      // Pause again before second response is read.
+      MockRead(ASYNC, ERR_IO_PENDING, 5),
+      CreateMockRead(connect2_resp, 6, ASYNC),
+      MockRead(ASYNC, OK, 7),
+  };
+
+  for (TimeoutPhase timeout_phase : kTimeoutPhases) {
+    SCOPED_TRACE(static_cast<int>(timeout_phase));
+
+    // Need to close the session to prevent reuse of a session from the last
+    // loop iteration.
+    session_->spdy_session_pool()->CloseAllSessions();
+    // And clear the auth cache to prevent reusing cache entries.
+    session_->http_auth_cache()->ClearAllEntries();
+
+    TestConnectJobDelegate test_delegate;
+    std::unique_ptr<ConnectJob> connect_job =
+        CreateConnectJobForTunnel(&test_delegate);
+
+    // Connecting should run until the request hits the HostResolver.
+    EXPECT_THAT(connect_job->Connect(), test::IsError(ERR_IO_PENDING));
+    EXPECT_FALSE(test_delegate.has_result());
+    EXPECT_TRUE(session_deps_.host_resolver->has_pending_requests());
+    EXPECT_EQ(LOAD_STATE_RESOLVING_HOST, connect_job->GetLoadState());
+
+    // Run until just before timeout. The proxy timeout can be less than the
+    // connection timeout, as it can be set based on the
+    // NetworkQualityEstimator, which the connection timeout is not.
+    FastForwardBy(std::min(TransportConnectJob::ConnectionTimeout(),
+                           GetProxyConnectionTimeout()) -
+                  kTinyTime);
+    EXPECT_FALSE(test_delegate.has_result());
+
+    // Wait until timeout, if appropriate.
+    if (timeout_phase == TimeoutPhase::CONNECT) {
+      FastForwardBy(kTinyTime);
+      ASSERT_TRUE(test_delegate.has_result());
+      EXPECT_THAT(test_delegate.WaitForResult(),
+                  test::IsError(ERR_CONNECTION_TIMED_OUT));
+      continue;
+    }
+
+    // Add mock reads for socket needed in next step. Connect phase is timed out
+    // before establishing a connection, so don't need them for
+    // TimeoutPhase::CONNECT.
+    Initialize(reads, writes, spdy_reads, spdy_writes, SYNCHRONOUS);
+
+    // Finish resolution.
+    session_deps_.host_resolver->ResolveOnlyRequestNow();
+    EXPECT_FALSE(test_delegate.has_result());
+    EXPECT_EQ(LOAD_STATE_ESTABLISHING_PROXY_TUNNEL,
+              connect_job->GetLoadState());
+
+    // Wait until just before negotiation with the tunnel should time out.
+    FastForwardBy(HttpProxyConnectJob::TunnelTimeoutForTesting() - kTinyTime);
+    EXPECT_FALSE(test_delegate.has_result());
+
+    if (timeout_phase == TimeoutPhase::PROXY_HANDSHAKE) {
+      FastForwardBy(kTinyTime);
+      ASSERT_TRUE(test_delegate.has_result());
+      EXPECT_THAT(test_delegate.WaitForResult(),
+                  test::IsError(ERR_CONNECTION_TIMED_OUT));
+      continue;
+    }
+
+    data_->Resume();
+    test_delegate.WaitForAuthChallenge(1);
+    EXPECT_FALSE(test_delegate.has_result());
+
+    // ConnectJobs cannot timeout while showing an auth dialog.
+    FastForwardBy(base::TimeDelta::FromDays(1) + GetProxyConnectionTimeout());
+    EXPECT_FALSE(test_delegate.has_result());
+
+    // Send credentials
+    test_delegate.auth_controller()->ResetAuth(
+        AuthCredentials(base::ASCIIToUTF16("foo"), base::ASCIIToUTF16("bar")));
+    test_delegate.RunAuthCallback();
+    EXPECT_FALSE(test_delegate.has_result());
+
+    // When sending proxy auth on the same socket a challenge was just received
+    // on, all subsequent proxy handshakes cannot timeout. However, H2 always
+    // follows the establish new connection path, which means its second proxy
+    // handshake *can* timeout. Retrying with an already established H2 stream
+    // uses the entire proxy timeout for just establishing the tunnel, rather
+    // than the tunnel timeout.
+    //
+    // TODO(https://crbug.com/937137): This behavior seems strange. Should we do
+    // something about it?
+    if (GetParam() == SPDY) {
+      FastForwardBy(GetProxyConnectionTimeout() - kTinyTime);
+      EXPECT_FALSE(test_delegate.has_result());
+
+      if (timeout_phase == TimeoutPhase::SECOND_PROXY_HANDSHAKE) {
+        FastForwardBy(kTinyTime);
+        ASSERT_TRUE(test_delegate.has_result());
+        EXPECT_THAT(test_delegate.WaitForResult(),
+                    test::IsError(ERR_CONNECTION_TIMED_OUT));
+        continue;
+      }
+    } else {
+      // See above comment for explanation.
+      FastForwardBy(base::TimeDelta::FromDays(1) + GetProxyConnectionTimeout());
+      EXPECT_FALSE(test_delegate.has_result());
+    }
+
+    data_->Resume();
+    EXPECT_THAT(test_delegate.WaitForResult(), test::IsOk());
+  }
+}
+
+// Same as above, except test the case the first connection cannot be reused
+// once credentials are received.
+TEST_P(HttpProxyConnectJobTest, TestTimeoutsAuthChallengeNewConnection) {
+  // Proxy-Connection: Close doesn't make sense with H2.
+  if (GetParam() == SPDY)
+    return;
+
+  enum class TimeoutPhase {
+    CONNECT,
+    PROXY_HANDSHAKE,
+    SECOND_CONNECT,
+    SECOND_PROXY_HANDSHAKE,
+
+    // This has to be last for the H2 proxy case, since success will populate
+    // the H2 session pool.
+    NONE,
+  };
+
+  const TimeoutPhase kTimeoutPhases[] = {
+      TimeoutPhase::CONNECT,        TimeoutPhase::PROXY_HANDSHAKE,
+      TimeoutPhase::SECOND_CONNECT, TimeoutPhase::SECOND_PROXY_HANDSHAKE,
+      TimeoutPhase::NONE,
+  };
+
+  // Wait until this amount of time before something times out.
+  const base::TimeDelta kTinyTime = base::TimeDelta::FromMicroseconds(1);
+
+  session_deps_.host_resolver->set_ondemand_mode(true);
+
+  MockWrite writes[] = {
+      MockWrite(ASYNC, 0,
+                "CONNECT www.endpoint.test:443 HTTP/1.1\r\n"
+                "Host: www.endpoint.test:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+  };
+  MockRead reads[] = {
+      // Pause at read.
+      MockRead(ASYNC, ERR_IO_PENDING, 1),
+      MockRead(ASYNC, 2,
+               "HTTP/1.1 407 Proxy Authentication Required\r\n"
+               "Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"
+               "Proxy-Connection: Close\r\n"
+               "Content-Length: 0\r\n\r\n"),
+  };
+
+  MockWrite writes2[] = {
+      MockWrite(ASYNC, 0,
+                "CONNECT www.endpoint.test:443 HTTP/1.1\r\n"
+                "Host: www.endpoint.test:443\r\n"
+                "Proxy-Connection: keep-alive\r\n"
+                "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+  };
+  MockRead reads2[] = {
+      // Pause at read.
+      MockRead(ASYNC, ERR_IO_PENDING, 1),
+      MockRead(ASYNC, 2, "HTTP/1.1 200 Connection Established\r\n\r\n"),
+  };
+
+  for (TimeoutPhase timeout_phase : kTimeoutPhases) {
+    SCOPED_TRACE(static_cast<int>(timeout_phase));
+
+    // Need to clear the auth cache to prevent reusing cache entries.
+    session_->http_auth_cache()->ClearAllEntries();
+
+    TestConnectJobDelegate test_delegate;
+    std::unique_ptr<ConnectJob> connect_job =
+        CreateConnectJobForTunnel(&test_delegate);
+
+    // Connecting should run until the request hits the HostResolver.
+    EXPECT_THAT(connect_job->Connect(), test::IsError(ERR_IO_PENDING));
+    EXPECT_FALSE(test_delegate.has_result());
+    EXPECT_TRUE(session_deps_.host_resolver->has_pending_requests());
+    EXPECT_EQ(LOAD_STATE_RESOLVING_HOST, connect_job->GetLoadState());
+
+    // Run until just before timeout. The proxy timeout can be less than the
+    // connection timeout, as it can be set based on the
+    // NetworkQualityEstimator, which the connection timeout is not.
+    FastForwardBy(std::min(TransportConnectJob::ConnectionTimeout(),
+                           GetProxyConnectionTimeout()) -
+                  kTinyTime);
+    EXPECT_FALSE(test_delegate.has_result());
+
+    // Wait until timeout, if appropriate.
+    if (timeout_phase == TimeoutPhase::CONNECT) {
+      FastForwardBy(kTinyTime);
+      ASSERT_TRUE(test_delegate.has_result());
+      EXPECT_THAT(test_delegate.WaitForResult(),
+                  test::IsError(ERR_CONNECTION_TIMED_OUT));
+      continue;
+    }
+
+    // Add mock reads for socket needed in next step. Connect phase is timed out
+    // before establishing a connection, so don't need them for
+    // TimeoutPhase::CONNECT.
+    Initialize(reads, writes, base::span<MockRead>(), base::span<MockWrite>(),
+               SYNCHRONOUS);
+
+    // Finish resolution.
+    session_deps_.host_resolver->ResolveOnlyRequestNow();
+    EXPECT_FALSE(test_delegate.has_result());
+    EXPECT_EQ(LOAD_STATE_ESTABLISHING_PROXY_TUNNEL,
+              connect_job->GetLoadState());
+
+    // Wait until just before negotiation with the tunnel should time out.
+    FastForwardBy(HttpProxyConnectJob::TunnelTimeoutForTesting() - kTinyTime);
+    EXPECT_FALSE(test_delegate.has_result());
+
+    if (timeout_phase == TimeoutPhase::PROXY_HANDSHAKE) {
+      FastForwardBy(kTinyTime);
+      ASSERT_TRUE(test_delegate.has_result());
+      EXPECT_THAT(test_delegate.WaitForResult(),
+                  test::IsError(ERR_CONNECTION_TIMED_OUT));
+      continue;
+    }
+
+    data_->Resume();
+    test_delegate.WaitForAuthChallenge(1);
+    EXPECT_FALSE(test_delegate.has_result());
+
+    // ConnectJobs cannot timeout while showing an auth dialog.
+    FastForwardBy(base::TimeDelta::FromDays(1) + GetProxyConnectionTimeout());
+    EXPECT_FALSE(test_delegate.has_result());
+
+    // Send credentials
+    test_delegate.auth_controller()->ResetAuth(
+        AuthCredentials(base::ASCIIToUTF16("foo"), base::ASCIIToUTF16("bar")));
+    test_delegate.RunAuthCallback();
+    EXPECT_FALSE(test_delegate.has_result());
+
+    // Since the connection was not reusable, a new connection needs to be
+    // established.
+    base::RunLoop().RunUntilIdle();
+    EXPECT_FALSE(test_delegate.has_result());
+    EXPECT_TRUE(session_deps_.host_resolver->has_pending_requests());
+    EXPECT_EQ(LOAD_STATE_RESOLVING_HOST, connect_job->GetLoadState());
+
+    // Run until just before timeout. The proxy timeout can be less than the
+    // connection timeout, as it can be set based on the
+    // NetworkQualityEstimator, which the connection timeout is not.
+    FastForwardBy(std::min(TransportConnectJob::ConnectionTimeout(),
+                           GetProxyConnectionTimeout()) -
+                  kTinyTime);
+    EXPECT_FALSE(test_delegate.has_result());
+
+    // Wait until timeout, if appropriate.
+    if (timeout_phase == TimeoutPhase::SECOND_CONNECT) {
+      FastForwardBy(kTinyTime);
+      ASSERT_TRUE(test_delegate.has_result());
+      EXPECT_THAT(test_delegate.WaitForResult(),
+                  test::IsError(ERR_CONNECTION_TIMED_OUT));
+      continue;
+    }
+
+    // Add mock reads for socket needed in next step. Connect phase is timed out
+    // before establishing a connection, so don't need them for
+    // TimeoutPhase::SECOND_CONNECT.
+    Initialize(reads2, writes2, base::span<MockRead>(), base::span<MockWrite>(),
+               SYNCHRONOUS);
+
+    // Finish resolution.
+    session_deps_.host_resolver->ResolveOnlyRequestNow();
+    EXPECT_FALSE(test_delegate.has_result());
+    EXPECT_EQ(LOAD_STATE_ESTABLISHING_PROXY_TUNNEL,
+              connect_job->GetLoadState());
+
+    // Wait until just before negotiation with the tunnel should time out.
+    FastForwardBy(HttpProxyConnectJob::TunnelTimeoutForTesting() - kTinyTime);
+    EXPECT_FALSE(test_delegate.has_result());
+
+    if (timeout_phase == TimeoutPhase::SECOND_PROXY_HANDSHAKE) {
+      FastForwardBy(kTinyTime);
+      ASSERT_TRUE(test_delegate.has_result());
+      EXPECT_THAT(test_delegate.WaitForResult(),
+                  test::IsError(ERR_CONNECTION_TIMED_OUT));
+      continue;
+    }
+
+    data_->Resume();
+    ASSERT_TRUE(test_delegate.has_result());
+    EXPECT_THAT(test_delegate.WaitForResult(), test::IsOk());
+  }
+}
+
 TEST_P(HttpProxyConnectJobTest, ConnectionTimeoutMin) {
   // Set RTT estimate to a low value.
   base::TimeDelta rtt_estimate = base::TimeDelta::FromMilliseconds(1);
-  network_quality_estimator_.SetStartTimeNullHttpRtt(rtt_estimate);
+  network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
 
   EXPECT_LE(base::TimeDelta(), GetProxyConnectionTimeout());
 
@@ -791,7 +1456,7 @@ TEST_P(HttpProxyConnectJobTest, ConnectionTimeoutMin) {
 TEST_P(HttpProxyConnectJobTest, ConnectionTimeoutMax) {
   // Set RTT estimate to a high value.
   base::TimeDelta rtt_estimate = base::TimeDelta::FromSeconds(100);
-  network_quality_estimator_.SetStartTimeNullHttpRtt(rtt_estimate);
+  network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
 
   EXPECT_LE(base::TimeDelta(), GetProxyConnectionTimeout());
 
@@ -818,18 +1483,18 @@ TEST_P(HttpProxyConnectJobTest, ConnectionTimeoutWithExperiment) {
   EXPECT_LE(base::TimeDelta(), GetProxyConnectionTimeout());
 
   base::TimeDelta rtt_estimate = base::TimeDelta::FromSeconds(4);
-  network_quality_estimator_.SetStartTimeNullHttpRtt(rtt_estimate);
+  network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
   base::TimeDelta expected_connection_timeout = kMultiplier * rtt_estimate;
   EXPECT_EQ(expected_connection_timeout, GetProxyConnectionTimeout());
 
   // Connection timeout should not exceed kMaxTimeout.
   rtt_estimate = base::TimeDelta::FromSeconds(25);
-  network_quality_estimator_.SetStartTimeNullHttpRtt(rtt_estimate);
+  network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
   EXPECT_EQ(kMaxTimeout, GetProxyConnectionTimeout());
 
   // Connection timeout should not be less than kMinTimeout.
   rtt_estimate = base::TimeDelta::FromSeconds(0);
-  network_quality_estimator_.SetStartTimeNullHttpRtt(rtt_estimate);
+  network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
   EXPECT_EQ(kMinTimeout, GetProxyConnectionTimeout());
 }
 
@@ -846,22 +1511,22 @@ TEST_P(HttpProxyConnectJobTest, ConnectionTimeoutExperimentDifferentParams) {
   EXPECT_LE(base::TimeDelta(), GetProxyConnectionTimeout());
 
   base::TimeDelta rtt_estimate = base::TimeDelta::FromSeconds(2);
-  network_quality_estimator_.SetStartTimeNullHttpRtt(rtt_estimate);
+  network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
   EXPECT_EQ(kMultiplier * rtt_estimate, GetProxyConnectionTimeout());
 
   // A change in RTT estimate should also change the connection timeout.
   rtt_estimate = base::TimeDelta::FromSeconds(7);
-  network_quality_estimator_.SetStartTimeNullHttpRtt(rtt_estimate);
+  network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
   EXPECT_EQ(kMultiplier * rtt_estimate, GetProxyConnectionTimeout());
 
   // Connection timeout should not exceed kMaxTimeout.
   rtt_estimate = base::TimeDelta::FromSeconds(35);
-  network_quality_estimator_.SetStartTimeNullHttpRtt(rtt_estimate);
+  network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
   EXPECT_EQ(kMaxTimeout, GetProxyConnectionTimeout());
 
   // Connection timeout should not be less than kMinTimeout.
   rtt_estimate = base::TimeDelta::FromSeconds(0);
-  network_quality_estimator_.SetStartTimeNullHttpRtt(rtt_estimate);
+  network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
   EXPECT_EQ(kMinTimeout, GetProxyConnectionTimeout());
 }
 
@@ -875,7 +1540,7 @@ TEST_P(HttpProxyConnectJobTest, ConnectionTimeoutWithConnectionProperty) {
       false, kSecureMultiplier, kNonSecureMultiplier, kMinTimeout, kMaxTimeout);
 
   const base::TimeDelta kRttEstimate = base::TimeDelta::FromSeconds(2);
-  network_quality_estimator_.SetStartTimeNullHttpRtt(kRttEstimate);
+  network_quality_estimator_->SetStartTimeNullHttpRtt(kRttEstimate);
   // By default, connection timeout should return the timeout for secure
   // proxies.
   if (GetParam() != HTTP) {
@@ -895,28 +1560,25 @@ TEST_P(HttpProxyConnectJobTest, ProxyPoolTimeoutWithExperimentDefaultParams) {
   // Timeout should be |http_rtt_multiplier| times the HTTP RTT
   // estimate.
   base::TimeDelta rtt_estimate = base::TimeDelta::FromMilliseconds(10);
-  network_quality_estimator_.SetStartTimeNullHttpRtt(rtt_estimate);
+  network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
   // Connection timeout should not be less than the HTTP RTT estimate.
   EXPECT_LE(rtt_estimate, GetProxyConnectionTimeout());
 
   // A change in RTT estimate should also change the connection timeout.
   rtt_estimate = base::TimeDelta::FromSeconds(10);
-  network_quality_estimator_.SetStartTimeNullHttpRtt(rtt_estimate);
+  network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
   // Connection timeout should not be less than the HTTP RTT estimate.
   EXPECT_LE(rtt_estimate, GetProxyConnectionTimeout());
 
   // Set RTT to a very large value.
   rtt_estimate = base::TimeDelta::FromMinutes(60);
-  network_quality_estimator_.SetStartTimeNullHttpRtt(rtt_estimate);
+  network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
   EXPECT_GT(rtt_estimate, GetProxyConnectionTimeout());
 
   // Set RTT to a very small value.
   rtt_estimate = base::TimeDelta::FromSeconds(0);
-  network_quality_estimator_.SetStartTimeNullHttpRtt(rtt_estimate);
+  network_quality_estimator_->SetStartTimeNullHttpRtt(rtt_estimate);
   EXPECT_LT(rtt_estimate, GetProxyConnectionTimeout());
 }
-
-// TODO(https://crbug.com/927096): It would be nice to also test the timeouts in
-// HttpProxyClientSocketPool.
 
 }  // namespace net

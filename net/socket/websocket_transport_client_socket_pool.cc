@@ -511,6 +511,15 @@ WebSocketTransportClientSocketPool::ConnectJobDelegate::OnConnectJobComplete(
   owner_->OnConnectJobComplete(result, this);
 }
 
+void WebSocketTransportClientSocketPool::ConnectJobDelegate::OnNeedsProxyAuth(
+    const HttpResponseInfo& response,
+    HttpAuthController* auth_controller,
+    base::OnceClosure restart_with_auth_callback,
+    ConnectJob* job) {
+  // This class isn't used for proxies.
+  NOTREACHED();
+}
+
 int WebSocketTransportClientSocketPool::ConnectJobDelegate::Connect(
     std::unique_ptr<ConnectJob> connect_job) {
   connect_job_ = std::move(connect_job);

@@ -120,6 +120,10 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
 
     // ConnectJob::Delegate implementation
     void OnConnectJobComplete(int result, ConnectJob* job) override;
+    void OnNeedsProxyAuth(const HttpResponseInfo& response,
+                          HttpAuthController* auth_controller,
+                          base::OnceClosure restart_with_auth_callback,
+                          ConnectJob* job) override;
 
     // Calls Connect() on |connect_job|, and takes ownership. Returns Connect's
     // return value.

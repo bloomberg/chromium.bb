@@ -8,7 +8,9 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/load_states.h"
@@ -25,6 +27,8 @@ namespace net {
 class ClientSocketFactory;
 class ClientSocketHandle;
 class HostResolver;
+class HttpAuthController;
+class HttpResponseInfo;
 class NetLog;
 class NetworkQualityEstimator;
 class ProxyDelegate;
@@ -99,6 +103,21 @@ class NET_EXPORT_PRIVATE ConnectJob {
     // destroyed by the delegate. A std::unique_ptr<> isn't used because the
     // caller of this function doesn't own |job|.
     virtual void OnConnectJobComplete(int result, ConnectJob* job) = 0;
+
+    // Invoked when an HTTP proxy returns an HTTP auth challenge during tunnel
+    // establishment. Always invoked asynchronously. The caller should use
+    // |auth_controller| to set challenge response information and then invoke
+    // |restart_with_auth_callback| to continue establishing a connection, or
+    // delete the ConnectJob if it doesn't want to respond to the challenge.
+    //
+    // Will only be called once at a time. Neither OnConnectJobComplete() nor
+    // OnNeedsProxyAuth() will be called synchronously when
+    // |restart_with_auth_callback| is invoked. Will not be called after
+    // OnConnectJobComplete() has been invoked.
+    virtual void OnNeedsProxyAuth(const HttpResponseInfo& response,
+                                  HttpAuthController* auth_controller,
+                                  base::OnceClosure restart_with_auth_callback,
+                                  ConnectJob* job) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
@@ -213,6 +232,9 @@ class NET_EXPORT_PRIVATE ConnectJob {
 
   void SetSocket(std::unique_ptr<StreamSocket> socket);
   void NotifyDelegateOfCompletion(int rv);
+  void NotifyDelegateOfProxyAuth(const HttpResponseInfo& response,
+                                 HttpAuthController* auth_controller,
+                                 base::OnceClosure restart_with_auth_callback);
   void ResetTimer(base::TimeDelta remaining_time);
 
   // Connection establishment timing information.

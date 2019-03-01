@@ -38,6 +38,8 @@ class SSLSocketParams;
 class TransportSecurityState;
 class TransportSocketParams;
 
+// TODO(mmenke): Remove HigherLayeredPool implementation once this can no longer
+// sit on top of other socket pools.
 class NET_EXPORT_PRIVATE TransportClientSocketPool
     : public ClientSocketPool,
       public HigherLayeredPool,

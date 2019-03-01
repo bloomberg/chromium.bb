@@ -158,6 +158,32 @@ void SSLConnectJob::OnConnectJobComplete(int result, ConnectJob* job) {
   OnIOComplete(result);
 }
 
+void SSLConnectJob::OnNeedsProxyAuth(
+    const HttpResponseInfo& response,
+    HttpAuthController* auth_controller,
+    base::OnceClosure restart_with_auth_callback,
+    ConnectJob* job) {
+  // Currently OnProxyAuthChallenge() is used instead of this method.
+  //
+  // TODO(mmenke):  When this can no longer sit on top of an HTTP proxy socket
+  // pool, remove SSLConnectJob::OnProxyAuthChallengeCallback and implement this
+  // method instead.
+  NOTREACHED();
+}
+
+void SSLConnectJob::OnProxyAuthChallenge(
+    const HttpResponseInfo& response,
+    HttpAuthController* auth_controller,
+    base::OnceClosure restart_with_auth_callback) {
+  DCHECK_EQ(next_state_, STATE_TUNNEL_CONNECT_COMPLETE);
+
+  // Stop timer, since this will need to wait on user input.
+  ResetTimer(base::TimeDelta());
+
+  NotifyDelegateOfProxyAuth(response, auth_controller,
+                            std::move(restart_with_auth_callback));
+}
+
 void SSLConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {
   // Headers in |error_response_info_| indicate a proxy tunnel setup
   // problem. See DoTunnelConnectComplete.
@@ -307,7 +333,9 @@ int SSLConnectJob::DoTunnelConnect() {
       TransportClientSocketPool::SocketParams::CreateFromHttpProxySocketParams(
           http_proxy_params),
       priority(), socket_tag(), respect_limits(), callback_,
-      ClientSocketPool::ProxyAuthCallback(), http_proxy_pool_, net_log());
+      base::BindRepeating(&SSLConnectJob::OnProxyAuthChallenge,
+                          base::Unretained(this)),
+      http_proxy_pool_, net_log());
 }
 
 int SSLConnectJob::DoTunnelConnectComplete(int result) {

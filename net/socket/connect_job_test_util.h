@@ -8,8 +8,11 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_auth_controller.h"
+#include "net/http/http_response_info.h"
 #include "net/socket/connect_job.h"
 
 namespace net {
@@ -32,10 +35,29 @@ class TestConnectJobDelegate : public ConnectJob::Delegate {
 
   // ConnectJob::Delegate implementation.
   void OnConnectJobComplete(int result, ConnectJob* job) override;
+  void OnNeedsProxyAuth(const HttpResponseInfo& response,
+                        HttpAuthController* auth_controller,
+                        base::OnceClosure restart_with_auth_callback,
+                        ConnectJob* job) override;
+
+  // Waits for the specified number of total auth challenges to be seen. Number
+  // includes auth challenges that have already been waited for. Fails the test
+  // if more auth challenges are seen than expected.
+  void WaitForAuthChallenge(int num_auth_challenges_to_wait_for);
+
+  void RunAuthCallback();
 
   // Waits for the ConnectJob to complete if it hasn't already and returns the
   // resulting network error code.
   int WaitForResult();
+
+  int num_auth_challenges() const { return num_auth_challenges_; }
+  const HttpResponseInfo& auth_response_info() const {
+    return auth_response_info_;
+  }
+  scoped_refptr<HttpAuthController> auth_controller() {
+    return auth_controller_.get();
+  }
 
   // Returns true if the ConnectJob has a result.
   bool has_result() const { return has_result_; }
@@ -54,7 +76,14 @@ class TestConnectJobDelegate : public ConnectJob::Delegate {
   int result_ = ERR_IO_PENDING;
   std::unique_ptr<StreamSocket> socket_;
 
+  // These values are all updated each time a proxy auth challenge is seen.
+  int num_auth_challenges_ = 0;
+  HttpResponseInfo auth_response_info_;
+  scoped_refptr<HttpAuthController> auth_controller_;
+  base::OnceClosure restart_with_auth_callback_;
+
   base::RunLoop run_loop_;
+  std::unique_ptr<base::RunLoop> auth_challenge_run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TestConnectJobDelegate);
 };

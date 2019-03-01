@@ -16,6 +16,7 @@
 #include "net/base/net_export.h"
 #include "net/base/privacy_mode.h"
 #include "net/http/http_response_info.h"
+#include "net/socket/client_socket_pool.h"
 #include "net/socket/connect_job.h"
 #include "net/socket/connection_attempts.h"
 #include "net/socket/ssl_client_socket.h"
@@ -95,6 +96,14 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
 
   // ConnectJob::Delegate methods.
   void OnConnectJobComplete(int result, ConnectJob* job) override;
+  void OnNeedsProxyAuth(const HttpResponseInfo& response,
+                        HttpAuthController* auth_controller,
+                        base::OnceClosure restart_with_auth_callback,
+                        ConnectJob* job) override;
+
+  void OnProxyAuthChallenge(const HttpResponseInfo& response,
+                            HttpAuthController* auth_controller,
+                            base::OnceClosure restart_with_auth_callback);
 
   void GetAdditionalErrorState(ClientSocketHandle* handle) override;
 

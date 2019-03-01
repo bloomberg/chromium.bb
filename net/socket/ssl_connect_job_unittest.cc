@@ -641,7 +641,60 @@ TEST_F(SSLConnectJobTest, HttpProxyFail) {
   }
 }
 
-TEST_F(SSLConnectJobTest, HttpProxyBasic) {
+TEST_F(SSLConnectJobTest, HttpProxyAuthChallenge) {
+  MockWrite writes[] = {
+      MockWrite(ASYNC, 0,
+                "CONNECT host:80 HTTP/1.1\r\n"
+                "Host: host:80\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite(ASYNC, 5,
+                "CONNECT host:80 HTTP/1.1\r\n"
+                "Host: host:80\r\n"
+                "Proxy-Connection: keep-alive\r\n"
+                "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+  };
+  MockRead reads[] = {
+      MockRead(ASYNC, 1, "HTTP/1.1 407 Proxy Authentication Required\r\n"),
+      MockRead(ASYNC, 2, "Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
+      MockRead(ASYNC, 3, "Content-Length: 10\r\n\r\n"),
+      MockRead(ASYNC, 4, "0123456789"),
+      MockRead(ASYNC, 6, "HTTP/1.1 200 Connection Established\r\n\r\n"),
+  };
+  StaticSocketDataProvider data(reads, writes);
+  socket_factory_.AddSocketDataProvider(&data);
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  socket_factory_.AddSSLSocketDataProvider(&ssl);
+
+  ClientSocketHandle handle;
+  TestCompletionCallback callback;
+
+  TestConnectJobDelegate test_delegate;
+  std::unique_ptr<ConnectJob> ssl_connect_job =
+      CreateConnectJob(&test_delegate, ProxyServer::SCHEME_HTTP);
+  ASSERT_THAT(ssl_connect_job->Connect(), test::IsError(ERR_IO_PENDING));
+  test_delegate.WaitForAuthChallenge(1);
+
+  EXPECT_EQ(407, test_delegate.auth_response_info().headers->response_code());
+  std::string proxy_authenticate;
+  ASSERT_TRUE(test_delegate.auth_response_info().headers->EnumerateHeader(
+      nullptr, "Proxy-Authenticate", &proxy_authenticate));
+  EXPECT_EQ(proxy_authenticate, "Basic realm=\"MyRealm1\"");
+
+  // While waiting for auth credentials to be provided, the Job should not time
+  // out.
+  FastForwardBy(base::TimeDelta::FromDays(1));
+  test_delegate.WaitForAuthChallenge(1);
+  EXPECT_FALSE(test_delegate.has_result());
+
+  // Respond to challenge.
+  test_delegate.auth_controller()->ResetAuth(
+      AuthCredentials(base::ASCIIToUTF16("foo"), base::ASCIIToUTF16("bar")));
+  test_delegate.RunAuthCallback();
+
+  EXPECT_THAT(test_delegate.WaitForResult(), test::IsOk());
+}
+
+TEST_F(SSLConnectJobTest, HttpProxyAuthWithCachedCredentials) {
   for (IoMode io_mode : {SYNCHRONOUS, ASYNC}) {
     SCOPED_TRACE(io_mode);
     host_resolver_.set_synchronous_mode(io_mode == SYNCHRONOUS);

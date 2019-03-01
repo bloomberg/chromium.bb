@@ -26,6 +26,7 @@
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/quic/quic_stream_factory.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/socket/client_socket_pool.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/ssl_client_socket.h"
@@ -280,8 +281,6 @@ class HttpStreamFactory::Job {
     STATE_INIT_CONNECTION,
     STATE_INIT_CONNECTION_COMPLETE,
     STATE_WAITING_USER_ACTION,
-    STATE_RESTART_TUNNEL_AUTH,
-    STATE_RESTART_TUNNEL_AUTH_COMPLETE,
     STATE_CREATE_STREAM,
     STATE_CREATE_STREAM_COMPLETE,
     STATE_DRAIN_BODY_FOR_AUTH_RESTART,
@@ -300,7 +299,8 @@ class HttpStreamFactory::Job {
   void OnStreamFailedCallback(int result);
   void OnCertificateErrorCallback(int result, const SSLInfo& ssl_info);
   void OnNeedsProxyAuthCallback(const HttpResponseInfo& response_info,
-                                HttpAuthController* auth_controller);
+                                HttpAuthController* auth_controller,
+                                base::OnceClosure restart_with_auth_callback);
   void OnNeedsClientAuthCallback(SSLCertRequestInfo* cert_info);
   void OnHttpsProxyTunnelResponseRedirectCallback(
       const HttpResponseInfo& response_info,
@@ -336,8 +336,6 @@ class HttpStreamFactory::Job {
   int DoWaitingUserAction(int result);
   int DoCreateStream();
   int DoCreateStreamComplete(int result);
-  int DoRestartTunnelAuth();
-  int DoRestartTunnelAuthComplete(int result);
 
   void ResumeInitConnection();
   // Creates a SpdyHttpStream or a BidirectionalStreamImpl from the given values
@@ -518,6 +516,8 @@ class HttpStreamFactory::Job {
 
   // Whether Job has continued to DoInitConnection().
   bool init_connection_already_resumed_;
+
+  base::OnceClosure restart_with_auth_callback_;
 
   NetErrorDetails net_error_details_;
 

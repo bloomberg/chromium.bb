@@ -8,9 +8,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/proxy_delegate.h"
 #include "net/http/http_proxy_client_socket.h"
@@ -36,6 +38,7 @@
 namespace net {
 
 HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
+    const OnProxyAuthChallengeCallback& on_proxy_auth_callback,
     RequestPriority priority,
     base::TimeDelta connect_timeout_duration,
     base::TimeDelta proxy_negotiation_timeout_duration,
@@ -53,7 +56,8 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
     bool tunnel,
     const NetworkTrafficAnnotationTag& traffic_annotation,
     const NetLogWithSource& net_log)
-    : next_state_(STATE_NONE),
+    : on_proxy_auth_callback_(on_proxy_auth_callback),
+      next_state_(STATE_NONE),
       priority_(priority),
       connect_timeout_duration_(connect_timeout_duration),
       proxy_negotiation_timeout_duration_(proxy_negotiation_timeout_duration),
@@ -81,7 +85,8 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
       net_log_(NetLogWithSource::Make(
           net_log.net_log(),
           NetLogSourceType::PROXY_CLIENT_SOCKET_WRAPPER)),
-      traffic_annotation_(traffic_annotation) {
+      traffic_annotation_(traffic_annotation),
+      weak_ptr_factory_(this) {
   net_log_.BeginEvent(NetLogEventType::SOCKET_ALIVE,
                       net_log.source().ToEventParametersCallback());
   // If doing a QUIC proxy, |quic_version| must not be
@@ -162,14 +167,10 @@ const HttpResponseInfo* HttpProxyClientSocketWrapper::GetConnectResponseInfo()
 
 int HttpProxyClientSocketWrapper::RestartWithAuth(
     CompletionOnceCallback callback) {
-  DCHECK(!callback.is_null());
-  DCHECK(connect_callback_.is_null());
-  DCHECK(transport_socket_);
-  DCHECK_EQ(STATE_NONE, next_state_);
-
-  connect_callback_ = std::move(callback);
-  next_state_ = STATE_RESTART_WITH_AUTH;
-  return DoLoop(OK);
+  // TODO(mmenke): Remove this method, once this class is merged with
+  // HttpProxyConnectJob.
+  NOTREACHED();
+  return ERR_UNEXPECTED;
 }
 
 const scoped_refptr<HttpAuthController>&
@@ -396,6 +397,15 @@ bool HttpProxyClientSocketWrapper::HasEstablishedConnection() {
   return has_established_connection_;
 }
 
+void HttpProxyClientSocketWrapper::OnNeedsProxyAuth(
+    const HttpResponseInfo& response,
+    HttpAuthController* auth_controller,
+    base::OnceClosure restart_with_auth_callback,
+    ConnectJob* job) {
+  // This class can't sit on top of another proxy socket class.
+  NOTREACHED();
+}
+
 ProxyServer::Scheme HttpProxyClientSocketWrapper::GetProxyServerScheme() const {
   if (quic_version_ != quic::QUIC_VERSION_UNSUPPORTED)
     return ProxyServer::SCHEME_QUIC;
@@ -413,6 +423,18 @@ void HttpProxyClientSocketWrapper::OnIOComplete(int result) {
     // May delete |this|.
     std::move(connect_callback_).Run(rv);
   }
+}
+
+void HttpProxyClientSocketWrapper::RestartWithAuthCredentials() {
+  DCHECK(!connect_callback_.is_null());
+  DCHECK(transport_socket_);
+  DCHECK_EQ(STATE_NONE, next_state_);
+
+  // Always do this asynchronously, to avoid re-entrancy.
+  next_state_ = STATE_RESTART_WITH_AUTH;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&HttpProxyClientSocketWrapper::OnIOComplete,
+                                weak_ptr_factory_.GetWeakPtr(), net::OK));
 }
 
 int HttpProxyClientSocketWrapper::DoLoop(int result) {
@@ -645,6 +667,15 @@ int HttpProxyClientSocketWrapper::DoHttpProxyConnect() {
 }
 
 int HttpProxyClientSocketWrapper::DoHttpProxyConnectComplete(int result) {
+  // Always inform caller of auth requests asynchronously.
+  if (result == ERR_PROXY_AUTH_REQUESTED) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&HttpProxyClientSocketWrapper::OnAuthChallenge,
+                       weak_ptr_factory_.GetWeakPtr()));
+    return ERR_IO_PENDING;
+  }
+
   if (result == ERR_HTTP_1_1_REQUIRED)
     return ERR_PROXY_HTTP_1_1_REQUIRED;
 
@@ -769,6 +800,9 @@ int HttpProxyClientSocketWrapper::DoRestartWithAuth() {
 int HttpProxyClientSocketWrapper::DoRestartWithAuthComplete(int result) {
   DCHECK_NE(ERR_IO_PENDING, result);
 
+  if (result == OK && !transport_socket_->IsConnected())
+    result = ERR_UNABLE_TO_REUSE_CONNECTION_FOR_PROXY_AUTH;
+
   // If the connection could not be reused to attempt to send proxy auth
   // credentials, try reconnecting. Do not reset the HttpAuthController in this
   // case; the server may, for instance, send "Proxy-Connection: close" and
@@ -800,6 +834,10 @@ int HttpProxyClientSocketWrapper::DoRestartWithAuthComplete(int result) {
     return OK;
   }
 
+  // If not reconnecting, treat the result as the result of establishing a
+  // tunnel through the proxy. This important in the case another auth challenge
+  // is seen.
+  next_state_ = STATE_HTTP_PROXY_CONNECT_COMPLETE;
   return result;
 }
 
@@ -829,6 +867,15 @@ void HttpProxyClientSocketWrapper::ConnectTimeout() {
   CompletionOnceCallback callback = std::move(connect_callback_);
   Disconnect();
   std::move(callback).Run(ERR_CONNECTION_TIMED_OUT);
+}
+
+void HttpProxyClientSocketWrapper::OnAuthChallenge() {
+  connect_timer_.Stop();
+  on_proxy_auth_callback_.Run(
+      *transport_socket_->GetConnectResponseInfo(),
+      transport_socket_->GetAuthController().get(),
+      base::BindOnce(&HttpProxyClientSocketWrapper::RestartWithAuthCredentials,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 const HostPortPair& HttpProxyClientSocketWrapper::GetDestination() {

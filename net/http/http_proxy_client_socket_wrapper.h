@@ -10,8 +10,10 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/completion_callback.h"
@@ -54,7 +56,13 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
     : public ProxyClientSocket,
       public ConnectJob::Delegate {
  public:
+  using OnProxyAuthChallengeCallback = base::RepeatingCallback<void(
+      const HttpResponseInfo& response,
+      HttpAuthController* auth_controller,
+      base::OnceClosure restart_with_auth_callback)>;
+
   HttpProxyClientSocketWrapper(
+      const OnProxyAuthChallengeCallback& on_proxy_auth_callback,
       RequestPriority priority,
       base::TimeDelta connect_timeout_duration,
       base::TimeDelta proxy_negotiation_timeout_duration,
@@ -128,6 +136,10 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
   void OnConnectJobComplete(int result, ConnectJob* job) override;
 
   bool HasEstablishedConnection();
+  void OnNeedsProxyAuth(const HttpResponseInfo& response,
+                        HttpAuthController* auth_controller,
+                        base::OnceClosure restart_with_auth_callback,
+                        ConnectJob* job) override;
 
   NetErrorDetails* quic_net_error_details() { return &quic_net_error_details_; }
 
@@ -153,6 +165,8 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
   ProxyServer::Scheme GetProxyServerScheme() const;
 
   void OnIOComplete(int result);
+
+  void RestartWithAuthCredentials();
 
   // Runs the state transition loop.
   int DoLoop(int result);
@@ -182,7 +196,11 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
   void SetConnectTimer(base::TimeDelta duration);
   void ConnectTimeout();
 
+  void OnAuthChallenge();
+
   const HostPortPair& GetDestination();
+
+  const OnProxyAuthChallengeCallback on_proxy_auth_callback_;
 
   State next_state_;
 
@@ -241,6 +259,8 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
 
   // Time when the connection to the proxy was started.
   base::TimeTicks connect_start_time_;
+
+  base::WeakPtrFactory<HttpProxyClientSocketWrapper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpProxyClientSocketWrapper);
 };
