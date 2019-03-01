@@ -31,8 +31,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   STACK_ALLOCATED();
 
  public:
-  typedef Vector<scoped_refptr<const NGPhysicalFragment>, 16> ChildrenVector;
-  typedef Vector<NGLogicalOffset, 16> OffsetVector;
+  typedef Vector<scoped_refptr<const NGPhysicalFragment>, 4> ChildrenVector;
+  typedef Vector<NGLogicalOffset, 4> OffsetVector;
 
   LayoutUnit BfcLineOffset() const { return bfc_line_offset_; }
   NGContainerFragmentBuilder& SetBfcLineOffset(LayoutUnit bfc_line_offset) {
