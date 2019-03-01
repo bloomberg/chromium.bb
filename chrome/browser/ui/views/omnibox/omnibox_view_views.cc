@@ -648,36 +648,34 @@ bool OmniboxViewViews::TextAndUIDirectionMatch() const {
           base::i18n::RIGHT_TO_LEFT) == base::i18n::IsRTL();
 }
 
-bool OmniboxViewViews::AtEndWithTabMatch() const {
-  if (model()->popup_model() &&  // Can be null in tests.
-      model()->popup_model()->SelectedLineHasButton()) {
-    // When text and UI direction match, 'end' is as expected,
-    // otherwise we use beginning.
-    return TextAndUIDirectionMatch() ? SelectionAtEnd()
-                                     : SelectionAtBeginning();
-  }
-  return false;
+bool OmniboxViewViews::SelectedSuggestionHasTabMatch() const {
+  return model()->popup_model() &&  // Can be null in tests.
+         model()->popup_model()->SelectedLineHasButton();
+}
+
+bool OmniboxViewViews::DirectionAwareSelectionAtEnd() const {
+  // When text and UI direction match, 'end' is as expected,
+  // otherwise we use beginning.
+  return TextAndUIDirectionMatch() ? SelectionAtEnd() : SelectionAtBeginning();
 }
 
 bool OmniboxViewViews::MaybeFocusTabButton() {
-  if (AtEndWithTabMatch()) {
-    if (model()->popup_model()->selected_line_state() ==
-        OmniboxPopupModel::NORMAL) {
-      model()->popup_model()->SetSelectedLineState(
-          OmniboxPopupModel::BUTTON_FOCUSED);
-      popup_view_->ProvideButtonFocusHint(
-          model()->popup_model()->selected_line());
-    }
+  if (SelectedSuggestionHasTabMatch() &&
+      model()->popup_model()->selected_line_state() ==
+          OmniboxPopupModel::NORMAL) {
+    model()->popup_model()->SetSelectedLineState(
+        OmniboxPopupModel::BUTTON_FOCUSED);
+    popup_view_->ProvideButtonFocusHint(
+        model()->popup_model()->selected_line());
     return true;
   }
   return false;
 }
 
 bool OmniboxViewViews::MaybeUnfocusTabButton() {
-  // 'at end' isn't strictly necessary for unfocusing, because unfocusing
-  // on other events e.g. mouse clicks, takes care of it.
-  if (AtEndWithTabMatch() && model()->popup_model()->selected_line_state() ==
-                                 OmniboxPopupModel::BUTTON_FOCUSED) {
+  if (SelectedSuggestionHasTabMatch() &&
+      model()->popup_model()->selected_line_state() ==
+          OmniboxPopupModel::BUTTON_FOCUSED) {
     model()->popup_model()->SetSelectedLineState(OmniboxPopupModel::NORMAL);
     return true;
   }
@@ -1511,7 +1509,7 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
     case ui::VKEY_RIGHT:
       if (!(control || alt || shift)) {
         if (!base::i18n::IsRTL()) {
-          if (MaybeFocusTabButton())
+          if (DirectionAwareSelectionAtEnd() && MaybeFocusTabButton())
             return true;
         } else {
           if (MaybeUnfocusTabButton())
@@ -1526,7 +1524,7 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
           if (MaybeUnfocusTabButton())
             return true;
         } else {
-          if (MaybeFocusTabButton())
+          if (DirectionAwareSelectionAtEnd() && MaybeFocusTabButton())
             return true;
         }
       }
