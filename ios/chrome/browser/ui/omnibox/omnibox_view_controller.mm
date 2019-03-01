@@ -36,15 +36,15 @@ const CGFloat kClearButtonSize = 28.0f;
 // Override of UIViewController's view with a different type.
 @property(nonatomic, strong) OmniboxContainerView* view;
 
+// Whether the default search engine supports search-by-image. This controls the
+// edit menu option to do an image search.
+@property(nonatomic, assign) BOOL searchByImageEnabled;
+
 @property(nonatomic, assign) BOOL incognito;
 
 @end
 
 @implementation OmniboxViewController
-@synthesize incognito = _incognito;
-@synthesize dispatcher = _dispatcher;
-@synthesize defaultLeadingImage = _defaultLeadingImage;
-@synthesize emptyTextLeadingImage = _emptyTextLeadingImage;
 @dynamic view;
 
 - (instancetype)initWithIncognito:(BOOL)isIncognito {
@@ -141,6 +141,10 @@ const CGFloat kClearButtonSize = 28.0f;
 
 - (void)updateAutocompleteIcon:(UIImage*)icon {
   [self.view setLeadingImage:icon];
+}
+
+- (void)updateSearchByImageSupported:(BOOL)searchByImageSupported {
+  self.searchByImageEnabled = searchByImageSupported;
 }
 
 #pragma mark - EditViewAnimatee
@@ -268,7 +272,8 @@ const CGFloat kClearButtonSize = 28.0f;
       action == @selector(searchCopiedText:)) {
     ClipboardRecentContent* clipboardRecentContent =
         ClipboardRecentContent::GetInstance();
-    if (clipboardRecentContent->GetRecentImageFromClipboard().has_value()) {
+    if (self.searchByImageEnabled &&
+        clipboardRecentContent->GetRecentImageFromClipboard().has_value()) {
       return action == @selector(searchCopiedImage:);
     }
     if (clipboardRecentContent->GetRecentURLFromClipboard().has_value()) {

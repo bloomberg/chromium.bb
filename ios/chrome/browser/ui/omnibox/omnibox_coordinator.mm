@@ -11,6 +11,7 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_mediator.h"
@@ -60,14 +61,16 @@
 
   self.viewController =
       [[OmniboxViewController alloc] initWithIncognito:isIncognito];
+
   self.viewController.defaultLeadingImage =
       GetOmniboxSuggestionIcon(DEFAULT_FAVICON);
   self.viewController.emptyTextLeadingImage = GetOmniboxSuggestionIcon(SEARCH);
-
   self.viewController.dispatcher =
       static_cast<id<BrowserCommands, LoadQueryCommands, OmniboxFocuser>>(
           self.dispatcher);
   self.mediator = [[OmniboxMediator alloc] init];
+  self.mediator.templateURLService =
+      ios::TemplateURLServiceFactory::GetForBrowserState(self.browserState);
   self.mediator.consumer = self.viewController;
 
   DCHECK(self.editController);

@@ -8,6 +8,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/omnibox/browser/location_bar_model.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
+#import "ios/chrome/browser/search_engines/search_engines_util.h"
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_consumer.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
@@ -28,20 +30,21 @@
 #error "This file requires ARC support."
 #endif
 
-@interface LocationBarMediator ()<CRWWebStateObserver, WebStateListObserving>
+@interface LocationBarMediator () <CRWWebStateObserver,
+                                   WebStateListObserving,
+                                   SearchEngineObserving>
 // The current web state associated with the toolbar.
 @property(nonatomic, assign) web::WebState* webState;
+
+// Whether the current default search engine supports search by image.
+@property(nonatomic, assign) BOOL searchEngineSupportsSearchByImage;
 @end
 
 @implementation LocationBarMediator {
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
+  std::unique_ptr<SearchEngineObserverBridge> _searchEngineObserver;
 }
-
-@synthesize consumer = _consumer;
-@synthesize webState = _webState;
-@synthesize webStateList = _webStateList;
-@synthesize locationBarModel = _locationBarModel;
 
 - (instancetype)initWithLocationBarModel:(LocationBarModel*)locationBarModel {
   DCHECK(locationBarModel);
@@ -50,6 +53,7 @@
     _locationBarModel = locationBarModel;
     _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
+    _searchEngineSupportsSearchByImage = NO;
   }
   return self;
 }
@@ -142,6 +146,13 @@
   [self.consumer defocusOmnibox];
 }
 
+#pragma mark - SearchEngineObserving
+
+- (void)searchEngineChanged {
+  self.searchEngineSupportsSearchByImage =
+      search_engines::SupportsSearchByImage(self.templateURLService);
+}
+
 #pragma mark - Setters
 
 - (void)setWebState:(web::WebState*)webState {
@@ -167,6 +178,8 @@
     [self notifyConsumerOfChangedLocation];
     [self notifyConsumerOfChangedSecurityIcon];
   }
+  [consumer
+      updateSearchByImageSupported:self.searchEngineSupportsSearchByImage];
 }
 
 - (void)setWebStateList:(WebStateList*)webStateList {
@@ -177,6 +190,25 @@
   _webStateList = webStateList;
   self.webState = self.webStateList->GetActiveWebState();
   _webStateList->AddObserver(_webStateListObserver.get());
+}
+
+- (void)setTemplateURLService:(TemplateURLService*)templateURLService {
+  _templateURLService = templateURLService;
+  self.searchEngineSupportsSearchByImage =
+      search_engines::SupportsSearchByImage(templateURLService);
+  _searchEngineObserver =
+      std::make_unique<SearchEngineObserverBridge>(self, templateURLService);
+}
+
+- (void)setSearchEngineSupportsSearchByImage:
+    (BOOL)searchEngineSupportsSearchByImage {
+  BOOL supportChanged =
+      _searchEngineSupportsSearchByImage != searchEngineSupportsSearchByImage;
+  _searchEngineSupportsSearchByImage = searchEngineSupportsSearchByImage;
+  if (supportChanged) {
+    [self.consumer
+        updateSearchByImageSupported:searchEngineSupportsSearchByImage];
+  }
 }
 
 #pragma mark - private

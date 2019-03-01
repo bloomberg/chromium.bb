@@ -491,7 +491,8 @@ typedef NS_ENUM(int, TrailingButtonState) {
     ClipboardRecentContent* clipboardRecentContent =
         ClipboardRecentContent::GetInstance();
     DCHECK(base::FeatureList::IsEnabled(kCopiedContentBehavior));
-    if (clipboardRecentContent->GetRecentImageFromClipboard().has_value()) {
+    if (self.searchByImageEnabled &&
+        clipboardRecentContent->GetRecentImageFromClipboard().has_value()) {
       return action == @selector(searchCopiedImage:);
     }
     if (clipboardRecentContent->GetRecentURLFromClipboard().has_value()) {

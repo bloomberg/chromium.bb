@@ -26,6 +26,10 @@
 // after -updateLocationText. Used for triggering NTP-specific location bar UI.
 - (void)updateAfterNavigatingToNTP;
 
+// Notifies the consumer to update after the search-by-image support status
+// changes. (This is usually when the default search engine changes).
+- (void)updateSearchByImageSupported:(BOOL)searchByImageSupported;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_CONSUMER_H_
