@@ -61,8 +61,7 @@ TEST_F(ImageElementTimingTest, ImageInsideSVG) {
 
   const ImageElementTiming& timing = GetImageElementTiming();
   // |layout_image| should have had its paint notified to ImageElementTiming.
-  EXPECT_TRUE(timing.images_notified_.find(layout_image) !=
-              timing.images_notified_.end());
+  EXPECT_TRUE(timing.images_notified_.Contains(layout_image));
 }
 
 }  // namespace blink

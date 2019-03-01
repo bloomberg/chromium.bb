@@ -74,8 +74,7 @@ void WebFormElementObserverImpl::ObserverCallback::Deliver(
     if (record->type() == "childList") {
       for (unsigned i = 0; i < record->removedNodes()->length(); ++i) {
         Node* removed_node = record->removedNodes()->item(i);
-        if (removed_node != element_ &&
-            parents_.find(removed_node) == parents_.end()) {
+        if (removed_node != element_ && !parents_.Contains(removed_node)) {
           continue;
         }
         callback_->ElementWasHiddenOrRemoved();

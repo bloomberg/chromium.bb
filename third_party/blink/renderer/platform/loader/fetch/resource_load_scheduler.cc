@@ -462,7 +462,7 @@ bool ResourceLoadScheduler::Release(
   if (id == kInvalidClientId)
     return false;
 
-  if (running_requests_.find(id) != running_requests_.end()) {
+  if (running_requests_.Contains(id)) {
     running_requests_.erase(id);
     running_throttleable_requests_.erase(id);
 

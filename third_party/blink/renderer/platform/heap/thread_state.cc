@@ -1318,13 +1318,13 @@ void ThreadState::PushRegistersAndVisitStack() {
 
 void ThreadState::AddObserver(BlinkGCObserver* observer) {
   DCHECK(observer);
-  DCHECK(observers_.find(observer) == observers_.end());
+  DCHECK(!observers_.Contains(observer));
   observers_.insert(observer);
 }
 
 void ThreadState::RemoveObserver(BlinkGCObserver* observer) {
   DCHECK(observer);
-  DCHECK(observers_.find(observer) != observers_.end());
+  DCHECK(observers_.Contains(observer));
   observers_.erase(observer);
 }
 

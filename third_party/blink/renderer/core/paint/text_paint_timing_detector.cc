@@ -194,12 +194,12 @@ void TextPaintTimingDetector::RecordText(
 
   // This metric defines the size of a text by its first size. So it
   // early-returns if the text has been recorded.
-  if (size_zero_node_ids_.find(node_id) != size_zero_node_ids_.end())
+  if (size_zero_node_ids_.Contains(node_id))
     return;
   // The node is reattached.
   if (id_record_map_.Contains(node_id) && detached_ids_.Contains(node_id))
     detached_ids_.erase(node_id);
-  if (id_record_map_.find(node_id) != id_record_map_.end())
+  if (id_record_map_.Contains(node_id))
     return;
   // When node_id is not found in id_record_map_, this invalidation is
   // the text's first invalidation.
