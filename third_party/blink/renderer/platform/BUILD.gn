@@ -972,6 +972,8 @@ jumbo_component("platform") {
     "graphics/graphics_types.cc",
     "graphics/graphics_types.h",
     "graphics/graphics_types_3d.h",
+    "graphics/high_contrast_color_classifier.cc",
+    "graphics/high_contrast_color_classifier.h",
     "graphics/high_contrast_image_classifier.cc",
     "graphics/high_contrast_image_classifier.h",
     "graphics/high_contrast_settings.h",
