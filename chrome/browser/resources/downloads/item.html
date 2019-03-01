@@ -255,12 +255,13 @@
       }
 
       #incognito {
+        -webkit-mask-image: url(chrome://downloads/images/incognito_marker.svg);
+        background-color: var(--cr-secondary-text-color);
         bottom: 20px;
-        content: -webkit-image-set(
-            url(chrome://downloads/images/1x/incognito_marker.png) 1x,
-            url(chrome://downloads/images/2x/incognito_marker.png) 2x);
+        height: 16px;
         position: absolute;
         right: 16px;
+        width: 16px;
       }
 
       :host-context([dir='rtl']) #incognito {
