@@ -9,8 +9,8 @@ import android.support.annotation.NonNull;
 import com.google.android.libraries.feed.api.common.MutationContext;
 import com.google.android.libraries.feed.api.requestmanager.RequestManager;
 import com.google.android.libraries.feed.api.sessionmanager.SessionManager;
+import com.google.android.libraries.feed.host.logging.RequestReason;
 import com.google.android.libraries.feed.host.scheduler.SchedulerApi;
-import com.google.search.now.wire.feed.FeedQueryProto.FeedQuery.RequestReason;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -131,7 +131,7 @@ public class FeedSchedulerBridge implements FeedScheduler {
     @CalledByNative
     private boolean triggerRefresh() {
         if (mRequestManager != null && mSessionManager != null) {
-            mRequestManager.triggerRefresh(RequestReason.SCHEDULED_REFRESH,
+            mRequestManager.triggerRefresh(RequestReason.HOST_REQUESTED,
                     mSessionManager.getUpdateConsumer(MutationContext.EMPTY_CONTEXT));
             return true;
         }

@@ -6,9 +6,7 @@ package org.chromium.chrome.browser.feed;
 
 import android.support.annotation.Nullable;
 
-import com.google.android.libraries.feed.api.common.ThreadUtils;
 import com.google.android.libraries.feed.api.scope.FeedProcessScope;
-import com.google.android.libraries.feed.feedapplifecyclelistener.FeedAppLifecycleListener;
 import com.google.android.libraries.feed.host.config.ApplicationInfo;
 import com.google.android.libraries.feed.host.config.Configuration;
 import com.google.android.libraries.feed.host.config.DebugBehavior;
@@ -132,22 +130,19 @@ public class FeedProcessScopeFactory {
 
         FeedSchedulerBridge schedulerBridge = new FeedSchedulerBridge(profile);
         sFeedScheduler = schedulerBridge;
-        FeedAppLifecycleListener lifecycleListener =
-                new FeedAppLifecycleListener(new ThreadUtils());
         FeedContentStorage contentStorage = new FeedContentStorage(profile);
         FeedJournalStorage journalStorage = new FeedJournalStorage(profile);
         NetworkClient networkClient = sTestNetworkClient == null ?
             new FeedNetworkBridge(profile) : sTestNetworkClient;
         sFeedLoggingBridge = new FeedLoggingBridge(profile);
-        sFeedProcessScope =
-                new FeedProcessScope
-                        .Builder(configHostApi, Executors.newSingleThreadExecutor(),
-                                new LoggingApiImpl(), sFeedLoggingBridge, networkClient,
-                                schedulerBridge, lifecycleListener, DebugBehavior.SILENT,
-                                ContextUtils.getApplicationContext(), applicationInfo)
-                        .setContentStorage(contentStorage)
-                        .setJournalStorage(journalStorage)
-                        .build();
+        sFeedProcessScope = new FeedProcessScope
+                                    .Builder(configHostApi, Executors.newSingleThreadExecutor(),
+                                            new LoggingApiImpl(), sFeedLoggingBridge, networkClient,
+                                            schedulerBridge, DebugBehavior.SILENT,
+                                            ContextUtils.getApplicationContext(), applicationInfo)
+                                    .setContentStorage(contentStorage)
+                                    .setJournalStorage(journalStorage)
+                                    .build();
         schedulerBridge.initializeFeedDependencies(
                 sFeedProcessScope.getRequestManager(), sFeedProcessScope.getSessionManager());
 
@@ -165,12 +160,13 @@ public class FeedProcessScopeFactory {
      * @param feedScheduler A {@link FeedScheduler} to use for testing.
      * @param networkClient A {@link NetworkClient} to use for testing.
      * @param feedOfflineIndicator A {@link FeedOfflineIndicator} to use for testing.
+     * @param feedAppLifecycle A {@link FeedAppLifecycle} to use for testing.
+     * @param loggingBridge A {@link FeedLoggingBridge} to use for testing.
      */
     @VisibleForTesting
     static void createFeedProcessScopeForTesting(FeedScheduler feedScheduler,
             NetworkClient networkClient, FeedOfflineIndicator feedOfflineIndicator,
-            FeedAppLifecycle feedAppLifecycle, FeedAppLifecycleListener lifecycleListener,
-            FeedLoggingBridge loggingBridge) {
+            FeedAppLifecycle feedAppLifecycle, FeedLoggingBridge loggingBridge) {
         Configuration configHostApi = FeedConfiguration.createConfiguration();
 
         sFeedScheduler = feedScheduler;
@@ -183,7 +179,7 @@ public class FeedProcessScopeFactory {
         sFeedProcessScope = new FeedProcessScope
                                     .Builder(configHostApi, Executors.newSingleThreadExecutor(),
                                             new LoggingApiImpl(), sFeedLoggingBridge, networkClient,
-                                            sFeedScheduler, lifecycleListener, DebugBehavior.SILENT,
+                                            sFeedScheduler, DebugBehavior.SILENT,
                                             ContextUtils.getApplicationContext(), applicationInfo)
                                     .build();
     }

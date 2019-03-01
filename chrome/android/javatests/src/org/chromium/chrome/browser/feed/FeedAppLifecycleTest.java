@@ -15,7 +15,6 @@ import android.app.Activity;
 import android.support.test.filters.SmallTest;
 
 import com.google.android.libraries.feed.api.lifecycle.AppLifecycleListener;
-import com.google.android.libraries.feed.feedapplifecyclelistener.FeedAppLifecycleListener;
 import com.google.android.libraries.feed.host.network.NetworkClient;
 
 import org.junit.Assert;
@@ -95,8 +94,6 @@ public class FeedAppLifecycleTest {
                     new FeedAppLifecycle(mAppLifecycleListener, mLifecycleBridge, mFeedScheduler);
             FeedProcessScopeFactory.createFeedProcessScopeForTesting(mFeedScheduler, mNetworkClient,
                     mOfflineIndicator, mAppLifecycle,
-                    new FeedAppLifecycleListener(
-                            new com.google.android.libraries.feed.api.common.ThreadUtils()),
                     new FeedLoggingBridge(profile));
         });
 

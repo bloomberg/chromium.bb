@@ -2,7 +2,7 @@ Name: Feed
 Short name: feed
 URL: https://chromium.googlesource.com/feed
 Version: 0
-Revision: 90b20079146d28dee623666a432dc76d018f66dc
+Revision: 9a7f20c75b0e6ca8d669e967ec0bd6b72965df3e
 License: Apache 2.0
 License File: LICENSE
 Security Critical: yes
