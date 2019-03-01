@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/drag_data.h"
@@ -157,14 +158,19 @@ void FileInputType::HandleDOMActivateEvent(Event& event) {
   if (GetElement().IsDisabledFormControl())
     return;
 
-  if (!LocalFrame::HasTransientUserActivation(
-          GetElement().GetDocument().GetFrame()))
+  HTMLInputElement& input = GetElement();
+  Document& document = input.GetDocument();
+
+  if (!LocalFrame::HasTransientUserActivation(document.GetFrame())) {
+    String message =
+        "File chooser dialog can only be shown with a user activation.";
+    document.AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kWarningMessageLevel, message));
     return;
+  }
 
   if (ChromeClient* chrome_client = GetChromeClient()) {
     FileChooserParams params;
-    HTMLInputElement& input = GetElement();
-    Document& document = input.GetDocument();
     bool is_directory = input.FastHasAttribute(kWebkitdirectoryAttr);
     if (is_directory)
       params.mode = FileChooserParams::Mode::kUploadFolder;
