@@ -828,6 +828,11 @@ A version of pixel-1280x720.jpg converted to grayscale using:
 ```
 jpegtran -grayscale pixel-1280x720.jpg > pixel-1280x720-grayscale.jpg
 ```
+#### pixel-1280x720-yuv420.jpg
+A version of pixel-1280x720.jpg converted to 4:2:0 subsampling using:
+```
+convert pixel-1280x720.jpg -sampling-factor 4:2:0 pixel-1280x720-yuv420.jpg
+```
 
 #### peach_pi-1280x720.jpg
 Single MJPEG encoded frame of 1280x720, captured on Samsung Chromebook 2(13").
