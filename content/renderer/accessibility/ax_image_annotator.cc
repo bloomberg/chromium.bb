@@ -15,6 +15,7 @@
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
@@ -73,6 +74,8 @@ void AXImageAnnotator::OnImageAdded(blink::WebAXObject& image) {
       image_id, image_info.GetImageProcessor(),
       base::BindOnce(&AXImageAnnotator::OnImageAnnotated,
                      weak_factory_.GetWeakPtr(), image));
+  VLOG(1) << "Requesting annotation for " << image_id << " from page "
+          << GetDocumentUrl();
 }
 
 void AXImageAnnotator::OnImageUpdated(blink::WebAXObject& image) {
@@ -164,6 +167,8 @@ SkBitmap AXImageAnnotator::GetImageData(const blink::WebAXObject& image) {
   if (node.IsNull() || !node.IsElementNode())
     return SkBitmap();
   blink::WebElement element = node.To<blink::WebElement>();
+  VLOG(1) << "Uploading pixels for " << element.ImageContents().width() << " x "
+          << element.ImageContents().height() << " image";
   return element.ImageContents();
 }
 
@@ -217,6 +222,15 @@ void AXImageAnnotator::OnImageAnnotated(
       base::JoinString(contextualized_strings, base::ASCIIToUTF16(". ")));
   image_annotations_.at(image.AxID()).set_annotation(contextualized_string);
   render_accessibility_->MarkWebAXObjectDirty(image, false /* subtree */);
+
+  VLOG(1) << "Annotating image on page " << GetDocumentUrl() << " - "
+          << contextualized_string;
+}
+
+std::string AXImageAnnotator::GetDocumentUrl() const {
+  const blink::WebLocalFrame* frame =
+      render_accessibility_->render_frame()->GetWebFrame();
+  return frame->GetDocument().Url().GetString().Utf8();
 }
 
 }  // namespace content
