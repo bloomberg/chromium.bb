@@ -900,6 +900,21 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
     blink::WebRuntimeFeatures::EnableCustomElementsV0(true);
     blink::WebRuntimeFeatures::EnableHTMLImports(true);
   }
+  // FilesApp support. crbug.com/924873
+  // For Polymer1, we still need v0 APIs.
+  // Extensions IDs from src/chrome/browser/chromeos/file_manager/app_id.h.
+  if (!base::FeatureList::IsEnabled(features::kWebUIPolymer2) &&
+      (extension_id == "hhaomjibdihmijegdhdafkllkbggdgoj" ||
+       extension_id == "jcgeabjmjgoblfofpppfkcoakmfobdko" ||
+       extension_id == "nlkncpkkdoccmpiclbokaimcnedabhhm" ||
+       extension_id == "cjbfomnbifhcdnihkgipgfcihmgjfhbf" ||
+       extension_id == "mmfbcljfglbokpmkimbfghdkjmjhdgbg" ||
+       extension_id == "pmfjbimdmchhbnneeidfognadeopoehp" ||
+       extension_id == "dmboannefpncccogfdikhmhpmdnddgoe")) {
+    blink::WebRuntimeFeatures::EnableShadowDOMV0(true);
+    blink::WebRuntimeFeatures::EnableCustomElementsV0(true);
+    blink::WebRuntimeFeatures::EnableHTMLImports(true);
+  }
 
   InitOriginPermissions(extension);
 
