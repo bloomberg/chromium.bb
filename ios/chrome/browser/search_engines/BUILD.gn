@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//ios/web/js_compile.gni")
 import("//build/config/features.gni")
+import("//ios/web/js_compile.gni")
 import("//rlz/buildflags/buildflags.gni")
 
 source_set("feature_flags") {
@@ -65,14 +65,31 @@ source_set("search_engines") {
   }
 }
 
+source_set("extension_search_engine_data_updater") {
+  sources = [
+    "extension_search_engine_data_updater.h",
+    "extension_search_engine_data_updater.mm",
+  ]
+
+  deps = [
+    ":search_engines",
+    "//base",
+    "//components/search_engines",
+    "//ios/chrome/common/app_group",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "extension_search_engine_data_updater_unittest.mm",
     "search_engine_js_unittest.mm",
     "search_engine_tab_helper_unittest.mm",
   ]
   deps = [
+    ":extension_search_engine_data_updater",
     ":search_engine_js",
     ":search_engines",
     "//base:base",
@@ -83,6 +100,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/favicon:favicon",
     "//ios/chrome/browser/web:test_support",
+    "//ios/chrome/common/app_group",
     "//ios/web",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",

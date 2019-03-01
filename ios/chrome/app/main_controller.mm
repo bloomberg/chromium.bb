@@ -93,6 +93,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/reading_list/reading_list_download_service.h"
 #import "ios/chrome/browser/reading_list/reading_list_download_service_factory.h"
+#import "ios/chrome/browser/search_engines/extension_search_engine_data_updater.h"
 #include "ios/chrome/browser/search_engines/search_engines_util.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/share_extension/share_extension_service.h"
@@ -388,6 +389,11 @@ enum class EnterTabSwitcherSnapshotResult {
 
   // Registrar for pref changes notifications to the local state.
   PrefChangeRegistrar _localStatePrefChangeRegistrar;
+
+  // Updates data about the current default search engine to be accessed in
+  // extensions.
+  std::unique_ptr<ExtensionSearchEngineDataUpdater>
+      _extensionSearchEngineDataUpdater;
 
   // The class in charge of showing/hiding the memory debugger when the
   // appropriate pref changes.
@@ -968,6 +974,8 @@ enum class EnterTabSwitcherSnapshotResult {
   [_browserViewWrangler shutdown];
   _browserViewWrangler = nil;
 
+  _extensionSearchEngineDataUpdater = nullptr;
+
   [_historyCoordinator stop];
   _historyCoordinator = nil;
 
@@ -1039,12 +1047,19 @@ enum class EnterTabSwitcherSnapshotResult {
                         &_localStatePrefChangeRegistrar);
 
                     // Calls the onPreferenceChanged function in case there was
-                    // a
-                    // change to the observed preferences before the observer
+                    // a change to the observed preferences before the observer
                     // bridge was set up.
                     [self onPreferenceChanged:metrics::prefs::
                                                   kMetricsReportingEnabled];
                     [self onPreferenceChanged:prefs::kMetricsReportingWifiOnly];
+
+                    // Track changes to default search engine.
+                    TemplateURLService* service =
+                        ios::TemplateURLServiceFactory::GetForBrowserState(
+                            _mainBrowserState);
+                    _extensionSearchEngineDataUpdater =
+                        std::make_unique<ExtensionSearchEngineDataUpdater>(
+                            service);
                   }];
 }
 

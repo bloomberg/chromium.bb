@@ -172,9 +172,7 @@ enum SearchExtensionAction {
 + (instancetype)newExtensionCommandAppStartupParametersFromWithURL:(NSURL*)url
                                              fromSourceApplication:
                                                  (NSString*)appId {
-  NSString* appGroup = app_group::ApplicationGroup();
-  NSUserDefaults* sharedDefaults =
-      [[NSUserDefaults alloc] initWithSuiteName:appGroup];
+  NSUserDefaults* sharedDefaults = app_group::GetGroupUserDefaults();
 
   NSString* commandDictionaryPreference =
       base::SysUTF8ToNSString(app_group::kChromeAppGroupCommandPreference);

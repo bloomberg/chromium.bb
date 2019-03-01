@@ -38,6 +38,8 @@ const char kChromeAppGroupFocusOmniboxCommand[] = "focusomnibox";
 const char kChromeAppGroupIncognitoSearchCommand[] = "incognitosearch";
 const char kChromeAppGroupQRScannerCommand[] = "qrscanner";
 
+const char kChromeAppGroupSupportsSearchByImage[] = "supportsSearchByImage";
+
 const char kChromeAppClientID[] = "ClientID";
 const char kUserMetricsEnabledDate[] = "UserMetricsEnabledDate";
 const char kInstallDate[] = "InstallDate";
