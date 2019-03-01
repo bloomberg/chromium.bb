@@ -20,7 +20,6 @@ interface AppService {
 
   // App Icon Factory methods.
   LoadIcon(
-      AppType app_type,
       IconKey icon_key,
       IconCompression icon_compression,
       int32 size_hint_in_dip,

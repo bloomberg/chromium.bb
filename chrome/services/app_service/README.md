@@ -279,7 +279,6 @@ statically built resource ID.
     interface AppService {
       // App Icon Factory methods.
       LoadIcon(
-          AppType app_type,
           IconKey icon_key,
           IconCompression icon_compression,
           int32 size_hint_in_dip,
@@ -308,8 +307,9 @@ statically built resource ID.
     };
 
     struct IconKey {
+      AppType app_type;
       IconType icon_type;
-      // The semantics of u_key and s_key depend on the icon_type.
+      // The semantics of u_key and s_key depend on the app_type.
       uint64 u_key;
       string s_key;
     };
@@ -417,4 +417,4 @@ TBD: details.
 
 ---
 
-Updated on 2019-02-09.
+Updated on 2019-03-01.
