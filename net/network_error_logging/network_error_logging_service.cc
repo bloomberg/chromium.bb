@@ -188,6 +188,9 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
   void OnHeader(const url::Origin& origin,
                 const IPAddress& received_ip_address,
                 const std::string& value) override {
+    if (shut_down_)
+      return;
+
     // NEL is only available to secure origins, so don't permit insecure origins
     // to set policies.
     if (!origin.GetURL().SchemeIsCryptographic()) {
@@ -219,6 +222,9 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
   }
 
   void OnRequest(RequestDetails details) override {
+    if (shut_down_)
+      return;
+
     if (!reporting_service_) {
       RecordRequestOutcome(RequestOutcome::DISCARDED_NO_REPORTING_SERVICE);
       return;
@@ -306,6 +312,9 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
 
   void QueueSignedExchangeReport(
       const SignedExchangeReportDetails& details) override {
+    if (shut_down_)
+      return;
+
     if (!reporting_service_) {
       RecordRequestOutcome(RequestOutcome::DISCARDED_NO_REPORTING_SERVICE);
       return;
@@ -734,6 +743,11 @@ void NetworkErrorLoggingService::SetReportingService(
   reporting_service_ = reporting_service;
 }
 
+void NetworkErrorLoggingService::OnShutdown() {
+  shut_down_ = true;
+  SetReportingService(nullptr);
+}
+
 void NetworkErrorLoggingService::SetClockForTesting(const base::Clock* clock) {
   clock_ = clock;
 }
@@ -749,6 +763,8 @@ std::set<url::Origin> NetworkErrorLoggingService::GetPolicyOriginsForTesting() {
 }
 
 NetworkErrorLoggingService::NetworkErrorLoggingService()
-    : clock_(base::DefaultClock::GetInstance()), reporting_service_(nullptr) {}
+    : clock_(base::DefaultClock::GetInstance()),
+      reporting_service_(nullptr),
+      shut_down_(false) {}
 
 }  // namespace net

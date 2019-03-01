@@ -79,6 +79,10 @@ class TestReportingUploader : public ReportingUploader {
                    int max_depth,
                    UploadCallback callback) override;
 
+  void OnShutdown() override;
+
+  int GetPendingUploadCountForTesting() const override;
+
  private:
   std::vector<std::unique_ptr<PendingUpload>> pending_uploads_;
 

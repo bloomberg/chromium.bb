@@ -212,6 +212,10 @@ class NET_EXPORT NetworkErrorLoggingService {
   // |reporting_service| must outlive the NetworkErrorLoggingService.
   void SetReportingService(ReportingService* reporting_service);
 
+  // Shuts down the NEL service so that no more requests or headers are
+  // processed and no more reports are queued.
+  void OnShutdown();
+
   // Sets a base::Clock (used to track policy expiration) for tests.
   // |clock| must outlive the NetworkErrorLoggingService, and cannot be
   // nullptr.
@@ -230,6 +234,7 @@ class NET_EXPORT NetworkErrorLoggingService {
   // Unowned:
   const base::Clock* clock_;
   ReportingService* reporting_service_;
+  bool shut_down_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkErrorLoggingService);

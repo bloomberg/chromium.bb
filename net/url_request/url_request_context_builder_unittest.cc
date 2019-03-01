@@ -25,6 +25,14 @@
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
+#if BUILDFLAG(ENABLE_REPORTING)
+#include "net/dns/mock_host_resolver.h"
+#include "net/reporting/reporting_context.h"
+#include "net/reporting/reporting_policy.h"
+#include "net/reporting/reporting_service.h"
+#include "net/reporting/reporting_uploader.h"
+#endif  // BUILDFLAG(ENABLE_REPORTING)
+
 namespace net {
 
 namespace {
@@ -141,6 +149,41 @@ TEST_F(URLRequestContextBuilderTest, CustomHttpAuthHandlerFactory) {
                 "Bogus", HttpAuth::AUTH_SERVER, null_ssl_info, gurl,
                 NetLogWithSource(), &handler));
 }
+
+#if BUILDFLAG(ENABLE_REPORTING)
+// See crbug.com/935209. This test ensures that shutdown occurs correctly and
+// does not crash while destoying the NEL and Reporting services in the process
+// of destroying the URLRequestContext whilst Reporting has a pending upload.
+TEST_F(URLRequestContextBuilderTest, ShutDownNELAndReportingWithPendingUpload) {
+  std::unique_ptr<MockHostResolver> host_resolver =
+      std::make_unique<MockHostResolver>();
+  host_resolver->set_ondemand_mode(true);
+  MockHostResolver* mock_host_resolver = host_resolver.get();
+  builder_.set_host_resolver(std::move(host_resolver));
+  builder_.set_proxy_resolution_service(ProxyResolutionService::CreateDirect());
+  builder_.set_reporting_policy(std::make_unique<ReportingPolicy>());
+  builder_.set_network_error_logging_enabled(true);
+
+  std::unique_ptr<URLRequestContext> context(builder_.Build());
+  ASSERT_TRUE(context->network_error_logging_service());
+  ASSERT_TRUE(context->reporting_service());
+
+  // Queue a pending upload.
+  GURL url("https://www.foo.test");
+  context->reporting_service()->GetContextForTesting()->uploader()->StartUpload(
+      url::Origin::Create(url), url, "report body", 0, base::DoNothing());
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(1, context->reporting_service()
+                   ->GetContextForTesting()
+                   ->uploader()
+                   ->GetPendingUploadCountForTesting());
+  ASSERT_TRUE(mock_host_resolver->has_pending_requests());
+
+  // This should shut down and destroy the NEL and Reporting services, including
+  // the PendingUpload, and should not cause a crash.
+  context.reset();
+}
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 }  // namespace
 

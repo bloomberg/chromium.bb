@@ -155,6 +155,11 @@ class ReportingUploaderImpl : public ReportingUploader, URLRequest::Delegate {
     }
   }
 
+  void OnShutdown() override {
+    // Cancels all pending uploads.
+    uploads_.clear();
+  }
+
   void StartPreflightRequest(std::unique_ptr<PendingUpload> upload) {
     DCHECK(upload->state == PendingUpload::CREATED);
 
@@ -319,6 +324,10 @@ class ReportingUploaderImpl : public ReportingUploader, URLRequest::Delegate {
     // Reporting doesn't need anything in the body of the response, so it
     // doesn't read it, so it should never get OnReadCompleted calls.
     NOTREACHED();
+  }
+
+  int GetPendingUploadCountForTesting() const override {
+    return uploads_.size();
   }
 
  private:
