@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_RULE_NAMESPACE_H_
 
 #include "third_party/blink/renderer/core/css/style_rule.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -36,7 +37,12 @@ class StyleRuleNamespace final : public StyleRuleBase {
   AtomicString uri_;
 };
 
-DEFINE_STYLE_RULE_TYPE_CASTS(Namespace);
+template <>
+struct DowncastTraits<StyleRuleNamespace> {
+  static bool AllowFrom(const StyleRuleBase& rule) {
+    return rule.IsNamespaceRule();
+  }
+};
 
 }  // namespace blink
 

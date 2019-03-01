@@ -290,9 +290,7 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
   for (unsigned i = 0; i < rules.size(); ++i) {
     StyleRuleBase* rule = rules[i].Get();
 
-    if (rule->IsStyleRule()) {
-      StyleRule* style_rule = ToStyleRule(rule);
-
+    if (auto* style_rule = DynamicTo<StyleRule>(rule)) {
       const CSSSelectorList& selector_list = style_rule->SelectorList();
       for (const CSSSelector* selector = selector_list.First(); selector;
            selector = selector_list.Next(*selector)) {
@@ -310,25 +308,24 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
           AddRule(style_rule, selector_index, add_rule_flags);
         }
       }
-    } else if (rule->IsPageRule()) {
-      AddPageRule(ToStyleRulePage(rule));
-    } else if (rule->IsMediaRule()) {
-      StyleRuleMedia* media_rule = ToStyleRuleMedia(rule);
+    } else if (auto* page_rule = DynamicTo<StyleRulePage>(rule)) {
+      AddPageRule(page_rule);
+    } else if (auto* media_rule = DynamicTo<StyleRuleMedia>(rule)) {
       if (!media_rule->MediaQueries() ||
           medium.Eval(*media_rule->MediaQueries(),
                       &features_.ViewportDependentMediaQueryResults(),
                       &features_.DeviceDependentMediaQueryResults()))
         AddChildRules(media_rule->ChildRules(), medium, add_rule_flags);
-    } else if (rule->IsFontFaceRule()) {
-      AddFontFaceRule(ToStyleRuleFontFace(rule));
-    } else if (rule->IsFontFeatureValuesRule()) {
-      AddFontFeatureValuesRule(ToStyleRuleFontFeatureValues(rule));
-    } else if (rule->IsKeyframesRule()) {
-      AddKeyframesRule(ToStyleRuleKeyframes(rule));
-    } else if (rule->IsSupportsRule() &&
-               ToStyleRuleSupports(rule)->ConditionIsSupported()) {
-      AddChildRules(ToStyleRuleSupports(rule)->ChildRules(), medium,
-                    add_rule_flags);
+    } else if (auto* font_face_rule = DynamicTo<StyleRuleFontFace>(rule)) {
+      AddFontFaceRule(font_face_rule);
+    } else if (auto* font_feature_values_rule =
+                   DynamicTo<StyleRuleFontFeatureValues>(rule)) {
+      AddFontFeatureValuesRule(font_feature_values_rule);
+    } else if (auto* keyframes_rule = DynamicTo<StyleRuleKeyframes>(rule)) {
+      AddKeyframesRule(keyframes_rule);
+    } else if (auto* supports_rule = DynamicTo<StyleRuleSupports>(rule)) {
+      if (supports_rule->ConditionIsSupported())
+        AddChildRules(supports_rule->ChildRules(), medium, add_rule_flags);
     }
   }
 }

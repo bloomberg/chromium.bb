@@ -203,7 +203,7 @@ StyleRuleKeyframe* CSSParser::ParseKeyframeRule(const CSSParserContext* context,
                                                 const String& rule) {
   StyleRuleBase* keyframe = CSSParserImpl::ParseRule(
       rule, context, nullptr, CSSParserImpl::kKeyframeRules);
-  return ToStyleRuleKeyframe(keyframe);
+  return To<StyleRuleKeyframe>(keyframe);
 }
 
 bool CSSParser::ParseSupportsCondition(const String& condition,

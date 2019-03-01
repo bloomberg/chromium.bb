@@ -788,7 +788,7 @@ StyleRuleFontFeatureValues* CSSParserImpl::ConsumeFontFeatureValuesRule(
   ConsumeRuleList(
       block, kFontFeatureRuleList, [&font_display](StyleRuleBase* rule) {
         const CSSValue* value =
-            ToStyleRuleFontFace(rule)->Properties().GetPropertyCSSValue(
+            To<StyleRuleFontFace>(rule)->Properties().GetPropertyCSSValue(
                 CSSPropertyFontDisplay);
         if (value)
           font_display = ToCSSIdentifierValue(value);
@@ -831,7 +831,7 @@ StyleRuleKeyframes* CSSParserImpl::ConsumeKeyframesRule(
   StyleRuleKeyframes* keyframe_rule = StyleRuleKeyframes::Create();
   ConsumeRuleList(
       block, kKeyframesRuleList, [keyframe_rule](StyleRuleBase* keyframe) {
-        keyframe_rule->ParserAppendKeyframe(ToStyleRuleKeyframe(keyframe));
+        keyframe_rule->ParserAppendKeyframe(To<StyleRuleKeyframe>(keyframe));
       });
   keyframe_rule->SetName(name);
   keyframe_rule->SetVendorPrefixed(webkit_prefixed);

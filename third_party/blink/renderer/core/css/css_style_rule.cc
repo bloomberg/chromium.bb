@@ -103,7 +103,7 @@ String CSSStyleRule::cssText() const {
 
 void CSSStyleRule::Reattach(StyleRuleBase* rule) {
   DCHECK(rule);
-  style_rule_ = ToStyleRule(rule);
+  style_rule_ = To<StyleRule>(rule);
   if (properties_cssom_wrapper_)
     properties_cssom_wrapper_->Reattach(style_rule_->MutableProperties());
 }
