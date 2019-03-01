@@ -750,9 +750,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @end
 
 @implementation BrowserViewController
-// DialogPresenterDelegate property
-@synthesize dialogPresenterDelegateIsPresenting =
-    _dialogPresenterDelegateIsPresenting;
 
 #pragma mark - Object lifecycle
 
@@ -1779,8 +1776,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                             completion:^{
                               BrowserViewController* strongSelf = weakSelf;
                               strongSelf.dismissingModal = NO;
-                              strongSelf.dialogPresenterDelegateIsPresenting =
-                                  NO;
                               if (completion)
                                 completion();
                               [strongSelf.dialogPresenter tryToPresent];
@@ -1837,7 +1832,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     }
   }
 
-  self.dialogPresenterDelegateIsPresenting = YES;
   if ([self.sideSwipeController inSwipe]) {
     [self.sideSwipeController resetContentView];
   }
@@ -3705,6 +3699,16 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 }
 
+- (BOOL)shouldDialogPresenterPresentDialog:(DialogPresenter*)presenter {
+  if (self.presentedViewController)
+    return NO;
+  for (UIViewController* childViewController in self.childViewControllers) {
+    if (childViewController.presentedViewController)
+      return NO;
+  }
+  return YES;
+}
+
 #pragma mark - ToolbarHeightProviderForFullscreen
 
 - (CGFloat)collapsedTopToolbarHeight {
@@ -4756,7 +4760,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)activityServiceDidEndPresenting {
-  self.dialogPresenterDelegateIsPresenting = NO;
   [self.dialogPresenter tryToPresent];
 }
 

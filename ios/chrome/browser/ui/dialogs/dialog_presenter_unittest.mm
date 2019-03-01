@@ -50,11 +50,18 @@ class DialogPresenterTestWebState : public web::TestWebState {
 }
 // The web states for the dialogs that have been presented.
 @property(nonatomic, readonly) std::vector<web::WebState*> presentedWebStates;
+// Whether the dialog should be allowed to present a dialog.
+@property(nonatomic, assign) BOOL shouldAllowDialogPresentation;
 @end
 
 @implementation TestDialogPresenterDelegate
-@synthesize dialogPresenterDelegateIsPresenting =
-    _dialogPresenterDelegateIsPresenting;
+
+- (instancetype)init {
+  if (self = [super init]) {
+    _shouldAllowDialogPresentation = YES;
+  }
+  return self;
+}
 
 - (std::vector<web::WebState*>)presentedWebStates {
   return _presentedWebStates;
@@ -63,6 +70,10 @@ class DialogPresenterTestWebState : public web::TestWebState {
 - (void)dialogPresenter:(DialogPresenter*)presenter
     willShowDialogForWebState:(web::WebState*)webState {
   _presentedWebStates.push_back(webState);
+}
+
+- (BOOL)shouldDialogPresenterPresentDialog:(DialogPresenter*)presenter {
+  return self.shouldAllowDialogPresentation;
 }
 
 @end
@@ -215,7 +226,7 @@ TEST_F(DialogPresenterTest, CancelTest) {
 TEST_F(DialogPresenterTest, DelegatePresenting) {
   // Tests that the dialog is not shown if the delegate is presenting.
   DialogPresenterTestWebState webState1;
-  delegate().dialogPresenterDelegateIsPresenting = YES;
+  delegate().shouldAllowDialogPresentation = NO;
   [presenter() runJavaScriptAlertPanelWithMessage:@""
                                        requestURL:GURL()
                                          webState:&webState1
@@ -225,7 +236,7 @@ TEST_F(DialogPresenterTest, DelegatePresenting) {
   EXPECT_EQ(0U, delegate().presentedWebStates.size());
 
   // The delegate is not presenting anymore, the dialog is not shown yet.
-  delegate().dialogPresenterDelegateIsPresenting = NO;
+  delegate().shouldAllowDialogPresentation = YES;
   EXPECT_EQ(0U, delegate().presentedWebStates.size());
 
   // Notify the presenter that it can present.
