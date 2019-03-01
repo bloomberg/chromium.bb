@@ -16,6 +16,8 @@
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/serialization_context.h"
 #include "mojo/public/cpp/bindings/lib/serialization_forward.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
@@ -115,6 +117,26 @@ struct Serializer<InterfacePtrDataView<Base>, InterfacePtrInfo<T>> {
 };
 
 template <typename Base, typename T>
+struct Serializer<InterfacePtrDataView<Base>, PendingRemote<T>> {
+  static_assert(std::is_base_of<Base, T>::value, "Interface type mismatch.");
+
+  static void Serialize(PendingRemote<T>& input,
+                        Interface_Data* output,
+                        SerializationContext* context) {
+    context->AddInterfaceInfo(input.TakePipe(), input.version(), output);
+  }
+
+  static bool Deserialize(Interface_Data* input,
+                          PendingRemote<T>* output,
+                          SerializationContext* context) {
+    *output = PendingRemote<T>(
+        context->TakeHandleAs<mojo::MessagePipeHandle>(input->handle),
+        input->version);
+    return true;
+  }
+};
+
+template <typename Base, typename T>
 struct Serializer<InterfaceRequestDataView<Base>, InterfaceRequest<T>> {
   static_assert(std::is_base_of<Base, T>::value, "Interface type mismatch.");
 
@@ -129,6 +151,25 @@ struct Serializer<InterfaceRequestDataView<Base>, InterfaceRequest<T>> {
                           SerializationContext* context) {
     *output =
         InterfaceRequest<T>(context->TakeHandleAs<MessagePipeHandle>(*input));
+    return true;
+  }
+};
+
+template <typename Base, typename T>
+struct Serializer<InterfaceRequestDataView<Base>, PendingReceiver<T>> {
+  static_assert(std::is_base_of<Base, T>::value, "Interface type mismatch.");
+
+  static void Serialize(PendingReceiver<T>& input,
+                        Handle_Data* output,
+                        SerializationContext* context) {
+    context->AddHandle(ScopedHandle::From(input.TakePipe()), output);
+  }
+
+  static bool Deserialize(Handle_Data* input,
+                          PendingReceiver<T>* output,
+                          SerializationContext* context) {
+    *output =
+        PendingReceiver<T>(context->TakeHandleAs<MessagePipeHandle>(*input));
     return true;
   }
 };

@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/component_export.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -58,6 +59,12 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfacePtrStateBase {
   bool has_pending_callbacks() const {
     return endpoint_client_ && endpoint_client_->has_pending_responders();
   }
+
+#if DCHECK_IS_ON()
+  void SetNextCallLocation(const base::Location& location) {
+    endpoint_client_->SetNextCallLocation(location);
+  }
+#endif
 
  protected:
   InterfaceEndpointClient* endpoint_client() const {
@@ -114,6 +121,13 @@ class InterfacePtrState : public InterfacePtrStateBase {
 
     // This will be null if the object is not bound.
     return proxy_.get();
+  }
+
+  void SetNextCallLocation(const base::Location& location) {
+#if DCHECK_IS_ON()
+    ConfigureProxyIfNecessary();
+    InterfacePtrStateBase::SetNextCallLocation(location);
+#endif
   }
 
   void QueryVersion(const base::Callback<void(uint32_t)>& callback) {

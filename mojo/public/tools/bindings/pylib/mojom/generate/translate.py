@@ -69,7 +69,7 @@ def _MapKind(kind):
     base_kind = _MapKind(kind[0:-1])
     # NOTE: This doesn't rule out enum types. Those will be detected later, when
     # cross-reference is established.
-    reference_kinds = ('m', 's', 'h', 'a', 'r', 'x', 'asso')
+    reference_kinds = ('m', 's', 'h', 'a', 'r', 'x', 'asso', 'rmt', 'rcv')
     if re.split('[^a-z]', base_kind, 1)[0] not in reference_kinds:
       raise Exception(
           'A type (spec "%s") cannot be made nullable' % base_kind)
@@ -87,6 +87,12 @@ def _MapKind(kind):
   if kind.startswith('asso<'):
     assert kind.endswith('>')
     return 'asso:' + _MapKind(kind[5:-1])
+  if kind.startswith('rmt<'):
+    assert kind.endswith('>')
+    return 'rmt:' + _MapKind(kind[4:-1])
+  if kind.startswith('rcv<'):
+    assert kind.endswith('>')
+    return 'rcv:' + _MapKind(kind[4:-1])
   if kind in map_to_kind:
     return map_to_kind[kind]
   return 'x:' + kind
@@ -202,6 +208,10 @@ def _Kind(kinds, spec, scope):
     kind = mojom.Array(_Kind(kinds, spec[colon+1:], scope), length)
   elif spec.startswith('r:'):
     kind = mojom.InterfaceRequest(_Kind(kinds, spec[2:], scope))
+  elif spec.startswith('rmt:'):
+    kind = mojom.PendingRemote(_Kind(kinds, spec[4:], scope))
+  elif spec.startswith('rcv:'):
+    kind = mojom.PendingReceiver(_Kind(kinds, spec[4:], scope))
   elif spec.startswith('m['):
     # Isolate the two types from their brackets.
 

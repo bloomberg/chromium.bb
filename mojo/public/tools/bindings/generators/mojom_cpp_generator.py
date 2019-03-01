@@ -224,7 +224,9 @@ class Generator(generator.Generator):
           mojom.IsAnyHandleKind(kind) or
           mojom.IsInterfaceKind(kind) or
           mojom.IsInterfaceRequestKind(kind) or
-          mojom.IsAssociatedKind(kind)):
+          mojom.IsAssociatedKind(kind) or
+          mojom.IsPendingRemoteKind(kind) or
+          mojom.IsPendingReceiverKind(kind)):
         pass
       elif mojom.IsArrayKind(kind):
         AddKind(kind.kind)
@@ -585,6 +587,12 @@ class Generator(generator.Generator):
     if mojom.IsInterfaceRequestKind(kind):
       return "%sRequest" % self._GetNameForKind(
           kind.kind, add_same_module_namespaces=add_same_module_namespaces)
+    if mojom.IsPendingRemoteKind(kind):
+      return "mojo::PendingRemote<%s>" % self._GetNameForKind(
+          kind.kind, add_same_module_namespaces=add_same_module_namespaces)
+    if mojom.IsPendingReceiverKind(kind):
+      return "mojo::PendingReceiver<%s>" % self._GetNameForKind(
+          kind.kind, add_same_module_namespaces=add_same_module_namespaces)
     if mojom.IsAssociatedInterfaceKind(kind):
       return "%sAssociatedPtrInfo" % self._GetNameForKind(
           kind.kind, add_same_module_namespaces=add_same_module_namespaces)
@@ -671,9 +679,9 @@ class Generator(generator.Generator):
       return ("mojo::internal::Pointer<mojo::internal::Map_Data<%s, %s>>" %
               (self._GetCppFieldType(kind.key_kind),
                self._GetCppFieldType(kind.value_kind)))
-    if mojom.IsInterfaceKind(kind):
+    if mojom.IsInterfaceKind(kind) or mojom.IsPendingRemoteKind(kind):
       return "mojo::internal::Interface_Data"
-    if mojom.IsInterfaceRequestKind(kind):
+    if mojom.IsInterfaceRequestKind(kind) or mojom.IsPendingReceiverKind(kind):
       return "mojo::internal::Handle_Data"
     if mojom.IsAssociatedInterfaceKind(kind):
       return "mojo::internal::AssociatedInterface_Data"
@@ -889,6 +897,12 @@ class Generator(generator.Generator):
       return "%sPtrDataView" % _GetName(kind)
     if mojom.IsInterfaceRequestKind(kind):
       return "%sRequestDataView" % _GetName(kind.kind)
+    if mojom.IsPendingRemoteKind(kind):
+      return ("mojo::InterfacePtrDataView<%sInterfaceBase>" %
+              _GetName(kind.kind))
+    if mojom.IsPendingReceiverKind(kind):
+      return ("mojo::InterfaceRequestDataView<%sInterfaceBase>" %
+              _GetName(kind.kind))
     if mojom.IsAssociatedInterfaceKind(kind):
       return "%sAssociatedPtrInfoDataView" % _GetName(kind.kind)
     if mojom.IsAssociatedInterfaceRequestKind(kind):
