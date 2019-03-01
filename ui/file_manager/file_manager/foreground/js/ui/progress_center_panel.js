@@ -124,7 +124,7 @@ ProgressCenterItemElement.prototype.update = function(item, animated) {
   }
 
   // Set track width.
-  const setWidth = nextWidthFrame => {
+  const setWidth = ((nextWidthFrame) => {
     const currentWidthRate = parseInt(this.track_.style.width, 10);
     // Prevent assigning the same width to avoid stopping the animation.
     // animated == false may be intended to cancel the animation, so in that
@@ -135,7 +135,7 @@ ProgressCenterItemElement.prototype.update = function(item, animated) {
     this.track_.hidden = false;
     this.track_.style.width = nextWidthFrame + '%';
     this.track_.classList.toggle('animated', animated);
-  };
+  }).bind(null, item.progressRateInPercent);
 
   if (animated) {
     this.cancelTransition_ =
@@ -143,7 +143,7 @@ ProgressCenterItemElement.prototype.update = function(item, animated) {
   } else {
     // For animated === false, we should call setWidth immediately to cancel the
     // animation, otherwise the animation may complete before canceling it.
-    setWidth(undefined);
+    setWidth();
   }
 };
 
