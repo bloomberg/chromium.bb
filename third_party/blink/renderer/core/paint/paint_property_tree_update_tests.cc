@@ -1578,4 +1578,45 @@ TEST_P(PaintPropertyTreeUpdateTest, ChangingClipPath) {
   // Pass if no crash.
 }
 
+TEST_P(PaintPropertyTreeUpdateTest, SubpixelAccumulationAcrossIsolation) {
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0 }</style>
+    <div id="parent" style="margin-left: 10.25px">
+      <div id="isolation" style="contain: paint">
+        <div id="child"><div>
+      </div>
+    </div>
+  )HTML");
+  auto* parent_element = GetDocument().getElementById("parent");
+  auto* parent = parent_element->GetLayoutObject();
+  auto* isolation_properties = PaintPropertiesForElement("isolation");
+  auto* child = GetLayoutObjectByElementId("child");
+  EXPECT_EQ(LayoutPoint(LayoutUnit(10.25), LayoutUnit()),
+            parent->FirstFragment().PaintOffset());
+  EXPECT_EQ(FloatSize(10, 0), isolation_properties->PaintOffsetTranslation()
+                                  ->Matrix()
+                                  .To2DTranslation());
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    EXPECT_EQ(LayoutPoint(), child->FirstFragment().PaintOffset());
+  } else {
+    EXPECT_EQ(LayoutPoint(LayoutUnit(0.25), LayoutUnit()),
+              child->FirstFragment().PaintOffset());
+  }
+
+  parent_element->setAttribute(html_names::kStyleAttr, "margin-left: 12.75px");
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(LayoutPoint(LayoutUnit(12.75), LayoutUnit()),
+            parent->FirstFragment().PaintOffset());
+  EXPECT_EQ(FloatSize(13, 0), isolation_properties->PaintOffsetTranslation()
+                                  ->Matrix()
+                                  .To2DTranslation());
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    EXPECT_EQ(LayoutPoint(), child->FirstFragment().PaintOffset());
+  } else {
+    EXPECT_EQ(LayoutPoint(LayoutUnit(-0.25), LayoutUnit()),
+              child->FirstFragment().PaintOffset());
+  }
+}
+
 }  // namespace blink
