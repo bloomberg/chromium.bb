@@ -169,6 +169,10 @@ void WebRuntimeFeatures::EnableDecodeToYUV(bool enable) {
   RuntimeEnabledFeatures::SetDecodeToYUVEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableFallbackCursorMode(bool enable) {
+  RuntimeEnabledFeatures::SetFallbackCursorModeEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableFastMobileScrolling(bool enable) {
   RuntimeEnabledFeatures::SetFastMobileScrollingEnabled(enable);
 }

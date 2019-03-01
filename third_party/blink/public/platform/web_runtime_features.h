@@ -99,6 +99,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableDatabase(bool);
   BLINK_PLATFORM_EXPORT static void EnableDecodeToYUV(bool);
   BLINK_PLATFORM_EXPORT static void EnableDisplayCutoutAPI(bool);
+  BLINK_PLATFORM_EXPORT static void EnableFallbackCursorMode(bool);
   BLINK_PLATFORM_EXPORT static void EnableFastMobileScrolling(bool);
   BLINK_PLATFORM_EXPORT static void EnableFeaturePolicyForSandbox(bool);
   BLINK_PLATFORM_EXPORT static void EnableFileSystem(bool);
