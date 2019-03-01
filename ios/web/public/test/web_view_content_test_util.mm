@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
-#import "base/test/ios/wait_util.h"
 #include "base/values.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 #import "net/base/mac/url_conversions.h"
@@ -95,8 +94,10 @@ bool IsWebViewContainingText(web::WebState* web_state,
   return false;
 }
 
-bool WaitForWebViewContainingText(web::WebState* web_state, std::string text) {
-  return WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
+bool WaitForWebViewContainingText(web::WebState* web_state,
+                                  std::string text,
+                                  NSTimeInterval timeout) {
+  return WaitUntilConditionOrTimeout(timeout, ^{
     base::RunLoop().RunUntilIdle();
     return IsWebViewContainingText(web_state, text);
   });
