@@ -122,43 +122,6 @@ inline base::Optional<MinMaxSize> ComputeMinMaxSizeWithAlgorithm(
   return minmax;
 }
 
-bool IsFloatFragment(const NGPhysicalFragment& fragment) {
-  const LayoutObject* layout_object = fragment.GetLayoutObject();
-  return layout_object && layout_object->IsFloating() && fragment.IsBox();
-}
-
-// Creates a blink::FloatingObject (if needed), and populates it with the
-// position information needed by the existing layout tree.
-void CopyFloatChildFragmentPosition(LayoutBox* floating_box,
-                                    const NGPhysicalOffset offset,
-                                    bool has_flipped_x_axis) {
-  DCHECK(floating_box->IsFloating());
-
-  LayoutBlock* containing_block = floating_box->ContainingBlock();
-  DCHECK(containing_block);
-
-  // Floats need an associated FloatingObject for painting.
-  FloatingObject* floating_object =
-      ToLayoutBlockFlow(containing_block)->InsertFloatingObject(*floating_box);
-  floating_object->SetShouldPaint(!floating_box->HasSelfPaintingLayer());
-  LayoutUnit horizontal_margin_edge_offset = offset.left;
-  if (has_flipped_x_axis)
-    horizontal_margin_edge_offset -= floating_box->MarginRight();
-  else
-    horizontal_margin_edge_offset -= floating_box->MarginLeft();
-  floating_object->SetX(horizontal_margin_edge_offset);
-  floating_object->SetY(offset.top - floating_box->MarginTop());
-#if DCHECK_IS_ON()
-  // Being "placed" is a legacy thing. Make sure the flags remain unset in NG.
-  DCHECK(!floating_object->IsPlaced());
-  DCHECK(!floating_object->IsInPlacedTree());
-
-  // Set this flag to tell the float machinery that it's safe to read out
-  // position data.
-  floating_object->SetHasGeometry();
-#endif
-}
-
 void UpdateLegacyMultiColumnFlowThread(
     NGBlockNode node,
     LayoutMultiColumnFlowThread* flow_thread,
@@ -687,8 +650,6 @@ void NGBlockNode::PlaceChildrenInLayoutBox(
     const NGPhysicalOffset& offset_from_start) {
   LayoutBox* rendered_legend = nullptr;
   for (const auto& child_fragment : physical_fragment.Children()) {
-    auto* child_object = child_fragment->GetLayoutObject();
-
     // Skip any line-boxes we have as children, this is handled within
     // NGInlineNode at the moment.
     if (!child_fragment->IsBox() && !child_fragment->IsRenderedLegend())
@@ -700,10 +661,6 @@ void NGBlockNode::PlaceChildrenInLayoutBox(
         rendered_legend = ToLayoutBox(box_fragment.GetLayoutObject());
       CopyChildFragmentPosition(box_fragment, child_fragment.Offset(),
                                 offset_from_start);
-    }
-    if (child_object->IsLayoutBlockFlow()) {
-      ToLayoutBlockFlow(child_object)->AddVisualOverflowFromFloats();
-      ToLayoutBlockFlow(child_object)->AddLayoutOverflowFromFloats();
     }
   }
 
@@ -778,11 +735,6 @@ void NGBlockNode::CopyChildFragmentPosition(
   }
   layout_box->SetLocation(LayoutPoint(
       horizontal_offset, fragment_offset.top + additional_offset.top));
-
-  if (IsFloatFragment(fragment)) {
-    CopyFloatChildFragmentPosition(
-        layout_box, fragment_offset + additional_offset, has_flipped_x_axis);
-  }
 }
 
 // For inline children, NG painters handles fragments directly, but there are
@@ -809,11 +761,6 @@ void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
                                       maybe_flipped_offset.left;
         }
         layout_box.SetLocation(maybe_flipped_offset.ToLayoutPoint());
-
-        if (IsFloatFragment(*child)) {
-          CopyFloatChildFragmentPosition(&layout_box, maybe_flipped_offset,
-                                         initial_container_is_flipped);
-        }
       }
 
       // Legacy compatibility. This flag is used in paint layer for

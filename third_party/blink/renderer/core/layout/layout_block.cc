@@ -57,6 +57,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/logical_values.h"
+#include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -566,7 +567,8 @@ void LayoutBlock::ComputeLayoutOverflow(LayoutUnit old_client_after_edge,
 void LayoutBlock::AddVisualOverflowFromBlockChildren() {
   for (LayoutBox* child = FirstChildBox(); child;
        child = child->NextSiblingBox()) {
-    if (child->IsFloatingOrOutOfFlowPositioned() || child->IsColumnSpanAll())
+    if ((!IsLayoutNGContainingBlock(this) && child->IsFloating()) ||
+        child->IsOutOfFlowPositioned() || child->IsColumnSpanAll())
       continue;
 
     // If the child contains inline with outline and continuation, its
@@ -584,7 +586,8 @@ void LayoutBlock::AddVisualOverflowFromBlockChildren() {
 void LayoutBlock::AddLayoutOverflowFromBlockChildren() {
   for (LayoutBox* child = FirstChildBox(); child;
        child = child->NextSiblingBox()) {
-    if (child->IsFloatingOrOutOfFlowPositioned() || child->IsColumnSpanAll())
+    if ((!IsLayoutNGContainingBlock(this) && child->IsFloating()) ||
+        child->IsOutOfFlowPositioned() || child->IsColumnSpanAll())
       continue;
 
     // If the child contains inline with outline and continuation, its
