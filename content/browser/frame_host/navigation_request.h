@@ -251,6 +251,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
     common_params_.has_user_gesture = has_user_gesture;
   }
 
+  // Ignores any interface disconnect that might happen to the
+  // navigation_client used to commit.
+  void IgnoreCommitInterfaceDisconnection();
+
  private:
   NavigationRequest(FrameTreeNode* frame_tree_node,
                     const CommonNavigationParams& common_params,

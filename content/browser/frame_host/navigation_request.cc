@@ -2058,4 +2058,9 @@ void NavigationRequest::IgnoreInterfaceDisconnection() {
       base::DoNothing());
 }
 
+void NavigationRequest::IgnoreCommitInterfaceDisconnection() {
+  return commit_navigation_client_.set_connection_error_handler(
+      base::DoNothing());
+}
+
 }  // namespace content
