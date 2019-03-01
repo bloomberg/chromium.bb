@@ -366,11 +366,10 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
   // displayed.
   if (self.blockingConfirmationCoordinator)
     return;
-  // The active TabModel can't be changed while a JavaScript dialog is shown.
-  DCHECK(!self.showingDialog);
-  if (_active && !_queuedWebStates.empty() &&
-      !self.delegate.dialogPresenterDelegateIsPresenting)
+  if (!self.showingDialog && _active && !_queuedWebStates.empty() &&
+      [self.delegate shouldDialogPresenterPresentDialog:self]) {
     [self showNextDialog];
+  }
 }
 
 + (NSString*)localizedTitleForJavaScriptAlertFromPage:(const GURL&)pageURL
@@ -398,8 +397,9 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
   _dialogCoordinatorsForWebStates[webState] = coordinator;
 
   if (self.active && !self.showingDialog &&
-      !self.delegate.dialogPresenterDelegateIsPresenting)
+      [self.delegate shouldDialogPresenterPresentDialog:self]) {
     [self showNextDialog];
+  }
 }
 
 - (void)showNextDialog {
@@ -425,8 +425,9 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
   self.presentedDialogCoordinator = nil;
   self.blockingConfirmationCoordinator = nil;
   if (!_queuedWebStates.empty() &&
-      !self.delegate.dialogPresenterDelegateIsPresenting)
+      [self.delegate shouldDialogPresenterPresentDialog:self]) {
     [self showNextDialog];
+  }
 }
 
 - (void)setUpAlertCoordinator:(AlertCoordinator*)alertCoordinator
