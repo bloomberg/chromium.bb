@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/strike_database.h"
 
+#include <algorithm>
 #include <string>
 #include <utility>
 #include <vector>
@@ -39,7 +40,7 @@ StrikeDatabase::StrikeDatabase(const base::FilePath& database_dir)
 
 StrikeDatabase::~StrikeDatabase() {}
 
-int StrikeDatabase::AddStrikes(int strikes_increase, const std::string key) {
+int StrikeDatabase::AddStrikes(int strikes_increase, const std::string& key) {
   DCHECK(strikes_increase > 0);
   int num_strikes =
       strike_map_cache_.count(key)  // Cache has entry for |key|.
@@ -49,25 +50,20 @@ int StrikeDatabase::AddStrikes(int strikes_increase, const std::string key) {
   return num_strikes;
 }
 
-int StrikeDatabase::RemoveStrikes(int strikes_decrease, const std::string key) {
-  DCHECK(strikes_decrease > 0);
-  DCHECK(strike_map_cache_.count(key));
-  int num_strikes = strike_map_cache_[key].num_strikes() - strikes_decrease;
-  if (num_strikes < 1) {
-    ClearStrikes(key);
-    return 0;
-  }
+int StrikeDatabase::RemoveStrikes(int strikes_decrease,
+                                  const std::string& key) {
+  int num_strikes = GetStrikes(key);
+  num_strikes = std::max(0, num_strikes - strikes_decrease);
   SetStrikeData(key, num_strikes);
   return num_strikes;
 }
 
-int StrikeDatabase::GetStrikes(const std::string key) {
-  return strike_map_cache_.count(key)  // Cache contains entry for |key|.
-             ? strike_map_cache_[key].num_strikes()
-             : 0;
+int StrikeDatabase::GetStrikes(const std::string& key) {
+  auto iter = strike_map_cache_.find(key);
+  return (iter != strike_map_cache_.end()) ? iter->second.num_strikes() : 0;
 }
 
-void StrikeDatabase::ClearStrikes(const std::string key) {
+void StrikeDatabase::ClearStrikes(const std::string& key) {
   strike_map_cache_.erase(key);
   ClearAllProtoStrikesForKey(key, base::DoNothing());
 }
@@ -123,7 +119,11 @@ void StrikeDatabase::OnDatabaseLoadKeysAndEntries(
   strike_map_cache_.insert(entries->begin(), entries->end());
 }
 
-void StrikeDatabase::SetStrikeData(const std::string key, int num_strikes) {
+void StrikeDatabase::SetStrikeData(const std::string& key, int num_strikes) {
+  if (num_strikes == 0) {
+    ClearStrikes(key);
+    return;
+  }
   StrikeData data;
   data.set_num_strikes(num_strikes);
   data.set_last_update_timestamp(
@@ -132,7 +132,7 @@ void StrikeDatabase::SetStrikeData(const std::string key, int num_strikes) {
   SetProtoStrikeData(key, data, base::DoNothing());
 }
 
-void StrikeDatabase::GetProtoStrikes(const std::string key,
+void StrikeDatabase::GetProtoStrikes(const std::string& key,
                                      const StrikesCallback& outer_callback) {
   if (!database_initialized_) {
     outer_callback.Run(false);
@@ -173,7 +173,7 @@ void StrikeDatabase::ClearAllProtoStrikesForKey(
       /*keys_to_remove=*/std::move(keys_to_remove), outer_callback);
 }
 
-void StrikeDatabase::GetProtoStrikeData(const std::string key,
+void StrikeDatabase::GetProtoStrikeData(const std::string& key,
                                         const GetValueCallback& callback) {
   if (!database_initialized_) {
     callback.Run(false, nullptr);

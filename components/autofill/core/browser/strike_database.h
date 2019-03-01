@@ -54,18 +54,18 @@ class StrikeDatabase : public KeyedService {
 
   // Increases in-memory cache by |strikes_increase| and updates underlying
   // ProtoDatabase.
-  int AddStrikes(int strikes_increase, const std::string key);
+  int AddStrikes(int strikes_increase, const std::string& key);
 
   // Removes |strikes_decrease| in-memory cache strikes, updates
   // last_update_timestamp, and updates underlying ProtoDatabase.
-  int RemoveStrikes(int strikes_decrease, const std::string key);
+  int RemoveStrikes(int strikes_decrease, const std::string& key);
 
   // Returns strike count from in-memory cache.
-  int GetStrikes(const std::string key);
+  int GetStrikes(const std::string& key);
 
   // Removes database entry for |key| from in-memory cache and underlying
   // ProtoDatabase.
-  void ClearStrikes(const std::string key);
+  void ClearStrikes(const std::string& key);
 
   // Removes all database entries from in-memory cache and underlying
   // ProtoDatabase for the whole project.
@@ -117,12 +117,12 @@ class StrikeDatabase : public KeyedService {
 
   // Updates the StrikeData for |key| in the cache and ProtoDatabase to have
   // |num_strikes|, and the current time as timestamp.
-  void SetStrikeData(const std::string key, int num_strikes);
+  void SetStrikeData(const std::string& key, int num_strikes);
 
   // Passes the number of strikes for |key| to |outer_callback|. In the case
   // that the database fails to retrieve the strike update or if no entry is
   // found for |key|, 0 is passed.
-  virtual void GetProtoStrikes(const std::string key,
+  virtual void GetProtoStrikes(const std::string& key,
                                const StrikesCallback& outer_callback);
 
   // Removes all database entries, which ensures there will be no saved strikes
@@ -137,7 +137,7 @@ class StrikeDatabase : public KeyedService {
       const ClearStrikesCallback& outer_callback);
 
   // Passes success status and StrikeData entry for |key| to |inner_callback|.
-  void GetProtoStrikeData(const std::string key,
+  void GetProtoStrikeData(const std::string& key,
                           const GetValueCallback& inner_callback);
 
   // Sets the entry for |key| to |strike_data|. Success status is passed to the

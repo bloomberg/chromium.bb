@@ -18,6 +18,16 @@ class LocalCardMigrationStrikeDatabase : public StrikeDatabaseIntegratorBase {
   LocalCardMigrationStrikeDatabase(StrikeDatabase* strike_database);
   ~LocalCardMigrationStrikeDatabase() override;
 
+  // Strikes to remove when user adds new local card.
+  static const int kStrikesToRemoveWhenLocalCardAdded;
+  // Strikes to add when  user closes LocalCardMigrationBubble.
+  static const int kStrikesToAddWhenBubbleClosed;
+  // Strikes to add when user closes LocalCardMigrationDialog.
+  static const int kStrikesToAddWhenDialogClosed;
+  // Number of strikes to add when user de-selected some local cards during
+  // migration.
+  static const int kStrikesToAddWhenCardsDeselectedAtMigration;
+
   std::string GetProjectPrefix() override;
   int GetMaxStrikesLimit() override;
   long long GetExpiryTimeMicros() override;

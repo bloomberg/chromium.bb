@@ -40,7 +40,17 @@ LocalCardMigrationManager::LocalCardMigrationManager(
       payments_client_(payments_client),
       app_locale_(app_locale),
       personal_data_manager_(personal_data_manager),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  // This is to initialize StrikeDatabase is if it hasn't been already, so that
+  // its cache would be loaded and ready to use when the first LCMM is created.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillSaveCreditCardUsesStrikeSystemV2)) {
+    // Only init when |kAutofillSaveCreditCardUsesStrikeSystemV2| is enabled. If
+    // flag is off and LegacyStrikeDatabase instead of StrikeDatabase is used,
+    // this init will cause failure on GetStrikes().
+    client_->GetStrikeDatabase();
+  }
+}
 
 LocalCardMigrationManager::~LocalCardMigrationManager() {}
 
@@ -63,9 +73,28 @@ bool LocalCardMigrationManager::ShouldOfferLocalCardMigration(
   if (!IsCreditCardMigrationEnabled())
     return false;
 
-  // Don't show the the prompt if user cancelled/rejected previously.
-  if (prefs::IsLocalCardMigrationPromptPreviouslyCancelled(client_->GetPrefs()))
+  // Don't show the prompt if max strike count was reached.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillSaveCreditCardUsesStrikeSystemV2) &&
+      base::FeatureList::IsEnabled(
+          features::kAutofillLocalCardMigrationUsesStrikeSystemV2) &&
+      GetLocalCardMigrationStrikeDatabase()->IsMaxStrikesLimitReached()) {
+    switch (imported_credit_card_record_type) {
+      case FormDataImporter::ImportedCreditCardRecordType::LOCAL_CARD:
+        AutofillMetrics::LogLocalCardMigrationNotOfferedDueToMaxStrikesMetric(
+            AutofillMetrics::SaveTypeMetric::LOCAL);
+        break;
+      case FormDataImporter::ImportedCreditCardRecordType::SERVER_CARD:
+        AutofillMetrics::LogLocalCardMigrationNotOfferedDueToMaxStrikesMetric(
+            AutofillMetrics::SaveTypeMetric::SERVER);
+        break;
+    }
     return false;
+  } else if (prefs::IsLocalCardMigrationPromptPreviouslyCancelled(
+                 client_->GetPrefs())) {
+    // Don't show the the prompt if user cancelled/rejected previously.
+    return false;
+  }
 
   // Fetch all migratable credit cards and store in |migratable_credit_cards_|.
   GetMigratableCreditCards();
@@ -120,6 +149,17 @@ void LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog(
   user_accepted_main_migration_dialog_ = true;
   AutofillMetrics::LogLocalCardMigrationPromptMetric(
       local_card_migration_origin_, AutofillMetrics::MAIN_DIALOG_ACCEPTED);
+
+  // If there are cards which aren't selected, add 3 strikes to
+  // LocalCardMigrationStrikeDatabase.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillSaveCreditCardUsesStrikeSystemV2) &&
+      (selected_card_guids.size() < migratable_credit_cards_.size())) {
+    GetLocalCardMigrationStrikeDatabase()->AddStrikes(
+        LocalCardMigrationStrikeDatabase::
+            kStrikesToAddWhenCardsDeselectedAtMigration);
+  }
+
   // Update the |migratable_credit_cards_| with the |selected_card_guids|. This
   // will remove any card from |migratable_credit_cards_| of which the GUID is
   // not in |selected_card_guids|.
@@ -288,6 +328,16 @@ void LocalCardMigrationManager::SendMigrateLocalCardsRequest() {
       base::BindOnce(&LocalCardMigrationManager::OnDidMigrateLocalCards,
                      weak_ptr_factory_.GetWeakPtr()));
   user_accepted_main_migration_dialog_ = false;
+}
+
+LocalCardMigrationStrikeDatabase*
+LocalCardMigrationManager::GetLocalCardMigrationStrikeDatabase() {
+  if (local_card_migration_strike_database_.get() == nullptr) {
+    local_card_migration_strike_database_ =
+        std::make_unique<LocalCardMigrationStrikeDatabase>(
+            LocalCardMigrationStrikeDatabase(client_->GetStrikeDatabase()));
+  }
+  return local_card_migration_strike_database_.get();
 }
 
 // Pops up a larger, modal dialog showing the local cards to be uploaded. Pass

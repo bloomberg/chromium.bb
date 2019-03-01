@@ -339,7 +339,9 @@ void CreditCardSaveManager::OnDidUploadCard(
           /*is_local=*/false,
           GetCreditCardSaveStrikeDatabase()->GetStrikes(
               base::UTF16ToUTF8(upload_request_.card.LastFourDigits())));
-      // Clear all strikes for this card, in case it is later removed.
+
+      // Clear all CreditCardSave strikes for this card, in case it is later
+      // removed.
       GetCreditCardSaveStrikeDatabase()->ClearStrikes(
           base::UTF16ToUTF8(upload_request_.card.LastFourDigits()));
     } else if (base::FeatureList::IsEnabled(
@@ -388,11 +390,22 @@ void CreditCardSaveManager::OnDidUploadCard(
 
 CreditCardSaveStrikeDatabase*
 CreditCardSaveManager::GetCreditCardSaveStrikeDatabase() {
-  if (strike_database_.get() == nullptr) {
-    strike_database_ = std::make_unique<CreditCardSaveStrikeDatabase>(
-        CreditCardSaveStrikeDatabase(client_->GetStrikeDatabase()));
+  if (credit_card_save_strike_database_.get() == nullptr) {
+    credit_card_save_strike_database_ =
+        std::make_unique<CreditCardSaveStrikeDatabase>(
+            CreditCardSaveStrikeDatabase(client_->GetStrikeDatabase()));
   }
-  return strike_database_.get();
+  return credit_card_save_strike_database_.get();
+}
+
+LocalCardMigrationStrikeDatabase*
+CreditCardSaveManager::GetLocalCardMigrationStrikeDatabase() {
+  if (local_card_migration_strike_database_.get() == nullptr) {
+    local_card_migration_strike_database_ =
+        std::make_unique<LocalCardMigrationStrikeDatabase>(
+            LocalCardMigrationStrikeDatabase(client_->GetStrikeDatabase()));
+  }
+  return local_card_migration_strike_database_.get();
 }
 
 void CreditCardSaveManager::OnDidGetStrikesForLocalSave(const int num_strikes) {
@@ -554,12 +567,20 @@ void CreditCardSaveManager::OnUserDidDecideOnLocalSave(
             /*is_local=*/true);
       if (base::FeatureList::IsEnabled(
               features::kAutofillSaveCreditCardUsesStrikeSystemV2)) {
-        // Log how many strikes the card had when it was saved.
+        // Log how many CreditCardSave strikes the card had when it was saved.
         LogStrikesPresentWhenCardSaved(
             /*is_local=*/true,
             GetCreditCardSaveStrikeDatabase()->GetStrikes(base::UTF16ToUTF8(
                 local_card_save_candidate_.LastFourDigits())));
-        // Clear all strikes for this card, in case it is later removed.
+        if (base::FeatureList::IsEnabled(
+                features::kAutofillLocalCardMigrationUsesStrikeSystemV2)) {
+          GetLocalCardMigrationStrikeDatabase()->RemoveStrikes(
+              LocalCardMigrationStrikeDatabase::
+                  kStrikesToRemoveWhenLocalCardAdded);
+        }
+
+        // Clear all CreditCardSave strikes for this card, in case it is later
+        // removed.
         GetCreditCardSaveStrikeDatabase()->ClearStrikes(
             base::UTF16ToUTF8(local_card_save_candidate_.LastFourDigits()));
       } else if (base::FeatureList::IsEnabled(

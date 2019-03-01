@@ -592,6 +592,14 @@ void AutofillMetrics::LogCreditCardSaveNotOfferedDueToMaxStrikesMetric(
 }
 
 // static
+void AutofillMetrics::LogLocalCardMigrationNotOfferedDueToMaxStrikesMetric(
+    SaveTypeMetric metric) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Autofill.StrikeDatabase.LocalCardMigrationNotOfferedDueToMaxStrikes",
+      metric);
+}
+
+// static
 void AutofillMetrics::LogUploadDisallowedForNetworkMetric(
     const std::string& network) {
   UploadDisallowedForNetworkMetric metric;

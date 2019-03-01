@@ -425,6 +425,14 @@ const char kEnableAutofillLocalCardMigrationShowFeedbackDescription[] =
     "after the user clicks the save button. Once migration is finished, "
     "the dialog will be updated with the results of each card.";
 
+const char kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Name[] =
+    "Enable limit on offering to migrate local cards repeatedly using the "
+    "updated strike system implementation";
+const char kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Description[] =
+    "If enabled, uses the updated strike system implementation to prevent "
+    "offering prompts for local card migration if it has repeatedly been "
+    "ignored, declined, or failed.";
+
 const char kEnableAutofillNativeDropdownViewsName[] =
     "Display Autofill Dropdown Using Views";
 const char kEnableAutofillNativeDropdownViewsDescription[] =
@@ -457,11 +465,11 @@ const char kEnableAutofillSaveCreditCardUsesStrikeSystemDescription[] =
     "it has repeatedly been ignored, declined, or failed.";
 
 const char kEnableAutofillSaveCreditCardUsesStrikeSystemV2Name[] =
-    "Enable limit on offering to save the same credit card repeatedly using the"
-    "updated strike system implementation";
+    "Enable limit on offering to save the same credit card repeatedly using "
+    "the updated strike system implementation";
 const char kEnableAutofillSaveCreditCardUsesStrikeSystemV2Description[] =
-    "If enabled, uses the updated strike system implementation to prevent"
-    "popping up the credit card offer-to-save prompt if it has repeatedly been"
+    "If enabled, uses the updated strike system implementation to prevent "
+    "popping up the credit card offer-to-save prompt if it has repeatedly been "
     "ignored, declined, or failed.";
 
 const char kEnableAutofillSendExperimentIdsInPaymentsRPCsName[] =
