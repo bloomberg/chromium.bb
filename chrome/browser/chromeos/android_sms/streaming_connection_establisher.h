@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ANDROID_SMS_STREAMING_CONNECTION_ESTABLISHER_H_
 #define CHROME_BROWSER_CHROMEOS_ANDROID_SMS_STREAMING_CONNECTION_ESTABLISHER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "base/time/clock.h"
 #include "chrome/browser/chromeos/android_sms/connection_establisher.h"
 
@@ -48,6 +49,8 @@ class StreamingConnectionEstablisher : public ConnectionEstablisher {
   base::Clock* clock_;
   bool is_connected_ = false;
   base::Time start_connection_message_time_;
+  base::WeakPtrFactory<StreamingConnectionEstablisher> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(StreamingConnectionEstablisher);
 };
 

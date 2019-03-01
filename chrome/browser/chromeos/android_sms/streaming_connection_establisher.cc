@@ -27,7 +27,7 @@ const char StreamingConnectionEstablisher::kResumeStreamingMessage[] =
 
 StreamingConnectionEstablisher::StreamingConnectionEstablisher(
     base::Clock* clock)
-    : clock_(clock) {}
+    : clock_(clock), weak_ptr_factory_(this) {}
 StreamingConnectionEstablisher::~StreamingConnectionEstablisher() = default;
 
 void StreamingConnectionEstablisher::EstablishConnection(
@@ -38,7 +38,7 @@ void StreamingConnectionEstablisher::EstablishConnection(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&StreamingConnectionEstablisher::
                          SendStartStreamingMessageIfNotConnected,
-                     base::Unretained(this), url, connection_mode,
+                     weak_ptr_factory_.GetWeakPtr(), url, connection_mode,
                      service_worker_context));
 }
 
@@ -78,7 +78,7 @@ void StreamingConnectionEstablisher::SendStartStreamingMessageIfNotConnected(
   service_worker_context->StartServiceWorkerAndDispatchLongRunningMessage(
       url, std::move(msg),
       base::BindOnce(&StreamingConnectionEstablisher::OnMessageDispatchResult,
-                     base::Unretained(this)));
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void StreamingConnectionEstablisher::OnMessageDispatchResult(bool status) {
