@@ -1810,7 +1810,7 @@
       "reference_board_name": "fizz-moblab",
       "arch": "X86_INTERNAL",
       "builder": "RELEASE",
-      "experimental": true,
+      "experimental": false,
       "models": [
         {
           "board_name": "fizz-moblab",
@@ -1845,6 +1845,12 @@
         {
           "board_name": "fizz-moblab",
           "name": "wukong",
+          "test_suites": [
+            "bvt-inline",
+            "bvt-installer",
+            "au",
+            "bvt-cq"
+          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         }

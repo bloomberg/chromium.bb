@@ -323,6 +323,7 @@
     falco-postsubmit
     falco_li-postsubmit
     fizz-accelerator-postsubmit
+    fizz-moblab-postsubmit
     fizz-postsubmit
     flapjack-postsubmit
     gale-postsubmit
@@ -2675,6 +2676,7 @@
     falco-postsubmit
     falco_li-postsubmit
     fizz-accelerator-postsubmit
+    fizz-moblab-postsubmit
     fizz-postsubmit
     flapjack-postsubmit
     gale-postsubmit
