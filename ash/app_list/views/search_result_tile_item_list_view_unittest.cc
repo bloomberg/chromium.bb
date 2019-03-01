@@ -229,8 +229,9 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
         ->child_at(first_child + i * child_step)
         ->GetAccessibleNodeData(&node_data);
     EXPECT_EQ(ax::mojom::Role::kButton, node_data.role);
-    EXPECT_EQ(base::StringPrintf("RecommendedApp %d, Star rating %d.0",
-                                 i - start_index, i + 1 - start_index),
+    EXPECT_EQ(base::StringPrintf(
+                  "RecommendedApp %d, Star rating %d.0, App recommendation",
+                  i - start_index, i + 1 - start_index),
               node_data.GetStringAttribute(ax::mojom::StringAttribute::kName));
   }
 
