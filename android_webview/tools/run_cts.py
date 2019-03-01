@@ -43,6 +43,8 @@ _ARCH_SPECIFIC_CTS_INFO = ["filename", "unzip_dir", "_origin"]
 
 _CTS_ARCHIVE_DIR = os.path.join(os.path.dirname(__file__), 'cts_archive')
 
+_CTS_WEBKIT_PACKAGES = ["com.android.cts.webkit", "android.webkit.cts"]
+
 SDK_PLATFORM_DICT = {
     version_codes.LOLLIPOP: 'L',
     version_codes.LOLLIPOP_MR1: 'L',
@@ -313,6 +315,11 @@ def DetermineArch(device):
   return arch
 
 
+def UninstallAnyCtsWebkitPackages(device):
+  for package in _CTS_WEBKIT_PACKAGES:
+    device.Uninstall(package)
+
+
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument(
@@ -388,6 +395,13 @@ def main():
     raise Exception('--module-apk for arch==' + arch + 'and cts_release=='
                     + cts_release + ' must be one of: '
                     + ', '.join(platform_modules))
+
+  # Need to uninstall all previous cts webkit packages so that the
+  # MockContentProvider names won't conflict with a previously installed
+  # one under a different package name.  This is due to CtsWebkitTestCases's
+  # package name change from M to N versions of the tests while keeping the
+  # MockContentProvider's authority string the same.
+  UninstallAnyCtsWebkitPackages(device)
 
   return RunAllCTSTests(args, arch, cts_release, test_runner_args)
 
