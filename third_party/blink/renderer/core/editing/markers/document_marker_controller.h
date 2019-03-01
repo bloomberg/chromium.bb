@@ -146,7 +146,7 @@ class CORE_EXPORT DocumentMarkerController final
 
   Vector<IntRect> LayoutRectsForTextMatchMarkers();
   void InvalidateRectsForAllTextMatchMarkers();
-  void InvalidateRectsForTextMatchMarkersInNode(const Node&);
+  void InvalidateRectsForTextMatchMarkersInNode(const Text&);
 
   void Trace(blink::Visitor*) override;
 

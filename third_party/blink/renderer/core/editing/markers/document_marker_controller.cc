@@ -713,11 +713,8 @@ static void InvalidatePaintForTickmarks(const Node& node) {
 }
 
 void DocumentMarkerController::InvalidateRectsForTextMatchMarkersInNode(
-    const Node& node) {
-  // TODO(yoichio): Make this function to take Text instead of Node.
-  if (!node.IsTextNode())
-    return;
-  MarkerLists* markers = markers_.at(&ToText(node));
+    const Text& node) {
+  MarkerLists* markers = markers_.at(&node);
 
   const DocumentMarkerList* const marker_list =
       ListForType(markers, DocumentMarker::kTextMatch);
@@ -1021,7 +1018,7 @@ void DocumentMarkerController::DidUpdateCharacterData(CharacterData* node,
     return;
   if (!node->GetLayoutObject())
     return;
-  InvalidateRectsForTextMatchMarkersInNode(*node);
+  InvalidateRectsForTextMatchMarkersInNode(ToText(*node));
   InvalidatePaintForNode(*node);
 }
 
