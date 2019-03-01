@@ -39,6 +39,8 @@ class FontDescription;
 const int kCAllFamiliesScanned = -1;
 
 class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
+  USING_FAST_MALLOC(FontFallbackList);
+
  public:
   static scoped_refptr<FontFallbackList> Create() {
     return base::AdoptRef(new FontFallbackList());

@@ -30,6 +30,8 @@
 namespace {
 
 class IntegerHasher {
+  STACK_ALLOCATED();
+
  public:
   void add(unsigned integer) {
     m_underlyingHasher.AddCharactersAssumingAligned(integer, integer >> 16);

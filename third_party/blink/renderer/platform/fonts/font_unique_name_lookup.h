@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #if defined(OS_ANDROID) || defined(OS_WIN)
@@ -22,6 +23,8 @@ namespace blink {
 class FontTableMatcher;
 
 class FontUniqueNameLookup {
+  USING_FAST_MALLOC(FontUniqueNameLookup);
+
  public:
   // Factory function to construct a platform specific font unique name lookup
   // instance. Client must not use this directly as it is thread

@@ -57,6 +57,8 @@ struct PLATFORM_EXPORT UnicodeRange final {
 };
 
 class PLATFORM_EXPORT UnicodeRangeSet : public RefCounted<UnicodeRangeSet> {
+  USING_FAST_MALLOC(UnicodeRangeSet);
+
  public:
   explicit UnicodeRangeSet(const Vector<UnicodeRange>&);
   UnicodeRangeSet() = default;

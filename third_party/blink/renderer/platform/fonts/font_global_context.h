@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_font_cache.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/text/layout_locale.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 struct hb_font_funcs_t;
 
@@ -22,6 +23,8 @@ enum CreateIfNeeded { kDoNotCreate, kCreate };
 // FontGlobalContext contains non-thread-safe, thread-specific data used for
 // font formatting.
 class PLATFORM_EXPORT FontGlobalContext {
+  USING_FAST_MALLOC(FontGlobalContext);
+
  public:
   static FontGlobalContext* Get(CreateIfNeeded = kCreate);
 
