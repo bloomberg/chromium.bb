@@ -22,7 +22,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_ELEMENT_BASE_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -62,8 +61,7 @@ class CORE_EXPORT ScriptElementBase : public GarbageCollectedMixin {
 
   virtual bool AllowInlineScriptForCSP(const AtomicString& nonce,
                                        const WTF::OrdinalNumber&,
-                                       const String& script_content,
-                                       ContentSecurityPolicy::InlineType) = 0;
+                                       const String& script_content) = 0;
   virtual Document& GetDocument() const = 0;
   virtual void SetScriptElementForBinding(
       HTMLScriptElementOrSVGScriptElement&) = 0;

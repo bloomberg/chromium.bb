@@ -732,10 +732,9 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
     policy->DidReceiveHeader(String("script-src ") + test.policy,
                              kContentSecurityPolicyHeaderTypeEnforce,
                              kContentSecurityPolicyHeaderSourceHTTP);
-    EXPECT_EQ(test.allowed,
-              policy->AllowInlineScript(
-                  element, context_url, String(test.nonce), context_line,
-                  content, ContentSecurityPolicy::InlineType::kBlock));
+    EXPECT_EQ(test.allowed, policy->AllowInlineScript(element, context_url,
+                                                      String(test.nonce),
+                                                      context_line, content));
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
 
     // Enforce 'style-src'
@@ -757,8 +756,7 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
                              kContentSecurityPolicyHeaderTypeReport,
                              kContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_TRUE(policy->AllowInlineScript(
-        element, context_url, String(test.nonce), context_line, content,
-        ContentSecurityPolicy::InlineType::kBlock));
+        element, context_url, String(test.nonce), context_line, content));
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
 
     // Report 'style-src'
@@ -1550,9 +1548,8 @@ TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
   EXPECT_TRUE(csp->AllowScriptFromSource(
       example_url, nonce, IntegrityMetadataSet(), kParserInserted));
   EXPECT_TRUE(csp->AllowStyleFromSource(example_url, nonce));
-  EXPECT_TRUE(csp->AllowInlineScript(
-      element, context_url, nonce, ordinal_number, source,
-      ContentSecurityPolicy::InlineType::kBlock));
+  EXPECT_TRUE(csp->AllowInlineScript(element, context_url, nonce,
+                                     ordinal_number, source));
   EXPECT_TRUE(csp->AllowInlineStyle(element, context_url, nonce, ordinal_number,
                                     source,
                                     ContentSecurityPolicy::InlineType::kBlock));

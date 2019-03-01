@@ -355,7 +355,6 @@ class CORE_EXPORT ContentSecurityPolicy
                          const String& nonce,
                          const WTF::OrdinalNumber& context_line,
                          const String& script_content,
-                         InlineType,
                          SecurityViolationReportingPolicy =
                              SecurityViolationReportingPolicy::kReport) const;
   bool AllowInlineStyle(Element*,

@@ -46,11 +46,10 @@ class MockScriptElementBase
   MOCK_CONST_METHOD0(GetNonceForElement, const AtomicString&());
   MOCK_CONST_METHOD0(ElementHasDuplicateAttributes, bool());
   MOCK_CONST_METHOD0(InitiatorName, AtomicString());
-  MOCK_METHOD4(AllowInlineScriptForCSP,
+  MOCK_METHOD3(AllowInlineScriptForCSP,
                bool(const AtomicString&,
                     const WTF::OrdinalNumber&,
-                    const String&,
-                    ContentSecurityPolicy::InlineType));
+                    const String&));
   MOCK_CONST_METHOD0(GetDocument, Document&());
   MOCK_METHOD1(SetScriptElementForBinding,
                void(HTMLScriptElementOrSVGScriptElement&));
