@@ -99,10 +99,6 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'Other', function() {
   this.runMochaTest(settings_sections_tests.TestNames.Other);
 });
 
-TEST_F('PrintPreviewSettingsSectionsTest', 'SetCopies', function() {
-  this.runMochaTest(settings_sections_tests.TestNames.SetCopies);
-});
-
 TEST_F('PrintPreviewSettingsSectionsTest', 'SetLayout', function() {
   this.runMochaTest(settings_sections_tests.TestNames.SetLayout);
 });
@@ -1293,6 +1289,26 @@ TEST_F(
       this.runMochaTest(
           scaling_settings_test.TestNames.InputNotDisabledOnValidityChange);
     });
+
+PrintPreviewCopiesSettingsTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/copies_settings.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      'print_preview_test_utils.js',
+      'copies_settings_test.js',
+    ]);
+  }
+};
+
+TEST_F('PrintPreviewCopiesSettingsTest', 'All', function() {
+  mocha.run();
+});
 
 PrintPreviewMediaSizeSettingsTest = class extends NewPrintPreviewTest {
   /** @override */

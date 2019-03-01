@@ -7,7 +7,6 @@ cr.define('settings_sections_tests', function() {
   const TestNames = {
     SettingsSectionsVisibilityChange: 'settings sections visibility change',
     Other: 'other',
-    SetCopies: 'set copies',
     SetLayout: 'set layout',
     SetColor: 'set color',
     SetMargins: 'set margins',
@@ -126,66 +125,6 @@ cr.define('settings_sections_tests', function() {
 
             page.set(`settings.${setting}.available`, false);
             assertTrue(isSectionHidden(section));
-          });
-    });
-
-    test(assert(TestNames.SetCopies), function() {
-      const copiesElement = page.$$('print-preview-copies-settings');
-      assertFalse(copiesElement.hidden);
-
-      // Default value is 1
-      const copiesInput =
-          copiesElement.$$('print-preview-number-settings-section').getInput();
-      assertEquals('1', copiesInput.value);
-      assertEquals(1, page.settings.copies.value);
-
-      // Change to 2
-      return print_preview_test_utils
-          .triggerInputEvent(copiesInput, '2', copiesElement)
-          .then(function() {
-            assertEquals(2, page.settings.copies.value);
-
-            // Collate is true by default.
-            const collateInput = copiesElement.$.collate;
-            assertTrue(collateInput.checked);
-            assertTrue(page.settings.collate.value);
-
-            // Uncheck the box.
-            MockInteractions.tap(collateInput);
-            assertFalse(collateInput.checked);
-            collateInput.dispatchEvent(new CustomEvent('change'));
-            assertFalse(page.settings.collate.value);
-
-            // Set an empty value.
-            return print_preview_test_utils.triggerInputEvent(
-                copiesInput, '', copiesElement);
-          })
-          .then(function() {
-            // Collate should be hidden now, but no update to the backing value
-            // occurs.
-            assertTrue(copiesElement.$$('.checkbox').hidden);
-            assertTrue(page.settings.copies.valid);
-            assertEquals(2, page.settings.copies.value);
-
-            // If the field is blurred, it will be reset to the default by the
-            // number-settings-section. Simulate this ocurring.
-            const numberSettingsSection =
-                copiesElement.$$('print-preview-number-settings-section');
-            numberSettingsSection.$.userValue.value = '1';
-            numberSettingsSection.currentValue = '1';
-            assertTrue(page.settings.copies.valid);
-            assertEquals(1, page.settings.copies.value);
-
-            // Enter an invalid value.
-            return print_preview_test_utils.triggerInputEvent(
-                copiesInput, '0', copiesElement);
-          })
-          .then(function() {
-            // Collate should be hidden. Value is not updated to the invalid
-            // number. Setting is marked invalid.
-            assertTrue(copiesElement.$$('.checkbox').hidden);
-            assertFalse(page.settings.copies.valid);
-            assertEquals(1, page.settings.copies.value);
           });
     });
 
