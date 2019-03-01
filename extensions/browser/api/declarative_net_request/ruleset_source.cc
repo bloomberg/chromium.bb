@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 
+#include <utility>
+
 #include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_resource.h"
@@ -14,25 +16,22 @@ namespace declarative_net_request {
 
 // static
 RulesetSource RulesetSource::Create(const Extension& extension) {
-  RulesetSource source;
-  source.json_path =
-      declarative_net_request::DNRManifestData::GetRulesetPath(extension);
-  source.indexed_path = file_util::GetIndexedRulesetPath(extension.path());
-  return source;
+  return RulesetSource(
+      declarative_net_request::DNRManifestData::GetRulesetPath(extension),
+      file_util::GetIndexedRulesetPath(extension.path()));
 }
+
+RulesetSource::RulesetSource(base::FilePath json_path,
+                             base::FilePath indexed_path)
+    : json_path(std::move(json_path)), indexed_path(std::move(indexed_path)) {}
 
 RulesetSource::~RulesetSource() = default;
 RulesetSource::RulesetSource(RulesetSource&&) = default;
 RulesetSource& RulesetSource::operator=(RulesetSource&&) = default;
 
 RulesetSource RulesetSource::Clone() const {
-  RulesetSource clone;
-  clone.json_path = json_path;
-  clone.indexed_path = indexed_path;
-  return clone;
+  return RulesetSource(json_path, indexed_path);
 }
-
-RulesetSource::RulesetSource() = default;
 
 }  // namespace declarative_net_request
 }  // namespace extensions
