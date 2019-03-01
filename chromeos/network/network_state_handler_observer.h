@@ -42,9 +42,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandlerObserver {
   virtual void NetworkConnectionStateChanged(const NetworkState* network);
 
   // Triggered when the connection state of any current or previously active
-  // (connected or connecting) network changes. Includes significant changes to
-  // the signal strength. Provides the current list of active networks, which
-  // may include a VPN.
+  // (connected or connecting) network changes. Provides the current list of
+  // active networks, which may include a VPN.
   virtual void ActiveNetworksChanged(
       const std::vector<const NetworkState*>& active_networks);
 

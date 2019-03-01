@@ -96,14 +96,10 @@ class NetworkIconTest : public testing::Test {
     return network;
   }
 
-  gfx::Image GetImageForNonVirtualNetwork(const chromeos::NetworkState* network,
-                                          bool badge_vpn) {
-    return gfx::Image(network_icon::GetImageForNonVirtualNetwork(
-        network_icon::NetworkIconState(network), icon_type_, badge_vpn));
-  }
-
   gfx::Image ImageForNetwork(const chromeos::NetworkState* network) {
-    return GetImageForNonVirtualNetwork(network, false /* show_vpn_badge */);
+    gfx::ImageSkia image_skia = GetImageForNonVirtualNetwork(
+        network, icon_type_, false /* show_vpn_badge */);
+    return gfx::Image(image_skia);
   }
 
   void GetDefaultNetworkImageAndLabel(IconType icon_type,
@@ -122,7 +118,8 @@ class NetworkIconTest : public testing::Test {
   void GetAndCompareImagesByNetworkType(
       const chromeos::NetworkState* wifi_network,
       const chromeos::NetworkState* cellular_network,
-      const chromeos::NetworkState* tether_network) {
+      const chromeos::NetworkState* tether_network,
+      const chromeos::NetworkState* wifi_tether_network) {
     ASSERT_EQ(wifi_network->type(), shill::kTypeWifi);
     gfx::Image wifi_image = ImageForNetwork(wifi_network);
 
@@ -132,9 +129,15 @@ class NetworkIconTest : public testing::Test {
     ASSERT_EQ(tether_network->type(), chromeos::kTypeTether);
     gfx::Image tether_image = ImageForNetwork(tether_network);
 
+    ASSERT_EQ(wifi_tether_network->type(), shill::kTypeWifi);
+    ASSERT_FALSE(wifi_tether_network->tether_guid().empty());
+    gfx::Image wifi_tether_image = ImageForNetwork(wifi_tether_network);
+
     EXPECT_FALSE(gfx::test::AreImagesEqual(tether_image, wifi_image));
     EXPECT_FALSE(gfx::test::AreImagesEqual(cellular_image, wifi_image));
     EXPECT_TRUE(gfx::test::AreImagesEqual(tether_image, cellular_image));
+
+    EXPECT_TRUE(gfx::test::AreImagesEqual(tether_image, wifi_tether_image));
   }
 
   void SetCellularUnavailable() {
@@ -198,8 +201,13 @@ TEST_F(NetworkIconTest, CompareImagesByNetworkType_NotVisible) {
       CreateStandaloneNetworkState("tether", chromeos::kTypeTether,
                                    shill::kStateIdle, 50);
 
+  std::unique_ptr<chromeos::NetworkState> wifi_tether_network =
+      CreateStandaloneWifiTetherNetworkState("wifi_tether", "tether",
+                                             shill::kStateIdle, 50);
+
   GetAndCompareImagesByNetworkType(wifi_network.get(), cellular_network.get(),
-                                   tether_network.get());
+                                   tether_network.get(),
+                                   wifi_tether_network.get());
 }
 
 TEST_F(NetworkIconTest, CompareImagesByNetworkType_Connecting) {
@@ -215,8 +223,13 @@ TEST_F(NetworkIconTest, CompareImagesByNetworkType_Connecting) {
       CreateStandaloneNetworkState("tether", chromeos::kTypeTether,
                                    shill::kStateAssociation, 50);
 
+  std::unique_ptr<chromeos::NetworkState> wifi_tether_network =
+      CreateStandaloneWifiTetherNetworkState("wifi_tether", "tether",
+                                             shill::kStateAssociation, 50);
+
   GetAndCompareImagesByNetworkType(wifi_network.get(), cellular_network.get(),
-                                   tether_network.get());
+                                   tether_network.get(),
+                                   wifi_tether_network.get());
 }
 
 TEST_F(NetworkIconTest, CompareImagesByNetworkType_Connected) {
@@ -232,8 +245,13 @@ TEST_F(NetworkIconTest, CompareImagesByNetworkType_Connected) {
       CreateStandaloneNetworkState("tether", chromeos::kTypeTether,
                                    shill::kStateOnline, 50);
 
+  std::unique_ptr<chromeos::NetworkState> wifi_tether_network =
+      CreateStandaloneWifiTetherNetworkState("wifi_tether", "tether",
+                                             shill::kStateOnline, 50);
+
   GetAndCompareImagesByNetworkType(wifi_network.get(), cellular_network.get(),
-                                   tether_network.get());
+                                   tether_network.get(),
+                                   wifi_tether_network.get());
 }
 
 TEST_F(NetworkIconTest, NetworkSignalStrength) {
@@ -638,10 +656,10 @@ TEST_F(NetworkIconTest, DefaultNetworkVpnBadge) {
   std::unique_ptr<chromeos::NetworkState> reference_eth =
       CreateStandaloneNetworkState("reference_eth", shill::kTypeEthernet,
                                    shill::kStateOnline, 0);
-  gfx::Image reference_eth_unbadged = GetImageForNonVirtualNetwork(
-      reference_eth.get(), false /* show_vpn_badge */);
-  gfx::Image reference_eth_badged = GetImageForNonVirtualNetwork(
-      reference_eth.get(), true /* show_vpn_badge */);
+  gfx::Image reference_eth_unbadged = gfx::Image(GetImageForNonVirtualNetwork(
+      reference_eth.get(), icon_type_, false /* show_vpn_badge */));
+  gfx::Image reference_eth_badged = gfx::Image(GetImageForNonVirtualNetwork(
+      reference_eth.get(), icon_type_, true /* show_vpn_badge */));
 
   EXPECT_FALSE(gfx::test::AreImagesEqual(gfx::Image(default_image),
                                          reference_eth_unbadged));
@@ -659,8 +677,8 @@ TEST_F(NetworkIconTest, DefaultNetworkVpnBadge) {
   std::unique_ptr<chromeos::NetworkState> reference_wifi =
       CreateStandaloneNetworkState("reference_wifi", shill::kTypeWifi,
                                    shill::kStateOnline, 45);
-  gfx::Image reference_wifi_badged = GetImageForNonVirtualNetwork(
-      reference_wifi.get(), true /* show_vpn_badge */);
+  gfx::Image reference_wifi_badged = gfx::Image(GetImageForNonVirtualNetwork(
+      reference_wifi.get(), icon_type_, true /* show_vpn_badge */));
   EXPECT_TRUE(gfx::test::AreImagesEqual(gfx::Image(default_image),
                                         reference_wifi_badged));
 

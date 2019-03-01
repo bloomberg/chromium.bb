@@ -122,13 +122,11 @@ void NetworkListView::UpdateNetworkIcons() {
     if (!network)
       continue;
     bool prohibited_by_policy = network->blocked_by_policy();
-    network_icon::NetworkIconState network_icon_state(network);
     info->label = network_icon::GetLabelForNetwork(
-        network_icon_state, network_icon::ICON_TYPE_MENU_LIST);
+        network, network_icon::ICON_TYPE_MENU_LIST);
     // |network_list_| only contains non virtual networks.
     info->image = network_icon::GetImageForNonVirtualNetwork(
-        network_icon_state, network_icon::ICON_TYPE_LIST,
-        false /* badge_vpn */);
+        network, network_icon::ICON_TYPE_LIST, false /* badge_vpn */);
     info->disable =
         (network->activation_state() == shill::kActivationStateActivating) ||
         prohibited_by_policy;
