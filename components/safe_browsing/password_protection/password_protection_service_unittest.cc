@@ -28,6 +28,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::AnyNumber;
 using testing::ElementsAre;
 using testing::Return;
 using PasswordReuseEvent =
@@ -1333,6 +1334,30 @@ TEST_P(PasswordProtectionServiceTest, TestPingsForAboutBlank) {
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
   base::RunLoop().RunUntilIdle();
   histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 1);
+}
+
+TEST_P(PasswordProtectionServiceTest,
+       TestVisualFeaturesPopulatedInOnFocusPing) {
+  LoginReputationClientResponse expected_response =
+      CreateVerdictProto(LoginReputationClientResponse::PHISHING, 10 * kMinute,
+                         GURL("about:blank").host());
+  test_url_loader_factory_.AddResponse(url_.spec(),
+                                       expected_response.SerializeAsString());
+  EXPECT_CALL(*password_protection_service_, GetCurrentContentAreaSize())
+      .Times(AnyNumber())
+      .WillOnce(Return(gfx::Size(1000, 1000)));
+  password_protection_service_->StartRequest(
+      GetWebContents(), GURL("about:blank"), GURL(), GURL(),
+      PasswordReuseEvent::SAVED_PASSWORD, {"example.com"},
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
+  base::RunLoop().RunUntilIdle();
+
+  bool is_sber = GetParam();
+  if (is_sber) {
+    ASSERT_NE(nullptr, password_protection_service_->GetLatestRequestProto());
+    EXPECT_TRUE(password_protection_service_->GetLatestRequestProto()
+                    ->has_visual_features());
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(Regular,
