@@ -268,7 +268,7 @@ Element* TreeScope::HitTestPointInternal(Node* node,
   if (!element)
     return nullptr;
   if (type == HitTestPointType::kWebExposed)
-    return Retarget(*element);
+    return &Retarget(*element);
   return element;
 }
 
@@ -425,10 +425,10 @@ void TreeScope::AdoptIfNeeded(Node& node) {
 // This retargets |target| against the root of |this|.
 // The steps are different with the spec for performance reasons,
 // but the results should be the same.
-Element* TreeScope::Retarget(const Element& target) const {
+Element& TreeScope::Retarget(const Element& target) const {
   const TreeScope& target_scope = target.GetTreeScope();
   if (!target_scope.RootNode().IsShadowRoot())
-    return const_cast<Element*>(&target);
+    return const_cast<Element&>(target);
 
   HeapVector<Member<const TreeScope>> target_ancestor_scopes;
   HeapVector<Member<const TreeScope>> context_ancestor_scopes;
@@ -449,10 +449,10 @@ Element* TreeScope::Retarget(const Element& target) const {
   }
 
   if (target_ancestor_riterator == target_ancestor_scopes.rend())
-    return const_cast<Element*>(&target);
+    return const_cast<Element&>(target);
   Node& first_different_scope_root =
       (*target_ancestor_riterator).Get()->RootNode();
-  return &To<ShadowRoot>(first_different_scope_root).host();
+  return To<ShadowRoot>(first_different_scope_root).host();
 }
 
 Element* TreeScope::AdjustedFocusedElementInternal(
