@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <title>Test that a div can't preventDefault on touches to prevent the overlay play button from working.</title>
+<script src="../../resources/gesture-util.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../media-controls.js"></script>
@@ -20,11 +21,16 @@ async_test(t => {
   video.src = '../content/60_sec_video.webm';
   outerDiv.appendChild(video);
 
+  let tap_gesture;
+
   video.addEventListener('loadedmetadata', t.step_func(() => {
-    singleTouchOnControl(mediaControlsOverlayPlayButton(video));
+    const coordinates = elementCoordinates(mediaControlsOverlayPlayButton(video));
+    tap_gesture = touchTapOn(coordinates[0], coordinates[1]);
   }), { once: true });
 
-  video.addEventListener('play', t.done.bind(t), { once: true });
+  video.addEventListener('play', () => {
+    tap_gesture.then(t.done.bind(t));
+  }, { once: true });
 
   ['click', 'touchstart', 'touchmove', 'touchend'].forEach(name => {
     outerDiv.addEventListener(name, evt => {
