@@ -228,7 +228,7 @@ cast_source_set("cast_sys_info") {
       "//chromecast:chromecast_buildflags",
       "//chromecast/browser:jni_headers",
     ]
-  } else if (chromecast_branding == "public") {
+  } else if (chromecast_branding == "public" || is_fuchsia) {
     sources += [ "cast_sys_info_util_simple.cc" ]
   }
 }
@@ -249,7 +249,7 @@ cast_shared_library("libcast_sys_info_1.0") {
 
 # Note: Android links //chromecast/base:cast_sys_info statically.
 cast_source_set("cast_sys_info_shlib") {
-  if (!is_android) {
+  if (!is_android && !is_fuchsia) {
     sources = [
       "cast_sys_info_util_shlib.cc",
     ]
