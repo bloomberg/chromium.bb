@@ -424,8 +424,7 @@ public class VrShellDelegate
                         registerDaydreamIntent(activity);
                     }
                 }
-            }
-                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } catch (RejectedExecutionException ex) {
             // This isn't critical work, so it's okay to fail silently. If the user does try to
             // enter VR the asset component may not be available, and headset insertion will go to
@@ -828,7 +827,7 @@ public class VrShellDelegate
 
         SimpleConfirmInfoBarBuilder.create(tab, listener,
                 InfoBarIdentifier.VR_FEEDBACK_INFOBAR_ANDROID,
-                org.chromium.chrome.vr.pub.R.drawable.vr_services,
+                org.chromium.chrome.vr.R.drawable.vr_services,
                 ContextUtils.getApplicationContext().getString(
                         org.chromium.chrome.vr.R.string.vr_shell_feedback_infobar_description),
                 ContextUtils.getApplicationContext().getString(
@@ -1022,8 +1021,8 @@ public class VrShellDelegate
         };
         SimpleConfirmInfoBarBuilder.create(tab, listener,
                 InfoBarIdentifier.VR_SERVICES_UPGRADE_ANDROID,
-                org.chromium.chrome.vr.pub.R.drawable.vr_services, infobarText, buttonText, null,
-                null, true);
+                org.chromium.chrome.vr.R.drawable.vr_services, infobarText, buttonText, null, null,
+                true);
     }
 
     @VisibleForTesting
@@ -1461,7 +1460,7 @@ public class VrShellDelegate
         maybeUpdateVrSupportLevel();
 
         // Shouldn't handle VR Intents pre-Daydream.
-        assert(getVrSupportLevel() == VrSupportLevel.VR_DAYDREAM || !mStartedFromVrIntent);
+        assert (getVrSupportLevel() == VrSupportLevel.VR_DAYDREAM || !mStartedFromVrIntent);
 
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
@@ -1495,7 +1494,7 @@ public class VrShellDelegate
             // If we were resumed at the wrong density, we need to trigger activity recreation.
             if (!mInVr && mExpectedDensityChange != 0
                     && (mActivity.getResources().getConfiguration().densityDpi
-                               != mExpectedDensityChange)) {
+                            != mExpectedDensityChange)) {
                 mActivity.recreate();
             }
         }

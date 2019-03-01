@@ -39,7 +39,7 @@ template("vr_module_tmpl") {
     android_manifest = _manifest
     android_manifest_dep = ":${_manifest_target}"
     deps = [
-      "//chrome/browser/android/vr:java",
+      "//chrome/android/features/vr:java",
     ]
     proguard_enabled = !is_java_debug
     if (!defined(invoker.uncompress_shared_libraries)) {
