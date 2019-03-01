@@ -5895,7 +5895,7 @@ crbug.com/933880 http/tests/inspector-protocol/network/xhr-interception-auth-fai
 # enabled this fails in both content_shell and chrome.
 crbug.com/933880 http/tests/misc/redirect-to-about-blank.html [ Failure Timeout ]
 crbug.com/933880 [ Win ] external/wpt/kv-storage/key-types.https.html [ Timeout ]
-crbug.com/849284 [ Win ] http/tests/devtools/editor/text-editor-ctrl-d-2.js [ Failure ]
+crbug.com/849284 [ Win ] http/tests/devtools/editor/text-editor-ctrl-d-2.js [ Failure Timeout ]
 crbug.com/849284 [ Win ] virtual/outofblink-cors/http/tests/fetch/serviceworker-proxied/thorough/redirect.html [ Timeout ]
 
 # Sheriff 2019-02-21
