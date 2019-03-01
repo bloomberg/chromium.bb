@@ -55,7 +55,6 @@ int GetFilterWeight(unsigned int row, unsigned int col,
   return blk_fw[2 * (row >= block_height / 2) + (col >= block_width / 2)];
 }
 
-// Highbitdepth version
 template <typename PixelType>
 int GetModIndex(int sum_dist, int index, int rounding, int strength,
                 int filter_weight) {
@@ -83,6 +82,30 @@ int GetModIndex<uint8_t>(int sum_dist, int index, int rounding, int strength,
   assert(index_mult[index] != 0);
 
   int mod = (clamp(sum_dist, 0, UINT16_MAX) * index_mult[index]) >> 16;
+  mod += rounding;
+  mod >>= strength;
+
+  mod = AOMMIN(16, mod);
+
+  mod = 16 - mod;
+  mod *= filter_weight;
+
+  return mod;
+}
+
+// Highbitdepth version
+template <>
+int GetModIndex<uint16_t>(int sum_dist, int index, int rounding, int strength,
+                          int filter_weight) {
+  int64_t index_mult[14] = { 0U,          0U,          0U,          0U,
+                             3221225472U, 2576980378U, 2147483648U, 1840700270U,
+                             1610612736U, 1431655766U, 1288490189U, 1171354718U,
+                             0U,          991146300U };
+
+  assert(index >= 0 && index <= 13);
+  assert(index_mult[index] != 0);
+
+  int mod = static_cast<int>((sum_dist * index_mult[index]) >> 32);
   mod += rounding;
   mod >>= strength;
 
@@ -692,9 +715,12 @@ INSTANTIATE_TEST_CASE_P(
         TemporalFilterWithBd(&av1_highbd_apply_temporal_filter_c, 12)));
 
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(SSE4_1, YUVTemporalFilterTest,
-                        ::testing::Values(TemporalFilterWithBd(
-                            &av1_apply_temporal_filter_sse4_1, 8)));
+INSTANTIATE_TEST_CASE_P(
+    SSE4_1, YUVTemporalFilterTest,
+    ::testing::Values(
+        TemporalFilterWithBd(&av1_apply_temporal_filter_sse4_1, 8),
+        TemporalFilterWithBd(&av1_highbd_apply_temporal_filter_sse4_1, 10),
+        TemporalFilterWithBd(&av1_highbd_apply_temporal_filter_sse4_1, 12)));
 #endif  // HAVE_SSE4_1
 
 }  // namespace

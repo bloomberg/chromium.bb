@@ -41,6 +41,12 @@ static unsigned int index_mult[14] = {
   0, 0, 0, 0, 49152, 39322, 32768, 28087, 24576, 21846, 19661, 17874, 0, 15124
 };
 
+static int64_t highbd_index_mult[14] = { 0U,          0U,          0U,
+                                         0U,          3221225472U, 2576980378U,
+                                         2147483648U, 1840700270U, 1610612736U,
+                                         1431655766U, 1288490189U, 1171354718U,
+                                         0U,          991146300U };
+
 static void temporal_filter_predictors_mb_c(
     MACROBLOCKD *xd, uint8_t *y_mb_ptr, uint8_t *u_mb_ptr, uint8_t *v_mb_ptr,
     int stride, int uv_block_width, int uv_block_height, int mv_row, int mv_col,
@@ -190,10 +196,19 @@ static INLINE int mod_index(int sum_dist, int index, int rounding, int strength,
 
 static INLINE int highbd_mod_index(int64_t sum_dist, int index, int rounding,
                                    int strength, int filter_weight) {
-  int mod = (int)(((sum_dist * 3) / index + rounding) >> strength);
+  assert(index >= 0 && index <= 13);
+  assert(highbd_index_mult[index] != 0);
+
+  int mod =
+      (int)((AOMMIN(sum_dist, INT32_MAX) * highbd_index_mult[index]) >> 32);
+  mod += rounding;
+  mod >>= strength;
+
   mod = AOMMIN(16, mod);
+
   mod = 16 - mod;
   mod *= filter_weight;
+
   return mod;
 }
 

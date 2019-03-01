@@ -290,6 +290,7 @@ list(APPEND AOM_AV1_ENCODER_INTRIN_SSE4_1
             "${AOM_ROOT}/av1/encoder/x86/rdopt_sse4.c"
             "${AOM_ROOT}/av1/encoder/x86/temporal_filter_constants.h"
             "${AOM_ROOT}/av1/encoder/x86/temporal_filter_sse4.c"
+            "${AOM_ROOT}/av1/encoder/x86/highbd_temporal_filter_sse4.c"
             "${AOM_ROOT}/av1/encoder/x86/pickrst_sse4.c")
 
 list(APPEND AOM_AV1_ENCODER_INTRIN_AVX2
