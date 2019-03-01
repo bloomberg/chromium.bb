@@ -47,12 +47,6 @@ class FakeDB : public ProtoDatabaseImpl<T> {
           entries_to_save,
       const KeyFilter& filter,
       Callbacks::UpdateCallback callback) override;
-  void UpdateEntriesWithRemoveFilter(
-      std::unique_ptr<typename Util::Internal<T>::KeyEntryVector>
-          entries_to_save,
-      const leveldb_proto::KeyFilter& filter,
-      const std::string& target_prefix,
-      Callbacks::UpdateCallback callback) override;
   void LoadEntries(
       typename Callbacks::Internal<T>::LoadCallback callback) override;
   void LoadEntriesWithFilter(
@@ -183,27 +177,6 @@ void FakeDB<T>::UpdateEntriesWithRemoveFilter(
   auto it = db_->begin();
   while (it != db_->end()) {
     if (!delete_key_filter.is_null() && delete_key_filter.Run(it->first))
-      db_->erase(it++);
-    else
-      ++it;
-  }
-
-  update_callback_ = std::move(callback);
-}
-
-template <typename T>
-void FakeDB<T>::UpdateEntriesWithRemoveFilter(
-    std::unique_ptr<typename Util::Internal<T>::KeyEntryVector> entries_to_save,
-    const leveldb_proto::KeyFilter& delete_key_filter,
-    const std::string& target_prefix,
-    Callbacks::UpdateCallback callback) {
-  for (const auto& pair : *entries_to_save)
-    (*db_)[pair.first] = pair.second;
-
-  auto it = db_->begin();
-  while (it != db_->end()) {
-    if (!delete_key_filter.is_null() && delete_key_filter.Run(it->first) &&
-        (it->first).compare(0, target_prefix.length(), target_prefix) == 0)
       db_->erase(it++);
     else
       ++it;

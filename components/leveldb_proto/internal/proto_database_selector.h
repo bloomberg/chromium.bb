@@ -60,11 +60,6 @@ class ProtoDatabaseSelector
       std::unique_ptr<KeyValueVector> entries_to_save,
       const KeyFilter& delete_key_filter,
       Callbacks::UpdateCallback callback);
-  void UpdateEntriesWithRemoveFilter(
-      std::unique_ptr<KeyValueVector> entries_to_save,
-      const KeyFilter& delete_key_filter,
-      const std::string& target_prefix,
-      Callbacks::UpdateCallback callback);
 
   void LoadEntries(typename Callbacks::LoadCallback callback);
 
@@ -86,8 +81,7 @@ class ProtoDatabaseSelector
       const std::string& end,
       typename Callbacks::LoadKeysAndEntriesCallback callback);
 
-  void LoadKeys(const std::string& target_prefix,
-                Callbacks::LoadKeysCallback callback);
+  void LoadKeys(Callbacks::LoadKeysCallback callback);
 
   void GetEntry(const std::string& key,
                 typename Callbacks::GetCallback callback);
