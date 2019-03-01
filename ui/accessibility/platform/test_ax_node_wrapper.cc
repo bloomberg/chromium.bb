@@ -381,12 +381,11 @@ base::string16 TestAXNodeWrapper::GetLocalizedStringForImageAnnotationStatus(
           "To get missing image descriptions, open the context menu.");
     case ax::mojom::ImageAnnotationStatus::kAnnotationPending:
       return base::ASCIIToUTF16("Getting description...");
-    case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
-      return base::ASCIIToUTF16("No description is available.");
     case ax::mojom::ImageAnnotationStatus::kAnnotationAdult:
-      return base::ASCIIToUTF16("Appears to be adult content.");
+      return base::ASCIIToUTF16(
+          "Appears to contain adult content. No description available.");
+    case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
     case ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed:
-      return base::ASCIIToUTF16("Unable to get a description.");
     case ax::mojom::ImageAnnotationStatus::kNone:
     case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
     case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:

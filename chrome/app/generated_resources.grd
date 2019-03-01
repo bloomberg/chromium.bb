@@ -784,7 +784,7 @@ are declared in tools/grit/grit_rule.gni.
             &amp;Add to Dictionary
           </message>
           <message name="IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_MENU_OPTION" desc="The context-menu item that asks whether to integrate the accessibility image labeling service of Google to Chrome. This text is also used as the title of a bubble which confirms it.">
-            Get Image Descriptions From Google
+            Get Image Descriptions from Google
           </message>
           <message name="IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_SEND" desc="The context-menu sub-item that asks whether to integrate the accessibility image labeling service of Google to Chrome always.">
             Always

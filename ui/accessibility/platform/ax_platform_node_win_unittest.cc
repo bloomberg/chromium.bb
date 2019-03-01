@@ -2605,8 +2605,8 @@ TEST_F(AXPlatformNodeWinTest, TestAnnotatedImageName) {
       ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded);
   expected_names.push_back(L"ExistingLabel. Annotation");
 
-  // If the status is AnnotationEmpty, failure text should be appended
-  // to the name.
+  // If the status is AnnotationEmpty, no failure text should be added to the
+  // name.
   tree.nodes[7].id = 8;
   tree.nodes[7].role = ax::mojom::Role::kImage;
   tree.nodes[7].AddStringAttribute(ax::mojom::StringAttribute::kImageAnnotation,
@@ -2614,7 +2614,7 @@ TEST_F(AXPlatformNodeWinTest, TestAnnotatedImageName) {
   tree.nodes[7].SetName("ExistingLabel");
   tree.nodes[7].SetImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus::kAnnotationEmpty);
-  expected_names.push_back(L"ExistingLabel. No description is available.");
+  expected_names.push_back(L"ExistingLabel");
 
   // If the status is AnnotationAdult, appropriate text should be appended
   // to the name.
@@ -2625,10 +2625,12 @@ TEST_F(AXPlatformNodeWinTest, TestAnnotatedImageName) {
   tree.nodes[8].SetName("ExistingLabel");
   tree.nodes[8].SetImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus::kAnnotationAdult);
-  expected_names.push_back(L"ExistingLabel. Appears to be adult content.");
+  expected_names.push_back(
+      L"ExistingLabel. Appears to contain adult content. No description "
+      L"available.");
 
-  // If the status is AnnotationProcessFailed, appropriate text should be
-  // appended to the name.
+  // If the status is AnnotationProcessFailed, no failure text should be added
+  // to the name.
   tree.nodes[9].id = 10;
   tree.nodes[9].role = ax::mojom::Role::kImage;
   tree.nodes[9].AddStringAttribute(ax::mojom::StringAttribute::kImageAnnotation,
@@ -2636,7 +2638,7 @@ TEST_F(AXPlatformNodeWinTest, TestAnnotatedImageName) {
   tree.nodes[9].SetName("ExistingLabel");
   tree.nodes[9].SetImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed);
-  expected_names.push_back(L"ExistingLabel. Unable to get a description.");
+  expected_names.push_back(L"ExistingLabel");
 
   // We should have one expected name per child of the root.
   ASSERT_EQ(expected_names.size(), tree.nodes[0].child_ids.size());

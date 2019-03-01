@@ -1272,15 +1272,11 @@ base::string16 BrowserAccessibility::GetLocalizedStringForImageAnnotationStatus(
     case ax::mojom::ImageAnnotationStatus::kAnnotationPending:
       message_id = IDS_AX_IMAGE_ANNOTATION_PENDING;
       break;
-    case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
-      message_id = IDS_AX_IMAGE_ANNOTATION_EMPTY;
-      break;
     case ax::mojom::ImageAnnotationStatus::kAnnotationAdult:
       message_id = IDS_AX_IMAGE_ANNOTATION_ADULT;
       break;
+    case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
     case ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed:
-      message_id = IDS_AX_IMAGE_ANNOTATION_PROCESS_FAILED;
-      break;
     case ax::mojom::ImageAnnotationStatus::kNone:
     case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
     case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:
