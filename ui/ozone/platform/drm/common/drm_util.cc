@@ -33,12 +33,11 @@ void EmitEdidColorSpaceChecksOutcomeUma(EdidColorSpaceChecksOutcome outcome) {
                             outcome);
 }
 
-bool IsCrtcInUse(
-    uint32_t crtc,
-    const std::vector<std::unique_ptr<HardwareDisplayControllerInfo>>&
-        displays) {
+bool IsCrtcInUse(uint32_t crtc,
+                 const HardwareDisplayControllerInfos& displays) {
   for (size_t i = 0; i < displays.size(); ++i) {
-    if (crtc == displays[i]->crtc()->crtc_id)
+    if (displays[i]->has_associated_crtc() &&
+        crtc == displays[i]->crtc()->crtc_id)
       return true;
   }
 
@@ -48,12 +47,10 @@ bool IsCrtcInUse(
 // Return a CRTC compatible with |connector| and not already used in |displays|.
 // If there are multiple compatible CRTCs, the one that supports the majority of
 // planes will be returned.
-uint32_t GetCrtc(
-    int fd,
-    drmModeConnector* connector,
-    drmModeRes* resources,
-    const std::vector<std::unique_ptr<HardwareDisplayControllerInfo>>&
-        displays) {
+uint32_t GetCrtc(int fd,
+                 drmModeConnector* connector,
+                 drmModeRes* resources,
+                 const HardwareDisplayControllerInfos& displays) {
   ScopedDrmPlaneResPtr plane_resources(drmModeGetPlaneResources(fd));
   std::vector<ScopedDrmPlanePtr> planes;
   for (uint32_t i = 0; i < plane_resources->count_planes; i++)
@@ -290,11 +287,12 @@ HardwareDisplayControllerInfo::HardwareDisplayControllerInfo(
 HardwareDisplayControllerInfo::~HardwareDisplayControllerInfo() {
 }
 
-std::vector<std::unique_ptr<HardwareDisplayControllerInfo>>
-GetAvailableDisplayControllerInfos(int fd) {
+HardwareDisplayControllerInfos GetAvailableDisplayControllerInfos(
+    int fd,
+    bool* support_all_connectors) {
   ScopedDrmResourcesPtr resources(drmModeGetResources(fd));
   DCHECK(resources) << "Failed to get DRM resources";
-  std::vector<std::unique_ptr<HardwareDisplayControllerInfo>> displays;
+  HardwareDisplayControllerInfos displays;
 
   std::vector<ScopedDrmConnectorPtr> connectors;
   std::vector<drmModeConnector*> available_connectors;
@@ -336,12 +334,20 @@ GetAvailableDisplayControllerInfos(int fd) {
                             c1_crtcs != c2_crtcs;
                    });
 
+  if (support_all_connectors)
+    *support_all_connectors = true;
   for (auto* c : available_connectors) {
     uint32_t crtc_id = GetCrtc(fd, c, resources.get(), displays);
-    if (!crtc_id)
-      continue;
+    ScopedDrmCrtcPtr crtc;
 
-    ScopedDrmCrtcPtr crtc(drmModeGetCrtc(fd, crtc_id));
+    if (crtc_id) {
+      crtc = ScopedDrmCrtcPtr(drmModeGetCrtc(fd, crtc_id));
+    } else {
+      // No available crtc for this connector.
+      if (support_all_connectors)
+        *support_all_connectors = false;
+    }
+
     auto iter = std::find_if(connectors.begin(), connectors.end(),
                              [c](const ScopedDrmConnectorPtr& connector) {
                                return connector.get() == c;
@@ -388,7 +394,8 @@ display::DisplaySnapshot::DisplayModeList ExtractDisplayModes(
     const drmModeModeInfo& mode = info->connector()->modes[i];
     modes.push_back(CreateDisplayMode(mode));
 
-    if (info->crtc()->mode_valid && SameMode(info->crtc()->mode, mode))
+    if (info->has_associated_crtc() && info->crtc()->mode_valid &&
+        SameMode(info->crtc()->mode, mode))
       *out_current_mode = modes.back().get();
 
     if (mode.type & DRM_MODE_TYPE_PREFERRED)
@@ -427,8 +434,9 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
   const bool is_aspect_preserving_scaling =
       IsAspectPreserving(fd, info->connector());
   const bool has_color_correction_matrix =
-      HasColorCorrectionMatrix(fd, info->crtc()) ||
-      HasPerPlaneColorCorrectionMatrix(fd, info->crtc());
+      info->has_associated_crtc() &&
+      (HasColorCorrectionMatrix(fd, info->crtc()) ||
+       HasPerPlaneColorCorrectionMatrix(fd, info->crtc()));
   // On rk3399 we can set a color correction matrix that will be applied in
   // linear space. https://crbug.com/839020 to track if it will be possible to
   // disable the per-plane degamma/gamma.
@@ -478,7 +486,7 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
       has_overscan, has_color_correction_matrix,
       color_correction_in_linear_space, display_color_space, display_name,
       sys_path, std::move(modes), edid, current_mode, native_mode, product_code,
-      year_of_manufacture, maximum_cursor_size);
+      year_of_manufacture, maximum_cursor_size, info->has_associated_crtc());
 }
 
 // TODO(rjkroege): Remove in a subsequent CL once Mojo IPC is used everywhere.
@@ -518,6 +526,7 @@ std::vector<DisplaySnapshot_Params> CreateDisplaySnapshotParams(
     p.product_code = d->product_code();
     p.year_of_manufacture = d->year_of_manufacture();
     p.maximum_cursor_size = d->maximum_cursor_size();
+    p.has_associated_crtc = d->has_associated_crtc();
 
     params.push_back(p);
   }
@@ -544,7 +553,8 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
       params.color_correction_in_linear_space, params.color_space,
       params.display_name, params.sys_path, std::move(modes), params.edid,
       current_mode, native_mode, params.product_code,
-      params.year_of_manufacture, params.maximum_cursor_size);
+      params.year_of_manufacture, params.maximum_cursor_size,
+      params.has_associated_crtc);
 }
 
 int GetFourCCFormatForOpaqueFramebuffer(gfx::BufferFormat format) {

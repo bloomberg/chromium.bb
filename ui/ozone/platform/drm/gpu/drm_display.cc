@@ -92,7 +92,7 @@ std::unique_ptr<display::DisplaySnapshot> DrmDisplay::Update(
     size_t device_index) {
   std::unique_ptr<display::DisplaySnapshot> params = CreateDisplaySnapshot(
       info, drm_->get_fd(), drm_->device_path(), device_index, origin_);
-  crtc_ = info->crtc()->crtc_id;
+  crtc_ = info->has_associated_crtc() ? info->crtc()->crtc_id : 0;
   connector_ = info->connector()->connector_id;
   display_id_ = params->display_id();
   modes_ = GetDrmModeVector(info->connector());

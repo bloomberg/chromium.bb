@@ -57,6 +57,7 @@ struct DisplaySnapshot_Params {
   int64_t product_code = 0;
   int32_t year_of_manufacture = display::kInvalidYearOfManufacture;
   gfx::Size maximum_cursor_size;
+  bool has_associated_crtc = true;
 };
 
 struct OverlayCheck_Params {

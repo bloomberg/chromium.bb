@@ -484,7 +484,7 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
 
   // Indicates whether there is any connected display having no associated crtc.
   // This can be caused by crtc shortage. When it is true, the corresponding
-  // notification will be created to inform user.
+  // notification will be created to inform the user.
   bool has_unassociated_display_;
 
   // This must be the last variable.
