@@ -3374,6 +3374,25 @@ TEST_P(PaintArtifactCompositorTest, OpacityRenderSurfacesWithBackdropChildren) {
                  kHasRenderSurface);
 }
 
+TEST_P(PaintArtifactCompositorTest,
+       DirectCompositingReasonsCausesRenderSurface) {
+  // When an effect has an animated transform, we should get a render surface.
+  auto t1 = CreateTransform(t0(), TransformationMatrix(), FloatPoint3D(),
+                            CompositingReason::kActiveTransformAnimation);
+  auto e1 = CreateOpacityEffect(e0(), *t1, nullptr, 1.f);
+  auto c1 = CreateClip(c0(), t0(), FloatRoundedRect(50, 50, 50, 50));
+  TestPaintArtifact artifact;
+  FloatRect r(150, 150, 100, 100);
+  artifact.Chunk(t0(), c0(), e0()).RectDrawing(r, Color::kWhite);
+  artifact.Chunk(t0(), *c1, *e1).RectDrawing(r, Color::kWhite);
+  Update(artifact.Build());
+  ASSERT_EQ(2u, ContentLayerCount());
+
+  const auto* effect = GetPropertyTrees().effect_tree.Node(
+      ContentLayerAt(1)->effect_tree_index());
+  EXPECT_TRUE(effect->has_render_surface);
+}
+
 TEST_P(PaintArtifactCompositorTest, OpacityIndirectlyAffectingTwoLayers) {
   auto opacity = CreateOpacityEffect(e0(), 0.5f);
   auto child_composited_effect = CreateOpacityEffect(
