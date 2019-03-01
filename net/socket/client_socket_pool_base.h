@@ -237,6 +237,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
         ClientSocketPool::kMaxConnectRetryIntervalMs);
   }
 
+  // TODO(mmenke): de-inline these.
   size_t NumNeverAssignedConnectJobsInGroup(
       const std::string& group_name) const {
     return group_map_.find(group_name)->second->never_assigned_job_count();
@@ -323,8 +324,9 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
 
   using RequestQueue = PriorityQueue<std::unique_ptr<Request>>;
 
-  // A Group is allocated per group_name when there are idle sockets or pending
-  // requests. Otherwise, the Group object is removed from the map.
+  // A Group is allocated per group_name when there are idle sockets, unbound
+  // request, or bound requests. Otherwise, the Group object is removed from the
+  // map.
   //
   // A request is "bound" to a ConnectJob when an unbound ConnectJob encounters
   // a proxy HTTP auth challenge, and the auth challenge is presented to that
@@ -355,7 +357,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
 
     bool IsEmpty() const {
       return active_socket_count_ == 0 && idle_sockets_.empty() &&
-             jobs_.empty() && pending_requests_.empty() &&
+             jobs_.empty() && unbound_requests_.empty() &&
              bound_requests_.empty();
     }
 
@@ -373,17 +375,17 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     // it were given one.
     bool CanUseAdditionalSocketSlot(int max_sockets_per_group) const {
       return HasAvailableSocketSlot(max_sockets_per_group) &&
-          pending_requests_.size() > jobs_.size();
+             unbound_requests_.size() > jobs_.size();
     }
 
-    // Returns the priority of the top of the pending request queue
+    // Returns the priority of the top of the unbound request queue
     // (which may be less than the maximum priority over the entire
     // queue, due to how we prioritize requests with |respect_limits|
     // DISABLED over others).
     RequestPriority TopPendingPriority() const {
       // NOTE: FirstMax().value()->priority() is not the same as
       // FirstMax().priority()!
-      return pending_requests_.FirstMax().value()->priority();
+      return unbound_requests_.FirstMax().value()->priority();
     }
 
     // Set a timer to create a backup job if it takes too long to
@@ -401,16 +403,12 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     void AddJob(std::unique_ptr<ConnectJob> job, bool is_preconnect);
     // Remove |job| from this group, which must already own |job|. Returns the
     // removed ConnectJob.
-    std::unique_ptr<ConnectJob> RemoveJob(ConnectJob* job);
-    void RemoveAllJobs();
+    std::unique_ptr<ConnectJob> RemoveUnboundJob(ConnectJob* job);
+    void RemoveAllUnboundJobs();
 
-    bool has_pending_requests() const {
-      return !pending_requests_.empty();
-    }
+    bool has_unbound_requests() const { return !unbound_requests_.empty(); }
 
-    size_t pending_request_count() const {
-      return pending_requests_.size();
-    }
+    size_t unbound_request_count() const { return unbound_requests_.size(); }
 
     size_t ConnectJobCount() const;
 
@@ -420,19 +418,19 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     // Inserts the request into the queue based on priority
     // order. Older requests are prioritized over requests of equal
     // priority.
-    void InsertPendingRequest(std::unique_ptr<Request> request);
+    void InsertUnboundRequest(std::unique_ptr<Request> request);
 
-    // Gets (but does not remove) the next pending request. Returns
-    // NULL if there are no pending requests.
-    const Request* GetNextPendingRequest() const;
+    // Gets (but does not remove) the next unbound request. Returns
+    // NULL if there are no unbound requests.
+    const Request* GetNextUnboundRequest() const;
 
-    // Gets and removes the next pending request. Returns NULL if
-    // there are no pending requests.
-    std::unique_ptr<Request> PopNextPendingRequest();
+    // Gets and removes the next unbound request. Returns NULL if
+    // there are no unbound requests.
+    std::unique_ptr<Request> PopNextUnboundRequest();
 
-    // Finds the pending request for |handle| and removes it. Returns
-    // the removed pending request, or NULL if there was none.
-    std::unique_ptr<Request> FindAndRemovePendingRequest(
+    // Finds the unbound request for |handle| and removes it. Returns
+    // the removed unbound request, or NULL if there was none.
+    std::unique_ptr<Request> FindAndRemoveUnboundRequest(
         ClientSocketHandle* handle);
 
     // Sets a pending error for all bound requests. Bound requests may be in the
@@ -468,7 +466,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     void IncrementActiveSocketCount() { active_socket_count_++; }
     void DecrementActiveSocketCount() { active_socket_count_--; }
 
-    // Whether the request in |pending_requests_| with a given handle has a job.
+    // Whether the request in |unbound_requests_| with a given handle has a job.
     bool RequestWithHandleHasJobForTesting(
         const ClientSocketHandle* handle) const;
 
@@ -501,17 +499,18 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
       int pending_error;
     };
 
-    // Returns the iterator's pending request after removing it from
+    // Returns the iterator's unbound request after removing it from
     // the queue. Expects the Group to pass SanityCheck() when called.
-    std::unique_ptr<Request> RemovePendingRequest(
+    std::unique_ptr<Request> RemoveUnboundRequest(
         const RequestQueue::Pointer& pointer);
 
     // Finds the Request which is associated with the given ConnectJob.
     // Returns nullptr if none is found. Expects the Group to pass SanityCheck()
     // when called.
-    RequestQueue::Pointer FindRequestWithJob(const ConnectJob* job) const;
+    RequestQueue::Pointer FindUnboundRequestWithJob(
+        const ConnectJob* job) const;
 
-    // Finds the Request in |pending_requests_| which is the first request
+    // Finds the Request in |unbound_requests_| which is the first request
     // without a job. Returns a null pointer if all requests have jobs. Does not
     // expect the Group to pass SanityCheck() when called, but does expect all
     // jobs to either be assigned to a request or in |unassigned_jobs_|. Expects
@@ -533,7 +532,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     // expect that:
     //  - the request associated with |request_pointer| must not have
     //    an assigned ConnectJob,
-    //  - the first min( jobs_.size(), pending_requests_.size() - 1 ) Requests
+    //  - the first min( jobs_.size(), unbound_requests_.size() - 1 ) Requests
     //    other than the given request must have ConnectJobs, i.e. the group
     //    must have passed SanityCheck() before the passed in Request was either
     //    added or had its job unassigned.
@@ -573,16 +572,16 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     JobList jobs_;  // For bookkeeping purposes, there is a copy of the raw
                     // pointer of each element of |jobs_| stored either in
                     // |unassigned_jobs_|, or as the associated |job_| of an
-                    // element of |pending_requests_|.
+                    // element of |unbound_requests_|.
     std::list<ConnectJob*> unassigned_jobs_;
-    RequestQueue pending_requests_;
+    RequestQueue unbound_requests_;
     int active_socket_count_;  // number of active sockets used by clients
     // A timer for when to start the backup job.
     base::OneShotTimer backup_job_timer_;
 
     // List of Requests bound to ConnectJobs currently undergoing proxy auth.
     // The Requests and ConnectJobs in this list do not appear in
-    // |pending_requests_| or |jobs_|.
+    // |unbound_requests_| or |jobs_|.
     std::vector<BoundRequest> bound_requests_;
   };
 
