@@ -18250,6 +18250,11 @@ class HttpNetworkTransactionReportingTest : public HttpNetworkTransactionTest {
     request.traffic_annotation =
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
+    MockWrite data_writes[] = {
+        MockWrite("GET / HTTP/1.1\r\n"
+                  "Host: www.example.org\r\n"
+                  "Connection: keep-alive\r\n\r\n"),
+    };
     MockRead data_reads[] = {
         MockRead("HTTP/1.0 200 OK\r\n"),
         MockRead("Report-To: {\"group\": \"nel\", \"max_age\": 86400, "
@@ -18258,11 +18263,6 @@ class HttpNetworkTransactionReportingTest : public HttpNetworkTransactionTest {
         MockRead("\r\n"),
         MockRead("hello world"),
         MockRead(SYNCHRONOUS, OK),
-    };
-    MockWrite data_writes[] = {
-        MockWrite("GET / HTTP/1.1\r\n"
-                  "Host: www.example.org\r\n"
-                  "Connection: keep-alive\r\n\r\n"),
     };
 
     StaticSocketDataProvider reads(data_reads, data_writes);
@@ -18378,19 +18378,19 @@ class HttpNetworkTransactionNetworkErrorLoggingTest
   // Makes an HTTPS request that should install a valid NEL policy.
   void RequestPolicy(CertStatus cert_status = 0) {
     std::string extra_header_string = extra_headers_.ToString();
-    MockRead data_reads[] = {
-        MockRead("HTTP/1.0 200 OK\r\n"),
-        MockRead("NEL: {\"report_to\": \"nel\", \"max_age\": 86400}\r\n"),
-        MockRead("\r\n"),
-        MockRead("hello world"),
-        MockRead(SYNCHRONOUS, OK),
-    };
     MockWrite data_writes[] = {
         MockWrite("GET / HTTP/1.1\r\n"
                   "Host: www.example.org\r\n"
                   "Connection: keep-alive\r\n"),
         MockWrite(ASYNC, extra_header_string.data(),
                   extra_header_string.size()),
+    };
+    MockRead data_reads[] = {
+        MockRead("HTTP/1.0 200 OK\r\n"),
+        MockRead("NEL: {\"report_to\": \"nel\", \"max_age\": 86400}\r\n"),
+        MockRead("\r\n"),
+        MockRead("hello world"),
+        MockRead(SYNCHRONOUS, OK),
     };
 
     StaticSocketDataProvider reads(data_reads, data_writes);
@@ -18610,17 +18610,17 @@ TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
 TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
        CreateReportReadBodyError) {
   std::string extra_header_string = extra_headers_.ToString();
-  MockRead data_reads[] = {
-      MockRead("HTTP/1.0 200 OK\r\n"),
-      MockRead("Content-Length: 100\r\n\r\n"),  // wrong content length
-      MockRead("hello world"),
-      MockRead(SYNCHRONOUS, OK),
-  };
   MockWrite data_writes[] = {
       MockWrite("GET / HTTP/1.1\r\n"
                 "Host: www.example.org\r\n"
                 "Connection: keep-alive\r\n"),
       MockWrite(ASYNC, extra_header_string.data(), extra_header_string.size()),
+  };
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.0 200 OK\r\n"),
+      MockRead("Content-Length: 100\r\n\r\n"),  // wrong content length
+      MockRead("hello world"),
+      MockRead(SYNCHRONOUS, OK),
   };
 
   StaticSocketDataProvider reads(data_reads, data_writes);
@@ -18664,17 +18664,17 @@ TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
 TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
        CreateReportReadBodyErrorAsync) {
   std::string extra_header_string = extra_headers_.ToString();
-  MockRead data_reads[] = {
-      MockRead("HTTP/1.0 200 OK\r\n"),
-      MockRead("Content-Length: 100\r\n\r\n"),  // wrong content length
-      MockRead("hello world"),
-      MockRead(ASYNC, OK),
-  };
   MockWrite data_writes[] = {
       MockWrite("GET / HTTP/1.1\r\n"
                 "Host: www.example.org\r\n"
                 "Connection: keep-alive\r\n"),
       MockWrite(ASYNC, extra_header_string.data(), extra_header_string.size()),
+  };
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.0 200 OK\r\n"),
+      MockRead("Content-Length: 100\r\n\r\n"),  // wrong content length
+      MockRead("hello world"),
+      MockRead(ASYNC, OK),
   };
 
   StaticSocketDataProvider reads(data_reads, data_writes);
@@ -19241,6 +19241,67 @@ TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
   EXPECT_EQ(0, error3.reporting_upload_depth);
 }
 
+TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
+       CreateReportCancelAfterStart) {
+  StaticSocketDataProvider data;
+  data.set_connect_data(MockConnect(SYNCHRONOUS, ERR_IO_PENDING));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  TestCompletionCallback callback;
+  auto session = CreateSession(&session_deps_);
+  auto trans =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  int rv = trans->Start(&request_, callback.callback(), NetLogWithSource());
+  EXPECT_EQ(rv, ERR_IO_PENDING);
+
+  // Cancel after start.
+  trans.reset();
+
+  ASSERT_EQ(1u, network_error_logging_service()->errors().size());
+  CheckReport(0 /* index */, 0 /* status_code */, ERR_ABORTED,
+              IPAddress() /* server_ip */);
+}
+
+TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
+       CreateReportCancelBeforeReadingBody) {
+  std::string extra_header_string = extra_headers_.ToString();
+  MockWrite data_writes[] = {
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n"),
+      MockWrite(ASYNC, extra_header_string.data(), extra_header_string.size()),
+  };
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.0 200 OK\r\n"),
+      MockRead("Content-Length: 100\r\n\r\n"),  // Body is never read.
+  };
+
+  StaticSocketDataProvider data(data_reads, data_writes);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  TestCompletionCallback callback;
+  auto session = CreateSession(&session_deps_);
+  auto trans =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  int rv = trans->Start(&request_, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response);
+
+  EXPECT_TRUE(response->headers);
+  EXPECT_EQ("HTTP/1.0 200 OK", response->headers->GetStatusLine());
+
+  // Cancel before reading the body.
+  trans.reset();
+
+  ASSERT_EQ(1u, network_error_logging_service()->errors().size());
+  CheckReport(0 /* index */, 200 /* status_code */, ERR_ABORTED);
+}
+
 TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest, DontCreateReportHttp) {
   base::HistogramTester histograms;
   RequestPolicy();
@@ -19261,8 +19322,8 @@ TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest, DontCreateReportHttp) {
       MockWrite(ASYNC, extra_header_string.data(), extra_header_string.size()),
   };
 
-  StaticSocketDataProvider reads(data_reads, data_writes);
-  session_deps_.socket_factory->AddSocketDataProvider(&reads);
+  StaticSocketDataProvider data(data_reads, data_writes);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   // Insecure url
   url_ = "http://www.example.org/";
