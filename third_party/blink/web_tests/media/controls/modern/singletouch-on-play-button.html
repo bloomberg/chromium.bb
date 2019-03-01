@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <title>Test that the player pauses if single-touched on the play button.</title>
+<script src="../../../resources/gesture-util.js"></script>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../media-controls.js"></script>
@@ -17,14 +18,18 @@ async_test(t => {
   video.src='../../content/60_sec_video.webm';
   document.body.appendChild(video);
 
+  let tap_gesture;
+
   video.addEventListener('playing', t.step_func(() => {
     // Single tap in the middle of the button.
     const coordinates =
       elementCoordinates(mediaControlsOverlayPlayButtonInternal(video));
-    singleTouchAtCoordinates(coordinates[0], coordinates[1]);
+    tap_gesture = touchTapOn(coordinates[0], coordinates[1]);
   }), { once: true });
 
-  video.addEventListener('pause', t.step_func_done(), { once: true });
+  video.addEventListener('pause', () => {
+    tap_gesture.then(t.step_func_done());
+  }, { once: true });
 
   video.play();
 });

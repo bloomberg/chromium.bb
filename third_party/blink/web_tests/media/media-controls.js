@@ -561,7 +561,6 @@ function doubleTapAtCoordinates(x, y, timeout, callback) {
 }
 
 function singleTapAtCoordinates(xPos, yPos, callback) {
-  let delayCallback = function() { setTimeout(callback); };
   chrome.gpuBenchmarking.pointerActionSequence([
     {
       source: 'mouse',
@@ -570,7 +569,7 @@ function singleTapAtCoordinates(xPos, yPos, callback) {
         { name: 'pointerUp' }
       ]
     }
-  ], delayCallback);
+  ], callback);
 }
 
 function singleTapOutsideControl(control, callback) {

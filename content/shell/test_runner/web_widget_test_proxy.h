@@ -80,6 +80,8 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxy : public content::RenderWidget {
   void Reset();
   void BindTo(blink::WebLocalFrame* frame);
 
+  void EndSyntheticGestures();
+
  private:
   // RenderWidget does not have a public destructor.
   ~WebWidgetTestProxy() override;
