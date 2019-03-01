@@ -10,6 +10,8 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
+#include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/platform/ax_platform_node_base.h"
@@ -103,12 +105,22 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
 
   void UpdateHypertext();
   const AXHypertext& GetHypertext();
+  const base::OffsetAdjuster::Adjustments& GetHypertextAdjustments();
+  size_t UTF16ToUnicodeOffsetInText(size_t utf16_offset);
+  size_t UnicodeToUTF16OffsetInText(size_t unicode_offset);
 
   void SetEmbeddedDocument(AtkObject* new_document);
   void SetEmbeddingWindow(AtkObject* new_embedding_window);
 
  protected:
   AXHypertext hypertext_;
+
+  // Offsets for the AtkText API are calculated in UTF-16 code point offsets,
+  // but the ATK APIs want all offsets to be in "characters," which we
+  // understand to be Unicode character offsets. We keep a lazily generated set
+  // of Adjustments to convert between UTF-16 and Unicode character offsets.
+  base::Optional<base::OffsetAdjuster::Adjustments> text_unicode_adjustments_ =
+      base::nullopt;
 
   void AddAttributeToList(const char* name,
                           const char* value,
