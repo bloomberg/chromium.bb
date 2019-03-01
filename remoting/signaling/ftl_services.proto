@@ -16,3 +16,8 @@ service PeerToPeer {
   rpc GetICEServer(remoting.ftl.GetICEServerRequest)
       returns (remoting.ftl.GetICEServerResponse) {}
 }
+
+service Registration {
+  rpc SignInGaia(remoting.ftl.SignInGaiaRequest)
+      returns (remoting.ftl.SignInGaiaResponse) {}
+}

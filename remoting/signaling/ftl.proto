@@ -8,6 +8,8 @@ option optimize_for = LITE_RUNTIME;
 
 package remoting.ftl;
 
+// Enums
+
 // This is exactly google.protobuf.Duration. The Chromium proto_library
 // template has trouble importing protobuf outside the current directory.
 message Duration {
@@ -40,6 +42,33 @@ message IdType {
     EMAIL = 16;
   }
 }
+
+message DeviceIdType {
+  enum Type {
+    UNKNOWN = 0;
+    ANDROID_IID_TOKEN = 1;
+    IOS_VENDOR_ID = 2;
+    WEB_UUID = 3;
+  }
+}
+
+message SignInGaiaMode {
+  enum Value {
+    DEFAULT_CREATE_ACCOUNT = 0;
+    LOOKUP = 1;
+    LOOKUP_AND_SIGN_IN = 2;
+  }
+}
+
+message FtlCapability {
+  enum Feature {
+    UNKNOWN = 0;
+    RECEIVE_CALLS_FROM_GAIA = 86;
+    GAIA_REACHABLE = 87;
+  }
+}
+
+// Messages
 
 message ClientInfo {
   // Renamed from major, minor, point because they are defined in glibc macros.
@@ -83,6 +112,24 @@ message ICEConfiguration {
   string ice_transport_policy = 6;
 }
 
+message DeviceId {
+  DeviceIdType.Type type = 1;
+  string id = 2;
+}
+
+message RegisterData {
+  DeviceId device_id = 1;
+  string locale = 8;
+  repeated int32 caps = 9;
+}
+
+message AuthToken {
+  bytes payload = 1;
+  int64 expires_in = 2;
+}
+
+// Requests and responses
+
 message GetICEServerRequest {
   RequestHeader header = 1;
   bool unblock_me = 2;
@@ -92,4 +139,17 @@ message GetICEServerRequest {
 message GetICEServerResponse {
   ResponseHeader header = 1;
   ICEConfiguration ice_config = 4;
+}
+
+message SignInGaiaRequest {
+  RequestHeader header = 1;
+  RegisterData register_data = 2;
+  SignInGaiaMode.Value mode = 3;
+  string app = 4;
+}
+
+message SignInGaiaResponse {
+  ResponseHeader header = 1;
+  bytes registration_id = 2;
+  AuthToken auth_token = 4;
 }
