@@ -624,16 +624,19 @@ void PolicyUIHandler::AddCommonLocalizedStringsToSource(
       content::WebUIDataSource* source) {
   AddLocalizedPolicyStrings(source, policy::kPolicySources,
                             static_cast<size_t>(policy::POLICY_SOURCE_COUNT));
+  source->AddLocalizedString("conflict", IDS_POLICY_LABEL_CONFLICT);
   source->AddLocalizedString("headerLevel", IDS_POLICY_HEADER_LEVEL);
   source->AddLocalizedString("headerName", IDS_POLICY_HEADER_NAME);
   source->AddLocalizedString("headerScope", IDS_POLICY_HEADER_SCOPE);
   source->AddLocalizedString("headerSource", IDS_POLICY_HEADER_SOURCE);
   source->AddLocalizedString("headerStatus", IDS_POLICY_HEADER_STATUS);
   source->AddLocalizedString("headerValue", IDS_POLICY_HEADER_VALUE);
-  source->AddLocalizedString("headerWarning", IDS_POLICY_HEADER_WARNING);
+  source->AddLocalizedString("warning", IDS_POLICY_HEADER_WARNING);
   source->AddLocalizedString("levelMandatory", IDS_POLICY_LEVEL_MANDATORY);
   source->AddLocalizedString("levelRecommended", IDS_POLICY_LEVEL_RECOMMENDED);
   source->AddLocalizedString("messages", IDS_POLICY_LABEL_MESSAGES);
+  source->AddLocalizedString("warningAndConflicts",
+                             IDS_POLICY_LABEL_WARNING_AND_CONFLICT);
   source->AddLocalizedString("notSpecified", IDS_POLICY_NOT_SPECIFIED);
   source->AddLocalizedString("ok", IDS_POLICY_OK);
   source->AddLocalizedString("scopeDevice", IDS_POLICY_SCOPE_DEVICE);

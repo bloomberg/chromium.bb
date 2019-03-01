@@ -117,27 +117,53 @@
           <div class="source">$i18n{headerSource}</div>
           <div class="scope">$i18n{headerScope}</div>
           <div class="level">$i18n{headerLevel}</div>
-          <div class="messages">$i18n{headerWarning}</div>
+          <div class="messages">$i18n{headerStatus}</div>
+          <div class="toggle"></div>
         </div>
         <div class="no-policy">$i18n{noPoliciesSet}</div>
       </div>
     </div>
 
+    <div class="policy-conflict-data" id="policy-conflict-template" hidden>
+      <div class="policy conflict row">
+          <div class="name">$i18n{conflict}</div>
+          <div class="value"></div>
+          <div class="source"></div>
+          <div class="scope"></div>
+          <div class="level"></div>
+          <div class="messages"></div>
+          <div class="toggle"></div>
+      </div>
+      <div class="value row">
+        <div class="name"></div>
+        <div class="value"></div>
+      </div>
+    </div>
+
     <div class="policy-data" id="policy-template">
       <div class="policy row">
-        <div class="name"><a class="name-link"></a></div>
+        <div class="name">
+          <a class="link" target="_blank">
+            <span></span>
+            <img src="../../../../ui/webui/resources/images/open_in_new.svg">
+          </a>
+        </div>
         <div class="value"></div>
         <div class="source"></div>
         <div class="scope"></div>
         <div class="level"></div>
         <div class="messages"></div>
+        <div class="toggle">
+          <a is="action-link" class="show-more">$i18n{showMore}</a>
+          <a is="action-link" class="show-less" hidden>$i18n{showLess}</a>
+        </div>
       </div>
       <div class="value row" hidden>
         <div class="name">$i18n{value}</div>
         <div class="value"></div>
       </div>
       <div class="messages row" hidden>
-        <div class="name">$i18n{messages}</div>
+        <div class="name">$i18n{warning}</div>
         <div class="value"></div>
       </div>
     </div>

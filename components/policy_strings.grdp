@@ -322,6 +322,12 @@ Additional details:
   <message name="IDS_POLICY_LABEL_MESSAGES" desc="Label for the messages row in the policy table.">
     Messages
   </message>
+  <message name="IDS_POLICY_LABEL_CONFLICT" desc="Label for the conflict row in the policy table.">
+    Conflict
+  </message>
+  <message name="IDS_POLICY_LABEL_WARNING_AND_CONFLICT" desc="Label for the conflict row in the policy table when there are warnings and conflicts.">
+    Warnings, Conflict
+  </message>
   <message name="IDS_POLICY_LABEL_VALUE" desc="Label for the value row in the policy table.">
     Value
   </message>
@@ -355,11 +361,11 @@ Additional details:
   <message name="IDS_POLICY_HEADER_WARNING" desc="Table header for the column in the policy table that contains the policy warnings.">
     Warning
   </message>
-  <message name="IDS_POLICY_SHOW_EXPANDED_VALUE" desc="Text for the link that shows the policy value. Used when the policy value is too long to be always visible.">
-    Show value
+  <message name="IDS_POLICY_SHOW_MORE" desc="Text for the link that expands and shows the are full value, conflicts and warnings rows of a policy.">
+    Show more
   </message>
-  <message name="IDS_POLICY_HIDE_EXPANDED_VALUE" desc="Text for the link that hides the policy value. Used when the policy value is too long to be always visible.">
-    Hide value
+  <message name="IDS_POLICY_SHOW_LESS" desc="Text for the link that collapses and hides the are full value, conflicts and warnings rows of a policy.">
+    Show less
   </message>
   <message name="IDS_POLICY_LEARN_MORE" desc="Help text for learn-more link for known chrome policies.">
     Learn more about <ph name="POLICY_NAME">$1<ex>AllowDinosaurEasterEgg</ex></ph> policy
