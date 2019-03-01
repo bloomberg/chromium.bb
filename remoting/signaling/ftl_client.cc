@@ -23,7 +23,9 @@ constexpr char kFtlServerEndpoint[] = "instantmessaging-pa.googleapis.com";
 
 namespace remoting {
 
-FtlClient::FtlClient() {
+FtlClient::FtlClient(OAuthTokenGetter* token_getter) : weak_factory_(this) {
+  DCHECK(token_getter);
+  token_getter_ = token_getter;
   auto channel_creds = grpc::SslCredentials(grpc::SslCredentialsOptions());
   auto channel = grpc::CreateChannel(kFtlServerEndpoint, channel_creds);
   peer_to_peer_stub_ = PeerToPeer::NewStub(channel);
@@ -35,10 +37,42 @@ void FtlClient::GetIceServer(RpcCallback<ftl::GetICEServerResponse> callback) {
   ftl::GetICEServerRequest request;
   request.set_allocated_header(BuildRequestHeader().release());
 
-  dispatcher_.ExecuteAsyncRpc(
+  GetOAuthTokenAndExecuteRpc(
       base::BindOnce(&PeerToPeer::Stub::AsyncGetICEServer,
                      base::Unretained(peer_to_peer_stub_.get())),
-      CreateClientContext(), request, std::move(callback));
+      request, std::move(callback));
+}
+
+template <typename RequestType, typename ResponseType>
+void FtlClient::GetOAuthTokenAndExecuteRpc(
+    GrpcAsyncDispatcher::AsyncRpcFunction<RequestType, ResponseType> rpc,
+    const RequestType& request,
+    RpcCallback<ResponseType> callback) {
+  token_getter_->CallWithToken(base::BindOnce(
+      &FtlClient::ExecuteRpcWithFetchedOAuthToken<RequestType, ResponseType>,
+      weak_factory_.GetWeakPtr(), std::move(rpc), request,
+      std::move(callback)));
+}
+
+template <typename RequestType, typename ResponseType>
+void FtlClient::ExecuteRpcWithFetchedOAuthToken(
+    GrpcAsyncDispatcher::AsyncRpcFunction<RequestType, ResponseType> rpc,
+    const RequestType& request,
+    RpcCallback<ResponseType> callback,
+    OAuthTokenGetter::Status status,
+    const std::string& user_email,
+    const std::string& access_token) {
+  std::unique_ptr<grpc::ClientContext> context = CreateClientContext();
+  if (status != OAuthTokenGetter::Status::SUCCESS) {
+    LOG(ERROR) << "Failed to fetch access token. Status: " << status;
+  }
+  if (status == OAuthTokenGetter::Status::SUCCESS && !access_token.empty()) {
+    context->set_credentials(grpc::AccessTokenCredentials(access_token));
+  } else {
+    LOG(WARNING) << "Attempting to execute RPC without access token.";
+  }
+  dispatcher_.ExecuteAsyncRpc(std::move(rpc), std::move(context), request,
+                              std::move(callback));
 }
 
 // static
