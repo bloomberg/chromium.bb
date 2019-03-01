@@ -41,6 +41,12 @@ def GetAndroidPylibDir():
   return os.path.join(GetChromiumSrcDir(), 'build', 'android')
 
 
+def GetSoundwaveDir():
+  return os.path.join(
+      GetChromiumSrcDir(), 'third_party', 'catapult', 'experimental',
+      'soundwave')
+
+
 def AddTelemetryToPath():
   telemetry_path = GetTelemetryDir()
   if telemetry_path not in sys.path:
@@ -58,6 +64,13 @@ def AddPyUtilsToPath():
       GetChromiumSrcDir(), 'third_party', 'catapult', 'common', 'py_utils')
   if py_utils_dir not in sys.path:
     sys.path.insert(1, py_utils_dir)
+
+
+def AddSoundwaveToPath():
+  AddPyUtilsToPath()  # needed by some soundwave scripts
+  soundwave_services_path = GetSoundwaveDir()
+  if soundwave_services_path not in sys.path:
+    sys.path.insert(1, soundwave_services_path)
 
 
 def GetWprDir():

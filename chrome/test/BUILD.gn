@@ -2366,6 +2366,9 @@ group("telemetry_perf_unittests") {
     # For tests in tools/perf/process_perf_results_unittest.py
     "//build/android/pylib/",
     "//tools/swarming_client/",
+
+    # For tests in tools/perf/cli_tools/update_wpr
+    "//third_party/catapult/experimental/soundwave/services/",
   ]
 
   if (enable_mus) {
