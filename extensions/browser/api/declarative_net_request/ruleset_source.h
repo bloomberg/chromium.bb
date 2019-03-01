@@ -18,6 +18,8 @@ struct RulesetSource {
   // ruleset.
   static RulesetSource Create(const Extension& extension);
 
+  RulesetSource(base::FilePath json_path, base::FilePath indexed_path);
+
   ~RulesetSource();
   RulesetSource(RulesetSource&&);
   RulesetSource& operator=(RulesetSource&&);
@@ -31,8 +33,6 @@ struct RulesetSource {
   base::FilePath indexed_path;
 
  private:
-  RulesetSource();
-
   DISALLOW_COPY_AND_ASSIGN(RulesetSource);
 };
 
