@@ -36,7 +36,7 @@ public class VrCoreInfo {
     public long makeNativeVrCoreInfo() {
         return (gvrVersion == null) ? nativeInit(0, 0, 0, compatibility)
                                     : nativeInit(gvrVersion.majorVersion, gvrVersion.minorVersion,
-                                            gvrVersion.patchVersion, compatibility);
+                                              gvrVersion.patchVersion, compatibility);
     }
 
     private native long nativeInit(

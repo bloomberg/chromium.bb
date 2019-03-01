@@ -235,7 +235,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
     deps += [ "//chrome/android:chrome_all_java" ]
 
     if (enable_vr && (_target_type == "android_apk" || !modularize_vr)) {
-      deps += [ "//chrome/android/features/vr:java" ]
+      deps += [ "//chrome/browser/android/vr:java" ]
     }
 
     if (!defined(version_code)) {

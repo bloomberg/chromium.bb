@@ -1686,6 +1686,16 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/util/ViewUtils.java",
   "java/src/org/chromium/chrome/browser/vr/ArDelegate.java",
   "java/src/org/chromium/chrome/browser/vr/ArDelegateProvider.java",
+  "java/src/org/chromium/chrome/browser/vr/OnExitVrRequestListener.java",
+  "java/src/org/chromium/chrome/browser/vr/VrDelegate.java",
+  "java/src/org/chromium/chrome/browser/vr/VrDelegateFallback.java",
+  "java/src/org/chromium/chrome/browser/vr/VrFallbackUtils.java",
+  "java/src/org/chromium/chrome/browser/vr/VrIntentDelegateFallback.java",
+  "java/src/org/chromium/chrome/browser/vr/VrDelegateProvider.java",
+  "java/src/org/chromium/chrome/browser/vr/VrDelegateProviderFallback.java",
+  "java/src/org/chromium/chrome/browser/vr/VrIntentDelegate.java",
+  "java/src/org/chromium/chrome/browser/vr/VrModeObserver.java",
+  "java/src/org/chromium/chrome/browser/vr/VrModuleProvider.java",
   "java/src/org/chromium/chrome/browser/webapps/ActivityAssigner.java",
   "java/src/org/chromium/chrome/browser/webapps/AddToHomescreenDialog.java",
   "java/src/org/chromium/chrome/browser/webapps/AddToHomescreenManager.java",
@@ -1856,7 +1866,10 @@ chrome_java_sources = [
 ]
 
 if (enable_vr) {
-  chrome_java_sources += [ "java/src/org/chromium/chrome/browser/component_updater/VrAssetsComponentInstaller.java" ]
+  chrome_java_sources += [
+    "java/src/org/chromium/chrome/browser/component_updater/VrAssetsComponentInstaller.java",
+    "java/src/org/chromium/chrome/browser/vr/SilenceLintErrors.java",
+  ]
 }
 
 chrome_test_java_sources = [

@@ -84,7 +84,7 @@ public class VrAlertDialog extends AlertDialog {
     @Override
     public void setButton(
             int whichButton, CharSequence text, DialogInterface.OnClickListener listener) {
-        assert (whichButton == DialogInterface.BUTTON_POSITIVE
+        assert(whichButton == DialogInterface.BUTTON_POSITIVE
                 || whichButton == DialogInterface.BUTTON_NEGATIVE);
         if (whichButton == DialogInterface.BUTTON_POSITIVE) {
             mButtonPositive = new DialogButton(
@@ -118,7 +118,7 @@ public class VrAlertDialog extends AlertDialog {
             @Override
             public void onDismiss(PropertyModel model, int dismissalCause) {}
         };
-        assert (mView == null || mMessage == null);
+        assert(mView == null || mMessage == null);
 
         String message = mMessage != null ? mMessage.toString() : null;
         String positiveButtonText = mButtonPositive != null ? mButtonPositive.getText() : null;
