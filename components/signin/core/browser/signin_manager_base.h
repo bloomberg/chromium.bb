@@ -125,21 +125,9 @@ class SigninManagerBase : public KeyedService {
   // Returns true if there is an authenticated user.
   bool IsAuthenticated() const;
 
-  // KeyedService implementation.
-  void Shutdown() override;
-
   // Methods to register or remove observers of signin.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
-
-  // Adds a callback that will be called when this instance is shut down.Not
-  // intended for general usage, but rather for usage only by the Identity
-  // Service implementation during the time period of conversion of Chrome to
-  // use the Identity Service.
-  std::unique_ptr<base::CallbackList<void()>::Subscription>
-  RegisterOnShutdownCallback(const base::Closure& cb) {
-    return on_shutdown_callback_list_.Add(cb);
-  }
 
  protected:
   SigninClient* signin_client() const { return client_; }

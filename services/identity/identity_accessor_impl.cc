@@ -74,10 +74,6 @@ IdentityAccessorImpl::IdentityAccessorImpl(
       account_tracker_(account_tracker),
       signin_manager_(signin_manager),
       token_service_(token_service) {
-  signin_manager_shutdown_subscription_ =
-      signin_manager_->RegisterOnShutdownCallback(
-          base::BindRepeating(&IdentityAccessorImpl::OnSigninManagerShutdown,
-                              base::Unretained(this)));
   binding_.set_connection_error_handler(base::BindRepeating(
       &IdentityAccessorImpl::OnConnectionError, base::Unretained(this)));
 
@@ -183,10 +179,6 @@ AccountState IdentityAccessorImpl::GetStateOfAccount(
   account_state.is_primary_account =
       (account_info.account_id == signin_manager_->GetAuthenticatedAccountId());
   return account_state;
-}
-
-void IdentityAccessorImpl::OnSigninManagerShutdown() {
-  delete this;
 }
 
 void IdentityAccessorImpl::OnConnectionError() {

@@ -19,9 +19,6 @@ IdentityService::IdentityService(AccountTrackerService* account_tracker,
       token_service_(token_service) {
   registry_.AddInterface<mojom::IdentityAccessor>(
       base::Bind(&IdentityService::Create, base::Unretained(this)));
-  signin_manager_shutdown_subscription_ =
-      signin_manager_->RegisterOnShutdownCallback(
-          base::Bind(&IdentityService::ShutDown, base::Unretained(this)));
 }
 
 IdentityService::~IdentityService() {
@@ -40,7 +37,6 @@ void IdentityService::ShutDown() {
     return;
 
   signin_manager_ = nullptr;
-  signin_manager_shutdown_subscription_.reset();
   token_service_ = nullptr;
   account_tracker_ = nullptr;
 }
