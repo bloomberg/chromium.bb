@@ -12,7 +12,7 @@ enum IsolatedWorldId {
   kEmbedderWorldIdLimit = (1 << 29),
   kDocumentXMLTreeViewerWorldId,
   kDevToolsFirstIsolatedWorldId,
-  kDevToolsLastIsolatedWorldId = kDevToolsFirstIsolatedWorldId + 100,
+  kDevToolsLastIsolatedWorldId = kDevToolsFirstIsolatedWorldId + (1 << 29),
   kIsolatedWorldIdLimit,
 };
 
