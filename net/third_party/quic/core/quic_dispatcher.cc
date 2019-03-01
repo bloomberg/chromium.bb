@@ -96,8 +96,7 @@ class PacketCollector : public QuicPacketCreator::DelegateInterface,
                        QuicStreamOffset offset,
                        QuicByteCount data_length,
                        QuicDataWriter* writer) override {
-    QUIC_BUG << "PacketCollector::WriteCryptoData is unimplemented.";
-    return false;
+    return send_buffer_.WriteStreamData(offset, data_length, writer);
   }
 
   std::vector<std::unique_ptr<QuicEncryptedPacket>>* packets() {
@@ -143,7 +142,12 @@ class StatelessConnectionTerminator {
     frame->error_details = error_details;
     // TODO(fayang): Use the right long header type for conneciton close sent by
     // dispatcher.
-    creator_.SetLongHeaderType(RETRY);
+    if (QuicVersionHasLongHeaderLengths(framer_->transport_version())) {
+      creator_.SetLongHeaderType(HANDSHAKE);
+    } else {
+      // TODO(b/123493765): we should probably not be sending RETRY here.
+      creator_.SetLongHeaderType(RETRY);
+    }
     if (!creator_.AddSavedFrame(QuicFrame(frame), NOT_RETRANSMISSION)) {
       QUIC_BUG << "Unable to add frame to an empty packet";
       delete frame;
@@ -165,16 +169,31 @@ class StatelessConnectionTerminator {
     collector_.SaveStatelessRejectFrameData(reject);
     while (offset < reject.length()) {
       QuicFrame frame;
-      creator_.SetLongHeaderType(RETRY);
-      if (!creator_.ConsumeData(
-              QuicUtils::GetCryptoStreamId(framer_->transport_version()),
-              reject.length(), offset, offset,
-              /*fin=*/false,
-              /*needs_full_padding=*/true, NOT_RETRANSMISSION, &frame)) {
-        QUIC_BUG << "Unable to consume data into an empty packet.";
-        return;
+      if (QuicVersionHasLongHeaderLengths(framer_->transport_version())) {
+        creator_.SetLongHeaderType(HANDSHAKE);
+      } else {
+        // TODO(b/123493765): we should probably not be sending RETRY here.
+        creator_.SetLongHeaderType(RETRY);
       }
-      offset += frame.stream_frame.data_length;
+      if (framer_->transport_version() < QUIC_VERSION_47) {
+        if (!creator_.ConsumeData(
+                QuicUtils::GetCryptoStreamId(framer_->transport_version()),
+                reject.length(), offset, offset,
+                /*fin=*/false,
+                /*needs_full_padding=*/true, NOT_RETRANSMISSION, &frame)) {
+          QUIC_BUG << "Unable to consume data into an empty packet.";
+          return;
+        }
+        offset += frame.stream_frame.data_length;
+      } else {
+        if (!creator_.ConsumeCryptoData(ENCRYPTION_NONE,
+                                        reject.length() - offset, offset,
+                                        NOT_RETRANSMISSION, &frame)) {
+          QUIC_BUG << "Unable to consume crypto data into an empty packet.";
+          return;
+        }
+        offset += frame.crypto_frame->data_length;
+      }
       if (offset < reject.length()) {
         DCHECK(!creator_.HasRoomForStreamFrame(
             QuicUtils::GetCryptoStreamId(framer_->transport_version()), offset,
@@ -840,6 +859,10 @@ void QuicDispatcher::OnDecryptedPacket(EncryptionLevel level) {
 bool QuicDispatcher::OnPacketHeader(const QuicPacketHeader& /*header*/) {
   DCHECK(false);
   return false;
+}
+
+void QuicDispatcher::OnCoalescedPacket(const QuicEncryptedPacket& /*packet*/) {
+  DCHECK(false);
 }
 
 bool QuicDispatcher::OnStreamFrame(const QuicStreamFrame& /*frame*/) {

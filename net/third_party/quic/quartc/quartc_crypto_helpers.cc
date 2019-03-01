@@ -27,7 +27,7 @@ QuicReferenceCountedPointer<DummyProofSource::Chain>
 DummyProofSource::GetCertChain(const QuicSocketAddress& server_address,
                                const QuicString& hostname) {
   std::vector<QuicString> certs;
-  certs.push_back("Dummy cert");
+  certs.push_back(kDummyCertName);
   return QuicReferenceCountedPointer<ProofSource::Chain>(
       new ProofSource::Chain(certs));
 }
@@ -103,10 +103,11 @@ std::unique_ptr<QuicCryptoClientConfig> CreateCryptoClientConfig(
   return config;
 }
 
-std::unique_ptr<QuicCryptoServerConfig> CreateCryptoServerConfig(
-    QuicRandom* random,
-    const QuicClock* clock,
-    QuicStringPiece pre_shared_key) {
+CryptoServerConfig CreateCryptoServerConfig(QuicRandom* random,
+                                            const QuicClock* clock,
+                                            QuicStringPiece pre_shared_key) {
+  CryptoServerConfig crypto_server_config;
+
   // Generate a random source address token secret. For long-running servers
   // it's better to not regenerate it for each connection to enable zero-RTT
   // handshakes, but for transient clients it does not matter.
@@ -150,7 +151,12 @@ std::unique_ptr<QuicCryptoServerConfig> CreateCryptoServerConfig(
   if (!pre_shared_key.empty()) {
     config->set_pre_shared_key(pre_shared_key);
   }
-  return config;
+  crypto_server_config.config = std::move(config);
+  const QuicData& data = message->GetSerialized();
+
+  crypto_server_config.serialized_crypto_config =
+      QuicString(data.data(), data.length());
+  return crypto_server_config;
 }
 
 }  // namespace quic

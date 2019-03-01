@@ -24,11 +24,10 @@ QuartcFactory::QuartcFactory(const QuartcFactoryConfig& factory_config)
           QuicCompressedCertsCache::kQuicCompressedCertsCacheSize)),
       stream_helper_(QuicMakeUnique<QuartcCryptoServerStreamHelper>()) {}
 
-std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcSession(
-    const QuartcSessionConfig& quartc_session_config) {
+std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcClientSession(
+    const QuartcSessionConfig& quartc_session_config,
+    QuicStringPiece server_crypto_config) {
   DCHECK(quartc_session_config.packet_transport);
-
-  Perspective perspective = quartc_session_config.perspective;
 
   // QuartcSession will eventually own both |writer| and |quic_connection|.
   auto writer =
@@ -39,13 +38,13 @@ std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcSession(
   // also sets flag values which must be set before creating the connection.
   QuicConfig quic_config = CreateQuicConfig(quartc_session_config);
   std::unique_ptr<QuicConnection> quic_connection =
-      CreateQuicConnection(perspective, writer.get());
+      CreateQuicConnection(Perspective::IS_CLIENT, writer.get());
 
-  DCHECK_EQ(perspective, Perspective::IS_CLIENT);
   return QuicMakeUnique<QuartcClientSession>(
       std::move(quic_connection), quic_config, CurrentSupportedVersions(),
       clock_, std::move(writer),
-      CreateCryptoClientConfig(quartc_session_config.pre_shared_key));
+      CreateCryptoClientConfig(quartc_session_config.pre_shared_key),
+      server_crypto_config);
 }
 
 QuicConfig CreateQuicConfig(const QuartcSessionConfig& quartc_session_config) {
@@ -61,9 +60,7 @@ QuicConfig CreateQuicConfig(const QuartcSessionConfig& quartc_session_config) {
   // Fix b/110259444.
   SetQuicReloadableFlag(quic_fix_spurious_ack_alarm, true);
 
-  // Enable version 45+ to enable SendMessage API.
-  // Enable version 46+ to enable 'quic bit' per draft 17.
-  SetQuicReloadableFlag(quic_enable_version_45, true);
+  // Enable version 46+ to enable SendMessage API and 'quic bit' per draft 17.
   SetQuicReloadableFlag(quic_enable_version_46, true);
 
   // Fix for inconsistent reporting of crypto handshake.
@@ -182,18 +179,13 @@ std::unique_ptr<QuicConnection> QuartcFactory::CreateQuicConnection(
     QuartcPacketWriter* packet_writer) {
   // |dummy_id| and |dummy_address| are used because Quartc network layer will
   // not use these two.
-  QuicConnectionId dummy_id;
-  if (!QuicConnectionIdSupportsVariableLength(perspective)) {
-    dummy_id = QuicConnectionIdFromUInt64(0);
-  } else {
     char connection_id_bytes[sizeof(uint64_t)] = {};
-    dummy_id = QuicConnectionId(static_cast<char*>(connection_id_bytes),
-                                sizeof(connection_id_bytes));
-  }
-  QuicSocketAddress dummy_address(QuicIpAddress::Any4(), /*port=*/0);
-  return quic::CreateQuicConnection(
-      dummy_id, dummy_address, connection_helper_.get(), alarm_factory_,
-      packet_writer, perspective, CurrentSupportedVersions());
+    QuicConnectionId dummy_id = QuicConnectionId(
+        static_cast<char*>(connection_id_bytes), sizeof(connection_id_bytes));
+    QuicSocketAddress dummy_address(QuicIpAddress::Any4(), /*port=*/0);
+    return quic::CreateQuicConnection(
+        dummy_id, dummy_address, connection_helper_.get(), alarm_factory_,
+        packet_writer, perspective, CurrentSupportedVersions());
 }
 
 std::unique_ptr<QuicConnection> CreateQuicConnection(

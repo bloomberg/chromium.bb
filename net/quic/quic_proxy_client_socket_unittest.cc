@@ -98,6 +98,12 @@ class QuicProxyClientSocketTest
       quic::QuicConnectionIdLength connection_id_length,
       quic::QuicPacketNumberLength packet_number_length,
       quic::QuicStreamOffset offset) {
+    quic::QuicVariableLengthIntegerLength retry_token_length_length =
+        quic::VARIABLE_LENGTH_INTEGER_LENGTH_0;
+    quic::QuicVariableLengthIntegerLength length_length =
+        quic::QuicVersionHasLongHeaderLengths(version) && include_version
+            ? quic::VARIABLE_LENGTH_INTEGER_LENGTH_2
+            : quic::VARIABLE_LENGTH_INTEGER_LENGTH_0;
     size_t min_data_length = 1;
     size_t min_packet_length =
         quic::NullEncrypter(quic::Perspective::IS_CLIENT)
@@ -105,7 +111,8 @@ class QuicProxyClientSocketTest
         quic::QuicPacketCreator::StreamFramePacketOverhead(
             version, quic::PACKET_8BYTE_CONNECTION_ID,
             quic::PACKET_0BYTE_CONNECTION_ID, include_version,
-            include_diversification_nonce, packet_number_length, offset);
+            include_diversification_nonce, packet_number_length,
+            retry_token_length_length, length_length, offset);
 
     DCHECK(packet_length >= min_packet_length);
     return min_data_length + packet_length - min_packet_length;

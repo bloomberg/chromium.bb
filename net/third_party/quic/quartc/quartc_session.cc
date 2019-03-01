@@ -9,6 +9,7 @@
 #include "net/third_party/quic/core/tls_server_handshaker.h"
 #include "net/third_party/quic/platform/api/quic_mem_slice_storage.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
+#include "net/third_party/quic/quartc/quartc_crypto_helpers.h"
 
 namespace quic {
 namespace {
@@ -19,13 +20,11 @@ const int kQuicServerPort = 0;
 }  // namespace
 
 QuartcSession::QuartcSession(std::unique_ptr<QuicConnection> connection,
+                             Visitor* visitor,
                              const QuicConfig& config,
                              const ParsedQuicVersionVector& supported_versions,
                              const QuicClock* clock)
-    : QuicSession(connection.get(),
-                  nullptr /*visitor*/,
-                  config,
-                  supported_versions),
+    : QuicSession(connection.get(), visitor, config, supported_versions),
       connection_(std::move(connection)),
       clock_(clock),
       per_packet_options_(QuicMakeUnique<QuartcPerPacketOptions>()) {
@@ -276,10 +275,16 @@ QuartcClientSession::QuartcClientSession(
     const ParsedQuicVersionVector& supported_versions,
     const QuicClock* clock,
     std::unique_ptr<QuartcPacketWriter> packet_writer,
-    std::unique_ptr<QuicCryptoClientConfig> client_crypto_config)
-    : QuartcSession(std::move(connection), config, supported_versions, clock),
+    std::unique_ptr<QuicCryptoClientConfig> client_crypto_config,
+    QuicStringPiece server_crypto_config)
+    : QuartcSession(std::move(connection),
+                    /*visitor=*/nullptr,
+                    config,
+                    supported_versions,
+                    clock),
       packet_writer_(std::move(packet_writer)),
-      client_crypto_config_(std::move(client_crypto_config)) {
+      client_crypto_config_(std::move(client_crypto_config)),
+      server_config_(server_crypto_config) {
   DCHECK_EQ(QuartcSession::connection()->perspective(), Perspective::IS_CLIENT);
 }
 
@@ -310,6 +315,27 @@ QuicCryptoStream* QuartcClientSession::GetMutableCryptoStream() {
 void QuartcClientSession::StartCryptoHandshake() {
   QuicServerId server_id(/*host=*/"", kQuicServerPort,
                          /*privacy_mode_enabled=*/false);
+
+  if (!server_config_.empty()) {
+    QuicCryptoServerConfig::ConfigOptions options;
+
+    QuicString error;
+    QuicWallTime now = clock()->WallNow();
+    QuicCryptoClientConfig::CachedState::ServerConfigState result =
+        client_crypto_config_->LookupOrCreate(server_id)->SetServerConfig(
+            server_config_, now,
+            /*expiry_time=*/now.Add(QuicTime::Delta::Infinite()), &error);
+
+    if (result == QuicCryptoClientConfig::CachedState::SERVER_CONFIG_VALID) {
+      DCHECK_EQ(error, "");
+      client_crypto_config_->LookupOrCreate(server_id)->SetProof(
+          std::vector<QuicString>{kDummyCertName}, /*cert_sct=*/"",
+          /*chlo_hash=*/"", /*signature=*/"anything");
+    } else {
+      LOG(DFATAL) << "Unable to set server config, error=" << error;
+    }
+  }
+
   crypto_stream_ = QuicMakeUnique<QuicCryptoClientStream>(
       server_id, this,
       client_crypto_config_->proof_verifier()->CreateDefaultContext(),
@@ -330,13 +356,18 @@ void QuartcClientSession::OnProofVerifyDetailsAvailable(
 
 QuartcServerSession::QuartcServerSession(
     std::unique_ptr<QuicConnection> connection,
+    Visitor* visitor,
     const QuicConfig& config,
     const ParsedQuicVersionVector& supported_versions,
     const QuicClock* clock,
     const QuicCryptoServerConfig* server_crypto_config,
     QuicCompressedCertsCache* const compressed_certs_cache,
     QuicCryptoServerStream::Helper* const stream_helper)
-    : QuartcSession(std::move(connection), config, supported_versions, clock),
+    : QuartcSession(std::move(connection),
+                    visitor,
+                    config,
+                    supported_versions,
+                    clock),
       server_crypto_config_(server_crypto_config),
       compressed_certs_cache_(compressed_certs_cache),
       stream_helper_(stream_helper) {

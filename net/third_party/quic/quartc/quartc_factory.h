@@ -26,11 +26,6 @@ struct QuartcFactoryConfig {
 };
 
 struct QuartcSessionConfig {
-  // When using Quartc, there are two endpoints. The QuartcSession on one
-  // endpoint must act as a server and the one on the other side must act as a
-  // client.
-  Perspective perspective = Perspective::IS_CLIENT;
-
   // If a pre-shared cryptographic key is available for this session, specify it
   // here.  This value will only be used if non-empty.
   QuicString pre_shared_key;
@@ -65,8 +60,9 @@ class QuartcFactory {
   explicit QuartcFactory(const QuartcFactoryConfig& factory_config);
 
   // Creates a new QuartcSession using the given configuration.
-  std::unique_ptr<QuartcSession> CreateQuartcSession(
-      const QuartcSessionConfig& quartc_session_config);
+  std::unique_ptr<QuartcSession> CreateQuartcClientSession(
+      const QuartcSessionConfig& quartc_session_config,
+      QuicStringPiece server_crypto_config);
 
  private:
   std::unique_ptr<QuicConnection> CreateQuicConnection(

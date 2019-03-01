@@ -216,6 +216,10 @@ class QuicSimpleServerStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
     return connection_->transport_version() == QUIC_VERSION_99;
   }
 
+  bool HasFrameHeader() const {
+    return VersionHasDataFrameHeader(connection_->transport_version());
+  }
+
   spdy::SpdyHeaderBlock response_headers_;
   MockQuicConnectionHelper helper_;
   MockAlarmFactory alarm_factory_;
@@ -245,7 +249,7 @@ TEST_P(QuicSimpleServerStreamTest, TestFraming) {
   QuicByteCount header_length =
       encoder_.SerializeDataFrameHeader(body_.length(), &buffer);
   QuicString header = QuicString(buffer.get(), header_length);
-  QuicString data = IsVersion99() ? header + body_ : body_;
+  QuicString data = HasFrameHeader() ? header + body_ : body_;
   stream_->OnStreamFrame(
       QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, data));
   EXPECT_EQ("11", StreamHeadersValue("content-length"));
@@ -263,7 +267,7 @@ TEST_P(QuicSimpleServerStreamTest, TestFramingOnePacket) {
   QuicByteCount header_length =
       encoder_.SerializeDataFrameHeader(body_.length(), &buffer);
   QuicString header = QuicString(buffer.get(), header_length);
-  QuicString data = IsVersion99() ? header + body_ : body_;
+  QuicString data = HasFrameHeader() ? header + body_ : body_;
   stream_->OnStreamFrame(
       QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, data));
   EXPECT_EQ("11", StreamHeadersValue("content-length"));
@@ -292,7 +296,7 @@ TEST_P(QuicSimpleServerStreamTest, TestFramingExtraData) {
 
   // We'll automatically write out an error (headers + body)
   EXPECT_CALL(*stream_, WriteHeadersMock(false));
-  if (IsVersion99()) {
+  if (HasFrameHeader()) {
     EXPECT_CALL(session_, WritevData(_, _, kDataFrameHeaderLength, _, NO_FIN));
   }
   EXPECT_CALL(session_, WritevData(_, _, kErrorLength, _, FIN));
@@ -304,7 +308,7 @@ TEST_P(QuicSimpleServerStreamTest, TestFramingExtraData) {
   QuicByteCount header_length =
       encoder_.SerializeDataFrameHeader(body_.length(), &buffer);
   QuicString header = QuicString(buffer.get(), header_length);
-  QuicString data = IsVersion99() ? header + body_ : body_;
+  QuicString data = HasFrameHeader() ? header + body_ : body_;
 
   stream_->OnStreamFrame(
       QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, data));
@@ -313,7 +317,7 @@ TEST_P(QuicSimpleServerStreamTest, TestFramingExtraData) {
   header_length =
       encoder_.SerializeDataFrameHeader(large_body.length(), &buffer);
   header = QuicString(buffer.get(), header_length);
-  QuicString data2 = IsVersion99() ? header + large_body : large_body;
+  QuicString data2 = HasFrameHeader() ? header + large_body : large_body;
   stream_->OnStreamFrame(
       QuicStreamFrame(stream_->id(), /*fin=*/true, data.size(), data2));
   EXPECT_EQ("11", StreamHeadersValue("content-length"));
@@ -345,7 +349,7 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus) {
 
   InSequence s;
   EXPECT_CALL(*stream_, WriteHeadersMock(false));
-  if (IsVersion99()) {
+  if (HasFrameHeader()) {
     EXPECT_CALL(session_, WritevData(_, _, header_length, _, NO_FIN));
   }
   EXPECT_CALL(session_, WritevData(_, _, kErrorLength, _, FIN));
@@ -380,7 +384,7 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus2) {
 
   InSequence s;
   EXPECT_CALL(*stream_, WriteHeadersMock(false));
-  if (IsVersion99()) {
+  if (HasFrameHeader()) {
     EXPECT_CALL(session_, WritevData(_, _, header_length, _, NO_FIN));
   }
   EXPECT_CALL(session_, WritevData(_, _, kErrorLength, _, FIN));
@@ -444,7 +448,7 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithValidHeaders) {
 
   InSequence s;
   EXPECT_CALL(*stream_, WriteHeadersMock(false));
-  if (IsVersion99()) {
+  if (HasFrameHeader()) {
     EXPECT_CALL(session_, WritevData(_, _, header_length, _, NO_FIN));
   }
   EXPECT_CALL(session_, WritevData(_, _, body.length(), _, FIN));
@@ -489,7 +493,7 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithPushResources) {
               session_, 0),
           _));
   EXPECT_CALL(*stream_, WriteHeadersMock(false));
-  if (IsVersion99()) {
+  if (HasFrameHeader()) {
     EXPECT_CALL(session_, WritevData(_, _, header_length, _, NO_FIN));
   }
   EXPECT_CALL(session_, WritevData(_, _, body.length(), _, FIN));
@@ -547,7 +551,7 @@ TEST_P(QuicSimpleServerStreamTest, PushResponseOnServerInitiatedStream) {
   InSequence s;
   EXPECT_CALL(*server_initiated_stream, WriteHeadersMock(false));
 
-  if (IsVersion99()) {
+  if (HasFrameHeader()) {
     EXPECT_CALL(session_, WritevData(_, kServerInitiatedStreamId, header_length,
                                      _, NO_FIN));
   }
@@ -565,7 +569,7 @@ TEST_P(QuicSimpleServerStreamTest, TestSendErrorResponse) {
 
   InSequence s;
   EXPECT_CALL(*stream_, WriteHeadersMock(false));
-  if (IsVersion99()) {
+  if (HasFrameHeader()) {
     EXPECT_CALL(session_, WritevData(_, _, kDataFrameHeaderLength, _, NO_FIN));
   }
   EXPECT_CALL(session_, WritevData(_, _, kErrorLength, _, FIN));

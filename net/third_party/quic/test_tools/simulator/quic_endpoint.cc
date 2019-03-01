@@ -223,6 +223,8 @@ void QuicEndpoint::OnStreamFrame(const QuicStreamFrame& frame) {
   DCHECK_LE(offsets_received_.Size(), 1000u);
 }
 
+void QuicEndpoint::OnCryptoFrame(const QuicCryptoFrame& frame) {}
+
 void QuicEndpoint::OnCanWrite() {
   if (notifier_ != nullptr) {
     notifier_->OnCanWrite();

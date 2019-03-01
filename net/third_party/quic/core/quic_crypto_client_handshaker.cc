@@ -381,15 +381,15 @@ void QuicCryptoClientHandshaker::DoSendCHLO(
   SendHandshakeMessage(out);
   // Be prepared to decrypt with the new server write key.
   session()->connection()->SetAlternativeDecrypter(
-      ENCRYPTION_INITIAL,
+      ENCRYPTION_ZERO_RTT,
       std::move(crypto_negotiated_params_->initial_crypters.decrypter),
       true /* latch once used */);
   // Send subsequent packets under encryption on the assumption that the
   // server will accept the handshake.
   session()->connection()->SetEncrypter(
-      ENCRYPTION_INITIAL,
+      ENCRYPTION_ZERO_RTT,
       std::move(crypto_negotiated_params_->initial_crypters.encrypter));
-  session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
+  session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_ZERO_RTT);
 
   // TODO(ianswett): Merge ENCRYPTION_REESTABLISHED and
   // ENCRYPTION_FIRST_ESTABLSIHED

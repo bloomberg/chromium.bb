@@ -19,7 +19,7 @@ TEST(QuicSimpleCryptoServerStreamHelperTest, GenerateConnectionIdForReject) {
   EXPECT_EQ(quic::QuicUtils::CreateRandomConnectionId(&random),
             // N.B., version number and ID are ignored in the helper.
             helper.GenerateConnectionIdForReject(
-                quic::QUIC_VERSION_45, quic::test::TestConnectionId(42)));
+                quic::QUIC_VERSION_46, quic::test::TestConnectionId(42)));
 }
 
 }  // namespace net

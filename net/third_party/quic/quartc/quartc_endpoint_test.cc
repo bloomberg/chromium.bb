@@ -36,22 +36,20 @@ class QuartcEndpointTest : public QuicTest {
       : transport_(&simulator_,
                    "client_transport",
                    "server_transport",
-                   10 * kDefaultMaxPacketSize),
-        endpoint_(simulator_.GetAlarmFactory(),
-                  simulator_.GetClock(),
-                  &delegate_) {}
+                   10 * kDefaultMaxPacketSize) {}
 
   simulator::Simulator simulator_;
   simulator::SimulatedQuartcPacketTransport transport_;
   FakeEndpointDelegate delegate_;
-  QuartcEndpoint endpoint_;
 };
 
-// The session remains null immediately after a call to Connect.  The caller
-// must wait for an async callback before it gets a nonnull session.
-TEST_F(QuartcEndpointTest, CreatesSessionAsynchronously) {
+// After calling Connect, the client endpoint must wait for an async callback.
+// The callback occurs after a finite amount of time and produces a session.
+TEST_F(QuartcEndpointTest, ClientCreatesSessionAsynchronously) {
+  QuartcClientEndpoint endpoint_(simulator_.GetAlarmFactory(),
+                                 simulator_.GetClock(), &delegate_,
+                                 /*serialized_server_config=*/"");
   QuartcSessionConfig config;
-  config.perspective = Perspective::IS_CLIENT;
   config.packet_transport = &transport_;
   config.max_packet_size = kDefaultMaxPacketSize;
   endpoint_.Connect(config);

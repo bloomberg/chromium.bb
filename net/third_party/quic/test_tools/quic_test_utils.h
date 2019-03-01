@@ -165,6 +165,8 @@ size_t GetPacketLengthForOneStream(
     QuicConnectionIdLength destination_connection_id_length,
     QuicConnectionIdLength source_connection_id_length,
     QuicPacketNumberLength packet_number_length,
+    QuicVariableLengthIntegerLength retry_token_length_length,
+    QuicVariableLengthIntegerLength length_length,
     size_t* payload_length);
 
 // Returns QuicConfig set to default values.
@@ -265,6 +267,7 @@ class MockFramerVisitor : public QuicFramerVisitorInterface {
                bool(const QuicPacketHeader& header));
   MOCK_METHOD1(OnDecryptedPacket, void(EncryptionLevel level));
   MOCK_METHOD1(OnPacketHeader, bool(const QuicPacketHeader& header));
+  MOCK_METHOD1(OnCoalescedPacket, void(const QuicEncryptedPacket& packet));
   MOCK_METHOD1(OnStreamFrame, bool(const QuicStreamFrame& frame));
   MOCK_METHOD1(OnCryptoFrame, bool(const QuicCryptoFrame& frame));
   MOCK_METHOD2(OnAckFrameStart, bool(QuicPacketNumber, QuicTime::Delta));
@@ -317,6 +320,7 @@ class NoOpFramerVisitor : public QuicFramerVisitorInterface {
   bool OnUnauthenticatedPublicHeader(const QuicPacketHeader& header) override;
   void OnDecryptedPacket(EncryptionLevel level) override {}
   bool OnPacketHeader(const QuicPacketHeader& header) override;
+  void OnCoalescedPacket(const QuicEncryptedPacket& packet) override;
   bool OnStreamFrame(const QuicStreamFrame& frame) override;
   bool OnCryptoFrame(const QuicCryptoFrame& frame) override;
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
@@ -359,6 +363,7 @@ class MockQuicConnectionVisitor : public QuicConnectionVisitorInterface {
   ~MockQuicConnectionVisitor() override;
 
   MOCK_METHOD1(OnStreamFrame, void(const QuicStreamFrame& frame));
+  MOCK_METHOD1(OnCryptoFrame, void(const QuicCryptoFrame& frame));
   MOCK_METHOD1(OnWindowUpdateFrame, void(const QuicWindowUpdateFrame& frame));
   MOCK_METHOD1(OnBlockedFrame, void(const QuicBlockedFrame& frame));
   MOCK_METHOD1(OnRstStream, void(const QuicRstStreamFrame& frame));
@@ -556,6 +561,13 @@ class MockQuicConnection : public QuicConnection {
   }
   MOCK_METHOD1(OnPathResponseFrame, bool(const QuicPathResponseFrame&));
   MOCK_METHOD1(OnStopSendingFrame, bool(const QuicStopSendingFrame& frame));
+  MOCK_METHOD3(SendCryptoData,
+               size_t(EncryptionLevel, size_t, QuicStreamOffset));
+  size_t QuicConnection_SendCryptoData(EncryptionLevel level,
+                                       size_t write_length,
+                                       QuicStreamOffset offset) {
+    return QuicConnection::SendCryptoData(level, write_length, offset);
+  }
 };
 
 class PacketSavingConnection : public MockQuicConnection {
@@ -576,6 +588,7 @@ class PacketSavingConnection : public MockQuicConnection {
   void SendOrQueuePacket(SerializedPacket* packet) override;
 
   std::vector<std::unique_ptr<QuicEncryptedPacket>> encrypted_packets_;
+  MockClock clock_;
 };
 
 class MockQuicSession : public QuicSession {
@@ -1169,6 +1182,7 @@ QuicStreamId GetNthServerInitiatedUnidirectionalStreamId(
 
 StreamType DetermineStreamType(QuicStreamId id,
                                QuicTransportVersion version,
+                               Perspective perspective,
                                bool is_incoming,
                                StreamType default_type);
 

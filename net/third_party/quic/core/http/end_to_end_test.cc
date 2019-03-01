@@ -138,18 +138,21 @@ std::vector<TestParams> GetTestParams(bool use_tls_handshake,
   ParsedQuicVersionVector all_supported_versions =
       FilterSupportedVersions(AllSupportedVersions());
 
-  // Buckets are separated by the handshake protocol (QUIC crypto or TLS) in
-  // use, since if the handshake protocol changes, the ClientHello/CHLO must be
+  // Buckets are separated by versions: versions prior to QUIC_VERSION_47 use
+  // STREAM frames for the handshake, and only have QUIC crypto as the handshake
+  // protocol. Version 47 and greater use CRYPTO frames for the handshake, and
+  // must also be split based on the handshake protocol. If the handshake
+  // protocol (QUIC crypto or TLS) changes, the ClientHello/CHLO must be
   // reconstructed for the correct protocol.
-  ParsedQuicVersionVector version_buckets[2];
+  ParsedQuicVersionVector version_buckets[3];
 
   for (const ParsedQuicVersion& version : all_supported_versions) {
-    // Versions: 35+
-    // QUIC_VERSION_35 allows endpoints to independently set stream limit.
-    if (version.handshake_protocol == PROTOCOL_TLS1_3) {
+    if (version.transport_version < QUIC_VERSION_47) {
+      version_buckets[0].push_back(version);
+    } else if (version.handshake_protocol == PROTOCOL_QUIC_CRYPTO) {
       version_buckets[1].push_back(version);
     } else {
-      version_buckets[0].push_back(version);
+      version_buckets[2].push_back(version);
     }
   }
 
@@ -711,25 +714,6 @@ TEST_P(EndToEndTest, SimpleRequestResponse) {
             client_->client()->GetNumSentClientHellos());
 }
 
-// TODO(dschinazi) remove this test once the flags are deprecated
-TEST_P(EndToEndTest, SimpleRequestResponseVariableLengthConnectionIDClient) {
-  SetQuicRestartFlag(quic_variable_length_connection_ids_client, true);
-  SetQuicRestartFlag(quic_variable_length_connection_ids_server, false);
-  ASSERT_TRUE(Initialize());
-
-  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
-  int expected_num_client_hellos = 2;
-  if (ServerSendsVersionNegotiation()) {
-    ++expected_num_client_hellos;
-    if (BothSidesSupportStatelessRejects()) {
-      ++expected_num_client_hellos;
-    }
-  }
-  EXPECT_EQ(expected_num_client_hellos,
-            client_->client()->GetNumSentClientHellos());
-}
-
 TEST_P(EndToEndTest, SimpleRequestResponseZeroConnectionID) {
   QuicConnectionId connection_id = QuicUtils::CreateZeroConnectionId(
       GetParam().negotiated_version.transport_version);
@@ -750,25 +734,6 @@ TEST_P(EndToEndTest, SimpleRequestResponseZeroConnectionID) {
   EXPECT_EQ(client_->client()->client_session()->connection()->connection_id(),
             QuicUtils::CreateZeroConnectionId(
                 GetParam().negotiated_version.transport_version));
-}
-
-// TODO(dschinazi) remove this test once the flags are deprecated
-TEST_P(EndToEndTest, SimpleRequestResponseVariableLengthConnectionIDServer) {
-  SetQuicRestartFlag(quic_variable_length_connection_ids_client, false);
-  SetQuicRestartFlag(quic_variable_length_connection_ids_server, true);
-  ASSERT_TRUE(Initialize());
-
-  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
-  int expected_num_client_hellos = 2;
-  if (ServerSendsVersionNegotiation()) {
-    ++expected_num_client_hellos;
-    if (BothSidesSupportStatelessRejects()) {
-      ++expected_num_client_hellos;
-    }
-  }
-  EXPECT_EQ(expected_num_client_hellos,
-            client_->client()->GetNumSentClientHellos());
 }
 
 TEST_P(EndToEndTest, SimpleRequestResponseWithLargeReject) {
@@ -2048,9 +2013,14 @@ TEST_P(EndToEndTest, HeadersAndCryptoStreamsNoConnectionFlowControl) {
 
   QuicCryptoStream* crypto_stream = QuicSessionPeer::GetMutableCryptoStream(
       client_->client()->client_session());
-  EXPECT_LT(
-      QuicFlowControllerPeer::SendWindowSize(crypto_stream->flow_controller()),
-      kStreamIFCW);
+  // In v47 and later, the crypto handshake (sent in CRYPTO frames) is not
+  // subject to flow control.
+  if (client_->client()->client_session()->connection()->transport_version() <
+      QUIC_VERSION_47) {
+    EXPECT_LT(QuicFlowControllerPeer::SendWindowSize(
+                  crypto_stream->flow_controller()),
+              kStreamIFCW);
+  }
   EXPECT_EQ(kSessionIFCW,
             QuicFlowControllerPeer::SendWindowSize(
                 client_->client()->client_session()->flow_controller()));

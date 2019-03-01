@@ -77,7 +77,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
     // ENCRYPTION_REESTABLISHED indicates that a client hello was rejected by
     // the server and thus the encryption key has been updated. Therefore the
     // connection should resend any packets that were sent under
-    // ENCRYPTION_INITIAL. (Client only.)
+    // ENCRYPTION_ZERO_RTT. (Client only.)
     ENCRYPTION_REESTABLISHED,
     // HANDSHAKE_CONFIRMED, in a client, indicates the server has accepted
     // our handshake. In a server it indicates that a full, valid client hello
@@ -99,6 +99,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
 
   // QuicConnectionVisitorInterface methods:
   void OnStreamFrame(const QuicStreamFrame& frame) override;
+  void OnCryptoFrame(const QuicCryptoFrame& frame) override;
   void OnRstStream(const QuicRstStreamFrame& frame) override;
   void OnGoAway(const QuicGoAwayFrame& frame) override;
   void OnMessageReceived(QuicStringPiece message) override;

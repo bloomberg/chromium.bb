@@ -30,7 +30,9 @@ static const int kDefaultAdaptiveLossDelayShift = 4;
 GeneralLossAlgorithm::GeneralLossAlgorithm() : GeneralLossAlgorithm(kNack) {}
 
 GeneralLossAlgorithm::GeneralLossAlgorithm(LossDetectionType loss_type)
-    : loss_detection_timeout_(QuicTime::Zero()), least_in_flight_(1) {
+    : loss_detection_timeout_(QuicTime::Zero()),
+      least_in_flight_(1),
+      packet_number_space_(NUM_PACKET_NUMBER_SPACES) {
   SetLossDetectionType(loss_type);
 }
 
@@ -97,8 +99,17 @@ void GeneralLossAlgorithm::DetectLosses(
   }
   // Clear least_in_flight_.
   least_in_flight_.Clear();
+  DCHECK(!unacked_packets.use_uber_loss_algorithm() ||
+         packet_number_space_ ==
+             unacked_packets.GetPacketNumberSpace(largest_newly_acked));
   for (; it != unacked_packets.end() && packet_number <= largest_newly_acked;
        ++it, ++packet_number) {
+    if (unacked_packets.use_uber_loss_algorithm() &&
+        unacked_packets.GetPacketNumberSpace(it->encryption_level) !=
+            packet_number_space_) {
+      // Skip packets of different packet number space.
+      continue;
+    }
     if (!it->in_flight) {
       continue;
     }
@@ -126,8 +137,18 @@ void GeneralLossAlgorithm::DetectLosses(
     // Only early retransmit(RFC5827) when the last packet gets acked and
     // there are retransmittable packets in flight.
     // This also implements a timer-protected variant of FACK.
-    if (unacked_packets.largest_sent_retransmittable_packet() <=
-            largest_newly_acked ||
+    QuicPacketNumber largest_sent_retransmittable_packet;
+    if (unacked_packets.use_uber_loss_algorithm()) {
+      // Use largest_sent_retransmittable_packet of corresponding packet number
+      // space for timer based loss detection.
+      largest_sent_retransmittable_packet =
+          unacked_packets.GetLargestSentRetransmittableOfPacketNumberSpace(
+              packet_number_space_);
+    } else {
+      largest_sent_retransmittable_packet =
+          unacked_packets.largest_sent_retransmittable_packet();
+    }
+    if (largest_sent_retransmittable_packet <= largest_newly_acked ||
         loss_type_ == kTime || loss_type_ == kAdaptiveTime) {
       QuicTime when_lost = it->sent_time + loss_delay;
       if (time < when_lost) {
@@ -200,6 +221,16 @@ void GeneralLossAlgorithm::SpuriousRetransmitDetected(
     proposed_extra_time = max_rtt >> reordering_shift_;
     --reordering_shift_;
   } while (proposed_extra_time < extra_time_needed && reordering_shift_ > 0);
+}
+
+void GeneralLossAlgorithm::SetPacketNumberSpace(
+    PacketNumberSpace packet_number_space) {
+  if (packet_number_space_ < NUM_PACKET_NUMBER_SPACES) {
+    QUIC_BUG << "Cannot switch packet_number_space";
+    return;
+  }
+
+  packet_number_space_ = packet_number_space;
 }
 
 }  // namespace quic

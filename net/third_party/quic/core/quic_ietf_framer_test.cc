@@ -113,6 +113,8 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
 
   bool OnPacketHeader(const QuicPacketHeader& header) override { return true; }
 
+  void OnCoalescedPacket(const QuicEncryptedPacket& packet) override {}
+
   bool OnStreamFrame(const QuicStreamFrame& frame) override { return true; }
 
   bool OnCryptoFrame(const QuicCryptoFrame& frame) override { return true; }

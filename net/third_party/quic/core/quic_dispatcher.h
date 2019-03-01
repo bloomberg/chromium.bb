@@ -143,6 +143,7 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
       const QuicVersionNegotiationPacket& packet) override;
   void OnDecryptedPacket(EncryptionLevel level) override;
   bool OnPacketHeader(const QuicPacketHeader& header) override;
+  void OnCoalescedPacket(const QuicEncryptedPacket& packet) override;
   bool OnStreamFrame(const QuicStreamFrame& frame) override;
   bool OnCryptoFrame(const QuicCryptoFrame& frame) override;
   bool OnAckFrameStart(QuicPacketNumber largest_acked,

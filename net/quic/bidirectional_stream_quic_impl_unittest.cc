@@ -871,7 +871,7 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   quic::QuicStreamOffset header_stream_offset = 0;
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_INITIAL);
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   AddWrite(ConstructRequestHeadersPacketInner(
       1, GetNthClientInitiatedBidirectionalStreamId(0), kFin, DEFAULT_PRIORITY,
@@ -975,7 +975,7 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
 TEST_P(BidirectionalStreamQuicImplTest, LoadTimingTwoRequests) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   quic::QuicStreamOffset offset = 0;
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_INITIAL);
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   AddWrite(ConstructRequestHeadersPacketInner(
       1, GetNthClientInitiatedBidirectionalStreamId(0), kFin, DEFAULT_PRIORITY,
@@ -1809,7 +1809,7 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterHeaders) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   quic::QuicStreamOffset header_stream_offset = 0;
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_INITIAL);
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   AddWrite(ConstructRequestHeadersPacketInner(
       1, GetNthClientInitiatedBidirectionalStreamId(0), kFin, DEFAULT_PRIORITY,
@@ -1856,7 +1856,7 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterReadData) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   quic::QuicStreamOffset header_stream_offset = 0;
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_INITIAL);
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   AddWrite(ConstructRequestHeadersPacketInner(
       1, GetNthClientInitiatedBidirectionalStreamId(0), kFin, DEFAULT_PRIORITY,
@@ -2331,7 +2331,7 @@ TEST_P(BidirectionalStreamQuicImplTest, AsyncFinRead) {
 TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_INITIAL);
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   AddWrite(ConstructRequestHeadersPacket(1, kFin, DEFAULT_PRIORITY,
                                          &spdy_request_headers_frame_length));
