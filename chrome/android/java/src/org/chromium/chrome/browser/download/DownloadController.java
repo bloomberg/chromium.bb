@@ -245,7 +245,7 @@ public class DownloadController {
      * @param info Download information about the download.
      */
     static void enqueueDownloadManagerRequest(final DownloadInfo info) {
-        DownloadManagerService.getDownloadManagerService().enqueueDownloadManagerRequest(
+        DownloadManagerService.getDownloadManagerService().enqueueNewDownload(
                 new DownloadItem(true, info), true);
     }
 

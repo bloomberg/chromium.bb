@@ -26,6 +26,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.download.DownloadInfo.Builder;
 import org.chromium.chrome.browser.download.DownloadManagerServiceTest.MockDownloadNotifier.MethodID;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -256,12 +257,6 @@ public class DownloadManagerServiceTest {
         }
 
         @Override
-        protected boolean addCompletedDownload(DownloadItem downloadItem) {
-            downloadItem.setSystemDownloadId(1L);
-            return true;
-        }
-
-        @Override
         protected void init() {}
 
         @Override
@@ -311,6 +306,10 @@ public class DownloadManagerServiceTest {
         return new Builder()
                 .setBytesReceived(100)
                 .setDownloadGuid(UUID.randomUUID().toString())
+                .setFileName("test")
+                .setDescription("test")
+                .setFilePath(UrlUtils.getIsolatedTestFilePath(
+                        "chrome/test/data/android/download/download.txt"))
                 .build();
     }
 
@@ -543,46 +542,20 @@ public class DownloadManagerServiceTest {
     @Feature({"Download"})
     public void testShouldOpenAfterDownload() {
         // Should not open any download type MIME types.
-        Assert.assertFalse(DownloadManagerService.shouldOpenAfterDownload(
-                new DownloadInfo.Builder()
-                        .setMimeType("application/download")
-                        .setHasUserGesture(true)
-                        .build()));
-        Assert.assertFalse(DownloadManagerService.shouldOpenAfterDownload(
-                new DownloadInfo.Builder()
-                        .setMimeType("application/x-download")
-                        .setHasUserGesture(true)
-                        .build()));
-        Assert.assertFalse(DownloadManagerService.shouldOpenAfterDownload(
-                new DownloadInfo.Builder()
-                        .setMimeType("application/octet-stream")
-                        .setHasUserGesture(true)
-                        .build()));
-
-        // Should open PDFs.
-        Assert.assertTrue(DownloadManagerService.shouldOpenAfterDownload(
-                new DownloadInfo.Builder()
-                        .setMimeType("application/pdf")
-                        .setHasUserGesture(true)
-                        .build()));
-        Assert.assertTrue(DownloadManagerService.shouldOpenAfterDownload(
-                new DownloadInfo.Builder()
-                        .setContentDisposition("filename=test.pdf")
-                        .setMimeType("application/pdf")
-                        .setHasUserGesture(true)
-                        .build()));
-
-        // Require user gesture.
-        Assert.assertFalse(DownloadManagerService.shouldOpenAfterDownload(
-                new DownloadInfo.Builder()
-                        .setMimeType("application/pdf")
-                        .setHasUserGesture(false)
-                        .build()));
-        Assert.assertFalse(DownloadManagerService.shouldOpenAfterDownload(
-                new DownloadInfo.Builder()
-                        .setContentDisposition("filename=test.pdf")
-                        .setMimeType("application/pdf")
-                        .setHasUserGesture(false)
-                        .build()));
+        Assert.assertFalse(
+                DownloadManagerService.shouldOpenAfterDownload("application/download", true));
+        Assert.assertFalse(
+                DownloadManagerService.shouldOpenAfterDownload("application/x-download", true));
+        Assert.assertFalse(
+                DownloadManagerService.shouldOpenAfterDownload("application/octet-stream", true));
+        Assert.assertTrue(DownloadManagerService.shouldOpenAfterDownload("application/pdf", true));
+        Assert.assertFalse(
+                DownloadManagerService.shouldOpenAfterDownload("application/pdf", false));
+        Assert.assertFalse(
+                DownloadManagerService.shouldOpenAfterDownload("application/x-download", true));
+        Assert.assertFalse(
+                DownloadManagerService.shouldOpenAfterDownload("application/x-download", true));
+        Assert.assertFalse(
+                DownloadManagerService.shouldOpenAfterDownload("application/x-download", true));
     }
 }
