@@ -15,19 +15,6 @@
 
 namespace blink {
 namespace {
-Timing::FillMode ConvertFillMode(const String& fill_mode) {
-  if (fill_mode == "none")
-    return Timing::FillMode::NONE;
-  if (fill_mode == "backwards")
-    return Timing::FillMode::BACKWARDS;
-  if (fill_mode == "both")
-    return Timing::FillMode::BOTH;
-  if (fill_mode == "forwards")
-    return Timing::FillMode::FORWARDS;
-  DCHECK_EQ(fill_mode, "auto");
-  return Timing::FillMode::AUTO;
-}
-
 Timing::PlaybackDirection ConvertPlaybackDirection(const String& direction) {
   if (direction == "reverse")
     return Timing::PlaybackDirection::REVERSE;
@@ -184,8 +171,8 @@ bool TimingInput::Update(Timing& timing,
     changed |= UpdateValueIfChanged(timing.end_delay, input->endDelay() / 1000);
   }
   if (input->hasFill()) {
-    changed |=
-        UpdateValueIfChanged(timing.fill_mode, ConvertFillMode(input->fill()));
+    changed |= UpdateValueIfChanged(timing.fill_mode,
+                                    Timing::StringToFillMode(input->fill()));
   }
   if (input->hasIterationStart()) {
     changed |=

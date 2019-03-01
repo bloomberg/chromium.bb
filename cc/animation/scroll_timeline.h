@@ -8,6 +8,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_export.h"
+#include "cc/animation/keyframe_model.h"
 #include "cc/trees/element_id.h"
 
 namespace cc {
@@ -32,7 +33,8 @@ class CC_ANIMATION_EXPORT ScrollTimeline {
                  ScrollDirection direction,
                  base::Optional<double> start_scroll_offset,
                  base::Optional<double> end_scroll_offset,
-                 double time_range);
+                 double time_range,
+                 KeyframeModel::FillMode fill);
   virtual ~ScrollTimeline();
 
   // Create a copy of this ScrollTimeline intended for the impl thread in the
@@ -78,6 +80,9 @@ class CC_ANIMATION_EXPORT ScrollTimeline {
   // it should base its current time on, and where the origin point is.
   ScrollDirection direction_;
 
+  // These define the total range of the scroller that the ScrollTimeline is
+  // active within. If not set they default to the beginning/end of the scroller
+  // respectively, respecting the current |direction_|.
   base::Optional<double> start_scroll_offset_;
   base::Optional<double> end_scroll_offset_;
 
@@ -85,6 +90,10 @@ class CC_ANIMATION_EXPORT ScrollTimeline {
   // value based on a 'time range'. See the implementation of CurrentTime or the
   // spec for details.
   double time_range_;
+
+  // Determines whether the timeline is active when the scroll offset is outside
+  // the range defined by |start_scroll_offset_| and |end_scroll_offset_|.
+  KeyframeModel::FillMode fill_;
 };
 
 }  // namespace cc

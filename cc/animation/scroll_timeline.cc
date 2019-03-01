@@ -9,6 +9,8 @@
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size.h"
 
+#include <memory>
+
 namespace cc {
 
 namespace {
@@ -27,20 +29,22 @@ ScrollTimeline::ScrollTimeline(base::Optional<ElementId> scroller_id,
                                ScrollDirection direction,
                                base::Optional<double> start_scroll_offset,
                                base::Optional<double> end_scroll_offset,
-                               double time_range)
+                               double time_range,
+                               KeyframeModel::FillMode fill)
     : active_id_(),
       pending_id_(scroller_id),
       direction_(direction),
       start_scroll_offset_(start_scroll_offset),
       end_scroll_offset_(end_scroll_offset),
-      time_range_(time_range) {}
+      time_range_(time_range),
+      fill_(fill) {}
 
 ScrollTimeline::~ScrollTimeline() {}
 
 std::unique_ptr<ScrollTimeline> ScrollTimeline::CreateImplInstance() const {
-  return std::make_unique<ScrollTimeline>(pending_id_, direction_,
-                                          start_scroll_offset_,
-                                          end_scroll_offset_, time_range_);
+  return std::make_unique<ScrollTimeline>(
+      pending_id_, direction_, start_scroll_offset_, end_scroll_offset_,
+      time_range_, fill_);
 }
 
 base::Optional<base::TimeTicks> ScrollTimeline::CurrentTime(
@@ -84,11 +88,16 @@ base::Optional<base::TimeTicks> ScrollTimeline::CurrentTime(
   double resolved_start_scroll_offset = start_scroll_offset_.value_or(0);
   double resolved_end_scroll_offset = end_scroll_offset_.value_or(max_offset);
 
-  // 3. If current scroll offset is less than startScrollOffset, return an
-  // unresolved time value if fill is none or forwards, or 0 otherwise.
-  // TODO(smcgruer): Implement |fill|.
+  // 3. If current scroll offset is less than startScrollOffset:
   if (current_offset < resolved_start_scroll_offset) {
-    return base::nullopt;
+    // Return an unresolved time value if fill is none or forwards.
+    if (fill_ == KeyframeModel::FillMode::NONE ||
+        fill_ == KeyframeModel::FillMode::FORWARDS) {
+      return base::nullopt;
+    }
+
+    // Otherwise, return 0.
+    return base::TimeTicks();
   }
 
   // 4. If current scroll offset is greater than or equal to endScrollOffset:
@@ -96,9 +105,11 @@ base::Optional<base::TimeTicks> ScrollTimeline::CurrentTime(
     // If endScrollOffset is less than the maximum scroll offset of scrollSource
     // in orientation and fill is none or backwards, return an unresolved time
     // value.
-    // TODO(smcgruer): Implement |fill|.
-    if (resolved_end_scroll_offset < max_offset)
+    if (resolved_end_scroll_offset < max_offset &&
+        (fill_ == KeyframeModel::FillMode::NONE ||
+         fill_ == KeyframeModel::FillMode::BACKWARDS)) {
       return base::nullopt;
+    }
 
     // Otherwise, return the effective time range.
     return base::TimeTicks() + base::TimeDelta::FromMillisecondsD(time_range_);

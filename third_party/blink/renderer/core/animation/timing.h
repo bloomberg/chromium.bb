@@ -50,6 +50,7 @@ struct Timing {
   using PlaybackDirection = CompositorKeyframeModel::Direction;
 
   static String FillModeString(FillMode);
+  static FillMode StringToFillMode(const String&);
   static String PlaybackDirectionString(PlaybackDirection);
 
   static const Timing& Defaults() {

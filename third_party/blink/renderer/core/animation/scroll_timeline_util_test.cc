@@ -81,7 +81,7 @@ TEST_F(ScrollTimelineUtilTest, ToCompositorScrollTimelineNullScrollSource) {
   CSSPrimitiveValue* end_scroll_offset = nullptr;
   ScrollTimeline* timeline = MakeGarbageCollected<ScrollTimeline>(
       scroll_source, ScrollTimeline::Block, start_scroll_offset,
-      end_scroll_offset, 100);
+      end_scroll_offset, 100, Timing::FillMode::NONE);
 
   std::unique_ptr<CompositorScrollTimeline> compositor_timeline =
       ToCompositorScrollTimeline(timeline);

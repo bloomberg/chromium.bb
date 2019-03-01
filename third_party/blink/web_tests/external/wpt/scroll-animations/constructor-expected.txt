@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 59 tests; 50 PASS, 9 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 59 tests; 57 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS A ScrollTimeline can be created with a scrollSource
 PASS A ScrollTimeline can be created with a non-scrolling scrollSource
 PASS A ScrollTimeline created with a null scrollSource should use the document.scrollingElement
@@ -52,14 +52,12 @@ PASS 'invalid' is an invalid timeRange value
 PASS 'Infinity' is an invalid timeRange value
 PASS '-Infinity' is an invalid timeRange value
 PASS 'NaN' is an invalid timeRange value
-FAIL A ScrollTimeline created with the default fill should default to 'none' assert_equals: expected (string) "none" but got (undefined) undefined
-FAIL 'none' is a valid fill value assert_equals: expected (string) "none" but got (undefined) undefined
-FAIL 'forwards' is a valid fill value assert_equals: expected (string) "forwards" but got (undefined) undefined
-FAIL 'backwards' is a valid fill value assert_equals: expected (string) "backwards" but got (undefined) undefined
-FAIL 'both' is a valid fill value assert_equals: expected (string) "both" but got (undefined) undefined
-FAIL 'auto' is a valid fill value assert_equals: expected (string) "auto" but got (undefined) undefined
-FAIL Creating a ScrollTimeline with an invalid fill value should throw assert_throws: function "function() {
-    new ScrollTimeline({fill: 'nonsense', timeRange: 100})
-  }" did not throw
+PASS A ScrollTimeline created with the default fill should default to 'none'
+PASS 'none' is a valid fill value
+PASS 'forwards' is a valid fill value
+PASS 'backwards' is a valid fill value
+PASS 'both' is a valid fill value
+PASS 'auto' is a valid fill value
+PASS Creating a ScrollTimeline with an invalid fill value should throw
 Harness: the test ran to completion.
 

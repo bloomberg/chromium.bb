@@ -23,6 +23,19 @@ String Timing::FillModeString(FillMode fill_mode) {
   return "none";
 }
 
+Timing::FillMode Timing::StringToFillMode(const String& fill_mode) {
+  if (fill_mode == "none")
+    return Timing::FillMode::NONE;
+  if (fill_mode == "backwards")
+    return Timing::FillMode::BACKWARDS;
+  if (fill_mode == "both")
+    return Timing::FillMode::BOTH;
+  if (fill_mode == "forwards")
+    return Timing::FillMode::FORWARDS;
+  DCHECK_EQ(fill_mode, "auto");
+  return Timing::FillMode::AUTO;
+}
+
 String Timing::PlaybackDirectionString(PlaybackDirection playback_direction) {
   switch (playback_direction) {
     case PlaybackDirection::NORMAL:
