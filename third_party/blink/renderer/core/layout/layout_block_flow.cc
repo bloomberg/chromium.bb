@@ -2566,8 +2566,9 @@ void LayoutBlockFlow::ComputeVisualOverflow(
   AddVisualEffectOverflow();
   AddVisualOverflowFromTheme();
 
-  if (recompute_floats || CreatesNewFormattingContext() ||
-      HasSelfPaintingLayer())
+  if (!IsLayoutNGContainingBlock(this) &&
+      (recompute_floats || CreatesNewFormattingContext() ||
+       HasSelfPaintingLayer()))
     AddVisualOverflowFromFloats();
   if (VisualOverflowRect() != previous_visual_overflow_rect) {
     SetShouldCheckForPaintInvalidation();
@@ -2580,8 +2581,9 @@ void LayoutBlockFlow::ComputeLayoutOverflow(LayoutUnit old_client_after_edge,
   LayoutBlock::ComputeLayoutOverflow(old_client_after_edge, recompute_floats);
   // TODO(chrishtr): why does it check for a self-painting layer? That should
   // only apply to visual overflow.
-  if (recompute_floats || CreatesNewFormattingContext() ||
-      HasSelfPaintingLayer())
+  if (!IsLayoutNGContainingBlock(this) &&
+      (recompute_floats || CreatesNewFormattingContext() ||
+       HasSelfPaintingLayer()))
     AddLayoutOverflowFromFloats();
 }
 

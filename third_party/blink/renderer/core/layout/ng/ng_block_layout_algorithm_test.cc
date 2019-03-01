@@ -1243,26 +1243,6 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatInsideEmptyBlocks) {
   EXPECT_THAT(left_float->OffsetLeft(), 88);
   // 30 = body_top_offset(collapsed margins result) + float's padding
   EXPECT_THAT(left_float->OffsetTop(), body_top_offset + 10);
-
-  // ** Legacy Floating objects **
-  Element* empty2 = GetDocument().getElementById("empty2");
-  auto& floating_objects =
-      const_cast<FloatingObjects*>(
-          ToLayoutBlockFlow(empty2->GetLayoutObject())->GetFloatingObjects())
-          ->MutableSet();
-  ASSERT_EQ(2UL, floating_objects.size());
-  auto left_floating_object = floating_objects.TakeFirst();
-  // 80 = float_inline_offset(25) + accumulative offset of empty blocks(35 + 20)
-  EXPECT_THAT(left_floating_object->X(), LayoutUnit(15));
-  // 10 = left float's margin
-  EXPECT_THAT(left_floating_object->Y(), LayoutUnit());
-
-  auto right_floating_object = floating_objects.TakeFirst();
-  // 150 = float_inline_offset(25) +
-  //       right float offset(125)
-  EXPECT_THAT(right_floating_object->X(), LayoutUnit(140));
-  // 15 = right float's margin
-  EXPECT_THAT(right_floating_object->Y(), LayoutUnit(0));
 }
 
 // Verifies that left/right floating and regular blocks can be positioned
@@ -1684,17 +1664,6 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionEmptyBlocksInNewBfc) {
       <div id="empty-block2"></div>
     </div>
   )HTML");
-  // #container is the new parent for our float because it's height != 0.
-  Element* container = GetDocument().getElementById("container");
-  auto& floating_objects =
-      const_cast<FloatingObjects*>(
-          ToLayoutBlockFlow(container->GetLayoutObject())->GetFloatingObjects())
-          ->MutableSet();
-  ASSERT_EQ(1UL, floating_objects.size());
-  auto floating_object = floating_objects.TakeFirst();
-  // left-float's margin = 15.
-  EXPECT_THAT(floating_object->X(), LayoutUnit());
-  EXPECT_THAT(floating_object->Y(), LayoutUnit());
 
   scoped_refptr<const NGPhysicalBoxFragment> html_fragment;
   std::tie(html_fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
