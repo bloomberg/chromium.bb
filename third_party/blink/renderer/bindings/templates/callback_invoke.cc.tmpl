@@ -192,13 +192,18 @@
   {% set has_variadic_argument = arguments[-1].is_variadic %}
   {% set non_variadic_arguments = arguments | rejectattr('is_variadic') | list %}
   {% set variadic_argument = arguments[-1] if has_variadic_argument else None %}
-  {% set arguments_length = '%d + %s.size()' % (non_variadic_arguments|length, variadic_argument.name) if has_variadic_argument else non_variadic_arguments|length %}
   {% for argument in non_variadic_arguments %}
   v8::Local<v8::Value> {{argument.v8_name}} = {{argument.cpp_value_to_v8_value}};
   {% endfor %}
   {% if has_variadic_argument %}
-  const int argc = {{arguments_length}};
-  v8::Local<v8::Value> argv[argc];
+  // Secure one element at least in |argv| to avoid the following restriction.
+  //
+  // C++14 8.3.4 Arrays
+  // If the constant-expression (5.19) is present, it shall be a converted
+  // constant expression of type std::size_t and its value shall be greater than
+  // zero.
+  const int argc = {{non_variadic_arguments|length}} + {{variadic_argument.name}}.size();
+  v8::Local<v8::Value> argv[std::max(1, argc)];
   {% for argument in non_variadic_arguments %}
   argv[{{loop.index0}}] = {{argument.v8_name}};
   {% endfor %}
@@ -206,7 +211,7 @@
     argv[{{non_variadic_arguments|length}} + i] = ToV8({{variadic_argument.name}}[i], argument_creation_context, GetIsolate());
   }
   {% else %}{# if has_variadic_argument #}
-  constexpr int argc = {{arguments_length}};
+  constexpr int argc = {{non_variadic_arguments|length}};
   v8::Local<v8::Value> argv[] = { {{non_variadic_arguments | join(', ', 'v8_name')}} };
   static_assert(static_cast<size_t>(argc) == base::size(argv), "size mismatch");
   {% endif %}
