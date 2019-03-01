@@ -5964,3 +5964,4 @@ crbug.com/893659 [ Mac ] virtual/threaded/fast/events/pointerevents/pinch/pointe
 crbug.com/937358 [ Win ] virtual/scroll_customization/fast/events/touch/touch-handler-iframe-plugin-assert.html [ Pass Failure ]
 crbug.com/937378 [ Win7 ] http/tests/devtools/service-workers/service-workers-force-update-on-page-load.js [ Pass Timeout ]
 crbug.com/864994 [ Linux Win7 ] external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-decode-ksc_5601.html [ Timeout Failure Pass ]
+crbug.com/937416 [ Mac ] http/tests/devtools/resource-tree/resource-tree-htmlimports.js [ Pass Failure ]
