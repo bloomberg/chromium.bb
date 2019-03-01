@@ -459,7 +459,7 @@ void HTMLSlotElement::NotifySlottedNodesOfFlatTreeChange(
     const HeapVector<Member<Node>>& new_slotted) {
   if (old_slotted == new_slotted)
     return;
-  probe::didPerformSlotDistribution(this);
+  probe::DidPerformSlotDistribution(this);
 
   if (old_slotted.size() + 1 > kLCSTableSizeLimit ||
       new_slotted.size() + 1 > kLCSTableSizeLimit) {

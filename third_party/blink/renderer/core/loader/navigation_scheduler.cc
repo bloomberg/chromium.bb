@@ -404,13 +404,13 @@ void NavigationScheduler::NavigateTask() {
   if (!frame_->GetPage())
     return;
   if (frame_->GetPage()->Paused()) {
-    probe::frameClearedScheduledNavigation(frame_);
+    probe::FrameClearedScheduledNavigation(frame_);
     return;
   }
 
   ScheduledNavigation* redirect(redirect_.Release());
   redirect->Fire(frame_);
-  probe::frameClearedScheduledNavigation(frame_);
+  probe::FrameClearedScheduledNavigation(frame_);
 }
 
 void NavigationScheduler::Schedule(ScheduledNavigation* redirect) {
@@ -455,13 +455,13 @@ void NavigationScheduler::StartTimer() {
       WTF::Bind(&NavigationScheduler::NavigateTask, WrapWeakPersistent(this)),
       TimeDelta::FromSecondsD(redirect_->Delay()));
 
-  probe::frameScheduledNavigation(frame_, redirect_->Url(), redirect_->Delay(),
+  probe::FrameScheduledNavigation(frame_, redirect_->Url(), redirect_->Delay(),
                                   redirect_->GetReason());
 }
 
 void NavigationScheduler::Cancel() {
   if (navigate_task_handle_.IsActive()) {
-    probe::frameClearedScheduledNavigation(frame_);
+    probe::FrameClearedScheduledNavigation(frame_);
   }
   if (frame_->GetDocument())
     frame_->GetDocument()->CancelPendingJavaScriptUrl();

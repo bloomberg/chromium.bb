@@ -767,7 +767,7 @@ void XMLHttpRequest::send(
     const ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormDataOrURLSearchParams&
         body,
     ExceptionState& exception_state) {
-  probe::willSendXMLHttpOrFetchNetworkRequest(GetExecutionContext(), Url());
+  probe::WillSendXMLHttpOrFetchNetworkRequest(GetExecutionContext(), Url());
 
   if (body.IsNull()) {
     send(String(), exception_state);
@@ -1069,7 +1069,7 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   request.SetExternalRequestStateFromRequestorAddressSpace(
       execution_context.GetSecurityContext().AddressSpace());
 
-  probe::willLoadXHR(&execution_context, method_, url_, async_, http_body.get(),
+  probe::WillLoadXHR(&execution_context, method_, url_, async_, http_body.get(),
                      request_headers_, with_credentials_);
 
   if (http_body) {
@@ -1359,7 +1359,7 @@ void XMLHttpRequest::HandleRequestError(DOMExceptionCode exception_code,
                                         long long expected_length) {
   NETWORK_DVLOG(1) << this << " handleRequestError()";
 
-  probe::didFinishXHR(GetExecutionContext(), this);
+  probe::DidFinishXHR(GetExecutionContext(), this);
 
   send_flag_ = false;
   if (!async_) {
@@ -1755,7 +1755,7 @@ void XMLHttpRequest::NotifyParserStopped() {
 }
 
 void XMLHttpRequest::EndLoading() {
-  probe::didFinishXHR(GetExecutionContext(), this);
+  probe::DidFinishXHR(GetExecutionContext(), this);
 
   if (loader_) {
     // Set |m_error| in order to suppress the cancel notification (see

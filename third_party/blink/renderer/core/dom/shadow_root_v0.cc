@@ -189,7 +189,7 @@ void ShadowRootV0::Distribute() {
             ShadowRootWhereNodeCanBeDistributedForV0(*shadow_insertion_point))
       shadow_root->SetNeedsDistributionRecalc();
   }
-  probe::didPerformElementShadowDistribution(&GetShadowRoot().host());
+  probe::DidPerformElementShadowDistribution(&GetShadowRoot().host());
 }
 
 void ShadowRootV0::DidDistributeNode(const Node* node,

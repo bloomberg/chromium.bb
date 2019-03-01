@@ -881,7 +881,7 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
   }
 }
 
-void InspectorPageAgent::DOMContentLoadedEventFired(LocalFrame* frame) {
+void InspectorPageAgent::DomContentLoadedEventFired(LocalFrame* frame) {
   double timestamp = CurrentTimeTicksInSeconds();
   if (frame == inspected_frames_->Root())
     GetFrontend()->domContentEventFired(timestamp);

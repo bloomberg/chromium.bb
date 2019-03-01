@@ -753,7 +753,7 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
     EInsideLink link_state = state.ElementLinkState();
     if (link_state != EInsideLink::kNotInsideLink) {
       bool force_visited = false;
-      probe::forcePseudoState(element, CSSSelector::kPseudoVisited,
+      probe::ForcePseudoState(element, CSSSelector::kPseudoVisited,
                               &force_visited);
       if (force_visited)
         link_state = EInsideLink::kInsideVisitedLink;

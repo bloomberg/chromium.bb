@@ -267,7 +267,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
 
 void WebSharedWorkerImpl::DidReceiveScriptLoaderResponse() {
   DCHECK(IsMainThread());
-  probe::didReceiveScriptResponse(shadow_page_->GetDocument(),
+  probe::DidReceiveScriptResponse(shadow_page_->GetDocument(),
                                   main_script_loader_->Identifier());
   client_->SelectAppCacheID(main_script_loader_->AppCacheID());
 }
@@ -288,7 +288,7 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
     return;
   }
   DidFetchScript();
-  probe::scriptImported(shadow_page_->GetDocument(),
+  probe::ScriptImported(shadow_page_->GetDocument(),
                         main_script_loader_->Identifier(),
                         main_script_loader_->SourceText());
 

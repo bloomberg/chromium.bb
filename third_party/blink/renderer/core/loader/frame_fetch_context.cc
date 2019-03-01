@@ -403,7 +403,7 @@ void FrameFetchContext::DispatchDidChangeResourcePriority(
   TRACE_EVENT1("devtools.timeline", "ResourceChangePriority", "data",
                inspector_change_resource_priority_event::Data(
                    MasterDocumentLoader(), identifier, load_priority));
-  probe::didChangeResourcePriority(GetFrame(), MasterDocumentLoader(),
+  probe::DidChangeResourcePriority(GetFrame(), MasterDocumentLoader(),
                                    identifier, load_priority);
 }
 
@@ -433,7 +433,7 @@ void FrameFetchContext::PrepareRequest(
         WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
   }
 
-  probe::prepareRequest(Probe(), MasterDocumentLoader(), request,
+  probe::PrepareRequest(Probe(), MasterDocumentLoader(), request,
                         initiator_info, resource_type);
 
   // ServiceWorker hook ups.
@@ -466,7 +466,7 @@ void FrameFetchContext::DispatchWillSendRequest(
     GetFrame()->Loader().Progress().WillStartLoading(identifier,
                                                      request.Priority());
   }
-  probe::willSendRequest(Probe(), identifier, MasterDocumentLoader(), Url(),
+  probe::WillSendRequest(Probe(), identifier, MasterDocumentLoader(), Url(),
                          request, redirect_response, initiator_info,
                          resource_type);
   if (IdlenessDetector* idleness_detector = GetFrame()->GetIdlenessDetector())
@@ -506,8 +506,8 @@ void FrameFetchContext::DispatchDidReceiveResponse(
     GetLocalFrameClient()->DispatchDidLoadResourceFromMemoryCache(
         resource->GetResourceRequest(), response);
 
-    // Note: probe::willSendRequest needs to precede before this probe method.
-    probe::markResourceAsCached(GetFrame(), MasterDocumentLoader(), identifier);
+    // Note: probe::WillSendRequest needs to precede before this probe method.
+    probe::MarkResourceAsCached(GetFrame(), MasterDocumentLoader(), identifier);
     if (response.IsNull())
       return;
   }
@@ -541,7 +541,7 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   GetFrame()->Loader().Progress().IncrementProgress(identifier, response);
   GetLocalFrameClient()->DispatchDidReceiveResponse(response);
   DocumentLoader* document_loader = MasterDocumentLoader();
-  probe::didReceiveResourceResponse(Probe(), identifier, document_loader,
+  probe::DidReceiveResourceResponse(Probe(), identifier, document_loader,
                                     response, resource);
   // It is essential that inspector gets resource response BEFORE console.
   GetFrame()->Console().ReportResourceResponseReceived(document_loader,
@@ -555,7 +555,7 @@ void FrameFetchContext::DispatchDidReceiveData(unsigned long identifier,
     return;
 
   GetFrame()->Loader().Progress().IncrementProgress(identifier, data_length);
-  probe::didReceiveData(Probe(), identifier, MasterDocumentLoader(), data,
+  probe::DidReceiveData(Probe(), identifier, MasterDocumentLoader(), data,
                         data_length);
 }
 
@@ -564,7 +564,7 @@ void FrameFetchContext::DispatchDidReceiveEncodedData(
     size_t encoded_data_length) {
   if (GetResourceFetcherProperties().IsDetached())
     return;
-  probe::didReceiveEncodedDataLength(Probe(), MasterDocumentLoader(),
+  probe::DidReceiveEncodedDataLength(Probe(), MasterDocumentLoader(),
                                      identifier, encoded_data_length);
 }
 
@@ -573,7 +573,7 @@ void FrameFetchContext::DispatchDidDownloadToBlob(unsigned long identifier,
   if (GetResourceFetcherProperties().IsDetached() || !blob)
     return;
 
-  probe::didReceiveBlob(Probe(), identifier, MasterDocumentLoader(), blob);
+  probe::DidReceiveBlob(Probe(), identifier, MasterDocumentLoader(), blob);
 }
 
 void FrameFetchContext::DispatchDidFinishLoading(
@@ -587,7 +587,7 @@ void FrameFetchContext::DispatchDidFinishLoading(
     return;
 
   GetFrame()->Loader().Progress().CompleteProgress(identifier);
-  probe::didFinishLoading(Probe(), identifier, MasterDocumentLoader(),
+  probe::DidFinishLoading(Probe(), identifier, MasterDocumentLoader(),
                           finish_time, encoded_data_length, decoded_body_length,
                           should_report_corb_blocking);
 
@@ -629,7 +629,8 @@ void FrameFetchContext::DispatchDidFail(const KURL& url,
   }
 
   GetFrame()->Loader().Progress().CompleteProgress(identifier);
-  probe::didFailLoading(Probe(), identifier, MasterDocumentLoader(), error);
+  probe::DidFailLoading(Probe(), identifier, MasterDocumentLoader(), error);
+
   // Notification to FrameConsole should come AFTER InspectorInstrumentation
   // call, DevTools front-end relies on this.
   if (!is_internal_request) {
@@ -955,7 +956,7 @@ bool FrameFetchContext::ShouldBlockRequestByInspector(const KURL& url) const {
   if (GetResourceFetcherProperties().IsDetached())
     return false;
   bool should_block_request = false;
-  probe::shouldBlockRequest(Probe(), url, &should_block_request);
+  probe::ShouldBlockRequest(Probe(), url, &should_block_request);
   return should_block_request;
 }
 
@@ -966,7 +967,7 @@ void FrameFetchContext::DispatchDidBlockRequest(
     ResourceType resource_type) const {
   if (GetResourceFetcherProperties().IsDetached())
     return;
-  probe::didBlockRequest(Probe(), resource_request, MasterDocumentLoader(),
+  probe::DidBlockRequest(Probe(), resource_request, MasterDocumentLoader(),
                          Url(), fetch_initiator_info, blocked_reason,
                          resource_type);
 }

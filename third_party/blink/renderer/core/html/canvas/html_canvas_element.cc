@@ -309,7 +309,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
 
   context_creation_was_blocked_ = false;
 
-  probe::didCreateCanvasContext(&GetDocument());
+  probe::DidCreateCanvasContext(&GetDocument());
 
   if (Is3d())
     UpdateMemoryUsage();

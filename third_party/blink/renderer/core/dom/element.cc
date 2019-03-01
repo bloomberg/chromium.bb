@@ -2577,7 +2577,7 @@ ShadowRoot& Element::CreateAndAttachShadowRoot(ShadowRootType type) {
   SetNeedsStyleRecalc(kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
                                                style_change_reason::kShadow));
 
-  probe::didPushShadowRoot(this, shadow_root);
+  probe::DidPushShadowRoot(this, shadow_root);
 
   return *shadow_root;
 }
@@ -3488,7 +3488,7 @@ void Element::outerHTML(StringOrTrustedHTML& result) const {
 
 void Element::SetInnerHTMLFromString(const String& html,
                                      ExceptionState& exception_state) {
-  probe::breakableLocation(&GetDocument(), "Element.setInnerHTML");
+  probe::BreakableLocation(&GetDocument(), "Element.setInnerHTML");
   if (html.IsEmpty() && !HasNonInBodyInsertionMode()) {
     setTextContent(html);
   } else {
@@ -4101,7 +4101,7 @@ PseudoElement* Element::CreatePseudoElementIfNeeded(PseudoId pseudo_id) {
 
   pseudo_element->SetComputedStyle(std::move(pseudo_style));
 
-  probe::pseudoElementCreated(pseudo_element);
+  probe::PseudoElementCreated(pseudo_element);
 
   return pseudo_element;
 }
@@ -4532,7 +4532,7 @@ void Element::WillModifyAttribute(const QualifiedName& name,
     recipients->EnqueueMutationRecord(
         MutationRecord::CreateAttributes(this, name, old_value));
 
-  probe::willModifyDOMAttr(this, old_value, new_value);
+  probe::WillModifyDOMAttr(this, old_value, new_value);
 }
 
 DISABLE_CFI_PERF
@@ -4542,7 +4542,7 @@ void Element::DidAddAttribute(const QualifiedName& name,
     UpdateId(g_null_atom, value);
   AttributeChanged(AttributeModificationParams(
       name, g_null_atom, value, AttributeModificationReason::kDirectly));
-  probe::didModifyDOMAttr(this, name, value);
+  probe::DidModifyDOMAttr(this, name, value);
   DispatchSubtreeModifiedEvent();
 }
 
@@ -4553,7 +4553,7 @@ void Element::DidModifyAttribute(const QualifiedName& name,
     UpdateId(old_value, new_value);
   AttributeChanged(AttributeModificationParams(
       name, old_value, new_value, AttributeModificationReason::kDirectly));
-  probe::didModifyDOMAttr(this, name, new_value);
+  probe::DidModifyDOMAttr(this, name, new_value);
   // Do not dispatch a DOMSubtreeModified event here; see bug 81141.
 }
 
@@ -4563,7 +4563,7 @@ void Element::DidRemoveAttribute(const QualifiedName& name,
     UpdateId(old_value, g_null_atom);
   AttributeChanged(AttributeModificationParams(
       name, old_value, g_null_atom, AttributeModificationReason::kDirectly));
-  probe::didRemoveDOMAttr(this, name);
+  probe::DidRemoveDOMAttr(this, name);
   DispatchSubtreeModifiedEvent();
 }
 
@@ -4943,7 +4943,7 @@ void Element::StyleAttributeChanged(
   SetNeedsStyleRecalc(kLocalStyleChange,
                       StyleChangeReasonForTracing::Create(
                           style_change_reason::kStyleSheetChange));
-  probe::didInvalidateStyleAttr(this);
+  probe::DidInvalidateStyleAttr(this);
 }
 
 void Element::InlineStyleChanged() {
@@ -4952,7 +4952,7 @@ void Element::InlineStyleChanged() {
                                              style_change_reason::kInline));
   DCHECK(GetElementData());
   GetElementData()->style_attribute_is_dirty_ = true;
-  probe::didInvalidateStyleAttr(this);
+  probe::DidInvalidateStyleAttr(this);
 
   if (MutationObserverInterestGroup* recipients =
           MutationObserverInterestGroup::CreateForAttributesMutation(

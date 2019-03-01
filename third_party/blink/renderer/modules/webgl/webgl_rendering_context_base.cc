@@ -211,7 +211,7 @@ void WebGLRenderingContextBase::ForciblyLoseOldestContext(
     return;
 
   candidate->PrintWarningToConsole(reason);
-  probe::didFireWebGLWarning(candidate->canvas());
+  probe::DidFireWebGLWarning(candidate->canvas());
 
   // This will call deactivateContext once the context has actually been lost.
   candidate->ForceLostContext(WebGLRenderingContextBase::kSyntheticLostContext,
@@ -1403,7 +1403,7 @@ void WebGLRenderingContextBase::OnErrorMessage(const char* message,
                                                int32_t id) {
   if (synthesized_errors_to_console_)
     PrintGLErrorToConsole(message);
-  probe::didFireWebGLErrorOrWarning(canvas(), message);
+  probe::DidFireWebGLErrorOrWarning(canvas(), message);
 }
 
 WebGLRenderingContextBase::HowToClear
@@ -7898,7 +7898,7 @@ void WebGLRenderingContextBase::SynthesizeGLError(
     if (!lost_context_errors_.Contains(error))
       lost_context_errors_.push_back(error);
   }
-  probe::didFireWebGLError(canvas(), error_type);
+  probe::DidFireWebGLError(canvas(), error_type);
 }
 
 void WebGLRenderingContextBase::EmitGLWarning(const char* function_name,
@@ -7908,7 +7908,7 @@ void WebGLRenderingContextBase::EmitGLWarning(const char* function_name,
         String("WebGL: ") + String(function_name) + ": " + String(description);
     PrintGLErrorToConsole(message);
   }
-  probe::didFireWebGLWarning(canvas());
+  probe::DidFireWebGLWarning(canvas());
 }
 
 void WebGLRenderingContextBase::ApplyStencilTest() {

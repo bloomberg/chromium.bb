@@ -512,7 +512,7 @@ bool VisualViewport::DidSetScaleOrLocation(float scale,
   MainFrame()->GetEventHandler().MayUpdateHoverWhenContentUnderMouseChanged(
       MouseEventManager::UpdateHoverReason::kScrollOffsetChanged);
 
-  probe::didChangeViewport(MainFrame());
+  probe::DidChangeViewport(MainFrame());
   MainFrame()->Loader().SaveScrollState();
 
   ClampToBoundaries();

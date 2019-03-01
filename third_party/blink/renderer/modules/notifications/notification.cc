@@ -435,7 +435,7 @@ ScriptPromise Notification::requestPermission(
   ExecutionContext* context = ExecutionContext::From(script_state);
   Document* doc = DynamicTo<Document>(context);
 
-  probe::breakableLocation(context, "Notification.requestPermission");
+  probe::BreakableLocation(context, "Notification.requestPermission");
   if (!LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame()
                                                   : nullptr)) {
     PerformanceMonitor::ReportGenericViolation(

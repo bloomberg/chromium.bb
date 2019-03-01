@@ -309,7 +309,7 @@ WorkerGlobalScope::LoadScriptFromClassicScriptLoader(
   *out_response_url = classic_script_loader->ResponseURL();
   *out_source_code = classic_script_loader->SourceText();
   *out_cached_meta_data = classic_script_loader->ReleaseCachedMetadata();
-  probe::scriptImported(execution_context, classic_script_loader->Identifier(),
+  probe::ScriptImported(execution_context, classic_script_loader->Identifier(),
                         classic_script_loader->SourceText());
   return LoadResult::kSuccess;
 }
@@ -425,7 +425,7 @@ void WorkerGlobalScope::DidReceiveResponseForClassicScript(
          base::FeatureList::IsEnabled(
              features::kOffMainThreadServiceWorkerScriptFetch) ||
          features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
-  probe::didReceiveScriptResponse(this, classic_script_loader->Identifier());
+  probe::DidReceiveScriptResponse(this, classic_script_loader->Identifier());
 }
 
 // https://html.spec.whatwg.org/C/#worker-processing-model
@@ -448,7 +448,7 @@ void WorkerGlobalScope::DidImportClassicScript(
     return;
   }
   ReportingProxy().DidFetchScript();
-  probe::scriptImported(this, classic_script_loader->Identifier(),
+  probe::ScriptImported(this, classic_script_loader->Identifier(),
                         classic_script_loader->SourceText());
 
   // Step 12.3. "Set worker global scope's url to response's url."

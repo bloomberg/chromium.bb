@@ -264,7 +264,7 @@ DocumentLoader::DocumentLoader(
   if (!GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument())
     redirect_chain_.push_back(url_);
 
-  probe::lifecycleEvent(frame_, this, "init", CurrentTimeTicksInSeconds());
+  probe::LifecycleEvent(frame_, this, "init", CurrentTimeTicksInSeconds());
 }
 
 FrameLoader& DocumentLoader::GetFrameLoader() const {
@@ -429,7 +429,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
 
   GetLocalFrameClient().DidFinishSameDocumentNavigation(
       history_item_.Get(), commit_type, initiating_document);
-  probe::didNavigateWithinDocument(frame_);
+  probe::DidNavigateWithinDocument(frame_);
 }
 
 const KURL& DocumentLoader::UrlForHistory() const {
@@ -577,7 +577,7 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
       state_ = kSentDidFinishLoad;
       GetLocalFrameClient().DispatchDidFailProvisionalLoad(error,
                                                            history_commit_type);
-      probe::didFailProvisionalLoad(frame_);
+      probe::DidFailProvisionalLoad(frame_);
       if (frame_)
         GetFrameLoader().DetachProvisionalDocumentLoader(this);
       break;
@@ -1089,7 +1089,7 @@ void DocumentLoader::StartLoadingInternal() {
 
   GetFrameLoader().Progress().WillStartLoading(main_resource_identifier_,
                                                ResourceLoadPriority::kVeryHigh);
-  probe::willSendNavigationRequest(probe::ToCoreProbeSink(GetFrame()),
+  probe::WillSendNavigationRequest(probe::ToCoreProbeSink(GetFrame()),
                                    main_resource_identifier_, this, url_,
                                    http_method_, http_body_.get());
 
@@ -1110,7 +1110,7 @@ void DocumentLoader::StartLoadingInternal() {
     http_content_type_ = g_null_atom;
     // TODO(dgozman): check whether clearing origin policy is intended behavior.
     origin_policy_ = String();
-    probe::willSendNavigationRequest(probe::ToCoreProbeSink(GetFrame()),
+    probe::WillSendNavigationRequest(probe::ToCoreProbeSink(GetFrame()),
                                      main_resource_identifier_, this, url_,
                                      http_method_, http_body_.get());
     ResourceResponse redirect_response =
@@ -1142,7 +1142,7 @@ void DocumentLoader::StartLoadingInternal() {
                                                 response);
   // TODO(dgozman): remove this client call, it is only used in tests.
   GetLocalFrameClient().DispatchDidReceiveResponse(response);
-  probe::didReceiveResourceResponse(probe::ToCoreProbeSink(GetFrame()),
+  probe::DidReceiveResourceResponse(probe::ToCoreProbeSink(GetFrame()),
                                     main_resource_identifier_, this, response,
                                     nullptr /* resource */);
   frame_->Console().ReportResourceResponseReceived(
@@ -1254,7 +1254,7 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
 void DocumentLoader::WillCommitNavigation() {
   if (GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument())
     return;
-  probe::willCommitLoad(frame_, this);
+  probe::WillCommitLoad(frame_, this);
   frame_->GetIdlenessDetector()->WillCommitLoad();
 }
 
@@ -1306,7 +1306,7 @@ void DocumentLoader::DidCommitNavigation(
                inspector_commit_load_event::Data(frame_));
 
   // Needs to run before dispatching preloads, as it may evict the memory cache.
-  probe::didCommitLoad(frame_, this);
+  probe::DidCommitLoad(frame_, this);
 
   // Links with media values need more information (like viewport information).
   // This happens after the first chunk is parsed in HTMLDocumentParser.

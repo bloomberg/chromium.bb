@@ -558,7 +558,7 @@ void PaintLayerCompositor::UpdateIfNeeded(
 
   // Inform the inspector that the layer tree has changed.
   if (IsMainFrame() && !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    probe::layerTreeDidChange(layout_view_.GetFrame());
+    probe::LayerTreeDidChange(layout_view_.GetFrame());
 
   Lifecycle().AdvanceTo(DocumentLifecycle::kCompositingClean);
 }

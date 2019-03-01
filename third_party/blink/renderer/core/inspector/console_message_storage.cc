@@ -65,7 +65,7 @@ ConsoleMessageStorage::ConsoleMessageStorage() : expired_count_(0) {}
 void ConsoleMessageStorage::AddConsoleMessage(ExecutionContext* context,
                                               ConsoleMessage* message) {
   TraceConsoleMessageEvent(message);
-  probe::consoleMessageAdded(context, message);
+  probe::ConsoleMessageAdded(context, message);
   DCHECK(messages_.size() <= kMaxConsoleMessageCount);
   if (messages_.size() == kMaxConsoleMessageCount) {
     ++expired_count_;

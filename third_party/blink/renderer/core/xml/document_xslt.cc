@@ -93,7 +93,7 @@ void DocumentXSLT::ApplyXSLTransform(Document& document,
   LocalFrame* owner_frame = document.GetFrame();
   processor->CreateDocumentFromSource(new_source, result_encoding,
                                       result_mime_type, &document, owner_frame);
-  probe::frameDocumentUpdated(owner_frame);
+  probe::FrameDocumentUpdated(owner_frame);
   document.SetParsingState(Document::kFinishedParsing);
 }
 

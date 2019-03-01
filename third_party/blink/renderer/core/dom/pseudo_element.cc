@@ -127,7 +127,7 @@ scoped_refptr<ComputedStyle> PseudoElement::LayoutStyleForDisplayContents(
 void PseudoElement::Dispose() {
   DCHECK(ParentOrShadowHostElement());
 
-  probe::pseudoElementDestroyed(this);
+  probe::PseudoElementDestroyed(this);
 
   DCHECK(!nextSibling());
   DCHECK(!previousSibling());

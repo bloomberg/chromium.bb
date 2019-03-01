@@ -3422,7 +3422,7 @@ void CompositedLayerMapping::PaintContents(
   }
 
   if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    probe::didPaint(owning_layer_.GetLayoutObject().GetFrame(),
+    probe::DidPaint(owning_layer_.GetLayoutObject().GetFrame(),
                     graphics_layer->CcLayer(), LayoutRect(interest_rect));
   }
 

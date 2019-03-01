@@ -317,7 +317,7 @@ static Frame* CreateWindowHelper(LocalFrame& opener_frame,
          opener_frame.GetDocument()->Url().IsEmpty());
   DCHECK_EQ(request.GetResourceRequest().GetFrameType(),
             network::mojom::RequestContextFrameType::kAuxiliary);
-  probe::windowOpen(opener_frame.GetDocument(),
+  probe::WindowOpen(opener_frame.GetDocument(),
                     request.GetResourceRequest().Url(), request.FrameName(),
                     features,
                     LocalFrame::HasTransientUserActivation(&opener_frame));

@@ -86,7 +86,7 @@ bool WorkerFetchContext::AllowScriptFromSource(const KURL& url) const {
 
 bool WorkerFetchContext::ShouldBlockRequestByInspector(const KURL& url) const {
   bool should_block_request = false;
-  probe::shouldBlockRequest(Probe(), url, &should_block_request);
+  probe::ShouldBlockRequest(Probe(), url, &should_block_request);
   return should_block_request;
 }
 
@@ -95,7 +95,7 @@ void WorkerFetchContext::DispatchDidBlockRequest(
     const FetchInitiatorInfo& fetch_initiator_info,
     ResourceRequestBlockedReason blocked_reason,
     ResourceType resource_type) const {
-  probe::didBlockRequest(Probe(), resource_request, nullptr, Url(),
+  probe::DidBlockRequest(Probe(), resource_request, nullptr, Url(),
                          fetch_initiator_info, blocked_reason, resource_type);
 }
 
@@ -195,14 +195,14 @@ void WorkerFetchContext::PrepareRequest(
     RedirectType redirect_type,
     ResourceType resource_type) {
   String user_agent = global_scope_->UserAgent();
-  probe::applyUserAgentOverride(Probe(), &user_agent);
+  probe::ApplyUserAgentOverride(Probe(), &user_agent);
   DCHECK(!user_agent.IsNull());
   request.SetHTTPUserAgent(AtomicString(user_agent));
 
   WrappedResourceRequest webreq(request);
   web_context_->WillSendRequest(webreq);
 
-  probe::prepareRequest(Probe(), nullptr, request, initiator_info,
+  probe::PrepareRequest(Probe(), nullptr, request, initiator_info,
                         resource_type);
 }
 
@@ -223,7 +223,7 @@ void WorkerFetchContext::DispatchWillSendRequest(
     const ResourceResponse& redirect_response,
     ResourceType resource_type,
     const FetchInitiatorInfo& initiator_info) {
-  probe::willSendRequest(Probe(), identifier, nullptr, Url(), request,
+  probe::WillSendRequest(Probe(), identifier, nullptr, Url(), request,
                          redirect_response, initiator_info, resource_type);
 }
 
@@ -244,20 +244,20 @@ void WorkerFetchContext::DispatchDidReceiveResponse(
       web_context_->DidDisplayContentWithCertificateErrors();
     }
   }
-  probe::didReceiveResourceResponse(Probe(), identifier, nullptr, response,
+  probe::DidReceiveResourceResponse(Probe(), identifier, nullptr, response,
                                     resource);
 }
 
 void WorkerFetchContext::DispatchDidReceiveData(unsigned long identifier,
                                                 const char* data,
                                                 uint64_t data_length) {
-  probe::didReceiveData(Probe(), identifier, nullptr, data, data_length);
+  probe::DidReceiveData(Probe(), identifier, nullptr, data, data_length);
 }
 
 void WorkerFetchContext::DispatchDidReceiveEncodedData(
     unsigned long identifier,
     size_t encoded_data_length) {
-  probe::didReceiveEncodedDataLength(Probe(), nullptr, identifier,
+  probe::DidReceiveEncodedDataLength(Probe(), nullptr, identifier,
                                      encoded_data_length);
 }
 
@@ -268,7 +268,7 @@ void WorkerFetchContext::DispatchDidFinishLoading(
     int64_t decoded_body_length,
     bool should_report_corb_blocking,
     ResourceResponseType) {
-  probe::didFinishLoading(Probe(), identifier, nullptr, finish_time,
+  probe::DidFinishLoading(Probe(), identifier, nullptr, finish_time,
                           encoded_data_length, decoded_body_length,
                           should_report_corb_blocking);
 }
@@ -278,7 +278,7 @@ void WorkerFetchContext::DispatchDidFail(const KURL& url,
                                          const ResourceError& error,
                                          int64_t encoded_data_length,
                                          bool is_internal_request) {
-  probe::didFailLoading(Probe(), identifier, nullptr, error);
+  probe::DidFailLoading(Probe(), identifier, nullptr, error);
   if (network_utils::IsCertificateTransparencyRequiredError(
           error.ErrorCode())) {
     CountUsage(WebFeature::kCertificateTransparencyRequiredErrorOnResourceLoad);

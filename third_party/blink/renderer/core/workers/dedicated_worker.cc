@@ -361,7 +361,7 @@ WorkerClients* DedicatedWorker::CreateWorkerClients() {
 
 void DedicatedWorker::OnResponse() {
   DCHECK(GetExecutionContext()->IsContextThread());
-  probe::didReceiveScriptResponse(GetExecutionContext(),
+  probe::DidReceiveScriptResponse(GetExecutionContext(),
                                   classic_script_loader_->Identifier());
 }
 
@@ -389,7 +389,7 @@ void DedicatedWorker::OnFinished() {
     ContinueStart(script_response_url,
                   OffMainThreadWorkerScriptFetchOption::kDisabled,
                   referrer_policy, classic_script_loader_->SourceText());
-    probe::scriptImported(GetExecutionContext(),
+    probe::ScriptImported(GetExecutionContext(),
                           classic_script_loader_->Identifier(),
                           classic_script_loader_->SourceText());
   }

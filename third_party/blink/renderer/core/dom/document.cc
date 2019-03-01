@@ -568,7 +568,7 @@ class Document::NetworkStateObserver final
     if (!document->domWindow())
       return;
     document->domWindow()->DispatchEvent(*Event::Create(event_name));
-    probe::networkStateChanged(document->GetFrame(), on_line);
+    probe::NetworkStateChanged(document->GetFrame(), on_line);
   }
 
   void ContextDestroyed(ExecutionContext* context) override {
@@ -818,7 +818,7 @@ void Document::MediaQueryAffectingValueChanged() {
     evaluate_media_queries_on_style_recalc_ = true;
   else
     EvaluateMediaQueryList();
-  probe::mediaQueryResultChanged(this);
+  probe::MediaQueryResultChanged(this);
 }
 
 void Document::SetCompatibilityMode(CompatibilityMode mode) {
@@ -2838,7 +2838,7 @@ void Document::Shutdown() {
     }
   }
 
-  probe::documentDetached(this);
+  probe::DocumentDetached(this);
 
   // FIXME: consider using ContextLifecycleStateObserver.
   if (scripted_animation_controller_)
@@ -3946,7 +3946,7 @@ void Document::write(const String& text,
       "https://developers.google.com/web/updates/2016/08/"
       "removing-document-write",
       base::TimeDelta(), nullptr);
-  probe::breakableLocation(this, "Document.write");
+  probe::BreakableLocation(this, "Document.write");
   parser_->insert(text);
 }
 
@@ -6169,7 +6169,7 @@ void Document::FinishedParsing() {
     TRACE_EVENT_INSTANT1("devtools.timeline", "MarkDOMContent",
                          TRACE_EVENT_SCOPE_THREAD, "data",
                          inspector_mark_load_event::Data(frame));
-    probe::domContentLoadedEventFired(frame);
+    probe::DomContentLoadedEventFired(frame);
     frame->GetIdlenessDetector()->DomContentLoadedEventFired();
 
     // Forward intervention policy state to the corresponding frame object

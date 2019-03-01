@@ -220,11 +220,12 @@ LocalFrame* LocalFrame::Create(LocalFrameClient* client,
       client, page, owner,
       interface_registry ? interface_registry
                          : InterfaceRegistry::GetEmptyInterfaceRegistry());
+
   if (frame->IsMainFrame()) {
     if (PageScheduler* page_scheduler = page.GetPageScheduler())
       page_scheduler->SetIsMainFrameLocal(true);
   }
-  probe::frameAttachedToParent(frame);
+  probe::FrameAttachedToParent(frame);
   return frame;
 }
 
@@ -438,7 +439,7 @@ void LocalFrame::DetachImpl(FrameDetachType type) {
 
   DomWindow()->FrameDestroyed();
 
-  probe::frameDetachedFromParent(this);
+  probe::FrameDetachedFromParent(this);
 
   supplements_.clear();
   frame_scheduler_.reset();
@@ -535,9 +536,9 @@ void LocalFrame::Reload(WebFrameLoadType load_type,
   if (const WebInputEvent* input_event = CurrentInputEvent::Get())
     request.SetInputStartTime(input_event->TimeStamp());
   if (client_redirect_policy == ClientRedirectPolicy::kClientRedirect) {
-    probe::frameScheduledNavigation(this, request.GetResourceRequest().Url(),
+    probe::FrameScheduledNavigation(this, request.GetResourceRequest().Url(),
                                     0.0, ClientNavigationReason::kReload);
-    probe::frameClearedScheduledNavigation(this);
+    probe::FrameClearedScheduledNavigation(this);
   }
 
   loader_.StartNavigation(request, load_type);

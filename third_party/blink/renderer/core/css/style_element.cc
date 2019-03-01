@@ -93,7 +93,7 @@ void StyleElement::RemovedFrom(Element& element,
 StyleElement::ProcessingResult StyleElement::ChildrenChanged(Element& element) {
   if (created_by_parser_)
     return kProcessingSuccessful;
-  probe::willChangeStyleElement(&element);
+  probe::WillChangeStyleElement(&element);
   return Process(element);
 }
 

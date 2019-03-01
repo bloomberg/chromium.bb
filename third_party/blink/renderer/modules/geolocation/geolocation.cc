@@ -183,7 +183,7 @@ void Geolocation::getCurrentPosition(V8PositionCallback* success_callback,
   if (!GetFrame())
     return;
 
-  probe::breakableLocation(GetDocument(), "Geolocation.getCurrentPosition");
+  probe::BreakableLocation(GetDocument(), "Geolocation.getCurrentPosition");
 
   GeoNotifier* notifier =
       GeoNotifier::Create(this, success_callback, error_callback, options);
@@ -199,7 +199,7 @@ int Geolocation::watchPosition(V8PositionCallback* success_callback,
   if (!GetFrame())
     return 0;
 
-  probe::breakableLocation(GetDocument(), "Geolocation.watchPosition");
+  probe::BreakableLocation(GetDocument(), "Geolocation.watchPosition");
 
   GeoNotifier* notifier =
       GeoNotifier::Create(this, success_callback, error_callback, options);
