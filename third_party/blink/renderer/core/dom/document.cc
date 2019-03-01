@@ -6316,12 +6316,20 @@ void Document::ApplyFeaturePolicyFromHeader(
   if (!feature_policy_header.IsEmpty())
     UseCounter::Count(*this, WebFeature::kFeaturePolicyHeader);
   Vector<String> messages;
-  const ParsedFeaturePolicy& declared_policy = ParseFeaturePolicyHeader(
+  auto declared_policy = ParseFeaturePolicyHeader(
       feature_policy_header, GetSecurityOrigin(), &messages, this);
   for (auto& message : messages) {
     AddConsoleMessage(
         ConsoleMessage::Create(kSecurityMessageSource, kErrorMessageLevel,
                                "Error with Feature-Policy header: " + message));
+  }
+  if (GetSandboxFlags() != kSandboxNone &&
+      RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
+    // The sandbox flags might have come from CSP header or the browser; in such
+    // cases the sandbox is not part of the container policy. They are added
+    // to the header policy (which specifically makes sense in the case of CSP
+    // sandbox).
+    ApplySandboxFlagsToParsedFeaturePolicy(GetSandboxFlags(), declared_policy);
   }
   ApplyFeaturePolicy(declared_policy);
   if (frame_) {
@@ -6588,7 +6596,15 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
       SecurityOrigin::Create(url_)->IsPotentiallyTrustworthy())
     GetMutableSecurityOrigin()->SetOpaqueOriginIsPotentiallyTrustworthy(true);
 
-  ApplyFeaturePolicy({});
+  ParsedFeaturePolicy declared_policy = {};
+  if (GetSandboxFlags() != kSandboxNone &&
+      RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
+    // If any sandbox flags are enforced above they should also be added as
+    // part of a declared policy to properly initialize the sandbox feature
+    // policies.
+    ApplySandboxFlagsToParsedFeaturePolicy(GetSandboxFlags(), declared_policy);
+  }
+  ApplyFeaturePolicy(declared_policy);
 
   InitSecureContextState();
 }

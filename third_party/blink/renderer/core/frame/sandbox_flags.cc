@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/renderer/core/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -92,6 +93,43 @@ SandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
   }
 
   return flags;
+}
+
+void ApplySandboxFlagsToParsedFeaturePolicy(
+    SandboxFlags sandbox_flags,
+    ParsedFeaturePolicy& parsed_feature_policy) {
+  if ((sandbox_flags & kSandboxTopNavigation)) {
+    DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kTopNavigation,
+                                parsed_feature_policy);
+  }
+  if ((sandbox_flags & kSandboxForms)) {
+    DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kFormSubmission,
+                                parsed_feature_policy);
+  }
+  if ((sandbox_flags & kSandboxScripts)) {
+    DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kScript,
+                                parsed_feature_policy);
+  }
+  if ((sandbox_flags & kSandboxPopups)) {
+    DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kPopups,
+                                parsed_feature_policy);
+  }
+  if ((sandbox_flags & kSandboxPointerLock)) {
+    DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kPointerLock,
+                                parsed_feature_policy);
+  }
+  if ((sandbox_flags & kSandboxModals)) {
+    DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kModals,
+                                parsed_feature_policy);
+  }
+  if ((sandbox_flags & kSandboxOrientationLock)) {
+    DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kOrientationLock,
+                                parsed_feature_policy);
+  }
+  if ((sandbox_flags & kSandboxPresentationController)) {
+    DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kPresentation,
+                                parsed_feature_policy);
+  }
 }
 
 STATIC_ASSERT_ENUM(WebSandboxFlags::kNone, kSandboxNone);

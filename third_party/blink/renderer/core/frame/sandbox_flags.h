@@ -27,6 +27,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_SANDBOX_FLAGS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_SANDBOX_FLAGS_H_
 
+#include <vector>
+
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -66,6 +69,11 @@ typedef int SandboxFlags;
 
 SandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
                                 String& invalid_tokens_error_message);
+
+// Applies the sandbox flags as parsed feature policies; If a flag is present
+// both in the provided flags and in the parsed feature as a feature policy,
+// the parsed policy takes precedence.
+void ApplySandboxFlagsToParsedFeaturePolicy(SandboxFlags, ParsedFeaturePolicy&);
 
 }  // namespace blink
 

@@ -5825,19 +5825,6 @@ crbug.com/924954 http/tests/images/feature-policy-image-policies-with-border-rad
 # WebXR feature policy feature name in Chrome doesn't match spec.
 crbug.com/924670 external/wpt/webvr/webvr-supported-by-feature-policy.html [ Failure ]
 
-# Feature Policy for Sandbox currently causes these tests to fail.
-crbug.com/926245 virtual/feature-policy-for-sandbox/http/tests/security/contentSecurityPolicy/sandbox-empty-subframe.html [ Failure ]
-crbug.com/926245 virtual/feature-policy-for-sandbox/http/tests/security/contentSecurityPolicy/sandbox-empty.html [ Failure ]
-crbug.com/926245 virtual/feature-policy-for-sandbox/http/tests/security/contentSecurityPolicy/sandbox-in-http-header-control.html [ Failure ]
-crbug.com/926245 virtual/feature-policy-for-sandbox/http/tests/security/contentSecurityPolicy/sandbox-invalid-header.html [ Failure ]
-crbug.com/926247 virtual/feature-policy-for-sandbox/http/tests/navigation/new-window-sandboxed-iframe.html [ Failure ]
-crbug.com/926247 virtual/feature-policy-for-sandbox/http/tests/security/popup-allowed-by-sandbox-is-sandboxed.html [ Failure ]
-crbug.com/926248 virtual/feature-policy-for-sandbox/mhtml/page_with_css_and_js_ie.mht [ Failure ]
-crbug.com/926248 virtual/feature-policy-for-sandbox/mhtml/page_with_css_and_js_unmht.mht [ Failure ]
-crbug.com/926248 virtual/feature-policy-for-sandbox/mhtml/page_with_javascript.mht [ Failure ]
-crbug.com/926248 virtual/feature-policy-for-sandbox/mhtml/transfer_encoding_8bit.mht [ Failure ]
-crbug.com/926249 virtual/feature-policy-for-sandbox/http/tests/security/sandbox-iframe-blocks-modals.php [ Failure ]
-
 # This test requires FeaturePolicyForSandbox flag.
 crbug.com/791017 external/wpt/feature-policy/feature-policy-for-sandbox/feature-propagation-to-auxiliary-context.html [ Failure ]
 crbug.com/791017 virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-for-sandbox/feature-propagation-to-auxiliary-context.html [ Failure ]
