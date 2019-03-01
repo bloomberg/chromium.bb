@@ -104,8 +104,9 @@ public class MediaNotificationTestTabHolder {
         mMediaSessionTabHelper.mTabObserver.onDidStartNavigation(mTab, navigation);
 
         navigation.didFinish(url, false /* isErrorPage */, true /* hasCommitted */,
-                false /* isFragmentNavigation */, false /* isDownload */, 0 /* pageTransition */,
-                0 /* errorCode */, 200 /* httpStatusCode */);
+                false /* isFragmentNavigation */, false /* isDownload */,
+                false /* isValidSearchFormUrl */, 0 /* pageTransition */, 0 /* errorCode */,
+                200 /* httpStatusCode */);
         mMediaSessionTabHelper.mTabObserver.onDidFinishNavigation(mTab, navigation);
     }
 }

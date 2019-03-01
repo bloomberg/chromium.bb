@@ -237,8 +237,9 @@ public class TrustedWebActivityVerifierTest {
         }
 
         navigation.didFinish(url, false /* isErrorPage */, true /* hasCommitted */,
-                false /* isFragmentNavigation */, false /* isDownload */, 0 /* pageTransition */,
-                0 /* errorCode*/, 200 /* httpStatusCode*/);
+                false /* isFragmentNavigation */, false /* isDownload */,
+                false /* isValidSearchFormUrl */, 0 /* pageTransition */, 0 /* errorCode*/,
+                200 /* httpStatusCode*/);
         for (TabObserver tabObserver : mTabObserverCaptor.getAllValues()) {
             tabObserver.onDidFinishNavigation(mTab, navigation);
         }

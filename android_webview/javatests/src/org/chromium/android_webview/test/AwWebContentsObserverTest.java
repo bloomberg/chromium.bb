@@ -192,7 +192,8 @@ public class AwWebContentsObserverTest {
         mWebContentsObserver.didStartNavigation(navigation);
 
         navigation.didFinish(url, isErrorPage, true /* hasCommitted */, isFragmentNavigation,
-                false /* isDownload */, transition, 0 /* errorCode*/, 200 /* httpStatusCode*/);
+                false /* isDownload */, false /* isValidSearchFormUrl */, transition,
+                0 /* errorCode*/, 200 /* httpStatusCode*/);
         mWebContentsObserver.didFinishNavigation(navigation);
     }
 }
