@@ -103,7 +103,8 @@
         <iron-icon icon="cr:bluetooth"></iron-icon>
         $i18n{bluetoothPageTitle}
       </a>
-      <a href="/multidevice"">
+      <a id="multidevice" href="/multidevice"
+          hidden="[[!pageVisibility.multidevice]]">
         <iron-icon icon="settings:multidevice-better-together-suite">
         </iron-icon>
         $i18n{multidevicePageTitle}
