@@ -5947,9 +5947,6 @@ crbug.com/754910 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_t
 crbug.com/936827 external/wpt/fullscreen/api/element-request-fullscreen-and-remove-manual.html [ Failure Pass ]
 
 # Enable WPT animation-worklet test to run with threaded-compositing
-crbug.com/915352 virtual/threaded/external/wpt/animation-worklet/animation-worklet-inside-iframe.https.html [ Pass Failure ]
-crbug.com/915352 virtual/threaded/external/wpt/animation-worklet/animator-animate.https.html [ Pass Failure ]
-crbug.com/915352 virtual/threaded/external/wpt/animation-worklet/animator-with-options.https.html [ Pass Failure ]
 crbug.com/915352 virtual/threaded/external/wpt/animation-worklet/playback-rate.https.html [ Pass Failure ]
 crbug.com/915352 virtual/threaded/external/wpt/animation-worklet/scroll-timeline-writing-modes.https.html [ Pass Failure ]
 crbug.com/915352 virtual/threaded/external/wpt/animation-worklet/worklet-animation-pause-resume.https.html [ Pass Failure ]
