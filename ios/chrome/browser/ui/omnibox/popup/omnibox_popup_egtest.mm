@@ -299,6 +299,10 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // Start typing url of the first page.
   [ChromeEarlGreyUI focusOmniboxAndType:base::SysUTF8ToNSString(kPage1URL)];
 
+  // Make sure that the "Switch to Open Tab" element is visible.
+  [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL1)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
   // Close the first page.
   chrome_test_util::CloseTabAtIndex(0);
   [ChromeEarlGrey waitForMainTabCount:1];
