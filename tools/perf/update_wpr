@@ -5,7 +5,8 @@
 
 import sys
 
-from wpr import update_wpr
+from cli_tools import update_wpr
+
 
 if __name__ == '__main__':
   sys.exit(update_wpr.Main(sys.argv[1:]))

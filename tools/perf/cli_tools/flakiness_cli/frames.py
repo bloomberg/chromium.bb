@@ -13,8 +13,8 @@ except ImportError:
   pass
 
 
-CACHE_DIR = os.path.normpath(
-    os.path.join(os.path.dirname(__file__), '..', 'data', 'test_results'))
+CACHE_DIR = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', '..', '_cached_data', 'flakiness_cli'))
 
 TEST_RESULTS_COLUMNS = (
     'timestamp', 'builder', 'build_number', 'commit_pos', 'test_suite',

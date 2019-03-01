@@ -5,8 +5,8 @@
 import datetime
 import hashlib
 
-from test_results import api
-from test_results import frames
+from cli_tools.flakiness_cli import api
+from cli_tools.flakiness_cli import frames
 
 
 def GetBuilders():

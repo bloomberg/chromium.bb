@@ -9,10 +9,10 @@ import unittest
 
 import mock
 
-from wpr import update_wpr
+from cli_tools.update_wpr import update_wpr
 
 
-WPR_UPDATER = 'wpr.update_wpr.WprUpdater.'
+WPR_UPDATER = 'cli_tools.update_wpr.update_wpr.'
 
 
 class UpdateWprTest(unittest.TestCase):
@@ -34,12 +34,12 @@ class UpdateWprTest(unittest.TestCase):
     mock.patch('core.cli_helpers.Error').start()
     mock.patch('core.cli_helpers.Step').start()
     mock.patch('os.environ').start().copy.return_value = {}
-    mock.patch('wpr.update_wpr.SRC_ROOT', '...').start()
-    mock.patch('wpr.update_wpr.RESULTS2JSON', '.../results2json').start()
-    mock.patch('wpr.update_wpr.HISTOGRAM2CSV', '.../histograms2csv').start()
-    mock.patch('wpr.update_wpr.RUN_BENCHMARK', '.../run_benchmark').start()
-    mock.patch('wpr.update_wpr.DATA_DIR', '.../data/dir').start()
-    mock.patch('wpr.update_wpr.RECORD_WPR', '.../record_wpr').start()
+    mock.patch(WPR_UPDATER + 'SRC_ROOT', '...').start()
+    mock.patch(WPR_UPDATER + 'RESULTS2JSON', '.../results2json').start()
+    mock.patch(WPR_UPDATER + 'HISTOGRAM2CSV', '.../histograms2csv').start()
+    mock.patch(WPR_UPDATER + 'RUN_BENCHMARK', '.../run_benchmark').start()
+    mock.patch(WPR_UPDATER + 'DATA_DIR', '.../data/dir').start()
+    mock.patch(WPR_UPDATER + 'RECORD_WPR', '.../record_wpr').start()
     mock.patch('os.path.join', lambda *parts: '/'.join(parts)).start()
     mock.patch('os.path.exists', return_value=True).start()
 
@@ -51,7 +51,7 @@ class UpdateWprTest(unittest.TestCase):
     mock.patch.stopall()
 
   def testMain(self):
-    wpr_updater_cls = mock.patch('wpr.update_wpr.WprUpdater').start()
+    wpr_updater_cls = mock.patch(WPR_UPDATER + 'WprUpdater').start()
     update_wpr.Main([
       'live',
       '-s', 'foo:bar:story:2019',
@@ -87,9 +87,10 @@ class UpdateWprTest(unittest.TestCase):
 
   def testLiveRun(self):
     run_benchmark = mock.patch(
-        WPR_UPDATER + '_RunSystemHealthMemoryBenchmark',
+        WPR_UPDATER + 'WprUpdater._RunSystemHealthMemoryBenchmark',
         return_value='<out-file>').start()
-    print_run_info = mock.patch(WPR_UPDATER + '_PrintRunInfo').start()
+    print_run_info = mock.patch(
+        WPR_UPDATER + 'WprUpdater._PrintRunInfo').start()
     self.wpr_updater.LiveRun()
     run_benchmark.assert_called_once_with(log_name='live', live=True)
     print_run_info.assert_called_once_with('<out-file>')
@@ -145,7 +146,7 @@ class UpdateWprTest(unittest.TestCase):
 
   def testPrintRunInfo(self):
     print_results = mock.patch(
-        WPR_UPDATER + '_PrintResultsHTMLInfo',
+        WPR_UPDATER + 'WprUpdater._PrintResultsHTMLInfo',
         side_effect=[Exception()]).start()
     self._check_output.return_value = '0\n'
     self.wpr_updater._PrintRunInfo('<outfile>', True)
@@ -173,8 +174,8 @@ class UpdateWprTest(unittest.TestCase):
     ])
 
   def testRecordWprDesktop(self):
-    mock.patch(WPR_UPDATER + '_PrintRunInfo').start()
-    mock.patch(WPR_UPDATER + '_DeleteExistingWpr').start()
+    mock.patch(WPR_UPDATER + 'WprUpdater._PrintRunInfo').start()
+    mock.patch(WPR_UPDATER + 'WprUpdater._DeleteExistingWpr').start()
     self.wpr_updater.RecordWpr()
     self._check_log.assert_called_once_with([
       '.../record_wpr', '--story-filter=^\\<story\\>$',
@@ -182,8 +183,8 @@ class UpdateWprTest(unittest.TestCase):
     ], env={'LC_ALL': 'en_US.UTF-8'}, log_path='/tmp/dir/record_<tstamp>')
 
   def testRecordWprMobile(self):
-    mock.patch(WPR_UPDATER + '_PrintRunInfo').start()
-    mock.patch(WPR_UPDATER + '_DeleteExistingWpr').start()
+    mock.patch(WPR_UPDATER + 'WprUpdater._PrintRunInfo').start()
+    mock.patch(WPR_UPDATER + 'WprUpdater._DeleteExistingWpr').start()
     self.wpr_updater.device_id = '<serial>'
     self.wpr_updater.RecordWpr()
     self._check_log.assert_called_once_with([
@@ -193,16 +194,19 @@ class UpdateWprTest(unittest.TestCase):
     ], env={'LC_ALL': 'en_US.UTF-8'}, log_path='/tmp/dir/record_<tstamp>')
 
   def testReplayWpr(self):
-    print_run_info = mock.patch(WPR_UPDATER + '_PrintRunInfo').start()
+    print_run_info = mock.patch(
+        WPR_UPDATER + 'WprUpdater._PrintRunInfo').start()
     run_benchmark = mock.patch(
-        WPR_UPDATER + '_RunSystemHealthMemoryBenchmark',
+        WPR_UPDATER + 'WprUpdater._RunSystemHealthMemoryBenchmark',
         return_value='<out-file>').start()
     self.wpr_updater.ReplayWpr()
     run_benchmark.assert_called_once_with(log_name='replay', live=False)
     print_run_info.assert_called_once_with('<out-file>')
 
   def testUploadWPR(self):
-    mock.patch(WPR_UPDATER + '_ExistingWpr', return_value='<archive>').start()
+    mock.patch(
+        WPR_UPDATER + 'WprUpdater._ExistingWpr',
+        return_value='<archive>').start()
     self.wpr_updater.UploadWpr()
     self.assertListEqual(self._run.mock_calls, [
       mock.call(['upload_to_google_storage.py',
