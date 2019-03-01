@@ -54,6 +54,7 @@ LanguageDetectionController::LanguageDetectionController(
 
 LanguageDetectionController::~LanguageDetectionController() {
   if (web_state_) {
+    web_state_->RemoveScriptCommandCallback(kCommandPrefix);
     web_state_->RemoveObserver(this);
     web_state_ = nullptr;
   }
