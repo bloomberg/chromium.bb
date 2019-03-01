@@ -98,6 +98,7 @@
     [self.view removeFakeOmniboxTarget];
   }
 }
+
 #pragma mark - UIViewController
 
 - (void)loadView {

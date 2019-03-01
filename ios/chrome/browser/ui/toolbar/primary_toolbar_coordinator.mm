@@ -47,6 +47,8 @@
 @property(nonatomic, strong) LocationBarCoordinator* locationBarCoordinator;
 // Orchestrator for the expansion animation.
 @property(nonatomic, strong) OmniboxFocusOrchestrator* orchestrator;
+// Whether the omnibox focusing should happen with animation.
+@property(nonatomic, assign) BOOL enableAnimationsForOmniboxFocus;
 
 @end
 
@@ -65,6 +67,8 @@
   DCHECK(self.commandDispatcher);
   if (self.started)
     return;
+
+  self.enableAnimationsForOmniboxFocus = YES;
 
   [self.commandDispatcher startDispatchingToTarget:self
                                        forProtocol:@protocol(FakeboxFocuser)];
@@ -141,7 +145,7 @@
       transitionToStateOmniboxFocused:focused
                       toolbarExpanded:focused && !IsRegularXRegularSizeClass(
                                                      self.viewController)
-                             animated:YES];
+                             animated:self.enableAnimationsForOmniboxFocus];
 }
 
 #pragma mark - PrimaryToolbarViewControllerDelegate
@@ -165,6 +169,12 @@
 }
 
 #pragma mark - FakeboxFocuser
+
+- (void)focusOmniboxNoAnimation {
+  self.enableAnimationsForOmniboxFocus = NO;
+  [self fakeboxFocused];
+  self.enableAnimationsForOmniboxFocus = YES;
+}
 
 - (void)fakeboxFocused {
   [self.locationBarCoordinator focusOmniboxFromFakebox];

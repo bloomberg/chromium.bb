@@ -161,10 +161,6 @@ void configureSearchHintLabel(UILabel* searchHintLabel,
   [searchHintLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
   [searchTapTarget addSubview:searchHintLabel];
 
-  [searchHintLabel.centerXAnchor
-      constraintEqualToAnchor:searchTapTarget.centerXAnchor]
-      .active = YES;
-
   [searchHintLabel setText:l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT)];
   if (base::i18n::IsRTL()) {
     [searchHintLabel setTextAlignment:NSTextAlignmentRight];

@@ -213,7 +213,8 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibilityID,
 }
 
 + (id<GREYMatcher>)omnibox {
-  return grey_kindOfClass([OmniboxTextFieldIOS class]);
+  return grey_allOf(grey_kindOfClass([OmniboxTextFieldIOS class]),
+                    grey_userInteractionEnabled(), nil);
 }
 
 + (id<GREYMatcher>)defocusedLocationView {

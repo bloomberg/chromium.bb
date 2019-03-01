@@ -18,6 +18,18 @@
 // Voice search button.
 @property(nonatomic, strong, readonly) UIButton* voiceSearchButton;
 
+// Fake cancel button, used for animations. Hidden by default.
+@property(nonatomic, strong) UIView* cancelButton;
+// Fake omnibox, used for animations. Hidden by default.
+@property(nonatomic, strong) UIView* omnibox;
+
+@property(nonatomic, strong)
+    NSLayoutConstraint* fakeLocationBarLeadingConstraint;
+@property(nonatomic, strong)
+    NSLayoutConstraint* fakeLocationBarTrailingConstraint;
+@property(nonatomic, strong) UIView* fakeLocationBar;
+@property(nonatomic, strong) UILabel* searchHintLabel;
+
 // Adds the |toolbarView| to the view implementing this protocol.
 // Can only be added once.
 - (void)addToolbarView:(UIView*)toolbarView;

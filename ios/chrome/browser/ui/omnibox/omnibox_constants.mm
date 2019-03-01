@@ -9,3 +9,5 @@
 #endif
 
 NSString* const kShortcutsAccessibilityIdentifier = @"OmniboxShortcuts";
+
+const CGFloat kOmniboxPlaceholderAlpha = 0.3;

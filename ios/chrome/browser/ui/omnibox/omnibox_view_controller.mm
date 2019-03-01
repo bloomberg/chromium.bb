@@ -10,6 +10,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_container_view.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
@@ -166,8 +167,9 @@ const CGFloat kClearButtonSize = 28.0f;
 
 // Tint color for the textfield placeholder and the clear button.
 - (UIColor*)placeholderAndClearButtonColor {
-  return self.incognito ? [UIColor colorWithWhite:1 alpha:0.5]
-                        : [UIColor colorWithWhite:0 alpha:0.3];
+  return self.incognito
+             ? [UIColor colorWithWhite:1 alpha:0.5]
+             : [UIColor colorWithWhite:0 alpha:kOmniboxPlaceholderAlpha];
 }
 
 #pragma mark notification callbacks
