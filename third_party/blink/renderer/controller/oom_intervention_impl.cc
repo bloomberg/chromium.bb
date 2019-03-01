@@ -187,45 +187,47 @@ void OomInterventionImpl::ReportMemoryStats(
           current_memory.current_vm_size_kb / 1024));
 }
 
+int ToMemoryUsageDeltaSample(uint64_t after_kb, uint64_t before_kb) {
+  int delta_mb = (base::saturated_cast<int>(after_kb) -
+                  base::saturated_cast<int>(before_kb)) /
+                 1024;
+  return std::min(std::max(delta_mb, -500), 500);
+}
+
 void OomInterventionImpl::TimerFiredUMAReport(TimerBase*) {
   OomInterventionMetrics current_memory =
-      CrashMemoryMetricsReporterImpl::Instance().GetCurrentMemoryMetrics();
+      CrashMemoryMetricsReporterImpl::MemoryUsageToMetrics(
+          MemoryUsageMonitorInstance().GetCurrentMemoryUsage());
+  int blink_usage_delta =
+      ToMemoryUsageDeltaSample(current_memory.current_blink_usage_kb,
+                               metrics_at_intervention_.current_blink_usage_kb);
+  int private_footprint_delta = ToMemoryUsageDeltaSample(
+      current_memory.current_private_footprint_kb,
+      metrics_at_intervention_.current_private_footprint_kb);
   switch (number_of_report_needed_--) {
     case 3:
       base::UmaHistogramSparse(
           "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter10secs",
-          base::saturated_cast<base::Histogram::Sample>(
-              current_memory.current_blink_usage_kb / 1024 -
-              metrics_at_intervention_.current_blink_usage_kb / 1024));
+          blink_usage_delta);
       base::UmaHistogramSparse(
           "Memory.Experimental.OomIntervention.ReducedRendererPMFAfter10secs",
-          base::saturated_cast<base::Histogram::Sample>(
-              current_memory.current_private_footprint_kb / 1024 -
-              metrics_at_intervention_.current_private_footprint_kb / 1024));
+          private_footprint_delta);
       break;
     case 2:
       base::UmaHistogramSparse(
           "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter20secs",
-          base::saturated_cast<base::Histogram::Sample>(
-              current_memory.current_blink_usage_kb / 1024 -
-              metrics_at_intervention_.current_blink_usage_kb / 1024));
+          blink_usage_delta);
       base::UmaHistogramSparse(
           "Memory.Experimental.OomIntervention.ReducedRendererPMFAfter20secs",
-          base::saturated_cast<base::Histogram::Sample>(
-              current_memory.current_private_footprint_kb / 1024 -
-              metrics_at_intervention_.current_private_footprint_kb / 1024));
+          private_footprint_delta);
       break;
     case 1:
       base::UmaHistogramSparse(
           "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter30secs",
-          base::saturated_cast<base::Histogram::Sample>(
-              current_memory.current_blink_usage_kb / 1024 -
-              metrics_at_intervention_.current_blink_usage_kb / 1024));
+          blink_usage_delta);
       base::UmaHistogramSparse(
           "Memory.Experimental.OomIntervention.ReducedRendererPMFAfter30secs",
-          base::saturated_cast<base::Histogram::Sample>(
-              current_memory.current_private_footprint_kb / 1024 -
-              metrics_at_intervention_.current_private_footprint_kb / 1024));
+          private_footprint_delta);
       delayed_report_timer_.Stop();
       break;
   }
