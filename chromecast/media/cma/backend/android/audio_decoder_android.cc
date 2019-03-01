@@ -159,6 +159,7 @@ bool AudioDecoderAndroid::Resume() {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(sink_);
   sink_->SetPaused(false);
+  last_sink_delay_ = AudioDecoderAndroid::RenderingDelay();
   return true;
 }
 

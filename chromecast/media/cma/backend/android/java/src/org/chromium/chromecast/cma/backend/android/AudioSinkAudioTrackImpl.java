@@ -137,6 +137,8 @@ class AudioSinkAudioTrackImpl {
     private enum ReferenceTimestampState {
         STARTING_UP, // Starting up, no valid reference time yet.
         STABLE, // Reference time exists and is updated regularly.
+        RESYNCING_AFTER_PAUSE, // Sync the timestamp after pause so that the renderer delay will be
+                               // correct.
         RESYNCING_AFTER_UNDERRUN, // The AudioTrack hit an underrun and we need to find a new
                                   // reference timestamp after the underrun point.
         RESYNCING_AFTER_EXCESSIVE_TIMESTAMP_DRIFT, // We experienced excessive and consistent
@@ -361,6 +363,7 @@ class AudioSinkAudioTrackImpl {
     private void pause() {
         Log.i(mTag, "Pausing playback");
         mAudioTrack.pause();
+        resyncTimestamp(ReferenceTimestampState.RESYNCING_AFTER_PAUSE);
     }
 
     @CalledByNative
@@ -622,11 +625,15 @@ class AudioSinkAudioTrackImpl {
                     "Underrun detected (" + mLastUnderrunCount + "->" + underruns
                             + ")! Resetting rendering delay logic.");
             // Invalidate timestamp (resets RenderingDelay).
-            mLastTimestampUpdateNsec = NO_TIMESTAMP;
             mLastUnderrunCount = underruns;
-            mTimestampStabilityCounter = 0;
-            mReferenceTimestampState = ReferenceTimestampState.RESYNCING_AFTER_UNDERRUN;
+            resyncTimestamp(ReferenceTimestampState.RESYNCING_AFTER_UNDERRUN);
         }
+    }
+
+    private void resyncTimestamp(ReferenceTimestampState reason) {
+        mLastTimestampUpdateNsec = NO_TIMESTAMP;
+        mTimestampStabilityCounter = 0;
+        mReferenceTimestampState = reason;
     }
 
     /**
@@ -694,18 +701,19 @@ class AudioSinkAudioTrackImpl {
                         "First stable timestamp [" + mTimestampStabilityCounter + "/"
                                 + elapsedNsec(mTimestampStabilityStartTimeNsec) / 1000000 + "ms]");
                 break;
-
+            case RESYNCING_AFTER_PAUSE:
+            // fall-through
             case RESYNCING_AFTER_EXCESSIVE_TIMESTAMP_DRIFT:
             // fall-through
             case RESYNCING_AFTER_UNDERRUN:
-                // Resyncing happens after we hit an underrun in the AudioTrack. This causes the
-                // Android Audio stack to insert additional samples, which increases the reference
-                // timestamp (at framePosition=0) by thousands of usecs. Hence we need to find a new
-                // initial reference timestamp. Unfortunately, even though the underrun already
-                // happened, the timestamps returned by the AudioTrack may still be located *before*
-                // the underrun, and there is no way to query the AudioTrack about at which
-                // framePosition the underrun occured and where and how much additional data was
-                // inserted.
+                // Resyncing happens after we hit a pause, underrun or excessive drift in the
+                // AudioTrack. This causes the Android Audio stack to insert additional samples,
+                // which increases the reference timestamp (at framePosition=0) by thousands of
+                // usecs. Hence we need to find a new initial reference timestamp. Unfortunately,
+                // even though the underrun already happened, the timestamps returned by the
+                // AudioTrack may still be located *before* the underrun, and there is no way to
+                // query the AudioTrack about at which framePosition the underrun occurred and where
+                // and how much additional data was inserted.
                 //
                 // At this point we just do the same as when in STARTING_UP, but eventually there
                 // should be a more refined way to figure out when the timestamps returned from the
@@ -717,7 +725,7 @@ class AudioSinkAudioTrackImpl {
                 mRefNanoTimeAtFramePos0 = newNanoTimeAtFramePos0;
                 mReferenceTimestampState = ReferenceTimestampState.STABLE;
                 Log.i(mTag,
-                        "New stable timestamp after underrun or excessive drift ["
+                        "New stable timestamp after pause, underrun or excessive drift ["
                                 + mTimestampStabilityCounter + "/"
                                 + elapsedNsec(mTimestampStabilityStartTimeNsec) / 1000000 + "ms]");
                 break;
