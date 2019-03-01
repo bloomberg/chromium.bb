@@ -254,12 +254,6 @@ bool MatchesStaleWhileRevalidateAllowList(const String& host) {
          stale_while_revalidate_allow_hosts->Find(host) != kNotFound;
 }
 
-std::unique_ptr<TracedValue> UrlForTraceEvent(const KURL& url) {
-  std::unique_ptr<TracedValue> value = TracedValue::Create();
-  value->SetString("url", url.GetString());
-  return value;
-}
-
 std::unique_ptr<TracedValue> BeginResourceLoadData(
     const blink::ResourceRequest& request) {
   std::unique_ptr<TracedValue> value = TracedValue::Create();
@@ -899,7 +893,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER_THREAD_SAFE(
       "Blink.Fetch.RequestResourceTime");
   TRACE_EVENT1("blink", "ResourceFetcher::requestResource", "url",
-               UrlForTraceEvent(params.Url()));
+               params.Url().GetString().Utf8());
 
   // TODO(crbug.com/123004): Remove once we have enough stats on data URIs that
   // contain fragments ('#' characters).
