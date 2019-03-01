@@ -420,7 +420,7 @@ void Annotator::OnJpgImageDataReceived(
   local_processors_.erase(source_id);
 
   // Schedule an HTTP request for this image.
-  http_request_queue_.push_back({source_id, image_bytes});
+  http_request_queue_.push_front({source_id, image_bytes});
   pending_source_ids_.insert(source_id);
 
   // Start sending batches to the server.
