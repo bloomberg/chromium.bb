@@ -11,7 +11,7 @@ import unittest
 import mock
 
 from telemetry import decorators
-from test_results import frames
+from cli_tools.flakiness_cli import frames
 
 
 class TestDataFrames(unittest.TestCase):

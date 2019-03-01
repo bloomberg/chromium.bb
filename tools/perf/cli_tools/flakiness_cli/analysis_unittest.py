@@ -5,8 +5,8 @@
 import unittest
 
 from telemetry import decorators
-from test_results import analysis
-from test_results import frames
+from cli_tools.flakiness_cli import analysis
+from cli_tools.flakiness_cli import frames
 
 
 class TestAnalysis(unittest.TestCase):
