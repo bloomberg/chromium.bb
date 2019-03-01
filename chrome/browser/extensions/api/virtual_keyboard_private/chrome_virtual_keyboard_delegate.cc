@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string16.h"
@@ -386,6 +387,10 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   features->AppendString(GenerateFeatureFlag(
       "handwritinggesture",
       base::FeatureList::IsEnabled(features::kHandwritingGesture)));
+  features->AppendString(GenerateFeatureFlag(
+      "fstinputlogic", base::GetFieldTrialParamByFeatureAsBool(
+                           chromeos::features::kImeInputLogic, "fst", false)));
+
   results->Set("features", std::move(features));
 
   std::move(on_settings_callback).Run(std::move(results));
