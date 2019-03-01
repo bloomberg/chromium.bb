@@ -160,9 +160,5 @@ bool TimeDomain::HasPendingHighResolutionTasks() const {
   return pending_high_res_wake_up_count_;
 }
 
-bool TimeDomain::Empty() const {
-  return delayed_wake_up_queue_.empty();
-}
-
 }  // namespace sequence_manager
 }  // namespace base

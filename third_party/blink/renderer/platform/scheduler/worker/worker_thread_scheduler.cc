@@ -107,6 +107,7 @@ WorkerThreadScheduler::WorkerThreadScheduler(
                    "WorkerSchedulerIdlePeriod",
                    base::TimeDelta::FromMilliseconds(300),
                    helper()->NewTaskQueue(TaskQueue::Spec("worker_idle_tq"))),
+      idle_memory_reclaimer_(helper(), idle_helper_.IdleTaskRunner()),
       load_tracker_(helper()->NowTicks(),
                     base::BindRepeating(&ReportWorkerTaskLoad),
                     kUnspecifiedWorkerThreadLoadTrackerReportingInterval),

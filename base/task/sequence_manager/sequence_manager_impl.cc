@@ -62,8 +62,8 @@ namespace internal {
 
 namespace {
 
-constexpr TimeDelta kLongTaskTraceEventThreshold =
-    TimeDelta::FromMilliseconds(50);
+constexpr base::TimeDelta kLongTaskTraceEventThreshold =
+    base::TimeDelta::FromMilliseconds(50);
 // Proportion of tasks which will record thread time for metrics.
 const double kTaskSamplingRateForRecordingCPUTime = 0.01;
 // Proprortion of SequenceManagers which will record thread time for each task,
@@ -80,8 +80,6 @@ void ReclaimMemoryFromQueue(internal::TaskQueueImpl* queue,
   if (time_domain_now->find(time_domain) == time_domain_now->end())
     time_domain_now->insert(std::make_pair(time_domain, time_domain->Now()));
   queue->ReclaimMemory(time_domain_now->at(time_domain));
-  queue->delayed_work_queue()->RemoveAllCanceledTasksFromFront();
-  queue->immediate_work_queue()->RemoveAllCanceledTasksFromFront();
 }
 
 SequenceManager::MetricRecordingSettings InitializeMetricRecordingSettings(
@@ -113,9 +111,6 @@ SequenceManagerImpl::SequenceManagerImpl(
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("sequence_manager"), "SequenceManager", this);
   main_thread_only().selector.SetTaskQueueSelectorObserver(this);
-
-  main_thread_only().next_time_to_reclaim_memory =
-      settings.clock->NowTicks() + kReclaimMemoryInterval;
 
   RegisterTimeDomain(main_thread_only().real_time_domain.get());
 
@@ -390,13 +385,6 @@ Optional<PendingTask> SequenceManagerImpl::TakeTaskImpl() {
   LazyNow lazy_now(controller_->GetClock());
   WakeUpReadyDelayedQueues(&lazy_now);
 
-  // If we sampled now, check if it's time to reclaim memory next time we go
-  // idle.
-  if (lazy_now.has_value() &&
-      lazy_now.Now() >= main_thread_only().next_time_to_reclaim_memory) {
-    main_thread_only().memory_reclaim_scheduled = true;
-  }
-
   while (true) {
     internal::WorkQueue* work_queue =
         main_thread_only().selector.SelectWorkQueueToService();
@@ -498,8 +486,6 @@ bool SequenceManagerImpl::OnSystemIdle() {
       have_work_to_do = true;
     }
   }
-  if (!have_work_to_do)
-    MaybeReclaimMemory();
   return have_work_to_do;
 }
 
@@ -722,19 +708,6 @@ void SequenceManagerImpl::OnTaskQueueEnabled(internal::TaskQueueImpl* queue) {
     ScheduleWork();
 }
 
-void SequenceManagerImpl::MaybeReclaimMemory() {
-  if (!main_thread_only().memory_reclaim_scheduled)
-    return;
-
-  TRACE_EVENT0("sequence_manager", "SequenceManagerImpl::MaybeReclaimMemory");
-  ReclaimMemory();
-
-  // To avoid performance regressions we only want to do this every so often.
-  main_thread_only().next_time_to_reclaim_memory =
-      NowTicks() + kReclaimMemoryInterval;
-  main_thread_only().memory_reclaim_scheduled = false;
-}
-
 void SequenceManagerImpl::ReclaimMemory() {
   std::map<TimeDomain*, TimeTicks> time_domain_now;
   for (auto* const queue : main_thread_only().active_queues)
@@ -932,8 +905,6 @@ internal::TaskQueueImpl* SequenceManagerImpl::currently_executing_task_queue()
     return nullptr;
   return main_thread_only().task_execution_stack.rbegin()->task_queue;
 }
-
-constexpr TimeDelta SequenceManagerImpl::kReclaimMemoryInterval;
 
 }  // namespace internal
 }  // namespace sequence_manager

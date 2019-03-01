@@ -27,6 +27,7 @@
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/common/idle_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/common/idle_memory_reclaimer.h"
 #include "third_party/blink/renderer/platform/scheduler/common/pollable_thread_safe_flag.h"
 #include "third_party/blink/renderer/platform/scheduler/common/thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/common/tracing_helper.h"
@@ -742,6 +743,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   MainThreadSchedulerHelper helper_;
   IdleHelper idle_helper_;
+  IdleMemoryReclaimer idle_memory_reclaimer_;
   std::unique_ptr<TaskQueueThrottler> task_queue_throttler_;
   RenderWidgetSignals render_widget_scheduler_signals_;
   MemoryPurgeManager memory_purge_manager_;
