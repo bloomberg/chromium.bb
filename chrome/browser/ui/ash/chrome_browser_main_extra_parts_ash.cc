@@ -185,7 +185,7 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
 
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   // IME driver must be available at login screen, so initialize before profile.
-  IMEDriver::Register();
+  IMEDriverMus::Register();
 
   // NetworkConnect handles the network connection state machine for the UI.
   network_connect_delegate_ =
