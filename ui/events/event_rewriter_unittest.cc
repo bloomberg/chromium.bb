@@ -13,25 +13,25 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/events/test/test_event_processor.h"
+#include "ui/events/test/test_event_source.h"
 
 namespace ui {
 
 namespace {
 
-// TestEventRewriteProcessor is set up with a sequence of event types,
+// TestEventRewriteSink is set up with a sequence of event types,
 // and fails if the events received via OnEventFromSource() do not match
 // this sequence. These expected event types are consumed on receipt.
-class TestEventRewriteProcessor : public test::TestEventProcessor {
+class TestEventRewriteSink : public EventSink {
  public:
-  TestEventRewriteProcessor() {}
-  ~TestEventRewriteProcessor() override { CheckAllReceived(); }
+  TestEventRewriteSink() {}
+  ~TestEventRewriteSink() override { CheckAllReceived(); }
 
   void AddExpectedEvent(EventType type) { expected_events_.push_back(type); }
   // Test that all expected events have been received.
   void CheckAllReceived() { EXPECT_TRUE(expected_events_.empty()); }
 
-  // EventProcessor:
+  // EventSink override:
   EventDispatchDetails OnEventFromSource(Event* event) override {
     EXPECT_FALSE(expected_events_.empty());
     EXPECT_EQ(expected_events_.front(), event->type());
@@ -41,7 +41,7 @@ class TestEventRewriteProcessor : public test::TestEventProcessor {
 
  private:
   std::list<EventType> expected_events_;
-  DISALLOW_COPY_AND_ASSIGN(TestEventRewriteProcessor);
+  DISALLOW_COPY_AND_ASSIGN(TestEventRewriteSink);
 };
 
 std::unique_ptr<Event> CreateEventForType(EventType type) {
@@ -66,19 +66,13 @@ std::unique_ptr<Event> CreateEventForType(EventType type) {
   }
 }
 
-// Trivial EventSource that does nothing but send events.
-class TestEventRewriteSource : public EventSource {
+class TestEventRewriteSource : public test::TestEventSource {
  public:
-  explicit TestEventRewriteSource(EventProcessor* processor)
-      : processor_(processor) {}
-  EventProcessor* GetEventSink() override { return processor_; }
-  void Send(EventType type) {
+  explicit TestEventRewriteSource(EventSink* sink) : TestEventSource(sink) {}
+  EventDispatchDetails Send(EventType type) {
     auto event = CreateEventForType(type);
-    SendEventToSink(event.get());
+    return TestEventSource::Send(event.get());
   }
-
- private:
-  EventProcessor* processor_;
 };
 
 // This EventRewriter always returns the same status, and if rewriting, the
@@ -116,8 +110,11 @@ class TestConstantEventRewriterOld : public EventRewriter {
 class TestStateMachineEventRewriterOld : public EventRewriter {
  public:
   TestStateMachineEventRewriterOld() : last_rewritten_event_(0), state_(0) {}
-  void AddRule(int from_state, EventType from_type,
-               int to_state, EventType to_type, EventRewriteStatus to_status) {
+  void AddRule(int from_state,
+               EventType from_type,
+               int to_state,
+               EventType to_type,
+               EventRewriteStatus to_status) {
     RewriteResult r = {to_state, to_type, to_status};
     rules_.insert(std::pair<RewriteCase, RewriteResult>(
         RewriteCase(from_state, from_type), r));
@@ -263,7 +260,7 @@ TEST(EventRewriterTest, EventRewritingOld) {
   // rewritten events are not passed further down the chain.
   TestConstantEventRewriterOld r3(EVENT_REWRITE_REWRITTEN, ET_CANCEL_MODE);
 
-  TestEventRewriteProcessor p;
+  TestEventRewriteSink p;
   TestEventRewriteSource s(&p);
   s.AddEventRewriter(&r0);
   s.AddEventRewriter(&r1);
@@ -285,8 +282,10 @@ TEST(EventRewriterTest, EventRewritingOld) {
   //   should NOT be ET_CANCEL_MODE.
   s.AddEventRewriter(&r3);
   s.RemoveEventRewriter(&r0);
+  // clang-format off
   r2.AddRule(0, ET_SCROLL_FLING_START,
              0, ET_SCROLL_FLING_CANCEL, EVENT_REWRITE_REWRITTEN);
+  // clang-format on
   p.AddExpectedEvent(ET_SCROLL_FLING_CANCEL);
   s.Send(ET_SCROLL_FLING_START);
   p.CheckAllReceived();
@@ -294,6 +293,7 @@ TEST(EventRewriterTest, EventRewritingOld) {
 
   // Verify EVENT_REWRITE_DISPATCH_ANOTHER using a state machine
   // (that happens to be analogous to sticky keys).
+  // clang-format off
   r2.AddRule(0, ET_KEY_PRESSED,
              1, ET_KEY_PRESSED, EVENT_REWRITE_CONTINUE);
   r2.AddRule(1, ET_MOUSE_PRESSED,
@@ -304,6 +304,7 @@ TEST(EventRewriterTest, EventRewritingOld) {
              3, ET_MOUSE_RELEASED, EVENT_REWRITE_DISPATCH_ANOTHER);
   r2.AddRule(3, ET_MOUSE_RELEASED,
              0, ET_KEY_RELEASED, EVENT_REWRITE_REWRITTEN);
+  // clang-format on
   p.AddExpectedEvent(ET_KEY_PRESSED);
   s.Send(ET_KEY_PRESSED);
   s.Send(ET_KEY_RELEASED);
@@ -340,7 +341,7 @@ TEST(EventRewriterTest, EventRewriting) {
   // rewritten events are not passed further down the chain.
   TestConstantEventRewriter r3(ET_CANCEL_MODE);
 
-  TestEventRewriteProcessor p;
+  TestEventRewriteSink p;
   TestEventRewriteSource s(&p);
   s.AddEventRewriter(&r0);
   s.AddEventRewriter(&r1);
