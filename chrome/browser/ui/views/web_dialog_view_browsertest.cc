@@ -39,7 +39,9 @@ class TestWebDialogView : public views::WebDialogView {
   TestWebDialogView(content::BrowserContext* context,
                     ui::WebDialogDelegate* delegate,
                     bool* observed_destroy)
-      : views::WebDialogView(context, delegate, new ChromeWebContentsHandler),
+      : views::WebDialogView(context,
+                             delegate,
+                             std::make_unique<ChromeWebContentsHandler>()),
         should_quit_on_size_change_(false),
         observed_destroy_(observed_destroy) {
     EXPECT_FALSE(*observed_destroy_);

@@ -46,10 +46,10 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
                                      public ui::WebDialogDelegate,
                                      public views::WidgetDelegate {
  public:
-  // |handler| must not be NULL and this class takes the ownership.
+  // |handler| must not be nullptr.
   WebDialogView(content::BrowserContext* context,
                 ui::WebDialogDelegate* delegate,
-                WebContentsHandler* handler);
+                std::unique_ptr<WebContentsHandler> handler);
   ~WebDialogView() override;
 
   // For testing.
