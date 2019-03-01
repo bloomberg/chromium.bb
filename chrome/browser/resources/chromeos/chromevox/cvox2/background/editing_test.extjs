@@ -87,15 +87,15 @@ TEST_F('ChromeVoxEditingTest', 'Multiline', function() {
                       {startIndex: 9, endIndex: 9})
         .call(textarea.setSelection.bind(textarea, 1, 1))
         .expectSpeech('i')
-        .expectBraille('Line 1\nmled',
+        .expectBraille('Line 1 mled',
                        {startIndex: 1, endIndex: 1})
         .call(textarea.setSelection.bind(textarea, 7, 7))
         .expectSpeech('line 2')
-        .expectBraille('line 2\n',
+        .expectBraille('line 2',
                        {startIndex: 0, endIndex: 0})
         .call(textarea.setSelection.bind(textarea, 7, 13))
         .expectSpeech('line 2', 'selected')
-        .expectBraille('line 2\n',
+        .expectBraille('line 2',
                        {startIndex: 0, endIndex: 6});
 
     mockFeedback.replay();

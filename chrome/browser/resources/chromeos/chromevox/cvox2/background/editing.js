@@ -54,8 +54,7 @@ editing.TextEditHandler = function(node) {
     //
     // The only other editables we expect are all single line (including those
     // from ARC++).
-    var useRichText =
-        node.state[StateType.RICHLY_EDITABLE] || node.htmlTag == 'textarea';
+    var useRichText = node.state[StateType.RICHLY_EDITABLE];
 
     /** @private {!AutomationEditableText} */
     this.editableText_ = useRichText ? new AutomationRichEditableText(node) :
@@ -128,9 +127,12 @@ editing.TextEditHandler.prototype = {
 function AutomationEditableText(node) {
   if (!node.state.editable)
     throw Error('Node must have editable state set to true.');
+  var value = this.getProcessedValue_(node) || '';
+  /** @private {!Array<number>} */
+  this.lineBreaks_ = [];
+  this.updateLineBreaks_(value);
   var start = node.textSelStart;
   var end = node.textSelEnd;
-  var value = this.getProcessedValue_(node) || '';
   cvox.ChromeVoxEditableTextBase.call(
       this, value, Math.min(start, end, value.length),
       Math.min(Math.max(start, end), value.length),
@@ -149,52 +151,77 @@ AutomationEditableText.prototype = {
    * @param {string|undefined} eventFrom
    */
   onUpdate: function(eventFrom) {
+    var oldValue = this.value;
+    var oldStart = this.start;
+    var oldEnd = this.end;
     var newValue = this.getProcessedValue_(this.node_) || '';
+    this.updateLineBreaks_(newValue);
 
     var textChangeEvent = new cvox.TextChangeEvent(
         newValue, Math.min(this.node_.textSelStart || 0, newValue.length),
         Math.min(this.node_.textSelEnd || 0, newValue.length),
         true /* triggered by user */);
     this.changed(textChangeEvent);
-    this.outputBraille_();
+    this.outputBraille_(oldValue, oldStart, oldEnd);
   },
 
   /**
    * Returns true if selection starts on the first line.
    */
   isSelectionOnFirstLine: function() {
-    return true;
+    return this.getLineIndex(this.start) == 0;
   },
 
   /**
    * Returns true if selection ends on the last line.
    */
   isSelectionOnLastLine: function() {
-    return true;
+    return this.getLineIndex(this.end) >= this.lineBreaks_.length - 1;
   },
 
   /** @override */
   getLineIndex: function(charIndex) {
-    return 0;
+    var lineIndex = 0;
+    while (charIndex > this.lineBreaks_[lineIndex])
+      lineIndex++;
+    return lineIndex;
   },
 
   /** @override */
   getLineStart: function(lineIndex) {
-    return 0;
+    if (lineIndex == 0)
+      return 0;
+
+    // The start of this line is defined as the line break of the previous line
+    // + 1 (the hard line break).
+    return this.lineBreaks_[lineIndex - 1] + 1;
   },
 
   /** @override */
   getLineEnd: function(lineIndex) {
-    return this.node_.value.length;
+    return this.lineBreaks_[lineIndex];
   },
 
   /** @private */
-  outputBraille_: function() {
-    var output = new Output();
-    var range;
-    range = Range.fromNode(this.node_);
-    output.withBraille(range, null, Output.EventType.NAVIGATE);
-    output.go();
+  outputBraille_: function(oldValue, oldStart, oldEnd) {
+    var lineIndex = this.getLineIndex(this.start);
+    // Output braille at the end of the selection that changed, if start and end
+    // differ.
+    if (this.start != this.end && this.start == oldStart)
+      lineIndex = this.getLineIndex(this.end);
+    var lineStart = this.getLineStart(lineIndex);
+    var lineText =
+        this.value.substr(lineStart, this.getLineEnd(lineIndex) - lineStart);
+
+    if (lineIndex == 0)
+      lineText += ' ' +
+          Msgs.getMsg(this.multiline ? 'tag_textarea_brl' : 'role_textbox_brl');
+
+    cvox.ChromeVox.braille.write(new cvox.NavBraille({
+      text: lineText,
+      startIndex: this.start - lineStart,
+      endIndex: this.end - lineStart
+    }));
   },
 
   /**
@@ -205,6 +232,24 @@ AutomationEditableText.prototype = {
   getProcessedValue_: function(node) {
     var value = node.value;
     return (value && node.inputType == 'tel') ? value['trimEnd']() : value;
+  },
+
+  /**
+   * @private
+   */
+  updateLineBreaks_: function(value) {
+    if (value == this.value)
+      return;
+
+    this.lineBreaks_ = [];
+    var lines = value.split('\n');
+    for (var i = 0, total = 0; i < lines.length; i++) {
+      total += lines[i].length;
+      this.lineBreaks_[i] = total;
+
+      // Account for the line break itself.
+      total++;
+    }
   }
 };
 
