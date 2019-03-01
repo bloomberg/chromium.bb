@@ -839,8 +839,14 @@ void NavigationRequest::RegisterSubresourceOverride(
 mojom::NavigationClient* NavigationRequest::GetCommitNavigationClient() {
   if (commit_navigation_client_ && commit_navigation_client_.is_bound())
     return commit_navigation_client_.get();
+
+  // Instantiate a new NavigationClient interface.
   commit_navigation_client_ =
       render_frame_host_->GetNavigationClientFromInterfaceProvider();
+  HandleInterfaceDisconnection(
+      &commit_navigation_client_,
+      base::BindOnce(&NavigationRequest::OnRendererAbortedNavigation,
+                     base::Unretained(this)));
   return commit_navigation_client_.get();
 }
 
