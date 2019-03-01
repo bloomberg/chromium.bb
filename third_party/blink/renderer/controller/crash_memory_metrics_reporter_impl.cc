@@ -76,12 +76,6 @@ void CrashMemoryMetricsReporterImpl::OnOOMCallback() {
   CrashMemoryMetricsReporterImpl::Instance().WriteIntoSharedMemory(metrics);
 }
 
-OomInterventionMetrics
-CrashMemoryMetricsReporterImpl::GetCurrentMemoryMetrics() {
-  return MemoryUsageToMetrics(
-      MemoryUsageMonitor::Instance().GetCurrentMemoryUsage());
-}
-
 // static
 OomInterventionMetrics CrashMemoryMetricsReporterImpl::MemoryUsageToMetrics(
     MemoryUsage usage) {

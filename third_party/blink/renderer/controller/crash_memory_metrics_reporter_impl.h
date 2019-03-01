@@ -39,9 +39,6 @@ class CONTROLLER_EXPORT CrashMemoryMetricsReporterImpl
   // failures and base::TerminateBecauseOutOfMemory(), too.
   static void OnOOMCallback();
 
-  // This function needs to be called after ResetFileDescriptors.
-  OomInterventionMetrics GetCurrentMemoryMetrics();
-
  protected:
   CrashMemoryMetricsReporterImpl();
 
