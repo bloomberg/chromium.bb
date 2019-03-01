@@ -64,8 +64,8 @@ constexpr char kBatchRequest[] = R"(
 {
   "imageRequests": [
     {
-      "imageId": "https://www.example.com/image1.jpg",
-      "imageBytes": "AQID",
+      "imageId": "https://www.example.com/image3.jpg",
+      "imageBytes": "BwgJ",
       "engineParameters": [
         {"ocrParameters": {}},
         {"descriptionParameters": {}}
@@ -80,8 +80,8 @@ constexpr char kBatchRequest[] = R"(
       ]
     },
     {
-      "imageId": "https://www.example.com/image3.jpg",
-      "imageBytes": "BwgJ",
+      "imageId": "https://www.example.com/image1.jpg",
+      "imageBytes": "AQID",
       "engineParameters": [
         {"ocrParameters": {}},
         {"descriptionParameters": {}}
