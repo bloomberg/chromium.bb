@@ -258,7 +258,7 @@ TEST_F(WorkletAnimationTest, DocumentTimelineSetPlaybackRate) {
   double playback_rate = 2.0;
 
   SimulateFrame(111.0);
-  worklet_animation_->setPlaybackRate(nullptr, playback_rate);
+  worklet_animation_->setPlaybackRate(GetScriptState(), playback_rate);
   worklet_animation_->play(ASSERT_NO_EXCEPTION);
   worklet_animation_->UpdateCompositingState();
   // Zero current time is not impacted by playback rate.
@@ -283,7 +283,7 @@ TEST_F(WorkletAnimationTest, DocumentTimelineSetPlaybackRateWhilePlaying) {
   worklet_animation_->UpdateCompositingState();
   // Update playback rate after second tick.
   SimulateFrame(111.0 + 123.4);
-  worklet_animation_->setPlaybackRate(nullptr, playback_rate);
+  worklet_animation_->setPlaybackRate(GetScriptState(), playback_rate);
   // Verify current time after third tick.
   SimulateFrame(111.0 + 123.4 + 200.0);
   EXPECT_TIME_NEAR(123.4 + 200.0 * playback_rate,
@@ -320,6 +320,103 @@ TEST_F(WorkletAnimationTest, PausePlay) {
   EXPECT_EQ(Animation::kRunning, worklet_animation_->PlayState());
   EXPECT_TIME_NEAR(20,
                    worklet_animation_->CurrentTime().value().InMillisecondsF());
+}
+
+// Verifies correctness of current time when playback rate is set while
+// scroll-linked animation is in idle state.
+TEST_F(WorkletAnimationTest, ScrollTimelineSetPlaybackRate) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #scroller { overflow: scroll; width: 100px; height: 100px; }
+      #spacer { width: 200px; height: 200px; }
+    </style>
+    <div id='scroller'>
+      <div id='spacer'></div>
+    </div>
+  )HTML");
+
+  LayoutBoxModelObject* scroller =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  ASSERT_TRUE(scroller);
+  ASSERT_TRUE(scroller->HasOverflowClip());
+  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
+  ASSERT_TRUE(scrollable_area);
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 20), kProgrammaticScroll);
+  ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
+  DoubleOrScrollTimelineAutoKeyword time_range =
+      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  options->setTimeRange(time_range);
+  options->setScrollSource(GetElementById("scroller"));
+  ScrollTimeline* scroll_timeline =
+      ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
+  WorkletAnimation* worklet_animation = CreateWorkletAnimation(
+      GetScriptState(), element_, animator_name_, scroll_timeline);
+
+  DummyExceptionStateForTesting exception_state;
+  double playback_rate = 2.0;
+
+  // Set playback rate while the animation is in 'idle' state.
+  worklet_animation->setPlaybackRate(GetScriptState(), playback_rate);
+  worklet_animation->play(exception_state);
+  worklet_animation->UpdateCompositingState();
+
+  // Initial current time increased by playback rate.
+  EXPECT_TIME_NEAR(40,
+                   worklet_animation->CurrentTime().value().InMillisecondsF());
+
+  // Update scroll offset.
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 40), kProgrammaticScroll);
+
+  // Verify that the current time is updated playback_rate faster than the
+  // timeline time.
+  EXPECT_TIME_NEAR(40 + 20 * playback_rate,
+                   worklet_animation->CurrentTime().value().InMillisecondsF());
+}
+
+// Verifies correctness of current time when playback rate is set while the
+// scroll-linked animation is playing.
+TEST_F(WorkletAnimationTest, ScrollTimelineSetPlaybackRateWhilePlaying) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #scroller { overflow: scroll; width: 100px; height: 100px; }
+      #spacer { width: 200px; height: 200px; }
+    </style>
+    <div id='scroller'>
+      <div id='spacer'></div>
+    </div>
+  )HTML");
+
+  LayoutBoxModelObject* scroller =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  ASSERT_TRUE(scroller);
+  ASSERT_TRUE(scroller->HasOverflowClip());
+  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
+  ASSERT_TRUE(scrollable_area);
+  ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
+  DoubleOrScrollTimelineAutoKeyword time_range =
+      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  options->setTimeRange(time_range);
+  options->setScrollSource(GetElementById("scroller"));
+  ScrollTimeline* scroll_timeline =
+      ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
+  WorkletAnimation* worklet_animation = CreateWorkletAnimation(
+      GetScriptState(), element_, animator_name_, scroll_timeline);
+
+  double playback_rate = 0.5;
+
+  // Start the animation.
+  DummyExceptionStateForTesting exception_state;
+  worklet_animation->play(exception_state);
+  worklet_animation->UpdateCompositingState();
+
+  // Update scroll offset and playback rate.
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 40), kProgrammaticScroll);
+  worklet_animation->setPlaybackRate(GetScriptState(), playback_rate);
+
+  // Verify the current time after another scroll offset update.
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 80), kProgrammaticScroll);
+  EXPECT_TIME_NEAR(40 + 40 * playback_rate,
+                   worklet_animation->CurrentTime().value().InMillisecondsF());
 }
 
 }  //  namespace blink

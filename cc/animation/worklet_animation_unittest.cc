@@ -55,7 +55,8 @@ class MockScrollTimeline : public ScrollTimeline {
                        base::nullopt,
                        base::nullopt,
                        0) {}
-  MOCK_CONST_METHOD2(CurrentTime, double(const ScrollTree&, bool));
+  MOCK_CONST_METHOD2(CurrentTime,
+                     base::Optional<base::TimeTicks>(const ScrollTree&, bool));
 };
 
 TEST_F(WorkletAnimationTest, NonImplInstanceDoesNotTickKeyframe) {
@@ -109,7 +110,9 @@ TEST_F(WorkletAnimationTest, LocalTimeIsUsedWhenTicking) {
 
 TEST_F(WorkletAnimationTest, CurrentTimeCorrectlyUsesScrollTimeline) {
   auto scroll_timeline = std::make_unique<MockScrollTimeline>();
-  EXPECT_CALL(*scroll_timeline, CurrentTime(_, _)).WillRepeatedly(Return(1234));
+  EXPECT_CALL(*scroll_timeline, CurrentTime(_, _))
+      .WillRepeatedly(Return(
+          (base::TimeTicks() + base::TimeDelta::FromMilliseconds(1234))));
   scoped_refptr<WorkletAnimation> worklet_animation =
       WorkletAnimation::Create(worklet_animation_id_, "test_name", 1,
                                std::move(scroll_timeline), nullptr);
@@ -205,6 +208,56 @@ TEST_F(WorkletAnimationTest, DocumentTimelineSetPlaybackRate) {
 
   // Verify that the current time is updated half as fast as the timeline time.
   EXPECT_EQ(123.4 * playback_rate_double + 200.0 * playback_rate_half,
+            input->updated_animations[0].current_time);
+}
+
+// Verifies correctness of current time when playback rate is set on
+// initializing the scroll-linked animation and while the animation is playing.
+TEST_F(WorkletAnimationTest, ScrollTimelineSetPlaybackRate) {
+  const double playback_rate_double = 2;
+  const double playback_rate_half = 0.5;
+  auto scroll_timeline = std::make_unique<MockScrollTimeline>();
+
+  EXPECT_CALL(*scroll_timeline, CurrentTime(_, _))
+      // First UpdateInputState call.
+      .WillOnce(
+          Return(base::TimeTicks() + base::TimeDelta::FromMilliseconds(50)))
+      // First UpdateInputState call.
+      .WillOnce(
+          Return(base::TimeTicks() + base::TimeDelta::FromMilliseconds(50)))
+      // Second UpdateInputState call.
+      .WillRepeatedly(
+          Return(base::TimeTicks() + base::TimeDelta::FromMilliseconds(100)));
+
+  scoped_refptr<WorkletAnimation> worklet_animation = WorkletAnimation::Create(
+      worklet_animation_id_, "test_name", playback_rate_double,
+      std::move(scroll_timeline), nullptr);
+
+  ScrollTree scroll_tree;
+  std::unique_ptr<MutatorInputState> state =
+      std::make_unique<MutatorInputState>();
+  // Start the animation.
+  worklet_animation->UpdateInputState(state.get(), base::TimeTicks(),
+                                      scroll_tree, true);
+  std::unique_ptr<AnimationWorkletInput> input =
+      state->TakeWorkletState(worklet_animation_id_.worklet_id);
+
+  // Verify that the current time is updated twice faster than the timeline
+  // time.
+  EXPECT_EQ(50 * playback_rate_double,
+            input->added_and_updated_animations[0].current_time);
+
+  // Update the playback rate.
+  worklet_animation->SetPlaybackRateForTesting(playback_rate_half);
+  state.reset(new MutatorInputState());
+
+  // Continue playing the animation.
+  worklet_animation->UpdateInputState(state.get(), base::TimeTicks(),
+                                      scroll_tree, true);
+  input = state->TakeWorkletState(worklet_animation_id_.worklet_id);
+
+  // Verify that the current time is updated half as fast as the timeline time.
+  EXPECT_EQ(50 * playback_rate_double + 50 * playback_rate_half,
             input->updated_animations[0].current_time);
 }
 
