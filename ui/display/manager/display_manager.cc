@@ -1582,6 +1582,10 @@ void DisplayManager::UpdateZoomFactor(int64_t display_id, float zoom_factor) {
     }
   }
 }
+
+bool DisplayManager::HasUnassociatedDisplay() const {
+  return display_configurator_->has_unassociated_display();
+}
 #endif
 
 void DisplayManager::SetDefaultMultiDisplayModeForCurrentDisplays(

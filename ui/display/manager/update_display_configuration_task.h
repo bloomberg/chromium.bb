@@ -24,11 +24,12 @@ class NativeDisplayDelegate;
 class DISPLAY_MANAGER_EXPORT UpdateDisplayConfigurationTask
     : public NativeDisplayObserver {
  public:
-  using ResponseCallback =
-      base::Callback<void(bool /* success */,
-                          const std::vector<DisplaySnapshot*>& /* displays */,
-                          MultipleDisplayState /* new_display_state */,
-                          chromeos::DisplayPowerState /* new_power_state */)>;
+  using ResponseCallback = base::RepeatingCallback<void(
+      /*success=*/bool,
+      /*displays=*/const std::vector<DisplaySnapshot*>&,
+      /*unassociated_displays=*/const std::vector<DisplaySnapshot*>&,
+      /*new_display_state=*/MultipleDisplayState,
+      /*new_power_state=*/chromeos::DisplayPowerState)>;
 
   UpdateDisplayConfigurationTask(NativeDisplayDelegate* delegate,
                                  DisplayLayoutManager* layout_manager,
@@ -97,6 +98,11 @@ class DISPLAY_MANAGER_EXPORT UpdateDisplayConfigurationTask
 
   // List of updated displays.
   std::vector<DisplaySnapshot*> cached_displays_;
+
+  // List of updated displays which have no associated crtc. It can happen
+  // when the device is connected with so many displays that has no available
+  // crtc to assign.
+  std::vector<DisplaySnapshot*> cached_unassociated_displays_;
 
   std::unique_ptr<ConfigureDisplaysTask> configure_task_;
 

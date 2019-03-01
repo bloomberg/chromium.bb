@@ -40,6 +40,10 @@ class ManagedDisplayMode;
 class NativeDisplayDelegate;
 class UpdateDisplayConfigurationTask;
 
+namespace test {
+class DisplayManagerTestApi;
+}
+
 // This class interacts directly with the system display configurator.
 class DISPLAY_MANAGER_EXPORT DisplayConfigurator
     : public NativeDisplayObserver {
@@ -192,6 +196,7 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   void set_configure_display(bool configure_display) {
     configure_display_ = configure_display;
   }
+  bool has_unassociated_display() const { return has_unassociated_display_; }
   chromeos::DisplayPowerState current_power_state() const {
     return current_power_state_;
   }
@@ -312,6 +317,8 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   }
 
  private:
+  friend class test::DisplayManagerTestApi;
+
   class DisplayLayoutManagerImpl;
 
   // Mapping a client to its protection request.
@@ -349,6 +356,7 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // this is called with the result (|success|) and the updated display state.
   void OnConfigured(bool success,
                     const std::vector<DisplaySnapshot*>& displays,
+                    const std::vector<DisplaySnapshot*>& unassociated_displays,
                     MultipleDisplayState new_display_state,
                     chromeos::DisplayPowerState new_power_state);
 
@@ -473,6 +481,11 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   std::unique_ptr<DisplayLayoutManager> layout_manager_;
 
   std::unique_ptr<UpdateDisplayConfigurationTask> configuration_task_;
+
+  // Indicates whether there is any connected display having no associated crtc.
+  // This can be caused by crtc shortage. When it is true, the corresponding
+  // notification will be created to inform user.
+  bool has_unassociated_display_;
 
   // This must be the last variable.
   base::WeakPtrFactory<DisplayConfigurator> weak_ptr_factory_;

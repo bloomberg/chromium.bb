@@ -180,6 +180,50 @@ TEST_F(ScreenLayoutObserverTest, DisplayNotifications) {
   display_info_list.emplace_back(second_display_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
 
+  // Simulate that device can support at most two displays and user
+  // connects it with three displays. Notification should be created to warn
+  // user of it. See issue 827406 (https://crbug.com/827406).
+  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
+      .set_maximum_display(2u);
+  UpdateDisplay("400x400,200x200,100x100");
+  EXPECT_TRUE(GetDisplayNotificationText().empty());
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_ASH_STATUS_TRAY_DISPLAY_REMOVED_EXCEEDED_MAXIMUM),
+            GetDisplayNotificationAdditionalText());
+  EXPECT_TRUE(GetDisplayNotificationText().empty());
+  UpdateDisplay("400x400,200x200");
+  CloseNotification();
+
+  // Start tablet mode and wait until display mode is updated.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  base::RunLoop().RunUntilIdle();
+
+  // Exit mirror mode manually. Now display mode should be extending mode.
+  display_manager()->SetMirrorMode(display::MirrorMode::kOff, base::nullopt);
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_MIRROR_EXIT),
+            GetDisplayNotificationText());
+  CloseNotification();
+
+  // Simulate that device can support at most two displays and user connects
+  // it with three displays. Because device is in tablet mode, display mode
+  // becomes mirror mode from extending mode. Under this circumstance, user is
+  // still notified of connecting more displays than maximum. See issue 827406
+  // (https://crbug.com/827406).
+  UpdateDisplay("400x400,200x200,100x100");
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_ASH_STATUS_TRAY_DISPLAY_REMOVED_EXCEEDED_MAXIMUM),
+            GetDisplayNotificationAdditionalText());
+  EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING,
+                                       GetMirroringDisplayNames()),
+            GetDisplayNotificationText());
+
+  // Reset the parameter. Close tablet mode and wait until display mode is
+  // updated.
+  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
+      .ResetMaximumDisplay();
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  base::RunLoop().RunUntilIdle();
+
   // Turn on mirror mode.
   CloseNotification();
   display_manager()->SetMirrorMode(display::MirrorMode::kNormal, base::nullopt);

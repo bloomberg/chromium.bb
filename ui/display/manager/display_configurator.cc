@@ -578,6 +578,7 @@ DisplayConfigurator::DisplayConfigurator()
       display_control_changing_(false),
       displays_suspended_(false),
       layout_manager_(new DisplayLayoutManagerImpl(this)),
+      has_unassociated_display_(false),
       weak_ptr_factory_(this) {}
 
 DisplayConfigurator::~DisplayConfigurator() {
@@ -1156,6 +1157,7 @@ void DisplayConfigurator::RunPendingConfiguration() {
 void DisplayConfigurator::OnConfigured(
     bool success,
     const std::vector<DisplaySnapshot*>& displays,
+    const std::vector<DisplaySnapshot*>& unassociated_displays,
     MultipleDisplayState new_display_state,
     chromeos::DisplayPowerState new_power_state) {
   VLOG(1) << "OnConfigured: success=" << success << " new_display_state="
@@ -1163,6 +1165,8 @@ void DisplayConfigurator::OnConfigured(
           << " new_power_state=" << DisplayPowerStateToString(new_power_state);
 
   cached_displays_ = displays;
+  has_unassociated_display_ = unassociated_displays.size();
+
   if (success) {
     current_display_state_ = new_display_state;
     UpdatePowerState(new_power_state);

@@ -146,8 +146,8 @@ void UpdateDisplayConfigurationTask::OnEnableSoftwareMirroring(
 }
 
 void UpdateDisplayConfigurationTask::FinishConfiguration(bool success) {
-  callback_.Run(success, cached_displays_, new_display_state_,
-                new_power_state_);
+  callback_.Run(success, cached_displays_, cached_unassociated_displays_,
+                new_display_state_, new_power_state_);
 }
 
 bool UpdateDisplayConfigurationTask::ShouldForceDpms() const {
