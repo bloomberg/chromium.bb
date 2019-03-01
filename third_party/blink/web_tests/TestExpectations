@@ -2152,6 +2152,10 @@ crbug.com/626703 [ Win ] external/wpt/css/css-text/word-break/word-break-normal-
 crbug.com/626703 external/wpt/css/css-text/word-break/word-break-normal-tdd-000.html [ Failure ]
 crbug.com/40634 external/wpt/css/css-text/white-space/trailing-space-before-br-001.html [ Failure ]
 
+# The 'line-break: anywhere' feature is not implemented yet
+crbug.com/720205 external/wpt/css/css-text/line-break/line-break-anywhere-001.html [ Skip ]
+crbug.com/720205 external/wpt/css/css-text/line-break/line-break-anywhere-002.html [ Skip ]
+
 crbug.com/666657 external/wpt/css/css-text-decor/text-emphasis-color-001.xht [ Failure ]
 crbug.com/666657 external/wpt/css/css-text-decor/text-emphasis-position-above-left-001.xht [ Failure ]
 crbug.com/666657 external/wpt/css/css-text-decor/text-emphasis-position-above-left-002.xht [ Failure ]
