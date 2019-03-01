@@ -396,7 +396,7 @@ android_library("chrome_java") {
     "//components/password_manager/core/browser:password_manager_java_enums_srcjar",
     "//components/search_engines:search_engine_type_java",
     "//components/security_state/core:security_state_enums_java",
-    "//components/signin/core/browser:investigated_scenario_java",
+    "//components/signin/core/browser:signin_enums_javagen",
     "//components/supervised_user_error_page:enums_srcjar",
     "//components/ui_metrics:ui_metrics_enums_java",
     "//chrome/browser/ui:tab_model_enums_java",
