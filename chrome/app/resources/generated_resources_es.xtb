@@ -653,6 +653,7 @@
 <translation id="1942765061641586207">Resolución de imagen</translation>
 <translation id="1943097386230153518">Instala más servicios</translation>
 <translation id="1944921356641260203">Actualización encontrada</translation>
+<translation id="1951012854035635156">Asistente</translation>
 <translation id="1954813140452229842">No se ha podido activar el recurso compartido. Comprueba tus credenciales y vuelve a intentarlo.</translation>
 <translation id="1956050014111002555">El archivo contenía varios certificados, pero no se ha importado ninguno de ellos:</translation>
 <translation id="1956390763342388273">Se subirán todos los archivos de "<ph name="FOLDER_PATH" />". Realiza esta acción únicamente si confías en el sitio web.</translation>
@@ -1154,6 +1155,7 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2704184184447774363">Firma de documentos de Microsoft</translation>
 <translation id="270516211545221798">Velocidad del panel táctil</translation>
 <translation id="2705736684557713153">Desplázate hasta el final de la pantalla y activa la opción Conexión compartida instantánea si aparece. Si no, ya has terminado.</translation>
+<translation id="2706892089432507937">Dispositivos USB</translation>
 <translation id="2707024448553392710">Descargando componente</translation>
 <translation id="270921614578699633">Por encima de la media</translation>
 <translation id="2709453993673701466">¿Quieres administrar la sincronización y personalización antes de que se activen? Accede a <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
@@ -1467,7 +1469,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="3177909033752230686">Idioma de la página:</translation>
 <translation id="3182749001423093222">Revisión ortográfica</translation>
 <translation id="3183139917765991655">Importador de perfiles</translation>
-<translation id="3188257591659621405">Mis archivos</translation>
 <translation id="3188465121994729530">Media móvil</translation>
 <translation id="3190558889382726167">Contraseña guardada</translation>
 <translation id="3192947282887913208">Archivos de audio</translation>
@@ -4310,7 +4311,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> y los datos asociados a esta aplicación se eliminarán de este dispositivo.</translation>
 <translation id="7497215489070763236">Certificado de CA del servidor</translation>
 <translation id="7497981768003291373">No has capturado ningún registro de texto de WebRTC recientemente.</translation>
-<translation id="7502199377020483660">Para usar estas tarjetas en todos tus dispositivos, guárdalas en tu cuenta de Google</translation>
 <translation id="7502658306369382406">Dirección IPv6</translation>
 <translation id="7503191893372251637">Tipo de certificado de Netscape</translation>
 <translation id="7503821294401948377">No se ha podido cargar el icono "<ph name="ICON" />" para la acción del navegador.</translation>
@@ -4980,7 +4980,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8468750959626135884">Desbloquea tu <ph name="DEVICE_TYPE" /> con tu teléfono Android.</translation>
 <translation id="8470028084415844044">Activa la sincronización para tener tus contraseñas en todos tus dispositivos.</translation>
 <translation id="8470513973197838199">Contraseñas guardadas de <ph name="ORIGIN" /></translation>
-<translation id="8471635086304129332">Para utilizar esta tarjeta en todos tus dispositivos, guárdala en tu cuenta de Google</translation>
 <translation id="8472623782143987204">respaldado por hardware</translation>
 <translation id="8473863474539038330">Direcciones y más</translation>
 <translation id="8475313423285172237">Otro programa de tu ordenador ha añadido una extensión que puede cambiar el funcionamiento de Chrome.</translation>

@@ -653,6 +653,7 @@
 <translation id="1942765061641586207">画像解像度</translation>
 <translation id="1943097386230153518">新しいサービスをインストール</translation>
 <translation id="1944921356641260203">アップデートが見つかりました</translation>
+<translation id="1951012854035635156">アシスタント</translation>
 <translation id="1954813140452229842">共有フォルダのマウントエラー。認証情報を確認してもう一度お試しください。</translation>
 <translation id="1956050014111002555">ファイルに含まれる複数の証明書のうち、いずれもインポートできませんでした:</translation>
 <translation id="1956390763342388273">「<ph name="FOLDER_PATH" />」のすべてのファイルがアップロードされます。この操作は、サイトを信頼できる場合にのみ行ってください。</translation>
@@ -1154,6 +1155,7 @@
 <translation id="2704184184447774363">Microsoft ドキュメントの署名</translation>
 <translation id="270516211545221798">タッチパッドの速度</translation>
 <translation id="2705736684557713153">画面の一番下までスクロールし、[インスタント テザリング] が表示される場合は有効にします。表示されない場合は、設定が完了しています。</translation>
+<translation id="2706892089432507937">USB デバイス</translation>
 <translation id="2707024448553392710">コンポーネントのダウンロード中</translation>
 <translation id="270921614578699633">次の平均:</translation>
 <translation id="2709453993673701466">同期とパーソナライズを有効にする前に管理するには、[<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] に移動します。</translation>
@@ -1467,7 +1469,6 @@
 <translation id="3177909033752230686">ページの言語:</translation>
 <translation id="3182749001423093222">スペルチェック</translation>
 <translation id="3183139917765991655">プロフィール インポーター</translation>
-<translation id="3188257591659621405">マイファイル</translation>
 <translation id="3188465121994729530">移動平均</translation>
 <translation id="3190558889382726167">パスワードを保存しました</translation>
 <translation id="3192947282887913208">音声ファイル</translation>
@@ -4314,7 +4315,6 @@
 <translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> および関連付けられているデータはこのデバイスから削除されます。</translation>
 <translation id="7497215489070763236">サーバーの CA 証明書</translation>
 <translation id="7497981768003291373">最近記録された WebRTC テキストログはありません。</translation>
-<translation id="7502199377020483660">お使いのすべてのデバイスでこれらのカードを使用できるようにするには、Google アカウントにカードを保存します</translation>
 <translation id="7502658306369382406">IPv6 アドレス</translation>
 <translation id="7503191893372251637">Netscape 証明書タイプ</translation>
 <translation id="7503821294401948377">ブラウザ操作のアイコン「<ph name="ICON" />」を読み込むことができませんでした。</translation>
@@ -4984,7 +4984,6 @@
 <translation id="8468750959626135884">Android スマートフォンで <ph name="DEVICE_TYPE" /> のロックを解除します。</translation>
 <translation id="8470028084415844044">お使いのどの端末でも同じパスワードを使用するには、同期を有効にします。</translation>
 <translation id="8470513973197838199"><ph name="ORIGIN" /> 用に保存されているパスワード</translation>
-<translation id="8471635086304129332">お使いのすべてのデバイスでこのカードを使用できるようにするには、Google アカウントにカードを保存します</translation>
 <translation id="8472623782143987204">ハードウェア式</translation>
 <translation id="8473863474539038330">住所やその他の情報</translation>
 <translation id="8475313423285172237">パソコン上の別のプログラムにより、Chrome の動作方法を変更する可能性のある拡張機能が追加されました。</translation>

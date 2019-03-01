@@ -370,15 +370,15 @@
 
           Den här policyn följs endast om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="1852294065645015766">Tillåt automatisk uppspelning av media</translation>
-<translation id="1857152770025485173">Principen förhindrar att användaren läser in webbsidor från svartlistade webbadresser. Svartlistan är en lista med webbadressmönster som anger vilka webbadresser som inte är tillåtna.
+<translation id="1857152770025485173">Principen förhindrar att användaren läser in webbsidor från svartlistade webbadresser. Svartlistan är en lista med webbadressmallar som anger vilka webbadresser som inte är tillåtna.
 
-      Webbadressmönstret ska ha det format som anges i https://www.chromium.org/administrators/url-blacklist-filter-format.
+      Webbadressmallen ska ha det format som anges i https://www.chromium.org/administrators/url-blacklist-filter-format.
 
       Undantag kan definieras i principen för vitlistade webbadresser. De här principerna kan innehålla högst 1000 poster. Alla poster utöver det ignoreras.
 
       Interna adresser som börjar med chrome://* bör inte blockeras eftersom det kan leda till oväntade fel.
 
-      Från och med version M73 går det att blockera webbadresser som börjar med javascript://* , men bara JavaScript som angetts i adressfältet (eller exempelvis skriptbokmärken) påverkas. Observera att webbadresser i JavaScript på sidan, som dynamiskt inläst data, inte påverkas av den här principen. Om du t.ex. blockerar example.com/abc kan sidan example.com fortfarande läsa in example.com/abc via XMLHTTPRequest.
+      Från och med version M73 går det att blockera webbadresser som börjar med javascript://* , men bara JavaScript som angetts i adressfältet (eller exempelvis skriptbokmärken) påverkas. Observera att webbadresser i JavaScript på sidan, om datan är dynamiskt inläst, inte påverkas av den här principen. Om du t.ex. blockerar example.com/abc kan sidan example.com fortfarande läsa in example.com/abc via XMLHTTPRequest.
 
       Om principen saknar inställning svartlistas inga webbadresser i webbläsaren.</translation>
 <translation id="1859859319036806634">Varning! Den alternativa TLS-versionen tas bort från <ph name="PRODUCT_NAME" /> efter version 52 (i september 2016) och den här principen slutar då att fungera.
@@ -861,7 +861,7 @@
 
       Om principen används är bara de skrivare vars id matchar något av principens värden tillgängliga för användaren. Id:na måste svara mot id- eller guid-fälten i den fil som angetts i <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
-<translation id="2842152347010310843">Styr vitlistan med webbadressmönster där automatisk uppspelning alltid ska vara aktiverat.
+<translation id="2842152347010310843">Styr vitlistan med webbadressmallar där automatisk uppspelning alltid ska vara aktiverat.
 
       Om automatisk uppspelning har aktiverats kan videor spelas upp automatiskt (utan att användaren har godkänt det) med ljud i<ph name="PRODUCT_NAME" />.
 
@@ -883,7 +883,7 @@
 
       Om principen AutoplayAllowed är inställd på Sant har den här principen ingen funktion.
 
-      Om principen AutoplayAllowed är inställd på Falskt tillåts automatisk uppspelning fortfarande för alla webbadressmönster som angetts i den här principen.
+      Om principen AutoplayAllowed är inställd på Falskt tillåts automatisk uppspelning fortfarande för alla webbadressmallar som angetts i den här principen.
 
       Observera att om principen ändras medan <ph name="PRODUCT_NAME" /> körs gäller principen bara för nya flikar som öppnas. Därför kan vissa flikar fortfarande fungera som de gjorde innan.</translation>
 <translation id="285480231336205327">Aktivera läge för hög kontrast</translation>
@@ -1301,7 +1301,7 @@
       kiosksessionen. Om principen är inställd på sant eller inte har angetts
       rapporteras information om kiosksessionen.</translation>
 <translation id="3852924591079583104">
-      När principen är inställd på ArcSession görs en tvingad omstart när användaren loggar ut om Android har startas.
+      När principen är inställd på ArcSession görs en tvingad omstart när användaren loggar ut om Android har startats.
       Med inställningen Alltid görs en tvingad omstart varje gång användaren loggar ut.
       Om principen saknar inställning händer ingenting: ingen tvingad omstart görs när användaren loggar ut. Detsamma gäller om principen har ställts in på Aldrig.
       </translation>

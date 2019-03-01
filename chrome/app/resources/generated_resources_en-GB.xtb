@@ -122,6 +122,7 @@
 <translation id="1164899421101904659">Enter PIN Unlock Key</translation>
 <translation id="1165039591588034296">Error</translation>
 <translation id="1166212789817575481">Close Tabs to the Right</translation>
+<translation id="1167199480815330007">Find the 6-digit PIN on the back of your security key</translation>
 <translation id="1168020859489941584">Opening in <ph name="TIME_REMAINING" />...</translation>
 <translation id="1168100932582989117">Google name servers</translation>
 <translation id="1171135284592304528">Highlight the object with keyboard focus when it changes</translation>
@@ -254,6 +255,7 @@
 <translation id="1361872463926621533">Play sound on startup</translation>
 <translation id="1363028406613469049">Track</translation>
 <translation id="1364702626840264065">{NUM_TABS,plural, =1{Close tab}other{Close tabs}}</translation>
+<translation id="1366177842110999534">Run Linux tools, editors and IDEs on your <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Find out more&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Choose a file</translation>
 <translation id="1371301976177520732">Your bookmarks, passwords, history and more on all your devices</translation>
 <translation id="1372841398847029212">Sync to your account</translation>
@@ -294,6 +296,7 @@
 <translation id="1422159345171879700">Load Unsafe Scripts</translation>
 <translation id="1426410128494586442">Yes</translation>
 <translation id="1426870617281699524">Click Try Again, and accept the prompt on your computer</translation>
+<translation id="1427269577154060167">Country</translation>
 <translation id="142758023928848008">Enable sticky keys (to perform keyboard shortcuts by typing them sequentially)</translation>
 <translation id="143027896309062157">Read and change all your data on your computer and the websites that you visit</translation>
 <translation id="1430915738399379752">Print</translation>
@@ -409,6 +412,7 @@
 <translation id="159359590073980872">Image Cache</translation>
 <translation id="1593926297800505364">Save payment method</translation>
 <translation id="1595492813686795610">Linux is upgrading</translation>
+<translation id="1596286373007273895">Available</translation>
 <translation id="1598233202702788831">Updates are disabled by your administrator.</translation>
 <translation id="1600857548979126453">Access the page debugger backend</translation>
 <translation id="1601560923496285236">Apply</translation>
@@ -547,6 +551,7 @@
 <translation id="1802687198411089702">The page isn't responding. You can wait for it or exit.</translation>
 <translation id="1802931390041703523">Flash was blocked on this page</translation>
 <translation id="1803545009660609783">Retrain</translation>
+<translation id="1805472176602625930">Press the button on the security key</translation>
 <translation id="1805738995123446102">Background tab is using your microphone</translation>
 <translation id="1805822111539868586">Inspect views</translation>
 <translation id="1805967612549112634">Confirm PIN</translation>
@@ -653,6 +658,7 @@
 <translation id="1942765061641586207">Image resolution</translation>
 <translation id="1943097386230153518">Install new service</translation>
 <translation id="1944921356641260203">Update found</translation>
+<translation id="1951012854035635156">Assistant</translation>
 <translation id="1954813140452229842">Error mounting share. Please check your credentials and try again.</translation>
 <translation id="1956050014111002555">The file contained multiple certificates, none of which were imported:</translation>
 <translation id="1956390763342388273">This will upload all files from '<ph name="FOLDER_PATH" />'. Only do this if you trust the site.</translation>
@@ -910,6 +916,7 @@
 <translation id="2339120501444485379">Enter new name</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> wants to pair</translation>
 <translation id="2342740338116612727">Bookmarks added</translation>
+<translation id="2343747224442182863">Focus This Tab</translation>
 <translation id="2344028582131185878">Automatic downloads</translation>
 <translation id="2344214284954353199">PIN is too short.</translation>
 <translation id="2345723121311404059">1 page to <ph name="PRINTER_NAME" /></translation>
@@ -1153,6 +1160,7 @@
 <translation id="2704184184447774363">Microsoft Document Signing</translation>
 <translation id="270516211545221798">Touchpad speed</translation>
 <translation id="2705736684557713153">Scroll to the bottom of the screen and if it appears, turn on Instant Tethering. If it doesn't, you're ready to go.</translation>
+<translation id="2706892089432507937">USB Devices</translation>
 <translation id="2707024448553392710">Component downloading</translation>
 <translation id="270921614578699633">Average Over</translation>
 <translation id="2709453993673701466">Want to manage sync and personalisation before they’re turned on? Visit <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
@@ -1240,6 +1248,7 @@
 <translation id="2822634587701817431">Shrink/Expand</translation>
 <translation id="2822910719211888134">Error while backing up Linux</translation>
 <translation id="2825758591930162672">Subject's Public Key</translation>
+<translation id="2825848369316359348">Find the name printed on the back of your security key</translation>
 <translation id="2828650939514476812">Connect to Wi-Fi network</translation>
 <translation id="2836269494620652131">Crash</translation>
 <translation id="2836635946302913370">Signing in with this username has been disabled by your administrator.</translation>
@@ -1383,6 +1392,7 @@
 <translation id="3038612606416062604">Add a printer manually</translation>
 <translation id="3038675903128704560">Do not allow any site to use a plug-in to access your computer</translation>
 <translation id="3039491566278747710">Failed to install offline policy on the device.</translation>
+<translation id="3040310857793999281">Toggle mute</translation>
 <translation id="3045447014237878114">This site downloaded multiple files automatically</translation>
 <translation id="3046910703532196514">Web Page, Complete</translation>
 <translation id="304747341537320566">Speech Engines</translation>
@@ -1466,7 +1476,6 @@
 <translation id="3177909033752230686">Page language:</translation>
 <translation id="3182749001423093222">Spell check</translation>
 <translation id="3183139917765991655">Profile Importer</translation>
-<translation id="3188257591659621405">My files</translation>
 <translation id="3188465121994729530">Moving Average</translation>
 <translation id="3190558889382726167">Password saved</translation>
 <translation id="3192947282887913208">Audio Files</translation>
@@ -1593,6 +1602,7 @@
 <translation id="3393352139658145068">Activate the Assistant when anyone says “Ok Google”. To save battery, “Ok Google” is on only when your device is connected to a power source.</translation>
 <translation id="3396800784455899911">By clicking the 'Accept and continue' button, you agree to the processing described above for these Google services.</translation>
 <translation id="3399432415385675819">Notifications will be disabled</translation>
+<translation id="3400390787768057815"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> Hertz) – interlaced</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
 <translation id="3404065873681873169">No passwords saved for this site</translation>
 <translation id="340485819826776184">Use a prediction service to help complete searches and URLs typed in the address bar</translation>
@@ -1881,6 +1891,7 @@
 <translation id="379082410132524484">Your card has expired</translation>
 <translation id="3792890930871100565">Disconnect printers</translation>
 <translation id="3796648294839530037">Favourite Networks:</translation>
+<translation id="3797739167230984533">Your <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> is managed<ph name="END_LINK" /> by your organisation</translation>
 <translation id="3797900183766075808">&amp;Search <ph name="SEARCH_ENGINE" /> for “<ph name="SEARCH_TERMS" />”</translation>
 <translation id="3798449238516105146">Version</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{&amp;Open All}=1{&amp;Open Bookmark}other{&amp;Open All (#)}}</translation>
@@ -2148,6 +2159,7 @@
 <translation id="4198146608511578238">Just hold the Launcher icon to talk to your Google Assistant.</translation>
 <translation id="4200689466366162458">Customised words</translation>
 <translation id="4200983522494130825">New &amp;tab</translation>
+<translation id="4201546031411513170">You can always choose what to sync in settings.</translation>
 <translation id="4206144641569145248">Alien</translation>
 <translation id="4206323443866416204">Feedback Report</translation>
 <translation id="4206944295053515692">Ask Google for Suggestions</translation>
@@ -2497,6 +2509,7 @@
 <translation id="477945296921629067">{NUM_POPUPS,plural, =1{Pop-up blocked}other{# pop-ups blocked}}</translation>
 <translation id="4780321648949301421">Save Page As...</translation>
 <translation id="4784330909746505604">PowerPoint presentation</translation>
+<translation id="4785719467058219317">You're using a security key that's not registered with this website</translation>
 <translation id="4788092183367008521">Please check your network connection and try again.</translation>
 <translation id="4788401404269709922"><ph name="NUMBER_OF_KB" /> KB</translation>
 <translation id="4790972063719531840">Automatically send diagnostic and usage data to Google</translation>
@@ -2776,6 +2789,7 @@
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
 <translation id="5213481667492808996">Your '<ph name="NAME" />' data service is ready to use</translation>
 <translation id="5213891612754844763">Show proxy settings</translation>
+<translation id="5215502535566372932">Select country</translation>
 <translation id="521582610500777512">Photo was discarded</translation>
 <translation id="5222676887888702881">Sign out</translation>
 <translation id="52232769093306234">Packing failed.</translation>
@@ -3060,6 +3074,7 @@
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5602765853043467355">Clear bookmarks, history, passwords and more from this device</translation>
 <translation id="5605623530403479164">Other search engines</translation>
+<translation id="5605758115928394442">A notification was sent to your phone to confirm that it's you.</translation>
 <translation id="5608580678041221894">Tap the following keys to adjust or move the cropping area</translation>
 <translation id="5609231933459083978">The application appears to be invalid.</translation>
 <translation id="5610038042047936818">Switch to camera mode</translation>
@@ -3504,6 +3519,7 @@
 <translation id="6238923052227198598">Keep latest note on lock screen</translation>
 <translation id="6239558157302047471">Reload &amp;frame</translation>
 <translation id="6241530762627360640">Access information about Bluetooth devices paired with your system and discover nearby Bluetooth devices.</translation>
+<translation id="6242852299490624841">Focus this tab</translation>
 <translation id="6243280677745499710">Currently set</translation>
 <translation id="6243774244933267674">Server unavailable</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
@@ -3711,6 +3727,7 @@
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">The file path or name is too long.  Please save with a shorter name or to another location.</translation>
 <translation id="656398493051028875">Deleting "<ph name="FILENAME" />"...</translation>
+<translation id="6564072216966459757">Remove Linux Apps for <ph name="DEVICE_TYPE" /></translation>
 <translation id="6567688344210276845">Could not load icon '<ph name="ICON" />' for page action.</translation>
 <translation id="6571979863037191371">Disconnect your phone from your Chromebook. They will no longer connect automatically.</translation>
 <translation id="657402800789773160">&amp;Reload This Page</translation>
@@ -3793,6 +3810,7 @@
 <translation id="6690659332373509948">Unable to parse file: <ph name="FILE_NAME" /></translation>
 <translation id="6690751852586194791">Choose a supervised user to add to this device.</translation>
 <translation id="6691331417640343772">Manage synced data on Google Dashboard</translation>
+<translation id="6691541770654083180">Earth</translation>
 <translation id="6691936601825168937">&amp;Forward</translation>
 <translation id="6697492270171225480">Show suggestions for similar pages when a page can't be found</translation>
 <translation id="6697690052557311665">To share, right-click on a folder in Files app, then select 'Share with Linux'.</translation>
@@ -4051,6 +4069,9 @@
 <translation id="7088434364990739311">Update check failed to start (error code <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip Archiver – Open and pack ZIP files in Files app.</translation>
 <translation id="7088674813905715446">This device has been placed into a deprovisioned state by the administrator. To enable it for enrolment, please have your administrator place the device into a pending state.</translation>
+<translation id="7092474863625458670">Voice Match lets you access your Assistant directly by using your voice.
+    <ph name="BR" />
+    <ph name="BEGIN_BOLD" />Bear in mind:<ph name="END_BOLD" /> A similar voice or recording might also be able to access your Assistant. You can remove Voice Match permission later by turning it off in Assistant Settings.</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Exchange data with the devices named: <ph name="HOSTNAMES" /></translation>
 <translation id="7098389117866926363">USB-C device (left port in the back)</translation>
@@ -4148,6 +4169,7 @@
 <translation id="7240120331469437312">Certificate Subject Alternative Name</translation>
 <translation id="7240339475467890413">Connect to new hotspot?</translation>
 <translation id="7241389281993241388">Please sign in to <ph name="TOKEN_NAME" /> to import the client certificate.</translation>
+<translation id="7241443820034350811">If your security key isn't listed, press its button for at least 5 seconds.</translation>
 <translation id="7243632151880336635">Clear and Sign Out</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (Best)</translation>
 <translation id="7246947237293279874">FTP Proxy</translation>
@@ -4310,9 +4332,9 @@
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Forgot your old password?</translation>
 <translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> and the data associated with it will be removed from this device.</translation>
+<translation id="7496732379142025470">To save battery, “Ok Google” is on only when your device is connected to a power source. To make changes, go to Settings.</translation>
 <translation id="7497215489070763236">Server CA certificate</translation>
 <translation id="7497981768003291373">You have no recently captured WebRTC text logs.</translation>
-<translation id="7502199377020483660">To use these cards on all your devices, save them in your Google account</translation>
 <translation id="7502658306369382406">IPv6 address</translation>
 <translation id="7503191893372251637">Netscape Certificate Type</translation>
 <translation id="7503821294401948377">Could not load icon '<ph name="ICON" />' for browser action.</translation>
@@ -4437,6 +4459,7 @@
 <translation id="7704305437604973648">Task</translation>
 <translation id="7704317875155739195">Auto-complete searches and URLs</translation>
 <translation id="7704521324619958564">Open Play Store</translation>
+<translation id="7704628569466676326">Pair your security key to this device so that you can use it to sign into your account</translation>
 <translation id="7705276765467986571">Could not load bookmark model.</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7707922173985738739">Use mobile data</translation>
@@ -4642,6 +4665,7 @@
 <translation id="7957615753207896812">Open keyboard device settings</translation>
 <translation id="7959074893852789871">The file contained multiple certificates, some of which were not imported:</translation>
 <translation id="7961015016161918242">Never</translation>
+<translation id="7963826112438303517">Your Assistant uses these recordings and your spoken requests to create and update your voice model, which is only stored on devices where you've turned on Voice Match. View or retrain voice activity in Assistant Settings.</translation>
 <translation id="7966241909927244760">C&amp;opy Image Address</translation>
 <translation id="7968742106503422125">Read and modify data that you copy and paste</translation>
 <translation id="7968833647796919681">Enable performance data collection</translation>
@@ -4899,6 +4923,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8329978297633540474">Plain text</translation>
 <translation id="8335587457941836791">Unpin from shelf</translation>
 <translation id="8336153091935557858">Yesterday <ph name="YESTERDAY_DAYTIME" /></translation>
+<translation id="8337047789441383384">You already registered this security key. You don't have to register it again.</translation>
 <translation id="8338952601723052325">Developer website</translation>
 <translation id="8339059274628563283"><ph name="SITE" /> locally stored data</translation>
 <translation id="833986336429795709">To open this link, choose an app</translation>
@@ -4982,7 +5007,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8468750959626135884">Unlock your <ph name="DEVICE_TYPE" /> with your Android phone.</translation>
 <translation id="8470028084415844044">To get all of your passwords on all your devices, turn on sync.</translation>
 <translation id="8470513973197838199">Saved passwords for <ph name="ORIGIN" /></translation>
-<translation id="8471635086304129332">To use this card on all your devices, save it in your Google account</translation>
 <translation id="8472623782143987204">hardware-backed</translation>
 <translation id="8473863474539038330">Addresses and more</translation>
 <translation id="8475313423285172237">Another programme on your computer added an extension that may change the way Chrome works.</translation>
@@ -5007,6 +5031,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8509646642152301857">Spell check dictionary download failed.</translation>
 <translation id="8512476990829870887">End Process</translation>
 <translation id="851263357009351303">Always allow <ph name="HOST" /> to show images</translation>
+<translation id="8514746246728959655">Try a different security key</translation>
 <translation id="8521475323816527629">Get to your apps fast</translation>
 <translation id="8523493869875972733">Keep Changes</translation>
 <translation id="8523849605371521713">Added by policy</translation>

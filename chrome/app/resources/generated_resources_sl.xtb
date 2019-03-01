@@ -653,6 +653,7 @@
 <translation id="1942765061641586207">Ločljivost slike</translation>
 <translation id="1943097386230153518">Namesti novo storitev</translation>
 <translation id="1944921356641260203">Najdena je bila posodobitev</translation>
+<translation id="1951012854035635156">Pomočnik</translation>
 <translation id="1954813140452229842">Napaka pri vpenjanju datotečnega sredstva v skupni rabi. Preverite poverilnice in poskusite znova.</translation>
 <translation id="1956050014111002555">V datoteki je bilo več potrdil in nobeno ni bilo uvoženo:</translation>
 <translation id="1956390763342388273">S tem bodo naložene vse datoteke z mesta »<ph name="FOLDER_PATH" />«. To storite samo, če spletnemu mestu zaupate.</translation>
@@ -1154,6 +1155,7 @@
 <translation id="2704184184447774363">Microsoftovo podpisovanje dokumentov</translation>
 <translation id="270516211545221798">Hitrost sledilne ploščice</translation>
 <translation id="2705736684557713153">Pomaknite se na dno zaslona in vklopite takojšnjo povezavo z internetom prek mobilnega telefona, če se ta možnost pojavi. Če se ne, ste pripravljeni.</translation>
+<translation id="2706892089432507937">Naprave USB</translation>
 <translation id="2707024448553392710">Prenos komponente</translation>
 <translation id="270921614578699633">Časovno obdobje drsečega povprečja</translation>
 <translation id="2709453993673701466">Ali želite upravljati sinhronizacijo in prilagajanje, preden ju vklopite? Odprite <ph name="BEGIN_LINK" />nastavitve<ph name="END_LINK" />.</translation>
@@ -1183,7 +1185,7 @@
 <translation id="2739191690716947896">Odpravljanje napak</translation>
 <translation id="2739240477418971307">Sprememba nastavitev funkcij za ljudi s posebnimi potrebami</translation>
 <translation id="2740393541869613458">pregled spletnih mest, ki jih je obiskal zaščiteni uporabnik, in</translation>
-<translation id="274290345632688601">Obnovitev aplikacij in datotek za Linux</translation>
+<translation id="274290345632688601">Obnavljanje aplikacij in datotek za Linux</translation>
 <translation id="2743387203779672305">Kopiraj v odložišče</translation>
 <translation id="2745080116229976798">Microsoftova kvalificirana podrejenost</translation>
 <translation id="2745305015456260872"><ph name="ENROLLMENT_DOMAIN" /> upravlja to napravo in ima dostop do vse dejavnosti uporabnika, vključno z obiskanimi spletnimi mesti, gesli in e-pošto. Oglejte si podrobnosti.</translation>
@@ -1467,7 +1469,6 @@
 <translation id="3177909033752230686">Jezik strani:</translation>
 <translation id="3182749001423093222">Preverjanje črkovanja</translation>
 <translation id="3183139917765991655">Uvoznik profilov</translation>
-<translation id="3188257591659621405">Moje datoteke</translation>
 <translation id="3188465121994729530">Drseče povprečje</translation>
 <translation id="3190558889382726167">Geslo je shranjeno</translation>
 <translation id="3192947282887913208">Zvočne datoteke</translation>
@@ -1832,7 +1833,7 @@
 <translation id="3726463242007121105">Naprave ni mogoče odpreti, ker njen datotečni sistem ni podprt.</translation>
 <translation id="3727148787322499904">Sprememba te nastavitve vpliva na vsa omrežja v skupni rabi</translation>
 <translation id="3727187387656390258">Preglej pojavno okno</translation>
-<translation id="372722114124766626">Samo enkrat.</translation>
+<translation id="372722114124766626">Samo enkrat</translation>
 <translation id="3729506734996624908">Dovoljena spletna mesta</translation>
 <translation id="3731997362820527097">Izberite varnostni ključ</translation>
 <translation id="3732078975418297900">Napaka v vrstici <ph name="ERROR_LINE" /></translation>
@@ -4315,7 +4316,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> in podatki, povezani s to aplikacijo, bodo odstranjeni iz te naprave.</translation>
 <translation id="7497215489070763236">Strežniško overjeno potrdilo</translation>
 <translation id="7497981768003291373">Nimate nedavno zajetih besedilnih dnevnikov za WebRTC.</translation>
-<translation id="7502199377020483660">Če želite te kartice uporabljati v vseh svojih napravah, jih shranite v računu za Google</translation>
 <translation id="7502658306369382406">Naslov IPv6</translation>
 <translation id="7503191893372251637">Vrsta Netscapeovega potrdila</translation>
 <translation id="7503821294401948377">Ikone »<ph name="ICON" />« za dejanje brskalnika ni bilo mogoče naložiti.</translation>
@@ -4985,7 +4985,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8468750959626135884">Odklenite napravo <ph name="DEVICE_TYPE" /> s telefonom Android.</translation>
 <translation id="8470028084415844044">Če želite dostopati do vseh gesel v vseh napravah, vklopite sinhronizacijo.</translation>
 <translation id="8470513973197838199">Shranjena gesla za <ph name="ORIGIN" /></translation>
-<translation id="8471635086304129332">Če želite to kartico uporabljati v vseh svojih napravah, jo shranite v računu za Google</translation>
 <translation id="8472623782143987204">podprto s strojno opremo</translation>
 <translation id="8473863474539038330">Naslovi in drugo</translation>
 <translation id="8475313423285172237">Drug program v računalniku je dodal razširitev, ki lahko spremeni način delovanja Chroma.</translation>
@@ -5241,7 +5240,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8847988622838149491">USB</translation>
 <translation id="8848561196844274665">Ko povežete napravi, se strinjate, da lahko Chromebook:</translation>
 <translation id="8850251000316748990">Več ...</translation>
-<translation id="8853586775156634952">Ta kartica bo shranjeno samo v to napravo</translation>
+<translation id="8853586775156634952">Ta kartica bo shranjena samo v to napravo</translation>
 <translation id="8859057652521303089">Izberite jezik:</translation>
 <translation id="8859174528519900719">Podokvir: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8860454412039442620">Excelova preglednica</translation>

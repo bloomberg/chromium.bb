@@ -650,6 +650,7 @@
 <translation id="1942765061641586207">图片分辨率</translation>
 <translation id="1943097386230153518">安装新服务</translation>
 <translation id="1944921356641260203">发现更新</translation>
+<translation id="1951012854035635156">智能助理</translation>
 <translation id="1954813140452229842">装载共享资源时出错。请检查您的凭据，然后重试。</translation>
 <translation id="1956050014111002555">该文件包含多个证书，但均未导入：</translation>
 <translation id="1956390763342388273">此操作会上传“<ph name="FOLDER_PATH" />”下的所有文件。请仅在您信任该网站的情况下执行此操作。</translation>
@@ -1149,6 +1150,7 @@
 <translation id="2704184184447774363">Microsoft 文档签名</translation>
 <translation id="270516211545221798">触控板速度</translation>
 <translation id="2705736684557713153">滚动到屏幕底部，如果看到“即时网络共享”，请将其开启。如果未看到该功能，则表示您已设置完毕。</translation>
+<translation id="2706892089432507937">USB 设备</translation>
 <translation id="2707024448553392710">正在下载组件</translation>
 <translation id="270921614578699633"> </translation>
 <translation id="2709453993673701466">想在启用同步和个性化之前管理这些功能？请访问<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />。</translation>
@@ -1462,7 +1464,6 @@
 <translation id="3177909033752230686">网页语言：</translation>
 <translation id="3182749001423093222">拼写检查</translation>
 <translation id="3183139917765991655">个人资料导入应用</translation>
-<translation id="3188257591659621405">我的文件</translation>
 <translation id="3188465121994729530">移动平均值</translation>
 <translation id="3190558889382726167">密码已保存</translation>
 <translation id="3192947282887913208">音频文件</translation>
@@ -4300,7 +4301,6 @@
 <translation id="7496511874649569424">系统将会从此设备上移除“<ph name="LINUX_APP_NAME" />”以及与其相关的数据。</translation>
 <translation id="7497215489070763236">服务器 CA 证书</translation>
 <translation id="7497981768003291373">您最近未记录 WebRTC 文本日志。</translation>
-<translation id="7502199377020483660">若想在您的所有设备上使用这些卡，请将它们保存到您的 Google 帐号中</translation>
 <translation id="7502658306369382406">IPv6 地址</translation>
 <translation id="7503191893372251637">Netscape 证书类型</translation>
 <translation id="7503821294401948377">无法加载浏览器操作的“<ph name="ICON" />”图标。</translation>
@@ -4967,7 +4967,6 @@
 <translation id="8468750959626135884">利用 Android 手机解锁您的 <ph name="DEVICE_TYPE" />。</translation>
 <translation id="8470028084415844044">要想将您的所有密码同步到您的所有设备上，请开启同步功能。</translation>
 <translation id="8470513973197838199">已保存用于登录 <ph name="ORIGIN" /> 的密码</translation>
-<translation id="8471635086304129332">若想在您的所有设备上使用这张卡，请将它保存到您的 Google 帐号中</translation>
 <translation id="8472623782143987204">硬件支持</translation>
 <translation id="8473863474539038330">地址和其他信息</translation>
 <translation id="8475313423285172237">您计算机上的其他程序添加了一个扩展程序，该扩展程序可能会改变 Chrome 的工作方式。</translation>

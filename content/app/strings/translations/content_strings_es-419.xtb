@@ -32,6 +32,7 @@
 <translation id="1930711995431081526">estado</translation>
 <translation id="1938124657309484470">El valor debe ser igual o anterior a <ph name="MAXIMUM_DATE_OR_TIME" />.</translation>
 <translation id="1946271899482435442">Mostrar el selector de fechas</translation>
+<translation id="1982354452682152483">No hay descripciones disponibles.</translation>
 <translation id="1993104285338243655">Se cambió a duplicación</translation>
 <translation id="2060505056492490888">El signo "<ph name="DOT" />" está colocado en una posición incorrecta en "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Hoy</translation>
@@ -52,7 +53,6 @@
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2657045182931379222">objeto gráfico</translation>
 <translation id="2674318244760992338">pie de página</translation>
-<translation id="2706474812903655270">Este video se reproduce en el modo de pantalla en pantalla</translation>
 <translation id="2709516037105925701">Autocompletar</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2746543609216772311">El valor debe ser igual o posterior a <ph name="MINIMUM_DATE_OR_TIME" />.</translation>
@@ -73,6 +73,7 @@
 <translation id="3450233048674729344">El valor debe ser menor de o igual a <ph name="MAXIMUM" /></translation>
 <translation id="3486220673238053218">definición</translation>
 <translation id="3557673793733683882">encabezado <ph name="HEADING_LEVEL" /></translation>
+<translation id="3685101356851116974">Imagen sin etiquetar</translation>
 <translation id="3706100364254443312">cambiar</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
@@ -176,6 +177,7 @@
 <translation id="7139483182332611405">prefacio</translation>
 <translation id="7263440858009898357">Selecciona un elemento de la lista</translation>
 <translation id="727747134524199931">encabezado de columna</translation>
+<translation id="7336527682887843386">No es posible obtener una descripción.</translation>
 <translation id="7353453495576941748">crédito</translation>
 <translation id="7364796246159120393">Seleccionar archivo</translation>
 <translation id="739024184232394898">Otra...</translation>
@@ -184,11 +186,13 @@
 <translation id="7491962110804786152">tab</translation>
 <translation id="7514365320538308">Descargar</translation>
 <translation id="7529102961911894712">retrovínculo</translation>
+<translation id="7533959249147584474">Gráfico sin etiquetar</translation>
 <translation id="7647456547678091388">sugerencia</translation>
 <translation id="7661956066982048809">documento gráfico</translation>
 <translation id="7673697353781729403">Horas</translation>
 <translation id="7681220483256441252">índice</translation>
 <translation id="7740050170769002709">Contenido HTML</translation>
+<translation id="7745230546936012372">Para obtener las descripciones de imágenes faltantes, abre el menú contextual.</translation>
 <translation id="7750228210027921155">Pantalla en pantalla</translation>
 <translation id="775297008183122718">Entrada no válida</translation>
 <translation id="7789962463072032349">pausa</translation>
@@ -196,9 +200,11 @@
 <translation id="7888071071722539607">Incluye un signo "<ph name="ATSIGN" />" en la dirección de correo electrónico. La dirección "<ph name="INVALIDADDRESS" />" no incluye el signo "<ph name="ATSIGN" />".</translation>
 <translation id="7891486169920085145">separador</translation>
 <translation id="795667975304826397">No se eligió archivo</translation>
+<translation id="8042519864538898414">Parece ser contenido para adultos.</translation>
 <translation id="8053789581856978548">campo de texto de búsqueda</translation>
 <translation id="8057695513531652401">aviso</translation>
 <translation id="8105797009065549151">nota de referencia</translation>
+<translation id="811583516810654505">Obteniendo la descripción…</translation>
 <translation id="8117451130807776954">Esta semana</translation>
 <translation id="8199524924445686405">aaaa</translation>
 <translation id="8261464734335370856">Ortografía no válida</translation>

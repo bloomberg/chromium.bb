@@ -354,7 +354,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er aktivert.</translation>
 <translation id="1852294065645015766">Tillat automatisk avspilling av medier</translation>
-<translation id="1857152770025485173">Denne regelen hindrer at brukerne kan laste inn nettsider fra nettadresser som er svartelistet. Svartelisten inneholder nettadressemønstre som spesifiserer hvilke nettadresser som svartelistes.
+<translation id="1857152770025485173">Denne regelen hindrer at brukerne kan laste inn nettsider fra svartelistede nettadresser. Svartelisten inneholder nettadressemønstre som spesifiserer hvilke nettadresser som svartelistes.
 
       Nettadressemønstre må formateres i samsvar med https://www.chromium.org/administrators/url-blacklist-filter-format.
 
@@ -859,7 +859,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Hvis AutoplayAllowed-regelen er satt til «False» (usann), får eventuelle nettadressemønstre som er angitt i denne regelen, fremdeles lov til å spille av automatisk.
 
-      Merk at hvis <ph name="PRODUCT_NAME" /> kjører og denne regelen endres, brukes den kun for nye faner som åpnes. Derfor kan noen faner fremdeles følge den gamle atferden.</translation>
+      Merk at hvis <ph name="PRODUCT_NAME" /> kjører og denne regelen endres, brukes den kun for nye faner som åpnes. Derfor kan noen faner fremdeles følge den gamle funksjonaliteten.</translation>
 <translation id="285480231336205327">Aktiver modus for høy kontrast</translation>
 <translation id="2854919890879212089">Gjør at <ph name="PRODUCT_NAME" /> bruker skriveren som er standard for systemet, i stedet for skriveren som ble brukt sist, som standardvalg i forhåndsvisning av utskrift.
 
@@ -2676,7 +2676,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7138678301420049075">Annet</translation>
 <translation id="7140629953254369759">Instruerer <ph name="PRODUCT_OS_NAME" /> om å bruke konfigurasjonen for oppgaveplanlegging med navnet som angis.
 
-      Denne regelen kan settes til «konservativ» og «ytelse», som medfører at konfigurasjoner for oppgaveplanlegging som er justert for henholdsvis stabilitet og maksimal ytelse, brukes.
+      Denne regelen kan settes til «conservative» («konservativ») og «performance» («ytelse») for å velge konfigurasjoner for oppgaveplanlegging som er justert for henholdsvis stabilitet og maksimal ytelse.
 
       Hvis regelen ikke er angitt, kan brukeren velge selv.</translation>
 <translation id="7158064522994309072">Denne regelen kontrollerer hvilken kommando som skal brukes for å åpne nettadresser i en alternativ nettleser.

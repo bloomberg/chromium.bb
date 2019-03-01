@@ -17,7 +17,7 @@
 <translation id="151962892725702025">మీ డొమైన్ కోసం సింక్‌ అందుబాటులో లేనందున, Chromium OS, మీ డేటాను సింక్ చేయ‌లేక‌పోయింది.</translation>
 <translation id="1585657529869845941">ఇది కనిపిస్తే, <ph name="BEGIN_BOLD" />అయిన కూడా మార్చు<ph name="END_BOLD" />ను క్లిక్ చేయండి</translation>
 <translation id="1668054258064581266">Chromium నుండి మీ ఖాతాను తీసివేసిన తర్వాత, ప్రభావవంతం కావడానికి మీరు మీ తెరిచిన ట్యాబ్‌లను మళ్లీ లోడ్ చేయాల్సి రావచ్చు.</translation>
-<translation id="1688750314291223739">మీ వ్యక్తిగతీకరించిన బ్రౌజర్ ఫీచ‌ర్‌ల‌ను వెబ్‌లో సేవ్ చేయడానికి సమకాలీకణను సెటప్ చేయండి. వాటిని ఏదైనా కంప్యూటర్‌లోని Chromium నుండి యాక్సెస్‌ చేయండి.</translation>
+<translation id="1688750314291223739">వెబ్‌కు మీ వ్యక్తిగతీకరించిన బ్రౌజర్ ఫీచర్‌లను సేవ్ చేసి, వాటిని ఏదైనా కంప్యూటర్‌లోని Chromium నుండి యాక్సెస్ చేయడానికి సింక్‌ను సెటప్ చేయండి.</translation>
 <translation id="1708666629004767631">Chromium యొక్క కొత్త సురక్షితమైన వెర్షన్ అందుబాటులో ఉంది.</translation>
 <translation id="1766096484055239003">అప్‌డేట్‌ను వర్తింపజేయడం కోసం మీరు Chromiumను పునఃప్రారంభించాలని మీ నిర్వాహకుడు కోరుతున్నారు</translation>
 <translation id="1774152462503052664">నేపథ్యంలో Chromiumని అమలు చేయడానికి అనుమతించు</translation>
@@ -181,7 +181,6 @@
 <translation id="6810143991807788455">ప్రస్తుత సెట్టింగ్‌లను నివేదించడం ద్వారా Chromiumను మెరుగుపరచడంలో సహాయపడండి</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromiumకి కాపీ చేయబడింది)</translation>
-<translation id="6877899728743402439">ప్రత్యామ్నాయ బ్రౌజర్‌ను తెరవడానికి మీ సిస్టమ్‌ నిర్వాహకుడు Chromiumను కాన్ఫిగర్ చేసారు.</translation>
 <translation id="6893813176749746474">Chromium నవీకరించబడింది, కానీ మీరు దీన్ని గత 30 రోజులుగా ఉపయోగించలేదు.</translation>
 <translation id="6964305034639999644">Chromium అజ్ఞా&amp;త విండోలో లింక్‌ని తెరువు</translation>
 <translation id="6970811910055250180">మీ పరికరాన్ని అప్‌డేట్ చేస్తోంది...</translation>
@@ -207,7 +206,7 @@
 దయచేసి తదుపరి సూచనల కోసం <ph name="ACCOUNT_EMAIL" /> లో మీ ఇమెయిల్‌ను చూడండి.</translation>
 <translation id="7448255348454382571">Chromium OSని మళ్లీ ప్రారంభించండి</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
-<translation id="7451052299415159299">ఈ సైట్ కోసం మీ కెమెరాని యాక్సెస్ చేయడానికి Chromiumకు అనుమతి అవసరం</translation>
+<translation id="7451052299415159299">ఈ సైట్ కోసం మీ కెమెరాను యాక్సెస్ చేయడానికి Chromiumకు అనుమతి అవసరం</translation>
 <translation id="7471302858145901434">{0,plural, =1{ఒక రోజులో Chromium OSని మళ్లీ ప్రారంభించండి}other{# రోజుల్లో Chromium OSని మళ్లీ ప్రారంభించండి}}</translation>
 <translation id="7483335560992089831">ప్రస్తుతం అమలు అవుతోన్న అదే Chromium వెర్షన్‌ను ఇన్‌స్టాల్ చేయలేరు. దయచేసి Chromiumను మూసివేసి, మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="7549178288319965365">Chromium OS గురించి</translation>
@@ -267,7 +266,7 @@
 <translation id="9089354809943900324">Chromium కాలం చెల్లినది</translation>
 <translation id="91086099826398415">కొత్త Chromium &amp;ట్యాబ్‌లో లింక్‌ని తెరువు</translation>
 <translation id="911206726377975832">మీ బ్రౌజింగ్ డేటాను కూడా తొలగించాలా?</translation>
-<translation id="918373042641772655"><ph name="USERNAME" />ని డిస్‌కనెక్ట్ చేయడం వలన ఈ పరికరంలో నిల్వ చేయబడిన మీ చరిత్ర, బుక్‌మార్క్‌లు, సెట్టింగ్‌లు, ఇతర Chromium డేటా క్లియర్ చేయబడతాయి. మీ Google ఖాతాలో నిల్వ చేయబడిన డేటా క్లియర్ చేయబడదు. దాన్ని <ph name="GOOGLE_DASHBOARD_LINK" />Google డాష్‌బోర్డ్<ph name="END_GOOGLE_DASHBOARD_LINK" />లో నిర్వహించవచ్చు.</translation>
+<translation id="918373042641772655"><ph name="USERNAME" />ను డిస్‌కనెక్ట్ చేయడం వలన ఈ పరికరంలో నిల్వ చేయబడిన మీ చరిత్ర, బుక్‌మార్క్‌లు, సెట్టింగ్‌లు మరియు ఇతర Chromium డేటా క్లియర్ చేయబడతాయి. మీ Google ఖాతాలో నిల్వ చేయబడిన డేటా క్లియర్ చేయబడదు మరియు దాన్ని <ph name="GOOGLE_DASHBOARD_LINK" />Google డాష్‌బోర్డ్<ph name="END_GOOGLE_DASHBOARD_LINK" />లో నిర్వహించవచ్చు.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">మీరు ఇప్పుడు Chromiumకు సైన్ ఇన్ చేసారు</translation>
 <translation id="93478295209880648">Chromiumకి ఇప్పుడు Windows XP లేదా Windows Vistaలో మద్దతు లేనందున ఇది సరిగ్గా పని చేయకపోవచ్చు</translation>

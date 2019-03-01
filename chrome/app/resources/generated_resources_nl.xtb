@@ -653,6 +653,7 @@
 <translation id="1942765061641586207">Afbeeldingsresolutie</translation>
 <translation id="1943097386230153518">Nieuwe service installeren</translation>
 <translation id="1944921356641260203">Update gevonden</translation>
+<translation id="1951012854035635156">Assistent</translation>
 <translation id="1954813140452229842">Fout bij het activeren van de fileshare. Controleer je inloggegevens en probeer het opnieuw.</translation>
 <translation id="1956050014111002555">Het bestand bevatte meerdere certificaten. Geen van deze certificaten is geïmporteerd:</translation>
 <translation id="1956390763342388273">Hiermee worden alle bestanden in <ph name="FOLDER_PATH" /> geüpload. Doe dit alleen als je de site vertrouwt.</translation>
@@ -1154,6 +1155,7 @@
 <translation id="2704184184447774363">Microsoft-documentondertekening</translation>
 <translation id="270516211545221798">Snelheid touchpad</translation>
 <translation id="2705736684557713153">Scroll naar de onderkant van het scherm en schakel instant-tethering in als deze optie wordt weergegeven. Als de optie niet wordt weergegeven, ben je helemaal klaar.</translation>
+<translation id="2706892089432507937">USB-apparaten</translation>
 <translation id="2707024448553392710">Component downloaden</translation>
 <translation id="270921614578699633">Gemiddelde van</translation>
 <translation id="2709453993673701466">Wil je synchronisatie en personalisatie beheren voordat ze worden ingeschakeld? Ga naar <ph name="BEGIN_LINK" />Instellingen<ph name="END_LINK" />.</translation>
@@ -1467,7 +1469,6 @@
 <translation id="3177909033752230686">Brontaal:</translation>
 <translation id="3182749001423093222">Spellingcontrole</translation>
 <translation id="3183139917765991655">Profile Importer</translation>
-<translation id="3188257591659621405">Mijn bestanden</translation>
 <translation id="3188465121994729530">Voortschrijdend gemiddelde</translation>
 <translation id="3190558889382726167">Wachtwoord opgeslagen</translation>
 <translation id="3192947282887913208">Audiobestanden</translation>
@@ -4314,7 +4315,6 @@
 <translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> en de gegevens die aan deze app gekoppeld zijn, worden verwijderd van dit apparaat.</translation>
 <translation id="7497215489070763236">CA-certificaat van server</translation>
 <translation id="7497981768003291373">Je hebt geen onlangs vastgelegde WebRTC-tekstlogboeken.</translation>
-<translation id="7502199377020483660">Als je deze kaarten op al je apparaten wilt gebruiken, sla je ze op in je Google-account</translation>
 <translation id="7502658306369382406">IPv6-adres</translation>
 <translation id="7503191893372251637">Type Netscape-certificaat</translation>
 <translation id="7503821294401948377">Kan pictogram '<ph name="ICON" />' voor browseractie niet laden.</translation>
@@ -4983,7 +4983,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8468750959626135884">Ontgrendel je <ph name="DEVICE_TYPE" /> met je Android-telefoon.</translation>
 <translation id="8470028084415844044">Schakel synchronisatie in om al je wachtwoorden op al je apparaten beschikbaar te maken.</translation>
 <translation id="8470513973197838199">Opgeslagen wachtwoorden voor <ph name="ORIGIN" /></translation>
-<translation id="8471635086304129332">Als je deze kaart op al je apparaten wilt gebruiken, sla je deze op in je Google-account</translation>
 <translation id="8472623782143987204">hardware-ondersteund</translation>
 <translation id="8473863474539038330">Adressen en meer</translation>
 <translation id="8475313423285172237">Een ander programma op je computer heeft een extensie toegevoegd die de manier waarop Chrome werkt kan wijzigen.</translation>
@@ -5303,7 +5302,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8946359700442089734">Foutopsporingsfuncties zijn niet volledig ingeschakeld op dit <ph name="IDS_SHORT_PRODUCT_NAME" />-apparaat.</translation>
 <translation id="8947779852178668482">Afbeeldingsbeschrijvingen ophalen van Google</translation>
 <translation id="894871326938397531">Incognitomodus verlaten?</translation>
-<translation id="8951256747718668828">De herstelactie kan niet worden voltooid vanwege een fout</translation>
+<translation id="8951256747718668828">De herstelactie kan niet worden voltooid door een fout</translation>
 <translation id="895347679606913382">Starten...</translation>
 <translation id="895944840846194039">JavaScript-geheugen</translation>
 <translation id="8959810181433034287">De gebruiker met beperkte rechten moet dit wachtwoord gebruiken om in te loggen, kies dus een veilig wachtwoord en geef dit door aan de gebruiker met beperkte rechten.</translation>

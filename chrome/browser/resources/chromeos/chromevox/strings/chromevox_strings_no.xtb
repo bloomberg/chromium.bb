@@ -70,7 +70,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1405567553485452995">Lysegrønn</translation>
 <translation id="1417889266572670458">Marineblå</translation>
-<translation id="1431911867058218151">Plommefarget</translation>
+<translation id="1431911867058218151">Plomme</translation>
 <translation id="1439316808600711881">rgn</translation>
 <translation id="1452236308086741652"><ph name="VALUE" />, tekstfelt for passord</translation>
 <translation id="146450394670219700">Grafikkobjekt</translation>
@@ -177,7 +177,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="2359897517538099099">Tabellmodus er ikke aktiv.</translation>
 <translation id="2381733276052567791">Slå tale på eller av</translation>
 <translation id="2390264819538553347">Trykk på Enter for å gå videre eller på tilbaketasten for å gå tilbake.</translation>
-<translation id="240709722712693803">Blå fiolett</translation>
+<translation id="240709722712693803">Blåfiolett</translation>
 <translation id="241124561063364910">etterfulgt av</translation>
 <translation id="2416512023405990736">En avmerkingsboks uten hake</translation>
 <translation id="2417569100218200841">Innholdsinformasjon</translation>
@@ -193,7 +193,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="2462626033734746142">Gruppe med alternativknapper</translation>
 <translation id="2471138580042810658">Overskrift 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{asterisk}other{# asterisker}}</translation>
-<translation id="2490721194269245365">Rosenbrun</translation>
+<translation id="2490721194269245365">Rosebrun</translation>
 <translation id="249330843868392562">Åpne innstillinger for tekst til tale</translation>
 <translation id="2497706219848005458">Grønngul</translation>
 <translation id="2523609930580546572">ChromeVox-veiledning</translation>
@@ -305,7 +305,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="316542773973815724">Navigering</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{mellomrom}other{# mellomrom}}</translation>
 <translation id="320961988183078793">angitt <ph name="TYPE" /></translation>
-<translation id="321072937702597574">Orkidefarget</translation>
+<translation id="321072937702597574">Orkide</translation>
 <translation id="3218691001991391708">lim inn <ph name="TEXT" />.</translation>
 <translation id="3223701887221307104"><ph name="NAME" />-fane</translation>
 <translation id="3226035351387556942">chk</translation>
@@ -371,12 +371,12 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="3655855170848725876">{COUNT,plural, =1{dollar}other{# dollartegn}}</translation>
 <translation id="3659787053479271466">alrt</translation>
 <translation id="3665563998540286755"><ph name="VALUE" />, listefelt</translation>
-<translation id="3681531118904532409">Papayafarget</translation>
+<translation id="3681531118904532409">Papayakrem</translation>
 <translation id="3687295507293856493">Gjett kolonneoverskriften i den nåværende cellen</translation>
 <translation id="3692274950075847560">S:<ph name="RESULT" /></translation>
-<translation id="370367311675896712">Gjennomstreking</translation>
+<translation id="370367311675896712">Gjennomstreket</translation>
 <translation id="3712520970944678024">Kontroll av tale</translation>
-<translation id="371302509916403935">Understreking</translation>
+<translation id="371302509916403935">Understreket</translation>
 <translation id="3716845769494773620">Flere linjer</translation>
 <translation id="3731746171184829332">Det finnes ingen tidligere overskrifter.</translation>
 <translation id="3735039640698208086">Ved avspilling av lyd:</translation>
@@ -395,7 +395,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="3819376190738087562">Det finnes ingenting å gå til.</translation>
 <translation id="385383972552776628">Åpne siden med alternativer</translation>
 <translation id="3856075812838139784">Skrivebeskyttet</translation>
-<translation id="3857141338659865495">Middels turkis</translation>
+<translation id="3857141338659865495">Mellomturkis</translation>
 <translation id="3887576927692165210">ed</translation>
 <translation id="3897092660631435901">Meny</translation>
 <translation id="3907138069015388678">ruteliste</translation>
@@ -636,7 +636,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="5500932716852106146">Det finnes ingen tidligere redigerbare tekstområder.</translation>
 <translation id="5502713021410870035">September</translation>
 <translation id="5507663321906818013">Feilsøk referansemålingen</translation>
-<translation id="551361796444814639">Middels blå</translation>
+<translation id="551361796444814639">Mellomblå</translation>
 <translation id="5518443085409638729">Plasser markøren mellom tegn når du redigerer tekst (som i Mac OS X).</translation>
 <translation id="552195134157544755">Alternativknapp</translation>
 <translation id="5534303576632885660">hdr</translation>
@@ -812,7 +812,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="6786800275320335305">Artikkel</translation>
 <translation id="6787839852456839824">Hurtigtaster</translation>
 <translation id="6793101435925451627">lstbx</translation>
-<translation id="6815255864998354418">Sitronfarget</translation>
+<translation id="6815255864998354418">Sitronfromasj</translation>
 <translation id="6816066673340002913">Blek gullris</translation>
 <translation id="6826226459053491773">Sveip to fingre ned</translation>
 <translation id="6833103209700200188">Bunntekst</translation>
@@ -1071,7 +1071,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8076492880354921740">Faner</translation>
 <translation id="8091452896542422286">Mellomrom</translation>
-<translation id="8096975275316362544">Mintkremfarget</translation>
+<translation id="8096975275316362544">Mintkrem</translation>
 <translation id="8098587210054821856">Skifergrå</translation>
 <translation id="8110647606445335195">Det finnes ingen ARIA-landmerker.</translation>
 <translation id="8138880386467279117">Berøring</translation>
@@ -1127,8 +1127,8 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="860150890330522909"><ph name="NAME" />-ruten er avmerket</translation>
 <translation id="8603071050456974042">ChromeVox-panelet</translation>
 <translation id="8606621670302093223">Datokontroll</translation>
-<translation id="8613709718990529335">Bisquefarget</translation>
-<translation id="8628186274519446680">Tomatfarget</translation>
+<translation id="8613709718990529335">Bisque</translation>
+<translation id="8628186274519446680">Tomat</translation>
 <translation id="8631359288236106450">valgte <ph name="COUNT" /> elementer</translation>
 <translation id="8638532244051952400">Les opp gjeldende cellekoordinater</translation>
 <translation id="8640369214276455272">Hvit røyk</translation>
@@ -1138,7 +1138,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="8656888282555543604">Slå på loggføring av punktskrift</translation>
 <translation id="8664519043722036194">sekunder</translation>
 <translation id="867187640362843212">Overskrift 5</translation>
-<translation id="8696284982970258155">Honeydew</translation>
+<translation id="8696284982970258155">Honningmelon</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{loddrett strek}other{# loddrette streker}}</translation>
 <translation id="8735450637152821465">Start markeringen</translation>
 <translation id="8743786158317878347">åpne strukturert innhold, for eksempel tabeller</translation>
@@ -1157,7 +1157,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="8882002077197914455">Radoverskrift</translation>
 <translation id="8883850400338911892">endre URL 8 p</translation>
 <translation id="8896347895970027998">Velg om ChromeVox skal være på eller av.</translation>
-<translation id="8896479570570613387">Middels lilla</translation>
+<translation id="8896479570570613387">Mellomlilla</translation>
 <translation id="8898516272131543774">Slå av eller på tegnsettingsekko</translation>
 <translation id="8900148057318340779">Prefikstast</translation>
 <translation id="8908714597367957477">colhdr</translation>
@@ -1197,7 +1197,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="9173115498289768110">Volum – <ph name="PERCENT" /> prosent</translation>
 <translation id="9178973770513562274">Bruk piltastene for opp og ned for å bla gjennom, eller skriv inn tekst for å søke.</translation>
 <translation id="9192904702577636854">Rulletekst</translation>
-<translation id="9208241857935108694">Gammelhvit</translation>
+<translation id="9208241857935108694">Antikkhvit</translation>
 <translation id="9212322457209634662">Det finnes ingen neste del.</translation>
 <translation id="9220679313820249046">Oransjerød</translation>
 <translation id="9223032053830369045">Mørk rød</translation>

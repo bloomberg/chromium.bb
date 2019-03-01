@@ -228,6 +228,7 @@
 <translation id="4585337515783392668">Остановить трансляцию на неизвестное устройство</translation>
 <translation id="4628757576491864469">Устройства</translation>
 <translation id="4659419629803378708">Функция ChromeVox включена</translation>
+<translation id="4696813013609194136">Требуется родительский код доступа</translation>
 <translation id="4734965478015604180">Горизонтальная ориентация</translation>
 <translation id="4774338217796918551">Возвращайтесь завтра в <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Пароль для адреса электронной почты <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -308,6 +309,7 @@
 <translation id="615957422585914272">Показывать экранную клавиатуру</translation>
 <translation id="6164005077879661055">После удаления контролируемого профиля все файлы и локальные данные, связанные с ним, будут удалены. Посещенные страницы и настройки этого профиля будут видны его менеджеру на странице: <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Подробнее...</translation>
+<translation id="6226658484809055840">У администратора устройства есть доступ ко всем вашим действиям, а также к паролям и переписке.</translation>
 <translation id="6254629735336163724">Заблокировано в горизонтальном положении</translation>
 <translation id="6259254695169772643">Выберите нужное с помощью стилуса</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: выполняется активация...</translation>
@@ -376,6 +378,7 @@
 <translation id="7377169924702866686">Включен режим Caps Lock.</translation>
 <translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> сек.</translation>
 <translation id="7398254312354928459">Установлено соединение с другой сетью</translation>
+<translation id="7405710164030118432">Чтобы разблокировать устройство, введите родительский код доступа Family Link.</translation>
 <translation id="742594950370306541">Камера используется.</translation>
 <translation id="743058460480092004">Камера и микрофон используются.</translation>
 <translation id="7497767806359279797">Выберите язык и клавиатуру</translation>
