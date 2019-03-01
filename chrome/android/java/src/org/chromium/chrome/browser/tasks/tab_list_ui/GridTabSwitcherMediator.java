@@ -5,12 +5,16 @@
 package org.chromium.chrome.browser.tasks.tab_list_ui;
 
 import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES;
+import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.BOTTOM_CONTROLS_HEIGHT;
 import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.INITIAL_SCROLL_INDEX;
 import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.IS_INCOGNITO;
 import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.IS_VISIBLE;
+import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.TOP_CONTROLS_HEIGHT;
 import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.VISIBILITY_LISTENER;
 
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeController;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -38,6 +42,24 @@ class GridTabSwitcherMediator
     private final TabModelSelectorTabModelObserver mTabModelObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
     private final List<OverviewModeObserver> mObservers = new ArrayList<>();
+    private final ChromeFullscreenManager mFullscreenManager;
+    private final ChromeFullscreenManager.FullscreenListener mFullscreenListener =
+            new ChromeFullscreenManager.FullscreenListener() {
+                @Override
+                public void onContentOffsetChanged(int offset) {}
+
+                @Override
+                public void onControlsOffsetChanged(
+                        int topOffset, int bottomOffset, boolean needsAnimate) {}
+
+                @Override
+                public void onToggleOverlayVideoMode(boolean enabled) {}
+
+                @Override
+                public void onBottomControlsHeightChanged(int bottomControlsHeight) {
+                    mContainerViewModel.set(BOTTOM_CONTROLS_HEIGHT, bottomControlsHeight);
+                }
+            };
 
     /**
      * In cases where a didSelectTab was due to closing a tab or switching models with a toggle,
@@ -51,12 +73,15 @@ class GridTabSwitcherMediator
      * @param containerViewModel The {@link PropertyModel} to keep state on the View containing the
      *         grid.
      * @param tabModelSelector {@link TabModelSelector} to observer for model and selection changes.
+     * @param fullscreenManager {@link FullscreenManager} to use.
      */
     GridTabSwitcherMediator(GridTabSwitcherCoordinator coordinator,
-            PropertyModel containerViewModel, TabModelSelector tabModelSelector) {
+            PropertyModel containerViewModel, TabModelSelector tabModelSelector,
+            ChromeFullscreenManager fullscreenManager) {
         mCoordinator = coordinator;
         mContainerViewModel = containerViewModel;
         mTabModelSelector = tabModelSelector;
+        mFullscreenManager = fullscreenManager;
 
         mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
             @Override
@@ -94,9 +119,14 @@ class GridTabSwitcherMediator
             }
         };
 
+        mFullscreenManager.addListener(mFullscreenListener);
+
         mContainerViewModel.set(VISIBILITY_LISTENER, this);
         mContainerViewModel.set(IS_INCOGNITO, mTabModelSelector.getCurrentModel().isIncognito());
         mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);
+        mContainerViewModel.set(TOP_CONTROLS_HEIGHT, fullscreenManager.getTopControlsHeight());
+        mContainerViewModel.set(
+                BOTTOM_CONTROLS_HEIGHT, fullscreenManager.getBottomControlsHeight());
     }
 
     private void setVisibility(boolean isVisible) {
@@ -174,6 +204,7 @@ class GridTabSwitcherMediator
      */
     public void destroy() {
         mTabModelSelector.removeObserver(mTabModelSelectorObserver);
+        mFullscreenManager.removeListener(mFullscreenListener);
         mTabModelObserver.destroy();
     }
 }

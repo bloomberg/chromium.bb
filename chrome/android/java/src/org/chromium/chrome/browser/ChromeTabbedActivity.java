@@ -733,7 +733,7 @@ public class ChromeTabbedActivity
             if (FeatureUtilities.isGridTabSwitcherEnabled(this)) {
                 mGridTabSwitcherCoordinator = new GridTabSwitcherCoordinator(this,
                         getLifecycleDispatcher(), getToolbarManager(), getTabModelSelector(),
-                        getTabContentManager(), getCompositorViewHolder());
+                        getTabContentManager(), getCompositorViewHolder(), getFullscreenManager());
                 mOverviewModeController.overrideOverviewModeController(
                         mGridTabSwitcherCoordinator.getOverviewModeController());
             }

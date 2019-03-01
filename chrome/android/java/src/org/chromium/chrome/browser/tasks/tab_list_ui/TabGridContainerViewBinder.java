@@ -5,10 +5,14 @@
 package org.chromium.chrome.browser.tasks.tab_list_ui;
 
 import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES;
+import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.BOTTOM_CONTROLS_HEIGHT;
 import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.INITIAL_SCROLL_INDEX;
 import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.IS_INCOGNITO;
 import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.IS_VISIBLE;
+import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.TOP_CONTROLS_HEIGHT;
 import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.VISIBILITY_LISTENER;
+
+import android.widget.FrameLayout;
 
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -36,6 +40,14 @@ class TabGridContainerViewBinder {
             view.setVisibilityListener(model.get(VISIBILITY_LISTENER));
         } else if (INITIAL_SCROLL_INDEX == propertyKey) {
             view.scrollToPosition(model.get(INITIAL_SCROLL_INDEX));
+        } else if (TOP_CONTROLS_HEIGHT == propertyKey) {
+            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) view.getLayoutParams();
+            params.topMargin = model.get(TOP_CONTROLS_HEIGHT);
+            view.requestLayout();
+        } else if (BOTTOM_CONTROLS_HEIGHT == propertyKey) {
+            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) view.getLayoutParams();
+            params.bottomMargin = model.get(BOTTOM_CONTROLS_HEIGHT);
+            view.requestLayout();
         }
     }
 }
