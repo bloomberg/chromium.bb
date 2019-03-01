@@ -1320,7 +1320,7 @@ void UseCounter::CountIfFeatureWouldBeBlockedByFeaturePolicy(
   if (!frame.GetSecurityContext()->GetSecurityOrigin()->CanAccess(topOrigin)) {
     // This frame is cross-origin with the top-level frame, and so would be
     // blocked without a feature policy.
-    UseCounter::Count(&frame, blocked_cross_origin);
+    UseCounter::Count(frame.GetDocument(), blocked_cross_origin);
     return;
   }
 
@@ -1330,7 +1330,7 @@ void UseCounter::CountIfFeatureWouldBeBlockedByFeaturePolicy(
   const Frame* f = &frame;
   while (!f->IsMainFrame()) {
     if (!f->GetSecurityContext()->GetSecurityOrigin()->CanAccess(topOrigin)) {
-      UseCounter::Count(&frame, blocked_same_origin);
+      UseCounter::Count(frame.GetDocument(), blocked_same_origin);
       return;
     }
     f = f->Tree().Parent();

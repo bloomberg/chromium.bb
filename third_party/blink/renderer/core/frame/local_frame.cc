@@ -1028,9 +1028,10 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
 
   // Top navigation in sandbox with or w/o 'allow-top-navigation'.
   if (target_frame != this && sandboxed && target_frame == Tree().Top()) {
-    UseCounter::Count(this, WebFeature::kTopNavInSandbox);
+    UseCounter::Count(GetDocument(), WebFeature::kTopNavInSandbox);
     if (!has_user_gesture) {
-      UseCounter::Count(this, WebFeature::kTopNavInSandboxWithoutGesture);
+      UseCounter::Count(GetDocument(),
+                        WebFeature::kTopNavInSandboxWithoutGesture);
     }
   }
 
@@ -1051,11 +1052,11 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
     if (IsAdSubframe())
       framebust_params |= kAdBit;
 
-    UseCounter::Count(this, WebFeature::kTopNavigationFromSubFrame);
+    UseCounter::Count(GetDocument(), WebFeature::kTopNavigationFromSubFrame);
     if (sandboxed) {  // Sandboxed with 'allow-top-navigation'.
-      UseCounter::Count(this, WebFeature::kTopNavInSandboxWithPerm);
+      UseCounter::Count(GetDocument(), WebFeature::kTopNavInSandboxWithPerm);
       if (!has_user_gesture) {
-        UseCounter::Count(this,
+        UseCounter::Count(GetDocument(),
                           WebFeature::kTopNavInSandboxWithPermButNoGesture);
       }
     }
@@ -1131,7 +1132,8 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
       !HasTransientUserActivation(this, false /* check_if_main_thread */) &&
       !target_frame.GetSecurityContext()->GetSecurityOrigin()->CanAccess(
           SecurityOrigin::Create(destination_url).get())) {
-    UseCounter::Count(this, WebFeature::kOpenerNavigationWithoutGesture);
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kOpenerNavigationWithoutGesture);
   }
 
   if (!is_allowed_navigation && !error_reason.IsNull())

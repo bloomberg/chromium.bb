@@ -467,17 +467,17 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
                                               ->ToString());
   if (MixedContentChecker::IsMixedContent(source_document->GetSecurityOrigin(),
                                           target_url)) {
-    UseCounter::Count(source->GetFrame(),
+    UseCounter::Count(source_document,
                       WebFeature::kPostMessageFromSecureToInsecure);
   } else if (MixedContentChecker::IsMixedContent(
                  GetFrame()->GetSecurityContext()->GetSecurityOrigin(),
                  source_document->Url())) {
-    UseCounter::Count(source->GetFrame(),
+    UseCounter::Count(source_document,
                       WebFeature::kPostMessageFromInsecureToSecure);
     if (MixedContentChecker::IsMixedContent(
             GetFrame()->Tree().Top().GetSecurityContext()->GetSecurityOrigin(),
             source_document->Url())) {
-      UseCounter::Count(source->GetFrame(),
+      UseCounter::Count(source_document,
                         WebFeature::kPostMessageFromInsecureToSecureToplevel);
     }
   }
@@ -486,7 +486,7 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
           target_url, RedirectStatus::kNoRedirect,
           SecurityViolationReportingPolicy::kSuppressReporting)) {
     UseCounter::Count(
-        source->GetFrame(),
+        source_document,
         WebFeature::kPostMessageOutgoingWouldBeBlockedByConnectSrc);
   }
   UserActivation* user_activation = nullptr;
