@@ -13,36 +13,21 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
+import org.chromium.components.signin.GAIAServiceType;
 
 /**
  * Stub entry points and implementation interface for the account management fragment delegate.
  */
 public class AccountManagementScreenHelper {
-
-    /*
-     * TODO(guohui): add all Gaia service types.
-     * Enum for the Gaia service types, must match GAIAServiceType in
-     * signin_header_helper.h
-     */
-    /**
-     * The signin::GAIAServiceType value used in openAccountManagementScreen when the dialog
-     * hasn't been triggered from the content area.
-     */
-    public static final int GAIA_SERVICE_TYPE_NONE = 0;
-    /**
-     * The signin::GAIAServiceType value used when openAndroidAccountCreationScreen is triggered by
-     * the GAIA service to create a new account
-     */
-    public static final int GAIA_SERVICE_TYPE_SIGNUP = 5;
-
     private static final String EXTRA_ACCOUNT_TYPES = "account_types";
     private static final String EXTRA_VALUE_GOOGLE_ACCOUNTS = "com.google";
 
     @CalledByNative
-    private static void openAccountManagementScreen(Profile profile, int gaiaServiceType) {
+    private static void openAccountManagementScreen(
+            Profile profile, @GAIAServiceType int gaiaServiceType) {
         ThreadUtils.assertOnUiThread();
 
-        if (gaiaServiceType == GAIA_SERVICE_TYPE_SIGNUP) {
+        if (gaiaServiceType == GAIAServiceType.GAIA_SERVICE_TYPE_SIGNUP) {
             openAndroidAccountCreationScreen();
             return;
         }
@@ -59,7 +44,8 @@ public class AccountManagementScreenHelper {
      * Opens the Android account manager for adding or creating a Google account.
      */
     private static void openAndroidAccountCreationScreen() {
-        logEvent(ProfileAccountManagementMetrics.DIRECT_ADD_ACCOUNT, GAIA_SERVICE_TYPE_SIGNUP);
+        logEvent(ProfileAccountManagementMetrics.DIRECT_ADD_ACCOUNT,
+                GAIAServiceType.GAIA_SERVICE_TYPE_SIGNUP);
 
         Intent createAccountIntent = new Intent(Settings.ACTION_ADD_ACCOUNT);
         createAccountIntent.putExtra(

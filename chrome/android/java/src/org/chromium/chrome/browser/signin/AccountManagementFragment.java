@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.sync.ProfileSyncService.SyncStateChangedListe
 import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.GAIAServiceType;
 
 import java.util.List;
 
@@ -95,7 +96,7 @@ public class AccountManagementFragment extends PreferenceFragment
     public static final String PREF_SIGN_OUT = "sign_out";
     public static final String PREF_SIGN_OUT_DIVIDER = "sign_out_divider";
 
-    private int mGaiaServiceType;
+    private @GAIAServiceType int mGaiaServiceType = GAIAServiceType.GAIA_SERVICE_TYPE_NONE;
 
     private Profile mProfile;
     private String mSignedInAccountName;
@@ -112,7 +113,6 @@ public class AccountManagementFragment extends PreferenceFragment
             mSyncSetupInProgressHandle = syncService.getSetupInProgressHandle();
         }
 
-        mGaiaServiceType = AccountManagementScreenHelper.GAIA_SERVICE_TYPE_NONE;
         if (getArguments() != null) {
             mGaiaServiceType =
                     getArguments().getInt(SHOW_GAIA_SERVICE_TYPE_EXTRA, mGaiaServiceType);
@@ -121,8 +121,7 @@ public class AccountManagementFragment extends PreferenceFragment
         mProfile = Profile.getLastUsedProfile();
 
         AccountManagementScreenHelper.logEvent(
-                ProfileAccountManagementMetrics.VIEW,
-                mGaiaServiceType);
+                ProfileAccountManagementMetrics.VIEW, mGaiaServiceType);
 
         int avatarImageSize = getResources().getDimensionPixelSize(R.dimen.user_picture_size);
         ProfileDataCache.BadgeConfig badgeConfig = null;
@@ -390,7 +389,7 @@ public class AccountManagementFragment extends PreferenceFragment
             AccountAdder.getInstance().addAccount(getActivity(), AccountAdder.ADD_ACCOUNT_RESULT);
 
             // Return to the last opened tab if triggered from the content area.
-            if (mGaiaServiceType != AccountManagementScreenHelper.GAIA_SERVICE_TYPE_NONE) {
+            if (mGaiaServiceType != GAIAServiceType.GAIA_SERVICE_TYPE_NONE) {
                 if (isAdded()) getActivity().finish();
             }
 
@@ -507,7 +506,7 @@ public class AccountManagementFragment extends PreferenceFragment
      * Open the account management UI.
      * @param serviceType A signin::GAIAServiceType that triggered the dialog.
      */
-    public static void openAccountManagementScreen(int serviceType) {
+    public static void openAccountManagementScreen(@GAIAServiceType int serviceType) {
         Bundle arguments = new Bundle();
         arguments.putInt(SHOW_GAIA_SERVICE_TYPE_EXTRA, serviceType);
         PreferencesLauncher.launchSettingsPage(
