@@ -229,10 +229,6 @@ bool SigninManagerBase::IsAuthenticated() const {
   return !authenticated_account_id_.empty();
 }
 
-void SigninManagerBase::Shutdown() {
-  on_shutdown_callback_list_.Notify();
-}
-
 void SigninManagerBase::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }

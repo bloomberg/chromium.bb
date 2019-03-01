@@ -45,9 +45,6 @@ class IdentityService : public service_manager::Service {
   SigninManagerBase* signin_manager_;
   ProfileOAuth2TokenService* token_service_;
 
-  std::unique_ptr<base::CallbackList<void()>::Subscription>
-      signin_manager_shutdown_subscription_;
-
   service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityService);

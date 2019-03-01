@@ -96,12 +96,6 @@ class IdentityAccessorImpl : public mojom::IdentityAccessor,
   // Gets the current state of the account represented by |account_info|.
   AccountState GetStateOfAccount(const AccountInfo& account_info);
 
-  // Called when |signin_manager_| is shutting down. Destroys this instance,
-  // since this instance can't outlive the signin classes that it is depending
-  // on. Note that once IdentityAccessorImpl manages the lifetime of its
-  // dependencies internally, this will no longer be necessary.
-  void OnSigninManagerShutdown();
-
   // Called when |binding_| hits a connection error. Destroys this instance,
   // since it's no longer needed.
   void OnConnectionError();
@@ -110,9 +104,6 @@ class IdentityAccessorImpl : public mojom::IdentityAccessor,
   AccountTrackerService* account_tracker_;
   SigninManagerBase* signin_manager_;
   ProfileOAuth2TokenService* token_service_;
-
-  std::unique_ptr<base::CallbackList<void()>::Subscription>
-      signin_manager_shutdown_subscription_;
 
   // The set of pending requests for access tokens.
   AccessTokenRequests access_token_requests_;

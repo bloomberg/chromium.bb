@@ -58,9 +58,13 @@ class IdentityAccessorImplTest : public testing::Test {
   }
 
   void TearDown() override {
-    // Shut down the SigninManager so that the IdentityAccessorImpl doesn't end
-    // up outliving it.
-    signin_manager_.Shutdown();
+    // Explicitly destruct IdentityAccessorImpl so that it doesn't outlive its
+    // dependencies.
+    ResetIdentityAccessorImpl();
+
+    // Wait for the IdentityAccessorImpl to be notified of disconnection and
+    // destroy itself.
+    base::RunLoop().RunUntilIdle();
   }
 
   void OnReceivedPrimaryAccountInfo(
@@ -159,77 +163,6 @@ class IdentityAccessorImplTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(IdentityAccessorImplTest);
 };
-
-// Tests that it is not possible to connect to the IdentityAccessor if
-// initiated after SigninManager shutdown.
-TEST_F(IdentityAccessorImplTest, SigninManagerShutdownBeforeConnection) {
-  AccountInfo sentinel;
-  sentinel.account_id = "sentinel";
-  primary_account_info_ = sentinel;
-
-  // Ensure that the Identity Service has actually been created before
-  // invoking SigninManagerBase::Shutdown(), since otherwise this test will
-  // spin forever. Then reset the IdentityAccessor so that the next request
-  // makes a fresh connection.
-  FlushIdentityAccessorImplForTesting();
-  ResetIdentityAccessorImpl();
-
-  // Make a call to connect to the IdentityAccessorImpl *after* SigninManager
-  // shutdown; it should get notified of an error when the Identity Service
-  // drops the connection.
-  signin_manager()->Shutdown();
-  base::RunLoop run_loop;
-  SetIdentityAccessorImplConnectionErrorHandler(run_loop.QuitClosure());
-
-  GetIdentityAccessorImpl()->GetPrimaryAccountInfo(base::BindRepeating(
-      &IdentityAccessorImplTest::OnReceivedPrimaryAccountInfo,
-      base::Unretained(this), run_loop.QuitClosure()));
-  run_loop.Run();
-
-  // Verify that the callback to GetPrimaryAccountInfo() was not invoked.
-  EXPECT_TRUE(primary_account_info_);
-  EXPECT_EQ("sentinel", primary_account_info_->account_id);
-}
-
-// Tests that the IdentityAccessor destroys itself on SigninManager shutdown.
-TEST_F(IdentityAccessorImplTest, SigninManagerShutdownAfterConnection) {
-  base::RunLoop run_loop;
-  SetIdentityAccessorImplConnectionErrorHandler(run_loop.QuitClosure());
-
-  // Ensure that the IdentityAccessorImpl instance has actually been created
-  // before invoking SigninManagerBase::Shutdown(), since otherwise this test
-  // will spin forever.
-  FlushIdentityAccessorImplForTesting();
-  signin_manager()->Shutdown();
-  run_loop.Run();
-}
-
-// Tests that the IdentityAccessor properly handles its own destruction in the
-// case where there is an active consumer request (i.e., a pending callback from
-// a Mojo call). In particular, this flow should not cause a DCHECK to fire in
-// debug mode.
-TEST_F(IdentityAccessorImplTest,
-       IdentityAccessorImplShutdownWithActiveRequest) {
-  base::RunLoop run_loop;
-  SetIdentityAccessorImplConnectionErrorHandler(run_loop.QuitClosure());
-
-  // Call a method on the IdentityAccessorImpl that will cause it to store a
-  // pending callback. This callback will never be invoked, so just pass dummy
-  // arguments to it.
-  GetIdentityAccessorImpl()->GetPrimaryAccountWhenAvailable(base::BindRepeating(
-      &IdentityAccessorImplTest::OnPrimaryAccountAvailable,
-      base::Unretained(this), base::RepeatingClosure(), nullptr, nullptr));
-
-  // Ensure that the IdentityAccessorImpl has received the above call before
-  // invoking SigninManagerBase::Shutdown(), as otherwise this test is
-  // pointless.
-  FlushIdentityAccessorImplForTesting();
-
-  // This flow is what would cause a DCHECK to fire if IdentityAccessorImpl is
-  // not properly closing its binding on shutdown.
-  signin_manager()->Shutdown();
-  run_loop.Run();
-}
 
 // Check that the primary account info is null if not signed in.
 TEST_F(IdentityAccessorImplTest, GetPrimaryAccountInfoNotSignedIn) {
