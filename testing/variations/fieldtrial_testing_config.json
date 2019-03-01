@@ -5126,21 +5126,6 @@
             ]
         }
     ],
-    "UserInitiatedChromeCleanupsFieldTrial": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "On",
-                    "enable_features": [
-                        "UserInitiatedChromeCleanups"
-                    ]
-                }
-            ]
-        }
-    ],
     "V8AsmJSToWasm": [
         {
             "platforms": [
