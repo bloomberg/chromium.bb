@@ -32,6 +32,7 @@
 <translation id="1930711995431081526">статус</translation>
 <translation id="1938124657309484470">Максимальное значение должно быть <ph name="MAXIMUM_DATE_OR_TIME" />.</translation>
 <translation id="1946271899482435442">Показать окно выбора даты</translation>
+<translation id="1982354452682152483">Описание недоступно.</translation>
 <translation id="1993104285338243655">Включено дублирование экрана</translation>
 <translation id="2060505056492490888">Недопустимое положение символа "<ph name="DOT" />" в адресе "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Сегодня</translation>
@@ -52,7 +53,6 @@
 <translation id="2653659639078652383">Отправить</translation>
 <translation id="2657045182931379222">графический объект</translation>
 <translation id="2674318244760992338">нижний колонтитул</translation>
-<translation id="2706474812903655270">Видео воспроизводится в режиме "Картинка в картинке".</translation>
 <translation id="2709516037105925701">Автозаполнение</translation>
 <translation id="2723001399770238859">аудио</translation>
 <translation id="2746543609216772311">Минимальное значение должно быть <ph name="MINIMUM_DATE_OR_TIME" />.</translation>
@@ -73,6 +73,7 @@
 <translation id="3450233048674729344">Значение должно быть меньше или равно <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">описание</translation>
 <translation id="3557673793733683882">заголовок <ph name="HEADING_LEVEL" /></translation>
+<translation id="3685101356851116974">Изображение без описания</translation>
 <translation id="3706100364254443312">переключить</translation>
 <translation id="3732799496749320381">мм</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> ГБ</translation>
@@ -176,6 +177,7 @@
 <translation id="7139483182332611405">вступление</translation>
 <translation id="7263440858009898357">Выберите один из пунктов списка.</translation>
 <translation id="727747134524199931">заголовок столбца</translation>
+<translation id="7336527682887843386">Не удалось получить описание.</translation>
 <translation id="7353453495576941748">упоминание</translation>
 <translation id="7364796246159120393">Выберите файл</translation>
 <translation id="739024184232394898">Другое…</translation>
@@ -184,11 +186,13 @@
 <translation id="7491962110804786152">tab</translation>
 <translation id="7514365320538308">Скачать</translation>
 <translation id="7529102961911894712">обратная ссылка</translation>
+<translation id="7533959249147584474">Графическое изображение без описания</translation>
 <translation id="7647456547678091388">совет</translation>
 <translation id="7661956066982048809">графический документ</translation>
 <translation id="7673697353781729403">Часы</translation>
 <translation id="7681220483256441252">указатель</translation>
 <translation id="7740050170769002709">HTML-содержание</translation>
+<translation id="7745230546936012372">Чтобы получить недостающие описания изображений, откройте контекстное меню.</translation>
 <translation id="7750228210027921155">Картинка в картинке</translation>
 <translation id="775297008183122718">Неверная запись</translation>
 <translation id="7789962463072032349">Пауза</translation>
@@ -196,9 +200,11 @@
 <translation id="7888071071722539607">Адрес электронной почты должен содержать символ "<ph name="ATSIGN" />". В адресе "<ph name="INVALIDADDRESS" />" отсутствует символ "<ph name="ATSIGN" />".</translation>
 <translation id="7891486169920085145">разделитель</translation>
 <translation id="795667975304826397">Файл не выбран</translation>
+<translation id="8042519864538898414">Похоже, это контент для взрослых.</translation>
 <translation id="8053789581856978548">поле поиска</translation>
 <translation id="8057695513531652401">примечание</translation>
 <translation id="8105797009065549151">ссылка на примечание</translation>
+<translation id="811583516810654505">Загружается описание...</translation>
 <translation id="8117451130807776954">На этой неделе</translation>
 <translation id="8199524924445686405">гггг</translation>
 <translation id="8261464734335370856">Орфографическая ошибка</translation>

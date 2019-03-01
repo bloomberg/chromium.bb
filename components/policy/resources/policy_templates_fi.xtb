@@ -838,7 +838,7 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 
       Jos automaattinen toisto on käytössä, <ph name="PRODUCT_NAME" /> voi toistaa automaattisesti, eli ilman käyttäjän hyväksyntää, videot ja niiden äänisisällön.
 
-      URL-osoitemallen vaihtoehdot:
+      URL-osoitemallien vaihtoehdot:
 
       - [*.]domain.tld (vastaa tunnusta domain.tld ja kaikkia aliverkkotunnuksia)
 

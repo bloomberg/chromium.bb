@@ -69,7 +69,7 @@
 <translation id="1385214448885562192">동의하려면 Enter를 누르고 취소하려면 Esc를 누르세요. 다음으로 이동하려면 아래를 누르고 이전으로 이동하려면 위를 누르세요.</translation>
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1405567553485452995">연한 녹색</translation>
-<translation id="1417889266572670458">감청색</translation>
+<translation id="1417889266572670458">네이비</translation>
 <translation id="1431911867058218151">플럼</translation>
 <translation id="1439316808600711881">rgn</translation>
 <translation id="1452236308086741652"><ph name="VALUE" />, 비밀번호 입력란</translation>
@@ -545,7 +545,7 @@
 <translation id="4867316986324544967">TTS 로깅 사용</translation>
 <translation id="4877261390094455813">검색어를 입력하세요.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
-<translation id="4892105484979139179">진한 시안</translation>
+<translation id="4892105484979139179">다크 시안</translation>
 <translation id="489907760999452556">내부 링크</translation>
 <translation id="4915087353619183190">학습 모드를 시작합니다. 쿼티 키, 새로고침할 수 있는 점자 키, 터치 동작을 눌러 기능을 확인하세요. Control 키와 W를 누르거나 Esc 키로 종료하세요.</translation>
 <translation id="492295894462528572">서문</translation>
@@ -618,7 +618,7 @@
 <translation id="5374320867641260420">다음 버튼이 없습니다.</translation>
 <translation id="5376407118396657359">셀 단위로 이동하려면 Search + Ctrl + Alt와 함께 화살표를 누르세요.</translation>
 <translation id="5382299583965267720">다음 수준 1 제목이 없습니다.</translation>
-<translation id="5400836586163650660">회색</translation>
+<translation id="5400836586163650660">그레이</translation>
 <translation id="5402367795255837559">점자</translation>
 <translation id="5402791055281059602">모달 알림</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{세미콜론}other{세미콜론 #개}}</translation>
@@ -872,7 +872,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="7203150201908454328">펼쳐짐</translation>
 <translation id="7210211103303402262">분</translation>
 <translation id="7217912842225915592">+<ph name="NUM" /></translation>
-<translation id="7218782500591078391">골든로드</translation>
+<translation id="7218782500591078391">골든 로드</translation>
 <translation id="7221740160534240920">선</translation>
 <translation id="7226216518520804442">lst</translation>
 <translation id="7229749224609077523">6점 점자표 선택:</translation>
@@ -972,7 +972,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="794091007957014205">{COUNT,plural, =1{애트 기호}other{애트 기호 #개}}</translation>
 <translation id="7942349550061667556">빨간색</translation>
 <translation id="7965147473449754028">메뉴 닫힘</translation>
-<translation id="7968340748835037139">진한 녹색</translation>
+<translation id="7968340748835037139">다크 그린</translation>
 <translation id="7972507042926081808">초콜릿</translation>
 <translation id="7974390230414479278">메뉴 항목</translation>
 <translation id="8007540374018858731">h3</translation>

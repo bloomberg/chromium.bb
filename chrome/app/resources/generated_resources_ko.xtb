@@ -653,6 +653,7 @@
 <translation id="1942765061641586207">이미지 해상도</translation>
 <translation id="1943097386230153518">새 서비스 설치</translation>
 <translation id="1944921356641260203">사용 가능한 업데이트 있음</translation>
+<translation id="1951012854035635156">어시스턴트</translation>
 <translation id="1954813140452229842">공유를 마운트하는 중에 오류가 발생했습니다. 사용자 인증 정보를 확인한 후 다시 시도해 주세요.</translation>
 <translation id="1956050014111002555">파일에 여러 인증서가 있지만 가져올 수 있는 인증서가 없습니다.</translation>
 <translation id="1956390763342388273">'<ph name="FOLDER_PATH" />'의 모든 파일이 업로드됩니다. 사이트를 신뢰할 수 있을 때만 실행하세요.</translation>
@@ -1154,6 +1155,7 @@
 <translation id="2704184184447774363">Microsoft Document Signing</translation>
 <translation id="270516211545221798">터치패드 속도</translation>
 <translation id="2705736684557713153">화면 하단으로 스크롤하여 인스턴트 테더링이 표시되면 사용 설정합니다. 표시되지 않으면 설정이 완료된 것입니다.</translation>
+<translation id="2706892089432507937">USB 기기</translation>
 <translation id="2707024448553392710">구성요소 다운로드 중</translation>
 <translation id="270921614578699633">평균 이동</translation>
 <translation id="2709453993673701466">동기화 및 맞춤설정을 관리한 다음 사용 설정하시겠습니까? <ph name="BEGIN_LINK" />설정<ph name="END_LINK" />으로 이동하세요.</translation>
@@ -1467,7 +1469,6 @@
 <translation id="3177909033752230686">페이지 언어:</translation>
 <translation id="3182749001423093222">맞춤법 검사</translation>
 <translation id="3183139917765991655">프로필 가져오기 도구</translation>
-<translation id="3188257591659621405">내 파일</translation>
 <translation id="3188465121994729530">이동 평균</translation>
 <translation id="3190558889382726167">비밀번호 저장됨</translation>
 <translation id="3192947282887913208">오디오 파일</translation>
@@ -4311,7 +4312,6 @@
 <translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> 및 관련 데이터가 이 기기에서 삭제됩니다.</translation>
 <translation id="7497215489070763236">서버 CA 인증서</translation>
 <translation id="7497981768003291373">최근 캡처한 WebRTC 텍스트 로그가 없습니다.</translation>
-<translation id="7502199377020483660">모든 기기에서 이 카드를 사용하려면 Google 계정에 카드를 저장하세요.</translation>
 <translation id="7502658306369382406">IPv6 주소</translation>
 <translation id="7503191893372251637">Netscape Certificate Type</translation>
 <translation id="7503821294401948377">브라우저 작업의 아이콘('<ph name="ICON" />')을 로드하지 못했습니다.</translation>
@@ -4981,7 +4981,6 @@
 <translation id="8468750959626135884">Android 휴대전화로 <ph name="DEVICE_TYPE" />을(를) 잠금 해제하세요.</translation>
 <translation id="8470028084415844044">저장된 비밀번호를 어느 기기에서나 사용하려면 동기화를 사용 설정하세요.</translation>
 <translation id="8470513973197838199"><ph name="ORIGIN" />의 저장된 비밀번호</translation>
-<translation id="8471635086304129332">모든 기기에서 이 카드를 사용하려면 Google 계정에 카드를 저장하세요.</translation>
 <translation id="8472623782143987204">하드웨어 지원</translation>
 <translation id="8473863474539038330">주소 및 기타</translation>
 <translation id="8475313423285172237">컴퓨터의 다른 프로그램에서 Chrome 작동에 영향을 줄 수 있는 확장 프로그램을 추가했습니다.</translation>

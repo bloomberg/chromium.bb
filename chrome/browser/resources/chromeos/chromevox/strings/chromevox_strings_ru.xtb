@@ -15,6 +15,7 @@
 <translation id="1044777062731150180">Заголовков нет</translation>
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">Неправильный ввод</translation>
+<translation id="1066085461259044485">Лесной зеленый</translation>
 <translation id="1080471004309605942">Конец курсива</translation>
 <translation id="1082209053475788238">Предыдущего заголовка шестого уровня нет.</translation>
 <translation id="1087788677726983142">Скрыть фильтры журнала событий</translation>
@@ -38,16 +39,21 @@
 <translation id="1213216066620407844">ChromeVox – голосовой интерфейс для Chrome</translation>
 <translation id="1225437811932752266">Поздравляем! Вы познакомились с основами ChromeVox. Помните, что меню с командами ChromeVox можно открыть в любой момент, нажав Поиск + Ю. Более подробную информацию о ChromeVox и Chrome OS вы найдете в перечисленных ниже статьях.
 Чтобы завершить работу с руководством, перейдите к кнопке "Закрыть" и нажмите ее, используя команды ChromeVox.</translation>
+<translation id="1225969361094801578">Темный аспидно-серый</translation>
 <translation id="1229276918471378188">Предыдущий переход</translation>
 <translation id="1236794971743289975">Концевая сноска</translation>
 <translation id="1237866625126425153">rdgrp</translation>
+<translation id="1243477406442346359">Васильковый</translation>
+<translation id="1246424317317450637">Полужирный</translation>
 <translation id="1251750620252348585">Перейти к следующему заголовку шестого уровня</translation>
 <translation id="1275718070701477396">Выбрано</translation>
 <translation id="1286609444451033486">Для переключения нажмите Поиск + Пробел.</translation>
 <translation id="1291286136605998134">Переключатель</translation>
+<translation id="1299774449519412690">Светлый небесно-голубой</translation>
 <translation id="1303806948938513162">Чтобы открыть меню ChromeVox, нажмите четырьмя пальцами.</translation>
 <translation id="1319608975892113573">Предыдущей цитаты нет.</translation>
 <translation id="1321576897702511272">Скрыть справку ChromeVox</translation>
+<translation id="1325946044405407859">Дубильная кора</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> из <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">Озвучивание символов и слов.</translation>
 <translation id="1339428534620983148">Перейти к предыдущему столбцу таблицы</translation>
@@ -63,6 +69,8 @@
 <translation id="1385214448885562192">Нажмите ВВОД, чтобы принять, или ОТМЕНА, чтобы отменить изменения. Для перехода к следующему или предыдущему элементу используйте стрелки вниз и вверх.</translation>
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1405567553485452995">Светло-зеленый</translation>
+<translation id="1417889266572670458">Военно-морской синий</translation>
+<translation id="1431911867058218151">Сливовый</translation>
 <translation id="1439316808600711881">rgn</translation>
 <translation id="1452236308086741652">Поле для ввода пароля, <ph name="VALUE" /></translation>
 <translation id="146450394670219700">Графический объект</translation>
@@ -86,7 +94,9 @@
 <translation id="1611168825862729585">Заголовок столбца:</translation>
 <translation id="1611649489706141841">вперед</translation>
 <translation id="1613476421962910979">Звуковые сигналы включены.</translation>
+<translation id="1616111909442424068">Пшеничный</translation>
 <translation id="1618597272655350600">Озвучить полное описание текущего элемента</translation>
+<translation id="1627222324347828322">Призрачно-белый</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{знак "больше"}one{# знак "больше"}few{# знака "больше"}many{# знаков "больше"}other{# greater than signs}}</translation>
 <translation id="1653266918374749391">Перейти к предыдущему заголовку третьего уровня</translation>
 <translation id="1657616855184033958">Показать фильтры журнала событий</translation>
@@ -95,12 +105,14 @@
 <translation id="1674262202423278359">Навигация ChromeVox</translation>
 <translation id="16777221443363124">Строка меню</translation>
 <translation id="1680732992526857724"><ph name="NAME" />: включено</translation>
+<translation id="1686878109459149415">Золотой</translation>
 <translation id="1692077714702418899">Структурная линия.</translation>
 <translation id="1700517974991662022">Посещено</translation>
 <translation id="1714116687360794776">Счетчик</translation>
 <translation id="1722567105086139392">Ссылка</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">Перейти к следующей диаграмме</translation>
+<translation id="1756785467854861272">Темная маджента</translation>
 <translation id="1765245556747822181">Проведите одним пальцем вверх</translation>
 <translation id="1781173782405573156">Пропустить нажатие</translation>
 <translation id="1787176709638001873">Поле для ввода пароля</translation>
@@ -115,10 +127,12 @@
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Озвучить текущее время и дату</translation>
 <translation id="1902396333223336119">Ячейка</translation>
+<translation id="1903683160884433981">Умеренный весенне-зеленый</translation>
 <translation id="1905379170753160525">Показать список заголовков</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
 <translation id="1914635379910604678">комбинация: <ph name="DOT" /></translation>
+<translation id="1923956950274750765">Умеренный цвет орхидеи</translation>
 <translation id="1954623340234317532">Элемент управления "номер недели"</translation>
 <translation id="1964135212174907577">Перейти к следующему элементу</translation>
 <translation id="1969092762068865084">июль</translation>
@@ -138,12 +152,14 @@
 <translation id="2110480898214777136">Перенос из начала в конец и наоборот внутри страницы, диалога или другого контейнера</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">access key:<ph name="KEY" /></translation>
+<translation id="2127747486437921899">Курсив</translation>
 <translation id="2138345533858834403">Имитация вывода дисплея Брайля
         на панели ChromeVox в верхней части экрана.</translation>
 <translation id="2163782704988363449">Список опечаток</translation>
 <translation id="2169714232367507776">Нажать на текущий элемент</translation>
 <translation id="2179452035581866348">ChromeVox использует звуки, чтобы передавать важную и дополнительную информацию. Когда вы будете знать, что означает каждый звук, то сможете перемещаться по странице с их помощью и при необходимости даже отключить подробное озвучивание. Ниже представлен полный список звуков и их значений.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{закрывающая круглая скобка}one{# закрывающая круглая скобка}few{# закрывающие круглые скобки}many{# закрывающих круглых скобок}other{# close parens}}</translation>
+<translation id="2197863150503783129">Коричневая кожа</translation>
 <translation id="2199994615414171367">Перейти к предыдущему математическому выражению</translation>
 <translation id="2203046366315513658">Уменьшить значение.</translation>
 <translation id="2220529011494928058">Сообщить о проблеме</translation>
@@ -161,6 +177,7 @@
 <translation id="2359897517538099099">Режим таблицы выключен.</translation>
 <translation id="2381733276052567791">Включить или выключить озвучивание действий</translation>
 <translation id="2390264819538553347">Чтобы продолжить, нажмите ВВОД. Чтобы вернуться на предыдущую страницу, нажмите BACKSPACE.</translation>
+<translation id="240709722712693803">Сине-фиолетовый</translation>
 <translation id="241124561063364910">а затем</translation>
 <translation id="2416512023405990736">Снятый флажок</translation>
 <translation id="2417569100218200841">Сведения о контенте</translation>
@@ -171,11 +188,14 @@
 <translation id="2429669115401274487">PM</translation>
 <translation id="242998846562331953">Подзаголовок</translation>
 <translation id="2435413342408885429">Клавиша <ph name="KEY" /> выбрана в качестве модификатора.</translation>
+<translation id="2435422727584637732">Синий цвет клуба Доджерс</translation>
 <translation id="2450814015951372393">Флажок</translation>
 <translation id="2462626033734746142">Группа переключателей</translation>
 <translation id="2471138580042810658">Заголовок шестого уровня.</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{звездочка}one{# звездочка}few{# звездочки}many{# звездочек}other{# asterisks}}</translation>
+<translation id="2490721194269245365">Розово-коричневый</translation>
 <translation id="249330843868392562">Открыть настройки озвучивания текста</translation>
+<translation id="2497706219848005458">Зеленовато-желтый</translation>
 <translation id="2523609930580546572">Руководство по ChromeVox</translation>
 <translation id="2525706221823668172">Быстрые клавиши Chromebook</translation>
 <translation id="2549392850788122959">Сброс до состояния по умолчанию для клавиши <ph name="KEY" /> выполнен.</translation>
@@ -194,11 +214,13 @@
 <translation id="2661530546602071611">Примечание</translation>
 <translation id="2673280813984708147">редактируется</translation>
 <translation id="267442004702508783">обновить</translation>
+<translation id="2675533876313964202">Шартрёз</translation>
 <translation id="2684412629217766642">Закрыть руководство по ChromeVox</translation>
 <translation id="2697408785920771974">autoinl</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{открывающая круглая скобка}one{# открывающая круглая скобка}few{# открывающие круглые скобки}many{# открывающих круглых скобок}other{# open parens}}</translation>
 <translation id="2705875883745373140">Не нажато</translation>
 <translation id="2706462751667573066">Вверх</translation>
+<translation id="2708078563826046398">Воздушный персиковый</translation>
 <translation id="2713444072780614174">Белый</translation>
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">аудио</translation>
@@ -218,12 +240,14 @@
 <translation id="2811204574343810641">Строка.</translation>
 <translation id="2816654101880605877">Следующего ползунка нет.</translation>
 <translation id="2841013758207633010">Время</translation>
+<translation id="2843814945404750166">Темный оливково-зеленый</translation>
 <translation id="2843837985843789981">Перейти к предыдущей группе</translation>
 <translation id="2844995807198708617">Контекстное меню.</translation>
 <translation id="2849332794118375855">Следующего флажка нет.</translation>
 <translation id="2864481629947106776">Перейти к предыдущей ссылке</translation>
 <translation id="2867808975387772810">Библиография</translation>
 <translation id="2873259058405069099">Перейти к началу таблицы</translation>
+<translation id="287383510823843610">Темно-оранжевый</translation>
 <translation id="2879867157561757640">Проведите тремя пальцами вниз</translation>
 <translation id="288178314850623291">Вы можете перемещаться между определенными элементами страницы. Например, чтобы перейти к следующему заголовку, нажмите SEARCH + H, а к предыдущему – SEARCH + SHIFT + H.</translation>
 <translation id="2894654529758326923">Подробные сведения</translation>
@@ -232,8 +256,11 @@
 <translation id="2911433807131383493">Открыть руководство ChromeVox</translation>
 <translation id="2912405967290226587">Проведите тремя пальцами вправо</translation>
 <translation id="2932083475399492303">Переключиться между структурной и контурной линией</translation>
+<translation id="2942710183375260152">Темный аспидно-синий</translation>
+<translation id="2943596527105977722">Темный золотарник</translation>
 <translation id="2944762337049891859">Автоматически читать страницу после загрузки</translation>
 <translation id="2964026537669811554">Группировка заголовков.</translation>
+<translation id="2968634799764242930">Цвет морской волны</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{вкладка}one{# вкладка}few{# вкладки}many{# вкладок}other{# tabs}}</translation>
 <translation id="2972078295414139404">Предыдущей открытой ссылки нет.</translation>
 <translation id="2972205263822847197">Подсказка</translation>
@@ -261,20 +288,24 @@
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">Перейти к следующему ориентиру</translation>
 <translation id="3096671415663099226">cbo</translation>
+<translation id="3103579948980282461">Умеренный фиолетово-красный</translation>
 <translation id="3104705064753753826">alrt dlg</translation>
 <translation id="3109724472072898302">Свернуто</translation>
 <translation id="3112457281078985179">Чтобы включить или отключить ChromeVox, нажмите CTRL + ALT + Z.</translation>
 <translation id="3134461040845705080">rdonly</translation>
+<translation id="3137663468179739624">Оливковый</translation>
 <translation id="3138767756593758860">Показать список ориентиров</translation>
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">Перейти к следующей строке</translation>
 <translation id="3153024374267644603">Включить озвучивание действий</translation>
 <translation id="3153928844647607688">Таблица "<ph name="TABLENAME" />", <ph name="TABLEROWS" /> на <ph name="TABLECOLS" /></translation>
 <translation id="3155083529632865074">Предыдущей кнопки нет.</translation>
+<translation id="3159493096109238499">Бежевый</translation>
 <translation id="3163593631834463955">Нет заголовка столбца</translation>
 <translation id="316542773973815724">Навигация</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{пробел}one{# пробел}few{# пробела}many{# пробелов}other{# spaces}}</translation>
 <translation id="320961988183078793">Введено <ph name="TYPE" />.</translation>
+<translation id="321072937702597574">Орхидея</translation>
 <translation id="3218691001991391708">вставить <ph name="TEXT" />.</translation>
 <translation id="3223701887221307104">Вкладка "<ph name="NAME" />"</translation>
 <translation id="3226035351387556942">chk</translation>
@@ -282,6 +313,7 @@
 <translation id="3232388865800379423">Всплывающая кнопка</translation>
 <translation id="3241052487511142956">Перейти к предыдущей открытой ссылке</translation>
 <translation id="3241638166094654466">Ячеек в каждой строке:</translation>
+<translation id="327361630706777244">Цвет шрифта <ph name="FONT_COLOR" />, конец</translation>
 <translation id="3286372614333682499">вертикальная ориентация</translation>
 <translation id="3286390186030710347">Ползунок</translation>
 <translation id="3299925995433437805">Следующей открытой ссылки нет.</translation>
@@ -305,11 +337,15 @@
 <translation id="3392045790598181549">Пункт меню <ph name="NAME" /></translation>
 <translation id="3393605254399152980">Проведите пальцем по экрану, чтобы включить озвучивание текста.</translation>
 <translation id="3406283310380167331">Показать список форм</translation>
+<translation id="3414400929511680526">Голубой цвет имени Алисы Рузвельт</translation>
+<translation id="3437941064431741545">Размер шрифта <ph name="FONT_SIZE" />, конец</translation>
+<translation id="344800400831402066">Светло-коричневый</translation>
 <translation id="3457000393508828486">Частично нажато</translation>
 <translation id="3458865416877308321"><ph name="NAME" />: отключено</translation>
 <translation id="3462439746547587373">Кнопка "<ph name="NAME" />"</translation>
 <translation id="3466530247399808663">Нажатие недопустимой клавиши</translation>
 <translation id="3468959318854349468">Без названия</translation>
+<translation id="3469413619751135069">Бледно-зеленый</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> – <ph name="V2" /></translation>
 <translation id="3490765818161916458">Элемент ListGrid</translation>
@@ -321,8 +357,11 @@
 <translation id="352577523970648069">Редактируемое текстовое поле</translation>
 <translation id="3549141990712742152">вырезать <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Чтобы приостановить озвучивание текста, коснитесь экрана двумя пальцами.</translation>
+<translation id="3555380819397253474">Шрифт <ph name="FONT_FAMILY" />, начало</translation>
 <translation id="3568702578574425662">Флажок "<ph name="NAME" />", не установлен</translation>
 <translation id="3589661172894441357">Словарь</translation>
+<translation id="3591784666823501596">Королевский синий</translation>
+<translation id="3594207934078151302">Умеренный цвет морской волны</translation>
 <translation id="3599054940393788245">Не математический символ</translation>
 <translation id="360241989769010433">Благодарности</translation>
 <translation id="3616113530831147358">Аудио</translation>
@@ -332,34 +371,46 @@
 <translation id="3655855170848725876">{COUNT,plural, =1{знак доллара}one{# знак доллара}few{# знака доллара}many{# знаков доллара}other{# dollar signs}}</translation>
 <translation id="3659787053479271466">alrt</translation>
 <translation id="3665563998540286755">Список, <ph name="VALUE" /></translation>
+<translation id="3681531118904532409">Папайя со взбитыми сливками</translation>
 <translation id="3687295507293856493">Определить тип данных в заголовке столбца текущей ячейки</translation>
 <translation id="3692274950075847560">П: <ph name="RESULT" /></translation>
+<translation id="370367311675896712">Зачеркнутый</translation>
 <translation id="3712520970944678024">Управление речью</translation>
+<translation id="371302509916403935">Подчеркнутый</translation>
 <translation id="3716845769494773620">Несколько строк</translation>
 <translation id="3731746171184829332">Предыдущего заголовка нет.</translation>
 <translation id="3735039640698208086">При воспроизведении аудио…</translation>
 <translation id="3755561384917041694">Чтобы использовать дополнительные команды Брайля, включите экранную клавиатуру, выбрав строку состояния &gt; "Специальные возможности".</translation>
 <translation id="3762198587642264450">Перейти к концу текущей строки</translation>
 <translation id="3777255250339039212">h1</translation>
+<translation id="3777742246909257041">Снежный</translation>
 <translation id="3781428340399460090">Ярко-розовый</translation>
+<translation id="3783725005098956899">Показать журнал</translation>
 <translation id="3793710123303304873">Диалоговое окно закрыто.</translation>
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}few{#}many{#}other{#}}</translation>
 <translation id="3801735343383419236">Список автозаполнения</translation>
 <translation id="3810838688059735925">Видео</translation>
+<translation id="3813387282697781382">Светло-коралловый</translation>
 <translation id="3816633764618089385">Перейти к следующему файлу мультимедиа</translation>
 <translation id="3819376190738087562">Переходов нет.</translation>
 <translation id="385383972552776628">Открыть страницу параметров</translation>
 <translation id="3856075812838139784">Только чтение</translation>
+<translation id="3857141338659865495">Умеренный бирюзовый</translation>
 <translation id="3887576927692165210">ed</translation>
 <translation id="3897092660631435901">Меню</translation>
 <translation id="3907138069015388678">lstgrd</translation>
 <translation id="3909320334364316587">Перейти к предыдущему заголовку шестого уровня</translation>
 <translation id="3914173277599553213">Обязательно</translation>
 <translation id="3914732343065571127">Команды ChromeVox</translation>
+<translation id="3930383913623796990">Весенне-зеленый</translation>
 <translation id="3930498801443296724">Цитата в виде врезки</translation>
+<translation id="3936394396199829062">Розово-лавандовый</translation>
 <translation id="3941269780691800708">Произносить текст под мышью</translation>
 <translation id="3962990492275676168">Читать с текущего места</translation>
+<translation id="3970951409746498040">Песочно-коричневый</translation>
 <translation id="3989324057180830702">tgl btn</translation>
+<translation id="3991317907213946254">Мокасиновый</translation>
+<translation id="4002709828007663583">Темная орхидея</translation>
 <translation id="4004802134384979325">установлен</translation>
 <translation id="4006140876663370126">изображение</translation>
 <translation id="4038349100599457191">Элемент управления "месяц"</translation>
@@ -369,6 +420,7 @@
 <translation id="4045764028670444336">Начало неправильного слова</translation>
 <translation id="4047216625641135770">Пометка.</translation>
 <translation id="404803211695627272"><ph name="V1" /> – <ph name="V2" /></translation>
+<translation id="4053520724192563562">Зеленый лайм</translation>
 <translation id="4054936709456751127">sts</translation>
 <translation id="4058278702844053247">Загрузка страницы</translation>
 <translation id="4065205963140826639">Попробуйте найти кнопку "Далее" с помощью клавиш SEARCH + СТРЕЛКА ВПРАВО и нажать ее, используя клавиши SEARCH + ПРОБЕЛ.</translation>
@@ -393,24 +445,32 @@
 <translation id="4191918948604314587">Кнопка</translation>
 <translation id="419265409837491189">Перейти к предыдущему столбцу</translation>
 <translation id="4202186506458631436">Переместить вправо</translation>
+<translation id="4204126831294769023">Лазурный</translation>
+<translation id="4204864733111726379">Цветочный белый</translation>
 <translation id="4206289001967551965">Открыта таблица.</translation>
 <translation id="4209770650650780359">Для автозаполнения нажимайте стрелку вверх или вниз.</translation>
 <translation id="4215733775853809057">Перейти к следующему ползунку</translation>
+<translation id="42164919740161077">Кадетский синий</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{тире}one{# тире}few{# тире}many{# тире}other{# dashes}}</translation>
 <translation id="421884353938374759">color picker</translation>
 <translation id="4229646983878045487">date time</translation>
+<translation id="4230834257931120629">Светлый аспидно-серый</translation>
+<translation id="4231102694147661229">Включить режим для разработчиков</translation>
 <translation id="423334822609210999">Ячейки слева нет.</translation>
 <translation id="4243624244759495699"><ph name="LOCALE" />, уровень <ph name="GRADE" /></translation>
+<translation id="4246217262268234757">Стальной синий</translation>
 <translation id="4253168017788158739">Примечание</translation>
 <translation id="4254798249533888099">Дерево</translation>
 <translation id="4255943572433203166">Эти параметры позволяют настроить ChromeVox. Изменения вступят в силу немедленно.</translation>
 <translation id="4271220233568730077">Перейти к следующему математическому выражению</translation>
 <translation id="4271521365602459209">Больше ничего не найдено.</translation>
 <translation id="4275397969489577657">Включить ведение журнала событий</translation>
+<translation id="4281245629646759298">Светло-желтый</translation>
 <translation id="4287520460805643128">Следующей статьи нет.</translation>
 <translation id="4289540628985791613">Обзор</translation>
 <translation id="4300318234632215983">Произносить URL после названия ссылки</translation>
 <translation id="4301352596632316575">содержит подменю.</translation>
+<translation id="4322625298640984693">Сиена</translation>
 <translation id="4342180618051828363">{COUNT,plural, =1{точка}=3{многоточие}one{# точка}few{# точки}many{# точек}other{# dots}}</translation>
 <translation id="4347461890115250064">Следующего списка нет.</translation>
 <translation id="4367650418938037324">Конечные узлы Math ML.</translation>
@@ -421,13 +481,17 @@
 <translation id="4378308539633073595">Прокрутить вперед.</translation>
 <translation id="4384583879834880242">Вопросы и ответы</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
+<translation id="4402014469255336455">Насыщенный небесно-голубой</translation>
 <translation id="443163561286008705">reset</translation>
+<translation id="4432457053224379116">Индийский красный</translation>
 <translation id="4457472090507035117">Голос:</translation>
 <translation id="4471074325120394300">Ссылок нет.</translation>
 <translation id="4476183483923481720">Новая строка.</translation>
+<translation id="4479068155583208887">Огнеупорный кирпич</translation>
 <translation id="4482330759234983253">Перейти к предыдущей таблице</translation>
 <translation id="4491109536499578614">Изображение</translation>
 <translation id="4505167975768625962">Вставка</translation>
+<translation id="4511186779140817916">Бланшированный миндаль</translation>
 <translation id="4517854969512651305">Увеличить значение.</translation>
 <translation id="4529987814483543472">Классическая раскладка</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{косая черта}one{# косая черта}few{# косые черты}many{# косых черт}other{# slashes}}</translation>
@@ -464,11 +528,13 @@
 <translation id="479989351350248267">поиск</translation>
 <translation id="4804818685124855865">Отключиться</translation>
 <translation id="481165870889056555">Назвать заголовок текущей страницы</translation>
+<translation id="4815668758102003883">Бледно-бирюзовый</translation>
 <translation id="4826415162591436065">Перейти к следующему элементу</translation>
 <translation id="4826604887384865800">Следующий переход</translation>
 <translation id="4827410568042294688">Выделение отменено.</translation>
 <translation id="4838490795649708173">Коснитесь четырьмя пальцами</translation>
 <translation id="4839925464551908214">Перейти к предыдущей строке</translation>
+<translation id="4841614409681890122">Насыщенный розовый</translation>
 <translation id="4842108708071771135">Следующей цитаты нет.</translation>
 <translation id="4844625982113518938">Чтобы узнать, какая это клавиша, нажмите на нее. Чтобы выйти из режима обучения, нажмите CTRL + Ц.</translation>
 <translation id="4846428657345567687">Добро пожаловать в ChromeVox!</translation>
@@ -479,6 +545,7 @@
 <translation id="4867316986324544967">Включить ведение журнала синтеза речи</translation>
 <translation id="4877261390094455813">Введите поисковый запрос.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" /> из <ph name="TOTAL" /></translation>
+<translation id="4892105484979139179">Темный циан</translation>
 <translation id="489907760999452556">Внутренняя ссылка.</translation>
 <translation id="4915087353619183190">Запускается режим обучения. Нажмите клавишу или коснитесь изображения жеста, чтобы узнать, какую функцию они выполняют. Вы можете использовать как стандартную, так и брайлевскую клавиатуру. Для выхода нажмите Ctrl + W или клавишу Esc.</translation>
 <translation id="492295894462528572">Предисловие</translation>
@@ -509,6 +576,7 @@
 <translation id="5075936896689244141">Следующая раскладка</translation>
 <translation id="5078661581131202757">Выбор файла</translation>
 <translation id="5080758118274074384">Выполнено двойное нажатие.</translation>
+<translation id="5085453135206054947">Бледный фиолетово-красный</translation>
 <translation id="5087864757604726239">назад</translation>
 <translation id="5098541983634824365">Выход из сетки.</translation>
 <translation id="5102981729317424850">Панель инструментов</translation>
@@ -517,8 +585,11 @@
 <translation id="5110983769041734144">Предыдущего поля формы нет.</translation>
 <translation id="5111640677200759579">Заголовок столбца</translation>
 <translation id="5115892389597951922">Журнал ChromeVox</translation>
+<translation id="5119330972669454698">Плотная древесина</translation>
 <translation id="5136967254288895616">Предыдущей ссылки нет.</translation>
 <translation id="513774504516943387">lnk</translation>
+<translation id="5138912041966667164">Умеренный аспидно-синий</translation>
+<translation id="5140016802771803559">Пурпурный цвет имени Ребекки</translation>
 <translation id="5158275234811857234">Обложка</translation>
 <translation id="517143700877085897">, выделение снято.</translation>
 <translation id="5183440668879371625">Перейти к предыдущей строке</translation>
@@ -527,6 +598,7 @@
 <translation id="5203930734796605961">Клавише <ph name="KEY" /> уже назначена команда.</translation>
 <translation id="5205493599117157272">Список: <ph name="TYPE" />.</translation>
 <translation id="520883772648104506">Следующего переключателя нет.</translation>
+<translation id="5263034204789987535">Кукурузные рыльца</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">Завершить</translation>
 <translation id="5291783959063340370">Объект.</translation>
@@ -546,6 +618,7 @@
 <translation id="5374320867641260420">Следующей кнопки нет.</translation>
 <translation id="5376407118396657359">Для перемещения к другой ячейке нажмите Поиск + Ctrl + Alt и нужную стрелку.</translation>
 <translation id="5382299583965267720">Следующего заголовка первого уровня нет.</translation>
+<translation id="5400836586163650660">Серый</translation>
 <translation id="5402367795255837559">Шрифт Брайля</translation>
 <translation id="5402791055281059602">Модальное оповещение</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{точка с запятой}one{# точка с запятой}few{# точки с запятой}many{# точек с запятой}other{# semicolons}}</translation>
@@ -563,9 +636,11 @@
 <translation id="5500932716852106146">Предыдущего редактируемого текстового поля нет.</translation>
 <translation id="5502713021410870035">сентябрь</translation>
 <translation id="5507663321906818013">Эталон для отладки</translation>
+<translation id="551361796444814639">Умеренный синий</translation>
 <translation id="5518443085409638729">Показывать курсор между символами (как в Mac OS X)</translation>
 <translation id="552195134157544755">Переключатель</translation>
 <translation id="5534303576632885660">hdr</translation>
+<translation id="5539820223028224601">Гейнсборо</translation>
 <translation id="5546092960038624944">Предыдущего заголовка пятого уровня нет.</translation>
 <translation id="556042886152191864">Кнопка</translation>
 <translation id="5561345396546889625">Перейти к следующему списку</translation>
@@ -598,6 +673,7 @@
 <translation id="5712244464475377681">popbtn</translation>
 <translation id="5712338278108304766">Перейти к следующему столбцу</translation>
 <translation id="571866080859340309">Переход по группам.</translation>
+<translation id="5725079927589231571">Светлый стальной синий</translation>
 <translation id="5728409797179002635">Таблицы не найдены.</translation>
 <translation id="5729047866208036762">Для работы с математическим контентом используйте клавиши со стрелками.</translation>
 <translation id="5732189279857692565">Это второй заголовок. Чтобы продолжить, нажмите SEARCH + Р или SEARCH + SHIFT + Р.</translation>
@@ -608,6 +684,7 @@
 <translation id="5805940204952508776">Коснитесь двумя пальцами</translation>
 <translation id="5806206155699461681">Расширить функциональность определенных сайтов (например, Google Поиска)</translation>
 <translation id="5819072574982403430">Элемент дерева</translation>
+<translation id="5822819874379903994">Темно-бирюзовый</translation>
 <translation id="5826479389509458994">Строка <ph name="ROW" />, столбец <ph name="COL" /></translation>
 <translation id="5847883414085148048">Посвящение</translation>
 <translation id="5850707923114094062">Переместить назад</translation>
@@ -617,6 +694,7 @@
 <translation id="5867591286054666064">При изучении руководства вы можете нажать любую клавишу и услышать ее название.</translation>
 <translation id="5869546221129391014">Сетка</translation>
 <translation id="5876817486144482042">Уменьшить громкость речи</translation>
+<translation id="5878908838135392163">Пыльно-голубой</translation>
 <translation id="5887397643266327462">Титры шрифтом Брайля включены.</translation>
 <translation id="5891934789323004067">Таблица.</translation>
 <translation id="5899860758576822363">Уменьшать его громкость во время чтения ChromeVox</translation>
@@ -630,6 +708,7 @@
 <translation id="5956928062748260866">Диалоговое окно</translation>
 <translation id="5963413905009737549">Раздел</translation>
 <translation id="5968607524793740041">Показать контекстное меню</translation>
+<translation id="5981446804259161541">Светлый циан</translation>
 <translation id="5983179082906765664">Увеличить точность навигации</translation>
 <translation id="5992285135956208197">Графический документ</translation>
 <translation id="5999630716831179808">Голоса</translation>
@@ -651,11 +730,14 @@
 <translation id="6129953537138746214">Пробел</translation>
 <translation id="6132506484792346370">Обычный или комбинированный список</translation>
 <translation id="6142308968191113180">Заголовок четвертого уровня</translation>
+<translation id="6150023170003443621">Желто-зеленый</translation>
 <translation id="6158882249329863701">строка <ph name="TABLECELLROWINDEX" />, столбец <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="6164829606128959761">счетчик</translation>
 <translation id="6169420925157477918">Изображение с подробным описанием</translation>
 <translation id="6186305613600865047">Перейти в конец страницы</translation>
+<translation id="6187190722927752226">Аквамариновый</translation>
 <translation id="6193330012414963395">AM/PM</translation>
+<translation id="6197361807490522975">Темно-синий</translation>
 <translation id="622484624075952240">Вниз</translation>
 <translation id="6236061028292614533">Перейти к следующему заголовку</translation>
 <translation id="6254901459154107917">Перейти к следующей редактируемой области текста</translation>
@@ -669,10 +751,13 @@
 <translation id="6324551002951139333">Найдена грамматическая ошибка</translation>
 <translation id="6325241889020214828">копировать <ph name="TEXT" />.</translation>
 <translation id="6348657800373377022">Поле со списком</translation>
+<translation id="6348869651006731065">Тусклый серый</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{маркер списка}one{# маркер списка}few{# маркера списка}many{# маркеров списка}other{# маркера списка}}</translation>
 <translation id="6355910664415701303">Предыдущего пункта списка нет.</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Перейти к предыдущему заголовку</translation>
+<translation id="6376999910001533545">Красно-коричневый</translation>
+<translation id="6378394210114975876">Чертополох</translation>
 <translation id="6385591741672306837">стлбц</translation>
 <translation id="6387719785439924554">aside</translation>
 <translation id="6411426777058107714">Предыдущего переключателя нет.</translation>
@@ -685,11 +770,18 @@
 <translation id="6459511626086141404">Обычная раскладка</translation>
 <translation id="6468049171101508116">Перейти к следующей кнопке</translation>
 <translation id="646954774886932461">Указатель</translation>
+<translation id="6470797302070897045">Размер шрифта <ph name="FONT_SIZE" />, начало</translation>
 <translation id="6493991254603208962">Уменьшить яркость</translation>
+<translation id="6497864469186228849">Шрифт <ph name="FONT_FAMILY" />, конец</translation>
+<translation id="6501595918865591267">Бирюзовый</translation>
 <translation id="6508059270146105198">Разместить дисплей Брайля внизу страницы</translation>
+<translation id="6521550811716689390">Темно-фиолетовый</translation>
+<translation id="6536157907112457272">Лен</translation>
 <translation id="6536864053412760904">Токены MathML.</translation>
 <translation id="6540201937398578274">Поиск – это клавиша-модификатор в ChromeVox. С нее начинаются многие сочетания клавиш. Для навигации используются клавиши со стрелками.</translation>
+<translation id="6544923685317771506">Морская ракушка</translation>
 <translation id="6550720799683018100">Выберите комбинацию клавиш из списка ниже</translation>
+<translation id="6551185905438378412">Слоновая кость</translation>
 <translation id="6561818612645211875">Перейти к началу текущей строки</translation>
 <translation id="6579990219486187401">Светло-розовый</translation>
 <translation id="6583174818554398774">Перейти к следующему уровню детализации</translation>
@@ -704,6 +796,7 @@
 <translation id="6659594942844771486">Вкладка</translation>
 <translation id="667999046851023355">Документ</translation>
 <translation id="6688209025607531203">Немодальное оповещение</translation>
+<translation id="6689672606256159458">Темно-лососевый</translation>
 <translation id="6696967141280706829">Вступление</translation>
 <translation id="6697092096875747123">Перейти к предыдущему полю со списком</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{восклицательный знак}one{# восклицательный знак}few{# восклицательных знака}many{# восклицательных знаков}other{# восклицательного знака}}</translation>
@@ -719,6 +812,8 @@
 <translation id="6786800275320335305">Статья</translation>
 <translation id="6787839852456839824">Быстрые клавиши</translation>
 <translation id="6793101435925451627">lstbx</translation>
+<translation id="6815255864998354418">Лимонный шифоновый бисквит</translation>
+<translation id="6816066673340002913">Бледный золотарник</translation>
 <translation id="6826226459053491773">Проведите двумя пальцами вниз</translation>
 <translation id="6833103209700200188">Нижний колонтитул.</translation>
 <translation id="6858047746862060282">Пролог</translation>
@@ -731,7 +826,10 @@
 <translation id="6910969481785184048">Включение и отключение ChromeVox, а также отключение звука</translation>
 <translation id="6911965441508464308">Предыдущей строки нет.</translation>
 <translation id="6919104639734799681">Показать список таблиц</translation>
+<translation id="6949846980769640811">Умеренный аквамариновый</translation>
+<translation id="6955705049214951590">Приглушенно-розовый</translation>
 <translation id="6964088412282673743">Предыдущего элемента управления нет.</translation>
+<translation id="699159175332639490">Кнопка поиска + O + W</translation>
 <translation id="6994042831499278539">Ссылка на словарную статью</translation>
 <translation id="6996566555547746822">Перейти к следующему полю со списком</translation>
 <translation id="700202842116345659">Запись в библиографии</translation>
@@ -739,7 +837,9 @@
 <translation id="7010712454773919705">Клавиши-модификаторы ChromeVox</translation>
 <translation id="7031651751836475482">lstitm</translation>
 <translation id="7037042857287298941">Перейти к предыдущему списку</translation>
+<translation id="7039555289296502784">Серовато-оливковый</translation>
 <translation id="7041173719775863268">Выделение завершено.</translation>
+<translation id="7043850226734279132">Темное хаки</translation>
 <translation id="7048792632163898198">Перечисленные ниже быстрые клавиши не относятся к ChromeVox, но пригодятся при работе в браузере Chrome.
 Чтобы перейти к следующей кнопке, ссылке или другому элементу страницы, позволяющему выполнить действие, нажмите клавишу Tab. Чтобы вернуться к предыдущему подобному элементу, нажмите Shift + Tab.
 Чтобы перейти к адресной строке Chrome, также называемой омнибоксом, нажмите Ctrl + L.
@@ -747,13 +847,16 @@
 Чтобы закрыть вкладку, нажмите Ctrl + W.
 Чтобы перейти к следующей открытой вкладке, нажмите Ctrl + Tab.
 Чтобы открыть меню браузера Chrome, нажмите Alt + F.</translation>
+<translation id="7051308646573997571">Коралловый</translation>
 <translation id="7062635574500127092">Бирюзовый</translation>
 <translation id="7086377898680121060">Увеличить яркость</translation>
 <translation id="7088743565397416204">Чтобы нажать на выбранный элемент, дважды коснитесь экрана.</translation>
+<translation id="7091296112653361280">Белый навахо</translation>
 <translation id="7095834689119144465">Изменение текста: только цифры</translation>
 <translation id="7096001299300236431">Перейти к предыдущему файлу мультимедиа</translation>
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">Озвучивание слов.</translation>
+<translation id="7137397390322864165">Лососевый</translation>
 <translation id="713824876195128146">Перейти к следующей цитате</translation>
 <translation id="7143034430156387447">Переключение между 6- и 8-точечным шрифтами</translation>
 <translation id="7143207342074048698">Подключение</translation>
@@ -764,10 +867,12 @@
 <translation id="7165714724802225287">Текущий стиль дисплея: чередующийся.</translation>
 <translation id="7167657087543110">Озвучивание символов.</translation>
 <translation id="7170733337935166589">Перейти вперед во время непрерывного чтения</translation>
+<translation id="7173102181852295013">Полуночный синий</translation>
 <translation id="7181697990050180700">Ниже укажите быстрые клавиши для часто используемых команд.</translation>
 <translation id="7203150201908454328">Развернуто</translation>
 <translation id="7210211103303402262">мин.</translation>
 <translation id="7217912842225915592">+<ph name="NUM" /></translation>
+<translation id="7218782500591078391">Золотарник</translation>
 <translation id="7221740160534240920">Линия.</translation>
 <translation id="7226216518520804442">lst</translation>
 <translation id="7229749224609077523">6-точечный шрифт:</translation>
@@ -794,6 +899,8 @@
 <translation id="7370432716629432284">{COUNT,plural, =1{амперсанд}one{# амперсанд}few{# амперсанда}many{# амперсандов}other{# ampersands}}</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Выход из таблицы.</translation>
+<translation id="7374188624530452127">Цвет шрифта <ph name="FONT_COLOR" />, начало</translation>
+<translation id="738899727977260036">Аспидно-синий</translation>
 <translation id="7392145451309930991">Начало совпадающего отрывка</translation>
 <translation id="739763518212184081">Перейти к предыдущей строке</translation>
 <translation id="7400575256015741911">Найдена орфографическая ошибка</translation>
@@ -809,9 +916,11 @@
 <translation id="7518543783849163354">Чтобы временно отключить озвучивание в ChromeVox, нажмите клавишу CTRL.</translation>
 <translation id="7521682724501952239">ChromeVox можно использовать на сенсорном экране.</translation>
 <translation id="7532613204005497612">июнь</translation>
+<translation id="7533226154149229506">Светло-желтый золотарник</translation>
 <translation id="7552432549459840808">Быстрые клавиши для работы с Chrome</translation>
 <translation id="7569983096843329377">Черный</translation>
 <translation id="7579911500627256166">точка <ph name="DOT" /></translation>
+<translation id="7596131838331109045">Светло-лососевый</translation>
 <translation id="7596919493010894443">Отмена выбора.</translation>
 <translation id="7604026522577407655">Перейти к началу текущего столбца</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -830,6 +939,14 @@
 <translation id="7684431668231950609">Редактирование текста, URL</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Перейти к предыдущему переключателю</translation>
+<translation id="769900455782717361">Форматирование текста.
+        <ph name="FONT_SIZE_STRING" />
+        <ph name="COLOR_STRING" />
+        <ph name="BOLD_STRING" />
+        <ph name="ITALIC_STRING" />
+        <ph name="UNDERLINE_STRING" />
+        <ph name="LINE_THROUGH_STRING" />
+        <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7712273827621319827">Начало подчеркивания</translation>
 <translation id="7770823902658038748">Поле для ввода пароля "<ph name="NAME" />" со значением "<ph name="VALUE" />"</translation>
@@ -855,6 +972,8 @@
 <translation id="794091007957014205">{COUNT,plural, =1{коммерческое "эт"}one{# коммерческое "эт"}few{# коммерческих "эт"}many{# коммерческих "эт"}other{# at signs}}</translation>
 <translation id="7942349550061667556">Красный</translation>
 <translation id="7965147473449754028">меню закрыто</translation>
+<translation id="7968340748835037139">Темно-зеленый</translation>
+<translation id="7972507042926081808">Шоколадный</translation>
 <translation id="7974390230414479278">Элемент меню</translation>
 <translation id="8007540374018858731">h3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{кавычка}one{# кавычка}few{# кавычки}many{# кавычек}other{# quotes}}</translation>
@@ -952,6 +1071,8 @@
 <translation id="8066678206530322333">Баннер</translation>
 <translation id="8076492880354921740">Вкладки</translation>
 <translation id="8091452896542422286">Пробел</translation>
+<translation id="8096975275316362544">Мятные сливки</translation>
+<translation id="8098587210054821856">Аспидно-серый</translation>
 <translation id="8110647606445335195">Ориентиров ARIA нет.</translation>
 <translation id="8138880386467279117">Нажмите</translation>
 <translation id="8153880621934657047">Ошибка. Перейдите в таблицу.</translation>
@@ -961,15 +1082,21 @@
 <translation id="8184828902145951186">стрк</translation>
 <translation id="8186185314313222077">включить полноэкранный режим</translation>
 <translation id="8199231515320852133">Назвать заголовки текущей ячейки</translation>
+<translation id="8202174735952881587">Небесно-голубой</translation>
 <translation id="820417203470636242">Пустая ячейка.</translation>
 <translation id="820469951249669083">Перейти к следующей строке</translation>
+<translation id="8205922869661890178">Открыть страницу с журналом разработчика.</translation>
 <translation id="8215202828671303819">Множественный выбор</translation>
+<translation id="8249864170673238087">Цвет <ph name="COLOR" />, прозрачность <ph name="OPACITY_PERCENTAGE" /> %.</translation>
 <translation id="826825447994856889">Введение</translation>
+<translation id="827422111966801947">Индиго</translation>
 <translation id="8276439074553447000">Перейти к предыдущему активируемому элементу</translation>
 <translation id="8278417001922463147">Предыдущей статьи нет.</translation>
 <translation id="8283603667300770666">Перейти к следующему полю формы</translation>
 <translation id="831207808878314375">Определение</translation>
 <translation id="8313653172105209786">dir</translation>
+<translation id="8316881042119029234">Старое кружево</translation>
+<translation id="8326783648485765113">Зеленая лужайка</translation>
 <translation id="8344569602005188545">час.</translation>
 <translation id="8345569862449483843">{COUNT,plural, =1{решетка}one{# решетка}few{# решетки}many{# решеток}other{# pound signs}}</translation>
 <translation id="8374154622594089836">месяц</translation>
@@ -1000,18 +1127,23 @@
 <translation id="860150890330522909">Флажок "<ph name="NAME" />", установлен</translation>
 <translation id="8603071050456974042">Панель управления ChromeVox</translation>
 <translation id="8606621670302093223">Выбор даты</translation>
+<translation id="8613709718990529335">Биск</translation>
+<translation id="8628186274519446680">Томатный</translation>
 <translation id="8631359288236106450">Выбрано: <ph name="COUNT" /></translation>
 <translation id="8638532244051952400">Назвать координаты текущей ячейки</translation>
+<translation id="8640369214276455272">Белый дым</translation>
 <translation id="8650576015643545550">Предыдущего списка нет.</translation>
 <translation id="8651481478098336970">отключить звук</translation>
 <translation id="8653646212587894517">Показать список ссылок</translation>
 <translation id="8656888282555543604">Включить ведение журнала для шрифта Брайля</translation>
 <translation id="8664519043722036194">сек.</translation>
 <translation id="867187640362843212">Заголовок пятого уровня.</translation>
+<translation id="8696284982970258155">Мускатная дыня</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{вертикальная черта}one{# вертикальная черта}few{# вертикальные черты}many{# вертикальных черт}other{# vertical pipes}}</translation>
 <translation id="8735450637152821465">Выделение начато.</translation>
 <translation id="8743786158317878347">Ввести структурированное содержание, например таблицу</translation>
 <translation id="8747966237988593539">Нумерованный список.</translation>
+<translation id="8749988712346667988">Серебристый</translation>
 <translation id="8759334257841767240">Следующей ссылки нет.</translation>
 <translation id="8767968232364267681">Перейти к следующему заголовку четвертого уровня</translation>
 <translation id="8770473310765924354">Закончить ввод структурированного содержания, например таблицы</translation>
@@ -1025,6 +1157,7 @@
 <translation id="8882002077197914455">Заголовок строки</translation>
 <translation id="8883850400338911892">изм. url 8точ.</translation>
 <translation id="8896347895970027998">Включить или отключить ChromeVox.</translation>
+<translation id="8896479570570613387">Умеренный пурпурный</translation>
 <translation id="8898516272131543774">Повторно озвучивать пунктуацию</translation>
 <translation id="8900148057318340779">Клавиша-префикс</translation>
 <translation id="8908714597367957477">colhdr</translation>
@@ -1045,6 +1178,7 @@
 <translation id="9066023754636984703">Чтобы перейти к дополнительным сведениям, нажмите Поиск + A, затем J.</translation>
 <translation id="9067522039955793016">Разрыв страницы</translation>
 <translation id="9077213568694924680">Удалено из выбранного фрагмента.</translation>
+<translation id="9077305471618729969">Светлый цвет морской волны</translation>
 <translation id="9082874451376019682">Предыдущего ползунка нет.</translation>
 <translation id="9087707351856729768">Чтобы сработало автозаполнение, начните вводить текст.</translation>
 <translation id="9089864840575085222">Повторно озвучивать вводимый текст</translation>
@@ -1054,6 +1188,7 @@
 <translation id="911476240645808512">{COUNT,plural, =1{знак процента}one{# знак процента}few{# знака процента}many{# знаков процента}other{# percent signs}}</translation>
 <translation id="9115913704608474258">ноябрь</translation>
 <translation id="9128414153595658330">dlg</translation>
+<translation id="9133928141873682933">Хаки</translation>
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Вкладка</translation>
 <translation id="9151211641321628915">Озвучить краткое описание текущего элемента</translation>
@@ -1062,9 +1197,13 @@
 <translation id="9173115498289768110">Громкость: <ph name="PERCENT" />%</translation>
 <translation id="9178973770513562274">Перемещайтесь по списку с помощью стрелок вверх и вниз или введите поисковый запрос.</translation>
 <translation id="9192904702577636854">Бегущая строка</translation>
+<translation id="9208241857935108694">Античный белый</translation>
 <translation id="9212322457209634662">Следующего раздела нет.</translation>
+<translation id="9220679313820249046">Оранжево-красный</translation>
+<translation id="9223032053830369045">Темно-красный</translation>
 <translation id="923331726185079994">Расширение ChromeVox обновлено</translation>
 <translation id="930275611743429116">Начать или завершить выделение</translation>
+<translation id="93384979447910801">Темный цвет морской волны</translation>
 <translation id="948171205378458592">Замедлить речь</translation>
 <translation id="958854023026327378">Проведите одним пальцем вниз</translation>
 <translation id="962913030769097253">Перейти к следующему заголовку первого уровня</translation>

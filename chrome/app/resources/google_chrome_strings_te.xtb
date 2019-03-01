@@ -38,7 +38,7 @@
 <translation id="1773601347087397504">Chrome OSను ఉపయోగించడం గురించి సహాయాన్ని పొందండి</translation>
 <translation id="1795405610103747296">మీ ఫోన్‌లో Chromeను ఇన్‌స్టాల్ చేయండి. మేము మీ ఫోన్ నంబర్‌కు SMS పంపుతాము: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1812689907177901597">దీనిని ఆఫ్ చేయడం ద్వారా, మీరు Chromeకి సైన్ ఇన్ చేయకుండానే Gmail లాంటి Google సైట్‌లలో సైన్ ఇన్ చేయగలరు</translation>
-<translation id="1860536484129686729">ఈ సైట్ కోసం మీ కెమెరాని ఉపయోగించడానికి Chromeకి అనుమతి అవసరం</translation>
+<translation id="1860536484129686729">ఈ సైట్ కోసం మీ కెమెరాను ఉపయోగించడానికి Chromeకు అనుమతి అవసరం</translation>
 <translation id="1873233029667955273">Google Chrome మీ డిఫాల్ట్ బ్రౌజర్ కాదు</translation>
 <translation id="1874309113135274312">Google Chrome బీటా (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome కాలం చెల్లినది</translation>
@@ -194,7 +194,6 @@
 <translation id="6566149418543181476">Google Chrome నవీకరించబడుతోంది (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">మీరు మీ Chrome అంశాలను సింక్ చేయ‌డానికి <ph name="PROFILE_EMAIL" />ను ఉపయోగిస్తున్నారు. మీ సింక్‌ ప్రాధాన్యతను అప్‌డేట్ చేయ‌డానికి లేదా Google ఖాతా లేకుండా Chromeను ఉపయోగించడానికి, <ph name="SETTINGS_LINK" />ను సందర్శించండి.</translation>
 <translation id="6600954340915313787">Chromeకి కాపీ చేయబడింది</translation>
-<translation id="6609605543612238677">మీ సిస్టమ్ నిర్వాహకుడు <ph name="URL" />ను యాక్సెస్ చేయడం కోసం ప్రత్యామ్నాయ బ్రౌజర్‌ను తెరవడానికి Google Chromeను కాన్ఫిగర్ చేసారు.</translation>
 <translation id="6634887557811630702">Google Chrome తాజాగా ఉంది.</translation>
 <translation id="6676384891291319759">ఇంటర్నెట్‌ను ఆక్సెస్ చెయ్యండి</translation>
 <translation id="6679975945624592337">Google Chromeను నేపథ్యంలో అమలు అయ్యేందుకు అనుమతించండి</translation>
@@ -220,7 +219,7 @@
 <translation id="7398801000654795464">మీరు <ph name="USER_EMAIL_ADDRESS" />గా Chromeకు సైన్ ఇన్ చేసారు. మళ్లీ సైన్ ఇన్ చేయడానికి, దయచేసి ఇదే ఖాతాను ఉపయోగించండి.</translation>
 <translation id="7408085963519505752">Chrome OS నిబంధనలు</translation>
 <translation id="7419046106786626209">మీ డొమైన్ కోసం సింక్‌ అందుబాటులో లేనందున Chrome OS మీ డేటాను సింక్ చేయ‌లేక‌పోయింది.</translation>
-<translation id="7459554271817304652">వెబ్‌కు మీ వ్యక్తిగతీకరించిన‌ బ్రౌజర్ ఫీచ‌ర్‌ల‌ను సేవ్ చేయడానికి, ఏదైనా కంప్యూటర్‌లోని Google Chrome నుండి అయినా వాటిని యాక్సెస్‌ చేయడానికి సింక్‌ను సెటప్ చేయండి.</translation>
+<translation id="7459554271817304652">వెబ్‌కు మీ వ్యక్తిగతీకరించి బ్రౌజర్ ఫీచర్‌లను సేవ్ చేయడానికి, ఏదైనా కంప్యూటర్‌లోని Google Chrome నుండి అయినా వాటిని యాక్సెస్ చేయడానికి సింక్‌ను సెటప్ చేయండి.</translation>
 <translation id="7473136999113284234">Chrome ఆటోమేటిక్‌గా అప్‌డేట్ అవుతుంది కాబట్టి మీ వద్ద ఎప్పుడూ తాజా వెర్షన్ ఉంటుంది.</translation>
 <translation id="7486227612705979895">చిరునామా బార్‌లో సూచనలను చేయడానికి Chrome మీ డిస్క్‌ను యాక్సెస్ చేస్తుంది</translation>
 <translation id="7535429826459677826">Google Chrome డెవలపర్</translation>

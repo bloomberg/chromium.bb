@@ -653,6 +653,7 @@
 <translation id="1942765061641586207">Résolution de l'image</translation>
 <translation id="1943097386230153518">Installer un nouveau service</translation>
 <translation id="1944921356641260203">Mise à jour trouvée</translation>
+<translation id="1951012854035635156">Assistant</translation>
 <translation id="1954813140452229842">Erreur lors de l'installation du partage. Veuillez vérifier vos identifiants, puis réessayer.</translation>
 <translation id="1956050014111002555">Le fichier contenait plusieurs certificats, aucun d'eux n'a été importé :</translation>
 <translation id="1956390763342388273">Tous les fichiers seront téléchargés depuis "<ph name="FOLDER_PATH" />". N'effectuez cette opération que s'il s'agit d'un site de confiance.</translation>
@@ -1154,6 +1155,7 @@
 <translation id="2704184184447774363">Signature de document Microsoft</translation>
 <translation id="270516211545221798">Vitesse du pavé tactile</translation>
 <translation id="2705736684557713153">Faites défiler l'écran vers le bas et activez le partage de connexion instantané si l'option correspondante s'affiche. Dans le cas contraire, vous avez terminé.</translation>
+<translation id="2706892089432507937">Appareils USB</translation>
 <translation id="2707024448553392710">Téléchargement de composants en cours…</translation>
 <translation id="270921614578699633">Moyenne de</translation>
 <translation id="2709453993673701466">Vous souhaitez gérer la synchronisation et la personnalisation avant de les activer ? Accédez aux <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" />.</translation>
@@ -1467,7 +1469,6 @@
 <translation id="3177909033752230686">Langue de la page :</translation>
 <translation id="3182749001423093222">Correcteur orthographique</translation>
 <translation id="3183139917765991655">Importation de profils</translation>
-<translation id="3188257591659621405">Mes fichiers</translation>
 <translation id="3188465121994729530">Moyenne glissante</translation>
 <translation id="3190558889382726167">Mot de passe enregistré</translation>
 <translation id="3192947282887913208">Fichiers audio</translation>
@@ -4314,7 +4315,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7496511874649569424">L'application <ph name="LINUX_APP_NAME" /> et les données qui y sont associées seront supprimées de cet appareil.</translation>
 <translation id="7497215489070763236">Certificat de l'autorité de certification du serveur</translation>
 <translation id="7497981768003291373">Aucun journal texte WebRTC n'a été créé récemment.</translation>
-<translation id="7502199377020483660">Pour utiliser ces cartes sur tous vos appareils, enregistrez-les dans votre compte Google</translation>
 <translation id="7502658306369382406">Adresse IPv6</translation>
 <translation id="7503191893372251637">Type de certificat Netscape</translation>
 <translation id="7503821294401948377">Impossible de charger l'icône "<ph name="ICON" />" d'action du navigateur.</translation>
@@ -4984,7 +4984,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8468750959626135884">Déverrouillez votre <ph name="DEVICE_TYPE" /> avec votre téléphone Android.</translation>
 <translation id="8470028084415844044">Pour avoir tous vos mots de passe sur tous vos appareils, activez la synchronisation.</translation>
 <translation id="8470513973197838199">Mots de passe enregistrés pour <ph name="ORIGIN" /></translation>
-<translation id="8471635086304129332">Pour utiliser cette carte sur tous vos appareils, enregistrez-la dans votre compte Google</translation>
 <translation id="8472623782143987204">matériel requis</translation>
 <translation id="8473863474539038330">Adresses et autres</translation>
 <translation id="8475313423285172237">Un autre programme sur votre ordinateur a ajouté une extension qui risque de modifier le fonctionnement de Google Chrome.</translation>

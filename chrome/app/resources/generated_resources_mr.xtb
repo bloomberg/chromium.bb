@@ -652,6 +652,7 @@
 <translation id="1942765061641586207">इमेज रिझोल्यूशन</translation>
 <translation id="1943097386230153518">नवीन सेवा इंस्टॉल करा</translation>
 <translation id="1944921356641260203">अपडेट आढळले</translation>
+<translation id="1951012854035635156">साहाय्यक</translation>
 <translation id="1954813140452229842">शेअर माउंट करताना एरर आली. कृपया तुमची क्रेडेंशियल तपासा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="1956050014111002555">फाइलमध्ये एकाधिक प्रमाणपत्रे आहेत ज्यापैकी एकही इंपोर्ट झालेले नाही: </translation>
 <translation id="1956390763342388273">हे "<ph name="FOLDER_PATH" />" वरील सर्व फायली अपलोड करेल. जर तुमचा साइटवर विश्वास असेल तरच हे करा.</translation>
@@ -1153,6 +1154,7 @@
 <translation id="2704184184447774363">Microsoft Document Signing</translation>
 <translation id="270516211545221798">टचपॅड गती</translation>
 <translation id="2705736684557713153">ते दिसल्यास, स्क्रीनच्या तळाशी स्क्रोल करा आणि झटपट टेदरिंग चालू करा. ते न दिसल्यास, तुम्ही तयार आहात.</translation>
+<translation id="2706892089432507937">USB डिव्हाइसेस</translation>
 <translation id="2707024448553392710">घटक डाउनलोड करत आहे</translation>
 <translation id="270921614578699633">यावर सरासरी</translation>
 <translation id="2709453993673701466">सिंक करणे आणि पर्सनलाइझ करणे ते चालू करण्याआधी व्यवस्थापित करायचे आहे का? <ph name="BEGIN_LINK" />सेटिंग्ज<ph name="END_LINK" /> मध्ये जा.</translation>
@@ -1466,7 +1468,6 @@
 <translation id="3177909033752230686">पृष्ठ भाषा:</translation>
 <translation id="3182749001423093222">शब्दलेखन तपासणी</translation>
 <translation id="3183139917765991655">प्रोफाईल आयातकर्ता</translation>
-<translation id="3188257591659621405">माझ्या फायली</translation>
 <translation id="3188465121994729530">हलविण्याची सरासरी</translation>
 <translation id="3190558889382726167">पासवर्ड सेव्ह केला</translation>
 <translation id="3192947282887913208">ऑडिओ फायली</translation>
@@ -4313,7 +4314,6 @@
 <translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> आणि त्याच्याशी संबंधित डेटा या डिव्हाइसवरून काढला जाईल.</translation>
 <translation id="7497215489070763236">सर्व्हर CA सर्टिफिकेट</translation>
 <translation id="7497981768003291373">तुमच्याकडे नुकतेच कॅप्चर केलेले कोणतेही WebRTC मजकूर लॉग नाहीत.</translation>
-<translation id="7502199377020483660">ही कार्डे तुमच्या सर्व डिव्हाइसवर वापरण्यासाठी, ती तुमच्या Google खात्यामध्ये सेव्ह करा</translation>
 <translation id="7502658306369382406">IPv6 पत्ता</translation>
 <translation id="7503191893372251637">Netscape सर्टिफिकेट प्रकार</translation>
 <translation id="7503821294401948377">ब्राउझर क्रियेसाठी '<ph name="ICON" />' आयकन लोड करू शकलो नाही.</translation>
@@ -4981,7 +4981,6 @@
 <translation id="8468750959626135884">Android फोनसह तुमचे <ph name="DEVICE_TYPE" /> अनलॉक करा.</translation>
 <translation id="8470028084415844044">तुमच्या सर्व डिव्हाइसवर सर्व पासवर्ड मिळवण्यासाठी, सिंक सुरू करा.</translation>
 <translation id="8470513973197838199"><ph name="ORIGIN" /> साठी सेव्ह केलेले पासवर्ड</translation>
-<translation id="8471635086304129332">हे कार्ड तुमच्या सर्व डिव्हाइसवर वापरण्यासाठी, ते तुमच्या Google खात्यामध्ये सेव्ह करा</translation>
 <translation id="8472623782143987204">हार्डवेअर-बॅक्ड</translation>
 <translation id="8473863474539038330">पत्ते आणि बरेच काही</translation>
 <translation id="8475313423285172237">आपल्या संगणकावरील दुसऱ्या प्रोग्रामने Chrome च्या कार्य करण्याचा मार्ग बदलू शकणारा विस्तार जोडला.</translation>

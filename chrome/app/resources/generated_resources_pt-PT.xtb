@@ -653,6 +653,7 @@
 <translation id="1942765061641586207">Resolução da imagem</translation>
 <translation id="1943097386230153518">Instalar novo serviço</translation>
 <translation id="1944921356641260203">Atualização encontrada</translation>
+<translation id="1951012854035635156">Assistente</translation>
 <translation id="1954813140452229842">Erro ao montar a partilha. Verifique as suas credenciais e tente novamente.</translation>
 <translation id="1956050014111002555">O ficheiro continha vários certificados e nenhum deles foi importado:</translation>
 <translation id="1956390763342388273">Esta ação irá carregar todos os ficheiros de "<ph name="FOLDER_PATH" />". Faça isto apenas se confiar no site.</translation>
@@ -1153,6 +1154,7 @@
 <translation id="2704184184447774363">Assinatura de documentos Microsoft</translation>
 <translation id="270516211545221798">Velocidade do touchpad</translation>
 <translation id="2705736684557713153">Desloque-se até à parte inferior do ecrã e ative a Ligação via telemóvel instantânea, se for apresentada. Caso contrário, está pronto para começar.</translation>
+<translation id="2706892089432507937">Dispositivos USB</translation>
 <translation id="2707024448553392710">A transferir o componente</translation>
 <translation id="270921614578699633">Média superior</translation>
 <translation id="2709453993673701466">Pretende gerir a sincronização e a personalização antes de serem ativadas? Aceda às <ph name="BEGIN_LINK" />Definições<ph name="END_LINK" />.</translation>
@@ -1467,7 +1469,6 @@ Pretende pará-lo?</translation>
 <translation id="3177909033752230686">Idioma da página:</translation>
 <translation id="3182749001423093222">Verificação ortográfica</translation>
 <translation id="3183139917765991655">Importador de perfis</translation>
-<translation id="3188257591659621405">Os meus ficheiros</translation>
 <translation id="3188465121994729530">Média de movimentações</translation>
 <translation id="3190558889382726167">Palavra-passe guardada</translation>
 <translation id="3192947282887913208">Ficheiros de áudio</translation>
@@ -4314,7 +4315,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7496511874649569424">A aplicação <ph name="LINUX_APP_NAME" /> e os dados associados à mesma serão removidos deste dispositivo.</translation>
 <translation id="7497215489070763236">Certificado da AC do servidor</translation>
 <translation id="7497981768003291373">Não existem registos de textos WebRTC capturados recentemente.</translation>
-<translation id="7502199377020483660">Para utilizar estes cartões em todos os seus dispositivos, guarde-os na sua Conta Google.</translation>
 <translation id="7502658306369382406">Endereço IPv6</translation>
 <translation id="7503191893372251637">Tipo de certificado Netscape</translation>
 <translation id="7503821294401948377">Não foi possível carregar o ícone "<ph name="ICON" />" para a ação do navegador.</translation>
@@ -4983,7 +4983,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8468750959626135884">Desbloqueie o <ph name="DEVICE_TYPE" /> com o telemóvel Android.</translation>
 <translation id="8470028084415844044">Para obter todas as suas palavras-passe em todos os dispositivos, ative a sincronização.</translation>
 <translation id="8470513973197838199">Palavras-passe guardadas para <ph name="ORIGIN" /></translation>
-<translation id="8471635086304129332">Para utilizar este cartão em todos os seus dispositivos, guarde-o na sua Conta Google.</translation>
 <translation id="8472623782143987204">suporte de hardware</translation>
 <translation id="8473863474539038330">Endereços e mais</translation>
 <translation id="8475313423285172237">Outro programa do computador adicionou uma extensão que pode alterar o funcionamento do Chrome.</translation>

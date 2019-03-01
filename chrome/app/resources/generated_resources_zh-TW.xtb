@@ -653,6 +653,7 @@
 <translation id="1942765061641586207">影像解析度</translation>
 <translation id="1943097386230153518">安裝新服務</translation>
 <translation id="1944921356641260203">找到更新</translation>
+<translation id="1951012854035635156">小幫手</translation>
 <translation id="1954813140452229842">掛接共用裝置時發生錯誤。請檢查你的憑證，然後再試一次。</translation>
 <translation id="1956050014111002555">檔案含有多個憑證，但全都無法匯入：</translation>
 <translation id="1956390763342388273">你即將上傳「<ph name="FOLDER_PATH" />」中的所有檔案。除非你信任該網站，否則請勿這麼做。</translation>
@@ -1153,6 +1154,7 @@
 <translation id="2704184184447774363">Microsoft 文件簽署</translation>
 <translation id="270516211545221798">觸控板速度</translation>
 <translation id="2705736684557713153">捲動至畫面底部，如果看到 [即時網路共用]，請開啟這項功能；如果沒有看到，代表你已完成設定。</translation>
+<translation id="2706892089432507937">USB 裝置</translation>
 <translation id="2707024448553392710">正在下載元件</translation>
 <translation id="270921614578699633">平均取樣數：</translation>
 <translation id="2709453993673701466">想在開啟同步功能和個人化功能前先進行管理嗎？請前往「<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />」。</translation>
@@ -1466,7 +1468,6 @@
 <translation id="3177909033752230686">網頁語言：</translation>
 <translation id="3182749001423093222">拼字檢查</translation>
 <translation id="3183139917765991655">設定檔匯入工具</translation>
-<translation id="3188257591659621405">我的檔案</translation>
 <translation id="3188465121994729530">移動平均</translation>
 <translation id="3190558889382726167">密碼已儲存</translation>
 <translation id="3192947282887913208">音訊檔</translation>
@@ -4307,7 +4308,6 @@
 <translation id="7496511874649569424">「<ph name="LINUX_APP_NAME" />」和與這個應用程式相關聯的資料會從這個裝置上移除。</translation>
 <translation id="7497215489070763236">伺服器 CA 憑證</translation>
 <translation id="7497981768003291373">你最近並未擷取 WebRTC 文字記錄。</translation>
-<translation id="7502199377020483660">如要在所有裝置上使用這些卡片，請將卡片儲存在你的 Google 帳戶中</translation>
 <translation id="7502658306369382406">IPv6 位址</translation>
 <translation id="7503191893372251637">Netscape 憑證類型</translation>
 <translation id="7503821294401948377">無法載入瀏覽器動作的圖示「<ph name="ICON" />」。</translation>
@@ -4975,7 +4975,6 @@
 <translation id="8468750959626135884">使用 Android 手機解鎖您的 <ph name="DEVICE_TYPE" />。</translation>
 <translation id="8470028084415844044">如要將密碼同步到所有裝置，請開啟同步處理功能。</translation>
 <translation id="8470513973197838199">已儲存 <ph name="ORIGIN" /> 的密碼</translation>
-<translation id="8471635086304129332">如要在所有裝置上使用這張卡片，請將卡片儲存在你的 Google 帳戶中</translation>
 <translation id="8472623782143987204">硬體支援</translation>
 <translation id="8473863474539038330">地址和其他資訊</translation>
 <translation id="8475313423285172237">電腦中其他程式所新增的擴充功能可能會變更 Chrome 的運作方式。</translation>

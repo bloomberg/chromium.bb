@@ -845,7 +845,6 @@
 <translation id="7352939065658542140">동영상</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{선택한 1개 항목 공유}other{선택한 #개 항목 공유}}</translation>
 <translation id="7359002509206457351">결제 수단 액세스</translation>
-<translation id="7366340029385295517"><ph name="SCREEN_NAME" />(으)로 전송 중</translation>
 <translation id="7375125077091615385">유형:</translation>
 <translation id="7396940094317457632">파일(<ph name="FILE_NAME" />)이 다운로드되었습니다.</translation>
 <translation id="7400418766976504921">URL</translation>

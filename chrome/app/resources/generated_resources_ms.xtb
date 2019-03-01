@@ -653,6 +653,7 @@
 <translation id="1942765061641586207">Peleraian imej</translation>
 <translation id="1943097386230153518">Pasang perkhidmatan baharu</translation>
 <translation id="1944921356641260203">Kemas kini ditemui</translation>
+<translation id="1951012854035635156">Pembantu</translation>
 <translation id="1954813140452229842">Ralat melekapkan perkongsian. Sila semak bukti kelayakan anda dan cuba lagi.</translation>
 <translation id="1956050014111002555">Fail mengandungi berbilang sijil, tiada yang diimport:</translation>
 <translation id="1956390763342388273">Tindakan ini akan memuat naik semua fail daripada "<ph name="FOLDER_PATH" />". Lakukan tindakan ini hanya jika anda mempercayai tapak tersebut.</translation>
@@ -1155,6 +1156,7 @@
 <translation id="2704184184447774363">Menandatangani Dokumen Microsoft</translation>
 <translation id="270516211545221798">Kelajuan pad sentuh</translation>
 <translation id="2705736684557713153">Tatal ke bahagian bawah skrin dan hidupkan Penambatan Segera jika dipaparkan. Jika tidak dipaparkan, itu menunjukkan anda sudah menghidupkannya.</translation>
+<translation id="2706892089432507937">Peranti USB</translation>
 <translation id="2707024448553392710">Memuat turun komponen</translation>
 <translation id="270921614578699633">Purata</translation>
 <translation id="2709453993673701466">Ingin mengurus penyegerakan dan pemeribadian sebelum dihidupkan? Pergi ke <ph name="BEGIN_LINK" />Tetapan<ph name="END_LINK" />.</translation>
@@ -1468,7 +1470,6 @@
 <translation id="3177909033752230686">Bahasa Halaman:</translation>
 <translation id="3182749001423093222">Semakan ejaan</translation>
 <translation id="3183139917765991655">Pengimport Profil</translation>
-<translation id="3188257591659621405">Fail saya</translation>
 <translation id="3188465121994729530">Purata Pergerakan</translation>
 <translation id="3190558889382726167">Kata laluan yang disimpan</translation>
 <translation id="3192947282887913208">Fail Audio</translation>
@@ -4314,7 +4315,6 @@
 <translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> dan data yang berkaitan akan dialih keluar daripada peranti ini.</translation>
 <translation id="7497215489070763236">Sijil CA pelayan</translation>
 <translation id="7497981768003291373">Anda tiada log teks WebRTC yang dirakam baru-baru ini.</translation>
-<translation id="7502199377020483660">Untuk menggunakan kad ini pada semua peranti anda, simpan kad tersebut dalam akaun Google anda</translation>
 <translation id="7502658306369382406">Alamat IPv6</translation>
 <translation id="7503191893372251637">Jenis Sijil Netscape</translation>
 <translation id="7503821294401948377">Tidak dapat memuatkan ikon '<ph name="ICON" />' untuk tindakan penyemak imbas.</translation>
@@ -4985,7 +4985,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8468750959626135884">Buka kunci <ph name="DEVICE_TYPE" /> anda dengan telefon Android anda.</translation>
 <translation id="8470028084415844044">Hidupkan penyegerakan untuk mendapatkan semua kata laluan anda pada semua peranti anda.</translation>
 <translation id="8470513973197838199">Kata laluan disimpan untuk <ph name="ORIGIN" /></translation>
-<translation id="8471635086304129332">Untuk menggunakan kad ini pada semua peranti anda, simpan kad ini dalam Akaun Google anda</translation>
 <translation id="8472623782143987204">disokong perkakasan</translation>
 <translation id="8473863474539038330">Alamat dan pelbagai lagi</translation>
 <translation id="8475313423285172237">Program lain pada komputer anda menambah sambungan yang boleh mengubah cara Chrome berfungsi.</translation>

@@ -652,6 +652,7 @@
 <translation id="1942765061641586207">চিত্রের রেজোলিউশন</translation>
 <translation id="1943097386230153518">নতুন পরিষেবা ইনস্টল করুন</translation>
 <translation id="1944921356641260203">আপডেট পাওয়া গেছে</translation>
+<translation id="1951012854035635156">সহায়ক</translation>
 <translation id="1954813140452229842">মাউন্টিং শেয়ারে সমস্যা। অনুগ্রহ করে আপনার ক্রেডেনশিয়াল যাচাই করে আবার চেষ্টা করুন।</translation>
 <translation id="1956050014111002555">ফাইলটিতে একাধিক শংসাপত্র রয়েছে, এর মধ্যে কোনওটিই আমদানি করা হয়নি:</translation>
 <translation id="1956390763342388273">এটি "<ph name="FOLDER_PATH" />" থেকে সমস্ত ফাইল আপলোড করবে। এই সাইটটি আপনার বিশ্বস্ত হলে এটি করুন।</translation>
@@ -1153,6 +1154,7 @@
 <translation id="2704184184447774363">Microsoft Document Signing</translation>
 <translation id="270516211545221798">টাচপ্যাডের গতি</translation>
 <translation id="2705736684557713153">ইনস্ট্যান্ট টেথারিং যদি দেখায়, তাহলে চালু করার জন্য স্ক্রিনের নিচে স্ক্রল করুন। যদি না দেখায়, আপনার সব সেট করা আছে।</translation>
+<translation id="2706892089432507937">USB ডিভাইসগুলি</translation>
 <translation id="2707024448553392710">কম্পোনেন্ট ডাউনলোড হচ্ছে</translation>
 <translation id="270921614578699633">এর উপর গড়</translation>
 <translation id="2709453993673701466">চালু করার আগেই সিঙ্ক এবং ব্যক্তিগতকরণ পরিচালনা করতে চান?
@@ -1467,7 +1469,6 @@
 <translation id="3177909033752230686">পৃষ্ঠার ভাষা:</translation>
 <translation id="3182749001423093222">বানান পরীক্ষা</translation>
 <translation id="3183139917765991655">প্রোফাইল আমদানিকারক</translation>
-<translation id="3188257591659621405">আমার ফাইল</translation>
 <translation id="3188465121994729530">সরানোর গড়</translation>
 <translation id="3190558889382726167">পাসওয়ার্ড সংরক্ষিত</translation>
 <translation id="3192947282887913208">অডিও ফাইলসমূহ</translation>
@@ -4310,7 +4311,6 @@
 <translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> ও সেটির সাথে সংশ্লিষ্ট ডেটা এই ডিভাইস থেকে সরিয়ে দেওয়া হবে।</translation>
 <translation id="7497215489070763236">সার্ভার CA সার্টিফিকেট</translation>
 <translation id="7497981768003291373">আপনার সাম্প্রতিক কোনও ক্যাপচার করা WebRTC টেক্সট লগ নেই।</translation>
-<translation id="7502199377020483660">আপনার সব ডিভাইসে এই কার্ডগুলি ব্যবহার করতে আপনার Google অ্যাকাউন্টে সেগুলি সেভ করুন</translation>
 <translation id="7502658306369382406">IPv6 ঠিকানা</translation>
 <translation id="7503191893372251637">Netscape সার্টিফিকেটের প্রকার</translation>
 <translation id="7503821294401948377">ব্রাউজার ক্রিয়ার জন্য '<ph name="ICON" />' আইকন লোড করা যায়নি৷</translation>
@@ -4979,7 +4979,6 @@
 <translation id="8468750959626135884">আপনার Android ফোন দিয়ে আপনার <ph name="DEVICE_TYPE" /> আনলক করুন।</translation>
 <translation id="8470028084415844044">সব ডিভাইসে আপনার পাসওয়ার্ড পেতে, সিঙ্ক চালু করুন।</translation>
 <translation id="8470513973197838199"><ph name="ORIGIN" /> এর জন্য সেভ করা পাসওয়ার্ডগুলি</translation>
-<translation id="8471635086304129332">আপনার সব ডিভাইসে এই কার্ড ব্যবহার করতে আপনার Google অ্যাকাউন্টে সেটি সেভ করুন</translation>
 <translation id="8472623782143987204">hardware-backed</translation>
 <translation id="8473863474539038330">ঠিকানা ও আরও অনেককিছু</translation>
 <translation id="8475313423285172237">আপনার কম্পিউটারের অন্য একটি প্রোগ্রাম এক্সটেনশন যোগ করেছে যা Chrome-এর কাজ করার ধরন পাল্টে দিতে পারে৷</translation>
