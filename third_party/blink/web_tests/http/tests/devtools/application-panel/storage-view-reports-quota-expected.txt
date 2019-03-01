@@ -2,8 +2,6 @@ Tests quota reporting.
 
 Tree element found: true
 Clear storage view is visible: true
-
-Running: Clear all data
 -- B used out of -- storage quota
 Usage breakdown:
 
@@ -11,10 +9,4 @@ Running: Now with data
 -- KB used out of -- storage quota
 Usage breakdown:
 IndexedDB: --.- KB
-Service Workers: --.- B
-
-Running: Clear all data, again
-service worker is stopping
--- B used out of -- storage quota
-Usage breakdown:
 
