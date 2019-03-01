@@ -3489,6 +3489,12 @@ const char kEnableAppReinstallZeroStateDescription[] =
     "Enable Zero State App Reinstall Suggestions feature in launcher, which "
     "will show app reinstall recommendations at end of zero state list.";
 
+extern const char kAshNotificationStackingBarRedesignName[] =
+    "Redesigned notification stacking bar";
+extern const char kAshNotificationStackingBarRedesignDescription[] =
+    "Enables the redesigned notification stacking bar UI with a \"Clear all\" "
+    "button.";
+
 #endif  // defined(OS_CHROMEOS)
 
 // Random platform combinations -----------------------------------------------

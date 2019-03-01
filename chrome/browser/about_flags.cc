@@ -4122,6 +4122,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillShowFullDisclosureLabelDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillShowFullDisclosureLabel)},
 
+#if defined(OS_CHROMEOS)
+    {"ash-notification-stacking-bar-redesign",
+     flag_descriptions::kAshNotificationStackingBarRedesignName,
+     flag_descriptions::kAshNotificationStackingBarRedesignDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kNotificationStackingBarRedesign)},
+#endif  // OS_CHROMEOS
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

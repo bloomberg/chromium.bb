@@ -2082,6 +2082,9 @@ extern const char kWakeOnPacketsDescription[];
 extern const char kEnableAppReinstallZeroStateName[];
 extern const char kEnableAppReinstallZeroStateDescription[];
 
+extern const char kAshNotificationStackingBarRedesignName[];
+extern const char kAshNotificationStackingBarRedesignDescription[];
+
 #endif  // #if defined(OS_CHROMEOS)
 
 // Random platform combinations -----------------------------------------------
