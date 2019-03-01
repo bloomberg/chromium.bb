@@ -308,14 +308,18 @@ class PLATFORM_EXPORT ResourceFetcher
       const FetchParameters&,
       const Resource& existing_resource,
       bool is_static_data) const;
+  static const char* GetNameFor(RevalidationPolicy policy);
   // Determines a RevalidationPolicy given a FetchParameters and an existing
   // resource retrieved from the memory cache (can be a newly constructed one
   // for a static data).
-  RevalidationPolicy DetermineRevalidationPolicyInternal(
-      ResourceType,
-      const FetchParameters&,
-      const Resource& existing_resource,
-      bool is_static_data) const;
+  // The first member of the returned value is the revalidation policy. The
+  // second member of the returned value is a string explaining the reason for
+  // trace events. Its extent is unbound.
+  std::pair<RevalidationPolicy, const char*>
+  DetermineRevalidationPolicyInternal(ResourceType,
+                                      const FetchParameters&,
+                                      const Resource& existing_resource,
+                                      bool is_static_data) const;
 
   void MakePreloadedResourceBlockOnloadIfNeeded(Resource*,
                                                 const FetchParameters&);
