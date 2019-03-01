@@ -267,7 +267,7 @@ Database::~Database() {
 
 void Database::RecordEvent(Events event, size_t count) {
   for (size_t i = 0; i < count; ++i) {
-    UMA_HISTOGRAM_ENUMERATION("Sqlite.Stats", event, EVENT_MAX_VALUE);
+    UMA_HISTOGRAM_ENUMERATION("Sqlite.Stats2", event, EVENT_MAX_VALUE);
   }
 
   if (stats_histogram_) {
@@ -1483,7 +1483,7 @@ bool Database::OpenInternal(const std::string& file_name,
   // Databases which won't exercise all of these probably shouldn't exist.
   if (!histogram_tag_.empty()) {
     stats_histogram_ = base::LinearHistogram::FactoryGet(
-        "Sqlite.Stats." + histogram_tag_, 1, EVENT_MAX_VALUE,
+        "Sqlite.Stats2." + histogram_tag_, 1, EVENT_MAX_VALUE,
         EVENT_MAX_VALUE + 1, base::HistogramBase::kUmaTargetedHistogramFlag);
   }
 
