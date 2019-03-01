@@ -67,8 +67,9 @@ inline bool ShouldForceRetransmission(TransmissionType transmission_type) {
 
 }  // namespace
 
-#define ENDPOINT \
-  (perspective_ == Perspective::IS_SERVER ? "Server: " : "Client: ")
+#define ENDPOINT                                                         \
+  (unacked_packets_.perspective() == Perspective::IS_SERVER ? "Server: " \
+                                                            : "Client: ")
 
 QuicSentPacketManager::QuicSentPacketManager(
     Perspective perspective,
@@ -76,15 +77,19 @@ QuicSentPacketManager::QuicSentPacketManager(
     QuicConnectionStats* stats,
     CongestionControlType congestion_control_type,
     LossDetectionType loss_type)
-    : unacked_packets_(),
-      perspective_(perspective),
+    : unacked_packets_(perspective),
       clock_(clock),
       stats_(stats),
       debug_delegate_(nullptr),
       network_change_visitor_(nullptr),
       initial_congestion_window_(kInitialCongestionWindow),
-      loss_algorithm_(&general_loss_algorithm_),
+      loss_algorithm_(
+          unacked_packets_.use_uber_loss_algorithm()
+              ? dynamic_cast<LossDetectionInterface*>(&uber_loss_algorithm_)
+              : dynamic_cast<LossDetectionInterface*>(
+                    &general_loss_algorithm_)),
       general_loss_algorithm_(loss_type),
+      uber_loss_algorithm_(loss_type),
       n_connection_simulation_(false),
       consecutive_rto_count_(0),
       consecutive_tlp_count_(0),
@@ -114,9 +119,10 @@ QuicSentPacketManager::QuicSentPacketManager(
 QuicSentPacketManager::~QuicSentPacketManager() {}
 
 void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
+  const Perspective perspective = unacked_packets_.perspective();
   if (config.HasReceivedInitialRoundTripTimeUs() &&
       config.ReceivedInitialRoundTripTimeUs() > 0) {
-    if (!config.HasClientSentConnectionOption(kNRTT, perspective_)) {
+    if (!config.HasClientSentConnectionOption(kNRTT, perspective)) {
       SetInitialRtt(QuicTime::Delta::FromMicroseconds(
           config.ReceivedInitialRoundTripTimeUs()));
     }
@@ -125,55 +131,54 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
     SetInitialRtt(QuicTime::Delta::FromMicroseconds(
         config.GetInitialRoundTripTimeUsToSend()));
   }
-  if (config.HasClientSentConnectionOption(kMAD0, perspective_)) {
+  if (config.HasClientSentConnectionOption(kMAD0, perspective)) {
     rtt_stats_.set_ignore_max_ack_delay(true);
   }
-  if (config.HasClientSentConnectionOption(kMAD1, perspective_)) {
+  if (config.HasClientSentConnectionOption(kMAD1, perspective)) {
     rtt_stats_.set_initial_max_ack_delay(delayed_ack_time_);
   }
-  if (config.HasClientSentConnectionOption(kMAD2, perspective_)) {
+  if (config.HasClientSentConnectionOption(kMAD2, perspective)) {
     min_tlp_timeout_ = QuicTime::Delta::Zero();
   }
-  if (config.HasClientSentConnectionOption(kMAD3, perspective_)) {
+  if (config.HasClientSentConnectionOption(kMAD3, perspective)) {
     min_rto_timeout_ = QuicTime::Delta::Zero();
   }
-  if (config.HasClientSentConnectionOption(kMAD4, perspective_)) {
+  if (config.HasClientSentConnectionOption(kMAD4, perspective)) {
     ietf_style_tlp_ = true;
   }
-  if (config.HasClientSentConnectionOption(kMAD5, perspective_)) {
+  if (config.HasClientSentConnectionOption(kMAD5, perspective)) {
     ietf_style_2x_tlp_ = true;
   }
 
   // Configure congestion control.
-  if (config.HasClientRequestedIndependentOption(kTBBR, perspective_)) {
+  if (config.HasClientRequestedIndependentOption(kTBBR, perspective)) {
     SetSendAlgorithm(kBBR);
   }
-  if (config.HasClientRequestedIndependentOption(kRENO, perspective_)) {
+  if (config.HasClientRequestedIndependentOption(kRENO, perspective)) {
     SetSendAlgorithm(kRenoBytes);
-  } else if (config.HasClientRequestedIndependentOption(kBYTE, perspective_) ||
+  } else if (config.HasClientRequestedIndependentOption(kBYTE, perspective) ||
              (GetQuicReloadableFlag(quic_default_to_bbr) &&
-              config.HasClientRequestedIndependentOption(kQBIC,
-                                                         perspective_))) {
+              config.HasClientRequestedIndependentOption(kQBIC, perspective))) {
     SetSendAlgorithm(kCubicBytes);
   } else if (GetQuicReloadableFlag(quic_enable_pcc3) &&
-             config.HasClientRequestedIndependentOption(kTPCC, perspective_)) {
+             config.HasClientRequestedIndependentOption(kTPCC, perspective)) {
     SetSendAlgorithm(kPCC);
   }
   // Initial window.
   if (GetQuicReloadableFlag(quic_unified_iw_options)) {
-    if (config.HasClientRequestedIndependentOption(kIW03, perspective_)) {
+    if (config.HasClientRequestedIndependentOption(kIW03, perspective)) {
       initial_congestion_window_ = 3;
       send_algorithm_->SetInitialCongestionWindowInPackets(3);
     }
-    if (config.HasClientRequestedIndependentOption(kIW10, perspective_)) {
+    if (config.HasClientRequestedIndependentOption(kIW10, perspective)) {
       initial_congestion_window_ = 10;
       send_algorithm_->SetInitialCongestionWindowInPackets(10);
     }
-    if (config.HasClientRequestedIndependentOption(kIW20, perspective_)) {
+    if (config.HasClientRequestedIndependentOption(kIW20, perspective)) {
       initial_congestion_window_ = 20;
       send_algorithm_->SetInitialCongestionWindowInPackets(20);
     }
-    if (config.HasClientRequestedIndependentOption(kIW50, perspective_)) {
+    if (config.HasClientRequestedIndependentOption(kIW50, perspective)) {
       initial_congestion_window_ = 50;
       send_algorithm_->SetInitialCongestionWindowInPackets(50);
     }
@@ -181,41 +186,53 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
 
   using_pacing_ = !FLAGS_quic_disable_pacing_for_perf_tests;
 
-  if (config.HasClientSentConnectionOption(k1CON, perspective_)) {
+  if (config.HasClientSentConnectionOption(k1CON, perspective)) {
     send_algorithm_->SetNumEmulatedConnections(1);
   }
-  if (config.HasClientSentConnectionOption(kNCON, perspective_)) {
+  if (config.HasClientSentConnectionOption(kNCON, perspective)) {
     n_connection_simulation_ = true;
   }
-  if (config.HasClientSentConnectionOption(kNTLP, perspective_)) {
+  if (config.HasClientSentConnectionOption(kNTLP, perspective)) {
     max_tail_loss_probes_ = 0;
   }
-  if (config.HasClientSentConnectionOption(k1TLP, perspective_)) {
+  if (config.HasClientSentConnectionOption(k1TLP, perspective)) {
     max_tail_loss_probes_ = 1;
   }
-  if (config.HasClientSentConnectionOption(k1RTO, perspective_)) {
+  if (config.HasClientSentConnectionOption(k1RTO, perspective)) {
     max_rto_packets_ = 1;
   }
-  if (config.HasClientSentConnectionOption(kTLPR, perspective_)) {
+  if (config.HasClientSentConnectionOption(kTLPR, perspective)) {
     enable_half_rtt_tail_loss_probe_ = true;
   }
-  if (config.HasClientSentConnectionOption(kNRTO, perspective_)) {
+  if (config.HasClientSentConnectionOption(kNRTO, perspective)) {
     use_new_rto_ = true;
   }
   // Configure loss detection.
-  if (config.HasClientRequestedIndependentOption(kTIME, perspective_)) {
-    general_loss_algorithm_.SetLossDetectionType(kTime);
+  if (config.HasClientRequestedIndependentOption(kTIME, perspective)) {
+    if (unacked_packets_.use_uber_loss_algorithm()) {
+      uber_loss_algorithm_.SetLossDetectionType(kTime);
+    } else {
+      general_loss_algorithm_.SetLossDetectionType(kTime);
+    }
   }
-  if (config.HasClientRequestedIndependentOption(kATIM, perspective_)) {
-    general_loss_algorithm_.SetLossDetectionType(kAdaptiveTime);
+  if (config.HasClientRequestedIndependentOption(kATIM, perspective)) {
+    if (unacked_packets_.use_uber_loss_algorithm()) {
+      uber_loss_algorithm_.SetLossDetectionType(kAdaptiveTime);
+    } else {
+      general_loss_algorithm_.SetLossDetectionType(kAdaptiveTime);
+    }
   }
-  if (config.HasClientRequestedIndependentOption(kLFAK, perspective_)) {
-    general_loss_algorithm_.SetLossDetectionType(kLazyFack);
+  if (config.HasClientRequestedIndependentOption(kLFAK, perspective)) {
+    if (unacked_packets_.use_uber_loss_algorithm()) {
+      uber_loss_algorithm_.SetLossDetectionType(kLazyFack);
+    } else {
+      general_loss_algorithm_.SetLossDetectionType(kLazyFack);
+    }
   }
-  if (config.HasClientSentConnectionOption(kCONH, perspective_)) {
+  if (config.HasClientSentConnectionOption(kCONH, perspective)) {
     conservative_handshake_retransmits_ = true;
   }
-  send_algorithm_->SetFromConfig(config, perspective_);
+  send_algorithm_->SetFromConfig(config, perspective);
 
   if (network_change_visitor_ != nullptr) {
     network_change_visitor_->OnCongestionChange();
@@ -250,6 +267,13 @@ void QuicSentPacketManager::SetNumOpenStreams(size_t num_streams) {
     // Ensure the number of connections is between 1 and 5.
     send_algorithm_->SetNumEmulatedConnections(
         std::min<size_t>(5, std::max<size_t>(1, num_streams)));
+  }
+}
+
+void QuicSentPacketManager::SetHandshakeConfirmed() {
+  handshake_confirmed_ = true;
+  if (unacked_packets_.use_uber_loss_algorithm()) {
+    NeuterHandshakePackets();
   }
 }
 
@@ -300,8 +324,8 @@ void QuicSentPacketManager::PostProcessAfterMarkingPacketHandled(
 
   if (debug_delegate_ != nullptr) {
     debug_delegate_->OnIncomingAck(ack_frame, ack_receive_time,
-                                   unacked_packets_.largest_acked(),
-                                   rtt_updated, GetLeastUnacked());
+                                   LargestAcked(ack_frame), rtt_updated,
+                                   GetLeastUnacked());
   }
   // Remove packets below least unacked from all_packets_acked_ and
   // last_ack_frame_.
@@ -338,7 +362,7 @@ void QuicSentPacketManager::RetransmitUnackedPackets(
   for (QuicUnackedPacketMap::const_iterator it = unacked_packets_.begin();
        it != unacked_packets_.end(); ++it, ++packet_number) {
     if ((retransmission_type == ALL_UNACKED_RETRANSMISSION ||
-         it->encryption_level == ENCRYPTION_INITIAL) &&
+         it->encryption_level == ENCRYPTION_ZERO_RTT) &&
         unacked_packets_.HasRetransmittableFrames(*it)) {
       MarkForRetransmission(packet_number, retransmission_type);
     }
@@ -368,6 +392,29 @@ void QuicSentPacketManager::NeuterUnencryptedPackets() {
       // or otherwise. Unencrypted packets are neutered and abandoned, to ensure
       // they are not retransmitted or considered lost from a congestion control
       // perspective.
+      pending_retransmissions_.erase(packet_number);
+      unacked_packets_.RemoveFromInFlight(packet_number);
+      unacked_packets_.RemoveRetransmittability(packet_number);
+    }
+  }
+}
+
+void QuicSentPacketManager::NeuterHandshakePackets() {
+  DCHECK(unacked_packets_.use_uber_loss_algorithm());
+  QuicPacketNumber packet_number = unacked_packets_.GetLeastUnacked();
+  for (QuicUnackedPacketMap::const_iterator it = unacked_packets_.begin();
+       it != unacked_packets_.end(); ++it, ++packet_number) {
+    if (session_decides_what_to_write()) {
+      if (!it->retransmittable_frames.empty() &&
+          unacked_packets_.GetPacketNumberSpace(it->encryption_level) ==
+              HANDSHAKE_DATA) {
+        unacked_packets_.RemoveFromInFlight(packet_number);
+      }
+      continue;
+    }
+    if (unacked_packets_.GetPacketNumberSpace(it->encryption_level) ==
+            HANDSHAKE_DATA &&
+        unacked_packets_.HasRetransmittableFrames(*it)) {
       pending_retransmissions_.erase(packet_number);
       unacked_packets_.RemoveFromInFlight(packet_number);
       unacked_packets_.RemoveRetransmittability(packet_number);
@@ -1121,6 +1168,10 @@ bool QuicSentPacketManager::OnAckFrameEnd(QuicTime ack_receive_time) {
     } else {
       // Unackable packets are skipped earlier.
       largest_newly_acked_ = acked_packet.packet_number;
+    }
+    if (unacked_packets_.use_uber_loss_algorithm()) {
+      unacked_packets_.MaybeUpdateLargestAckedOfPacketNumberSpace(
+          info->encryption_level, acked_packet.packet_number);
     }
     MarkPacketHandled(acked_packet.packet_number, info,
                       last_ack_frame_.ack_delay_time);

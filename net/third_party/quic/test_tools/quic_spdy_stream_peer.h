@@ -6,6 +6,7 @@
 #define NET_THIRD_PARTY_QUIC_TEST_TOOLS_QUIC_SPDY_STREAM_PEER_H_
 
 #include "net/third_party/quic/core/quic_ack_listener_interface.h"
+#include "net/third_party/quic/core/quic_interval_set.h"
 #include "net/third_party/quic/platform/api/quic_containers.h"
 
 namespace quic {

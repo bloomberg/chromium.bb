@@ -23,12 +23,6 @@ namespace quic {
 
 namespace {
 
-struct iovec MakeIovec(QuicStringPiece data) {
-  struct iovec iov = {const_cast<char*>(data.data()),
-                      static_cast<size_t>(data.size())};
-  return iov;
-}
-
 size_t GetInitialStreamFlowControlWindowToSend(QuicSession* session) {
   return session->config()->GetInitialStreamFlowControlWindowToSend();
 }
@@ -242,13 +236,10 @@ QuicStream::QuicStream(QuicStreamId id,
       is_static_(is_static),
       deadline_(QuicTime::Zero()),
       type_(session->connection()->transport_version() == QUIC_VERSION_99
-                ? QuicUtils::GetStreamType(id_, session->IsIncomingStream(id_))
+                ? QuicUtils::GetStreamType(id_,
+                                           perspective_,
+                                           session->IsIncomingStream(id_))
                 : type) {
-  if (session->connection()->transport_version() == QUIC_VERSION_99) {
-    DCHECK_EQ(type,
-              QuicUtils::GetStreamType(id_, session->IsIncomingStream(id_)))
-        << id_;
-  }
   if (type_ == WRITE_UNIDIRECTIONAL) {
     set_fin_received(true);
     CloseReadSide();
@@ -452,7 +443,7 @@ void QuicStream::WriteOrBufferData(
   // Do not respect buffered data upper limit as WriteOrBufferData guarantees
   // all data to be consumed.
   if (data.length() > 0) {
-    struct iovec iov(MakeIovec(data));
+    struct iovec iov(QuicUtils::MakeIovec(data));
     QuicStreamOffset offset = send_buffer_.stream_offset();
     if (kMaxStreamLength - offset < data.length()) {
       QUIC_BUG << "Write too many data via stream " << id_;

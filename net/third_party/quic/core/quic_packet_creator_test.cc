@@ -148,8 +148,8 @@ class QuicPacketCreatorTest : public QuicTestWithParam<TestParams> {
         creator_(connection_id_, &client_framer_, &delegate_, &producer_),
         serialized_packet_(creator_.NoPacket()) {
     EXPECT_CALL(delegate_, GetPacketBuffer()).WillRepeatedly(Return(nullptr));
-    creator_.SetEncrypter(ENCRYPTION_INITIAL, QuicMakeUnique<NullEncrypter>(
-                                                  Perspective::IS_CLIENT));
+    creator_.SetEncrypter(ENCRYPTION_ZERO_RTT, QuicMakeUnique<NullEncrypter>(
+                                                   Perspective::IS_CLIENT));
     creator_.SetEncrypter(
         ENCRYPTION_FORWARD_SECURE,
         QuicMakeUnique<NullEncrypter>(Perspective::IS_CLIENT));
@@ -203,7 +203,9 @@ class QuicPacketCreatorTest : public QuicTestWithParam<TestParams> {
         creator_.GetSourceConnectionIdLength(),
         QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
         !kIncludeDiversificationNonce,
-        QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
+        QuicPacketCreatorPeer::GetPacketNumberLength(&creator_),
+        QuicPacketCreatorPeer::GetRetryTokenLengthLength(&creator_), 0,
+        QuicPacketCreatorPeer::GetLengthLength(&creator_));
   }
 
   // Returns the number of bytes of overhead that will be added to a packet
@@ -527,6 +529,15 @@ TEST_P(QuicPacketCreatorTest, SerializeConnectionClose) {
   EXPECT_CALL(framer_visitor_, OnPacketComplete());
 
   ProcessPacket(serialized);
+}
+
+TEST_P(QuicPacketCreatorTest, ConsumeCryptoData) {
+  QuicString data = "crypto data";
+  QuicFrame frame;
+  ASSERT_TRUE(creator_.ConsumeCryptoData(ENCRYPTION_NONE, data.length(), 0,
+                                         NOT_RETRANSMISSION, &frame));
+  EXPECT_EQ(frame.crypto_frame->data_length, data.length());
+  EXPECT_TRUE(creator_.HasPendingFrames());
 }
 
 TEST_P(QuicPacketCreatorTest, ConsumeData) {
@@ -1114,7 +1125,8 @@ TEST_P(QuicPacketCreatorTest, ConsumeDataLargerThanOneStreamFrame) {
       creator_.GetDestinationConnectionIdLength(),
       creator_.GetSourceConnectionIdLength(),
       QuicPacketCreatorPeer::GetPacketNumberLength(&creator_),
-      &payload_length));
+      QuicPacketCreatorPeer::GetRetryTokenLengthLength(&creator_),
+      QuicPacketCreatorPeer::GetLengthLength(&creator_), &payload_length));
   QuicFrame frame;
   const QuicString too_long_payload(payload_length * 2, 'a');
   MakeIOVector(too_long_payload, &iov_);
@@ -1149,7 +1161,9 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndFlush) {
                     creator_.GetSourceConnectionIdLength(),
                     QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
                     !kIncludeDiversificationNonce,
-                    QuicPacketCreatorPeer::GetPacketNumberLength(&creator_)),
+                    QuicPacketCreatorPeer::GetPacketNumberLength(&creator_),
+                    QuicPacketCreatorPeer::GetRetryTokenLengthLength(&creator_),
+                    0, QuicPacketCreatorPeer::GetLengthLength(&creator_)),
             creator_.BytesFree());
 
   // Add a variety of frame types and then a padding frame.
@@ -1203,7 +1217,9 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndFlush) {
                     creator_.GetSourceConnectionIdLength(),
                     QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
                     !kIncludeDiversificationNonce,
-                    QuicPacketCreatorPeer::GetPacketNumberLength(&creator_)),
+                    QuicPacketCreatorPeer::GetPacketNumberLength(&creator_),
+                    QuicPacketCreatorPeer::GetRetryTokenLengthLength(&creator_),
+                    0, QuicPacketCreatorPeer::GetLengthLength(&creator_)),
             creator_.BytesFree());
 }
 
@@ -1607,6 +1623,44 @@ TEST_P(QuicPacketCreatorTest, PacketTransmissionType) {
     EXPECT_EQ(serialized_packet_.transmission_type, NOT_RETRANSMISSION);
   }
   DeleteSerializedPacket();
+}
+
+TEST_P(QuicPacketCreatorTest, RetryToken) {
+  if (!GetParam().version_serialization ||
+      !QuicVersionHasLongHeaderLengths(client_framer_.transport_version())) {
+    return;
+  }
+
+  char retry_token_bytes[] = {1, 2,  3,  4,  5,  6,  7,  8,
+                              9, 10, 11, 12, 13, 14, 15, 16};
+
+  creator_.SetRetryToken(
+      QuicString(retry_token_bytes, sizeof(retry_token_bytes)));
+
+  frames_.push_back(QuicFrame(QuicStreamFrame(
+      QuicUtils::GetCryptoStreamId(client_framer_.transport_version()), false,
+      0u, QuicStringPiece())));
+  SerializedPacket serialized = SerializeAllFrames(frames_);
+
+  QuicPacketHeader header;
+  {
+    InSequence s;
+    EXPECT_CALL(framer_visitor_, OnPacket());
+    EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
+    EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
+    EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+    EXPECT_CALL(framer_visitor_, OnPacketHeader(_))
+        .WillOnce(DoAll(SaveArg<0>(&header), Return(true)));
+    EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
+    EXPECT_CALL(framer_visitor_, OnPacketComplete());
+  }
+  ProcessPacket(serialized);
+  ASSERT_TRUE(header.version_flag);
+  ASSERT_EQ(header.long_packet_type, INITIAL);
+  ASSERT_EQ(header.retry_token.length(), sizeof(retry_token_bytes));
+  test::CompareCharArraysWithHexError(
+      "retry token", header.retry_token.data(), header.retry_token.length(),
+      retry_token_bytes, sizeof(retry_token_bytes));
 }
 
 }  // namespace

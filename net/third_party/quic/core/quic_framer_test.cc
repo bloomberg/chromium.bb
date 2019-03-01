@@ -207,6 +207,15 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
     return accept_packet_;
   }
 
+  void OnCoalescedPacket(const QuicEncryptedPacket& packet) override {
+    size_t coalesced_data_length = packet.length();
+    char* coalesced_data = new char[coalesced_data_length];
+    memcpy(coalesced_data, packet.data(), coalesced_data_length);
+    coalesced_packets_.push_back(QuicMakeUnique<QuicEncryptedPacket>(
+        coalesced_data, coalesced_data_length,
+        /*owns_buffer=*/true));
+  }
+
   bool OnStreamFrame(const QuicStreamFrame& frame) override {
     ++frame_count_;
     // Save a copy of the data so it is valid after the packet is processed.
@@ -382,6 +391,7 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
   std::vector<std::unique_ptr<QuicPaddingFrame>> padding_frames_;
   std::vector<std::unique_ptr<QuicPingFrame>> ping_frames_;
   std::vector<std::unique_ptr<QuicMessageFrame>> message_frames_;
+  std::vector<std::unique_ptr<QuicEncryptedPacket>> coalesced_packets_;
   QuicRstStreamFrame rst_stream_frame_;
   QuicConnectionCloseFrame connection_close_frame_;
   QuicApplicationCloseFrame application_close_frame_;
@@ -483,35 +493,53 @@ class QuicFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
                        bool includes_diversification_nonce,
                        QuicConnectionIdLength destination_connection_id_length,
                        QuicConnectionIdLength source_connection_id_length) {
+    return CheckDecryption(
+        encrypted, includes_version, includes_diversification_nonce,
+        destination_connection_id_length, source_connection_id_length,
+        VARIABLE_LENGTH_INTEGER_LENGTH_0, 0, VARIABLE_LENGTH_INTEGER_LENGTH_0);
+  }
+
+  bool CheckDecryption(
+      const QuicEncryptedPacket& encrypted,
+      bool includes_version,
+      bool includes_diversification_nonce,
+      QuicConnectionIdLength destination_connection_id_length,
+      QuicConnectionIdLength source_connection_id_length,
+      QuicVariableLengthIntegerLength retry_token_length_length,
+      size_t retry_token_length,
+      QuicVariableLengthIntegerLength length_length) {
     if (visitor_.header_->packet_number != decrypter_->packet_number_) {
       QUIC_LOG(ERROR) << "Decrypted incorrect packet number.  expected "
                       << visitor_.header_->packet_number
                       << " actual: " << decrypter_->packet_number_;
       return false;
     }
-    if (QuicFramer::GetAssociatedDataFromEncryptedPacket(
+    QuicStringPiece associated_data =
+        QuicFramer::GetAssociatedDataFromEncryptedPacket(
             framer_.transport_version(), encrypted,
             destination_connection_id_length, source_connection_id_length,
             includes_version, includes_diversification_nonce,
-            PACKET_4BYTE_PACKET_NUMBER) != decrypter_->associated_data_) {
+            PACKET_4BYTE_PACKET_NUMBER, retry_token_length_length,
+            retry_token_length, length_length);
+    if (associated_data != decrypter_->associated_data_) {
       QUIC_LOG(ERROR) << "Decrypted incorrect associated data.  expected "
-                      << QuicFramer::GetAssociatedDataFromEncryptedPacket(
-                             framer_.transport_version(), encrypted,
-                             destination_connection_id_length,
-                             source_connection_id_length, includes_version,
-                             includes_diversification_nonce,
-                             PACKET_4BYTE_PACKET_NUMBER)
-                      << " actual: " << decrypter_->associated_data_;
+                      << QuicTextUtils::HexEncode(associated_data)
+                      << " actual: "
+                      << QuicTextUtils::HexEncode(decrypter_->associated_data_);
       return false;
     }
     QuicStringPiece ciphertext(
         encrypted.AsStringPiece().substr(GetStartOfEncryptedData(
             framer_.transport_version(), destination_connection_id_length,
             source_connection_id_length, includes_version,
-            includes_diversification_nonce, PACKET_4BYTE_PACKET_NUMBER)));
+            includes_diversification_nonce, PACKET_4BYTE_PACKET_NUMBER,
+            retry_token_length_length, retry_token_length, length_length)));
     if (ciphertext != decrypter_->ciphertext_) {
       QUIC_LOG(ERROR) << "Decrypted incorrect ciphertext data.  expected "
-                      << ciphertext << " actual: " << decrypter_->ciphertext_;
+                      << QuicTextUtils::HexEncode(ciphertext) << " actual: "
+                      << QuicTextUtils::HexEncode(decrypter_->ciphertext_)
+                      << " associated data: "
+                      << QuicTextUtils::HexEncode(associated_data);
       return false;
     }
     return true;
@@ -786,7 +814,7 @@ TEST_P(QuicFramerTest, LargePacket) {
   // clang-format on
   unsigned char* p = packet;
   size_t p_size = QUIC_ARRAYSIZE(packet);
-  if (framer_.transport_version() > QUIC_VERSION_45) {
+  if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
     p_size = QUIC_ARRAYSIZE(packet46);
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
@@ -797,7 +825,8 @@ TEST_P(QuicFramerTest, LargePacket) {
   const size_t header_size = GetPacketHeaderSize(
       framer_.transport_version(), PACKET_8BYTE_CONNECTION_ID,
       PACKET_0BYTE_CONNECTION_ID, !kIncludeVersion,
-      !kIncludeDiversificationNonce, PACKET_4BYTE_PACKET_NUMBER);
+      !kIncludeDiversificationNonce, PACKET_4BYTE_PACKET_NUMBER,
+      VARIABLE_LENGTH_INTEGER_LENGTH_0, 0, VARIABLE_LENGTH_INTEGER_LENGTH_0);
 
   memset(p + header_size, 0, kMaxPacketSize - header_size);
 
@@ -886,12 +915,13 @@ TEST_P(QuicFramerTest, LongPacketHeader) {
   };
   // clang-format on
 
-  if (framer_.transport_version() <= QUIC_VERSION_43) {
+  if (framer_.transport_version() <= QUIC_VERSION_43 ||
+      QuicVersionHasLongHeaderLengths(framer_.transport_version())) {
     return;
   }
 
   PacketFragments& fragments =
-      framer_.transport_version() > QUIC_VERSION_45 ? packet46 : packet44;
+      framer_.transport_version() > QUIC_VERSION_44 ? packet46 : packet44;
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
 
@@ -905,7 +935,7 @@ TEST_P(QuicFramerTest, LongPacketHeader) {
   EXPECT_EQ(kPacketNumber, visitor_.header_->packet_number);
 
   CheckFramingBoundaries(
-      framer_.transport_version() > QUIC_VERSION_45 ? packet46 : packet44,
+      framer_.transport_version() > QUIC_VERSION_44 ? packet46 : packet44,
       QUIC_INVALID_PACKET_HEADER);
 }
 
@@ -947,7 +977,7 @@ TEST_P(QuicFramerTest, PacketHeaderWith0ByteConnectionId) {
   // clang-format on
 
   PacketFragments& fragments =
-      framer_.transport_version() > QUIC_VERSION_45
+      framer_.transport_version() > QUIC_VERSION_44
           ? packet46
           : (framer_.transport_version() > QUIC_VERSION_43 ? packet44 : packet);
   std::unique_ptr<QuicEncryptedPacket> encrypted(
@@ -1017,12 +1047,37 @@ TEST_P(QuicFramerTest, PacketHeaderWithVersionFlag) {
       {"Unable to read packet number.",
        {0x12, 0x34, 0x56, 0x78}},
   };
+
+  PacketFragments packet99 = {
+      // type (long header with packet type ZERO_RTT_PROTECTED and 4 bytes
+      // packet number)
+      {"Unable to read type.",
+       {0xD3}},
+      // version tag
+      {"Unable to read protocol version.",
+       {QUIC_VERSION_BYTES}},
+      // connection_id length
+      {"Unable to read ConnectionId length.",
+       {0x50}},
+      // connection_id
+      {"Unable to read Destination ConnectionId.",
+       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
+      // long header packet length
+      {"Unable to read long header payload length.",
+       {0x04}},
+      // packet number
+      {"Long header payload length longer than packet.",
+       {0x12, 0x34, 0x56, 0x78}},
+  };
   // clang-format on
 
   PacketFragments& fragments =
-      framer_.transport_version() > QUIC_VERSION_45
-          ? packet46
-          : (framer_.transport_version() > QUIC_VERSION_43 ? packet44 : packet);
+      framer_.transport_version() == QUIC_VERSION_99
+          ? packet99
+          : framer_.transport_version() > QUIC_VERSION_44
+                ? packet46
+                : (framer_.transport_version() > QUIC_VERSION_43 ? packet44
+                                                                 : packet);
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
   EXPECT_FALSE(framer_.ProcessPacket(*encrypted));
@@ -1080,7 +1135,7 @@ TEST_P(QuicFramerTest, PacketHeaderWith4BytePacketNumber) {
   // clang-format on
 
   PacketFragments& fragments =
-      framer_.transport_version() > QUIC_VERSION_45
+      framer_.transport_version() > QUIC_VERSION_44
           ? packet46
           : (framer_.transport_version() > QUIC_VERSION_43 ? packet44 : packet);
   std::unique_ptr<QuicEncryptedPacket> encrypted(
@@ -1139,7 +1194,7 @@ TEST_P(QuicFramerTest, PacketHeaderWith2BytePacketNumber) {
   // clang-format on
 
   PacketFragments& fragments =
-      framer_.transport_version() > QUIC_VERSION_45
+      framer_.transport_version() > QUIC_VERSION_44
           ? packet46
           : (framer_.transport_version() > QUIC_VERSION_43 ? packet44 : packet);
   std::unique_ptr<QuicEncryptedPacket> encrypted(
@@ -1200,7 +1255,7 @@ TEST_P(QuicFramerTest, PacketHeaderWith1BytePacketNumber) {
   // clang-format on
 
   PacketFragments& fragments =
-      framer_.transport_version() > QUIC_VERSION_45
+      framer_.transport_version() > QUIC_VERSION_44
           ? packet46
           : (framer_.transport_version() > QUIC_VERSION_43 ? packet44 : packet);
   std::unique_ptr<QuicEncryptedPacket> encrypted(
@@ -1348,6 +1403,31 @@ TEST_P(QuicFramerTest, PacketWithDiversificationNonce) {
     0x00,
     0x00, 0x00, 0x00, 0x00
   };
+
+  unsigned char packet99[] = {
+    // type: Long header with packet type ZERO_RTT_PROTECTED and 1 byte packet
+    // number.
+    0xD0,
+    // version tag
+    QUIC_VERSION_BYTES,
+    // connection_id length
+    0x05,
+    // connection_id
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    // long header packet length
+    0x26,
+    // packet number
+    0x78,
+    // nonce
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+    0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+    0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
+
+    // frame type (padding)
+    0x00,
+    0x00, 0x00, 0x00, 0x00
+  };
   // clang-format on
 
   if (framer_.version().handshake_protocol != PROTOCOL_QUIC_CRYPTO) {
@@ -1356,7 +1436,10 @@ TEST_P(QuicFramerTest, PacketWithDiversificationNonce) {
 
   unsigned char* p = packet;
   size_t p_size = QUIC_ARRAYSIZE(packet);
-  if (framer_.transport_version() > QUIC_VERSION_45) {
+  if (framer_.transport_version() == QUIC_VERSION_99) {
+    p = packet99;
+    p_size = QUIC_ARRAYSIZE(packet99);
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
     p_size = QUIC_ARRAYSIZE(packet46);
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
@@ -1542,7 +1625,7 @@ TEST_P(QuicFramerTest, PaddingFrame) {
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
     p_size = QUIC_ARRAYSIZE(packet99);
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
     p_size = QUIC_ARRAYSIZE(packet46);
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
@@ -1695,7 +1778,7 @@ TEST_P(QuicFramerTest, StreamFrame) {
   PacketFragments& fragments =
       framer_.transport_version() == QUIC_VERSION_99
           ? packet99
-          : (framer_.transport_version() > QUIC_VERSION_45
+          : (framer_.transport_version() > QUIC_VERSION_44
                  ? packet46
                  : (framer_.transport_version() > QUIC_VERSION_43 ? packet44
                                                                   : packet));
@@ -1779,7 +1862,7 @@ TEST_P(QuicFramerTest, MissingDiversificationNonce) {
                        QuicMakeUnique<NullDecrypter>(Perspective::IS_CLIENT));
   decrypter_ = new test::TestDecrypter();
   framer_.SetAlternativeDecrypter(
-      ENCRYPTION_INITIAL, std::unique_ptr<QuicDecrypter>(decrypter_), false);
+      ENCRYPTION_ZERO_RTT, std::unique_ptr<QuicDecrypter>(decrypter_), false);
 
   // clang-format off
   unsigned char packet[] = {
@@ -2036,7 +2119,7 @@ TEST_P(QuicFramerTest, StreamFrame2ByteStreamId) {
   PacketFragments& fragments =
       framer_.transport_version() == QUIC_VERSION_99
           ? packet99
-          : (framer_.transport_version() > QUIC_VERSION_45
+          : (framer_.transport_version() > QUIC_VERSION_44
                  ? packet46
                  : (framer_.transport_version() > QUIC_VERSION_43 ? packet44
                                                                   : packet));
@@ -2187,7 +2270,7 @@ TEST_P(QuicFramerTest, StreamFrame1ByteStreamId) {
   PacketFragments& fragments =
       framer_.transport_version() == QUIC_VERSION_99
           ? packet99
-          : (framer_.transport_version() > QUIC_VERSION_45
+          : (framer_.transport_version() > QUIC_VERSION_44
                  ? packet46
                  : (framer_.transport_version() > QUIC_VERSION_43 ? packet44
                                                                   : packet));
@@ -2334,6 +2417,9 @@ TEST_P(QuicFramerTest, StreamFrameWithVersion) {
       // connection_id
       {"",
        {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
+      // long header packet length
+      {"",
+       {0x1E}},
       // packet number
       {"",
        {0x12, 0x34, 0x56, 0x78}},
@@ -2341,27 +2427,35 @@ TEST_P(QuicFramerTest, StreamFrameWithVersion) {
       {"",
        {0x08 | 0x01 | 0x02 | 0x04}},
       // stream id
-      {"Unable to read stream_id.",
+      {"Long header payload length longer than packet.",
        {kVarInt62FourBytes + 0x00, 0x02, 0x03, 0x04}},
       // offset
-      {"Unable to read stream data offset.",
+      {"Long header payload length longer than packet.",
        {kVarInt62EightBytes + 0x3A, 0x98, 0xFE, 0xDC,
         0x32, 0x10, 0x76, 0x54}},
       // data length
-      {"Unable to read stream data length.",
+      {"Long header payload length longer than packet.",
        {kVarInt62OneByte + 0x0c}},
       // data
-      {"Unable to read frame data.",
+      {"Long header payload length longer than packet.",
        { 'h',  'e',  'l',  'l',
          'o',  ' ',  'w',  'o',
          'r',  'l',  'd',  '!'}},
   };
   // clang-format on
 
+  QuicVariableLengthIntegerLength retry_token_length_length =
+      VARIABLE_LENGTH_INTEGER_LENGTH_0;
+  size_t retry_token_length = 0;
+  QuicVariableLengthIntegerLength length_length =
+      QuicVersionHasLongHeaderLengths(framer_.transport_version())
+          ? VARIABLE_LENGTH_INTEGER_LENGTH_1
+          : VARIABLE_LENGTH_INTEGER_LENGTH_0;
+
   PacketFragments& fragments =
       framer_.transport_version() == QUIC_VERSION_99
           ? packet99
-          : (framer_.transport_version() > QUIC_VERSION_45
+          : (framer_.transport_version() > QUIC_VERSION_44
                  ? packet46
                  : (framer_.transport_version() > QUIC_VERSION_43 ? packet44
                                                                   : packet));
@@ -2373,7 +2467,8 @@ TEST_P(QuicFramerTest, StreamFrameWithVersion) {
   ASSERT_TRUE(visitor_.header_.get());
   EXPECT_TRUE(CheckDecryption(
       *encrypted, kIncludeVersion, !kIncludeDiversificationNonce,
-      PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID));
+      PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID,
+      retry_token_length_length, retry_token_length, length_length));
 
   ASSERT_EQ(1u, visitor_.stream_frames_.size());
   EXPECT_EQ(0u, visitor_.ack_frames_.size());
@@ -2383,7 +2478,10 @@ TEST_P(QuicFramerTest, StreamFrameWithVersion) {
   EXPECT_EQ(kStreamOffset, visitor_.stream_frames_[0]->offset);
   CheckStreamFrameData("hello world!", visitor_.stream_frames_[0].get());
 
-  CheckFramingBoundaries(fragments, QUIC_INVALID_STREAM_DATA);
+  CheckFramingBoundaries(fragments,
+                         framer_.transport_version() == QUIC_VERSION_99
+                             ? QUIC_INVALID_PACKET_HEADER
+                             : QUIC_INVALID_STREAM_DATA);
 }
 
 TEST_P(QuicFramerTest, RejectPacket) {
@@ -2461,7 +2559,7 @@ TEST_P(QuicFramerTest, RejectPacket) {
   // clang-format on
 
   unsigned char* p = packet;
-  if (framer_.transport_version() > QUIC_VERSION_45) {
+  if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
@@ -2514,11 +2612,11 @@ TEST_P(QuicFramerTest, RejectPublicHeader) {
   // clang-format on
 
   QuicEncryptedPacket encrypted(
-      framer_.transport_version() > QUIC_VERSION_45
+      framer_.transport_version() > QUIC_VERSION_44
           ? AsChars(packet46)
           : (framer_.transport_version() > QUIC_VERSION_43 ? AsChars(packet44)
                                                            : AsChars(packet)),
-      framer_.transport_version() > QUIC_VERSION_45
+      framer_.transport_version() > QUIC_VERSION_44
           ? QUIC_ARRAYSIZE(packet46)
           : (framer_.transport_version() > QUIC_VERSION_43
                  ? QUIC_ARRAYSIZE(packet44)
@@ -2656,7 +2754,7 @@ TEST_P(QuicFramerTest, AckFrameOneAckBlock) {
   PacketFragments& fragments =
       framer_.transport_version() == QUIC_VERSION_99
           ? packet99
-          : (framer_.transport_version() > QUIC_VERSION_45
+          : (framer_.transport_version() > QUIC_VERSION_44
                  ? packet46
                  : (framer_.transport_version() > QUIC_VERSION_43 ? packet44
                                                                   : packet));
@@ -2799,7 +2897,7 @@ TEST_P(QuicFramerTest, FirstAckFrameUnderflow) {
   PacketFragments& fragments =
       framer_.transport_version() == QUIC_VERSION_99
           ? packet99
-          : (framer_.transport_version() > QUIC_VERSION_45
+          : (framer_.transport_version() > QUIC_VERSION_44
                  ? packet46
                  : (framer_.transport_version() > QUIC_VERSION_43 ? packet44
                                                                   : packet));
@@ -3202,7 +3300,7 @@ TEST_P(QuicFramerTest, AckFrameFirstAckBlockLengthZero) {
 
   // clang-format on
   PacketFragments& fragments =
-      framer_.transport_version() > QUIC_VERSION_45
+      framer_.transport_version() > QUIC_VERSION_44
           ? packet46
           : (framer_.transport_version() > QUIC_VERSION_43 ? packet44 : packet);
 
@@ -3340,7 +3438,7 @@ TEST_P(QuicFramerTest, AckFrameOneAckBlockMaxLength) {
   PacketFragments& fragments =
       framer_.transport_version() == QUIC_VERSION_99
           ? packet99
-          : (framer_.transport_version() > QUIC_VERSION_45
+          : (framer_.transport_version() > QUIC_VERSION_44
                  ? packet46
                  : (framer_.transport_version() > QUIC_VERSION_43 ? packet44
                                                                   : packet));
@@ -3631,7 +3729,7 @@ TEST_P(QuicFramerTest, AckFrameTwoTimeStampsMultipleAckBlocks) {
   PacketFragments& fragments =
       framer_.transport_version() == QUIC_VERSION_99
           ? packet99
-          : (framer_.transport_version() > QUIC_VERSION_45
+          : (framer_.transport_version() > QUIC_VERSION_44
                  ? packet46
                  : (framer_.transport_version() > QUIC_VERSION_43 ? packet44
                                                                   : packet));
@@ -3743,7 +3841,7 @@ TEST_P(QuicFramerTest, AckFrameTimeStampDeltaTooHigh) {
     return;
   }
   QuicEncryptedPacket encrypted(
-      AsChars(framer_.transport_version() > QUIC_VERSION_45
+      AsChars(framer_.transport_version() > QUIC_VERSION_44
                   ? packet46
                   : (framer_.transport_version() > QUIC_VERSION_43 ? packet44
                                                                    : packet)),
@@ -3846,7 +3944,7 @@ TEST_P(QuicFramerTest, AckFrameTimeStampSecondDeltaTooHigh) {
     return;
   }
   QuicEncryptedPacket encrypted(
-      AsChars(framer_.transport_version() > QUIC_VERSION_45
+      AsChars(framer_.transport_version() > QUIC_VERSION_44
                   ? packet46
                   : (framer_.transport_version() > QUIC_VERSION_43 ? packet44
                                                                    : packet)),
@@ -3917,7 +4015,7 @@ TEST_P(QuicFramerTest, NewStopWaitingFrame) {
   // clang-format on
 
   PacketFragments& fragments =
-      framer_.transport_version() > QUIC_VERSION_45
+      framer_.transport_version() > QUIC_VERSION_44
           ? packet46
           : (framer_.transport_version() > QUIC_VERSION_43 ? packet44 : packet);
 
@@ -3986,7 +4084,7 @@ TEST_P(QuicFramerTest, InvalidNewStopWaitingFrame) {
   // clang-format on
 
   QuicEncryptedPacket encrypted(
-      AsChars(framer_.transport_version() > QUIC_VERSION_45
+      AsChars(framer_.transport_version() > QUIC_VERSION_44
                   ? packet46
                   : (framer_.transport_version() > QUIC_VERSION_43 ? packet44
                                                                    : packet)),
@@ -4103,7 +4201,7 @@ TEST_P(QuicFramerTest, RstStreamFrame) {
   PacketFragments& fragments =
       framer_.transport_version() == QUIC_VERSION_99
           ? packet99
-          : (framer_.transport_version() > QUIC_VERSION_45
+          : (framer_.transport_version() > QUIC_VERSION_44
                  ? packet46
                  : (framer_.transport_version() > QUIC_VERSION_43 ? packet44
                                                                   : packet));
@@ -4243,7 +4341,7 @@ TEST_P(QuicFramerTest, ConnectionCloseFrame) {
   PacketFragments& fragments =
       framer_.transport_version() == QUIC_VERSION_99
           ? packet99
-          : (framer_.transport_version() > QUIC_VERSION_45
+          : (framer_.transport_version() > QUIC_VERSION_44
                  ? packet46
                  : (framer_.transport_version() > QUIC_VERSION_43 ? packet44
                                                                   : packet));
@@ -4430,7 +4528,7 @@ TEST_P(QuicFramerTest, GoAwayFrame) {
   // clang-format on
 
   PacketFragments& fragments =
-      framer_.transport_version() > QUIC_VERSION_45
+      framer_.transport_version() > QUIC_VERSION_44
           ? packet46
           : (framer_.transport_version() > QUIC_VERSION_43 ? packet44 : packet);
   std::unique_ptr<QuicEncryptedPacket> encrypted(
@@ -4526,7 +4624,7 @@ TEST_P(QuicFramerTest, WindowUpdateFrame) {
   // clang-format on
 
   PacketFragments& fragments =
-      framer_.transport_version() > QUIC_VERSION_45
+      framer_.transport_version() > QUIC_VERSION_44
           ? packet46
           : (framer_.transport_version() > QUIC_VERSION_43 ? packet44 : packet);
   std::unique_ptr<QuicEncryptedPacket> encrypted(
@@ -4714,7 +4812,7 @@ TEST_P(QuicFramerTest, BlockedFrame) {
   PacketFragments& fragments =
       framer_.transport_version() == QUIC_VERSION_99
           ? packet99
-          : (framer_.transport_version() > QUIC_VERSION_45
+          : (framer_.transport_version() > QUIC_VERSION_44
                  ? packet46
                  : (framer_.transport_version() > QUIC_VERSION_43 ? packet44
                                                                   : packet));
@@ -4796,14 +4894,14 @@ TEST_P(QuicFramerTest, PingFrame) {
   QuicEncryptedPacket encrypted(
       AsChars(framer_.transport_version() == QUIC_VERSION_99
                   ? packet99
-                  : (framer_.transport_version() > QUIC_VERSION_45
+                  : (framer_.transport_version() > QUIC_VERSION_44
                          ? packet46
                          : framer_.transport_version() > QUIC_VERSION_43
                                ? packet44
                                : packet)),
       framer_.transport_version() == QUIC_VERSION_99
           ? QUIC_ARRAYSIZE(packet99)
-          : (framer_.transport_version() > QUIC_VERSION_45
+          : (framer_.transport_version() > QUIC_VERSION_44
                  ? QUIC_ARRAYSIZE(packet46)
                  : framer_.transport_version() > QUIC_VERSION_43
                        ? QUIC_ARRAYSIZE(packet44)
@@ -4883,7 +4981,7 @@ TEST_P(QuicFramerTest, MessageFrame) {
   // clang-format on
 
   std::unique_ptr<QuicEncryptedPacket> encrypted(AssemblePacketFromFragments(
-      framer_.transport_version() > QUIC_VERSION_45 ? packet46 : packet45));
+      framer_.transport_version() > QUIC_VERSION_44 ? packet46 : packet45));
   EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
 
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
@@ -4897,7 +4995,7 @@ TEST_P(QuicFramerTest, MessageFrame) {
   EXPECT_EQ(8u, visitor_.message_frames_[1]->message_length);
 
   CheckFramingBoundaries(
-      framer_.transport_version() > QUIC_VERSION_45 ? packet46 : packet45,
+      framer_.transport_version() > QUIC_VERSION_44 ? packet46 : packet45,
       QUIC_INVALID_MESSAGE_DATA);
 }
 
@@ -5132,7 +5230,7 @@ TEST_P(QuicFramerTest, IetfStatelessResetPacket) {
                        QuicMakeUnique<NullDecrypter>(Perspective::IS_CLIENT));
   decrypter_ = new test::TestDecrypter();
   framer_.SetAlternativeDecrypter(
-      ENCRYPTION_INITIAL, std::unique_ptr<QuicDecrypter>(decrypter_), false);
+      ENCRYPTION_ZERO_RTT, std::unique_ptr<QuicDecrypter>(decrypter_), false);
   // This packet cannot be decrypted because diversification nonce is missing.
   QuicEncryptedPacket encrypted(AsChars(packet), QUIC_ARRAYSIZE(packet), false);
   EXPECT_TRUE(framer_.ProcessPacket(encrypted));
@@ -5162,7 +5260,7 @@ TEST_P(QuicFramerTest, IetfStatelessResetPacketInvalidStatelessResetToken) {
                        QuicMakeUnique<NullDecrypter>(Perspective::IS_CLIENT));
   decrypter_ = new test::TestDecrypter();
   framer_.SetAlternativeDecrypter(
-      ENCRYPTION_INITIAL, std::unique_ptr<QuicDecrypter>(decrypter_), false);
+      ENCRYPTION_ZERO_RTT, std::unique_ptr<QuicDecrypter>(decrypter_), false);
   // This packet cannot be decrypted because diversification nonce is missing.
   QuicEncryptedPacket encrypted(AsChars(packet), QUIC_ARRAYSIZE(packet), false);
   EXPECT_FALSE(framer_.ProcessPacket(encrypted));
@@ -5330,7 +5428,7 @@ TEST_P(QuicFramerTest, BuildPaddingFramePacket) {
   unsigned char* p = packet;
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
@@ -5339,7 +5437,8 @@ TEST_P(QuicFramerTest, BuildPaddingFramePacket) {
   uint64_t header_size = GetPacketHeaderSize(
       framer_.transport_version(), PACKET_8BYTE_CONNECTION_ID,
       PACKET_0BYTE_CONNECTION_ID, !kIncludeVersion,
-      !kIncludeDiversificationNonce, PACKET_4BYTE_PACKET_NUMBER);
+      !kIncludeDiversificationNonce, PACKET_4BYTE_PACKET_NUMBER,
+      VARIABLE_LENGTH_INTEGER_LENGTH_0, 0, VARIABLE_LENGTH_INTEGER_LENGTH_0);
   memset(p + header_size + 1, 0x00, kMaxPacketSize - header_size - 1);
 
   std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
@@ -5481,7 +5580,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithNewPaddingFrame) {
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
     p_size = QUIC_ARRAYSIZE(packet99);
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
     p_size = QUIC_ARRAYSIZE(packet46);
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
@@ -5561,7 +5660,7 @@ TEST_P(QuicFramerTest, Build4ByteSequenceNumberPaddingFramePacket) {
   unsigned char* p = packet;
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
@@ -5570,7 +5669,8 @@ TEST_P(QuicFramerTest, Build4ByteSequenceNumberPaddingFramePacket) {
   uint64_t header_size = GetPacketHeaderSize(
       framer_.transport_version(), PACKET_8BYTE_CONNECTION_ID,
       PACKET_0BYTE_CONNECTION_ID, !kIncludeVersion,
-      !kIncludeDiversificationNonce, PACKET_4BYTE_PACKET_NUMBER);
+      !kIncludeDiversificationNonce, PACKET_4BYTE_PACKET_NUMBER,
+      VARIABLE_LENGTH_INTEGER_LENGTH_0, 0, VARIABLE_LENGTH_INTEGER_LENGTH_0);
   memset(p + header_size + 1, 0x00, kMaxPacketSize - header_size - 1);
 
   std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
@@ -5649,7 +5749,7 @@ TEST_P(QuicFramerTest, Build2ByteSequenceNumberPaddingFramePacket) {
   unsigned char* p = packet;
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
@@ -5658,7 +5758,8 @@ TEST_P(QuicFramerTest, Build2ByteSequenceNumberPaddingFramePacket) {
   uint64_t header_size = GetPacketHeaderSize(
       framer_.transport_version(), PACKET_8BYTE_CONNECTION_ID,
       PACKET_0BYTE_CONNECTION_ID, !kIncludeVersion,
-      !kIncludeDiversificationNonce, PACKET_2BYTE_PACKET_NUMBER);
+      !kIncludeDiversificationNonce, PACKET_2BYTE_PACKET_NUMBER,
+      VARIABLE_LENGTH_INTEGER_LENGTH_0, 0, VARIABLE_LENGTH_INTEGER_LENGTH_0);
   memset(p + header_size + 1, 0x00, kMaxPacketSize - header_size - 1);
 
   std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
@@ -5737,7 +5838,7 @@ TEST_P(QuicFramerTest, Build1ByteSequenceNumberPaddingFramePacket) {
   unsigned char* p = packet;
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
@@ -5746,7 +5847,8 @@ TEST_P(QuicFramerTest, Build1ByteSequenceNumberPaddingFramePacket) {
   uint64_t header_size = GetPacketHeaderSize(
       framer_.transport_version(), PACKET_8BYTE_CONNECTION_ID,
       PACKET_0BYTE_CONNECTION_ID, !kIncludeVersion,
-      !kIncludeDiversificationNonce, PACKET_1BYTE_PACKET_NUMBER);
+      !kIncludeDiversificationNonce, PACKET_1BYTE_PACKET_NUMBER,
+      VARIABLE_LENGTH_INTEGER_LENGTH_0, 0, VARIABLE_LENGTH_INTEGER_LENGTH_0);
   memset(p + header_size + 1, 0x00, kMaxPacketSize - header_size - 1);
 
   std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
@@ -5764,6 +5866,9 @@ TEST_P(QuicFramerTest, BuildStreamFramePacket) {
   header.reset_flag = false;
   header.version_flag = false;
   header.packet_number = kPacketNumber;
+  if (QuicVersionHasLongHeaderLengths(framer_.transport_version())) {
+    header.length_length = VARIABLE_LENGTH_INTEGER_LENGTH_2;
+  }
 
   QuicStreamFrame stream_frame(kStreamId, true, kStreamOffset,
                                QuicStringPiece("hello world!"));
@@ -5864,7 +5969,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacket) {
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
     p_size = QUIC_ARRAYSIZE(packet99);
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
     p_size = QUIC_ARRAYSIZE(packet46);
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
@@ -5884,6 +5989,9 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
     header.long_packet_type = ZERO_RTT_PROTECTED;
   }
   header.packet_number = kPacketNumber;
+  if (QuicVersionHasLongHeaderLengths(framer_.transport_version())) {
+    header.length_length = VARIABLE_LENGTH_INTEGER_LENGTH_2;
+  }
 
   QuicStreamFrame stream_frame(kStreamId, true, kStreamOffset,
                                QuicStringPiece("hello world!"));
@@ -5963,6 +6071,8 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
       0x50,
       // connection_id
       0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+      // length
+      0x40, 0x1D,
       // packet number
       0x12, 0x34, 0x56, 0x78,
 
@@ -5986,7 +6096,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
     p_size = QUIC_ARRAYSIZE(packet99);
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
     p_size = QUIC_ARRAYSIZE(packet46);
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
@@ -6244,7 +6354,7 @@ TEST_P(QuicFramerTest, BuildAckFramePacketOneAckBlock) {
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
     p_size = QUIC_ARRAYSIZE(packet99);
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
     p_size = QUIC_ARRAYSIZE(packet46);
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
@@ -6360,7 +6470,7 @@ TEST_P(QuicFramerTest, BuildAckFramePacketOneAckBlockMaxLength) {
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
     p_size = QUIC_ARRAYSIZE(packet99);
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
     p_size = QUIC_ARRAYSIZE(packet46);
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
@@ -6549,7 +6659,7 @@ TEST_P(QuicFramerTest, BuildAckFramePacketMultipleAckBlocks) {
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
     p_size = QUIC_ARRAYSIZE(packet99);
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
     p_size = QUIC_ARRAYSIZE(packet46);
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
@@ -6953,7 +7063,7 @@ TEST_P(QuicFramerTest, BuildAckFramePacketMaxAckBlocks) {
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
     p_size = QUIC_ARRAYSIZE(packet99);
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
     p_size = QUIC_ARRAYSIZE(packet46);
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
@@ -7111,7 +7221,7 @@ TEST_P(QuicFramerTest, BuildRstFramePacketQuic) {
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
     p_size = QUIC_ARRAYSIZE(packet99);
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
     p_size = QUIC_ARRAYSIZE(packet46);
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
@@ -7236,7 +7346,7 @@ TEST_P(QuicFramerTest, BuildCloseFramePacket) {
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
     p_size = QUIC_ARRAYSIZE(packet99);
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
     p_size = QUIC_ARRAYSIZE(packet46);
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
@@ -7473,7 +7583,7 @@ TEST_P(QuicFramerTest, BuildTruncatedCloseFramePacket) {
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
     p_size = QUIC_ARRAYSIZE(packet99);
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
     p_size = QUIC_ARRAYSIZE(packet46);
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
@@ -7705,7 +7815,7 @@ TEST_P(QuicFramerTest, BuildGoAwayPacket) {
 
   unsigned char* p = packet;
   size_t p_size = QUIC_ARRAYSIZE(packet);
-  if (framer_.transport_version() > QUIC_VERSION_45) {
+  if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
     p_size = QUIC_ARRAYSIZE(packet46);
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
@@ -7895,7 +8005,7 @@ TEST_P(QuicFramerTest, BuildTruncatedGoAwayPacket) {
 
   unsigned char* p = packet;
   size_t p_size = QUIC_ARRAYSIZE(packet);
-  if (framer_.transport_version() > QUIC_VERSION_45) {
+  if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
     p_size = QUIC_ARRAYSIZE(packet46);
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
@@ -8001,7 +8111,7 @@ TEST_P(QuicFramerTest, BuildWindowUpdatePacket) {
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
     p_size = QUIC_ARRAYSIZE(packet99);
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
     p_size = QUIC_ARRAYSIZE(packet46);
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
@@ -8187,7 +8297,7 @@ TEST_P(QuicFramerTest, BuildBlockedPacket) {
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
     p_size = QUIC_ARRAYSIZE(packet99);
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
     p_size = QUIC_ARRAYSIZE(packet46);
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
@@ -8261,7 +8371,7 @@ TEST_P(QuicFramerTest, BuildPingPacket) {
   unsigned char* p = packet;
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
@@ -8359,7 +8469,7 @@ TEST_P(QuicFramerTest, BuildMessagePacket) {
   unsigned char* p = packet45;
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
   }
 
@@ -8447,7 +8557,7 @@ TEST_P(QuicFramerTest, BuildConnectivityProbingPacket) {
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
     packet_size = QUIC_ARRAYSIZE(packet99);
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
     packet_size = QUIC_ARRAYSIZE(packet46);
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
@@ -8457,14 +8567,11 @@ TEST_P(QuicFramerTest, BuildConnectivityProbingPacket) {
 
   std::unique_ptr<char[]> buffer(new char[kMaxPacketSize]);
 
-  size_t length =
-      framer_.BuildConnectivityProbingPacket(header, buffer.get(), packet_size);
+  size_t length = framer_.BuildConnectivityProbingPacket(
+      header, buffer.get(), packet_size, ENCRYPTION_NONE);
 
   EXPECT_NE(0u, length);
-  QuicPacket data(buffer.release(), length, true,
-                  header.destination_connection_id_length,
-                  header.source_connection_id_length, header.version_flag,
-                  header.nonce != nullptr, header.packet_number_length);
+  QuicPacket data(buffer.release(), length, true, header);
 
   test::CompareCharArraysWithHexError("constructed packet", data.data(),
                                       data.length(), AsChars(p), packet_size);
@@ -8507,17 +8614,15 @@ TEST_P(QuicFramerTest, BuildPaddedPathChallengePacket) {
   MockRandom randomizer;
 
   size_t length = framer_.BuildPaddedPathChallengePacket(
-      header, buffer.get(), QUIC_ARRAYSIZE(packet), &payload, &randomizer);
+      header, buffer.get(), QUIC_ARRAYSIZE(packet), &payload, &randomizer,
+      ENCRYPTION_NONE);
   EXPECT_EQ(length, QUIC_ARRAYSIZE(packet));
 
   // Payload has the random bytes that were generated. Copy them into packet,
   // above, before checking that the generated packet is correct.
   EXPECT_EQ(kQuicPathFrameBufferSize, payload.size());
 
-  QuicPacket data(buffer.release(), length, true,
-                  header.destination_connection_id_length,
-                  header.source_connection_id_length, header.version_flag,
-                  header.nonce != nullptr, header.packet_number_length);
+  QuicPacket data(buffer.release(), length, true, header);
 
   test::CompareCharArraysWithHexError("constructed packet", data.data(),
                                       data.length(), AsChars(packet),
@@ -8562,12 +8667,9 @@ TEST_P(QuicFramerTest, BuildPathResponsePacket1ResponseUnpadded) {
   payloads.push_back(payload0);
   size_t length = framer_.BuildPathResponsePacket(
       header, buffer.get(), QUIC_ARRAYSIZE(packet), payloads,
-      /*is_padded=*/false);
+      /*is_padded=*/false, ENCRYPTION_NONE);
   EXPECT_EQ(length, QUIC_ARRAYSIZE(packet));
-  QuicPacket data(buffer.release(), length, true,
-                  header.destination_connection_id_length,
-                  header.source_connection_id_length, header.version_flag,
-                  header.nonce != nullptr, header.packet_number_length);
+  QuicPacket data(buffer.release(), length, true, header);
 
   test::CompareCharArraysWithHexError("constructed packet", data.data(),
                                       data.length(), AsChars(packet),
@@ -8610,12 +8712,9 @@ TEST_P(QuicFramerTest, BuildPathResponsePacket1ResponsePadded) {
   payloads.push_back(payload0);
   size_t length = framer_.BuildPathResponsePacket(
       header, buffer.get(), QUIC_ARRAYSIZE(packet), payloads,
-      /*is_padded=*/true);
+      /*is_padded=*/true, ENCRYPTION_NONE);
   EXPECT_EQ(length, QUIC_ARRAYSIZE(packet));
-  QuicPacket data(buffer.release(), length, true,
-                  header.destination_connection_id_length,
-                  header.source_connection_id_length, header.version_flag,
-                  header.nonce != nullptr, header.packet_number_length);
+  QuicPacket data(buffer.release(), length, true, header);
 
   test::CompareCharArraysWithHexError("constructed packet", data.data(),
                                       data.length(), AsChars(packet),
@@ -8663,12 +8762,9 @@ TEST_P(QuicFramerTest, BuildPathResponsePacket3ResponsesUnpadded) {
   payloads.push_back(payload2);
   size_t length = framer_.BuildPathResponsePacket(
       header, buffer.get(), QUIC_ARRAYSIZE(packet), payloads,
-      /*is_padded=*/false);
+      /*is_padded=*/false, ENCRYPTION_NONE);
   EXPECT_EQ(length, QUIC_ARRAYSIZE(packet));
-  QuicPacket data(buffer.release(), length, true,
-                  header.destination_connection_id_length,
-                  header.source_connection_id_length, header.version_flag,
-                  header.nonce != nullptr, header.packet_number_length);
+  QuicPacket data(buffer.release(), length, true, header);
 
   test::CompareCharArraysWithHexError("constructed packet", data.data(),
                                       data.length(), AsChars(packet),
@@ -8718,12 +8814,9 @@ TEST_P(QuicFramerTest, BuildPathResponsePacket3ResponsesPadded) {
   payloads.push_back(payload2);
   size_t length = framer_.BuildPathResponsePacket(
       header, buffer.get(), QUIC_ARRAYSIZE(packet), payloads,
-      /*is_padded=*/true);
+      /*is_padded=*/true, ENCRYPTION_NONE);
   EXPECT_EQ(length, QUIC_ARRAYSIZE(packet));
-  QuicPacket data(buffer.release(), length, true,
-                  header.destination_connection_id_length,
-                  header.source_connection_id_length, header.version_flag,
-                  header.nonce != nullptr, header.packet_number_length);
+  QuicPacket data(buffer.release(), length, true, header);
 
   test::CompareCharArraysWithHexError("constructed packet", data.data(),
                                       data.length(), AsChars(packet),
@@ -8796,7 +8889,7 @@ TEST_P(QuicFramerTest, BuildMtuDiscoveryPacket) {
   unsigned char* p = packet;
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
@@ -9077,7 +9170,7 @@ TEST_P(QuicFramerTest, EncryptPacket) {
   unsigned char* p = packet;
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
@@ -9086,7 +9179,8 @@ TEST_P(QuicFramerTest, EncryptPacket) {
   std::unique_ptr<QuicPacket> raw(new QuicPacket(
       AsChars(p), QUIC_ARRAYSIZE(packet), false, PACKET_8BYTE_CONNECTION_ID,
       PACKET_0BYTE_CONNECTION_ID, !kIncludeVersion,
-      !kIncludeDiversificationNonce, PACKET_4BYTE_PACKET_NUMBER));
+      !kIncludeDiversificationNonce, PACKET_4BYTE_PACKET_NUMBER,
+      VARIABLE_LENGTH_INTEGER_LENGTH_0, 0, VARIABLE_LENGTH_INTEGER_LENGTH_0));
   char buffer[kMaxPacketSize];
   size_t encrypted_length = framer_.EncryptPayload(
       ENCRYPTION_NONE, packet_number, *raw, buffer, kMaxPacketSize);
@@ -9176,7 +9270,7 @@ TEST_P(QuicFramerTest, EncryptPacketWithVersionFlag) {
   unsigned char* p = packet;
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
@@ -9188,7 +9282,8 @@ TEST_P(QuicFramerTest, EncryptPacketWithVersionFlag) {
                                                     : QUIC_ARRAYSIZE(packet),
       false, PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID,
       kIncludeVersion, !kIncludeDiversificationNonce,
-      PACKET_4BYTE_PACKET_NUMBER));
+      PACKET_4BYTE_PACKET_NUMBER, VARIABLE_LENGTH_INTEGER_LENGTH_0, 0,
+      VARIABLE_LENGTH_INTEGER_LENGTH_0));
   char buffer[kMaxPacketSize];
   size_t encrypted_length = framer_.EncryptPayload(
       ENCRYPTION_NONE, packet_number, *raw, buffer, kMaxPacketSize);
@@ -9488,7 +9583,7 @@ TEST_P(QuicFramerTest, StopPacketProcessing) {
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
     p_size = QUIC_ARRAYSIZE(packet99);
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
     p_size = QUIC_ARRAYSIZE(packet46);
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
@@ -9540,7 +9635,11 @@ TEST_P(QuicFramerTest, ConstructEncryptedPacket) {
   EXPECT_CALL(visitor, OnDecryptedPacket(_)).Times(1);
   EXPECT_CALL(visitor, OnError(_)).Times(0);
   EXPECT_CALL(visitor, OnStreamFrame(_)).Times(0);
-  EXPECT_CALL(visitor, OnStreamFrame(Truly(ExpectedStreamFrame))).Times(1);
+  if (framer_.version().transport_version < QUIC_VERSION_47) {
+    EXPECT_CALL(visitor, OnStreamFrame(Truly(ExpectedStreamFrame))).Times(1);
+  } else {
+    EXPECT_CALL(visitor, OnCryptoFrame(_)).Times(1);
+  }
   EXPECT_CALL(visitor, OnPacketComplete()).Times(1);
 
   EXPECT_TRUE(framer_.ProcessPacket(*packet));
@@ -9709,7 +9808,7 @@ TEST_P(QuicFramerTest, FramerFuzzTest) {
   unsigned char* p = packet;
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
@@ -12286,7 +12385,7 @@ TEST_P(QuicFramerTest, AckFrameWithInvalidLargestObserved) {
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
     p_size = QUIC_ARRAYSIZE(packet99);
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
@@ -12386,7 +12485,7 @@ TEST_P(QuicFramerTest, FirstAckBlockJustUnderFlow) {
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
     p_size = QUIC_ARRAYSIZE(packet99);
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
     p_size = QUIC_ARRAYSIZE(packet46);
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
@@ -12526,7 +12625,7 @@ TEST_P(QuicFramerTest, ThirdAckBlockJustUnderflow) {
   if (framer_.transport_version() == QUIC_VERSION_99) {
     p = packet99;
     p_size = QUIC_ARRAYSIZE(packet99);
-  } else if (framer_.transport_version() > QUIC_VERSION_45) {
+  } else if (framer_.transport_version() > QUIC_VERSION_44) {
     p = packet46;
     p_size = QUIC_ARRAYSIZE(packet46);
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
@@ -12543,6 +12642,242 @@ TEST_P(QuicFramerTest, ThirdAckBlockJustUnderflow) {
     EXPECT_EQ(framer_.detailed_error(),
               "Underflow with ack block length 6, end of block is 6.");
   }
+}
+
+TEST_P(QuicFramerTest, CoalescedPacket) {
+  if (!QuicVersionHasLongHeaderLengths(framer_.transport_version())) {
+    return;
+  }
+  // clang-format off
+  unsigned char packet[] = {
+    // first coalesced packet
+      // public flags (long header with packet type ZERO_RTT_PROTECTED and
+      // 4-byte packet number)
+      0xD3,
+      // version
+      QUIC_VERSION_BYTES,
+      // destination connection ID length
+      0x50,
+      // destination connection ID
+      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+      // long header packet length
+      0x1E,
+      // packet number
+      0x12, 0x34, 0x56, 0x78,
+      // frame type (IETF_STREAM frame with FIN, LEN, and OFFSET bits set)
+      0x08 | 0x01 | 0x02 | 0x04,
+      // stream id
+      kVarInt62FourBytes + 0x00, 0x02, 0x03, 0x04,
+      // offset
+      kVarInt62EightBytes + 0x3A, 0x98, 0xFE, 0xDC,
+      0x32, 0x10, 0x76, 0x54,
+      // data length
+      kVarInt62OneByte + 0x0c,
+      // data
+      'h',  'e',  'l',  'l',
+      'o',  ' ',  'w',  'o',
+      'r',  'l',  'd',  '!',
+    // second coalesced packet
+      // public flags (long header with packet type ZERO_RTT_PROTECTED and
+      // 4-byte packet number)
+      0xD3,
+      // version
+      QUIC_VERSION_BYTES,
+      // destination connection ID length
+      0x50,
+      // destination connection ID
+      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+      // long header packet length
+      0x1E,
+      // packet number
+      0x12, 0x34, 0x56, 0x79,
+      // frame type (IETF_STREAM frame with FIN, LEN, and OFFSET bits set)
+      0x08 | 0x01 | 0x02 | 0x04,
+      // stream id
+      kVarInt62FourBytes + 0x00, 0x02, 0x03, 0x04,
+      // offset
+      kVarInt62EightBytes + 0x3A, 0x98, 0xFE, 0xDC,
+      0x32, 0x10, 0x76, 0x54,
+      // data length
+      kVarInt62OneByte + 0x0c,
+      // data
+      'H',  'E',  'L',  'L',
+      'O',  '_',  'W',  'O',
+      'R',  'L',  'D',  '?',
+  };
+  // clang-format on
+
+  QuicEncryptedPacket encrypted(AsChars(packet), QUIC_ARRAYSIZE(packet), false);
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
+
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+
+  ASSERT_EQ(1u, visitor_.stream_frames_.size());
+  EXPECT_EQ(0u, visitor_.ack_frames_.size());
+
+  // Stream ID should be the last 3 bytes of kStreamId.
+  EXPECT_EQ(0x00FFFFFF & kStreamId, visitor_.stream_frames_[0]->stream_id);
+  EXPECT_TRUE(visitor_.stream_frames_[0]->fin);
+  EXPECT_EQ(kStreamOffset, visitor_.stream_frames_[0]->offset);
+  CheckStreamFrameData("hello world!", visitor_.stream_frames_[0].get());
+
+  ASSERT_EQ(visitor_.coalesced_packets_.size(), 1u);
+  EXPECT_TRUE(framer_.ProcessPacket(*visitor_.coalesced_packets_[0].get()));
+
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+
+  ASSERT_EQ(2u, visitor_.stream_frames_.size());
+  EXPECT_EQ(0u, visitor_.ack_frames_.size());
+
+  // Stream ID should be the last 3 bytes of kStreamId.
+  EXPECT_EQ(0x00FFFFFF & kStreamId, visitor_.stream_frames_[1]->stream_id);
+  EXPECT_TRUE(visitor_.stream_frames_[1]->fin);
+  EXPECT_EQ(kStreamOffset, visitor_.stream_frames_[1]->offset);
+  CheckStreamFrameData("HELLO_WORLD?", visitor_.stream_frames_[1].get());
+}
+
+TEST_P(QuicFramerTest, MismatchedCoalescedPacket) {
+  if (!QuicVersionHasLongHeaderLengths(framer_.transport_version())) {
+    return;
+  }
+  // clang-format off
+  unsigned char packet[] = {
+    // first coalesced packet
+      // public flags (long header with packet type ZERO_RTT_PROTECTED and
+      // 4-byte packet number)
+      0xD3,
+      // version
+      QUIC_VERSION_BYTES,
+      // destination connection ID length
+      0x50,
+      // destination connection ID
+      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+      // long header packet length
+      0x1E,
+      // packet number
+      0x12, 0x34, 0x56, 0x78,
+      // frame type (IETF_STREAM frame with FIN, LEN, and OFFSET bits set)
+      0x08 | 0x01 | 0x02 | 0x04,
+      // stream id
+      kVarInt62FourBytes + 0x00, 0x02, 0x03, 0x04,
+      // offset
+      kVarInt62EightBytes + 0x3A, 0x98, 0xFE, 0xDC,
+      0x32, 0x10, 0x76, 0x54,
+      // data length
+      kVarInt62OneByte + 0x0c,
+      // data
+      'h',  'e',  'l',  'l',
+      'o',  ' ',  'w',  'o',
+      'r',  'l',  'd',  '!',
+    // second coalesced packet
+      // public flags (long header with packet type ZERO_RTT_PROTECTED and
+      // 4-byte packet number)
+      0xD3,
+      // version
+      QUIC_VERSION_BYTES,
+      // destination connection ID length
+      0x50,
+      // destination connection ID
+      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x11,
+      // long header packet length
+      0x1E,
+      // packet number
+      0x12, 0x34, 0x56, 0x79,
+      // frame type (IETF_STREAM frame with FIN, LEN, and OFFSET bits set)
+      0x08 | 0x01 | 0x02 | 0x04,
+      // stream id
+      kVarInt62FourBytes + 0x00, 0x02, 0x03, 0x04,
+      // offset
+      kVarInt62EightBytes + 0x3A, 0x98, 0xFE, 0xDC,
+      0x32, 0x10, 0x76, 0x54,
+      // data length
+      kVarInt62OneByte + 0x0c,
+      // data
+      'H',  'E',  'L',  'L',
+      'O',  '_',  'W',  'O',
+      'R',  'L',  'D',  '?',
+  };
+  // clang-format on
+
+  QuicEncryptedPacket encrypted(AsChars(packet), QUIC_ARRAYSIZE(packet), false);
+  EXPECT_QUIC_PEER_BUG(EXPECT_TRUE(framer_.ProcessPacket(encrypted)),
+                       "Server: Received mismatched coalesced header.*");
+
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+
+  ASSERT_EQ(1u, visitor_.stream_frames_.size());
+  EXPECT_EQ(0u, visitor_.ack_frames_.size());
+
+  // Stream ID should be the last 3 bytes of kStreamId.
+  EXPECT_EQ(0x00FFFFFF & kStreamId, visitor_.stream_frames_[0]->stream_id);
+  EXPECT_TRUE(visitor_.stream_frames_[0]->fin);
+  EXPECT_EQ(kStreamOffset, visitor_.stream_frames_[0]->offset);
+  CheckStreamFrameData("hello world!", visitor_.stream_frames_[0].get());
+
+  ASSERT_EQ(visitor_.coalesced_packets_.size(), 0u);
+}
+
+TEST_P(QuicFramerTest, InvalidCoalescedPacket) {
+  if (!QuicVersionHasLongHeaderLengths(framer_.transport_version())) {
+    return;
+  }
+  // clang-format off
+  unsigned char packet[] = {
+    // first coalesced packet
+      // public flags (long header with packet type ZERO_RTT_PROTECTED and
+      // 4-byte packet number)
+      0xD3,
+      // version
+      QUIC_VERSION_BYTES,
+      // destination connection ID length
+      0x50,
+      // destination connection ID
+      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+      // long header packet length
+      0x1E,
+      // packet number
+      0x12, 0x34, 0x56, 0x78,
+      // frame type (IETF_STREAM frame with FIN, LEN, and OFFSET bits set)
+      0x08 | 0x01 | 0x02 | 0x04,
+      // stream id
+      kVarInt62FourBytes + 0x00, 0x02, 0x03, 0x04,
+      // offset
+      kVarInt62EightBytes + 0x3A, 0x98, 0xFE, 0xDC,
+      0x32, 0x10, 0x76, 0x54,
+      // data length
+      kVarInt62OneByte + 0x0c,
+      // data
+      'h',  'e',  'l',  'l',
+      'o',  ' ',  'w',  'o',
+      'r',  'l',  'd',  '!',
+    // second coalesced packet
+      // public flags (long header with packet type ZERO_RTT_PROTECTED and
+      // 4-byte packet number)
+      0xD3,
+      // version would be here but we cut off the invalid coalesced header.
+  };
+  // clang-format on
+
+  QuicEncryptedPacket encrypted(AsChars(packet), QUIC_ARRAYSIZE(packet), false);
+  EXPECT_QUIC_PEER_BUG(EXPECT_TRUE(framer_.ProcessPacket(encrypted)),
+                       "Server: Failed to parse received coalesced header.*");
+
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+
+  ASSERT_EQ(1u, visitor_.stream_frames_.size());
+  EXPECT_EQ(0u, visitor_.ack_frames_.size());
+
+  // Stream ID should be the last 3 bytes of kStreamId.
+  EXPECT_EQ(0x00FFFFFF & kStreamId, visitor_.stream_frames_[0]->stream_id);
+  EXPECT_TRUE(visitor_.stream_frames_[0]->fin);
+  EXPECT_EQ(kStreamOffset, visitor_.stream_frames_[0]->offset);
+  CheckStreamFrameData("hello world!", visitor_.stream_frames_[0].get());
+
+  ASSERT_EQ(visitor_.coalesced_packets_.size(), 0u);
 }
 
 }  // namespace

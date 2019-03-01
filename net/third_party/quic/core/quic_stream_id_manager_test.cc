@@ -63,6 +63,7 @@ class TestQuicSession : public MockQuicSession {
     TestQuicStream* stream = new TestQuicStream(
         id, this,
         DetermineStreamType(id, connection()->transport_version(),
+                            perspective(),
                             /*is_incoming=*/true, BIDIRECTIONAL));
     ActivateStream(QuicWrapUnique(stream));
     return stream;

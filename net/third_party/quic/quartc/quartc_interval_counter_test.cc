@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/quartc/quartc_interval_counter.h"
 
-#include "net/third_party/quic/platform/api/quic_interval.h"
+#include "net/third_party/quic/core/quic_interval.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

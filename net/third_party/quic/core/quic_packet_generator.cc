@@ -56,6 +56,44 @@ void QuicPacketGenerator::AddControlFrame(const QuicFrame& frame) {
   SendQueuedFrames(/*flush=*/false);
 }
 
+size_t QuicPacketGenerator::ConsumeCryptoData(EncryptionLevel level,
+                                              size_t write_length,
+                                              QuicStreamOffset offset) {
+  QUIC_BUG_IF(!flusher_attached_) << "Packet flusher is not attached when "
+                                     "generator tries to write crypto data.";
+  // To make reasoning about crypto frames easier, we don't combine them with
+  // other retransmittable frames in a single packet.
+  // TODO(nharper): Once we have separate packet number spaces, everything
+  // should be driven by encryption level, and we should stop flushing in this
+  // spot.
+  const bool flush = packet_creator_.HasPendingRetransmittableFrames();
+  SendQueuedFrames(flush);
+
+  size_t total_bytes_consumed = 0;
+
+  while (total_bytes_consumed < write_length) {
+    QuicFrame frame;
+    if (!packet_creator_.ConsumeCryptoData(
+            level, write_length - total_bytes_consumed,
+            offset + total_bytes_consumed, next_transmission_type_, &frame)) {
+      // The only pending data in the packet is non-retransmittable frames. I'm
+      // assuming here that they won't occupy so much of the packet that a
+      // CRYPTO frame won't fit.
+      QUIC_BUG << "Failed to ConsumeCryptoData at level " << level;
+      return 0;
+    }
+    total_bytes_consumed += frame.crypto_frame->data_length;
+
+    // TODO(ianswett): Move to having the creator flush itself when it's full.
+    packet_creator_.Flush();
+  }
+
+  // Don't allow the handshake to be bundled with other retransmittable frames.
+  SendQueuedFrames(/*flush=*/true);
+
+  return total_bytes_consumed;
+}
+
 QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
                                                   size_t write_length,
                                                   QuicStreamOffset offset,

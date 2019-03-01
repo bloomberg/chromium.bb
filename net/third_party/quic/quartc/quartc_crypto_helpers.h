@@ -20,6 +20,15 @@
 
 namespace quic {
 
+// Never, ever, change this certificate name. You will break 0-rtt handshake if
+// you do.
+static constexpr char kDummyCertName[] = "Dummy cert";
+
+struct CryptoServerConfig {
+  std::unique_ptr<QuicCryptoServerConfig> config;
+  QuicString serialized_crypto_config;
+};
+
 // Length of HKDF input keying material, equal to its number of bytes.
 // https://tools.ietf.org/html/rfc5869#section-2.2.
 // TODO(zhihuang): Verify that input keying material length is correct.
@@ -103,10 +112,9 @@ class QuartcCryptoServerStreamHelper : public QuicCryptoServerStream::Helper {
 std::unique_ptr<QuicCryptoClientConfig> CreateCryptoClientConfig(
     QuicStringPiece pre_shared_key);
 
-std::unique_ptr<QuicCryptoServerConfig> CreateCryptoServerConfig(
-    QuicRandom* random,
-    const QuicClock* clock,
-    QuicStringPiece pre_shared_key);
+CryptoServerConfig CreateCryptoServerConfig(QuicRandom* random,
+                                            const QuicClock* clock,
+                                            QuicStringPiece pre_shared_key);
 
 }  // namespace quic
 

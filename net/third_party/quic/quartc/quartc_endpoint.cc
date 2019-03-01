@@ -49,127 +49,49 @@ QuartcFactoryConfig CreateFactoryConfig(QuicAlarmFactory* alarm_factory,
   return config;
 }
 
-// Implementation of QuartcEndpoint which immediately (but asynchronously)
-// creates a session by scheduling a QuicAlarm.  Only suitable for use with the
-// client perspective.
-class QuartcAlarmEndpointImpl : public QuartcEndpointImpl {
- public:
-  QuartcAlarmEndpointImpl(QuicAlarmFactory* alarm,
-                          const QuicClock* clock,
-                          QuartcEndpoint::Delegate* delegate,
-                          const QuartcSessionConfig& config);
+}  // namespace
 
- private:
-  friend class CreateSessionDelegate;
-  class CreateSessionDelegate : public QuicAlarm::Delegate {
-   public:
-    CreateSessionDelegate(QuartcAlarmEndpointImpl* endpoint)
-        : endpoint_(endpoint) {}
-
-    void OnAlarm() override { endpoint_->OnCreateSessionAlarm(); }
-
-   private:
-    QuartcAlarmEndpointImpl* endpoint_;
-  };
-
-  // Callback which occurs when |create_session_alarm_| fires.
-  void OnCreateSessionAlarm();
-
-  // Implementation of QuicAlarmFactory used by this endpoint.  Unowned.
-  QuicAlarmFactory* alarm_factory_;
-
-  // Implementation of QuicClock used by this endpoint.  Unowned.
-  const QuicClock* clock_;
-
-  // Delegate which receives callbacks for newly created sessions.
-  QuartcEndpoint::Delegate* delegate_;
-
-  // Config to be used for new sessions.
-  QuartcSessionConfig config_;
-
-  // Alarm for creating sessions asynchronously.  The alarm is set when
-  // Connect() is called.  When it fires, the endpoint creates a session and
-  // calls the delegate.
-  std::unique_ptr<QuicAlarm> create_session_alarm_;
-
-  // QuartcFactory used by this endpoint to create sessions.  This is an
-  // implementation detail of the QuartcEndpoint, and will eventually be
-  // replaced by a dispatcher (for servers) or version-negotiation agent (for
-  // clients).
-  std::unique_ptr<QuartcFactory> factory_;
-
-  // The currently-active session.  Nullptr until |Connect| and
-  // |Delegate::OnSessionCreated| are called.
-  std::unique_ptr<QuartcSession> session_;
-};
-
-QuartcAlarmEndpointImpl::QuartcAlarmEndpointImpl(
+QuartcClientEndpoint::QuartcClientEndpoint(
     QuicAlarmFactory* alarm_factory,
     const QuicClock* clock,
     QuartcEndpoint::Delegate* delegate,
-    const QuartcSessionConfig& config)
+    QuicStringPiece serialized_server_config)
     : alarm_factory_(alarm_factory),
       clock_(clock),
       delegate_(delegate),
-      config_(config),
+      serialized_server_config_(serialized_server_config),
       create_session_alarm_(QuicWrapUnique(
           alarm_factory_->CreateAlarm(new CreateSessionDelegate(this)))),
       factory_(QuicMakeUnique<QuartcFactory>(
-          CreateFactoryConfig(alarm_factory, clock))) {
-  DCHECK_EQ(config_.perspective, Perspective::IS_CLIENT);
+          CreateFactoryConfig(alarm_factory, clock))) {}
+
+void QuartcClientEndpoint::Connect(const QuartcSessionConfig& config) {
+  config_ = config;
   create_session_alarm_->Set(clock_->Now());
 }
 
-void QuartcAlarmEndpointImpl::OnCreateSessionAlarm() {
-  session_ = factory_->CreateQuartcSession(config_);
+void QuartcClientEndpoint::OnCreateSessionAlarm() {
+  session_ =
+      factory_->CreateQuartcClientSession(config_, serialized_server_config_);
   delegate_->OnSessionCreated(session_.get());
 }
 
-// Implementation of QuartcEndpoint which uses a QuartcDispatcher to listen for
-// an incoming CHLO and create a session when one arrives.  Only suitable for
-// use with the server perspective.
-class QuartcDispatcherEndpointImpl : public QuartcEndpointImpl,
-                                     public QuartcDispatcher::Delegate {
- public:
-  QuartcDispatcherEndpointImpl(QuicAlarmFactory* alarm_factory,
-                               const QuicClock* clock,
-                               QuartcEndpoint::Delegate* delegate,
-                               const QuartcSessionConfig& config);
+QuartcServerEndpoint::QuartcServerEndpoint(QuicAlarmFactory* alarm_factory,
+                                           const QuicClock* clock,
+                                           QuartcEndpoint::Delegate* delegate)
+    : alarm_factory_(alarm_factory), clock_(clock), delegate_(delegate) {}
 
-  void OnSessionCreated(QuartcSession* session) override {
-    delegate_->OnSessionCreated(session);
-  }
-
- private:
-  // Delegate which receives callbacks for newly created sessions.
-  QuartcEndpoint::Delegate* delegate_;
-
-  // Config to be used for new sessions.
-  QuartcSessionConfig config_;
-
-  // QuartcDispatcher waits for an incoming CHLO, then either rejects it or
-  // creates a session to respond to it.  The dispatcher owns all sessions it
-  // creates.
-  std::unique_ptr<QuartcDispatcher> dispatcher_;
-};
-
-QuartcDispatcherEndpointImpl::QuartcDispatcherEndpointImpl(
-    QuicAlarmFactory* alarm_factory,
-    const QuicClock* clock,
-    QuartcEndpoint::Delegate* delegate,
-    const QuartcSessionConfig& config)
-    : delegate_(delegate), config_(config) {
-  DCHECK_EQ(config_.perspective, Perspective::IS_SERVER);
-  auto connection_helper = QuicMakeUnique<QuartcConnectionHelper>(clock);
+void QuartcServerEndpoint::Connect(const QuartcSessionConfig& config) {
+  auto connection_helper = QuicMakeUnique<QuartcConnectionHelper>(clock_);
   auto crypto_config = CreateCryptoServerConfig(
-      connection_helper->GetRandomGenerator(), clock, config.pre_shared_key);
+      connection_helper->GetRandomGenerator(), clock_, config.pre_shared_key);
   dispatcher_ = QuicMakeUnique<QuartcDispatcher>(
       QuicMakeUnique<QuicConfig>(CreateQuicConfig(config)),
-      std::move(crypto_config),
+      std::move(crypto_config.config), crypto_config.serialized_crypto_config,
       QuicMakeUnique<QuicVersionManager>(AllSupportedVersions()),
       std::move(connection_helper),
       QuicMakeUnique<QuartcCryptoServerStreamHelper>(),
-      QuicMakeUnique<QuartcAlarmFactoryWrapper>(alarm_factory),
+      QuicMakeUnique<QuartcAlarmFactoryWrapper>(alarm_factory_),
       QuicMakeUnique<QuartcPacketWriter>(config.packet_transport,
                                          config.max_packet_size),
       this);
@@ -178,21 +100,8 @@ QuartcDispatcherEndpointImpl::QuartcDispatcherEndpointImpl(
   dispatcher_->ProcessBufferedChlos(/*max_connections_to_create=*/1);
 }
 
-}  // namespace
-
-QuartcEndpoint::QuartcEndpoint(QuicAlarmFactory* alarm_factory,
-                               const QuicClock* clock,
-                               Delegate* delegate)
-    : alarm_factory_(alarm_factory), clock_(clock), delegate_(delegate) {}
-
-void QuartcEndpoint::Connect(const QuartcSessionConfig& config) {
-  if (config.perspective == Perspective::IS_CLIENT) {
-    impl_ = QuicMakeUnique<QuartcAlarmEndpointImpl>(alarm_factory_, clock_,
-                                                    delegate_, config);
-  } else {
-    impl_ = QuicMakeUnique<QuartcDispatcherEndpointImpl>(alarm_factory_, clock_,
-                                                         delegate_, config);
-  }
+void QuartcServerEndpoint::OnSessionCreated(QuartcSession* session) {
+  delegate_->OnSessionCreated(session);
 }
 
 }  // namespace quic

@@ -98,7 +98,9 @@ enum QuicTransportVersion {
   QUIC_VERSION_43 = 43,  // PRIORITY frames are sent by client and accepted by
                          // server.
   QUIC_VERSION_44 = 44,  // Use IETF header format.
-  QUIC_VERSION_45 = 45,  // Added MESSAGE frame.
+
+  // Version 45 added MESSAGE frame.
+
   QUIC_VERSION_46 = 46,  // Use IETF draft-17 header format with demultiplexing
                          // bit.
   QUIC_VERSION_47 = 47,  // Use CRYPTO frames for QuicCryptoStreams.
@@ -164,7 +166,7 @@ using QuicVersionLabelVector = std::vector<QuicVersionLabel>;
 //
 // See go/new-quic-version for more details on how to roll out new versions.
 static const QuicTransportVersion kSupportedTransportVersions[] = {
-    QUIC_VERSION_99, QUIC_VERSION_47, QUIC_VERSION_46, QUIC_VERSION_45,
+    QUIC_VERSION_99, QUIC_VERSION_47, QUIC_VERSION_46,
     QUIC_VERSION_44, QUIC_VERSION_43, QUIC_VERSION_39,
 };
 
@@ -307,6 +309,13 @@ QUIC_EXPORT_PRIVATE inline QuicString ParsedQuicVersionVectorToString(
                                          std::numeric_limits<size_t>::max());
 }
 
+// Returns true if QuicSpdyStream encodes body using HTTP/3 specification and
+// sends data frame header along with body.
+QUIC_EXPORT_PRIVATE inline bool VersionHasDataFrameHeader(
+    QuicTransportVersion transport_version) {
+  return transport_version == QUIC_VERSION_99;
+}
+
 // Returns true if QuicSpdySession instantiates a QPACK encoder and decoder.
 // TODO(123528590): Implement the following features and gate them on this
 // function as well, optionally renaming this function as appropriate.
@@ -316,6 +325,19 @@ QUIC_EXPORT_PRIVATE inline QuicString ParsedQuicVersionVectorToString(
 // Do not instantiate the headers stream object.
 QUIC_EXPORT_PRIVATE inline bool VersionUsesQpack(
     QuicTransportVersion transport_version) {
+  const bool uses_qpack = (transport_version == QUIC_VERSION_99);
+  if (uses_qpack) {
+    DCHECK(VersionHasDataFrameHeader(transport_version));
+  }
+  return uses_qpack;
+}
+
+// Returns whether the transport_version supports the variable length integer
+// length field as defined by IETF QUIC draft-13 and later.
+QUIC_EXPORT_PRIVATE inline bool QuicVersionHasLongHeaderLengths(
+    QuicTransportVersion transport_version) {
+  // TODO(dschinazi) if we enable long header lengths before v99, we need to
+  // add support for fixing up lengths in QuicFramer::BuildDataPacket.
   return transport_version == QUIC_VERSION_99;
 }
 

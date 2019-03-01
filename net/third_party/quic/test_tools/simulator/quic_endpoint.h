@@ -80,6 +80,7 @@ class QuicEndpoint : public Endpoint,
 
   // Begin QuicConnectionVisitorInterface implementation.
   void OnStreamFrame(const QuicStreamFrame& frame) override;
+  void OnCryptoFrame(const QuicCryptoFrame& frame) override;
   void OnCanWrite() override;
   bool WillingAndAbleToWrite() const override;
   bool HasPendingHandshake() const override;

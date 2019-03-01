@@ -617,7 +617,7 @@ class QuicSimpleServerSessionServerPushTest
       QuicString body(body_size, 'a');
       QuicString data;
       header_length = 0;
-      if (IsVersion99()) {
+      if (VersionHasDataFrameHeader(connection_->transport_version())) {
         HttpEncoder encoder;
         std::unique_ptr<char[]> buffer;
         header_length =
@@ -640,7 +640,7 @@ class QuicSimpleServerSessionServerPushTest
         // |kMaxStreamsForTest| promised responses should be sent.
         // Since flow control window is smaller than response body, not the
         // whole body will be sent.
-        if (IsVersion99()) {
+        if (VersionHasDataFrameHeader(connection_->transport_version())) {
           EXPECT_CALL(*connection_,
                       SendStreamData(stream_id, header_length, 0, NO_FIN));
         }
@@ -691,7 +691,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
 
   // After an open stream is marked draining, a new stream is expected to be
   // created and a response sent on the stream.
-  if (IsVersion99()) {
+  if (VersionHasDataFrameHeader(connection_->transport_version())) {
     EXPECT_CALL(*connection_, SendStreamData(next_out_going_stream_id,
                                              header_length, 0, NO_FIN));
   }
@@ -754,7 +754,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
   QuicStreamId stream_not_reset =
       GetNthServerInitiatedUnidirectionalId(kMaxStreamsForTest);
   InSequence s;
-  if (IsVersion99()) {
+  if (VersionHasDataFrameHeader(connection_->transport_version())) {
     EXPECT_CALL(*connection_,
                 SendStreamData(stream_not_reset, header_length, 0, NO_FIN));
   }
@@ -804,7 +804,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
     EXPECT_CALL(*connection_,
                 OnStreamReset(stream_got_reset, QUIC_RST_ACKNOWLEDGEMENT));
   }
-  if (IsVersion99()) {
+  if (VersionHasDataFrameHeader(connection_->transport_version())) {
     EXPECT_CALL(*connection_,
                 SendStreamData(stream_to_open, header_length, 0, NO_FIN));
   }

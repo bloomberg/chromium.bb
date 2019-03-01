@@ -151,6 +151,10 @@ void QuicSession::OnStreamFrame(const QuicStreamFrame& frame) {
   handler.stream->OnStreamFrame(frame);
 }
 
+void QuicSession::OnCryptoFrame(const QuicCryptoFrame& frame) {
+  GetMutableCryptoStream()->OnCryptoFrame(frame);
+}
+
 bool QuicSession::OnStopSendingFrame(const QuicStopSendingFrame& frame) {
   // We are not version 99. In theory, if not in version 99 then the framer
   // could not call OnStopSending... This is just a check that is good when
@@ -1365,6 +1369,10 @@ bool QuicSession::OnFrameAcked(const QuicFrame& frame,
     OnMessageAcked(frame.message_frame->message_id);
     return true;
   }
+  if (frame.type == CRYPTO_FRAME) {
+    return GetMutableCryptoStream()->OnCryptoFrameAcked(*frame.crypto_frame,
+                                                        ack_delay_time);
+  }
   if (frame.type != STREAM_FRAME) {
     return control_frame_manager_.OnControlFrameAcked(frame);
   }
@@ -1402,6 +1410,10 @@ void QuicSession::OnFrameLost(const QuicFrame& frame) {
     OnMessageLost(frame.message_frame->message_id);
     return;
   }
+  if (frame.type == CRYPTO_FRAME) {
+    GetMutableCryptoStream()->OnCryptoFrameLost(frame.crypto_frame);
+    return;
+  }
   if (frame.type != STREAM_FRAME) {
     control_frame_manager_.OnControlFrameLost(frame);
     return;
@@ -1431,6 +1443,10 @@ void QuicSession::RetransmitFrames(const QuicFrames& frames,
       // Do not retransmit MESSAGE frames.
       continue;
     }
+    if (frame.type == CRYPTO_FRAME) {
+      GetMutableCryptoStream()->RetransmitData(frame.crypto_frame);
+      continue;
+    }
     if (frame.type != STREAM_FRAME) {
       if (!control_frame_manager_.RetransmitControlFrame(frame)) {
         break;
@@ -1450,6 +1466,11 @@ void QuicSession::RetransmitFrames(const QuicFrames& frames,
 bool QuicSession::IsFrameOutstanding(const QuicFrame& frame) const {
   if (frame.type == MESSAGE_FRAME) {
     return false;
+  }
+  if (frame.type == CRYPTO_FRAME) {
+    return GetCryptoStream()->IsFrameOutstanding(
+        frame.crypto_frame->level, frame.crypto_frame->offset,
+        frame.crypto_frame->data_length);
   }
   if (frame.type != STREAM_FRAME) {
     return control_frame_manager_.IsControlFrameOutstanding(frame);
@@ -1495,21 +1516,27 @@ bool QuicSession::WriteCryptoData(EncryptionLevel level,
                                   QuicStreamOffset offset,
                                   QuicByteCount data_length,
                                   QuicDataWriter* writer) {
-  QUIC_BUG << "QuicSession::WriteCryptoData is unimplemented";
-  return false;
+  return GetMutableCryptoStream()->WriteCryptoFrame(level, offset, data_length,
+                                                    writer);
 }
 
 QuicUint128 QuicSession::GetStatelessResetToken() const {
-  if (!QuicConnectionIdSupportsVariableLength(perspective())) {
-    return QuicConnectionIdToUInt64(connection_->connection_id());
-  }
   return QuicUtils::GenerateStatelessResetToken(connection_->connection_id());
 }
 
 bool QuicSession::RetransmitLostData() {
   QuicConnection::ScopedPacketFlusher retransmission_flusher(
       connection_, QuicConnection::SEND_ACK_IF_QUEUED);
-  if (QuicContainsKey(
+  // Retransmit crypto data first.
+  bool uses_crypto_frames = connection_->transport_version() >= QUIC_VERSION_47;
+  QuicCryptoStream* crypto_stream = GetMutableCryptoStream();
+  if (uses_crypto_frames && crypto_stream->HasPendingCryptoRetransmission()) {
+    SetTransmissionType(HANDSHAKE_RETRANSMISSION);
+    crypto_stream->WritePendingCryptoRetransmission();
+  }
+  // Retransmit crypto data in stream 1 frames (version < 47).
+  if (!uses_crypto_frames &&
+      QuicContainsKey(
           streams_with_pending_retransmission_,
           QuicUtils::GetCryptoStreamId(connection_->transport_version()))) {
     SetTransmissionType(HANDSHAKE_RETRANSMISSION);

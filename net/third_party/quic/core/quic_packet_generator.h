@@ -101,6 +101,14 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
                                QuicStreamOffset offset,
                                StreamSendingState state);
 
+  // Consumes data for CRYPTO frames sent at |level| starting at |offset| for a
+  // total of |write_length| bytes, and returns the number of bytes consumed.
+  // The data is passed into the packet creator and serialized into one or more
+  // packets.
+  size_t ConsumeCryptoData(EncryptionLevel level,
+                           size_t write_length,
+                           QuicStreamOffset offset);
+
   // Sends as many data only packets as allowed by the send algorithm and the
   // available iov.
   // This path does not support padding, or bundling pending frames.

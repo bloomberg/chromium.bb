@@ -131,7 +131,8 @@ QuicSpdyStream::QuicSpdyStream(QuicStreamId id,
   // are complete.
   sequencer()->SetBlockedUntilFlush();
 
-  if (spdy_session_->connection()->transport_version() == QUIC_VERSION_99) {
+  if (VersionHasDataFrameHeader(
+          spdy_session_->connection()->transport_version())) {
     sequencer()->set_level_triggered(true);
   }
   decoder_.set_visitor(http_decoder_visitor_.get());
@@ -156,7 +157,8 @@ QuicSpdyStream::QuicSpdyStream(PendingStream pending,
   // are complete.
   sequencer()->SetBlockedUntilFlush();
 
-  if (spdy_session_->connection()->transport_version() == QUIC_VERSION_99) {
+  if (VersionHasDataFrameHeader(
+          spdy_session_->connection()->transport_version())) {
     sequencer()->set_level_triggered(true);
   }
   decoder_.set_visitor(http_decoder_visitor_.get());
@@ -179,7 +181,8 @@ size_t QuicSpdyStream::WriteHeaders(
 }
 
 void QuicSpdyStream::WriteOrBufferBody(QuicStringPiece data, bool fin) {
-  if (spdy_session_->connection()->transport_version() != QUIC_VERSION_99 ||
+  if (!VersionHasDataFrameHeader(
+          spdy_session_->connection()->transport_version()) ||
       data.length() == 0) {
     WriteOrBufferData(data, fin, nullptr);
     return;
@@ -254,7 +257,8 @@ QuicConsumedData QuicSpdyStream::WritevBody(const struct iovec* iov,
 
 QuicConsumedData QuicSpdyStream::WriteBodySlices(QuicMemSliceSpan slices,
                                                  bool fin) {
-  if (spdy_session_->connection()->transport_version() != QUIC_VERSION_99 ||
+  if (!VersionHasDataFrameHeader(
+          spdy_session_->connection()->transport_version()) ||
       slices.empty()) {
     return WriteMemSlices(slices, fin);
   }
@@ -290,7 +294,8 @@ QuicConsumedData QuicSpdyStream::WriteBodySlices(QuicMemSliceSpan slices,
 
 size_t QuicSpdyStream::Readv(const struct iovec* iov, size_t iov_len) {
   DCHECK(FinishedReadingHeaders());
-  if (spdy_session_->connection()->transport_version() != QUIC_VERSION_99) {
+  if (!VersionHasDataFrameHeader(
+          spdy_session_->connection()->transport_version())) {
     return sequencer()->Readv(iov, iov_len);
   }
   return body_buffer_.ReadBody(iov, iov_len);
@@ -298,7 +303,8 @@ size_t QuicSpdyStream::Readv(const struct iovec* iov, size_t iov_len) {
 
 int QuicSpdyStream::GetReadableRegions(iovec* iov, size_t iov_len) const {
   DCHECK(FinishedReadingHeaders());
-  if (spdy_session_->connection()->transport_version() != QUIC_VERSION_99) {
+  if (!VersionHasDataFrameHeader(
+          spdy_session_->connection()->transport_version())) {
     return sequencer()->GetReadableRegions(iov, iov_len);
   }
   return body_buffer_.PeekBody(iov, iov_len);
@@ -306,8 +312,10 @@ int QuicSpdyStream::GetReadableRegions(iovec* iov, size_t iov_len) const {
 
 void QuicSpdyStream::MarkConsumed(size_t num_bytes) {
   DCHECK(FinishedReadingHeaders());
-  if (spdy_session_->connection()->transport_version() != QUIC_VERSION_99) {
-    return sequencer()->MarkConsumed(num_bytes);
+  if (!VersionHasDataFrameHeader(
+          spdy_session_->connection()->transport_version())) {
+    sequencer()->MarkConsumed(num_bytes);
+    return;
   }
   body_buffer_.MarkBodyConsumed(num_bytes);
 }
@@ -320,7 +328,8 @@ bool QuicSpdyStream::IsDoneReading() const {
 }
 
 bool QuicSpdyStream::HasBytesToRead() const {
-  if (spdy_session_->connection()->transport_version() != QUIC_VERSION_99) {
+  if (!VersionHasDataFrameHeader(
+          spdy_session_->connection()->transport_version())) {
     return sequencer()->HasBytesToRead();
   }
   return body_buffer_.HasBytesToRead();
@@ -331,7 +340,8 @@ void QuicSpdyStream::MarkTrailersConsumed() {
 }
 
 uint64_t QuicSpdyStream::total_body_bytes_read() const {
-  if (spdy_session_->connection()->transport_version() == QUIC_VERSION_99) {
+  if (VersionHasDataFrameHeader(
+          spdy_session_->connection()->transport_version())) {
     return body_buffer_.total_body_bytes_received();
   }
   return sequencer()->NumBytesConsumed();
@@ -460,7 +470,8 @@ void QuicSpdyStream::OnStreamReset(const QuicRstStreamFrame& frame) {
 }
 
 void QuicSpdyStream::OnDataAvailable() {
-  if (session()->connection()->transport_version() != QUIC_VERSION_99) {
+  if (!VersionHasDataFrameHeader(
+          session()->connection()->transport_version())) {
     OnBodyAvailable();
     return;
   }

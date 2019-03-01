@@ -12,6 +12,7 @@
 #include "net/third_party/quic/core/quic_connection.h"
 #include "net/third_party/quic/core/quic_stream_sequencer_buffer.h"
 #include "net/third_party/quic/core/quic_utils.h"
+#include "net/third_party/quic/core/quic_versions.h"
 #include "net/third_party/quic/core/quic_write_blocked_list.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_expect_bug.h"
@@ -33,7 +34,7 @@ using spdy::kV3LowestPriority;
 using spdy::SpdyHeaderBlock;
 using spdy::SpdyPriority;
 using testing::_;
-using testing::AnyNumber;
+using testing::AtLeast;
 using testing::Invoke;
 using testing::Return;
 using testing::StrictMock;
@@ -148,6 +149,9 @@ class QuicSpdyStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
         SupportedVersions(GetParam()));
     session_ = QuicMakeUnique<StrictMock<MockQuicSpdySession>>(connection_);
     session_->Initialize();
+    ON_CALL(*session_, WritevData(_, _, _, _, _))
+        .WillByDefault(Invoke(MockQuicSession::ConsumeData));
+
     stream_ =
         new StrictMock<TestStream>(GetNthClientInitiatedBidirectionalId(0),
                                    session_.get(), stream_should_process_data);
@@ -169,8 +173,8 @@ class QuicSpdyStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
         *session_, n);
   }
 
-  bool IsVersion99() const {
-    return connection_->transport_version() == QUIC_VERSION_99;
+  bool HasFrameHeader() const {
+    return VersionHasDataFrameHeader(connection_->transport_version());
   }
 
  protected:
@@ -308,7 +312,7 @@ TEST_P(QuicSpdyStreamTest, ProcessHeadersAndBody) {
   QuicByteCount header_length =
       encoder_.SerializeDataFrameHeader(body.length(), &buffer);
   QuicString header = QuicString(buffer.get(), header_length);
-  QuicString data = IsVersion99() ? header + body : body;
+  QuicString data = HasFrameHeader() ? header + body : body;
 
   EXPECT_EQ("", stream_->data());
   QuicHeaderList headers = ProcessHeaders(false, headers_);
@@ -328,7 +332,7 @@ TEST_P(QuicSpdyStreamTest, ProcessHeadersAndBodyFragments) {
   QuicByteCount header_length =
       encoder_.SerializeDataFrameHeader(body.length(), &buffer);
   QuicString header = QuicString(buffer.get(), header_length);
-  QuicString data = IsVersion99() ? header + body : body;
+  QuicString data = HasFrameHeader() ? header + body : body;
 
   for (size_t fragment_size = 1; fragment_size < data.size(); ++fragment_size) {
     Initialize(kShouldProcessData);
@@ -354,7 +358,7 @@ TEST_P(QuicSpdyStreamTest, ProcessHeadersAndBodyFragmentsSplit) {
   QuicByteCount header_length =
       encoder_.SerializeDataFrameHeader(body.length(), &buffer);
   QuicString header = QuicString(buffer.get(), header_length);
-  QuicString data = IsVersion99() ? header + body : body;
+  QuicString data = HasFrameHeader() ? header + body : body;
 
   for (size_t split_point = 1; split_point < data.size() - 1; ++split_point) {
     Initialize(kShouldProcessData);
@@ -385,7 +389,7 @@ TEST_P(QuicSpdyStreamTest, ProcessHeadersAndBodyReadv) {
   QuicByteCount header_length =
       encoder_.SerializeDataFrameHeader(body.length(), &buf);
   QuicString header = QuicString(buf.get(), header_length);
-  QuicString data = IsVersion99() ? header + body : body;
+  QuicString data = HasFrameHeader() ? header + body : body;
 
   ProcessHeaders(false, headers_);
   QuicStreamFrame frame(GetNthClientInitiatedBidirectionalId(0), false, 0,
@@ -411,7 +415,7 @@ TEST_P(QuicSpdyStreamTest, ProcessHeadersAndLargeBodySmallReadv) {
   QuicByteCount header_length =
       encoder_.SerializeDataFrameHeader(body.length(), &buf);
   QuicString header = QuicString(buf.get(), header_length);
-  QuicString data = IsVersion99() ? header + body : body;
+  QuicString data = HasFrameHeader() ? header + body : body;
   ProcessHeaders(false, headers_);
   QuicStreamFrame frame(GetNthClientInitiatedBidirectionalId(0), false, 0,
                         QuicStringPiece(data));
@@ -438,7 +442,7 @@ TEST_P(QuicSpdyStreamTest, ProcessHeadersAndBodyMarkConsumed) {
   QuicByteCount header_length =
       encoder_.SerializeDataFrameHeader(body.length(), &buf);
   QuicString header = QuicString(buf.get(), header_length);
-  QuicString data = IsVersion99() ? header + body : body;
+  QuicString data = HasFrameHeader() ? header + body : body;
 
   ProcessHeaders(false, headers_);
   QuicStreamFrame frame(GetNthClientInitiatedBidirectionalId(0), false, 0,
@@ -464,9 +468,9 @@ TEST_P(QuicSpdyStreamTest, ProcessHeadersAndConsumeMultipleBody) {
   QuicByteCount header_length =
       encoder_.SerializeDataFrameHeader(body1.length(), &buf);
   QuicString header = QuicString(buf.get(), header_length);
-  QuicString data1 = IsVersion99() ? header + body1 : body1;
+  QuicString data1 = HasFrameHeader() ? header + body1 : body1;
   header_length = encoder_.SerializeDataFrameHeader(body2.length(), &buf);
-  QuicString data2 = IsVersion99() ? header + body2 : body2;
+  QuicString data2 = HasFrameHeader() ? header + body2 : body2;
 
   ProcessHeaders(false, headers_);
   QuicStreamFrame frame1(GetNthClientInitiatedBidirectionalId(0), false, 0,
@@ -490,7 +494,7 @@ TEST_P(QuicSpdyStreamTest, ProcessHeadersAndBodyIncrementalReadv) {
   QuicByteCount header_length =
       encoder_.SerializeDataFrameHeader(body.length(), &buf);
   QuicString header = QuicString(buf.get(), header_length);
-  QuicString data = IsVersion99() ? header + body : body;
+  QuicString data = HasFrameHeader() ? header + body : body;
 
   ProcessHeaders(false, headers_);
   QuicStreamFrame frame(GetNthClientInitiatedBidirectionalId(0), false, 0,
@@ -518,7 +522,7 @@ TEST_P(QuicSpdyStreamTest, ProcessHeadersUsingReadvWithMultipleIovecs) {
   QuicByteCount header_length =
       encoder_.SerializeDataFrameHeader(body.length(), &buf);
   QuicString header = QuicString(buf.get(), header_length);
-  QuicString data = IsVersion99() ? header + body : body;
+  QuicString data = HasFrameHeader() ? header + body : body;
 
   ProcessHeaders(false, headers_);
   QuicStreamFrame frame(GetNthClientInitiatedBidirectionalId(0), false, 0,
@@ -559,10 +563,9 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlBlocked) {
   const uint64_t kOverflow = 15;
   QuicString body(kWindow + kOverflow, 'a');
 
-  const uint64_t kHeaderLength = IsVersion99() ? 2 : 0;
-  if (IsVersion99()) {
-    EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
-        .WillOnce(Return(QuicConsumedData(kHeaderLength, false)));
+  const uint64_t kHeaderLength = HasFrameHeader() ? 2 : 0;
+  if (HasFrameHeader()) {
+    EXPECT_CALL(*session_, WritevData(_, _, kHeaderLength, _, NO_FIN));
   }
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(kWindow - kHeaderLength, true)));
@@ -604,7 +607,7 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlNoWindowUpdateIfNotConsumed) {
   QuicByteCount header_length = 0;
   QuicString data;
 
-  if (IsVersion99()) {
+  if (HasFrameHeader()) {
     std::unique_ptr<char[]> buffer;
     header_length = encoder_.SerializeDataFrameHeader(body.length(), &buffer);
     QuicString header = QuicString(buffer.get(), header_length);
@@ -653,7 +656,7 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlWindowUpdate) {
   QuicByteCount header_length = 0;
   QuicString data;
 
-  if (IsVersion99()) {
+  if (HasFrameHeader()) {
     std::unique_ptr<char[]> buffer;
     header_length = encoder_.SerializeDataFrameHeader(body.length(), &buffer);
     QuicString header = QuicString(buffer.get(), header_length);
@@ -722,7 +725,7 @@ TEST_P(QuicSpdyStreamTest, ConnectionFlowControlWindowUpdate) {
   QuicString data2;
   QuicString body2(1, 'a');
 
-  if (IsVersion99()) {
+  if (HasFrameHeader()) {
     body = QuicString(kWindow / 4 - 2, 'a');
     std::unique_ptr<char[]> buffer;
     header_length = encoder_.SerializeDataFrameHeader(body.length(), &buffer);
@@ -776,7 +779,7 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlViolation) {
   QuicByteCount header_length =
       encoder_.SerializeDataFrameHeader(body.length(), &buf);
   QuicString header = QuicString(buf.get(), header_length);
-  QuicString data = IsVersion99() ? header + body : body;
+  QuicString data = HasFrameHeader() ? header + body : body;
   QuicStreamFrame frame(GetNthClientInitiatedBidirectionalId(0), false, 0,
                         QuicStringPiece(data));
   EXPECT_CALL(*connection_,
@@ -819,7 +822,7 @@ TEST_P(QuicSpdyStreamTest, ConnectionFlowControlViolation) {
   QuicByteCount header_length =
       encoder_.SerializeDataFrameHeader(body.length(), &buf);
   QuicString header = QuicString(buf.get(), header_length);
-  QuicString data = IsVersion99() ? header + body : body;
+  QuicString data = HasFrameHeader() ? header + body : body;
 
   EXPECT_LT(data.size(), kStreamWindow);
   QuicStreamFrame frame(GetNthClientInitiatedBidirectionalId(0), false, 0,
@@ -848,8 +851,7 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlFinNotBlocked) {
   EXPECT_CALL(*connection_,
               SendBlocked(GetNthClientInitiatedBidirectionalId(0)))
       .Times(0);
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
-      .WillOnce(Return(QuicConsumedData(0, fin)));
+  EXPECT_CALL(*session_, WritevData(_, _, 0, _, FIN));
 
   stream_->WriteOrBufferBody(body, fin);
 }
@@ -910,7 +912,7 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersWithOffset) {
   QuicByteCount header_length =
       encoder_.SerializeDataFrameHeader(body.length(), &buf);
   QuicString header = QuicString(buf.get(), header_length);
-  QuicString data = IsVersion99() ? header + body : body;
+  QuicString data = HasFrameHeader() ? header + body : body;
 
   // Receive trailing headers.
   SpdyHeaderBlock trailers_block;
@@ -1045,7 +1047,7 @@ TEST_P(QuicSpdyStreamTest, ClosingStreamWithNoTrailers) {
   QuicByteCount header_length =
       encoder_.SerializeDataFrameHeader(body.length(), &buf);
   QuicString header = QuicString(buf.get(), header_length);
-  QuicString data = IsVersion99() ? header + body : body;
+  QuicString data = HasFrameHeader() ? header + body : body;
 
   QuicStreamFrame frame(GetNthClientInitiatedBidirectionalId(0), /*fin=*/true,
                         0, data);
@@ -1081,11 +1083,10 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersFinalOffset) {
   stream_->WriteHeaders(SpdyHeaderBlock(), /*fin=*/false, nullptr);
 
   // Write non-zero body data to force a non-zero final offset.
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
-      .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _)).Times(AtLeast(1));
   QuicString body(1024, 'x');  // 1 kB
   QuicByteCount header_length = 0;
-  if (IsVersion99()) {
+  if (HasFrameHeader()) {
     std::unique_ptr<char[]> buf;
     header_length = encoder_.SerializeDataFrameHeader(body.length(), &buf);
   }
@@ -1114,8 +1115,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersClosesWriteSide) {
   stream_->WriteHeaders(SpdyHeaderBlock(), /*fin=*/false, nullptr);
 
   // Write non-zero body data.
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
-      .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _)).Times(AtLeast(1));
   const int kBodySize = 1 * 1024;  // 1 kB
   stream_->WriteOrBufferBody(QuicString(kBodySize, 'x'), false);
   EXPECT_EQ(0u, stream_->BufferedDataBytes());
@@ -1139,11 +1139,10 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersWithQueuedBytes) {
 
   // Write non-zero body data, but only consume partially, ensuring queueing.
   const int kBodySize = 1 * 1024;  // 1 kB
-  if (IsVersion99()) {
-    EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
-        .WillOnce(Return(QuicConsumedData(3, false)));
+  if (HasFrameHeader()) {
+    EXPECT_CALL(*session_, WritevData(_, _, 3, _, NO_FIN));
   }
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
+  EXPECT_CALL(*session_, WritevData(_, _, kBodySize, _, NO_FIN))
       .WillOnce(Return(QuicConsumedData(kBodySize - 1, false)));
   stream_->WriteOrBufferBody(QuicString(kBodySize, 'x'), false);
   EXPECT_EQ(1u, stream_->BufferedDataBytes());
@@ -1156,8 +1155,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersWithQueuedBytes) {
   EXPECT_FALSE(stream_->write_side_closed());
 
   // Writing the queued bytes will close the write side of the stream.
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
-      .WillOnce(Return(QuicConsumedData(1, false)));
+  EXPECT_CALL(*session_, WritevData(_, _, 1, _, NO_FIN));
   stream_->OnCanWrite();
   EXPECT_TRUE(stream_->write_side_closed());
 }
@@ -1184,8 +1182,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersAfterFIN) {
 
 TEST_P(QuicSpdyStreamTest, HeaderStreamNotiferCorrespondingSpdyStream) {
   Initialize(kShouldProcessData);
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
-      .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _)).Times(AtLeast(1));
   testing::InSequence s;
   QuicReferenceCountedPointer<MockAckListener> ack_listener1(
       new MockAckListener());
@@ -1206,7 +1203,7 @@ TEST_P(QuicSpdyStreamTest, HeaderStreamNotiferCorrespondingSpdyStream) {
       QuicUtils::GetHeadersStreamId(connection_->transport_version()), false, 0,
       "Header1");
   QuicString header = "";
-  if (IsVersion99()) {
+  if (HasFrameHeader()) {
     std::unique_ptr<char[]> buffer;
     QuicByteCount header_length = encoder_.SerializeDataFrameHeader(5, &buffer);
     header = QuicString(buffer.get(), header_length);
@@ -1236,8 +1233,7 @@ TEST_P(QuicSpdyStreamTest, HeaderStreamNotiferCorrespondingSpdyStream) {
 
 TEST_P(QuicSpdyStreamTest, StreamBecomesZombieWithWriteThatCloses) {
   Initialize(kShouldProcessData);
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
-      .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _)).Times(AtLeast(1));
   QuicStreamPeer::CloseReadSide(stream_);
   // This write causes stream to be closed.
   stream_->WriteOrBufferBody("Test1", true);
@@ -1257,12 +1253,10 @@ TEST_P(QuicSpdyStreamTest, OnPriorityFrameAfterSendingData) {
   testing::InSequence seq;
   Initialize(kShouldProcessData);
 
-  if (IsVersion99()) {
-    EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
-        .WillOnce(Return(QuicConsumedData(2, false)));
+  if (HasFrameHeader()) {
+    EXPECT_CALL(*session_, WritevData(_, _, 2, _, NO_FIN));
   }
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
-      .WillOnce(Return(QuicConsumedData(4, true)));
+  EXPECT_CALL(*session_, WritevData(_, _, 4, _, FIN));
   stream_->WriteOrBufferBody("data", true);
   stream_->OnPriorityFrame(kV3HighestPriority);
   EXPECT_EQ(kV3HighestPriority, stream_->priority());
@@ -1274,7 +1268,7 @@ TEST_P(QuicSpdyStreamTest, SetPriorityBeforeUpdateStreamPriority) {
       SupportedVersions(GetParam()));
   std::unique_ptr<TestMockUpdateStreamSession> session(
       new StrictMock<TestMockUpdateStreamSession>(connection));
-  TestStream* stream = new TestStream(
+  auto stream = new StrictMock<TestStream>(
       QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(*session,
                                                                       0),
       session.get(),
@@ -1298,8 +1292,7 @@ TEST_P(QuicSpdyStreamTest, StreamWaitsForAcks) {
   QuicReferenceCountedPointer<MockAckListener> mock_ack_listener(
       new StrictMock<MockAckListener>);
   stream_->set_ack_listener(mock_ack_listener);
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
-      .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _)).Times(AtLeast(1));
   // Stream is not waiting for acks initially.
   EXPECT_FALSE(stream_->IsWaitingForAcks());
   EXPECT_EQ(0u, QuicStreamPeer::SendBuffer(stream_).size());
@@ -1350,8 +1343,7 @@ TEST_P(QuicSpdyStreamTest, StreamDataGetAckedMultipleTimes) {
   QuicReferenceCountedPointer<MockAckListener> mock_ack_listener(
       new StrictMock<MockAckListener>);
   stream_->set_ack_listener(mock_ack_listener);
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
-      .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _)).Times(AtLeast(1));
   // Send [0, 27) and fin.
   stream_->WriteOrBufferData("FooAndBar", false, nullptr);
   stream_->WriteOrBufferData("FooAndBar", false, nullptr);
@@ -1403,7 +1395,7 @@ TEST_P(QuicSpdyStreamTest, StreamDataGetAckedMultipleTimes) {
 // HTTP/3 only.
 TEST_P(QuicSpdyStreamTest, HeadersAckNotReportedWriteOrBufferBody) {
   Initialize(kShouldProcessData);
-  if (!IsVersion99()) {
+  if (!HasFrameHeader()) {
     return;
   }
   QuicReferenceCountedPointer<MockAckListener> mock_ack_listener(
@@ -1412,8 +1404,7 @@ TEST_P(QuicSpdyStreamTest, HeadersAckNotReportedWriteOrBufferBody) {
   QuicString body = "Test1";
   QuicString body2(100, 'x');
 
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
-      .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _)).Times(AtLeast(1));
   stream_->WriteOrBufferBody(body, false);
   stream_->WriteOrBufferBody(body2, true);
 
@@ -1449,7 +1440,7 @@ TEST_P(QuicSpdyStreamTest, HeadersAckNotReportedWriteOrBufferBody) {
 // HTTP/3 only.
 TEST_P(QuicSpdyStreamTest, HeadersAckNotReportedWriteBodySlices) {
   Initialize(kShouldProcessData);
-  if (!IsVersion99()) {
+  if (!HasFrameHeader()) {
     return;
   }
   QuicReferenceCountedPointer<MockAckListener> mock_ack_listener(
@@ -1463,8 +1454,7 @@ TEST_P(QuicSpdyStreamTest, HeadersAckNotReportedWriteBodySlices) {
                               helper_.GetStreamSendBufferAllocator(), 1024);
   QuicMemSliceStorage storage2(&body2_iov, 1,
                                helper_.GetStreamSendBufferAllocator(), 1024);
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
-      .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _)).Times(AtLeast(1));
   stream_->WriteBodySlices(storage.ToSpan(), false);
   stream_->WriteBodySlices(storage2.ToSpan(), true);
 
@@ -1490,7 +1480,7 @@ TEST_P(QuicSpdyStreamTest, HeadersAckNotReportedWriteBodySlices) {
 // HTTP/3 only.
 TEST_P(QuicSpdyStreamTest, HeaderBytesNotReportedOnRetransmission) {
   Initialize(kShouldProcessData);
-  if (!IsVersion99()) {
+  if (!HasFrameHeader()) {
     return;
   }
   QuicReferenceCountedPointer<MockAckListener> mock_ack_listener(
@@ -1499,8 +1489,7 @@ TEST_P(QuicSpdyStreamTest, HeaderBytesNotReportedOnRetransmission) {
   QuicString body = "Test1";
   QuicString body2(100, 'x');
 
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
-      .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _)).Times(AtLeast(1));
   stream_->WriteOrBufferBody(body, false);
   stream_->WriteOrBufferBody(body2, true);
 

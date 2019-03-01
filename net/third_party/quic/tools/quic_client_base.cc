@@ -330,7 +330,7 @@ QuicConnectionId QuicClientBase::GetNextServerDesignatedConnectionId() {
 }
 
 QuicConnectionId QuicClientBase::GenerateNewConnectionId() {
-  return QuicUtils::CreateRandomConnectionId(Perspective::IS_CLIENT);
+  return QuicUtils::CreateRandomConnectionId();
 }
 
 bool QuicClientBase::CanReconnectWithDifferentVersion(

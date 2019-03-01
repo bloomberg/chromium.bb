@@ -332,9 +332,7 @@ QuicConnection::QuicConnection(
       processing_ack_frame_(false),
       supports_release_time_(false),
       release_time_into_future_(QuicTime::Delta::Zero()),
-      no_version_negotiation_(supported_versions.size() == 1),
-      clear_probing_mark_after_packet_processing_(GetQuicReloadableFlag(
-          quic_clear_probing_mark_after_packet_processing)) {
+      no_version_negotiation_(supported_versions.size() == 1) {
   if (ack_mode_ == ACK_DECIMATION) {
     QUIC_RELOADABLE_FLAG_COUNT(quic_enable_ack_decimation);
   }
@@ -805,6 +803,10 @@ void QuicConnection::OnDecryptedPacket(EncryptionLevel level) {
   if (level == ENCRYPTION_FORWARD_SECURE &&
       perspective_ == Perspective::IS_SERVER) {
     sent_packet_manager_.SetHandshakeConfirmed();
+    if (sent_packet_manager_.unacked_packets().use_uber_loss_algorithm()) {
+      // This may have changed the retransmission timer, so re-arm it.
+      SetRetransmissionAlarm();
+    }
   }
 }
 
@@ -916,8 +918,15 @@ bool QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
 }
 
 bool QuicConnection::OnCryptoFrame(const QuicCryptoFrame& frame) {
-  // TODO(nharper): Implement.
-  return false;
+  DCHECK(connected_);
+
+  // Since a CRYPTO frame was received, this is not a connectivity probe.
+  // A probe only contains a PING and full padding.
+  UpdatePacketContent(NOT_PADDED_PING);
+
+  visitor_->OnCryptoFrame(frame);
+  should_last_packet_instigate_acks_ = true;
+  return connected_;
 }
 
 bool QuicConnection::OnAckFrameStart(QuicPacketNumber largest_acked,
@@ -1548,7 +1557,9 @@ void QuicConnection::CloseIfTooManyOutstandingSentPackets() {
           sent_packet_manager_.GetLeastUnacked() + max_tracked_packets_) {
     CloseConnection(
         QUIC_TOO_MANY_OUTSTANDING_SENT_PACKETS,
-        QuicStrCat("More than ", max_tracked_packets_, " outstanding."),
+        QuicStrCat("More than ", max_tracked_packets_,
+                   " outstanding, least_unacked: ",
+                   sent_packet_manager_.GetLeastUnacked().ToUint64()),
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
   }
 }
@@ -1628,6 +1639,18 @@ void QuicConnection::SendVersionNegotiationPacket(bool ietf_quic) {
   }
 
   pending_version_negotiation_packet_ = false;
+}
+
+size_t QuicConnection::SendCryptoData(EncryptionLevel level,
+                                      size_t write_length,
+                                      QuicStreamOffset offset) {
+  if (write_length == 0) {
+    QUIC_BUG << "Attempt to send empty crypto frame";
+    return 0;
+  }
+
+  ScopedPacketFlusher flusher(this, SEND_ACK_IF_PENDING);
+  return packet_generator_.ConsumeCryptoData(level, write_length, offset);
 }
 
 QuicConsumedData QuicConnection::SendStreamData(QuicStreamId id,
@@ -1728,6 +1751,10 @@ const QuicConnectionStats& QuicConnection::GetStats() {
   return stats_;
 }
 
+void QuicConnection::OnCoalescedPacket(const QuicEncryptedPacket& packet) {
+  QueueCoalescedPacket(packet);
+}
+
 void QuicConnection::ProcessUdpPacket(const QuicSocketAddress& self_address,
                                       const QuicSocketAddress& peer_address,
                                       const QuicReceivedPacket& packet) {
@@ -1795,13 +1822,9 @@ void QuicConnection::ProcessUdpPacket(const QuicSocketAddress& self_address,
                   << "Unable to process packet.  Last packet processed: "
                   << last_header_.packet_number;
     current_packet_data_ = nullptr;
-    if (clear_probing_mark_after_packet_processing_) {
-      if (is_current_packet_connectivity_probing_) {
-        QUIC_RELOADABLE_FLAG_COUNT_N(
-            quic_clear_probing_mark_after_packet_processing, 1, 2);
-      }
-      is_current_packet_connectivity_probing_ = false;
-    }
+    is_current_packet_connectivity_probing_ = false;
+
+    MaybeProcessCoalescedPackets();
     return;
   }
 
@@ -1822,17 +1845,12 @@ void QuicConnection::ProcessUdpPacket(const QuicSocketAddress& self_address,
     }
   }
 
+  MaybeProcessCoalescedPackets();
   MaybeProcessUndecryptablePackets();
   MaybeSendInResponseToPacket();
   SetPingAlarm();
   current_packet_data_ = nullptr;
-  if (clear_probing_mark_after_packet_processing_) {
-    if (is_current_packet_connectivity_probing_) {
-      QUIC_RELOADABLE_FLAG_COUNT_N(
-          quic_clear_probing_mark_after_packet_processing, 2, 2);
-    }
-    is_current_packet_connectivity_probing_ = false;
-  }
+  is_current_packet_connectivity_probing_ = false;
 }
 
 void QuicConnection::OnBlockedWriterCanWrite() {
@@ -2506,6 +2524,10 @@ void QuicConnection::OnPathMtuIncreased(QuicPacketLength packet_size) {
 
 void QuicConnection::OnHandshakeComplete() {
   sent_packet_manager_.SetHandshakeConfirmed();
+  if (sent_packet_manager_.unacked_packets().use_uber_loss_algorithm()) {
+    // This may have changed the retransmission timer, so re-arm it.
+    SetRetransmissionAlarm();
+  }
   // The client should immediately ack the SHLO to confirm the handshake is
   // complete with the server.
   if (perspective_ == Perspective::IS_CLIENT && !ack_queued_ &&
@@ -2696,6 +2718,44 @@ void QuicConnection::MaybeProcessUndecryptablePackets() {
       }
     }
     undecryptable_packets_.clear();
+  }
+}
+
+void QuicConnection::QueueCoalescedPacket(const QuicEncryptedPacket& packet) {
+  QUIC_DVLOG(1) << ENDPOINT << "Queueing coalesced packet.";
+  coalesced_packets_.push_back(packet.Clone());
+}
+
+void QuicConnection::MaybeProcessCoalescedPackets() {
+  bool processed = false;
+  for (const auto& packet : coalesced_packets_) {
+    if (!connected_) {
+      return;
+    }
+
+    // }
+    // while (connected_ && !coalesced_packets_.empty()) {
+    QUIC_DVLOG(1) << ENDPOINT << "Processing coalesced packet";
+    // QuicEncryptedPacket* packet = coalesced_packets_.front().get();
+    if (framer_.ProcessPacket(*packet)) {
+      processed = true;
+    } else {
+      // If we are unable to decrypt this packet, it might be
+      // because the CHLO or SHLO packet was lost.
+      if (framer_.error() == QUIC_DECRYPTION_FAILURE) {
+        if (encryption_level_ != ENCRYPTION_FORWARD_SECURE &&
+            undecryptable_packets_.size() < max_undecryptable_packets_) {
+          QueueUndecryptablePacket(*packet);
+        } else if (debug_visitor_ != nullptr) {
+          debug_visitor_->OnUndecryptablePacket();
+        }
+      }
+    }
+    // coalesced_packets_.pop_front();
+  }
+  coalesced_packets_.clear();
+  if (processed) {
+    MaybeProcessUndecryptablePackets();
   }
 }
 
@@ -3075,9 +3135,7 @@ bool QuicConnection::IsTerminationPacket(const SerializedPacket& packet) {
       return true;
     }
     if (save_crypto_packets_as_termination_packets_ &&
-        frame.type == STREAM_FRAME &&
-        frame.stream_frame.stream_id ==
-            QuicUtils::GetCryptoStreamId(transport_version())) {
+        QuicUtils::IsHandshakeFrame(frame, transport_version())) {
       return true;
     }
   }

@@ -24,6 +24,7 @@ class QuartcSession : public QuicSession,
                       public QuartcPacketTransport::Delegate {
  public:
   QuartcSession(std::unique_ptr<QuicConnection> connection,
+                Visitor* visitor,
                 const QuicConfig& config,
                 const ParsedQuicVersionVector& supported_versions,
                 const QuicClock* clock);
@@ -56,7 +57,7 @@ class QuartcSession : public QuicSession,
 
   // Return true if transport support message frame.
   bool CanSendMessage() const {
-    return connection()->transport_version() >= QUIC_VERSION_45;
+    return connection()->transport_version() > QUIC_VERSION_44;
   }
 
   void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
@@ -161,6 +162,8 @@ class QuartcSession : public QuicSession,
 
   void ResetStream(QuicStreamId stream_id, QuicRstStreamErrorCode error);
 
+  const QuicClock* clock() { return clock_; }
+
  private:
   std::unique_ptr<QuartcStream> InitializeDataStream(
       std::unique_ptr<QuartcStream> stream,
@@ -197,7 +200,8 @@ class QuartcClientSession : public QuartcSession,
       const ParsedQuicVersionVector& supported_versions,
       const QuicClock* clock,
       std::unique_ptr<QuartcPacketWriter> packet_writer,
-      std::unique_ptr<QuicCryptoClientConfig> client_crypto_config);
+      std::unique_ptr<QuicCryptoClientConfig> client_crypto_config,
+      QuicStringPiece server_crypto_config);
   QuartcClientSession(const QuartcClientSession&) = delete;
   QuartcClientSession& operator=(const QuartcClientSession&) = delete;
 
@@ -236,11 +240,14 @@ class QuartcClientSession : public QuartcSession,
 
   // Client perspective crypto stream.
   std::unique_ptr<QuicCryptoClientStream> crypto_stream_;
+
+  const QuicString server_config_;
 };
 
 class QuartcServerSession : public QuartcSession {
  public:
   QuartcServerSession(std::unique_ptr<QuicConnection> connection,
+                      Visitor* visitor,
                       const QuicConfig& config,
                       const ParsedQuicVersionVector& supported_versions,
                       const QuicClock* clock,

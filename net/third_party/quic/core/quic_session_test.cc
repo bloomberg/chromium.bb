@@ -98,6 +98,7 @@ class TestCryptoStream : public QuicCryptoStream, public QuicCryptoHandshaker {
   }
 
   MOCK_METHOD0(OnCanWrite, void());
+  bool HasPendingCryptoRetransmission() override { return false; }
 
   MOCK_CONST_METHOD0(HasPendingRetransmission, bool());
 
@@ -191,10 +192,11 @@ class TestSession : public QuicSession {
       return nullptr;
     }
 
-    TestStream* stream = new TestStream(
-        id, this,
-        DetermineStreamType(id, connection()->transport_version(),
-                            /*is_incoming=*/true, BIDIRECTIONAL));
+    TestStream* stream =
+        new TestStream(id, this,
+                       DetermineStreamType(
+                           id, connection()->transport_version(), perspective(),
+                           /*is_incoming=*/true, BIDIRECTIONAL));
     ActivateStream(QuicWrapUnique(stream));
     ++num_incoming_streams_created_;
     return stream;
@@ -202,10 +204,11 @@ class TestSession : public QuicSession {
 
   TestStream* CreateIncomingStream(PendingStream pending) override {
     QuicStreamId id = pending.id();
-    TestStream* stream = new TestStream(
-        std::move(pending),
-        DetermineStreamType(id, connection()->transport_version(),
-                            /*is_incoming=*/true, BIDIRECTIONAL));
+    TestStream* stream =
+        new TestStream(std::move(pending),
+                       DetermineStreamType(
+                           id, connection()->transport_version(), perspective(),
+                           /*is_incoming=*/true, BIDIRECTIONAL));
     ActivateStream(QuicWrapUnique(stream));
     ++num_incoming_streams_created_;
     return stream;
@@ -335,7 +338,8 @@ class QuicSessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
 
   void CloseStream(QuicStreamId id) {
     if (session_.connection()->transport_version() == QUIC_VERSION_99 &&
-        QuicUtils::GetStreamType(id, session_.IsIncomingStream(id)) ==
+        QuicUtils::GetStreamType(id, session_.perspective(),
+                                 session_.IsIncomingStream(id)) ==
             READ_UNIDIRECTIONAL) {
       // Verify reset is not sent for READ_UNIDIRECTIONAL streams.
       EXPECT_CALL(*connection_, SendControlFrame(_)).Times(0);
@@ -1235,6 +1239,12 @@ TEST_P(QuicSessionTestServer, HandshakeUnblocksFlowControlBlockedStream) {
 }
 
 TEST_P(QuicSessionTestServer, HandshakeUnblocksFlowControlBlockedCryptoStream) {
+  if (GetParam().transport_version >= QUIC_VERSION_46) {
+    // QUIC version 46 onwards uses CRYPTO frames for the handshake, so this
+    // test doesn't make sense for those versions since CRYPTO frames aren't
+    // flow controlled.
+    return;
+  }
   // Test that if the crypto stream is flow control blocked, then if the SHLO
   // contains a larger send window offset, the stream becomes unblocked.
   session_.set_writev_consumes_all_data(true);
@@ -1798,11 +1808,18 @@ TEST_P(QuicSessionTestServer, OnStreamFrameLost) {
 
   // Lost data on cryption stream, streams 2 and 4.
   EXPECT_CALL(*stream4, HasPendingRetransmission()).WillOnce(Return(true));
-  EXPECT_CALL(*crypto_stream, HasPendingRetransmission())
-      .WillOnce(Return(true));
+  if (connection_->transport_version() < QUIC_VERSION_47) {
+    EXPECT_CALL(*crypto_stream, HasPendingRetransmission())
+        .WillOnce(Return(true));
+  }
   EXPECT_CALL(*stream2, HasPendingRetransmission()).WillOnce(Return(true));
   session_.OnFrameLost(QuicFrame(frame3));
-  session_.OnFrameLost(QuicFrame(frame1));
+  if (connection_->transport_version() < QUIC_VERSION_47) {
+    session_.OnFrameLost(QuicFrame(frame1));
+  } else {
+    QuicCryptoFrame crypto_frame(ENCRYPTION_NONE, 0, 1300);
+    session_.OnFrameLost(QuicFrame(&crypto_frame));
+  }
   session_.OnFrameLost(QuicFrame(frame2));
   EXPECT_TRUE(session_.WillingAndAbleToWrite());
 
@@ -1814,9 +1831,11 @@ TEST_P(QuicSessionTestServer, OnStreamFrameLost) {
   // stream go first.
   // Do not check congestion window when crypto stream has lost data.
   EXPECT_CALL(*send_algorithm, CanSend(_)).Times(0);
-  EXPECT_CALL(*crypto_stream, OnCanWrite());
-  EXPECT_CALL(*crypto_stream, HasPendingRetransmission())
-      .WillOnce(Return(false));
+  if (connection_->transport_version() < QUIC_VERSION_47) {
+    EXPECT_CALL(*crypto_stream, OnCanWrite());
+    EXPECT_CALL(*crypto_stream, HasPendingRetransmission())
+        .WillOnce(Return(false));
+  }
   // Check congestion window for non crypto streams.
   EXPECT_CALL(*send_algorithm, CanSend(_)).WillOnce(Return(true));
   EXPECT_CALL(*stream4, OnCanWrite());
