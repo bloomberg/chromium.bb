@@ -28,9 +28,9 @@ class VolumeControlAndroid : SystemVolumeTableAccessApi {
   void AddVolumeObserver(VolumeObserver* observer);
   void RemoveVolumeObserver(VolumeObserver* observer);
   float GetVolume(AudioContentType type);
-  void SetVolume(AudioContentType type, float level);
+  void SetVolume(VolumeChangeSource source, AudioContentType type, float level);
   bool IsMuted(AudioContentType type);
-  void SetMuted(AudioContentType type, bool muted);
+  void SetMuted(VolumeChangeSource source, AudioContentType type, bool muted);
   void SetOutputLimit(AudioContentType type, float limit);
   float VolumeToDbFSCached(AudioContentType type, float volume);
   float DbFSToVolumeCached(AudioContentType type, float db);
@@ -52,8 +52,14 @@ class VolumeControlAndroid : SystemVolumeTableAccessApi {
 
  private:
   void InitializeOnThread();
-  void SetVolumeOnThread(AudioContentType type, float level, bool from_android);
-  void SetMutedOnThread(AudioContentType type, bool muted, bool from_android);
+  void SetVolumeOnThread(VolumeChangeSource source,
+                         AudioContentType type,
+                         float level,
+                         bool from_android);
+  void SetMutedOnThread(VolumeChangeSource source,
+                        AudioContentType type,
+                        bool muted,
+                        bool from_android);
   void ReportVolumeChangeOnThread(AudioContentType type, float level);
   void ReportMuteChangeOnThread(AudioContentType type, bool muted);
 

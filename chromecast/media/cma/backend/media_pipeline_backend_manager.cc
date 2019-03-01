@@ -137,17 +137,16 @@ void MediaPipelineBackendManager::UpdatePlayingAudioCount(
   bool had_playing_audio_streams = (TotalPlayingAudioStreamsCount() > 0);
   playing_audio_streams_count_[type] += change;
   DCHECK_GE(playing_audio_streams_count_[type], 0);
-  if (VolumeControl::SetPowerSaveMode) {
-    int new_playing_audio_streams = TotalPlayingAudioStreamsCount();
-    if (new_playing_audio_streams == 0) {
-      power_save_timer_.Start(FROM_HERE, kPowerSaveWaitTime, this,
-                              &MediaPipelineBackendManager::EnterPowerSaveMode);
-    } else if (!had_playing_audio_streams && new_playing_audio_streams > 0) {
-      power_save_timer_.Stop();
-      metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
-          "Cast.Platform.VolumeControl.PowerSaveOff");
-      VolumeControl::SetPowerSaveMode(false);
-    }
+
+  int new_playing_audio_streams = TotalPlayingAudioStreamsCount();
+  if (new_playing_audio_streams == 0) {
+    power_save_timer_.Start(FROM_HERE, kPowerSaveWaitTime, this,
+                            &MediaPipelineBackendManager::EnterPowerSaveMode);
+  } else if (!had_playing_audio_streams && new_playing_audio_streams > 0) {
+    power_save_timer_.Stop();
+    metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
+        "Cast.Platform.VolumeControl.PowerSaveOff");
+    VolumeControl::SetPowerSaveMode(false);
   }
 
   if (sfx) {
@@ -266,9 +265,7 @@ void MediaPipelineBackendManager::SetPowerSaveEnabled(bool power_save_enabled) {
   MAKE_SURE_MEDIA_THREAD(SetPowerSaveEnabled, power_save_enabled);
   power_save_enabled_ = power_save_enabled;
   if (!power_save_enabled_) {
-    if (VolumeControl::SetPowerSaveMode) {
-      VolumeControl::SetPowerSaveMode(false);
-    }
+    VolumeControl::SetPowerSaveMode(false);
   }
 }
 

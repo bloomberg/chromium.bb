@@ -134,18 +134,14 @@ class MultizoneBackendTest : public testing::TestWithParam<TestParams> {
   void SetUp() override {
     srand(12345);
     CastMediaShlib::Initialize(base::CommandLine::ForCurrentProcess()->argv());
-    if (VolumeControl::Initialize) {
-      VolumeControl::Initialize(base::CommandLine::ForCurrentProcess()->argv());
-    }
+    VolumeControl::Initialize(base::CommandLine::ForCurrentProcess()->argv());
   }
 
   void TearDown() override {
     // Pipeline must be destroyed before finalizing media shlib.
     audio_feeder_.reset();
     effects_feeders_.clear();
-    if (VolumeControl::Finalize) {
-      VolumeControl::Finalize();
-    }
+    VolumeControl::Finalize();
     CastMediaShlib::Finalize();
   }
 
