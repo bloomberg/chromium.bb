@@ -23,6 +23,7 @@
 #
 
 from contextlib import contextmanager
+import difflib
 import filecmp
 import fnmatch
 import os
@@ -210,16 +211,13 @@ def bindings_tests(output_directory, verbose, suppress_diff):
         return files
 
     def diff(filename1, filename2):
-        # Python's difflib module is too slow, especially on long output, so
-        # run external diff(1) command
-        cmd = ['diff',
-               '-u',  # unified format
-               '-N',  # treat absent files as empty
-               filename1,
-               filename2]
-        # Return output and don't raise exception, even though diff(1) has
-        # non-zero exit if files differ.
-        return executive.run_command(cmd, error_handler=lambda x: None)
+        with open(filename1) as file1:
+            file1_lines = file1.readlines()
+        with open(filename2) as file2:
+            file2_lines = file2.readlines()
+
+        # Use Python's difflib module so that diffing works across platforms
+        return ''.join(difflib.context_diff(file1_lines, file2_lines))
 
     def is_cache_file(filename):
         return filename.endswith('.cache')
