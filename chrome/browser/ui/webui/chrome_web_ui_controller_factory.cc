@@ -618,10 +618,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<ManagementUI>;
 #endif
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (url.host_piece() == chrome::kChromeUIExtensionsFrameHost)
-    return &NewWebUI<extensions::ExtensionsUI>;
-#endif
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (url.host_piece() == chrome::kChromeUIPrintHost &&
       !profile->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled)) {
@@ -893,8 +889,7 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
     return ManagementUI::GetFaviconResourceBytes(scale_factor);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (page_url.host_piece() == chrome::kChromeUIExtensionsHost ||
-      page_url.host_piece() == chrome::kChromeUIExtensionsFrameHost) {
+  if (page_url.host_piece() == chrome::kChromeUIExtensionsHost) {
     return extensions::ExtensionsUI::GetFaviconResourceBytes(scale_factor);
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
