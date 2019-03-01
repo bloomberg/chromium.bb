@@ -436,6 +436,11 @@ void ArcMetricsService::RecordEngagementTimeToUmaIfNeeded() {
       base::TimeDelta::FromSeconds(1),
       base::TimeDelta::FromDays(1) + kUpdateEngagementTimePeriod, 50);
   UMA_HISTOGRAM_CUSTOM_TIMES(
+      "Arc.EngagementTime.ArcTotal",
+      engagement_time_foreground_ + engagement_time_background_,
+      base::TimeDelta::FromSeconds(1),
+      base::TimeDelta::FromDays(1) + kUpdateEngagementTimePeriod, 50);
+  UMA_HISTOGRAM_CUSTOM_TIMES(
       "Arc.EngagementTime.Foreground", engagement_time_foreground_,
       base::TimeDelta::FromSeconds(1),
       base::TimeDelta::FromDays(1) + kUpdateEngagementTimePeriod, 50);

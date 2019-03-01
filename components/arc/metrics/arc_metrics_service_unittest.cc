@@ -464,6 +464,8 @@ TEST_F(ArcMetricsServiceTest, RecordEngagementTimeSessionLocked) {
   TriggerRecordEngagementTimeToUma();
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Total",
                                base::TimeDelta::FromSeconds(0), 1);
+  tester.ExpectTimeBucketCount("Arc.EngagementTime.ArcTotal",
+                               base::TimeDelta::FromSeconds(0), 1);
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Foreground",
                                base::TimeDelta::FromSeconds(0), 1);
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Background",
@@ -480,6 +482,8 @@ TEST_F(ArcMetricsServiceTest, RecordEngagementTimeSessionActive) {
   TriggerRecordEngagementTimeToUma();
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Total",
                                base::TimeDelta::FromSeconds(1), 1);
+  tester.ExpectTimeBucketCount("Arc.EngagementTime.ArcTotal",
+                               base::TimeDelta::FromSeconds(0), 1);
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Foreground",
                                base::TimeDelta::FromSeconds(0), 1);
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Background",
@@ -496,6 +500,8 @@ TEST_F(ArcMetricsServiceTest, RecordEngagementTimeScreenDimmed) {
 
   TriggerRecordEngagementTimeToUma();
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Total",
+                               base::TimeDelta::FromSeconds(0), 1);
+  tester.ExpectTimeBucketCount("Arc.EngagementTime.ArcTotal",
                                base::TimeDelta::FromSeconds(0), 1);
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Foreground",
                                base::TimeDelta::FromSeconds(0), 1);
@@ -518,6 +524,8 @@ TEST_F(ArcMetricsServiceTest, RecordEngagementTimeArcWindowFocused) {
   TriggerRecordEngagementTimeToUma();
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Total",
                                base::TimeDelta::FromSeconds(1), 1);
+  tester.ExpectTimeBucketCount("Arc.EngagementTime.ArcTotal",
+                               base::TimeDelta::FromSeconds(1), 1);
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Foreground",
                                base::TimeDelta::FromSeconds(1), 1);
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Background",
@@ -538,6 +546,8 @@ TEST_F(ArcMetricsServiceTest, RecordEngagementTimeNonArcWindowFocused) {
   TriggerRecordEngagementTimeToUma();
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Total",
                                base::TimeDelta::FromSeconds(1), 1);
+  tester.ExpectTimeBucketCount("Arc.EngagementTime.ArcTotal",
+                               base::TimeDelta::FromSeconds(0), 1);
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Foreground",
                                base::TimeDelta::FromSeconds(0), 1);
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Background",
@@ -555,6 +565,8 @@ TEST_F(ArcMetricsServiceTest, RecordEngagementTimeAppInBackground) {
 
   TriggerRecordEngagementTimeToUma();
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Total",
+                               base::TimeDelta::FromSeconds(1), 1);
+  tester.ExpectTimeBucketCount("Arc.EngagementTime.ArcTotal",
                                base::TimeDelta::FromSeconds(1), 1);
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Foreground",
                                base::TimeDelta::FromSeconds(0), 1);
@@ -578,6 +590,8 @@ TEST_F(ArcMetricsServiceTest,
 
   TriggerRecordEngagementTimeToUma();
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Total",
+                               base::TimeDelta::FromSeconds(1), 1);
+  tester.ExpectTimeBucketCount("Arc.EngagementTime.ArcTotal",
                                base::TimeDelta::FromSeconds(1), 1);
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Foreground",
                                base::TimeDelta::FromSeconds(1), 1);
