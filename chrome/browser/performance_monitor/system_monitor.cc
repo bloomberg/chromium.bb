@@ -75,6 +75,13 @@ SystemMonitor* SystemMonitor::Get() {
   return g_system_metrics_monitor;
 }
 
+SystemMonitor::SystemObserver::~SystemObserver() {
+  if (g_system_metrics_monitor) {
+    // This is a no-op if the observer has already been removed.
+    g_system_metrics_monitor->RemoveObserver(this);
+  }
+}
+
 void SystemMonitor::SystemObserver::OnFreePhysicalMemoryMbSample(
     int free_phys_memory_mb) {
   NOTREACHED();
@@ -103,8 +110,8 @@ void SystemMonitor::AddOrUpdateObserver(
 void SystemMonitor::RemoveObserver(SystemMonitor::SystemObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.RemoveObserver(observer);
-  observer_metrics_.erase(observer);
-  UpdateObservedMetrics();
+  if (observer_metrics_.erase(observer))
+    UpdateObservedMetrics();
 }
 
 SystemMonitor::MetricVector SystemMonitor::GetMetricsToEvaluate() const {
