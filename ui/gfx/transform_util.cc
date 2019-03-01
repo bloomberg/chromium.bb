@@ -243,6 +243,10 @@ DecomposedTransform BlendDecomposedTransforms(const DecomposedTransform& to,
 }
 
 // Taken from http://www.w3.org/TR/css3-transforms/.
+// TODO(crbug/937296): This implementation is virtually identical to the
+// implementation in blink::TransformationMatrix with the main difference being
+// the representation of the underlying matrix. These implementations should be
+// consolidated.
 bool DecomposeTransform(DecomposedTransform* decomp,
                         const Transform& transform) {
   if (!decomp)
@@ -302,82 +306,120 @@ bool DecomposeTransform(DecomposedTransform* decomp,
   for (int i = 0; i < 3; i++)
     decomp->translate[i] = matrix.get(i, 3);
 
-  SkMScalar row[3][3];
+  // Copy of matrix is stored in column major order to facilitate column-level
+  // operations.
+  SkMScalar column[3][3];
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; ++j)
-      row[i][j] = matrix.get(j, i);
+      column[i][j] = matrix.get(j, i);
 
-  // Compute X scale factor and normalize first row.
-  decomp->scale[0] = Length3(row[0]);
+  // Compute X scale factor and normalize first column.
+  decomp->scale[0] = Length3(column[0]);
   if (decomp->scale[0] != 0.0) {
-    row[0][0] /= decomp->scale[0];
-    row[0][1] /= decomp->scale[0];
-    row[0][2] /= decomp->scale[0];
+    column[0][0] /= decomp->scale[0];
+    column[0][1] /= decomp->scale[0];
+    column[0][2] /= decomp->scale[0];
   }
 
-  // Compute XY shear factor and make 2nd row orthogonal to 1st.
-  decomp->skew[0] = Dot<3>(row[0], row[1]);
-  Combine<3>(row[1], row[1], row[0], 1.0, -decomp->skew[0]);
+  // Compute XY shear factor and make 2nd column orthogonal to 1st.
+  decomp->skew[0] = Dot<3>(column[0], column[1]);
+  Combine<3>(column[1], column[1], column[0], 1.0, -decomp->skew[0]);
 
-  // Now, compute Y scale and normalize 2nd row.
-  decomp->scale[1] = Length3(row[1]);
+  // Now, compute Y scale and normalize 2nd column.
+  decomp->scale[1] = Length3(column[1]);
   if (decomp->scale[1] != 0.0) {
-    row[1][0] /= decomp->scale[1];
-    row[1][1] /= decomp->scale[1];
-    row[1][2] /= decomp->scale[1];
+    column[1][0] /= decomp->scale[1];
+    column[1][1] /= decomp->scale[1];
+    column[1][2] /= decomp->scale[1];
   }
 
   decomp->skew[0] /= decomp->scale[1];
 
-  // Compute XZ and YZ shears, orthogonalize 3rd row
-  decomp->skew[1] = Dot<3>(row[0], row[2]);
-  Combine<3>(row[2], row[2], row[0], 1.0, -decomp->skew[1]);
-  decomp->skew[2] = Dot<3>(row[1], row[2]);
-  Combine<3>(row[2], row[2], row[1], 1.0, -decomp->skew[2]);
+  // Compute XZ and YZ shears, orthogonalize the 3rd column.
+  decomp->skew[1] = Dot<3>(column[0], column[2]);
+  Combine<3>(column[2], column[2], column[0], 1.0, -decomp->skew[1]);
+  decomp->skew[2] = Dot<3>(column[1], column[2]);
+  Combine<3>(column[2], column[2], column[1], 1.0, -decomp->skew[2]);
 
-  // Next, get Z scale and normalize 3rd row.
-  decomp->scale[2] = Length3(row[2]);
+  // Next, get Z scale and normalize the 3rd column.
+  decomp->scale[2] = Length3(column[2]);
   if (decomp->scale[2] != 0.0) {
-    row[2][0] /= decomp->scale[2];
-    row[2][1] /= decomp->scale[2];
-    row[2][2] /= decomp->scale[2];
+    column[2][0] /= decomp->scale[2];
+    column[2][1] /= decomp->scale[2];
+    column[2][2] /= decomp->scale[2];
   }
 
   decomp->skew[1] /= decomp->scale[2];
   decomp->skew[2] /= decomp->scale[2];
 
-  // At this point, the matrix (in rows) is orthonormal.
+  // At this point, the matrix is orthonormal.
   // Check for a coordinate system flip.  If the determinant
   // is -1, then negate the matrix and the scaling factors.
+  // TODO(kevers): This is inconsistent from the 2D specification, in which
+  // only 1 axis is flipped when the determinant is negative. Verify if it is
+  // correct to flip all of the scales and matrix elements, as this introduces
+  // rotation for the simple case of a single axis scale inversion.
   SkMScalar pdum3[3];
-  Cross3(pdum3, row[1], row[2]);
-  if (Dot<3>(row[0], pdum3) < 0) {
+  Cross3(pdum3, column[1], column[2]);
+  if (Dot<3>(column[0], pdum3) < 0) {
     for (int i = 0; i < 3; i++) {
       decomp->scale[i] *= -1.0;
       for (int j = 0; j < 3; ++j)
-        row[i][j] *= -1.0;
+        column[i][j] *= -1.0;
     }
   }
 
-  double row00 = SkMScalarToDouble(row[0][0]);
-  double row11 = SkMScalarToDouble(row[1][1]);
-  double row22 = SkMScalarToDouble(row[2][2]);
+  // See https://en.wikipedia.org/wiki/Rotation_matrix#Quaternion.
+  // Note: deviating from spec (http://www.w3.org/TR/css3-transforms/)
+  // which has a degenerate case of zero off-diagonal elements in the
+  // orthonormal matrix, which leads to errors in determining the sign
+  // of the quaternions.
+  double q_xx = SkMScalarToDouble(column[0][0]);
+  double q_xy = SkMScalarToDouble(column[1][0]);
+  double q_xz = SkMScalarToDouble(column[2][0]);
+  double q_yx = SkMScalarToDouble(column[0][1]);
+  double q_yy = SkMScalarToDouble(column[1][1]);
+  double q_yz = SkMScalarToDouble(column[2][1]);
+  double q_zx = SkMScalarToDouble(column[0][2]);
+  double q_zy = SkMScalarToDouble(column[1][2]);
+  double q_zz = SkMScalarToDouble(column[2][2]);
 
-  decomp->quaternion.set_x(SkDoubleToMScalar(
-      0.5 * std::sqrt(std::max(1.0 + row00 - row11 - row22, 0.0))));
-  decomp->quaternion.set_y(SkDoubleToMScalar(
-      0.5 * std::sqrt(std::max(1.0 - row00 + row11 - row22, 0.0))));
-  decomp->quaternion.set_z(SkDoubleToMScalar(
-      0.5 * std::sqrt(std::max(1.0 - row00 - row11 + row22, 0.0))));
-  decomp->quaternion.set_w(SkDoubleToMScalar(
-      0.5 * std::sqrt(std::max(1.0 + row00 + row11 + row22, 0.0))));
+  double r, s, t, x, y, z, w;
+  t = q_xx + q_yy + q_zz;
+  if (t > 0) {
+    r = std::sqrt(1.0 + t);
+    s = 0.5 / r;
+    w = 0.5 * r;
+    x = (q_zy - q_yz) * s;
+    y = (q_xz - q_zx) * s;
+    z = (q_yx - q_xy) * s;
+  } else if (q_xx > q_yy && q_xx > q_zz) {
+    r = std::sqrt(1.0 + q_xx - q_yy - q_zz);
+    s = 0.5 / r;
+    x = 0.5 * r;
+    y = (q_xy + q_yx) * s;
+    z = (q_xz + q_zx) * s;
+    w = (q_zy - q_yz) * s;
+  } else if (q_yy > q_zz) {
+    r = std::sqrt(1.0 - q_xx + q_yy - q_zz);
+    s = 0.5 / r;
+    x = (q_xy + q_yx) * s;
+    y = 0.5 * r;
+    z = (q_yz + q_zy) * s;
+    w = (q_xz - q_zx) * s;
+  } else {
+    r = std::sqrt(1.0 - q_xx - q_yy + q_zz);
+    s = 0.5 / r;
+    x = (q_xz + q_zx) * s;
+    y = (q_yz + q_zy) * s;
+    z = 0.5 * r;
+    w = (q_yx - q_xy) * s;
+  }
 
-  if (row[2][1] > row[1][2])
-    decomp->quaternion.set_x(-decomp->quaternion.x());
-  if (row[0][2] > row[2][0])
-    decomp->quaternion.set_y(-decomp->quaternion.y());
-  if (row[1][0] > row[0][1])
-    decomp->quaternion.set_z(-decomp->quaternion.z());
+  decomp->quaternion.set_x(SkDoubleToMScalar(x));
+  decomp->quaternion.set_y(SkDoubleToMScalar(y));
+  decomp->quaternion.set_z(SkDoubleToMScalar(z));
+  decomp->quaternion.set_w(SkDoubleToMScalar(w));
 
   return true;
 }

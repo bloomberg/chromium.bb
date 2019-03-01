@@ -418,4 +418,65 @@ TEST(TransformationMatrixTest, Decompose2dShearTest) {
   EXPECT_TRANSFORMATION_MATRIX(transformShearY, recompShearY);
 }
 
+double ComputeDecompRecompError(const TransformationMatrix& transform_matrix) {
+  TransformationMatrix::DecomposedType decomp;
+  EXPECT_TRUE(transform_matrix.Decompose(decomp));
+
+  TransformationMatrix composed;
+  composed.Recompose(decomp);
+
+  float expected[16];
+  float actual[16];
+  transform_matrix.ToColumnMajorFloatArray(expected);
+  composed.ToColumnMajorFloatArray(actual);
+  double sse = 0;
+  for (int i = 0; i < 16; i++) {
+    double diff = expected[i] - actual[i];
+    sse += diff * diff;
+  }
+  return sse;
+}
+
+TEST(TransformationMatrixTest, RoundTripTest) {
+  // rotateZ(90deg)
+  EXPECT_NEAR(0,
+              ComputeDecompRecompError(TransformationMatrix(0, 1, -1, 0, 0, 0)),
+              1e-6);
+
+  // rotateZ(180deg)
+  // Edge case where w = 0.
+  EXPECT_NEAR(
+      0, ComputeDecompRecompError(TransformationMatrix(-1, 0, 0, -1, 0, 0)),
+      1e-6);
+
+  // rotateX(90deg) rotateY(90deg) rotateZ(90deg)
+  // [1  0   0][ 0 0 1][0 -1 0]   [0 0 1][0 -1 0]   [0  0 1]
+  // [0  0  -1][ 0 1 0][1  0 0] = [1 0 0][1  0 0] = [0 -1 0]
+  // [0  1   0][-1 0 0][0  0 1]   [0 1 0][0  0 1]   [1  0 0]
+  // This test case leads to Gimbal lock when using Euler angles.
+  EXPECT_NEAR(0,
+              ComputeDecompRecompError(TransformationMatrix(
+                  0, 0, 1, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1)),
+              1e-6);
+
+  // Quaternion matrices with 0 off-diagonal elements, and negative trace.
+  // Stress tests handling of degenerate cases in computing quaternions.
+  // Validates fix for https://crbug.com/647554.
+  EXPECT_NEAR(0,
+              ComputeDecompRecompError(TransformationMatrix(1, 1, 1, 0, 0, 0)),
+              1e-6);
+  EXPECT_NEAR(0,
+              ComputeDecompRecompError(TransformationMatrix(
+                  -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)),
+              1e-6);
+  EXPECT_NEAR(0,
+              ComputeDecompRecompError(TransformationMatrix(
+                  1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)),
+              1e-6);
+  EXPECT_NEAR(0,
+              ComputeDecompRecompError(TransformationMatrix(
+                  1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1)),
+              1e-6);
+}
+
 }  // namespace blink
