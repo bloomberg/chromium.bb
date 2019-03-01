@@ -220,7 +220,7 @@ BOOL AreCredentialsAtIndexesConnected(
                  action:^{
                    base::RecordAction(base::UserMetricsAction(
                        "ManualFallback_Password_OpenSuggestPassword"));
-                   [self generateAndOfferPassword];
+                   [weakSelf generateAndOfferPassword];
                  }];
       generatePasswordItem.accessibilityIdentifier =
           manual_fill::SuggestPasswordAccessibilityIdentifier;
