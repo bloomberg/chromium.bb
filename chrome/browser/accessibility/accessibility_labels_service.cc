@@ -24,9 +24,12 @@ AccessibilityLabelsService::~AccessibilityLabelsService() {}
 // static
 void AccessibilityLabelsService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kAccessibilityImageLabelsEnabled, false);
-  registry->RegisterBooleanPref(prefs::kAccessibilityImageLabelsOptInAccepted,
-                                false);
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityImageLabelsEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityImageLabelsOptInAccepted, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 void AccessibilityLabelsService::Init() {
