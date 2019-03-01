@@ -9,6 +9,7 @@ import android.content.Context;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeController;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -29,7 +30,7 @@ public class GridTabSwitcherCoordinator implements Destroyable {
     public GridTabSwitcherCoordinator(Context context,
             ActivityLifecycleDispatcher lifecycleDispatcher, ToolbarManager toolbarManager,
             TabModelSelector tabModelSelector, TabContentManager tabContentManager,
-            CompositorViewHolder compositorViewHolder) {
+            CompositorViewHolder compositorViewHolder, ChromeFullscreenManager fullscreenManager) {
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
 
         mTabGridCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
@@ -38,7 +39,8 @@ public class GridTabSwitcherCoordinator implements Destroyable {
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                 mTabGridCoordinator.getContainerView(), TabGridContainerViewBinder::bind);
 
-        mMediator = new GridTabSwitcherMediator(this, containerViewModel, tabModelSelector);
+        mMediator = new GridTabSwitcherMediator(
+                this, containerViewModel, tabModelSelector, fullscreenManager);
 
         mLifecycleDispatcher = lifecycleDispatcher;
         mLifecycleDispatcher.register(this);
