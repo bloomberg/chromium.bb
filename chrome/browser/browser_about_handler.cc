@@ -60,10 +60,6 @@ bool WillHandleBrowserAboutURL(GURL* url,
   if (host == chrome::kChromeUIAboutHost)
     host = chrome::kChromeUIChromeURLsHost;
 
-  // Legacy redirect from chrome://history-frame to chrome://history.
-  if (host == chrome::kDeprecatedChromeUIHistoryFrameHost)
-    host = chrome::kChromeUIHistoryHost;
-
   if (host == chrome::kChromeUISyncHost) {
     // Replace sync with sync-internals (for legacy reasons).
     host = chrome::kChromeUISyncInternalsHost;

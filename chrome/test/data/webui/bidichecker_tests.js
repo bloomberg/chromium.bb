@@ -83,17 +83,6 @@ function filtersForPage(pageName, isRTL) {
         bidichecker.FilterFactory.atText('חדשות תוכן ועדכונים - ידיעות אחרונות')
       ]
     },
-    'chrome://history-frame': {
-      'LTR': [
-        // BUG: http://crbug.com/119595
-        bidichecker.FilterFactory.atText('בדיקה')
-      ],
-      'RTL': [
-        // BUG: http://crbug.com/119595
-        bidichecker.FilterFactory.atText('Google'),
-        bidichecker.FilterFactory.atText('www.google.com')
-      ],
-    },
   };
   var globalFilters = {
     'RTL': [

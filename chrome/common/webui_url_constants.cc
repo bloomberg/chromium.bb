@@ -162,8 +162,6 @@ const char kChromeUIWelcomeHost[] = "welcome";
 const char kChromeUIWelcomeURL[] = "chrome://welcome/";
 const char kChromeUIWelcomeWin10Host[] = "welcome-win10";
 const char kChromeUIWelcomeWin10URL[] = "chrome://welcome-win10/";
-const char kDeprecatedChromeUIHistoryFrameHost[] = "history-frame";
-const char kDeprecatedChromeUIHistoryFrameURL[] = "chrome://history-frame/";
 
 #if defined(OS_ANDROID)
 const char kChromeUIEocInternalsHost[] = "eoc-internals";
