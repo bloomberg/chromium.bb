@@ -18843,7 +18843,7 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="FeatureObserver">
-<!-- Generated from third_party/blink/public/platform/web_feature.mojom.-->
+<!-- Generated from third_party/blink/public/mojom/web_feature/web_feature.mojom.-->
 
   <int value="0" label="OBSOLETE_PageDestruction"/>
   <int value="1" label="LegacyNotifications"/>

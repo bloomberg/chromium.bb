@@ -14,7 +14,7 @@
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "chrome/renderer/page_load_metrics/page_resource_data_use.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom.h"
-#include "third_party/blink/public/platform/web_feature.mojom-shared.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 
 class GURL;
