@@ -42,9 +42,6 @@ constexpr char kSRTPromptTrial[] = "SRTPromptFieldTrial";
 const base::Feature kRebootPromptDialogFeature{
     "RebootPromptDialog", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kUserInitiatedChromeCleanupsFeature{
-    "UserInitiatedChromeCleanups", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kChromeCleanupDistributionFeature{
     "ChromeCleanupDistribution", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -60,10 +57,6 @@ bool SRTPromptNeedsElevationIcon() {
   return !base::StartsWith(
       base::FieldTrialList::FindFullName(kSRTElevationTrial),
       kSRTElevationAsNeededGroup, base::CompareCase::SENSITIVE);
-}
-
-bool UserInitiatedCleanupsEnabled() {
-  return base::FeatureList::IsEnabled(kUserInitiatedChromeCleanupsFeature);
 }
 
 GURL GetStableDownloadURL() {
