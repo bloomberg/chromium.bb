@@ -98,7 +98,13 @@ class PrintPreviewDialogController
   // Handler for the NAV_ENTRY_COMMITTED notification. This is observed when the
   // renderer is navigated to a different page.
   void OnNavEntryCommitted(content::WebContents* contents,
-                           content::LoadCommittedDetails* details);
+                           const content::LoadCommittedDetails* details);
+
+  // Helpers for OnNavEntryCommitted().
+  void OnInitiatorNavigated(content::WebContents* initiator,
+                            const content::LoadCommittedDetails* details);
+  void OnPreviewDialogNavigated(content::WebContents* preview_dialog,
+                                const content::LoadCommittedDetails* details);
 
   // Creates a new print preview dialog.
   content::WebContents* CreatePrintPreviewDialog(
