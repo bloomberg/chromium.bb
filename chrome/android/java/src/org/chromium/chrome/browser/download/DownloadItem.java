@@ -47,13 +47,6 @@ public class DownloadItem {
     }
 
     /**
-     * @return whether the download item has a valid system download ID.
-     */
-    public boolean hasSystemDownloadId() {
-        return mDownloadId != INVALID_DOWNLOAD_ID;
-    }
-
-    /**
      * @return System download ID from the Android DownloadManager.
      */
     public long getSystemDownloadId() {
