@@ -173,7 +173,10 @@ bool WorkQueue::RemoveAllCanceledTasksFromFront() {
       // capacity if we're wasting memory.
       tasks_.MaybeShrinkQueue();
     }
-    work_queue_sets_->OnQueuesFrontTaskChanged(this);
+    // If we have a valid |heap_handle_| (i.e. we're not blocked by a fence or
+    // disabled) then |work_queue_sets_| needs to be told.
+    if (heap_handle_.IsValid())
+      work_queue_sets_->OnQueuesFrontTaskChanged(this);
     task_queue_->TraceQueueSize();
   }
   return task_removed;
