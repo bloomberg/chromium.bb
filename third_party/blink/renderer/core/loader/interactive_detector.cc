@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 
-#include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -22,9 +22,9 @@ constexpr auto kTimeToInteractiveWindow = TimeDelta::FromSeconds(5);
 // requests for this duration of time.
 constexpr int kNetworkQuietMaximumConnections = 2;
 
-const char kHistogramInputDelay[] = "PageLoad.InteractiveTiming.InputDelay2";
+const char kHistogramInputDelay[] = "PageLoad.InteractiveTiming.InputDelay3";
 const char kHistogramInputTimestamp[] =
-    "PageLoad.InteractiveTiming.InputTimestamp2";
+    "PageLoad.InteractiveTiming.InputTimestamp3";
 
 // static
 const char InteractiveDetector::kSupplementName[] = "InteractiveDetector";
@@ -167,45 +167,39 @@ bool InteractiveDetector::PageWasBackgroundedSinceEvent(TimeTicks event_time) {
   return false;
 }  // namespace blink
 
-// This is called early enough in the pipeline that we don't need to worry about
-// javascript dispatching untrusted input events.
-void InteractiveDetector::HandleForInputDelay(const WebInputEvent& event) {
-  DCHECK(event.GetType() != WebInputEvent::kTouchStart);
+void InteractiveDetector::HandleForInputDelay(
+    const Event& event,
+    TimeTicks event_platform_timestamp,
+    TimeTicks processing_start) {
+  DCHECK(event.isTrusted());
 
   // This only happens sometimes on tests unrelated to InteractiveDetector. It
   // is safe to ignore events that are not properly initialized.
-  if (event.TimeStamp().is_null())
+  if (event_platform_timestamp.is_null())
     return;
 
   // We can't report a pointerDown until the pointerUp, in case it turns into a
   // scroll.
-  if (event.GetType() == WebInputEvent::kPointerDown) {
-    pending_pointerdown_delay_ = CurrentTimeTicks() - event.TimeStamp();
-    pending_pointerdown_timestamp_ = event.TimeStamp();
-    return;
-  }
-  if (event.GetType() == WebInputEvent::kPointerCancel ||
-      event.GetType() == WebInputEvent::kPointerCausedUaAction) {
-    pending_pointerdown_delay_ = base::TimeDelta();
-    pending_pointerdown_timestamp_ = base::TimeTicks();
+  if (event.type() == event_type_names::kPointerdown) {
+    pending_pointerdown_delay_ = processing_start - event_platform_timestamp;
+    pending_pointerdown_timestamp_ = event_platform_timestamp;
     return;
   }
 
-  bool event_is_meaningful =
-      event.GetType() == WebInputEvent::kMouseDown ||
-      event.GetType() == WebInputEvent::kKeyDown ||
-      event.GetType() == WebInputEvent::kRawKeyDown ||
-      // We need to explicitly include tap, as if there are no listeners, we
-      // won't receive the pointer events.
-      event.GetType() == WebInputEvent::kGestureTap ||
-      event.GetType() == WebInputEvent::kPointerUp;
+  // We receive any event relevant for EventTiming, but we only care about
+  // events relevant for FirstInputDelay.
+  bool event_is_meaningful = event.type() == event_type_names::kPointerup ||
+                             event.type() == event_type_names::kClick ||
+                             event.type() == event_type_names::kKeydown ||
+                             event.type() == event_type_names::kMousedown;
 
   if (!event_is_meaningful)
     return;
 
+  // These variables track the values which will be reported to histograms.
   TimeDelta delay;
   TimeTicks event_timestamp;
-  if (event.GetType() == WebInputEvent::kPointerUp) {
+  if (event.type() == event_type_names::kPointerup) {
     // PointerUp by itself is not considered a significant input.
     if (pending_pointerdown_timestamp_.is_null())
       return;
@@ -217,8 +211,8 @@ void InteractiveDetector::HandleForInputDelay(const WebInputEvent& event) {
     delay = pending_pointerdown_delay_;
     event_timestamp = pending_pointerdown_timestamp_;
   } else {
-    delay = CurrentTimeTicks() - event.TimeStamp();
-    event_timestamp = event.TimeStamp();
+    delay = processing_start - event_platform_timestamp;
+    event_timestamp = event_platform_timestamp;
   }
 
   pending_pointerdown_delay_ = base::TimeDelta();

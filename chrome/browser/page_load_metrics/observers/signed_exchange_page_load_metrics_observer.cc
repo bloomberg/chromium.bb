@@ -15,7 +15,7 @@ constexpr char kHistogramSignedExchangePrefix[] = HISTOGRAM_PREFIX;
 constexpr char kHistogramSignedExchangeParseStart[] =
     HISTOGRAM_PREFIX "ParseTiming.NavigationToParseStart";
 constexpr char kHistogramSignedExchangeFirstInputDelay[] =
-    HISTOGRAM_PREFIX "InteractiveTiming.FirstInputDelay2";
+    HISTOGRAM_PREFIX "InteractiveTiming.FirstInputDelay3";
 constexpr char kHistogramSignedExchangeFirstPaint[] =
     HISTOGRAM_PREFIX "PaintTiming.NavigationToFirstPaint";
 constexpr char kHistogramSignedExchangeFirstContentfulPaint[] =
