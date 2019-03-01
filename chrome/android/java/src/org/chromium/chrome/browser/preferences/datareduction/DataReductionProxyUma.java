@@ -13,8 +13,6 @@ import org.chromium.chrome.browser.util.ConversionUtils;
 public class DataReductionProxyUma {
 
     public static final String UI_ACTION_HISTOGRAM_NAME = "DataReductionProxy.UIAction";
-    public static final String SNACKBAR_HISTOGRAM_NAME =
-            "DataReductionProxy.SnackbarPromo.DataSavings";
     public static final String PREVIEWS_HISTOGRAM_NAME = "Previews.ContextMenuAction.LoFi";
 
     public static final String USER_VIEWED_ORIGINAL_SIZE_HISTOGRAM_NAME =
@@ -27,11 +25,11 @@ public class DataReductionProxyUma {
             "DataReductionProxy.UserViewedSavingsDifferenceWithBreakdown";
 
     // Represent the possible user actions in the various data reduction promos and settings menu.
-    // This must remain in sync with DataReductionProxy.UIAction in
-    // tools/metrics/histograms/histograms.xml.
+    // This must remain in sync with DataReductionProxyUIAction in
+    // tools/metrics/histograms/enums.xml.
     public static final int ACTION_ENABLED = 0;
-    // The value of 1 is reserved for an iOS-specific action. Values 2 and 3 are
-    // deprecated promo actions.
+    // The value of 1 is reserved for an iOS-specific action. Values 2, 3, 13, 14, and 15 are
+    // deprecated actions.
     public static final int ACTION_DISMISSED = 4;
     public static final int ACTION_OFF_TO_OFF = 5;
     public static final int ACTION_OFF_TO_ON = 6;
@@ -41,9 +39,6 @@ public class DataReductionProxyUma {
     public static final int ACTION_FRE_DISABLED = 10;
     public static final int ACTION_INFOBAR_ENABLED = 11;
     public static final int ACTION_INFOBAR_DISMISSED = 12;
-    public static final int ACTION_SNACKBAR_LINK_CLICKED = 13;
-    public static final int ACTION_SNACKBAR_LINK_CLICKED_DISABLED = 14;
-    public static final int ACTION_SNACKBAR_DISMISSED = 15;
     public static final int ACTION_MAIN_MENU_OFF_TO_OFF = 16;
     public static final int ACTION_MAIN_MENU_OFF_TO_ON = 17;
     public static final int ACTION_MAIN_MENU_ON_TO_OFF = 18;
@@ -80,15 +75,6 @@ public class DataReductionProxyUma {
         RecordHistogram.recordEnumeratedHistogram(
                 UI_ACTION_HISTOGRAM_NAME, action,
                 DataReductionProxyUma.ACTION_INDEX_BOUNDARY);
-    }
-
-    /**
-     * Record the DataReductionProxy.SnackbarPromo.DataSavings histogram.
-     * @param promoDataSavingsMB The data savings in MB of the promo that was shown.
-     */
-    public static void dataReductionProxySnackbarPromo(int promoDataSavingsMB) {
-        RecordHistogram.recordCustomCountHistogram(
-                SNACKBAR_HISTOGRAM_NAME, promoDataSavingsMB, 1, 10000, 200);
     }
 
     /**

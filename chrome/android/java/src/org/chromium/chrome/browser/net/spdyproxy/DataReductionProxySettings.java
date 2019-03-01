@@ -204,9 +204,9 @@ public class DataReductionProxySettings {
      * @param reason from the DataReductionProxySavingsClearedReason enum
      */
     public void clearDataSavingStatistics(@DataReductionProxySavingsClearedReason int reason) {
-        // When the data saving statistics are cleared, reset the snackbar promo that tells the user
-        // how much data they have saved using Data Saver so far.
-        DataReductionPromoUtils.saveSnackbarPromoDisplayed(0);
+        // When the data saving statistics are cleared, reset the milestone promo that tells the
+        // user how much data they have saved using Data Saver so far.
+        DataReductionPromoUtils.saveMilestonePromoDisplayed(0);
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putLong(DATA_REDUCTION_FIRST_ENABLED_TIME, System.currentTimeMillis())
