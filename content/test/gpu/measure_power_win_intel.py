@@ -9,23 +9,53 @@ be installed on the machine before this script works. The software can be
 downloaded from:
   https://software.intel.com/en-us/articles/intel-power-gadget-20
 
+Newer IPG versions might also require Visual C++ 2010 runtime to be installed:
+  https://www.microsoft.com/en-us/download/details.aspx?id=14632
+
+Install selenium via pip: `pip install selenium`
+
+And finally install the web drivers for Chrome (and Edge if needed):
+  http://chromedriver.chromium.org/downloads
+  https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/
+
 Sample runs:
 
 python measure_power_win_intel.py --browser=canary --duration=10 --delay=5
   --verbose --url="https://www.youtube.com/watch?v=0XdS37Re1XQ"
   --extra-browser-args="--no-sandbox --disable-features=UseSurfaceLayerForVideo"
+
+It is recommended to test with optimized builds of Chromium e.g. these GN args:
+
+  is_debug = false
+  is_component_build = false
+  is_official_build = true # optimization similar to official builds
+  use_goma = true
+  enable_nacl = false
+  proprietary_codecs = true
+  ffmpeg_branding = "Chrome"
+
+It might also help to disable unnecessary background services and to unplug the
+power source some time before measuring.  See "Computer setup" section here:
+  https://microsoftedge.github.io/videotest/2017-04/WebdriverMethodology.html
 """
 
 import csv
 import datetime
 import logging
+import optparse
 import os
 import shutil
 import subprocess
 import sys
 import tempfile
 import time
-import optparse
+
+try:
+  from selenium import webdriver
+except ImportError as error:
+  logging.error(
+      "This script needs selenium and appropriate web drivers to be installed.")
+  raise
 
 import gpu_tests.ipg_utils as ipg_utils
 
@@ -71,46 +101,47 @@ def LocateBrowser(options_browser):
   return browser
 
 
-def LaunchBrowser(browser, user_data_dir, url, extra_browser_args):
-  browser_proc = None
+def CreateWebDriver(browser, user_data_dir, url, fullscreen,
+                    extra_browser_args):
   if browser == 'edge':
-    cmd = 'start microsoft-edge:'
-    if url:
-      cmd = cmd + '\"' + url + '\"'
-    logging.debug(cmd)
-    browser_proc = subprocess.Popen(cmd, shell=True)
+    driver = webdriver.Edge()
   else:
-    args = [browser]
-    if url:
-      args.append(url)
-    if browser.endswith("chrome.exe"):
-      args.append('--user-data-dir=%s' % user_data_dir)
-      args.append('--no-first-run')
-      args.append('--no-default-browser-check')
-      args.append('--autoplay-policy=no-user-gesture-required')
-      args.append('--start-maximized')
-      if len(extra_browser_args) > 0:
-        args.extend(extra_browser_args)
-    logging.debug(" ".join(args))
-    browser_proc = subprocess.Popen(args)
-  return browser_proc
+    options = webdriver.ChromeOptions()
+    options.binary_location = browser
+    options.add_argument('--user-data-dir=%s' % user_data_dir)
+    options.add_argument('--no-first-run')
+    options.add_argument('--no-default-browser-check')
+    options.add_argument('--autoplay-policy=no-user-gesture-required')
+    options.add_argument('--start-maximized')
+    options.add_argument('--disable-infobars')
+    for arg in extra_browser_args:
+      options.add_argument(arg)
+    logging.debug(" ".join(options.arguments))
+    driver = webdriver.Chrome(options=options)
+  driver.implicitly_wait(30)
+  driver.get(url)
+  if fullscreen:
+    try:
+      video_el = driver.find_element_by_tag_name('video')
+      actions = webdriver.ActionChains(driver)
+      actions.move_to_element(video_el)
+      actions.double_click(video_el)
+      actions.perform()
+    except:
+      logging.warning('Could not locate video element to make fullscreen')
+  return driver
 
 
 def MeasurePowerOnce(browser, logfile, duration, delay, resolution, url,
-                     extra_browser_args):
+                     fullscreen, extra_browser_args):
   logging.debug("Logging into " + logfile)
   user_data_dir = tempfile.mkdtemp()
-  browser_proc = LaunchBrowser(browser, user_data_dir, url, extra_browser_args)
+
+  driver = CreateWebDriver(browser, user_data_dir, url, fullscreen,
+                           extra_browser_args)
   ipg_utils.RunIPG(duration + delay, resolution, logfile)
-  if browser == 'edge':
-    subprocess.call("taskkill /F /IM MicrosoftEdge.exe /T")
-  else:
-    browser_proc.kill()
-    for _ in range(100):
-      if browser_proc.poll() is not None:
-        break
-      logging.debug("Waiting for browser to exit")
-      time.sleep(0.05)
+  driver.quit()
+
   try:
     shutil.rmtree(user_data_dir)
   except Exception as err:
@@ -158,7 +189,8 @@ def main(argv):
                     dest="extra_browser_args_filename", metavar="FILE",
                     help="specify extra command line switches for the browser "
                     "in a text file that are separated by whitespace.")
-  # TODO(zmo): add an option --start-fullscreen
+  parser.add_option("--fullscreen", action="store_true", default=False,
+                    help="specify whether video should be made fullscreen.")
   (options, _) = parser.parse_args(args=argv)
   if options.verbose:
     logging.basicConfig(level=logging.DEBUG)
@@ -174,7 +206,7 @@ def main(argv):
 
   all_results = []
 
-  extra_brower_args = []
+  extra_browser_args = []
   if options.extra_browser_args:
     extra_browser_args = options.extra_browser_args.split()
   if options.extra_browser_args_filename:
@@ -192,7 +224,7 @@ def main(argv):
     print "Iteration #%d out of %d" % (run, options.repeat)
     results = MeasurePowerOnce(browser, logfile, options.duration,
                                options.delay, options.resolution, options.url,
-                               extra_browser_args)
+                               options.fullscreen, extra_browser_args)
     print results
     all_results.append(results)
 
