@@ -278,7 +278,12 @@ chrome::mojom::IppMessagePtr ConvertIppToMojo(ipp_t* ipp) {
        attr = ippNextAttribute(ipp)) {
     chrome::mojom::IppAttributePtr attrptr = chrome::mojom::IppAttribute::New();
 
-    attrptr->name = ippGetName(attr);
+    auto* name = ippGetName(attr);
+    if (!name) {
+      return nullptr;
+    }
+    attrptr->name = name;
+
     attrptr->group_tag = ippGetGroupTag(attr);
     if (attrptr->group_tag == IPP_TAG_ZERO) {
       return nullptr;
