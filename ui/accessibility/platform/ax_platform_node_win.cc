@@ -3695,6 +3695,12 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
                             : VARIANT_FALSE;
       break;
 
+    case UIA_IsOffscreenPropertyId:
+      result->vt = VT_BOOL;
+      result->boolVal =
+          GetDelegate()->IsOffscreen() ? VARIANT_TRUE : VARIANT_FALSE;
+      break;
+
     case UIA_IsRequiredForFormPropertyId:
       result->vt = VT_BOOL;
       if (data.HasState(ax::mojom::State::kRequired)) {
@@ -3847,7 +3853,6 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
     // Covered by MSAA.
     case UIA_BoundingRectanglePropertyId:
     case UIA_HelpTextPropertyId:
-    case UIA_IsOffscreenPropertyId:
     case UIA_NativeWindowHandlePropertyId:
     case UIA_ProcessIdPropertyId:
       break;
