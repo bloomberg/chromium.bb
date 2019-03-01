@@ -196,18 +196,14 @@ class AudioVideoPipelineDeviceTest : public testing::Test {
   void SetUp() override {
     CastMediaShlib::Initialize(
         base::CommandLine::ForCurrentProcess()->argv());
-    if (VolumeControl::Initialize) {
-      VolumeControl::Initialize(base::CommandLine::ForCurrentProcess()->argv());
-    }
+    VolumeControl::Initialize(base::CommandLine::ForCurrentProcess()->argv());
   }
 
   void TearDown() override {
     // Pipeline must be destroyed before finalizing media shlib.
     backend_.reset();
     effects_backends_.clear();
-    if (VolumeControl::Finalize) {
-      VolumeControl::Finalize();
-    }
+    VolumeControl::Finalize();
     CastMediaShlib::Finalize();
   }
 

@@ -152,7 +152,9 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     return volumes_[type];
   }
 
-  void SetVolume(AudioContentType type, float level) {
+  void SetVolume(VolumeChangeSource source,
+                 AudioContentType type,
+                 float level) {
     if (type == AudioContentType::kOther) {
       NOTREACHED() << "Can't set volume for content type kOther";
       return;
@@ -161,7 +163,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     level = std::max(0.0f, std::min(level, 1.0f));
     thread_.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&VolumeControlInternal::SetVolumeOnThread,
-                                  base::Unretained(this), type, level,
+                                  base::Unretained(this), source, type, level,
                                   false /* from_system */));
   }
 
@@ -170,7 +172,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     return muted_[type];
   }
 
-  void SetMuted(AudioContentType type, bool muted) {
+  void SetMuted(VolumeChangeSource source, AudioContentType type, bool muted) {
     if (type == AudioContentType::kOther) {
       NOTREACHED() << "Can't set mute state for content type kOther";
       return;
@@ -178,7 +180,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
 
     thread_.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&VolumeControlInternal::SetMutedOnThread,
-                                  base::Unretained(this), type, muted,
+                                  base::Unretained(this), source, type, muted,
                                   false /* from_system */));
   }
 
@@ -243,7 +245,10 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     initialize_complete_event_.Signal();
   }
 
-  void SetVolumeOnThread(AudioContentType type, float level, bool from_system) {
+  void SetVolumeOnThread(VolumeChangeSource source,
+                         AudioContentType type,
+                         float level,
+                         bool from_system) {
     DCHECK(thread_.task_runner()->BelongsToCurrentThread());
     DCHECK(type != AudioContentType::kOther);
     DCHECK(!from_system || type == AudioContentType::kMedia);
@@ -272,7 +277,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     {
       base::AutoLock lock(observer_lock_);
       for (VolumeObserver* observer : volume_observers_) {
-        observer->OnVolumeChange(type, level);
+        observer->OnVolumeChange(source, type, level);
       }
     }
 
@@ -280,7 +285,10 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     SerializeJsonToFile(storage_path_, stored_values_);
   }
 
-  void SetMutedOnThread(AudioContentType type, bool muted, bool from_system) {
+  void SetMutedOnThread(VolumeChangeSource source,
+                        AudioContentType type,
+                        bool muted,
+                        bool from_system) {
     DCHECK(thread_.task_runner()->BelongsToCurrentThread());
     DCHECK(type != AudioContentType::kOther);
 
@@ -303,7 +311,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     {
       base::AutoLock lock(observer_lock_);
       for (VolumeObserver* observer : volume_observers_) {
-        observer->OnMuteChange(type, muted);
+        observer->OnMuteChange(source, type, muted);
       }
     }
   }
@@ -318,10 +326,10 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     LOG(INFO) << "System volume/mute change, new volume = " << new_volume
               << ", new mute = " << new_mute;
     DCHECK(thread_.task_runner()->BelongsToCurrentThread());
-    SetVolumeOnThread(AudioContentType::kMedia, new_volume,
-                      true /* from_system */);
-    SetMutedOnThread(AudioContentType::kMedia, new_mute,
-                     true /* from_system */);
+    SetVolumeOnThread(VolumeChangeSource::kUser, AudioContentType::kMedia,
+                      new_volume, true /* from_system */);
+    SetMutedOnThread(VolumeChangeSource::kUser, AudioContentType::kMedia,
+                     new_mute, true /* from_system */);
   }
 
   base::FilePath storage_path_;
@@ -376,8 +384,10 @@ float VolumeControl::GetVolume(AudioContentType type) {
 }
 
 // static
-void VolumeControl::SetVolume(AudioContentType type, float level) {
-  GetVolumeControl().SetVolume(type, level);
+void VolumeControl::SetVolume(VolumeChangeSource source,
+                              AudioContentType type,
+                              float level) {
+  GetVolumeControl().SetVolume(source, type, level);
 }
 
 // static
@@ -386,8 +396,10 @@ bool VolumeControl::IsMuted(AudioContentType type) {
 }
 
 // static
-void VolumeControl::SetMuted(AudioContentType type, bool muted) {
-  GetVolumeControl().SetMuted(type, muted);
+void VolumeControl::SetMuted(VolumeChangeSource source,
+                             AudioContentType type,
+                             bool muted) {
+  GetVolumeControl().SetMuted(source, type, muted);
 }
 
 // static
