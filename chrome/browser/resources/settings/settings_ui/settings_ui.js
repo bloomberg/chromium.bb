@@ -54,7 +54,7 @@ Polymer({
     showAndroidApps_: Boolean,
 
     /** @private */
-    showContainedShell_: Boolean,
+    showKioskNextShell_: Boolean,
 
     /** @private */
     showCrostini_: Boolean,
@@ -139,8 +139,8 @@ Polymer({
 
     this.showAndroidApps_ = loadTimeData.valueExists('androidAppsVisible') &&
         loadTimeData.getBoolean('androidAppsVisible');
-    this.showContainedShell_ = loadTimeData.valueExists('showContainedShell') &&
-        loadTimeData.getBoolean('showContainedShell');
+    this.showKioskNextShell_ = loadTimeData.valueExists('showKioskNextShell') &&
+        loadTimeData.getBoolean('showKioskNextShell');
     this.showCrostini_ = loadTimeData.valueExists('showCrostini') &&
         loadTimeData.getBoolean('showCrostini');
     this.havePlayStoreApp_ = loadTimeData.valueExists('havePlayStoreApp') &&

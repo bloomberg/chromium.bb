@@ -4,11 +4,11 @@
 
 /**
  * @fileoverview
- * 'settings-contained-shell-page' is the settings page for enabling the
- * Contained Shell.
+ * 'settings-kiosk-next-shell-page' is the settings page for enabling the
+ * Kiosk Next Shell.
  */
 Polymer({
-  is: 'settings-contained-shell-page',
+  is: 'settings-kiosk-next-shell-page',
 
   behaviors: [I18nBehavior, PrefsBehavior],
 
@@ -42,23 +42,23 @@ Polymer({
 
   /**
    * @private
-   * @param {boolean} containedShellEnabled
+   * @param {boolean} kioskNextShellEnabled
    * @return {string}
    */
-  getSubtextLabel_: function(containedShellEnabled) {
-    return containedShellEnabled
-        ? this.i18n('containedShellPageSubtextDisable')
-        : this.i18n('containedShellPageSubtextEnable');
+  getSubtextLabel_: function(kioskNextShellEnabled) {
+    return kioskNextShellEnabled
+        ? this.i18n('kioskNextShellPageSubtextDisable')
+        : this.i18n('kioskNextShellPageSubtextEnable');
   },
 
   /**
    * @private
-   * @param {boolean} containedShellEnabled
+   * @param {boolean} kioskNextShellEnabled
    * @return {string}
    */
-  getButtonLabel_: function(containedShellEnabled) {
-    return containedShellEnabled
-        ? this.i18n('containedShellTurnOff')
-        : this.i18n('containedShellTurnOn');
+  getButtonLabel_: function(kioskNextShellEnabled) {
+    return kioskNextShellEnabled
+        ? this.i18n('kioskNextShellTurnOff')
+        : this.i18n('kioskNextShellTurnOn');
   }
 });
