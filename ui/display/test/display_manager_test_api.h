@@ -32,6 +32,11 @@ class DISPLAY_EXPORT DisplayManagerTestApi {
   explicit DisplayManagerTestApi(DisplayManager* display_manager);
   virtual ~DisplayManagerTestApi();
 
+  void set_maximum_display(size_t maximum_display_num) {
+    maximum_support_display_ = maximum_display_num;
+  }
+  void ResetMaximumDisplay();
+
   // Update the display configuration as given in |display_specs|. The format of
   // |display_spec| is a list of comma separated spec for each displays. Please
   // refer to the comment in |ash::DisplayInfo::CreateFromSpec| for the format
@@ -56,6 +61,9 @@ class DISPLAY_EXPORT DisplayManagerTestApi {
   // Sets the display id for internal display and
   // update the display mode list if necessary.
   void SetInternalDisplayId(int64_t id);
+
+  // Indicate the maximum number of displays that chrome device can support.
+  static size_t maximum_support_display_;
 
   DisplayManager* display_manager_;  // not owned
 

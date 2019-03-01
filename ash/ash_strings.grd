@@ -970,6 +970,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_AUDIO_INPUT" desc="The label used in audio detailed page for audio input section of ash tray pop up.">
         Input
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_REMOVED_EXCEEDED_MAXIMUM" desc="The label used when user connects more external displays than the maximum that the device can support.">
+        Your device is connected to the maximum number of monitors, so one of the screens has been disconnected.
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING" desc="The label used in the tray to show that the current status is mirroring.">
         Mirroring to <ph name="DISPLAY_NAME">$1</ph>
       </message>
@@ -1841,4 +1844,3 @@ This file contains the strings for ash.
     </messages>
   </release>
 </grit>
-

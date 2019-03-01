@@ -444,6 +444,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
       int64_t display_id,
       base::Optional<TouchDeviceIdentifier> touch_device_identifier);
   void UpdateZoomFactor(int64_t display_id, float zoom_factor);
+  bool HasUnassociatedDisplay() const;
 #endif
 
   // Sets/gets default multi display mode.

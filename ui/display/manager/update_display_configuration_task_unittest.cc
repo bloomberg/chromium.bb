@@ -172,10 +172,12 @@ class UpdateDisplayConfigurationTaskTest : public testing::Test {
     delegate_.set_outputs(displays);
   }
 
-  void ResponseCallback(bool success,
-                        const std::vector<DisplaySnapshot*>& displays,
-                        MultipleDisplayState new_display_state,
-                        chromeos::DisplayPowerState new_power_state) {
+  void ResponseCallback(
+      bool success,
+      const std::vector<DisplaySnapshot*>& displays,
+      const std::vector<DisplaySnapshot*>& unassociated_displays,
+      MultipleDisplayState new_display_state,
+      chromeos::DisplayPowerState new_power_state) {
     configured_ = true;
     configuration_status_ = success;
     display_states_ = displays;
