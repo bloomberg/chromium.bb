@@ -6,6 +6,7 @@
 #define CHROMECAST_COMMON_CAST_CONTENT_CLIENT_H_
 
 #include "content/public/common/content_client.h"
+#include "url/gurl.h"
 
 namespace chromecast {
 namespace shell {
@@ -30,6 +31,9 @@ class CastContentClient : public content::ContentClient {
 #if defined(OS_ANDROID)
   ::media::MediaDrmBridgeClient* GetMediaDrmBridgeClient() override;
 #endif  // OS_ANDROID
+
+ private:
+  GURL last_active_url_;
 };
 
 }  // namespace shell

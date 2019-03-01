@@ -87,8 +87,11 @@ CastContentClient::~CastContentClient() {
 }
 
 void CastContentClient::SetActiveURL(const GURL& url, std::string top_origin) {
+  if (url.is_empty() || url == last_active_url_)
+    return;
   LOG(INFO) << "Active URL: " << url.possibly_invalid_spec() << " for origin '"
             << top_origin << "'";
+  last_active_url_ = url;
 }
 
 void CastContentClient::AddAdditionalSchemes(Schemes* schemes) {
