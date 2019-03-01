@@ -520,7 +520,16 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestDialogConfirmDefaultCancel) {
   RunTest("testDialogConfirmDefaultCancel", "web_view/dialog");
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestDialogConfirmDefaultGCCancel) {
+// This test is flaky and times out on windows.
+// https://crbug.com/937461.
+#if defined(OS_WIN)
+#define MAYBE_TestDialogConfirmDefaultGCCancel \
+  DISABLED_TestDialogConfirmDefaultGCCancel
+#else
+#define MAYBE_TestDialogConfirmDefaultGCCancel TestDialogConfirmDefaultGCCancel
+#endif
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, MAYBE_TestDialogConfirmDefaultGCCancel) {
   RunTest("testDialogConfirmDefaultGCCancel", "web_view/dialog");
 }
 
