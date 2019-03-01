@@ -213,11 +213,13 @@ IncompatibleApplicationsUpdater::IncompatibleApplicationsUpdater(
     ModuleDatabaseEventSource* module_database_event_source,
     const CertificateInfo& exe_certificate_info,
     scoped_refptr<ModuleListFilter> module_list_filter,
-    const InstalledApplications& installed_applications)
+    const InstalledApplications& installed_applications,
+    bool module_analysis_disabled)
     : module_database_event_source_(module_database_event_source),
       exe_certificate_info_(exe_certificate_info),
       module_list_filter_(std::move(module_list_filter)),
-      installed_applications_(installed_applications) {
+      installed_applications_(installed_applications),
+      module_analysis_disabled_(module_analysis_disabled) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   module_database_event_source_->AddObserver(this);
 }
@@ -291,6 +293,13 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
   if ((module_data.module_properties & ModuleInfoData::kPropertyLoadedModule) ==
       0) {
     warning_decision = ModuleWarningDecision::kNotLoaded;
+    return;
+  }
+
+  // New modules should not cause a warning when the module analysis is
+  // disabled.
+  if (module_analysis_disabled_) {
+    warning_decision = ModuleWarningDecision::kNotAnalyzed;
     return;
   }
 
@@ -431,4 +440,8 @@ IncompatibleApplicationsUpdater::GetModuleWarningDecision(
   auto it = module_warning_decisions_.find(module_key);
   DCHECK(it != module_warning_decisions_.end());
   return it->second;
+}
+
+void IncompatibleApplicationsUpdater::DisableModuleAnalysis() {
+  module_analysis_disabled_ = true;
 }

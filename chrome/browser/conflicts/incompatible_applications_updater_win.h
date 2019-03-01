@@ -53,6 +53,9 @@ class IncompatibleApplicationsUpdater : public ModuleDatabaseObserver {
     kAllowedMicrosoft,
     // Explicitly whitelisted by the Module List component.
     kAllowedWhitelisted,
+    // Module analysis was interrupted using DisableModuleAnalysis(). No warning
+    // will be emitted for that module.
+    kNotAnalyzed,
     // This module is already going to be blocked on next browser launch, so
     // don't warn about it.
     kAddedToBlacklist,
@@ -83,7 +86,8 @@ class IncompatibleApplicationsUpdater : public ModuleDatabaseObserver {
       ModuleDatabaseEventSource* module_database_event_source,
       const CertificateInfo& exe_certificate_info,
       scoped_refptr<ModuleListFilter> module_list_filter,
-      const InstalledApplications& installed_applications);
+      const InstalledApplications& installed_applications,
+      bool module_analysis_disabled);
   ~IncompatibleApplicationsUpdater() override;
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
@@ -111,6 +115,10 @@ class IncompatibleApplicationsUpdater : public ModuleDatabaseObserver {
   ModuleWarningDecision GetModuleWarningDecision(
       const ModuleInfoKey& module_key) const;
 
+  // Disables the analysis of newly found modules. This is a one way switch that
+  // will apply until Chrome is restarted.
+  void DisableModuleAnalysis();
+
  private:
   ModuleDatabaseEventSource* const module_database_event_source_;
 
@@ -127,6 +135,10 @@ class IncompatibleApplicationsUpdater : public ModuleDatabaseObserver {
   // Holds the warning decision for all known modules.
   base::flat_map<ModuleInfoKey, ModuleWarningDecision>
       module_warning_decisions_;
+
+  // Indicates if the analysis of newly found modules is disabled. Used as a
+  // workaround for https://crbug.com/892294.
+  bool module_analysis_disabled_;
 
   DISALLOW_COPY_AND_ASSIGN(IncompatibleApplicationsUpdater);
 };

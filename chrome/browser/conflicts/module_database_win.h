@@ -146,7 +146,7 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
   // printing code that may require that third-party DLLs be successfully
   // loaded into the process to work correctly.
   // TODO(pmonette): Remove this workaround when printing is moved to a utility
-  //                 process. See https://crbug.com/809738.
+  //                 process. See https://crbug.com/892294.
   static void DisableThirdPartyBlocking();
 
   // Accessor for the third party conflicts manager.

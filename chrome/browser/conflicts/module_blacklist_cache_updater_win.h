@@ -97,6 +97,9 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
     kAllowedMicrosoft,
     // Explicitly whitelisted by the Module List component.
     kAllowedWhitelisted,
+    // Module analysis was interrupted using DisableModuleAnalysis(). This
+    // module will not be added to the cache.
+    kNotAnalyzed,
     // New "allowed" reasons should be added here!
 
     // Unwanted, but allowed to load by the Module List component. This is
@@ -160,7 +163,8 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
       scoped_refptr<ModuleListFilter> module_list_filter,
       const std::vector<third_party_dlls::PackedListModule>&
           initial_blacklisted_modules,
-      OnCacheUpdatedCallback on_cache_updated_callback);
+      OnCacheUpdatedCallback on_cache_updated_callback,
+      bool module_analysis_disabled);
   ~ModuleBlacklistCacheUpdater() override;
 
   // Returns true if the blocking of third-party modules is enabled. The return
@@ -184,6 +188,10 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
   // Returns the blocking decision for a module.
   const ModuleBlockingState& GetModuleBlockingState(
       const ModuleInfoKey& module_key) const;
+
+  // Disables the analysis of newly found modules. This is a one way switch that
+  // will apply until Chrome is restarted.
+  void DisableModuleAnalysis();
 
  private:
   // The state of the module with respect to the ModuleList.
@@ -243,6 +251,10 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
 
   // Holds the blocking state for all known modules.
   base::flat_map<ModuleInfoKey, ModuleBlockingState> module_blocking_states_;
+
+  // Indicates if the analysis of newly found modules is disabled. Used as a
+  // workaround for https://crbug.com/892294.
+  bool module_analysis_disabled_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

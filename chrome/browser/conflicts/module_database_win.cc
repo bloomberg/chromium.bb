@@ -273,6 +273,12 @@ void ModuleDatabase::DisableThirdPartyBlocking() {
   // Immediately disable the hook. DisableHook() can be called concurrently.
   DisableHook();
 
+  // Stop analyzing those modules.
+  ThirdPartyConflictsManager* third_party_conflicts_manager =
+      ModuleDatabase::GetInstance()->third_party_conflicts_manager_.get();
+  if (third_party_conflicts_manager)
+    third_party_conflicts_manager->DisableModuleAnalysis();
+
   // Notify the ThirdPartyMetricsRecorder instance that the hook is disabled.
   // Since this is meant for a heartbeat metric, the small latency introduced
   // with the thread-hopping is perfectly acceptable.

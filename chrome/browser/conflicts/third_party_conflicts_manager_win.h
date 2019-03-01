@@ -140,6 +140,9 @@ class ThirdPartyConflictsManager
     return module_blacklist_cache_updater_.get();
   }
 
+  // Disables the analysis of newly found modules.
+  void DisableModuleAnalysis();
+
  private:
   // Called when |module_list_filter_| finishes its initialization.
   void OnModuleListFilterCreated(
@@ -234,6 +237,10 @@ class ThirdPartyConflictsManager
 
   // The callback that is invoked when |state_| changes.
   OnInitializationCompleteCallback on_initialization_complete_callback_;
+
+  // Indicates if the analysis of newly found modules is disabled. Used as a
+  // workaround for https://crbug.com/892294.
+  bool module_analysis_disabled_ = false;
 
   base::WeakPtrFactory<ThirdPartyConflictsManager> weak_ptr_factory_;
 

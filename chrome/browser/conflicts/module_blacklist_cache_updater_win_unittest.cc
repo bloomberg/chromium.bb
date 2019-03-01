@@ -122,7 +122,8 @@ class ModuleBlacklistCacheUpdaterTest : public testing::Test,
         initial_blacklisted_modules_,
         base::BindRepeating(
             &ModuleBlacklistCacheUpdaterTest::OnModuleBlacklistCacheUpdated,
-            base::Unretained(this)));
+            base::Unretained(this)),
+        false);
   }
 
   void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
@@ -357,4 +358,36 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, RegisteredModules) {
                       module_code_id.length(), &expected.code_id_hash[0]);
 
   EXPECT_TRUE(internal::ModuleEqual()(expected, blacklisted_modules[0]));
+}
+
+TEST_F(ModuleBlacklistCacheUpdaterTest, DisableModuleAnalysis) {
+  EXPECT_FALSE(base::PathExists(module_blacklist_cache_path()));
+
+  auto module_blacklist_cache_updater = CreateModuleBlacklistCacheUpdater();
+  module_blacklist_cache_updater->DisableModuleAnalysis();
+
+  // Simulate some arbitrary module loading into the process.
+  ModuleInfoKey module_key(dll1_, 0, 0);
+  module_blacklist_cache_updater->OnNewModuleFound(
+      module_key, CreateLoadedModuleInfoData());
+  module_blacklist_cache_updater->OnModuleDatabaseIdle();
+
+  RunUntilIdle();
+  EXPECT_TRUE(base::PathExists(module_blacklist_cache_path()));
+  EXPECT_TRUE(on_cache_updated_callback_invoked());
+  EXPECT_TRUE(RegistryKeyExists());
+
+  // Check the cache.
+  third_party_dlls::PackedListMetadata metadata;
+  std::vector<third_party_dlls::PackedListModule> blacklisted_modules;
+  base::MD5Digest md5_digest;
+  EXPECT_EQ(ReadResult::kSuccess,
+            ReadModuleBlacklistCache(module_blacklist_cache_path(), &metadata,
+                                     &blacklisted_modules, &md5_digest));
+
+  // The module is not added to the blacklist.
+  EXPECT_EQ(0u, blacklisted_modules.size());
+  ASSERT_EQ(ModuleBlacklistCacheUpdater::ModuleBlockingDecision::kNotAnalyzed,
+            module_blacklist_cache_updater->GetModuleBlockingState(module_key)
+                .blocking_decision);
 }
