@@ -15,6 +15,8 @@
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_presentation_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -46,6 +48,9 @@ NSString* const PasswordDoneButtonAccessibilityIdentifier =
 // dismissing any presented view controller. iPad only.
 @property(nonatomic, weak) UIButton* presentingButton;
 
+// The origin for this mediator.
+@property(nonatomic) GURL origin;
+
 @end
 
 @implementation ManualFillPasswordCoordinator
@@ -70,9 +75,14 @@ initWithBaseViewController:(UIViewController*)viewController
 
     auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
         browserState, ServiceAccessType::EXPLICIT_ACCESS);
-    _passwordMediator =
-        [[ManualFillPasswordMediator alloc] initWithWebStateList:webStateList
-                                                   passwordStore:passwordStore];
+    _passwordMediator = [[ManualFillPasswordMediator alloc]
+        initWithPasswordStore:passwordStore];
+    // TODO(crbug.com/936413): This class doesn't need the WebState anymore,
+    // remove it from the init and only pass the origin.
+    DCHECK(webStateList->GetActiveWebState());
+    _origin = webStateList->GetActiveWebState()->GetLastCommittedURL();
+    [_passwordMediator fetchPasswordsForOrigin:_origin];
+    _passwordMediator.actionSectionEnabled = YES;
     _passwordMediator.consumer = _passwordViewController;
     _passwordMediator.navigationDelegate = self;
     _passwordMediator.contentDelegate = injectionHandler;
@@ -159,7 +169,8 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
 
   PasswordViewController* allPasswordsViewController = [
       [PasswordViewController alloc] initWithSearchController:searchController];
-  self.passwordMediator.disableFilter = YES;
+  self.passwordMediator.actionSectionEnabled = NO;
+  [self.passwordMediator fetchPasswordsForOrigin:GURL::EmptyGURL()];
   self.passwordMediator.consumer = allPasswordsViewController;
   UIBarButtonItem* doneButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
@@ -187,7 +198,9 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
   [self.allPasswordsViewController.presentingViewController
       dismissViewControllerAnimated:YES
                          completion:^{
-                           weakSelf.passwordMediator.disableFilter = NO;
+                           weakSelf.passwordMediator.actionSectionEnabled = YES;
+                           [weakSelf.passwordMediator
+                               fetchPasswordsForOrigin:self.origin];
                            weakSelf.passwordMediator.consumer =
                                weakSelf.passwordViewController;
                            if (weakSelf.presentingButton) {

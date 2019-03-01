@@ -178,7 +178,8 @@
   if (passwordStore) {
     _passwordFetcher =
         [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
-                                              delegate:self];
+                                              delegate:self
+                                                origin:GURL::EmptyGURL()];
   }
   if (personalDataManager) {
     _personalDataManager = personalDataManager;

@@ -200,14 +200,14 @@ void SaveExamplePasswordForm() {
   SaveToPasswordStore(example);
 }
 
-// Saves an example form in the store.
-void SaveLocalPasswordForm() {
-  autofill::PasswordForm example;
-  example.username_value = base::ASCIIToUTF16(kExampleUsername);
-  example.password_value = base::ASCIIToUTF16(kExamplePassword);
-  example.origin = GURL("http://127.0.0.1:55264");
-  example.signon_realm = example.origin.spec();
-  SaveToPasswordStore(example);
+// Saves an example form in the storefor the passed URL.
+void SaveLocalPasswordForm(const GURL& url) {
+  autofill::PasswordForm localForm;
+  localForm.username_value = base::ASCIIToUTF16(kExampleUsername);
+  localForm.password_value = base::ASCIIToUTF16(kExamplePassword);
+  localForm.origin = url;
+  localForm.signon_realm = localForm.origin.spec();
+  SaveToPasswordStore(localForm);
 }
 
 // Removes all credentials stored.
@@ -585,8 +585,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
   const GURL URL = self.testServer->GetURL(kIFrameHTMLFile);
   [ChromeEarlGrey loadURL:URL];
   [ChromeEarlGrey waitForWebViewContainingText:"iFrame"];
-
-  SaveLocalPasswordForm();
+  SaveLocalPasswordForm(URL);
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]

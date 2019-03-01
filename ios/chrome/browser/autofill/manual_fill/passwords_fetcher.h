@@ -21,6 +21,8 @@ namespace password_manager {
 class PasswordStore;
 }  // namespace password_manager
 
+class GURL;
+
 // Protocol to receive the passwords fetched asynchronously.
 @protocol PasswordFetcherDelegate
 
@@ -33,12 +35,14 @@ class PasswordStore;
 
 @interface PasswordFetcher : NSObject
 
-// The designated initializer. |browserState| must not be nil.
-- (instancetype)initWithPasswordStore:
-                    (scoped_refptr<password_manager::PasswordStore>)
-                        passwordStore
-                             delegate:(id<PasswordFetcherDelegate>)delegate
-    NS_DESIGNATED_INITIALIZER;
+// The designated initializer. |passwordStore| must not be nil. The passwords
+// will be filtered by the passed |origin|, pass an empty GURL to avoid
+// filtering.
+- (instancetype)
+    initWithPasswordStore:
+        (scoped_refptr<password_manager::PasswordStore>)passwordStore
+                 delegate:(id<PasswordFetcherDelegate>)delegate
+                   origin:(const GURL&)origin NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
