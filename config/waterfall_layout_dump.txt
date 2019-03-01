@@ -78,6 +78,7 @@
     falco-full-compile-paladin
     falco-paladin
     fizz-accelerator-paladin
+    fizz-moblab-paladin
     fizz-paladin
     flapjack-paladin
     gale-paladin
@@ -2559,6 +2560,7 @@
     falco-full-compile-paladin
     falco-paladin
     fizz-accelerator-paladin
+    fizz-moblab-paladin
     fizz-paladin
     flapjack-paladin
     gale-paladin

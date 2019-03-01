@@ -1925,6 +1925,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'coral', # contact: xixuan@
       'eve-arcnext', # contact: ihf@ (crbug.com/826755)
+      'fizz-moblab', # contact: haddowk@ (crbug.com/937344)
   ])
 
   assert not (_paladin_experimental_boards & _paladin_important_boards), (
@@ -1966,6 +1967,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
 
   _paladin_moblab_hwtest_boards = frozenset([
       'guado_moblab',
+      'fizz-moblab',
   ])
 
   _paladin_chroot_replace_boards = frozenset([
