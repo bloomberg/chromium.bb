@@ -317,6 +317,13 @@ void AudioSinkAndroidAudioTrackImpl::FeedDataContinue() {
 
   DCHECK(written == left_to_send);
 
+  // RenderingDelay was returned through JNI via direct buffers.
+  sink_rendering_delay_.delay_microseconds = direct_rendering_delay_address_[0];
+  sink_rendering_delay_.timestamp_microseconds =
+      direct_rendering_delay_address_[1];
+
+  TrackRawMonotonicClockDeviation();
+
   PostPcmCallback(sink_rendering_delay_);
 }
 
