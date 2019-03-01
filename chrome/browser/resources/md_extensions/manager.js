@@ -98,10 +98,11 @@ cr.define('extensions', function() {
       detailViewItem_: Object,
 
       /**
-       * The id of the item for the activity log view subpage.
-       * See also errorPageItem_.
+       * The item that provides some information about the current extension
+       * for the activity log view subpage. See also errorPageItem_.
+       * @private {!chrome.developerPrivate.ExtensionInfo|undefined}
        */
-      activityLogItemId_: String,
+      activityLogItem_: Object,
 
       /** @private {!Array<!chrome.developerPrivate.ExtensionInfo>} */
       extensions_: Array,
@@ -486,7 +487,7 @@ cr.define('extensions', function() {
           return;
         }
 
-        this.activityLogItemId_ = assert(data.id);
+        this.activityLogItem_ = assert(data);
       }
 
       if (fromPage != toPage) {

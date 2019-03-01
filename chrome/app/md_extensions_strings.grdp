@@ -128,10 +128,22 @@
     Error from line <ph name="ERROR_LINE_START">$1</ph> to <ph name="ERROR_LINE_END">$2</ph>
   </message>
   <message name="IDS_MD_EXTENSIONS_ACTIVITY_LOG_PAGE_HEADING" desc="The heading of the page displaying an extension's activity log.">
-    Activity Log
+    <ph name="NAME_PH">$1</ph> - Activity Log
   </message>
   <message name="IDS_MD_EXTENSIONS_ACTIVITY_LOG_SEARCH_LABEL" desc="The placeholder label to display in the search bar for the activity log page.">
     Search by API call/URL
+  </message>
+  <message name="IDS_MD_EXTENSIONS_ACTIVITY_LOG_TYPE_COLUMN" desc="The column heading for the activity's type.">
+    Type
+  </message>
+  <message name="IDS_MD_EXTENSIONS_ACTIVITY_LOG_NAME_COLUMN" desc="The column heading for the activity's name.">
+    Activity Name
+  </message>
+  <message name="IDS_MD_EXTENSIONS_ACTIVITY_LOG_COUNT_COLUMN" desc="The column heading for the activity's count.">
+    Count
+  </message>
+  <message name="IDS_MD_EXTENSIONS_ACTIVITY_LOG_TIME_COLUMN" desc="The column heading for the activity's time.">
+    Time
   </message>
   <message name="IDS_MD_EXTENSIONS_ACTIVITY_LOG_HISTORY_TAB_HEADING" desc="The heading for the activity log history tab.">
     History

@@ -23,11 +23,16 @@ cr.define('extensions', function() {
 
     behaviors: [
       CrContainerShadowBehavior,
+      I18nBehavior,
+      extensions.ItemBehavior,
     ],
 
     properties: {
-      /** @type {!string} */
-      extensionId: String,
+      /**
+       * The underlying ExtensionInfo for the details being displayed.
+       * @type {!chrome.developerPrivate.ExtensionInfo}
+       */
+      extensionInfo: Object,
 
       /** @type {!extensions.ActivityLogDelegate} */
       delegate: Object,
@@ -66,10 +71,6 @@ cr.define('extensions', function() {
      * @private
      */
     onViewExitFinish_: function() {
-      const activityLogStream = this.$$('activity-log-stream');
-      if (activityLogStream) {
-        activityLogStream.clearStream();
-      }
       this.selectedSubpage_ = ActivityLogSubpage.NONE;
     },
 
@@ -90,20 +91,9 @@ cr.define('extensions', function() {
     },
 
     /** @private */
-    onClearButtonTap_: function() {
-      if (this.selectedSubpage_ === ActivityLogSubpage.HISTORY) {
-        const activityLogHistory = this.$$('activity-log-history');
-        activityLogHistory.clearActivities();
-      } else {
-        const activityLogStream = this.$$('activity-log-stream');
-        activityLogStream.clearStream();
-      }
-    },
-
-    /** @private */
     onCloseButtonTap_: function() {
       extensions.navigation.navigateTo(
-          {page: Page.DETAILS, extensionId: this.extensionId});
+          {page: Page.DETAILS, extensionId: this.extensionInfo.id});
     },
 
     /**

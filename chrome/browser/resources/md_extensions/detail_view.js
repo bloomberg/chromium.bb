@@ -16,7 +16,7 @@ cr.define('extensions', function() {
     properties: {
       /**
        * The underlying ExtensionInfo for the details being displayed.
-       * @type {chrome.developerPrivate.ExtensionInfo}
+       * @type {!chrome.developerPrivate.ExtensionInfo}
        */
       data: Object,
 

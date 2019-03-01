@@ -72,7 +72,7 @@ suite('ExtensionsActivityLogStreamTest', function() {
     Polymer.dom.flush();
 
     // Stream should be on when element is first attached to the DOM.
-    testVisible('#activity-log-stream-header', true);
+    testVisible('.activity-subpage-header', true);
     testVisible('#empty-stream-message', true);
     testVisible('#stream-started-message', true);
 
@@ -125,11 +125,24 @@ suite('ExtensionsActivityLogStreamTest', function() {
     proxyDelegate.getOnExtensionActivity().callListeners(contentScriptActivity);
 
     Polymer.dom.flush();
-    streamItems = getStreamItems();
+    let streamItems = getStreamItems();
     expectEquals(2, streamItems.length);
 
     // We should see two items: one for every script called.
     expectEquals(streamItems[0].$$('#activity-name').innerText, 'script1.js');
     expectEquals(streamItems[1].$$('#activity-name').innerText, 'script2.js');
+  });
+
+  test('clicking on clear button clears the activity log stream', function() {
+    proxyDelegate.getOnExtensionActivity().callListeners(activity1);
+
+    Polymer.dom.flush();
+    expectEquals(1, getStreamItems().length);
+    testVisible('.activity-table-headings', true);
+    activityLogStream.$$('.clear-activities-button').click();
+
+    Polymer.dom.flush();
+    expectEquals(0, getStreamItems().length);
+    testVisible('.activity-table-headings', false);
   });
 });

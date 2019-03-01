@@ -16,6 +16,13 @@ suite('ExtensionsActivityLogTest', function() {
    * @type {extensions.ActivityLog}
    */
   let activityLog;
+
+  /**
+   * Backing extension info for the activity log.
+   * @type {chrome.developerPrivate.ExtensionInfo}
+   */
+  let extensionInfo;
+
   let proxyDelegate;
   let testVisible;
 
@@ -69,7 +76,11 @@ suite('ExtensionsActivityLogTest', function() {
     activityLog = new extensions.ActivityLog();
     testVisible = extension_test_util.testVisible.bind(null, activityLog);
 
-    activityLog.extensionId = EXTENSION_ID;
+    extensionInfo = extension_test_util.createExtensionInfo({
+      id: EXTENSION_ID,
+    });
+    activityLog.extensionInfo = extensionInfo;
+
     proxyDelegate = new extensions.TestService();
     activityLog.delegate = proxyDelegate;
     proxyDelegate.testActivities = testActivities;
@@ -148,27 +159,6 @@ suite('ExtensionsActivityLogTest', function() {
         });
   });
 
-  test('clicking on clear activities button clears activities', function() {
-    activityLog.$$('#clear-activities-button').click();
-
-    return proxyDelegate.whenCalled('deleteActivitiesFromExtension')
-        .then(() => {
-          Polymer.dom.flush();
-          const activityLogHistory = activityLog.$$('activity-log-history');
-          testVisible =
-              extension_test_util.testVisible.bind(null, activityLogHistory);
-
-          testVisible('#no-activities', true);
-          testVisible('#loading-activities', false);
-          testVisible('#activity-list', false);
-          expectEquals(
-              activityLogHistory.shadowRoot
-                  .querySelectorAll('activity-log-history-item')
-                  .length,
-              0);
-        });
-  });
-
   test('clicking on back button navigates to the details page', function() {
     Polymer.dom.flush();
 
@@ -200,33 +190,5 @@ suite('ExtensionsActivityLogTest', function() {
       Polymer.dom.flush();
       testVisible('activity-log-history', true);
     });
-  });
-
-  test('clicking on clear button clears the activity log stream', function() {
-    Polymer.dom.flush();
-
-    // Navigate to the activity log stream.
-    activityLog.$$('#real-time-tab').click();
-    Polymer.dom.flush();
-    testVisible('activity-log-stream', true);
-
-    const activityLogStream = activityLog.$$('activity-log-stream');
-    const testVisibleForStream =
-        extension_test_util.testVisible.bind(null, activityLogStream);
-    proxyDelegate.getOnExtensionActivity().callListeners(testActivityEvent);
-
-    Polymer.dom.flush();
-    testVisibleForStream('#empty-stream-message', false);
-
-    expectEquals(
-        1,
-        activityLogStream.shadowRoot
-            .querySelectorAll('activity-log-stream-item')
-            .length);
-
-    activityLog.$$('#clear-activities-button').click();
-    Polymer.dom.flush();
-
-    testVisibleForStream('#empty-stream-message', true);
   });
 });

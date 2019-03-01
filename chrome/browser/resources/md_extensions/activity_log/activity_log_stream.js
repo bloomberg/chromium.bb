@@ -82,10 +82,11 @@ cr.define('extensions', function() {
     /** @override */
     detached: function() {
       this.pauseStream_();
-      this.clearStream();
+      this.clearStream_();
     },
 
-    clearStream: function() {
+    /** @private */
+    clearStream_: function() {
       this.activityStream_ = [];
     },
 
