@@ -10,7 +10,7 @@
 #include <memory>
 
 @class CommandDispatcher;
-@protocol OmniboxPopupPositioner;
+@protocol OmniboxPopupPresenterDelegate;
 @protocol OmniboxFocuser;
 class OmniboxPopupViewIOS;
 
@@ -29,7 +29,7 @@ class WebStateList;
 // BrowserState.
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // Positioner for the popup.
-@property(nonatomic, weak) id<OmniboxPopupPositioner> positioner;
+@property(nonatomic, weak) id<OmniboxPopupPresenterDelegate> presenterDelegate;
 // Whether this coordinator has results to show.
 @property(nonatomic, assign, readonly) BOOL hasResults;
 // Whether the popup is open.

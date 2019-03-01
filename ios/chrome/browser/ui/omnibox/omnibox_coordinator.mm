@@ -136,7 +136,7 @@
 }
 
 - (OmniboxPopupCoordinator*)createPopupCoordinator:
-    (id<OmniboxPopupPositioner>)positioner {
+    (id<OmniboxPopupPresenterDelegate>)presenterDelegate {
   std::unique_ptr<OmniboxPopupViewIOS> popupView =
       std::make_unique<OmniboxPopupViewIOS>(_editView->model(),
                                             _editView.get());
@@ -147,7 +147,7 @@
   OmniboxPopupCoordinator* coordinator =
       [[OmniboxPopupCoordinator alloc] initWithPopupView:std::move(popupView)];
   coordinator.browserState = self.browserState;
-  coordinator.positioner = positioner;
+  coordinator.presenterDelegate = presenterDelegate;
 
   return coordinator;
 }

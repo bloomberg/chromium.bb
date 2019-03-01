@@ -117,6 +117,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_owning.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/page_not_available_controller.h"
 #import "ios/chrome/browser/ui/payments/payment_request_manager.h"
@@ -372,6 +373,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                      MFMailComposeViewControllerDelegate,
                                      NetExportTabHelperDelegate,
                                      NewTabPageTabHelperDelegate,
+                                     OmniboxPopupPresenterDelegate,
                                      OverscrollActionsControllerDelegate,
                                      PasswordControllerDelegate,
                                      PreloadControllerDelegate,
@@ -1951,6 +1953,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       [[PrimaryToolbarCoordinator alloc] initWithBrowserState:_browserState];
   self.primaryToolbarCoordinator = topToolbarCoordinator;
   topToolbarCoordinator.delegate = self;
+  topToolbarCoordinator.popupPresenterDelegate = self;
   topToolbarCoordinator.webStateList = self.tabModel.webStateList;
   topToolbarCoordinator.dispatcher = self.dispatcher;
   topToolbarCoordinator.commandDispatcher = self.commandDispatcher;
@@ -3518,6 +3521,31 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         self.view.window.traitCollection.horizontalSizeClass;
     [SizeClassRecorder pageLoadedWithHorizontalSizeClass:sizeClass];
   }
+}
+
+#pragma mark - OmniboxPopupPresenterDelegate methods.
+
+- (UIView*)popupParentViewForPresenter:(OmniboxPopupPresenter*)presenter {
+  return self.view;
+}
+
+- (UIViewController*)popupParentViewControllerForPresenter:
+    (OmniboxPopupPresenter*)presenter {
+  return self;
+}
+
+- (void)popupDidOpenForPresenter:(OmniboxPopupPresenter*)presenter {
+  self.contentArea.accessibilityElementsHidden = YES;
+  self.secondaryToolbarContainerView.accessibilityElementsHidden = YES;
+  self.infobarContainerCoordinator.legacyContainerView
+      .accessibilityElementsHidden = YES;
+}
+
+- (void)popupDidCloseForPresenter:(OmniboxPopupPresenter*)presenter {
+  self.contentArea.accessibilityElementsHidden = NO;
+  self.secondaryToolbarContainerView.accessibilityElementsHidden = NO;
+  self.infobarContainerCoordinator.legacyContainerView
+      .accessibilityElementsHidden = NO;
 }
 
 #pragma mark - OverscrollActionsControllerDelegate methods.

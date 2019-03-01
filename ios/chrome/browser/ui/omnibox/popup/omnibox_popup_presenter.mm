@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
 
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_positioner.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
@@ -27,7 +26,7 @@ const CGFloat kVerticalOffset = 6;
 // Constraint for the bottom anchor of the popup.
 @property(nonatomic, strong) NSLayoutConstraint* bottomConstraint;
 
-@property(nonatomic, weak) id<OmniboxPopupPositioner> positioner;
+@property(nonatomic, weak) id<OmniboxPopupPresenterDelegate> delegate;
 @property(nonatomic, weak) UIViewController* viewController;
 @property(nonatomic, strong) UIView* popupContainerView;
 @property(nonatomic) UIViewPropertyAnimator* animator;
@@ -35,12 +34,13 @@ const CGFloat kVerticalOffset = 6;
 
 @implementation OmniboxPopupPresenter
 
-- (instancetype)initWithPopupPositioner:(id<OmniboxPopupPositioner>)positioner
-                    popupViewController:(UIViewController*)viewController
-                              incognito:(BOOL)incognito {
+- (instancetype)initWithPopupPresenterDelegate:
+                    (id<OmniboxPopupPresenterDelegate>)delegate
+                           popupViewController:(UIViewController*)viewController
+                                     incognito:(BOOL)incognito {
   self = [super init];
   if (self) {
-    _positioner = positioner;
+    _delegate = delegate;
     _viewController = viewController;
 
     // Popup uses same colors as the toolbar, so the ToolbarConfiguration is
@@ -72,9 +72,10 @@ const CGFloat kVerticalOffset = 6;
 - (void)updateHeightAndAnimateAppearanceIfNecessary {
   UIView* popup = self.popupContainerView;
   if (!popup.superview) {
-    UIViewController* parentVC = [self.positioner popupParentViewController];
+    UIViewController* parentVC =
+        [self.delegate popupParentViewControllerForPresenter:self];
     [parentVC addChildViewController:self.viewController];
-    [[self.positioner popupParentView] addSubview:popup];
+    [[self.delegate popupParentViewForPresenter:self] addSubview:popup];
     [self.viewController didMoveToParentViewController:parentVC];
 
     [self initialLayout];
@@ -83,6 +84,8 @@ const CGFloat kVerticalOffset = 6;
   if (!IsIPadIdiom()) {
     self.bottomConstraint.active = YES;
   }
+
+  [self.delegate popupDidOpenForPresenter:self];
 
   [self.animator stopAnimation:YES];
 
@@ -99,6 +102,7 @@ const CGFloat kVerticalOffset = 6;
 }
 
 - (void)animateCollapse {
+  [self.delegate popupDidCloseForPresenter:self];
   UIView* retainedPopupView = self.popupContainerView;
   UIViewController* retainedViewController = self.viewController;
   if (!IsIPadIdiom()) {

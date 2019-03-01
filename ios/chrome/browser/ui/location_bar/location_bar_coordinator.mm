@@ -98,7 +98,6 @@ const int kLocationAuthorizationStatusCount = 4;
 @synthesize delegate = _delegate;
 @synthesize webStateList = _webStateList;
 @synthesize omniboxPopupCoordinator = _omniboxPopupCoordinator;
-@synthesize popupPositioner = _popupPositioner;
 @synthesize omniboxCoordinator = _omniboxCoordinator;
 
 #pragma mark - public
@@ -150,8 +149,8 @@ const int kLocationAuthorizationStatusCount = 4;
       didMoveToParentViewController:self.viewController];
   self.viewController.offsetProvider = [self.omniboxCoordinator offsetProvider];
 
-  self.omniboxPopupCoordinator =
-      [self.omniboxCoordinator createPopupCoordinator:self.popupPositioner];
+  self.omniboxPopupCoordinator = [self.omniboxCoordinator
+      createPopupCoordinator:self.popupPresenterDelegate];
   self.omniboxPopupCoordinator.dispatcher = self.dispatcher;
   self.omniboxPopupCoordinator.webStateList = self.webStateList;
   [self.omniboxPopupCoordinator start];

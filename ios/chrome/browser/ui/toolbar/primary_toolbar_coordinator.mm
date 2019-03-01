@@ -18,7 +18,6 @@
 #import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_positioner.h"
 #import "ios/chrome/browser/ui/orchestrator/omnibox_focus_orchestrator.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_coordinator+subclassing.h"
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_view_controller.h"
@@ -33,8 +32,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface PrimaryToolbarCoordinator ()<OmniboxPopupPositioner,
-                                        PrimaryToolbarViewControllerDelegate> {
+@interface PrimaryToolbarCoordinator () <PrimaryToolbarViewControllerDelegate> {
   // Observer that updates |toolbarViewController| for fullscreen events.
   std::unique_ptr<FullscreenControllerObserver> _fullscreenObserver;
 }
@@ -55,11 +53,9 @@
 @implementation PrimaryToolbarCoordinator
 
 @dynamic viewController;
-@synthesize started = _started;
+@synthesize popupPresenterDelegate = _popupPresenterDelegate;
 @synthesize commandDispatcher = _commandDispatcher;
 @synthesize delegate = _delegate;
-@synthesize locationBarCoordinator = _locationBarCoordinator;
-@synthesize orchestrator = _orchestrator;
 
 #pragma mark - ChromeCoordinator
 
@@ -192,19 +188,6 @@
   self.viewController.view.hidden = NO;
 }
 
-// TODO(crbug.com/786940): This protocol should move to the ViewController
-// owning the Toolbar. This can wait until the omnibox and toolbar refactoring
-// is more advanced.
-#pragma mark OmniboxPopupPositioner methods.
-
-- (UIView*)popupParentView {
-  return self.viewController.view.superview;
-}
-
-- (UIViewController*)popupParentViewController {
-  return self.viewController.parentViewController;
-}
-
 #pragma mark - Protected override
 
 - (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState {
@@ -238,7 +221,8 @@
   self.locationBarCoordinator.commandDispatcher = self.commandDispatcher;
   self.locationBarCoordinator.delegate = self.delegate;
   self.locationBarCoordinator.webStateList = self.webStateList;
-  self.locationBarCoordinator.popupPositioner = self;
+  self.locationBarCoordinator.popupPresenterDelegate =
+      self.popupPresenterDelegate;
   [self.locationBarCoordinator start];
 }
 

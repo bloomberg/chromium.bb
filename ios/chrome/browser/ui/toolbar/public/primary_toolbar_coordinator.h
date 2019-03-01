@@ -11,11 +11,16 @@
 
 @protocol ActivityServicePositioner;
 @class CommandDispatcher;
+@protocol OmniboxPopupPresenterDelegate;
 
 // Protocol defining a primary toolbar, in a paradigm where the toolbar can be
 // split between primary and secondary.
 @protocol PrimaryToolbarCoordinator<FakeboxFocuser,
                                     SideSwipeToolbarSnapshotProviding>
+
+// Defines where the omnibox popup will be positioned.
+@property(nonatomic, weak) id<OmniboxPopupPresenterDelegate>
+    popupPresenterDelegate;
 
 // Command dispatcher.
 @property(nonatomic, strong) CommandDispatcher* commandDispatcher;
