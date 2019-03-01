@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
+import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -395,6 +396,12 @@ public class CustomTabActivityTabController implements InflationObserver, Native
         }
 
         initializeTab(tab);
+
+        if (mIntentDataProvider.getTranslateLanguage() != null) {
+            TranslateBridge.setPredefinedTargetLanguage(
+                    tab, mIntentDataProvider.getTranslateLanguage());
+        }
+
         return tab;
     }
 

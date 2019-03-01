@@ -108,6 +108,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCCTRedirectPreconnect,
     &kCCTReportParallelRequestStatus,
     &kCCTResourcePrefetch,
+    &kCCTTargetTranslateLanguage,
     &kChromeDuetFeature,
     &kChromeDuetAdaptive,
     &kChromeSmartSelection,
@@ -290,6 +291,9 @@ const base::Feature kCCTReportParallelRequestStatus{
 
 const base::Feature kCCTResourcePrefetch{"CCTResourcePrefetch",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kCCTTargetTranslateLanguage{
+    "CCTTargetTranslateLanguage", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kChromeDuetFeature{"ChromeDuet",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

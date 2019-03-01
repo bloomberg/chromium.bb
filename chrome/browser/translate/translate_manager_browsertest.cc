@@ -984,3 +984,56 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   EXPECT_EQ("fr",
             restored_translate_client->GetLanguageState().current_language());
 }
+
+// Test that hrefTranslate overrides manual translate
+IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
+                       HrefTranslateOverridesManualTranslate) {
+  ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
+  translate::TranslateManager* manager =
+      chrome_translate_client->GetTranslateManager();
+  manager->SetIgnoreMissingKeyForTesting(true);
+
+  // Set target language manually
+  manager->SetPredefinedTargetLanguage("ru");
+  EXPECT_EQ("ru", manager->GetLanguageState().GetPredefinedTargetLanguage());
+
+  SetTranslateScript(kTestValidScript);
+  SetupDefaultSearchEngine(embedded_test_server()->base_url().spec());
+
+  // There is a possible race condition, when the language is not yet detected,
+  // so we check for that and wait if necessary.
+  if (chrome_translate_client->GetLanguageState().original_language().empty())
+    WaitUntilLanguageDetected();
+
+  EXPECT_EQ("und",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  ResetObserver();
+  // Load a German page and detect it's language
+  AddTabAtIndex(
+      0, GURL(embedded_test_server()->GetURL("/href_translate_test.html")),
+      ui::PAGE_TRANSITION_TYPED);
+  chrome_translate_client = GetChromeTranslateClient();
+  WaitUntilLanguageDetected();
+  EXPECT_EQ("de",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  // Navigate to the French page by way of a link on the original page
+  ResetObserver();
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+
+  const std::string click_link_js =
+      "(function() { document.getElementById('test').click(); })();";
+  ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
+
+  // Detect language on the new page
+  WaitUntilLanguageDetected();
+  EXPECT_EQ("fr",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  // Href-translate to ja should override manual translate to ru.
+  WaitUntilPageTranslated();
+  EXPECT_EQ("ja",
+            chrome_translate_client->GetLanguageState().current_language());
+}

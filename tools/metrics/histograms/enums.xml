@@ -31686,6 +31686,7 @@ from previous Chrome versions.
   <int value="-769865314" label="AutofillCacheQueryResponses:disabled"/>
   <int value="-763900417" label="CCTModuleUseIntentExtras:enabled"/>
   <int value="-763759697" label="enable-audio-support-for-desktop-share"/>
+  <int value="-763730918" label="CCTTargetTranslateLanguage:disabled"/>
   <int value="-762687134" label="ExperimentalCrostiniUI:enabled"/>
   <int value="-759830869" label="enable-tab-discarding"/>
   <int value="-758048639" label="InfiniteSessionRestore:enabled"/>
@@ -31896,6 +31897,7 @@ from previous Chrome versions.
   <int value="-401170566"
       label="OmniboxUIExperimentHideSuggestionUrlPath:disabled"/>
   <int value="-400584764" label="ChromeHomeNtpRedesign:enabled"/>
+  <int value="-398623652" label="CCTTargetTranslateLanguage:enabled"/>
   <int value="-396994784" label="enable-vr-shell"/>
   <int value="-396496344" label="ViewsTaskManager:enabled"/>
   <int value="-395606844" label="enable-site-settings"/>

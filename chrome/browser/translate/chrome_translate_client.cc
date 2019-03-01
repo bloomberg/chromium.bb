@@ -306,6 +306,12 @@ void ChromeTranslateClient::ManualTranslateWhenReady() {
 }
 #endif
 
+void ChromeTranslateClient::SetPredefinedTargetLanguage(
+    const std::string& translate_language_code) {
+  translate::TranslateManager* manager = GetTranslateManager();
+  manager->SetPredefinedTargetLanguage(translate_language_code);
+}
+
 void ChromeTranslateClient::RecordLanguageDetectionEvent(
     const translate::LanguageDetectionDetails& details) const {
   if (!FeatureList::IsEnabled(switches::kSyncUserLanguageDetectionEvents))

@@ -171,6 +171,9 @@ class TranslateManager {
   bool ShouldSuppressBubbleUI(bool triggered_from_menu,
                               const std::string& source_language);
 
+  // Sets target language.
+  void SetPredefinedTargetLanguage(const std::string& language_code);
+
  private:
   friend class translate::testing::TranslateManagerTest;
 
@@ -234,6 +237,18 @@ class TranslateManager {
   void FilterForHrefTranslate(TranslateTriggerDecision* decision,
                               TranslatePrefs* translate_prefs,
                               const std::string& page_language_code);
+
+  // Determines if showing the UI is supported for the predefined target
+  // language which was set via SetPredefinedTargetLanguage call.
+  // Writes the results to |decision|.
+  void FilterForPredefinedTarget(TranslateTriggerDecision* decision,
+                                 TranslatePrefs* translate_prefs,
+                                 const std::string& page_language_code);
+
+  // Check whether there is specified target, the source and
+  // the target are both supported, and the source and target don't match.
+  bool IsTranslatableLanguagePair(const std::string& page_language_code,
+                                  const std::string& target_language_code);
 
   // Enables or disables the translate omnibox icon depending on |decision|. The
   // icon is always shown if translate UI is shown, auto-translation happens, or

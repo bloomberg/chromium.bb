@@ -160,6 +160,14 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     public static final String EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS =
             "org.chromium.chrome.browser.customtabs.EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS";
 
+    // TODO(amalova): Move this to CustomTabsIntent.
+    /**
+     * Extra that, if set, specifies Translate UI should be triggered with
+     * specified target language.
+     */
+    private static final String EXTRA_TRANSLATE_LANGUAGE =
+            "org.chromium.chrome.browser.customtabs.EXTRA_TRANSLATE_LANGUAGE";
+
     private static final int MAX_CUSTOM_MENU_ITEMS = 5;
 
     private static final int MAX_CUSTOM_TOOLBAR_ITEMS = 2;
@@ -212,6 +220,10 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
 
     /** Whether this CustomTabActivity was explicitly started by another Chrome Activity. */
     private final boolean mIsOpenedByChrome;
+
+    /** ISO 639 language code */
+    @Nullable
+    private final String mTranslateLanguage;
 
     /**
      * Add extras to customize menu items for opening payment request UI custom tab from Chrome.
@@ -314,6 +326,8 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
                 IntentUtils.safeGetBooleanExtra(intent, EXTRA_DISABLE_DOWNLOAD_BUTTON, false);
         mIsOpenedByWebApk =
                 IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_OPENED_BY_WEBAPK, false);
+
+        mTranslateLanguage = IntentUtils.safeGetStringExtra(intent, EXTRA_TRANSLATE_LANGUAGE);
 
         String modulePackageName =
                 IntentUtils.safeGetStringExtra(intent, EXTRA_MODULE_PACKAGE_NAME);
@@ -884,4 +898,14 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
         return mTrustedWebActivityAdditionalOrigins;
     }
 
+    /**
+     * @return ISO 639 code of target language the page should be translated to.
+     * This method requires native.
+     */
+    @Nullable
+    public String getTranslateLanguage() {
+        boolean isEnabled =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_TARGET_TRANSLATE_LANGUAGE);
+        return isEnabled ? mTranslateLanguage : null;
+    }
 }

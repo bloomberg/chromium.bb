@@ -97,6 +97,7 @@ struct TranslateManager::TranslateTriggerDecision {
     can_show_ui_ = false;
     can_auto_href_translate_ = false;
     can_show_href_translate_ui_ = false;
+    can_show_predefined_language_translate_ui_ = false;
   }
 
   void PreventAutoTranslate() { can_auto_translate_ = false; }
@@ -111,6 +112,13 @@ struct TranslateManager::TranslateTriggerDecision {
   void PreventShowingHrefTranslateUI() { can_show_href_translate_ui_ = false; }
   bool can_show_href_translate_ui() const {
     return can_show_href_translate_ui_;
+  }
+
+  void PreventShowingPredefinedLanguageTranslateUI() {
+    can_show_predefined_language_translate_ui_ = false;
+  }
+  bool can_show_predefined_language_translate_ui() const {
+    return can_show_predefined_language_translate_ui_;
   }
 
   void SuppressFromRanker() { should_suppress_from_ranker_ = true; }
@@ -140,6 +148,7 @@ struct TranslateManager::TranslateTriggerDecision {
   std::vector<int> ranker_events;
   std::string auto_translate_target;
   std::string href_translate_target;
+  std::string predefined_translate_target;
 
  private:
   // These fields are private because they should only be set one way. Filters
@@ -150,6 +159,10 @@ struct TranslateManager::TranslateTriggerDecision {
 
   bool can_auto_href_translate_ = true;
   bool can_show_href_translate_ui_ = true;
+
+  // Whether the UI should be shown for a predefined target language
+  // which was set via SetPredefinedTargetLanguage call.
+  bool can_show_predefined_language_translate_ui_ = true;
 
   bool should_suppress_from_ranker_ = false;
 };
@@ -656,6 +669,7 @@ TranslateManager::ComputePossibleOutcomes(TranslatePrefs* translate_prefs,
   FilterForUserPrefs(&decision, translate_prefs, page_language_code);
   FilterAutoTranslate(&decision, translate_prefs, page_language_code);
   FilterForHrefTranslate(&decision, translate_prefs, page_language_code);
+  FilterForPredefinedTarget(&decision, translate_prefs, page_language_code);
 
   return decision;
 }
@@ -811,19 +825,38 @@ void TranslateManager::FilterForHrefTranslate(
     decision->PreventAutoHrefTranslate();
   }
 
-  translate::TranslateLanguageList* language_list =
-      translate::TranslateDownloadManager::GetInstance()->language_list();
-
   decision->href_translate_target = language_state_.href_translate();
-  if (decision->href_translate_target.empty() ||
-      !language_list->IsSupportedLanguage(decision->href_translate_target) ||
-      !TranslateDownloadManager::IsSupportedLanguage(page_language_code) ||
-      page_language_code == decision->href_translate_target) {
-    // Can't honor hrefTranslate if there's no specified target, the source or
-    // the target aren't supported, or the source and target match.
+  // Can't honor hrefTranslate if there's no specified target, the source or
+  // the target aren't supported, or the source and target match.
+  if (!IsTranslatableLanguagePair(page_language_code,
+                                  decision->href_translate_target)) {
     decision->PreventAutoHrefTranslate();
     decision->PreventShowingHrefTranslateUI();
   }
+}
+
+void TranslateManager::FilterForPredefinedTarget(
+    TranslateTriggerDecision* decision,
+    TranslatePrefs* translate_prefs,
+    const std::string& page_language_code) {
+  decision->predefined_translate_target =
+      language_state_.GetPredefinedTargetLanguage();
+  if (!IsTranslatableLanguagePair(page_language_code,
+                                  decision->predefined_translate_target)) {
+    decision->PreventShowingPredefinedLanguageTranslateUI();
+  }
+}
+
+bool TranslateManager::IsTranslatableLanguagePair(
+    const std::string& page_language_code,
+    const std::string& target_language_code) {
+  translate::TranslateLanguageList* language_list =
+      translate::TranslateDownloadManager::GetInstance()->language_list();
+
+  return !target_language_code.empty() &&
+         language_list->IsSupportedLanguage(target_language_code) &&
+         TranslateDownloadManager::IsSupportedLanguage(page_language_code) &&
+         page_language_code != target_language_code;
 }
 
 void TranslateManager::MaybeShowOmniboxIcon(
@@ -857,7 +890,17 @@ bool TranslateManager::MaterializeDecision(
 
   // Will be true if we've decided to show the infobar/bubble UI to the user.
   bool did_show_ui = false;
-  if (decision.ShouldShowUI()) {
+
+  // Check whether the target language is predefined. If it is predefined
+  // trigger Translate UI even if it would not otherwise be triggered
+  // or would be triggered with another language.
+  if (decision.can_show_predefined_language_translate_ui()) {
+    did_show_ui = translate_client_->ShowTranslateUI(
+        translate::TRANSLATE_STEP_BEFORE_TRANSLATE, page_language_code,
+        decision.predefined_translate_target, TranslateErrors::NONE, false);
+  }
+
+  if (!did_show_ui && decision.ShouldShowUI()) {
     // If the source language matches the UI language, it means the translation
     // prompt is being forced by an experiment. Report this so the count of how
     // often it happens can be tracked to suppress the experiment as necessary.
@@ -888,6 +931,15 @@ void TranslateManager::RecordDecisionMetrics(
     const TranslateTriggerDecision& decision,
     const std::string& page_language_code,
     bool ui_shown) {
+  if (!decision.can_auto_translate() &&
+      decision.can_show_predefined_language_translate_ui()) {
+    TranslateBrowserMetrics::ReportInitiationStatus(
+        TranslateBrowserMetrics::
+            INITIATION_STATUS_SHOW_UI_PREDEFINED_TARGET_LANGUAGE);
+
+    return;
+  }
+
   // If the chosen outcome is to show the UI or let it be suppressed, log a few
   // explicit things.
   if (!decision.can_auto_translate() && decision.can_show_ui()) {
@@ -962,6 +1014,11 @@ void TranslateManager::RecordDecisionRankerEvent(
       decision.should_suppress_from_ranker()) {
     RecordTranslateEvent(metrics::TranslateEventProto::DISABLED_BY_RANKER);
   }
+}
+
+void TranslateManager::SetPredefinedTargetLanguage(
+    const std::string& language_code) {
+  language_state_.SetPredefinedTargetLanguage(language_code);
 }
 
 }  // namespace translate
