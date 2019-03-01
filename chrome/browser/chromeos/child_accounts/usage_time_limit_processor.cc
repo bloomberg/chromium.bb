@@ -112,8 +112,18 @@ class UsageTimeLimitProcessor {
   base::TimeDelta GetConsecutiveTimeWindowLimitDuration(
       internal::Weekday weekday);
 
-  // Whether there is a valid override.
+  // Whether there's an override whose duration has finished.
+  bool IsOverrideDurationFinished();
+
+  // Whether the device should be locked by an override.
+  bool ShouldBeLockedByOverride();
+
+  // Whether there is a valid override. It includes lock, unlock or unlock with
+  // duration override.
   bool HasActiveOverride();
+
+  // Whether there's an active override with duration.
+  bool HasActiveOverrideWithDuration();
 
   // Whether the user's session should be locked.
   bool IsLocked();
@@ -126,6 +136,10 @@ class UsageTimeLimitProcessor {
 
   // Gets the next time when usage time limit will reset.
   base::Time GetNextUsageLimitResetTime();
+
+  // Gets the time when the current override will end. If there's no override,
+  // returns base::Time().
+  base::Time GetCurrentOverrideEndTime();
 
   // Gets the time when the lock override will end.
   base::Time GetLockOverrideEndTime();
@@ -141,6 +155,14 @@ class UsageTimeLimitProcessor {
 
   // Whether the time usage limit defined in the given weekday is overridden.
   bool IsUsageLimitOverridden(internal::Weekday weekday);
+
+  // Whether the current override was canceled by the window limit update in the
+  // given weekday.
+  bool WasOverrideCanceledByWindowLimit(internal::Weekday weekday);
+
+  // Whether the current override was canceled by the usage time limit update in
+  // the given weekday.
+  bool WasOverrideCanceledByUsageTimeLimit(internal::Weekday weekday);
 
   // When the lock override should reset.
   base::TimeDelta LockOverrideResetTime();
@@ -349,14 +371,17 @@ bool UsageTimeLimitProcessor::IsWindowLimitOverridden(
     return false;
   }
 
+  // If there's an override with duration, the window limit is overridden only
+  // if the override is active and duration is not over, since it works
+  // as a lock override after duration.
+  if (time_limit_override_->duration)
+    return HasActiveOverrideWithDuration() && !IsOverrideDurationFinished();
+
+  if (WasOverrideCanceledByWindowLimit(weekday))
+    return false;
+
   base::Optional<internal::TimeWindowLimitEntry> window_limit_entry =
       time_window_limit_->entries[weekday];
-
-  // If the time window limit has been updated since the override, it doesn't
-  // take effect.
-  if (!window_limit_entry ||
-      window_limit_entry->last_updated > time_limit_override_->created_at)
-    return false;
 
   int days_behind = 0;
   for (int i = 0; i < static_cast<int>(internal::Weekday::kCount); i++) {
@@ -385,13 +410,13 @@ bool UsageTimeLimitProcessor::IsUsageLimitOverridden(
   if (!time_usage_limit_ || !previous_state_)
     return false;
 
-  base::Optional<internal::TimeUsageLimitEntry> usage_limit_entry =
-      time_usage_limit_->entries[weekday];
+  // If there's an override with duration, the usage limit is overridden only
+  // if the override is active and duration is not over, since it works
+  // as a lock override after duration.
+  if (time_limit_override_->duration)
+    return HasActiveOverrideWithDuration() && !IsOverrideDurationFinished();
 
-  // If the time usage limit has been updated since the override, it doesn't
-  // take effect.
-  if (!usage_limit_entry ||
-      usage_limit_entry->last_updated > time_limit_override_->created_at)
+  if (WasOverrideCanceledByUsageTimeLimit(weekday))
     return false;
 
   base::Time last_reset_time = ConvertPolicyTime(LockOverrideResetTime(), 0);
@@ -405,6 +430,71 @@ bool UsageTimeLimitProcessor::IsUsageLimitOverridden(
       time_limit_override_->created_at >= last_reset_time;
   return usage_limit_enforced_previously &&
          override_created_after_usage_limit_start;
+}
+
+bool UsageTimeLimitProcessor::WasOverrideCanceledByUsageTimeLimit(
+    internal::Weekday weekday) {
+  if (!time_usage_limit_ || !time_limit_override_)
+    return false;
+
+  base::Optional<internal::TimeUsageLimitEntry> usage_limit_entry =
+      time_usage_limit_->entries[weekday];
+
+  // If the time usage limit has been updated since the override, the
+  // override is cancelled.
+  return usage_limit_entry &&
+         usage_limit_entry->last_updated > time_limit_override_->created_at;
+}
+
+bool UsageTimeLimitProcessor::WasOverrideCanceledByWindowLimit(
+    internal::Weekday weekday) {
+  if (!time_window_limit_ || !time_limit_override_)
+    return false;
+
+  base::Optional<TimeWindowLimitEntry> window_limit =
+      time_window_limit_->entries[weekday];
+
+  // If the window limit has been updated since the override, the
+  // override is cancelled.
+  if (window_limit &&
+      window_limit->last_updated > time_limit_override_->created_at)
+    return true;
+
+  return false;
+}
+
+bool UsageTimeLimitProcessor::HasActiveOverrideWithDuration() {
+  if (!time_limit_override_ ||
+      time_limit_override_->action ==
+          internal::TimeLimitOverride::Action::kLock ||
+      !time_limit_override_->duration) {
+    return false;
+  }
+
+  internal::Weekday current_usage_limit_day =
+      current_time_ > ConvertPolicyTime(UsageLimitResetTime(), 0)
+          ? current_weekday_
+          : internal::WeekdayShift(current_weekday_, -1);
+
+  if (current_time_ >= GetCurrentOverrideEndTime() ||
+      WasOverrideCanceledByUsageTimeLimit(current_usage_limit_day))
+    return false;
+
+  if (!time_window_limit_)
+    return true;
+
+  internal::Weekday previous_weekday =
+      internal::WeekdayShift(current_weekday_, -1);
+  base::Optional<internal::TimeWindowLimitEntry> previous_day_entry =
+      time_window_limit_->entries[previous_weekday];
+
+  // Active time window limit that started on the previous day.
+  if (previous_day_entry && previous_day_entry->IsOvernight() &&
+      WasOverrideCanceledByWindowLimit(previous_weekday)) {
+    return false;
+  }
+
+  return !WasOverrideCanceledByWindowLimit(current_weekday_);
 }
 
 base::Optional<internal::TimeWindowLimitEntry>
@@ -505,6 +595,28 @@ UsageTimeLimitProcessor::GetActiveTimeUsageLimit() {
   return base::nullopt;
 }
 
+bool UsageTimeLimitProcessor::IsOverrideDurationFinished() {
+  if (!time_limit_override_ ||
+      time_limit_override_->action ==
+          internal::TimeLimitOverride::Action::kLock ||
+      !time_limit_override_->duration)
+    return false;
+
+  base::Time lock_time =
+      time_limit_override_->created_at + time_limit_override_->duration.value();
+  if (ContainsTime(time_limit_override_->created_at, lock_time, current_time_))
+    return false;
+
+  return true;
+}
+
+bool UsageTimeLimitProcessor::ShouldBeLockedByOverride() {
+  return (HasActiveOverride() &&
+          time_limit_override_->action ==
+              internal::TimeLimitOverride::Action::kLock) ||
+         (HasActiveOverrideWithDuration() && IsOverrideDurationFinished());
+}
+
 bool UsageTimeLimitProcessor::HasActiveOverride() {
   if (!time_limit_override_ || active_time_window_limit_ ||
       active_time_usage_limit_) {
@@ -514,13 +626,16 @@ bool UsageTimeLimitProcessor::HasActiveOverride() {
   if (overridden_window_limit_ || overridden_usage_limit_)
     return true;
 
+  if (time_limit_override_->duration)
+    return HasActiveOverrideWithDuration();
+
   base::Time last_reset_time = ConvertPolicyTime(LockOverrideResetTime(), 0);
   if (current_time_ < last_reset_time)
     last_reset_time -= base::TimeDelta::FromDays(1);
 
   bool override_cancelled_by_window_limit = false;
   if (time_window_limit_) {
-    // Check if yestardays or todays window limit ended after override was
+    // Check if yesterdays or todays window limit ended after override was
     // created.
     for (int i = -1; i <= 0; i++) {
       internal::Weekday weekday = WeekdayShift(current_weekday_, i);
@@ -565,12 +680,15 @@ bool UsageTimeLimitProcessor::HasActiveOverride() {
 
 bool UsageTimeLimitProcessor::IsLocked() {
   return active_time_usage_limit_ || active_time_window_limit_ ||
-         (HasActiveOverride() &&
-          time_limit_override_->action ==
-              internal::TimeLimitOverride::Action::kLock);
+         ShouldBeLockedByOverride();
 }
 
 ActivePolicies UsageTimeLimitProcessor::GetActivePolicy() {
+  // If there's an active override with duration, the active policy is always
+  // override.
+  if (HasActiveOverrideWithDuration())
+    return ActivePolicies::kOverride;
+
   if (active_time_window_limit_)
     return ActivePolicies::kFixedLimit;
 
@@ -603,16 +721,24 @@ base::Time UsageTimeLimitProcessor::GetNextUsageLimitResetTime() {
   return ConvertPolicyTime(UsageLimitResetTime(), has_reset_today ? 1 : 0);
 }
 
+base::Time UsageTimeLimitProcessor::GetCurrentOverrideEndTime() {
+  if (!time_limit_override_)
+    return base::Time();
+
+  base::Time reset_time =
+      LocalMidnight(time_limit_override_->created_at) + LockOverrideResetTime();
+
+  if (IsBefore(reset_time, time_limit_override_->created_at))
+    reset_time = reset_time + base::TimeDelta::FromDays(1);
+
+  return reset_time;
+}
+
 base::Time UsageTimeLimitProcessor::GetLockOverrideEndTime() {
-  if (!HasActiveOverride() || time_limit_override_->action !=
-                                  internal::TimeLimitOverride::Action::kLock) {
+  if (!ShouldBeLockedByOverride()) {
     return base::Time();
   }
-  // Whether this lock override was created after today's reset.
-  bool lock_after_reset =
-      time_limit_override_->created_at >
-      LocalMidnight(current_time_) + LockOverrideResetTime();
-  return ConvertPolicyTime(LockOverrideResetTime(), lock_after_reset ? 1 : 0);
+  return GetCurrentOverrideEndTime();
 }
 
 base::Time UsageTimeLimitProcessor::GetNextUnlockTime() {
@@ -632,7 +758,7 @@ base::Time UsageTimeLimitProcessor::GetNextUnlockTime() {
     // The usage limit could reset when a window limit is active, we must check
     // that, and if this is the case calculate the end of the window limit.
     if (time_window_limit_) {
-      // Check if yestardays, todays or tomorrows window limit will be active
+      // Check if yesterdays, todays or tomorrows window limit will be active
       // when the reset happens.
       for (int i = -1; i <= 1; i++) {
         base::Optional<TimeWindowLimitEntry> window_limit =
@@ -653,13 +779,14 @@ base::Time UsageTimeLimitProcessor::GetNextUnlockTime() {
   }
 
   // When a lock override will become inactive.
-  if (HasActiveOverride() && time_limit_override_->action ==
-                                 internal::TimeLimitOverride::Action::kLock) {
+  if (ShouldBeLockedByOverride()) {
     // The lock override ends either on the next reset time or when a bedtime
-    // ends.
+    // ends. Also, if the duration of the unlock override has finished, the
+    // device will remain locked until the next reset time or when the next
+    // bedtime ends, if the bedtime should be active at the current time.
     base::Time lock_override_ends = GetLockOverrideEndTime();
-    if (time_window_limit_) {
-      // Check yestardays, todays or tomorrows window limit, since these can end
+    if (time_window_limit_ && !IsOverrideDurationFinished()) {
+      // Check yesterdays, todays or tomorrows window limit, since these can end
       // before the reset time.
       for (int i = -1; i <= 1; i++) {
         internal::Weekday weekday = WeekdayShift(current_weekday_, i);
@@ -671,8 +798,10 @@ base::Time UsageTimeLimitProcessor::GetNextUnlockTime() {
           base::Time window_limit_end =
               window_limit_start +
               GetConsecutiveTimeWindowLimitDuration(weekday);
-          if (window_limit_end > time_limit_override_->created_at)
+
+          if (window_limit_end > time_limit_override_->created_at) {
             lock_override_ends = std::min(lock_override_ends, window_limit_end);
+          }
         }
       }
     }
@@ -691,7 +820,7 @@ base::Time UsageTimeLimitProcessor::GetNextStateChangeTime(
   base::Time next_usage_quota_reset = GetNextUsageLimitResetTime();
 
   // Check when next time window limit starts.
-  if (time_window_limit_) {
+  if (time_window_limit_ && !active_time_window_limit_) {
     internal::Weekday start_day = internal::WeekdayShift(current_weekday_, 1);
     base::TimeDelta delta_from_midnight =
         current_time_ - LocalMidnight(current_time_);
@@ -793,6 +922,42 @@ base::Time UsageTimeLimitProcessor::GetNextStateChangeTime(
         *out_next_active = ActivePolicies::kFixedLimit;
       } else {
         *out_next_active = ActivePolicies::kNoActivePolicy;
+      }
+    }
+  }
+
+  // When an override with duration will change the state. It will change either
+  // when the duration is over (then the next state will work as a lock
+  // override) or at the same time as time usage limit resets.
+  if (HasActiveOverrideWithDuration()) {
+    base::Time lock_time = time_limit_override_->created_at +
+                           time_limit_override_->duration.value();
+    if (!IsOverrideDurationFinished()) {
+      next_change = lock_time;
+      *out_next_active = ActivePolicies::kOverride;
+    } else {
+      next_change = GetLockOverrideEndTime();
+      *out_next_active = ActivePolicies::kNoActivePolicy;
+
+      if (time_window_limit_) {
+        // Check yesterdays, todays or tomorrows window limit, since these can
+        // end after the next change time or it can starts at the next change
+        // time, if it happens, the next active policy should be fixed limit.
+        for (int i = -1; i <= 1; i++) {
+          internal::Weekday weekday = WeekdayShift(current_weekday_, i);
+          base::Optional<TimeWindowLimitEntry> window_limit =
+              time_window_limit_->entries[weekday];
+          if (window_limit) {
+            base::Time window_start =
+                ConvertPolicyTime(window_limit->starts_at, i);
+            base::Time window_end =
+                window_start + GetConsecutiveTimeWindowLimitDuration(weekday);
+
+            if (ContainsTime(window_start, window_end, next_change) ||
+                next_change == window_start)
+              *out_next_active = ActivePolicies::kFixedLimit;
+          }
+        }
       }
     }
   }

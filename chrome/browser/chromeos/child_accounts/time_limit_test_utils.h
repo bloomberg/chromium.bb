@@ -4,8 +4,8 @@
 //
 // Helper functions to create and modify Usage Time Limit policies.
 
-#ifndef CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_TIME_LIMIT_TEST_HELPER_H_
-#define CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_TIME_LIMIT_TEST_HELPER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_TIME_LIMIT_TEST_UTILS_H_
+#define CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_TIME_LIMIT_TEST_UTILS_H_
 
 #include <memory>
 #include <string>
@@ -79,10 +79,17 @@ void AddOverride(base::DictionaryValue* policy,
                  std::string action,
                  base::Time created_at);
 
+// Adds a time limit override with duration dictionary to the provided
+// Time Limit policy.
+void AddOverrideWithDuration(base::DictionaryValue* policy,
+                             std::string action,
+                             base::Time created_at,
+                             base::TimeDelta duration);
+
 // Converts the Time Limit policy to a string.
 std::string PolicyToString(const base::DictionaryValue* policy);
 
 }  // namespace time_limit_test_utils
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_TIME_LIMIT_TEST_HELPER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_TIME_LIMIT_TEST_UTILS_H_
