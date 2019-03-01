@@ -6796,12 +6796,19 @@ IN_PROC_BROWSER_TEST_P(WebRtcEventLogCollectionAllowedPolicyTest, RunTest) {
   int render_process_id = web_contents->GetMainFrame()->GetProcess()->GetID();
 
   constexpr int kLid = 123;
-  const std::string kPeerConnectionId = "id";
+  const std::string kSessionId = "id";
 
   {
     base::RunLoop run_loop;
     webrtc_event_log_manager->PeerConnectionAdded(
-        render_process_id, kLid, kPeerConnectionId,
+        render_process_id, kLid, BlockingBoolExpectingReply(&run_loop, true));
+    run_loop.Run();
+  }
+
+  {
+    base::RunLoop run_loop;
+    webrtc_event_log_manager->PeerConnectionSessionIdSet(
+        render_process_id, kLid, kSessionId,
         BlockingBoolExpectingReply(&run_loop, true));
     run_loop.Run();
   }
@@ -6815,8 +6822,8 @@ IN_PROC_BROWSER_TEST_P(WebRtcEventLogCollectionAllowedPolicyTest, RunTest) {
     // Test focus - remote-bound logging allowed if and only if the policy
     // is configured to allow it.
     webrtc_event_log_manager->StartRemoteLogging(
-        render_process_id, kPeerConnectionId, kMaxFileSizeBytes,
-        kOutputPeriodMs, kWebAppId,
+        render_process_id, kSessionId, kMaxFileSizeBytes, kOutputPeriodMs,
+        kWebAppId,
         BlockingBoolExpectingReplyWithExtras(&run_loop,
                                              remote_logging_allowed));
     run_loop.Run();

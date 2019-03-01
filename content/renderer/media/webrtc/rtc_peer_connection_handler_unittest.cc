@@ -1232,16 +1232,4 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateDataChannel) {
   channel->SetClient(nullptr);
 }
 
-TEST_F(RTCPeerConnectionHandlerTest, IdIsOfExpectedFormat) {
-  const std::string id = pc_handler_->Id().Ascii();
-  constexpr size_t expected_length = 32u;
-  EXPECT_EQ(id.length(), expected_length);
-  EXPECT_EQ(id.length(), strspn(id.c_str(), "0123456789ABCDEF"));
-}
-
-TEST_F(RTCPeerConnectionHandlerTest, IdIsNotRepeated) {
-  const auto other_pc_handler_ = CreateRTCPeerConnectionHandlerUnderTest();
-  EXPECT_NE(pc_handler_->Id(), other_pc_handler_->Id());
-}
-
 }  // namespace content

@@ -140,9 +140,6 @@ class WebRTCPeerConnectionHandler {
       WebRTCRtpSender*) = 0;
   virtual void Stop() = 0;
 
-  // Origin Trial - RtcPeerConnectionId
-  virtual WebString Id() const = 0;
-
   // Returns a pointer to the underlying native PeerConnection object.
   virtual webrtc::PeerConnectionInterface* NativePeerConnection() = 0;
 

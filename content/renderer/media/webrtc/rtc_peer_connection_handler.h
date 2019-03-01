@@ -170,7 +170,6 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       const blink::WebString& label,
       const blink::WebRTCDataChannelInit& init) override;
   void Stop() override;
-  blink::WebString Id() const override;
   webrtc::PeerConnectionInterface* NativePeerConnection() override;
   void RunSynchronousOnceClosureOnSignalingThread(
       base::OnceClosure closure,
@@ -322,9 +321,6 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       RtpTransceiverState transceiver_state);
 
   scoped_refptr<base::SingleThreadTaskRunner> signaling_thread() const;
-
-  // Corresponds to the experimental RTCPeerConnection.id read-only attribute.
-  const std::string id_;
 
   // Initialize() is never expected to be called more than once, even if the
   // first call fails.

@@ -171,8 +171,6 @@ enum RTCPeerConnectionState {
     [Measure, RaisesException] RTCDTMFSender createDTMFSender(MediaStreamTrack track);
     attribute EventHandler onaddstream;
     attribute EventHandler onremovestream;
-
-    [OriginTrialEnabled=RtcPeerConnectionId, CallWith=ScriptState, MeasureAs=RtcPeerConnectionId] readonly attribute DOMString id;
 };
 
 // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectionerrorcallback

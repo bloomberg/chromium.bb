@@ -1178,11 +1178,6 @@
       origin_trial_feature_name: "RTCQuicTransport",
       status: "experimental",
     },
-    {
-      name: "RtcPeerConnectionId",
-      origin_trial_feature_name: "RtcPeerConnectionId",
-      status: "experimental",
-    },
     // Enables the use of the RTCQuicTransport object.
     {
       name: "RTCQuicTransport",

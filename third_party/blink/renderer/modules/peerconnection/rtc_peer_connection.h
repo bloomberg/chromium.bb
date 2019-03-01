@@ -202,8 +202,6 @@ class MODULES_EXPORT RTCPeerConnection final
 
   void removeStream(MediaStream*, ExceptionState&);
 
-  String id(ScriptState*) const;
-
   // Calls one of the below versions (or rejects with an exception) depending on
   // type, see RTCPeerConnection.idl.
   ScriptPromise getStats(ScriptState*, blink::ScriptValue callback_or_selector);

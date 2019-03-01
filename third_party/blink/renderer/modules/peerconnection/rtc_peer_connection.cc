@@ -1862,12 +1862,6 @@ void RTCPeerConnection::removeStream(MediaStream* stream,
   stream->UnregisterObserver(this);
 }
 
-String RTCPeerConnection::id(ScriptState* script_state) const {
-  DCHECK(origin_trials::RtcPeerConnectionIdEnabled(
-      ExecutionContext::From(script_state)));
-  return peer_handler_->Id();
-}
-
 MediaStreamVector RTCPeerConnection::getLocalStreams() const {
   MediaStreamVector local_streams;
   if (sdp_semantics_ == webrtc::SdpSemantics::kPlanB) {

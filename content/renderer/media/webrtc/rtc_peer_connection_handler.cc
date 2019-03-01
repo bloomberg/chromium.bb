@@ -21,7 +21,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -253,6 +252,7 @@ class CreateSessionDescriptionRequest
       }
       tracker_->TrackSessionDescriptionCallback(handler_.get(), action_,
                                                 "OnSuccess", value);
+      tracker_->TrackSessionId(handler_.get(), desc->session_id());
     }
     webkit_request_.RequestSucceeded(CreateWebKitSessionDescription(desc));
     webkit_request_.Reset();
@@ -954,8 +954,7 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
     blink::WebRTCPeerConnectionHandlerClient* client,
     PeerConnectionDependencyFactory* dependency_factory,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : id_(base::ToUpperASCII(base::UnguessableToken::Create().ToString())),
-      initialize_called_(false),
+    : initialize_called_(false),
       client_(client),
       is_closed_(false),
       dependency_factory_(dependency_factory),
@@ -1964,10 +1963,6 @@ void RTCPeerConnectionHandler::Stop() {
 
   // This object may no longer forward call backs to blink.
   is_closed_ = true;
-}
-
-blink::WebString RTCPeerConnectionHandler::Id() const {
-  return blink::WebString::FromASCII(id_);
 }
 
 webrtc::PeerConnectionInterface*

@@ -1816,7 +1816,7 @@ enum WebFeature {
   kV8RTCRtpSender_Dtmf_AttributeGetter = 2381,
   kRTCConstraintEnableDtlsSrtpTrue = 2382,
   kRTCConstraintEnableDtlsSrtpFalse = 2383,
-  kRtcPeerConnectionId = 2384,
+  kDeprecatedRtcPeerConnectionId = 2384,
   kV8PaintWorkletGlobalScope_RegisterPaint_Method = 2385,
   kV8PaintWorkletGlobalScope_DevicePixelRatio_AttributeGetter = 2386,
   kCSSSelectorPseudoFocus = 2387,
