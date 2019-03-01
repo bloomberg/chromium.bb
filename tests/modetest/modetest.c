@@ -293,6 +293,8 @@ static const char *modifier_to_string(uint64_t modifier)
 		return "NVIDIA_16BX2_BLOCK(5)";
 	case DRM_FORMAT_MOD_BROADCOM_VC4_T_TILED:
 		return "MOD_BROADCOM_VC4_T_TILED";
+	case DRM_FORMAT_MOD_QCOM_COMPRESSED:
+		return "QCOM_COMPRESSED";
 	default:
 		return "(UNKNOWN MODIFIER)";
 	}
