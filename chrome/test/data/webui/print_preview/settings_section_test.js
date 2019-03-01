@@ -6,13 +6,10 @@ cr.define('settings_sections_tests', function() {
   /** @enum {string} */
   const TestNames = {
     SettingsSectionsVisibilityChange: 'settings sections visibility change',
-    MediaSizeCustomNames: 'media size custom names',
     Other: 'other',
     SetCopies: 'set copies',
     SetLayout: 'set layout',
     SetColor: 'set color',
-    SetMediaSize: 'set media size',
-    SetDpi: 'set dpi',
     SetMargins: 'set margins',
     SetPagesPerSheet: 'set pages per sheet',
     SetOther: 'set other',
@@ -109,31 +106,6 @@ cr.define('settings_sections_tests', function() {
               assertEquals(!value, element.hidden);
             });
           });
-    });
-
-    test(assert(TestNames.MediaSizeCustomNames), function() {
-      const customLocalizedMediaName = 'Vendor defined localized media name';
-      const customMediaName = 'Vendor defined media name';
-      const mediaSizeElement = page.$$('print-preview-media-size-settings');
-
-      // Expand more settings to reveal the element.
-      toggleMoreSettings();
-      assertFalse(mediaSizeElement.hidden);
-
-      // Change capability to have custom paper sizes.
-      let capabilities =
-          print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
-      capabilities.printer.media_size =
-          print_preview_test_utils.getMediaSizeCapabilityWithCustomNames();
-      page.set('destination_.capabilities', capabilities);
-      Polymer.dom.flush();
-
-      const settingsSelect =
-          mediaSizeElement.$$('print-preview-settings-select');
-
-      assertEquals(capabilities.printer.media_size, settingsSelect.capability);
-      assertFalse(settingsSelect.disabled);
-      assertEquals('mediaSize', settingsSelect.settingName);
     });
 
     /**
@@ -246,98 +218,6 @@ cr.define('settings_sections_tests', function() {
       return print_preview_test_utils.selectOption(colorElement, 'bw')
           .then(function() {
             assertFalse(page.settings.color.value);
-          });
-    });
-
-    test(assert(TestNames.SetMediaSize), function() {
-      toggleMoreSettings();
-      const mediaSizeElement = page.$$('print-preview-media-size-settings');
-      assertFalse(mediaSizeElement.hidden);
-
-      const mediaSizeCapabilities =
-          page.destination_.capabilities.printer.media_size;
-      const letterOption = JSON.stringify(mediaSizeCapabilities.option[0]);
-      const squareOption = JSON.stringify(mediaSizeCapabilities.option[1]);
-
-      // Default is letter
-      const settingsSelect =
-          mediaSizeElement.$$('print-preview-settings-select');
-      assertEquals(letterOption, settingsSelect.$$('select').value);
-      assertEquals(letterOption, JSON.stringify(page.settings.mediaSize.value));
-
-      // Change to square
-      return print_preview_test_utils.selectOption(settingsSelect, squareOption)
-          .then(function() {
-            assertEquals(
-                squareOption, JSON.stringify(page.settings.mediaSize.value));
-
-            // Set the setting to an option that is not supported by the
-            // printer. This can occur if sticky settings are for a different
-            // printer at startup.
-            const unavailableOption = {
-              name: 'ISO_A4',
-              width_microns: 210000,
-              height_microns: 297000,
-              custom_display_name: 'A4',
-            };
-            page.setSetting('mediaSize', unavailableOption);
-            return test_util.eventToPromise(
-                'process-select-change', mediaSizeElement);
-          })
-          .then(function() {
-            // The section should reset the setting to the printer's default
-            // value, since the printer does not support A4.
-            assertEquals(
-                letterOption, JSON.stringify(page.settings.mediaSize.value));
-          });
-    });
-
-    test(assert(TestNames.SetDpi), function() {
-      toggleMoreSettings();
-      const dpiElement = page.$$('print-preview-dpi-settings');
-      assertFalse(dpiElement.hidden);
-
-      const dpiCapabilities = page.destination_.capabilities.printer.dpi;
-      const highQualityOption = dpiCapabilities.option[0];
-      const lowQualityOption = dpiCapabilities.option[1];
-
-      // Default is 200
-      const settingsSelect = dpiElement.$$('print-preview-settings-select');
-      const isDpiEqual = function(value1, value2) {
-        return value1.horizontal_dpi == value2.horizontal_dpi &&
-            value1.vertical_dpi == value2.vertical_dpi &&
-            value1.vendor_id == value2.vendor_id;
-      };
-      expectTrue(isDpiEqual(
-          highQualityOption, JSON.parse(settingsSelect.$$('select').value)));
-      expectTrue(isDpiEqual(highQualityOption, page.settings.dpi.value));
-
-      // Change to 100
-      return print_preview_test_utils
-          .selectOption(
-              settingsSelect,
-              JSON.stringify(dpiElement.capabilityWithLabels_.option[1]))
-          .then(function() {
-            expectTrue(isDpiEqual(
-                lowQualityOption,
-                JSON.parse(settingsSelect.$$('select').value)));
-            expectTrue(isDpiEqual(lowQualityOption, page.settings.dpi.value));
-
-            // Set to the setting to an option that is not supported by the
-            // printer. This can occur if sticky settings are for a different
-            // printer at startup.
-            const unavailableOption = {
-              horizontal_dpi: 400,
-              vertical_dpi: 400,
-            };
-            page.setSetting('dpi', unavailableOption);
-            return test_util.eventToPromise(
-                'process-select-change', dpiElement);
-          })
-          .then(function() {
-            // The section should reset the setting to the printer's default
-            // value, since the printer does not support 400 DPI.
-            expectTrue(isDpiEqual(highQualityOption, page.settings.dpi.value));
           });
     });
 

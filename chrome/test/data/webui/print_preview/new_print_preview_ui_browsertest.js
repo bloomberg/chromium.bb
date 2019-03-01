@@ -95,10 +95,6 @@ TEST_F(
           settings_sections_tests.TestNames.SettingsSectionsVisibilityChange);
     });
 
-TEST_F('PrintPreviewSettingsSectionsTest', 'MediaSizeCustomNames', function() {
-  this.runMochaTest(settings_sections_tests.TestNames.MediaSizeCustomNames);
-});
-
 TEST_F('PrintPreviewSettingsSectionsTest', 'Other', function() {
   this.runMochaTest(settings_sections_tests.TestNames.Other);
 });
@@ -113,14 +109,6 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'SetLayout', function() {
 
 TEST_F('PrintPreviewSettingsSectionsTest', 'SetColor', function() {
   this.runMochaTest(settings_sections_tests.TestNames.SetColor);
-});
-
-TEST_F('PrintPreviewSettingsSectionsTest', 'SetMediaSize', function() {
-  this.runMochaTest(settings_sections_tests.TestNames.SetMediaSize);
-});
-
-TEST_F('PrintPreviewSettingsSectionsTest', 'SetDpi', function() {
-  this.runMochaTest(settings_sections_tests.TestNames.SetDpi);
 });
 
 TEST_F('PrintPreviewSettingsSectionsTest', 'SetMargins', function() {
@@ -246,19 +234,15 @@ PrintPreviewSettingsSelectTest = class extends NewPrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      '../settings/test_util.js',
       'print_preview_test_utils.js',
       'settings_select_test.js',
     ]);
   }
-
-  /** @override */
-  get suiteName() {
-    return settings_select_test.suiteName;
-  }
 };
 
-TEST_F('PrintPreviewSettingsSelectTest', 'CustomMediaNames', function() {
-  this.runMochaTest(settings_select_test.TestNames.CustomMediaNames);
+TEST_F('PrintPreviewSettingsSelectTest', 'All', function() {
+  mocha.run();
 });
 
 PrintPreviewSelectBehaviorTest = class extends NewPrintPreviewTest {
@@ -1309,3 +1293,43 @@ TEST_F(
       this.runMochaTest(
           scaling_settings_test.TestNames.InputNotDisabledOnValidityChange);
     });
+
+PrintPreviewMediaSizeSettingsTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/media_size_settings.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      'print_preview_test_utils.js',
+      'media_size_settings_test.js',
+    ]);
+  }
+};
+
+TEST_F('PrintPreviewMediaSizeSettingsTest', 'All', function() {
+  mocha.run();
+});
+
+PrintPreviewDpiSettingsTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/dpi_settings.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      'print_preview_test_utils.js',
+      'dpi_settings_test.js',
+    ]);
+  }
+};
+
+TEST_F('PrintPreviewDpiSettingsTest', 'All', function() {
+  mocha.run();
+});
