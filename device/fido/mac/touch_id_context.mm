@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
@@ -49,9 +50,12 @@ std::unique_ptr<TouchIdContext> TouchIdContext::Create() {
 // static
 bool TouchIdContext::TouchIdAvailableImpl() {
   base::scoped_nsobject<LAContext> context([[LAContext alloc] init]);
-  return
+  bool available =
       [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
                            error:nil];
+  if (@available(macOS 10.13.2, *))
+    return available && [context biometryType] == LABiometryTypeTouchID;
+  return available;
 }
 
 // static
