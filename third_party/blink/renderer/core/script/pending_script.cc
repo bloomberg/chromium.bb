@@ -160,9 +160,8 @@ void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
 
     AtomicString nonce = element_->GetNonceForElement();
     if (!should_bypass_main_world_csp &&
-        !element_->AllowInlineScriptForCSP(
-            nonce, StartingPosition().line_, script->InlineSourceTextForCSP(),
-            ContentSecurityPolicy::InlineType::kBlock)) {
+        !element_->AllowInlineScriptForCSP(nonce, StartingPosition().line_,
+                                           script->InlineSourceTextForCSP())) {
       // Consider as if:
       //
       // <spec step="2">If the script's script is null, ...</spec>

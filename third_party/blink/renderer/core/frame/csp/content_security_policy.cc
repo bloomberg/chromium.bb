@@ -540,7 +540,6 @@ bool ContentSecurityPolicy::AllowInlineScript(
     const String& nonce,
     const WTF::OrdinalNumber& context_line,
     const String& script_content,
-    InlineType inline_type,
     SecurityViolationReportingPolicy reporting_policy) const {
   DCHECK(element);
 
@@ -551,7 +550,8 @@ bool ContentSecurityPolicy::AllowInlineScript(
   bool is_allowed = true;
   for (const auto& policy : policies_) {
     is_allowed &=
-        CheckScriptHashAgainstPolicy(csp_hash_values, policy, inline_type) ||
+        CheckScriptHashAgainstPolicy(csp_hash_values, policy,
+                                     InlineType::kBlock) ||
         policy->AllowInlineScript(element, context_url, nonce, context_line,
                                   reporting_policy, script_content);
   }
