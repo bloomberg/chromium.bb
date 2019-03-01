@@ -27,11 +27,11 @@ class ConstrainedWebDialogDelegateBase
       public content::WebContentsObserver,
       public ui::WebDialogWebContentsDelegate {
  public:
-  // |browser_context| and |delegate| must outlive |this| instance, whereas
-  // |this| will take ownership of |tab_delegate|.
-  ConstrainedWebDialogDelegateBase(content::BrowserContext* browser_context,
-                                   ui::WebDialogDelegate* delegate,
-                                   WebDialogWebContentsDelegate* tab_delegate);
+  // |browser_context| must outlive |this| instance.
+  ConstrainedWebDialogDelegateBase(
+      content::BrowserContext* browser_context,
+      std::unique_ptr<ui::WebDialogDelegate> web_dialog_delegate,
+      std::unique_ptr<WebDialogWebContentsDelegate> tab_delegate);
   ~ConstrainedWebDialogDelegateBase() override;
 
   bool closed_via_webui() const;

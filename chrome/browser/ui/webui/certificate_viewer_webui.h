@@ -34,6 +34,8 @@ class CertificateViewerDialog : public ui::WebDialogDelegate {
       content::WebContents* web_contents,
       gfx::NativeWindow parent);
 
+  ~CertificateViewerDialog() override;
+
   gfx::NativeWindow GetNativeWebContentsModalDialog();
 
  private:
@@ -43,7 +45,6 @@ class CertificateViewerDialog : public ui::WebDialogDelegate {
   // to the certificate pointer is added for the lifetime of the certificate
   // viewer.
   explicit CertificateViewerDialog(net::ScopedCERTCertificateList certs);
-  ~CertificateViewerDialog() override;
 
   // ui::WebDialogDelegate:
   ui::ModalType GetDialogModalType() const override;
