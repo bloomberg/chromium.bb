@@ -18,7 +18,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view.h"
-#include "ui/views/view_properties.h"
+#include "ui/views/view_class_properties.h"
 
 gfx::Insets GetToolbarInkDropInsets(const views::View* host_view,
                                     const gfx::Insets& margin_insets) {

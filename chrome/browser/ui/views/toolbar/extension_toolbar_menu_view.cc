@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
-#include "ui/views/view_properties.h"
+#include "ui/views/view_class_properties.h"
 
 namespace {
 // The delay before we close the app menu if this was opened for a drop so that

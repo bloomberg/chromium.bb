@@ -55,7 +55,7 @@
 #include "ui/views/controls/menu/menu_types.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/view_properties.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
 using session_manager::SessionState;

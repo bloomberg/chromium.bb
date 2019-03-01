@@ -16,7 +16,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/painter.h"
-#include "ui/views/view_properties.h"
+#include "ui/views/view_class_properties.h"
 
 namespace ash {
 

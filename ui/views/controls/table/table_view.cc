@@ -41,7 +41,7 @@
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/style/typography.h"
-#include "ui/views/view_properties.h"
+#include "ui/views/view_class_properties.h"
 
 namespace views {
 

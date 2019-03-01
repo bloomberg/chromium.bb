@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_VIEW_PROPERTIES_H_
-#define UI_VIEWS_VIEW_PROPERTIES_H_
+#ifndef UI_VIEWS_VIEW_CLASS_PROPERTIES_H_
+#define UI_VIEWS_VIEW_CLASS_PROPERTIES_H_
 
 #include "ui/base/class_property.h"
 #include "ui/views/views_export.h"
@@ -60,4 +60,4 @@ DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, gfx::Insets*)
 DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT,
                                         views::BubbleDialogDelegateView*)
 DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, SkPath*)
-#endif  // UI_VIEWS_VIEW_PROPERTIES_H_
+#endif  // UI_VIEWS_VIEW_CLASS_PROPERTIES_H_

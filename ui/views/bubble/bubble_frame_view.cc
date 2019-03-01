@@ -34,7 +34,7 @@
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/paint_info.h"
 #include "ui/views/resources/grit/views_resources.h"
-#include "ui/views/view_properties.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"

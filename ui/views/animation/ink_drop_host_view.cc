@@ -18,7 +18,7 @@
 #include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/style/platform_style.h"
-#include "ui/views/view_properties.h"
+#include "ui/views/view_class_properties.h"
 
 namespace views {
 
