@@ -402,7 +402,8 @@ public class VrBrowserNativeUiTest {
         NativeUiUtils.clickContentNode(
                 "textfield", new PointF(), 1 /* numClicks */, mVrBrowserTestFramework);
         NativeUiUtils.waitForUiQuiescence();
-        NativeUiUtils.hoverElement(UserFriendlyElementName.CONTENT_QUAD, new PointF(0.0f, 0.55f));
+        NativeUiUtils.hoverElement(
+                UserFriendlyElementName.CONTENT_QUAD, NativeUiUtils.REPOSITION_BAR_COORDINATES);
         NativeUiUtils.waitForUiQuiescence();
         // Due to the way the repositioner works, the reposition bar is technically always visible
         // in the element hierarchy, so we can't just assert that it's invisible. Instead, we have
@@ -592,5 +593,110 @@ public class VrBrowserNativeUiTest {
                 UserFriendlyElementName.SUGGESTION_BOX, new PointF(0.0f, -0.55f));
         RenderTestUtils.dumpAndCompareWithCrop(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
                 "suggestion_clicking_bottom", cropBounds, mRenderTestRule);
+    }
+
+    /**
+     * Tests that scrolling while holding the reposition bar causes the content window to be
+     * resized and that the resize doesn't affect the dimensions reported to the webpage.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Browser", "RenderTest"})
+    public void testScrollResizing() throws InterruptedException, TimeoutException, IOException {
+        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile(
+                        "test_content_resizing_does_not_affect_webpage"),
+                PAGE_LOAD_TIMEOUT_S);
+        mVrBrowserTestFramework.executeStepAndWait("stepGetInitialDimensions()");
+        NativeUiUtils.selectRepositionBar();
+        NativeUiUtils.scrollFling(NativeUiUtils.ScrollDirection.DOWN);
+        // We need to ensure that the scroll has finished, but we can't use waitForUiQuiescence()
+        // because the UI is never quiescent while the reposition bar is being used. So, wait a
+        // suitable number of frames.
+        NativeUiUtils.waitNumFrames(2 * NativeUiUtils.NUM_STEPS_FLING_SCROLL);
+        NativeUiUtils.deselectRepositionBar();
+        NativeUiUtils.waitForUiQuiescence();
+        RenderTestUtils.dumpAndCompare(
+                NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI, "scroll_resizing", mRenderTestRule);
+        mVrBrowserTestFramework.executeStepAndWait("stepCheckDimensionsAfterResize()");
+        mVrBrowserTestFramework.endTest();
+    }
+
+    /**
+     * Tests that the overflow menu and keyboard properly follow the content quad when it is
+     * repositioned.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Browser", "RenderTest"})
+    public void testOverflowAndKeyboardFollowContentQuad()
+            throws InterruptedException, TimeoutException, IOException {
+        mVrTestRule.loadUrl(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("generic_text_entry_page"),
+                PAGE_LOAD_TIMEOUT_S);
+        // Drag the content quad up and to the left.
+        NativeUiUtils.selectRepositionBar();
+        NativeUiUtils.hoverElement(UserFriendlyElementName.CONTENT_QUAD, new PointF(-0.5f, 1.0f));
+        NativeUiUtils.deselectRepositionBar();
+        // Click coordinates are determined when we queue the command, not when it's actually
+        // executed, so ensure the quad has moved before attempting to click.
+        NativeUiUtils.waitForUiQuiescence();
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(
+                UserFriendlyElementName.OVERFLOW_MENU, new PointF());
+        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                "repositioned_overflow_menu", mRenderTestRule);
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(
+                UserFriendlyElementName.OVERFLOW_MENU, new PointF());
+        NativeUiUtils.clickContentNode(
+                "textfield", new PointF(), 1 /* numClicks */, mVrBrowserTestFramework);
+        NativeUiUtils.waitForUiQuiescence();
+        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                "repositioned_keyboard", mRenderTestRule);
+    }
+
+    /**
+     * Tests that window and WebXR rAFs continue to fire while repositioning the content quad.
+     */
+    @Test
+    @MediumTest
+    @CommandLineFlags.Add({"enable-features=WebXR"})
+    public void testRAFsFireWhileRepositioning()
+            throws InterruptedException, TimeoutException, IOException {
+        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile(
+                        "test_rafs_fire_while_repositioning"),
+                PAGE_LOAD_TIMEOUT_S);
+        NativeUiUtils.selectRepositionBar();
+        mVrBrowserTestFramework.executeStepAndWait("stepCheckForRafs()");
+        mVrBrowserTestFramework.endTest();
+    }
+
+    /**
+     * Tests that the reposition bar is not active while a permission prompt is displayed.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Browser", "RenderTest"})
+    public void testRepositionBarDoesNotAppearWithPermissionPromptVisible()
+            throws InterruptedException, TimeoutException, IOException {
+        // We don't need to actually accept the prompt, so we don't need to use the local server.
+        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("2d_permission_page"),
+                PAGE_LOAD_TIMEOUT_S);
+        NativeUiUtils.enableMockedInput();
+        NativeUiUtils.waitForUiQuiescence();
+        NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
+            NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                    UserFriendlyElementName.BROWSING_DIALOG, true /* visible */, () -> {
+                        mVrBrowserTestFramework.runJavaScriptOrFail(
+                                "navigator.getUserMedia({audio: true}, onGranted, onDenied)",
+                                POLL_TIMEOUT_LONG_MS);
+                    });
+        });
+        NativeUiUtils.hoverElement(
+                UserFriendlyElementName.CONTENT_QUAD, NativeUiUtils.REPOSITION_BAR_COORDINATES);
+        NativeUiUtils.waitForUiQuiescence();
+        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                "reposition_bar_permission_prompt_open", mRenderTestRule);
     }
 }

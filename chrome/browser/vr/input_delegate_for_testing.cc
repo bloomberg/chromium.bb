@@ -59,13 +59,19 @@ void InputDelegateForTesting::QueueControllerActionForTesting(
   ControllerModel controller_model;
   if (controller_input.element_name == UserFriendlyElementName::kNone) {
     controller_model.laser_direction = kForwardVector;
+    SetOriginAndTransform(&controller_model);
+  } else if (controller_input.element_name ==
+             UserFriendlyElementName::kCurrentPosition) {
+    controller_model.transform = GetMostRecentModel().transform;
+    controller_model.laser_direction = GetMostRecentModel().laser_direction;
+    controller_model.laser_origin = GetMostRecentModel().laser_origin;
   } else {
     auto target_point = ui_->GetTargetPointForTesting(
         controller_input.element_name, controller_input.position);
     auto direction = (target_point - kStartControllerPosition) - kOrigin;
     direction.GetNormalized(&controller_model.laser_direction);
+    SetOriginAndTransform(&controller_model);
   }
-  SetOriginAndTransform(&controller_model);
 
   switch (controller_input.action) {
     case VrControllerTestAction::kHover:
@@ -96,11 +102,14 @@ void InputDelegateForTesting::QueueControllerActionForTesting(
       break;
     case VrControllerTestAction::kTouchDown:
       // Use whatever the most recent direction is and interpret the provided
-      // point as the point on the touchpad.
+      // point as the point on the touchpad. Also keep whatever the last
+      // touchpad button state was.
       controller_model.laser_direction = GetMostRecentModel().laser_direction;
       SetOriginAndTransform(&controller_model);
       controller_model.touching_touchpad = true;
       controller_model.touchpad_touch_position = controller_input.position;
+      controller_model.touchpad_button_state =
+          GetMostRecentModel().touchpad_button_state;
       controller_model_queue_.push(controller_model);
       break;
     case VrControllerTestAction::kTouchUp:
@@ -108,6 +117,8 @@ void InputDelegateForTesting::QueueControllerActionForTesting(
       SetOriginAndTransform(&controller_model);
       controller_model.touching_touchpad = false;
       controller_model.touchpad_touch_position = controller_input.position;
+      controller_model.touchpad_button_state =
+          GetMostRecentModel().touchpad_button_state;
       controller_model_queue_.push(controller_model);
       break;
     default:

@@ -16,6 +16,8 @@ namespace vr {
 enum class UserFriendlyElementName : int {
   kNone = 0,         // A special "element" that causes the controller to point
                      // straight forward.
+  kCurrentPosition,  // A special "element" that causes the controller to
+                     // remain where it is.
   kUrl,              // URL bar
   kBackButton,       // Back button on the URL bar
   kForwardButton,    // Forward button in the overflow menu
