@@ -371,10 +371,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // in flight change).
   bool RequestRepaintForTesting();
 
-  // Called by the RenderProcessHost to handle the case when the process
-  // changed its state of being blocked.
-  void RenderProcessBlockedStateChanged(bool blocked);
-
   // Called after every cross-document navigation. If Surface Synchronizaton is
   // on, we send a new LocalSurfaceId to RenderWidget to be used after
   // navigation. If Surface Synchronization is off, we block CompositorFrames
@@ -894,6 +890,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                                      const SkBitmap& bitmap);
 
   void OnSnapshotReceived(int snapshot_id, gfx::Image image);
+
+  // Called by the RenderProcessHost to handle the case when the process
+  // changed its state of being blocked.
+  void RenderProcessBlockedStateChanged(bool blocked);
 
   // 1. Grants permissions to URL (if any)
   // 2. Grants permissions to filenames

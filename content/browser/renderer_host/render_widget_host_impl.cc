@@ -482,15 +482,15 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
 
   const auto* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kDisableHangMonitor)) {
-    input_event_ack_timeout_.reset(new TimeoutMonitor(
+    input_event_ack_timeout_ = std::make_unique<TimeoutMonitor>(
         base::BindRepeating(&RenderWidgetHostImpl::OnInputEventAckTimeout,
-                            weak_factory_.GetWeakPtr())));
+                            weak_factory_.GetWeakPtr()));
   }
 
   if (!command_line->HasSwitch(switches::kDisableNewContentRenderingTimeout)) {
-    new_content_rendering_timeout_.reset(new TimeoutMonitor(
+    new_content_rendering_timeout_ = std::make_unique<TimeoutMonitor>(
         base::Bind(&RenderWidgetHostImpl::ClearDisplayedGraphics,
-                   weak_factory_.GetWeakPtr())));
+                   weak_factory_.GetWeakPtr()));
   }
 
   enable_surface_synchronization_ = features::IsSurfaceSynchronizationEnabled();
@@ -531,7 +531,7 @@ RenderWidgetHostImpl* RenderWidgetHostImpl::FromID(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RoutingIDWidgetMap* widgets = g_routing_id_widget_map.Pointer();
   auto it = widgets->find(RenderWidgetHostID(process_id, routing_id));
-  return it == widgets->end() ? NULL : it->second;
+  return it != widgets->end() ? it->second : nullptr;
 }
 
 // static
@@ -558,8 +558,7 @@ RenderWidgetHost::GetRenderWidgetHosts() {
 // static
 std::unique_ptr<RenderWidgetHostIterator>
 RenderWidgetHostImpl::GetAllRenderWidgetHosts() {
-  std::unique_ptr<RenderWidgetHostIteratorImpl> hosts(
-      new RenderWidgetHostIteratorImpl());
+  auto hosts = std::make_unique<RenderWidgetHostIteratorImpl>();
   for (auto& it : g_routing_id_widget_map.Get())
     hosts->Add(it.second);
 
@@ -1024,7 +1023,7 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
     return false;
   }
 
-  std::unique_ptr<VisualProperties> visual_properties(new VisualProperties);
+  auto visual_properties = std::make_unique<VisualProperties>();
   bool needs_ack = false;
   if (!GetVisualProperties(visual_properties.get(), &needs_ack))
     return false;
@@ -3284,8 +3283,7 @@ std::unique_ptr<RenderWidgetHostIterator>
 RenderWidgetHostImpl::GetEmbeddedRenderWidgetHosts() {
   // This iterates over all RenderWidgetHosts and returns those whose Views
   // are children of this host's View.
-  std::unique_ptr<RenderWidgetHostIteratorImpl> hosts(
-      new RenderWidgetHostIteratorImpl());
+  auto hosts = std::make_unique<RenderWidgetHostIteratorImpl>();
   auto* parent_view = static_cast<RenderWidgetHostViewBase*>(GetView());
   for (auto& it : g_routing_id_widget_map.Get()) {
     RenderWidgetHost* widget = it.second;
