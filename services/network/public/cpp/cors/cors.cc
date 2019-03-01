@@ -398,7 +398,8 @@ bool IsCorsSafelistedHeader(const std::string& name, const std::string& value) {
 
   // Client hints are device specific, and not origin specific. As such all
   // client hint headers are considered as safe.
-  // See third_party/WebKit/public/platform/web_client_hints_types.mojom.
+  // See
+  // third_party/blink/public/mojom/web_client_hints/web_client_hints_types.mojom.
   // Client hint headers can be added by Chrome automatically or via JavaScript.
   if (lower_name == "device-memory" || lower_name == "dpr")
     return IsSimilarToDoubleABNF(value);
