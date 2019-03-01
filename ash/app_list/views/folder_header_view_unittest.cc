@@ -67,7 +67,7 @@ class FolderHeaderViewTest : public views::ViewsTestBase {
     // Create a widget so that the FolderNameView can be focused.
     widget_ = std::make_unique<views::Widget>();
     views::Widget::InitParams params = views::ViewsTestBase::CreateParams(
-        views::Widget::InitParams::TYPE_POPUP);
+        views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(0, 0, 650, 650);
     widget_->Init(params);

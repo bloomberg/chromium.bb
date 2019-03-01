@@ -145,7 +145,8 @@ class ArcAccessibilityHelperBridgeTest : public ChromeViewsTestBase {
 
   views::Widget* CreateTestWidget() {
     views::Widget* widget = new views::Widget();
-    widget->Init(CreateParams(views::Widget::InitParams::TYPE_POPUP));
+    widget->Init(
+        CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS));
     return widget;
   }
 

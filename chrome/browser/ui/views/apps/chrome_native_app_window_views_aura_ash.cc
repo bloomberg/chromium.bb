@@ -144,8 +144,15 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
   else if (create_params.show_on_lock_screen)
     container_id = ash::kShellWindowId_LockActionHandlerContainer;
 
-  if (container_id.has_value())
+  if (container_id.has_value()) {
     ash_util::SetupWidgetInitParamsForContainer(init_params, *container_id);
+    if (!ash::IsActivatableShellWindowId(*container_id)) {
+      // This ensures calls to Activate() don't attempt to activate the window
+      // locally, which can have side effects that should be avoided (such as
+      // changing focus). See https://crbug.com/935274 for more details.
+      init_params->activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+    }
+  }
 
   // Resizable lock screen apps will end up maximized by ash. Do it now to
   // save back-and-forth communication with the window manager. Right now all

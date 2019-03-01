@@ -122,7 +122,7 @@ gfx::Rect ConvertRectFromWidgetToView(View* view, const gfx::Rect& r) {
 TEST_F(ViewTargeterTest, ViewTargeterForKeyEvents) {
   Widget widget;
   Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::TYPE_POPUP);
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget.Init(init_params);
   widget.Show();

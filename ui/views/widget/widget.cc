@@ -667,7 +667,8 @@ void Widget::ShowInactive() {
 }
 
 void Widget::Activate() {
-  native_widget_->Activate();
+  if (CanActivate())
+    native_widget_->Activate();
 }
 
 void Widget::Deactivate() {
@@ -1060,7 +1061,9 @@ bool Widget::IsDialogBox() const {
 }
 
 bool Widget::CanActivate() const {
-  return widget_delegate_->CanActivate();
+  // This may be called after OnNativeWidgetDestroyed(), which sets
+  // |widget_delegate_| to null.
+  return widget_delegate_ && widget_delegate_->CanActivate();
 }
 
 bool Widget::IsAlwaysRenderAsActive() const {
@@ -1142,7 +1145,7 @@ void Widget::OnNativeWidgetDestroyed() {
     observer.OnWidgetDestroyed(this);
   widget_delegate_->can_delete_this_ = true;
   widget_delegate_->DeleteDelegate();
-  widget_delegate_ = NULL;
+  widget_delegate_ = nullptr;
   native_widget_destroyed_ = true;
 }
 

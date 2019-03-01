@@ -90,7 +90,8 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
   void CreateTextfield() {
     textfield_ = new Textfield();
     textfield_widget_ = new Widget;
-    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+    Widget::InitParams params =
+        CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.bounds = gfx::Rect(0, 0, 200, 200);
     textfield_widget_->Init(params);
     View* container = new View();
