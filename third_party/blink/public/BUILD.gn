@@ -658,9 +658,6 @@ mojom("mojo_bindings") {
     "platform/modules/permissions/permission.mojom",
     "platform/modules/permissions/permission_status.mojom",
     "platform/modules/webdatabase/web_database.mojom",
-    "platform/reporting.mojom",
-    "platform/site_engagement.mojom",
-    "platform/ukm.mojom",
     "web/commit_result.mojom",
     "web/devtools_frontend.mojom",
     "web/selection_menu_behavior.mojom",
@@ -728,11 +725,6 @@ mojom("android_mojo_bindings") {
     "//ui/gfx/geometry/mojo",
     "//url/mojom:url_mojom_gurl",
   ]
-
-  # This Android unhandled-tap feature uses another mojo source, add it in.
-  if (enable_unhandled_tap) {
-    sources += [ "platform/unhandled_tap_notifier.mojom" ]
-  }
 
   component_output_prefix = "blink_android_mojo_bindings"
 

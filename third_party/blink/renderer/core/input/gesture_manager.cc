@@ -25,7 +25,7 @@
 
 #if BUILDFLAG(ENABLE_UNHANDLED_TAP)
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/platform/unhandled_tap_notifier.mojom-blink.h"
+#include "third_party/blink/public/mojom/unhandled_tap_notifier/unhandled_tap_notifier.mojom-blink.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"

@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/reporting.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html_or_trusted_script_or_trusted_script_url_or_trusted_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"

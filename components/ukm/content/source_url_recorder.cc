@@ -16,7 +16,7 @@
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "third_party/blink/public/platform/ukm.mojom.h"
+#include "third_party/blink/public/mojom/ukm/ukm.mojom.h"
 #include "url/gurl.h"
 
 namespace ukm {
