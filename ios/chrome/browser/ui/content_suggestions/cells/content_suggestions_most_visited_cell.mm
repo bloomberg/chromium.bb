@@ -60,7 +60,7 @@
 }
 
 + (CGSize)defaultSize {
-  return kMostVisitedCellSize;
+  return MostVisitedCellSize();
 }
 
 - (CGSize)intrinsicContentSize {

@@ -7,9 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-// Size of a Most Visited cell, for example on NTP.
-extern const CGSize kMostVisitedCellSize;
-
 // Enum listing the collection shortcuts on NTP and similar surfaces.
 typedef NS_ENUM(NSInteger, NTPCollectionShortcutType) {
   NTPCollectionShortcutTypeBookmark,
@@ -17,6 +14,12 @@ typedef NS_ENUM(NSInteger, NTPCollectionShortcutType) {
   NTPCollectionShortcutTypeRecentTabs,
   NTPCollectionShortcutTypeHistory,
 };
+
+// Returns the size of most visited cell according to current font size.
+CGSize MostVisitedCellSize();
+
+// Returns number of tiles per row based on current system font size.
+NSUInteger NumberOfTilesPerRow();
 
 // Returns a localized title for a given collection shortcut type.
 NSString* TitleForCollectionShortcutType(NTPCollectionShortcutType action);
