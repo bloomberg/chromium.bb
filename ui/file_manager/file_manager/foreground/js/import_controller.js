@@ -103,7 +103,6 @@ importer.ImportController = function(
       .then(
           (/**
            * @param {boolean} importCompleted If so, we hide the banner
-           * @this {importer.ImportController}
            */
           function(importCompleted) {
             this.commandWidget_.setDetailsBannerVisible(!importCompleted);

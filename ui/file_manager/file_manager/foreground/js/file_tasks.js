@@ -1293,12 +1293,12 @@ FileTasks.prototype.createCombobuttonItem_ = function(
   return {
     type: FileTasks.TaskMenuButtonItemType.RunTask,
     label: opt_title || task.label || task.title,
-    iconUrl: task.iconUrl,
+    iconUrl: task.iconUrl || '',
     iconType: task.iconType || '',
     task: task,
     bold: opt_bold || false,
     isDefault: opt_isDefault || false,
-    isGenericFileHandler: task.isGenericFileHandler
+    isGenericFileHandler: /** @type {boolean} */ (task.isGenericFileHandler)
   };
 };
 

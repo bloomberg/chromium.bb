@@ -163,14 +163,15 @@ util.rename = (entry, newName, successCallback, errorCallback) => {
 
 /**
  * Converts DOMError of util.rename to error message.
- * @param {!DOMError} error
+ * @param {DOMError} error
  * @param {!Entry} entry
  * @param {string} newName
  * @return {string}
  */
 util.getRenameErrorMessage = (error, entry, newName) => {
-  if (error.name == util.FileError.PATH_EXISTS_ERR ||
-      error.name == util.FileError.TYPE_MISMATCH_ERR) {
+  if (error &&
+      (error.name == util.FileError.PATH_EXISTS_ERR ||
+       error.name == util.FileError.TYPE_MISMATCH_ERR)) {
     // Check the existing entry is file or not.
     // 1) If the entry is a file:
     //   a) If we get PATH_EXISTS_ERR, a file exists.

@@ -1045,7 +1045,6 @@ FileManager.prototype = /** @struct */ {
         .then(
             (/**
              * @param {boolean} isChild
-             * @this {FileManager}
              */
             function(isChild) {
               if (isChild) {

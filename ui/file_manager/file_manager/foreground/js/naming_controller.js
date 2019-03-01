@@ -301,7 +301,7 @@ NamingController.prototype.commitRename_ = function() {
     util.rename(
         entry, newName,
         function(newEntry) {
-          this.directoryModel_.onRenameEntry(entry, newEntry, function() {
+          this.directoryModel_.onRenameEntry(entry, assert(newEntry), function() {
             // Select new entry.
             this.listContainer_.currentList.selectionModel.selectedIndex =
                 this.directoryModel_.getFileList().indexOf(newEntry);

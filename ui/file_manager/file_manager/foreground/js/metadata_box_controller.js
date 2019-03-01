@@ -148,12 +148,12 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
   if (item.externalFileUrl || item.alternateUrl) {
     this.metadataModel_.get([entry], ['contentMimeType']).then(function(items) {
       const item = items[0];
-      this.metadataBox_.mediaMimeType = item.contentMimeType;
+      this.metadataBox_.mediaMimeType = item.contentMimeType || '';
     }.bind(this));
   } else {
     this.metadataModel_.get([entry], ['mediaMimeType']).then(function(items) {
       const item = items[0];
-      this.metadataBox_.mediaMimeType = item.mediaMimeType;
+      this.metadataBox_.mediaMimeType = item.mediaMimeType || '';
     }.bind(this));
   }
 
@@ -162,8 +162,10 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
       this.metadataModel_.get([entry], ['imageHeight', 'imageWidth'])
           .then(function(items) {
             const item = items[0];
-            this.metadataBox_.imageHeight = item.imageHeight;
-            this.metadataBox_.imageWidth = item.imageWidth;
+            this.metadataBox_.imageHeight =
+                /** @type {number} */ (item.imageHeight);
+            this.metadataBox_.imageWidth =
+                /** @type {number} */ (item.imageWidth);
           }.bind(this));
     } else {
       this.metadataModel_
