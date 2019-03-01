@@ -2167,3 +2167,27 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramInputToFirstContentfulPaint, 1);
 }
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, FirstInputFromScroll) {
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  waiter->AddPageExpectation(TimingField::kLoadEvent);
+  waiter->AddPageExpectation(TimingField::kFirstContentfulPaint);
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/page_load_metrics/scroll.html"));
+  waiter->Wait();
+
+  content::SimulateGestureScrollSequence(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      gfx::Point(100, 100), gfx::Vector2dF(0, 15));
+  NavigateToUntrackedUrl();
+
+  // First Input Delay should not be reported from a scroll!
+  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstInputDelay, 0);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstInputTimestamp,
+                                     0);
+}
