@@ -964,7 +964,7 @@
   },
   {
     "name": "enable-clipboard-provider",
-    // "owners": [ "your-team" ],
+    "owners": [ "orinj", "mpearson", "jdonnelly" ],
     "expiry_milestone": 76
   },
   {
