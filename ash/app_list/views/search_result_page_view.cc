@@ -204,6 +204,10 @@ void SearchResultPageView::AddSearchResultContainerView(
 }
 
 bool SearchResultPageView::IsFirstResultTile() const {
+  // In the event that the result does not exist, it is not a tile.
+  if (!first_result_view_ || !first_result_view_->result())
+    return false;
+
   // |kRecommendation| result type refers to tiles in Zero State.
   return first_result_view_->result()->display_type() ==
              ash::SearchResultDisplayType::kTile ||
