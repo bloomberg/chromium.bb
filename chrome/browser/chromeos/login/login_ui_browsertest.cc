@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/screenshot_testing/login_screen_areas.h"
 #include "chrome/browser/chromeos/login/screenshot_testing/screenshot_testing_mixin.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/pref_names.h"

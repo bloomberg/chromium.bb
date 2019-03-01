@@ -48,7 +48,7 @@ const char kExternalDataPath[] = "policy/blank.html";
 class UserCloudExternalDataManagerTest : public LoginPolicyTestBase {
  protected:
   void SetUp() override {
-    set_initialize_fake_merge_session(false);
+    fake_gaia_.set_initialize_fake_merge_session(false);
 
     LoginPolicyTestBase::SetUp();
   }

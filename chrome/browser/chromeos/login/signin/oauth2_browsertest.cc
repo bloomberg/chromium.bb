@@ -22,6 +22,8 @@
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
+#include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -228,7 +230,8 @@ class RequestDeferrer {
 
 class OAuth2Test : public OobeBaseTest {
  protected:
-  OAuth2Test() {}
+  OAuth2Test() = default;
+  ~OAuth2Test() override = default;
 
   // OobeBaseTest overrides.
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -257,15 +260,17 @@ class OAuth2Test : public OobeBaseTest {
     params.id_token = is_under_advanced_protection
                           ? kTestIdTokenAdvancedProtectionEnabled
                           : kTestIdTokenAdvancedProtectionDisabled;
-    fake_gaia_->SetMergeSessionParams(params);
-    SetupFakeGaiaForLogin(kTestEmail, kTestGaiaId, kTestRefreshToken);
+    fake_gaia_.fake_gaia()->SetMergeSessionParams(params);
+    fake_gaia_.SetupFakeGaiaForLogin(kTestEmail, kTestGaiaId,
+                                     kTestRefreshToken);
   }
 
   void SetupGaiaServerForUnexpiredAccount() {
     FakeGaia::MergeSessionParams params;
     params.email = kTestEmail;
-    fake_gaia_->SetMergeSessionParams(params);
-    SetupFakeGaiaForLogin(kTestEmail, kTestGaiaId, kTestRefreshToken);
+    fake_gaia_.fake_gaia()->SetMergeSessionParams(params);
+    fake_gaia_.SetupFakeGaiaForLogin(kTestEmail, kTestGaiaId,
+                                     kTestRefreshToken);
   }
 
   void SetupGaiaServerForExpiredAccount() {
@@ -273,8 +278,9 @@ class OAuth2Test : public OobeBaseTest {
     params.gaia_uber_token = kTestGaiaUberToken;
     params.session_sid_cookie = kTestSession2SIDCookie;
     params.session_lsid_cookie = kTestSession2LSIDCookie;
-    fake_gaia_->SetMergeSessionParams(params);
-    SetupFakeGaiaForLogin(kTestEmail, kTestGaiaId, kTestRefreshToken);
+    fake_gaia_.fake_gaia()->SetMergeSessionParams(params);
+    fake_gaia_.SetupFakeGaiaForLogin(kTestEmail, kTestGaiaId,
+                                     kTestRefreshToken);
   }
 
   void LoginAsExistingUser() {
@@ -444,6 +450,8 @@ class OAuth2Test : public OobeBaseTest {
     DCHECK(request_deferers_.find(path) == request_deferers_.end());
     request_deferers_[path] = request_deferer;
   }
+
+  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
 
  private:
   std::map<std::string, RequestDeferrer*> request_deferers_;
@@ -653,7 +661,7 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, TerminateOnBadMergeSessionAfterOnlineAuth) {
   params.auth_code = kTestAuthCode;
   params.refresh_token = kTestRefreshToken;
   params.access_token = kTestAuthLoginAccessToken;
-  fake_gaia_->SetMergeSessionParams(params);
+  fake_gaia_.fake_gaia()->SetMergeSessionParams(params);
 
   // Simulate an online sign-in.
   LoginDisplayHost::default_host()
