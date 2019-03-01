@@ -1454,7 +1454,14 @@ TEST_F(DeveloperPrivateApiUnitTest, RemoveHostPermission) {
   EXPECT_FALSE(modifier.HasGrantedHostPermission(kMapsGoogleCom));
 }
 
-TEST_F(DeveloperPrivateApiUnitTest, UpdateHostAccess) {
+// This test is flaky on chromeos.
+// https://crbug.com/937355
+#if defined(OS_CHROMEOS)
+#define MAYBE_UpdateHostAccess DISABLED_UpdateHostAccess
+#else
+#define MAYBE_UpdateHostAccess UpdateHostAccess
+#endif
+TEST_F(DeveloperPrivateApiUnitTest, MAYBE_UpdateHostAccess) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       extensions_features::kRuntimeHostPermissions);
