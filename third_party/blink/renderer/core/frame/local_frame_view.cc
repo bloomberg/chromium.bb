@@ -40,6 +40,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
+#include "third_party/blink/renderer/core/accessibility/apply_high_contrast_check.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/css/font_face_set_document.h"
@@ -2634,13 +2635,8 @@ void LocalFrameView::PaintTree() {
         graphics_context.SetPrinting(true);
 
       if (Settings* settings = frame_->GetSettings()) {
-        HighContrastSettings high_contrast_settings;
-        high_contrast_settings.mode = settings->GetHighContrastMode();
-        high_contrast_settings.grayscale = settings->GetHighContrastGrayscale();
-        high_contrast_settings.contrast = settings->GetHighContrastContrast();
-        high_contrast_settings.image_policy =
-            settings->GetHighContrastImagePolicy();
-        graphics_context.SetHighContrast(high_contrast_settings);
+        graphics_context.SetHighContrast(
+            BuildHighContrastSettings(*settings, *GetLayoutView()));
       }
 
       PaintInternal(graphics_context, kGlobalPaintNormalPhase,
