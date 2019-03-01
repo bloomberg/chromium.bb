@@ -143,7 +143,7 @@ void RemoteFontFaceSource::NotifyFinished(Resource* resource) {
     const scoped_refptr<FontCustomPlatformData> customFontData =
         font->GetCustomFontData();
     if (customFontData) {
-      probe::fontsUpdated(font_selector_->GetExecutionContext(),
+      probe::FontsUpdated(font_selector_->GetExecutionContext(),
                           face_->GetFontFace(), resource->Url().GetString(),
                           customFontData.get());
     }

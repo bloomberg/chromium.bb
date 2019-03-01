@@ -476,7 +476,7 @@ void ThreadDebugger::consoleTimeStamp(const v8_inspector::StringView& title) {
   TRACE_EVENT_INSTANT1(
       "devtools.timeline", "TimeStamp", TRACE_EVENT_SCOPE_THREAD, "data",
       inspector_time_stamp_event::Data(ec, ToCoreString(title)));
-  probe::consoleTimeStamp(ec, ToCoreString(title));
+  probe::ConsoleTimeStamp(ec, ToCoreString(title));
 }
 
 void ThreadDebugger::startRepeatingTimer(

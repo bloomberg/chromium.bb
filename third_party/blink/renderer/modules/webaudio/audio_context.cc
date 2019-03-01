@@ -111,7 +111,7 @@ AudioContext* AudioContext::Create(Document& document,
       audio_context->destination()->maxChannelCount());
   sample_rate_histogram.Sample(audio_context->sampleRate());
 
-  probe::didCreateAudioContext(&document);
+  probe::DidCreateAudioContext(&document);
 
   return audio_context;
 }
@@ -186,7 +186,7 @@ ScriptPromise AudioContext::suspendContext(ScriptState* script_state) {
     resolver->Resolve();
 
     // Probe reports the suspension only when the promise is resolved.
-    probe::didSuspendAudioContext(GetDocument());
+    probe::DidSuspendAudioContext(GetDocument());
   }
 
   return promise;
@@ -220,7 +220,7 @@ ScriptPromise AudioContext::resumeContext(ScriptState* script_state) {
       StartRendering();
 
       // Probe reports only when the user gesture allows the audio rendering.
-      probe::didResumeAudioContext(GetDocument());
+      probe::DidResumeAudioContext(GetDocument());
     }
   }
 
@@ -290,7 +290,7 @@ ScriptPromise AudioContext::closeContext(ScriptState* script_state) {
   // The promise from closing context resolves immediately after this function.
   DidClose();
 
-  probe::didCloseAudioContext(GetDocument());
+  probe::DidCloseAudioContext(GetDocument());
 
   return promise;
 }

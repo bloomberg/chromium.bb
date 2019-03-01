@@ -121,7 +121,7 @@ bool MaybeDisallowFetchForDocWrittenScript(FetchParameters& params,
   if (params.Defer() != FetchParameters::kNoDefer)
     return false;
 
-  probe::documentWriteFetchScript(&document);
+  probe::DocumentWriteFetchScript(&document);
 
   if (!params.Url().ProtocolIsInHTTPFamily())
     return false;

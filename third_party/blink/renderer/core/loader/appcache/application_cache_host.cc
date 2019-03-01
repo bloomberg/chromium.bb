@@ -194,7 +194,7 @@ void ApplicationCacheHost::NotifyApplicationCache(
     int error_status,
     const String& error_message) {
   if (id != mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT) {
-    probe::updateApplicationCacheStatus(document_loader_->GetFrame());
+    probe::UpdateApplicationCacheStatus(document_loader_->GetFrame());
   }
 
   if (defers_events_) {
@@ -291,7 +291,7 @@ bool ApplicationCacheHost::Update() {
 bool ApplicationCacheHost::SwapCache() {
   bool success = host_ ? host_->SwapCache() : false;
   if (success) {
-    probe::updateApplicationCacheStatus(document_loader_->GetFrame());
+    probe::UpdateApplicationCacheStatus(document_loader_->GetFrame());
   }
   return success;
 }

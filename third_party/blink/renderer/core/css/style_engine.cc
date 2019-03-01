@@ -464,7 +464,7 @@ void StyleEngine::UpdateActiveStyleSheets() {
       active_tree_scopes_.erase(tree_scope);
   }
 
-  probe::activeStyleSheetsUpdated(document_);
+  probe::ActiveStyleSheetsUpdated(document_);
 
   dirty_tree_scopes_.clear();
   document_scope_dirty_ = false;
@@ -793,7 +793,7 @@ void StyleEngine::FontsNeedUpdate(FontSelector*) {
   GetDocument().SetNeedsStyleRecalc(
       kSubtreeStyleChange,
       StyleChangeReasonForTracing::Create(style_change_reason::kFonts));
-  probe::fontsUpdated(document_, nullptr, String(), nullptr);
+  probe::FontsUpdated(document_, nullptr, String(), nullptr);
 }
 
 void StyleEngine::SetFontSelector(CSSFontSelector* font_selector) {

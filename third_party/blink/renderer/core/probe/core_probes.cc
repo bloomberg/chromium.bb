@@ -91,7 +91,7 @@ void AsyncTaskScheduledBreakable(ExecutionContext* context,
                                  const char* name,
                                  void* task) {
   AsyncTaskScheduled(context, name, task);
-  breakableLocation(context, name);
+  BreakableLocation(context, name);
 }
 
 void AsyncTaskCanceled(ExecutionContext* context, void* task) {
@@ -109,7 +109,7 @@ void AsyncTaskCanceledBreakable(ExecutionContext* context,
                                 const char* name,
                                 void* task) {
   AsyncTaskCanceled(context, task);
-  breakableLocation(context, name);
+  BreakableLocation(context, name);
 }
 
 void AllAsyncTasksCanceled(ExecutionContext* context) {

@@ -61,7 +61,7 @@ class GlobalFetchImpl final
     if (exception_state.HadException())
       return ScriptPromise();
 
-    probe::willSendXMLHttpOrFetchNetworkRequest(execution_context, r->url());
+    probe::WillSendXMLHttpOrFetchNetworkRequest(execution_context, r->url());
     FetchRequestData* request_data =
         r->PassRequestData(script_state, exception_state);
     if (exception_state.HadException())

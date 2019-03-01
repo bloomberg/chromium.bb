@@ -215,7 +215,7 @@ void ExecutionContextCSPDelegate::DisableEval(const String& error_message) {
 
 void ExecutionContextCSPDelegate::ReportBlockedScriptExecutionToInspector(
     const String& directive_text) {
-  probe::scriptExecutionBlockedByCSP(execution_context_, directive_text);
+  probe::ScriptExecutionBlockedByCSP(execution_context_, directive_text);
 }
 
 void ExecutionContextCSPDelegate::DidAddContentSecurityPolicies(

@@ -237,7 +237,7 @@ void CharacterData::DidModifyData(const String& old_data, UpdateSource source) {
     }
     DispatchSubtreeModifiedEvent();
   }
-  probe::characterDataModified(this);
+  probe::CharacterDataModified(this);
 }
 
 }  // namespace blink

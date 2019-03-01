@@ -72,7 +72,7 @@ void NavigatorLanguage::SetLanguagesForTesting(const String& languages) {
 void NavigatorLanguage::EnsureUpdatedLanguage() {
   if (languages_dirty_) {
     String accept_languages_override;
-    probe::applyAcceptLanguageOverride(context_, &accept_languages_override);
+    probe::ApplyAcceptLanguageOverride(context_, &accept_languages_override);
 
     if (!accept_languages_override.IsNull()) {
       languages_ = ParseAndSanitize(accept_languages_override);

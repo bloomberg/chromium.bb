@@ -152,7 +152,7 @@ void EventSource::Connect() {
   ResourceLoaderOptions resource_loader_options;
   resource_loader_options.data_buffering_policy = kDoNotBufferData;
 
-  probe::willSendEventSourceRequest(&execution_context);
+  probe::WillSendEventSourceRequest(&execution_context);
   loader_ = MakeGarbageCollected<ThreadableLoader>(execution_context, this,
                                                    resource_loader_options);
   loader_->Start(request);
@@ -325,7 +325,7 @@ void EventSource::OnMessageEvent(const AtomicString& event_type,
   e->initMessageEvent(event_type, false, false, data, event_stream_origin_,
                       last_event_id, nullptr, nullptr);
 
-  probe::willDispatchEventSourceEvent(GetExecutionContext(),
+  probe::WillDispatchEventSourceEvent(GetExecutionContext(),
                                       resource_identifier_, event_type,
                                       last_event_id, data);
   DispatchEvent(*e);

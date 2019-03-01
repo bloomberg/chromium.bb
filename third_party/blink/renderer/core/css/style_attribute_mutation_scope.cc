@@ -117,7 +117,7 @@ StyleAttributeMutationScope::~StyleAttributeMutationScope() {
 
   should_notify_inspector_ = false;
   if (local_copy_style_decl->ParentElement())
-    probe::didInvalidateStyleAttr(local_copy_style_decl->ParentElement());
+    probe::DidInvalidateStyleAttr(local_copy_style_decl->ParentElement());
 }
 
 }  // namespace blink

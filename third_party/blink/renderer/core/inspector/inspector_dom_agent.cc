@@ -1788,7 +1788,7 @@ void InspectorDOMAgent::CollectNodes(
   }
 }
 
-void InspectorDOMAgent::DOMContentLoadedEventFired(LocalFrame* frame) {
+void InspectorDOMAgent::DomContentLoadedEventFired(LocalFrame* frame) {
   if (frame != inspected_frames_->Root())
     return;
 

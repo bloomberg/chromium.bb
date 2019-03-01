@@ -327,7 +327,7 @@ void FrameLoader::DispatchUnloadEvent() {
 }
 
 void FrameLoader::DidExplicitOpen() {
-  probe::lifecycleEvent(frame_, GetDocumentLoader(), "init",
+  probe::LifecycleEvent(frame_, GetDocumentLoader(), "init",
                         CurrentTimeTicksInSeconds());
   // Calling document.open counts as committing the first real document load.
   if (!state_machine_.CommittedFirstRealDocumentLoad())
@@ -1024,7 +1024,7 @@ void FrameLoader::CommitNavigation(
 
   frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
   Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_);
-  probe::didStartProvisionalLoad(frame_);
+  probe::DidStartProvisionalLoad(frame_);
   virtual_time_pauser_.PauseVirtualTime();
 
   provisional_document_loader_->StartLoading();
@@ -1100,7 +1100,7 @@ bool FrameLoader::CreatePlaceholderDocumentLoader(
       frame_, info.navigation_type, std::move(navigation_params),
       std::move(extra_data));
   frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
-  probe::didStartProvisionalLoad(frame_);
+  probe::DidStartProvisionalLoad(frame_);
   virtual_time_pauser_.PauseVirtualTime();
   TakeObjectSnapshot();
   return true;
@@ -1355,7 +1355,7 @@ void FrameLoader::RestoreScrollPositionAndViewState(
 
 String FrameLoader::UserAgent() const {
   String user_agent = Client()->UserAgent();
-  probe::applyUserAgentOverride(probe::ToCoreProbeSink(frame_->GetDocument()),
+  probe::ApplyUserAgentOverride(probe::ToCoreProbeSink(frame_->GetDocument()),
                                 &user_agent);
   return user_agent;
 }
@@ -1590,7 +1590,7 @@ void FrameLoader::DispatchDidClearDocumentOfWindowObject() {
     // Forcibly instantiate WindowProxy, even if script is disabled.
     frame_->GetScriptController().WindowProxy(DOMWrapperWorld::MainWorld());
   }
-  probe::didClearDocumentOfWindowObject(frame_);
+  probe::DidClearDocumentOfWindowObject(frame_);
   if (!frame_->GetDocument()->CanExecuteScripts(kNotAboutToExecuteScript))
     return;
 

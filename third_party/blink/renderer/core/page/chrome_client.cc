@@ -128,9 +128,9 @@ static bool OpenJavaScriptDialog(LocalFrame* frame,
   // otherwise cause the load to continue while we're in the middle of
   // executing JavaScript.
   ScopedPagePauser pauser;
-  probe::willRunJavaScriptDialog(frame);
+  probe::WillRunJavaScriptDialog(frame);
   bool result = delegate();
-  probe::didRunJavaScriptDialog(frame);
+  probe::DidRunJavaScriptDialog(frame);
   return result;
 }
 

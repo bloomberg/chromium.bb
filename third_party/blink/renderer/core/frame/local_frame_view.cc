@@ -952,7 +952,7 @@ void LocalFrameView::UpdateLayout() {
   // Remove or update this code. crbug.com/460596
   TRACE_EVENT_END1("devtools.timeline", "Layout", "endData",
                    inspector_layout_event::EndData(root_for_this_layout));
-  probe::didChangeViewport(frame_.Get());
+  probe::DidChangeViewport(frame_.Get());
 
   nested_layout_count_--;
   if (nested_layout_count_)
@@ -1871,7 +1871,7 @@ void LocalFrameView::SendResizeEventIfNeeded() {
   frame_->GetDocument()->EnqueueResizeEvent();
 
   if (frame_->IsMainFrame())
-    probe::didResizeMainFrame(frame_.Get());
+    probe::DidResizeMainFrame(frame_.Get());
 }
 
 float LocalFrameView::InputEventsScaleFactor() const {
@@ -2815,7 +2815,7 @@ void LocalFrameView::PushPaintArtifactToCompositor(
       paint_controller_->GetPaintArtifactShared(), composited_element_ids,
       viewport_properties, settings);
 
-  probe::layerTreePainted(&GetFrame());
+  probe::LayerTreePainted(&GetFrame());
 }
 
 std::unique_ptr<JSONObject> LocalFrameView::CompositedLayersAsJSON(

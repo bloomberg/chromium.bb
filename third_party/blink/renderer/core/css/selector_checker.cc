@@ -942,7 +942,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         else
           element.SetChildrenOrSiblingsAffectedByFocusWithin();
       }
-      probe::forcePseudoState(&element, CSSSelector::kPseudoFocusWithin,
+      probe::ForcePseudoState(&element, CSSSelector::kPseudoFocusWithin,
                               &force_pseudo_state);
       if (force_pseudo_state)
         return true;
@@ -956,7 +956,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       }
       if (!ShouldMatchHoverOrActive(context))
         return false;
-      probe::forcePseudoState(&element, CSSSelector::kPseudoHover,
+      probe::ForcePseudoState(&element, CSSSelector::kPseudoHover,
                               &force_pseudo_state);
       if (force_pseudo_state)
         return true;
@@ -970,7 +970,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       }
       if (!ShouldMatchHoverOrActive(context))
         return false;
-      probe::forcePseudoState(&element, CSSSelector::kPseudoActive,
+      probe::ForcePseudoState(&element, CSSSelector::kPseudoActive,
                               &force_pseudo_state);
       if (force_pseudo_state)
         return true;
@@ -1376,7 +1376,7 @@ bool SelectorChecker::CheckScrollbarPseudoClass(
 
 bool SelectorChecker::MatchesFocusPseudoClass(const Element& element) {
   bool force_pseudo_state = false;
-  probe::forcePseudoState(const_cast<Element*>(&element),
+  probe::ForcePseudoState(const_cast<Element*>(&element),
                           CSSSelector::kPseudoFocus, &force_pseudo_state);
   if (force_pseudo_state)
     return true;
@@ -1385,7 +1385,7 @@ bool SelectorChecker::MatchesFocusPseudoClass(const Element& element) {
 
 bool SelectorChecker::MatchesFocusVisiblePseudoClass(const Element& element) {
   bool force_pseudo_state = false;
-  probe::forcePseudoState(const_cast<Element*>(&element),
+  probe::ForcePseudoState(const_cast<Element*>(&element),
                           CSSSelector::kPseudoFocusVisible,
                           &force_pseudo_state);
   if (force_pseudo_state)

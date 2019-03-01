@@ -345,7 +345,7 @@ void DOMWindow::Close(LocalDOMWindow* incumbent_window) {
   if (auto* local_dom_window = DynamicTo<LocalDOMWindow>(this)) {
     execution_context = local_dom_window->GetExecutionContext();
   }
-  probe::breakableLocation(execution_context, "DOMWindow.close");
+  probe::BreakableLocation(execution_context, "DOMWindow.close");
 
   page->CloseSoon();
 

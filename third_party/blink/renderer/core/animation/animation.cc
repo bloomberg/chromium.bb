@@ -142,7 +142,7 @@ Animation::Animation(ExecutionContext* execution_context,
     }
     content_->Attach(this);
   }
-  probe::didCreateAnimation(timeline_->GetDocument(), sequence_number_);
+  probe::DidCreateAnimation(timeline_->GetDocument(), sequence_number_);
 }
 
 Animation::~Animation() {
@@ -1222,7 +1222,7 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope() {
   animation_->EndUpdatingState();
 
   if (old_play_state != new_play_state) {
-    probe::animationPlayStateChanged(
+    probe::AnimationPlayStateChanged(
         animation_->TimelineInternal()->GetDocument(), animation_,
         old_play_state, new_play_state);
   }

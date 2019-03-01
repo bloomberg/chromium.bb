@@ -279,7 +279,7 @@ void ThreadableLoader::Start(const ResourceRequest& request) {
   // Set the service worker mode to none if "bypass for network" in DevTools is
   // enabled.
   bool should_bypass_service_worker = false;
-  probe::shouldBypassServiceWorker(execution_context_,
+  probe::ShouldBypassServiceWorker(execution_context_,
                                    &should_bypass_service_worker);
   if (should_bypass_service_worker)
     new_request.SetSkipServiceWorker(true);
@@ -472,7 +472,7 @@ void ThreadableLoader::MakeCrossOriginAccessRequest(
   bool should_ignore_preflight_cache = false;
   // Prevent use of the CORS preflight cache when instructed by the DevTools
   // not to use caches.
-  probe::shouldForceCorsPreflight(execution_context_,
+  probe::ShouldForceCorsPreflight(execution_context_,
                                   &should_ignore_preflight_cache);
   if (should_ignore_preflight_cache ||
       !cors::CheckIfRequestCanSkipPreflight(
@@ -647,7 +647,7 @@ bool ThreadableLoader::RedirectReceived(
       return follow;
     }
 
-    probe::didReceiveCorsRedirectResponse(
+    probe::DidReceiveCorsRedirectResponse(
         execution_context_, resource->Identifier(),
         GetDocument() && GetDocument()->GetFrame()
             ? GetDocument()->GetFrame()->Loader().GetDocumentLoader()
@@ -814,7 +814,7 @@ void ThreadableLoader::ReportResponseReceived(
   if (!frame)
     return;
   DocumentLoader* loader = frame->Loader().GetDocumentLoader();
-  probe::didReceiveResourceResponse(probe::ToCoreProbeSink(execution_context_),
+  probe::DidReceiveResourceResponse(probe::ToCoreProbeSink(execution_context_),
                                     identifier, loader, response,
                                     GetResource());
   frame->Console().ReportResourceResponseReceived(loader, identifier, response);

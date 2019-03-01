@@ -135,9 +135,9 @@ bool WebFrame::Swap(WebFrame* frame) {
 
   if (auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(owner)) {
     if (auto* new_local_frame = DynamicTo<LocalFrame>(new_frame)) {
-      probe::frameOwnerContentUpdated(new_local_frame, frame_owner_element);
+      probe::FrameOwnerContentUpdated(new_local_frame, frame_owner_element);
     } else if (auto* old_local_frame = DynamicTo<LocalFrame>(old_frame)) {
-      probe::frameOwnerContentUpdated(old_local_frame, frame_owner_element);
+      probe::FrameOwnerContentUpdated(old_local_frame, frame_owner_element);
     }
   }
 
