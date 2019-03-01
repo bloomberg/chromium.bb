@@ -15,7 +15,6 @@
 
 namespace {
 const char kBookmarkFolderPath[] = "folder/";
-const char kLegacyWelcomeHost[] = "welcome";
 }
 
 namespace chrome {
@@ -24,10 +23,7 @@ namespace android {
 bool HandleAndroidNativePageURL(GURL* url,
                                 content::BrowserContext* browser_context) {
   if (url->SchemeIs(content::kChromeUIScheme)) {
-    // TODO(newt): stop redirecting chrome://welcome to chrome-native://newtab
-    // when M39 is a distant memory. http://crbug.com/455427
-    if (url->host() == chrome::kChromeUINewTabHost ||
-        url->host() == kLegacyWelcomeHost) {
+    if (url->host() == chrome::kChromeUINewTabHost) {
       *url = GURL(chrome::kChromeUINativeNewTabURL);
       return true;
     }
