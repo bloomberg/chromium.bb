@@ -32,6 +32,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "media/base/media_switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -502,7 +503,7 @@ class AdsPageLoadMetricsTestWaiter
   bool ExpectationsSatisfied() const override {
     int num_ad_resources = 0;
     for (auto& kv : page_resources_) {
-      if (kv.second->reported_as_ad_resource)
+      if (kv.second->reported_as_ad_resource && kv.second->is_complete)
         num_ad_resources++;
     }
     return num_ad_resources >= expected_minimum_num_ad_resources_ &&
@@ -527,6 +528,12 @@ class AdsPageLoadMetricsObserverResourceBrowserTest
         {subresource_filter::testing::CreateSuffixRule("ad_script.js"),
          subresource_filter::testing::CreateSuffixRule("ad_script_2.js"),
          subresource_filter::testing::CreateSuffixRule("disallow.zip")});
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(
+        switches::kAutoplayPolicy,
+        switches::autoplay::kNoUserGestureRequiredPolicy);
   }
 
   void OpenLinkInFrame(const content::ToRenderFrameHost& adapter,
@@ -863,9 +870,9 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   GURL url = embedded_test_server()->GetURL("foo.com", "/frame_factory.html");
   ui_test_utils::NavigateToURL(browser(), url);
 
-  // This page will load an autoplay video.
-  contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("createAdFrame('multiple_mimes.html', 'test');"));
+  // This frame will load a video.
+  EXPECT_TRUE(
+      ExecJs(contents, "createAdFrame('multiple_mimes.html', 'test');"));
 
   // Intercept one of the resources loaded by "multiple_mimes.html" and load
   // enough bytes to trigger the intervention.
@@ -878,7 +885,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   waiter->AddMinimumAdResourceExpectation(8);
   waiter->Wait();
 
-  // Wait for the video to play.
+  // Wait for the video to autoplay in the frame.
   content::RenderFrameHost* ad_frame =
       ChildFrameAt(contents->GetMainFrame(), 0);
   EXPECT_EQ("true", content::EvalJsWithManualReply(
@@ -886,7 +893,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                         "var video = document.getElementsByTagName('video')[0];"
                         "video.onplaying = () => { "
                         "window.domAutomationController.send('true'); };"
-                        "video.play();"));
+                        "video.play();",
+                        content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   // Close all tabs to report metrics.
   browser()->tab_strip_model()->CloseAllTabs();
