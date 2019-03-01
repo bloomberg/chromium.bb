@@ -14,8 +14,8 @@ import time
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import memoize
 from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib import timeout_util
 
 
@@ -76,9 +76,8 @@ def GetChrootVersion(chroot):
   Returns:
     The version of the chroot dir, or None if the version is missing/invalid.
   """
-  # Append since CHROOT_VERSION_FILE starts with /.
   ver_path = os.path.join(chroot, CHROOT_VERSION_FILE.lstrip(os.sep))
-  updater = GetChrootUpdater(version_file=ver_path)
+  updater = ChrootUpdater(version_file=ver_path)
   try:
     return updater.GetVersion()
   except (IOError, Error) as e:
@@ -460,7 +459,7 @@ def RunChrootVersionHooks(version_file=None, hooks_dir=None):
     command = ['run_chroot_version_hooks']
     cros_build_lib.RunCommand(command, enter_chroot=True)
   else:
-    chroot = GetChrootUpdater(version_file=version_file, hooks_dir=hooks_dir)
+    chroot = ChrootUpdater(version_file=version_file, hooks_dir=hooks_dir)
     chroot.ApplyUpdates()
 
 
@@ -472,18 +471,12 @@ def InitLatestVersion(version_file=None, hooks_dir=None):
     cros_build_lib.RunCommand(command, enter_chroot=True)
   else:
     # Initialize the version.
-    chroot = GetChrootUpdater(version_file=version_file, hooks_dir=hooks_dir)
+    chroot = ChrootUpdater(version_file=version_file, hooks_dir=hooks_dir)
     if chroot.IsInitialized():
       logging.info('Chroot is already initialized to %s.', chroot.GetVersion())
     else:
       logging.info('Initializing chroot to version %s.', chroot.latest_version)
       chroot.SetVersion(chroot.latest_version)
-
-
-@memoize.Memoize
-def GetChrootUpdater(version_file=None, hooks_dir=None):
-  """Memoized factory method to help avoid extraneous filesystem operations."""
-  return ChrootUpdater(version_file=version_file, hooks_dir=hooks_dir)
 
 
 class ChrootUpdater(object):
@@ -500,10 +493,8 @@ class ChrootUpdater(object):
       # Use the absolute path since we're inside the chroot.
       default_version_file = CHROOT_VERSION_FILE
     else:
-      # Use the default chroot path as a prefix since we're outside the chroot.
-      ch_dir = os.path.join(constants.SOURCE_ROOT, constants.DEFAULT_CHROOT_DIR)
-      # Append since CHROOT_VERSION_FILE starts with /.
-      default_version_file = ch_dir + CHROOT_VERSION_FILE
+      # Otherwise convert to the path outside the chroot.
+      default_version_file = path_util.FromChrootPath(CHROOT_VERSION_FILE)
 
     self._version_file = version_file or default_version_file
     self._hooks_dir = hooks_dir or self._CHROOT_VERSION_HOOKS_DIR
