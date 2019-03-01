@@ -22,7 +22,7 @@ static const char valueListStringPool[] = {
 {% endfor %}
 };
 
-static const unsigned short valueListStringOffsets[] = {
+static const uint16_t valueListStringOffsets[] = {
 {% for offset in value_keyword_offsets %}
   {{offset}},
 {% endfor %}
@@ -58,7 +58,7 @@ const char* getValueName(CSSValueID id) {
   return valueListStringPool + valueListStringOffsets[id - 1];
 }
 
-bool isValueAllowedInMode(unsigned short id, CSSParserMode mode) {
+bool isValueAllowedInMode(uint16_t id, CSSParserMode mode) {
   switch (id) {
 {% for ua_keyword in ua_sheet_mode_values_keywords %}
     case {{ua_keyword.enum_name}}:
