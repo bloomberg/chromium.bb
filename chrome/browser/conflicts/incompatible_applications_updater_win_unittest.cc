@@ -149,7 +149,7 @@ class IncompatibleApplicationsUpdaterTest : public testing::Test,
   CreateIncompatibleApplicationsUpdater() {
     return std::make_unique<IncompatibleApplicationsUpdater>(
         this, exe_certificate_info_, module_list_filter_,
-        installed_applications_);
+        installed_applications_, false);
   }
 
   // ModuleDatabaseEventSource:
@@ -440,4 +440,26 @@ TEST_F(IncompatibleApplicationsUpdaterTest, IgnoreModulesAddedToTheBlacklist) {
   auto application_names =
       IncompatibleApplicationsUpdater::GetCachedApplications();
   ASSERT_EQ(0u, application_names.size());
+}
+
+TEST_F(IncompatibleApplicationsUpdaterTest, DisableModuleAnalysis) {
+  AddIncompatibleApplication(dll1_, L"Foo", Option::ADD_REGISTRY_ENTRY);
+
+  auto incompatible_applications_updater =
+      CreateIncompatibleApplicationsUpdater();
+
+  incompatible_applications_updater->DisableModuleAnalysis();
+
+  // Simulate the module loading into the process.
+  ModuleInfoKey module_key(dll1_, 0, 0);
+  incompatible_applications_updater->OnNewModuleFound(
+      module_key, CreateLoadedModuleInfoData());
+  incompatible_applications_updater->OnModuleDatabaseIdle();
+
+  // The module does not cause a warning.
+  EXPECT_FALSE(IncompatibleApplicationsUpdater::HasCachedApplications());
+  EXPECT_TRUE(IncompatibleApplicationsUpdater::GetCachedApplications().empty());
+  EXPECT_EQ(
+      incompatible_applications_updater->GetModuleWarningDecision(module_key),
+      IncompatibleApplicationsUpdater::ModuleWarningDecision::kNotAnalyzed);
 }

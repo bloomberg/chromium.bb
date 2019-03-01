@@ -333,6 +333,14 @@ void ThirdPartyConflictsManager::OnEvent(Events event,
     SetTerminalState(State::kNoModuleListAvailableFailure);
 }
 
+void ThirdPartyConflictsManager::DisableModuleAnalysis() {
+  module_analysis_disabled_ = true;
+  if (incompatible_applications_updater_)
+    incompatible_applications_updater_->DisableModuleAnalysis();
+  if (incompatible_applications_updater_)
+    incompatible_applications_updater_->DisableModuleAnalysis();
+}
+
 void ThirdPartyConflictsManager::OnModuleListFilterCreated(
     scoped_refptr<ModuleListFilter> module_list_filter) {
   module_list_filter_ = std::move(module_list_filter);
@@ -400,7 +408,8 @@ void ThirdPartyConflictsManager::InitializeIfReady() {
             module_list_filter_, *initial_blacklisted_modules_,
             base::BindRepeating(
                 &ThirdPartyConflictsManager::OnModuleBlacklistCacheUpdated,
-                base::Unretained(this)));
+                base::Unretained(this)),
+            module_analysis_disabled_);
   }
 
   // The |incompatible_applications_updater_| instance must be created last so
@@ -412,7 +421,8 @@ void ThirdPartyConflictsManager::InitializeIfReady() {
     incompatible_applications_updater_ =
         std::make_unique<IncompatibleApplicationsUpdater>(
             module_database_event_source_, *exe_certificate_info_,
-            module_list_filter_, *installed_applications_);
+            module_list_filter_, *installed_applications_,
+            module_analysis_disabled_);
   }
 
   if (!incompatible_applications_updater_) {

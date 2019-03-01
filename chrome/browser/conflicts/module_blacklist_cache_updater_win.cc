@@ -161,6 +161,7 @@ bool ShouldInsertInBlacklistCache(ModuleBlockingDecision blocking_decision) {
     case ModuleBlockingDecision::kAllowedMicrosoft:
     case ModuleBlockingDecision::kAllowedWhitelisted:
     case ModuleBlockingDecision::kTolerated:
+    case ModuleBlockingDecision::kNotAnalyzed:
       return false;
 
     // The following are reasons for the module to be blocked.
@@ -184,7 +185,8 @@ ModuleBlacklistCacheUpdater::ModuleBlacklistCacheUpdater(
     scoped_refptr<ModuleListFilter> module_list_filter,
     const std::vector<third_party_dlls::PackedListModule>&
         initial_blacklisted_modules,
-    OnCacheUpdatedCallback on_cache_updated_callback)
+    OnCacheUpdatedCallback on_cache_updated_callback,
+    bool module_analysis_disabled)
     : module_database_event_source_(module_database_event_source),
       exe_certificate_info_(exe_certificate_info),
       module_list_filter_(std::move(module_list_filter)),
@@ -193,6 +195,7 @@ ModuleBlacklistCacheUpdater::ModuleBlacklistCacheUpdater(
       background_sequence_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
+      module_analysis_disabled_(module_analysis_disabled),
       weak_ptr_factory_(this) {
   DCHECK(module_list_filter_);
   module_database_event_source_->AddObserver(this);
@@ -305,6 +308,10 @@ ModuleBlacklistCacheUpdater::GetModuleBlockingState(
   return it->second;
 }
 
+void ModuleBlacklistCacheUpdater::DisableModuleAnalysis() {
+  module_analysis_disabled_ = true;
+}
+
 void ModuleBlacklistCacheUpdater::OnTimerExpired() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -332,6 +339,11 @@ ModuleBlacklistCacheUpdater::DetermineModuleBlockingDecision(
     const ModuleInfoKey& module_key,
     const ModuleInfoData& module_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // New modules should not be added to the cache when the module analysis is
+  // disabled.
+  if (module_analysis_disabled_)
+    return ModuleBlockingDecision::kNotAnalyzed;
 
   // First check if this module is a part of Chrome's installation. This can
   // override explicit directions in the module list. This prevents us from
