@@ -169,7 +169,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 - (void)createReadingListFolder {
   {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::WILL_BLOCK);
+        FROM_HERE, base::BlockingType::WILL_BLOCK);
     NSFileManager* manager = [NSFileManager defaultManager];
     if (![manager fileExistsAtPath:[[self presentedItemURL] path]]) {
       [manager createDirectoryAtPath:[[self presentedItemURL] path]
@@ -296,7 +296,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
   };
   void (^readingAccessor)(NSURL*) = ^(NSURL* newURL) {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::WILL_BLOCK);
+        FROM_HERE, base::BlockingType::WILL_BLOCK);
     NSFileManager* manager = [NSFileManager defaultManager];
     NSData* data = [manager contentsAtPath:[newURL path]];
     if (![weakSelf receivedData:data withCompletion:successCompletion]) {
@@ -318,7 +318,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
                                                 base::BlockingType::WILL_BLOCK);
   void (^deletingAccessor)(NSURL*) = ^(NSURL* newURL) {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
     NSFileManager* manager = [NSFileManager defaultManager];
     [manager removeItemAtURL:newURL error:nil];
   };

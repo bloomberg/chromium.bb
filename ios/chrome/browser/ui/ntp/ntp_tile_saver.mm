@@ -185,7 +185,7 @@ void UpdateSingleFavicon(const GURL& site_url,
 
           base::OnceCallback<void()> writeImage = base::BindOnce(^{
             base::ScopedBlockingCall scoped_blocking_call(
-                base::BlockingType::WILL_BLOCK);
+                FROM_HERE, base::BlockingType::WILL_BLOCK);
             [imageData writeToURL:fileURL atomically:YES];
           });
 
@@ -210,7 +210,7 @@ void UpdateSingleFavicon(const GURL& site_url,
               [favicons_directory URLByAppendingPathComponent:faviconFileName];
           base::OnceCallback<void()> removeImage = base::BindOnce(^{
             base::ScopedBlockingCall scoped_blocking_call(
-                base::BlockingType::WILL_BLOCK);
+                FROM_HERE, base::BlockingType::WILL_BLOCK);
             [[NSFileManager defaultManager] removeItemAtURL:fileURL error:nil];
           });
 

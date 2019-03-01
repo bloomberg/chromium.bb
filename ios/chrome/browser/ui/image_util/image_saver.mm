@@ -130,7 +130,7 @@
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(^{
         base::ScopedBlockingCall scoped_blocking_call(
-            base::BlockingType::MAY_BLOCK);
+            FROM_HERE, base::BlockingType::MAY_BLOCK);
 
         NSString* fileName = [[[NSProcessInfo processInfo] globallyUniqueString]
             stringByAppendingString:fileExtension];
@@ -156,7 +156,7 @@
                    base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
                   base::BindOnce(^{
                     base::ScopedBlockingCall scoped_blocking_call(
-                        base::BlockingType::MAY_BLOCK);
+                        FROM_HERE, base::BlockingType::MAY_BLOCK);
                     if (completion)
                       completion(success, error);
 
