@@ -28,6 +28,7 @@ action_foreach("generate_seed_corpus") {
   input_dir = "text_format_seed_corpus"
   sources = [
     "$input_dir/1_quad_renderpass.asciipb",
+    "$input_dir/2_quad_renderpass.asciipb",
   ]
   outputs = [
     "$seed_corpus_dir/{{source_name_part}}.pb",
