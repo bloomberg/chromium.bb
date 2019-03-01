@@ -46,12 +46,14 @@ public class DataReductionPromoUtils {
     private static final String SHARED_PREF_DISPLAYED_INFOBAR_PROMO_VERSION =
             "displayed_data_reduction_infobar_promo_version";
     /**
-     * Key used to save the saved bytes when the snackbar promo was last shown. This value is
+     * Key used to save the saved bytes when the milestone promo was last shown. This value is
      * initialized to the bytes saved for data saver users that had data saver turned on when this
      * pref was added. This prevents us from showing promo for savings that have already happened
      * for existing users.
+     * Note: For historical reasons, this pref key is misnamed. This promotion used to be conveyed
+     * in a snackbar but was moved to an IPH in M74.
      */
-    private static final String SHARED_PREF_DISPLAYED_SNACKBAR_PROMO_SAVED_BYTES =
+    private static final String SHARED_PREF_DISPLAYED_MILESTONE_PROMO_SAVED_BYTES =
             "displayed_data_reduction_snackbar_promo_saved_bytes";
 
     /**
@@ -159,32 +161,32 @@ public class DataReductionPromoUtils {
                 SHARED_PREF_DISPLAYED_INFOBAR_PROMO, false);
     }
 
-    /** See {@link #SHARED_PREF_DISPLAYED_SNACKBAR_PROMO_SAVED_BYTES}. */
-    public static void saveSnackbarPromoDisplayed(long dataSavingsInBytes) {
+    /** See {@link #SHARED_PREF_DISPLAYED_MILESTONE_PROMO_SAVED_BYTES}. */
+    public static void saveMilestonePromoDisplayed(long dataSavingsInBytes) {
         ContextUtils.getAppSharedPreferences()
                 .edit()
-                .putLong(SHARED_PREF_DISPLAYED_SNACKBAR_PROMO_SAVED_BYTES, dataSavingsInBytes)
+                .putLong(SHARED_PREF_DISPLAYED_MILESTONE_PROMO_SAVED_BYTES, dataSavingsInBytes)
                 .apply();
     }
 
     /**
-     * Returns the data savings in bytes from when the promo snackbar was last displayed.
+     * Returns the data savings in bytes from when the milestone promo was last displayed.
      *
      * @return The data savings in bytes, or -1 if the promo has not been displayed before.
      */
-    public static long getDisplayedSnackbarPromoSavedBytes() {
+    public static long getDisplayedMilestonePromoSavedBytes() {
         return ContextUtils.getAppSharedPreferences().getLong(
-                SHARED_PREF_DISPLAYED_SNACKBAR_PROMO_SAVED_BYTES, -1);
+                SHARED_PREF_DISPLAYED_MILESTONE_PROMO_SAVED_BYTES, -1);
     }
 
     /**
      * Returns a boolean indicating that the data savings in bytes on the first upgrade to the
-     * version that shows the snackbar has been initialized.
+     * version that shows the milestone promo has been initialized.
      *
      * @return Whether that the starting saved bytes have been initialized.
      */
-    public static boolean hasSnackbarPromoBeenInitWithStartingSavedBytes() {
-        return ContextUtils.getAppSharedPreferences()
-                .contains(SHARED_PREF_DISPLAYED_SNACKBAR_PROMO_SAVED_BYTES);
+    public static boolean hasMilestonePromoBeenInitWithStartingSavedBytes() {
+        return ContextUtils.getAppSharedPreferences().contains(
+                SHARED_PREF_DISPLAYED_MILESTONE_PROMO_SAVED_BYTES);
     }
 }

@@ -108,7 +108,6 @@ import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.modaldialog.AppModalPresenter;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
-import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.nfc.BeamController;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
@@ -126,7 +125,6 @@ import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareMenuActionHandler;
 import org.chromium.chrome.browser.snackbar.BottomContainer;
-import org.chromium.chrome.browser.snackbar.DataReductionPromoSnackbarController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -275,7 +273,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private EphemeralTabPanel mEphemeralTabPanel;
     protected ReaderModeManager mReaderModeManager;
     private SnackbarManager mSnackbarManager;
-    private DataReductionPromoSnackbarController mDataReductionPromoSnackbarController;
     private AppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
     private AppMenuHandler mAppMenuHandler;
     private ToolbarManager mToolbarManager;
@@ -696,23 +693,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (mTabModelSelectorTabObserver != null) mTabModelSelectorTabObserver.destroy();
 
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelector) {
-            @Override
-            public void didFirstVisuallyNonEmptyPaint(Tab tab) {
-                // Only alert about data savings once the first paint has happened. It
-                // doesn't make sense to show a snackbar about savings when nothing has been
-                // displayed yet.
-                if (DataReductionProxySettings.getInstance().isSnackbarPromoAllowed(tab.getUrl())) {
-                    if (mDataReductionPromoSnackbarController == null) {
-                        mDataReductionPromoSnackbarController =
-                                new DataReductionPromoSnackbarController(
-                                        getApplicationContext(), getSnackbarManager());
-                    }
-                    mDataReductionPromoSnackbarController.maybeShowDataReductionPromoSnackbar(
-                            DataReductionProxySettings.getInstance()
-                                    .getTotalHttpContentLengthSaved());
-                }
-            }
-
             @Override
             public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
                 postDeferredStartupIfNeeded();

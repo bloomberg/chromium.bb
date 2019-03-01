@@ -10680,11 +10680,13 @@ Called by update_net_error_codes.py.-->
   <int value="11" label="Enabled directly from the Infobar promo"/>
   <int value="12" label="InfoBar promo dismissed (proxy not enabled)"/>
   <int value="13"
-      label="Snackbar promo link clicked, but no action was taken (the proxy
-             remained enabled)"/>
+      label="DEPRECATED Snackbar promo link clicked, but no action was taken
+             (the proxy remained enabled)"/>
   <int value="14"
-      label="Snackbar promo link clicked, and the proxy was disabled"/>
-  <int value="15" label="Snackbar promo dismissed (no action taken)"/>
+      label="DEPRECATED Snackbar promo link clicked, and the proxy was
+             disabled"/>
+  <int value="15"
+      label="DEPRECATED Snackbar promo dismissed (no action taken)"/>
   <int value="16"
       label="Arrived at settings menu by main menu footer: entered off,
              exited off"/>
