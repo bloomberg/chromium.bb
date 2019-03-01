@@ -46,6 +46,7 @@ from chromite.lib import timeout_util
 
 BUILD_PACKAGES_PREBUILTS = '10774.0.0'
 BUILD_PACKAGES_WITH_DEBUG_SYMBOLS = '6302.0.0'
+BUILD_IMAGE_BUILDER_PATH = '8183.0.0'
 
 class InvalidWorkspace(failures_lib.StepFailure):
   """Raised when a workspace isn't usable."""
@@ -527,30 +528,44 @@ class WorkspaceBuildImageStage(generic_stages.BoardSpecificBuilderStage,
   config_name = 'images'
   category = constants.PRODUCT_OS_STAGE
 
-  def _BuildImages(self):
+  def PerformStage(self):
+
+    # Collect build_image arguments.
+    version = self.GetWorkspaceReleaseTag()
+    rootfs_verification = self._run.config.rootfs_verification
+    disk_layout = self._run.config.disk_layout
+    builder_path = '/'.join([self._bot_id, version])
+
     # We only build base, dev, and test images from this stage.
     images_can_build = set(['base', 'dev', 'test'])
     images_to_build = set(self._run.config.images).intersection(
         images_can_build)
+    assert images_to_build
 
-    version = self.GetWorkspaceReleaseTag()
+    # Build up command line.
+    cmd = ['./build_image',
+           '--board', self._current_board,
+           '--replace',
+           '--version', version]
 
-    disk_layout = self._run.config.disk_layout
+    if not rootfs_verification:
+      cmd += ['--noenable_rootfs_verification']
 
-    rootfs_verification = self._run.config.rootfs_verification
-    builder_path = '/'.join([self._bot_id, version])
-    commands.BuildImage(self._build_root,
-                        self._current_board,
-                        sorted(images_to_build),
-                        rootfs_verification=rootfs_verification,
-                        version=version,
-                        builder_path=builder_path,
-                        disk_layout=disk_layout,
-                        chroot_args=ChrootArgs(self._run.options),
-                        extra_env=self._portage_extra_env)
+    if disk_layout:
+      cmd += ['--disk_layout', disk_layout]
 
-  def PerformStage(self):
-    self._BuildImages()
+    if self.AfterLimit(BUILD_IMAGE_BUILDER_PATH):
+      cmd += ['--builder_path', builder_path]
+
+    cmd += sorted(images_to_build)
+
+    # Run command.
+    commands.RunBuildScript(
+        self._build_root,
+        cmd,
+        enter_chroot=True,
+        extra_env=self._portage_extra_env,
+        chroot_args=ChrootArgs(self._run.options))
 
 
 class WorkspaceDebugSymbolsStage(WorkspaceStageBase,

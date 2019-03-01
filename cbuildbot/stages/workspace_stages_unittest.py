@@ -708,7 +708,8 @@ class WorkspaceBuildImageStageTest(WorkspaceStageBase):
     return workspace_stages.WorkspaceBuildImageStage(
         self._run, self.buildstore, build_root=self.workspace, board='board')
 
-  def testFactory(self):
+  def testFactoryOld(self):
+    self.SetWorkspaceVersion(self.OLD_VERSION)
     self._Prepare(
         'test-factorybranch',
         site_config=workspace_builders_unittest.CreateMockSiteConfig(),
@@ -717,13 +718,44 @@ class WorkspaceBuildImageStageTest(WorkspaceStageBase):
     self.RunStage()
 
     self.assertEqual(self.rc.call_count, 1)
+
+    # Ensure no --builderpath
     self.rc.assertCommandCalled(
         [
             './build_image',
-            '--board=board',
+            '--board', 'board',
             '--replace',
-            '--version=R1-1.2.3',
-            '--builder_path=test-factorybranch/R1-1.2.3',
+            '--version', 'R1-1.2.3',
+            'test',
+        ],
+        enter_chroot=True,
+        chroot_args=['--cache-dir', '/cache'],
+        extra_env={
+            'USE': '-cros-debug chrome_internal',
+            'FEATURES': 'separatedebug',
+        },
+        cwd=self.workspace,
+    )
+
+  def testFactoryModern(self):
+    self.SetWorkspaceVersion(self.MODERN_VERSION)
+    self._Prepare(
+        'test-factorybranch',
+        site_config=workspace_builders_unittest.CreateMockSiteConfig(),
+        extra_cmd_args=['--cache-dir', '/cache'])
+
+    self.RunStage()
+
+    self.assertEqual(self.rc.call_count, 1)
+
+    # Ensure has --builderpath
+    self.rc.assertCommandCalled(
+        [
+            './build_image',
+            '--board', 'board',
+            '--replace',
+            '--version', 'R1-11000.0.0',
+            '--builder_path', 'test-factorybranch/R1-11000.0.0',
             'test',
         ],
         enter_chroot=True,
