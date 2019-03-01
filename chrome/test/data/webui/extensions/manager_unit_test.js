@@ -185,7 +185,7 @@ cr.define('extension_manager_tests', function() {
 
       const activityLog = manager.$$('extensions-activity-log');
       expectTrue(!!activityLog);  // View should now be present.
-      expectEquals(extension.id, activityLog.extensionId);
+      expectEquals(extension.id, activityLog.extensionInfo.id);
 
       // Test that updates to different extensions does not change which
       // extension the activity log points to. Regression test for
@@ -195,7 +195,7 @@ cr.define('extension_manager_tests', function() {
         extensionInfo: secondExtension,
       });
 
-      expectEquals(extension.id, activityLog.extensionId);
+      expectEquals(extension.id, activityLog.extensionInfo.id);
     });
 
     test(assert(TestNames.ProfileSettings), function() {

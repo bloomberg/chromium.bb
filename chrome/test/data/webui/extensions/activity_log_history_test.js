@@ -138,6 +138,11 @@ suite('ExtensionsActivityLogHistoryTest', function() {
     activityLogHistory.remove();
   });
 
+  function getHistoryItems() {
+    return activityLogHistory.shadowRoot.querySelectorAll(
+        'activity-log-history-item');
+  }
+
   test('activities are present for extension', function() {
     proxyDelegate.testActivities = testActivities;
 
@@ -147,9 +152,9 @@ suite('ExtensionsActivityLogHistoryTest', function() {
       testVisible('#no-activities', false);
       testVisible('#loading-activities', false);
       testVisible('#activity-list', true);
+      testVisible('.activity-table-headings', true);
 
-      const activityLogItems = activityLogHistory.shadowRoot.querySelectorAll(
-          'activity-log-history-item');
+      const activityLogItems = getHistoryItems();
       expectEquals(activityLogItems.length, 2);
 
       // Test the order of the activity log items here. This test is in this
@@ -171,8 +176,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
 
     return setupActivityLogHistory().then(() => {
       Polymer.dom.flush();
-      const activityLogItems = activityLogHistory.shadowRoot.querySelectorAll(
-          'activity-log-history-item');
+      const activityLogItems = getHistoryItems();
 
       // One activity should be shown for each content script name.
       expectEquals(activityLogItems.length, 2);
@@ -189,8 +193,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
 
     return setupActivityLogHistory().then(() => {
       Polymer.dom.flush();
-      const activityLogItems = activityLogHistory.shadowRoot.querySelectorAll(
-          'activity-log-history-item');
+      const activityLogItems = getHistoryItems();
 
       // First activity should be split into two groups as it has two actions
       // recorded in the other.webRequest object. We display the names of these
@@ -221,9 +224,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
 
         return setupActivityLogHistory().then(() => {
           Polymer.dom.flush();
-          const activityLogItems =
-              activityLogHistory.shadowRoot.querySelectorAll(
-                  'activity-log-history-item');
+          const activityLogItems = getHistoryItems();
 
           expectEquals(activityLogItems.length, 2);
           proxyDelegate.resetResolver('getExtensionActivityLog');
@@ -235,11 +236,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
               .then(() => proxyDelegate.whenCalled('getExtensionActivityLog'))
               .then(() => {
                 Polymer.dom.flush();
-                expectEquals(
-                    1,
-                    activityLogHistory.shadowRoot
-                        .querySelectorAll('activity-log-history-item')
-                        .length);
+                expectEquals(1, getHistoryItems().length);
               });
         });
       });
@@ -254,11 +251,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
       testVisible('#no-activities', true);
       testVisible('#loading-activities', false);
       testVisible('#activity-list', false);
-      expectEquals(
-          activityLogHistory.shadowRoot
-              .querySelectorAll('activity-log-history-item')
-              .length,
-          0);
+      expectEquals(0, getHistoryItems().length);
     });
   });
 
@@ -275,6 +268,24 @@ suite('ExtensionsActivityLogHistoryTest', function() {
       testVisible('#no-activities', false);
       testVisible('#loading-activities', true);
       testVisible('#activity-list', false);
+    });
+  });
+
+  test('clicking on clear button clears the activity log history', function() {
+    proxyDelegate.testActivities = testActivities;
+
+    return setupActivityLogHistory().then(() => {
+      Polymer.dom.flush();
+
+      expectEquals(2, getHistoryItems().length);
+      activityLogHistory.$$('.clear-activities-button').click();
+      return proxyDelegate.whenCalled('deleteActivitiesFromExtension')
+          .then(() => {
+            Polymer.dom.flush();
+            testVisible('#no-activities', true);
+            testVisible('.activity-table-headings', false);
+            expectEquals(0, getHistoryItems().length);
+          });
     });
   });
 });

@@ -263,7 +263,8 @@ cr.define('extensions', function() {
           this.activityData_.length > 0;
     },
 
-    clearActivities: function() {
+    /** @private */
+    onClearActivitiesClick_: function() {
       this.delegate.deleteActivitiesFromExtension(this.extensionId).then(() => {
         this.processActivities_([]);
       });
