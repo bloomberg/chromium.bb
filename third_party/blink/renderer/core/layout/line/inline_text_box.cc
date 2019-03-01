@@ -315,7 +315,7 @@ void InlineTextBox::AttachLine() {
   GetLineLayoutItem().AttachTextBox(this);
 }
 
-void InlineTextBox::SetTruncation(unsigned truncation) {
+void InlineTextBox::SetTruncation(uint16_t truncation) {
   if (truncation == truncation_)
     return;
 

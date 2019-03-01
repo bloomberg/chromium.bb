@@ -176,7 +176,7 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
 
  private:
   bool IsBoxEndIncludedInSelection() const;
-  void SetTruncation(unsigned);
+  void SetTruncation(uint16_t);
 
   void ClearTruncation() final;
   LayoutUnit PlaceEllipsisBox(bool flow_is_ltr,
