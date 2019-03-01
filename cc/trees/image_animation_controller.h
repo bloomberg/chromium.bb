@@ -150,8 +150,8 @@ class CC_EXPORT ImageAnimationController {
 
     size_t pending_index() const { return pending_index_; }
     size_t active_index() const { return active_index_; }
-    base::TimeTicks next_desired_frame_time() const {
-      return next_desired_frame_time_;
+    base::TimeTicks next_desired_tick_time() const {
+      return next_desired_tick_time_;
     }
     const base::flat_set<AnimationDriver*>& drivers_for_testing() const {
       return drivers_;
@@ -159,15 +159,15 @@ class CC_EXPORT ImageAnimationController {
     size_t last_num_frames_skipped_for_testing() const {
       return last_num_frames_skipped_;
     }
+    std::string ToString() const;
 
    private:
-    void AdvanceFrameInternal(const viz::BeginFrameArgs& args,
-                              bool enable_image_animation_resync);
     void ResetAnimation();
     size_t NextFrameIndex() const;
     bool is_complete() const {
       return completion_state_ == PaintImage::CompletionState::DONE;
     }
+    bool needs_invalidation() const { return pending_index_ != active_index_; }
 
     PaintImage::Id paint_image_id_ = PaintImage::kInvalidId;
 
@@ -196,8 +196,13 @@ class CC_EXPORT ImageAnimationController {
 
     // The time at which we would like to display the next frame. This can be in
     // the past, for instance, if we pause the animation from the image becoming
-    // invisible.
+    // invisible. This time is updated strictly based on the animation timeline
+    // provided by the image.
     base::TimeTicks next_desired_frame_time_;
+
+    // The time of the next tick at which we want to invalidate and update the
+    // current frame.
+    base::TimeTicks next_desired_tick_time_;
 
     // Set if there is at least one driver interested in animating this image,
     // cached from the last update.
@@ -205,6 +210,8 @@ class CC_EXPORT ImageAnimationController {
 
     // Set if the animation has been started.
     bool animation_started_ = false;
+    // Used for tracing, the time at which the animation was started.
+    base::TimeTicks animation_started_time_;
 
     // The last synchronized sequence id for resetting this animation.
     PaintImage::AnimationSequenceId reset_animation_sequence_id_ = 0;

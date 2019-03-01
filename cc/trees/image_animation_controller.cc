@@ -17,6 +17,20 @@ namespace {
 // desired frame.
 const base::TimeDelta kAnimationResyncCutoff = base::TimeDelta::FromMinutes(5);
 
+// Given the |desired_frame_time|, returns the time of the tick it should be
+// snapped to.
+base::TimeTicks SnappedTickTimeFromFrameTime(
+    const viz::BeginFrameArgs& args,
+    base::TimeTicks desired_frame_time) {
+  auto snapped_tick_time =
+      desired_frame_time.SnappedToNextTick(args.frame_time, args.interval);
+  DCHECK_GE(snapped_tick_time, desired_frame_time);
+
+  if (snapped_tick_time != desired_frame_time)
+    snapped_tick_time -= args.interval;
+  return snapped_tick_time;
+}
+
 }  //  namespace
 
 ImageAnimationController::ImageAnimationController(
@@ -55,7 +69,9 @@ void ImageAnimationController::UnregisterAnimationDriver(
 
 const PaintImageIdFlatSet& ImageAnimationController::AnimateForSyncTree(
     const viz::BeginFrameArgs& args) {
-  TRACE_EVENT0("cc", "ImageAnimationController::AnimateImagesForSyncTree");
+  TRACE_EVENT1("cc", "ImageAnimationController::AnimateImagesForSyncTree",
+               "frame_time_from_now",
+               (base::TimeTicks::Now() - args.frame_time).InMillisecondsF());
   DCHECK(images_animated_on_sync_tree_.empty());
 
   scheduler_.WillAnimate();
@@ -68,14 +84,21 @@ const PaintImageIdFlatSet& ImageAnimationController::AnimateForSyncTree(
 
     // Is anyone still interested in animating this image?
     state.UpdateStateFromDrivers();
-    if (!state.ShouldAnimate())
+    if (!state.ShouldAnimate()) {
+      TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+                           "ShouldAnimate - early out",
+                           TRACE_EVENT_SCOPE_THREAD);
       continue;
+    }
 
     // If we were able to advance this animation, invalidate it on the sync
     // tree.
     if (state.AdvanceFrame(args, enable_image_animation_resync_))
       images_animated_on_sync_tree_.insert(id);
 
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+                         "AnimationState", TRACE_EVENT_SCOPE_THREAD, "state",
+                         state.ToString());
     // Update the next invalidation time to the earliest time at which we need
     // a frame to animate an image.
     // Note its important to check ShouldAnimate() here again since advancing to
@@ -84,11 +107,11 @@ const PaintImageIdFlatSet& ImageAnimationController::AnimateForSyncTree(
     if (!state.ShouldAnimate())
       continue;
 
-    DCHECK_GT(state.next_desired_frame_time(), args.frame_time);
+    DCHECK_GT(state.next_desired_tick_time(), args.frame_time);
     if (!next_invalidation_time.has_value()) {
-      next_invalidation_time.emplace(state.next_desired_frame_time());
+      next_invalidation_time.emplace(state.next_desired_tick_time());
     } else {
-      next_invalidation_time = std::min(state.next_desired_frame_time(),
+      next_invalidation_time = std::min(state.next_desired_tick_time(),
                                         next_invalidation_time.value());
     }
   }
@@ -118,10 +141,10 @@ void ImageAnimationController::UpdateStateFromDrivers() {
       continue;
 
     if (!next_invalidation_time.has_value()) {
-      next_invalidation_time.emplace(state.next_desired_frame_time());
+      next_invalidation_time.emplace(state.next_desired_tick_time());
     } else {
       next_invalidation_time = std::min(next_invalidation_time.value(),
-                                        state.next_desired_frame_time());
+                                        state.next_desired_tick_time());
     }
   }
 
@@ -229,67 +252,45 @@ bool ImageAnimationController::AnimationState::ShouldAnimate() const {
   // and loop back to the first frame.
   size_t last_frame_index = frames_.size() - 1;
   if (completion_state_ != PaintImage::CompletionState::DONE &&
-      pending_index_ == last_frame_index)
+      pending_index_ == last_frame_index) {
     return false;
+  }
 
   return true;
 }
 
+// SCHEDULING
+// The rate at which the animation progresses is decided by the frame duration,
+// the time for which a particular frame should be displayed, specified in the
+// metadata for the image. The animation is assumed to start from the frame_time
+// of the first BeginFrame after the animation is registered and is visible.
+// From here on, the time at which a frame should be displayed is the sum of
+// durations for all previous frames of the animation.
+// But, in order to align the work for the animation update with an impl frame,
+// invalidations are requested at the beginning of the frame boundary in which
+// the frame should be displayed.
 bool ImageAnimationController::AnimationState::AdvanceFrame(
     const viz::BeginFrameArgs& args,
     bool enable_image_animation_resync) {
-  AdvanceFrameInternal(args, enable_image_animation_resync);
-  const bool needs_invalidation = pending_index_ != active_index_;
-
-  // If the animation will no longer continue, |next_desired_frame_time_| is
-  // not needed and will not be updated.
-  if (!ShouldAnimate())
-    return needs_invalidation;
-
-  DCHECK_GT(next_desired_frame_time_, args.frame_time);
-  auto snapped_next_desired_frame_time =
-      next_desired_frame_time_.SnappedToNextTick(args.frame_time,
-                                                 args.interval);
-  if (snapped_next_desired_frame_time != next_desired_frame_time_) {
-    // If the next desired frame time was past the next tick but did not lie
-    // exactly at the frame tick, then snapping it would have set it to the tick
-    // after we wanted to display it. So set it to the tick we want to target.
-    snapped_next_desired_frame_time -= args.interval;
-  }
-
-  // In the common case, |next_desired_frame_time_| should be >= to the
-  // |next_tick_time|, since the catch up loop skips frames until it reaches the
-  // first frame which should be drawn at or after the next tick.
-  // But in some cases we decode to skip the catch up and restart the regular
-  // animation from the next frame, in which case just snap it to the next tick.
-  auto next_tick_time = args.frame_time + args.interval;
-  next_desired_frame_time_ =
-      std::max(snapped_next_desired_frame_time, next_tick_time);
-
-  return needs_invalidation;
-}
-
-void ImageAnimationController::AnimationState::AdvanceFrameInternal(
-    const viz::BeginFrameArgs& args,
-    bool enable_image_animation_resync) {
   DCHECK(ShouldAnimate());
+  const base::TimeTicks next_tick_time = args.frame_time + args.interval;
 
-  // Start the animation from the first frame, if not yet started. We don't need
-  // an invalidation here if the pending and active tree are both displaying the
-  // first frame. Its possible for the 2 to be different if the animation was
-  // reset, in which case we are starting again from the first frame on the
-  // pending tree.
+  // Start the animation from the first frame, if not yet started. The code
+  // falls through to catching up if the duration for the first frame is less
+  // than the interval.
   if (!animation_started_) {
     DCHECK_EQ(pending_index_, 0u);
 
+    animation_started_time_ = args.frame_time;
     next_desired_frame_time_ = args.frame_time + frames_[0].duration;
+    next_desired_tick_time_ =
+        SnappedTickTimeFromFrameTime(args, next_desired_frame_time_);
     animation_started_ = true;
-    return;
   }
 
   // Don't advance the animation if its not time yet to move to the next frame.
-  if (args.frame_time < next_desired_frame_time_)
-    return;
+  if (args.frame_time < next_desired_tick_time_)
+    return needs_invalidation();
 
   // If the animation is more than 5 min out of date, we don't bother catching
   // up and start again from the current frame.
@@ -297,23 +298,27 @@ void ImageAnimationController::AnimationState::AdvanceFrameInternal(
   // is already displaying the current frame.
   if (enable_image_animation_resync &&
       args.frame_time - next_desired_frame_time_ > kAnimationResyncCutoff) {
+    TRACE_EVENT_INSTANT0("cc", "Resync - early out", TRACE_EVENT_SCOPE_THREAD);
     DCHECK_EQ(pending_index_, active_index_);
     next_desired_frame_time_ =
         args.frame_time + frames_[pending_index_].duration;
-    return;
+    next_desired_tick_time_ =
+        std::max(SnappedTickTimeFromFrameTime(args, next_desired_frame_time_),
+                 next_tick_time);
+    return needs_invalidation();
   }
 
   // Keep catching up the animation until we reach the frame we should be
   // displaying now.
-  // TODO(khushalsagar): Avoid unnecessary iterations for skipping whole loops
-  // in the animations.
-  size_t last_frame_index = frames_.size() - 1;
+  const size_t last_frame_index = frames_.size() - 1;
   size_t num_of_frames_advanced = 0u;
-
-  base::TimeTicks next_frame_time = args.frame_time + args.interval;
-  while (next_desired_frame_time_ < next_frame_time && ShouldAnimate()) {
+  while (next_desired_tick_time_ < next_tick_time && ShouldAnimate()) {
     num_of_frames_advanced++;
     size_t next_frame_index = NextFrameIndex();
+    TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+                         "FrameDurationAndIndex", TRACE_EVENT_SCOPE_THREAD,
+                         "frame_index", next_frame_index, "duration",
+                         frames_[next_frame_index].duration.InMillisecondsF());
     base::TimeTicks next_desired_frame_time =
         next_desired_frame_time_ + frames_[next_frame_index].duration;
 
@@ -332,12 +337,17 @@ void ImageAnimationController::AnimationState::AdvanceFrameInternal(
         next_desired_frame_time <= args.frame_time) {
       pending_index_ = 0u;
       next_desired_frame_time_ = args.frame_time + frames_[0].duration;
+      next_desired_tick_time_ =
+          std::max(SnappedTickTimeFromFrameTime(args, next_desired_frame_time_),
+                   next_tick_time);
       repetitions_completed_ = 0;
       break;
     }
 
     pending_index_ = next_frame_index;
     next_desired_frame_time_ = next_desired_frame_time;
+    next_desired_tick_time_ =
+        SnappedTickTimeFromFrameTime(args, next_desired_frame_time_);
 
     // If we are advancing to the last frame and the image has been completely
     // loaded (which means that the frame count is known to be accurate), we
@@ -352,6 +362,7 @@ void ImageAnimationController::AnimationState::AdvanceFrameInternal(
   last_num_frames_skipped_ = num_of_frames_advanced - 1u;
   UMA_HISTOGRAM_COUNTS_100000("AnimatedImage.NumOfFramesSkipped.Compositor",
                               last_num_frames_skipped_);
+  return needs_invalidation();
 }
 
 void ImageAnimationController::AnimationState::UpdateMetadata(
@@ -417,6 +428,21 @@ void ImageAnimationController::AnimationState::ResetAnimation() {
   repetitions_completed_ = 0;
   pending_index_ = 0u;
   // Don't reset the |active_index_|, tiles on the active tree still need it.
+}
+
+std::string ImageAnimationController::AnimationState::ToString() const {
+  std::ostringstream str;
+  str << "paint_image_id[" << paint_image_id_ << "]\nrequested_repetitions["
+      << requested_repetitions_ << "]\nrepetitions_completed["
+      << requested_repetitions_ << "]\ndrivers[" << drivers_.size()
+      << "]\nactive_index[" << active_index_ << "]\npending_index["
+      << pending_index_ << "]\nnext_desired_frame_time["
+      << (next_desired_frame_time_ - animation_started_time_).InMillisecondsF()
+      << "]\nnext_desired_tick_time["
+      << (next_desired_tick_time_ - animation_started_time_).InMillisecondsF()
+      << "]\nshould_animate_from_drivers[" << should_animate_from_drivers_
+      << "]\ncompletion_state[" << static_cast<int>(completion_state_) << "]";
+  return str.str();
 }
 
 size_t ImageAnimationController::AnimationState::NextFrameIndex() const {
@@ -538,6 +564,9 @@ void ImageAnimationController::InvalidationScheduler::WillBeginImplFrame(
 }
 
 void ImageAnimationController::InvalidationScheduler::RequestInvalidation() {
+  TRACE_EVENT0(
+      "cc",
+      "ImageAnimationController::InvalidationScheduler::RequestInvalidation");
   DCHECK_NE(state_, InvalidationState::kIdle);
   DCHECK_NE(state_, InvalidationState::kPendingInvalidation);
 
