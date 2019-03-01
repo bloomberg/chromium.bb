@@ -322,6 +322,7 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
         kwargs['upload_bucket'] = results.telemetry_info.upload_bucket
         kwargs['cloud_url'] = results.telemetry_info.trace_remote_url
       trace_value = trace.TraceValue(page, trace_data, **kwargs)
+      trace_value.SerializeTraceData()
       results.AddValue(trace_value)
 
       trace_events_to_measure = tab.EvaluateJavaScript(
