@@ -113,6 +113,7 @@ mojom("mojom_platform") {
     ":android_mojo_bindings",
     ":mojom_mhtml_load_result",
     ":speech_recognition_error_code",
+    ":web_client_hints_types_mojo_bindings",
     ":web_feature_mojo_bindings",
     "//components/payments/mojom",
     "//components/services/filesystem/public/interfaces",
@@ -304,4 +305,13 @@ mojom_component("web_feature_mojo_bindings") {
 
   macro_prefix = "WEB_FEATURE_MOJO_BINDINGS_MOJOM"
   output_prefix = "web_feature_mojo_bindings_mojom"
+}
+
+# The web_client_hints_types_mojo_bindings is separated from the rest of the
+# mojom files because the chromium typemap for blink mojo_bindings has private
+# content dependencies.
+mojom("web_client_hints_types_mojo_bindings") {
+  sources = [
+    "web_client_hints/web_client_hints_types.mojom",
+  ]
 }

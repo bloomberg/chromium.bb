@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CLIENT_HINTS_TYPE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CLIENT_HINTS_TYPE_H_
 
-#include "third_party/blink/public/platform/web_client_hints_types.mojom-shared.h"
+#include "third_party/blink/public/mojom/web_client_hints/web_client_hints_types.mojom-shared.h"
 
 namespace blink {
 
