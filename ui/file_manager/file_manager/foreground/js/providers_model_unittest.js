@@ -165,11 +165,11 @@ function setUp() {
 function testGetInstalledProviders(callback) {
   reportPromise(
       volumeManagerFactory.getInstance()
-          .then(function(volumeManager) {
+          .then(volumeManager => {
             let model = new ProvidersModel(volumeManager);
             return model.getInstalledProviders();
           })
-          .then(function(providers) {
+          .then(providers => {
             assertEquals(5, providers.length);
             assertEquals(
                 MOUNTED_SINGLE_PROVIDING_EXTENSION.providerId,
@@ -223,11 +223,11 @@ function testGetInstalledProviders(callback) {
 function testGetMountableProviders(callback) {
   reportPromise(
       volumeManagerFactory.getInstance()
-          .then(function(volumeManager) {
+          .then(volumeManager => {
             let model = new ProvidersModel(volumeManager);
             return model.getMountableProviders();
           })
-          .then(function(providers) {
+          .then(providers => {
             assertEquals(2, providers.length);
             assertEquals(
                 NOT_MOUNTED_SINGLE_PROVIDING_EXTENSION.providerId,

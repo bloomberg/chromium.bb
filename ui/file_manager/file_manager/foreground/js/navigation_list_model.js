@@ -112,7 +112,7 @@ class NavigationModelVolumeItem extends NavigationModelItem {
     this.volumeInfo_ = volumeInfo;
     // Start resolving the display root because it is used
     // for determining executability of commands.
-    this.volumeInfo_.resolveDisplayRoot(function() {}, function() {});
+    this.volumeInfo_.resolveDisplayRoot(() => {}, () => {});
   }
 
   get volumeInfo() {
@@ -220,14 +220,14 @@ class NavigationListModel extends cr.EventTarget {
     /** @private {?NavigationModelFakeItem} */
     this.fakeDriveItem_;
 
-    const volumeInfoToModelItem = function(volumeInfo) {
+    const volumeInfoToModelItem = volumeInfo => {
       return new NavigationModelVolumeItem(volumeInfo.label, volumeInfo);
-    }.bind(this);
+    };
 
-    const entryToModelItem = function(entry) {
+    const entryToModelItem = entry => {
       const item = new NavigationModelShortcutItem(entry.name, entry);
       return item;
-    }.bind(this);
+    };
 
     /**
      * Type of updated list.
@@ -472,7 +472,7 @@ class NavigationListModel extends cr.EventTarget {
      *     type to be filtered from volumeList.
      * @return {NavigationModelVolumeItem}
      */
-    const getSingleVolume = function(volumeType) {
+    const getSingleVolume = volumeType => {
       return volumeList[volumeIndexes[volumeType]];
     };
 
@@ -481,7 +481,7 @@ class NavigationListModel extends cr.EventTarget {
      *     type to be filtered from volumeList.
      * @return Array<!NavigationModelVolumeItem>
      */
-    const getVolumes = function(volumeType) {
+    const getVolumes = volumeType => {
       const indexes = volumeIndexes[volumeType] || [];
       return indexes.map(idx => volumeList[idx]);
     };
@@ -491,7 +491,7 @@ class NavigationListModel extends cr.EventTarget {
      * grouped.
      * @return !Map<string, !Array<!NavigationModelVolumeItem>>
      */
-    const groupRemovables = function() {
+    const groupRemovables = () => {
       const removableGroups = new Map();
       const removableVolumes =
           getVolumes(VolumeManagerCommon.VolumeType.REMOVABLE);

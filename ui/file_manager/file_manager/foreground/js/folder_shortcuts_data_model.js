@@ -33,12 +33,12 @@ function FolderShortcutsDataModel(volumeManager) {
   this.load_();
 
   // Listening for changes in the storage.
-  chrome.storage.onChanged.addListener(function(changes, namespace) {
+  chrome.storage.onChanged.addListener((changes, namespace) => {
     if (!(FolderShortcutsDataModel.NAME in changes) || namespace !== 'sync') {
       return;
     }
     this.reload_();  // Runs within the queue.
-  }.bind(this));
+  });
 
   // If the volume info list is changed, then shortcuts have to be reloaded.
   this.volumeManager_.volumeInfoList.addEventListener(
@@ -88,23 +88,23 @@ FolderShortcutsDataModel.prototype = {
    * @private
    */
   processEntries_: function(list) {
-    this.queue_.run(function(callback) {
+    this.queue_.run(callback => {
       this.pendingPaths_ = {};
       this.unresolvablePaths_ = {};
       list.forEach(function(path) {
         this.pendingPaths_[path] = true;
       }, this);
       callback();
-    }.bind(this));
+    });
 
-    this.queue_.run(function(queueCallback) {
+    this.queue_.run(queueCallback => {
       const volumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
           VolumeManagerCommon.VolumeType.DRIVE);
       let changed = false;
       const resolvedURLs = {};
       this.rememberLastDriveURL_();  // Required for conversions.
 
-      const onResolveSuccess = function(path, entry) {
+      const onResolveSuccess = (path, entry) => {
         if (path in this.pendingPaths_) {
           delete this.pendingPaths_[path];
         }
@@ -117,9 +117,9 @@ FolderShortcutsDataModel.prototype = {
           this.addInternal_(entry);
         }
         resolvedURLs[entry.toURL()] = true;
-      }.bind(this);
+      };
 
-      const onResolveFailure = function(path, url) {
+      const onResolveFailure = (path, url) => {
         if (path in this.pendingPaths_) {
           delete this.pendingPaths_[path];
         }
@@ -142,22 +142,22 @@ FolderShortcutsDataModel.prototype = {
         // Not adding to the model nor to the |unresolvablePaths_| means
         // that it will be removed from the storage permanently after the
         // next call to save_().
-      }.bind(this);
+      };
 
       // Resolve the items all at once, in parallel.
       const group = new AsyncUtil.Group();
       list.forEach(function(path) {
-        group.add(function(path, callback) {
+        group.add(((path, callback) => {
           const url =
               this.lastDriveRootURL_ && this.convertStoredPathToUrl_(path);
           if (url && volumeInfo) {
             window.webkitResolveLocalFileSystemURL(
                 url,
-                function(entry) {
+                entry => {
                   onResolveSuccess(path, entry);
                   callback();
                 },
-                function() {
+                () => {
                   onResolveFailure(path, url);
                   callback();
                 });
@@ -165,11 +165,11 @@ FolderShortcutsDataModel.prototype = {
             onResolveFailure(path, url);
             callback();
           }
-        }.bind(this, path));
+        }).bind(null, path));
       }, this);
 
       // Save the model after finishing.
-      group.run(function() {
+      group.run(() => {
         // Remove all of those old entries, which were resolved by this method.
         let index = 0;
         while (index < this.length) {
@@ -186,8 +186,8 @@ FolderShortcutsDataModel.prototype = {
           this.save_();
         }
         queueCallback();
-      }.bind(this));
-    }.bind(this));
+      });
+    });
   },
 
   /**
@@ -195,8 +195,8 @@ FolderShortcutsDataModel.prototype = {
    * @private
    */
   load_: function() {
-    this.queue_.run(function(callback) {
-      chrome.storage.sync.get(FolderShortcutsDataModel.NAME, function(value) {
+    this.queue_.run(callback => {
+      chrome.storage.sync.get(FolderShortcutsDataModel.NAME, value => {
         if (chrome.runtime.lastError) {
           console.error('Failed to load shortcut paths from chrome.storage: ' +
               chrome.runtime.lastError.message);
@@ -211,8 +211,8 @@ FolderShortcutsDataModel.prototype = {
         // Resolve and add the entries to the model.
         this.processEntries_(shortcutPaths);  // Runs within a queue.
         callback();
-      }.bind(this));
-    }.bind(this));
+      });
+    });
   },
 
   /**
@@ -221,13 +221,13 @@ FolderShortcutsDataModel.prototype = {
    */
   reload_: function() {
     let shortcutPaths;
-    this.queue_.run(function(callback) {
-      chrome.storage.sync.get(FolderShortcutsDataModel.NAME, function(value) {
+    this.queue_.run(callback => {
+      chrome.storage.sync.get(FolderShortcutsDataModel.NAME, value => {
         const shortcutPaths = value[FolderShortcutsDataModel.NAME] || [];
         this.processEntries_(shortcutPaths);  // Runs within a queue.
         callback();
-      }.bind(this));
-    }.bind(this));
+      });
+    });
   },
 
   /**
@@ -411,7 +411,7 @@ FolderShortcutsDataModel.prototype = {
 
     // TODO(mtomasz): Migrate to URL.
     const paths = this.array_
-                    .map(function(entry) {
+                    .map(entry => {
                       return entry.toURL();
                     })
                     .map(this.convertUrlToStoredPath_.bind(this))
@@ -420,7 +420,7 @@ FolderShortcutsDataModel.prototype = {
 
     const prefs = {};
     prefs[FolderShortcutsDataModel.NAME] = paths;
-    chrome.storage.sync.set(prefs, function() {});
+    chrome.storage.sync.set(prefs, () => {});
   },
 
   /**

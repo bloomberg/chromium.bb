@@ -152,7 +152,7 @@ ScanController.prototype.onScanUpdated_ = function() {
 
   // Show contents incrementally by finishing batch updated, but only after
   // 200ms elapsed, to avoid flickering when it is not necessary.
-  this.scanUpdatedTimer_ = setTimeout(function() {
+  this.scanUpdatedTimer_ = setTimeout(() => {
     this.hideSpinner_();
 
     // Update the UI.
@@ -161,7 +161,7 @@ ScanController.prototype.onScanUpdated_ = function() {
       this.listContainer_.startBatchUpdates();
     }
     this.scanUpdatedTimer_ = 0;
-  }.bind(this), 200);
+  }, 200);
 };
 
 /**

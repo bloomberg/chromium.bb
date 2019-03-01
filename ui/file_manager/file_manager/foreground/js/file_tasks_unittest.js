@@ -133,10 +133,10 @@ function getMockFileManager() {
  * @return {!Promise}
  */
 function showHtmlOfAlertDialogIsCalled(entries, expectedTitle, expectedText) {
-  return new Promise(function(resolve, reject) {
+  return new Promise((resolve, reject) => {
     const fileManager = getMockFileManager();
     fileManager.ui.alertDialog.showHtml =
-        function(title, text, onOk, onCancel, onShow) {
+        (title, text, onOk, onCancel, onShow) => {
           assertEquals(expectedTitle, title);
           assertEquals(expectedText, text);
           resolve();
@@ -147,7 +147,7 @@ function showHtmlOfAlertDialogIsCalled(entries, expectedTitle, expectedText) {
             fileManager.volumeManager, fileManager.metadataModel,
             fileManager.directoryModel, fileManager.ui, entries, [null],
             mockTaskHistory, fileManager.namingController, fileManager.crostini)
-        .then(function(tasks) {
+        .then(tasks => {
           tasks.executeDefault();
         });
   });
@@ -161,7 +161,7 @@ function showHtmlOfAlertDialogIsCalled(entries, expectedTitle, expectedText) {
  * @return {!Promise}
  */
 function openSuggestAppsDialogIsCalled(entries, mimeTypes) {
-  return new Promise(function(resolve, reject) {
+  return new Promise((resolve, reject) => {
     const fileManager = getMockFileManager();
     fileManager.ui.suggestAppsDialog = {
       showByExtensionAndMime: function(extension, mimeType, onDialogClosed) {
@@ -174,7 +174,7 @@ function openSuggestAppsDialogIsCalled(entries, mimeTypes) {
             fileManager.volumeManager, fileManager.metadataModel,
             fileManager.directoryModel, fileManager.ui, entries, mimeTypes,
             mockTaskHistory, fileManager.namingController, fileManager.crostini)
-        .then(function(tasks) {
+        .then(tasks => {
           tasks.executeDefault();
         });
   });
@@ -188,7 +188,7 @@ function openSuggestAppsDialogIsCalled(entries, mimeTypes) {
  * @return {!Promise}
  */
 function showDefaultTaskDialogCalled(entries, mimeTypes) {
-  return new Promise(function(resolve, reject) {
+  return new Promise((resolve, reject) => {
     const fileManager = getMockFileManager();
     fileManager.ui.defaultTaskPicker = {
       showDefaultTaskDialog: function(
@@ -202,7 +202,7 @@ function showDefaultTaskDialogCalled(entries, mimeTypes) {
             fileManager.volumeManager, fileManager.metadataModel,
             fileManager.directoryModel, fileManager.ui, entries, mimeTypes,
             mockTaskHistory, fileManager.namingController, fileManager.crostini)
-        .then(function(tasks) {
+        .then(tasks => {
           tasks.executeDefault();
         });
   });
@@ -256,7 +256,7 @@ function testToOpenRtfFile(callback) {
  * Tests opening an entry that has external metadata type.
  */
 function testOpenSuggestAppsDialogWithMetadata(callback) {
-  const showByExtensionAndMimeIsCalled = new Promise(function(resolve, reject) {
+  const showByExtensionAndMimeIsCalled = new Promise((resolve, reject) => {
     const mockFileSystem = new MockFileSystem('volumeId');
     const mockEntry = new MockFileEntry(mockFileSystem, '/test.rtf');
     const fileManager = getMockFileManager();
@@ -280,9 +280,9 @@ function testOpenSuggestAppsDialogWithMetadata(callback) {
             }),
             [mockEntry], ['application/rtf'], mockTaskHistory,
             fileManager.namingController, fileManager.crostini)
-        .then(function(tasks) {
+        .then(tasks => {
           tasks.openSuggestAppsDialog(
-              function() {}, function() {}, function() {});
+              () => {}, () => {}, () => {});
         });
   });
 
@@ -294,7 +294,7 @@ function testOpenSuggestAppsDialogWithMetadata(callback) {
  * entry MIME type are required, the onFalure method should be called.
  */
 function testOpenSuggestAppsDialogFailure(callback) {
-  const onFailureIsCalled = new Promise(function(resolve, reject) {
+  const onFailureIsCalled = new Promise((resolve, reject) => {
     const mockFileSystem = new MockFileSystem('volumeId');
     const mockEntry = new MockFileEntry(mockFileSystem, '/test');
     const fileManager = getMockFileManager();
@@ -304,8 +304,8 @@ function testOpenSuggestAppsDialogFailure(callback) {
             fileManager.volumeManager, fileManager.metadataModel,
             fileManager.directoryModel, fileManager.ui, [mockEntry], [null],
             mockTaskHistory, fileManager.namingController, fileManager.crostini)
-        .then(function(tasks) {
-          tasks.openSuggestAppsDialog(function() {}, function() {}, resolve);
+        .then(tasks => {
+          tasks.openSuggestAppsDialog(() => {}, () => {}, resolve);
         });
   });
 
@@ -317,7 +317,7 @@ function testOpenSuggestAppsDialogFailure(callback) {
  * but there are multiple apps that could open it.
  */
 function testOpenTaskPicker(callback) {
-  window.chrome.fileManagerPrivate.getFileTasks = function(entries, callback) {
+  window.chrome.fileManagerPrivate.getFileTasks = (entries, callback) => {
     setTimeout(
         callback.bind(
             null,
@@ -354,7 +354,7 @@ function testOpenWithMostRecentlyExecuted(callback) {
   const latestTaskId = 'handler-extension-most-recently-executed|app|any';
   const oldTaskId = 'handler-extension-executed-before|app|any';
 
-  window.chrome.fileManagerPrivate.getFileTasks = function(entries, callback) {
+  window.chrome.fileManagerPrivate.getFileTasks = (entries, callback) => {
     setTimeout(
         callback.bind(
             null,
@@ -396,8 +396,7 @@ function testOpenWithMostRecentlyExecuted(callback) {
   });
 
   let executedTask = null;
-  window.chrome.fileManagerPrivate.executeTask = function(
-      taskId, entries, onViewFiles) {
+  window.chrome.fileManagerPrivate.executeTask = (taskId, entries, onViewFiles) => {
     executedTask = taskId;
     onViewFiles('success');
   };
@@ -405,7 +404,7 @@ function testOpenWithMostRecentlyExecuted(callback) {
   const mockFileSystem = new MockFileSystem('volumeId');
   const mockEntry = new MockFileEntry(mockFileSystem, '/test.tiff');
 
-  const promise = new Promise(function(resolve, reject) {
+  const promise = new Promise((resolve, reject) => {
     const fileManager = getMockFileManager();
     fileManager.ui.defaultTaskPicker = {
       showDefaultTaskDialog: function(
@@ -419,7 +418,7 @@ function testOpenWithMostRecentlyExecuted(callback) {
             fileManager.volumeManager, fileManager.metadataModel,
             fileManager.directoryModel, fileManager.ui, [mockEntry], [null],
             taskHistory, fileManager.namingController, fileManager.crostini)
-        .then(function(tasks) {
+        .then(tasks => {
           tasks.executeDefault();
           assertEquals(latestTaskId, executedTask);
           resolve();
@@ -435,7 +434,7 @@ function testOpenWithMostRecentlyExecuted(callback) {
 function testOpenZipWithZipArchiver(callback) {
   const zipArchiverTaskId = 'dmboannefpncccogfdikhmhpmdnddgoe|app|open';
 
-  chrome.commandLinePrivate.hasSwitch = function(name, callback) {
+  chrome.commandLinePrivate.hasSwitch = (name, callback) => {
     if (name == 'enable-zip-archiver-unpacker') {
       // This flag used to exist and was used to switch between the "Zip
       // Unpacker" and "Zip Archiver" component extensions.
@@ -444,7 +443,7 @@ function testOpenZipWithZipArchiver(callback) {
     callback(false);
   };
 
-  window.chrome.fileManagerPrivate.getFileTasks = function(entries, callback) {
+  window.chrome.fileManagerPrivate.getFileTasks = (entries, callback) => {
     setTimeout(
         callback.bind(
             null,
@@ -468,8 +467,7 @@ function testOpenZipWithZipArchiver(callback) {
   });
 
   let executedTask = null;
-  window.chrome.fileManagerPrivate.executeTask = function(
-      taskId, entries, onViewFiles) {
+  window.chrome.fileManagerPrivate.executeTask = (taskId, entries, onViewFiles) => {
     executedTask = taskId;
     onViewFiles('success');
   };
@@ -477,7 +475,7 @@ function testOpenZipWithZipArchiver(callback) {
   const mockFileSystem = new MockFileSystem('volumeId');
   const mockEntry = new MockFileEntry(mockFileSystem, '/test.zip');
 
-  const promise = new Promise(function(resolve, reject) {
+  const promise = new Promise((resolve, reject) => {
     const fileManager = getMockFileManager();
     fileManager.ui.defaultTaskPicker = {
       showDefaultTaskDialog: function(
@@ -491,7 +489,7 @@ function testOpenZipWithZipArchiver(callback) {
             fileManager.volumeManager, fileManager.metadataModel,
             fileManager.directoryModel, fileManager.ui, [mockEntry], [null],
             taskHistory, fileManager.namingController, fileManager.crostini)
-        .then(function(tasks) {
+        .then(tasks => {
           tasks.executeDefault();
           assertEquals(zipArchiverTaskId, executedTask);
           resolve();
@@ -506,7 +504,7 @@ function testOpenZipWithZipArchiver(callback) {
  * be called.
  */
 function testOpenInstallLinuxPackageDialog(callback) {
-  window.chrome.fileManagerPrivate.getFileTasks = function(entries, callback) {
+  window.chrome.fileManagerPrivate.getFileTasks = (entries, callback) => {
     setTimeout(
         callback.bind(
             null,
@@ -524,7 +522,7 @@ function testOpenInstallLinuxPackageDialog(callback) {
   const mockFileSystem = new MockFileSystem('volumeId');
   const mockEntry = new MockFileEntry(mockFileSystem, '/test.deb');
 
-  const promise = new Promise(function(resolve, reject) {
+  const promise = new Promise((resolve, reject) => {
     const fileManager = getMockFileManager();
     fileManager.ui.installLinuxPackageDialog = {
       showInstallLinuxPackageDialog: function(entry) {
@@ -532,7 +530,7 @@ function testOpenInstallLinuxPackageDialog(callback) {
       },
     };
 
-    fileManager.volumeManager.getLocationInfo = function(entry) {
+    fileManager.volumeManager.getLocationInfo = entry => {
       return /** @type {!EntryLocation} */ ({
         rootType: VolumeManagerCommon.RootType.CROSTINI,
       });
@@ -543,7 +541,7 @@ function testOpenInstallLinuxPackageDialog(callback) {
             fileManager.volumeManager, fileManager.metadataModel,
             fileManager.directoryModel, fileManager.ui, [mockEntry], [null],
             mockTaskHistory, fileManager.namingController, fileManager.crostini)
-        .then(function(tasks) {
+        .then(tasks => {
           tasks.executeDefault();
         });
   });

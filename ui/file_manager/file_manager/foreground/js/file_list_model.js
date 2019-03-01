@@ -143,7 +143,7 @@ class FileListModel extends cr.ui.ArrayDataModel {
       const compareFunction = this.compareFunctions_[this.sortStatus.field];
       if (compareFunction) {
         const dirMultiplier = this.sortStatus.direction === 'desc' ? -1 : 1;
-        comp = function(a, b) {
+        comp = (a, b) => {
           return compareFunction(a, b) * dirMultiplier;
         };
       }

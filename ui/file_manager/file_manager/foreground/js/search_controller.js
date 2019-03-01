@@ -108,7 +108,7 @@ SearchController.prototype.onTextChange_ = function() {
   // {@code DirectoryModel.search()}.
   if (this.directoryModel_.isSearching() &&
       this.directoryModel_.getLastSearchQuery() != searchString) {
-    this.directoryModel_.search('', function() {}, function() {});
+    this.directoryModel_.search('', () => {}, () => {});
   }
 
   this.requestAutocompleteSuggestions_();
@@ -156,7 +156,7 @@ SearchController.prototype.requestAutocompleteSuggestions_ = function() {
         types: 'ALL',
         maxResults: 4
       },
-      function(suggestions) {
+      suggestions => {
         this.autocompleteSuggestionsBusy_ = false;
 
         // Discard results for previous requests and fire a new search
@@ -169,7 +169,7 @@ SearchController.prototype.requestAutocompleteSuggestions_ = function() {
         // Keeps the items in the suggestion list.
         this.searchBox_.autocompleteList.suggestions =
             [headerItem].concat(suggestions);
-      }.bind(this));
+      });
 };
 
 /**
@@ -212,7 +212,7 @@ SearchController.prototype.onItemSelect_ = function() {
   // requires the entry to be in the current directory model. For
   // consistency, the current directory is always changed regardless of
   // the file type.
-  entry.getParent(function(parentEntry) {
+  entry.getParent(parentEntry => {
     // Check if the parent entry points /drive/other or not.
     // If so it just opens the file.
     const locationInfo = this.volumeManager_.getLocationInfo(parentEntry);
@@ -225,11 +225,11 @@ SearchController.prototype.onItemSelect_ = function() {
     // If the parent entry can be /drive/other.
     this.directoryModel_.changeDirectoryEntry(
         parentEntry,
-        function() {
+        () => {
           this.directoryModel_.selectEntry(entry);
           this.taskController_.executeEntryTask(entry);
-        }.bind(this));
-  }.bind(this));
+        });
+  });
 };
 
 /**

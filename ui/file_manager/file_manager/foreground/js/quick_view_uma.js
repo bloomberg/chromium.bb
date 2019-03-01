@@ -74,7 +74,7 @@ QuickViewUma.VolumeType = [
  *
  * @private
  */
-QuickViewUma.prototype.exportFileType_ = function(entry, name) {
+QuickViewUma.prototype.exportFileType_ = (entry, name) => {
   let extension = FileType.getExtension(entry).toLowerCase();
   if (entry.isDirectory) {
     extension = 'directory';

@@ -154,7 +154,7 @@ GearMenuController.prototype.refreshRemainingSpace_ = function(
     return;
   }
 
-  this.gearMenu_.setSpaceInfo(new Promise(function(fulfill) {
+  this.gearMenu_.setSpaceInfo(new Promise(fulfill => {
     chrome.fileManagerPrivate.getSizeStats(currentVolumeInfo.volumeId, fulfill);
   }), true);
 };
@@ -164,7 +164,7 @@ GearMenuController.prototype.refreshRemainingSpace_ = function(
  * @private
  */
 GearMenuController.prototype.onPreferencesChanged_ = function() {
-  chrome.fileManagerPrivate.getPreferences(function(prefs) {
+  chrome.fileManagerPrivate.getPreferences(prefs => {
     if (chrome.runtime.lastError) {
       return;
     }
@@ -174,5 +174,5 @@ GearMenuController.prototype.onPreferencesChanged_ = function() {
     } else {
       this.gearMenu_.syncButton.removeAttribute('checked');
     }
-  }.bind(this));
+  });
 };

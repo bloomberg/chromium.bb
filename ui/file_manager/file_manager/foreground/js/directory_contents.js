@@ -60,8 +60,8 @@ class DirectoryContentScanner extends ContentScanner {
 
     metrics.startInterval('DirectoryScan');
     const reader = this.entry_.createReader();
-    const readEntries = function() {
-      reader.readEntries(function(entries) {
+    const readEntries = () => {
+      reader.readEntries(entries => {
         if (this.cancelled_) {
           errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
           return;
@@ -76,8 +76,8 @@ class DirectoryContentScanner extends ContentScanner {
 
         entriesCallback(entries);
         readEntries();
-      }.bind(this), errorCallback);
-    }.bind(this);
+      }, errorCallback);
+    };
     readEntries();
   }
 }
@@ -202,7 +202,7 @@ class DriveMetadataSearchContentScanner extends ContentScanner {
   scan(entriesCallback, successCallback, errorCallback) {
     chrome.fileManagerPrivate.searchDriveMetadata(
         {query: '', types: this.searchType_, maxResults: 100},
-        function(results) {
+        results => {
           if (this.cancelled_) {
             errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
             return;
@@ -215,14 +215,14 @@ class DriveMetadataSearchContentScanner extends ContentScanner {
             return;
           }
 
-          const entries = results.map(function(result) {
+          const entries = results.map(result => {
             return result.entry;
           });
           if (entries.length > 0) {
             entriesCallback(entries);
           }
           successCallback();
-        }.bind(this));
+        });
   }
 }
 
@@ -263,7 +263,7 @@ class RecentContentScanner extends ContentScanner {
    */
   scan(entriesCallback, successCallback, errorCallback) {
     chrome.fileManagerPrivate.getRecentFiles(
-        this.sourceRestriction_, function(entries) {
+        this.sourceRestriction_, entries => {
           if (chrome.runtime.lastError) {
             console.error(chrome.runtime.lastError.message);
             errorCallback(
@@ -275,7 +275,7 @@ class RecentContentScanner extends ContentScanner {
                 entry => entry.name.toLowerCase().indexOf(this.query_) >= 0));
           }
           successCallback();
-        }.bind(this));
+        });
   }
 }
 
@@ -798,11 +798,11 @@ class DirectoryContents extends cr.EventTarget {
       this.context_.metadataModel.notifyEntriesRemoved(removedUrls);
     }
 
-    this.prefetchMetadata(updatedList, true, function() {
+    this.prefetchMetadata(updatedList, true, () => {
       this.onNewEntries_(true, addedList);
       this.onScanFinished_();
       this.onScanCompleted_();
-    }.bind(this));
+    });
   }
 
   /**
@@ -842,13 +842,13 @@ class DirectoryContents extends cr.EventTarget {
       return;
     }
 
-    this.processNewEntriesQueue_.run(function(callback) {
+    this.processNewEntriesQueue_.run(callback => {
       // Call callback first, so isScanning() returns false in the event
       // handlers.
       callback();
 
       cr.dispatchSimpleEvent(this, 'scan-completed');
-    }.bind(this));
+    });
   }
 
   /**
@@ -861,14 +861,14 @@ class DirectoryContents extends cr.EventTarget {
       return;
     }
 
-    this.processNewEntriesQueue_.run(function(callback) {
+    this.processNewEntriesQueue_.run(callback => {
       // Call callback first, so isScanning() returns false in the event
       // handlers.
       callback();
       const event = new Event('scan-failed');
       event.error = error;
       this.dispatchEvent(event);
-    }.bind(this));
+    });
   }
 
   /**
@@ -887,7 +887,7 @@ class DirectoryContents extends cr.EventTarget {
     // Caching URL to reduce a number of calls of toURL in sort.
     // This is a temporary solution. We need to fix a root cause of slow toURL.
     // See crbug.com/370908 for detail.
-    entries.forEach(function(entry) {
+    entries.forEach(entry => {
       entry['cachedUrl'] = entry.toURL();
     });
 
@@ -898,8 +898,8 @@ class DirectoryContents extends cr.EventTarget {
     // Enlarge the cache size into the new filelist size.
     const newListSize = this.fileList_.length + entries.length;
 
-    this.processNewEntriesQueue_.run(function(callbackOuter) {
-      const finish = function() {
+    this.processNewEntriesQueue_.run(callbackOuter => {
+      const finish = () => {
         if (!this.scanCancelled_) {
           let entriesFiltered = [].filter.call(
               entries,
@@ -911,7 +911,7 @@ class DirectoryContents extends cr.EventTarget {
           for (let i = 0; i < this.fileList_.length; i++) {
             currentURLs[this.fileList_.item(i).toURL()] = true;
           }
-          entriesFiltered = entriesFiltered.filter(function(entry) {
+          entriesFiltered = entriesFiltered.filter(entry => {
             return !currentURLs[entry.toURL()];
           });
           // Update the filelist without waiting the metadata.
@@ -919,7 +919,7 @@ class DirectoryContents extends cr.EventTarget {
           cr.dispatchSimpleEvent(this, 'scan-updated');
         }
         callbackOuter();
-      }.bind(this);
+      };
       // Because the prefetchMetadata can be slow, throttling by splitting
       // entries into smaller chunks to reduce UI latency.
       // TODO(hidehiko,mtomasz): This should be handled in MetadataCache.
@@ -931,8 +931,8 @@ class DirectoryContents extends cr.EventTarget {
         }
 
         const chunk = entries.slice(i, i + MAX_CHUNK_SIZE);
-        prefetchMetadataQueue.run(function(chunk, callbackInner) {
-          this.prefetchMetadata(chunk, refresh, function() {
+        prefetchMetadataQueue.run(((chunk, callbackInner) => {
+          this.prefetchMetadata(chunk, refresh, () => {
             if (!prefetchMetadataQueue.isCancelled()) {
               if (this.scanCancelled_) {
                 prefetchMetadataQueue.cancel();
@@ -948,10 +948,10 @@ class DirectoryContents extends cr.EventTarget {
             }
 
             callbackInner();
-          }.bind(this));
-        }.bind(this, chunk));
+          });
+        }).bind(null, chunk));
       }
-    }.bind(this));
+    });
   }
 
   /**
@@ -981,7 +981,7 @@ class DirectoryContents extends cr.EventTarget {
     return new DirectoryContents(
         context,
         false,  // Non search.
-        directoryEntry, function() {
+        directoryEntry, () => {
           return new DirectoryContentScanner(directoryEntry);
         });
   }
@@ -999,7 +999,7 @@ class DirectoryContents extends cr.EventTarget {
     return new DirectoryContents(
         context,
         true,  // Search.
-        directoryEntry, function() {
+        directoryEntry, () => {
           return new DriveSearchContentScanner(query);
         });
   }
@@ -1017,7 +1017,7 @@ class DirectoryContents extends cr.EventTarget {
     return new DirectoryContents(
         context,
         true,  // Search.
-        directoryEntry, function() {
+        directoryEntry, () => {
           return new LocalSearchContentScanner(directoryEntry, query);
         });
   }
@@ -1039,7 +1039,7 @@ class DirectoryContents extends cr.EventTarget {
     return new DirectoryContents(
         context,
         true,  // Search
-        fakeDirectoryEntry, function() {
+        fakeDirectoryEntry, () => {
           return new DriveMetadataSearchContentScanner(searchType);
         });
   }
@@ -1054,7 +1054,7 @@ class DirectoryContents extends cr.EventTarget {
    * @return {DirectoryContents} Created DirectoryContents instance.
    */
   static createForRecent(context, recentRootEntry, query) {
-    return new DirectoryContents(context, true, recentRootEntry, function() {
+    return new DirectoryContents(context, true, recentRootEntry, () => {
       return new RecentContentScanner(query, recentRootEntry.sourceRestriction);
     });
   }
@@ -1068,7 +1068,7 @@ class DirectoryContents extends cr.EventTarget {
    * @return {DirectoryContents} Created DirectoryContents instance.
    */
   static createForMediaView(context, rootEntry) {
-    return new DirectoryContents(context, true, rootEntry, function() {
+    return new DirectoryContents(context, true, rootEntry, () => {
       return new MediaViewContentScanner(rootEntry);
     });
   }
@@ -1082,7 +1082,7 @@ class DirectoryContents extends cr.EventTarget {
    * @return {DirectoryContents} Created DirectoryContents instance.
    */
   static createForCrostiniMounter(context, crostiniRootEntry) {
-    return new DirectoryContents(context, true, crostiniRootEntry, function() {
+    return new DirectoryContents(context, true, crostiniRootEntry, () => {
       return new CrostiniMounter();
     });
   }
@@ -1097,7 +1097,7 @@ class DirectoryContents extends cr.EventTarget {
    * @return {DirectoryContents} Created DirectoryContents instance.
    */
   static createForFakeDrive(context, rootEntry) {
-    return new DirectoryContents(context, true, rootEntry, function() {
+    return new DirectoryContents(context, true, rootEntry, () => {
       return new ContentScanner();
     });
   }

@@ -33,7 +33,7 @@ function generateSampleImageDataUrl(width, height) {
  * @param {function(!LoadImageRequest, function(!Object))} mockLoad
  */
 function installMockLoad(mockLoad) {
-  ImageLoaderClient.getInstance = function() {
+  ImageLoaderClient.getInstance = () => {
     return /** @type {!ImageLoaderClient} */ ({load: mockLoad});
   };
 }
@@ -67,7 +67,7 @@ function testShouldUseMetadataThumbnail() {
 }
 
 function testLoadAsDataUrlFromImageClient(callback) {
-  installMockLoad(function(request, callback) {
+  installMockLoad((request, callback) => {
     callback({status: 'success', data: 'imageDataUrl', width: 32, height: 32});
   });
 
@@ -76,13 +76,13 @@ function testLoadAsDataUrlFromImageClient(callback) {
   const thumbnailLoader = new ThumbnailLoader(entry);
   reportPromise(
       thumbnailLoader.loadAsDataUrl(ThumbnailLoader.FillMode.OVER_FILL)
-      .then(function(result) {
+      .then(result => {
         assertEquals('imageDataUrl', result.data);
       }), callback);
 }
 
 function testLoadAsDataUrlFromExifThumbnail(callback) {
-  installMockLoad(function(request, callback) {
+  installMockLoad((request, callback) => {
     // Assert that data url is passed.
     assertTrue(/^data:/i.test(request.url));
     callback({status: 'success', data: request.url, width: 32, height: 32});
@@ -99,13 +99,13 @@ function testLoadAsDataUrlFromExifThumbnail(callback) {
   const thumbnailLoader = new ThumbnailLoader(entry, undefined, metadata);
   reportPromise(
       thumbnailLoader.loadAsDataUrl(ThumbnailLoader.FillMode.OVER_FILL)
-      .then(function(result) {
+      .then(result => {
         assertEquals(metadata.thumbnail.url, result.data);
       }), callback);
 }
 
 function testLoadAsDataUrlFromExifThumbnailPropagatesTransform(callback) {
-  installMockLoad(function(request, callback) {
+  installMockLoad((request, callback) => {
     // Assert that data url and transform info is passed.
     assertTrue(/^data:/i.test(request.url));
     assertEquals(1, request.orientation.rotate90);
@@ -133,7 +133,7 @@ function testLoadAsDataUrlFromExifThumbnailPropagatesTransform(callback) {
   const thumbnailLoader = new ThumbnailLoader(entry, undefined, metadata);
   reportPromise(
       thumbnailLoader.loadAsDataUrl(ThumbnailLoader.FillMode.OVER_FILL)
-      .then(function(result) {
+      .then(result => {
         assertEquals(32, result.width);
         assertEquals(64, result.height);
         assertEquals(generateSampleImageDataUrl(32, 64), result.data);
@@ -145,7 +145,7 @@ function testLoadAsDataUrlFromExternal(callback) {
   const externalCroppedThumbnailUrl = 'https://external-cropped-thumbnail-url/';
   const externalThumbnailDataUrl = generateSampleImageDataUrl(32, 32);
 
-  installMockLoad(function(request, callback) {
+  installMockLoad((request, callback) => {
     assertEquals(externalCroppedThumbnailUrl, request.url);
     callback({
       status: 'success',
@@ -167,13 +167,13 @@ function testLoadAsDataUrlFromExternal(callback) {
   const thumbnailLoader = new ThumbnailLoader(entry, undefined, metadata);
   reportPromise(
       thumbnailLoader.loadAsDataUrl(ThumbnailLoader.FillMode.OVER_FILL)
-      .then(function(result) {
+      .then(result => {
         assertEquals(externalThumbnailDataUrl, result.data);
       }), callback);
 }
 
 function testLoadDetachedFromExifInCavnasModeThumbnailDoesNotRotate(callback) {
-  installMockLoad(function(request, callback) {
+  installMockLoad((request, callback) => {
     // Assert that data url is passed.
     assertTrue(/^data:/i.test(request.url));
     // Assert that the rotation is propagated to ImageLoader.
@@ -204,9 +204,9 @@ function testLoadDetachedFromExifInCavnasModeThumbnailDoesNotRotate(callback) {
       new ThumbnailLoader(entry, ThumbnailLoader.LoaderType.CANVAS, metadata);
 
   reportPromise(
-    new Promise(function(resolve, reject) {
+    new Promise((resolve, reject) => {
       thumbnailLoader.loadDetachedImage(resolve);
-    }).then(function() {
+    }).then(() => {
       const image = thumbnailLoader.getImage();
       // No need to rotate by loadDetachedImage() as it's already done.
       assertEquals(32, image.width);

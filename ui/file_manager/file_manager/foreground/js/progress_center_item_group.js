@@ -142,8 +142,7 @@ ProgressCenterItemGroup.getSummarizedErrorItem = function(var_args) {
  * @return {boolean} Whether the item should be animated or not.
  * @private
  */
-ProgressCenterItemGroup.shouldAnimate_ = function(
-    previousAnimated, previousItem, item, summarized) {
+ProgressCenterItemGroup.shouldAnimate_ = (previousAnimated, previousItem, item, summarized) => {
   // Check visibility of previous and current progress bar.
   const previousShow =
       previousItem && (!summarized || !previousItem.quiet);

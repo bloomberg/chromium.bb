@@ -48,10 +48,10 @@ class TaskHistory extends cr.EventTarget {
    */
   load_() {
     chrome.storage.local.get(
-        TaskHistory.STORAGE_KEY_LAST_EXECUTED_TIME, function(value) {
+        TaskHistory.STORAGE_KEY_LAST_EXECUTED_TIME, value => {
           this.lastExecutedTime_ =
               value[TaskHistory.STORAGE_KEY_LAST_EXECUTED_TIME] || {};
-        }.bind(this));
+        });
   }
 
   /**

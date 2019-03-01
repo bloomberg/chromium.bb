@@ -103,16 +103,16 @@ function QuickViewController(
       this.onFileSelectionChanged_.bind(this));
   this.listContainer_.element.addEventListener(
       'keydown', this.onKeyDownToOpen_.bind(this));
-  this.listContainer_.element.addEventListener('command', function(event) {
+  this.listContainer_.element.addEventListener('command', event => {
     if (event.command.id === 'get-info') {
       this.display_(QuickViewUma.WayToOpen.CONTEXT_MENU);
     }
-  }.bind(this));
-  selectionMenuButton.addEventListener('command', function(event) {
+  });
+  selectionMenuButton.addEventListener('command', event => {
     if (event.command.id === 'get-info') {
       this.display_(QuickViewUma.WayToOpen.SELECTION_MENU);
     }
-  }.bind(this));
+  });
 }
 
 /**
@@ -160,9 +160,9 @@ QuickViewController.prototype.init_ = function(quickView) {
   this.metadataBoxController_.init(quickView);
   document.body.addEventListener(
       'keydown', this.onQuickViewKeyDown_.bind(this));
-  quickView.addEventListener('close', function() {
+  quickView.addEventListener('close', () => {
     this.listContainer_.focus();
-  }.bind(this));
+  });
   quickView.onOpenInNewButtonTap = this.onOpenInNewButtonTap_.bind(this);
 
   const toolTip = this.quickView_.$$('files-tooltip');
@@ -175,9 +175,9 @@ QuickViewController.prototype.init_ = function(quickView) {
  * @return Promise<!FilesQuickView>
  * @private
  */
-QuickViewController.prototype.createQuickView_ = function() {
-  return new Promise(function(resolve, reject) {
-    Polymer.Base.importHref(constants.FILES_QUICK_VIEW_HTML, function() {
+QuickViewController.prototype.createQuickView_ = () => {
+  return new Promise((resolve, reject) => {
+    Polymer.Base.importHref(constants.FILES_QUICK_VIEW_HTML, () => {
       const quickView = document.querySelector('#quick-view');
       resolve(quickView);
     }, reject);
@@ -257,12 +257,12 @@ QuickViewController.prototype.onQuickViewKeyDown_ = function(event) {
  * @private
  */
 QuickViewController.prototype.display_ = function(opt_wayToOpen) {
-  this.updateQuickView_().then(function() {
+  this.updateQuickView_().then(() => {
     if (!this.quickView_.isOpened()) {
       this.quickView_.open();
       this.quickViewUma_.onOpened(this.entries_[0], assert(opt_wayToOpen));
     }
-  }.bind(this));
+  });
 };
 
 /**
@@ -290,7 +290,7 @@ QuickViewController.prototype.onFileSelectionChanged_ = function(event) {
  * @private
  */
 QuickViewController.prototype.getAvailableTasks_ = function(entry) {
-  return this.taskController_.getFileTasks().then(function(tasks) {
+  return this.taskController_.getFileTasks().then(tasks => {
     return tasks.getTaskItems();
   });
 };
@@ -321,12 +321,12 @@ QuickViewController.prototype.updateQuickView_ = function() {
         this.metadataModel_.get([entry], ['thumbnailUrl']),
         this.getAvailableTasks_(entry)
       ])
-      .then(function(values) {
+      .then(values => {
         const items = (/**@type{Array<MetadataItem>}*/ (values[0]));
         const tasks = (/**@type{!Array<!chrome.fileManagerPrivate.FileTask>}*/ (
             values[1]));
         return this.onMetadataLoaded_(entry, items, tasks);
-      }.bind(this))
+      })
       .catch(console.error);
 };
 
@@ -341,7 +341,7 @@ QuickViewController.prototype.updateQuickView_ = function() {
 QuickViewController.prototype.onMetadataLoaded_ = function(
     entry, items, tasks) {
   return this.getQuickViewParameters_(entry, items, tasks)
-      .then(function(params) {
+      .then(params => {
         this.quickView_.type = params.type || '';
         this.quickView_.subtype = params.subtype || '';
         this.quickView_.filePath = params.filePath || '';
@@ -351,7 +351,7 @@ QuickViewController.prototype.onMetadataLoaded_ = function(
         this.quickView_.audioArtwork = params.audioArtwork || '';
         this.quickView_.autoplay = params.autoplay || false;
         this.quickView_.browsable = params.browsable || false;
-      }.bind(this));
+      });
 };
 
 /**
@@ -400,7 +400,7 @@ QuickViewController.prototype.getQuickViewParameters_ = function(
     // For Drive files, display a thumbnail if there is one.
     if (item.thumbnailUrl) {
       return this.loadThumbnailFromDrive_(item.thumbnailUrl)
-          .then(function(result) {
+          .then(result => {
             if (result.status === 'success') {
               if (params.type == 'video') {
                 params.videoPoster = result.data;
@@ -414,7 +414,7 @@ QuickViewController.prototype.getQuickViewParameters_ = function(
               }
             }
             return params;
-          }.bind(this));
+          });
     }
 
     // We ask user to open it with external app.
@@ -424,10 +424,10 @@ QuickViewController.prototype.getQuickViewParameters_ = function(
   if (type === '.folder') {
     return Promise.resolve(params);
   }
-  return new Promise(function(resolve, reject) {
+  return new Promise((resolve, reject) => {
            entry.file(resolve, reject);
          })
-      .then(function(file) {
+      .then(file => {
         switch (type) {
           case 'image':
             if (QuickViewController.UNSUPPORTED_IMAGE_SUBTYPES_.indexOf(
@@ -448,7 +448,7 @@ QuickViewController.prototype.getQuickViewParameters_ = function(
             params.contentUrl = URL.createObjectURL(file);
             params.autoplay = true;
             return this.metadataModel_.get([entry], ['contentThumbnailUrl'])
-                .then(function(items) {
+                .then(items => {
                   const item = items[0];
                   if (item.contentThumbnailUrl) {
                     params.audioArtwork = item.contentThumbnailUrl;
@@ -463,7 +463,7 @@ QuickViewController.prototype.getQuickViewParameters_ = function(
               break;
             }
         }
-        const browsable = tasks.some(function(task) {
+        const browsable = tasks.some(task => {
           return ['view-in-browser', 'view-pdf'].includes(
               task.taskId.split('|')[2]);
         });
@@ -473,8 +473,8 @@ QuickViewController.prototype.getQuickViewParameters_ = function(
           params.contentUrl += '#view=FitH';
         }
         return params;
-      }.bind(this))
-      .catch(function(e) {
+      })
+      .catch(e => {
         console.error(e);
         return params;
       });
@@ -487,8 +487,8 @@ QuickViewController.prototype.getQuickViewParameters_ = function(
  * @return Promise<{{status: string, data:string, width:number, height:number}}>
  * @private
  */
-QuickViewController.prototype.loadThumbnailFromDrive_ = function(url) {
-  return new Promise(function(resolve) {
+QuickViewController.prototype.loadThumbnailFromDrive_ = url => {
+  return new Promise(resolve => {
     ImageLoaderClient.getInstance().load(
         LoadImageRequest.createForUrl(url), resolve);
   });

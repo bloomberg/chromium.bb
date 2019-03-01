@@ -222,7 +222,7 @@ DirectoryModel.prototype.isCurrentRootVolumeType_ = function(volumeType) {
  * @private
  */
 DirectoryModel.prototype.updateSelectionAndPublishEvent_ =
-    function(selection, updateFunc) {
+    (selection, updateFunc) => {
   // Begin change.
   selection.beginChange();
 
@@ -232,7 +232,7 @@ DirectoryModel.prototype.updateSelectionAndPublishEvent_ =
 
   // Check if the change event is dispatched in the endChange function
   // or not.
-  const eventDispatched = function() {
+  const eventDispatched = () => {
     dispatchNeeded = false;
   };
   selection.addEventListener('change', eventDispatched);
@@ -270,22 +270,22 @@ DirectoryModel.prototype.onWatcherDirectoryChanged_ = function(event) {
   if (!this.ignoreCurrentDirectoryDeletion_) {
     // If the change is deletion of currentDir, move up to its parent directory.
     directoryEntry.getDirectory(
-        directoryEntry.fullPath, {create: false}, function() {},
-        function() {
+        directoryEntry.fullPath, {create: false}, () => {},
+        () => {
           const volumeInfo =
               this.volumeManager_.getVolumeInfo(assert(directoryEntry));
           if (volumeInfo) {
-            volumeInfo.resolveDisplayRoot().then(function(displayRoot) {
+            volumeInfo.resolveDisplayRoot().then(displayRoot => {
               this.changeDirectoryEntry(displayRoot);
-            }.bind(this));
+            });
           }
-        }.bind(this));
+        });
   }
 
   if (event.changedFiles) {
     const addedOrUpdatedFileUrls = [];
     let deletedFileUrls = [];
-    event.changedFiles.forEach(function(change) {
+    event.changedFiles.forEach(change => {
       if (change.changes.length === 1 && change.changes[0] === 'delete') {
         deletedFileUrls.push(change.url);
       } else {
@@ -293,17 +293,17 @@ DirectoryModel.prototype.onWatcherDirectoryChanged_ = function(event) {
       }
     });
 
-    util.URLsToEntries(addedOrUpdatedFileUrls).then(function(result) {
+    util.URLsToEntries(addedOrUpdatedFileUrls).then(result => {
       deletedFileUrls = deletedFileUrls.concat(result.failureUrls);
 
       // Passing the resolved entries and failed URLs as the removed files.
       // The URLs are removed files and they chan't be resolved.
       this.partialUpdate_(result.entries, deletedFileUrls);
-    }.bind(this)).catch(function(error) {
+    }).catch(error => {
       console.error('Error in proceeding the changed event.', error,
                     'Fallback to force-refresh');
       this.rescanAggregator_.run();
-    }.bind(this));
+    });
   } else {
     // Invokes force refresh if the detailed information isn't provided.
     // This can occur very frequently (e.g. when copying files into Downlaods)
@@ -357,7 +357,7 @@ DirectoryModel.prototype.getSelectedEntries_ = function() {
   const indexes = this.fileListSelection_.selectedIndexes;
   const fileList = this.getFileList();
   if (fileList) {
-    return indexes.map(function(i) {
+    return indexes.map(i => {
       return fileList.item(i);
     });
   }
@@ -443,12 +443,12 @@ DirectoryModel.prototype.scheduleRescan = function(delay, refresh) {
   const sequence = this.changeDirectorySequence_;
 
   this.rescanTime_ = Date.now() + delay;
-  this.rescanTimeoutId_ = setTimeout(function() {
+  this.rescanTimeoutId_ = setTimeout(() => {
     this.rescanTimeoutId_ = null;
     if (sequence === this.changeDirectorySequence_) {
       this.rescan(refresh);
     }
-  }.bind(this), delay);
+  }, delay);
 };
 
 /**
@@ -488,16 +488,16 @@ DirectoryModel.prototype.rescan = function(refresh) {
 
   const sequence = this.changeDirectorySequence_;
 
-  const successCallback = (function() {
+  const successCallback = () => {
     if (sequence === this.changeDirectorySequence_) {
       this.replaceDirectoryContents_(dirContents);
       cr.dispatchSimpleEvent(this, 'rescan-completed');
     }
-  }).bind(this);
+  };
 
   this.scan_(dirContents,
              refresh,
-             successCallback, function() {}, function() {}, function() {});
+             successCallback, () => {}, () => {}, () => {});
 };
 
 /**
@@ -533,17 +533,17 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents, callback) {
   const sequence = this.changeDirectorySequence_;
   let cancelled = false;
 
-  const onDone = function() {
+  const onDone = () => {
     if (cancelled) {
       return;
     }
 
     cr.dispatchSimpleEvent(this, 'scan-completed');
     callback(true);
-  }.bind(this);
+  };
 
   /** @param {DOMError} error error. */
-  const onFailed = function(error) {
+  const onFailed = error => {
     if (cancelled) {
       return;
     }
@@ -552,9 +552,9 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents, callback) {
     event.error = error;
     this.dispatchEvent(event);
     callback(false);
-  }.bind(this);
+  };
 
-  const onUpdated = function() {
+  const onUpdated = () => {
     if (cancelled) {
       return;
     }
@@ -567,9 +567,9 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents, callback) {
     }
 
     cr.dispatchSimpleEvent(this, 'scan-updated');
-  }.bind(this);
+  };
 
-  const onCancelled = function() {
+  const onCancelled = () => {
     if (cancelled) {
       return;
     }
@@ -577,7 +577,7 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents, callback) {
     cancelled = true;
     cr.dispatchSimpleEvent(this, 'scan-cancelled');
     callback(false);
-  }.bind(this);
+  };
 
   // Clear metadata information for the old (no longer visible) items in the
   // file list.
@@ -619,19 +619,19 @@ DirectoryModel.prototype.partialUpdate_ =
   if (this.runningScan_) {
     // Do update after the current scan is finished.
     const previousScan = this.runningScan_;
-    const onPreviousScanCompleted = function() {
+    const onPreviousScanCompleted = () => {
       previousScan.removeEventListener('scan-completed',
                                        onPreviousScanCompleted);
       // Run the update asynchronously.
-      Promise.resolve().then(function() {
+      Promise.resolve().then(() => {
         this.partialUpdate_(changedEntries, removedUrls);
-      }.bind(this));
-    }.bind(this);
+      });
+    };
     previousScan.addEventListener('scan-completed', onPreviousScanCompleted);
     return;
   }
 
-  const onFinish = function() {
+  const onFinish = () => {
     this.runningScan_ = null;
 
     this.currentDirContents_.removeEventListener(
@@ -639,18 +639,18 @@ DirectoryModel.prototype.partialUpdate_ =
     this.currentDirContents_.removeEventListener('scan-failed', onFailure);
     this.currentDirContents_.removeEventListener(
         'scan-cancelled', onCancelled);
-  }.bind(this);
+  };
 
-  const onCompleted = function() {
+  const onCompleted = () => {
     onFinish();
     cr.dispatchSimpleEvent(this, 'rescan-completed');
-  }.bind(this);
+  };
 
-  const onFailure = function() {
+  const onFailure = () => {
     onFinish();
   };
 
-  const onCancelled = function() {
+  const onCancelled = () => {
     onFinish();
   };
 
@@ -687,23 +687,23 @@ DirectoryModel.prototype.scan_ = function(
    *
    * @return {boolean} Did pending scan exist.
    */
-  const maybeRunPendingRescan = function() {
+  const maybeRunPendingRescan = () => {
     if (this.pendingRescan_) {
       this.rescanSoon(refresh);
       this.pendingRescan_ = false;
       return true;
     }
     return false;
-  }.bind(this);
+  };
 
-  const onFinished = function() {
+  const onFinished = () => {
     dirContents.removeEventListener('scan-completed', onSuccess);
     dirContents.removeEventListener('scan-updated', updatedCallback);
     dirContents.removeEventListener('scan-failed', onFailure);
     dirContents.removeEventListener('scan-cancelled', cancelledCallback);
   };
 
-  const onSuccess = function() {
+  const onSuccess = () => {
     onFinished();
 
     // Record metric for Downloads directory.
@@ -724,9 +724,9 @@ DirectoryModel.prototype.scan_ = function(
     successCallback();
     this.scanFailures_ = 0;
     maybeRunPendingRescan();
-  }.bind(this);
+  };
 
-  const onFailure = function(event) {
+  const onFailure = event => {
     onFinished();
 
     this.runningScan_ = null;
@@ -745,9 +745,9 @@ DirectoryModel.prototype.scan_ = function(
     if (this.scanFailures_ <= 1) {
       this.rescanLater(refresh);
     }
-  }.bind(this);
+  };
 
-  const onCancelled = function() {
+  const onCancelled = () => {
     onFinished();
     cancelledCallback();
   };
@@ -770,7 +770,7 @@ DirectoryModel.prototype.replaceDirectoryContents_ = function(dirContents) {
   console.assert(this.currentDirContents_ !== dirContents,
       'Give directory contents instance must be different from current one.');
   cr.dispatchSimpleEvent(this, 'begin-update-files');
-  this.updateSelectionAndPublishEvent_(this.fileListSelection_, function() {
+  this.updateSelectionAndPublishEvent_(this.fileListSelection_, () => {
     const selectedEntries = this.getSelectedEntries_();
     const selectedIndices = this.fileListSelection_.selectedIndexes;
 
@@ -802,7 +802,7 @@ DirectoryModel.prototype.replaceDirectoryContents_ = function(dirContents) {
       this.fileListSelection_.setCheckSelectMode(true);
     }
     return forceChangeEvent;
-  }.bind(this));
+  });
 
   cr.dispatchSimpleEvent(this, 'end-update-files');
 };
@@ -830,11 +830,11 @@ DirectoryModel.prototype.onEntriesChanged_ = function(event) {
     case util.EntryChangedKind.CREATED:
       const parentPromises = [];
       for (let i = 0; i < entries.length; i++) {
-        parentPromises.push(new Promise(function(resolve, reject) {
+        parentPromises.push(new Promise((resolve, reject) => {
           entries[i].getParent(resolve, reject);
         }));
       }
-      Promise.all(parentPromises).then(function(parents) {
+      Promise.all(parentPromises).then(parents => {
         const entriesToAdd = [];
         for (let i = 0; i < parents.length; i++) {
           if (!util.isSameEntry(parents[i], this.getCurrentDirEntry())) {
@@ -849,7 +849,7 @@ DirectoryModel.prototype.onEntriesChanged_ = function(event) {
           }
         }
         this.partialUpdate_(entriesToAdd, []);
-      }.bind(this)).catch(function(error) {
+      }).catch(error => {
         console.error(error.stack || error);
       });
       break;
@@ -893,7 +893,7 @@ DirectoryModel.prototype.findIndexByEntry_ = function(entry) {
  */
 DirectoryModel.prototype.onRenameEntry = function(
     oldEntry, newEntry, opt_callback) {
-  this.currentDirContents_.prefetchMetadata([newEntry], true, function() {
+  this.currentDirContents_.prefetchMetadata([newEntry], true, () => {
     // If the current directory is the old entry, then quietly change to the
     // new one.
     if (util.isSameEntry(oldEntry, this.getCurrentDirEntry())) {
@@ -936,7 +936,7 @@ DirectoryModel.prototype.onRenameEntry = function(
     if (opt_callback) {
       opt_callback();
     }
-  }.bind(this));
+  });
 };
 
 /**
@@ -951,10 +951,10 @@ DirectoryModel.prototype.updateAndSelectNewDirectory = function(newDirectory) {
   this.metadataModel_.notifyEntriesCreated([newDirectory]);
   const dirContents = this.currentDirContents_;
 
-  return new Promise(function(onFulfilled, onRejected) {
+  return new Promise((onFulfilled, onRejected) => {
     dirContents.prefetchMetadata(
         [newDirectory], false, onFulfilled);
-  }).then(function(sequence) {
+  }).then((sequence => {
     // If current directory has changed during the prefetch, do not try to
     // select new directory.
     if (sequence !== this.changeDirectorySequence_) {
@@ -962,7 +962,7 @@ DirectoryModel.prototype.updateAndSelectNewDirectory = function(newDirectory) {
     }
 
     // If target directory is already in the list, just select it.
-    const existing = this.getFileList().slice().filter(function(e) {
+    const existing = this.getFileList().slice().filter(e => {
       return e.name === newDirectory.name;
     });
     if (existing.length) {
@@ -973,7 +973,7 @@ DirectoryModel.prototype.updateAndSelectNewDirectory = function(newDirectory) {
       this.selectEntry(newDirectory);
       this.fileListSelection_.endChange();
     }
-  }.bind(this, this.changeDirectorySequence_));
+  }).bind(null, this.changeDirectorySequence_));
 };
 
 /**
@@ -1021,9 +1021,9 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
     this.currentDirContents_.cancelScan();
   }
 
-  this.directoryChangeQueue_.run(function(sequence, queueTaskCallback) {
+  this.directoryChangeQueue_.run(((sequence, queueTaskCallback) => {
     this.fileWatcher_.changeWatchedDirectory(dirEntry)
-        .then(function() {
+        .then(() => {
           if (this.changeDirectorySequence_ !== sequence) {
             queueTaskCallback();
             return;
@@ -1040,7 +1040,7 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
               this.currentDirContents_.getDirectoryEntry();
           this.clearAndScan_(
                newDirectoryContents,
-               function(result) {
+               result => {
                  // Calls the callback of the method when successful.
                  if (result && opt_callback) {
                    opt_callback();
@@ -1064,8 +1064,8 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
           event.newDirEntry = dirEntry;
           event.volumeChanged = previousVolumeInfo !== currentVolumeInfo;
           this.dispatchEvent(event);
-        }.bind(this));
-  }.bind(this, this.changeDirectorySequence_));
+        });
+  }).bind(null, this.changeDirectorySequence_));
 };
 
 /**
@@ -1395,7 +1395,7 @@ DirectoryModel.prototype.search = function(query,
   }
 
   this.changeDirectorySequence_++;
-  this.directoryChangeQueue_.run(function(sequence, callback) {
+  this.directoryChangeQueue_.run(((sequence, callback) => {
     if (this.changeDirectorySequence_ !== sequence) {
       callback();
       return;
@@ -1426,7 +1426,7 @@ DirectoryModel.prototype.search = function(query,
     this.addEventListener('scan-completed', this.onSearchCompleted_);
     this.clearAndScan_(newDirContents,
                        callback);
-  }.bind(this, this.changeDirectorySequence_));
+  }).bind(null, this.changeDirectorySequence_));
 };
 
 /**

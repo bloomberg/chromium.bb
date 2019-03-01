@@ -62,7 +62,7 @@ SortMenuController.prototype.onHideSortMenu_ = function() {
  * @param {boolean} checked True if the item should have 'checked' attribute.
  * @private
  */
-SortMenuController.prototype.setCheckStatus_ = function(menuItem, checked) {
+SortMenuController.prototype.setCheckStatus_ = (menuItem, checked) => {
   if (checked) {
     menuItem.setAttribute('checked', '');
   } else {

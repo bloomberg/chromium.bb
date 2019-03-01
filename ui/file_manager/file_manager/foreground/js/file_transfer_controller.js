@@ -372,10 +372,10 @@ FileTransferController.PastePlan.prototype.getConfirmationMessages = function(
  * @param {!Array<string>} urls Urls to be converted.
  * @return {Promise<!Array<string>>}
  */
-FileTransferController.URLsToEntriesWithAccess = function(urls) {
-  return new Promise(function(resolve, reject) {
+FileTransferController.URLsToEntriesWithAccess = urls => {
+  return new Promise((resolve, reject) => {
     chrome.fileManagerPrivate.grantAccess(urls, resolve.bind(null, undefined));
-  }).then(function() {
+  }).then(() => {
     return util.URLsToEntries(urls);
   });
 };
@@ -487,9 +487,13 @@ FileTransferController.prototype.cutOrCopy_ = function(
  * @param {boolean} missingFileContents
  * @private
  */
-FileTransferController.prototype.appendCutOrCopyInfo_ = function(
-    clipboardData, effectAllowed, sourceVolumeInfo, entries,
-    missingFileContents) {
+FileTransferController.prototype.appendCutOrCopyInfo_ = (
+  clipboardData,
+  effectAllowed,
+  sourceVolumeInfo,
+  entries,
+  missingFileContents
+) => {
   // Tag to check it's filemanager data.
   clipboardData.setData('fs/tag', 'filemanager-data');
   clipboardData.setData('fs/sourceRootURL',
@@ -537,7 +541,7 @@ FileTransferController.prototype.appendUriList_ = function(
  * @return {Object<string>} Drag and drop global data object.
  * @private
  */
-FileTransferController.prototype.getDragAndDropGlobalData_ = function() {
+FileTransferController.prototype.getDragAndDropGlobalData_ = () => {
   if (window[DRAG_AND_DROP_GLOBAL_DATA]) {
     return window[DRAG_AND_DROP_GLOBAL_DATA];
   }
@@ -562,8 +566,7 @@ FileTransferController.prototype.getDragAndDropGlobalData_ = function() {
  * @return {string} URL or an empty string (if unknown).
  * @private
  */
-FileTransferController.prototype.getSourceRootURL_ = function(
-    clipboardData, dragAndDropData) {
+FileTransferController.prototype.getSourceRootURL_ = (clipboardData, dragAndDropData) => {
   const sourceRootURL = clipboardData.getData('fs/sourceRootURL');
   if (sourceRootURL) {
     return sourceRootURL;
@@ -607,16 +610,16 @@ FileTransferController.prototype.isMissingFileContents_ =
 FileTransferController.prototype.getMultiProfileShareEntries_ =
     function(entries) {
   // Utility function to concat arrays.
-  const concatArrays = function(arrays) {
+  const concatArrays = arrays => {
     return Array.prototype.concat.apply([], arrays);
   };
 
   // Call processEntry for each item of entries.
-  const processEntries = function(entries) {
-    const files = entries.filter(function(entry) {
+  const processEntries = entries => {
+    const files = entries.filter(entry => {
       return entry.isFile;
     });
-    const dirs = entries.filter(function(entry) {
+    const dirs = entries.filter(entry => {
       return !entry.isFile;
     });
     const promises = dirs.map(processDirectoryEntry);
@@ -627,14 +630,14 @@ FileTransferController.prototype.getMultiProfileShareEntries_ =
   };
 
   // Check all file entries and keeps only those need sharing operation.
-  const processFileEntries = function(entries) {
-    return new Promise(function(callback) {
+  const processFileEntries = entries => {
+    return new Promise(callback => {
       // Do not use metadata cache here because the urls come from the different
       // profile.
       chrome.fileManagerPrivate.getEntryProperties(
           entries, ['hosted', 'sharedWithMe'], callback);
-    }).then(function(metadatas) {
-      return entries.filter(function(entry, i) {
+    }).then(metadatas => {
+      return entries.filter((entry, i) => {
         const metadata = metadatas[i];
         return metadata && metadata.hosted && !metadata.sharedWithMe;
       });
@@ -642,15 +645,15 @@ FileTransferController.prototype.getMultiProfileShareEntries_ =
   };
 
   // Check child entries.
-  const processDirectoryEntry = function(entry) {
+  const processDirectoryEntry = entry => {
     return readEntries(entry.createReader());
   };
 
   // Read entries from DirectoryReader and call processEntries for the chunk
   // of entries.
-  const readEntries = function(reader) {
+  const readEntries = reader => {
     return new Promise(reader.readEntries.bind(reader)).then(
-        function(entries) {
+        entries => {
           if (entries.length > 0) {
             return Promise.all(
                 [processEntries(entries), readEntries(reader)]).
@@ -659,19 +662,19 @@ FileTransferController.prototype.getMultiProfileShareEntries_ =
             return [];
           }
         },
-        function(error) {
+        error => {
           console.warn(
               'Error happens while reading directory.', error);
           return [];
         });
-  }.bind(this);
+  };
 
   // Filter entries that is owned by the current user, and call
   // processEntries.
-  return processEntries(entries.filter(function(entry) {
+  return processEntries(entries.filter(entry => {
     // If the volumeInfo is found, the entry belongs to the current user.
     return !this.volumeManager_.getVolumeInfo(/** @type {!Entry} */ (entry));
-  }.bind(this)));
+  }));
 };
 
 /**
@@ -721,7 +724,7 @@ FileTransferController.prototype.paste = function(
   const pastePlan =
       this.preparePaste(clipboardData, opt_destinationEntry, opt_effect);
 
-  return util.URLsToEntries(pastePlan.sourceURLs).then(function(entriesResult) {
+  return util.URLsToEntries(pastePlan.sourceURLs).then(entriesResult => {
     const sourceEntries = entriesResult.entries;
     const destinationEntry = pastePlan.destinationEntry;
     const destinationLocationInfo =
@@ -764,12 +767,12 @@ FileTransferController.prototype.paste = function(
     const messages =
         pastePlan.getConfirmationMessages(confirmationType, sourceEntries);
     this.confirmationCallback_(pastePlan.isMove, messages)
-        .then(function(userApproved) {
+        .then(userApproved => {
           if (userApproved) {
             this.executePaste(pastePlan);
           }
-        }.bind(this));
-  }.bind(this));
+        });
+  });
 };
 
 /**
@@ -789,66 +792,66 @@ FileTransferController.prototype.executePaste = function(pastePlan) {
   const taskId = this.fileOperationManager_.generateTaskId();
 
   FileTransferController.URLsToEntriesWithAccess(sourceURLs)
-      .then((/**
-              * @param {Object} result
-              */
-             function(result) {
-               failureUrls = result.failureUrls;
-               // The promise is not rejected, so it's safe to not remove the
-               // early progress center item here.
-               return this.fileOperationManager_.filterSameDirectoryEntry(
-                   result.entries, destinationEntry, toMove);
-             }).bind(this))
-      .then((/**
-              * @param {!Array<Entry>} filteredEntries
-              * @return {!Promise<Array<Entry>>}
-              */
-             function(filteredEntries) {
-               entries = filteredEntries;
-               if (entries.length === 0) {
-                 return Promise.reject('ABORT');
-               }
+      .then(/**
+   * @param {Object} result
+   */
+  result => {
+    failureUrls = result.failureUrls;
+    // The promise is not rejected, so it's safe to not remove the
+    // early progress center item here.
+    return this.fileOperationManager_.filterSameDirectoryEntry(
+        result.entries, destinationEntry, toMove);
+  })
+      .then(/**
+   * @param {!Array<Entry>} filteredEntries
+   * @return {!Promise<Array<Entry>>}
+   */
+  filteredEntries => {
+    entries = filteredEntries;
+    if (entries.length === 0) {
+      return Promise.reject('ABORT');
+    }
 
-               this.pendingTaskIds.push(taskId);
-               const item = new ProgressCenterItem();
-               item.id = taskId;
-               if (toMove) {
-                 item.type = ProgressItemType.MOVE;
-                 if (entries.length === 1) {
-                   item.message = strf('MOVE_FILE_NAME', entries[0].name);
-                 } else {
-                   item.message = strf('MOVE_ITEMS_REMAINING', entries.length);
-                 }
-               } else {
-                 item.type = ProgressItemType.COPY;
-                 if (entries.length === 1) {
-                   item.message = strf('COPY_FILE_NAME', entries[0].name);
-                 } else {
-                   item.message = strf('COPY_ITEMS_REMAINING', entries.length);
-                 }
-               }
-               this.progressCenter_.updateItem(item);
-               // Check if cross share is needed or not.
-               return this.getMultiProfileShareEntries_(entries);
-             }).bind(this))
-      .then((/**
-              * @param {Array<Entry>} inShareEntries
-              * @return {!Promise<Array<Entry>>|!Promise<null>}
-              */
-             function(inShareEntries) {
-               shareEntries = inShareEntries;
-               if (shareEntries.length === 0) {
-                 return Promise.resolve(null);
-               }
-               return this.multiProfileShareDialog_.showMultiProfileShareDialog(
-                   shareEntries.length > 1);
-             }).bind(this))
+    this.pendingTaskIds.push(taskId);
+    const item = new ProgressCenterItem();
+    item.id = taskId;
+    if (toMove) {
+      item.type = ProgressItemType.MOVE;
+      if (entries.length === 1) {
+        item.message = strf('MOVE_FILE_NAME', entries[0].name);
+      } else {
+        item.message = strf('MOVE_ITEMS_REMAINING', entries.length);
+      }
+    } else {
+      item.type = ProgressItemType.COPY;
+      if (entries.length === 1) {
+        item.message = strf('COPY_FILE_NAME', entries[0].name);
+      } else {
+        item.message = strf('COPY_ITEMS_REMAINING', entries.length);
+      }
+    }
+    this.progressCenter_.updateItem(item);
+    // Check if cross share is needed or not.
+    return this.getMultiProfileShareEntries_(entries);
+  })
+      .then(/**
+   * @param {Array<Entry>} inShareEntries
+   * @return {!Promise<Array<Entry>>|!Promise<null>}
+   */
+  inShareEntries => {
+    shareEntries = inShareEntries;
+    if (shareEntries.length === 0) {
+      return Promise.resolve(null);
+    }
+    return this.multiProfileShareDialog_.showMultiProfileShareDialog(
+        shareEntries.length > 1);
+  })
       .then(
           /**
            * @param {?string} dialogResult
            * @return {!Promise<undefined>|undefined}
            */
-          function(dialogResult) {
+          dialogResult => {
             if (dialogResult === null) {
               return;
             }  // No dialog was shown, skip this step.
@@ -857,14 +860,14 @@ FileTransferController.prototype.executePaste = function(pastePlan) {
             }
             // Do cross share.
             // TODO(hirono): Make the loop cancellable.
-            const requestDriveShare = function(index) {
+            const requestDriveShare = index => {
               if (index >= shareEntries.length) {
                 return;
               }
-              return new Promise(function(fulfill) {
+              return new Promise(fulfill => {
                        chrome.fileManagerPrivate.requestDriveShare(
                            shareEntries[index], assert(dialogResult),
-                           function() {
+                           () => {
                              // TODO(hirono): Check chrome.runtime.lastError
                              // here.
                              fulfill();
@@ -874,30 +877,30 @@ FileTransferController.prototype.executePaste = function(pastePlan) {
             };
             return requestDriveShare(0);
           })
-      .then((function() {
-               // Start the pasting operation.
-               this.fileOperationManager_.paste(
-                   entries, destinationEntry, toMove, taskId);
-               this.pendingTaskIds.splice(
-                   this.pendingTaskIds.indexOf(taskId), 1);
+      .then(() => {
+    // Start the pasting operation.
+    this.fileOperationManager_.paste(
+        entries, destinationEntry, toMove, taskId);
+    this.pendingTaskIds.splice(
+        this.pendingTaskIds.indexOf(taskId), 1);
 
-               // Publish source not found error item.
-               for (let i = 0; i < failureUrls.length; i++) {
-                 const fileName =
-                     decodeURIComponent(failureUrls[i].replace(/^.+\//, ''));
-                 const item = new ProgressCenterItem();
-                 item.id = 'source-not-found-' + this.sourceNotFoundErrorCount_;
-                 if (toMove) {
-                   item.message = strf('MOVE_SOURCE_NOT_FOUND_ERROR', fileName);
-                 } else {
-                   item.message = strf('COPY_SOURCE_NOT_FOUND_ERROR', fileName);
-                 }
-                 item.state = ProgressItemState.ERROR;
-                 this.progressCenter_.updateItem(item);
-                 this.sourceNotFoundErrorCount_++;
-               }
-             }).bind(this))
-      .catch(function(error) {
+    // Publish source not found error item.
+    for (let i = 0; i < failureUrls.length; i++) {
+      const fileName =
+          decodeURIComponent(failureUrls[i].replace(/^.+\//, ''));
+      const item = new ProgressCenterItem();
+      item.id = 'source-not-found-' + this.sourceNotFoundErrorCount_;
+      if (toMove) {
+        item.message = strf('MOVE_SOURCE_NOT_FOUND_ERROR', fileName);
+      } else {
+        item.message = strf('COPY_SOURCE_NOT_FOUND_ERROR', fileName);
+      }
+      item.state = ProgressItemState.ERROR;
+      this.progressCenter_.updateItem(item);
+      this.sourceNotFoundErrorCount_++;
+    }
+  })
+      .catch(error => {
         if (error !== 'ABORT') {
           console.error(error.stack ? error.stack : error);
         }
@@ -912,11 +915,11 @@ FileTransferController.prototype.executePaste = function(pastePlan) {
  * @private
  */
 FileTransferController.prototype.preloadThumbnailImage_ = function(entry) {
-  const imagePromise = this.thumbnailModel_.get([entry]).then(function(metadata) {
-    return new Promise(function(fulfill, reject) {
+  const imagePromise = this.thumbnailModel_.get([entry]).then(metadata => {
+    return new Promise((fulfill, reject) => {
       const loader = new ThumbnailLoader(
           entry, ThumbnailLoader.LoaderType.IMAGE, metadata[0]);
-      loader.loadDetachedImage(function(result) {
+      loader.loadDetachedImage(result => {
         if (result) {
           fulfill(loader.getImage());
         }
@@ -924,7 +927,7 @@ FileTransferController.prototype.preloadThumbnailImage_ = function(entry) {
     });
   });
 
-  imagePromise.then(function(image) {
+  imagePromise.then(image => {
     // Store the image so that we can obtain the image synchronously.
     imagePromise.value = image;
   });
@@ -1326,7 +1329,7 @@ FileTransferController.prototype.isDocumentWideEvent_ = function() {
  * treat as modal, false otherwise.
  * @private
  */
-FileTransferController.prototype.isModalDialogBeingDisplayed_ = function() {
+FileTransferController.prototype.isModalDialogBeingDisplayed_ = () => {
   // Do not allow Cut or Copy if a modal dialog is being displayed.
   if (document.querySelector('.cr-dialog-container.shown') !== null) {
     return true;
@@ -1529,7 +1532,7 @@ FileTransferController.prototype.onPaste_ = function(event) {
     // On cut, we clear the clipboard after the file is pasted/moved so we don't
     // try to move/delete the original file again.
     if (effect === 'move') {
-      this.simulateCommand_('cut', function(event) {
+      this.simulateCommand_('cut', event => {
         event.preventDefault();
         event.clipboardData.setData('fs/clear', '');
       });
@@ -1615,10 +1618,10 @@ FileTransferController.prototype.queryPasteCommandEnabled = function(
   // HACK(serya): return this.document_.queryCommandEnabled('paste')
   // should be used.
   let result;
-  this.simulateCommand_('paste', function(event) {
+  this.simulateCommand_('paste', event => {
     result = this.canPasteOrDrop_(
         assert(event.clipboardData), destinationEntry);
-  }.bind(this));
+  });
   return result;
 };
 
@@ -1676,9 +1679,9 @@ FileTransferController.prototype.onFileSelectionChangedThrottled_ = function() {
   // asynchronous operations.
   if (!containsDirectory) {
     for (let i = 0; i < fileEntries.length; i++) {
-      (function(fileEntry) {
+      (fileEntry => {
         if (!(asyncData[fileEntry.toURL()].file)) {
-          fileEntry.file(function(file) {
+          fileEntry.file(file => {
             asyncData[fileEntry.toURL()].file = file;
           });
         }
@@ -1695,7 +1698,7 @@ FileTransferController.prototype.onFileSelectionChangedThrottled_ = function() {
 
   this.metadataModel_
       .get(entries, ['alternateUrl', 'externalFileUrl', 'hosted'])
-      .then(function(metadataList) {
+      .then(metadataList => {
         // |Copy| is the only menu item affected by allDriveFilesAvailable_.
         // It could be open right now, update its UI.
         this.copyCommand_.disabled =
@@ -1711,7 +1714,7 @@ FileTransferController.prototype.onFileSelectionChangedThrottled_ = function() {
             }
           }
         }
-      }.bind(this));
+      });
 };
 
 /**
@@ -1811,7 +1814,7 @@ FileTransferController.prototype.blinkSelection_ = function() {
     }
   }
 
-  setTimeout(function() {
+  setTimeout(() => {
     for (let i = 0; i < listItems.length; i++) {
       listItems[i].classList.remove('blink');
     }

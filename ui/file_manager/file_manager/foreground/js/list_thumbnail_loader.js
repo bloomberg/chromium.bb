@@ -285,12 +285,12 @@ ListThumbnailLoader.prototype.enqueue_ = function(index, entry) {
   const url = entry.toURL();
   this.active_[url] = task;
 
-  task.fetch().then(function(thumbnail) {
+  task.fetch().then(thumbnail => {
     delete this.active_[url];
     this.cache_.put(url, thumbnail);
     this.dispatchThumbnailLoaded_(index, thumbnail);
     this.continue_();
-  }.bind(this));
+  });
 };
 
 /**
@@ -421,7 +421,7 @@ ListThumbnailLoader.Task.EXIF_IO_ERROR_DELAY = 3000;
  */
 ListThumbnailLoader.Task.prototype.fetch = function() {
   let ioError = false;
-  return this.thumbnailModel_.get([this.entry_]).then(function(metadatas) {
+  return this.thumbnailModel_.get([this.entry_]).then(metadatas => {
     // When it failed to read exif header with an IO error, do not generate
     // thumbnail at this time since it may success in the second try. If it
     // failed to read at 0 byte, it would be an IO error.
@@ -432,7 +432,7 @@ ListThumbnailLoader.Task.prototype.fetch = function() {
       return Promise.reject();
     }
     return metadatas[0];
-  }.bind(this)).then(function(metadata) {
+  }).then(metadata => {
     const loadTargets = [
       ThumbnailLoader.LoadTarget.CONTENT_METADATA,
       ThumbnailLoader.LoadTarget.EXTERNAL_METADATA
@@ -452,10 +452,10 @@ ListThumbnailLoader.Task.prototype.fetch = function() {
         this.entry_, ThumbnailLoader.LoaderType.IMAGE, metadata,
         undefined /* opt_mediaType */, loadTargets)
         .loadAsDataUrl(ThumbnailLoader.FillMode.OVER_FILL);
-  }.bind(this)).then(function(result) {
+  }).then(result => {
     return new ListThumbnailLoader.ThumbnailData(
         this.entry_.toURL(), result.data, result.width, result.height);
-  }.bind(this)).catch(function() {
+  }).catch(() => {
     // If an error happens during generating of a thumbnail, then return
     // an empty object, so we don't retry the thumbnail over and over
     // again.
@@ -464,10 +464,10 @@ ListThumbnailLoader.Task.prototype.fetch = function() {
     if (ioError) {
       // If fetching a thumbnail from EXIF fails due to an IO error, then try to
       // refetch it in the future, but not earlier than in 3 second.
-      setTimeout(function() {
+      setTimeout(() => {
         thumbnailData.outdated = true;
       }, ListThumbnailLoader.Task.EXIF_IO_ERROR_DELAY);
     }
     return thumbnailData;
-  }.bind(this));
+  });
 };

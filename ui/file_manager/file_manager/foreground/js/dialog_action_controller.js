@@ -154,7 +154,7 @@ DialogActionController.prototype.processOKActionForSaveDialog_ = function() {
   }
 
   this.namingController_.validateFileNameForSaving(filename)
-      .then(function(url) {
+      .then(url => {
         // TODO(mtomasz): Clean this up by avoiding constructing a URL
         //                via string concatenation.
         this.selectFilesAndClose_({
@@ -162,8 +162,8 @@ DialogActionController.prototype.processOKActionForSaveDialog_ = function() {
           multiple: false,
           filterIndex: this.dialogFooter_.selectedFilterIndex
         });
-      }.bind(this))
-      .catch(function(error) {
+      })
+      .catch(error => {
         if (error instanceof Error) {
           console.error(error.stack && error);
         }
@@ -260,7 +260,7 @@ DialogActionController.prototype.processOKAction_ = function() {
  * Cancels file selection and closes the file selection dialog.
  * @private
  */
-DialogActionController.prototype.processCancelAction_ = function() {
+DialogActionController.prototype.processCancelAction_ = () => {
   chrome.fileManagerPrivate.cancelDialog();
   window.close();
 };
@@ -290,8 +290,8 @@ DialogActionController.prototype.updateNewFolderButton_ = function() {
  */
 DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
   const currentRootType = this.directoryModel_.getCurrentRootType();
-  const callSelectFilesApiAndClose = function(callback) {
-    const onFileSelected = function() {
+  const callSelectFilesApiAndClose = callback => {
+    const onFileSelected = () => {
       callback();
       if (!chrome.runtime.lastError) {
         // Call next method on a timeout, as it's unsafe to
@@ -319,11 +319,11 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
           this.allowedPaths_ === AllowedPaths.NATIVE_PATH,
           onFileSelected);
     }
-  }.bind(this);
+  };
 
   if (currentRootType !== VolumeManagerCommon.VolumeType.DRIVE ||
       this.dialogType_ === DialogType.SELECT_SAVEAS_FILE) {
-    callSelectFilesApiAndClose(function() {});
+    callSelectFilesApiAndClose(() => {});
     return;
   }
 
@@ -344,7 +344,7 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
   let bytesTotal = 0;
   let bytesDone = 0;
 
-  const onFileTransfersUpdated = function(status) {
+  const onFileTransfersUpdated = status => {
     if (!(status.fileUrl in progressMap)) {
       return;
     }
@@ -369,11 +369,11 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
     // file is small, and the second one is large.
     lastPercent = Math.max(lastPercent, percent);
     progress.style.width = lastPercent + '%';
-  }.bind(this);
+  };
 
-  const setup = function() {
+  const setup = () => {
     document.querySelector('.dialog-container').appendChild(shade);
-    setTimeout(function() {
+    setTimeout(() => {
       shade.setAttribute('fadein', 'fadein');
     }, 100);
     footer.setAttribute('progress', 'progress');
@@ -382,9 +382,9 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
     this.dialogFooter_.cancelButton.addEventListener('click', onCancel);
     chrome.fileManagerPrivate.onFileTransfersUpdated.addListener(
         onFileTransfersUpdated);
-  }.bind(this);
+  };
 
-  const cleanup = function() {
+  const cleanup = () => {
     shade.parentNode.removeChild(shade);
     footer.removeAttribute('progress');
     this.dialogFooter_.cancelButton.removeEventListener('click', onCancel);
@@ -392,18 +392,18 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
         'click', this.onCancelBound_);
     chrome.fileManagerPrivate.onFileTransfersUpdated.removeListener(
         onFileTransfersUpdated);
-  }.bind(this);
+  };
 
-  const onCancel = function() {
+  const onCancel = () => {
     // According to API cancel may fail, but there is no proper UI to reflect
     // this. So, we just silently assume that everything is cancelled.
-    util.URLsToEntries(selection.urls).then(function(entries) {
+    util.URLsToEntries(selection.urls).then(entries => {
       chrome.fileManagerPrivate.cancelFileTransfers(
           entries, util.checkAPIError);
     });
-  }.bind(this);
+  };
 
-  const onProperties = function(properties) {
+  const onProperties = properties => {
     for (let i = 0; i < properties.length; i++) {
       if (properties[i].present) {
         // For files already in GCache, we don't get any transfer updates.
@@ -411,14 +411,14 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
       }
     }
     callSelectFilesApiAndClose(cleanup);
-  }.bind(this);
+  };
 
   setup();
 
   // TODO(mtomasz): Use Entry instead of URLs, if possible.
-  util.URLsToEntries(selection.urls, function(entries) {
+  util.URLsToEntries(selection.urls, entries => {
     this.metadataModel_.get(entries, ['present']).then(onProperties);
-  }.bind(this));
+  });
 };
 
 /**
@@ -431,7 +431,7 @@ DialogActionController.prototype.onFileTypeFilterChanged_ = function() {
   if (selectedIndex > 0) { // Specific filter selected.
     const regexp = new RegExp('\\.(' +
         this.fileTypes_[selectedIndex - 1].extensions.join('|') + ')$', 'i');
-    const filter = function(entry) {
+    const filter = entry => {
       return entry.isDirectory || regexp.test(entry.name);
     };
     this.fileFilter_.addFilter('fileType', filter);

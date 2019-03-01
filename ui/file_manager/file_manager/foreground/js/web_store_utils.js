@@ -33,7 +33,7 @@ webStoreUtils.WEB_STORE_HANDLER_BASE_URL =
  * @param {?string} mimeType Mime type of the file.
  * @return {string} URL
  */
-webStoreUtils.createWebStoreLink = function(extension, mimeType) {
+webStoreUtils.createWebStoreLink = (extension, mimeType) => {
   if (!extension || constants.EXECUTABLE_EXTENSIONS.indexOf(extension) !== -1) {
     return webStoreUtils.CHROME_WEB_STORE_URL;
   }

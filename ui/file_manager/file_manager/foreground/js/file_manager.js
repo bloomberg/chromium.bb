@@ -510,7 +510,7 @@ FileManager.prototype = /** @struct */ {
 };
 
 // Anonymous "namespace".
-(function() {
+(() => {
   /**
    * One time initialization for app state controller to load view option from
    * local storage.
@@ -542,31 +542,31 @@ FileManager.prototype = /** @struct */ {
     const self = this;
 
     let listBeingUpdated = null;
-    this.directoryModel_.addEventListener('begin-update-files', function() {
+    this.directoryModel_.addEventListener('begin-update-files', () => {
       self.ui_.listContainer.currentList.startBatchUpdates();
       // Remember the list which was used when updating files started, so
       // endBatchUpdates() is called on the same list.
       listBeingUpdated = self.ui_.listContainer.currentList;
     });
-    this.directoryModel_.addEventListener('end-update-files', function() {
+    this.directoryModel_.addEventListener('end-update-files', () => {
       self.namingController_.restoreItemBeingRenamed();
       listBeingUpdated.endBatchUpdates();
       listBeingUpdated = null;
     });
     this.volumeManager_.addEventListener(
-        VolumeManagerCommon.ARCHIVE_OPENED_EVENT_TYPE, function(event) {
+        VolumeManagerCommon.ARCHIVE_OPENED_EVENT_TYPE, event => {
           assert(event.detail.mountPoint);
           if (window.isFocused()) {
             this.directoryModel_.changeDirectoryEntry(event.detail.mountPoint);
           }
-        }.bind(this));
+        });
 
     this.directoryModel_.addEventListener(
         'directory-changed',
-        (/** @param {!Event} event */
-        function(event) {
+        /** @param {!Event} event */
+        event => {
           this.navigationUma_.onDirectoryChanged(event.newDirEntry);
-        }).bind(this));
+        });
 
     this.initCommands_();
 
@@ -629,7 +629,7 @@ FileManager.prototype = /** @struct */ {
 
     if (this.dialogType === DialogType.FULL_PAGE) {
       importer.importEnabled().then(
-          function(enabled) {
+          enabled => {
             if (enabled) {
               this.importController_ = new importer.ImportController(
                   new importer.RuntimeControllerEnvironment(
@@ -637,7 +637,7 @@ FileManager.prototype = /** @struct */ {
                   assert(this.mediaScanner_), assert(this.mediaImportHandler_),
                   new importer.RuntimeCommandWidget());
             }
-          }.bind(this));
+          });
     }
 
     assert(this.fileFilter_);
@@ -770,12 +770,12 @@ FileManager.prototype = /** @struct */ {
    * @param {Node} node Text input element to register on.
    * @private
    */
-  FileManager.prototype.registerInputCommands_ = function(node) {
+  FileManager.prototype.registerInputCommands_ = node => {
     CommandUtil.forceDefaultHandler(node, 'cut');
     CommandUtil.forceDefaultHandler(node, 'copy');
     CommandUtil.forceDefaultHandler(node, 'paste');
     CommandUtil.forceDefaultHandler(node, 'delete');
-    node.addEventListener('keydown', function(e) {
+    node.addEventListener('keydown', e => {
       const key = util.getKeyModifiers(e) + e.keyCode;
       if (key === '190' /* '/' */ || key === '191' /* '.' */) {
         // If this key event is propagated, this is handled search command,
@@ -793,9 +793,9 @@ FileManager.prototype = /** @struct */ {
     this.initGeneral_();
     this.initSettingsPromise_ = this.startInitSettings_();
     this.initBackgroundPagePromise_ = this.startInitBackgroundPage_();
-    this.initBackgroundPagePromise_.then(function() {
+    this.initBackgroundPagePromise_.then(() => {
       this.initVolumeManager_();
-    }.bind(this));
+    });
 
     window.addEventListener('pagehide', this.onUnload_.bind(this));
   };
@@ -810,18 +810,18 @@ FileManager.prototype = /** @struct */ {
     metrics.startInterval('Load.InitDocuments');
     return Promise
         .all([this.initBackgroundPagePromise_, window.importElementsPromise])
-        .then(function() {
+        .then(() => {
           metrics.recordInterval('Load.InitDocuments');
           metrics.startInterval('Load.InitUI');
           this.initEssentialUI_();
           this.initAdditionalUI_();
           return this.initSettingsPromise_;
-        }.bind(this))
-        .then(function() {
+        })
+        .then(() => {
           this.initFileSystemUI_();
           this.initUIFocus_();
           metrics.recordInterval('Load.InitUI');
-        }.bind(this));
+        });
   };
 
   /**
@@ -860,17 +860,17 @@ FileManager.prototype = /** @struct */ {
    * @private
    */
   FileManager.prototype.startInitBackgroundPage_ = function() {
-    return new Promise(function(resolve) {
+    return new Promise(resolve => {
       metrics.startInterval('Load.InitBackgroundPage');
       chrome.runtime.getBackgroundPage(/** @type {function(Window=)} */ (
-          function(opt_backgroundPage) {
+          opt_backgroundPage => {
             assert(opt_backgroundPage);
             this.backgroundPage_ =
                 /** @type {!BackgroundWindow} */ (opt_backgroundPage);
             this.fileBrowserBackground_ =
                 /** @type {!FileBrowserBackgroundFull} */ (
                     this.backgroundPage_.background);
-            this.fileBrowserBackground_.ready(function() {
+            this.fileBrowserBackground_.ready(() => {
               loadTimeData.data = this.fileBrowserBackground_.stringData;
               if (util.runningInBrowser()) {
                 this.backgroundPage_.registerDialog(window);
@@ -886,9 +886,9 @@ FileManager.prototype = /** @struct */ {
               this.crostini_ = this.fileBrowserBackground_.crostini;
               metrics.recordInterval('Load.InitBackgroundPage');
               resolve();
-            }.bind(this));
-          }.bind(this)));
-    }.bind(this));
+            });
+          }));
+    });
   };
 
   /**
@@ -1021,14 +1021,14 @@ FileManager.prototype = /** @struct */ {
     // If, and only if history is ever fully loaded (it may not be),
     // we want to update grid/list view when it changes.
     this.historyLoader_.addHistoryLoadedListener(
-        (/**
-         * @param {!importer.ImportHistory} history
-         * @this {FileManager}
-         */
-        function(history) {
+        /**
+        * @param {!importer.ImportHistory} history
+        * @this {FileManager}
+        */
+        history => {
           this.importHistory_ = history;
           history.addObserver(this.onHistoryChangedBound_);
-        }).bind(this));
+        });
 
   };
 
@@ -1043,10 +1043,10 @@ FileManager.prototype = /** @struct */ {
     // current directory.
     util.isChildEntry(event.entry, this.getCurrentDirectoryEntry())
         .then(
-            (/**
-             * @param {boolean} isChild
-             */
-            function(isChild) {
+            /**
+            * @param {boolean} isChild
+            */
+            isChild => {
               if (isChild) {
                 this.ui_.listContainer.grid.updateListItemsMetadata(
                     'import-history',
@@ -1055,7 +1055,7 @@ FileManager.prototype = /** @struct */ {
                     'import-history',
                     [event.entry]);
               }
-            }).bind(this));
+            });
   };
 
   /**
@@ -1471,7 +1471,7 @@ FileManager.prototype = /** @struct */ {
       const entryDescription = util.entryDebugString(directoryEntry);
       console.warn(
           'Files app start up: changing to directory: ' + entryDescription);
-      this.directoryModel_.changeDirectoryEntry(directoryEntry, function() {
+      this.directoryModel_.changeDirectoryEntry(directoryEntry, () => {
         if (opt_selectionEntry) {
           this.directoryModel_.selectEntry(opt_selectionEntry);
         }
@@ -1479,7 +1479,7 @@ FileManager.prototype = /** @struct */ {
             'Files app start up: finished changing to directory: ' +
             entryDescription);
         this.ui_.addLoadedAttribute();
-      }.bind(this));
+      });
     } else {
       console.warn('No entry for finishSetupCurrentDirectory_');
       this.ui_.addLoadedAttribute();
