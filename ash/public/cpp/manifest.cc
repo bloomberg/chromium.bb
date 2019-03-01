@@ -15,7 +15,6 @@
 #include "ash/public/interfaces/assistant_volume_control.mojom.h"
 #include "ash/public/interfaces/cast_config.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/contained_shell.mojom.h"
 #include "ash/public/interfaces/cros_display_config.mojom.h"
 #include "ash/public/interfaces/display_output_protection.mojom.h"
 #include "ash/public/interfaces/docked_magnifier_controller.mojom.h"
@@ -24,6 +23,7 @@
 #include "ash/public/interfaces/highlighter_controller.mojom.h"
 #include "ash/public/interfaces/ime_controller.mojom.h"
 #include "ash/public/interfaces/keyboard_controller.mojom.h"
+#include "ash/public/interfaces/kiosk_next_shell.mojom.h"
 #include "ash/public/interfaces/locale.mojom.h"
 #include "ash/public/interfaces/login_screen.mojom.h"
 #include "ash/public/interfaces/media.mojom.h"
@@ -88,7 +88,7 @@ const service_manager::Manifest& GetManifest() {
                   mojom::AssistantScreenContextController,
                   mojom::AssistantSetupController,
                   mojom::AssistantVolumeControl, mojom::CastConfig,
-                  mojom::ContainedShellController,
+                  mojom::KioskNextShellController,
                   mojom::CrosDisplayConfigController,
                   mojom::DockedMagnifierController,
                   mojom::EventRewriterController, mojom::FirstRunHelper,

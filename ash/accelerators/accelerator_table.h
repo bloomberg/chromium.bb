@@ -155,9 +155,9 @@ ASH_EXPORT extern const size_t kActionsNeedingWindowLength;
 ASH_EXPORT extern const AcceleratorAction kActionsKeepingMenuOpen[];
 ASH_EXPORT extern const size_t kActionsKeepingMenuOpenLength;
 
-// Actions that can be performed when the Contained Shell is enabled.
-ASH_EXPORT extern const AcceleratorAction kActionsAllowedForContainedShell[];
-ASH_EXPORT extern const size_t kActionsAllowedForContainedShellLength;
+// Actions that can be performed when the Kiosk Next Shell is enabled.
+ASH_EXPORT extern const AcceleratorAction kActionsAllowedForKioskNextShell[];
+ASH_EXPORT extern const size_t kActionsAllowedForKioskNextShellLength;
 
 }  // namespace ash
 

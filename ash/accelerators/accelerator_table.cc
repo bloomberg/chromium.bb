@@ -372,7 +372,7 @@ const AcceleratorAction kActionsKeepingMenuOpen[] = {
 const size_t kActionsKeepingMenuOpenLength =
     base::size(kActionsKeepingMenuOpen);
 
-const AcceleratorAction kActionsAllowedForContainedShell[] = {
+const AcceleratorAction kActionsAllowedForKioskNextShell[] = {
     BRIGHTNESS_DOWN,
     BRIGHTNESS_UP,
     KEYBOARD_BRIGHTNESS_DOWN,
@@ -393,7 +393,7 @@ const AcceleratorAction kActionsAllowedForContainedShell[] = {
     VOLUME_UP,
 };
 
-const size_t kActionsAllowedForContainedShellLength =
-    base::size(kActionsAllowedForContainedShell);
+const size_t kActionsAllowedForKioskNextShellLength =
+    base::size(kActionsAllowedForKioskNextShell);
 
 }  // namespace ash

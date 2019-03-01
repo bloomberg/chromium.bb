@@ -108,7 +108,6 @@ class BluetoothPowerController;
 class BrightnessControlDelegate;
 class CastConfigController;
 class DisplayOutputProtection;
-class ContainedShellController;
 class CrosDisplayConfig;
 class DesksController;
 class DetachableBaseHandler;
@@ -134,6 +133,7 @@ class ImeFocusHandler;
 class ImmersiveContext;
 class KeyAccessibilityEnabler;
 class KeyboardBrightnessControlDelegate;
+class KioskNextShellController;
 class AshKeyboardController;
 class LaserPointerController;
 class LocaleUpdateController;
@@ -369,9 +369,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   CastConfigController* cast_config() { return cast_config_.get(); }
   service_manager::Connector* connector() { return connector_; }
-  ContainedShellController* contained_shell_controller() {
-    return contained_shell_controller_.get();
-  }
   CrosDisplayConfig* cros_display_config() {
     return cros_display_config_.get();
   }
@@ -426,6 +423,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   KeyboardBrightnessControlDelegate* keyboard_brightness_control_delegate() {
     return keyboard_brightness_control_delegate_.get();
+  }
+  KioskNextShellController* kiosk_next_shell_controller() {
+    return kiosk_next_shell_controller_.get();
   }
   AshKeyboardController* ash_keyboard_controller() {
     return ash_keyboard_controller_.get();
@@ -718,7 +718,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<CastConfigController> cast_config_;
   std::unique_ptr<CrosDisplayConfig> cros_display_config_;
   service_manager::Connector* const connector_;
-  std::unique_ptr<ContainedShellController> contained_shell_controller_;
   std::unique_ptr<DesksController> desks_controller_;
   std::unique_ptr<DetachableBaseHandler> detachable_base_handler_;
   std::unique_ptr<DetachableBaseNotificationController>
@@ -732,6 +731,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ImmersiveContext> immersive_context_;
   std::unique_ptr<KeyboardBrightnessControlDelegate>
       keyboard_brightness_control_delegate_;
+  std::unique_ptr<KioskNextShellController> kiosk_next_shell_controller_;
   std::unique_ptr<LocaleUpdateController> locale_update_controller_;
   std::unique_ptr<LoginScreenController> login_screen_controller_;
   std::unique_ptr<LogoutConfirmationController> logout_confirmation_controller_;
