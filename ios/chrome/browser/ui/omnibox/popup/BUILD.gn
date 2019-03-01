@@ -8,7 +8,6 @@ source_set("popup") {
     "omnibox_popup_coordinator.mm",
     "omnibox_popup_mediator.h",
     "omnibox_popup_mediator.mm",
-    "omnibox_popup_positioner.h",
     "omnibox_popup_presenter.h",
     "omnibox_popup_presenter.mm",
     "omnibox_popup_provider.h",

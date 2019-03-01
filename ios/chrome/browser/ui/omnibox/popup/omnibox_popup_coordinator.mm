@@ -39,7 +39,6 @@
 @synthesize browserState = _browserState;
 @synthesize mediator = _mediator;
 @synthesize popupViewController = _popupViewController;
-@synthesize positioner = _positioner;
 @synthesize dispatcher = _dispatcher;
 
 #pragma mark - Public
@@ -69,10 +68,10 @@
   BOOL isIncognito = self.browserState->IsOffTheRecord();
   self.mediator.incognito = isIncognito;
   self.mediator.consumer = self.popupViewController;
-    self.mediator.presenter = [[OmniboxPopupPresenter alloc]
-        initWithPopupPositioner:self.positioner
-            popupViewController:self.popupViewController
-                      incognito:isIncognito];
+  self.mediator.presenter = [[OmniboxPopupPresenter alloc]
+      initWithPopupPresenterDelegate:self.presenterDelegate
+                 popupViewController:self.popupViewController
+                           incognito:isIncognito];
   self.popupViewController.imageRetriever = self.mediator;
   self.popupViewController.delegate = self.mediator;
   [self.dispatcher

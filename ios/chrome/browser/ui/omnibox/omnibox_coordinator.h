@@ -16,7 +16,7 @@ class WebOmniboxEditController;
 @class OmniboxPopupCoordinator;
 @class OmniboxTextFieldIOS;
 @protocol LocationBarOffsetProvider;
-@protocol OmniboxPopupPositioner;
+@protocol OmniboxPopupPresenterDelegate;
 
 // The coordinator for the omnibox.
 @interface OmniboxCoordinator : NSObject
@@ -59,7 +59,7 @@ class WebOmniboxEditController;
 // Creates a child popup coordinator. The popup coordinator is linked to the
 // |textField| through components code.
 - (OmniboxPopupCoordinator*)createPopupCoordinator:
-    (id<OmniboxPopupPositioner>)positioner;
+    (id<OmniboxPopupPresenterDelegate>)presenterDelegate;
 
 @end
 

@@ -20,7 +20,7 @@ class WebStateList;
 @protocol BrowserCommands;
 @protocol EditViewAnimatee;
 @protocol LocationBarAnimatee;
-@protocol OmniboxPopupPositioner;
+@protocol OmniboxPopupPresenterDelegate;
 @protocol ToolbarCoordinatorDelegate;
 
 @protocol LocationBarGenericCoordinator<NSObject,
@@ -41,7 +41,8 @@ class WebStateList;
 // The web state list this ToolbarCoordinator is handling.
 @property(nonatomic, assign) WebStateList* webStateList;
 
-@property(nonatomic, weak) id<OmniboxPopupPositioner> popupPositioner;
+@property(nonatomic, weak) id<OmniboxPopupPresenterDelegate>
+    popupPresenterDelegate;
 
 // Start this coordinator.
 - (void)start;
