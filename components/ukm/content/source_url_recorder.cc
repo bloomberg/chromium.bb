@@ -99,9 +99,6 @@ class SourceUrlRecorderWebContentsObserver
 
   SourceId last_committed_source_id_;
 
-  // The source id before |last_committed_source_id_|.
-  SourceId previous_committed_source_id_;
-
   // The source id of the last committed source in the tab that opened this tab.
   // Will be set to kInvalidSourceId after the first navigation in this tab is
   // finished.
@@ -121,7 +118,6 @@ SourceUrlRecorderWebContentsObserver::SourceUrlRecorderWebContentsObserver(
     : content::WebContentsObserver(web_contents),
       bindings_(web_contents, this),
       last_committed_source_id_(ukm::kInvalidSourceId),
-      previous_committed_source_id_(ukm::kInvalidSourceId),
       opener_source_id_(ukm::kInvalidSourceId),
       tab_id_(CreateUniqueTabId()) {}
 
@@ -157,12 +153,6 @@ void SourceUrlRecorderWebContentsObserver::DidFinishNavigation(
   DCHECK(navigation_handle->IsInMainFrame());
   DCHECK(!navigation_handle->IsSameDocument());
 
-  if (navigation_handle->HasCommitted()) {
-    previous_committed_source_id_ = last_committed_source_id_;
-    last_committed_source_id_ = ukm::ConvertToSourceId(
-        navigation_handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
-  }
-
   GURL initial_url = std::move(it->second);
   pending_navigations_.erase(it);
 
@@ -171,6 +161,11 @@ void SourceUrlRecorderWebContentsObserver::DidFinishNavigation(
     return;
 
   MaybeRecordUrl(navigation_handle, initial_url);
+
+  if (navigation_handle->HasCommitted()) {
+    last_committed_source_id_ = ukm::ConvertToSourceId(
+        navigation_handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
+  }
 
   MaybeFlushPendingEvents();
 
@@ -255,10 +250,7 @@ void SourceUrlRecorderWebContentsObserver::MaybeRecordUrl(
     navigation_data.urls = {initial_url};
   navigation_data.urls.push_back(final_url);
 
-  // Careful note: the current navigation may have failed.
-  navigation_data.previous_source_id = navigation_handle->HasCommitted()
-                                           ? previous_committed_source_id_
-                                           : last_committed_source_id_;
+  navigation_data.previous_source_id = last_committed_source_id_;
   navigation_data.opener_source_id = opener_source_id_;
   navigation_data.tab_id = tab_id_;
 
