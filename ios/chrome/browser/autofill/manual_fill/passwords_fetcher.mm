@@ -70,7 +70,8 @@ class PasswordStoreObserverBridge
 - (instancetype)initWithPasswordStore:
                     (scoped_refptr<password_manager::PasswordStore>)
                         passwordStore
-                             delegate:(id<PasswordFetcherDelegate>)delegate {
+                             delegate:(id<PasswordFetcherDelegate>)delegate
+                               origin:(const GURL&)origin {
   DCHECK(passwordStore);
   DCHECK(delegate);
   self = [super init];
@@ -78,9 +79,17 @@ class PasswordStoreObserverBridge
     _delegate = delegate;
     _passwordStore = passwordStore;
     _savedPasswordsConsumer.reset(new ios::SavePasswordsConsumer(self));
-    _passwordStore->GetAutofillableLogins(_savedPasswordsConsumer.get());
     _passwordStoreObserver.reset(new PasswordStoreObserverBridge(self));
     _passwordStore->AddObserver(_passwordStoreObserver.get());
+
+    if (origin.is_empty()) {
+      _passwordStore->GetAutofillableLogins(_savedPasswordsConsumer.get());
+    } else {
+      password_manager::PasswordStore::FormDigest digest = {
+          autofill::PasswordForm::SCHEME_HTML, std::string(), origin};
+      digest.signon_realm = origin.spec();
+      _passwordStore->GetLogins(digest, _savedPasswordsConsumer.get());
+    }
   }
   return self;
 }
