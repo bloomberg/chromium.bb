@@ -89,7 +89,7 @@ String CSSPageRule::cssText() const {
 
 void CSSPageRule::Reattach(StyleRuleBase* rule) {
   DCHECK(rule);
-  page_rule_ = ToStyleRulePage(rule);
+  page_rule_ = To<StyleRulePage>(rule);
   if (properties_cssom_wrapper_)
     properties_cssom_wrapper_->Reattach(page_rule_->MutableProperties());
 }

@@ -191,7 +191,7 @@ CSSRuleList* CSSKeyframesRule::cssRules() const {
 
 void CSSKeyframesRule::Reattach(StyleRuleBase* rule) {
   DCHECK(rule);
-  keyframes_rule_ = ToStyleRuleKeyframes(rule);
+  keyframes_rule_ = To<StyleRuleKeyframes>(rule);
 }
 
 void CSSKeyframesRule::Trace(blink::Visitor* visitor) {

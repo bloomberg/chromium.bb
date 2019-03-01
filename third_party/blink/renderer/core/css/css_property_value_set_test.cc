@@ -15,7 +15,7 @@ namespace blink {
 class CSSPropertyValueSetTest : public PageTestBase {
  public:
   StyleRule* RuleAt(StyleSheetContents* sheet, wtf_size_t index) {
-    return ToStyleRule(sheet->ChildRules()[index]);
+    return To<StyleRule>(sheet->ChildRules()[index].Get());
   }
 };
 

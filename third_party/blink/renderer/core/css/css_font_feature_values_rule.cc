@@ -50,7 +50,7 @@ String CSSFontFeatureValuesRule::cssText() const {
 
 void CSSFontFeatureValuesRule::Reattach(StyleRuleBase* rule) {
   DCHECK(rule);
-  font_feature_values_rule_ = ToStyleRuleFontFeatureValues(rule);
+  font_feature_values_rule_ = To<StyleRuleFontFeatureValues>(rule);
 }
 
 void CSSFontFeatureValuesRule::Trace(blink::Visitor* visitor) {

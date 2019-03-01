@@ -80,7 +80,12 @@ class StyleRuleKeyframes final : public StyleRuleBase {
   unsigned is_prefixed_ : 1;
 };
 
-DEFINE_STYLE_RULE_TYPE_CASTS(Keyframes);
+template <>
+struct DowncastTraits<StyleRuleKeyframes> {
+  static bool AllowFrom(const StyleRuleBase& rule) {
+    return rule.IsKeyframesRule();
+  }
+};
 
 class CSSKeyframesRule final : public CSSRule {
   DEFINE_WRAPPERTYPEINFO();

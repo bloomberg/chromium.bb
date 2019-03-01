@@ -115,18 +115,16 @@ void ViewportStyleResolver::CollectViewportChildRules(
     const HeapVector<Member<StyleRuleBase>>& rules,
     Origin origin) {
   for (auto& rule : rules) {
-    if (rule->IsViewportRule()) {
-      AddViewportRule(*ToStyleRuleViewport(rule), origin);
-    } else if (rule->IsMediaRule()) {
-      StyleRuleMedia* media_rule = ToStyleRuleMedia(rule);
+    if (auto* viewport_rule = DynamicTo<StyleRuleViewport>(rule.Get())) {
+      AddViewportRule(*viewport_rule, origin);
+    } else if (auto* media_rule = DynamicTo<StyleRuleMedia>(rule.Get())) {
       if (!media_rule->MediaQueries() ||
           initial_viewport_medium_->Eval(
               *media_rule->MediaQueries(),
               &viewport_dependent_media_query_results_,
               &device_dependent_media_query_results_))
         CollectViewportChildRules(media_rule->ChildRules(), origin);
-    } else if (rule->IsSupportsRule()) {
-      StyleRuleSupports* supports_rule = ToStyleRuleSupports(rule);
+    } else if (auto* supports_rule = DynamicTo<StyleRuleSupports>(rule.Get())) {
       if (supports_rule->ConditionIsSupported())
         CollectViewportChildRules(supports_rule->ChildRules(), origin);
     }
