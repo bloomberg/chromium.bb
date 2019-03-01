@@ -59,9 +59,6 @@ class BASE_EXPORT TimeDomain {
   void AsValueInto(trace_event::TracedValue* state) const;
   bool HasPendingHighResolutionTasks() const;
 
-  // Returns true if there are no pending delayed tasks.
-  bool Empty() const;
-
   // This is the signal that virtual time should step forward. If
   // RunLoop::QuitWhenIdle has been called then |quit_when_idle_requested| will
   // be true. Returns true if time advanced and there is now a task to run.

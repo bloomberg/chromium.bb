@@ -17,6 +17,8 @@ blink_platform_sources("scheduler") {
     "common/frame_or_worker_scheduler.cc",
     "common/idle_helper.cc",
     "common/idle_helper.h",
+    "common/idle_memory_reclaimer.cc",
+    "common/idle_memory_reclaimer.h",
     "common/metrics_helper.cc",
     "common/metrics_helper.h",
     "common/pollable_thread_safe_flag.cc",
@@ -183,6 +185,7 @@ jumbo_source_set("unit_tests") {
   sources = [
     "common/cooperative_scheduling_manager_unittest.cc",
     "common/idle_helper_unittest.cc",
+    "common/idle_memory_reclaimer_unittest.cc",
     "common/metrics_helper_unittest.cc",
     "common/post_cancellable_task_unittest.cc",
     "common/scheduler_helper_unittest.cc",

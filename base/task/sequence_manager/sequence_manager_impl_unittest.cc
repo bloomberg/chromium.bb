@@ -11,7 +11,6 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
@@ -129,8 +128,6 @@ class CallCountingTickClock : public TickClock {
     return now_callback_.Run();
   }
 
-  void Reset() { now_call_count_.store(0); }
-
   int now_call_count() const { return now_call_count_; }
 
  private:
@@ -149,15 +146,9 @@ class FixtureWithMockTaskRunner final : public Fixture {
             nullptr,
             ThreadTaskRunnerHandle::Get(),
             mock_tick_clock(),
-            SequenceManager::Settings{.randomised_sampling_enabled = false,
-                                      .clock = mock_tick_clock()})) {
+            SequenceManager::Settings{.randomised_sampling_enabled = false})) {
     // A null clock triggers some assertions.
     AdvanceMockTickClock(TimeDelta::FromMilliseconds(1));
-
-    // The SequenceManager constructor calls Now() once for setting up
-    // housekeeping.
-    EXPECT_EQ(1, GetNowTicksCallCount());
-    call_counting_clock_.Reset();
   }
 
   void AdvanceMockTickClock(TimeDelta delta) override {
@@ -220,14 +211,8 @@ class FixtureWithMockMessagePump : public Fixture {
     sequence_manager_ = SequenceManagerForTest::Create(
         std::make_unique<ThreadControllerWithMessagePumpImpl>(
             std::move(pump), mock_tick_clock()),
-        SequenceManager::Settings{.randomised_sampling_enabled = false,
-                                  .clock = mock_tick_clock()});
+        SequenceManager::Settings{.randomised_sampling_enabled = false});
     sequence_manager_->SetDefaultTaskRunner(MakeRefCounted<NullTaskRunner>());
-
-    // The SequenceManager constructor calls Now() once for setting up
-    // housekeeping.
-    EXPECT_EQ(1, GetNowTicksCallCount());
-    call_counting_clock_.Reset();
   }
 
   void AdvanceMockTickClock(TimeDelta delta) override {
@@ -302,14 +287,7 @@ class FixtureWithMessageLoop : public Fixture {
     sequence_manager_ = SequenceManagerForTest::Create(
         message_loop_->GetMessageLoopBase(), ThreadTaskRunnerHandle::Get(),
         mock_tick_clock(),
-        SequenceManager::Settings{.randomised_sampling_enabled = false,
-                                  .clock = mock_tick_clock()});
-
-    // The SequenceManager constructor calls Now() once for setting up
-    // housekeeping. The MessageLoop also contains a SequenceManager so two
-    // calls are expected.
-    EXPECT_EQ(2, GetNowTicksCallCount());
-    call_counting_clock_.Reset();
+        SequenceManager::Settings{.randomised_sampling_enabled = false});
   }
 
   void AdvanceMockTickClock(TimeDelta delta) override {
@@ -4491,77 +4469,6 @@ TEST_P(SequenceManagerTest, TaskPriortyInterleaving) {
             "223222222423222222223433333343333334333333433333343333334333"
             "333433333343333344444444444444444444444444444444444444444444"
             "555555555555555555555555555555555555555555555555555555555555");
-}
-
-class CancelableTaskWithDestructionObserver {
- public:
-  CancelableTaskWithDestructionObserver() : weak_factory_(this) {}
-
-  void Task(std::unique_ptr<ScopedClosureRunner> destruction_observer) {
-    destruction_observer_ = std::move(destruction_observer);
-  }
-
-  std::unique_ptr<ScopedClosureRunner> destruction_observer_;
-  WeakPtrFactory<CancelableTaskWithDestructionObserver> weak_factory_;
-};
-
-TEST_P(SequenceManagerTest, PeriodicHousekeeping) {
-  auto queue = CreateTaskQueue();
-
-  // Post a task that will trigger housekeeping.
-  queue->task_runner()->PostDelayedTask(
-      FROM_HERE, BindOnce(&NopTask),
-      SequenceManagerImpl::kReclaimMemoryInterval);
-
-  // Posts some tasks set to run long in the future and then cancel some of
-  // them.
-  bool task1_deleted = false;
-  bool task2_deleted = false;
-  bool task3_deleted = false;
-  CancelableTaskWithDestructionObserver task1;
-  CancelableTaskWithDestructionObserver task2;
-  CancelableTaskWithDestructionObserver task3;
-
-  queue->task_runner()->PostDelayedTask(
-      FROM_HERE,
-      BindOnce(&CancelableTaskWithDestructionObserver::Task,
-               task1.weak_factory_.GetWeakPtr(),
-               std::make_unique<ScopedClosureRunner>(
-                   BindLambdaForTesting([&]() { task1_deleted = true; }))),
-      TimeDelta::FromHours(1));
-
-  queue->task_runner()->PostDelayedTask(
-      FROM_HERE,
-      BindOnce(&CancelableTaskWithDestructionObserver::Task,
-               task2.weak_factory_.GetWeakPtr(),
-               std::make_unique<ScopedClosureRunner>(
-                   BindLambdaForTesting([&]() { task2_deleted = true; }))),
-      TimeDelta::FromHours(2));
-
-  queue->task_runner()->PostDelayedTask(
-      FROM_HERE,
-      BindOnce(&CancelableTaskWithDestructionObserver::Task,
-               task3.weak_factory_.GetWeakPtr(),
-               std::make_unique<ScopedClosureRunner>(
-                   BindLambdaForTesting([&]() { task3_deleted = true; }))),
-      TimeDelta::FromHours(3));
-
-  task2.weak_factory_.InvalidateWeakPtrs();
-  task3.weak_factory_.InvalidateWeakPtrs();
-
-  EXPECT_FALSE(task1_deleted);
-  EXPECT_FALSE(task2_deleted);
-  EXPECT_FALSE(task3_deleted);
-
-  // This should trigger housekeeping which will sweep away the canceled tasks.
-  FastForwardBy(SequenceManagerImpl::kReclaimMemoryInterval);
-
-  EXPECT_FALSE(task1_deleted);
-  EXPECT_TRUE(task2_deleted);
-  EXPECT_TRUE(task3_deleted);
-
-  // Tidy up.
-  FastForwardUntilNoTasksRemain();
 }
 
 }  // namespace sequence_manager_impl_unittest

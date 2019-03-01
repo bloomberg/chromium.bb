@@ -12,6 +12,7 @@
 #include "components/scheduling_metrics/task_duration_metric_reporter.h"
 #include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/platform/scheduler/common/idle_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/common/idle_memory_reclaimer.h"
 #include "third_party/blink/renderer/platform/scheduler/common/thread_load_tracker.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_status.h"
@@ -139,6 +140,7 @@ class PLATFORM_EXPORT WorkerThreadScheduler
 
   const WebThreadType thread_type_;
   IdleHelper idle_helper_;
+  IdleMemoryReclaimer idle_memory_reclaimer_;
   ThreadLoadTracker load_tracker_;
   bool initialized_;
   base::TimeTicks thread_start_time_;

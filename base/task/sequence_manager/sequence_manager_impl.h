@@ -188,10 +188,6 @@ class BASE_EXPORT SequenceManagerImpl
 
   WeakPtr<SequenceManagerImpl> GetWeakPtr();
 
-  // How frequently to perform housekeeping tasks (sweeping canceled tasks etc).
-  static constexpr TimeDelta kReclaimMemoryInterval =
-      TimeDelta::FromSeconds(30);
-
  protected:
   // Create a task queue manager where |controller| controls the thread
   // on which the tasks are eventually run.
@@ -254,12 +250,6 @@ class BASE_EXPORT SequenceManagerImpl
     ObserverList<TaskTimeObserver>::Unchecked task_time_observers;
     std::set<TimeDomain*> time_domains;
     std::unique_ptr<internal::RealTimeDomain> real_time_domain;
-
-    // If true MaybeReclaimMemory will attempt to reclaim memory.
-    bool memory_reclaim_scheduled = false;
-
-    // Used to ensure we don't perform expensive housekeeping too frequently.
-    TimeTicks next_time_to_reclaim_memory;
 
     // List of task queues managed by this SequenceManager.
     // - active_queues contains queues that are still running tasks.
@@ -328,10 +318,6 @@ class BASE_EXPORT SequenceManagerImpl
 
   std::unique_ptr<internal::TaskQueueImpl> CreateTaskQueueImpl(
       const TaskQueue::Spec& spec) override;
-
-  // Periodically reclaims memory by sweeping away canceled tasks and shrinking
-  // buffers.
-  void MaybeReclaimMemory();
 
   // Deletes queues marked for deletion and empty queues marked for shutdown.
   void CleanUpQueues();

@@ -182,6 +182,7 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
                            MainThreadTaskQueue::QueueType::kIdle)
                            .SetFixedPriority(
                                TaskQueue::QueuePriority::kBestEffortPriority))),
+      idle_memory_reclaimer_(&helper_, idle_helper_.IdleTaskRunner()),
       render_widget_scheduler_signals_(this),
       control_task_queue_(helper_.ControlMainThreadTaskQueue()),
       compositor_task_queue_(
