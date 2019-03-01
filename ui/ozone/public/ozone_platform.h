@@ -82,6 +82,15 @@ class OZONE_EXPORT OzonePlatform {
     // use mojo. Setting this to true requires calling |AddInterfaces|
     // afterwards in the Viz process and providing a connector as part.
     bool using_mojo = false;
+
+    // Setting this to true indicates the display compositor will run in the GPU
+    // process (as part of the viz service). Note this param is currently only
+    // checked in Ozone DRM for overlay support. Other Ozone platforms either
+    // don't need to change anything or assume that VizDisplayCompositor is
+    // always enabled.
+    // TODO(crbug.com/936425): Remove after VizDisplayCompositor feature
+    // launches.
+    bool viz_display_compositor = false;
   };
 
   // Struct used to indicate platform properties.

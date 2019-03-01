@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/observer_list_types.h"
+#include "components/viz/common/features.h"
 #include "services/ws/public/mojom/window_tree.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env_input_state_controller.h"
@@ -342,6 +343,7 @@ void Env::Init(service_manager::Connector* connector) {
   params.single_process = command_line->HasSwitch("single-process") ||
                           command_line->HasSwitch("in-process-gpu");
   params.using_mojo = features::IsOzoneDrmMojo();
+  params.viz_display_compositor = features::IsVizDisplayCompositorEnabled();
 
   if (connector) {
     // Supplying a connector implies this process is hosting Viz.

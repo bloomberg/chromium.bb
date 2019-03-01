@@ -162,10 +162,10 @@ class OzonePlatformGbm : public OzonePlatform {
       adapter = host_drm_device_.get();
     }
 
-    std::unique_ptr<DrmWindowHost> platform_window(new DrmWindowHost(
+    auto platform_window = std::make_unique<DrmWindowHost>(
         delegate, properties.bounds, adapter, event_factory_ozone_.get(),
         cursor_.get(), window_manager_.get(), display_manager_.get(),
-        overlay_manager_.get()));
+        overlay_manager_.get());
     platform_window->Initialize();
     return std::move(platform_window);
   }
@@ -237,11 +237,15 @@ class OzonePlatformGbm : public OzonePlatform {
       adapter = gpu_platform_support_host_.get();
     }
 
-    auto overlay_manager_host =
-        std::make_unique<DrmOverlayManagerHost>(adapter, window_manager_.get());
-    display_manager_.reset(new DrmDisplayHostManager(
+    std::unique_ptr<DrmOverlayManagerHost> overlay_manager_host;
+    if (!args.viz_display_compositor) {
+      overlay_manager_host = std::make_unique<DrmOverlayManagerHost>(
+          adapter, window_manager_.get());
+    }
+
+    display_manager_ = std::make_unique<DrmDisplayHostManager>(
         adapter, device_manager_.get(), overlay_manager_host.get(),
-        event_factory_ozone_->input_controller()));
+        event_factory_ozone_->input_controller());
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
 
     if (using_mojo_) {
