@@ -52,7 +52,10 @@ const base::Feature kEnableSupervisionTransitionScreens{
 const base::Feature kFsNosymfollow{"FsNosymfollow",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
-// TODO(https://crbug.com/837156): Add this feature to chrome://flags.
+// Enable or disable Unified Input Logic in the IME extension on Chrome OS.
+const base::Feature kImeInputLogic{"ImeInputLogic",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, allows the qualified IME extension to connect to IME service.
 const base::Feature kImeServiceConnectable{"ImeServiceConnectable",
                                            base::FEATURE_DISABLED_BY_DEFAULT};

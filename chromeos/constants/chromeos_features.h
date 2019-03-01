@@ -25,6 +25,7 @@ CHROMEOS_EXPORT extern const base::Feature kEnableMessagesWebPush;
 CHROMEOS_EXPORT extern const base::Feature kMyFilesVolume;
 CHROMEOS_EXPORT extern const base::Feature kEnableSupervisionTransitionScreens;
 CHROMEOS_EXPORT extern const base::Feature kFsNosymfollow;
+CHROMEOS_EXPORT extern const base::Feature kImeInputLogic;
 CHROMEOS_EXPORT extern const base::Feature kImeServiceConnectable;
 CHROMEOS_EXPORT extern const base::Feature kInstantTethering;
 CHROMEOS_EXPORT extern const base::Feature kVideoPlayerNativeControls;
