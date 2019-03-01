@@ -166,7 +166,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
      * specified target language.
      */
     private static final String EXTRA_TRANSLATE_LANGUAGE =
-            "org.chromium.chrome.browser.customtabs.EXTRA_TRANSLATE_LANGUAGE";
+            "androidx.browser.customtabs.extra.TRANSLATE_LANGUAGE";
 
     private static final int MAX_CUSTOM_MENU_ITEMS = 5;
 
