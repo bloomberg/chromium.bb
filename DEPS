@@ -798,7 +798,7 @@ deps = {
   },
 
   'src/third_party/ffmpeg':
-    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + '41268576ad9a8b760287101f4f58d0ef468798af',
+    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + '7e1e8a4f7df474a4f8109c507a09621acad40314',
 
   'src/third_party/flac':
     Var('chromium_git') + '/chromium/deps/flac.git' + '@' + 'af862024c8c8fa0ae07ced05e89013d881b00596',
