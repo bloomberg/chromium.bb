@@ -313,7 +313,9 @@ def write_file(new_text, destination_filename):
     destination_dirname = os.path.dirname(destination_filename)
     if not os.path.exists(destination_dirname):
         os.makedirs(destination_dirname)
-    with open(destination_filename, 'w') as destination_file:
+    # Write file in binary so that when run on Windows, line endings are not
+    # converted
+    with open(destination_filename, 'wb') as destination_file:
         destination_file.write(new_text)
 
 
@@ -471,6 +473,10 @@ def to_snake_case(name):
 
 def to_header_guard(path):
     return NameStyleConverter(path).to_header_guard()
+
+
+def normalize_path(path):
+    return path.replace("\\", "/")
 
 
 def format_remove_duplicates(text, patterns):
