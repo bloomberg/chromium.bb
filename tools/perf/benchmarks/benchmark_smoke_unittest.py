@@ -49,15 +49,10 @@ def SmokeTestGenerator(benchmark, num_pages=1):
   @decorators.Disabled('chromeos')  # crbug.com/351114
   @decorators.Disabled('android')  # crbug.com/641934
   def BenchmarkSmokeTest(self):
-    # Only measure a single page so that this test cycles reasonably quickly.
-    benchmark.options['pageset_repeat'] = 1
-
-    # Some benchmarks are running multiple iterations
-    # which is not needed for a smoke test
-    if hasattr(benchmark, 'enable_smoke_test_mode'):
-      benchmark.enable_smoke_test_mode = True
-
     class SinglePageBenchmark(benchmark):  # pylint: disable=no-init
+      # Only measure a single page so that this test cycles reasonably quickly.
+      options = benchmark.options.copy()
+      options['pageset_repeat'] = 1
 
       def CreateStorySet(self, options):
         # pylint: disable=super-on-old-class
@@ -69,14 +64,19 @@ def SmokeTestGenerator(benchmark, num_pages=1):
           story_set.RemoveStory(s)
         return story_set
 
+    # Some benchmarks are running multiple iterations
+    # which is not needed for a smoke test
+    if hasattr(SinglePageBenchmark, 'enable_smoke_test_mode'):
+      SinglePageBenchmark.enable_smoke_test_mode = True
+
     # Set the benchmark's default arguments.
     options = options_for_unittests.GetCopy()
     options.output_formats = ['none']
     parser = options.CreateParser()
 
-    benchmark.AddCommandLineArgs(parser)
+    SinglePageBenchmark.AddCommandLineArgs(parser)
     benchmark_module.AddCommandLineArgs(parser)
-    benchmark.SetArgumentDefaults(parser)
+    SinglePageBenchmark.SetArgumentDefaults(parser)
     options.MergeDefaultValues(parser.get_default_values())
 
     # Prevent benchmarks from accidentally trying to upload too much data to the
@@ -90,7 +90,7 @@ def SmokeTestGenerator(benchmark, num_pages=1):
     story_set = benchmark().CreateStorySet(options)
     SinglePageBenchmark.MAX_NUM_VALUES = MAX_NUM_VALUES / len(story_set.stories)
 
-    benchmark.ProcessCommandLineArgs(None, options)
+    SinglePageBenchmark.ProcessCommandLineArgs(None, options)
     benchmark_module.ProcessCommandLineArgs(None, options)
 
     single_page_benchmark = SinglePageBenchmark()
