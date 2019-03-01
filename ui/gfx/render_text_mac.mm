@@ -43,17 +43,13 @@ base::ScopedCFTypeRef<CTFontRef> CopyFontWithSymbolicTraits(CTFontRef font,
   base::ScopedCFTypeRef<CFMutableDictionaryRef> attributes(
       CFDictionaryCreateMutableCopy(kCFAllocatorDefault, 0, orig_attributes));
 
-  base::ScopedCFTypeRef<CFMutableDictionaryRef> traits(
-      CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
-                                &kCFTypeDictionaryKeyCallBacks,
-                                &kCFTypeDictionaryValueCallBacks));
-  base::ScopedCFTypeRef<CFNumberRef> n(
-      CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &sym_traits));
-  CFDictionarySetValue(traits, kCTFontSymbolicTrait, n.release());
-  CFDictionarySetValue(attributes, kCTFontTraitsAttribute, traits.release());
+  NSDictionary* traits =
+      @{base::mac::CFToNSCast(kCTFontSymbolicTrait) : @(sym_traits)};
+  CFDictionarySetValue(attributes, kCTFontTraitsAttribute,
+                       base::mac::NSToCFCast(traits));
 
   base::ScopedCFTypeRef<CFStringRef> family_name(CTFontCopyFamilyName(font));
-  CFDictionarySetValue(attributes, kCTFontNameAttribute, family_name.release());
+  CFDictionarySetValue(attributes, kCTFontNameAttribute, family_name);
 
   base::ScopedCFTypeRef<CTFontDescriptorRef> desc(
       CTFontDescriptorCreateWithAttributes(attributes));
