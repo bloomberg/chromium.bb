@@ -218,8 +218,8 @@ IN_PROC_BROWSER_TEST_F(BrowserAccessibilityCocoaBrowserTest,
       ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded);
   expected_descriptions.push_back("ExistingLabel. Annotation");
 
-  // If the status is AnnotationEmpty, failure text should be appended
-  // to the name.
+  // If the status is AnnotationEmpty, no failure text should be added to the
+  // name.
   tree.nodes[7].id = 8;
   tree.nodes[7].role = ax::mojom::Role::kImage;
   tree.nodes[7].AddStringAttribute(ax::mojom::StringAttribute::kImageAnnotation,
@@ -227,8 +227,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAccessibilityCocoaBrowserTest,
   tree.nodes[7].SetName("ExistingLabel");
   tree.nodes[7].SetImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus::kAnnotationEmpty);
-  expected_descriptions.push_back(
-      "ExistingLabel. No description is available.");
+  expected_descriptions.push_back("ExistingLabel");
 
   // If the status is AnnotationAdult, appropriate text should be appended
   // to the name.
@@ -239,11 +238,11 @@ IN_PROC_BROWSER_TEST_F(BrowserAccessibilityCocoaBrowserTest,
   tree.nodes[8].SetName("ExistingLabel");
   tree.nodes[8].SetImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus::kAnnotationAdult);
-  expected_descriptions.push_back(
-      "ExistingLabel. Appears to be adult content.");
+  expected_descriptions.push_back("ExistingLabel. Appears to contain adult "
+                                  "content. No description available.");
 
-  // If the status is AnnotationProcessFailed, appropriate text should be
-  // appended to the name.
+  // If the status is AnnotationProcessFailed, no failure text should be added
+  // to the name.
   tree.nodes[9].id = 10;
   tree.nodes[9].role = ax::mojom::Role::kImage;
   tree.nodes[9].AddStringAttribute(ax::mojom::StringAttribute::kImageAnnotation,
@@ -251,8 +250,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAccessibilityCocoaBrowserTest,
   tree.nodes[9].SetName("ExistingLabel");
   tree.nodes[9].SetImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed);
-  expected_descriptions.push_back(
-      "ExistingLabel. Unable to get a description.");
+  expected_descriptions.push_back("ExistingLabel");
 
   // We should have one expected description per child of the root.
   ASSERT_EQ(expected_descriptions.size(), tree.nodes[0].child_ids.size());

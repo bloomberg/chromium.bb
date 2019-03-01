@@ -175,10 +175,10 @@
     Enable accessibility features
   </message>
   <message name="IDS_SETTINGS_ACCESSIBLE_IMAGE_LABELS_TITLE" desc="Description for screen reader image labels feature.">
-    Image labeling
+    Get image descriptions from Google
   </message>
   <message name="IDS_SETTINGS_ACCESSIBLE_IMAGE_LABELS_SUBTITLE" desc="Subtitle for screen reader image labels feature.">
-    Send images to Google servers to get labels.
+    If an image doesn’t have a useful description, Chrome will provide one for you. Images are scanned by Google.
   </message>
   <if expr="chromeos">
     <message name="IDS_SETTINGS_OPTIONS_IN_MENU_LABEL" desc="Label for checkbox which enables showing accessibility options in the system menu.">
