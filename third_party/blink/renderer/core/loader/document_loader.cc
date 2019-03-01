@@ -533,7 +533,8 @@ void DocumentLoader::BodyLoadingFinished(
   if (!error) {
     fetcher_->Context().DispatchDidFinishLoading(
         main_resource_identifier_, completion_time, total_encoded_data_length,
-        total_decoded_body_length, should_report_corb_blocking);
+        total_decoded_body_length, should_report_corb_blocking,
+        FetchContext::ResourceResponseType::kNotFromMemoryCache);
     if (response_.IsHTTP()) {
       navigation_timing_info_->SetFinalResponse(response_);
       navigation_timing_info_->AddFinalTransferSize(

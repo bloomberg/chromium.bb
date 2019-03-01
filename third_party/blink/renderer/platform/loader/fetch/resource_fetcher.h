@@ -321,7 +321,6 @@ class PLATFORM_EXPORT ResourceFetcher
                                                 const FetchParameters&);
   void MoveResourceLoaderToNonBlocking(ResourceLoader*);
   void RemoveResourceLoader(ResourceLoader*);
-  void HandleLoadCompletion(Resource*);
 
   void RequestLoadStarted(unsigned long identifier,
                           Resource*,

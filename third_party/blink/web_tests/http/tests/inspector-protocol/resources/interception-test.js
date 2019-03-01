@@ -126,9 +126,13 @@
     });
 
     this._session.protocol.Page.onFrameStoppedLoading(() => {
-      frameStoppedLoading = true;
-      this._log(this._getNextId(), 'Page.frameStoppedLoading');
-      maybeCompleteTest();
+      // We want to see errors that might stop frame loading, so we delay
+      // completion a bit.
+      setTimeout(() => {
+        frameStoppedLoading = true;
+        this._log(this._getNextId(), 'Page.frameStoppedLoading');
+        maybeCompleteTest();
+      }, 0);
     });
 
     this._testRunner.log('Test started');

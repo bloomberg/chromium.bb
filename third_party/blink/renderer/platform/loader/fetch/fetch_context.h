@@ -156,7 +156,8 @@ class PLATFORM_EXPORT FetchContext
                                         TimeTicks finish_time,
                                         int64_t encoded_data_length,
                                         int64_t decoded_body_length,
-                                        bool should_report_corb_blocking);
+                                        bool should_report_corb_blocking,
+                                        ResourceResponseType);
   virtual void DispatchDidFail(const KURL&,
                                unsigned long identifier,
                                const ResourceError&,
@@ -171,7 +172,6 @@ class PLATFORM_EXPORT FetchContext
                                      ResourceType,
                                      const AtomicString& fetch_initiator_name);
 
-  virtual void DidLoadResource(Resource*);
   virtual void DidObserveLoadingBehavior(WebLoadingBehaviorFlag);
 
   virtual void AddResourceTiming(const ResourceTimingInfo&);
