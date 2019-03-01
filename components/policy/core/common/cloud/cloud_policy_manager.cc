@@ -38,7 +38,7 @@ CloudPolicyManager::CloudPolicyManager(
             settings_entity_id,
             cloud_policy_store,
             task_runner,
-            network_connection_tracker_getter),
+            std::move(network_connection_tracker_getter)),
       waiting_for_policy_refresh_(false) {}
 
 CloudPolicyManager::~CloudPolicyManager() {}
