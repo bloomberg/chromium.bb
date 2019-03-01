@@ -874,6 +874,19 @@ TEST_F(OverviewSessionTest, BoundsChangeDuringOverview) {
   ToggleOverview();
 }
 
+// Tests that a change to the |kTopViewInset| window property during overview is
+// corrected for.
+TEST_F(OverviewSessionTest, TopViewInsetChangeDuringOverview) {
+  std::unique_ptr<aura::Window> window = CreateTestWindow(gfx::Rect(400, 400));
+  window->SetProperty(aura::client::kTopViewInset, 32);
+  ToggleOverview();
+  gfx::Rect overview_bounds = GetTransformedTargetBounds(window.get());
+  window->SetProperty(aura::client::kTopViewInset, 0);
+  gfx::Rect new_overview_bounds = GetTransformedTargetBounds(window.get());
+  EXPECT_NE(overview_bounds, new_overview_bounds);
+  ToggleOverview();
+}
+
 // Tests that a newly created window aborts overview.
 TEST_F(OverviewSessionTest, NewWindowCancelsOverview) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());

@@ -919,6 +919,16 @@ void OverviewGrid::OnWindowBoundsChanged(aura::Window* window,
   PositionWindows(false);
 }
 
+void OverviewGrid::OnWindowPropertyChanged(aura::Window* window,
+                                           const void* key,
+                                           intptr_t old) {
+  if (prepared_for_overview_ && key == aura::client::kTopViewInset &&
+      window->GetProperty(aura::client::kTopViewInset) !=
+          static_cast<int>(old)) {
+    PositionWindows(/*animate=*/false);
+  }
+}
+
 void OverviewGrid::OnPostWindowStateTypeChange(
     wm::WindowState* window_state,
     mojom::WindowStateType old_type) {
