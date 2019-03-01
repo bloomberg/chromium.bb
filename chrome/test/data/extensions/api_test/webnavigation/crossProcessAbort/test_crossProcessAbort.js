@@ -31,6 +31,7 @@ onload = async function() {
         { label: "a-onCommitted",
           event: "onCommitted",
           details: { frameId: 0,
+                     parentFrameId: -1,
                      processId: 0,
                      tabId: 0,
                      timeStamp: 0,
@@ -40,6 +41,7 @@ onload = async function() {
         { label: "a-onDOMContentLoaded",
           event: "onDOMContentLoaded",
           details: { frameId: 0,
+                     parentFrameId: -1,
                      processId: 0,
                      tabId: 0,
                      timeStamp: 0,
@@ -47,6 +49,7 @@ onload = async function() {
         { label: "a-onCompleted",
           event: "onCompleted",
           details: { frameId: 0,
+                     parentFrameId: -1,
                      processId: 0,
                      tabId: 0,
                      timeStamp: 0,
@@ -62,6 +65,7 @@ onload = async function() {
         { label: "b-onCommitted",
           event: "onCommitted",
           details: { frameId: 0,
+                     parentFrameId: -1,
                      processId: 1,
                      tabId: 0,
                      timeStamp: 0,
@@ -71,6 +75,7 @@ onload = async function() {
         { label: "b-onDOMContentLoaded",
           event: "onDOMContentLoaded",
           details: { frameId: 0,
+                     parentFrameId: -1,
                      processId: 1,
                      tabId: 0,
                      timeStamp: 0,
@@ -78,6 +83,7 @@ onload = async function() {
         { label: "b-onCompleted",
           event: "onCompleted",
           details: { frameId: 0,
+                     parentFrameId: -1,
                      processId: 1,
                      tabId: 0,
                      timeStamp: 0,
@@ -94,6 +100,7 @@ onload = async function() {
           event: "onErrorOccurred",
           details: { error: "net::ERR_ABORTED",
                      frameId: 0,
+                     parentFrameId: -1,
                      processId: -1,
                      tabId: 0,
                      timeStamp: 0,
@@ -109,7 +116,8 @@ onload = async function() {
 
       chrome.tabs.update(
         tab.id,
-        { url: getURL('initial.html?' + port + '/title1.html') })
+        { url: getURL("initial.html?" + port + "/title1.html") }
+      );
     },
   ]);
 };
