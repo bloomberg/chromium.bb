@@ -8,15 +8,17 @@ cr.define('onboarding_ntp_background_test', function() {
     let backgrounds = [
       {
         id: 0,
-        title: 'Cat',
-        imageUrl: 'some/cute/photo/of/a/cat',
-        thumbnailClass: 'cat',
+        title: 'Art',
+        /* Image URLs are set to actual static images to prevent requesting
+         * an external image. */
+        imageUrl: '../images/ntp_thumbnails/art.jpg',
+        thumbnailClass: 'art',
       },
       {
         id: 1,
-        title: 'Venice',
-        imageUrl: 'some/scenic/photo/of/a/beach',
-        thumbnailClass: 'venice',
+        title: 'Cityscape',
+        imageUrl: '../images/ntp_thumbnails/cityscape.jpg',
+        thumbnailClass: 'cityscape',
       },
     ];
 
@@ -64,6 +66,29 @@ cr.define('onboarding_ntp_background_test', function() {
             options[i + 1].querySelector('.ntp-background-title').innerText,
             backgrounds[i].title);
       }
+    });
+
+    test('test previewing a background and going back to default', function() {
+      const options = testElement.shadowRoot.querySelectorAll(
+          '.ntp-background-grid-button');
+
+      options[1].click();
+      return testNtpBackgroundProxy.whenCalled('preloadImage').then(() => {
+        assertEquals(
+            testElement.$.backgroundPreview.style.backgroundImage,
+            `url("${backgrounds[0].imageUrl}")`);
+        assertTrue(
+            testElement.$.backgroundPreview.classList.contains('active'));
+
+        // go back to the default option, and pretend all CSS transitions
+        // have completed
+        options[0].click();
+        testElement.$.backgroundPreview.dispatchEvent(
+            new Event('transitionend'));
+        assertEquals(testElement.$.backgroundPreview.style.backgroundImage, '');
+        assertFalse(
+            testElement.$.backgroundPreview.classList.contains('active'));
+      });
     });
 
     test('test disabling and enabling of the next button', function() {

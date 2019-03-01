@@ -7,6 +7,7 @@ class TestNtpBackgroundProxy extends TestBrowserProxy {
   constructor() {
     super([
       'getBackgrounds',
+      'preloadImage',
       'setBackground',
     ]);
 
@@ -18,6 +19,12 @@ class TestNtpBackgroundProxy extends TestBrowserProxy {
   getBackgrounds() {
     this.methodCalled('getBackgrounds');
     return Promise.resolve(this.backgroundsList_);
+  }
+
+  /** @override */
+  preloadImage(url) {
+    this.methodCalled('preloadImage');
+    return Promise.resolve();
   }
 
   /** @override */

@@ -17,7 +17,10 @@ Polymer({
     indicatorModel: Object,
 
     /** @private {?nux.NtpBackgroundData} */
-    selectedBackground_: Object,
+    selectedBackground_: {
+      observer: 'onSelectedBackgroundChange_',
+      type: Object,
+    },
   },
 
   /** @private {?Array<!nux.NtpBackgroundData>} */
@@ -38,13 +41,17 @@ Polymer({
       thumbnailClass: '',
       title: this.i18n('ntpBackgroundDefault'),
     };
-    this.selectedBackground_ = defaultBackground;
-    this.ntpBackgroundProxy_.getBackgrounds().then((backgrounds) => {
-      this.backgrounds_ = [
-        defaultBackground,
-        ...backgrounds,
-      ];
-    });
+    if (!this.selectedBackground_) {
+      this.selectedBackground_ = defaultBackground;
+    }
+    if (!this.backgrounds_) {
+      this.ntpBackgroundProxy_.getBackgrounds().then((backgrounds) => {
+        this.backgrounds_ = [
+          defaultBackground,
+          ...backgrounds,
+        ];
+      });
+    }
   },
 
   /**
@@ -69,6 +76,33 @@ Polymer({
    */
   isSelectedBackground_: function(background) {
     return background == this.selectedBackground_;
+  },
+
+  /** @private */
+  onSelectedBackgroundChange_: function() {
+    const id = this.selectedBackground_.id;
+
+    if (id > -1) {
+      const imageUrl = this.selectedBackground_.imageUrl;
+      this.ntpBackgroundProxy_.preloadImage(imageUrl).then(() => {
+        if (this.selectedBackground_.id === id) {
+          this.$.backgroundPreview.classList.add('active');
+          this.$.backgroundPreview.style.backgroundImage = `url(${imageUrl})`;
+        }
+      });
+    } else {
+      this.$.backgroundPreview.classList.remove('active');
+    }
+  },
+
+  /** @private */
+  onBackgroundPreviewTransitionEnd_: function() {
+    // Whenever the #backgroundPreview transitions to a non-active, hidden
+    // state, remove the background image. This way, when the element
+    // transitions back to active, the previous background is not displayed.
+    if (!this.$.backgroundPreview.classList.contains('active')) {
+      this.$.backgroundPreview.style.backgroundImage = '';
+    }
   },
 
   /**
