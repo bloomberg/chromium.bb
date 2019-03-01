@@ -351,10 +351,14 @@ void InkDropImpl::HideHighlightOnRippleHiddenState::AnimationStarted(
     // |ink_drop_ripple_|.
     // TODO(bruthig): Investigate if the animation framework can address this
     // issue instead. See https://crbug.com/663335.
-    if (GetInkDrop()->ink_drop_ripple_)
-      GetInkDrop()->ink_drop_ripple_->SnapToHidden();
-    GetInkDrop()->SetHighlightState(
-        state_factory()->CreateVisibleState(base::TimeDelta(), false));
+    InkDropImpl* ink_drop = GetInkDrop();
+    HighlightStateFactory* highlight_state_factory = state_factory();
+    if (ink_drop->ink_drop_ripple_)
+      ink_drop->ink_drop_ripple_->SnapToHidden();
+    // |this| may be destroyed after SnapToHidden(), so be sure not to access
+    // |any members.
+    ink_drop->SetHighlightState(
+        highlight_state_factory->CreateVisibleState(base::TimeDelta(), false));
   }
 }
 
@@ -629,7 +633,9 @@ void InkDropImpl::HostSizeChanged(const gfx::Size& new_size) {
   root_layer_->SetBounds(gfx::Rect(new_size));
 
   const bool create_ink_drop_ripple = !!ink_drop_ripple_;
-  const InkDropState state = GetTargetInkDropState();
+  InkDropState state = GetTargetInkDropState();
+  if (ShouldAnimateToHidden(state))
+    state = views::InkDropState::HIDDEN;
   DestroyInkDropRipple();
 
   if (highlight_) {

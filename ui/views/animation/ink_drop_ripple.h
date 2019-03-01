@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_ANIMATION_INK_DROP_RIPPLE_H_
 #define UI_VIEWS_ANIMATION_INK_DROP_RIPPLE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
@@ -117,10 +119,17 @@ class VIEWS_EXPORT InkDropRipple {
       InkDropState ink_drop_state,
       const ui::CallbackLayerAnimationObserver& observer);
 
+  // Creates a new animation observer bound to AnimationStartedCallback() and
+  // AnimationEndedCallback().
+  std::unique_ptr<ui::CallbackLayerAnimationObserver> CreateAnimationObserver(
+      InkDropState ink_drop_state);
+
   // The target InkDropState.
   InkDropState target_ink_drop_state_;
 
   InkDropRippleObserver* observer_;
+
+  std::unique_ptr<ui::CallbackLayerAnimationObserver> animation_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropRipple);
 };
