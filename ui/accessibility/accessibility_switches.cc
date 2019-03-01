@@ -36,7 +36,7 @@ bool AreExperimentalAccessibilityFeaturesEnabled() {
       ::switches::kEnableExperimentalAccessibilityFeatures);
 }
 
-bool AreExperimentalAccessibilityLanguageDetectionEnabled() {
+bool IsExperimentalAccessibilityLanguageDetectionEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetection);
 }
