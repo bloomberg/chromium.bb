@@ -50,6 +50,7 @@ class BASE_EXPORT PoissonAllocationSampler {
   // within the object scope for the current thread.
   // It allows observers to allocate/deallocate memory while holding a lock
   // without a chance to get into reentrancy problems.
+  // The current implementation doesn't support ScopedMuteThreadSamples nesting.
   class BASE_EXPORT ScopedMuteThreadSamples {
    public:
     ScopedMuteThreadSamples();

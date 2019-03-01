@@ -4,36 +4,21 @@
 
 #include "components/services/heap_profiling/public/cpp/sampling_profiler_wrapper.h"
 
+#include <unordered_set>
 #include <utility>
 
-#include "base/allocator/buildflags.h"
 #include "base/atomicops.h"
-#include "base/bind.h"
-#include "base/compiler_specific.h"
-#include "base/debug/debugging_buildflags.h"
 #include "base/debug/stack_trace.h"
 #include "base/lazy_instance.h"
 #include "base/no_destructor.h"
 #include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
+#include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/trace_event/heap_profiler_event_filter.h"
 #include "base/trace_event/memory_dump_manager.h"
-#include "build/build_config.h"
-
-#if defined(OS_POSIX)
-#include <pthread.h>
-#endif
-
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-#include <sys/prctl.h>
-#endif
-
-#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
-    defined(OFFICIAL_BUILD)
-#include "base/trace_event/cfi_backtrace_android.h"
-#endif
+#include "components/services/heap_profiling/public/cpp/sender_pipe.h"
+#include "components/services/heap_profiling/public/cpp/stream.h"
 
 using base::trace_event::AllocationContext;
 using base::trace_event::AllocationContextTracker;
@@ -74,9 +59,6 @@ constexpr int kTimeoutMs = 10000;
 
 // The allocator shim needs to retain some additional state for each thread.
 struct ShimState {
-  // The pointer must be valid for the lifetime of the process.
-  const char* thread_name = nullptr;
-
   // If we are using pseudo stacks, we need to inform the profiling service of
   // the address to string mapping. To avoid a global lock, we keep a
   // thread-local unordered_set of every address that has been sent from the
@@ -97,64 +79,11 @@ base::ThreadLocalStorage::Slot& ShimStateTLS() {
 // already guards against that.
 ShimState* GetShimState() {
   ShimState* state = static_cast<ShimState*>(ShimStateTLS().Get());
-
   if (!state) {
     state = new ShimState();
     ShimStateTLS().Set(state);
   }
-
   return state;
-}
-
-// Set the thread name, which is a pointer to a leaked string, to ensure
-// validity forever.
-void SetCurrentThreadName(const char* name) {
-  GetShimState()->thread_name = name;
-}
-
-// If a thread name has been set from ThreadIdNameManager, use that. Otherwise,
-// gets the thread name from kernel if available or returns a string with id.
-// This function intentionally leaks the allocated strings since they are used
-// to tag allocations even after the thread dies.
-const char* GetAndLeakThreadName() {
-  const char* thread_name =
-      base::ThreadIdNameManager::GetInstance()->GetNameForCurrentThread();
-  if (thread_name && strcmp(thread_name, "") != 0)
-    return thread_name;
-
-  // prctl requires 16 bytes, snprintf requires 19, pthread_getname_np requires
-  // 64 on macOS, see PlatformThread::SetName in platform_thread_mac.mm.
-  constexpr size_t kBufferLen = 64;
-  char name[kBufferLen];
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-  // If the thread name is not set, try to get it from prctl. Thread name might
-  // not be set in cases where the thread started before heap profiling was
-  // enabled.
-  int err = prctl(PR_GET_NAME, name);
-  if (!err) {
-    return strdup(name);
-  }
-#elif defined(OS_MACOSX)
-  int err = pthread_getname_np(pthread_self(), name, kBufferLen);
-  if (err == 0 && name[0] != '\0') {
-    return strdup(name);
-  }
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
-
-  // Use tid if we don't have a thread name.
-  snprintf(name, sizeof(name), "Thread %lu",
-           static_cast<unsigned long>(base::PlatformThread::CurrentId()));
-  return strdup(name);
-}
-
-// Returns the thread name, looking it up if necessary.
-const char* GetOrSetThreadName() {
-  const char* thread_name = GetShimState()->thread_name;
-  if (UNLIKELY(!thread_name)) {
-    thread_name = GetAndLeakThreadName();
-    GetShimState()->thread_name = thread_name;
-  }
-  return thread_name;
 }
 
 class SendBuffer {
@@ -344,7 +273,7 @@ class FrameSerializer {
 }  // namespace
 
 void InitTLSSlot() {
-  base::PoissonAllocationSampler::Init();
+  base::SamplingHeapProfiler::Init();
   ignore_result(ShimStateTLS());
 }
 
@@ -377,8 +306,7 @@ void InitAllocationRecorder(SenderPipe* sender_pipe,
 
   if (params->stack_mode == mojom::StackMode::NATIVE_WITH_THREAD_NAMES) {
     g_include_thread_names = true;
-    base::ThreadIdNameManager::GetInstance()->InstallSetNameCallback(
-        base::BindRepeating(&SetCurrentThreadName));
+    base::SamplingHeapProfiler::Get()->SetRecordThreadNames(true);
   }
 
   switch (params->stack_mode) {
@@ -408,6 +336,8 @@ void SamplingProfilerWrapper::FlushBuffersAndClosePipe() {
     g_sender_pipe->Close();
 }
 
+namespace {
+
 void SerializeFramesFromAllocationContext(FrameSerializer* serializer,
                                           const char** context) {
   // Allocation context is tracked in TLS. Return nothing if TLS was destroyed.
@@ -426,56 +356,23 @@ void SerializeFramesFromAllocationContext(FrameSerializer* serializer,
     *context = allocation_context.type_name;
 }
 
-// Captures up to |max_entries| stack frames using the buffer pointed by
-// |frames|. Puts the number of captured frames into the |count| output
-// parameters. Returns the pointer to the topmost frame.
-const void** CaptureStackTrace(const void** frames,
-                               size_t max_entries,
-                               size_t* count) {
-  // Skip 5 top frames related to the profiler itself, e.g.:
-  //   base::debug::CollectStackTrace
-  //   heap_profiling::CaptureStackTrace
-  //   heap_profiling::RecordAndSendAlloc
-  //   SamplingProfilerWrapper::SampleAdded
-  //   sampling_heap_profiler::PoissonAllocationSampler::DoRecordAlloc
-  size_t skip_frames = 5;
-#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
-    defined(OFFICIAL_BUILD)
-  size_t frame_count =
-      base::trace_event::CFIBacktraceAndroid::GetInitializedInstance()->Unwind(
-          frames, max_entries);
-#elif BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
-  size_t frame_count =
-      base::debug::TraceStackFramePointers(frames, max_entries, skip_frames);
-  skip_frames = 0;
-#else
-  // Fall-back to capturing the stack with base::debug::CollectStackTrace,
-  // which is likely slower, but more reliable.
-  size_t frame_count =
-      base::debug::CollectStackTrace(const_cast<void**>(frames), max_entries);
-#endif
-
-  skip_frames = std::min(skip_frames, frame_count);
-  *count = frame_count - skip_frames;
-  return frames + skip_frames;
-}
-
 void SerializeFramesFromBacktrace(FrameSerializer* serializer,
                                   const char** context) {
-  const void* frames[kMaxStackEntries];
+  void* frames[kMaxStackEntries];
   size_t frames_count;
   const void** first_frame =
-      CaptureStackTrace(frames, kMaxStackEntries - 1, &frames_count);
+      const_cast<const void**>(base::SamplingHeapProfiler::CaptureStackTrace(
+          frames, kMaxStackEntries - 1, &frames_count));
   serializer->AddAllInstructionPointers(frames_count, first_frame);
 
-  // Both thread name and task context require access to TLS.
-  if (ScopedAllowAlloc::HasTLSBeenDestroyed())
-    return;
-
   if (g_include_thread_names) {
-    const char* thread_name = GetOrSetThreadName();
+    const char* thread_name = base::SamplingHeapProfiler::CachedThreadName();
     serializer->AddCString(thread_name);
   }
+
+  // Task context requires access to TLS.
+  if (ScopedAllowAlloc::HasTLSBeenDestroyed())
+    return;
 
   if (!*context) {
     const auto* tracker =
@@ -485,13 +382,49 @@ void SerializeFramesFromBacktrace(FrameSerializer* serializer,
   }
 }
 
+// Notifies the test clients that allocation hooks have been initialized.
+void AllocatorHooksHaveBeenInitialized() {
+  base::AutoLock lock(g_on_init_allocator_shim_lock_.Get());
+  g_initialized_ = true;
+  if (!g_on_init_allocator_shim_callback_.Get())
+    return;
+  g_on_init_allocator_shim_task_runner_.Get()->PostTask(
+      FROM_HERE, std::move(*g_on_init_allocator_shim_callback_.Pointer()));
+}
+
+AllocatorType ConvertType(base::PoissonAllocationSampler::AllocatorType type) {
+  static_assert(static_cast<uint32_t>(
+                    base::PoissonAllocationSampler::AllocatorType::kMax) ==
+                    static_cast<uint32_t>(AllocatorType::kCount),
+                "AllocatorType lengths do not match.");
+  switch (type) {
+    case base::PoissonAllocationSampler::AllocatorType::kMalloc:
+      return AllocatorType::kMalloc;
+    case base::PoissonAllocationSampler::AllocatorType::kPartitionAlloc:
+      return AllocatorType::kPartitionAlloc;
+    case base::PoissonAllocationSampler::AllocatorType::kBlinkGC:
+      return AllocatorType::kOilpan;
+    default:
+      NOTREACHED();
+      return AllocatorType::kMalloc;
+  }
+}
+
+}  // namespace
+
 // Creates allocation info record, populates it with current call stack,
 // thread name, allocator type and sends out to the client. Safe to call this
 // method after TLS is destroyed.
-void RecordAndSendAlloc(AllocatorType type,
-                        void* address,
-                        size_t sz,
-                        const char* context) {
+void SamplingProfilerWrapper::SampleAdded(
+    void* address,
+    size_t size,
+    size_t total,
+    base::PoissonAllocationSampler::AllocatorType type,
+    const char* context) {
+  // The PoissonAllocationSampler that invokes this method guarantees
+  // non-reentrancy, i.e. no allocations made within the scope of SampleAdded
+  // will produce a sample.
+  DCHECK(base::PoissonAllocationSampler::ScopedMuteThreadSamples::IsMuted());
   SendBuffer* send_buffers = g_send_buffers.Read();
   if (!send_buffers)
     return;
@@ -522,9 +455,9 @@ void RecordAndSendAlloc(AllocatorType type,
   size_t context_len = context ? strnlen(context, kMaxContextLen) : 0;
 
   alloc_packet->op = kAllocPacketType;
-  alloc_packet->allocator = type;
+  alloc_packet->allocator = ConvertType(type);
   alloc_packet->address = (uint64_t)address;
-  alloc_packet->size = sz;
+  alloc_packet->size = size;
   alloc_packet->stack_len = static_cast<uint32_t>(serializer.count());
   alloc_packet->context_byte_len = static_cast<uint32_t>(context_len);
 
@@ -539,7 +472,8 @@ void RecordAndSendAlloc(AllocatorType type,
 
 // Creates the record for free operation and sends it out to the client. Safe
 // to call this method after TLS is destroyed.
-void RecordAndSendFree(void* address) {
+void SamplingProfilerWrapper::SampleRemoved(void* address) {
+  DCHECK(base::PoissonAllocationSampler::ScopedMuteThreadSamples::IsMuted());
   SendBuffer* send_buffers = g_send_buffers.Read();
   if (!send_buffers)
     return;
@@ -579,180 +513,67 @@ bool SetOnInitAllocatorShimCallbackForTesting(
   return false;
 }
 
-namespace {
-
-// Notifies the test clients that allocation hooks have been initialized.
-void AllocatorHooksHaveBeenInitialized() {
-  base::AutoLock lock(g_on_init_allocator_shim_lock_.Get());
-  g_initialized_ = true;
-  if (!g_on_init_allocator_shim_callback_.Get())
-    return;
-  g_on_init_allocator_shim_task_runner_.Get()->PostTask(
-      FROM_HERE, std::move(*g_on_init_allocator_shim_callback_.Pointer()));
-}
-
-AllocatorType ConvertType(base::PoissonAllocationSampler::AllocatorType type) {
-  static_assert(static_cast<uint32_t>(
-                    base::PoissonAllocationSampler::AllocatorType::kMax) ==
-                    static_cast<uint32_t>(AllocatorType::kCount),
-                "AllocatorType lengths do not match.");
-  switch (type) {
-    case base::PoissonAllocationSampler::AllocatorType::kMalloc:
-      return AllocatorType::kMalloc;
-    case base::PoissonAllocationSampler::AllocatorType::kPartitionAlloc:
-      return AllocatorType::kPartitionAlloc;
-    case base::PoissonAllocationSampler::AllocatorType::kBlinkGC:
-      return AllocatorType::kOilpan;
-    default:
-      NOTREACHED();
-      return AllocatorType::kMalloc;
-  }
-}
-
-}  // namespace
-
-SamplingProfilerWrapper::SamplingProfilerWrapper() = default;
-SamplingProfilerWrapper::~SamplingProfilerWrapper() = default;
-
-SamplingProfilerWrapper::Sample::Sample() = default;
-SamplingProfilerWrapper::Sample::Sample(Sample&&) = default;
-SamplingProfilerWrapper::Sample::~Sample() = default;
-
 void SamplingProfilerWrapper::StartProfiling(SenderPipe* sender_pipe,
                                              mojom::ProfilingParamsPtr params) {
   size_t sampling_rate = params->sampling_rate;
   stream_samples_ = params->stream_samples;
   InitAllocationRecorder(sender_pipe, std::move(params));
-  auto* sampler = base::PoissonAllocationSampler::Get();
-  sampler->SetSamplingInterval(sampling_rate);
-  sampler->AddSamplesObserver(this);
+  if (stream_samples_) {
+    auto* sampler = base::PoissonAllocationSampler::Get();
+    sampler->SetSamplingInterval(sampling_rate);
+    sampler->AddSamplesObserver(this);
+  } else {
+    auto* profiler = base::SamplingHeapProfiler::Get();
+    profiler->SetSamplingInterval(sampling_rate);
+    profiler->Start();
+  }
   AllocatorHooksHaveBeenInitialized();
 }
 
 void SamplingProfilerWrapper::StopProfiling() {
-  base::PoissonAllocationSampler::Get()->RemoveSamplesObserver(this);
+  if (stream_samples_)
+    base::PoissonAllocationSampler::Get()->RemoveSamplesObserver(this);
+  else
+    base::SamplingHeapProfiler::Get()->Stop();
 }
 
 mojom::HeapProfilePtr SamplingProfilerWrapper::RetrieveHeapProfile() {
-  base::PoissonAllocationSampler::ScopedMuteThreadSamples no_samples_scope;
-  base::AutoLock lock(mutex_);
+  DCHECK(!stream_samples_);
+  auto* profiler = base::SamplingHeapProfiler::Get();
+  std::vector<base::SamplingHeapProfiler::Sample> samples =
+      profiler->GetSamples(/*profile_id=*/0);
+  // It's important to retrieve strings after samples, as otherwise it could
+  // miss a string referenced by a sample.
+  std::vector<const char*> strings = profiler->GetStrings();
   mojom::HeapProfilePtr profile = mojom::HeapProfile::New();
-  profile->samples.reserve(samples_.size());
-  for (const auto& pair : samples_) {
+  profile->samples.reserve(samples.size());
+  std::unordered_set<const char*> thread_names;
+  for (const auto& sample : samples) {
     auto mojo_sample = mojom::HeapProfileSample::New();
-    mojo_sample->allocator = static_cast<uint32_t>(pair.second.allocator);
-    mojo_sample->size = pair.second.size;
-    mojo_sample->context_id = reinterpret_cast<uintptr_t>(pair.second.context);
-    mojo_sample->stack = pair.second.stack;
+    mojo_sample->allocator =
+        static_cast<uint32_t>(ConvertType(sample.allocator));
+    mojo_sample->size = sample.size;
+    mojo_sample->context_id = reinterpret_cast<uintptr_t>(sample.context);
+    mojo_sample->stack.reserve(sample.stack.size() +
+                               (g_include_thread_names ? 1 : 0));
+    mojo_sample->stack.insert(
+        mojo_sample->stack.end(),
+        reinterpret_cast<const uintptr_t*>(sample.stack.data()),
+        reinterpret_cast<const uintptr_t*>(sample.stack.data() +
+                                           sample.stack.size()));
+    if (g_include_thread_names) {
+      mojo_sample->stack.push_back(
+          reinterpret_cast<uintptr_t>(sample.thread_name));
+      thread_names.insert(sample.thread_name);
+    }
     profile->samples.push_back(std::move(mojo_sample));
   }
-  profile->strings.reserve(strings_.size());
-  for (const char* string : strings_)
+  profile->strings.reserve(strings.size() + thread_names.size());
+  for (const char* string : strings)
+    profile->strings.emplace(reinterpret_cast<uintptr_t>(string), string);
+  for (const char* string : thread_names)
     profile->strings.emplace(reinterpret_cast<uintptr_t>(string), string);
   return profile;
-}
-
-// The PoissonAllocationSampler that invokes this method guarantees
-// non-reentrancy, i.e. no allocations made within the scope of SampleAdded
-// will produce a sample.
-void SamplingProfilerWrapper::SampleAdded(
-    void* address,
-    size_t size,
-    size_t total,
-    base::PoissonAllocationSampler::AllocatorType type,
-    const char* context) {
-  DCHECK(base::PoissonAllocationSampler::ScopedMuteThreadSamples::IsMuted());
-  if (stream_samples_) {
-    RecordAndSendAlloc(ConvertType(type), address, size, context);
-    return;
-  }
-  base::AutoLock lock(mutex_);
-  Sample sample;
-  sample.allocator = ConvertType(type);
-  sample.size = size;
-  CaptureMode capture_mode = AllocationContextTracker::capture_mode();
-  if (capture_mode == CaptureMode::PSEUDO_STACK ||
-      capture_mode == CaptureMode::MIXED_STACK) {
-    CaptureMixedStack(context, &sample);
-  } else {
-    CaptureNativeStack(context, &sample);
-  }
-  RecordString(sample.context);
-  samples_.emplace(address, std::move(sample));
-}
-
-void SamplingProfilerWrapper::CaptureMixedStack(const char* context,
-                                                Sample* sample) {
-  // Allocation context is tracked in TLS. Return nothing if TLS was destroyed.
-  if (ScopedAllowAlloc::HasTLSBeenDestroyed())
-    return;
-  auto* tracker = AllocationContextTracker::GetInstanceForCurrentThread();
-  if (!tracker)
-    return;
-
-  AllocationContext allocation_context;
-  if (!tracker->GetContextSnapshot(&allocation_context))
-    return;
-
-  const base::trace_event::Backtrace& backtrace = allocation_context.backtrace;
-  CHECK_LE(backtrace.frame_count, kMaxStackEntries);
-  std::vector<uint64_t> stack;
-  stack.reserve(backtrace.frame_count);
-  for (int i = base::checked_cast<int>(backtrace.frame_count) - 1; i >= 0;
-       --i) {
-    const base::trace_event::StackFrame& frame = backtrace.frames[i];
-    if (frame.type != base::trace_event::StackFrame::Type::PROGRAM_COUNTER)
-      RecordString(static_cast<const char*>(frame.value));
-    stack.push_back(reinterpret_cast<uintptr_t>(frame.value));
-  }
-  sample->stack = std::move(stack);
-  if (!context)
-    context = allocation_context.type_name;
-  sample->context = context;
-}
-
-void SamplingProfilerWrapper::CaptureNativeStack(const char* context,
-                                                 Sample* sample) {
-  const void* stack[kMaxStackEntries];
-  size_t frame_count;
-  // One frame is reserved for the thread name.
-  const void** first_frame =
-      CaptureStackTrace(stack, kMaxStackEntries - 1, &frame_count);
-  DCHECK_LT(frame_count, kMaxStackEntries);
-  sample->stack.reserve(frame_count + (g_include_thread_names ? 1 : 0));
-  sample->stack.insert(sample->stack.end(),
-                       reinterpret_cast<uintptr_t*>(first_frame),
-                       reinterpret_cast<uintptr_t*>(first_frame + frame_count));
-
-  // Both thread name and task context require access to TLS.
-  if (ScopedAllowAlloc::HasTLSBeenDestroyed())
-    return;
-
-  if (g_include_thread_names) {
-    sample->stack.push_back(
-        reinterpret_cast<uintptr_t>(RecordString(GetOrSetThreadName())));
-  }
-  if (!context) {
-    const auto* tracker =
-        AllocationContextTracker::GetInstanceForCurrentThread();
-    if (tracker)
-      context = tracker->TaskContext();
-  }
-  sample->context = context;
-}
-
-const char* SamplingProfilerWrapper::RecordString(const char* string) {
-  return string ? *strings_.insert(string).first : nullptr;
-}
-
-void SamplingProfilerWrapper::SampleRemoved(void* address) {
-  DCHECK(base::PoissonAllocationSampler::ScopedMuteThreadSamples::IsMuted());
-  if (stream_samples_) {
-    RecordAndSendFree(address);
-    return;
-  }
-  base::AutoLock lock(mutex_);
-  samples_.erase(address);
 }
 
 }  // namespace heap_profiling
