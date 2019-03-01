@@ -40,13 +40,11 @@ void AssistantPageView::InitLayout() {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
-  SetBackground(views::CreateBackgroundFromPainter(
-      views::Painter::CreateSolidRoundRectPainter(
-          SK_ColorWHITE, search_box::kSearchBoxBorderCornerRadius)));
+  SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
 
   mask_ = views::Painter::CreatePaintedLayer(
       views::Painter::CreateSolidRoundRectPainter(
-          SK_ColorBLACK, search_box::kSearchBoxBorderCornerRadius));
+          SK_ColorBLACK, search_box::kSearchBoxBorderCornerRadiusSearchResult));
   mask_->layer()->SetFillsBoundsOpaquely(false);
   layer()->SetMaskLayer(mask_->layer());
 
