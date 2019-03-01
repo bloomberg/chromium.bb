@@ -97,6 +97,7 @@ class ChromeTranslateClient
   // language) is ready.
   void ManualTranslateWhenReady();
 #endif
+  void SetPredefinedTargetLanguage(const std::string& translate_language_code);
 
   void RecordLanguageDetectionEvent(
       const translate::LanguageDetectionDetails& details) const override;

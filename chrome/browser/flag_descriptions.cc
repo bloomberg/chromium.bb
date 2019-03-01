@@ -2231,6 +2231,12 @@ const char kCCTModuleUseIntentExtrasName[] =
 const char kCCTModuleUseIntentExtrasDescription[] =
     "Enables usage of Intent's extras in Chrome Custom Tabs Module";
 
+const char kCCTTargetTranslateLanguageName[] =
+    "Chrome Custom Tabs Target Translate Language";
+const char kCCTTargetTranslateLanguageDescription[] =
+    "Enables specify target language the page should be translated to "
+    "in Chrome Custom Tabs.";
+
 const char kChromeDuetName[] = "Chrome Duet";
 const char kChromeDuetDescription[] =
     "Enables Chrome Duet, split toolbar Chrome Home, on Android.";

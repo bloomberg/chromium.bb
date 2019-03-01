@@ -362,6 +362,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "cct-target-translate-language",
+    "owners": [ "amalova" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "clear-old-browsing-data",
     "owners": [ "dullweber" ],
     "expiry_milestone": 78

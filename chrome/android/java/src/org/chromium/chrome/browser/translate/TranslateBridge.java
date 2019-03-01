@@ -32,7 +32,19 @@ public class TranslateBridge {
         return nativeShouldShowManualTranslateIPH(tab.getWebContents());
     }
 
+    /**
+     * Sets the language that the contents of the tab needs to be translated to.
+     * No-op in case target language is invalid or not supported.
+     *
+     * @param targetLanguage language code in ISO 639 format.
+     */
+    public static void setPredefinedTargetLanguage(Tab tab, String targetLanguage) {
+        nativeSetPredefinedTargetLanguage(tab.getWebContents(), targetLanguage);
+    }
+
     private static native void nativeManualTranslateWhenReady(WebContents webContents);
     private static native boolean nativeCanManuallyTranslate(WebContents webContents);
     private static native boolean nativeShouldShowManualTranslateIPH(WebContents webContents);
+    private static native void nativeSetPredefinedTargetLanguage(
+            WebContents webContents, String targetLanguage);
 }

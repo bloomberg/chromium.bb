@@ -82,6 +82,13 @@ class LanguageState {
   std::string href_translate() const { return href_translate_; }
   bool navigation_from_dse() const { return navigation_from_dse_; }
 
+  std::string GetPredefinedTargetLanguage() const {
+    return predefined_target_language_;
+  }
+  void SetPredefinedTargetLanguage(const std::string& language) {
+    predefined_target_language_ = language;
+  }
+
  private:
   void SetIsPageTranslated(bool value);
 
@@ -137,6 +144,9 @@ class LanguageState {
   // True when the current page was the result of a navigation originated in the
   // origin of the user's default search engine.
   bool navigation_from_dse_ = false;
+
+  // Target language set by client.
+  std::string predefined_target_language_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageState);
 };

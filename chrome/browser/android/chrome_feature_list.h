@@ -37,6 +37,7 @@ extern const base::Feature kCCTPostMessageAPI;
 extern const base::Feature kCCTRedirectPreconnect;
 extern const base::Feature kCCTReportParallelRequestStatus;
 extern const base::Feature kCCTResourcePrefetch;
+extern const base::Feature kCCTTargetTranslateLanguage;
 extern const base::Feature kChromeDuetFeature;
 extern const base::Feature kChromeDuetAdaptive;
 extern const base::Feature kChromeSmartSelection;

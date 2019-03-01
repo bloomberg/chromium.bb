@@ -4129,6 +4129,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(ash::features::kNotificationStackingBarRedesign)},
 #endif  // OS_CHROMEOS
 
+#if defined(OS_ANDROID)
+    {"cct-target-translate-language",
+     flag_descriptions::kCCTTargetTranslateLanguageName,
+     flag_descriptions::kCCTTargetTranslateLanguageDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kCCTTargetTranslateLanguage)},
+#endif
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
