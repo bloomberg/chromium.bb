@@ -13,6 +13,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/googletest/src/googletest/include/gtest/internal/gtest-port.h"
 
+namespace testing {
+namespace internal {
+// This function is tested within this file, but it's not part of the public
+// API, and since it's a free function there's no way to friend the test for it.
+extern std::string StringDescription(id<NSObject> obj);
+}
+}
+
 TEST(GTestMac, NSStringComparators) {
   // This test wants to really guarantee that s1 and s2 aren't the same address,
   // so it constructs an autoreleased string this way. In theory this could be
@@ -67,6 +75,13 @@ TEST(GTestMac, NSRangeComparators) {
   EXPECT_NSEQ(NSMakeRange(3, 4), NSMakeRange(3, 4));
   EXPECT_NSNE(NSMakeRange(3, 4), NSMakeRange(3, 3));
   EXPECT_NSNE(NSMakeRange(3, 4), NSMakeRange(4, 4));
+}
+
+TEST(GTestMac, StringDescription) {
+  using testing::internal::StringDescription;
+  EXPECT_EQ(StringDescription(@4), "4");
+  EXPECT_EQ(StringDescription(@"foo"), "foo");
+  EXPECT_EQ(StringDescription(nil), "(null)");
 }
 
 #endif  // !GTEST_OS_IOS
