@@ -775,11 +775,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   GURL loaded_url_;
 
   // NOTE: |using_media_player_renderer_| is set based on the usage of a
-  // MediaResource::Type::URL in StartPipeline(). This currently works because
-  // the MediaPlayerRendererClient factory is the only factory that returns that
-  // Type, but this may no longer be accurate when we remove |cast_impl_| and
-  // WebMediaPlayerCast. This flag should be renamed/updated accordingly when
-  // removing |cast_impl_|.
+  // MediaResource::Type::URL in StartPipeline(). This works because
+  // MediaPlayerRendererClientFactory is the only factory that uses
+  // MediaResource::Type::URL for now.
   bool using_media_player_renderer_ = false;
 
   // Set whenever the demuxer encounters an HLS file.
