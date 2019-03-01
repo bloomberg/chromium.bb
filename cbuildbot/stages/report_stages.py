@@ -729,12 +729,12 @@ class ReportStage(generic_stages.BuilderStage,
     logging.PrintBuildbotLink('Artifacts[%s]' % links_build_description,
                               artifacts_url)
 
-  def _UploadBuildStagesTimeline(self, builder_run, build_id):
+  def _UploadBuildStagesTimeline(self, builder_run, buildbucket_id):
     """Upload an HTML timeline for the build stages at remote archive location.
 
     Args:
       builder_run: BuilderRun object for this run.
-      build_id: CIDB id for the current build.
+      buildbucket_id: Buildbucket id for the current build.
 
     Returns:
       If an index file is uploaded then a dict is returned where each value
@@ -757,7 +757,7 @@ class ReportStage(generic_stages.BuilderStage,
     timeline = os.path.join(archive_path, timeline_file)
 
     # Gather information about this build from CIDB.
-    stages = self.buildstore.GetBuildsStages(build_ids=[build_id])
+    stages = self.buildstore.GetBuildsStages(buildbucket_ids=[buildbucket_id])
     # Many stages are started in parallel after the build finishes. Stages are
     # sorted by start_time first bceause it shows that progression most
     # clearly. Sort by finish_time secondarily to display those paralllel
@@ -861,14 +861,12 @@ class ReportStage(generic_stages.BuilderStage,
         builder_run, get_statuses_from_slaves, config, stage, final_status,
         completion_instance, child_configs_list)
 
-  def ArchiveResults(self, final_status, build_id, db):
+  def ArchiveResults(self, final_status):
     """Archive our build results.
 
     Args:
       final_status: constants.BUILDER_STATUS_PASSED or
                     constants.BUILDER_STATUS_FAILED
-      build_id: CIDB id for the current build.
-      db: CIDBConnection instance.
     """
     # Make sure local archive directory is prepared, if it was not already.
     if not os.path.exists(self.archive_path):
@@ -883,11 +881,14 @@ class ReportStage(generic_stages.BuilderStage,
     if final_status == constants.BUILDER_STATUS_FAILED:
       self._SendPreCQInfraAlertMessageIfNeeded()
 
+    build_identifier, db = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
+    buildbucket_id = build_identifier.buildbucket_id
     # Iterate through each builder run, whether there is just the main one
     # or multiple child builder runs.
     for builder_run in self._run.GetUngroupedBuilderRuns():
       if db is not None:
-        timeline = self._UploadBuildStagesTimeline(builder_run, build_id)
+        timeline = self._UploadBuildStagesTimeline(builder_run, buildbucket_id)
         logging.PrintBuildbotLink('Build stages timeline', timeline)
 
         timeline = self._UploadSlavesTimeline(builder_run, build_id)
@@ -933,7 +934,7 @@ class ReportStage(generic_stages.BuilderStage,
     This includes final metadata archival, and update CIDB with our final status
     as well as producting a logged build result summary.
     """
-    build_identifier, db = self._run.GetCIDBHandle()
+    build_identifier, _ = self._run.GetCIDBHandle()
     build_id = build_identifier.cidb_id
     buildbucket_id = build_identifier.buildbucket_id
     if results_lib.Results.BuildSucceededSoFar(self.buildstore, buildbucket_id,
@@ -987,7 +988,7 @@ class ReportStage(generic_stages.BuilderStage,
     # Some operations can only be performed if a valid version is available.
     try:
       self._run.GetVersionInfo()
-      self.ArchiveResults(final_status, build_id, db)
+      self.ArchiveResults(final_status)
       metadata_url = os.path.join(self.upload_url, constants.METADATA_JSON)
     except cbuildbot_run.VersionNotSetError:
       logging.error('A valid version was never set for this run. '
@@ -1085,8 +1086,9 @@ class ReportStage(generic_stages.BuilderStage,
     """
     build_identifier, _ = self._run.GetCIDBHandle()
     if self.buildstore.AreClientsReady():
-      build_id = build_identifier.cidb_id
-      build_info = self.buildstore.GetBuildStatuses(build_ids=[build_id])[0]
+      buildbucket_id = build_identifier.buildbucket_id
+      build_info = self.buildstore.GetBuildStatuses(
+          buildbucket_ids=[buildbucket_id])[0]
       duration = (build_info['finish_time'] -
                   build_info['start_time']).total_seconds()
       return duration

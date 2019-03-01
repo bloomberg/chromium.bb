@@ -781,11 +781,11 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
     self.success = success
     self.stage_push = stage_push
 
-  def CheckMasterBinhostTest(self, build_id):
+  def CheckMasterBinhostTest(self, buildbucket_id):
     """Check whether the master builder has passed BinhostTest stage.
 
     Args:
-      build_id: build_id of the master build to check for.
+      buildbucket_id: buildbucket_id of the master build to check for.
 
     Returns:
       True if the status of the master build BinhostTest stage is 'pass';
@@ -794,12 +794,13 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
     stage_name = 'BinhostTest'
 
     if self._build_stage_id is not None and self.buildstore.AreClientsReady():
-      stages = self.buildstore.GetBuildsStages(build_ids=[build_id])
+      stages = self.buildstore.GetBuildsStages(buildbucket_ids=[buildbucket_id])
 
       # No stages found. BinhostTest stage didn't start or got skipped,
       # in both case we don't need to push commits to the temp pfq branch.
       if not stages:
-        logging.warning('no %s stage found in build %s', stage_name, build_id)
+        logging.warning('no %s stage found in build %s',
+                        stage_name, buildbucket_id)
         return False
 
       stage_status = [
@@ -807,12 +808,12 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
                                 s['status'] == constants.BUILDER_STATUS_PASSED)
       ]
       if stage_status:
-        logging.info('build %s passed stage %s with %s', build_id, stage_name,
-                     stage_status)
+        logging.info('build %s passed stage %s with %s', buildbucket_id,
+                     stage_name, stage_status)
         return True
       else:
-        logging.warning('build %s stage %s result %s', build_id, stage_name,
-                        stage_status)
+        logging.warning('build %s stage %s result %s', buildbucket_id,
+                        stage_name, stage_status)
         return False
 
     logging.warning('Not valid build_stage_id %s or no %s found',
@@ -885,10 +886,11 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
                          'when stage_push is True.')
       build_identifier, _ = self._run.GetCIDBHandle()
       build_id = build_identifier.cidb_id
+      buildbucket_id = build_identifier.buildbucket_id
 
       # If the master passed BinHostTest and all the important slaves passed
       # UploadPrebuiltsTest, push uprev commits to a staging_branch.
-      if (self.CheckMasterBinhostTest(build_id) and
+      if (self.CheckMasterBinhostTest(buildbucket_id) and
           self.CheckSlaveUploadPrebuiltsTest()):
         staging_branch = ('refs/' + constants.PFQ_REF + '/' +
                           constants.STAGING_PFQ_BRANCH_PREFIX + str(build_id))

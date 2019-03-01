@@ -179,7 +179,8 @@ class CIDBStatusInfos(object):
         'started': CIDBStatusInfos.GetInflightBuild(build_id=1),
         'completed_success': CIDBStatusInfos.GetPassedBuild(build_id=2),
         'completed_failure': CIDBStatusInfos.GetFailedBuild(build_id=3),
-        'completed_canceled': CIDBStatusInfos.GetInflightBuild(build_id=4)
+        'completed_canceled': CIDBStatusInfos.GetInflightBuild(build_id=4,
+                                                               buildbucket_id=4)
     }
 
     if exclude_builds:
@@ -466,9 +467,9 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         slave_status._GetRetriableBuilds(self._GetCompletedAllSet()),
         set())
 
-    for _ in range(5):
+    for i in range(5):
       self.db.InsertBuild('builder_name', 'buildbucket_id',
-                          'master-paladin', 'bot_hostname')
+                          'master-paladin', 'bot_hostname', buildbucket_id=i)
     self.db.InsertBuildStage(3, 'CommitQueueSync',
                              status=constants.BUILDER_STATUS_PASSED)
     self.db.InsertBuildStage(4, 'MasterSlaveLKGMSync',
