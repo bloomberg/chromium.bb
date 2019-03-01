@@ -678,7 +678,21 @@ class WorkspaceUnitTestStageTest(WorkspaceStageBase):
     return workspace_stages.WorkspaceUnitTestStage(
         self._run, self.buildstore, build_root=self.workspace, board='board')
 
-  def testFactory(self):
+  def testFactoryOld(self):
+    self.SetWorkspaceVersion(self.OLD_VERSION)
+
+    self._Prepare(
+        'test-factorybranch',
+        site_config=workspace_builders_unittest.CreateMockSiteConfig(),
+        extra_cmd_args=['--cache-dir', '/cache'])
+
+    self.RunStage()
+
+    self.assertEqual(self.rc.call_args_list, [])
+
+  def testFactoryNew(self):
+    self.SetWorkspaceVersion(self.MODERN_VERSION)
+
     self._Prepare(
         'test-factorybranch',
         site_config=workspace_builders_unittest.CreateMockSiteConfig(),

@@ -46,6 +46,7 @@ from chromite.lib import timeout_util
 
 BUILD_PACKAGES_PREBUILTS = '10774.0.0'
 BUILD_PACKAGES_WITH_DEBUG_SYMBOLS = '6302.0.0'
+CROS_RUN_UNITTESTS = '6773.0.0'
 BUILD_IMAGE_BUILDER_PATH = '8183.0.0'
 
 class InvalidWorkspace(failures_lib.StepFailure):
@@ -504,6 +505,16 @@ class WorkspaceUnitTestStage(generic_stages.BoardSpecificBuilderStage,
   # If the processes hang, parallel_emerge will print a status report after 60
   # minutes, so we picked 90 minutes because it gives us a little buffer time.
   UNIT_TEST_TIMEOUT = 90 * 60
+
+  def WaitUntilReady(self):
+    """Decide if we should run the unittest stage."""
+    # See crbug.com/937328.
+    if not self.AfterLimit(CROS_RUN_UNITTESTS):
+      logging.PrintBuildbotStepWarnings()
+      logging.warning('cros_run_unit_tests does not exist on this branch.')
+      return False
+
+    return True
 
   def PerformStage(self):
     extra_env = {}
