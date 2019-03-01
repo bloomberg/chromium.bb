@@ -43,13 +43,13 @@ using base::android::JavaRef;
 namespace autofill_assistant {
 namespace switches {
 const char* const kAutofillAssistantServerKey = "autofill-assistant-key";
+const char* const kAutofillAssistantUrl = "autofill-assistant-url";
 }  // namespace switches
 
 namespace {
 
-const base::FeatureParam<std::string> kAutofillAssistantServerUrl{
-    &autofill_assistant::features::kAutofillAssistant, "url",
-    "https://automate-pa.googleapis.com"};
+const char* const kDefaultAutofillAssistantServerUrl =
+    "https://automate-pa.googleapis.com";
 
 // Fills a map from two Java arrays of strings of the same length.
 void FillParametersFromJava(JNIEnv* env,
@@ -83,7 +83,13 @@ ClientAndroid::ClientAndroid(content::WebContents* web_contents)
       java_object_(Java_AutofillAssistantClient_create(
           AttachCurrentThread(),
           reinterpret_cast<intptr_t>(this))),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  server_url_ = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kAutofillAssistantUrl);
+  if (server_url_.empty()) {
+    server_url_ = kDefaultAutofillAssistantServerUrl;
+  }
+}
 
 ClientAndroid::~ClientAndroid() {
   if (controller_ != nullptr) {
@@ -221,7 +227,7 @@ autofill::PersonalDataManager* ClientAndroid::GetPersonalDataManager() {
 }
 
 std::string ClientAndroid::GetServerUrl() {
-  return kAutofillAssistantServerUrl.Get();
+  return server_url_;
 }
 
 UiController* ClientAndroid::GetUiController() {
