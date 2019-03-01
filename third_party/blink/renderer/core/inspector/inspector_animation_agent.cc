@@ -478,7 +478,7 @@ String InspectorAnimationAgent::CreateCSSId(blink::Animation& animation) {
     AddStringToDigestor(digestor.get(),
                         css_agent_->StyleSheetId(style->ParentStyleSheet()));
     AddStringToDigestor(digestor.get(),
-                        ToCSSStyleRule(style->parentRule())->selectorText());
+                        To<CSSStyleRule>(style->parentRule())->selectorText());
   }
   DigestValue digest_result;
   FinishDigestor(digestor.get(), digest_result);

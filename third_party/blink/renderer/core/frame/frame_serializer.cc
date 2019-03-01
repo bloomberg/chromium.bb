@@ -427,11 +427,11 @@ void FrameSerializer::SerializeCSSRule(CSSRule* rule) {
   switch (rule->type()) {
     case CSSRule::kStyleRule:
       RetrieveResourcesForProperties(
-          &ToCSSStyleRule(rule)->GetStyleRule()->Properties(), document);
+          &To<CSSStyleRule>(rule)->GetStyleRule()->Properties(), document);
       break;
 
     case CSSRule::kImportRule: {
-      CSSImportRule* import_rule = ToCSSImportRule(rule);
+      CSSImportRule* import_rule = To<CSSImportRule>(rule);
       KURL sheet_base_url = rule->parentStyleSheet()->BaseURL();
       DCHECK(sheet_base_url.IsValid());
       KURL import_url = KURL(sheet_base_url, import_rule->href());
@@ -451,7 +451,7 @@ void FrameSerializer::SerializeCSSRule(CSSRule* rule) {
 
     case CSSRule::kFontFaceRule:
       RetrieveResourcesForProperties(
-          &ToCSSFontFaceRule(rule)->StyleRule()->Properties(), document);
+          &To<CSSFontFaceRule>(rule)->StyleRule()->Properties(), document);
       break;
 
     // Rules in which no external resources can be referenced

@@ -106,10 +106,6 @@ class CORE_EXPORT CSSRule : public ScriptWrappable {
   };
 };
 
-#define DEFINE_CSS_RULE_TYPE_CASTS(ToType, TYPE_NAME)                          \
-  DEFINE_TYPE_CASTS(ToType, CSSRule, rule, rule->type() == CSSRule::TYPE_NAME, \
-                    rule.type() == CSSRule::TYPE_NAME)
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_RULE_H_

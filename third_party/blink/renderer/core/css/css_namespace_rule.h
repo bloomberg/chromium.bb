@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_NAMESPACE_RULE_H_
 
 #include "third_party/blink/renderer/core/css/css_rule.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -37,7 +38,12 @@ class CSSNamespaceRule final : public CSSRule {
   Member<StyleRuleNamespace> namespace_rule_;
 };
 
-DEFINE_CSS_RULE_TYPE_CASTS(CSSNamespaceRule, kNamespaceRule);
+template <>
+struct DowncastTraits<CSSNamespaceRule> {
+  static bool AllowFrom(const CSSRule& rule) {
+    return rule.type() == CSSRule::kNamespaceRule;
+  }
+};
 
 }  // namespace blink
 

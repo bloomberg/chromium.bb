@@ -28,6 +28,7 @@
 
 #include "third_party/blink/renderer/core/css/css_rule.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
@@ -129,7 +130,12 @@ class CSSKeyframesRule final : public CSSRule {
   bool is_prefixed_;
 };
 
-DEFINE_CSS_RULE_TYPE_CASTS(CSSKeyframesRule, kKeyframesRule);
+template <>
+struct DowncastTraits<CSSKeyframesRule> {
+  static bool AllowFrom(const CSSRule& rule) {
+    return rule.type() == CSSRule::kKeyframesRule;
+  }
+};
 
 }  // namespace blink
 
