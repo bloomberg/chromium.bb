@@ -456,6 +456,13 @@ class CppStyleTest(CppStyleTestBase):
         self.assertEqual(cpp_style.Position(1, 1), cpp_style.close_expression(['}{}{', '}'], cpp_style.Position(0, 3)))
         self.assertEqual(cpp_style.Position(2, -1), cpp_style.close_expression(['][][', ' '], cpp_style.Position(0, 3)))
 
+    # Test the integer type.
+    def test_precise_width_integer(self):
+        self.assert_lint(
+            'unsigned short a = 1',
+            'Use a precise-width integer type from <stdint.h> or <cstdint> such as uint16_t instead of unsigned short'
+            '  [runtime/int] [1]')
+
     # Test C-style cast cases.
     def test_cstyle_cast(self):
         self.assert_lint(
