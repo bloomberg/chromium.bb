@@ -66,6 +66,8 @@ class EditableCombobox::EditableComboboxMenuModel
   }
 
   void UpdateItemsShown(const base::string16& text) {
+    if (!update_items_shown_enabled_)
+      return;
     text_ = text;
     items_shown_.clear();
     items_shown_enabled_.clear();
@@ -83,18 +85,31 @@ class EditableCombobox::EditableComboboxMenuModel
       menu_model_delegate()->OnMenuStructureChanged();
   }
 
+  void DisableUpdateItemsShown() { update_items_shown_enabled_ = false; }
+
+  void EnableUpdateItemsShown() { update_items_shown_enabled_ = true; }
+
   //////////////////////////////////////////////////////////////////////////////
   // Overridden from ComboboxModelObserver:
   void OnComboboxModelChanged(ui::ComboboxModel* model) override {
     UpdateItemsShown(text_);
   }
 
- private:
   //////////////////////////////////////////////////////////////////////////////
   // Overridden from MenuModel:
-  bool HasIcons() const override { return false; }
 
   int GetItemCount() const override { return items_shown_.size(); }
+
+  base::string16 GetLabelAt(int index) const override {
+    // Inserting the Unicode formatting characters if necessary so that the text
+    // is displayed correctly in right-to-left UIs.
+    base::string16 text = items_shown_[index];
+    base::i18n::AdjustStringForLocaleDirection(&text);
+    return text;
+  }
+
+ private:
+  bool HasIcons() const override { return false; }
 
   ItemType GetTypeAt(int index) const override { return TYPE_COMMAND; }
 
@@ -105,14 +120,6 @@ class EditableCombobox::EditableComboboxMenuModel
   int GetCommandIdAt(int index) const override {
     constexpr int kFirstMenuItemId = 1000;
     return index + kFirstMenuItemId;
-  }
-
-  base::string16 GetLabelAt(int index) const override {
-    // Inserting the Unicode formatting characters if necessary so that the text
-    // is displayed correctly in right-to-left UIs.
-    base::string16 text = items_shown_[index];
-    base::i18n::AdjustStringForLocaleDirection(&text);
-    return text;
   }
 
   bool IsItemDynamicAt(int index) const override { return false; }
@@ -160,6 +167,9 @@ class EditableCombobox::EditableComboboxMenuModel
   // The current content of |owner_|'s textfield.
   base::string16 text_;
 
+  // When false, UpdateItemsShown doesn't do anything.
+  bool update_items_shown_enabled_ = true;
+
   DISALLOW_COPY_AND_ASSIGN(EditableComboboxMenuModel);
 };
 
@@ -196,13 +206,6 @@ const base::string16& EditableCombobox::GetText() const {
   return textfield_->text();
 }
 
-void EditableCombobox::SetText(const base::string16& text) {
-  textfield_->SetText(text);
-  // SetText does not actually notify the TextfieldController, so we call the
-  // handling code directly.
-  HandleNewContent(text);
-}
-
 const gfx::FontList& EditableCombobox::GetFontList() const {
   return style::GetFont(text_context_, text_style_);
 }
@@ -213,6 +216,22 @@ void EditableCombobox::SetAccessibleName(const base::string16& name) {
 
 void EditableCombobox::SetAssociatedLabel(View* labelling_view) {
   textfield_->SetAssociatedLabel(labelling_view);
+}
+
+int EditableCombobox::GetItemCountForTest() {
+  return menu_model_->GetItemCount();
+}
+
+base::string16 EditableCombobox::GetItemForTest(int index) {
+  return menu_model_->GetLabelAt(index);
+}
+
+void EditableCombobox::SetTextForTest(const base::string16& text) {
+  textfield_->SetText(text);
+  // SetText does not actually notify the TextfieldController, so we call the
+  // handling code directly.
+  HandleNewContent(text);
+  ShowDropDownMenu();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -232,6 +251,7 @@ void EditableCombobox::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 void EditableCombobox::ContentsChanged(Textfield* sender,
                                        const base::string16& new_contents) {
   HandleNewContent(new_contents);
+  ShowDropDownMenu(ui::MENU_SOURCE_KEYBOARD);
 }
 
 void EditableCombobox::OnViewBlurred(View* observed_view) {
@@ -247,22 +267,27 @@ void EditableCombobox::OnViewFocused(View* observed_view) {
 
 void EditableCombobox::OnItemSelected(int index) {
   textfield_->SetText(menu_model_->GetLabelAt(index));
+  // SetText does not actually notify the TextfieldController, so we call the
+  // handling code directly.
+  HandleNewContent(menu_model_->GetLabelAt(index));
   NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged,
                            /*xsend_native_event=*/true);
 }
 
 void EditableCombobox::HandleNewContent(const base::string16& new_content) {
   DCHECK(GetText() == new_content);
-  static_cast<EditableComboboxMenuModel*>(menu_model_.get())
-      ->UpdateItemsShown(new_content);
-
-  if (!menu_model_->GetItemCount())
-    menu_runner_.reset();
-  if (textfield_->HasFocus() && !(menu_runner_ && menu_runner_->IsRunning()))
-    ShowDropDownMenu(ui::MENU_SOURCE_KEYBOARD);
-
-  if (listener_)
+  // We notify |listener_| before updating |menu_model_|'s items shown. This
+  // gives the user a chance to modify the ComboboxModel beforehand if they wish
+  // to do so.
+  // We disable UpdateItemsShown while we notify the listener in case it
+  // modifies the ComboboxModel, then calls OnComboboxModelChanged and thus
+  // UpdateItemsShown. That way UpdateItemsShown doesn't do its work twice.
+  if (listener_) {
+    menu_model_->DisableUpdateItemsShown();
     listener_->OnContentChanged(this);
+    menu_model_->EnableUpdateItemsShown();
+  }
+  menu_model_->UpdateItemsShown(new_content);
 }
 
 void EditableCombobox::OnMenuClosed() {
@@ -278,6 +303,8 @@ void EditableCombobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
     menu_runner_.reset();
     return;
   }
+  if (!textfield_->HasFocus() || (menu_runner_ && menu_runner_->IsRunning()))
+    return;
 
   gfx::Rect local_bounds = textfield_->GetLocalBounds();
   gfx::Point menu_position(local_bounds.origin());
