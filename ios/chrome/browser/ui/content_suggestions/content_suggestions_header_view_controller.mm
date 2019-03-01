@@ -40,6 +40,11 @@ using base::UserMetricsAction;
 
 @interface ContentSuggestionsHeaderViewController ()
 
+// If YES the animations of the fake omnibox triggered when the collection is
+// scrolled (expansion) are disabled. This is used for the fake omnibox focus
+// animations so the constraints aren't changed while the ntp is scrolled.
+@property(nonatomic, assign) BOOL disableScrollAnimation;
+
 // |YES| when notifications indicate the omnibox is focused.
 @property(nonatomic, assign, getter=isOmniboxFocused) BOOL omniboxFocused;
 
@@ -154,6 +159,9 @@ using base::UserMetricsAction;
     }
   }
 
+  if (self.disableScrollAnimation)
+    return;
+
   [self.headerView updateSearchFieldWidth:self.fakeOmniboxWidthConstraint
                                    height:self.fakeOmniboxHeightConstraint
                                 topMargin:self.fakeOmniboxTopMarginConstraint
@@ -200,6 +208,10 @@ using base::UserMetricsAction;
   return AlignValueToPixel(offsetY);
 }
 
+- (void)loadView {
+  self.view = [[ContentSuggestionsHeaderView alloc] init];
+}
+
 - (CGFloat)headerHeight {
   return content_suggestions::heightForLogoHeader(
       self.logoIsShowing, self.promoCanShow, YES, [self topInset]);
@@ -209,7 +221,8 @@ using base::UserMetricsAction;
 
 - (UIView*)headerForWidth:(CGFloat)width {
   if (!self.headerView) {
-    self.headerView = [[ContentSuggestionsHeaderView alloc] init];
+    self.headerView =
+        base::mac::ObjCCastStrict<ContentSuggestionsHeaderView>(self.view);
     [self addFakeTapView];
     [self addFakeOmnibox];
 
@@ -416,13 +429,69 @@ using base::UserMetricsAction;
 }
 
 - (void)shiftTilesUp {
+  if (self.disableScrollAnimation)
+    return;
+
+  void (^animations)() = nil;
+  if (![self.delegate isScrolledToTop]) {
+    // Only trigger the fake omnibox animation if the header isn't scrolled to
+    // the top. Otherwise just rely on the normal animation.
+    self.disableScrollAnimation = YES;
+    [self.dispatcher focusOmniboxNoAnimation];
+    NamedGuide* omniboxGuide = [NamedGuide guideWithName:kOmniboxGuide
+                                                    view:self.headerView];
+    // Layout the owning view to make sure that the constrains are applied.
+    [omniboxGuide.owningView layoutIfNeeded];
+
+    self.headerView.omnibox.hidden = NO;
+    self.headerView.cancelButton.hidden = NO;
+    self.headerView.omnibox.alpha = 0;
+    self.headerView.cancelButton.alpha = 0;
+    animations = ^{
+      // Make sure that the offset is after the pinned offset to have the fake
+      // omnibox taking the full width.
+      CGFloat offset = 9000;
+      [self.headerView
+          updateSearchFieldWidth:self.fakeOmniboxWidthConstraint
+                          height:self.fakeOmniboxHeightConstraint
+                       topMargin:self.fakeOmniboxTopMarginConstraint
+                       forOffset:offset
+                     screenWidth:self.headerView.bounds.size.width
+                  safeAreaInsets:self.view.safeAreaInsets];
+
+      self.fakeOmniboxWidthConstraint.constant =
+          self.headerView.bounds.size.width;
+      [self.headerView layoutIfNeeded];
+      CGRect omniboxFrameInFakebox =
+          [[omniboxGuide owningView] convertRect:[omniboxGuide layoutFrame]
+                                          toView:self.fakeOmnibox];
+      self.headerView.fakeLocationBarLeadingConstraint.constant =
+          omniboxFrameInFakebox.origin.x;
+      self.headerView.fakeLocationBarTrailingConstraint.constant = -(
+          self.fakeOmnibox.bounds.size.width -
+          (omniboxFrameInFakebox.origin.x + omniboxFrameInFakebox.size.width));
+      self.headerView.voiceSearchButton.alpha = 0;
+      self.headerView.cancelButton.alpha = 0.7;
+      self.headerView.omnibox.alpha = 1;
+      self.headerView.searchHintLabel.alpha = 0;
+      [self.headerView layoutIfNeeded];
+    };
+  }
+
   void (^completionBlock)() = ^{
+    self.headerView.omnibox.hidden = YES;
+    self.headerView.cancelButton.hidden = YES;
+    self.headerView.searchHintLabel.alpha = 1;
+    self.headerView.voiceSearchButton.alpha = 1;
+    self.disableScrollAnimation = NO;
     [self.dispatcher fakeboxFocused];
     if (IsSplitToolbarMode()) {
       [self.dispatcher onFakeboxAnimationComplete];
     }
   };
-  [self.collectionSynchronizer shiftTilesUpWithCompletionBlock:completionBlock];
+
+  [self.collectionSynchronizer shiftTilesUpWithAnimations:animations
+                                               completion:completionBlock];
 }
 
 - (CGFloat)topInset {

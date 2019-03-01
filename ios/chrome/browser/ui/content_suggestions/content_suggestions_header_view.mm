@@ -7,9 +7,13 @@
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"
+#include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/UIView+SizeClassSupport.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_container_view.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
@@ -18,6 +22,7 @@
 #import "ios/chrome/browser/ui/util/named_guide_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
 #import "ui/gfx/ios/uikit_util.h"
 
@@ -55,32 +60,13 @@ CGFloat ToolbarHeight() {
 @property(nonatomic, strong) NSLayoutConstraint* fakeLocationBarTopConstraint;
 @property(nonatomic, strong)
     NSLayoutConstraint* fakeLocationBarHeightConstraint;
-@property(nonatomic, strong)
-    NSLayoutConstraint* fakeLocationBarLeadingConstraint;
-@property(nonatomic, strong)
-    NSLayoutConstraint* fakeLocationBarTrailingConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* fakeToolbarTopConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* hintLabelLeadingConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* voiceSearchTrailingConstraint;
-@property(nonatomic, strong) UIView* fakeLocationBar;
-@property(nonatomic, strong) UILabel* searchHintLabel;
 
 @end
 
 @implementation ContentSuggestionsHeaderView
-
-@synthesize fakeLocationBar = _fakeLocationBar;
-@synthesize fakeLocationBarTopConstraint = _fakeLocationBarTopConstraint;
-@synthesize fakeLocationBarHeightConstraint = _fakeLocationBarHeightConstraint;
-@synthesize fakeLocationBarLeadingConstraint =
-    _fakeLocationBarLeadingConstraint;
-@synthesize fakeLocationBarTrailingConstraint =
-    _fakeLocationBarTrailingConstraint;
-@synthesize fakeToolbarTopConstraint = _fakeToolbarTopConstraint;
-@synthesize voiceSearchTrailingConstraint = _voiceSearchTrailingConstraint;
-@synthesize hintLabelLeadingConstraint = _hintLabelLeadingConstraint;
-@synthesize toolBarView = _toolBarView;
-@synthesize searchHintLabel = _searchHintLabel;
 
 #pragma mark - Public
 
@@ -128,6 +114,39 @@ CGFloat ToolbarHeight() {
   // Fake location bar.
   [fakeToolbarContentView addSubview:self.fakeLocationBar];
 
+  // Omnibox, used for animations.
+  // TODO(crbug.com/936811): See if it is possible to share some initialization
+  // code with the real Omnibox.
+  UIColor* color = [UIColor colorWithWhite:0 alpha:kOmniboxPlaceholderAlpha];
+  OmniboxContainerView* omnibox =
+      [[OmniboxContainerView alloc] initWithFrame:CGRectZero
+                                        textColor:color
+                                    textFieldTint:color
+                                         iconTint:color];
+  omnibox.textField.placeholderTextColor = color;
+  omnibox.textField.placeholder =
+      l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
+  [omnibox.textField setText:@""];
+  omnibox.translatesAutoresizingMaskIntoConstraints = NO;
+  [searchField addSubview:omnibox];
+  AddSameConstraints(omnibox, self.fakeLocationBar);
+  omnibox.textField.userInteractionEnabled = NO;
+  omnibox.hidden = YES;
+  self.omnibox = omnibox;
+
+  // Cancel button, used in animation.
+  ToolbarButtonFactory* factory =
+      [[ToolbarButtonFactory alloc] initWithStyle:NORMAL];
+  self.cancelButton = [factory cancelButton];
+  [searchField addSubview:self.cancelButton];
+  self.cancelButton.translatesAutoresizingMaskIntoConstraints = NO;
+  [NSLayoutConstraint activateConstraints:@[
+    [self.cancelButton.centerYAnchor
+        constraintEqualToAnchor:self.fakeLocationBar.centerYAnchor],
+    [self.cancelButton.leadingAnchor
+        constraintEqualToAnchor:self.fakeLocationBar.trailingAnchor],
+  ]];
+
   // Hint label.
   self.searchHintLabel = [[UILabel alloc] init];
   content_suggestions::configureSearchHintLabel(self.searchHintLabel,
@@ -136,6 +155,8 @@ CGFloat ToolbarHeight() {
       constraintGreaterThanOrEqualToAnchor:[searchField leadingAnchor]
                                   constant:ntp_header::kHintLabelSidePadding];
   [NSLayoutConstraint activateConstraints:@[
+    [self.searchHintLabel.centerXAnchor
+        constraintEqualToAnchor:self.fakeLocationBar.centerXAnchor],
     self.hintLabelLeadingConstraint,
     [self.searchHintLabel.heightAnchor
         constraintEqualToAnchor:self.fakeLocationBar.heightAnchor
@@ -181,14 +202,21 @@ CGFloat ToolbarHeight() {
     self.fakeLocationBarHeightConstraint,
   ]];
 
+  // The voice search button should always be at least inside the fake omnibox.
+  // When the fake omnibox is shrinked, the position from the trailing side of
+  // the search field should yield.
   self.voiceSearchTrailingConstraint = [self.voiceSearchButton.trailingAnchor
       constraintEqualToAnchor:[searchField trailingAnchor]];
+  self.voiceSearchTrailingConstraint.priority = UILayoutPriorityDefaultHigh + 1;
+
   [NSLayoutConstraint activateConstraints:@[
     [self.voiceSearchButton.centerYAnchor
         constraintEqualToAnchor:self.fakeLocationBar.centerYAnchor],
     [self.searchHintLabel.trailingAnchor
         constraintLessThanOrEqualToAnchor:self.voiceSearchButton.leadingAnchor],
-    self.voiceSearchTrailingConstraint
+    self.voiceSearchTrailingConstraint,
+    [self.voiceSearchButton.trailingAnchor
+        constraintLessThanOrEqualToAnchor:self.fakeLocationBar.trailingAnchor],
   ]];
 }
 
