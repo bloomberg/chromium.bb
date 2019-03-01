@@ -312,9 +312,6 @@ bool HQPAllowMatchInSchemeValue();
 // ---------------------------------------------------------
 // For SearchProvider related experiments.
 
-// Returns true if the search provider should not be caching results.
-bool DisableResultsCaching();
-
 // Returns how the search provider should poll Suggest. Currently, we support
 // measuring polling delay from the last keystroke or last suggest request.
 void GetSuggestPollingStrategy(bool* from_last_keystroke,
@@ -483,7 +480,6 @@ extern const char kHQPTypedValueRule[];
 extern const char kHQPAllowMatchInTLDRule[];
 extern const char kHQPAllowMatchInSchemeRule[];
 extern const char kZeroSuggestVariantRule[];
-extern const char kDisableResultsCachingRule[];
 extern const char kMeasureSuggestPollingDelayFromLastKeystrokeRule[];
 extern const char kSuggestPollingDelayMsRule[];
 extern const char kHQPMaxVisitsToScoreRule[];

@@ -427,21 +427,6 @@ TEST_F(OmniboxFieldTrialTest, HalfLifeTimeDecay) {
   EXPECT_EQ(1.0, buckets.HalfLifeTimeDecay(base::TimeDelta::FromDays(-1)));
 }
 
-TEST_F(OmniboxFieldTrialTest, DisableResultsCaching) {
-  EXPECT_FALSE(OmniboxFieldTrial::DisableResultsCaching());
-
-  {
-    std::map<std::string, std::string> params;
-    params[std::string(OmniboxFieldTrial::kDisableResultsCachingRule)] = "true";
-    ASSERT_TRUE(variations::AssociateVariationParams(
-        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
-    base::FieldTrialList::CreateFieldTrial(
-        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
-
-    EXPECT_TRUE(OmniboxFieldTrial::DisableResultsCaching());
-  }
-}
-
 TEST_F(OmniboxFieldTrialTest, GetSuggestPollingStrategy) {
   // Invalid params.
   VerifySuggestPollingStrategy(

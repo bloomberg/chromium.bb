@@ -693,9 +693,6 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
     return;
   }
 
-  if (OmniboxFieldTrial::DisableResultsCaching())
-    ClearAllResults();
-
   // For the minimal_changes case, if we finished the previous query and still
   // have its results, or are allowed to keep running it, just do that, rather
   // than starting a new query.
