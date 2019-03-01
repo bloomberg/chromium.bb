@@ -42,8 +42,10 @@
 #include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/web/web_content_capture_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/core_probe_sink.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
@@ -314,6 +316,7 @@ void LocalFrame::Trace(blink::Visitor* visitor) {
   visitor->Trace(input_method_controller_);
   visitor->Trace(text_suggestion_controller_);
   visitor->Trace(smooth_scroll_sequencer_);
+  visitor->Trace(content_capture_manager_);
   Frame::Trace(visitor);
   Supplementable<LocalFrame>::Trace(visitor);
 }
@@ -389,6 +392,12 @@ void LocalFrame::DetachImpl(FrameDetachType type) {
   loader_.StopAllLoaders();
   loader_.Detach();
   GetDocument()->Shutdown();
+
+  if (content_capture_manager_) {
+    content_capture_manager_->Shutdown();
+    content_capture_manager_ = nullptr;
+  }
+
   // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
   // It seems to crash because Frame is detached before LocalFrameView.
   // Verify here that any LocalFrameView has been detached by now.
@@ -1278,6 +1287,23 @@ void LocalFrame::SetIsAdSubframeIfNecessary() {
     SetIsAdSubframe(parent_is_ad ? blink::mojom::AdFrameType::kChildAd
                                  : blink::mojom::AdFrameType::kRootAd);
   }
+}
+
+ContentCaptureManager* LocalFrame::GetContentCaptureManager() {
+  DCHECK(Client());
+  if (!IsLocalRoot())
+    return nullptr;
+
+  if (auto* content_capture_client = Client()->GetWebContentCaptureClient()) {
+    if (!content_capture_manager_) {
+      content_capture_manager_ = MakeGarbageCollected<ContentCaptureManager>(
+          *this, content_capture_client->GetNodeHolderType());
+    }
+  } else if (content_capture_manager_) {
+    content_capture_manager_->Shutdown();
+    content_capture_manager_ = nullptr;
+  }
+  return content_capture_manager_;
 }
 
 service_manager::InterfaceProvider& LocalFrame::GetInterfaceProvider() {

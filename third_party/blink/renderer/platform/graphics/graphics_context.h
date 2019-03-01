@@ -31,6 +31,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "cc/paint/node_holder.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/graphics/dash_array.h"
 #include "third_party/blink/renderer/platform/graphics/draw_looper_builder.h"
@@ -258,17 +259,25 @@ class PLATFORM_EXPORT GraphicsContext {
                 AntiAliasingMode = kNotAntiAliased,
                 SkClipOp = SkClipOp::kIntersect);
 
-  void DrawText(const Font&, const TextRunPaintInfo&, const FloatPoint&);
-  void DrawText(const Font&, const NGTextFragmentPaintInfo&, const FloatPoint&);
+  void DrawText(const Font&,
+                const TextRunPaintInfo&,
+                const FloatPoint&,
+                const cc::NodeHolder&);
+  void DrawText(const Font&,
+                const NGTextFragmentPaintInfo&,
+                const FloatPoint&,
+                const cc::NodeHolder&);
 
   void DrawText(const Font&,
                 const TextRunPaintInfo&,
                 const FloatPoint&,
-                const PaintFlags&);
+                const PaintFlags&,
+                const cc::NodeHolder&);
   void DrawText(const Font&,
                 const NGTextFragmentPaintInfo&,
                 const FloatPoint&,
-                const PaintFlags&);
+                const PaintFlags&,
+                const cc::NodeHolder&);
 
   void DrawEmphasisMarks(const Font&,
                          const TextRunPaintInfo&,
@@ -404,10 +413,14 @@ class PLATFORM_EXPORT GraphicsContext {
   void DrawTextInternal(const Font&,
                         const TextPaintInfo&,
                         const FloatPoint&,
-                        const PaintFlags&);
+                        const PaintFlags&,
+                        const cc::NodeHolder&);
 
   template <typename TextPaintInfo>
-  void DrawTextInternal(const Font&, const TextPaintInfo&, const FloatPoint&);
+  void DrawTextInternal(const Font&,
+                        const TextPaintInfo&,
+                        const FloatPoint&,
+                        const cc::NodeHolder&);
 
   template <typename TextPaintInfo>
   void DrawEmphasisMarksInternal(const Font&,

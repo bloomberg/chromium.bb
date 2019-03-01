@@ -824,8 +824,14 @@ void NGBoxFragmentPainter::PaintTextChild(const NGPaintFragment& text_fragment,
       return;
   }
 
+  NodeHolder node_holder;
+  if (auto* node = text_fragment.GetNode()) {
+    if (node->GetLayoutObject()->IsText())
+      node_holder = ToLayoutText(node->GetLayoutObject())->EnsureNodeHolder();
+  }
+
   NGTextFragmentPainter text_painter(text_fragment);
-  text_painter.Paint(paint_info, paint_offset);
+  text_painter.Paint(paint_info, paint_offset, node_holder);
 }
 
 void NGBoxFragmentPainter::PaintAtomicInline(const PaintInfo& paint_info) {

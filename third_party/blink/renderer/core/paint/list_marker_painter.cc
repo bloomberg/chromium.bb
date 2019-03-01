@@ -165,15 +165,19 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
   TextRunPaintInfo suffix_run_info(suffix_run);
 
   if (layout_list_marker_.StyleRef().IsLeftToRightDirection()) {
-    context.DrawText(font, text_run_paint_info, text_origin);
+    context.DrawText(font, text_run_paint_info, text_origin,
+                     NodeHolder::EmptyNodeHolder());
     context.DrawText(font, suffix_run_info,
-                     text_origin + FloatSize(IntSize(font.Width(text_run), 0)));
+                     text_origin + FloatSize(IntSize(font.Width(text_run), 0)),
+                     NodeHolder::EmptyNodeHolder());
   } else {
-    context.DrawText(font, suffix_run_info, text_origin);
+    context.DrawText(font, suffix_run_info, text_origin,
+                     NodeHolder::EmptyNodeHolder());
     // Is the truncation to IntSize below meaningful or a bug?
     context.DrawText(
         font, text_run_paint_info,
-        text_origin + FloatSize(IntSize(font.Width(suffix_run), 0)));
+        text_origin + FloatSize(IntSize(font.Width(suffix_run), 0)),
+        NodeHolder::EmptyNodeHolder());
   }
   // TODO(npm): Check that there are non-whitespace characters. See
   // crbug.com/788444.

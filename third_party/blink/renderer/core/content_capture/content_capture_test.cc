@@ -8,9 +8,14 @@
 #include "third_party/blink/public/web/web_content_holder.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/html/html_iframe_element.h"
+#include "third_party/blink/renderer/core/html_element_type_helpers.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 
 namespace blink {
 
@@ -29,6 +34,8 @@ class WebContentCaptureClientTestHelper : public WebContentCaptureClient {
       bool first_data) override {
     data_ = data;
     first_data_ = first_data;
+    for (auto d : data)
+      all_text_.push_back(d->GetValue().Utf8());
   }
 
   void DidRemoveContent(const std::vector<int64_t>& data) override {
@@ -40,6 +47,8 @@ class WebContentCaptureClientTestHelper : public WebContentCaptureClient {
   const std::vector<scoped_refptr<WebContentHolder>>& Data() const {
     return data_;
   }
+
+  const std::vector<std::string>& AllText() const { return all_text_; }
 
   const std::vector<int64_t>& RemovedData() const { return removed_data_; }
 
@@ -54,6 +63,7 @@ class WebContentCaptureClientTestHelper : public WebContentCaptureClient {
   std::vector<scoped_refptr<WebContentHolder>> data_;
   std::vector<int64_t> removed_data_;
   NodeHolder::Type node_holder_type_;
+  std::vector<std::string> all_text_;
 };
 
 class ContentCaptureTaskTestHelper : public ContentCaptureTask {
@@ -352,6 +362,218 @@ TEST_P(ContentCaptureTest, RemoveNodeAfterSendingOut) {
   RunLongDelayContentCaptureTask();
   EXPECT_EQ(0u, GetWebContentCaptureClient()->Data().size());
   EXPECT_EQ(1u, GetWebContentCaptureClient()->RemovedData().size());
+}
+
+class ContentCaptureSimTest
+    : public SimTest,
+      public ::testing::WithParamInterface<NodeHolder::Type> {
+ public:
+  ContentCaptureSimTest() : client_(GetParam()), child_client_(GetParam()) {}
+  void SetUp() override {
+    SimTest::SetUp();
+    MainFrame().SetContentCaptureClient(&client_);
+    SetupPage();
+  }
+
+  void RunContentCaptureTaskUntil(ContentCaptureTask::TaskState state) {
+    Client().ResetResults();
+    ChildClient().ResetResults();
+    GetDocument()
+        .GetFrame()
+        ->LocalFrameRoot()
+        .GetContentCaptureManager()
+        ->GetContentCaptureTaskForTesting()
+        ->RunTaskForTestingUntil(state);
+  }
+
+  WebContentCaptureClientTestHelper& Client() { return client_; }
+  WebContentCaptureClientTestHelper& ChildClient() { return child_client_; }
+
+  enum class ContentType { kAll, kMainFrame, kChildFrame };
+  void SetCapturedContent(ContentType type) {
+    if (type == ContentType::kMainFrame) {
+      SetCapturedContent(main_frame_content_);
+    } else if (type == ContentType::kChildFrame) {
+      SetCapturedContent(child_frame_content_);
+    } else if (type == ContentType::kAll) {
+      std::vector<NodeHolder> holders(main_frame_content_);
+      holders.insert(holders.end(), child_frame_content_.begin(),
+                     child_frame_content_.end());
+      SetCapturedContent(holders);
+    }
+  }
+
+  void AddOneNodeToMainFrame() {
+    AddNodeToDocument(GetDocument(), main_frame_content_);
+    main_frame_expected_text_.push_back("New Text");
+  }
+
+  void AddOneNodeToChildFrame() {
+    AddNodeToDocument(*child_document_, child_frame_content_);
+    child_frame_expected_text_.push_back("New Text");
+  }
+
+  const std::vector<std::string>& MainFrameExpectedText() const {
+    return main_frame_expected_text_;
+  }
+
+  const std::vector<std::string>& ChildFrameExpectedText() const {
+    return child_frame_expected_text_;
+  }
+
+ private:
+  void SetupPage() {
+    SimRequest main_resource("https://example.com/test.html", "text/html");
+    SimRequest frame_resource("https://example.com/frame.html", "text/html");
+    LoadURL("https://example.com/test.html");
+    WebView().MainFrameWidget()->Resize(WebSize(800, 6000));
+    main_resource.Complete(R"HTML(
+      <!DOCTYPE html>
+      <body style='background: white'>
+      <iframe id=frame name='frame' src=frame.html></iframe>
+      <p id='p1'>Hello World1</p>
+      <p id='p2'>Hello World2</p>
+      <p id='p3'>Hello World3</p>
+      <p id='p4'>Hello World4</p>
+      <p id='p5'>Hello World5</p>
+      <p id='p6'>Hello World6</p>
+      <p id='p7'>Hello World7</p>
+      <p id='p8'>Hello World8</p>
+      <div id='d1'></div>
+      )HTML");
+    auto frame1 = Compositor().BeginFrame();
+    frame_resource.Complete(R"HTML(
+      <!DOCTYPE html>
+      <p id='c1'>Hello World11</p>
+      <p id='c2'>Hello World12</p>
+      <div id='d1'></div>
+      )HTML");
+
+    static_cast<WebLocalFrame*>(MainFrame().FindFrameByName("frame"))
+        ->SetContentCaptureClient(&child_client_);
+    auto* child_frame =
+        ToHTMLIFrameElement(GetDocument().getElementById("frame"));
+    child_document_ = child_frame->contentDocument();
+    child_document_->UpdateStyleAndLayoutIgnorePendingStylesheets();
+    Compositor().BeginFrame();
+    InitMainFrameNodeHolders();
+    InitChildFrameNodeHolders(*child_document_);
+  }
+
+  void InitMainFrameNodeHolders() {
+    std::vector<std::string> ids = {"p1", "p2", "p3", "p4",
+                                    "p5", "p6", "p7", "p8"};
+    main_frame_expected_text_ = {"Hello World1", "Hello World2", "Hello World3",
+                                 "Hello World4", "Hello World5", "Hello World6",
+                                 "Hello World7", "Hello World8"};
+    InitNodeHolders(main_frame_content_, ids, GetDocument());
+    EXPECT_EQ(8u, main_frame_content_.size());
+  }
+
+  void InitChildFrameNodeHolders(const Document& doc) {
+    std::vector<std::string> ids = {"c1", "c2"};
+    child_frame_expected_text_ = {"Hello World11", "Hello World12"};
+    InitNodeHolders(child_frame_content_, ids, doc);
+    EXPECT_EQ(2u, child_frame_content_.size());
+  }
+
+  void InitNodeHolders(std::vector<NodeHolder>& buffer,
+                       const std::vector<std::string>& ids,
+                       const Document& document) {
+    for (auto id : ids) {
+      LayoutText* layout_text = ToLayoutText(
+          document.getElementById(id.c_str())->firstChild()->GetLayoutObject());
+      EXPECT_TRUE(layout_text->HasNodeHolder());
+      buffer.push_back(layout_text->EnsureNodeHolder());
+    }
+  }
+
+  void AddNodeToDocument(Document& doc, std::vector<NodeHolder>& buffer) {
+    Node* node = doc.createTextNode("New Text");
+    Element* element = Element::Create(html_names::kPTag, &doc);
+    element->appendChild(node);
+    Element* div_element = doc.getElementById("d1");
+    div_element->appendChild(element);
+    Compositor().BeginFrame();
+    LayoutText* layout_text = ToLayoutText(node->GetLayoutObject());
+    EXPECT_TRUE(layout_text->HasNodeHolder());
+    buffer.insert(buffer.begin(), layout_text->EnsureNodeHolder());
+  }
+
+  void SetCapturedContent(const std::vector<NodeHolder>& captured_content) {
+    GetDocument()
+        .GetFrame()
+        ->LocalFrameRoot()
+        .GetContentCaptureManager()
+        ->GetContentCaptureTaskForTesting()
+        ->SetCapturedContentForTesting(captured_content);
+  }
+
+  std::vector<std::string> main_frame_expected_text_;
+  std::vector<std::string> child_frame_expected_text_;
+  std::vector<NodeHolder> main_frame_content_;
+  std::vector<NodeHolder> child_frame_content_;
+  WebContentCaptureClientTestHelper client_;
+  WebContentCaptureClientTestHelper child_client_;
+  Persistent<Document> child_document_;
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         ContentCaptureSimTest,
+                         testing::Values(NodeHolder::Type::kID,
+                                         NodeHolder::Type::kTextHolder));
+
+TEST_P(ContentCaptureSimTest, MultiFrame) {
+  SetCapturedContent(ContentType::kAll);
+  RunContentCaptureTaskUntil(ContentCaptureTask::TaskState::kStop);
+  EXPECT_EQ(3u, Client().Data().size());
+  EXPECT_EQ(2u, ChildClient().Data().size());
+  EXPECT_THAT(Client().AllText(),
+              testing::UnorderedElementsAreArray(MainFrameExpectedText()));
+  EXPECT_THAT(ChildClient().AllText(),
+              testing::UnorderedElementsAreArray(ChildFrameExpectedText()));
+}
+
+TEST_P(ContentCaptureSimTest, AddNodeToMultiFrame) {
+  SetCapturedContent(ContentType::kMainFrame);
+  // Stops after capturing content.
+  RunContentCaptureTaskUntil(
+      ContentCaptureTask::TaskState::kProcessCurrentSession);
+  EXPECT_TRUE(Client().Data().empty());
+  EXPECT_FALSE(Client().FirstData());
+  EXPECT_TRUE(ChildClient().Data().empty());
+
+  // Sends the first batch data.
+  RunContentCaptureTaskUntil(ContentCaptureTask::TaskState::kProcessRetryTask);
+  EXPECT_EQ(5u, Client().Data().size());
+  EXPECT_TRUE(Client().FirstData());
+  EXPECT_TRUE(ChildClient().Data().empty());
+
+  // Sends the reset of data
+  RunContentCaptureTaskUntil(ContentCaptureTask::TaskState::kProcessRetryTask);
+  EXPECT_EQ(3u, Client().Data().size());
+  EXPECT_FALSE(Client().FirstData());
+  EXPECT_TRUE(ChildClient().Data().empty());
+  EXPECT_THAT(Client().AllText(),
+              testing::UnorderedElementsAreArray(MainFrameExpectedText()));
+
+  AddOneNodeToMainFrame();
+  SetCapturedContent(ContentType::kMainFrame);
+  RunContentCaptureTaskUntil(ContentCaptureTask::TaskState::kStop);
+  // Though returns all main frame content, only new added node is unsent.
+  EXPECT_EQ(1u, Client().Data().size());
+  EXPECT_FALSE(Client().FirstData());
+  EXPECT_TRUE(ChildClient().Data().empty());
+  EXPECT_THAT(Client().AllText(),
+              testing::UnorderedElementsAreArray(MainFrameExpectedText()));
+
+  AddOneNodeToChildFrame();
+  SetCapturedContent(ContentType::kChildFrame);
+  RunContentCaptureTaskUntil(ContentCaptureTask::TaskState::kStop);
+  EXPECT_EQ(3u, ChildClient().Data().size());
+  EXPECT_THAT(ChildClient().AllText(),
+              testing::UnorderedElementsAreArray(ChildFrameExpectedText()));
+  EXPECT_TRUE(ChildClient().FirstData());
 }
 
 }  // namespace blink
