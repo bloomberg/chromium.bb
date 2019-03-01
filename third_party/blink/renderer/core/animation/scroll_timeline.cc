@@ -157,23 +157,22 @@ double ScrollTimeline::currentTime(bool& is_null) {
     return std::numeric_limits<double>::quiet_NaN();
   }
 
-  // 4. If current scroll offset is greater than or equal to endScrollOffset,
-  // return an unresolved time value if fill is none or backwards, or the
-  // effective time range otherwise.
-  //
-  // TODO(smcgruer): Implement |fill|.
-  //
-  // Note we deliberately break the spec here by only returning if the current
-  // offset is strictly greater, as that is more in line with the web animation
-  // spec. See https://github.com/WICG/scroll-animations/issues/19
-  if (current_offset > resolved_end_scroll_offset) {
-    return std::numeric_limits<double>::quiet_NaN();
+  // 4. If current scroll offset is greater than or equal to endScrollOffset:
+  if (current_offset >= resolved_end_scroll_offset) {
+    // If endScrollOffset is less than the maximum scroll offset of scrollSource
+    // in orientation and fill is none or backwards, return an unresolved time
+    // value.
+    // TODO(smcgruer): Implement |fill|.
+    if (resolved_end_scroll_offset < max_offset)
+      return std::numeric_limits<double>::quiet_NaN();
+
+    // Otherwise, return the effective time range.
+    is_null = false;
+    return time_range_;
   }
 
-  // This is not by the spec, but avoids both negative current time and a
-  // divsion by zero issue. See
-  // https://github.com/WICG/scroll-animations/issues/20 and
-  // https://github.com/WICG/scroll-animations/issues/21
+  // This is not by the spec, but avoids a negative current time.
+  // See https://github.com/WICG/scroll-animations/issues/20
   if (resolved_start_scroll_offset >= resolved_end_scroll_offset) {
     return std::numeric_limits<double>::quiet_NaN();
   }
