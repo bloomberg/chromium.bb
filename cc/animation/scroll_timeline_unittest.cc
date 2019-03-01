@@ -230,9 +230,7 @@ TEST_F(ScrollTimelineTest, CurrentTimeHandlesEndScrollOffset) {
   EXPECT_TRUE(std::isnan(timeline.CurrentTime(scroll_tree(), false)));
   SetScrollOffset(&property_trees(), scroller_id(),
                   gfx::ScrollOffset(0, time_range - 20));
-  EXPECT_FLOAT_EQ(
-      CalculateCurrentTime(time_range - 20, 0, end_scroll_offset, time_range),
-      timeline.CurrentTime(scroll_tree(), false));
+  EXPECT_TRUE(std::isnan(timeline.CurrentTime(scroll_tree(), false)));
   SetScrollOffset(&property_trees(), scroller_id(),
                   gfx::ScrollOffset(0, time_range - 50));
   EXPECT_FLOAT_EQ(
@@ -242,6 +240,21 @@ TEST_F(ScrollTimelineTest, CurrentTimeHandlesEndScrollOffset) {
                   gfx::ScrollOffset(0, time_range - 200));
   EXPECT_FLOAT_EQ(
       CalculateCurrentTime(time_range - 200, 0, end_scroll_offset, time_range),
+      timeline.CurrentTime(scroll_tree(), false));
+}
+
+TEST_F(ScrollTimelineTest, CurrentTimeHandlesEndScrollOffsetInclusive) {
+  double time_range = 100;
+  const double end_scroll_offset =
+      content_size().height() - container_size().height();
+  ScrollTimeline timeline(scroller_id(), ScrollTimeline::ScrollDown,
+                          base::nullopt, end_scroll_offset, time_range);
+
+  const double current_offset = end_scroll_offset;
+  SetScrollOffset(&property_trees(), scroller_id(),
+                  gfx::ScrollOffset(0, current_offset));
+  EXPECT_FLOAT_EQ(
+      CalculateCurrentTime(current_offset, 0, end_scroll_offset, time_range),
       timeline.CurrentTime(scroll_tree(), false));
 }
 
