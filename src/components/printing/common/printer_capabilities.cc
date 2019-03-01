@@ -66,7 +66,7 @@ GetPrinterCapabilitiesOnBlockingPoolThread(
   return cloud_print::PrinterSemanticCapsAndDefaultsToCdd(info);
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && defined(ENABLE_PRINT_PREVIEW)
 std::string GetUserFriendlyName(const std::string& printer_name) {
   // |printer_name| may be a UNC path like \\printserver\printername.
   if (!base::StartsWith(printer_name, "\\\\",
@@ -101,7 +101,7 @@ std::pair<std::string, std::string> GetPrinterNameAndDescription(
   if (it != printer.options.end())
     real_description = it->second;
   return std::make_pair(real_name, real_description);
-#elif defined(OS_WIN)
+#elif defined(OS_WIN) && defined(ENABLE_PRINT_PREVIEW)
   return std::make_pair(GetUserFriendlyName(printer.printer_name),
                         printer.printer_description);
 #else

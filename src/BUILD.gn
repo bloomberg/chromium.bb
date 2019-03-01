@@ -670,8 +670,10 @@ group("gn_all") {
     deps += [ "//third_party/perfetto:all" ]
   }
 
-  if (is_mac || is_linux) {
-    deps += [ "//third_party/sqlite:sqlite_shell" ]
+  if (is_win) {
+    deps += [
+      "//blpwtk2:blpwtk2_all"
+    ]
   }
 
   if (is_linux && !is_chromeos && !is_chromecast) {

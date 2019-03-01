@@ -106,6 +106,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/swap_metrics_driver.h"
+#include "content/browser/utility_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -147,6 +148,7 @@
 #include "ui/display/display_switches.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/switches.h"
+#include "ui/base/ui_base_switches.h"
 
 #if defined(USE_AURA) || defined(OS_MACOSX)
 #include "content/browser/compositor/gpu_process_transport_factory.h"
@@ -747,7 +749,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
         std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
     // TODO(boliu): kSingleProcess check is a temporary workaround for
     // in-process Android WebView. crbug.com/503724 tracks proper fix.
-    if (!parsed_command_line_.HasSwitch(switches::kSingleProcess)) {
+    if (!GetContentClient()->browser()->SupportsInProcessRenderer()) {
       base::DiscardableMemoryAllocator::SetInstance(
           discardable_shared_memory_manager_.get());
     }
@@ -855,6 +857,15 @@ int BrowserMainLoop::PreCreateThreads() {
     RenderProcessHost::SetRunRendererInProcess(true);
 #endif
 
+  if (parsed_command_line_.HasSwitch(switches::kSingleProcess)) {
+    UtilityProcessHost::SetRunUtilityInProcess(true);
+  }
+
+  if (GetContentClient()->browser()->SupportsInProcessRenderer()) {
+    RenderProcessHost::AdjustCommandLineForInProcessRenderer(
+        base::CommandLine::ForCurrentProcess());
+  }
+
   // Initialize origins that are whitelisted for process isolation.  Must be
   // done after base::FeatureList is initialized, but before any navigations
   // can happen.
@@ -869,6 +880,7 @@ int BrowserMainLoop::PreCreateThreads() {
 }
 
 void BrowserMainLoop::PreShutdown() {
+  CHECK(parts_);
   parts_->PreShutdown();
 
   ui::Clipboard::OnPreShutdownForCurrentThread();
@@ -1022,9 +1034,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 #if defined(OS_ANDROID)
   g_browser_main_loop_shutting_down = true;
 #endif
-
-  if (RenderProcessHost::run_renderer_in_process())
-    RenderProcessHostImpl::ShutDownInProcessRenderer();
 
   if (parts_) {
     TRACE_EVENT0("shutdown",
