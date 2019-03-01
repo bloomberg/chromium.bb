@@ -2268,6 +2268,7 @@ jumbo_source_set("unit_tests") {
     "//skia:skcms",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/blink/renderer/core/accessibility:unit_tests",
     "//third_party/blink/renderer/core/editing:unit_tests",
     "//third_party/blink/renderer/core/fileapi:unit_tests",
   ]
