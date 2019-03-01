@@ -71,6 +71,8 @@ public class NativeUiUtils {
     public static final String FRAME_BUFFER_SUFFIX_WEB_XR_CONTENT = "_WebXrContent";
     public static final String FRAME_BUFFER_SUFFIX_BROWSER_UI = "_BrowserUi";
     public static final String FRAME_BUFFER_SUFFIX_BROWSER_CONTENT = "_BrowserContent";
+    // Valid position to click on the content quad in order to select the reposition bar.
+    public static final PointF REPOSITION_BAR_COORDINATES = new PointF(0.0f, 0.55f);
 
     // Arbitrary but reasonable amount of time to expect the UI to stop updating after interacting
     // with an element.
@@ -104,8 +106,30 @@ public class NativeUiUtils {
      *        unit square centered at (0, 0).
      */
     public static void clickElement(int elementName, PointF position) {
+        clickDown(elementName, position);
+        clickUp(elementName, position);
+    }
+
+    /**
+     * Moves to the given position in the given element and presses the touchpad down.
+     *
+     * @param elementName The UserFriendlyElementName that will be clicked on.
+     * @param position A PointF specifying where on the element to send the click relative to a
+     *        unit square centered at (0, 0).
+     */
+    public static void clickDown(int elementName, PointF position) {
         TestVrShellDelegate.getInstance().performControllerActionForTesting(
                 elementName, VrControllerTestAction.CLICK_DOWN, position);
+    }
+
+    /**
+     * Moves to the given position in the given element and unpresses the touchpad.
+     *
+     * @param elementName The UserFriendlyElementName that will be unclicked on.
+     * @param position A PointF specifying where on the element to send the click relative to a
+     *        unit square centered at (0, 0).
+     */
+    public static void clickUp(int elementName, PointF position) {
         TestVrShellDelegate.getInstance().performControllerActionForTesting(
                 elementName, VrControllerTestAction.CLICK_UP, position);
     }
@@ -197,6 +221,36 @@ public class NativeUiUtils {
     }
 
     /**
+     * Helper function to click the reposition bar to select it.
+     */
+    public static void selectRepositionBar() {
+        // We need to ensure that the reposition bar is at least partially visible before trying
+        // to click it, so hover it for a frame.
+        hoverElement(UserFriendlyElementName.CONTENT_QUAD, REPOSITION_BAR_COORDINATES);
+        clickElement(UserFriendlyElementName.CONTENT_QUAD, REPOSITION_BAR_COORDINATES);
+    }
+
+    /**
+     * An alias to click in place in order to deslect the reposition bar.
+     */
+    public static void deselectRepositionBar() {
+        clickElement(UserFriendlyElementName.CURRENT_POSITION, new PointF());
+    }
+
+    /**
+     * Touches the touchpad at the given coordinates, keeping whatever button states and direction
+     * are already present.
+     *
+     * @param position A PointF specifying where on the touchpad to touch, each axis in the range
+     *        [-1, 1].
+     */
+    public static void touchDown(PointF position) {
+        TestVrShellDelegate.getInstance().performControllerActionForTesting(
+                UserFriendlyElementName.NONE /* unused */, VrControllerTestAction.TOUCH_DOWN,
+                position);
+    }
+
+    /**
      * Helper function for performing a non-fling scroll.
      *
      * @param direction the ScrollDirection to scroll in.
@@ -244,14 +298,10 @@ public class NativeUiUtils {
         PointF stepIncrement =
                 new PointF((end.x - start.x) / numSteps, (end.y - start.y) / numSteps);
         PointF currentPosition = new PointF(start.x, start.y);
-        TestVrShellDelegate.getInstance().performControllerActionForTesting(
-                UserFriendlyElementName.NONE /* unused */, VrControllerTestAction.TOUCH_DOWN,
-                currentPosition);
+        touchDown(currentPosition);
         for (int i = 0; i < numSteps; ++i) {
             currentPosition.offset(stepIncrement.x, stepIncrement.y);
-            TestVrShellDelegate.getInstance().performControllerActionForTesting(
-                    UserFriendlyElementName.NONE /* unused */, VrControllerTestAction.TOUCH_DOWN,
-                    currentPosition);
+            touchDown(currentPosition);
         }
         if (delayTouchUp) {
             waitNumFrames(NUM_FRAMES_DELAY_TO_PREVENT_FLING);
