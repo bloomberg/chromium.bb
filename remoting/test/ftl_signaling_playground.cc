@@ -4,6 +4,7 @@
 
 #include "remoting/test/ftl_signaling_playground.h"
 
+#include <inttypes.h>
 #include <utility>
 
 #include "base/bind.h"
@@ -106,17 +107,20 @@ void FtlSignalingPlayground::OnGetIceServerResponse(
     grpc::Status status,
     const ftl::GetICEServerResponse& response) {
   if (status.ok()) {
-    VLOG(0) << "Ice transport policy: "
-            << response.ice_config().ice_transport_policy();
+    printf("Ice transport policy: %s\n",
+           response.ice_config().ice_transport_policy().c_str());
     for (const ftl::ICEServerList& server :
          response.ice_config().ice_servers()) {
-      VLOG(0) << "ICE server:";
-      VLOG(0) << "  hostname=" << server.hostname();
-      VLOG(0) << "  username=" << server.username();
-      VLOG(0) << "  credential=" << server.credential();
-      VLOG(0) << "  max_rate_kbps=" << server.max_rate_kbps();
+      printf(
+          "ICE server:\n"
+          "  hostname=%s\n"
+          "  username=%s\n"
+          "  credential=%s\n"
+          "  max_rate_kbps=%" PRId64 "\n",
+          server.hostname().c_str(), server.username().c_str(),
+          server.credential().c_str(), server.max_rate_kbps());
       for (const std::string& url : server.urls()) {
-        VLOG(0) << "  url=" << url;
+        printf("  url=%s\n", url.c_str());
       }
     }
   } else {
