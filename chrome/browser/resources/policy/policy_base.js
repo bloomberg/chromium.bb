@@ -24,6 +24,16 @@ policy.PolicyValuesResponse;
 
 /**
  * @typedef {{
+ *    level: string,
+ *    scope: string,
+ *    source: string,
+ *    value: any,
+ * }}
+ */
+policy.Conflict;
+
+/**
+ * @typedef {{
  *    name: string,
  *    level: string,
  *    link: ?string,
@@ -31,6 +41,7 @@ policy.PolicyValuesResponse;
  *    source: string,
  *    error: string,
  *    value: any,
+ *    conflicts: ?Array<!Conflict>,
  * }}
  */
 policy.Policy;
@@ -142,6 +153,39 @@ cr.define('policy', function() {
   };
 
   /**
+   * A single policy conflict's entry in the policy table.
+   * @constructor
+   * @extends {HTMLDivElement}
+   */
+  const PolicyConflict = cr.ui.define(function() {
+    const node = $('policy-conflict-template').cloneNode(true);
+    node.removeAttribute('id');
+    return node;
+  });
+
+  PolicyConflict.prototype = {
+    // Set up the prototype chain.
+    __proto__: HTMLDivElement.prototype,
+
+    decorate: function() {
+      this.querySelector('.policy.row')
+          .addEventListener('click', this.toggleExpanded_);
+    },
+
+    /** @param {Conflict} conflict */
+    initialize(conflict) {
+      this.querySelector('.scope').textContent = loadTimeData.getString(
+          conflict.scope == 'user' ? 'scopeUser' : 'scopeDevice');
+      this.querySelector('.level').textContent = loadTimeData.getString(
+          conflict.level == 'recommended' ? 'levelRecommended' :
+                                            'levelMandatory');
+      this.querySelector('.source').textContent =
+          loadTimeData.getString(conflict.source);
+      this.querySelector('.value.row .value').textContent = conflict.value;
+    }
+  };
+
+  /**
    * A single policy's entry in the policy table.
    * @constructor
    * @extends {HTMLDivElement}
@@ -160,8 +204,8 @@ cr.define('policy', function() {
      * Initialization function for the cr.ui framework.
      */
     decorate: function() {
-      const policyRowDisplay = this.querySelector('.policy.row');
-      policyRowDisplay.addEventListener('click', this.toggleExpanded_);
+      const toggle = this.querySelector('.policy.row .toggle');
+      toggle.addEventListener('click', this.toggleExpanded_);
     },
 
     /** @param {Policy} policy */
@@ -175,13 +219,16 @@ cr.define('policy', function() {
       /** @private {boolean} */
       this.hasMessages_ = !!policy.error;
 
+      /** @private {boolean} */
+      this.hasConflicts_ = !!policy.conflicts;
+
       // Populate the name column.
-      const nameDisplay = this.querySelector('.name-link');
+      const nameDisplay = this.querySelector('.name .link span');
       nameDisplay.textContent = policy.name;
       if (policy.link) {
-        nameDisplay.href = policy.link;
-        nameDisplay.title =
-            loadTimeData.getStringF('policyLearnMore', policy.name);
+        const link = this.querySelector('.name .link');
+        link.href = policy.link;
+        link.title = loadTimeData.getStringF('policyLearnMore', policy.name);
       } else {
         this.classList.add('no-help-link');
       }
@@ -209,10 +256,6 @@ cr.define('policy', function() {
         const valueDisplay = this.querySelector('.value');
         valueDisplay.textContent = truncatedValue;
 
-        const messagesDisplay = this.querySelector('.messages');
-        messagesDisplay.textContent =
-            this.hasMessages_ ? loadTimeData.getString('messages') : '';
-        messagesDisplay.hidden = !this.hasMessages_;
 
         const valueRowContentDisplay = this.querySelector('.value.row .value');
         valueRowContentDisplay.textContent = policy.value;
@@ -221,13 +264,37 @@ cr.define('policy', function() {
             this.querySelector('.messages.row .value');
         messageRowContentDisplay.textContent = policy.error;
 
+        const messagesDisplay = this.querySelector('.messages');
+        const messagesNotice =
+            this.hasMessages_ ? loadTimeData.getString('warning') : '';
+        const conflictsNotice =
+            this.hasConflicts_ ? loadTimeData.getString('conflict') : '';
+        const notice = (messagesNotice && conflictsNotice) ?
+            loadTimeData.getString('warningAndConflicts') :
+            messagesNotice || conflictsNotice || loadTimeData.getString('ok');
+        messagesDisplay.textContent = notice;
+
         // <if expr="android">
         const valueRowDisplay = this.querySelector('.value.row');
         valueRowDisplay.hidden = false;
         valueDisplay.hidden = true;
         levelDisplay.hidden = true;
         scopeDisplay.hidden = true;
+        this.querySelector('.toggle').hidden = true;
+        row.querySelectorAll('.policy-conflict-data')
+            .forEach(row => row.hidden = false);
         // </if>
+
+        if (policy.conflicts) {
+          policy.conflicts.forEach(conflict => {
+            const row = new PolicyConflict;
+            row.initialize(conflict);
+            this.appendChild(row);
+          });
+        }
+      } else {
+        const messagesDisplay = this.querySelector('.messages');
+        messagesDisplay.textContent = loadTimeData.getString('unset');
       }
     },
 
@@ -237,13 +304,24 @@ cr.define('policy', function() {
      */
     toggleExpanded_: function() {
       // <if expr="not android">
-      const row = this.parentElement;
+      const row = this.parentElement.parentElement;
       const messageRowDisplay = row.querySelector('.messages.row');
       const valueRowDisplay = row.querySelector('.value.row');
       valueRowDisplay.hidden = !valueRowDisplay.hidden;
-      if (row.hasMessages) {
+      if (valueRowDisplay.hidden) {
+        row.classList.remove('expanded');
+      } else {
+        row.classList.add('expanded');
+      }
+
+      const messagesDisplay = row.querySelector('.messages');
+      this.querySelector('.show-more').hidden = !valueRowDisplay.hidden;
+      this.querySelector('.show-less').hidden = valueRowDisplay.hidden;
+      if (messagesDisplay.textContent !== loadTimeData.getString('ok')) {
         messageRowDisplay.hidden = !messageRowDisplay.hidden;
       }
+      row.querySelectorAll('.policy-conflict-data')
+          .forEach(row => row.hidden = !row.hidden);
       // </if>
     },
   };
@@ -276,7 +354,7 @@ cr.define('policy', function() {
     update(dataModel) {
       // Clear policies
       const mainContent = this.querySelector('.main');
-      const policies = this.querySelectorAll('.policies-data');
+      const policies = this.querySelectorAll('.policy-data');
       this.querySelector('.header').textContent = dataModel.name;
       this.querySelector('.id').textContent = dataModel.id;
       this.querySelector('.id').hidden = !dataModel.id;

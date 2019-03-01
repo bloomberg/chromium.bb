@@ -54,10 +54,8 @@ content::WebUIDataSource* CreatePolicyUIHtmlSource() {
   source->AddLocalizedString("labelStatus", IDS_POLICY_LABEL_STATUS);
   source->AddLocalizedString("showUnset", IDS_POLICY_SHOW_UNSET);
   source->AddLocalizedString("noPoliciesSet", IDS_POLICY_NO_POLICIES_SET);
-  source->AddLocalizedString("showExpandedValue",
-                             IDS_POLICY_SHOW_EXPANDED_VALUE);
-  source->AddLocalizedString("hideExpandedValue",
-                             IDS_POLICY_HIDE_EXPANDED_VALUE);
+  source->AddLocalizedString("showMore", IDS_POLICY_SHOW_MORE);
+  source->AddLocalizedString("showLess", IDS_POLICY_SHOW_LESS);
   source->AddLocalizedString("showExpandedStatus",
                              IDS_POLICY_SHOW_EXPANDED_STATUS);
   source->AddLocalizedString("hideExpandedStatus",

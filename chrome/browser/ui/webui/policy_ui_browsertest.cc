@@ -137,10 +137,11 @@ std::vector<std::string> PopulateExpectedPolicy(
   // Populate expected status.
   if (unknown)
     expected_policy.push_back(
-        l10n_util::GetStringUTF8(IDS_POLICY_LABEL_MESSAGES));
+        l10n_util::GetStringUTF8(IDS_POLICY_HEADER_WARNING));
+  else if (!policy_map_entry)
+    expected_policy.push_back(l10n_util::GetStringUTF8(IDS_POLICY_UNSET));
   else
-    expected_policy.push_back(std::string());
-
+    expected_policy.push_back(l10n_util::GetStringUTF8(IDS_POLICY_OK));
   return expected_policy;
 }
 
@@ -276,7 +277,7 @@ void PolicyUITest::VerifyPolicies(
       "  for (var j = 0; j < items.length; ++j) {"
       "    var children = items[j].querySelectorAll('div');"
       "    var values = [];"
-      "    for(var k = 0; k < children.length; ++k) {"
+      "    for(var k = 0; k < children.length - 1; ++k) {"
       "      values.push(children[k].textContent.trim());"
       "    }"
       "    policies.push(values);"
@@ -304,7 +305,8 @@ void PolicyUITest::VerifyPolicies(
     for (size_t j = 0; j < expected_policy.size(); ++j) {
       std::string value;
       ASSERT_TRUE(actual_policy->GetString(j, &value));
-      EXPECT_EQ(expected_policy[j], value);
+      if (expected_policy[j] != value)
+        EXPECT_EQ(expected_policy[j], value);
     }
   }
 }

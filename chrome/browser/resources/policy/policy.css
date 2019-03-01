@@ -52,11 +52,11 @@ body > main {
 
 .name {
   border-inline-end: 1px solid rgba(0, 0, 0, .06);
-  flex: 0 0 20%;
+  flex: 0 0 15%;
 }
 
 .value {
-  flex: 0 0 40%;
+  flex: 0 0 35%;
 }
 
 .row.header {
@@ -75,10 +75,9 @@ body > main {
   white-space: nowrap;
 }
 
-.expanded,
-.policy.row:hover {
+.expanded .policy.row:not(.conflict),
+.policy.row:not(.conflict):hover {
   background-color: rgb(250, 250, 250);
-  cursor: pointer;
 }
 
 .messages.row .value,
@@ -91,6 +90,7 @@ body > main {
 }
 
 .messages.row .name,
+.conflict.row .name,
 .value.row .name {
   text-align: end;
 }
@@ -141,10 +141,40 @@ body > header,
   padding: 12px;
 }
 
-.no-help-link .name-link {
+a {
+  color: rgb(26, 115, 232);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.toggle {
+  cursor: pointer;
+}
+
+.name .link {
+  align-items: center;
+  display: flex;
+}
+
+.link span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.link img {
+  height: 12px;
+  width: 12px;
+}
+
+.no-help-link .name .link {
   color: inherit;
   pointer-events: none;
   text-decoration: none;
+}
+
+.no-help-link .link img {
+  display: none;
 }
 
 <if expr="android">
