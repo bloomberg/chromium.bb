@@ -474,9 +474,7 @@ bool TranslateStringToShill(const StringTranslationEntry table[],
     *shill_value = table[i].shill_value;
     return true;
   }
-  LOG(ERROR) << "Value '" << onc_value << "' cannot be translated to Shill"
-             << " table[0]: " << table[0].onc_value << " => "
-             << table[0].shill_value;
+  LOG(ERROR) << "Value '" << onc_value << "' cannot be translated to Shill";
   return false;
 }
 
@@ -489,9 +487,7 @@ bool TranslateStringToONC(const StringTranslationEntry table[],
     *onc_value = table[i].onc_value;
     return true;
   }
-  LOG(ERROR) << "Value '" << shill_value << "' cannot be translated to ONC"
-             << " table[0]: " << table[0].shill_value << " => "
-             << table[0].onc_value;
+  LOG(ERROR) << "Value '" << shill_value << "' cannot be translated to ONC";
   return false;
 }
 

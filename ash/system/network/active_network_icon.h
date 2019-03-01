@@ -11,7 +11,6 @@
 #include "ash/ash_export.h"
 #include "ash/system/network/network_icon.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chromeos/network/network_state_handler_observer.h"
@@ -70,7 +69,7 @@ class ASH_EXPORT ActiveNetworkIcon
   void ShutdownNetworkStateHandler();
 
   gfx::ImageSkia GetDefaultImageImpl(
-      const base::Optional<network_icon::NetworkIconState>& default_network,
+      const chromeos::NetworkState* default_network,
       network_icon::IconType icon_type,
       bool* animating);
 
@@ -90,10 +89,10 @@ class ASH_EXPORT ActiveNetworkIcon
   void OnShuttingDown() override;
 
   chromeos::NetworkStateHandler* network_state_handler_ = nullptr;
-  base::Optional<network_icon::NetworkIconState> default_network_;
-  base::Optional<network_icon::NetworkIconState> active_non_cellular_;
-  base::Optional<network_icon::NetworkIconState> active_cellular_;
-  base::Optional<network_icon::NetworkIconState> active_vpn_;
+  const chromeos::NetworkState* default_network_ = nullptr;
+  const chromeos::NetworkState* active_non_cellular_ = nullptr;
+  const chromeos::NetworkState* active_cellular_ = nullptr;
+  const chromeos::NetworkState* active_vpn_ = nullptr;
   int cellular_uninitialized_msg_ = 0;
   base::Time uninitialized_state_time_;
 

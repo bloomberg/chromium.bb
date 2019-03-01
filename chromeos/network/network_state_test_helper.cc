@@ -147,7 +147,6 @@ NetworkStateTestHelper::CreateStandaloneNetworkState(
     int signal_strength) {
   auto network = std::make_unique<NetworkState>(id);
   network->SetGuid(id);
-  network->set_name(id);
   network->set_type(type);
   network->set_visible(true);
   network->SetConnectionState(connection_state);
