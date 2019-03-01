@@ -673,13 +673,10 @@ void DownloadManagerImpl::CheckForHistoryFilesRemoval() {
 void DownloadManagerImpl::OnHistoryQueryComplete(
     base::OnceClosure load_history_downloads_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (base::FeatureList::IsEnabled(
-          download::features::kDownloadDBForNewDownloads) &&
-      !in_progress_cache_initialized_) {
+  if (!in_progress_cache_initialized_)
     load_history_downloads_cb_ = std::move(load_history_downloads_cb);
-  } else {
+  else
     std::move(load_history_downloads_cb).Run();
-  }
 }
 
 void DownloadManagerImpl::CheckForFileRemoval(
@@ -1018,6 +1015,10 @@ download::DownloadItem* DownloadManagerImpl::CreateDownloadItem(
       item->SetDelegate(this);
     }
   }
+  base::FilePath display_name =
+      in_progress_manager_->GetDownloadDisplayName(target_path);
+  if (!display_name.empty())
+    item->SetDisplayName(display_name);
   download::DownloadItemImpl* download = item.get();
   DownloadItemUtils::AttachInfo(download, GetBrowserContext(), nullptr);
   OnDownloadCreated(std::move(item));

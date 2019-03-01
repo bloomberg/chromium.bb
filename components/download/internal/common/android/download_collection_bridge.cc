@@ -4,6 +4,8 @@
 
 #include "components/download/internal/common/android/download_collection_bridge.h"
 
+#include <utility>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/files/file_util.h"
@@ -127,6 +129,40 @@ bool DownloadCollectionBridge::renameDownloadUri(
       ConvertUTF8ToJavaString(env, new_display_name.value());
   return Java_DownloadCollectionBridge_renameDownloadUri(env, jdownload_uri,
                                                          jdisplay_name);
+}
+
+// static
+void DownloadCollectionBridge::GetDisplayNamesForDownloads(
+    GetDisplayNamesCallback cb) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobjectArray> jdisplay_infos =
+      Java_DownloadCollectionBridge_getDisplayNamesForDownloads(env);
+  auto result = std::make_unique<std::map<std::string, base::FilePath>>();
+  if (!jdisplay_infos) {
+    std::move(cb).Run(std::move(result));
+    return;
+  }
+  jsize count = env->GetArrayLength(jdisplay_infos.obj());
+  for (jsize i = 0; i < count; ++i) {
+    base::android::ScopedJavaLocalRef<jobject> jdisplay_info(
+        env, env->GetObjectArrayElement(jdisplay_infos.obj(), i));
+    ScopedJavaLocalRef<jstring> juri =
+        Java_DisplayNameInfo_getDownloadUri(env, jdisplay_info);
+    ScopedJavaLocalRef<jstring> jdisplay_name =
+        Java_DisplayNameInfo_getDisplayName(env, jdisplay_info);
+    if (juri && jdisplay_name) {
+      std::string uri = ConvertJavaStringToUTF8(env, juri);
+      std::string display_name = ConvertJavaStringToUTF8(env, jdisplay_name);
+      result->emplace(uri, display_name);
+    }
+  }
+  std::move(cb).Run(std::move(result));
+}
+
+// static
+bool DownloadCollectionBridge::NeedToRetrieveDisplayNames() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_DownloadCollectionBridge_needToRetrieveDisplayNames(env);
 }
 
 }  // namespace download

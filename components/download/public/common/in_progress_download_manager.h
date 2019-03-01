@@ -5,8 +5,10 @@
 #ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_IN_PROGRESS_DOWNLOAD_MANAGER_H_
 #define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_IN_PROGRESS_DOWNLOAD_MANAGER_H_
 
+#include <map>
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
@@ -44,6 +46,8 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
       base::OnceCallback<void(std::unique_ptr<DownloadCreateInfo> info,
                               DownloadItemImpl*,
                               bool /* should_persist_new_download */)>;
+  using DisplayNames = std::unique_ptr<
+      std::map<std::string /*content URI*/, base::FilePath /* display name*/>>;
 
   // Class to be notified when download starts/stops.
   class COMPONENTS_DOWNLOAD_EXPORT Delegate {
@@ -151,6 +155,10 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // enabled by default.
   void OnAllInprogressDownloadsLoaded();
 
+  // Gets the display name for a download. For non-android platforms, this
+  // always returns an empty path.
+  base::FilePath GetDownloadDisplayName(const base::FilePath& path);
+
   void set_file_factory(std::unique_ptr<DownloadFileFactory> file_factory) {
     file_factory_ = std::move(file_factory);
   }
@@ -185,9 +193,14 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   void OnUrlDownloadHandlerCreated(
       UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader) override;
 
-  // Called when the object is initialized.
-  void OnInitialized(bool success,
-                     std::unique_ptr<std::vector<DownloadDBEntry>> entries);
+  // Called when the in-progress DB is initialized.
+  void OnDBInitialized(bool success,
+                       std::unique_ptr<std::vector<DownloadDBEntry>> entries);
+
+  // Called when download display names are retrieved,
+  void OnDownloadNamesRetrieved(
+      std::unique_ptr<std::vector<DownloadDBEntry>> entries,
+      DisplayNames display_names);
 
   // Start a DownloadItemImpl.
   void StartDownloadWithItem(
@@ -242,6 +255,10 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // URLLoaderFactoryGetter for issuing network request when DownloadMangerImpl
   // is not available.
   scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter_;
+
+  // Mapping between download URIs and display names.
+  // TODO(qinmin): move display name to history and in-progress DB.
+  DisplayNames display_names_;
 
   // Used to check if the URL is safe.
   URLSecurityPolicy url_security_policy_;

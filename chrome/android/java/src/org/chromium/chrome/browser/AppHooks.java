@@ -354,8 +354,8 @@ public abstract class AppHooks {
     /**
      * @return A new {@link DownloadCollectionBridge} instance.
      */
-    public DownloadCollectionBridge createDownloadCollectionBridge() {
-        return new DownloadCollectionBridge();
+    public DownloadCollectionBridge getDownloadCollectionBridge() {
+        return DownloadCollectionBridge.getDownloadCollectionBridge();
     }
 
     /**

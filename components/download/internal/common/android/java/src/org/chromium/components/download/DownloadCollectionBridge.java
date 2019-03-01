@@ -25,6 +25,29 @@ public class DownloadCollectionBridge {
     private static final Object sLock = new Object();
 
     /**
+     *  Class representing the Uri and display name pair for downloads.
+     */
+    protected static class DisplayNameInfo {
+        private final String mUri;
+        private final String mDisplayName;
+
+        public DisplayNameInfo(String uri, String displayName) {
+            mUri = uri;
+            mDisplayName = displayName;
+        }
+
+        @CalledByNative("DisplayNameInfo")
+        private String getDownloadUri() {
+            return mUri;
+        }
+
+        @CalledByNative("DisplayNameInfo")
+        private String getDisplayName() {
+            return mDisplayName;
+        }
+    }
+
+    /**
      * Return getDownloadCollectionBridge singleton.
      */
     public static DownloadCollectionBridge getDownloadCollectionBridge() {
@@ -107,6 +130,21 @@ public class DownloadCollectionBridge {
      */
     protected boolean rename(final String downloadUri, final String displayName) {
         return false;
+    }
+
+    /**
+     * @return  Whether download display names needs to be retrieved.
+     */
+    protected boolean needToGetDisplayNames() {
+        return false;
+    }
+
+    /**
+     * Gets the display names for all downloads
+     * @return an array of download Uri and display name pair.
+     */
+    protected DisplayNameInfo[] getDisplayNames() {
+        return null;
     }
 
     /**
@@ -202,5 +240,22 @@ public class DownloadCollectionBridge {
     @CalledByNative
     private static boolean renameDownloadUri(final String downloadUri, final String displayName) {
         return getDownloadCollectionBridge().rename(downloadUri, displayName);
+    }
+
+    /**
+     * @return  Whether download display names needs to be retrieved.
+     */
+    @CalledByNative
+    private static boolean needToRetrieveDisplayNames() {
+        return getDownloadCollectionBridge().needToGetDisplayNames();
+    }
+
+    /**
+     * Gets the display names for all downloads
+     * @return an array of download Uri and display name pair.
+     */
+    @CalledByNative
+    private static DisplayNameInfo[] getDisplayNamesForDownloads() {
+        return getDownloadCollectionBridge().getDisplayNames();
     }
 }
