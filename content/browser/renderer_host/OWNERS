@@ -23,6 +23,7 @@ tdresser@chromium.org
 # For surface ID propagation and synchronization
 fsamuel@chromium.org
 samans@chromium.org
+jonross@chromium.org
 
 # DelegatedFrame*
 per-file *delegated_frame*=fsamuel@chromium.org
