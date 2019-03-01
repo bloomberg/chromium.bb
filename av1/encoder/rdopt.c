@@ -9341,26 +9341,27 @@ static int64_t motion_mode_rd(
       // SIMPLE_TRANSLATION mode: no need to recalculate.
       // The prediction is calculated before motion_mode_rd() is called in
       // handle_inter_mode()
-      if (cpi->sf.prune_single_motion_modes_by_simple_trans &&
-          args->single_ref_first_pass == 0 && !is_comp_pred) {
-        if (simple_states->early_skipped) {
-          assert(simple_states->rd_stats.rdcost == INT64_MAX);
-          return INT64_MAX;
+      if (cpi->sf.prune_single_motion_modes_by_simple_trans && !is_comp_pred) {
+        if (args->single_ref_first_pass == 0) {
+          if (simple_states->early_skipped) {
+            assert(simple_states->rd_stats.rdcost == INT64_MAX);
+            return INT64_MAX;
+          }
+          if (simple_states->rd_stats.rdcost != INT64_MAX) {
+            best_rd = simple_states->rd_stats.rdcost;
+            best_rd_stats = simple_states->rd_stats;
+            best_rd_stats_y = simple_states->rd_stats_y;
+            best_rd_stats_uv = simple_states->rd_stats_uv;
+            memcpy(best_blk_skip, simple_states->blk_skip,
+                   sizeof(x->blk_skip[0]) * xd->n4_h * xd->n4_w);
+            best_xskip = simple_states->skip;
+            best_disable_skip = simple_states->disable_skip;
+            best_mbmi = *mbmi;
+          }
+          continue;
         }
-        if (simple_states->rd_stats.rdcost != INT64_MAX) {
-          best_rd = simple_states->rd_stats.rdcost;
-          best_rd_stats = simple_states->rd_stats;
-          best_rd_stats_y = simple_states->rd_stats_y;
-          best_rd_stats_uv = simple_states->rd_stats_uv;
-          memcpy(best_blk_skip, simple_states->blk_skip,
-                 sizeof(x->blk_skip[0]) * xd->n4_h * xd->n4_w);
-          best_xskip = simple_states->skip;
-          best_disable_skip = simple_states->disable_skip;
-          best_mbmi = *mbmi;
-        }
-        continue;
+        simple_states->early_skipped = 0;
       }
-      simple_states->early_skipped = 0;
     } else if (mbmi->motion_mode == OBMC_CAUSAL) {
       const uint32_t cur_mv = mbmi->mv[0].as_int;
       assert(!is_comp_pred);
@@ -9542,7 +9543,10 @@ static int64_t motion_mode_rd(
       if (!txfm_search(cpi, tile_data, x, bsize, mi_row, mi_col, rd_stats,
                        rd_stats_y, rd_stats_uv, rd_stats->rate, ref_best_rd)) {
         if (rd_stats_y->rate == INT_MAX && mode_index == 0) {
-          simple_states->early_skipped = 1;
+          if (cpi->sf.prune_single_motion_modes_by_simple_trans &&
+              !is_comp_pred) {
+            simple_states->early_skipped = 1;
+          }
           return INT64_MAX;
         }
         continue;
