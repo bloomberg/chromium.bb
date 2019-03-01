@@ -348,7 +348,7 @@ class FileSystemDirectoryURLLoader : public FileSystemEntryURLLoader {
     }
 
     network::ResourceResponseHead head;
-    head.mime_type = "text/plain";
+    head.mime_type = "text/html";
     head.charset = "utf-8";
     head.content_length = data_.size();
     head.headers = CreateHttpResponseHeaders(200);
