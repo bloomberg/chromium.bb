@@ -5962,3 +5962,4 @@ crbug.com/937170 [ Linux Win7 ] external/wpt/IndexedDB/interleaved-cursors-large
 crbug.com/937312 [ Win7 ] external/wpt/background-fetch/fetch.https.window.html [ Pass Timeout ]
 crbug.com/893659 [ Mac ] virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure Crash ]
 crbug.com/937358 [ Win ] virtual/scroll_customization/fast/events/touch/touch-handler-iframe-plugin-assert.html [ Pass Failure ]
+crbug.com/937378 [ Win7 ] http/tests/devtools/service-workers/service-workers-force-update-on-page-load.js [ Pass Timeout ]
