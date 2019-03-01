@@ -2421,20 +2421,16 @@ public class Tab
     /**
      * See {@link #mInterceptNavigationDelegate}.
      */
+    @VisibleForTesting
     public InterceptNavigationDelegateImpl getInterceptNavigationDelegate() {
         return mInterceptNavigationDelegate;
-    }
-
-    // TODO(jinsukkim): Remove this once the callsite is updated.
-    @VisibleForTesting
-    public AuthenticatorNavigationInterceptor getAuthenticatorHelper() {
-        return getInterceptNavigationDelegate().getAuthenticatorNavigationInterceptor();
     }
 
     /**
      * See {@link #mInterceptNavigationDelegate}.
      */
-    public void setInterceptNavigationDelegate(InterceptNavigationDelegateImpl delegate) {
+    @VisibleForTesting
+    void setInterceptNavigationDelegate(InterceptNavigationDelegateImpl delegate) {
         mInterceptNavigationDelegate = delegate;
         nativeSetInterceptNavigationDelegate(mNativeTabAndroid, delegate);
     }
@@ -2442,15 +2438,6 @@ public class Tab
     @VisibleForTesting
     public boolean hasPrerenderedUrl(String url) {
         return nativeHasPrerenderedUrl(mNativeTabAndroid, url);
-    }
-
-    @VisibleForTesting
-    public int getSystemWindowInsetBottom() {
-        ChromeActivity activity = getActivity();
-        if (activity != null && activity.getInsetObserverView() != null) {
-            return activity.getInsetObserverView().getSystemWindowInsetsBottom();
-        }
-        return 0;
     }
 
     /**

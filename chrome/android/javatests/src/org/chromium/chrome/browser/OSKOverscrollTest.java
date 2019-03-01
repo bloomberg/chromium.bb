@@ -150,7 +150,10 @@ public class OSKOverscrollTest {
                 // the viewport after the OSK show plus the size of the keyboard.
                 int viewportHeightAfterCss = getViewportHeight(webContentsRef.get());
                 int keyboardHeight = mActivityTestRule.getActivity()
+                                             .getActivityTabProvider()
                                              .getActivityTab()
+                                             .getWebContents()
+                                             .getViewAndroidDelegate()
                                              .getSystemWindowInsetBottom();
 
                 int priorHeight = (int) (viewportHeightBeforeCss * cssToDevicePixFactor);
