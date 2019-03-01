@@ -22,6 +22,11 @@ struct AutocompleteMatchType {
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.omnibox
   // GENERATED_JAVA_CLASS_NAME_OVERRIDE: OmniboxSuggestionType
   // clang-format off
+  //
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused. The values should remain
+  // synchronized with the enum AutocompleteMatchType in
+  // //tools/metrics/histograms/enums.xml.
   enum Type {
     URL_WHAT_YOU_TYPED    = 0,  // The input as a URL.
     HISTORY_URL           = 1,  // A past page whose URL contains the input.
