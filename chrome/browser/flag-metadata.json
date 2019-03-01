@@ -691,8 +691,8 @@
   },
   {
     "name": "download-progress-infobar",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "shaktisahu", "dtrainor" ],
+    "expiry_milestone": 75
   },
   {
     "name": "enable-accessibility-object-model",
