@@ -95,64 +95,6 @@ CollectionImage CollectionImage::CreateFromProto(
   return collection_image;
 }
 
-AlbumInfo::AlbumInfo() = default;
-AlbumInfo::AlbumInfo(const AlbumInfo&) = default;
-AlbumInfo::AlbumInfo(AlbumInfo&&) = default;
-AlbumInfo::~AlbumInfo() = default;
-
-AlbumInfo& AlbumInfo::operator=(const AlbumInfo&) = default;
-AlbumInfo& AlbumInfo::operator=(AlbumInfo&&) = default;
-
-bool operator==(const AlbumInfo& lhs, const AlbumInfo& rhs) {
-  return lhs.album_id == rhs.album_id &&
-         lhs.photo_container_id == rhs.photo_container_id &&
-         lhs.album_name == rhs.album_name &&
-         lhs.preview_image_url == rhs.preview_image_url;
-}
-
-bool operator!=(const AlbumInfo& lhs, const AlbumInfo& rhs) {
-  return !(lhs == rhs);
-}
-
-AlbumInfo AlbumInfo::CreateFromProto(
-    const ntp::background::AlbumMetaData& album) {
-  AlbumInfo album_info;
-  album_info.album_id = album.album_id();
-  album_info.photo_container_id = album.photo_container_id();
-  album_info.album_name = album.album_name();
-  album_info.preview_image_url = GURL(album.banner_image_url());
-
-  return album_info;
-}
-
-AlbumPhoto::AlbumPhoto() = default;
-// TODO(crbug.com/851990) Handle urls with existing image options.
-AlbumPhoto::AlbumPhoto(const std::string& album_id,
-                       const std::string& photo_container_id,
-                       const std::string& photo_url,
-                       const std::string& default_image_options)
-    : album_id(album_id),
-      photo_container_id(photo_container_id),
-      thumbnail_photo_url(GURL(photo_url)),
-      photo_url(GURL(photo_url + ((photo_url.find('=') == std::string::npos)
-                                      ? default_image_options
-                                      : std::string()))) {}
-AlbumPhoto::AlbumPhoto(const AlbumPhoto&) = default;
-AlbumPhoto::AlbumPhoto(AlbumPhoto&&) = default;
-AlbumPhoto::~AlbumPhoto() = default;
-
-AlbumPhoto& AlbumPhoto::operator=(const AlbumPhoto&) = default;
-AlbumPhoto& AlbumPhoto::operator=(AlbumPhoto&&) = default;
-
-bool operator==(const AlbumPhoto& lhs, const AlbumPhoto& rhs) {
-  return lhs.thumbnail_photo_url == rhs.thumbnail_photo_url &&
-         lhs.photo_url == rhs.photo_url;
-}
-
-bool operator!=(const AlbumPhoto& lhs, const AlbumPhoto& rhs) {
-  return !(lhs == rhs);
-}
-
 ErrorInfo::ErrorInfo() : net_error(0), error_type(ErrorType::NONE) {}
 ErrorInfo::ErrorInfo(const ErrorInfo&) = default;
 ErrorInfo::ErrorInfo(ErrorInfo&&) = default;

@@ -13,7 +13,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/background/ntp_background_service.h"
 #include "chrome/browser/search/ntp_features.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -43,12 +42,8 @@ KeyedService* NtpBackgroundServiceFactory::BuildServiceInstanceFor(
   // TODO(crbug.com/914898): Background service URLs should be
   // configurable server-side, so they can be changed mid-release.
 
-  Profile* profile = Profile::FromBrowserContext(context);
-  identity::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile);
-
   auto url_loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(context)
           ->GetURLLoaderFactoryForBrowserProcess();
-  return new NtpBackgroundService(identity_manager, url_loader_factory);
+  return new NtpBackgroundService(url_loader_factory);
 }

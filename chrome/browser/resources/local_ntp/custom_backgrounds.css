@@ -202,10 +202,6 @@ html[darkmode=true] .bg-option.bg-option-disabled {
   background-color: transparent;
 }
 
-#edit-bg-google-photos .bg-option-img {
-  background: url(icons/photos.svg) no-repeat center;
-}
-
 #edit-bg-default-wallpapers .bg-option-img {
   background: url(icons/wallpapers.svg) no-repeat center;
 }
