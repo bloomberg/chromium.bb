@@ -245,10 +245,9 @@ static void set_good_speed_features_framesize_independent(
     sf->intra_tx_size_search_init_depth_rect = 1;
     sf->tx_size_search_lgr_block = 1;
     if (speed >= CONFIG_2PASS_PARTITION_SEARCH_LVL_START &&
-        speed < CONFIG_2PASS_PARTITION_SEARCH_LVL_END) {
+        speed < CONFIG_2PASS_PARTITION_SEARCH_LVL_END)
       sf->two_pass_partition_search = 1;
-      sf->mode_pruning_based_on_two_pass_partition_search = 1;
-    }
+
     sf->prune_ext_partition_types_search_level = 2;
     sf->skip_repeat_interpolation_filter_search = 1;
     sf->tx_type_search.skip_tx_search = 1;
@@ -726,7 +725,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->txb_split_cap = 1;
   sf->adaptive_txb_search_level = 0;
   sf->two_pass_partition_search = 0;
-  sf->mode_pruning_based_on_two_pass_partition_search = 0;
   sf->use_intra_txb_hash = 0;
   // TODO(any) : clean use_inter_txb_hash code
   sf->use_inter_txb_hash = 0;

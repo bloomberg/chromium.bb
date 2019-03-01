@@ -375,12 +375,9 @@ typedef struct SPEED_FEATURES {
 
   int fast_cdef_search;
 
-  // 2-pass coding block partition search
+  // 2-pass coding block partition search, and also use the mode decisions made
+  // in the initial partition search to prune mode candidates, e.g. ref frames.
   int two_pass_partition_search;
-
-  // Use the mode decisions made in the initial partition search to prune mode
-  // candidates, e.g. ref frames.
-  int mode_pruning_based_on_two_pass_partition_search;
 
   // Skip rectangular partition test when partition type none gives better
   // rd than partition type split. Can take values 0 - 2, 0 referring to no

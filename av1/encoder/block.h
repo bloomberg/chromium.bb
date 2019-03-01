@@ -155,7 +155,7 @@ typedef struct {
 
 // Region size for mode decision sampling in the first pass of partition
 // search(two_pass_partition_search speed feature), in units of mi size(4).
-// Used by the mode_pruning_based_on_two_pass_partition_search speed feature.
+// Used by the mode pruning in two_pass_partition_search feature.
 #define FIRST_PARTITION_PASS_SAMPLE_REGION 8
 #define FIRST_PARTITION_PASS_SAMPLE_REGION_LOG2 3
 #define FIRST_PARTITION_PASS_STATS_TABLES                     \

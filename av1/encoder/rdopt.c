@@ -11823,8 +11823,7 @@ static int inter_mode_search_order_independent_skip(
     if (skip_ref) return 1;
   }
 
-  if (cpi->mode_pruning_based_on_two_pass_partition_search &&
-      !x->cb_partition_scan) {
+  if (cpi->two_pass_partition_search && !x->cb_partition_scan) {
     const int mi_width = mi_size_wide[bsize];
     const int mi_height = mi_size_high[bsize];
     int found = 0;
