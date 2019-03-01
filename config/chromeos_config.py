@@ -2171,6 +2171,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     ('coral',         None,            None,               'coral'),            # coral (APL)
     (None,            'eve',           'soraka',           'eve'),              # poppy (KBL)
     ('nocturne',      None,            None,               'nocturne'),         # Nocturne (KBL)
+    ('octopus',       None,            None,               'octopus'),          # Octopus (GLK unibuild)
     (None,            None,            'kevin-arcnext',    'kevin-arcnext'),    # gru + arcnext
     (None,            None,            'caroline-arcnext', 'caroline-arcnext'), # arcnext
     ('nyan_blaze',    None,            None,               'nyan_blaze'),       # Add for Skylab test
