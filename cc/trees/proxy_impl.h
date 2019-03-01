@@ -110,6 +110,9 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
       const gfx::PresentationFeedback& feedback) override;
   void DidGenerateLocalSurfaceIdAllocationOnImplThread(
       const viz::LocalSurfaceIdAllocation& allocation) override;
+  void NotifyAnimationWorkletStateChange(
+      AnimationWorkletMutationState state,
+      ElementListType element_list_type) override;
 
   // SchedulerClient implementation
   bool WillBeginImplFrame(const viz::BeginFrameArgs& args) override;

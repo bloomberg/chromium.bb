@@ -101,7 +101,8 @@ class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
 
   void AsyncMutationsDone(int async_mutation_id);
 
-  void ApplyMutationsOnHostThread();
+  // Returns true if any updates were applied.
+  bool ApplyMutationsOnHostThread();
 
   // The AnimationWorkletProxyClients are also owned by the WorkerClients
   // dictionary.

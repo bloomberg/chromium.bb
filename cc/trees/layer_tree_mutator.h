@@ -25,8 +25,11 @@ enum class MutateQueuingStrategy {
 };
 
 enum class MutateStatus {
-  kCompleted,  // Mutation cycle successfully ran to completion.
-  kCanceled    // Mutation cycle dropped from the input queue.
+  kCompletedWithUpdate,  // Mutation cycle successfully ran to completion with
+                         // at least one update.
+  kCompletedNoUpdate,    // Mutation cycle successfully ran to completion but
+                         // no update was applied.
+  kCanceled              // Mutation cycle dropped from the input queue.
 };
 
 struct CC_EXPORT WorkletAnimationId {
@@ -155,7 +158,11 @@ class CC_EXPORT LayerTreeMutator {
 
   virtual void SetClient(LayerTreeMutatorClient* client) = 0;
 
-  virtual void Mutate(std::unique_ptr<MutatorInputState> input_state) = 0;
+  using DoneCallback = base::OnceCallback<void(MutateStatus)>;
+
+  virtual bool Mutate(std::unique_ptr<MutatorInputState> input_state,
+                      MutateQueuingStrategy queueing_strategy,
+                      DoneCallback done_callback) = 0;
   // TODO(majidvp): Remove when timeline inputs are known.
   virtual bool HasMutators() = 0;
 };

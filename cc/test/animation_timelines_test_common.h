@@ -130,6 +130,9 @@ class TestHostClient : public MutatorHostClient {
   gfx::ScrollOffset GetScrollOffsetForAnimation(
       ElementId element_id) const override;
 
+  void NotifyAnimationWorkletStateChange(AnimationWorkletMutationState state,
+                                         ElementListType tree_type) override {}
+
   bool mutators_need_commit() const { return mutators_need_commit_; }
   void set_mutators_need_commit(bool need) { mutators_need_commit_ = need; }
 

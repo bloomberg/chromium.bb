@@ -132,6 +132,9 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
       const gfx::PresentationFeedback& feedback) override;
   void DidGenerateLocalSurfaceIdAllocationOnImplThread(
       const viz::LocalSurfaceIdAllocation& allocation) override;
+  void NotifyAnimationWorkletStateChange(
+      AnimationWorkletMutationState state,
+      ElementListType element_list_type) override;
 
   void RequestNewLayerTreeFrameSink();
 

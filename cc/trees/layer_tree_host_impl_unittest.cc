@@ -235,6 +235,8 @@ class LayerTreeHostImplTest : public testing::Test,
     last_generated_local_surface_id_ = allocation;
     did_generate_local_surface_id_ = true;
   }
+  void NotifyAnimationWorkletStateChange(AnimationWorkletMutationState state,
+                                         ElementListType tree_type) override {}
 
   void set_reduce_memory_result(bool reduce_memory_result) {
     reduce_memory_result_ = reduce_memory_result;

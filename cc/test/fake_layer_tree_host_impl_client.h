@@ -46,6 +46,9 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   void DidGenerateLocalSurfaceIdAllocationOnImplThread(
       const viz::LocalSurfaceIdAllocation& allocation) override {}
 
+  void NotifyAnimationWorkletStateChange(AnimationWorkletMutationState state,
+                                         ElementListType tree_type) override {}
+
   void reset_did_request_impl_side_invalidation() {
     did_request_impl_side_invalidation_ = false;
   }
