@@ -1187,10 +1187,10 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
     app_updaters_.push_back(std::move(crostini_app_updater));
   }
 
-  app_list::AppListSyncableService* app_service =
+  app_list::AppListSyncableService* app_list_syncable_service =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile());
-  if (app_service)
-    app_service->AddObserverAndStart(this);
+  if (app_list_syncable_service)
+    app_list_syncable_service->AddObserverAndStart(this);
 
   PrefServiceSyncableFromProfile(profile())->AddObserver(this);
 }
@@ -1203,10 +1203,10 @@ void ChromeLauncherController::ReleaseProfile() {
 
   pref_change_registrar_.RemoveAll();
 
-  app_list::AppListSyncableService* app_service =
+  app_list::AppListSyncableService* app_list_syncable_service =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile());
-  if (app_service)
-    app_service->RemoveObserver(this);
+  if (app_list_syncable_service)
+    app_list_syncable_service->RemoveObserver(this);
 
   PrefServiceSyncableFromProfile(profile())->RemoveObserver(this);
 }
