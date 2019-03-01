@@ -212,5 +212,58 @@ TEST(TransformUtilTest, BlendOppositeQuaternions) {
   EXPECT_FALSE(std::isnan(result.quaternion.w()));
 }
 
+double ComputeDecompRecompError(const Transform& transform) {
+  DecomposedTransform decomp;
+  DecomposeTransform(&decomp, transform);
+  Transform composed = ComposeTransform(decomp);
+
+  float expected[16];
+  float actual[16];
+  transform.matrix().asRowMajorf(expected);
+  composed.matrix().asRowMajorf(actual);
+  double sse = 0;
+  for (int i = 0; i < 16; i++) {
+    double diff = expected[i] - actual[i];
+    sse += diff * diff;
+  }
+  return sse;
+}
+
+TEST(TransformUtilTest, RoundTripTest) {
+  // rotateZ(90deg)
+  EXPECT_NEAR(0, ComputeDecompRecompError(Transform(0, 1, -1, 0, 0, 0)), 1e-6);
+
+  // rotateZ(180deg)
+  // Edge case where w = 0.
+  EXPECT_NEAR(0, ComputeDecompRecompError(Transform(-1, 0, 0, -1, 0, 0)), 1e-6);
+
+  // rotateX(90deg) rotateY(90deg) rotateZ(90deg)
+  // [1  0   0][ 0 0 1][0 -1 0]   [0 0 1][0 -1 0]   [0  0 1]
+  // [0  0  -1][ 0 1 0][1  0 0] = [1 0 0][1  0 0] = [0 -1 0]
+  // [0  1   0][-1 0 0][0  0 1]   [0 1 0][0  0 1]   [1  0 0]
+  // This test case leads to Gimbal lock when using Euler angles.
+  EXPECT_NEAR(0,
+              ComputeDecompRecompError(
+                  Transform(0, 0, 1, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1)),
+              1e-6);
+
+  // Quaternion matrices with 0 off-diagonal elements, and negative trace.
+  // Stress tests handling of degenerate cases in computing quaternions.
+  // Validates fix for https://crbug.com/647554.
+  EXPECT_NEAR(0, ComputeDecompRecompError(Transform(1, 1, 1, 0, 0, 0)), 1e-6);
+  EXPECT_NEAR(0,
+              ComputeDecompRecompError(
+                  Transform(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)),
+              1e-6);
+  EXPECT_NEAR(0,
+              ComputeDecompRecompError(
+                  Transform(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)),
+              1e-6);
+  EXPECT_NEAR(0,
+              ComputeDecompRecompError(
+                  Transform(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1)),
+              1e-6);
+}
+
 }  // namespace
 }  // namespace gfx
