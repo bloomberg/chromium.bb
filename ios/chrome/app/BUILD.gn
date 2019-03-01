@@ -196,6 +196,7 @@ source_set("app_internal") {
     "//ios/chrome/browser/payments:constants",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/search_engines",
+    "//ios/chrome/browser/search_engines:extension_search_engine_data_updater",
     "//ios/chrome/browser/share_extension",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/snapshots",

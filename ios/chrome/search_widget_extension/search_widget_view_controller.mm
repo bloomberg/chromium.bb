@@ -35,6 +35,8 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 @property(nonatomic, strong)
     ClipboardRecentContentImplIOS* clipboardRecentContent;
 @property(nonatomic, copy, nullable) NSDictionary* fieldTrialValues;
+// Whether the current default search engine supports search by image
+@property(nonatomic, assign) BOOL supportsSearchByImage;
 @property(nonatomic, readonly) BOOL copiedContentBehaviorEnabled;
 
 // Updates the widget with latest data from the clipboard. Returns whether any
@@ -136,6 +138,11 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
       base::SysUTF8ToNSString(app_group::kChromeExtensionFieldTrialPreference);
   self.fieldTrialValues = [sharedDefaults dictionaryForKey:fieldTrialKey];
 
+  NSString* supportsSearchByImageKey =
+      base::SysUTF8ToNSString(app_group::kChromeAppGroupSupportsSearchByImage);
+  self.supportsSearchByImage =
+      [sharedDefaults boolForKey:supportsSearchByImageKey];
+
   NSString* copiedText;
   UIImage* copiedImage;
   CopiedContentType type = CopiedContentTypeNone;
@@ -171,7 +178,7 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 // image.
 // TODO(crbug.com/932116): Can be removed when the flag is cleaned up.
 - (UIImage*)getCopiedImageUsingFlag {
-  if (!self.copiedContentBehaviorEnabled) {
+  if (!self.copiedContentBehaviorEnabled || !self.supportsSearchByImage) {
     return nil;
   }
   return [self.clipboardRecentContent recentImageFromClipboard];

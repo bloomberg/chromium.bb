@@ -86,6 +86,10 @@ extern const char kChromeAppGroupCommandDataPreference[];
 // if the command requires one.
 extern const char kChromeAppGroupCommandIndexPreference[];
 
+// The key of a preference containing whether the current default search engine
+// supports Search by Image.
+extern const char kChromeAppGroupSupportsSearchByImage[];
+
 // The key of a preference containing Chrome client ID reported in the metrics
 // client ID. If the user does not opt in, this value must be cleared from the
 // shared user defaults.
