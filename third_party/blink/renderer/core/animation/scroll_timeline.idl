@@ -16,4 +16,5 @@
     readonly attribute DOMString startScrollOffset;
     readonly attribute DOMString endScrollOffset;
     readonly attribute (double or ScrollTimelineAutoKeyword) timeRange;
+    readonly attribute FillMode fill;
 };

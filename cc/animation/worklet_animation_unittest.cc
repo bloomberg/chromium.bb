@@ -54,7 +54,8 @@ class MockScrollTimeline : public ScrollTimeline {
                        ScrollTimeline::ScrollDown,
                        base::nullopt,
                        base::nullopt,
-                       0) {}
+                       0,
+                       KeyframeModel::FillMode::NONE) {}
   MOCK_CONST_METHOD2(CurrentTime,
                      base::Optional<base::TimeTicks>(const ScrollTree&, bool));
 };

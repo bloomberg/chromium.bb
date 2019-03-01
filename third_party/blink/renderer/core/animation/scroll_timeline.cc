@@ -110,21 +110,23 @@ ScrollTimeline* ScrollTimeline::Create(Document& document,
 
   return MakeGarbageCollected<ScrollTimeline>(
       scroll_source, orientation, start_scroll_offset, end_scroll_offset,
-      options->timeRange().GetAsDouble());
+      options->timeRange().GetAsDouble(),
+      Timing::StringToFillMode(options->fill()));
 }
 
 ScrollTimeline::ScrollTimeline(Element* scroll_source,
                                ScrollDirection orientation,
                                CSSPrimitiveValue* start_scroll_offset,
                                CSSPrimitiveValue* end_scroll_offset,
-                               double time_range)
+                               double time_range,
+                               Timing::FillMode fill)
     : scroll_source_(scroll_source),
       resolved_scroll_source_(ResolveScrollSource(scroll_source_)),
       orientation_(orientation),
       start_scroll_offset_(start_scroll_offset),
       end_scroll_offset_(end_scroll_offset),
-      time_range_(time_range) {
-}
+      time_range_(time_range),
+      fill_(fill) {}
 
 double ScrollTimeline::currentTime(bool& is_null) {
   is_null = true;
@@ -150,11 +152,15 @@ double ScrollTimeline::currentTime(bool& is_null) {
   ResolveScrollStartAndEnd(layout_box, max_offset, resolved_start_scroll_offset,
                            resolved_end_scroll_offset);
 
-  // 3. If current scroll offset is less than startScrollOffset, return an
-  // unresolved time value if fill is none or forwards, or 0 otherwise.
-  // TODO(smcgruer): Implement |fill|.
+  // 3. If current scroll offset is less than startScrollOffset:
   if (current_offset < resolved_start_scroll_offset) {
-    return std::numeric_limits<double>::quiet_NaN();
+    // Return an unresolved time value if fill is none or forwards.
+    if (fill_ == Timing::FillMode::NONE || fill_ == Timing::FillMode::FORWARDS)
+      return std::numeric_limits<double>::quiet_NaN();
+
+    // Otherwise, return 0.
+    is_null = false;
+    return 0;
   }
 
   // 4. If current scroll offset is greater than or equal to endScrollOffset:
@@ -162,9 +168,11 @@ double ScrollTimeline::currentTime(bool& is_null) {
     // If endScrollOffset is less than the maximum scroll offset of scrollSource
     // in orientation and fill is none or backwards, return an unresolved time
     // value.
-    // TODO(smcgruer): Implement |fill|.
-    if (resolved_end_scroll_offset < max_offset)
+    if (resolved_end_scroll_offset < max_offset &&
+        (fill_ == Timing::FillMode::NONE ||
+         fill_ == Timing::FillMode::BACKWARDS)) {
       return std::numeric_limits<double>::quiet_NaN();
+    }
 
     // Otherwise, return the effective time range.
     is_null = false;
@@ -218,6 +226,9 @@ void ScrollTimeline::timeRange(DoubleOrScrollTimelineAutoKeyword& result) {
   result.SetDouble(time_range_);
 }
 
+String ScrollTimeline::fill() {
+  return Timing::FillModeString(fill_);
+}
 
 void ScrollTimeline::GetCurrentAndMaxOffset(const LayoutBox* layout_box,
                                             double& current_offset,

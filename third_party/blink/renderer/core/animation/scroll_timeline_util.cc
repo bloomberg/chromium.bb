@@ -52,7 +52,7 @@ std::unique_ptr<CompositorScrollTimeline> ToCompositorScrollTimeline(
 
   return std::make_unique<CompositorScrollTimeline>(
       element_id, orientation, start_scroll_offset, end_scroll_offset,
-      time_range.GetAsDouble());
+      time_range.GetAsDouble(), scroll_timeline->GetFillMode());
 }
 
 base::Optional<CompositorElementId> GetCompositorScrollElementId(
