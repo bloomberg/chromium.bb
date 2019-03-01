@@ -2,15 +2,15 @@
 
 <link rel="import" href="chrome://resources/cr_components/managed_footnote/managed_footnote.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
-<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-announcer/iron-a11y-announcer.html">
 <link rel="import" href="item.html">
+<link rel="import" href="shared_style.html">
 
 <dom-module id="extensions-item-list">
   <template>
-    <style include="cr-shared-style">
+    <style include="shared-style">
       .items-container,
       #content-wrapper {
         --extensions-card-width: 400px;
@@ -33,6 +33,10 @@
         font-weight: 500;
         margin-top: 80px;
         text-align: center;
+      }
+
+      :host-context([dark]) .empty-list-message {
+        color: var(--cr-secondary-text-color);
       }
 
       .items-container {
