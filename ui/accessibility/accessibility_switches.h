@@ -22,7 +22,7 @@ AX_EXPORT extern const char
 AX_EXPORT bool AreExperimentalAccessibilityFeaturesEnabled();
 
 // Returns true if experimental accessibility language detection is enabled.
-AX_EXPORT bool AreExperimentalAccessibilityLanguageDetectionEnabled();
+AX_EXPORT bool IsExperimentalAccessibilityLanguageDetectionEnabled();
 
 #if defined(OS_WIN)
 AX_EXPORT extern const char kEnableExperimentalUIAutomation[];

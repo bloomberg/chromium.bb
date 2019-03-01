@@ -20,13 +20,13 @@ namespace ui {
 TEST(AXLanguageInfoTest, TestSwitch) {
   // TODO(crbug/889370): Remove this test once this feature is stable
   EXPECT_FALSE(
-      ::switches::AreExperimentalAccessibilityLanguageDetectionEnabled());
+      ::switches::IsExperimentalAccessibilityLanguageDetectionEnabled());
 
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetection);
 
   EXPECT_TRUE(
-      ::switches::AreExperimentalAccessibilityLanguageDetectionEnabled());
+      ::switches::IsExperimentalAccessibilityLanguageDetectionEnabled());
 }
 
 // Tests that AXNode::GetLanguage() terminates when there is no lang attribute.
