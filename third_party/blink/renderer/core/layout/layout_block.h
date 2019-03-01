@@ -163,7 +163,8 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
                                ContainingBlockState = kSameContainingBlock);
 
   TrackedLayoutBoxListHashSet* PositionedObjects() const {
-    return HasPositionedObjects() ? PositionedObjectsInternal() : nullptr;
+    return UNLIKELY(HasPositionedObjects()) ? PositionedObjectsInternal()
+                                            : nullptr;
   }
   bool HasPositionedObjects() const {
     DCHECK(has_positioned_objects_ ? (PositionedObjectsInternal() &&

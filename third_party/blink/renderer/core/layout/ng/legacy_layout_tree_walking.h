@@ -23,7 +23,7 @@ inline LayoutObject* GetLayoutObjectForFirstChildNode(LayoutBlock* parent) {
   LayoutObject* child = parent->FirstChild();
   if (!child)
     return nullptr;
-  if (child->IsLayoutFlowThread())
+  if (UNLIKELY(child->IsLayoutFlowThread()))
     return ToLayoutBlockFlow(child)->FirstChild();
   // The rendered legend is a child of the anonymous wrapper inside the fieldset
   // container. If we find it, skip it. As far as NG is concerned, the rendered
@@ -43,7 +43,7 @@ inline LayoutObject* GetLayoutObjectForParentNode(LayoutObject* object) {
   DCHECK(!object->IsLayoutMultiColumnSpannerPlaceholder());
 
   LayoutObject* parent = object->Parent();
-  if (!parent)
+  if (UNLIKELY(!parent))
     return nullptr;
 
   // The parent of the rendered legend is the fieldset container, as far as NG
@@ -51,7 +51,7 @@ inline LayoutObject* GetLayoutObjectForParentNode(LayoutObject* object) {
   if (UNLIKELY(object->IsRenderedLegend()))
     return parent->Parent();
 
-  if (parent->IsLayoutFlowThread())
+  if (UNLIKELY(parent->IsLayoutFlowThread()))
     return parent->Parent();
   return parent;
 }
@@ -78,7 +78,7 @@ inline bool AreNGBlockFlowChildrenInline(const LayoutBlock* block) {
   if (block->ChildrenInline())
     return true;
   if (const auto* first_child = block->FirstChild()) {
-    if (first_child->IsLayoutFlowThread())
+    if (UNLIKELY(first_child->IsLayoutFlowThread()))
       return first_child->ChildrenInline();
   }
   return false;
@@ -88,7 +88,7 @@ inline bool AreNGBlockFlowChildrenInline(const LayoutBlock* block) {
 // LayoutNG and it has an NG containg block. False if it's hosted by the legacy
 // layout engine.
 inline bool IsLayoutNGContainingBlock(const LayoutBlock* containing_block) {
-  if (containing_block->IsLayoutFlowThread())
+  if (UNLIKELY(containing_block->IsLayoutFlowThread()))
     containing_block = containing_block->ContainingBlock();
   return containing_block && (containing_block->IsLayoutNGMixin() ||
                               containing_block->IsLayoutNGFlexibleBox());
@@ -100,7 +100,7 @@ inline bool IsManagedByLayoutNG(const LayoutObject& object) {
   if (!object.IsLayoutNGMixin() && !object.IsLayoutNGFlexibleBox())
     return false;
   const auto* containing_block = object.ContainingBlock();
-  if (!containing_block)
+  if (UNLIKELY(!containing_block))
     return false;
   return IsLayoutNGContainingBlock(containing_block);
 }

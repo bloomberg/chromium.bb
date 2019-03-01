@@ -134,7 +134,7 @@ NGBoxFragmentBuilder& NGBoxFragmentBuilder::AddBreakBeforeLine(
 
 NGBoxFragmentBuilder& NGBoxFragmentBuilder::PropagateBreak(
     const NGLayoutResult& child_layout_result) {
-  if (!has_block_fragmentation_)
+  if (LIKELY(!has_block_fragmentation_))
     return *this;
   if (!did_break_)
     PropagateBreak(*child_layout_result.PhysicalFragment());
@@ -231,7 +231,7 @@ EBreakBetween NGBoxFragmentBuilder::JoinedBreakBetweenValue(
 
 scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
     WritingMode block_or_line_writing_mode) {
-  if (node_ && has_block_fragmentation_) {
+  if (UNLIKELY(node_ && has_block_fragmentation_)) {
     if (!inline_break_tokens_.IsEmpty()) {
       if (auto token = inline_break_tokens_.back()) {
         if (!token->IsFinished())
