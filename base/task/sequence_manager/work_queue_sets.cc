@@ -66,6 +66,10 @@ void WorkQueueSets::ChangeSetIndex(WorkQueue* work_queue, size_t set_index) {
 void WorkQueueSets::OnQueuesFrontTaskChanged(WorkQueue* work_queue) {
   EnqueueOrder enqueue_order;
   size_t set_index = work_queue->work_queue_set_index();
+  DCHECK_EQ(this, work_queue->work_queue_sets());
+  DCHECK_LT(set_index, work_queue_heaps_.size());
+  DCHECK(work_queue->heap_handle().IsValid());
+  DCHECK(!work_queue_heaps_[set_index].empty()) << " set_index = " << set_index;
   if (work_queue->GetFrontTaskEnqueueOrder(&enqueue_order)) {
     // O(log n)
     work_queue_heaps_[set_index].ChangeKey(work_queue->heap_handle(),

@@ -471,6 +471,27 @@ TEST_F(WorkQueueTest, RemoveAllCanceledTasksFromFrontTasksNotCanceled) {
   }
 }
 
+TEST_F(WorkQueueTest, RemoveAllCanceledTasksFromFrontQueueBlockedByFence) {
+  {
+    Cancelable cancelable;
+    work_queue_->Push(FakeCancelableTaskWithEnqueueOrder(
+        2, cancelable.weak_ptr_factory.GetWeakPtr()));
+    work_queue_->Push(FakeCancelableTaskWithEnqueueOrder(
+        3, cancelable.weak_ptr_factory.GetWeakPtr()));
+    work_queue_->Push(FakeCancelableTaskWithEnqueueOrder(
+        4, cancelable.weak_ptr_factory.GetWeakPtr()));
+    work_queue_->Push(FakeTaskWithEnqueueOrder(5));
+  }
+
+  EXPECT_FALSE(work_queue_->InsertFence(EnqueueOrder::blocking_fence()));
+  EXPECT_TRUE(work_queue_->BlockedByFence());
+
+  EXPECT_TRUE(work_queue_->RemoveAllCanceledTasksFromFront());
+
+  EnqueueOrder enqueue_order;
+  EXPECT_FALSE(work_queue_->GetFrontTaskEnqueueOrder(&enqueue_order));
+}
+
 }  // namespace internal
 }  // namespace sequence_manager
 }  // namespace base
