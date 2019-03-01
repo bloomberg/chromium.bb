@@ -30,7 +30,8 @@ issues]].
   Kana rules using multipass statements.
 
 ** Other changes
-
+   - Don't search for tables in /usr/local/share/liblouis/tables if
+     LOUIS_TABLEPATH is set.
 ** Deprecation notice
 - The ~locale~ opcode was never implemented and was just silently
   ignored. It is now removed from the tables and and a warning will be
