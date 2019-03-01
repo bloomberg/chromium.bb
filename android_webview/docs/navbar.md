@@ -3,6 +3,7 @@
 * [Home][home]
 * [Device Setup](/android_webview/docs/device-setup.md)
 * [Test instructions](/android_webview/docs/test-instructions.md)
+* [WebView Shell](/android_webview/docs/webview-shell.md)
 * [Commandline flags](/android_webview/docs/commandline-flags.md)
 * [Net debugging](/android_webview/docs/net-debugging.md)
 
