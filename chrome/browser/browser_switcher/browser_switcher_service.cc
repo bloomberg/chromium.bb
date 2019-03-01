@@ -16,6 +16,8 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/file_url_loader.h"
+#include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -83,9 +85,11 @@ XmlDownloader::XmlDownloader(Profile* profile,
     : sources_(std::move(sources)),
       all_done_callback_(std::move(all_done_callback)),
       weak_ptr_factory_(this) {
-  factory_ = content::BrowserContext::GetDefaultStoragePartition(profile)
-                 ->GetURLLoaderFactoryForBrowserProcess();
-  DCHECK(factory_);
+  file_url_factory_ =
+      content::CreateFileURLLoaderFactory(base::FilePath(), nullptr);
+  other_url_factory_ =
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetURLLoaderFactoryForBrowserProcess();
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&XmlDownloader::FetchXml, weak_ptr_factory_.GetWeakPtr()),
@@ -107,10 +111,17 @@ void XmlDownloader::FetchXml() {
         kFetchNumRetries,
         network::SimpleURLLoader::RetryMode::RETRY_ON_NETWORK_CHANGE);
     source.url_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-        factory_.get(),
+        GetURLLoaderFactoryForURL(source.url),
         base::BindOnce(&XmlDownloader::ParseXml, weak_ptr_factory_.GetWeakPtr(),
                        base::Unretained(&source)));
   }
+}
+
+network::mojom::URLLoaderFactory* XmlDownloader::GetURLLoaderFactoryForURL(
+    const GURL& url) {
+  if (url.SchemeIsFile())
+    return file_url_factory_.get();
+  return other_url_factory_.get();
 }
 
 void XmlDownloader::ParseXml(RulesetSource* source,
