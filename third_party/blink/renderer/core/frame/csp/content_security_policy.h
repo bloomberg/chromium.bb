@@ -272,84 +272,36 @@ class CORE_EXPORT ContentSecurityPolicy
       SecurityViolationReportingPolicy =
           SecurityViolationReportingPolicy::kReport) const;
 
-  bool AllowObjectFromSource(
-      const KURL&,
-      RedirectStatus = RedirectStatus::kNoRedirect,
-      SecurityViolationReportingPolicy =
-          SecurityViolationReportingPolicy::kReport,
-      CheckHeaderType = CheckHeaderType::kCheckAll) const;
-  bool AllowPrefetchFromSource(
-      const KURL&,
-      RedirectStatus = RedirectStatus::kNoRedirect,
-      SecurityViolationReportingPolicy =
-          SecurityViolationReportingPolicy::kReport,
-      CheckHeaderType = CheckHeaderType::kCheckAll) const;
-  bool AllowFrameFromSource(const KURL&,
-                            RedirectStatus = RedirectStatus::kNoRedirect,
-                            SecurityViolationReportingPolicy =
-                                SecurityViolationReportingPolicy::kReport,
-                            CheckHeaderType = CheckHeaderType::kCheckAll) const;
-  bool AllowImageFromSource(const KURL&,
-                            RedirectStatus = RedirectStatus::kNoRedirect,
-                            SecurityViolationReportingPolicy =
-                                SecurityViolationReportingPolicy::kReport,
-                            CheckHeaderType = CheckHeaderType::kCheckAll) const;
-  bool AllowFontFromSource(const KURL&,
-                           RedirectStatus = RedirectStatus::kNoRedirect,
-                           SecurityViolationReportingPolicy =
-                               SecurityViolationReportingPolicy::kReport,
-                           CheckHeaderType = CheckHeaderType::kCheckAll) const;
-  bool AllowMediaFromSource(const KURL&,
-                            RedirectStatus = RedirectStatus::kNoRedirect,
-                            SecurityViolationReportingPolicy =
-                                SecurityViolationReportingPolicy::kReport,
-                            CheckHeaderType = CheckHeaderType::kCheckAll) const;
+  // AllowFromSource() wrappers.
+  bool AllowBaseURI(const KURL&) const;
   bool AllowConnectToSource(const KURL&,
                             RedirectStatus = RedirectStatus::kNoRedirect,
                             SecurityViolationReportingPolicy =
                                 SecurityViolationReportingPolicy::kReport,
                             CheckHeaderType = CheckHeaderType::kCheckAll) const;
-  bool AllowFormAction(const KURL&,
-                       RedirectStatus = RedirectStatus::kNoRedirect,
-                       SecurityViolationReportingPolicy =
-                           SecurityViolationReportingPolicy::kReport,
-                       CheckHeaderType = CheckHeaderType::kCheckAll) const;
-  bool AllowBaseURI(const KURL&,
-                    RedirectStatus = RedirectStatus::kNoRedirect,
-                    SecurityViolationReportingPolicy =
-                        SecurityViolationReportingPolicy::kReport) const;
-  bool AllowTrustedTypePolicy(const String& policy_name) const;
-  bool AllowWorkerContextFromSource(
-      const KURL&,
-      RedirectStatus = RedirectStatus::kNoRedirect,
-      SecurityViolationReportingPolicy =
-          SecurityViolationReportingPolicy::kReport,
-      CheckHeaderType = CheckHeaderType::kCheckAll) const;
-
-  bool AllowManifestFromSource(
-      const KURL&,
-      RedirectStatus = RedirectStatus::kNoRedirect,
-      SecurityViolationReportingPolicy =
-          SecurityViolationReportingPolicy::kReport,
-      CheckHeaderType = CheckHeaderType::kCheckAll) const;
-
-  // Passing 'String()' into the |nonce| arguments in the following methods
-  // represents an unnonced resource load.
+  bool AllowFormAction(const KURL&) const;
+  bool AllowImageFromSource(const KURL&,
+                            RedirectStatus = RedirectStatus::kNoRedirect,
+                            SecurityViolationReportingPolicy =
+                                SecurityViolationReportingPolicy::kReport,
+                            CheckHeaderType = CheckHeaderType::kCheckAll) const;
+  bool AllowMediaFromSource(const KURL&) const;
+  bool AllowObjectFromSource(const KURL&) const;
   bool AllowScriptFromSource(
       const KURL&,
       const String& nonce,
-      const IntegrityMetadataSet& hashes,
+      const IntegrityMetadataSet&,
       ParserDisposition,
       RedirectStatus = RedirectStatus::kNoRedirect,
       SecurityViolationReportingPolicy =
           SecurityViolationReportingPolicy::kReport,
       CheckHeaderType = CheckHeaderType::kCheckAll) const;
-  bool AllowStyleFromSource(const KURL&,
-                            const String& nonce,
-                            RedirectStatus = RedirectStatus::kNoRedirect,
-                            SecurityViolationReportingPolicy =
-                                SecurityViolationReportingPolicy::kReport,
-                            CheckHeaderType = CheckHeaderType::kCheckAll) const;
+  bool AllowWorkerContextFromSource(const KURL&) const;
+
+  bool AllowTrustedTypePolicy(const String& policy_name) const;
+
+  // Passing 'String()' into the |nonce| arguments in the following methods
+  // represents an unnonced resource load.
   bool AllowInlineScript(Element*,
                          const String& context_url,
                          const String& nonce,
@@ -556,6 +508,7 @@ class CORE_EXPORT ContentSecurityPolicy
   FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceInline);
   FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceSinglePolicy);
   FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceMultiplePolicy);
+  FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, EmptyCSPIsNoOp);
   FRIEND_TEST_ALL_PREFIXES(BaseFetchContextTest, CanRequest);
   FRIEND_TEST_ALL_PREFIXES(BaseFetchContextTest, CheckCSPForRequest);
   FRIEND_TEST_ALL_PREFIXES(BaseFetchContextTest,
@@ -577,6 +530,16 @@ class CORE_EXPORT ContentSecurityPolicy
                            LocalFrame*,
                            const Vector<String>& report_endpoints,
                            bool use_reporting_api);
+
+  bool AllowFromSource(ContentSecurityPolicy::DirectiveType,
+                       const KURL&,
+                       RedirectStatus = RedirectStatus::kNoRedirect,
+                       SecurityViolationReportingPolicy =
+                           SecurityViolationReportingPolicy::kReport,
+                       CheckHeaderType = CheckHeaderType::kCheckAll,
+                       const String& = String(),
+                       const IntegrityMetadataSet& = IntegrityMetadataSet(),
+                       ParserDisposition = kParserInserted) const;
 
   static void FillInCSPHashValues(const String& source,
                                   uint8_t hash_algorithms_used,

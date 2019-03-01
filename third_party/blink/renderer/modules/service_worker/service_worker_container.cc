@@ -347,9 +347,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
   if (csp) {
     if (!csp->AllowRequestWithoutIntegrity(
             mojom::RequestContextType::SERVICE_WORKER, script_url) ||
-        !csp->AllowWorkerContextFromSource(
-            script_url, ResourceRequest::RedirectStatus::kNoRedirect,
-            SecurityViolationReportingPolicy::kReport)) {
+        !csp->AllowWorkerContextFromSource(script_url)) {
       callbacks->OnError(WebServiceWorkerError(
           mojom::blink::ServiceWorkerErrorType::kSecurity,
           String(
