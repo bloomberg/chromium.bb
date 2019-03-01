@@ -238,8 +238,14 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     private void setChips(AssistantCarouselModel model, List<AssistantChip> chips) {
-        model.getChipsModel().set(chips);
         model.set(ALIGNMENT, computeAlignment(chips));
+
+        // We apply the minimum set of operations on the current chips to transform it in the target
+        // list of chips. When testing for chip equivalence, we only compare their type and text but
+        // all substitutions will still be applied so we are sure we display the given {@code chips}
+        // with their associated callbacks.
+        EditDistance.transform(model.getChipsModel(), chips,
+                (a, b) -> a.getType() == b.getType() && a.getText().equals(b.getText()));
     }
 
     @CalledByNative

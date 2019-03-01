@@ -9,6 +9,7 @@ import android.graphics.Rect;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.util.TypedValue;
 import android.view.View;
 
@@ -36,10 +37,6 @@ public class AssistantCarouselCoordinator {
         mView = new RecyclerView(context);
         mView.setLayoutManager(mLayoutManager);
         mView.addItemDecoration(new SpaceItemDecoration(context));
-        mView.getItemAnimator().setAddDuration(0);
-        mView.getItemAnimator().setChangeDuration(0);
-        mView.getItemAnimator().setMoveDuration(0);
-        mView.getItemAnimator().setRemoveDuration(0);
         mView.setAdapter(new RecyclerViewAdapter<>(
                 new SimpleRecyclerViewMcp<>(model.getChipsModel(), AssistantChip::getType,
                         AssistantChipViewHolder::bind),
@@ -125,7 +122,9 @@ public class AssistantCarouselCoordinator {
         @Override
         public void getItemOffsets(
                 Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-            if (mCentered && parent.getAdapter().getItemCount() == 1) {
+            // We use RecyclerView.State#getItemCount() as it returns the correct value when the
+            // carousel is being animated.
+            if (mCentered && state.getItemCount() == 1) {
                 // We have one view and want it horizontally centered. By this time the parent
                 // measured width is correct (as it matches its parent), but we need to explicitly
                 // measure how big the chip view wants to be.
@@ -133,7 +132,7 @@ public class AssistantCarouselCoordinator {
                 view.measure(
                         View.MeasureSpec.makeMeasureSpec(availableWidth, View.MeasureSpec.AT_MOST),
                         View.MeasureSpec.makeMeasureSpec(
-                                parent.getMeasuredHeight(), View.MeasureSpec.AT_MOST));
+                                parent.getMeasuredHeight(), View.MeasureSpec.UNSPECIFIED));
 
                 int margin = (availableWidth - view.getMeasuredWidth()) / 2;
                 outRect.left = margin;
@@ -142,6 +141,18 @@ public class AssistantCarouselCoordinator {
             }
 
             int position = parent.getChildAdapterPosition(view);
+
+            // If old position != NO_POSITION, it means the carousel is being animated and we should
+            // use that position in our logic.
+            ViewHolder viewHolder = parent.getChildViewHolder(view);
+            if (viewHolder != null && viewHolder.getOldPosition() != RecyclerView.NO_POSITION) {
+                position = viewHolder.getOldPosition();
+            }
+
+            if (position == RecyclerView.NO_POSITION) {
+                return;
+            }
+
             int left;
             int right;
             if (position == 0) {
@@ -150,7 +161,7 @@ public class AssistantCarouselCoordinator {
                 left = mInnerSpacePx;
             }
 
-            if (position == parent.getAdapter().getItemCount() - 1) {
+            if (position == state.getItemCount() - 1) {
                 right = mOuterSpacePx;
             } else {
                 right = mInnerSpacePx;
