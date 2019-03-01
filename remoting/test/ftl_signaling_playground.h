@@ -24,12 +24,19 @@ class FtlSignalingPlayground {
   bool ShouldPrintHelp();
   void PrintHelp();
   void StartAndAuthenticate();
-  void GetIceServer(base::OnceClosure on_done);
 
  private:
+  void StartLoop();
+
+  void GetIceServer(base::OnceClosure on_done);
   static void OnGetIceServerResponse(base::OnceClosure on_done,
                                      grpc::Status status,
                                      const ftl::GetICEServerResponse& response);
+
+  void SignInGaia(base::OnceClosure on_done);
+  static void OnSignInGaiaResponse(base::OnceClosure on_done,
+                                   grpc::Status status,
+                                   const ftl::SignInGaiaResponse& response);
 
   std::unique_ptr<TestOAuthTokenGetterFactory> token_getter_factory_;
   std::unique_ptr<OAuthTokenGetter> token_getter_;

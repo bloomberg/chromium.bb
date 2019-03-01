@@ -30,9 +30,16 @@ class FtlClient {
   // Retrieves the ice server configs.
   void GetIceServer(RpcCallback<ftl::GetICEServerResponse> callback);
 
+  // Performs a SignInGaia call for this device.
+  void SignInGaia(const std::string& device_id,
+                  ftl::SignInGaiaMode::Value sign_in_gaia_mode,
+                  RpcCallback<ftl::SignInGaiaResponse> callback);
+
  private:
   using PeerToPeer =
       google::internal::communications::instantmessaging::v1::PeerToPeer;
+  using Registration =
+      google::internal::communications::instantmessaging::v1::Registration;
 
   template <typename RequestType, typename ResponseType>
   void GetOAuthTokenAndExecuteRpc(
@@ -54,6 +61,7 @@ class FtlClient {
 
   OAuthTokenGetter* token_getter_;
   std::unique_ptr<PeerToPeer::Stub> peer_to_peer_stub_;
+  std::unique_ptr<Registration::Stub> registration_stub_;
   GrpcAsyncDispatcher dispatcher_;
 
   base::WeakPtrFactory<FtlClient> weak_factory_;

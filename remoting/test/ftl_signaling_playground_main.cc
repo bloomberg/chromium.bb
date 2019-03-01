@@ -27,9 +27,6 @@ int main(int argc, char const* argv[]) {
   mojo::core::Init();
 
   playground.StartAndAuthenticate();
-  base::RunLoop run_loop;
-  playground.GetIceServer(run_loop.QuitClosure());
-  run_loop.Run();
 
   return 0;
 }

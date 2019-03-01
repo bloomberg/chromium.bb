@@ -12,6 +12,8 @@
 #include "google_apis/google_api_keys.h"
 #include "third_party/grpc/src/include/grpcpp/grpcpp.h"
 
+namespace remoting {
+
 namespace {
 
 constexpr char kChromotingAppIdentifier[] = "CRD";
@@ -19,9 +21,11 @@ constexpr char kChromotingAppIdentifier[] = "CRD";
 // TODO(yuweih): We should target different service environments.
 constexpr char kFtlServerEndpoint[] = "instantmessaging-pa.googleapis.com";
 
-}  // namespace
+constexpr ftl::FtlCapability::Feature kFtlCapabilities[] = {
+    ftl::FtlCapability_Feature_RECEIVE_CALLS_FROM_GAIA,
+    ftl::FtlCapability_Feature_GAIA_REACHABLE};
 
-namespace remoting {
+}  // namespace
 
 FtlClient::FtlClient(OAuthTokenGetter* token_getter) : weak_factory_(this) {
   DCHECK(token_getter);
@@ -29,6 +33,7 @@ FtlClient::FtlClient(OAuthTokenGetter* token_getter) : weak_factory_(this) {
   auto channel_creds = grpc::SslCredentials(grpc::SslCredentialsOptions());
   auto channel = grpc::CreateChannel(kFtlServerEndpoint, channel_creds);
   peer_to_peer_stub_ = PeerToPeer::NewStub(channel);
+  registration_stub_ = Registration::NewStub(channel);
 }
 
 FtlClient::~FtlClient() = default;
@@ -40,6 +45,32 @@ void FtlClient::GetIceServer(RpcCallback<ftl::GetICEServerResponse> callback) {
   GetOAuthTokenAndExecuteRpc(
       base::BindOnce(&PeerToPeer::Stub::AsyncGetICEServer,
                      base::Unretained(peer_to_peer_stub_.get())),
+      request, std::move(callback));
+}
+
+void FtlClient::SignInGaia(const std::string& device_id,
+                           ftl::SignInGaiaMode::Value sign_in_gaia_mode,
+                           RpcCallback<ftl::SignInGaiaResponse> callback) {
+  ftl::SignInGaiaRequest request;
+  request.set_allocated_header(BuildRequestHeader().release());
+  request.set_app(kChromotingAppIdentifier);
+  request.set_mode(sign_in_gaia_mode);
+
+  request.mutable_register_data()->mutable_device_id()->set_id(device_id);
+
+  // TODO(yuweih): Consider using different device ID type.
+  request.mutable_register_data()->mutable_device_id()->set_type(
+      ftl::DeviceIdType_Type_WEB_UUID);
+
+  size_t ftl_capability_count =
+      sizeof(kFtlCapabilities) / sizeof(ftl::FtlCapability::Feature);
+  for (size_t i = 0; i < ftl_capability_count; i++) {
+    request.mutable_register_data()->add_caps(kFtlCapabilities[i]);
+  }
+
+  GetOAuthTokenAndExecuteRpc(
+      base::BindOnce(&Registration::Stub::AsyncSignInGaia,
+                     base::Unretained(registration_stub_.get())),
       request, std::move(callback));
 }
 

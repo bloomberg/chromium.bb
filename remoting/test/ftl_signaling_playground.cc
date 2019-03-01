@@ -5,14 +5,18 @@
 #include "remoting/test/ftl_signaling_playground.h"
 
 #include <inttypes.h>
+#include <string>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/guid.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "remoting/base/oauth_token_getter_impl.h"
 #include "remoting/signaling/ftl_client.h"
@@ -47,6 +51,18 @@ std::string ReadStringFromCommandLineOrStdin(const std::string& switch_name,
   }
   printf("%s", read_prompt.c_str());
   return ReadString();
+}
+
+void PrintGrpcStatusError(const grpc::Status& status) {
+  DCHECK(!status.ok());
+  LOG(ERROR) << "RPC failed. Code=" << status.error_code() << ", "
+             << "Message=" << status.error_message();
+  if (status.error_code() == grpc::StatusCode::UNAVAILABLE) {
+    VLOG(0)
+        << "Set the GRPC_DEFAULT_SSL_ROOTS_FILE_PATH environment variable "
+        << "to third_party/grpc/src/etc/roots.pem if gRPC cannot locate the "
+        << "root certificates.";
+  }
 }
 
 }  // namespace
@@ -92,6 +108,36 @@ void FtlSignalingPlayground::StartAndAuthenticate() {
       auth_code,
       base::DoNothing::Repeatedly<const std::string&, const std::string&>());
   client_ = std::make_unique<FtlClient>(token_getter_.get());
+
+  StartLoop();
+}
+
+void FtlSignalingPlayground::StartLoop() {
+  while (true) {
+    printf(
+        "\nOptions:\n"
+        "  1. GetIceServer\n"
+        "  2. SignInGaia\n"
+        "  3. Quit\n\n"
+        "Your choice [number]: ");
+    int choice = 0;
+    base::StringToInt(ReadString(), &choice);
+    base::RunLoop run_loop;
+    switch (choice) {
+      case 1:
+        GetIceServer(run_loop.QuitClosure());
+        break;
+      case 2:
+        SignInGaia(run_loop.QuitClosure());
+        break;
+      case 3:
+        return;
+      default:
+        fprintf(stderr, "Unknown option\n");
+        continue;
+    }
+    run_loop.Run();
+  }
 }
 
 void FtlSignalingPlayground::GetIceServer(base::OnceClosure on_done) {
@@ -124,14 +170,43 @@ void FtlSignalingPlayground::OnGetIceServerResponse(
       }
     }
   } else {
-    LOG(ERROR) << "RPC failed. Code=" << status.error_code() << ", "
-               << "Message=" << status.error_message();
-    if (status.error_code() == grpc::StatusCode::UNAVAILABLE) {
-      VLOG(0)
-          << "Set the GRPC_DEFAULT_SSL_ROOTS_FILE_PATH environment variable "
-          << "to third_party/grpc/src/etc/roots.pem if gRPC cannot locate the "
-          << "root certificates.";
-    }
+    PrintGrpcStatusError(status);
+  }
+  std::move(on_done).Run();
+}
+
+void FtlSignalingPlayground::SignInGaia(base::OnceClosure on_done) {
+  DCHECK(client_);
+  VLOG(0) << "Running SignInGaia...";
+  // TODO(yuweih): Store generated GUID and reuse them when possible.
+  std::string device_id = "crd-web-" + base::GenerateGUID();
+  VLOG(0) << "Using device_id: " << device_id;
+  VLOG(0) << "Using sign_in_gaia_mode: DEFAULT_CREATE_ACCOUNT";
+  client_->SignInGaia(
+      device_id, ftl::SignInGaiaMode_Value_DEFAULT_CREATE_ACCOUNT,
+      base::BindOnce(&FtlSignalingPlayground::OnSignInGaiaResponse,
+                     std::move(on_done)));
+}
+
+// static
+void FtlSignalingPlayground::OnSignInGaiaResponse(
+    base::OnceClosure on_done,
+    grpc::Status status,
+    const ftl::SignInGaiaResponse& response) {
+  if (status.ok()) {
+    // TODO(yuweih): Allow loading auth token directly from command line.
+    std::string registration_id_base64;
+    std::string auth_token_base64;
+    base::Base64Encode(response.registration_id(), &registration_id_base64);
+    base::Base64Encode(response.auth_token().payload(), &auth_token_base64);
+    printf(
+        "registration_id(base64)=%s\n"
+        "auth_token.payload(base64)=%s\n"
+        "auth_token.expires_in=%" PRId64 "\n",
+        registration_id_base64.c_str(), auth_token_base64.c_str(),
+        response.auth_token().expires_in());
+  } else {
+    PrintGrpcStatusError(status);
   }
   std::move(on_done).Run();
 }
