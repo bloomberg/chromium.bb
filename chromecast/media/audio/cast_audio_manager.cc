@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "chromecast/media/audio/audio_buildflags.h"
 #include "chromecast/media/audio/cast_audio_mixer.h"
 #include "chromecast/media/audio/cast_audio_output_stream.h"
 #include "chromecast/media/cma/backend/cma_backend_factory.h"
@@ -28,11 +29,13 @@ namespace {
 const int kDefaultSampleRate = 48000;
 
 // Define bounds for the output buffer size (in frames).
-// Note: These values are copied from AudioManagerPulse implementation.
 // TODO(alokp): Query the preferred value from media backend.
-static const int kMinimumOutputBufferSize = 512;
-static const int kMaximumOutputBufferSize = 8192;
-static const int kDefaultOutputBufferSize = 2048;
+static const int kMinimumOutputBufferSize =
+    BUILDFLAG(MINIMUM_OUTPUT_BUFFER_SIZE_IN_FRAMES);
+static const int kMaximumOutputBufferSize =
+    BUILDFLAG(MAXIMUM_OUTPUT_BUFFER_SIZE_IN_FRAMES);
+static const int kDefaultOutputBufferSize =
+    BUILDFLAG(DEFAULT_OUTPUT_BUFFER_SIZE_IN_FRAMES);
 
 // TODO(jyw): Query the preferred value from media backend.
 static const int kDefaultInputBufferSize = 1024;
