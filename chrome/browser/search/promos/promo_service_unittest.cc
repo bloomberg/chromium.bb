@@ -100,7 +100,8 @@ class PromoServiceTest : public testing::Test {
   std::unique_ptr<PromoService> service_;
 };
 
-TEST_F(PromoServiceTest, PromoDataNetworkError) {
+// Flaky on linux-chromeos-rel and win. See https://crbug.com/937041.
+TEST_F(PromoServiceTest, DISABLED_PromoDataNetworkError) {
   SetUpResponseWithNetworkError(service()->GetLoadURLForTesting());
 
   ASSERT_EQ(service()->promo_data(), base::nullopt);
