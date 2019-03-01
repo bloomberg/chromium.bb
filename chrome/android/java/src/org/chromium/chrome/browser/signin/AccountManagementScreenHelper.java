@@ -10,6 +10,7 @@ import android.provider.Settings;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
 
@@ -43,6 +44,11 @@ public class AccountManagementScreenHelper {
 
         if (gaiaServiceType == GAIA_SERVICE_TYPE_SIGNUP) {
             openAndroidAccountCreationScreen();
+            return;
+        }
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
+            SigninUtils.openSettingsForAllAccounts(ContextUtils.getApplicationContext());
             return;
         }
 
