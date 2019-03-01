@@ -2016,11 +2016,6 @@
     "expiry_milestone": 75
   },
   {
-    "name": "enable-zero-suggest-redirect-to-chrome",
-    "owners": [ "mpearson", "jdonnelly" ],
-    "expiry_milestone": 79
-  },
-  {
     "name": "use_messages_google_com_domain",
     "owners": [ "azeemarshad", "khorimoto" ],
     "expiry_milestone": 76

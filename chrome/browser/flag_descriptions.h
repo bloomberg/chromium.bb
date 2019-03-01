@@ -567,9 +567,6 @@ extern const char kEnableImageCaptureAPIDescription[];
 extern const char kEnableIncognitoWindowCounterName[];
 extern const char kEnableIncognitoWindowCounterDescription[];
 
-extern const char kEnableZeroSuggestRedirectToChromeName[];
-extern const char kEnableZeroSuggestRedirectToChromeDescription[];
-
 extern const char kEnableWasmBaselineName[];
 extern const char kEnableWasmBaselineDescription[];
 
