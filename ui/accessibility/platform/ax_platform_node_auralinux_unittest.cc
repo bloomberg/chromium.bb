@@ -1120,6 +1120,47 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextParagraphGranularity) {
   g_object_unref(root_obj);
 }
 
+TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextWordsWithNonBMPCharacters) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kTextField;
+  root.AddStringAttribute(ax::mojom::StringAttribute::kValue,
+                          "\xF0\x9F\x83\x8f a decently long string.");
+  Init(root);
+
+  AtkObject* root_obj(GetRootAtkObject());
+  ASSERT_TRUE(ATK_IS_OBJECT(root_obj));
+  g_object_ref(root_obj);
+
+  ASSERT_TRUE(ATK_IS_TEXT(root_obj));
+  AtkText* atk_text = ATK_TEXT(root_obj);
+
+  // The playing card emoji in this string should be considered a single
+  // character offset.
+  static GetTextSegmentTest tests[] = {{0, "\xF0\x9F\x83\x8f ", 0, 2},
+                                       {6, "decently ", 4, 13}};
+
+  for (unsigned i = 0; i < G_N_ELEMENTS(tests); i++) {
+    int start_offset = -1, end_offset = -1;
+    char* content = atk_text_get_text_at_offset(atk_text, tests[i].offset,
+                                                ATK_TEXT_BOUNDARY_WORD_START,
+                                                &start_offset, &end_offset);
+    testing::Message message;
+    message << "Checking test with index=" << i << " and expected text=\'"
+            << tests[i].content << "\' at " << tests[1].start_offset << '-'
+            << tests[1].end_offset << '.';
+    SCOPED_TRACE(message);
+
+    ASSERT_STREQ(content, tests[i].content);
+    ASSERT_EQ(start_offset, tests[i].start_offset);
+    ASSERT_EQ(end_offset, tests[i].end_offset);
+
+    g_free(content);
+  }
+
+  g_object_unref(root_obj);
+}
+
 class ActivationTester {
  public:
   explicit ActivationTester(AtkObject* target) : target_(target) {

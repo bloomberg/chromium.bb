@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_mode_observer.h"
@@ -994,6 +995,11 @@ static char* AXPlatformNodeAuraLinuxGetTextWithBoundaryType(
   if (offset < 0 || offset >= atk_text_get_character_count(atk_text))
     return nullptr;
 
+  // The offset that we receive from the API is a Unicode character offset.
+  // Since we calculate boundaries in terms of UTF-16 code point offsets, we
+  // need to convert this input value.
+  offset = obj->UnicodeToUTF16OffsetInText(offset);
+
   std::vector<int32_t> unused_line_start_offsets = std::vector<int32_t>();
   base::string16 text = base::UTF8ToUTF16(obj->GetTextForATK());
   size_t start_offset = static_cast<int>(FindAccessibleTextBoundary(
@@ -1019,8 +1025,8 @@ static char* AXPlatformNodeAuraLinuxGetTextWithBoundaryType(
       end_offset++;
   }
 
-  *start_offset_ptr = start_offset;
-  *end_offset_ptr = end_offset;
+  *start_offset_ptr = obj->UTF16ToUnicodeOffsetInText(start_offset);
+  *end_offset_ptr = obj->UTF16ToUnicodeOffsetInText(end_offset);
 
   base::string16 substr = text.substr(start_offset, end_offset - start_offset);
   return g_strdup(base::UTF16ToUTF8(substr).c_str());
@@ -2813,10 +2819,50 @@ void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
 
 void AXPlatformNodeAuraLinux::UpdateHypertext() {
   hypertext_ = ComputeHypertext();
+  text_unicode_adjustments_ = base::nullopt;
 }
 
 const AXHypertext& AXPlatformNodeAuraLinux::GetHypertext() {
   return hypertext_;
+}
+
+const base::OffsetAdjuster::Adjustments&
+AXPlatformNodeAuraLinux::GetHypertextAdjustments() {
+  if (text_unicode_adjustments_.has_value())
+    return *text_unicode_adjustments_;
+
+  text_unicode_adjustments_.emplace();
+
+  base::string16 text = base::UTF8ToUTF16(GetTextForATK());
+  int32_t text_length = text.size();
+  for (int32_t i = 0; i < text_length; i++) {
+    uint32_t code_point;
+    size_t original_i = i;
+    base::ReadUnicodeCharacter(text.c_str(), text_length + 1, &i, &code_point);
+
+    if ((i - original_i + 1) != 1) {
+      text_unicode_adjustments_->push_back(
+          base::OffsetAdjuster::Adjustment(original_i, i - original_i + 1, 1));
+    }
+  }
+
+  return *text_unicode_adjustments_;
+}
+
+size_t AXPlatformNodeAuraLinux::UTF16ToUnicodeOffsetInText(
+    size_t utf16_offset) {
+  size_t unicode_offset = utf16_offset;
+  base::OffsetAdjuster::AdjustOffset(GetHypertextAdjustments(),
+                                     &unicode_offset);
+  return unicode_offset;
+}
+
+size_t AXPlatformNodeAuraLinux::UnicodeToUTF16OffsetInText(
+    size_t unicode_offset) {
+  size_t utf16_offset = unicode_offset;
+  base::OffsetAdjuster::UnadjustOffset(GetHypertextAdjustments(),
+                                       &utf16_offset);
+  return utf16_offset;
 }
 
 int AXPlatformNodeAuraLinux::GetIndexInParent() {
