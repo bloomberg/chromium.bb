@@ -366,7 +366,7 @@ public class AccountManagementFragment extends PreferenceFragment
             pref.setIcon(mProfileDataCache.getProfileDataOrDefault(account.name).getImage());
 
             pref.setOnPreferenceClickListener(
-                    preference -> SigninUtils.openAccountSettingsPage(getActivity(), account));
+                    preference -> SigninUtils.openSettingsForAccount(getActivity(), account));
 
             accountsCategory.addPreference(pref);
         }
