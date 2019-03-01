@@ -147,6 +147,12 @@ const base::Feature kAutofillLocalCardMigrationShowFeedback{
     "AutofillLocalCardMigrationShowFeedback",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether offering to migrate cards will consider data from the
+// Autofill strike database (new version).
+const base::Feature kAutofillLocalCardMigrationUsesStrikeSystemV2{
+    "AutofillLocalCardMigrationUsesStrikeSystemV2",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the manual fallback will be present.
 const base::Feature kAutofillManualFallback{"AutofillManualFallback",
                                             base::FEATURE_DISABLED_BY_DEFAULT};

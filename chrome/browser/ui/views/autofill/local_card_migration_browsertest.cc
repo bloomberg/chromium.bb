@@ -764,6 +764,91 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
   EXPECT_EQ(nullptr, personal_data_->GetCreditCardByNumber(kSecondCardNumber));
 }
 
+// Ensures that rejecting the main migration dialog adds 3 strikes.
+IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
+                       ClosingDialogAddsLocalCardMigrationStrikes) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      // Enabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystemV2,
+       features::kAutofillLocalCardMigrationUsesStrikeSystemV2},
+      // Disabled
+      {});
+  base::HistogramTester histogram_tester;
+
+  SaveLocalCard(kFirstCardNumber);
+  SaveLocalCard(kSecondCardNumber);
+  UseCardAndWaitForMigrationOffer(kFirstCardNumber);
+  ClickOnOkButton(GetLocalCardMigrationOfferBubbleViews());
+  // Click the [Cancel] button, should add and log 3 strikes.
+  ClickOnCancelButton(GetLocalCardMigrationMainDialogView());
+
+  // Metrics
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "Autofill.StrikeDatabase.NthStrikeAdded.LocalCardMigration"),
+              ElementsAre(Bucket(3, 1)));
+}
+
+// Ensures that rejecting the migration bubble adds 2 strikes.
+IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
+                       ClosingBubbleAddsLocalCardMigrationStrikes) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      // Enabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystemV2,
+       features::kAutofillLocalCardMigrationUsesStrikeSystemV2},
+      // Disabled
+      {});
+  base::HistogramTester histogram_tester;
+
+  SaveLocalCard(kFirstCardNumber);
+  SaveLocalCard(kSecondCardNumber);
+  UseCardAndWaitForMigrationOffer(kFirstCardNumber);
+  ClickOnDialogViewAndWait(GetCloseButton(),
+                           GetLocalCardMigrationOfferBubbleViews());
+
+  // No bubble should be showing.
+  EXPECT_EQ(nullptr, GetLocalCardMigrationOfferBubbleViews());
+  // Metrics
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "Autofill.StrikeDatabase.NthStrikeAdded.LocalCardMigration"),
+              ElementsAre(Bucket(2, 1)));
+}
+
+// Ensures that reshowing and closing bubble after previously closing it does
+// not add strikes.
+IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
+                       ReshowingBubbleDoesNotAddStrikes) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      // Enabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystemV2,
+       features::kAutofillLocalCardMigrationUsesStrikeSystemV2},
+      // Disabled
+      {});
+
+  SaveLocalCard(kFirstCardNumber);
+  SaveLocalCard(kSecondCardNumber);
+  UseCardAndWaitForMigrationOffer(kFirstCardNumber);
+  ClickOnDialogViewAndWait(GetCloseButton(),
+                           GetLocalCardMigrationOfferBubbleViews());
+  base::HistogramTester histogram_tester;
+  ClickOnView(GetLocalCardMigrationIconView());
+
+  // Clicking the icon should reshow the bubble.
+  EXPECT_TRUE(
+      FindViewInDialogById(DialogViewId::MAIN_CONTENT_VIEW_MIGRATION_BUBBLE,
+                           GetLocalCardMigrationOfferBubbleViews())
+          ->visible());
+
+  ClickOnDialogViewAndWait(GetCloseButton(),
+                           GetLocalCardMigrationOfferBubbleViews());
+
+  // Metrics
+  histogram_tester.ExpectTotalCount(
+      "Autofill.LocalCardMigrationBubbleOffer.FirstShow", 0);
+}
+
 // TODO(crbug.com/897998):
 // - Update test set-up and add navagation tests.
 // - Add more tests for feedback dialog.

@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/local_card_migration_strike_database.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 
 namespace autofill {
@@ -161,6 +162,9 @@ class LocalCardMigrationManager {
   FRIEND_TEST_ALL_PREFIXES(LocalCardMigrationManagerTest,
                            MigrateCreditCard_ToggleIsChosen);
 
+  // Returns the LocalCardMigrationStrikeDatabase for |client_|.
+  LocalCardMigrationStrikeDatabase* GetLocalCardMigrationStrikeDatabase();
+
   // Pops up a larger, modal dialog showing the local cards to be uploaded.
   void ShowMainMigrationDialog();
 
@@ -205,6 +209,9 @@ class LocalCardMigrationManager {
 
   // Initialized only during tests.
   ObserverForTest* observer_for_testing_ = nullptr;
+
+  std::unique_ptr<LocalCardMigrationStrikeDatabase>
+      local_card_migration_strike_database_;
 
   base::WeakPtrFactory<LocalCardMigrationManager> weak_ptr_factory_;
 

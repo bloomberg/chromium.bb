@@ -8,6 +8,13 @@
 
 namespace autofill {
 
+const int LocalCardMigrationStrikeDatabase::kStrikesToRemoveWhenLocalCardAdded =
+    2;
+const int LocalCardMigrationStrikeDatabase::kStrikesToAddWhenBubbleClosed = 2;
+const int LocalCardMigrationStrikeDatabase::kStrikesToAddWhenDialogClosed = 3;
+const int LocalCardMigrationStrikeDatabase::
+    kStrikesToAddWhenCardsDeselectedAtMigration = 3;
+
 LocalCardMigrationStrikeDatabase::LocalCardMigrationStrikeDatabase(
     StrikeDatabase* strike_database)
     : StrikeDatabaseIntegratorBase(strike_database) {

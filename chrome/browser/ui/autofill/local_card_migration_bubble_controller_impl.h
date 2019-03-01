@@ -72,6 +72,10 @@ class LocalCardMigrationBubbleControllerImpl
   // Update the visibility and toggled state of the Omnibox save card icon.
   void UpdateIcon();
 
+  // Add strikes for local card migration, to be called on user closing the
+  // promo bubble.
+  void AddStrikesForBubbleClose();
+
   // Weak reference. Will be nullptr if no bubble is currently shown.
   LocalCardMigrationBubble* local_card_migration_bubble_ = nullptr;
 
@@ -83,6 +87,11 @@ class LocalCardMigrationBubbleControllerImpl
 
   // Boolean to determine if bubble is called from ReshowBubble().
   bool is_reshow_ = false;
+
+  // Boolean to determine if strikes should be added when bubble is closed. They
+  // should be added only once and only if the bubble isn't closed due to
+  // clicking the Continue button.
+  bool should_add_strikes_on_bubble_close_ = true;
 
   base::ObserverList<LocalCardMigrationControllerObserver>::Unchecked
       observer_list_;

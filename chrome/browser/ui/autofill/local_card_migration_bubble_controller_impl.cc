@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include "chrome/browser/autofill/strike_database_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/local_card_migration_bubble.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
 #include "chrome/browser/ui/browser.h"
@@ -13,6 +15,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/local_card_migration_strike_database.h"
+#include "components/autofill/core/browser/strike_database.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/navigation_handle.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -80,6 +85,7 @@ LocalCardMigrationBubbleControllerImpl::local_card_migration_bubble_view()
 void LocalCardMigrationBubbleControllerImpl::OnConfirmButtonClicked() {
   DCHECK(local_card_migration_bubble_closure_);
   std::move(local_card_migration_bubble_closure_).Run();
+  should_add_strikes_on_bubble_close_ = false;
 
   AutofillMetrics::LogLocalCardMigrationBubbleUserInteractionMetric(
       AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_CLOSED_ACCEPTED, is_reshow_);
@@ -95,6 +101,14 @@ void LocalCardMigrationBubbleControllerImpl::OnCancelButtonClicked() {
 void LocalCardMigrationBubbleControllerImpl::OnBubbleClosed() {
   local_card_migration_bubble_ = nullptr;
   UpdateIcon();
+  if (should_add_strikes_on_bubble_close_ &&
+      base::FeatureList::IsEnabled(
+          features::kAutofillSaveCreditCardUsesStrikeSystemV2) &&
+      base::FeatureList::IsEnabled(
+          features::kAutofillLocalCardMigrationUsesStrikeSystemV2)) {
+    should_add_strikes_on_bubble_close_ = false;
+    AddStrikesForBubbleClose();
+  }
 }
 
 base::TimeDelta LocalCardMigrationBubbleControllerImpl::Elapsed() const {
@@ -179,6 +193,14 @@ void LocalCardMigrationBubbleControllerImpl::UpdateIcon() {
   if (!location_bar)
     return;
   location_bar->UpdateLocalCardMigrationIcon();
+}
+
+void LocalCardMigrationBubbleControllerImpl::AddStrikesForBubbleClose() {
+  LocalCardMigrationStrikeDatabase local_card_migration_strike_database(
+      StrikeDatabaseFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents()->GetBrowserContext())));
+  local_card_migration_strike_database.AddStrikes(
+      LocalCardMigrationStrikeDatabase::kStrikesToAddWhenBubbleClosed);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(LocalCardMigrationBubbleControllerImpl)

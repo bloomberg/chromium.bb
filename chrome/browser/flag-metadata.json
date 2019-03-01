@@ -833,6 +833,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-autofill-local-card-migration-uses-strike-system-v2",
+    "owners": [ "annelim@google.com", "jsaul@google.com" , "jiahuiguo@google.com"],
+    "expiry_milestone": 76
+  },
+  {
     "name": "enable-autofill-manual-fallback",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

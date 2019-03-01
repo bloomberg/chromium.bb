@@ -861,6 +861,11 @@ class AutofillMetrics {
   static void LogCreditCardSaveNotOfferedDueToMaxStrikesMetric(
       SaveTypeMetric metric);
 
+  // When local card migration is not offered due to max strike limit reached,
+  // logs the occurrence.
+  static void LogLocalCardMigrationNotOfferedDueToMaxStrikesMetric(
+      SaveTypeMetric metric);
+
   // When credit card upload is disallowed for a particular network, logs which
   // network was blocked.
   static void LogUploadDisallowedForNetworkMetric(const std::string& network);

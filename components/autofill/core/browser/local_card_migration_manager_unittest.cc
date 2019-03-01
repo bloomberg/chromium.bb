@@ -81,6 +81,10 @@ class LocalCardMigrationManagerTest : public testing::Test {
     local_card_migration_manager_ = new TestLocalCardMigrationManager(
         autofill_driver_.get(), &autofill_client_, payments_client_,
         &personal_data_);
+    std::unique_ptr<TestStrikeDatabase> test_strike_database =
+        std::make_unique<TestStrikeDatabase>();
+    strike_database_ = test_strike_database.get();
+    autofill_client_.set_test_strike_database(std::move(test_strike_database));
     autofill::TestFormDataImporter* test_form_data_importer =
         new TestFormDataImporter(
             &autofill_client_, payments_client_,
@@ -177,6 +181,8 @@ class LocalCardMigrationManagerTest : public testing::Test {
   MockAutocompleteHistoryManager autocomplete_history_manager_;
   syncer::TestSyncService sync_service_;
   base::test::ScopedFeatureList scoped_feature_list_;
+  // Ends up getting owned (and destroyed) by TestAutofillClient:
+  TestStrikeDatabase* strike_database_;
   // Ends up getting owned (and destroyed) by TestFormDataImporter:
   TestCreditCardSaveManager* credit_card_save_manager_;
   // Ends up getting owned (and destroyed) by TestFormDataImporter:
@@ -1036,6 +1042,143 @@ TEST_F(LocalCardMigrationManagerTest, DeleteLocalCardViaMigrationDialog) {
       "guid1");
 
   EXPECT_FALSE(personal_data_.GetCreditCardWithGUID("guid1"));
+}
+
+// Use one local card with more valid local cards available, don't show prompt
+// if max strikes reached.
+TEST_F(LocalCardMigrationManagerTest,
+       MigrateLocalCreditCard_MaxStrikesReached) {
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled
+      {features::kAutofillCreditCardLocalCardMigration,
+       features::kAutofillSaveCreditCardUsesStrikeSystemV2,
+       features::kAutofillLocalCardMigrationUsesStrikeSystemV2},
+      // Disabled
+      {});
+
+  LocalCardMigrationStrikeDatabase local_card_migration_strike_database =
+      LocalCardMigrationStrikeDatabase(strike_database_);
+  local_card_migration_strike_database.AddStrikes(7);
+
+  EXPECT_EQ(local_card_migration_strike_database.GetStrikes(), 7);
+
+  // Set the billing_customer_number Priority Preference to designate
+  // existence of a Payments account.
+  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
+                                         12345);
+  // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
+  // enter below.
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "1", "guid1");
+  // Add another local credit card, so it will trigger migration.
+  AddLocalCreditCard(personal_data_, "Flo Master", "5555555555554444", "11",
+                     test::NextYear().c_str(), "1", "guid2");
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  test::CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  base::HistogramTester histogram_tester;
+  // Edit the data, and submit.
+  EditCreditCardFrom(credit_card_form, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "123");
+  FormSubmitted(credit_card_form);
+
+  // Local card migration not triggered since max strikes have been reached.
+  EXPECT_FALSE(local_card_migration_manager_->LocalCardMigrationWasTriggered());
+
+  // Verify that the correct histogram entry was logged.
+  histogram_tester.ExpectBucketCount(
+      "Autofill.StrikeDatabase.LocalCardMigrationNotOfferedDueToMaxStrikes",
+      AutofillMetrics::SaveTypeMetric::LOCAL, 1);
+}
+
+// Use one server card with more valid local cards available, don't show prompt
+// if max strikes reached.
+TEST_F(LocalCardMigrationManagerTest,
+       MigrateServerCreditCard_MaxStrikesReached) {
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled
+      {features::kAutofillCreditCardLocalCardMigration,
+       features::kAutofillSaveCreditCardUsesStrikeSystemV2,
+       features::kAutofillLocalCardMigrationUsesStrikeSystemV2},
+      // Disabled
+      {});
+
+  LocalCardMigrationStrikeDatabase local_card_migration_strike_database =
+      LocalCardMigrationStrikeDatabase(strike_database_);
+  local_card_migration_strike_database.AddStrikes(7);
+
+  EXPECT_EQ(local_card_migration_strike_database.GetStrikes(), 7);
+
+  // Set the billing_customer_number Priority Preference to designate
+  // existence of a Payments account.
+  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
+                                         12345);
+
+  // Add a masked server credit card whose |TypeAndLastFourDigits| matches what
+  // we will enter below.
+  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  test::SetCreditCardInfo(&credit_card, "Flo Master", "1111", "11",
+                          test::NextYear().c_str(), "1");
+  credit_card.SetNetworkForMaskedCard(kVisaCard);
+  personal_data_.AddServerCreditCard(credit_card);
+  // Add one valid local credit card, so it will trigger migration
+  AddLocalCreditCard(personal_data_, "Flo Master", "5555555555554444", "11",
+                     test::NextYear().c_str(), "1", "guid1");
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  test::CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  base::HistogramTester histogram_tester;
+  // Edit the data, and submit.
+  EditCreditCardFrom(credit_card_form, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "123");
+  FormSubmitted(credit_card_form);
+
+  // Local card migration not triggered since max strikes have been reached.
+  EXPECT_FALSE(local_card_migration_manager_->LocalCardMigrationWasTriggered());
+
+  // Verify that the correct histogram entry was logged.
+  histogram_tester.ExpectBucketCount(
+      "Autofill.StrikeDatabase.LocalCardMigrationNotOfferedDueToMaxStrikes",
+      AutofillMetrics::SaveTypeMetric::SERVER, 1);
+}
+
+// When local card migration is attempted and some cards aren't selected,
+// 3 strikes should be added.
+TEST_F(LocalCardMigrationManagerTest,
+       MigrateCreditCard_StrikesAddedWhenSomeCardsNotSelected) {
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled
+      {features::kAutofillCreditCardLocalCardMigration,
+       features::kAutofillSaveCreditCardUsesStrikeSystemV2,
+       features::kAutofillLocalCardMigrationUsesStrikeSystemV2},
+      // Disabled
+      {});
+
+  LocalCardMigrationStrikeDatabase local_card_migration_strike_database =
+      LocalCardMigrationStrikeDatabase(strike_database_);
+  // LocalCardMigrationStrikeDatabase should initially have no strikes.
+  EXPECT_EQ(local_card_migration_strike_database.GetStrikes(), 0);
+
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "1", "guid1");
+  AddLocalCreditCard(personal_data_, "Flo Master", "5454545454545454", "11",
+                     test::NextYear().c_str(), "1", "guid2");
+  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
+                                         12345);
+  local_card_migration_manager_->GetMigratableCreditCards();
+
+  // Only select one of the two cards.
+  autofill_client_.set_migration_card_selections(
+      std::vector<std::string>{"guid1"});
+  local_card_migration_manager_->AttemptToOfferLocalCardMigration(true);
+
+  EXPECT_EQ(local_card_migration_strike_database.GetStrikes(), 3);
 }
 
 }  // namespace autofill

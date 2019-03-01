@@ -13,7 +13,7 @@ TestStrikeDatabase::TestStrikeDatabase() {}
 TestStrikeDatabase::~TestStrikeDatabase() {}
 
 void TestStrikeDatabase::GetProtoStrikes(
-    const std::string key,
+    const std::string& key,
     const StrikesCallback& outer_callback) {
   outer_callback.Run(GetStrikesForTesting(key));
 }
