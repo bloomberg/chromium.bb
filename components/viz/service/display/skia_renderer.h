@@ -93,7 +93,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void ClearFramebuffer();
 
   void PrepareCanvasForDrawQuads(
-      const gfx::Transform& transform,
+      gfx::Transform contents_device_transform,
       const gfx::QuadF* draw_region,
       const gfx::Rect* scissor_rect,
       base::Optional<SkAutoCanvasRestore>* auto_canvas_restore);
@@ -106,8 +106,10 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
 
   void DrawSolidColorQuad(const SolidColorDrawQuad* quad, SkPaint* paint);
   void DrawTextureQuad(const TextureDrawQuad* quad, SkPaint* paint);
-  bool MustDrawBatchedTileQuadsBeforeQuad(const DrawQuad* new_quad,
-                                          const gfx::QuadF* draw_region);
+  bool MustDrawBatchedTileQuads(const DrawQuad* new_quad,
+                                const gfx::Transform& content_device_transform,
+                                bool apply_transform_and_scissor,
+                                const gfx::QuadF* draw_region);
   void AddTileQuadToBatch(const TileDrawQuad* quad,
                           const gfx::QuadF* draw_region);
   void DrawBatchedTileQuads();
@@ -179,7 +181,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
 
   // State common to all tile quads in a batch
   struct BatchedTileState {
-    gfx::Transform transform;
+    gfx::Transform contents_device_transform;
     gfx::Rect scissor_rect;
     gfx::QuadF draw_region;
     SkBlendMode blend_mode;
