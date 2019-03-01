@@ -131,7 +131,8 @@ class ButtonTest : public ViewsTestBase {
     // Create a widget so that the Button can query the hover state
     // correctly.
     widget_.reset(new Widget);
-    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+    Widget::InitParams params =
+        CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(0, 0, 650, 650);
     widget_->Init(params);

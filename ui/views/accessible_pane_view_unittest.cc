@@ -75,7 +75,8 @@ View* TestBarView::GetDefaultFocusableChild() {
 TEST_F(AccessiblePaneViewTest, SimpleSetPaneFocus) {
   TestBarView* test_view = new TestBarView();
   std::unique_ptr<Widget> widget(new Widget());
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
@@ -103,10 +104,9 @@ TEST_F(AccessiblePaneViewTest, SimpleSetPaneFocus) {
 TEST_F(AccessiblePaneViewTest, SetPaneFocusAndRestore) {
   View* test_view_main = new View();
   std::unique_ptr<Widget> widget_main(new Widget());
-  Widget::InitParams params_main = CreateParams(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params_main =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params_main.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  // By default, TYPE_POPUP is not activatable.
-  params_main.activatable = Widget::InitParams::ACTIVATABLE_YES;
   params_main.bounds = gfx::Rect(0, 0, 20, 20);
   widget_main->Init(params_main);
   View* root_main = widget_main->GetRootView();
@@ -119,9 +119,9 @@ TEST_F(AccessiblePaneViewTest, SetPaneFocusAndRestore) {
 
   TestBarView* test_view_bar = new TestBarView();
   std::unique_ptr<Widget> widget_bar(new Widget());
-  Widget::InitParams params_bar = CreateParams(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params_bar =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params_bar.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params_bar.activatable = Widget::InitParams::ACTIVATABLE_YES;
   params_bar.bounds = gfx::Rect(50, 50, 650, 650);
   widget_bar->Init(params_bar);
   View* root_bar = widget_bar->GetRootView();
@@ -160,7 +160,8 @@ TEST_F(AccessiblePaneViewTest, TwoSetPaneFocus) {
   TestBarView* test_view = new TestBarView();
   TestBarView* test_view_2 = new TestBarView();
   std::unique_ptr<Widget> widget(new Widget());
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
@@ -190,7 +191,8 @@ TEST_F(AccessiblePaneViewTest, PaneFocusTraversal) {
   TestBarView* test_view = new TestBarView();
   TestBarView* original_test_view = new TestBarView();
   std::unique_ptr<Widget> widget(new Widget());
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget->Init(params);
@@ -237,7 +239,8 @@ TEST_F(AccessiblePaneViewTest, DoesntCrashOnEscapeWithRemovedView) {
   TestBarView* test_view1 = new TestBarView();
   TestBarView* test_view2 = new TestBarView();
   Widget widget;
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 650, 650);
   widget.Init(params);
