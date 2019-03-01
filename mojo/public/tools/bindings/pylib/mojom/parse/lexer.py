@@ -65,7 +65,9 @@ class Lexer(object):
     'DEFAULT',
     'ARRAY',
     'MAP',
-    'ASSOCIATED'
+    'ASSOCIATED',
+    'PENDING_REMOTE',
+    'PENDING_RECEIVER'
   )
 
   keyword_map = {}

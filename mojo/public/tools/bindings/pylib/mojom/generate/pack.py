@@ -44,11 +44,12 @@ class PackedField(object):
   @classmethod
   def GetSizeForKind(cls, kind):
     if isinstance(kind, (mojom.Array, mojom.Map, mojom.Struct,
-                         mojom.Interface, mojom.AssociatedInterface)):
+                         mojom.Interface, mojom.AssociatedInterface,
+                         mojom.PendingRemote)):
       return 8
     if isinstance(kind, mojom.Union):
       return 16
-    if isinstance(kind, mojom.InterfaceRequest):
+    if isinstance(kind, (mojom.InterfaceRequest, mojom.PendingReceiver)):
       kind = mojom.MSGPIPE
     if isinstance(kind, mojom.AssociatedInterfaceRequest):
       return 4

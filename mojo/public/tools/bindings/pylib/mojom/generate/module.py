@@ -490,6 +490,30 @@ class Map(ReferenceKind):
       return GenericRepr(self, {'key_kind': True, 'value_kind': True})
 
 
+class PendingRemote(ReferenceKind):
+  ReferenceKind.AddSharedProperty('kind')
+
+  def __init__(self, kind=None):
+    if not isinstance(kind, Interface):
+      raise Exception(
+          'pending_remote<T> requires T to be an interface type. Got %r' %
+          kind.spec)
+    ReferenceKind.__init__(self, 'rmt:' + kind.spec)
+    self.kind = kind
+
+
+class PendingReceiver(ReferenceKind):
+  ReferenceKind.AddSharedProperty('kind')
+
+  def __init__(self, kind=None):
+    if not isinstance(kind, Interface):
+      raise Exception(
+          'pending_receiver<T> requires T to be an interface type. Got %r' %
+          kind.spec)
+    ReferenceKind.__init__(self, 'rcv:' + kind.spec)
+    self.kind = kind
+
+
 class InterfaceRequest(ReferenceKind):
   ReferenceKind.AddSharedProperty('kind')
 
@@ -838,6 +862,13 @@ def IsInterfaceRequestKind(kind):
 def IsAssociatedInterfaceRequestKind(kind):
   return isinstance(kind, AssociatedInterfaceRequest)
 
+def IsPendingRemoteKind(kind):
+  return isinstance(kind, PendingRemote)
+
+
+def IsPendingReceiverKind(kind):
+  return isinstance(kind, PendingReceiver)
+
 
 def IsEnumKind(kind):
   return isinstance(kind, Enum)
@@ -875,7 +906,8 @@ def IsAnyHandleKind(kind):
 
 def IsAnyInterfaceKind(kind):
   return (IsInterfaceKind(kind) or IsInterfaceRequestKind(kind) or
-          IsAssociatedKind(kind))
+          IsAssociatedKind(kind) or IsPendingRemoteKind(kind) or
+          IsPendingReceiverKind(kind))
 
 
 def IsAnyHandleOrInterfaceKind(kind):

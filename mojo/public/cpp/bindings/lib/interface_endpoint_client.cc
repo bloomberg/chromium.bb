@@ -239,6 +239,11 @@ bool InterfaceEndpointClient::Accept(Message* message) {
 
   InitControllerIfNecessary();
 
+#if DCHECK_IS_ON()
+  // TODO(https://crbug.com/695289): Send |next_call_location_| in a control
+  // message before calling |SendMessage()| below.
+#endif
+
   return controller_->SendMessage(message);
 }
 
@@ -264,6 +269,11 @@ bool InterfaceEndpointClient::AcceptWithResponder(
     request_id = next_request_id_++;
 
   message->set_request_id(request_id);
+
+#if DCHECK_IS_ON()
+  // TODO(https://crbug.com/695289): Send |next_call_location_| in a control
+  // message before calling |SendMessage()| below.
+#endif
 
   bool is_sync = message->has_flag(Message::kFlagIsSync);
   if (!controller_->SendMessage(message))

@@ -484,3 +484,12 @@ mojom("echo") {
     "echo_import/echo_import.mojom",
   ]
 }
+
+# These could probably be merged with "test_interfaces" at some point.
+mojom("other_test_interfaces") {
+  testonly = true
+  cpp_only = true
+  sources = [
+    "new_endpoint_types.test-mojom",
+  ]
+}
