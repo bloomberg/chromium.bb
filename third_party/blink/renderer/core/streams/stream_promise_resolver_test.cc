@@ -8,7 +8,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/streams/stream_script_function.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
 
 namespace blink {
 
@@ -19,6 +21,7 @@ TEST(StreamPromiseResolverTest, Construct) {
   auto* promise =
       MakeGarbageCollected<StreamPromiseResolver>(scope.GetScriptState());
   EXPECT_TRUE(promise->V8Promise(scope.GetIsolate())->IsPromise());
+  EXPECT_FALSE(promise->IsSettled());
 }
 
 TEST(StreamPromiseResolverTest, Resolve) {
@@ -29,6 +32,7 @@ TEST(StreamPromiseResolverTest, Resolve) {
   promise->Resolve(scope.GetScriptState(), v8::Null(isolate));
   ASSERT_EQ(promise->State(isolate), v8::Promise::kFulfilled);
   EXPECT_TRUE(promise->V8Promise(isolate)->Result()->IsNull());
+  EXPECT_TRUE(promise->IsSettled());
 }
 
 TEST(StreamPromiseResolverTest, ResolveWithUndefined) {
@@ -39,6 +43,7 @@ TEST(StreamPromiseResolverTest, ResolveWithUndefined) {
   promise->ResolveWithUndefined(scope.GetScriptState());
   ASSERT_EQ(promise->State(isolate), v8::Promise::kFulfilled);
   EXPECT_TRUE(promise->V8Promise(isolate)->Result()->IsUndefined());
+  EXPECT_TRUE(promise->IsSettled());
 }
 
 TEST(StreamPromiseResolverTest, Reject) {
@@ -51,6 +56,7 @@ TEST(StreamPromiseResolverTest, Reject) {
   auto result = promise->V8Promise(isolate)->Result();
   ASSERT_TRUE(result->IsNumber());
   EXPECT_EQ(result.As<v8::Number>()->Value(), 2.0);
+  EXPECT_TRUE(promise->IsSettled());
 }
 
 TEST(StreamPromiseResolverTest, RejectDoesNothingAfterResolve) {
@@ -73,6 +79,59 @@ TEST(StreamPromiseResolverTest, ResolveDoesNothingAfterReject) {
   promise->Resolve(scope.GetScriptState(), v8::Undefined(isolate));
   ASSERT_EQ(promise->State(isolate), v8::Promise::kRejected);
   EXPECT_TRUE(promise->V8Promise(isolate)->Result()->IsNull());
+}
+
+TEST(StreamPromiseResolverTest, ResolveDoesNothingInsideResolve) {
+  V8TestingScope scope;
+  auto* isolate = scope.GetIsolate();
+  auto* promise =
+      MakeGarbageCollected<StreamPromiseResolver>(scope.GetScriptState());
+
+  // Create an object equivalent to
+  // value = {
+  //   get then() {
+  //     resolvePromise(promise, undefined);
+  //     runMicrotasks();
+  //   }
+  // }
+  class ThenGetter final : public ScriptFunction {
+   public:
+    static v8::Local<v8::Function> Create(ScriptState* script_state,
+                                          StreamPromiseResolver* promise) {
+      return MakeGarbageCollected<ThenGetter>(script_state, promise)
+          ->BindToV8Function();
+    }
+
+    ThenGetter(ScriptState* script_state, StreamPromiseResolver* promise)
+        : ScriptFunction(script_state), promise_(promise) {}
+
+    void Trace(Visitor* visitor) override {
+      visitor->Trace(promise_);
+      ScriptFunction::Trace(visitor);
+    }
+
+   private:
+    void CallRaw(const v8::FunctionCallbackInfo<v8::Value>&) override {
+      auto* isolate = GetScriptState()->GetIsolate();
+      EXPECT_TRUE(promise_->IsSettled());
+      promise_->Resolve(GetScriptState(), v8::Undefined(isolate));
+      v8::MicrotasksScope::PerformCheckpoint(isolate);
+    }
+
+    Member<StreamPromiseResolver> promise_;
+  };
+
+  auto value = v8::Object::New(isolate);
+  v8::PropertyDescriptor property_descriptor(
+      ThenGetter::Create(scope.GetScriptState(), promise),
+      v8::Undefined(isolate));
+  const auto then = V8String(isolate, "then");
+  value->DefineProperty(scope.GetContext(), then, property_descriptor).Check();
+
+  // Resolving with |value| will call the "then" getter synchronously.
+  promise->Resolve(scope.GetScriptState(), value);
+  ASSERT_EQ(promise->State(isolate), v8::Promise::kFulfilled);
+  EXPECT_EQ(promise->V8Promise(isolate)->Result(), value);
 }
 
 TEST(StreamPromiseResolverTest, GetScriptPromise) {
@@ -100,6 +159,7 @@ TEST(StreamPromiseResolverTest, CreateResolved) {
                                                         v8::Null(isolate));
   ASSERT_EQ(promise->State(isolate), v8::Promise::kFulfilled);
   EXPECT_TRUE(promise->V8Promise(isolate)->Result()->IsNull());
+  EXPECT_TRUE(promise->IsSettled());
 }
 
 TEST(StreamPromiseResolverTest, CreateResolvedWithUndefined) {
@@ -109,6 +169,7 @@ TEST(StreamPromiseResolverTest, CreateResolvedWithUndefined) {
       scope.GetScriptState());
   ASSERT_EQ(promise->State(isolate), v8::Promise::kFulfilled);
   EXPECT_TRUE(promise->V8Promise(isolate)->Result()->IsUndefined());
+  EXPECT_TRUE(promise->IsSettled());
 }
 
 TEST(StreamPromiseResolverTest, CreateRejected) {
@@ -118,6 +179,7 @@ TEST(StreamPromiseResolverTest, CreateRejected) {
                                                         v8::Null(isolate));
   ASSERT_EQ(promise->State(isolate), v8::Promise::kRejected);
   EXPECT_TRUE(promise->V8Promise(isolate)->Result()->IsNull());
+  EXPECT_TRUE(promise->IsSettled());
 }
 
 }  // namespace

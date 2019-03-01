@@ -46,6 +46,10 @@ StreamPromiseResolver::~StreamPromiseResolver() = default;
 void StreamPromiseResolver::Resolve(ScriptState* script_state,
                                     v8::Local<v8::Value> value) {
   DCHECK(!resolver_.IsEmpty());
+  if (is_settled_) {
+    return;
+  }
+  is_settled_ = true;
   auto result = resolver_.NewLocal(script_state->GetIsolate())
                     ->Resolve(script_state->GetContext(), value);
   if (result.IsNothing()) {
@@ -60,6 +64,10 @@ void StreamPromiseResolver::ResolveWithUndefined(ScriptState* script_state) {
 void StreamPromiseResolver::Reject(ScriptState* script_state,
                                    v8::Local<v8::Value> reason) {
   DCHECK(!resolver_.IsEmpty());
+  if (is_settled_) {
+    return;
+  }
+  is_settled_ = true;
   auto result = resolver_.NewLocal(script_state->GetIsolate())
                     ->Reject(script_state->GetContext(), reason);
   if (result.IsNothing()) {
