@@ -43,12 +43,11 @@
 
 namespace {
 
-// By spec, dropdowns should have a min width of 64, a max width of 456, and
-// should always have a width which is a multiple of 12.
+// By spec, dropdowns should always have a width which is a multiple of 12.
 constexpr int kAutofillPopupWidthMultiple = 12;
-constexpr int kAutofillPopupMinWidth = 64;
+constexpr int kAutofillPopupMinWidth = kAutofillPopupWidthMultiple * 16;
 // TODO(crbug.com/831603): move handling the max width to the base class.
-constexpr int kAutofillPopupMaxWidth = 456;
+constexpr int kAutofillPopupMaxWidth = kAutofillPopupWidthMultiple * 38;
 
 // Max width for the username and masked password.
 constexpr int kAutofillPopupUsernameMaxWidth = 272;
