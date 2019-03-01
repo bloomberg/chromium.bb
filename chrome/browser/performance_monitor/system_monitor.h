@@ -77,7 +77,7 @@ class SystemMonitor {
           SamplingFrequency::kNoSampling;
     };
 
-    ~SystemObserver() override = default;
+    ~SystemObserver() override;
 
     // Reports the amount of free physical memory, in MB.
     virtual void OnFreePhysicalMemoryMbSample(int free_phys_memory_mb);
@@ -102,7 +102,8 @@ class SystemMonitor {
       SystemObserver::MetricRefreshFrequencies metrics_frequencies);
 
   // Removes |observer| from the observer list. After this call, the observer
-  // will not receive notifications for any metric.
+  // will not receive notifications for any metric. This is a no-op if this
+  // observer isn't registred.
   void RemoveObserver(SystemObserver* observer);
 
   const base::OneShotTimer& refresh_timer_for_testing() {
