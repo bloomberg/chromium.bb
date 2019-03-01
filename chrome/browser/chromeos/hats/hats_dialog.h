@@ -14,19 +14,19 @@ namespace chromeos {
 
 // Happiness tracking survey dialog. Sometimes appears after login to ask the
 // user how satisfied they are with their Chromebook.
+// This class lives on the UI thread and is self deleting.
 class HatsDialog : public ui::WebDialogDelegate {
  public:
-  HatsDialog();
-  ~HatsDialog() override;
-
   // Creates an instance of HatsDialog and posts a task to load all the relevant
   // device info before displaying the dialog.
   static void CreateAndShow(bool is_google_account);
 
  private:
-  static void Show(std::unique_ptr<HatsDialog> hats_dialog,
-                   std::string site_id,
-                   std::string site_context);
+  static void Show(bool is_google_account, const std::string& site_context);
+
+  // Use CreateAndShow() above.
+  explicit HatsDialog(const std::string& html_data);
+  ~HatsDialog() override;
 
   // ui::WebDialogDelegate implementation.
   ui::ModalType GetDialogModalType() const override;
@@ -45,7 +45,7 @@ class HatsDialog : public ui::WebDialogDelegate {
   bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
                          const content::ContextMenuParams& params) override;
 
-  std::string html_data_;
+  const std::string html_data_;
 
   DISALLOW_COPY_AND_ASSIGN(HatsDialog);
 };
