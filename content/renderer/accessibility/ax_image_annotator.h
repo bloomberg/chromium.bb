@@ -83,6 +83,9 @@ class AXImageAnnotator final : public base::CheckedObserver {
   void OnImageAnnotated(const blink::WebAXObject& image,
                         image_annotation::mojom::AnnotateImageResultPtr result);
 
+  // Only for local logging when running with --v=1.
+  std::string GetDocumentUrl() const;
+
   // Weak, owns us.
   RenderAccessibilityImpl* const render_accessibility_;
 
