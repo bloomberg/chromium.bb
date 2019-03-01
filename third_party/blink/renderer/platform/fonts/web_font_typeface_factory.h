@@ -8,6 +8,7 @@
 #include "third_party/skia/include/core/SkFontMgr.h"
 
 #include "build/build_config.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #if defined(OS_WIN) || defined(OS_MACOSX)
 #include "third_party/skia/include/ports/SkFontMgr_empty.h"
 #endif
@@ -19,6 +20,8 @@ namespace blink {
 // However, for variable fonts, color bitmap font formats and CFF2 fonts we want
 // to use FreeType on Windows and Mac.
 class WebFontTypefaceFactory {
+  STACK_ALLOCATED();
+
  public:
   static bool CreateTypeface(const sk_sp<SkData>, sk_sp<SkTypeface>&);
 

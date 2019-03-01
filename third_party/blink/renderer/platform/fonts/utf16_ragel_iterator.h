@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -20,6 +21,8 @@ namespace blink {
 // third-party/emoji-segmenter. The dereferenced character category is cached
 // since Ragel dereferences multiple times without moving the iterator's cursor.
 class PLATFORM_EXPORT UTF16RagelIterator {
+  DISALLOW_NEW();
+
  public:
   UTF16RagelIterator() : buffer_(nullptr), buffer_size_(0), cursor_(0) {}
 

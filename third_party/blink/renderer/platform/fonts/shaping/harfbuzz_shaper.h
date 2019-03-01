@@ -47,6 +47,8 @@ struct RangeData;
 struct BufferSlice;
 
 class PLATFORM_EXPORT HarfBuzzShaper final {
+  DISALLOW_NEW();
+
  public:
   HarfBuzzShaper(const String& text) : text_(text) {}
 
