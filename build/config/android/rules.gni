@@ -1962,6 +1962,7 @@ if (enable_java_templates) {
   #     resources with acceptable/non-acceptable optimizations.
   #   verify_android_configuration: Enables verification of expected merged
   #     manifest and proguard flags based on a golden file.
+  #   exclude_dex: Omit .dex files (even if they exist) from the final APK.
   template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
 
@@ -2698,6 +2699,7 @@ if (enable_java_templates) {
       create_apk("$_create_apk_target") {
         forward_variables_from(invoker,
                                [
+                                 "exclude_dex",
                                  "native_lib_placeholders",
                                  "public_deps",
                                  "secondary_native_lib_placeholders",
@@ -2966,6 +2968,7 @@ if (enable_java_templates) {
                                "emma_never_instrument",
                                "enable_chromium_linker_tests",
                                "enable_multidex",
+                               "exclude_dex",
                                "final_apk_path",
                                "firebase_app_id",
                                "generate_buildconfig_java",
@@ -4238,6 +4241,46 @@ if (enable_java_templates) {
         "--keystore-password",
         android_keystore_password,
       ]
+    }
+  }
+
+  # Generate an APK stub that contains a stripped down version of the manifest,
+  # a resources.arsc containing only the package name string, and signing
+  # artifacts.
+  #
+  # Variables:
+  #   android_manifest: Path to the android manifest file.
+  #   android_manifest_dep: Target that generates the manifest (optional).
+  #   apk_name: Name of the final .apk.
+  template("create_stub_apk") {
+    _stub_manifest = "$target_gen_dir/$target_name/AndroidManifest_stub.xml"
+    _stub_manifest_target = "${target_name}__stub_manifest"
+    action(_stub_manifest_target) {
+      script = "//build/android/gyp/create_stub_manifest.py"
+      inputs = [
+        invoker.android_manifest,
+      ]
+      outputs = [
+        _stub_manifest,
+      ]
+      args = [
+        "--input",
+        rebase_path(invoker.android_manifest),
+        "--output",
+        rebase_path(_stub_manifest),
+      ]
+      if (defined(invoker.android_manifest_dep)) {
+        deps = [
+          invoker.android_manifest_dep,
+        ]
+      }
+    }
+
+    android_apk(target_name) {
+      apk_name = invoker.apk_name
+      android_manifest = _stub_manifest
+      android_manifest_dep = ":$_stub_manifest_target"
+      exclude_dex = true
     }
   }
 }
