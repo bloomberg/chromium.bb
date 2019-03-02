@@ -165,6 +165,7 @@ bool LinuxCoreDumper::EnumerateThreads() {
     //   -------------------------------------------------------------------
     //   1st thread       CORE          NT_PRSTATUS
     //   process-wide     CORE          NT_PRPSINFO
+    //   process-wide     CORE          NT_SIGINFO
     //   process-wide     CORE          NT_AUXV
     //   1st thread       CORE          NT_FPREGSET
     //   1st thread       LINUX         NT_PRXFPREG
@@ -217,6 +218,28 @@ bool LinuxCoreDumper::EnumerateThreads() {
         first_thread = false;
         threads_.push_back(pid);
         thread_infos_.push_back(info);
+        break;
+      }
+      case NT_SIGINFO: {
+        if (description.length() != sizeof(siginfo_t)) {
+          fprintf(stderr, "Found NT_SIGINFO descriptor of unexpected size\n");
+          return false;
+        }
+
+        const siginfo_t* info =
+            reinterpret_cast<const siginfo_t*>(description.data());
+
+        // Set crash_address when si_addr is valid for the signal.
+        switch (info->si_signo) {
+          case MD_EXCEPTION_CODE_LIN_SIGBUS:
+          case MD_EXCEPTION_CODE_LIN_SIGFPE:
+          case MD_EXCEPTION_CODE_LIN_SIGILL:
+          case MD_EXCEPTION_CODE_LIN_SIGSEGV:
+          case MD_EXCEPTION_CODE_LIN_SIGSYS:
+          case MD_EXCEPTION_CODE_LIN_SIGTRAP:
+            crash_address_ = reinterpret_cast<uintptr_t>(info->si_addr);
+            break;
+        }
         break;
       }
 #if defined(__i386) || defined(__x86_64)
