@@ -689,9 +689,6 @@ deps = {
       'dep_type': 'cipd',
   },
 
-  'src/third_party/bidichecker':
-    Var('chromium_git') + '/external/bidichecker/lib.git' + '@' + '97f2aa645b74c28c57eca56992235c79850fa9e0',
-
   'src/third_party/bison': {
       'url': Var('chromium_git') + '/chromium/deps/bison.git' + '@' + '083c9a45e4affdd5464ee2b224c2df649c6e26c3',
       'condition': 'checkout_win',

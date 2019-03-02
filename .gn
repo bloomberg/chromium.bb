@@ -351,7 +351,6 @@ check_targets = [
   "//third_party/auto/*",
   "//third_party/axe-core/*",
   "//third_party/bazel/*",
-  "//third_party/bidichecker/*",
   "//third_party/binutils/*",
   "//third_party/blanketjs/*",
 

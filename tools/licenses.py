@@ -39,9 +39,6 @@ PRUNE_PATHS = set([
     # Already covered by //third_party/android_tools.
     os.path.join('third_party','android_tools_internal'),
 
-    # Apache 2.0 license. See crbug.com/140478
-    os.path.join('third_party','bidichecker'),
-
     # Build files only, not third-party code.
     os.path.join('third_party','widevine'),
 
