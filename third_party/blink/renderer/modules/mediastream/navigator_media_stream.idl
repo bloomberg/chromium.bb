@@ -22,6 +22,7 @@
     ImplementedAs=NavigatorMediaStream
 ] partial interface Navigator {
     [RaisesException,
+     SecureContext,
      MeasureAs=GetUserMediaLegacy
     ] void getUserMedia(MediaStreamConstraints constraints,
                         NavigatorUserMediaSuccessCallback successCallback,
@@ -29,6 +30,7 @@
 
     // Non-standard
     [RaisesException,
+     SecureContext,
      ImplementedAs=getUserMedia,
      MeasureAs=GetUserMediaPrefixed
     ] void webkitGetUserMedia(MediaStreamConstraints constraints,

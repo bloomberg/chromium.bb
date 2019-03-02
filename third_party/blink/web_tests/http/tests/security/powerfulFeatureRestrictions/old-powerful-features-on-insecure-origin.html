@@ -36,20 +36,11 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
             }));
     }, 'watchPosition');
 
-    async_test(function() {
-        navigator.webkitGetUserMedia({ audio: true, video: true },
-            this.unreached_func('navigator.webkitGetUserMedia should call the error callback, but called the success callback instead.'),
-            this.step_func_done());
-    }, 'navigator.webkitGetUserMedia');
-
-    promise_test(function(test) {
-        return navigator.mediaDevices.getUserMedia({audio: true, video: true}).then(
-            test.unreached_func("navigator.mediaDevices.getUserMedia should reject the promise, but resolved instead."),
-            function(error) {
-                assert_equals(error.name, "NotSupportedError");
-                assert_equals(error.message, "Only secure origins are allowed (see: https://goo.gl/Y0ZkNV).");
-            });
-    }, 'navigator.mediaDevices.getUserMedia');
+    test(function() {
+        assert_false('webkitGetUserMedia' in navigator);
+        assert_false('getUserMedia' in navigator);
+        assert_false('mediaDevices' in navigator);
+    }, 'Media devices properties');
 
     test(function() {
       assert_false('requestMediaKeySystemAccess' in navigator);
