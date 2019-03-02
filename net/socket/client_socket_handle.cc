@@ -76,14 +76,20 @@ void ClientSocketHandle::ResetInternal(bool cancel) {
     RemoveHigherLayeredPool(higher_pool_);
   pool_ = NULL;
   idle_time_ = base::TimeDelta();
-  connect_timing_ = LoadTimingInfo::ConnectTiming();
+  // Connection timing is still needed for handling
+  // ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT errors.
+  //
+  // TODO(mmenke): Remove once ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT no
+  // longer results in following a redirect.
+  if (!pending_http_proxy_socket_)
+    connect_timing_ = LoadTimingInfo::ConnectTiming();
   pool_id_ = -1;
 }
 
 void ClientSocketHandle::ResetErrorState() {
   is_ssl_error_ = false;
   ssl_error_response_info_ = HttpResponseInfo();
-  pending_http_proxy_connection_.reset();
+  pending_http_proxy_socket_.reset();
 }
 
 LoadState ClientSocketHandle::GetLoadState() const {
@@ -132,11 +138,19 @@ void ClientSocketHandle::CloseIdleSocketsInGroup() {
 bool ClientSocketHandle::GetLoadTimingInfo(
     bool is_reused,
     LoadTimingInfo* load_timing_info) const {
-  // Only return load timing information when there's a socket.
-  if (!socket_)
+  if (socket_) {
+    load_timing_info->socket_log_id = socket_->NetLog().source().id;
+  } else if (pending_http_proxy_socket_) {
+    // TODO(mmenke): This case is only needed for timing for redirects in the
+    // case of ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT. Remove this code once
+    // we no longer follow those redirects.
+    load_timing_info->socket_log_id =
+        pending_http_proxy_socket_->NetLog().source().id;
+  } else {
+    // Only return load timing information when there's a socket.
     return false;
+  }
 
-  load_timing_info->socket_log_id = socket_->NetLog().source().id;
   load_timing_info->socket_reused = is_reused;
 
   // No times if the socket is reused.

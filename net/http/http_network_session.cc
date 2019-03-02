@@ -331,13 +331,6 @@ TransportClientSocketPool* HttpNetworkSession::GetSocketPoolForHTTPLikeProxy(
       http_proxy);
 }
 
-TransportClientSocketPool* HttpNetworkSession::GetSocketPoolForSSLWithProxy(
-    SocketPoolType pool_type,
-    const ProxyServer& proxy_server) {
-  return GetSocketPoolManager(pool_type)->GetSocketPoolForSSLWithProxy(
-      proxy_server);
-}
-
 std::unique_ptr<base::Value> HttpNetworkSession::SocketPoolInfoToValue() const {
   // TODO(yutak): Should merge values from normal pools and WebSocket pools.
   return normal_socket_pool_manager_->SocketPoolInfoToValue();

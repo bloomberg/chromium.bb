@@ -30,12 +30,6 @@ void MockClientSocketPoolManager::SetSocketPoolForHTTPProxy(
   http_proxy_socket_pools_[http_proxy] = std::move(pool);
 }
 
-void MockClientSocketPoolManager::SetSocketPoolForSSLWithProxy(
-    const ProxyServer& proxy_server,
-    std::unique_ptr<TransportClientSocketPool> pool) {
-  ssl_socket_pools_for_proxies_[proxy_server] = std::move(pool);
-}
-
 void MockClientSocketPoolManager::FlushSocketPoolsWithError(int error) {
   NOTIMPLEMENTED();
 }
@@ -66,16 +60,6 @@ MockClientSocketPoolManager::GetSocketPoolForHTTPLikeProxy(
   TransportClientSocketPoolMap::const_iterator it =
       http_proxy_socket_pools_.find(http_proxy);
   if (it != http_proxy_socket_pools_.end())
-    return it->second.get();
-  return nullptr;
-}
-
-TransportClientSocketPool*
-MockClientSocketPoolManager::GetSocketPoolForSSLWithProxy(
-    const ProxyServer& proxy_server) {
-  TransportClientSocketPoolMap::const_iterator it =
-      ssl_socket_pools_for_proxies_.find(proxy_server);
-  if (it != ssl_socket_pools_for_proxies_.end())
     return it->second.get();
   return nullptr;
 }

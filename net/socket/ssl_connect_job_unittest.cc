@@ -165,8 +165,6 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
             nullptr /* network_quality_estimator */, nullptr /* net_log */,
             nullptr /* websocket_lock_endpoint_manager */),
         SSLParams(proxy_scheme),
-        proxy_scheme == ProxyServer::SCHEME_HTTP ? &http_proxy_socket_pool_
-                                                 : nullptr,
         test_delegate, nullptr /* net_log */);
   }
 
@@ -206,7 +204,7 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
 
  protected:
   MockClientSocketFactory socket_factory_;
-  MockCachingHostResolver host_resolver_;
+  MockHostResolver host_resolver_;
   MockCertVerifier cert_verifier_;
   TransportSecurityState transport_security_state_;
   MultiLogCTVerifier ct_verifier_;
@@ -762,6 +760,202 @@ TEST_F(SSLConnectJobTest, HttpProxyRequestPriority) {
                   test::IsError(ERR_PROXY_CONNECTION_FAILED));
     }
   }
+}
+
+TEST_F(SSLConnectJobTest, HttpProxyAuthHasEstablishedConnection) {
+  host_resolver_.set_ondemand_mode(true);
+  MockWrite writes[] = {
+      MockWrite(ASYNC, 0,
+                "CONNECT host:80 HTTP/1.1\r\n"
+                "Host: host:80\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite(ASYNC, 3,
+                "CONNECT host:80 HTTP/1.1\r\n"
+                "Host: host:80\r\n"
+                "Proxy-Connection: keep-alive\r\n"
+                "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+  };
+  MockRead reads[] = {
+      // Pause reading.
+      MockRead(ASYNC, ERR_IO_PENDING, 1),
+      MockRead(ASYNC, 2,
+               "HTTP/1.1 407 Proxy Authentication Required\r\n"
+               "Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"
+               "Content-Length: 0\r\n\r\n"),
+      // Pause reading.
+      MockRead(ASYNC, ERR_IO_PENDING, 4),
+      MockRead(ASYNC, 5, "HTTP/1.1 200 Connection Established\r\n\r\n"),
+  };
+  SequencedSocketData data(reads, writes);
+  socket_factory_.AddSocketDataProvider(&data);
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  socket_factory_.AddSSLSocketDataProvider(&ssl);
+
+  ClientSocketHandle handle;
+  TestCompletionCallback callback;
+
+  TestConnectJobDelegate test_delegate;
+  std::unique_ptr<ConnectJob> ssl_connect_job =
+      CreateConnectJob(&test_delegate, ProxyServer::SCHEME_HTTP);
+  ASSERT_THAT(ssl_connect_job->Connect(), test::IsError(ERR_IO_PENDING));
+  EXPECT_TRUE(host_resolver_.has_pending_requests());
+  EXPECT_EQ(LOAD_STATE_RESOLVING_HOST, ssl_connect_job->GetLoadState());
+  EXPECT_FALSE(ssl_connect_job->HasEstablishedConnection());
+
+  // DNS resolution completes, and then the ConnectJob tries to connect the
+  // socket, which should succeed asynchronously.
+  host_resolver_.ResolveOnlyRequestNow();
+  EXPECT_EQ(LOAD_STATE_CONNECTING, ssl_connect_job->GetLoadState());
+  EXPECT_FALSE(ssl_connect_job->HasEstablishedConnection());
+
+  // Spinning the message loop causes the connection to be established and the
+  // nested HttpProxyConnectJob to start establishing a tunnel.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(test_delegate.has_result());
+  EXPECT_EQ(LOAD_STATE_ESTABLISHING_PROXY_TUNNEL,
+            ssl_connect_job->GetLoadState());
+  EXPECT_TRUE(ssl_connect_job->HasEstablishedConnection());
+
+  // Receive the auth challenge.
+  data.Resume();
+  test_delegate.WaitForAuthChallenge(1);
+  EXPECT_FALSE(test_delegate.has_result());
+  EXPECT_EQ(LOAD_STATE_IDLE, ssl_connect_job->GetLoadState());
+  EXPECT_TRUE(ssl_connect_job->HasEstablishedConnection());
+
+  // Respond to challenge.
+  test_delegate.auth_controller()->ResetAuth(
+      AuthCredentials(base::ASCIIToUTF16("foo"), base::ASCIIToUTF16("bar")));
+  test_delegate.RunAuthCallback();
+  EXPECT_FALSE(test_delegate.has_result());
+  EXPECT_EQ(LOAD_STATE_ESTABLISHING_PROXY_TUNNEL,
+            ssl_connect_job->GetLoadState());
+  EXPECT_TRUE(ssl_connect_job->HasEstablishedConnection());
+
+  // Run until the next read pauses.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(test_delegate.has_result());
+  EXPECT_EQ(LOAD_STATE_ESTABLISHING_PROXY_TUNNEL,
+            ssl_connect_job->GetLoadState());
+  EXPECT_TRUE(ssl_connect_job->HasEstablishedConnection());
+
+  // Receive the connection established response, at which point SSL negotiation
+  // finally starts.
+  data.Resume();
+  EXPECT_FALSE(test_delegate.has_result());
+  EXPECT_EQ(LOAD_STATE_SSL_HANDSHAKE, ssl_connect_job->GetLoadState());
+  EXPECT_TRUE(ssl_connect_job->HasEstablishedConnection());
+
+  EXPECT_THAT(test_delegate.WaitForResult(), test::IsOk());
+}
+
+TEST_F(SSLConnectJobTest,
+       HttpProxyAuthHasEstablishedConnectionWithProxyConnectionClose) {
+  host_resolver_.set_ondemand_mode(true);
+  MockWrite writes1[] = {
+      MockWrite(ASYNC, 0,
+                "CONNECT host:80 HTTP/1.1\r\n"
+                "Host: host:80\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+  };
+  MockRead reads1[] = {
+      // Pause reading.
+      MockRead(ASYNC, ERR_IO_PENDING, 1),
+      MockRead(ASYNC, 2,
+               "HTTP/1.1 407 Proxy Authentication Required\r\n"
+               "Proxy-Connection: Close\r\n"
+               "Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"
+               "Content-Length: 0\r\n\r\n"),
+  };
+  SequencedSocketData data1(reads1, writes1);
+  socket_factory_.AddSocketDataProvider(&data1);
+
+  MockWrite writes2[] = {
+      MockWrite(ASYNC, 0,
+                "CONNECT host:80 HTTP/1.1\r\n"
+                "Host: host:80\r\n"
+                "Proxy-Connection: keep-alive\r\n"
+                "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+  };
+  MockRead reads2[] = {
+      // Pause reading.
+      MockRead(ASYNC, ERR_IO_PENDING, 1),
+      MockRead(ASYNC, 2, "HTTP/1.1 200 Connection Established\r\n\r\n"),
+  };
+  SequencedSocketData data2(reads2, writes2);
+  socket_factory_.AddSocketDataProvider(&data2);
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  socket_factory_.AddSSLSocketDataProvider(&ssl);
+
+  ClientSocketHandle handle;
+  TestCompletionCallback callback;
+
+  TestConnectJobDelegate test_delegate;
+  std::unique_ptr<ConnectJob> ssl_connect_job =
+      CreateConnectJob(&test_delegate, ProxyServer::SCHEME_HTTP);
+  ASSERT_THAT(ssl_connect_job->Connect(), test::IsError(ERR_IO_PENDING));
+  EXPECT_TRUE(host_resolver_.has_pending_requests());
+  EXPECT_EQ(LOAD_STATE_RESOLVING_HOST, ssl_connect_job->GetLoadState());
+  EXPECT_FALSE(ssl_connect_job->HasEstablishedConnection());
+
+  // DNS resolution completes, and then the ConnectJob tries to connect the
+  // socket, which should succeed asynchronously.
+  host_resolver_.ResolveOnlyRequestNow();
+  EXPECT_EQ(LOAD_STATE_CONNECTING, ssl_connect_job->GetLoadState());
+  EXPECT_FALSE(ssl_connect_job->HasEstablishedConnection());
+
+  // Spinning the message loop causes the connection to be established and the
+  // nested HttpProxyConnectJob to start establishing a tunnel.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(test_delegate.has_result());
+  EXPECT_EQ(LOAD_STATE_ESTABLISHING_PROXY_TUNNEL,
+            ssl_connect_job->GetLoadState());
+  EXPECT_TRUE(ssl_connect_job->HasEstablishedConnection());
+
+  // Receive the auth challenge.
+  data1.Resume();
+  test_delegate.WaitForAuthChallenge(1);
+  EXPECT_FALSE(test_delegate.has_result());
+  EXPECT_EQ(LOAD_STATE_IDLE, ssl_connect_job->GetLoadState());
+  EXPECT_TRUE(ssl_connect_job->HasEstablishedConnection());
+
+  // Respond to challenge.
+  test_delegate.auth_controller()->ResetAuth(
+      AuthCredentials(base::ASCIIToUTF16("foo"), base::ASCIIToUTF16("bar")));
+  test_delegate.RunAuthCallback();
+  EXPECT_FALSE(test_delegate.has_result());
+  EXPECT_EQ(LOAD_STATE_ESTABLISHING_PROXY_TUNNEL,
+            ssl_connect_job->GetLoadState());
+  EXPECT_TRUE(ssl_connect_job->HasEstablishedConnection());
+
+  // Run until the next DNS lookup.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(host_resolver_.has_pending_requests());
+  EXPECT_EQ(LOAD_STATE_RESOLVING_HOST, ssl_connect_job->GetLoadState());
+  EXPECT_TRUE(ssl_connect_job->HasEstablishedConnection());
+
+  // DNS resolution completes, and then the ConnectJob tries to connect the
+  // socket, which should succeed asynchronously.
+  host_resolver_.ResolveOnlyRequestNow();
+  EXPECT_EQ(LOAD_STATE_CONNECTING, ssl_connect_job->GetLoadState());
+  EXPECT_TRUE(ssl_connect_job->HasEstablishedConnection());
+
+  // Spinning the message loop causes the connection to be established and the
+  // nested HttpProxyConnectJob to start establishing a tunnel.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(test_delegate.has_result());
+  EXPECT_EQ(LOAD_STATE_ESTABLISHING_PROXY_TUNNEL,
+            ssl_connect_job->GetLoadState());
+  EXPECT_TRUE(ssl_connect_job->HasEstablishedConnection());
+
+  // Receive the connection established response, at which point SSL negotiation
+  // finally starts.
+  data2.Resume();
+  EXPECT_FALSE(test_delegate.has_result());
+  EXPECT_EQ(LOAD_STATE_SSL_HANDSHAKE, ssl_connect_job->GetLoadState());
+  EXPECT_TRUE(ssl_connect_job->HasEstablishedConnection());
+
+  EXPECT_THAT(test_delegate.WaitForResult(), test::IsOk());
 }
 
 }  // namespace

@@ -96,8 +96,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManager {
   // "HTTP-like" scheme, as defined by ProxyServer::is_http_like().
   virtual TransportClientSocketPool* GetSocketPoolForHTTPLikeProxy(
       const ProxyServer& http_proxy) = 0;
-  virtual TransportClientSocketPool* GetSocketPoolForSSLWithProxy(
-      const ProxyServer& proxy_server) = 0;
   // Creates a Value summary of the state of the socket pools.
   virtual std::unique_ptr<base::Value> SocketPoolInfoToValue() const = 0;
 

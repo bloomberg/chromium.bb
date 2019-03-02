@@ -619,14 +619,19 @@ void HttpStreamFactory::Job::RunLoop(int result) {
 
     case ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT: {
       DCHECK(connection_.get());
-      DCHECK(connection_->socket());
       DCHECK(establishing_tunnel_);
 
       LoadTimingInfo load_timing_info;
       bool have_load_timing_info = connection_->GetLoadTimingInfo(
           connection_->is_reused(), &load_timing_info);
+
+      std::unique_ptr<StreamSocket> socket =
+          connection_->release_pending_http_proxy_socket();
+      DCHECK(socket);
+
+      connection_.reset();
       ProxyClientSocket* proxy_socket =
-          static_cast<ProxyClientSocket*>(connection_->socket());
+          static_cast<ProxyClientSocket*>(socket.get());
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::BindOnce(
@@ -1072,13 +1077,6 @@ int HttpStreamFactory::Job::DoInitConnectionComplete(int result) {
 
   if (result == ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT) {
     DCHECK(!ssl_started);
-    // Other state (i.e. |using_ssl_|) suggests that |connection_| will have an
-    // SSL socket, but there was an error before that could happen.  This
-    // puts the in progress HttpProxy socket into |connection_| in order to
-    // complete the auth (or read the response body).  The tunnel restart code
-    // is careful to remove it before returning control to the rest of this
-    // class.
-    connection_ = connection_->release_pending_http_proxy_connection();
     return result;
   }
 

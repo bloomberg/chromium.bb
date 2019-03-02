@@ -207,7 +207,7 @@ int InitSocketPoolHelper(
       ssl_pool = session->GetSocketPoolForSOCKSProxy(socket_pool_type,
                                                      proxy_info.proxy_server());
     } else {
-      ssl_pool = session->GetSocketPoolForSSLWithProxy(
+      ssl_pool = session->GetSocketPoolForHTTPLikeProxy(
           socket_pool_type, proxy_info.proxy_server());
     }
 
