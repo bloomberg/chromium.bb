@@ -4,8 +4,13 @@
 
 #include "ui/views/controls/prefix_selector.h"
 
+#if defined(OS_WIN)
+#include <vector>
+#endif
+
 #include "base/i18n/case_conversion.h"
 #include "base/time/default_tick_clock.h"
+#include "build/build_config.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/range/range.h"
@@ -163,6 +168,12 @@ bool PrefixSelector::ShouldDoLearning() {
   NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
+
+#if defined(OS_WIN)
+void PrefixSelector::SetCompositionFromExistingText(
+    const gfx::Range& range,
+    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {}
+#endif
 
 void PrefixSelector::OnTextInput(const base::string16& text) {
   // Small hack to filter out 'tab' and 'enter' input, as the expectation is

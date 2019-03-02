@@ -8,8 +8,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#if defined(OS_WIN)
+#include <vector>
+#endif
+
 #include "base/i18n/rtl.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/text_input_mode.h"
@@ -198,6 +203,15 @@ class UI_BASE_IME_EXPORT TextInputClient {
   // improve typing suggestions for the user. This should return false for text
   // fields that are considered 'private' (e.g. in incognito tabs).
   virtual bool ShouldDoLearning() = 0;
+
+#if defined(OS_WIN)
+  // Start composition over a given UTF-16 code range from existing text. This
+  // should only be used for composition scenario when IME wants to start
+  // composition on existing text.
+  virtual void SetCompositionFromExistingText(
+      const gfx::Range& range,
+      const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) = 0;
+#endif
 };
 
 }  // namespace ui

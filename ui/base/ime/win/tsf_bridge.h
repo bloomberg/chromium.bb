@@ -75,6 +75,13 @@ class UI_BASE_IME_EXPORT TSFBridge {
   // Caller must free |client|.
   virtual void RemoveFocusedClient(TextInputClient* client) = 0;
 
+  // Lets TSFTextstore see InputMethodDelegate instance when in focus.
+  virtual void SetInputMethodDelegate(
+      internal::InputMethodDelegate* delegate) = 0;
+
+  // Remove InputMethodDelegate instance from TSFTextStore when not in focus.
+  virtual void RemoveInputMethodDelegate() = 0;
+
   // Obtains current thread manager.
   virtual Microsoft::WRL::ComPtr<ITfThreadMgr> GetThreadManager() = 0;
 

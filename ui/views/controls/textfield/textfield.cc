@@ -7,6 +7,10 @@
 #include <string>
 #include <utility>
 
+#if defined(OS_WIN)
+#include <vector>
+#endif
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1769,6 +1773,14 @@ bool Textfield::ShouldDoLearning() {
   NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
+
+#if defined(OS_WIN)
+// TODO(IME): Implement this method to support Korean IME reconversion feature
+// on native text fields (e.g. find bar).
+void Textfield::SetCompositionFromExistingText(
+    const gfx::Range& range,
+    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, protected:

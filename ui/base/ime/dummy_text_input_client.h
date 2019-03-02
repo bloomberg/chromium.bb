@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "ui/base/ime/text_input_client.h"
 
 namespace ui {
@@ -54,6 +55,13 @@ class DummyTextInputClient : public TextInputClient {
   void SetTextEditCommandForNextKeyEvent(TextEditCommand command) override;
   ukm::SourceId GetClientSourceForMetrics() const override;
   bool ShouldDoLearning() override;
+
+#if defined(OS_WIN)
+  // Overridden from ui::TextInputClient(Windows only):
+  void SetCompositionFromExistingText(
+      const gfx::Range& range,
+      const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
+#endif
 
   int insert_char_count() const { return insert_char_count_; }
   base::char16 last_insert_char() const { return last_insert_char_; }

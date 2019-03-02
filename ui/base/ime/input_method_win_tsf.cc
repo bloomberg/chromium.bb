@@ -41,10 +41,13 @@ InputMethodWinTSF::~InputMethodWinTSF() {}
 void InputMethodWinTSF::OnFocus() {
   tsf_event_router_->SetManager(
       ui::TSFBridge::GetInstance()->GetThreadManager().Get());
+  ui::TSFBridge::GetInstance()->SetInputMethodDelegate(
+      InputMethodBase::delegate());
 }
 
 void InputMethodWinTSF::OnBlur() {
   tsf_event_router_->SetManager(nullptr);
+  ui::TSFBridge::GetInstance()->RemoveInputMethodDelegate();
 }
 
 bool InputMethodWinTSF::OnUntranslatedIMEMessage(

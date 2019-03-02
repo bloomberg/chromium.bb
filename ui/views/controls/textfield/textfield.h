@@ -11,6 +11,10 @@
 #include <memory>
 #include <string>
 
+#if defined(OS_WIN)
+#include <vector>
+#endif
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -363,6 +367,13 @@ class VIEWS_EXPORT Textfield : public View,
   void SetTextEditCommandForNextKeyEvent(ui::TextEditCommand command) override;
   ukm::SourceId GetClientSourceForMetrics() const override;
   bool ShouldDoLearning() override;
+
+#if defined(OS_WIN)
+  // Overridden from ui::TextInputClient(Windows only):
+  void SetCompositionFromExistingText(
+      const gfx::Range& range,
+      const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
+#endif
 
  protected:
   // Inserts or appends a character in response to an IME operation.
