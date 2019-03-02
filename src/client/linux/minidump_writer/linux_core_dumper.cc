@@ -241,6 +241,16 @@ bool LinuxCoreDumper::EnumerateThreads() {
             crash_address_ = reinterpret_cast<uintptr_t>(info->si_addr);
             break;
         }
+
+        // Set crash_exception_info for common signals.
+        switch (info->si_signo) {
+          case MD_EXCEPTION_CODE_LIN_SIGKILL:
+            set_crash_exception_info({info->si_pid, info->si_uid});
+            break;
+          case MD_EXCEPTION_CODE_LIN_SIGSYS:
+            set_crash_exception_info({info->si_syscall, info->si_arch});
+            break;
+        }
         break;
       }
 #if defined(__i386) || defined(__x86_64)
