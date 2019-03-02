@@ -297,7 +297,7 @@
   "dashboardPrivate": [{
     "channel": "stable",
     "contexts": ["blessed_web_page", "web_page"],
-    "matches": ["https://chrome.google.com/*"]
+    "matches": ["https://chrome.google.com/webstore/*"]
   }, {
     "channel": "stable",
     "contexts": ["blessed_extension"],
