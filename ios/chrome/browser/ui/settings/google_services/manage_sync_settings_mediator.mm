@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
@@ -16,6 +17,7 @@
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_consumer.h"
+#import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
@@ -63,6 +65,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ReadingListDataTypeItemType,
   // kSyncPreferences.
   SettingsDataTypeItemType,
+  // Item for kAutofillWalletImportEnabled.
+  AutocompleteWalletItemType,
   // AdvancedSettingsSectionIdentifier section.
   // Encryption item.
   EncryptionItemType,
@@ -76,21 +80,29 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 
 }  // namespace
 
-@interface ManageSyncSettingsMediator () <SyncObserverModelBridge> {
+@interface ManageSyncSettingsMediator () <BooleanObserver,
+                                          SyncObserverModelBridge> {
   // Sync observer.
   std::unique_ptr<SyncObserverBridge> _syncObserver;
   // Whether Sync State changes should be currently ignored.
   BOOL _ignoreSyncStateChanges;
 }
 
+// Preference value for kAutofillWalletImportEnabled.
+@property(nonatomic, strong, readonly)
+    PrefBackedBoolean* autocompleteWalletPreference;
 // Sync service.
 @property(nonatomic, assign) syncer::SyncService* syncService;
 // Model item for sync everything.
 @property(nonatomic, strong) SyncSwitchItem* syncEverythingItem;
 // Model item for each data types.
 @property(nonatomic, strong) NSArray<SyncSwitchItem*>* syncSwitchItems;
+// Autocomplete wallet item.
+@property(nonatomic, strong) SyncSwitchItem* autocompleteWalletItem;
 // Encryption item.
 @property(nonatomic, strong) TableViewImageItem* encryptionItem;
+// Returns YES if the sync data items should be enabled.
+@property(nonatomic, assign, readonly) BOOL shouldSyncDataItemEnabled;
 // Returns whether the Sync settings should be disabled because of a Sync error.
 @property(nonatomic, assign, readonly) BOOL disabledBecauseOfSyncError;
 
@@ -98,12 +110,17 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 
 @implementation ManageSyncSettingsMediator
 
-- (instancetype)initWithSyncService:(syncer::SyncService*)syncService {
+- (instancetype)initWithSyncService:(syncer::SyncService*)syncService
+                    userPrefService:(PrefService*)userPrefService {
   self = [super init];
   if (self) {
     DCHECK(syncService);
     self.syncService = syncService;
     _syncObserver.reset(new SyncObserverBridge(self, syncService));
+    _autocompleteWalletPreference = [[PrefBackedBoolean alloc]
+        initWithPrefService:userPrefService
+                   prefName:autofill::prefs::kAutofillWalletImportEnabled];
+    _autocompleteWalletPreference.observer = self;
   }
   return self;
 }
@@ -129,11 +146,17 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     [self switchItemWithDataType:SyncSetupService::kSyncReadingList],
     [self switchItemWithDataType:SyncSetupService::kSyncPreferences]
   ];
-  [self updateSyncDataItemsNotifyConsumer:NO];
   for (SyncSwitchItem* switchItem in self.syncSwitchItems) {
     [model addItem:switchItem
         toSectionWithIdentifier:SyncDataTypeSectionIdentifier];
   }
+  self.autocompleteWalletItem =
+      [[SyncSwitchItem alloc] initWithType:AutocompleteWalletItemType];
+  self.autocompleteWalletItem.text =
+      GetNSString(IDS_AUTOFILL_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL);
+  [model addItem:self.autocompleteWalletItem
+      toSectionWithIdentifier:SyncDataTypeSectionIdentifier];
+  [self updateSyncItemsNotifyConsumer:NO];
 }
 
 // Updates the sync everything item, and notify the consumer if |notifyConsumer|
@@ -155,13 +178,16 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   }
 }
 
+// Updates all the items related to sync (sync data items and autocomplete
+// wallet item). The consumer is notified if |notifyConsumer| is set to YES.
+- (void)updateSyncItemsNotifyConsumer:(BOOL)notifyConsumer {
+  [self updateSyncDataItemsNotifyConsumer:notifyConsumer];
+  [self updateAutocompleteWalletItemNotifyConsumer:notifyConsumer];
+}
+
 // Updates all the sync data type items, and notify the consumer if
 // |notifyConsumer| is set to YES.
 - (void)updateSyncDataItemsNotifyConsumer:(BOOL)notifyConsumer {
-  BOOL isSyncDataTypeItemEnabled =
-      (!self.syncSetupService->IsSyncingAllDataTypes() &&
-       self.syncSetupService->IsSyncEnabled() &&
-       !self.disabledBecauseOfSyncError);
   for (SyncSwitchItem* syncSwitchItem in self.syncSwitchItems) {
     SyncSetupService::SyncableDatatype dataType =
         static_cast<SyncSetupService::SyncableDatatype>(
@@ -169,13 +195,34 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     syncer::ModelType modelType = self.syncSetupService->GetModelType(dataType);
     BOOL isDataTypeSynced =
         self.syncSetupService->IsDataTypePreferred(modelType);
-    BOOL needsUpdate = (syncSwitchItem.on != isDataTypeSynced) ||
-                       (syncSwitchItem.isEnabled != isSyncDataTypeItemEnabled);
+    BOOL needsUpdate =
+        (syncSwitchItem.on != isDataTypeSynced) ||
+        (syncSwitchItem.isEnabled != self.shouldSyncDataItemEnabled);
     syncSwitchItem.on = isDataTypeSynced;
-    syncSwitchItem.enabled = isSyncDataTypeItemEnabled;
+    syncSwitchItem.enabled = self.shouldSyncDataItemEnabled;
     if (needsUpdate && notifyConsumer) {
       [self.consumer reloadItem:syncSwitchItem];
     }
+  }
+}
+
+// Updates the autocomplete wallet item. The consumer is notified if
+// |notifyConsumer| is set to YES.
+- (void)updateAutocompleteWalletItemNotifyConsumer:(BOOL)notifyConsumer {
+  syncer::ModelType autofillModelType =
+      self.syncSetupService->GetModelType(SyncSetupService::kSyncAutofill);
+  BOOL isAutofillOn =
+      self.syncSetupService->IsDataTypePreferred(autofillModelType);
+  BOOL autocompleteWalletEnabled =
+      isAutofillOn && self.shouldSyncDataItemEnabled;
+  BOOL autocompleteWalletOn = self.autocompleteWalletPreference.value;
+  BOOL needsUpdate =
+      (self.autocompleteWalletItem.enabled != autocompleteWalletEnabled) ||
+      (self.autocompleteWalletItem.on != autocompleteWalletOn);
+  self.autocompleteWalletItem.enabled = autocompleteWalletEnabled;
+  self.autocompleteWalletItem.on = autocompleteWalletOn;
+  if (needsUpdate && notifyConsumer) {
+    [self.consumer reloadItem:self.autocompleteWalletItem];
   }
 }
 
@@ -305,6 +352,12 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
          state != SyncSetupService::kSyncServiceNeedsPassphrase;
 }
 
+- (BOOL)shouldSyncDataItemEnabled {
+  return (!self.syncSetupService->IsSyncingAllDataTypes() &&
+          self.syncSetupService->IsSyncEnabled() &&
+          !self.disabledBecauseOfSyncError);
+}
+
 - (BOOL)shouldEncryptionItemBeEnabled {
   return self.syncService->IsEngineInitialized() &&
          self.syncSetupService->IsSyncEnabled() &&
@@ -320,6 +373,12 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   [self loadAdvancedSettingsSection];
 }
 
+#pragma mark - BooleanObserver
+
+- (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
+  [self updateAutocompleteWalletItemNotifyConsumer:YES];
+}
+
 #pragma mark - SyncObserverModelBridge
 
 - (void)onSyncStateChanged {
@@ -328,7 +387,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     return;
   }
   [self updateSyncEverythingItemNotifyConsumer:YES];
-  [self updateSyncDataItemsNotifyConsumer:YES];
+  [self updateSyncItemsNotifyConsumer:YES];
   [self updateEncryptionItem:YES];
 }
 
@@ -341,18 +400,46 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     // settings.
     base::AutoReset<BOOL> autoReset(&_ignoreSyncStateChanges, YES);
     switchItem.on = value;
-    if (switchItem.type == SyncEverythingItemType) {
-      self.syncSetupService->SetSyncingAllDataTypes(value);
-    } else {
-      SyncSetupService::SyncableDatatype dataType =
-          static_cast<SyncSetupService::SyncableDatatype>(switchItem.dataType);
-      syncer::ModelType modelType =
-          self.syncSetupService->GetModelType(dataType);
-      self.syncSetupService->SetDataTypeEnabled(modelType, value);
+    ItemType itemType = static_cast<ItemType>(switchItem.type);
+    switch (itemType) {
+      case SyncEverythingItemType:
+        self.syncSetupService->SetSyncingAllDataTypes(value);
+        break;
+      case AutofillDataTypeItemType:
+      case BookmarksDataTypeItemType:
+      case HistoryDataTypeItemType:
+      case OpenTabsDataTypeItemType:
+      case PasswordsDataTypeItemType:
+      case ReadingListDataTypeItemType:
+      case SettingsDataTypeItemType: {
+        SyncSetupService::SyncableDatatype dataType =
+            static_cast<SyncSetupService::SyncableDatatype>(
+                switchItem.dataType);
+        syncer::ModelType modelType =
+            self.syncSetupService->GetModelType(dataType);
+        self.syncSetupService->SetDataTypeEnabled(modelType, value);
+        if (dataType == SyncSetupService::kSyncAutofill) {
+          // When the auto fill data type is updated, the autocomplete wallet
+          // should be updated too. Autocomplete wallet should not be enabled
+          // when auto fill data type disabled. This behaviour not be
+          // implemented in the UI code. This code can be removed once
+          // crbug.com/937234 is fixed.
+          self.autocompleteWalletPreference.value = value;
+        }
+        break;
+      }
+      case AutocompleteWalletItemType:
+        self.autocompleteWalletPreference.value = value;
+        break;
+      case EncryptionItemType:
+      case GoogleActivityControlsItemType:
+      case DataFromChromeSync:
+        NOTREACHED();
+        break;
     }
   }
   [self updateSyncEverythingItemNotifyConsumer:YES];
-  [self updateSyncDataItemsNotifyConsumer:YES];
+  [self updateSyncItemsNotifyConsumer:YES];
 }
 
 - (void)didSelectItem:(TableViewItem*)item {
@@ -375,6 +462,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     case PasswordsDataTypeItemType:
     case ReadingListDataTypeItemType:
     case SettingsDataTypeItemType:
+    case AutocompleteWalletItemType:
       // Nothing to do.
       break;
   }

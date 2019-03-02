@@ -12,6 +12,7 @@
 
 @protocol ManageSyncSettingsCommandHandler;
 @protocol ManageSyncSettingsConsumer;
+class PrefService;
 class SyncSetupService;
 namespace syncer {
 class SyncService;
@@ -34,6 +35,7 @@ class SyncService;
 // Designated initializer.
 // |syncService|: Sync service. Should not be null.
 - (instancetype)initWithSyncService:(syncer::SyncService*)syncService
+                    userPrefService:(PrefService*)userPrefService
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 

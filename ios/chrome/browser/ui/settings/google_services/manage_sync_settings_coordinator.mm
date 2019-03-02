@@ -10,6 +10,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/google/core/common/google_util.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -60,8 +61,9 @@
 - (void)start {
   syncer::SyncService* syncService =
       ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
-  self.mediator =
-      [[ManageSyncSettingsMediator alloc] initWithSyncService:syncService];
+  self.mediator = [[ManageSyncSettingsMediator alloc]
+      initWithSyncService:syncService
+          userPrefService:self.browserState->GetPrefs()];
   self.mediator.syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(self.browserState);
   self.mediator.commandHandler = self;
