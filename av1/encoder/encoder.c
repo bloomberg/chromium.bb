@@ -506,13 +506,19 @@ static void update_film_grain_parameters(struct AV1_COMP *cpi,
       }
     }
   } else if (oxcf->film_grain_table_filename) {
+    cm->seq_params.film_grain_params_present = 1;
+
     cpi->film_grain_table = aom_malloc(sizeof(*cpi->film_grain_table));
     memset(cpi->film_grain_table, 0, sizeof(aom_film_grain_table_t));
 
     aom_film_grain_table_read(cpi->film_grain_table,
                               oxcf->film_grain_table_filename, &cm->error);
   } else {
+#if CONFIG_DENOISE
+    cm->seq_params.film_grain_params_present = (cpi->oxcf.noise_level > 0);
+#else
     cm->seq_params.film_grain_params_present = 0;
+#endif
     memset(&cm->film_grain_params, 0, sizeof(cm->film_grain_params));
   }
 }
