@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/android/jni_android.h"
+#include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "jni/SurfaceTexturePlatformWrapper_jni.h"
 #include "ui/gl/android/scoped_java_surface.h"
@@ -51,6 +52,10 @@ void SurfaceTexture::SetFrameAvailableCallbackOnAnyThread(
 }
 
 void SurfaceTexture::UpdateTexImage() {
+  static auto* kCrashKey = base::debug::AllocateCrashKeyString(
+      "inside_surface_texture_update_tex_image",
+      base::debug::CrashKeySize::Size256);
+  base::debug::ScopedCrashKeyString scoped_crash_key(kCrashKey, "1");
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_SurfaceTexturePlatformWrapper_updateTexImage(env, j_surface_texture_);
 }
