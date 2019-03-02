@@ -91,9 +91,6 @@ char kLSanDefaultSuppressions[] =
     "leak:blink::DOMWrapperWorld::Create\n"
     "leak:blink::ScriptState::Create\n"
 
-    // https://crbug.com/795148
-    "leak:third_party/fontconfig/\n"
-
     // PLEASE READ ABOVE BEFORE ADDING NEW SUPPRESSIONS.
 
     // End of suppressions.
