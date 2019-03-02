@@ -105,4 +105,20 @@ bool TabThroughView(ui::test::EventGenerator* event_generator,
   return false;
 }
 
+// Performs a DFS for the first button in the views hierarchy
+// The last child is on the top of the z layer stack
+views::View* FindTopButton(views::View* current_view) {
+  for (int i = current_view->child_count() - 1; i >= 0; i--) {
+    views::View* child = current_view->child_at(i);
+    if (views::Button::AsButton(child))
+      return child;
+    if (child->has_children()) {
+      views::View* child_button = FindTopButton(child);
+      if (child_button)
+        return child_button;
+    }
+  }
+  return nullptr;
+}
+
 }  // namespace ash

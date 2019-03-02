@@ -391,25 +391,6 @@ LockContentsView::LockContentsView(
   Shell::Get()->system_tray_notifier()->AddSystemTrayFocusObserver(this);
   keyboard::KeyboardController::Get()->AddObserver(this);
 
-  auth_error_bubble_ = new LoginErrorBubble();
-  AddChildView(auth_error_bubble_);
-
-  supervised_user_deprecation_bubble_ = new LoginErrorBubble();
-  supervised_user_deprecation_bubble_->SetPersistent(true);
-  AddChildView(supervised_user_deprecation_bubble_);
-
-  detachable_base_error_bubble_ = new LoginErrorBubble();
-  detachable_base_error_bubble_->SetPersistent(true);
-  AddChildView(detachable_base_error_bubble_);
-
-  tooltip_bubble_ = new LoginTooltipView(base::UTF8ToUTF16("") /*message*/,
-                                         nullptr /*anchor_view*/);
-  AddChildView(tooltip_bubble_);
-
-  warning_banner_bubble_ = new LoginErrorBubble();
-  warning_banner_bubble_->SetPersistent(true);
-  AddChildView(warning_banner_bubble_);
-
   // We reuse the focusable state on this view as a signal that focus should
   // switch to the system tray. LockContentsView should otherwise not be
   // focusable.
@@ -447,6 +428,25 @@ LockContentsView::LockContentsView(
                           base::Unretained(this), DisplayStyle::kAll));
   expanded_view_->SetVisible(false);
   AddChildView(expanded_view_);
+
+  supervised_user_deprecation_bubble_ = new LoginErrorBubble();
+  supervised_user_deprecation_bubble_->SetPersistent(true);
+  AddChildView(supervised_user_deprecation_bubble_);
+
+  detachable_base_error_bubble_ = new LoginErrorBubble();
+  detachable_base_error_bubble_->SetPersistent(true);
+  AddChildView(detachable_base_error_bubble_);
+
+  tooltip_bubble_ = new LoginTooltipView(base::UTF8ToUTF16("") /*message*/,
+                                         nullptr /*anchor_view*/);
+  AddChildView(tooltip_bubble_);
+
+  warning_banner_bubble_ = new LoginErrorBubble();
+  warning_banner_bubble_->SetPersistent(true);
+  AddChildView(warning_banner_bubble_);
+
+  auth_error_bubble_ = new LoginErrorBubble();
+  AddChildView(auth_error_bubble_);
 
   OnLockScreenNoteStateChanged(initial_note_action_state);
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
