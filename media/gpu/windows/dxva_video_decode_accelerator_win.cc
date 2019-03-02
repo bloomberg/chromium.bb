@@ -44,6 +44,7 @@
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_preferences.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
@@ -1810,12 +1811,19 @@ bool DXVAVideoDecodeAccelerator::SetDecoderInputMediaType() {
     RETURN_ON_HR_FAILURE(hr, "Failed to get stream attributes", false);
     out_attributes->SetUINT32(MF_SA_D3D11_BINDFLAGS,
                               D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DECODER);
-    // For some reason newer Intel drivers need D3D11_BIND_DECODER textures to
-    // be created with a share handle or they'll crash in
-    // CreateShaderResourceView.  Technically MF_SA_D3D11_SHARED_WITHOUT_MUTEX
-    // is only honored by the sample allocator, not by the media foundation
-    // transform, but Microsoft's h.264 transform happens to pass it through.
-    out_attributes->SetUINT32(MF_SA_D3D11_SHARED_WITHOUT_MUTEX, TRUE);
+    // TODO(sunnyps): Find if we can always set resource sharing to disabled.
+    if (base::FeatureList::IsEnabled(
+            features::kDirectCompositionUseNV12DecodeSwapChain)) {
+      // Decode swap chains do not support shared resources.
+      out_attributes->SetUINT32(MF_SA_D3D11_SHARED, FALSE);
+    } else {
+      // For some reason newer Intel drivers need D3D11_BIND_DECODER textures to
+      // be created with a share handle or they'll crash in
+      // CreateShaderResourceView.  Technically MF_SA_D3D11_SHARED_WITHOUT_MUTEX
+      // is only honored by the sample allocator, not by the media foundation
+      // transform, but Microsoft's h.264 transform happens to pass it through.
+      out_attributes->SetUINT32(MF_SA_D3D11_SHARED_WITHOUT_MUTEX, TRUE);
+    }
   }
 
   hr = decoder_->SetInputType(0, media_type.Get(), 0);  // No flags
