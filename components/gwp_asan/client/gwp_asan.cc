@@ -37,11 +37,14 @@ const base::FeatureParam<int> kAllocationSamplingParam{
 const base::FeatureParam<double> kProcessSamplingParam{
     &kGwpAsan, "ProcessSamplingProbability", 1.0};
 
-// The multiplier to increase MaxAllocations/TotalPages on canary/dev builds.
-const base::FeatureParam<int> kCanaryDevMultiplierParam{
-    &kGwpAsan, "CanaryDevMultiplier", 5};
+// The multiplier to increase MaxAllocations/TotalPages in scenarios where we
+// want to perform additional testing (e.g. on canary/dev builds or in the
+// browser process.) The multiplier increase is cumulative when multiple
+// conditions apply.
+const base::FeatureParam<int> kIncreasedMemoryMultiplierParam{
+    &kGwpAsan, "IncreasedMemoryMultiplier", 4};
 
-bool EnableForMalloc(bool is_canary_dev) {
+bool EnableForMalloc(bool is_canary_dev, bool is_browser_process) {
   if (!base::FeatureList::IsEnabled(kGwpAsan))
     return false;
 
@@ -77,24 +80,26 @@ bool EnableForMalloc(bool is_canary_dev) {
     return false;
   }
 
-  int multiplier = 1;
+  base::CheckedNumeric<int> multiplier = 1;
   if (is_canary_dev)
-    multiplier = kCanaryDevMultiplierParam.Get();
+    multiplier += kIncreasedMemoryMultiplierParam.Get();
+  if (is_browser_process)
+    multiplier += kIncreasedMemoryMultiplierParam.Get();
 
-  if (multiplier < 1 || multiplier > kMaxPages) {
-    DLOG(ERROR) << "GWP-ASan CanaryDevMultiplier is out-of-range: "
-                << multiplier;
+  if (!multiplier.IsValid() || multiplier.ValueOrDie() < 1 ||
+      multiplier.ValueOrDie() > kMaxPages) {
+    DLOG(ERROR) << "GWP-ASan IncreaseMemoryMultiplier is out-of-range";
     return false;
   }
 
   base::CheckedNumeric<int> total_pages_mult = total_pages;
-  total_pages_mult *= multiplier;
+  total_pages_mult *= multiplier.ValueOrDie();
   base::CheckedNumeric<int> max_allocations_mult = max_allocations;
-  max_allocations_mult *= multiplier;
+  max_allocations_mult *= multiplier.ValueOrDie();
 
   if (!total_pages_mult.IsValid() || !max_allocations_mult.IsValid()) {
     DLOG(ERROR) << "GWP-ASan multiplier caused out-of-range multiply: "
-                << multiplier;
+                << multiplier.ValueOrDie();
     return false;
   }
 
@@ -112,8 +117,9 @@ bool EnableForMalloc(bool is_canary_dev) {
 }  // namespace
 }  // namespace internal
 
-void EnableForMalloc(bool is_canary_dev) {
-  static bool init_once = internal::EnableForMalloc(is_canary_dev);
+void EnableForMalloc(bool is_canary_dev, bool is_browser_process) {
+  static bool init_once =
+      internal::EnableForMalloc(is_canary_dev, is_browser_process);
   ignore_result(init_once);
 }
 
