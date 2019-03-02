@@ -31,6 +31,7 @@ enum MediaDeviceKind {
     "videoinput"
 };
 
+[SecureContext]
 interface MediaDeviceInfo {
     readonly attribute DOMString deviceId;
     readonly attribute MediaDeviceKind kind;
