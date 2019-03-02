@@ -92,7 +92,6 @@ class ArcApps : public KeyedService,
 
   apps::mojom::AppPtr Convert(const std::string& app_id,
                               const ArcAppListPrefs::AppInfo& app_info);
-  apps::mojom::IconKeyPtr NewIconKey(const std::string& app_id);
   void Publish(apps::mojom::AppPtr app);
   void ConvertAndPublishPackageApps(
       const arc::mojom::ArcPackageInfo& package_info);

@@ -67,16 +67,12 @@ void CrostiniApps::LoadIcon(apps::mojom::IconKeyPtr icon_key,
                             bool allow_placeholder_icon,
                             LoadIconCallback callback) {
   if (!icon_key.is_null()) {
-    if ((icon_key->icon_type == apps::mojom::IconType::kResource) &&
-        (icon_key->u_key != 0) && (icon_key->u_key <= INT_MAX)) {
-      int resource_id = static_cast<int>(icon_key->u_key);
-      constexpr bool is_placeholder_icon = false;
-      LoadIconFromResource(icon_compression, size_hint_in_dip, resource_id,
-                           is_placeholder_icon, std::move(callback));
-      return;
-    }
-
-    if (icon_key->icon_type == apps::mojom::IconType::kCrostini) {
+    // A non-empty s_key means that the icon is provided by the Crostini VM
+    // (and possibly cached on disk).
+    //
+    // An empty s_key means that the icon is a resource built into the Chrome
+    // OS binary.
+    if (!icon_key->s_key.empty()) {
       auto scale_factor = apps_util::GetPrimaryDisplayUIScaleFactor();
 
       // Try loading the icon from an on-disk cache. If that fails, fall back
@@ -89,6 +85,13 @@ void CrostiniApps::LoadIcon(apps::mojom::IconKeyPtr icon_key,
                          weak_ptr_factory_.GetWeakPtr(), icon_key->s_key,
                          icon_compression, size_hint_in_dip,
                          allow_placeholder_icon, scale_factor));
+      return;
+
+    } else if ((icon_key->u_key != 0) && (icon_key->u_key <= INT_MAX)) {
+      int resource_id = static_cast<int>(icon_key->u_key);
+      constexpr bool is_placeholder_icon = false;
+      LoadIconFromResource(icon_compression, size_hint_in_dip, resource_id,
+                           is_placeholder_icon, std::move(callback));
       return;
     }
   }
@@ -216,6 +219,8 @@ apps::mojom::AppPtr CrostiniApps::Convert(
 }
 
 apps::mojom::IconKeyPtr CrostiniApps::NewIconKey(const std::string& app_id) {
+  DCHECK(!app_id.empty());
+
   // Treat the Crostini Terminal as a special case, loading an icon defined by
   // a resource instead of asking the Crostini VM (or the cache of previous
   // responses from the Crostini VM). Presumably this is for bootstrapping: the
@@ -223,16 +228,11 @@ apps::mojom::IconKeyPtr CrostiniApps::NewIconKey(const std::string& app_id) {
   // should be showable even before the user has installed their first Crostini
   // app and before bringing up an Crostini VM for the first time.
   if (app_id == crostini::kCrostiniTerminalId) {
-    auto icon_key = apps::mojom::IconKey::New();
-    icon_key->app_type = apps::mojom::AppType::kCrostini;
-    icon_key->icon_type = apps::mojom::IconType::kResource;
-    icon_key->u_key = IDR_LOGO_CROSTINI_TERMINAL;
-    return icon_key;
+    return apps::mojom::IconKey::New(apps::mojom::AppType::kCrostini,
+                                     IDR_LOGO_CROSTINI_TERMINAL, std::string());
   }
 
-  return icon_key_factory_.MakeIconKey(apps::mojom::AppType::kCrostini,
-                                       apps::mojom::IconType::kCrostini,
-                                       app_id);
+  return icon_key_factory_.MakeIconKey(apps::mojom::AppType::kCrostini, app_id);
 }
 
 void CrostiniApps::PublishAppID(const std::string& app_id,

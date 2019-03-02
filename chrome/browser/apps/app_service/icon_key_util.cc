@@ -10,18 +10,13 @@ IncrementingIconKeyFactory::IncrementingIconKeyFactory() : u_key_(0) {}
 
 apps::mojom::IconKeyPtr IncrementingIconKeyFactory::MakeIconKey(
     apps::mojom::AppType app_type,
-    apps::mojom::IconType icon_type,
     const std::string& s_key,
     uint8_t flags) {
   // The flags occupy the low 8 bits.
   u_key_ += 1 << 8;
 
-  auto icon_key = apps::mojom::IconKey::New();
-  icon_key->app_type = app_type;
-  icon_key->icon_type = icon_type;
-  icon_key->s_key = s_key;
-  icon_key->u_key = u_key_ | static_cast<uint64_t>(flags);
-  return icon_key;
+  return apps::mojom::IconKey::New(
+      app_type, u_key_ | static_cast<uint64_t>(flags), s_key);
 }
 
 }  // namespace apps_util
