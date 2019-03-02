@@ -1778,6 +1778,7 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
   DCHECK_GT(image_data->decode.ref_count, 0u);
   DCHECK_GT(image_data->upload.ref_count, 0u);
 
+  image_data->decode.mark_used();
   sk_sp<SkColorSpace> color_space =
       SupportsColorSpaceConversion() ? target_color_space_ : nullptr;
   // The value of |decoded_target_colorspace| takes into account the fact
@@ -1825,7 +1826,6 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
   // Grab a reference to our decoded image. For the kCpu path, we will use
   // this directly as our "uploaded" data.
   sk_sp<SkImage> uploaded_image = image_data->decode.image();
-  image_data->decode.mark_used();
   GrMipMapped image_needs_mips =
       image_data->needs_mips ? GrMipMapped::kYes : GrMipMapped::kNo;
 
