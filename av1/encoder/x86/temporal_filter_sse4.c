@@ -926,9 +926,9 @@ void av1_apply_temporal_filter_sse4_1(
     int y_pre_stride, const uint8_t *u_src, const uint8_t *v_src,
     int uv_src_stride, const uint8_t *u_pre, const uint8_t *v_pre,
     int uv_pre_stride, unsigned int block_width, unsigned int block_height,
-    int ss_x, int ss_y, int strength, const int *const blk_fw,
-    int use_whole_blk, uint32_t *y_accum, uint16_t *y_count, uint32_t *u_accum,
-    uint16_t *u_count, uint32_t *v_accum, uint16_t *v_count) {
+    int ss_x, int ss_y, int strength, const int *blk_fw, int use_whole_blk,
+    uint32_t *y_accum, uint16_t *y_count, uint32_t *u_accum, uint16_t *u_count,
+    uint32_t *v_accum, uint16_t *v_count) {
   const unsigned int chroma_height = block_height >> ss_y,
                      chroma_width = block_width >> ss_x;
 

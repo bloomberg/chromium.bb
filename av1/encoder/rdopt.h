@@ -117,9 +117,9 @@ unsigned int av1_high_get_sby_perpixel_variance(const struct AV1_COMP *cpi,
                                                 const struct buf_2d *ref,
                                                 BLOCK_SIZE bs, int bd);
 void av1_simple_motion_sse_var(AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
-                               int mi_col, BLOCK_SIZE bsize, MV ref_mv_full,
-                               int use_subpixel, unsigned int *sse,
-                               unsigned int *var);
+                               int mi_col, BLOCK_SIZE bsize,
+                               const MV ref_mv_full, int use_subpixel,
+                               unsigned int *sse, unsigned int *var);
 
 void av1_rd_pick_inter_mode_sb(struct AV1_COMP *cpi,
                                struct TileDataEnc *tile_data,
