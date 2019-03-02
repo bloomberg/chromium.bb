@@ -257,8 +257,10 @@ void FrameSinkManagerImpl::AddVideoDetectorObserver(
 
 void FrameSinkManagerImpl::CreateVideoCapturer(
     mojom::FrameSinkVideoCapturerRequest request) {
-  video_capturers_.emplace(
-      std::make_unique<FrameSinkVideoCapturerImpl>(this, std::move(request)));
+  video_capturers_.emplace(std::make_unique<FrameSinkVideoCapturerImpl>(
+      this, std::move(request),
+      std::make_unique<media::VideoCaptureOracle>(
+          true /* enable_auto_throttling */)));
 }
 
 void FrameSinkManagerImpl::EvictSurfaces(

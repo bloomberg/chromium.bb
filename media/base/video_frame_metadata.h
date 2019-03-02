@@ -17,6 +17,10 @@
 #include "media/base/media_export.h"
 #include "media/base/video_rotation.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace media {
 
 class MEDIA_EXPORT VideoFrameMetadata {
@@ -33,6 +37,24 @@ class MEDIA_EXPORT VideoFrameMetadata {
     // these keys.
     CAPTURE_BEGIN_TIME,
     CAPTURE_END_TIME,
+
+    // A counter that is increased by the producer of video frames each time
+    // it pushes out a new frame. By looking for gaps in this counter, clients
+    // can determine whether or not any frames have been dropped on the way from
+    // the producer between two consecutively received frames. Note that the
+    // counter may start at arbitrary values, so the absolute value of it has no
+    // meaning.
+    CAPTURE_COUNTER,
+
+    // A base::ListValue containing 4 integers representing x, y, width, height
+    // of the rectangular region of the frame that has changed since the frame
+    // with the directly preceding CAPTURE_COUNTER. If that frame was not
+    // received, typically because it was dropped during transport from the
+    // producer, clients must assume that the entire frame has changed.
+    // The rectangle is relative to the full frame data, i.e. [0, 0,
+    // coded_size().width(), coded_size().height()]. It does not have to be
+    // fully contained within visible_rect().
+    CAPTURE_UPDATE_RECT,
 
     // Indicates that this frame must be copied to a new texture before use,
     // rather than being used directly. Specifically this is required for
@@ -158,6 +180,7 @@ class MEDIA_EXPORT VideoFrameMetadata {
   void SetTimeDelta(Key key, const base::TimeDelta& value);
   void SetTimeTicks(Key key, const base::TimeTicks& value);
   void SetUnguessableToken(Key key, const base::UnguessableToken& value);
+  void SetRect(Key key, const gfx::Rect& value);
   void SetValue(Key key, std::unique_ptr<base::Value> value);
 
   // Getters.  Returns true if |key| is present, and its value has been set.
@@ -170,7 +193,9 @@ class MEDIA_EXPORT VideoFrameMetadata {
   bool GetTimeTicks(Key key, base::TimeTicks* value) const WARN_UNUSED_RESULT;
   bool GetUnguessableToken(Key key, base::UnguessableToken* value) const
       WARN_UNUSED_RESULT;
-
+  bool GetRect(Key key, gfx::Rect* value) const WARN_UNUSED_RESULT;
+  // Returns null if |key| was not present or value was not a ListValue.
+  const base::ListValue* GetList(Key key) const WARN_UNUSED_RESULT;
   // Returns null if |key| was not present.
   const base::Value* GetValue(Key key) const WARN_UNUSED_RESULT;
 

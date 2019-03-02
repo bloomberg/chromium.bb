@@ -77,7 +77,6 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
   void OnFrameCaptured(
       base::ReadOnlySharedMemoryRegion data,
       media::mojom::VideoFrameInfoPtr info,
-      const gfx::Rect& update_rect,
       const gfx::Rect& content_rect,
       viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) final;
   void OnStopped() final;

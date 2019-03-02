@@ -375,8 +375,15 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   VideoPixelFormat format() const { return layout_.format(); }
   StorageType storage_type() const { return storage_type_; }
 
+  // The full dimensions of the video frame data.
   const gfx::Size& coded_size() const { return layout_.coded_size(); }
+  // A subsection of [0, 0, coded_size().width(), coded_size.height()]. This
+  // can be set to "soft-apply" a cropping. It determines the pointers into
+  // the data returned by visible_data().
   const gfx::Rect& visible_rect() const { return visible_rect_; }
+  // Specifies that the |visible_rect| section of the frame is supposed to be
+  // scaled to this size when being presented. This can be used to represent
+  // anamorphic frames, or to "soft-apply" any custom scaling.
   const gfx::Size& natural_size() const { return natural_size_; }
 
   int stride(size_t plane) const {

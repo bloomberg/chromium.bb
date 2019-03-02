@@ -187,7 +187,7 @@ class DevToolsVideoConsumerTest : public testing::Test {
         nullptr);
 
     consumer_->OnFrameCaptured(std::move(data), std::move(info),
-                               gfx::Rect(kResolution), gfx::Rect(kResolution),
+                               gfx::Rect(kResolution),
                                std::move(callbacks_ptr));
   }
 

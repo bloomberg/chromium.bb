@@ -209,7 +209,6 @@ void FrameSinkVideoCaptureDevice::OnUtilizationReport(int frame_feedback_id,
 void FrameSinkVideoCaptureDevice::OnFrameCaptured(
     base::ReadOnlySharedMemoryRegion data,
     media::mojom::VideoFrameInfoPtr info,
-    const gfx::Rect& update_rect,
     const gfx::Rect& content_rect,
     viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

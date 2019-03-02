@@ -134,7 +134,6 @@ bool DevToolsVideoConsumer::IsValidMinAndMaxFrameSize(
 void DevToolsVideoConsumer::OnFrameCaptured(
     base::ReadOnlySharedMemoryRegion data,
     ::media::mojom::VideoFrameInfoPtr info,
-    const gfx::Rect& update_rect,
     const gfx::Rect& content_rect,
     viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) {
   if (!data.IsValid())

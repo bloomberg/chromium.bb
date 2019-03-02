@@ -40,8 +40,8 @@ gfx::Rect ComputeResultRect(const gfx::Rect& area,
                             const gfx::Vector2d& scale_to) {
   DCHECK_GT(scale_from.x(), 0);
   DCHECK_GT(scale_from.y(), 0);
-  DCHECK_GT(scale_to.x(), 0);
-  DCHECK_GT(scale_to.y(), 0);
+  DCHECK_GE(scale_to.x(), 0);
+  DCHECK_GE(scale_to.y(), 0);
 
   const int64_t x = FloorScale(area.x(), scale_to.x(), scale_from.x());
   const int64_t y = FloorScale(area.y(), scale_to.y(), scale_from.y());
