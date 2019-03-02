@@ -82,8 +82,8 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
   portal_contents_impl_ = static_cast<WebContentsImpl*>(portal_contents.get());
   portal_contents_impl_->set_portal(this);
 
-  portal_contents_impl_->AttachToOuterWebContentsFrame(
-      std::move(portal_contents), outer_node->current_frame_host());
+  outer_contents_impl->AttachInnerWebContents(std::move(portal_contents),
+                                              outer_node->current_frame_host());
 
   FrameTreeNode* frame_tree_node =
       portal_contents_impl_->GetMainFrame()->frame_tree_node();

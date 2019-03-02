@@ -451,23 +451,6 @@ WebContentsImpl::WebContentsTreeNode::WebContentsTreeNode(
 
 WebContentsImpl::WebContentsTreeNode::~WebContentsTreeNode() {}
 
-void WebContentsImpl::WebContentsTreeNode::ConnectToOuterWebContents(
-    std::unique_ptr<WebContents> current_web_contents,
-    RenderFrameHostImpl* outer_contents_frame) {
-  DCHECK_EQ(current_web_contents.get(), current_web_contents_);
-  auto* outer_web_contents =
-      static_cast<WebContentsImpl*>(FromRenderFrameHost(outer_contents_frame));
-
-  focused_web_contents_ = nullptr;
-  outer_web_contents_ = outer_web_contents;
-  outer_contents_frame_tree_node_id_ =
-      outer_contents_frame->frame_tree_node()->frame_tree_node_id();
-
-  outer_web_contents_->node_.AttachInnerWebContents(
-      std::move(current_web_contents));
-  outer_contents_frame->frame_tree_node()->AddObserver(this);
-}
-
 std::unique_ptr<WebContents>
 WebContentsImpl::WebContentsTreeNode::DisconnectFromOuterWebContents() {
   std::unique_ptr<WebContents> inner_contents =
@@ -479,8 +462,20 @@ WebContentsImpl::WebContentsTreeNode::DisconnectFromOuterWebContents() {
 }
 
 void WebContentsImpl::WebContentsTreeNode::AttachInnerWebContents(
-    std::unique_ptr<WebContents> inner_web_contents) {
+    std::unique_ptr<WebContents> inner_web_contents,
+    RenderFrameHostImpl* render_frame_host) {
+  WebContentsImpl* inner_web_contents_impl =
+      static_cast<WebContentsImpl*>(inner_web_contents.get());
+  WebContentsTreeNode& inner_web_contents_node = inner_web_contents_impl->node_;
+
+  inner_web_contents_node.focused_web_contents_ = nullptr;
+  inner_web_contents_node.outer_web_contents_ = current_web_contents_;
+  inner_web_contents_node.outer_contents_frame_tree_node_id_ =
+      render_frame_host->frame_tree_node()->frame_tree_node_id();
+
   inner_web_contents_.push_back(std::move(inner_web_contents));
+
+  render_frame_host->frame_tree_node()->AddObserver(&inner_web_contents_node);
 }
 
 std::unique_ptr<WebContents>
@@ -1808,23 +1803,33 @@ void WebContentsImpl::DispatchBeforeUnload(bool auto_cancel) {
   GetMainFrame()->DispatchBeforeUnload(before_unload_type, false);
 }
 
-void WebContentsImpl::AttachToOuterWebContentsFrame(
-    std::unique_ptr<WebContents> current_web_contents,
-    RenderFrameHost* outer_contents_frame) {
-  DCHECK(!node_.outer_web_contents());
-  DCHECK_EQ(current_web_contents.get(), this);
-  auto* outer_contents_frame_impl =
-      static_cast<RenderFrameHostImpl*>(outer_contents_frame);
+void WebContentsImpl::AttachInnerWebContents(
+    std::unique_ptr<WebContents> inner_web_contents,
+    RenderFrameHost* render_frame_host) {
+  WebContentsImpl* inner_web_contents_impl =
+      static_cast<WebContentsImpl*>(inner_web_contents.get());
+  DCHECK(!inner_web_contents_impl->node_.outer_web_contents());
+  auto* render_frame_host_impl =
+      static_cast<RenderFrameHostImpl*>(render_frame_host);
+  DCHECK_EQ(&frame_tree_,
+            render_frame_host_impl->frame_tree_node()->frame_tree());
 
-  RenderFrameHostManager* render_manager = GetRenderManager();
-  auto* outer_contnets_render_manager =
-      outer_contents_frame_impl->frame_tree_node()->render_manager();
+  RenderFrameHostManager* inner_render_manager =
+      inner_web_contents_impl->GetRenderManager();
+  RenderFrameHostImpl* inner_main_frame =
+      inner_render_manager->current_frame_host();
+  RenderViewHostImpl* inner_render_view_host =
+      inner_render_manager->current_host();
+  auto* outer_render_manager =
+      render_frame_host_impl->frame_tree_node()->render_manager();
 
   // When attaching a WebContents as an inner WebContents, we need to replace
   // the Webcontents' view with a WebContentsViewChildFrame.
-  view_.reset(new WebContentsViewChildFrame(
-      this, GetContentClient()->browser()->GetWebContentsViewDelegate(this),
-      &render_view_host_delegate_view_));
+  inner_web_contents_impl->view_.reset(new WebContentsViewChildFrame(
+      inner_web_contents_impl,
+      GetContentClient()->browser()->GetWebContentsViewDelegate(
+          inner_web_contents_impl),
+      &inner_web_contents_impl->render_view_host_delegate_view_));
 
   // When the WebContents being initialized has an opener, the  browser side
   // Render{View,Frame}Host must be initialized and the RenderWidgetHostView
@@ -1832,36 +1837,39 @@ void WebContentsImpl::AttachToOuterWebContentsFrame(
   // the first navigation, but when attaching a new window we don't navigate
   // before attaching. If the browser side is already initialized, the calls
   // below will just early return.
-  render_manager->InitRenderView(GetRenderViewHost(), nullptr);
-  GetMainFrame()->Init();
-  if (!render_manager->GetRenderWidgetHostView())
-    CreateRenderWidgetHostViewForRenderManager(GetRenderViewHost());
+  inner_render_manager->InitRenderView(inner_render_view_host, nullptr);
+  inner_main_frame->Init();
+  if (!inner_render_manager->GetRenderWidgetHostView()) {
+    inner_web_contents_impl->CreateRenderWidgetHostViewForRenderManager(
+        inner_render_view_host);
+  }
 
   // Create a link to our outer WebContents.
-  node_.ConnectToOuterWebContents(std::move(current_web_contents),
-                                  outer_contents_frame_impl);
+  node_.AttachInnerWebContents(std::move(inner_web_contents),
+                               render_frame_host_impl);
 
   // Create a proxy in top-level RenderFrameHostManager, pointing to the
   // SiteInstance of the outer WebContents. The proxy will be used to send
   // postMessage to the inner WebContents.
-  auto* proxy = render_manager->CreateOuterDelegateProxy(
-      outer_contents_frame->GetSiteInstance());
+  auto* proxy = inner_render_manager->CreateOuterDelegateProxy(
+      render_frame_host_impl->GetSiteInstance());
 
   // When attaching a GuestView as an inner WebContents, there should already be
   // a live RenderFrame, which has to be swapped. When attaching a portal, there
   // will not be a live RenderFrame before creating the proxy.
-  if (outer_contents_frame->IsRenderFrameLive()) {
-    render_manager->SwapOuterDelegateFrame(outer_contents_frame_impl, proxy);
+  if (render_frame_host_impl->IsRenderFrameLive()) {
+    inner_render_manager->SwapOuterDelegateFrame(render_frame_host_impl, proxy);
 
-    ReattachToOuterWebContentsFrame();
+    inner_web_contents_impl->ReattachToOuterWebContentsFrame();
   }
 
-  if (node_.outer_web_contents()->frame_tree_.GetFocusedFrame() ==
-      outer_contents_frame_impl->frame_tree_node()) {
-    SetFocusedFrame(frame_tree_.root(),
-                    outer_contents_frame->GetSiteInstance());
+  if (frame_tree_.GetFocusedFrame() ==
+      render_frame_host_impl->frame_tree_node()) {
+    inner_web_contents_impl->SetFocusedFrame(
+        inner_web_contents_impl->frame_tree_.root(),
+        render_frame_host_impl->GetSiteInstance());
   }
-  outer_contnets_render_manager->set_attach_complete();
+  outer_render_manager->set_attach_complete();
 }
 
 std::unique_ptr<WebContents> WebContentsImpl::DetachFromOuterWebContents() {
