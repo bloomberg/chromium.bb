@@ -39,7 +39,7 @@
 #include "extensions/browser/extension_registry.h"
 
 // Id for extension that enables users to report sites to Safe Browsing.
-const char kPreventElisionExtensionId[] = "ekpgepffboojnckiahkpangdldnjafnj";
+const char kPreventElisionExtensionId[] = "jknemblkbdhdcpllfgbfekkdciegfboi";
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 ChromeLocationBarModelDelegate::ChromeLocationBarModelDelegate() {}
