@@ -2440,13 +2440,42 @@ void Document::UpdateStyleAndLayoutTreeForNode(const Node* node) {
   DCHECK(node);
   if (!NeedsLayoutTreeUpdateForNode(*node))
     return;
+
+  // Force unlock any element from the given node up the ancestor chain.
+  Vector<DisplayLockContext::ScopedForcedUpdate> scoped_update_forced_list;
+  if (RuntimeEnabledFeatures::DisplayLockingEnabled() &&
+      LockedDisplayLockCount() > 0) {
+    const_cast<Node*>(node)->UpdateDistributionForFlatTreeTraversal();
+    for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*node)) {
+      if (!ancestor.IsElementNode())
+        continue;
+      if (auto* context = ToElement(ancestor).GetDisplayLockContext())
+        scoped_update_forced_list.push_back(context->GetScopedForcedUpdate());
+    }
+  }
+
   UpdateStyleAndLayoutTree();
 }
 
-void Document::UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(Node* node) {
+void Document::UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(
+    const Node* node) {
   DCHECK(node);
   if (!node->InActiveDocument())
     return;
+
+  // Force unlock any element from the given node up the ancestor chain.
+  Vector<DisplayLockContext::ScopedForcedUpdate> scoped_update_forced_list;
+  if (RuntimeEnabledFeatures::DisplayLockingEnabled() &&
+      LockedDisplayLockCount() > 0) {
+    const_cast<Node*>(node)->UpdateDistributionForFlatTreeTraversal();
+    for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*node)) {
+      if (!ancestor.IsElementNode())
+        continue;
+      if (auto* context = ToElement(ancestor).GetDisplayLockContext())
+        scoped_update_forced_list.push_back(context->GetScopedForcedUpdate());
+    }
+  }
+
   UpdateStyleAndLayoutIgnorePendingStylesheets();
 }
 
