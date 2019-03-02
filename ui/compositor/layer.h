@@ -172,8 +172,8 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // otherwise.
   gfx::Rect GetTargetBounds() const;
 
-  // Sets/gets whether or not drawing of child layers should be clipped to the
-  // bounds of this layer.
+  // Sets/gets whether or not drawing of child layers, including drawing in
+  // this layer, should be clipped to the bounds of this layer.
   void SetMasksToBounds(bool masks_to_bounds);
   bool GetMasksToBounds() const;
 

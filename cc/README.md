@@ -44,7 +44,7 @@ Design documents for the graphics stack can be found at
 
 ## Other Docs
 
-* [How cc Works](https://docs.google.com/document/d/1yjzOWrPfFGviEd1nru3yzqxSHETC-zsEBSt9C8SvV-Q/edit)
+* [How cc Works](../docs/how_cc_works.md)
 
 ## Glossaries
 
