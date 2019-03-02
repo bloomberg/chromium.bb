@@ -216,6 +216,11 @@ void AssistantManagerServiceImpl::EnableListening(bool enable) {
 
 void AssistantManagerServiceImpl::EnableHotword(bool enable) {
   platform_api_->OnHotwordEnabled(enable);
+
+  if (base::FeatureList::IsEnabled(assistant::features::kAssistantVoiceMatch) &&
+      state_ == State::RUNNING) {
+    assistant_settings_manager_->SyncSpeakerIdEnrollmentStatus();
+  }
 }
 
 AssistantSettingsManager*
