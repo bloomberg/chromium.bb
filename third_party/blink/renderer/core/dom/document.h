@@ -527,7 +527,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // but allows style & layout tree calculation for invisible nodes.
   void UpdateStyleAndLayoutIgnorePendingStylesheetsConsideringInvisibleNodes(
       RunPostLayoutTasks = kRunPostLayoutTasksAsynchronously);
-  void UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(Node*);
+  void UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(const Node*);
   scoped_refptr<ComputedStyle> StyleForPage(int page_index);
 
   // Ensures that location-based data will be valid for a given node.
