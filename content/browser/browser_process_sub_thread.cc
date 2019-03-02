@@ -81,7 +81,7 @@ BrowserProcessSubThread::CreateIOThread() {
   TRACE_EVENT0("startup", "BrowserProcessSubThread::CreateIOThread");
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(USE_OZONE)
   // Up the priority of the |io_thread_| as some of its IPCs relate to
   // display tasks.
   options.priority = base::ThreadPriority::DISPLAY;

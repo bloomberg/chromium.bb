@@ -103,7 +103,7 @@ void Thread::CreateAndSetCompositorThread() {
   DCHECK(!GetCompositorThread());
 
   ThreadCreationParams params(WebThreadType::kCompositorThread);
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(USE_OZONE)
   params.thread_options.priority = base::ThreadPriority::DISPLAY;
 #endif
   auto compositor_thread =

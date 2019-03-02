@@ -288,7 +288,7 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   base::PlatformThread::SetName("CrGpuMain");
 
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(USE_OZONE)
   // Set thread priority before sandbox initialization.
   base::PlatformThread::SetCurrentThreadPriority(base::ThreadPriority::DISPLAY);
 #endif
@@ -321,7 +321,7 @@ int GpuMain(const MainFunctionParams& parameters) {
   GetContentClient()->SetGpuInfo(gpu_init->gpu_info());
 
   base::ThreadPriority io_thread_priority = base::ThreadPriority::NORMAL;
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(USE_OZONE)
   io_thread_priority = base::ThreadPriority::DISPLAY;
 #endif
 
