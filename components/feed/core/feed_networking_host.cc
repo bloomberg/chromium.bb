@@ -66,7 +66,8 @@ class NetworkFetch {
 
  private:
   void StartAccessTokenFetch();
-  void AccessTokenFetchFinished(GoogleServiceAuthError error,
+  void AccessTokenFetchFinished(base::TimeTicks token_start_ticks,
+                                GoogleServiceAuthError error,
                                 identity::AccessTokenInfo access_token_info);
   void StartLoader();
   std::unique_ptr<network::SimpleURLLoader> MakeLoader();
@@ -130,15 +131,21 @@ void NetworkFetch::StartAccessTokenFetch() {
   token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
       "feed", identity_manager_, scopes,
       base::BindOnce(&NetworkFetch::AccessTokenFetchFinished,
-                     base::Unretained(this)),
+                     base::Unretained(this), tick_clock_->NowTicks()),
       identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
 void NetworkFetch::AccessTokenFetchFinished(
+    base::TimeTicks token_start_ticks,
     GoogleServiceAuthError error,
     identity::AccessTokenInfo access_token_info) {
   UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.Network.TokenFetchStatus",
                             error.state(), GoogleServiceAuthError::NUM_STATES);
+
+  base::TimeDelta token_duration = tick_clock_->NowTicks() - token_start_ticks;
+  UMA_HISTOGRAM_MEDIUM_TIMES("ContentSuggestions.Feed.Network.TokenDuration",
+                             token_duration);
+
   access_token_ = access_token_info.token;
   StartLoader();
 }
