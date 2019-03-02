@@ -91,29 +91,11 @@ class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
                                       session_->quic_stream_factory(),
                                       /*is_trusted_proxy=*/false,
                                       /*tunnel=*/true,
-                                      TRAFFIC_ANNOTATION_FOR_TESTS)),
-        http_proxy_socket_pool_(
-            kMaxSockets,
-            kMaxSocketsPerGroup,
-            kUnusedIdleSocketTimeout,
-            &socket_factory_,
-            &host_resolver_,
-            nullptr /* proxy_delegate */,
-            nullptr /* cert_verifier */,
-            nullptr /* channel_id_server */,
-            nullptr /* transport_security_state */,
-            nullptr /* cert_transparency_verifier */,
-            nullptr /* ct_policy_enforcer */,
-            nullptr /* ssl_client_session_cache */,
-            nullptr /* ssl_client_session_cache_privacy_mode */,
-            nullptr /* ssl_config_service */,
-            nullptr /* socket_performance_watcher_factory */,
-            nullptr /* network_quality_estimator */,
-            nullptr /* net_log */) {
+                                      TRAFFIC_ANNOTATION_FOR_TESTS)) {
     ssl_config_service_->GetSSLConfig(&ssl_config_);
   }
 
-  void CreatePool(bool http_proxy_pool) {
+  void CreatePool() {
     pool_.reset(new TransportClientSocketPool(
         kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
         &socket_factory_, &host_resolver_, NULL /* proxy_delegate */,
@@ -123,8 +105,7 @@ class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
         nullptr /* ssl_client_session_cache_privacy_mode */,
         nullptr /* ssl_config_service */,
         nullptr /* socket_performance_watcher_factory */,
-        nullptr /* network_quality_estimator */, nullptr /* net_log */,
-        http_proxy_pool ? &http_proxy_socket_pool_ : nullptr));
+        nullptr /* network_quality_estimator */, nullptr /* net_log */));
   }
 
   scoped_refptr<SSLSocketParams> SSLParams(ProxyServer::Scheme proxy) {
@@ -181,7 +162,6 @@ class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
   scoped_refptr<TransportSocketParams> proxy_transport_socket_params_;
 
   scoped_refptr<HttpProxySocketParams> http_proxy_socket_params_;
-  TransportClientSocketPool http_proxy_socket_pool_;
 
   SSLConfig ssl_config_;
   std::unique_ptr<TransportClientSocketPool> pool_;
@@ -193,7 +173,7 @@ TEST_F(SSLClientSocketPoolTest, DirectCertError) {
   SSLSocketDataProvider ssl(ASYNC, ERR_CERT_COMMON_NAME_INVALID);
   socket_factory_.AddSSLSocketDataProvider(&ssl);
 
-  CreatePool(false /* http_proxy_pool */);
+  CreatePool();
   scoped_refptr<SSLSocketParams> params = SSLParams(ProxyServer::SCHEME_DIRECT);
 
   ClientSocketHandle handle;

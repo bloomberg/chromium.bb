@@ -577,8 +577,7 @@ int HttpProxyClientSocketWrapper::DoSSLConnect() {
   }
   next_state_ = STATE_SSL_CONNECT_COMPLETE;
   nested_connect_job_ = std::make_unique<SSLConnectJob>(
-      priority_, common_connect_job_params_, ssl_params_,
-      nullptr /* http_proxy_pool */, this, &net_log_);
+      priority_, common_connect_job_params_, ssl_params_, this, &net_log_);
   return nested_connect_job_->Connect();
 }
 

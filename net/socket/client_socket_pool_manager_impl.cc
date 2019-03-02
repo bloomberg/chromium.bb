@@ -103,13 +103,6 @@ ClientSocketPoolManagerImpl::~ClientSocketPoolManagerImpl() {
 }
 
 void ClientSocketPoolManagerImpl::FlushSocketPoolsWithError(int error) {
-  // Flush the highest level pools first, since higher level pools may release
-  // stuff to the lower level pools.
-
-  for (const auto& it : ssl_socket_pools_for_proxies_) {
-    it.second->FlushWithError(error);
-  }
-
   for (const auto& it : http_proxy_socket_pools_) {
     it.second->FlushWithError(error);
   }
@@ -122,12 +115,6 @@ void ClientSocketPoolManagerImpl::FlushSocketPoolsWithError(int error) {
 }
 
 void ClientSocketPoolManagerImpl::CloseIdleSockets() {
-  // Close sockets in the highest level pools first, since higher level pools'
-  // sockets may release stuff to the lower level pools.
-  for (const auto& it : ssl_socket_pools_for_proxies_) {
-    it.second->CloseIdleSockets();
-  }
-
   for (const auto& it : http_proxy_socket_pools_) {
     it.second->CloseIdleSockets();
   }
@@ -182,39 +169,6 @@ ClientSocketPoolManagerImpl::GetSocketPoolForHTTPLikeProxy(
   return ret.first->second.get();
 }
 
-TransportClientSocketPool*
-ClientSocketPoolManagerImpl::GetSocketPoolForSSLWithProxy(
-    const ProxyServer& proxy_server) {
-  DCHECK(!proxy_server.is_socks());
-  DCHECK(!proxy_server.is_direct());
-
-  TransportSocketPoolMap::const_iterator it =
-      ssl_socket_pools_for_proxies_.find(proxy_server);
-  if (it != ssl_socket_pools_for_proxies_.end())
-    return it->second.get();
-
-  int sockets_per_proxy_server = max_sockets_per_proxy_server(pool_type_);
-  int sockets_per_group = std::min(sockets_per_proxy_server,
-                                   max_sockets_per_group(pool_type_));
-  std::pair<TransportSocketPoolMap::iterator, bool> ret =
-      ssl_socket_pools_for_proxies_.insert(std::make_pair(
-          proxy_server,
-          std::make_unique<TransportClientSocketPool>(
-              sockets_per_proxy_server, sockets_per_group,
-              unused_idle_socket_timeout(pool_type_), socket_factory_,
-              host_resolver_, proxy_delegate_, cert_verifier_,
-              channel_id_service_, transport_security_state_,
-              cert_transparency_verifier_, ct_policy_enforcer_,
-              ssl_client_session_cache_, ssl_client_session_cache_privacy_mode_,
-              ssl_config_service_, socket_performance_watcher_factory_,
-              network_quality_estimator_, net_log_,
-              proxy_server.is_http_like()
-                  ? GetSocketPoolForHTTPLikeProxy(proxy_server)
-                  : nullptr)));
-
-  return ret.first->second.get();
-}
-
 std::unique_ptr<base::Value>
 ClientSocketPoolManagerImpl::SocketPoolInfoToValue() const {
   std::unique_ptr<base::ListValue> list(new base::ListValue());
@@ -226,10 +180,6 @@ ClientSocketPoolManagerImpl::SocketPoolInfoToValue() const {
   AddSocketPoolsToList(list.get(), proxy_socket_pools_, "proxy_socket_pools",
                        true);
 
-  // Third parameter is false because |ssl_socket_pools_for_proxies_| use
-  // socket pools in |http_proxy_socket_pools_| and |socks_socket_pools_|.
-  AddSocketPoolsToList(list.get(), ssl_socket_pools_for_proxies_,
-                       "ssl_socket_pool_for_proxies", false);
   return std::move(list);
 }
 

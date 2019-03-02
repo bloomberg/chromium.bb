@@ -16,7 +16,6 @@
 #include "net/base/net_export.h"
 #include "net/base/privacy_mode.h"
 #include "net/http/http_response_info.h"
-#include "net/socket/client_socket_pool.h"
 #include "net/socket/connect_job.h"
 #include "net/socket/connection_attempts.h"
 #include "net/socket/ssl_client_socket.h"
@@ -24,10 +23,10 @@
 
 namespace net {
 
+class ClientSocketHandle;
 class HostPortPair;
 class HttpProxySocketParams;
 class SOCKSSocketParams;
-class TransportClientSocketPool;
 class TransportSocketParams;
 
 class NET_EXPORT_PRIVATE SSLSocketParams
@@ -85,7 +84,6 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
   SSLConnectJob(RequestPriority priority,
                 const CommonConnectJobParams& common_connect_job_params,
                 const scoped_refptr<SSLSocketParams>& params,
-                TransportClientSocketPool* http_proxy_pool,
                 ConnectJob::Delegate* delegate,
                 const NetLogWithSource* net_log);
   ~SSLConnectJob() override;
@@ -100,10 +98,6 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
                         HttpAuthController* auth_controller,
                         base::OnceClosure restart_with_auth_callback,
                         ConnectJob* job) override;
-
-  void OnProxyAuthChallenge(const HttpResponseInfo& response,
-                            HttpAuthController* auth_controller,
-                            base::OnceClosure restart_with_auth_callback);
 
   void GetAdditionalErrorState(ClientSocketHandle* handle) override;
 
@@ -152,13 +146,11 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
   void ChangePriorityInternal(RequestPriority priority) override;
 
   scoped_refptr<SSLSocketParams> params_;
-  TransportClientSocketPool* const http_proxy_pool_;
 
   State next_state_;
   CompletionRepeatingCallback callback_;
   std::unique_ptr<ConnectJob> nested_connect_job_;
   std::unique_ptr<StreamSocket> nested_socket_;
-  std::unique_ptr<ClientSocketHandle> transport_socket_handle_;
   std::unique_ptr<SSLClientSocket> ssl_socket_;
 
   HttpResponseInfo error_response_info_;

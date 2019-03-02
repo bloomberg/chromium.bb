@@ -37,9 +37,7 @@ std::unique_ptr<ConnectJob> CreateTransportConnectJob(
     scoped_refptr<TransportSocketParams> transport_socket_params,
     RequestPriority priority,
     const CommonConnectJobParams& common_connect_job_params,
-    ConnectJob::Delegate* delegate,
-    TransportClientSocketPool* http_proxy_pool_for_ssl_pool) {
-  DCHECK(!http_proxy_pool_for_ssl_pool);
+    ConnectJob::Delegate* delegate) {
   return TransportConnectJob::CreateTransportConnectJob(
       std::move(transport_socket_params), priority, common_connect_job_params,
       delegate, nullptr /* net_log */);
@@ -49,9 +47,7 @@ std::unique_ptr<ConnectJob> CreateSOCKSConnectJob(
     scoped_refptr<SOCKSSocketParams> socks_socket_params,
     RequestPriority priority,
     const CommonConnectJobParams& common_connect_job_params,
-    ConnectJob::Delegate* delegate,
-    TransportClientSocketPool* http_proxy_pool_for_ssl_pool) {
-  DCHECK(!http_proxy_pool_for_ssl_pool);
+    ConnectJob::Delegate* delegate) {
   return std::make_unique<SOCKSConnectJob>(priority, common_connect_job_params,
                                            std::move(socks_socket_params),
                                            delegate, nullptr /* net_log */);
@@ -61,20 +57,17 @@ std::unique_ptr<ConnectJob> CreateSSLConnectJob(
     scoped_refptr<SSLSocketParams> ssl_socket_params,
     RequestPriority priority,
     const CommonConnectJobParams& common_connect_job_params,
-    ConnectJob::Delegate* delegate,
-    TransportClientSocketPool* http_proxy_pool_for_ssl_pool) {
-  return std::make_unique<SSLConnectJob>(
-      priority, common_connect_job_params, std::move(ssl_socket_params),
-      http_proxy_pool_for_ssl_pool, delegate, nullptr /* net_log */);
+    ConnectJob::Delegate* delegate) {
+  return std::make_unique<SSLConnectJob>(priority, common_connect_job_params,
+                                         std::move(ssl_socket_params), delegate,
+                                         nullptr /* net_log */);
 }
 
 std::unique_ptr<ConnectJob> CreateHttpProxyConnectJob(
     scoped_refptr<HttpProxySocketParams> http_proxy_socket_params,
     RequestPriority priority,
     const CommonConnectJobParams& common_connect_job_params,
-    ConnectJob::Delegate* delegate,
-    TransportClientSocketPool* http_proxy_pool_for_ssl_pool) {
-  DCHECK(!http_proxy_pool_for_ssl_pool);
+    ConnectJob::Delegate* delegate) {
   return std::make_unique<HttpProxyConnectJob>(
       priority, common_connect_job_params, std::move(http_proxy_socket_params),
       delegate, nullptr /* net_log */);
@@ -129,8 +122,7 @@ TransportClientSocketPool::TransportConnectJobFactory::
         const SSLClientSocketContext& ssl_client_socket_context_privacy_mode,
         SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
         NetworkQualityEstimator* network_quality_estimator,
-        NetLog* net_log,
-        TransportClientSocketPool* http_proxy_pool_for_ssl_pool)
+        NetLog* net_log)
     : client_socket_factory_(client_socket_factory),
       host_resolver_(host_resolver),
       proxy_delegate_(proxy_delegate),
@@ -139,8 +131,7 @@ TransportClientSocketPool::TransportConnectJobFactory::
           ssl_client_socket_context_privacy_mode),
       socket_performance_watcher_factory_(socket_performance_watcher_factory),
       network_quality_estimator_(network_quality_estimator),
-      net_log_(net_log),
-      http_proxy_pool_for_ssl_pool_(http_proxy_pool_for_ssl_pool) {}
+      net_log_(net_log) {}
 
 TransportClientSocketPool::TransportConnectJobFactory::
     ~TransportConnectJobFactory() = default;
@@ -159,7 +150,7 @@ TransportClientSocketPool::TransportConnectJobFactory::NewConnectJob(
           ssl_client_socket_context_, ssl_client_socket_context_privacy_mode_,
           socket_performance_watcher_factory_, network_quality_estimator_,
           net_log_, nullptr /* websocket_endpoint_lock_manager */),
-      delegate, http_proxy_pool_for_ssl_pool_);
+      delegate);
 }
 
 TransportClientSocketPool::TransportClientSocketPool(
@@ -179,8 +170,7 @@ TransportClientSocketPool::TransportClientSocketPool(
     SSLConfigService* ssl_config_service,
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
     NetworkQualityEstimator* network_quality_estimator,
-    NetLog* net_log,
-    TransportClientSocketPool* http_proxy_pool_for_ssl_pool)
+    NetLog* net_log)
     : base_(this,
             max_sockets,
             max_sockets_per_group,
@@ -204,15 +194,12 @@ TransportClientSocketPool::TransportClientSocketPool(
                                        ssl_client_session_cache_privacy_mode),
                 socket_performance_watcher_factory,
                 network_quality_estimator,
-                net_log,
-                http_proxy_pool_for_ssl_pool)),
+                net_log)),
       client_socket_factory_(client_socket_factory),
       ssl_config_service_(ssl_config_service) {
   base_.EnableConnectBackupJobs();
   if (ssl_config_service_)
     ssl_config_service_->AddObserver(this);
-  if (http_proxy_pool_for_ssl_pool)
-    base_.AddLowerLayeredPool(http_proxy_pool_for_ssl_pool);
 }
 
 TransportClientSocketPool::~TransportClientSocketPool() {

@@ -11290,24 +11290,15 @@ TEST_F(HttpNetworkTransactionTest, GroupNameForHTTPProxyConnections) {
                              HostPortPair("http_proxy", 80));
     CaptureGroupNameTransportSocketPool* http_proxy_pool =
         new CaptureGroupNameTransportSocketPool(NULL, NULL);
-    CaptureGroupNameTransportSocketPool* ssl_conn_pool =
-        new CaptureGroupNameTransportSocketPool(NULL, NULL);
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
     mock_pool_manager->SetSocketPoolForHTTPProxy(
         proxy_server, base::WrapUnique(http_proxy_pool));
-    mock_pool_manager->SetSocketPoolForSSLWithProxy(
-        proxy_server, base::WrapUnique(ssl_conn_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
     EXPECT_EQ(ERR_IO_PENDING,
               GroupNameTransactionHelper(tests[i].url, session.get()));
-    if (tests[i].ssl) {
-      EXPECT_EQ(tests[i].expected_group_name,
-                ssl_conn_pool->last_group_name_received());
-    } else {
-      EXPECT_EQ(tests[i].expected_group_name,
-                http_proxy_pool->last_group_name_received());
-    }
+    EXPECT_EQ(tests[i].expected_group_name,
+              http_proxy_pool->last_group_name_received());
   }
 }
 

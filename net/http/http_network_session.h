@@ -304,9 +304,6 @@ class NET_EXPORT HttpNetworkSession {
   TransportClientSocketPool* GetSocketPoolForHTTPLikeProxy(
       SocketPoolType pool_type,
       const ProxyServer& http_proxy);
-  TransportClientSocketPool* GetSocketPoolForSSLWithProxy(
-      SocketPoolType pool_type,
-      const ProxyServer& proxy_server);
 
   CertVerifier* cert_verifier() { return cert_verifier_; }
   ProxyResolutionService* proxy_resolution_service() {

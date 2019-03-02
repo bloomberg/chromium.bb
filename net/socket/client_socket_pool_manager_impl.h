@@ -77,9 +77,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
   TransportClientSocketPool* GetSocketPoolForHTTPLikeProxy(
       const ProxyServer& http_proxy) override;
 
-  TransportClientSocketPool* GetSocketPoolForSSLWithProxy(
-      const ProxyServer& proxy_server) override;
-
   // Creates a Value summary of the state of the socket pools.
   std::unique_ptr<base::Value> SocketPoolInfoToValue() const override;
 
@@ -129,7 +126,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
   TransportSocketPoolMap proxy_socket_pools_;
 
   TransportSocketPoolMap http_proxy_socket_pools_;
-  TransportSocketPoolMap ssl_socket_pools_for_proxies_;
 
   THREAD_CHECKER(thread_checker_);
 
