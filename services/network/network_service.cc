@@ -95,9 +95,9 @@ std::unique_ptr<net::NetworkChangeNotifier> CreateNetworkChangeNotifierIfNeeded(
     // browser process.
     return std::make_unique<net::NetworkChangeNotifierPosix>(
         initial_connection_type, initial_connection_subtype);
-#elif defined(OS_IOS) || defined(OS_FUCHSIA)
-    // iOS doesn't embed //content. Fuchsia doesn't have an implementation yet.
-    // TODO(xunjieli): Figure out what to do for these 2 platforms.
+#elif defined(OS_IOS)
+    // iOS doesn't embed //content.
+    // TODO(xunjieli): Figure out what to do for iOS.
     NOTIMPLEMENTED();
     return nullptr;
 #endif
