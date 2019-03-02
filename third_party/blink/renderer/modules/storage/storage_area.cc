@@ -113,8 +113,10 @@ String StorageArea::key(unsigned index, ExceptionState& exception_state) const {
     return cached_area_->GetKey(index);
   bool did_decrease_iterator = false;
   String result = storage_area_->Key(index, &did_decrease_iterator);
-  if (did_decrease_iterator)
-    UseCounter::Count(GetFrame(), WebFeature::kReverseIterateDOMStorage);
+  if (did_decrease_iterator) {
+    UseCounter::Count(GetFrame()->GetDocument(),
+                      WebFeature::kReverseIterateDOMStorage);
+  }
   return result;
 }
 

@@ -33,7 +33,7 @@ BeforeInstallPromptEvent::BeforeInstallPromptEvent(
       require_gesture_(require_gesture) {
   DCHECK(banner_service_);
   DCHECK(binding_.is_bound());
-  UseCounter::Count(&frame, WebFeature::kBeforeInstallPromptEvent);
+  UseCounter::Count(frame.GetDocument(), WebFeature::kBeforeInstallPromptEvent);
 }
 
 BeforeInstallPromptEvent::BeforeInstallPromptEvent(
