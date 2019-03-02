@@ -1845,6 +1845,11 @@ LayerListReverseIterator<Layer> LayerTreeHost::rend() {
   return LayerListReverseIterator<Layer>(nullptr);
 }
 
+void LayerTreeHost::SetPropertyTreesForTesting(
+    const PropertyTrees* property_trees) {
+  property_trees_ = *property_trees;
+}
+
 void LayerTreeHost::SetNeedsDisplayOnAllLayers() {
   for (auto* layer : *this)
     layer->SetNeedsDisplay();

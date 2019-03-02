@@ -442,7 +442,6 @@ void PropertyTreeManager::EmitClipMaskLayer() {
       GetEffectTree().Insert(cc::EffectNode(), current_.effect_id));
   mask_effect.stable_id = mask_effect_id.GetInternalValue();
   mask_effect.clip_id = clip_id;
-  mask_effect.has_render_surface = true;
   mask_effect.blend_mode = SkBlendMode::kDstIn;
 
   const auto& clip_space = current_.clip->LocalTransformSpace();

@@ -200,6 +200,9 @@ const TileDrawQuad* DirectRenderer::CanPassBeDrawnDirectly(
   if (quad->shared_quad_state->opacity != 1.0f)
     return nullptr;
 
+  if (quad->shared_quad_state->blend_mode != SkBlendMode::kSrcOver)
+    return nullptr;
+
   const TileDrawQuad* tile_quad = TileDrawQuad::MaterialCast(quad);
   // Hack: this could be supported by passing in a subrectangle to draw
   // render pass, although in practice if there is only one quad there

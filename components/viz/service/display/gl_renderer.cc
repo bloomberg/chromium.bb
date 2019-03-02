@@ -1966,9 +1966,12 @@ void GLRenderer::DrawContentQuadAA(const ContentDrawQuadBase* quad,
   // Blending is required for antialiasing.
   SetBlendEnabled(true);
   SetShaderOpacity(quad->shared_quad_state->opacity);
+  DCHECK(CanApplyBlendModeUsingBlendFunc(quad->shared_quad_state->blend_mode));
+  ApplyBlendModeUsingBlendFunc(quad->shared_quad_state->blend_mode);
 
   // Draw the quad with antialiasing.
   DrawQuadGeometryWithAA(quad, &local_quad, tile_rect);
+  RestoreBlendFuncToDefault(quad->shared_quad_state->blend_mode);
 }
 
 void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
@@ -2051,7 +2054,9 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
                  tex_coord_rect.x(), tex_coord_rect.y(), tex_coord_rect.width(),
                  tex_coord_rect.height());
 
+  DCHECK(CanApplyBlendModeUsingBlendFunc(quad->shared_quad_state->blend_mode));
   SetBlendEnabled(quad->ShouldDrawWithBlending());
+  ApplyBlendModeUsingBlendFunc(quad->shared_quad_state->blend_mode);
 
   SetShaderOpacity(quad->shared_quad_state->opacity);
 
@@ -2093,6 +2098,7 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
 
   gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, nullptr);
   num_triangles_drawn_ += 2;
+  RestoreBlendFuncToDefault(quad->shared_quad_state->blend_mode);
 }
 
 void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
