@@ -65,6 +65,7 @@
 #include "content/browser/keyboard_lock/keyboard_lock_service_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/log_console_message.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_interface_proxy.h"
 #include "content/browser/media/session/media_session_service_impl.h"
@@ -1847,21 +1848,11 @@ void RenderFrameHostImpl::OnDidAddMessageToConsole(
       HasWebUIScheme(delegate_->GetMainFrameLastCommittedURL()) ||
       GetContentClient()->browser()->IsBuiltinComponent(
           GetProcess()->GetBrowserContext(), GetLastCommittedOrigin());
-  const int32_t resolved_level =
-      is_builtin_component ? level : ::logging::LOG_INFO;
+  const bool is_off_the_record =
+      GetSiteInstance()->GetBrowserContext()->IsOffTheRecord();
 
-  // LogMessages can be persisted so this shouldn't be logged in incognito mode.
-  // This rule is not applied to WebUI pages or other builtin components,
-  // because WebUI and builtin components source code is a part of Chrome source
-  // code, and we want to treat messages from WebUI and other builtin components
-  // the same way as we treat log messages from native code.
-  if (::logging::GetMinLogLevel() <= resolved_level &&
-      (is_builtin_component ||
-       !GetSiteInstance()->GetBrowserContext()->IsOffTheRecord())) {
-    logging::LogMessage("CONSOLE", line_no, resolved_level).stream()
-        << "\"" << message << "\", source: " << source_id << " (" << line_no
-        << ")";
-  }
+  LogConsoleMessage(level, message, line_no, is_builtin_component,
+                    is_off_the_record, source_id);
 }
 
 void RenderFrameHostImpl::OnCreateChildFrame(

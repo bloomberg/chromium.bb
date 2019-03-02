@@ -20,6 +20,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/log_console_message.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_consts.h"
@@ -38,6 +39,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/url_utils.h"
 #include "ipc/ipc_message.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
@@ -837,6 +839,18 @@ void ServiceWorkerContextCore::OnReportConsoleMessage(
     const base::string16& message,
     int line_number,
     const GURL& source_url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // NOTE: This differs slightly from
+  // RenderFrameHostImpl::OnDidAddMessageToConsole, which also asks the
+  // content embedder whether to classify the message as a builtin component.
+  // This is called on the IO thread, though, so we can't easily get a
+  // BrowserContext and call ContentBrowserClient::IsBuiltinComponent().
+  const bool is_builtin_component = HasWebUIScheme(source_url);
+
+  LogConsoleMessage(message_level, message, line_number, is_builtin_component,
+                    wrapper_->is_incognito(),
+                    base::UTF8ToUTF16(source_url.spec()));
+
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnReportConsoleMessage,
       version->version_id(),
