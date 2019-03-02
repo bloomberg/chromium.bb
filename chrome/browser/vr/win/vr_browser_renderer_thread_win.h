@@ -37,16 +37,29 @@ class VR_EXPORT VRBrowserRendererThreadWin {
   BrowserRenderer* GetBrowserRendererForTesting();
 
  private:
+  class DrawState {
+   public:
+    // State changing methods.
+    bool SetPrompt(ExternalPromptNotificationType prompt) {
+      auto old = prompt_;
+      prompt_ = prompt;
+      return prompt_ != old;
+    }
+    void StopOverlay();
+
+    // State querying methods.
+    bool ShouldDrawUI();
+    bool ShouldDrawWebXR();
+
+   private:
+    ExternalPromptNotificationType prompt_ =
+        ExternalPromptNotificationType::kPromptNone;
+  };
+
   void CleanUp();
   void OnPose(device::mojom::XRFrameDataPtr data);
   void SubmitResult(bool success);
   void SubmitFrame(device::mojom::XRFrameDataPtr data);
-  // If there is fullscreen UI in-headset, we won't composite WebXR content or
-  // render WebXR Overlays. We can even avoid giving out poses to avoid spending
-  // resources drawing things that won't be shown.
-  // When we return false, we tell the Ui to DrawWebVR. When we return true, we
-  // tell the Ui to DrawUI.
-  bool ShouldPauseWebXrAndDrawUI();
 
   // We need to do some initialization of GraphicsDelegateWin before
   // browser_renderer_, so we first store it in a unique_ptr, then transition
@@ -60,8 +73,8 @@ class VR_EXPORT VRBrowserRendererThreadWin {
   GraphicsDelegateWin* graphics_ = nullptr;
   SchedulerDelegateWin* scheduler_ = nullptr;
   BrowserUiInterface* ui_ = nullptr;
-  ExternalPromptNotificationType current_external_prompt_notification_type_ =
-      ExternalPromptNotificationType::kPromptNone;
+
+  DrawState draw_state_;
 
   device::mojom::ImmersiveOverlayPtr overlay_;
   device::mojom::VRDisplayInfoPtr display_info_;
