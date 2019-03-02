@@ -9,6 +9,8 @@
 #include "chrome/browser/ui/webui/feed_internals/feed_internals.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
+class PrefService;
+
 namespace feed {
 class FeedHostService;
 class FeedSchedulerHost;
@@ -18,7 +20,8 @@ class FeedSchedulerHost;
 class FeedInternalsPageHandler : public feed_internals::mojom::PageHandler {
  public:
   FeedInternalsPageHandler(feed_internals::mojom::PageHandlerRequest request,
-                           feed::FeedHostService* feed_host_service);
+                           feed::FeedHostService* feed_host_service,
+                           PrefService* pref_service);
   ~FeedInternalsPageHandler() override;
 
   // feed_internals::mojom::PageHandler
@@ -26,6 +29,8 @@ class FeedInternalsPageHandler : public feed_internals::mojom::PageHandler {
   void GetUserClassifierProperties(
       GetUserClassifierPropertiesCallback) override;
   void ClearUserClassifierProperties() override;
+  void GetLastFetchProperties(GetLastFetchPropertiesCallback) override;
+  void ClearCachedDataAndRefreshFeed() override;
 
  private:
   // Binding from the mojo interface to concrete implementation.
@@ -33,6 +38,7 @@ class FeedInternalsPageHandler : public feed_internals::mojom::PageHandler {
 
   // Services that provide the data and functionality.
   feed::FeedSchedulerHost* feed_scheduler_host_;
+  PrefService* pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedInternalsPageHandler);
 };

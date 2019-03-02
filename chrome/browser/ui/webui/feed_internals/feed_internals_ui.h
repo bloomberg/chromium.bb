@@ -8,9 +8,10 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/webui/feed_internals/feed_internals.mojom.h"
 #include "chrome/browser/ui/webui/feed_internals/feed_internals_page_handler.h"
 #include "ui/webui/mojo_web_ui_controller.h"
+
+class Profile;
 
 // During the interim migration to Feed, this page will be co-located with
 // snippets-internals. Once migration is complete, and snippets-internals is
@@ -28,7 +29,7 @@ class FeedInternalsUI : public ui::MojoWebUIController {
   void BindFeedInternalsPageHandler(
       feed_internals::mojom::PageHandlerRequest request);
 
-  feed::FeedHostService* feed_host_service_;
+  Profile* profile_;
 
   std::unique_ptr<FeedInternalsPageHandler> page_handler_;
 

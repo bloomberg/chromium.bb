@@ -224,6 +224,8 @@ void ReportReasonForNotRefreshingByTrigger(
   }
 }
 
+const int kHttpStatusOk = 200;
+
 }  // namespace
 
 FeedSchedulerHost::FeedSchedulerHost(PrefService* profile_prefs,
@@ -386,6 +388,7 @@ void FeedSchedulerHost::OnReceiveNewContent(
     base::Time content_creation_date_time) {
   profile_prefs_->SetTime(prefs::kLastFetchAttemptTime,
                           content_creation_date_time);
+  last_fetch_status_ = kHttpStatusOk;
   TryRun(std::move(fixed_timer_completion_));
   ScheduleFixedTimerWakeUp(GetTriggerThreshold(TriggerType::kFixedTimer));
   outstanding_request_until_ = base::Time();
@@ -397,6 +400,7 @@ void FeedSchedulerHost::OnReceiveNewContent(
 
 void FeedSchedulerHost::OnRequestError(int network_response_code) {
   profile_prefs_->SetTime(prefs::kLastFetchAttemptTime, clock_->Now());
+  last_fetch_status_ = network_response_code;
   TryRun(std::move(fixed_timer_completion_));
   outstanding_request_until_ = base::Time();
   time_until_first_shown_trigger_reported_ = false;
@@ -489,6 +493,18 @@ bool FeedSchedulerHost::OnArticlesCleared(bool suppress_refreshes) {
   }
 
   return false;
+}
+
+UserClassifier* FeedSchedulerHost::GetUserClassifierForDebugging() {
+  return &user_classifier_;
+}
+
+base::Time FeedSchedulerHost::GetSuppressRefreshesUntilForDebugging() const {
+  return suppress_refreshes_until_;
+}
+
+int FeedSchedulerHost::GetLastFetchStatusForDebugging() const {
+  return last_fetch_status_;
 }
 
 void FeedSchedulerHost::OnEulaAccepted() {
@@ -619,10 +635,6 @@ void FeedSchedulerHost::CancelFixedTimerWakeUp() {
     profile_prefs_->ClearPref(prefs::kBackgroundRefreshPeriod);
     cancel_background_task_callback_.Run();
   }
-}
-
-UserClassifier* FeedSchedulerHost::user_classifier() {
-  return &user_classifier_;
 }
 
 }  // namespace feed
