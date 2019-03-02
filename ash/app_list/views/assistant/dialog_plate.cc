@@ -80,14 +80,6 @@ DialogPlate::~DialogPlate() {
   delegate_->RemoveInteractionModelObserver(this);
 }
 
-void DialogPlate::AddObserver(ash::DialogPlateObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void DialogPlate::RemoveObserver(ash::DialogPlateObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 const char* DialogPlate::GetClassName() const {
   return "DialogPlate";
 }
@@ -122,9 +114,8 @@ bool DialogPlate::HandleKeyEvent(views::Textfield* textfield,
       // Only non-empty trimmed text is consider a valid contents commit.
       // Anything else will simply result in the DialogPlate being cleared.
       if (!trimmed_text.empty()) {
-        for (ash::DialogPlateObserver& observer : observers_)
-          observer.OnDialogPlateContentsCommitted(
-              base::UTF16ToUTF8(trimmed_text));
+        delegate_->OnDialogPlateContentsCommitted(
+            base::UTF16ToUTF8(trimmed_text));
       }
 
       textfield_->SetText(base::string16());
@@ -409,9 +400,7 @@ void DialogPlate::InitVoiceLayoutContainer() {
 }
 
 void DialogPlate::OnButtonPressed(ash::AssistantButtonId id) {
-  for (ash::DialogPlateObserver& observer : observers_)
-    observer.OnDialogPlateButtonPressed(id);
-
+  delegate_->OnDialogPlateButtonPressed(id);
   textfield_->SetText(base::string16());
 }
 

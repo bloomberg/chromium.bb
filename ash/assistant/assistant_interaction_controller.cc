@@ -89,9 +89,11 @@ void AssistantInteractionController::RemoveModelObserver(
 
 void AssistantInteractionController::OnAssistantControllerConstructed() {
   assistant_controller_->ui_controller()->AddModelObserver(this);
+  assistant_controller_->view_delegate()->AddObserver(this);
 }
 
 void AssistantInteractionController::OnAssistantControllerDestroying() {
+  assistant_controller_->view_delegate()->RemoveObserver(this);
   assistant_controller_->ui_controller()->RemoveModelObserver(this);
 }
 

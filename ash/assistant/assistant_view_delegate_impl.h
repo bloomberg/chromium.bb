@@ -27,6 +27,8 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
   const AssistantInteractionModel* GetInteractionModel() const override;
   const AssistantNotificationModel* GetNotificationModel() const override;
   const AssistantUiModel* GetUiModel() const override;
+  void AddObserver(AssistantViewDelegateObserver* observer) override;
+  void RemoveObserver(AssistantViewDelegateObserver* observer) override;
   void AddCacheModelObserver(AssistantCacheModelObserver* observer) override;
   void RemoveCacheModelObserver(AssistantCacheModelObserver* observer) override;
   void AddInteractionModelObserver(
@@ -39,16 +41,11 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
       AssistantNotificationModelObserver* observer) override;
   void AddUiModelObserver(AssistantUiModelObserver* observer) override;
   void RemoveUiModelObserver(AssistantUiModelObserver* observer) override;
-  void AddViewDelegateObserver(
-      AssistantViewDelegateObserver* observer) override;
-  void RemoveViewDelegateObserver(
-      AssistantViewDelegateObserver* observer) override;
   void AddVoiceInteractionControllerObserver(
       DefaultVoiceInteractionObserver* observer) override;
   void RemoveVoiceInteractionControllerObserver(
       DefaultVoiceInteractionObserver* observer) override;
   CaptionBarDelegate* GetCaptionBarDelegate() override;
-  std::vector<DialogPlateObserver*> GetDialogPlateObservers() override;
   AssistantMiniViewDelegate* GetMiniViewDelegate() override;
   AssistantOptInDelegate* GetOptInDelegate() override;
   void DownloadImage(
@@ -60,6 +57,8 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
       content::mojom::NavigableContentsFactoryRequest request) override;
   aura::Window* GetRootWindowForNewWindows() override;
   bool IsTabletMode() const override;
+  void OnDialogPlateButtonPressed(AssistantButtonId id) override;
+  void OnDialogPlateContentsCommitted(const std::string& text) override;
   void OnNotificationButtonPressed(const std::string& notification_id,
                                    int notification_button_index) override;
   void OnSuggestionChipPressed(const AssistantSuggestion* suggestion) override;

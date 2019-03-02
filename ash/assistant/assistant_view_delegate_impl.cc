@@ -39,6 +39,16 @@ const AssistantUiModel* AssistantViewDelegateImpl::GetUiModel() const {
   return assistant_controller_->ui_controller()->model();
 }
 
+void AssistantViewDelegateImpl::AddObserver(
+    AssistantViewDelegateObserver* observer) {
+  view_delegate_observers_.AddObserver(observer);
+}
+
+void AssistantViewDelegateImpl::RemoveObserver(
+    AssistantViewDelegateObserver* observer) {
+  view_delegate_observers_.RemoveObserver(observer);
+}
+
 void AssistantViewDelegateImpl::AddCacheModelObserver(
     AssistantCacheModelObserver* observer) {
   assistant_controller_->cache_controller()->AddModelObserver(observer);
@@ -81,16 +91,6 @@ void AssistantViewDelegateImpl::RemoveUiModelObserver(
   assistant_controller_->ui_controller()->RemoveModelObserver(observer);
 }
 
-void AssistantViewDelegateImpl::AddViewDelegateObserver(
-    AssistantViewDelegateObserver* observer) {
-  view_delegate_observers_.AddObserver(observer);
-}
-
-void AssistantViewDelegateImpl::RemoveViewDelegateObserver(
-    AssistantViewDelegateObserver* observer) {
-  view_delegate_observers_.RemoveObserver(observer);
-}
-
 void AssistantViewDelegateImpl::AddVoiceInteractionControllerObserver(
     DefaultVoiceInteractionObserver* observer) {
   Shell::Get()->voice_interaction_controller()->AddLocalObserver(observer);
@@ -103,12 +103,6 @@ void AssistantViewDelegateImpl::RemoveVoiceInteractionControllerObserver(
 
 CaptionBarDelegate* AssistantViewDelegateImpl::GetCaptionBarDelegate() {
   return assistant_controller_->ui_controller();
-}
-
-std::vector<DialogPlateObserver*>
-AssistantViewDelegateImpl::GetDialogPlateObservers() {
-  return {assistant_controller_->interaction_controller(),
-          assistant_controller_->ui_controller()};
 }
 
 AssistantMiniViewDelegate* AssistantViewDelegateImpl::GetMiniViewDelegate() {
@@ -149,6 +143,18 @@ bool AssistantViewDelegateImpl::IsTabletMode() const {
   return Shell::Get()
       ->tablet_mode_controller()
       ->IsTabletModeWindowManagerEnabled();
+}
+
+void AssistantViewDelegateImpl::OnDialogPlateButtonPressed(
+    AssistantButtonId id) {
+  for (auto& observer : view_delegate_observers_)
+    observer.OnDialogPlateButtonPressed(id);
+}
+
+void AssistantViewDelegateImpl::OnDialogPlateContentsCommitted(
+    const std::string& text) {
+  for (auto& observer : view_delegate_observers_)
+    observer.OnDialogPlateContentsCommitted(text);
 }
 
 void AssistantViewDelegateImpl::OnNotificationButtonPressed(

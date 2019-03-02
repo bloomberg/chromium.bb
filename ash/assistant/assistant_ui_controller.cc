@@ -216,9 +216,11 @@ void AssistantUiController::OnHighlighterEnabledChanged(
 void AssistantUiController::OnAssistantControllerConstructed() {
   assistant_controller_->interaction_controller()->AddModelObserver(this);
   assistant_controller_->screen_context_controller()->AddModelObserver(this);
+  assistant_controller_->view_delegate()->AddObserver(this);
 }
 
 void AssistantUiController::OnAssistantControllerDestroying() {
+  assistant_controller_->view_delegate()->RemoveObserver(this);
   assistant_controller_->screen_context_controller()->RemoveModelObserver(this);
   assistant_controller_->interaction_controller()->RemoveModelObserver(this);
 
