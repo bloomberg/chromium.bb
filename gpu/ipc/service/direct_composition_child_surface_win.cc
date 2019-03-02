@@ -154,7 +154,9 @@ bool DirectCompositionChildSurfaceWin::ReleaseDrawTexture(bool will_discard) {
       params.DirtyRectsCount = 1;
       params.pDirtyRects = &dirty_rect;
       HRESULT hr = swap_chain_->Present1(interval, flags, &params);
-      if (FAILED(hr)) {
+      // Ignore DXGI_STATUS_OCCLUDED since that's not an error but only
+      // indicates that the window is occluded and we can stop rendering.
+      if (FAILED(hr) && hr != DXGI_STATUS_OCCLUDED) {
         DLOG(ERROR) << "Present1 failed with error " << std::hex << hr;
         return false;
       }
