@@ -279,7 +279,7 @@ TEST_F(MockVideoCaptureDeviceSharedAccessTest,
 }
 
 TEST_F(MockVideoCaptureDeviceSharedAccessTest,
-       SecondClientsForcesReopenWithDifferentSettings) {
+       SecondClientForcesReopenWithDifferentSettings) {
   LetClient1ConnectWithRequestableSettingsAndExpectToGetThem();
   subscription_1_->Activate();
 
@@ -306,9 +306,11 @@ TEST_F(MockVideoCaptureDeviceSharedAccessTest,
   SendFrameAndExpectToArriveAtBothSubscribers();
 }
 
-TEST_F(
-    MockVideoCaptureDeviceSharedAccessTest,
-    ExistingBuffersAreRetiredAndOnStartedIsNotSentAgainWhenDeviceIsReopened) {
+// Tests that existing buffers are retired but no OnStopped() and OnStarted()
+// event is sent to existing client when the device internally restarts because
+// a new client connects with |force_reopen_with_new_settings| set to true.
+TEST_F(MockVideoCaptureDeviceSharedAccessTest,
+       InternalDeviceRestartIsTransparentToExistingSubscribers) {
   LetClient1ConnectWithRequestableSettingsAndExpectToGetThem();
   EXPECT_CALL(mock_receiver_1_, DoOnNewBuffer(_, _)).Times(1);
   EXPECT_CALL(mock_receiver_1_, OnStarted()).Times(1);
@@ -327,6 +329,7 @@ TEST_F(
     EXPECT_CALL(mock_receiver_1_, DoOnBufferRetired(_)).Times(1);
     EXPECT_CALL(mock_receiver_1_, DoOnNewBuffer(_, _)).Times(1);
   }
+  EXPECT_CALL(mock_receiver_1_, OnStopped()).Times(0);
   EXPECT_CALL(mock_receiver_1_, OnStarted()).Times(0);
 
   LetClient2ConnectWithRequestableSettings(
@@ -336,6 +339,7 @@ TEST_F(
 
   mock_device_.SendOnStarted();
   SendFrameAndExpectToArriveAtBothSubscribers();
+  Mock::VerifyAndClearExpectations(&mock_receiver_1_);
 }
 
 TEST_F(MockVideoCaptureDeviceSharedAccessTest,

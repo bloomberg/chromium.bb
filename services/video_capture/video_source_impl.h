@@ -71,6 +71,8 @@ class VideoSourceImpl : public mojom::VideoSource {
   media::VideoCaptureParams device_start_settings_;
   bool restart_device_once_when_stop_complete_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
   base::WeakPtrFactory<VideoSourceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoSourceImpl);

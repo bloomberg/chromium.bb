@@ -126,6 +126,19 @@ BroadcastingReceiver::~BroadcastingReceiver() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
+void BroadcastingReceiver::HideSourceRestartFromClients(
+    base::OnceClosure on_stopped_handler) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  on_stopped_handler_ = std::move(on_stopped_handler);
+  status_ = Status::kDeviceIsRestarting;
+}
+
+void BroadcastingReceiver::SetOnStoppedHandler(
+    base::OnceClosure on_stopped_handler) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  on_stopped_handler_ = std::move(on_stopped_handler);
+}
+
 int32_t BroadcastingReceiver::AddClient(mojom::ReceiverPtr client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto client_id = next_client_id_++;
@@ -261,6 +274,21 @@ void BroadcastingReceiver::OnStartedUsingGpuDecode() {
     client.second.OnStartedUsingGpuDecode();
   }
   status_ = Status::kOnStartedUsingGpuDecodeHasBeenCalled;
+}
+
+void BroadcastingReceiver::OnStopped() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (status_ == Status::kDeviceIsRestarting) {
+    status_ = Status::kOnStartedHasNotYetBeenCalled;
+    std::move(on_stopped_handler_).Run();
+  } else {
+    for (auto& client : clients_) {
+      client.second.client()->OnStopped();
+    }
+    status_ = Status::kOnStoppedHasBeenCalled;
+    if (on_stopped_handler_)
+      std::move(on_stopped_handler_).Run();
+  }
 }
 
 void BroadcastingReceiver::OnClientFinishedConsumingFrame(int32_t buffer_id) {

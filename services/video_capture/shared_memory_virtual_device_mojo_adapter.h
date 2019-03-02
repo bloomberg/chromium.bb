@@ -44,7 +44,8 @@ class SharedMemoryVirtualDeviceMojoAdapter
   void SetPhotoOptions(media::mojom::PhotoSettingsPtr settings,
                        SetPhotoOptionsCallback callback) override;
   void TakePhoto(TakePhotoCallback callback) override;
-  void Stop(StopCallback callback) override;
+
+  void Stop();
 
   // Returns the fixed maximum number of buffers passed to the constructor
   // of VideoCaptureBufferPoolImpl.

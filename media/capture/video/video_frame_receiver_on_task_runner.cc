@@ -72,4 +72,9 @@ void VideoFrameReceiverOnTaskRunner::OnStartedUsingGpuDecode() {
       base::BindOnce(&VideoFrameReceiver::OnStartedUsingGpuDecode, receiver_));
 }
 
+void VideoFrameReceiverOnTaskRunner::OnStopped() {
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VideoFrameReceiver::OnStopped, receiver_));
+}
+
 }  // namespace media

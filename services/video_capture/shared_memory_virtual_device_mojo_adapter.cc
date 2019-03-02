@@ -194,21 +194,22 @@ void SharedMemoryVirtualDeviceMojoAdapter::TakePhoto(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void SharedMemoryVirtualDeviceMojoAdapter::Stop(StopCallback callback) {
+void SharedMemoryVirtualDeviceMojoAdapter::Stop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!receiver_.is_bound()) {
-    std::move(callback).Run();
+  if (!receiver_.is_bound())
     return;
-  }
   // Unsubscribe from connection error callbacks.
   receiver_.set_connection_error_handler(base::OnceClosure());
+  // Send out OnBufferRetired events and OnStopped.
+  for (auto buffer_id : known_buffer_ids_)
+    receiver_->OnBufferRetired(buffer_id);
+  receiver_->OnStopped();
   receiver_.reset();
-  std::move(callback).Run();
 }
 
 void SharedMemoryVirtualDeviceMojoAdapter::OnReceiverConnectionErrorOrClose() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  Stop(base::DoNothing());
+  Stop();
 }
 
 }  // namespace video_capture

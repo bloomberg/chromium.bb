@@ -103,6 +103,8 @@ class FakeVideoCaptureStack::Receiver : public media::VideoFrameReceiver {
 
   void OnStartedUsingGpuDecode() final { NOTREACHED(); }
 
+  void OnStopped() final {}
+
   FakeVideoCaptureStack* const capture_stack_;
   base::flat_map<int, media::mojom::VideoBufferHandlePtr> buffers_;
 

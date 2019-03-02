@@ -20,4 +20,5 @@ interface Receiver {
   OnLog(string message);
   OnStarted();
   OnStartedUsingGpuDecode();
+  OnStopped();
 };

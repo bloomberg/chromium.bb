@@ -10,11 +10,11 @@ import "services/video_capture/public/mojom/receiver.mojom";
 
 // Represents access to a video capture device available on the machine.
 // The device is stopped automatically when the message pipe corresponding to
-// either the Device or the given |receiver| is closed. Note, however, that
-// as a response to closing the device, the service may still need to send out
-// events such as Receiver.OnBufferRetired(). Clients who need to wait for this
-// to complete must explicitly call Stop() and wait for its callback to indicate
-// that all events related to stopping device have been sent out.
+// either the Device or the given |receiver| is closed. Note that as a response
+// to stopping the device, the service may still need to send out events such as
+// Receiver.OnBufferRetired() to |receiver|. The service will send a final event
+// Receiver.OnStopped() to indicate that stopping has completed and no further
+// events are going to be sent to |receiver|.
 interface Device {
   Start(media.mojom.VideoCaptureParams requested_settings, Receiver receiver);
   MaybeSuspend();
@@ -25,6 +25,4 @@ interface Device {
       => (bool success);
   TakePhoto()
       => (media.mojom.Blob? blob);
-
-  Stop() => ();
 };
