@@ -52,29 +52,14 @@ class CORE_EXPORT CSPDirectiveList
     return header_source_;
   }
 
-  bool AllowJavaScriptURLs(Element*,
-                           const String& source,
-                           const String& context_url,
-                           const WTF::OrdinalNumber& context_line,
-                           SecurityViolationReportingPolicy) const;
-  bool AllowInlineEventHandlers(Element*,
-                                const String& source,
-                                const String& context_url,
-                                const WTF::OrdinalNumber& context_line,
-                                SecurityViolationReportingPolicy) const;
-  bool AllowInlineScript(Element*,
-                         const String& context_url,
-                         const String& nonce,
-                         const WTF::OrdinalNumber& context_line,
-                         SecurityViolationReportingPolicy,
-                         const String& script_content) const;
-  bool AllowInlineStyle(Element*,
-                        const String& context_url,
-                        const String& nonce,
-                        const WTF::OrdinalNumber& context_line,
-                        SecurityViolationReportingPolicy,
-                        const String& style_content,
-                        ContentSecurityPolicy::InlineType inline_type) const;
+  bool AllowInline(ContentSecurityPolicy::InlineType,
+                   Element*,
+                   const String& content,
+                   const String& nonce,
+                   const String& context_url,
+                   const WTF::OrdinalNumber& context_line,
+                   SecurityViolationReportingPolicy) const;
+
   bool AllowEval(ScriptState*,
                  SecurityViolationReportingPolicy,
                  ContentSecurityPolicy::ExceptionStatus,
@@ -107,10 +92,6 @@ class CORE_EXPORT CSPDirectiveList
   bool AllowAncestors(LocalFrame*,
                       const KURL&,
                       SecurityViolationReportingPolicy) const;
-  bool AllowScriptHash(const CSPHashValue&,
-                       ContentSecurityPolicy::InlineType) const;
-  bool AllowStyleHash(const CSPHashValue&,
-                      ContentSecurityPolicy::InlineType) const;
   bool AllowDynamic(ContentSecurityPolicy::DirectiveType) const;
   bool AllowDynamicWorker() const;
 
@@ -150,6 +131,9 @@ class CORE_EXPORT CSPDirectiveList
   const String& PluginTypesText() const;
 
   bool ShouldSendCSPHeader(ResourceType) const;
+
+  bool AllowHash(const CSPHashValue& hash_value,
+                 const ContentSecurityPolicy::InlineType inline_type) const;
 
   // The algorithm is described here:
   // https://w3c.github.io/webappsec-csp/embedded/#subsume-policy
@@ -304,11 +288,6 @@ class CORE_EXPORT CSPDirectiveList
   static SourceListDirectiveVector GetSourceVector(
       const ContentSecurityPolicy::DirectiveType,
       const CSPDirectiveListVector& policies);
-
-  bool AllowHash(
-      const CSPHashValue& hash_value,
-      const ContentSecurityPolicy::InlineType type,
-      const ContentSecurityPolicy::DirectiveType directive_type) const;
 
   Member<ContentSecurityPolicy> policy_;
 

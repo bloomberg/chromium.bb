@@ -695,9 +695,11 @@ bool FrameLoader::PrepareRequestForThisFrame(FrameLoadRequest& request) {
     bool javascript_url_is_allowed =
         request.ShouldCheckMainWorldContentSecurityPolicy() ==
             kDoNotCheckContentSecurityPolicy ||
-        origin_document->GetContentSecurityPolicy()->AllowJavaScriptURLs(
+        origin_document->GetContentSecurityPolicy()->AllowInline(
+            ContentSecurityPolicy::InlineType::kJavaScriptURL,
             frame_->DeprecatedLocalOwner(), url.GetString(),
-            origin_document->Url(), OrdinalNumber::First());
+            String() /* nonce */, origin_document->Url(),
+            OrdinalNumber::First());
 
     if (!javascript_url_is_allowed)
       return false;

@@ -74,6 +74,45 @@ bool ParseBase64Digest(String base64, DigestValue* hash) {
   return true;
 }
 
+// TODO(hiroshige): The following two methods are slightly different.
+// Investigate the correct behavior and merge them.
+ContentSecurityPolicy::DirectiveType
+GetDirectiveTypeForAllowInlineFromInlineType(
+    ContentSecurityPolicy::InlineType inline_type) {
+  switch (inline_type) {
+    case ContentSecurityPolicy::InlineType::kJavaScriptURL:
+    case ContentSecurityPolicy::InlineType::kInlineScriptElement:
+      return ContentSecurityPolicy::DirectiveType::kScriptSrcElem;
+
+    case ContentSecurityPolicy::InlineType::kInlineEventHandler:
+      return ContentSecurityPolicy::DirectiveType::kScriptSrcAttr;
+
+    case ContentSecurityPolicy::InlineType::kInlineStyleAttribute:
+      return ContentSecurityPolicy::DirectiveType::kStyleSrcAttr;
+
+    case ContentSecurityPolicy::InlineType::kInlineStyleElement:
+      return ContentSecurityPolicy::DirectiveType::kStyleSrcElem;
+  }
+}
+
+ContentSecurityPolicy::DirectiveType GetDirectiveTypeForAllowHashFromInlineType(
+    ContentSecurityPolicy::InlineType inline_type) {
+  switch (inline_type) {
+    case ContentSecurityPolicy::InlineType::kInlineScriptElement:
+      return ContentSecurityPolicy::DirectiveType::kScriptSrcElem;
+
+    case ContentSecurityPolicy::InlineType::kJavaScriptURL:
+    case ContentSecurityPolicy::InlineType::kInlineEventHandler:
+      return ContentSecurityPolicy::DirectiveType::kScriptSrcAttr;
+
+    case ContentSecurityPolicy::InlineType::kInlineStyleAttribute:
+      return ContentSecurityPolicy::DirectiveType::kStyleSrcAttr;
+
+    case ContentSecurityPolicy::InlineType::kInlineStyleElement:
+      return ContentSecurityPolicy::DirectiveType::kStyleSrcElem;
+  }
+}
+
 }  // namespace
 
 CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy,
@@ -615,99 +654,70 @@ bool CSPDirectiveList::CheckAncestorsAndReportViolation(
   return DenyIfEnforcingPolicy();
 }
 
-bool CSPDirectiveList::AllowJavaScriptURLs(
+bool CSPDirectiveList::AllowInline(
+    ContentSecurityPolicy::InlineType inline_type,
     Element* element,
-    const String& source,
-    const String& context_url,
-    const WTF::OrdinalNumber& context_line,
-    SecurityViolationReportingPolicy reporting_policy) const {
-  SourceListDirective* directive =
-      OperativeDirective(ContentSecurityPolicy::DirectiveType::kScriptSrcElem);
-  if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
-    return CheckInlineAndReportViolation(
-        directive,
-        "Refused to run the JavaScript URL because it violates the following "
-        "Content Security Policy directive: ",
-        element, source, context_url, context_line, true, "sha256-...",
-        ContentSecurityPolicy::DirectiveType::kScriptSrcElem);
-  }
-
-  return !directive || directive->AllowAllInline();
-}
-
-bool CSPDirectiveList::AllowInlineEventHandlers(
-    Element* element,
-    const String& source,
-    const String& context_url,
-    const WTF::OrdinalNumber& context_line,
-    SecurityViolationReportingPolicy reporting_policy) const {
-  SourceListDirective* directive =
-      OperativeDirective(ContentSecurityPolicy::DirectiveType::kScriptSrcAttr);
-  if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
-    return CheckInlineAndReportViolation(
-        directive,
-        "Refused to execute inline event handler because it violates the "
-        "following Content Security Policy directive: ",
-        element, source, context_url, context_line, true, "sha256-...",
-        ContentSecurityPolicy::DirectiveType::kScriptSrcAttr);
-  }
-
-  return !directive || directive->AllowAllInline();
-}
-
-bool CSPDirectiveList::AllowInlineScript(
-    Element* element,
-    const String& context_url,
-    const String& nonce,
-    const WTF::OrdinalNumber& context_line,
-    SecurityViolationReportingPolicy reporting_policy,
-    const String& content) const {
-  SourceListDirective* directive =
-      OperativeDirective(ContentSecurityPolicy::DirectiveType::kScriptSrcElem);
-  if (IsMatchingNoncePresent(directive, nonce))
-    return true;
-  if (element && IsHTMLScriptElement(element) &&
-      !ToHTMLScriptElement(element)->Loader()->IsParserInserted() &&
-      AllowDynamic(ContentSecurityPolicy::DirectiveType::kScriptSrcElem)) {
-    return true;
-  }
-  if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
-    return CheckInlineAndReportViolation(
-        directive,
-        "Refused to execute inline script because it violates the following "
-        "Content Security Policy directive: ",
-        element, content, context_url, context_line, true,
-        GetSha256String(content),
-        ContentSecurityPolicy::DirectiveType::kScriptSrcElem);
-  }
-
-  return !directive || directive->AllowAllInline();
-}
-
-bool CSPDirectiveList::AllowInlineStyle(
-    Element* element,
-    const String& context_url,
-    const String& nonce,
-    const WTF::OrdinalNumber& context_line,
-    SecurityViolationReportingPolicy reporting_policy,
     const String& content,
-    ContentSecurityPolicy::InlineType inline_type) const {
-  ContentSecurityPolicy::DirectiveType effective_type =
-      inline_type == ContentSecurityPolicy::InlineType::kAttribute
-          ? ContentSecurityPolicy::DirectiveType::kStyleSrcAttr
-          : ContentSecurityPolicy::DirectiveType::kStyleSrcElem;
-  SourceListDirective* directive = OperativeDirective(effective_type);
+    const String& nonce,
+    const String& context_url,
+    const WTF::OrdinalNumber& context_line,
+    SecurityViolationReportingPolicy reporting_policy) const {
+  ContentSecurityPolicy::DirectiveType type =
+      GetDirectiveTypeForAllowInlineFromInlineType(inline_type);
 
+  SourceListDirective* directive = OperativeDirective(type);
   if (IsMatchingNoncePresent(directive, nonce))
     return true;
 
+  if (inline_type == ContentSecurityPolicy::InlineType::kInlineScriptElement &&
+      element && IsHTMLScriptElement(element) &&
+      !ToHTMLScriptElement(element)->Loader()->IsParserInserted() &&
+      AllowDynamic(type)) {
+    return true;
+  }
   if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
+    String hash_value;
+    switch (inline_type) {
+      case ContentSecurityPolicy::InlineType::kJavaScriptURL:
+      case ContentSecurityPolicy::InlineType::kInlineEventHandler:
+        hash_value = "sha256-...";
+        break;
+
+      case ContentSecurityPolicy::InlineType::kInlineScriptElement:
+      case ContentSecurityPolicy::InlineType::kInlineStyleAttribute:
+      case ContentSecurityPolicy::InlineType::kInlineStyleElement:
+        hash_value = GetSha256String(content);
+        break;
+    }
+
+    String message;
+    switch (inline_type) {
+      case ContentSecurityPolicy::InlineType::kJavaScriptURL:
+        message = "run the JavaScript URL";
+        break;
+
+      case ContentSecurityPolicy::InlineType::kInlineEventHandler:
+        message = "execute inline event handler";
+        break;
+
+      case ContentSecurityPolicy::InlineType::kInlineScriptElement:
+        message = "execute inline script";
+        break;
+
+      case ContentSecurityPolicy::InlineType::kInlineStyleAttribute:
+      case ContentSecurityPolicy::InlineType::kInlineStyleElement:
+        message = "apply inline style";
+        break;
+    }
+
     return CheckInlineAndReportViolation(
         directive,
-        "Refused to apply inline style because it violates the following "
-        "Content Security Policy directive: ",
-        element, content, context_url, context_line, false,
-        GetSha256String(content), effective_type);
+        "Refused to " + message +
+            " because it violates the following Content Security Policy "
+            "directive: ",
+        element, content, context_url, context_line,
+        ContentSecurityPolicy::IsScriptInlineType(inline_type), hash_value,
+        type);
   }
 
   return !directive || directive->AllowAllInline();
@@ -860,33 +870,27 @@ bool CSPDirectiveList::AllowAncestors(
 
 bool CSPDirectiveList::AllowHash(
     const CSPHashValue& hash_value,
-    const ContentSecurityPolicy::InlineType type,
-    const ContentSecurityPolicy::DirectiveType directive_type) const {
-  if (type == ContentSecurityPolicy::InlineType::kAttribute) {
-    if (!policy_->ExperimentalFeaturesEnabled())
-      return false;
-    if (!CheckUnsafeHashesAllowed(OperativeDirective(directive_type)))
-      return false;
+    const ContentSecurityPolicy::InlineType inline_type) const {
+  ContentSecurityPolicy::DirectiveType directive_type =
+      GetDirectiveTypeForAllowHashFromInlineType(inline_type);
+  switch (directive_type) {
+    case ContentSecurityPolicy::DirectiveType::kScriptSrcAttr:
+    case ContentSecurityPolicy::DirectiveType::kStyleSrcAttr:
+      if (!policy_->ExperimentalFeaturesEnabled())
+        return false;
+      if (!CheckUnsafeHashesAllowed(OperativeDirective(directive_type)))
+        return false;
+      break;
+
+    case ContentSecurityPolicy::DirectiveType::kScriptSrcElem:
+    case ContentSecurityPolicy::DirectiveType::kStyleSrcElem:
+      break;
+
+    default:
+      NOTREACHED();
+      break;
   }
   return CheckHash(OperativeDirective(directive_type), hash_value);
-}
-
-bool CSPDirectiveList::AllowScriptHash(
-    const CSPHashValue& hash_value,
-    ContentSecurityPolicy::InlineType type) const {
-  return AllowHash(hash_value, type,
-                   type == ContentSecurityPolicy::InlineType::kAttribute
-                       ? ContentSecurityPolicy::DirectiveType::kScriptSrcAttr
-                       : ContentSecurityPolicy::DirectiveType::kScriptSrcElem);
-}
-
-bool CSPDirectiveList::AllowStyleHash(
-    const CSPHashValue& hash_value,
-    ContentSecurityPolicy::InlineType type) const {
-  return AllowHash(hash_value, type,
-                   type == ContentSecurityPolicy::InlineType::kAttribute
-                       ? ContentSecurityPolicy::DirectiveType::kStyleSrcAttr
-                       : ContentSecurityPolicy::DirectiveType::kStyleSrcElem);
 }
 
 bool CSPDirectiveList::AllowDynamic(

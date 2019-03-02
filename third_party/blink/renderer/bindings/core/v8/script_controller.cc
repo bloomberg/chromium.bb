@@ -231,12 +231,10 @@ bool ScriptController::ExecuteScriptIfJavaScriptURL(
       ContentSecurityPolicy::ShouldBypassMainWorld(GetFrame()->GetDocument());
   if (!GetFrame()->GetPage() ||
       (!should_bypass_main_world_content_security_policy &&
-       !GetFrame()
-            ->GetDocument()
-            ->GetContentSecurityPolicy()
-            ->AllowJavaScriptURLs(element, script_source,
-                                  GetFrame()->GetDocument()->Url(),
-                                  EventHandlerPosition().line_))) {
+       !GetFrame()->GetDocument()->GetContentSecurityPolicy()->AllowInline(
+           ContentSecurityPolicy::InlineType::kJavaScriptURL, element,
+           script_source, String() /* nonce */,
+           GetFrame()->GetDocument()->Url(), EventHandlerPosition().line_))) {
     return true;
   }
 

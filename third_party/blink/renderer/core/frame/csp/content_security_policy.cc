@@ -463,128 +463,64 @@ void ContentSecurityPolicy::FillInCSPHashValues(
 }
 
 // static
-bool ContentSecurityPolicy::CheckScriptHashAgainstPolicy(
+bool ContentSecurityPolicy::CheckHashAgainstPolicy(
     Vector<CSPHashValue>& csp_hash_values,
     const Member<CSPDirectiveList>& policy,
     InlineType inline_type) {
   for (const auto& csp_hash_value : csp_hash_values) {
-    if (policy->AllowScriptHash(csp_hash_value, inline_type)) {
+    if (policy->AllowHash(csp_hash_value, inline_type))
       return true;
-    }
   }
   return false;
 }
 
-// static
-bool ContentSecurityPolicy::CheckStyleHashAgainstPolicy(
-    Vector<CSPHashValue>& csp_hash_values,
-    const Member<CSPDirectiveList>& policy,
-    InlineType inline_type) {
-  for (const auto& csp_hash_value : csp_hash_values) {
-    if (policy->AllowStyleHash(csp_hash_value, inline_type)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool ContentSecurityPolicy::AllowJavaScriptURLs(
-    Element* element,
-    const String& source,
-    const String& context_url,
-    const WTF::OrdinalNumber& context_line,
-    SecurityViolationReportingPolicy reporting_policy) const {
-  // Javascript URLs may be whitelisted by hash, if
-  // 'unsafe-hashes' is present in a policy. Check against the digest
-  // of the |source| and also check whether inline script is allowed.
-  Vector<CSPHashValue> csp_hash_values;
-  FillInCSPHashValues(source, script_hash_algorithms_used_, &csp_hash_values);
-
-  bool is_allowed = true;
-  for (const auto& policy : policies_) {
-    is_allowed &= CheckScriptHashAgainstPolicy(csp_hash_values, policy,
-                                               InlineType::kAttribute) ||
-                  policy->AllowJavaScriptURLs(element, source, context_url,
-                                              context_line, reporting_policy);
-  }
-  return is_allowed;
-}
-
-bool ContentSecurityPolicy::AllowInlineEventHandler(
-    Element* element,
-    const String& source,
-    const String& context_url,
-    const WTF::OrdinalNumber& context_line,
-    SecurityViolationReportingPolicy reporting_policy) const {
-  // Inline event handlers may be whitelisted by hash, if
-  // 'unsafe-hashes' is present in a policy. Check against the digest
-  // of the |source| and also check whether inline script is allowed.
-  Vector<CSPHashValue> csp_hash_values;
-  FillInCSPHashValues(source, script_hash_algorithms_used_, &csp_hash_values);
-
-  bool is_allowed = true;
-  for (const auto& policy : policies_) {
-    is_allowed &=
-        CheckScriptHashAgainstPolicy(csp_hash_values, policy,
-                                     InlineType::kAttribute) ||
-        policy->AllowInlineEventHandlers(element, source, context_url,
-                                         context_line, reporting_policy);
-  }
-
-  return is_allowed;
-}
-
-bool ContentSecurityPolicy::AllowInlineScript(
-    Element* element,
-    const String& context_url,
-    const String& nonce,
-    const WTF::OrdinalNumber& context_line,
-    const String& script_content,
-    SecurityViolationReportingPolicy reporting_policy) const {
-  DCHECK(element);
-
-  Vector<CSPHashValue> csp_hash_values;
-  FillInCSPHashValues(script_content, script_hash_algorithms_used_,
-                      &csp_hash_values);
-
-  bool is_allowed = true;
-  for (const auto& policy : policies_) {
-    is_allowed &=
-        CheckScriptHashAgainstPolicy(csp_hash_values, policy,
-                                     InlineType::kBlock) ||
-        policy->AllowInlineScript(element, context_url, nonce, context_line,
-                                  reporting_policy, script_content);
-  }
-
-  return is_allowed;
-}
-
-bool ContentSecurityPolicy::AllowInlineStyle(
-    Element* element,
-    const String& context_url,
-    const String& nonce,
-    const WTF::OrdinalNumber& context_line,
-    const String& style_content,
+bool ContentSecurityPolicy::AllowInline(
     InlineType inline_type,
+    Element* element,
+    const String& content,
+    const String& nonce,
+    const String& context_url,
+    const WTF::OrdinalNumber& context_line,
     SecurityViolationReportingPolicy reporting_policy) const {
-  DCHECK(element);
+  DCHECK(element || inline_type == InlineType::kInlineEventHandler ||
+         inline_type == InlineType::kJavaScriptURL);
 
-  if (override_inline_style_allowed_)
+  const bool is_script = IsScriptInlineType(inline_type);
+  if (!is_script && override_inline_style_allowed_) {
     return true;
+  }
 
   Vector<CSPHashValue> csp_hash_values;
-  FillInCSPHashValues(style_content, style_hash_algorithms_used_,
-                      &csp_hash_values);
+  FillInCSPHashValues(
+      content,
+      is_script ? script_hash_algorithms_used_ : style_hash_algorithms_used_,
+      &csp_hash_values);
 
   bool is_allowed = true;
   for (const auto& policy : policies_) {
+    // May be whitelisted by hash, if 'unsafe-hashes' is present in a policy.
+    // Check against the digest of the |content| and also check whether inline
+    // script is allowed.
     is_allowed &=
-        CheckStyleHashAgainstPolicy(csp_hash_values, policy, inline_type) ||
-        policy->AllowInlineStyle(element, context_url, nonce, context_line,
-                                 reporting_policy, style_content, inline_type);
+        CheckHashAgainstPolicy(csp_hash_values, policy, inline_type) ||
+        policy->AllowInline(inline_type, element, content, nonce, context_url,
+                            context_line, reporting_policy);
   }
 
   return is_allowed;
+}
+
+bool ContentSecurityPolicy::IsScriptInlineType(InlineType inline_type) {
+  switch (inline_type) {
+    case ContentSecurityPolicy::InlineType::kJavaScriptURL:
+    case ContentSecurityPolicy::InlineType::kInlineEventHandler:
+    case ContentSecurityPolicy::InlineType::kInlineScriptElement:
+      return true;
+
+    case ContentSecurityPolicy::InlineType::kInlineStyleAttribute:
+    case ContentSecurityPolicy::InlineType::kInlineStyleElement:
+      return false;
+  }
 }
 
 bool ContentSecurityPolicy::AllowEval(

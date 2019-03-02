@@ -145,7 +145,13 @@ class CORE_EXPORT ContentSecurityPolicy
     kTrustedTypesViolation
   };
 
-  enum class InlineType { kBlock, kAttribute };
+  enum class InlineType {
+    kJavaScriptURL,
+    kInlineEventHandler,
+    kInlineScriptElement,
+    kInlineStyleAttribute,
+    kInlineStyleElement
+  };
 
   enum class DirectiveType {
     kBaseURI,
@@ -222,27 +228,6 @@ class CORE_EXPORT ContentSecurityPolicy
 
   Vector<CSPHeaderAndType> Headers() const;
 
-  // |element| will not be present for navigations to javascript URLs,
-  // as those checks happen in the middle of the navigation algorithm,
-  // and we generally don't have access to the responsible element.
-  bool AllowJavaScriptURLs(Element*,
-                           const String& source,
-                           const String& context_url,
-                           const WTF::OrdinalNumber& context_line,
-                           SecurityViolationReportingPolicy =
-                               SecurityViolationReportingPolicy::kReport) const;
-
-  // |element| will be present almost all of the time, but because of
-  // strangeness around targeting handlers for '<body>', '<svg>', and
-  // '<frameset>', it will be 'nullptr' for handlers on those
-  // elements.
-  bool AllowInlineEventHandler(
-      Element*,
-      const String& source,
-      const String& context_url,
-      const WTF::OrdinalNumber& context_line,
-      SecurityViolationReportingPolicy =
-          SecurityViolationReportingPolicy::kReport) const;
   // When the reporting status is |SendReport|, the |ExceptionStatus|
   // should indicate whether the caller will throw a JavaScript
   // exception in the event of a violation. When the caller will throw
@@ -302,21 +287,25 @@ class CORE_EXPORT ContentSecurityPolicy
 
   // Passing 'String()' into the |nonce| arguments in the following methods
   // represents an unnonced resource load.
-  bool AllowInlineScript(Element*,
-                         const String& context_url,
-                         const String& nonce,
-                         const WTF::OrdinalNumber& context_line,
-                         const String& script_content,
-                         SecurityViolationReportingPolicy =
-                             SecurityViolationReportingPolicy::kReport) const;
-  bool AllowInlineStyle(Element*,
-                        const String& context_url,
-                        const String& nonce,
-                        const WTF::OrdinalNumber& context_line,
-                        const String& style_content,
-                        InlineType,
-                        SecurityViolationReportingPolicy =
-                            SecurityViolationReportingPolicy::kReport) const;
+  //
+  // For kJavaScriptURL case, |element| will not be present for navigations to
+  // javascript URLs, as those checks happen in the middle of the navigation
+  // algorithm, and we generally don't have access to the responsible element.
+  //
+  // For kInlineEventHandler case, |element| will be present almost all of the
+  // time, but because of strangeness around targeting handlers for '<body>',
+  // '<svg>', and '<frameset>', it will be 'nullptr' for handlers on those
+  // elements.
+  bool AllowInline(InlineType,
+                   Element*,
+                   const String& content,
+                   const String& nonce,
+                   const String& context_url,
+                   const WTF::OrdinalNumber& context_line,
+                   SecurityViolationReportingPolicy =
+                       SecurityViolationReportingPolicy::kReport) const;
+
+  static bool IsScriptInlineType(InlineType);
 
   // |allowAncestors| does not need to know whether the resource was a
   // result of a redirect. After a redirect, source paths are usually
@@ -547,12 +536,9 @@ class CORE_EXPORT ContentSecurityPolicy
 
   // checks a vector of csp hashes against policy, probably a good idea
   // to use in tandem with FillInCSPHashValues.
-  static bool CheckScriptHashAgainstPolicy(Vector<CSPHashValue>&,
-                                           const Member<CSPDirectiveList>&,
-                                           InlineType);
-  static bool CheckStyleHashAgainstPolicy(Vector<CSPHashValue>&,
-                                          const Member<CSPDirectiveList>&,
-                                          InlineType);
+  static bool CheckHashAgainstPolicy(Vector<CSPHashValue>&,
+                                     const Member<CSPDirectiveList>&,
+                                     InlineType);
 
   bool ShouldBypassContentSecurityPolicy(
       const KURL&,
