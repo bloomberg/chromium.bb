@@ -21,6 +21,7 @@
 
 struct PrintHostMsg_PreviewIds;
 struct PrintHostMsg_ScriptedPrint_Params;
+struct PrintMsg_Print_Params;
 class Profile;
 
 namespace printing {
@@ -32,6 +33,10 @@ class PrinterQuery;
 // renderer process on the IPC thread.
 class PrintingMessageFilter : public content::BrowserMessageFilter {
  public:
+  // Sets a global override for print params in OnUpdatePrintSettingsReply().
+  static void SetTestUpdatePrintSettingsReply(
+      const PrintMsg_Print_Params& print_params);
+
   PrintingMessageFilter(int render_process_id, Profile* profile);
 
   // content::BrowserMessageFilter:
