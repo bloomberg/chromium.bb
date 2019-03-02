@@ -4931,10 +4931,10 @@ void Element::StyleAttributeChanged(
              ContentSecurityPolicy::ShouldBypassMainWorld(&GetDocument()) ||
              (ContainingShadowRoot() &&
               ContainingShadowRoot()->IsUserAgent()) ||
-             GetDocument().GetContentSecurityPolicy()->AllowInlineStyle(
-                 this, GetDocument().Url(), String(), start_line_number,
-                 new_style_string,
-                 ContentSecurityPolicy::InlineType::kAttribute)) {
+             GetDocument().GetContentSecurityPolicy()->AllowInline(
+                 ContentSecurityPolicy::InlineType::kInlineStyleAttribute, this,
+                 new_style_string, String() /* nonce */, GetDocument().Url(),
+                 start_line_number)) {
     SetInlineStyleFromString(new_style_string);
   }
 

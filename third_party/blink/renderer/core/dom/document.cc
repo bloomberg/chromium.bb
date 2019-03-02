@@ -6729,8 +6729,10 @@ bool Document::AllowInlineEventHandler(Node* node,
                                        const WTF::OrdinalNumber& context_line) {
   Element* element = node && node->IsElementNode() ? ToElement(node) : nullptr;
   if (!ContentSecurityPolicy::ShouldBypassMainWorld(this) &&
-      !GetContentSecurityPolicy()->AllowInlineEventHandler(
-          element, listener->ScriptBody(), context_url, context_line))
+      !GetContentSecurityPolicy()->AllowInline(
+          ContentSecurityPolicy::InlineType::kInlineEventHandler, element,
+          listener->ScriptBody(), String() /* nonce */, context_url,
+          context_line))
     return false;
 
   // HTML says that inline script needs browsing context to create its execution

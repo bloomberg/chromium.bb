@@ -388,11 +388,10 @@ DOMWindow* CreateWindow(const String& url_string,
     String script_source = DecodeURLEscapeSequences(
         completed_url.GetString(), DecodeURLMode::kUTF8OrIsomorphic);
 
-    if (!opener_frame.GetDocument()
-             ->GetContentSecurityPolicy()
-             ->AllowJavaScriptURLs(nullptr, script_source,
-                                   opener_frame.GetDocument()->Url(),
-                                   OrdinalNumber())) {
+    if (!opener_frame.GetDocument()->GetContentSecurityPolicy()->AllowInline(
+            ContentSecurityPolicy::InlineType::kJavaScriptURL,
+            nullptr /* element */, script_source, String() /* nonce */,
+            opener_frame.GetDocument()->Url(), OrdinalNumber())) {
       return nullptr;
     }
   }

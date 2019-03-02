@@ -142,9 +142,9 @@ StyleElement::ProcessingResult StyleElement::CreateSheet(Element& element,
   const ContentSecurityPolicy* csp = document.GetContentSecurityPolicy();
   bool passes_content_security_policy_checks =
       ShouldBypassMainWorldCSP(element) ||
-      csp->AllowInlineStyle(&element, document.Url(), element.nonce(),
-                            start_position_.line_, text,
-                            ContentSecurityPolicy::InlineType::kBlock);
+      csp->AllowInline(ContentSecurityPolicy::InlineType::kInlineStyleElement,
+                       &element, text, element.nonce(), document.Url(),
+                       start_position_.line_);
 
   // Clearing the current sheet may remove the cache entry so create the new
   // sheet first
