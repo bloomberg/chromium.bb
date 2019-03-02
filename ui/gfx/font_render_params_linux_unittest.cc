@@ -394,6 +394,8 @@ TEST_F(FontRenderParamsTest, NoFontconfigMatch) {
   EXPECT_EQ(system_params.hinting, params.hinting);
   EXPECT_EQ(system_params.subpixel_rendering, params.subpixel_rendering);
   EXPECT_EQ(query.families[0], suggested_family);
+
+  FcConfigDestroy(FcConfigGetCurrent());
 }
 
 TEST_F(FontRenderParamsTest, MissingFamily) {
