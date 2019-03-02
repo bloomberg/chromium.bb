@@ -49,10 +49,9 @@ namespace web {
 
 namespace {
 
-// TODO(tsepez) remove unsafe-eval when bidichecker_packaged.js fixed.
 const char kChromeURLContentSecurityPolicyHeaderBase[] =
     "Content-Security-Policy: script-src chrome://resources "
-    "'self' 'unsafe-eval'; ";
+    "'self'; ";
 
 const char kChromeURLXFrameOptionsHeader[] = "X-Frame-Options: DENY";
 
