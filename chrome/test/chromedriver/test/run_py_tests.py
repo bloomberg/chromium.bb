@@ -3295,10 +3295,6 @@ if __name__ == '__main__':
 
     options.filter = '*-' + ':__main__.'.join([''] + negative_filter)
 
-  # Temp code for debugging https://crbug.com/chromedriver/2778.
-  if options.test_type is None and util.GetPlatformName() == 'linux':
-    chromedriver.enable_core_dump = True
-
   all_tests_suite = unittest.defaultTestLoader.loadTestsFromModule(
       sys.modules[__name__])
   tests = unittest_util.FilterTestSuite(all_tests_suite, options.filter)
