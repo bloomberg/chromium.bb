@@ -68,7 +68,7 @@ grit("invalidations_resources") {
 }
 
 grit("net_internals_resources") {
-  source = "net_internals_resources.grd"
+  source = "net_internals/net_internals_resources.grd"
   defines = chrome_grit_defines
   outputs = [
     "grit/net_internals_resources.h",
@@ -78,7 +78,7 @@ grit("net_internals_resources") {
 }
 
 grit("quota_internals_resources") {
-  source = "quota_internals_resources.grd"
+  source = "quota_internals/quota_internals_resources.grd"
   defines = chrome_grit_defines
   outputs = [
     "grit/quota_internals_resources.h",
@@ -88,7 +88,7 @@ grit("quota_internals_resources") {
 }
 
 grit("translate_internals_resources") {
-  source = "translate_internals_resources.grd"
+  source = "translate_internals/translate_internals_resources.grd"
   defines = chrome_grit_defines
   outputs = [
     "grit/translate_internals_resources.h",
@@ -98,7 +98,7 @@ grit("translate_internals_resources") {
 }
 
 grit("webapks_ui_resources") {
-  source = "webapks_ui_resources.grd"
+  source = "webapks/webapks_ui_resources.grd"
   defines = chrome_grit_defines
   outputs = [
     "grit/webapks_ui_resources.h",
@@ -125,7 +125,7 @@ if (!is_android) {
   }
 
   grit("local_ntp_resources") {
-    source = "local_ntp_resources.grd"
+    source = "local_ntp/local_ntp_resources.grd"
     defines = chrome_grit_defines
     outputs = [
       "grit/local_ntp_resources.h",
@@ -208,7 +208,8 @@ if (enable_extensions) {
   }
 
   grit("sync_file_system_internals_resources") {
-    source = "sync_file_system_internals_resources.grd"
+    source =
+        "sync_file_system_internals/sync_file_system_internals_resources.grd"
     defines = chrome_grit_defines
     outputs = [
       "grit/sync_file_system_internals_resources.h",

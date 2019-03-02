@@ -94,7 +94,7 @@
   "chrome/browser/resources/invalidations_resources.grd": {
     "includes": [12400],
   },
-  "chrome/browser/resources/local_ntp_resources.grd": {
+  "chrome/browser/resources/local_ntp/local_ntp_resources.grd": {
     "includes": [12440],
   },
   "chrome/browser/resources/md_extensions/extensions_resources_vulcanized.grd": {
@@ -103,7 +103,7 @@
   "chrome/browser/resources/md_extensions/extensions_resources.grd": {
     "structures": [12510],
   },
-  "chrome/browser/resources/net_internals_resources.grd": {
+  "chrome/browser/resources/net_internals/net_internals_resources.grd": {
     "includes": [12600],
   },
   "chrome/browser/resources/print_preview/print_preview_resources_vulcanized.grd": {
@@ -112,7 +112,7 @@
   "chrome/browser/resources/print_preview/print_preview_resources.grd": {
     "structures": [12620],
   },
-  "chrome/browser/resources/quota_internals_resources.grd": {
+  "chrome/browser/resources/quota_internals/quota_internals_resources.grd": {
     "includes": [12810],
   },
   "chrome/browser/resources/settings/settings_resources_vulcanized.grd": {
@@ -121,13 +121,13 @@
   "chrome/browser/resources/settings/settings_resources.grd": {
     "structures": [12840],
   },
-  "chrome/browser/resources/sync_file_system_internals_resources.grd": {
+  "chrome/browser/resources/sync_file_system_internals/sync_file_system_internals_resources.grd": {
     "includes": [13340],
   },
-  "chrome/browser/resources/translate_internals_resources.grd": {
+  "chrome/browser/resources/translate_internals/translate_internals_resources.grd": {
     "includes": [13370],
   },
-  "chrome/browser/resources/webapks_ui_resources.grd": {
+  "chrome/browser/resources/webapks/webapks_ui_resources.grd": {
     "includes": [13380],
   },
   "chrome/browser/resources/welcome/onboarding_welcome/onboarding_welcome_resources.grd": {
