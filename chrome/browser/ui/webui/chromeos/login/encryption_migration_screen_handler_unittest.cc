@@ -134,13 +134,11 @@ class EncryptionMigrationScreenHandlerTest : public testing::Test {
     DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
         base::WrapUnique<CryptohomeClient>(fake_cryptohome_client_));
 
-    DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
-        std::make_unique<FakePowerManagerClient>());
+    PowerManagerClient::Initialize();
 
     DBusThreadManager::Initialize();
 
-    PowerPolicyController::Initialize(
-        DBusThreadManager::Get()->GetPowerManagerClient());
+    PowerPolicyController::Initialize(PowerManagerClient::Get());
 
     // Build dummy user context.
     user_context_.SetAccountId(account_id_);
@@ -168,6 +166,7 @@ class EncryptionMigrationScreenHandlerTest : public testing::Test {
 
     PowerPolicyController::Shutdown();
     DBusThreadManager::Shutdown();
+    PowerManagerClient::Shutdown();
     cryptohome::AsyncMethodCaller::Shutdown();
   }
 

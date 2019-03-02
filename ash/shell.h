@@ -466,6 +466,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   NoteTakingController* note_taking_controller() {
     return note_taking_controller_.get();
   }
+  NotificationReporter* notification_reporter() {
+    return notification_reporter_.get();
+  }
   OverlayEventFilter* overlay_filter() { return overlay_filter_.get(); }
   PartialMagnificationController* partial_magnification_controller() {
     return partial_magnification_controller_.get();

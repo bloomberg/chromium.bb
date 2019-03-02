@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/tpm/install_attributes.h"
 
@@ -20,6 +21,7 @@ void InitializeDBus() {
 
   // Initialize Chrome dbus clients.
   dbus::Bus* bus = DBusThreadManager::Get()->GetSystemBus();
+  PowerManagerClient::Initialize(bus);
   SystemClockClient::Initialize(bus);
 
   // Initialize the device settings service so that we'll take actions per
@@ -31,6 +33,7 @@ void InitializeDBus() {
 
 void ShutdownDBus() {
   // NOTE: These must only be called if InitializeDBus() was called.
+  PowerManagerClient::Shutdown();
   SystemClockClient::Shutdown();
   DBusThreadManager::Shutdown();
   SystemSaltGetter::Shutdown();

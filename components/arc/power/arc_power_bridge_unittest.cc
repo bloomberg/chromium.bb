@@ -8,7 +8,6 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "components/arc/arc_bridge_service.h"
@@ -30,11 +29,12 @@ class ArcPowerBridgeTest : public testing::Test {
   // Initial screen brightness percent for the Chrome OS power manager.
   static constexpr double kInitialBrightness = 100.0;
 
-  ArcPowerBridgeTest() {
-    chromeos::DBusThreadManager::Initialize();
-    power_manager_client_ = static_cast<chromeos::FakePowerManagerClient*>(
-        chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
-    power_manager_client_->set_screen_brightness_percent(kInitialBrightness);
+  ArcPowerBridgeTest() = default;
+  ~ArcPowerBridgeTest() override = default;
+
+  void SetUp() override {
+    chromeos::PowerManagerClient::Initialize();
+    power_manager_client()->set_screen_brightness_percent(kInitialBrightness);
 
     wake_lock_provider_ = std::make_unique<device::TestWakeLockProvider>(
         connector_factory_.RegisterInstance(device::mojom::kServiceName));
@@ -47,10 +47,10 @@ class ArcPowerBridgeTest : public testing::Test {
     CreatePowerInstance();
   }
 
-  ~ArcPowerBridgeTest() override {
+  void TearDown() override {
     DestroyPowerInstance();
     power_bridge_.reset();
-    chromeos::DBusThreadManager::Shutdown();
+    chromeos::PowerManagerClient::Shutdown();
   }
 
  protected:
@@ -98,11 +98,13 @@ class ArcPowerBridgeTest : public testing::Test {
     return result_count;
   }
 
+  chromeos::FakePowerManagerClient* power_manager_client() {
+    return chromeos::FakePowerManagerClient::Get();
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   service_manager::TestConnectorFactory connector_factory_;
-
-  chromeos::FakePowerManagerClient* power_manager_client_;  // Not owned.
 
   std::unique_ptr<ArcBridgeService> bridge_service_;
   std::unique_ptr<FakePowerInstance> power_instance_;
@@ -121,26 +123,29 @@ TEST_F(ArcPowerBridgeTest, SuspendAndResume) {
   // When powerd notifies Chrome that the system is about to suspend,
   // ArcPowerBridge should notify Android and take a suspend readiness callback
   // to defer the suspend operation.
-  power_manager_client_->SendSuspendImminent(
+  power_manager_client()->SendSuspendImminent(
       power_manager::SuspendImminent_Reason_OTHER);
   EXPECT_EQ(1, power_instance_->num_suspend());
   EXPECT_EQ(0, power_instance_->num_resume());
-  EXPECT_EQ(1, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(1,
+            power_manager_client()->GetNumPendingSuspendReadinessCallbacks());
 
   // Simulate Android acknowledging that it's ready for the system to suspend.
   power_instance_->GetSuspendCallback().Run();
-  EXPECT_EQ(0, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(0,
+            power_manager_client()->GetNumPendingSuspendReadinessCallbacks());
 
-  power_manager_client_->SendSuspendDone();
+  power_manager_client()->SendSuspendDone();
   EXPECT_EQ(1, power_instance_->num_suspend());
   EXPECT_EQ(1, power_instance_->num_resume());
 
   // We shouldn't crash if the instance isn't ready.
   DestroyPowerInstance();
-  power_manager_client_->SendSuspendImminent(
+  power_manager_client()->SendSuspendImminent(
       power_manager::SuspendImminent_Reason_OTHER);
-  EXPECT_EQ(0, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
-  power_manager_client_->SendSuspendDone();
+  EXPECT_EQ(0,
+            power_manager_client()->GetNumPendingSuspendReadinessCallbacks());
+  power_manager_client()->SendSuspendDone();
 }
 
 TEST_F(ArcPowerBridgeTest, SetInteractive) {
@@ -162,24 +167,24 @@ TEST_F(ArcPowerBridgeTest, ScreenBrightness) {
 
   // Check that Chrome OS brightness changes are passed to Android.
   const double kUpdatedBrightness = 45.0;
-  power_manager_client_->set_screen_brightness_percent(kUpdatedBrightness);
+  power_manager_client()->set_screen_brightness_percent(kUpdatedBrightness);
   power_manager::BacklightBrightnessChange change;
   change.set_percent(kUpdatedBrightness);
   change.set_cause(power_manager::BacklightBrightnessChange_Cause_USER_REQUEST);
-  power_manager_client_->SendScreenBrightnessChanged(change);
+  power_manager_client()->SendScreenBrightnessChanged(change);
   EXPECT_DOUBLE_EQ(kUpdatedBrightness, power_instance_->screen_brightness());
 
   // Requests from Android should update the Chrome OS brightness.
   const double kAndroidBrightness = 70.0;
   power_bridge_->OnScreenBrightnessUpdateRequest(kAndroidBrightness);
   EXPECT_DOUBLE_EQ(kAndroidBrightness,
-                   power_manager_client_->screen_brightness_percent());
+                   power_manager_client()->screen_brightness_percent());
 
   // To prevent battles between Chrome OS and Android, the updated brightness
   // shouldn't be passed to Android immediately, but it should be passed after
   // the timer fires.
   change.set_percent(kAndroidBrightness);
-  power_manager_client_->SendScreenBrightnessChanged(change);
+  power_manager_client()->SendScreenBrightnessChanged(change);
   EXPECT_DOUBLE_EQ(kUpdatedBrightness, power_instance_->screen_brightness());
   ASSERT_TRUE(power_bridge_->TriggerNotifyBrightnessTimerForTesting());
   EXPECT_DOUBLE_EQ(kAndroidBrightness, power_instance_->screen_brightness());

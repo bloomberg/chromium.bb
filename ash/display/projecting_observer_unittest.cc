@@ -43,15 +43,25 @@ display::DisplayConfigurator::DisplayStateList GetPointers(
 
 class ProjectingObserverTest : public testing::Test {
  public:
-  ProjectingObserverTest() {
+  ProjectingObserverTest() = default;
+
+  void SetUp() override {
+    chromeos::PowerManagerClient::Initialize();
     observer_ = std::make_unique<ProjectingObserver>(nullptr);
-    observer_->set_power_manager_client_for_test(&fake_power_client_);
+  }
+
+  void TearDown() override {
+    observer_.reset();
+    chromeos::PowerManagerClient::Shutdown();
   }
 
   ~ProjectingObserverTest() override = default;
 
  protected:
-  chromeos::FakePowerManagerClient fake_power_client_;
+  chromeos::FakePowerManagerClient* power_client() {
+    return chromeos::FakePowerManagerClient::Get();
+  }
+
   std::unique_ptr<ProjectingObserver> observer_;
 
  private:
@@ -62,8 +72,8 @@ TEST_F(ProjectingObserverTest, CheckNoDisplay) {
   std::vector<std::unique_ptr<display::DisplaySnapshot>> displays;
   observer_->OnDisplayModeChanged(GetPointers(displays));
 
-  EXPECT_EQ(1, fake_power_client_.num_set_is_projecting_calls());
-  EXPECT_FALSE(fake_power_client_.is_projecting());
+  EXPECT_EQ(1, power_client()->num_set_is_projecting_calls());
+  EXPECT_FALSE(power_client()->is_projecting());
 }
 
 TEST_F(ProjectingObserverTest, CheckWithoutInternalDisplay) {
@@ -71,8 +81,8 @@ TEST_F(ProjectingObserverTest, CheckWithoutInternalDisplay) {
   displays.push_back(CreateVGASnapshot());
   observer_->OnDisplayModeChanged(GetPointers(displays));
 
-  EXPECT_EQ(1, fake_power_client_.num_set_is_projecting_calls());
-  EXPECT_FALSE(fake_power_client_.is_projecting());
+  EXPECT_EQ(1, power_client()->num_set_is_projecting_calls());
+  EXPECT_FALSE(power_client()->is_projecting());
 }
 
 TEST_F(ProjectingObserverTest, CheckWithInternalDisplay) {
@@ -80,8 +90,8 @@ TEST_F(ProjectingObserverTest, CheckWithInternalDisplay) {
   displays.push_back(CreateInternalSnapshot());
   observer_->OnDisplayModeChanged(GetPointers(displays));
 
-  EXPECT_EQ(1, fake_power_client_.num_set_is_projecting_calls());
-  EXPECT_FALSE(fake_power_client_.is_projecting());
+  EXPECT_EQ(1, power_client()->num_set_is_projecting_calls());
+  EXPECT_FALSE(power_client()->is_projecting());
 }
 
 TEST_F(ProjectingObserverTest, CheckWithTwoVGADisplays) {
@@ -90,9 +100,9 @@ TEST_F(ProjectingObserverTest, CheckWithTwoVGADisplays) {
   displays.push_back(CreateVGASnapshot());
   observer_->OnDisplayModeChanged(GetPointers(displays));
 
-  EXPECT_EQ(1, fake_power_client_.num_set_is_projecting_calls());
+  EXPECT_EQ(1, power_client()->num_set_is_projecting_calls());
   // We need at least 1 internal display to set projecting to on.
-  EXPECT_FALSE(fake_power_client_.is_projecting());
+  EXPECT_FALSE(power_client()->is_projecting());
 }
 
 TEST_F(ProjectingObserverTest, CheckWithInternalAndVGADisplays) {
@@ -101,8 +111,8 @@ TEST_F(ProjectingObserverTest, CheckWithInternalAndVGADisplays) {
   displays.push_back(CreateVGASnapshot());
   observer_->OnDisplayModeChanged(GetPointers(displays));
 
-  EXPECT_EQ(1, fake_power_client_.num_set_is_projecting_calls());
-  EXPECT_TRUE(fake_power_client_.is_projecting());
+  EXPECT_EQ(1, power_client()->num_set_is_projecting_calls());
+  EXPECT_TRUE(power_client()->is_projecting());
 }
 
 TEST_F(ProjectingObserverTest, CheckWithVGADisplayAndOneCastingSession) {
@@ -112,9 +122,9 @@ TEST_F(ProjectingObserverTest, CheckWithVGADisplayAndOneCastingSession) {
 
   observer_->OnCastingSessionStartedOrStopped(true);
 
-  EXPECT_EQ(2, fake_power_client_.num_set_is_projecting_calls());
+  EXPECT_EQ(2, power_client()->num_set_is_projecting_calls());
   // Need at least one internal display to set projecting state to |true|.
-  EXPECT_FALSE(fake_power_client_.is_projecting());
+  EXPECT_FALSE(power_client()->is_projecting());
 }
 
 TEST_F(ProjectingObserverTest, CheckWithInternalDisplayAndOneCastingSession) {
@@ -124,8 +134,8 @@ TEST_F(ProjectingObserverTest, CheckWithInternalDisplayAndOneCastingSession) {
 
   observer_->OnCastingSessionStartedOrStopped(true);
 
-  EXPECT_EQ(2, fake_power_client_.num_set_is_projecting_calls());
-  EXPECT_TRUE(fake_power_client_.is_projecting());
+  EXPECT_EQ(2, power_client()->num_set_is_projecting_calls());
+  EXPECT_TRUE(power_client()->is_projecting());
 }
 
 TEST_F(ProjectingObserverTest, CheckProjectingAfterClosingACastingSession) {
@@ -136,13 +146,13 @@ TEST_F(ProjectingObserverTest, CheckProjectingAfterClosingACastingSession) {
   observer_->OnCastingSessionStartedOrStopped(true);
   observer_->OnCastingSessionStartedOrStopped(true);
 
-  EXPECT_EQ(3, fake_power_client_.num_set_is_projecting_calls());
-  EXPECT_TRUE(fake_power_client_.is_projecting());
+  EXPECT_EQ(3, power_client()->num_set_is_projecting_calls());
+  EXPECT_TRUE(power_client()->is_projecting());
 
   observer_->OnCastingSessionStartedOrStopped(false);
 
-  EXPECT_EQ(4, fake_power_client_.num_set_is_projecting_calls());
-  EXPECT_TRUE(fake_power_client_.is_projecting());
+  EXPECT_EQ(4, power_client()->num_set_is_projecting_calls());
+  EXPECT_TRUE(power_client()->is_projecting());
 }
 
 TEST_F(ProjectingObserverTest,
@@ -154,8 +164,8 @@ TEST_F(ProjectingObserverTest,
   observer_->OnCastingSessionStartedOrStopped(true);
   observer_->OnCastingSessionStartedOrStopped(false);
 
-  EXPECT_EQ(3, fake_power_client_.num_set_is_projecting_calls());
-  EXPECT_FALSE(fake_power_client_.is_projecting());
+  EXPECT_EQ(3, power_client()->num_set_is_projecting_calls());
+  EXPECT_FALSE(power_client()->is_projecting());
 }
 
 TEST_F(ProjectingObserverTest,
@@ -169,8 +179,8 @@ TEST_F(ProjectingObserverTest,
   displays.erase(displays.begin() + 1);
   observer_->OnDisplayModeChanged(GetPointers(displays));
 
-  EXPECT_EQ(2, fake_power_client_.num_set_is_projecting_calls());
-  EXPECT_FALSE(fake_power_client_.is_projecting());
+  EXPECT_EQ(2, power_client()->num_set_is_projecting_calls());
+  EXPECT_FALSE(power_client()->is_projecting());
 }
 
 }  // namespace ash

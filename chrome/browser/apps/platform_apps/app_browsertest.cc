@@ -1226,16 +1226,12 @@ IN_PROC_BROWSER_TEST_F(PlatformAppIncognitoBrowserTest,
 
 class RestartDeviceTest : public PlatformAppBrowserTest {
  public:
-  RestartDeviceTest() : power_manager_client_(NULL), mock_user_manager_(NULL) {}
-  ~RestartDeviceTest() override {}
+  RestartDeviceTest() = default;
+  ~RestartDeviceTest() override = default;
 
   // PlatformAppBrowserTest overrides
   void SetUpInProcessBrowserTestFixture() override {
     PlatformAppBrowserTest::SetUpInProcessBrowserTestFixture();
-
-    power_manager_client_ = new chromeos::FakePowerManagerClient;
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
-        std::unique_ptr<chromeos::PowerManagerClient>(power_manager_client_));
   }
 
   void SetUpOnMainThread() override {
@@ -1264,12 +1260,11 @@ class RestartDeviceTest : public PlatformAppBrowserTest {
   }
 
   int num_request_restart_calls() const {
-    return power_manager_client_->num_request_restart_calls();
+    return chromeos::FakePowerManagerClient::Get()->num_request_restart_calls();
   }
 
  private:
-  chromeos::FakePowerManagerClient* power_manager_client_;
-  chromeos::MockUserManager* mock_user_manager_;
+  chromeos::MockUserManager* mock_user_manager_ = nullptr;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 
   DISALLOW_COPY_AND_ASSIGN(RestartDeviceTest);

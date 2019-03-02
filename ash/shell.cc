@@ -1123,9 +1123,9 @@ void Shell::Init(
   sticky_keys_controller_.reset(new StickyKeysController);
   screen_pinning_controller_ = std::make_unique<ScreenPinningController>();
 
-  power_prefs_ = std::make_unique<PowerPrefs>(
-      chromeos::PowerPolicyController::Get(),
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
+  power_prefs_ =
+      std::make_unique<PowerPrefs>(chromeos::PowerPolicyController::Get(),
+                                   chromeos::PowerManagerClient::Get());
 
   backlights_forced_off_setter_ = std::make_unique<BacklightsForcedOffSetter>();
 
@@ -1278,9 +1278,7 @@ void Shell::Init(
 
   user_metrics_recorder_->OnShellInitialized();
 
-  notification_reporter_ = std::make_unique<NotificationReporter>(
-      message_center::MessageCenter::Get(),
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
+  notification_reporter_ = std::make_unique<NotificationReporter>();
 
   // Initialize the D-Bus thread and services for ash.
   ash_dbus_services_ = std::make_unique<AshDBusServices>();

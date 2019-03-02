@@ -159,21 +159,7 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
         task_runner_(new base::TestSimpleTaskRunner()),
         thread_task_runner_handle_(task_runner_) {}
 
-  ~ProximityAuthUnlockManagerImplTest() override {
-    // Make sure to verify the mock prior to the destruction of the unlock
-    // manager, as otherwise it's impossible to tell whether calls to Stop()
-    // occur as a side-effect of the destruction or from the code intended to be
-    // under test.
-    if (proximity_monitor())
-      testing::Mock::VerifyAndClearExpectations(proximity_monitor());
-
-    // The UnlockManager must be destroyed before calling
-    // chromeos::DBusThreadManager::Shutdown(), as the UnlockManager's
-    // destructor references the DBusThreadManager.
-    unlock_manager_.reset();
-
-    chromeos::DBusThreadManager::Shutdown();
-  }
+  ~ProximityAuthUnlockManagerImplTest() override = default;
 
   void SetUp() override {
     ON_CALL(*bluetooth_adapter_, IsPresent()).WillByDefault(Return(true));
@@ -185,7 +171,20 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
     life_cycle_.set_messenger(&messenger_);
     life_cycle_.set_channel(fake_client_channel_.get());
 
-    chromeos::DBusThreadManager::Initialize();
+    chromeos::PowerManagerClient::Initialize();
+  }
+
+  void TearDown() override {
+    // Make sure to verify the mock prior to the destruction of the unlock
+    // manager, as otherwise it's impossible to tell whether calls to Stop()
+    // occur as a side-effect of the destruction or from the code intended to be
+    // under test.
+    if (proximity_monitor())
+      testing::Mock::VerifyAndClearExpectations(proximity_monitor());
+
+    unlock_manager_.reset();
+
+    chromeos::PowerManagerClient::Shutdown();
   }
 
   void CreateUnlockManager(

@@ -973,8 +973,7 @@ DeviceStatusCollector::DeviceStatusCollector(
       tpm_status_fetcher_(tpm_status_fetcher),
       statistics_provider_(provider),
       cros_settings_(chromeos::CrosSettings::Get()),
-      power_manager_(
-          chromeos::DBusThreadManager::Get()->GetPowerManagerClient()),
+      power_manager_(chromeos::PowerManagerClient::Get()),
       session_manager_(session_manager::SessionManager::Get()),
       runtime_probe_(
           chromeos::DBusThreadManager::Get()->GetRuntimeProbeClient()),

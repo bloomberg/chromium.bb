@@ -151,8 +151,7 @@ ArcMetricsService::ArcMetricsService(content::BrowserContext* context,
   arc_bridge_service_->process()->AddObserver(&process_observer_);
   arc_window_delegate_->RegisterActivationChangeObserver();
   session_manager::SessionManager::Get()->AddObserver(this);
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->AddObserver(this);
 
   DCHECK(pref_service_);
   RestoreEngagementTimeFromPrefs();
@@ -171,8 +170,7 @@ ArcMetricsService::~ArcMetricsService() {
   UpdateEngagementTime();
   SaveEngagementTimeToPrefs();
 
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
   session_manager::SessionManager::Get()->RemoveObserver(this);
   arc_window_delegate_->UnregisterActivationChangeObserver();
   arc_bridge_service_->process()->RemoveObserver(&process_observer_);

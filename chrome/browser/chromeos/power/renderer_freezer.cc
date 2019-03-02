@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/process/process_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -109,9 +108,8 @@ void RendererFreezer::OnCheckCanFreezeRenderersComplete(bool can_freeze) {
   if (!can_freeze)
     return;
 
-  DBusThreadManager::Get()
-      ->GetPowerManagerClient()
-      ->SetRenderProcessManagerDelegate(weak_factory_.GetWeakPtr());
+  PowerManagerClient::Get()->SetRenderProcessManagerDelegate(
+      weak_factory_.GetWeakPtr());
 
   registrar_.Add(
       this,

@@ -164,8 +164,7 @@ const char PeripheralBatteryNotifier::kStylusNotificationId[] =
 PeripheralBatteryNotifier::PeripheralBatteryNotifier()
     : weakptr_factory_(
           new base::WeakPtrFactory<PeripheralBatteryNotifier>(this)) {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->AddObserver(this);
   device::BluetoothAdapterFactory::GetAdapter(
       base::BindOnce(&PeripheralBatteryNotifier::InitializeOnBluetoothReady,
                      weakptr_factory_->GetWeakPtr()));
@@ -174,8 +173,7 @@ PeripheralBatteryNotifier::PeripheralBatteryNotifier()
 PeripheralBatteryNotifier::~PeripheralBatteryNotifier() {
   if (bluetooth_adapter_.get())
     bluetooth_adapter_->RemoveObserver(this);
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
 }
 
 void PeripheralBatteryNotifier::PeripheralBatteryStatusReceived(

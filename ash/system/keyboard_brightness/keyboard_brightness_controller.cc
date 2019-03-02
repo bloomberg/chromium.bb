@@ -23,9 +23,7 @@ void KeyboardBrightnessController::HandleKeyboardBrightnessDown(
   if (accelerator.key_code() == ui::VKEY_BRIGHTNESS_DOWN)
     RecordAction(UserMetricsAction("Accel_KeyboardBrightnessDown_F6"));
 
-  chromeos::DBusThreadManager::Get()
-      ->GetPowerManagerClient()
-      ->DecreaseKeyboardBrightness();
+  chromeos::PowerManagerClient::Get()->DecreaseKeyboardBrightness();
 }
 
 void KeyboardBrightnessController::HandleKeyboardBrightnessUp(
@@ -33,9 +31,7 @@ void KeyboardBrightnessController::HandleKeyboardBrightnessUp(
   if (accelerator.key_code() == ui::VKEY_BRIGHTNESS_UP)
     RecordAction(UserMetricsAction("Accel_KeyboardBrightnessUp_F7"));
 
-  chromeos::DBusThreadManager::Get()
-      ->GetPowerManagerClient()
-      ->IncreaseKeyboardBrightness();
+  chromeos::PowerManagerClient::Get()->IncreaseKeyboardBrightness();
 }
 
 }  // namespace ash

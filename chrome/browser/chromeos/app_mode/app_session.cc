@@ -63,7 +63,7 @@ bool IsPepperPlugin(const base::FilePath& plugin_path) {
 }
 
 void RebootDevice() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
+  PowerManagerClient::Get()->RequestRestart(
       power_manager::REQUEST_RESTART_OTHER, "kiosk app session");
 }
 

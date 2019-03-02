@@ -322,7 +322,7 @@ void ErrorScreen::OnLocalStateErrorPowerwashButtonClicked() {
 }
 
 void ErrorScreen::OnRebootButtonClicked() {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
+  chromeos::PowerManagerClient::Get()->RequestRestart(
       power_manager::REQUEST_RESTART_FOR_USER, "login error screen");
 }
 

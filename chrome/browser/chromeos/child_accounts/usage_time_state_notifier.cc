@@ -39,7 +39,7 @@ void UsageTimeStateNotifier::AddObserver(
   DCHECK(observer);
   if (!observers_.might_have_observers()) {
     session_manager::SessionManager::Get()->AddObserver(this);
-    DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+    PowerManagerClient::Get()->AddObserver(this);
     last_state_ = GetCurrentState();
   }
   observers_.AddObserver(observer);
@@ -51,7 +51,7 @@ void UsageTimeStateNotifier::RemoveObserver(
   observers_.RemoveObserver(observer);
   if (!observers_.might_have_observers()) {
     session_manager::SessionManager::Get()->RemoveObserver(this);
-    DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+    PowerManagerClient::Get()->RemoveObserver(this);
   }
 }
 

@@ -279,8 +279,7 @@ class VideoCaptureDeviceTest
 
   void SetUp() override {
 #if defined(OS_CHROMEOS)
-    dbus_setter_->SetPowerManagerClient(
-        std::make_unique<chromeos::FakePowerManagerClient>());
+    chromeos::PowerManagerClient::Initialize();
 #endif
 #if defined(OS_ANDROID)
     static_cast<VideoCaptureDeviceFactoryAndroid*>(
@@ -290,6 +289,12 @@ class VideoCaptureDeviceTest
     static_cast<VideoCaptureDeviceFactoryWin*>(
         video_capture_device_factory_.get())
         ->set_use_media_foundation_for_testing(UseWinMediaFoundation());
+#endif
+  }
+
+  void TearDown() override {
+#if defined(OS_CHROMEOS)
+    chromeos::PowerManagerClient::Shutdown();
 #endif
   }
 

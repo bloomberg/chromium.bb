@@ -7,7 +7,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -25,11 +24,8 @@ TEST_F(ArcMigrationGuideNotificationTest, BatteryPercent) {
   TestingProfile profile;
 
   // Set a high battery state.
-  auto power_manager_client =
-      std::make_unique<chromeos::FakePowerManagerClient>();
-  auto* power_manager = power_manager_client.get();
-  chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
-      std::move(power_manager_client));
+  chromeos::PowerManagerClient::Initialize();
+  auto* power_manager = chromeos::FakePowerManagerClient::Get();
   power_manager::PowerSupplyProperties props = *power_manager->GetLastStatus();
   props.set_battery_percent(99);
   power_manager->UpdatePowerProperties(props);
@@ -58,6 +54,8 @@ TEST_F(ArcMigrationGuideNotificationTest, BatteryPercent) {
   EXPECT_NE(message, notifications[0].message());
   EXPECT_THAT(base::UTF16ToUTF8(notifications[0].message()),
               HasSubstr("charge"));
+
+  chromeos::PowerManagerClient::Shutdown();
 }
 
 }  // namespace arc

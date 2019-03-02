@@ -36,7 +36,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/components/drivefs/drivefs_host.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/disks/disk.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
@@ -504,7 +504,7 @@ void EventRouter::Shutdown() {
   }
 
   chromeos::PowerManagerClient* const power_manager_client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+      chromeos::PowerManagerClient::Get();
   power_manager_client->RemoveObserver(device_event_router_.get());
 
   profile_ = nullptr;
@@ -533,7 +533,7 @@ void EventRouter::ObserveEvents() {
   }
 
   chromeos::PowerManagerClient* const power_manager_client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+      chromeos::PowerManagerClient::Get();
   power_manager_client->AddObserver(device_event_router_.get());
 
   DriveIntegrationService* const integration_service =

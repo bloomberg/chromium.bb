@@ -29,7 +29,7 @@ class PowerManagerObserver
     if (currently_listening_)
       return;
     chromeos::PowerManagerClient* power_client =
-        chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+        chromeos::PowerManagerClient::Get();
     power_client->AddObserver(this);
     power_client->RequestStatusUpdate();
     currently_listening_ = true;
@@ -39,8 +39,7 @@ class PowerManagerObserver
   void Stop() {
     if (!currently_listening_)
       return;
-    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-        this);
+    chromeos::PowerManagerClient::Get()->RemoveObserver(this);
     currently_listening_ = false;
   }
 

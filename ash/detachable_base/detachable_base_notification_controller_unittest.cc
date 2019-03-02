@@ -14,7 +14,6 @@
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_type.h"
@@ -41,13 +40,8 @@ class DetachableBaseNotificationControllerTest : public NoSessionAshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    GetPowerManagerClient()->SetTabletMode(
+    chromeos::FakePowerManagerClient::Get()->SetTabletMode(
         chromeos::PowerManagerClient::TabletMode::OFF, base::TimeTicks());
-  }
-
-  chromeos::FakePowerManagerClient* GetPowerManagerClient() {
-    return static_cast<chromeos::FakePowerManagerClient*>(
-        chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
   }
 
   bool IsBaseChangedNotificationVisible() {
@@ -244,7 +238,7 @@ TEST_F(DetachableBaseNotificationControllerTest, NotificationOnUpdateRequired) {
   EXPECT_TRUE(IsBaseRequiresUpdateNotificationVisible());
 
   // The notification should be removed when the base gets detached.
-  GetPowerManagerClient()->SetTabletMode(
+  chromeos::FakePowerManagerClient::Get()->SetTabletMode(
       chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks());
   EXPECT_FALSE(IsBaseRequiresUpdateNotificationVisible());
 }
@@ -261,7 +255,7 @@ TEST_F(DetachableBaseNotificationControllerTest,
   EXPECT_TRUE(IsBaseRequiresUpdateNotificationVisible());
 
   // The notification should be removed when the base gets detached.
-  GetPowerManagerClient()->SetTabletMode(
+  chromeos::FakePowerManagerClient::Get()->SetTabletMode(
       chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks());
   EXPECT_FALSE(IsBaseRequiresUpdateNotificationVisible());
 }
@@ -276,7 +270,7 @@ TEST_F(DetachableBaseNotificationControllerTest,
   EXPECT_TRUE(IsBaseRequiresUpdateNotificationVisible());
 
   // The notification should be removed when the base gets detached.
-  GetPowerManagerClient()->SetTabletMode(
+  chromeos::FakePowerManagerClient::Get()->SetTabletMode(
       chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks());
   EXPECT_FALSE(IsBaseRequiresUpdateNotificationVisible());
 }

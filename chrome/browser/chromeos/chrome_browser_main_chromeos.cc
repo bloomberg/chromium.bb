@@ -285,8 +285,7 @@ class DBusServices {
 
     if (!::features::IsMultiProcessMash()) {
       // In Mash, power policy is sent to powerd by ash.
-      PowerPolicyController::Initialize(
-          DBusThreadManager::Get()->GetPowerManagerClient());
+      PowerPolicyController::Initialize(PowerManagerClient::Get());
     }
 
     dbus::Bus* system_bus = DBusThreadManager::Get()->IsUsingFakes()
@@ -940,8 +939,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
       std::make_unique<FreezerCgroupProcessManager>());
 
   power_metrics_reporter_ = std::make_unique<PowerMetricsReporter>(
-      DBusThreadManager::Get()->GetPowerManagerClient(),
-      g_browser_process->local_state());
+      PowerManagerClient::Get(), g_browser_process->local_state());
 
   g_browser_process->platform_part()->InitializeAutomaticRebootManager();
   user_removal_manager::RemoveUsersIfNeeded();

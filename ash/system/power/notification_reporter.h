@@ -9,8 +9,6 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "chromeos/dbus/power_manager_client.h"
-#include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 
 namespace ash {
@@ -22,8 +20,7 @@ namespace ash {
 class ASH_EXPORT NotificationReporter
     : public message_center::MessageCenterObserver {
  public:
-  NotificationReporter(message_center::MessageCenter* message_center,
-                       chromeos::PowerManagerClient* power_manager_client);
+  NotificationReporter();
   ~NotificationReporter() override;
 
   // Overridden from MessageCenterObserver:
@@ -34,9 +31,6 @@ class ASH_EXPORT NotificationReporter
   // Notifies power manager if the notification corresponding to
   // |notification_id| has high priority.
   void MaybeNotifyPowerManager(const std::string& notification_id);
-
-  message_center::MessageCenter* const message_center_;
-  chromeos::PowerManagerClient* const power_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationReporter);
 };

@@ -22,7 +22,7 @@ NetworkChangeManagerClient::NetworkChangeManagerClient(
     : connection_type_(net::NetworkChangeNotifier::CONNECTION_NONE),
       connection_subtype_(net::NetworkChangeNotifier::SUBTYPE_NONE),
       network_change_notifier_(network_change_notifier) {
-  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+  PowerManagerClient::Get()->AddObserver(this);
   NetworkHandler::Get()->network_state_handler()->AddObserver(this, FROM_HERE);
 
   if (content::IsOutOfProcessNetworkService())
@@ -36,7 +36,7 @@ NetworkChangeManagerClient::NetworkChangeManagerClient(
 NetworkChangeManagerClient::~NetworkChangeManagerClient() {
   NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
                                                                  FROM_HERE);
-  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+  PowerManagerClient::Get()->RemoveObserver(this);
 }
 
 void NetworkChangeManagerClient::SuspendDone(

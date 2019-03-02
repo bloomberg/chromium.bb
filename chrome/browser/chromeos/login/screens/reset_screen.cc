@@ -292,7 +292,7 @@ void ResetScreen::OnRestart() {
   }
   prefs->CommitPendingWrite();
 
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
+  chromeos::PowerManagerClient::Get()->RequestRestart(
       power_manager::REQUEST_RESTART_FOR_USER, "login reset screen restart");
 }
 
@@ -356,7 +356,7 @@ void ResetScreen::UpdateStatusChanged(
     get_base_screen_delegate()->ShowErrorScreen();
   } else if (status.status ==
              UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
-    DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
+    PowerManagerClient::Get()->RequestRestart(
         power_manager::REQUEST_RESTART_FOR_UPDATE, "login reset screen update");
   }
 }

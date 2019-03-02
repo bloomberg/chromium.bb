@@ -48,16 +48,14 @@ VideoCaptureDeviceChromeOSHalv3::VideoCaptureDeviceChromeOSHalv3(
       rotation_(0),
       reprocess_manager_(reprocess_manager),
       weak_ptr_factory_(this) {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->AddObserver(this);
 }
 
 VideoCaptureDeviceChromeOSHalv3::~VideoCaptureDeviceChromeOSHalv3() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
   DCHECK(!camera_device_ipc_thread_.IsRunning());
   screen_observer_delegate_->RemoveObserver();
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
 }
 
 // VideoCaptureDevice implementation.
@@ -131,8 +129,7 @@ void VideoCaptureDeviceChromeOSHalv3::SuspendImminent(
       base::BindOnce(
           &VideoCaptureDeviceChromeOSHalv3::CloseDevice,
           weak_ptr_factory_.GetWeakPtr(),
-          BindToCurrentLoop(chromeos::DBusThreadManager::Get()
-                                ->GetPowerManagerClient()
+          BindToCurrentLoop(chromeos::PowerManagerClient::Get()
                                 ->GetSuspendReadinessCallback(FROM_HERE))));
 }
 

@@ -404,9 +404,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     chromeos::CrasAudioHandler::InitializeForTesting();
     chromeos::LoginState::Initialize();
 
-    fake_power_manager_client_ = new chromeos::FakePowerManagerClient;
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
-        base::WrapUnique(fake_power_manager_client_));
+    chromeos::PowerManagerClient::Initialize();
   }
 
   ~DeviceStatusCollectorTest() override {
@@ -453,19 +451,21 @@ class DeviceStatusCollectorTest : public testing::Test {
         case DeviceStateTransitions::kEnterIdleState: {
           power_manager::ScreenIdleState state;
           state.set_off(true);
-          fake_power_manager_client_->SendScreenIdleStateChanged(state);
+          chromeos::FakePowerManagerClient::Get()->SendScreenIdleStateChanged(
+              state);
         } break;
         case DeviceStateTransitions::kLeaveIdleState: {
           power_manager::ScreenIdleState state;
           state.set_off(false);
-          fake_power_manager_client_->SendScreenIdleStateChanged(state);
+          chromeos::FakePowerManagerClient::Get()->SendScreenIdleStateChanged(
+              state);
         } break;
         case DeviceStateTransitions::kEnterSleep:
-          fake_power_manager_client_->SendSuspendImminent(
+          chromeos::FakePowerManagerClient::Get()->SendSuspendImminent(
               power_manager::SuspendImminent_Reason_LID_CLOSED);
           break;
         case DeviceStateTransitions::kLeaveSleep:
-          fake_power_manager_client_->SendSuspendDone(
+          chromeos::FakePowerManagerClient::Get()->SendSuspendDone(
               base::TimeDelta::FromSeconds(
                   policy::DeviceStatusCollector::kIdlePollIntervalSeconds));
           break;
@@ -671,12 +671,12 @@ class DeviceStatusCollectorTest : public testing::Test {
   chromeos::FakeUpdateEngineClient* const update_engine_client_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
-  // Owned by chromeos::DBusThreadManager.
-  chromeos::FakePowerManagerClient* fake_power_manager_client_;
-
   // This property is required to instantiate the session manager, a singleton
   // which is used by the device status collector.
   session_manager::SessionManager session_manager_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DeviceStatusCollectorTest);
 };
 
 TEST_F(DeviceStatusCollectorTest, AllIdle) {

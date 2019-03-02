@@ -128,11 +128,11 @@ class DBusThreadManagerLifetimeHelper {
     // Set fake clients for testing.
     dbus_thread_manager_setter->SetSessionManagerClient(
         std::make_unique<chromeos::FakeSessionManagerClient>());
-    dbus_thread_manager_setter->SetPowerManagerClient(
-        std::make_unique<chromeos::FakePowerManagerClient>());
+    chromeos::PowerManagerClient::Initialize();
   }
 
   ~DBusThreadManagerLifetimeHelper() {
+    chromeos::PowerManagerClient::Shutdown();
     // Destroy the global DBusThreadManager instance.
     chromeos::DBusThreadManager::Shutdown();
   }
@@ -233,7 +233,7 @@ class ArcMetricsServiceTest : public testing::Test {
 
   chromeos::FakePowerManagerClient* GetPowerManagerClient() {
     return static_cast<chromeos::FakePowerManagerClient*>(
-        chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
+        chromeos::PowerManagerClient::Get());
   }
 
   content::TestBrowserThreadBundle thread_bundle_;

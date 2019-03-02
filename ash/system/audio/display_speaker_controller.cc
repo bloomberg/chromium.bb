@@ -13,17 +13,16 @@
 #include "ui/display/screen.h"
 
 using chromeos::CrasAudioHandler;
-using chromeos::DBusThreadManager;
 
 namespace ash {
 
 DisplaySpeakerController::DisplaySpeakerController() {
   display::Screen::GetScreen()->AddObserver(this);
-  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+  chromeos::PowerManagerClient::Get()->AddObserver(this);
 }
 
 DisplaySpeakerController::~DisplaySpeakerController() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
 }
 

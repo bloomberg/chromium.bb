@@ -15,7 +15,6 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
@@ -165,14 +164,9 @@ class AssistantServiceTest : public testing::Test {
     // which are irrelevant for these tests.
     test_connector_factory_.set_ignore_unknown_service_requests(true);
 
-    auto power_manager_client =
-        std::make_unique<chromeos::FakePowerManagerClient>();
-    power_manager_client->SetTabletMode(
-        chromeos::PowerManagerClient::TabletMode::OFF, base::TimeTicks());
-    power_manager_client_ = power_manager_client.get();
-
-    auto dbus_setter = chromeos::DBusThreadManager::GetSetterForTesting();
-    dbus_setter->SetPowerManagerClient(std::move(power_manager_client));
+    PowerManagerClient::Initialize();
+    FakePowerManagerClient::Get()->SetTabletMode(
+        PowerManagerClient::TabletMode::OFF, base::TimeTicks());
 
     service_ = std::make_unique<Service>(
         test_connector_factory_.RegisterInstance(mojom::kServiceName),
@@ -202,6 +196,8 @@ class AssistantServiceTest : public testing::Test {
             &url_loader_factory_);
     platform_.FlushForTesting();
     base::RunLoop().RunUntilIdle();
+
+    PowerManagerClient::Shutdown();
   }
 
   mojom::AssistantPlatform* GetPlatform() {

@@ -42,6 +42,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
@@ -101,8 +102,6 @@ class ArcSessionManagerInLoginScreenTest : public testing::Test {
             std::make_unique<chromeos::FakeChromeUserManager>()) {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         std::make_unique<chromeos::FakeSessionManagerClient>());
-
-    chromeos::DBusThreadManager::Initialize();
 
     ArcSessionManager::SetUiEnabledForTesting(false);
     SetArcBlockedDueToIncompatibleFileSystemForTesting(false);
@@ -181,7 +180,7 @@ class ArcSessionManagerTestBase : public testing::Test {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         std::make_unique<chromeos::FakeSessionManagerClient>());
 
-    chromeos::DBusThreadManager::Initialize();
+    chromeos::PowerManagerClient::Initialize();
 
     SetArcAvailableCommandLineForTesting(
         base::CommandLine::ForCurrentProcess());
@@ -209,6 +208,7 @@ class ArcSessionManagerTestBase : public testing::Test {
     profile_.reset();
     arc_session_manager_.reset();
     arc_service_manager_.reset();
+    chromeos::PowerManagerClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 

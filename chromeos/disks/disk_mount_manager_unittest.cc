@@ -17,19 +17,16 @@
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/disks/disk.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPrintf;
-using chromeos::disks::Disk;
-using chromeos::disks::DiskMountManager;
-using chromeos::CrosDisksClient;
-using chromeos::DBusThreadManager;
-using chromeos::FakeCrosDisksClient;
-using chromeos::MountError;
-using chromeos::MountType;
-using chromeos::disks::MountCondition;
+
+namespace chromeos {
+
+namespace disks {
 
 namespace {
 
@@ -505,6 +502,7 @@ class DiskMountManagerTest : public testing::Test {
     fake_cros_disks_client_ = new FakeCrosDisksClient;
     DBusThreadManager::GetSetterForTesting()->SetCrosDisksClient(
         std::unique_ptr<CrosDisksClient>(fake_cros_disks_client_));
+    PowerManagerClient::Initialize();
 
     DiskMountManager::Initialize();
 
@@ -519,6 +517,7 @@ class DiskMountManagerTest : public testing::Test {
   void TearDown() override {
     DiskMountManager::GetInstance()->RemoveObserver(observer_.get());
     DiskMountManager::Shutdown();
+    PowerManagerClient::Shutdown();
     DBusThreadManager::Shutdown();
   }
 
@@ -1535,3 +1534,6 @@ TEST_F(DiskMountManagerTest, UnmountDeviceRecursively_FailFirst) {
 }
 
 }  // namespace
+
+}  // namespace disks
+}  // namespace chromeos

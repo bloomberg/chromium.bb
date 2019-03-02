@@ -63,12 +63,7 @@ void ProjectingObserver::SetIsProjecting() {
   bool projecting =
       has_internal_output_ && (output_count_ + casting_session_count_ > 1);
 
-  chromeos::PowerManagerClient* power_manager_client =
-      power_manager_client_for_test_
-          ? power_manager_client_for_test_
-          : chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
-  if (power_manager_client)
-    power_manager_client->SetIsProjecting(projecting);
+  chromeos::PowerManagerClient::Get()->SetIsProjecting(projecting);
 }
 
 }  // namespace ash

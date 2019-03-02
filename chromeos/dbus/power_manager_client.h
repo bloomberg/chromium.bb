@@ -18,13 +18,15 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "chromeos/dbus/dbus_client.h"
-#include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+
+namespace dbus {
+class Bus;
+}
 
 namespace power_manager {
 class BacklightBrightnessChange;
@@ -35,7 +37,7 @@ class SetBacklightBrightnessRequest;
 namespace chromeos {
 
 // PowerManagerClient is used to communicate with the power manager.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) PowerManagerClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) PowerManagerClient {
  public:
   using TimerId = int32_t;
 
@@ -316,17 +318,14 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) PowerManagerClient : public DBusClient {
   // ScreenDimImminent notifications.
   virtual void DeferScreenDim() = 0;
 
-  // Creates the instance.
-  static PowerManagerClient* Create(DBusClientImplementationType type);
-
-  ~PowerManagerClient() override;
-
- protected:
-  // Needs to call DBusClient::Init().
-  friend class PowerManagerClientTest;
-
-  // Create() should be used instead.
   PowerManagerClient();
+  virtual ~PowerManagerClient();
+
+  // Creates and inits the instance. If |bus| is null, a FakePowerManagerClient
+  // will be created.
+  static void Initialize(dbus::Bus* bus = nullptr);
+  static PowerManagerClient* Get();
+  static void Shutdown();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PowerManagerClient);

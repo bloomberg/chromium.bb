@@ -71,7 +71,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakePowerManagerClient
   }
 
   // PowerManagerClient overrides:
-  void Init(dbus::Bus* bus) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   bool HasObserver(const Observer* observer) const override;
@@ -183,6 +182,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakePowerManagerClient
     keyboard_brightness_percent_ = percent;
   }
 
+  static FakePowerManagerClient* Get();
+
  private:
   // Callback that will be run by asynchronous suspend delays to report
   // readiness.
@@ -282,7 +283,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakePowerManagerClient
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<FakePowerManagerClient> weak_ptr_factory_;
+  base::WeakPtrFactory<FakePowerManagerClient> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakePowerManagerClient);
 };

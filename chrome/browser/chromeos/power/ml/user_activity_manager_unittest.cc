@@ -35,7 +35,6 @@
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
-#include "chromeos/dbus/power_manager_client.h"
 #include "components/session_manager/session_manager_types.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -174,15 +173,22 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
       : ChromeRenderViewHostTestHarness(
             base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME,
             base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
-        model_(thread_bundle()->GetMainThreadTaskRunner()) {
-    fake_power_manager_client_.Init(nullptr);
+        model_(thread_bundle()->GetMainThreadTaskRunner()) {}
+
+  ~UserActivityManagerTest() override = default;
+
+  // ChromeRenderViewHostTestHarness:
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+
+    PowerManagerClient::Initialize();
     viz::mojom::VideoDetectorObserverPtr observer;
     idle_event_notifier_ = std::make_unique<IdleEventNotifier>(
-        &fake_power_manager_client_, &user_activity_detector_,
+        PowerManagerClient::Get(), &user_activity_detector_,
         mojo::MakeRequest(&observer));
     activity_logger_ = std::make_unique<UserActivityManager>(
         &delegate_, idle_event_notifier_.get(), &user_activity_detector_,
-        &fake_power_manager_client_, &session_manager_,
+        PowerManagerClient::Get(), &session_manager_,
         mojo::MakeRequest(&observer), &fake_user_manager_, &model_);
     activity_logger_->SetTaskRunnerForTesting(
         thread_bundle()->GetMainThreadTaskRunner(),
@@ -190,7 +196,12 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
                                         base::TimeDelta::FromSeconds(10)));
   }
 
-  ~UserActivityManagerTest() override = default;
+  void TearDown() override {
+    activity_logger_.reset();
+    idle_event_notifier_.reset();
+    PowerManagerClient::Shutdown();
+    ChromeRenderViewHostTestHarness::TearDown();
+  }
 
  protected:
   void ReportUserActivity(const ui::Event* event) {
@@ -202,7 +213,8 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   void ReportLidEvent(chromeos::PowerManagerClient::LidState state) {
-    fake_power_manager_client_.SetLidState(state, base::TimeTicks::UnixEpoch());
+    FakePowerManagerClient::Get()->SetLidState(state,
+                                               base::TimeTicks::UnixEpoch());
   }
 
   void ReportPowerChangeEvent(
@@ -211,12 +223,12 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
     power_manager::PowerSupplyProperties proto;
     proto.set_external_power(power);
     proto.set_battery_percent(battery_percent);
-    fake_power_manager_client_.UpdatePowerProperties(proto);
+    FakePowerManagerClient::Get()->UpdatePowerProperties(proto);
   }
 
   void ReportTabletModeEvent(chromeos::PowerManagerClient::TabletMode mode) {
-    fake_power_manager_client_.SetTabletMode(mode,
-                                             base::TimeTicks::UnixEpoch());
+    FakePowerManagerClient::Get()->SetTabletMode(mode,
+                                                 base::TimeTicks::UnixEpoch());
   }
 
   void ReportVideoStart() { activity_logger_->OnVideoActivityStarted(); }
@@ -225,7 +237,7 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
     power_manager::ScreenIdleState proto;
     proto.set_dimmed(screen_dim);
     proto.set_off(screen_off);
-    fake_power_manager_client_.SendScreenIdleStateChanged(proto);
+    FakePowerManagerClient::Get()->SendScreenIdleStateChanged(proto);
   }
 
   void ReportScreenLocked() {
@@ -234,9 +246,9 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
 
   void ReportSuspend(power_manager::SuspendImminent::Reason reason,
                      base::TimeDelta sleep_duration) {
-    fake_power_manager_client_.SendSuspendImminent(reason);
+    FakePowerManagerClient::Get()->SendSuspendImminent(reason);
     thread_bundle()->FastForwardBy(sleep_duration);
-    fake_power_manager_client_.SendSuspendDone(sleep_duration);
+    FakePowerManagerClient::Get()->SendSuspendDone(sleep_duration);
   }
 
   void ReportInactivityDelays(base::TimeDelta screen_dim_delay,
@@ -244,11 +256,11 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
     power_manager::PowerManagementPolicy::Delays proto;
     proto.set_screen_dim_ms(screen_dim_delay.InMilliseconds());
     proto.set_screen_off_ms(screen_off_delay.InMilliseconds());
-    fake_power_manager_client_.SetInactivityDelays(proto);
+    FakePowerManagerClient::Get()->SetInactivityDelays(proto);
   }
 
   int GetNumberOfDeferredDims() {
-    return fake_power_manager_client_.num_defer_screen_dim_calls();
+    return FakePowerManagerClient::Get()->num_defer_screen_dim_calls();
   }
 
   TabProperty UpdateOpenTabURL() {
@@ -325,7 +337,6 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
  private:
   ui::UserActivityDetector user_activity_detector_;
   std::unique_ptr<IdleEventNotifier> idle_event_notifier_;
-  chromeos::FakePowerManagerClient fake_power_manager_client_;
   session_manager::SessionManager session_manager_;
   std::unique_ptr<UserActivityManager> activity_logger_;
 

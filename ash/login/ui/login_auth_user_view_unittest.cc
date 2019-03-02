@@ -12,9 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
-#include "chromeos/dbus/power_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
@@ -36,9 +34,6 @@ class LoginAuthUserViewUnittest : public LoginTestBase {
 
   // LoginTestBase:
   void SetUp() override {
-    power_manager_ = new chromeos::FakePowerManagerClient();
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
-        base::WrapUnique(power_manager_));
     LoginTestBase::SetUp();
 
     user_ = CreateUser("user@domain.com");
@@ -68,8 +63,6 @@ class LoginAuthUserViewUnittest : public LoginTestBase {
   mojom::LoginUserInfoPtr user_;
   views::View* container_ = nullptr;   // Owned by test widget view hierarchy.
   LoginAuthUserView* view_ = nullptr;  // Owned by test widget view hierarchy.
-  chromeos::FakePowerManagerClient* power_manager_ =
-      nullptr;  // Owned by DBusThreadmanager
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LoginAuthUserViewUnittest);
@@ -211,8 +204,8 @@ TEST_F(LoginAuthUserViewUnittest, AttemptsUnlockOnLidOpen) {
                                ->current_user()
                                ->basic_user_info->account_id,
                            _));
-  power_manager_->SetLidState(chromeos::PowerManagerClient::LidState::OPEN,
-                              base::TimeTicks::Now());
+  power_manager_client()->SetLidState(
+      chromeos::PowerManagerClient::LidState::OPEN, base::TimeTicks::Now());
 
   base::RunLoop().RunUntilIdle();
 

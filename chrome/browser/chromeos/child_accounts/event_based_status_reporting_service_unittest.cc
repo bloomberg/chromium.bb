@@ -18,7 +18,6 @@
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "components/account_id/account_id.h"
@@ -88,10 +87,7 @@ class EventBasedStatusReportingServiceTest : public testing::Test {
   ~EventBasedStatusReportingServiceTest() override = default;
 
   void SetUp() override {
-    std::unique_ptr<DBusThreadManagerSetter> dbus_setter =
-        DBusThreadManager::GetSetterForTesting();
-    dbus_setter->SetPowerManagerClient(
-        std::make_unique<FakePowerManagerClient>());
+    PowerManagerClient::Initialize();
     SystemClockClient::Initialize(nullptr /* bus */);
     profile_ = std::make_unique<TestingProfile>();
     profile_.get()->SetSupervisedUserId(supervised_users::kChildAccountSUID);
@@ -128,7 +124,7 @@ class EventBasedStatusReportingServiceTest : public testing::Test {
     service_->Shutdown();
     arc_test_.TearDown();
     profile_.reset();
-    DBusThreadManager::Shutdown();
+    PowerManagerClient::Shutdown();
   }
 
   void SetConnectionType(network::mojom::ConnectionType type) {
@@ -140,8 +136,7 @@ class EventBasedStatusReportingServiceTest : public testing::Test {
   arc::mojom::AppHost* app_host() { return arc_test_.arc_app_list_prefs(); }
   Profile* profile() { return profile_.get(); }
   FakePowerManagerClient* power_manager_client() {
-    return static_cast<FakePowerManagerClient*>(
-        DBusThreadManager::Get()->GetPowerManagerClient());
+    return FakePowerManagerClient::Get();
   }
 
   TestingConsumerStatusReportingService*

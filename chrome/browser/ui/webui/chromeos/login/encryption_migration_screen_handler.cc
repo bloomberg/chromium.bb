@@ -266,7 +266,7 @@ EncryptionMigrationScreenHandler::EncryptionMigrationScreenHandler(
 
 EncryptionMigrationScreenHandler::~EncryptionMigrationScreenHandler() {
   DBusThreadManager::Get()->GetCryptohomeClient()->RemoveObserver(this);
-  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+  PowerManagerClient::Get()->RemoveObserver(this);
   if (delegate_)
     delegate_->OnViewDestroyed(this);
 }
@@ -322,7 +322,7 @@ void EncryptionMigrationScreenHandler::SetupInitialView() {
     StartMigration();
     return;
   }
-  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+  PowerManagerClient::Get()->AddObserver(this);
   CheckAvailableStorage();
 }
 
@@ -463,14 +463,14 @@ void EncryptionMigrationScreenHandler::HandleSkipMigration() {
 
 void EncryptionMigrationScreenHandler::HandleRequestRestartOnLowStorage() {
   RecordUserChoice(UserChoice::USER_CHOICE_RESTART_ON_LOW_STORAGE);
-  DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
+  PowerManagerClient::Get()->RequestRestart(
       power_manager::REQUEST_RESTART_OTHER,
       "login encryption migration low storage");
 }
 
 void EncryptionMigrationScreenHandler::HandleRequestRestartOnFailure() {
   RecordUserChoice(UserChoice::USER_CHOICE_RESTART_ON_FAILURE);
-  DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
+  PowerManagerClient::Get()->RequestRestart(
       power_manager::REQUEST_RESTART_OTHER,
       "login encryption migration failure");
 }
@@ -495,7 +495,7 @@ void EncryptionMigrationScreenHandler::UpdateUIState(UIState state) {
   // When this handler is about to show the READY screen, we should get the
   // latest battery status and show it on the screen.
   if (state == UIState::READY)
-    DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate();
+    PowerManagerClient::Get()->RequestStatusUpdate();
 
   // We should request wake lock and not shut down on lid close during
   // migration.
@@ -561,7 +561,7 @@ void EncryptionMigrationScreenHandler::WaitBatteryAndMigrate() {
   UpdateUIState(UIState::READY);
 
   should_migrate_on_enough_battery_ = true;
-  DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate();
+  PowerManagerClient::Get()->RequestStatusUpdate();
 }
 
 void EncryptionMigrationScreenHandler::StartMigration() {
@@ -742,7 +742,7 @@ void EncryptionMigrationScreenHandler::DircryptoMigrationProgress(
           std::move(continue_login_callback_).Run(user_context_);
       } else {
         // Restart immediately after successful full migration.
-        DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
+        PowerManagerClient::Get()->RequestRestart(
             power_manager::REQUEST_RESTART_OTHER,
             "login encryption migration success");
       }

@@ -71,10 +71,8 @@ void VideoActivityNotifier::UpdateTimer() {
 
 void VideoActivityNotifier::MaybeNotifyPowerManager() {
   if (should_notify_power_manager()) {
-    chromeos::DBusThreadManager::Get()
-        ->GetPowerManagerClient()
-        ->NotifyVideoActivity(video_state_ ==
-                              VideoDetector::State::PLAYING_FULLSCREEN);
+    chromeos::PowerManagerClient::Get()->NotifyVideoActivity(
+        video_state_ == VideoDetector::State::PLAYING_FULLSCREEN);
   }
 }
 

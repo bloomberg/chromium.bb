@@ -29,11 +29,11 @@ void ReportMetricsForDemoMode(IdleLogoutWarningEvent event) {
 namespace chromeos {
 
 IdleActionWarningObserver::IdleActionWarningObserver() : warning_dialog_(NULL) {
-  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+  PowerManagerClient::Get()->AddObserver(this);
 }
 
 IdleActionWarningObserver::~IdleActionWarningObserver() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+  PowerManagerClient::Get()->RemoveObserver(this);
   if (warning_dialog_)
     warning_dialog_->CloseDialog();
 }

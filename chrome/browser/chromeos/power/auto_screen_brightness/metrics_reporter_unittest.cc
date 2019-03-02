@@ -30,16 +30,25 @@ constexpr auto kUnsupportedAls =
 
 class MetricsReporterTest : public testing::Test {
  public:
-  MetricsReporterTest() {
+  MetricsReporterTest() = default;
+  ~MetricsReporterTest() override = default;
+
+  void SetUp() override {
+    PowerManagerClient::Initialize();
     MetricsReporter::RegisterLocalStatePrefs(pref_service_.registry());
     ResetReporter();
+  }
+
+  void TearDown() override {
+    reporter_.reset();
+    PowerManagerClient::Shutdown();
   }
 
  protected:
   // Reinitialize |reporter_| without resetting underlying prefs. May be called
   // by tests to simulate a Chrome restart.
   void ResetReporter() {
-    reporter_ = std::make_unique<MetricsReporter>(&power_manager_client_,
+    reporter_ = std::make_unique<MetricsReporter>(PowerManagerClient::Get(),
                                                   &pref_service_);
   }
 
@@ -73,7 +82,6 @@ class MetricsReporterTest : public testing::Test {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  FakePowerManagerClient power_manager_client_;
   TestingPrefServiceSimple pref_service_;
   std::unique_ptr<MetricsReporter> reporter_;
 

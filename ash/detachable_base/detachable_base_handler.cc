@@ -57,7 +57,7 @@ DetachableBaseHandler::DetachableBaseHandler(Shell* shell)
 
   hammerd_observer_.Add(chromeos::DBusThreadManager::Get()->GetHammerdClient());
   chromeos::PowerManagerClient* power_manager_client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+      chromeos::PowerManagerClient::Get();
   power_manager_observer_.Add(power_manager_client);
 
   power_manager_client->GetSwitchStates(

@@ -33,7 +33,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/command_line.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "extensions/shell/browser/shell_screen.h"
 #include "extensions/shell/common/switches.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -141,8 +141,7 @@ ShellDesktopControllerAura::ShellDesktopControllerAura(
   extensions::AppWindowClient::Set(app_window_client_.get());
 
 #if defined(OS_CHROMEOS)
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->AddObserver(this);
   display_configurator_.reset(new display::DisplayConfigurator);
   display_configurator_->Init(
       ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(), false);
@@ -156,8 +155,7 @@ ShellDesktopControllerAura::ShellDesktopControllerAura(
 ShellDesktopControllerAura::~ShellDesktopControllerAura() {
   TearDownWindowManager();
 #if defined(OS_CHROMEOS)
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
 #endif
   extensions::AppWindowClient::Set(NULL);
 }
@@ -213,10 +211,8 @@ void ShellDesktopControllerAura::PowerButtonEventReceived(
     bool down,
     const base::TimeTicks& timestamp) {
   if (down) {
-    chromeos::DBusThreadManager::Get()
-        ->GetPowerManagerClient()
-        ->RequestShutdown(power_manager::REQUEST_SHUTDOWN_FOR_USER,
-                          "AppShell power button");
+    chromeos::PowerManagerClient::Get()->RequestShutdown(
+        power_manager::REQUEST_SHUTDOWN_FOR_USER, "AppShell power button");
   }
 }
 

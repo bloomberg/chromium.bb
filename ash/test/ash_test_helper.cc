@@ -168,9 +168,11 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
     bluez_dbus_manager_initialized_ = true;
   }
 
+  chromeos::PowerManagerClient::Initialize();
+
   if (!chromeos::PowerPolicyController::IsInitialized()) {
     chromeos::PowerPolicyController::Initialize(
-        chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
+        chromeos::PowerManagerClient::Get());
     power_policy_controller_initialized_ = true;
   }
 
@@ -260,6 +262,8 @@ void AshTestHelper::TearDown() {
     chromeos::PowerPolicyController::Shutdown();
     power_policy_controller_initialized_ = false;
   }
+
+  chromeos::PowerManagerClient::Shutdown();
 
   if (bluez_dbus_manager_initialized_) {
     device::BluetoothAdapterFactory::Shutdown();
