@@ -109,21 +109,22 @@ void TextureVirtualDeviceMojoAdapter::TakePhoto(TakePhotoCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void TextureVirtualDeviceMojoAdapter::Stop(StopCallback callback) {
+void TextureVirtualDeviceMojoAdapter::Stop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!receiver_.is_bound()) {
-    std::move(callback).Run();
+  if (!receiver_.is_bound())
     return;
-  }
   // Unsubscribe from connection error callbacks.
   receiver_.set_connection_error_handler(base::OnceClosure());
+  // Send out OnBufferRetired events and OnStopped.
+  for (const auto& entry : known_buffer_handles_)
+    receiver_->OnBufferRetired(entry.first);
+  receiver_->OnStopped();
   receiver_.reset();
-  std::move(callback).Run();
 }
 
 void TextureVirtualDeviceMojoAdapter::OnReceiverConnectionErrorOrClose() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  Stop(base::DoNothing());
+  Stop();
   if (optional_receiver_disconnected_callback_)
     std::move(optional_receiver_disconnected_callback_).Run();
 }

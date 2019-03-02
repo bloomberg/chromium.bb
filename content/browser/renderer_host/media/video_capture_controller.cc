@@ -628,6 +628,16 @@ void VideoCaptureController::OnStartedUsingGpuDecode() {
       base::BindRepeating(&CallOnStartedUsingGpuDecode));
 }
 
+void VideoCaptureController::OnStopped() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  EmitLogMessage(__func__, 3);
+  // Clients of VideoCaptureController are currently not interested in
+  // OnStopped events, so we simply swallow the event here. Note that, if we
+  // wanted to forward it to clients in the future, care would have to be taken
+  // for the case of there being outstanding OnBufferRetired() events that have
+  // been deferred because a client was still consuming a retired buffer.
+}
+
 void VideoCaptureController::OnDeviceLaunched(
     std::unique_ptr<LaunchedVideoCaptureDevice> device) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

@@ -86,6 +86,7 @@ class SingleClientVideoCaptureHost final
   void OnLog(const std::string& message) override;
   void OnStarted() override;
   void OnStartedUsingGpuDecode() override;
+  void OnStopped() override;
 
   void OnDeviceLaunched(
       std::unique_ptr<content::LaunchedVideoCaptureDevice> device);

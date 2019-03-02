@@ -266,6 +266,10 @@ void SingleClientVideoCaptureHost::OnStartedUsingGpuDecode() {
   NOTIMPLEMENTED();
 }
 
+void SingleClientVideoCaptureHost::OnStopped() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
 void SingleClientVideoCaptureHost::OnDeviceLaunched(
     std::unique_ptr<content::LaunchedVideoCaptureDevice> device) {
   DVLOG(1) << __func__;

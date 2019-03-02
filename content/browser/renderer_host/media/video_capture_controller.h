@@ -119,6 +119,7 @@ class CONTENT_EXPORT VideoCaptureController
   void OnLog(const std::string& message) override;
   void OnStarted() override;
   void OnStartedUsingGpuDecode() override;
+  void OnStopped() override;
 
   // Implementation of VideoCaptureDeviceLauncher::Callbacks interface:
   void OnDeviceLaunched(

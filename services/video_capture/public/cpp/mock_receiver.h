@@ -45,6 +45,7 @@ class MockReceiver : public mojom::Receiver {
   MOCK_METHOD1(OnLog, void(const std::string&));
   MOCK_METHOD0(OnStarted, void());
   MOCK_METHOD0(OnStartedUsingGpuDecode, void());
+  MOCK_METHOD0(OnStopped, void());
 
  private:
   const mojo::Binding<mojom::Receiver> binding_;

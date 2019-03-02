@@ -29,6 +29,7 @@ class MockVideoFrameReceiver : public VideoFrameReceiver {
   MOCK_METHOD1(OnBufferRetired, void(int buffer_id));
   MOCK_METHOD0(OnStarted, void());
   MOCK_METHOD0(OnStartedUsingGpuDecode, void());
+  MOCK_METHOD0(OnStopped, void());
 
   void OnNewBuffer(int buffer_id,
                    media::mojom::VideoBufferHandlePtr buffer_handle) override {

@@ -22,6 +22,17 @@ class BroadcastingReceiver : public mojom::Receiver {
   BroadcastingReceiver();
   ~BroadcastingReceiver() override;
 
+  // Indicates to the BroadcastingReceiver that we want to restart the source
+  // without letting connected clients know about the restart. The
+  // BroadcastingReceiver will hide the OnStopped() event sent by the source
+  // from the connected clients and instead invoke the given
+  // |on_stopped_handler|. It will also not forward the subsequent
+  // OnStarted() and possibly OnStartedUsingGpuDecode() events to clients who
+  // have already received these events.
+  void HideSourceRestartFromClients(base::OnceClosure on_stopped_handler);
+
+  void SetOnStoppedHandler(base::OnceClosure on_stopped_handler);
+
   // Returns a client_id that can be used for a call to Suspend/Resume/Remove.
   int32_t AddClient(mojom::ReceiverPtr client);
   void SuspendClient(int32_t client_id);
@@ -43,17 +54,21 @@ class BroadcastingReceiver : public mojom::Receiver {
   void OnLog(const std::string& message) override;
   void OnStarted() override;
   void OnStartedUsingGpuDecode() override;
+  void OnStopped() override;
 
  private:
   enum class Status {
     kOnStartedHasNotYetBeenCalled,
     kOnStartedHasBeenCalled,
     kOnStartedUsingGpuDecodeHasBeenCalled,
+    kDeviceIsRestarting,
     kOnErrorHasBeenCalled,
+    kOnStoppedHasBeenCalled
   };
 
   // Wrapper that suppresses calls to OnStarted() and OnStartedUsingGpuDecode()
-  // after they have already been called once.
+  // after they have already been called once. Keeps track of whether or not
+  // a client is suspended.
   class ClientContext {
    public:
     explicit ClientContext(mojom::ReceiverPtr client);
@@ -108,6 +123,7 @@ class BroadcastingReceiver : public mojom::Receiver {
   std::map<int32_t /*client_id*/, ClientContext> clients_;
   std::vector<BufferContext> buffer_contexts_;
   Status status_;
+  base::OnceClosure on_stopped_handler_;
 
   // Keeps track of the last VideoCaptureError that arrived via OnError().
   // This is used for relaying the error event to clients that connect after the

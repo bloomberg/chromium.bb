@@ -165,6 +165,21 @@ TEST_F(VirtualDeviceTest, OnFrameReadyInBufferWithReceiver) {
   device_adapter_->RequestFrameBuffer(kTestFrameSize, kTestPixelFormat, nullptr,
                                       request_frame_buffer_callback.Get());
   wait_loop2.RunUntilIdle();
+
+  // Verify that when stopping the device, the receiver receives calls to
+  // OnBufferRetired() followed by a single call to OnStopped().
+  base::RunLoop wait_for_stopped_loop;
+  {
+    testing::InSequence s;
+    EXPECT_CALL(receiver, DoOnBufferRetired(_))
+        .Times(SharedMemoryVirtualDeviceMojoAdapter::
+                   max_buffer_pool_buffer_count());
+    EXPECT_CALL(receiver, OnStopped())
+        .WillOnce(Invoke(
+            [&wait_for_stopped_loop]() { wait_for_stopped_loop.Quit(); }));
+  }
+  device_adapter_->Stop();
+  wait_for_stopped_loop.Run();
 }
 
 }  // namespace video_capture

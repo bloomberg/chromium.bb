@@ -115,6 +115,7 @@ VideoCaptureDeviceClient::VideoCaptureDeviceClient(
 VideoCaptureDeviceClient::~VideoCaptureDeviceClient() {
   for (int buffer_id : buffer_ids_known_by_receiver_)
     receiver_->OnBufferRetired(buffer_id);
+  receiver_->OnStopped();
 }
 
 // static

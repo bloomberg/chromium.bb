@@ -20,15 +20,18 @@ VideoSourceImpl::VideoSourceImpl(
       device_status_(DeviceStatus::kNotStarted),
       restart_device_once_when_stop_complete_(false),
       weak_factory_(this) {
+  // Unretained(this) is safe because |this| owns |bindings_|.
   bindings_.set_connection_error_handler(base::BindRepeating(
       &VideoSourceImpl::OnClientDisconnected, base::Unretained(this)));
 }
 
 VideoSourceImpl::~VideoSourceImpl() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bindings_.set_connection_error_handler(base::DoNothing());
 }
 
 void VideoSourceImpl::AddToBindingSet(mojom::VideoSourceRequest request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bindings_.AddBinding(this, std::move(request));
 }
 
@@ -38,6 +41,7 @@ void VideoSourceImpl::CreatePushSubscription(
     bool force_reopen_with_new_settings,
     mojom::PushVideoStreamSubscriptionRequest subscription_request,
     CreatePushSubscriptionCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto subscription = std::make_unique<PushVideoStreamSubscriptionImpl>(
       std::move(subscription_request), std::move(subscriber),
       requested_settings, std::move(callback), &broadcaster_, &device_);
@@ -76,6 +80,7 @@ void VideoSourceImpl::CreatePushSubscription(
 }
 
 void VideoSourceImpl::OnClientDisconnected() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (bindings_.empty()) {
     // Note: Invoking this callback may synchronously trigger the destruction of
     // |this|, so no more member access should be done after it.
@@ -85,6 +90,7 @@ void VideoSourceImpl::OnClientDisconnected() {
 
 void VideoSourceImpl::StartDeviceWithSettings(
     const media::VideoCaptureParams& requested_settings) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   device_start_settings_ = requested_settings;
   device_status_ = DeviceStatus::kStartingAsynchronously;
   device_factory_->CreateDevice(
@@ -95,6 +101,7 @@ void VideoSourceImpl::StartDeviceWithSettings(
 
 void VideoSourceImpl::OnCreateDeviceResponse(
     mojom::DeviceAccessResultCode result_code) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (result_code) {
     case mojom::DeviceAccessResultCode::SUCCESS: {
       mojom::ReceiverPtr broadcaster_as_receiver;
@@ -129,6 +136,7 @@ void VideoSourceImpl::OnCreateDeviceResponse(
 void VideoSourceImpl::OnPushSubscriptionClosedOrDisconnectedOrDiscarded(
     PushVideoStreamSubscriptionImpl* subscription,
     base::OnceClosure done_cb) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // We keep the subscription instance alive until after having called |done_cb|
   // in order to allow it to send out a callback before being destroyed.
   auto subscription_ownership = std::move(push_subscriptions_[subscription]);
@@ -154,13 +162,29 @@ void VideoSourceImpl::OnPushSubscriptionClosedOrDisconnectedOrDiscarded(
 }
 
 void VideoSourceImpl::StopDeviceAsynchronously() {
-  device_->Stop(base::BindOnce(&VideoSourceImpl::OnStopDeviceComplete,
-                               weak_factory_.GetWeakPtr()));
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (restart_device_once_when_stop_complete_) {
+    // We do not want to send out OnStopped() or OnStarted() to already
+    // connected clients, to make this internal restart transparent to them.
+    // The broadcaster already drops additional OnStarted() events for clients
+    // who already received one. But for OnStopped() we need to explicitly tell
+    // it to.
+    // Unretained(this) is safe because |this| owns |broadcaster_|.
+    broadcaster_.HideSourceRestartFromClients(base::BindOnce(
+        &VideoSourceImpl::OnStopDeviceComplete, base::Unretained(this)));
+  } else {
+    broadcaster_.SetOnStoppedHandler(base::BindOnce(
+        &VideoSourceImpl::OnStopDeviceComplete, base::Unretained(this)));
+  }
+
+  // Stop the device by closing the connection to it. Stopping is complete when
+  // OnStopDeviceComplete() gets invoked.
+  device_.reset();
   device_status_ = DeviceStatus::kStoppingAsynchronously;
 }
 
 void VideoSourceImpl::OnStopDeviceComplete() {
-  device_.reset();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   device_status_ = DeviceStatus::kNotStarted;
   if (!restart_device_once_when_stop_complete_)
     return;
