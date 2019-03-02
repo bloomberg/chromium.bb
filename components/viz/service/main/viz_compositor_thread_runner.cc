@@ -57,7 +57,7 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
   thread_options.message_loop_type =
       ui::OzonePlatform::GetInstance()->GetMessageLoopTypeForGpu();
 #endif
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(USE_OZONE)
   thread_options.priority = base::ThreadPriority::DISPLAY;
 #endif
 

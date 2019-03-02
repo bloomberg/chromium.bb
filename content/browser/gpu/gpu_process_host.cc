@@ -840,7 +840,7 @@ bool GpuProcessHost::Init() {
     // WGL needs to create its own window and pump messages on it.
     options.message_loop_type = base::MessageLoop::TYPE_UI;
 #endif
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(USE_OZONE)
     options.priority = base::ThreadPriority::DISPLAY;
 #endif
     in_process_gpu_thread_->StartWithOptions(options);

@@ -36,7 +36,7 @@ std::unique_ptr<base::Thread> CreateAndStartIOThread() {
   // It should be possible to use |main_task_runner_| for doing IO tasks.
   base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
   thread_options.priority = base::ThreadPriority::NORMAL;
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(USE_OZONE)
   // TODO(reveman): Remove this in favor of setting it explicitly for each
   // type of process.
   thread_options.priority = base::ThreadPriority::DISPLAY;
