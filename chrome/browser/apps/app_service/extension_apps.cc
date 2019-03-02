@@ -128,9 +128,7 @@ void ExtensionApps::LoadIcon(apps::mojom::IconKeyPtr icon_key,
                              int32_t size_hint_in_dip,
                              bool allow_placeholder_icon,
                              LoadIconCallback callback) {
-  if (!icon_key.is_null() &&
-      (icon_key->icon_type == apps::mojom::IconType::kExtension) &&
-      !icon_key->s_key.empty()) {
+  if (!icon_key.is_null() && !icon_key->s_key.empty()) {
     LoadIconFromExtension(icon_compression, size_hint_in_dip, profile_,
                           icon_key->s_key, std::move(callback));
     return;
@@ -425,8 +423,7 @@ apps::mojom::AppPtr ExtensionApps::Convert(
   app->name = extension->name();
   app->short_name = extension->short_name();
 
-  app->icon_key = icon_key_factory_.MakeIconKey(
-      app_type_, apps::mojom::IconType::kExtension, extension->id());
+  app->icon_key = icon_key_factory_.MakeIconKey(app_type_, extension->id());
 
   if (profile_) {
     auto* prefs = extensions::ExtensionPrefs::Get(profile_);

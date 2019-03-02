@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_APPS_APP_SERVICE_BUILT_IN_CHROMEOS_APPS_H_
 #define CHROME_BROWSER_APPS_APP_SERVICE_BUILT_IN_CHROMEOS_APPS_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"

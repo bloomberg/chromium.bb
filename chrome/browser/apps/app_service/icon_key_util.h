@@ -31,7 +31,6 @@ class IncrementingIconKeyFactory {
   IncrementingIconKeyFactory();
 
   apps::mojom::IconKeyPtr MakeIconKey(apps::mojom::AppType app_type,
-                                      apps::mojom::IconType icon_type,
                                       const std::string& s_key,
                                       uint8_t flags = 0);
 

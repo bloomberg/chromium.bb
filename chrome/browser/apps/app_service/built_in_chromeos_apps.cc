@@ -38,10 +38,9 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
         l10n_util::GetStringUTF8(internal_app.searchable_string_resource_id));
   }
 
-  app->icon_key = apps::mojom::IconKey::New();
-  app->icon_key->app_type = apps::mojom::AppType::kBuiltIn;
-  app->icon_key->icon_type = apps::mojom::IconType::kResource;
-  app->icon_key->u_key = static_cast<uint64_t>(internal_app.icon_resource_id);
+  app->icon_key = apps::mojom::IconKey::New(
+      apps::mojom::AppType::kBuiltIn,
+      static_cast<uint64_t>(internal_app.icon_resource_id), std::string());
 
   app->last_launch_time = base::Time();
   app->install_time = base::Time();
@@ -118,9 +117,8 @@ void BuiltInChromeOsApps::LoadIcon(
     bool allow_placeholder_icon,
     LoadIconCallback callback) {
   constexpr bool is_placeholder_icon = false;
-  if (!icon_key.is_null() &&
-      (icon_key->icon_type == apps::mojom::IconType::kResource) &&
-      (icon_key->u_key != 0) && (icon_key->u_key <= INT_MAX)) {
+  if (!icon_key.is_null() && (icon_key->u_key != 0) &&
+      (icon_key->u_key <= INT_MAX)) {
     int resource_id = static_cast<int>(icon_key->u_key);
     LoadIconFromResource(icon_compression, size_hint_in_dip, resource_id,
                          is_placeholder_icon, std::move(callback));

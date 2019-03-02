@@ -174,9 +174,7 @@ void ArcApps::LoadIcon(apps::mojom::IconKeyPtr icon_key,
                        int32_t size_hint_in_dip,
                        bool allow_placeholder_icon,
                        LoadIconCallback callback) {
-  if (!icon_key.is_null() &&
-      (icon_key->icon_type == apps::mojom::IconType::kArc) &&
-      !icon_key->s_key.empty()) {
+  if (!icon_key.is_null() && !icon_key->s_key.empty()) {
     // Treat the Play Store as a special case, loading an icon defined by a
     // resource instead of asking the Android VM (or the cache of previous
     // responses from the Android VM). Presumably this is for bootstrapping:
@@ -332,7 +330,8 @@ void ArcApps::OnAppIconUpdated(const std::string& app_id,
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_type = apps::mojom::AppType::kArc;
   app->app_id = app_id;
-  app->icon_key = NewIconKey(app_id);
+  app->icon_key =
+      icon_key_factory_.MakeIconKey(apps::mojom::AppType::kArc, app_id);
   Publish(std::move(app));
 }
 
@@ -446,7 +445,8 @@ apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
   app->name = app_info.name;
   app->short_name = app->name;
 
-  app->icon_key = NewIconKey(app_id);
+  app->icon_key =
+      icon_key_factory_.MakeIconKey(apps::mojom::AppType::kArc, app_id);
 
   app->last_launch_time = app_info.last_launch_time;
   app->install_time = app_info.install_time;
@@ -473,11 +473,6 @@ apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
   }
 
   return app;
-}
-
-apps::mojom::IconKeyPtr ArcApps::NewIconKey(const std::string& app_id) {
-  return icon_key_factory_.MakeIconKey(apps::mojom::AppType::kArc,
-                                       apps::mojom::IconType::kArc, app_id);
 }
 
 void ArcApps::Publish(apps::mojom::AppPtr app) {

@@ -255,20 +255,17 @@ Icon data (even compressed as a PNG) is bulky, relative to the rest of the
 `App` type. `Publisher`s will generally serve icon data lazily, on demand,
 especially as the desired icon resolutions (e.g. 64dip or 256dip) aren't known
 up-front. Instead of sending an icon at all possible resolutions, the
-`Publisher` sends an `IconKey`: enough information (when combined with the
-`AppType app_type` and `string app_id`) to load the icon at given resoultions.
-The `IconKey` is an `IconType icon_type` plus additional data (`uint64 u_key`
-and `string s_key`) whose semantics depend on the `icon_type`.
+`Publisher` sends an `IconKey`: enough information to load the icon at given
+resoultions. The `IconKey` is an `AppType app_type` plus additional data
+(`uint64 u_key` and `string s_key`) whose semantics depend on the `app_type`.
 
 For example, some icons are statically built into the Chrome or Chrome OS
 binary, as PNG-formatted resources, and can be loaded (synchronously, without
 sandboxing). They can be loaded from a `u_key` resource ID. Some icons are
 dynamically (and asynchronously) loaded from the extension database on disk.
-They can be loaded from the `app_id` alone.
-
-TBD: for extension-backed icons, some sort of timestamp or version in the
-`IconKey` (probably encoded in the `u_key`) so that an icon update results in a
-different `IconKey`.
+They can be loaded from the `s_key` app ID, with the `u_key` serving as a
+(monotonically increasing) epoch number so that an icon update results in a
+different `u_key` and hence a different `IconKey`.
 
 Consumers (via the `AppServiceProxy`) can always ask the `AppService` to load
 an icon. As an optimization, if the `AppServiceProxy` knows how to load an icon
@@ -298,17 +295,8 @@ statically built resource ID.
       // Some additional methods; not App Icon Factory related.
     };
 
-    enum IconType {
-      kUnknown,
-      kArc,
-      kCrostini,
-      kExtension,
-      kResource,
-    };
-
     struct IconKey {
       AppType app_type;
-      IconType icon_type;
       // The semantics of u_key and s_key depend on the app_type.
       uint64 u_key;
       string s_key;
@@ -417,4 +405,4 @@ TBD: details.
 
 ---
 
-Updated on 2019-03-01.
+Updated on 2019-03-02.
