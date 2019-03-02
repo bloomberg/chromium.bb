@@ -31,6 +31,10 @@ class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
   void RunPixelResourceTest(scoped_refptr<Layer> content_root,
                             const SkBitmap& expected_bitmap);
 
+  void RunPixelResourceTestWithLayerList(scoped_refptr<Layer> root_layer,
+                                         base::FilePath file_name,
+                                         PropertyTrees* property_trees);
+
  protected:
   PixelResourceTestCase test_case_;
   Layer::LayerMaskType mask_type_;
