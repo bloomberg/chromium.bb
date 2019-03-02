@@ -179,9 +179,16 @@ ACTION_P5(VerifyAbortedNavigationStartedContext,
   EXPECT_FALSE((*context)->IsRendererInitiated());
   ASSERT_FALSE((*context)->GetResponseHeaders());
   ASSERT_FALSE(web_state->IsLoading());
-  // TODO(crbug.com/899827): Pending URL should exist and be owned by
-  // NavigationContext.
-  ASSERT_FALSE(web_state->GetNavigationManager()->GetPendingItem());
+  NavigationItem* pendig_item =
+      web_state->GetNavigationManager()->GetPendingItem();
+  if (web::features::StorePendingItemInContext()) {
+    ASSERT_TRUE(pendig_item);
+    EXPECT_EQ(url, pendig_item->GetURL());
+  } else {
+    // TODO(crbug.com/899827): Pending URL should exist and be owned by
+    // NavigationContext.
+    ASSERT_FALSE(pendig_item);
+  }
 }
 
 // Verifies correctness of |NavigationContext| (|arg1|) for new page navigation

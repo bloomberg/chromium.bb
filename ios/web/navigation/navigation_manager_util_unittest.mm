@@ -11,6 +11,7 @@
 #import "ios/web/public/navigation_item.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/test/fakes/fake_navigation_manager_delegate.h"
+#import "ios/web/web_state/navigation_context_impl.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -52,20 +53,26 @@ class NavigationManagerUtilTest : public PlatformTest,
 // GetItemWithUniqueID functions.
 TEST_P(NavigationManagerUtilTest, GetCommittedItemWithUniqueID) {
   // Start with NavigationManager that only has a pending item.
+  std::unique_ptr<NavigationContextImpl> context =
+      NavigationContextImpl::CreateNavigationContext(
+          /*web_state=*/nullptr, GURL::EmptyGURL(),
+          /*has_user_gesture=*/false, ui::PAGE_TRANSITION_TYPED,
+          /*is_renderer_initiated=*/false);
   manager_->AddPendingItem(
       GURL("http://chromium.org"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::BROWSER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
   NavigationItem* item = manager_->GetPendingItem();
   int unique_id = item->GetUniqueID();
+  context->SetNavigationItemUniqueID(item->GetUniqueID());
   EXPECT_FALSE(GetCommittedItemWithUniqueID(manager_.get(), unique_id));
-  EXPECT_EQ(item, GetItemWithUniqueID(manager_.get(), unique_id));
+  EXPECT_EQ(item, GetItemWithUniqueID(manager_.get(), context.get()));
   EXPECT_EQ(-1, GetCommittedItemIndexWithUniqueID(manager_.get(), unique_id));
 
   // Commit that pending item.
   manager_->CommitPendingItem();
   EXPECT_EQ(item, GetCommittedItemWithUniqueID(manager_.get(), unique_id));
-  EXPECT_EQ(item, GetItemWithUniqueID(manager_.get(), unique_id));
+  EXPECT_EQ(item, GetItemWithUniqueID(manager_.get(), context.get()));
   EXPECT_EQ(0, GetCommittedItemIndexWithUniqueID(manager_.get(), unique_id));
 
   // Commit another navigation so that the current item is updated.  This allows
@@ -77,16 +84,24 @@ TEST_P(NavigationManagerUtilTest, GetCommittedItemWithUniqueID) {
   manager_->CommitPendingItem();
   manager_->RemoveItemAtIndex(0);
   EXPECT_FALSE(GetCommittedItemWithUniqueID(manager_.get(), unique_id));
-  EXPECT_FALSE(GetItemWithUniqueID(manager_.get(), unique_id));
+  EXPECT_FALSE(GetItemWithUniqueID(manager_.get(), context.get()));
   EXPECT_EQ(-1, GetCommittedItemIndexWithUniqueID(manager_.get(), unique_id));
 
   // Add transient item.
   [controller_ addTransientItemWithURL:GURL("http://chromium.org")];
   item = manager_->GetTransientItem();
   unique_id = item->GetUniqueID();
+  context->SetNavigationItemUniqueID(unique_id);
   EXPECT_FALSE(GetCommittedItemWithUniqueID(manager_.get(), unique_id));
-  EXPECT_EQ(item, GetItemWithUniqueID(manager_.get(), unique_id));
+  EXPECT_EQ(item, GetItemWithUniqueID(manager_.get(), context.get()));
   EXPECT_EQ(-1, GetCommittedItemIndexWithUniqueID(manager_.get(), unique_id));
+
+  // Add item to NavigationContextImpl.
+  auto context_item = std::make_unique<NavigationItemImpl>();
+  context->SetNavigationItemUniqueID(context_item->GetUniqueID());
+  context->SetItem(std::move(context_item));
+  EXPECT_EQ(context->GetItem(),
+            GetItemWithUniqueID(manager_.get(), context.get()));
 }
 
 INSTANTIATE_TEST_SUITE_P(

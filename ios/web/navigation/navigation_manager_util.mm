@@ -6,6 +6,8 @@
 
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
+#include "ios/web/public/features.h"
+#import "ios/web/web_state/navigation_context_impl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -15,7 +17,11 @@ namespace web {
 
 NavigationItemImpl* GetItemWithUniqueID(
     NavigationManagerImpl* navigation_manager,
-    int unique_id) {
+    NavigationContextImpl* context) {
+  if (context->GetItem())
+    return context->GetItem();
+
+  int unique_id = context->GetNavigationItemUniqueID();
   NavigationItemImpl* transient_item =
       navigation_manager->GetTransientItemImpl();
   if (transient_item && transient_item->GetUniqueID() == unique_id)

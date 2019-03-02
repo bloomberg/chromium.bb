@@ -29,7 +29,8 @@ class NavigationContext {
   // The WebState the navigation is taking place in.
   virtual WebState* GetWebState() = 0;
 
-  // Returns a unique ID for this navigation.
+  // Returns a unique ID for this navigation. This number is a counter, so
+  // new context will have higher ID number than older context.
   virtual int64_t GetNavigationId() const = 0;
 
   // The URL the WebState is navigating to. This may change during the

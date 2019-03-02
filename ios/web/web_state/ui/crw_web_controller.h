@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -53,9 +54,10 @@ class WebStateImpl;
 // web view.
 // This is an abstract class which must not be instantiated directly.
 // TODO(stuartmorgan): Move all of the navigation APIs out of this class.
-@interface CRWWebController : NSObject<CRWJSInjectionEvaluator,
-                                       CRWTouchTrackingDelegate,
-                                       UIGestureRecognizerDelegate>
+@interface CRWWebController : NSObject <CRWJSInjectionEvaluator,
+                                        CRWSessionControllerDelegate,
+                                        CRWTouchTrackingDelegate,
+                                        UIGestureRecognizerDelegate>
 
 // Whether or not a UIWebView is allowed to exist in this CRWWebController.
 // Defaults to NO; this should be enabled before attempting to access the view.

@@ -258,6 +258,13 @@ void WKBasedNavigationManagerImpl::CommitPendingItem() {
   OnNavigationItemCommitted();
 }
 
+void WKBasedNavigationManagerImpl::CommitPendingItem(
+    std::unique_ptr<NavigationItemImpl> item) {
+  // TODO(crbug.com/899827): Store Pending Item in NavigationContext with
+  // slim-navigation-manager.
+  CommitPendingItem();
+}
+
 int WKBasedNavigationManagerImpl::GetIndexForOffset(int offset) const {
   int current_item_index = pending_item_index_;
   if (pending_item_index_ == -1) {

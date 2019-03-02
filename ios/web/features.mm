@@ -7,6 +7,15 @@
 namespace web {
 namespace features {
 
+bool StorePendingItemInContext() {
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager)) {
+    // TODO(crbug.com/899827): Store Pending Item in NavigationContext with
+    // slim-navigation-manager.
+    return false;
+  }
+  return base::FeatureList::IsEnabled(kStorePendingItemInContext);
+}
+
 const base::Feature kIgnoresViewportScaleLimits{
     "IgnoresViewportScaleLimits", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -15,6 +24,9 @@ const base::Feature kWebFrameMessaging{"WebFrameMessaging",
 
 const base::Feature kSlimNavigationManager{"SlimNavigationManager",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kStorePendingItemInContext{
+    "StorePendingItemInContext", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kWKHTTPSystemCookieStore{"WKHTTPSystemCookieStore",
                                              base::FEATURE_ENABLED_BY_DEFAULT};

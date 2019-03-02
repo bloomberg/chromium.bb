@@ -61,6 +61,8 @@ std::unique_ptr<WebState> WebState::Create(const CreateParams& params) {
 
   // Initialize the new session.
   web_state->GetNavigationManagerImpl().InitializeSession();
+  web_state->GetNavigationManagerImpl().GetSessionController().delegate =
+      web_state->GetWebController();
 
   return web_state;
 }
@@ -907,6 +909,8 @@ void WebStateImpl::RestoreSessionStorage(CRWSessionStorage* session_storage) {
     restored_session_storage_ = session_storage;
   SessionStorageBuilder session_storage_builder;
   session_storage_builder.ExtractSessionState(this, session_storage);
+  GetNavigationManagerImpl().GetSessionController().delegate =
+      GetWebController();
 }
 
 }  // namespace web

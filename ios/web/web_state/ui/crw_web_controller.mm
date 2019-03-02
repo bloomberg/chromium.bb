@@ -45,7 +45,6 @@
 #include "ios/web/history_state_util.h"
 #import "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/navigation/crw_navigation_item_holder.h"
-#import "ios/web/navigation/crw_session_controller.h"
 #include "ios/web/navigation/error_retry_state_machine.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
@@ -448,7 +447,7 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 // information about the navigation that triggered the document/URL change.
 // TODO(stuartmorgan): The code conflates URL changes and document object
 // changes; the two need to be separated and handled differently.
-- (void)webPageChangedWithContext:(const web::NavigationContextImpl*)context;
+- (void)webPageChangedWithContext:(web::NavigationContextImpl*)context;
 // Resets any state that is associated with a specific document object (e.g.,
 // page interaction tracking).
 - (void)resetDocumentSpecificState;
@@ -1500,6 +1499,27 @@ GURL URLEscapedForHistory(const GURL& url) {
     if (!web::GetWebClient()->IsSlimNavigationManagerEnabled())
       [_webUIManager loadWebUIForURL:requestURL];
   }
+
+  // WKWebView may have multiple pending items. Move pending item ownership from
+  // NavigationManager to NavigationContext. NavigationManager owns pending item
+  // after navigation was requested and until NavigationContext is created.
+  if (web::features::StorePendingItemInContext()) {
+    // No need to transfer the ownership for NativeContent URLs, because the
+    // load of NativeContent is synchronous. No need to transfer the ownership
+    // for WebUI navigations, because those navigation do not have access to
+    // NavigationContext.
+    if (![_nativeProvider hasControllerForURL:context->GetUrl()] &&
+        !(_webUIManager &&
+          web::GetWebClient()->IsAppSpecificURL(context->GetUrl()))) {
+      // TODO(crbug.com/665189): NavigationManager::GetPendingItemIndex returns
+      // incorrect value, so CRWSessionController.pendingItemIndex is used
+      // instead.
+      if ([self.sessionController pendingItemIndex] == -1) {
+        context->SetItem([self.sessionController releasePendingItem]);
+      }
+    }
+  }
+
   return context;
 }
 
@@ -1832,7 +1852,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   // they should have already been triggered during navigation commit for
   // failures that happen after commit.
   [self didStartLoading];
-  self.navigationManagerImpl->CommitPendingItem();
+  self.navigationManagerImpl->CommitPendingItem(context->ReleaseItem());
   web::NavigationItem* lastCommittedItem =
       self.navigationManagerImpl->GetLastCommittedItem();
   [self setDocumentURL:lastCommittedItem->GetURL() context:context];
@@ -2130,7 +2150,8 @@ GURL URLEscapedForHistory(const GURL& url) {
             placeholderNavigation:NO];
     _webStateImpl->OnNavigationStarted(navigationContext.get());
     [self didStartLoading];
-    self.navigationManagerImpl->CommitPendingItem();
+    self.navigationManagerImpl->CommitPendingItem(
+        navigationContext->ReleaseItem());
     [self.nativeController reload];
     navigationContext->SetHasCommitted(true);
     _webStateImpl->OnNavigationFinished(navigationContext.get());
@@ -2205,8 +2226,8 @@ GURL URLEscapedForHistory(const GURL& url) {
 - (void)didReceiveRedirectForNavigation:(web::NavigationContextImpl*)context
                                 withURL:(const GURL&)URL {
   context->SetUrl(URL);
-  web::NavigationItemImpl* item = web::GetItemWithUniqueID(
-      self.navigationManagerImpl, context->GetNavigationItemUniqueID());
+  web::NavigationItemImpl* item =
+      web::GetItemWithUniqueID(self.navigationManagerImpl, context);
 
   // Associated item can be a pending item, previously discarded by another
   // navigation. WKWebView allows multiple provisional navigations, while
@@ -2991,7 +3012,7 @@ GURL URLEscapedForHistory(const GURL& url) {
 // TODO(stuartmorgan): This method conflates document changes and URL changes;
 // we should be distinguishing better, and be clear about the expected
 // WebDelegate and WCO callbacks in each case.
-- (void)webPageChangedWithContext:(const web::NavigationContextImpl*)context {
+- (void)webPageChangedWithContext:(web::NavigationContextImpl*)context {
   DCHECK_EQ(_loadPhase, web::LOAD_REQUESTED);
 
   web::Referrer referrer = [self currentReferrer];
@@ -3014,7 +3035,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   // Do not commit pending item in the middle of loading a placeholder URL. The
   // item will be committed when the native content or webUI is displayed.
   if (!context->IsPlaceholderNavigation()) {
-    self.navigationManagerImpl->CommitPendingItem();
+    self.navigationManagerImpl->CommitPendingItem(context->ReleaseItem());
     // If a SafeBrowsing warning is currently displayed, the user has tapped
     // the button on the warning page to proceed to the site, the site has
     // started loading, and the warning is about to be removed. In this case,
@@ -3220,8 +3241,8 @@ GURL URLEscapedForHistory(const GURL& url) {
   }
 
   web::NavigationItemImpl* item =
-      web::GetItemWithUniqueID(self.navigationManagerImpl,
-                               navigationContext->GetNavigationItemUniqueID());
+      web::GetItemWithUniqueID(self.navigationManagerImpl, navigationContext);
+
   if (item) {
     GURL errorURL =
         net::GURLWithNSURL(error.userInfo[NSURLErrorFailingURLErrorKey]);
@@ -3957,8 +3978,14 @@ GURL URLEscapedForHistory(const GURL& url) {
   web::NavigationContextImpl* context =
       [_navigationStates contextForNavigation:navigation];
   if (context) {
-    web::NavigationItemImpl* item = web::GetItemWithUniqueID(
-        self.navigationManagerImpl, context->GetNavigationItemUniqueID());
+    if (web::features::StorePendingItemInContext()) {
+      // This NavigationContext will be destroyed, so return pending item
+      // ownership to NavigationManager. NavigationContext can only own pending
+      // item until the navigation has committed or aborted.
+      [self.sessionController setPendingItem:context->ReleaseItem()];
+    }
+    web::NavigationItemImpl* item =
+        web::GetItemWithUniqueID(self.navigationManagerImpl, context);
     if (item && item->error_retry_state_machine().state() ==
                     web::ErrorRetryState::kRetryFailedNavigationItem) {
       item->error_retry_state_machine().SetDisplayingWebError();
@@ -4186,6 +4213,14 @@ GURL URLEscapedForHistory(const GURL& url) {
   [_webView removeFromSuperview];
   [_containerView resetContent];
   [self setWebView:nil];
+
+  if (web::features::StorePendingItemInContext()) {
+    // webView:didFailProvisionalNavigation:withError: may never be called after
+    // resetting WKWebView, so it is important to clear pending navigations now.
+    for (__strong id navigation in [_navigationStates pendingNavigations]) {
+      [_navigationStates removeNavigation:navigation];
+    }
+  }
 }
 
 - (void)webViewWebProcessDidCrash {
@@ -4254,6 +4289,12 @@ GURL URLEscapedForHistory(const GURL& url) {
         _webStateImpl, URL, /*has_user_gesture=*/true, loadHTMLTransition,
         /*is_renderer_initiated=*/false);
     context->SetNavigationItemUniqueID(self.currentNavItem->GetUniqueID());
+    if (web::features::StorePendingItemInContext()) {
+      // Transfer pending item ownership to NavigationContext.
+      // NavigationManager owns pending item after navigation is requested and
+      // until navigation context is created.
+      context->SetItem([self.sessionController releasePendingItem]);
+    }
   } else {
     context = [self registerLoadRequestForURL:URL
                                      referrer:web::Referrer()
@@ -4752,7 +4793,12 @@ GURL URLEscapedForHistory(const GURL& url) {
     // Discard the pending item to ensure that the current URL is not different
     // from what is displayed on the view.
     [self discardNonCommittedItemsIfLastCommittedWasNotNativeView];
-    _webStateImpl->SetIsLoading(false);
+    if (!web::features::StorePendingItemInContext()) {
+      // Loading will be stopped in webView:didFinishNavigation: callback. This
+      // call is here to preserve the original behavior when pending item is not
+      // stored in NavigationContext.
+      _webStateImpl->SetIsLoading(false);
+    }
   } else if (!shouldRenderResponse && WKResponse.forMainFrame) {
     [_pendingNavigationInfo setCancelled:YES];
   }
@@ -4799,8 +4845,8 @@ GURL URLEscapedForHistory(const GURL& url) {
         context->GetUrl() != webViewURL) {
       // Update last seen URL because it may be changed by WKWebView (f.e. by
       // performing characters escaping).
-      web::NavigationItem* item = web::GetItemWithUniqueID(
-          self.navigationManagerImpl, context->GetNavigationItemUniqueID());
+      web::NavigationItem* item =
+          web::GetItemWithUniqueID(self.navigationManagerImpl, context);
       if (!web::wk_navigation_util::IsWKInternalUrl(webViewURL)) {
         if (item) {
           item->SetURL(webViewURL);
@@ -4860,9 +4906,12 @@ GURL URLEscapedForHistory(const GURL& url) {
                        hasUserGesture:[_pendingNavigationInfo hasUserGesture]
                     rendererInitiated:YES
                 placeholderNavigation:IsPlaceholderUrl(webViewURL)];
-  _webStateImpl->OnNavigationStarted(navigationContext.get());
+  web::NavigationContextImpl* navigationContextPtr = navigationContext.get();
+  // GetPendingItem which may be called inside OnNavigationStarted relies on
+  // association between NavigationContextImpl and WKNavigation.
   [_navigationStates setContext:std::move(navigationContext)
                   forNavigation:navigation];
+  _webStateImpl->OnNavigationStarted(navigationContextPtr);
   DCHECK(self.loadPhase == web::LOAD_REQUESTED);
 }
 
@@ -4940,7 +4989,15 @@ GURL URLEscapedForHistory(const GURL& url) {
   // the pending load.
   _pendingNavigationInfo = nil;
   _certVerificationErrors->Clear();
-  [self forgetNullWKNavigation:navigation];
+  if (web::features::StorePendingItemInContext()) {
+    // Remove the navigation to immediately get rid of pending item.
+    if (web::WKNavigationState::NONE !=
+        [_navigationStates stateForNavigation:navigation]) {
+      [_navigationStates removeNavigation:navigation];
+    }
+  } else {
+    [self forgetNullWKNavigation:navigation];
+  }
 }
 
 - (void)webView:(WKWebView*)webView
@@ -4957,8 +5014,11 @@ GURL URLEscapedForHistory(const GURL& url) {
 
   BOOL committedNavigation =
       [_navigationStates isCommittedNavigation:navigation];
-  [_navigationStates setState:web::WKNavigationState::COMMITTED
-                forNavigation:navigation];
+  if (!web::features::StorePendingItemInContext()) {
+    // Code in this method relies on existance of pending item.
+    [_navigationStates setState:web::WKNavigationState::COMMITTED
+                  forNavigation:navigation];
+  }
 
   DCHECK_EQ(_webView, webView);
   _certVerificationErrors->Clear();
@@ -5108,6 +5168,13 @@ GURL URLEscapedForHistory(const GURL& url) {
     }
   }
 
+  if (web::features::StorePendingItemInContext()) {
+    // No further code relies an existance of pending item, so this navigation
+    // can be marked as "committed".
+    [_navigationStates setState:web::WKNavigationState::COMMITTED
+                  forNavigation:navigation];
+  }
+
   // This is the point where the document's URL has actually changed.
   [self setDocumentURL:webViewURL context:context];
 
@@ -5242,8 +5309,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   web::NavigationContextImpl* context =
       [_navigationStates contextForNavigation:navigation];
   web::NavigationItemImpl* item =
-      context ? web::GetItemWithUniqueID(self.navigationManagerImpl,
-                                         context->GetNavigationItemUniqueID())
+      context ? web::GetItemWithUniqueID(self.navigationManagerImpl, context)
               : nullptr;
 
   // Invariant: every |navigation| should have a |context| and a |item|.
@@ -5451,6 +5517,18 @@ GURL URLEscapedForHistory(const GURL& url) {
     return;
   }
   self.webStateImpl->HandleContextMenu(params);
+}
+
+#pragma mark -
+#pragma mark CRWSessionControllerDelegate methods
+
+- (web::NavigationItemImpl*)pendingItemForSessionController:
+    (CRWSessionController*)sessionController {
+  WKNavigation* navigation =
+      [_navigationStates lastNavigationWithPendingItemInNavigationContext];
+  if (!navigation)
+    return nullptr;
+  return [_navigationStates contextForNavigation:navigation] -> GetItem();
 }
 
 #pragma mark -
@@ -5840,7 +5918,9 @@ GURL URLEscapedForHistory(const GURL& url) {
       // Otherwise, sync the current title for items created by same document
       // navigations.
       if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-        auto* pendingItem = self.navigationManagerImpl->GetPendingItem();
+        auto* pendingItem = web::features::StorePendingItemInContext()
+                                ? newNavigationContext->GetItem()
+                                : self.navigationManagerImpl->GetPendingItem();
         if (pendingItem)
           pendingItem->SetTitle(_webStateImpl->GetTitle());
       }
@@ -5860,7 +5940,8 @@ GURL URLEscapedForHistory(const GURL& url) {
     navigationContext->SetIsSameDocument(true);
     _webStateImpl->OnNavigationStarted(navigationContext);
     [self didStartLoading];
-    self.navigationManagerImpl->CommitPendingItem();
+    self.navigationManagerImpl->CommitPendingItem(
+        navigationContext->ReleaseItem());
     navigationContext->SetHasCommitted(true);
     _webStateImpl->OnNavigationFinished(navigationContext);
 

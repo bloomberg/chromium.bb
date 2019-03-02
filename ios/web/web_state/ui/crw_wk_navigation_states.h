@@ -85,6 +85,10 @@ enum class WKNavigationState : int {
 // last navigation was null.
 - (WKNavigation*)lastAddedNavigation;
 
+// WKNavigation which was added the most recently via |setState:forNavigation:|
+// and has associated navigation context with pending item.
+- (WKNavigation*)lastNavigationWithPendingItemInNavigationContext;
+
 // State of WKNavigation which was added the most recently via
 // |setState:forNavigation:|. WKNavigationState::NONE if CRWWKNavigationStates
 // is empty.
