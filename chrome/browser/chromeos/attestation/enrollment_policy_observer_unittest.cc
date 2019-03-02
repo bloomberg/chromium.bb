@@ -80,7 +80,11 @@ class CallsHoldingFakeCryptohomeClient : public FakeCryptohomeClient {
 
 class EnrollmentPolicyObserverTest : public DeviceSettingsTestBase {
  public:
-  EnrollmentPolicyObserverTest() {
+  EnrollmentPolicyObserverTest() = default;
+  ~EnrollmentPolicyObserverTest() override = default;
+
+  void SetUp() override {
+    DeviceSettingsTestBase::SetUp();
     policy_client_.SetDMToken("fake_dm_token");
 
     std::vector<uint8_t> eid;
@@ -91,13 +95,18 @@ class EnrollmentPolicyObserverTest : public DeviceSettingsTestBase {
         true /* ignore_cache */, enrollment_id_);
   }
 
+  void TearDown() override {
+    observer_.reset();
+    DeviceSettingsTestBase::TearDown();
+  }
+
  protected:
   static constexpr char kEnrollmentId[] =
       "6fcc0ebddec3db9500cf82476d594f4d60db934c5b47fa6085c707b2a93e205b";
 
   void SetUpObserver() {
     observer_ = std::make_unique<EnrollmentPolicyObserver>(
-        &policy_client_, &device_settings_service_, &cryptohome_client_);
+        &policy_client_, device_settings_service_.get(), &cryptohome_client_);
     observer_->set_retry_limit(3);
     observer_->set_retry_delay(0);
   }
@@ -109,7 +118,8 @@ class EnrollmentPolicyObserverTest : public DeviceSettingsTestBase {
   }
 
   void SetUpDevicePolicy(bool enrollment_id_needed) {
-    device_policy_.policy_data().set_enrollment_id_needed(enrollment_id_needed);
+    device_policy_->policy_data().set_enrollment_id_needed(
+        enrollment_id_needed);
   }
 
   void PropagateDevicePolicy() {
@@ -125,6 +135,9 @@ class EnrollmentPolicyObserverTest : public DeviceSettingsTestBase {
   StrictMock<policy::MockCloudPolicyClient> policy_client_;
   std::unique_ptr<EnrollmentPolicyObserver> observer_;
   std::string enrollment_id_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EnrollmentPolicyObserverTest);
 };
 
 constexpr char EnrollmentPolicyObserverTest::kEnrollmentId[];

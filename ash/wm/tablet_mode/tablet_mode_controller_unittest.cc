@@ -656,11 +656,7 @@ TEST_F(TabletModeControllerTest, VerticalHingeUnstableAnglesTest) {
 // state will trigger a mode update.
 TEST_F(TabletModeControllerTest, InitializedWhileTabletModeSwitchOn) {
   base::RunLoop().RunUntilIdle();
-  // FakePowerManagerClient is always installed for tests
-  chromeos::FakePowerManagerClient* power_manager_client =
-      static_cast<chromeos::FakePowerManagerClient*>(
-          chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
-  power_manager_client->SetTabletMode(
+  power_manager_client()->SetTabletMode(
       chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks::Now());
 
   // Clear the callback that was set by the original TabletModeController.

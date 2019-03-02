@@ -37,7 +37,6 @@
 #include "chromeos/dbus/media_analytics_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/permission_broker_client.h"
-#include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/runtime_probe_client.h"
 #include "chromeos/dbus/seneschal_client.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -254,10 +253,6 @@ OobeConfigurationClient* DBusThreadManager::GetOobeConfigurationClient() {
 
 PermissionBrokerClient* DBusThreadManager::GetPermissionBrokerClient() {
   return clients_common_->permission_broker_client_.get();
-}
-
-PowerManagerClient* DBusThreadManager::GetPowerManagerClient() {
-  return clients_common_->power_manager_client_.get();
 }
 
 SessionManagerClient* DBusThreadManager::GetSessionManagerClient() {
@@ -500,12 +495,6 @@ void DBusThreadManagerSetter::SetMediaAnalyticsClient(
 void DBusThreadManagerSetter::SetPermissionBrokerClient(
     std::unique_ptr<PermissionBrokerClient> client) {
   DBusThreadManager::Get()->clients_common_->permission_broker_client_ =
-      std::move(client);
-}
-
-void DBusThreadManagerSetter::SetPowerManagerClient(
-    std::unique_ptr<PowerManagerClient> client) {
-  DBusThreadManager::Get()->clients_common_->power_manager_client_ =
       std::move(client);
 }
 

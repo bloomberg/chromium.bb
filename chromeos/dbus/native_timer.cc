@@ -21,7 +21,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 
 namespace chromeos {
@@ -53,7 +52,7 @@ NativeTimer::NativeTimer(const std::string& tag)
   std::vector<std::pair<clockid_t, base::ScopedFD>> create_timers_request;
   create_timers_request.push_back(
       std::make_pair(CLOCK_BOOTTIME_ALARM, std::move(powerd_fd)));
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->CreateArcTimers(
+  PowerManagerClient::Get()->CreateArcTimers(
       tag, std::move(create_timers_request),
       base::BindOnce(&NativeTimer::OnCreateTimer, weak_factory_.GetWeakPtr(),
                      std::move(expiration_fd)));
@@ -65,8 +64,7 @@ NativeTimer::~NativeTimer() {
     return;
   }
 
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->DeleteArcTimers(
-      tag_, base::DoNothing());
+  PowerManagerClient::Get()->DeleteArcTimers(tag_, base::DoNothing());
 }
 
 struct NativeTimer::StartTimerParams {
@@ -118,7 +116,7 @@ void NativeTimer::Start(base::TimeTicks absolute_expiration_time,
   // state to ensure this.
   ResetState();
   DCHECK_GE(timer_id_, 0);
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->StartArcTimer(
+  PowerManagerClient::Get()->StartArcTimer(
       timer_id_, absolute_expiration_time,
       base::BindOnce(&NativeTimer::OnStartTimer, weak_factory_.GetWeakPtr(),
                      std::move(timer_expiration_callback),
@@ -225,7 +223,7 @@ void NativeTimer::ProcessAndResetInFlightStartParams(bool result) {
 
   // The |in_flight_start_timer_params_->result_callback| will be called in
   // |OnStartTimer|.
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->StartArcTimer(
+  PowerManagerClient::Get()->StartArcTimer(
       timer_id_, in_flight_start_timer_params_->absolute_expiration_time,
       base::BindOnce(
           &NativeTimer::OnStartTimer, weak_factory_.GetWeakPtr(),

@@ -64,8 +64,7 @@ AppInstallEventLogCollector::AppInstallEventLogCollector(
       profile_(profile),
       online_(GetOnlineState()),
       pending_packages_(pending_packages) {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->AddObserver(this);
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
   // Might not be available in unit test.
   arc::ArcPolicyBridge* const policy_bridge =
@@ -84,8 +83,7 @@ AppInstallEventLogCollector::~AppInstallEventLogCollector() {
   if (app_prefs) {
     app_prefs->RemoveObserver(this);
   }
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
   content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
   arc::ArcPolicyBridge* const policy_bridge =
       arc::ArcPolicyBridge::GetForBrowserContext(profile_);

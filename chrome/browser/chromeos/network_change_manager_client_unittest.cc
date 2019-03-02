@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -107,16 +108,26 @@ TEST(NetworkChangeManagerClientTest, ConnectionTypeFromShill) {
 
 class NetworkChangeManagerClientUpdateTest : public testing::Test {
  protected:
-  NetworkChangeManagerClientUpdateTest() : default_network_("") {
+  NetworkChangeManagerClientUpdateTest() : default_network_("") {}
+  ~NetworkChangeManagerClientUpdateTest() override = default;
+
+  void SetUp() override {
     network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
     DBusThreadManager::Initialize();
+    PowerManagerClient::Initialize();
     NetworkHandler::Initialize();
-    proxy_.reset(new NetworkChangeManagerClient(
+    proxy_ = std::make_unique<NetworkChangeManagerClient>(
         static_cast<net::NetworkChangeNotifierPosix*>(
-            network_change_notifier_.get())));
+            network_change_notifier_.get()));
   }
 
-  ~NetworkChangeManagerClientUpdateTest() override = default;
+  void TearDown() override {
+    proxy_.reset();
+    NetworkHandler::Shutdown();
+    PowerManagerClient::Shutdown();
+    DBusThreadManager::Shutdown();
+    network_change_notifier_.reset();
+  }
 
   void SetNotifierState(const NotifierState& notifier_state) {
     proxy_->connection_type_ = notifier_state.type;
@@ -172,6 +183,8 @@ class NetworkChangeManagerClientUpdateTest : public testing::Test {
   NetworkState default_network_;
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<NetworkChangeManagerClient> proxy_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkChangeManagerClientUpdateTest);
 };
 
 NotifierUpdateTestCase test_cases[] = {

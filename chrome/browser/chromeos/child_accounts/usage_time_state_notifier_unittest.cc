@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "components/session_manager/core/session_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -47,14 +46,12 @@ class UsageTimeStateNotifierTest : public testing::Test {
   ~UsageTimeStateNotifierTest() override = default;
 
   void SetUp() override {
-    DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
-        std::make_unique<FakePowerManagerClient>());
-
+    PowerManagerClient::Initialize();
     session_manager_.SetSessionState(
         session_manager::SessionState::LOGIN_PRIMARY);
   }
 
-  void TearDown() override { DBusThreadManager::Shutdown(); }
+  void TearDown() override { PowerManagerClient::Shutdown(); }
 
   void NotifyScreenIdleOffChanged(bool off) {
     power_manager::ScreenIdleState proto;
@@ -63,8 +60,7 @@ class UsageTimeStateNotifierTest : public testing::Test {
   }
 
   FakePowerManagerClient* power_manager_client() {
-    return static_cast<FakePowerManagerClient*>(
-        DBusThreadManager::Get()->GetPowerManagerClient());
+    return FakePowerManagerClient::Get();
   }
 
   session_manager::SessionManager* session_manager() {

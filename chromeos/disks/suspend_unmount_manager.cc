@@ -18,16 +18,13 @@ void OnRefreshCompleted(bool success) {}
 }  // namespace
 
 SuspendUnmountManager::SuspendUnmountManager(
-    DiskMountManager* disk_mount_manager,
-    PowerManagerClient* power_manager_client)
-    : disk_mount_manager_(disk_mount_manager),
-      power_manager_client_(power_manager_client),
-      weak_ptr_factory_(this) {
-  power_manager_client_->AddObserver(this);
+    DiskMountManager* disk_mount_manager)
+    : disk_mount_manager_(disk_mount_manager), weak_ptr_factory_(this) {
+  PowerManagerClient::Get()->AddObserver(this);
 }
 
 SuspendUnmountManager::~SuspendUnmountManager() {
-  power_manager_client_->RemoveObserver(this);
+  PowerManagerClient::Get()->RemoveObserver(this);
   if (!suspend_readiness_callback_.is_null())
     suspend_readiness_callback_.Run();
 }
@@ -48,7 +45,7 @@ void SuspendUnmountManager::SuspendImminent(
   for (const auto& mount_path : mount_paths) {
     if (suspend_readiness_callback_.is_null()) {
       suspend_readiness_callback_ =
-          power_manager_client_->GetSuspendReadinessCallback(FROM_HERE);
+          PowerManagerClient::Get()->GetSuspendReadinessCallback(FROM_HERE);
     }
     disk_mount_manager_->UnmountPath(
         mount_path, UNMOUNT_OPTIONS_NONE,

@@ -55,7 +55,7 @@ EventBasedStatusReportingService::EventBasedStatusReportingService(
     arc_app_prefs->AddObserver(this);
   session_manager::SessionManager::Get()->AddObserver(this);
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
-  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+  PowerManagerClient::Get()->AddObserver(this);
   ScreenTimeControllerFactory::GetForBrowserContext(context_)->AddObserver(
       this);
 }
@@ -129,7 +129,7 @@ void EventBasedStatusReportingService::Shutdown() {
     arc_app_prefs->RemoveObserver(this);
   session_manager::SessionManager::Get()->RemoveObserver(this);
   content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
-  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+  PowerManagerClient::Get()->RemoveObserver(this);
   ScreenTimeControllerFactory::GetForBrowserContext(context_)->RemoveObserver(
       this);
 }

@@ -9,7 +9,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -70,12 +69,17 @@ class BrightnessMonitorImplTest : public testing::Test {
  public:
   BrightnessMonitorImplTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
-        std::make_unique<chromeos::FakePowerManagerClient>());
-  }
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
 
-  ~BrightnessMonitorImplTest() override {
+  ~BrightnessMonitorImplTest() override {}
+
+  // testing::Test:
+  void SetUp() override { PowerManagerClient::Initialize(); }
+
+  void TearDown() override {
+    test_observer_.reset();
+    monitor_.reset();
+    PowerManagerClient::Shutdown();
     base::TaskScheduler::GetInstance()->FlushForTesting();
   }
 
@@ -85,13 +89,11 @@ class BrightnessMonitorImplTest : public testing::Test {
     if (init_brightness >= 0) {
       power_manager::SetBacklightBrightnessRequest request;
       request.set_percent(init_brightness);
-      chromeos::DBusThreadManager::Get()
-          ->GetPowerManagerClient()
-          ->SetScreenBrightness(request);
+      PowerManagerClient::Get()->SetScreenBrightness(request);
     }
 
-    monitor_ = std::make_unique<BrightnessMonitorImpl>(
-        chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
+    monitor_ =
+        std::make_unique<BrightnessMonitorImpl>(PowerManagerClient::Get());
     test_observer_ = std::make_unique<TestObserver>();
     monitor_->AddObserver(test_observer_.get());
     scoped_task_environment_.RunUntilIdle();
@@ -104,8 +106,7 @@ class BrightnessMonitorImplTest : public testing::Test {
     power_manager::BacklightBrightnessChange change;
     change.set_percent(level);
     change.set_cause(cause);
-    static_cast<chromeos::FakePowerManagerClient*>(
-        chromeos::DBusThreadManager::Get()->GetPowerManagerClient())
+    static_cast<FakePowerManagerClient*>(PowerManagerClient::Get())
         ->SendScreenBrightnessChanged(change);
     scoped_task_environment_.RunUntilIdle();
   }
@@ -138,7 +139,7 @@ TEST_F(BrightnessMonitorImplTest, ReportDisabled) {
 }
 
 // PowerManagerClient is not set up to return initial brightness, hence
-// Status is kDiabled.
+// Status is kDisabled.
 TEST_F(BrightnessMonitorImplTest, PowerManagerClientBrightnessUnset) {
   // Do not set initial brightess in FakePowerManagerClient.
   SetUpBrightnessMonitor(-1);

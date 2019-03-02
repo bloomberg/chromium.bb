@@ -140,9 +140,11 @@ class PowerPolicyBrowserTestBase : public DevicePolicyCrosBrowserTest {
   // Returns a string describing |policy|.
   std::string GetDebugString(const pm::PowerManagementPolicy& policy);
 
-  UserPolicyBuilder user_policy_;
+  chromeos::FakePowerManagerClient* power_manager_client() {
+    return chromeos::FakePowerManagerClient::Get();
+  }
 
-  chromeos::FakePowerManagerClient* power_manager_client_;
+  UserPolicyBuilder user_policy_;
 
  private:
   // Runs |closure| and waits for |profile|'s user policy to be updated as a
@@ -180,15 +182,10 @@ class PowerPolicyInSessionBrowserTest : public PowerPolicyBrowserTestBase {
   DISALLOW_COPY_AND_ASSIGN(PowerPolicyInSessionBrowserTest);
 };
 
-PowerPolicyBrowserTestBase::PowerPolicyBrowserTestBase()
-    : power_manager_client_(NULL) {
-}
+PowerPolicyBrowserTestBase::PowerPolicyBrowserTestBase() = default;
 
 void PowerPolicyBrowserTestBase::SetUpInProcessBrowserTestFixture() {
   DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
-  power_manager_client_ = new chromeos::FakePowerManagerClient;
-  dbus_setter()->SetPowerManagerClient(
-      std::unique_ptr<chromeos::PowerManagerClient>(power_manager_client_));
 
   // Initialize device policy.
   InstallOwnerKey();
@@ -322,7 +319,7 @@ void PowerPolicyInSessionBrowserTest::SetUpOnMainThread() {
 // Verifies that device policy is applied on the login screen.
 IN_PROC_BROWSER_TEST_F(PowerPolicyLoginScreenBrowserTest, SetDevicePolicy) {
   pm::PowerManagementPolicy power_management_policy =
-      power_manager_client_->policy();
+      power_manager_client()->policy();
   power_management_policy.mutable_ac_delays()->set_screen_dim_ms(5000);
   power_management_policy.mutable_ac_delays()->set_screen_off_ms(7000);
   power_management_policy.mutable_ac_delays()->set_idle_ms(9000);
@@ -347,26 +344,26 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyLoginScreenBrowserTest, SetDevicePolicy) {
   // Spin the run loop to ensure ash sees pref change.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetDebugString(power_management_policy),
-            GetDebugString(power_manager_client_->policy()));
+            GetDebugString(power_manager_client()->policy()));
 }
 
 // Verifies that device policy is ignored during a session.
 IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetDevicePolicy) {
   pm::PowerManagementPolicy power_management_policy =
-      power_manager_client_->policy();
+      power_manager_client()->policy();
 
   em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
   proto.mutable_login_screen_power_management()->
       set_login_screen_power_management(kLoginScreenPowerManagementPolicy);
   StoreAndReloadDevicePolicyAndWaitForLoginProfileChange();
   EXPECT_EQ(GetDebugString(power_management_policy),
-            GetDebugString(power_manager_client_->policy()));
+            GetDebugString(power_manager_client()->policy()));
 }
 
 // Verifies that legacy user policy is applied during a session.
 IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetLegacyUserPolicy) {
   pm::PowerManagementPolicy power_management_policy =
-      power_manager_client_->policy();
+      power_manager_client()->policy();
   power_management_policy.mutable_ac_delays()->set_screen_dim_ms(5000);
   power_management_policy.mutable_ac_delays()->set_screen_lock_ms(6000);
   power_management_policy.mutable_ac_delays()->set_screen_off_ms(7000);
@@ -421,7 +418,7 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetLegacyUserPolicy) {
   // Spin the run loop to ensure ash sees pref change.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetDebugString(power_management_policy),
-            GetDebugString(power_manager_client_->policy()));
+            GetDebugString(power_manager_client()->policy()));
 }
 
 // Verifies that legacy user policy is applied during a session.
@@ -429,7 +426,7 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetLegacyUserPolicy) {
 IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest,
                        SetLegacyUserPolicySmartDimDisabled) {
   pm::PowerManagementPolicy power_management_policy =
-      power_manager_client_->policy();
+      power_manager_client()->policy();
   power_management_policy.mutable_ac_delays()->set_screen_dim_ms(5000);
   power_management_policy.mutable_ac_delays()->set_screen_lock_ms(6000);
   power_management_policy.mutable_ac_delays()->set_screen_off_ms(7000);
@@ -483,13 +480,13 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest,
   // Spin the run loop to ensure ash sees pref change.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetDebugString(power_management_policy),
-            GetDebugString(power_manager_client_->policy()));
+            GetDebugString(power_manager_client()->policy()));
 }
 
 // Verifies that user policy is applied during a session.
 IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetUserPolicy) {
   pm::PowerManagementPolicy power_management_policy =
-      power_manager_client_->policy();
+      power_manager_client()->policy();
   power_management_policy.mutable_ac_delays()->set_screen_dim_ms(5000);
   power_management_policy.mutable_ac_delays()->set_screen_lock_ms(6000);
   power_management_policy.mutable_ac_delays()->set_screen_off_ms(7000);
@@ -553,14 +550,13 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetUserPolicy) {
   // Spin the run loop to ensure ash sees pref change.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetDebugString(power_management_policy),
-            GetDebugString(power_manager_client_->policy()));
+            GetDebugString(power_manager_client()->policy()));
 }
 
 // Verifies that screen wake locks can be enabled and disabled by extensions and
 // user policy during a session.
 IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, AllowScreenWakeLocks) {
-  pm::PowerManagementPolicy baseline_policy =
-      power_manager_client_->policy();
+  pm::PowerManagementPolicy baseline_policy = power_manager_client()->policy();
 
   // Default settings should not report any wake locks.
   pm::PowerManagementPolicy power_management_policy = baseline_policy;
@@ -575,20 +571,19 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, AllowScreenWakeLocks) {
 
   // The PowerAPI requests system wake lock asynchronously.
   base::RunLoop run_loop;
-  power_manager_client_->SetPowerPolicyQuitClosure(run_loop.QuitClosure());
+  power_manager_client()->SetPowerPolicyQuitClosure(run_loop.QuitClosure());
   run_loop.Run();
 
   // Check that the lock is in effect (ignoring ac_idle_action,
   // battery_idle_action and reason).
   pm::PowerManagementPolicy policy = baseline_policy;
   policy.set_screen_wake_lock(true);
-  policy.set_ac_idle_action(
-      power_manager_client_->policy().ac_idle_action());
+  policy.set_ac_idle_action(power_manager_client()->policy().ac_idle_action());
   policy.set_battery_idle_action(
-      power_manager_client_->policy().battery_idle_action());
-  policy.set_reason(power_manager_client_->policy().reason());
+      power_manager_client()->policy().battery_idle_action());
+  policy.set_reason(power_manager_client()->policy().reason());
   EXPECT_EQ(GetDebugString(policy),
-            GetDebugString(power_manager_client_->policy()));
+            GetDebugString(power_manager_client()->policy()));
 
   // Engage the user policy and verify that the screen wake lock is downgraded
   // to be a system wake lock.
@@ -596,14 +591,14 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, AllowScreenWakeLocks) {
   StoreAndReloadUserPolicy();
   policy = baseline_policy;
   policy.set_system_wake_lock(true);
-  policy.set_ac_idle_action(power_manager_client_->policy().ac_idle_action());
+  policy.set_ac_idle_action(power_manager_client()->policy().ac_idle_action());
   policy.set_battery_idle_action(
-      power_manager_client_->policy().battery_idle_action());
-  policy.set_reason(power_manager_client_->policy().reason());
+      power_manager_client()->policy().battery_idle_action());
+  policy.set_reason(power_manager_client()->policy().reason());
   // Spin the run loop to ensure ash sees pref change.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetDebugString(policy),
-            GetDebugString(power_manager_client_->policy()));
+            GetDebugString(power_manager_client()->policy()));
 }
 
 }  // namespace policy

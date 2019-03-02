@@ -19,7 +19,6 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "components/prefs/pref_service.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -43,32 +42,7 @@ class TestAccessibilityObserver : public AccessibilityObserver {
   DISALLOW_COPY_AND_ASSIGN(TestAccessibilityObserver);
 };
 
-class AccessibilityControllerTest : public AshTestBase {
- public:
-  AccessibilityControllerTest() = default;
-  ~AccessibilityControllerTest() override = default;
-
-  void SetUp() override {
-    auto power_manager_client =
-        std::make_unique<chromeos::FakePowerManagerClient>();
-    power_manager_client_ = power_manager_client.get();
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
-        std::move(power_manager_client));
-
-    AshTestBase::SetUp();
-  }
-  void TearDown() override {
-    AshTestBase::TearDown();
-    chromeos::DBusThreadManager::Shutdown();
-  }
-
- protected:
-  // Owned by chromeos::DBusThreadManager.
-  chromeos::FakePowerManagerClient* power_manager_client_ = nullptr;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityControllerTest);
-};
+using AccessibilityControllerTest = AshTestBase;
 
 TEST_F(AccessibilityControllerTest, PrefsAreRegistered) {
   PrefService* prefs =
@@ -354,15 +328,17 @@ TEST_F(AccessibilityControllerTest, GetShouldToggleSpokenFeedbackViaTouch) {
 }
 
 TEST_F(AccessibilityControllerTest, SetDarkenScreen) {
-  ASSERT_FALSE(power_manager_client_->backlights_forced_off());
+  ASSERT_FALSE(
+      chromeos::FakePowerManagerClient::Get()->backlights_forced_off());
 
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
   controller->SetDarkenScreen(true);
-  EXPECT_TRUE(power_manager_client_->backlights_forced_off());
+  EXPECT_TRUE(chromeos::FakePowerManagerClient::Get()->backlights_forced_off());
 
   controller->SetDarkenScreen(false);
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(
+      chromeos::FakePowerManagerClient::Get()->backlights_forced_off());
 }
 
 TEST_F(AccessibilityControllerTest, ShowNotificationOnSpokenFeedback) {

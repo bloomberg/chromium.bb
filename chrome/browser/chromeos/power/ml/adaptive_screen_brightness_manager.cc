@@ -170,7 +170,7 @@ AdaptiveScreenBrightnessManager::CreateInstance() {
   }
 
   chromeos::PowerManagerClient* const power_manager_client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+      chromeos::PowerManagerClient::Get();
   DCHECK(power_manager_client);
   ui::UserActivityDetector* const detector = ui::UserActivityDetector::Get();
   DCHECK(detector);

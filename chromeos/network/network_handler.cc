@@ -5,7 +5,6 @@
 #include "chromeos/network/network_handler.h"
 
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/auto_connect_handler.h"
 #include "chromeos/network/client_cert_resolver.h"
 #include "chromeos/network/geolocation_handler.h"
@@ -31,8 +30,6 @@ static NetworkHandler* g_network_handler = NULL;
 
 NetworkHandler::NetworkHandler()
     : task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-  CHECK(DBusThreadManager::IsInitialized());
-
   network_state_handler_.reset(new NetworkStateHandler());
   network_device_handler_.reset(new NetworkDeviceHandlerImpl());
   network_profile_handler_.reset(new NetworkProfileHandler());

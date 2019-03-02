@@ -81,10 +81,16 @@ class IdleEventNotifierTest : public testing::Test {
   IdleEventNotifierTest()
       : scoped_task_env_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED) {
+            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED) {}
+
+  ~IdleEventNotifierTest() override = default;
+
+  void SetUp() override {
+    PowerManagerClient::Initialize();
     viz::mojom::VideoDetectorObserverPtr observer;
     idle_event_notifier_ = std::make_unique<IdleEventNotifier>(
-        &power_client_, &user_activity_detector_, mojo::MakeRequest(&observer));
+        PowerManagerClient::Get(), &user_activity_detector_,
+        mojo::MakeRequest(&observer));
     idle_event_notifier_->SetClockForTesting(
         scoped_task_env_.GetMainThreadTaskRunner(),
         const_cast<base::Clock*>(scoped_task_env_.GetMockClock()),
@@ -97,12 +103,15 @@ class IdleEventNotifierTest : public testing::Test {
         power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED);
   }
 
-  ~IdleEventNotifierTest() override {
+  void TearDown() override {
     idle_event_notifier_.reset();
+    PowerManagerClient::Shutdown();
   }
 
  protected:
-  void ReportScreenDimImminent() { power_client_.SendScreenDimImminent(); }
+  void ReportScreenDimImminent() {
+    FakePowerManagerClient::Get()->SendScreenDimImminent();
+  }
 
   void ReportIdleEventAndCheckResults(
       int expected_idle_count,
@@ -118,7 +127,6 @@ class IdleEventNotifierTest : public testing::Test {
   std::unique_ptr<IdleEventNotifier> idle_event_notifier_;
   power_manager::PowerSupplyProperties ac_power_;
   power_manager::PowerSupplyProperties disconnected_power_;
-  FakePowerManagerClient power_client_;
   ui::UserActivityDetector user_activity_detector_;
 
  private:

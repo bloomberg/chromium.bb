@@ -149,7 +149,7 @@ TEST_F(PowerButtonScreenshotControllerTest,
 
   // Releases power button now should not set display off.
   ReleasePowerButton();
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(power_manager_client()->backlights_forced_off());
   // Releases volume down key, and verifies nothing happens.
   ReleaseKey(ui::VKEY_VOLUME_DOWN);
   EXPECT_EQ(0, GetScreenshotCount());
@@ -174,7 +174,7 @@ TEST_F(PowerButtonScreenshotControllerTest,
   EXPECT_FALSE(LastKeyConsumed());
   // Releases power button now should not set display off.
   ReleasePowerButton();
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(power_manager_client()->backlights_forced_off());
   // Releases volume down key, and verifies nothing happens.
   ReleaseKey(ui::VKEY_VOLUME_DOWN);
   EXPECT_EQ(0, GetScreenshotCount());
@@ -192,7 +192,7 @@ TEST_F(PowerButtonScreenshotControllerTest,
   EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
   ReleasePowerButton();
   ReleaseKey(ui::VKEY_VOLUME_DOWN);
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(power_manager_client()->backlights_forced_off());
 
   // Tests volume up key can stop power button's shutdown timer and power button
   // menu timer. Also tests that volume up key is not consumed.
@@ -203,7 +203,7 @@ TEST_F(PowerButtonScreenshotControllerTest,
   EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
   ReleasePowerButton();
   ReleaseKey(ui::VKEY_VOLUME_UP);
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(power_manager_client()->backlights_forced_off());
   EXPECT_FALSE(LastKeyConsumed());
 }
 
@@ -251,7 +251,7 @@ TEST_F(PowerButtonScreenshotControllerTest,
 
   // Releases power button now should not set display off.
   ReleasePowerButton();
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(power_manager_client()->backlights_forced_off());
   // Releases volume down key, and verifies nothing happens.
   ReleaseKey(ui::VKEY_VOLUME_DOWN);
   EXPECT_EQ(0, GetScreenshotCount());
@@ -282,7 +282,7 @@ TEST_F(PowerButtonScreenshotControllerTest,
   EXPECT_FALSE(LastKeyConsumed());
   // Releases power button now should not set display off.
   ReleasePowerButton();
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(power_manager_client()->backlights_forced_off());
   // Releases volume down key, and verifies nothing happens.
   ReleaseKey(ui::VKEY_VOLUME_DOWN);
   EXPECT_EQ(0, GetScreenshotCount());
@@ -298,7 +298,7 @@ TEST_F(PowerButtonScreenshotControllerTest,
   EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
   ReleasePowerButton();
   ReleaseKey(ui::VKEY_VOLUME_DOWN);
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(power_manager_client()->backlights_forced_off());
 
   // Tests volume up key invalidates the power button behavior. Also
   // tests that volume up key is not consumed.
@@ -308,7 +308,7 @@ TEST_F(PowerButtonScreenshotControllerTest,
   EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
   ReleasePowerButton();
   ReleaseKey(ui::VKEY_VOLUME_UP);
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(power_manager_client()->backlights_forced_off());
   EXPECT_FALSE(LastKeyConsumed());
 }
 

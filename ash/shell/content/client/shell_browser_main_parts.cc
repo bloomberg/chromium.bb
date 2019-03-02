@@ -98,7 +98,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   bluez::BluezDBusManager::Initialize();
 
   chromeos::PowerPolicyController::Initialize(
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
+      chromeos::PowerManagerClient::Get());
 
   service_manager::Connector* const connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();

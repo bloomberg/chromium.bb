@@ -19,22 +19,31 @@ namespace chromeos {
 
 class PowerMetricsReporterTest : public testing::Test {
  public:
-  PowerMetricsReporterTest() {
+  PowerMetricsReporterTest() = default;
+  ~PowerMetricsReporterTest() override = default;
+
+  void SetUp() override {
+    PowerManagerClient::Initialize();
     PowerMetricsReporter::RegisterLocalStatePrefs(pref_service_.registry());
     ResetReporter();
+  }
+
+  void TearDown() override {
+    reporter_.reset();
+    PowerManagerClient::Shutdown();
   }
 
  protected:
   // Reinitialize |reporter_| without resetting underlying prefs. May be called
   // by tests to simulate a Chrome restart.
   void ResetReporter() {
-    reporter_ = std::make_unique<PowerMetricsReporter>(&power_manager_client_,
-                                                       &pref_service_);
+    reporter_ = std::make_unique<PowerMetricsReporter>(
+        chromeos::FakePowerManagerClient::Get(), &pref_service_);
   }
 
   // Notifies |reporter_| that the screen is undimmed and on.
   void SendNormalScreenIdleState() {
-    power_manager_client_.SendScreenIdleStateChanged(
+    chromeos::FakePowerManagerClient::Get()->SendScreenIdleStateChanged(
         power_manager::ScreenIdleState());
   }
 
@@ -42,7 +51,7 @@ class PowerMetricsReporterTest : public testing::Test {
   void SendDimmedScreenIdleState() {
     power_manager::ScreenIdleState state;
     state.set_dimmed(true);
-    power_manager_client_.SendScreenIdleStateChanged(state);
+    chromeos::FakePowerManagerClient::Get()->SendScreenIdleStateChanged(state);
   }
 
   // Notifies |reporter_| that the screen is dimmed and off.
@@ -50,7 +59,7 @@ class PowerMetricsReporterTest : public testing::Test {
     power_manager::ScreenIdleState state;
     state.set_dimmed(true);
     state.set_off(true);
-    power_manager_client_.SendScreenIdleStateChanged(state);
+    chromeos::FakePowerManagerClient::Get()->SendScreenIdleStateChanged(state);
   }
 
   // Instructs |reporter_| to report daily metrics for reason |type|.
@@ -79,7 +88,6 @@ class PowerMetricsReporterTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   TestingPrefServiceSimple pref_service_;
-  FakePowerManagerClient power_manager_client_;
   std::unique_ptr<PowerMetricsReporter> reporter_;
 
  private:
@@ -99,9 +107,9 @@ TEST_F(PowerMetricsReporterTest, CountAndReportEvents) {
   // The next day, report three dims, two screen-offs, and one idle suspend.
   SendDimmedScreenIdleState();
   SendDimmedAndOffScreenIdleState();
-  power_manager_client_.SendSuspendImminent(
+  chromeos::FakePowerManagerClient::Get()->SendSuspendImminent(
       power_manager::SuspendImminent_Reason_IDLE);
-  power_manager_client_.SendSuspendDone();
+  chromeos::FakePowerManagerClient::Get()->SendSuspendDone();
   SendNormalScreenIdleState();
   SendDimmedScreenIdleState();
   SendDimmedAndOffScreenIdleState();
@@ -111,9 +119,9 @@ TEST_F(PowerMetricsReporterTest, CountAndReportEvents) {
   TriggerDailyEventAndVerifyHistograms(3, 2, 1, 0);
 
   // The next day, report a single lid-closed suspend.
-  power_manager_client_.SendSuspendImminent(
+  chromeos::FakePowerManagerClient::Get()->SendSuspendImminent(
       power_manager::SuspendImminent_Reason_LID_CLOSED);
-  power_manager_client_.SendSuspendDone();
+  chromeos::FakePowerManagerClient::Get()->SendSuspendDone();
   TriggerDailyEventAndVerifyHistograms(0, 0, 0, 1);
 
   // We should report zeros if a day passes without any events.
@@ -146,9 +154,9 @@ TEST_F(PowerMetricsReporterTest, IgnoreUnchangedScreenIdleState) {
 
 TEST_F(PowerMetricsReporterTest, IgnoreOtherSuspendReasons) {
   // Suspends triggered for other reasons shouldn't be reported.
-  power_manager_client_.SendSuspendImminent(
+  chromeos::FakePowerManagerClient::Get()->SendSuspendImminent(
       power_manager::SuspendImminent_Reason_OTHER);
-  power_manager_client_.SendSuspendDone();
+  chromeos::FakePowerManagerClient::Get()->SendSuspendDone();
   TriggerDailyEventAndVerifyHistograms(0, 0, 0, 0);
 }
 

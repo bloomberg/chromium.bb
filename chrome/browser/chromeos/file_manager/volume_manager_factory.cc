@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/file_system_provider/service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/storage_monitor/storage_monitor.h"
@@ -46,7 +46,7 @@ KeyedService* VolumeManagerFactory::BuildServiceInstanceFor(
   Profile* const profile = Profile::FromBrowserContext(context);
   VolumeManager* instance = new VolumeManager(
       profile, drive::DriveIntegrationServiceFactory::GetForProfile(profile),
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient(),
+      chromeos::PowerManagerClient::Get(),
       chromeos::disks::DiskMountManager::GetInstance(),
       chromeos::file_system_provider::ServiceFactory::Get(context),
       VolumeManager::GetMtpStorageInfoCallback());

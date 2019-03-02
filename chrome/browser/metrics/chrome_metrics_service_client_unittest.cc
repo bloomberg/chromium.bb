@@ -33,7 +33,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/assistant/buildflags.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #endif
 
@@ -58,14 +58,20 @@ class ChromeMetricsServiceClientTest : public testing::Test {
     service_manager_context_ =
         std::make_unique<content::TestServiceManagerContext>();
 #if defined(OS_CHROMEOS)
-    // ChromeOs Metrics Provider require g_login_state and dbus initialized
-    // before they can be instantiated.
+    // ChromeOs Metrics Provider require g_login_state and power manager client
+    // initialized before they can be instantiated.
     chromeos::LoginState::Initialize();
-    chromeos::DBusThreadManager::Initialize();
+    chromeos::PowerManagerClient::Initialize();
 #endif  // defined(OS_CHROMEOS)
   }
 
-  void TearDown() override { service_manager_context_.reset(); }
+  void TearDown() override {
+#if defined(OS_CHROMEOS)
+    chromeos::PowerManagerClient::Shutdown();
+    chromeos::LoginState::Shutdown();
+#endif  // defined(OS_CHROMEOS)
+    service_manager_context_.reset();
+  }
 
  protected:
   void FakeStoreClientInfoBackup(const metrics::ClientInfo& client_info) {}

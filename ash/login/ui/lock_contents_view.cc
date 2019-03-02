@@ -449,8 +449,7 @@ LockContentsView::LockContentsView(
   AddChildView(auth_error_bubble_);
 
   OnLockScreenNoteStateChanged(initial_note_action_state);
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->AddObserver(this);
   RegisterAccelerators();
 }
 
@@ -468,8 +467,7 @@ LockContentsView::~LockContentsView() {
     Shell::Get()->metrics()->login_metrics_recorder()->RecordNumLoginAttempts(
         unlock_attempt_, false /*success*/);
   }
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
 }
 
 void LockContentsView::FocusNextUser() {

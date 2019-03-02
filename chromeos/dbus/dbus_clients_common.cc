@@ -31,8 +31,6 @@
 #include "chromeos/dbus/machine_learning_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/permission_broker_client.h"
-#include "chromeos/dbus/power_manager_client.h"
-#include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
@@ -111,8 +109,6 @@ DBusClientsCommon::DBusClientsCommon(bool use_real_clients) {
   else
     permission_broker_client_.reset(new FakePermissionBrokerClient);
 
-  power_manager_client_.reset(PowerManagerClient::Create(client_impl_type));
-
   session_manager_client_.reset(SessionManagerClient::Create(client_impl_type));
 
   if (use_real_clients)
@@ -142,7 +138,6 @@ void DBusClientsCommon::Initialize(dbus::Bus* system_bus) {
   machine_learning_client_->Init(system_bus);
   modem_messaging_client_->Init(system_bus);
   permission_broker_client_->Init(system_bus);
-  power_manager_client_->Init(system_bus);
   session_manager_client_->Init(system_bus);
   shill_device_client_->Init(system_bus);
   shill_ipconfig_client_->Init(system_bus);

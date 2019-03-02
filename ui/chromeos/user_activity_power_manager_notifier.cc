@@ -102,9 +102,7 @@ void UserActivityPowerManagerNotifier::MaybeNotifyUserActivity(
   // comparison.
   if (last_notify_time_.is_null() ||
       (now - last_notify_time_).InSeconds() >= kNotifyIntervalSec) {
-    chromeos::DBusThreadManager::Get()
-        ->GetPowerManagerClient()
-        ->NotifyUserActivity(user_activity_type);
+    chromeos::PowerManagerClient::Get()->NotifyUserActivity(user_activity_type);
     last_notify_time_ = now;
   }
 }

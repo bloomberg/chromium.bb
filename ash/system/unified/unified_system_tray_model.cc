@@ -38,16 +38,14 @@ class UnifiedSystemTrayModel::DBusObserver
 UnifiedSystemTrayModel::DBusObserver::DBusObserver(
     UnifiedSystemTrayModel* owner)
     : owner_(owner) {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->AddObserver(this);
   Shell::Get()->brightness_control_delegate()->GetBrightnessPercent(
       base::BindOnce(&DBusObserver::HandleInitialBrightness,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 UnifiedSystemTrayModel::DBusObserver::~DBusObserver() {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
 }
 
 void UnifiedSystemTrayModel::DBusObserver::HandleInitialBrightness(

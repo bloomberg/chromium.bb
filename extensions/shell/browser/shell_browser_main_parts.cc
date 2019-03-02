@@ -65,6 +65,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 #elif defined(OS_LINUX)
 #include "device/bluetooth/dbus/bluez_dbus_thread_manager.h"
 #endif
@@ -123,6 +124,8 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
   // helper classes so those classes' tests can initialize stub versions of the
   // D-Bus objects.
   chromeos::DBusThreadManager::Initialize();
+  chromeos::PowerManagerClient::Initialize(
+      chromeos::DBusThreadManager::Get()->GetSystemBus());
   chromeos::disks::DiskMountManager::Initialize();
 
   bluez::BluezDBusManager::Initialize();
@@ -308,6 +311,7 @@ void ShellBrowserMainParts::PostDestroyThreads() {
   chromeos::disks::DiskMountManager::Shutdown();
   device::BluetoothAdapterFactory::Shutdown();
   bluez::BluezDBusManager::Shutdown();
+  chromeos::PowerManagerClient::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
 #elif defined(OS_LINUX)
   device::BluetoothAdapterFactory::Shutdown();

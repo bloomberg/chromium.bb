@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/network/network_state_handler.h"
@@ -92,10 +91,8 @@ void HandleScreenBrightnessCallback(
 
 void DeviceActions::GetScreenBrightnessLevel(
     DeviceActions::GetScreenBrightnessLevelCallback callback) {
-  chromeos::DBusThreadManager::Get()
-      ->GetPowerManagerClient()
-      ->GetScreenBrightnessPercent(
-          base::BindOnce(&HandleScreenBrightnessCallback, std::move(callback)));
+  chromeos::PowerManagerClient::Get()->GetScreenBrightnessPercent(
+      base::BindOnce(&HandleScreenBrightnessCallback, std::move(callback)));
 }
 
 void DeviceActions::SetScreenBrightnessLevel(double level, bool gradual) {
@@ -107,9 +104,7 @@ void DeviceActions::SetScreenBrightnessLevel(double level, bool gradual) {
           : power_manager::SetBacklightBrightnessRequest_Transition_INSTANT);
   request.set_cause(
       power_manager::SetBacklightBrightnessRequest_Cause_USER_REQUEST);
-  chromeos::DBusThreadManager::Get()
-      ->GetPowerManagerClient()
-      ->SetScreenBrightness(request);
+  chromeos::PowerManagerClient::Get()->SetScreenBrightness(request);
 }
 
 void DeviceActions::SetNightLightEnabled(bool enabled) {

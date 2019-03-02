@@ -236,14 +236,14 @@ class PowerManagerClientTest : public testing::Test {
         DoCallMethod(HasMember(power_manager::kGetPowerSupplyPropertiesMethod),
                      _, _));
 
-    client_.reset(PowerManagerClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION));
-    client_->Init(bus_.get());
+    PowerManagerClient::Initialize(bus_.get());
+    client_ = PowerManagerClient::Get();
 
     // Execute callbacks posted by Init().
     base::RunLoop().RunUntilIdle();
   }
 
-  void TearDown() override { client_.reset(); }
+  void TearDown() override { PowerManagerClient::Shutdown(); }
 
  protected:
   // Synchronously passes |signal| to |client_|'s handler, simulating the signal
@@ -297,7 +297,7 @@ class PowerManagerClientTest : public testing::Test {
   scoped_refptr<dbus::MockBus> bus_;
   scoped_refptr<dbus::MockObjectProxy> proxy_;
 
-  std::unique_ptr<PowerManagerClient> client_;
+  PowerManagerClient* client_ = nullptr;
 
   // Maps from powerd signal name to the corresponding callback provided by
   // |client_|.
@@ -358,8 +358,8 @@ TEST_F(PowerManagerClientTest, ReportSuspendReadinessWithoutObservers) {
 // Tests that synchronous observers are notified about impending suspend
 // attempts and completion.
 TEST_F(PowerManagerClientTest, ReportSuspendReadinessWithoutCallbacks) {
-  TestObserver observer_1(client_.get());
-  TestObserver observer_2(client_.get());
+  TestObserver observer_1(client_);
+  TestObserver observer_2(client_);
 
   // Observers should be notified when suspend is imminent. Readiness should be
   // reported synchronously since GetSuspendReadinessCallback() hasn't been
@@ -382,11 +382,11 @@ TEST_F(PowerManagerClientTest, ReportSuspendReadinessWithoutCallbacks) {
 // Tests that readiness is deferred until asynchronous observers have run their
 // callbacks.
 TEST_F(PowerManagerClientTest, ReportSuspendReadinessWithCallbacks) {
-  TestObserver observer_1(client_.get());
+  TestObserver observer_1(client_);
   observer_1.set_take_suspend_readiness_callback(true);
-  TestObserver observer_2(client_.get());
+  TestObserver observer_2(client_);
   observer_2.set_take_suspend_readiness_callback(true);
-  TestObserver observer_3(client_.get());
+  TestObserver observer_3(client_);
 
   // When observers call GetSuspendReadinessCallback() from their
   // SuspendImminent() methods, the HandleSuspendReadiness method call should be
@@ -404,8 +404,8 @@ TEST_F(PowerManagerClientTest, ReportSuspendReadinessWithCallbacks) {
 // Tests that RenderProcessManagerDelegate is notified about suspend and resume
 // in the common case where suspend readiness is reported.
 TEST_F(PowerManagerClientTest, NotifyRenderProcessManagerDelegate) {
-  TestDelegate delegate(client_.get());
-  TestObserver observer(client_.get());
+  TestDelegate delegate(client_);
+  TestObserver observer(client_);
   observer.set_take_suspend_readiness_callback(true);
 
   const int kSuspendId = 1;
@@ -429,8 +429,8 @@ TEST_F(PowerManagerClientTest, NotifyRenderProcessManagerDelegate) {
 // Tests that DarkSuspendImminent is handled in a manner similar to
 // SuspendImminent.
 TEST_F(PowerManagerClientTest, ReportDarkSuspendReadiness) {
-  TestDelegate delegate(client_.get());
-  TestObserver observer(client_.get());
+  TestDelegate delegate(client_);
+  TestObserver observer(client_);
   observer.set_take_suspend_readiness_callback(true);
 
   const int kSuspendId = 1;
@@ -463,8 +463,8 @@ TEST_F(PowerManagerClientTest, ReportDarkSuspendReadiness) {
 // Tests the case where a SuspendDone signal is received while a readiness
 // callback is still pending.
 TEST_F(PowerManagerClientTest, SuspendCancelledWhileCallbackPending) {
-  TestDelegate delegate(client_.get());
-  TestObserver observer(client_.get());
+  TestDelegate delegate(client_);
+  TestObserver observer(client_);
   observer.set_take_suspend_readiness_callback(true);
 
   const int kSuspendId = 1;
@@ -492,8 +492,8 @@ TEST_F(PowerManagerClientTest, SuspendCancelledWhileCallbackPending) {
 // Tests the case where a SuspendDone signal is received while a dark suspend
 // readiness callback is still pending.
 TEST_F(PowerManagerClientTest, SuspendDoneWhileDarkSuspendCallbackPending) {
-  TestDelegate delegate(client_.get());
-  TestObserver observer(client_.get());
+  TestDelegate delegate(client_);
+  TestObserver observer(client_);
   observer.set_take_suspend_readiness_callback(true);
 
   const int kSuspendId = 1;
@@ -522,8 +522,8 @@ TEST_F(PowerManagerClientTest, SuspendDoneWhileDarkSuspendCallbackPending) {
 // Tests the case where dark suspend is announced while readiness hasn't been
 // reported for the initial regular suspend attempt.
 TEST_F(PowerManagerClientTest, DarkSuspendImminentWhileCallbackPending) {
-  TestDelegate delegate(client_.get());
-  TestObserver observer(client_.get());
+  TestDelegate delegate(client_);
+  TestObserver observer(client_);
   observer.set_take_suspend_readiness_callback(true);
 
   // Announce that suspend is imminent and grab, but don't run, the readiness
@@ -552,7 +552,7 @@ TEST_F(PowerManagerClientTest, DarkSuspendImminentWhileCallbackPending) {
 // SuspendImminent() instead of running it asynchronously:
 // http://crosbug.com/p/58295
 TEST_F(PowerManagerClientTest, SyncCallbackWithSingleObserver) {
-  TestObserver observer(client_.get());
+  TestObserver observer(client_);
   observer.set_take_suspend_readiness_callback(true);
   observer.set_run_suspend_readiness_callback_immediately(true);
 
@@ -567,11 +567,11 @@ TEST_F(PowerManagerClientTest, SyncCallbackWithSingleObserver) {
 // attempt. We shouldn't report suspend readiness until the second observer has
 // been notified and confirmed readiness.
 TEST_F(PowerManagerClientTest, SyncCallbackWithMultipleObservers) {
-  TestObserver observer1(client_.get());
+  TestObserver observer1(client_);
   observer1.set_take_suspend_readiness_callback(true);
   observer1.set_run_suspend_readiness_callback_immediately(true);
 
-  TestObserver observer2(client_.get());
+  TestObserver observer2(client_);
   observer2.set_take_suspend_readiness_callback(true);
 
   const int kSuspendId = 1;

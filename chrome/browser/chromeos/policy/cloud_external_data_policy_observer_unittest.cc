@@ -185,11 +185,11 @@ void CloudExternalDataPolicyObserverTest::SetUp() {
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &url_loader_factory_);
   cros_settings_ = std::make_unique<chromeos::CrosSettings>(
-      &device_settings_service_,
+      device_settings_service_.get(),
       TestingBrowserProcess::GetGlobal()->local_state());
   device_local_account_policy_service_.reset(
       new DeviceLocalAccountPolicyService(
-          &session_manager_client_, &device_settings_service_,
+          &session_manager_client_, device_settings_service_.get(),
           cros_settings_.get(), &affiliated_invalidation_service_provider_,
           base::ThreadTaskRunnerHandle::Get(),
           base::ThreadTaskRunnerHandle::Get(),
@@ -283,19 +283,19 @@ void CloudExternalDataPolicyObserverTest::SetDeviceLocalAccountAvatarPolicy(
 void CloudExternalDataPolicyObserverTest::AddDeviceLocalAccount(
     const std::string& account_id) {
   em::DeviceLocalAccountInfoProto* account =
-      device_policy_.payload().mutable_device_local_accounts()->add_account();
+      device_policy_->payload().mutable_device_local_accounts()->add_account();
   account->set_account_id(account_id);
   account->set_type(
       em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_PUBLIC_SESSION);
-  device_policy_.Build();
-  session_manager_client_.set_device_policy(device_policy_.GetBlob());
+  device_policy_->Build();
+  session_manager_client_.set_device_policy(device_policy_->GetBlob());
   ReloadDeviceSettings();
 }
 
 void CloudExternalDataPolicyObserverTest::RemoveDeviceLocalAccount(
     const std::string& account_id) {
   em::DeviceLocalAccountsProto* accounts =
-      device_policy_.payload().mutable_device_local_accounts();
+      device_policy_->payload().mutable_device_local_accounts();
   std::vector<std::string> account_ids;
   for (int i = 0; i < accounts->account_size(); ++i) {
     if (accounts->account(i).account_id() != account_id)
@@ -309,8 +309,8 @@ void CloudExternalDataPolicyObserverTest::RemoveDeviceLocalAccount(
     account->set_type(
         em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_PUBLIC_SESSION);
   }
-  device_policy_.Build();
-  session_manager_client_.set_device_policy(device_policy_.GetBlob());
+  device_policy_->Build();
+  session_manager_client_.set_device_policy(device_policy_->GetBlob());
   ReloadDeviceSettings();
 }
 

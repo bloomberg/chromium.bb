@@ -25,7 +25,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
@@ -155,7 +155,7 @@ TabletModeController::TabletModeController()
             base::Unretained(this)));
   }
   chromeos::PowerManagerClient* power_manager_client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+      chromeos::PowerManagerClient::Get();
   power_manager_client->AddObserver(this);
   power_manager_client->GetSwitchStates(base::BindOnce(
       &TabletModeController::OnGetSwitchStates, weak_factory_.GetWeakPtr()));
@@ -182,8 +182,7 @@ TabletModeController::~TabletModeController() {
     AccelerometerReader::GetInstance()->RemoveObserver(this);
     ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
   }
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
 
   for (auto& observer : tablet_mode_observers_)
     observer.OnTabletControllerDestroyed();
@@ -612,8 +611,7 @@ void TabletModeController::SetTabletModeEnabledForTesting(
   // run on DUTs and require switching to/back tablet mode in runtime, like some
   // ARC++ Tast tests.
   AccelerometerReader::GetInstance()->RemoveObserver(this);
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
   EnableTabletModeWindowManager(enabled);
   std::move(callback).Run(IsTabletModeWindowManagerEnabled());
 }

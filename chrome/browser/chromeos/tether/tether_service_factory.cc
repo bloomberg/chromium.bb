@@ -68,7 +68,7 @@ KeyedService* TetherServiceFactory::BuildServiceInstanceFor(
   if (command_line->HasSwitch(chromeos::switches::kTetherStub)) {
     FakeTetherService* fake_tether_service = new FakeTetherService(
         Profile::FromBrowserContext(context),
-        chromeos::DBusThreadManager::Get()->GetPowerManagerClient(),
+        chromeos::PowerManagerClient::Get(),
         chromeos::device_sync::DeviceSyncClientFactory::GetForProfile(
             Profile::FromBrowserContext(context)),
         chromeos::secure_channel::SecureChannelClientProvider::GetInstance()
@@ -88,8 +88,7 @@ KeyedService* TetherServiceFactory::BuildServiceInstanceFor(
   }
 
   return new TetherService(
-      Profile::FromBrowserContext(context),
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient(),
+      Profile::FromBrowserContext(context), chromeos::PowerManagerClient::Get(),
       chromeos::device_sync::DeviceSyncClientFactory::GetForProfile(
           Profile::FromBrowserContext(context)),
       chromeos::secure_channel::SecureChannelClientProvider::GetInstance()

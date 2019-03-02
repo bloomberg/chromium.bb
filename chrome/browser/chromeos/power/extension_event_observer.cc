@@ -14,7 +14,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/gcm.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"
@@ -72,7 +71,7 @@ ExtensionEventObserver::ExtensionEventObserver()
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
 
-  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+  PowerManagerClient::Get()->AddObserver(this);
 }
 
 ExtensionEventObserver::~ExtensionEventObserver() {
@@ -85,7 +84,7 @@ ExtensionEventObserver::~ExtensionEventObserver() {
     host->RemoveObserver(this);
   }
 
-  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+  PowerManagerClient::Get()->RemoveObserver(this);
 }
 
 std::unique_ptr<ExtensionEventObserver::TestApi>
@@ -244,9 +243,8 @@ void ExtensionEventObserver::OnSuspendImminent(bool dark_suspend) {
   }
 
   suspend_is_pending_ = true;
-  power_manager_callback_ = DBusThreadManager::Get()
-                                ->GetPowerManagerClient()
-                                ->GetSuspendReadinessCallback(FROM_HERE);
+  power_manager_callback_ =
+      PowerManagerClient::Get()->GetSuspendReadinessCallback(FROM_HERE);
 
   suspend_readiness_callback_.Reset(
       base::Bind(&ExtensionEventObserver::MaybeReportSuspendReadiness,

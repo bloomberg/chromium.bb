@@ -17,7 +17,6 @@
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/power_policy_controller.h"
@@ -126,10 +125,6 @@ class PowerPrefsTest : public NoSessionAshTestBase {
 
   // NoSessionAshTestBase:
   void SetUp() override {
-    fake_power_manager_client_ = new chromeos::FakePowerManagerClient;
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
-        base::WrapUnique(fake_power_manager_client_));
-
     NoSessionAshTestBase::SetUp();
 
     power_policy_controller_ = chromeos::PowerPolicyController::Get();
@@ -145,7 +140,7 @@ class PowerPrefsTest : public NoSessionAshTestBase {
 
   std::string GetCurrentPowerPolicy() const {
     return chromeos::PowerPolicyController::GetPolicyDebugString(
-        fake_power_manager_client_->policy());
+        power_manager_client()->policy());
   }
 
   bool GetCurrentAllowScreenWakeLocks() const {
@@ -154,9 +149,9 @@ class PowerPrefsTest : public NoSessionAshTestBase {
 
   std::vector<power_manager::PowerManagementPolicy_Action>
   GetCurrentPowerPolicyActions() const {
-    return {fake_power_manager_client_->policy().ac_idle_action(),
-            fake_power_manager_client_->policy().battery_idle_action(),
-            fake_power_manager_client_->policy().lid_closed_action()};
+    return {power_manager_client()->policy().ac_idle_action(),
+            power_manager_client()->policy().battery_idle_action(),
+            power_manager_client()->policy().lid_closed_action()};
   }
 
   void SetLockedState(ScreenLockState lock_state) {
@@ -168,11 +163,8 @@ class PowerPrefsTest : public NoSessionAshTestBase {
   void NotifyScreenIdleOffChanged(bool off) {
     power_manager::ScreenIdleState proto;
     proto.set_off(off);
-    fake_power_manager_client_->SendScreenIdleStateChanged(proto);
+    power_manager_client()->SendScreenIdleStateChanged(proto);
   }
-
-  // Owned by chromeos::DBusThreadManager.
-  chromeos::FakePowerManagerClient* fake_power_manager_client_;
 
   chromeos::PowerPolicyController* power_policy_controller_ =
       nullptr;                         // Not owned.

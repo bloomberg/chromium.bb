@@ -251,8 +251,7 @@ void StateController::InitializeWithCryptoKey(Profile* profile,
 void StateController::InitializeWithStylusInputPresent() {
   stylus_input_missing_ = false;
 
-  power_manager_client_observer_.Add(
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
+  power_manager_client_observer_.Add(chromeos::PowerManagerClient::Get());
   session_observer_.Add(session_manager::SessionManager::Get());
   OnSessionStateChanged();
 

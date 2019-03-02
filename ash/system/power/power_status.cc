@@ -240,9 +240,7 @@ void PowerStatus::RemoveObserver(Observer* observer) {
 }
 
 void PowerStatus::RequestStatusUpdate() {
-  chromeos::DBusThreadManager::Get()
-      ->GetPowerManagerClient()
-      ->RequestStatusUpdate();
+  chromeos::PowerManagerClient::Get()->RequestStatusUpdate();
 }
 
 bool PowerStatus::IsBatteryPresent() const {
@@ -483,16 +481,12 @@ base::string16 PowerStatus::GetInlinedStatusString() const {
 }
 
 PowerStatus::PowerStatus() {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-      this);
-  chromeos::DBusThreadManager::Get()
-      ->GetPowerManagerClient()
-      ->RequestStatusUpdate();
+  chromeos::PowerManagerClient::Get()->AddObserver(this);
+  chromeos::PowerManagerClient::Get()->RequestStatusUpdate();
 }
 
 PowerStatus::~PowerStatus() {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
 }
 
 void PowerStatus::SetProtoForTesting(

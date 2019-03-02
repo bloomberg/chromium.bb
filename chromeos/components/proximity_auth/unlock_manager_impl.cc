@@ -19,11 +19,8 @@
 #include "chromeos/components/proximity_auth/proximity_auth_client.h"
 #include "chromeos/components/proximity_auth/proximity_auth_pref_manager.h"
 #include "chromeos/components/proximity_auth/proximity_monitor_impl.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/services/secure_channel/public/cpp/client/client_channel.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
-
-using chromeos::DBusThreadManager;
 
 namespace proximity_auth {
 namespace {
@@ -121,7 +118,7 @@ UnlockManagerImpl::UnlockManagerImpl(
       clear_waking_up_state_weak_ptr_factory_(this),
       reject_auth_attempt_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
-  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+  chromeos::PowerManagerClient::Get()->AddObserver(this);
 
   SetWakingUpState(true /* is_waking_up */);
 
@@ -139,7 +136,7 @@ UnlockManagerImpl::~UnlockManagerImpl() {
   if (proximity_monitor_)
     proximity_monitor_->RemoveObserver(this);
 
-  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
 
   if (bluetooth_adapter_)
     bluetooth_adapter_->RemoveObserver(this);

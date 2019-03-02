@@ -108,7 +108,7 @@ class LockStateControllerTest : public PowerButtonTestBase {
     power_manager::BacklightBrightnessChange change;
     change.set_percent(percent);
     change.set_cause(cause);
-    power_manager_client_->SendScreenBrightnessChanged(change);
+    power_manager_client()->SendScreenBrightnessChanged(change);
   }
 
   void ExpectPreLockAnimationStarted() {

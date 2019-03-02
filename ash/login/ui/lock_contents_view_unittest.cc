@@ -35,7 +35,6 @@
 #include "ash/tray_action/tray_action.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1880,15 +1879,7 @@ TEST_F(LockContentsViewUnitTest, DisabledAuthMessageFocusBehavior) {
   EXPECT_TRUE(HasFocusInAnyChildView(status_area));
 }
 
-class LockContentsViewPowerManagerUnitTest : public LockContentsViewUnitTest {
- public:
-  void SetUp() override {
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
-        std::make_unique<chromeos::FakePowerManagerClient>());
-
-    LockContentsViewUnitTest::SetUp();
-  }
-};
+using LockContentsViewPowerManagerUnitTest = LockContentsViewUnitTest;
 
 // Ensures that a PowerManagerClient::Observer is added on LockScreen::Show()
 // and removed on LockScreen::Destroy().
@@ -1897,16 +1888,12 @@ TEST_F(LockContentsViewPowerManagerUnitTest,
   ASSERT_NO_FATAL_FAILURE(ShowLockScreen());
   LockContentsView* contents =
       LockScreen::TestApi(LockScreen::Get()).contents_view();
-  EXPECT_TRUE(
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->HasObserver(
-          contents));
+  EXPECT_TRUE(chromeos::PowerManagerClient::Get()->HasObserver(contents));
 
   LockScreen::Get()->Destroy();
   // Wait for LockScreen to be fully destroyed
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->HasObserver(
-          contents));
+  EXPECT_FALSE(chromeos::PowerManagerClient::Get()->HasObserver(contents));
 }
 
 // Verifies that the password box for the active user is cleared if a suspend

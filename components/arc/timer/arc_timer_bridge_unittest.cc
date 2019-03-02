@@ -15,7 +15,6 @@
 #include "base/posix/unix_domain_socket.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
@@ -91,7 +90,7 @@ class ArcTimerTest : public testing::Test {
  public:
   ArcTimerTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
-    chromeos::DBusThreadManager::Initialize();
+    chromeos::PowerManagerClient::Initialize();
     timer_bridge_ = ArcTimerBridge::GetForBrowserContextForTesting(&context_);
     // This results in ArcTimerBridge::OnInstanceReady being called.
     ArcServiceManager::Get()->arc_bridge_service()->timer()->SetInstance(
@@ -106,7 +105,7 @@ class ArcTimerTest : public testing::Test {
     ArcServiceManager::Get()->arc_bridge_service()->timer()->CloseInstance(
         &timer_instance_);
     timer_bridge_->Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
+    chromeos::PowerManagerClient::Shutdown();
   }
 
  protected:

@@ -21,7 +21,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -119,25 +118,27 @@ class AdapterTest : public testing::Test {
  public:
   AdapterTest()
       : thread_bundle_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
-        std::make_unique<chromeos::FakePowerManagerClient>());
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
+
+  ~AdapterTest() override = default;
+
+  void SetUp() override {
+    chromeos::PowerManagerClient::Initialize();
     power_manager::SetBacklightBrightnessRequest request;
     request.set_percent(1);
-    chromeos::DBusThreadManager::Get()
-        ->GetPowerManagerClient()
-        ->SetScreenBrightness(request);
+    chromeos::PowerManagerClient::Get()->SetScreenBrightness(request);
     thread_bundle_.RunUntilIdle();
 
-    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-        &test_observer_);
+    chromeos::PowerManagerClient::Get()->AddObserver(&test_observer_);
 
     global_curve_.emplace(MonotoneCubicSpline({-4, 12, 20}, {30, 80, 100}));
     personal_curve_.emplace(MonotoneCubicSpline({-4, 12, 20}, {20, 60, 100}));
   }
 
-  ~AdapterTest() override {
+  void TearDown() override {
+    adapter_.reset();
     base::TaskScheduler::GetInstance()->FlushForTesting();
+    chromeos::PowerManagerClient::Shutdown();
   }
 
   void SetUpAdapter(const std::map<std::string, std::string>& params,
@@ -185,7 +186,7 @@ class AdapterTest : public testing::Test {
     adapter_ = std::make_unique<Adapter>(
         profile_.get(), &fake_als_reader_, &fake_brightness_monitor_,
         &fake_modeller_, nullptr /* metrics_reporter */,
-        chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
+        chromeos::PowerManagerClient::Get());
     adapter_->SetTickClockForTesting(thread_bundle_.GetMockTickClock());
   }
 
@@ -203,9 +204,7 @@ class AdapterTest : public testing::Test {
   }
 
   void ReportSuspendDone() {
-    static_cast<chromeos::FakePowerManagerClient*>(
-        chromeos::DBusThreadManager::Get()->GetPowerManagerClient())
-        ->SendSuspendDone();
+    chromeos::FakePowerManagerClient::Get()->SendSuspendDone();
     thread_bundle_.RunUntilIdle();
   }
 

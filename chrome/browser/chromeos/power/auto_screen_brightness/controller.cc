@@ -23,7 +23,7 @@ namespace auto_screen_brightness {
 
 Controller::Controller() {
   chromeos::PowerManagerClient* power_manager_client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+      chromeos::PowerManagerClient::Get();
   DCHECK(power_manager_client);
 
   metrics_reporter_ = std::make_unique<MetricsReporter>(

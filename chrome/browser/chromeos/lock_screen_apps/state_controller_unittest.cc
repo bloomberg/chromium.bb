@@ -37,7 +37,6 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "components/arc/arc_service_manager.h"
@@ -384,11 +383,6 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     command_line_->GetProcessCommandLine()->InitFromArgv({""});
     SetUpCommandLine(command_line_->GetProcessCommandLine());
 
-    std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
-        chromeos::DBusThreadManager::GetSetterForTesting();
-    dbus_setter->SetPowerManagerClient(
-        std::make_unique<chromeos::FakePowerManagerClient>());
-
     BrowserWithTestWindowTest::SetUp();
 
     SetUpStylusAvailability();
@@ -626,11 +620,6 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     return lock_screen_profile_creator_->lock_screen_profile();
   }
 
-  chromeos::FakePowerManagerClient* GetPowerManagerClient() {
-    return static_cast<chromeos::FakePowerManagerClient*>(
-        chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
-  }
-
   session_manager::SessionManager* session_manager() {
     return session_manager_.get();
   }
@@ -665,7 +654,6 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   // in |InitializeNoteTakingApp|)
   bool is_first_app_run_test_ = false;
 
- private:
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
 
   chromeos::FakeChromeUserManager* fake_user_manager_;
@@ -1241,7 +1229,7 @@ TEST_F(LockScreenAppStateTest, CloseAppWindowOnSuspend) {
   ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kActive,
                                       true /* enable_app_launch */));
 
-  GetPowerManagerClient()->SendSuspendImminent(
+  chromeos::FakePowerManagerClient::Get()->SendSuspendImminent(
       power_manager::SuspendImminent_Reason_OTHER);
   EXPECT_EQ(TrayActionState::kAvailable,
             state_controller()->GetLockScreenNoteState());

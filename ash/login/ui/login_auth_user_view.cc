@@ -654,8 +654,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   external_binary_enrollment_button_->SetVisible(has_external_binary);
 
   if (has_external_binary) {
-    power_manager_client_observer_.Add(
-        chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
+    power_manager_client_observer_.Add(chromeos::PowerManagerClient::Get());
   }
 
   int padding_view_height = kDistanceBetweenPasswordFieldAndPinKeyboardDp;

@@ -33,11 +33,7 @@ constexpr char kTestUser1GaiaId[] = "test-user1@gmail.com";
 
 class ResetTest : public LoginManagerTest {
  public:
-  ResetTest()
-      : LoginManagerTest(false, true /* should_initialize_webui */),
-        update_engine_client_(NULL),
-        session_manager_client_(NULL),
-        power_manager_client_(NULL) {}
+  ResetTest() : LoginManagerTest(false, true /* should_initialize_webui */) {}
   ~ResetTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -51,9 +47,6 @@ class ResetTest : public LoginManagerTest {
     session_manager_client_ = new FakeSessionManagerClient;
     dbus_setter->SetSessionManagerClient(
         std::unique_ptr<SessionManagerClient>(session_manager_client_));
-    power_manager_client_ = new FakePowerManagerClient;
-    dbus_setter->SetPowerManagerClient(
-        std::unique_ptr<PowerManagerClient>(power_manager_client_));
     update_engine_client_ = new FakeUpdateEngineClient;
     dbus_setter->SetUpdateEngineClient(
         std::unique_ptr<UpdateEngineClient>(update_engine_client_));
@@ -103,9 +96,11 @@ class ResetTest : public LoginManagerTest {
         "['reset-confirm-dismissed']);");
   }
 
-  FakeUpdateEngineClient* update_engine_client_;
-  FakeSessionManagerClient* session_manager_client_;
-  FakePowerManagerClient* power_manager_client_;
+  FakeUpdateEngineClient* update_engine_client_ = nullptr;
+  FakeSessionManagerClient* session_manager_client_ = nullptr;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ResetTest);
 };
 
 class ResetFirstAfterBootTest : public ResetTest {
@@ -138,10 +133,10 @@ IN_PROC_BROWSER_TEST_F(ResetTest, RestartBeforePowerwash) {
   PrefService* prefs = g_browser_process->local_state();
 
   InvokeResetScreen();
-  EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
+  EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(0, session_manager_client_->start_device_wipe_call_count());
   ClickRestartButton();
-  ASSERT_EQ(1, power_manager_client_->num_request_restart_calls());
+  ASSERT_EQ(1, FakePowerManagerClient::Get()->num_request_restart_calls());
   ASSERT_EQ(0, session_manager_client_->start_device_wipe_call_count());
 
   EXPECT_TRUE(prefs->GetBoolean(prefs::kFactoryResetRequested));
@@ -218,13 +213,13 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, DISABLED_RollbackUnavailable) {
   update_engine_client_->set_can_rollback_check_result(false);
 
   InvokeResetScreen();
-  EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
+  EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(0, session_manager_client_->start_device_wipe_call_count());
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
   InvokeRollbackOption();  // No changes
   ClickToConfirmButton();
   ClickResetButton();
-  EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
+  EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(1, session_manager_client_->start_device_wipe_call_count());
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
   CloseResetScreen();
@@ -236,7 +231,7 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, DISABLED_RollbackUnavailable) {
   InvokeResetScreen();
   ClickToConfirmButton();
   ClickResetButton();
-  EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
+  EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(2, session_manager_client_->start_device_wipe_call_count());
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
   CloseResetScreen();
@@ -253,12 +248,12 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, RollbackAvailable) {
   PrefService* prefs = g_browser_process->local_state();
 
   InvokeResetScreen();
-  EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
+  EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(0, session_manager_client_->start_device_wipe_call_count());
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
   ClickToConfirmButton();
   ClickResetButton();
-  EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
+  EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(1, session_manager_client_->start_device_wipe_call_count());
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
   CloseResetScreen();
@@ -273,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, RollbackAvailable) {
   InvokeResetScreen();
   ClickToConfirmButton();
   ClickResetButton();
-  EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
+  EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(2, session_manager_client_->start_device_wipe_call_count());
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
   CloseResetScreen();
@@ -284,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, RollbackAvailable) {
   InvokeRollbackOption();  // Shows rollback.
   ClickToConfirmButton();
   ClickResetButton();
-  EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
+  EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(2, session_manager_client_->start_device_wipe_call_count());
   EXPECT_EQ(1, update_engine_client_->rollback_call_count());
 }
@@ -298,7 +293,7 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_ErrorOnRollbackRequested) {
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ErrorOnRollbackRequested) {
   update_engine_client_->set_can_rollback_check_result(true);
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_RESET).Wait();
-  EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
+  EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(0, session_manager_client_->start_device_wipe_call_count());
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
   test::OobeJS().ExpectTrue(
@@ -306,7 +301,7 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ErrorOnRollbackRequested) {
   InvokeRollbackOption();
   ClickToConfirmButton();
   ClickResetButton();
-  EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
+  EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(0, session_manager_client_->start_device_wipe_call_count());
   EXPECT_EQ(1, update_engine_client_->rollback_call_count());
   test::OobeJS().ExpectTrue(
@@ -326,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_RevertAfterCancel) {
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, RevertAfterCancel) {
   update_engine_client_->set_can_rollback_check_result(true);
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_RESET).Wait();
-  EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
+  EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
   EXPECT_EQ(0, session_manager_client_->start_device_wipe_call_count());
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
   test::OobeJS().ExpectTrue(

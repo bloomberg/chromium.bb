@@ -9,7 +9,6 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "services/device/public/cpp/test/test_wake_lock_provider.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -33,23 +32,27 @@ class DarkResumeControllerTest : public testing::Test {
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
         wake_lock_provider_(
-            connector_factory_.RegisterInstance(device::mojom::kServiceName)) {
+            connector_factory_.RegisterInstance(device::mojom::kServiceName)) {}
+
+  ~DarkResumeControllerTest() override = default;
+
+  void SetUp() override {
     // Create wake lock that will be acquired and released in tests.
     wake_lock_provider_.GetWakeLockWithoutContext(
         WakeLockType::kPreventDisplaySleepAllowDimming,
         device::mojom::WakeLockReason::kOther, kWakeLockDescription,
         mojo::MakeRequest(&wake_lock_));
 
-    // Create fake power manager to simulate power events.
-    fake_power_manager_client_ = new chromeos::FakePowerManagerClient;
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
-        base::WrapUnique(fake_power_manager_client_));
+    PowerManagerClient::Initialize();
 
     dark_resume_controller_ = std::make_unique<DarkResumeController>(
         connector_factory_.GetDefaultConnector());
   }
 
-  ~DarkResumeControllerTest() override {}
+  void TearDown() override {
+    dark_resume_controller_.reset();
+    PowerManagerClient::Shutdown();
+  }
 
  protected:
   // Returns the number of active wake locks of type |type|.
@@ -68,9 +71,11 @@ class DarkResumeControllerTest : public testing::Test {
     return result_count;
   }
 
+  FakePowerManagerClient* fake_power_manager_client() {
+    return FakePowerManagerClient::Get();
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  // Owned by chromeos::DBusThreadManager.
-  chromeos::FakePowerManagerClient* fake_power_manager_client_;
   service_manager::TestConnectorFactory connector_factory_;
   device::mojom::WakeLockPtr wake_lock_;
   std::unique_ptr<DarkResumeController> dark_resume_controller_;
@@ -84,19 +89,19 @@ class DarkResumeControllerTest : public testing::Test {
 TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeNoWakeLocksHeld) {
   // Trigger a dark resume event, move time forward to trigger a wake lock check
   // and check if a re-suspend happened if no wake locks were acquired.
-  fake_power_manager_client_->SendDarkSuspendImminent();
+  fake_power_manager_client()->SendDarkSuspendImminent();
   scoped_task_environment_.FastForwardBy(
       DarkResumeController::kDarkResumeWakeLockCheckTimeout);
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
   EXPECT_TRUE(dark_resume_controller_->IsDarkResumeStateClearedForTesting());
   EXPECT_EQ(
-      0, fake_power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+      0, fake_power_manager_client()->GetNumPendingSuspendReadinessCallbacks());
 
   // Trigger a dark resume event, acquire and release a wake lock and move time
   // forward to trigger a wake lock check. The device should re-suspend in this
   // case since no wake locks were held at the time of the wake lock check.
-  fake_power_manager_client_->SendDarkSuspendImminent();
+  fake_power_manager_client()->SendDarkSuspendImminent();
   wake_lock_->RequestWakeLock();
   wake_lock_->CancelWakeLock();
   scoped_task_environment_.FastForwardBy(
@@ -105,7 +110,7 @@ TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeNoWakeLocksHeld) {
   run_loop2.RunUntilIdle();
   EXPECT_TRUE(dark_resume_controller_->IsDarkResumeStateClearedForTesting());
   EXPECT_EQ(
-      0, fake_power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+      0, fake_power_manager_client()->GetNumPendingSuspendReadinessCallbacks());
 }
 
 TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeWakeLocksHeld) {
@@ -113,7 +118,7 @@ TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeWakeLocksHeld) {
   // wake lock check. At this point the system shouldn't re-suspend i.e. the
   // suspend readiness callback should be set and wake lock release should have
   // observers.
-  fake_power_manager_client_->SendDarkSuspendImminent();
+  fake_power_manager_client()->SendDarkSuspendImminent();
   wake_lock_->RequestWakeLock();
   scoped_task_environment_.FastForwardBy(
       DarkResumeController::kDarkResumeWakeLockCheckTimeout);
@@ -131,7 +136,7 @@ TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeWakeLocksHeld) {
   run_loop2.RunUntilIdle();
   EXPECT_TRUE(dark_resume_controller_->IsDarkResumeStateClearedForTesting());
   EXPECT_EQ(
-      0, fake_power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+      0, fake_power_manager_client()->GetNumPendingSuspendReadinessCallbacks());
 }
 
 TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeHardTimeout) {
@@ -139,7 +144,7 @@ TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeHardTimeout) {
   // wake lock check. At this point the system shouldn't re-suspend i.e. the
   // suspend readiness callback should be set and wake lock release should have
   // observers.
-  fake_power_manager_client_->SendDarkSuspendImminent();
+  fake_power_manager_client()->SendDarkSuspendImminent();
   wake_lock_->RequestWakeLock();
   scoped_task_environment_.FastForwardBy(
       DarkResumeController::kDarkResumeWakeLockCheckTimeout);
@@ -157,7 +162,7 @@ TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeHardTimeout) {
   run_loop2.RunUntilIdle();
   EXPECT_TRUE(dark_resume_controller_->IsDarkResumeStateClearedForTesting());
   EXPECT_EQ(
-      0, fake_power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+      0, fake_power_manager_client()->GetNumPendingSuspendReadinessCallbacks());
 }
 
 TEST_F(DarkResumeControllerTest, CheckStateResetAfterSuspendDone) {
@@ -165,7 +170,7 @@ TEST_F(DarkResumeControllerTest, CheckStateResetAfterSuspendDone) {
   // wake lock check. At this point the system shouldn't re-suspend i.e. the
   // suspend readiness callback should be set and wake lock release should have
   // observers.
-  fake_power_manager_client_->SendDarkSuspendImminent();
+  fake_power_manager_client()->SendDarkSuspendImminent();
   wake_lock_->RequestWakeLock();
   scoped_task_environment_.FastForwardBy(
       DarkResumeController::kDarkResumeWakeLockCheckTimeout);
@@ -175,7 +180,7 @@ TEST_F(DarkResumeControllerTest, CheckStateResetAfterSuspendDone) {
 
   // Trigger suspend done event. Check if state is reset as dark resume would be
   // exited.
-  fake_power_manager_client_->SendSuspendDone();
+  fake_power_manager_client()->SendSuspendDone();
   EXPECT_TRUE(dark_resume_controller_->IsDarkResumeStateClearedForTesting());
 }
 

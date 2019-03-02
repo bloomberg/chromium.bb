@@ -203,8 +203,7 @@ DeviceEmulatorMessageHandler::DeviceEmulatorMessageHandler()
               bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient())),
       fake_cras_audio_client_(static_cast<chromeos::FakeCrasAudioClient*>(
           chromeos::DBusThreadManager::Get()->GetCrasAudioClient())),
-      fake_power_manager_client_(static_cast<chromeos::FakePowerManagerClient*>(
-          chromeos::DBusThreadManager::Get()->GetPowerManagerClient())),
+      fake_power_manager_client_(chromeos::FakePowerManagerClient::Get()),
       weak_ptr_factory_(this) {
   device::BluetoothAdapterFactory::GetAdapter(
       base::BindOnce(&DeviceEmulatorMessageHandler::BluetoothDeviceAdapterReady,

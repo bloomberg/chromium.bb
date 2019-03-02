@@ -29,7 +29,7 @@ UserActivityController::UserActivityController() {
   }
 
   chromeos::PowerManagerClient* power_manager_client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+      chromeos::PowerManagerClient::Get();
   DCHECK(power_manager_client);
   ui::UserActivityDetector* detector = ui::UserActivityDetector::Get();
   DCHECK(detector);

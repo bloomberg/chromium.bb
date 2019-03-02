@@ -19,7 +19,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -39,8 +38,7 @@ namespace chromeos {
 class ExtensionEventObserverTest : public ChromeRenderViewHostTestHarness {
  public:
   ExtensionEventObserverTest()
-      : power_manager_client_(new FakePowerManagerClient()),
-        fake_user_manager_(new FakeChromeUserManager()),
+      : fake_user_manager_(new FakeChromeUserManager()),
         scoped_user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {}
 
   ~ExtensionEventObserverTest() override = default;
@@ -49,8 +47,7 @@ class ExtensionEventObserverTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
-        base::WrapUnique(power_manager_client_));
+    PowerManagerClient::Initialize();
     profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     extension_event_observer_ = std::make_unique<ExtensionEventObserver>();
@@ -73,7 +70,7 @@ class ExtensionEventObserverTest : public ChromeRenderViewHostTestHarness {
     profile_ = NULL;
     profile_manager_->DeleteAllTestingProfiles();
     profile_manager_.reset();
-    DBusThreadManager::Shutdown();
+    PowerManagerClient::Shutdown();
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
@@ -118,9 +115,6 @@ class ExtensionEventObserverTest : public ChromeRenderViewHostTestHarness {
         ->GetBackgroundHostForExtension(app->id());
   }
 
-  // Owned by DBusThreadManager.
-  FakePowerManagerClient* power_manager_client_;
-
   std::unique_ptr<ExtensionEventObserver> extension_event_observer_;
   std::unique_ptr<ExtensionEventObserver::TestApi> test_api_;
 
@@ -144,28 +138,38 @@ class ExtensionEventObserverTest : public ChromeRenderViewHostTestHarness {
 // Tests that the ExtensionEventObserver reports readiness for suspend when
 // there is nothing interesting going on.
 TEST_F(ExtensionEventObserverTest, BasicSuspendAndDarkSuspend) {
-  power_manager_client_->SendSuspendImminent(
+  FakePowerManagerClient::Get()->SendSuspendImminent(
       power_manager::SuspendImminent_Reason_OTHER);
-  EXPECT_EQ(1, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(
+      1,
+      FakePowerManagerClient::Get()->GetNumPendingSuspendReadinessCallbacks());
 
   EXPECT_TRUE(test_api_->MaybeRunSuspendReadinessCallback());
-  EXPECT_EQ(0, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(
+      0,
+      FakePowerManagerClient::Get()->GetNumPendingSuspendReadinessCallbacks());
 
-  power_manager_client_->SendDarkSuspendImminent();
-  EXPECT_EQ(1, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+  FakePowerManagerClient::Get()->SendDarkSuspendImminent();
+  EXPECT_EQ(
+      1,
+      FakePowerManagerClient::Get()->GetNumPendingSuspendReadinessCallbacks());
 
   EXPECT_TRUE(test_api_->MaybeRunSuspendReadinessCallback());
-  EXPECT_EQ(0, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(
+      0,
+      FakePowerManagerClient::Get()->GetNumPendingSuspendReadinessCallbacks());
 }
 
 // Tests that the ExtensionEventObserver properly handles a canceled suspend
 // attempt.
 TEST_F(ExtensionEventObserverTest, CanceledSuspend) {
-  power_manager_client_->SendSuspendImminent(
+  FakePowerManagerClient::Get()->SendSuspendImminent(
       power_manager::SuspendImminent_Reason_OTHER);
-  EXPECT_EQ(1, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(
+      1,
+      FakePowerManagerClient::Get()->GetNumPendingSuspendReadinessCallbacks());
 
-  power_manager_client_->SendSuspendDone();
+  FakePowerManagerClient::Get()->SendSuspendDone();
   EXPECT_FALSE(test_api_->MaybeRunSuspendReadinessCallback());
 }
 
@@ -183,35 +187,45 @@ TEST_F(ExtensionEventObserverTest, PushMessagesDelaySuspend) {
   const int kSuspendPushId = 23874;
   extension_event_observer_->OnBackgroundEventDispatched(
       host, extensions::api::gcm::OnMessage::kEventName, kSuspendPushId);
-  power_manager_client_->SendSuspendImminent(
+  FakePowerManagerClient::Get()->SendSuspendImminent(
       power_manager::SuspendImminent_Reason_OTHER);
 
   EXPECT_TRUE(test_api_->MaybeRunSuspendReadinessCallback());
-  EXPECT_EQ(1, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(
+      1,
+      FakePowerManagerClient::Get()->GetNumPendingSuspendReadinessCallbacks());
 
   extension_event_observer_->OnBackgroundEventAcked(host, kSuspendPushId);
-  EXPECT_EQ(0, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(
+      0,
+      FakePowerManagerClient::Get()->GetNumPendingSuspendReadinessCallbacks());
 
   // Now test receiving the suspend attempt before the push message.
   const int kDarkSuspendPushId = 56674;
-  power_manager_client_->SendDarkSuspendImminent();
+  FakePowerManagerClient::Get()->SendDarkSuspendImminent();
   extension_event_observer_->OnBackgroundEventDispatched(
       host, extensions::api::gcm::OnMessage::kEventName, kDarkSuspendPushId);
 
   EXPECT_TRUE(test_api_->MaybeRunSuspendReadinessCallback());
-  EXPECT_EQ(1, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(
+      1,
+      FakePowerManagerClient::Get()->GetNumPendingSuspendReadinessCallbacks());
 
   extension_event_observer_->OnBackgroundEventAcked(host, kDarkSuspendPushId);
-  EXPECT_EQ(0, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(
+      0,
+      FakePowerManagerClient::Get()->GetNumPendingSuspendReadinessCallbacks());
 
   // Test that non-push messages do not delay the suspend.
   const int kNonPushId = 5687;
-  power_manager_client_->SendDarkSuspendImminent();
+  FakePowerManagerClient::Get()->SendDarkSuspendImminent();
   extension_event_observer_->OnBackgroundEventDispatched(host, "FakeMessage",
                                                          kNonPushId);
 
   EXPECT_TRUE(test_api_->MaybeRunSuspendReadinessCallback());
-  EXPECT_EQ(0, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(
+      0,
+      FakePowerManagerClient::Get()->GetNumPendingSuspendReadinessCallbacks());
 }
 
 // Tests that messages sent for apps that don't use GCM are ignored.
@@ -222,10 +236,12 @@ TEST_F(ExtensionEventObserverTest, IgnoresNonGCMApps) {
 
   EXPECT_FALSE(test_api_->WillDelaySuspendForExtensionHost(host));
 
-  power_manager_client_->SendSuspendImminent(
+  FakePowerManagerClient::Get()->SendSuspendImminent(
       power_manager::SuspendImminent_Reason_OTHER);
   EXPECT_TRUE(test_api_->MaybeRunSuspendReadinessCallback());
-  EXPECT_EQ(0, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(
+      0,
+      FakePowerManagerClient::Get()->GetNumPendingSuspendReadinessCallbacks());
 }
 
 // Tests that network requests started by an app while it is processing a push
@@ -241,29 +257,37 @@ TEST_F(ExtensionEventObserverTest, NetworkRequestsMayDelaySuspend) {
   // are ignored.
   const uint64_t kNonPushRequestId = 5170725;
   extension_event_observer_->OnNetworkRequestStarted(host, kNonPushRequestId);
-  power_manager_client_->SendSuspendImminent(
+  FakePowerManagerClient::Get()->SendSuspendImminent(
       power_manager::SuspendImminent_Reason_OTHER);
 
   EXPECT_TRUE(test_api_->MaybeRunSuspendReadinessCallback());
-  EXPECT_EQ(0, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(
+      0,
+      FakePowerManagerClient::Get()->GetNumPendingSuspendReadinessCallbacks());
 
   // Test that network requests started while a push message is pending delay
   // the suspend even after the push message has been acked.
   const int kPushMessageId = 178674;
   const uint64_t kNetworkRequestId = 78917089;
-  power_manager_client_->SendDarkSuspendImminent();
+  FakePowerManagerClient::Get()->SendDarkSuspendImminent();
   extension_event_observer_->OnBackgroundEventDispatched(
       host, extensions::api::gcm::OnMessage::kEventName, kPushMessageId);
 
   EXPECT_TRUE(test_api_->MaybeRunSuspendReadinessCallback());
-  EXPECT_EQ(1, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(
+      1,
+      FakePowerManagerClient::Get()->GetNumPendingSuspendReadinessCallbacks());
 
   extension_event_observer_->OnNetworkRequestStarted(host, kNetworkRequestId);
   extension_event_observer_->OnBackgroundEventAcked(host, kPushMessageId);
-  EXPECT_EQ(1, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(
+      1,
+      FakePowerManagerClient::Get()->GetNumPendingSuspendReadinessCallbacks());
 
   extension_event_observer_->OnNetworkRequestDone(host, kNetworkRequestId);
-  EXPECT_EQ(0, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(
+      0,
+      FakePowerManagerClient::Get()->GetNumPendingSuspendReadinessCallbacks());
 }
 
 // Tests that any outstanding push messages or network requests for an
@@ -291,10 +315,12 @@ TEST_F(ExtensionEventObserverTest, DeletedExtensionHostDoesNotBlockSuspend) {
   // ExtensionHosts.
   profile_manager_->DeleteTestingProfile(kProfileName);
 
-  power_manager_client_->SendSuspendImminent(
+  FakePowerManagerClient::Get()->SendSuspendImminent(
       power_manager::SuspendImminent_Reason_OTHER);
   EXPECT_TRUE(test_api_->MaybeRunSuspendReadinessCallback());
-  EXPECT_EQ(0, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(
+      0,
+      FakePowerManagerClient::Get()->GetNumPendingSuspendReadinessCallbacks());
 }
 
 // Tests that the ExtensionEventObserver does not delay suspend attempts when it
@@ -311,18 +337,24 @@ TEST_F(ExtensionEventObserverTest, DoesNotDelaySuspendWhenDisabled) {
   const int kPushId = 416753;
   extension_event_observer_->OnBackgroundEventDispatched(
       host, extensions::api::gcm::OnMessage::kEventName, kPushId);
-  power_manager_client_->SendSuspendImminent(
+  FakePowerManagerClient::Get()->SendSuspendImminent(
       power_manager::SuspendImminent_Reason_OTHER);
-  EXPECT_EQ(1, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(
+      1,
+      FakePowerManagerClient::Get()->GetNumPendingSuspendReadinessCallbacks());
 
   extension_event_observer_->SetShouldDelaySuspend(false);
   EXPECT_FALSE(test_api_->MaybeRunSuspendReadinessCallback());
-  EXPECT_EQ(0, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+  EXPECT_EQ(
+      0,
+      FakePowerManagerClient::Get()->GetNumPendingSuspendReadinessCallbacks());
 
   // Test that the ExtensionEventObserver does not delay suspend attempts when
   // it is disabled.
-  power_manager_client_->SendDarkSuspendImminent();
-  EXPECT_EQ(0, power_manager_client_->GetNumPendingSuspendReadinessCallbacks());
+  FakePowerManagerClient::Get()->SendDarkSuspendImminent();
+  EXPECT_EQ(
+      0,
+      FakePowerManagerClient::Get()->GetNumPendingSuspendReadinessCallbacks());
 }
 
 }  // namespace chromeos

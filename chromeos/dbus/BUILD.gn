@@ -73,6 +73,7 @@ component("dbus") {
     "cros_disks_client.h",
     "cryptohome_client.cc",
     "cryptohome_client.h",
+    "dbus_client.h",
     "dbus_client_implementation_type.h",
     "dbus_clients_browser.cc",
     "dbus_clients_browser.h",

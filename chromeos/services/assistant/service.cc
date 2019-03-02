@@ -77,7 +77,7 @@ Service::Service(service_manager::mojom::ServiceRequest request,
   // TODO(xiaohuic): in MASH we will need to setup the dbus client if assistant
   // service runs in its own process.
   chromeos::PowerManagerClient* power_manager_client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+      chromeos::PowerManagerClient::Get();
   power_manager_observer_.Add(power_manager_client);
   power_manager_client->RequestStatusUpdate();
 }

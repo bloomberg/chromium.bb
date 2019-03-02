@@ -20,6 +20,9 @@
 namespace chromeos {
 
 namespace {
+
+FakePowerManagerClient* g_instance = nullptr;
+
 // Minimum power for a USB power source to be classified as AC.
 constexpr double kUsbMinAcWatts = 24;
 
@@ -53,11 +56,10 @@ power_manager::BacklightBrightnessChange_Cause RequestCauseToChangeCause(
 }  // namespace
 
 FakePowerManagerClient::FakePowerManagerClient()
-    : props_(power_manager::PowerSupplyProperties()), weak_ptr_factory_(this) {}
+    : props_(power_manager::PowerSupplyProperties()) {
+  DCHECK(!g_instance);
+  g_instance = this;
 
-FakePowerManagerClient::~FakePowerManagerClient() = default;
-
-void FakePowerManagerClient::Init(dbus::Bus* bus) {
   props_->set_battery_percent(50);
   props_->set_is_calculating_battery_time(false);
   props_->set_battery_state(
@@ -66,6 +68,11 @@ void FakePowerManagerClient::Init(dbus::Bus* bus) {
       power_manager::PowerSupplyProperties_ExternalPower_DISCONNECTED);
   props_->set_battery_time_to_full_sec(0);
   props_->set_battery_time_to_empty_sec(18000);
+}
+
+FakePowerManagerClient::~FakePowerManagerClient() {
+  DCHECK_EQ(g_instance, this);
+  g_instance = nullptr;
 }
 
 void FakePowerManagerClient::AddObserver(Observer* observer) {
@@ -417,6 +424,11 @@ void FakePowerManagerClient::UpdatePowerProperties(
 void FakePowerManagerClient::NotifyObservers() {
   for (auto& observer : observers_)
     observer.PowerChanged(*props_);
+}
+
+FakePowerManagerClient* FakePowerManagerClient::Get() {
+  DCHECK(g_instance);
+  return g_instance;
 }
 
 void FakePowerManagerClient::HandleSuspendReadiness() {

@@ -34,6 +34,10 @@ class ScopedTaskEnvironment;
 }
 }  // namespace base
 
+namespace chromeos {
+class FakePowerManagerClient;
+}
+
 namespace display {
 class Display;
 class DisplayManager;
@@ -174,6 +178,9 @@ class AshTestBase : public testing::Test {
 
   // Convenience method to return the DisplayManager.
   display::DisplayManager* display_manager();
+
+  // Convenience method to return the FakePowerManagerClient.
+  chromeos::FakePowerManagerClient* power_manager_client() const;
 
   // Test if moving a mouse to |point_in_screen| warps it to another
   // display.

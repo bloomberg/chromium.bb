@@ -70,8 +70,7 @@ class PowerEventObserverTest : public AshTestBase {
 };
 
 TEST_F(PowerEventObserverTest, LockBeforeSuspend) {
-  chromeos::PowerManagerClient* client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+  chromeos::PowerManagerClient* client = chromeos::PowerManagerClient::Get();
   ASSERT_EQ(0, client->GetNumPendingSuspendReadinessCallbacks());
 
   // Check that the observer requests a suspend-readiness callback when it hears
@@ -203,8 +202,7 @@ TEST_F(PowerEventObserverTest, DelayResuspendForLockAnimations) {
   SetCanLockScreen(true);
   SetShouldLockScreenAutomatically(true);
 
-  chromeos::PowerManagerClient* client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+  chromeos::PowerManagerClient* client = chromeos::PowerManagerClient::Get();
   observer_->SuspendImminent(power_manager::SuspendImminent_Reason_OTHER);
   EXPECT_EQ(1, client->GetNumPendingSuspendReadinessCallbacks());
 
@@ -236,8 +234,7 @@ TEST_F(PowerEventObserverTest, DelaySuspendForCompositing_MultiDisplay) {
 
   UpdateDisplay("100x100,200x200");
 
-  chromeos::PowerManagerClient* client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+  chromeos::PowerManagerClient* client = chromeos::PowerManagerClient::Get();
   observer_->SuspendImminent(power_manager::SuspendImminent_Reason_OTHER);
   EXPECT_EQ(1, client->GetNumPendingSuspendReadinessCallbacks());
 
@@ -285,8 +282,7 @@ TEST_F(PowerEventObserverTest,
 
   UpdateDisplay("100x100,200x200");
 
-  chromeos::PowerManagerClient* client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+  chromeos::PowerManagerClient* client = chromeos::PowerManagerClient::Get();
   observer_->SuspendImminent(power_manager::SuspendImminent_Reason_OTHER);
   EXPECT_EQ(1, client->GetNumPendingSuspendReadinessCallbacks());
 
@@ -322,8 +318,7 @@ TEST_F(PowerEventObserverTest, CompositorNotVisibleAtLockAnimationsComplete) {
   SetCanLockScreen(true);
   SetShouldLockScreenAutomatically(true);
 
-  chromeos::PowerManagerClient* client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+  chromeos::PowerManagerClient* client = chromeos::PowerManagerClient::Get();
   observer_->SuspendImminent(power_manager::SuspendImminent_Reason_OTHER);
   EXPECT_EQ(1, client->GetNumPendingSuspendReadinessCallbacks());
 
@@ -389,8 +384,7 @@ TEST_F(PowerEventObserverTest, ImmediateLockAnimations) {
 // another wallpaper after the screen is locked).
 TEST_F(PowerEventObserverTest,
        DisplaysNotReadyForSuspendUntilWallpaperAnimationEnds) {
-  chromeos::PowerManagerClient* client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+  chromeos::PowerManagerClient* client = chromeos::PowerManagerClient::Get();
   ASSERT_EQ(0, client->GetNumPendingSuspendReadinessCallbacks());
 
   SetCanLockScreen(true);
@@ -440,8 +434,7 @@ TEST_F(PowerEventObserverTest,
 // Tests that animated wallpaper changes will be finished immediately when
 // suspend starts (if the screen was locked when suspend started).
 TEST_F(PowerEventObserverTest, EndWallpaperAnimationOnSuspendWhileLocked) {
-  chromeos::PowerManagerClient* client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+  chromeos::PowerManagerClient* client = chromeos::PowerManagerClient::Get();
   ASSERT_EQ(0, client->GetNumPendingSuspendReadinessCallbacks());
 
   SetCanLockScreen(true);
@@ -482,8 +475,7 @@ TEST_F(PowerEventObserverTest, EndWallpaperAnimationOnSuspendWhileLocked) {
 // Tests that animated wallpaper changes will be finished immediately when
 // suspend starts (if the screen lock started before suspend).
 TEST_F(PowerEventObserverTest, EndWallpaperAnimationOnSuspendWhileLocking) {
-  chromeos::PowerManagerClient* client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+  chromeos::PowerManagerClient* client = chromeos::PowerManagerClient::Get();
   ASSERT_EQ(0, client->GetNumPendingSuspendReadinessCallbacks());
 
   SetCanLockScreen(true);
@@ -525,8 +517,7 @@ TEST_F(PowerEventObserverTest, EndWallpaperAnimationOnSuspendWhileLocking) {
 // Tests that animated wallpaper changes will be finished immediately when
 // suspend starts and causes a screen lock.
 TEST_F(PowerEventObserverTest, EndWallpaperAnimationAfterLockDueToSuspend) {
-  chromeos::PowerManagerClient* client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+  chromeos::PowerManagerClient* client = chromeos::PowerManagerClient::Get();
   ASSERT_EQ(0, client->GetNumPendingSuspendReadinessCallbacks());
 
   SetCanLockScreen(true);
@@ -564,8 +555,7 @@ TEST_F(PowerEventObserverTest, EndWallpaperAnimationAfterLockDueToSuspend) {
 // Tests that removing a display while power event observer is waiting for the
 // wallpaper animation does not cause suspend to hang.
 TEST_F(PowerEventObserverTest, DisplayRemovedDuringWallpaperAnimation) {
-  chromeos::PowerManagerClient* client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+  chromeos::PowerManagerClient* client = chromeos::PowerManagerClient::Get();
   ASSERT_EQ(0, client->GetNumPendingSuspendReadinessCallbacks());
 
   SetCanLockScreen(true);

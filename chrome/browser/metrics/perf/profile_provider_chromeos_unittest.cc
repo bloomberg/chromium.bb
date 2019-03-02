@@ -18,7 +18,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/metrics/perf/heap_collector.h"
 #include "chrome/browser/metrics/perf/metric_collector.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
@@ -130,9 +129,9 @@ class ProfileProviderTest : public testing::Test {
 
   void SetUp() override {
     // ProfileProvider requires chromeos::LoginState and
-    // chromeos::DBusThreadManager to be initialized.
+    // chromeos::PowerManagerClient to be initialized.
     chromeos::LoginState::Initialize();
-    chromeos::DBusThreadManager::Initialize();
+    chromeos::PowerManagerClient::Initialize();
 
     profile_provider_ = std::make_unique<TestProfileProvider>();
     profile_provider_->Init();
@@ -140,8 +139,7 @@ class ProfileProviderTest : public testing::Test {
 
   void TearDown() override {
     profile_provider_.reset();
-    chromeos::DBusThreadManager::Shutdown();
-    chromeos::LoginState::Shutdown();
+    chromeos::PowerManagerClient::Shutdown();
   }
 
  protected:
@@ -302,13 +300,13 @@ class ProfileProviderFeatureParamsTest : public testing::Test {
 
   void SetUp() override {
     // ProfileProvider requires chromeos::LoginState and
-    // chromeos::DBusThreadManager to be initialized.
+    // chromeos::PowerManagerClient to be initialized.
     chromeos::LoginState::Initialize();
-    chromeos::DBusThreadManager::Initialize();
+    chromeos::PowerManagerClient::Initialize();
   }
 
   void TearDown() override {
-    chromeos::DBusThreadManager::Shutdown();
+    chromeos::PowerManagerClient::Shutdown();
     chromeos::LoginState::Shutdown();
   }
 

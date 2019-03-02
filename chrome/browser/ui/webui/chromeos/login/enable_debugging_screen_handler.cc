@@ -225,7 +225,7 @@ void EnableDebuggingScreenHandler::OnRemoveRootfsVerification(bool success) {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kDebuggingFeaturesRequested, true);
   prefs->CommitPendingWrite();
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
+  chromeos::PowerManagerClient::Get()->RequestRestart(
       power_manager::REQUEST_RESTART_OTHER,
       "login debugging screen removing rootfs verification");
 }

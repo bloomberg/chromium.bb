@@ -88,6 +88,7 @@ AshService::~AshService() {
   device::BluetoothAdapterFactory::Shutdown();
   bluez::BluezDBusManager::Shutdown();
   chromeos::PowerPolicyController::Shutdown();
+  chromeos::PowerManagerClient::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
 
   // |gpu_host_| must be completely destroyed before Env as GpuHost depends on
@@ -155,8 +156,9 @@ void AshService::InitializeDBusClients() {
   dbus::Bus* bus = chromeos::DBusThreadManager::Get()->GetSystemBus();
   chromeos::SystemClockClient::Initialize(bus);
 
+  chromeos::PowerManagerClient::Initialize(bus);
   chromeos::PowerPolicyController::Initialize(
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
+      chromeos::PowerManagerClient::Get());
 
   // TODO(ortuno): Eliminate BluezDBusManager code from Ash, crbug.com/830893.
   bluez::BluezDBusManager::Initialize();

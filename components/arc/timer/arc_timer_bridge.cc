@@ -141,8 +141,7 @@ void ArcTimerBridge::CreateTimers(
     requests.emplace_back(clock_id, std::move(expiration_fd));
     clock_ids.emplace_back(clock_id);
   }
-
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->CreateArcTimers(
+  chromeos::PowerManagerClient::Get()->CreateArcTimers(
       kTag, std::move(requests),
       base::BindOnce(&ArcTimerBridge::OnCreateArcTimers,
                      weak_ptr_factory_.GetWeakPtr(), std::move(clock_ids),
@@ -158,13 +157,13 @@ void ArcTimerBridge::StartTimer(clockid_t clock_id,
     std::move(callback).Run(mojom::ArcTimerResult::FAILURE);
     return;
   }
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->StartArcTimer(
+  chromeos::PowerManagerClient::Get()->StartArcTimer(
       timer_id.value(), absolute_expiration_time,
       base::BindOnce(&OnStartTimer, std::move(callback)));
 }
 
 void ArcTimerBridge::DeleteArcTimers() {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->DeleteArcTimers(
+  chromeos::PowerManagerClient::Get()->DeleteArcTimers(
       kTag, base::BindOnce(&ArcTimerBridge::OnDeleteArcTimers,
                            weak_ptr_factory_.GetWeakPtr()));
 }

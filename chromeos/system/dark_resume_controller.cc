@@ -5,7 +5,6 @@
 
 #include <utility>
 
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 
@@ -23,20 +22,17 @@ DarkResumeController::DarkResumeController(
       weak_ptr_factory_(this) {
   connector_->BindInterface(device::mojom::kServiceName,
                             mojo::MakeRequest(&wake_lock_provider_));
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-      this);
+  PowerManagerClient::Get()->AddObserver(this);
 }
 
 DarkResumeController::~DarkResumeController() {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-      this);
+  PowerManagerClient::Get()->RemoveObserver(this);
 }
 
 void DarkResumeController::DarkSuspendImminent() {
   DVLOG(1) << __func__;
-  suspend_readiness_cb_ = chromeos::DBusThreadManager::Get()
-                              ->GetPowerManagerClient()
-                              ->GetSuspendReadinessCallback(FROM_HERE);
+  suspend_readiness_cb_ =
+      PowerManagerClient::Get()->GetSuspendReadinessCallback(FROM_HERE);
   // Schedule task that will check for any wake locks acquired in dark resume.
   DCHECK(!wake_lock_check_timer_.IsRunning());
   wake_lock_check_timer_.Start(

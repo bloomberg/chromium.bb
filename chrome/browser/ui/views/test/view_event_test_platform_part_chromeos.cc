@@ -53,11 +53,12 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
     ui::ContextFactory* context_factory,
     ui::ContextFactoryPrivate* context_factory_private) {
   chromeos::DBusThreadManager::Initialize();
+  chromeos::PowerManagerClient::Initialize();
   // ash::Shell::CreateInstance needs chromeos::PowerPolicyController
   // initialized. In classic ash, it is initialized in chrome process. In mash,
   // it is initialized by window manager service.
   chromeos::PowerPolicyController::Initialize(
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
+      chromeos::PowerManagerClient::Get());
   bluez::BluezDBusManager::Initialize();
   chromeos::CrasAudioHandler::InitializeForTesting();
   chromeos::NetworkHandler::Initialize();

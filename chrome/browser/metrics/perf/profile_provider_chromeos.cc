@@ -42,8 +42,7 @@ ProfileProvider::ProfileProvider() : weak_factory_(this) {
 
 ProfileProvider::~ProfileProvider() {
   chromeos::LoginState::Get()->RemoveObserver(this);
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
 }
 
 void ProfileProvider::Init() {
@@ -65,8 +64,7 @@ void ProfileProvider::Init() {
   chromeos::LoginState::Get()->AddObserver(this);
 
   // Register as an observer of power manager events.
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->AddObserver(this);
 
   // Register as an observer of session restore.
   on_session_restored_callback_subscription_ =

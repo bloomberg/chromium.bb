@@ -52,7 +52,6 @@ class MediaAnalyticsClient;
 class ModemMessagingClient;
 class OobeConfigurationClient;
 class PermissionBrokerClient;
-class PowerManagerClient;
 class RuntimeProbeClient;
 class SeneschalClient;
 class SessionManagerClient;
@@ -160,7 +159,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager {
   ModemMessagingClient* GetModemMessagingClient();
   OobeConfigurationClient* GetOobeConfigurationClient();
   PermissionBrokerClient* GetPermissionBrokerClient();
-  PowerManagerClient* GetPowerManagerClient();
   RuntimeProbeClient* GetRuntimeProbeClient();
   SeneschalClient* GetSeneschalClient();
   SessionManagerClient* GetSessionManagerClient();
@@ -222,7 +220,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManagerSetter {
   void SetMediaAnalyticsClient(std::unique_ptr<MediaAnalyticsClient> client);
   void SetPermissionBrokerClient(
       std::unique_ptr<PermissionBrokerClient> client);
-  void SetPowerManagerClient(std::unique_ptr<PowerManagerClient> client);
   void SetSeneschalClient(std::unique_ptr<SeneschalClient> client);
   void SetRuntimeProbeClient(std::unique_ptr<RuntimeProbeClient> client);
   void SetSessionManagerClient(std::unique_ptr<SessionManagerClient> client);

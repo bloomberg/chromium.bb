@@ -46,10 +46,10 @@ void ShutdownController::ShutDownOrReboot(ShutdownReason reason) {
   std::string description = base::StringPrintf("UI request from ash: %s",
                                                ShutdownReasonToString(reason));
   if (reboot_on_shutdown_) {
-    DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
+    chromeos::PowerManagerClient::Get()->RequestRestart(
         power_manager::REQUEST_RESTART_FOR_USER, description);
   } else {
-    DBusThreadManager::Get()->GetPowerManagerClient()->RequestShutdown(
+    chromeos::PowerManagerClient::Get()->RequestShutdown(
         power_manager::REQUEST_SHUTDOWN_FOR_USER, description);
   }
 }

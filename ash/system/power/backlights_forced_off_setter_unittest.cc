@@ -15,7 +15,6 @@
 #include "ash/touch/touch_devices_controller.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/display/manager/display_manager.h"
@@ -71,12 +70,6 @@ class BacklightsForcedOffSetterTest : public AshTestBase {
   ~BacklightsForcedOffSetterTest() override = default;
 
   void SetUp() override {
-    auto power_manager_client =
-        std::make_unique<chromeos::FakePowerManagerClient>();
-    power_manager_client_ = power_manager_client.get();
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
-        std::move(power_manager_client));
-
     AshTestBase::SetUp();
 
     backlights_forced_off_setter_ =
@@ -89,7 +82,6 @@ class BacklightsForcedOffSetterTest : public AshTestBase {
     backlights_forced_off_observer_.reset();
     backlights_forced_off_setter_.reset();
     AshTestBase::TearDown();
-    chromeos::DBusThreadManager::Shutdown();
   }
 
   void ResetBacklightsForcedOffSetter() {
@@ -98,9 +90,6 @@ class BacklightsForcedOffSetterTest : public AshTestBase {
   }
 
  protected:
-  // Owned by DBusThreadManager.
-  chromeos::FakePowerManagerClient* power_manager_client_ = nullptr;
-
   std::unique_ptr<BacklightsForcedOffSetter> backlights_forced_off_setter_;
   std::unique_ptr<TestObserver> backlights_forced_off_observer_;
 
@@ -109,52 +98,52 @@ class BacklightsForcedOffSetterTest : public AshTestBase {
 };
 
 TEST_F(BacklightsForcedOffSetterTest, SingleForcedOffRequest) {
-  ASSERT_FALSE(power_manager_client_->backlights_forced_off());
+  ASSERT_FALSE(power_manager_client()->backlights_forced_off());
 
   std::unique_ptr<ScopedBacklightsForcedOff> scoped_forced_off =
       backlights_forced_off_setter_->ForceBacklightsOff();
 
-  EXPECT_TRUE(power_manager_client_->backlights_forced_off());
+  EXPECT_TRUE(power_manager_client()->backlights_forced_off());
   EXPECT_EQ(std::vector<bool>({true}),
             backlights_forced_off_observer_->forced_off_states());
   backlights_forced_off_observer_->ClearForcedOffStates();
 
   scoped_forced_off.reset();
 
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(power_manager_client()->backlights_forced_off());
   EXPECT_EQ(std::vector<bool>({false}),
             backlights_forced_off_observer_->forced_off_states());
 }
 
 TEST_F(BacklightsForcedOffSetterTest, BacklightsForcedOffSetterDeleted) {
-  ASSERT_FALSE(power_manager_client_->backlights_forced_off());
+  ASSERT_FALSE(power_manager_client()->backlights_forced_off());
 
   std::unique_ptr<ScopedBacklightsForcedOff> scoped_forced_off =
       backlights_forced_off_setter_->ForceBacklightsOff();
 
-  EXPECT_TRUE(power_manager_client_->backlights_forced_off());
+  EXPECT_TRUE(power_manager_client()->backlights_forced_off());
   EXPECT_EQ(std::vector<bool>({true}),
             backlights_forced_off_observer_->forced_off_states());
   backlights_forced_off_observer_->ClearForcedOffStates();
 
   ResetBacklightsForcedOffSetter();
 
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(power_manager_client()->backlights_forced_off());
 
   // Verify that deleting scoped forced off request does not affect
   // power manager state (nor cause a crash).
   scoped_forced_off.reset();
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(power_manager_client()->backlights_forced_off());
 }
 
 TEST_F(BacklightsForcedOffSetterTest,
        OverlappingRequests_SecondRequestResetFirst) {
-  ASSERT_FALSE(power_manager_client_->backlights_forced_off());
+  ASSERT_FALSE(power_manager_client()->backlights_forced_off());
 
   std::unique_ptr<ScopedBacklightsForcedOff> scoped_forced_off_1 =
       backlights_forced_off_setter_->ForceBacklightsOff();
 
-  EXPECT_TRUE(power_manager_client_->backlights_forced_off());
+  EXPECT_TRUE(power_manager_client()->backlights_forced_off());
   EXPECT_EQ(std::vector<bool>({true}),
             backlights_forced_off_observer_->forced_off_states());
   backlights_forced_off_observer_->ClearForcedOffStates();
@@ -162,29 +151,29 @@ TEST_F(BacklightsForcedOffSetterTest,
   std::unique_ptr<ScopedBacklightsForcedOff> scoped_forced_off_2 =
       backlights_forced_off_setter_->ForceBacklightsOff();
 
-  EXPECT_TRUE(power_manager_client_->backlights_forced_off());
+  EXPECT_TRUE(power_manager_client()->backlights_forced_off());
   EXPECT_TRUE(backlights_forced_off_observer_->forced_off_states().empty());
 
   scoped_forced_off_2.reset();
 
-  EXPECT_TRUE(power_manager_client_->backlights_forced_off());
+  EXPECT_TRUE(power_manager_client()->backlights_forced_off());
   EXPECT_TRUE(backlights_forced_off_observer_->forced_off_states().empty());
 
   scoped_forced_off_1.reset();
 
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(power_manager_client()->backlights_forced_off());
   EXPECT_EQ(std::vector<bool>({false}),
             backlights_forced_off_observer_->forced_off_states());
 }
 
 TEST_F(BacklightsForcedOffSetterTest,
        OverlappingRequests_FirstRequestResetFirst) {
-  ASSERT_FALSE(power_manager_client_->backlights_forced_off());
+  ASSERT_FALSE(power_manager_client()->backlights_forced_off());
 
   std::unique_ptr<ScopedBacklightsForcedOff> scoped_forced_off_1 =
       backlights_forced_off_setter_->ForceBacklightsOff();
 
-  EXPECT_TRUE(power_manager_client_->backlights_forced_off());
+  EXPECT_TRUE(power_manager_client()->backlights_forced_off());
   EXPECT_EQ(std::vector<bool>({true}),
             backlights_forced_off_observer_->forced_off_states());
   backlights_forced_off_observer_->ClearForcedOffStates();
@@ -192,7 +181,7 @@ TEST_F(BacklightsForcedOffSetterTest,
   std::unique_ptr<ScopedBacklightsForcedOff> scoped_forced_off_2 =
       backlights_forced_off_setter_->ForceBacklightsOff();
 
-  EXPECT_TRUE(power_manager_client_->backlights_forced_off());
+  EXPECT_TRUE(power_manager_client()->backlights_forced_off());
   EXPECT_TRUE(backlights_forced_off_observer_->forced_off_states().empty());
 
   scoped_forced_off_1.reset();
@@ -201,7 +190,7 @@ TEST_F(BacklightsForcedOffSetterTest,
 
   scoped_forced_off_2.reset();
 
-  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(power_manager_client()->backlights_forced_off());
   EXPECT_EQ(std::vector<bool>({false}),
             backlights_forced_off_observer_->forced_off_states());
 }
@@ -256,7 +245,7 @@ TEST_F(BacklightsForcedOffSetterTest,
   change.set_cause(power_manager::BacklightBrightnessChange_Cause_OTHER);
   change.set_percent(0.0);
 
-  power_manager_client_->SendScreenBrightnessChanged(change);
+  power_manager_client()->SendScreenBrightnessChanged(change);
 
   // The touchscreens should be enabled.
   EXPECT_TRUE(Shell::Get()->touch_devices_controller()->GetTouchscreenEnabled(
@@ -295,7 +284,7 @@ TEST_F(BacklightsForcedOffSetterTest, TouchscreensDisableOnBrightnessChange) {
   change.set_cause(power_manager::BacklightBrightnessChange_Cause_OTHER);
   change.set_percent(0.0);
 
-  power_manager_client_->SendScreenBrightnessChanged(change);
+  power_manager_client()->SendScreenBrightnessChanged(change);
 
   // The touchscreens should be disabled.
   EXPECT_FALSE(Shell::Get()->touch_devices_controller()->GetTouchscreenEnabled(

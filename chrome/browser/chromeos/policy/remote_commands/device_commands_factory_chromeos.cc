@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_start_crd_session_job.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_wipe_users_job.h"
 #include "chrome/browser/chromeos/policy/remote_commands/screenshot_delegate.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
@@ -31,7 +31,7 @@ DeviceCommandsFactoryChromeOS::BuildJobForType(em::RemoteCommand_Type type,
   switch (type) {
     case em::RemoteCommand_Type_DEVICE_REBOOT:
       return std::make_unique<DeviceCommandRebootJob>(
-          chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
+          chromeos::PowerManagerClient::Get());
     case em::RemoteCommand_Type_DEVICE_SCREENSHOT:
       return std::make_unique<DeviceCommandScreenshotJob>(
           std::make_unique<ScreenshotDelegate>());

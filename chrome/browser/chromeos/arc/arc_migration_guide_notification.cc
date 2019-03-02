@@ -44,9 +44,7 @@ void ShowArcMigrationGuideNotification(Profile* profile) {
       multi_user_util::GetAccountIdFromProfile(profile).GetUserEmail();
 
   base::Optional<power_manager::PowerSupplyProperties> power =
-      chromeos::DBusThreadManager::Get()
-          ->GetPowerManagerClient()
-          ->GetLastStatus();
+      chromeos::PowerManagerClient::Get()->GetLastStatus();
   const bool is_low_battery =
       power &&
       power->battery_state() !=

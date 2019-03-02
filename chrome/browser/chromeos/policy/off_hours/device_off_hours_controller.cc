@@ -32,30 +32,24 @@ namespace off_hours {
 DeviceOffHoursController::DeviceOffHoursController()
     : timer_(std::make_unique<base::OneShotTimer>()),
       clock_(base::DefaultClock::GetInstance()) {
-  // IsInitialized() check is used for testing. Otherwise it has to be already
-  // initialized.
-  if (chromeos::DBusThreadManager::IsInitialized()) {
-    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-        this);
-    auto* system_clock_client = chromeos::SystemClockClient::Get();
-    if (system_clock_client) {
-      system_clock_client->AddObserver(this);
-      system_clock_client->WaitForServiceToBeAvailable(
-          base::Bind(&DeviceOffHoursController::SystemClockInitiallyAvailable,
-                     weak_ptr_factory_.GetWeakPtr()));
-    }
+  auto* system_clock_client = chromeos::SystemClockClient::Get();
+  if (system_clock_client) {
+    system_clock_client->AddObserver(this);
+    system_clock_client->WaitForServiceToBeAvailable(
+        base::Bind(&DeviceOffHoursController::SystemClockInitiallyAvailable,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
+
+  if (chromeos::PowerManagerClient::Get())
+    chromeos::PowerManagerClient::Get()->AddObserver(this);
 }
 
 DeviceOffHoursController::~DeviceOffHoursController() {
-  // IsInitialized() check is used for testing. Otherwise it has to be already
-  // initialized.
-  if (chromeos::DBusThreadManager::IsInitialized()) {
-    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-        this);
-    if (chromeos::SystemClockClient::Get())
-      chromeos::SystemClockClient::Get()->RemoveObserver(this);
-  }
+  if (chromeos::SystemClockClient::Get())
+    chromeos::SystemClockClient::Get()->RemoveObserver(this);
+
+  if (chromeos::PowerManagerClient::Get())
+    chromeos::PowerManagerClient::Get()->RemoveObserver(this);
 }
 
 void DeviceOffHoursController::AddObserver(Observer* observer) {

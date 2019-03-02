@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -60,19 +59,17 @@ class NativeTimerTest : public testing::Test {
  public:
   NativeTimerTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
-    fake_power_manager_client_ = new chromeos::FakePowerManagerClient;
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
-        base::WrapUnique(fake_power_manager_client_));
-  }
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
 
   ~NativeTimerTest() override = default;
 
+  // testing::Test:
+  void SetUp() override { PowerManagerClient::Initialize(); }
+
+  void TearDown() override { PowerManagerClient::Shutdown(); }
+
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-
-  // Owned by chromeos::DBusThreadManager.
-  chromeos::FakePowerManagerClient* fake_power_manager_client_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeTimerTest);

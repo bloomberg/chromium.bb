@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/power/power_data_collector.h"
 
 #include "base/logging.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
+#include "chromeos/dbus/power_manager_client.h"
 
 namespace chromeos {
 
@@ -22,14 +22,14 @@ const int PowerDataCollector::kSampleTimeLimitSec = 24 * 60 * 60;
 // static
 void PowerDataCollector::Initialize() {
   // Check that power data collector is initialized only after the
-  // DBusThreadManager is initialized.
-  CHECK(DBusThreadManager::Get());
+  // PowerManagerClient is initialized.
+  CHECK(PowerManagerClient::Get());
   CHECK(g_power_data_collector == NULL);
   g_power_data_collector = new PowerDataCollector(true);
 }
 
 void PowerDataCollector::InitializeForTesting() {
-  CHECK(DBusThreadManager::Get());
+  CHECK(PowerManagerClient::Get());
   CHECK(g_power_data_collector == NULL);
   g_power_data_collector = new PowerDataCollector(false);
 }
@@ -67,15 +67,13 @@ void PowerDataCollector::SuspendDone(const base::TimeDelta& sleep_duration) {
 }
 
 PowerDataCollector::PowerDataCollector(const bool start_cpu_data_collector) {
-  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+  PowerManagerClient::Get()->AddObserver(this);
   if (start_cpu_data_collector)
     cpu_data_collector_.Start();
 }
 
 PowerDataCollector::~PowerDataCollector() {
-  DBusThreadManager* dbus_manager = DBusThreadManager::Get();
-  CHECK(dbus_manager);
-  dbus_manager->GetPowerManagerClient()->RemoveObserver(this);
+  PowerManagerClient::Get()->RemoveObserver(this);
 }
 
 PowerDataCollector::PowerSupplySample::PowerSupplySample()

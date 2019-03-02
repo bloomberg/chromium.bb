@@ -161,9 +161,8 @@ AutomaticRebootManager::AutomaticRebootManager(const base::TickClock* clock)
   notification_registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
       content::NotificationService::AllSources());
 
-  DBusThreadManager* dbus_thread_manager = DBusThreadManager::Get();
-  dbus_thread_manager->GetPowerManagerClient()->AddObserver(this);
-  dbus_thread_manager->GetUpdateEngineClient()->AddObserver(this);
+  PowerManagerClient::Get()->AddObserver(this);
+  DBusThreadManager::Get()->GetUpdateEngineClient()->AddObserver(this);
 
   // If no user is logged in, a reboot may be performed whenever the user is
   // idle. Start listening for user activity to determine whether the user is
@@ -189,9 +188,8 @@ AutomaticRebootManager::~AutomaticRebootManager() {
   for (auto& observer : observers_)
     observer.WillDestroyAutomaticRebootManager();
 
-  DBusThreadManager* dbus_thread_manager = DBusThreadManager::Get();
-  dbus_thread_manager->GetPowerManagerClient()->RemoveObserver(this);
-  dbus_thread_manager->GetUpdateEngineClient()->RemoveObserver(this);
+  PowerManagerClient::Get()->RemoveObserver(this);
+  DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
   if (ui::UserActivityDetector::Get())
     ui::UserActivityDetector::Get()->RemoveObserver(this);
 }
@@ -415,7 +413,7 @@ void AutomaticRebootManager::Reboot() {
   grace_start_timer_.reset();
   grace_end_timer_.reset();
   VLOG(1) << "Rebooting immediately.";
-  DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
+  PowerManagerClient::Get()->RequestRestart(
       power_manager::REQUEST_RESTART_OTHER, "automatic reboot manager");
 }
 

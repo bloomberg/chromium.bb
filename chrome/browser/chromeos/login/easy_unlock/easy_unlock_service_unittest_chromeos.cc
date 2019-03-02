@@ -28,8 +28,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
-#include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "components/account_id/account_id.h"
@@ -113,12 +111,6 @@ class EasyUnlockServiceTest : public testing::Test {
         .WillRepeatedly(testing::Invoke(
             this, &EasyUnlockServiceTest::is_bluetooth_adapter_present));
 
-    std::unique_ptr<DBusThreadManagerSetter> dbus_setter =
-        DBusThreadManager::GetSetterForTesting();
-    power_manager_client_ = new FakePowerManagerClient;
-    dbus_setter->SetPowerManagerClient(
-        std::unique_ptr<PowerManagerClient>(power_manager_client_));
-
     ON_CALL(*mock_user_manager_, Shutdown()).WillByDefault(Return());
     ON_CALL(*mock_user_manager_, IsLoggedInAsUserWithGaiaAccount())
         .WillByDefault(Return(true));
@@ -146,10 +138,6 @@ class EasyUnlockServiceTest : public testing::Test {
 
   bool is_bluetooth_adapter_present() const {
     return is_bluetooth_adapter_present_;
-  }
-
-  FakePowerManagerClient* power_manager_client() {
-    return power_manager_client_;
   }
 
   // Sets up a test profile using the provided |email|. Will generate a unique
@@ -194,10 +182,7 @@ class EasyUnlockServiceTest : public testing::Test {
   std::string secondary_profile_gaia_id_;
   MockUserManager* mock_user_manager_;
 
- private:
   user_manager::ScopedUserManager scoped_user_manager_;
-
-  FakePowerManagerClient* power_manager_client_;
 
   bool is_bluetooth_adapter_present_;
   scoped_refptr<testing::NiceMock<MockBluetoothAdapter>> mock_adapter_;
@@ -205,6 +190,7 @@ class EasyUnlockServiceTest : public testing::Test {
   // PrefService which contains the browser process' local storage.
   TestingPrefServiceSimple local_pref_service_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockServiceTest);
 };
 

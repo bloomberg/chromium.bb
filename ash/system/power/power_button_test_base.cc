@@ -33,8 +33,6 @@ void PowerButtonTestBase::SetUp() {
   // This also initializes DBusThreadManager.
   std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
       chromeos::DBusThreadManager::GetSetterForTesting();
-  power_manager_client_ = new chromeos::FakePowerManagerClient();
-  dbus_setter->SetPowerManagerClient(base::WrapUnique(power_manager_client_));
   session_manager_client_ = new chromeos::FakeSessionManagerClient;
   dbus_setter->SetSessionManagerClient(
       base::WrapUnique(session_manager_client_));

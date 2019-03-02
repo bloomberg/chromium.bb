@@ -725,7 +725,7 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
 
 void HandleSuspend() {
   base::RecordAction(UserMetricsAction("Accel_Suspend"));
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestSuspend();
+  chromeos::PowerManagerClient::Get()->RequestSuspend();
 }
 
 bool CanHandleCycleUser() {
