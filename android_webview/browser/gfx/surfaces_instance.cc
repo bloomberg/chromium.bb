@@ -67,8 +67,8 @@ SurfacesInstance::SurfacesInstance()
   // Webview does not own the surface so should not clear it.
   settings.should_clear_root_render_pass = false;
 
-  settings.use_skia_renderer =
-      features::IsUsingSkiaRenderer() || features::IsUsingSkiaRendererNonDDL();
+  settings.use_skia_renderer = features::IsUsingSkiaRenderer();
+  settings.use_skia_renderer_non_ddl = features::IsUsingSkiaRendererNonDDL();
 
   // The SharedBitmapManager is null as we do not support or use software
   // compositing on Android.
@@ -85,7 +85,7 @@ SurfacesInstance::SurfacesInstance()
 
   std::unique_ptr<viz::OutputSurface> output_surface;
   viz::SkiaOutputSurface* skia_output_surface = nullptr;
-  if (settings.use_skia_renderer) {
+  if (settings.use_skia_renderer || settings.use_skia_renderer_non_ddl) {
     auto* task_executor = DeferredGpuCommandService::GetInstance();
     if (!shared_context_state_) {
       auto surface = base::MakeRefCounted<AwGLSurface>();
@@ -103,11 +103,11 @@ SurfacesInstance::SurfacesInstance()
                                            .enabled_gpu_driver_bug_workarounds),
           nullptr /* gr_shader_cache */);
     }
-    if (features::IsUsingSkiaRendererNonDDL()) {
+    if (settings.use_skia_renderer_non_ddl) {
       output_surface = std::make_unique<viz::SkiaOutputSurfaceImplNonDDL>(
           base::MakeRefCounted<AwGLSurface>(), shared_context_state_,
-          task_executor->mailbox_manager(),
-          task_executor->sync_point_manager());
+          task_executor->mailbox_manager(), task_executor->sync_point_manager(),
+          false /* need_swapbuffers_ack */);
     } else {
       output_surface = std::make_unique<viz::SkiaOutputSurfaceImpl>(
           task_executor, base::MakeRefCounted<AwGLSurface>(),

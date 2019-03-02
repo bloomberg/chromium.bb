@@ -52,14 +52,17 @@ SkiaOutputSurfaceImplNonDDL::SkiaOutputSurfaceImplNonDDL(
     scoped_refptr<gl::GLSurface> gl_surface,
     scoped_refptr<gpu::SharedContextState> shared_context_state,
     gpu::MailboxManager* mailbox_manager,
-    gpu::SyncPointManager* sync_point_manager)
+    gpu::SyncPointManager* sync_point_manager,
+    bool need_swapbuffers_ack)
     : gl_surface_(std::move(gl_surface)),
       shared_context_state_(std::move(shared_context_state)),
       mailbox_manager_(mailbox_manager),
       sync_point_order_data_(sync_point_manager->CreateSyncPointOrderData()),
       sync_point_client_state_(
           CreateSyncPointClientState(sync_point_manager,
-                                     sync_point_order_data_->sequence_id())) {}
+                                     sync_point_order_data_->sequence_id())),
+      need_swapbuffers_ack_(need_swapbuffers_ack),
+      weak_ptr_factory_(this) {}
 
 SkiaOutputSurfaceImplNonDDL::~SkiaOutputSurfaceImplNonDDL() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -102,6 +105,15 @@ void SkiaOutputSurfaceImplNonDDL::Reshape(const gfx::Size& size,
   reshape_color_space_ = color_space;
   reshape_has_alpha_ = has_alpha;
   reshape_use_stencil_ = use_stencil;
+
+  // Conversion to GLSurface's color space follows the same logic as in
+  // gl::GetGLColorSpace().
+  gl::GLSurface::ColorSpace surface_color_space =
+      color_space.IsHDR() ? gl::GLSurface::ColorSpace::SCRGB_LINEAR
+                          : gl::GLSurface::ColorSpace::UNSPECIFIED;
+  gl_surface_->Resize(size, device_scale_factor, surface_color_space,
+                      has_alpha);
+
   backing_framebuffer_object_ = gl_surface_->GetBackingFramebufferObject();
 
   SkSurfaceProps surface_props =
@@ -290,7 +302,10 @@ gpu::SyncToken SkiaOutputSurfaceImplNonDDL::ReleasePromiseSkImages(
 void SkiaOutputSurfaceImplNonDDL::SkiaSwapBuffers(OutputSurfaceFrame frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   gl_surface_->SwapBuffers(
-      base::DoNothing::Once<const gfx::PresentationFeedback&>());
+      base::BindOnce(&SkiaOutputSurfaceImplNonDDL::BufferPresented,
+                     weak_ptr_factory_.GetWeakPtr()));
+  if (need_swapbuffers_ack_)
+    client_->DidReceiveSwapBuffersAck();
 }
 
 SkCanvas* SkiaOutputSurfaceImplNonDDL::BeginPaintRenderPass(
@@ -417,6 +432,12 @@ bool SkiaOutputSurfaceImplNonDDL::GetGrBackendTexture(
   return gpu::GetGrBackendTexture(gl_version_info, texture_base->target(),
                                   metadata.size, texture_base->service_id(),
                                   metadata.resource_format, backend_texture);
+}
+
+void SkiaOutputSurfaceImplNonDDL::BufferPresented(
+    const gfx::PresentationFeedback& feedback) {
+  if (need_swapbuffers_ack_)
+    client_->DidReceivePresentationFeedback(feedback);
 }
 
 void SkiaOutputSurfaceImplNonDDL::ContextLost() {

@@ -18,17 +18,22 @@
 #include "components/viz/service/display_embedder/gl_output_surface_offscreen.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
+#include "components/viz/service/display_embedder/skia_output_surface_impl_non_ddl.h"
 #include "components/viz/service/display_embedder/software_output_surface.h"
 #include "components/viz/service/display_embedder/viz_process_context_provider.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/service/image_factory.h"
+#include "gpu/command_buffer/service/mailbox_manager_factory.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
+#include "gpu/ipc/service/image_transport_surface.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/init/gl_factory.h"
 
 #if defined(OS_WIN)
 #include "components/viz/service/display_embedder/gl_output_surface_win.h"
@@ -124,15 +129,43 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     output_surface = std::make_unique<SoftwareOutputSurface>(
         CreateSoftwareOutputDeviceForPlatform(surface_handle, display_client),
         synthetic_begin_frame_source);
-  } else if (renderer_settings.use_skia_renderer) {
+  } else if (renderer_settings.use_skia_renderer ||
+             renderer_settings.use_skia_renderer_non_ddl) {
 #if defined(OS_MACOSX) || defined(OS_WIN)
-    // TODO(penghuang): Support DDL for all platforms.
+    // TODO(penghuang): Support SkiaRenderer for all platforms.
     NOTIMPLEMENTED();
     return nullptr;
 #else
-    output_surface = std::make_unique<SkiaOutputSurfaceImpl>(
-        gpu_service_impl_, surface_handle, synthetic_begin_frame_source,
-        renderer_settings.show_overdraw_feedback);
+    if (renderer_settings.use_skia_renderer_non_ddl) {
+      DCHECK_EQ(gl::GetGLImplementation(), gl::kGLImplementationEGLGLES2)
+          << "SkiaRendererNonDDL is only supported with GLES2.";
+      auto gl_surface = gpu::ImageTransportSurface::CreateNativeSurface(
+          nullptr, surface_handle, gl::GLSurfaceFormat());
+      if (!shared_context_state_) {
+        auto gl_share_group = base::MakeRefCounted<gl::GLShareGroup>();
+        auto gl_context = gl::init::CreateGLContext(
+            gl_share_group.get(), gl_surface.get(), gl::GLContextAttribs());
+        gl_context->MakeCurrent(gl_surface.get());
+        shared_context_state_ = base::MakeRefCounted<gpu::SharedContextState>(
+            std::move(gl_share_group), gl_surface, std::move(gl_context),
+            false /* use_virtualized_gl_contexts */, base::DoNothing::Once(),
+            nullptr /* vulkan_context_provider */);
+        shared_context_state_->InitializeGrContext(
+            gpu::GpuDriverBugWorkarounds(), nullptr /* gr_shader_cache */);
+        mailbox_manager_ = gpu::gles2::CreateMailboxManager(
+            gpu_service_impl_->gpu_preferences());
+        DCHECK(mailbox_manager_->UsesSync());
+      }
+      output_surface = std::make_unique<SkiaOutputSurfaceImplNonDDL>(
+          std::move(gl_surface), shared_context_state_, mailbox_manager_.get(),
+          gpu_service_impl_->sync_point_manager(),
+          true /* need_swapbuffers_ack */);
+
+    } else {
+      output_surface = std::make_unique<SkiaOutputSurfaceImpl>(
+          gpu_service_impl_, surface_handle, synthetic_begin_frame_source,
+          renderer_settings.show_overdraw_feedback);
+    }
     skia_output_surface = static_cast<SkiaOutputSurface*>(output_surface.get());
 #endif
   } else {
