@@ -213,7 +213,13 @@ void DrmGpuDisplayManagerTest::SetUp() {
       screen_manager_.get(), device_manager_.get()));
 }
 
-TEST_F(DrmGpuDisplayManagerTest, GetDisplays) {
+// Crashes on ChromeOS ASan LSan. https://crbug.com/937638.
+#if defined(OS_CHROMEOS)
+#define MAYBE_GetDisplays DISABLED_GetDisplays
+#else
+#define MAYBE_GetDisplays GetDisplays
+#endif
+TEST_F(DrmGpuDisplayManagerTest, MAYBE_GetDisplays) {
   const uint32_t display_id1 = 1, display_id2 = 2, display_id3 = 3;
 
   // Connect two displays with device then update |hardware_infos_|.
