@@ -125,6 +125,11 @@ const char kArcForceShowOptInUi[] = "arc-force-show-optin-ui";
 //             to the temporary directory.
 const char kArcPackagesCacheMode[] = "arc-packages-cache-mode";
 
+// Used in autotest to forces Play Store auto-update state. Can be
+// on - auto-update is forced on.
+// off - auto-update is forced off.
+const char kArcPlayStoreAutoUpdate[] = "arc-play-store-auto-update";
+
 // Defines how to start ARC. This can take one of the following values:
 // - always-start automatically start with Play Store UI support.
 // - always-start-with-no-play-store automatically start without Play Store UI.
