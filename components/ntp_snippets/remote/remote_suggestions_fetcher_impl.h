@@ -83,7 +83,8 @@ class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
 
   void StartTokenRequest();
 
-  void AccessTokenFetchFinished(GoogleServiceAuthError error,
+  void AccessTokenFetchFinished(base::Time token_start_time,
+                                GoogleServiceAuthError error,
                                 identity::AccessTokenInfo access_token_info);
   void AccessTokenError(const GoogleServiceAuthError& error);
 
@@ -100,6 +101,11 @@ class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
                      const std::string& error_details,
                      bool is_authenticated,
                      std::string access_token);
+  void EmitDurationAndInvokeCallback(
+      base::Time start_time,
+      SnippetsAvailableCallback callback,
+      Status status,
+      OptionalFetchedCategories fetched_categories);
 
   // Authentication for signed-in users.
   identity::IdentityManager* identity_manager_;
