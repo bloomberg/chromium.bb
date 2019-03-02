@@ -14,9 +14,6 @@ ELEMENT_KEY_W3C = "element-6066-11e4-a52e-4f735466cecf"
 ELEMENT_KEY = "ELEMENT"
 MAX_RETRY_COUNT = 3
 
-# Temp code for debugging https://crbug.com/chromedriver/2778.
-enable_core_dump = False
-
 class ChromeDriverException(Exception):
   pass
 class NoSuchElement(ChromeDriverException):
@@ -136,35 +133,6 @@ class ChromeDriver(object):
       if not e.message.startswith('timed out'):
         raise
       else:
-        # Temp code for debugging https://crbug.com/chromedriver/2778.
-        # If enabled, trigger a core dump on first timeout.
-        # The code is only intended for Linux, where the above bug is observed.
-        global enable_core_dump
-        if enable_core_dump and util.GetPlatformName() == 'linux':
-          enable_core_dump = False
-          import psutil
-          import signal
-          this_process = psutil.Process()
-          chromedriver_process = this_process.children()[0]
-          if chromedriver_process.name() == 'chromedriver':
-            chrome_processes = chromedriver_process.children()
-            if len(chrome_processes) == 1:
-              # Remove core file size limit, then use SIGABRT to dump core.
-              # Newer versions of psutil.Process have rlimit method, while older
-              # versions have set_rlimit method.
-              if hasattr(chrome_processes[0], 'rlimit'):
-                rlimit_method = chrome_processes[0].rlimit
-              else:
-                rlimit_method = chrome_processes[0].set_rlimit
-              rlimit_method(
-                  psutil.RLIMIT_CORE,
-                  (psutil.RLIM_INFINITY, psutil.RLIM_INFINITY))
-              chrome_processes[0].send_signal(signal.SIGABRT)
-            else:
-              print 'Skipping core dump as ChromeDriver has unexpected children'
-          else:
-            print 'Unable to find ChromeDriver process, skipping core dump'
-
         if ChromeDriver.retry_count < MAX_RETRY_COUNT:
           ChromeDriver.retry_count = ChromeDriver.retry_count + 1
           ChromeDriver.retried_tests.append(kwargs.get('test_name'))
