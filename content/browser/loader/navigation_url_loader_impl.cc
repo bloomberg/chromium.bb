@@ -316,17 +316,6 @@ void UnknownSchemeCallback(
       handled_externally ? net::ERR_ABORTED : net::ERR_UNKNOWN_URL_SCHEME));
 }
 
-// Returns whether this URL can be handled by the default network service
-// URLLoader.
-bool IsURLHandledByDefaultLoader(const GURL& url) {
-  // Data URLs are only handled by the network service if
-  // |enable_data_url_support| is set in NetworkContextParams. This is set to
-  // true for the context used by NavigationURLLoaderImpl, so in addition to
-  // checking whether the URL is handled by the network service, we also need to
-  // check for the data scheme.
-  return IsURLHandledByNetworkService(url) || url.SchemeIs(url::kDataScheme);
-}
-
 // Determines whether it is safe to redirect from |from_url| to |to_url|.
 bool IsRedirectSafe(const GURL& from_url,
                     const GURL& to_url,
@@ -787,8 +776,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     if (!default_loader_used_ ||
         (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
          url_chain_.size() > 1 &&
-         IsURLHandledByDefaultLoader(url_chain_[url_chain_.size() - 1]) !=
-             IsURLHandledByDefaultLoader(url_chain_[url_chain_.size() - 2]))) {
+         IsURLHandledByNetworkService(url_chain_[url_chain_.size() - 1]) !=
+             IsURLHandledByNetworkService(url_chain_[url_chain_.size() - 2]))) {
       url_loader_.reset();
     }
     interceptor_index_ = 0;
@@ -972,7 +961,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // further refactor the factory getters to avoid this.
     scoped_refptr<network::SharedURLLoaderFactory> factory;
 
-    if (!IsURLHandledByDefaultLoader(resource_request_->url)) {
+    if (!IsURLHandledByNetworkService(resource_request_->url)) {
       if (known_schemes_.find(resource_request_->url.scheme()) ==
           known_schemes_.end()) {
         bool handled = GetContentClient()->browser()->HandleExternalProtocol(
