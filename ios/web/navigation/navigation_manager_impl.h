@@ -122,7 +122,13 @@ class NavigationManagerImpl : public NavigationManager {
       UserAgentOverrideOption user_agent_override_option) = 0;
 
   // Commits the pending item, if any.
+  // TODO(crbug.com/936933): Remove this method.
   virtual void CommitPendingItem() = 0;
+
+  // Commits given pending |item| stored outside of navigation manager
+  // (normally in NavigationContext). It is possible to have additional pending
+  // items owned by navigation manager and/or outside of navigation manager.
+  virtual void CommitPendingItem(std::unique_ptr<NavigationItemImpl> item) = 0;
 
   // Returns the navigation index that differs from the current item (or pending
   // item if it exists) by the specified |offset|, skipping redirect navigation

@@ -4,6 +4,7 @@
 
 #import "ios/web/web_state/navigation_context_impl.h"
 
+#import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -95,6 +96,7 @@ TEST_F(NavigationContextImplTest, Setters) {
   ASSERT_NE(response_headers_.get(), context->GetResponseHeaders());
   EXPECT_EQ(WKNavigationTypeOther, context->GetWKNavigationType());
   EXPECT_FALSE(context->GetMimeType());
+  EXPECT_FALSE(context->GetItem());
 
   // SetUrl
   GURL new_url("https://new.test");
@@ -110,6 +112,7 @@ TEST_F(NavigationContextImplTest, Setters) {
   EXPECT_EQ(WKNavigationTypeOther, context->GetWKNavigationType());
   EXPECT_EQ(WKNavigationTypeOther, context->GetWKNavigationType());
   EXPECT_FALSE(context->GetMimeType());
+  EXPECT_FALSE(context->GetItem());
 
   // SetSameDocument
   context->SetIsSameDocument(true);
@@ -124,6 +127,7 @@ TEST_F(NavigationContextImplTest, Setters) {
   EXPECT_EQ(WKNavigationTypeOther, context->GetWKNavigationType());
   EXPECT_EQ(WKNavigationTypeOther, context->GetWKNavigationType());
   EXPECT_FALSE(context->GetMimeType());
+  EXPECT_FALSE(context->GetItem());
 
   // SetHasCommitted
   context->SetHasCommitted(true);
@@ -138,6 +142,7 @@ TEST_F(NavigationContextImplTest, Setters) {
   EXPECT_EQ(WKNavigationTypeOther, context->GetWKNavigationType());
   EXPECT_EQ(WKNavigationTypeOther, context->GetWKNavigationType());
   EXPECT_FALSE(context->GetMimeType());
+  EXPECT_FALSE(context->GetItem());
 
   // SetIsDownload
   context->SetIsDownload(true);
@@ -152,6 +157,7 @@ TEST_F(NavigationContextImplTest, Setters) {
   EXPECT_EQ(WKNavigationTypeOther, context->GetWKNavigationType());
   EXPECT_EQ(WKNavigationTypeOther, context->GetWKNavigationType());
   EXPECT_FALSE(context->GetMimeType());
+  EXPECT_FALSE(context->GetItem());
 
   // SetPost
   context->SetIsPost(true);
@@ -165,6 +171,7 @@ TEST_F(NavigationContextImplTest, Setters) {
   EXPECT_NE(response_headers_.get(), context->GetResponseHeaders());
   EXPECT_EQ(WKNavigationTypeOther, context->GetWKNavigationType());
   EXPECT_FALSE(context->GetMimeType());
+  EXPECT_FALSE(context->GetItem());
 
   // SetErrorPage
   NSError* error = [[NSError alloc] initWithDomain:@"" code:0 userInfo:nil];
@@ -179,6 +186,7 @@ TEST_F(NavigationContextImplTest, Setters) {
   EXPECT_NE(response_headers_.get(), context->GetResponseHeaders());
   EXPECT_EQ(WKNavigationTypeOther, context->GetWKNavigationType());
   EXPECT_FALSE(context->GetMimeType());
+  EXPECT_FALSE(context->GetItem());
 
   // SetResponseHeaders
   context->SetResponseHeaders(response_headers_);
@@ -192,6 +200,7 @@ TEST_F(NavigationContextImplTest, Setters) {
   EXPECT_EQ(response_headers_.get(), context->GetResponseHeaders());
   EXPECT_EQ(WKNavigationTypeOther, context->GetWKNavigationType());
   EXPECT_FALSE(context->GetMimeType());
+  EXPECT_FALSE(context->GetItem());
 
   // SetWKNavigationType
   context->SetWKNavigationType(WKNavigationTypeBackForward);
@@ -205,7 +214,9 @@ TEST_F(NavigationContextImplTest, Setters) {
   EXPECT_EQ(response_headers_.get(), context->GetResponseHeaders());
   EXPECT_EQ(WKNavigationTypeBackForward, context->GetWKNavigationType());
   EXPECT_FALSE(context->GetMimeType());
+  EXPECT_FALSE(context->GetItem());
 
+  // SetMimeType
   context->SetMimeType(@"test/mime");
   EXPECT_EQ(new_url, context->GetUrl());
   EXPECT_TRUE(context->IsSameDocument());
@@ -217,6 +228,26 @@ TEST_F(NavigationContextImplTest, Setters) {
   EXPECT_EQ(response_headers_.get(), context->GetResponseHeaders());
   EXPECT_EQ(WKNavigationTypeBackForward, context->GetWKNavigationType());
   EXPECT_NSEQ(@"test/mime", context->GetMimeType());
+  EXPECT_FALSE(context->GetItem());
+
+  // SetItem and ReleaseItem
+  auto item = std::make_unique<NavigationItemImpl>();
+  NavigationItemImpl* item_ptr = item.get();
+  context->SetNavigationItemUniqueID(item->GetUniqueID());
+  context->SetItem(std::move(item));
+  EXPECT_EQ(new_url, context->GetUrl());
+  EXPECT_TRUE(context->IsSameDocument());
+  EXPECT_TRUE(context->HasCommitted());
+  EXPECT_TRUE(context->IsDownload());
+  ASSERT_TRUE(context->IsPost());
+  EXPECT_EQ(error, context->GetError());
+  EXPECT_FALSE(context->IsRendererInitiated());
+  EXPECT_EQ(response_headers_.get(), context->GetResponseHeaders());
+  EXPECT_EQ(WKNavigationTypeBackForward, context->GetWKNavigationType());
+  EXPECT_NSEQ(@"test/mime", context->GetMimeType());
+  EXPECT_EQ(item_ptr, context->GetItem());
+  item = context->ReleaseItem();
+  EXPECT_EQ(item_ptr, item.get());
 }
 
 }  // namespace web

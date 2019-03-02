@@ -47,6 +47,7 @@ class LegacyNavigationManagerImpl : public NavigationManagerImpl {
       NavigationInitiationType initiation_type,
       UserAgentOverrideOption user_agent_override_option) override;
   void CommitPendingItem() override;
+  void CommitPendingItem(std::unique_ptr<NavigationItemImpl> item) override;
   int GetIndexForOffset(int offset) const override;
   int GetPreviousItemIndex() const override;
   void SetPreviousItemIndex(int previous_item_index) override;

@@ -191,6 +191,20 @@
   return result;
 }
 
+- (WKNavigation*)lastNavigationWithPendingItemInNavigationContext {
+  NSUInteger lastAddedIndex = 0;  // record indices start with 1.
+  WKNavigation* result = nullptr;
+  for (id navigation in _records) {
+    CRWWKNavigationsStateRecord* record = [_records objectForKey:navigation];
+    web::NavigationContextImpl* context = [record context];
+    if (context && context->GetItem() && lastAddedIndex < record.index) {
+      result = navigation;
+      lastAddedIndex = record.index;
+    }
+  }
+  return result;
+}
+
 - (web::WKNavigationState)lastAddedNavigationState {
   CRWWKNavigationsStateRecord* result = nil;
   WKNavigation* unused = nil;

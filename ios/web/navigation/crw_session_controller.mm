@@ -10,6 +10,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
@@ -21,6 +22,7 @@
 #include "ios/web/navigation/time_smoother.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/browser_url_rewriter.h"
+#include "ios/web/public/features.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/ssl_status.h"
 #import "ios/web/public/web_client.h"
@@ -171,8 +173,12 @@ initiationType:(web::NavigationInitiationType)initiationType;
 }
 
 - (web::NavigationItemImpl*)pendingItem {
-  if (self.pendingItemIndex == -1)
+  if (self.pendingItemIndex == -1) {
+    if (web::features::StorePendingItemInContext() && !_pendingItem) {
+      return [self.delegate pendingItemForSessionController:self];
+    }
     return _pendingItem.get();
+  }
   return self.items[self.pendingItemIndex].get();
 }
 
@@ -282,6 +288,14 @@ initiationType:(web::NavigationInitiationType)initiationType;
   _browserState = browserState;
   DCHECK(!_navigationManager ||
          _navigationManager->GetBrowserState() == _browserState);
+}
+
+- (std::unique_ptr<web::NavigationItemImpl>)releasePendingItem {
+  return std::move(_pendingItem);
+}
+
+- (void)setPendingItem:(std::unique_ptr<web::NavigationItemImpl>)item {
+  _pendingItem = std::move(item);
 }
 
 - (void)addPendingItem:(const GURL&)url
@@ -405,7 +419,9 @@ initiationType:(web::NavigationInitiationType)initiationType;
     DCHECK(!_pendingItem);
   }
 
-  web::NavigationItem* item = self.currentItem;
+  web::NavigationItem* item = web::features::StorePendingItemInContext()
+                                  ? self.lastCommittedItem
+                                  : self.currentItem;
   // Update the navigation timestamp now that it's actually happened.
   if (item)
     item->SetTimestamp(_timeSmoother.GetSmoothedTime(base::Time::Now()));
@@ -413,6 +429,23 @@ initiationType:(web::NavigationInitiationType)initiationType;
   if (_navigationManager && item)
     _navigationManager->OnNavigationItemCommitted();
   DCHECK_EQ(self.pendingItemIndex, -1);
+}
+
+- (void)commitPendingItem:(std::unique_ptr<web::NavigationItemImpl>)item {
+  DCHECK(web::features::StorePendingItemInContext());
+  if (!item)
+    return;
+
+  // Once an item is committed it's not renderer-initiated any more. (Matches
+  // the implementation in NavigationController.)
+  item->ResetForCommit();
+  item->SetTimestamp(_timeSmoother.GetSmoothedTime(base::Time::Now()));
+
+  [self clearForwardItems];
+  _items.push_back(std::move(item));
+  _previousItemIndex = _lastCommittedItemIndex;
+  self.lastCommittedItemIndex = self.items.size() - 1;
+  self.pendingItemIndex = -1;
 }
 
 - (void)addTransientItemWithURL:(const GURL&)URL {

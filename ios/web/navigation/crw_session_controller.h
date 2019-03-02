@@ -6,6 +6,8 @@
 #define IOS_WEB_NAVIGATION_CRW_SESSION_CONTROLLER_H_
 
 #import <Foundation/Foundation.h>
+
+#include <memory>
 #include <vector>
 
 #import "ios/web/navigation/navigation_item_impl_list.h"
@@ -21,6 +23,14 @@ enum class NavigationInitiationType;
 struct Referrer;
 }
 
+@class CRWSessionController;
+
+@protocol CRWSessionControllerDelegate
+// Used to access pending item stored in NavigationContext.
+- (web::NavigationItemImpl*)pendingItemForSessionController:
+    (CRWSessionController*)sessionController;
+@end
+
 // A CRWSessionController is similar to a NavigationController object in desktop
 // Chrome. It maintains information needed to save/restore a tab with its
 // complete session history. There is one of these for each tab.
@@ -28,6 +38,8 @@ struct Referrer;
 // Use web::NavigationManager instead.
 // TODO(crbug.com/454984): Remove this class.
 @interface CRWSessionController : NSObject
+
+@property(nonatomic, weak) id<CRWSessionControllerDelegate> delegate;
 
 @property(nonatomic, readonly, assign) NSInteger lastCommittedItemIndex;
 @property(nonatomic, readwrite, assign) NSInteger previousItemIndex;
@@ -78,6 +90,17 @@ struct Referrer;
 // Sets the corresponding BrowserState.
 - (void)setBrowserState:(web::BrowserState*)browserState;
 
+// Removes pending item, so it can be stored in NavigationContext.
+// Pending item is stored in this object when NavigationContext object does not
+// yet exist (e.g. when navigation was just requested, or when navigation has
+// aborted).
+- (std::unique_ptr<web::NavigationItemImpl>)releasePendingItem;
+
+// Allows transferring pending item from NavigationContext to this object.
+// Pending item can be moved from NavigationContext to this object when
+// navigation is aborted, but pending item should be retained.
+- (void)setPendingItem:(std::unique_ptr<web::NavigationItemImpl>)item;
+
 // Add a new item with the given url, referrer, navigation type and user agent
 // override option, making it the current item. If pending item is the same as
 // current item, this does nothing. |referrer| may be nil if there isn't one.
@@ -93,7 +116,13 @@ struct Referrer;
 // Commits the current pending item. No changes are made to the item during
 // this process, it is just moved from pending to committed.
 // TODO(pinkerton): Desktop Chrome broadcasts a notification here, should we?
+// TODO(crbug.com/936933): Remove this method.
 - (void)commitPendingItem;
+
+// Commits given pending |item| stored outside of session controller
+// (normally in NavigationContext). It is possible to have additional pending
+// items owned by session controller and/or outside of session controller.
+- (void)commitPendingItem:(std::unique_ptr<web::NavigationItemImpl>)item;
 
 // Adds a transient item with the given URL. A transient item will be
 // discarded on any navigation.
