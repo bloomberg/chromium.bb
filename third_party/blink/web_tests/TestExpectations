@@ -5952,3 +5952,4 @@ crbug.com/864994 [ Linux Win7 ] external/wpt/encoding/legacy-mb-korean/euc-kr/eu
 crbug.com/937416 [ Linux Mac ] http/tests/devtools/resource-tree/resource-tree-htmlimports.js [ Pass Failure ]
 crbug.com/937416 http/tests/devtools/resource-tree/resource-tree-frame-navigate.js [ Pass Failure ]
 crbug.com/937546 [ Win7 ] http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Pass Timeout ]
+crbug.com/937544 [ Win7 Mac ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/registration-mime-types.https.html [ Pass Timeout ]
