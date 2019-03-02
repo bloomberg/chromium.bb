@@ -57,7 +57,7 @@ BookmarkCodec::BookmarkCodec()
           BookmarkNode::kInvalidSyncTransactionVersion) {
 }
 
-BookmarkCodec::~BookmarkCodec() {}
+BookmarkCodec::~BookmarkCodec() = default;
 
 std::unique_ptr<base::Value> BookmarkCodec::Encode(
     BookmarkModel* model,
@@ -99,7 +99,8 @@ std::unique_ptr<base::Value> BookmarkCodec::Encode(
   if (!sync_metadata_str.empty()) {
     std::string sync_metadata_str_base64;
     base::Base64Encode(sync_metadata_str, &sync_metadata_str_base64);
-    main->SetString(kSyncMetadata, std::move(sync_metadata_str_base64));
+    main->SetKey(kSyncMetadata,
+                 base::Value(std::move(sync_metadata_str_base64)));
   }
   return std::move(main);
 }
@@ -167,8 +168,8 @@ std::unique_ptr<base::Value> BookmarkCodec::EncodeNode(
 std::unique_ptr<base::Value> BookmarkCodec::EncodeMetaInfo(
     const BookmarkNode::MetaInfoMap& meta_info_map) {
   auto meta_info = std::make_unique<base::DictionaryValue>();
-  for (auto it = meta_info_map.begin(); it != meta_info_map.end(); ++it) {
-    meta_info->SetKey(it->first, base::Value(it->second));
+  for (const auto& item : meta_info_map) {
+    meta_info->SetKey(item.first, base::Value(item.second));
   }
   return std::move(meta_info);
 }
