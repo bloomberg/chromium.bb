@@ -1058,7 +1058,9 @@ bool DCLayerTree::SwapChainPresenter::PresentToDecodeSwapChain(
   HRESULT hr = decode_swap_chain_->PresentBuffer(image_dxgi->level(), 1, 0);
   base::UmaHistogramSparse("GPU.DirectComposition.DecodeSwapChainPresentResult",
                            hr);
-  if (FAILED(hr)) {
+  // Ignore DXGI_STATUS_OCCLUDED since that's not an error but only indicates
+  // that the window is occluded and we can stop rendering.
+  if (FAILED(hr) && hr != DXGI_STATUS_OCCLUDED) {
     DLOG(ERROR) << "PresentBuffer failed with error 0x" << std::hex << hr;
     return false;
   }
@@ -1224,7 +1226,9 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     first_present_ = false;
 
     HRESULT hr = swap_chain_->Present(0, 0);
-    if (FAILED(hr)) {
+    // Ignore DXGI_STATUS_OCCLUDED since that's not an error but only indicates
+    // that the window is occluded and we can stop rendering.
+    if (FAILED(hr) && hr != DXGI_STATUS_OCCLUDED) {
       DLOG(ERROR) << "Present failed with error 0x" << std::hex << hr;
       return false;
     }
@@ -1259,8 +1263,10 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     event.Wait();
   }
 
+  // Ignore DXGI_STATUS_OCCLUDED since that's not an error but only indicates
+  // that the window is occluded and we can stop rendering.
   HRESULT hr = swap_chain_->Present(1, 0);
-  if (FAILED(hr)) {
+  if (FAILED(hr) && hr != DXGI_STATUS_OCCLUDED) {
     DLOG(ERROR) << "Present failed with error 0x" << std::hex << hr;
     return false;
   }
