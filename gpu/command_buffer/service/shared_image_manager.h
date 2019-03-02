@@ -6,6 +6,9 @@
 #define GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_MANAGER_H_
 
 #include "base/containers/flat_set.h"
+#include "base/optional.h"
+#include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/gpu_gles2_export.h"
@@ -15,7 +18,7 @@ class SharedImageRepresentationFactoryRef;
 
 class GPU_GLES2_EXPORT SharedImageManager {
  public:
-  SharedImageManager();
+  explicit SharedImageManager(bool thread_safe = false);
   ~SharedImageManager();
 
   // Registers a SharedImageBacking with the manager and returns a
@@ -50,8 +53,16 @@ class GPU_GLES2_EXPORT SharedImageManager {
                     int client_id,
                     uint64_t client_tracing_id);
 
+  bool is_thread_safe() const { return !!lock_; }
+
  private:
+  class AutoLock;
+  // The lock for protecting |images_|.
+  base::Optional<base::Lock> lock_;
+
   base::flat_set<std::unique_ptr<SharedImageBacking>> images_;
+
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(SharedImageManager);
 };

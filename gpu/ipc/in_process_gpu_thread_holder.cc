@@ -83,6 +83,7 @@ void InProcessGpuThreadHolder::DeleteOnGpuThread() {
   task_executor_.reset();
   scheduler_.reset();
   sync_point_manager_.reset();
+  shared_image_manager_.reset();
 }
 
 }  // namespace gpu
