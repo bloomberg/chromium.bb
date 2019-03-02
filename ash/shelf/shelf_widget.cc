@@ -242,6 +242,8 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
 
   // Show rounded corners except in maximized (which includes split view) mode.
   if (background_type == SHELF_BACKGROUND_MAXIMIZED) {
+    if (mask_)
+      opaque_background_.RemoveCacheRenderSurfaceRequest();
     mask_ = nullptr;
     opaque_background_.SetMaskLayer(nullptr);
   } else {
@@ -250,6 +252,7 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
           views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK, radius));
       mask_->layer()->SetFillsBoundsOpaquely(false);
       opaque_background_.SetMaskLayer(mask_->layer());
+      opaque_background_.AddCacheRenderSurfaceRequest();
     }
     if (mask_->layer()->bounds() != opaque_background_bounds)
       mask_->layer()->SetBounds(opaque_background_bounds);
