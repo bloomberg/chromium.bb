@@ -266,7 +266,6 @@ void DevToolsEyeDropper::UpdateCursor() {
 void DevToolsEyeDropper::OnFrameCaptured(
     base::ReadOnlySharedMemoryRegion data,
     ::media::mojom::VideoFrameInfoPtr info,
-    const gfx::Rect& update_rect,
     const gfx::Rect& content_rect,
     viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) {
   gfx::Size view_size = host_->GetView()->GetViewBounds().size();

@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/value_conversions.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace media {
 
@@ -85,6 +86,15 @@ void VideoFrameMetadata::SetUnguessableToken(
                      base::CreateUnguessableTokenValue(value));
 }
 
+void VideoFrameMetadata::SetRect(Key key, const gfx::Rect& value) {
+  base::Value init[] = {base::Value(value.x()), base::Value(value.y()),
+                        base::Value(value.width()),
+                        base::Value(value.height())};
+  SetValue(key, std::make_unique<base::ListValue>(base::Value::ListStorage{
+                    std::make_move_iterator(std::begin(init)),
+                    std::make_move_iterator(std::end(init))}));
+}
+
 void VideoFrameMetadata::SetValue(Key key, std::unique_ptr<base::Value> value) {
   dictionary_.SetWithoutPathExpansion(ToInternalKey(key), std::move(value));
 }
@@ -155,6 +165,22 @@ bool VideoFrameMetadata::GetUnguessableToken(
   if (!internal_value)
     return false;
   return base::GetValueAsUnguessableToken(*internal_value, value);
+}
+
+bool VideoFrameMetadata::GetRect(Key key, gfx::Rect* value) const {
+  const base::ListValue* internal_value = GetList(key);
+  if (!internal_value || internal_value->GetList().size() != 4)
+    return false;
+  *value = gfx::Rect(internal_value->GetList()[0].GetInt(),
+                     internal_value->GetList()[1].GetInt(),
+                     internal_value->GetList()[2].GetInt(),
+                     internal_value->GetList()[3].GetInt());
+  return true;
+}
+
+const base::ListValue* VideoFrameMetadata::GetList(Key key) const {
+  return static_cast<const base::ListValue*>(
+      dictionary_.FindKeyOfType(ToInternalKey(key), base::Value::Type::LIST));
 }
 
 const base::Value* VideoFrameMetadata::GetValue(Key key) const {

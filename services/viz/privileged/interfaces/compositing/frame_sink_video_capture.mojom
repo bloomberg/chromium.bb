@@ -38,14 +38,13 @@ interface FrameSinkVideoConsumer {
   // the service that it is Done(). |info| is used to interpret the
   // format/layout of the data, and also contains the frame timestamps and other
   // metadata (the following media::VideoFrameMetadata keys are set:
-  // CAPTURE_BEGIN_TIME, CAPTURE_END_TIME, COLOR_SPACE, FRAME_DURATION,
-  // INTERACTIVE_CONTENT, REFERENCE_TIME). |update_rect| is the region of the
-  // frame that has changed since the last frame. |content_rect| is the region
-  // of the frame that contains the captured content, with the rest of the frame
-  // having been letterboxed to adhere to resolution constraints.
+  // CAPTURE_BEGIN_TIME, CAPTURE_END_TIME, CAPTURE_COUNTER, CAPTURE_UPDATE_RECT,
+  // COLOR_SPACE, FRAME_DURATION, INTERACTIVE_CONTENT, REFERENCE_TIME).
+  // |content_rect| is the region of the frame that contains the captured
+  // content, with the rest of the frame having been letterboxed to adhere to
+  // resolution constraints.
   OnFrameCaptured(mojo_base.mojom.ReadOnlySharedMemoryRegion data,
                   media.mojom.VideoFrameInfo info,
-                  gfx.mojom.Rect update_rect,
                   gfx.mojom.Rect content_rect,
                   FrameSinkVideoConsumerFrameCallbacks callbacks);
 

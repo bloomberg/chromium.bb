@@ -363,7 +363,6 @@ void LameWindowCapturerChromeOS::DeliverFrame(
   info->visible_rect = frame->visible_rect();
   DCHECK(frame->ColorSpace().IsValid());  // Ensure it was set by this point.
   info->color_space = frame->ColorSpace();
-  const gfx::Rect update_rect = frame->visible_rect();
   const gfx::Rect content_rect = in_flight_frame->content_rect();
 
   // Create a mojo message pipe and bind to the InFlightFrame to wait for the
@@ -374,8 +373,8 @@ void LameWindowCapturerChromeOS::DeliverFrame(
                           mojo::MakeRequest(&callbacks));
 
   // Send the frame to the consumer.
-  consumer_->OnFrameCaptured(std::move(handle), std::move(info), update_rect,
-                             content_rect, std::move(callbacks));
+  consumer_->OnFrameCaptured(std::move(handle), std::move(info), content_rect,
+                             std::move(callbacks));
 }
 
 void LameWindowCapturerChromeOS::OnWindowDestroying(aura::Window* window) {

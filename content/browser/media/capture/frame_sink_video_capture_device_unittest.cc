@@ -377,7 +377,7 @@ class FrameSinkVideoCaptureDeviceTest : public testing::Test {
                   base::Value(base::Value::Type::DICTIONARY), kFormat,
                   kResolution, gfx::Rect(kResolution),
                   gfx::ColorSpace::CreateREC709(), nullptr),
-              gfx::Rect(kResolution), gfx::Rect(kResolution),
+              gfx::Rect(kResolution),
               viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr(
                   std::move(callbacks_info)));
         },
