@@ -868,6 +868,53 @@ TEST_F(LockContentsViewUnitTest, ShowErrorBubbleOnAuthFailure) {
   EXPECT_FALSE(test_api.auth_error_bubble()->visible());
 }
 
+TEST_F(LockContentsViewUnitTest, AuthErrorButtonClickable) {
+  // Build lock screen with a single user.
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  SetUserCount(1);
+  SetWidget(CreateWidgetWithContent(contents));
+
+  LockContentsView::TestApi test_api(contents);
+
+  // Password submit runs mojo.
+  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  client->set_authenticate_user_callback_result(false);
+  EXPECT_CALL(*client,
+              AuthenticateUserWithPasswordOrPin_(
+                  users()[0]->basic_user_info->account_id, _, false, _));
+
+  // AuthErrorButton should not be visible yet.
+  EXPECT_FALSE(test_api.auth_error_bubble()->visible());
+
+  // Submit password.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::KeyboardCode::VKEY_A, 0);
+  generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+  base::RunLoop().RunUntilIdle();
+
+  // Auth Error button should be visible as an incorrect password was given.
+  EXPECT_TRUE(test_api.auth_error_bubble()->visible());
+
+  // Find button in auth_error_bubble children.
+  views::View* button = FindTopButton(test_api.auth_error_bubble());
+  ASSERT_TRUE(button);
+
+  // Expect ShowAccountAccessHelp() to be called due to button click.
+  EXPECT_CALL(*client, ShowAccountAccessHelpApp()).Times(1);
+
+  // Move mouse to AuthError's ShowAccountAccessHelp button and click it.
+  // Should result in ShowAccountAccessHelpApp().
+  generator->MoveMouseTo(button->GetBoundsInScreen().CenterPoint());
+  generator->ClickLeftButton();
+  Shell::Get()->login_screen_controller()->FlushForTesting();
+
+  // AuthErrorButton should go away after button press.
+  EXPECT_FALSE(test_api.auth_error_bubble()->visible());
+}
+
 // Gaia is never shown on lock, no mater how many times auth fails.
 TEST_F(LockContentsViewUnitTest, GaiaNeverShownOnLockAfterFailedAuth) {
   // Build lock screen with a single user.

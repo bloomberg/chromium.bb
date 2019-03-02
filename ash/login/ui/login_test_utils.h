@@ -48,6 +48,9 @@ bool TabThroughView(ui::test::EventGenerator* event_generator,
                     views::View* view,
                     bool reverse);
 
+// Find the first button in the z layer stack of the given view
+views::View* FindTopButton(views::View* current_view);
+
 }  // namespace ash
 
 #endif  // ASH_LOGIN_UI_LOGIN_TEST_UTILS_H_
