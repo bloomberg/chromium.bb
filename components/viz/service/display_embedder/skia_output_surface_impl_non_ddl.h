@@ -10,12 +10,17 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/viz/service/display/skia_output_surface.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
+
+namespace gfx {
+struct PresentationFeedback;
+}
 
 namespace gl {
 class GLSurface;
@@ -41,7 +46,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
       scoped_refptr<gl::GLSurface> gl_surface,
       scoped_refptr<gpu::SharedContextState> shared_context_state,
       gpu::MailboxManager* mailbox_manager,
-      gpu::SyncPointManager* sync_point_manager);
+      gpu::SyncPointManager* sync_point_manager,
+      bool need_swapbuffers_ack);
   ~SkiaOutputSurfaceImplNonDDL() override;
 
   // OutputSurface implementation:
@@ -104,6 +110,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
   bool GetGrBackendTexture(const ResourceMetadata& metadata,
                            GrBackendTexture* backend_texture);
 
+  void BufferPresented(const gfx::PresentationFeedback& feedback);
   void ContextLost();
 
   uint64_t sync_fence_release_ = 0;
@@ -114,6 +121,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
   gpu::MailboxManager* mailbox_manager_;
   scoped_refptr<gpu::SyncPointOrderData> sync_point_order_data_;
   scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
+  const bool need_swapbuffers_ack_;
   uint32_t order_num_ = 0u;
 
   OutputSurfaceClient* client_ = nullptr;
@@ -138,6 +146,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
   base::flat_map<RenderPassId, sk_sp<SkSurface>> offscreen_sk_surfaces_;
 
   THREAD_CHECKER(thread_checker_);
+
+  base::WeakPtrFactory<SkiaOutputSurfaceImplNonDDL> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputSurfaceImplNonDDL);
 };

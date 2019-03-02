@@ -27,6 +27,7 @@ class CommandBufferTaskExecutor;
 class GpuChannelManagerDelegate;
 class GpuMemoryBufferManager;
 class ImageFactory;
+class SharedContextState;
 }  // namespace gpu
 
 namespace viz {
@@ -87,6 +88,11 @@ class VIZ_SERVICE_EXPORT GpuDisplayProvider : public DisplayProvider {
 #endif
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  // A shared context which will be used on display compositor thread.
+  scoped_refptr<gpu::SharedContextState> shared_context_state_;
+  std::unique_ptr<gpu::MailboxManager> mailbox_manager_;
+  std::unique_ptr<gpu::SyncPointManager> sync_point_manager_;
 
   const bool headless_;
   const bool wait_for_all_pipeline_stages_before_draw_;
