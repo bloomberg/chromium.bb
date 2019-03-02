@@ -233,7 +233,7 @@ void ProcessingInstruction::NotifyFinished(Resource* resource) {
   loading_ = false;
 
   if (is_css_)
-    ToCSSStyleSheet(sheet_.Get())->Contents()->CheckLoaded();
+    To<CSSStyleSheet>(sheet_.Get())->Contents()->CheckLoaded();
   else if (is_xsl_)
     ToXSLStyleSheet(sheet_.Get())->CheckLoaded();
 }

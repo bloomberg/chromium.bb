@@ -365,8 +365,8 @@ void StyleEngine::MediaQueryAffectingValueChanged(
     UnorderedTreeScopeSet& tree_scopes) {
   for (TreeScope* tree_scope : tree_scopes) {
     DCHECK(tree_scope != document_);
-    ShadowTreeStyleSheetCollection* collection =
-        ToShadowTreeStyleSheetCollection(StyleSheetCollectionFor(*tree_scope));
+    auto* collection = To<ShadowTreeStyleSheetCollection>(
+        StyleSheetCollectionFor(*tree_scope));
     DCHECK(collection);
     if (collection->MediaQueryAffectingValueChanged())
       SetNeedsActiveStyleUpdate(*tree_scope);
@@ -408,8 +408,8 @@ void StyleEngine::UpdateActiveStyleSheetsInShadow(
     TreeScope* tree_scope,
     UnorderedTreeScopeSet& tree_scopes_removed) {
   DCHECK_NE(tree_scope, document_);
-  ShadowTreeStyleSheetCollection* collection =
-      ToShadowTreeStyleSheetCollection(StyleSheetCollectionFor(*tree_scope));
+  auto* collection =
+      To<ShadowTreeStyleSheetCollection>(StyleSheetCollectionFor(*tree_scope));
   DCHECK(collection);
   collection->UpdateActiveStyleSheets(*this);
   if (!collection->HasStyleSheetCandidateNodes() &&

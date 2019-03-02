@@ -514,7 +514,7 @@ TEST_F(ApplyRulesetsTest, RemoveSheetFromShadowTree) {
   ASSERT_TRUE(sheet);
   ASSERT_TRUE(sheet->IsCSSStyleSheet());
 
-  CSSStyleSheet* css_sheet = ToCSSStyleSheet(sheet);
+  auto* css_sheet = To<CSSStyleSheet>(sheet);
   ActiveStyleSheetVector old_style_sheets;
   old_style_sheets.push_back(
       std::make_pair(css_sheet, &css_sheet->Contents()->GetRuleSet()));
