@@ -259,7 +259,6 @@ ProcessManager::ProcessManager(BrowserContext* context,
           {content::BrowserThread::IO})),
       startup_background_hosts_created_(false),
       last_background_close_sequence_id_(0),
-      process_observer_(this),
       weak_ptr_factory_(this) {
   // ExtensionRegistry is shared between incognito and regular contexts.
   DCHECK_EQ(original_context, extension_registry_->browser_context());
@@ -969,49 +968,9 @@ void ProcessManager::UnregisterExtension(const std::string& extension_id) {
 
 void ProcessManager::RegisterServiceWorker(const WorkerId& worker_id) {
   all_extension_workers_.Add(worker_id);
-
-  // Observe the RenderProcessHost for cleaning up on process shutdown.
-  int render_process_id = worker_id.render_process_id;
-  bool inserted = worker_process_to_extension_ids_[render_process_id]
-                      .insert(worker_id.extension_id)
-                      .second;
-  if (inserted) {
-    content::RenderProcessHost* render_process_host =
-        content::RenderProcessHost::FromID(render_process_id);
-    DCHECK(render_process_host);
-    if (!process_observer_.IsObserving(render_process_host)) {
-      // These will be cleaned up in RenderProcessExited().
-      process_observer_.Add(render_process_host);
-    }
-  }
-}
-
-void ProcessManager::RenderProcessExited(
-    content::RenderProcessHost* host,
-    const content::ChildProcessTerminationInfo& info) {
-  DCHECK(process_observer_.IsObserving(host));
-  process_observer_.Remove(host);
-  const int render_process_id = host->GetID();
-  // Look up and then clean up the entries that are affected by
-  // |render_process_id| destruction.
-  //
-  // TODO(lazyboy): Revisit this once incognito is tested for extension SWs, as
-  // the cleanup below only works because regular and OTR ProcessManagers are
-  // separate. The conclusive approach would be to have a
-  // all_extension_workers_.RemoveAllForProcess(render_process_id) method:
-  //   Pros: We won't need worker_process_to_extension_ids_ anymore.
-  //   Cons: We would require traversing all workers within
-  //         |all_extension_workers_| (slow) as things stand right now.
-  auto iter = worker_process_to_extension_ids_.find(render_process_id);
-  if (iter == worker_process_to_extension_ids_.end())
-    return;
-  for (const ExtensionId& extension_id : iter->second)
-    all_extension_workers_.RemoveAllForExtension(extension_id);
-  worker_process_to_extension_ids_.erase(iter);
 }
 
 void ProcessManager::UnregisterServiceWorker(const WorkerId& worker_id) {
-  // TODO(lazyboy): DCHECK that |worker_id| exists in |all_extension_workers_|.
   all_extension_workers_.Remove(worker_id);
 }
 
@@ -1024,10 +983,6 @@ std::vector<WorkerId> ProcessManager::GetServiceWorkers(
     int render_process_id) const {
   return all_extension_workers_.GetAllForExtension(extension_id,
                                                    render_process_id);
-}
-
-std::vector<WorkerId> ProcessManager::GetAllWorkersIdsForTesting() {
-  return all_extension_workers_.GetAllForTesting();
 }
 
 void ProcessManager::ClearBackgroundPageData(const std::string& extension_id) {

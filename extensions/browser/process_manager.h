@@ -19,12 +19,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/scoped_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/devtools_agent_host_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/render_process_host_observer.h"
 #include "extensions/browser/activity.h"
 #include "extensions/browser/event_page_tracker.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -57,8 +55,7 @@ class ProcessManager : public KeyedService,
                        public content::NotificationObserver,
                        public ExtensionRegistryObserver,
                        public EventPageTracker,
-                       public content::DevToolsAgentHostObserver,
-                       public content::RenderProcessHostObserver {
+                       public content::DevToolsAgentHostObserver {
  public:
   using ExtensionHostSet = std::set<extensions::ExtensionHost*>;
 
@@ -75,6 +72,7 @@ class ProcessManager : public KeyedService,
 
   // Registers or unregisters a running worker state to this process manager.
   // Note: This does not create any Service Workers.
+  // TODO(lazyboy): Hook this up to ServiceWorkerTaskQueue class.
   void RegisterServiceWorker(const WorkerId& worker_id);
   void UnregisterServiceWorker(const WorkerId& worker_id);
 
@@ -237,8 +235,6 @@ class ProcessManager : public KeyedService,
     return startup_background_hosts_created_;
   }
 
-  std::vector<WorkerId> GetAllWorkersIdsForTesting();
-
  protected:
   static ProcessManager* Create(content::BrowserContext* context);
 
@@ -267,11 +263,6 @@ class ProcessManager : public KeyedService,
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
                            UnloadedExtensionReason reason) override;
-
-  // content::RenderProcessHostObserver:
-  void RenderProcessExited(
-      content::RenderProcessHost* host,
-      const content::ChildProcessTerminationInfo& info) override;
 
   // Extra information we keep for each extension's background page.
   struct BackgroundPageData;
@@ -384,13 +375,6 @@ class ProcessManager : public KeyedService,
   // starting, we can receive a completion notification without a corresponding
   // start notification. In that case we want to avoid decrementing keepalive.
   std::map<int, ExtensionHost*> pending_network_requests_;
-
-  // Observers of Service Worker RPH this ProcessManager manages.
-  ScopedObserver<content::RenderProcessHost, content::RenderProcessHostObserver>
-      process_observer_;
-  // Maps render render_process_id -> extension_id for all Service Workers this
-  // ProcessManager manages.
-  std::map<int, std::set<ExtensionId>> worker_process_to_extension_ids_;
 
   // Must be last member, see doc on WeakPtrFactory.
   base::WeakPtrFactory<ProcessManager> weak_ptr_factory_;
