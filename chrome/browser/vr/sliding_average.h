@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_VR_UTIL_SLIDING_AVERAGE_H_
-#define DEVICE_VR_UTIL_SLIDING_AVERAGE_H_
+#ifndef CHROME_BROWSER_VR_SLIDING_AVERAGE_H_
+#define CHROME_BROWSER_VR_SLIDING_AVERAGE_H_
 
 #include <vector>
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "device/vr/util/sample_queue.h"
-#include "device/vr/vr_export.h"
+#include "chrome/browser/vr/sample_queue.h"
+#include "chrome/browser/vr/vr_export.h"
 
-namespace device {
+namespace vr {
 
-class DEVICE_VR_EXPORT SlidingAverage {
+class VR_EXPORT SlidingAverage {
  public:
   explicit SlidingAverage(size_t window_size);
   ~SlidingAverage();
@@ -29,7 +29,7 @@ class DEVICE_VR_EXPORT SlidingAverage {
   DISALLOW_COPY_AND_ASSIGN(SlidingAverage);
 };
 
-class DEVICE_VR_EXPORT SlidingTimeDeltaAverage {
+class VR_EXPORT SlidingTimeDeltaAverage {
  public:
   explicit SlidingTimeDeltaAverage(size_t window_size);
   virtual ~SlidingTimeDeltaAverage();
@@ -46,6 +46,6 @@ class DEVICE_VR_EXPORT SlidingTimeDeltaAverage {
   DISALLOW_COPY_AND_ASSIGN(SlidingTimeDeltaAverage);
 };
 
-}  // namespace device
+}  // namespace vr
 
-#endif  // DEVICE_VR_UTIL_SLIDING_AVERAGE_H_
+#endif  // CHROME_BROWSER_VR_SLIDING_AVERAGE_H_

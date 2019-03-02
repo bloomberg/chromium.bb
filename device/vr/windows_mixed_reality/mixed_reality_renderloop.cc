@@ -16,7 +16,6 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/trace_event/common/trace_event_common.h"
 #include "base/win/com_init_util.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/scoped_hstring.h"
@@ -30,7 +29,6 @@ namespace device {
 
 using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::Graphics::Holographic;
-using namespace ABI::Windows::Perception;
 using namespace ABI::Windows::Perception::Spatial;
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;
@@ -440,25 +438,11 @@ mojom::XRFrameDataPtr CreateDefaultFrameData(
     int16_t frame_id) {
   mojom::XRFrameDataPtr ret = mojom::XRFrameData::New();
 
-  ComPtr<IPerceptionTimestamp> timestamp;
+  Microsoft::WRL::ComPtr<ABI::Windows::Perception::IPerceptionTimestamp>
+      timestamp;
   prediction->get_Timestamp(&timestamp);
   ABI::Windows::Foundation::DateTime date_time;
   timestamp->get_TargetTime(&date_time);
-
-  ComPtr<IPerceptionTimestamp2> timestamp2;
-  if (SUCCEEDED(timestamp.As(&timestamp2))) {
-    ABI::Windows::Foundation::TimeSpan relative_time;
-    if (SUCCEEDED(timestamp2->get_SystemRelativeTargetTime(&relative_time))) {
-      // relative_time.Duration is a count of 100ns units, so multiply by 100
-      // to get a count of nanoseconds.
-      double milliseconds =
-          base::TimeDelta::FromNanosecondsD(100.0 * relative_time.Duration)
-              .InMillisecondsF();
-      TRACE_EVENT_INSTANT1("gpu", "WebXR pose prediction",
-                           TRACE_EVENT_SCOPE_THREAD, "milliseconds",
-                           milliseconds);
-    }
-  }
 
   ret->time_delta =
       base::TimeDelta::FromMicroseconds(date_time.UniversalTime / 10);

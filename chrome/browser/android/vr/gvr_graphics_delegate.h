@@ -16,8 +16,9 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/android/vr/web_xr_presentation_state.h"
 #include "chrome/browser/vr/base_graphics_delegate.h"
+#include "chrome/browser/vr/fps_meter.h"
 #include "chrome/browser/vr/render_info.h"
-#include "device/vr/util/sliding_average.h"
+#include "chrome/browser/vr/sliding_average.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 #include "ui/gfx/geometry/point3_f.h"
@@ -42,6 +43,7 @@ class SurfaceTexture;
 namespace vr {
 
 class GlBrowserInterface;
+class SlidingTimeDeltaAverage;
 
 struct WebVrBounds {
   WebVrBounds(const gfx::RectF& left,
@@ -203,8 +205,8 @@ class GvrGraphicsDelegate : public BaseGraphicsDelegate {
   TexturesInitializedCallback textures_initialized_callback_;
 
   // GVR acquire/submit times for scheduling heuristics.
-  device::SlidingTimeDeltaAverage webvr_acquire_time_;
-  device::SlidingTimeDeltaAverage webvr_submit_time_;
+  SlidingTimeDeltaAverage webvr_acquire_time_;
+  SlidingTimeDeltaAverage webvr_submit_time_;
 
   gfx::Point3F pointer_start_;
 

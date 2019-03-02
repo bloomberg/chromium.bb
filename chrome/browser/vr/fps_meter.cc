@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/vr/util/fps_meter.h"
+#include "chrome/browser/vr/fps_meter.h"
 
-namespace device {
+namespace vr {
 
 namespace {
 
@@ -46,4 +46,4 @@ double FPSMeter::GetFPS() const {
   return (frame_times_.GetCount() * 1.0e6) / frame_times_.GetSum();
 }
 
-}  // namespace device
+}  // namespace vr

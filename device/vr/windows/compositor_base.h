@@ -10,8 +10,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
-#include "device/vr/util/fps_meter.h"
-#include "device/vr/util/sliding_average.h"
 #include "device/vr/vr_device.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -132,16 +130,7 @@ class XRCompositorCommon : public base::Thread,
     bool waiting_for_webxr_ = false;
     bool waiting_for_overlay_ = false;
     mojom::XRFrameDataPtr frame_data_;
-
-    base::TimeTicks sent_frame_data_time_;
-    base::TimeTicks submit_frame_time_;
-    base::TimeTicks frame_ready_time_;
   };
-
-  FPSMeter fps_meter_;
-  SlidingTimeDeltaAverage webxr_js_time_;
-  SlidingTimeDeltaAverage webxr_gpu_time_;
-
   base::Optional<OutstandingFrame> pending_frame_;
 
   bool is_presenting_ = false;  // True if we have a presenting session.
