@@ -31341,6 +31341,7 @@ from previous Chrome versions.
   <int value="-1396974542" label="UserMediaScreenCapturing:enabled"/>
   <int value="-1392689905" label="ServiceWorkerLongRunningMessage:enabled"/>
   <int value="-1392562498" label="disable-origin-chip"/>
+  <int value="-1391728260" label="ContextualSearchDefinitions:enabled"/>
   <int value="-1391693054"
       label="ContentSuggestionsFaviconsFromNewServer:disabled"/>
   <int value="-1390331361"
@@ -32319,6 +32320,7 @@ from previous Chrome versions.
   <int value="270267831" label="enable-scripts-require-action"/>
   <int value="272631627" label="BookmarkAppsMac:enabled"/>
   <int value="274103741" label="enable-ntp-popular-sites"/>
+  <int value="277565405" label="ContextualSearchDefinitions:disabled"/>
   <int value="278756320" label="disable-app-list-app-info"/>
   <int value="280644887" label="mash"/>
   <int value="282636212" label="VideoPlayerNativeControls:disabled"/>

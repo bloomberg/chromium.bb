@@ -2254,6 +2254,11 @@ const char kContentSuggestionsDebugLogDescription[] =
     "Enable content suggestions debug log accessible through "
     "snippets-internals.";
 
+const char kContextualSearchDefinitionsName[] = "Contextual Search definitions";
+const char kContextualSearchDefinitionsDescription[] =
+    "Enables tap-activated contextual definitions of words on a page to be "
+    "presented in the caption of the Tap to Search Bar.";
+
 const char kContextualSearchMlTapSuppressionName[] =
     "Contextual Search ML tap suppression";
 const char kContextualSearchMlTapSuppressionDescription[] =

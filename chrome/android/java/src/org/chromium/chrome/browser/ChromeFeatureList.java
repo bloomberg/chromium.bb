@@ -201,6 +201,7 @@ public abstract class ChromeFeatureList {
             "ContentSuggestionsScrollToLoad";
     public static final String CONTENT_SUGGESTIONS_THUMBNAIL_DOMINANT_COLOR =
             "ContentSuggestionsThumbnailDominantColor";
+    public static final String CONTEXTUAL_SEARCH_DEFINITIONS = "ContextualSearchDefinitions";
     public static final String CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION =
             "ContextualSearchMlTapSuppression";
     public static final String CONTEXTUAL_SEARCH_SECOND_TAP = "ContextualSearchSecondTap";
