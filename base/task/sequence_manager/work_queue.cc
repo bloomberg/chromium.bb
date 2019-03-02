@@ -154,7 +154,8 @@ Task WorkQueue::TakeTaskFromWorkQueue() {
 }
 
 bool WorkQueue::RemoveAllCanceledTasksFromFront() {
-  DCHECK(work_queue_sets_);
+  if (!work_queue_sets_)
+    return false;
   bool task_removed = false;
   while (!tasks_.empty() &&
          (!tasks_.front().task || tasks_.front().task.IsCancelled())) {
