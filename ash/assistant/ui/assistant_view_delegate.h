@@ -7,7 +7,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #include "ash/assistant/model/assistant_cache_model.h"
 #include "ash/assistant/model/assistant_cache_model_observer.h"
@@ -45,6 +44,12 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegateObserver
   virtual void OnDeepLinkReceived(
       assistant::util::DeepLinkType type,
       const std::map<std::string, std::string>& params) {}
+
+  // Invoked when the dialog plate button identified by |id| is pressed.
+  virtual void OnDialogPlateButtonPressed(AssistantButtonId id) {}
+
+  // Invoked when the dialog plate contents have been committed.
+  virtual void OnDialogPlateContentsCommitted(const std::string& text) {}
 };
 
 // A delegate of views in assistant/ui that handles views related actions e.g.
@@ -67,6 +72,10 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
 
   // Gets the ui model associated with the view delegate.
   virtual const AssistantUiModel* GetUiModel() const = 0;
+
+  // Adds/removes the specified view delegate observer.
+  virtual void AddObserver(AssistantViewDelegateObserver* observer) = 0;
+  virtual void RemoveObserver(AssistantViewDelegateObserver* observer) = 0;
 
   // Adds/removes the cache model observer associated with the view delegate.
   virtual void AddCacheModelObserver(AssistantCacheModelObserver* observer) = 0;
@@ -91,12 +100,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   virtual void AddUiModelObserver(AssistantUiModelObserver* observer) = 0;
   virtual void RemoveUiModelObserver(AssistantUiModelObserver* observer) = 0;
 
-  // Adds/removes the view delegate observer.
-  virtual void AddViewDelegateObserver(
-      AssistantViewDelegateObserver* observer) = 0;
-  virtual void RemoveViewDelegateObserver(
-      AssistantViewDelegateObserver* observer) = 0;
-
   // Adds/removes the voice interaction controller observer associated with the
   // view delegate.
   virtual void AddVoiceInteractionControllerObserver(
@@ -106,9 +109,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
 
   // Gets the caption bar delegate associated with the view delegate.
   virtual CaptionBarDelegate* GetCaptionBarDelegate() = 0;
-
-  // Gets the dialog plate observers associated with the view delegate.
-  virtual std::vector<DialogPlateObserver*> GetDialogPlateObservers() = 0;
 
   // Gets the mini view delegate associated with the view delegate.
   virtual AssistantMiniViewDelegate* GetMiniViewDelegate() = 0;
@@ -134,10 +134,17 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   virtual void GetNavigableContentsFactoryForView(
       content::mojom::NavigableContentsFactoryRequest request) = 0;
 
+  // Returns the root window that newly created windows should be added to.
   virtual aura::Window* GetRootWindowForNewWindows() = 0;
 
   // Returns true if in tablet mode.
   virtual bool IsTabletMode() const = 0;
+
+  // Invoked when the dialog plate button identified by |id| is pressed.
+  virtual void OnDialogPlateButtonPressed(AssistantButtonId id) = 0;
+
+  // Invoked when the dialog plate contents have been committed.
+  virtual void OnDialogPlateContentsCommitted(const std::string& text) = 0;
 
   // Invoked when an in-Assistant notification button is pressed.
   virtual void OnNotificationButtonPressed(const std::string& notification_id,

@@ -10,7 +10,6 @@
 #include "ash/app_list/views/assistant/dialog_plate.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
-#include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace app_list {
@@ -24,19 +23,9 @@ constexpr int kBottomPaddingDip = 8;
 AssistantMainView::AssistantMainView(ash::AssistantViewDelegate* delegate)
     : delegate_(delegate) {
   InitLayout();
-
-  for (ash::DialogPlateObserver* observer :
-       delegate_->GetDialogPlateObservers()) {
-    dialog_plate_->AddObserver(observer);
-  }
 }
 
-AssistantMainView::~AssistantMainView() {
-  for (ash::DialogPlateObserver* observer :
-       delegate_->GetDialogPlateObservers()) {
-    dialog_plate_->RemoveObserver(observer);
-  }
-}
+AssistantMainView::~AssistantMainView() = default;
 
 const char* AssistantMainView::GetClassName() const {
   return "AssistantMainView";

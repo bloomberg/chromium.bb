@@ -67,11 +67,11 @@ AssistantWebView::AssistantWebView(AssistantViewDelegate* delegate)
     : delegate_(delegate), weak_factory_(this) {
   InitLayout();
 
-  delegate_->AddViewDelegateObserver(this);
+  delegate_->AddObserver(this);
 }
 
 AssistantWebView::~AssistantWebView() {
-  delegate_->RemoveViewDelegateObserver(this);
+  delegate_->RemoveObserver(this);
 
   RemoveContents();
 }

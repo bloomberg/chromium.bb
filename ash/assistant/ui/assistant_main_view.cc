@@ -55,17 +55,11 @@ AssistantMainView::AssistantMainView(AssistantViewDelegate* delegate)
   // Set delegate/observers.
   caption_bar_->set_delegate(delegate_->GetCaptionBarDelegate());
 
-  for (DialogPlateObserver* observer : delegate_->GetDialogPlateObservers())
-    dialog_plate_->AddObserver(observer);
-
   // The AssistantViewDelegate should outlive AssistantMainView.
   delegate_->AddUiModelObserver(this);
 }
 
 AssistantMainView::~AssistantMainView() {
-  for (DialogPlateObserver* observer : delegate_->GetDialogPlateObservers())
-    dialog_plate_->RemoveObserver(observer);
-
   delegate_->RemoveUiModelObserver(this);
 }
 

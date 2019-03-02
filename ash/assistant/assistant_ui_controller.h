@@ -16,6 +16,7 @@
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/assistant_mini_view.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/caption_bar.h"
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/highlighter/highlighter_controller.h"
@@ -53,8 +54,8 @@ class ASH_EXPORT AssistantUiController
       public AssistantScreenContextModelObserver,
       public AssistantUiModelObserver,
       public AssistantMiniViewDelegate,
+      public AssistantViewDelegateObserver,
       public CaptionBarDelegate,
-      public DialogPlateObserver,
       public HighlighterController::Observer,
       public keyboard::KeyboardControllerObserver,
       public display::DisplayObserver,
@@ -93,7 +94,7 @@ class ASH_EXPORT AssistantUiController
   // CaptionBarDelegate:
   bool OnCaptionButtonPressed(AssistantButtonId id) override;
 
-  // DialogPlateObserver:
+  // AssistantViewDelegateObserver:
   void OnDialogPlateButtonPressed(AssistantButtonId id) override;
 
   // HighlighterController::Observer:

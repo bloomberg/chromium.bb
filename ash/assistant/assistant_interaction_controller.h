@@ -14,7 +14,7 @@
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
-#include "ash/assistant/ui/dialog_plate/dialog_plate.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -33,8 +33,8 @@ class AssistantInteractionController
       public AssistantControllerObserver,
       public AssistantInteractionModelObserver,
       public AssistantUiModelObserver,
-      public HighlighterController::Observer,
-      public DialogPlateObserver {
+      public AssistantViewDelegateObserver,
+      public HighlighterController::Observer {
  public:
   using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
   using AssistantSuggestionPtr =
@@ -100,7 +100,7 @@ class AssistantInteractionController
   void OnSpeechLevelUpdated(float speech_level) override;
   void OnTtsStarted(bool due_to_error) override;
 
-  // DialogPlateObserver:
+  // AssistantViewDelegateObserver:
   void OnDialogPlateButtonPressed(AssistantButtonId id) override;
   void OnDialogPlateContentsCommitted(const std::string& text) override;
 

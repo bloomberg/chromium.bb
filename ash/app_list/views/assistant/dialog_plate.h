@@ -14,7 +14,6 @@
 #include "ash/assistant/ui/dialog_plate/action_view.h"
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
@@ -24,7 +23,6 @@ class ActionView;
 enum class AssistantButtonId;
 class AssistantViewDelegate;
 class BaseLogoView;
-class DialogPlateObserver;
 }  // namespace ash
 
 namespace ui {
@@ -53,10 +51,6 @@ class APP_LIST_EXPORT DialogPlate
  public:
   explicit DialogPlate(ash::AssistantViewDelegate* delegate);
   ~DialogPlate() override;
-
-  // Adds/removes the specified |observer|.
-  void AddObserver(ash::DialogPlateObserver* observer);
-  void RemoveObserver(ash::DialogPlateObserver* observer);
 
   // views::View:
   const char* GetClassName() const override;
@@ -105,8 +99,6 @@ class APP_LIST_EXPORT DialogPlate
 
   std::unique_ptr<ui::CallbackLayerAnimationObserver> animation_observer_;
   std::unique_ptr<ash::AssistantQueryHistory::Iterator> query_history_iterator_;
-
-  base::ObserverList<ash::DialogPlateObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DialogPlate);
 };
