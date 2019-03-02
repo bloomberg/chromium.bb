@@ -45,7 +45,6 @@ struct NET_EXPORT_PRIVATE CommonConnectJobParams {
   CommonConnectJobParams(
       const std::string& group_name,
       const SocketTag& socket_tag,
-      bool respect_limits,
       ClientSocketFactory* client_socket_factory,
       HostResolver* host_resolver,
       ProxyDelegate* proxy_delegate,
@@ -67,11 +66,6 @@ struct NET_EXPORT_PRIVATE CommonConnectJobParams {
 
   // Tag applied to any created socket.
   SocketTag socket_tag;
-
-  // Whether connection limits should be respected.
-  // TODO(mmenke): Look into removing this. Only needed here because socket
-  // pools query it.
-  bool respect_limits;
 
   ClientSocketFactory* client_socket_factory;
   HostResolver* host_resolver;
@@ -145,9 +139,6 @@ class NET_EXPORT_PRIVATE ConnectJob {
   }
   const NetLogWithSource& net_log() { return net_log_; }
   RequestPriority priority() const { return priority_; }
-  bool respect_limits() const {
-    return common_connect_job_params_.respect_limits;
-  }
 
   // Releases ownership of the underlying socket to the caller. Returns the
   // released socket, or nullptr if there was a connection error.

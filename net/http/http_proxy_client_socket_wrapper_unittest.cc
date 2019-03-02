@@ -299,7 +299,6 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxy) {
       /*proxy_negotiation_timeout_duration=*/base::TimeDelta::FromHours(1),
       CommonConnectJobParams("group_name",
                              /*socket_tag=*/SocketTag(),
-                             /*respect_limits=*/true,
                              /*client_socket_factory=*/nullptr,
                              /*host_resolver=*/nullptr,
                              /*proxy_delegate=*/nullptr,
@@ -367,7 +366,6 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxySocketTag) {
       CommonConnectJobParams(
           /*group_name=*/"group_name",
           /*socket_tag=*/tag,
-          /*respect_limits=*/true,
           /*client_socket_factory=*/nullptr,
           /*host_resolver=*/nullptr,
           /*proxy_delegate=*/nullptr, SSLClientSocketContext(),

@@ -158,14 +158,13 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
     return std::make_unique<SSLConnectJob>(
         priority,
         CommonConnectJobParams(
-            kGroupName, SocketTag(), true /* respect_limits */,
-            &socket_factory_, &host_resolver_, nullptr /* proxy_delegate */,
-            ssl_client_socket_context_, ssl_client_socket_context_,
+            kGroupName, SocketTag(), &socket_factory_, &host_resolver_,
+            nullptr /* proxy_delegate */, ssl_client_socket_context_,
+            ssl_client_socket_context_,
             nullptr /* socket_performance_watcher */,
             nullptr /* network_quality_estimator */, nullptr /* net_log */,
             nullptr /* websocket_lock_endpoint_manager */),
-        SSLParams(proxy_scheme),
-        test_delegate, nullptr /* net_log */);
+        SSLParams(proxy_scheme), test_delegate, nullptr /* net_log */);
   }
 
   scoped_refptr<SSLSocketParams> SSLParams(ProxyServer::Scheme proxy) {

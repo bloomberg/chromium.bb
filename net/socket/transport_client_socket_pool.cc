@@ -145,7 +145,6 @@ TransportClientSocketPool::TransportConnectJobFactory::NewConnectJob(
       request.priority(),
       CommonConnectJobParams(
           group_name, request.socket_tag(),
-          request.respect_limits() == ClientSocketPool::RespectLimits::ENABLED,
           client_socket_factory_, host_resolver_, proxy_delegate_,
           ssl_client_socket_context_, ssl_client_socket_context_privacy_mode_,
           socket_performance_watcher_factory_, network_quality_estimator_,

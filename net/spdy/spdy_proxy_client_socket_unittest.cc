@@ -103,9 +103,8 @@ base::WeakPtr<SpdySession> CreateSpdyProxySession(
   SSLConnectJob connect_job(
       MEDIUM,
       CommonConnectJobParams(
-          "group_name", SocketTag(), true /* respect_limits */,
-          session_deps->socket_factory.get(), session_deps->host_resolver.get(),
-          nullptr /* proxy_delegate */,
+          "group_name", SocketTag(), session_deps->socket_factory.get(),
+          session_deps->host_resolver.get(), nullptr /* proxy_delegate */,
           SSLClientSocketContext(session_deps->cert_verifier.get(),
                                  session_deps->channel_id_service.get(),
                                  session_deps->transport_security_state.get(),
