@@ -1552,6 +1552,19 @@ bool RenderWidgetHostViewAura::ShouldDoLearning() {
   return GetTextInputManager() && GetTextInputManager()->should_do_learning();
 }
 
+#if defined(OS_WIN)
+void RenderWidgetHostViewAura::SetCompositionFromExistingText(
+    const gfx::Range& range,
+    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
+  RenderFrameHostImpl* frame = GetFocusedFrame();
+  if (frame) {
+    frame->GetFrameInputHandler()->SetCompositionFromExistingText(
+        range.start(), range.end(), ui_ime_text_spans);
+    has_composition_text_ = true;
+  }
+}
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, display::DisplayObserver implementation:
 
