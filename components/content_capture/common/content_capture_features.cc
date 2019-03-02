@@ -21,9 +21,9 @@ bool ShouldUseNodeID() {
                                                  false);
 }
 
-int TaskLongDelayInSeconds() {
+int TaskLongDelayInMilliseconds() {
   return base::GetFieldTrialParamByFeatureAsInt(
-      kContentCapture, "task_long_delay_in_seconds", 5);
+      kContentCapture, "task_long_delay_in_milliseconds", 5000);
 }
 
 int TaskShortDelayInMilliseconds() {

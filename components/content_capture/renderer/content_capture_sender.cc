@@ -28,6 +28,15 @@ cc::NodeHolder::Type ContentCaptureSender::GetNodeHolderType() const {
     return cc::NodeHolder::Type::kTextHolder;
 }
 
+void ContentCaptureSender::GetTaskTimingParameters(
+    base::TimeDelta& short_delay,
+    base::TimeDelta& long_delay) const {
+  short_delay = base::TimeDelta::FromMilliseconds(
+      features::TaskShortDelayInMilliseconds());
+  long_delay = base::TimeDelta::FromMilliseconds(
+      features::TaskLongDelayInMilliseconds());
+}
+
 void ContentCaptureSender::DidCaptureContent(
     const std::vector<scoped_refptr<blink::WebContentHolder>>& data,
     bool first_data) {

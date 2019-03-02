@@ -1291,7 +1291,7 @@
                 {
                     "name": "ContentCaptureUseTextHolder",
                     "params": {
-                        "task_long_delay_in_seconds": "5",
+                        "task_long_delay_in_milliseconds": "5000",
                         "task_short_delay_in_milliseconds": "500",
                         "use_node_id": "false"
                     },
