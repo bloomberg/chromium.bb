@@ -19,6 +19,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -175,6 +176,31 @@ IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest,
       histogram_tester.GetAllSamples(
           "Extensions.BrowsingInstanceViolation.IsBackgroundSourceOrTarget"),
       testing::ElementsAre(base::Bucket(false, 1)));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, DownloadExtensionResource) {
+  auto* download_manager =
+      content::BrowserContext::GetDownloadManager(profile());
+  content::DownloadTestObserverTerminal download_observer(
+      download_manager, 1,
+      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT);
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("download")));
+  download_observer.WaitForFinished();
+
+  std::vector<download::DownloadItem*> download_items;
+  download_manager->GetAllDownloads(&download_items);
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  auto file_path = download_items[0]->GetTargetFilePath();
+
+  base::FilePath expected_path = ui_test_utils::GetTestFilePath(
+      base::FilePath(),
+      base::FilePath().AppendASCII("extensions/download/download.dat"));
+
+  std::string actual_contents, expected_contents;
+  ASSERT_TRUE(base::ReadFileToString(file_path, &actual_contents));
+  ASSERT_TRUE(base::ReadFileToString(expected_path, &expected_contents));
+  ASSERT_EQ(expected_contents, actual_contents);
 }
 
 }  // namespace extensions

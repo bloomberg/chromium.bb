@@ -70,6 +70,8 @@
 #include "content/public/common/origin_util.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/url_utils.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
@@ -77,6 +79,7 @@
 #include "net/url_request/url_request_context.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "storage/browser/blob/blob_url_loader_factory.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "url/origin.h"
@@ -1317,6 +1320,35 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
         base::MakeRefCounted<FileSystemDownloadURLLoaderFactoryGetter>(
             params->url(), rfh, /*is_navigation=*/false,
             storage_partition->GetFileSystemContext(), storage_domain);
+  } else if (!IsURLHandledByNetworkService(params->url())) {
+    ContentBrowserClient::NonNetworkURLLoaderFactoryMap
+        non_network_url_loader_factories;
+    GetContentClient()
+        ->browser()
+        ->RegisterNonNetworkSubresourceURLLoaderFactories(
+            params->render_process_host_id(),
+            params->render_frame_host_routing_id(),
+            &non_network_url_loader_factories);
+    auto it = non_network_url_loader_factories.find(params->url().scheme());
+    if (it == non_network_url_loader_factories.end()) {
+      DLOG(ERROR) << "No URLLoaderFactory found to download " << params->url();
+      return;
+    } else {
+      std::unique_ptr<network::mojom::URLLoaderFactory> factory =
+          std::move(it->second);
+      network::mojom::URLLoaderFactoryPtr factory_ptr;
+      mojo::MakeStrongBinding(std::move(factory),
+                              mojo::MakeRequest(&factory_ptr));
+      network::mojom::URLLoaderFactoryPtrInfo factory_ptr_info =
+          factory_ptr.PassInterface();
+
+      auto wrapper_factory =
+          std::make_unique<network::WrapperSharedURLLoaderFactoryInfo>(
+              std::move(factory_ptr_info));
+      url_loader_factory_getter =
+          base::MakeRefCounted<download::DownloadURLLoaderFactoryGetterImpl>(
+              std::move(wrapper_factory));
+    }
   } else {
     StoragePartitionImpl* storage_partition =
         static_cast<StoragePartitionImpl*>(
