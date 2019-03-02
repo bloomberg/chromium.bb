@@ -33,7 +33,11 @@ NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
   DCHECK(netstack_);
 
   netstack_.set_error_handler([](zx_status_t status) {
-    ZX_LOG(FATAL, status) << "Lost connection to netstack.";
+    // TODO(https://crbug.com/901092): Unit tests that use NetworkService are
+    // crashing because NetworkService does not clean up properly, and the
+    // netstack connection is cancelled, causing this fatal error.
+    // When the NetworkService cleanup is fixed, we should make this log FATAL.
+    ZX_LOG(ERROR, status) << "Lost connection to netstack.";
   });
   netstack_.events().OnInterfacesChanged = fit::bind_member(
       this, &NetworkChangeNotifierFuchsia::ProcessInterfaceList);
