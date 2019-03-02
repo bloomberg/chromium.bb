@@ -488,6 +488,7 @@ fuzzer_test("v4_store_fuzzer") {
     "v4_store_fuzzer.cc",
   ]
   deps = [
+    ":v4_protocol_manager_util",
     ":v4_store",
     ":v4_test_util",
     "//base/test:test_support",
