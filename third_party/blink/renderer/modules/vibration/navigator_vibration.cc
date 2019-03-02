@@ -104,9 +104,10 @@ bool NavigatorVibration::vibrate(Navigator& navigator,
 void NavigatorVibration::CollectHistogramMetrics(const LocalFrame& frame) {
   NavigatorVibrationType type;
   bool user_gesture = frame.HasBeenActivated();
-  UseCounter::Count(&frame, WebFeature::kNavigatorVibrate);
+  UseCounter::Count(frame.GetDocument(), WebFeature::kNavigatorVibrate);
   if (!frame.IsMainFrame()) {
-    UseCounter::Count(&frame, WebFeature::kNavigatorVibrateSubFrame);
+    UseCounter::Count(frame.GetDocument(),
+                      WebFeature::kNavigatorVibrateSubFrame);
     if (frame.IsCrossOriginSubframe()) {
       if (user_gesture)
         type = NavigatorVibrationType::kCrossOriginSubFrameWithUserGesture;
