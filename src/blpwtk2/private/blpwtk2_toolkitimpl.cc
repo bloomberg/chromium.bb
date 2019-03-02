@@ -70,6 +70,15 @@
 #include <third_party/blink/public/web/web_security_policy.h>
 #include <third_party/blink/public/web/web_script_controller.h>
 
+#include <atomic>
+#include <condition_variable>
+#include <chrono>
+#include <mutex>
+#include <thread>
+#include <tuple>
+#include <utility>
+#include <third_party/blink/public/web/web_script_bindings.h>
+
 
 
 // patch section: embedder ipc
@@ -82,6 +91,50 @@
 namespace blpwtk2 {
 
 static ToolkitImpl *g_instance;
+constexpr size_t EXIT_TIME_OUT_MS{1000};
+constexpr size_t TERMINATE_LOG_WAIT_TIME_MS{200};
+
+                        // ===============
+                        // class ScopeExitGuard
+                        // ===============
+// ScopeExitGuard is used to prevent deadlocks / race conditions.
+// At the given timeout if a ScopeExitGuard is not out of scope,
+// the current process will be terminated.
+// On the other hand,  nothing will happen except logging an info when
+// a ScopeExitGuard is out of scope normally.
+class ScopeExitGuard {
+public:
+  ScopeExitGuard(size_t timeout_ms) {
+    LOG(INFO) << "Monitoring renderer exit process...";
+    monitor_thread_ = std::thread([this, timeout_ms]() {
+      std::mutex mtx;
+      std::unique_lock<std::mutex> lk(mtx);
+      while (cv_.wait_for(lk, std::chrono::milliseconds(timeout_ms)) !=
+                 std::cv_status::timeout &&
+             !exit_normally_) {
+      }
+      if (!exit_normally_) {
+        // Try to log the error message before terminating the process
+        LOG(ERROR) << "Renderer terminated because of exit timeout";
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds{TERMINATE_LOG_WAIT_TIME_MS});
+        base::Process::TerminateCurrentProcessImmediately(0);
+      }
+    });
+  }
+
+  ~ScopeExitGuard() {
+    exit_normally_ = true;
+    cv_.notify_one();
+    monitor_thread_.join();
+    LOG(INFO) << "Renderer exits normally";
+  }
+
+private:
+  std::atomic<bool> exit_normally_{false};
+  std::condition_variable cv_;
+  std::thread monitor_thread_;
+};
 
 static void createLoopbackHostChannel(
         std::string                                       *hostChannel,
@@ -547,6 +600,7 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
 ToolkitImpl::~ToolkitImpl()
 {
     LOG(INFO) << "Shutting down threads...";
+    ScopeExitGuard exit_guard{EXIT_TIME_OUT_MS};
 
     if (Statics::isRendererMainThreadMode()) {
         if (d_browserThread.get()) {
