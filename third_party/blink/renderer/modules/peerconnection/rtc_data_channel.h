@@ -26,9 +26,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_DATA_CHANNEL_H_
 
 #include <memory>
+
 #include "base/gtest_prod_util.h"
-#include "third_party/blink/public/platform/web_rtc_data_channel_handler.h"
-#include "third_party/blink/public/platform/web_rtc_data_channel_handler_client.h"
+#include "base/sequence_checker.h"
+#include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
@@ -36,6 +37,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
+#include "third_party/webrtc/api/peer_connection_interface.h"
 
 namespace blink {
 
@@ -43,13 +45,10 @@ class Blob;
 class DOMArrayBuffer;
 class DOMArrayBufferView;
 class ExceptionState;
-class WebRTCDataChannelHandler;
 class WebRTCPeerConnectionHandler;
-struct WebRTCDataChannelInit;
 
 class MODULES_EXPORT RTCDataChannel final
     : public EventTargetWithInlineData,
-      public WebRTCDataChannelHandlerClient,
       public ActiveScriptWrappable<RTCDataChannel>,
       public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(RTCDataChannel);
@@ -57,18 +56,15 @@ class MODULES_EXPORT RTCDataChannel final
   USING_PRE_FINALIZER(RTCDataChannel, Dispose);
 
  public:
-  static RTCDataChannel* Create(ExecutionContext*,
-                                std::unique_ptr<WebRTCDataChannelHandler>);
-  static RTCDataChannel* Create(ExecutionContext*,
-                                WebRTCPeerConnectionHandler*,
-                                const String& label,
-                                const WebRTCDataChannelInit&,
-                                ExceptionState&);
+  static RTCDataChannel* Create(
+      ExecutionContext*,
+      scoped_refptr<webrtc::DataChannelInterface> channel,
+      WebRTCPeerConnectionHandler* peer_connection_handler);
 
-  RTCDataChannel(ExecutionContext*, std::unique_ptr<WebRTCDataChannelHandler>);
+  RTCDataChannel(ExecutionContext*,
+                 scoped_refptr<webrtc::DataChannelInterface> channel,
+                 WebRTCPeerConnectionHandler* peer_connection_handler);
   ~RTCDataChannel() override;
-
-  ReadyState GetHandlerState() const;
 
   String label() const;
 
@@ -115,34 +111,76 @@ class MODULES_EXPORT RTCDataChannel final
 
   void Trace(blink::Visitor*) override;
 
-  // WebRTCDataChannelHandlerClient
-  void DidChangeReadyState(WebRTCDataChannelHandlerClient::ReadyState) override;
-  void DidDecreaseBufferedAmount(unsigned) override;
-  void DidReceiveStringData(const WebString&) override;
-  void DidReceiveRawData(const char*, size_t) override;
-  void DidDetectError() override;
-
  private:
+  friend class Observer;
+  // Implementation of webrtc::DataChannelObserver that receives events on
+  // webrtc's signaling thread and forwards them over to the main thread for
+  // handling. Since the |blink_channel_|'s lifetime is scoped potentially
+  // narrower than the |webrtc_channel_|, the observer is reference counted to
+  // make sure all callbacks have a valid pointer but won't do anything if the
+  // |blink_channel_| has gone away.
+  class Observer : public WTF::ThreadSafeRefCounted<RTCDataChannel::Observer>,
+                   public webrtc::DataChannelObserver {
+   public:
+    Observer(scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+             RTCDataChannel* blink_channel,
+             scoped_refptr<webrtc::DataChannelInterface> channel);
+    ~Observer() override;
+
+    // Returns a reference to |webrtc_channel_|. Typically called from the main
+    // thread except for on observer registration, done in a synchronous call to
+    // the signaling thread (safe because the call is synchronous).
+    const scoped_refptr<webrtc::DataChannelInterface>& channel() const;
+
+    // Clears the |blink_channel_| reference, disassociates this observer from
+    // the |webrtc_channel_| and releases the |webrtc_channel_| pointer. Must be
+    // called on the main thread.
+    void Unregister();
+
+    // webrtc::DataChannelObserver implementation, called from signaling thread.
+    void OnStateChange() override;
+    void OnBufferedAmountChange(uint64_t previous_amount) override;
+    void OnMessage(const webrtc::DataBuffer& buffer) override;
+
+   private:
+    // webrtc::DataChannelObserver implementation on the main thread.
+    void OnStateChangeImpl(webrtc::DataChannelInterface::DataState state);
+    void OnBufferedAmountDecreaseImpl(unsigned previous_amount);
+    void OnMessageImpl(std::unique_ptr<webrtc::DataBuffer> buffer);
+
+    const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
+    WeakPersistent<RTCDataChannel> blink_channel_;
+    scoped_refptr<webrtc::DataChannelInterface> webrtc_channel_;
+  };
+
+  void OnStateChange(webrtc::DataChannelInterface::DataState state);
+  void OnBufferedAmountDecrease(unsigned previous_amount);
+  void OnMessage(std::unique_ptr<webrtc::DataBuffer> buffer);
+
   void Dispose();
 
   void ScheduleDispatchEvent(Event*);
   void ScheduledEventTimerFired(TimerBase*);
 
-  std::unique_ptr<WebRTCDataChannelHandler> handler_;
+  const scoped_refptr<webrtc::DataChannelInterface>& channel() const;
+  bool SendRawData(const char* data, size_t length);
 
-  WebRTCDataChannelHandlerClient::ReadyState ready_state_;
+  webrtc::DataChannelInterface::DataState state_;
 
   enum BinaryType { kBinaryTypeBlob, kBinaryTypeArrayBuffer };
   BinaryType binary_type_;
 
   TaskRunnerTimer<RTCDataChannel> scheduled_event_timer_;
   HeapVector<Member<Event>> scheduled_events_;
+  FRIEND_TEST_ALL_PREFIXES(RTCDataChannelTest, Open);
+  FRIEND_TEST_ALL_PREFIXES(RTCDataChannelTest, Close);
+  FRIEND_TEST_ALL_PREFIXES(RTCDataChannelTest, Message);
+  FRIEND_TEST_ALL_PREFIXES(RTCDataChannelTest, BufferedAmountLow);
 
   unsigned buffered_amount_low_threshold_;
-
   bool stopped_;
-
-  FRIEND_TEST_ALL_PREFIXES(RTCDataChannelTest, BufferedAmountLow);
+  scoped_refptr<Observer> observer_;
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // namespace blink

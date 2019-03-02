@@ -33,7 +33,6 @@
 namespace blink {
 class WebLocalFrame;
 class WebRTCAnswerOptions;
-class WebRTCDataChannelHandler;
 class WebRTCLegacyStats;
 class WebRTCOfferOptions;
 class WebRTCPeerConnectionHandlerClient;
@@ -43,7 +42,6 @@ namespace content {
 
 class PeerConnectionDependencyFactory;
 class PeerConnectionTracker;
-class RtcDataChannelHandler;
 class SetLocalDescriptionRequest;
 
 // Mockable wrapper for blink::WebRTCStatsResponse
@@ -166,7 +164,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>> RemoveTrack(
       blink::WebRTCRtpSender* web_sender) override;
 
-  blink::WebRTCDataChannelHandler* CreateDataChannel(
+  scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
       const blink::WebString& label,
       const blink::WebRTCDataChannelInit& init) override;
   void Stop() override;
@@ -227,7 +225,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   void OnRemoveReceiverPlanB(uintptr_t receiver_id);
   void OnModifyTransceivers(std::vector<RtpTransceiverState> transceiver_states,
                             bool is_remote_description);
-  void OnDataChannel(std::unique_ptr<RtcDataChannelHandler> handler);
+  void OnDataChannel(scoped_refptr<webrtc::DataChannelInterface> channel);
   void OnIceCandidate(const std::string& sdp,
                       const std::string& sdp_mid,
                       int sdp_mline_index,

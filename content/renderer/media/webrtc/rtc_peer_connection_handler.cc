@@ -31,7 +31,6 @@
 #include "content/renderer/media/stream/media_stream_constraints_util.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
-#include "content/renderer/media/webrtc/rtc_data_channel_handler.h"
 #include "content/renderer/media/webrtc/rtc_dtmf_sender_handler.h"
 #include "content/renderer/media/webrtc/rtc_event_log_output_sink.h"
 #include "content/renderer/media/webrtc/rtc_event_log_output_sink_proxy.h"
@@ -839,12 +838,11 @@ class RTCPeerConnectionHandler::Observer
 
   void OnDataChannel(
       rtc::scoped_refptr<DataChannelInterface> data_channel) override {
-    std::unique_ptr<RtcDataChannelHandler> handler(
-        new RtcDataChannelHandler(main_thread_, data_channel));
     main_thread_->PostTask(
         FROM_HERE,
-        base::BindOnce(&RTCPeerConnectionHandler::Observer::OnDataChannelImpl,
-                       this, std::move(handler)));
+        base::BindOnce(
+            &RTCPeerConnectionHandler::Observer::OnDataChannelImpl, this,
+            base::WrapRefCounted<DataChannelInterface>(data_channel.get())));
   }
 
   void OnRenegotiationNeeded() override {
@@ -915,10 +913,10 @@ class RTCPeerConnectionHandler::Observer
                        candidate->candidate().address().family()));
   }
 
-  void OnDataChannelImpl(std::unique_ptr<RtcDataChannelHandler> handler) {
+  void OnDataChannelImpl(scoped_refptr<DataChannelInterface> channel) {
     DCHECK(main_thread_->BelongsToCurrentThread());
     if (handler_)
-      handler_->OnDataChannel(std::move(handler));
+      handler_->OnDataChannel(std::move(channel));
   }
 
   void OnIceCandidateImpl(const std::string& sdp, const std::string& sdp_mid,
@@ -1915,7 +1913,7 @@ void RTCPeerConnectionHandler::OnWebRtcEventLogWrite(
   }
 }
 
-blink::WebRTCDataChannelHandler* RTCPeerConnectionHandler::CreateDataChannel(
+scoped_refptr<DataChannelInterface> RTCPeerConnectionHandler::CreateDataChannel(
     const blink::WebString& label,
     const blink::WebRTCDataChannelInit& init) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -1933,7 +1931,7 @@ blink::WebRTCDataChannelHandler* RTCPeerConnectionHandler::CreateDataChannel(
   config.maxRetransmitTime = init.max_retransmit_time;
   config.protocol = init.protocol.Utf8();
 
-  rtc::scoped_refptr<webrtc::DataChannelInterface> webrtc_channel(
+  rtc::scoped_refptr<DataChannelInterface> webrtc_channel(
       native_peer_connection_->CreateDataChannel(label.Utf8(), &config));
   if (!webrtc_channel) {
     DLOG(ERROR) << "Could not create native data channel.";
@@ -1946,7 +1944,7 @@ blink::WebRTCDataChannelHandler* RTCPeerConnectionHandler::CreateDataChannel(
 
   ++num_data_channels_created_;
 
-  return new RtcDataChannelHandler(task_runner_, webrtc_channel);
+  return base::WrapRefCounted<DataChannelInterface>(webrtc_channel.get());
 }
 
 void RTCPeerConnectionHandler::Stop() {
@@ -2217,17 +2215,17 @@ void RTCPeerConnectionHandler::OnModifyTransceivers(
 }
 
 void RTCPeerConnectionHandler::OnDataChannel(
-    std::unique_ptr<RtcDataChannelHandler> handler) {
+    scoped_refptr<DataChannelInterface> channel) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnDataChannelImpl");
 
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackCreateDataChannel(
-        this, handler->channel().get(), PeerConnectionTracker::SOURCE_REMOTE);
+        this, channel.get(), PeerConnectionTracker::SOURCE_REMOTE);
   }
 
   if (!is_closed_)
-    client_->DidAddRemoteDataChannel(handler.release());
+    client_->DidAddRemoteDataChannel(std::move(channel));
 }
 
 void RTCPeerConnectionHandler::OnIceCandidate(

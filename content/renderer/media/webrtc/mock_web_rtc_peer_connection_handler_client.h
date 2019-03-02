@@ -5,7 +5,9 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBRTC_MOCK_WEB_RTC_PEER_CONNECTION_HANDLER_CLIENT_H_
 #define CONTENT_RENDERER_MEDIA_WEBRTC_MOCK_WEB_RTC_PEER_CONNECTION_HANDLER_CLIENT_H_
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -48,7 +50,8 @@ class MockWebRTCPeerConnectionHandlerClient
       bool is_remote_description) override {
     DidModifyTransceiversForMock(&web_transceivers, is_remote_description);
   }
-  MOCK_METHOD1(DidAddRemoteDataChannel, void(blink::WebRTCDataChannelHandler*));
+  MOCK_METHOD1(DidAddRemoteDataChannel,
+               void(scoped_refptr<webrtc::DataChannelInterface>));
   MOCK_METHOD1(DidNoteInterestingUsage, void(int));
   MOCK_METHOD0(ReleasePeerConnectionHandler, void());
 

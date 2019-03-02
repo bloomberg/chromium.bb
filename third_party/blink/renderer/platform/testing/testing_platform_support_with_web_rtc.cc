@@ -367,7 +367,8 @@ MockWebRTCPeerConnectionHandler::RemoveTrack(WebRTCRtpSender* sender) {
   return std::unique_ptr<WebRTCRtpTransceiver>(std::move(copy));
 }
 
-WebRTCDataChannelHandler* MockWebRTCPeerConnectionHandler::CreateDataChannel(
+scoped_refptr<webrtc::DataChannelInterface>
+MockWebRTCPeerConnectionHandler::CreateDataChannel(
     const WebString& label,
     const WebRTCDataChannelInit&) {
   return nullptr;

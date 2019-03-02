@@ -53,7 +53,6 @@ class WebMediaConstraints;
 class WebMediaStream;
 class WebMediaStreamTrack;
 class WebRTCAnswerOptions;
-class WebRTCDataChannelHandler;
 class WebRTCOfferOptions;
 class WebRTCRtpSender;
 class WebRTCSessionDescription;
@@ -116,7 +115,7 @@ class WebRTCPeerConnectionHandler {
   // API when the new API has matured enough.
   virtual void GetStats(std::unique_ptr<WebRTCStatsReportCallback>,
                         RTCStatsFilter) = 0;
-  virtual WebRTCDataChannelHandler* CreateDataChannel(
+  virtual scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
       const WebString& label,
       const WebRTCDataChannelInit&) = 0;
   virtual webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>

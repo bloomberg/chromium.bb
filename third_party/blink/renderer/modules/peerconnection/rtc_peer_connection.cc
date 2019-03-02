@@ -47,7 +47,6 @@
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_rtc_answer_options.h"
 #include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
-#include "third_party/blink/public/platform/web_rtc_data_channel_handler.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
 #include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
 #include "third_party/blink/public/platform/web_rtc_key_params.h"
@@ -143,10 +142,10 @@ const int64_t kMaxPeerConnections = 500;
 
 bool ThrowExceptionIfSignalingStateClosed(
     webrtc::PeerConnectionInterface::SignalingState state,
-    ExceptionState& exception_state) {
+    ExceptionState* exception_state) {
   if (state == webrtc::PeerConnectionInterface::SignalingState::kClosed) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      kSignalingStateClosedMessage);
+    exception_state->ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                       kSignalingStateClosedMessage);
     return true;
   }
 
@@ -312,7 +311,7 @@ webrtc::PeerConnectionInterface::IceTransportsType IceTransportPolicyFromString(
 webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
     ExecutionContext* context,
     const RTCConfiguration* configuration,
-    ExceptionState& exception_state) {
+    ExceptionState* exception_state) {
   DCHECK(context);
 
   webrtc::PeerConnectionInterface::RTCConfiguration web_configuration;
@@ -390,7 +389,7 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
         UseCounter::Count(context, WebFeature::kRTCIceServerURL);
         url_strings.push_back(ice_server->url());
       } else {
-        exception_state.ThrowTypeError("Malformed RTCIceServer");
+        exception_state->ThrowTypeError("Malformed RTCIceServer");
         return {};
       }
 
@@ -400,14 +399,14 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
       for (const String& url_string : url_strings) {
         KURL url(NullURL(), url_string);
         if (!url.IsValid()) {
-          exception_state.ThrowDOMException(
+          exception_state->ThrowDOMException(
               DOMExceptionCode::kSyntaxError,
               "'" + url_string + "' is not a valid URL.");
           return {};
         }
         if (!(url.ProtocolIs("turn") || url.ProtocolIs("turns") ||
               url.ProtocolIs("stun"))) {
-          exception_state.ThrowDOMException(
+          exception_state->ThrowDOMException(
               DOMExceptionCode::kSyntaxError,
               "'" + url.Protocol() +
                   "' is not one of the supported URL schemes "
@@ -416,7 +415,7 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
         }
         if ((url.ProtocolIs("turn") || url.ProtocolIs("turns")) &&
             (username.IsNull() || credential.IsNull())) {
-          exception_state.ThrowDOMException(
+          exception_state->ThrowDOMException(
               DOMExceptionCode::kInvalidAccessError,
               "Both username and credential are "
               "required when the URL scheme is "
@@ -473,13 +472,13 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
 }
 
 RTCOfferOptionsPlatform* ParseOfferOptions(const Dictionary& options,
-                                           ExceptionState& exception_state) {
+                                           ExceptionState* exception_state) {
   if (options.IsUndefinedOrNull())
     return nullptr;
 
   const Vector<String>& property_names =
-      options.GetPropertyNames(exception_state);
-  if (exception_state.HadException())
+      options.GetPropertyNames(*exception_state);
+  if (exception_state->HadException())
     return nullptr;
 
   // Treat |options| as MediaConstraints if it is empty or has "optional" or
@@ -672,7 +671,7 @@ RTCPeerConnection* RTCPeerConnection::Create(
   }
 
   webrtc::PeerConnectionInterface::RTCConfiguration configuration =
-      ParseConfiguration(context, rtc_configuration, exception_state);
+      ParseConfiguration(context, rtc_configuration, &exception_state);
   if (exception_state.HadException())
     return nullptr;
 
@@ -871,7 +870,7 @@ ScriptPromise RTCPeerConnection::createOffer(
     return ScriptPromise::CastUndefined(script_state);
 
   RTCOfferOptionsPlatform* offer_options =
-      ParseOfferOptions(rtc_offer_options, exception_state);
+      ParseOfferOptions(rtc_offer_options, &exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
   call_setup_state_tracker_.NoteOffererStateEvent(
@@ -1507,12 +1506,12 @@ void RTCPeerConnection::setConfiguration(
     ScriptState* script_state,
     const RTCConfiguration* rtc_configuration,
     ExceptionState& exception_state) {
-  if (ThrowExceptionIfSignalingStateClosed(signaling_state_, exception_state))
+  if (ThrowExceptionIfSignalingStateClosed(signaling_state_, &exception_state))
     return;
 
   webrtc::PeerConnectionInterface::RTCConfiguration configuration =
       ParseConfiguration(ExecutionContext::From(script_state),
-                         rtc_configuration, exception_state);
+                         rtc_configuration, &exception_state);
 
   if (exception_state.HadException())
     return;
@@ -1822,7 +1821,7 @@ void RTCPeerConnection::addStream(ScriptState* script_state,
                                   MediaStream* stream,
                                   const Dictionary& media_constraints,
                                   ExceptionState& exception_state) {
-  if (ThrowExceptionIfSignalingStateClosed(signaling_state_, exception_state))
+  if (ThrowExceptionIfSignalingStateClosed(signaling_state_, &exception_state))
     return;
   if (!media_constraints.IsUndefinedOrNull()) {
     MediaErrorState media_error_state;
@@ -1850,7 +1849,7 @@ void RTCPeerConnection::addStream(ScriptState* script_state,
 
 void RTCPeerConnection::removeStream(MediaStream* stream,
                                      ExceptionState& exception_state) {
-  if (ThrowExceptionIfSignalingStateClosed(signaling_state_, exception_state))
+  if (ThrowExceptionIfSignalingStateClosed(signaling_state_, &exception_state))
     return;
   for (const auto& track : stream->getTracks()) {
     auto* sender = FindSenderForTrackAndStream(track, stream);
@@ -2075,7 +2074,7 @@ RTCRtpTransceiver* RTCPeerConnection::addTransceiver(
                                       kOnlySupportedInUnifiedPlanMessage);
     return nullptr;
   }
-  if (ThrowExceptionIfSignalingStateClosed(signaling_state_, exception_state))
+  if (ThrowExceptionIfSignalingStateClosed(signaling_state_, &exception_state))
     return nullptr;
   auto webrtc_init = ToRtpTransceiverInit(init);
   webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>> result =
@@ -2115,7 +2114,7 @@ RTCRtpSender* RTCPeerConnection::addTrack(MediaStreamTrack* track,
                                           ExceptionState& exception_state) {
   DCHECK(track);
   DCHECK(track->Component());
-  if (ThrowExceptionIfSignalingStateClosed(signaling_state_, exception_state))
+  if (ThrowExceptionIfSignalingStateClosed(signaling_state_, &exception_state))
     return nullptr;
   if (sdp_semantics_ == webrtc::SdpSemantics::kPlanB && streams.size() >= 2) {
     // TODO(hbos): Update peer_handler_ to call the AddTrack() that returns the
@@ -2183,7 +2182,7 @@ RTCRtpSender* RTCPeerConnection::addTrack(MediaStreamTrack* track,
 void RTCPeerConnection::removeTrack(RTCRtpSender* sender,
                                     ExceptionState& exception_state) {
   DCHECK(sender);
-  if (ThrowExceptionIfSignalingStateClosed(signaling_state_, exception_state))
+  if (ThrowExceptionIfSignalingStateClosed(signaling_state_, &exception_state))
     return;
   auto* it = FindSender(*sender->web_sender());
   if (it == rtp_senders_.end()) {
@@ -2223,7 +2222,7 @@ RTCDataChannel* RTCPeerConnection::createDataChannel(
     String label,
     const RTCDataChannelInit* data_channel_dict,
     ExceptionState& exception_state) {
-  if (ThrowExceptionIfSignalingStateClosed(signaling_state_, exception_state))
+  if (ThrowExceptionIfSignalingStateClosed(signaling_state_, &exception_state))
     return nullptr;
 
   WebRTCDataChannelInit init;
@@ -2254,15 +2253,15 @@ RTCDataChannel* RTCPeerConnection::createDataChannel(
   if (data_channel_dict->hasId())
     init.id = data_channel_dict->id();
 
-  RTCDataChannel* channel = RTCDataChannel::Create(
-      GetExecutionContext(), peer_handler_.get(), label, init, exception_state);
-  if (exception_state.HadException())
+  scoped_refptr<webrtc::DataChannelInterface> webrtc_channel =
+      peer_handler_->CreateDataChannel(label, init);
+  if (!webrtc_channel) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      "RTCDataChannel is not supported");
     return nullptr;
-  RTCDataChannel::ReadyState handler_state = channel->GetHandlerState();
-  if (handler_state != RTCDataChannel::kReadyStateConnecting) {
-    // There was an early state transition.  Don't miss it!
-    channel->DidChangeReadyState(handler_state);
   }
+  RTCDataChannel* channel = RTCDataChannel::Create(
+      GetExecutionContext(), std::move(webrtc_channel), peer_handler_.get());
   has_data_channels_ = true;
 
   return channel;
@@ -2459,7 +2458,7 @@ RTCIceTransport* RTCPeerConnection::CreateOrUpdateIceTransport(
 RTCDTMFSender* RTCPeerConnection::createDTMFSender(
     MediaStreamTrack* track,
     ExceptionState& exception_state) {
-  if (ThrowExceptionIfSignalingStateClosed(signaling_state_, exception_state))
+  if (ThrowExceptionIfSignalingStateClosed(signaling_state_, &exception_state))
     return nullptr;
   if (track->kind() != "audio") {
     exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
@@ -2836,7 +2835,7 @@ void RTCPeerConnection::SetAssociatedMediaStreams(
 }
 
 void RTCPeerConnection::DidAddRemoteDataChannel(
-    WebRTCDataChannelHandler* handler) {
+    scoped_refptr<webrtc::DataChannelInterface> channel) {
   DCHECK(!closed_);
   DCHECK(GetExecutionContext()->IsContextThread());
 
@@ -2844,10 +2843,10 @@ void RTCPeerConnection::DidAddRemoteDataChannel(
       webrtc::PeerConnectionInterface::SignalingState::kClosed)
     return;
 
-  RTCDataChannel* channel =
-      RTCDataChannel::Create(GetExecutionContext(), base::WrapUnique(handler));
-  ScheduleDispatchEvent(
-      RTCDataChannelEvent::Create(event_type_names::kDatachannel, channel));
+  RTCDataChannel* blink_channel = RTCDataChannel::Create(
+      GetExecutionContext(), std::move(channel), peer_handler_.get());
+  ScheduleDispatchEvent(RTCDataChannelEvent::Create(
+      event_type_names::kDatachannel, blink_channel));
   has_data_channels_ = true;
 }
 

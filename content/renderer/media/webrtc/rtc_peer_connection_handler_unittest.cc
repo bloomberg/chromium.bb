@@ -45,7 +45,6 @@
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/platform/web_rtc_data_channel_handler.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
 #include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
 #include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
@@ -1225,11 +1224,10 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateDataChannel) {
               TrackCreateDataChannel(pc_handler_.get(),
                                      testing::NotNull(),
                                      PeerConnectionTracker::SOURCE_LOCAL));
-  std::unique_ptr<blink::WebRTCDataChannelHandler> channel(
-      pc_handler_->CreateDataChannel("d1", blink::WebRTCDataChannelInit()));
+  scoped_refptr<webrtc::DataChannelInterface> channel =
+      pc_handler_->CreateDataChannel("d1", blink::WebRTCDataChannelInit());
   EXPECT_TRUE(channel.get() != nullptr);
-  EXPECT_EQ(label, channel->Label());
-  channel->SetClient(nullptr);
+  EXPECT_EQ(label.Utf8(), channel->label());
 }
 
 }  // namespace content
