@@ -52,12 +52,6 @@ class ServiceWorkerTaskQueue : public KeyedService,
   // e.g. unregistering |extension|'s worker.
   void DeactivateExtension(const Extension* extension);
 
-  // Called once an extension Service Worker context was initialized but not
-  // necessarily started executing its JavaScript.
-  void DidInitializeServiceWorkerContext(int render_process_id,
-                                         const ExtensionId& extension_id,
-                                         int64_t service_worker_version_id,
-                                         int thread_id);
   // Called once an extension Service Worker started running.
   // This can be thought as "loadstop", i.e. the global JS script of the worker
   // has completed executing.

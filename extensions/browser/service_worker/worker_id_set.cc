@@ -91,8 +91,4 @@ std::vector<WorkerId> WorkerIdSet::GetAllForExtension(
   return std::vector<WorkerId>(begin_range, end_range);
 }
 
-std::vector<WorkerId> WorkerIdSet::GetAllForTesting() const {
-  return std::vector<WorkerId>(workers_.begin(), workers_.end());
-}
-
 }  // namespace extensions
