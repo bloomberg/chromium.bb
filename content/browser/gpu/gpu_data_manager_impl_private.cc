@@ -585,12 +585,14 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
 
 #if !defined(OS_MACOSX)
   // MacOSX bots use real GPU in tests.
-  if (browser_command_line->HasSwitch(
-          switches::kOverrideUseSoftwareGLForTests) ||
-      browser_command_line->HasSwitch(switches::kHeadless)) {
-    // TODO(zmo): We should also pass in kUseGL here.
-    // See https://crbug.com/805204.
-    command_line->AppendSwitch(switches::kOverrideUseSoftwareGLForTests);
+  if (browser_command_line->HasSwitch(switches::kHeadless)) {
+    if (command_line->HasSwitch(switches::kUseGL)) {
+      use_gl = command_line->GetSwitchValueASCII(switches::kUseGL);
+      // Don't append kOverrideUseSoftwareGLForTests when we need to enable GPU
+      // hardware for headless chromium.
+      if (use_gl != gl::kGLImplementationEGLName)
+        command_line->AppendSwitch(switches::kOverrideUseSoftwareGLForTests);
+    }
   }
 #endif  // !OS_MACOSX
 }
