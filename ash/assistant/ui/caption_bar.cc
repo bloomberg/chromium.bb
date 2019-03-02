@@ -4,8 +4,6 @@
 
 #include "ash/assistant/ui/caption_bar.h"
 
-#include <memory>
-
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/base/assistant_button.h"
@@ -15,6 +13,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/event_monitor.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/vector_icons/vector_icons.h"
@@ -53,31 +52,6 @@ const char* CaptionBar::GetClassName() const {
   return "CaptionBar";
 }
 
-bool CaptionBar::AcceleratorPressed(const ui::Accelerator& accelerator) {
-  switch (accelerator.key_code()) {
-    case ui::VKEY_BROWSER_BACK:
-      HandleButton(AssistantButtonId::kBack);
-      break;
-    case ui::VKEY_ESCAPE:
-      HandleButton(AssistantButtonId::kClose);
-      break;
-    case ui::VKEY_W:
-      if (accelerator.IsCtrlDown()) {
-        HandleButton(AssistantButtonId::kClose);
-      } else {
-        NOTREACHED();
-        return false;
-      }
-      break;
-    default:
-      NOTREACHED();
-      return false;
-  }
-
-  // Don't let ClientView handle the accelerator.
-  return true;
-}
-
 gfx::Size CaptionBar::CalculatePreferredSize() const {
   return gfx::Size(INT_MAX, GetHeightForWidth(INT_MAX));
 }
@@ -86,9 +60,47 @@ int CaptionBar::GetHeightForWidth(int width) const {
   return kPreferredHeightDip;
 }
 
+void CaptionBar::VisibilityChanged(views::View* starting_from, bool visible) {
+  if (!IsDrawn()) {
+    event_monitor_.reset();
+    return;
+  }
+
+  views::Widget* widget = GetWidget();
+  if (!widget)
+    return;
+
+  // Only when the CaptionBar is drawn do we allow it to monitor key press
+  // events. We monitor key press events to handle hotkeys that behave the same
+  // as caption bar buttons. Note that we use an EventMonitor rather than adding
+  // accelerators so that we always receive key events, even if an embedded
+  // navigable contents in our view hierarchy has focus.
+  gfx::NativeWindow root_window = widget->GetNativeWindow()->GetRootWindow();
+  event_monitor_ = views::EventMonitor::CreateWindowMonitor(
+      this, root_window, {ui::ET_KEY_PRESSED});
+}
+
 void CaptionBar::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  auto id = static_cast<AssistantButtonId>(sender->id());
-  HandleButton(id);
+  HandleButton(static_cast<AssistantButtonId>(sender->id()));
+}
+
+void CaptionBar::OnEvent(const ui::Event& event) {
+  const ui::KeyEvent& key_event = static_cast<const ui::KeyEvent&>(event);
+  switch (key_event.key_code()) {
+    case ui::VKEY_BROWSER_BACK:
+      HandleButton(AssistantButtonId::kBack);
+      break;
+    case ui::VKEY_ESCAPE:
+      HandleButton(AssistantButtonId::kClose);
+      break;
+    case ui::VKEY_W:
+      if (key_event.IsControlDown())
+        HandleButton(AssistantButtonId::kClose);
+      break;
+    default:
+      // No action necessary.
+      break;
+  }
 }
 
 void CaptionBar::SetButtonVisible(AssistantButtonId id, bool visible) {
@@ -107,10 +119,8 @@ void CaptionBar::InitLayout() {
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
   // Back.
-  auto* back_button =
-      CreateCaptionButton(kWindowControlBackIcon, IDS_APP_LIST_BACK,
-                          AssistantButtonId::kBack, this);
-  AddChildView(back_button);
+  AddChildView(CreateCaptionButton(kWindowControlBackIcon, IDS_APP_LIST_BACK,
+                                   AssistantButtonId::kBack, this));
 
   // Spacer.
   views::View* spacer = new views::View();
@@ -119,21 +129,14 @@ void CaptionBar::InitLayout() {
   layout_manager->SetFlexForView(spacer, 1);
 
   // Minimize.
-  auto* minimize_button = CreateCaptionButton(
-      views::kWindowControlMinimizeIcon, IDS_APP_ACCNAME_MINIMIZE,
-      AssistantButtonId::kMinimize, this);
-  AddChildView(minimize_button);
+  AddChildView(CreateCaptionButton(views::kWindowControlMinimizeIcon,
+                                   IDS_APP_ACCNAME_MINIMIZE,
+                                   AssistantButtonId::kMinimize, this));
 
   // Close.
-  auto* close_button =
-      CreateCaptionButton(views::kWindowControlCloseIcon, IDS_APP_ACCNAME_CLOSE,
-                          AssistantButtonId::kClose, this);
-  AddChildView(close_button);
-
-  // Add accelerators for keyboard shortcuts that behave like caption buttons.
-  AddAccelerator(ui::Accelerator(ui::VKEY_BROWSER_BACK, ui::EF_NONE));  // Back
-  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));        // Close
-  AddAccelerator(ui::Accelerator(ui::VKEY_W, ui::EF_CONTROL_DOWN));     // Close
+  AddChildView(CreateCaptionButton(views::kWindowControlCloseIcon,
+                                   IDS_APP_ACCNAME_CLOSE,
+                                   AssistantButtonId::kClose, this));
 }
 
 void CaptionBar::HandleButton(AssistantButtonId id) {

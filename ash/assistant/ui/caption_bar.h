@@ -5,10 +5,17 @@
 #ifndef ASH_ASSISTANT_UI_CAPTION_BAR_H_
 #define ASH_ASSISTANT_UI_CAPTION_BAR_H_
 
+#include <memory>
+
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "ui/events/event_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
+
+namespace views {
+class EventMonitor;
+}  // namespace views
 
 namespace ash {
 
@@ -31,19 +38,27 @@ class COMPONENT_EXPORT(ASSISTANT_UI) CaptionBarDelegate {
 // CaptionBar ------------------------------------------------------------------
 
 class COMPONENT_EXPORT(ASSISTANT_UI) CaptionBar : public views::View,
-                                                  views::ButtonListener {
+                                                  public views::ButtonListener,
+                                                  public ui::EventObserver {
  public:
+  // This is necessary to inform clang that our overload of |OnEvent|,
+  // overridden from |ui::EventObserver|, is intentional.
+  using ui::EventHandler::OnEvent;
+
   CaptionBar();
   ~CaptionBar() override;
 
   // views::View:
   const char* GetClassName() const override;
-  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
+  void VisibilityChanged(views::View* starting_from, bool visible) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // ui::EventObserver:
+  void OnEvent(const ui::Event& event) override;
 
   void set_delegate(CaptionBarDelegate* delegate) { delegate_ = delegate; }
 
@@ -55,6 +70,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) CaptionBar : public views::View,
   void HandleButton(AssistantButtonId id);
 
   CaptionBarDelegate* delegate_ = nullptr;
+
+  std::unique_ptr<views::EventMonitor> event_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptionBar);
 };
