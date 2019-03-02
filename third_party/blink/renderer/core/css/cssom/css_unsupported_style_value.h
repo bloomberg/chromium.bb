@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -73,6 +74,13 @@ DEFINE_TYPE_CASTS(CSSUnsupportedStyleValue,
                       CSSStyleValue::StyleValueType::kUnknownType,
                   value.GetType() ==
                       CSSStyleValue::StyleValueType::kUnknownType);
+
+template <>
+struct DowncastTraits<CSSUnsupportedStyleValue> {
+  static bool AllowFrom(const CSSStyleValue& value) {
+    return value.GetType() == CSSStyleValue::StyleValueType::kUnknownType;
+  }
+};
 
 }  // namespace blink
 

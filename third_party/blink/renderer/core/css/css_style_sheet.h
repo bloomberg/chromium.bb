@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 
@@ -282,11 +283,12 @@ inline CSSStyleSheet::RuleMutationScope::~RuleMutationScope() {
     style_sheet_->DidMutateRules();
 }
 
-DEFINE_TYPE_CASTS(CSSStyleSheet,
-                  StyleSheet,
-                  sheet,
-                  sheet->IsCSSStyleSheet(),
-                  sheet.IsCSSStyleSheet());
+template <>
+struct DowncastTraits<CSSStyleSheet> {
+  static bool AllowFrom(const StyleSheet& sheet) {
+    return sheet.IsCSSStyleSheet();
+  }
+};
 
 }  // namespace blink
 
