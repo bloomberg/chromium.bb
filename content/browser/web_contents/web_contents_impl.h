@@ -359,9 +359,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   Visibility GetVisibility() override;
   bool NeedToFireBeforeUnload() override;
   void DispatchBeforeUnload(bool auto_cancel) override;
-  void AttachToOuterWebContentsFrame(
-      std::unique_ptr<WebContents> current_web_contents,
-      RenderFrameHost* outer_contents_frame) override;
+  void AttachInnerWebContents(std::unique_ptr<WebContents> inner_web_contents,
+                              RenderFrameHost* render_frame_host) override;
   RenderFrameHostImpl* GetOuterWebContentsFrame() override;
   WebContentsImpl* GetOuterWebContents() override;
   WebContentsImpl* GetOutermostWebContents() override;
@@ -1110,11 +1109,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
     explicit WebContentsTreeNode(WebContentsImpl* current_web_contents);
     ~WebContentsTreeNode() final;
 
-    // Connects |current_web_contents| to the outer WebContents that owns
-    // |outer_contents_frame|.
-    void ConnectToOuterWebContents(
-        std::unique_ptr<WebContents> current_web_contents,
-        RenderFrameHostImpl* outer_contents_frame);
+    // Attaches |inner_web_contents| to the |render_frame_host| within this
+    // WebContents.
+    void AttachInnerWebContents(std::unique_ptr<WebContents> inner_web_contents,
+                                RenderFrameHostImpl* render_frame_host);
 
     // Disconnects the current WebContents from its outer WebContents, and
     // returns ownership to the caller. This is used when activating a portal,
@@ -1141,8 +1139,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
     std::vector<WebContentsImpl*> GetInnerWebContents() const;
 
    private:
-    void AttachInnerWebContents(
-        std::unique_ptr<WebContents> inner_web_contents);
     std::unique_ptr<WebContents> DetachInnerWebContents(
         WebContentsImpl* inner_web_contents);
 

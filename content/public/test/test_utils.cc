@@ -285,8 +285,7 @@ WebContents* CreateAndAttachInnerContents(RenderFrameHost* rfh) {
 
   // Attach. |inner_contents| becomes owned by |outer_contents|.
   WebContents* inner_contents = inner_contents_ptr.get();
-  inner_contents->AttachToOuterWebContentsFrame(std::move(inner_contents_ptr),
-                                                rfh);
+  outer_contents->AttachInnerWebContents(std::move(inner_contents_ptr), rfh);
 
   // |guest_delegate| becomes owned by |inner_contents|.
   guest_delegate.release()->SetInnerWebContents(inner_contents);
