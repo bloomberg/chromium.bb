@@ -7,16 +7,31 @@
 #include <utility>
 
 #include "base/feature_list.h"
+#include "base/time/time.h"
+#include "chrome/browser/android/feed/feed_lifecycle_bridge.h"
 #include "components/feed/content/feed_host_service.h"
 #include "components/feed/core/feed_scheduler_host.h"
+#include "components/feed/core/pref_names.h"
 #include "components/feed/core/user_classifier.h"
 #include "components/feed/feed_feature_list.h"
+#include "components/prefs/pref_service.h"
+
+namespace {
+
+feed_internals::mojom::TimePtr ToMojoTime(base::Time time) {
+  return time.is_null() ? nullptr
+                        : feed_internals::mojom::Time::New(time.ToJsTime());
+}
+
+}  // namespace
 
 FeedInternalsPageHandler::FeedInternalsPageHandler(
     feed_internals::mojom::PageHandlerRequest request,
-    feed::FeedHostService* feed_host_service)
+    feed::FeedHostService* feed_host_service,
+    PrefService* pref_service)
     : binding_(this, std::move(request)),
-      feed_scheduler_host_(feed_host_service->GetSchedulerHost()) {}
+      feed_scheduler_host_(feed_host_service->GetSchedulerHost()),
+      pref_service_(pref_service) {}
 
 FeedInternalsPageHandler::~FeedInternalsPageHandler() = default;
 
@@ -35,7 +50,7 @@ void FeedInternalsPageHandler::GetUserClassifierProperties(
   auto properties = feed_internals::mojom::UserClassifier::New();
 
   feed::UserClassifier* user_classifier =
-      feed_scheduler_host_->user_classifier();
+      feed_scheduler_host_->GetUserClassifierForDebugging();
 
   properties->user_class_description =
       user_classifier->GetUserClassDescriptionForDebugging();
@@ -47,6 +62,25 @@ void FeedInternalsPageHandler::GetUserClassifierProperties(
   std::move(callback).Run(std::move(properties));
 }
 
+void FeedInternalsPageHandler::GetLastFetchProperties(
+    GetLastFetchPropertiesCallback callback) {
+  auto properties = feed_internals::mojom::LastFetchProperties::New();
+
+  properties->last_fetch_status =
+      feed_scheduler_host_->GetLastFetchStatusForDebugging();
+  properties->last_fetch_time =
+      ToMojoTime(pref_service_->GetTime(feed::prefs::kLastFetchAttemptTime));
+  properties->refresh_suppress_time =
+      ToMojoTime(feed_scheduler_host_->GetSuppressRefreshesUntilForDebugging());
+
+  std::move(callback).Run(std::move(properties));
+}
+
 void FeedInternalsPageHandler::ClearUserClassifierProperties() {
-  feed_scheduler_host_->user_classifier()->ClearClassificationForDebugging();
+  feed_scheduler_host_->GetUserClassifierForDebugging()
+      ->ClearClassificationForDebugging();
+}
+
+void FeedInternalsPageHandler::ClearCachedDataAndRefreshFeed() {
+  feed::FeedLifecycleBridge::ClearCachedData();
 }

@@ -15,7 +15,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 
 FeedInternalsUI::FeedInternalsUI(content::WebUI* web_ui)
-    : ui::MojoWebUIController(web_ui) {
+    : ui::MojoWebUIController(web_ui), profile_(Profile::FromWebUI(web_ui)) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISnippetsInternalsHost);
 
@@ -26,11 +26,7 @@ FeedInternalsUI::FeedInternalsUI(content::WebUI* web_ui)
   source->SetDefaultResource(IDR_FEED_INTERNALS_HTML);
   source->UseGzip();
 
-  Profile* profile = Profile::FromWebUI(web_ui);
-  feed_host_service_ =
-      feed::FeedHostServiceFactory::GetForBrowserContext(profile);
-
-  content::WebUIDataSource::Add(profile, source);
+  content::WebUIDataSource::Add(profile_, source);
   // This class is the caller of the callback when an observer interface is
   // triggered. So this base::Unretained is safe.
   AddHandlerToRegistry(base::BindRepeating(
@@ -42,5 +38,7 @@ FeedInternalsUI::~FeedInternalsUI() = default;
 void FeedInternalsUI::BindFeedInternalsPageHandler(
     feed_internals::mojom::PageHandlerRequest request) {
   page_handler_ = std::make_unique<FeedInternalsPageHandler>(
-      std::move(request), feed_host_service_);
+      std::move(request),
+      feed::FeedHostServiceFactory::GetForBrowserContext(profile_),
+      profile_->GetPrefs());
 }

@@ -4,33 +4,80 @@
 
 'use strict';
 
-// Reference to the backend.
+/**
+ * Reference to the backend.
+ * @type {feedInternals.mojom.PageHandlerProxy}
+ */
 let pageHandler = null;
 
 (function() {
-// Get and display general properties.
+
+/**
+ * Get and display general properties.
+ */
 function updatePageWithProperties() {
   pageHandler.getGeneralProperties().then(response => {
+    /** @type {!feedInternals.mojom.Properties} */
     const properties = response.properties;
-    $('isFeedEnabled').textContent = properties.isFeedEnabled;
+    $('is-feed-enabled').textContent = properties.isFeedEnabled;
   });
 }
 
-// Get and display user classifier properties.
+/**
+ * Get and display user classifier properties.
+ */
 function updatePageWithUserClass() {
   pageHandler.getUserClassifierProperties().then(response => {
+    /** @type {!feedInternals.mojom.UserClassifier} */
     const properties = response.properties;
-    $('userClassDescription').textContent = properties.userClassDescription;
-    $('avgHoursBetweenViews').textContent = properties.avgHoursBetweenViews;
-    $('avgHoursBetweenUses').textContent = properties.avgHoursBetweenUses;
+    $('user-class-description').textContent = properties.userClassDescription;
+    $('avg-hours-between-views').textContent = properties.avgHoursBetweenViews;
+    $('avg-hours-between-uses').textContent = properties.avgHoursBetweenUses;
   });
 }
 
-// Hook up buttons to event listeners.
+/**
+ * Get and display last fetch data.
+ */
+function updatePageWithLastFetchProperties() {
+  pageHandler.getLastFetchProperties().then(response => {
+    /** @type {!feedInternals.mojom.LastFetchProperties} */
+    const properties = response.properties;
+    $('last-fetch-status').textContent = properties.lastFetchStatus;
+    $('last-fetch-time').textContent = toDateString(properties.lastFetchTime);
+    $('refresh-suppress-time').textContent =
+        toDateString(properties.refreshSuppressTime);
+  });
+}
+
+/**
+ * Convert time to string for display.
+ *
+ * @param {feedInternals.mojom.Time|undefined} time
+ * @return {string}
+ */
+function toDateString(time) {
+  return time == null ? '' : new Date(time.msSinceEpoch).toLocaleString();
+}
+
+/**
+ * Hook up buttons to event listeners.
+ */
 function setupEventListeners() {
-  $('btnClearUserClassification').addEventListener('click', function() {
+  $('clear-user-classification').addEventListener('click', function() {
     pageHandler.clearUserClassifierProperties();
     updatePageWithUserClass();
+  });
+
+  $('clear-cached-data').addEventListener('click', function() {
+    pageHandler.clearCachedDataAndRefreshFeed();
+
+    // TODO(chouinard): Investigate whether the Feed library's
+    // AppLifecycleListener.onClearAll methods could accept a callback to notify
+    // when cache clear and Feed refresh operations are complete. If not,
+    // consider adding backend->frontend mojo communication to listen for
+    // updates, rather than waiting an arbitrary period of time.
+    setTimeout(updatePageWithLastFetchProperties, 1000);
   });
 }
 
@@ -40,6 +87,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   updatePageWithProperties();
   updatePageWithUserClass();
+  updatePageWithLastFetchProperties();
+
   setupEventListeners();
 });
 })();

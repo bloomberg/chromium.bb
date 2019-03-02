@@ -134,8 +134,14 @@ class FeedSchedulerHost : web_resource::EulaAcceptedNotifier::Observer {
   // the return value, and if true, the caller should start a refresh.
   bool OnArticlesCleared(bool suppress_refreshes);
 
-  // Surface user classifier data for internals debugging page.
-  UserClassifier* user_classifier();
+  // Surface user_classifier_ for internals debugging page.
+  UserClassifier* GetUserClassifierForDebugging();
+
+  // Surface suppress_refreshes_until_ for internals debugging page.
+  base::Time GetSuppressRefreshesUntilForDebugging() const;
+
+  // Surface last_fetch_status_ for internals debugging page.
+  int GetLastFetchStatusForDebugging() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FeedSchedulerHostTest, GetTriggerThreshold);
@@ -218,6 +224,9 @@ class FeedSchedulerHost : web_resource::EulaAcceptedNotifier::Observer {
   // throttler for any situation.
   base::flat_map<UserClassifier::UserClass, std::unique_ptr<RefreshThrottler>>
       throttlers_;
+
+  // Status of the last fetch for debugging.
+  int last_fetch_status_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedSchedulerHost);
 };
