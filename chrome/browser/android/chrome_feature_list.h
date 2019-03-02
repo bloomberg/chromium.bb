@@ -44,6 +44,7 @@ extern const base::Feature kChromeSmartSelection;
 extern const base::Feature kCommandLineOnNonRooted;
 extern const base::Feature kContentSuggestionsScrollToLoad;
 extern const base::Feature kContentSuggestionsThumbnailDominantColor;
+extern const base::Feature kContextualSearchDefinitions;
 extern const base::Feature kContextualSearchMlTapSuppression;
 extern const base::Feature kContextualSearchSecondTap;
 extern const base::Feature kContextualSearchTapDisableOverride;

@@ -1210,6 +1210,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisableIpcFloodingProtectionDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kDisableIpcFloodingProtection)},
 #if defined(OS_ANDROID)
+    {"contextual-search-definitions",
+     flag_descriptions::kContextualSearchDefinitionsName,
+     flag_descriptions::kContextualSearchDefinitionsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kContextualSearchDefinitions)},
     {"contextual-search-ml-tap-suppression",
      flag_descriptions::kContextualSearchMlTapSuppressionName,
      flag_descriptions::kContextualSearchMlTapSuppressionDescription,
