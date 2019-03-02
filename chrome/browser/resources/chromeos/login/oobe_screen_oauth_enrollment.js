@@ -252,7 +252,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * URL.
      */
     onBeforeShow: function(data) {
-      chrome.send('showGuestInOobe', [true]);
       if (Oobe.getInstance().forceKeyboardFlow) {
         // We run the tab remapping logic inside of the webview so that the
         // simulated tab events will use the webview tab-stops. Simulated tab
