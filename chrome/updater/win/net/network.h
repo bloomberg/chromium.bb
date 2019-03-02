@@ -9,25 +9,27 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/updater/win/net/scoped_hinternet.h"
 #include "components/update_client/network.h"
 
 namespace updater {
 
-class NetworkFetcherWinHTTPFactory
-    : public update_client::NetworkFetcherFactory {
+// Network fetcher factory for WinHTTP.
+class NetworkFetcherFactory : public update_client::NetworkFetcherFactory {
  public:
-  NetworkFetcherWinHTTPFactory();
+  NetworkFetcherFactory();
 
   std::unique_ptr<update_client::NetworkFetcher> Create() const override;
 
  protected:
-  ~NetworkFetcherWinHTTPFactory() override;
+  ~NetworkFetcherFactory() override;
 
  private:
-  ScopedHInternet session_handle_;
+  THREAD_CHECKER(thread_checker_);
+  scoped_hinternet session_handle_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkFetcherWinHTTPFactory);
+  DISALLOW_COPY_AND_ASSIGN(NetworkFetcherFactory);
 };
 
 }  // namespace updater

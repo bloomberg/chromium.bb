@@ -25,12 +25,8 @@ struct ScopedHInternetTraits {
 }  // namespace internal
 
 // Manages the lifetime of HINTERNET handles allocated by WinHTTP.
-class ScopedHInternet
-    : public base::ScopedGeneric<HINTERNET,
-                                 updater::internal::ScopedHInternetTraits> {
- public:
-  explicit ScopedHInternet(HINTERNET handle) : ScopedGeneric(handle) {}
-};
+using scoped_hinternet =
+    base::ScopedGeneric<HINTERNET, updater::internal::ScopedHInternetTraits>;
 
 }  // namespace updater
 

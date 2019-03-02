@@ -37,10 +37,16 @@ process_version_rc_template("version_resources") {
 
 source_set("code") {
   sources = [
+    "net/net_util.cc",
+    "net/net_util.h",
     "net/network.h",
+    "net/network_fetcher.cc",
+    "net/network_fetcher.h",
     "net/network_winhttp.cc",
     "net/network_winhttp.h",
     "net/scoped_hinternet.h",
+    "util.cc",
+    "util.h",
   ]
 
   deps = [
@@ -54,6 +60,7 @@ source_set("unittest") {
 
   sources = [
     "net/network_unittest.cc",
+    "util_unittest.cc",
   ]
 
   deps = [

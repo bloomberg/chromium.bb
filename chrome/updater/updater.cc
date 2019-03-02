@@ -4,6 +4,7 @@
 
 #include "chrome/updater/updater.h"
 
+#include <iterator>
 #include <memory>
 #include <string>
 #include <utility>
@@ -23,6 +24,7 @@
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/task_runner.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/updater/configurator.h"
@@ -43,10 +45,12 @@ namespace updater {
 
 namespace {
 
-const uint8_t jebg_hash[] = {0x94, 0x16, 0x0b, 0x6d, 0x41, 0x75, 0xe9, 0xec,
-                             0x8e, 0xd5, 0xfa, 0x54, 0xb0, 0xd2, 0xdd, 0xa5,
-                             0x6e, 0x05, 0x6b, 0xe8, 0x73, 0x47, 0xf6, 0xc4,
-                             0x11, 0x9f, 0xbc, 0xb3, 0x09, 0xb3, 0x5b, 0x40};
+// For now, use the Flash CRX for testing.
+// CRX id is mimojjlkmoijpicakmndhoigimigcmbb.
+const uint8_t mimo_hash[] = {0xc8, 0xce, 0x99, 0xba, 0xce, 0x89, 0xf8, 0x20,
+                             0xac, 0xd3, 0x7e, 0x86, 0x8c, 0x86, 0x2c, 0x11,
+                             0xb9, 0x40, 0xc5, 0x55, 0xaf, 0x08, 0x63, 0x70,
+                             0x54, 0xf9, 0x56, 0xd3, 0xe7, 0x88, 0xba, 0x8c};
 
 void TaskSchedulerStart() {
   base::TaskScheduler::Create("Updater");
@@ -128,15 +132,30 @@ class Observer : public update_client::UpdateClient::Observer {
   DISALLOW_COPY_AND_ASSIGN(Observer);
 };
 
+void InitLogging(const base::CommandLine& command_line) {
+  logging::LoggingSettings settings;
+  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  logging::InitLogging(settings);
+  logging::SetLogItems(true,    // enable_process_id
+                       true,    // enable_thread_id
+                       true,    // enable_timestamp
+                       false);  // enable_tickcount
+}
+
 }  // namespace
 
 int UpdaterMain(int argc, const char* const* argv) {
   base::CommandLine::Init(argc, argv);
-
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch("test"))
     return 0;
+
+  base::DisallowBlocking();
+
+  InitLogging(*command_line);
+
+  base::PlatformThread::SetName("UpdaterMain");
 
   base::AtExitManager exit_manager;
 
@@ -145,10 +164,8 @@ int UpdaterMain(int argc, const char* const* argv) {
   TaskSchedulerStart();
 
   base::MessageLoopForUI message_loop;
-  DCHECK(base::ThreadTaskRunnerHandle::IsSet());
-  base::PlatformThread::SetName("UpdaterMain");
-
   base::RunLoop runloop;
+  DCHECK(base::ThreadTaskRunnerHandle::IsSet());
 
   auto embedder_service = CreateEmbedderService();
   auto config =
@@ -158,17 +175,18 @@ int UpdaterMain(int argc, const char* const* argv) {
   Observer observer(update_client);
   update_client->AddObserver(&observer);
 
-  const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf"};
+  const std::vector<std::string> ids = {"mimojjlkmoijpicakmndhoigimigcmbb"};
   update_client->Update(
       ids,
       base::BindOnce(
           [](const std::vector<std::string>& ids)
               -> std::vector<base::Optional<update_client::CrxComponent>> {
             update_client::CrxComponent component;
-            component.name = "jebg";
-            component.pk_hash.assign(jebg_hash,
-                                     jebg_hash + base::size(jebg_hash));
+            component.name = "mimo";
+            component.pk_hash.assign(std::begin(mimo_hash),
+                                     std::end(mimo_hash));
             component.version = base::Version("0.0");
+            component.requires_network_encryption = false;
             return {component};
           }),
       true,
@@ -177,7 +195,7 @@ int UpdaterMain(int argc, const char* const* argv) {
             base::ThreadTaskRunnerHandle::Get()->PostTask(
                 FROM_HERE, base::BindOnce(&QuitLoop, std::move(closure)));
           },
-          runloop.QuitClosure()));
+          runloop.QuitWhenIdleClosure()));
 
   runloop.Run();
 
