@@ -28,6 +28,8 @@ class ContentCaptureSender : public content::RenderFrameObserver,
 
   // blink::WebContentCaptureClient:
   cc::NodeHolder::Type GetNodeHolderType() const override;
+  void GetTaskTimingParameters(base::TimeDelta& short_delay,
+                               base::TimeDelta& long_delay) const override;
   void DidCaptureContent(
       const std::vector<scoped_refptr<blink::WebContentHolder>>& data,
       bool first_data) override;

@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -27,6 +28,20 @@ class WebContentCaptureClientTestHelper : public WebContentCaptureClient {
 
   NodeHolder::Type GetNodeHolderType() const override {
     return node_holder_type_;
+  }
+
+  void GetTaskTimingParameters(base::TimeDelta& short_delay,
+                               base::TimeDelta& long_delay) const override {
+    short_delay = GetTaskShortDelay();
+    long_delay = GetTaskLongDelay();
+  }
+
+  base::TimeDelta GetTaskLongDelay() const {
+    return base::TimeDelta::FromMilliseconds(5000);
+  }
+
+  base::TimeDelta GetTaskShortDelay() const {
+    return base::TimeDelta::FromMilliseconds(500);
   }
 
   void DidCaptureContent(
@@ -114,6 +129,19 @@ class ContentCaptureManagerTestHelper : public ContentCaptureManager {
   scoped_refptr<ContentCaptureTaskTestHelper> content_capture_task_;
 };
 
+class ContentCaptureLocalFrameClientHelper : public EmptyLocalFrameClient {
+ public:
+  ContentCaptureLocalFrameClientHelper(WebContentCaptureClient& client)
+      : client_(client) {}
+
+  WebContentCaptureClient* GetWebContentCaptureClient() const override {
+    return &client_;
+  }
+
+ private:
+  WebContentCaptureClient& client_;
+};
+
 class ContentCaptureTest
     : public PageTestBase,
       public ::testing::WithParamInterface<NodeHolder::Type> {
@@ -121,7 +149,12 @@ class ContentCaptureTest
   ContentCaptureTest() { EnablePlatform(); }
 
   void SetUp() override {
-    PageTestBase::SetUp();
+    content_capture_client_ =
+        std::make_unique<WebContentCaptureClientTestHelper>(GetParam());
+    local_frame_client_ =
+        MakeGarbageCollected<ContentCaptureLocalFrameClientHelper>(
+            *content_capture_client_);
+    SetupPageWithClients(nullptr, local_frame_client_);
     SetHtmlInnerHTML(
         "<!DOCTYPE HTML>"
         "<p id='p1'>1</p>"
@@ -134,8 +167,6 @@ class ContentCaptureTest
         "<p id='p8'>8</p>");
     platform()->SetAutoAdvanceNowToPendingTasks(false);
     // TODO(michaelbai): ContentCaptureManager should be get from LocalFrame.
-    content_capture_client_ =
-        std::make_unique<WebContentCaptureClientTestHelper>(GetParam());
     content_capture_manager_ =
         MakeGarbageCollected<ContentCaptureManagerTestHelper>(
             GetFrame(), *content_capture_client_);
@@ -161,14 +192,12 @@ class ContentCaptureTest
 
   void RunContentCaptureTask() {
     ResetResult();
-    platform()->RunForPeriod(base::TimeDelta::FromMilliseconds(
-        ContentCaptureTask::kTaskShortDelayInMS));
+    platform()->RunForPeriod(GetWebContentCaptureClient()->GetTaskShortDelay());
   }
 
   void RunLongDelayContentCaptureTask() {
     ResetResult();
-    platform()->RunForPeriod(base::TimeDelta::FromMilliseconds(
-        ContentCaptureTask::kTaskLongDelayInMS));
+    platform()->RunForPeriod(GetWebContentCaptureClient()->GetTaskLongDelay());
   }
 
   void RemoveNode(NodeHolder node_holder, Node* node) {
@@ -210,6 +239,7 @@ class ContentCaptureTest
   std::vector<NodeHolder> node_holders_;
   std::unique_ptr<WebContentCaptureClientTestHelper> content_capture_client_;
   Persistent<ContentCaptureManagerTestHelper> content_capture_manager_;
+  Persistent<ContentCaptureLocalFrameClientHelper> local_frame_client_;
 };
 
 INSTANTIATE_TEST_SUITE_P(,
@@ -364,6 +394,8 @@ TEST_P(ContentCaptureTest, RemoveNodeAfterSendingOut) {
   EXPECT_EQ(1u, GetWebContentCaptureClient()->RemovedData().size());
 }
 
+// TODO(michaelbai): use RenderingTest instead of PageTestBase for multiple
+// frame test.
 class ContentCaptureSimTest
     : public SimTest,
       public ::testing::WithParamInterface<NodeHolder::Type> {

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/time/time.h"
 #include "cc/paint/node_holder.h"
 
 namespace blink {
@@ -19,6 +20,10 @@ class WebContentHolder;
 class WebContentCaptureClient {
  public:
   virtual cc::NodeHolder::Type GetNodeHolderType() const = 0;
+  // Adjusts the ContentCaptureTask delay time, has no effect for the existing
+  // tasks.
+  virtual void GetTaskTimingParameters(base::TimeDelta& short_delay,
+                                       base::TimeDelta& long_delay) const = 0;
 
   // Invoked when a list of |content| is captured, |first_content| indicates if
   // this is first captured content in the current document.

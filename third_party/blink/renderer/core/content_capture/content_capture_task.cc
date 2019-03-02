@@ -21,7 +21,11 @@ namespace blink {
 
 ContentCaptureTask::ContentCaptureTask(LocalFrame& local_frame_root,
                                        TaskSession& task_session)
-    : local_frame_root_(&local_frame_root), task_session_(&task_session) {}
+    : local_frame_root_(&local_frame_root), task_session_(&task_session) {
+  local_frame_root.Client()
+      ->GetWebContentCaptureClient()
+      ->GetTaskTimingParameters(task_short_delay_, task_long_delay_);
+}
 
 ContentCaptureTask::~ContentCaptureTask() {}
 
@@ -170,15 +174,15 @@ void ContentCaptureTask::ScheduleInternal(ScheduleReason reason) {
   if (is_scheduled_)
     return;
 
-  int delay_ms = 0;
+  TimeDelta delay;
   switch (reason) {
     case ScheduleReason::kFirstContentChange:
     case ScheduleReason::kScrolling:
     case ScheduleReason::kRetryTask:
-      delay_ms = kTaskShortDelayInMS;
+      delay = task_short_delay_;
       break;
     case ScheduleReason::kContentChange:
-      delay_ms = kTaskLongDelayInMS;
+      delay = task_long_delay_;
       break;
   }
 
@@ -189,8 +193,7 @@ void ContentCaptureTask::ScheduleInternal(ScheduleReason reason) {
         task_runner, this, &ContentCaptureTask::Run);
   }
 
-  delay_task_->StartOneShot(base::TimeDelta::FromMilliseconds(delay_ms),
-                            FROM_HERE);
+  delay_task_->StartOneShot(delay, FROM_HERE);
   is_scheduled_ = true;
 }
 

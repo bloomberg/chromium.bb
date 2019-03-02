@@ -50,11 +50,6 @@ class CORE_EXPORT ContentCaptureTask : public RefCounted<ContentCaptureTask> {
   // Make those const public for testing purpose.
   static constexpr size_t kBatchSize = 5;
 
-  // Schedules the task with short delay for kFirstContentChange, kScrolling and
-  // kRetryTask, with long delay for kContentChange.
-  static constexpr int kTaskShortDelayInMS = 500;
-  static constexpr int kTaskLongDelayInMS = 5000;
-
   TaskState GetTaskStateForTesting() const { return task_state_; }
 
   void RunTaskForTestingUntil(TaskState stop_state) {
@@ -107,6 +102,11 @@ class CORE_EXPORT ContentCaptureTask : public RefCounted<ContentCaptureTask> {
   UntracedMember<TaskSession> task_session_;
   std::unique_ptr<TaskRunnerTimer<ContentCaptureTask>> delay_task_;
   TaskState task_state_ = TaskState::kStop;
+
+  // Schedules the task with short delay for kFirstContentChange, kScrolling and
+  // kRetryTask, with long delay for kContentChange.
+  base::TimeDelta task_short_delay_;
+  base::TimeDelta task_long_delay_;
   base::Optional<TaskState> task_stop_for_testing_;
   base::Optional<std::vector<cc::NodeHolder>> captured_content_for_testing_;
 };
