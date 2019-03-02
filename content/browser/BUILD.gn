@@ -1117,6 +1117,8 @@ jumbo_source_set("browser") {
     "loader_delegate_impl.h",
     "locks/lock_manager.cc",
     "locks/lock_manager.h",
+    "log_console_message.cc",
+    "log_console_message.h",
     "mach_broker_mac.h",
     "mach_broker_mac.mm",
     "manifest/manifest_icon_downloader.cc",
