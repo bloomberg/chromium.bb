@@ -28,6 +28,7 @@ class WorkerIdSet {
   std::vector<WorkerId> GetAllForExtension(const ExtensionId& extension_id,
                                            int render_process_id) const;
 
+  std::vector<WorkerId> GetAllForTesting() const;
   size_t count_for_testing() const { return workers_.size(); }
 
  private:

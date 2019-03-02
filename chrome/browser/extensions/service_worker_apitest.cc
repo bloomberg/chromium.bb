@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -35,12 +36,14 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/page_type.h"
+#include "content/public/common/result_codes.h"
 #include "content/public/test/background_sync_test_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/service_worker_test_helpers.h"
@@ -244,6 +247,25 @@ class ServiceWorkerBasedBackgroundTest : public ServiceWorkerTest {
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
     ServiceWorkerTest::SetUpOnMainThread();
+  }
+
+  // Returns the only running worker id for |extension_id|.
+  // Returns base::nullopt if there isn't any worker running or more than one
+  // worker is running for |extension_id|.
+  base::Optional<WorkerId> GetUniqueRunningWorkerId(
+      const ExtensionId& extension_id) {
+    ProcessManager* process_manager = ProcessManager::Get(profile());
+    std::vector<WorkerId> all_workers =
+        process_manager->GetAllWorkersIdsForTesting();
+    base::Optional<WorkerId> running_worker_id;
+    for (const WorkerId& worker_id : all_workers) {
+      if (worker_id.extension_id == extension_id) {
+        if (running_worker_id)  // More than one worker present.
+          return base::nullopt;
+        running_worker_id = worker_id;
+      }
+    }
+    return running_worker_id;
   }
 
  private:
@@ -1561,6 +1583,68 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerLazyBackgroundTest,
   content::WebContents* web_contents = AddTab(browser(), page_url);
   EXPECT_TRUE(web_contents);
   EXPECT_TRUE(worker_filtered_event_listener.WaitUntilSatisfied());
+}
+
+IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest,
+                       ProcessManagerRegistrationOnShutdown) {
+  // Note that StopServiceWorkerForScope call below expects the worker to be
+  // completely installed, so wait for the |extension| worker to see "activate"
+  // event.
+  ExtensionTestMessageListener activated_listener("WORKER_ACTIVATED", false);
+  const Extension* extension = LoadExtension(test_data_dir_.AppendASCII(
+      "service_worker/worker_based_background/process_manager"));
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(activated_listener.WaitUntilSatisfied());
+
+  base::Optional<WorkerId> worker_id =
+      GetUniqueRunningWorkerId(extension->id());
+  ASSERT_TRUE(worker_id);
+  {
+    // Shutdown the worker.
+    // TODO(lazyboy): Ideally we'd want to test worker shutdown on idle, do that
+    // once //content API allows to override test timeouts for Service Workers.
+    base::RunLoop run_loop;
+    content::StoragePartition* storage_partition =
+        content::BrowserContext::GetDefaultStoragePartition(
+            browser()->profile());
+    GURL scope = extension->url();
+    content::StopServiceWorkerForScope(
+        storage_partition->GetServiceWorkerContext(),
+        // The service worker is registered at the top level scope.
+        extension->url(), run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  EXPECT_FALSE(ProcessManager::Get(profile())->HasServiceWorker(*worker_id));
+}
+
+IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest,
+                       ProcessManagerRegistrationOnTerminate) {
+  // NOTE: It is not necessary to wait for "activate" event from the worker
+  // for this test, but we're lazily reusing the extension from
+  // ProcessManagerRegistrationOnShutdown test.
+  ExtensionTestMessageListener activated_listener("WORKER_ACTIVATED", false);
+  const Extension* extension = LoadExtension(test_data_dir_.AppendASCII(
+      "service_worker/worker_based_background/process_manager"));
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(activated_listener.WaitUntilSatisfied());
+
+  base::Optional<WorkerId> worker_id =
+      GetUniqueRunningWorkerId(extension->id());
+  ASSERT_TRUE(worker_id);
+  {
+    // Terminate worker's RenderProcessHost.
+    content::RenderProcessHost* worker_render_process_host =
+        content::RenderProcessHost::FromID(worker_id->render_process_id);
+    ASSERT_TRUE(worker_render_process_host);
+    content::RenderProcessHostWatcher process_exit_observer(
+        worker_render_process_host,
+        content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+    worker_render_process_host->Shutdown(content::RESULT_CODE_KILLED);
+    process_exit_observer.Wait();
+  }
+
+  EXPECT_FALSE(ProcessManager::Get(profile())->HasServiceWorker(*worker_id));
 }
 
 // Run with both native and JS-based bindings. This ensures that both stable
