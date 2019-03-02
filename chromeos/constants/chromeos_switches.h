@@ -39,6 +39,7 @@ CHROMEOS_EXPORT extern const char kArcDisablePlayAutoInstall[];
 CHROMEOS_EXPORT extern const char kArcForceCacheAppIcons[];
 CHROMEOS_EXPORT extern const char kArcForceShowOptInUi[];
 CHROMEOS_EXPORT extern const char kArcPackagesCacheMode[];
+CHROMEOS_EXPORT extern const char kArcPlayStoreAutoUpdate[];
 CHROMEOS_EXPORT extern const char kArcStartMode[];
 CHROMEOS_EXPORT extern const char kArcTransitionMigrationRequired[];
 CHROMEOS_EXPORT extern const char kArtifactsDir[];

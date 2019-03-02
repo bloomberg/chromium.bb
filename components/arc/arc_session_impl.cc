@@ -44,6 +44,9 @@ namespace {
 constexpr char kArcBridgeSocketPath[] = "/run/chrome/arc_bridge.sock";
 constexpr char kArcBridgeSocketGroup[] = "arc-bridge";
 
+constexpr char kOn[] = "on";
+constexpr char kOff[] = "off";
+
 std::string GenerateRandomToken() {
   char random_bytes[16];
   base::RandBytes(random_bytes, 16);
@@ -371,6 +374,27 @@ void ArcSessionImpl::OnLcdDensity(int32_t lcd_density) {
   request.set_arc_file_picker_experiment(
       base::FeatureList::IsEnabled(arc::kFilePickerExperimentFeature));
   request.set_lcd_density(lcd_density);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kArcPlayStoreAutoUpdate)) {
+    const std::string value =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            chromeos::switches::kArcPlayStoreAutoUpdate);
+    if (value == kOn) {
+      request.set_play_store_auto_update(
+          login_manager::
+              StartArcMiniContainerRequest_PlayStoreAutoUpdate_AUTO_UPDATE_ON);
+      VLOG(1) << "Play Store auto-update is forced on";
+    } else if (value == kOff) {
+      request.set_play_store_auto_update(
+          login_manager::
+              StartArcMiniContainerRequest_PlayStoreAutoUpdate_AUTO_UPDATE_OFF);
+      VLOG(1) << "Play Store auto-update is forced off";
+    } else {
+      LOG(ERROR) << "Invalid parameter " << value << " for "
+                 << chromeos::switches::kArcPlayStoreAutoUpdate;
+    }
+  }
 
   VLOG(1) << "Starting ARC mini instance with lcd_density="
           << request.lcd_density();
