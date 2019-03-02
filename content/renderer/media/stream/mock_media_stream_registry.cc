@@ -45,8 +45,7 @@ class MockCDQualityAudioSource : public blink::MediaStreamAudioSource {
 
 MockMediaStreamRegistry::MockMediaStreamRegistry() {}
 
-void MockMediaStreamRegistry::Init(const std::string& stream_url) {
-  stream_url_ = stream_url;
+void MockMediaStreamRegistry::Init() {
   const blink::WebVector<blink::WebMediaStreamTrack> webkit_audio_tracks;
   const blink::WebVector<blink::WebMediaStreamTrack> webkit_video_tracks;
   const blink::WebString label(kTestStreamLabel);
@@ -93,11 +92,6 @@ void MockMediaStreamRegistry::AddAudioTrack(const std::string& track_id) {
   CHECK(source->ConnectToTrack(blink_track));
 
   test_stream_.AddTrack(blink_track);
-}
-
-blink::WebMediaStream MockMediaStreamRegistry::GetMediaStream(
-    const std::string& url) {
-  return (url != stream_url_) ? blink::WebMediaStream() : test_stream_;
 }
 
 }  // namespace content

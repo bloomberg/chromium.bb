@@ -41,7 +41,6 @@ ACTION_P(RunClosure, closure) {
   closure.Run();
 }
 
-static const std::string kTestStreamUrl = "stream_url";
 static const std::string kTestVideoTrackId = "video_track_id";
 static const std::string kTestAudioTrackId = "audio_track_id";
 static const int kTestAudioChannels = 2;
@@ -86,7 +85,7 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
                       kTestAudioSampleRate) {
     EXPECT_FALSE(media_recorder_handler_->recording_);
 
-    registry_.Init(kTestStreamUrl);
+    registry_.Init();
   }
 
   ~MediaRecorderHandlerTest() {

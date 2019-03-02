@@ -23,7 +23,7 @@ class MediaStreamVideoWebRtcSinkTest : public ::testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   void SetVideoTrack() {
-    registry_.Init("stream URL");
+    registry_.Init();
     registry_.AddVideoTrack("test video track");
     blink::WebVector<blink::WebMediaStreamTrack> video_tracks =
         registry_.test_stream().VideoTracks();
@@ -33,7 +33,7 @@ class MediaStreamVideoWebRtcSinkTest : public ::testing::Test {
   }
 
   void SetVideoTrack(const base::Optional<bool>& noise_reduction) {
-    registry_.Init("stream URL");
+    registry_.Init();
     registry_.AddVideoTrack("test video track", VideoTrackAdapterSettings(),
                             noise_reduction, false, 0.0);
     blink::WebVector<blink::WebMediaStreamTrack> video_tracks =
