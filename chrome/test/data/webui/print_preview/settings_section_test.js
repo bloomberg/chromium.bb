@@ -6,12 +6,10 @@ cr.define('settings_sections_tests', function() {
   /** @enum {string} */
   const TestNames = {
     SettingsSectionsVisibilityChange: 'settings sections visibility change',
-    Other: 'other',
     SetLayout: 'set layout',
     SetColor: 'set color',
     SetMargins: 'set margins',
     SetPagesPerSheet: 'set pages per sheet',
-    SetOther: 'set other',
     PresetCopies: 'preset copies',
     PresetDuplex: 'preset duplex',
     DisableMarginsByPagesPerSheet: 'disable margins by pages per sheet',
@@ -104,27 +102,6 @@ cr.define('settings_sections_tests', function() {
               // Element expected to be visible when available.
               assertEquals(!value, element.hidden);
             });
-          });
-    });
-
-    /**
-     * @param {!CrCheckboxElement} checkbox The checkbox to check
-     * @return {boolean} Whether the checkbox's parent section is hidden.
-     */
-    function isSectionHidden(checkbox) {
-      return checkbox.parentNode.parentNode.hidden;
-    }
-
-    test(assert(TestNames.Other), function() {
-      const optionsElement = page.$$('print-preview-other-options-settings');
-      ['headerFooter', 'duplex', 'cssBackground', 'rasterize', 'selectionOnly']
-          .forEach(setting => {
-            page.set(`settings.${setting}.available`, true);
-            const section = optionsElement.$$(`#${setting}`);
-            assertFalse(isSectionHidden(section));
-
-            page.set(`settings.${setting}.available`, false);
-            assertTrue(isSectionHidden(section));
           });
     });
 
@@ -249,51 +226,6 @@ cr.define('settings_sections_tests', function() {
             assertEquals(
                 marginsTypeEnum.DEFAULT.toString(), marginsInput.value);
             assertFalse(marginsInput.disabled);
-          });
-    });
-
-    test(assert(TestNames.SetOther), function() {
-      toggleMoreSettings();
-      const optionsElement = page.$$('print-preview-other-options-settings');
-      assertFalse(optionsElement.hidden);
-
-      // HTML - Header/footer, duplex, and CSS background. Also add selection.
-      initDocumentInfo(false, true);
-
-      const testOptionCheckbox = (settingName, defaultValue) => {
-        const element = optionsElement.$$('#' + settingName);
-        const optionSetting = page.settings[settingName];
-        assertFalse(isSectionHidden(element));
-        assertEquals(defaultValue, element.checked);
-        assertEquals(defaultValue, optionSetting.value);
-        element.checked = !defaultValue;
-        element.dispatchEvent(new CustomEvent('change'));
-        return test_util
-            .eventToPromise('update-checkbox-setting', optionsElement)
-            .then(function(event) {
-              assertEquals(element.id, event.detail);
-              assertEquals(!defaultValue, optionSetting.value);
-            });
-      };
-
-      return testOptionCheckbox('headerFooter', true)
-          .then(function() {
-            // Duplex defaults to false, since the printer sets no duplex as the
-            // default in the CDD (see print_preview_test_utils.js).
-            return testOptionCheckbox('duplex', false);
-          })
-          .then(function() {
-            return testOptionCheckbox('cssBackground', false);
-          })
-          .then(function() {
-            return testOptionCheckbox('selectionOnly', false);
-          })
-          .then(function() {
-            // Set PDF to test rasterize
-            if (!cr.isWindows && !cr.isMac) {
-              initDocumentInfo(true, false);
-              return testOptionCheckbox('rasterize', false);
-            }
           });
     });
 
@@ -480,7 +412,8 @@ cr.define('settings_sections_tests', function() {
         assertEquals(
             subtestParams.expectedValue, page.getSettingValue('duplex'));
         assertEquals(
-            subtestParams.expectedHidden, isSectionHidden(duplexElement));
+            subtestParams.expectedHidden,
+            duplexElement.parentNode.parentNode.hidden);
         if (!subtestParams.expectedHidden) {
           assertEquals(subtestParams.expectedValue, duplexElement.checked);
           assertEquals(subtestParams.expectedManaged, duplexElement.disabled);
