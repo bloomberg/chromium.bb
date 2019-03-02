@@ -76,7 +76,7 @@ std::string Configurator::GetBrand() const {
 }
 
 std::string Configurator::GetLang() const {
-  return {};
+  return "en-US";
 }
 
 std::string Configurator::GetOSLongName() const {
@@ -85,7 +85,7 @@ std::string Configurator::GetOSLongName() const {
 
 base::flat_map<std::string, std::string> Configurator::ExtraRequestParams()
     const {
-  return {};
+  return {{"testrequest", "1"}, {"testsource", "dev"}};
 }
 
 std::string Configurator::GetDownloadPreference() const {
@@ -96,8 +96,7 @@ scoped_refptr<update_client::NetworkFetcherFactory>
 Configurator::GetNetworkFetcherFactory() {
 #if defined(OS_WIN)
   if (!network_fetcher_factory_) {
-    network_fetcher_factory_ =
-        base::MakeRefCounted<NetworkFetcherWinHTTPFactory>();
+    network_fetcher_factory_ = base::MakeRefCounted<NetworkFetcherFactory>();
   }
   return network_fetcher_factory_;
 #else
