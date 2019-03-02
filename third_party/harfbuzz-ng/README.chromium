@@ -1,9 +1,9 @@
 Name: harfbuzz-ng
 Short Name: harfbuzz-ng
 URL: http://harfbuzz.org
-Version: 2.3.0-181
-Date: 20190129
-Revision: fe532923101586e316b300d419a337d357cd93da
+Version: 2.3.1-79
+Date: 20190301
+Revision: 4f37ab63de9705d7bf74ee75364747e41b7c06a1
 Security Critical: yes
 License: MIT
 License File: src/COPYING
