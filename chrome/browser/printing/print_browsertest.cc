@@ -13,6 +13,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/printing/print_view_manager_common.h"
+#include "chrome/browser/printing/printing_message_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -197,11 +198,23 @@ class PrintBrowserTest : public InProcessBrowserTest {
     frame_host->GetProcess()->AddFilter(filter.get());
   }
 
-  PrintMsg_PrintFrame_Params GetDefaultPrintParams() {
+  static PrintMsg_PrintFrame_Params GetDefaultPrintFrameParams() {
     PrintMsg_PrintFrame_Params params;
-    gfx::Rect area(800, 600);
-    params.printable_area = area;
+    params.printable_area = gfx::Rect(800, 600);
     params.document_cookie = kDefaultDocumentCookie;
+    return params;
+  }
+
+  static PrintMsg_Print_Params GetNupPrintParams() {
+    PrintMsg_Print_Params params;
+    params.page_size = gfx::Size(612, 792);
+    params.content_size = gfx::Size(612, 792);
+    params.printable_area = gfx::Rect(612, 792);
+    params.dpi = gfx::Size(72, 72);
+    params.document_cookie = kDefaultDocumentCookie;
+    params.pages_per_sheet = 4;
+    params.printed_doc_type =
+        IsOopifEnabled() ? SkiaDocumentType::MSKP : SkiaDocumentType::PDF;
     return params;
   }
 
@@ -316,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintFrameContent) {
   AddFilterForFrame(rfh);
 
   rfh->Send(new PrintMsg_PrintFrameContent(rfh->GetRoutingID(),
-                                           GetDefaultPrintParams()));
+                                           GetDefaultPrintFrameParams()));
 
   // The printed result will be received and checked in
   // TestPrintFrameContentMsgFilter.
@@ -340,8 +353,8 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeContent) {
 
   AddFilterForFrame(test_frame);
 
-  test_frame->Send(new PrintMsg_PrintFrameContent(test_frame->GetRoutingID(),
-                                                  GetDefaultPrintParams()));
+  test_frame->Send(new PrintMsg_PrintFrameContent(
+      test_frame->GetRoutingID(), GetDefaultPrintFrameParams()));
 
   // The printed result will be received and checked in
   // TestPrintFrameContentMsgFilter.
@@ -385,8 +398,8 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeChain) {
     AddFilterForFrame(grandchild_frame);
   }
 
-  main_frame->Send(new PrintMsg_PrintFrameContent(main_frame->GetRoutingID(),
-                                                  GetDefaultPrintParams()));
+  main_frame->Send(new PrintMsg_PrintFrameContent(
+      main_frame->GetRoutingID(), GetDefaultPrintFrameParams()));
 
   // The printed result will be received and checked in
   // TestPrintFrameContentMsgFilter.
@@ -429,8 +442,8 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeABA) {
   if (oopif_enabled)
     AddFilterForFrame(child_frame);
 
-  main_frame->Send(new PrintMsg_PrintFrameContent(main_frame->GetRoutingID(),
-                                                  GetDefaultPrintParams()));
+  main_frame->Send(new PrintMsg_PrintFrameContent(
+      main_frame->GetRoutingID(), GetDefaultPrintFrameParams()));
 
   // The printed result will be received and checked in
   // TestPrintFrameContentMsgFilter.
@@ -570,6 +583,27 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPrintExtensionBrowserTest,
 #endif
 
   LoadExtensionAndNavigateToOptionPage();
+  PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
+}
+
+// Printing frame content for the main frame of a generic webpage with N-up
+// priting. This is a regression test for https://crbug.com/937247
+IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintNup) {
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  PrintingMessageFilter::SetTestUpdatePrintSettingsReply(GetNupPrintParams());
+  PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
+}
+
+// Site per process version of PrintBrowserTest.PrintNup.
+IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest, PrintNup) {
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  PrintingMessageFilter::SetTestUpdatePrintSettingsReply(GetNupPrintParams());
   PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
 }
 
