@@ -932,32 +932,32 @@
     //
     {
       name: "lazyFrameLoadingDistanceThresholdPxUnknown",
-      initial: 800,
+      initial: 6000,
       type: "int",
     },
     {
       name: "lazyFrameLoadingDistanceThresholdPxOffline",
-      initial: 800,
+      initial: 8000,
       type: "int",
     },
     {
       name: "lazyFrameLoadingDistanceThresholdPxSlow2G",
-      initial: 800,
+      initial: 8000,
       type: "int",
     },
     {
       name: "lazyFrameLoadingDistanceThresholdPx2G",
-      initial: 800,
+      initial: 6000,
       type: "int",
     },
     {
       name: "lazyFrameLoadingDistanceThresholdPx3G",
-      initial: 800,
+      initial: 5000,
       type: "int",
     },
     {
       name: "lazyFrameLoadingDistanceThresholdPx4G",
-      initial: 800,
+      initial: 4000,
       type: "int",
     },
 
@@ -966,32 +966,32 @@
     //
     {
       name: "lazyImageLoadingDistanceThresholdPxUnknown",
-      initial: 800,
+      initial: 5000,
       type: "int",
     },
     {
       name: "lazyImageLoadingDistanceThresholdPxOffline",
-      initial: 800,
+      initial: 8000,
       type: "int",
     },
     {
       name: "lazyImageLoadingDistanceThresholdPxSlow2G",
-      initial: 800,
+      initial: 8000,
       type: "int",
     },
     {
       name: "lazyImageLoadingDistanceThresholdPx2G",
-      initial: 800,
+      initial: 6000,
       type: "int",
     },
     {
       name: "lazyImageLoadingDistanceThresholdPx3G",
-      initial: 800,
+      initial: 4000,
       type: "int",
     },
     {
       name: "lazyImageLoadingDistanceThresholdPx4G",
-      initial: 800,
+      initial: 3000,
       type: "int",
     },
 
