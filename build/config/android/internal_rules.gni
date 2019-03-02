@@ -2417,6 +2417,7 @@ if (enable_java_templates) {
   #       asset information.
   #   deps: Specifies the dependencies of this target.
   #   dex_path: Path to classes.dex file to include (optional).
+  #   exclude_dex: Omit .dex files from the .apk (optional).
   #   packaged_resources_path: Path to .ap_ to use.
   #   output_apk_path: Output path for the generated .apk.
   #   native_lib_placeholders: List of placeholder filenames to add to the apk
@@ -2453,6 +2454,7 @@ if (enable_java_templates) {
         _secondary_native_lib_placeholders =
             invoker.secondary_native_lib_placeholders
       }
+      _exclude_dex = defined(invoker.exclude_dex) && invoker.exclude_dex
 
       script = "//build/android/gyp/apkbuilder.py"
       depfile = "$target_gen_dir/$target_name.d"
@@ -2518,7 +2520,7 @@ if (enable_java_templates) {
       if (defined(invoker.write_asset_list) && invoker.write_asset_list) {
         args += [ "--write-asset-list" ]
       }
-      if (defined(invoker.dex_path)) {
+      if (defined(invoker.dex_path) && !_exclude_dex) {
         _rebased_dex_path = rebase_path(invoker.dex_path, root_build_dir)
         args += [ "--dex-file=$_rebased_dex_path" ]
       }
@@ -2600,6 +2602,7 @@ if (enable_java_templates) {
                              [
                                "apk_name",
                                "assets_build_config",
+                               "exclude_dex",
                                "native_lib_placeholders",
                                "native_libs_filearg",
                                "packaged_resources_path",
