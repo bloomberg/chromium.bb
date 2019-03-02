@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/shared_image_manager.h"
-#include "gpu/command_buffer/service/shared_image_representation.h"
 
 #include <inttypes.h>
+
+#include <utility>
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -13,7 +14,18 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
+#include "gpu/command_buffer/service/shared_image_representation.h"
 #include "ui/gl/trace_util.h"
+
+#if DCHECK_IS_ON()
+#define CALLED_ON_VALID_THREAD()                      \
+  do {                                                \
+    if (!this->is_thread_safe())                      \
+      DCHECK_CALLED_ON_VALID_THREAD(thread_checker_); \
+  } while (false)
+#else
+#define CALLED_ON_VALID_THREAD()
+#endif
 
 namespace gpu {
 // Overrides for flat_set lookups:
@@ -32,42 +44,75 @@ bool operator<(const std::unique_ptr<SharedImageBacking>& lhs,
   return lhs->mailbox() < rhs;
 }
 
-SharedImageManager::SharedImageManager() = default;
+class SharedImageManager::AutoLock {
+ public:
+  explicit AutoLock(SharedImageManager* manager) {
+    if (manager->is_thread_safe())
+      auto_lock_.emplace(manager->lock_.value());
+  }
+  ~AutoLock() = default;
+
+ private:
+  base::Optional<base::AutoLock> auto_lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutoLock);
+};
+
+SharedImageManager::SharedImageManager(bool thread_safe) {
+  if (thread_safe)
+    lock_.emplace();
+  CALLED_ON_VALID_THREAD();
+}
 
 SharedImageManager::~SharedImageManager() {
+  CALLED_ON_VALID_THREAD();
+#if DCHECK_IS_ON()
+  AutoLock auto_lock(this);
+#endif
   DCHECK(images_.empty());
 }
 
 std::unique_ptr<SharedImageRepresentationFactoryRef>
 SharedImageManager::Register(std::unique_ptr<SharedImageBacking> backing,
                              MemoryTypeTracker* tracker) {
+  CALLED_ON_VALID_THREAD();
   DCHECK(backing->mailbox().IsSharedImage());
-  if (images_.find(backing->mailbox()) != images_.end()) {
+
+  AutoLock autolock(this);
+  const auto lower_bound = images_.lower_bound(backing->mailbox());
+  if (lower_bound != images_.end() &&
+      (*lower_bound)->mailbox() == backing->mailbox()) {
     LOG(ERROR) << "SharedImageManager::Register: Trying to register an "
                   "already registered mailbox.";
     backing->Destroy();
     return nullptr;
   }
+
   auto factory_ref = std::make_unique<SharedImageRepresentationFactoryRef>(
       this, backing.get(), tracker);
-  images_.emplace(std::move(backing));
+  images_.emplace_hint(lower_bound, std::move(backing));
   return factory_ref;
 }
 
 void SharedImageManager::OnContextLost(const Mailbox& mailbox) {
+  CALLED_ON_VALID_THREAD();
+
+  AutoLock autolock(this);
   auto found = images_.find(mailbox);
   if (found == images_.end()) {
     LOG(ERROR) << "SharedImageManager::OnContextLost: Trying to mark constext "
                   "lost on a non existent mailbox.";
     return;
   }
-
   (*found)->OnContextLost();
 }
 
 std::unique_ptr<SharedImageRepresentationGLTexture>
 SharedImageManager::ProduceGLTexture(const Mailbox& mailbox,
                                      MemoryTypeTracker* tracker) {
+  CALLED_ON_VALID_THREAD();
+
+  AutoLock autolock(this);
   auto found = images_.find(mailbox);
   if (found == images_.end()) {
     LOG(ERROR) << "SharedImageManager::ProduceGLTexture: Trying to produce a "
@@ -88,6 +133,9 @@ SharedImageManager::ProduceGLTexture(const Mailbox& mailbox,
 std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
 SharedImageManager::ProduceGLTexturePassthrough(const Mailbox& mailbox,
                                                 MemoryTypeTracker* tracker) {
+  CALLED_ON_VALID_THREAD();
+
+  AutoLock autolock(this);
   auto found = images_.find(mailbox);
   if (found == images_.end()) {
     LOG(ERROR) << "SharedImageManager::ProduceGLTexturePassthrough: Trying to "
@@ -108,6 +156,9 @@ SharedImageManager::ProduceGLTexturePassthrough(const Mailbox& mailbox,
 std::unique_ptr<SharedImageRepresentationSkia> SharedImageManager::ProduceSkia(
     const Mailbox& mailbox,
     MemoryTypeTracker* tracker) {
+  CALLED_ON_VALID_THREAD();
+
+  AutoLock autolock(this);
   auto found = images_.find(mailbox);
   if (found == images_.end()) {
     LOG(ERROR) << "SharedImageManager::ProduceSkia: Trying to Produce a "
@@ -128,6 +179,9 @@ std::unique_ptr<SharedImageRepresentationSkia> SharedImageManager::ProduceSkia(
 void SharedImageManager::OnRepresentationDestroyed(
     const Mailbox& mailbox,
     SharedImageRepresentation* representation) {
+  CALLED_ON_VALID_THREAD();
+
+  AutoLock autolock(this);
   auto found = images_.find(mailbox);
   if (found == images_.end()) {
     LOG(ERROR) << "SharedImageManager::OnRepresentationDestroyed: Trying to "
@@ -149,6 +203,9 @@ void SharedImageManager::OnMemoryDump(const Mailbox& mailbox,
                                       base::trace_event::ProcessMemoryDump* pmd,
                                       int client_id,
                                       uint64_t client_tracing_id) {
+  CALLED_ON_VALID_THREAD();
+
+  AutoLock autolock(this);
   auto found = images_.find(mailbox);
   if (found == images_.end()) {
     LOG(ERROR) << "SharedImageManager::OnMemoryDump: Trying to dump memory for "
