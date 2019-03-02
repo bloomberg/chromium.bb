@@ -56,6 +56,9 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
 
   EventBookkeeper* event_bookkeeper() { return &event_bookkeeper_; }
 
+  // Called when a service worker context was initialized.
+  void DidInitializeContext(int64_t service_worker_version_id);
+
   // Called when a service worker context started running.
   void DidStartContext(const GURL& service_worker_scope,
                        int64_t service_worker_version_id);

@@ -20,6 +20,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/lazy_context_id.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/browser/service_worker_task_queue_factory.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -95,6 +96,17 @@ void ServiceWorkerTaskQueue::DidStartWorkerForScope(
   RunPendingTasksIfWorkerReady(context_id, version_id, process_id, thread_id);
 }
 
+void ServiceWorkerTaskQueue::DidInitializeServiceWorkerContext(
+    int render_process_id,
+    const ExtensionId& extension_id,
+    int64_t service_worker_version_id,
+    int thread_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  ProcessManager::Get(browser_context_)
+      ->RegisterServiceWorker({extension_id, render_process_id,
+                               service_worker_version_id, thread_id});
+}
+
 void ServiceWorkerTaskQueue::DidStartServiceWorkerContext(
     int render_process_id,
     const ExtensionId& extension_id,
@@ -116,6 +128,9 @@ void ServiceWorkerTaskQueue::DidStopServiceWorkerContext(
     int64_t service_worker_version_id,
     int thread_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  ProcessManager::Get(browser_context_)
+      ->UnregisterServiceWorker({extension_id, render_process_id,
+                                 service_worker_version_id, thread_id});
   LazyContextId context_id(browser_context_, extension_id,
                            service_worker_scope);
   // TODO(lazyboy): Run orphaned tasks with nullptr ContextInfo.
