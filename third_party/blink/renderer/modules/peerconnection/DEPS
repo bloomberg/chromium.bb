@@ -12,3 +12,9 @@ include_rules = [
     "+net/quic",
     "+net/test",
 ]
+
+specific_include_rules = {
+    "rtc_data_channel_test\.cc" : [
+        "+base/run_loop.h",
+    ],
+}
