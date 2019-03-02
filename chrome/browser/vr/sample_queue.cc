@@ -4,9 +4,9 @@
 
 #include <stdint.h>
 
-#include "device/vr/util/sample_queue.h"
+#include "chrome/browser/vr/sample_queue.h"
 
-namespace device {
+namespace vr {
 
 SampleQueue::SampleQueue(size_t window_size) : window_size_(window_size) {
   samples_.reserve(window_size);
@@ -30,4 +30,4 @@ void SampleQueue::AddSample(int64_t value) {
   }
 }
 
-}  // namespace device
+}  // namespace vr
