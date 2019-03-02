@@ -20,7 +20,6 @@ namespace net {
 CommonConnectJobParams::CommonConnectJobParams(
     const std::string& group_name,
     const SocketTag& socket_tag,
-    bool respect_limits,
     ClientSocketFactory* client_socket_factory,
     HostResolver* host_resolver,
     ProxyDelegate* proxy_delegate,
@@ -32,7 +31,6 @@ CommonConnectJobParams::CommonConnectJobParams(
     WebSocketEndpointLockManager* websocket_endpoint_lock_manager)
     : group_name(group_name),
       socket_tag(socket_tag),
-      respect_limits(respect_limits),
       client_socket_factory(client_socket_factory),
       host_resolver(host_resolver),
       proxy_delegate(proxy_delegate),
@@ -94,9 +92,6 @@ std::unique_ptr<StreamSocket> ConnectJob::PassSocket() {
 }
 
 void ConnectJob::ChangePriority(RequestPriority priority) {
-  // Priority of a job that ignores limits should not be changed because it
-  // should always be MAXIMUM_PRIORITY.
-  DCHECK(respect_limits());
   priority_ = priority;
   ChangePriorityInternal(priority);
 }

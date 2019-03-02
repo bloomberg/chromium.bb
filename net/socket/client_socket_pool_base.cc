@@ -70,11 +70,7 @@ void ClientSocketPoolBaseHelper::Request::AssignJob(ConnectJob* job) {
   DCHECK(job);
   DCHECK(!job_);
   job_ = job;
-  // If the priority of the new job does not match the priority of |this|,
-  // change the job's priority but only if the job respects limits. If the job
-  // ignores limits, then the priority should not be changed because it should
-  // always be MAXIMUM_PRIORITY.
-  if (job_->priority() != priority_ && job_->respect_limits())
+  if (job_->priority() != priority_)
     job_->ChangePriority(priority_);
 }
 
@@ -1410,14 +1406,7 @@ void ClientSocketPoolBaseHelper::Group::SanityCheck() const {
         DCHECK(job2);
         DCHECK_NE(job, job2);
       }
-      // The request's priority matches the job's priority, unless the job has
-      // respect limits disabled, in which case the job should have
-      // MAXIMUM_PRIORITY.
-      if (job->respect_limits()) {
-        DCHECK_EQ(pointer.value()->priority(), job->priority());
-      } else {
-        DCHECK_EQ(MAXIMUM_PRIORITY, job->priority());
-      }
+      DCHECK_EQ(pointer.value()->priority(), job->priority());
     } else {
       // Check that any subsequent requests do not have a job.
       DCHECK(!pointer.value()->job());

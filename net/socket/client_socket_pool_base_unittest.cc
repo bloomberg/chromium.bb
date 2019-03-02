@@ -342,8 +342,6 @@ class TestConnectJob : public ConnectJob {
                    CommonConnectJobParams(
                        group_name,
                        request.socket_tag(),
-                       request.respect_limits() ==
-                           ClientSocketPool::RespectLimits::ENABLED,
                        nullptr /* client_socket_factory */,
                        nullptr /* host_resolver */,
                        nullptr /* proxy_delegate */,

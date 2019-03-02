@@ -486,7 +486,7 @@ TEST_F(TransportClientSocketPoolTest, ReprioritizeRequests) {
   EXPECT_TRUE(handle6.socket());
 }
 
-TEST_F(TransportClientSocketPoolTest, RequestIgnoringLimitsIsNotReprioritized) {
+TEST_F(TransportClientSocketPoolTest, RequestIgnoringLimitsIsReprioritized) {
   TransportClientSocketPool pool(
       kMaxSockets, 1, kUnusedIdleSocketTimeout, &client_socket_factory_,
       session_deps_.host_resolver.get(), nullptr /* proxy_delegate */,
@@ -499,7 +499,7 @@ TEST_F(TransportClientSocketPoolTest, RequestIgnoringLimitsIsNotReprioritized) {
       nullptr /* socket_performance_watcher_factory */,
       nullptr /* network_quality_estimator */, nullptr /* net_log */);
 
-  // Creates a job which ignores limits whose priority is MAXIMUM_PRIORITY
+  // Creates a job which ignores limits whose priority is MAXIMUM_PRIORITY.
   TestCompletionCallback callback1;
   ClientSocketHandle handle1;
   int rv1 = handle1.Init(
@@ -518,10 +518,9 @@ TEST_F(TransportClientSocketPoolTest, RequestIgnoringLimitsIsNotReprioritized) {
       NetLogWithSource());
   EXPECT_THAT(rv2, IsError(ERR_IO_PENDING));
 
-  // handle2 gets assigned the job, but it is not changed to match the request
-  // priority because it ignores limits.
+  // |handle2| gets assigned the job, which is reprioritized.
   handle1.Reset();
-  EXPECT_EQ(MAXIMUM_PRIORITY, session_deps_.host_resolver->request_priority(1));
+  EXPECT_EQ(LOW, session_deps_.host_resolver->request_priority(1));
 }
 
 TEST_F(TransportClientSocketPoolTest, InitHostResolutionFailure) {

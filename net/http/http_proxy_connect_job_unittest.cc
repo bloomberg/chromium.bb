@@ -160,9 +160,8 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
     return std::make_unique<HttpProxyConnectJob>(
         priority,
         CommonConnectJobParams(
-            "group_name", SocketTag(), true /* respect_limits */,
-            &socket_factory_, session_deps_.host_resolver.get(),
-            proxy_delegate_.get(),
+            "group_name", SocketTag(), &socket_factory_,
+            session_deps_.host_resolver.get(), proxy_delegate_.get(),
             SSLClientSocketContext(
                 session_deps_.cert_verifier.get(),
                 session_deps_.channel_id_service.get(),

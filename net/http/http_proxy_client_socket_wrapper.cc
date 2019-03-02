@@ -138,11 +138,6 @@ HttpProxyClientSocketWrapper::GetAdditionalErrorState() {
 }
 
 void HttpProxyClientSocketWrapper::SetPriority(RequestPriority priority) {
-  if (!common_connect_job_params_.respect_limits) {
-    DCHECK_EQ(MAXIMUM_PRIORITY, priority_);
-    return;
-  }
-
   priority_ = priority;
 
   if (nested_connect_job_)
