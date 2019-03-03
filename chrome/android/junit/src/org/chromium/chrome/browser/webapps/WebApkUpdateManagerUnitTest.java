@@ -18,6 +18,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +33,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -528,8 +528,9 @@ public class WebApkUpdateManagerUnitTest {
      * Test that the pending update file is deleted after update completes regardless of whether
      * update succeeded.
      */
+    // Test is flaky. See https://crbug.com/937109.
+    @Ignore
     @Test
-    @DisabledTest
     public void testPendingUpdateFileDeletedAfterUpdateCompletion() {
         mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
 
@@ -554,8 +555,9 @@ public class WebApkUpdateManagerUnitTest {
      * {@link WebApkUpdateManager#nativeStoreWebApkUpdateRequestToFile} creates the pending update
      * file but fails.
      */
+    // Test is flaky. See https://crbug.com/937109.
+    @Ignore
     @Test
-    @DisabledTest
     public void testFileDeletedIfStoreWebApkUpdateRequestToFileFails() {
         mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
 
