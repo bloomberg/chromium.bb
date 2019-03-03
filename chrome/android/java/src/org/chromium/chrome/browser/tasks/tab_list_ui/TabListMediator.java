@@ -58,10 +58,11 @@ class TabListMediator {
         }
     }
     private final int mFaviconSize;
-    private final FaviconHelper mFaviconHelper = new FaviconHelper();
+    private final FaviconHelper mFaviconHelper;
     private final TabListModel mModel;
     private final TabModelSelector mTabModelSelector;
     private final TabContentManager mTabContentManager;
+    private final Profile mProfile;
 
     private final TabActionListener mTabSelectedListener = new TabActionListener() {
         @Override
@@ -122,13 +123,16 @@ class TabListMediator {
      *                                                 the tabs concerned.
      * @param tabContentManager {@link TabContentManager} to provide screenshot related details.
      */
-    public TabListMediator(TabListModel model, Context context, TabModelSelector tabModelSelector,
-            TabContentManager tabContentManager) {
+    public TabListMediator(Profile profile, TabListModel model, Context context,
+            TabModelSelector tabModelSelector, TabContentManager tabContentManager,
+            FaviconHelper faviconHelper) {
         mFaviconSize = context.getResources().getDimensionPixelSize(R.dimen.tab_grid_favicon_size);
 
         mTabModelSelector = tabModelSelector;
         mTabContentManager = tabContentManager;
         mModel = model;
+        mFaviconHelper = faviconHelper;
+        mProfile = profile;
 
         mTabModelObserver = new TabModelSelectorTabModelObserver(mTabModelSelector) {
             @Override
@@ -208,8 +212,8 @@ class TabListMediator {
         } else {
             mModel.add(index, tabInfo);
         }
-        mFaviconHelper.getLocalFaviconImageForURL(Profile.getLastUsedProfile().getOriginalProfile(),
-                tab.getUrl(), mFaviconSize, (image, iconUrl) -> {
+        mFaviconHelper.getLocalFaviconImageForURL(
+                mProfile, tab.getUrl(), mFaviconSize, (image, iconUrl) -> {
                     if (mModel.indexFromId(tab.getId()) == Tab.INVALID_TAB_ID) return;
                     mModel.get(mModel.indexFromId(tab.getId())).set(TabProperties.FAVICON, image);
                 });
