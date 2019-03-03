@@ -4162,6 +4162,10 @@ void RenderProcessHostImpl::ProcessDied(
 
   UpdateProcessPriority();
 
+  // RenderProcessGone relies on the exit code set during shutdown.
+  if (shutdown_exit_code_ != -1)
+    info.exit_code = shutdown_exit_code_;
+
   within_process_died_observer_ = true;
   NotificationService::current()->Notify(
       NOTIFICATION_RENDERER_PROCESS_CLOSED, Source<RenderProcessHost>(this),
@@ -4170,18 +4174,14 @@ void RenderProcessHostImpl::ProcessDied(
     observer.RenderProcessExited(this, info);
   within_process_died_observer_ = false;
 
-  RemoveUserData(kSessionStorageHolderKey);
-
-  // RenderProcessGone relies on the exit code set during shutdown.
-  if (shutdown_exit_code_ != -1)
-    info.exit_code = shutdown_exit_code_;
-
   base::IDMap<IPC::Listener*>::iterator iter(&listeners_);
   while (!iter.IsAtEnd()) {
     iter.GetCurrentValue()->OnMessageReceived(FrameHostMsg_RenderProcessGone(
         iter.GetCurrentKey(), static_cast<int>(info.status), info.exit_code));
     iter.Advance();
   }
+
+  RemoveUserData(kSessionStorageHolderKey);
 
   // Initialize a new ChannelProxy in case this host is re-used for a new
   // process. This ensures that new messages can be sent on the host ASAP (even
