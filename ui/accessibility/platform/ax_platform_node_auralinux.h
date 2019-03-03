@@ -100,8 +100,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   // AXPlatformNodeBase overrides.
   void Init(AXPlatformNodeDelegate* delegate) override;
   int GetIndexInParent() override;
-
-  std::string GetTextForATK();
+  base::string16 GetText() const override;
 
   void UpdateHypertext();
   const AXHypertext& GetHypertext();

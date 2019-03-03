@@ -313,11 +313,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   void Destroy() override;
   int GetIndexInParent() override;
   base::string16 GetValue() const override;
-
-  // For the moment, we add a special version of this method which returns a
-  // base::string16, but once the hypertext generation code is shared between
-  // platforms we can just override AXPlatformNodeBase::GetText().
-  base::string16 GetTextAsString16() const;
+  base::string16 GetText() const override;
 
   //
   // IAccessible methods.

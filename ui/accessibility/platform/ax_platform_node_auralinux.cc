@@ -905,11 +905,26 @@ static gchar* AXPlatformNodeAuraLinuxGetText(AtkText* atk_text,
   if (!obj)
     return nullptr;
 
-  std::string text = obj->GetTextForATK();
-  if (end_offset < 0)
-    end_offset = g_utf8_strlen(text.c_str(), -1);
+  if (start_offset < 0)
+    return nullptr;
 
-  return g_utf8_substring(text.c_str(), start_offset, end_offset);
+  base::string16 text = obj->GetText();
+
+  start_offset = obj->UnicodeToUTF16OffsetInText(start_offset);
+  if (end_offset < 0) {
+    end_offset = text.size();
+  } else {
+    end_offset = obj->UnicodeToUTF16OffsetInText(end_offset);
+    end_offset = std::max(start_offset,
+                          std::min(end_offset, static_cast<int>(text.size())));
+  }
+
+  DCHECK_GE(start_offset, 0);
+  DCHECK_GE(end_offset, start_offset);
+
+  return g_strdup(
+      base::UTF16ToUTF8(text.substr(start_offset, end_offset - start_offset))
+          .c_str());
 }
 
 static gint AXPlatformNodeAuraLinuxGetCharacterCount(AtkText* atk_text) {
@@ -918,8 +933,7 @@ static gint AXPlatformNodeAuraLinuxGetCharacterCount(AtkText* atk_text) {
   if (!obj)
     return 0;
 
-  std::string text = obj->GetTextForATK();
-  return g_utf8_strlen(text.c_str(), -1);
+  return obj->UTF16ToUnicodeOffsetInText(obj->GetText().length());
 }
 
 static AtkAttributeSet* AXPlatformNodeAuraLinuxGetRunAttributes(
@@ -948,15 +962,16 @@ static gunichar AXPlatformNodeAuraLinuxGetCharacterAtOffset(AtkText* atk_text,
   if (!obj)
     return 0;
 
-  std::string text = obj->GetTextForATK();
-  size_t limited_offset = std::max(0L, std::min(g_utf8_strlen(text.c_str(), -1),
-                                                static_cast<glong>(offset)));
+  base::string16 text = obj->GetText();
+  int32_t text_length = text.length();
 
-  // According to the C++ documentation, the pointer returned by c_str() should
-  // be valid as long as any non-const operations are not performed on the
-  // std::string in question.
-  return g_utf8_get_char(
-      g_utf8_offset_to_pointer(text.c_str(), limited_offset));
+  offset = obj->UnicodeToUTF16OffsetInText(offset);
+  int32_t limited_offset = std::max(0, std::min(text_length, offset));
+
+  uint32_t code_point;
+  base::ReadUnicodeCharacter(text.c_str(), text_length + 1, &limited_offset,
+                             &code_point);
+  return code_point;
 }
 
 // This function returns a single character as a UTF-8 encoded C string because
@@ -973,12 +988,17 @@ static char* AXPlatformNodeAuraLinuxGetCharacter(AtkText* atk_text,
   if (!obj)
     return nullptr;
 
-  std::string text = obj->GetTextForATK();
-  int text_length = static_cast<int>(g_utf8_strlen(text.c_str(), -1));
-  *start_offset = std::max(0, std::min(text_length, offset));
-  *end_offset = std::max(0, std::min(text_length, *start_offset + 1));
+  if (offset < 0 ||
+      offset >= AXPlatformNodeAuraLinuxGetCharacterCount(atk_text))
+    return nullptr;
 
-  return g_utf8_substring(text.c_str(), *start_offset, *end_offset);
+  char* text = AXPlatformNodeAuraLinuxGetText(atk_text, offset, offset + 1);
+  if (!text)
+    return nullptr;
+
+  *start_offset = offset;
+  *end_offset = offset + 1;
+  return text;
 }
 
 static char* AXPlatformNodeAuraLinuxGetTextWithBoundaryType(
@@ -1001,7 +1021,7 @@ static char* AXPlatformNodeAuraLinuxGetTextWithBoundaryType(
   offset = obj->UnicodeToUTF16OffsetInText(offset);
 
   std::vector<int32_t> unused_line_start_offsets = std::vector<int32_t>();
-  base::string16 text = base::UTF8ToUTF16(obj->GetTextForATK());
+  base::string16 text = obj->GetText();
   size_t start_offset = static_cast<int>(FindAccessibleTextBoundary(
       text, unused_line_start_offsets, boundary_type, offset,
       BACKWARDS_DIRECTION, ax::mojom::TextAffinity::kDownstream));
@@ -2833,7 +2853,7 @@ AXPlatformNodeAuraLinux::GetHypertextAdjustments() {
 
   text_unicode_adjustments_.emplace();
 
-  base::string16 text = base::UTF8ToUTF16(GetTextForATK());
+  base::string16 text = GetText();
   int32_t text_length = text.size();
   for (int32_t i = 0; i < text_length; i++) {
     uint32_t code_point;
@@ -3048,17 +3068,6 @@ void AXPlatformNodeAuraLinux::AddAttributeToList(const char* name,
   *attributes = PrependAtkAttributeToAtkAttributeSet(name, value, *attributes);
 }
 
-std::string AXPlatformNodeAuraLinux::GetTextForATK() {
-  // Special case allows us to get text even in non-HTML case, e.g. browser UI.
-  if (IsPlainTextField())
-    return GetStringAttribute(ax::mojom::StringAttribute::kValue);
-
-  if (IsChildOfLeaf())
-    return AXPlatformNodeBase::GetText();
-
-  return base::UTF16ToUTF8(hypertext_.hypertext);
-}
-
 void AXPlatformNodeAuraLinux::SetEmbeddedDocument(
     AtkObject* new_embedded_document) {
   SetWeakGPtrToAtkObject(&embedded_document_, new_embedded_document);
@@ -3067,6 +3076,17 @@ void AXPlatformNodeAuraLinux::SetEmbeddedDocument(
 void AXPlatformNodeAuraLinux::SetEmbeddingWindow(
     AtkObject* new_embedding_window) {
   SetWeakGPtrToAtkObject(&embedding_window_, new_embedding_window);
+}
+
+base::string16 AXPlatformNodeAuraLinux::GetText() const {
+  // Special case allows us to get text even in non-HTML case, e.g. browser UI.
+  if (IsPlainTextField())
+    return GetString16Attribute(ax::mojom::StringAttribute::kValue);
+
+  if (IsChildOfLeaf())
+    return AXPlatformNodeBase::GetText();
+
+  return hypertext_.hypertext;
 }
 
 }  // namespace ui
