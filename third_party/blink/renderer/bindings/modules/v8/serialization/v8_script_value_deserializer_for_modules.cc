@@ -256,7 +256,7 @@ CryptoKey* V8ScriptValueDeserializerForModules::ReadCryptoKey() {
       uint32_t length_bytes;
       if (!ReadUint32(&raw_id) || !AlgorithmIdFromWireFormat(raw_id, &id) ||
           !ReadUint32(&length_bytes) ||
-          length_bytes > std::numeric_limits<unsigned short>::max() / 8u)
+          length_bytes > std::numeric_limits<uint16_t>::max() / 8u)
         return nullptr;
       algorithm = WebCryptoKeyAlgorithm::CreateAes(id, length_bytes * 8);
       key_type = kWebCryptoKeyTypeSecret;

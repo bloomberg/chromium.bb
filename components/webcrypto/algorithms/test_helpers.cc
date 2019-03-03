@@ -275,7 +275,7 @@ bool CopiesExist(const std::vector<std::vector<uint8_t>>& bufs) {
 
 blink::WebCryptoAlgorithm CreateAesKeyGenAlgorithm(
     blink::WebCryptoAlgorithmId aes_alg_id,
-    unsigned short length) {
+    uint16_t length) {
   return blink::WebCryptoAlgorithm::AdoptParamsAndCreate(
       aes_alg_id, new blink::WebCryptoAesKeyGenParams(length));
 }

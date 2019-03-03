@@ -20,8 +20,7 @@ namespace webcrypto {
 
 namespace {
 
-blink::WebCryptoAlgorithm CreateAesKwKeyGenAlgorithm(
-    unsigned short key_length_bits) {
+blink::WebCryptoAlgorithm CreateAesKwKeyGenAlgorithm(uint16_t key_length_bits) {
   return CreateAesKeyGenAlgorithm(blink::kWebCryptoAlgorithmIdAesKw,
                                   key_length_bits);
 }
@@ -29,7 +28,7 @@ blink::WebCryptoAlgorithm CreateAesKwKeyGenAlgorithm(
 class WebCryptoAesKwTest : public WebCryptoTestBase {};
 
 TEST_F(WebCryptoAesKwTest, GenerateKeyBadLength) {
-  const unsigned short kKeyLen[] = {0, 127, 257};
+  const uint16_t kKeyLen[] = {0, 127, 257};
   blink::WebCryptoKey key;
   for (size_t i = 0; i < base::size(kKeyLen); ++i) {
     SCOPED_TRACE(i);

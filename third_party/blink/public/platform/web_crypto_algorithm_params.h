@@ -108,17 +108,17 @@ class WebCryptoAesCtrParams : public WebCryptoAlgorithmParams {
 
 class WebCryptoAesKeyGenParams : public WebCryptoAlgorithmParams {
  public:
-  explicit WebCryptoAesKeyGenParams(unsigned short length_bits)
+  explicit WebCryptoAesKeyGenParams(uint16_t length_bits)
       : length_bits_(length_bits) {}
 
   WebCryptoAlgorithmParamsType GetType() const override {
     return kWebCryptoAlgorithmParamsTypeAesKeyGenParams;
   }
 
-  unsigned short LengthBits() const { return length_bits_; }
+  uint16_t LengthBits() const { return length_bits_; }
 
  private:
-  const unsigned short length_bits_;
+  const uint16_t length_bits_;
 };
 
 class WebCryptoHmacImportParams : public WebCryptoAlgorithmParamsWithHash {
@@ -359,17 +359,17 @@ class WebCryptoEcdhKeyDeriveParams : public WebCryptoAlgorithmParams {
 
 class WebCryptoAesDerivedKeyParams : public WebCryptoAlgorithmParams {
  public:
-  explicit WebCryptoAesDerivedKeyParams(unsigned short length_bits)
+  explicit WebCryptoAesDerivedKeyParams(uint16_t length_bits)
       : length_bits_(length_bits) {}
 
   WebCryptoAlgorithmParamsType GetType() const override {
     return kWebCryptoAlgorithmParamsTypeAesDerivedKeyParams;
   }
 
-  unsigned short LengthBits() const { return length_bits_; }
+  uint16_t LengthBits() const { return length_bits_; }
 
  private:
-  const unsigned short length_bits_;
+  const uint16_t length_bits_;
 };
 
 class WebCryptoHkdfParams : public WebCryptoAlgorithmParamsWithHash {

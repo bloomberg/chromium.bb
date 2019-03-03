@@ -34,8 +34,7 @@ blink::WebCryptoAlgorithm CreateEcdhDeriveParams(
       new blink::WebCryptoEcdhKeyDeriveParams(public_key));
 }
 
-blink::WebCryptoAlgorithm CreateAesGcmDerivedKeyParams(
-    unsigned short length_bits) {
+blink::WebCryptoAlgorithm CreateAesGcmDerivedKeyParams(uint16_t length_bits) {
   return blink::WebCryptoAlgorithm::AdoptParamsAndCreate(
       blink::kWebCryptoAlgorithmIdAesGcm,
       new blink::WebCryptoAesDerivedKeyParams(length_bits));

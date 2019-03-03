@@ -30,7 +30,7 @@ blink::WebCryptoAlgorithm CreateAesCbcAlgorithm(
 }
 
 blink::WebCryptoAlgorithm CreateAesCbcKeyGenAlgorithm(
-    unsigned short key_length_bits) {
+    uint16_t key_length_bits) {
   return CreateAesKeyGenAlgorithm(blink::kWebCryptoAlgorithmIdAesCbc,
                                   key_length_bits);
 }
@@ -167,7 +167,7 @@ TEST_F(WebCryptoAesCbcTest, KnownAnswerEncryptDecrypt) {
 TEST_F(WebCryptoAesCbcTest, GenerateKeyIsRandom) {
   // Check key generation for each allowed key length.
   std::vector<blink::WebCryptoAlgorithm> algorithm;
-  const unsigned short kKeyLength[] = {128, 256};
+  const uint16_t kKeyLength[] = {128, 256};
   for (size_t key_length_i = 0; key_length_i < base::size(kKeyLength);
        ++key_length_i) {
     blink::WebCryptoKey key;
@@ -196,7 +196,7 @@ TEST_F(WebCryptoAesCbcTest, GenerateKeyIsRandom) {
 }
 
 TEST_F(WebCryptoAesCbcTest, GenerateKeyBadLength) {
-  const unsigned short kKeyLen[] = {0, 127, 257};
+  const uint16_t kKeyLen[] = {0, 127, 257};
   blink::WebCryptoKey key;
   for (size_t i = 0; i < base::size(kKeyLen); ++i) {
     SCOPED_TRACE(i);
