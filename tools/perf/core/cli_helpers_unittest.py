@@ -8,6 +8,7 @@ import unittest
 import mock
 
 from core import cli_helpers
+from telemetry import decorators
 
 
 class CLIHelpersTest(unittest.TestCase):
@@ -78,6 +79,8 @@ class CLIHelpersTest(unittest.TestCase):
       mock.call('\033[96mReady? [foo/bar] \033[0m', end=' ')
     ])
 
+  # https://crbug.com/937654.
+  @decorators.Disabled('android', 'chromeos')
   def testAskWithInvalidDefaultAnswer(self):
     with self.assertRaises(ValueError):
       cli_helpers.Ask('Ready?', ['foo', 'bar'], 'baz')
