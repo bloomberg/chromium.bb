@@ -5917,7 +5917,7 @@ crbug.com/936165 virtual/video-surface-layer/media/autoplay-muted.html [ Timeout
 crbug.com/936108 virtual/streams-native/http/tests/streams/transferable/readable-stream.html [ Failure Pass ]
 
 # Sheriff 2019-02-27
-crbug.com/936279 external/wpt/import-maps/fallback-disallowed.sub.tentative.html [ Failure Pass ]
+crbug.com/936279 external/wpt/import-maps/fallback-disallowed.sub.tentative.html [ Failure Pass Timeout ]
 crbug.com/936479 [ Mac10.13 ] http/tests/devtools/sources/debugger/async-callstack-fetch.js [ Failure Crash Pass ]
 crbug.com/936615 [ Win7 ] external/wpt/kv-storage/values.https.html [ Timeout Pass ]
 
