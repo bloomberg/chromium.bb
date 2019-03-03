@@ -1475,7 +1475,7 @@ void DocumentLoader::InstallNewDocument(
   // If stale while revalidate is enabled via Origin Trials count it as such.
   if (stale_while_revalidate_enabled &&
       !RuntimeEnabledFeatures::StaleWhileRevalidateEnabledByRuntimeFlag())
-    UseCounter::Count(frame_, WebFeature::kStaleWhileRevalidateEnabled);
+    UseCounter::Count(document, WebFeature::kStaleWhileRevalidateEnabled);
 
   parser_ = document->OpenForNavigation(parsing_policy, mime_type, encoding);
 

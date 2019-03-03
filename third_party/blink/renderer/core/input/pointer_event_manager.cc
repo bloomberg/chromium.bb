@@ -172,9 +172,11 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
   }
 
   if (!check_for_listener || target->HasEventListeners(event_type)) {
-    UseCounter::Count(frame_, WebFeature::kPointerEventDispatch);
-    if (event_type == event_type_names::kPointerdown)
-      UseCounter::Count(frame_, WebFeature::kPointerEventDispatchPointerDown);
+    UseCounter::Count(frame_->GetDocument(), WebFeature::kPointerEventDispatch);
+    if (event_type == event_type_names::kPointerdown) {
+      UseCounter::Count(frame_->GetDocument(),
+                        WebFeature::kPointerEventDispatchPointerDown);
+    }
 
     DCHECK(!dispatching_pointer_id_);
     base::AutoReset<PointerId> dispatch_holder(&dispatching_pointer_id_,

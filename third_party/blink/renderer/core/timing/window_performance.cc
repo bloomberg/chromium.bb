@@ -185,8 +185,10 @@ WindowPerformance::CreateNavigationTimingInstance() {
     return nullptr;
   WebVector<WebServerTimingInfo> server_timing =
       PerformanceServerTiming::ParseServerTiming(*info);
-  if (!server_timing.empty())
-    UseCounter::Count(GetFrame(), WebFeature::kPerformanceServerTiming);
+  if (!server_timing.empty()) {
+    UseCounter::Count(GetFrame()->GetDocument(),
+                      WebFeature::kPerformanceServerTiming);
+  }
   return MakeGarbageCollected<PerformanceNavigationTiming>(
       GetFrame(), info, time_origin_, server_timing);
 }
@@ -386,7 +388,7 @@ void WindowPerformance::ReportEventTimings(WebLayerTreeView::SwapResult result,
       continue;
 
     if (HasObserverFor(PerformanceEntry::kEvent)) {
-      UseCounter::Count(GetFrame(),
+      UseCounter::Count(GetFrame()->GetDocument(),
                         WebFeature::kEventTimingExplicitlyRequested);
       NotifyObserversOfEntry(*entry);
     }
@@ -404,7 +406,7 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
   PerformanceElementTiming* entry = PerformanceElementTiming::Create(
       name, rect, MonotonicTimeToDOMHighResTimeStamp(timestamp));
   if (HasObserverFor(PerformanceEntry::kElement)) {
-    UseCounter::Count(GetFrame(),
+    UseCounter::Count(GetFrame()->GetDocument(),
                       WebFeature::kElementTimingExplicitlyRequested);
     NotifyObserversOfEntry(*entry);
   }

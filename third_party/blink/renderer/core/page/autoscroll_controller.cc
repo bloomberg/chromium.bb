@@ -293,7 +293,8 @@ void AutoscrollController::StartMiddleClickAutoscroll(
   middle_click_mode_ = kMiddleClickInitial;
   middle_click_autoscroll_start_pos_global_ = position_global;
 
-  UseCounter::Count(frame, WebFeature::kMiddleClickAutoscrollStart);
+  UseCounter::Count(frame->GetDocument(),
+                    WebFeature::kMiddleClickAutoscrollStart);
 
   last_velocity_ = FloatSize();
 
