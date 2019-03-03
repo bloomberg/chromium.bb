@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
+import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -186,7 +187,7 @@ public class MediaCaptureNotificationService extends Service {
                         .setSmallIcon(getNotificationIconId(mediaType))
                         .setLocalOnly(true);
 
-        Intent tabIntent = Tab.createBringTabToFrontIntent(notificationId);
+        Intent tabIntent = IntentUtils.createBringTabToFrontIntent(notificationId);
         if (tabIntent != null) {
             PendingIntent contentIntent = PendingIntent.getActivity(
                     ContextUtils.getApplicationContext(), notificationId, tabIntent, 0);
