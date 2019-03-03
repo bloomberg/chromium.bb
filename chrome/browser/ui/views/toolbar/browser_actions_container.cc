@@ -194,15 +194,15 @@ void BrowserActionsContainer::Redraw(bool order_changed) {
     return;
   }
 
-  // Don't allow resizing if the bar is highlighting.
-  if (resize_area_)
-    resize_area_->SetEnabled(!toolbar_actions_bar()->is_highlighting());
+  // Need to update the resize area because resizing is not allowed when the
+  // actions bar is highlighting.
+  UpdateResizeArea();
 
-  std::vector<ToolbarActionViewController*> actions =
-      toolbar_actions_bar_->GetActions();
   if (order_changed) {
     // Run through the views and compare them to the desired order. If something
     // is out of place, find the correct spot for it.
+    std::vector<ToolbarActionViewController*> actions =
+        toolbar_actions_bar_->GetActions();
     for (int i = 0; i < static_cast<int>(actions.size()) - 1; ++i) {
       if (actions[i] != toolbar_action_views_[i]->view_controller()) {
         // Find where the correct view is (it's guaranteed to be after our
@@ -685,6 +685,14 @@ void BrowserActionsContainer::OnResize(int resize_amount, bool done_resizing) {
   toolbar_actions_bar_->OnResizeComplete(icon_area_width);
 }
 
+void BrowserActionsContainer::OnBoundsChanged(
+    const gfx::Rect& previous_bounds) {
+  // When bounds change, it's possible that the amount of space available to the
+  // view changes as well. If the amount of space is not enough to fit a single
+  // icon, the resize handle should be disabled.
+  UpdateResizeArea();
+}
+
 void BrowserActionsContainer::AnimationProgressed(
     const gfx::Animation* animation) {
   DCHECK_EQ(resize_animation_.get(), animation);
@@ -815,4 +823,15 @@ int BrowserActionsContainer::GetSeparatorAreaWidth() const {
     return 0;
   return 2 * GetLayoutConstant(TOOLBAR_STANDARD_SPACING) +
          views::Separator::kThickness;
+}
+
+void BrowserActionsContainer::UpdateResizeArea() {
+  if (!resize_area_)
+    return;
+
+  const base::Optional<int> max_width = delegate_->GetMaxBrowserActionsWidth();
+  const bool enable_resize_area =
+      interactive_ && !toolbar_actions_bar()->is_highlighting() &&
+      (!max_width || *max_width >= GetWidthForIconCount(1));
+  resize_area_->SetEnabled(enable_resize_area);
 }
