@@ -101,7 +101,7 @@ class LoginUtilsTest : public OobeBaseTest {
 class LoginUtilsContainedShellTest : public LoginUtilsTest {
  public:
   void SetUp() override {
-    feature_list_.InitAndEnableFeature(ash::features::kContainedShell);
+    feature_list_.InitAndEnableFeature(ash::features::kKioskNextShell);
     LoginUtilsTest::SetUp();
   }
 
@@ -119,7 +119,7 @@ class LoginUtilsContainedShellTest : public LoginUtilsTest {
     ProfileHelper::Get()
         ->GetProfileByUser(user_manager::UserManager::Get()->GetActiveUser())
         ->GetPrefs()
-        ->SetBoolean(ash::prefs::kContainedShellEnabled,
+        ->SetBoolean(ash::prefs::kKioskNextShellEnabled,
                      contained_shell_pref_value);
   }
 
