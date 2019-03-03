@@ -112,7 +112,7 @@ bool CopiesExist(const std::vector<std::vector<uint8_t>>& bufs);
 
 blink::WebCryptoAlgorithm CreateAesKeyGenAlgorithm(
     blink::WebCryptoAlgorithmId aes_alg_id,
-    unsigned short length);
+    uint16_t length);
 
 // The following key pair is comprised of the SPKI (public key) and PKCS#8
 // (private key) representations of the key pair provided in Example 1 of the

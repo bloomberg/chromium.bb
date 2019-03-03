@@ -31,7 +31,7 @@ blink::WebCryptoAlgorithm CreateAesGcmAlgorithm(
 }
 
 blink::WebCryptoAlgorithm CreateAesGcmKeyGenAlgorithm(
-    unsigned short key_length_bits) {
+    uint16_t key_length_bits) {
   return CreateAesKeyGenAlgorithm(blink::kWebCryptoAlgorithmIdAesGcm,
                                   key_length_bits);
 }
@@ -97,7 +97,7 @@ Status AesGcmDecrypt(const blink::WebCryptoKey& key,
 class WebCryptoAesGcmTest : public WebCryptoTestBase {};
 
 TEST_F(WebCryptoAesGcmTest, GenerateKeyBadLength) {
-  const unsigned short kKeyLen[] = {0, 127, 257};
+  const uint16_t kKeyLen[] = {0, 127, 257};
   blink::WebCryptoKey key;
   for (size_t i = 0; i < base::size(kKeyLen); ++i) {
     SCOPED_TRACE(i);
