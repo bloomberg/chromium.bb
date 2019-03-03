@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
+import org.chromium.chrome.browser.util.IntentUtils;
 
 /**
  * Deprecated class for running Chrome in document mode.  Kept around to force users into the
@@ -40,7 +41,9 @@ public class DocumentActivity extends ChromeActivity {
 
         // Try to bring this tab forward after migration.
         Intent tabbedIntent = null;
-        if (tabId != Tab.INVALID_TAB_ID) tabbedIntent = Tab.createBringTabToFrontIntent(tabId);
+        if (tabId != Tab.INVALID_TAB_ID) {
+            tabbedIntent = IntentUtils.createBringTabToFrontIntent(tabId);
+        }
 
         if (tabbedIntent == null) {
             tabbedIntent = new Intent(Intent.ACTION_MAIN);

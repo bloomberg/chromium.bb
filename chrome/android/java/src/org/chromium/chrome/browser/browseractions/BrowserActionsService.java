@@ -278,7 +278,7 @@ public class BrowserActionsService extends Service {
         boolean multipleUrls = hasBrowserActionsNotification();
         Intent intent;
         if (!multipleUrls && tabId != Tab.INVALID_TAB_ID) {
-            intent = Tab.createBringTabToFrontIntent(tabId);
+            intent = IntentUtils.createBringTabToFrontIntent(tabId);
         } else {
             intent = new Intent(this, ChromeLauncherActivity.class);
             IntentHandler.addTrustedIntentExtras(intent);
