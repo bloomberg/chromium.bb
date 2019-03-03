@@ -893,8 +893,9 @@ def _RunTestSuiteUsingCtest(buildroot,
   cwd = os.path.join(buildroot, 'src', 'scripts')
   dut_type = 'gce' if test_type == constants.GCE_SUITE_TEST_TYPE else 'vm'
 
+  crostestutils = os.path.join(buildroot, 'src', 'platform', 'crostestutils')
   cmd = [
-      'bin/ctest',
+      os.path.join(crostestutils, 'ctest', 'ctest.py'),
       '--board=%s' % board,
       '--type=%s' % dut_type, '--no_graphics', '--verbose',
       '--target_image=%s' % image_path,

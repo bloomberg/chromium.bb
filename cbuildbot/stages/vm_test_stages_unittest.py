@@ -427,7 +427,9 @@ class RunTestSuiteTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertCommandContains(['--board=%s' % self.TEST_BOARD])
     if test_config.use_ctest:
       self.assertCommandContains([
-          'bin/ctest', '--no_graphics', '--verbose',
+          os.path.join(self.BUILD_ROOT, 'src', 'platform', 'crostestutils',
+                       'ctest', 'ctest.py'),
+          '--no_graphics', '--verbose',
           '--target_image=%s' % self.TEST_IMAGE_OUTSIDE_CHROOT,
           '--ssh_private_key=%s' % self.PRIVATE_KEY_OUTSIDE_CHROOT
       ])
