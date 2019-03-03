@@ -14,7 +14,9 @@ import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -86,7 +88,8 @@ public class TabListCoordinator implements Destroyable {
 
         mRecyclerView.setHasFixedSize(true);
 
-        mMediator = new TabListMediator(tabListModel, context, tabModelSelector, tabContentManager);
+        mMediator = new TabListMediator(Profile.getLastUsedProfile(), tabListModel, context,
+                tabModelSelector, tabContentManager, new FaviconHelper());
     }
 
     /**
