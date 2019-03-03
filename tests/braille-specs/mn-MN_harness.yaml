@@ -1,6 +1,7 @@
 display: unicode.dis
 table:
   locale: mn
+  contraction: no
   __assert-match: mn-MN-g1.utb
 tests:
   - # Hello world  
