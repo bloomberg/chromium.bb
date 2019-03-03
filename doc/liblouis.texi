@@ -1540,7 +1540,8 @@ this operand.
 
 @item $ (dollar sign)
 a string of attributes, such as @samp{d} for digit, @samp{l} for
-letter, etc. More than one attribute can be given. If you wish to
+letter, etc. For a list of all valid attributes @pxref{valid attribute
+characters}. More than one attribute can be given. If you wish to
 check characters with any attribute, use the letter @samp{a}. Input
 characters are checked to see if they have at least one of the
 attributes. The attribute string can be followed by numbers specifying
@@ -1659,7 +1660,9 @@ at the same level is also removed.
 
 @end table
 
-The characters which can be used in attribute strings are as follows:
+@anchor{valid attribute characters}
+The valid characters which can be used in attribute strings are as
+follows:
 
 @table @kbd
 @item a 
@@ -1895,10 +1898,6 @@ which can include other files, etc. For an example, see what files are
 included by the entry include @file{en-us-g1.ctb} in the table
 @file{en-us-g2.ctb}. If the included file is not in the same directory
 as the main table, use a full path name for filename.
-
-@opcode{locale, characters}
-Not implemented, but recognized and ignored for backward
-compatibility.
 
 @opcode{undefined, dots}
 If this opcode is used in a table any characters which have not been

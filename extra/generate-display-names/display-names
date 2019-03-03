@@ -94,7 +94,10 @@
 * ../../tables/mt.tbl                           Maltese computer braille
 * ../../tables/mun.tbl                          Munda braille
 * ../../tables/mwr.tbl                          Marwari braille
-* ../../tables/no-no-g0.utb                     Norwegian uncontracted braille
+* ../../tables/no-no-comp8.ctb                  Norwegian computer braille
+* ../../tables/no-no-g0.utb                     Norwegian 6-dot uncontracted braille
+* ../../tables/no-no-8dot.utb                   Norwegian 8-dot uncontracted braille
+  ../../tables/no-no-8dot-fallback-6dot-g0.utb  Norwegian 8-dot uncontracted braille with 6-dot fallback
 * ../../tables/no-no-g1.ctb                     Norwegian grade 1 contracted braille
 * ../../tables/no-no-g2.ctb                     Norwegian grade 2 contracted braille
 * ../../tables/no.tbl                           Norwegian grade 3 contracted braille

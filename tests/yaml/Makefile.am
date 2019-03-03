@@ -1,5 +1,4 @@
 EXTRA_DIST =					\
-	all-spaces.yaml				\
 	back_cont_then_punc.yaml		\
 	before_begmidword.yaml			\
 	begcaps_endcaps.yaml			\
@@ -37,6 +36,5 @@ EXTRA_DIST =					\
 	noletsignafter.yaml			\
 	pass0_typebuf.yaml			\
 	present_progressive.yaml		\
-	spaces-in-all-tables.yaml		\
 	squash_space.yaml			\
 	syllable.yaml

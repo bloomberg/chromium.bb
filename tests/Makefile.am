@@ -123,6 +123,8 @@ dist_braille_specs_TESTS =				  \
 	braille-specs/hu-hu-comp8_harness.yaml		  \
 	braille-specs/hu-hu-g1_backward.yaml		  \
 	braille-specs/hu-hu-g1_harness.yaml		  \
+	braille-specs/hu-hu-g2_harness.yaml \
+	braille-specs/hu-hu-g2_backward.yaml \
 	braille-specs/iu-ca-g1_harness.yaml		  \
 	braille-specs/ko-2006-g2_harness.yaml		  \
 	braille-specs/ko-g2_harness.yaml		  \
@@ -134,12 +136,14 @@ dist_braille_specs_TESTS =				  \
 	braille-specs/nl-NL-g0_harness.yaml		  \
 	braille-specs/nl-g0_harness.yaml		  \
 	braille-specs/no_8dot_harness.yaml		  \
+	braille-specs/no_backward.yaml			  \
 	braille-specs/no_g1_harness.yaml		  \
 	braille-specs/no_g2_harness.yaml		  \
 	braille-specs/no_harness.yaml			  \
 	braille-specs/pl-pl-comp8_harness.yaml		  \
 	braille-specs/Pl-Pl-g1_backward.yaml		  \
 	braille-specs/sk-g1_harness.yaml		  \
+	braille-specs/spaces.yaml			  \
 	braille-specs/sr-g1_harness.yaml		  \
 	braille-specs/ta-ta-g1_harness.yaml		  \
 	braille-specs/uk.yaml				  \
@@ -158,7 +162,6 @@ dist_braille_specs_TESTS +=				  \
 endif
 
 dist_yaml_TESTS =				\
-	yaml/all-spaces.yaml			\
 	yaml/back_cont_then_punc.yaml		\
 	yaml/begcaps_endcaps.yaml		\
 	yaml/before_begmidword.yaml		\
@@ -198,7 +201,6 @@ dist_yaml_TESTS =				\
 	yaml/partialTrans.yaml			\
 	yaml/pass0_typebuf.yaml			\
 	yaml/present_progressive.yaml		\
-	yaml/spaces-in-all-tables.yaml		\
 	yaml/squash_space.yaml			\
 	yaml/syllable.yaml
 

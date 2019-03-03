@@ -1,5 +1,55 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
+* Noteworthy changes in release 3.9.0 (2019-03-04)
+
+For a detailed list of all the changes refer to [[https://github.com/liblouis/liblouis/milestone/19?closed=1][the list of closed
+issues]].
+
+** New features
+- None
+
+** Bug fixes
+- Fix a problem in the callback registration in the Python bindings
+  thanks to Leonard de Ruijter
+- Fix a problem in the Python bindings when translating using tables
+  located in path with Non-ASCII characters. Thanks to André-Abush
+  Clause.
+- Fixed memory leaks created by block scope compound literals thanks
+  to Martin Gieseking
+
+** Braille table improvements
+- Major extension of the German 8 dot computer braille table thanks to
+  Ali-Riza Ciftcioglu. For example the Euro sign or quote characters
+  are finally defined.
+- Fix a few issues with hungarian grade1 and grade2 Braille thanks to
+  Attila Hammer.
+- Various improvements to Norwegian thanks to Lars Bjørndal, Jostein
+  Austvik Jacobsen, Ammar Usama and Bert Frees.
+- Updates to Bopomofo-based Chinese Braille thanks to Sponge Jhan:
+  Improved Braille representation of Chinese characters, and rewritten
+  Kana rules using multipass statements.
+
+** Other changes
+- Don't search for tables in ~/usr/local/share/liblouis/tables~ (or
+  the Windows equivalent) if ~LOUIS_TABLEPATH~ is set.
+
+** Deprecation notice
+- The ~locale~ opcode was never implemented and was just silently
+  ignored. It is now removed from the tables and and a warning will be
+  issued if it is found in a table.
+
+** Backwards incompatible changes
+
+** New, renamed or removed tables
+*** New
+- None
+
+*** Renamed
+- None
+
+*** Removed
+- None
+
 * Noteworthy changes in release 3.8.0 (2018-12-03)
 The major focus of this release is on braille table updates. There are
 major updates to German, Arabic, Chinese, Turkish, Dutch, Czech,

@@ -57,7 +57,7 @@ endnum ? 6-26
 endnum ; 6-23
 endnum ! 6-235
 endnum " 6-236
-
+endnum * 6-35
 always . 3
 always ' 6-3
 postpunc . 256
@@ -69,6 +69,7 @@ always : 25
 always ! 235
 endnum . 3
 always • 6-35
+endnum % 3456-245-356
 # literary forms of the decimal digits
 include litdigits6Dots.uti
 midendnumericmodechars ,:.-

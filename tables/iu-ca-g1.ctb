@@ -13,13 +13,10 @@
 # accurate nor complete. It hasn't been verified by the table
 # author yet. It is merely an attempt by the liblouis maintainers
 # to get some sensible initial values in place.
-#
-# TODO: Please add a reference to official documentation about
-# the implemented braille code. Preferably submit the documents
-# to https://github.com/liblouis/braille-specs.
 # -----------
 #
-# liblouis: Inuktitut Braille Table
+# Based on the Inuktitut syllabary Braille code developed by Tamara
+# Johnson Kearney <https://www.cbtbc.org/braille/inuktitut/>.
 #
 # Copyright (C) 2012, maintained by Greg Kearney, gkearney@gmail.com
 #

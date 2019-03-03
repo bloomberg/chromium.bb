@@ -2507,6 +2507,9 @@ doOpcode:
 		break;
 	}
 	case CTO_Locale:
+		compileWarning(nested,
+				"The locale opcode is not implemented. Use the locale meta data "
+				"instead.");
 		break;
 	case CTO_Undefined:
 		tmp_offset = (*table)->undefined;
@@ -3703,22 +3706,28 @@ _lou_getTablePath(void) {
 	char searchPath[MAXSTRING];
 	char *path;
 	char *cp;
+	int envset = 0;
 	cp = searchPath;
 	path = getenv("LOUIS_TABLEPATH");
-	if (path != NULL && path[0] != '\0') cp += sprintf(cp, ",%s", path);
+	if (path != NULL && path[0] != '\0') {
+		envset = 1;
+		cp += sprintf(cp, ",%s", path);
+	}
 	path = lou_getDataPath();
 	if (path != NULL && path[0] != '\0')
 		cp += sprintf(cp, ",%s%c%s%c%s", path, DIR_SEP, "liblouis", DIR_SEP, "tables");
+	if (!envset) {
 #ifdef _WIN32
-	path = lou_getProgramPath();
-	if (path != NULL) {
-		if (path[0] != '\0')
-			cp += sprintf(cp, ",%s%s", path, "\\share\\liblouis\\tables");
-		free(path);
-	}
+		path = lou_getProgramPath();
+		if (path != NULL) {
+			if (path[0] != '\0')
+				cp += sprintf(cp, ",%s%s", path, "\\share\\liblouis\\tables");
+			free(path);
+		}
 #else
-	cp += sprintf(cp, ",%s", TABLESDIR);
+		cp += sprintf(cp, ",%s", TABLESDIR);
 #endif
+	}
 	if (searchPath[0] != '\0')
 		return strdup(&searchPath[1]);
 	else
