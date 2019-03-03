@@ -55,7 +55,7 @@ const AtomicString& FrameTree::GetName() const {
     if (!frame)
       frame = DynamicTo<LocalFrame>(&Top());
     if (frame) {
-      UseCounter::Count(frame,
+      UseCounter::Count(frame->GetDocument(),
                         WebFeature::kCrossOriginMainFrameNulledNameAccessed);
       if (!name_.IsEmpty()) {
         UseCounter::Count(
