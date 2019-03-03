@@ -1,2 +1,3 @@
-include unicode.dis
+include unicode-without-blank.dis
 display 9 9
+display a a

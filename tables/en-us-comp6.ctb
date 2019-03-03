@@ -24,6 +24,7 @@ space \t 7 tab
 space \s 0 blank
 sign \x000a 78 newline
 space \x000d 0 carriage return
+space \x00a0 a
 include loweredDigits6Dots.uti
 include latinLetterDef8Dots.uti
 punctuation , 6

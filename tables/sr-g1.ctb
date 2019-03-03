@@ -31,7 +31,6 @@
 #
 # ---------------------------------------------------------------------------------------
 
-include spaces.uti
 include sr-chardefs.cti
 include braille-patterns.cti
 

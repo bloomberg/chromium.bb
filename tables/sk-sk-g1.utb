@@ -23,16 +23,15 @@
 # Created by Mike Sivill #<mike.sivill@viewplus.com>
 
 #**** Display Codes
- include text_nabcc.dis
+include text_nabcc.dis
 
-#**** Character Definitions
-space \s 0 blank
+#**** Spaces
 space \t 9 tab
-space \x000a 0 newline
-space \x000c 0
-space \x000d 0 carriage return
 space \x001b 1b escape character for html back-translation
 space \x00A0 a NO-BREAK SPACE <noBreak> 0020 NON-BREAKING SPACE 
+include spaces.uti
+
+#**** Character Definitions
 include loweredDigits6Dots.uti
 
 include latinLetterDef8Dots.uti

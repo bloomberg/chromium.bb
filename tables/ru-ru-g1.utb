@@ -23,13 +23,11 @@
 #include text_nabcc.dis All display opcodes
 include ru-ru.dis All display opcodes	#replace text_nabcc.dis Yuemei Sun 03/12/08
 
+space \x00a0 a
+include spaces.uti
 
 # ----------- define all chars --------------------------------------
 
-space \t 0
-space \x000A 0
-space \x000D 0
-space \s 0 blank	
 replace \x0007
 punctuation ! 2346				# 33
 punctuation " 5						# 34
@@ -105,7 +103,6 @@ sign | 1256								# 124
 punctuation } 12456				# 125
 math ~ 45									# 126
 
-space \X00A0 0						# 160 no-break space
 sign \x00A2 4-14					# 162 ¢ cents sign
 sign \x00A3 4-123					# 163 £ pounds sign
 

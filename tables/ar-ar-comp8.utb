@@ -27,10 +27,10 @@
 include text_nabcc.dis All display opcodes
 include braille-patterns.cti # unicode braille.
 
+space \s 0 blank
 space \t 0 tab
 space \x000A 0
 space \x000D 0
-space \s 0 blank
 
 # Arabic characters
 letter ء 3 # arabic individual hamza (\x0621)

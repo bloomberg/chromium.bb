@@ -132,7 +132,7 @@ lowercase w 2456		LATIN SMALL LETTER W
 lowercase x 1346		LATIN SMALL LETTER X
 lowercase y 13456		LATIN SMALL LETTER Y
 lowercase z 1356		LATIN SMALL LETTER Z
-# punctuation \x00a0 0		NO-BREAK SPACE
+punctuation \x00a0 0		NO-BREAK SPACE
 
 # letters specific to Icelandic (though part of the Windows 1252 set)
 uppercase \x00c1 167		LATIN CAPITAL LETTER A WITH ACUTE

@@ -35,7 +35,6 @@
 #
 # ----------------------------------------------------------------------------------------------
 
-include spaces.uti
 include nl-chardefs.uti
 include braille-patterns.cti
 

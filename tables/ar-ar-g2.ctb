@@ -24,8 +24,6 @@
 #-author-name: Ikrami Ahmad
 #-author-email: ikrami.ahmad@gmail.com
 
-include spaces.uti
-
 include ar-ar-g1.utb
 
 # first rule: these should be abbriviated everywhere, whether as stand alone word or part of a bigger word.

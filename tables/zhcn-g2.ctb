@@ -93,7 +93,7 @@
 #
 # Start
 
-include spaces.uti
+space \s 0
 
 # Single Chinese character
 sign \x5416 23456-2345

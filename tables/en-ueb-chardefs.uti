@@ -25,14 +25,12 @@
 
 #  Maintained by Mike Gray <mgray@aph.org>
 
-
-space \s 0 blank
 space \t 9 tab
-space \x000a 0 newline
-space \x000c 0
-space \x000d 0 carriage return
 space \x001b 1b escape character for html back-translation
 space \x00A0 a NO-BREAK SPACE <noBreak> 0020 NON-BREAKING SPACE
+
+include spaces.uti
+noback correct "\x200b" "\s"
 
 include latinLetterDef8Dots.uti
 
@@ -500,18 +498,6 @@ sign \x02e6 45-46-14 ˦ high tone
 sign \x02e7 45-46-25 ˧ mid tone
 sign \x02e8 45-46-36 ˨ low tone
 
-space \x2000 0
-space \x2001 0
-space \x2002 0
-space \x2003 0
-space \x2004 0
-space \x2005 0
-space \x2006 0
-space \x2007 0
-space \x2008 0
-space \x2009 0
-space \x200a 0
-space \x200b 0
 punctuation \x2010 36 ‐
 punctuation \x2011 36 ‑
 punctuation \x2013 6-36 –
@@ -525,7 +511,6 @@ sign \x2020 4-6-1456 † dagger
 sign \x2021 4-6-12456 ‡ double dagger
 sign \x2022 456-256 • bullet
 punctuation \x2026 256-256-256 … ellipse
-space \x202f 0 narrow no-break space
 sign \x20a3 4-124 ₣ franc
 sign \x20a6 4-1345 ₦ naira
 sign \x20ac 4-15 € euro

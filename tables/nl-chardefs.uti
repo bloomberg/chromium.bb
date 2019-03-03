@@ -35,6 +35,11 @@
 #
 # ----------------------------------------------------------------------------------------------
 
+space       \x0009        9                                       <control> HORIZONTAL TABULATION
+space       \x001B        1b                                      <control> ESCAPE
+space       \x00A0        a                                       NO-BREAK SPACE
+include spaces.uti
+
 # ==============================================================================================
 # SINGLE-CELL
 # ==============================================================================================
@@ -69,12 +74,6 @@ uplow       \x00DC\x00FC  1256,1256           Üü                  LATIN CAPITA
 uplow       \x1E9E\x00DF  2346,2346           ẞß                  LATIN CAPITAL LETTER SHARP S - LATIN SMALL LETTER SHARP S
 
 
-space       \x0009        9                                       <control> HORIZONTAL TABULATION
-space       \x000A        0                                       <control> LINE FEED
-space       \x000C        0                                       <control> FORM FEED
-space       \x000D        0                                       <control> CARRIAGE RETURN
-space       \x001B        1b                                      <control> ESCAPE
-space       \x0020        0                                       SPACE
 punctuation \x0021        235                 !                   EXCLAMATION MARK
 punctuation \x0022        2356                "                   QUOTATION MARK
 sign        \x0024        145                 $                   DOLLAR SIGN
@@ -125,7 +124,6 @@ punctuation \x0096        36                  –                   <control> ST
 punctuation \x0097        36                  —                   <control> END OF GUARDED AREA - ANSI: EM DASH - MACROMAN: O ACUTE
 punctuation \x009B        3                   ›                   <control> CONTROL SEQUENCE INTRODUCER - ANSI: SINGLE RIGHT-POINTING ANGLE QUOTATION MARK - MACROMAN: O TILDE
 
-space       \x00A0        a                                       NO-BREAK SPACE
 punctuation \x00A1        235                 ¡                   INVERTED EXCLAMATION MARK
 sign        \x00A2        14                  ¢                   CENT SIGN
 sign        \x00A3        1234                £                   POUND SIGN

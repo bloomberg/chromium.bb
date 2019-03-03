@@ -18,6 +18,7 @@
 #  <http://www.gnu.org/licenses/>.
 
 # Table for Gondi
+space \x00a0 a
 include spaces.uti
 include devanagari.cti
 include telugu.cti

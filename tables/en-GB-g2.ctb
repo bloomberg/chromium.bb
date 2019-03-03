@@ -22,7 +22,6 @@
 
 # Created by Tom Johnston <tom.johnston@accessibilityconsulting.co.uk>. 
 
-include spaces.uti
 include en-gb-g1.utb
 
 # the letter a

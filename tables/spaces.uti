@@ -25,9 +25,10 @@
 # Also this table defines all the space characters to be empty braille
 # cells.
 
-space \s 0		SPACE
-noback sign \x0000 0
+space \s     0		SPACE
 
+sign  \x0000 0		NULL
+space \x0009 0		CHARACTER TABULATION
 space \x000a 0		LINE FEED (LF)
 space \x000b 0		LINE TABULATION
 space \x000c 0		FORM FEED (FF)
@@ -44,12 +45,18 @@ space \x2007 0		FIGURE SPACE
 space \x2008 0		PUNCTUATION SPACE
 space \x2009 0		THIN SPACE
 space \x200a 0		HAIR SPACE
+space \x200b 0		ZERO WIDTH SPACE
 space \x2028 0		LINE SEPARATOR
 space \x2029 0		PARAGRAPH SEPARATOR
 space \x202f 0		NARROW NO-BREAK SPACE
 space \x205f 0		MEDIUM MATHEMATICAL SPACE
+space \x2060 0		WORD JOINER
+space \x2800 0		BRAILLE PATTERN BLANK
+space \xfeff 0		ZERO WIDTH NO-BREAK SPACE (also Unicode BOM)
 
-replace \xFEFF		ZERO WIDTH NO-BREAK SPACE
-replace \x200B		ZERO WIDTH SPACE
+# replace \x200b		ZERO WIDTH SPACE
+noback correct "\x200b" ""
+
 replace \x2060		WORD JOINER
+replace \xfeff		ZERO WIDTH NO-BREAK SPACE (also Unicode BOM)
 

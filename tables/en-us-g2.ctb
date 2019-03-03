@@ -22,8 +22,6 @@
 #  License along with liblouis. If not, see
 #  <http://www.gnu.org/licenses/>.
 
-include spaces.uti
-
 include en-us-g1.ctb
 
 # Braille indicators specific to Grade 2

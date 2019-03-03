@@ -28,8 +28,6 @@
 #     Based on the official Czech Braille Standard
 # -------------------------------------------------------------------------------
 
-include spaces.uti
-
 include cs-chardefs.cti
 include braille-patterns.cti
 include cs-translation.cti
