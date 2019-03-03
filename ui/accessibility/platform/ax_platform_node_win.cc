@@ -542,9 +542,9 @@ int AXPlatformNodeWin::GetIndexInParent() {
   return -1;
 }
 
-base::string16 AXPlatformNodeWin::GetTextAsString16() const {
+base::string16 AXPlatformNodeWin::GetText() const {
   if (IsChildOfLeaf())
-    return base::UTF8ToUTF16(AXPlatformNodeBase::GetText());
+    return AXPlatformNodeBase::GetText();
 
   return hypertext_.hypertext;
 }
@@ -992,7 +992,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accValue(VARIANT var_id, BSTR* value) {
   }
 
   if (result.empty() && target->IsRichTextField())
-    result = base::UTF8ToUTF16(target->GetInnerText());
+    result = target->GetInnerText();
 
   *value = SysAllocString(result.c_str());
   DCHECK(*value);
@@ -1505,8 +1505,7 @@ IFACEMETHODIMP AXPlatformNodeWin::setSelectionRanges(LONG nRanges,
     return E_INVALIDARG;
 
   if (anchor_node->IsTextOnlyObject() || anchor_node->IsPlainTextField()) {
-    if (size_t{ranges->anchorOffset} >
-        anchor_node->GetTextAsString16().length()) {
+    if (size_t{ranges->anchorOffset} > anchor_node->GetText().length()) {
       return E_INVALIDARG;
     }
   } else {
@@ -1515,7 +1514,7 @@ IFACEMETHODIMP AXPlatformNodeWin::setSelectionRanges(LONG nRanges,
   }
 
   if (focus_node->IsTextOnlyObject() || focus_node->IsPlainTextField()) {
-    if (size_t{ranges->activeOffset} > focus_node->GetTextAsString16().length())
+    if (size_t{ranges->activeOffset} > focus_node->GetText().length())
       return E_INVALIDARG;
   } else {
     if (ranges->activeOffset > focus_node->GetChildCount())
@@ -6177,12 +6176,12 @@ base::string16 AXPlatformNodeWin::TextForIAccessibleText() {
   // UI.
   if (IsPlainTextField())
     return GetString16Attribute(ax::mojom::StringAttribute::kValue);
-  return GetTextAsString16();
+  return GetText();
 }
 
 void AXPlatformNodeWin::HandleSpecialTextOffset(LONG* offset) {
   if (*offset == IA2_TEXT_OFFSET_LENGTH) {
-    *offset = static_cast<LONG>(GetTextAsString16().length());
+    *offset = static_cast<LONG>(GetText().length());
   } else if (*offset == IA2_TEXT_OFFSET_CARET) {
     int selection_start, selection_end;
     GetSelectionOffsets(&selection_start, &selection_end);
@@ -6376,7 +6375,7 @@ int32_t AXPlatformNodeWin::GetHypertextOffsetFromChild(
           FromNativeViewAccessible(GetDelegate()->ChildAtIndex(i)));
       DCHECK(sibling);
       if (sibling->IsTextOnlyObject()) {
-        hypertext_offset += (int32_t)sibling->GetTextAsString16().size();
+        hypertext_offset += (int32_t)sibling->GetText().size();
       } else {
         ++hypertext_offset;
       }
@@ -6475,7 +6474,7 @@ int AXPlatformNodeWin::GetHypertextOffsetFromEndpoint(
   if (endpoint_index_in_common_parent < index_in_common_parent)
     return 0;
   if (endpoint_index_in_common_parent > index_in_common_parent)
-    return (int32_t)GetTextAsString16().size();
+    return (int32_t)GetText().size();
 
   NOTREACHED();
   return -1;

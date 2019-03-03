@@ -915,8 +915,8 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextCharacterGranularity) {
   };
 
   verify_text_at_offset("d", 2, 2, 3);
-  verify_text_at_offset("A", -1, 0, 1);
-  verify_text_at_offset("", 42342, 39, 39);
+  verify_text_at_offset(nullptr, -1, -1, -1);
+  verify_text_at_offset(nullptr, 42342, -1, -1);
   verify_text_at_offset("\xE2\x98\xBA", 23, 23, 24);
   verify_text_at_offset(" ", 24, 24, 25);
 
@@ -929,7 +929,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextCharacterGranularity) {
   };
 
   verify_text_after_offset("d", 1, 2, 3);
-  verify_text_after_offset("", 42342, 39, 39);
+  verify_text_after_offset(nullptr, 42342, -1, -1);
   verify_text_after_offset("\xE2\x98\xBA", 22, 23, 24);
   verify_text_after_offset(" ", 23, 24, 25);
 
@@ -945,11 +945,9 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextCharacterGranularity) {
   };
 
   verify_text_before_offset("d", 3, 2, 3);
-  verify_text_before_offset("", 42342, 39, 39);
+  verify_text_before_offset(nullptr, 42342, -1, -1);
   verify_text_before_offset("\xE2\x98\xBA", 24, 23, 24);
   verify_text_before_offset(" ", 25, 24, 25);
-
-  // This boundary condition is enforced by ATK for some reason.
   verify_text_after_offset(nullptr, -1, 0, 0);
 
   g_object_unref(root_obj);
@@ -1120,12 +1118,17 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextParagraphGranularity) {
   g_object_unref(root_obj);
 }
 
-TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextWordsWithNonBMPCharacters) {
+TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextWithNonBMPCharacters) {
   AXNodeData root;
   root.id = 1;
   root.role = ax::mojom::Role::kTextField;
-  root.AddStringAttribute(ax::mojom::StringAttribute::kValue,
-                          "\xF0\x9F\x83\x8f a decently long string.");
+
+  // The playing card emoji in this string should be considered a single
+  // character offset for all AtkText API calls.
+  static const char root_text[] =
+      "\xF0\x9F\x83\x8f a decently long \xF0\x9F\x83\x8f string "
+      "\xF0\x9F\x83\x8f.";
+  root.AddStringAttribute(ax::mojom::StringAttribute::kValue, root_text);
   Init(root);
 
   AtkObject* root_obj(GetRootAtkObject());
@@ -1135,27 +1138,61 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextWordsWithNonBMPCharacters) {
   ASSERT_TRUE(ATK_IS_TEXT(root_obj));
   AtkText* atk_text = ATK_TEXT(root_obj);
 
-  // The playing card emoji in this string should be considered a single
-  // character offset.
+  int root_text_length = g_utf8_strlen(root_text, -1);
+  ASSERT_EQ(atk_text_get_character_count(atk_text), root_text_length);
+
+  for (int i = 0; i < root_text_length; i++) {
+    testing::Message message;
+    message << "Checking character at offset " << i;
+    SCOPED_TRACE(message);
+
+    gunichar character = atk_text_get_character_at_offset(atk_text, i);
+    gunichar expected_character =
+        g_utf8_get_char_validated(g_utf8_offset_to_pointer(root_text, i), -1);
+    ASSERT_EQ(character, expected_character);
+
+    int start_offset = -1, end_offset = -1;
+    char* char_string = atk_text_get_text_at_offset(
+        atk_text, i, ATK_TEXT_BOUNDARY_CHAR, &start_offset, &end_offset);
+    character = g_utf8_get_char_validated(char_string, -1);
+    ASSERT_EQ(character, expected_character);
+    ASSERT_EQ(start_offset, i);
+    ASSERT_EQ(end_offset, i + 1);
+    g_free(char_string);
+
+#if ATK_CHECK_VERSION(2, 10, 0)
+    start_offset = -1;
+    end_offset = -1;
+    char_string = atk_text_get_string_at_offset(
+        atk_text, i, ATK_TEXT_GRANULARITY_CHAR, &start_offset, &end_offset);
+
+    character = g_utf8_get_char_validated(char_string, -1);
+    ASSERT_EQ(character, expected_character);
+    ASSERT_EQ(start_offset, i);
+    ASSERT_EQ(end_offset, i + 1);
+    g_free(char_string);
+#endif
+  }
+
   static GetTextSegmentTest tests[] = {{0, "\xF0\x9F\x83\x8f ", 0, 2},
                                        {6, "decently ", 4, 13}};
 
   for (unsigned i = 0; i < G_N_ELEMENTS(tests); i++) {
     int start_offset = -1, end_offset = -1;
-    char* content = atk_text_get_text_at_offset(atk_text, tests[i].offset,
-                                                ATK_TEXT_BOUNDARY_WORD_START,
-                                                &start_offset, &end_offset);
+    char* word = atk_text_get_text_at_offset(atk_text, tests[i].offset,
+                                             ATK_TEXT_BOUNDARY_WORD_START,
+                                             &start_offset, &end_offset);
     testing::Message message;
     message << "Checking test with index=" << i << " and expected text=\'"
             << tests[i].content << "\' at " << tests[1].start_offset << '-'
             << tests[1].end_offset << '.';
     SCOPED_TRACE(message);
 
-    ASSERT_STREQ(content, tests[i].content);
+    ASSERT_STREQ(word, tests[i].content);
     ASSERT_EQ(start_offset, tests[i].start_offset);
     ASSERT_EQ(end_offset, tests[i].end_offset);
 
-    g_free(content);
+    g_free(word);
   }
 
   g_object_unref(root_obj);

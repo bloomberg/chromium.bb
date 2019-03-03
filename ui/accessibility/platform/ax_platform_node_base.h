@@ -200,7 +200,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
   bool HasFocus();
 
-  virtual std::string GetText() const;
+  virtual base::string16 GetText() const;
 
   virtual base::string16 GetValue() const;
 
@@ -239,7 +239,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
   // |GetInnerText| recursively includes all the text from descendants such as
   // text found in any embedded object.
-  std::string GetInnerText() const;
+  base::string16 GetInnerText() const;
 
   // Get the role description from the node data or from the image annotation
   // status.
