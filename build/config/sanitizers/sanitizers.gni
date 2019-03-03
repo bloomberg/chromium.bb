@@ -220,6 +220,11 @@ assert(!is_lsan || is_asan, "is_lsan = true requires is_asan = true also.")
 assert(!is_win || !is_debug || !is_asan,
        "ASan on Windows doesn't work in debug (set is_debug=false).")
 
+# libFuzzer targets can fail to build or behave incorrectly when built without
+# ASAN on Windows.
+assert(!is_win || !use_libfuzzer || is_asan,
+       "use_libfuzzer on Windows requires setting is_asan = true")
+
 # Make sure that if we recover on detection (i.e. not crash), diagnostics are
 # printed.
 assert(!use_cfi_recover || use_cfi_diag,
