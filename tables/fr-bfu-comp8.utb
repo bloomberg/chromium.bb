@@ -242,8 +242,6 @@ lowercase  	\x00FD	134568  	253 ⢽ ý LATIN SMALL LETTER Y WITH ACUTE
 lowercase  	\x00FE	2458    	254 ⢚ þ LATIN SMALL LETTER THORN
 lowercase  	\x00FF	2568    	255 ⢲ ÿ LATIN SMALL LETTER Y WITH DIAERESIS
 
-always \x00A0 7
-
 include braille-patterns.cti
 
 # unofficial definitions

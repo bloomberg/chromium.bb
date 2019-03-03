@@ -427,6 +427,19 @@ tests:
 flags: {testmode: forward}
 tests:
   - ['\x00a0', '\x0020']
+table: de-de-comp8.ctb
+flags: {testmode: bothDirections}
+tests:
+  - ['\x0009', '⣊']
+  - ['\x000a', '⣚']
+  - ['\x000b', '⣅']
+  - ['\x000c', '⣇']
+  - ['\x000d', '⣍']
+  - ['\x0020', '\x0020']
+  - ['\x00a0', '⡀']
+flags: {testmode: forward}
+tests:
+  - ['\x202f', '⡀']
 table: de-g0.utb
 flags: {testmode: bothDirections}
 tests:
@@ -825,6 +838,9 @@ tests:
   - ['\x000d', '⣍']
   - ['\x0020', '\x0020']
   - ['\x00a0', '⡀']
+flags: {testmode: forward}
+tests:
+  - ['\x202f', '⡀']
 table: fr-bfu-g2.ctb
 flags: {testmode: bothDirections}
 tests:
