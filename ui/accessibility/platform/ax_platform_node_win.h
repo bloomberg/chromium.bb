@@ -889,6 +889,11 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                               void** object) override;
 
  protected:
+  // This is hard-coded; all products based on the Chromium engine will have the
+  // same framework name, so that assistive technology can detect any
+  // Chromium-based product.
+  static constexpr const base::char16* FRAMEWORK_ID = L"Chrome";
+
   AXPlatformNodeWin();
 
   int MSAAState() const;
