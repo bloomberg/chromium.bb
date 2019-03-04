@@ -473,15 +473,19 @@ class TestConnectJob : public ConnectJob {
         return ret;
       }
       case kMockAuthChallengeOnceJob:
+        set_load_state(LOAD_STATE_CONNECTING);
         DoAdvanceAuthChallenge(1, true /* succeed_after_last_challenge */);
         return ERR_IO_PENDING;
       case kMockAuthChallengeTwiceJob:
+        set_load_state(LOAD_STATE_CONNECTING);
         DoAdvanceAuthChallenge(2, true /* succeed_after_last_challenge */);
         return ERR_IO_PENDING;
       case kMockAuthChallengeOnceFailingJob:
+        set_load_state(LOAD_STATE_CONNECTING);
         DoAdvanceAuthChallenge(1, false /* succeed_after_last_challenge */);
         return ERR_IO_PENDING;
       case kMockAuthChallengeTwiceFailingJob:
+        set_load_state(LOAD_STATE_CONNECTING);
         DoAdvanceAuthChallenge(2, false /* succeed_after_last_challenge */);
         return ERR_IO_PENDING;
       default:
@@ -523,6 +527,7 @@ class TestConnectJob : public ConnectJob {
 
   void InvokeNextProxyAuthCallback(int remaining_challenges,
                                    bool succeed_after_last_challenge) {
+    set_load_state(LOAD_STATE_ESTABLISHING_PROXY_TUNNEL);
     if (remaining_challenges == 0) {
       DoConnect(succeed_after_last_challenge, true /* was_async */,
                 false /* cert_error */);
@@ -2126,7 +2131,6 @@ TEST_F(ClientSocketPoolBaseTest, LoadStateOneRequest) {
 }
 
 // Test GetLoadState in the case there are two socket requests.
-// Only the first connection in the pool should affect the pool's load status.
 TEST_F(ClientSocketPoolBaseTest, LoadStateTwoRequests) {
   CreatePool(2, 2);
   connect_job_factory_->set_job_type(TestConnectJob::kMockWaitingJob);
@@ -2149,48 +2153,29 @@ TEST_F(ClientSocketPoolBaseTest, LoadStateTwoRequests) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   client_socket_factory_.SetJobLoadState(1, LOAD_STATE_RESOLVING_HOST);
 
-  // Check that both handles report the state of the first job.
+  // Each handle should reflect the state of its own job.
   EXPECT_EQ(LOAD_STATE_RESOLVING_HOST, handle.GetLoadState());
   EXPECT_EQ(LOAD_STATE_RESOLVING_HOST, handle2.GetLoadState());
 
+  // Update the state of the first job.
   client_socket_factory_.SetJobLoadState(0, LOAD_STATE_CONNECTING);
 
-  // Check that both handles change to LOAD_STATE_CONNECTING.
+  // Only the state of the first request should have changed.
   EXPECT_EQ(LOAD_STATE_CONNECTING, handle.GetLoadState());
-  EXPECT_EQ(LOAD_STATE_CONNECTING, handle2.GetLoadState());
-}
-
-// Test that the second connection request does not affect the pool's load
-// status.
-TEST_F(ClientSocketPoolBaseTest, LoadStateTwoRequestsChangeSecondRequestState) {
-  CreatePool(2, 2);
-  connect_job_factory_->set_job_type(TestConnectJob::kMockWaitingJob);
-
-  ClientSocketHandle handle;
-  TestCompletionCallback callback;
-  int rv = handle.Init(
-      "a", params_, DEFAULT_PRIORITY, SocketTag(),
-      ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
-      ClientSocketPool::ProxyAuthCallback(), pool_.get(), NetLogWithSource());
-  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-
-  ClientSocketHandle handle2;
-  TestCompletionCallback callback2;
-  rv = handle2.Init("a", params_, DEFAULT_PRIORITY, SocketTag(),
-                    ClientSocketPool::RespectLimits::ENABLED,
-                    callback2.callback(), ClientSocketPool::ProxyAuthCallback(),
-                    pool_.get(), NetLogWithSource());
-  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-  client_socket_factory_.SetJobLoadState(1, LOAD_STATE_RESOLVING_HOST);
-
-  EXPECT_EQ(LOAD_STATE_CONNECTING, handle.GetLoadState());
-  EXPECT_EQ(LOAD_STATE_CONNECTING, handle2.GetLoadState());
-
-  // First job connects and the first request gets the socket.  The
-  // second handle switches to the state of the remaining ConnectJob.
-  client_socket_factory_.SignalJob(0);
-  EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_EQ(LOAD_STATE_RESOLVING_HOST, handle2.GetLoadState());
+
+  // Update the state of the second job.
+  client_socket_factory_.SetJobLoadState(1, LOAD_STATE_SSL_HANDSHAKE);
+
+  // Only the state of the second request should have changed.
+  EXPECT_EQ(LOAD_STATE_CONNECTING, handle.GetLoadState());
+  EXPECT_EQ(LOAD_STATE_SSL_HANDSHAKE, handle2.GetLoadState());
+
+  // Second job connects and the first request gets the socket.  The
+  // second handle switches to the state of the remaining ConnectJob.
+  client_socket_factory_.SignalJob(1);
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+  EXPECT_EQ(LOAD_STATE_CONNECTING, handle2.GetLoadState());
 }
 
 // Test GetLoadState in the case the per-group limit is reached.
@@ -4821,12 +4806,18 @@ TEST_F(ClientSocketPoolBaseTest, ProxyAuthOnce) {
   TestAuthHelper auth_helper;
   auth_helper.InitHandle(params_, pool_.get());
   EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+  EXPECT_EQ(LOAD_STATE_CONNECTING,
+            pool_->GetLoadState("a", auth_helper.handle()));
 
   auth_helper.WaitForAuth();
   EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+  EXPECT_EQ(LOAD_STATE_ESTABLISHING_PROXY_TUNNEL,
+            pool_->GetLoadState("a", auth_helper.handle()));
 
   auth_helper.RestartWithAuth();
   EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+  EXPECT_EQ(LOAD_STATE_ESTABLISHING_PROXY_TUNNEL,
+            pool_->GetLoadState("a", auth_helper.handle()));
 
   EXPECT_THAT(auth_helper.WaitForResult(), IsOk());
   EXPECT_EQ(1, auth_helper.auth_count());
@@ -4843,9 +4834,13 @@ TEST_F(ClientSocketPoolBaseTest, ProxyAuthOnceSync) {
   TestAuthHelper auth_helper;
   auth_helper.InitHandle(params_, pool_.get());
   EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+  EXPECT_EQ(LOAD_STATE_CONNECTING,
+            pool_->GetLoadState("a", auth_helper.handle()));
 
   auth_helper.WaitForAuthAndRestartSync();
   EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+  EXPECT_EQ(LOAD_STATE_ESTABLISHING_PROXY_TUNNEL,
+            pool_->GetLoadState("a", auth_helper.handle()));
 
   EXPECT_THAT(auth_helper.WaitForResult(), IsOk());
   EXPECT_EQ(1, auth_helper.auth_count());
@@ -4962,16 +4957,27 @@ TEST_F(ClientSocketPoolBaseTest, ProxyAuthTwice) {
   TestAuthHelper auth_helper;
   auth_helper.InitHandle(params_, pool_.get());
   EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+  EXPECT_EQ(LOAD_STATE_CONNECTING,
+            pool_->GetLoadState("a", auth_helper.handle()));
 
   auth_helper.WaitForAuth();
   auth_helper.RestartWithAuth();
   EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
   EXPECT_EQ(1, auth_helper.auth_count());
+  EXPECT_EQ(LOAD_STATE_ESTABLISHING_PROXY_TUNNEL,
+            pool_->GetLoadState("a", auth_helper.handle()));
 
   auth_helper.WaitForAuth();
+  EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
+  EXPECT_EQ(2, auth_helper.auth_count());
+  EXPECT_EQ(LOAD_STATE_ESTABLISHING_PROXY_TUNNEL,
+            pool_->GetLoadState("a", auth_helper.handle()));
+
   auth_helper.RestartWithAuth();
   EXPECT_EQ(1u, pool_->NumConnectJobsInGroup("a"));
   EXPECT_EQ(2, auth_helper.auth_count());
+  EXPECT_EQ(LOAD_STATE_ESTABLISHING_PROXY_TUNNEL,
+            pool_->GetLoadState("a", auth_helper.handle()));
 
   EXPECT_THAT(auth_helper.WaitForResult(), IsOk());
   EXPECT_EQ(2, auth_helper.auth_count());

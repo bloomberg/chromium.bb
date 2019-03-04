@@ -560,10 +560,9 @@ LoadState ClientSocketPoolBaseHelper::GetLoadState(
   }
 
   const Group& group = *group_it->second;
-  if (group.HasConnectJobForHandle(handle)) {
-    // Just return the state of the oldest ConnectJob.
-    return (*group.jobs().begin())->GetLoadState();
-  }
+  ConnectJob* job = group.GetConnectJobForHandle(handle);
+  if (job)
+    return job->GetLoadState();
 
   if (group.CanUseAdditionalSocketSlot(max_sockets_per_group_))
     return LOAD_STATE_WAITING_FOR_STALLED_SOCKET_POOL;
@@ -1459,12 +1458,12 @@ size_t ClientSocketPoolBaseHelper::Group::ConnectJobCount() const {
   return bound_requests_.size() + jobs_.size();
 }
 
-bool ClientSocketPoolBaseHelper::Group::HasConnectJobForHandle(
+ConnectJob* ClientSocketPoolBaseHelper::Group::GetConnectJobForHandle(
     const ClientSocketHandle* handle) const {
   // Search through bound requests for |handle|.
   for (const auto& bound_pair : bound_requests_) {
     if (handle == bound_pair.request->handle())
-      return true;
+      return bound_pair.connect_job.get();
   }
 
   // Search through the unbound requests that have corresponding jobs for a
@@ -1473,10 +1472,10 @@ bool ClientSocketPoolBaseHelper::Group::HasConnectJobForHandle(
        !pointer.is_null() && pointer.value()->job();
        pointer = unbound_requests_.GetNextTowardsLastMin(pointer)) {
     if (pointer.value()->handle() == handle)
-      return true;
+      return pointer.value()->job();
   }
 
-  return false;
+  return nullptr;
 }
 
 void ClientSocketPoolBaseHelper::Group::InsertUnboundRequest(
@@ -1630,7 +1629,7 @@ void ClientSocketPoolBaseHelper::Group::SetPriority(ClientSocketHandle* handle,
 bool ClientSocketPoolBaseHelper::Group::RequestWithHandleHasJobForTesting(
     const ClientSocketHandle* handle) const {
   SanityCheck();
-  if (HasConnectJobForHandle(handle))
+  if (GetConnectJobForHandle(handle))
     return true;
 
   // There's no corresponding ConnectJob. Verify that the handle is at least

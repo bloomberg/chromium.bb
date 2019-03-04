@@ -412,8 +412,10 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
 
     size_t ConnectJobCount() const;
 
-    // Returns true if there is a connect job for |handle|.
-    bool HasConnectJobForHandle(const ClientSocketHandle* handle) const;
+    // Returns the connect job correspding to |handle|. In particular, if
+    // |handle| is bound to a ConnectJob, returns that job. If |handle| is
+    // "assigned" a ConnectJob, return that job. Otherwise, returns nullptr.
+    ConnectJob* GetConnectJobForHandle(const ClientSocketHandle* handle) const;
 
     // Inserts the request into the queue based on priority
     // order. Older requests are prioritized over requests of equal
