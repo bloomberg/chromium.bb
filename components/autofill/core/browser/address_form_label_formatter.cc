@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/name_and_address_disclosure_label_formatter.h"
+#include "components/autofill/core/browser/address_form_label_formatter.h"
 
 namespace autofill {
 
-NameAndAddressDisclosureLabelFormatter::NameAndAddressDisclosureLabelFormatter(
+AddressFormLabelFormatter::AddressFormLabelFormatter(
     const std::string& app_locale,
     ServerFieldType focused_field_type,
     const std::vector<ServerFieldType>& field_types)
@@ -21,10 +21,9 @@ NameAndAddressDisclosureLabelFormatter::NameAndAddressDisclosureLabelFormatter(
   }
 }
 
-NameAndAddressDisclosureLabelFormatter::
-    ~NameAndAddressDisclosureLabelFormatter() {}
+AddressFormLabelFormatter::~AddressFormLabelFormatter() {}
 
-std::vector<base::string16> NameAndAddressDisclosureLabelFormatter::GetLabels(
+std::vector<base::string16> AddressFormLabelFormatter::GetLabels(
     const std::vector<AutofillProfile*>& profiles) const {
   // TODO(crbug.com/936168): Implement GetLabels().
   std::vector<base::string16> labels;

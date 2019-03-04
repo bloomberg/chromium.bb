@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_NAME_AND_ADDRESS_DISCLOSURE_LABEL_FORMATTER_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_NAME_AND_ADDRESS_DISCLOSURE_LABEL_FORMATTER_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_FORM_LABEL_FORMATTER_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_FORM_LABEL_FORMATTER_H_
 
 #include <string>
 #include <vector>
@@ -15,16 +15,15 @@
 
 namespace autofill {
 
-// A LabelFormatter that uses the disclosure approach to create Suggestions'
-// disambiguating labels for forms exclusively containing name and address
-// fields.
-class NameAndAddressDisclosureLabelFormatter : public LabelFormatter {
+// A LabelFormatter that creates Suggestions' disambiguating labels for forms
+// with name and address fields and without email or phone fields.
+class AddressFormLabelFormatter : public LabelFormatter {
  public:
-  explicit NameAndAddressDisclosureLabelFormatter(
+  explicit AddressFormLabelFormatter(
       const std::string& app_locale,
       ServerFieldType focused_field_type,
       const std::vector<ServerFieldType>& field_types);
-  ~NameAndAddressDisclosureLabelFormatter() override;
+  ~AddressFormLabelFormatter() override;
 
   std::vector<base::string16> GetLabels(
       const std::vector<AutofillProfile*>& profiles) const override;
@@ -51,4 +50,4 @@ class NameAndAddressDisclosureLabelFormatter : public LabelFormatter {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_NAME_AND_ADDRESS_DISCLOSURE_LABEL_FORMATTER_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_FORM_LABEL_FORMATTER_H_

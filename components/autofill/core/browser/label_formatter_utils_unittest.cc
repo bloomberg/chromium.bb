@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/label_formatter_creator.h"
+#include "components/autofill/core/browser/label_formatter_utils.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,7 +16,7 @@ using label_formatter_groups::kPhone;
 using label_formatter_groups::kUnsupported;
 }  // namespace
 
-TEST(LabelFormatterCreatorTest, DetermineGroupsForHomeNameAndAddress) {
+TEST(LabelFormatterUtilsTest, DetermineGroupsForHomeNameAndAddress) {
   const std::vector<ServerFieldType> field_types{
       NAME_FIRST,        NAME_LAST,          ADDRESS_HOME_LINE1,
       ADDRESS_HOME_CITY, ADDRESS_HOME_STATE, ADDRESS_HOME_ZIP};
@@ -26,7 +26,7 @@ TEST(LabelFormatterCreatorTest, DetermineGroupsForHomeNameAndAddress) {
   EXPECT_EQ(expected_group_bitmask, group_bitmask);
 }
 
-TEST(LabelFormatterCreatorTest, DetermineGroupsForBillingNameAndAddress) {
+TEST(LabelFormatterUtilsTest, DetermineGroupsForBillingNameAndAddress) {
   const std::vector<ServerFieldType> field_types{
       NAME_BILLING_FULL, ADDRESS_BILLING_LINE1, ADDRESS_BILLING_CITY,
       ADDRESS_BILLING_STATE, ADDRESS_BILLING_ZIP};
@@ -36,7 +36,7 @@ TEST(LabelFormatterCreatorTest, DetermineGroupsForBillingNameAndAddress) {
   EXPECT_EQ(expected_group_bitmask, group_bitmask);
 }
 
-TEST(LabelFormatterCreatorTest, DetermineGroupsForNameHomePhoneAndEmail) {
+TEST(LabelFormatterUtilsTest, DetermineGroupsForNameHomePhoneAndEmail) {
   const std::vector<ServerFieldType> field_types{
       NAME_FULL, PHONE_HOME_CITY_AND_NUMBER, EMAIL_ADDRESS};
 
@@ -45,7 +45,7 @@ TEST(LabelFormatterCreatorTest, DetermineGroupsForNameHomePhoneAndEmail) {
   EXPECT_EQ(expected_group_bitmask, group_bitmask);
 }
 
-TEST(LabelFormatterCreatorTest, DetermineGroupsForNameBillingPhoneAndEmail) {
+TEST(LabelFormatterUtilsTest, DetermineGroupsForNameBillingPhoneAndEmail) {
   const std::vector<ServerFieldType> field_types{
       NAME_BILLING_FULL, PHONE_BILLING_WHOLE_NUMBER, EMAIL_ADDRESS};
 
@@ -54,7 +54,7 @@ TEST(LabelFormatterCreatorTest, DetermineGroupsForNameBillingPhoneAndEmail) {
   EXPECT_EQ(expected_group_bitmask, group_bitmask);
 }
 
-TEST(LabelFormatterCreatorTest, DetermineGroupsForUnknownServerFieldType) {
+TEST(LabelFormatterUtilsTest, DetermineGroupsForUnknownServerFieldType) {
   const std::vector<ServerFieldType> field_types{UNKNOWN_TYPE, NAME_FULL,
                                                  ADDRESS_HOME_ZIP};
 
@@ -63,7 +63,7 @@ TEST(LabelFormatterCreatorTest, DetermineGroupsForUnknownServerFieldType) {
   EXPECT_EQ(expected_group_bitmask, group_bitmask);
 }
 
-TEST(LabelFormatterCreatorTest, DetermineGroupsForNoServerFieldTypes) {
+TEST(LabelFormatterUtilsTest, DetermineGroupsForNoServerFieldTypes) {
   const std::vector<ServerFieldType> field_types =
       std::vector<ServerFieldType>();
   const uint32_t expected_group_bitmask = 0;
