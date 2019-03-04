@@ -1651,7 +1651,6 @@
         }
       },
       {
-        "experiment_percentage": 100,
         "isolate_name": "flatbuffers_unittests",
         "name": "flatbuffers_unittests",
         "swarming": {
@@ -2375,7 +2374,6 @@
         }
       },
       {
-        "experiment_percentage": 100,
         "isolate_name": "flatbuffers_unittests",
         "name": "flatbuffers_unittests",
         "swarming": {
@@ -3057,7 +3055,6 @@
         }
       },
       {
-        "experiment_percentage": 100,
         "isolate_name": "flatbuffers_unittests",
         "name": "flatbuffers_unittests",
         "swarming": {
@@ -4227,7 +4224,6 @@
         }
       },
       {
-        "experiment_percentage": 100,
         "isolate_name": "flatbuffers_unittests",
         "name": "flatbuffers_unittests",
         "swarming": {

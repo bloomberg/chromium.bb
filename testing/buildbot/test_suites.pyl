@@ -2693,9 +2693,7 @@
 
     'desktop_chromium_isolated_scripts': {
       'content_shell_crash_test': {},
-      'flatbuffers_unittests': {
-        'experiment_percentage': 100,
-      },
+      'flatbuffers_unittests': {},
       'metrics_python_tests': {},
       'telemetry_gpu_unittests': {
         'swarming': {
