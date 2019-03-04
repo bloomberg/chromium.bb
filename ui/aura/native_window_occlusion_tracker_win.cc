@@ -202,9 +202,9 @@ void NativeWindowOcclusionTrackerWin::OnSessionChange(WPARAM status_code) {
     // set them as hidden.
     for (const auto& root_window_hwnd_pair : hwnd_root_window_map_) {
       root_window_hwnd_pair.second->GetHost()->SetNativeWindowOcclusionState(
-          root_window_hwnd_pair.second->IsVisible()
-              ? Window::OcclusionState::OCCLUDED
-              : Window::OcclusionState::HIDDEN);
+          IsIconic(root_window_hwnd_pair.first)
+              ? Window::OcclusionState::HIDDEN
+              : Window::OcclusionState::OCCLUDED);
     }
   } else if (status_code == WTS_SESSION_UNLOCK) {
     screen_locked_ = false;
