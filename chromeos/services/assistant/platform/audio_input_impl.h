@@ -29,20 +29,28 @@ namespace assistant {
 class AudioInputImpl : public assistant_client::AudioInput,
                        public media::AudioCapturerSource::CaptureCallback {
  public:
-  explicit AudioInputImpl(service_manager::Connector* connector);
+  AudioInputImpl(service_manager::Connector* connector,
+                 const std::string& device_id,
+                 const std::string& hotword_device_id);
   ~AudioInputImpl() override;
 
   class HotwordStateManager {
    public:
-    HotwordStateManager() = default;
+    explicit HotwordStateManager(AudioInputImpl* audio_input_);
     virtual ~HotwordStateManager() = default;
     virtual void OnConversationTurnStarted() {}
     virtual void OnConversationTurnFinished() {}
     virtual void OnCaptureDataArrived() {}
+    virtual void RecreateAudioInputStream();
+
+   protected:
+    AudioInputImpl* input_;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(HotwordStateManager);
   };
+
+  void RecreateStateManager();
 
   // media::AudioCapturerSource::CaptureCallback overrides:
   void Capture(const media::AudioBus* audio_source,
@@ -68,7 +76,12 @@ class AudioInputImpl : public assistant_client::AudioInput,
   // Called when hotword enabled status changed.
   void OnHotwordEnabled(bool enable);
 
+  void SetDeviceId(const std::string& device_id);
+  void SetHotwordDeviceId(const std::string& device_id);
+
   void RecreateAudioInputStream(bool use_dsp);
+
+  bool IsHotwordAvailable();
 
  private:
   void StartRecording();
@@ -103,6 +116,11 @@ class AudioInputImpl : public assistant_client::AudioInput,
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   std::unique_ptr<HotwordStateManager> state_manager_;
+
+  // Audio input device which will be used for capture.
+  std::string device_id_;
+  // Hotword input device used for hardware based hotword detection.
+  std::string hotword_device_id_;
 
   base::WeakPtrFactory<AudioInputImpl> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(AudioInputImpl);

@@ -49,7 +49,9 @@ class DspHotwordStateManager : public AudioInputImpl::HotwordStateManager {
  public:
   DspHotwordStateManager(scoped_refptr<base::SequencedTaskRunner> task_runner,
                          AudioInputImpl* input)
-      : task_runner_(task_runner), input_(input), weak_factory_(this) {
+      : AudioInputImpl::HotwordStateManager(input),
+        task_runner_(task_runner),
+        weak_factory_(this) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
   }
 
@@ -60,11 +62,11 @@ class DspHotwordStateManager : public AudioInputImpl::HotwordStateManager {
     if (second_phase_timer_.IsRunning()) {
       DCHECK(stream_state_ == StreamState::HOTWORD);
       second_phase_timer_.Stop();
-      stream_state_ = StreamState::NORMAL;
     } else {
       // Handles user click on mic button.
       input_->RecreateAudioInputStream(false /* use_dsp */);
     }
+    stream_state_ = StreamState::NORMAL;
   }
 
   // Runs on main thread.
@@ -81,6 +83,11 @@ class DspHotwordStateManager : public AudioInputImpl::HotwordStateManager {
         FROM_HERE,
         base::BindOnce(&DspHotwordStateManager::OnCaptureDataArrivedMainThread,
                        weak_factory_.GetWeakPtr()));
+  }
+
+  void RecreateAudioInputStream() override {
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
+    input_->RecreateAudioInputStream(stream_state_ == StreamState::HOTWORD);
   }
 
   // Runs on main thread.
@@ -108,7 +115,6 @@ class DspHotwordStateManager : public AudioInputImpl::HotwordStateManager {
   StreamState stream_state_ = StreamState::HOTWORD;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::OneShotTimer second_phase_timer_;
-  AudioInputImpl* input_;
   base::WeakPtrFactory<DspHotwordStateManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DspHotwordStateManager);
@@ -139,19 +145,25 @@ class AudioInputBufferImpl : public assistant_client::AudioBuffer {
 
 }  // namespace
 
-AudioInputImpl::AudioInputImpl(service_manager::Connector* connector)
+AudioInputImpl::HotwordStateManager::HotwordStateManager(
+    AudioInputImpl* audio_input)
+    : input_(audio_input) {}
+
+void AudioInputImpl::HotwordStateManager::RecreateAudioInputStream() {
+  input_->RecreateAudioInputStream(/*use_dsp=*/false);
+}
+
+AudioInputImpl::AudioInputImpl(service_manager::Connector* connector,
+                               const std::string& device_id,
+                               const std::string& hotword_device_id)
     : connector_(connector),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      device_id_(device_id),
+      hotword_device_id_(hotword_device_id),
       weak_factory_(this) {
   DETACH_FROM_SEQUENCE(observer_sequence_checker_);
 
-  if (features::IsDspHotwordEnabled()) {
-    state_manager_ =
-        std::make_unique<DspHotwordStateManager>(task_runner_, this);
-  } else {
-    state_manager_ = std::make_unique<HotwordStateManager>();
-  }
-
+  RecreateStateManager();
   if (features::IsStereoAudioInputEnabled())
     g_current_format = kFormatStereo;
   else
@@ -161,6 +173,15 @@ AudioInputImpl::AudioInputImpl(service_manager::Connector* connector)
 AudioInputImpl::~AudioInputImpl() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   StopRecording();
+}
+
+void AudioInputImpl::RecreateStateManager() {
+  if (IsHotwordAvailable()) {
+    state_manager_ =
+        std::make_unique<DspHotwordStateManager>(task_runner_, this);
+  } else {
+    state_manager_ = std::make_unique<HotwordStateManager>(this);
+  }
 }
 
 // Runs on audio service thread.
@@ -286,30 +307,55 @@ void AudioInputImpl::OnHotwordEnabled(bool enable) {
   UpdateRecordingState();
 }
 
+void AudioInputImpl::SetDeviceId(const std::string& device_id) {
+  if (device_id_ == device_id)
+    return;
+
+  device_id_ = device_id;
+  if (source_)
+    state_manager_->RecreateAudioInputStream();
+}
+
+void AudioInputImpl::SetHotwordDeviceId(const std::string& device_id) {
+  if (hotword_device_id_ == device_id)
+    return;
+
+  hotword_device_id_ = device_id;
+  RecreateStateManager();
+  if (source_)
+    state_manager_->RecreateAudioInputStream();
+}
+
 void AudioInputImpl::RecreateAudioInputStream(bool use_dsp) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   StopRecording();
 
-  source_ = audio::CreateInputDevice(
-      connector_->Clone(), media::AudioDeviceDescription::kDefaultDeviceId);
   // AUDIO_PCM_LINEAR and AUDIO_PCM_LOW_LATENCY are the same on CRAS.
   auto param = media::AudioParameters(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
       GetChannelLayout(g_current_format), g_current_format.sample_rate,
       g_current_format.sample_rate / 10 /* buffer size for 100 ms */);
 
-  if (use_dsp)
+  std::string* device_id = &device_id_;
+  if (use_dsp && !hotword_device_id_.empty()) {
     param.set_effects(media::AudioParameters::PlatformEffectsMask::HOTWORD);
+    device_id = &hotword_device_id_;
+  }
+  source_ = audio::CreateInputDevice(connector_->Clone(), *device_id);
 
   source_->Initialize(param, this);
   source_->Start();
   VLOG(1) << "Start recording";
 }
 
+bool AudioInputImpl::IsHotwordAvailable() {
+  return features::IsDspHotwordEnabled() && !hotword_device_id_.empty();
+}
+
 void AudioInputImpl::StartRecording() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!source_);
-  RecreateAudioInputStream(features::IsDspHotwordEnabled());
+  RecreateAudioInputStream(IsHotwordAvailable());
 }
 
 void AudioInputImpl::StopRecording() {
