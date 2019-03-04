@@ -133,7 +133,7 @@ void ChromeBrowserStateImplIOData::Handle::ClearNetworkingHistorySince(
 
   base::PostTaskWithTraits(
       FROM_HERE, {web::WebThread::IO},
-      base::Bind(
+      base::BindOnce(
           &ChromeBrowserStateImplIOData::ClearNetworkingHistorySinceOnIOThread,
           base::Unretained(io_data_), time, completion));
 }

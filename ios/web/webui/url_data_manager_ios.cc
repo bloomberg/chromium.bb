@@ -69,8 +69,8 @@ void URLDataManagerIOS::AddDataSource(URLDataSourceIOSImpl* source) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   base::PostTaskWithTraits(
       FROM_HERE, {web::WebThread::IO},
-      base::Bind(&AddDataSourceOnIOThread, base::Unretained(browser_state_),
-                 base::WrapRefCounted(source)));
+      base::BindOnce(&AddDataSourceOnIOThread, base::Unretained(browser_state_),
+                     base::WrapRefCounted(source)));
 }
 
 // static
@@ -109,8 +109,9 @@ void URLDataManagerIOS::DeleteDataSource(
   }
   if (schedule_delete) {
     // Schedule a task to delete the DataSource back on the UI thread.
-    base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI},
-                             base::Bind(&URLDataManagerIOS::DeleteDataSources));
+    base::PostTaskWithTraits(
+        FROM_HERE, {web::WebThread::UI},
+        base::BindOnce(&URLDataManagerIOS::DeleteDataSources));
   }
 }
 

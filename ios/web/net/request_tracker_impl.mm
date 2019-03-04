@@ -187,9 +187,9 @@ RequestTrackerImpl::CreateTrackerForRequestGroupID(
   DCHECK(policy_cache);
 
   // Take care of the IO-thread init.
-  base::PostTaskWithTraits(
-      FROM_HERE, {web::WebThread::IO},
-      base::Bind(&RequestTrackerImpl::InitOnIOThread, tracker, policy_cache));
+  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO},
+                           base::BindOnce(&RequestTrackerImpl::InitOnIOThread,
+                                          tracker, policy_cache));
   RegisterTracker(tracker.get(), request_group_id);
   return tracker;
 }
@@ -197,23 +197,23 @@ RequestTrackerImpl::CreateTrackerForRequestGroupID(
 void RequestTrackerImpl::StartPageLoad(const GURL& url, id user_info) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   id scoped_user_info = user_info;
-  base::PostTaskWithTraits(
-      FROM_HERE, {web::WebThread::IO},
-      base::Bind(&RequestTrackerImpl::TrimToURL, this, url, scoped_user_info));
+  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO},
+                           base::BindOnce(&RequestTrackerImpl::TrimToURL, this,
+                                          url, scoped_user_info));
 }
 
 void RequestTrackerImpl::FinishPageLoad(const GURL& url, bool load_success) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  base::PostTaskWithTraits(
-      FROM_HERE, {web::WebThread::IO},
-      base::Bind(&RequestTrackerImpl::StopPageLoad, this, url, load_success));
+  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO},
+                           base::BindOnce(&RequestTrackerImpl::StopPageLoad,
+                                          this, url, load_success));
 }
 
 void RequestTrackerImpl::HistoryStateChange(const GURL& url) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   base::PostTaskWithTraits(
       FROM_HERE, {web::WebThread::IO},
-      base::Bind(&RequestTrackerImpl::HistoryStateChangeToURL, this, url));
+      base::BindOnce(&RequestTrackerImpl::HistoryStateChangeToURL, this, url));
 }
 
 // Close is called when an owning object (a Tab or something that acts like
@@ -228,7 +228,7 @@ void RequestTrackerImpl::Close() {
   // be set before destruction begins.
   base::PostTaskWithTraits(
       FROM_HERE, {web::WebThread::IO},
-      base::Bind(
+      base::BindOnce(
           [](RequestTrackerImpl* tracker) { tracker->is_closing_ = true; },
           base::RetainedRef(this)));
 
@@ -264,7 +264,7 @@ void RequestTrackerImpl::BlockUntilTrackersShutdown() {
     g_waiting_on_io_thread = true;
   }
   base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO},
-                           base::Bind(&StopIOThreadWaiting));
+                           base::BindOnce(&StopIOThreadWaiting));
 
   // Poll endlessly until the wait flag is unset on the IO thread by
   // StopIOThreadWaiting().
@@ -526,7 +526,7 @@ void RequestTrackerImpl::Notify() {
   notification_depth_ += 1;
   base::PostTaskWithTraits(
       FROM_HERE, {web::WebThread::IO},
-      base::Bind(&RequestTrackerImpl::StackNotification, this));
+      base::BindOnce(&RequestTrackerImpl::StackNotification, this));
 }
 
 void RequestTrackerImpl::StackNotification() {

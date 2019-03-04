@@ -394,8 +394,8 @@ void GetMimeTypeOnUI(URLDataSourceIOSImpl* source,
   std::string mime_type = source->source()->GetMimeType(path);
   base::PostTaskWithTraits(
       FROM_HERE, {WebThread::IO},
-      base::Bind(&URLRequestChromeJob::MimeTypeAvailable, job,
-                 base::RetainedRef(source), mime_type));
+      base::BindOnce(&URLRequestChromeJob::MimeTypeAvailable, job,
+                     base::RetainedRef(source), mime_type));
 }
 
 }  // namespace

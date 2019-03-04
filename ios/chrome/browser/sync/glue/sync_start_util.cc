@@ -49,7 +49,7 @@ void StartSyncProxy(const base::FilePath& browser_state_path,
                     syncer::ModelType type) {
   base::PostTaskWithTraits(
       FROM_HERE, {web::WebThread::UI},
-      base::Bind(&StartSyncOnUIThread, browser_state_path, type));
+      base::BindOnce(&StartSyncOnUIThread, browser_state_path, type));
 }
 
 }  // namespace
