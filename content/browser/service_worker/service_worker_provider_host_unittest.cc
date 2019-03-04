@@ -77,8 +77,7 @@ class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
 class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
  protected:
   ServiceWorkerProviderHostTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-        next_renderer_provided_id_(1) {
+      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
     SetContentClient(&test_content_client_);
   }
   ~ServiceWorkerProviderHostTest() override {}
@@ -151,14 +150,11 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
   ServiceWorkerProviderHost* CreateProviderHostWithInsecureParentFrame(
       const GURL& document_url) {
     remote_endpoints_.emplace_back();
-    std::unique_ptr<ServiceWorkerProviderHost> host =
-        CreateProviderHostForWindow(
-            helper_->mock_render_process_id(), next_renderer_provided_id_++,
-            false /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
-            &remote_endpoints_.back());
+    base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
+        helper_->mock_render_process_id(), false /* is_parent_frame_secure */,
+        helper_->context()->AsWeakPtr(), &remote_endpoints_.back());
     ServiceWorkerProviderHost* host_raw = host.get();
     host->UpdateUrls(document_url, document_url);
-    context_->AddProviderHost(std::move(host));
     return host_raw;
   }
 
@@ -276,7 +272,6 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
   ServiceWorkerTestContentClient test_content_client_;
   TestContentBrowserClient test_content_browser_client_;
   ContentBrowserClient* old_content_browser_client_;
-  int next_renderer_provided_id_;
   std::vector<ServiceWorkerRemoteProviderEndpoint> remote_endpoints_;
   std::vector<std::string> bad_messages_;
 

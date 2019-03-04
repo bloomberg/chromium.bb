@@ -214,22 +214,20 @@ class ServiceWorkerVersionTest : public testing::Test {
     return ServiceWorkerVersion::FetchHandlerExistence::EXISTS;
   }
 
-  std::unique_ptr<ServiceWorkerProviderHost> ActivateWithControllee(
+  ServiceWorkerRemoteProviderEndpoint ActivateWithControllee(
       int controllee_process_id = 33) {
     version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
     registration_->SetActiveVersion(version_);
     ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-    std::unique_ptr<ServiceWorkerProviderHost> host =
-        CreateProviderHostForWindow(
-            controllee_process_id, 1 /* dummy provider_id */,
-            true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
-            &remote_endpoint);
+    base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
+        controllee_process_id, true /* is_parent_frame_secure */,
+        helper_->context()->AsWeakPtr(), &remote_endpoint);
     host->UpdateUrls(registration_->scope(), registration_->scope());
     host->SetControllerRegistration(registration_,
                                     false /* notify_controllerchange */);
     EXPECT_TRUE(version_->HasControllee());
     EXPECT_TRUE(host->controller());
-    return host;
+    return remote_endpoint;
   }
 
   TestBrowserThreadBundle thread_bundle_;
@@ -469,10 +467,9 @@ TEST_F(ServiceWorkerVersionTest, Doom) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-  std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
-      33 /* dummy render process id */, 1 /* dummy provider_id */,
-      true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
-      &remote_endpoint);
+  base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
+      33 /* dummy render process id */, true /* is_parent_frame_secure */,
+      helper_->context()->AsWeakPtr(), &remote_endpoint);
   host->UpdateUrls(registration_->scope(), registration_->scope());
   host->SetControllerRegistration(registration_, false);
   EXPECT_TRUE(version_->HasControllee());
@@ -517,10 +514,9 @@ TEST_F(ServiceWorkerVersionTest, IdleTimeout) {
   version_->idle_time_ -= kOneSecond;
   idle_time = version_->idle_time_;
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-  std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
-      33 /* dummy render process id */, 1 /* dummy provider_id */,
-      true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
-      &remote_endpoint);
+  base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
+      33 /* dummy render process id */, true /* is_parent_frame_secure */,
+      helper_->context()->AsWeakPtr(), &remote_endpoint);
   version_->AddControllee(host.get());
   EXPECT_TRUE(version_->timeout_timer_.IsRunning());
   EXPECT_LT(idle_time, version_->idle_time_);
@@ -1213,7 +1209,7 @@ TEST_F(ServiceWorkerVersionTest,
       helper_->mock_render_process_host()->foreground_service_worker_count());
 
   // Add a controllee in a different process from the service worker.
-  auto host = ActivateWithControllee();
+  auto remote_endpoint = ActivateWithControllee();
 
   // RenderProcessHost should be notified of foreground worker.
   base::RunLoop().RunUntilIdle();
@@ -1222,7 +1218,8 @@ TEST_F(ServiceWorkerVersionTest,
       helper_->mock_render_process_host()->foreground_service_worker_count());
 
   // Remove the controllee.
-  host.reset();
+  remote_endpoint.host_ptr()->reset();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(version_->HasControllee());
 
   // RenderProcessHost should be notified that there are no foreground workers.
@@ -1248,7 +1245,8 @@ TEST_F(ServiceWorkerVersionTest,
       helper_->mock_render_process_host()->foreground_service_worker_count());
 
   // Add a controllee in the same process as the service worker.
-  auto host = ActivateWithControllee(version_->embedded_worker()->process_id());
+  auto remote_endpoint =
+      ActivateWithControllee(version_->embedded_worker()->process_id());
 
   // RenderProcessHost should be notified of foreground worker.
   base::RunLoop().RunUntilIdle();
@@ -1263,7 +1261,7 @@ TEST_F(ServiceWorkerVersionTest,
   scoped_list.InitAndEnableFeature(features::kServiceWorkerForegroundPriority);
 
   // Add a controllee in a different process from the service worker.
-  auto host = ActivateWithControllee();
+  auto remote_endpoint = ActivateWithControllee();
 
   // RenderProcessHost should not be notified of foreground worker yet since
   // there is no worker running.
@@ -1316,7 +1314,7 @@ TEST_F(ServiceWorkerVersionNoFetchHandlerTest,
       helper_->mock_render_process_host()->foreground_service_worker_count());
 
   // Add a controllee in a different process from the service worker.
-  auto host = ActivateWithControllee();
+  auto remote_endpoint = ActivateWithControllee();
 
   // RenderProcessHost should not be notified if the service worker does not
   // have a FetchEvent handler.

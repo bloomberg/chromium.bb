@@ -170,6 +170,11 @@ class ServiceWorkerObjectHostTest : public testing::Test {
     return nullptr;
   }
 
+  void SetProviderHostRenderFrameId(ServiceWorkerProviderHost* host,
+                                    int render_frame_id) {
+    host->info_->route_id = render_frame_id;
+  }
+
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
   GetRegistrationFromRemote(
       blink::mojom::ServiceWorkerContainerHost* container_host,
@@ -206,7 +211,6 @@ class ServiceWorkerObjectHostTest : public testing::Test {
 };
 
 TEST_F(ServiceWorkerObjectHostTest, OnVersionStateChanged) {
-  const int64_t kProviderId = 99;
   const GURL scope("https://www.example.com/");
   const GURL script_url("https://www.example.com/service_worker.js");
   Initialize(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
@@ -214,11 +218,10 @@ TEST_F(ServiceWorkerObjectHostTest, OnVersionStateChanged) {
   registration_->SetInstallingVersion(version_);
 
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-  std::unique_ptr<ServiceWorkerProviderHost> provider_host =
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host =
       CreateProviderHostForWindow(
-          helper_->mock_render_process_id(), kProviderId,
-          true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
-          &remote_endpoint);
+          helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
+          helper_->context()->AsWeakPtr(), &remote_endpoint);
   provider_host->UpdateUrls(scope, scope);
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info =
       GetRegistrationFromRemote(remote_endpoint.host_ptr()->get(), scope);
@@ -317,7 +320,6 @@ TEST_F(ServiceWorkerObjectHostTest,
 
 // Tests postMessage() from a page to a service worker.
 TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_FromClient) {
-  const int64_t kProviderId = 99;
   const GURL scope("https://www.example.com/");
   const GURL script_url("https://www.example.com/service_worker.js");
   Initialize(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
@@ -333,12 +335,12 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_FromClient) {
       WebContentsTester::CreateTestWebContents(helper_->browser_context(),
                                                nullptr));
   RenderFrameHost* frame_host = web_contents->GetMainFrame();
-  blink::mojom::ServiceWorkerProviderHostInfoPtr provider_host_info =
-      CreateProviderHostInfoForWindow(kProviderId, frame_host->GetRoutingID());
-  std::unique_ptr<ServiceWorkerProviderHost> provider_host =
-      ServiceWorkerProviderHost::Create(frame_host->GetProcess()->GetID(),
-                                        std::move(provider_host_info),
-                                        helper_->context()->AsWeakPtr());
+  ServiceWorkerRemoteProviderEndpoint remote_endpoint;
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host =
+      CreateProviderHostForWindow(
+          frame_host->GetProcess()->GetID(), true /* is_parent_frame_secure */,
+          helper_->context()->AsWeakPtr(), &remote_endpoint);
+  SetProviderHostRenderFrameId(provider_host.get(), frame_host->GetRoutingID());
   provider_host->UpdateUrls(scope, scope);
 
   // Prepare a ServiceWorkerObjectHost for the worker.
