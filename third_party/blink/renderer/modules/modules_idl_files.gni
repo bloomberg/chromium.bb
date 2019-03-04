@@ -287,8 +287,6 @@ modules_idl_files =
           "sensor/relative_orientation_sensor.idl",
           "sensor/sensor.idl",
           "sensor/sensor_error_event.idl",
-          "serial/serial.idl",
-          "serial/serial_port.idl",
           "service_worker/client.idl",
           "service_worker/clients.idl",
           "service_worker/extendable_event.idl",
@@ -480,6 +478,14 @@ modules_idl_files =
           "xr/xr_webgl_layer.idl",
         ],
         "abspath")
+
+if (!is_android) {
+  modules_idl_files += get_path_info([
+                                       "serial/serial.idl",
+                                       "serial/serial_port.idl",
+                                     ],
+                                     "abspath")
+}
 
 if (support_webgl2_compute_context) {
   modules_idl_files +=
@@ -687,8 +693,6 @@ modules_dictionary_idl_files =
           "sensor/sensor_error_event_init.idl",
           "sensor/sensor_options.idl",
           "sensor/spatial_sensor_options.idl",
-          "serial/serial_options.idl",
-          "serial/serial_port_request_options.idl",
           "service_worker/client_query_options.idl",
           "service_worker/extendable_event_init.idl",
           "service_worker/extendable_message_event_init.idl",
@@ -752,6 +756,15 @@ modules_dictionary_idl_files =
           "xr/xr_webgl_layer_init.idl",
         ],
         "abspath")
+
+if (!is_android) {
+  modules_dictionary_idl_files +=
+      get_path_info([
+                      "serial/serial_options.idl",
+                      "serial/serial_port_request_options.idl",
+                    ],
+                    "abspath")
+}
 
 # 'partial interface' or target (right side of) 'implements'
 modules_dependency_idl_files =
@@ -836,8 +849,6 @@ modules_dependency_idl_files =
           "quota/worker_navigator_storage_quota.idl",
           "remoteplayback/html_media_element_remote_playback.idl",
           "screen_orientation/screen_screen_orientation.idl",
-          "serial/navigator_serial.idl",
-          "serial/worker_navigator_serial.idl",
           "service_worker/navigator_service_worker.idl",
           "speech/window_speech.idl",
           "speech/window_speech_synthesis.idl",
@@ -857,6 +868,15 @@ modules_dependency_idl_files =
           "webusb/worker_navigator_usb.idl",
         ],
         "abspath")
+
+if (!is_android) {
+  modules_dependency_idl_files +=
+      get_path_info([
+                      "serial/navigator_serial.idl",
+                      "serial/worker_navigator_serial.idl",
+                    ],
+                    "abspath")
+}
 
 if (support_webgl2_compute_context) {
   modules_dependency_idl_files += get_path_info(
