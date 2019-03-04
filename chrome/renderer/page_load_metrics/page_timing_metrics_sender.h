@@ -56,7 +56,12 @@ class PageTimingMetricsSender {
                            const network::URLLoaderCompletionStatus& status);
   void DidCancelResponse(int resource_id);
 
+  // TODO(ericrobinson): There should probably be a name change here:
+  // * Send: Sends immediately, functions as SendNow.
+  // * QueueSend: Queues the send by starting the timer, functions as Send.
   void Send(mojom::PageLoadTimingPtr timing);
+  // Updates the PageLoadMetrics::CpuTiming data and starts the Send timer.
+  void UpdateCpuTiming(base::TimeDelta task_time);
 
   void UpdateResourceMetadata(int resource_id,
                               bool is_ad_resource,
@@ -73,6 +78,7 @@ class PageTimingMetricsSender {
   std::unique_ptr<PageTimingSender> sender_;
   std::unique_ptr<base::OneShotTimer> timer_;
   mojom::PageLoadTimingPtr last_timing_;
+  mojom::CpuTimingPtr last_cpu_timing_;
 
   // The the sender keep track of metadata as it comes in, because the sender is
   // scoped to a single committed load.

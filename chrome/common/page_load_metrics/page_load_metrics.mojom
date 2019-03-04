@@ -236,6 +236,12 @@ struct PageRenderData {
   float layout_jank_score;
 };
 
+// Metrics about the time spent in tasks (cpu time) by a frame.
+struct CpuTiming {
+  // Time spent in tasks measured in wall time.
+  mojo_base.mojom.TimeDelta task_time;
+};
+
 // Sent from renderer to browser process when the PageLoadTiming for the
 // associated frame changed.
 interface PageLoadMetrics {
@@ -243,5 +249,6 @@ interface PageLoadMetrics {
                PageLoadMetadata page_load_metadata,
                PageLoadFeatures new_features,
                array<ResourceDataUpdate> resources,
-               PageRenderData render_data);
+               PageRenderData render_data,
+               CpuTiming cpu_load_timing);
 };

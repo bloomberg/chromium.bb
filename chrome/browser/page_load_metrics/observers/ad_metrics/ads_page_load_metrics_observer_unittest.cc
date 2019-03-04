@@ -109,7 +109,8 @@ class ResourceLoadingCancellingThrottle
         navigation_handle()->GetRenderFrameHost(), std::move(timing),
         page_load_metrics::mojom::PageLoadMetadataPtr(base::in_place),
         page_load_metrics::mojom::PageLoadFeaturesPtr(base::in_place),
-        resources, page_load_metrics::mojom::PageRenderDataPtr(base::in_place));
+        resources, page_load_metrics::mojom::PageRenderDataPtr(base::in_place),
+        page_load_metrics::mojom::CpuTimingPtr(base::in_place));
   }
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadingCancellingThrottle);

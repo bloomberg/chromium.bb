@@ -152,6 +152,10 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // Notifications when |PerformanceTiming| data becomes available
   virtual void DidChangePerformanceTiming() {}
 
+  // Notifications when a cpu timing update becomes available, when a frame
+  // has performed at least 100ms of tasks.
+  virtual void DidChangeCpuTiming(base::TimeDelta time) {}
+
   // Notification when the renderer uses a particular code path during a page
   // load. This is used for metrics collection.
   virtual void DidObserveLoadingBehavior(

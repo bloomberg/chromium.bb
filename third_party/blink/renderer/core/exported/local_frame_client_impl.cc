@@ -722,6 +722,11 @@ void LocalFrameClientImpl::DidChangePerformanceTiming() {
     web_frame_->Client()->DidChangePerformanceTiming();
 }
 
+void LocalFrameClientImpl::DidChangeCpuTiming(base::TimeDelta time) {
+  if (web_frame_->Client())
+    web_frame_->Client()->DidChangeCpuTiming(time);
+}
+
 void LocalFrameClientImpl::DidObserveLoadingBehavior(
     WebLoadingBehaviorFlag behavior) {
   if (web_frame_->Client())

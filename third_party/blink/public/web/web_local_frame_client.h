@@ -634,6 +634,10 @@ class BLINK_EXPORT WebLocalFrameClient {
   // A performance timing event (e.g. first paint) occurred
   virtual void DidChangePerformanceTiming() {}
 
+  // A cpu task or tasks completed.  Triggered when at least 100ms of wall time
+  // was spent in tasks on the frame.
+  virtual void DidChangeCpuTiming(base::TimeDelta time) {}
+
   virtual void VisibilityChanged(blink::mojom::FrameVisibility visibility) {}
 
   // UseCounter ----------------------------------------------------------

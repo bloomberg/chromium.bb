@@ -2325,6 +2325,8 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
   DCHECK_LE(task_timing.start_time(), task_timing.end_time());
   DCHECK(!main_thread_only().running_queues.empty());
   DCHECK(!queue || main_thread_only().running_queues.top().get() == queue);
+  if (task_timing.has_wall_time() && queue && queue->GetFrameScheduler())
+    queue->GetFrameScheduler()->AddTaskTime(task_timing.wall_duration());
   main_thread_only().running_queues.pop();
   queueing_time_estimator_.OnExecutionStopped(task_timing.end_time());
   if (main_thread_only().nested_runloop)

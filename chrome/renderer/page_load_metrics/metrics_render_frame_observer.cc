@@ -42,11 +42,12 @@ class MojoPageTimingSender : public PageTimingSender {
                   const mojom::PageLoadMetadataPtr& metadata,
                   mojom::PageLoadFeaturesPtr new_features,
                   std::vector<mojom::ResourceDataUpdatePtr> resources,
-                  const mojom::PageRenderData& render_data) override {
+                  const mojom::PageRenderData& render_data,
+                  const mojom::CpuTimingPtr& cpu_timing) override {
     DCHECK(page_load_metrics_);
-    page_load_metrics_->UpdateTiming(timing->Clone(), metadata->Clone(),
-                                     std::move(new_features),
-                                     std::move(resources), render_data.Clone());
+    page_load_metrics_->UpdateTiming(
+        timing->Clone(), metadata->Clone(), std::move(new_features),
+        std::move(resources), render_data.Clone(), cpu_timing->Clone());
   }
 
  private:
@@ -66,6 +67,14 @@ MetricsRenderFrameObserver::~MetricsRenderFrameObserver() {}
 
 void MetricsRenderFrameObserver::DidChangePerformanceTiming() {
   SendMetrics();
+}
+
+void MetricsRenderFrameObserver::DidChangeCpuTiming(base::TimeDelta time) {
+  if (!page_timing_metrics_sender_)
+    return;
+  if (HasNoRenderFrame())
+    return;
+  page_timing_metrics_sender_->UpdateCpuTiming(time);
 }
 
 void MetricsRenderFrameObserver::DidObserveLoadingBehavior(

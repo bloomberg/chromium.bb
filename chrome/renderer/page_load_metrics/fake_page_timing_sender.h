@@ -43,9 +43,17 @@ class FakePageTimingSender : public PageTimingSender {
     // be passed to ExpectPageLoadTiming.
     void ExpectPageLoadTiming(const mojom::PageLoadTiming& timing);
 
+    // CpuTimings that are expected to be sent through SendTiming() should be
+    // passed to ExpectCpuTiming.
+    void ExpectCpuTiming(const base::TimeDelta& timing);
+
     // Forces verification that actual timings sent through SendTiming() match
     // expected timings provided via ExpectPageLoadTiming.
     void VerifyExpectedTimings() const;
+
+    // Forces verification that actual timings sent through SendTiming() match
+    // expected timings provided via ExpectCpuTiming.
+    void VerifyExpectedCpuTimings() const;
 
     // PageLoad features that are expected to be sent through SendTiming()
     // should be passed via UpdateExpectedPageLoadFeatures.
@@ -78,11 +86,14 @@ class FakePageTimingSender : public PageTimingSender {
         const mojom::PageLoadMetadataPtr& metadata,
         const mojom::PageLoadFeaturesPtr& new_features,
         const std::vector<mojom::ResourceDataUpdatePtr>& resources,
-        const mojom::PageRenderData& render_data);
+        const mojom::PageRenderData& render_data,
+        const mojom::CpuTimingPtr& cpu_timing);
 
    private:
     std::vector<mojom::PageLoadTimingPtr> expected_timings_;
     std::vector<mojom::PageLoadTimingPtr> actual_timings_;
+    std::vector<mojom::CpuTimingPtr> expected_cpu_timings_;
+    std::vector<mojom::CpuTimingPtr> actual_cpu_timings_;
     std::set<blink::mojom::WebFeature> expected_features_;
     std::set<blink::mojom::WebFeature> actual_features_;
     std::set<int> expected_css_properties_;
@@ -98,7 +109,8 @@ class FakePageTimingSender : public PageTimingSender {
                   const mojom::PageLoadMetadataPtr& metadata,
                   mojom::PageLoadFeaturesPtr new_features,
                   std::vector<mojom::ResourceDataUpdatePtr> resources,
-                  const mojom::PageRenderData& render_data) override;
+                  const mojom::PageRenderData& render_data,
+                  const mojom::CpuTimingPtr& cpu_timing) override;
 
  private:
   PageTimingValidator* const validator_;
