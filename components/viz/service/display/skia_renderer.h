@@ -37,7 +37,7 @@ class YUVVideoDrawQuad;
 class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
  public:
   // Different draw modes that are supported by SkiaRenderer right now.
-  enum DrawMode { GL, DDL, SKPRECORD };
+  enum DrawMode { DDL, SKPRECORD };
 
   // TODO(penghuang): Remove skia_output_surface when DDL is used everywhere.
   SkiaRenderer(const RendererSettings* settings,
@@ -123,8 +123,9 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
       const cc::FilterOperations* backdrop_filters) const;
   const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
 
-  // Get corresponding GrContext in DrawMode::GL. Returns nullptr when there is
-  // no GrContext.
+  // Get corresponding GrContext. Returns nullptr when there is no GrContext.
+  // TODO(weiliangc): This currently only returns nullptr. If SKPRecord isn't
+  // going to use this later, it should be removed.
   GrContext* GetGrContext();
   bool is_using_ddl() const { return draw_mode_ == DrawMode::DDL; }
 
@@ -172,9 +173,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   std::unique_ptr<SkCanvas> overdraw_canvas_;
   std::unique_ptr<SkNWayCanvas> nway_canvas_;
 
-  // Specific for GL.
-  ContextProvider* context_provider_ = nullptr;
-  base::Optional<SyncQueryCollection> sync_queries_;
+  // TODO(crbug.com/920344): Use partial swap for SkDDL.
   bool use_swap_with_bounds_ = false;
   gfx::Rect swap_buffer_rect_;
   std::vector<gfx::Rect> swap_content_bounds_;
@@ -216,6 +215,8 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   sk_sp<SkPicture> root_picture_;
   sk_sp<SkPicture>* current_picture_;
   SkPictureRecorder* current_recorder_;
+  ContextProvider* context_provider_ = nullptr;
+  base::Optional<SyncQueryCollection> sync_queries_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaRenderer);
 };

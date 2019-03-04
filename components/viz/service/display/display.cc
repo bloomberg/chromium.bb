@@ -290,15 +290,13 @@ void Display::InitializeRenderer(bool enable_shared_images) {
           &settings_, output_surface_.get(), resource_provider_.get(),
           skia_output_surface_, SkiaRenderer::DrawMode::DDL);
     } else {
-      // GPU compositing with GL.
+      // GPU compositing with GL to an SKP.
       DCHECK(output_surface_);
       DCHECK(output_surface_->context_provider());
-      SkiaRenderer::DrawMode mode = settings_.record_sk_picture
-                                        ? SkiaRenderer::DrawMode::SKPRECORD
-                                        : SkiaRenderer::DrawMode::GL;
+      DCHECK(settings_.record_sk_picture);
       renderer_ = std::make_unique<SkiaRenderer>(
           &settings_, output_surface_.get(), resource_provider_.get(),
-          nullptr /* skia_output_surface */, mode);
+          nullptr /* skia_output_surface */, SkiaRenderer::DrawMode::SKPRECORD);
     }
   } else if (output_surface_->context_provider()) {
     renderer_ = std::make_unique<GLRenderer>(&settings_, output_surface_.get(),

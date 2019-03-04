@@ -203,17 +203,6 @@ SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
       draw_mode_(mode),
       skia_output_surface_(skia_output_surface) {
   switch (draw_mode_) {
-    case DrawMode::GL: {
-      DCHECK(output_surface_);
-      context_provider_ = output_surface_->context_provider();
-      const auto& context_caps = context_provider_->ContextCapabilities();
-      use_swap_with_bounds_ = context_caps.swap_buffers_with_bounds;
-      if (context_caps.sync_query) {
-        sync_queries_ =
-            base::Optional<SyncQueryCollection>(context_provider_->ContextGL());
-      }
-      break;
-    }
     case DrawMode::DDL: {
       DCHECK(skia_output_surface_);
       lock_set_for_external_use_.emplace(resource_provider,
@@ -236,7 +225,7 @@ SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
 SkiaRenderer::~SkiaRenderer() = default;
 
 bool SkiaRenderer::CanPartialSwap() {
-  if (draw_mode_ != DrawMode::GL && draw_mode_ != DrawMode::SKPRECORD)
+  if (draw_mode_ != DrawMode::SKPRECORD)
     return false;
 
   DCHECK(context_provider_);
@@ -248,7 +237,7 @@ bool SkiaRenderer::CanPartialSwap() {
 
 void SkiaRenderer::BeginDrawingFrame() {
   TRACE_EVENT0("viz", "SkiaRenderer::BeginDrawingFrame");
-  if (draw_mode_ != DrawMode::GL && draw_mode_ != DrawMode::SKPRECORD)
+  if (draw_mode_ != DrawMode::SKPRECORD)
     return;
 
   // Copied from GLRenderer.
@@ -308,10 +297,6 @@ void SkiaRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
       skia_output_surface_->SkiaSwapBuffers(std::move(output_frame));
       break;
     }
-    case DrawMode::GL: {
-      output_surface_->SwapBuffers(std::move(output_frame));
-      break;
-    }
     case DrawMode::SKPRECORD: {
       // write to skp files
       std::string file_name = "composited-frame.skp";
@@ -347,41 +332,10 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
   DCHECK(!output_surface_->HasExternalStencilTest());
   non_root_surface_ = nullptr;
 
-  // LegacyFontHost will get LCD text and skia figures out what type to use.
-  SkSurfaceProps surface_props =
-      SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
-
-  // TODO(weiliangc): Set up correct can_use_lcd_text for SkSurfaceProps flags.
-  // How to setup is in ResourceProvider. (http://crbug.com/644851)
   switch (draw_mode_) {
     case DrawMode::DDL: {
       root_canvas_ = skia_output_surface_->BeginPaintCurrentFrame();
       DCHECK(root_canvas_);
-      break;
-    }
-    case DrawMode::GL: {
-      auto* gr_context = GetGrContext();
-      if (!root_canvas_ || root_canvas_->getGrContext() != gr_context ||
-          gfx::SkISizeToSize(root_canvas_->getBaseLayerSize()) !=
-              current_frame()->device_viewport_size) {
-        // Either no SkSurface setup yet, or new GrContext, need to create new
-        // surface.
-        GrGLFramebufferInfo framebuffer_info;
-        framebuffer_info.fFBOID = 0;
-        framebuffer_info.fFormat = GL_RGB8_OES;
-        GrBackendRenderTarget render_target(
-            current_frame()->device_viewport_size.width(),
-            current_frame()->device_viewport_size.height(), 0, 8,
-            framebuffer_info);
-
-        root_surface_ = SkSurface::MakeFromBackendRenderTarget(
-            gr_context, render_target, kBottomLeft_GrSurfaceOrigin,
-            kRGB_888x_SkColorType,
-            current_frame()->root_render_pass->color_space.ToSkColorSpace(),
-            &surface_props);
-        DCHECK(root_surface_);
-        root_canvas_ = root_surface_->getCanvas();
-      }
       break;
     }
     case DrawMode::SKPRECORD: {
@@ -426,12 +380,6 @@ void SkiaRenderer::BindFramebufferToTexture(const RenderPassId render_pass_id) {
       current_canvas_ = skia_output_surface_->BeginPaintRenderPass(
           render_pass_id, backing.size, backing.format, backing.generate_mipmap,
           backing.color_space.ToSkColorSpace());
-      break;
-    }
-    case DrawMode::GL: {
-      non_root_surface_ = backing.render_pass_surface;
-      current_surface_ = non_root_surface_.get();
-      current_canvas_ = non_root_surface_->getCanvas();
       break;
     }
     case DrawMode::SKPRECORD: {
@@ -984,10 +932,6 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
             backing.generate_mipmap, backing.color_space.ToSkColorSpace());
         break;
       }
-      case DrawMode::GL: {
-        content_image = backing.render_pass_surface->makeImageSnapshot();
-        break;
-      }
       case DrawMode::SKPRECORD: {
         content_image = SkImage::MakeFromPicture(
             backing.picture,
@@ -1142,37 +1086,6 @@ void SkiaRenderer::CopyDrawnRenderPass(
                                        std::move(request));
       break;
     }
-    case DrawMode::GL: {
-      if (request->result_format() != CopyOutputResult::Format::RGBA_BITMAP ||
-          request->is_scaled() ||
-          geometry.result_bounds != geometry.result_selection) {
-        // TODO(crbug.com/644851): Complete the implementation for all request
-        // types, scaling, etc.
-        NOTIMPLEMENTED();
-        return;
-      }
-      sk_sp<SkImage> copy_image =
-          current_surface_->makeImageSnapshot()->makeSubset(
-              RectToSkIRect(geometry.sampling_bounds));
-
-      // Send copy request by copying into a bitmap.
-      SkBitmap bitmap;
-      copy_image->asLegacyBitmap(&bitmap);
-      // TODO(crbug.com/795132): Plumb color space throughout SkiaRenderer up to
-      // the SkSurface/SkImage here. Until then, play "musical chairs" with the
-      // SkPixelRef to hack-in the RenderPass's |color_space|.
-      sk_sp<SkPixelRef> pixels(SkSafeRef(bitmap.pixelRef()));
-      SkIPoint origin = bitmap.pixelRefOrigin();
-      bitmap.setInfo(
-          bitmap.info().makeColorSpace(
-              current_frame()
-                  ->current_render_pass->color_space.ToSkColorSpace()),
-          bitmap.rowBytes());
-      bitmap.setPixelRef(std::move(pixels), origin.x(), origin.y());
-      request->SendResult(std::make_unique<CopyOutputSkBitmapResult>(
-          geometry.result_bounds, bitmap));
-      break;
-    }
     case DrawMode::SKPRECORD: {
       NOTIMPLEMENTED();
       break;
@@ -1206,23 +1119,6 @@ void SkiaRenderer::FinishDrawingQuadList() {
       lock_set_for_external_use_->UnlockResources(sync_token);
       break;
     }
-    case DrawMode::GL: {
-      // For SkiaRendererPixelTestWithOverdrawFeedback, CopyDrawnRenderPass
-      // happens before FinishDrawingFrame which results in an empty image. So
-      // force a draw here.
-      if (settings_->show_overdraw_feedback &&
-          (current_frame()->current_render_pass ==
-           current_frame()->root_render_pass)) {
-        sk_sp<SkImage> image = overdraw_surface_->makeImageSnapshot();
-        SkPaint paint;
-        sk_sp<SkColorFilter> color_filter =
-            SkiaHelper::MakeOverdrawColorFilter();
-        paint.setColorFilter(color_filter);
-        current_surface_->getCanvas()->drawImage(image.get(), 0, 0, &paint);
-      }
-      current_canvas_->flush();
-      break;
-    }
     case DrawMode::SKPRECORD: {
       current_canvas_->flush();
       sk_sp<SkPicture> picture = current_recorder_->finishRecordingAsPicture();
@@ -1249,8 +1145,6 @@ GrContext* SkiaRenderer::GetGrContext() {
   switch (draw_mode_) {
     case DrawMode::DDL:
       return nullptr;
-    case DrawMode::GL:
-      return context_provider_->GrContext();
     case DrawMode::SKPRECORD:
       return nullptr;
   }
@@ -1304,11 +1198,6 @@ void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
   switch (draw_mode_) {
     case DrawMode::DDL:
       break;
-    case DrawMode::GL: {
-      caps.texture_format_bgra8888 =
-          context_provider_->ContextCapabilities().texture_format_bgra8888;
-      break;
-    }
     case DrawMode::SKPRECORD: {
       render_pass_backings_.emplace(
           render_pass_id,
