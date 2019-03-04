@@ -34,7 +34,7 @@ testcase.restoreGeometry = async function() {
  * Tests restoring a maximized Files app window.
  */
 testcase.restoreGeometryMaximized = async function() {
-  var caller = getCaller();
+  const caller = getCaller();
 
   // Set up Files app.
   let appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);

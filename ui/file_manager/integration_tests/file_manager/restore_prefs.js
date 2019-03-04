@@ -8,7 +8,7 @@
  * Tests restoring the sorting order.
  */
 testcase.restoreSortColumn = async function() {
-  var EXPECTED_FILES = TestEntryInfo.getExpectedRows([
+  const EXPECTED_FILES = TestEntryInfo.getExpectedRows([
     ENTRIES.photos,     // 'photos' (directory)
     ENTRIES.world,      // 'world.ogv', 59943 bytes
     ENTRIES.beautiful,  // 'Beautiful Song.ogg', 13410 bytes

@@ -55,7 +55,7 @@ async function copyBetweenWindows(
 
   await remoteCall.callRemoteTestUtil('execCommand', window2, ['paste']);
 
-  var expectedFiles = [file.getExpectedRow()];
+  const expectedFiles = [file.getExpectedRow()];
   if (alreadyPresentFile) {
     expectedFiles.push(alreadyPresentFile.getExpectedRow());
   }

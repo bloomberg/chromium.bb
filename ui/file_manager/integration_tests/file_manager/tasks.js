@@ -30,7 +30,7 @@ function FakeTask(isDefault, taskId, title, opt_isGenericFileHandler) {
  * @type {Array<FakeTask>}
  * @const
  */
-var DOWNLOADS_FAKE_TASKS = [
+const DOWNLOADS_FAKE_TASKS = [
   new FakeTask(true, 'dummytaskid|open-with', 'DummyTask1'),
   new FakeTask(false, 'dummytaskid-2|open-with', 'DummyTask2')
 ];
@@ -41,7 +41,7 @@ var DOWNLOADS_FAKE_TASKS = [
  * @type {Array<FakeTask>}
  * @const
  */
-var DRIVE_FAKE_TASKS = [
+const DRIVE_FAKE_TASKS = [
   new FakeTask(true, 'dummytaskid|drive|open-with', 'DummyTask1'),
   new FakeTask(false, 'dummytaskid-2|drive|open-with', 'DummyTask2')
 ];
@@ -89,7 +89,7 @@ async function executeDefaultTask(appId, expectedTaskId) {
  */
 async function defaultTaskDialog(appId, expectedTaskId) {
   // Prepare expected labels.
-  var expectedLabels = [
+  const expectedLabels = [
     'DummyTask1 (default)',
     'DummyTask2',
   ];
@@ -104,7 +104,7 @@ async function defaultTaskDialog(appId, expectedTaskId) {
       'fakeEvent', appId,
       ['#tasks', 'select', {item: {type: 'ChangeDefaultTask'}}]));
 
-  var caller = getCaller();
+  const caller = getCaller();
 
   // Wait for the list of menu item is added as expected.
   await repeatUntil(async function() {
@@ -114,7 +114,7 @@ async function defaultTaskDialog(appId, expectedTaskId) {
         ['#default-task-dialog #default-tasks-list li']);
 
     // Compare the contents of items.
-    var actualLabels = items.map((item) => item.text);
+    const actualLabels = items.map((item) => item.text);
     if (chrome.test.checkDeepEq(expectedLabels, actualLabels)) {
       return true;
     }
@@ -179,7 +179,7 @@ testcase.defaultTaskDialogDownloads = async function() {
 };
 
 testcase.genericTaskIsNotExecuted = async function() {
-  var tasks = [new FakeTask(
+  const tasks = [new FakeTask(
       false, 'dummytaskid|open-with', 'DummyTask1',
       true /* isGenericFileHandler */)];
 
@@ -194,7 +194,7 @@ testcase.genericTaskIsNotExecuted = async function() {
 };
 
 testcase.genericTaskAndNonGenericTask = async function() {
-  var tasks = [
+  const tasks = [
     new FakeTask(
         false, 'dummytaskid|open-with', 'DummyTask1',
         true /* isGenericFileHandler */),

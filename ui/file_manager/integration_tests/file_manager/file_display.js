@@ -310,7 +310,7 @@ testcase.fileSearchCaseInsensitive = function() {
  * there are no displayed items that match the search string.
  */
 testcase.fileSearchNotFound = async function() {
-  var searchTerm = 'blahblah';
+  const searchTerm = 'blahblah';
 
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 

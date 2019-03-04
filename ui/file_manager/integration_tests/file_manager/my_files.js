@@ -27,7 +27,7 @@ testcase.showMyFiles = async function() {
       'queryAllElements', appId, dirTreeQuery);
 
   // Check tree elements for the correct order and label/element type.
-  var visibleElements = [];
+  const visibleElements = [];
   for (let element of elements) {
     if (!element.hidden) {  // Ignore hidden elements.
       visibleElements.push(

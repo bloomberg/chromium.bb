@@ -13,7 +13,7 @@ testcase.suggestAppDialog = async function() {
       JSON.parse(await sendTestMessage({name: 'getCwsWidgetContainerMockUrl'}));
 
   // Override the container URL with the mock.
-  var appState = {
+  const appState = {
     suggestAppsDialogState: {
       overrideCwsContainerUrlForTest: data.url,
       overrideCwsContainerOriginForTest: data.origin

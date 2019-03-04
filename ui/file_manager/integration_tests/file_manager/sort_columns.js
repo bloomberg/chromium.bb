@@ -7,7 +7,7 @@
  * Tests the order is sorted correctly for each of the columns.
  */
 testcase.sortColumns = async function() {
-  var NAME_ASC = TestEntryInfo.getExpectedRows([
+  const NAME_ASC = TestEntryInfo.getExpectedRows([
     ENTRIES.photos,
     ENTRIES.beautiful,
     ENTRIES.hello,
@@ -15,7 +15,7 @@ testcase.sortColumns = async function() {
     ENTRIES.world,
   ]);
 
-  var NAME_DESC = TestEntryInfo.getExpectedRows([
+  const NAME_DESC = TestEntryInfo.getExpectedRows([
     ENTRIES.photos,
     ENTRIES.world,
     ENTRIES.desktop,
@@ -23,7 +23,7 @@ testcase.sortColumns = async function() {
     ENTRIES.beautiful,
   ]);
 
-  var SIZE_ASC = TestEntryInfo.getExpectedRows([
+  const SIZE_ASC = TestEntryInfo.getExpectedRows([
     ENTRIES.photos,
     ENTRIES.hello,
     ENTRIES.desktop,
@@ -31,7 +31,7 @@ testcase.sortColumns = async function() {
     ENTRIES.world,
   ]);
 
-  var SIZE_DESC = TestEntryInfo.getExpectedRows([
+  const SIZE_DESC = TestEntryInfo.getExpectedRows([
     ENTRIES.photos,
     ENTRIES.world,
     ENTRIES.beautiful,
@@ -39,7 +39,7 @@ testcase.sortColumns = async function() {
     ENTRIES.hello,
   ]);
 
-  var TYPE_ASC = TestEntryInfo.getExpectedRows([
+  const TYPE_ASC = TestEntryInfo.getExpectedRows([
     ENTRIES.photos,
     ENTRIES.beautiful,
     ENTRIES.world,
@@ -47,7 +47,7 @@ testcase.sortColumns = async function() {
     ENTRIES.desktop,
   ]);
 
-  var TYPE_DESC = TestEntryInfo.getExpectedRows([
+  const TYPE_DESC = TestEntryInfo.getExpectedRows([
     ENTRIES.photos,
     ENTRIES.desktop,
     ENTRIES.hello,
@@ -55,7 +55,7 @@ testcase.sortColumns = async function() {
     ENTRIES.beautiful,
   ]);
 
-  var DATE_ASC = TestEntryInfo.getExpectedRows([
+  const DATE_ASC = TestEntryInfo.getExpectedRows([
     ENTRIES.photos,
     ENTRIES.hello,
     ENTRIES.world,
@@ -63,7 +63,7 @@ testcase.sortColumns = async function() {
     ENTRIES.beautiful,
   ]);
 
-  var DATE_DESC = TestEntryInfo.getExpectedRows([
+  const DATE_DESC = TestEntryInfo.getExpectedRows([
     ENTRIES.photos,
     ENTRIES.beautiful,
     ENTRIES.desktop,

@@ -9,36 +9,36 @@
  * @type {string}
  * @const
  */
-var FILE_MANAGER_EXTENSIONS_ID = 'hhaomjibdihmijegdhdafkllkbggdgoj';
+const FILE_MANAGER_EXTENSIONS_ID = 'hhaomjibdihmijegdhdafkllkbggdgoj';
 
-var remoteCall = new RemoteCallFilesApp(FILE_MANAGER_EXTENSIONS_ID);
+const remoteCall = new RemoteCallFilesApp(FILE_MANAGER_EXTENSIONS_ID);
 
 /**
  * Extension ID of Gallery.
  * @type {string}
  * @const
  */
-var GALLERY_APP_ID = 'nlkncpkkdoccmpiclbokaimcnedabhhm';
+const GALLERY_APP_ID = 'nlkncpkkdoccmpiclbokaimcnedabhhm';
 
-var galleryApp = new RemoteCallGallery(GALLERY_APP_ID);
+const galleryApp = new RemoteCallGallery(GALLERY_APP_ID);
 
 /**
  * Extension ID of Audio Player.
  * @type {string}
  * @const
  */
-var AUDIO_PLAYER_APP_ID = 'cjbfomnbifhcdnihkgipgfcihmgjfhbf';
+const AUDIO_PLAYER_APP_ID = 'cjbfomnbifhcdnihkgipgfcihmgjfhbf';
 
-var audioPlayerApp = new RemoteCall(AUDIO_PLAYER_APP_ID);
+const audioPlayerApp = new RemoteCall(AUDIO_PLAYER_APP_ID);
 
 /**
  * App ID of Video Player.
  * @type {string}
  * @const
  */
-var VIDEO_PLAYER_APP_ID = 'jcgeabjmjgoblfofpppfkcoakmfobdko';
+const VIDEO_PLAYER_APP_ID = 'jcgeabjmjgoblfofpppfkcoakmfobdko';
 
-var videoPlayerApp = new RemoteCall(VIDEO_PLAYER_APP_ID);
+const videoPlayerApp = new RemoteCall(VIDEO_PLAYER_APP_ID);
 
 /**
  * Basic entry set for the local volume.
@@ -46,7 +46,7 @@ var videoPlayerApp = new RemoteCall(VIDEO_PLAYER_APP_ID);
  * @type {Array<TestEntryInfo>}
  * @const
  */
-var BASIC_LOCAL_ENTRY_SET = [
+const BASIC_LOCAL_ENTRY_SET = [
   ENTRIES.hello,
   ENTRIES.world,
   ENTRIES.desktop,
@@ -66,7 +66,7 @@ var BASIC_LOCAL_ENTRY_SET = [
  * @type {Array<TestEntryInfo>}
  * @const
  */
-var BASIC_DRIVE_ENTRY_SET = [
+const BASIC_DRIVE_ENTRY_SET = [
   ENTRIES.hello,
   ENTRIES.world,
   ENTRIES.desktop,
@@ -82,7 +82,7 @@ var BASIC_DRIVE_ENTRY_SET = [
  * @type {!Array<!TestEntryInfo>}
  * @const
  */
-var BASIC_CROSTINI_ENTRY_SET = [
+const BASIC_CROSTINI_ENTRY_SET = [
   ENTRIES.hello,
   ENTRIES.world,
   ENTRIES.desktop,
@@ -95,7 +95,7 @@ var BASIC_CROSTINI_ENTRY_SET = [
  * @type {Array<TestEntryInfo>}
  * @const
  */
-var COMPLEX_DRIVE_ENTRY_SET = [
+const COMPLEX_DRIVE_ENTRY_SET = [
   ENTRIES.hello, ENTRIES.photos, ENTRIES.readOnlyFolder,
   ENTRIES.readOnlyDocument, ENTRIES.readOnlyStrictDocument, ENTRIES.readOnlyFile
 ];
@@ -106,7 +106,7 @@ var COMPLEX_DRIVE_ENTRY_SET = [
  * @type {Array<TestEntryInfo>}
  * @const
  */
-var NESTED_ENTRY_SET = [
+const NESTED_ENTRY_SET = [
   ENTRIES.directoryA,
   ENTRIES.directoryB,
   ENTRIES.directoryC
@@ -119,7 +119,7 @@ var NESTED_ENTRY_SET = [
  * @type {Array<TestEntryInfo>}
  * @const
  */
-var BASIC_FAKE_ENTRY_SET = [
+const BASIC_FAKE_ENTRY_SET = [
   ENTRIES.hello,
   ENTRIES.directoryA
 ];
@@ -131,7 +131,7 @@ var BASIC_FAKE_ENTRY_SET = [
  * @type {Array<TestEntryInfo>}
  * @const
  */
-var RECENT_ENTRY_SET = [
+const RECENT_ENTRY_SET = [
   ENTRIES.desktop,
   ENTRIES.beautiful,
 ];
@@ -144,7 +144,7 @@ var RECENT_ENTRY_SET = [
  * @type {Array<TestEntryInfo>}
  * @const
  */
-var OFFLINE_ENTRY_SET = [
+const OFFLINE_ENTRY_SET = [
   ENTRIES.testDocument,
   ENTRIES.testSharedDocument
 ];
@@ -156,7 +156,7 @@ var OFFLINE_ENTRY_SET = [
  * @type {Array<TestEntryInfo>}
  * @const
  */
-var SHARED_WITH_ME_ENTRY_SET = [
+const SHARED_WITH_ME_ENTRY_SET = [
   ENTRIES.testSharedDocument
 ];
 
@@ -169,7 +169,7 @@ var SHARED_WITH_ME_ENTRY_SET = [
  * @type {Array<TestEntryInfo>}
  * @const
  */
-var TEAM_DRIVE_ENTRY_SET = [
+const TEAM_DRIVE_ENTRY_SET = [
   ENTRIES.hello,
   ENTRIES.teamDriveA,
   ENTRIES.teamDriveAFile,
@@ -281,8 +281,8 @@ async function openAndWaitForClosingDialog(
 async function setupAndWaitUntilReady(
     initialRoot, initialLocalEntries = BASIC_LOCAL_ENTRY_SET,
     initialDriveEntries = BASIC_DRIVE_ENTRY_SET, appState = {}) {
-  var localEntriesPromise = addEntries(['local'], initialLocalEntries);
-  var driveEntriesPromise = addEntries(['drive'], initialDriveEntries);
+  const localEntriesPromise = addEntries(['local'], initialLocalEntries);
+  const driveEntriesPromise = addEntries(['drive'], initialDriveEntries);
 
   const appId = await openNewWindow(initialRoot, appState);
   await remoteCall.waitForElement(appId, '#detail-table');
@@ -370,7 +370,7 @@ async function awaitAsyncTestResult(resultPromise) {
 /**
  * Namespace for test cases.
  */
-var testcase = {};
+const testcase = {};
 
 /**
  * When the FileManagerBrowserTest harness loads this test extension, request
@@ -379,7 +379,7 @@ var testcase = {};
  * then run the test case using chrome.test.RunTests.
  */
 window.addEventListener('load', function() {
-  var steps = [
+  const steps = [
     // Request the guest mode state.
     function() {
       sendBrowserTestCommand({name: 'isInGuestMode'}, steps.shift());
@@ -393,7 +393,7 @@ window.addEventListener('load', function() {
     },
     // Request the test case name.
     function(paths) {
-      var roots = JSON.parse(paths);
+      const roots = JSON.parse(paths);
       RootPath.DOWNLOADS = roots.downloads;
       RootPath.DOWNLOADS_PATH = roots.downloads_path;
       RootPath.DRIVE = roots.drive;
@@ -403,7 +403,7 @@ window.addEventListener('load', function() {
     // Run the test case.
     function(testCaseName) {
       // Get the test function from testcase namespace testCaseName.
-      var test = testcase[testCaseName];
+      const test = testcase[testCaseName];
       // Verify test is an unnamed (aka 'anonymous') Function.
       if (!(test instanceof Function) || test.name) {
         chrome.test.fail('[' + testCaseName + '] not found.');
@@ -411,8 +411,8 @@ window.addEventListener('load', function() {
       }
       // Define the test case and its name for chrome.test logging.
       test.generatedName = testCaseName;
-      var testCaseSymbol = Symbol(testCaseName);
-      var testCase = {
+      const testCaseSymbol = Symbol(testCaseName);
+      const testCase = {
         [testCaseSymbol]: () => {
           return awaitAsyncTestResult(test());
         },

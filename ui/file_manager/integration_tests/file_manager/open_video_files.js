@@ -11,7 +11,7 @@
  * @param {Promise} promise Promise to be fulfilled with a found window's ID.
  */
 function waitForPlaying(filename) {
-  var caller = getCaller();
+  const caller = getCaller();
   return repeatUntil(async () => {
     if (await videoPlayerApp.callRemoteTestUtil(
             'isPlaying', null, [filename])) {
