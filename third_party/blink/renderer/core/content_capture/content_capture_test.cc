@@ -470,7 +470,9 @@ class ContentCaptureSimTest
       <p id='p5'>Hello World5</p>
       <p id='p6'>Hello World6</p>
       <p id='p7'>Hello World7</p>
-      <p id='p8'>Hello World8</p>
+      <svg>
+      <text id="s8">Hello World8</text>
+      </svg>
       <div id='d1'></div>
       )HTML");
     auto frame1 = Compositor().BeginFrame();
@@ -494,7 +496,7 @@ class ContentCaptureSimTest
 
   void InitMainFrameNodeHolders() {
     std::vector<std::string> ids = {"p1", "p2", "p3", "p4",
-                                    "p5", "p6", "p7", "p8"};
+                                    "p5", "p6", "p7", "s8"};
     main_frame_expected_text_ = {"Hello World1", "Hello World2", "Hello World3",
                                  "Hello World4", "Hello World5", "Hello World6",
                                  "Hello World7", "Hello World8"};
