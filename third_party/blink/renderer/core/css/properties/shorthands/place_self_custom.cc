@@ -24,7 +24,7 @@ bool PlaceSelf::ParseShorthand(
 
   CSSParserTokenRange range_copy = range;
   const CSSValue* align_self_value =
-      ToLonghand(GetCSSPropertyAlignSelf())
+      To<Longhand>(GetCSSPropertyAlignSelf())
           .ParseSingleValue(range, context, local_context);
   if (!align_self_value)
     return false;
@@ -33,7 +33,7 @@ bool PlaceSelf::ParseShorthand(
     range = range_copy;
 
   const CSSValue* justify_self_value =
-      ToLonghand(GetCSSPropertyJustifySelf())
+      To<Longhand>(GetCSSPropertyJustifySelf())
           .ParseSingleValue(range, context, local_context);
   if (!justify_self_value || !range.AtEnd())
     return false;

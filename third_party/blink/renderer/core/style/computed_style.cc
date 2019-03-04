@@ -2022,12 +2022,12 @@ StyleColor ComputedStyle::DecorationColorIncludingFallback(
 Color ComputedStyle::VisitedDependentColor(
     const CSSProperty& color_property) const {
   Color unvisited_color =
-      ToLonghand(color_property).ColorIncludingFallback(false, *this);
+      To<Longhand>(color_property).ColorIncludingFallback(false, *this);
   if (InsideLink() != EInsideLink::kInsideVisitedLink)
     return unvisited_color;
 
   Color visited_color =
-      ToLonghand(color_property).ColorIncludingFallback(true, *this);
+      To<Longhand>(color_property).ColorIncludingFallback(true, *this);
 
   // Take the alpha from the unvisited color, but get the RGB values from the
   // visited color.

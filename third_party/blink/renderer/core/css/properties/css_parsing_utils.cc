@@ -591,7 +591,7 @@ bool ConsumeAnimationShorthand(
     for (unsigned i = 0; i < longhand_count; ++i) {
       if (!parsed_longhand[i]) {
         longhands[i]->Append(
-            *ToLonghand(shorthand.properties()[i])->InitialValue());
+            *To<Longhand>(shorthand.properties()[i])->InitialValue());
       }
       parsed_longhand[i] = false;
     }

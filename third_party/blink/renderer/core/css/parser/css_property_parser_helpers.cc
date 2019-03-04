@@ -1909,7 +1909,7 @@ const CSSValue* ParseLonghand(CSSPropertyID unresolved_property,
           .WithAliasParsing(isPropertyAlias(unresolved_property))
           .WithCurrentShorthand(current_shorthand);
 
-  const CSSValue* result = ToLonghand(CSSProperty::Get(property_id))
+  const CSSValue* result = To<Longhand>(CSSProperty::Get(property_id))
                                .ParseSingleValue(range, context, local_context);
   return result;
 }
