@@ -494,26 +494,18 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
   }
 
   void SetPacketLossPercentage(int32_t loss) {
-    // TODO(rtenneti): enable when we can do random packet loss tests in
-    // chrome's tree.
-    if (loss != 0 && loss != 100)
-      return;
     client_writer_->set_fake_packet_loss_percentage(loss);
     server_writer_->set_fake_packet_loss_percentage(loss);
   }
 
   void SetPacketSendDelay(QuicTime::Delta delay) {
-    // TODO(rtenneti): enable when we can do random packet send delay tests in
-    // chrome's tree.
-    // client_writer_->set_fake_packet_delay(delay);
-    // server_writer_->set_fake_packet_delay(delay);
+    client_writer_->set_fake_packet_delay(delay);
+    server_writer_->set_fake_packet_delay(delay);
   }
 
   void SetReorderPercentage(int32_t reorder) {
-    // TODO(rtenneti): enable when we can do random packet reorder tests in
-    // chrome's tree.
-    // client_writer_->set_fake_reorder_percentage(reorder);
-    // server_writer_->set_fake_reorder_percentage(reorder);
+    client_writer_->set_fake_reorder_percentage(reorder);
+    server_writer_->set_fake_reorder_percentage(reorder);
   }
 
   // Verifies that the client and server connections were both free of packets
