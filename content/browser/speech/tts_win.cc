@@ -139,8 +139,9 @@ bool TtsPlatformImplWin::StopSpeaking() {
     stream_number_ = 0;
 
     if (IsSpeaking()) {
-      // Stop speech by speaking the empty string with the purge flag.
-      speech_synthesizer_->Speak(L"", SPF_ASYNC | SPF_PURGEBEFORESPEAK, NULL);
+      // Stop speech by speaking nullptr with the purge flag.
+      speech_synthesizer_->Speak(nullptr, SPF_ASYNC | SPF_PURGEBEFORESPEAK,
+                                 NULL);
     }
     if (paused_) {
       speech_synthesizer_->Resume();
