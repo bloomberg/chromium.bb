@@ -19,7 +19,7 @@ template("vr_module_tmpl") {
   _manifest = "$target_gen_dir/$target_name/AndroidManifest.xml"
   _manifest_target = "${target_name}__manifest"
   jinja_template(_manifest_target) {
-    input = "//chrome/android/features/vr/AndroidManifest.xml"
+    input = "//chrome/android/features/vr/java/AndroidManifest.xml"
     output = _manifest
     variables = [
       "target_sdk_version=$android_sdk_version",
@@ -39,7 +39,7 @@ template("vr_module_tmpl") {
     android_manifest = _manifest
     android_manifest_dep = ":${_manifest_target}"
     deps = [
-      "//chrome/browser/android/vr:java",
+      "//chrome/android/features/vr:java",
     ]
     proguard_enabled = !is_java_debug
     if (!defined(invoker.uncompress_shared_libraries)) {
