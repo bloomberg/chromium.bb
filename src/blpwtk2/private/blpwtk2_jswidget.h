@@ -50,7 +50,7 @@ class JsWidget : public blink::WebPlugin {
     bool Initialize(blink::WebPluginContainer*) override;
     void Destroy() override;
     blink::WebPluginContainer* Container() const override;
-    void Paint(blink::WebCanvas*, const blink::WebRect&) override {}
+    void Paint(cc::PaintCanvas*, const blink::WebRect&) override {}
     void UpdateGeometry(
         const blink::WebRect& windowRect, const blink::WebRect& clipRect,
         const blink::WebRect& unobscuredRect, bool isVisible) override;
