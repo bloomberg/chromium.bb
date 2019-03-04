@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/command_buffer_direct.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -34,6 +35,7 @@
 #include "gpu/command_buffer/service/raster_decoder.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
+#include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "ui/gfx/geometry/size.h"
@@ -359,19 +361,37 @@ class CommandBufferSetup {
         new gles2::FeatureInfo(config_.workarounds, gpu_feature_info);
     command_buffer_.reset(new CommandBufferDirect());
 
-#if defined(GPU_FUZZER_USE_RASTER_DECODER)
-    CHECK(feature_info->feature_flags().chromium_raster_transport);
     scoped_refptr<SharedContextState> context_state =
         base::MakeRefCounted<SharedContextState>(
             share_group_, surface_, context_,
             config_.workarounds.use_virtualized_gl_contexts, base::DoNothing());
     context_state->InitializeGrContext(config_.workarounds, nullptr);
     context_state->InitializeGL(gpu_preferences_, feature_info);
+
+    shared_image_manager_ = std::make_unique<SharedImageManager>();
+    shared_image_factory_ = std::make_unique<SharedImageFactory>(
+        gpu_preferences_, config_.workarounds, gpu_feature_info,
+        context_state.get(), &mailbox_manager_, shared_image_manager_.get(),
+        nullptr /* image_factory */, nullptr /* memory_tracker */);
+    for (uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
+         usage <= SHARED_IMAGE_USAGE_RGB_EMULATION; usage <<= 1) {
+      Mailbox::Name name;
+      memset(name, 0, sizeof(name));
+      name[base::size(name) - 1] = usage;
+      Mailbox mailbox;
+      mailbox.SetName(name);
+      shared_image_factory_->CreateSharedImage(
+          mailbox, viz::RGBA_8888, gfx::Size(256, 256),
+          gfx::ColorSpace::CreateSRGB(), usage);
+    }
+
+#if defined(GPU_FUZZER_USE_RASTER_DECODER)
+    CHECK(feature_info->feature_flags().chromium_raster_transport);
     auto* context = context_state->context();
     decoder_.reset(raster::RasterDecoder::Create(
         command_buffer_.get(), command_buffer_->service(), &outputter_,
         gpu_feature_info, gpu_preferences_, nullptr /* memory_tracker */,
-        &shared_image_manager_, std::move(context_state)));
+        shared_image_manager_.get(), std::move(context_state)));
 #else
     scoped_refptr<gles2::ContextGroup> context_group = new gles2::ContextGroup(
         gpu_preferences_, true, &mailbox_manager_, nullptr /* memory_tracker */,
@@ -379,7 +399,7 @@ class CommandBufferSetup {
         config_.attrib_helper.bind_generates_resource, &image_manager_,
         nullptr /* image_factory */, nullptr /* progress_reporter */,
         gpu_feature_info, discardable_manager_.get(),
-        passthrough_discardable_manager_.get(), &shared_image_manager_);
+        passthrough_discardable_manager_.get(), shared_image_manager_.get());
     auto* context = context_.get();
     decoder_.reset(gles2::GLES2Decoder::Create(
         command_buffer_.get(), command_buffer_->service(), &outputter_,
@@ -423,6 +443,9 @@ class CommandBufferSetup {
           decoder_->WasContextLost() || !decoder_->CheckResetStatus();
       decoder_->Destroy(!context_lost);
       decoder_.reset();
+
+      shared_image_factory_.reset();
+      shared_image_manager_.reset();
     }
 
     if (context_) {
@@ -541,7 +564,8 @@ class CommandBufferSetup {
   std::unique_ptr<ServiceDiscardableManager> discardable_manager_;
   std::unique_ptr<PassthroughDiscardableManager>
       passthrough_discardable_manager_;
-  SharedImageManager shared_image_manager_;
+  std::unique_ptr<SharedImageManager> shared_image_manager_;
+  std::unique_ptr<SharedImageFactory> shared_image_factory_;
 
   bool recreate_context_ = false;
   scoped_refptr<gl::GLSurface> surface_;
