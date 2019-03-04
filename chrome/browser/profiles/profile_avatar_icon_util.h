@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_set>
 
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -118,6 +119,11 @@ bool IsDefaultAvatarIconUrl(const std::string& icon_url, size_t *icon_index);
 // well as avatar labels used for accessibility purposes. The list is ordered
 // according to the avatars' default order.
 std::unique_ptr<base::ListValue> GetDefaultProfileAvatarIconsAndLabels();
+
+// This method tries to find a random avatar index that is not in
+// |used_icon_indices|. If there is no such index, a random index is returned.
+size_t GetRandomAvatarIconIndex(
+    const std::unordered_set<size_t>& used_icon_indices);
 
 }  // namespace profiles
 

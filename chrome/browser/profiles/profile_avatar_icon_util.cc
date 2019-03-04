@@ -12,6 +12,7 @@
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -517,6 +518,19 @@ std::unique_ptr<base::ListValue> GetDefaultProfileAvatarIconsAndLabels() {
     avatars->Append(std::move(avatar_info));
   }
   return avatars;
+}
+
+size_t GetRandomAvatarIconIndex(
+    const std::unordered_set<size_t>& used_icon_indices) {
+  int rand = base::RandInt(0, GetDefaultAvatarIconCount());
+  // Find the next unused index.
+  for (size_t i = 0; i < GetDefaultAvatarIconCount(); ++i) {
+    size_t icon_index = (rand + i) % GetDefaultAvatarIconCount();
+    if (used_icon_indices.count(icon_index) == 0u)
+      return icon_index;
+  }
+  // All indices are used, so return a random one.
+  return rand;
 }
 
 }  // namespace profiles
