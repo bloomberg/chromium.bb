@@ -85,6 +85,10 @@ if not j_specified and not t_specified:
     if sys.platform.startswith('win'):
       # On windows, j value higher than 1000 does not improve build performance.
       j_value = min(j_value, 1000)
+    elif sys.platform == 'darwin':
+      # On Mac, j value higher than 500 causes 'Too many open files' error
+      # (crbug.com/936864).
+      j_value = min(j_value, 500)
 
     args.append('%d' % j_value)
   else:
