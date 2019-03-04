@@ -654,7 +654,11 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->mv.subpel_search_method = SUBPEL_TREE;
   sf->mv.subpel_iters_per_step = 2;
   sf->mv.subpel_force_stop = EIGHTH_PEL;
-  if (cpi->oxcf.disable_trellis_quant == 2) {
+  if (cpi->oxcf.disable_trellis_quant == 3) {
+    sf->optimize_coefficients = !is_lossless_requested(&cpi->oxcf)
+                                    ? NO_ESTIMATE_YRD_TRELLIS_OPT
+                                    : NO_TRELLIS_OPT;
+  } else if (cpi->oxcf.disable_trellis_quant == 2) {
     sf->optimize_coefficients = !is_lossless_requested(&cpi->oxcf)
                                     ? FINAL_PASS_TRELLIS_OPT
                                     : NO_TRELLIS_OPT;
