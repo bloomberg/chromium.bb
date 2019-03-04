@@ -24,6 +24,7 @@
 
 include braille-patterns.cti
 
+sign \x0020 0
 sign \x0000 0
 sign \x0001 178
 sign \x0002 1278
@@ -56,7 +57,6 @@ sign \x001c 3478
 sign \x001d 2345678
 sign \x001e 234678
 sign \x001f 45678
-sign \x0020 0
 sign \x0021 5
 sign \x0022 4
 sign \x0023 3456
@@ -289,6 +289,7 @@ sign \x201e 1268	# „
 sign \x201c 138		# “
 sign \x201a 3678	# ‚
 sign \x2018 2367	# ‘
+noback sign \x202F 7	  NARROW NO-BREAK SPACE
 noback sign \X25CF 35	# 9679 black circle
 
 # those symbols should be ignored because there is no one character mapping in the actual braille table
