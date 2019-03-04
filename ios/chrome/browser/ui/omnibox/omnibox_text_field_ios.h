@@ -79,12 +79,6 @@ typedef enum {
 // Called when animations added by |-animateFadeWithStyle:| can be removed.
 - (void)cleanUpFadeAnimations;
 
-// New animations API, currently behind clean-toolbar flag.
-// They replace all animations above.
-- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator
-                completionAnimator:(UIViewPropertyAnimator*)completionAnimator;
-- (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator;
-
 // Returns an x offset for a given string. If no such string is found, returns
 // some default offset.
 // Used for focus/defocus animation.
@@ -111,7 +105,7 @@ typedef enum {
 @property(nonatomic, strong) NSString* preEditText;
 
 @property(nonatomic) BOOL clearingPreEditText;
-@property(nonatomic, strong) UIColor* selectedTextBackgroundColor;
+@property(nonatomic, readonly, strong) UIColor* selectedTextBackgroundColor;
 @property(nonatomic, strong) UIColor* placeholderTextColor;
 @property(nonatomic, assign) BOOL incognito;
 
