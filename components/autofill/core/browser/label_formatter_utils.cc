@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/autofill/core/browser/label_formatter_utils.h"
+
 #include <memory>
 #include <set>
 
-#include "components/autofill/core/browser/label_formatter_creator.h"
-#include "components/autofill/core/browser/name_and_address_disclosure_label_formatter.h"
-#include "components/autofill/core/browser/name_phone_and_email_disclosure_label_formatter.h"
+#include "components/autofill/core/browser/address_form_label_formatter.h"
+#include "components/autofill/core/browser/contact_form_label_formatter.h"
 
 namespace autofill {
 namespace {
@@ -69,14 +70,14 @@ std::unique_ptr<LabelFormatter> Create(
   const uint32_t groups = DetermineGroups(filtered_field_types);
   if (groups ==
       (label_formatter_groups::kName | label_formatter_groups::kAddress)) {
-    return std::make_unique<NameAndAddressDisclosureLabelFormatter>(
+    return std::make_unique<AddressFormLabelFormatter>(
         app_locale, focused_field_type, filtered_field_types);
   }
 
   if (groups ==
       (label_formatter_groups::kName | label_formatter_groups::kPhone |
        label_formatter_groups::kEmail)) {
-    return std::make_unique<NamePhoneAndEmailDisclosureLabelFormatter>(
+    return std::make_unique<ContactFormLabelFormatter>(
         app_locale, focused_field_type, filtered_field_types);
   }
   return nullptr;
