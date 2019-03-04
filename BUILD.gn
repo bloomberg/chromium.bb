@@ -12,6 +12,17 @@ if (current_cpu == "arm") {
 
 assert(!is_ios, "This is not used on iOS, don't drag it in unintentionally")
 
+source_set("libjpeg_headers") {
+  sources = [
+    "jconfig.h",
+    "jdct.h",
+    "jinclude.h",
+    "jmorecfg.h",
+    "jpeglib.h",
+    "jpeglibmangler.h",
+  ]
+}
+
 if (current_cpu == "x86" || current_cpu == "x64") {
   import("//third_party/yasm/yasm_assemble.gni")
 
@@ -123,18 +134,17 @@ if (current_cpu == "x86" || current_cpu == "x64") {
 
 static_library("simd") {
   include_dirs = [ "." ]
+  deps = [
+    ":libjpeg_headers",
+  ]
 
   if (current_cpu == "x86") {
-    deps = [
-      ":simd_asm",
-    ]
+    deps += [ ":simd_asm" ]
     sources = [
       "simd/i386/jsimd.c",
     ]
   } else if (current_cpu == "x64") {
-    deps = [
-      ":simd_asm",
-    ]
+    deps += [ ":simd_asm" ]
     sources = [
       "simd/x86_64/jsimd.c",
     ]
@@ -179,7 +189,6 @@ static_library("libjpeg") {
     "jcmarker.c",
     "jcmaster.c",
     "jcomapi.c",
-    "jconfig.h",
     "jcparam.c",
     "jcphuff.c",
     "jcprepct.c",
@@ -191,7 +200,6 @@ static_library("libjpeg") {
     "jdatasrc.c",
     "jdcoefct.c",
     "jdcolor.c",
-    "jdct.h",
     "jddctmgr.c",
     "jdhuff.c",
     "jdhuff.h",
@@ -214,14 +222,10 @@ static_library("libjpeg") {
     "jidctfst.c",
     "jidctint.c",
     "jidctred.c",
-    "jinclude.h",
     "jmemmgr.c",
     "jmemnobs.c",
     "jmemsys.h",
-    "jmorecfg.h",
     "jpegint.h",
-    "jpeglib.h",
-    "jpeglibmangler.h",
     "jquant1.c",
     "jquant2.c",
     "jutils.c",
@@ -236,14 +240,15 @@ static_library("libjpeg") {
   configs += [ ":libjpeg_config" ]
 
   public_configs = [ ":libjpeg_config" ]
+  deps = [
+    ":libjpeg_headers",
+  ]
 
   # MemorySanitizer doesn't support assembly code, so keep it disabled in
   # MSan builds for now.
   if (is_msan) {
     sources += [ "jsimd_none.c" ]
   } else {
-    deps = [
-      ":simd",
-    ]
+    deps += [ ":simd" ]
   }
 }
