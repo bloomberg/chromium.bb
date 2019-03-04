@@ -95,6 +95,7 @@ static_library("vr_android") {
   }
 
   deps = [
+    ":ui_factory",
     "//base",
     "//cc",
     "//chrome/android/features/vr:jni_headers",
@@ -142,6 +143,42 @@ static_library("vr_android") {
   }
 }
 
+# The VR UI module factory interface.
+source_set("ui_factory") {
+  sources = [
+    "ui_factory.h",
+  ]
+  deps = [
+    "//chrome/browser/vr:vr_base",
+  ]
+}
+
+# The default UI factory implementation, which simply instantiates an object.
+source_set("ui_default_factory") {
+  sources = [
+    "ui_default_factory.cc",
+    "ui_default_factory.h",
+  ]
+  deps = [
+    ":ui_factory",
+    "//chrome/browser/vr:vr_base",
+    "//chrome/browser/vr:vr_ui",
+  ]
+}
+
+# The DFM version of the factory, which opens the DFM shared library and uses
+# it to create a UI.
+source_set("ui_module_factory") {
+  sources = [
+    "ui_module_factory.cc",
+    "ui_module_factory.h",
+  ]
+  deps = [
+    ":ui_factory",
+    "//chrome/browser/vr:vr_base",
+  ]
+}
+
 android_library("ar_java") {
   deps = [
     "//third_party/android_deps:com_google_ar_core_java",
@@ -172,6 +209,12 @@ if (current_toolchain == default_toolchain) {
   }
 }
 
+group("test_support") {
+  public_deps = [
+    ":ui_default_factory",
+  ]
+}
+
 test("vr_android_unittests") {
   sources = [
     "arcore_device/arcore_device_unittest.cc",
@@ -187,6 +230,7 @@ test("vr_android_unittests") {
 
   deps = [
     ":jni_registration",
+    ":test_support",
     ":vr_android",
     "//base/test:test_support",
     "//chrome/browser:browser",

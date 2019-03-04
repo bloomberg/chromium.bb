@@ -206,6 +206,8 @@ static_library("test_support") {
       "base/test_browser_window.h",
     ]
     if (enable_vr) {
+      public_deps += [ "//chrome/browser/android/vr:test_support" ]
+
       # Add a dummy implementation of RegisterJni to satisfy the linker.
       sources += [ "../browser/android/vr/register_jni_monochrome.cc" ]
     }

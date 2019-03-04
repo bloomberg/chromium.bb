@@ -22,13 +22,19 @@ class Transform;
 
 namespace vr {
 
+class AudioDelegate;
 class BrowserUiInterface;
 class InputEvent;
+class KeyboardDelegate;
+class PlatformInputHandler;
 class PlatformUiInputDelegate;
 class SchedulerUiInterface;
+class TextInputDelegate;
+class UiBrowserInterface;
 struct ControllerModel;
 struct RenderInfo;
 struct ReticleModel;
+struct UiInitialState;
 enum class UserFriendlyElementName;
 
 using InputEventList = std::vector<std::unique_ptr<InputEvent>>;
@@ -114,6 +120,17 @@ class UiInterface {
       const FovRectangle& fov_recommended_right,
       float z_near) = 0;
 };
+
+// After obtaining a void pointer to CreateUi() via dlsym, the resulting pointer
+// should be cast to this type.  Hence, the arguments in this type must exactly
+// match the actual CreateUi method.
+typedef UiInterface* CreateUiFunction(
+    UiBrowserInterface* browser,
+    PlatformInputHandler* content_input_forwarder,
+    std::unique_ptr<KeyboardDelegate> keyboard_delegate,
+    std::unique_ptr<TextInputDelegate> text_input_delegate,
+    std::unique_ptr<AudioDelegate> audio_delegate,
+    const UiInitialState& ui_initial_state);
 
 }  // namespace vr
 

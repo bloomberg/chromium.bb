@@ -12,11 +12,12 @@
 #include "chrome/browser/android/vr/gvr_input_delegate.h"
 #include "chrome/browser/android/vr/gvr_keyboard_delegate.h"
 #include "chrome/browser/android/vr/gvr_scheduler_delegate.h"
+#include "chrome/browser/android/vr/ui_factory.h"
 #include "chrome/browser/android/vr/vr_gl_thread.h"
 #include "chrome/browser/vr/browser_renderer.h"
 #include "chrome/browser/vr/sounds_manager_audio_delegate.h"
 #include "chrome/browser/vr/text_input_delegate.h"
-#include "chrome/browser/vr/ui_factory.h"
+#include "chrome/browser/vr/ui_interface.h"
 
 namespace {
 // Number of frames to use for sliding averages for pose timings,
