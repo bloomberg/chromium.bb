@@ -140,6 +140,7 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/blink/renderer/modules/remoteplayback",
     "//third_party/blink/renderer/modules/screen_orientation",
     "//third_party/blink/renderer/modules/sensor",
+    "//third_party/blink/renderer/modules/serial",
     "//third_party/blink/renderer/modules/service_worker",
     "//third_party/blink/renderer/modules/shapedetection",
     "//third_party/blink/renderer/modules/speech",
@@ -165,10 +166,6 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/webrtc_overrides:init_webrtc",
     "//third_party/zlib",
   ]
-
-  if (!is_android) {
-    deps += [ "//third_party/blink/renderer/modules/serial" ]
-  }
 
   if (is_win) {
     cflags = [ "/wd4334" ]  # Result of 32-bit shift implicitly converted to 64 bits.

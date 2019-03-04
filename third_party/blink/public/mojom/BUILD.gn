@@ -74,6 +74,7 @@ mojom("mojom_platform") {
     "renderer_preferences.mojom",
     "reporting/reporting.mojom",
     "script/script_type.mojom",
+    "serial/serial.mojom",
     "service_worker/dispatch_fetch_event_params.mojom",
     "service_worker/navigation_preload_state.mojom",
     "service_worker/service_worker_client.mojom",
@@ -104,10 +105,6 @@ mojom("mojom_platform") {
     "worker/worker_content_settings_proxy.mojom",
     "worker/worker_main_script_load_params.mojom",
   ]
-
-  if (!is_android) {
-    sources += [ "serial/serial.mojom" ]
-  }
 
   if (is_win) {
     sources += [ "dwrite_font_proxy/dwrite_font_proxy.mojom" ]
