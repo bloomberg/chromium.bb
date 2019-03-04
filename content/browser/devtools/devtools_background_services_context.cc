@@ -66,7 +66,7 @@ void DevToolsBackgroundServicesContext::StartRecording(
     devtools::proto::BackgroundService service) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  DCHECK(expiration_times_[service].is_null());
+  DCHECK(!IsRecording(service));
 
   // TODO(rayankans): Make the time delay finch configurable.
   base::Time expiration_time = base::Time::Now() + base::TimeDelta::FromDays(3);
@@ -80,7 +80,7 @@ void DevToolsBackgroundServicesContext::StopRecording(
     devtools::proto::BackgroundService service) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  DCHECK(!expiration_times_[service].is_null());
+  DCHECK(IsRecording(service));
   expiration_times_[service] = base::Time();
 
   GetContentClient()->browser()->UpdateDevToolsBackgroundServiceExpiration(
@@ -89,7 +89,7 @@ void DevToolsBackgroundServicesContext::StopRecording(
 
 bool DevToolsBackgroundServicesContext::IsRecording(
     devtools::proto::BackgroundService service) {
-  return !expiration_times_[service].is_null();
+  return base::Time::Now() < expiration_times_[service];
 }
 
 void DevToolsBackgroundServicesContext::GetLoggedBackgroundServiceEvents(
@@ -109,31 +109,31 @@ void DevToolsBackgroundServicesContext::DidGetUserData(
     blink::ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  std::vector<devtools::proto::BackgroundServiceState> service_states;
+  std::vector<devtools::proto::BackgroundServiceEvent> events;
 
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     // TODO(rayankans): Log errors to UMA.
-    std::move(callback).Run(service_states);
+    std::move(callback).Run(events);
     return;
   }
 
-  service_states.reserve(user_data.size());
+  events.reserve(user_data.size());
   for (const auto& data : user_data) {
-    devtools::proto::BackgroundServiceState service_state;
-    if (!service_state.ParseFromString(data.second)) {
+    devtools::proto::BackgroundServiceEvent event;
+    if (!event.ParseFromString(data.second)) {
       // TODO(rayankans): Log errors to UMA.
       std::move(callback).Run({});
       return;
     }
-    DCHECK_EQ(data.first, service_state.service_worker_registration_id());
-    service_states.push_back(std::move(service_state));
+    DCHECK_EQ(data.first, event.service_worker_registration_id());
+    events.push_back(std::move(event));
   }
 
-  std::sort(service_states.begin(), service_states.end(),
+  std::sort(events.begin(), events.end(),
             [](const auto& state1, const auto& state2) {
               return state1.timestamp() < state2.timestamp();
             });
-  std::move(callback).Run(std::move(service_states));
+  std::move(callback).Run(std::move(events));
 }
 
 void DevToolsBackgroundServicesContext::ClearLoggedBackgroundServiceEvents(
@@ -144,41 +144,32 @@ void DevToolsBackgroundServicesContext::ClearLoggedBackgroundServiceEvents(
       CreateEntryKeyPrefix(service), base::BindOnce(&DidClearServiceEvents));
 }
 
-void DevToolsBackgroundServicesContext::LogTestBackgroundServiceEvent(
+void DevToolsBackgroundServicesContext::LogBackgroundServiceEvent(
     uint64_t service_worker_registration_id,
     const url::Origin& origin,
-    devtools::proto::TestBackgroundServiceEvent event) {
+    devtools::proto::BackgroundService service,
+    const std::string& event_name,
+    const std::string& instance_id,
+    const std::map<std::string, std::string>& event_metadata) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  devtools::proto::BackgroundServiceState service_state;
-  service_state.set_background_service(
-      devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE);
-  *service_state.mutable_test_event() = std::move(event);
-
-  LogBackgroundServiceState(service_worker_registration_id, origin,
-                            std::move(service_state));
-}
-
-void DevToolsBackgroundServicesContext::LogBackgroundServiceState(
-    uint64_t service_worker_registration_id,
-    const url::Origin& origin,
-    devtools::proto::BackgroundServiceState service_state) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (!IsRecording(service_state.background_service()))
+  if (!IsRecording(service))
     return;
 
-  // Add common metadata.
-  service_state.set_timestamp(
+  devtools::proto::BackgroundServiceEvent event;
+  event.set_timestamp(
       base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
-  service_state.set_origin(origin.GetURL().spec());
-  service_state.set_service_worker_registration_id(
-      service_worker_registration_id);
+  event.set_origin(origin.GetURL().spec());
+  event.set_service_worker_registration_id(service_worker_registration_id);
+  event.set_background_service(service);
+  event.set_event_name(event_name);
+  event.set_instance_id(instance_id);
+  event.mutable_event_metadata()->insert(event_metadata.begin(),
+                                         event_metadata.end());
 
   service_worker_context_->StoreRegistrationUserData(
       service_worker_registration_id, origin.GetURL(),
-      {{CreateEntryKey(service_state.background_service()),
-        service_state.SerializeAsString()}},
+      {{CreateEntryKey(event.background_service()), event.SerializeAsString()}},
       base::BindOnce(&DidLogServiceEvent));
 }
 

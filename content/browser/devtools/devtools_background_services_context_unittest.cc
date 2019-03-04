@@ -21,6 +21,9 @@
 namespace content {
 namespace {
 
+const std::string kEventName = "Test Event";
+const std::string kInstanceId = "my-instance";
+
 class TestBrowserClient : public ContentBrowserClient {
  public:
   TestBrowserClient() {}
@@ -71,8 +74,8 @@ void DidFindServiceWorkerRegistration(
 
 void DidGetLoggedBackgroundServiceEvents(
     base::OnceClosure quit_closure,
-    std::vector<devtools::proto::BackgroundServiceState>* out_feature_states,
-    std::vector<devtools::proto::BackgroundServiceState> feature_states) {
+    std::vector<devtools::proto::BackgroundServiceEvent>* out_feature_states,
+    std::vector<devtools::proto::BackgroundServiceEvent> feature_states) {
   *out_feature_states = std::move(feature_states);
   std::move(quit_closure).Run();
 }
@@ -107,6 +110,13 @@ class DevToolsBackgroundServicesContextTest : public ::testing::Test {
     ASSERT_TRUE(context_);
   }
 
+  void SimulateOneWeekPassing() {
+    base::Time one_week_ago = base::Time::Now() - base::TimeDelta::FromDays(7);
+    context_->expiration_times_
+        [devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE] =
+        one_week_ago;
+  }
+
   bool IsRecording() {
     return context_->IsRecording(
         devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE);
@@ -117,9 +127,9 @@ class DevToolsBackgroundServicesContextTest : public ::testing::Test {
         [devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE];
   }
 
-  std::vector<devtools::proto::BackgroundServiceState>
+  std::vector<devtools::proto::BackgroundServiceEvent>
   GetLoggedBackgroundServiceEvents() {
-    std::vector<devtools::proto::BackgroundServiceState> feature_states;
+    std::vector<devtools::proto::BackgroundServiceEvent> feature_states;
 
     base::RunLoop run_loop;
     context_->GetLoggedBackgroundServiceEvents(
@@ -132,11 +142,10 @@ class DevToolsBackgroundServicesContextTest : public ::testing::Test {
   }
 
   void LogTestBackgroundServiceEvent(const std::string& log_message) {
-    devtools::proto::TestBackgroundServiceEvent event;
-    event.set_value(log_message);
-
-    context_->LogTestBackgroundServiceEvent(service_worker_registration_id_,
-                                            origin_, std::move(event));
+    context_->LogBackgroundServiceEvent(
+        service_worker_registration_id_, origin_,
+        devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE, kEventName,
+        kInstanceId, {{"key", log_message}});
   }
 
   void StartRecording() {
@@ -250,11 +259,13 @@ TEST_F(DevToolsBackgroundServicesContextTest, GetLoggedEvents) {
     EXPECT_EQ(feature_event.origin(), origin_.GetURL().spec());
     EXPECT_EQ(feature_event.service_worker_registration_id(),
               service_worker_registration_id_);
-    ASSERT_TRUE(feature_event.has_test_event());
+    EXPECT_EQ(feature_event.event_name(), kEventName);
+    EXPECT_EQ(feature_event.instance_id(), kInstanceId);
+    ASSERT_EQ(feature_event.event_metadata().size(), 1u);
   }
 
-  EXPECT_EQ(feature_events[0].test_event().value(), "f1");
-  EXPECT_EQ(feature_events[1].test_event().value(), "f2");
+  EXPECT_EQ(feature_events[0].event_metadata().at("key"), "f1");
+  EXPECT_EQ(feature_events[1].event_metadata().at("key"), "f2");
 
   EXPECT_LE(feature_events[0].timestamp(), feature_events[1].timestamp());
 }
@@ -294,6 +305,19 @@ TEST_F(DevToolsBackgroundServicesContextTest, DelegateExpirationTimes) {
   EXPECT_FALSE(IsRecording());
   SimulateBrowserRestart();
   EXPECT_TRUE(GetExpirationTime().is_null());
+  EXPECT_FALSE(IsRecording());
+}
+
+TEST_F(DevToolsBackgroundServicesContextTest, RecordingExpiration) {
+  // Initially expiration time is null.
+  EXPECT_FALSE(IsRecording());
+
+  // Toggle Recording mode, and now this should be non-null.
+  StartRecording();
+  EXPECT_TRUE(IsRecording());
+
+  SimulateOneWeekPassing();
+  EXPECT_FALSE(GetExpirationTime().is_null());
   EXPECT_FALSE(IsRecording());
 }
 
