@@ -6174,6 +6174,18 @@ static void encode_frame_internal(AV1_COMP *cpi) {
         if (ref_frame_error == 0) continue;
 
         aom_clear_system_state();
+
+        // TODO(sarahparker, debargha): Explore do_adaptive_gm_estimation = 1
+        const int do_adaptive_gm_estimation = 0;
+
+        const int ref_frame_dist = get_relative_dist(
+            &cm->seq_params.order_hint_info, cm->current_frame.order_hint,
+            cm->cur_frame->ref_order_hints[frame - LAST_FRAME]);
+        const GlobalMotionEstimationType gm_estimation_type =
+            cm->seq_params.order_hint_info.enable_order_hint &&
+                    abs(ref_frame_dist) <= 2 && do_adaptive_gm_estimation
+                ? GLOBAL_MOTION_DISFLOW_BASED
+                : GLOBAL_MOTION_FEATURE_BASED;
         for (model = ROTZOOM; model < GLOBAL_TRANS_TYPES_ENC; ++model) {
           int64_t best_warp_error = INT64_MAX;
           // Initially set all params to identity.
@@ -6182,10 +6194,10 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                    (MAX_PARAMDIM - 1) * sizeof(*params_by_motion));
           }
 
-          av1_compute_global_motion(
-              model, cpi->source, ref_buf[frame],
-              cpi->common.seq_params.bit_depth, GLOBAL_MOTION_FEATURE_BASED,
-              inliers_by_motion, params_by_motion, RANSAC_NUM_MOTIONS);
+          av1_compute_global_motion(model, cpi->source, ref_buf[frame],
+                                    cpi->common.seq_params.bit_depth,
+                                    gm_estimation_type, inliers_by_motion,
+                                    params_by_motion, RANSAC_NUM_MOTIONS);
 
           for (i = 0; i < RANSAC_NUM_MOTIONS; ++i) {
             if (inliers_by_motion[i] == 0) continue;
