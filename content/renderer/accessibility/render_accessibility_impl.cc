@@ -713,8 +713,12 @@ void RenderAccessibilityImpl::OnPerformAction(
     case ax::mojom::Action::kAnnotatePageImages:
       // Ensure we aren't already labeling images, in which case this should
       // not change.
-      if (!ax_image_annotator_)
+      if (!ax_image_annotator_) {
         CreateAXImageAnnotator();
+        // Walk the tree to discover images, and mark them dirty so that
+        // they get added to the annotator.
+        MarkAllAXObjectsDirty(ax::mojom::Role::kImage);
+      }
       break;
   }
 }
@@ -878,6 +882,24 @@ void RenderAccessibilityImpl::StartOrStopLabelingImages(ui::AXMode old_mode,
     tree_source_.RemoveImageAnnotator();
     ax_image_annotator_->Destroy();
     ax_image_annotator_.release();
+  }
+}
+
+void RenderAccessibilityImpl::MarkAllAXObjectsDirty(ax::mojom::Role role) {
+  ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
+  base::queue<WebAXObject> objs_to_explore;
+  objs_to_explore.push(tree_source_.GetRoot());
+  while (objs_to_explore.size()) {
+    WebAXObject obj = objs_to_explore.front();
+    objs_to_explore.pop();
+
+    if (obj.Role() == role)
+      MarkWebAXObjectDirty(obj, /* subtree */ false);
+
+    std::vector<blink::WebAXObject> children;
+    tree_source_.GetChildren(obj, &children);
+    for (size_t i = 0; i < children.size(); ++i)
+      objs_to_explore.push(children[i]);
   }
 }
 
