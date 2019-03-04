@@ -1276,9 +1276,10 @@ void ShapeResult::UpdateStartIndex() {
 float ShapeResult::LineLeftBounds() const {
   DCHECK(!runs_.IsEmpty());
   const RunInfo& run = *runs_.front();
+  if (run.glyph_data_.IsEmpty())
+    return 0.0f;
   const bool is_horizontal_run = run.IsHorizontal();
   const SimpleFontData& font_data = *run.font_data_;
-  DCHECK(!run.glyph_data_.IsEmpty()) << *this;
   const unsigned character_index = run.glyph_data_.front().character_index;
   GlyphBoundsAccumulator bounds(0.f);
   for (const auto& glyph : run.glyph_data_) {
@@ -1297,9 +1298,10 @@ float ShapeResult::LineLeftBounds() const {
 float ShapeResult::LineRightBounds() const {
   DCHECK(!runs_.IsEmpty());
   const RunInfo& run = *runs_.back();
+  if (run.glyph_data_.IsEmpty())
+    return 0.0f;
   const bool is_horizontal_run = run.IsHorizontal();
   const SimpleFontData& font_data = *run.font_data_;
-  DCHECK(!run.glyph_data_.IsEmpty()) << *this;
   const unsigned character_index = run.glyph_data_.back().character_index;
   GlyphBoundsAccumulator bounds(width_);
   for (const auto& glyph : base::Reversed(run.glyph_data_)) {
@@ -1379,7 +1381,6 @@ unsigned ShapeResult::CopyRangeInternal(unsigned run_index,
           : target->EndIndex() - std::max(start_offset, StartIndex());
   unsigned target_run_size_before = target->runs_.size();
   float total_width = 0;
-  //run_index = 0;
   for (; run_index < runs_.size(); run_index++) {
     const auto& run = runs_[run_index];
     unsigned run_start = run->start_index_;
