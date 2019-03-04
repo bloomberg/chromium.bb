@@ -231,16 +231,16 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacter', function() {
 
           .call(moveByChar)
           .expectSpeech('i')
-          .expectSpeech('Bold start')
+          .expectSpeech('Bold')
           .expectBraille(lineText, { startIndex: 5, endIndex: 5 })
 
           .call(moveByChar)
           .expectSpeech('s')
-          .expectSpeech('Bold end')
           .expectBraille(lineText, { startIndex: 6, endIndex: 6 })
 
           .call(moveByChar)
           .expectSpeech(' ')
+          .expectSpeech('Not bold')
           .expectBraille(lineText, { startIndex: 7, endIndex: 7 })
 
           .call(moveByChar)
@@ -262,11 +262,12 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterAllAttributes', function(
   this.runWithLoadedTree(function() {/*!
     <div role="textbox" contenteditable>
       <p style="font-size:20px; font-family:times">
-        <b style="color:#ff0000">Move</b> <i>through</i>
-        <u style="font-family:georgia">text</u> by
-        <strike style="font-size:12px; color:#0000ff">character</strike> test
+        <b style="color:#ff0000">Move</b> <i>through</i> <u style="font-family:georgia">text</u>
+        by <strike style="font-size:12px; color:#0000ff">character</strike>
+        <a href="#">test</a>!
       </p>
     </div>
+
     <button id="go">Go</button>
 
     <script>
@@ -279,24 +280,30 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterAllAttributes', function(
     var input = root.find({role: RoleType.TEXT_FIELD});
     var go = root.find({role: RoleType.BUTTON});
     var moveByChar = go.doDefault.bind(go);
-    var lineText = 'Move through text by character test mled';
+    var lineText = 'Move through text by character test! mled';
+    var lineOnLinkText = 'Move through text by character test lnk ! mled';
 
     this.listenOnce(input, chrome.automation.EventType.FOCUS, function() {
       mockFeedback.call(moveByChar)
-          .expectSpeech('o').expectBraille(lineText, { startIndex: 1, endIndex: 1 })
+          .expectSpeech('o')
+          .expectSpeech('Size 20')
+          .expectSpeech('Red, 100% opacity.')
+          .expectSpeech('Bold')
+          .expectSpeech('Font times')
+          .expectBraille(lineText, { startIndex: 1, endIndex: 1 })
           .call(moveByChar)
           .expectSpeech('v').expectBraille(lineText, { startIndex: 2, endIndex: 2 })
           .call(moveByChar)
           .expectSpeech('e')
-          .expectSpeech('Bold end')
           .expectBraille(lineText, { startIndex: 3, endIndex: 3 })
           .call(moveByChar)
           .expectSpeech(' ')
-          .expectSpeech('Black, 100% opacity. start')
+          .expectSpeech('Black, 100% opacity.')
+          .expectSpeech('Not bold')
           .expectBraille(lineText, { startIndex: 4, endIndex: 4 })
           .call(moveByChar)
           .expectSpeech('t')
-          .expectSpeech('Italic start')
+          .expectSpeech('Italic')
           .expectBraille(lineText, { startIndex: 5, endIndex: 5 })
           .call(moveByChar)
           .expectSpeech('h').expectBraille(lineText, { startIndex: 6, endIndex: 6 })
@@ -310,14 +317,15 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterAllAttributes', function(
           .expectSpeech('g').expectBraille(lineText, { startIndex: 10, endIndex: 10 })
           .call(moveByChar)
           .expectSpeech('h')
-          .expectSpeech('Italic end')
           .expectBraille(lineText, { startIndex: 11, endIndex: 11 })
           .call(moveByChar)
-          .expectSpeech(' ').expectBraille(lineText, { startIndex: 12, endIndex: 12 })
+          .expectSpeech(' ')
+          .expectSpeech('Not italic')
+          .expectBraille(lineText, { startIndex: 12, endIndex: 12 })
           .call(moveByChar)
           .expectSpeech('t')
-          .expectSpeech('Underline start')
-          .expectSpeech('georgia start')
+          .expectSpeech('Underline')
+          .expectSpeech('Font georgia')
           .expectBraille(lineText, { startIndex: 13, endIndex: 13 })
           .call(moveByChar)
           .expectSpeech('e').expectBraille(lineText, { startIndex: 14, endIndex: 14 })
@@ -325,11 +333,11 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterAllAttributes', function(
           .expectSpeech('x').expectBraille(lineText, { startIndex: 15, endIndex: 15 })
           .call(moveByChar)
           .expectSpeech('t')
-          .expectSpeech('Underline end')
           .expectBraille(lineText, { startIndex: 16, endIndex: 16 })
           .call(moveByChar)
           .expectSpeech(' ')
-          .expectSpeech('times start')
+          .expectSpeech('Not underline')
+          .expectSpeech('Font times')
           .expectBraille(lineText, { startIndex: 17, endIndex: 17 })
           .call(moveByChar)
           .expectSpeech('b').expectBraille(lineText, { startIndex: 18, endIndex: 18 })
@@ -339,9 +347,9 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterAllAttributes', function(
           .expectSpeech(' ').expectBraille(lineText, { startIndex: 20, endIndex: 20 })
           .call(moveByChar)
           .expectSpeech('c')
-          .expectSpeech('Size 12 start')
-          .expectSpeech('Blue, 100% opacity. start')
-          .expectSpeech('Strike through start')
+          .expectSpeech('Size 12')
+          .expectSpeech('Blue, 100% opacity.')
+          .expectSpeech('Line through')
           .expectBraille(lineText, { startIndex: 21, endIndex: 21 })
           .call(moveByChar)
           .expectSpeech('h').expectBraille(lineText, { startIndex: 22, endIndex: 22 })
@@ -359,21 +367,31 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterAllAttributes', function(
           .expectSpeech('e').expectBraille(lineText, { startIndex: 28, endIndex: 28 })
           .call(moveByChar)
           .expectSpeech('r')
-          .expectSpeech('Strike through end')
           .expectBraille(lineText, { startIndex: 29, endIndex: 29 })
           .call(moveByChar)
           .expectSpeech(' ')
-          .expectSpeech('Size 20 start')
-          .expectSpeech('Black, 100% opacity. start')
+          .expectSpeech('Size 20')
+          .expectSpeech('Black, 100% opacity.')
+          .expectSpeech('Not line through')
           .expectBraille(lineText, { startIndex: 30, endIndex: 30 })
           .call(moveByChar)
-          .expectSpeech('t').expectBraille(lineText, { startIndex: 31, endIndex: 31 })
+          .expectSpeech('t')
+          .expectSpeech('Blue, 100% opacity.')
+          .expectSpeech('Link')
+          .expectSpeech('Underline')
+          .expectBraille(lineOnLinkText, { startIndex: 31, endIndex: 31 })
           .call(moveByChar)
-          .expectSpeech('e').expectBraille(lineText, { startIndex: 32, endIndex: 32 })
+          .expectSpeech('e').expectBraille(lineOnLinkText, { startIndex: 32, endIndex: 32 })
           .call(moveByChar)
-          .expectSpeech('s').expectBraille(lineText, { startIndex: 33, endIndex: 33 })
+          .expectSpeech('s').expectBraille(lineOnLinkText, { startIndex: 33, endIndex: 33 })
           .call(moveByChar)
-          .expectSpeech('t').expectBraille(lineText, { startIndex: 34, endIndex: 34 })
+          .expectSpeech('t').expectBraille(lineOnLinkText, { startIndex: 34, endIndex: 34 })
+          .call(moveByChar)
+          .expectSpeech('!')
+          .expectSpeech('Black, 100% opacity.')
+          .expectSpeech('Not link')
+          .expectSpeech('Not underline')
+          .expectBraille(lineText, {startIndex: 35, endIndex: 35 })
 
           .replay();
     });
@@ -487,8 +505,9 @@ TEST_F('ChromeVoxEditingTest', 'RichTextLinkOutput', function() {
           .expectBraille(lineText, { startIndex: 1, endIndex: 1 })
           .call(moveByChar)
           .expectSpeech('t')
-          .expectSpeech('Link start')
-          .expectSpeech('Underline start')
+          .expectSpeech('Blue, 100% opacity.')
+          .expectSpeech('Link')
+          .expectSpeech('Underline')
           .expectBraille(lineOnLinkText, { startIndex: 2, endIndex: 2 })
           .call(moveByChar)
           .expectSpeech('e')
@@ -498,8 +517,6 @@ TEST_F('ChromeVoxEditingTest', 'RichTextLinkOutput', function() {
           .expectBraille(lineOnLinkText, { startIndex: 4, endIndex: 4 })
           .call(moveByChar)
           .expectSpeech('t')
-          .expectSpeech('Link end')
-          .expectSpeech('Underline end')
           .expectBraille(lineOnLinkText, { startIndex: 5, endIndex: 5 })
 
           .replay();
