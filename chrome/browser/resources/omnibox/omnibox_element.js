@@ -38,9 +38,8 @@ class OmniboxElement extends HTMLElement {
   }
 
   /**
-   * Get an element that's known to exist by query. We use this instead of just
-   * calling querySelector because this lets us satisfy the JSCompiler type
-   * system.
+   * Get an element that's known to exist by query. Unlike querySelector, this
+   * satisfies the JSCompiler type system.
    * @private
    * @param {string} query
    * @param {!Node=} context

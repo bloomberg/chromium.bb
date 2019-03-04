@@ -581,13 +581,13 @@ cr.define('omnibox_output', function() {
     constructor() {
       super();
 
-      // We use margin-right on .pair-item's to separate them. To compensate,
+      // margin-right is used on .pair-item's to separate them. To compensate,
       // .pair-container has negative margin-right. This means .pair-container's
       // overflow their parent. Overflowing a table cell is problematic, as 1)
       // scroll bars overlay adjacent cell, and 2) the page receives a
       // horizontal scroll bar when the right most column overflows. To avoid
-      // this, we ensure the parent of any element with negative margins (e.g.
-      // .pair-container) is not a table cell; hence, we introduce
+      // this, the parent of any element with negative margins (e.g.
+      // .pair-container) must not be a table cell; hence, the use of
       // scrollContainer_.
       // Flex gutters may provide a cleaner alternative once implemented.
       // https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Mastering_Wrapping_of_Flex_Items#Creating_gutters_between_items
@@ -691,16 +691,66 @@ cr.define('omnibox_output', function() {
 
     /** @private @override */
     render_() {
-      this.contents_.textContent = this.values_[1];
-      this.description_.textContent = this.values_[2];
-      this.answer_.textContent = this.values_[3];
-      this.imageUrl_.textContent = this.values_[0];
-      this.imageUrl_.href = this.values_[0];
+      // TODO (manukh) Wrap this line when Clang is updated,
+      // https://b.corp.google.com/126708256 .
+      const [image, contents, description, answer, contentsClassification, descriptionClassification] =
+          this.values_;
+      OutputAnswerProperty.renderClassifiedText_(
+          this.contents_, /** @type {string} */ (contents),
+          /** @type {!Array<!mojom.ACMatchClassification>} */
+          (contentsClassification));
+      OutputAnswerProperty.renderClassifiedText_(
+          this.description_, /** @type {string} */ (description),
+          /** @type {!Array<!mojom.ACMatchClassification>} */
+          (descriptionClassification));
+      this.answer_.textContent = answer;
+      this.imageUrl_.textContent = image;
+      this.imageUrl_.href = image;
     }
 
     /** @override @return {string} */
     get text() {
       return this.values_.join('.');
+    }
+
+    /**
+     * @private
+     * @param {!Element} container
+     * @param {string} string
+     * @param {!Array<!mojom.ACMatchClassification>} classes
+     */
+    static renderClassifiedText_(container, string, classes) {
+      clearChildren(container);
+      OutputAnswerProperty.classify(string + '\n', classes)
+          .map(
+              ({string, style}) => OutputJsonProperty.renderJsonWord(
+                  string, OutputAnswerProperty.styleToClasses_(style)))
+          .forEach(span => container.appendChild(span));
+    }
+
+    /**
+     * @param {string} string
+     * @param {!Array<!mojom.ACMatchClassification>} classes
+     * @return {!Array<{string: string, style: number}>}
+     */
+    static classify(string, classes) {
+      return classes.map(({offset, style}, i) => {
+        const end = classes[i + 1] ? classes[i + 1].offset : string.length;
+        return {string: string.substring(offset, end), style};
+      });
+    }
+
+    /**
+     * @private
+     * @param {number} style
+     * @return {!Array<string>}
+     */
+    static styleToClasses_(style) {
+      // Maps the bitmask enum AutocompleteMatch::ACMatchClassification::Style
+      // to strings. See autocomplete_match.h for more details.
+      // E.g., maps the style 5 to classes ['style-url', 'style-dim'].
+      return ['style-url', 'style-match', 'style-dim'].filter(
+          (_, i) => (style >> i) % 2);
     }
   }
 
@@ -739,7 +789,7 @@ cr.define('omnibox_output', function() {
       this.text.split(/("(?:[^"\\]|\\.)*":?|\w+)/)
           .map(word => {
             return OutputJsonProperty.renderJsonWord(
-                word, OutputJsonProperty.classifyJsonWord(word));
+                word, [OutputJsonProperty.classifyJsonWord(word)]);
           })
           .forEach(jsonSpan => this.pre_.appendChild(jsonSpan));
     }
@@ -751,14 +801,12 @@ cr.define('omnibox_output', function() {
 
     /**
      * @param {string} word
-     * @param {string|undefined} cls
+     * @param {!Array<string>} classes
      * @return {!Element}
      */
-    static renderJsonWord(word, cls) {
+    static renderJsonWord(word, classes) {
       const span = document.createElement('span');
-      if (cls) {
-        span.classList.add(cls);
-      }
+      span.classList.add(...classes);
       span.textContent = word;
       return span;
     }
@@ -792,9 +840,9 @@ cr.define('omnibox_output', function() {
       clearChildren(this.pre_);
       this.value.forEach(({key, value}) => {
         this.pre_.appendChild(
-            OutputJsonProperty.renderJsonWord(key + ': ', 'key'));
+            OutputJsonProperty.renderJsonWord(key + ': ', ['key']));
         this.pre_.appendChild(
-            OutputJsonProperty.renderJsonWord(value + '\n', 'number'));
+            OutputJsonProperty.renderJsonWord(value + '\n', ['number']));
       });
     }
 
@@ -888,7 +936,7 @@ cr.define('omnibox_output', function() {
      * of digits, or non alpha characters.
      * E.g., `https://google.com/the-dog-ate-134pies` will be split to:
      * https, :, /, /, google, ., com, /, the, -,  dog, -, ate, -, 134, pies
-     * We don't use `Array.split`, because we want to group digits, e.g. 134.
+     * This differs from `Array.split` in that this groups digits, e.g. 134.
      * @private
      * @param {string} text
      * @return {!Array<string>}
@@ -959,9 +1007,14 @@ cr.define('omnibox_output', function() {
     new Column(
         ['Contents', 'Description', 'Answer'], '', 'contentsAndDescription',
         true,
-        'Contents & Description & Answer\nThe text that is presented ' +
-            'identifying the result. / The page title of the result.',
-        ['image', 'contents', 'description', 'answer'], OutputAnswerProperty),
+        'Contents & Description & Answer\nURL classifications are styled ' +
+            'blue.\nMATCH classifications are styled bold.\nDIM ' +
+            'classifications are styled with a gray background.',
+        [
+          'image', 'contents', 'description', 'answer', 'contentsClass',
+          'descriptionClass'
+        ],
+        OutputAnswerProperty),
     new Column(
         ['D'], '', 'allowedToBeDefaultMatch', true,
         'Can be Default\nA green checkmark indicates that the result can be ' +
