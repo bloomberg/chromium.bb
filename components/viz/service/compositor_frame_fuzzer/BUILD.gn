@@ -29,6 +29,7 @@ action_foreach("generate_seed_corpus") {
   sources = [
     "$input_dir/1_quad_renderpass.asciipb",
     "$input_dir/2_quad_renderpass.asciipb",
+    "$input_dir/solid_color_tiled_background_with_2_quads_on_top.asciipb",
   ]
   outputs = [
     "$seed_corpus_dir/{{source_name_part}}.pb",
