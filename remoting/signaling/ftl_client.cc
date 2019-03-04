@@ -34,9 +34,15 @@ FtlClient::FtlClient(OAuthTokenGetter* token_getter) : weak_factory_(this) {
   auto channel = grpc::CreateChannel(kFtlServerEndpoint, channel_creds);
   peer_to_peer_stub_ = PeerToPeer::NewStub(channel);
   registration_stub_ = Registration::NewStub(channel);
+  messaging_stub_ = Messaging::NewStub(channel);
 }
 
 FtlClient::~FtlClient() = default;
+
+void FtlClient::SetAuthToken(const std::string& auth_token) {
+  DCHECK(!auth_token.empty());
+  auth_token_ = auth_token;
+}
 
 void FtlClient::GetIceServer(RpcCallback<ftl::GetICEServerResponse> callback) {
   ftl::GetICEServerRequest request;
@@ -71,6 +77,32 @@ void FtlClient::SignInGaia(const std::string& device_id,
   GetOAuthTokenAndExecuteRpc(
       base::BindOnce(&Registration::Stub::AsyncSignInGaia,
                      base::Unretained(registration_stub_.get())),
+      request, std::move(callback));
+}
+
+void FtlClient::PullMessages(RpcCallback<ftl::PullMessagesResponse> callback) {
+  ftl::PullMessagesRequest request;
+  request.set_allocated_header(BuildRequestHeader().release());
+
+  GetOAuthTokenAndExecuteRpc(
+      base::BindOnce(&Messaging::Stub::AsyncPullMessages,
+                     base::Unretained(messaging_stub_.get())),
+      request, std::move(callback));
+}
+
+void FtlClient::AckMessages(const std::vector<ftl::ReceiverMessage>& messages,
+                            RpcCallback<ftl::AckMessagesResponse> callback) {
+  ftl::AckMessagesRequest request;
+  request.set_allocated_header(BuildRequestHeader().release());
+
+  for (auto& message : messages) {
+    ftl::ReceiverMessage* new_message = request.add_messages();
+    *new_message = message;
+  }
+
+  GetOAuthTokenAndExecuteRpc(
+      base::BindOnce(&Messaging::Stub::AsyncAckMessages,
+                     base::Unretained(messaging_stub_.get())),
       request, std::move(callback));
 }
 
@@ -113,11 +145,13 @@ std::unique_ptr<grpc::ClientContext> FtlClient::CreateClientContext() {
   return context;
 }
 
-// static
 std::unique_ptr<ftl::RequestHeader> FtlClient::BuildRequestHeader() {
   auto header = std::make_unique<ftl::RequestHeader>();
   header->set_request_id(base::GenerateGUID());
   header->set_app(kChromotingAppIdentifier);
+  if (!auth_token_.empty()) {
+    header->set_auth_token_payload(auth_token_);
+  }
   ftl::ClientInfo* client_info = header->mutable_client_info();
   client_info->set_api_version(ftl::ApiVersion_Value_V4);
   client_info->set_version_major(VERSION_MAJOR);

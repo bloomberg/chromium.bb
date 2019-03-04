@@ -50,6 +50,14 @@ class FtlSignalingPlayground {
                             grpc::Status status,
                             const ftl::SignInGaiaResponse& response);
 
+  void PullMessages(base::OnceClosure on_done);
+  void OnPullMessagesResponse(base::OnceClosure on_done,
+                              grpc::Status status,
+                              const ftl::PullMessagesResponse& response);
+  void OnAckMessagesResponse(base::OnceClosure on_done,
+                             grpc::Status status,
+                             const ftl::AckMessagesResponse& response);
+
   std::unique_ptr<test::TestTokenStorage> storage_;
   std::unique_ptr<TestOAuthTokenGetterFactory> token_getter_factory_;
   std::unique_ptr<OAuthTokenGetter> token_getter_;

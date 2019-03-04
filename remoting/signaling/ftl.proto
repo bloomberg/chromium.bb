@@ -128,6 +128,28 @@ message AuthToken {
   int64 expires_in = 2;
 }
 
+message InboxMessage {
+  enum MessageType {
+    UNKNOWN = 0;
+    CHROMOTING_MESSAGE = 29;
+  }
+
+  string message_id = 1;
+  MessageType message_type = 2;
+  Id sender_id = 8;
+  Id receiver_id = 9;
+  bytes message = 12;
+}
+
+message ReceiverMessage {
+  string message_id = 1;
+  Id receiver_id = 2;
+}
+
+message ChromotingMessage {
+  string message = 1;
+}
+
 // Requests and responses
 
 message GetICEServerRequest {
@@ -152,4 +174,23 @@ message SignInGaiaResponse {
   ResponseHeader header = 1;
   bytes registration_id = 2;
   AuthToken auth_token = 4;
+}
+
+message PullMessagesRequest {
+  RequestHeader header = 1;
+}
+
+message PullMessagesResponse {
+  ResponseHeader header = 1;
+  repeated InboxMessage messages = 2;
+  bool pulled_all = 3;
+}
+
+message AckMessagesRequest {
+  RequestHeader header = 1;
+  repeated ReceiverMessage messages = 4;
+}
+
+message AckMessagesResponse {
+  ResponseHeader header = 1;
 }
