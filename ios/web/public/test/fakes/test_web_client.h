@@ -25,9 +25,16 @@ class TestWebClient : public web::WebClient {
 
   // WebClient implementation.
   void AddAdditionalSchemes(Schemes* schemes) const override;
+
   // Returns true for kTestWebUIScheme and kTestNativeContentScheme URL schemes.
   bool IsAppSpecificURL(const GURL& url) const override;
+
   std::string GetUserAgent(UserAgentType type) const override;
+
+  // Returns |plugin_not_supported_text_| as the text to be displayed for an
+  // unsupported plugin.
+  base::string16 GetPluginNotSupportedText() const override;
+
   base::RefCountedMemory* GetDataResourceBytes(int id) const override;
   NSString* GetDocumentStartScriptForMainFrame(
       BrowserState* browser_state) const override;
@@ -37,6 +44,9 @@ class TestWebClient : public web::WebClient {
                              const GURL&,
                              bool overridable,
                              const base::Callback<void(bool)>&) override;
+
+  // Sets |plugin_not_supported_text_|.
+  void SetPluginNotSupportedText(const base::string16& text);
 
   // Changes Early Page Script for testing purposes.
   void SetEarlyPageScript(NSString* page_script);
@@ -55,6 +65,7 @@ class TestWebClient : public web::WebClient {
   bool last_cert_error_overridable() { return last_cert_error_overridable_; }
 
  private:
+  base::string16 plugin_not_supported_text_;
   NSString* early_page_script_ = nil;
   // Last arguments passed to AllowCertificateError.
   int last_cert_error_code_ = 0;

@@ -32,6 +32,10 @@ bool TestWebClient::IsAppSpecificURL(const GURL& url) const {
   return url.SchemeIs(kTestWebUIScheme) ||
          url.SchemeIs(kTestNativeContentScheme) ||
          url.SchemeIs(kTestAppSpecificScheme);
+};
+
+base::string16 TestWebClient::GetPluginNotSupportedText() const {
+  return plugin_not_supported_text_;
 }
 
 std::string TestWebClient::GetUserAgent(UserAgentType type) const {
@@ -49,6 +53,10 @@ base::RefCountedMemory* TestWebClient::GetDataResourceBytes(
 NSString* TestWebClient::GetDocumentStartScriptForMainFrame(
     BrowserState* browser_state) const {
   return early_page_script_ ? early_page_script_ : @"";
+}
+
+void TestWebClient::SetPluginNotSupportedText(const base::string16& text) {
+  plugin_not_supported_text_ = text;
 }
 
 void TestWebClient::SetEarlyPageScript(NSString* page_script) {
