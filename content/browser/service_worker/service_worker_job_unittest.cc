@@ -195,14 +195,11 @@ ServiceWorkerJobTest::FindRegistrationForScope(
 }
 
 ServiceWorkerProviderHost* ServiceWorkerJobTest::CreateControllee() {
-  static int s_next_provider_id = 1;
   remote_endpoints_.emplace_back();
-  std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
-      33 /* dummy render process id */, s_next_provider_id++,
-      true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
-      &remote_endpoints_.back());
+  base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
+      33 /* dummy render process id */, true /* is_parent_frame_secure */,
+      helper_->context()->AsWeakPtr(), &remote_endpoints_.back());
   auto* host_ptr = host.get();
-  helper_->context()->AddProviderHost(std::move(host));
   return host_ptr;
 }
 

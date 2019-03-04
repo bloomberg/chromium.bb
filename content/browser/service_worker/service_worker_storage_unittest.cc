@@ -1467,10 +1467,9 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   registration_->SetActiveVersion(registration_->waiting_version());
   storage()->UpdateToActiveState(registration_.get(), base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-  std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
-      33 /* dummy render process id */, 1 /* dummy provider_id */,
-      true /* is_parent_frame_secure */, context()->AsWeakPtr(),
-      &remote_endpoint);
+  base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
+      33 /* dummy render process id */, true /* is_parent_frame_secure */,
+      context()->AsWeakPtr(), &remote_endpoint);
   registration_->active_version()->AddControllee(host.get());
 
   bool was_called = false;
@@ -1498,7 +1497,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, true));
 
   // Removing the controllee should cause the resources to be deleted.
-  registration_->active_version()->RemoveControllee(host.get()->client_uuid());
+  registration_->active_version()->RemoveControllee(host->client_uuid());
   registration_->active_version()->Doom();
   base::RunLoop().RunUntilIdle();
   verify_ids.clear();
@@ -1516,10 +1515,9 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   registration_->SetWaitingVersion(nullptr);
   storage()->UpdateToActiveState(registration_.get(), base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-  std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
-      33 /* dummy render process id */, 1 /* dummy provider_id */,
-      true /* is_parent_frame_secure */, context()->AsWeakPtr(),
-      &remote_endpoint);
+  base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
+      33 /* dummy render process id */, true /* is_parent_frame_secure */,
+      context()->AsWeakPtr(), &remote_endpoint);
   registration_->active_version()->AddControllee(host.get());
 
   bool was_called = false;
@@ -1676,10 +1674,9 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   registration_->SetActiveVersion(registration_->waiting_version());
   storage()->UpdateToActiveState(registration_.get(), base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-  std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
-      33 /* dummy render process id */, 1 /* dummy provider_id */,
-      true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
-      &remote_endpoint);
+  base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
+      33 /* dummy render process id */, true /* is_parent_frame_secure */,
+      helper_->context()->AsWeakPtr(), &remote_endpoint);
   registration_->active_version()->AddControllee(host.get());
 
   bool was_called = false;
@@ -1720,7 +1717,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
 
   // Removing the controllee should cause the old version's resources to be
   // deleted.
-  registration_->active_version()->RemoveControllee(host.get()->client_uuid());
+  registration_->active_version()->RemoveControllee(host->client_uuid());
   registration_->active_version()->Doom();
   base::RunLoop().RunUntilIdle();
   verify_ids.clear();

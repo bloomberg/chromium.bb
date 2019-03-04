@@ -33,8 +33,6 @@
 namespace content {
 namespace service_worker_request_handler_unittest {
 
-int kMockProviderId = 1;
-
 class ServiceWorkerRequestHandlerTest : public testing::Test {
  public:
   ServiceWorkerRequestHandlerTest()
@@ -54,13 +52,9 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
  protected:
   void InitializeProviderHostForWindow() {
     // An empty host.
-    std::unique_ptr<ServiceWorkerProviderHost> host =
-        CreateProviderHostForWindow(helper_->mock_render_process_id(),
-                                    kMockProviderId,
-                                    true /* is_parent_frame_secure */,
-                                    context()->AsWeakPtr(), &remote_endpoint_);
-    provider_host_ = host->AsWeakPtr();
-    context()->AddProviderHost(std::move(host));
+    provider_host_ = CreateProviderHostForWindow(
+        helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
+        context()->AsWeakPtr(), &remote_endpoint_);
   }
 
   static std::unique_ptr<ServiceWorkerNavigationHandleCore>
@@ -99,8 +93,8 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
                          ResourceType resource_type) {
     ServiceWorkerRequestHandler::InitializeHandler(
         request, context_wrapper(), &blob_storage_context_,
-        helper_->mock_render_process_id(), kMockProviderId, skip_service_worker,
-        network::mojom::FetchRequestMode::kNoCors,
+        helper_->mock_render_process_id(), provider_host_->provider_id(),
+        skip_service_worker, network::mojom::FetchRequestMode::kNoCors,
         network::mojom::FetchCredentialsMode::kOmit,
         network::mojom::FetchRedirectMode::kFollow,
         std::string() /* integrity */, false /* keepalive */, resource_type,

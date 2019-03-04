@@ -100,9 +100,8 @@ blink::mojom::ServiceWorkerProviderHostInfoPtr CreateProviderHostInfoForWindow(
     int provider_id,
     int route_id);
 
-std::unique_ptr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
+base::WeakPtr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
     int process_id,
-    int provider_id,
     bool is_parent_frame_secure,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerRemoteProviderEndpoint* output_endpoint);

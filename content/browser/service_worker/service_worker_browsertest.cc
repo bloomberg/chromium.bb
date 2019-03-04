@@ -690,16 +690,13 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   void AddControlleeOnIOThread() {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     remote_endpoints_.emplace_back();
-    std::unique_ptr<ServiceWorkerProviderHost> host =
-        CreateProviderHostForWindow(
-            33 /* dummy render process id */, 1 /* dummy provider_id */,
-            true /* is_parent_frame_secure */,
-            wrapper()->context()->AsWeakPtr(), &remote_endpoints_.back());
+    base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
+        33 /* dummy render process id */, true /* is_parent_frame_secure */,
+        wrapper()->context()->AsWeakPtr(), &remote_endpoints_.back());
     const GURL url = embedded_test_server()->GetURL("/service_worker/host");
     host->UpdateUrls(url, url);
     host->SetControllerRegistration(registration_,
                                     false /* notify_controllerchange */);
-    wrapper()->context()->AddProviderHost(std::move(host));
   }
 
   void AddWaitingWorkerOnIOThread(const std::string& worker_url) {

@@ -38,8 +38,6 @@
 namespace content {
 namespace service_worker_controllee_request_handler_unittest {
 
-int kMockProviderId = 1;
-
 class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
  public:
   class ServiceWorkerRequestTestResources {
@@ -140,13 +138,9 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
 
     // An empty host.
     remote_endpoints_.emplace_back();
-    std::unique_ptr<ServiceWorkerProviderHost> host =
-        CreateProviderHostForWindow(
-            helper_->mock_render_process_id(), kMockProviderId,
-            true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
-            &remote_endpoints_.back());
-    provider_host_ = host->AsWeakPtr();
-    context()->AddProviderHost(std::move(host));
+    provider_host_ = CreateProviderHostForWindow(
+        helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
+        helper_->context()->AsWeakPtr(), &remote_endpoints_.back());
   }
 
   void TearDown() override {
@@ -331,7 +325,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
   // Shouldn't crash if the ProviderHost is deleted prior to completion of
   // the database lookup.
   context()->RemoveProviderHost(helper_->mock_render_process_id(),
-                                kMockProviderId);
+                                provider_host_->provider_id());
   EXPECT_FALSE(provider_host_.get());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(sw_job->ShouldFallbackToNetwork());

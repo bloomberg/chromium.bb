@@ -167,18 +167,21 @@ blink::mojom::ServiceWorkerProviderHostInfoPtr CreateProviderHostInfoForWindow(
       nullptr /* client_ptr_info */);
 }
 
-std::unique_ptr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
+base::WeakPtr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
     int process_id,
-    int provider_id,
     bool is_parent_frame_secure,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerRemoteProviderEndpoint* output_endpoint) {
+  base::WeakPtr<ServiceWorkerProviderHost> host =
+      ServiceWorkerProviderHost::PreCreateNavigationHost(
+          context, is_parent_frame_secure, base::NullCallback());
   blink::mojom::ServiceWorkerProviderHostInfoPtr info =
-      CreateProviderHostInfoForWindow(provider_id, 1 /* route_id */);
+      CreateProviderHostInfoForWindow(host->provider_id(), 1 /* route_id */);
   info->is_parent_frame_secure = is_parent_frame_secure;
   output_endpoint->BindWithProviderHostInfo(&info);
-  return ServiceWorkerProviderHost::Create(process_id, std::move(info),
-                                           std::move(context));
+
+  host->CompleteNavigationInitialized(process_id, std::move(info));
+  return host;
 }
 
 base::WeakPtr<ServiceWorkerProviderHost>
