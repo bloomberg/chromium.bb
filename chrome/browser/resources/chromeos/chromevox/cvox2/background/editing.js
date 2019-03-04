@@ -281,10 +281,6 @@ function AutomationRichEditableText(node) {
   this.updateIntraLineState_(this.line_);
 
   /**
-   * @private {string|undefined}
-   */
-  this.fontFamily_;
-  /**
    * @private {number|undefined}
    */
   this.fontSize_;
@@ -292,6 +288,38 @@ function AutomationRichEditableText(node) {
    * @private {string|undefined}
    */
   this.fontColor_;
+  /**
+   * @private {boolean|undefined}
+   */
+  this.linked_;
+  /**
+   * @private {boolean|undefined}
+   */
+  this.subscript_;
+  /**
+   * @private {boolean|undefined}
+   */
+  this.superscript_;
+  /**
+   * @private {boolean}
+   */
+  this.bold_ = false;
+  /**
+   * @private {boolean}
+   */
+  this.italic_ = false;
+  /**
+   * @private {boolean}
+   */
+  this.underline_ = false;
+  /**
+   * @private {boolean}
+   */
+  this.lineThrough_ = false;
+  /**
+   * @private {string|undefined}
+   */
+  this.fontFamily_;
 }
 
 AutomationRichEditableText.prototype = {
@@ -420,13 +448,7 @@ AutomationRichEditableText.prototype = {
         if (markerEndIndex > -1)
           this.speakTextMarker_(container.markerTypes[markerEndIndex], true);
       }
-
-      // Start of the container.
-      if (cur.containerStartOffset == cur.startOffset)
-        this.speakTextStyle_(container);
-      else if (cur.containerEndOffset == cur.endOffset)
-        this.speakTextStyle_(container, true);
-
+      this.speakTextStyle_(container);
       return;
     }
 
@@ -603,62 +625,69 @@ AutomationRichEditableText.prototype = {
 
   /**
    * @param {!AutomationNode} style
-   * @param {boolean=} opt_end
    * @private
    */
-  speakTextStyle_: function(style, opt_end) {
+  speakTextStyle_: function(style) {
     var msgs = [];
-    var fontFamily = style.fontFamily;
     var fontSize = style.fontSize;
     var fontColor = Color.getColorDescription(style.color);
-    var msg;
+    var linked = style.state[StateType.LINKED];
+    var subscript = style.state.subscript;
+    var superscript = style.state.superscript;
+    var bold = style.bold;
+    var italic = style.italic;
+    var underline = style.underline;
+    var lineThrough = style.lineThrough;
+    var fontFamily = style.fontFamily;
 
+    // Only report text style attributes if they change.
     if (fontSize && (fontSize !== this.fontSize_)) {
       this.fontSize_ = fontSize;
-      msg = opt_end ? 'font_size_end' : 'font_size_start';
-      msgs.push({'msg': msg, 'opt_subs': [this.fontSize_]});
+      msgs.push({msg: 'font_size', opt_subs: [this.fontSize_]});
     }
     if (fontColor && (fontColor !== this.fontColor_)) {
       this.fontColor_ = fontColor;
-      msg = opt_end ? 'font_color_end' : 'font_color_start';
-      msgs.push({'msg': msg, 'opt_subs': [this.fontColor_]});
+      msgs.push({msg: 'font_color', opt_subs: [this.fontColor_]});
     }
-    if (style.state.linked) {
-      msgs.push(opt_end ? {'msg': 'link_end'} : {'msg': 'link_start'});
+    if (linked !== this.linked_) {
+      this.linked_ = linked;
+      msgs.push(this.linked_ ? {msg: 'link'} : {msg: 'not_link'});
     }
-    if (style.subscript) {
+    if (style.subscript !== this.subscript_) {
+      this.subscript_ = subscript;
+      msgs.push(this.subscript_ ? {msg: 'subscript'} : {msg: 'not_subscript'});
+    }
+    if (style.superscript !== this.superscript_) {
+      this.superscript_ = superscript;
       msgs.push(
-          opt_end ? {'msg': 'subscript_end'} : {'msg': 'subscript_start'});
+          this.superscript_ ? {msg: 'superscript'} : {msg: 'not_superscript'});
     }
-    if (style.superscript) {
+    if (bold !== this.bold_) {
+      this.bold_ = bold;
+      msgs.push(this.bold_ ? {msg: 'bold'} : {msg: 'not_bold'});
+    }
+    if (italic !== this.italic_) {
+      this.italic_ = italic;
+      msgs.push(this.italic_ ? {msg: 'italic'} : {msg: 'not_italic'});
+    }
+    if (underline !== this.underline_) {
+      this.underline_ = underline;
+      msgs.push(this.underline_ ? {msg: 'underline'} : {msg: 'not_underline'});
+    }
+    if (lineThrough !== this.lineThrough_) {
+      this.lineThrough_ = lineThrough;
       msgs.push(
-          opt_end ? {'msg': 'superscript_end'} : {'msg': 'superscript_start'});
-    }
-    if (style.bold) {
-      msgs.push(opt_end ? {'msg': 'bold_end'} : {'msg': 'bold_start'});
-    }
-    if (style.italic) {
-      msgs.push(opt_end ? {'msg': 'italic_end'} : {'msg': 'italic_start'});
-    }
-    if (style.underline) {
-      msgs.push(
-          opt_end ? {'msg': 'underline_end'} : {'msg': 'underline_start'});
-    }
-    if (style.lineThrough) {
-      msgs.push(
-          opt_end ? {'msg': 'line_through_end'} :
-                    {'msg': 'line_through_start'});
+          this.lineThrough_ ? {msg: 'linethrough'} : {msg: 'not_linethrough'});
     }
     if (fontFamily && (fontFamily !== this.fontFamily_)) {
       this.fontFamily_ = fontFamily;
-      msg = opt_end ? 'font_family_end' : 'font_family_start';
-      msgs.push({'msg': msg, 'opt_subs': [this.fontFamily_]});
+      msgs.push({msg: 'font_family', opt_subs: [this.fontFamily_]});
     }
 
     if (msgs.length) {
       msgs.forEach(function(obj) {
         cvox.ChromeVox.tts.speak(
-            Msgs.getMsg(obj['msg'], obj['opt_subs']), cvox.QueueMode.QUEUE,
+            Msgs.getMsg(obj.msg, obj.opt_subs), cvox.QueueMode.QUEUE,
             cvox.AbstractTts.PERSONALITY_ANNOTATION);
       });
     }

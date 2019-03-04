@@ -2989,80 +2989,58 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Spoken when a user navigates to the end of a text match from a find in page." name="IDS_CHROMEVOX_TEXT_MATCH_END">
         Text match end
       </message>
-      <message desc="Spoken when a user navigates to the beginning of subscript text." name="IDS_CHROMEVOX_SUBSCRIPT_START">
-        Subscript start
+
+      <message desc="Spoken to describe text that is superscript." name="IDS_CHROMEVOX_SUPERSCRIPT">
+        Superscript
       </message>
-      <message desc="Spoken when a user navigates to the end of subscript text." name="IDS_CHROMEVOX_SUBSCRIPT_END">
-        Subscript end
+      <message desc="Spoken to describe text that is not superscript." name="IDS_CHROMEVOX_NOT_SUPERSCRIPT">
+        Not superscript
       </message>
-      <message desc="Spoken when a user navigates to the beginning of superscript text." name="IDS_CHROMEVOX_SUPERSCRIPT_START">
-        Superscript start
+      <message desc="Spoken to describe text that is subscript." name="IDS_CHROMEVOX_SUBSCRIPT">
+        Subscript
       </message>
-      <message desc="Spoken when a user navigates to the end of superscript text." name="IDS_CHROMEVOX_SUPERSCRIPT_END">
-        Superscript end
-      </message>
-      <message desc="Spoken when a user navigates to the beginning of bolded text." name="IDS_CHROMEVOX_BOLD_START">
-        Bold start
-      </message>
-      <message desc="Spoken when a user navigates to the end of bolded text." name="IDS_CHROMEVOX_BOLD_END">
-        Bold end
-      </message>
-      <message desc="Spoken when a user navigates to the beginning of italic text." name="IDS_CHROMEVOX_ITALIC_START">
-        Italic start
-      </message>
-      <message desc="Spoken when a user navigates to the end of italic text." name="IDS_CHROMEVOX_ITALIC_END">
-        Italic end
-      </message>
-      <message desc="Spoken when a user navigates to the beginning of underline text." name="IDS_CHROMEVOX_UNDERLINE_START">
-        Underline start
-      </message>
-      <message desc="Spoken when a user navigates to the end of underline text." name="IDS_CHROMEVOX_UNDERLINE_END">
-        Underline end
-      </message>
-      <message desc="Spoken when a user navigates to the beginning of strike through text." name="IDS_CHROMEVOX_LINE_THROUGH_START">
-        Strike through start
-      </message>
-      <message desc="Spoken when a user navigates to the end of strike through text." name="IDS_CHROMEVOX_LINE_THROUGH_END">
-        Strike through end
+      <message desc="Spoken to describe text that is not subscript." name="IDS_CHROMEVOX_NOT_SUBSCRIPT">
+        Not subscript
       </message>
       <message desc="Spoken to describe bolded text." name="IDS_CHROMEVOX_BOLD">
         Bold
       </message>
+      <message desc="Spoken to describe non bolded text." name="IDS_CHROMEVOX_NOT_BOLD">
+        Not bold
+      </message>
       <message desc="Spoken to describe italicized text." name="IDS_CHROMEVOX_ITALIC">
         Italic
+      </message>
+      <message desc="Spoken to describe non italicized text." name="IDS_CHROMEVOX_NOT_ITALIC">
+        Not italic
       </message>
       <message desc="Spoken to describe underlined text." name="IDS_CHROMEVOX_UNDERLINE">
         Underline
       </message>
+      <message desc="Spoken to describe non underlined text." name="IDS_CHROMEVOX_NOT_UNDERLINE">
+        Not underline
+      </message>
       <message desc="Spoken to describe line-through text." name="IDS_CHROMEVOX_LINETHROUGH">
         Line through
       </message>
-      <message desc="Spoken when a user navigates to the beginning of a link's text." name="IDS_CHROMEVOX_LINK_START">
-        Link start
+      <message desc="Spoken to describe non line-through text." name="IDS_CHROMEVOX_NOT_LINETHROUGH">
+        Not line through
       </message>
-      <message desc="Spoken when a user navigates to the end of a link's text." name="IDS_CHROMEVOX_LINK_END">
-        Link end
+      <message desc="Spoken when a user navigates to text and the link state changes" name="IDS_CHROMEVOX_LINK">
+        Link
       </message>
-
-      <message desc="Spoken when a user navigates to the beginning of a font family's text, e.g. 'Arial start'" name="IDS_CHROMEVOX_FONT_FAMILY_START">
-        <ph name="font_family">$1<ex>Arial</ex></ph> start
+      <message desc="Spoken to describe non-linked text." name="IDS_CHROMEVOX_NOT_LINK">
+        Not link
       </message>
-      <message desc="Spoken when a user navigates to the end of a font family's text, e.g. 'Arial end'" name="IDS_CHROMEVOX_FONT_FAMILY_END">
-        <ph name="font_family">$1<ex>Arial</ex></ph> end
+      <message desc="Spoken when a user navigates to text and the font family changes, e.g. 'Font Arial'" name="IDS_CHROMEVOX_FONT_FAMILY">
+        Font <ph name="font_family">$1<ex>Arial</ex></ph>
       </message>
-      <message desc="Spoken when a user navigates to the beginning of a font size's text, e.g. 'Size 12 start'" name="IDS_CHROMEVOX_FONT_SIZE_START">
-        Size <ph name="font_size">$1<ex>12</ex></ph> start
+      <message desc="Spoken when a user navigates to text and the font size changes, e.g. 'Size 12'" name="IDS_CHROMEVOX_FONT_SIZE">
+        Size <ph name="font_size">$1<ex>12</ex></ph>
       </message>
-      <message desc="Spoken when a user navigates to the end of a font size's text, e.g. 'Size 12 end'" name="IDS_CHROMEVOX_FONT_SIZE_END">
-        Size <ph name="font_size">$1<ex>12</ex></ph> end
+      <message desc="Spoken when a user navigates to text and the font color changes, e.g. 'Red, 100% opacity'" name="IDS_CHROMEVOX_FONT_COLOR">
+        <ph name="font_color">$1<ex>Red, 100% opacity</ex></ph>
       </message>
-      <message desc="Spoken when a user navigates to the beginning of a font color's text, e.g. 'Red, 100% opacity. start'" name="IDS_CHROMEVOX_FONT_COLOR_START">
-        <ph name="font_color">$1<ex>Red, 100% opacity.</ex></ph> start
-      </message>
-      <message desc="Spoken when a user navigates to the end of a font color's text, e.g. 'Red, 100% opacity. end'" name="IDS_CHROMEVOX_FONT_COLOR_END">
-        <ph name="font_color">$1<ex>Red, 100% opacity.</ex></ph> end
-      </message>
-
       <message desc="Shown to a user when they press a braille keyboard command that requires on screen keyboard to be enabled." name="IDS_CHROMEVOX_ENABLE_VIRTUAL_KEYBOARD">
         Please enable the on screen keyboard under status tray, accessibility to use extended braille commands.
       </message>
