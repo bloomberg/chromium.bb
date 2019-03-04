@@ -262,7 +262,8 @@ struct Config {
     GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
 #undef GPU_OP
 
-#if defined(GPU_FUZZER_USE_PASSTHROUGH_CMD_DECODER)
+#if defined(GPU_FUZZER_USE_PASSTHROUGH_CMD_DECODER) && \
+    !defined(GPU_FUZZER_USE_RASTER_DECODER)
     gl_context_attribs.bind_generates_resource =
         attrib_helper.bind_generates_resource;
     gl_context_attribs.webgl_compatibility_context =
