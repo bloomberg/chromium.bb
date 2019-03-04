@@ -431,7 +431,10 @@ Process LaunchProcess(const std::vector<std::string>& argv,
 #endif  // defined(OS_CHROMEOS)
 
     // Cannot use STL iterators here, since debug iterators use locks.
-    for (const auto& value : options.fds_to_remap) {
+    // NOLINTNEXTLINE(modernize-loop-convert)
+    for (size_t i = 0; i < options.fds_to_remap.size(); ++i) {
+      const FileHandleMappingVector::value_type& value =
+          options.fds_to_remap[i];
       fd_shuffle1.push_back(InjectionArc(value.first, value.second, false));
       fd_shuffle2.push_back(InjectionArc(value.first, value.second, false));
     }
