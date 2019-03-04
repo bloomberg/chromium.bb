@@ -563,6 +563,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"send-uma-cellular", flag_descriptions::kSendUmaOverCellularName,
      flag_descriptions::kSendUmaOverCellularDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUmaCellular)},
+    {"enable-sync-uss-passwords",
+     flag_descriptions::kEnableSyncUSSPasswordsName,
+     flag_descriptions::kEnableSyncUSSPasswordsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(switches::kSyncUSSPasswords)},
 };
 
 // Add all switches from experimental flags to |command_line|.

@@ -70,6 +70,9 @@ extern const char kEnableAutofillSaveCreditCardUsesStrikeSystemV2Description[];
 extern const char kEnableSyncUSSBookmarksName[];
 extern const char kEnableSyncUSSBookmarksDescription[];
 
+extern const char kEnableSyncUSSPasswordsName[];
+extern const char kEnableSyncUSSPasswordsDescription[];
+
 extern const char kSyncPseudoUSSFaviconsName[];
 extern const char kSyncPseudoUSSFaviconsDescription[];
 
