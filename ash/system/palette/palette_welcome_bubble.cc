@@ -113,8 +113,10 @@ void PaletteWelcomeBubble::ShowIfNeeded() {
 
   base::Optional<user_manager::UserType> user_type =
       Shell::Get()->session_controller()->GetUserType();
-  if (user_type && *user_type == user_manager::USER_TYPE_GUEST)
+  if (user_type && (*user_type == user_manager::USER_TYPE_GUEST ||
+                    *user_type == user_manager::USER_TYPE_PUBLIC_ACCOUNT)) {
     return;
+  }
 
   if (!HasBeenShown())
     Show();

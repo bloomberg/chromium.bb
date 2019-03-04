@@ -25,6 +25,7 @@ namespace {
 constexpr char kUser1Email[] = "user1@palettewelcome.com";
 constexpr char kUser2Email[] = "user2@palettewelcome.com";
 constexpr char kGuestEmail[] = "guest@palettewelcome.com";
+constexpr char kPublicAccountEmail[] = "public@palettewelcome.com";
 
 }  // namespace
 
@@ -140,25 +141,27 @@ TEST_F(PaletteWelcomeBubbleTest, BubbleNotShownInactiveSession) {
   EXPECT_FALSE(welcome_bubble_->GetBubbleViewForTesting());
 }
 
-class PaletteWelcomeBubbleGuestModeTest : public AshTestBase {
- public:
-  PaletteWelcomeBubbleGuestModeTest() = default;
-  ~PaletteWelcomeBubbleGuestModeTest() override = default;
+using PaletteWelcomeBubbleEmphemeralAccountTest = AshTestBase;
 
-  // AshTestBase:
-  void SetUp() override {
-    AshTestBase::SetUp();
-    GetSessionControllerClient()->AddUserSession(kGuestEmail,
-                                                 user_manager::USER_TYPE_GUEST);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PaletteWelcomeBubbleGuestModeTest);
-};
-
-TEST_F(PaletteWelcomeBubbleGuestModeTest, BubbleNotShownForGuest) {
+TEST_F(PaletteWelcomeBubbleEmphemeralAccountTest, BubbleNotShownForGuest) {
   auto welcome_bubble = std::make_unique<PaletteWelcomeBubble>(
       StatusAreaWidgetTestHelper::GetStatusAreaWidget()->palette_tray());
+  GetSessionControllerClient()->AddUserSession(kGuestEmail,
+                                               user_manager::USER_TYPE_GUEST);
+  GetSessionControllerClient()->SwitchActiveUser(
+      AccountId::FromUserEmail(kGuestEmail));
+  welcome_bubble->ShowIfNeeded();
+  EXPECT_FALSE(welcome_bubble->GetBubbleViewForTesting());
+}
+
+TEST_F(PaletteWelcomeBubbleEmphemeralAccountTest,
+       BubbleNotShownForPublicAccount) {
+  auto welcome_bubble = std::make_unique<PaletteWelcomeBubble>(
+      StatusAreaWidgetTestHelper::GetStatusAreaWidget()->palette_tray());
+  GetSessionControllerClient()->AddUserSession(
+      kPublicAccountEmail, user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+  GetSessionControllerClient()->SwitchActiveUser(
+      AccountId::FromUserEmail(kPublicAccountEmail));
   welcome_bubble->ShowIfNeeded();
   EXPECT_FALSE(welcome_bubble->GetBubbleViewForTesting());
 }
