@@ -135,17 +135,17 @@ PairwiseInterpolationValue ListInterpolationFunctions::MaybeMergeSingles(
       ToNonInterpolableList(*end.non_interpolable_value);
 
   for (wtf_size_t i = 0; i < final_length; i++) {
-    PairwiseInterpolationValue result = nullptr;
     if (length_matching_strategy ==
             LengthMatchingStrategy::kLowestCommonMultiple ||
         (i < start_length && i < end_length)) {
-      InterpolationValue start(
+      InterpolationValue start_merge(
           start_interpolable_list.Get(i % start_length)->Clone(),
           start_non_interpolable_list.Get(i % start_length));
-      InterpolationValue end(end_interpolable_list.Get(i % end_length)->Clone(),
-                             end_non_interpolable_list.Get(i % end_length));
-      PairwiseInterpolationValue result =
-          merge_single_item_conversions.Run(std::move(start), std::move(end));
+      InterpolationValue end_merge(
+          end_interpolable_list.Get(i % end_length)->Clone(),
+          end_non_interpolable_list.Get(i % end_length));
+      PairwiseInterpolationValue result = merge_single_item_conversions.Run(
+          std::move(start_merge), std::move(end_merge));
       if (!result)
         return nullptr;
       result_start_interpolable_list->Set(

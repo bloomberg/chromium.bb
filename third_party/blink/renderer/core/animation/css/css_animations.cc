@@ -382,14 +382,14 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
       wtf_size_t existing_animation_index = 0;
 
       if (css_animations) {
-        for (wtf_size_t i = 0; i < css_animations->running_animations_.size();
-             i++) {
+        for (wtf_size_t j = 0; j < css_animations->running_animations_.size();
+             j++) {
           const RunningAnimation& running_animation =
-              *css_animations->running_animations_[i];
+              *css_animations->running_animations_[j];
           if (running_animation.name == name &&
               running_animation.name_index == name_index) {
             existing_animation = &running_animation;
-            existing_animation_index = i;
+            existing_animation_index = j;
             break;
           }
         }
