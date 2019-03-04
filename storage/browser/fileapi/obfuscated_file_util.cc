@@ -277,7 +277,8 @@ ObfuscatedFileUtil::ObfuscatedFileUtil(
 
   if (is_incognito_ &&
       base::FeatureList::IsEnabled(features::kEnableFilesystemInIncognito)) {
-    delegate_ = std::make_unique<ObfuscatedFileUtilMemoryDelegate>();
+    delegate_ = std::make_unique<ObfuscatedFileUtilMemoryDelegate>(
+        file_system_directory_);
   } else {
     delegate_ = std::make_unique<ObfuscatedFileUtilDiskDelegate>();
   }

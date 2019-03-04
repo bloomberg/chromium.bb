@@ -5,10 +5,16 @@
 #ifndef STORAGE_BROWSER_FILEAPI_OBFUSCATED_FILE_UTIL_MEMORY_DELEGATE_H_
 #define STORAGE_BROWSER_FILEAPI_OBFUSCATED_FILE_UTIL_MEMORY_DELEGATE_H_
 
+#include <map>
+#include <memory>
+#include <vector>
+
 #include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "storage/browser/fileapi/native_file_util.h"
 #include "storage/browser/fileapi/obfuscated_file_util_delegate.h"
 
@@ -17,10 +23,24 @@ namespace storage {
 // This delegate performs all ObfuscatedFileUtil tasks that require touching
 // disk and peforms them in memory.
 
+// The given paths should be subpaths of the |file_system_directory| folder
+// passed to the constructor. No normalization is done on the this root folder
+// and it is expected that all input paths would start with it.
+
+// Directories and files are both stored in |Entry| structures, keeping the type
+// of the entry, creation, modification, and last access time, and
+// |file_content| or |directory_content| based on the type.
+
+// Directory tree is kept in a tree structure starting from |root_|. All API
+// functions that receive a |FilePath|, convert it to a |DecomposedPath| which
+// has separated normalized components, is ensured that it is under the root,
+// and has the respective |Entry| (if exists) and its parent in the directory
+// tree starting from |root_|.
+
 class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtilMemoryDelegate
     : public ObfuscatedFileUtilDelegate {
  public:
-  ObfuscatedFileUtilMemoryDelegate();
+  ObfuscatedFileUtilMemoryDelegate(const base::FilePath& file_system_directory);
   ~ObfuscatedFileUtilMemoryDelegate() override;
 
   bool DirectoryExists(const base::FilePath& path) override;
@@ -57,7 +77,33 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtilMemoryDelegate
   }
 
  private:
+  struct Entry;
+  struct DecomposedPath;
+
+  // Parses the given path into a decomposed path and performs validity checks
+  // and normalization. Returns an empty value if checks fail.
+  base::Optional<DecomposedPath> ParsePath(const base::FilePath& path);
+
+  // Creates or opens a file specified in |dp|.
+  void CreateOrOpenInternal(const DecomposedPath& dp, int file_flags);
+
+  // Moves a directory from |src_dp| to |dest_dp|.
+  bool MoveDirectoryInternal(const DecomposedPath& src_dp,
+                             const DecomposedPath& dest_dp);
+
+  // Copies or moves a file from |src_dp| to |dest_dp|.
+  bool CopyOrMoveFileInternal(const DecomposedPath& src_dp,
+                              const DecomposedPath& dest_dp,
+                              bool move);
+
+  // The root of the directory tree.
+  std::unique_ptr<Entry> root_;
+
+  // The components of root path, kept for faster processing.
+  std::vector<base::FilePath::StringType> root_path_components_;
+
   base::WeakPtrFactory<ObfuscatedFileUtilMemoryDelegate> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileUtilMemoryDelegate);
 };
 

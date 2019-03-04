@@ -298,6 +298,7 @@ source_set("unittests") {
     "fileapi/local_file_stream_writer_unittest.cc",
     "fileapi/local_file_util_unittest.cc",
     "fileapi/native_file_util_unittest.cc",
+    "fileapi/obfuscated_file_util_memory_delegate_unittest.cc",
     "fileapi/obfuscated_file_util_unittest.cc",
     "fileapi/plugin_private_file_system_backend_unittest.cc",
     "fileapi/quota/quota_backend_impl_unittest.cc",
