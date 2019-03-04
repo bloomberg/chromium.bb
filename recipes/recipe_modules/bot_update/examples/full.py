@@ -15,6 +15,8 @@ DEPS = [
   'recipe_engine/runtime',
 ]
 
+from PB.go.chromium.org.luci.buildbucket.proto.build import Build
+
 def RunSteps(api):
   api.gclient.use_mirror = True
   commit = api.buildbucket.build.input.gitiles_commit
@@ -93,7 +95,7 @@ def GenTests(api):
   )
   yield (
       api.test('input_commit_with_id_without_repo') +
-      api.buildbucket.build(api.buildbucket.build_pb2.Build(
+      api.buildbucket.build(Build(
           input={
               'gitiles_commit': {
                   'id': 'a' * 40,
