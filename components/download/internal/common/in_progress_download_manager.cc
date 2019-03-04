@@ -431,7 +431,8 @@ void InProgressDownloadManager::OnDBInitialized(
     bool success,
     std::unique_ptr<std::vector<DownloadDBEntry>> entries) {
 #if defined(OS_ANDROID)
-  if (DownloadCollectionBridge::NeedToRetrieveDisplayNames()) {
+  if (entries && !entries->empty() &&
+      DownloadCollectionBridge::NeedToRetrieveDisplayNames()) {
     DownloadCollectionBridge::GetDisplayNamesCallback callback =
         base::BindOnce(&InProgressDownloadManager::OnDownloadNamesRetrieved,
                        weak_factory_.GetWeakPtr(), std::move(entries));
