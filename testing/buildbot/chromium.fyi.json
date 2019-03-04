@@ -2025,7 +2025,6 @@
         "name": "network_service_in_process_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "priority_adjustment": 30,
           "shards": 15
         },
         "test": "browser_tests"
@@ -2037,7 +2036,6 @@
         "name": "network_service_web_request_proxy_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "priority_adjustment": 30,
           "shards": 15
         },
         "test": "browser_tests"
@@ -2049,7 +2047,6 @@
         "name": "network_service_in_process_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "priority_adjustment": 30,
           "shards": 2
         },
         "test": "content_browsertests"
@@ -2287,7 +2284,6 @@
             }
           ],
           "hard_timeout": 900,
-          "priority_adjustment": 30,
           "shards": 12
         }
       }
