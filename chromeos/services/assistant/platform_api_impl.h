@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/services/assistant/platform/audio_input_provider_impl.h"
 #include "chromeos/services/assistant/platform/audio_output_provider_impl.h"
 #include "chromeos/services/assistant/platform/file_provider_impl.h"
@@ -30,7 +31,8 @@ namespace assistant {
 class AssistantMediaSession;
 
 // Platform API required by the voice assistant.
-class PlatformApiImpl : public assistant_client::PlatformApi {
+class PlatformApiImpl : public assistant_client::PlatformApi,
+                        chromeos::CrasAudioHandler::AudioObserver {
  public:
   PlatformApiImpl(
       service_manager::Connector* connector,
@@ -48,6 +50,9 @@ class PlatformApiImpl : public assistant_client::PlatformApi {
   assistant_client::FileProvider& GetFileProvider() override;
   assistant_client::NetworkProvider& GetNetworkProvider() override;
   assistant_client::SystemProvider& GetSystemProvider() override;
+
+  // chromeos::CrasAudioHandler::AudioObserver overrides
+  void OnAudioNodesChanged() override;
 
   // Called when the mic state associated with the interaction is changed.
   void SetMicState(bool mic_open);

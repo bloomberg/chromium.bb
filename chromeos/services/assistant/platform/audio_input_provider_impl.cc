@@ -8,8 +8,10 @@ namespace chromeos {
 namespace assistant {
 
 AudioInputProviderImpl::AudioInputProviderImpl(
-    service_manager::Connector* connector)
-    : audio_input_(connector) {}
+    service_manager::Connector* connector,
+    const std::string& input_device_id,
+    const std::string& hotword_device_id)
+    : audio_input_(connector, input_device_id, hotword_device_id) {}
 
 AudioInputProviderImpl::~AudioInputProviderImpl() = default;
 
@@ -28,6 +30,14 @@ void AudioInputProviderImpl::SetMicState(bool mic_open) {
 
 void AudioInputProviderImpl::OnHotwordEnabled(bool enable) {
   audio_input_.OnHotwordEnabled(enable);
+}
+
+void AudioInputProviderImpl::SetDeviceId(const std::string& device_id) {
+  audio_input_.SetDeviceId(device_id);
+}
+
+void AudioInputProviderImpl::SetHotwordDeviceId(const std::string& device_id) {
+  audio_input_.SetHotwordDeviceId(device_id);
 }
 
 }  // namespace assistant
