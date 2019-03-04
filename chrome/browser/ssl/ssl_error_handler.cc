@@ -34,6 +34,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/prefs/pref_service.h"
+#include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "components/ssl_errors/error_classification.h"
 #include "components/ssl_errors/error_info.h"
@@ -560,9 +561,9 @@ void SSLErrorHandlerDelegateImpl::OnBlockingPageReady(
   if (blocking_page_ready_callback_.is_null()) {
     interstitial_page->Show();
   } else {
-    std::move(blocking_page_ready_callback_)
-        .Run(std::unique_ptr<security_interstitials::SecurityInterstitialPage>(
-            interstitial_page));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(blocking_page_ready_callback_),
+                                  base::WrapUnique(interstitial_page)));
   }
 }
 

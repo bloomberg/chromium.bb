@@ -129,6 +129,8 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   // |blocking_page_ready_callback| is null, this function will create a
   // blocking page and call Show() on it. Otherwise, this function creates an
   // interstitial and passes it to |blocking_page_ready_callback|.
+  // |blocking_page_ready_callback| is guaranteed not to be called
+  // synchronously.
   static void HandleSSLError(
       content::WebContents* web_contents,
       int cert_error,
