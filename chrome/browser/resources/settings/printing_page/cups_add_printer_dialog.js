@@ -198,13 +198,11 @@ Polymer({
   },
 
   /**
-   * @param {string} name
-   * @param {string} address
    * @return {boolean} Whether the add printer button is enabled.
    * @private
    */
-  canAddPrinter_: function(name, address) {
-    return settings.printing.isNameAndAddressValid(name, address);
+  canAddPrinter_: function() {
+    return settings.printing.isNameAndAddressValid(this.newPrinter);
   },
 });
 

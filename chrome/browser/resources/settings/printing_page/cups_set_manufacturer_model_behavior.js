@@ -71,7 +71,7 @@ const SetManufacturerModelBehavior = {
     // Reset model if manufacturer is changed.
     this.set('activePrinter.ppdModel', '');
     this.modelList = [];
-    if (manufacturer.length != 0) {
+    if (!!manufacturer && manufacturer.length != 0) {
       settings.CupsPrintersBrowserProxyImpl.getInstance()
           .getCupsPrinterModelsList(manufacturer)
           .then(this.modelListChanged_.bind(this));
