@@ -37,9 +37,6 @@ component("vr_ui") {
   sources = [
     "animation.cc",
     "animation.h",
-    "audio_delegate.h",
-    "content_input_delegate.cc",
-    "content_input_delegate.h",
     "databinding/binding.h",
     "databinding/binding_base.h",
     "databinding/vector_binding.h",
@@ -252,8 +249,6 @@ component("vr_common") {
     "sliding_average.h",
     "sounds_manager_audio_delegate.cc",
     "sounds_manager_audio_delegate.h",
-    "ui_factory.cc",
-    "ui_factory.h",
     "vr_export.h",
     "vr_web_contents_observer.cc",
     "vr_web_contents_observer.h",
@@ -271,7 +266,6 @@ component("vr_common") {
   ]
 
   deps = [
-    ":vr_ui",
     "//base",
     "//cc/animation",
     "//cc/paint",
@@ -309,6 +303,9 @@ component("vr_common") {
     ]
 
     deps += [ "//services/ws/public/cpp/gpu" ]
+
+    # Windows doesn't have app bundles, so include the UI directly.
+    deps += [ ":vr_ui" ]
   }
 
   defines = [ "VR_IMPLEMENTATION" ]
@@ -330,7 +327,10 @@ component("vr_base") {
     "assets_load_status.h",
     "assets_loader.cc",
     "assets_loader.h",
+    "audio_delegate.h",
     "browser_ui_interface.h",
+    "content_input_delegate.cc",
+    "content_input_delegate.h",
     "exit_vr_prompt_choice.h",
     "fov_rectangle.h",
     "gl_bindings.h",

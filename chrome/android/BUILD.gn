@@ -1026,7 +1026,7 @@ jinja_template_resources("chrome_test_apk_template_resources") {
 # This template creates a native library for Chrome's APK or bundle.
 template("libchrome_apk_or_bundle_tmpl") {
   chrome_common_shared_library(target_name) {
-    forward_variables_from(invoker, "*")
+    forward_variables_from(invoker, "*", [ "is_bundle" ])
     sources = [
       "../browser/android/chrome_entry_point.cc",
       chrome_jni_registration_header,
@@ -1034,16 +1034,27 @@ template("libchrome_apk_or_bundle_tmpl") {
     deps = [
       ":chrome_jni_registration($default_toolchain)",
     ]
+
+    # Include appropriate factories for native feature modules if necessary.
+    if (enable_vr) {
+      if (modularize_vr_native && invoker.is_bundle) {
+        public_deps += [ "//chrome/browser/android/vr:ui_module_factory" ]
+      } else {
+        deps += [ "//chrome/browser/android/vr:ui_default_factory" ]
+      }
+    }
   }
 }
 
 # Chrome APK's native library.
 libchrome_apk_or_bundle_tmpl("libchrome") {
+  is_bundle = false
 }
 
 # Chrome bundle's base module native library. This is currently the same as the
 # APK version, but will diverge when code moves into feature modules.
 libchrome_apk_or_bundle_tmpl("libchrome_base") {
+  is_bundle = true
 }
 
 chrome_common_shared_library("libchromefortest") {
@@ -1066,6 +1077,9 @@ chrome_common_shared_library("libchromefortest") {
     "//content/public/test/android:content_native_test_support",
     "//content/test:test_support",
   ]
+  if (enable_vr) {
+    deps += [ "//chrome/browser/android/vr:test_support" ]
+  }
 }
 
 # Ensure that .pak files are built only once (build them in the default
@@ -1304,7 +1318,7 @@ if (current_toolchain == default_toolchain) {
 # Monochrome equivalent of Chrome's APK or bundle library template.
 template("libmonochrome_apk_or_bundle_tmpl") {
   chrome_common_shared_library(target_name) {
-    forward_variables_from(invoker, "*")
+    forward_variables_from(invoker, "*", [ "is_bundle" ])
     sources = [
       "../browser/android/monochrome_entry_point.cc",
     ]
@@ -1312,6 +1326,16 @@ template("libmonochrome_apk_or_bundle_tmpl") {
       "//android_webview:common",
       "//components/crash/android:crashpad_main",
     ]
+
+    # Include appropriate factories for native feature modules if necessary.
+    if (enable_vr) {
+      if (modularize_vr_native && invoker.is_bundle) {
+        public_deps += [ "//chrome/browser/android/vr:ui_module_factory" ]
+      } else {
+        deps += [ "//chrome/browser/android/vr:ui_default_factory" ]
+      }
+    }
+
     is_monochrome = true
   }
 }
@@ -1320,10 +1344,12 @@ if (!android_64bit_target_cpu ||
     current_toolchain == android_secondary_abi_toolchain) {
   # Monochrome APK native library.
   libmonochrome_apk_or_bundle_tmpl("monochrome") {
+    is_bundle = false
   }
 
   # Monochrome bundle native library.
   libmonochrome_apk_or_bundle_tmpl("monochrome_base") {
+    is_bundle = true
   }
 
   if (android_64bit_target_cpu && enable_64_bit_browser) {
@@ -1342,8 +1368,10 @@ if (!android_64bit_target_cpu ||
   # 64-bit browser library targets (APK and bundle).
   if (enable_64_bit_browser) {
     libmonochrome_apk_or_bundle_tmpl("monochrome_64") {
+      is_bundle = false
     }
     libmonochrome_apk_or_bundle_tmpl("monochrome_64_base") {
+      is_bundle = true
     }
   }
 

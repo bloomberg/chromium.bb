@@ -16,6 +16,7 @@
 #include "base/numerics/ranges.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/elements/content_element.h"
 #include "chrome/browser/vr/elements/keyboard.h"
@@ -890,21 +891,24 @@ FovRectangle Ui::GetMinimalFov(const gfx::Transform& view_matrix,
   return FovRectangle{left_degrees, right_degrees, bottom_degrees, top_degrees};
 }
 
-#if defined(FEATURE_MODULES)
-
+#if defined(OS_ANDROID)
 extern "C" {
-Ui* CreateUi(UiBrowserInterface* browser,
-             PlatformInputHandler* content_input_forwarder,
-             std::unique_ptr<KeyboardDelegate> keyboard_delegate,
-             std::unique_ptr<TextInputDelegate> text_input_delegate,
-             std::unique_ptr<AudioDelegate> audio_delegate,
-             const UiInitialState& ui_initial_state) {
+
+// This symbol is retrieved from the VR feature module library via dlsym(),
+// where it's bare address is type-cast to a CreateUiFunction pointer and
+// executed. Any changes to the arguments here must be mirrored in that type.
+__attribute__((visibility("default"))) UiInterface* CreateUi(
+    UiBrowserInterface* browser,
+    PlatformInputHandler* content_input_forwarder,
+    std::unique_ptr<KeyboardDelegate> keyboard_delegate,
+    std::unique_ptr<TextInputDelegate> text_input_delegate,
+    std::unique_ptr<AudioDelegate> audio_delegate,
+    const UiInitialState& ui_initial_state) {
   return new Ui(browser, content_input_forwarder, std::move(keyboard_delegate),
                 std::move(text_input_delegate), std::move(audio_delegate),
                 ui_initial_state);
 }
 }
-
-#endif  // defined(FEATURE_MODULES)
+#endif  // defined(OS_ANDROID
 
 }  // namespace vr
