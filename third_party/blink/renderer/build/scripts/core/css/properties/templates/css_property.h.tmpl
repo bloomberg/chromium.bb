@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -166,11 +167,12 @@ class CSSProperty : public CSSUnresolvedProperty {
       const StylePropertyShorthand&);
 };
 
-DEFINE_TYPE_CASTS(CSSProperty,
-                  CSSUnresolvedProperty,
-                  unresolved,
-                  unresolved->IsResolvedProperty(),
-                  unresolved.IsResolvedProperty());
+template <>
+struct DowncastTraits<CSSProperty> {
+  static bool AllowFrom(const CSSUnresolvedProperty& unresolved) {
+    return unresolved.IsResolvedProperty();
+  }
+};
 
 CORE_EXPORT const CSSProperty& GetCSSPropertyVariable();
 {% for property_class_data in property_classes_by_property_id %}
