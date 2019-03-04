@@ -11,18 +11,18 @@
 namespace blink {
 
 const CSSProperty& GetCSSPropertyVariable() {
-  return ToCSSProperty(CSSUnresolvedProperty::GetCSSPropertyVariableInternal());
+  return To<CSSProperty>(CSSUnresolvedProperty::GetCSSPropertyVariableInternal());
 }
 {% for property_class_data in property_classes_by_property_id %}
 const CSSProperty& Get{{property_class_data.property_id}}() {
-  return ToCSSProperty(CSSUnresolvedProperty::Get{{property_class_data.property_id}}Internal());
+  return To<CSSProperty>(CSSUnresolvedProperty::Get{{property_class_data.property_id}}Internal());
 }
 {% endfor %}
 
 const CSSProperty& CSSProperty::Get(CSSPropertyID id) {
   DCHECK_NE(id, CSSPropertyInvalid);
   DCHECK_LE(id, {{last_property_id}}); // last property id
-  return ToCSSProperty(CSSUnresolvedProperty::GetNonAliasProperty(id));
+  return To<CSSProperty>(CSSUnresolvedProperty::GetNonAliasProperty(id));
 }
 
 }  // namespace blink
