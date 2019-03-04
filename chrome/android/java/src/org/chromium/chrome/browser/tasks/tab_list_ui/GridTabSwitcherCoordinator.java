@@ -21,7 +21,8 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 /**
  * Parent coordinator that is responsible for showing a grid of tabs for the main TabSwitcher UI.
  */
-public class GridTabSwitcherCoordinator implements Destroyable {
+public class GridTabSwitcherCoordinator
+        implements Destroyable, GridTabSwitcherMediator.ResetHandler {
     private final PropertyModelChangeProcessor mContainerViewChangeProcessor;
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
     private final TabListCoordinator mTabGridCoordinator;
@@ -58,7 +59,8 @@ public class GridTabSwitcherCoordinator implements Destroyable {
      * Reset the tab grid with the given {@link TabModel}. Can be null.
      * @param tabModel The current {@link TabModel} to show the tabs for in the grid.
      */
-    void resetWithTabModel(TabModel tabModel) {
+    @Override
+    public void resetWithTabModel(TabModel tabModel) {
         mTabGridCoordinator.resetWithTabModel(tabModel);
     }
 
