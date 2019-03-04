@@ -18,14 +18,18 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "remoting/base/fake_oauth_token_getter.h"
 #include "remoting/base/oauth_token_getter_impl.h"
 #include "remoting/signaling/ftl_client.h"
 #include "remoting/test/test_oauth_token_factory.h"
+#include "remoting/test/test_token_storage.h"
 
 namespace {
 
 constexpr char kSwitchNameHelp[] = "help";
 constexpr char kSwitchNameAuthCode[] = "code";
+constexpr char kSwitchNameUsername[] = "username";
+constexpr char kSwitchNameStoragePath[] = "storage-path";
 
 // Reads a newline-terminated string from stdin.
 std::string ReadString() {
@@ -53,23 +57,11 @@ std::string ReadStringFromCommandLineOrStdin(const std::string& switch_name,
   return ReadString();
 }
 
-void PrintGrpcStatusError(const grpc::Status& status) {
-  DCHECK(!status.ok());
-  LOG(ERROR) << "RPC failed. Code=" << status.error_code() << ", "
-             << "Message=" << status.error_message();
-  if (status.error_code() == grpc::StatusCode::UNAVAILABLE) {
-    VLOG(0)
-        << "Set the GRPC_DEFAULT_SSL_ROOTS_FILE_PATH environment variable "
-        << "to third_party/grpc/src/etc/roots.pem if gRPC cannot locate the "
-        << "root certificates.";
-  }
-}
-
 }  // namespace
 
 namespace remoting {
 
-FtlSignalingPlayground::FtlSignalingPlayground() = default;
+FtlSignalingPlayground::FtlSignalingPlayground() : weak_factory_(this) {}
 
 FtlSignalingPlayground::~FtlSignalingPlayground() = default;
 
@@ -78,36 +70,39 @@ bool FtlSignalingPlayground::ShouldPrintHelp() {
 }
 
 void FtlSignalingPlayground::PrintHelp() {
-  printf("Usage: %s [--code=<auth-code>]\n",
-         base::CommandLine::ForCurrentProcess()
-             ->GetProgram()
-             .MaybeAsASCII()
-             .c_str());
+  printf(
+      "Usage: %s [--code=<auth-code>] [--storage-path=<storage-path>] "
+      "[--username=<example@gmail.com>]\n",
+      base::CommandLine::ForCurrentProcess()
+          ->GetProgram()
+          .MaybeAsASCII()
+          .c_str());
 }
 
 void FtlSignalingPlayground::StartAndAuthenticate() {
+  DCHECK(!storage_);
   DCHECK(!token_getter_factory_);
   DCHECK(!token_getter_);
   DCHECK(!client_);
 
-  static const std::string read_auth_code_prompt = base::StringPrintf(
-      "Please authenticate at:\n\n"
-      "  %s\n\n"
-      "Enter the auth code: ",
-      TestOAuthTokenGetterFactory::GetAuthorizationCodeUri().c_str());
-  std::string auth_code = ReadStringFromCommandLineOrStdin(
-      kSwitchNameAuthCode, read_auth_code_prompt);
-
   token_getter_factory_ = std::make_unique<TestOAuthTokenGetterFactory>();
 
-  // We can't get back the refresh token since we have first-party scope, so
-  // we are not trying to store it.
-  // TODO(yuweih): Consider storing the access token and reuse it until it is
-  // expired.
-  token_getter_ = token_getter_factory_->CreateFromIntermediateCredentials(
-      auth_code,
-      base::DoNothing::Repeatedly<const std::string&, const std::string&>());
-  client_ = std::make_unique<FtlClient>(token_getter_.get());
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  std::string username = cmd_line->GetSwitchValueASCII(kSwitchNameUsername);
+  base::FilePath storage_path =
+      cmd_line->GetSwitchValuePath(kSwitchNameStoragePath);
+  storage_ = test::TestTokenStorage::OnDisk(username, storage_path);
+
+  std::string access_token = storage_->FetchAccessToken();
+  if (access_token.empty()) {
+    AuthenticateAndResetClient();
+  } else {
+    VLOG(0) << "Reusing access token: " << access_token;
+    token_getter_ = std::make_unique<FakeOAuthTokenGetter>(
+        OAuthTokenGetter::Status::SUCCESS, "fake_email@gmail.com",
+        access_token);
+    client_ = std::make_unique<FtlClient>(token_getter_.get());
+  }
 
   StartLoop();
 }
@@ -140,14 +135,79 @@ void FtlSignalingPlayground::StartLoop() {
   }
 }
 
+void FtlSignalingPlayground::AuthenticateAndResetClient() {
+  static const std::string read_auth_code_prompt = base::StringPrintf(
+      "Please authenticate at:\n\n"
+      "  %s\n\n"
+      "Enter the auth code: ",
+      TestOAuthTokenGetterFactory::GetAuthorizationCodeUri().c_str());
+  std::string auth_code = ReadStringFromCommandLineOrStdin(
+      kSwitchNameAuthCode, read_auth_code_prompt);
+
+  // Make sure we don't try to reuse an auth code.
+  base::CommandLine::ForCurrentProcess()->RemoveSwitch(kSwitchNameAuthCode);
+
+  // We can't get back the refresh token since we have first-party scope, so
+  // we are not trying to store it.
+  token_getter_ = token_getter_factory_->CreateFromIntermediateCredentials(
+      auth_code,
+      base::DoNothing::Repeatedly<const std::string&, const std::string&>());
+
+  // Get the access token so that we can reuse it for next time.
+  base::OnceClosure on_access_token_done = base::DoNothing::Once();
+  base::RunLoop run_loop;
+  if (!base::RunLoop::IsRunningOnCurrentThread()) {
+    on_access_token_done = run_loop.QuitClosure();
+  }
+  token_getter_->CallWithToken(base::BindOnce(
+      &FtlSignalingPlayground::OnAccessToken, weak_factory_.GetWeakPtr(),
+      std::move(on_access_token_done)));
+  if (!base::RunLoop::IsRunningOnCurrentThread()) {
+    run_loop.Run();
+  }
+
+  client_ = std::make_unique<FtlClient>(token_getter_.get());
+}
+
+void FtlSignalingPlayground::OnAccessToken(base::OnceClosure on_done,
+                                           OAuthTokenGetter::Status status,
+                                           const std::string& user_email,
+                                           const std::string& access_token) {
+  DCHECK(status == OAuthTokenGetter::Status::SUCCESS);
+  VLOG(0) << "Received access_token: " << access_token;
+  storage_->StoreAccessToken(access_token);
+  std::move(on_done).Run();
+}
+
+void FtlSignalingPlayground::HandleGrpcStatusError(const grpc::Status& status) {
+  DCHECK(!status.ok());
+  LOG(ERROR) << "RPC failed. Code=" << status.error_code() << ", "
+             << "Message=" << status.error_message();
+  switch (status.error_code()) {
+    case grpc::StatusCode::UNAVAILABLE:
+      VLOG(0)
+          << "Set the GRPC_DEFAULT_SSL_ROOTS_FILE_PATH environment variable "
+          << "to third_party/grpc/src/etc/roots.pem if gRPC cannot locate the "
+          << "root certificates.";
+      break;
+    case grpc::StatusCode::UNAUTHENTICATED:
+      VLOG(0) << "Grpc request failed to authenticate. "
+              << "Trying to reauthenticate...";
+      AuthenticateAndResetClient();
+      break;
+    default:
+      break;
+  }
+}
+
 void FtlSignalingPlayground::GetIceServer(base::OnceClosure on_done) {
   DCHECK(client_);
-  client_->GetIceServer(base::BindOnce(
-      &FtlSignalingPlayground::OnGetIceServerResponse, std::move(on_done)));
+  client_->GetIceServer(
+      base::BindOnce(&FtlSignalingPlayground::OnGetIceServerResponse,
+                     weak_factory_.GetWeakPtr(), std::move(on_done)));
   VLOG(0) << "Running GetIceServer...";
 }
 
-// static
 void FtlSignalingPlayground::OnGetIceServerResponse(
     base::OnceClosure on_done,
     grpc::Status status,
@@ -170,7 +230,7 @@ void FtlSignalingPlayground::OnGetIceServerResponse(
       }
     }
   } else {
-    PrintGrpcStatusError(status);
+    HandleGrpcStatusError(status);
   }
   std::move(on_done).Run();
 }
@@ -178,17 +238,22 @@ void FtlSignalingPlayground::OnGetIceServerResponse(
 void FtlSignalingPlayground::SignInGaia(base::OnceClosure on_done) {
   DCHECK(client_);
   VLOG(0) << "Running SignInGaia...";
-  // TODO(yuweih): Store generated GUID and reuse them when possible.
-  std::string device_id = "crd-web-" + base::GenerateGUID();
-  VLOG(0) << "Using device_id: " << device_id;
+  // TODO(yuweih): Logic should be cleaned up and moved out of the playground.
+  std::string device_id = storage_->FetchDeviceId();
+  if (device_id.empty()) {
+    device_id = "crd-web-" + base::GenerateGUID();
+    VLOG(0) << "Generated new device_id: " << device_id;
+    storage_->StoreDeviceId(device_id);
+  } else {
+    VLOG(0) << "Read device_id: " << device_id;
+  }
   VLOG(0) << "Using sign_in_gaia_mode: DEFAULT_CREATE_ACCOUNT";
   client_->SignInGaia(
       device_id, ftl::SignInGaiaMode_Value_DEFAULT_CREATE_ACCOUNT,
       base::BindOnce(&FtlSignalingPlayground::OnSignInGaiaResponse,
-                     std::move(on_done)));
+                     weak_factory_.GetWeakPtr(), std::move(on_done)));
 }
 
-// static
 void FtlSignalingPlayground::OnSignInGaiaResponse(
     base::OnceClosure on_done,
     grpc::Status status,
@@ -206,7 +271,7 @@ void FtlSignalingPlayground::OnSignInGaiaResponse(
         registration_id_base64.c_str(), auth_token_base64.c_str(),
         response.auth_token().expires_in());
   } else {
-    PrintGrpcStatusError(status);
+    HandleGrpcStatusError(status);
   }
   std::move(on_done).Run();
 }

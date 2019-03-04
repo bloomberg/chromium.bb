@@ -6,13 +6,19 @@
 #define REMOTING_TEST_FTL_SIGNALING_PLAYGROUND_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "remoting/base/oauth_token_getter.h"
 #include "remoting/signaling/ftl_client.h"
 
 namespace remoting {
+
+namespace test {
+class TestTokenStorage;
+}  // namespace test
 
 class TestOAuthTokenGetterFactory;
 
@@ -27,21 +33,29 @@ class FtlSignalingPlayground {
 
  private:
   void StartLoop();
+  void AuthenticateAndResetClient();
+  void OnAccessToken(base::OnceClosure on_done,
+                     OAuthTokenGetter::Status status,
+                     const std::string& user_email,
+                     const std::string& access_token);
+  void HandleGrpcStatusError(const grpc::Status& status);
 
   void GetIceServer(base::OnceClosure on_done);
-  static void OnGetIceServerResponse(base::OnceClosure on_done,
-                                     grpc::Status status,
-                                     const ftl::GetICEServerResponse& response);
+  void OnGetIceServerResponse(base::OnceClosure on_done,
+                              grpc::Status status,
+                              const ftl::GetICEServerResponse& response);
 
   void SignInGaia(base::OnceClosure on_done);
-  static void OnSignInGaiaResponse(base::OnceClosure on_done,
-                                   grpc::Status status,
-                                   const ftl::SignInGaiaResponse& response);
+  void OnSignInGaiaResponse(base::OnceClosure on_done,
+                            grpc::Status status,
+                            const ftl::SignInGaiaResponse& response);
 
+  std::unique_ptr<test::TestTokenStorage> storage_;
   std::unique_ptr<TestOAuthTokenGetterFactory> token_getter_factory_;
   std::unique_ptr<OAuthTokenGetter> token_getter_;
   std::unique_ptr<FtlClient> client_;
 
+  base::WeakPtrFactory<FtlSignalingPlayground> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(FtlSignalingPlayground);
 };
 
