@@ -177,10 +177,6 @@ class ControllerTest : public content::RenderViewHostTestHarness {
         .WillRepeatedly(RunOnceCallback<2>(true, response_str));
   }
 
-  void ExecuteScript(const std::string& script_path) {
-    controller_->OnScriptSelected(script_path);
-  }
-
   UiDelegate* GetUiDelegate() { return controller_.get(); }
 
   std::vector<AutofillAssistantState> states_;
@@ -286,6 +282,10 @@ TEST_F(ControllerTest, ShowFirstInitialStatusMessage) {
 }
 
 TEST_F(ControllerTest, Stop) {
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "stop");
+  SetNextScriptResponse(script_response);
+
   ActionsResponseProto actions_response;
   actions_response.add_actions()->mutable_stop();
   std::string actions_response_str;
@@ -293,10 +293,12 @@ TEST_F(ControllerTest, Stop) {
   EXPECT_CALL(*mock_service_, OnGetActions(StrEq("stop"), _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, actions_response_str));
 
+  Start();
+  ASSERT_THAT(controller_->GetSuggestions(), SizeIs(1));
+
   testing::InSequence seq;
   EXPECT_CALL(fake_client_, Shutdown(Metrics::SCRIPT_SHUTDOWN));
-
-  ExecuteScript("stop");
+  controller_->SelectSuggestion(0);
 
   // Simulates Client::Shutdown(SCRIPT_SHUTDOWN)
   EXPECT_CALL(mock_ui_controller_, WillShutdown(Metrics::SCRIPT_SHUTDOWN));
@@ -518,7 +520,8 @@ TEST_F(ControllerTest, StateChanges) {
   // Run script1: State should become RUNNING, as there's another script, then
   // go back to prompt to propose that script.
   states_.clear();
-  ExecuteScript("script1");  // returns immediately
+  ASSERT_THAT(controller_->GetSuggestions(), SizeIs(2));
+  controller_->SelectSuggestion(0);
 
   EXPECT_EQ(AutofillAssistantState::PROMPT, GetUiDelegate()->GetState());
   EXPECT_THAT(states_, ElementsAre(AutofillAssistantState::RUNNING,
@@ -527,7 +530,8 @@ TEST_F(ControllerTest, StateChanges) {
   // Run script2: State should become STOPPED, as there are no more runnable
   // scripts.
   states_.clear();
-  ExecuteScript("script2");
+  ASSERT_THAT(controller_->GetSuggestions(), SizeIs(1));
+  controller_->SelectSuggestion(0);
 
   EXPECT_EQ(AutofillAssistantState::STOPPED, GetUiDelegate()->GetState());
   EXPECT_THAT(states_, ElementsAre(AutofillAssistantState::RUNNING,
