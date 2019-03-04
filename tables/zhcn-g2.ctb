@@ -92,7 +92,9 @@
 #
 #
 # Start
-#
+
+space \s 0
+
 # Single Chinese character
 sign \x5416 23456-2345
 sign \x963F 23456-2345

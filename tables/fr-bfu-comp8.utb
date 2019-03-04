@@ -41,8 +41,6 @@
 
 # The 2007 unification of french computer braille tables is based on the cp1252 character set
 
-undefined 0
-
 include latinLetterDef8Dots.uti
 sign       	\x0000	123458  	000 ⢟   NULL
 sign       	\x0001	1234678 	001 ⣯   START OF HEADING
@@ -262,3 +260,5 @@ noback	sign	\x25cf	35        	BLACK CIRCLE
 
 # mathematical symbols, Greek letters, arrows, etc. (on multiple cells)
 include fr-bfu-comp68.cti
+
+undefined 0

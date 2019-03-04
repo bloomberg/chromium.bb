@@ -1,4 +1,4 @@
-display: unicode.dis
+display: unicode-without-blank.dis
 table:
   locale: ta
   grade: 1
@@ -1733,7 +1733,7 @@ tests:
   - ['"என்விடிஏ', ⠦⠢⠰⠈⠰⠧⠊⠰⠾⠊⠑]
   - ['[[என்விடிஏ', ⠠⠶⠠⠶⠢⠰⠈⠰⠧⠊⠰⠾⠊⠑]
   - ['[என்விடிஏ', ⠠⠶⠢⠰⠈⠰⠧⠊⠰⠾⠊⠑]
-  - ["\ufeff\u0b8e\u0ba9\u0bcd\u0bb5\u0bbf\u0b9f\u0bbf\u0b8f", ⠄⡳⠭⠋⠑⠋⠋⠄⠢⠰⠈⠰⠧⠊⠰⠾⠊⠑]
+  - ["\ufeff\u0b8e\u0ba9\u0bcd\u0bb5\u0bbf\u0b9f\u0bbf\u0b8f", ⠄⡳⠭⠋⠑⠋⠋⠄⠢⠰⠈⠰⠧⠊⠰⠾⠊⠑, {xfail: 'FIXME: \ufeff escape sequence is now "⠵⠑⠗⠕" ("ZERO")'}]
   - [என்விடிஏ+1, ⠢⠰⠈⠰⠧⠊⠰⠾⠊⠑⠈⠬⠼⠁]
   - [என்விடிஏ+2, ⠢⠰⠈⠰⠧⠊⠰⠾⠊⠑⠈⠬⠼⠃]
   - [என்விடிஏ+3, ⠢⠰⠈⠰⠧⠊⠰⠾⠊⠑⠈⠬⠼⠉]

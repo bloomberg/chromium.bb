@@ -40,12 +40,11 @@
 
 # Created by Leon Ungier <Leon.Ungier@ViewPlus.com>.
 
+space \x00a0 a
+include spaces.uti
 include text_nabcc.dis
 
 #--------------------- All chars definitions ------------------------------
-
-space \t 0 tab            #  9
-space \s 0 blank					# 32
 
 punctuation ! 235				exclamation mark	33
 punctuation " 236				double quote			34
@@ -89,7 +88,6 @@ punctuation } 456-2		right curly bracket			x007D
 sign ~ 5						tilde										x007E
 sign \x0080 15-136-1235-135										x0080
 
-space \X00A0 0				# no-break space													x00A0
 sign ¢ 4-14						cent sign																	x00A2
 sign £ 4-123					pound sign																x00A3
 sign ¤ 45-15					currency sign															x00A4

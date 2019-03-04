@@ -929,7 +929,7 @@ main(int argc, char *argv[]) {
 
 	if (!has_next) simple_error("table expected", &parser, &event);
 
-	int MAXTABLES = 10;
+	int MAXTABLES = 150;
 	char *tables[MAXTABLES + 1];
 	while ((tables[0] = read_table(&event, &parser, display_table))) {
 		yaml_event_delete(&event);
@@ -940,7 +940,9 @@ main(int argc, char *argv[]) {
 						"Expected table or %s (actual %s)",
 						event_names[YAML_SCALAR_EVENT], event_names[event.type]);
 			if ((tables[k++] = read_table(&event, &parser, display_table))) {
-				if (k == MAXTABLES) exit(EXIT_FAILURE);
+				if (k == MAXTABLES)
+					error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
+							"Only %d tables in one YAML test supported", MAXTABLES);
 				yaml_event_delete(&event);
 			} else
 				break;

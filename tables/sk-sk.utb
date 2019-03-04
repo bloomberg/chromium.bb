@@ -22,7 +22,11 @@
 # Created and maintained by Mike Sivill #<mike.sivill@viewplus.com>
 
 #**** Display Codes
- include text_nabcc.dis
+include text_nabcc.dis
+
+#**** Spaces
+space \x00a0 a
+include spaces.uti
 
 #**** Character Definitions
 include eurodefs.cti

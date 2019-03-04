@@ -1,6 +1,6 @@
 # Simple replacement with context
 table: |
-  include tables/unicode.dis
+  include tables/unicode-without-blank.dis
   include tables/latinLetterDef8Dots.uti
   punctuation - 36
   noback context "oo"["b"] @36-12
@@ -16,7 +16,7 @@ tests:
       inputPos: [0,1,2,3,3,4,5]
 
 table: |
-  include tables/unicode.dis
+  include tables/unicode-without-blank.dis
   include tables/latinLetterDef8Dots.uti
   include tables/loweredDigits6Dots.uti
   space \s 0

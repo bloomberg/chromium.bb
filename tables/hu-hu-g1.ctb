@@ -23,6 +23,7 @@
 # If you found bugs with hungarian grade1 table, report it with following address:
 # Attila Hammer <hammer.attila@infoalap.hu
 #If you have a Launchpad account, report table related requests with following bug tracker address: https://bugs.launchpad.net/belin
+
 include hu-backtranslate-correction.dis
 include hu-chardefs.cti
 include hu-exceptionwords.cti
@@ -142,10 +143,6 @@ always ` 4
 always Æ 1
 always lyú 456-346
 always lysz 456-156
-space \x000c 0
-space \x001b 1b
-space \e 1b
-space \f 0
 always ä 5-1
 noback context $l$p["–"] @36-36
 noback context $l["–"] @36-36

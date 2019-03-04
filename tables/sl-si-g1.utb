@@ -24,13 +24,11 @@
 
 include text_nabcc.dis Alldisplay opcodes
 
+space \x00a0 a
+include spaces.uti
 
 # ----------- define all chars --------------------------------------
 
-space \t 0
-space \x000A 0
-space \x000D 0
-space \s 0 blank					# 32
 replace \x0007
 punctuation ! 235				# 33
 punctuation " 2356						# 34
@@ -70,7 +68,6 @@ sign | 1256								# 124
 punctuation } 4-135				# 125
 math ~ 4-45									# 126
 
-space \X00A0 0						# 160 no-break space
 sign \x00A2 4-14					# 162 ¢ cents sign
 sign \x00A3 4-123					# 163 £ pounds sign
 sign \x20A4 4-123  # lira sign
