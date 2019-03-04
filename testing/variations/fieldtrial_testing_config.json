@@ -5044,6 +5044,7 @@
     "UnifiedConsent": [
         {
             "platforms": [
+                "android",
                 "linux",
                 "mac",
                 "windows"
