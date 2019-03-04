@@ -6,15 +6,15 @@
 #define CHROMEOS_SERVICES_DEVICE_SYNC_FAKE_CRYPTAUTH_KEY_PROOF_COMPUTER_H_
 
 #include <string>
-#include <vector>
 
 #include "base/macros.h"
-#include "chromeos/services/device_sync/cryptauth_key.h"
 #include "chromeos/services/device_sync/cryptauth_key_proof_computer.h"
 
 namespace chromeos {
 
 namespace device_sync {
+
+class CryptAuthKey;
 
 class FakeCryptAuthKeyProofComputer : public CryptAuthKeyProofComputer {
  public:
@@ -22,23 +22,18 @@ class FakeCryptAuthKeyProofComputer : public CryptAuthKeyProofComputer {
   ~FakeCryptAuthKeyProofComputer() override;
 
   // CryptAuthKeyProofComputer:
-  void ComputeKeyProofs(
-      const std::vector<std::pair<CryptAuthKey, std::string>>&
-          key_payload_pairs,
-      ComputeKeyProofsCallback compute_key_proofs_callback) override;
+  // Returns "fake_key_proof_<key handle>_<payload>_<salt>".
+  base::Optional<std::string> ComputeKeyProof(const CryptAuthKey& key,
+                                              const std::string& payload,
+                                              const std::string& salt) override;
 
-  const std::vector<std::pair<CryptAuthKey, std::string>>& key_payload_pairs()
-      const {
-    return key_payload_pairs_;
-  }
-
-  ComputeKeyProofsCallback& compute_key_proofs_callback() {
-    return compute_key_proofs_callback_;
+  void set_should_return_null(bool should_return_null) {
+    should_return_null_ = should_return_null;
   }
 
  private:
-  std::vector<std::pair<CryptAuthKey, std::string>> key_payload_pairs_;
-  ComputeKeyProofsCallback compute_key_proofs_callback_;
+  // If true, ComputeKeyProof() returns base::nullopt.
+  bool should_return_null_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCryptAuthKeyProofComputer);
 };

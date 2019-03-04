@@ -50,13 +50,17 @@ const char kClientVersion[] = "1.0.0";
 // for backward compatibility reasons.
 const char kFixedUserKeyPairHandle[] = "device_key";
 
+// The salt used in HKDF for symmetric key proofs. Also, for asymmetric key
+// proofs, the salt is prepended to the payload before being signed by the
+// private key. This value is part of the CryptAuth v2 Enrollment
+// specifications.
+const char kKeyProofSalt[] = "CryptAuth Key Proof";
+
 // Timeout values for asynchronous operations.
 // TODO(https://crbug.com/933656): Tune these values.
 constexpr base::TimeDelta kWaitingForSyncKeysResponseTimeout =
     base::TimeDelta::FromSeconds(10);
 constexpr base::TimeDelta kWaitingForKeyCreationTimeout =
-    base::TimeDelta::FromSeconds(10);
-constexpr base::TimeDelta kWaitingForKeyProofComputationTimeout =
     base::TimeDelta::FromSeconds(10);
 constexpr base::TimeDelta kWaitingForEnrollKeysResponseTimeout =
     base::TimeDelta::FromSeconds(10);
@@ -360,8 +364,6 @@ base::Optional<base::TimeDelta> CryptAuthV2EnrollerImpl::GetTimeoutForState(
       return kWaitingForSyncKeysResponseTimeout;
     case State::kWaitingForKeyCreation:
       return kWaitingForKeyCreationTimeout;
-    case State::kWaitingForKeyProofComputation:
-      return kWaitingForKeyProofComputationTimeout;
     case State::kWaitingForEnrollKeysResponse:
       return kWaitingForEnrollKeysResponseTimeout;
     default:
@@ -380,9 +382,6 @@ CryptAuthV2EnrollerImpl::ResultCodeErrorFromState(State state) {
     case State::kWaitingForKeyCreation:
       return CryptAuthEnrollmentResult::ResultCode::
           kErrorTimeoutWaitingForKeyCreation;
-    case State::kWaitingForKeyProofComputation:
-      return CryptAuthEnrollmentResult::ResultCode::
-          kErrorTimeoutWaitingForKeyProofComputation;
     case State::kWaitingForEnrollKeysResponse:
       return CryptAuthEnrollmentResult::ResultCode::
           kErrorTimeoutWaitingForEnrollKeysResponse;
@@ -519,8 +518,8 @@ void CryptAuthV2EnrollerImpl::OnSyncKeysSuccess(
 
   new_client_directive_ = response.client_directive();
 
-  // Note: The server's Diffie-Hellman public key is only required if
-  // symmetric keys need to be created.
+  // Note: The server's Diffie-Hellman public key is only required if symmetric
+  // keys need to be created.
   base::Optional<CryptAuthKey> server_ephemeral_dh;
   if (!response.server_ephemeral_dh().empty()) {
     server_ephemeral_dh = CryptAuthKey(
@@ -621,6 +620,10 @@ CryptAuthV2EnrollerImpl::ProcessSingleKeyResponses(
   return error_code;
 }
 
+void CryptAuthV2EnrollerImpl::OnSyncKeysFailure(NetworkRequestError error) {
+  FinishAttempt(SyncKeysNetworkRequestErrorToResultCode(error));
+}
+
 void CryptAuthV2EnrollerImpl::OnKeysCreated(
     const std::string& session_id,
     const base::flat_map<CryptAuthKeyBundle::Name, cryptauthv2::KeyDirective>&
@@ -629,62 +632,39 @@ void CryptAuthV2EnrollerImpl::OnKeysCreated(
     const base::Optional<CryptAuthKey>& client_ephemeral_dh) {
   DCHECK(state_ == State::kWaitingForKeyCreation);
 
-  // Compute key proofs for the new keys, using the random_session_id from the
-  // SyncKeysResponse as the payload, per the v2 Enrollment specifications.
-  std::vector<std::pair<CryptAuthKey, std::string>> key_payload_pairs;
-  std::vector<CryptAuthKeyBundle::Name> key_bundle_order_for_proofs;
-  for (const std::pair<CryptAuthKeyBundle::Name, CryptAuthKey>& new_key :
-       new_keys) {
-    key_bundle_order_for_proofs.emplace_back(new_key.first);
-    key_payload_pairs.emplace_back(new_key.second, session_id);
-  }
-
-  SetState(State::kWaitingForKeyProofComputation);
-
-  key_proof_computer_ =
-      CryptAuthKeyProofComputerImpl::Factory::Get()->BuildInstance();
-  key_proof_computer_->ComputeKeyProofs(
-      key_payload_pairs,
-      base::BindOnce(&CryptAuthV2EnrollerImpl::OnKeyProofsComputed,
-                     base::Unretained(this), session_id, new_key_directives,
-                     new_keys, client_ephemeral_dh,
-                     key_bundle_order_for_proofs));
-}
-
-void CryptAuthV2EnrollerImpl::OnSyncKeysFailure(NetworkRequestError error) {
-  FinishAttempt(SyncKeysNetworkRequestErrorToResultCode(error));
-}
-
-void CryptAuthV2EnrollerImpl::OnKeyProofsComputed(
-    const std::string& session_id,
-    const base::flat_map<CryptAuthKeyBundle::Name, cryptauthv2::KeyDirective>&
-        new_key_directives,
-    const base::flat_map<CryptAuthKeyBundle::Name, CryptAuthKey>& new_keys,
-    const base::Optional<CryptAuthKey>& client_ephemeral_dh,
-    const std::vector<CryptAuthKeyBundle::Name>& key_bundle_order_for_proofs,
-    const std::vector<std::string>& key_proofs) {
-  DCHECK(state_ == State::kWaitingForKeyProofComputation);
-
   EnrollKeysRequest request;
   request.set_random_session_id(session_id);
   if (client_ephemeral_dh)
     request.set_client_ephemeral_dh(client_ephemeral_dh->public_key());
 
-  DCHECK(key_proofs.size() == key_bundle_order_for_proofs.size());
-  for (size_t i = 0; i < key_bundle_order_for_proofs.size(); ++i) {
-    auto it = new_keys.find(key_bundle_order_for_proofs[i]);
-    DCHECK(it != new_keys.end());
-    const CryptAuthKeyBundle::Name& bundle_name = it->first;
-    const CryptAuthKey& new_key = it->second;
+  std::unique_ptr<CryptAuthKeyProofComputer> key_proof_computer =
+      CryptAuthKeyProofComputerImpl::Factory::Get()->BuildInstance();
+
+  for (const std::pair<CryptAuthKeyBundle::Name, CryptAuthKey>& name_key_pair :
+       new_keys) {
+    const CryptAuthKeyBundle::Name& bundle_name = name_key_pair.first;
+    const CryptAuthKey& new_key = name_key_pair.second;
 
     EnrollSingleKeyRequest* single_key_request =
         request.add_enroll_single_key_requests();
     single_key_request->set_key_name(
         CryptAuthKeyBundle::KeyBundleNameEnumToString(bundle_name));
     single_key_request->set_new_key_handle(new_key.handle());
-    single_key_request->set_key_proof(key_proofs[i]);
     if (new_key.IsAsymmetricKey())
       single_key_request->set_key_material(new_key.public_key());
+
+    // Compute key proofs for the new keys using the random_session_id from the
+    // SyncKeysResponse as the payload and the particular salt specified by the
+    // v2 Enrollment protocol.
+    base::Optional<std::string> key_proof =
+        key_proof_computer->ComputeKeyProof(new_key, session_id, kKeyProofSalt);
+    if (!key_proof || key_proof->empty()) {
+      FinishAttempt(CryptAuthEnrollmentResult::ResultCode::
+                        kErrorKeyProofComputationFailed);
+      return;
+    }
+
+    single_key_request->set_key_proof(*key_proof);
   }
 
   SetState(State::kWaitingForEnrollKeysResponse);
@@ -742,9 +722,6 @@ std::ostream& operator<<(std::ostream& stream,
       break;
     case CryptAuthV2EnrollerImpl::State::kWaitingForKeyCreation:
       stream << "[Enroller state: Waiting for key creation]";
-      break;
-    case CryptAuthV2EnrollerImpl::State::kWaitingForKeyProofComputation:
-      stream << "[Enroller state: Waiting for key proof computation]";
       break;
     case CryptAuthV2EnrollerImpl::State::kWaitingForEnrollKeysResponse:
       stream << "[Enroller state: Waiting for EnrollKeys response]";

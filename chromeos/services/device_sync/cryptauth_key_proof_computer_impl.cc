@@ -4,18 +4,15 @@
 
 #include "chromeos/services/device_sync/cryptauth_key_proof_computer_impl.h"
 
-#include <memory>
-#include <string>
-#include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
-#include "chromeos/components/multidevice/secure_message_delegate.h"
-#include "chromeos/components/multidevice/secure_message_delegate_impl.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/cryptauth_key.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
+#include "crypto/ec_private_key.h"
+#include "crypto/ec_signature_creator.h"
 #include "crypto/hkdf.h"
 #include "crypto/hmac.h"
 
@@ -24,10 +21,6 @@ namespace chromeos {
 namespace device_sync {
 
 namespace {
-
-// The salt used for HKDF in symmetric key proofs. This value is part of the
-// CryptAuth v2 Enrollment specifications.
-const char kSymmetricKeyProofSalt[] = "CryptAuth Key Proof";
 
 size_t NumBytesForSymmetricKeyType(cryptauthv2::KeyType key_type) {
   switch (key_type) {
@@ -44,6 +37,14 @@ size_t NumBytesForSymmetricKeyType(cryptauthv2::KeyType key_type) {
 bool IsValidAsymmetricKey(const CryptAuthKey& key) {
   return key.IsAsymmetricKey() && !key.private_key().empty() &&
          key.type() == cryptauthv2::KeyType::P256;
+}
+
+std::string ByteVectorToString(const std::vector<uint8_t>& byte_array) {
+  return std::string(byte_array.begin(), byte_array.end());
+}
+
+std::vector<uint8_t> StringToByteVector(const std::string& str) {
+  return std::vector<uint8_t>(str.begin(), str.end());
 }
 
 }  // namespace
@@ -75,82 +76,86 @@ CryptAuthKeyProofComputerImpl::Factory::BuildInstance() {
   return base::WrapUnique(new CryptAuthKeyProofComputerImpl());
 }
 
-CryptAuthKeyProofComputerImpl::CryptAuthKeyProofComputerImpl()
-    : secure_message_delegate_(
-          multidevice::SecureMessageDelegateImpl::Factory::NewInstance()) {}
+CryptAuthKeyProofComputerImpl::CryptAuthKeyProofComputerImpl() = default;
 
 CryptAuthKeyProofComputerImpl::~CryptAuthKeyProofComputerImpl() = default;
 
-void CryptAuthKeyProofComputerImpl::ComputeKeyProofs(
-    const std::vector<std::pair<CryptAuthKey, std::string>>& key_payload_pairs,
-    ComputeKeyProofsCallback compute_key_proofs_callback) {
-  DCHECK(!key_payload_pairs.empty());
+base::Optional<std::string> CryptAuthKeyProofComputerImpl::ComputeKeyProof(
+    const CryptAuthKey& key,
+    const std::string& payload,
+    const std::string& salt) {
+  if (key.IsSymmetricKey())
+    return ComputeSymmetricKeyProof(key, payload, salt);
 
-  // Fail if ComputeKeyProofs() has already been called.
-  DCHECK(num_key_proofs_to_compute_ == 0 && key_payload_pairs_.empty() &&
-         output_key_proofs_.empty() && !compute_key_proofs_callback_);
-
-  num_key_proofs_to_compute_ = key_payload_pairs.size();
-  key_payload_pairs_ = key_payload_pairs;
-  output_key_proofs_.resize(num_key_proofs_to_compute_);
-  compute_key_proofs_callback_ = std::move(compute_key_proofs_callback);
-
-  for (size_t i = 0; i < key_payload_pairs_.size(); ++i) {
-    if (key_payload_pairs_[i].first.IsSymmetricKey()) {
-      ComputeSymmetricKeyProof(i, key_payload_pairs_[i].first,
-                               key_payload_pairs_[i].second);
-    } else {
-      DCHECK(IsValidAsymmetricKey(key_payload_pairs_[i].first));
-      ComputeAsymmetricKeyProof(i, key_payload_pairs_[i].first,
-                                key_payload_pairs_[i].second);
-    }
-  }
+  return ComputeAsymmetricKeyProof(key, payload, salt);
 }
 
-void CryptAuthKeyProofComputerImpl::ComputeSymmetricKeyProof(
-    const size_t index,
+base::Optional<std::string>
+CryptAuthKeyProofComputerImpl::ComputeSymmetricKeyProof(
     const CryptAuthKey& symmetric_key,
-    const std::string& payload) {
-  std::string derived_symmetric_key_material =
-      crypto::HkdfSha256(symmetric_key.symmetric_key(), kSymmetricKeyProofSalt,
-                         symmetric_key.handle(),
-                         NumBytesForSymmetricKeyType(symmetric_key.type()));
+    const std::string& payload,
+    const std::string& salt) {
+  std::string derived_symmetric_key_material = crypto::HkdfSha256(
+      symmetric_key.symmetric_key(), salt, symmetric_key.handle(),
+      NumBytesForSymmetricKeyType(symmetric_key.type()));
 
   crypto::HMAC hmac(crypto::HMAC::HashAlgorithm::SHA256);
   std::vector<unsigned char> signed_payload(hmac.DigestLength());
   bool success =
       hmac.Init(derived_symmetric_key_material) &&
       hmac.Sign(payload, signed_payload.data(), signed_payload.size());
-  DCHECK(success);
 
-  OnKeyProofComputed(index,
-                     std::string(signed_payload.begin(), signed_payload.end()));
+  if (!success) {
+    PA_LOG(ERROR) << "Failed to compute symmetric key proof for key handle "
+                  << symmetric_key.handle();
+    return base::nullopt;
+  }
+
+  return std::string(signed_payload.begin(), signed_payload.end());
 }
 
-void CryptAuthKeyProofComputerImpl::ComputeAsymmetricKeyProof(
-    const size_t index,
+base::Optional<std::string>
+CryptAuthKeyProofComputerImpl::ComputeAsymmetricKeyProof(
     const CryptAuthKey& asymmetric_key,
-    const std::string& payload) {
-  multidevice::SecureMessageDelegate::CreateOptions options;
-  options.encryption_scheme = securemessage::EncScheme::NONE;
-  options.signature_scheme = securemessage::SigScheme::ECDSA_P256_SHA256;
-  options.verification_key_id = asymmetric_key.handle();
+    const std::string& payload,
+    const std::string& salt) {
+  if (!IsValidAsymmetricKey(asymmetric_key)) {
+    PA_LOG(ERROR) << "Failed to compute asymmetric key proof for key handle "
+                  << asymmetric_key.handle()
+                  << ". Invalid key type: " << asymmetric_key.type();
+    return base::nullopt;
+  }
 
-  secure_message_delegate_->CreateSecureMessage(
-      payload, asymmetric_key.private_key(), options,
-      base::Bind(&CryptAuthKeyProofComputerImpl::OnKeyProofComputed,
-                 base::Unretained(this), index));
-}
+  std::unique_ptr<crypto::ECPrivateKey> ec_private_key =
+      crypto::ECPrivateKey::CreateFromPrivateKeyInfo(
+          StringToByteVector(asymmetric_key.private_key()));
+  if (!ec_private_key) {
+    PA_LOG(ERROR) << "Failed to compute asymmetric key proof for key handle "
+                  << asymmetric_key.handle() << ". "
+                  << "Invalid private key material; expect DER-encoded PKCS #8 "
+                  << "PrivateKeyInfo format (RFC 5208).";
+    return base::nullopt;
+  }
 
-void CryptAuthKeyProofComputerImpl::OnKeyProofComputed(
-    const size_t index,
-    const std::string& key_proof) {
-  DCHECK(index < output_key_proofs_.size());
-  output_key_proofs_[index] = key_proof;
+  std::unique_ptr<crypto::ECSignatureCreator> ec_signature_creator =
+      crypto::ECSignatureCreator::Create(ec_private_key.get());
+  if (!ec_signature_creator) {
+    PA_LOG(ERROR) << "Failed to compute asymmetric key proof for key handle "
+                  << asymmetric_key.handle();
+    return base::nullopt;
+  }
 
-  --num_key_proofs_to_compute_;
-  if (!num_key_proofs_to_compute_)
-    std::move(compute_key_proofs_callback_).Run(output_key_proofs_);
+  std::string to_sign = salt + payload;
+  std::vector<uint8_t> key_proof;
+  bool success = ec_signature_creator->Sign(
+      StringToByteVector(salt + payload).data(), to_sign.size(), &key_proof);
+  if (!success) {
+    PA_LOG(ERROR) << "Failed to compute asymmetric key proof for key handle "
+                  << asymmetric_key.handle();
+    return base::nullopt;
+  }
+
+  return ByteVectorToString(key_proof);
 }
 
 }  // namespace device_sync
