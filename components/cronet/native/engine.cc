@@ -36,13 +36,15 @@ class SharedEngineState {
   // Marks |storage_path| in use, so multiple engines would not use it at the
   // same time. Returns |true| if marked successfully, |false| if it is in use
   // by another engine.
-  bool MarkStoragePathInUse(const std::string& storage_path) {
+  bool MarkStoragePathInUse(const std::string& storage_path)
+      LOCKS_EXCLUDED(lock_) {
     base::AutoLock lock(lock_);
     return in_use_storage_paths_.emplace(storage_path).second;
   }
 
   // Unmarks |storage_path| in use, so another engine could use it.
-  void UnmarkStoragePathInUse(const std::string& storage_path) {
+  void UnmarkStoragePathInUse(const std::string& storage_path)
+      LOCKS_EXCLUDED(lock_) {
     base::AutoLock lock(lock_);
     in_use_storage_paths_.erase(storage_path);
   }
@@ -59,7 +61,7 @@ class SharedEngineState {
   const std::string default_user_agent_;
   // Protecting shared state.
   base::Lock lock_;
-  std::unordered_set<std::string> in_use_storage_paths_;
+  std::unordered_set<std::string> in_use_storage_paths_ GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(SharedEngineState);
 };
@@ -302,7 +304,7 @@ class Cronet_EngineImpl::Callback : public CronetURLRequestContext::Callback {
   ~Callback() override;
 
   // CronetURLRequestContext::Callback implementation:
-  void OnInitNetworkThread() override;
+  void OnInitNetworkThread() override LOCKS_EXCLUDED(engine_->lock_);
   void OnDestroyNetworkThread() override;
   void OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType effective_connection_type) override;
@@ -317,7 +319,7 @@ class Cronet_EngineImpl::Callback : public CronetURLRequestContext::Callback {
       int32_t throughput_kbps,
       int32_t timestamp_ms,
       net::NetworkQualityObservationSource source) override;
-  void OnStopNetLogCompleted() override;
+  void OnStopNetLogCompleted() override LOCKS_EXCLUDED(engine_->lock_);
 
  private:
   // The engine which owns context that owns |this| callback.
