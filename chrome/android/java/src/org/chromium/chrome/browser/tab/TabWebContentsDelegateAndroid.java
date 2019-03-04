@@ -14,7 +14,7 @@ import android.graphics.RectF;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
-import android.util.Pair;
+import android.support.v4.util.ArrayMap;
 import android.view.KeyEvent;
 import android.view.View;
 
@@ -78,6 +78,8 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
 
     private final Runnable mCloseContentsRunnable;
     protected final Tab mTab;
+
+    private final ArrayMap<WebContents, String> mWebContentsUrlMapping = new ArrayMap<>();
 
     protected Handler mHandler;
     private FindResultListener mFindResultListener;
@@ -255,8 +257,12 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
                     openerRenderFrameId, frameName, targetUrl, newWebContents);
         }
         // The URL can't be taken from the WebContents if it's paused.  Save it for later.
-        assert mWebContentsUrlMapping == null;
-        mWebContentsUrlMapping = Pair.create(newWebContents, targetUrl);
+        // TODO(crbug.com/758186): Remove after debugging.
+        if (mWebContentsUrlMapping.containsKey(newWebContents)) {
+            Log.e(TAG, "Duplicate mWebContentsUrlMapping key");
+        }
+        assert !mWebContentsUrlMapping.containsKey(newWebContents);
+        mWebContentsUrlMapping.put(newWebContents, targetUrl);
 
         // TODO(dfalcantara): Re-remove this once crbug.com/508366 is fixed.
         TabCreator tabCreator = mTab.getActivity().getTabCreator(mTab.isIncognito());
@@ -292,8 +298,6 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
         mTab.openNewTab(url, null, extraHeaders, postData, disposition, true, isRendererInitiated);
     }
 
-    private Pair<WebContents, String> mWebContentsUrlMapping;
-
     protected TabModel getTabModel() {
         // TODO(dfalcantara): Remove this when DocumentActivity.getTabModelSelector()
         //                    can return a TabModelSelector that activateContents() can use.
@@ -311,14 +315,17 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
     @CalledByNative
     public boolean addNewContents(WebContents sourceWebContents, WebContents webContents,
             int disposition, Rect initialPosition, boolean userGesture) {
-        assert mWebContentsUrlMapping.first == webContents;
+        // TODO(crbug.com/758186): Remove after debugging.
+        if (!mWebContentsUrlMapping.containsKey(webContents)) {
+            Log.e(TAG, "Missing mWebContentsUrlMapping key");
+        }
+        assert mWebContentsUrlMapping.containsKey(webContents);
 
         TabCreator tabCreator = mTab.getActivity().getTabCreator(mTab.isIncognito());
         assert tabCreator != null;
 
         // Grab the URL, which might not be available via the Tab.
-        String url = mWebContentsUrlMapping.second;
-        mWebContentsUrlMapping = null;
+        String url = mWebContentsUrlMapping.remove(webContents);
 
         // Skip opening a new Tab if it doesn't make sense.
         if (mTab.isClosing()) return false;
