@@ -256,37 +256,15 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
           0) {
         changes = password_store_sync_->AddLoginSync(
             PasswordFromEntityChange(entity_change, /*sync_time=*/time_now));
-        // TODO(crbug.com/936823): The DCHECK_LE below is legit. However, recent
-        // crashes suggest that 2 changes are returned in the above call
-        // (details are in the bug). It should be uncommentted once the
-        // underlying cause is discovered.
-        // DCHECK_LE(1U, changes.size());
+        DCHECK_LE(changes.size(), 1U);
       } else {
         changes = password_store_sync_->UpdateLoginSync(
             PasswordFromEntityChange(entity_change, /*sync_time=*/time_now));
-        DCHECK_LE(1U, changes.size());
+        DCHECK_LE(changes.size(), 1U);
       }
       if (changes.empty()) {
         return syncer::ModelError(
             FROM_HERE, "Failed to add/update an entry in the password store.");
-      }
-
-      // TODO(crbug.com/936823): |changes| should never contain more than one
-      // change. This code path has been added to address the issue explained in
-      // the bug. It should be removed once the underlying cause of the issue is
-      // discovered.
-      if (changes.size() == 2) {
-        // In that case the first change indicates a removal of an existing
-        // password and we aren't interested in it.
-        DCHECK(changes[0].type() == PasswordStoreChange::REMOVE);
-        DCHECK(changes[1].type() == PasswordStoreChange::ADD);
-        change_processor()->UpdateStorageKey(
-            entity_change.data(),
-            /*storage_key=*/
-            base::NumberToString(changes[1].primary_key()),
-            metadata_change_list.get());
-        password_store_changes.push_back(changes[1]);
-        continue;
       }
 
       change_processor()->UpdateStorageKey(
