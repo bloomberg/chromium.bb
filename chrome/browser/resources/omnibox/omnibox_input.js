@@ -76,8 +76,6 @@ class OmniboxInput extends OmniboxElement {
     this.$$('#filter-text')
         .addEventListener('input', this.onFilterInputsChanged_.bind(this));
 
-    this.$$('#copy-text')
-        .addEventListener('click', this.onCopyText_.bind(this));
     this.$$('#download-json')
         .addEventListener('click', this.onDownloadJson_.bind(this));
 
@@ -231,11 +229,6 @@ class OmniboxInput extends OmniboxElement {
   onFilterInputsChanged_() {
     this.dispatchEvent(new CustomEvent(
         'filter-input-changed', {detail: this.$$('#filter-text').value}));
-  }
-
-  /** @private */
-  onCopyText_() {
-    this.dispatchEvent(new CustomEvent('copy-text'));
   }
 
   /** @private */

@@ -98,7 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
       'filter-input-changed', e => omniboxOutput.updateFilterText(e.detail));
   omniboxInput.addEventListener(
       'import-json', e => exportDelegate.importJson(e.detail));
-  omniboxInput.addEventListener('copy-text', () => exportDelegate.copyText());
   omniboxInput.addEventListener(
       'download-json', () => exportDelegate.downloadJson());
   omniboxInput.addEventListener(
@@ -133,10 +132,6 @@ class ExportDelegate {
     this.omniboxOutput_.setResponsesHistory(importData.responsesHistory);
   }
 
-  copyText() {
-    ExportDelegate.copy_(this.omniboxOutput_.visibleTableText);
-  }
-
   downloadJson() {
     /** @type {OmniboxExport} */
     const exportObj = {
@@ -147,12 +142,6 @@ class ExportDelegate {
     const fileName = `omnibox_debug_export_${exportObj.queryInputs.inputText}_${
         new Date().toISOString()}.json`;
     ExportDelegate.download_(exportObj, fileName);
-  }
-
-  /** @private @param {string} value */
-  static copy_(value) {
-    navigator.clipboard.writeText(value).catch(
-        error => console.error('unable to copy to clipboard:', error));
   }
 
   /**
