@@ -21,7 +21,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
-#include "third_party/blink/public/platform/modules/app_banner/app_banner.mojom.h"
+#include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
 
 enum class WebappInstallSource;
 class InstallableManager;

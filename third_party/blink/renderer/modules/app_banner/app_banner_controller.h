@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_APP_BANNER_APP_BANNER_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_APP_BANNER_APP_BANNER_CONTROLLER_H_
 
-#include "third_party/blink/public/platform/modules/app_banner/app_banner.mojom-blink.h"
+#include "third_party/blink/public/mojom/app_banner/app_banner.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
