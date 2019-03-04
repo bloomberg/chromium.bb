@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "net/base/request_priority.h"
 #include "net/third_party/quic/core/quic_packets.h"
+#include "net/third_party/quic/core/quic_stream_frame_data_producer.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/test_tools/mock_clock.h"
 #include "net/third_party/quic/test_tools/mock_random.h"
@@ -390,7 +391,8 @@ class QuicTestPacketMaker {
       const quic::QuicFrame& frame);
   std::unique_ptr<quic::QuicReceivedPacket> MakeMultipleFramesPacket(
       const quic::QuicPacketHeader& header,
-      const quic::QuicFrames& frames);
+      const quic::QuicFrames& frames,
+      quic::QuicStreamFrameDataProducer* data_producer);
 
   void InitializeHeader(uint64_t packet_number, bool should_include_version);
 
