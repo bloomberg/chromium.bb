@@ -8,5 +8,5 @@ interface PlatformProbes {
   class ResourceResponse;
   struct FetchInitiatorInfo;
 
-  PlatformSendRequest([Keep] FetchContext*, unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
+  PlatformSendRequest([Keep] FetchContext*, unsigned long identifier, ResourceRequest&, const ResourceResponse& redirect_response, const FetchInitiatorInfo&);
 }
