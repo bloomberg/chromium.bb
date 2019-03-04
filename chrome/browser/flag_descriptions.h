@@ -1705,9 +1705,6 @@ extern const char kUseAngleD3D9[];
 extern const char kUseWinrtMidiApiName[];
 extern const char kUseWinrtMidiApiDescription[];
 
-extern const char kWindows10CustomTitlebarName[];
-extern const char kWindows10CustomTitlebarDescription[];
-
 #endif  // defined(OS_WIN)
 
 // Mac ------------------------------------------------------------------------

@@ -2896,11 +2896,6 @@ const char kUseWinrtMidiApiDescription[] =
     "Use Windows Runtime MIDI API for WebMIDI (effective only on Windows 10 or "
     "later).";
 
-const char kWindows10CustomTitlebarName[] = "Custom-drawn Windows 10 Titlebar";
-const char kWindows10CustomTitlebarDescription[] =
-    "If enabled, Chrome will draw the titlebar and caption buttons instead of "
-    "deferring to Windows.";
-
 #endif  // defined(OS_WIN)
 
 // Mac -------------------------------------------------------------------------
