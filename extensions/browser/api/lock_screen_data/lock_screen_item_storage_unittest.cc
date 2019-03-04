@@ -1524,7 +1524,7 @@ TEST_F(LockScreenItemStorageTest, AttemptMigrationEvenWhenNoDataRecorded) {
 
   // Update the local state so it seems that lock screen notes have previously
   // been used by the extension, but currently, no items are recorded to exist
-  // for the extnesion.
+  // for the extension.
   InitExtensionLocalState(
       {{extension()->id(), 1 /*storage_version*/, 0 /*item_count*/}});
 
