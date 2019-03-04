@@ -67,8 +67,7 @@
   X("explore_sites")                                                     \
   X("FileSystem")                                                        \
   X("file_system_provider")                                              \
-  X("font_loader")                                                       \
-  X("font_service")                                                      \
+  X("fonts")                                                             \
   X("GAMEPAD")                                                           \
   X("gpu")                                                               \
   X("gpu.capture")                                                       \

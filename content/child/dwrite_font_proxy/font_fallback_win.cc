@@ -87,7 +87,7 @@ HRESULT FontFallback::MapCharacters(IDWriteTextAnalysisSource* source,
     return S_OK;
   }
 
-  TRACE_EVENT0("dwrite", "FontFallback::MapCharacters (IPC)");
+  TRACE_EVENT0("dwrite,fonts", "FontFallback::MapCharacters (IPC)");
 
   const WCHAR* locale = nullptr;
   // |locale_text_length| is actually the length of text with the locale, not
@@ -168,7 +168,7 @@ bool FontFallback::GetCachedFont(const base::string16& text,
   if (it == fallback_family_cache_.end())
     return false;
 
-  TRACE_EVENT0("dwrite", "FontFallback::GetCachedFont");
+  TRACE_EVENT0("dwrite,fonts", "FontFallback::GetCachedFont");
 
   std::list<mswr::ComPtr<IDWriteFontFamily>>& family_list = it->second;
   std::list<mswr::ComPtr<IDWriteFontFamily>>::iterator family_iterator;

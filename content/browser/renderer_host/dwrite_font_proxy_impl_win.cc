@@ -134,7 +134,7 @@ void DWriteFontProxyImpl::SetWindowsFontsPathForTesting(base::string16 path) {
 void DWriteFontProxyImpl::FindFamily(const base::string16& family_name,
                                      FindFamilyCallback callback) {
   InitializeDirectWrite();
-  TRACE_EVENT0("dwrite", "FontProxyHost::OnFindFamily");
+  TRACE_EVENT0("dwrite,fonts", "FontProxyHost::OnFindFamily");
   UINT32 family_index = UINT32_MAX;
   if (collection_) {
     BOOL exists = FALSE;
@@ -151,20 +151,20 @@ void DWriteFontProxyImpl::FindFamily(const base::string16& family_name,
 
 void DWriteFontProxyImpl::GetFamilyCount(GetFamilyCountCallback callback) {
   InitializeDirectWrite();
-  TRACE_EVENT0("dwrite", "FontProxyHost::OnGetFamilyCount");
+  TRACE_EVENT0("dwrite,fonts", "FontProxyHost::OnGetFamilyCount");
   std::move(callback).Run(collection_ ? collection_->GetFontFamilyCount() : 0);
 }
 
 void DWriteFontProxyImpl::GetFamilyNames(UINT32 family_index,
                                          GetFamilyNamesCallback callback) {
   InitializeDirectWrite();
-  TRACE_EVENT0("dwrite", "FontProxyHost::OnGetFamilyNames");
+  TRACE_EVENT0("dwrite,fonts", "FontProxyHost::OnGetFamilyNames");
   callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       std::move(callback), std::vector<blink::mojom::DWriteStringPairPtr>());
   if (!collection_)
     return;
 
-  TRACE_EVENT0("dwrite", "FontProxyHost::DoGetFamilyNames");
+  TRACE_EVENT0("dwrite,fonts", "FontProxyHost::DoGetFamilyNames");
 
   mswr::ComPtr<IDWriteFontFamily> family;
   HRESULT hr = collection_->GetFontFamily(family_index, &family);
@@ -219,7 +219,7 @@ void DWriteFontProxyImpl::GetFamilyNames(UINT32 family_index,
 void DWriteFontProxyImpl::GetFontFiles(uint32_t family_index,
                                        GetFontFilesCallback callback) {
   InitializeDirectWrite();
-  TRACE_EVENT0("dwrite", "FontProxyHost::OnGetFontFiles");
+  TRACE_EVENT0("dwrite,fonts", "FontProxyHost::OnGetFontFiles");
   callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       std::move(callback), std::vector<base::FilePath>(),
       std::vector<base::File>());
