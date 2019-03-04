@@ -70,7 +70,9 @@ js_library("item") {
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:util",
+    "//ui/webui/resources/js/cr/ui:focus_row",
     "//ui/webui/resources/js/cr/ui:focus_row_behavior",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
 }
 

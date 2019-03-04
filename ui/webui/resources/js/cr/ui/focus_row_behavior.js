@@ -155,6 +155,11 @@ cr.define('cr.ui', function() {
       }
     },
 
+    /** @return {!cr.ui.FocusRow} */
+    getFocusRow: function() {
+      return assert(this.row_);
+    },
+
     /** @private */
     updateFirstControl_: function() {
       const newFirstControl = this.row_.getFirstFocusable();
