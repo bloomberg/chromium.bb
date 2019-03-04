@@ -37,8 +37,9 @@ class NetworkFetcherWinHTTP
     : public base::RefCountedThreadSafe<NetworkFetcherWinHTTP> {
  public:
   using FetchCompleteCallback = base::OnceCallback<void()>;
-  using FetchStartedCallback = base::OnceCallback<
-      void(const GURL& final_url, int response_code, int64_t content_length)>;
+  using FetchStartedCallback =
+      update_client::NetworkFetcher::ResponseStartedCallback;
+  using FetchProgressCallback = update_client::NetworkFetcher::ProgressCallback;
 
   explicit NetworkFetcherWinHTTP(const HINTERNET& session_handle_);
 
@@ -49,10 +50,12 @@ class NetworkFetcherWinHTTP
       const std::string& post_data,
       const base::flat_map<std::string, std::string>& post_additional_headers,
       FetchStartedCallback fetch_started_callback,
+      FetchProgressCallback fetch_progress_callback,
       FetchCompleteCallback fetch_complete_callback);
   void DownloadToFile(const GURL& url,
                       const base::FilePath& file_path,
                       FetchStartedCallback fetch_started_callback,
+                      FetchProgressCallback fetch_progress_callback,
                       FetchCompleteCallback fetch_complete_callback);
 
   std::string GetResponseBody() const;
@@ -133,6 +136,7 @@ class NetworkFetcherWinHTTP
   int64_t content_size_ = 0;
 
   FetchStartedCallback fetch_started_callback_;
+  FetchProgressCallback fetch_progress_callback_;
   FetchCompleteCallback fetch_complete_callback_;
 
   scoped_refptr<update_client::NetworkFetcherFactory> network_fetcher_factory_;

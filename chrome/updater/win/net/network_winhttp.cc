@@ -94,11 +94,13 @@ void NetworkFetcherWinHTTP::PostRequest(
     const std::string& post_data,
     const base::flat_map<std::string, std::string>& post_additional_headers,
     FetchStartedCallback fetch_started_callback,
+    FetchProgressCallback fetch_progress_callback,
     FetchCompleteCallback fetch_complete_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   url_ = url;
   fetch_started_callback_ = std::move(fetch_started_callback);
+  fetch_progress_callback_ = std::move(fetch_progress_callback);
   fetch_complete_callback_ = std::move(fetch_complete_callback);
 
   DCHECK(url.SchemeIsHTTPOrHTTPS());
@@ -118,12 +120,14 @@ void NetworkFetcherWinHTTP::DownloadToFile(
     const GURL& url,
     const base::FilePath& file_path,
     FetchStartedCallback fetch_started_callback,
+    FetchProgressCallback fetch_progress_callback,
     FetchCompleteCallback fetch_complete_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   url_ = url;
   file_path_ = file_path;
   fetch_started_callback_ = std::move(fetch_started_callback);
+  fetch_progress_callback_ = std::move(fetch_progress_callback);
   fetch_complete_callback_ = std::move(fetch_complete_callback);
 
   DCHECK(url.SchemeIsHTTPOrHTTPS());
@@ -321,6 +325,8 @@ HRESULT NetworkFetcherWinHTTP::ReadData(size_t num_bytes_available) {
 
 void NetworkFetcherWinHTTP::ReadDataComplete(size_t num_bytes_read) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  fetch_progress_callback_.Run(base::saturated_cast<int64_t>(num_bytes_read));
 
   read_buffer_.resize(num_bytes_read);
   write_data_callback_.Run();

@@ -41,7 +41,6 @@ UrlFetcherDownloader::~UrlFetcherDownloader() {
 
 void UrlFetcherDownloader::DoStartDownload(const GURL& url) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, kTaskTraits,
       base::BindOnce(&UrlFetcherDownloader::CreateDownloadDir,
@@ -77,13 +76,14 @@ void UrlFetcherDownloader::StartURLFetch(const GURL& url) {
     return;
   }
 
-  VLOG(1) << "Starting background download: " << url.spec();
   const auto file_path = download_dir_.AppendASCII(url.ExtractFileName());
   network_fetcher_ = network_fetcher_factory_->Create();
   network_fetcher_->DownloadToFile(
       url, file_path,
       base::BindOnce(&UrlFetcherDownloader::OnResponseStarted,
                      base::Unretained(this)),
+      base::BindRepeating(&UrlFetcherDownloader::OnDownloadProgress,
+                          base::Unretained(this)),
       base::BindOnce(&UrlFetcherDownloader::OnNetworkFetcherComplete,
                      base::Unretained(this)));
 
@@ -153,11 +153,16 @@ void UrlFetcherDownloader::OnResponseStarted(const GURL& final_url,
                                              int64_t content_length) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  VLOG(1) << "url fetcher response started for: " << final_url.spec();
+
   final_url_ = final_url;
   response_code_ = response_code;
   total_bytes_ = content_length;
+}
 
-  OnDownloadProgress();
+void UrlFetcherDownloader::OnDownloadProgress(int64_t current) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  CrxDownloader::OnDownloadProgress();
 }
 
 }  // namespace update_client

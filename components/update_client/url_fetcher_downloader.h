@@ -41,6 +41,8 @@ class UrlFetcherDownloader : public CrxDownloader {
   void OnResponseStarted(const GURL& final_url,
                          int response_code,
                          int64_t content_length);
+  void OnDownloadProgress(int64_t content_length);
+
   THREAD_CHECKER(thread_checker_);
 
   scoped_refptr<NetworkFetcherFactory> network_fetcher_factory_;

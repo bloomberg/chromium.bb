@@ -30,12 +30,13 @@ void NetworkFetcher::PostRequest(
     const std::string& post_data,
     const base::flat_map<std::string, std::string>& post_additional_headers,
     ResponseStartedCallback response_started_callback,
+    ProgressCallback progress_callback,
     PostRequestCompleteCallback post_request_complete_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   post_request_complete_callback_ = std::move(post_request_complete_callback);
   network_fetcher_->PostRequest(
       url, post_data, post_additional_headers,
-      std::move(response_started_callback),
+      std::move(response_started_callback), std::move(progress_callback),
       base::BindOnce(&NetworkFetcher::PostRequestComplete,
                      base::Unretained(this)));
 }
@@ -44,12 +45,14 @@ void NetworkFetcher::DownloadToFile(
     const GURL& url,
     const base::FilePath& file_path,
     ResponseStartedCallback response_started_callback,
+    ProgressCallback progress_callback,
     DownloadToFileCompleteCallback download_to_file_complete_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   download_to_file_complete_callback_ =
       std::move(download_to_file_complete_callback);
   network_fetcher_->DownloadToFile(
       url, file_path, std::move(response_started_callback),
+      std::move(progress_callback),
       base::BindOnce(&NetworkFetcher::DownloadToFileComplete,
                      base::Unretained(this)));
 }
