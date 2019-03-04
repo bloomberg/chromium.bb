@@ -31,10 +31,17 @@ cr-menu > [hidden] {
 }
 
 cr-menu > [shortcutText]::after {
-  -webkit-padding-start: 30px;
   color: rgb(100, 100, 100);
   content: attr(shortcutText);
   float: right;
+  padding-inline-start: 30px;
+}
+
+cr-menu > [sub-menu]::after {
+  color: rgb(100, 100, 100);
+  content: '\25b6';
+  float: right;
+  font-size: 0.7em;
 }
 
 html[dir='rtl'] cr-menu > [shortcutText]::after {
@@ -56,11 +63,11 @@ cr-menu.files-menu > cr-menu-item {
 /* Icon on the left of the item label for cr.ui.FilesMenuItem.
    TODO(mtomasz): Upstream to cr.ui.MenuItem. */
 cr-menu.files-menu.has-icon-start cr-menu-item .icon.start {
-  -webkit-margin-end: 8px;
-  background-repeat: no-repeat;
   background-position: center;
+  background-repeat: no-repeat;
   display: inline-block;
   height: 16px;
+  margin-inline-end: 8px;
   vertical-align: middle;
   width: 16px;
 }
