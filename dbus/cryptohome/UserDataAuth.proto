@@ -66,6 +66,96 @@ enum CryptohomeErrorCode {
   CRYPTOHOME_ERROR_REMOVE_FAILED = 32;
 }
 
+// This is used by MountRequest to store details about the mount to create
+message CreateRequest {
+  // In the future, this will contain account-wide data like
+  // the deletion priority or the IdP's origin.
+
+  // keys contain the key data to add to the key for the mount that we
+  // are creating. Currently, only one key is supported.
+  repeated cryptohome.Key keys = 1;
+  // Explicitly use the |key| from the AuthorizationRequest.
+  // Setting this value means that the KeyData is filled as it
+  // would be with a Key above or in an AddKeyRequest.
+  bool copy_authorization_key = 2;
+  // If set to true, always use eCryptfs as the encryption method.
+  bool force_ecryptfs = 3;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Actual request/reply goes below
 ///////////////////////////////////////////////////////////////////////////////
+
+// Input parameters to IsMounted()
+message IsMountedRequest {
+  // If username is available, then it'll check if a specific user's home
+  // directory is mounted. Otherwise, it'll check if any home directory is
+  // mounted.
+  string username = 1;
+}
+
+// Output parameters for IsMounted()
+message IsMountedReply {
+  // If the requested home directory is mounted.
+  bool is_mounted = 1;
+  // If the mount is ephemeral, that is, if the contents get cleared once
+  // the user logs out.
+  bool is_ephemeral_mount = 2;
+}
+
+// Input parameters to Unmount()
+// Currently we only support unmounting all mounted cryptohomes but in the
+// future we may implement per-user unmount, at which point we can extend this
+// proto with the necessary information.
+message UnmountRequest {
+}
+
+// Output parameters for Unmount()
+message UnmountReply {
+  // Indicates an error if |error| is not empty.
+  CryptohomeErrorCode error = 1;
+}
+
+// Input parameters to Mount()
+message MountRequest {
+  // The account of the user whose home directory is requested for mounting.
+  cryptohome.AccountIdentifier account = 1;
+  // Authorization data from the user.
+  cryptohome.AuthorizationRequest authorization = 2;
+
+  // If set, then perform an ephemeral mount only.
+  bool require_ephemeral = 3;
+  // If defined, the account will be created if it does not exist.
+  // Additionally, a failed AuthorizationRequest will be expected as
+  // there will be no existing keys.
+  CreateRequest create = 4;
+  // If set to true, and cryptohomed supports the new "dircrypto" encryption,
+  // forces to use the new encryption. That is, makes it an error to mount
+  // an existing home directory encrypted in the old way (ecryptfs).
+  bool force_dircrypto_if_available = 5;
+  // If set to true, mounts the existing ecryptfs vault to a temporary location
+  // while setting up a new dircrypto directory.
+  bool to_migrate_from_ecryptfs = 6;
+  // If set, then performs a public mount, which is used for a Kiosk session.
+  // Credentials are not needed in the request; they are synthesized by
+  // cryptohomed from id.
+  bool public_mount = 7;
+  // If set to true, mounts the vault to a temporary location. The mount is not
+  // exposed to the usual locations (/home/user, /home/root).
+  bool hidden_mount = 8;
+  // If set to true, the mount will be for a guest session.
+  bool guest_mount = 9;
+}
+
+// Output parameters for Mount()
+message MountReply {
+  // Indicate an error when |error| is not empty.
+  CryptohomeErrorCode error = 1;
+  // |recreated| is set when the cryptohome had to be wiped
+  // because the key or data was an unrecoverable.  It does not imply
+  // failure to Mount nor is it 'true' when a CreateRequest creates
+  // a cryptohome for the first time.
+  bool recreated = 2;
+  // Returns the filesystem-sanitized username.
+  string sanitized_username = 3;
+}
