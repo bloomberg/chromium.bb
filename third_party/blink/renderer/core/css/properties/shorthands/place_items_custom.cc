@@ -24,7 +24,7 @@ bool PlaceItems::ParseShorthand(
 
   CSSParserTokenRange range_copy = range;
   const CSSValue* align_items_value =
-      ToLonghand(GetCSSPropertyAlignItems())
+      To<Longhand>(GetCSSPropertyAlignItems())
           .ParseSingleValue(range, context, local_context);
   if (!align_items_value)
     return false;
@@ -33,7 +33,7 @@ bool PlaceItems::ParseShorthand(
     range = range_copy;
 
   const CSSValue* justify_items_value =
-      ToLonghand(GetCSSPropertyJustifyItems())
+      To<Longhand>(GetCSSPropertyJustifyItems())
           .ParseSingleValue(range, context, local_context);
   if (!justify_items_value || !range.AtEnd())
     return false;

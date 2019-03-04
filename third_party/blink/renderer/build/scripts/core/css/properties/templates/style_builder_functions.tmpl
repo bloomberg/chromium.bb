@@ -76,7 +76,7 @@ const CSSProperty& resolved_property =
     ResolveDirectionAwareProperty(state.Style()->Direction(),
                                   state.Style()->GetWritingMode());
 DCHECK(!resolved_property.IDEquals(PropertyID()));
-ToLonghand(resolved_property).{{apply_call}};
+To<Longhand>(resolved_property).{{apply_call}};
 {% endmacro %}
 
 {% macro style_builder_functions(property, header) %}

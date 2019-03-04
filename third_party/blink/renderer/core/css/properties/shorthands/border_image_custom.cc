@@ -35,32 +35,35 @@ bool BorderImage::ParseShorthand(
 
   css_property_parser_helpers::AddProperty(
       CSSPropertyBorderImageSource, CSSPropertyBorderImage,
-      source ? *source
-             : *ToLonghand(&GetCSSPropertyBorderImageSource())->InitialValue(),
+      source
+          ? *source
+          : *To<Longhand>(&GetCSSPropertyBorderImageSource())->InitialValue(),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
       CSSPropertyBorderImageSlice, CSSPropertyBorderImage,
       slice ? *slice
-            : *ToLonghand(&GetCSSPropertyBorderImageSlice())->InitialValue(),
+            : *To<Longhand>(&GetCSSPropertyBorderImageSlice())->InitialValue(),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
       CSSPropertyBorderImageWidth, CSSPropertyBorderImage,
       width ? *width
-            : *ToLonghand(&GetCSSPropertyBorderImageWidth())->InitialValue(),
+            : *To<Longhand>(&GetCSSPropertyBorderImageWidth())->InitialValue(),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
       CSSPropertyBorderImageOutset, CSSPropertyBorderImage,
-      outset ? *outset
-             : *ToLonghand(&GetCSSPropertyBorderImageOutset())->InitialValue(),
+      outset
+          ? *outset
+          : *To<Longhand>(&GetCSSPropertyBorderImageOutset())->InitialValue(),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   css_property_parser_helpers::AddProperty(
       CSSPropertyBorderImageRepeat, CSSPropertyBorderImage,
-      repeat ? *repeat
-             : *ToLonghand(&GetCSSPropertyBorderImageRepeat())->InitialValue(),
+      repeat
+          ? *repeat
+          : *To<Longhand>(&GetCSSPropertyBorderImageRepeat())->InitialValue(),
       important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 

@@ -28,7 +28,7 @@ bool Offset::ParseShorthand(
   // CSSPropertys, and the base CSSProperty::ParseSingleValue contains
   // no functionality.
   const CSSValue* offset_position =
-      ToLonghand(GetCSSPropertyOffsetPosition())
+      To<Longhand>(GetCSSPropertyOffsetPosition())
           .ParseSingleValue(range, context, CSSParserLocalContext());
   const CSSValue* offset_path =
       css_parsing_utils::ConsumeOffsetPath(range, context);
@@ -46,7 +46,7 @@ bool Offset::ParseShorthand(
   const CSSValue* offset_anchor = nullptr;
   if (css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range)) {
     offset_anchor =
-        ToLonghand(GetCSSPropertyOffsetAnchor())
+        To<Longhand>(GetCSSPropertyOffsetAnchor())
             .ParseSingleValue(range, context, CSSParserLocalContext());
     if (!offset_anchor)
       return false;

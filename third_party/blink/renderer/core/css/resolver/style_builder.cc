@@ -121,11 +121,11 @@ void StyleBuilder::ApplyProperty(const CSSProperty& property,
   DCHECK(id != CSSPropertyVariable || !is_inherit);
 
   if (is_initial)
-    ToLonghand(property).ApplyInitial(state);
+    To<Longhand>(property).ApplyInitial(state);
   else if (is_inherit)
-    ToLonghand(property).ApplyInherit(state);
+    To<Longhand>(property).ApplyInherit(state);
   else
-    ToLonghand(property).ApplyValue(state, value);
+    To<Longhand>(property).ApplyValue(state, value);
 }
 
 }  // namespace blink
