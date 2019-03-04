@@ -197,7 +197,6 @@ std::string BrowserDMTokenStorageMac::InitClientId() {
     return std::string();
   }
 
-  ignore_result(serial_number.release());
   return base::SysCFStringRefToUTF8(serial_number_cfstring);
 }
 
