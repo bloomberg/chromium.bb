@@ -15,6 +15,9 @@ let subMenu;
 
 // Set up test components.
 function setUp() {
+  // Internals of WebUI reference this property when processing
+  // keyboard events, so we need to prepare it to stop asserts.
+  loadTimeData.data = {'SHORTCUT_ENTER': 'Enter'};
   // Install cr.ui <command> elements and <cr-menu>s on the page.
   document.body.innerHTML = [
     '<style>',
@@ -31,18 +34,18 @@ function setUp() {
     '</style>',
     '<command id="default-task">',
     '<command id="more-actions">',
-    '<command id="show-submenu">',
+    '<command id="show-submenu" shortcut="Enter">',
     '<button id="test-menu-button" menu="#menu"></button>',
     '<cr-menu id="menu" hidden>',
-    '  <cr-menu-item command="#default-task"></cr-menu-item>',
-    '  <cr-menu-item command="#more-actions"></cr-menu-item>',
+    '  <cr-menu-item id="default" command="#default-task"></cr-menu-item>',
+    '  <cr-menu-item id="more" command="#more-actions"></cr-menu-item>',
     '  <cr-menu-item id="host-sub-menu" command="#show-submenu"',
     'visibleif="full-page" class="hide-on-toolbar"',
     'sub-menu="#sub-menu" hidden></cr-menu-item>',
     '</cr-menu>',
     '<cr-menu id="sub-menu" hidden>',
-    '  <cr-menu-item class="custom-appearance"></cr-menu-item>',
-    '  <cr-menu-item class="custom-appearance"></cr-menu-item>',
+    '  <cr-menu-item id="first" class="custom-appearance"></cr-menu-item>',
+    '  <cr-menu-item id="second" class="custom-appearance"></cr-menu-item>',
     '</cr-menu>',
   ].join('');
 
@@ -80,6 +83,22 @@ function sendMouseOut(targetQuery, x, y) {
     composed: true,  // Allow the event to bubble past shadow DOM root.
     clientX: x,
     clientY: y,
+  });
+  const target = document.querySelector(targetQuery);
+  assertTrue(!!target);
+  return target.dispatchEvent(event);
+}
+
+/**
+ * Send a 'keydown' event to the element target of a query.
+ * @param {string} targetQuery Query to specify the element.
+ * @param {string} key property value for the key.
+ */
+function sendKeyDown(targetQuery, key) {
+  const event = new KeyboardEvent('keydown', {
+    key: key,
+    bubbles: true,
+    composed: true,  // Allow the event to bubble past shadow DOM root.
   });
   const target = document.querySelector(targetQuery);
   assertTrue(!!target);
@@ -232,4 +251,65 @@ function testGrowWindowSizesSubMenu() {
   // the height at the start of this test (before we
   // deliberately shrank it).
   assertTrue(grownPosition.bottom === subMenuPosition.bottom);
+}
+
+/**
+ * Utility function to prepare the menu and sub-menu for keyboard tests.
+ */
+function prepareForKeyboardNavigation() {
+  // Make sure the both of the menus are active.
+  testSelectHostMenuItemAndCallShowSubMenu();
+  // Re-enable the menu-items, since showMenu() disables
+  // all of them due to the canExecute() tests all returning
+  // false since we're just a unit test harness. This is
+  // needed since the arrow key handlers skip over disabled items.
+  document.querySelector('#default').removeAttribute('disabled');
+  document.querySelector('#more').removeAttribute('disabled');
+  document.querySelector('#host-sub-menu').removeAttribute('disabled');
+}
+
+/**
+ * Tests that arrow navigates from main menu to sub-menu.
+ */
+function testNavigateFromMenuToSubMenu() {
+  prepareForKeyboardNavigation();
+  // Check that the hosting menu-item is selected.
+  const hostItem = document.querySelector('#host-sub-menu');
+  assertTrue(hostItem.hasAttribute('selected'));
+  // Navigate across to the sub-menu using the keyboard.
+  sendKeyDown('#test-menu-button', 'ArrowRight');
+  // Check that the host menu-item loses selection.
+  assertFalse(hostItem.hasAttribute('selected'));
+  // Check that the sub-menu has taken selection.
+  const subItem = document.querySelector('#first');
+  assertTrue(subItem.hasAttribute('selected'));
+}
+
+/**
+ * Tests that arrow left moves back to the top level menu
+ * only when the selected sub-menu item is the first one.
+ */
+function testNavigateFromSubMenuToParentMenu() {
+  testNavigateFromMenuToSubMenu();
+  // Use the arrow key to go to the next sub-menu item.
+  sendKeyDown('#test-menu-button', 'ArrowDown');
+  const secondItem = document.querySelector('#second');
+  assertTrue(secondItem.hasAttribute('selected'));
+  // Try to navigate from sub-menu to the parent menu.
+  sendKeyDown('#test-menu-button', 'ArrowLeft');
+  // Check that parent menu hosting item didn't get selected.
+  const hostItem = document.querySelector('#host-sub-menu');
+  assertFalse(hostItem.hasAttribute('selected'));
+  // Check that selection is still on the sub-menu item.
+  assertTrue(secondItem.hasAttribute('selected'));
+  // Navigate up to the first sub-menu item.
+  sendKeyDown('#test-menu-button', 'ArrowUp');
+  // Check that the first sub-menu item is selected.
+  const firstItem = document.querySelector('#first');
+  assertTrue(firstItem.hasAttribute('selected'));
+  // Navigate back to the parent menu.
+  sendKeyDown('#test-menu-button', 'ArrowLeft');
+  // Check selection has moved back to the parent menu.
+  assertTrue(hostItem.hasAttribute('selected'));
+  assertFalse(firstItem.hasAttribute('selected'));
 }
