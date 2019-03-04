@@ -205,14 +205,23 @@ class OverviewGrid::ShieldView : public views::View {
     label_container_->SetVisible(false);
 
     AddChildView(label_container_);
-
-    if (features::IsVirtualDesksEnabled()) {
-      desks_bar_view_ = new DesksBarView;
-      AddChildView(desks_bar_view_);
-    }
   }
 
   ~ShieldView() override = default;
+
+  const DesksBarView* desks_bar_view() const { return desks_bar_view_; }
+
+  // Call this only after this view has been added to a widget. This is needed
+  // because the desks mini views need to access the widget to get the
+  // root window in order to know how to layout themselves.
+  void MaybeInitVirtualDesksBar() {
+    if (!features::IsVirtualDesksEnabled())
+      return;
+
+    desks_bar_view_ = new DesksBarView;
+    AddChildView(desks_bar_view_);
+    desks_bar_view_->Init();
+  }
 
   void SetLabelVisibility(bool visible) {
     label_container_->SetVisible(visible);
@@ -1229,6 +1238,17 @@ aura::Window* OverviewGrid::GetTargetWindowOnLocation(
   return (iter != window_list_.end()) ? (*iter)->GetWindow() : nullptr;
 }
 
+const DesksBarView* OverviewGrid::GetDesksBarViewForTesting() const {
+  return shield_view_->desks_bar_view();
+}
+
+int OverviewGrid::GetGridYOffset() const {
+  DCHECK(features::IsVirtualDesksEnabled());
+
+  // TODO(afakhry): Update this when animation is added.
+  return DesksBarView::GetBarHeight();
+}
+
 void OverviewGrid::InitShieldWidget(bool animate) {
   // TODO(varkha): The code assumes that SHELF_BACKGROUND_MAXIMIZED is
   // synonymous with a black shelf background. Update this code if that
@@ -1252,6 +1272,7 @@ void OverviewGrid::InitShieldWidget(bool animate) {
   // Create |shield_view_| and animate its background and label if needed.
   shield_view_ = new ShieldView();
   shield_widget_->SetContentsView(shield_view_);
+  shield_view_->MaybeInitVirtualDesksBar();
   shield_view_->SetGridBounds(bounds_);
 
   if (animate) {
@@ -1361,8 +1382,11 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRects(
     OverviewItem* ignored_item) {
   gfx::Rect total_bounds = bounds_;
 
-  if (features::IsVirtualDesksEnabled())
-    total_bounds.Inset(0, DesksBarView::GetBarHeight(), 0, 0);
+  if (features::IsVirtualDesksEnabled()) {
+    total_bounds.set_height(total_bounds.height() -
+                            DesksBarView::GetBarHeight());
+    total_bounds.Offset(0, GetGridYOffset());
+  }
 
   // Windows occupy vertically centered area with additional vertical insets.
   int horizontal_inset =
