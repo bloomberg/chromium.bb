@@ -31,7 +31,7 @@ microseconds = uint
 url = text
 
 request = (
-  request-id: request-id
+  0: request-id ; request-id
 )
 
 response = (
@@ -48,9 +48,9 @@ timestamp = (
 
 presentation-url-availability-request = {
   request
-  urls: [* text]
-  watch-duration: uint
-  watch-id: uint
+  1: [* text] ; urls
+  2: uint ; watch-duration
+  3: uint ; watch-id
 }
 
 presentation-url-availability-response = {
@@ -59,9 +59,9 @@ presentation-url-availability-response = {
 }
 
 presentation-url-availability-event = {
-  watch-id: uint
-  urls: [* url]
-  url-availabilities: [* presentation-url-availability]
+  1: uint ; watch-id
+  2: [* url] ; urls
+  3: [* presentation-url-availability] ; url-availabilities
 }
 
 presentation-id = text

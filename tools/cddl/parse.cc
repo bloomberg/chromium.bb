@@ -90,7 +90,12 @@ bool IsWhitespace(char c) {
   return c == ' ' || c == ';' || c == '\r' || c == '\n';
 }
 
-void SkipWhitespaceAndComments(Parser* p) {
+void SkipWhitespace(Parser* p, bool skip_comments = true) {
+  if (!skip_comments) {
+    p->data = absl::StripLeadingAsciiWhitespace(p->data).data();
+    return;
+  }
+
   absl::string_view view = p->data;
   absl::string_view new_view;
 
@@ -108,6 +113,22 @@ void SkipWhitespaceAndComments(Parser* p) {
   }
 
   p->data = new_view.data();
+}
+
+bool TrySkipNewline(Parser* p) {
+  auto* new_view = SkipNewline(p->data).data();
+  bool is_changed = p->data == new_view;
+  p->data = new_view;
+  return is_changed;
+}
+
+bool TrySkipCharacter(Parser* p, char c) {
+  if (p->data[0] == c) {
+    p->data++;
+    return true;
+  }
+
+  return false;
 }
 
 enum class AssignType {
@@ -136,7 +157,7 @@ AssignType ParseAssignmentType(Parser* p) {
 }
 
 AstNode* ParseType1(Parser* p);
-AstNode* ParseType(Parser* p);
+AstNode* ParseType(Parser* p, bool skip_comments = true);
 AstNode* ParseId(Parser* p);
 
 void SkipUint(Parser* p) {
@@ -225,13 +246,39 @@ AstNode* ParseOccur(Parser* p) {
   return node;
 }
 
+AstNode* ParseMemberKeyFromComment(Parser* p) {
+  Parser p_speculative{p->data};
+  if (!TrySkipCharacter(&p_speculative, ';')) {
+    return nullptr;
+  }
+
+  SkipWhitespace(&p_speculative, false);
+
+  AstNode* value = ParseId(&p_speculative);
+  if (!value) {
+    return nullptr;
+  }
+
+  SkipWhitespace(&p_speculative, false);
+  if (!TrySkipNewline(&p_speculative)) {
+    return nullptr;
+  }
+
+  AstNode* node = AddNode(p, AstNode::Type::kMemberKey, value->text, value);
+  p->data = p_speculative.data;
+  std::move(p_speculative.nodes.begin(), p_speculative.nodes.end(),
+            std::back_inserter(p->nodes));
+
+  return node;
+}
+
 AstNode* ParseMemberKey1(Parser* p) {
   Parser p_speculative{p->data};
   if (!ParseType1(&p_speculative)) {
     return nullptr;
   }
 
-  SkipWhitespaceAndComments(&p_speculative);
+  SkipWhitespace(&p_speculative);
 
   if (*p_speculative.data++ != '=' || *p_speculative.data++ != '>') {
     return nullptr;
@@ -252,7 +299,7 @@ AstNode* ParseMemberKey2(Parser* p) {
     return nullptr;
   }
 
-  SkipWhitespaceAndComments(&p_speculative);
+  SkipWhitespace(&p_speculative);
 
   if (*p_speculative.data++ != ':') {
     return nullptr;
@@ -274,7 +321,7 @@ AstNode* ParseMemberKey3(Parser* p) {
     return nullptr;
   }
 
-  SkipWhitespaceAndComments(&p_speculative);
+  SkipWhitespace(&p_speculative);
 
   if (*p_speculative.data++ != ':') {
     return nullptr;
@@ -304,10 +351,10 @@ AstNode* ParseMemberKey(Parser* p) {
 AstNode* ParseGroupEntry(Parser* p);
 
 bool SkipOptionalComma(Parser* p) {
-  SkipWhitespaceAndComments(p);
+  SkipWhitespace(p);
   if (p->data[0] == ',') {
     ++p->data;
-    SkipWhitespaceAndComments(p);
+    SkipWhitespace(p);
   }
   return true;
 }
@@ -395,12 +442,12 @@ AstNode* ParseType2(Parser* p) {
     node->children = id;
   } else if (it[0] == '(') {
     p->data = it + 1;
-    SkipWhitespaceAndComments(p);
+    SkipWhitespace(p);
     AstNode* type = ParseType(p);
     if (!type) {
       return nullptr;
     }
-    SkipWhitespaceAndComments(p);
+    SkipWhitespace(p);
     if (p->data[0] != ')') {
       return nullptr;
     }
@@ -408,12 +455,12 @@ AstNode* ParseType2(Parser* p) {
     node->children = type;
   } else if (it[0] == '{') {
     p->data = it + 1;
-    SkipWhitespaceAndComments(p);
+    SkipWhitespace(p);
     AstNode* group = ParseGroup(p);
     if (!group) {
       return nullptr;
     }
-    SkipWhitespaceAndComments(p);
+    SkipWhitespace(p);
     if (p->data[0] != '}') {
       return nullptr;
     }
@@ -421,12 +468,12 @@ AstNode* ParseType2(Parser* p) {
     node->children = group;
   } else if (it[0] == '[') {
     p->data = it + 1;
-    SkipWhitespaceAndComments(p);
+    SkipWhitespace(p);
     AstNode* group = ParseGroup(p);
     if (!group) {
       return nullptr;
     }
-    SkipWhitespaceAndComments(p);
+    SkipWhitespace(p);
     if (p->data[0] != ']') {
       return nullptr;
     }
@@ -434,7 +481,7 @@ AstNode* ParseType2(Parser* p) {
     node->children = group;
   } else if (it[0] == '~') {
     p->data = it + 1;
-    SkipWhitespaceAndComments(p);
+    SkipWhitespace(p);
     if (!ParseId(p)) {
       return nullptr;
     }
@@ -446,15 +493,15 @@ AstNode* ParseType2(Parser* p) {
     }
   } else if (it[0] == '&') {
     p->data = it + 1;
-    SkipWhitespaceAndComments(p);
+    SkipWhitespace(p);
     if (p->data[0] == '(') {
       ++p->data;
-      SkipWhitespaceAndComments(p);
+      SkipWhitespace(p);
       AstNode* group = ParseGroup(p);
       if (!group) {
         return nullptr;
       }
-      SkipWhitespaceAndComments(p);
+      SkipWhitespace(p);
       if (p->data[0] != ')') {
         return nullptr;
       }
@@ -487,12 +534,12 @@ AstNode* ParseType2(Parser* p) {
         return nullptr;
       }
       p->data = ++it;
-      SkipWhitespaceAndComments(p);
+      SkipWhitespace(p);
       AstNode* type = ParseType(p);
       if (!type) {
         return nullptr;
       }
-      SkipWhitespaceAndComments(p);
+      SkipWhitespace(p);
       if (p->data[0] != ')') {
         return nullptr;
       }
@@ -527,7 +574,7 @@ AstNode* ParseType1(Parser* p) {
 
 // Different valid types for a call are specified as type1 / type2, so we split
 // at the '/' character and process each allowed type separately.
-AstNode* ParseType(Parser* p) {
+AstNode* ParseType(Parser* p, bool skip_comments) {
   Parser p_speculative{p->data};
 
   // Parse all allowed types into a linked list starting in type1's sibling ptr.
@@ -535,13 +582,12 @@ AstNode* ParseType(Parser* p) {
   if (!type1) {
     return nullptr;
   }
-
-  SkipWhitespaceAndComments(&p_speculative);
+  SkipWhitespace(&p_speculative, skip_comments);
 
   AstNode* tail = type1;
   while (*p_speculative.data == '/') {
     ++p_speculative.data;
-    SkipWhitespaceAndComments(&p_speculative);
+    SkipWhitespace(&p_speculative, skip_comments);
 
     AstNode* next_type1 = ParseType1(&p_speculative);
     if (!next_type1) {
@@ -549,7 +595,7 @@ AstNode* ParseType(Parser* p) {
     }
     tail->sibling = next_type1;
     tail = next_type1;
-    SkipWhitespaceAndComments(&p_speculative);
+    SkipWhitespace(&p_speculative, skip_comments);
   }
 
   // Create a new AstNode with all parsed types.
@@ -593,30 +639,11 @@ AstNode* ParseId(Parser* p) {
   return node;
 }
 
-// Parses a group element of form 'name: type',
-AstNode* ParseGroupEntry1(Parser* p) {
-  Parser p_speculative{p->data};
-
-  // Check for an occurance indicator ('?', '*', "+") before the entry
-  // definition.
-  AstNode* occur = ParseOccur(&p_speculative);
-  if (occur) {
-    SkipWhitespaceAndComments(&p_speculative);
-  }
-
-  // Parse the id of the entry.
-  AstNode* member_key = ParseMemberKey(&p_speculative);
-  if (member_key) {
-    SkipWhitespaceAndComments(&p_speculative);
-  }
-
-  // Parse the type of data stored in the entry.
-  AstNode* type = ParseType(&p_speculative);
-  if (!type) {
-    return nullptr;
-  }
-
-  // Create a new node with this information.
+AstNode* UpdateNodesForGroupEntry(Parser* p,
+                                  Parser* p_speculative,
+                                  AstNode* occur,
+                                  AstNode* member_key,
+                                  AstNode* type) {
   AstNode* node = AddNode(p, AstNode::Type::kGrpent, absl::string_view());
   if (occur) {
     node->children = occur;
@@ -632,24 +659,70 @@ AstNode* ParseGroupEntry1(Parser* p) {
   } else {
     node->children = type;
   }
-  node->text = std::string(p->data, p_speculative.data - p->data);
-  p->data = p_speculative.data;
-  std::move(p_speculative.nodes.begin(), p_speculative.nodes.end(),
+  node->text = std::string(p->data, p_speculative->data - p->data);
+  p->data = p_speculative->data;
+  std::move(p_speculative->nodes.begin(), p_speculative->nodes.end(),
             std::back_inserter(p->nodes));
   return node;
 }
 
-// Parses an entry which is a reference to another sub-group, of the form
-// 'sugroupName'.
+// Parse a group entry of form <id_num>: <type> ; <name>
+AstNode* ParseGroupEntryWithNameInComment(Parser* p) {
+  Parser p_speculative{p->data};
+  AstNode* occur = ParseOccur(&p_speculative);
+  if (occur) {
+    SkipWhitespace(&p_speculative, false);
+  }
+  AstNode* member_key_num = ParseValue(&p_speculative);
+  if (!member_key_num) {
+    return nullptr;
+  }
+  SkipWhitespace(&p_speculative, false);
+  if (*p_speculative.data++ != ':') {
+    return nullptr;
+  }
+  SkipWhitespace(&p_speculative, false);
+  AstNode* type = ParseType(&p_speculative, false);
+  if (!type) {
+    return nullptr;
+  }
+  SkipWhitespace(&p_speculative, false);
+  AstNode* member_key = ParseMemberKeyFromComment(&p_speculative);
+  if (!member_key) {
+    return nullptr;
+  }
+
+  member_key->integer_member_key_text = member_key_num->text;
+
+  return UpdateNodesForGroupEntry(p, &p_speculative, occur, member_key, type);
+}
+
+AstNode* ParseGroupEntryWithNameAsId(Parser* p) {
+  Parser p_speculative{p->data};
+  AstNode* occur = ParseOccur(&p_speculative);
+  if (occur) {
+    SkipWhitespace(&p_speculative);
+  }
+  AstNode* member_key = ParseMemberKey(&p_speculative);
+  if (member_key) {
+    SkipWhitespace(&p_speculative);
+  }
+  AstNode* type = ParseType(&p_speculative);
+  if (!type) {
+    return nullptr;
+  }
+  return UpdateNodesForGroupEntry(p, &p_speculative, occur, member_key, type);
+}
+
 // NOTE: This should probably never be hit, why is it in the grammar?
-AstNode* ParseGroupEntry2(Parser* p) {
+AstNode* ParseGroupEntryWithGroupReference(Parser* p) {
   Parser p_speculative{p->data};
 
   // Check for an occurance indicator ('?', '*', "+") before the sub-group
   // definition.
   AstNode* occur = ParseOccur(&p_speculative);
   if (occur) {
-    SkipWhitespaceAndComments(&p_speculative);
+    SkipWhitespace(&p_speculative);
   }
 
   // Parse the ID of the sub-group.
@@ -682,23 +755,23 @@ AstNode* ParseGroupEntry2(Parser* p) {
 
 // Recursively parse a group entry that's an inline-defined group of the form
 // '(...<some contents>...)'.
-AstNode* ParseGroupEntry3(Parser* p) {
+AstNode* ParseGroupEntryWithInlineGroupDefinition(Parser* p) {
   Parser p_speculative{p->data};
   AstNode* occur = ParseOccur(&p_speculative);
   if (occur) {
-    SkipWhitespaceAndComments(&p_speculative);
+    SkipWhitespace(&p_speculative);
   }
   if (*p_speculative.data != '(') {
     return nullptr;
   }
   ++p_speculative.data;
-  SkipWhitespaceAndComments(&p_speculative);
-  AstNode* group = ParseGroup(&p_speculative);  // Recursive call here.
+  SkipWhitespace(&p_speculative);
+  AstNode* group = ParseGroup(&p_speculative);   // Recursive call here.
   if (!group) {
     return nullptr;
   }
 
-  SkipWhitespaceAndComments(&p_speculative);
+  SkipWhitespace(&p_speculative);
   if (*p_speculative.data != ')') {
     return nullptr;
   }
@@ -719,22 +792,27 @@ AstNode* ParseGroupEntry3(Parser* p) {
 
 // Recursively parse the group assignemnt.
 AstNode* ParseGroupEntry(Parser* p) {
+  // Parse a group entry of form '#: type ; name'
+  AstNode* node = ParseGroupEntryWithNameInComment(p);
+
   // Parse a group entry of form 'id: type'.
-  AstNode* node = ParseGroupEntry1(p);
+  if (!node) {
+    node = ParseGroupEntryWithNameAsId(p);
+  }
 
   // Parse a group entry of form 'subgroupName'.
   if (!node) {
-    node = ParseGroupEntry2(p);
+    node = ParseGroupEntryWithGroupReference(p);
   }
 
-  // Parse a group entry of the form (...<some contents>...).
+  // Parse a group entry of the form: '(' <some contents> ')'.
   // NOTE: This is the method hit during the top-level group parsing, and the
   // recursive call occurs inside this method.
   if (!node) {
-    node = ParseGroupEntry3(p);
+    node = ParseGroupEntryWithInlineGroupDefinition(p);
   }
 
-  // return the results of the recursive call.
+  // Return the results of the recursive call.
   return node;
 }
 
@@ -754,7 +832,7 @@ AstNode* ParseRule(Parser* p) {
   }
 
   // Determine the type of assignment being done to this variable name (ie '=').
-  SkipWhitespaceAndComments(p);
+  SkipWhitespace(p);
   const char* assign_start = p->data;
   AssignType assign_type = ParseAssignmentType(p);
   if (assign_type != AssignType::kAssign) {
@@ -770,11 +848,10 @@ AstNode* ParseRule(Parser* p) {
   id->sibling = assign_node;
 
   // Parse the object type being assigned.
-  SkipWhitespaceAndComments(p);
+  SkipWhitespace(p);
   AstNode* type = ParseType(p);  // Try to parse it as a type.
-  if (type) {
-    id->type = AstNode::Type::kTypename;
-  } else {  // If it's not a type, try and parse it as a group.
+  id->type = AstNode::Type::kTypename;
+  if (!type) {  // If it's not a type, try and parse it as a group.
     type = ParseGroupEntry(p);
     id->type = AstNode::Type::kGroupname;
   }
@@ -782,7 +859,7 @@ AstNode* ParseRule(Parser* p) {
     return nullptr;
   }
   assign_node->sibling = type;
-  SkipWhitespaceAndComments(p);
+  SkipWhitespace(p);
 
   // Return the results.
   return AddNode(p, AstNode::Type::kRule,
@@ -796,7 +873,7 @@ ParseResult ParseCddl(absl::string_view data) {
   }
   Parser p{(char*)data.data()};
 
-  SkipWhitespaceAndComments(&p);
+  SkipWhitespace(&p);
   AstNode* root = nullptr;
   AstNode* tail = nullptr;
   do {
@@ -812,7 +889,7 @@ ParseResult ParseCddl(absl::string_view data) {
     }
     tail = next;
 
-    SkipWhitespaceAndComments(&p);
+    SkipWhitespace(&p);
   } while (p.data[0]);
   return {root, std::move(p.nodes)};
 }

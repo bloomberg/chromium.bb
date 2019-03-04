@@ -53,8 +53,11 @@ struct AstNode {
   // Type of node being represented.
   Type type;
 
-  // Text which was parsed into the string.
+  // Text parsed from the CDDL spec to create this node.
   std::string text;
+
+  // Text parsed from another source but used when serializing this node.
+  std::string integer_member_key_text;
 };
 
 struct ParseResult {
