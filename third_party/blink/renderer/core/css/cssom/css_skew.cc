@@ -85,7 +85,7 @@ const CSSFunctionValue* CSSSkew::ToCSSValue() const {
 
   CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueSkew);
   result->Append(*ax);
-  if (!ay_->IsUnitValue() || ToCSSUnitValue(ay_)->value() != 0)
+  if (!ay_->IsUnitValue() || To<CSSUnitValue>(ay_.Get())->value() != 0)
     result->Append(*ay);
   return result;
 }

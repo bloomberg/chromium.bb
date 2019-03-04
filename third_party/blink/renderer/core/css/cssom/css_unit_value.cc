@@ -161,11 +161,11 @@ base::Optional<CSSNumericSumValue> CSSUnitValue::SumValue() const {
 }
 
 bool CSSUnitValue::Equals(const CSSNumericValue& other) const {
-  if (!other.IsUnitValue())
+  auto* other_unit_value = DynamicTo<CSSUnitValue>(other);
+  if (!other_unit_value)
     return false;
 
-  const CSSUnitValue& other_unit_value = ToCSSUnitValue(other);
-  return value_ == other_unit_value.value_ && unit_ == other_unit_value.unit_;
+  return value_ == other_unit_value->value_ && unit_ == other_unit_value->unit_;
 }
 
 const CSSPrimitiveValue* CSSUnitValue::ToCSSValue() const {

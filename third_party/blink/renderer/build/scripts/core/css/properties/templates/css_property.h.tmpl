@@ -126,8 +126,8 @@ class CSSProperty : public CSSUnresolvedProperty {
             ToCSSKeywordValue(style_value)->value().IsolatedCopy());
       case CSSStyleValue::StyleValueType::kUnitType:
         return std::make_unique<CrossThreadUnitValue>(
-            ToCSSUnitValue(style_value)->value(),
-            ToCSSUnitValue(style_value)->GetInternalUnit());
+            To<CSSUnitValue>(style_value)->value(),
+            To<CSSUnitValue>(style_value)->GetInternalUnit());
       default:
         // Make an isolated copy to ensure that it is safe to pass cross thread.
         return std::make_unique<CrossThreadUnsupportedValue>(

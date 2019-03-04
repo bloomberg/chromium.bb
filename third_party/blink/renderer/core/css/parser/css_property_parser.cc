@@ -102,7 +102,7 @@ bool CSSPropertyParser::ParseValueStart(CSSPropertyID unresolved_property,
             .WithCurrentShorthand(property_id);
     // Variable references will fail to parse here and will fall out to the
     // variable ref parser below.
-    if (ToShorthand(property).ParseShorthand(
+    if (To<Shorthand>(property).ParseShorthand(
             important, range_, *context_, local_context, *parsed_properties_))
       return true;
   } else {
