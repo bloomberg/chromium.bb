@@ -4,21 +4,12 @@
 
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 
-#include <map>
-#include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
-#include "base/atomic_sequence_num.h"
-#include "base/bind.h"
-#include "base/run_loop.h"
-#include "base/stl_util.h"
+#include "base/callback.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "content/browser/service_worker/embedded_worker_instance.h"
-#include "content/browser/service_worker/embedded_worker_registry.h"
-#include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
@@ -26,15 +17,11 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/http/http_util.h"
-#include "storage/common/blob_storage/blob_handle.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 
 namespace content {
 
@@ -336,11 +323,6 @@ EmbeddedWorkerTestHelper::CreateInstanceClient() {
 std::unique_ptr<FakeServiceWorker>
 EmbeddedWorkerTestHelper::CreateServiceWorker() {
   return std::make_unique<FakeServiceWorker>(this);
-}
-
-EmbeddedWorkerRegistry* EmbeddedWorkerTestHelper::registry() {
-  DCHECK(context());
-  return context()->embedded_worker_registry();
 }
 
 }  // namespace content

@@ -163,42 +163,13 @@ class MockServiceWorkerRegistrationObject
       binding_;
 };
 
-// We need this for NoInflightRequest test. The test expects that a worker
-// will be terminated when SetIdleTimerDelayToZero() is called.
-class RegistrationTestHelper : public EmbeddedWorkerTestHelper {
- public:
-  RegistrationTestHelper()
-      : EmbeddedWorkerTestHelper(base::FilePath()), weak_factory_(this) {}
-  ~RegistrationTestHelper() override = default;
-
-  void RequestTermination(int embedded_worker_id) {
-    GetEmbeddedWorkerInstanceHost(embedded_worker_id)
-        ->RequestTermination(
-            base::BindOnce(&RegistrationTestHelper::OnRequestedTermination,
-                           weak_factory_.GetWeakPtr()));
-  }
-
-  const base::Optional<bool>& will_be_terminated() const {
-    return will_be_terminated_;
-  }
-
- protected:
-  void OnRequestedTermination(bool will_be_terminated) {
-    will_be_terminated_ = will_be_terminated;
-  }
-
- private:
-  base::Optional<bool> will_be_terminated_;
-  base::WeakPtrFactory<RegistrationTestHelper> weak_factory_;
-};
-
 class ServiceWorkerRegistrationTest : public testing::Test {
  public:
   ServiceWorkerRegistrationTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void SetUp() override {
-    helper_ = std::make_unique<RegistrationTestHelper>();
+    helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
 
     context()->storage()->LazyInitializeForTest(base::DoNothing());
     base::RunLoop().RunUntilIdle();
@@ -251,7 +222,7 @@ class ServiceWorkerRegistrationTest : public testing::Test {
 
  protected:
   TestBrowserThreadBundle thread_bundle_;
-  std::unique_ptr<RegistrationTestHelper> helper_;
+  std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
 };
 
 TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
