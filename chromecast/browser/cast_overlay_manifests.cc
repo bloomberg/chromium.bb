@@ -6,6 +6,7 @@
 
 #include "base/no_destructor.h"
 #include "build/build_config.h"
+#include "chromecast/chromecast_buildflags.h"
 #include "chromecast/common/mojom/application_media_capabilities.mojom.h"
 #include "chromecast/common/mojom/feature_manager.mojom.h"
 #include "chromecast/common/mojom/media_caps.mojom.h"
@@ -13,6 +14,10 @@
 #include "chromecast/common/mojom/memory_pressure.mojom.h"
 #include "media/mojo/services/media_manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
+
+#if BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
+#include "chromecast/external_mojo/broker_service/broker_service.h"
+#endif
 
 #if defined(USE_INTERNAL_OVERLAY_MANIFESTS)
 #include "chromecast/internal/shell/browser/cast_content_browser_internal_manifest_overlay.h"
@@ -62,6 +67,9 @@ GetCastContentPackagedServicesOverlayManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest {
     service_manager::ManifestBuilder()
         .PackageService(::media::GetMediaManifest())
+#if BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
+        .PackageService(chromecast::external_mojo::BrokerService::GetManifest())
+#endif
         .Build()
 #if defined(USE_INTERNAL_OVERLAY_MANIFESTS)
         .Amend(cast_content_packaged_services_internal_manifest_overlay::

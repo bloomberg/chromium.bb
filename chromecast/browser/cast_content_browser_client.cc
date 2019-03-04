@@ -6,8 +6,6 @@
 
 #include <stddef.h>
 
-#include <memory>
-#include <string>
 #include <utility>
 
 #include "base/base_switches.h"
@@ -134,6 +132,10 @@
 #include "extensions/common/constants.h"                            // nogncheck
 #endif
 
+#if BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
+#include "chromecast/external_mojo/broker_service/broker_service.h"
+#endif
+
 namespace chromecast {
 namespace shell {
 
@@ -187,6 +189,14 @@ void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
                                std::move(request));
 }
 #endif  // defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
+
+#if BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
+void StartExternalMojoBrokerService(
+    service_manager::mojom::ServiceRequest request) {
+  service_manager::Service::RunAsyncUntilTermination(
+      std::make_unique<external_mojo::BrokerService>(std::move(request)));
+}
+#endif  // BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
 
 }  // namespace
 
@@ -379,6 +389,14 @@ void CastContentBrowserClient::RegisterMetricsProviders(
 
 bool CastContentBrowserClient::EnableRemoteDebuggingImmediately() {
   return true;
+}
+
+std::vector<std::string> CastContentBrowserClient::GetStartupServices() {
+  return {
+#if BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
+    external_mojo::BrokerService::kServiceName
+#endif
+  };
 }
 
 content::BrowserMainParts* CastContentBrowserClient::CreateBrowserMainParts(
@@ -785,8 +803,16 @@ void CastContentBrowserClient::HandleServiceRequest(
     GetMediaTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&CreateMediaService, this, std::move(request)));
+    return;
   }
-#endif
+#endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+
+#if BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
+  if (service_name == external_mojo::BrokerService::kServiceName) {
+    StartExternalMojoBrokerService(std::move(request));
+    return;
+  }
+#endif  // BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
 }
 
 base::Optional<service_manager::Manifest>

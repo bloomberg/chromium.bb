@@ -244,6 +244,10 @@ cast_source_set("browser") {
     ]
   }
 
+  if (enable_external_mojo_services) {
+    deps += [ "//chromecast/external_mojo/broker_service" ]
+  }
+
   if (enable_chromecast_extensions) {
     sources += [
       "cast_extension_host.cc",

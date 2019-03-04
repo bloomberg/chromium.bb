@@ -37,6 +37,9 @@ group("all") {
   if (chromecast_branding != "public") {
     deps += [ "//chromecast/internal:all" ]
   }
+  if (enable_external_mojo_services) {
+    deps += [ "//chromecast/external_mojo/external_service_support:standalone_mojo_broker" ]
+  }
 
   # No other targets should depend on this target, since it's just a convenience
   # target for the Chromecast internal build infrastructure.
@@ -580,6 +583,7 @@ buildflag_header("chromecast_buildflags") {
     "ENABLE_CAST_FRAGMENT=$enable_cast_fragment",
     "ENABLE_CAST_WAYLAND_SERVER=$enable_cast_wayland_server",
     "ENABLE_CHROMECAST_EXTENSIONS=$enable_chromecast_extensions",
+    "ENABLE_EXTERNAL_MOJO_SERVICES=$enable_external_mojo_services",
     "ENABLE_HEADLESS_MUSIC_MODE=$enable_headless_music_mode",
     "ENABLE_PLAYREADY=$enable_playready",
     "ENABLE_VIDEO_CAPTURE_SERVICE=$enable_video_capture_service",
