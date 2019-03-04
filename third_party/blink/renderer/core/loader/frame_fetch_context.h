@@ -60,8 +60,6 @@ class ResourceError;
 class ResourceResponse;
 class Settings;
 class WebContentSettingsClient;
-struct UserAgentMetadata;
-struct WebEnabledClientHints;
 
 class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
  public:

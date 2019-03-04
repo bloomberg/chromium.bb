@@ -592,6 +592,8 @@ jumbo_source_set("browser") {
     "child_process_launcher_helper_win.cc",
     "child_process_security_policy_impl.cc",
     "child_process_security_policy_impl.h",
+    "client_hints/client_hints.cc",
+    "client_hints/client_hints.h",
     "cocoa/system_hotkey_helper_mac.h",
     "cocoa/system_hotkey_helper_mac.mm",
     "cocoa/system_hotkey_map.h",

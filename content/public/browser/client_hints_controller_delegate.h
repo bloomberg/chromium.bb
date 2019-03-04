@@ -6,15 +6,22 @@
 #define CONTENT_PUBLIC_BROWSER_CLIENT_HINTS_CONTROLLER_DELEGATE_H_
 
 #include <memory>
+#include <string>
 
 #include "base/optional.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
+#include "content/public/browser/browser_context.h"
 
 class GURL;
 
-namespace net {
-class HttpRequestHeaders;
+namespace blink {
+struct WebEnabledClientHints;
+struct UserAgentMetadata;
+}  // namespace blink
+
+namespace network {
+class NetworkQualityTracker;
+
 }
 
 namespace content {
@@ -23,11 +30,18 @@ class CONTENT_EXPORT ClientHintsControllerDelegate {
  public:
   virtual ~ClientHintsControllerDelegate() = default;
 
-  // Returns additional client hints headers that can be attached to the
-  // request to |url|.
-  virtual void GetAdditionalNavigationRequestClientHintsHeaders(
+  virtual network::NetworkQualityTracker* GetNetworkQualityTracker() = 0;
+
+  // Get which client hints opt-ins were persisted on current origin.
+  virtual void GetAllowedClientHintsFromSource(
       const GURL& url,
-      net::HttpRequestHeaders* additional_headers) = 0;
+      blink::WebEnabledClientHints* client_hints) = 0;
+
+  virtual bool IsJavaScriptAllowed(const GURL& url) = 0;
+
+  virtual std::string GetAcceptLanguageString() = 0;
+
+  virtual blink::UserAgentMetadata GetUserAgentMetadata() = 0;
 };
 
 }  // namespace content

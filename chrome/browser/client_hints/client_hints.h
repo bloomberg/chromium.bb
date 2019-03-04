@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CLIENT_HINTS_CLIENT_HINTS_H_
 
 #include <memory>
+#include <string>
 
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
@@ -14,30 +15,7 @@
 
 class GURL;
 
-namespace content {
-class BrowserContext;
-}
-
-namespace net {
-class HttpRequestHeaders;
-}
-
 namespace client_hints {
-
-namespace internal {
-
-// Returns |rtt| after adding host-specific random noise, and rounding it as
-// per the NetInfo spec to improve privacy.
-unsigned long RoundRtt(const std::string& host,
-                       const base::Optional<base::TimeDelta>& rtt);
-
-// Returns downlink (in Mbps) after adding host-specific random noise to
-// |downlink_kbps| (which is in Kbps), and rounding it as per the NetInfo spec
-// to improve privacy.
-double RoundKbpsToMbps(const std::string& host,
-                       const base::Optional<int32_t>& downlink_kbps);
-
-}  // namespace internal
 
 class ClientHints : public KeyedService,
                     public content::ClientHintsControllerDelegate {
@@ -46,9 +24,17 @@ class ClientHints : public KeyedService,
   ~ClientHints() override;
 
   // content::ClientHintsControllerDelegate:
-  void GetAdditionalNavigationRequestClientHintsHeaders(
+  network::NetworkQualityTracker* GetNetworkQualityTracker() override;
+
+  void GetAllowedClientHintsFromSource(
       const GURL& url,
-      net::HttpRequestHeaders* additional_headers) override;
+      blink::WebEnabledClientHints* client_hints) override;
+
+  bool IsJavaScriptAllowed(const GURL& url) override;
+
+  std::string GetAcceptLanguageString() override;
+
+  blink::UserAgentMetadata GetUserAgentMetadata() override;
 
  private:
   content::BrowserContext* context_;

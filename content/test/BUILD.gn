@@ -1403,6 +1403,7 @@ test("content_unittests") {
     "../browser/cache_storage/cache_storage_operation_unittest.cc",
     "../browser/cache_storage/cache_storage_scheduler_unittest.cc",
     "../browser/child_process_security_policy_unittest.cc",
+    "../browser/client_hints/client_hints_unittest.cc",
     "../browser/cocoa/system_hotkey_map_unittest.mm",
     "../browser/code_cache/generated_code_cache_unittest.cc",
     "../browser/compositor/reflector_impl_unittest.cc",
