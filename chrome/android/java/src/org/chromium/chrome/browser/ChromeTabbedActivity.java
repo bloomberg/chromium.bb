@@ -2282,7 +2282,7 @@ public class ChromeTabbedActivity
         // If the current active tab is showing a tab modal dialog, an app menu shouldn't be shown
         // in any cases, e.g. when a hardware menu button is clicked.
         Tab tab = getActivityTab();
-        if (TabModalPresenter.isDialogShowing(tab)) return false;
+        if (tab != null && TabModalPresenter.isDialogShowing(tab)) return false;
 
         return super.shouldShowAppMenu();
     }
