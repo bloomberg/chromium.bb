@@ -163,13 +163,6 @@ cr.define('omnibox_output', function() {
       return this.resultsGroups_.flatMap(
           resultsGroup => resultsGroup.autocompleteMatches);
     }
-
-    /** @return {string} */
-    get visibleTableText() {
-      return this.resultsGroups_
-          .flatMap(resultsGroup => resultsGroup.visibleText)
-          .join('\n');
-    }
   }
 
   /**
@@ -328,12 +321,6 @@ cr.define('omnibox_output', function() {
       return [this.combinedResults]
           .concat(this.individualResultsList)
           .flatMap(results => results.autocompleteMatches);
-    }
-
-    /** @return {!Array<string>} */
-    get visibleText() {
-      return Array.from(this.shadowRoot.querySelectorAll(':host > :not(style)'))
-          .map(child => child.innerText);
     }
   }
 
