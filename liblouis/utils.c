@@ -227,7 +227,7 @@ _lou_showAttributes(TranslationTableCharacterAttributes a) {
 
 void EXPORT_CALL
 _lou_outOfMemory(void) {
-	_lou_logMessage(LOG_FATAL, "liblouis: Insufficient memory\n");
+	_lou_logMessage(LOU_LOG_FATAL, "liblouis: Insufficient memory\n");
 	exit(3);
 }
 
