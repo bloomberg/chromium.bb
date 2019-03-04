@@ -41,8 +41,7 @@ namespace app_list {
 // means by which a user converses with Assistant. To this end, DialogPlate
 // provides a textfield for use with the keyboard input modality, an
 // ActionView which serves to either commit a text query, or toggle voice
-// interaction as appropriate for the user's current input modality, and a back
-// button to go back in the launcher.
+// interaction as appropriate for the user's current input modality.
 class APP_LIST_EXPORT DialogPlate
     : public views::View,
       public views::TextfieldController,
@@ -87,7 +86,6 @@ class APP_LIST_EXPORT DialogPlate
 
   ash::AssistantViewDelegate* const delegate_;
 
-  views::ImageButton* back_button_;               // Owned by view hierarchy.
   ash::BaseLogoView* molecule_icon_;              // Owned by view hierarchy.
   views::View* input_modality_layout_container_;  // Owned by view hierarchy.
   views::View* keyboard_layout_container_;        // Owned by view hierarchy.
