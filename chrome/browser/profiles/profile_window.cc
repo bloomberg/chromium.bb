@@ -417,9 +417,6 @@ void CreateSystemProfileForUserManager(
 void BubbleViewModeFromAvatarBubbleMode(BrowserWindow::AvatarBubbleMode mode,
                                         BubbleViewMode* bubble_view_mode) {
   switch (mode) {
-    case BrowserWindow::AVATAR_BUBBLE_MODE_ACCOUNT_MANAGEMENT:
-      *bubble_view_mode = BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT;
-      return;
     case BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN:
       *bubble_view_mode = BUBBLE_VIEW_MODE_GAIA_SIGNIN;
       return;

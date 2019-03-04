@@ -167,6 +167,7 @@ void ProcessMirrorHeaderUIThread(
     ManageAccountsParams manage_accounts_params,
     const content::ResourceRequestInfo::WebContentsGetter&
         web_contents_getter) {
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   GAIAServiceType service_type = manage_accounts_params.service_type;
@@ -184,7 +185,7 @@ void ProcessMirrorHeaderUIThread(
   AccountReconcilor* account_reconcilor =
       AccountReconcilorFactory::GetForProfile(profile);
   account_reconcilor->OnReceivedManageAccountsResponse(service_type);
-#if !defined(OS_ANDROID)
+#if defined(OS_CHROMEOS)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (browser) {
     BrowserWindow::AvatarBubbleMode bubble_mode;
@@ -204,7 +205,6 @@ void ProcessMirrorHeaderUIThread(
     signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
         account_reconcilor->GetState());
 
-#if defined(OS_CHROMEOS)
     if (chromeos::switches::IsAccountManagerEnabled()) {
       // Chrome OS Account Manager is available. The only allowed operations
       // are:
@@ -223,13 +223,8 @@ void ProcessMirrorHeaderUIThread(
     // consistency is enforced and adding/removing accounts is not allowed,
     // GAIA_SERVICE_TYPE_INCOGNITO may be allowed though.
     return;
-#endif
-
-    browser->window()->ShowAvatarBubbleFromAvatarButton(
-        bubble_mode, manage_accounts_params,
-        signin_metrics::AccessPoint::ACCESS_POINT_CONTENT_AREA, false);
   }
-#else   // defined(OS_ANDROID)
+#else   // !defined(OS_CHROMEOS)
   if (service_type == signin::GAIA_SERVICE_TYPE_INCOGNITO) {
     GURL url(manage_accounts_params.continue_url.empty()
                  ? chrome::kChromeUINativeNewTabURL
@@ -243,7 +238,8 @@ void ProcessMirrorHeaderUIThread(
     AccountManagementScreenHelper::OpenAccountManagementScreen(profile,
                                                                service_type);
   }
-#endif  // !defined(OS_ANDROID)
+#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
 }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
