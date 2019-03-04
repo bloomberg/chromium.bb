@@ -752,14 +752,14 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   // refetch the MouseEventWithHitTestResults in case the scrollbar
   // EmbeddedContentView was destroyed when the mouse event was handled.
   if (mev.GetScrollbar()) {
-    const bool was_last_scroll_bar =
-        mev.GetScrollbar() == last_scrollbar_under_mouse_.Get();
-    HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
-    mev = frame_->GetDocument()->PerformMouseEventHitTest(
-        request, document_point, mouse_event);
-    if (was_last_scroll_bar &&
-        mev.GetScrollbar() != last_scrollbar_under_mouse_.Get())
-      last_scrollbar_under_mouse_ = nullptr;
+    if (mev.GetScrollbar() == last_scrollbar_under_mouse_.Get()) {
+      HitTestRequest read_only_request(HitTestRequest::kReadOnly |
+                                       HitTestRequest::kActive);
+      mev = frame_->GetDocument()->PerformMouseEventHitTest(
+          read_only_request, document_point, mouse_event);
+      if (mev.GetScrollbar() != last_scrollbar_under_mouse_.Get())
+        last_scrollbar_under_mouse_ = nullptr;
+    }
   }
 
   // Scrollbars should get events anyway, even disabled controls might be
@@ -769,10 +769,10 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
 
   if (event_result == WebInputEventResult::kNotHandled) {
     if (ShouldRefetchEventTarget(mev)) {
-      HitTestRequest request(HitTestRequest::kReadOnly |
-                             HitTestRequest::kActive);
+      HitTestRequest read_only_request(HitTestRequest::kReadOnly |
+                                       HitTestRequest::kActive);
       mev = frame_->GetDocument()->PerformMouseEventHitTest(
-          request, document_point, mouse_event);
+          read_only_request, document_point, mouse_event);
     }
     event_result = mouse_event_manager_->HandleMousePressEvent(mev);
   }
