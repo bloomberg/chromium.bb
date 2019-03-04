@@ -3166,18 +3166,64 @@ ax::mojom::SortDirection AXLayoutObject::GetSortDirection() const {
   return ax::mojom::SortDirection::kOther;
 }
 
-static ax::mojom::Role DecideRoleFromSibling(LayoutTableCell* sibling_cell) {
-  if (!sibling_cell)
+static bool IsNonEmptyNonHeaderCell(LayoutTableCell* cell) {
+  if (!cell)
+    return false;
+
+  if (Node* node = cell->GetNode())
+    return node->hasChildren() && node->HasTagName(kTdTag);
+
+  return false;
+}
+
+static bool IsHeaderCell(LayoutTableCell* cell) {
+  if (!cell)
+    return false;
+
+  if (Node* node = cell->GetNode())
+    return node->HasTagName(kThTag);
+
+  return false;
+}
+
+static ax::mojom::Role DecideRoleFromSiblings(LayoutTableCell* cell) {
+  if (!IsHeaderCell(cell))
     return ax::mojom::Role::kCell;
 
-  if (Node* sibling_node = sibling_cell->GetNode()) {
-    if (sibling_node->HasTagName(kThTag))
-      return ax::mojom::Role::kColumnHeader;
-    if (sibling_node->HasTagName(kTdTag))
-      return ax::mojom::Role::kRowHeader;
-  }
+  // If this header is only cell in its row, it is a column header.
+  // It is also a column header if it has a header on either side of it.
+  // If instead it has a non-empty td element next to it, it is a row header.
+  LayoutTableCell* next_cell = cell->NextCell();
+  LayoutTableCell* previous_cell = cell->PreviousCell();
+  if (!next_cell && !previous_cell)
+    return ax::mojom::Role::kColumnHeader;
+  if (IsHeaderCell(next_cell) && IsHeaderCell(previous_cell))
+    return ax::mojom::Role::kColumnHeader;
+  if (IsNonEmptyNonHeaderCell(next_cell) ||
+      IsNonEmptyNonHeaderCell(previous_cell))
+    return ax::mojom::Role::kRowHeader;
 
-  return ax::mojom::Role::kCell;
+  LayoutTableRow* layout_row = cell->Row();
+  DCHECK(layout_row);
+
+  // If this row's first or last cell is a non-empty td, this is a row header.
+  // Do the same check for the second and second-to-last cells because tables
+  // often have an empty cell at the intersection of the row and column headers.
+  LayoutTableCell* first_cell = layout_row->FirstCell();
+  DCHECK(first_cell);
+
+  LayoutTableCell* last_cell = layout_row->LastCell();
+  DCHECK(last_cell);
+
+  if (IsNonEmptyNonHeaderCell(first_cell) || IsNonEmptyNonHeaderCell(last_cell))
+    return ax::mojom::Role::kRowHeader;
+
+  if (IsNonEmptyNonHeaderCell(first_cell->NextCell()) ||
+      IsNonEmptyNonHeaderCell(last_cell->PreviousCell()))
+    return ax::mojom::Role::kRowHeader;
+
+  // We have no evidence that this is not a column header.
+  return ax::mojom::Role::kColumnHeader;
 }
 
 ax::mojom::Role AXLayoutObject::DetermineTableRowRole() const {
@@ -3228,23 +3274,7 @@ ax::mojom::Role AXLayoutObject::DetermineTableCellRole() const {
       EqualIgnoringASCIICase(scope, "colgroup"))
     return ax::mojom::Role::kColumnHeader;
 
-  // Check the previous cell and the next cell on the same row.
-  LayoutTableCell* layout_cell = ToLayoutTableCell(layout_object_);
-  ax::mojom::Role header_role = ax::mojom::Role::kCell;
-  // if header is preceded by header cells on the same row, then it is a
-  // column header. If it is preceded by other cells then it's a row header.
-  if ((header_role = DecideRoleFromSibling(layout_cell->PreviousCell())) !=
-      ax::mojom::Role::kCell)
-    return header_role;
-
-  // if header is followed by header cells on the same row, then it is a
-  // column header. If it is followed by other cells then it's a row header.
-  if ((header_role = DecideRoleFromSibling(layout_cell->NextCell())) !=
-      ax::mojom::Role::kCell)
-    return header_role;
-
-  // If there are no other cells on that row, then it is a column header.
-  return ax::mojom::Role::kColumnHeader;
+  return DecideRoleFromSiblings(ToLayoutTableCell(layout_object_));
 }
 
 AXObject* AXLayoutObject::CellForColumnAndRow(unsigned target_column_index,

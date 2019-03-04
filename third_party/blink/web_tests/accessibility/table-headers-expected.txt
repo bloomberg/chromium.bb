@@ -7,8 +7,8 @@ col head	row head	col head
 col head	data	row head
 row head	data	col head
 row header and column header (1)
-data	row head	column head
-column head	column head	data
+data	row head	row head
+row head	row head	data
 row head	data	row head
 row header and column header (2)
 row head	data	data
@@ -53,14 +53,8 @@ PASS table2.columnHeaderAtIndex(1).isEqual(table2.cellForColumnAndRow(2, 0)) is 
 PASS table2.columnHeaderAtIndex(2).isEqual(table2.cellForColumnAndRow(0, 1)) is true
 PASS table2.columnHeaderAtIndex(3).isEqual(table2.cellForColumnAndRow(2, 2)) is true
 PASS table2.columnHeadersCount is 4
-PASS table3.rowHeaderAtIndex(0).isEqual(table3.cellForColumnAndRow(1, 0)) is true
-PASS table3.rowHeaderAtIndex(1).isEqual(table3.cellForColumnAndRow(0, 2)) is true
-PASS table3.rowHeaderAtIndex(2).isEqual(table3.cellForColumnAndRow(2, 2)) is true
-PASS table3.rowHeadersCount is 3
-PASS table3.columnHeaderAtIndex(0).isEqual(table3.cellForColumnAndRow(2, 0)) is true
-PASS table3.columnHeaderAtIndex(1).isEqual(table3.cellForColumnAndRow(0, 1)) is true
-PASS table3.columnHeaderAtIndex(2).isEqual(table3.cellForColumnAndRow(1, 1)) is true
-PASS table3.columnHeadersCount is 3
+PASS table3.rowHeadersCount is 6
+PASS table3.columnHeadersCount is 0
 PASS table4.rowHeaderAtIndex(0).isEqual(table4.cellForColumnAndRow(0, 0)) is true
 PASS table4.rowHeadersCount is 1
 PASS table4.columnHeaderAtIndex(0).isEqual(table4.cellForColumnAndRow(0, 1)) is true
