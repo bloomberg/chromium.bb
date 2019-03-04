@@ -100,6 +100,15 @@ bool HasInvalidModification(const RTCRtpSendParameters* parameters,
   if (parameters->hasEncodings()) {
     if (parameters->encodings().size() != new_parameters->encodings().size())
       return true;
+
+    for (wtf_size_t i = 0; i < parameters->encodings().size(); ++i) {
+      const auto& encoding = parameters->encodings()[i];
+      const auto& new_encoding = new_parameters->encodings()[i];
+      if (encoding->hasRid() != new_encoding->hasRid() ||
+          (encoding->hasRid() && encoding->rid() != new_encoding->rid())) {
+        return true;
+      }
+    }
   }
 
   if (parameters->hasHeaderExtensions() !=
@@ -244,9 +253,11 @@ ToRtpParameters(const RTCRtpSendParameters* parameters) {
 webrtc::RtpEncodingParameters ToRtpEncodingParameters(
     const RTCRtpEncodingParameters* encoding) {
   // TODO(orphis): Forward missing fields from the WebRTC library:
-  // codecPayloadType, dtx, ptime, maxFramerate, scaleResolutionDownBy,
-  // rid
+  // codecPayloadType, dtx, ptime, maxFramerate, scaleResolutionDownBy.
   webrtc::RtpEncodingParameters webrtc_encoding;
+  if (encoding->hasRid()) {
+    webrtc_encoding.rid = WebString(encoding->rid()).Utf8();
+  }
   webrtc_encoding.active = encoding->active();
   webrtc_encoding.bitrate_priority = PriorityToDouble(encoding->priority());
   webrtc_encoding.network_priority =
@@ -359,8 +370,9 @@ RTCRtpSendParameters* RTCRtpSender::getParameters() {
       SafeCast<wtf_size_t>(webrtc_parameters->encodings.size()));
   for (const auto& webrtc_encoding : webrtc_parameters->encodings) {
     // TODO(orphis): Forward missing fields from the WebRTC library:
-    // codecPayloadType, dtx, ptime, maxFramerate, scaleResolutionDownBy, rid
+    // codecPayloadType, dtx, ptime, maxFramerate, scaleResolutionDownBy.
     RTCRtpEncodingParameters* encoding = RTCRtpEncodingParameters::Create();
+    encoding->setRid(WebString::FromUTF8(webrtc_encoding.rid));
     encoding->setActive(webrtc_encoding.active);
     if (webrtc_encoding.max_bitrate_bps) {
       encoding->setMaxBitrate(webrtc_encoding.max_bitrate_bps.value());

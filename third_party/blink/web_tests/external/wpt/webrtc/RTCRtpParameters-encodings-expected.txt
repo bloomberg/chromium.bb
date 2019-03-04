@@ -4,7 +4,7 @@ PASS addTransceiver() with empty list sendEncodings should have default encoding
 FAIL sender.getParameters() should return sendEncodings set by addTransceiver() promise_test: Unhandled rejection with value: object "InvalidAccessError: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': Failed to set remote answer sdp: Failed to set remote audio description send parameters."
 PASS sender.setParameters() with mismatch number of encodings should reject with InvalidModificationError
 PASS sender.setParameters() with encodings unset should reject with TypeError
-FAIL setParameters() with modified encoding.rid field should reject with InvalidModificationError assert_equals: expected (string) "foo" but got (undefined) undefined
+PASS setParameters() with modified encoding.rid field should reject with InvalidModificationError
 PASS setParameters() with encoding.scaleResolutionDownBy field set to less than 1.0 should reject with RangeError
 PASS setParameters() with encoding.scaleResolutionDownBy field set to greater than 1.0 should succeed
 FAIL setParameters() with modified encoding.dtx should succeed with RTCRtpTransceiverInit assert_equals: expected (string) "enabled" but got (undefined) undefined
