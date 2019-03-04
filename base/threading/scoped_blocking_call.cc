@@ -65,9 +65,6 @@ UncheckedScopedBlockingCall::~UncheckedScopedBlockingCall() {
 
 }  // namespace internal
 
-ScopedBlockingCall::ScopedBlockingCall(BlockingType blocking_type)
-    : ScopedBlockingCall(FROM_HERE, blocking_type) {}
-
 ScopedBlockingCall::ScopedBlockingCall(const Location& from_here,
                                        BlockingType blocking_type)
     : UncheckedScopedBlockingCall(blocking_type) {
