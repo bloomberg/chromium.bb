@@ -25,12 +25,8 @@
 # Spaces #
 ##########
 
-space	\s	0	space
-space	\x00A0	0	non-trivial blank
-space	\t	0	HT, CTRL-I
-space	\v	0	VT, CTRL-V
-space	\f	0	FF, CTRL-L
-space	\r	0	CR, CTRL-M
+space \x00a0 a
+include spaces.uti
 
 ##################
 # Greek Alphabet #

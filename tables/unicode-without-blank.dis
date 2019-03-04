@@ -1,5 +1,7 @@
-#  Copyright (C) 2010 Leon Ungier <Leon.Ungier@ViewPlus.com>, 
-#  Copyright (C) 2010 Samuel Thibault <samuel.thibault@ens-lyon.org>
+# This file will produce Unicode Braille output.
+# Use it as the first file in a table list.
+#
+#  Copyright (C) 2010 JJB Software, Inc. www.jjb-software.com
 #
 #  This file is part of liblouis.
 #
@@ -17,9 +19,6 @@
 #  License along with liblouis. If not, see
 #  <http://www.gnu.org/licenses/>.
 
-# Table for Gondi
-space \x00a0 a
-include spaces.uti
-include devanagari.cti
-include telugu.cti
-include text_nabcc.dis
+display \s 0
+include unicode.dis
+display \x2800 0

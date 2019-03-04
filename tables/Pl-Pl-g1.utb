@@ -22,14 +22,12 @@
 
 # Created & maintained by Leon Ungier <Leon.Ungier@ViewPlus.com>.
 
+space \x00a0 a
+include spaces.uti
 include text_nabcc.dis
 
 # ----------- define all chars --------------------------------------
 
-space \t 0 tab						#  9
-space \x000A 0
-space \x000D 0
-space \s 0 blank					# 32
 punctuation ! 235			exclamation sign   						x0021
 punctuation " 356			double quote									x0022
 sign # 3456						number sign										x0023
@@ -109,7 +107,6 @@ punctuation } 12456			right curly bracket					x007D
 math ~ 256				tilde												x007E
 sign \x0080 15-136-1235-135										x0080
 
-space \X00A0 0		no-break space																x00A0
 sign ¢ 4-14				cent sign																			x00A2
 sign £ 45-123			pound sign																		x00A3
 sign ¤ 45-15			currency sign																	x00A4

@@ -48,29 +48,13 @@
 #  <http://www.gnu.org/licenses/>.
 #
 
+space \t 9                   # tab x0009
+space \x001b 1b              # escape character for html back-translation # dec 27
+space \x00A0 a               # NO-BREAK SPACE <noBreak> 0020 NON-BREAKING SPACE # dec 160
+include spaces.uti
+
 include digits8Dots.uti
 include latinLetterDef6Dots.uti
-
-space \s 0                   # blank x0020
-space \x001b 1b              # escape character for html back-translation # dec 27
-
-# With liblouisxml, use the following three lines instead:
-space \t 9                   # tab x0009
-space \x000D 0               # \r
-space \x000A 0               # \n
-space \x00A0 a               # NO-BREAK SPACE <noBreak> 0020 NON-BREAKING SPACE # dec 160
-
-# Unicode space characters
-space \x2000 0               # En Quad
-space \x2001 0               # Em Quad
-space \x2002 0               # En Space
-space \x2003 0               # Em Space
-space \x2004 0               # Three-Per-Em Space
-space \x2005 0               # Four-Per-Em Space
-space \x2006 0               # Six-Per-Em Space
-space \x2007 0               # Figure Space
-space \x2008 0               # Punctuation Space
-space \x2009 0               # Thin Space
 
 punctuation ! 235            # exclamation mark x0021
 punctuation " 256            # double quote x0022

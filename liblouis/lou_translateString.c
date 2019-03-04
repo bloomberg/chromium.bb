@@ -1123,12 +1123,12 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 	if (tableList == NULL || inbufx == NULL || inlen == NULL || outbuf == NULL ||
 			outlen == NULL)
 		return 0;
-	_lou_logMessage(
-			LOG_ALL, "Performing translation: tableList=%s, inlen=%d", tableList, *inlen);
-	_lou_logWidecharBuf(LOG_ALL, "Inbuf=", inbufx, *inlen);
+	_lou_logMessage(LOU_LOG_ALL, "Performing translation: tableList=%s, inlen=%d",
+			tableList, *inlen);
+	_lou_logWidecharBuf(LOU_LOG_ALL, "Inbuf=", inbufx, *inlen);
 
 	if (!_lou_isValidMode(mode))
-		_lou_logMessage(LOG_ERROR, "Invalid mode parameter: %d", mode);
+		_lou_logMessage(LOU_LOG_ERROR, "Invalid mode parameter: %d", mode);
 
 	table = lou_getTable(tableList);
 	if (table == NULL || *inlen < 0 || *outlen < 0) return 0;
@@ -1323,8 +1323,8 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 			*cursorPos = cursorPosition;
 	}
 	if (rulesLen != NULL) *rulesLen = appliedRulesCount;
-	_lou_logMessage(LOG_ALL, "Translation complete: outlen=%d", *outlen);
-	_lou_logWidecharBuf(LOG_ALL, "Outbuf=", (const widechar *)outbuf, *outlen);
+	_lou_logMessage(LOU_LOG_ALL, "Translation complete: outlen=%d", *outlen);
+	_lou_logWidecharBuf(LOU_LOG_ALL, "Outbuf=", (const widechar *)outbuf, *outlen);
 
 	return goodTrans;
 }

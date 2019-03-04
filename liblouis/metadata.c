@@ -310,7 +310,7 @@ parseQuery(const char *query) {
 					memcpy(v, val, valSize);
 				}
 				FeatureWithImportance f = { feature_new(k, v), 0 };
-				_lou_logMessage(LOG_DEBUG, "Query has feature '%s:%s'", f.feature.key,
+				_lou_logMessage(LOU_LOG_DEBUG, "Query has feature '%s:%s'", f.feature.key,
 						f.feature.val);
 				features = list_conj(features, memcpy(malloc(sizeof(f)), &f, sizeof(f)),
 						NULL, NULL, (void (*)(void *))feature_free);
@@ -351,7 +351,7 @@ parseQuery(const char *query) {
 	}
 	return list_sort(features, (int (*)(void *, void *))cmpKeys);
 compile_error:
-	_lou_logMessage(LOG_ERROR, "Unexpected character '%c' at position %d", c, pos);
+	_lou_logMessage(LOU_LOG_ERROR, "Unexpected character '%c' at position %d", c, pos);
 	list_free(features);
 	return NULL;
 }
@@ -380,7 +380,7 @@ analyzeTable(const char *table, int activeOnly) {
 	int k;
 	resolved = _lou_resolveTable(table, NULL);
 	if (resolved == NULL) {
-		_lou_logMessage(LOG_ERROR, "Cannot resolve table '%s'", table);
+		_lou_logMessage(LOU_LOG_ERROR, "Cannot resolve table '%s'", table);
 		return NULL;
 	}
 	sprintf(fileName, "%s", *resolved);
@@ -388,7 +388,8 @@ analyzeTable(const char *table, int activeOnly) {
 	for (k = 0; resolved[k]; k++) free(resolved[k]);
 	free(resolved);
 	if (k > 1) {
-		_lou_logMessage(LOG_ERROR, "Table '%s' resolves to more than one file", table);
+		_lou_logMessage(
+				LOU_LOG_ERROR, "Table '%s' resolves to more than one file", table);
 		return NULL;
 	}
 	info.fileName = fileName;
@@ -467,8 +468,8 @@ analyzeTable(const char *table, int activeOnly) {
 								v[j] = '\0';
 							}
 							Feature f = feature_new(k, v);
-							_lou_logMessage(
-									LOG_DEBUG, "Table has feature '%s:%s'", f.key, f.val);
+							_lou_logMessage(LOU_LOG_DEBUG, "Table has feature '%s:%s'",
+									f.key, f.val);
 							features = list_conj(features,
 									memcpy(malloc(sizeof(f)), &f, sizeof(f)), NULL, NULL,
 									(void (*)(void *))feature_free);
@@ -484,14 +485,14 @@ analyzeTable(const char *table, int activeOnly) {
 		}
 		fclose(info.in);
 	} else
-		_lou_logMessage(LOG_ERROR, "Cannot open table '%s'", info.fileName);
+		_lou_logMessage(LOU_LOG_ERROR, "Cannot open table '%s'", info.fileName);
 	return list_sort(features, (int (*)(void *, void *))cmpKeys);
 compile_error:
 	if (info.linepos < info.linelen)
-		_lou_logMessage(LOG_ERROR, "Unexpected character '%c' on line %d, column %d",
+		_lou_logMessage(LOU_LOG_ERROR, "Unexpected character '%c' on line %d, column %d",
 				info.line[info.linepos], info.lineNumber, info.linepos);
 	else
-		_lou_logMessage(LOG_ERROR, "Unexpected newline on line %d", info.lineNumber);
+		_lou_logMessage(LOU_LOG_ERROR, "Unexpected newline on line %d", info.lineNumber);
 	list_free(features);
 	return NULL;
 }
@@ -504,7 +505,7 @@ lou_indexTables(const char **tables) {
 	list_free(tableIndex);
 	tableIndex = NULL;
 	for (table = tables; *table; table++) {
-		_lou_logMessage(LOG_DEBUG, "Analyzing table %s", *table);
+		_lou_logMessage(LOU_LOG_DEBUG, "Analyzing table %s", *table);
 		List *features = analyzeTable(*table, 1);
 		if (features) {
 			TableMeta m = { strdup(*table), features };
@@ -512,7 +513,7 @@ lou_indexTables(const char **tables) {
 					NULL, NULL, free);
 		}
 	}
-	if (!tableIndex) _lou_logMessage(LOG_WARN, "No tables were indexed");
+	if (!tableIndex) _lou_logMessage(LOU_LOG_WARN, "No tables were indexed");
 }
 
 /**
@@ -528,7 +529,7 @@ listDir(List *list, char *dirName) {
 	sprintf(glob, "%s%c%c", dirName, DIR_SEP, '*');
 	hFind = FindFirstFileA(glob, &ffd);
 	if (hFind == INVALID_HANDLE_VALUE) {
-		_lou_logMessage(LOG_WARN, "%s is not a directory", dirName);
+		_lou_logMessage(LOU_LOG_WARN, "%s is not a directory", dirName);
 	} else {
 		do {
 			if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
@@ -556,7 +557,7 @@ listDir(List *list, char *dirName) {
 		}
 		closedir(dir);
 	} else {
-		_lou_logMessage(LOG_WARN, "%s is not a directory", dirName);
+		_lou_logMessage(LOU_LOG_WARN, "%s is not a directory", dirName);
 	}
 	return list;
 }
@@ -595,7 +596,7 @@ indexTablePath(void) {
 	List *tables;
 	const char **tablesArray;
 	_lou_logMessage(
-			LOG_WARN, "Tables have not been indexed yet. Indexing LOUIS_TABLEPATH.");
+			LOU_LOG_WARN, "Tables have not been indexed yet. Indexing LOUIS_TABLEPATH.");
 	searchPath = _lou_getTablePath();
 	tables = listFiles(searchPath);
 	tablesArray = (const char **)list_toArray(tables, NULL);
@@ -622,10 +623,10 @@ lou_findTable(const char *query) {
 	}
 	list_free(queryFeatures);
 	if (bestMatch) {
-		_lou_logMessage(LOG_INFO, "Best match: %s (%d)", bestMatch, bestQuotient);
+		_lou_logMessage(LOU_LOG_INFO, "Best match: %s (%d)", bestMatch, bestQuotient);
 		return bestMatch;
 	} else {
-		_lou_logMessage(LOG_INFO, "No table could be found for query '%s'", query);
+		_lou_logMessage(LOU_LOG_INFO, "No table could be found for query '%s'", query);
 		return NULL;
 	}
 }
@@ -661,7 +662,7 @@ lou_findTables(const char *query) {
 	}
 	list_free(queryFeatures);
 	if (matches) {
-		_lou_logMessage(LOG_INFO, "%d matches found", list_size(matches));
+		_lou_logMessage(LOU_LOG_INFO, "%d matches found", list_size(matches));
 		int i = 0;
 		tablesArray = malloc((1 + list_size(matches)) * sizeof(void *));
 		for (; matches; matches = matches->tail)
@@ -670,7 +671,7 @@ lou_findTables(const char *query) {
 		list_free(matches);
 		return tablesArray;
 	} else {
-		_lou_logMessage(LOG_INFO, "No table could be found for query '%s'", query);
+		_lou_logMessage(LOU_LOG_INFO, "No table could be found for query '%s'", query);
 		return NULL;
 	}
 }

@@ -40,6 +40,12 @@
 # Uncontracted Unified French Table
 # ---------------------------------
 
+space \t 9 tab    # 9
+space \x001B 1b   # escape
+space \x00A0 a    # no-break space
+include spaces.uti
+space \x007f 0
+
 undefined 0
 
 display ¨ 46
@@ -58,15 +64,6 @@ display ^ 4
 display \s 0
 display @ 345
 display ó 346
-
-space \s 0      	# blank 32
-space \t 9 tab    # 9
-space \x001B 1b   # escape
-space \x000A 0    # lf
-space \x000c 0    #
-space \x000D 0    # cr
-space \x00A0 a    # no-break space
-space \x007f 0
 
 include latinLetterDef6Dots.uti
 

@@ -33,17 +33,13 @@
 #
 #
 
-# ----------- define all chars ------------------------------------------------
-space \t 0 tab							#  9
-space \x000A 0
-space \x000D 0
-space \s 0 blank						# 32
-
-#--BEGIN--------------------------------------------[Peter Engström 2011-03-23]
 # Remove U+200C three-per-em space = thick space but let it be a virtual space.
-space \x200C 9							# Assign x200C to virtual dot 9.
-noback pass2 @9 ?								# Remove virtual dot 9 during second pass.
-#--END----------------------------------------------[Peter Engström 2011-03-23]
+space \x200C 9							# Assign x200C to virtual dot 9. [Peter Engström 2011-03-23]
+noback pass2 @9 ?						# Remove virtual dot 9 during second pass. [Peter Engström 2011-03-23]
+space \x00a0 a
+include spaces.uti
+
+# ----------- define all chars ------------------------------------------------
 
 punctuation ! 235						# 33
 punctuation " 236						# 34	[Peter Engström 2011-03-15]
@@ -84,7 +80,6 @@ punctuation { 135						# 123	[Peter Engström 2011-03-15]
 sign | 1245								# 124
 punctuation } 246						# 125	[Peter Engström 2011-03-15]
 math ~ 45								# 126
-space \X00A0 0							# 160 no-break space
 sign \x00A2 4-14						# 162 ¢ cents sign
 sign \x00A3 4-123						# 163 £ pounds sign
 sign \x00A5 4-13456						# 165 ¥ yen sign

@@ -42,6 +42,8 @@
 # https://github.com/liblouis/liblouis/tree/formal_braille_spec#pistekirjoituksen-perusteet
 
 # Includes
+space \x00a0 a
+include spaces.uti
 include latinLetterDef6Dots.uti
 include digits6Dots.uti
 include litdigits6Dots.uti
@@ -87,9 +89,6 @@ uplow \x00DB\x00FB 45-136 Ûû
 uplow \x00DD\x00FD 45-13456 Ýý
 uplow \x00DE\x00FE 45-145 Þþ
 lowercase \x00FF 45-13456 ÿ
-
-# Whitespace
-space \s 0
 
 # Punctuation
 # For purposes of this table intended for general literary texts, some mathematical symbols and operators, such as < and > are considered as general punctuation. For reasoning, see section "General symbols" below.

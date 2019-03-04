@@ -41,8 +41,6 @@
 
 # The 2007 unification of french computer braille tables is based on the cp1252 character set
 
-undefined 0
-
 include latinLetterDef8Dots.uti
 sign       	\x0000	123458  	000 ⢟   NULL
 sign       	\x0001	1234678 	001 ⣯   START OF HEADING
@@ -244,8 +242,6 @@ lowercase  	\x00FD	134568  	253 ⢽ ý LATIN SMALL LETTER Y WITH ACUTE
 lowercase  	\x00FE	2458    	254 ⢚ þ LATIN SMALL LETTER THORN
 lowercase  	\x00FF	2568    	255 ⢲ ÿ LATIN SMALL LETTER Y WITH DIAERESIS
 
-always \x00A0 7
-
 include braille-patterns.cti
 
 # unofficial definitions
@@ -257,8 +253,13 @@ noback sign \x204C 124578	⁌ BLACK LEFTWARDS BULLET
 noback sign \x204D 124578	⁍ BLACK RIGHTWARDS BULLET
 noback sign \x2219 124578	∙ BULLET OPERATOR
 
+## NO-BREAK SPACE (variants)
+noback sign \x202F 7	  NARROW NO-BREAK SPACE
+
 ## miscellaneous
 noback	sign	\x25cf	35        	BLACK CIRCLE
 
 # mathematical symbols, Greek letters, arrows, etc. (on multiple cells)
 include fr-bfu-comp68.cti
+
+undefined 0

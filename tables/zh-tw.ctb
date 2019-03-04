@@ -40,12 +40,11 @@
 # U.S. English 8 dot Computer braille table
 include en-us-comp8.ctb
 
-#begin Basic Latin (U+0000-U+007F)
 space \x000C 457-123
-#end Basic Latin
+sign \x2028 1256
+include spaces.uti
 
 #begin Latin-1 Supplement (U+0080-U+00FF)
-space \x00A0 0
 punctuation \x00A1 34-2346
 sign \x00A2 4-14
 sign \x00A3 4-123
@@ -218,8 +217,6 @@ sign \x2024 34567-1
 sign \x2025 46-46
 punctuation \x2026 5-5-5
 punctuation \x2027 36
-sign \x2028 1256
-space \x202F 0
 sign \x2030 4-356-356
 punctuation \x2032 3
 punctuation \x2033 3-3
@@ -247,8 +244,6 @@ punctuation \x2058 46-46-46-46
 punctuation \x2059 46-46-46-46-46
 punctuation \x205A 46-46
 sign \x205B 46-46-46-46
-space \x205F 0
-space \x2060 0
 #end General Punctuation
 
 #begin Superscripts and Subscripts (U+2070-U+209F)

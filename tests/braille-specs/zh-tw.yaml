@@ -11,7 +11,7 @@
 # Currently maintained by Sponge Jhan <school510587@yahoo.com.tw>
 # Version: 2019-02
 
-display: unicode.dis
+display: unicode-without-blank.dis
 table:
   locale: cmn-TW
   __assert-match: zh_TW.tbl # zh-tw.ctb

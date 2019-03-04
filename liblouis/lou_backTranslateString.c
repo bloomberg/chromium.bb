@@ -178,7 +178,7 @@ _lou_backTranslateWithTracing(const char *tableList, const widechar *inbuf, int 
 	if (table == NULL) return 0;
 
 	if (!_lou_isValidMode(mode))
-		_lou_logMessage(LOG_ERROR, "Invalid mode parameter: %d", mode);
+		_lou_logMessage(LOU_LOG_ERROR, "Invalid mode parameter: %d", mode);
 
 	if (!stringBufferPool) initStringBufferPool();
 	for (idx = 0; idx < stringBufferPool->size; idx++) releaseStringBuffer(idx);
