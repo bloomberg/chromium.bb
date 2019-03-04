@@ -152,8 +152,7 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
       mock_render_process_id_(render_process_host_->GetID()),
       new_mock_render_process_id_(new_render_process_host_->GetID()),
       url_loader_factory_getter_(
-          base::MakeRefCounted<URLLoaderFactoryGetter>()),
-      weak_factory_(this) {
+          base::MakeRefCounted<URLLoaderFactoryGetter>()) {
   scoped_refptr<base::SequencedTaskRunner> database_task_runner =
       base::ThreadTaskRunnerHandle::Get();
   wrapper_->InitInternal(user_data_directory, std::move(database_task_runner),
