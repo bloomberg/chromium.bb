@@ -109,6 +109,15 @@ void WelcomeScreenHandler::ReloadLocalizedContent() {
   core_oobe_view_->ReloadContent(localized_strings);
 }
 
+void WelcomeScreenHandler::SetInputMethodId(
+    const std::string& input_method_id) {
+  CallJS("login.WelcomeScreen.onInputMethodIdSetFromBackend", input_method_id);
+}
+
+void WelcomeScreenHandler::SetTimezoneId(const std::string& timezone_id) {
+  CallJS("login.WelcomeScreen.onTimezoneIdSetFromBackend", timezone_id);
+}
+
 // WelcomeScreenHandler, BaseScreenHandler implementation: --------------------
 
 void WelcomeScreenHandler::DeclareLocalizedValues(
@@ -154,6 +163,15 @@ void WelcomeScreenHandler::DeclareLocalizedValues(
 
   builder->Add("timezoneDropdownTitle", IDS_TIMEZONE_DROPDOWN_TITLE);
   builder->Add("timezoneButtonText", IDS_TIMEZONE_BUTTON_TEXT);
+}
+
+void WelcomeScreenHandler::DeclareJSCallbacks() {
+  AddCallback("WelcomeScreen.setLocaleId",
+              &WelcomeScreenHandler::HandleSetLocaleId);
+  AddCallback("WelcomeScreen.setInputMethodId",
+              &WelcomeScreenHandler::HandleSetInputMethodId);
+  AddCallback("WelcomeScreen.setTimezoneId",
+              &WelcomeScreenHandler::HandleSetTimezoneId);
 }
 
 void WelcomeScreenHandler::GetAdditionalParameters(
@@ -219,6 +237,22 @@ void WelcomeScreenHandler::Initialize() {
   // Reload localized strings if they are already resolved.
   if (screen_ && screen_->language_list())
     ReloadLocalizedContent();
+}
+
+void WelcomeScreenHandler::HandleSetLocaleId(const std::string& locale_id) {
+  if (screen_)
+    screen_->SetApplicationLocale(locale_id);
+}
+
+void WelcomeScreenHandler::HandleSetInputMethodId(
+    const std::string& input_method_id) {
+  if (screen_)
+    screen_->SetInputMethod(input_method_id);
+}
+
+void WelcomeScreenHandler::HandleSetTimezoneId(const std::string& timezone_id) {
+  if (screen_)
+    screen_->SetTimezone(timezone_id);
 }
 
 // WelcomeScreenHandler, private: ----------------------------------------------

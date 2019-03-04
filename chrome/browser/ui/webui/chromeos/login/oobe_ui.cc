@@ -320,9 +320,10 @@ void OobeUI::ConfigureOobeDisplay() {
   AddScreenHandler(
       std::make_unique<UpdateScreenHandler>(js_calls_container_.get()));
 
-  if (display_type_ == kOobeDisplay)
+  if (display_type_ == kOobeDisplay) {
     AddScreenHandler(std::make_unique<WelcomeScreenHandler>(
         js_calls_container_.get(), core_handler_));
+  }
 
   AddScreenHandler(std::make_unique<NetworkScreenHandler>(
       js_calls_container_.get(), core_handler_));

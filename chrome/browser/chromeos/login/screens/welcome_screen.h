@@ -73,6 +73,8 @@ class WelcomeScreen : public BaseScreen,
   std::string GetApplicationLocale();
   std::string GetInputMethod() const;
 
+  void SetApplicationLocale(const std::string& locale);
+  void SetInputMethod(const std::string& input_method);
   void SetTimezone(const std::string& timezone_id);
   std::string GetTimezone() const;
 
@@ -84,15 +86,11 @@ class WelcomeScreen : public BaseScreen,
   void Show() override;
   void Hide() override;
   void OnUserAction(const std::string& action_id) override;
-  void OnContextKeyUpdated(const ::login::ScreenContext::KeyType& key) override;
 
   // InputMethodManager::Observer implementation:
   void InputMethodChanged(input_method::InputMethodManager* manager,
                           Profile* profile,
                           bool show_message) override;
-
-  void SetApplicationLocale(const std::string& locale);
-  void SetInputMethod(const std::string& input_method);
 
   // Subscribe to timezone changes.
   void InitializeTimezoneObserver();
