@@ -96,15 +96,23 @@ cr.define('downloads', function() {
       // and data.byExtName directly. Why?
       'observeControlledBy_(controlledBy_)',
       'observeIsDangerous_(isDangerous_, data)',
+      'restoreFocusAfterCancelIfNeeded_(data)',
     ],
 
     /** @private {downloads.mojom.PageHandlerInterface} */
     mojoHandler_: null,
 
+    /** @private {boolean} */
+    restoreFocusAfterCancel_: false,
+
     /** @override */
     ready: function() {
       this.mojoHandler_ = downloads.BrowserProxy.getInstance().handler;
       this.content = this.$.content;
+    },
+
+    focusOnRemoveButton: function() {
+      cr.ui.focusWithoutInk(this.$.remove);
     },
 
     /** Overrides FocusRowBehavior. */
@@ -412,6 +420,7 @@ cr.define('downloads', function() {
 
     /** @private */
     onCancelTap_: function() {
+      this.restoreFocusAfterCancel_ = true;
       this.mojoHandler_.cancel(this.data.id);
     },
 
@@ -450,6 +459,7 @@ cr.define('downloads', function() {
     /** @private */
     onRemoveTap_: function() {
       this.mojoHandler_.remove(this.data.id);
+      this.fire('restore-focus-after-remove');
     },
 
     /** @private */
@@ -466,6 +476,20 @@ cr.define('downloads', function() {
     onShowTap_: function() {
       this.mojoHandler_.show(this.data.id);
     },
+
+    /** @private */
+    restoreFocusAfterCancelIfNeeded_: function() {
+      if (!this.restoreFocusAfterCancel_) {
+        return;
+      }
+      this.restoreFocusAfterCancel_ = false;
+      setTimeout(() => {
+        const element = this.getFocusRow().getFirstFocusable('retry');
+        if (element) {
+          element.focus();
+        }
+      });
+    }
   });
 
   return {Item: Item};
