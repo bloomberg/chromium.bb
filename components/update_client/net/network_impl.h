@@ -34,17 +34,23 @@ class NetworkFetcherImpl : public NetworkFetcher {
       const std::string& post_data,
       const base::flat_map<std::string, std::string>& post_additional_headers,
       ResponseStartedCallback response_started_callback,
+      ProgressCallback progress_callback,
       PostRequestCompleteCallback post_request_complete_callback) override;
   void DownloadToFile(const GURL& url,
                       const base::FilePath& file_path,
                       ResponseStartedCallback response_started_callback,
+                      ProgressCallback progress_callback,
                       DownloadToFileCompleteCallback
                           download_to_file_complete_callback) override;
+
  private:
   void OnResponseStartedCallback(
       ResponseStartedCallback response_started_callback,
       const GURL& final_url,
       const network::ResourceResponseHead& response_head);
+
+  void OnProgressCallback(ProgressCallback response_started_callback,
+                          uint64_t current);
 
   static constexpr int kMaxRetriesOnNetworkChange = 3;
 

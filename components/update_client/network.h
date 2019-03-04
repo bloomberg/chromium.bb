@@ -34,6 +34,7 @@ class NetworkFetcher {
       void(base::FilePath path, int net_error, int64_t content_size)>;
   using ResponseStartedCallback = base::OnceCallback<
       void(const GURL& final_url, int response_code, int64_t content_length)>;
+  using ProgressCallback = base::RepeatingCallback<void(int64_t current)>;
 
   // The ETag header carries the ECSDA signature of the POST response, if
   // signing has been used.
@@ -54,11 +55,13 @@ class NetworkFetcher {
       const std::string& post_data,
       const base::flat_map<std::string, std::string>& post_additional_headers,
       ResponseStartedCallback response_started_callback,
+      ProgressCallback progress_callback,
       PostRequestCompleteCallback post_request_complete_callback) = 0;
   virtual void DownloadToFile(
       const GURL& url,
       const base::FilePath& file_path,
       ResponseStartedCallback response_started_callback,
+      ProgressCallback progress_callback,
       DownloadToFileCompleteCallback download_to_file_complete_callback) = 0;
 
  protected:

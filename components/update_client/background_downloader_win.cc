@@ -442,6 +442,8 @@ void BackgroundDownloader::BeginDownload(const GURL& url) {
     return;
   }
 
+  VLOG(1) << "Starting BITS download for: " << url.spec();
+
   ResetInterfacePointers();
   main_task_runner()->PostTask(FROM_HERE,
                                base::BindOnce(&BackgroundDownloader::StartTimer,

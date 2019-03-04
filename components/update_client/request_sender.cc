@@ -96,6 +96,7 @@ void RequestSender::SendInternal() {
   network_fetcher_->PostRequest(
       url, request_body_, request_extra_headers_,
       base::BindOnce(&RequestSender::OnResponseStarted, base::Unretained(this)),
+      base::BindRepeating([](int64_t current) {}),
       base::BindOnce(&RequestSender::OnNetworkFetcherComplete,
                      base::Unretained(this), url));
 }
