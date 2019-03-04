@@ -62,6 +62,79 @@ void UnloadRulesetOnIOThread(ExtensionId extension_id, InfoMap* info_map) {
   info_map->GetRulesetManager()->RemoveRuleset(extension_id);
 }
 
+// A helper class to hold the data relating to the loading of a single ruleset.
+class RulesetInfo {
+ public:
+  explicit RulesetInfo(RulesetSource source) : source_(std::move(source)) {}
+  ~RulesetInfo() = default;
+  RulesetInfo(RulesetInfo&&) = default;
+  RulesetInfo& operator=(RulesetInfo&&) = default;
+
+  const RulesetSource& source() const { return source_; }
+
+  // Returns the ownership of the ruleset matcher to the caller. Must only be
+  // called for a successful load.
+  std::unique_ptr<RulesetMatcher> TakeMatcher() {
+    DCHECK(did_load_successfully());
+    return std::move(matcher_);
+  }
+
+  // Clients should set a new checksum if the checksum stored in prefs should
+  // be updated.
+  void set_new_checksum(int new_checksum) { new_checksum_ = new_checksum; }
+  base::Optional<int> new_checksum() const { return new_checksum_; }
+
+  // The expected checksum for the indexed ruleset.
+  void set_expected_checksum(int checksum) { expected_checksum_ = checksum; }
+  int expected_checksum() const {
+    DCHECK(expected_checksum_);
+    return *expected_checksum_;
+  }
+
+  // Must be called after CreateVerifiedMatcher.
+  RulesetMatcher::LoadRulesetResult load_ruleset_result() const {
+    DCHECK(load_ruleset_result_);
+    // |matcher_| is valid only on success.
+    DCHECK_EQ(load_ruleset_result_ == RulesetMatcher::kLoadSuccess, !!matcher_);
+    return *load_ruleset_result_;
+  }
+
+  // Must be called after CreateVerifiedMatcher.
+  bool did_load_successfully() const {
+    return load_ruleset_result() == RulesetMatcher::kLoadSuccess;
+  }
+
+  // Must be invoked on the file sequence. Must only be called after the
+  // expected checksum is set.
+  void CreateVerifiedMatcher() {
+    DCHECK(expected_checksum_);
+    DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
+
+    load_ruleset_result_ = RulesetMatcher::CreateVerifiedMatcher(
+        source_.indexed_path, *expected_checksum_, &matcher_);
+
+    UMA_HISTOGRAM_ENUMERATION(
+        "Extensions.DeclarativeNetRequest.LoadRulesetResult",
+        load_ruleset_result(), RulesetMatcher::kLoadResultMax);
+  }
+
+ private:
+  RulesetSource source_;
+
+  // The expected checksum of the indexed ruleset.
+  base::Optional<int> expected_checksum_;
+
+  // Stores the result of creating a verified matcher from the |source_|.
+  std::unique_ptr<RulesetMatcher> matcher_;
+  base::Optional<RulesetMatcher::LoadRulesetResult> load_ruleset_result_;
+
+  // The new checksum to be persisted to prefs. A new checksum should only be
+  // set in case of flatbuffer version mismatch.
+  base::Optional<int> new_checksum_;
+
+  DISALLOW_COPY_AND_ASSIGN(RulesetInfo);
+};
+
 }  // namespace
 
 // static
@@ -91,28 +164,19 @@ void RulesMonitorService::RemoveObserver(Observer* observer) {
 }
 
 // Helper to pass information related to the ruleset being loaded.
-struct RulesMonitorService::LoadRulesetInfo {
-  LoadRulesetInfo(ExtensionId extension_id,
-                  int expected_ruleset_checksum,
-                  RulesetSource source)
-      : extension_id(std::move(extension_id)),
-        expected_ruleset_checksum(expected_ruleset_checksum),
-        source(std::move(source)) {}
+struct RulesMonitorService::LoadRequestData {
+  LoadRequestData(ExtensionId extension_id, RulesetInfo ruleset)
+      : extension_id(std::move(extension_id)), ruleset(std::move(ruleset)) {}
 
-  ~LoadRulesetInfo() = default;
-  LoadRulesetInfo(LoadRulesetInfo&&) = default;
-  LoadRulesetInfo& operator=(LoadRulesetInfo&&) = default;
+  ~LoadRequestData() = default;
+  LoadRequestData(LoadRequestData&&) = default;
+  LoadRequestData& operator=(LoadRequestData&&) = default;
 
   ExtensionId extension_id;
-  int expected_ruleset_checksum;
-  RulesetSource source;
+  RulesetInfo ruleset;
 
-  // True in case the checksum of the indexed ruleset changed. If true,
-  // |expected_ruleset_checksum| contains the updated checksum. This can only
-  // happen in case of an incorrect indexed ruleset format version.
-  bool checksum_updated_due_to_version_mismatch = false;
-
-  DISALLOW_COPY_AND_ASSIGN(LoadRulesetInfo);
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LoadRequestData);
 };
 
 // Maintains state needed on |file_task_runner_|. Created on the UI thread, but
@@ -131,82 +195,45 @@ class RulesMonitorService::FileSequenceState {
     DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
   }
 
-  using LoadRulesetUICallback =
-      base::OnceCallback<void(LoadRulesetInfo,
-                              std::unique_ptr<RulesetMatcher>)>;
-  // Loads ruleset for |info|. Invokes |ui_callback| with the RulesetMatcher
-  // instance created, passing null on failure.
-  void LoadRuleset(LoadRulesetInfo info,
+  using LoadRulesetUICallback = base::OnceCallback<void(LoadRequestData)>;
+  // Loads ruleset for |load_data|. Invokes |ui_callback| with the
+  // RulesetMatcher instance created, passing null on failure.
+  void LoadRuleset(LoadRequestData load_data,
                    LoadRulesetUICallback ui_callback) const {
-    LoadRulesetInternal(std::move(info), std::move(ui_callback),
-                        LoadFailedAction::kReindex);
-  }
-
- private:
-  // Describes the action to take if ruleset loading fails.
-  enum class LoadFailedAction {
-    kReindex,        // Reindexes the JSON ruleset.
-    kSignalFailure,  // Signals failure on the UI thread.
-  };
-
-  // Internal helper to load the ruleset for |info|.
-  void LoadRulesetInternal(LoadRulesetInfo info,
-                           LoadRulesetUICallback ui_callback,
-                           LoadFailedAction failed_action) const {
     DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
 
-    std::unique_ptr<RulesetMatcher> matcher;
-    RulesetMatcher::LoadRulesetResult result =
-        RulesetMatcher::CreateVerifiedMatcher(
-            info.source.indexed_path, info.expected_ruleset_checksum, &matcher);
-    UMA_HISTOGRAM_ENUMERATION(
-        "Extensions.DeclarativeNetRequest.LoadRulesetResult", result,
-        RulesetMatcher::kLoadResultMax);
+    load_data.ruleset.CreateVerifiedMatcher();
 
-    // |matcher| is valid only on success.
-    DCHECK_EQ(result == RulesetMatcher::kLoadSuccess, !!matcher);
-
-    const bool reindex_ruleset = result != RulesetMatcher::kLoadSuccess &&
-                                 failed_action == LoadFailedAction::kReindex;
-
-    if (!reindex_ruleset) {
+    if (load_data.ruleset.did_load_successfully()) {
       base::PostTaskWithTraits(
           FROM_HERE, {content::BrowserThread::UI},
-          base::BindOnce(std::move(ui_callback), std::move(info),
-                         std::move(matcher)));
+          base::BindOnce(std::move(ui_callback), std::move(load_data)));
       return;
     }
 
-    // Clone the RulesetSource before moving |info|.
-    RulesetSource source_copy = info.source.Clone();
+    // Clone the RulesetSource before moving |load_data|.
+    RulesetSource source_copy = load_data.ruleset.source().Clone();
 
     // Attempt to reindex the extension ruleset.
     // Using a weak pointer here is safe since |ruleset_reindexed_callback| will
     // be called on this sequence itself.
     IndexAndPersistRulesCallback ruleset_reindexed_callback = base::BindOnce(
         &FileSequenceState::OnRulesetReindexed, weak_factory_.GetWeakPtr(),
-        std::move(info), result, std::move(ui_callback));
+        std::move(load_data), std::move(ui_callback));
     IndexAndPersistRules(connector_.get(), base::nullopt /* decoder_batch_id */,
                          std::move(source_copy),
                          std::move(ruleset_reindexed_callback));
   }
 
+ private:
   // Callback invoked when the JSON ruleset is reindexed.
-  void OnRulesetReindexed(
-      LoadRulesetInfo info,
-      RulesetMatcher::LoadRulesetResult initial_failure_reason,
-      LoadRulesetUICallback ui_callback,
-      IndexAndPersistRulesResult result) const {
+  void OnRulesetReindexed(LoadRequestData load_data,
+                          LoadRulesetUICallback ui_callback,
+                          IndexAndPersistRulesResult result) const {
     DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
 
-    // In case of updates to the ruleset version, the ruleset checksum can
-    // change.
-    if (result.success &&
-        initial_failure_reason ==
-            RulesetMatcher::LoadRulesetResult::kLoadErrorVersionMismatch) {
-      info.expected_ruleset_checksum = result.ruleset_checksum;
-      info.checksum_updated_due_to_version_mismatch = true;
-    }
+    // Only ruleset which can't be loaded are reindexed.
+    DCHECK(!load_data.ruleset.did_load_successfully());
 
     // The checksum of the reindexed ruleset should have been the same as the
     // expected checksum obtained from prefs, in all cases except when the
@@ -216,23 +243,32 @@ class RulesMonitorService::FileSequenceState {
     // these is beyond our scope here, so simply signal a failure.
     bool reindexing_success =
         result.success &&
-        info.expected_ruleset_checksum == result.ruleset_checksum;
+        load_data.ruleset.expected_checksum() == result.ruleset_checksum;
+
+    // In case of updates to the ruleset version, the change of ruleset checksum
+    // is expected.
+    if (result.success &&
+        load_data.ruleset.load_ruleset_result() ==
+            RulesetMatcher::LoadRulesetResult::kLoadErrorVersionMismatch) {
+      load_data.ruleset.set_new_checksum(result.ruleset_checksum);
+      // Also change the |expected_checksum| so that the subsequent load
+      // succeeds.
+      load_data.ruleset.set_expected_checksum(result.ruleset_checksum);
+      reindexing_success = true;
+    }
+
     UMA_HISTOGRAM_BOOLEAN(
         "Extensions.DeclarativeNetRequest.RulesetReindexSuccessful",
         reindexing_success);
-    if (!reindexing_success) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {content::BrowserThread::UI},
-          base::BindOnce(std::move(ui_callback), std::move(info),
-                         nullptr /* matcher */));
-      return;
-    }
 
-    // We already reindexed the extension ruleset once and it succeeded. If the
-    // ruleset load fails again, there is some other issue. To prevent a cycle,
-    // don't reindex on failure again.
-    LoadRulesetInternal(std::move(info), std::move(ui_callback),
-                        LoadFailedAction::kSignalFailure);
+    // If the reindexing was successful, try to load the ruleset again.
+    if (reindexing_success)
+      load_data.ruleset.CreateVerifiedMatcher();
+
+    // The UI thread will handle success or failure.
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(std::move(ui_callback), std::move(load_data)));
   }
 
   const std::unique_ptr<service_manager::Connector> connector_;
@@ -256,7 +292,7 @@ class RulesMonitorService::FileSequenceBridge {
   }
 
   void LoadRuleset(
-      LoadRulesetInfo info,
+      LoadRequestData load_data,
       FileSequenceState::LoadRulesetUICallback load_ruleset_callback) const {
     // base::Unretained is safe here because we trigger the destruction of
     // |file_sequence_state_| on |file_task_runner_| from our destructor. Hence
@@ -264,7 +300,7 @@ class RulesMonitorService::FileSequenceBridge {
     base::OnceClosure load_ruleset_task =
         base::BindOnce(&FileSequenceState::LoadRuleset,
                        base::Unretained(file_sequence_state_.get()),
-                       std::move(info), std::move(load_ruleset_callback));
+                       std::move(load_data), std::move(load_ruleset_callback));
     file_task_runner_->PostTask(FROM_HERE, std::move(load_ruleset_task));
   }
 
@@ -314,14 +350,16 @@ void RulesMonitorService::OnExtensionLoaded(
                                                     &expected_ruleset_checksum);
   DCHECK(has_checksum);
 
-  LoadRulesetInfo info(extension->id(), expected_ruleset_checksum,
-                       RulesetSource::Create(*extension));
+  RulesetInfo ruleset(RulesetSource::Create(*extension));
+  ruleset.set_expected_checksum(expected_ruleset_checksum);
+
+  LoadRequestData load_data(extension->id(), std::move(ruleset));
 
   FileSequenceState::LoadRulesetUICallback load_ruleset_callback =
       base::BindOnce(&RulesMonitorService::OnRulesetLoaded,
                      weak_factory_.GetWeakPtr());
 
-  file_sequence_bridge_->LoadRuleset(std::move(info),
+  file_sequence_bridge_->LoadRuleset(std::move(load_data),
                                      std::move(load_ruleset_callback));
 }
 
@@ -341,35 +379,35 @@ void RulesMonitorService::OnExtensionUnloaded(
                            std::move(unload_ruleset_on_io_task));
 }
 
-void RulesMonitorService::OnRulesetLoaded(
-    LoadRulesetInfo info,
-    std::unique_ptr<RulesetMatcher> matcher) {
+void RulesMonitorService::OnRulesetLoaded(LoadRequestData load_data) {
   // Update the ruleset checksum if needed.
-  if (info.checksum_updated_due_to_version_mismatch) {
-    prefs_->SetDNRRulesetChecksum(info.extension_id,
-                                  info.expected_ruleset_checksum);
-  }
-
-  if (!matcher) {
-    // The ruleset failed to load. Notify the user.
-    warning_service_->AddWarnings(
-        {Warning::CreateRulesetFailedToLoadWarning(info.extension_id)});
-    return;
+  if (load_data.ruleset.new_checksum()) {
+    prefs_->SetDNRRulesetChecksum(load_data.extension_id,
+                                  *load_data.ruleset.new_checksum());
   }
 
   // It's possible that the extension has been disabled since the initial load
   // ruleset request. If it's disabled, do nothing.
-  if (!extension_registry_->enabled_extensions().Contains(info.extension_id))
+  if (!extension_registry_->enabled_extensions().Contains(
+          load_data.extension_id))
     return;
 
-  extensions_with_rulesets_.insert(info.extension_id);
+  if (!load_data.ruleset.did_load_successfully()) {
+    // The ruleset failed to load. Notify the user.
+    warning_service_->AddWarnings(
+        {Warning::CreateRulesetFailedToLoadWarning(load_data.extension_id)});
+    return;
+  }
+
+  extensions_with_rulesets_.insert(load_data.extension_id);
   for (auto& observer : observers_)
     observer.OnRulesetLoaded();
 
-  base::OnceClosure load_ruleset_on_io = base::BindOnce(
-      &LoadRulesetOnIOThread, info.extension_id, std::move(matcher),
-      prefs_->GetDNRAllowedPages(info.extension_id),
-      base::RetainedRef(info_map_));
+  base::OnceClosure load_ruleset_on_io =
+      base::BindOnce(&LoadRulesetOnIOThread, load_data.extension_id,
+                     load_data.ruleset.TakeMatcher(),
+                     prefs_->GetDNRAllowedPages(load_data.extension_id),
+                     base::RetainedRef(info_map_));
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
                            std::move(load_ruleset_on_io));
 }
