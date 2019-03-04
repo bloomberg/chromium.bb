@@ -47,13 +47,6 @@
 using base::UserMetricsAction;
 
 namespace {
-const CGFloat kClearTextButtonWidth = 28;
-const CGFloat kClearTextButtonHeight = 28;
-
-// The color of the rest of the URL (i.e. after the TLD) in the omnibox.
-UIColor* BaseTextColor() {
-  return [UIColor colorWithWhite:(161 / 255.0) alpha:1.0];
-}
 
 // The color of the https when there is an error.
 UIColor* ErrorTextColor() {
@@ -142,7 +135,6 @@ UIColor* IncognitoSecureTextColor() {
 
 // When editing, forward the message on to |editView_|.
 - (BOOL)textFieldShouldClear:(UITextField*)textField {
-  DCHECK(IsRefreshLocationBarEnabled());
   editView_->ClearText();
   processingUserEvent_ = YES;
   return YES;
@@ -158,39 +150,6 @@ UIColor* IncognitoSecureTextColor() {
 
 - (void)onDeleteBackward {
   editView_->OnDeleteBackward();
-}
-
-@end
-
-#pragma mark - OmniboxClearButtonBridge
-
-// An ObjC bridge class to allow taps on the clear button to be sent to a C++
-// class.
-@interface OmniboxClearButtonBridge : NSObject
-
-- (instancetype)initWithOmniboxView:(OmniboxViewIOS*)omniboxView
-    NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)init NS_UNAVAILABLE;
-
-- (void)clearText;
-
-@end
-
-@implementation OmniboxClearButtonBridge {
-  OmniboxViewIOS* _omniboxView;
-}
-
-- (instancetype)initWithOmniboxView:(OmniboxViewIOS*)omniboxView {
-  self = [super init];
-  if (self) {
-    _omniboxView = omniboxView;
-  }
-  return self;
-}
-
-- (void)clearText {
-  _omniboxView->ClearText();
 }
 
 @end
@@ -226,8 +185,6 @@ OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
       forControlEvents:UIControlEventEditingChanged];
   use_strikethrough_workaround_ = base::ios::IsRunningOnOrLater(10, 3, 0) &&
                                   !base::ios::IsRunningOnOrLater(11, 2, 0);
-
-  CreateClearTextIcon(browser_state->IsOffTheRecord());
 }
 
 OmniboxViewIOS::~OmniboxViewIOS() {
@@ -425,19 +382,11 @@ void OmniboxViewIOS::OnDidBeginEditing() {
   if (!popup_was_open_before_editing_began)
     [field_ enterPreEditState];
 
-  UpdateRightDecorations();
-
-  // Before UI Refresh, The controller looks at the current pre-edit state, so
-  // the call to OnSetFocus() must come after entering pre-edit. In UI Refresh,
   // |controller_| is only forwarding the call to the BVC. This should only
   // happen when the omnibox is being focused and it starts showing the popup;
   // if the popup was already open, no need to call this.
-  if (IsUIRefreshPhase1Enabled()) {
     if (!popup_was_open_before_editing_began)
       controller_->OnSetFocus();
-  } else {
-    controller_->OnSetFocus();
-  }
 }
 
 void OmniboxViewIOS::OnWillEndEditing() {
@@ -546,8 +495,6 @@ void OmniboxViewIOS::OnDidChange(bool processing_user_event) {
       [field_ setText:base::SysUTF16ToNSString(newText)];
     }
   }
-
-  UpdateRightDecorations();
 
   // Clear the autocomplete text, since the omnibox model does not expect to see
   // it in OnAfterPossibleChange().  Clearing the text here should not cause
@@ -672,79 +619,6 @@ UIColor* OmniboxViewIOS::GetSecureTextColor(
   return nil;
 }
 
-void OmniboxViewIOS::SetEmphasis(bool emphasize, const gfx::Range& range) {
-  if (IsRefreshLocationBarEnabled()) {
-    return;
-  }
-
-  NSRange ns_range = range.IsValid()
-                         ? range.ToNSRange()
-                         : NSMakeRange(0, [attributing_display_string_ length]);
-
-  [attributing_display_string_
-      addAttribute:NSForegroundColorAttributeName
-             value:(emphasize) ? [field_ displayedTextColor] : BaseTextColor()
-             range:ns_range];
-}
-
-void OmniboxViewIOS::UpdateSchemeStyle(const gfx::Range& range) {
-  if (IsRefreshLocationBarEnabled()) {
-    return;
-  }
-
-  if (!range.IsValid())
-    return;
-
-  const security_state::SecurityLevel security_level =
-      controller()->GetLocationBarModel()->GetSecurityLevel(false);
-
-  if ((security_level == security_state::NONE) ||
-      (security_level == security_state::HTTP_SHOW_WARNING)) {
-    return;
-  }
-
-  DCHECK_NE(security_state::SECURE_WITH_POLICY_INSTALLED_CERT, security_level);
-
-  if (security_level == security_state::DANGEROUS) {
-    if (use_strikethrough_workaround_) {
-      // Workaround: Add extra attribute to allow strikethough to apply on iOS
-      // 10.3+. See https://crbug.com/699702 for discussion.
-      [attributing_display_string_
-          addAttribute:NSBaselineOffsetAttributeName
-                 value:@0
-                 range:NSMakeRange(0, [attributing_display_string_ length])];
-    }
-
-    NSRange strikethroughRange = range.ToNSRange();
-
-    if (base::ios::IsRunningOnOrLater(11, 0, 0) &&
-        !base::ios::IsRunningOnOrLater(11, 2, 0)) {
-      // This is a workaround for an iOS bug (crbug.com/751801) fixed in 11.2.
-      // In iOS 11, UITextField has a bug: when the first character has
-      // strikethrough attribute, typing and setting text without strikethrough
-      // attribute will still result in strikethrough. The following is a
-      // workaround that prevents crossing out the first character.
-      if (strikethroughRange.location == 0 && strikethroughRange.length > 0) {
-        strikethroughRange.location += 1;
-        strikethroughRange.length -= 1;
-      }
-    }
-
-    // Add a strikethrough through the scheme.
-    [attributing_display_string_
-        addAttribute:NSStrikethroughStyleAttributeName
-               value:[NSNumber numberWithInteger:NSUnderlineStyleSingle]
-               range:strikethroughRange];
-  }
-
-  UIColor* color = GetSecureTextColor(security_level, [field_ incognito]);
-  if (color) {
-    [attributing_display_string_ addAttribute:NSForegroundColorAttributeName
-                                        value:color
-                                        range:range.ToNSRange()];
-  }
-}
-
 NSAttributedString* OmniboxViewIOS::ApplyTextAttributes(
     const base::string16& text) {
   NSMutableAttributedString* as = [[NSMutableAttributedString alloc]
@@ -773,56 +647,6 @@ void OmniboxViewIOS::UpdateAppearance() {
     NSAttributedString* as =
         ApplyTextAttributes(model()->GetPermanentDisplayText());
     [field_ setText:as userTextLength:[as length]];
-  }
-}
-
-void OmniboxViewIOS::CreateClearTextIcon(bool is_incognito) {
-  if (IsRefreshLocationBarEnabled()) {
-    // In UI Refresh, the view controller sets up the clear button.
-    return;
-  }
-
-  UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
-  UIImage* omniBoxClearImage = is_incognito
-                                   ? NativeImage(IDR_IOS_OMNIBOX_CLEAR_OTR)
-                                   : NativeImage(IDR_IOS_OMNIBOX_CLEAR);
-  UIImage* omniBoxClearPressedImage =
-      is_incognito ? NativeImage(IDR_IOS_OMNIBOX_CLEAR_OTR_PRESSED)
-                   : NativeImage(IDR_IOS_OMNIBOX_CLEAR_PRESSED);
-  [button setImage:omniBoxClearImage forState:UIControlStateNormal];
-  [button setImage:omniBoxClearPressedImage forState:UIControlStateHighlighted];
-
-  CGRect frame = CGRectZero;
-  frame.size = CGSizeMake(kClearTextButtonWidth, kClearTextButtonHeight);
-  [button setFrame:frame];
-
-  clear_button_bridge_ =
-      [[OmniboxClearButtonBridge alloc] initWithOmniboxView:this];
-  [button addTarget:clear_button_bridge_
-                action:@selector(clearText)
-      forControlEvents:UIControlEventTouchUpInside];
-  clear_text_button_ = button;
-
-  SetA11yLabelAndUiAutomationName(clear_text_button_,
-                                  IDS_IOS_ACCNAME_CLEAR_TEXT, @"Clear Text");
-}
-
-void OmniboxViewIOS::UpdateRightDecorations() {
-  if (IsRefreshLocationBarEnabled()) {
-    return;
-  }
-
-  DCHECK(clear_text_button_);
-  if (!model()->has_focus()) {
-    // Do nothing for iPhone. The right view will be set to nil after the
-    // omnibox animation is completed.
-    if (IsIPadIdiom())
-      [field_ setRightView:nil];
-  } else if ([field_ displayedText].empty()) {
-    [field_ setRightView:nil];
-  } else {
-    [field_ setRightView:clear_text_button_];
-    [clear_text_button_ setAlpha:1];
   }
 }
 
@@ -897,8 +721,6 @@ void OmniboxViewIOS::EndEditing() {
     model()->OnKillFocus();
     if ([field_ isPreEditing])
       [field_ exitPreEditState];
-
-    UpdateRightDecorations();
 
     // The controller looks at the current pre-edit state, so the call to
     // OnKillFocus() must come after exiting pre-edit.

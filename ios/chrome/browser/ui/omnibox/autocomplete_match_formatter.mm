@@ -21,33 +21,15 @@
 namespace {
 // The color of the main text of a suggest cell.
 UIColor* SuggestionTextColor() {
-  if (IsUIRefreshPhase1Enabled()) {
     return [UIColor blackColor];
-  } else {
-    return [UIColor colorWithWhite:(51 / 255.0) alpha:1.0];
-  }
 }
 // The color of the detail text of a suggest cell.
 UIColor* SuggestionDetailTextColor() {
-  if (IsUIRefreshPhase1Enabled()) {
     return [UIColor colorWithWhite:0 alpha:0.41];
-  } else {
-    return [UIColor colorWithRed:(85 / 255.0)
-                           green:(149 / 255.0)
-                            blue:(254 / 255.0)
-                           alpha:1.0];
-  }
 }
 // The color of the detail text of a suggest cell.
 UIColor* SuggestionDetailTextColorIncognito() {
-  if (IsUIRefreshPhase1Enabled()) {
     return [UIColor colorWithWhite:1 alpha:0.5];
-  } else {
-    return [UIColor colorWithRed:(85 / 255.0)
-                           green:(149 / 255.0)
-                            blue:(254 / 255.0)
-                           alpha:1.0];
-  }
 }
 // The color of the text in the portion of a search suggestion that matches the
 // omnibox input text.
@@ -217,16 +199,7 @@ UIColor* DimColorIncognito() {
   return _match.answer->second_line().image_url();
 }
 
-- (int)imageID {
-  // This method returns old icons. It should only be used in pre-UI Refresh.
-  DCHECK(!IsUIRefreshPhase1Enabled());
-
-  return GetIconForAutocompleteMatchType(_match.type, self.isStarred,
-                                         self.isIncognito);
-}
-
 - (UIImage*)suggestionTypeIcon {
-  DCHECK(IsUIRefreshPhase1Enabled());
   DCHECK(
       !(self.isIncognito && _match.type == AutocompleteMatchType::CALCULATOR))
       << "Calculator answers are never shown in incognito mode because input "
@@ -281,20 +254,14 @@ UIColor* DimColorIncognito() {
   switch (type) {
     case SuggestionAnswer::TOP_ALIGNED:
       attributes = @{
-        NSFontAttributeName :
-            IsUIRefreshPhase1Enabled()
-                ? [UIFont systemFontOfSize:12]
-                : [[MDCTypography fontLoader] regularFontOfSize:12],
+        NSFontAttributeName : [UIFont systemFontOfSize:12],
         NSBaselineOffsetAttributeName : @10.0f,
         NSForegroundColorAttributeName : [UIColor grayColor],
       };
       break;
     case SuggestionAnswer::DESCRIPTION_POSITIVE:
       attributes = @{
-        NSFontAttributeName :
-            IsUIRefreshPhase1Enabled()
-                ? [UIFont systemFontOfSize:16]
-                : [[MDCTypography fontLoader] regularFontOfSize:16],
+        NSFontAttributeName : [UIFont systemFontOfSize:16],
         NSForegroundColorAttributeName : [UIColor colorWithRed:11 / 255.0
                                                          green:128 / 255.0
                                                           blue:67 / 255.0
@@ -303,10 +270,7 @@ UIColor* DimColorIncognito() {
       break;
     case SuggestionAnswer::DESCRIPTION_NEGATIVE:
       attributes = @{
-        NSFontAttributeName :
-            IsUIRefreshPhase1Enabled()
-                ? [UIFont systemFontOfSize:16]
-                : [[MDCTypography fontLoader] regularFontOfSize:16],
+        NSFontAttributeName : [UIFont systemFontOfSize:16],
         NSForegroundColorAttributeName : [UIColor colorWithRed:197 / 255.0
                                                          green:57 / 255.0
                                                           blue:41 / 255.0
@@ -315,45 +279,31 @@ UIColor* DimColorIncognito() {
       break;
     case SuggestionAnswer::PERSONALIZED_SUGGESTION:
       attributes = @{
-        NSFontAttributeName :
-            IsUIRefreshPhase1Enabled()
-                ? [UIFont systemFontOfSize:16]
-                : [[MDCTypography fontLoader] regularFontOfSize:16],
+        NSFontAttributeName : [UIFont systemFontOfSize:16],
       };
       break;
     case SuggestionAnswer::ANSWER_TEXT_MEDIUM:
       attributes = @{
-        NSFontAttributeName :
-            IsUIRefreshPhase1Enabled()
-                ? [UIFont systemFontOfSize:20]
-                : [[MDCTypography fontLoader] regularFontOfSize:20],
+        NSFontAttributeName : [UIFont systemFontOfSize:20],
+
         NSForegroundColorAttributeName : [UIColor grayColor],
       };
       break;
     case SuggestionAnswer::ANSWER_TEXT_LARGE:
       attributes = @{
-        NSFontAttributeName :
-            IsUIRefreshPhase1Enabled()
-                ? [UIFont systemFontOfSize:24]
-                : [[MDCTypography fontLoader] regularFontOfSize:24],
+        NSFontAttributeName : [UIFont systemFontOfSize:24],
         NSForegroundColorAttributeName : [UIColor grayColor],
       };
       break;
     case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_SMALL:
       attributes = @{
-        NSFontAttributeName :
-            IsUIRefreshPhase1Enabled()
-                ? [UIFont systemFontOfSize:12]
-                : [[MDCTypography fontLoader] regularFontOfSize:12],
+        NSFontAttributeName : [UIFont systemFontOfSize:12],
         NSForegroundColorAttributeName : [UIColor grayColor],
       };
       break;
     case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_MEDIUM:
       attributes = @{
-        NSFontAttributeName :
-            IsUIRefreshPhase1Enabled()
-                ? [UIFont systemFontOfSize:14]
-                : [[MDCTypography fontLoader] regularFontOfSize:14],
+        NSFontAttributeName : [UIFont systemFontOfSize:14],
         NSForegroundColorAttributeName : [UIColor grayColor],
       };
       break;
@@ -361,10 +311,7 @@ UIColor* DimColorIncognito() {
     // Fall through.
     default:
       attributes = @{
-        NSFontAttributeName :
-            IsUIRefreshPhase1Enabled()
-                ? [UIFont systemFontOfSize:16]
-                : [[MDCTypography fontLoader] regularFontOfSize:16],
+        NSFontAttributeName : [UIFont systemFontOfSize:16],
       };
   }
 
@@ -393,11 +340,7 @@ attributedStringWithString:(NSString*)text
     return nil;
 
   UIFont* fontRef =
-      smallFont ? [MDCTypography body1Font] : [MDCTypography subheadFont];
-  if (IsUIRefreshPhase1Enabled()) {
-    fontRef =
-        smallFont ? [UIFont systemFontOfSize:12] : [UIFont systemFontOfSize:17];
-  }
+      smallFont ? [UIFont systemFontOfSize:12] : [UIFont systemFontOfSize:17];
 
   NSMutableAttributedString* styledText =
       [[NSMutableAttributedString alloc] initWithString:text];
@@ -411,11 +354,7 @@ attributedStringWithString:(NSString*)text
 
   if (classifications != NULL) {
     UIFont* boldFontRef =
-        [[MDCTypography fontLoader] mediumFontOfSize:fontRef.pointSize];
-    if (IsUIRefreshPhase1Enabled()) {
-      boldFontRef =
           [UIFont systemFontOfSize:fontRef.pointSize weight:UIFontWeightMedium];
-    }
 
     for (ACMatchClassifications::const_iterator i = classifications->begin();
          i != classifications->end(); ++i) {

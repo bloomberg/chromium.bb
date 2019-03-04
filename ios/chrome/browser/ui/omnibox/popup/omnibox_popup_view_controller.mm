@@ -194,10 +194,6 @@ UIColor* BackgroundColorIncognito() {
   [super traitCollectionDidChange:previousTraitCollection];
   [self layoutRows];
 
-  if (!IsUIRefreshPhase1Enabled()) {
-    return;
-  }
-
   ToolbarConfiguration* configuration = [[ToolbarConfiguration alloc]
       initWithStyle:self.incognito ? INCOGNITO : NORMAL];
 
@@ -301,9 +297,7 @@ UIColor* BackgroundColorIncognito() {
   CGFloat kTextCellLeadingPadding =
       [self showsLeadingIcons] ? ([self useRegularWidthOffset] ? 192 : 100)
                                : 16;
-  if (IsUIRefreshPhase1Enabled()) {
     kTextCellLeadingPadding = [self showsLeadingIcons] ? 221 : 24;
-  }
 
   const CGFloat kTextCellTopPadding = 6;
   const CGFloat kDetailCellTopPadding = 26;
@@ -412,11 +406,7 @@ UIColor* BackgroundColorIncognito() {
   // iPad.
   if ([self showsLeadingIcons]) {
     UIImage* image = nil;
-    if (IsUIRefreshPhase1Enabled()) {
       image = match.suggestionTypeIcon;
-    } else {
-      image = NativeImage(match.imageID);
-    }
     DCHECK(image);
     [row updateLeadingImage:image];
   }
@@ -769,11 +759,7 @@ UIColor* BackgroundColorIncognito() {
 #pragma mark - private
 
 - (BOOL)showsLeadingIcons {
-  if (IsUIRefreshPhase1Enabled()) {
     return IsRegularXRegularSizeClass();
-  } else {
-    return IsIPadIdiom();
-  }
 }
 
 - (BOOL)useRegularWidthOffset {

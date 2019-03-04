@@ -42,11 +42,6 @@
 
 namespace {
 
-const CGFloat kEditingRectWidthInset = 12;
-const CGFloat kClearButtonRightMarginIphone = 7;
-
-const CGFloat kVoiceSearchButtonWidth = 36.0;
-
 // When rendering the same string in a UITextField and a UILabel with the same
 // frame and the same font, the text is slightly offset.
 const CGFloat kUILabelUITextfieldBaselineDeltaInPoints = 1.0;
@@ -100,7 +95,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 @synthesize preEditText = _preEditText;
 @synthesize clearingPreEditText = _clearingPreEditText;
-@synthesize selectedTextBackgroundColor = _selectedTextBackgroundColor;
 @synthesize placeholderTextColor = _placeholderTextColor;
 @synthesize incognito = _incognito;
 @synthesize suggestionCommandsEndpoint = _suggestionCommandsEndpoint;
@@ -134,13 +128,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
     [self setSpellCheckingType:UITextSpellCheckingTypeNo];
     [self setTextAlignment:NSTextAlignmentNatural];
     [self setKeyboardType:(UIKeyboardType)UIKeyboardTypeWebSearch];
-
-    if (IsRefreshLocationBarEnabled()) {
-      // The right view mode is managed by the view controller.
-    } else {
-      [self setClearButtonMode:UITextFieldViewModeNever];
-      [self setRightViewMode:UITextFieldViewModeAlways];
-    }
 
     [self setSmartQuotesType:UITextSmartQuotesTypeNo];
 
@@ -292,38 +279,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 - (void)cleanUpFadeAnimations {
   RemoveAnimationForKeyFromLayers(kOmniboxFadeAnimationKey,
                                   [self fadeAnimationLayers]);
-}
-
-- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator
-                completionAnimator:(UIViewPropertyAnimator*)completionAnimator {
-  DCHECK(!IsRefreshLocationBarEnabled());
-
-  // Hide the rightView button so it's not visible on its initial layout
-  // while the expand animation is happening.
-  self.clearButtonView.hidden = YES;
-  self.clearButtonView.alpha = 0;
-  self.clearButtonView.frame =
-      CGRectLayoutOffset([self rightViewRectForBounds:self.bounds],
-                         [self clearButtonAnimationOffset]);
-
-  [completionAnimator addAnimations:^{
-    self.clearButtonView.hidden = NO;
-    self.clearButtonView.alpha = 1.0;
-
-    self.clearButtonView.frame = CGRectLayoutOffset(
-        self.clearButtonView.frame, -[self clearButtonAnimationOffset]);
-  }];
-}
-
-- (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator {
-  DCHECK(!IsRefreshLocationBarEnabled());
-
-  [animator addAnimations:^{
-    self.clearButtonView.alpha = 0;
-  }];
-  [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
-    [self resetClearButton];
-  }];
 }
 
 #pragma mark - UI Refresh animation public helpers
@@ -520,46 +475,9 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (CGRect)editingRectForBounds:(CGRect)bounds {
-  CGRect superBounds = [super editingRectForBounds:bounds];
-  CGRect newBounds = [self adjustedEditingRectForBounds:superBounds];
-  [self layoutSelectionViewWithNewEditingRectBounds:newBounds];
-  return newBounds;
-}
-
-// Overriding this method to offset the rightView property
-// (containing a clear text button).
-- (CGRect)rightViewRectForBounds:(CGRect)bounds {
-  if (IsRefreshLocationBarEnabled()) {
-    return [super rightViewRectForBounds:bounds];
-  }
-
-  // iOS9 added updated RTL support, but only half implemented it for
-  // UITextField. leftView and rightView were not renamed, but are are correctly
-  // swapped and treated as leadingView / trailingView.  However,
-  // -leftViewRectForBounds and -rightViewRectForBounds are *not* treated as
-  // leading and trailing.  Hence the swapping below.
-  if ([self isTextFieldLTR]) {
-    return [self layoutRightViewForBounds:bounds];
-  }
-  return [self layoutLeftViewForBounds:bounds];
-}
-
-// Overriding this method to offset the leftView property
-// (containing a placeholder image) consistently with omnibox text padding.
-- (CGRect)leftViewRectForBounds:(CGRect)bounds {
-  if (IsRefreshLocationBarEnabled()) {
-    return [super leftViewRectForBounds:bounds];
-  }
-
-  // iOS9 added updated RTL support, but only half implemented it for
-  // UITextField. leftView and rightView were not renamed, but are correctly
-  // swapped and treated as leadingView / trailingView.  However,
-  // -leftViewRectForBounds and -rightViewRectForBounds are *not* treated as
-  // leading and trailing.  Hence the swapping below.
-  if ([self isTextFieldLTR]) {
-    return [self layoutLeftViewForBounds:bounds];
-  }
-  return [self layoutRightViewForBounds:bounds];
+  CGRect editRect = [super editingRectForBounds:bounds];
+  [self layoutSelectionViewWithNewEditingRectBounds:editRect];
+  return editRect;
 }
 
 #pragma mark - UITextInput
@@ -587,9 +505,8 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
   if (_selection) {
     // Trigger a layout of _selection label.
-    CGRect superBounds = [super editingRectForBounds:self.bounds];
-    CGRect newBounds = [self adjustedEditingRectForBounds:superBounds];
-    [self layoutSelectionViewWithNewEditingRectBounds:newBounds];
+    CGRect editRect = [super editingRectForBounds:self.bounds];
+    [self layoutSelectionViewWithNewEditingRectBounds:editRect];
   }
 }
 
@@ -969,17 +886,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (UIColor*)selectedTextBackgroundColor {
-  if (IsUIRefreshPhase1Enabled()) {
     return [_displayedTintColor colorWithAlphaComponent:0.2];
-  } else {
-    if (!_selectedTextBackgroundColor) {
-      _selectedTextBackgroundColor = [UIColor colorWithRed:204.0 / 255
-                                                     green:221.0 / 255
-                                                      blue:237.0 / 255
-                                                     alpha:1.0];
-    }
-    return _selectedTextBackgroundColor;
-  }
 }
 
 - (BOOL)isColorHidden:(UIColor*)color {
@@ -1018,88 +925,8 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
          UIUserInterfaceLayoutDirectionLeftToRight;
 }
 
-- (CGRect)layoutRightViewForBounds:(CGRect)bounds {
-  DCHECK(!IsRefreshLocationBarEnabled());
-
-  if ([self rightView]) {
-    CGSize rightViewSize = self.rightView.bounds.size;
-    CGFloat leadingOffset = 0;
-    leadingOffset =
-        bounds.size.width - rightViewSize.width - kClearButtonRightMarginIphone;
-    LayoutRect rightViewLayout;
-    rightViewLayout.position.leading = leadingOffset;
-    rightViewLayout.boundingWidth = CGRectGetWidth(bounds);
-    rightViewLayout.position.originY =
-        floor((bounds.size.height - rightViewSize.height) / 2.0);
-    rightViewLayout.size = rightViewSize;
-    return LayoutRectGetRect(rightViewLayout);
-  }
-  return CGRectZero;
-}
-
 - (CGRect)layoutLeftViewForBounds:(CGRect)bounds {
   return CGRectZero;
-}
-
-// Accesses the clear button view when it's available; correctly resolves RTL.
-// This method must not be named -clearButton, because that conflicts with an
-// internal UITextField method.
-- (UIView*)clearButtonView {
-  DCHECK(!IsRefreshLocationBarEnabled());
-  if ([self isTextFieldLTR]) {
-    return self.rightView;
-  } else {
-    return self.leftView;
-  }
-}
-
-- (void)resetClearButton {
-  DCHECK(!IsRefreshLocationBarEnabled());
-
-  if ([self isTextFieldLTR]) {
-    self.rightView = nil;
-  } else {
-    self.rightView = nil;
-  }
-}
-
-- (CGFloat)clearButtonAnimationOffset {
-  DCHECK(!IsRefreshLocationBarEnabled());
-  return 0;
-}
-
-// Calculates editing rect from |bounds| rect by adjusting for in-bounds
-// decorations such as left/right view.
-- (CGRect)adjustedEditingRectForBounds:(CGRect)bounds {
-  CGRect newBounds = bounds;
-
-  if (!IsRefreshLocationBarEnabled()) {
-    // -editingRectForBounds doesn't account for rightViews that aren't flush
-    // with the right edge, it just looks at the rightView's width.  Account for
-    // the offset here.
-    CGFloat rightViewMaxX = CGRectGetMaxX([self rightViewRectForBounds:bounds]);
-    if (rightViewMaxX)
-      newBounds.size.width -= bounds.size.width - rightViewMaxX;
-
-    LayoutRect editingRectLayout =
-        LayoutRectForRectInBoundingRect(newBounds, bounds);
-    editingRectLayout.size.width -= kEditingRectWidthInset;
-    if (IsIPadIdiom()) {
-      if (!IsCompactTablet() && !self.rightView) {
-        // Normally the clear button shrinks the edit box, but if the rightView
-        // isn't set, shrink behind the mic icons.
-        editingRectLayout.size.width -= kVoiceSearchButtonWidth;
-      }
-    }
-    // Don't let the edit rect extend over the clear button.  The right view
-    // is hidden during animations, so fake its width here.
-    if (self.rightViewMode == UITextFieldViewModeNever)
-      editingRectLayout.size.width -= self.rightView.bounds.size.width;
-
-    newBounds = LayoutRectGetRect(editingRectLayout);
-  }
-
-  return newBounds;
 }
 
 // Aligns the selection UILabel to match the editing rect bounds. Takes iOS
