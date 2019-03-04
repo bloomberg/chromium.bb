@@ -302,12 +302,17 @@ def CopyAllDlcs(sysroot, install_root_dir):
   build_dir = os.path.join(sysroot, DLC_IMAGE_DIR)
 
   if not os.path.exists(build_dir) or not os.listdir(build_dir):
-    logging.warn('There is no DLC to copy to output. ignoring!!!')
+    logging.info('There is no DLC to copy to output, ignoring.')
     return
+
+  logging.info('Copying all DLC images to their destination path.')
+  logging.info('Detected the following DLCs: %s',
+               ', '.join(os.listdir(build_dir)))
 
   osutils.SafeMakedirs(output_dir)
   osutils.CopyDirContents(build_dir, output_dir)
 
+  logging.info('Done copying the DLCs to their destination.')
 
 def GetParser():
   """Creates an argument parser and returns it."""
@@ -383,5 +388,4 @@ def main(argv):
                                  name=opts.name)
     dlc_generator.GenerateDLC()
   else:
-    logging.info('Copying all DLC images to their destination path.')
     CopyAllDlcs(opts.sysroot, opts.install_root_dir)
