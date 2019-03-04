@@ -75,8 +75,4 @@ void PrimaryAccountMutatorImpl::SetAllowedPrimaryAccountPattern(
   NOTIMPLEMENTED();
 }
 
-void PrimaryAccountMutatorImpl::LegacyMergeSigninCredentialIntoCookieJar() {
-  signin_manager_->MergeSigninCredentialIntoCookieJar();
-}
-
 }  // namespace identity

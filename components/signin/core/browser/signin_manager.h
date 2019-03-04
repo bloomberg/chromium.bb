@@ -111,9 +111,6 @@ class SigninManager : public SigninManagerBase,
 
   void Shutdown() override;
 
-  // If applicable, merge the signed in account into the cookie jar.
-  void MergeSigninCredentialIntoCookieJar();
-
   // Invoked from SigninManagerAndroid to indicate that the sign-in process
   // has completed for the email |username|.  SigninManager assumes that
   // |username| can be used to look up the corresponding account_id and gaia_id

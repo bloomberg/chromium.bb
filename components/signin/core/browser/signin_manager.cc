@@ -230,18 +230,6 @@ bool SigninManager::IsAllowedUsername(const std::string& username) const {
   return identity::IsUsernameAllowedByPattern(username, pattern);
 }
 
-void SigninManager::MergeSigninCredentialIntoCookieJar() {
-  if (account_consistency_ == signin::AccountConsistencyMethod::kMirror)
-    return;
-
-  if (!IsAuthenticated())
-    return;
-
-  cookie_manager_service_->AddAccountToCookie(
-      GetAuthenticatedAccountId(), gaia::GaiaSource::kSigninManager,
-      GaiaCookieManagerService::AddAccountToCookieCompletedCallback());
-}
-
 void SigninManager::OnExternalSigninCompleted(const std::string& username) {
   AccountInfo info =
       account_tracker_service()->FindAccountInfoByEmail(username);

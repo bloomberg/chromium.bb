@@ -65,14 +65,6 @@ class PrimaryAccountMutator {
   // Sets the pattern controlling which user names are allowed when setting
   // the primary account.
   virtual void SetAllowedPrimaryAccountPattern(const std::string& pattern) = 0;
-
-  // All the following APIs are for use by legacy code only. They are deprecated
-  // and should not be used when writing new code. They will be removed when the
-  // old sign-in workflow has been turned down.
-
-  // If applicable, merges the signed-in account into the cookie jar (legacy,
-  // pre-DICE workflow).
-  virtual void LegacyMergeSigninCredentialIntoCookieJar() = 0;
 };
 
 }  // namespace identity
