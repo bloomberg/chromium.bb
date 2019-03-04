@@ -25,6 +25,7 @@ from devil.android import device_errors
 from devil.android import device_utils
 from devil.android import flag_changer
 from devil.android import forwarder
+from devil.android.ndk import abis
 from devil.android.sdk import intent
 
 sys.path.append(os.path.join(_SRC_PATH, 'build', 'android'))
@@ -204,8 +205,15 @@ class AndroidProfileTool(object):
     """
     if device is None:
       devices = device_utils.DeviceUtils.HealthyDevices()
-      assert len(devices) == 1, 'Expected exactly one connected device'
-      self._device = devices[0]
+      assert devices, 'Expected at least one connected device'
+      # In case of many connected devices, favor the device running arm64.
+      arm_64_device = ''
+      for device in devices:
+        if device.GetABI() == abis.ARM_64:
+         arm_64_device = device
+         break
+
+      self._device = arm_64_device if arm_64_device else devices[0]
     else:
       self._device = device_utils.DeviceUtils(device)
     self._cygprofile_tests = os.path.join(
@@ -216,6 +224,7 @@ class AndroidProfileTool(object):
     self._simulate_user = simulate_user
     self._SetUpDevice()
     self._pregenerated_profiles = None
+
 
   def SetPregeneratedProfiles(self, files):
     """Set pregenerated profiles.
