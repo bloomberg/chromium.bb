@@ -42,8 +42,9 @@ class MemoryPressureObserver {
 
  private:
   const scoped_refptr<ObserverListThreadSafe<MemoryPressureListener>>
-      async_observers_ = base::MakeRefCounted<
-          ObserverListThreadSafe<MemoryPressureListener>>();
+      async_observers_ =
+          base::MakeRefCounted<ObserverListThreadSafe<MemoryPressureListener>>(
+              ObserverListPolicy::EXISTING_ONLY);
   ObserverList<MemoryPressureListener>::Unchecked sync_observers_;
   Lock sync_observers_lock_;
 };

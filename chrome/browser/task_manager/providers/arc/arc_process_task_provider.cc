@@ -86,15 +86,22 @@ void ArcProcessTaskProvider::UpdateProcessList(
 }
 
 void ArcProcessTaskProvider::OnUpdateAppProcessList(
-    std::vector<ArcProcess> processes) {
+    OptionalArcProcessList processes) {
+  if (!processes) {
+    VLOG(2) << "ARC process instance is not ready.";
+    ScheduleNextAppRequest();
+    return;
+  }
+
   TRACE_EVENT0("browser", "ArcProcessTaskProvider::OnUpdateAppProcessList");
-  UpdateProcessList(&nspid_to_task_, std::move(processes));
+  UpdateProcessList(&nspid_to_task_, std::move(*processes));
   ScheduleNextAppRequest();
 }
 
 void ArcProcessTaskProvider::OnUpdateSystemProcessList(
-    std::vector<ArcProcess> processes) {
-  UpdateProcessList(&nspid_to_sys_task_, std::move(processes));
+    OptionalArcProcessList processes) {
+  if (processes)
+    UpdateProcessList(&nspid_to_sys_task_, std::move(*processes));
   ScheduleNextSystemRequest();
 }
 
@@ -103,12 +110,12 @@ void ArcProcessTaskProvider::RequestAppProcessList() {
       arc::ArcProcessService::Get();
   auto callback = base::Bind(&ArcProcessTaskProvider::OnUpdateAppProcessList,
                              weak_ptr_factory_.GetWeakPtr());
-  if (!arc_process_service ||
-      !arc_process_service->RequestAppProcessList(callback)) {
+  if (!arc_process_service) {
     VLOG(2) << "ARC process instance is not ready.";
     ScheduleNextAppRequest();
     return;
   }
+  arc_process_service->RequestAppProcessList(callback);
 }
 
 void ArcProcessTaskProvider::RequestSystemProcessList() {

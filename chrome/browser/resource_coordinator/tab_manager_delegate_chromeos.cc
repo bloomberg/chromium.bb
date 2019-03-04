@@ -26,8 +26,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/arc/process/arc_process.h"
-#include "chrome/browser/chromeos/arc/process/arc_process_service.h"
 #include "chrome/browser/memory/memory_kills_monitor.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager_stats_collector.h"
@@ -368,18 +366,17 @@ void TabManagerDelegate::ScheduleEarlyOomPrioritiesAdjustment() {
 // If able to get the list of ARC processes, prioritize tabs and apps as a
 // whole. Otherwise try to kill tabs only.
 void TabManagerDelegate::LowMemoryKill(
-    ::mojom::LifecycleUnitDiscardReason reason) {
+    ::mojom::LifecycleUnitDiscardReason reason,
+    TabManager::TabDiscardDoneCB tab_discard_done) {
   arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
   base::TimeTicks now = base::TimeTicks::Now();
-  if (arc_process_service &&
-      arc_process_service->RequestAppProcessList(
-          base::BindRepeating(&TabManagerDelegate::LowMemoryKillImpl,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              now, reason))) {
-    return;
+  if (arc_process_service) {
+    arc_process_service->RequestAppProcessList(base::BindOnce(
+        &TabManagerDelegate::LowMemoryKillImpl, weak_ptr_factory_.GetWeakPtr(),
+        now, reason, std::move(tab_discard_done)));
+  } else {
+    LowMemoryKillImpl(now, reason, std::move(tab_discard_done), base::nullopt);
   }
-
-  LowMemoryKillImpl(now, reason, std::vector<arc::ArcProcess>());
 }
 
 int TabManagerDelegate::GetCachedOomScore(ProcessHandle process_handle) {
@@ -507,15 +504,14 @@ void TabManagerDelegate::Observe(int type,
 // 3) is the tab currently selected
 void TabManagerDelegate::AdjustOomPriorities() {
   arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
-  if (arc_process_service &&
-      arc_process_service->RequestAppProcessList(
-          base::Bind(&TabManagerDelegate::AdjustOomPrioritiesImpl,
-                     weak_ptr_factory_.GetWeakPtr()))) {
-    return;
+  if (arc_process_service) {
+    arc_process_service->RequestAppProcessList(
+        base::BindOnce(&TabManagerDelegate::AdjustOomPrioritiesImpl,
+                       weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    // Pass in nullopt if unable to get ARC processes.
+    AdjustOomPrioritiesImpl(base::nullopt);
   }
-
-  // Pass in a dummy list if unable to get ARC processes.
-  AdjustOomPrioritiesImpl(std::vector<arc::ArcProcess>());
 }
 
 // Get a list of candidates to kill, sorted by descending importance.
@@ -523,16 +519,19 @@ void TabManagerDelegate::AdjustOomPriorities() {
 std::vector<TabManagerDelegate::Candidate>
 TabManagerDelegate::GetSortedCandidates(
     const LifecycleUnitVector& lifecycle_units,
-    const std::vector<arc::ArcProcess>& arc_processes) {
+    const OptionalArcProcessList& arc_processes) {
   std::vector<Candidate> candidates;
-  candidates.reserve(lifecycle_units.size() + arc_processes.size());
+  candidates.reserve(lifecycle_units.size() +
+                     (arc_processes ? (*arc_processes).size() : 0));
 
   for (LifecycleUnit* lifecycle_unit : lifecycle_units) {
     candidates.emplace_back(lifecycle_unit);
   }
 
-  for (const auto& app : arc_processes) {
-    candidates.emplace_back(&app);
+  if (arc_processes) {
+    for (const auto& app : *arc_processes) {
+      candidates.emplace_back(&app);
+    }
   }
 
   // Sort candidates according to priority.
@@ -577,12 +576,16 @@ chromeos::DebugDaemonClient* TabManagerDelegate::GetDebugDaemonClient() {
 void TabManagerDelegate::LowMemoryKillImpl(
     base::TimeTicks start_time,
     ::mojom::LifecycleUnitDiscardReason reason,
-    std::vector<arc::ArcProcess> arc_processes) {
+    TabManager::TabDiscardDoneCB tab_discard_done,
+    OptionalArcProcessList arc_processes) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   VLOG(2) << "LowMemoryKillImpl";
 
   // Prevent persistent ARC processes from being killed.
-  base::EraseIf(arc_processes, [](auto& proc) { return proc.IsPersistent(); });
+  if (arc_processes) {
+    base::EraseIf(*arc_processes,
+                  [](auto& proc) { return proc.IsPersistent(); });
+  }
 
   std::vector<TabManagerDelegate::Candidate> candidates =
       GetSortedCandidates(GetLifecycleUnits(), arc_processes);
@@ -685,10 +688,12 @@ void TabManagerDelegate::LowMemoryKillImpl(
     MEMORY_LOG(ERROR) << "Time to first kill " << delta;
     UMA_HISTOGRAM_MEDIUM_TIMES("Arc.LowMemoryKiller.FirstKillLatency", delta);
   }
+
+  // tab_discard_done runs when it goes out of the scope.
 }
 
 void TabManagerDelegate::AdjustOomPrioritiesImpl(
-    std::vector<arc::ArcProcess> arc_processes) {
+    OptionalArcProcessList arc_processes) {
   std::vector<TabManagerDelegate::Candidate> candidates;
   std::vector<TabManagerDelegate::Candidate> apps_persistent;
 

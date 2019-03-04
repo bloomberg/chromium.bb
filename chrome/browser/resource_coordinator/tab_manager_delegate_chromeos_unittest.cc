@@ -60,8 +60,10 @@ TEST_F(TabManagerDelegateTest, CandidatesSorted) {
 
   std::vector<TabManagerDelegate::Candidate> candidates;
 
-  candidates =
-      TabManagerDelegate::GetSortedCandidates(lifecycle_units, arc_processes);
+  TabManagerDelegate::OptionalArcProcessList opt_arc_processes(
+      std::move(arc_processes));
+  candidates = TabManagerDelegate::GetSortedCandidates(lifecycle_units,
+                                                       opt_arc_processes);
   ASSERT_EQ(8U, candidates.size());
 
   // focused LifecycleUnit
@@ -95,8 +97,11 @@ TEST_F(TabManagerDelegateTest, CandidatesSortedWithFocusedAppAndTab) {
   TestLifecycleUnit focused_lifecycle_unit(base::TimeTicks::Max());
   LifecycleUnitVector lifecycle_units{&focused_lifecycle_unit};
 
+  TabManagerDelegate::OptionalArcProcessList opt_arc_processes(
+      std::move(arc_processes));
   const std::vector<TabManagerDelegate::Candidate> candidates =
-      TabManagerDelegate::GetSortedCandidates(lifecycle_units, arc_processes);
+      TabManagerDelegate::GetSortedCandidates(lifecycle_units,
+                                              opt_arc_processes);
   ASSERT_EQ(2U, candidates.size());
   // FOCUSED_TAB should be the first one.
   EXPECT_EQ(&focused_lifecycle_unit, candidates[0].lifecycle_unit());
@@ -127,9 +132,11 @@ TEST_F(TabManagerDelegateTest, CandidatesSortedWithNewProcessTypes) {
   LifecycleUnitVector lifecycle_units{&focused_tab, &protected_tab,
                                       &background_tab};
 
+  TabManagerDelegate::OptionalArcProcessList opt_arc_processes(
+      std::move(arc_processes));
   std::vector<TabManagerDelegate::Candidate> candidates;
-  candidates =
-      TabManagerDelegate::GetSortedCandidates(lifecycle_units, arc_processes);
+  candidates = TabManagerDelegate::GetSortedCandidates(lifecycle_units,
+                                                       opt_arc_processes);
 
   ASSERT_EQ(7U, candidates.size());
   EXPECT_EQ(&focused_tab, candidates[0].lifecycle_unit());
@@ -379,6 +386,7 @@ TEST_F(TabManagerDelegateTest, DoNotKillRecentlyKilledArcProcesses) {
   memory_stat->SetProcessPss(30, 10000);
   tab_manager_delegate.LowMemoryKillImpl(
       base::TimeTicks::Now(), ::mojom::LifecycleUnitDiscardReason::URGENT,
+      TabManager::TabDiscardDoneCB(base::DoNothing()),
       std::move(arc_processes));
 
   auto killed_arc_processes = tab_manager_delegate.GetKilledArcProcesses();
@@ -451,6 +459,7 @@ TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
 
   tab_manager_delegate.LowMemoryKillImpl(
       base::TimeTicks::Now(), ::mojom::LifecycleUnitDiscardReason::PROACTIVE,
+      TabManager::TabDiscardDoneCB(base::DoNothing()),
       std::move(arc_processes));
 
   auto killed_arc_processes = tab_manager_delegate.GetKilledArcProcesses();
