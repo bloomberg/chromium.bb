@@ -476,7 +476,7 @@ bool LayoutFrameSet::UserResize(const MouseEvent& evt) {
       return false;
     if (evt.type() == event_type_names::kMousedown &&
         evt.button() ==
-            static_cast<short>(WebPointerProperties::Button::kLeft)) {
+            static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
       FloatPoint local_pos =
           AbsoluteToLocal(FloatPoint(evt.AbsoluteLocation()), kUseTransforms);
       StartResizing(cols_, local_pos.X());
@@ -491,14 +491,14 @@ bool LayoutFrameSet::UserResize(const MouseEvent& evt) {
     if (evt.type() == event_type_names::kMousemove ||
         (evt.type() == event_type_names::kMouseup &&
          evt.button() ==
-             static_cast<short>(WebPointerProperties::Button::kLeft))) {
+             static_cast<int16_t>(WebPointerProperties::Button::kLeft))) {
       FloatPoint local_pos =
           AbsoluteToLocal(FloatPoint(evt.AbsoluteLocation()), kUseTransforms);
       ContinueResizing(cols_, local_pos.X());
       ContinueResizing(rows_, local_pos.Y());
       if (evt.type() == event_type_names::kMouseup &&
           evt.button() ==
-              static_cast<short>(WebPointerProperties::Button::kLeft)) {
+              static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
         SetIsResizing(false);
         return true;
       }

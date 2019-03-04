@@ -238,8 +238,9 @@ void SliderThumbElement::DefaultEventHandler(Event& event) {
   }
 
   auto& mouse_event = ToMouseEvent(event);
-  bool is_left_button = mouse_event.button() ==
-                        static_cast<short>(WebPointerProperties::Button::kLeft);
+  bool is_left_button =
+      mouse_event.button() ==
+      static_cast<int16_t>(WebPointerProperties::Button::kLeft);
   const AtomicString& event_type = event.type();
 
   // We intentionally do not call event->setDefaultHandled() here because

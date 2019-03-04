@@ -198,37 +198,37 @@ WebMouseEventBuilder::WebMouseEventBuilder(const LocalFrameView* plugin_parent,
                                         *this);
 
   switch (event.button()) {
-    case short(WebPointerProperties::Button::kLeft):
+    case int16_t(WebPointerProperties::Button::kLeft):
       button = WebMouseEvent::Button::kLeft;
       break;
-    case short(WebPointerProperties::Button::kMiddle):
+    case int16_t(WebPointerProperties::Button::kMiddle):
       button = WebMouseEvent::Button::kMiddle;
       break;
-    case short(WebPointerProperties::Button::kRight):
+    case int16_t(WebPointerProperties::Button::kRight):
       button = WebMouseEvent::Button::kRight;
       break;
-    case short(WebPointerProperties::Button::kBack):
+    case int16_t(WebPointerProperties::Button::kBack):
       button = WebMouseEvent::Button::kBack;
       break;
-    case short(WebPointerProperties::Button::kForward):
+    case int16_t(WebPointerProperties::Button::kForward):
       button = WebMouseEvent::Button::kForward;
       break;
   }
   if (event.ButtonDown()) {
     switch (event.button()) {
-      case short(WebPointerProperties::Button::kLeft):
+      case int16_t(WebPointerProperties::Button::kLeft):
         modifiers_ |= WebInputEvent::kLeftButtonDown;
         break;
-      case short(WebPointerProperties::Button::kMiddle):
+      case int16_t(WebPointerProperties::Button::kMiddle):
         modifiers_ |= WebInputEvent::kMiddleButtonDown;
         break;
-      case short(WebPointerProperties::Button::kRight):
+      case int16_t(WebPointerProperties::Button::kRight):
         modifiers_ |= WebInputEvent::kRightButtonDown;
         break;
-      case short(WebPointerProperties::Button::kBack):
+      case int16_t(WebPointerProperties::Button::kBack):
         modifiers_ |= WebInputEvent::kBackButtonDown;
         break;
-      case short(WebPointerProperties::Button::kForward):
+      case int16_t(WebPointerProperties::Button::kForward):
         modifiers_ |= WebInputEvent::kForwardButtonDown;
         break;
     }

@@ -2690,7 +2690,7 @@ void Node::DefaultEventHandler(Event& event) {
              event.IsMouseEvent()) {
     auto& mouse_event = ToMouseEvent(event);
     if (mouse_event.button() ==
-        static_cast<short>(WebPointerProperties::Button::kMiddle)) {
+        static_cast<int16_t>(WebPointerProperties::Button::kMiddle)) {
       if (EnclosingLinkEventParentOrSelf())
         return;
 
@@ -2720,13 +2720,13 @@ void Node::DefaultEventHandler(Event& event) {
   } else if (event_type == event_type_names::kMouseup && event.IsMouseEvent()) {
     auto& mouse_event = ToMouseEvent(event);
     if (mouse_event.button() ==
-        static_cast<short>(WebPointerProperties::Button::kBack)) {
+        static_cast<int16_t>(WebPointerProperties::Button::kBack)) {
       if (LocalFrame* frame = GetDocument().GetFrame()) {
         if (frame->Client()->NavigateBackForward(-1))
           event.SetDefaultHandled();
       }
     } else if (mouse_event.button() ==
-               static_cast<short>(WebPointerProperties::Button::kForward)) {
+               static_cast<int16_t>(WebPointerProperties::Button::kForward)) {
       if (LocalFrame* frame = GetDocument().GetFrame()) {
         if (frame->Client()->NavigateBackForward(1))
           event.SetDefaultHandled();

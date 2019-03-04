@@ -47,7 +47,7 @@ namespace blink {
 
 namespace {
 
-NavigationPolicy NavigationPolicyFromEventModifiers(uint16_t button,
+NavigationPolicy NavigationPolicyFromEventModifiers(int16_t button,
                                                     bool ctrl,
                                                     bool shift,
                                                     bool alt,
@@ -104,7 +104,7 @@ NavigationPolicy NavigationPolicyFromCurrentEvent() {
   if (!event)
     return kNavigationPolicyCurrentTab;
 
-  uint16_t button = 0;
+  int16_t button = 0;
   if (event->GetType() == WebInputEvent::kMouseUp) {
     const WebMouseEvent* mouse_event = static_cast<const WebMouseEvent*>(event);
 

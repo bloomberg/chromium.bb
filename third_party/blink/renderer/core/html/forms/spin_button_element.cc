@@ -95,7 +95,7 @@ void SpinButtonElement::DefaultEventHandler(Event& event) {
       FloatPoint(mouse_event.AbsoluteLocation()), kUseTransforms));
   if (mouse_event.type() == event_type_names::kMousedown &&
       mouse_event.button() ==
-          static_cast<short>(WebPointerProperties::Button::kLeft)) {
+          static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
     if (box->PixelSnappedBorderBoxRect().Contains(local)) {
       if (spin_button_owner_)
         spin_button_owner_->FocusAndSelectSpinButtonOwner();
@@ -125,7 +125,7 @@ void SpinButtonElement::DefaultEventHandler(Event& event) {
     }
   } else if (mouse_event.type() == event_type_names::kMouseup &&
              mouse_event.button() ==
-                 static_cast<short>(WebPointerProperties::Button::kLeft)) {
+                 static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
     ReleaseCapture();
   } else if (event.type() == event_type_names::kMousemove) {
     if (box->PixelSnappedBorderBoxRect().Contains(local)) {

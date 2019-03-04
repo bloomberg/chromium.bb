@@ -42,7 +42,7 @@ bool IsValidPointerEvent(const blink::Event& event) {
   const blink::PointerEvent& pointer_event = ToPointerEvent(event);
   return pointer_event.isPrimary() &&
          pointer_event.button() ==
-             static_cast<short>(blink::WebPointerProperties::Button::kLeft);
+             static_cast<int16_t>(blink::WebPointerProperties::Button::kLeft);
 }
 
 }  // namespace.

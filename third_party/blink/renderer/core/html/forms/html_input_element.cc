@@ -1243,7 +1243,7 @@ EventDispatchHandlingState* HTMLInputElement::PreDispatchEventHandler(
     return nullptr;
   if (!event.IsMouseEvent() ||
       ToMouseEvent(event).button() !=
-          static_cast<short>(WebPointerProperties::Button::kLeft))
+          static_cast<int16_t>(WebPointerProperties::Button::kLeft))
     return nullptr;
   return input_type_view_->WillDispatchClick();
 }
@@ -1260,7 +1260,7 @@ void HTMLInputElement::PostDispatchEventHandler(
 void HTMLInputElement::DefaultEventHandler(Event& evt) {
   if (evt.IsMouseEvent() && evt.type() == event_type_names::kClick &&
       ToMouseEvent(evt).button() ==
-          static_cast<short>(WebPointerProperties::Button::kLeft)) {
+          static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
     input_type_view_->HandleClickEvent(ToMouseEvent(evt));
     if (evt.DefaultHandled())
       return;

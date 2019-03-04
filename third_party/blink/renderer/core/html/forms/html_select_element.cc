@@ -1383,7 +1383,7 @@ void HTMLSelectElement::MenuListDefaultEventHandler(Event& event) {
 
   if (event.type() == event_type_names::kMousedown && event.IsMouseEvent() &&
       ToMouseEvent(event).button() ==
-          static_cast<short>(WebPointerProperties::Button::kLeft)) {
+          static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
     InputDeviceCapabilities* source_capabilities =
         GetDocument()
             .domWindow()
@@ -1511,7 +1511,7 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
   } else if (event.type() == event_type_names::kMousedown &&
              event.IsMouseEvent() &&
              ToMouseEvent(event).button() ==
-                 static_cast<short>(WebPointerProperties::Button::kLeft)) {
+                 static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
     focus();
     // Calling focus() may cause us to lose our layoutObject, in which case
     // do not want to handle the event.
@@ -1541,7 +1541,7 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
              event.IsMouseEvent()) {
     auto& mouse_event = ToMouseEvent(event);
     if (mouse_event.button() !=
-            static_cast<short>(WebPointerProperties::Button::kLeft) ||
+            static_cast<int16_t>(WebPointerProperties::Button::kLeft) ||
         !mouse_event.ButtonDown())
       return;
 
@@ -1576,7 +1576,7 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
   } else if (event.type() == event_type_names::kMouseup &&
              event.IsMouseEvent() &&
              ToMouseEvent(event).button() ==
-                 static_cast<short>(WebPointerProperties::Button::kLeft) &&
+                 static_cast<int16_t>(WebPointerProperties::Button::kLeft) &&
              GetLayoutObject()) {
     if (GetDocument().GetPage() &&
         GetDocument()
