@@ -22,7 +22,6 @@
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -33,7 +32,6 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
@@ -42,8 +40,7 @@ namespace service_worker_controllee_request_handler_unittest {
 
 int kMockProviderId = 1;
 
-class ServiceWorkerControlleeRequestHandlerTest
-    : public testing::TestWithParam<bool> {
+class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
  public:
   class ServiceWorkerRequestTestResources {
    public:
@@ -53,8 +50,7 @@ class ServiceWorkerControlleeRequestHandlerTest
         ResourceType type,
         network::mojom::FetchRequestMode fetch_type =
             network::mojom::FetchRequestMode::kNoCors)
-        : test_(test),
-          resource_type_(type),
+        : resource_type_(type),
           request_(test->url_request_context_.CreateRequest(
               url,
               net::DEFAULT_PRIORITY,
@@ -90,17 +86,8 @@ class ServiceWorkerControlleeRequestHandlerTest
     }
 
     ServiceWorkerURLJobWrapper* MaybeCreateJobWrapper() {
-      if (test_->IsServiceWorkerServicificationEnabled()) {
-        MaybeCreateLoader();
-        return handler_->url_job();
-      } else {
-        ServiceWorkerURLRequestJob* job = MaybeCreateJob();
-        if (job) {
-          job_wrapper_ =
-              std::make_unique<ServiceWorkerURLJobWrapper>(job->GetWeakPtr());
-        }
-        return job_wrapper_.get();
-      }
+      MaybeCreateLoader();
+      return handler_->url_job();
     }
 
     void ResetHandler() { handler_.reset(nullptr); }
@@ -108,7 +95,6 @@ class ServiceWorkerControlleeRequestHandlerTest
     net::URLRequest* request() const { return request_.get(); }
 
    private:
-    ServiceWorkerControlleeRequestHandlerTest* test_;
     const ResourceType resource_type_;
     std::unique_ptr<net::URLRequest> request_;
     std::unique_ptr<ServiceWorkerControlleeRequestHandler> handler_;
@@ -123,13 +109,6 @@ class ServiceWorkerControlleeRequestHandlerTest
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void SetUp() override {
-    if (IsServiceWorkerServicificationEnabled()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          blink::features::kServiceWorkerServicification);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          blink::features::kServiceWorkerServicification);
-    }
     SetUpWithHelper(new EmbeddedWorkerTestHelper(base::FilePath()));
   }
 
@@ -183,14 +162,7 @@ class ServiceWorkerControlleeRequestHandlerTest
     host->info_->is_parent_frame_secure = is_secure;
   }
 
-  bool IsServiceWorkerServicificationEnabled() { return GetParam(); }
-
  protected:
-  // |scoped_feature_list_| must be before |thread_bundle_|, since
-  // the thread bundle's destruction causes service worker-related
-  // objects to destruct, whose destructors need to know whether servicification
-  // is enabled.
-  base::test::ScopedFeatureList scoped_feature_list_;
   TestBrowserThreadBundle browser_thread_bundle_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
@@ -215,7 +187,7 @@ class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
   }
 };
 
-TEST_P(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
   ServiceWorkerTestContentBrowserClient test_browser_client;
   ContentBrowserClient* old_browser_client =
       SetBrowserClientForTesting(&test_browser_client);
@@ -248,7 +220,7 @@ TEST_P(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
   SetBrowserClientForTesting(old_browser_client);
 }
 
-TEST_P(ServiceWorkerControlleeRequestHandlerTest, InsecureContext) {
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, InsecureContext) {
   // Store an activated worker.
   version_->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
@@ -277,7 +249,7 @@ TEST_P(ServiceWorkerControlleeRequestHandlerTest, InsecureContext) {
   EXPECT_FALSE(version_->HasControllee());
 }
 
-TEST_P(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
   // Store a registration that is installed but not activated yet.
   version_->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
@@ -305,16 +277,10 @@ TEST_P(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
   EXPECT_TRUE(version_->HasControllee());
 
   test_resources.ResetHandler();
-  // Navigations should trigger an update too when S13nServiceWorker is
-  // disabled. Note that when S13nServiceWorker is enabled we defer scheduling
-  // update. See the comment on
-  // ServiceWorkerProviderHost::AddServiceWorkerToUpdate() for details.
-  if (!IsServiceWorkerServicificationEnabled())
-    EXPECT_TRUE(version_->update_timer_.IsRunning());
 }
 
 // Test that an installing registration is associated with a provider host.
-TEST_P(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
   // Create an installing registration.
   version_->SetStatus(ServiceWorkerVersion::INSTALLING);
   version_->set_fetch_handler_existence(
@@ -340,7 +306,7 @@ TEST_P(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
 }
 
 // Test to not regress crbug/414118.
-TEST_P(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
   // Store a registration so the call to FindRegistrationForDocument will read
   // from the database.
   version_->set_fetch_handler_existence(
@@ -372,109 +338,8 @@ TEST_P(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
   EXPECT_FALSE(sw_job->ShouldForwardToServiceWorker());
 }
 
-// Tests the scenario where a controllee request handler was created
-// for a subresource request, but before MaybeCreateJob() is run, the
-// controller/active version becomes null.
-TEST_P(ServiceWorkerControlleeRequestHandlerTest, LostActiveVersion) {
-  // Skip this test when S13nServiceWorker is enabled because we don't use
-  // ServiceWorkerControlleeRequestHandler for subresource loading.
-  // TODO(bashi): Add a test in ServiceWorkerProviderHost to cover this
-  // scenario when S13nServiceWorker is enabled.
-  if (IsServiceWorkerServicificationEnabled())
-    return;
-
-  // Store an activated worker.
-  version_->set_fetch_handler_existence(
-      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
-  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  registration_->SetActiveVersion(version_);
-  context()->storage()->StoreRegistration(registration_.get(), version_.get(),
-                                          base::DoNothing());
-  base::RunLoop().RunUntilIdle();
-
-  // Conduct a main resource load to set the controller.
-  ServiceWorkerRequestTestResources main_test_resources(
-      this, GURL("https://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
-  main_test_resources.MaybeCreateJob();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(version_->HasControllee());
-  EXPECT_EQ(version_, provider_host_->controller());
-
-  // Unset the active version.
-  provider_host_->NotifyControllerLost();
-  registration_->SetActiveVersion(nullptr);
-  EXPECT_FALSE(version_->HasControllee());
-  EXPECT_FALSE(provider_host_->controller());
-
-  // Conduct a subresource load.
-  ServiceWorkerRequestTestResources sub_test_resources(
-      this, GURL("https://host/scope/doc"), RESOURCE_TYPE_IMAGE);
-  ServiceWorkerURLRequestJob* sub_job = sub_test_resources.MaybeCreateJob();
-  base::RunLoop().RunUntilIdle();
-
-  // Verify that the job errored.
-  EXPECT_EQ(ServiceWorkerResponseType::FAIL_DUE_TO_LOST_CONTROLLER,
-            sub_job->response_type_);
-}
-
-TEST_P(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoFetchHandler) {
-  // Skip this test when S13nServiceWorker is enabled because we don't use
-  // ServiceWorkerControlleeRequestHandler for subresource loading.
-  // TODO(bashi): Add a test in ServiceWorkerProviderHost to cover this
-  // scenario when S13nServiceWorker is enabled.
-  if (IsServiceWorkerServicificationEnabled())
-    return;
-
-  version_->set_fetch_handler_existence(
-      ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST);
-  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  registration_->SetActiveVersion(version_);
-  context()->storage()->StoreRegistration(registration_.get(), version_.get(),
-                                          base::DoNothing());
-  base::RunLoop().RunUntilIdle();
-
-  ServiceWorkerRequestTestResources main_test_resources(
-      this, GURL("https://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
-  ServiceWorkerURLRequestJob* main_job = main_test_resources.MaybeCreateJob();
-
-  EXPECT_FALSE(main_job->ShouldFallbackToNetwork());
-  EXPECT_FALSE(main_job->ShouldForwardToServiceWorker());
-  EXPECT_FALSE(version_->HasControllee());
-
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(main_job->ShouldFallbackToNetwork());
-  EXPECT_FALSE(main_job->ShouldForwardToServiceWorker());
-  EXPECT_TRUE(version_->HasControllee());
-  EXPECT_EQ(version_, provider_host_->controller());
-
-  ServiceWorkerRequestTestResources sub_test_resources(
-      this, GURL("https://host/scope/doc/subresource"), RESOURCE_TYPE_IMAGE);
-  ServiceWorkerURLRequestJob* sub_job = sub_test_resources.MaybeCreateJob();
-
-  // This job shouldn't be created because this worker doesn't have fetch
-  // handler.
-  EXPECT_EQ(nullptr, sub_job);
-
-  // CORS request should be returned to renderer for CORS checking.
-  ServiceWorkerRequestTestResources sub_test_resources_cors(
-      this, GURL("https://host/scope/doc/subresource"), RESOURCE_TYPE_SCRIPT,
-      network::mojom::FetchRequestMode::kCors);
-  ServiceWorkerURLRequestJob* sub_cors_job =
-      sub_test_resources_cors.MaybeCreateJob();
-
-  EXPECT_TRUE(sub_cors_job);
-  EXPECT_FALSE(sub_cors_job->ShouldFallbackToNetwork());
-  EXPECT_FALSE(sub_cors_job->ShouldForwardToServiceWorker());
-
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_FALSE(sub_cors_job->ShouldFallbackToNetwork());
-  EXPECT_FALSE(sub_cors_job->ShouldForwardToServiceWorker());
-}
-
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-TEST_P(ServiceWorkerControlleeRequestHandlerTest, FallbackWithOfflineHeader) {
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithOfflineHeader) {
   version_->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
@@ -495,7 +360,7 @@ TEST_P(ServiceWorkerControlleeRequestHandlerTest, FallbackWithOfflineHeader) {
   EXPECT_FALSE(sw_job);
 }
 
-TEST_P(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoOfflineHeader) {
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoOfflineHeader) {
   version_->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
@@ -516,10 +381,6 @@ TEST_P(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoOfflineHeader) {
   EXPECT_TRUE(sw_job);
 }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGE)
-
-INSTANTIATE_TEST_SUITE_P(IsServiceWorkerServicificationEnabled,
-                         ServiceWorkerControlleeRequestHandlerTest,
-                         ::testing::Bool());
 
 }  // namespace service_worker_controllee_request_handler_unittest
 }  // namespace content

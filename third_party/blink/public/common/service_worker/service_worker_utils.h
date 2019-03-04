@@ -38,8 +38,8 @@ BLINK_COMMON_EXPORT extern const char kServiceWorkerEagerCodeCacheStrategy[];
 
 class ServiceWorkerUtils {
  public:
-  // Whether the new service worker glue for NetworkService is enabled (i.e.,
-  // the NetworkService or ServiceWorkerServicification feature is enabled).
+  // Whether the new service worker glue for NetworkService is enabled. Always
+  // returns true as the glue is always enabled now.
   // TODO(crbug.com/715640): Remove this after non-NetS13nSW is removed.
   static bool BLINK_COMMON_EXPORT IsServicificationEnabled();
 
