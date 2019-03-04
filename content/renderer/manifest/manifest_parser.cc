@@ -5,6 +5,7 @@
 #include "content/renderer/manifest/manifest_parser.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/strings/nullable_string16.h"
@@ -31,8 +32,8 @@ bool IsValidMimeType(const std::string& mime_type) {
   return net::ParseMimeTypeWithoutParameter(mime_type, nullptr, nullptr);
 }
 
-bool VerifyFiles(const std::vector<blink::Manifest::ShareTargetFile>& files) {
-  for (const blink::Manifest::ShareTargetFile& file : files) {
+bool VerifyFiles(const std::vector<blink::Manifest::FileFilter>& files) {
+  for (const blink::Manifest::FileFilter& file : files) {
     for (const base::string16& utf_accept : file.accept) {
       std::string accept_type =
           base::ToLowerASCII(base::UTF16ToASCII(utf_accept));
@@ -92,6 +93,7 @@ void ManifestParser::Parse() {
   manifest_.orientation = ParseOrientation(*dictionary);
   manifest_.icons = ParseIcons(*dictionary);
   manifest_.share_target = ParseShareTarget(*dictionary);
+  manifest_.file_handler = ParseFileHandler(*dictionary);
   manifest_.related_applications = ParseRelatedApplications(*dictionary);
   manifest_.prefer_related_applications =
       ParsePreferRelatedApplications(*dictionary);
@@ -386,7 +388,7 @@ std::vector<blink::Manifest::ImageResource> ManifestParser::ParseIcons(
   return icons;
 }
 
-base::string16 ManifestParser::ParseShareTargetFileName(
+base::string16 ManifestParser::ParseFileFilterName(
     const base::DictionaryValue& file) {
   if (!file.HasKey("name")) {
     AddErrorInfo("property 'name' missing.");
@@ -401,7 +403,7 @@ base::string16 ManifestParser::ParseShareTargetFileName(
   return value;
 }
 
-std::vector<base::string16> ManifestParser::ParseShareTargetFileAccept(
+std::vector<base::string16> ManifestParser::ParseFileFilterAccept(
     const base::DictionaryValue& dictionary) {
   std::vector<base::string16> accept_types;
   if (!dictionary.HasKey("accept")) {
@@ -434,26 +436,26 @@ std::vector<base::string16> ManifestParser::ParseShareTargetFileAccept(
   return accept_types;
 }
 
-std::vector<blink::Manifest::ShareTargetFile>
-ManifestParser::ParseShareTargetFiles(
-    const base::DictionaryValue& share_target_params) {
-  std::vector<blink::Manifest::ShareTargetFile> files;
-  if (!share_target_params.HasKey("files"))
+std::vector<blink::Manifest::FileFilter> ManifestParser::ParseTargetFiles(
+    const base::StringPiece& key,
+    const base::DictionaryValue& from) {
+  std::vector<blink::Manifest::FileFilter> files;
+  if (!from.HasKey(key))
     return files;
 
   const base::ListValue* file_list = nullptr;
-  if (!share_target_params.GetList("files", &file_list)) {
+  if (!from.GetList(key, &file_list)) {
     // https://wicg.github.io/web-share-target/level-2/#share_target-member
     // step 5 indicates that the 'files' attribute is allowed to be a single
-    // (non-array) ShareTargetFile.
+    // (non-array) FileFilter.
     const base::DictionaryValue* file_dictionary = nullptr;
-    if (!share_target_params.GetDictionary("files", &file_dictionary)) {
+    if (!from.GetDictionary(key, &file_dictionary)) {
       AddErrorInfo(
-          "property 'files' ignored, type array or ShareTargetFile expected.");
+          "property 'files' ignored, type array or FileFilter expected.");
       return files;
     }
 
-    ParseShareTargetFile(*file_dictionary, &files);
+    ParseFileFilter(*file_dictionary, &files);
 
     return files;
   }
@@ -465,26 +467,26 @@ ManifestParser::ParseShareTargetFiles(
       continue;
     }
 
-    ParseShareTargetFile(*file_dictionary, &files);
+    ParseFileFilter(*file_dictionary, &files);
   }
 
   return files;
 }
 
-void ManifestParser::ParseShareTargetFile(
+void ManifestParser::ParseFileFilter(
     const base::DictionaryValue& file_dictionary,
-    std::vector<blink::Manifest::ShareTargetFile>* files) {
-  blink::Manifest::ShareTargetFile file;
-  file.name = ParseShareTargetFileName(file_dictionary);
+    std::vector<blink::Manifest::FileFilter>* files) {
+  blink::Manifest::FileFilter file;
+  file.name = ParseFileFilterName(file_dictionary);
   if (file.name.empty()) {
     // https://wicg.github.io/web-share-target/level-2/#share_target-member
-    // step 7.1 requires that we invalidate this ShareTargetFile if 'name' is an
+    // step 7.1 requires that we invalidate this FileFilter if 'name' is an
     // empty string. We also invalidate if 'name' is undefined or not a
     // string.
     return;
   }
 
-  file.accept = ParseShareTargetFileAccept(file_dictionary);
+  file.accept = ParseFileFilterAccept(file_dictionary);
   if (file.accept.empty())
     return;
 
@@ -551,7 +553,7 @@ blink::Manifest::ShareTargetParams ManifestParser::ParseShareTargetParams(
   params.text = ParseString(share_target_params, "text", Trim);
   params.title = ParseString(share_target_params, "title", Trim);
   params.url = ParseString(share_target_params, "url", Trim);
-  params.files = ParseShareTargetFiles(share_target_params);
+  params.files = ParseTargetFiles("files", share_target_params);
   return params;
 }
 
@@ -639,7 +641,23 @@ base::Optional<blink::Manifest::ShareTarget> ManifestParser::ParseShareTarget(
     return base::nullopt;
   }
 
-  return base::Optional<blink::Manifest::ShareTarget>(share_target);
+  return base::Optional<blink::Manifest::ShareTarget>(std::move(share_target));
+}
+
+base::Optional<blink::Manifest::FileHandler> ManifestParser::ParseFileHandler(
+    const base::DictionaryValue& dictionary) {
+  constexpr char file_handler_key[] = "file_handler";
+  if (!dictionary.HasKey(file_handler_key))
+    return base::nullopt;
+
+  blink::Manifest::FileHandler file_handler =
+      ParseTargetFiles(file_handler_key, dictionary);
+  if (file_handler.size() == 0) {
+    AddErrorInfo("no file handlers were specified.");
+    return base::nullopt;
+  }
+
+  return base::Optional<blink::Manifest::FileHandler>(std::move(file_handler));
 }
 
 base::NullableString16 ManifestParser::ParseRelatedApplicationPlatform(

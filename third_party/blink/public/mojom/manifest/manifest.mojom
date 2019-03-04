@@ -34,6 +34,12 @@ struct Manifest {
   // As such, this field should not be exposed to the drive-by web.
   ManifestShareTarget? share_target;
 
+  // TODO(harrisjay): This field is non-standard and part of a Chrome
+  // experiment. See:
+  // https://github.com/WICG/file-handling/blob/master/explainer.md
+  // As such, this field should not be exposed to the drive-by web.
+  array<ManifestFileFilter>? file_handler;
+
   array<ManifestRelatedApplication>? related_applications;
 
   // A boolean that is used as a hint for the user agent to say that related
@@ -84,7 +90,7 @@ struct ManifestImageResource {
 };
 
 // Structure representing a share target file.
-struct ManifestShareTargetFile {
+struct ManifestFileFilter {
   mojo_base.mojom.String16? name;
 
   // A sequence of accepted MIME types.
@@ -117,7 +123,7 @@ struct ManifestShareTargetParams {
 
   // An array of share target files, which is represented by two members:
   // name and accept.
-  array<ManifestShareTargetFile>? files;
+  array<ManifestFileFilter>? files;
 };
 
 // Structure representing how a Web Share target handles an incoming share.
