@@ -16,9 +16,12 @@ function wheelScroll(direction, start_x, start_y) {
 {
   var input_injection = async_test("Input Injection Automation");
   // Returns a promise that gets resolved when input injection is finished.
-  inject_input().then(function() {
-    input_injection.done();
-  });
+  window.requestAnimationFrame(
+    function () {
+      inject_input().then(function() {
+        input_injection.done();
+      });
+    });
 }
 
 function inject_input() {
