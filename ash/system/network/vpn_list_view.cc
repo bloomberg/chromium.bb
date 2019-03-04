@@ -8,7 +8,9 @@
 #include <vector>
 
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
@@ -28,6 +30,8 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "components/onc/onc_constants.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia.h"
@@ -75,6 +79,21 @@ bool VpnProviderMatchesNetwork(const VPNProvider& provider,
   } else {
     return provider.provider_type == VPNProvider::BUILT_IN_VPN;
   }
+}
+
+// Returns the PrefService that should be used for kVpnConfigAllowed, which is
+// controlled by policy. If multiple users are logged in, the more restrictive
+// policy is most likely in the primary user.
+PrefService* GetPrefService() {
+  SessionController* controller = Shell::Get()->session_controller();
+  PrefService* prefs = controller->GetPrimaryUserPrefService();
+  return prefs ? prefs : controller->GetActivePrefService();
+}
+
+bool IsVpnConfigAllowed() {
+  PrefService* prefs = GetPrefService();
+  DCHECK(prefs);
+  return prefs->GetBoolean(prefs::kVpnConfigAllowed);
 }
 
 // A list entry that represents a VPN provider.
@@ -211,9 +230,11 @@ void VPNListNetworkEntry::UpdateFromNetworkState(const NetworkState* vpn) {
   AddIconAndLabel(image, label);
   if (vpn->IsConnectedState()) {
     owner_->SetupConnectedScrollListItem(this);
-    disconnect_button_ = TrayPopupUtils::CreateTrayPopupButton(
-        this, l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VPN_DISCONNECT));
-    AddRightView(disconnect_button_);
+    if (IsVpnConfigAllowed()) {
+      disconnect_button_ = TrayPopupUtils::CreateTrayPopupButton(
+          this, l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VPN_DISCONNECT));
+      AddRightView(disconnect_button_);
+    }
     tri_view()->SetContainerBorder(
         TriView::Container::END,
         views::CreateEmptyBorder(
@@ -315,6 +336,11 @@ bool VPNListView::IsNetworkEntry(views::View* view, std::string* guid) const {
 
 void VPNListView::OnVPNProvidersChanged() {
   UpdateNetworkList();
+}
+
+void VPNListView::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kVpnConfigAllowed, true,
+                                PrefRegistry::PUBLIC);
 }
 
 void VPNListView::AddNetwork(const NetworkState* network) {

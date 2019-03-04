@@ -13,6 +13,8 @@
 #include "base/macros.h"
 #include "chromeos/network/network_state_handler.h"
 
+class PrefRegistrySimple;
+
 namespace chromeos {
 class NetworkState;
 }
@@ -53,6 +55,9 @@ class VPNListView : public NetworkStateListDetailedView,
 
   // VpnList::Observer:
   void OnVPNProvidersChanged() override;
+
+  // See Shell::RegisterProfilePrefs().
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
  private:
   // Adds a network to the list.
