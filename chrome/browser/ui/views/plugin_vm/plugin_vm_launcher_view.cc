@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/bytes_formatting.h"
@@ -158,15 +159,13 @@ gfx::Size PluginVmLauncherView::CalculatePreferredSize() const {
                    GetLayoutManager()->GetPreferredHeightForWidth(this, width));
 }
 
-PluginVmLauncherView::~PluginVmLauncherView() {
-  plugin_vm_image_manager_->RemoveObserver();
-  g_plugin_vm_launcher_view = nullptr;
+void PluginVmLauncherView::OnDownloadStarted() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
-
-void PluginVmLauncherView::OnDownloadStarted() {}
 
 void PluginVmLauncherView::OnDownloadProgressUpdated(uint64_t bytes_downloaded,
                                                      int64_t content_length) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::DOWNLOADING);
 
   base::Optional<double> fraction_complete =
@@ -178,6 +177,7 @@ void PluginVmLauncherView::OnDownloadProgressUpdated(uint64_t bytes_downloaded,
 }
 
 void PluginVmLauncherView::OnDownloadCompleted() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::DOWNLOADING);
 
   plugin_vm_image_manager_->StartUnzipping();
@@ -185,9 +185,12 @@ void PluginVmLauncherView::OnDownloadCompleted() {
   OnStateUpdated();
 }
 
-void PluginVmLauncherView::OnDownloadCancelled() {}
+void PluginVmLauncherView::OnDownloadCancelled() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+}
 
 void PluginVmLauncherView::OnDownloadFailed() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   state_ = State::ERROR;
   OnStateUpdated();
 }
@@ -195,6 +198,7 @@ void PluginVmLauncherView::OnDownloadFailed() {
 void PluginVmLauncherView::OnUnzippingProgressUpdated(
     int64_t bytes_unzipped,
     int64_t plugin_vm_image_size) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::UNZIPPING);
   base::Optional<double> fraction_complete =
       GetFractionComplete(bytes_unzipped, plugin_vm_image_size);
@@ -205,19 +209,16 @@ void PluginVmLauncherView::OnUnzippingProgressUpdated(
 }
 
 void PluginVmLauncherView::OnUnzipped() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::UNZIPPING);
   state_ = State::FINISHED;
   OnStateUpdated();
 }
 
 void PluginVmLauncherView::OnUnzippingFailed() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   state_ = State::ERROR;
   OnStateUpdated();
-}
-
-plugin_vm::PluginVmImageManager*
-PluginVmLauncherView::GetPluginVmImageManagerForTesting() {
-  return plugin_vm_image_manager_;
 }
 
 base::string16 PluginVmLauncherView::GetBigMessage() {
@@ -234,8 +235,28 @@ base::string16 PluginVmLauncherView::GetBigMessage() {
   }
 }
 
+PluginVmLauncherView::~PluginVmLauncherView() {
+  plugin_vm_image_manager_->RemoveObserver();
+  g_plugin_vm_launcher_view = nullptr;
+}
+
 void PluginVmLauncherView::AddedToWidget() {
   StartPluginVmImageDownload();
+}
+
+void PluginVmLauncherView::OnStateUpdated() {
+  DialogModelChanged();
+  SetBigMessageLabel();
+  SetMessageLabel();
+  SetBigImage();
+
+  const bool progress_bar_visible =
+      state_ == State::DOWNLOADING || state_ == State::UNZIPPING;
+  progress_bar_->SetVisible(progress_bar_visible);
+  // Values outside the range [0,1] display an infinite loading animation.
+  progress_bar_->SetValue(-1);
+
+  GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
 }
 
 base::string16 PluginVmLauncherView::GetMessage() const {
@@ -276,21 +297,6 @@ void PluginVmLauncherView::SetBigImage() {
   big_image_->SetImage(
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_PLUGIN_VM_LAUNCHER));
-}
-
-void PluginVmLauncherView::OnStateUpdated() {
-  DialogModelChanged();
-  SetBigMessageLabel();
-  SetMessageLabel();
-  SetBigImage();
-
-  const bool progress_bar_visible =
-      state_ == State::DOWNLOADING || state_ == State::UNZIPPING;
-  progress_bar_->SetVisible(progress_bar_visible);
-  // Values outside the range [0,1] display an infinite loading animation.
-  progress_bar_->SetValue(-1);
-
-  GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
 }
 
 void PluginVmLauncherView::StartPluginVmImageDownload() {
