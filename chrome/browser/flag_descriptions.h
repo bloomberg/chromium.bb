@@ -1373,9 +1373,6 @@ extern const char kEnableAndroidSpellcheckerDescription[];
 extern const char kEnableCommandLineOnNonRootedName[];
 extern const char kEnableCommandLineOnNoRootedDescription[];
 
-extern const char kEnableContentSuggestionsNewFaviconServerName[];
-extern const char kEnableContentSuggestionsNewFaviconServerDescription[];
-
 extern const char kEnableContentSuggestionsThumbnailDominantColorName[];
 extern const char kEnableContentSuggestionsThumbnailDominantColorDescription[];
 
