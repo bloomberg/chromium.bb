@@ -8,17 +8,36 @@
 
 cr.define('settings.printing', function() {
   /**
+   * @param {string} protocol
+   * @return {boolean} Whether |protocol| is a network protocol
+   */
+  function isNetworkProtocol(protocol) {
+    return ['ipp', 'ipps', 'http', 'https', 'socket', 'lpd'].includes(protocol);
+  }
+
+  /**
    * Returns true if the printer's name and address is valid. This function
    * uses regular expressions to determine whether the provided printer name
    * and address are valid. Address can be either an ipv4/6 address or a
    * hostname followed by an optional port.
    * NOTE: The regular expression for hostnames will allow hostnames that are
    * over 255 characters.
-   * @param {string} name
-   * @param {string} address
+   * @param {CupsPrinterInfo} printer
    * @return {boolean}
    */
-  function isNameAndAddressValid(name, address) {
+  function isNameAndAddressValid(printer) {
+    if (!printer) {
+      return false;
+    }
+
+    const name = printer.printerName;
+    const address = printer.printerAddress;
+
+    if (!isNetworkProtocol(printer.printerProtocol) && !!name) {
+      // We do not need to verify the address of a non-network printer.
+      return true;
+    }
+
     if (!name || !address) {
       return false;
     }
@@ -66,6 +85,7 @@ cr.define('settings.printing', function() {
   }
 
   return {
+    isNetworkProtocol: isNetworkProtocol,
     isNameAndAddressValid: isNameAndAddressValid,
     isPPDInfoValid: isPPDInfoValid,
   };

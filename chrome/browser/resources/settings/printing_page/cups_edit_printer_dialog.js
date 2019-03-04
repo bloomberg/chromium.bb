@@ -39,7 +39,7 @@ Polymer({
   ],
 
   /** @override */
-  ready: function() {
+  attached: function() {
     settings.CupsPrintersBrowserProxyImpl.getInstance()
         .getPrinterPpdManufacturerAndModel(this.activePrinter.printerId)
         .then(
@@ -135,7 +135,7 @@ Polymer({
    * @private
    */
   isNetworkProtocol_: function(protocol) {
-    return ['ipp', 'ipps', 'http', 'https', 'socket', 'lpd'].includes(protocol);
+    return settings.printing.isNetworkProtocol(protocol);
   },
 
   /**
@@ -143,9 +143,7 @@ Polymer({
    * @private
    */
   canSavePrinter_: function() {
-    return settings.printing.isNameAndAddressValid(
-               this.activePrinter.printerName,
-               this.activePrinter.printerAddress) &&
+    return settings.printing.isNameAndAddressValid(this.activePrinter) &&
         settings.printing.isPPDInfoValid(
             this.activePrinter.ppdManufacturer, this.activePrinter.ppdModel,
             this.activePrinter.printerPPDPath);

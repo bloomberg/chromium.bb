@@ -11,6 +11,7 @@ class TestCupsPrintersBrowserProxy extends TestBrowserProxy {
       'getCupsPrinterManufacturersList',
       'getCupsPrinterModelsList',
       'getPrinterInfo',
+      'getPrinterPpdManufacturerAndModel',
       'startDiscoveringPrinters',
       'stopDiscoveringPrinters',
       'cancelPrinterSetUp',
@@ -20,6 +21,7 @@ class TestCupsPrintersBrowserProxy extends TestBrowserProxy {
     this.manufacturers = [];
     this.models = [];
     this.printerInfo = {};
+    this.printerPpdMakeModel = {};
   }
 
   /** @override */
@@ -65,6 +67,12 @@ class TestCupsPrintersBrowserProxy extends TestBrowserProxy {
   cancelPrinterSetUp(newPrinter) {
     this.methodCalled('cancelPrinterSetUp', newPrinter);
   }
+
+  /** @override */
+  getPrinterPpdManufacturerAndModel(printerId) {
+    this.methodCalled('getPrinterPpdManufacturerAndModel', printerId);
+    return Promise.resolve(this.printerPpdMakeModel);
+  }
 }
 
 suite('CupsAddPrinterDialogTests', function() {
@@ -95,6 +103,12 @@ suite('CupsAddPrinterDialogTests', function() {
     const cancelButton = dialog.$$('.cancel-button');
     assertTrue(!!cancelButton, 'Button is null');
     cancelButton.click();
+  }
+
+  function canAddPrinter(dialog, name, address) {
+    dialog.newPrinter.printerName = name;
+    dialog.newPrinter.printerAddress = address;
+    return dialog.canAddPrinter_();
   }
 
   let page = null;
@@ -147,58 +161,59 @@ suite('CupsAddPrinterDialogTests', function() {
 
   test('ValidIPV4', function() {
     const dialog = document.createElement('add-printer-manually-dialog');
-    expectTrue(dialog.canAddPrinter_('Test printer', '127.0.0.1'));
+    expectTrue(canAddPrinter(dialog, 'Test printer', '127.0.0.1'));
   });
 
   test('ValidIPV4WithPort', function() {
     const dialog = document.createElement('add-printer-manually-dialog');
-    expectTrue(dialog.canAddPrinter_('Test printer', '127.0.1.183:1234'));
+
+    expectTrue(canAddPrinter(dialog, 'Test printer', '127.0.0.1:1234'));
   });
 
   test('ValidIPV6', function() {
     const dialog = document.createElement('add-printer-manually-dialog');
 
     // Test the full ipv6 address scheme.
-    expectTrue(dialog.canAddPrinter_('Test printer', '1:2:a3:ff4:5:6:7:8'));
+    expectTrue(canAddPrinter(dialog, 'Test printer', '1:2:a3:ff4:5:6:7:8'));
 
     // Test the shorthand prefix scheme.
-    expectTrue(dialog.canAddPrinter_('Test printer', '::255'));
+    expectTrue(canAddPrinter(dialog, 'Test printer', '::255'));
 
     // Test the shorthand suffix scheme.
-    expectTrue(dialog.canAddPrinter_('Test printer', '1::'));
+    expectTrue(canAddPrinter(dialog, 'Test printer', '1::'));
   });
 
   test('ValidIPV6WithPort', function() {
     const dialog = document.createElement('add-printer-manually-dialog');
 
-    expectTrue(dialog.canAddPrinter_('Test printer', '[1:2:aa2:4]:12'));
-    expectTrue(dialog.canAddPrinter_('Test printer', '[::255]:54'));
-    expectTrue(dialog.canAddPrinter_('Test printer', '[1::]:7899'));
+    expectTrue(canAddPrinter(dialog, 'Test printer', '[1:2:aa2:4]:12'));
+    expectTrue(canAddPrinter(dialog, 'Test printer', '[::255]:54'));
+    expectTrue(canAddPrinter(dialog, 'Test printer', '[1::]:7899'));
   });
 
   test('InvalidIPV6', function() {
     const dialog = document.createElement('add-printer-manually-dialog');
 
-    expectFalse(dialog.canAddPrinter_('Test printer', '1:2:3:4:5:6:7:8:9'));
-    expectFalse(dialog.canAddPrinter_('Test printer', '1:2:3:aa:a1245:2'));
-    expectFalse(dialog.canAddPrinter_('Test printer', '1:2:3:za:2'));
-    expectFalse(dialog.canAddPrinter_('Test printer', '1:::22'));
-    expectFalse(dialog.canAddPrinter_('Test printer', '1::2::3'));
+    expectFalse(canAddPrinter(dialog, 'Test printer', '1:2:3:4:5:6:7:8:9'));
+    expectFalse(canAddPrinter(dialog, 'Test printer', '1:2:3:aa:a1245:2'));
+    expectFalse(canAddPrinter(dialog, 'Test printer', '1:2:3:za:2'));
+    expectFalse(canAddPrinter(dialog, 'Test printer', '1:::22'));
+    expectFalse(canAddPrinter(dialog, 'Test printer', '1::2::3'));
   });
 
   test('ValidHostname', function() {
     const dialog = document.createElement('add-printer-manually-dialog');
 
-    expectTrue(dialog.canAddPrinter_('Test printer', 'hello-world.com'));
-    expectTrue(dialog.canAddPrinter_('Test printer', 'hello.world.com:12345'));
+    expectTrue(canAddPrinter(dialog, 'Test printer', 'hello-world.com'));
+    expectTrue(canAddPrinter(dialog, 'Test printer', 'hello.world.com:12345'));
   });
 
   test('InvalidHostname', function() {
     const dialog = document.createElement('add-printer-manually-dialog');
 
-    expectFalse(dialog.canAddPrinter_('Test printer', 'helloworld!123.com'));
-    expectFalse(dialog.canAddPrinter_('Test printer', 'helloworld123-.com'));
-    expectFalse(dialog.canAddPrinter_('Test printer', '-helloworld123.com'));
+    expectFalse(canAddPrinter(dialog, 'Test printer', 'helloworld!123.com'));
+    expectFalse(canAddPrinter(dialog, 'Test printer', 'helloworld123-.com'));
+    expectFalse(canAddPrinter(dialog, 'Test printer', '-helloworld123.com'));
   });
 
   /**
@@ -447,5 +462,97 @@ suite('CupsAddPrinterDialogTests', function() {
       dialog = page.$$('settings-cups-add-printer-dialog');
       assertFalse(dialog.showConfiguringDialog_);
     });
+  });
+});
+
+suite('EditPrinterDialog', function() {
+  // Sets ppdManufacturer and ppdModel since ppdManufacturer has an observer
+  // that erases ppdModel when ppdManufacturer changes.
+  function setPpdManufacturerAndPpdModel(manufacturer, model) {
+    dialog.activePrinter.ppdManufacturer = manufacturer;
+    dialog.activePrinter.ppdModel = model;
+  }
+
+  /** @type {?settings.TestCupsPrintersBrowserProxy} */
+  let cupsPrintersBrowserProxy = null;
+
+  let dialog = null;
+
+  setup(function() {
+    cupsPrintersBrowserProxy = new TestCupsPrintersBrowserProxy();
+    settings.CupsPrintersBrowserProxyImpl.instance_ = cupsPrintersBrowserProxy;
+    PolymerTest.clearBody();
+
+    dialog = document.createElement('settings-cups-edit-printer-dialog');
+
+    dialog.activePrinter = {
+      ppdManufacturer: '',
+      ppdModel: '',
+      printerAddress: '',
+      printerAutoconf: false,
+      printerDescription: '',
+      printerId: '',
+      printerManufacturer: '',
+      printerModel: '',
+      printerMakeAndModel: '',
+      printerName: '',
+      printerPPDPath: '',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: false,
+      },
+      printerProtocol: '',
+      printerQueue: '',
+      printerStatus: '',
+    };
+
+    document.body.appendChild(dialog);
+  });
+
+  teardown(function() {
+    dialog.remove();
+    dialog = null;
+  });
+
+  /**
+   * Test that USB printers can be editted.
+   */
+  test('USBPrinterCanBeEdited', function() {
+    dialog.activePrinter = {
+      ppdManufacturer: '',
+      ppdModel: '',
+      printerAddress: '03f0/e414?serial=CD4234',
+      printerAutoconf: false,
+      printerDescription: '',
+      printerId: '',
+      printerManufacturer: '',
+      printerModel: '',
+      printerMakeAndModel: '',
+      printerName: 'Test Printer',
+      printerPPDPath: '',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: false,
+      },
+      printerProtocol: 'usb',
+      printerQueue: 'moreinfohere',
+      printerStatus: '',
+    };
+
+    // Set activePrinter.ppdManufactuer and activePrinter.ppdModel to simulate
+    // a printer for which we have a PPD.
+    setPpdManufacturerAndPpdModel('manufacturer', 'model');
+
+    // Edit the printer name.
+    const nameField = dialog.$$('.printer-name-input');
+    assertTrue(!!nameField);
+    nameField.value = 'edited printer';
+
+    // Assert that the "Add" button is enabled.
+    const addButton = dialog.$$('.action-button');
+    assertTrue(!!addButton);
+    assertTrue(!addButton.disabled);
   });
 });
