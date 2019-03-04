@@ -363,11 +363,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // spaces of surfaces where one does not contain the other. To transform
   // between sibling surfaces, the point must be transformed to the root's
   // coordinate space as an intermediate step.
-  bool TransformPointToLocalCoordSpace(
-      const gfx::PointF& point,
-      const viz::SurfaceId& original_surface,
-      gfx::PointF* transformed_point,
-      viz::EventSource source = viz::EventSource::ANY);
+  bool TransformPointToLocalCoordSpace(const gfx::PointF& point,
+                                       const viz::SurfaceId& original_surface,
+                                       gfx::PointF* transformed_point);
 
   // This is deprecated, and will be removed once Viz hit-test is the default.
   virtual bool TransformPointToLocalCoordSpaceLegacy(
@@ -382,8 +380,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual bool TransformPointToCoordSpaceForView(
       const gfx::PointF& point,
       RenderWidgetHostViewBase* target_view,
-      gfx::PointF* transformed_point,
-      viz::EventSource source = viz::EventSource::ANY);
+      gfx::PointF* transformed_point);
 
   // On success, returns true and modifies |*transform| to represent the
   // transformation mapping a point in the coordinate space of this view
@@ -706,16 +703,14 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   bool TransformPointToTargetCoordSpace(RenderWidgetHostViewBase* original_view,
                                         RenderWidgetHostViewBase* target_view,
                                         const gfx::PointF& point,
-                                        gfx::PointF* transformed_point,
-                                        viz::EventSource source) const;
+                                        gfx::PointF* transformed_point) const;
 
   // Used to transform |point| when Viz hit-test is enabled.
   // TransformPointToLocalCoordSpaceLegacy is used in non-Viz hit-testing.
   bool TransformPointToLocalCoordSpaceViz(
       const gfx::PointF& point,
       const viz::SurfaceId& original_surface,
-      gfx::PointF* transformed_point,
-      viz::EventSource source);
+      gfx::PointF* transformed_point);
 
   bool view_stopped_flinging_for_test() const {
     return view_stopped_flinging_for_test_;

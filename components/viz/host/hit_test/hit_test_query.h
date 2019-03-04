@@ -93,7 +93,6 @@ class VIZ_HOST_EXPORT HitTestQuery {
   // |target_ancestors.front()| is the target, and |target_ancestors.back()|
   // is the root.
   bool TransformLocationForTarget(
-      EventSource event_source,
       const std::vector<FrameSinkId>& target_ancestors,
       const gfx::PointF& location_in_root,
       gfx::PointF* transformed_location) const;
@@ -143,7 +142,6 @@ class VIZ_HOST_EXPORT HitTestQuery {
   // |location_in_target| is in the coordinate space of |region_index|'s parent
   // at the beginning.
   bool TransformLocationForTargetRecursively(
-      EventSource event_source,
       const std::vector<FrameSinkId>& target_ancestors,
       size_t target_ancestor,
       size_t region_index,

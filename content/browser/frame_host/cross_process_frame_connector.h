@@ -95,8 +95,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector
       const gfx::PointF& point,
       RenderWidgetHostViewBase* target_view,
       const viz::SurfaceId& local_surface_id,
-      gfx::PointF* transformed_point,
-      viz::EventSource source = viz::EventSource::ANY) override;
+      gfx::PointF* transformed_point) override;
   void ForwardAckedTouchpadZoomEvent(const blink::WebGestureEvent& event,
                                      InputEventAckState ack_result) override;
   bool BubbleScrollEvent(const blink::WebGestureEvent& event) override;

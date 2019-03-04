@@ -1302,15 +1302,14 @@ bool RenderWidgetHostViewMac::HasFallbackSurface() const {
 bool RenderWidgetHostViewMac::TransformPointToCoordSpaceForView(
     const gfx::PointF& point,
     RenderWidgetHostViewBase* target_view,
-    gfx::PointF* transformed_point,
-    viz::EventSource source) {
+    gfx::PointF* transformed_point) {
   if (target_view == this) {
     *transformed_point = point;
     return true;
   }
 
   return target_view->TransformPointToLocalCoordSpace(
-      point, GetCurrentSurfaceId(), transformed_point, source);
+      point, GetCurrentSurfaceId(), transformed_point);
 }
 
 viz::FrameSinkId RenderWidgetHostViewMac::GetRootFrameSinkId() {

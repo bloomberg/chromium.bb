@@ -83,8 +83,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t num_bytes) {
     for (float y = 0; y < 1000.; y += 10) {
       gfx::PointF location(x, y);
       query.FindTargetForLocation(viz::EventSource::MOUSE, location);
-      query.TransformLocationForTarget(viz::EventSource::MOUSE, frame_sink_ids,
-                                       location, &location);
+      query.TransformLocationForTarget(frame_sink_ids, location, &location);
     }
   }
 

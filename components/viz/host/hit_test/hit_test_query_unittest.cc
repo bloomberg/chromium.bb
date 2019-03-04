@@ -400,19 +400,19 @@ TEST_F(HitTestQueryTest, ClippedChildWithChildUnderneathTransform) {
   std::vector<FrameSinkId> target_ancestors1{e_id};
   gfx::PointF transformed_point;
   EXPECT_TRUE(hit_test_query().TransformLocationForTarget(
-      EventSource::MOUSE, target_ancestors1, point1, &transformed_point));
+      target_ancestors1, point1, &transformed_point));
   EXPECT_EQ(transformed_point, point1);
   std::vector<FrameSinkId> target_ancestors2{a_id, c_id, e_id};
   EXPECT_TRUE(hit_test_query().TransformLocationForTarget(
-      EventSource::MOUSE, target_ancestors2, point2, &transformed_point));
+      target_ancestors2, point2, &transformed_point));
   EXPECT_EQ(transformed_point, gfx::PointF(2, 2));
   std::vector<FrameSinkId> target_ancestors3{d_id, e_id};
   EXPECT_TRUE(hit_test_query().TransformLocationForTarget(
-      EventSource::MOUSE, target_ancestors3, point3, &transformed_point));
+      target_ancestors3, point3, &transformed_point));
   EXPECT_EQ(transformed_point, gfx::PointF(50, 100));
   std::vector<FrameSinkId> target_ancestors4{b_id, c_id, e_id};
   EXPECT_TRUE(hit_test_query().TransformLocationForTarget(
-      EventSource::MOUSE, target_ancestors4, point4, &transformed_point));
+      target_ancestors4, point4, &transformed_point));
   EXPECT_EQ(transformed_point, gfx::PointF(2, 2));
 }
 
@@ -617,29 +617,29 @@ TEST_F(HitTestQueryTest,
   std::vector<FrameSinkId> target_ancestors1{e_id};
   gfx::PointF transformed_point;
   EXPECT_TRUE(hit_test_query().TransformLocationForTarget(
-      EventSource::MOUSE, target_ancestors1, point1, &transformed_point));
+      target_ancestors1, point1, &transformed_point));
   EXPECT_EQ(transformed_point, point1);
   std::vector<FrameSinkId> target_ancestors2{a_id, c1_id, e_id};
   EXPECT_TRUE(hit_test_query().TransformLocationForTarget(
-      EventSource::MOUSE, target_ancestors2, point2, &transformed_point));
+      target_ancestors2, point2, &transformed_point));
   EXPECT_EQ(transformed_point, gfx::PointF(2, 2));
   EXPECT_TRUE(hit_test_query().TransformLocationForTarget(
-      EventSource::MOUSE, target_ancestors1, point3, &transformed_point));
+      target_ancestors1, point3, &transformed_point));
   EXPECT_EQ(transformed_point, point3);
   std::vector<FrameSinkId> target_ancestors3{b_id, c1_id, e_id};
   EXPECT_TRUE(hit_test_query().TransformLocationForTarget(
-      EventSource::MOUSE, target_ancestors3, point4, &transformed_point));
+      target_ancestors3, point4, &transformed_point));
   EXPECT_EQ(transformed_point, gfx::PointF(2, 2));
   std::vector<FrameSinkId> target_ancestors4{g_id, c2_id, e_id};
   EXPECT_TRUE(hit_test_query().TransformLocationForTarget(
-      EventSource::MOUSE, target_ancestors4, point5, &transformed_point));
+      target_ancestors4, point5, &transformed_point));
   EXPECT_EQ(transformed_point, gfx::PointF(50, 50));
   EXPECT_TRUE(hit_test_query().TransformLocationForTarget(
-      EventSource::MOUSE, target_ancestors1, point6, &transformed_point));
+      target_ancestors1, point6, &transformed_point));
   EXPECT_EQ(transformed_point, point6);
   std::vector<FrameSinkId> target_ancestors5{h_id, c2_id, e_id};
   EXPECT_TRUE(hit_test_query().TransformLocationForTarget(
-      EventSource::MOUSE, target_ancestors5, point7, &transformed_point));
+      target_ancestors5, point7, &transformed_point));
   EXPECT_EQ(transformed_point, gfx::PointF(150, 300));
 }
 

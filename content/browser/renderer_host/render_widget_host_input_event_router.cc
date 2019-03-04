@@ -497,8 +497,7 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindMouseEventTarget(
 
   if (needs_transform_point) {
     if (!root_view->TransformPointToCoordSpaceForView(
-            event.PositionInWidget(), target, &transformed_point,
-            viz::EventSource::MOUSE)) {
+            event.PositionInWidget(), target, &transformed_point)) {
       return {nullptr, false, base::nullopt, latched_target, false};
     }
   }
@@ -515,8 +514,7 @@ RenderWidgetHostInputEventRouter::FindMouseWheelEventTarget(
   if (root_view->IsMouseLocked()) {
     target = root_view->host()->delegate()->GetMouseLockWidget()->GetView();
     if (!root_view->TransformPointToCoordSpaceForView(
-            event.PositionInWidget(), target, &transformed_point,
-            viz::EventSource::MOUSE)) {
+            event.PositionInWidget(), target, &transformed_point)) {
       return {nullptr, false, base::nullopt, true, false};
     }
     return {target, false, transformed_point, true, false};
@@ -1001,8 +999,7 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
     // propagated to its embedding surface, which makes it impossible to
     // compute the transformation for it
     if (!root_view->TransformPointToCoordSpaceForView(
-            event.PositionInWidget(), view, &transformed_point,
-            viz::EventSource::MOUSE)) {
+            event.PositionInWidget(), view, &transformed_point)) {
       transformed_point = gfx::PointF();
     }
     mouse_leave.SetPositionInWidget(transformed_point.x(),
@@ -1015,8 +1012,7 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
     blink::WebMouseEvent mouse_move(event);
     mouse_move.SetType(blink::WebInputEvent::kMouseMove);
     if (!root_view->TransformPointToCoordSpaceForView(
-            event.PositionInWidget(), common_ancestor, &transformed_point,
-            viz::EventSource::MOUSE)) {
+            event.PositionInWidget(), common_ancestor, &transformed_point)) {
       transformed_point = gfx::PointF();
     }
     mouse_move.SetPositionInWidget(transformed_point.x(),
@@ -1031,8 +1027,7 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
     blink::WebMouseEvent mouse_enter(event);
     mouse_enter.SetType(blink::WebInputEvent::kMouseMove);
     if (!root_view->TransformPointToCoordSpaceForView(
-            event.PositionInWidget(), view, &transformed_point,
-            viz::EventSource::MOUSE)) {
+            event.PositionInWidget(), view, &transformed_point)) {
       transformed_point = gfx::PointF();
     }
     mouse_enter.SetPositionInWidget(transformed_point.x(),

@@ -1749,8 +1749,7 @@ bool RenderWidgetHostViewAura::HasFallbackSurface() const {
 bool RenderWidgetHostViewAura::TransformPointToCoordSpaceForView(
     const gfx::PointF& point,
     RenderWidgetHostViewBase* target_view,
-    gfx::PointF* transformed_point,
-    viz::EventSource source) {
+    gfx::PointF* transformed_point) {
   if (target_view == this || !delegated_frame_host_) {
     *transformed_point = point;
     return true;
@@ -1760,7 +1759,7 @@ bool RenderWidgetHostViewAura::TransformPointToCoordSpaceForView(
   // but it is not necessary here because the final target view is responsible
   // for converting before computing the final transform.
   return target_view->TransformPointToLocalCoordSpace(
-      point, GetCurrentSurfaceId(), transformed_point, source);
+      point, GetCurrentSurfaceId(), transformed_point);
 }
 
 viz::FrameSinkId RenderWidgetHostViewAura::GetRootFrameSinkId() {
