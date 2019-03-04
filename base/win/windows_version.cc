@@ -56,6 +56,12 @@ int GetUBR() {
   return static_cast<int>(ubr);
 }
 
+const _SYSTEM_INFO& GetSystemInfoStorage() {
+  static _SYSTEM_INFO system_info = {};
+  ::GetNativeSystemInfo(&system_info);
+  return system_info;
+}
+
 }  // namespace
 
 // static
@@ -65,9 +71,6 @@ OSInfo** OSInfo::GetInstanceStorage() {
   static OSInfo* info = []() {
     _OSVERSIONINFOEXW version_info = {sizeof(version_info)};
     ::GetVersionEx(reinterpret_cast<_OSVERSIONINFOW*>(&version_info));
-
-    _SYSTEM_INFO system_info = {};
-    ::GetNativeSystemInfo(&system_info);
 
     DWORD os_type = 0;
     if (version_info.dwMajorVersion == 6 || version_info.dwMajorVersion == 10) {
@@ -79,7 +82,7 @@ OSInfo** OSInfo::GetInstanceStorage() {
                        0, 0, &os_type);
     }
 
-    return new OSInfo(version_info, system_info, os_type);
+    return new OSInfo(version_info, GetSystemInfoStorage(), os_type);
   }();
 
   return &info;
@@ -90,11 +93,26 @@ OSInfo* OSInfo::GetInstance() {
   return *GetInstanceStorage();
 }
 
+// static
+OSInfo::WindowsArchitecture OSInfo::GetArchitecture() {
+  switch (GetSystemInfoStorage().wProcessorArchitecture) {
+    case PROCESSOR_ARCHITECTURE_INTEL:
+      return X86_ARCHITECTURE;
+    case PROCESSOR_ARCHITECTURE_AMD64:
+      return X64_ARCHITECTURE;
+    case PROCESSOR_ARCHITECTURE_IA64:
+      return IA64_ARCHITECTURE;
+    case PROCESSOR_ARCHITECTURE_ARM64:
+      return ARM64_ARCHITECTURE;
+    default:
+      return OTHER_ARCHITECTURE;
+  }
+}
+
 OSInfo::OSInfo(const _OSVERSIONINFOEXW& version_info,
                const _SYSTEM_INFO& system_info,
                int os_type)
     : version_(VERSION_PRE_XP),
-      architecture_(OTHER_ARCHITECTURE),
       wow64_status_(GetWOW64StatusForProcess(GetCurrentProcess())) {
   version_number_.major = version_info.dwMajorVersion;
   version_number_.minor = version_info.dwMinorVersion;
@@ -106,14 +124,6 @@ OSInfo::OSInfo(const _OSVERSIONINFOEXW& version_info,
   service_pack_.minor = version_info.wServicePackMinor;
   service_pack_str_ = WideToUTF8(version_info.szCSDVersion);
 
-  switch (system_info.wProcessorArchitecture) {
-    case PROCESSOR_ARCHITECTURE_INTEL: architecture_ = X86_ARCHITECTURE; break;
-    case PROCESSOR_ARCHITECTURE_AMD64: architecture_ = X64_ARCHITECTURE; break;
-    case PROCESSOR_ARCHITECTURE_IA64:  architecture_ = IA64_ARCHITECTURE; break;
-    case PROCESSOR_ARCHITECTURE_ARM64:
-      architecture_ = ARM64_ARCHITECTURE;
-      break;
-  }
   processors_ = system_info.dwNumberOfProcessors;
   allocation_granularity_ = system_info.dwAllocationGranularity;
 
