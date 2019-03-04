@@ -52,15 +52,13 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
   // Sets the event type.
   void SetAutoclickEventType(mojom::AutoclickEventType type);
 
+  // Sets the movement threshold beyond which mouse movements cancel or begin
+  // a new Autoclick event.
+  void SetMovementThreshold(int movement_threshold);
+
   // Sets whether to revert to a left click after any other event type.
   void set_revert_to_left_click(bool revert_to_left_click) {
     revert_to_left_click_ = revert_to_left_click;
-  }
-
-  // Sets the movement threshold beyond which mouse movements cancel or begin
-  // a new Autoclick event.
-  void set_movement_threshold(int movement_threshold) {
-    movement_threshold_ = movement_threshold;
   }
 
   // Functionality for testing.
@@ -77,6 +75,7 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
   void OnActionCompleted(mojom::AutoclickEventType event_type);
   void InitClickTimers();
   void UpdateRingWidget(const gfx::Point& mouse_location);
+  void UpdateRingSize();
   void RecordUserAction(mojom::AutoclickEventType event_type) const;
   bool DragInProgress() const;
 
