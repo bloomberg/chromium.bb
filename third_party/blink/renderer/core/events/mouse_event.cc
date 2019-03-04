@@ -279,7 +279,7 @@ void MouseEvent::initMouseEvent(ScriptState* script_state,
                                 bool alt_key,
                                 bool shift_key,
                                 bool meta_key,
-                                short button,
+                                int16_t button,
                                 EventTarget* related_target,
                                 uint16_t buttons) {
   if (IsBeingDispatched())
@@ -306,7 +306,7 @@ void MouseEvent::InitMouseEventInternal(
     double client_x,
     double client_y,
     WebInputEvent::Modifiers modifiers,
-    short button,
+    int16_t button,
     EventTarget* related_target,
     InputDeviceCapabilities* source_capabilities,
     uint16_t buttons) {
@@ -332,7 +332,7 @@ bool MouseEvent::IsMouseEvent() const {
   return true;
 }
 
-short MouseEvent::button() const {
+int16_t MouseEvent::button() const {
   const AtomicString& event_name = type();
   if (button_ == -1 || event_name == event_type_names::kMousemove ||
       event_name == event_type_names::kMouseleave ||

@@ -40,7 +40,7 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   const String& pointerType() const { return pointer_type_; }
   bool isPrimary() const { return is_primary_; }
 
-  short button() const override { return RawButton(); }
+  int16_t button() const override { return RawButton(); }
   bool IsMouseEvent() const override;
   bool IsPointerEvent() const override;
 

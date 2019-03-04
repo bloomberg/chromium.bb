@@ -282,7 +282,7 @@ PointerEvent* PointerEventFactory::Create(
       type = event_type_names::kPointermove;
   } else {
     pointer_event_init->setButton(
-        static_cast<int>(WebPointerProperties::Button::kNoButton));
+        static_cast<int16_t>(WebPointerProperties::Button::kNoButton));
   }
 
   pointer_event_init->setView(view);

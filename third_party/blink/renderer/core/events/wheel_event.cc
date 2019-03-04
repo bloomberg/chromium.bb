@@ -54,7 +54,7 @@ MouseEventInit* GetMouseEventInitForWheel(const WebMouseWheelEvent& event,
   auto* local_dom_window = DynamicTo<LocalDOMWindow>(view);
   MouseEvent::SetCoordinatesFromWebPointerProperties(
       event.FlattenTransform(), local_dom_window, initializer);
-  initializer->setButton(static_cast<short>(event.button));
+  initializer->setButton(static_cast<int16_t>(event.button));
   initializer->setButtons(
       MouseEvent::WebInputEventModifiersToButtons(event.GetModifiers()));
   initializer->setView(view);

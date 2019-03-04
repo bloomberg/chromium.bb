@@ -160,7 +160,7 @@ void RangeInputType::HandleMouseDownEvent(MouseEvent& event) {
 
   Node* target_node = event.target()->ToNode();
   if (event.button() !=
-          static_cast<short>(WebPointerProperties::Button::kLeft) ||
+          static_cast<int16_t>(WebPointerProperties::Button::kLeft) ||
       !target_node)
     return;
   DCHECK(IsShadowHost(GetElement()));

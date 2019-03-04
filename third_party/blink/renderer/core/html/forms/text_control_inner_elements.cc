@@ -236,7 +236,7 @@ void SearchFieldCancelButtonElement::DefaultEventHandler(Event& event) {
 
   if (event.type() == event_type_names::kClick && event.IsMouseEvent() &&
       ToMouseEvent(event).button() ==
-          static_cast<short>(WebPointerProperties::Button::kLeft)) {
+          static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
     input->SetValueForUser("");
     input->SetAutofillState(WebAutofillState::kNotFilled);
     input->OnSearch();

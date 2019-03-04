@@ -255,7 +255,7 @@ WebInputEventResult MouseEventManager::DispatchMouseEvent(
         mouse_event.FlattenTransform(), target_node->GetDocument().domWindow(),
         initializer);
     UpdateMouseMovementXY(mouse_event, last_position, initializer);
-    initializer->setButton(static_cast<short>(mouse_event.button));
+    initializer->setButton(static_cast<int16_t>(mouse_event.button));
     initializer->setButtons(MouseEvent::WebInputEventModifiersToButtons(
         mouse_event.GetModifiers()));
     initializer->setView(target_node->GetDocument().domWindow());
