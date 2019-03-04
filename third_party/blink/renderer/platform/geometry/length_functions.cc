@@ -60,11 +60,9 @@ float FloatValueForLength(const Length& length, float maximum_value) {
   return 0;
 }
 
-LayoutUnit MinimumValueForLength(const Length& length,
-                                 LayoutUnit maximum_value) {
+LayoutUnit MinimumValueForLengthInternal(const Length& length,
+                                         LayoutUnit maximum_value) {
   switch (length.GetType()) {
-    case Length::kFixed:
-      return LayoutUnit(length.Value());
     case Length::kPercent:
       // Don't remove the extra cast to float. It is needed for rounding on
       // 32-bit Intel machines that use the FPU stack.
@@ -75,6 +73,7 @@ LayoutUnit MinimumValueForLength(const Length& length,
     case Length::kFillAvailable:
     case Length::kAuto:
       return LayoutUnit();
+    case Length::kFixed:
     case Length::kMinContent:
     case Length::kMaxContent:
     case Length::kFitContent:
