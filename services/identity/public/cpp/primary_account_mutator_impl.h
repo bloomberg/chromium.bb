@@ -29,7 +29,6 @@ class PrimaryAccountMutatorImpl : public PrimaryAccountMutator {
   bool IsSettingPrimaryAccountAllowed() const override;
   void SetSettingPrimaryAccountAllowed(bool allowed) override;
   void SetAllowedPrimaryAccountPattern(const std::string& pattern) override;
-  void LegacyMergeSigninCredentialIntoCookieJar() override;
 
  private:
   // Pointers to the services used by the PrimaryAccountMutatorImpl. They

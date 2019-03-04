@@ -402,8 +402,12 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
           base::BindOnce(&InlineLoginHandlerImpl::CloseTab, handler_));
     }
 
-    identity_manager->GetPrimaryAccountMutator()
-        ->LegacyMergeSigninCredentialIntoCookieJar();
+    if (identity_manager->HasPrimaryAccount()) {
+      identity_manager->GetAccountsCookieMutator()->AddAccountToCookie(
+          identity_manager->GetPrimaryAccountId(),
+          gaia::GaiaSource::kSigninManager, {});
+    }
+
     signin_metrics::LogSigninReason(
         GetSigninReasonFromHandlerSigninReason(reason));
   } else {
