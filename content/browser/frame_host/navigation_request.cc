@@ -20,6 +20,7 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/client_hints/client_hints.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/frame_host/debug_urls.h"
@@ -564,11 +565,13 @@ NavigationRequest::NavigationRequest(
   if (!is_for_commit) {
     BrowserContext* browser_context =
         frame_tree_node_->navigator()->GetController()->GetBrowserContext();
-    if (browser_context->GetClientHintsControllerDelegate()) {
+    ClientHintsControllerDelegate* client_hints_delegate =
+        browser_context->GetClientHintsControllerDelegate();
+    if (client_hints_delegate) {
       net::HttpRequestHeaders client_hints_headers;
-      browser_context->GetClientHintsControllerDelegate()
-          ->GetAdditionalNavigationRequestClientHintsHeaders(
-              common_params_.url, &client_hints_headers);
+      AddNavigationRequestClientHintsHeaders(
+          common_params_.url, &client_hints_headers, browser_context,
+          client_hints_delegate);
       headers.MergeFrom(client_hints_headers);
     }
 
@@ -1616,11 +1619,13 @@ void NavigationRequest::OnRedirectChecksComplete(
 
   BrowserContext* browser_context =
       frame_tree_node_->navigator()->GetController()->GetBrowserContext();
-  if (browser_context->GetClientHintsControllerDelegate()) {
+  ClientHintsControllerDelegate* client_hints_delegate =
+      browser_context->GetClientHintsControllerDelegate();
+  if (client_hints_delegate) {
     net::HttpRequestHeaders client_hints_extra_headers;
-    browser_context->GetClientHintsControllerDelegate()
-        ->GetAdditionalNavigationRequestClientHintsHeaders(
-            common_params_.url, &client_hints_extra_headers);
+    AddNavigationRequestClientHintsHeaders(
+        common_params_.url, &client_hints_extra_headers, browser_context,
+        client_hints_delegate);
     modified_headers.MergeFrom(client_hints_extra_headers);
   }
 
