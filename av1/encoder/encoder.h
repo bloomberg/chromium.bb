@@ -12,6 +12,7 @@
 #ifndef AOM_AV1_ENCODER_ENCODER_H_
 #define AOM_AV1_ENCODER_ENCODER_H_
 
+#include <stdbool.h>
 #include <stdio.h>
 
 #include "config/aom_config.h"
@@ -519,6 +520,10 @@ typedef struct inter_modes_info {
   int64_t sse_arr[MAX_INTER_MODES];
   int64_t est_rd_arr[MAX_INTER_MODES];
   RdIdxPair rd_idx_pair_arr[MAX_INTER_MODES];
+  bool true_rd_arr[MAX_INTER_MODES];
+  RD_STATS rd_cost_arr[MAX_INTER_MODES];
+  RD_STATS rd_cost_y_arr[MAX_INTER_MODES];
+  RD_STATS rd_cost_uv_arr[MAX_INTER_MODES];
 } InterModesInfo;
 
 // Encoder row synchronization

@@ -858,14 +858,23 @@ static void inter_mode_data_push(TileDataEnc *tile_data, BLOCK_SIZE bsize,
 }
 
 static void inter_modes_info_push(InterModesInfo *inter_modes_info,
-                                  int mode_rate, int64_t sse, int64_t est_rd,
+                                  int mode_rate, int64_t sse, int64_t rd,
+                                  bool true_rd, RD_STATS *rd_cost,
+                                  RD_STATS *rd_cost_y, RD_STATS *rd_cost_uv,
                                   const MB_MODE_INFO *mbmi) {
   const int num = inter_modes_info->num;
   assert(num < MAX_INTER_MODES);
   inter_modes_info->mbmi_arr[num] = *mbmi;
   inter_modes_info->mode_rate_arr[num] = mode_rate;
   inter_modes_info->sse_arr[num] = sse;
-  inter_modes_info->est_rd_arr[num] = est_rd;
+  inter_modes_info->est_rd_arr[num] = rd;
+  if (true_rd) {
+    inter_modes_info->est_rd_arr[num] = rd_cost->rdcost;
+  }
+  inter_modes_info->true_rd_arr[num] = true_rd;
+  inter_modes_info->rd_cost_arr[num] = *rd_cost;
+  inter_modes_info->rd_cost_y_arr[num] = *rd_cost_y;
+  inter_modes_info->rd_cost_uv_arr[num] = *rd_cost_uv;
   ++inter_modes_info->num;
 }
 
@@ -9532,12 +9541,14 @@ static int64_t motion_mode_rd(
         if (!is_comp_pred) {
           assert(curr_sse >= 0);
           inter_modes_info_push(inter_modes_info, mode_rate, curr_sse,
-                                rd_stats->rdcost, mbmi);
+                                rd_stats->rdcost, false, rd_stats, rd_stats_y,
+                                rd_stats_uv, mbmi);
         }
       } else {
         assert(curr_sse >= 0);
         inter_modes_info_push(inter_modes_info, mode_rate, curr_sse,
-                              rd_stats->rdcost, mbmi);
+                              rd_stats->rdcost, false, rd_stats, rd_stats_y,
+                              rd_stats_uv, mbmi);
       }
     } else {
       if (!txfm_search(cpi, tile_data, x, bsize, mi_row, mi_col, rd_stats,
@@ -12918,39 +12929,47 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       int64_t curr_est_rd = inter_modes_info->est_rd_arr[data_idx];
       if (curr_est_rd * 0.80 > top_est_rd) break;
 
-      const int mode_rate = inter_modes_info->mode_rate_arr[data_idx];
-
-      x->skip = 0;
-      set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
-
-      // Select prediction reference frames.
-      const int is_comp_pred = mbmi->ref_frame[1] > INTRA_FRAME;
-      for (i = 0; i < num_planes; i++) {
-        xd->plane[i].pre[0] = yv12_mb[mbmi->ref_frame[0]][i];
-        if (is_comp_pred) xd->plane[i].pre[1] = yv12_mb[mbmi->ref_frame[1]][i];
-      }
-
       RD_STATS rd_stats;
       RD_STATS rd_stats_y;
       RD_STATS rd_stats_uv;
 
-      av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize, 0,
-                                    av1_num_planes(cm) - 1);
-      if (mbmi->motion_mode == OBMC_CAUSAL)
-        av1_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
+      bool true_rd = inter_modes_info->true_rd_arr[data_idx];
+      if (true_rd) {
+        rd_stats = inter_modes_info->rd_cost_arr[data_idx];
+        rd_stats_y = inter_modes_info->rd_cost_y_arr[data_idx];
+        rd_stats_uv = inter_modes_info->rd_cost_uv_arr[data_idx];
+      } else {
+        const int mode_rate = inter_modes_info->mode_rate_arr[data_idx];
 
-      if (!txfm_search(cpi, tile_data, x, bsize, mi_row, mi_col, &rd_stats,
-                       &rd_stats_y, &rd_stats_uv, mode_rate,
-                       search_state.best_rd)) {
-        continue;
-      } else if (cpi->sf.inter_mode_rd_model_estimation == 1) {
-        const int skip_ctx = av1_get_skip_context(xd);
-        inter_mode_data_push(tile_data, mbmi->sb_type, rd_stats.sse,
-                             rd_stats.dist,
-                             rd_stats_y.rate + rd_stats_uv.rate +
-                                 x->skip_cost[skip_ctx][mbmi->skip]);
+        x->skip = 0;
+        set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
+
+        // Select prediction reference frames.
+        const int is_comp_pred = mbmi->ref_frame[1] > INTRA_FRAME;
+        for (i = 0; i < num_planes; i++) {
+          xd->plane[i].pre[0] = yv12_mb[mbmi->ref_frame[0]][i];
+          if (is_comp_pred)
+            xd->plane[i].pre[1] = yv12_mb[mbmi->ref_frame[1]][i];
+        }
+
+        av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize, 0,
+                                      av1_num_planes(cm) - 1);
+        if (mbmi->motion_mode == OBMC_CAUSAL)
+          av1_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
+
+        if (!txfm_search(cpi, tile_data, x, bsize, mi_row, mi_col, &rd_stats,
+                         &rd_stats_y, &rd_stats_uv, mode_rate,
+                         search_state.best_rd)) {
+          continue;
+        } else if (cpi->sf.inter_mode_rd_model_estimation == 1) {
+          const int skip_ctx = av1_get_skip_context(xd);
+          inter_mode_data_push(tile_data, mbmi->sb_type, rd_stats.sse,
+                               rd_stats.dist,
+                               rd_stats_y.rate + rd_stats_uv.rate +
+                                   x->skip_cost[skip_ctx][mbmi->skip]);
+        }
+        rd_stats.rdcost = RDCOST(x->rdmult, rd_stats.rate, rd_stats.dist);
       }
-      rd_stats.rdcost = RDCOST(x->rdmult, rd_stats.rate, rd_stats.dist);
 
       if (rd_stats.rdcost < search_state.best_rd) {
         search_state.best_rd = rd_stats.rdcost;
