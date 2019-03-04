@@ -23,7 +23,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/separator.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
@@ -35,14 +34,10 @@ namespace {
 
 // Appearance.
 // TODO(wutao): need to be finalized.
-constexpr int kDialogLeftPaddingDip = 16;
-constexpr int kDialogRightPaddingDip = 16;
-constexpr int kSmallIconSizeDip = 18;
+constexpr int kDialogPaddingDip = 16;
 constexpr int kIconSizeDip = 24;
 constexpr int kButtonSizeDip = 32;
 constexpr int kPreferredHeightDip = 48;
-constexpr int kSeparatorPaddingDip = 18;
-constexpr SkColor kSeparatorColor = SkColorSetA(SK_ColorBLACK, 0x1F);
 
 // Animation.
 constexpr base::TimeDelta kAnimationFadeInDelay =
@@ -250,25 +245,10 @@ void DialogPlate::InitLayout() {
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
-          gfx::Insets(0, kDialogLeftPaddingDip, 0, kDialogRightPaddingDip)));
+          gfx::Insets(0, kDialogPaddingDip)));
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
-
-  // Back button.
-  back_button_ = ash::AssistantButton::Create(
-      this, ash::kShelfBackIcon, kButtonSizeDip, kSmallIconSizeDip,
-      IDS_ASH_ASSISTANT_DIALOG_PLATE_BACK_ACCNAME,
-      ash::AssistantButtonId::kBackInLauncher);
-  AddChildView(back_button_);
-
-  // Vertical separator.
-  views::Separator* separator = new views::Separator();
-  separator->SetPreferredHeight(kIconSizeDip);
-  separator->SetColor(kSeparatorColor);
-  separator->SetBorder(views::CreateEmptyBorder(0, kSeparatorPaddingDip / 2, 0,
-                                                kSeparatorPaddingDip / 2));
-  AddChildView(separator);
 
   // Molecule icon.
   molecule_icon_ = ash::BaseLogoView::Create();
@@ -376,14 +356,9 @@ void DialogPlate::InitVoiceLayoutContainer() {
 
   // Spacer.
   // To make the mic icon in the center of the |assistant_page_view_|
-  // compensate for the width of back icon, separator, molecule icon, keyboard
-  // input toggle, and paddings.
+  // compensate for the width of molecule icon and keyboard input toggle.
   spacer = new views::View();
   constexpr int spacing =
-      /*dialog_plate_padding=*/kDialogLeftPaddingDip - kDialogRightPaddingDip +
-      /*back_button_width=*/kButtonSizeDip +
-      /*separator_padding=*/kSeparatorPaddingDip +
-      /*separator_thickness=*/1 +
       /*molecule_icon_width=*/kIconSizeDip -
       /*keyboard_input_toggle_width*/ kButtonSizeDip;
   spacer->SetPreferredSize(gfx::Size(spacing, 1));

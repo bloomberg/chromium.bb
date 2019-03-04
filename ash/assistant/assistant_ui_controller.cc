@@ -167,11 +167,6 @@ bool AssistantUiController::OnCaptionButtonPressed(AssistantButtonId id) {
 // TODO(dmblack): This event doesn't need to be handled here anymore. Move it
 // out of AssistantUiController.
 void AssistantUiController::OnDialogPlateButtonPressed(AssistantButtonId id) {
-  if (id == AssistantButtonId::kBackInLauncher) {
-    CloseUi(AssistantExitPoint::kBackInLauncher);
-    return;
-  }
-
   if (id != AssistantButtonId::kSettings)
     return;
 
