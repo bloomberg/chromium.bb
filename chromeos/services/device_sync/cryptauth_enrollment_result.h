@@ -81,13 +81,13 @@ class CryptAuthEnrollmentResult {
     kErrorKeyCreationKeyTypeNotSupported,
     // Cannot create a symmetric key without the server's Diffie-Hellman key.
     kErrorSymmetricKeyCreationMissingServerDiffieHellman,
+    // Failed to compute at least one key proof.
+    kErrorKeyProofComputationFailed,
     // The enroller timed out waiting for response from the SyncKeys API call.
     kErrorTimeoutWaitingForSyncKeysResponse,
     // The enroller timed out waiting for new keys to be created.
     kErrorTimeoutWaitingForKeyCreation,
     // The enroller timed out waiting for key proofs to be computed.
-    kErrorTimeoutWaitingForKeyProofComputation,
-    // The enroller timed out waiting for response from the EnrollKeys API call.
     kErrorTimeoutWaitingForEnrollKeysResponse,
     // Failed to register local device with GCM. This registration is required
     // in order for CryptAuth to send GCM messages to the local device,

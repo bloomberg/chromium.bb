@@ -122,14 +122,14 @@ std::ostream& operator<<(
       stream << "[Error: Cannot create symmetric key; missing server "
              << "Diffie-Hellman key]";
       break;
+    case ResultCode::kErrorKeyProofComputationFailed:
+      stream << "[Error: Failed to compute valid key proof]";
+      break;
     case ResultCode::kErrorTimeoutWaitingForSyncKeysResponse:
       stream << "[Error: Timeout waiting for SyncKeys response]";
       break;
     case ResultCode::kErrorTimeoutWaitingForKeyCreation:
       stream << "[Error: Timeout waiting for key creation]";
-      break;
-    case ResultCode::kErrorTimeoutWaitingForKeyProofComputation:
-      stream << "[Error: Timeout waiting for key proof computation]";
       break;
     case ResultCode::kErrorTimeoutWaitingForEnrollKeysResponse:
       stream << "[Error: Timeout waiting for EnrollKeys response]";

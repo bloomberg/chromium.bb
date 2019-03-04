@@ -4,7 +4,14 @@
 
 #include "chromeos/services/device_sync/fake_cryptauth_key_proof_computer.h"
 
-#include <utility>
+#include "base/optional.h"
+#include "chromeos/services/device_sync/cryptauth_key.h"
+
+namespace {
+
+const char kFakeKeyProofPrefix[] = "fake_key_proof";
+
+}  // namespace
 
 namespace chromeos {
 
@@ -14,13 +21,15 @@ FakeCryptAuthKeyProofComputer::FakeCryptAuthKeyProofComputer() = default;
 
 FakeCryptAuthKeyProofComputer::~FakeCryptAuthKeyProofComputer() = default;
 
-void FakeCryptAuthKeyProofComputer::ComputeKeyProofs(
-    const std::vector<std::pair<CryptAuthKey, std::string>>& key_payload_pairs,
-    ComputeKeyProofsCallback compute_key_proofs_callback) {
-  DCHECK(!key_payload_pairs.empty());
-  DCHECK(key_payload_pairs_.empty());
-  key_payload_pairs_ = key_payload_pairs;
-  compute_key_proofs_callback_ = std::move(compute_key_proofs_callback);
+base::Optional<std::string> FakeCryptAuthKeyProofComputer::ComputeKeyProof(
+    const CryptAuthKey& key,
+    const std::string& payload,
+    const std::string& salt) {
+  if (should_return_null_)
+    return base::nullopt;
+
+  return kFakeKeyProofPrefix + std::string("_") + key.handle() +
+         std::string("_") + payload + std::string("_") + salt;
 }
 
 }  // namespace device_sync

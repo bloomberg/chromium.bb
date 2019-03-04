@@ -36,7 +36,6 @@ namespace device_sync {
 
 class CryptAuthClient;
 class CryptAuthClientFactory;
-class CryptAuthKeyProofComputer;
 class CryptAuthKeyRegistry;
 
 // An implementation of CryptAuthV2Enroller, using instances of CryptAuthClient
@@ -65,7 +64,6 @@ class CryptAuthV2EnrollerImpl : public CryptAuthV2Enroller {
     kNotStarted,
     kWaitingForSyncKeysResponse,
     kWaitingForKeyCreation,
-    kWaitingForKeyProofComputation,
     kWaitingForEnrollKeysResponse,
     kFinished
   };
@@ -87,6 +85,7 @@ class CryptAuthV2EnrollerImpl : public CryptAuthV2Enroller {
   //     enroller reads the existing keys from the registry and is responsible
   //     for updating the key registry during the enrollment flow.
   // |client_factory|: Creates CryptAuthClient instances for making API calls.
+  // |timer|: Handles timeouts for asynchronous operations.
   CryptAuthV2EnrollerImpl(CryptAuthKeyRegistry* key_registry,
                           CryptAuthClientFactory* client_factory,
                           std::unique_ptr<base::OneShotTimer> timer);
@@ -130,15 +129,6 @@ class CryptAuthV2EnrollerImpl : public CryptAuthV2Enroller {
       const base::flat_map<CryptAuthKeyBundle::Name, CryptAuthKey>& new_keys,
       const base::Optional<CryptAuthKey>& client_ephemeral_dh);
 
-  void OnKeyProofsComputed(
-      const std::string& session_id,
-      const base::flat_map<CryptAuthKeyBundle::Name, cryptauthv2::KeyDirective>&
-          new_key_directives,
-      const base::flat_map<CryptAuthKeyBundle::Name, CryptAuthKey>& new_keys,
-      const base::Optional<CryptAuthKey>& client_ephemeral_dh,
-      const std::vector<CryptAuthKeyBundle::Name>& key_bundle_order_for_proofs,
-      const std::vector<std::string>& key_proofs);
-
   void OnEnrollKeysSuccess(
       const base::flat_map<CryptAuthKeyBundle::Name, cryptauthv2::KeyDirective>&
           new_key_directives,
@@ -177,11 +167,6 @@ class CryptAuthV2EnrollerImpl : public CryptAuthV2Enroller {
   // SyncKeysResponse. Information about the newly created keys are sent to
   // CryptAuth in the EnrollKeysRequest.
   std::unique_ptr<CryptAuthKeyCreator> key_creator_;
-
-  // An instance of CryptAuthKeyProofComputer, used to generate the key proofs
-  // associated with the new keys requested in SyncKeysResponse. These key
-  // proofs are sent to CryptAuth in the EnrollKeysRequest.
-  std::unique_ptr<CryptAuthKeyProofComputer> key_proof_computer_;
 
   DISALLOW_COPY_AND_ASSIGN(CryptAuthV2EnrollerImpl);
 };
