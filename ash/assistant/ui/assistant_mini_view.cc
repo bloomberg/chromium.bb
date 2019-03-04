@@ -97,8 +97,7 @@ void AssistantMiniView::InitLayout() {
 
 void AssistantMiniView::ButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
-  if (mini_view_delegate_)
-    mini_view_delegate_->OnAssistantMiniViewPressed();
+  delegate_->OnMiniViewPressed();
 }
 
 void AssistantMiniView::OnInputModalityChanged(InputModality input_modality) {

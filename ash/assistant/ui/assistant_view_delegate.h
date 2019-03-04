@@ -39,6 +39,8 @@ enum class DeepLinkType;
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegateObserver
     : public base::CheckedObserver {
  public:
+  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
+
   // Invoked when Assistant has received a deep link of the specified |type|
   // with the given |params|.
   virtual void OnDeepLinkReceived(
@@ -50,6 +52,15 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegateObserver
 
   // Invoked when the dialog plate contents have been committed.
   virtual void OnDialogPlateContentsCommitted(const std::string& text) {}
+
+  // Invoked when the mini view is pressed.
+  virtual void OnMiniViewPressed() {}
+
+  // Invoked when the opt in button is pressed.
+  virtual void OnOptInButtonPressed() {}
+
+  // Invoked when a suggestion chip is pressed.
+  virtual void OnSuggestionChipPressed(const AssistantSuggestion* suggestion) {}
 };
 
 // A delegate of views in assistant/ui that handles views related actions e.g.
@@ -110,12 +121,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   // Gets the caption bar delegate associated with the view delegate.
   virtual CaptionBarDelegate* GetCaptionBarDelegate() = 0;
 
-  // Gets the mini view delegate associated with the view delegate.
-  virtual AssistantMiniViewDelegate* GetMiniViewDelegate() = 0;
-
-  // Gets the opt in delegate associated with the view delegate.
-  virtual AssistantOptInDelegate* GetOptInDelegate() = 0;
-
   // Downloads the image found at the specified |url|. On completion, the
   // supplied |callback| will be run with the downloaded image. If the download
   // attempt is unsuccessful, a NULL image is returned.
@@ -146,9 +151,15 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   // Invoked when the dialog plate contents have been committed.
   virtual void OnDialogPlateContentsCommitted(const std::string& text) = 0;
 
+  // Invoked when the mini view is pressed.
+  virtual void OnMiniViewPressed() = 0;
+
   // Invoked when an in-Assistant notification button is pressed.
   virtual void OnNotificationButtonPressed(const std::string& notification_id,
                                            int notification_button_index) = 0;
+
+  // Invoked when the opt in button is pressed.
+  virtual void OnOptInButtonPressed() {}
 
   // Invoked when suggestion chip is pressed.
   virtual void OnSuggestionChipPressed(

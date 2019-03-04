@@ -146,17 +146,6 @@ void AssistantUiController::OnScreenContextRequestStateChanged(
     container_view_->GetWidget()->Activate();
 }
 
-void AssistantUiController::OnAssistantMiniViewPressed() {
-  InputModality input_modality = assistant_controller_->interaction_controller()
-                                     ->model()
-                                     ->input_modality();
-
-  // When not using stylus input modality, pressing the Assistant mini view
-  // will cause the UI to expand.
-  if (input_modality != InputModality::kStylus)
-    UpdateUiMode(AssistantUiMode::kMainUi);
-}
-
 bool AssistantUiController::OnCaptionButtonPressed(AssistantButtonId id) {
   switch (id) {
     case AssistantButtonId::kBack:
@@ -189,6 +178,17 @@ void AssistantUiController::OnDialogPlateButtonPressed(AssistantButtonId id) {
   // Launch Assistant Settings via deep link.
   assistant_controller_->OpenUrl(
       assistant::util::CreateAssistantSettingsDeepLink());
+}
+
+void AssistantUiController::OnMiniViewPressed() {
+  InputModality input_modality = assistant_controller_->interaction_controller()
+                                     ->model()
+                                     ->input_modality();
+
+  // When not using stylus input modality, pressing the Assistant mini view
+  // will cause the UI to expand.
+  if (input_modality != InputModality::kStylus)
+    UpdateUiMode(AssistantUiMode::kMainUi);
 }
 
 void AssistantUiController::OnHighlighterEnabledChanged(
