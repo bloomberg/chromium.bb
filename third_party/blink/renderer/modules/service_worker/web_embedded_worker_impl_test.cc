@@ -71,7 +71,8 @@ class MockServiceWorkerContextClient : public WebServiceWorkerContextClient {
   MOCK_METHOD0(WorkerContextFailedToStartOnMainThread, void());
   MOCK_METHOD0(WorkerScriptLoadedOnMainThread, void());
 
-  void WorkerContextStarted(WebServiceWorkerContextProxy* proxy) override {
+  void WorkerContextStarted(WebServiceWorkerContextProxy* proxy,
+                            scoped_refptr<base::SequencedTaskRunner>) override {
     // In production code, ReadyToEvaluateScript() is called when
     // ServiceWorkerContextClient receives the InitializeGlobalScope() IPC
     // message.

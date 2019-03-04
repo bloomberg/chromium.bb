@@ -11,6 +11,10 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace content {
 
 class ServiceWorkerContextClient;
@@ -35,7 +39,8 @@ class ControllerServiceWorkerImpl
   // sure the thread safety)
   ControllerServiceWorkerImpl(
       blink::mojom::ControllerServiceWorkerRequest request,
-      base::WeakPtr<ServiceWorkerContextClient> context_client);
+      base::WeakPtr<ServiceWorkerContextClient> context_client,
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~ControllerServiceWorkerImpl() override;
 
   // blink::mojom::ControllerServiceWorker:
@@ -51,6 +56,8 @@ class ControllerServiceWorkerImpl
   mojo::BindingSet<blink::mojom::ControllerServiceWorker> bindings_;
 
   base::WeakPtr<ServiceWorkerContextClient> context_client_;
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ControllerServiceWorkerImpl);
 };
