@@ -70,6 +70,22 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
           signin::AccountConsistencyMethod::kDisabled,
       TestSigninClient* test_signin_client = nullptr);
 
+  // Constructor that takes in instances of the dependencies of
+  // IdentityManager and constructs an IdentityManager instance from those
+  // dependencies. For use in contexts where those dependencies are still
+  // being used directly by the creator of this object (i.e., while a test is
+  // being incrementally converted). Prefer the above constructor, and switch to
+  // that constructor once possible (e.g., when an incremental conversion is
+  // completed). NOTE: The passed-in objects must all outlive this object.
+  IdentityTestEnvironment(
+      PrefService* pref_service,
+      AccountTrackerService* account_tracker_service,
+      FakeAccountFetcherService* account_fetcher_service,
+      FakeProfileOAuth2TokenService* token_service,
+      SigninManagerBase* signin_manager,
+      GaiaCookieManagerService* gaia_cookie_manager_service,
+      network::TestURLLoaderFactory* test_url_loader_factory = nullptr);
+
   ~IdentityTestEnvironment() override;
 
   // The IdentityManager instance associated with this instance.
