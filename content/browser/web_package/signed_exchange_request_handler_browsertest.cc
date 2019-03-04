@@ -53,7 +53,6 @@
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -590,48 +589,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerRealCertVerifierBrowserTest,
                                        SignedExchangeLoadResult::kOCSPError, 1);
 }
 
-enum class SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam {
-  kLegacy,
-  kServiceWorkerServicification,
-  kNetworkService
-};
-
-class SignedExchangeRequestHandlerWithServiceWorkerBrowserTest
-    : public SignedExchangeRequestHandlerBrowserTestBase,
-      public testing::WithParamInterface<
-          SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam> {
- public:
-  SignedExchangeRequestHandlerWithServiceWorkerBrowserTest() = default;
-  void SetUp() override {
-    switch (GetParam()) {
-      case SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam::
-          kLegacy:
-        feature_list_.InitWithFeatures(
-            {}, {blink::features::kServiceWorkerServicification,
-                 network::features::kNetworkService});
-        break;
-      case SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam::
-          kServiceWorkerServicification:
-        feature_list_.InitWithFeatures(
-            {blink::features::kServiceWorkerServicification},
-            {network::features::kNetworkService});
-        break;
-      case SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam::
-          kNetworkService:
-        feature_list_.InitAndEnableFeature(network::features::kNetworkService);
-        break;
-    }
-    SignedExchangeRequestHandlerBrowserTestBase::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(
-      SignedExchangeRequestHandlerWithServiceWorkerBrowserTest);
-};
-
-IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
                        LogicalUrlInServiceWorkerScope) {
   // SW-scope: https://test.example.org/test/
   // SXG physical URL: http://127.0.0.1:PORT/sxg/test.example.org_test.sxg
@@ -666,7 +624,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
 }
 
-IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
                        NotControlledByDistributorsSW) {
   // SW-scope: http://127.0.0.1:PORT/sxg/
   // SXG physical URL: http://127.0.0.1:PORT/sxg/test.example.org_test.sxg
@@ -696,7 +654,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
   EXPECT_EQ(false, EvalJs(shell(), "!!navigator.serviceWorker.controller"));
 }
 
-IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
                        NotControlledBySameOriginDistributorsSW) {
   // SW-scope: https://test.example.org/scope/
   // SXG physical URL: https://test.example.org/scope/test.example.org_test.sxg
@@ -733,7 +691,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
   EXPECT_EQ(false, EvalJs(shell(), "!!navigator.serviceWorker.controller"));
 }
 
-IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
                        RegisterServiceWorkerFromSignedExchange) {
   // SXG physical URL: http://127.0.0.1:PORT/sxg/test.example.org_test.sxg
   // SXG logical URL: https://test.example.org/test/
@@ -774,31 +732,9 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
   EXPECT_FALSE(result);
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
-    SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
-    testing::Values(
-        SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam::kLegacy,
-        SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam::
-            kServiceWorkerServicification,
-        SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam::
-            kNetworkService));
-
-struct SignedExchangeAcceptHeaderBrowserTestParam {
-  SignedExchangeAcceptHeaderBrowserTestParam(
-      bool sxg_enabled,
-      bool service_worker_servicification_enabled)
-      : sxg_enabled(sxg_enabled),
-        service_worker_servicification_enabled(
-            service_worker_servicification_enabled) {}
-  const bool sxg_enabled;
-  const bool service_worker_servicification_enabled;
-};
-
 class SignedExchangeAcceptHeaderBrowserTest
     : public ContentBrowserTest,
-      public testing::WithParamInterface<
-          SignedExchangeAcceptHeaderBrowserTestParam> {
+      public testing::WithParamInterface<bool> {
  public:
   using self = SignedExchangeAcceptHeaderBrowserTest;
   SignedExchangeAcceptHeaderBrowserTest()
@@ -807,20 +743,11 @@ class SignedExchangeAcceptHeaderBrowserTest
 
  protected:
   void SetUp() override {
-    std::vector<base::Feature> enable_features;
-    std::vector<base::Feature> disable_features;
-    if (GetParam().sxg_enabled) {
-      enable_features.push_back(features::kSignedHTTPExchange);
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(features::kSignedHTTPExchange);
     } else {
-      disable_features.push_back(features::kSignedHTTPExchange);
+      feature_list_.InitAndDisableFeature(features::kSignedHTTPExchange);
     }
-    if (GetParam().service_worker_servicification_enabled) {
-      enable_features.push_back(blink::features::kServiceWorkerServicification);
-    } else {
-      disable_features.push_back(
-          blink::features::kServiceWorkerServicification);
-    }
-    feature_list_.InitWithFeatures(enable_features, disable_features);
 
     https_server_.ServeFilesFromSourceDirectory("content/test/data");
     https_server_.RegisterRequestHandler(
@@ -839,11 +766,9 @@ class SignedExchangeAcceptHeaderBrowserTest
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
   }
 
-  bool ShouldHaveSXGAcceptHeaderInEnabledOrigin() const {
-    return GetParam().sxg_enabled;
-  }
+  bool ShouldHaveSXGAcceptHeaderInEnabledOrigin() const { return GetParam(); }
 
-  bool ShouldHaveSXGAcceptHeader() const { return GetParam().sxg_enabled; }
+  bool ShouldHaveSXGAcceptHeader() const { return GetParam(); }
 
   void CheckAcceptHeader(const GURL& url, bool is_navigation) {
     const auto accept_header = GetInterceptedAcceptHeader(url);
@@ -1049,12 +974,8 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
   ClearInterceptedAcceptHeaders();
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    SignedExchangeAcceptHeaderBrowserTest,
-    SignedExchangeAcceptHeaderBrowserTest,
-    testing::Values(SignedExchangeAcceptHeaderBrowserTestParam(false, false),
-                    SignedExchangeAcceptHeaderBrowserTestParam(false, true),
-                    SignedExchangeAcceptHeaderBrowserTestParam(true, false),
-                    SignedExchangeAcceptHeaderBrowserTestParam(true, true)));
+INSTANTIATE_TEST_SUITE_P(SignedExchangeAcceptHeaderBrowserTest,
+                         SignedExchangeAcceptHeaderBrowserTest,
+                         testing::Bool());
 
 }  // namespace content
