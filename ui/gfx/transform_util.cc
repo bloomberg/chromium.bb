@@ -210,6 +210,114 @@ bool CheckTransformsMapsIntViewportWithinOnePixel(const Rect& viewport,
                                               combined);
 }
 
+bool Is2dTransform(const Transform& transform) {
+  const SkMatrix44 matrix = transform.matrix();
+  if (matrix.hasPerspective())
+    return false;
+
+  return matrix.get(2, 0) == 0 && matrix.get(2, 1) == 0 &&
+         matrix.get(0, 2) == 0 && matrix.get(1, 2) == 0 &&
+         matrix.get(2, 2) == 1 && matrix.get(3, 2) == 0 &&
+         matrix.get(2, 3) == 0;
+}
+
+bool Decompose2DTransform(DecomposedTransform* decomp,
+                          const Transform& transform) {
+  if (!Is2dTransform(transform)) {
+    return false;
+  }
+
+  const SkMatrix44 matrix = transform.matrix();
+  double m11 = matrix.getDouble(0, 0);
+  double m21 = matrix.getDouble(0, 1);
+  double m12 = matrix.getDouble(1, 0);
+  double m22 = matrix.getDouble(1, 1);
+
+  double determinant = m11 * m22 - m12 * m21;
+  // Test for matrix being singular.
+  if (determinant == 0) {
+    return false;
+  }
+
+  // Translation transform.
+  // [m11 m21 0 m41]    [1 0 0 Tx] [m11 m21 0 0]
+  // [m12 m22 0 m42]  = [0 1 0 Ty] [m12 m22 0 0]
+  // [ 0   0  1  0 ]    [0 0 1 0 ] [ 0   0  1 0]
+  // [ 0   0  0  1 ]    [0 0 0 1 ] [ 0   0  0 1]
+  decomp->translate[0] = matrix.get(0, 3);
+  decomp->translate[1] = matrix.get(1, 3);
+
+  // For the remainder of the decomposition process, we can focus on the upper
+  // 2x2 submatrix
+  // [m11 m21] = [cos(R) -sin(R)] [1 K] [Sx 0 ]
+  // [m12 m22]   [sin(R)  cos(R)] [0 1] [0  Sy]
+  //           = [Sx*cos(R) Sy*(K*cos(R) - sin(R))]
+  //             [Sx*sin(R) Sy*(K*sin(R) + cos(R))]
+
+  // Determine sign of the x and y scale.
+  if (determinant < 0) {
+    // If the determinant is negative, we need to flip either the x or y scale.
+    // Flipping both is equivalent to rotating by 180 degrees.
+    if (m11 < m22) {
+      decomp->scale[0] *= -1;
+    } else {
+      decomp->scale[1] *= -1;
+    }
+  }
+
+  // X Scale.
+  // m11^2 + m12^2 = Sx^2*(cos^2(R) + sin^2(R)) = Sx^2.
+  // Sx = +/-sqrt(m11^2 + m22^2)
+  decomp->scale[0] *= sqrt(m11 * m11 + m12 * m12);
+  m11 /= decomp->scale[0];
+  m12 /= decomp->scale[0];
+
+  // Post normalization, the submatrix is now of the form:
+  // [m11 m21] = [cos(R)  Sy*(K*cos(R) - sin(R))]
+  // [m12 m22]   [sin(R)  Sy*(K*sin(R) + cos(R))]
+
+  // XY Shear.
+  // m11 * m21 + m12 * m22 = Sy*K*cos^2(R) - Sy*sin(R)*cos(R) +
+  //                         Sy*K*sin^2(R) + Sy*cos(R)*sin(R)
+  //                       = Sy*K
+  double scaledShear = m11 * m21 + m12 * m22;
+  m21 -= m11 * scaledShear;
+  m22 -= m12 * scaledShear;
+
+  // Post normalization, the submatrix is now of the form:
+  // [m11 m21] = [cos(R)  -Sy*sin(R)]
+  // [m12 m22]   [sin(R)   Sy*cos(R)]
+
+  // Y Scale.
+  // Similar process to determining x-scale.
+  decomp->scale[1] *= sqrt(m21 * m21 + m22 * m22);
+  m21 /= decomp->scale[1];
+  m22 /= decomp->scale[1];
+  decomp->skew[0] = scaledShear / decomp->scale[1];
+
+  // Rotation transform.
+  // [1-2(yy+zz)  2(xy-zw)    2(xz+yw) ]   [cos(R) -sin(R)  0]
+  // [2(xy+zw)   1-2(xx+zz)   2(yz-xw) ] = [sin(R)  cos(R)  0]
+  // [2(xz-yw)    2*(yz+xw)  1-2(xx+yy)]   [  0       0     1]
+  // Comparing terms, we can conclude that x = y = 0.
+  // [1-2zz   -2zw  0]   [cos(R) -sin(R)  0]
+  // [ 2zw   1-2zz  0] = [sin(R)  cos(R)  0]
+  // [  0     0     1]   [  0       0     1]
+  // cos(R) = 1 - 2*z^2
+  // From the double angle formula: cos(2a) = 1 - 2 sin(a)^2
+  // cos(R) = 1 - 2*sin(R/2)^2 = 1 - 2*z^2 ==> z = sin(R/2)
+  // sin(R) = 2*z*w
+  // But sin(2a) = 2 sin(a) cos(a)
+  // sin(R) = 2 sin(R/2) cos(R/2) = 2*z*w ==> w = cos(R/2)
+  double angle = atan2(m12, m11);
+  decomp->quaternion.set_x(0);
+  decomp->quaternion.set_y(0);
+  decomp->quaternion.set_z(sin(0.5 * angle));
+  decomp->quaternion.set_w(cos(0.5 * angle));
+
+  return true;
+}
+
 }  // namespace
 
 Transform GetScaleTransform(const Point& anchor, float scale) {
@@ -251,6 +359,9 @@ bool DecomposeTransform(DecomposedTransform* decomp,
                         const Transform& transform) {
   if (!decomp)
     return false;
+
+  if (Decompose2DTransform(decomp, transform))
+    return true;
 
   // We'll operate on a copy of the matrix.
   SkMatrix44 matrix = transform.matrix();
