@@ -6,8 +6,10 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_CHIP_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
+#include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill_assistant {
 
@@ -18,20 +20,7 @@ struct Chip {
   Chip(Chip&&);
   Chip& operator=(Chip&&);
 
-  // The type a chip can have. The terminology is borrow from:
-  //  - https://guidelines.googleplex.com/googlematerial/components/chips.html
-  //  - https://guidelines.googleplex.com/googlematerial/components/buttons.html
-  // GENERATED_JAVA_ENUM_PACKAGE: (
-  // org.chromium.chrome.browser.autofill_assistant.carousel)
-  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: AssistantChipType
-  enum Type {
-    CHIP_ASSISTIVE = 0,
-    BUTTON_FILLED_BLUE = 1,
-    BUTTON_HAIRLINE = 2,
-  };
-
-  // The type of the chip.
-  Type type;
+  ChipType type;
 
   // Localized string to display.
   std::string text;
@@ -39,6 +28,9 @@ struct Chip {
   // Callback triggered when the chip is tapped.
   base::OnceClosure callback;
 };
+
+// Guarantees that the Chip.type of all chips is set to a sensible value.
+void SetDefaultChipType(std::vector<Chip>* chips);
 
 }  // namespace autofill_assistant
 

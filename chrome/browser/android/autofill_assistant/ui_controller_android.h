@@ -101,7 +101,8 @@ class UiControllerAndroid : public UiController {
                         jint index);
   void OnCancelButtonClicked(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jcaller);
+      const base::android::JavaParamRef<jobject>& jcaller,
+      jint actionIndex);
   void OnCloseButtonClicked(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller);
@@ -139,14 +140,15 @@ class UiControllerAndroid : public UiController {
   // action after a short delay unless the user taps the undo button.
   void ShowSnackbar(const std::string& message,
                     base::OnceCallback<void()> action);
+  void OnCancelButtonWithActionIndexClicked(int action_index);
+  void OnCancel(int action_index);
 
   // Debug context captured previously. If non-empty, GetDebugContext() returns
   // this context.
   std::string captured_debug_context_;
 
   // Java-side AutofillAssistantUiController object.
-  base::android::ScopedJavaGlobalRef<jobject>
-      java_autofill_assistant_ui_controller_;
+  base::android::ScopedJavaGlobalRef<jobject> java_object_;
 
   base::WeakPtrFactory<UiControllerAndroid> weak_ptr_factory_;
 

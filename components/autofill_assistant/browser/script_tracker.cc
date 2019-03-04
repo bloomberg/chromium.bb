@@ -172,7 +172,7 @@ base::Value ScriptTracker::GetDebugContext() const {
     script_js.SetKey("path", base::Value(entry.path));
     script_js.SetKey("initial_prompt", base::Value(entry.initial_prompt));
     script_js.SetKey("autostart", base::Value(entry.autostart));
-    script_js.SetKey("highlight", base::Value(entry.highlight));
+    script_js.SetKey("chip_type", base::Value(entry.chip_type));
     runnable_scripts_js.push_back(std::move(script_js));
   }
   dict.SetKey("runnable-scripts", base::Value(runnable_scripts_js));

@@ -21,7 +21,6 @@ proto_java_library("proto_java") {
 
 java_cpp_enum("autofill_assistant_enums_java") {
   sources = [
-    "chip.h",
     "metrics.h",
     "overlay_state.h",
   ]

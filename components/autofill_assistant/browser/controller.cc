@@ -171,7 +171,7 @@ void Controller::SetChips(std::unique_ptr<std::vector<Chip>> chips) {
 
   if (chips && !chips->empty()) {
     for (auto iter = chips->begin(); iter != chips->end(); iter++) {
-      if (iter->type == Chip::Type::CHIP_ASSISTIVE) {
+      if (iter->type == SUGGESTION) {
         if (!suggestions_) {
           suggestions_ = std::make_unique<std::vector<Chip>>();
         }
@@ -652,28 +652,18 @@ void Controller::OnRunnableScriptsChanged(
   }
 
   // Update the set of scripts in the UI.
-  // TODO(crbug.com/806868): Surface type in proto instead of guessing it from
-  // highlight flag.
-  Chip::Type non_highlight_type = Chip::Type::CHIP_ASSISTIVE;
-  for (const auto& script : runnable_scripts) {
-    if (!script.autostart && !script.name.empty() && script.highlight) {
-      non_highlight_type = Chip::Type::BUTTON_HAIRLINE;
-      break;
-    }
-  }
-
   auto chips = std::make_unique<std::vector<Chip>>();
   for (const auto& script : runnable_scripts) {
     if (!script.autostart && !script.name.empty()) {
       chips->emplace_back();
-      chips->back().type = script.highlight ? Chip::Type::BUTTON_FILLED_BLUE
-                                            : non_highlight_type;
       chips->back().text = script.name;
+      chips->back().type = script.chip_type;
       chips->back().callback =
           base::BindOnce(&Controller::OnScriptSelected,
                          weak_ptr_factory_.GetWeakPtr(), script.path);
     }
   }
+  SetDefaultChipType(chips.get());
 
   if (allow_autostart_) {
     // Autostart was expected, but only non-autostartable scripts were found.
