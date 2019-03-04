@@ -31,16 +31,8 @@ using crazy::LibraryView;
 //
 
 struct crazy_context_t {
- public:
-  crazy_context_t() { ResetSearchPaths(); }
-
-  void ResetSearchPaths() { search_paths.ResetFromEnv("LD_LIBRARY_PATH"); }
-
   size_t load_address = 0;
   Error error;
-  SearchPathList search_paths;
-  void* java_vm = nullptr;
-  int minimum_jni_version = 0;
 };
 
 //
@@ -78,15 +70,28 @@ size_t crazy_context_get_load_address(crazy_context_t* context) {
   return context->load_address;
 }
 
-crazy_status_t crazy_context_add_search_path(crazy_context_t* context,
-                                             const char* file_path) {
-  context->search_paths.AddPaths(file_path);
+void crazy_context_destroy(crazy_context_t* context) {
+  delete context;
+}
+
+void crazy_set_java_vm(void* java_vm, int minimum_jni_version) {
+  ScopedLockedGlobals globals;
+  globals->InitJavaVm(java_vm, minimum_jni_version);
+}
+
+void crazy_get_java_vm(void** java_vm, int* minimum_jni_version) {
+  ScopedLockedGlobals globals;
+  *java_vm = globals->java_vm();
+  *minimum_jni_version = globals->minimum_jni_version();
+}
+
+crazy_status_t crazy_add_search_path(const char* file_path) {
+  ScopedLockedGlobals globals;
+  globals->search_path_list()->AddPaths(file_path);
   return CRAZY_STATUS_SUCCESS;
 }
 
-crazy_status_t crazy_context_add_search_path_for_address(
-    crazy_context_t* context,
-    void* address) {
+crazy_status_t crazy_add_search_path_for_address(void* address) {
   uintptr_t load_address;
   char path[512];
   char* p;
@@ -95,53 +100,29 @@ crazy_status_t crazy_context_add_search_path_for_address(
           address, &load_address, path, sizeof(path)) &&
       (p = strrchr(path, '/')) != NULL && p[1]) {
     *p = '\0';
-    return crazy_context_add_search_path(context, path);
+    return crazy_add_search_path(path);
   }
 
-  context->error.Format("Could not find ELF binary at address @%p", address);
   return CRAZY_STATUS_FAILURE;
 }
 
-void crazy_context_reset_search_paths(crazy_context_t* context) {
-  context->ResetSearchPaths();
+void crazy_reset_search_paths(void) {
+  ScopedLockedGlobals globals;
+  globals->search_path_list()->ResetFromEnv("LD_LIBRARY_PATH");
 }
-
-void crazy_context_set_java_vm(crazy_context_t* context,
-                               void* java_vm,
-                               int minimum_jni_version) {
-  context->java_vm = java_vm;
-  context->minimum_jni_version = minimum_jni_version;
-}
-
-void crazy_context_get_java_vm(crazy_context_t* context,
-                               void** java_vm,
-                               int* minimum_jni_version) {
-  *java_vm = context->java_vm;
-  *minimum_jni_version = context->minimum_jni_version;
-}
-
-void crazy_context_destroy(crazy_context_t* context) { delete context; }
 
 crazy_status_t crazy_library_open(crazy_library_t** library,
                                   const char* lib_name,
                                   crazy_context_t* context) {
   ScopedLockedGlobals globals;
-  LibraryView* wrap = globals->libraries()->LoadLibrary(
-      lib_name, context->load_address, &context->search_paths, &context->error);
+  LibraryView* view = globals->libraries()->LoadLibrary(
+      lib_name, context->load_address, globals->search_path_list(),
+      &context->error);
 
-  if (!wrap)
+  if (!view)
     return CRAZY_STATUS_FAILURE;
 
-  if (context->java_vm != NULL && wrap->IsCrazy()) {
-    crazy::SharedLibrary* lib = wrap->GetCrazy();
-    if (!lib->SetJavaVM(
-             context->java_vm, context->minimum_jni_version, &context->error)) {
-      globals->libraries()->UnloadLibrary(wrap);
-      return CRAZY_STATUS_FAILURE;
-    }
-  }
-
-  *library = reinterpret_cast<crazy_library_t*>(wrap);
+  *library = reinterpret_cast<crazy_library_t*>(view);
   return CRAZY_STATUS_SUCCESS;
 }
 

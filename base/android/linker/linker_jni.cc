@@ -258,8 +258,8 @@ crazy_context_t* GetCrazyContext() {
 
     // Ensure libraries located in the same directory as the linker
     // can be loaded before system ones.
-    crazy_context_add_search_path_for_address(
-        s_crazy_context, reinterpret_cast<void*>(&GetCrazyContext));
+    crazy_add_search_path_for_address(
+        reinterpret_cast<void*>(&GetCrazyContext));
   }
 
   return s_crazy_context;
@@ -365,8 +365,7 @@ Java_org_chromium_base_library_1loader_Linker_nativeAddZipArchivePath(
   snprintf(search_path, sizeof(search_path), "%s!lib/" CURRENT_ABI "/",
            apk_path.c_str());
 
-  crazy_context_t* context = GetCrazyContext();
-  crazy_context_add_search_path(context, search_path);
+  crazy_add_search_path(search_path);
   return true;
 }
 
@@ -524,9 +523,9 @@ static bool LinkerJNIInit(JavaVM* vm, JNIEnv* env) {
                           &linker_class))
     return false;
 
-  // Save JavaVM* handle into context.
-  crazy_context_t* context = GetCrazyContext();
-  crazy_context_set_java_vm(context, vm, JNI_VERSION_1_4);
+  // Save JavaVM* handle into linker, so that it can call JNI_OnLoad()
+  // automatically when loading libraries containing JNI entry points.
+  crazy_set_java_vm(vm, JNI_VERSION_1_4);
 
   return true;
 }

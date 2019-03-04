@@ -83,8 +83,7 @@ int main(int argc, char** argv) {
   crazy_context_t* context = crazy_context_create();
 
   // Ensure the program looks in its own directory too.
-  crazy_context_add_search_path_for_address(context,
-                                            reinterpret_cast<void*>(&main));
+  crazy_add_search_path_for_address(reinterpret_cast<void*>(&main));
 
   // Load the library with the crazy linker.
   drop_caches();

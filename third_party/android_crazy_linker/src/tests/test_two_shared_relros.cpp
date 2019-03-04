@@ -31,7 +31,7 @@ int main() {
   RelroLibrary foo;
   RelroLibrary bar;
 
-  crazy_context_add_search_path_for_address(context, (void*)&main);
+  crazy_add_search_path_for_address((void*)&main);
 
   // Load libfoo_with_relro.so
   crazy_context_set_load_address(context, 0x20000000);
