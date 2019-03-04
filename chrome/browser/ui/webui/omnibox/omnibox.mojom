@@ -6,6 +6,11 @@ module mojom;
 
 // The structures here roughly mirror those from autocomplete.
 
+struct ACMatchClassification {
+  int32 offset;
+  int32 style;
+};
+
 struct AutocompleteAdditionalInfo {
   string key;
   string value;
@@ -23,7 +28,9 @@ struct AutocompleteMatch {
   string stripped_destination_url;
   string image;
   string contents;
+  array<ACMatchClassification> contents_class;
   string description;
+  array<ACMatchClassification> description_class;
   string answer;
   string transition;
   bool allowed_to_be_default_match;

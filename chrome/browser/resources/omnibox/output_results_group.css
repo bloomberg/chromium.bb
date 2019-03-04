@@ -65,9 +65,9 @@ table {
 
 .body tr td pre.json {
   /* Browsers base rem font sizes on 16px, except for monospace fonts which use
-   a base size of 13px. Whereas we set the size to .75rem for the rest of the
-   table (.75 * 16px = 12px), we must set the size to 12/13rem for pre's
-   (12/13 * 13px = 12px) in order to have a consistent 12px across the table. */
+   a base size of 13px. Whereas the rest of the table has size set to .75rem
+   (.75 * 16px = 12px), pre's must have size 12/13rem (12/13 * 13px = 12px) in
+   order to have a consistent 12px across the table. */
   font-size: .9231rem;
   margin: 0;
   white-space: pre-wrap;
@@ -109,10 +109,6 @@ th {
 
 .header-provider-and-type .header-container :first-child {
   color: green;
-}
-
-.header-contents-and-description .header-container :first-child {
-  color: blue;
 }
 
 .header-contents-and-description .header-container :nth-child(3) {
@@ -164,8 +160,22 @@ th {
   height: 28px;
 }
 
-.cell-contents-and-description .pair-item.contents {
+.cell-contents-and-description .pair-item.contents::after {
+  color: #555;
+  content: '-';
+  margin-inline-start: 15px;
+}
+
+.cell-contents-and-description .style-url {
   color: blue;
+}
+
+.cell-contents-and-description .style-match {
+  font-weight: bold;
+}
+
+.cell-contents-and-description .style-dim {
+  background: #eee;
 }
 
 .cell-contents-and-description .pair-item.answer {
