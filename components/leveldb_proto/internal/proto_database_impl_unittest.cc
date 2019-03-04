@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "components/leveldb_proto/internal/shared_proto_database_provider.h"
@@ -556,6 +557,7 @@ TEST_F(ProtoDatabaseImplTest, Migration_EmptyDBs_UniqueToShared) {
                     Enums::InitStatus::kOK);
   // Kill the DB impl so it doesn't have a lock on the DB anymore.
   unique_db_impl.reset();
+  base::TaskScheduler::GetInstance()->FlushForTesting();
 
   auto db_provider_withshared = CreateProviderWithSharedDB();
   auto shared_db_impl = CreateDBImpl(
