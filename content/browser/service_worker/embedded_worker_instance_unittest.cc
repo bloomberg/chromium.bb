@@ -97,14 +97,7 @@ class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
   }
 
   void SetUp() override {
-    if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          blink::features::kServiceWorkerServicification);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          blink::features::kServiceWorkerServicification);
-    }
-    helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
+    helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
   }
 
   void TearDown() override { helper_.reset(); }
@@ -919,9 +912,5 @@ TEST_P(EmbeddedWorkerInstanceTest, AbruptCompletion) {
             events_[2].start_status.value());
   worker->Stop();
 }
-
-INSTANTIATE_TEST_SUITE_P(IsServiceWorkerServicificationEnabled,
-                         EmbeddedWorkerInstanceTest,
-                         ::testing::Bool());
 
 }  // namespace content

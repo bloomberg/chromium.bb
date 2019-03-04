@@ -27,7 +27,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "services/network/public/cpp/features.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
@@ -186,22 +185,13 @@ void SharedWorkerHost::Start(
     DCHECK(main_script_load_params);
     DCHECK(subresource_loader_factories);
     DCHECK(!subresource_loader_factories->default_factory_info());
-  } else if (base::FeatureList::IsEnabled(
-                 blink::features::kServiceWorkerServicification)) {
-    // S13nServiceWorker (non-NetworkService):
+  } else {
+    // non-NetworkService:
     DCHECK(service_worker_provider_info);
     DCHECK(main_script_loader_factory);
     DCHECK(!main_script_load_params);
     DCHECK(subresource_loader_factories);
     DCHECK(subresource_loader_factories->default_factory_info());
-    DCHECK(!controller);
-    DCHECK(!controller_service_worker_object_host);
-  } else {
-    // Legacy case (to be deprecated):
-    DCHECK(!service_worker_provider_info);
-    DCHECK(!main_script_loader_factory);
-    DCHECK(!main_script_load_params);
-    DCHECK(!subresource_loader_factories);
     DCHECK(!controller);
     DCHECK(!controller_service_worker_object_host);
   }

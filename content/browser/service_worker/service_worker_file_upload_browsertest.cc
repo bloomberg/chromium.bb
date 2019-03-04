@@ -23,13 +23,11 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/ssl/ssl_server_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
 namespace content {
 
 namespace {
-enum class ServicifiedFeatures { kNone, kServiceWorker };
 
 void GetKey(const base::DictionaryValue& dict,
             const std::string& key,
@@ -66,25 +64,11 @@ const size_t kFileSize = base::size(kFileContent) - 1;
 // URLs while serving http resources from the http server, but this trick can
 // break the test when Site Isolation is enabled and content from different
 // origins end up in different processes.
-class ServiceWorkerFileUploadTest
-    : public ContentBrowserTest,
-      public ::testing::WithParamInterface<ServicifiedFeatures> {
+class ServiceWorkerFileUploadTest : public ContentBrowserTest {
  public:
   ServiceWorkerFileUploadTest() = default;
 
   void SetUp() override {
-    ServicifiedFeatures param = GetParam();
-    switch (param) {
-      case ServicifiedFeatures::kNone:
-        scoped_feature_list_.InitAndDisableFeature(
-            blink::features::kServiceWorkerServicification);
-        break;
-      case ServicifiedFeatures::kServiceWorker:
-        scoped_feature_list_.InitAndEnableFeature(
-            blink::features::kServiceWorkerServicification);
-        break;
-    }
-
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
 
     ContentBrowserTest::SetUp();
@@ -262,7 +246,7 @@ class ServiceWorkerFileUploadTest
 };
 
 // Tests using Request.text().
-IN_PROC_BROWSER_TEST_P(ServiceWorkerFileUploadTest, AsText) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerFileUploadTest, AsText) {
   std::string filename;
   std::unique_ptr<base::DictionaryValue> dict;
   RunRespondWithTest("getAs=text", TargetOrigin::kSameOrigin, &filename, &dict);
@@ -276,7 +260,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerFileUploadTest, AsText) {
 }
 
 // Tests using Request.blob().
-IN_PROC_BROWSER_TEST_P(ServiceWorkerFileUploadTest, AsBlob) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerFileUploadTest, AsBlob) {
   std::string filename;
   std::unique_ptr<base::DictionaryValue> dict;
   RunRespondWithTest("getAs=blob", TargetOrigin::kSameOrigin, &filename, &dict);
@@ -290,7 +274,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerFileUploadTest, AsBlob) {
 }
 
 // Tests using Request.formData().
-IN_PROC_BROWSER_TEST_P(ServiceWorkerFileUploadTest, AsFormData) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerFileUploadTest, AsFormData) {
   std::string filename;
   std::unique_ptr<base::DictionaryValue> dict;
   RunRespondWithTest("getAs=formData", TargetOrigin::kSameOrigin, &filename,
@@ -300,13 +284,13 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerFileUploadTest, AsFormData) {
 }
 
 // Tests network fallback.
-IN_PROC_BROWSER_TEST_P(ServiceWorkerFileUploadTest, NetworkFallback) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerFileUploadTest, NetworkFallback) {
   RunNetworkFallbackTest(TargetOrigin::kSameOrigin);
 }
 
 // Tests using Request.formData() when the form was submitted to a cross-origin
 // target. Regression test for https://crbug.com/916070.
-IN_PROC_BROWSER_TEST_P(ServiceWorkerFileUploadTest, AsFormData_CrossOrigin) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerFileUploadTest, AsFormData_CrossOrigin) {
   std::string filename;
   std::unique_ptr<base::DictionaryValue> dict;
   RunRespondWithTest("getAs=formData", TargetOrigin::kCrossOrigin, &filename,
@@ -316,15 +300,9 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerFileUploadTest, AsFormData_CrossOrigin) {
 }
 
 // Tests network fallback when the form was submitted to a cross-origin target.
-IN_PROC_BROWSER_TEST_P(ServiceWorkerFileUploadTest,
+IN_PROC_BROWSER_TEST_F(ServiceWorkerFileUploadTest,
                        NetworkFallback_CrossOrigin) {
   RunNetworkFallbackTest(TargetOrigin::kCrossOrigin);
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
-    ServiceWorkerFileUploadTest,
-    ::testing::Values(ServicifiedFeatures::kNone,
-                      ServicifiedFeatures::kServiceWorker));
 
 }  // namespace content

@@ -30,7 +30,6 @@
 #include "content/test/test_content_client.h"
 #include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
@@ -85,14 +84,6 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
   ~ServiceWorkerProviderHostTest() override {}
 
   void SetUp() override {
-    if (IsServiceWorkerServicificationEnabled()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          blink::features::kServiceWorkerServicification);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          blink::features::kServiceWorkerServicification);
-    }
-
     old_content_browser_client_ =
         SetBrowserClientForTesting(&test_content_browser_client_);
     ResetSchemesAndOriginsWhitelist();
@@ -274,11 +265,6 @@ class ServiceWorkerProviderHostTest : public testing::TestWithParam<bool> {
     return !host->versions_to_update_.empty();
   }
 
-  // |scoped_feature_list_| must be before |thread_bundle_|, since
-  // the thread bundle's destruction causes service worker-related
-  // objects to destruct, whose destructors need to know whether servicification
-  // is enabled.
-  base::test::ScopedFeatureList scoped_feature_list_;
   TestBrowserThreadBundle thread_bundle_;
 
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
@@ -1149,9 +1135,5 @@ TEST_P(ServiceWorkerProviderHostTest, HintToUpdateServiceWorkerMultiple) {
   version3->DecrementPendingUpdateHintCount();
   ExpectUpdateIsScheduled(version3.get());
 }
-
-INSTANTIATE_TEST_SUITE_P(IsServiceWorkerServicificationEnabled,
-                         ServiceWorkerProviderHostTest,
-                         ::testing::Bool());
 
 }  // namespace content
