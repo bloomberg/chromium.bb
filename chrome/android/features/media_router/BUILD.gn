@@ -8,7 +8,7 @@ import("//chrome/common/features.gni")
 
 android_library("java") {
   deps = [
-    ":resources",
+    ":java_resources",
     "$google_play_services_package:google_play_services_base_java",
     "$google_play_services_package:google_play_services_basement_java",
     "$google_play_services_package:google_play_services_cast_framework_java",
@@ -22,46 +22,46 @@ android_library("java") {
     "//third_party/android_media:android_media_java",
   ]
   java_files = [
-    "java/org/chromium/chrome/browser/media/router/BaseMediaRouteDialogManager.java",
-    "java/org/chromium/chrome/browser/media/router/CastRequestIdGenerator.java",
-    "java/org/chromium/chrome/browser/media/router/CastSessionUtil.java",
-    "java/org/chromium/chrome/browser/media/router/ChromeMediaRouter.java",
-    "java/org/chromium/chrome/browser/media/router/ChromeMediaRouterDialogController.java",
-    "java/org/chromium/chrome/browser/media/router/ClientRecord.java",
-    "java/org/chromium/chrome/browser/media/router/DiscoveryCallback.java",
-    "java/org/chromium/chrome/browser/media/router/DiscoveryDelegate.java",
-    "java/org/chromium/chrome/browser/media/router/FlingingController.java",
-    "java/org/chromium/chrome/browser/media/router/FlingingControllerBridge.java",
-    "java/org/chromium/chrome/browser/media/router/MediaController.java",
-    "java/org/chromium/chrome/browser/media/router/MediaRoute.java",
-    "java/org/chromium/chrome/browser/media/router/MediaRouteChooserDialogManager.java",
-    "java/org/chromium/chrome/browser/media/router/MediaRouteControllerDialogManager.java",
-    "java/org/chromium/chrome/browser/media/router/MediaRouteDialogDelegate.java",
-    "java/org/chromium/chrome/browser/media/router/MediaRouteDialogManager.java",
-    "java/org/chromium/chrome/browser/media/router/MediaRouteManager.java",
-    "java/org/chromium/chrome/browser/media/router/MediaRouteProvider.java",
-    "java/org/chromium/chrome/browser/media/router/MediaSink.java",
-    "java/org/chromium/chrome/browser/media/router/MediaSource.java",
-    "java/org/chromium/chrome/browser/media/router/MediaStatusBridge.java",
-    "java/org/chromium/chrome/browser/media/router/MediaStatusObserver.java",
-    "java/org/chromium/chrome/browser/media/router/caf/BaseNotificationController.java",
-    "java/org/chromium/chrome/browser/media/router/caf/BaseSessionController.java",
-    "java/org/chromium/chrome/browser/media/router/caf/CafBaseMediaRouteProvider.java",
-    "java/org/chromium/chrome/browser/media/router/caf/CafMediaRouteProvider.java",
-    "java/org/chromium/chrome/browser/media/router/caf/CafMessageHandler.java",
-    "java/org/chromium/chrome/browser/media/router/caf/CafNotificationController.java",
-    "java/org/chromium/chrome/browser/media/router/caf/CastMediaSource.java",
-    "java/org/chromium/chrome/browser/media/router/caf/CastOptionsProvider.java",
-    "java/org/chromium/chrome/browser/media/router/caf/CastSessionController.java",
-    "java/org/chromium/chrome/browser/media/router/caf/CastUtils.java",
-    "java/org/chromium/chrome/browser/media/router/caf/CreateRouteRequestInfo.java",
-    "java/org/chromium/chrome/browser/media/router/caf/remoting/CafExpandedControllerActivity.java",
-    "java/org/chromium/chrome/browser/media/router/caf/remoting/CafRemotingMediaRouteProvider.java",
-    "java/org/chromium/chrome/browser/media/router/caf/remoting/FlingingControllerAdapter.java",
-    "java/org/chromium/chrome/browser/media/router/caf/remoting/RemotingMediaSource.java",
-    "java/org/chromium/chrome/browser/media/router/caf/remoting/RemotingNotificationController.java",
-    "java/org/chromium/chrome/browser/media/router/caf/remoting/RemotingSessionController.java",
-    "java/org/chromium/chrome/browser/media/router/caf/remoting/StreamPositionExtrapolator.java",
+    "java/src/org/chromium/chrome/browser/media/router/BaseMediaRouteDialogManager.java",
+    "java/src/org/chromium/chrome/browser/media/router/CastRequestIdGenerator.java",
+    "java/src/org/chromium/chrome/browser/media/router/CastSessionUtil.java",
+    "java/src/org/chromium/chrome/browser/media/router/ChromeMediaRouter.java",
+    "java/src/org/chromium/chrome/browser/media/router/ChromeMediaRouterDialogController.java",
+    "java/src/org/chromium/chrome/browser/media/router/ClientRecord.java",
+    "java/src/org/chromium/chrome/browser/media/router/DiscoveryCallback.java",
+    "java/src/org/chromium/chrome/browser/media/router/DiscoveryDelegate.java",
+    "java/src/org/chromium/chrome/browser/media/router/FlingingController.java",
+    "java/src/org/chromium/chrome/browser/media/router/FlingingControllerBridge.java",
+    "java/src/org/chromium/chrome/browser/media/router/MediaController.java",
+    "java/src/org/chromium/chrome/browser/media/router/MediaRoute.java",
+    "java/src/org/chromium/chrome/browser/media/router/MediaRouteChooserDialogManager.java",
+    "java/src/org/chromium/chrome/browser/media/router/MediaRouteControllerDialogManager.java",
+    "java/src/org/chromium/chrome/browser/media/router/MediaRouteDialogDelegate.java",
+    "java/src/org/chromium/chrome/browser/media/router/MediaRouteDialogManager.java",
+    "java/src/org/chromium/chrome/browser/media/router/MediaRouteManager.java",
+    "java/src/org/chromium/chrome/browser/media/router/MediaRouteProvider.java",
+    "java/src/org/chromium/chrome/browser/media/router/MediaSink.java",
+    "java/src/org/chromium/chrome/browser/media/router/MediaSource.java",
+    "java/src/org/chromium/chrome/browser/media/router/MediaStatusBridge.java",
+    "java/src/org/chromium/chrome/browser/media/router/MediaStatusObserver.java",
+    "java/src/org/chromium/chrome/browser/media/router/caf/BaseNotificationController.java",
+    "java/src/org/chromium/chrome/browser/media/router/caf/BaseSessionController.java",
+    "java/src/org/chromium/chrome/browser/media/router/caf/CafBaseMediaRouteProvider.java",
+    "java/src/org/chromium/chrome/browser/media/router/caf/CafMediaRouteProvider.java",
+    "java/src/org/chromium/chrome/browser/media/router/caf/CafMessageHandler.java",
+    "java/src/org/chromium/chrome/browser/media/router/caf/CafNotificationController.java",
+    "java/src/org/chromium/chrome/browser/media/router/caf/CastMediaSource.java",
+    "java/src/org/chromium/chrome/browser/media/router/caf/CastOptionsProvider.java",
+    "java/src/org/chromium/chrome/browser/media/router/caf/CastSessionController.java",
+    "java/src/org/chromium/chrome/browser/media/router/caf/CastUtils.java",
+    "java/src/org/chromium/chrome/browser/media/router/caf/CreateRouteRequestInfo.java",
+    "java/src/org/chromium/chrome/browser/media/router/caf/remoting/CafExpandedControllerActivity.java",
+    "java/src/org/chromium/chrome/browser/media/router/caf/remoting/CafRemotingMediaRouteProvider.java",
+    "java/src/org/chromium/chrome/browser/media/router/caf/remoting/FlingingControllerAdapter.java",
+    "java/src/org/chromium/chrome/browser/media/router/caf/remoting/RemotingMediaSource.java",
+    "java/src/org/chromium/chrome/browser/media/router/caf/remoting/RemotingNotificationController.java",
+    "java/src/org/chromium/chrome/browser/media/router/caf/remoting/RemotingSessionController.java",
+    "java/src/org/chromium/chrome/browser/media/router/caf/remoting/StreamPositionExtrapolator.java",
   ]
 }
 
@@ -69,8 +69,8 @@ android_library("test_java") {
   testonly = true
 
   java_files = [
-    "javatests/org/chromium/chrome/browser/media/router/MediaRouterIntegrationTest.java",
-    "javatests/org/chromium/chrome/browser/media/router/MockMediaRouteProvider.java",
+    "javatests/src/org/chromium/chrome/browser/media/router/MediaRouterIntegrationTest.java",
+    "javatests/src/org/chromium/chrome/browser/media/router/MockMediaRouteProvider.java",
   ]
 
   deps = [
@@ -90,21 +90,21 @@ android_library("test_java") {
 
 junit_binary("media_router_junit_tests") {
   java_files = [
-    "junit/org/chromium/chrome/browser/media/router/ChromeMediaRouterRouteTest.java",
-    "junit/org/chromium/chrome/browser/media/router/ChromeMediaRouterSinkObservationTest.java",
-    "junit/org/chromium/chrome/browser/media/router/ChromeMediaRouterTestBase.java",
-    "junit/org/chromium/chrome/browser/media/router/DiscoveryCallbackTest.java",
-    "junit/org/chromium/chrome/browser/media/router/JSONTestUtils.java",
-    "junit/org/chromium/chrome/browser/media/router/TestUtils.java",
-    "junit/org/chromium/chrome/browser/media/router/caf/BaseSessionControllerTest.java",
-    "junit/org/chromium/chrome/browser/media/router/caf/CafBaseMediaRouteProviderTest.java",
-    "junit/org/chromium/chrome/browser/media/router/caf/CafMediaRouteProviderTest.java",
-    "junit/org/chromium/chrome/browser/media/router/caf/CafMessageHandlerTest.java",
-    "junit/org/chromium/chrome/browser/media/router/caf/CastSessionControllerTest.java",
-    "junit/org/chromium/chrome/browser/media/router/caf/MediaRouterTestHelper.java",
-    "junit/org/chromium/chrome/browser/media/router/caf/ShadowCastContext.java",
-    "junit/org/chromium/chrome/browser/media/router/caf/ShadowCastMediaSource.java",
-    "junit/org/chromium/chrome/browser/media/router/caf/ShadowMediaRouter.java",
+    "junit/src/org/chromium/chrome/browser/media/router/ChromeMediaRouterRouteTest.java",
+    "junit/src/org/chromium/chrome/browser/media/router/ChromeMediaRouterSinkObservationTest.java",
+    "junit/src/org/chromium/chrome/browser/media/router/ChromeMediaRouterTestBase.java",
+    "junit/src/org/chromium/chrome/browser/media/router/DiscoveryCallbackTest.java",
+    "junit/src/org/chromium/chrome/browser/media/router/JSONTestUtils.java",
+    "junit/src/org/chromium/chrome/browser/media/router/TestUtils.java",
+    "junit/src/org/chromium/chrome/browser/media/router/caf/BaseSessionControllerTest.java",
+    "junit/src/org/chromium/chrome/browser/media/router/caf/CafBaseMediaRouteProviderTest.java",
+    "junit/src/org/chromium/chrome/browser/media/router/caf/CafMediaRouteProviderTest.java",
+    "junit/src/org/chromium/chrome/browser/media/router/caf/CafMessageHandlerTest.java",
+    "junit/src/org/chromium/chrome/browser/media/router/caf/CastSessionControllerTest.java",
+    "junit/src/org/chromium/chrome/browser/media/router/caf/MediaRouterTestHelper.java",
+    "junit/src/org/chromium/chrome/browser/media/router/caf/ShadowCastContext.java",
+    "junit/src/org/chromium/chrome/browser/media/router/caf/ShadowCastMediaSource.java",
+    "junit/src/org/chromium/chrome/browser/media/router/caf/ShadowMediaRouter.java",
   ]
 
   deps = [
@@ -115,20 +115,19 @@ junit_binary("media_router_junit_tests") {
   ]
 }
 
-# TODO(wnwen): Rename these to be more generic once https://crbug.com/935576 is fixed.
-android_resources("resources") {
-  resource_dirs = [ "res" ]
+android_resources("java_resources") {
+  resource_dirs = [ "java/res" ]
   deps = [
-    ":strings_grd",
+    ":java_strings_grd",
     "//chrome/android:chrome_app_java_resources",
     "//third_party/android_media:android_media_resources",
   ]
   custom_package = "org.chromium.chrome.media.router"
 }
 
-java_strings_grd("strings_grd") {
+java_strings_grd("java_strings_grd") {
   defines = chrome_grit_defines
-  grd_file = "strings/android_chrome_media_router_strings.grd"
+  grd_file = "java/strings/android_chrome_media_router_strings.grd"
   outputs = [
     "values-am/android_chrome_media_router_strings.xml",
     "values-ar/android_chrome_media_router_strings.xml",
