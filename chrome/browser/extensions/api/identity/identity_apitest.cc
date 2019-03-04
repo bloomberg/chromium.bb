@@ -94,9 +94,9 @@ class AsyncFunctionRunner {
                         content::BrowserContext* browser_context) {
     response_delegate_.reset(new api_test_utils::SendResponseHelper(function));
     std::unique_ptr<base::ListValue> parsed_args(utils::ParseList(args));
-    EXPECT_TRUE(parsed_args.get())
+    ASSERT_TRUE(parsed_args.get())
         << "Could not parse extension function arguments: " << args;
-    function->SetArgs(parsed_args.get());
+    function->SetArgs(base::Value::FromUniquePtrValue(std::move(parsed_args)));
 
     if (!function->extension()) {
       scoped_refptr<const Extension> empty_extension(

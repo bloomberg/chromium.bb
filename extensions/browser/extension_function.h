@@ -233,9 +233,9 @@ class ExtensionFunction
   // returns an error.
   virtual void OnQuotaExceeded(const std::string& violation_error);
 
-  // Specifies the raw arguments to the function, as a JSON value.
-  // TODO(dcheng): This should take a const ref.
-  virtual void SetArgs(const base::ListValue* args);
+  // Specifies the raw arguments to the function, as a JSON value. Expects a
+  // base::Value of type LIST.
+  void SetArgs(base::Value args);
 
   // Retrieves the results of the function as a ListValue.
   const base::ListValue* GetResultList() const;

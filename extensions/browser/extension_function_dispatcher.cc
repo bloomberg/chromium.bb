@@ -588,7 +588,7 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
     return NULL;
   }
 
-  function->SetArgs(&params.arguments);
+  function->SetArgs(params.arguments.Clone());
   function->set_source_url(params.source_url);
   function->set_request_id(params.request_id);
   function->set_has_callback(params.has_callback);

@@ -193,7 +193,7 @@ bool RunFunction(
     std::unique_ptr<extensions::ExtensionFunctionDispatcher> dispatcher,
     RunFunctionFlags flags) {
   SendResponseHelper response_helper(function);
-  function->SetArgs(args.get());
+  function->SetArgs(base::Value::FromUniquePtrValue(std::move(args)));
 
   CHECK(dispatcher);
   function->set_dispatcher(dispatcher->AsWeakPtr());
