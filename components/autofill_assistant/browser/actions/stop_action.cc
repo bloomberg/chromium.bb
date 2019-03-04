@@ -20,7 +20,11 @@ StopAction::~StopAction() {}
 
 void StopAction::InternalProcessAction(ActionDelegate* delegate,
                                        ProcessActionCallback callback) {
-  delegate->Shutdown();
+  if (proto_.stop().close_cct()) {
+    delegate->Close();
+  } else {
+    delegate->Shutdown();
+  }
   UpdateProcessedAction(ACTION_APPLIED);
   std::move(callback).Run(std::move(processed_action_proto_));
 }

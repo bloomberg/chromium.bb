@@ -8,7 +8,6 @@ import static org.chromium.chrome.browser.autofill_assistant.carousel.AssistantC
 
 import android.support.annotation.Nullable;
 
-import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.task.PostTask;
@@ -17,7 +16,6 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselModel;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
-import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChipType;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
@@ -208,71 +206,84 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     @CalledByNative
-    private void setSuggestions(int[] types, String[] texts) {
-        assert types.length == texts.length;
-        setChips(getModel().getSuggestionsModel(),
-                buildChips(types, texts, this::safeNativeOnSuggestionSelected));
-    }
-
-    private List<AssistantChip> buildChips(
-            int[] types, String[] texts, Callback<Integer> callback) {
+    private void setSuggestions(String[] texts) {
         List<AssistantChip> chips = new ArrayList<>();
-        for (int i = 0; i < types.length; i++) {
-            int index = i;
-            int type = types[i];
-            chips.add(new AssistantChip(type, texts[i], () -> callback.onResult(index)));
+        for (int i = 0; i < texts.length; i++) {
+            final int suggestionIndex = i;
+            chips.add(new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE, texts[i],
+                    () -> safeNativeOnSuggestionSelected(suggestionIndex)));
         }
-        return chips;
+        AssistantCarouselModel model = getModel().getSuggestionsModel();
+        model.set(ALIGNMENT, AssistantCarouselModel.Alignment.START);
+        setChips(model, chips);
     }
 
-    @AssistantCarouselModel.Alignment
-    private int computeAlignment(List<AssistantChip> chips) {
-        int alignment = AssistantCarouselModel.Alignment.START;
-        for (AssistantChip chip : chips) {
-            if (chip.getType() != AssistantChipType.CHIP_ASSISTIVE) {
-                alignment = chips.size() == 1 ? AssistantCarouselModel.Alignment.CENTER
-                                              : AssistantCarouselModel.Alignment.END;
-            }
-        }
-        return alignment;
+    @CalledByNative
+    private void clearActions() {
+        getModel().getActionsModel().getChipsModel().set(Collections.emptyList());
+    }
+
+    /** Creates an empty list of chips. */
+    @CalledByNative
+    private static List<AssistantChip> createChipList() {
+        return new ArrayList<AssistantChip>();
+    }
+
+    /**
+     * Adds an action button to the chip list, which executes the action {@code actionIndex}.
+     */
+    @CalledByNative
+    private void addActionButton(List<AssistantChip> chips, String text, int actionIndex) {
+        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, text,
+                () -> safeNativeOnActionSelected(actionIndex)));
+    }
+
+    /**
+     * Adds a highlighted action button to the chip list, which executes the action {@code
+     * actionIndex}.
+     */
+    @CalledByNative
+    private void addHighlightedActionButton(
+            List<AssistantChip> chips, String text, int actionIndex) {
+        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_FILLED_BLUE, text,
+                () -> safeNativeOnActionSelected(actionIndex)));
+    }
+
+    /**
+     * Adds a cancel action button to the chip list, which shows the snackbar and then executes
+     * {@code actionIndex}, or shuts down Autofill Assistant if {@code actionIndex} is {@code -1}.
+     */
+    @CalledByNative
+    private void addCancelButton(List<AssistantChip> chips, String text, int actionIndex) {
+        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, text,
+                () -> safeNativeOnCancelButtonClicked(actionIndex)));
+    }
+
+    /**
+     * Adds a close action button to the chip list, which shuts down Autofill Assistant.
+     */
+    @CalledByNative
+    private void addCloseButton(List<AssistantChip> chips, String text) {
+        chips.add(new AssistantChip(
+                AssistantChip.Type.BUTTON_HAIRLINE, text, this::safeNativeOnCloseButtonClicked));
+    }
+
+    @CalledByNative
+    private void setActions(List<AssistantChip> chips) {
+        AssistantCarouselModel model = getModel().getActionsModel();
+        model.set(ALIGNMENT,
+                chips.size() == 1 ? AssistantCarouselModel.Alignment.CENTER
+                                  : AssistantCarouselModel.Alignment.END);
+        setChips(model, chips);
     }
 
     private void setChips(AssistantCarouselModel model, List<AssistantChip> chips) {
-        model.set(ALIGNMENT, computeAlignment(chips));
-
         // We apply the minimum set of operations on the current chips to transform it in the target
         // list of chips. When testing for chip equivalence, we only compare their type and text but
         // all substitutions will still be applied so we are sure we display the given {@code chips}
         // with their associated callbacks.
         EditDistance.transform(model.getChipsModel(), chips,
                 (a, b) -> a.getType() == b.getType() && a.getText().equals(b.getText()));
-    }
-
-    @CalledByNative
-    private void setActions(
-            int[] types, String[] texts, boolean isStopping, boolean isShowingPaymentRequest) {
-        AssistantCarouselModel actionsModel = getModel().getActionsModel();
-        if (isShowingPaymentRequest) {
-            actionsModel.getChipsModel().set(Collections.emptyList());
-            return;
-        }
-
-        assert types.length == texts.length;
-        List<AssistantChip> chips = buildChips(types, texts, this::safeNativeOnActionSelected);
-        addCancelOrCloseButton(chips, isStopping);
-        setChips(actionsModel, chips);
-    }
-
-    private void addCancelOrCloseButton(List<AssistantChip> chips, boolean isStopping) {
-        int textResId = isStopping ? R.string.close : R.string.cancel;
-        chips.add(new AssistantChip(AssistantChipType.BUTTON_HAIRLINE,
-                mActivity.getResources().getString(textResId), () -> {
-                    if (isStopping) {
-                        safeNativeOnCloseButtonClicked();
-                    } else {
-                        safeNativeOnCancelButtonClicked();
-                    }
-                }));
     }
 
     // Native methods.
@@ -302,10 +313,10 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
     private native void nativeOnActionSelected(long nativeUiControllerAndroid, int index);
 
-    private void safeNativeOnCancelButtonClicked() {
-        if (mNativeUiController != 0) nativeOnCancelButtonClicked(mNativeUiController);
+    private void safeNativeOnCancelButtonClicked(int index) {
+        if (mNativeUiController != 0) nativeOnCancelButtonClicked(mNativeUiController, index);
     }
-    private native void nativeOnCancelButtonClicked(long nativeUiControllerAndroid);
+    private native void nativeOnCancelButtonClicked(long nativeUiControllerAndroid, int index);
 
     private void safeNativeOnCloseButtonClicked() {
         if (mNativeUiController != 0) nativeOnCloseButtonClicked(mNativeUiController);

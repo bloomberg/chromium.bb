@@ -80,11 +80,12 @@ message SupportedScriptProto {
     // priority 1.
     optional int32 priority = 5;
 
-    // Whether the script should be highlighted.
-    optional bool highlight = 7;
+    // Describes the chip to be shown. The name of the chip is set by the
+    // name field.
+    optional ChipType chip_type = 10;
 
-    // When set to true this script can be run in 'autostart mode'. Script won't
-    // be shown.
+    // When set to true this script can be run in 'autostart mode'. Chip won't
+    // be shown; name and chip_type are ignored.
     optional bool autostart = 8;
 
     // When set to true this script will be run from WaitForDom actions with
@@ -92,6 +93,35 @@ message SupportedScriptProto {
     optional bool interrupt = 9;
   }
   optional PresentationProto presentation = 2;
+}
+
+enum ChipType {
+  UNKNOWN_CHIP_TYPE = 0;
+
+  // Chip is a highlighted (blue) action chip.
+  HIGHLIGHTED_ACTION = 1;
+
+  // Chip is a suggestion.
+  SUGGESTION = 2;
+
+  // Chip is a normal action chip.
+  NORMAL_ACTION = 3;
+
+  // A cancel chip, which closes AA in a way that allows the user to undo.
+  //
+  // The action associated with the chip is only executed after enough time has
+  // passed that undo is not possible.
+  //
+  // The presence of this chip inhibit the addition of an implicit close or
+  // cancel button.
+  CANCEL_ACTION = 4;
+
+  // A close chip, which closes AA immediately.
+  //
+  // The presence of this chip inhibit the addition of an implicit close or
+  // cancel button. Otherwise, buttons of this type work and look like a
+  // NORMAL_ACTION.
+  CLOSE_ACTION = 5;
 }
 
 enum ScriptStatusProto {
@@ -547,7 +577,7 @@ message PromptProto {
   // Display this message to the user.
   optional string message = 1;
 
-  // A choice that is made either directly by clicking on a chip or button, or
+  // A choice that is made either directly by clicking on a chip or chip, or
   // implicitly by making a change on the website that is then detected by
   // looking for the existence of an element.
   //
@@ -557,8 +587,9 @@ message PromptProto {
     // Localized text message to display. Not required if element_exists is set.
     optional string name = 2;
 
-    // If set, the choice should be highlighted. Ignored unless name is set.
-    optional bool highlight = 3;
+    // Describes the chip to be shown. The name of the chip is set by the
+    // name field.
+    optional ChipType chip_type = 7;
 
     // Optionally auto-select this choice if the given element exist.
     optional ElementReferenceProto element_exists = 4;
@@ -608,7 +639,13 @@ message GetPaymentInformationProto {
 message ResetProto {}
 
 // Stop Autofill Assistant.
-message StopProto {}
+message StopProto {
+  // If true, close the Chrome Custom Tab, in addition to shutting down Autofill
+  // Assistant.
+  optional bool close_cct = 2;
+
+  reserved 1;  // stop_action_type
+}
 
 message DateProto {
   optional int64 year = 1;
@@ -637,7 +674,8 @@ message DateTimeProto {
 }
 
 message DetailsChangesProto {
-  // Whether the changes require user approval.
+  // Whether the changes require user approval. This de-emphasize
+  // non-highlighted fields.
   optional bool user_approval_required = 1;
 
   // Whether the title should be highlighted.

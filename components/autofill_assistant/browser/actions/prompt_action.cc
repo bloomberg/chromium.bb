@@ -74,16 +74,6 @@ void PromptAction::InternalProcessAction(ActionDelegate* delegate,
 
 std::unique_ptr<std::vector<Chip>> PromptAction::CreateChips() {
   auto chips = std::make_unique<std::vector<Chip>>();
-  // TODO(crbug.com/806868): Surface type in proto instead of guessing it from
-  // highlight flag.
-  Chip::Type non_highlight_type = Chip::Type::CHIP_ASSISTIVE;
-  for (const auto& choice_proto : proto_.prompt().choices()) {
-    if (!choice_proto.name().empty() && choice_proto.highlight()) {
-      non_highlight_type = Chip::Type::BUTTON_HAIRLINE;
-      break;
-    }
-  }
-
   for (int i = 0; i < proto_.prompt().choices_size(); i++) {
     auto& choice_proto = proto_.prompt().choices(i);
     if (choice_proto.show_only_if_element_exists().selectors_size() > 0 &&
@@ -91,11 +81,9 @@ std::unique_ptr<std::vector<Chip>> PromptAction::CreateChips() {
       continue;
 
     chips->emplace_back();
-    chips->back().type = choice_proto.highlight()
-                             ? Chip::Type::BUTTON_FILLED_BLUE
-                             : non_highlight_type;
-    chips->back().text = choice_proto.name();
-
+    Chip& chip = chips->back();
+    chip.text = choice_proto.name();
+    chip.type = choice_proto.chip_type();
     std::string server_payload;
     choice_proto.SerializeToString(&server_payload);
 
@@ -103,6 +91,7 @@ std::unique_ptr<std::vector<Chip>> PromptAction::CreateChips() {
         base::BindOnce(&PromptAction::OnSuggestionChosen,
                        weak_ptr_factory_.GetWeakPtr(), server_payload);
   }
+  SetDefaultChipType(chips.get());
   return chips;
 }
 

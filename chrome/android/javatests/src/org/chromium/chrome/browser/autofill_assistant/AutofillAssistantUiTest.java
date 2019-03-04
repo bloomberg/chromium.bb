@@ -33,7 +33,6 @@ import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselModel;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
-import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChipType;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetails;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsModel;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
@@ -182,8 +181,8 @@ public class AutofillAssistantUiTest {
             AssistantCarouselCoordinator carouselCoordinator) {
         List<AssistantChip> chips = Arrays.asList(
                 new AssistantChip(
-                        AssistantChipType.CHIP_ASSISTIVE, "chip 0", () -> {/* do nothing */}),
-                new AssistantChip(AssistantChipType.CHIP_ASSISTIVE, "chip 1", mRunnableMock));
+                        AssistantChip.Type.CHIP_ASSISTIVE, "chip 0", () -> {/* do nothing */}),
+                new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE, "chip 1", mRunnableMock));
         ThreadUtils.runOnUiThreadBlocking(() -> carouselModel.getChipsModel().set(chips));
         RecyclerView chipsViewContainer = carouselCoordinator.getView();
         Assert.assertEquals(2, chipsViewContainer.getAdapter().getItemCount());
