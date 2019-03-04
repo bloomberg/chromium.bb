@@ -1183,11 +1183,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-gamepad-vibration",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-generic-sensor",
     "owners": [ "reillyg@chromium.org", "raphael.kubo.da.costa@intel.com" ],
     "expiry_milestone": 72
