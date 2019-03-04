@@ -149,6 +149,9 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   // any automatic annotations that might have been added before.
   void StartOrStopLabelingImages(ui::AXMode old_mode, ui::AXMode new_mode);
 
+  // Marks all AXObjects with the given role in the current tree dirty.
+  void MarkAllAXObjectsDirty(ax::mojom::Role role);
+
   void Scroll(const blink::WebAXObject& target,
               ax::mojom::Action scroll_action);
   void ScrollPlugin(int id_to_make_visible);
