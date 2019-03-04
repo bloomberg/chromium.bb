@@ -1,7 +1,7 @@
-liblouis 3.8.0 has been released
+liblouis 3.9.0 has been released
 
 The liblouis developer team is proud to announce the liblouis release
-3.8.0. The release is available for download at:
+3.9.0. The release is available for download at:
 
     https://github.com/liblouis/liblouis/releases
 
@@ -18,12 +18,13 @@ project liblouisutdml[2] deals with formatting of braille.
 Changes in this release
 =======================
 
-The major focus of this release is on braille table updates. There are
-major updates to German, Arabic, Chinese, Turkish, Dutch, Czech,
-Latvian, Spanish and Ethiopic. Some of these new tables have only been
-possible because Bert Frees fixed some nasty long standing bugs behind
-the scene. Also there is the usual assortment of code improvements and
-cleanups.
+This release has seen a tremendous amount of work by Bert Frees. He
+was instrumental in pushing the improvements for Latvian, Norwegian
+and Slovenian. But most prominently he pushed the big change for space
+and control character handling through the door. These characters are
+now no longer hard coded in liblouis. This should solve a few long
+standing issues. Other than that there is the usual assortment of code
+improvements and cleanups.
 
 For a detailed list of all the changes refer to the list of closed
 issues[3].
@@ -36,60 +37,56 @@ New features
 Bug fixes
 ~~~~~~~~~
 
-- Fix support more than 4 classes thanks to Bert Frees.
-- Fix capitalization of words that match `nocont' rules thanks to Bert
-  Frees.
+- Fix a problem in the callback registration in the Python bindings
+  thanks to Leonard de Ruijter.
+- Fixed memory leaks created by block scope compound literals thanks
+  to Martin Gieseking.
+- The hard coded rules dealing with white space have been replaced
+  with a normal table that is included in all tables. This fixes a
+  number of bugs to do with space and control characters. This (big)
+  change has been brewing for a couple of releases and has finally
+  landed. Thanks to Christian Egli and Bert Frees.
 
 Braille table improvements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Defined the undefined character for the Czech tables thanks to Jan
-  Hegr.
-- Improvements to Unified English braille thanks to Mike Gray
-- Updated the Dutch table to the new 2017.1 braille standard thanks to
-  Davy Kager.
-- Improvements to the Polish grade 1 table, to make back-translations
-  of diacritics working
-- Fixes to Latvian braille table thanks to Gatis Grintals and Artis
-  Raugulis.
-- Improvements to traditional Mainland Chinese braille and two-cell
-  Chinese Braille thanks to Sunian Loomee.
-- Update Bopomofo-based Chinese Braille to version 2018-11 thanks to
-  Bo-Cheng Jhan
-  - Correct the default braille pattern of many Chinese characters
-  - Add various Chinese phrases involving exceptions of braille
-    patterns
-  - Modify dot patterns of dashes for readability reasons
-- Added a table for Turkish grade 2 thanks to Uğur Gürbüz and Simon
-  Aittamaa
-- Major upgrade to the German tables. They have been upgraded to /Das
-  System der deutschen Brailleschrift/ (2018). They are much smaller
-  now as they are based on `lou_maketable'. As they now work for any
-  locale (be it Switzerland or Germany) they have been merged into one
-  set of tables for the different grades. Thanks to Christian
-  Waldvogel.
-- New table for Arabic contracted braille thanks to Ikrami Ahmad.
-- New table for Arabic computer braille thanks to Ikrami Ahmad.
-- Improvements to Ethiopic thanks to Tamru E. Belay.
-- New table for Spanish contracted braille thanks to Juan Pablo Bello.
+- Major extension of the German 8 dot computer braille table thanks to
+  Ali-Riza Ciftcioglu. For example the Euro sign or quote characters
+  are finally defined.
+- Fix a few issues with Hungarian grade1 and grade2 Braille thanks to
+  Attila Hammer.
+- Various improvements to Norwegian thanks to Lars Bjørndal, Jostein
+  Austvik Jacobsen, Ammar Usama and Bert Frees.
+- Updates to Bopomofo-based Chinese Braille thanks to Sponge Jhan:
+  Improved Braille representation of Chinese characters, and rewritten
+  Kana rules using multipass statements.
+- Implement the new Slovenian Braille standard thanks to Robert Merič
+  and Bert Frees.
+- Updates to Latvian Grade 1 Braille thanks to Artis Raugulis and Bert
+  Frees.
+- Fixes to English, U.S. Grade 2 (ABAE) thanks to jdatray.
 
 Other changes
 ~~~~~~~~~~~~~
 
-- Updated the `lou_allround' and `lou_trace' test tools to include all
-  the mode flags described in the documentation of the
-  `lou_translateString()' function, thanks to Bue Vester-Andersen
+- Don't search for tables in `/usr/local/share/liblouis/tables' (or
+  the Windows equivalent) if `LOUIS_TABLEPATH' is set.
+- The log levels in `liblouis.h' are no longer exposed as `LOG_FOO'
+  but instead are now prefixed. So `LOG_WARN' becomes `LOU_LOG_WARN'
+  for example to issue a warning from a C program using liblouis. The
+  actual values remain the same, so the ABI remains stable.
 
 Deprecation notice
 ~~~~~~~~~~~~~~~~~~
 
-- None
+- The `locale' opcode was never implemented and was just silently
+  ignored. It is now removed from the tables and and a warning will be
+  issued if it is found in a table.
 
 Backwards incompatible changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- The `pass1Only' flag has been deprecated for a while and is now
-  removed from the code, thanks to Bue Vester-Andersen.
+- None
 
 New, renamed or removed tables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -97,32 +94,22 @@ New, renamed or removed tables
 New
 ---
 
-  - tr-g2.ctb
-  - ar-ar-g2.ctb
-  - ar-ar-comp8.utb
-  - es-g2.ctb
+- None
 
 Renamed
 -------
 
-  - de-de-accents.cti -> de-accents.cti
-  - de-de-g0.utb -> de-g0.utb
-  - de-de-g1.ctb -> de-g1.ctb
-  - de-de-g2.ctb -> de-g2.ctb
-  - de-ch-g0.utb -> de-g0.utb
-  - de-ch-g1.ctb -> de-g1.ctb
-  - de-ch-g2.ctb -> de-g2.ctb
+- None
 
 Removed
 -------
 
-  - ar-fa.utb
-  - Es-Es-g1.utb
+- None
 
 Next release
 ============
 
-The next release will be published on March 4 2019 so please keep up
+The next release will be published on June 3 2019 so please keep up
 the excellent work and keep those improvements coming.
 
 Share and Enjoy!
@@ -134,5 +121,5 @@ Footnotes
 
 [1]  https://github.com/liblouis/liblouis/tree/master/tables
 [2]  https://github.com/liblouis/liblouisutdml
-[3]  https://github.com/liblouis/liblouis/milestone/18?closed=1
+[3]  https://github.com/liblouis/liblouis/milestone/19?closed=1
 

@@ -1,6 +1,13 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
 * Noteworthy changes in release 3.9.0 (2019-03-04)
+This release has seen a tremendous amount of work by Bert Frees. He
+was instrumental in pushing the improvements for Latvian, Norwegian
+and Slovenian. But most prominently he pushed the big change for space
+and control character handling through the door. These characters are
+now no longer hard coded in liblouis. This should solve a few long
+standing issues. Other than that there is the usual assortment of code
+improvements and cleanups.
 
 For a detailed list of all the changes refer to [[https://github.com/liblouis/liblouis/milestone/19?closed=1][the list of closed
 issues]].
@@ -10,15 +17,20 @@ issues]].
 
 ** Bug fixes
 - Fix a problem in the callback registration in the Python bindings
-  thanks to Leonard de Ruijter
+  thanks to Leonard de Ruijter.
 - Fixed memory leaks created by block scope compound literals thanks
-  to Martin Gieseking
+  to Martin Gieseking.
+- The hard coded rules dealing with white space have been replaced
+  with a normal table that is included in all tables. This fixes a
+  number of bugs to do with space and control characters. This (big)
+  change has been brewing for a couple of releases and has finally
+  landed. Thanks to Christian Egli and Bert Frees.
 
 ** Braille table improvements
 - Major extension of the German 8 dot computer braille table thanks to
   Ali-Riza Ciftcioglu. For example the Euro sign or quote characters
   are finally defined.
-- Fix a few issues with hungarian grade1 and grade2 Braille thanks to
+- Fix a few issues with Hungarian grade1 and grade2 Braille thanks to
   Attila Hammer.
 - Various improvements to Norwegian thanks to Lars Bjørndal, Jostein
   Austvik Jacobsen, Ammar Usama and Bert Frees.
@@ -28,11 +40,16 @@ issues]].
 - Implement the new Slovenian Braille standard thanks to Robert Merič
   and Bert Frees.
 - Updates to Latvian Grade 1 Braille thanks to Artis Raugulis and Bert
-  Frees
+  Frees.
+- Fixes to English, U.S. Grade 2 (ABAE) thanks to jdatray.
 
 ** Other changes
 - Don't search for tables in ~/usr/local/share/liblouis/tables~ (or
   the Windows equivalent) if ~LOUIS_TABLEPATH~ is set.
+- The log levels in ~liblouis.h~ are no longer exposed as ~LOG_FOO~
+  but instead are now prefixed. So ~LOG_WARN~ becomes ~LOU_LOG_WARN~
+  for example to issue a warning from a C program using liblouis. The
+  actual values remain the same, so the ABI remains stable.
 
 ** Deprecation notice
 - The ~locale~ opcode was never implemented and was just silently
