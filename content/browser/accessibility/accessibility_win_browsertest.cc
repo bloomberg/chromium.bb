@@ -19,7 +19,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
-#include "build/build_config.h"
 #include "content/browser/accessibility/accessibility_event_recorder.h"
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
@@ -3187,13 +3186,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   win_event_waiter.Wait();
 }
 
-// Test is flaky on Win. https://crbug.com/936440.
-#if defined(OS_WIN)
-#define MAYBE_TestIScrollProvider DISABLED_TestIScrollProvider
-#else
-#define MAYBE_TestIScrollProvider TestIScrollProvider
-#endif
-IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, MAYBE_TestIScrollProvider) {
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIScrollProvider) {
   LoadInitialAccessibilityTreeFromHtml(
       R"HTML(
       <!DOCTYPE html>
