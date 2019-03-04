@@ -112,6 +112,11 @@ declare_args() {
 
   # Set to true to enable video capture service for video input and output.
   enable_video_capture_service = false
+
+  # Set to true to enable external Mojo services to communicate with services
+  # within cast_shell. Enable for desktop builds to ensure that Chromium CQ
+  # builds the external Mojo broker code.
+  enable_external_mojo_services = is_cast_desktop_build
 }
 
 declare_args() {

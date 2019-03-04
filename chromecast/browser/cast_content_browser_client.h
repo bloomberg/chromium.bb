@@ -130,6 +130,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   virtual bool EnableRemoteDebuggingImmediately();
 
   // content::ContentBrowserClient implementation:
+  std::vector<std::string> GetStartupServices() override;
   content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
   void RenderProcessWillLaunch(
