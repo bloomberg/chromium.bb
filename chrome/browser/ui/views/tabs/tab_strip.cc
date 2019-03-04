@@ -2250,9 +2250,7 @@ void TabStrip::UpdateContrastRatioValues() {
 
   const SkColor inactive_fg = GetTabForegroundColor(TAB_INACTIVE, inactive_bg);
   // The contrast ratio for the separator between inactive tabs.
-  // In the default color scheme, this corresponds to a separator opacity of
-  // 0.46.
-  constexpr float kTabSeparatorContrast = 1.84f;
+  constexpr float kTabSeparatorContrast = 3.0f;
   const SkAlpha separator_alpha = get_alpha(inactive_fg, kTabSeparatorContrast);
   separator_color_ =
       color_utils::AlphaBlend(inactive_fg, inactive_bg, separator_alpha);
