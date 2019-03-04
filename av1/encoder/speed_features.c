@@ -220,7 +220,6 @@ static void set_good_speed_features_framesize_independent(
   sf->two_loop_comp_search = 0;
 
   sf->prune_ref_frame_for_rect_partitions = !is_boosted_arf2_bwd_type;
-  sf->prune_ref_mode_for_partitions = sf->prune_ref_frame_for_rect_partitions;
   sf->less_rectangular_check_level = 1;
   sf->gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3;
   sf->gm_disable_recode = 1;
@@ -443,7 +442,6 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
 
   sf->prune_ref_frame_for_rect_partitions =
       !(boosted || cpi->refresh_bwd_ref_frame || cpi->refresh_alt2_ref_frame);
-  sf->prune_ref_mode_for_partitions = sf->prune_ref_frame_for_rect_partitions;
   sf->less_rectangular_check_level = 1;
   sf->gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3;
   sf->gm_disable_recode = 1;
@@ -703,7 +701,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->less_rectangular_check_level = 0;
   sf->use_square_partition_only_threshold = BLOCK_128X128;
   sf->prune_ref_frame_for_rect_partitions = 0;
-  sf->prune_ref_mode_for_partitions = 0;
   sf->auto_max_partition_based_on_simple_motion = 0;
   sf->auto_min_partition_based_on_simple_motion = 0;
   sf->rd_auto_partition_min_limit = BLOCK_4X4;

@@ -390,9 +390,6 @@ typedef struct SPEED_FEATURES {
   // Prune reference frames for rectangular partitions.
   int prune_ref_frame_for_rect_partitions;
 
-  // Prune ref/mode choices for partitions.
-  int prune_ref_mode_for_partitions;
-
   // Sets min and max square partition levels for this superblock based on
   // motion vector and prediction error distribution produced from 16x16
   // simple motion search

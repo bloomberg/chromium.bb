@@ -4522,10 +4522,7 @@ BEGIN_PARTITION_SEARCH:
           const int ref_type =
               av1_ref_frame_type(pc_tree->split[idx]->none.mic.ref_frame);
           ref_frames_used[idx] |= (1 << ref_type);
-
-          if (cpi->sf.prune_ref_mode_for_partitions) {
-            split_mbmi[idx] = &pc_tree->split[idx]->none.mic;
-          }
+          split_mbmi[idx] = &pc_tree->split[idx]->none.mic;
         }
         if (idx <= 1 && (bsize <= BLOCK_8X8 ||
                          pc_tree->split[idx]->partitioning == PARTITION_NONE)) {
@@ -4571,78 +4568,31 @@ BEGIN_PARTITION_SEARCH:
     if (used_frames) pc_tree->vertical[0].skip_ref_frame_mask = ~used_frames;
     used_frames = ref_frames_used[1] | ref_frames_used[3];
     if (used_frames) pc_tree->vertical[1].skip_ref_frame_mask = ~used_frames;
-  }
 
-  for (int i = 0; i < 2; ++i) {
-    pc_tree->horizontal[i].ref_selected[0] =
-        pc_tree->horizontal[i].ref_selected[1] = NONE_FRAME;
-    pc_tree->horizontal[i].mode_selected = -1;
-    pc_tree->vertical[i].ref_selected[0] =
-        pc_tree->vertical[i].ref_selected[1] = NONE_FRAME;
-    pc_tree->vertical[i].mode_selected = -1;
-  }
-
-  if (cpi->sf.prune_ref_mode_for_partitions) {
-    // horizontal partition
     for (int idx = 0; idx < 4; idx += 2) {
       const int horz_idx = idx / 2;
       if (split_mbmi[idx] && split_mbmi[idx + 1] &&
-          split_mbmi[idx]->ref_frame[0] > INTRA_FRAME) {
-        if (!has_second_ref(split_mbmi[idx])) {
-          // Single ref
-          if (split_mbmi[idx]->ref_frame[0] ==
-                  split_mbmi[idx + 1]->ref_frame[0] &&
-              !has_second_ref(split_mbmi[idx + 1])) {
-            const int ref_type = av1_ref_frame_type(split_mbmi[idx]->ref_frame);
-            // Overwrite skip_ref_frame_mask for the current block
-            const int used_frames = (1 << ref_type);
-            pc_tree->horizontal[horz_idx].skip_ref_frame_mask = ~used_frames;
-            pc_tree->horizontal[horz_idx].ref_selected[0] =
-                split_mbmi[idx]->ref_frame[0];
-#if 0
-            // TODO(zoeliu@gmail.com): To consider the scenario of obmc
-            if (split_mbmi[idx]->motion_mode ==
-                    split_mbmi[idx + 1]->motion_mode &&
-                split_mbmi[idx]->motion_mode == SIMPLE_TRANSLATION &&
-                split_mbmi[idx]->use_wedge_interintra == 0) {
-              pc_tree->horizontal[horz_idx].mode_selected = SIMPLE_TRANSLATION;
-            }
-#endif  // 0
-          }
-        } else {
-          // TODO(zoeliu@gmail.com): To handle comp ref
-        }
+          split_mbmi[idx]->ref_frame[0] > INTRA_FRAME &&
+          !has_second_ref(split_mbmi[idx]) &&
+          !has_second_ref(split_mbmi[idx + 1]) &&
+          split_mbmi[idx]->ref_frame[0] == split_mbmi[idx + 1]->ref_frame[0]) {
+        const int ref_type = av1_ref_frame_type(split_mbmi[idx]->ref_frame);
+        // Overwrite skip_ref_frame_mask for the current block
+        used_frames = (1 << ref_type);
+        pc_tree->horizontal[horz_idx].skip_ref_frame_mask = ~used_frames;
       }
     }
-    // vertical partition
+
     for (int idx = 0; idx < 2; ++idx) {
-      const int vert_idx = idx;
       if (split_mbmi[idx] && split_mbmi[idx + 2] &&
-          split_mbmi[idx]->ref_frame[0] > INTRA_FRAME) {
-        if (!has_second_ref(split_mbmi[idx])) {
-          // Single ref
-          if (split_mbmi[idx]->ref_frame[0] ==
-                  split_mbmi[idx + 2]->ref_frame[0] &&
-              !has_second_ref(split_mbmi[idx + 2])) {
-            const int ref_type = av1_ref_frame_type(split_mbmi[idx]->ref_frame);
-            // Overwrite skip_ref_frame_mask for the current block
-            const int used_frames = (1 << ref_type);
-            pc_tree->vertical[vert_idx].skip_ref_frame_mask = ~used_frames;
-            pc_tree->vertical[vert_idx].ref_selected[0] =
-                split_mbmi[idx]->ref_frame[0];
-#if 0
-            // TODO(zoeliu@gmail.com): To consider the scenario of obmc
-            if (split_mbmi[idx]->motion_mode ==
-                    split_mbmi[idx + 2]->motion_mode &&
-                split_mbmi[idx]->motion_mode == SIMPLE_TRANSLATION &&
-                split_mbmi[idx]->use_wedge_interintra == 0) {
-              pc_tree->vertical[vert_idx].mode_selected = SIMPLE_TRANSLATION;
-            }
-#endif  // 0
-          }
-        } else {
-          // TODO(zoeliu@gmail.com): To handle comp ref
-        }
+          split_mbmi[idx]->ref_frame[0] > INTRA_FRAME &&
+          !has_second_ref(split_mbmi[idx]) &&
+          split_mbmi[idx]->ref_frame[0] == split_mbmi[idx + 2]->ref_frame[0] &&
+          !has_second_ref(split_mbmi[idx + 2])) {
+        const int ref_type = av1_ref_frame_type(split_mbmi[idx]->ref_frame);
+        // Overwrite skip_ref_frame_mask for the current block
+        used_frames = (1 << ref_type);
+        pc_tree->vertical[idx].skip_ref_frame_mask = ~used_frames;
       }
     }
   }
@@ -4946,11 +4896,7 @@ BEGIN_PARTITION_SEARCH:
         pc_tree->horizontala[1].rd_mode_is_ready = 1;
       }
     }
-    for (int i = 0; i < 3; ++i) {
-      pc_tree->horizontala[i].skip_ref_frame_mask = 0;
-      pc_tree->horizontala[i].ref_selected[0] =
-          pc_tree->horizontala[i].ref_selected[1] = NONE_FRAME;
-    }
+    for (int i = 0; i < 3; ++i) pc_tree->horizontala[i].skip_ref_frame_mask = 0;
     if (cpi->sf.prune_ref_frame_for_rect_partitions) {
       int used_frames;
       used_frames = ref_frames_used[0];
@@ -4962,29 +4908,24 @@ BEGIN_PARTITION_SEARCH:
       used_frames = ref_frames_used[2] | ref_frames_used[3];
       if (used_frames)
         pc_tree->horizontala[2].skip_ref_frame_mask = ~used_frames;
-    }
-    if (cpi->sf.prune_ref_mode_for_partitions) {
+
       // Overwrite skip_ref_frame_mask for the current block
       if (split_mbmi[0] && split_mbmi[0]->ref_frame[0] > INTRA_FRAME &&
-          !has_second_ref(split_mbmi[0])) {  // single ref
-        const int used_frames = 1 << (int)split_mbmi[0]->ref_frame[0];
+          !has_second_ref(split_mbmi[0])) {
+        used_frames = 1 << (int)split_mbmi[0]->ref_frame[0];
         pc_tree->horizontala[0].skip_ref_frame_mask = ~used_frames;
-        pc_tree->horizontala[0].ref_selected[0] = split_mbmi[0]->ref_frame[0];
       }
       if (split_mbmi[1] && split_mbmi[1]->ref_frame[0] > INTRA_FRAME &&
-          !has_second_ref(split_mbmi[1])) {  // single ref
-        const int used_frames = 1 << (int)split_mbmi[1]->ref_frame[0];
+          !has_second_ref(split_mbmi[1])) {
+        used_frames = 1 << (int)split_mbmi[1]->ref_frame[0];
         pc_tree->horizontala[1].skip_ref_frame_mask = ~used_frames;
-        pc_tree->horizontala[1].ref_selected[0] = split_mbmi[1]->ref_frame[0];
       }
       if (split_mbmi[2] && split_mbmi[3] &&
           split_mbmi[2]->ref_frame[0] > INTRA_FRAME &&
           split_mbmi[2]->ref_frame[0] == split_mbmi[3]->ref_frame[0] &&
-          !has_second_ref(split_mbmi[2]) &&
-          !has_second_ref(split_mbmi[3])) {  // single ref
-        const int used_frames = 1 << (int)split_mbmi[2]->ref_frame[0];
+          !has_second_ref(split_mbmi[2]) && !has_second_ref(split_mbmi[3])) {
+        used_frames = 1 << (int)split_mbmi[2]->ref_frame[0];
         pc_tree->horizontala[2].skip_ref_frame_mask = ~used_frames;
-        pc_tree->horizontala[2].ref_selected[0] = split_mbmi[2]->ref_frame[0];
       }
     }
 #if CONFIG_COLLECT_PARTITION_STATS
@@ -5018,11 +4959,7 @@ BEGIN_PARTITION_SEARCH:
       pc_tree->horizontalb[0].mic.partition = PARTITION_HORZ_B;
       pc_tree->horizontalb[0].rd_mode_is_ready = 1;
     }
-    for (int i = 0; i < 3; ++i) {
-      pc_tree->horizontalb[i].skip_ref_frame_mask = 0;
-      pc_tree->horizontalb[i].ref_selected[0] =
-          pc_tree->horizontalb[i].ref_selected[1] = NONE_FRAME;
-    }
+    for (int i = 0; i < 3; ++i) pc_tree->horizontalb[i].skip_ref_frame_mask = 0;
     if (cpi->sf.prune_ref_frame_for_rect_partitions) {
       int used_frames;
       used_frames = ref_frames_used[0] | ref_frames_used[1];
@@ -5034,29 +4971,24 @@ BEGIN_PARTITION_SEARCH:
       used_frames = ref_frames_used[3];
       if (used_frames)
         pc_tree->horizontalb[2].skip_ref_frame_mask = ~used_frames;
-    }
-    if (cpi->sf.prune_ref_mode_for_partitions) {
+
       // Overwrite skip_ref_frame_mask for the current block
       if (split_mbmi[0] && split_mbmi[1] &&
           split_mbmi[0]->ref_frame[0] > INTRA_FRAME &&
           split_mbmi[0]->ref_frame[0] == split_mbmi[1]->ref_frame[0] &&
-          !has_second_ref(split_mbmi[0]) &&
-          !has_second_ref(split_mbmi[1])) {  // single ref
-        const int used_frames = 1 << (int)split_mbmi[0]->ref_frame[0];
+          !has_second_ref(split_mbmi[0]) && !has_second_ref(split_mbmi[1])) {
+        used_frames = 1 << (int)split_mbmi[0]->ref_frame[0];
         pc_tree->horizontalb[0].skip_ref_frame_mask = ~used_frames;
-        pc_tree->horizontalb[0].ref_selected[0] = split_mbmi[0]->ref_frame[0];
       }
       if (split_mbmi[2] && split_mbmi[2]->ref_frame[0] > INTRA_FRAME &&
-          !has_second_ref(split_mbmi[2])) {  // single ref
-        const int used_frames = 1 << (int)split_mbmi[2]->ref_frame[0];
+          !has_second_ref(split_mbmi[2])) {
+        used_frames = 1 << (int)split_mbmi[2]->ref_frame[0];
         pc_tree->horizontalb[1].skip_ref_frame_mask = ~used_frames;
-        pc_tree->horizontalb[1].ref_selected[0] = split_mbmi[2]->ref_frame[0];
       }
       if (split_mbmi[3] && split_mbmi[3]->ref_frame[0] > INTRA_FRAME &&
-          !has_second_ref(split_mbmi[3])) {  // single ref
-        const int used_frames = 1 << (int)split_mbmi[3]->ref_frame[0];
+          !has_second_ref(split_mbmi[3])) {
+        used_frames = 1 << (int)split_mbmi[3]->ref_frame[0];
         pc_tree->horizontalb[2].skip_ref_frame_mask = ~used_frames;
-        pc_tree->horizontalb[2].ref_selected[0] = split_mbmi[3]->ref_frame[0];
       }
     }
 #if CONFIG_COLLECT_PARTITION_STATS
@@ -5091,11 +5023,7 @@ BEGIN_PARTITION_SEARCH:
       pc_tree->verticala[0].mic.partition = PARTITION_VERT_A;
       pc_tree->verticala[0].rd_mode_is_ready = 1;
     }
-    for (int i = 0; i < 3; ++i) {
-      pc_tree->verticala[i].skip_ref_frame_mask = 0;
-      pc_tree->verticala[i].ref_selected[0] =
-          pc_tree->verticala[i].ref_selected[1] = NONE_FRAME;
-    }
+    for (int i = 0; i < 3; ++i) pc_tree->verticala[i].skip_ref_frame_mask = 0;
     if (cpi->sf.prune_ref_frame_for_rect_partitions) {
       int used_frames;
       used_frames = ref_frames_used[0];
@@ -5104,29 +5032,24 @@ BEGIN_PARTITION_SEARCH:
       if (used_frames) pc_tree->verticala[1].skip_ref_frame_mask = ~used_frames;
       used_frames = ref_frames_used[1] | ref_frames_used[3];
       if (used_frames) pc_tree->verticala[2].skip_ref_frame_mask = ~used_frames;
-    }
-    if (cpi->sf.prune_ref_mode_for_partitions) {
+
       // Overwrite skip_ref_frame_mask for the current block
       if (split_mbmi[0] && split_mbmi[0]->ref_frame[0] > INTRA_FRAME &&
-          !has_second_ref(split_mbmi[0])) {  // single ref
-        const int used_frames = 1 << (int)split_mbmi[0]->ref_frame[0];
+          !has_second_ref(split_mbmi[0])) {
+        used_frames = 1 << (int)split_mbmi[0]->ref_frame[0];
         pc_tree->verticala[0].skip_ref_frame_mask = ~used_frames;
-        pc_tree->verticala[0].ref_selected[0] = split_mbmi[0]->ref_frame[0];
       }
       if (split_mbmi[2] && split_mbmi[2]->ref_frame[0] > INTRA_FRAME &&
-          !has_second_ref(split_mbmi[2])) {  // single ref
-        const int used_frames = 1 << (int)split_mbmi[2]->ref_frame[0];
+          !has_second_ref(split_mbmi[2])) {
+        used_frames = 1 << (int)split_mbmi[2]->ref_frame[0];
         pc_tree->verticala[1].skip_ref_frame_mask = ~used_frames;
-        pc_tree->verticala[1].ref_selected[0] = split_mbmi[2]->ref_frame[0];
       }
       if (split_mbmi[1] && split_mbmi[3] &&
           split_mbmi[1]->ref_frame[0] > INTRA_FRAME &&
           split_mbmi[1]->ref_frame[0] == split_mbmi[3]->ref_frame[0] &&
-          !has_second_ref(split_mbmi[1]) &&
-          !has_second_ref(split_mbmi[3])) {  // single ref
-        const int used_frames = 1 << (int)split_mbmi[1]->ref_frame[0];
+          !has_second_ref(split_mbmi[1]) && !has_second_ref(split_mbmi[3])) {
+        used_frames = 1 << (int)split_mbmi[1]->ref_frame[0];
         pc_tree->verticala[2].skip_ref_frame_mask = ~used_frames;
-        pc_tree->verticala[2].ref_selected[0] = split_mbmi[1]->ref_frame[0];
       }
     }
 #if CONFIG_COLLECT_PARTITION_STATS
@@ -5160,11 +5083,7 @@ BEGIN_PARTITION_SEARCH:
       pc_tree->verticalb[0].mic.partition = PARTITION_VERT_B;
       pc_tree->verticalb[0].rd_mode_is_ready = 1;
     }
-    for (int i = 0; i < 3; ++i) {
-      pc_tree->verticalb[i].skip_ref_frame_mask = 0;
-      pc_tree->verticalb[i].ref_selected[0] =
-          pc_tree->verticalb[i].ref_selected[1] = NONE_FRAME;
-    }
+    for (int i = 0; i < 3; ++i) pc_tree->verticalb[i].skip_ref_frame_mask = 0;
     if (cpi->sf.prune_ref_frame_for_rect_partitions) {
       int used_frames;
       used_frames = ref_frames_used[0] | ref_frames_used[2];
@@ -5173,29 +5092,24 @@ BEGIN_PARTITION_SEARCH:
       if (used_frames) pc_tree->verticalb[1].skip_ref_frame_mask = ~used_frames;
       used_frames = ref_frames_used[3];
       if (used_frames) pc_tree->verticalb[2].skip_ref_frame_mask = ~used_frames;
-    }
-    if (cpi->sf.prune_ref_mode_for_partitions) {
+
       // Overwrite skip_ref_frame_mask for the current block
       if (split_mbmi[0] && split_mbmi[2] &&
           split_mbmi[0]->ref_frame[0] > INTRA_FRAME &&
           split_mbmi[0]->ref_frame[0] == split_mbmi[2]->ref_frame[0] &&
-          !has_second_ref(split_mbmi[0]) &&
-          !has_second_ref(split_mbmi[2])) {  // single ref
-        const int used_frames = 1 << (int)split_mbmi[0]->ref_frame[0];
+          !has_second_ref(split_mbmi[0]) && !has_second_ref(split_mbmi[2])) {
+        used_frames = 1 << (int)split_mbmi[0]->ref_frame[0];
         pc_tree->verticalb[0].skip_ref_frame_mask = ~used_frames;
-        pc_tree->verticalb[0].ref_selected[0] = split_mbmi[0]->ref_frame[0];
       }
       if (split_mbmi[1] && split_mbmi[1]->ref_frame[0] > INTRA_FRAME &&
-          !has_second_ref(split_mbmi[1])) {  // single ref
-        const int used_frames = 1 << (int)split_mbmi[1]->ref_frame[0];
+          !has_second_ref(split_mbmi[1])) {
+        used_frames = 1 << (int)split_mbmi[1]->ref_frame[0];
         pc_tree->verticalb[1].skip_ref_frame_mask = ~used_frames;
-        pc_tree->verticalb[1].ref_selected[0] = split_mbmi[1]->ref_frame[0];
       }
       if (split_mbmi[3] && split_mbmi[3]->ref_frame[0] > INTRA_FRAME &&
-          !has_second_ref(split_mbmi[3])) {  // single ref
-        const int used_frames = 1 << (int)split_mbmi[3]->ref_frame[0];
+          !has_second_ref(split_mbmi[3])) {
+        used_frames = 1 << (int)split_mbmi[3]->ref_frame[0];
         pc_tree->verticalb[2].skip_ref_frame_mask = ~used_frames;
-        pc_tree->verticalb[2].ref_selected[0] = split_mbmi[3]->ref_frame[0];
       }
     }
 #if CONFIG_COLLECT_PARTITION_STATS
