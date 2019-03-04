@@ -49,7 +49,7 @@ void BroadcastingReceiver::ClientContext::OnStartedUsingGpuDecode() {
   if (on_started_using_gpu_decode_has_been_called_)
     return;
   on_started_using_gpu_decode_has_been_called_ = true;
-  client_->OnStarted();
+  client_->OnStartedUsingGpuDecode();
 }
 
 BroadcastingReceiver::BufferContext::BufferContext(
@@ -156,8 +156,10 @@ int32_t BroadcastingReceiver::AddClient(mojom::ReceiverPtr client) {
   if (status_ == Status::kOnStartedHasBeenCalled) {
     added_client_context.OnStarted();
   }
-  if (status_ == Status::kOnStartedUsingGpuDecodeHasBeenCalled)
+  if (status_ == Status::kOnStartedUsingGpuDecodeHasBeenCalled) {
+    added_client_context.OnStarted();
     added_client_context.OnStartedUsingGpuDecode();
+  }
 
   for (auto& buffer_context : buffer_contexts_) {
     added_client_context.client()->OnNewBuffer(

@@ -20,6 +20,7 @@
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
 #include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
+#include "services/video_capture/public/mojom/devices_changed_observer.mojom.h"
 #include "services/video_capture/public/mojom/virtual_device.mojom.h"
 
 namespace content {
