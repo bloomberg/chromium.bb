@@ -703,7 +703,10 @@ void AppListControllerImpl::OnUiVisibilityChanged(
       }
 
       if (!IsShowingEmbeddedAssistantUI()) {
-        presenter_.GetView()->SetState(app_list::AppListViewState::HALF);
+        if (presenter_.GetView()->app_list_state() ==
+            app_list::AppListViewState::PEEKING) {
+          presenter_.GetView()->SetState(app_list::AppListViewState::HALF);
+        }
         presenter_.ShowEmbeddedAssistantUI(true);
       }
       break;
