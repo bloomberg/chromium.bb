@@ -571,8 +571,18 @@ class OmniboxEditModel {
   // the unique identifier of the originally selected item.  Thus, if the user
   // arrows to a different item with the same text, we can still distinguish
   // them and not revert all the way to the permanent display URL.
+  //
+  // original_user_text_with_keyword_ tracks the user_text_ before keywords are
+  // removed. When accepting a keyword (from either a default match or another
+  // lower in the dropdown), the user_text_ is destructively trimmed of its 1st
+  // word. In order to restore the user_text_ properly when the omnibox reverts,
+  // e.g. by pressing <escape> or pressing <up> until the first result is
+  // selected, we track original_user_text_with_keyword_.
+  // original_user_text_with_keyword_ is null if a keyword has not been
+  // accepted.
   bool has_temporary_text_;
   GURL original_url_;
+  base::string16 original_user_text_with_keyword_;
 
   // When the user's last action was to paste, we disallow inline autocomplete
   // (on the theory that the user is trying to paste in a new URL or part of

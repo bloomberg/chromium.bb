@@ -850,6 +850,8 @@ bool OmniboxEditModel::AcceptKeyword(
 
   is_keyword_hint_ = false;
   keyword_mode_entry_method_ = entry_method;
+  if (original_user_text_with_keyword_.empty())
+    original_user_text_with_keyword_ = user_text_;
   user_text_ = MaybeStripKeyword(user_text_);
 
   if (PopupIsOpen())
@@ -886,7 +888,8 @@ bool OmniboxEditModel::AcceptKeyword(
                                        match, save_original_selection, true);
   } else {
     const AutocompleteMatch& match = CurrentMatch(nullptr);
-    view_->OnTemporaryTextMaybeChanged(user_text_, match, false, true);
+    view_->OnTemporaryTextMaybeChanged(user_text_, match, !has_temporary_text_,
+                                       true);
   }
 
   base::RecordAction(base::UserMetricsAction("AcceptedKeywordHint"));
@@ -1166,6 +1169,13 @@ void OmniboxEditModel::OnPopupDataChanged(
     GURL* destination_for_temporary_text_change,
     const base::string16& keyword,
     bool is_keyword_hint) {
+  if (!original_user_text_with_keyword_.empty() &&
+      !destination_for_temporary_text_change &&
+      (keyword.empty() || is_keyword_hint)) {
+    user_text_ = original_user_text_with_keyword_;
+    original_user_text_with_keyword_.clear();
+  }
+
   // The popup changed its data, the match in the controller is no longer valid.
   omnibox_controller_->InvalidateCurrentMatch();
 
@@ -1210,8 +1220,10 @@ void OmniboxEditModel::OnPopupDataChanged(
     // right answer here :(
 
     const AutocompleteMatch& match = CurrentMatch(nullptr);
-    view_->OnTemporaryTextMaybeChanged(MaybeStripKeyword(text), match,
-                                       save_original_selection, true);
+    view_->OnTemporaryTextMaybeChanged(
+        MaybeStripKeyword(text), match,
+        save_original_selection && original_user_text_with_keyword_.empty(),
+        true);
     return;
   }
 
@@ -1388,6 +1400,7 @@ void OmniboxEditModel::OnCurrentMatchChanged() {
     // state (keyword_ and is_keyword_hint_), and MaybeStripKeyword checks this.
     user_text_ =
         KeywordProvider::SplitReplacementStringFromInput(user_text_, false);
+    original_user_text_with_keyword_.clear();
   }
 
   // OnPopupDataChanged() resets OmniboxController's |current_match_| early
@@ -1407,6 +1420,7 @@ bool OmniboxEditModel::PopupIsOpen() const {
 
 void OmniboxEditModel::InternalSetUserText(const base::string16& text) {
   user_text_ = text;
+  original_user_text_with_keyword_.clear();
   just_deleted_text_ = false;
   inline_autocomplete_text_.clear();
   view_->OnInlineAutocompleteTextCleared();
