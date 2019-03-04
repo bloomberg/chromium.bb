@@ -521,12 +521,10 @@ class CORE_EXPORT Document : public ContainerNode,
     kRunPostLayoutTasksAsynchronously,
     kRunPostLayoutTasksSynchronously,
   };
-  void UpdateStyleAndLayoutIgnorePendingStylesheets(
-      RunPostLayoutTasks = kRunPostLayoutTasksAsynchronously);
+  void UpdateStyleAndLayoutIgnorePendingStylesheets();
   // Same as UpdateStyleAndLayoutIgnorePendingStyleSheets()
   // but allows style & layout tree calculation for invisible nodes.
-  void UpdateStyleAndLayoutIgnorePendingStylesheetsConsideringInvisibleNodes(
-      RunPostLayoutTasks = kRunPostLayoutTasksAsynchronously);
+  void UpdateStyleAndLayoutIgnorePendingStylesheetsConsideringInvisibleNodes();
   void UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(const Node*);
   scoped_refptr<ComputedStyle> StyleForPage(int page_index);
 

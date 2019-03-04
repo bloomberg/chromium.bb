@@ -2599,16 +2599,13 @@ void Document::UpdateStyleAndLayoutTreeIgnorePendingStylesheets() {
   UpdateStyleAndLayoutTree();
 }
 
-void Document::UpdateStyleAndLayoutIgnorePendingStylesheets(
-    Document::RunPostLayoutTasks run_post_layout_tasks) {
+void Document::UpdateStyleAndLayoutIgnorePendingStylesheets() {
   DCHECK(!find_in_page_root_);
-  UpdateStyleAndLayoutIgnorePendingStylesheetsConsideringInvisibleNodes(
-      run_post_layout_tasks);
+  UpdateStyleAndLayoutIgnorePendingStylesheetsConsideringInvisibleNodes();
 }
 
 void Document::
-    UpdateStyleAndLayoutIgnorePendingStylesheetsConsideringInvisibleNodes(
-        Document::RunPostLayoutTasks run_post_layout_tasks) {
+    UpdateStyleAndLayoutIgnorePendingStylesheetsConsideringInvisibleNodes() {
   LocalFrameView* local_view = View();
   if (local_view)
     local_view->WillStartForcedLayout();
@@ -2616,12 +2613,8 @@ void Document::
     UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
   UpdateStyleAndLayout();
 
-  if (local_view) {
-    if (run_post_layout_tasks == kRunPostLayoutTasksSynchronously)
-      local_view->FlushAnyPendingPostLayoutTasks();
-
+  if (local_view)
     local_view->DidFinishForcedLayout();
-  }
 }
 
 scoped_refptr<ComputedStyle> Document::StyleForPage(int page_index) {
