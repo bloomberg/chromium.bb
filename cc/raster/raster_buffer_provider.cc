@@ -118,8 +118,12 @@ void RasterBufferProvider::PlaybackToMemory(
                    "RasterBufferProvider::PlaybackToMemory::ConvertRGBA4444");
       SkImageInfo dst_info = info.makeColorType(
           ResourceFormatToClosestSkColorType(gpu_compositing, format));
-      bool rv = surface->readPixels(dst_info, memory, stride, 0, 0);
-      DCHECK(rv);
+      auto dst_canvas = SkCanvas::MakeRasterDirect(dst_info, memory, stride);
+      DCHECK(dst_canvas);
+      SkPaint paint;
+      paint.setDither(true);
+      paint.setBlendMode(SkBlendMode::kSrc);
+      surface->draw(dst_canvas.get(), 0, 0, &paint);
       return;
     }
     case viz::ETC1:
