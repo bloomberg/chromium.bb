@@ -121,6 +121,8 @@ class AssistantOptInFlowScreenHandler
   // Whether user chose to enable hotword.
   bool enable_hotword_ = true;
 
+  bool is_retrain_flow_ = false;
+
   // Time that get settings request is sent.
   base::TimeTicks send_request_time_;
 

@@ -34,8 +34,9 @@ enum AssistantOptInFlowStatus {
   VOICE_MATCH_SHOWN = 12,
   VOICE_MATCH_ENROLLMENT_DONE = 13,
   VOICE_MATCH_ENROLLMENT_SKIPPED = 14,
+  VOICE_MATCH_ENROLLMENT_ERROR = 15,
   // Magic constant used by the histogram macros.
-  kMaxValue = VOICE_MATCH_ENROLLMENT_SKIPPED
+  kMaxValue = VOICE_MATCH_ENROLLMENT_ERROR
 };
 
 void RecordAssistantOptInStatus(AssistantOptInFlowStatus);

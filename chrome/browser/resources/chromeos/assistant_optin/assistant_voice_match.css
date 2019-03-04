@@ -24,6 +24,12 @@
   text-align: center;
 }
 
+#already-setup-img {
+  display: block;
+  margin: auto;
+  padding-top: 80px;
+}
+
 #intro-container,
 #recording-container,
 #already-setup-container {

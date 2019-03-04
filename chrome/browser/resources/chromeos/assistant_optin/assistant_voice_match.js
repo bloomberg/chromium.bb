@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+
+/** Maximum recording index. */
+const MAX_INDEX = 4;
+
 /**
  * @fileoverview Polymer element for displaying material design assistant
  * voice match screen.
@@ -38,6 +42,7 @@ Polymer({
   onAgreeTap_: function() {
     this.removeClass_('intro');
     this.addClass_('recording');
+    this.fire('loading');
     chrome.send(
         'login.AssistantOptInFlowScreen.VoiceMatchScreen.userActed',
         ['record-pressed']);
@@ -64,9 +69,24 @@ Polymer({
   },
 
   /**
+   * Reloads voice match flow.
+   */
+  reloadPage: function() {
+    this.removeClass_('recording');
+    this.removeClass_('already-setup');
+    this.removeClass_('completed');
+    this.addClass_('intro');
+    this.$['agree-button'].focus();
+    this.fire('loaded');
+  },
+
+  /**
    * Called when the server is ready to listening for hotword.
    */
   listenForHotword: function() {
+    if (this.currentIndex_ == 0) {
+      this.fire('loaded');
+    }
     var currentEntry = this.$['voice-entry-' + this.currentIndex_];
     currentEntry.setAttribute('active', true);
   },
@@ -79,7 +99,7 @@ Polymer({
     currentEntry.removeAttribute('active');
     currentEntry.setAttribute('completed', true);
     this.currentIndex_++;
-    if (this.currentIndex_ == 4) {
+    if (this.currentIndex_ == MAX_INDEX) {
       this.$['voice-match-entries'].hidden = true;
       this.$['later-button'].hidden = true;
       this.$['loading-animation'].hidden = false;
@@ -88,13 +108,20 @@ Polymer({
 
   voiceMatchDone: function() {
     this.removeClass_('recording');
-    this.addClass_('completed');
+    this.fire('loaded');
+    if (this.currentIndex_ != MAX_INDEX) {
+      // Existing voice model found on cloud. No need to train.
+      this.$['later-button'].hidden = true;
+      this.addClass_('already-setup');
+    } else {
+      this.addClass_('completed');
+    }
 
     window.setTimeout(function() {
       chrome.send(
           'login.AssistantOptInFlowScreen.VoiceMatchScreen.userActed',
           ['voice-match-done']);
-    }, 2000);
+    }, 3000);
   },
 
   /**

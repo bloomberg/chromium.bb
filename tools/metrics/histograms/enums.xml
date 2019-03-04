@@ -2104,6 +2104,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="12" label="VOICE_MATCH_SHOWN"/>
   <int value="13" label="VOICE_MATCH_ENROLLMENT_DONE"/>
   <int value="14" label="VOICE_MATCH_ENROLLMENT_SKIPPED"/>
+  <int value="15" label="VOICE_MATCH_ENROLLMENT_ERROR"/>
 </enum>
 
 <enum name="AssistantQueryResponseType">
