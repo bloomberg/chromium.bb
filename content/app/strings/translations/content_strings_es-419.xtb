@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">estado</translation>
 <translation id="1938124657309484470">El valor debe ser igual o anterior a <ph name="MAXIMUM_DATE_OR_TIME" />.</translation>
 <translation id="1946271899482435442">Mostrar el selector de fechas</translation>
-<translation id="1982354452682152483">No hay descripciones disponibles.</translation>
 <translation id="1993104285338243655">Se cambió a duplicación</translation>
 <translation id="2060505056492490888">El signo "<ph name="DOT" />" está colocado en una posición incorrecta en "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Hoy</translation>
@@ -177,7 +176,6 @@
 <translation id="7139483182332611405">prefacio</translation>
 <translation id="7263440858009898357">Selecciona un elemento de la lista</translation>
 <translation id="727747134524199931">encabezado de columna</translation>
-<translation id="7336527682887843386">No es posible obtener una descripción.</translation>
 <translation id="7353453495576941748">crédito</translation>
 <translation id="7364796246159120393">Seleccionar archivo</translation>
 <translation id="739024184232394898">Otra...</translation>
@@ -200,7 +198,6 @@
 <translation id="7888071071722539607">Incluye un signo "<ph name="ATSIGN" />" en la dirección de correo electrónico. La dirección "<ph name="INVALIDADDRESS" />" no incluye el signo "<ph name="ATSIGN" />".</translation>
 <translation id="7891486169920085145">separador</translation>
 <translation id="795667975304826397">No se eligió archivo</translation>
-<translation id="8042519864538898414">Parece ser contenido para adultos.</translation>
 <translation id="8053789581856978548">campo de texto de búsqueda</translation>
 <translation id="8057695513531652401">aviso</translation>
 <translation id="8105797009065549151">nota de referencia</translation>

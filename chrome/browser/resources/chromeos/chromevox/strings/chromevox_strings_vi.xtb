@@ -313,7 +313,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="3232388865800379423">Nút bật lên</translation>
 <translation id="3241052487511142956">Liên kết đã truy cập trước đó</translation>
 <translation id="3241638166094654466">Số ô mỗi dòng:</translation>
-<translation id="327361630706777244">Kết thúc <ph name="FONT_COLOR" /></translation>
+<translation id="327361630706777244"><ph name="FONT_COLOR" /> kết thúc</translation>
 <translation id="3286372614333682499">dọc</translation>
 <translation id="3286390186030710347">Thanh trượt</translation>
 <translation id="3299925995433437805">Không có liên kết đã truy cập tiếp theo nào.</translation>
@@ -338,7 +338,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="3393605254399152980">Kéo một ngón tay để nghe nội dung mà bạn chạm vào</translation>
 <translation id="3406283310380167331">Hiển thị danh sách biểu mẫu</translation>
 <translation id="3414400929511680526">Màu xanh lam Alice</translation>
-<translation id="3437941064431741545">Kết thúc kích thước <ph name="FONT_SIZE" /></translation>
+<translation id="3437941064431741545">Kích thước <ph name="FONT_SIZE" /> kết thúc</translation>
 <translation id="344800400831402066">Màu Peru</translation>
 <translation id="3457000393508828486">Được nhấn một phần</translation>
 <translation id="3458865416877308321">Nút gạt, <ph name="NAME" />, bị tắt</translation>
@@ -770,7 +770,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="6459511626086141404">Sơ đồ bàn phím phẳng</translation>
 <translation id="6468049171101508116">Nút tiếp theo</translation>
 <translation id="646954774886932461">Chú dẫn</translation>
-<translation id="6470797302070897045">Bắt đầu kích thước <ph name="FONT_SIZE" /></translation>
+<translation id="6470797302070897045">Kích thước <ph name="FONT_SIZE" /> bắt đầu</translation>
 <translation id="6493991254603208962">Giảm độ sáng</translation>
 <translation id="6497864469186228849">Kết thúc <ph name="FONT_FAMILY" /></translation>
 <translation id="6501595918865591267">Màu ngọc lam</translation>
@@ -899,7 +899,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="7370432716629432284">{COUNT,plural, =1{dấu và}other{# dấu và}}</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Thoát khỏi bảng.</translation>
-<translation id="7374188624530452127">Bắt đầu <ph name="FONT_COLOR" /></translation>
+<translation id="7374188624530452127"><ph name="FONT_COLOR" /> bắt đầu</translation>
 <translation id="738899727977260036">Màu lam xám đen</translation>
 <translation id="7392145451309930991">Đầu văn bản phù hợp</translation>
 <translation id="739763518212184081">Dòng trước</translation>

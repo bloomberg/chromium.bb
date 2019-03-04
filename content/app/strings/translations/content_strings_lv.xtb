@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">statuss</translation>
 <translation id="1938124657309484470">Vērtībai ir jābūt “<ph name="MAXIMUM_DATE_OR_TIME" />” vai agrākam datumam vai laikam.</translation>
 <translation id="1946271899482435442">Rādīt datumu atlasītāju</translation>
-<translation id="1982354452682152483">Apraksts nav pieejams</translation>
 <translation id="1993104285338243655">Mainīts uz spoguļošanu</translation>
 <translation id="2060505056492490888">Punkts (<ph name="DOT" />) atrodas nepareizā vietā (<ph name="INVALIDDOMAIN" />).</translation>
 <translation id="2148716181193084225">Šodien</translation>
@@ -95,6 +94,7 @@
 <translation id="4360991593054037559">Lūdzu, ievadiet derīgu vērtību. Divas tuvākās derīgās vērtības ir <ph name="VALID_VALUE_LOW" /> un <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Jautājumi un atbildes</translation>
 <translation id="4413860115965805769">izvēlnes poga</translation>
+<translation id="4444765639179266822">Izklausās: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">atsauce uz glosāriju</translation>
 <translation id="4522570452068850558">Informācija</translation>
 <translation id="4542388879936266156">atlikušais laiks: <ph name="REMAINING_TIME" /></translation>
@@ -121,6 +121,7 @@
 <translation id="5164977714490026579">Vērtībai ir jābūt lielākai vai vienādai ar <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Lūdzu, ievadiet daļu, kas atrodas pirms zīmes <ph name="ATSIGN" />. “<ph name="INVALIDADDRESS" />” ir nepilna adrese.</translation>
+<translation id="5334352251556557839">Nevar atskaņot multividi.</translation>
 <translation id="5406322316791861025">cipars</translation>
 <translation id="5453733299334684579">koka vienums</translation>
 <translation id="5466621249238537318">Lūdzu, atlasiet vienu vai vairākus failus.</translation>
@@ -147,6 +148,7 @@
 <translation id="6150588977291308318">bibliogrāfija</translation>
 <translation id="6164829606128959761">mērītājs</translation>
 <translation id="6166809985690652833">pēcvārds</translation>
+<translation id="6209276755895393898">Šķiet, ka tas ir: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glosārijs</translation>
 <translation id="6398862346408813489">Rādīt mēneša atlases paneli</translation>
 <translation id="6404546809543547843">audio laika skalas slīdnis</translation>
@@ -177,7 +179,7 @@
 <translation id="7139483182332611405">ievadraksts</translation>
 <translation id="7263440858009898357">Atlasiet vienumu sarakstā.</translation>
 <translation id="727747134524199931">slejas virsraksts</translation>
-<translation id="7336527682887843386">Nevar iegūt aprakstu.</translation>
+<translation id="7320576522385648310">notiek ievietošana buferī</translation>
 <translation id="7353453495576941748">pateicība</translation>
 <translation id="7364796246159120393">Izvēlēties failu</translation>
 <translation id="739024184232394898">Cits...</translation>
@@ -200,7 +202,6 @@
 <translation id="7888071071722539607">E-pasta adresē ietveriet zīmi <ph name="ATSIGN" />. Adresē “<ph name="INVALIDADDRESS" />” trūkst zīmes <ph name="ATSIGN" />.</translation>
 <translation id="7891486169920085145">sadalītājs</translation>
 <translation id="795667975304826397">Nav izvēlēts neviens fails</translation>
-<translation id="8042519864538898414">Šķiet, ka šis ir pieaugušajiem paredzēts saturs.</translation>
 <translation id="8053789581856978548">meklēšanas teksta lauks</translation>
 <translation id="8057695513531652401">paziņojums</translation>
 <translation id="8105797009065549151">vēres atsauce</translation>

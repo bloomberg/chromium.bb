@@ -29,6 +29,7 @@
 <translation id="1125573121925420732">जब वेबसाइटें अपनी सुरक्षा अपडेट कर रही होती हैं तब चेतावनियां आम हो सकती हैं. इसमें जल्दी ही सुधार होगा.</translation>
 <translation id="1126551341858583091">स्थानीय जगह का आकार <ph name="CRASH_SIZE" /> है.</translation>
 <translation id="112840717907525620">नीति संचय ठीक है</translation>
+<translation id="1131264053432022307">आपकी कॉपी की हुई इमेज</translation>
 <translation id="1150979032973867961">यह सर्वर यह नहीं प्रमाणित कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र आपके कंप्यूटर के ऑपरेटिंग सिस्टम द्वारा विश्वसनीय नहीं है. ऐसा गलत कॉन्फ़िगरेशन या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
 <translation id="1151972924205500581">पासवर्ड आवश्यक</translation>
 <translation id="1152921474424827756"><ph name="URL" /> की <ph name="BEGIN_LINK" />संचित प्रति<ph name="END_LINK" /> एक्सेस करें</translation>
@@ -46,7 +47,6 @@
 <translation id="121201262018556460">आपने <ph name="DOMAIN" /> तक पहुंचने का प्रयास किया, लेकिन लेकिन सर्वर ने कमज़ोर कुंजी वाला प्रमाणपत्र प्रस्‍तुत किया. संभवत: हमलावर ने निजी कुंजी का पता लगा लिया है, और हो सकता है कि सर्वर आपका अपेक्षित सर्वर न हो (हो सकता है कि आप किसी हमलावर से बातचीत कर रहे हों).</translation>
 <translation id="1219129156119358924">सिस्‍टम सुरक्षा</translation>
 <translation id="1227224963052638717">अज्ञात नीति.</translation>
-<translation id="1227633850867390598">मान छिपाएं</translation>
 <translation id="1228893227497259893">गलत इकाई पहचानकर्ता</translation>
 <translation id="1232569758102978740">शीर्षक रहित</translation>
 <translation id="124116460088058876">अधिक भाषाएं</translation>
@@ -100,6 +100,7 @@
 <translation id="1430915738399379752">प्रिंट करें</translation>
 <translation id="1455413310270022028">इरेज़र</translation>
 <translation id="1463543813647160932">5x7</translation>
+<translation id="1472675084647422956">और दिखाएं</translation>
 <translation id="147358896496811705">2ए0</translation>
 <translation id="1484290072879560759">शिपिंग पता चुनें</translation>
 <translation id="1501859676467574491">अपने Google खाते में मौजूद कार्ड दिखाएं</translation>
@@ -251,6 +252,7 @@
 <translation id="2317583587496011522">डेबिट कार्ड स्वीकार किए जाते हैं.</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, <ph name="EXPIRATION_DATE_ABBR" /> को खत्म होने वाला है</translation>
 <translation id="2337852623177822836">वह सेटिंग जिसे आपका व्यवस्थापक नियंत्रित करता है</translation>
+<translation id="2346319942568447007">आपकी कॉपी की हुई इमेज</translation>
 <translation id="2349790679044093737">VR सेशन चालू है</translation>
 <translation id="2354001756790975382">अन्य बुकमार्क</translation>
 <translation id="2354430244986887761">Google सुरक्षित ब्राउज़िंग को हाल में <ph name="SITE" /> पर <ph name="BEGIN_LINK" />नुकसान पहुंचाने वाले ऐप्लिकेशन मिले हैं<ph name="END_LINK" />.</translation>
@@ -471,6 +473,7 @@
 <translation id="358285529439630156">क्रेडिट और प्रीपेड कार्ड स्वीकार किए जाते हैं.</translation>
 <translation id="3582930987043644930">नाम जोड़ें</translation>
 <translation id="3583757800736429874">&amp;ले जाना फिर से करें</translation>
+<translation id="35866233670761917">आपके एडमिन ऐसी वेबसाइटों की सामग्री नहीं देखते जिन पर आप जाते हैं</translation>
 <translation id="3586931643579894722">विवरण छुपाएं</translation>
 <translation id="3592413004129370115">इटैलियन (एन्वेलप)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
@@ -478,7 +481,6 @@
 <translation id="3615877443314183785">खत्म होने की मान्य तारीख डालें</translation>
 <translation id="36224234498066874">ब्राउज़िंग डेटा साफ़ करें...</translation>
 <translation id="362276910939193118">संपूर्ण इतिहास दिखाएं</translation>
-<translation id="3623476034248543066">मान दिखाएं</translation>
 <translation id="3630155396527302611">यदि वह नेटवर्क एक्सेस करने की अनुमति प्राप्त प्रोग्राम के रूप में पहले से सूचीबद्ध है, तो
       उसे सूची से निकालें और पुन: जोड़कर देखें.</translation>
 <translation id="3640766068866876100">इंडेक्स-4x6-एक्स्ट्रा</translation>
@@ -494,6 +496,7 @@
 <translation id="3704162925118123524">आप जिस नेटवर्क का उपयोग कर रहे हैं उसके लिए आपको लॉगिन पेज पर जाने की ज़रूरत हो सकती है.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">लोड हो रही हैं...</translation>
+<translation id="3709599264800900598">आपका कॉपी किया हुआ टेक्स्ट</translation>
 <translation id="3712624925041724820">लाइसेंस समाप्त हो गए</translation>
 <translation id="3714780639079136834">मोबाइल डेटा या वाई-फ़ाई चालू करें</translation>
 <translation id="3715597595485130451">वाई-फ़ाई से कनेक्ट करें</translation>
@@ -619,6 +622,7 @@
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" /> कुकी</translation>
 <translation id="4415426530740016218">पिकअप का पता</translation>
 <translation id="4424024547088906515">यह सर्वर यह नहीं प्रमाणित कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र Chrome द्वारा विश्वसनीय नहीं है. ऐसा गलत कॉन्फ़िगरेशन या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
+<translation id="443121186588148776">सीरियल पोर्ट</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> ने आपका लॉगिन प्रमाणपत्र स्वीकार नहीं किया है या हो सकता है कि प्रमाणपत्र उपलब्ध नहीं कराया गया हो.</translation>
 <translation id="4434045419905280838">पॉप-अप और रीडायरेक्ट</translation>
 <translation id="4435702339979719576">पोस्टकार्ड)</translation>
@@ -707,6 +711,7 @@
 <translation id="5002932099480077015">यदि सक्षम किया हुआ हो, तो Chrome फ़ॉर्म को तेज़ी से भरने के लिए इस डिवाइस पर आपके कार्ड की एक प्रति संग्रहित करेगा.</translation>
 <translation id="5014174725590676422">'Chrome में Google Assistant' की सबसे पहली स्क्रीन दिखाई गई है</translation>
 <translation id="5015510746216210676">मशीन का नाम:</translation>
+<translation id="5017554619425969104">आपका कॉपी किया हुआ टेक्स्ट</translation>
 <translation id="5018422839182700155">यह पेज खुल नहीं पा रहा है</translation>
 <translation id="5019198164206649151">बैकिंग संग्रह खराब स्थिति में है</translation>
 <translation id="5023310440958281426">अपने व्यवस्थापक की नीतियां देखें</translation>
@@ -716,6 +721,7 @@
 <translation id="5034369478845443529">स्थानीय संदर्भ <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="5039804452771397117">अनुमति दें</translation>
 <translation id="5040262127954254034">निजता</translation>
+<translation id="5043480802608081735">आपका कॉपी किया हुआ लिंक</translation>
 <translation id="5045550434625856497">ग़लत पासवर्ड</translation>
 <translation id="5056549851600133418">आपके लिए लेख</translation>
 <translation id="5068524481479508725">ए10</translation>
@@ -732,6 +738,7 @@
 <translation id="5115563688576182185">(64-बिट)</translation>
 <translation id="5125394840236832993">बी-प्लस</translation>
 <translation id="5135404736266831032">पते प्रबंधित करें...</translation>
+<translation id="5138227688689900538">कम दिखाएं</translation>
 <translation id="5141240743006678641">समन्वयित पासवर्ड अपने Google प्रमाणिकता के साथ एन्क्रिप्ट करें</translation>
 <translation id="5145883236150621069">नीति प्रतिसाद में गड़बड़ी कोड मौजूद है</translation>
 <translation id="515292512908731282">सी4 (एन्वेलप)</translation>
@@ -963,6 +970,7 @@
 <translation id="6578796323535178455">सी2 (एन्वेलप)</translation>
 <translation id="6579990219486187401">हल्का गुलाबी रंग</translation>
 <translation id="6583674473685352014">बी6 (एन्वेलप)</translation>
+<translation id="6587923378399804057">आपका कॉपी किया हुआ लिंक</translation>
 <translation id="6596325263575161958">सुरक्षित तरीका विकल्प</translation>
 <translation id="6604181099783169992">गति या लाइट सेंसर</translation>
 <translation id="6609880536175561541">पीआरसी7 (एन्वेलप)</translation>
@@ -1153,6 +1161,7 @@
 <translation id="7610193165460212391"><ph name="VALUE" /> मान सीमा से बाहर है.</translation>
 <translation id="7613889955535752492">समय-सीमा समाप्त: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">आपके पास पहले से ऐसा डेटा है, जिसे आपके Google खाते के पासवर्ड के किसी भिन्‍न वर्शन का उपयोग करके एन्क्रिप्ट किया गया है. कृपया उसे नीचे लिखें.</translation>
+<translation id="7633909222644580952">प्रदर्शन डेटा और क्रैश रिपोर्ट</translation>
 <translation id="7637571805876720304">क्रोमियम से क्रेडिट कार्ड निकालें?</translation>
 <translation id="7639968568612851608">गहरा धूसर</translation>
 <translation id="765676359832457558">उन्नत सेटिंग छिपाएं...</translation>
@@ -1255,6 +1264,7 @@
 <translation id="8197543752516192074">पेज का अनुवाद करें</translation>
 <translation id="8201077131113104583">"<ph name="EXTENSION_ID" />" आईडी वाले एक्‍सटेंशन का गलत अपडेट यूआरएल.</translation>
 <translation id="8202097416529803614">आदेश सारांश</translation>
+<translation id="8202370299023114387">विरोध</translation>
 <translation id="8206978196348664717">पीआरसी4 (एन्वेलप)</translation>
 <translation id="8211406090763984747">कनेक्शन सुरक्षित है</translation>
 <translation id="8218327578424803826">सौंपा गया स्‍थान:</translation>

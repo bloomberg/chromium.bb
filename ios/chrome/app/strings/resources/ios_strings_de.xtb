@@ -63,7 +63,6 @@
 <translation id="1809939268435598390">Ordner löschen</translation>
 <translation id="1813414402673211292">Browserdaten löschen</translation>
 <translation id="1820259098641718022">Zur Leseliste hinzugefügt</translation>
-<translation id="1821253160463689938">Zum Speichern Ihrer Einstellungen werden Cookies verwendet, auch wenn Sie diese Seiten nicht besuchen</translation>
 <translation id="1828824471510190776">Passwort vorschlagen…</translation>
 <translation id="1876721852596493031">Nutzungsdaten senden</translation>
 <translation id="1886928167269928266">Für gesamten Zeitraum</translation>
@@ -75,6 +74,7 @@
 <translation id="2000419248597011803">Suchanfragen, die in die Adressleiste und das Suchfeld eingegeben wurden, sowie einige Cookies werden an Ihre Standardsuchmaschine gesendet</translation>
 <translation id="2015722694326466240">Um die Passwörter zu sehen, müssen Sie zuerst einen Passcode auf Ihrem Gerät einrichten.</translation>
 <translation id="2068952045031577364">Für die letzte Woche</translation>
+<translation id="2074131957428911366">Sie können in den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> auswählen, was Sie synchronisieren möchten.</translation>
 <translation id="2079545284768500474">Rückgängig machen</translation>
 <translation id="209018056901015185">Desktop-Version</translation>
 <translation id="2096012225669085171">Geräteübergreifend synchronisieren und personalisieren</translation>
@@ -176,6 +176,7 @@
 <translation id="3588820906588687999">Bild in neuem Tab öffnen</translation>
 <translation id="3603009562372709545">Link-URL kopieren</translation>
 <translation id="3607167657931203000">AutoFill-Daten</translation>
+<translation id="3607323550193047592">Synchronisierung ist aktiviert.</translation>
 <translation id="3609785682760573515">Synchronisieren...</translation>
 <translation id="3638472932233958418">Webseiten vorabladen</translation>
 <translation id="3691593122358196899">Als Lesezeichen in "<ph name="FOLDER_TITLE" />" gespeichert</translation>
@@ -199,6 +200,7 @@
 <translation id="4038354071007134711">Keine App zum Öffnen der Datei auf diesem Gerät</translation>
 <translation id="4042870976416480368">Auf Seite suchen</translation>
 <translation id="4049507953662678203">Überprüfen Sie Ihre Netzwerkverbindung und versuchen Sie es noch einmal.</translation>
+<translation id="4082688844002261427">Legen Sie fest, wie Ihr Browserverlauf zur Personalisierung verwendet wird, z. B. bei der Suche und bei Werbung</translation>
 <translation id="408404951701638773">Auf die Suchleiste kann jetzt noch einfacher zugegriffen werden</translation>
 <translation id="4084682180776658562">Lesezeichen</translation>
 <translation id="411254640334432676">Fehler beim Download</translation>
@@ -247,7 +249,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="4854345657858711387">Passcode einrichten</translation>
 <translation id="4860895144060829044">Anrufen</translation>
 <translation id="4881695831933465202">Öffnen</translation>
-<translation id="4895709476292058519">Konto wechseln</translation>
 <translation id="4904877109095351937">Als gelesen markieren</translation>
 <translation id="4930268273022498155">Vorhandene Daten werden gelöscht. Wenn Sie Ihre vorhandenen Daten abrufen möchten, wechseln Sie zurück zu <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Beim Teilen ist ein Fehler aufgetreten.</translation>
@@ -397,6 +398,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="7203585745079012652">Gesprochene Antworten</translation>
 <translation id="722055596168483966">Google-Dienste personalisieren</translation>
 <translation id="7272437679830969316">Ihre Identität konnte nicht bestätigt werden. Das Passwort wurde nicht kopiert.</translation>
+<translation id="7280856130494094142">Geben Sie Ihre Passphrase ein, um die Synchronisierung zu starten</translation>
 <translation id="7285236536143823449">JA, ICH BIN DABEI</translation>
 <translation id="7291368939935408496">Passwörter werden zum Exportieren vorbereitet…</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> % heruntergeladen</translation>
@@ -439,7 +441,6 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="794799177247607889">Protokollierung anhalten</translation>
 <translation id="7961015016161918242">Nie</translation>
 <translation id="7971521879845308059">Pop-ups blockieren</translation>
-<translation id="7981313251711023384">Seiten vorab laden, um das Surfen und die Suche zu beschleunigen</translation>
 <translation id="7982789257301363584">Netzwerk</translation>
 <translation id="8019783059653722575">Dadurch können Sie Fotos speichern und hochladen.</translation>
 <translation id="802154636333426148">Downloadfehler</translation>

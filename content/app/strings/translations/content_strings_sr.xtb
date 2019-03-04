@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">статус</translation>
 <translation id="1938124657309484470">Вредност мора да буде <ph name="MAXIMUM_DATE_OR_TIME" /> или старија.</translation>
 <translation id="1946271899482435442">Прикажи бирач датума</translation>
-<translation id="1982354452682152483">Није доступан опис.</translation>
 <translation id="1993104285338243655">Пребачено је на пресликавање</translation>
 <translation id="2060505056492490888">„<ph name="DOT" />“ је стављено на погрешно место у „<ph name="INVALIDDOMAIN" />“.</translation>
 <translation id="2148716181193084225">Данас</translation>
@@ -95,6 +94,7 @@
 <translation id="4360991593054037559">Унесите важећу вредност. Две најближе важеће вредности су <ph name="VALID_VALUE_LOW" /> и <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Питања и одговори</translation>
 <translation id="4413860115965805769">дугме менија</translation>
+<translation id="4444765639179266822">Изгледа да пише: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">референца речника термина</translation>
 <translation id="4522570452068850558">Детаљи</translation>
 <translation id="4542388879936266156">преостало време: <ph name="REMAINING_TIME" /></translation>
@@ -121,6 +121,7 @@
 <translation id="5164977714490026579">Вредност сме да буде најмање <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Унесите неки део пре „<ph name="ATSIGN" />“. Адреса „<ph name="INVALIDADDRESS" />“ је непотпуна.</translation>
+<translation id="5334352251556557839">Пуштање медија није успело.</translation>
 <translation id="5406322316791861025">цифра</translation>
 <translation id="5453733299334684579">ставка стабла</translation>
 <translation id="5466621249238537318">Изаберите једну или више датотека.</translation>
@@ -147,6 +148,7 @@
 <translation id="6150588977291308318">библиографија</translation>
 <translation id="6164829606128959761">мерач</translation>
 <translation id="6166809985690652833">поговор</translation>
+<translation id="6209276755895393898">Изгледа да је ово: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">речник термина</translation>
 <translation id="6398862346408813489">Прикажи таблу за избор месеца</translation>
 <translation id="6404546809543547843">клизач за трајање аудио-садржаја</translation>
@@ -177,7 +179,7 @@
 <translation id="7139483182332611405">предговор</translation>
 <translation id="7263440858009898357">Изаберите ставку са листе.</translation>
 <translation id="727747134524199931">заглавље колоне</translation>
-<translation id="7336527682887843386">Нисмо успели да нађемо опис.</translation>
+<translation id="7320576522385648310">баферовање</translation>
 <translation id="7353453495576941748">заслуга</translation>
 <translation id="7364796246159120393">Одабери датотеку</translation>
 <translation id="739024184232394898">Друго...</translation>
@@ -200,7 +202,6 @@
 <translation id="7888071071722539607">Уврстите „<ph name="ATSIGN" />“ у имејл адресу. У адреси е-поште „<ph name="INVALIDADDRESS" />“ недостаје „<ph name="ATSIGN" />“.</translation>
 <translation id="7891486169920085145">разделник</translation>
 <translation id="795667975304826397">Није одабрано</translation>
-<translation id="8042519864538898414">Изгледа да је садржај за одрасле.</translation>
 <translation id="8053789581856978548">поље за текст претраге</translation>
 <translation id="8057695513531652401">обавештење</translation>
 <translation id="8105797009065549151">референца напомене</translation>

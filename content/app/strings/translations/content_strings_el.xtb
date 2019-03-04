@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">κατάσταση</translation>
 <translation id="1938124657309484470">Η τιμή πρέπει να είναι <ph name="MAXIMUM_DATE_OR_TIME" /> ή προγενέστερη.</translation>
 <translation id="1946271899482435442">Εμφάνιση εργαλείου επιλογής ημερομηνίας</translation>
-<translation id="1982354452682152483">Δεν υπάρχει διαθέσιμη περιγραφή.</translation>
 <translation id="1993104285338243655">Εναλλαγή σε κατοπτρισμό</translation>
 <translation id="2060505056492490888">Το σύμβολο "<ph name="DOT" />" χρησιμοποιείται σε λάθος θέση στη διεύθυνση "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Σήμερα</translation>
@@ -95,6 +94,7 @@
 <translation id="4360991593054037559">Καταχωρίστε μια έγκυρη τιμή. Οι δύο πιο κοντινές έγκυρες τιμές είναι <ph name="VALID_VALUE_LOW" /> και <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Ερωτήσεις και απαντήσεις</translation>
 <translation id="4413860115965805769">κουμπί μενού</translation>
+<translation id="4444765639179266822">Φαίνεται πως λέει: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">αναφορά στο γλωσσάρι</translation>
 <translation id="4522570452068850558">Λεπτομέρειες</translation>
 <translation id="4542388879936266156">χρόνος που απομένει: <ph name="REMAINING_TIME" /></translation>
@@ -121,6 +121,7 @@
 <translation id="5164977714490026579">Η τιμή πρέπει να είναι μεγαλύτερη ή ίση του <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Καταχωρίστε το τμήμα της διεύθυνσης πριν το σύμβολο "<ph name="ATSIGN" />". Η διεύθυνση "<ph name="INVALIDADDRESS" />" δεν είναι πλήρης.</translation>
+<translation id="5334352251556557839">Δεν είναι δυνατή η αναπαραγωγή μέσων.</translation>
 <translation id="5406322316791861025">αριθμός</translation>
 <translation id="5453733299334684579">στοιχείο δέντρου</translation>
 <translation id="5466621249238537318">Επιλέξτε ένα ή περισσότερα αρχεία.</translation>
@@ -147,6 +148,7 @@
 <translation id="6150588977291308318">βιβλιογραφία</translation>
 <translation id="6164829606128959761">μετρητής</translation>
 <translation id="6166809985690652833">επίλογος</translation>
+<translation id="6209276755895393898">Φαίνεται πως ήταν: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">γλωσσάρι</translation>
 <translation id="6398862346408813489">Εμφάνιση παραθύρου επιλογής μήνα</translation>
 <translation id="6404546809543547843">δείκτης χρόνου ήχου</translation>
@@ -177,7 +179,7 @@
 <translation id="7139483182332611405">πρόλογος</translation>
 <translation id="7263440858009898357">Επιλέξτε ένα στοιχείο από τη λίστα.</translation>
 <translation id="727747134524199931">κεφαλίδα στήλης</translation>
-<translation id="7336527682887843386">Δεν είναι δυνατή η λήψη περιγραφής.</translation>
+<translation id="7320576522385648310">αποθήκευση στην προσωρινή μνήμη</translation>
 <translation id="7353453495576941748">εύσημα</translation>
 <translation id="7364796246159120393">Επιλογή αρχείου</translation>
 <translation id="739024184232394898">Άλλες…</translation>
@@ -200,7 +202,6 @@
 <translation id="7888071071722539607">Συμπεριλάβετε το σύμβολο "<ph name="ATSIGN" />" στη διεύθυνση ηλεκτρονικού ταχυδρομείου. Από τη διεύθυνση "<ph name="INVALIDADDRESS" />" λείπει το σύμβολο "<ph name="ATSIGN" />".</translation>
 <translation id="7891486169920085145">διαχωριστής</translation>
 <translation id="795667975304826397">Δεν επιλέχθηκε κανένα αρχείο.</translation>
-<translation id="8042519864538898414">Φαίνεται ότι είναι περιεχόμενο για ενηλίκους.</translation>
 <translation id="8053789581856978548">αναζήτηση πεδίου κειμένου</translation>
 <translation id="8057695513531652401">ειδοποίηση</translation>
 <translation id="8105797009065549151">παραπομπή</translation>

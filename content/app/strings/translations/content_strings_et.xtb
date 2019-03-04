@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">olek</translation>
 <translation id="1938124657309484470">Väärtus peab olema <ph name="MAXIMUM_DATE_OR_TIME" /> või varasem.</translation>
 <translation id="1946271899482435442">Kuupäevavalija kuvamine</translation>
-<translation id="1982354452682152483">Kirjeldus ei ole saadaval.</translation>
 <translation id="1993104285338243655">Lülitatud peegeldamisele</translation>
 <translation id="2060505056492490888">Tähist „<ph name="DOT" />” on aadressis „<ph name="INVALIDDOMAIN" />” valesti kasutatud.</translation>
 <translation id="2148716181193084225">Täna</translation>
@@ -95,6 +94,7 @@
 <translation id="4360991593054037559">Sisestage kehtiv väärtus. Kaks lähimat kehtivat väärtust on <ph name="VALID_VALUE_LOW" /> ja <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Küsimused ja vastused</translation>
 <translation id="4413860115965805769">menüünupp</translation>
+<translation id="4444765639179266822">Näib ütlevat: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">sõnastiku viide</translation>
 <translation id="4522570452068850558">Üksikasjad</translation>
 <translation id="4542388879936266156">järelejäänud aeg: <ph name="REMAINING_TIME" /></translation>
@@ -121,6 +121,7 @@
 <translation id="5164977714490026579">Väärtus peab olema suurem või võrdne <ph name="MINIMUM" />-ga.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Sisestage märgile „<ph name="ATSIGN" />” eelnev osa. Aadress „<ph name="INVALIDADDRESS" />” pole täielik.</translation>
+<translation id="5334352251556557839">Meediasisu ei saa esitada.</translation>
 <translation id="5406322316791861025">joonis</translation>
 <translation id="5453733299334684579">puuüksus</translation>
 <translation id="5466621249238537318">Valige üks või mitu faili.</translation>
@@ -147,6 +148,7 @@
 <translation id="6150588977291308318">bibliograafia</translation>
 <translation id="6164829606128959761">mõõdik</translation>
 <translation id="6166809985690652833">järelsõna</translation>
+<translation id="6209276755895393898">Näib olevat: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">sõnastik</translation>
 <translation id="6398862346408813489">Kuu valikupaneeli kuvamine</translation>
 <translation id="6404546809543547843">heli ajamõõdik</translation>
@@ -177,7 +179,7 @@
 <translation id="7139483182332611405">eessõna</translation>
 <translation id="7263440858009898357">Valige loendist element.</translation>
 <translation id="727747134524199931">veeru päis</translation>
-<translation id="7336527682887843386">Kirjelduse hankimine ebaõnnestus</translation>
+<translation id="7320576522385648310">puhverdamine</translation>
 <translation id="7353453495576941748">autor(id)</translation>
 <translation id="7364796246159120393">Vali fail</translation>
 <translation id="739024184232394898">Muu ...</translation>
@@ -200,7 +202,6 @@
 <translation id="7888071071722539607">Lisage e-posti aadressile märk „<ph name="ATSIGN" />”. Aadressist „<ph name="INVALIDADDRESS" />” puudub märk „<ph name="ATSIGN" />”.</translation>
 <translation id="7891486169920085145">jagaja</translation>
 <translation id="795667975304826397">Pole valitud</translation>
-<translation id="8042519864538898414">Näib olevat täiskasvanutele mõeldud sisu.</translation>
 <translation id="8053789581856978548">otsinguteksti väli</translation>
 <translation id="8057695513531652401">teatis</translation>
 <translation id="8105797009065549151">märkuse viide</translation>

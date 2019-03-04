@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">stanje</translation>
 <translation id="1938124657309484470">Vrednost mora biti <ph name="MAXIMUM_DATE_OR_TIME" /> ali prej.</translation>
 <translation id="1946271899482435442">Pokaži izbirnik datuma</translation>
-<translation id="1982354452682152483">Opis ni na voljo.</translation>
 <translation id="1993104285338243655">Preklopljeno na zrcaljenje</translation>
 <translation id="2060505056492490888">»<ph name="DOT" />« je na napačnem mestu v »<ph name="INVALIDDOMAIN" />«.</translation>
 <translation id="2148716181193084225">Danes</translation>
@@ -177,7 +176,6 @@
 <translation id="7139483182332611405">predgovor</translation>
 <translation id="7263440858009898357">Izberite element s seznama.</translation>
 <translation id="727747134524199931">glava stolpca</translation>
-<translation id="7336527682887843386">Opisa ni mogoče dobiti.</translation>
 <translation id="7353453495576941748">zasluga</translation>
 <translation id="7364796246159120393">Izberite datoteko</translation>
 <translation id="739024184232394898">Drugo ...</translation>
@@ -200,7 +198,6 @@
 <translation id="7888071071722539607">V e-poštnem naslovu mora biti znak »<ph name="ATSIGN" />«. V naslovu »<ph name="INVALIDADDRESS" />« manjka »<ph name="ATSIGN" />«.</translation>
 <translation id="7891486169920085145">razdelilnik</translation>
 <translation id="795667975304826397">Nobena datoteka ni izbrana</translation>
-<translation id="8042519864538898414">Videti je, da gre za vsebino za odrasle.</translation>
 <translation id="8053789581856978548">besedilno polje za iskanje</translation>
 <translation id="8057695513531652401">kritika</translation>
 <translation id="8105797009065549151">sklicevanje na opombo</translation>

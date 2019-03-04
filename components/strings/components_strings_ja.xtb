@@ -47,7 +47,6 @@
 <translation id="121201262018556460"><ph name="DOMAIN" /> にアクセスしようとしましたが、サーバーから提示された証明書には脆弱な暗号鍵が含まれています。悪意のあるユーザーによって秘密鍵が破られた可能性があり、アクセスしようとしたサーバーとは異なるサーバーであるおそれがあります（悪意のあるユーザーと通信している可能性があります）。</translation>
 <translation id="1219129156119358924">システム セキュリティ</translation>
 <translation id="1227224963052638717">不明なポリシー。</translation>
-<translation id="1227633850867390598">値を非表示</translation>
 <translation id="1228893227497259893">エンティティ識別子が正しくありません</translation>
 <translation id="1232569758102978740">無題</translation>
 <translation id="124116460088058876">その他の言語</translation>
@@ -100,6 +99,7 @@
 <translation id="1430915738399379752">印刷</translation>
 <translation id="1455413310270022028">消しゴム</translation>
 <translation id="1463543813647160932">5×7</translation>
+<translation id="1472675084647422956">表示項目を増やす</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">配送先住所を選択</translation>
 <translation id="1501859676467574491">Google アカウントに保存したカードを表示</translation>
@@ -474,7 +474,6 @@
 <translation id="3615877443314183785">有効期限（日）を入力してください</translation>
 <translation id="36224234498066874">閲覧履歴を消去...</translation>
 <translation id="362276910939193118">全履歴を表示</translation>
-<translation id="3623476034248543066">値を表示</translation>
 <translation id="3630155396527302611">ネットワークへのアクセスを許可されたプログラムとして既に表示されている場合は、
       いったんリストから削除し、もう一度追加してみてください。</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
@@ -732,6 +731,7 @@
 <translation id="5115563688576182185">（64 ビット）</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5135404736266831032">住所を管理...</translation>
+<translation id="5138227688689900538">一部を表示</translation>
 <translation id="5141240743006678641">Google の認証情報で同期パスワードを暗号化する</translation>
 <translation id="5145883236150621069">ポリシー応答内にエラー コードがあります</translation>
 <translation id="515292512908731282">C4（封筒）</translation>
@@ -1254,6 +1254,7 @@
 <translation id="8197543752516192074">ページを翻訳する</translation>
 <translation id="8201077131113104583">ID「<ph name="EXTENSION_ID" />」の拡張機能に対する無効な更新 URL です。</translation>
 <translation id="8202097416529803614">ご注文概要</translation>
+<translation id="8202370299023114387">競合</translation>
 <translation id="8206978196348664717">Prc4（封筒）</translation>
 <translation id="8211406090763984747">この接続は保護されています</translation>
 <translation id="8218327578424803826">割り当てられた場所:</translation>

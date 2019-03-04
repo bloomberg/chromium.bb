@@ -63,7 +63,6 @@
 <translation id="1809939268435598390">Odstrániť priečinok</translation>
 <translation id="1813414402673211292">Vymazať dáta prehliadania</translation>
 <translation id="1820259098641718022">Pridané do zoznamu na čítanie</translation>
-<translation id="1821253160463689938">Používa súbory cookie na zapamätanie si predvolieb, dokonca aj keď dané stránky nenavštívite</translation>
 <translation id="1828824471510190776">Navrhnúť heslo…</translation>
 <translation id="1876721852596493031">Odosielanie údajov o používaní</translation>
 <translation id="1886928167269928266">Celé obdobie</translation>
@@ -75,6 +74,7 @@
 <translation id="2000419248597011803">Odošle niektoré súbory cookie a vyhľadávania z panela s adresou a vyhľadávacieho poľa do vášho predvoleného vyhľadávača</translation>
 <translation id="2015722694326466240">Ak si chcete zobraziť heslá, najprv musíte v zariadení nastaviť vstupný kód.</translation>
 <translation id="2068952045031577364">Posledný týždeň</translation>
+<translation id="2074131957428911366">Položky, ktoré chcete synchronizovať, môžete vybrať v <ph name="BEGIN_LINK" />nastaveniach<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Späť</translation>
 <translation id="209018056901015185">Vyžiadať stránky pre počítač</translation>
 <translation id="2096012225669085171">Synchronizovať a prispôsobiť v rôznych zariadeniach</translation>
@@ -176,6 +176,7 @@
 <translation id="3588820906588687999">Otvoriť obrázok na novej karte</translation>
 <translation id="3603009562372709545">Kopírovať webovú adresu odkazu</translation>
 <translation id="3607167657931203000">Údaje automatického dopĺňania</translation>
+<translation id="3607323550193047592">Synchronizácia je zapnutá</translation>
 <translation id="3609785682760573515">Prebieha synchronizácia...</translation>
 <translation id="3638472932233958418">Predbežne načítavať webové stránky</translation>
 <translation id="3691593122358196899">Uložené ako záložka v priečinku <ph name="FOLDER_TITLE" /></translation>
@@ -199,6 +200,7 @@
 <translation id="4038354071007134711">Tento súbor nedokáže otvoriť žiadna aplikácia na tomto zariadení.</translation>
 <translation id="4042870976416480368">Nájsť na stránke</translation>
 <translation id="4049507953662678203">Uistite sa, že máte pripojenie k sieti, a skúste to znova.</translation>
+<translation id="4082688844002261427">Ovládajte, ako sa pomocou histórie prehliadania prispôsobujú Vyhľadávanie, reklamy a ďalší obsah</translation>
 <translation id="408404951701638773">Vyhľadávací panel je teraz dostupnejší</translation>
 <translation id="4084682180776658562">Záložka</translation>
 <translation id="411254640334432676">Sťahovanie zlyhalo.</translation>
@@ -247,7 +249,6 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="4854345657858711387">Nastavenie vstupného kódu</translation>
 <translation id="4860895144060829044">Volajte</translation>
 <translation id="4881695831933465202">Otvoriť</translation>
-<translation id="4895709476292058519">Zmeniť účty</translation>
 <translation id="4904877109095351937">Označiť ako prečítané</translation>
 <translation id="4930268273022498155">Odstrániť existujúce údaje. Načítate ich prepnutím späť na účet <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Je nám ľúto, pri zdieľaní položky sa vyskytol problém.</translation>
@@ -397,6 +398,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="7203585745079012652">Vysloviť odpovede</translation>
 <translation id="722055596168483966">Prispôsobenie služieb Google</translation>
 <translation id="7272437679830969316">Vašu totožnosť nie je možné overiť. Heslo sa neskopírovalo.</translation>
+<translation id="7280856130494094142">Ak chcete spustiť synchronizáciu, zadajte prístupovú frázu</translation>
 <translation id="7285236536143823449">ÁNO, SÚHLASÍM</translation>
 <translation id="7291368939935408496">Pripravujú sa heslá...</translation>
 <translation id="7336264872878993241">Stiahnuté: <ph name="PERCENT" /> percent</translation>
@@ -439,7 +441,6 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="794799177247607889">Zastaviť zapisovanie do denníka</translation>
 <translation id="7961015016161918242">Nikdy</translation>
 <translation id="7971521879845308059">Blokov. okien</translation>
-<translation id="7981313251711023384">Vopred načítavať stránky na zrýchlenie prehliadania a vyhľadávania</translation>
 <translation id="7982789257301363584">Sieť</translation>
 <translation id="8019783059653722575">Umožňuje uložiť a nahrať fotky.</translation>
 <translation id="802154636333426148">Stiahnutie zlyhalo</translation>

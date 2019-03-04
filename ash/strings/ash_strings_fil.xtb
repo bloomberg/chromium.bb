@@ -148,10 +148,12 @@
 <translation id="3153444934357957346">Maaari ka lang magkaroon ng hanggang <ph name="MULTI_PROFILE_USER_LIMIT" /> (na) account sa maraming pag-sign in.</translation>
 <translation id="3154351730702813399">Maaaring subaybayan ng admin ng device ang iyong aktibidad sa pag-browse.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Nakakonekta sa isang device}one{Nakakonekta sa # device}other{Nakakonekta sa # na device}}</translation>
+<translation id="3226991577105957773">+<ph name="COUNT" /> pa</translation>
 <translation id="3236488194889173876">Walang available na mobile network</translation>
 <translation id="3255483164551725916">Ano'ng maaari mong gawin?</translation>
 <translation id="3294437725009624529">Bisita</translation>
 <translation id="3308453408813785101">Maaari pa ring mag-sign in si <ph name="USER_EMAIL_ADDRESS" /> sa ibang pagkakataon.</translation>
+<translation id="3321628682574733415">Maling code ng magulang</translation>
 <translation id="332587331255250389">Pakipalitan ang baterya</translation>
 <translation id="3351879221545518001">Kasalukuyan kang nagka-cast ng screen.</translation>
 <translation id="3364721542077212959">Mga stylus tool</translation>
@@ -196,6 +198,7 @@
 <translation id="4017989525502048489">Laser pointer</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Naka-off para sa isang app}one{Naka-off para sa # app}other{Naka-off para sa # na app}}</translation>
 <translation id="4072264167173457037">Katamtaman ang signal</translation>
+<translation id="4129129681837227511">Para makakita ng mga notification sa iyong screen ng lock, i-unlock para baguhin ang setting</translation>
 <translation id="4146833061457621061">Mag-play ng musika</translation>
 <translation id="4181841719683918333">Mga Wika</translation>
 <translation id="4195877955194704651">Button ng mga awtomatikong pag-click</translation>
@@ -309,7 +312,6 @@
 <translation id="615957422585914272">Ipakita ang on-screen na keyboard</translation>
 <translation id="6164005077879661055">Permanenteng matatanggal ang lahat ng file at lokal na data na kaugnay ng pinangangasiwaang user sa oras na alisin ang pinangangasiwaang user na ito. Maaari pa ring makita ng manager ang mga nabisitang website at setting para sa pinangangasiwaang user na ito sa <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Matuto pa</translation>
-<translation id="6226658484809055840">May access ang administrator ng device sa lahat ng aktibidad, kasama ang mga password at komunikasyon.</translation>
 <translation id="6254629735336163724">Naka-lock sa horizontal</translation>
 <translation id="6259254695169772643">Gamitin ang iyong stylus para pumili</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Ina-activate...</translation>
@@ -333,6 +335,7 @@
 <translation id="6528179044667508675">Huwag istorbohin</translation>
 <translation id="6537270692134705506">I-capture ang screen</translation>
 <translation id="6542521951477560771">Nagka-cast sa <ph name="RECEIVER_NAME" /></translation>
+<translation id="6559976592393364813">Magtanong sa Administrator</translation>
 <translation id="6585808820553845416">Matatapos ang session pagkalipas ng <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Maghanap+Shift+K</translation>
 <translation id="6650933572246256093">Gusto ng bluetooth device na "<ph name="DEVICE_NAME" />" ng pahintulot na magpares. Pakilagay ang passkey na ito sa device na iyon: <ph name="PASSKEY" /></translation>

@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">وضعیت</translation>
 <translation id="1938124657309484470">مقدار باید <ph name="MAXIMUM_DATE_OR_TIME" /> یا قبل از آن باشد.</translation>
 <translation id="1946271899482435442">نمایش انتخابگر تاریخ</translation>
-<translation id="1982354452682152483">توضیحی دردسترس نیست.</translation>
 <translation id="1993104285338243655">به نمایش صفحه‌نمایش روی دستگاه دیگر تغییر یافت</translation>
 <translation id="2060505056492490888">«<ph name="DOT" />» در «<ph name="INVALIDDOMAIN" />» در محل اشتباهی قرار دارد.</translation>
 <translation id="2148716181193084225">امروز</translation>
@@ -177,7 +176,6 @@
 <translation id="7139483182332611405">پیش‌گفتار</translation>
 <translation id="7263440858009898357">لطفاً یک مورد را در فهرست انتخاب کنید.</translation>
 <translation id="727747134524199931">عنوان ستون</translation>
-<translation id="7336527682887843386">توضیح دریافت نشد.</translation>
 <translation id="7353453495576941748">تأیید اعتبار</translation>
 <translation id="7364796246159120393">انتخاب فایل</translation>
 <translation id="739024184232394898">موارد دیگر...</translation>
@@ -200,7 +198,6 @@
 <translation id="7888071071722539607">لطفاً نماد «<ph name="ATSIGN" />» را به نشانی ایمیل اضافه کنید. «<ph name="INVALIDADDRESS" />» در «<ph name="ATSIGN" />» موجود نیست.</translation>
 <translation id="7891486169920085145">تقسیم‌کننده</translation>
 <translation id="795667975304826397">فایلی انتخاب نشده است</translation>
-<translation id="8042519864538898414">ظاهراً محتوای بزرگسالان است.</translation>
 <translation id="8053789581856978548">فیلد نوشتاری جستجو</translation>
 <translation id="8057695513531652401">اطلاعیه</translation>
 <translation id="8105797009065549151">مرجع یادداشت</translation>

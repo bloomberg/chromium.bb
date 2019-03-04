@@ -47,7 +47,6 @@
 <translation id="121201262018556460">คุณพยายามเข้าถึง <ph name="DOMAIN" /> แต่เซิร์ฟเวอร์แสดงใบรับรองที่มีคีย์ที่ไม่รัดกุม ผู้โจมตีอาจทำให้คีย์ส่วนตัวเสียหายไปแล้วและเซิร์ฟเวอร์นี้อาจไม่ใช่เซิร์ฟเวอร์ที่คุณคิด (คุณอาจกำลังติดต่อกับผู้โจมตี)</translation>
 <translation id="1219129156119358924">การรักษาความปลอดภัยของระบบ</translation>
 <translation id="1227224963052638717">นโยบายที่ไม่รู้จัก</translation>
-<translation id="1227633850867390598">ซ่อนค่า</translation>
 <translation id="1228893227497259893">ตัวระบุเอนทิตีไม่ถูกต้อง</translation>
 <translation id="1232569758102978740">ไม่ระบุชื่อ</translation>
 <translation id="124116460088058876">ภาษาเพิ่มเติม</translation>
@@ -102,6 +101,7 @@
 <translation id="1430915738399379752">พิมพ์</translation>
 <translation id="1455413310270022028">ยางลบ</translation>
 <translation id="1463543813647160932">5x7</translation>
+<translation id="1472675084647422956">แสดงเพิ่มเติม</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">เลือกที่อยู่สำหรับจัดส่ง</translation>
 <translation id="1501859676467574491">แสดงบัตรจากบัญชี Google ของคุณ</translation>
@@ -481,7 +481,6 @@
 <translation id="3615877443314183785">ป้อนวันที่หมดอายุที่ถูกต้อง</translation>
 <translation id="36224234498066874">ล้างข้อมูลการท่องเว็บ</translation>
 <translation id="362276910939193118">แสดงประวัติการเข้าชมทั้งหมด</translation>
-<translation id="3623476034248543066">แสดงค่า</translation>
 <translation id="3630155396527302611">หากโปรแกรมอยู่ในรายการที่ได้รับอนุญาตให้เข้าถึงเครือข่ายอยู่แล้ว
       ลองนำโปรแกรมออกจากรายการและเพิ่มกลับเข้าไปใหม่</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
@@ -739,6 +738,7 @@
 <translation id="5115563688576182185">(64 บิต)</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5135404736266831032">จัดการที่อยู่...</translation>
+<translation id="5138227688689900538">แสดงน้อยลง</translation>
 <translation id="5141240743006678641">เข้ารหัสผ่านที่ซิงค์ด้วยข้อมูลรับรอง Google ของคุณ</translation>
 <translation id="5145883236150621069">มีรหัสข้อผิดพลาดในการตอบกลับนโยบาย</translation>
 <translation id="515292512908731282">C4 (ซองจดหมาย)</translation>
@@ -1264,6 +1264,7 @@
 <translation id="8197543752516192074">แปลหน้าเว็บ</translation>
 <translation id="8201077131113104583">การอัปเดต URL ไม่ถูกต้องสำหรับส่วนขยายรหัส "<ph name="EXTENSION_ID" />"</translation>
 <translation id="8202097416529803614">ข้อมูลสรุปคำสั่งซื้อ</translation>
+<translation id="8202370299023114387">ความขัดแย้ง</translation>
 <translation id="8206978196348664717">Prc4 (ซองจดหมาย)</translation>
 <translation id="8211406090763984747">การเชื่อมต่อปลอดภัย</translation>
 <translation id="8218327578424803826">ตำแหน่งที่มอบหมาย:</translation>

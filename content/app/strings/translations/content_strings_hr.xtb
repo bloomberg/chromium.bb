@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">status</translation>
 <translation id="1938124657309484470">Vrijednost mora biti <ph name="MAXIMUM_DATE_OR_TIME" /> ili prije toga.</translation>
 <translation id="1946271899482435442">Prikaz alata za odabir datuma</translation>
-<translation id="1982354452682152483">Opis nije dostupan.</translation>
 <translation id="1993104285338243655">Prebačeno na zrcaljenje</translation>
 <translation id="2060505056492490888">Znak "<ph name="DOT" />" upotrebljava se na pogrešnom položaju u domeni "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Danas</translation>
@@ -95,6 +94,7 @@
 <translation id="4360991593054037559">Unesite važeću vrijednost. Dvije su najbliže važeće vrijednosti <ph name="VALID_VALUE_LOW" /> i <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Pitanja i odgovori</translation>
 <translation id="4413860115965805769">gumb izbornika</translation>
+<translation id="4444765639179266822">Čini se da piše: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">referenca iz pojmovnika</translation>
 <translation id="4522570452068850558">Detalji</translation>
 <translation id="4542388879936266156">preostalo vrijeme: <ph name="REMAINING_TIME" /></translation>
@@ -121,6 +121,7 @@
 <translation id="5164977714490026579">Vrijednost mora biti <ph name="MINIMUM" /> ili veća.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Unesite dio adrese ispred znaka "<ph name="ATSIGN" />". "<ph name="INVALIDADDRESS" />" nije potpuna e-adresa.</translation>
+<translation id="5334352251556557839">Reprodukcija medija nije uspjela.</translation>
 <translation id="5406322316791861025">lik</translation>
 <translation id="5453733299334684579">stavka stabla</translation>
 <translation id="5466621249238537318">Izaberite jednu ili više datoteka.</translation>
@@ -147,6 +148,7 @@
 <translation id="6150588977291308318">bibliografija</translation>
 <translation id="6164829606128959761">mjerač</translation>
 <translation id="6166809985690652833">pogovor</translation>
+<translation id="6209276755895393898">Čini se da je to: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">pojmovnik</translation>
 <translation id="6398862346408813489">Prikaži ploču za odabir mjeseca</translation>
 <translation id="6404546809543547843">klizač vremena audiozapisa</translation>
@@ -177,7 +179,7 @@
 <translation id="7139483182332611405">predgovor</translation>
 <translation id="7263440858009898357">Odaberite stavku s popisa.</translation>
 <translation id="727747134524199931">zaglavlje stupca</translation>
-<translation id="7336527682887843386">Dohvaćanje opisa nije uspjelo.</translation>
+<translation id="7320576522385648310">pohranjivanje u međuspremnik</translation>
 <translation id="7353453495576941748">zasluga</translation>
 <translation id="7364796246159120393">Odaberi datoteku</translation>
 <translation id="739024184232394898">Drugo...</translation>
@@ -200,7 +202,6 @@
 <translation id="7888071071722539607">Uključite znak "<ph name="ATSIGN" />" u e-adresu. U adresi "<ph name="INVALIDADDRESS" />" nedostaje znak "<ph name="ATSIGN" />".</translation>
 <translation id="7891486169920085145">razdjelnik</translation>
 <translation id="795667975304826397">Nije odabrana niti jedna datoteka.</translation>
-<translation id="8042519864538898414">Čini se da je sadržaj za odrasle.</translation>
 <translation id="8053789581856978548">pretraži tekstno polje</translation>
 <translation id="8057695513531652401">obavijest</translation>
 <translation id="8105797009065549151">referenca bilješke</translation>

@@ -841,7 +841,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       - scheme://[*.]domain.tld:port (esquemas compatibles: http,https)
 
-      - file://path (La la ruta debe ser absoluta y comenzar con '/')
+      - file://path (La ruta debe ser absoluta y comenzar con '/')
 
       - a.b.c.d (coincide con una ip IPv4 exacta)
 

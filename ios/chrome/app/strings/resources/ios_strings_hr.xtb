@@ -63,7 +63,6 @@
 <translation id="1809939268435598390">Izbriši mapu</translation>
 <translation id="1813414402673211292">Brisanje podataka o pregledavanju</translation>
 <translation id="1820259098641718022">Dodano na popis za čitanje</translation>
-<translation id="1821253160463689938">Upotrebljava kolačiće za pamćenje vaših postavki, čak i ako ne posjetite te stranice</translation>
 <translation id="1828824471510190776">Predloži zaporku...</translation>
 <translation id="1876721852596493031">Slanje pod. o upot.</translation>
 <translation id="1886928167269928266">Od početka</translation>
@@ -75,6 +74,7 @@
 <translation id="2000419248597011803">Zadanoj tražilici šalje neke kolačiće i pretraživanja iz adresne trake i okvira za pretraživanje</translation>
 <translation id="2015722694326466240">Da biste vidjeli zaporke, najprije morate postaviti šifru zaporke na uređaju.</translation>
 <translation id="2068952045031577364">Od proteklog tjedna</translation>
+<translation id="2074131957428911366">Uvijek možete odabrati u <ph name="BEGIN_LINK" />postavkama<ph name="END_LINK" /> što će se sinkronizirati.</translation>
 <translation id="2079545284768500474">Poništi</translation>
 <translation id="209018056901015185">Prikaži klasičnu stranicu</translation>
 <translation id="2096012225669085171">Sinkronizacija i prilagodba na svim uređajima</translation>
@@ -176,6 +176,7 @@
 <translation id="3588820906588687999">Otvori sliku u novoj kartici</translation>
 <translation id="3603009562372709545">Kopiraj URL veze</translation>
 <translation id="3607167657931203000">Podaci automatskog popunjavanja</translation>
+<translation id="3607323550193047592">Sinkronizacija je uključena</translation>
 <translation id="3609785682760573515">Sinkronizacija...</translation>
 <translation id="3638472932233958418">Već učitane stranice</translation>
 <translation id="3691593122358196899">Oznaka dodana u mapu <ph name="FOLDER_TITLE" /></translation>
@@ -199,6 +200,7 @@
 <translation id="4038354071007134711">Na ovom uređaju nema aplikacije za tu datoteku.</translation>
 <translation id="4042870976416480368">Traži na stranici</translation>
 <translation id="4049507953662678203">Provjerite mrežnu vezu i pokušajte ponovo.</translation>
+<translation id="4082688844002261427">Odredite na koji će se način vaša povijest pregledavanja upotrebljavati za prilagodbu Pretraživanja, oglasa i drugog</translation>
 <translation id="408404951701638773">Traku za pretraživanje sada je lakše dohvatiti</translation>
 <translation id="4084682180776658562">Oznaka</translation>
 <translation id="411254640334432676">Preuzimanje nije uspjelo.</translation>
@@ -247,7 +249,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="4854345657858711387">Postavite šifru zaporke</translation>
 <translation id="4860895144060829044">Poziv</translation>
 <translation id="4881695831933465202">Otvori</translation>
-<translation id="4895709476292058519">Promijenite račun</translation>
 <translation id="4904877109095351937">Označi kao pročitano</translation>
 <translation id="4930268273022498155">Postojeći će se podaci izbrisati. Dohvatiti ih možete tako da se vratite na <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Došlo je do problema prilikom dijeljenja vaše stavke.</translation>
@@ -397,6 +398,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="7203585745079012652">Izgovaranje odgovora</translation>
 <translation id="722055596168483966">Prilagođavanje Googleovih usluga</translation>
 <translation id="7272437679830969316">Potvrda identiteta nije moguća. Zaporka nije kopirana.</translation>
+<translation id="7280856130494094142">Unesite šifru za pokretanje sinkronizacije</translation>
 <translation id="7285236536143823449">DA, U REDU</translation>
 <translation id="7291368939935408496">Priprema zaporki...</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> posto preuzeto</translation>
@@ -439,7 +441,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="794799177247607889">Prestani zapisivati</translation>
 <translation id="7961015016161918242">Nikad</translation>
 <translation id="7971521879845308059">Blokiraj skočne</translation>
-<translation id="7981313251711023384">Prethodno učitaj stranice za brže pregledavanje i pretraživanje</translation>
 <translation id="7982789257301363584">Mreža</translation>
 <translation id="8019783059653722575">To vam omogućuje spremanje i prijenos fotografija.</translation>
 <translation id="802154636333426148">Preuzimanje nije uspjelo</translation>

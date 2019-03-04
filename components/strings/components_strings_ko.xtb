@@ -47,7 +47,6 @@
 <translation id="121201262018556460"><ph name="DOMAIN" />에 접속하려 했으나 서버가 안전성이 낮은 키가 포함된 인증서를 전달했습니다. 공격자가 비공개 키를 손상시켰을 수 있으며 서버를 가장한 공격자와 통신 중일 수 있습니다.</translation>
 <translation id="1219129156119358924">시스템 보안</translation>
 <translation id="1227224963052638717">알 수 없는 정책입니다.</translation>
-<translation id="1227633850867390598">값 숨기기</translation>
 <translation id="1228893227497259893">잘못된 개체 식별자</translation>
 <translation id="1232569758102978740">제목 없음</translation>
 <translation id="124116460088058876">다른 언어</translation>
@@ -102,6 +101,7 @@
 <translation id="1430915738399379752">인쇄</translation>
 <translation id="1455413310270022028">지우개</translation>
 <translation id="1463543813647160932">5x7</translation>
+<translation id="1472675084647422956">자세히 보기</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">배송지 주소 선택</translation>
 <translation id="1501859676467574491">Google 계정에 저장된 카드 표시</translation>
@@ -482,7 +482,6 @@
 <translation id="3615877443314183785">올바른 만료일을 입력하세요.</translation>
 <translation id="36224234498066874">인터넷 사용 기록 삭제...</translation>
 <translation id="362276910939193118">방문 기록 전체 보기</translation>
-<translation id="3623476034248543066">값 표시</translation>
 <translation id="3630155396527302611">이미 네트워크 액세스가 허용된 프로그램으로 되어 있는 경우
     목록에서 삭제한 뒤 다시 추가합니다.</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
@@ -740,6 +739,7 @@
 <translation id="5115563688576182185">(64비트)</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5135404736266831032">주소 관리...</translation>
+<translation id="5138227688689900538">간략히</translation>
 <translation id="5141240743006678641">동기화 비밀번호를 Google 자격증명으로 암호화</translation>
 <translation id="5145883236150621069">정책 응답에 오류 코드가 포함되어 있음</translation>
 <translation id="515292512908731282">C4(봉투)</translation>
@@ -1264,6 +1264,7 @@
 <translation id="8197543752516192074">페이지 번역</translation>
 <translation id="8201077131113104583">ID가 '<ph name="EXTENSION_ID" />'인 확장 프로그램에 대한 잘못된 업데이트 URL</translation>
 <translation id="8202097416529803614">주문 요약</translation>
+<translation id="8202370299023114387">충돌</translation>
 <translation id="8206978196348664717">Prc4(봉투)</translation>
 <translation id="8211406090763984747">이 사이트는 보안 연결(HTTPS)이 사용되었습니다.</translation>
 <translation id="8218327578424803826">지정된 위치:</translation>

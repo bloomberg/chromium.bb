@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">stan</translation>
 <translation id="1938124657309484470">Musisz podać wartość <ph name="MAXIMUM_DATE_OR_TIME" /> lub wcześniejszą.</translation>
 <translation id="1946271899482435442">Pokaż selektor dat</translation>
-<translation id="1982354452682152483">Brak opisu.</translation>
 <translation id="1993104285338243655">Przełączono na odbicie lustrzane</translation>
 <translation id="2060505056492490888">„<ph name="DOT" />” występuje w niewłaściwym miejscu w „<ph name="INVALIDDOMAIN" />”.</translation>
 <translation id="2148716181193084225">Dzisiaj</translation>
@@ -95,6 +94,7 @@
 <translation id="4360991593054037559">Podaj prawidłową wartość. Dwie najbliższe prawidłowe wartości to <ph name="VALID_VALUE_LOW" /> i <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Pytania i odpowiedzi</translation>
 <translation id="4413860115965805769">przycisk menu</translation>
+<translation id="4444765639179266822">Wygląda jak napis: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">odniesienie do słownika</translation>
 <translation id="4522570452068850558">Szczegóły</translation>
 <translation id="4542388879936266156">pozostało: <ph name="REMAINING_TIME" /></translation>
@@ -121,6 +121,7 @@
 <translation id="5164977714490026579">Wartość nie może być mniejsza niż <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Podaj część przed znakiem „<ph name="ATSIGN" />”. Adres „<ph name="INVALIDADDRESS" />” jest niepełny.</translation>
+<translation id="5334352251556557839">Nie można odtworzyć multimediów.</translation>
 <translation id="5406322316791861025">figura</translation>
 <translation id="5453733299334684579">element drzewa</translation>
 <translation id="5466621249238537318">Wybierz jeden lub kilka plików.</translation>
@@ -147,6 +148,7 @@
 <translation id="6150588977291308318">bibliografia</translation>
 <translation id="6164829606128959761">miernik</translation>
 <translation id="6166809985690652833">posłowie</translation>
+<translation id="6209276755895393898">Wygląda jak: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">słownik</translation>
 <translation id="6398862346408813489">Pokaż panel wyboru miesiąca</translation>
 <translation id="6404546809543547843">pasek czasu odtwarzania dźwięku</translation>
@@ -177,7 +179,7 @@
 <translation id="7139483182332611405">wstęp</translation>
 <translation id="7263440858009898357">Wybierz element z listy.</translation>
 <translation id="727747134524199931">nagłówek kolumny</translation>
-<translation id="7336527682887843386">Nie udało się uzyskać opisu.</translation>
+<translation id="7320576522385648310">buforowanie</translation>
 <translation id="7353453495576941748">twórcy</translation>
 <translation id="7364796246159120393">Wybierz plik</translation>
 <translation id="739024184232394898">Inny...</translation>
@@ -200,7 +202,6 @@
 <translation id="7888071071722539607">Uwzględnij znak „<ph name="ATSIGN" />” w adresie e-mail. W adresie „<ph name="INVALIDADDRESS" />” brakuje znaku „<ph name="ATSIGN" />”.</translation>
 <translation id="7891486169920085145">podział</translation>
 <translation id="795667975304826397">Nie wybrano pliku</translation>
-<translation id="8042519864538898414">To wygląda na przeznaczone tylko dla dorosłych.</translation>
 <translation id="8053789581856978548">pole tekstowe wyszukiwania</translation>
 <translation id="8057695513531652401">uwaga</translation>
 <translation id="8105797009065549151">odsyłacz</translation>

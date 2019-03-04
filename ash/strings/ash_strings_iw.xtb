@@ -148,10 +148,12 @@
 <translation id="3153444934357957346">אפשר לכלול עד <ph name="MULTI_PROFILE_USER_LIMIT" /> חשבונות בכניסה עם מספר חשבונות.</translation>
 <translation id="3154351730702813399">ייתכן שמנהל המכשיר עוקב אחרי פעילות הגלישה שלך.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{מחובר למכשיר אחד}two{מחובר ל-# מכשירים}many{מחובר ל-# מכשירים}other{מחובר ל-# מכשירים}}</translation>
+<translation id="3226991577105957773">+<ph name="COUNT" /> נוספות</translation>
 <translation id="3236488194889173876">אין רשת סלולרית זמינה</translation>
 <translation id="3255483164551725916">מה אפשר לעשות?</translation>
 <translation id="3294437725009624529">אורח</translation>
 <translation id="3308453408813785101">ל-<ph name="USER_EMAIL_ADDRESS" /> תהיה עדיין אפשרות להיכנס לחשבון מאוחר יותר.</translation>
+<translation id="3321628682574733415">קוד הורה שגוי</translation>
 <translation id="332587331255250389">יש להחליף את הסוללה</translation>
 <translation id="3351879221545518001">מתבצעת עכשיו העברה של מסך.</translation>
 <translation id="3364721542077212959">כלי סטיילוס</translation>
@@ -196,6 +198,7 @@
 <translation id="4017989525502048489">סמן לייזר</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{מושבת לאפליקציה אחת}two{מושבת ל-2 אפליקציות}many{מושבת ל-# אפליקציות}other{מושבת ל-# אפליקציות}}</translation>
 <translation id="4072264167173457037">אות בינוני</translation>
+<translation id="4129129681837227511">כדי להציג הודעות במסך הנעילה, יש לבטל את הנעילה כדי לשנות את ההגדרה</translation>
 <translation id="4146833061457621061">השמעת מוזיקה</translation>
 <translation id="4181841719683918333">שפות</translation>
 <translation id="4195877955194704651">לחצן קליקים אוטומטיים</translation>
@@ -309,7 +312,6 @@
 <translation id="615957422585914272">הצג מקלדת במסך</translation>
 <translation id="6164005077879661055">כל הקבצים והנתונים המקומיים המשויכים למשתמש בפיקוח יימחקו לצמיתות לאחר שמשתמש בפיקוח זה יוסר. המנהל עדיין יוכל לראות את האתרים שבהם משתמש בפיקוח זה ביקר, ואת ההגדרות שלו, בכתובת <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
-<translation id="6226658484809055840">למנהל המכשיר יש גישה לכל הפעילות, כולל סיסמאות ותקשורת.</translation>
 <translation id="6254629735336163724">נעול במצב אופקי</translation>
 <translation id="6259254695169772643">כדי לבחור יש להשתמש בסטיילוס</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: מפעיל...</translation>
@@ -333,6 +335,7 @@
 <translation id="6528179044667508675">נא לא להפריע</translation>
 <translation id="6537270692134705506">צילום מסך</translation>
 <translation id="6542521951477560771">מעביר אל <ph name="RECEIVER_NAME" /></translation>
+<translation id="6559976592393364813">שאלה למנהל מערכת</translation>
 <translation id="6585808820553845416">הפעילות באתר תסתיים בעוד <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">‏חיפוש+Shift‏+K</translation>
 <translation id="6650933572246256093">‏מכשיר ה-Bluetooth ‏"<ph name="DEVICE_NAME" />" מבקש הרשאה לביצוע התאמה. הזן את מפתח הסיסמה הבא במכשיר הזה: <ph name="PASSKEY" /></translation>

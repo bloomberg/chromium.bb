@@ -63,14 +63,13 @@
 <translation id="1809939268435598390">Eliminar carpeta</translation>
 <translation id="1813414402673211292">Eliminar datos de navegación</translation>
 <translation id="1820259098641718022">Se agregó a la lista de lectura</translation>
-<translation id="1821253160463689938">Usa cookies para recordar tus preferencias, incluso si no visitas esas páginas</translation>
 <translation id="1828824471510190776">Sugerir contraseña…</translation>
 <translation id="1876721852596493031">Enviar datos de uso</translation>
 <translation id="1886928167269928266">Principio</translation>
 <translation id="1911619930368729126">Cargar a Google Drive</translation>
 <translation id="1941314575388338491">Presiona dos veces para copiar.</translation>
 <translation id="1952728750904661634">Acceder con una cuenta administrada</translation>
-<translation id="1974060860693918893">Avanzada</translation>
+<translation id="1974060860693918893">Configuración avanzada</translation>
 <translation id="1989112275319619282">Navegar</translation>
 <translation id="2000419248597011803">Envía algunas cookies y búsquedas de la barra de direcciones y del cuadro de búsqueda a tu motor de búsqueda predeterminado</translation>
 <translation id="2015722694326466240">Para ver las contraseñas, primero debes establecer una en tu dispositivo.</translation>
@@ -176,6 +175,7 @@
 <translation id="3588820906588687999">Abrir imagen en nueva pestaña</translation>
 <translation id="3603009562372709545">Copiar URL del vínculo</translation>
 <translation id="3607167657931203000">Autocompletar datos</translation>
+<translation id="3607323550193047592">Sincronización activada</translation>
 <translation id="3609785682760573515">Sincronizando…</translation>
 <translation id="3638472932233958418">Precargar pág. web</translation>
 <translation id="3691593122358196899">Se agregó a favoritos en <ph name="FOLDER_TITLE" /></translation>
@@ -247,7 +247,6 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="4854345657858711387">Establecer una contraseña</translation>
 <translation id="4860895144060829044">Llamar</translation>
 <translation id="4881695831933465202">Abrir</translation>
-<translation id="4895709476292058519">Cambiar de cuenta</translation>
 <translation id="4904877109095351937">Marcar como leídas</translation>
 <translation id="4930268273022498155">Borra los datos existentes. Para recuperarlos, cambia de nuevo a <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Se produjo un error al compartir tu elemento.</translation>
@@ -353,7 +352,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="6445981559479772097">Mensaje enviado</translation>
 <translation id="6464071786529933911">Abrir en una pestaña de incógnito nueva</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos eliminados</translation>
-<translation id="6513773942555305766">Contraseña sugerida por Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
+<translation id="6513773942555305766">Contraseña sugerida de Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">La última hora</translation>
 <translation id="6548479190262846511">No hay contraseñas para este sitio</translation>
 <translation id="6642362222295953972">Cambiar a la pestaña existente</translation>
@@ -439,7 +438,6 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="794799177247607889">Detener registro</translation>
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7971521879845308059">Bloquear ventanas emergentes</translation>
-<translation id="7981313251711023384">Cargar previamente las páginas para acelerar la navegación y las búsquedas</translation>
 <translation id="7982789257301363584">Red</translation>
 <translation id="8019783059653722575">Te permite guardar fotos y cargarlas.</translation>
 <translation id="802154636333426148">Error en la descarga</translation>

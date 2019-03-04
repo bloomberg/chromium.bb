@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">ಸ್ಥಿತಿ</translation>
 <translation id="1938124657309484470">ಮೌಲ್ಯವು <ph name="MAXIMUM_DATE_OR_TIME" /> ಅಥವಾ ಹಿಂದಿನದ್ದಾಗಿರಬೇಕು.</translation>
 <translation id="1946271899482435442">ದಿನಾಂಕದ ಆಯ್ಕೆಯನ್ನು ತೋರಿಸಿ</translation>
-<translation id="1982354452682152483">ಯಾವುದೇ ವಿವರಣೆಯು ಲಭ್ಯವಿಲ್ಲ.</translation>
 <translation id="1993104285338243655">ಪ್ರತಿಬಿಂಬಿಸುವಿಕೆಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' ಅನ್ನು '<ph name="INVALIDDOMAIN" />' ನಲ್ಲಿ ತಪ್ಪಾದ ಸ್ಥಾನದಲ್ಲಿ ಬಳಸಲಾಗಿದೆ.</translation>
 <translation id="2148716181193084225">ಇಂದು</translation>
@@ -95,6 +94,7 @@
 <translation id="4360991593054037559">ಮಾನ್ಯವಾದ ಮೌಲ್ಯವನ್ನು ನಮೂದಿಸಿ. <ph name="VALID_VALUE_LOW" /> ಮತ್ತು <ph name="VALID_VALUE_HIGHER" /> ಎರಡು ಹತ್ತಿರದ ಮಾನ್ಯ ಮೌಲ್ಯಗಳಾಗಿವೆ.</translation>
 <translation id="4384583879834880242">ಪ್ರಶ್ನೋತ್ತರ</translation>
 <translation id="4413860115965805769">ಮೆನು ಬಟನ್</translation>
+<translation id="4444765639179266822">ಹೀಗೆ ಹೇಳುತ್ತಿರಬಹುದು: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">ಪದಕೋಶ ಉಲ್ಲೇಖ</translation>
 <translation id="4522570452068850558">ವಿವರಗಳು</translation>
 <translation id="4542388879936266156">ಬಾಕಿ ಉಳಿದಿರುವ ಸಮಯ: <ph name="REMAINING_TIME" /></translation>
@@ -121,6 +121,7 @@
 <translation id="5164977714490026579">ಮೌಲ್ಯವು <ph name="MINIMUM" /> ಕ್ಕಿಂತಲೂ ಹೆಚ್ಚಾಗಿರಬೇಕು ಅಥವಾ ಸಮನಾಗಿರಬೇಕು.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">'<ph name="ATSIGN" />' ನಂತರದ ಭಾಗವನ್ನು ನಮೂದಿಸಿ. '<ph name="INVALIDADDRESS" />' ಅಪೂರ್ಣವಾಗಿದೆ.</translation>
+<translation id="5334352251556557839">ಮೀಡಿಯಾ ಪ್ಲೇ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="5406322316791861025">ಆಕೃತಿ</translation>
 <translation id="5453733299334684579">ಟ್ರೀ ಐಟಂ</translation>
 <translation id="5466621249238537318">ದಯವಿಟ್ಟು ಒಂದು ಅಥವಾ ಹೆಚ್ಚು ಫೈಲ್‌ಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ.</translation>
@@ -147,6 +148,7 @@
 <translation id="6150588977291308318">ಗ್ರಂಥಸೂಚಿ</translation>
 <translation id="6164829606128959761">ಮೀಟರ್</translation>
 <translation id="6166809985690652833">ನಂತರದ</translation>
+<translation id="6209276755895393898">ಹೀಗೆ ಕಾಣಿಸುತ್ತಿದೆ: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">ಪದಕೋಶ</translation>
 <translation id="6398862346408813489">ತಿಂಗಳ ಆಯ್ಕೆ ಪ್ಯಾನಲ್ ತೋರಿಸಿ</translation>
 <translation id="6404546809543547843">ಆಡಿಯೊ ಸಮಯ ಸ್ಕ್ರಬ್ಬರ್</translation>
@@ -177,7 +179,7 @@
 <translation id="7139483182332611405">ಮುನ್ನುಡಿ</translation>
 <translation id="7263440858009898357">ಪಟ್ಟಿಯಲ್ಲಿನ ಐಟಂ ಅನ್ನು ದಯವಿಟ್ಟು ಆಯ್ಕೆ ಮಾಡಿ.</translation>
 <translation id="727747134524199931">ಕಾಲಮ್ ಶಿರೋನಾಮೆ</translation>
-<translation id="7336527682887843386">ವಿವರಣೆಯನ್ನು ಪಡೆಯಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
+<translation id="7320576522385648310">ಬಫರ್ ಆಗುತ್ತಿದೆ</translation>
 <translation id="7353453495576941748">ಗೌರವ</translation>
 <translation id="7364796246159120393">ಫೈಲ್ ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="739024184232394898">ಇತರೆ...</translation>
@@ -200,7 +202,6 @@
 <translation id="7888071071722539607">ಇಮೇಲ್ ವಿಳಾಸದಲ್ಲಿ ಒಂದು '<ph name="ATSIGN" />' ಅನ್ನು ಸೇರಿಸಿ. '<ph name="ATSIGN" />' ನಲ್ಲಿ '<ph name="INVALIDADDRESS" />' ಕಾಣೆಯಾಗಿದೆ.</translation>
 <translation id="7891486169920085145">ಛೇದಕ</translation>
 <translation id="795667975304826397">ಯಾವುದೇ ಫೈಲ್ ಆಯ್ಕೆ ಮಾಡಿಲ್ಲ</translation>
-<translation id="8042519864538898414">ವಯಸ್ಕರ ವಿಷಯ ಎಂಬಂತೆ ತೋರುತ್ತಿದೆ.</translation>
 <translation id="8053789581856978548">ಪಠ್ಯ ಕ್ಷೇತ್ರವನ್ನು ಹುಡುಕಿ</translation>
 <translation id="8057695513531652401">ಸೂಚನೆ</translation>
 <translation id="8105797009065549151">ಸೂಚನೆ ಉಲ್ಲೇಖ</translation>

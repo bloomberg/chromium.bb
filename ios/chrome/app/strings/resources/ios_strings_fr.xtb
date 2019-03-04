@@ -63,7 +63,6 @@
 <translation id="1809939268435598390">Supprimer le dossier</translation>
 <translation id="1813414402673211292">Effacer les données de navigation</translation>
 <translation id="1820259098641718022">Page ajoutée à la liste de lecture</translation>
-<translation id="1821253160463689938">Utilise des cookies pour mémoriser vos préférences, même si vous n'accédez pas à ces pages</translation>
 <translation id="1828824471510190776">Suggérer un mot de passe…</translation>
 <translation id="1876721852596493031">Envoyer les données d'utilisation</translation>
 <translation id="1886928167269928266">Depuis le début</translation>
@@ -75,6 +74,7 @@
 <translation id="2000419248597011803">Envoie des cookies et des recherches effectuées à partir de la barre d'adresse et du champ de recherche à votre moteur de recherche par défaut</translation>
 <translation id="2015722694326466240">Pour afficher les mots de passe, vous devez d'abord définir un code secret sur votre appareil.</translation>
 <translation id="2068952045031577364">Semaine dernière</translation>
+<translation id="2074131957428911366">Vous avez toujours la possibilité de sélectionner les éléments à synchroniser dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Annuler</translation>
 <translation id="209018056901015185">Voir version ordinateur</translation>
 <translation id="2096012225669085171">Synchroniser et personnaliser les données sur tous les appareils</translation>
@@ -176,6 +176,7 @@
 <translation id="3588820906588687999">Ouvrir l'image dans un nouvel onglet</translation>
 <translation id="3603009562372709545">Copier l'URL du lien</translation>
 <translation id="3607167657931203000">Saisie automatique</translation>
+<translation id="3607323550193047592">Synchronisation activée</translation>
 <translation id="3609785682760573515">Synchronisation en cours…</translation>
 <translation id="3638472932233958418">Précharger pages Web</translation>
 <translation id="3691593122358196899">Ajouté aux favoris dans "<ph name="FOLDER_TITLE" />"</translation>
@@ -199,6 +200,7 @@
 <translation id="4038354071007134711">Aucune appli sur appareil ne peut ouvrir fichier.</translation>
 <translation id="4042870976416480368">Rechercher sur la page</translation>
 <translation id="4049507953662678203">Vérifiez si vous disposez bien d'une connexion réseau, puis réessayez.</translation>
+<translation id="4082688844002261427">Contrôler la manière dont votre historique de navigation est utilisé pour personnaliser la recherche, les annonces et plus encore</translation>
 <translation id="408404951701638773">La barre de recherche est désormais accessible plus facilement</translation>
 <translation id="4084682180776658562">Favori</translation>
 <translation id="411254640334432676">Échec du téléchargement.</translation>
@@ -247,7 +249,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="4854345657858711387">Définir un code secret</translation>
 <translation id="4860895144060829044">Appeler</translation>
 <translation id="4881695831933465202">Ouvrir</translation>
-<translation id="4895709476292058519">Changer de compte</translation>
 <translation id="4904877109095351937">Marquer comme lues</translation>
 <translation id="4930268273022498155">Supprimer les données actuelles. Vous pouvez les récupérer en repassant sur le compte <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Désolé, un problème est survenu lors du partage de l'élément.</translation>
@@ -397,6 +398,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7203585745079012652">Énoncer les réponses</translation>
 <translation id="722055596168483966">Personnaliser les services Google</translation>
 <translation id="7272437679830969316">Impossible de confirmer votre identité. Mot de passe non copié.</translation>
+<translation id="7280856130494094142">Saisir la phrase secrète pour lancer la synchronisation</translation>
 <translation id="7285236536143823449">OUI, J'ACCEPTE</translation>
 <translation id="7291368939935408496">Préparation des mots de passe…</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> % téléchargés</translation>
@@ -439,7 +441,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="794799177247607889">Arrêter la journalisation</translation>
 <translation id="7961015016161918242">Jamais</translation>
 <translation id="7971521879845308059">Bloquer les pop-ups</translation>
-<translation id="7981313251711023384">Précharger les pages pour accélérer la navigation et la recherche</translation>
 <translation id="7982789257301363584">Réseau</translation>
 <translation id="8019783059653722575">Cela vous permet d'enregistrer et d'importer des photos.</translation>
 <translation id="802154636333426148">Échec du téléchargement</translation>

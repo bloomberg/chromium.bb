@@ -63,7 +63,6 @@
 <translation id="1809939268435598390">Elimina cartella</translation>
 <translation id="1813414402673211292">Cancella dati di navigazione</translation>
 <translation id="1820259098641718022">Aggiunta all'elenco di lettura</translation>
-<translation id="1821253160463689938">Utilizza i cookie per memorizzare le tue preferenze, anche se non visiti quelle pagine</translation>
 <translation id="1828824471510190776">Suggerisci password...</translation>
 <translation id="1876721852596493031">Invia dati di utilizzo</translation>
 <translation id="1886928167269928266">Tutto</translation>
@@ -75,6 +74,7 @@
 <translation id="2000419248597011803">Invia al tuo motore di ricerca predefinito alcune ricerche dalla barra degli indirizzi e dalla casella di ricerca, nonché alcuni cookie</translation>
 <translation id="2015722694326466240">Per visualizzare le password, per prima cosa imposta un passcode sul tuo dispositivo.</translation>
 <translation id="2068952045031577364">Ultima settimana</translation>
+<translation id="2074131957428911366">Puoi scegliere in qualsiasi momento i dati da sincronizzare nelle <ph name="BEGIN_LINK" />impostazioni<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="209018056901015185">Richiedi sito desktop</translation>
 <translation id="2096012225669085171">Sincronizza e personalizza su tutti i dispositivi</translation>
@@ -176,6 +176,7 @@
 <translation id="3588820906588687999">Apri immagine in un'altra scheda</translation>
 <translation id="3603009562372709545">Copia URL link</translation>
 <translation id="3607167657931203000">Dati della Compilazione automatica</translation>
+<translation id="3607323550193047592">La sincronizzazione è attiva</translation>
 <translation id="3609785682760573515">Sincronizzazione in corso...</translation>
 <translation id="3638472932233958418">Precarica pagine web</translation>
 <translation id="3691593122358196899">Preferito aggiunto in: <ph name="FOLDER_TITLE" /></translation>
@@ -199,6 +200,7 @@
 <translation id="4038354071007134711">Impossibile aprire il file con le app sul dispositivo.</translation>
 <translation id="4042870976416480368">Trova nella pagina</translation>
 <translation id="4049507953662678203">Controlla la connessione di rete e riprova.</translation>
+<translation id="4082688844002261427">Gestisci la modalità di utilizzo della cronologia di navigazione per personalizzare la Ricerca, gli annunci e non solo</translation>
 <translation id="408404951701638773">Ora è più facile raggiungere la barra di ricerca</translation>
 <translation id="4084682180776658562">Aggiungi ai Preferiti</translation>
 <translation id="411254640334432676">Download non riuscito.</translation>
@@ -247,7 +249,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="4854345657858711387">Imposta un passcode</translation>
 <translation id="4860895144060829044">Chiama</translation>
 <translation id="4881695831933465202">Apri</translation>
-<translation id="4895709476292058519">Cambia account</translation>
 <translation id="4904877109095351937">Segna come già letti</translation>
 <translation id="4930268273022498155">Elimina i dati esistenti. Puoi recuperarli tornando all'account <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Spiacenti, si è verificato un problema di condivisione.</translation>
@@ -397,6 +398,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7203585745079012652">Pronuncia le risposte</translation>
 <translation id="722055596168483966">Personalizza i servizi Google</translation>
 <translation id="7272437679830969316">Impossibile verificare la tua identità. Password non copiata.</translation>
+<translation id="7280856130494094142">Inserisci la passphrase per avviare la sincronizzazione</translation>
 <translation id="7285236536143823449">ACCETTO</translation>
 <translation id="7291368939935408496">Preparazione delle password...</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" />% scaricato</translation>
@@ -439,7 +441,6 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="794799177247607889">Interrompi logging</translation>
 <translation id="7961015016161918242">Mai</translation>
 <translation id="7971521879845308059">Blocca popup</translation>
-<translation id="7981313251711023384">Le pagine vengono precaricate per velocizzare la navigazione e la ricerca</translation>
 <translation id="7982789257301363584">Rete</translation>
 <translation id="8019783059653722575">In questo modo puoi salvare e caricare foto.</translation>
 <translation id="802154636333426148">Download non riuscito</translation>

@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">tila</translation>
 <translation id="1938124657309484470">Arvon on oltava <ph name="MAXIMUM_DATE_OR_TIME" /> tai aiempi.</translation>
 <translation id="1946271899482435442">Näytä päivämäärävalitsin</translation>
-<translation id="1982354452682152483">Ei kuvausta saatavilla</translation>
 <translation id="1993104285338243655">Peilaus käynnissä</translation>
 <translation id="2060505056492490888"><ph name="DOT" />-merkkiä on käytetty väärässä kohdassa osoitteessa <ph name="INVALIDDOMAIN" />.</translation>
 <translation id="2148716181193084225">Tänään</translation>
@@ -177,7 +176,6 @@
 <translation id="7139483182332611405">johdanto</translation>
 <translation id="7263440858009898357">Valitse kohde luettelosta.</translation>
 <translation id="727747134524199931">sarakkeen otsikko</translation>
-<translation id="7336527682887843386">Kuvausta ei löydy.</translation>
 <translation id="7353453495576941748">tunnustus</translation>
 <translation id="7364796246159120393">Valitse tiedosto</translation>
 <translation id="739024184232394898">Muu...</translation>
@@ -200,7 +198,6 @@
 <translation id="7888071071722539607">Sähköpostiosoitteeseen kuuluu <ph name="ATSIGN" />-osa. Osoitteesta <ph name="INVALIDADDRESS" /> puuttuu <ph name="ATSIGN" />.</translation>
 <translation id="7891486169920085145">jakaja</translation>
 <translation id="795667975304826397">Ei valittua tiedostoa</translation>
-<translation id="8042519864538898414">Vaikuttaa aikuisille suunnatulta sisällöltä</translation>
 <translation id="8053789581856978548">hakutekstikenttä</translation>
 <translation id="8057695513531652401">ilmoitus</translation>
 <translation id="8105797009065549151">muistiinpanoviittaus</translation>

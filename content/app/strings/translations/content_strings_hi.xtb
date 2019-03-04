@@ -72,6 +72,7 @@
 <translation id="3450233048674729344">मान <ph name="MAXIMUM" /> से कम या इसके बराबर होना चाहिए.</translation>
 <translation id="3486220673238053218">परिभाषा</translation>
 <translation id="3557673793733683882">शीर्षक <ph name="HEADING_LEVEL" /></translation>
+<translation id="3685101356851116974">लेबल न की गई इमेज</translation>
 <translation id="3706100364254443312">स्विच करें</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> जीबी</translation>
@@ -183,11 +184,13 @@
 <translation id="7491962110804786152">टैब</translation>
 <translation id="7514365320538308">डाउनलोड करें</translation>
 <translation id="7529102961911894712">बैक लिंक</translation>
+<translation id="7533959249147584474">बिना लेबल वाले ग्राफ़िक</translation>
 <translation id="7647456547678091388">सलाह</translation>
 <translation id="7661956066982048809">ग्राफ़िक्स दस्तावेज़</translation>
 <translation id="7673697353781729403">घंटे</translation>
 <translation id="7681220483256441252">इंडेक्स</translation>
 <translation id="7740050170769002709">HTML सामग्री</translation>
+<translation id="7745230546936012372">ऐसी इमेज जो मौजूद नहीं हैं उनके बारे में जानकारी पाने के लिए, संदर्भ मेन्यू खोलें.</translation>
 <translation id="7750228210027921155">पिक्चर में पिक्चर</translation>
 <translation id="775297008183122718">अमान्य प्रविष्टि</translation>
 <translation id="7789962463072032349">पॉज़ करें</translation>
@@ -198,6 +201,7 @@
 <translation id="8053789581856978548">लेख फ़ील्ड खोजें</translation>
 <translation id="8057695513531652401">सूचना</translation>
 <translation id="8105797009065549151">नोट संदर्भ</translation>
+<translation id="811583516810654505">इमेज की जानकारी ढूंढी जा रही है</translation>
 <translation id="8117451130807776954">इस सप्ताह</translation>
 <translation id="8199524924445686405">yyyy</translation>
 <translation id="8261464734335370856">गलत स्पेलिंग</translation>

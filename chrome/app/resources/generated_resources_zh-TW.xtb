@@ -325,7 +325,6 @@
 <translation id="1475502736924165259">您儲存的這些憑證不屬於任何其他類別</translation>
 <translation id="1476607407192946488">語言設定(&amp;L)</translation>
 <translation id="1477301030751268706">Identity API 憑證快取</translation>
-<translation id="1478233201128522094">下次新的手機就會為這部 <ph name="DEVICE_TYPE" /> 解鎖。你可以在「設定」中停用 Smart Lock。</translation>
 <translation id="1478340334823509079">詳細資料：<ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">未啟用安裝功能</translation>
 <translation id="1483493594462132177">傳送</translation>
@@ -1043,7 +1042,7 @@
 <translation id="2534460670861217804">安全 HTTP Proxy</translation>
 <translation id="253557089021624350">Keepalive 數量</translation>
 <translation id="2538361623464451692">同步處理已停用</translation>
-<translation id="2540449034743108469">按下「開始」即可監聽擴充功能活動</translation>
+<translation id="2540449034743108469">按下 [開始] 即可監聽擴充功能活動</translation>
 <translation id="2541002089857695151">要讓全螢幕投放最佳化嗎？</translation>
 <translation id="2542049655219295786">Google 表格</translation>
 <translation id="2544853746127077729">網路已拒絕驗證憑證</translation>
@@ -1247,6 +1246,7 @@
 <translation id="2836635946302913370">管理員已禁止使用這個使用者名稱登入。</translation>
 <translation id="283669119850230892">如要使用 <ph name="NETWORK_ID" /> 網路，請先在下方連線至網際網路。</translation>
 <translation id="2838379631617906747">安裝中</translation>
+<translation id="2841013758207633010">時間</translation>
 <translation id="2841837950101800123">提供者</translation>
 <translation id="2843806747483486897">變更預設值...</translation>
 <translation id="2844169650293029770">USB-C 裝置 (左前方連接埠)</translation>
@@ -1416,7 +1416,6 @@
 <translation id="3090819949319990166">無法將外部 crx 檔案複製到 <ph name="TEMP_CRX_FILE" />。</translation>
 <translation id="3090871774332213558">「<ph name="DEVICE_NAME" />」已配對</translation>
 <translation id="3101709781009526431">日期與時間</translation>
-<translation id="3104763887980088552">活動記錄</translation>
 <translation id="310671807099593501">網站正在使用藍牙</translation>
 <translation id="3115147772012638511">等候快取...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" />說明</translation>
@@ -1561,7 +1560,6 @@
 <translation id="3335337277364016868">錄音年份</translation>
 <translation id="3335947283844343239">重新開啟先前關閉的分頁</translation>
 <translation id="3336664756920573711">使用 Android 手機解鎖你的 <ph name="DEVICE_TYPE" /></translation>
-<translation id="3340978935015468852">設定</translation>
 <translation id="3341703758641437857">允許存取檔案網址</translation>
 <translation id="3342361181740736773">「<ph name="TRIGGERING_EXTENSION_NAME" />」要求移除這個擴充功能。</translation>
 <translation id="3345886924813989455">找不到支援的瀏覽器</translation>
@@ -2121,7 +2119,6 @@
 <translation id="4145922204387553806">允許 Google 助理根據畫面上的內容顯示相關資訊</translation>
 <translation id="4146026355784316281">一律使用系統檢視器開啟</translation>
 <translation id="4146785383423576110">重設與清理</translation>
-<translation id="4147897805161313378">Google 相簿</translation>
 <translation id="4147911968024186208">請再試一次。如果這個錯誤再次發生，請與你的產品支援代表聯絡。</translation>
 <translation id="4150201353443180367">顯示設定</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 個分頁}other{# 個分頁}}</translation>
@@ -2165,7 +2162,6 @@
 <translation id="4222932583846282852">取消中…</translation>
 <translation id="4225397296022057997">在所有網站上</translation>
 <translation id="4235200303672858594">整個畫面</translation>
-<translation id="4235813040357936597">為<ph name="PROFILE_NAME" />新增帳戶</translation>
 <translation id="4235965441080806197">取消登入</translation>
 <translation id="4242533952199664413">開啟設定</translation>
 <translation id="4242577469625748426">無法在裝置上安裝政策設定：<ph name="VALIDATION_ERROR" />。</translation>
@@ -2402,7 +2398,6 @@
 <translation id="4627442949885028695">透過其他裝置繼續瀏覽</translation>
 <translation id="4628757576491864469">裝置</translation>
 <translation id="4628762811416793313">無法完成 Linux 容器設定。請再試一次。</translation>
-<translation id="4628948037717959914">相片</translation>
 <translation id="4631887759990505102">演出者</translation>
 <translation id="4633003931260532286">擴充功能要求的最低「<ph name="IMPORT_NAME" />」版本是「<ph name="IMPORT_VERSION" />」，但目前只安裝了版本「<ph name="INSTALLED_VERSION" />」</translation>
 <translation id="4634771451598206121">重新登入...</translation>
@@ -2464,7 +2459,6 @@
 <translation id="4733082559415072992"><ph name="URL" /> 要求使用裝置的位置資訊</translation>
 <translation id="4733793249294335256">位置</translation>
 <translation id="4734518477988699048">輸入值無效。</translation>
-<translation id="4735265153267957659">輸入密碼即可啟用 Smart Lock，這樣下次手機就會為你的 <ph name="DEVICE_TYPE" /> 解鎖。你可以在「設定」中停用 Smart Lock。</translation>
 <translation id="473546211690256853">這個帳戶是由 <ph name="DOMAIN" /> 負責管理。</translation>
 <translation id="4735803855089279419">系統無法判別這個裝置的裝置識別碼。</translation>
 <translation id="4736292055110123391">讓你在所有裝置上的書籤、密碼、歷史記錄及其他設定保持同步</translation>
@@ -3640,7 +3634,6 @@
 <translation id="6455264371803474013">在特定網站上</translation>
 <translation id="6455894534188563617">新增資料夾(&amp;N)</translation>
 <translation id="6456394469623773452">良好</translation>
-<translation id="6456631036739229488">Smart Lock 手機已變更，請輸入你的密碼以更新 Smart Lock。下次手機就會為你的 <ph name="DEVICE_TYPE" /> 解鎖。你可以在「設定」中停用 Smart Lock。</translation>
 <translation id="645705751491738698">繼續封鎖 JavaScript</translation>
 <translation id="6458701200018867744">上傳失敗 (<ph name="WEBRTC_LOG_UPLOAD_TIME" />)。</translation>
 <translation id="6459488832681039634">使用所選範圍尋找</translation>
@@ -3994,7 +3987,6 @@
 <translation id="7005848115657603926">頁面範圍無效，請使用 <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">下邊界</translation>
 <translation id="7007648447224463482">在新視窗中開啟所有書籤</translation>
-<translation id="7010204281905545194">圖片標籤</translation>
 <translation id="701080569351381435">檢視原始碼</translation>
 <translation id="7014174261166285193">安裝失敗。</translation>
 <translation id="7017004637493394352">再說一次「Ok Google」</translation>
@@ -4105,7 +4097,6 @@
 <translation id="7175353351958621980">載入來源：</translation>
 <translation id="7180611975245234373">重新整理</translation>
 <translation id="7180865173735832675">自訂</translation>
-<translation id="7182359331070524176">選取 Google 相簿</translation>
 <translation id="7186088072322679094">固定在工具列中</translation>
 <translation id="7187428571767585875">系統將移除或變更下列登錄檔項目：</translation>
 <translation id="7189234443051076392">確認你的裝置上有足夠空間</translation>
@@ -4695,7 +4686,6 @@
 <translation id="8028993641010258682">大小</translation>
 <translation id="8030656706657716245">新增印表機</translation>
 <translation id="8032244173881942855">無法投放分頁。</translation>
-<translation id="8033827949643255796">已選取</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{在無痕式視窗中開啟所有書籤(&amp;I)}=1{在無痕式視窗中開啟(&amp;I)}other{在無痕式視窗中開啟全部 # 個書籤(&amp;I)}}</translation>
 <translation id="8037117027592400564">讀取使用合成語音朗讀的所有文字</translation>
 <translation id="8037357227543935929">詢問 (預設)</translation>
@@ -4847,7 +4837,6 @@
 <translation id="8260126382462817229">請嘗試重新登入</translation>
 <translation id="8260864402787962391">滑鼠</translation>
 <translation id="8261378640211443080">這個擴充功能未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> 中，可能在你不知情的情況下加入瀏覽器。</translation>
-<translation id="8261387128019234107">為 <ph name="PROFILE_NAME" /> 新增帳戶</translation>
 <translation id="8261506727792406068">刪除</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> 已停用滑鼠游標。</translation>
 <translation id="8264718194193514834">「<ph name="EXTENSION_NAME" />」啟用了全螢幕。</translation>
@@ -5291,7 +5280,6 @@
 <translation id="8944099748578356325">更快耗盡電量 (目前為 <ph name="BATTERY_PERCENTAGE" />%)</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" /> 正在與 <ph name="TAB_NAME" /> 共用視窗。</translation>
 <translation id="8946359700442089734">尚未在這個 <ph name="IDS_SHORT_PRODUCT_NAME" /> 裝置上完整啟用偵錯功能。</translation>
-<translation id="8947779852178668482">從 Google 取得圖片說明</translation>
 <translation id="894871326938397531">要退出無痕模式嗎？</translation>
 <translation id="8951256747718668828">發生錯誤，因此無法完成還原程序</translation>
 <translation id="895347679606913382">啟動中...</translation>
@@ -5348,7 +5336,6 @@
 <translation id="9034924485347205037">Linux 檔案</translation>
 <translation id="9035012421917565900">這些項目無法移回「<ph name="DESTINATION_NAME" />」，因此無法復原這項操作。</translation>
 <translation id="9037965129289936994">顯示原文</translation>
-<translation id="9038430547971207796">下次手機就會為你的 <ph name="DEVICE_TYPE" /> 解鎖。你可以在「設定」中停用 Smart Lock。</translation>
 <translation id="9038620279323455325">名稱為「<ph name="FILE_NAME" />」的檔案已經存在，請選擇其他名稱。</translation>
 <translation id="9038649477754266430">使用預測查詢字串服務，讓系統更快載入網頁</translation>
 <translation id="9039663905644212491">PEAP</translation>
@@ -5447,7 +5434,6 @@
 <translation id="9188441292293901223">你必須將手機更新至較新的 Android 版本，才能為這台 <ph name="DEVICE_TYPE" /> 解鎖。</translation>
 <translation id="9188732951356337132">傳送使用狀況與診斷資料。這個裝置目前會自動將診斷資料以及裝置和應用程式的使用狀況資料傳送給 Google。這些資料將有助於系統和應用程式提高穩定性及做出其他改善，並不會用於識別貴子女的身分。部分匯總資料還能夠為 Google 應用程式和合作夥伴 (例如 Android 開發人員) 提供幫助。如果貴子女的「其他網路和應用程式活動」設定為開啟，系統可能會將這些資料儲存到他們的 Google 帳戶。<ph name="BEGIN_LINK2" />瞭解詳情<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + 預先共用金鑰</translation>
-<translation id="919031884024748298">將圖片傳送到 Google 伺服器以取得標籤。</translation>
 <translation id="920045321358709304">透過 <ph name="SEARCH_ENGINE" /> 搜尋</translation>
 <translation id="9201220332032049474">螢幕鎖定選項</translation>
 <translation id="9203398526606335860">分析已啟用(&amp;P)</translation>

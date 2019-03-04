@@ -361,7 +361,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="3568702578574425662">Afkrydsningsfeltet <ph name="NAME" /> er ikke markeret</translation>
 <translation id="3589661172894441357">Ordliste</translation>
 <translation id="3591784666823501596">Kongeblå</translation>
-<translation id="3594207934078151302">Havgrøn</translation>
+<translation id="3594207934078151302">Mellemlys havgrøn</translation>
 <translation id="3599054940393788245">Ikke inden i matematik</translation>
 <translation id="360241989769010433">Tak</translation>
 <translation id="3616113530831147358">Lyd</translation>
@@ -470,7 +470,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="4289540628985791613">Oversigt</translation>
 <translation id="4300318234632215983">Offentliggør webadressen bag et link</translation>
 <translation id="4301352596632316575">har undermenu</translation>
-<translation id="4322625298640984693">Orangebrun</translation>
+<translation id="4322625298640984693">Brændt orange</translation>
 <translation id="4342180618051828363">{COUNT,plural, =1{punktum}=3{ellipse}one{# punktummer}other{# punktummer}}</translation>
 <translation id="4347461890115250064">Ikke flere lister.</translation>
 <translation id="4367650418938037324">Math ML-blad</translation>
@@ -483,7 +483,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="4402014469255336455">Dyb himmelblå</translation>
 <translation id="443163561286008705">nulstil</translation>
-<translation id="4432457053224379116">Laksefarvet</translation>
+<translation id="4432457053224379116">Murstensrød</translation>
 <translation id="4457472090507035117">Vælg den aktuelle stemme:</translation>
 <translation id="4471074325120394300">Ingen links.</translation>
 <translation id="4476183483923481720">ny linje</translation>
@@ -588,7 +588,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="5119330972669454698">Sandfarvet</translation>
 <translation id="5136967254288895616">Ingen tidligere links.</translation>
 <translation id="513774504516943387">lnk</translation>
-<translation id="5138912041966667164">Skiferblå</translation>
+<translation id="5138912041966667164">Mellemlys skiferblå</translation>
 <translation id="5140016802771803559">Lilla</translation>
 <translation id="5158275234811857234">Forside</translation>
 <translation id="517143700877085897">, ikke valgt</translation>
@@ -1157,7 +1157,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="8882002077197914455">Rækkeoverskrift</translation>
 <translation id="8883850400338911892">urlred 8felt</translation>
 <translation id="8896347895970027998">Aktivér eller deaktiver ChromeVox.</translation>
-<translation id="8896479570570613387">Lilla</translation>
+<translation id="8896479570570613387">Mellemlys lilla</translation>
 <translation id="8898516272131543774">Cyklus for ekko ved tegnsætning</translation>
 <translation id="8900148057318340779">Præfikstast</translation>
 <translation id="8908714597367957477">colhdr</translation>

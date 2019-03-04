@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">ステータス</translation>
 <translation id="1938124657309484470"><ph name="MAXIMUM_DATE_OR_TIME" /> 以前の値を指定する必要があります。</translation>
 <translation id="1946271899482435442">日付選択ツールを表示</translation>
-<translation id="1982354452682152483">説明がありません。</translation>
 <translation id="1993104285338243655">ミラーリングに切り替わりました</translation>
 <translation id="2060505056492490888">「<ph name="INVALIDDOMAIN" />」内の「<ph name="DOT" />」の位置が間違っています。</translation>
 <translation id="2148716181193084225">今日</translation>
@@ -177,7 +176,6 @@
 <translation id="7139483182332611405">序文</translation>
 <translation id="7263440858009898357">リスト内の項目を選択してください。</translation>
 <translation id="727747134524199931">列見出し</translation>
-<translation id="7336527682887843386">説明を取得できません。</translation>
 <translation id="7353453495576941748">クレジット</translation>
 <translation id="7364796246159120393">ファイルを選択</translation>
 <translation id="739024184232394898">その他...</translation>
@@ -200,7 +198,6 @@
 <translation id="7888071071722539607">メール アドレスに「<ph name="ATSIGN" />」を挿入してください。「<ph name="INVALIDADDRESS" />」内に「<ph name="ATSIGN" />」がありません。</translation>
 <translation id="7891486169920085145">分割バー</translation>
 <translation id="795667975304826397">選択されていません</translation>
-<translation id="8042519864538898414">アダルト コンテンツと思われます。</translation>
 <translation id="8053789581856978548">検索テキスト欄</translation>
 <translation id="8057695513531652401">注記</translation>
 <translation id="8105797009065549151">備考</translation>

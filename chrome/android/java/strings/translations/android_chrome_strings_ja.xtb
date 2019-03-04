@@ -506,7 +506,6 @@
 <translation id="4824958205181053313">同期をキャンセルしますか？</translation>
 <translation id="4837753911714442426">ページの印刷オプションを開く</translation>
 <translation id="4842092870884894799">パスワード作成のポップアップを表示しています</translation>
-<translation id="4850886885716139402">表示</translation>
 <translation id="4858052445109442067">Chrome を Digital Wellbeing に接続しますか？</translation>
 <translation id="4860895144060829044">通話</translation>
 <translation id="4866368707455379617">Chrome 用の <ph name="MODULE" /> をインストールできません</translation>
@@ -887,7 +886,7 @@
 <translation id="7612619742409846846">次のユーザーとして Google にログインしています:</translation>
 <translation id="7619072057915878432">ネットワーク障害が発生したため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />ヘルプ<ph name="END_LINK1" />または<ph name="BEGIN_LINK2" />再スキャン<ph name="END_LINK2" /></translation>
-<translation id="7626032353295482388">Chrome にようこそ</translation>
+<translation id="7626032353295482388">Chrome へようこそ</translation>
 <translation id="7638584964844754484">パスフレーズが正しくありません</translation>
 <translation id="7641339528570811325">閲覧データを削除…</translation>
 <translation id="7648422057306047504">Google の認証情報でパスワードを暗号化する</translation>

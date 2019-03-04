@@ -313,7 +313,7 @@
 <translation id="3232388865800379423">একটি পপ আপ বোতাম</translation>
 <translation id="3241052487511142956">পূর্ববর্তী ঘুরে দেখা লিঙ্ক</translation>
 <translation id="3241638166094654466">প্রতিটি লাইনে কক্ষের সংখ্যা:</translation>
-<translation id="327361630706777244"><ph name="FONT_COLOR" /> শেষ</translation>
+<translation id="327361630706777244">শেষ ফন্টের রঙ <ph name="FONT_COLOR" /></translation>
 <translation id="3286372614333682499">পোর্ট্রেট</translation>
 <translation id="3286390186030710347">স্লাইডার</translation>
 <translation id="3299925995433437805">কোনো পরবর্তী ঘুরে দেখা লিঙ্ক নেই</translation>
@@ -338,7 +338,7 @@
 <translation id="3393605254399152980">আপনি কী টাচ করছেন তা শোনার জন্য টাচস্ক্রিনে রাখা একটি আঙ্গুল টেনে আনুন</translation>
 <translation id="3406283310380167331">ফর্ম তালিকা দেখান</translation>
 <translation id="3414400929511680526">অ্যালিস নীল</translation>
-<translation id="3437941064431741545">সাইজ <ph name="FONT_SIZE" /> শেষ</translation>
+<translation id="3437941064431741545">ফন্টের শেষ সাইজ <ph name="FONT_SIZE" /></translation>
 <translation id="344800400831402066">পেরু কমলা</translation>
 <translation id="3457000393508828486">আংশিক টেপা</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, বন্ধ করুন</translation>
@@ -357,7 +357,7 @@
 <translation id="352577523970648069">একটি সম্পাদনাযোগ্য পাঠ্য ফিল্ড</translation>
 <translation id="3549141990712742152"><ph name="TEXT" /> কাট করুন।</translation>
 <translation id="3549680091535286226">আপাতত স্পিচ বন্ধ করার জন্য ২টি আঙ্গুল দিয়ে ট্যাপ করুন</translation>
-<translation id="3555380819397253474"><ph name="FONT_FAMILY" /> শুরু</translation>
+<translation id="3555380819397253474">প্রথম ফন্ট <ph name="FONT_FAMILY" /></translation>
 <translation id="3568702578574425662"><ph name="NAME" />, চেকবাক্স চেকযুক্ত করা হয়নি</translation>
 <translation id="3589661172894441357">শব্দকোষ</translation>
 <translation id="3591784666823501596">রয়্যাল নীল</translation>
@@ -770,9 +770,9 @@
 <translation id="6459511626086141404">ফ্ল্যাট কীম্যাপ</translation>
 <translation id="6468049171101508116">পরবর্তী বোতাম</translation>
 <translation id="646954774886932461">সূচি</translation>
-<translation id="6470797302070897045">সাইজ <ph name="FONT_SIZE" /> শুরু</translation>
+<translation id="6470797302070897045">ফন্টের প্রথম সাইজ <ph name="FONT_SIZE" /></translation>
 <translation id="6493991254603208962">উজ্জ্বলতা কমান</translation>
-<translation id="6497864469186228849"><ph name="FONT_FAMILY" /> শেষ</translation>
+<translation id="6497864469186228849">শেষ ফন্ট <ph name="FONT_FAMILY" /></translation>
 <translation id="6501595918865591267">ফিরোজা</translation>
 <translation id="6508059270146105198">পৃষ্ঠার নীচের দিকে ব্রেইল প্রদর্শন সরান</translation>
 <translation id="6521550811716689390">গাঢ় বেগুনী</translation>
@@ -899,7 +899,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="7370432716629432284">{COUNT,plural, =1{অ্যামপারসেন্ট}one{#টি অ্যামপারসেন্ট}other{#টি অ্যামপারসেন্ট}}</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">সারণী ত্যাগ করছে৷</translation>
-<translation id="7374188624530452127"><ph name="FONT_COLOR" /> শুরু</translation>
+<translation id="7374188624530452127">ফন্টের প্রথম রঙ <ph name="FONT_COLOR" /></translation>
 <translation id="738899727977260036">স্লেট নীল</translation>
 <translation id="7392145451309930991">টেক্সট ম্যাচিং শুরু</translation>
 <translation id="739763518212184081">পূর্ববর্তী লাইন</translation>

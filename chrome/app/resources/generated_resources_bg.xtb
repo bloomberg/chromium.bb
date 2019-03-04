@@ -325,7 +325,6 @@
 <translation id="1475502736924165259">Разполагате със сертификати, които не отговарят на нито една от другите категории</translation>
 <translation id="1476607407192946488">&amp;Езикови настройки</translation>
 <translation id="1477301030751268706">Кеш на означенията за приложния програмен интерфейс (API) за самоличност</translation>
-<translation id="1478233201128522094">Следващия път този <ph name="DEVICE_TYPE" /> ще бъде отключен от нов телефон. Можете да изключите Smart Lock от настройките.</translation>
 <translation id="1478340334823509079">Подробности: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">Инсталирането не е активирано</translation>
 <translation id="1483493594462132177">Изпращане</translation>
@@ -1245,6 +1244,7 @@
 <translation id="2836635946302913370">Влизането с това потребителско име е деактивирано от администратора ви.</translation>
 <translation id="283669119850230892">За да използвате мрежата <ph name="NETWORK_ID" />, първо завършете свързването си с интернет по-долу.</translation>
 <translation id="2838379631617906747">Инсталира се</translation>
+<translation id="2841013758207633010">Време</translation>
 <translation id="2841837950101800123">Доставчик</translation>
 <translation id="2843806747483486897">Промяна на действието по подразбиране...</translation>
 <translation id="2844169650293029770">Устройство с USB-C (предният ляв порт)</translation>
@@ -1414,7 +1414,6 @@
 <translation id="3090819949319990166">Външният crx файл не може да се копира в/ъв „<ph name="TEMP_CRX_FILE" />“.</translation>
 <translation id="3090871774332213558">Успешно сдвояване на <ph name="DEVICE_NAME" /></translation>
 <translation id="3101709781009526431">Дата и час</translation>
-<translation id="3104763887980088552">Регистрационен файл за активността</translation>
 <translation id="310671807099593501">Сайтът използва Bluetooth</translation>
 <translation id="3115147772012638511">Кешът се изчаква...</translation>
 <translation id="3118319026408854581">Помощ за <ph name="PRODUCT_NAME" /></translation>
@@ -1559,7 +1558,6 @@
 <translation id="3335337277364016868">Година на записване</translation>
 <translation id="3335947283844343239">Повторно отваряне на затворения раздел</translation>
 <translation id="3336664756920573711">Отключвайте устройството си <ph name="DEVICE_TYPE" /> с телефона си с Android</translation>
-<translation id="3340978935015468852">настройки</translation>
 <translation id="3341703758641437857">Да се разреши достъп до URL адресите на файловете</translation>
 <translation id="3342361181740736773"><ph name="TRIGGERING_EXTENSION_NAME" /> иска да премахне това разширение.</translation>
 <translation id="3345886924813989455">Не е открит поддържан браузър</translation>
@@ -2122,7 +2120,6 @@
 <translation id="4145922204387553806">Разрешаване на Асистент да ви показва информация въз основа на съдържанието на екрана ви</translation>
 <translation id="4146026355784316281">Отваряне винаги със системния визуализатор</translation>
 <translation id="4146785383423576110">Нулиране на настройките и почистване</translation>
-<translation id="4147897805161313378">Google Снимки</translation>
 <translation id="4147911968024186208">Моля, опитайте пак. Ако отново видите тази грешка, свържете се с представител на екипа за поддръжка.</translation>
 <translation id="4150201353443180367">Екран</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 раздел}other{# раздела}}</translation>
@@ -2166,7 +2163,6 @@
 <translation id="4222932583846282852">Анулира се...</translation>
 <translation id="4225397296022057997">На всички сайтове</translation>
 <translation id="4235200303672858594">Цял екран</translation>
-<translation id="4235813040357936597">Добавяне на профил за <ph name="PROFILE_NAME" /></translation>
 <translation id="4235965441080806197">Анулиране на влизането</translation>
 <translation id="4242533952199664413">Отваряне на настройките</translation>
 <translation id="4242577469625748426">Настройките за правила не бяха инсталирани успешно на устройството: <ph name="VALIDATION_ERROR" />.</translation>
@@ -2403,7 +2399,6 @@
 <translation id="4627442949885028695">Продължаване от друго устройство</translation>
 <translation id="4628757576491864469">Устройства</translation>
 <translation id="4628762811416793313">Настройването на контейнера за Linux не завърши. Моля, опитайте отново.</translation>
-<translation id="4628948037717959914">Снимка</translation>
 <translation id="4631887759990505102">Изпълнител</translation>
 <translation id="4633003931260532286">Разширението изисква <ph name="IMPORT_VERSION" /> или по-нова версия на <ph name="IMPORT_NAME" />, но само <ph name="INSTALLED_VERSION" /> е инсталирана</translation>
 <translation id="4634771451598206121">Влизане отново...</translation>
@@ -2465,7 +2460,6 @@
 <translation id="4733082559415072992"><ph name="URL" /> иска да използва местоположението на устройството ви</translation>
 <translation id="4733793249294335256">Местоположение</translation>
 <translation id="4734518477988699048">Въведената стойност е невалидна.</translation>
-<translation id="4735265153267957659">Въведете паролата си, за да активирате Smart Lock. Следващия път телефонът ви ще отключи вашия <ph name="DEVICE_TYPE" />. Можете да изключите Smart Lock от настройките.</translation>
 <translation id="473546211690256853">Този профил се управлява от <ph name="DOMAIN" /></translation>
 <translation id="4735803855089279419">Системата не успя да определи идентификаторите за това устройство.</translation>
 <translation id="4736292055110123391">Синхронизиране на вашите отметки, пароли, история и др. на всичките ви устройства</translation>
@@ -3642,7 +3636,6 @@
 <translation id="6455264371803474013">На конкретни сайтове</translation>
 <translation id="6455894534188563617">&amp;Нова папка</translation>
 <translation id="6456394469623773452">Добър</translation>
-<translation id="6456631036739229488">Телефонът за Smart Lock е променен. Въведете паролата си, за да актуализирате функцията. Следващия път телефонът ви ще отключи вашия <ph name="DEVICE_TYPE" />. Можете да изключите Smart Lock от настройките.</translation>
 <translation id="645705751491738698">Блокирането на JavaScript да продължи</translation>
 <translation id="6458701200018867744">Качването не бе успешно (<ph name="WEBRTC_LOG_UPLOAD_TIME" />).</translation>
 <translation id="6459488832681039634">Използване на избраното за търсене</translation>
@@ -4000,7 +3993,6 @@
 <translation id="7005848115657603926">Невалиден обхват на страници. Използвайте <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">Долно поле</translation>
 <translation id="7007648447224463482">Отваряне на всички в нов прозорец</translation>
-<translation id="7010204281905545194">Обозначаване на изображенията с етикети</translation>
 <translation id="701080569351381435">Преглед на изходния код</translation>
 <translation id="7014174261166285193">Инсталацията не бе успешна.</translation>
 <translation id="7017004637493394352">Кажете „Ok Google“ отново</translation>
@@ -4111,7 +4103,6 @@
 <translation id="7175353351958621980">Заредено от:</translation>
 <translation id="7180611975245234373">Опресняване</translation>
 <translation id="7180865173735832675">Персонализиране</translation>
-<translation id="7182359331070524176">Избиране на албум от Google Снимки</translation>
 <translation id="7186088072322679094">Запазване в лентата с инструменти</translation>
 <translation id="7187428571767585875">Записи в системния регистър, които ще бъдат премахнати или променени:</translation>
 <translation id="7189234443051076392">Уверете се, че има достатъчно място на устройството ви.</translation>
@@ -4702,7 +4693,6 @@
 <translation id="8028993641010258682">Размер</translation>
 <translation id="8030656706657716245">Добавяне на принтер</translation>
 <translation id="8032244173881942855">Предаването на раздела не е възможно.</translation>
-<translation id="8033827949643255796">откроени</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{Отваряне на всички в прозорец в режим „&amp;инкогнито“}=1{Отваряне в прозорец в режим „&amp;инкогнито“}other{Отваряне на всички (#) в прозорец в режим „&amp;инкогнито“}}</translation>
 <translation id="8037117027592400564">Четене на целия текст, произнесен посредством синтезирания говор</translation>
 <translation id="8037357227543935929">Извеждане на запитване (по подразбиране)</translation>
@@ -4855,7 +4845,6 @@
 <translation id="8260126382462817229">Опитайте да влезете отново</translation>
 <translation id="8260864402787962391">Мишка</translation>
 <translation id="8261378640211443080">Това разширение не е посочено в <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и може да е било добавено без ваше знание.</translation>
-<translation id="8261387128019234107">Добавяне на профил за <ph name="PROFILE_NAME" /></translation>
 <translation id="8261506727792406068">Изтриване</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> деактивира курсора на мишката ви.</translation>
 <translation id="8264718194193514834"><ph name="EXTENSION_NAME" /> задейства цял екран.</translation>
@@ -5299,7 +5288,6 @@
 <translation id="8944099748578356325">използва батерията по-бързо (понастоящем тя е <ph name="BATTERY_PERCENTAGE" />%)</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" /> споделя прозорец с/ъс „<ph name="TAB_NAME" />“.</translation>
 <translation id="8946359700442089734">Функциите за отстраняване на грешки не бяха напълно активирани на това устройство с <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
-<translation id="8947779852178668482">Изтегляне от Google на описания за изображенията</translation>
 <translation id="894871326938397531">Излизане от режим „инкогнито“?</translation>
 <translation id="8951256747718668828">Възстановяването не можа да завърши поради грешка</translation>
 <translation id="895347679606913382">Стартира...</translation>
@@ -5356,7 +5344,6 @@
 <translation id="9034924485347205037">Файлове за Linux</translation>
 <translation id="9035012421917565900">Елементите не могат да бъдат върнати в/ъв „<ph name="DESTINATION_NAME" />“, така че няма да можете да отмените това действие.</translation>
 <translation id="9037965129289936994">Показване на оригинала</translation>
-<translation id="9038430547971207796">Следващия път телефонът ви ще отключи вашия <ph name="DEVICE_TYPE" />. Можете да изключите Smart Lock от настройките.</translation>
 <translation id="9038620279323455325">Файлът „<ph name="FILE_NAME" />“ вече съществува. Моля, изберете друго име.</translation>
 <translation id="9038649477754266430">Използване на услуга за предвиждане с цел по-бързо зареждане на страниците</translation>
 <translation id="9039663905644212491">PEAP</translation>
@@ -5455,7 +5442,6 @@
 <translation id="9188441292293901223">Моля, актуализирайте телефона си до по-нова версия на Android, за да отключите този <ph name="DEVICE_TYPE" />.</translation>
 <translation id="9188732951356337132">Изпращане на данни за употребата и диагностиката. Понастоящем това устройство автоматично изпраща до Google диагностична информация и данни за употребата на устройството и приложенията. Тази информация няма да се използва за идентифициране на детето ви, а ще послужи за подобряване на стабилността на системата и приложенията и др. Някои обобщени данни също така ще подпомогнат приложенията и партньорите на Google, напр. програмистите за Android. Ако настройката „Допълнителна активност в мрежата и приложенията“ е включена за детето ви, тези данни може да се запазват в профила му в Google. <ph name="BEGIN_LINK2" />Научете повече<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPSec с предварително споделен ключ</translation>
-<translation id="919031884024748298">Изпращане на изображенията до сървърите на Google с цел изтегляне на етикети.</translation>
 <translation id="920045321358709304">Търсене с/ъс <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201220332032049474">Опции за заключване на екрана</translation>
 <translation id="9203398526606335860">&amp;Профилирането е активирано</translation>

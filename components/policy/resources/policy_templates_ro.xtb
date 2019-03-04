@@ -93,6 +93,19 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
       Politica stabilește durata până la afișarea screen saverului pe ecranul de conectare, pentru dispozitivele aflate în modul Vânzare.
 
       Valoarea politicii ar trebui să fie specificată în milisecunde.</translation>
+<translation id="1141767714195601945">Această politică stabilește parametrii liniei de comandă pentru Chrome din Internet Explorer.
+
+      Dacă suplimentul „Compatibilitate pentru browsere vechi” pentru Internet Explorer nu este instalat, politica nu are efect.
+
+      Când politica nu este configurată, Internet Explorer trimite doar adresa URL la Chrome ca parametru pentru linia de comandă.
+
+      Când politica este setată la o listă de șiruri, șirurile sunt alăturate cu spații și trimise la Chrome ca parametri pentru linia de comandă.
+
+      Dacă un element conține ${url}, este înlocuit cu adresa URL a paginii care va fi deschisă.
+
+      Dacă niciun element nu conține ${url}, adresa URL este anexată la sfârșitul liniei de comandă.
+
+      Variabilele de mediu sunt extinse. În Windows, %ABC% este înlocuit cu valoarea variabilei mediului ABC.</translation>
 <translation id="1151353063931113432">Permite imagini de pe aceste site-uri</translation>
 <translation id="1152117524387175066">Raportează starea comutatorului modului pentru dezvoltatori al dispozitivului la pornire.
 
@@ -155,6 +168,10 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă această politică este dezactivată, <ph name="PRODUCT_NAME" /> nu va permite crearea profilurilor pentru invitați.</translation>
 <translation id="1363275621236827384">Activează interogările către Quirks Server pentru profilurile hardware</translation>
+<translation id="1363612796557848469">Politica oferă Asistentului Google permisiunea să acceseze contextul pe ecran și să trimită informațiile către server.
+      Dacă politica este activată, Asistentul Google va avea permisiunea de a accesa contextul pe ecran.
+      Dacă politica este dezactivată, Asistentul Google nu va avea permisiunea de a accesa contextul pe ecran.
+      Dacă nu este setată, utilizatorii pot decide dacă să permită Asistentului Google să acceseze sau nu contextul pe ecran</translation>
 <translation id="1383493480903114193">Această politică forțează codul de rețea să ruleze în procesul browserului.
 
       Această politică este dezactivată în mod prestabilit, iar dacă este activată, utilizatorii vor fi vulnerabili în fața problemelor de securitate odată ce procesul de rețea este integrat în mediul de testare securizat.
@@ -228,6 +245,13 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       va fi dezactivat. În acest caz, utilizatorul nu poate activa funcția.</translation>
 <translation id="1474273443907024088">Dezactivează optimizarea False Start pentru TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1478485744311397487">Servere la care <ph name="PRODUCT_NAME" /> poate delega.
+
+          Separă mai multe nume de servere cu virgule. Metacaracterele (*) sunt permise.
+
+          Dacă politica nu este configurată, <ph name="PRODUCT_NAME" /> nu va delega datele de conectare ale utilizatorului, chiar dacă detectează un server ca fiind în intranet.
+
+          Politica este ignorată dacă politica „UseKDCConstrainedDelegation” este activată.</translation>
 <translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> va ocoli toate proxy-urile pentru lista de gazde indicată aici.
 
           Această politică are efect doar dacă ai selectat manual setările de proxy la „Alege modul de specificare a setărilor serverului proxy”.
@@ -274,6 +298,12 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Consultă https://developers.google.com/safe-browsing pentru mai multe informații despre Navigarea sigură.</translation>
 <translation id="1583248206450240930">Utilizează <ph name="PRODUCT_FRAME_NAME" /> în mod prestabilit</translation>
 <translation id="1599424828227887013">Activează Izolarea site-ului pentru originile specificate pe dispozitive Android</translation>
+<translation id="1608259529294767544">Politica oferă Asistentului Google permisiunea de a asculta expresia de activare vocală.
+
+      Dacă politica este activată, Asistentul Google va asculta expresia de activare vocală.
+      Dacă politica este dezactivată, Asistentul Google nu va asculta expresia de activare vocală.
+      Dacă nu este configurată, utilizatorii pot decide dacă să permită Asistentului Google să asculte expresia de activare vocală.
+      </translation>
 <translation id="1608755754295374538">Adresele URL cărora li se va acorda acces automat la dispozitivele de capturare a conținutului audio</translation>
 <translation id="1615221548356595305">Permite fuzionarea conexiunilor HTTP/2 pentru aceste gazde, chiar și atunci când se folosesc certificate client</translation>
 <translation id="1617235075406854669">Permite ștergerea istoricului browserului și a istoricului descărcărilor</translation>
@@ -325,6 +355,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Politica trebuie setată la o adresă URL de la care <ph name="PRODUCT_OS_NAME" /> poate descărca Termenii și condițiile. Termenii și condițiile trebuie să fie în format de text simplu, de tip MIME text/plain. Nu se permite limbajul de markup.</translation>
 <translation id="1750315445671978749">Blochează toate descărcările</translation>
 <translation id="1781356041596378058">Această politică controlează și accesul la Opțiunile pentru dezvoltatori Android. Dacă această politică este activată, utilizatorii nu pot accesa Opțiunile pentru dezvoltatori. Dacă această politică este dezactivată sau nu este configurată, utilizatorii pot accesa Opțiunile pentru dezvoltatori atingând de șapte ori numărul versiunii din aplicația Setări Android.</translation>
+<translation id="1793346220873697538">Dezactivează printarea cu PIN prestabilită</translation>
 <translation id="1797233582739332495">Afișează utilizatorului o solicitare recurentă prin care se indică faptul că relansarea este obligatorie</translation>
 <translation id="1798559516913615713">Întreaga perioadă a memoriei cache GPO</translation>
 <translation id="1803646570632580723">Listare aplicații fixate de afișat în lansator</translation>
@@ -348,6 +379,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="1843117931376765605">Rata de actualizare pentru politica privind utilizatorii</translation>
 <translation id="1844620919405873871">Configurează politicile privind deblocarea rapidă.</translation>
 <translation id="1845405905602899692">Setări Kiosk</translation>
+<translation id="1845429996559814839">Modul de printare cu PIN limitat</translation>
 <translation id="1847960418907100918">Specifică parametrii utilizați la căutarea instant cu POST. Politica este alcătuită din perechi nume/valoare separate prin virgulă. Dacă o valoare este un parametru șablon, precum {searchTerms} din exemplul de mai sus, acesta va fi înlocuit cu datele termenilor de căutare reali.
 
           Această politică este opțională. Dacă nu este setată, solicitarea de căutare instant va fi trimisă prin metoda GET.
@@ -456,6 +488,15 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă politica nu este setată, <ph name="PRODUCT_NAME" /> va folosi valoarea prestabilită de 3 ore.
 
       Reține că dacă platforma acceptă notificări privind politica, întârzierea actualizării va fi setată la 24 de ore (vor fi ignorate valorile prestabilite și valoarea acestei politici), deoarece se așteaptă ca notificările privind politica să forțeze automat o actualizare ori de câte ori politica se modifică, actualizările mai frecvente fiind inutile.</translation>
+<translation id="2024149678078029009">Politica stabilește comanda care trebuie folosită atunci când se deschid adrese URL în <ph name="PRODUCT_NAME" /> când se comută de la Internet Explorer.
+
+      Dacă suplimentul „Compatibilitate pentru browsere vechi” pentru Internet Explorer nu este instalat, politica nu are efect.
+
+      Când politica nu este configurată, Internet Explorer va detecta automat calea executabilă a <ph name="PRODUCT_NAME" /> când lansează <ph name="PRODUCT_NAME" /> din Internet Explorer.
+
+      Când politica este configurată, va fi folosită pentru a lansa <ph name="PRODUCT_NAME" /> atunci când se comută lansarea <ph name="PRODUCT_NAME" /> din Internet Explorer.
+
+      Politica poate fi setată la o cale executabilă de fișier sau la ${chrome} pentru a detecta automat locația de instalare a Chrome.</translation>
 <translation id="2024476116966025075">Configurează numele de domeniu necesar pentru clienții cu acces la distanță</translation>
 <translation id="2030905906517501646">Cuvânt cheie pentru furnizorul de căutare prestabilit</translation>
 <translation id="203096360153626918">Această politică nu afectează aplicațiile Android. Acestea vor putea fi deschise în modul ecran complet, chiar dacă politica este setată la <ph name="FALSE" />.</translation>
@@ -474,6 +515,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="209586405398070749">Canalul în versiune stabilă</translation>
 <translation id="2098658257603918882">Activează raportarea datelor privind utilizarea și blocările</translation>
 <translation id="2104418465060359056">Raportează informații despre extensii și pluginuri</translation>
+<translation id="2106627642643925514">Modifică modul de printare cu PIN prestabilit. Dacă modul nu este disponibil, politica este ignorată.</translation>
 <translation id="2107601598727098402">
         Această politică este învechită în M72. Folosește CloudManagementEnrollmentToken în schimb.
         </translation>
@@ -491,6 +533,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Când politica este dezactivată, nu se colectează informații care se pot folosi pentru a identifica utilizatorii.
 
       Politica se aplică doar când este activată <ph name="CHROME_REPORTING_EXTENSION_NAME" />, iar dispozitivul este înregistrat cu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="2126178089984117495">Limitează modul de printare cu PIN. Politica nesetată este tratată ca lipsa oricărei restricții. Dacă modul nu este disponibil, politica este ignorată.</translation>
 <translation id="2127599828444728326">Permiteți notificări pentru aceste site-uri</translation>
 <translation id="2131902621292742709">Interval până la reducerea luminozității ecranului la funcționarea pe baterie</translation>
 <translation id="2134437727173969994">Permite blocarea ecranului</translation>
@@ -510,6 +553,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="2156132677421487971">Configurează politicile pentru <ph name="PRODUCT_NAME" />, o funcție cu ajutorul căreia utilizatorii pot să trimită conținutul filelor, al site-urilor sau al desktopului din browser pe ecrane și sisteme audio aflate la distanță.</translation>
 <translation id="2166472654199325139">Nu filtra conținutul pentru adulți de pe site-uri</translation>
 <translation id="2168397434410358693">Interval de inactivitate la funcționarea pe c.a.</translation>
+<translation id="217013996107840632">Parametrii liniei de comandă pentru comutarea de la browserul secundar.</translation>
 <translation id="2170233653554726857">Activați optimizarea pentru WPAD</translation>
 <translation id="2176565653304920879">Când această politică este configurată, fluxul de detectare automată a fusului orar va fi într-unul dintre următoarele moduri, în funcție de valoarea setării:
 
@@ -755,6 +799,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="267596348720209223">Specifică codificările de caractere acceptate de furnizorul de căutare. Codificările reprezintă nume ale paginilor cu coduri cum ar fi UTF-8, GB2312 și ISO-8859-1. Acestea sunt încercate în ordinea furnizată. Politica este opțională. Dacă nu este setată, va fi utilizată codificarea standard, care este UTF-8. Această politică este urmată numai în cazul în care este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="268577405881275241">Activează funcția proxy de comprimare a datelor</translation>
 <translation id="2693108589792503178">Configurează adresa URL de modificare a parolei.</translation>
+<translation id="2706708761587205154">Permite printarea numai cu PIN</translation>
 <translation id="2731627323327011390">Dezactivează folosirea certificatelor <ph name="PRODUCT_OS_NAME" /> pentru aplicațiile ARC</translation>
 <translation id="2742843273354638707">Ascunde aplicația Magazin web Chrome și linkul notei de subsol din pagina Filă nouă și din lansatorul de aplicații pentru <ph name="PRODUCT_OS_NAME" />.
 
@@ -825,15 +870,15 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă această politică este folosită, utilizatorilor le sunt disponibile numai imprimantele ale căror ID-uri se potrivesc cu valorile din politică. ID-urile trebuie să corespundă câmpurilor „id” sau „guid” din fișierul specificat în <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
-<translation id="2842152347010310843">Controlează lista albă a șabloanelor adreselor URL pentru care redarea automată este întotdeauna activată.
+<translation id="2842152347010310843">Controlează lista albă a șabloanelor de adrese URL pentru care redarea automată este întotdeauna activată.
 
       Dacă redarea automată este activată, videoclipurile pot fi redate automat (fără consimțământul utilizatorului) cu conținut audio în <ph name="PRODUCT_NAME" />.
 
-      Specificațiile valide ale șabloanelor adreselor URL sunt:
+      Specificațiile valide ale șabloanelor de adrese URL sunt:
 
-      - [*.]domeniu.tld (se potrivește domeniului domain.tld și tuturor subdomeniilor)
+      - [*.]domeniu.tld (se potrivește cu formatul domain.tld și toate subdomeniile)
 
-      - gazdă de domenii (se potrivește unui nume de gazdă exact)
+      - gazdă de domenii (se potrivește cu un nume de gazdă exact)
 
       - schemă://gazdă:port (scheme compatibile: http, https)
 
@@ -857,6 +902,11 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă activezi această setare, funcția Previzualizare înainte de printare va folosi imprimanta prestabilită pentru sistemul de operare ca opțiune de destinație prestabilită.</translation>
 <translation id="2856674246949497058">Revino și rămâi la versiunea țintă dacă versiunea SO este mai nouă decât ținta. Efectuează un Powerwash în timpul procesului.</translation>
+<translation id="2858646435735022107">Stabilește dacă semnalul OK-AS-DELEGATE din KDC este respectat sau dacă „AuthNegotiateDelegateWhitelist” este folosită pentru a limita delegarea tichetelor Kerberos.
+
+          Dacă politica este activată, autentificarea HTTP respectă setările delegării limitate pe KDC. Politica „AuthNegotiateDelegateWhitelist” este ignorată în acest caz. Consultă https://tools.ietf.org/html/rfc5896.html pentru mai multe informații.
+
+          Dacă această politică nu este configurată sau este dezactivată, setările delegării limitate din KDC sunt ignorate, iar politica „AuthNegotiateDelegateWhitelist” este respectată.</translation>
 <translation id="2872961005593481000">Închide</translation>
 <translation id="2873651257716068683">Modifică dimensiunea prestabilită a paginii de printare. Dacă dimensiunea paginii nu este disponibilă, această politică este ignorată.</translation>
 <translation id="2874209944580848064">Notă pentru dispozitivele <ph name="PRODUCT_OS_NAME" /> care acceptă aplicațiile Android:</translation>
@@ -1440,6 +1490,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Această politică este opțională. Dacă nu este setată, solicitarea de căutare a imaginilor va fi trimisă prin metoda GET.
 
           Această politică este urmată numai dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
+<translation id="427706009709857238">„Permite Asistentului Google accesul pentru a asculta expresia de activare vocală”</translation>
 <translation id="4285674129118156176">Permite utilizatorilor neafiliați să folosească ARC</translation>
 <translation id="4298509794364745131">Specifică lista de aplicații care pot fi activate ca aplicație pentru creat note pe ecranul de blocare din <ph name="PRODUCT_OS_NAME" />.
 
@@ -1513,6 +1564,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="4483649828988077221">Dezactivează actualizarea automată</translation>
 <translation id="4485425108474077672">Configurează adresa URL a paginii Filă nouă</translation>
 <translation id="4492287494009043413">Dezactivați capturile de ecran</translation>
+<translation id="4494132853995232608">Wilco DTC</translation>
 <translation id="449423975179525290">Configurează politicile privind <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="450537894712826981">Configurează dimensiunea memoriei cache pe care <ph name="PRODUCT_NAME" /> o va utiliza pentru a stoca pe disc fișierele media salvate în memoria cache.
 
@@ -1679,8 +1731,10 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="4978405676361550165">Dacă politica „OffHours” este configurată, politicile privind dispozitivele specificate sunt ignorate (se folosesc setările prestabilite ale acestor politici) în intervalele de timp definite. Politicile privind dispozitivele sunt aplicate din nou de Chrome la fiecare eveniment când perioada setată prin „OffHours” începe sau se încheie. Utilizatorul va fi notificat și forțat să se deconecteze când perioada setată prin „OffHours” se încheie și setările politicii privind dispozitivele sunt modificate (de ex., când utilizatorul nu este conectat cu un cont permis).</translation>
 <translation id="4980635395568992380">Tip de date:</translation>
 <translation id="4983201894483989687">Permite rularea pluginurilor învechite</translation>
+<translation id="4986560318567565414">Calea către Chrome pentru comutarea de la browserul secundar.</translation>
 <translation id="4988291787868618635">Măsura care se va lua la atingerea intervalului maxim de inactivitate</translation>
 <translation id="4995548127349206948">Dacă este activată autentificarea NTLMv2.</translation>
+<translation id="5022792010322211583">Folosește delegarea limitată de KDC</translation>
 <translation id="5047604665028708335">Se permite accesul la site-urile din afara pachetelor de conținut</translation>
 <translation id="5052081091120171147">Dacă este activată, această politică forțează importarea istoricului de navigare din browserul prestabilit actual. Dacă este activată, această politică afectează, de asemenea, caseta de dialog de importare. Dacă este dezactivată, istoricul de navigare nu va fi importat. În cazul în care nu este setată, utilizatorul poate fi întrebat dacă dorește importarea sau aceasta poate avea loc în mod automat.</translation>
 <translation id="5056708224511062314">Lupă ecran dezactivată</translation>
@@ -1930,6 +1984,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă nu este specificată, politica nu va modifica adresa URL a valorii de bază pentru variante.</translation>
 <translation id="5561811616825571914">Selectează automat certificatele de client pentru aceste site-uri pe ecranul de conectare</translation>
+<translation id="5566210228171064229">Permite printarea cu și fără PIN</translation>
 <translation id="556941986578702361">Controlați ascunderea automată a raftului <ph name="PRODUCT_OS_NAME" />.
 
       Dacă această politică este setată la „AlwaysAutoHideShelf”, raftul va fi întotdeauna ascuns automat.
@@ -1949,6 +2004,15 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Această politică se aplică doar când este activată <ph name="CHROME_REPORTING_EXTENSION_NAME" />, iar dispozitivul este înregistrat cu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Gestionează serviciile de localizare Google Android</translation>
 <translation id="5586942249556966598">Nicio acțiune</translation>
+<translation id="5590494712401018042">Indică procentul cu care este ajustat intervalul până la reducerea luminozității ecranului atunci când dispozitivul este în modul de prezentare.
+
+          Dacă această politică este setată, ea specifică procentul cu care este ajustat intervalul până la reducerea luminozității ecranului atunci când dispozitivul este în modul de prezentare. La ajustarea intervalului până la reducerea luminozității ecranului, intervalele până la oprirea ecranului, blocarea ecranului și trecerea la modul inactiv sunt modificate pentru a se păstra distanțele configurate inițial față de intervalul până la reducerea luminozității ecranului.
+
+          Dacă politica nu este setată, se utilizează un factor de ajustare prestabilit.
+
+          Politica are efect numai dacă <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> este dezactivată. În caz contrar, politica este ignorată deoarece intervalul până la reducerea luminozității ecranului este stabilit de un model de învățare automată.
+
+          Factorul de ajustare trebuie să fie de cel puțin 100%. Valorile prin care intervalul până la reducerea luminozității ecranului în modul de prezentare ar deveni mai scurt decât intervalul obișnuit până la reducerea luminozității ecranului nu sunt permise.</translation>
 <translation id="5592242031005200087">
       Dacă politica este activată, fiecare dintre originile denumite într-o
       listă de valori separate prin virgulă își va rula propriul proces. Astfel, vor fi izolate
@@ -2161,6 +2225,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă această politică nu este configurată, lista de dispozitive USB detașabile este necompletată.</translation>
 <translation id="6083631234867522991">Windows (clienți Windows):</translation>
+<translation id="6089679180657323464">Stabilește setările controlerului wilco de diagnosticare și telemetrie.</translation>
 <translation id="6091233616732024397">Obligă utilizatorii să se conecteze pentru a utiliza browserul</translation>
 <translation id="6093156968240188330">Permite utilizatorilor la distanță să interacționeze cu ferestrele cu privilegii superioare din sesiunile de asistență la distanță</translation>
 <translation id="6095999036251797924">Indică intervalul de timp fără intervenția utilizatorului după care ecranul este blocat atunci când dispozitivul funcționează pe c.a. sau pe baterie.
@@ -2233,7 +2298,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Numai dacă allowCorporateKeyUsage este setat la „true” pentru o extensie, aceasta poate folosi orice certificat al platformei, marcat ca să fie folosit în cadrul companiei, pentru a semna date arbitrare. Această permisiune ar trebui acordată doar dacă ai încredere că extensia protejează accesul la certificat împotriva atacatorilor.</translation>
 <translation id="6208896993204286313">Raportează informații despre politica <ph name="PRODUCT_NAME" /></translation>
 <translation id="6210259502936598222">Raportează informații despre versiunea <ph name="PRODUCT_NAME" /> și a sistemului de operare</translation>
-<translation id="6210610748361191729">Dacă politica este dezactivată, IU de exportare/importare nu va fi disponibilă utilizatorilor, dar aceștia pot folosi comenzi 'lxc' direct în mașina virtuală pentru a exporta și importa imagini ale containerului.</translation>
+<translation id="6210610748361191729">Dacă politica este dezactivată, IU de exportare/importare nu va fi disponibilă utilizatorilor, dar aceștia pot folosi comenzi „lxc” direct în mașina virtuală pentru a exporta și importa imagini ale containerului.</translation>
 <translation id="6211428344788340116">Raportează perioadele de activitate ale dispozitivului.
 
       Dacă setarea nu este configurată sau dacă este activată, dispozitivele înscrise vor raporta perioadele când un utilizator este activ pe dispozitiv. Dacă setarea este dezactivată, perioadele de activitate ale dispozitivului nu vor fi înregistrate sau raportate.</translation>
@@ -2432,6 +2497,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="6770454900105963262">Raportează informații despre sesiunile chioșc active</translation>
 <translation id="6786747875388722282">Extensii</translation>
 <translation id="6786967369487349613">Setează locația profilului de roaming</translation>
+<translation id="6795485990775913659">Permite printarea numai fără PIN</translation>
 <translation id="6810445994095397827">Blochează JavaScript de pe aceste site-uri</translation>
 <translation id="6813263547126514821">Pornire și închidere</translation>
 <translation id="681446116407619279">Scheme de autentificare acceptate</translation>
@@ -2547,6 +2613,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Această politică se aplică doar dacă este activată asistența pentru aplicațiile Linux.</translation>
 <translation id="69525503251220566">Parametru care pune la dispoziție funcția Căutare după imagine pentru furnizorul de căutare prestabilit</translation>
+<translation id="6953102253399571439">Activează printarea cu PIN prestabilită</translation>
 <translation id="6956272732789158625">Nu permite niciunui site să folosească generarea cheilor</translation>
 <translation id="6965859329738616662">Specifică dacă un model inteligent de reducere a luminozității poate extinde timpul până la întunecarea ecranului
 
@@ -2597,6 +2664,15 @@ Dacă politica este setată la True sau nu este setată, modelul inteligent de r
           Dacă această politică nu este configurată, va fi folosită valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultWebUsbGuardSetting”, în cazul în care aceasta este configurată, fie din configurația personală a utilizatorului, în caz contrar.
 
           Șabloanele de adrese URL din această politică nu trebuie să fie în contradicție cu cele configurate prin WebUsbBlockedForUrls. Nu se precizează care dintre cele două politici are întâietate dacă o adresă URL corespunde cu amândouă.</translation>
+<translation id="7086677522575756117">Indică procentul cu care este ajustat intervalul până la reducerea luminozității ecranului atunci când se observă activitatea utilizatorului în timp ce luminozitatea ecranului este redusă sau imediat după ce ecranul a fost oprit.
+
+          Dacă politica este configurată, indică procentul cu care este ajustat intervalul până la reducerea luminozității ecranului atunci când se observă activitatea utilizatorului în timp ce luminozitatea ecranului este redusă sau imediat după ce ecranul a fost oprit. La ajustarea intervalului până la reducerea luminozității, intervalele până la oprirea ecranului, blocarea ecranului și trecerea la modul inactiv sunt modificate pentru a se păstra distanțele configurate inițial față de intervalul până la reducerea luminozității ecranului.
+
+          Dacă politica nu este setată, se utilizează un factor de ajustare prestabilit.
+
+          Politica are efect numai dacă politica <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> este dezactivată. În caz contrar, politica este ignorată deoarece intervalul până la reducerea luminozității ecranului este stabilit de un model de învățare automată.
+
+          Factorul de ajustare trebuie să fie de cel puțin 100%.</translation>
 <translation id="7106631983877564505">Activează blocarea când dispozitivele <ph name="PRODUCT_OS_NAME" /> ajung să fie inactive sau suspendate.
 
       Dacă activezi această setare, utilizatorilor li se va solicita o parolă pentru a debloca dispozitivul din modul inactiv.
@@ -2634,6 +2710,7 @@ nu poate fi stabilit de utilizator din setările browserului.
       Această politică poate fi setată la „conservare” și „performanță”, ce selectează configurațiile planificatorului de activități care sunt ajustate pentru stabilitate sau performanță maximă.
 
       Dacă politica nu este activată, utilizatorul poate face propria alegere.</translation>
+<translation id="7145335384492396213">Modul de printare cu PIN prestabilit</translation>
 <translation id="7158064522994309072">Această politică stabilește ce comandă se folosește pentru a deschide URL-urile într-un browser secundar.
 
       Dacă această politică nu este configurată, se folosește setarea prestabilită a platformei. Internet Explorer pentru Windows sau Safari pentru Mac OS X. În Linux, lansarea unui browser secundar va eșua dacă această politică nu este configurată.
@@ -2701,6 +2778,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 
       Dacă activezi această politică, imprimantele care folosesc alte protocoale în afară de IPPS, USB sau IPP prin USB vor fi dezactivate, deoarece numele de utilizator și numele fișierului nu trebuie trimise în mod deschis în rețea.</translation>
 <translation id="7258823566580374486">Permite protecția gazdelor de acces la distanță</translation>
+<translation id="7260204423892780600">Stabilește setările pentru Asistentul Google.</translation>
 <translation id="7260277299188117560">Actualizare automată p2p este activată</translation>
 <translation id="7261252191178797385">Imaginea de fundal a dispozitivului</translation>
 <translation id="7264704483008663819">Această politică este învechită în M68. Folosește DeveloperToolsAvailability.
@@ -2808,10 +2886,15 @@ nu poate fi stabilit de utilizator din setările browserului.
           Când este activată această politică, luminozitatea inițială a ecranului este ajustată la valoarea politicii, însă utilizatorul o poate modifica mai târziu. Funcțiile de luminozitate automată sunt dezactivate.
           Când această politică nu este setată, comenzile utilizatorului pentru ecran și funcțiile de luminozitate automată nu sunt afectate.
           Valorile politicii trebuie indicate în procente, în intervalul 0 – 100.</translation>
+<translation id="7517846421386644905">Permite unui administrator să stabilească dacă datele de telemetrie și de diagnosticare trebuie colectate, prelucrate și raportate de controlerul Wilco pentru diagnosticare și telemetrie (DTC).
+
+      Dacă politica este dezactivată sau nu este configurată, DTC este dezactivat și nu poate să colecteze, să prelucreze și să raporteze datele de telemetrie și diagnosticare de pe dispozitiv.
+      Dacă Wilco DTC este disponibil pe dispozitivul dat, iar politica este activată, colectarea, prelucrarea și raportarea datelor de telemetrie și diagnosticare sunt activate.</translation>
 <translation id="7519251620064708155">Permite generarea cheilor pe aceste site-uri</translation>
 <translation id="7529100000224450960">Vă permite să setați o listă de modele pentru adresele URL care specifică site-urile ce au permisiunea să deschidă ferestre de tip pop-up. Dacă această politică nu este setată, va fi utilizată valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultPopupsSetting”, în cazul în care aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="7529144158022474049">Factor de difuzare pentru actualizări automate</translation>
 <translation id="7534199150025803530">Această politică nu afectează aplicația Android Google Drive. Dacă vrei să împiedici folosirea Google Drive prin conexiunile mobile, îți recomandăm să nu permiți instalarea aplicației Android Google Drive.</translation>
+<translation id="7540622499178214923">Permite controlerul wilco de diagnosticare și telemetrie</translation>
 <translation id="7547549430720182663">Îmbină</translation>
 <translation id="7553535237300701827">Când această politică este configurată, fluxul de autentificare la conectare va fi unul dintre următoarele, în funcție de valoarea setării:
 
@@ -3482,6 +3565,7 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
       Setarea acestei politici la o valoare mai scăzută are un efect permanent: ESTE POSIBIL ca dispozitivul să nu revină la versiunile anterioare nici măcar după ce politica este resetată la o valoare mai mare.
 
       Posibilitățile reale de revenire pot depinde și de modelul dispozitivului și de corecțiile de vulnerabilitate critice.</translation>
+<translation id="9126014181388780690">„Permite Asistentului Google să acceseze contextul de pe ecran”</translation>
 <translation id="913195841488580904">Blocați accesul la o listă de adrese URL</translation>
 <translation id="9135033364005346124">Activează proxy-ul <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9136399279941091445">Intervalele de inactivitate când politicile specificate ale dispozitivului sunt lansate</translation>

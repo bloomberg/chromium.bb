@@ -325,7 +325,6 @@
 <translation id="1475502736924165259">他のどのカテゴリにも適合しない証明書がファイルに格納されています</translation>
 <translation id="1476607407192946488">言語設定(&amp;L)</translation>
 <translation id="1477301030751268706">Identity API トークン キャッシュ</translation>
-<translation id="1478233201128522094">次回から、新しいスマートフォンでこの <ph name="DEVICE_TYPE" /> のロックを解除できます。Smart Lock を無効にするには [設定] で指定します。</translation>
 <translation id="1478340334823509079">詳細: <ph name="FILE_NAME" /></translation>
 <translation id="1478607704480248626">インストールが有効になっていません</translation>
 <translation id="1483493594462132177">送信</translation>
@@ -1248,6 +1247,7 @@
 <translation id="2836635946302913370">このユーザー名でのログインは、管理者によって無効にされています。</translation>
 <translation id="283669119850230892">ネットワーク <ph name="NETWORK_ID" /> を使用するには、まずインターネット接続を完了してください（下記参照）。</translation>
 <translation id="2838379631617906747">インストール中</translation>
+<translation id="2841013758207633010">時間</translation>
 <translation id="2841837950101800123">提供元</translation>
 <translation id="2843806747483486897">デフォルトを変更...</translation>
 <translation id="2844169650293029770">USB-C デバイス（左手前のポート）</translation>
@@ -1417,7 +1417,6 @@
 <translation id="3090819949319990166">外部の crx ファイルは <ph name="TEMP_CRX_FILE" /> にコピーできません。</translation>
 <translation id="3090871774332213558">「<ph name="DEVICE_NAME" />」がペア設定されました</translation>
 <translation id="3101709781009526431">日時</translation>
-<translation id="3104763887980088552">アクティビティ ログ</translation>
 <translation id="310671807099593501">サイトで Bluetooth が使用されています</translation>
 <translation id="3115147772012638511">キャッシュを待機しています...</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> ヘルプ</translation>
@@ -1562,7 +1561,6 @@
 <translation id="3335337277364016868">録音された年</translation>
 <translation id="3335947283844343239">閉じたタブを開く</translation>
 <translation id="3336664756920573711">Android スマートフォンで <ph name="DEVICE_TYPE" /> のロックを解除します</translation>
-<translation id="3340978935015468852">設定</translation>
 <translation id="3341703758641437857">ファイルの URL へのアクセスを許可する</translation>
 <translation id="3342361181740736773">「<ph name="TRIGGERING_EXTENSION_NAME" />」によってこの拡張機能が削除されます。</translation>
 <translation id="3345886924813989455">サポートされているブラウザが見つかりませんでした</translation>
@@ -2123,7 +2121,6 @@
 <translation id="4145922204387553806">アシスタントが画面上のアイテムに関連した情報を表示できるようにします</translation>
 <translation id="4146026355784316281">常にシステム ビューアで開く</translation>
 <translation id="4146785383423576110">リセットとクリーンアップ</translation>
-<translation id="4147897805161313378">Google フォト</translation>
 <translation id="4147911968024186208">もう一度お試しください。このエラーが再び表示される場合は、サポート担当者にお問い合わせください。</translation>
 <translation id="4150201353443180367">表示</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 個のタブ}other{# 個のタブ}}</translation>
@@ -2167,7 +2164,6 @@
 <translation id="4222932583846282852">キャンセルしています...</translation>
 <translation id="4225397296022057997">すべてのサイト</translation>
 <translation id="4235200303672858594">画面全体</translation>
-<translation id="4235813040357936597"><ph name="PROFILE_NAME" /> のアカウントを追加</translation>
 <translation id="4235965441080806197">ログインをキャンセル</translation>
 <translation id="4242533952199664413">設定を開く</translation>
 <translation id="4242577469625748426">デバイスにポリシー設定をインストールできませんでした: <ph name="VALIDATION_ERROR" />。</translation>
@@ -2404,7 +2400,6 @@
 <translation id="4627442949885028695">他の端末で開いたタブ</translation>
 <translation id="4628757576491864469">デバイス</translation>
 <translation id="4628762811416793313">Linux コンテナの設定を完了できませんでした。もう一度お試しください。</translation>
-<translation id="4628948037717959914">写真</translation>
 <translation id="4631887759990505102">アーティスト</translation>
 <translation id="4633003931260532286">拡張機能には「<ph name="IMPORT_NAME" />」のバージョン「<ph name="IMPORT_VERSION" />」以上が必要ですが、インストールされているのはバージョン「<ph name="INSTALLED_VERSION" />」のみです</translation>
 <translation id="4634771451598206121">もう一度ログインする...</translation>
@@ -2466,7 +2461,6 @@
 <translation id="4733082559415072992"><ph name="URL" /> から、端末の現在地情報の使用許可を求められています</translation>
 <translation id="4733793249294335256">保存先</translation>
 <translation id="4734518477988699048">入力値が無効です。</translation>
-<translation id="4735265153267957659">Smart Lock を有効にするにはパスワードを入力します。次回から、スマートフォンで <ph name="DEVICE_TYPE" /> のロックを解除できます。Smart Lock を無効にするには [設定] で指定します。</translation>
 <translation id="473546211690256853">このアカウントは <ph name="DOMAIN" /> によって管理されています。</translation>
 <translation id="4735803855089279419">この端末の端末識別子を特定できませんでした。</translation>
 <translation id="4736292055110123391">すべてのデバイスでブックマーク、パスワード、履歴、その他の設定を同期する</translation>
@@ -3642,7 +3636,6 @@
 <translation id="6455264371803474013">特定のサイト</translation>
 <translation id="6455894534188563617">新しいフォルダ(&amp;N)</translation>
 <translation id="6456394469623773452">中程度</translation>
-<translation id="6456631036739229488">Smart Lock に使用するスマートフォンが変更されました。Smart Lock を更新するにはパスワードを入力してください。次回から、新しいスマートフォンで <ph name="DEVICE_TYPE" /> のロックを解除できます。Smart Lock を無効にするには [設定] で指定します。</translation>
 <translation id="645705751491738698">Javascript を引き続きブロックする</translation>
 <translation id="6458701200018867744">アップロードできませんでした（<ph name="WEBRTC_LOG_UPLOAD_TIME" />）。</translation>
 <translation id="6459488832681039634">選択部分を検索に使用</translation>
@@ -4000,7 +3993,6 @@
 <translation id="7005848115657603926">ページ範囲が無効です。<ph name="EXAMPLE_PAGE_RANGE" /> の範囲で指定してください。</translation>
 <translation id="7006634003215061422">下余白</translation>
 <translation id="7007648447224463482">すべてを新しいウィンドウで開く</translation>
-<translation id="7010204281905545194">画像のラベル付け</translation>
 <translation id="701080569351381435">ソースを表示</translation>
 <translation id="7014174261166285193">インストールできませんでした。</translation>
 <translation id="7017004637493394352">もう一度「OK Google」と言ってください</translation>
@@ -4111,7 +4103,6 @@
 <translation id="7175353351958621980">ロード元:</translation>
 <translation id="7180611975245234373">更新</translation>
 <translation id="7180865173735832675">カスタマイズ</translation>
-<translation id="7182359331070524176">Google フォトアルバムを選択</translation>
 <translation id="7186088072322679094">ツールバーに残す</translation>
 <translation id="7187428571767585875">削除または変更されるレジストリ項目:</translation>
 <translation id="7189234443051076392">端末に十分な空き容量があることを確認してください</translation>
@@ -4703,7 +4694,6 @@
 <translation id="8028993641010258682">サイズ</translation>
 <translation id="8030656706657716245">プリンタを追加</translation>
 <translation id="8032244173881942855">タブをキャストできません。</translation>
-<translation id="8033827949643255796">選択しました</translation>
 <translation id="803435727213847625">{COUNT,plural, =0{すべてをシークレット ウィンドウで開く(&amp;I)}=1{シークレット ウィンドウで開く(&amp;I)}other{すべて（# 件）をシークレット ウィンドウで開く(&amp;I)}}</translation>
 <translation id="8037117027592400564">合成音声で読み上げたすべてのテキストの読み取り</translation>
 <translation id="8037357227543935929">確認（デフォルト）</translation>
@@ -4856,7 +4846,6 @@
 <translation id="8260126382462817229">もう一度ログインしてみてください</translation>
 <translation id="8260864402787962391">マウス</translation>
 <translation id="8261378640211443080">この拡張機能は <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />で提供されていません。知らないうちに追加された可能性があります。</translation>
-<translation id="8261387128019234107"><ph name="PROFILE_NAME" /> のアカウントを追加</translation>
 <translation id="8261506727792406068">削除</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> でマウス カーソルが無効になりました。</translation>
 <translation id="8264718194193514834">「<ph name="EXTENSION_NAME" />」によって全画面表示になりました。</translation>
@@ -5300,7 +5289,6 @@
 <translation id="8944099748578356325">バッテリー消費が速くなります（現在 <ph name="BATTERY_PERCENTAGE" />%）</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" /> が <ph name="TAB_NAME" /> のウィンドウを共有しています。</translation>
 <translation id="8946359700442089734">この <ph name="IDS_SHORT_PRODUCT_NAME" /> 搭載デバイスでデバッグ機能が完全に有効になっていませんでした。</translation>
-<translation id="8947779852178668482">Google から画像の説明を取得</translation>
 <translation id="894871326938397531">シークレット モードを終了しますか？</translation>
 <translation id="8951256747718668828">エラーが発生したため、復元を完了できませんでした</translation>
 <translation id="895347679606913382">開始しています...</translation>
@@ -5357,7 +5345,6 @@
 <translation id="9034924485347205037">Linux ファイル</translation>
 <translation id="9035012421917565900">この操作は元に戻せません（これらのアイテムを「<ph name="DESTINATION_NAME" />」に戻すことはできません）。</translation>
 <translation id="9037965129289936994">原文のページを表示</translation>
-<translation id="9038430547971207796">次回から、スマートフォンで <ph name="DEVICE_TYPE" /> のロックを解除できます。Smart Lock を無効にするには [設定] で指定します。</translation>
 <translation id="9038620279323455325">「<ph name="FILE_NAME" />」という名前のファイルはすでに存在します。別の名前を選択してください。</translation>
 <translation id="9038649477754266430">予測サービスを使用してページをより迅速に読み込む</translation>
 <translation id="9039663905644212491">PEAP</translation>
@@ -5456,7 +5443,6 @@
 <translation id="9188441292293901223">この <ph name="DEVICE_TYPE" /> のロックを解除するには、スマートフォンを新しいバージョンの Android に更新してください。</translation>
 <translation id="9188732951356337132">使用状況データや診断データを送信します。このデバイスは現在、診断データやデバイスとアプリの使用状況データを Google に自動送信するように設定されています。この情報を使ってお子様個人が特定されることはありません。この情報は、システムとアプリの安定性の向上やその他の機能の改善に役立てられます。また、Google のアプリやパートナー（Android デベロッパーなど）も、集計データとしてこの情報を活用します。お子様の [その他のウェブとアプリのアクティビティ] の設定がオンになっている場合、このデータはお子様の Google アカウントに保存されます。<ph name="BEGIN_LINK2" />詳細<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPSec + 事前共有鍵</translation>
-<translation id="919031884024748298">ラベルを取得するには Google のサーバーに画像を送信します。</translation>
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" /> で検索</translation>
 <translation id="9201220332032049474">画面ロックの種類</translation>
 <translation id="9203398526606335860">プロファイル記録の開始(&amp;P)</translation>

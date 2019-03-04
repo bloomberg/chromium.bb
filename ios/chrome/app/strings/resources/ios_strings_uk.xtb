@@ -63,7 +63,6 @@
 <translation id="1809939268435598390">Видалити папку</translation>
 <translation id="1813414402673211292">Очистити історію</translation>
 <translation id="1820259098641718022">Додано в список читання</translation>
-<translation id="1821253160463689938">Використовує файли cookie, щоб зберігати налаштування, навіть якщо ви не відвідуєте ці сторінки</translation>
 <translation id="1828824471510190776">Запропонувати пароль…</translation>
 <translation id="1876721852596493031">Надсилати статистику</translation>
 <translation id="1886928167269928266">Весь період</translation>
@@ -176,6 +175,7 @@
 <translation id="3588820906588687999">Відкрити зображення в новій вкладці</translation>
 <translation id="3603009562372709545">Копіювати URL-адресу посилання</translation>
 <translation id="3607167657931203000">Дані автозаповнення</translation>
+<translation id="3607323550193047592">Синхронізацію ввімкнено</translation>
 <translation id="3609785682760573515">Синхронізація…</translation>
 <translation id="3638472932233958418">Попер.завантаж.стор.</translation>
 <translation id="3691593122358196899">Закладку збережено в папці "<ph name="FOLDER_TITLE" />"</translation>
@@ -247,7 +247,6 @@
 <translation id="4854345657858711387">Налаштуйте код доступу</translation>
 <translation id="4860895144060829044">Зателефонувати</translation>
 <translation id="4881695831933465202">Відкрити</translation>
-<translation id="4895709476292058519">Змінити обліковий запис</translation>
 <translation id="4904877109095351937">Позначити як прочитані</translation>
 <translation id="4930268273022498155">Видалити наявні дані. Щоб відновити їх, поверніться в обліковий запис <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Під час спроби поділитися елементом виникла проблема.</translation>
@@ -439,7 +438,6 @@
 <translation id="794799177247607889">Припинити ведення журналів</translation>
 <translation id="7961015016161918242">Ніколи</translation>
 <translation id="7971521879845308059">Блок.сплив.вікна</translation>
-<translation id="7981313251711023384">Попередньо завантажувати сторінки, щоб швидше переглядати та шукати</translation>
 <translation id="7982789257301363584">Мережа</translation>
 <translation id="8019783059653722575">Ви зможете зберігати й завантажувати фотографії.</translation>
 <translation id="802154636333426148">Не вдалося завантажити</translation>

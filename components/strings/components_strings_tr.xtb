@@ -29,7 +29,7 @@
 <translation id="1125573121925420732">Web siteleri güvenliklerini güncellerken uyarılar yaygın olarak görülebilir. Yakında bu işlev iyileştirilecektir.</translation>
 <translation id="1126551341858583091">Yerel depolama alanındaki boyut <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Politika önbelleği uygun</translation>
-<translation id="1131264053432022307">Kopyaladığınız Resim</translation>
+<translation id="1131264053432022307">Kopyalanan Resim</translation>
 <translation id="1150979032973867961">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Bilgisayarınızın işletim sistemi, sunucunun güvenlik sertifikasına güvenmiyor. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
 <translation id="1151972924205500581">Şifre gerekiyor</translation>
 <translation id="1152921474424827756"><ph name="URL" /> sitesinin <ph name="BEGIN_LINK" />önbelleğe alınmış bir kopyasına<ph name="END_LINK" /> erişin</translation>
@@ -47,7 +47,6 @@
 <translation id="121201262018556460"><ph name="DOMAIN" /> alanına ulaşmayı denediniz, ancak sunucu zayıf anahtar içeren bir sertifika sundu. Bir saldırgan özel anahtarı ele geçirmiş olabilir ve sunucu beklediğiniz sunucu olmayabilir (bir saldırganla irtibat kuruyor olabilirsiniz).</translation>
 <translation id="1219129156119358924">Sistem Güvenliği</translation>
 <translation id="1227224963052638717">Bilinmeyen politika.</translation>
-<translation id="1227633850867390598">Değeri gizle</translation>
 <translation id="1228893227497259893">Yanlış varlık tanımlayıcı</translation>
 <translation id="1232569758102978740">Adsız</translation>
 <translation id="124116460088058876">Diğer diller</translation>
@@ -102,6 +101,7 @@
 <translation id="1430915738399379752">Yazdır</translation>
 <translation id="1455413310270022028">Silgi</translation>
 <translation id="1463543813647160932">5x7</translation>
+<translation id="1472675084647422956">Daha fazla göster</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Gönderim Adresi Seç</translation>
 <translation id="1501859676467574491">Google Hesabımdaki kartları göster</translation>
@@ -253,7 +253,7 @@
 <translation id="2317583587496011522">Banka kartları kabul edilir.</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" /> için kullanım süresi sonu: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="2337852623177822836">Ayar yöneticinizin kontrolü altındadır</translation>
-<translation id="2346319942568447007">Kopyaladığınız resim</translation>
+<translation id="2346319942568447007">Kopyalanan resim</translation>
 <translation id="2349790679044093737">VR oturumu etkin</translation>
 <translation id="2354001756790975382">Diğer yer işaretleri</translation>
 <translation id="2354430244986887761">Google Güvenli Tarama son zamanlarda <ph name="SITE" /> sitesinde <ph name="BEGIN_LINK" />zararlı uygulamalar buldu<ph name="END_LINK" />.</translation>
@@ -482,7 +482,6 @@
 <translation id="3615877443314183785">Geçerli bir son kullanma tarihi girin</translation>
 <translation id="36224234498066874">Göz Atma Verilerini Temizle...</translation>
 <translation id="362276910939193118">Tam Geçmişi Göster</translation>
-<translation id="3623476034248543066">Değeri göster</translation>
 <translation id="3630155396527302611">Ağa erişmesine izin verilmiş bir program olarak zaten listeleniyorsa,
     listeden kaldırıp tekrar eklemeyi deneyin.</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
@@ -498,7 +497,7 @@
 <translation id="3704162925118123524">Kullandığınız ağ bir giriş sayfasını ziyaret etmenizi gerektiriyor olabilir.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Yükleniyor...</translation>
-<translation id="3709599264800900598">Kopyaladığınız Metin</translation>
+<translation id="3709599264800900598">Kopyalanan Metin</translation>
 <translation id="3712624925041724820">Lisanslar bitti</translation>
 <translation id="3714780639079136834">Mobil veriyi veya kablosuz bağlantıyı açma</translation>
 <translation id="3715597595485130451">Kablosuz Ağa Bağlanma</translation>
@@ -713,7 +712,7 @@
 <translation id="5002932099480077015">Bu seçenek etkinleştirildiğinde Chrome, formları daha hızlı doldurmak için kartınızın bir kopyasını bu cihazda saklar.</translation>
 <translation id="5014174725590676422">Chrome'da Google Asistan'ın ilk kez çalışma ekranı aşağıda gösterilmiştir</translation>
 <translation id="5015510746216210676">Makine Adı:</translation>
-<translation id="5017554619425969104">Kopyaladığınız metin</translation>
+<translation id="5017554619425969104">Kopyalanan metin</translation>
 <translation id="5018422839182700155">Bu sayfa açılamıyor</translation>
 <translation id="5019198164206649151">Yedekleme deposu kötü durumda</translation>
 <translation id="5023310440958281426">Yöneticinizin politikalarını inceleyin.</translation>
@@ -723,7 +722,7 @@
 <translation id="5034369478845443529">Yerel Bağlam <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="5039804452771397117">İzin ver</translation>
 <translation id="5040262127954254034">Gizlilik</translation>
-<translation id="5043480802608081735">Kopyaladığınız Bağlantı</translation>
+<translation id="5043480802608081735">Kopyalanan Bağlantı</translation>
 <translation id="5045550434625856497">Hatalı parola</translation>
 <translation id="5056549851600133418">Size uygun makaleler</translation>
 <translation id="5068524481479508725">A10</translation>
@@ -740,6 +739,7 @@
 <translation id="5115563688576182185">(64 bit)</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5135404736266831032">Adresleri yönet...</translation>
+<translation id="5138227688689900538">Daha az göster</translation>
 <translation id="5141240743006678641">Senkronize edilen şifreleri Google kimlik bilgilerinizle şifreleyin</translation>
 <translation id="5145883236150621069">Politika yanıtında hata kodu var</translation>
 <translation id="515292512908731282">C4 (Zarf)</translation>
@@ -971,7 +971,7 @@
 <translation id="6578796323535178455">C2 (Zarf)</translation>
 <translation id="6579990219486187401">Açık Pembe</translation>
 <translation id="6583674473685352014">B6 (Zarf)</translation>
-<translation id="6587923378399804057">Kopyaladığınız bağlantı</translation>
+<translation id="6587923378399804057">Kopyalanan bağlantı</translation>
 <translation id="6596325263575161958">Şifreleme seçenekleri</translation>
 <translation id="6604181099783169992">Hareket veya Işık Sensörleri</translation>
 <translation id="6609880536175561541">Prc7 (Zarf)</translation>
@@ -1265,6 +1265,7 @@ Ek ayrıntılar:
 <translation id="8197543752516192074">Sayfayı Çevir</translation>
 <translation id="8201077131113104583">"<ph name="EXTENSION_ID" />" kodlu uzantı için geçersiz güncelleme URL'si.</translation>
 <translation id="8202097416529803614">Sipariş özeti</translation>
+<translation id="8202370299023114387">Çakışma</translation>
 <translation id="8206978196348664717">Prc4 (Zarf)</translation>
 <translation id="8211406090763984747">Bağlantı güvenli</translation>
 <translation id="8218327578424803826">Atanan Konum:</translation>

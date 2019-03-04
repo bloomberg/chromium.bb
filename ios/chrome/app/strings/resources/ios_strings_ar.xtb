@@ -63,7 +63,6 @@
 <translation id="1809939268435598390">حذف مجلد</translation>
 <translation id="1813414402673211292">محو بيانات التصفح</translation>
 <translation id="1820259098641718022">تمت الإضافة إلى قائمة القراءة</translation>
-<translation id="1821253160463689938">يستخدم ملفات تعريف الارتباط لتذكّر الإعدادات المُفضّلة حتى إذا لم تزُر تلك الصفحات.</translation>
 <translation id="1828824471510190776">اقتراح  كلمة مرور...</translation>
 <translation id="1876721852596493031">إرسال بيانات الاستخدام</translation>
 <translation id="1886928167269928266">بدايةَ الوقت</translation>
@@ -75,6 +74,7 @@
 <translation id="2000419248597011803">يُرسِل بعض ملفات تعريف الارتباط وعمليات البحث من شريط العناوين ومربّع البحث إلى محرِّك البحث التلقائي.</translation>
 <translation id="2015722694326466240">للاطلاع على كلمات المرور، يجب عليك أولاً تعيين رمز مرور على جهازك.</translation>
 <translation id="2068952045031577364">الأسبوع الماضي</translation>
+<translation id="2074131957428911366">يمكنك دائمًا اختيار ما تريد مزامنته في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">تراجع</translation>
 <translation id="209018056901015185">طلب موقع سطح المكتب</translation>
 <translation id="2096012225669085171">المزامنة والتخصيص على الأجهزة</translation>
@@ -91,7 +91,7 @@
 <translation id="2267753748892043616">إضافة حساب</translation>
 <translation id="2268044343513325586">تحسين</translation>
 <translation id="2273327106802955778">قائمة "المزيد"</translation>
-<translation id="2316709634732130529">استخدام كلمة مرور مُقترحة</translation>
+<translation id="2316709634732130529">استخدام كلمة المرور المقترحة</translation>
 <translation id="2320166752086256636">إخفاء لوحة المفاتيح</translation>
 <translation id="2339560363438331454">‏خدمات Google والمزامنة</translation>
 <translation id="2351097562818989364">تم إعادة ضبط إعداداتك للترجمة.</translation>
@@ -176,6 +176,7 @@
 <translation id="3588820906588687999">فتح صورة في علامة تبويب جديدة</translation>
 <translation id="3603009562372709545">‏نسخ عنوان URL للرابط</translation>
 <translation id="3607167657931203000">ملء البيانات تلقائيًا</translation>
+<translation id="3607323550193047592">تم تشغيل المزامنة</translation>
 <translation id="3609785682760573515">جارٍ المزامنة...</translation>
 <translation id="3638472932233958418">تحميل صفحات الويب مسبقًا</translation>
 <translation id="3691593122358196899">أُضيفَت إشارة مرجعية إلى <ph name="FOLDER_TITLE" /></translation>
@@ -199,6 +200,7 @@
 <translation id="4038354071007134711">لا يمكن فتح هذا الملف بأي تطبيق موجود على هذا الجهاز.</translation>
 <translation id="4042870976416480368">البحث في الصفحة</translation>
 <translation id="4049507953662678203">تأكد من اتصالك بالشبكة، وأعد المحاولة.</translation>
+<translation id="4082688844002261427">التحكُّم في كيفية استخدام سجلّ التصفُّح لتخصيص البحث والإعلانات والمزيد</translation>
 <translation id="408404951701638773">أصبح الوصول إلى شريط البحث أسهل الآن</translation>
 <translation id="4084682180776658562">إشارة</translation>
 <translation id="411254640334432676">فشلت عملية التنزيل</translation>
@@ -247,7 +249,6 @@
 <translation id="4854345657858711387">تعيين رمز المرور</translation>
 <translation id="4860895144060829044">اتصال</translation>
 <translation id="4881695831933465202">فتح</translation>
-<translation id="4895709476292058519">تغيير الحسابات</translation>
 <translation id="4904877109095351937">وضع علامة كمقروءة</translation>
 <translation id="4930268273022498155">يمكنك حذف البيانات الحالية. يمكنك استرداد هذه البيانات بالتبديل مرة أخرى إلى <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">عذرًا، حدثت مشكلة أثناء مشاركة العنصر.</translation>
@@ -261,7 +262,7 @@
 <translation id="5083464117946352670">تعذر تحديد حجم الملف.</translation>
 <translation id="5094827893301452931">‏اكتملت مشاركة Tweet.</translation>
 <translation id="5132942445612118989">مزامنة كلمات المرور والسجلّ والمزيد على جميع الأجهزة</translation>
-<translation id="5140288047769711648">‏سيتذكّر Chrome كلمة المرور هذه من أجلك. وليس عليك تذكُّرها.</translation>
+<translation id="5140288047769711648">‏سيتذكّر Chrome كلمة المرور هذه بالنيابة عنك. وبالتالي لن تضطرّ لتذكُّرها كلّ مرّة.</translation>
 <translation id="5181140330217080051">تنزيل</translation>
 <translation id="5186185447130319458">خاص</translation>
 <translation id="5190835502935405962">شريط الإشارات</translation>
@@ -353,7 +354,7 @@
 <translation id="6445981559479772097">تم إرسال الرسالة.</translation>
 <translation id="6464071786529933911">فتح في علامة تبويب جديدة للتصفح المتخفي</translation>
 <translation id="6482629121755362506">تم حذف <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> من العناصر</translation>
-<translation id="6513773942555305766">‏كلمة المرور المُقترحة في Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
+<translation id="6513773942555305766">‏كلمة المرور المقترحة في Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">الساعة الماضية</translation>
 <translation id="6548479190262846511">لم يتم العثور على كلمات مرور لهذا الموقع الإلكتروني</translation>
 <translation id="6642362222295953972">التبديل إلى علامة تبويب حالية</translation>
@@ -397,6 +398,7 @@
 <translation id="7203585745079012652">النطق بالإجابات</translation>
 <translation id="722055596168483966">‏تخصيص خدمات Google</translation>
 <translation id="7272437679830969316">تعذَّر التحقق من هويتك. لم يتم نسخ كلمة المرور.</translation>
+<translation id="7280856130494094142">إدخال عبارة المرور لبدء المزامنة</translation>
 <translation id="7285236536143823449">نعم، موافق</translation>
 <translation id="7291368939935408496">جارٍ تحضير كلمات المرور…</translation>
 <translation id="7336264872878993241">تم تنزيل <ph name="PERCENT" /> بالمائة</translation>
@@ -439,7 +441,6 @@
 <translation id="794799177247607889">إيقاف التسجيل</translation>
 <translation id="7961015016161918242">مطلقًا</translation>
 <translation id="7971521879845308059">حظر النوافذ المنبثقة</translation>
-<translation id="7981313251711023384">التحميل المُسبق للصفحات للحصول على أداء أسرع أثناء التصفّح والبحث</translation>
 <translation id="7982789257301363584">الشبكة</translation>
 <translation id="8019783059653722575">هذا يتيح لك حفظ الصور وتحميلها.</translation>
 <translation id="802154636333426148">تعذّر التنزيل</translation>

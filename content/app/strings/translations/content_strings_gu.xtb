@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">સ્થિતિ</translation>
 <translation id="1938124657309484470">મૂલ્ય <ph name="MAXIMUM_DATE_OR_TIME" /> અથવા પહેલાંનું હોવું આવશ્યક છે.</translation>
 <translation id="1946271899482435442">તારીખ પીકર બતાવો</translation>
-<translation id="1982354452682152483">કોઈ વર્ણન ઉપલબ્ધ નથી.</translation>
 <translation id="1993104285338243655">મીરરીંગ પર સ્વિચ કર્યુંં</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' નો ઉપયોગ '<ph name="INVALIDDOMAIN" />' માં ખોટી જગ્યાએ થયો છે.</translation>
 <translation id="2148716181193084225">આજે</translation>
@@ -95,6 +94,7 @@
 <translation id="4360991593054037559">કૃપા કરીને એક માન્ય મૂલ્ય દાખલ કરો. બે નિકટતમ માન્ય મૂલ્યો <ph name="VALID_VALUE_LOW" /> અને <ph name="VALID_VALUE_HIGHER" /> છે.</translation>
 <translation id="4384583879834880242">પ્રશ્ન અને જવાબ</translation>
 <translation id="4413860115965805769">મેનૂ બટન</translation>
+<translation id="4444765639179266822">આવું બોલતા જણાય છે: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">શબ્દાવલીનો સંદર્ભ</translation>
 <translation id="4522570452068850558">વિગતો</translation>
 <translation id="4542388879936266156">બાકીનો સમય: <ph name="REMAINING_TIME" /></translation>
@@ -121,6 +121,7 @@
 <translation id="5164977714490026579">મૂલ્ય <ph name="MINIMUM" /> જેટલું અથવા આનાથી વધુ હોવું આવશ્યક છે.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">કૃપા કરીને '<ph name="ATSIGN" />' ની આગળનો ભાગ દાખલ કરો. '<ph name="INVALIDADDRESS" />' અપૂર્ણ છે.</translation>
+<translation id="5334352251556557839">મીડિયા ચલાવવામાં નિષ્ફળ રહ્યાં.</translation>
 <translation id="5406322316791861025">આકૃતિ</translation>
 <translation id="5453733299334684579">ટ્રી આઇટમ</translation>
 <translation id="5466621249238537318">કૃપા કરીને એક અથવા વધુ ફાઇલ પસંદ કરો. </translation>
@@ -147,6 +148,7 @@
 <translation id="6150588977291308318">ગ્રંથસૂચિ</translation>
 <translation id="6164829606128959761">મીટર</translation>
 <translation id="6166809985690652833">સમાપન ભાષણ</translation>
+<translation id="6209276755895393898">આના જેવું જણાય છે: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">શબ્દાવલી</translation>
 <translation id="6398862346408813489">મહિના પસંદગી પેનલ દર્શાવો</translation>
 <translation id="6404546809543547843">ઑડિઓ સમય સ્ક્રબર</translation>
@@ -177,7 +179,7 @@
 <translation id="7139483182332611405">પ્રસ્તાવના</translation>
 <translation id="7263440858009898357">કૃપા કરીને સૂચિમાંથી એક આઇટમ પસંદ કરો.</translation>
 <translation id="727747134524199931">કૉલમ હેડર</translation>
-<translation id="7336527682887843386">વર્ણન મેળવી શકતાં નથી.</translation>
+<translation id="7320576522385648310">બફર થઈ રહ્યું છે</translation>
 <translation id="7353453495576941748">ક્રેડિટ</translation>
 <translation id="7364796246159120393">ફાઇલ પસંદ કરો</translation>
 <translation id="739024184232394898">અન્ય...</translation>
@@ -200,7 +202,6 @@
 <translation id="7888071071722539607">કૃપા કરીને ઇમેઇલ સરનામાંમાં '<ph name="ATSIGN" />' શામેલ કરો. '<ph name="INVALIDADDRESS" />'માં '<ph name="ATSIGN" />' ખૂટે છે.</translation>
 <translation id="7891486169920085145">વિભાજનકર્તા</translation>
 <translation id="795667975304826397">કોઈ ફાઇલ પસંદ કરેલી નથી</translation>
-<translation id="8042519864538898414">કન્ટેન્ટ પુખ્ત લોકો માટેનું હોય તેવું જણાય છે.</translation>
 <translation id="8053789581856978548">ટેક્સ્ટ ફીલ્ડ શોધો</translation>
 <translation id="8057695513531652401">સૂચના</translation>
 <translation id="8105797009065549151">નોંધ સંદર્ભ</translation>

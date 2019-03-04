@@ -47,7 +47,6 @@
 <translation id="121201262018556460">আপনি <ph name="DOMAIN" /> অ্যাক্সেস করার চেষ্টা করেছেন, কিন্তু সার্ভার একটি দুর্বল কী সম্বলিত সার্টিফিকেট উপস্থাপন করেছে৷ কোনও আক্রমণকারী ব্যক্তিগত কী অ্যাক্সেস করে থাকতে পারে এবং সার্ভারটি আপনার প্রত্যাশিত সার্ভার নাও হতে পারে (হতে পারে আপনি একজন আক্রমণকারীর সাথে যোগাযোগ করছেন)৷</translation>
 <translation id="1219129156119358924">সিস্টেম নিরাপত্তা</translation>
 <translation id="1227224963052638717">অজানা নীতি৷</translation>
-<translation id="1227633850867390598">মান লুকান</translation>
 <translation id="1228893227497259893">ভুল সত্তা সনাক্তকারী</translation>
 <translation id="1232569758102978740">শিরোনামহীন</translation>
 <translation id="124116460088058876">আরও ভাষা</translation>
@@ -102,6 +101,7 @@
 <translation id="1430915738399379752">প্রিন্ট</translation>
 <translation id="1455413310270022028">ইরেজার</translation>
 <translation id="1463543813647160932">৫x৭</translation>
+<translation id="1472675084647422956">আরও দেখান</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">শিপিং ঠিকানা বেছে নিন</translation>
 <translation id="1501859676467574491">আপনার Google Account থেকে কার্ড দেখুন</translation>
@@ -483,7 +483,6 @@
 <translation id="3615877443314183785">মেয়াদ শেষ হওয়ার তারিখের সঠিক মান লিখুন</translation>
 <translation id="36224234498066874">ব্রাউজ করা ডেটা সাফ করুন...</translation>
 <translation id="362276910939193118">সম্পূর্ণ ইতিহাস দেখুন</translation>
-<translation id="3623476034248543066">মান দেখান</translation>
 <translation id="3630155396527302611">নেটওয়ার্ক অ্যাক্সেস করতে এটি যদি ইতোমধ্যে মঞ্জুরিকৃত প্রোগ্রাম হিসাবে তালিকাতে থাকে, তাহলে
       তালিকাটি থেকে এটি সরানোর চেষ্টা করে আবার যোগ করে দেখুন।</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
@@ -741,6 +740,7 @@
 <translation id="5115563688576182185">(৬৪-বিট)</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5135404736266831032">ঠিকানাগুলি পরিচালনা করুন...</translation>
+<translation id="5138227688689900538">কম দেখুন</translation>
 <translation id="5141240743006678641">আপনার Google সার্টিফিকেটের সাথে সিঙ্ক করা পাসওয়ার্ডগুলি এনক্রিপ্ট করুন৷</translation>
 <translation id="5145883236150621069">নীতি প্রতিক্রিয়ার মধ্যে ত্রুটি কোড উপস্থিত</translation>
 <translation id="515292512908731282">C4 (Envelope)</translation>
@@ -1265,6 +1265,7 @@
 <translation id="8197543752516192074">পৃষ্ঠাটি অনুবাদ করুন</translation>
 <translation id="8201077131113104583">"<ph name="EXTENSION_ID" />" আইডি যুক্ত এক্সটেনশনের আপডেট করার ইউআরএলটি ভুল।</translation>
 <translation id="8202097416529803614">অর্ডারের সারসংক্ষেপ</translation>
+<translation id="8202370299023114387">দ্বন্দ্ব</translation>
 <translation id="8206978196348664717">Prc4 (Envelope)</translation>
 <translation id="8211406090763984747">কানেকশনটি নিরাপদ</translation>
 <translation id="8218327578424803826">নির্ধারিত লোকেশন:</translation>

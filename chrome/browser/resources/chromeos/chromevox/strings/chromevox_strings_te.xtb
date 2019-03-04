@@ -53,7 +53,7 @@
 <translation id="1303806948938513162">ChromeVox మెనూలలోకి వెళ్లడం కోసం 4 వేళ్లతో నొక్కండి</translation>
 <translation id="1319608975892113573">మునుపటి బ్లాక్‌కోట్ లేదు.</translation>
 <translation id="1321576897702511272">ChromeVox సహాయాన్ని దాచండి</translation>
-<translation id="1325946044405407859">వివర్ణ సిందూర రంగు</translation>
+<translation id="1325946044405407859">లేత సింధూర రంగు</translation>
 <translation id="1331702245475014624"><ph name="TOTAL" />లో <ph name="INDEX" /></translation>
 <translation id="1334095593597963605">అక్షరం మరియు పదం అనుకరణ</translation>
 <translation id="1339428534620983148">మునుపటి పట్టిక నిలువు వరుస</translation>
@@ -337,7 +337,7 @@
 <translation id="3392045790598181549"><ph name="NAME" />, మెను అంశం</translation>
 <translation id="3393605254399152980">మీరు తాకిన దానిని వినడం కోసం ఒక వేలితో లాగండి</translation>
 <translation id="3406283310380167331">ఫారమ్‌ల జాబితాను చూపండి</translation>
-<translation id="3414400929511680526">వివర్ణ లేజాయ నీలి రంగు</translation>
+<translation id="3414400929511680526">లేత లేజాయ నీలి రంగు</translation>
 <translation id="3437941064431741545">పరిమాణం <ph name="FONT_SIZE" /> ముగింపు</translation>
 <translation id="344800400831402066">నారింజ ఛాయల రంగు</translation>
 <translation id="3457000393508828486">పాక్షికంగా నొక్కబడింది</translation>
@@ -345,7 +345,7 @@
 <translation id="3462439746547587373"><ph name="NAME" />, బటన్</translation>
 <translation id="3466530247399808663">చెల్లని కీ నొక్కారు</translation>
 <translation id="3468959318854349468">శీర్షిక లేదు</translation>
-<translation id="3469413619751135069">వివర్ణ ఆకుపచ్చ</translation>
+<translation id="3469413619751135069">లేత ఆకుపచ్చ</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> నుండి <ph name="V2" /> వరకు</translation>
 <translation id="3490765818161916458">జాబితా గ్రిడ్</translation>
@@ -390,7 +390,7 @@
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">స్వీయపూర్తి జాబితా</translation>
 <translation id="3810838688059735925">వీడియో</translation>
-<translation id="3813387282697781382">పగడం వంటి లేత యెర్రని రంగు</translation>
+<translation id="3813387282697781382">పగడం వంటి లేత ఎర్రని రంగు</translation>
 <translation id="3816633764618089385">తరువాత మీడియా</translation>
 <translation id="3819376190738087562">జంప్‌లు లేవు.</translation>
 <translation id="385383972552776628">ఎంపికల పేజీని తెరవండి</translation>
@@ -528,7 +528,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">డిస్‌కనెక్ట్ చెయ్యి</translation>
 <translation id="481165870889056555">ప్రస్తుత పేజీ యొక్క శీర్షికను తెలియజేయండి</translation>
-<translation id="4815668758102003883">వివర్ణ నీలమణి రంగు</translation>
+<translation id="4815668758102003883">లేత నీలమణి రంగు</translation>
 <translation id="4826415162591436065">ముందుకు నావిగేట్ చేయండి</translation>
 <translation id="4826604887384865800">తరువాత జంప్</translation>
 <translation id="4827410568042294688">ఎంపిక తీసివేయబడింది</translation>
@@ -576,7 +576,7 @@
 <translation id="5075936896689244141">తరువాత కీమ్యాప్</translation>
 <translation id="5078661581131202757">పైల్ ఎంపిక</translation>
 <translation id="5080758118274074384">రెండుసార్లు క్లిక్ చేయబడింది</translation>
-<translation id="5085453135206054947">వివర్ణ ఊదా ఎరుపు</translation>
+<translation id="5085453135206054947">లేత ఊదా ఎరుపు</translation>
 <translation id="5087864757604726239">వెనుకకు</translation>
 <translation id="5098541983634824365">గ్రిడ్ నుండి నిష్క్రమిస్తున్నారు.</translation>
 <translation id="5102981729317424850">సాధనపట్టీ</translation>
@@ -708,7 +708,7 @@
 <translation id="5956928062748260866">డైలాగ్</translation>
 <translation id="5963413905009737549">విభాగం</translation>
 <translation id="5968607524793740041">సందర్భ మెనూను చూపుతుంది</translation>
-<translation id="5981446804259161541">Light Cyanలేత నీలి ఆకుపచ్చ రంగు</translation>
+<translation id="5981446804259161541">లేత నీలి ఆకుపచ్చ రంగు</translation>
 <translation id="5983179082906765664">నావిగేషన్ గ్రాన్యులారిటీని పెంచండి</translation>
 <translation id="5992285135956208197">గ్రాఫిక్స్ పత్రం</translation>
 <translation id="5999630716831179808">వాయిస్‌లు</translation>
@@ -781,7 +781,7 @@
 <translation id="6540201937398578274">ChromeVoxలో, శోధన కీ అనేది మాడిఫైయర్ కీ. చాలా వరకు ChromeVox షార్ట్‌కట్‌లు శోధన కీతో ప్రారంభమవుతాయి. అలాగే మీరు నావిగేషన్ కోసం ఎక్కువగా బాణం కీలను ఉపయోగిస్తారు.</translation>
 <translation id="6544923685317771506">సముద్ర శంఖం రంగు</translation>
 <translation id="6550720799683018100">దిగువ జాబితా నుండి ఎంపికను ఎంచుకోవడం ద్వారా ప్రస్తుత కీమ్యాప్‌ను మార్చండి.</translation>
-<translation id="6551185905438378412">నిగనిగలాడే నలుపు వర్ణం</translation>
+<translation id="6551185905438378412">లేత గోధుమ రంగు</translation>
 <translation id="6561818612645211875">ప్రస్తుత అడ్డు వరుస ప్రారంభానికి వెళ్లండి</translation>
 <translation id="6579990219486187401">లేత గులాబీ రంగు</translation>
 <translation id="6583174818554398774">వివరాల స్థాయి వద్ద తర్వాతి దానికి తరలించండి</translation>
@@ -813,7 +813,7 @@
 <translation id="6787839852456839824">కీబోర్డ్ సత్వరమార్గాలు</translation>
 <translation id="6793101435925451627">lstbx</translation>
 <translation id="6815255864998354418">లేత నిమ్మపండు రంగు</translation>
-<translation id="6816066673340002913">వివర్ణ బంగారు కడ్డీ రంగు</translation>
+<translation id="6816066673340002913">లేత బంగారు కడ్డీ రంగు</translation>
 <translation id="6826226459053491773">రెండు వేళ్లతో కిందికి స్వైప్ చేయండి</translation>
 <translation id="6833103209700200188">ఫుటర్</translation>
 <translation id="6858047746862060282">ప్రారంభం</translation>
@@ -939,7 +939,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="7684431668231950609">వచనం, URL నమోదును సవరించండి</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">మునుపటి రేడియో బటన్</translation>
-<translation id="769900455782717361">వచన ఆకృతీకరణ.
+<translation id="769900455782717361">వచన ఫార్మాటింగ్.
         <ph name="FONT_SIZE_STRING" />
         <ph name="COLOR_STRING" />
         <ph name="BOLD_STRING" />
@@ -1127,7 +1127,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="860150890330522909"><ph name="NAME" /> చెక్‌బాక్స్ ఎంచుకోబడింది</translation>
 <translation id="8603071050456974042">ChromeVox ప్యానెల్</translation>
 <translation id="8606621670302093223">తేదీ నియంత్రణ</translation>
-<translation id="8613709718990529335">వివర్ణ గులాబీ గోధుమ రంగు</translation>
+<translation id="8613709718990529335">లేత గులాబీ గోధుమ రంగు</translation>
 <translation id="8628186274519446680">టమోటా రంగు</translation>
 <translation id="8631359288236106450"><ph name="COUNT" /> అంశాలు ఎంచుకోబడ్డాయి</translation>
 <translation id="8638532244051952400">ప్రస్తుత సెల్ అక్షాలను తెలియజేయండి</translation>

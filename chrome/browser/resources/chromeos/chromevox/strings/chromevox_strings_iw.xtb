@@ -257,7 +257,7 @@
 <translation id="2912405967290226587">החלקה ימינה עם שלוש אצבעות</translation>
 <translation id="2932083475399492303">החלף סוג שורה בין מבנית או פריסה</translation>
 <translation id="2942710183375260152">כחול אפור כהה</translation>
-<translation id="2943596527105977722">כתום-זהב כהה</translation>
+<translation id="2943596527105977722">מטה-זהב כהה</translation>
 <translation id="2944762337049891859">הקרא את הדף באופן אוטומטי בסיום טעינתו.</translation>
 <translation id="2964026537669811554">קבוצת כותרות</translation>
 <translation id="2968634799764242930">ירוק ים</translation>
@@ -446,7 +446,7 @@
 <translation id="419265409837491189">מעבר לעמודה הקודמת</translation>
 <translation id="4202186506458631436">העבר ימינה</translation>
 <translation id="4204126831294769023">תכלת</translation>
-<translation id="4204864733111726379">לבן פרחוני</translation>
+<translation id="4204864733111726379">לבן פורח</translation>
 <translation id="4206289001967551965">בתוך טבלה</translation>
 <translation id="4209770650650780359">כדי להשתמש בהשלמה האוטומטית, יש להקיש על החיצים הפונים מעלה או מטה.</translation>
 <translation id="4215733775853809057">המחוון הבא</translation>
@@ -458,7 +458,7 @@
 <translation id="4231102694147661229">הפעלת אפשרויות למפתחים</translation>
 <translation id="423334822609210999">אין תא משמאל.</translation>
 <translation id="4243624244759495699"><ph name="LOCALE" />, רמה <ph name="GRADE" /></translation>
-<translation id="4246217262268234757">כחול מתכתי</translation>
+<translation id="4246217262268234757">כחול פלדה</translation>
 <translation id="4253168017788158739">הערה</translation>
 <translation id="4254798249533888099">עץ</translation>
 <translation id="4255943572433203166">‏השתמש באפשרויות הבאות כדי להתאים אישית את ChromeVox. השינויים ייכנסו לתוקף באופן מיידי.</translation>
@@ -487,7 +487,7 @@
 <translation id="4457472090507035117">בחר את הקול המוגדר כרגע:</translation>
 <translation id="4471074325120394300">אין קישורים.</translation>
 <translation id="4476183483923481720">שורה חדשה</translation>
-<translation id="4479068155583208887">אדום קיר</translation>
+<translation id="4479068155583208887">אדום קיר-לבנים</translation>
 <translation id="4482330759234983253">הטבלה הקודמת</translation>
 <translation id="4491109536499578614">תמונה</translation>
 <translation id="4505167975768625962">הוספה</translation>
@@ -585,7 +585,7 @@
 <translation id="5110983769041734144">אין שדה קודם בטופס.</translation>
 <translation id="5111640677200759579">כותרת עמודה</translation>
 <translation id="5115892389597951922">‏יומן ChromeVox</translation>
-<translation id="5119330972669454698">עץ מוצק</translation>
+<translation id="5119330972669454698">חום-עץ</translation>
 <translation id="5136967254288895616">אין קישור קודם.</translation>
 <translation id="513774504516943387">lnk</translation>
 <translation id="5138912041966667164">כחול סגלגל בינוני</translation>
@@ -673,7 +673,7 @@
 <translation id="5712244464475377681">popbtn</translation>
 <translation id="5712338278108304766">העמודה הבאה בטבלה</translation>
 <translation id="571866080859340309">סקירת קבוצות</translation>
-<translation id="5725079927589231571">כחול מתכתי בהיר</translation>
+<translation id="5725079927589231571">כחול פלדה בהיר</translation>
 <translation id="5728409797179002635">לא נמצאה טבלה.</translation>
 <translation id="5729047866208036762">כדי לעיין בחישובים צריך ללחוץ על החיצים מעלה, מטה, שמאלה או ימינה.</translation>
 <translation id="5732189279857692565">‏זו הכותרת השנייה. המשך במדריך; הקש על מקש החיפוש ועל H או על מקש החיפוש, על Shift ועל H</translation>
@@ -813,7 +813,7 @@
 <translation id="6787839852456839824">מקשי קיצור</translation>
 <translation id="6793101435925451627">lstbx</translation>
 <translation id="6815255864998354418">לימון שיפון</translation>
-<translation id="6816066673340002913">כתום זהב חיוור</translation>
+<translation id="6816066673340002913">מטה-זהב חיוור</translation>
 <translation id="6826226459053491773">החלקה מטה עם שתי אצבעות</translation>
 <translation id="6833103209700200188">כותרת תחתונה</translation>
 <translation id="6858047746862060282">פרולוג</translation>
@@ -826,7 +826,7 @@
 <translation id="6910969481785184048">הפעלה, כיבוי והפסקה</translation>
 <translation id="6911965441508464308">אין תא מעל.</translation>
 <translation id="6919104639734799681">הצג את רשימת הטבלאות</translation>
-<translation id="6949846980769640811">ירוק כחלחל בהיר</translation>
+<translation id="6949846980769640811">ירוק כחלחל בינוני</translation>
 <translation id="6955705049214951590">ורוד ערפילי</translation>
 <translation id="6964088412282673743">אין פקד קודם.</translation>
 <translation id="699159175332639490">Search + O + W</translation>
@@ -867,12 +867,12 @@
 <translation id="7165714724802225287">התצוגה הנוכחית היא משולבת.</translation>
 <translation id="7167657087543110">הד תו</translation>
 <translation id="7170733337935166589">דלג קדימה בזמן קריאה רציפה</translation>
-<translation id="7173102181852295013">כחול שחור</translation>
+<translation id="7173102181852295013">כחול מידנייט</translation>
 <translation id="7181697990050180700">התאם אישית את מקשי הקיצור עבור פקודות נפוצות על ידי הקלדה שלהם בשדות המתאימים למטה.</translation>
 <translation id="7203150201908454328">מורחב</translation>
 <translation id="7210211103303402262">דקות</translation>
 <translation id="7217912842225915592">+<ph name="NUM" /></translation>
-<translation id="7218782500591078391">כתום זהב</translation>
+<translation id="7218782500591078391">מטה-זהב</translation>
 <translation id="7221740160534240920">שורה</translation>
 <translation id="7226216518520804442">lst</translation>
 <translation id="7229749224609077523">בחר טבלת ברייל 6 נקודות:</translation>
@@ -916,7 +916,7 @@
 <translation id="7518543783849163354">‏כדי להפסיק באופן זמני את המשוב בדיבור של ChromeVox, הקש על Control.</translation>
 <translation id="7521682724501952239">‏אפשר להשתמש ב-ChromeVox בעזרת מסך המגע.</translation>
 <translation id="7532613204005497612">יוני</translation>
-<translation id="7533226154149229506">כתום זהב בהיר</translation>
+<translation id="7533226154149229506">צהוב מטה-זהב בהיר</translation>
 <translation id="7552432549459840808">‏מקשי קיצור מועילים ב-Chrome</translation>
 <translation id="7569983096843329377">שחור</translation>
 <translation id="7579911500627256166">נקודה <ph name="DOT" /></translation>

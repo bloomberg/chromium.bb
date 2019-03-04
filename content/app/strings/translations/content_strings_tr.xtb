@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">durum</translation>
 <translation id="1938124657309484470">Değer <ph name="MAXIMUM_DATE_OR_TIME" /> veya daha geri olmalıdır.</translation>
 <translation id="1946271899482435442">Tarih seçiciyi göster</translation>
-<translation id="1982354452682152483">Açıklama yok.</translation>
 <translation id="1993104285338243655">Yansıtmaya geçildi</translation>
 <translation id="2060505056492490888">"<ph name="DOT" />", "<ph name="INVALIDDOMAIN" />" adı içinde yanlış bir konumda kullanılmış.</translation>
 <translation id="2148716181193084225">Bugün</translation>
@@ -177,7 +176,6 @@
 <translation id="7139483182332611405">önsöz</translation>
 <translation id="7263440858009898357">Lütfen listeden bir öğe seçin.</translation>
 <translation id="727747134524199931">sütun başlığı</translation>
-<translation id="7336527682887843386">Açıklama alınamıyor.</translation>
 <translation id="7353453495576941748">katkıda bulunan</translation>
 <translation id="7364796246159120393">Dosya Seç</translation>
 <translation id="739024184232394898">Diğer...</translation>
@@ -200,7 +198,6 @@
 <translation id="7888071071722539607">Lütfen e-posta adresine bir "<ph name="ATSIGN" />" işareti ekleyin. "<ph name="INVALIDADDRESS" />" adresinde "<ph name="ATSIGN" />" eksik.</translation>
 <translation id="7891486169920085145">ayırıcı</translation>
 <translation id="795667975304826397">Dosya seçilmedi</translation>
-<translation id="8042519864538898414">Yetişkinlere uygun içerik olduğu anlaşılıyor.</translation>
 <translation id="8053789581856978548">arama metni alanı</translation>
 <translation id="8057695513531652401">bildirim</translation>
 <translation id="8105797009065549151">not referansı</translation>

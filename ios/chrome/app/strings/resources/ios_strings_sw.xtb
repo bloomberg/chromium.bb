@@ -63,7 +63,6 @@
 <translation id="1809939268435598390">Futa Folda</translation>
 <translation id="1813414402673211292">Futa Data ya Kuvinjari</translation>
 <translation id="1820259098641718022">Imeongezwa kwenye Orodha ya Kusoma</translation>
-<translation id="1821253160463689938">Hutumia vidakuzi kukumbuka mapendeleo yako, hata usipotembelea kurasa hizo</translation>
 <translation id="1828824471510190776">Pendekeza Nenosiri...</translation>
 <translation id="1876721852596493031">Tuma Data ya Utumiaji</translation>
 <translation id="1886928167269928266">Kutoka Mwanzo</translation>
@@ -75,6 +74,7 @@
 <translation id="2000419248597011803">Hutuma baadhi ya vidakuzi na utafutaji kutoka kwenye sehemu ya anwani na kisanduku cha kutafutia kwenye mtambo wako chaguomsingi wa kutafuta</translation>
 <translation id="2015722694326466240">Ili uone manenosiri, ni lazima kwanza uweke nambari ya siri kwenye kifaa chako.</translation>
 <translation id="2068952045031577364">Wiki Iliyopita</translation>
+<translation id="2074131957428911366">Unaweza kuchagua utakachosawazisha wakati wowote katika <ph name="BEGIN_LINK" />mipangilio<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Tendua</translation>
 <translation id="209018056901015185">Omba Tovuti ya Eneo-kazi</translation>
 <translation id="2096012225669085171">Sawazisha na uweke mapendeleo kwenye vifaa vyote</translation>
@@ -176,6 +176,7 @@
 <translation id="3588820906588687999">Fungua Picha Katika Kichupo Kipya</translation>
 <translation id="3603009562372709545">Nakili URL ya Kiungo</translation>
 <translation id="3607167657931203000">Jaza Data Kiotomatiki</translation>
+<translation id="3607323550193047592">Usawazishaji Umewashwa</translation>
 <translation id="3609785682760573515">Inasawazisha...</translation>
 <translation id="3638472932233958418">Pakia Kurasa za wavuti Mapema</translation>
 <translation id="3691593122358196899">Imetiwa alamisho kwenye <ph name="FOLDER_TITLE" /></translation>
@@ -199,6 +200,7 @@
 <translation id="4038354071007134711">Hakuna programu kwenye kifaa hiki inayoweza kufungua faili.</translation>
 <translation id="4042870976416480368">Pata katika Ukurasa</translation>
 <translation id="4049507953662678203">Hakikisha una muunganisho wa mtandao, kisha ujaribu tena.</translation>
+<translation id="4082688844002261427">Dhibiti namna historia yako ya kuvinjari inavyotumika kuweka mapendeleo kwenye Huduma ya Tafuta na Google, matangazo na zaidi</translation>
 <translation id="408404951701638773">Sasa unaweza kufikia upau wa kutafutia kwa urahisi</translation>
 <translation id="4084682180776658562">Alamisho</translation>
 <translation id="411254640334432676">Upakuaji haujafaulu.</translation>
@@ -247,7 +249,6 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="4854345657858711387">Weka Nambari ya Siri</translation>
 <translation id="4860895144060829044">Piga simu</translation>
 <translation id="4881695831933465202">Fungua</translation>
-<translation id="4895709476292058519">Badilisha Akaunti</translation>
 <translation id="4904877109095351937">Tia Alama Kuwa Umesoma</translation>
 <translation id="4930268273022498155">Futa data iliyopo. Unaweza kuirejesha kwa kurudi kwenye <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Samahani, kulikuwa na tatizo wakati wa kushiriki kipengee chako.</translation>
@@ -397,6 +398,7 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="7203585745079012652">Itamke Majibu</translation>
 <translation id="722055596168483966">Badilisha huduma za Google zikufae</translation>
 <translation id="7272437679830969316">Utambulisho wako haujathibitishwa. Nenosiri halijanakiliwa.</translation>
+<translation id="7280856130494094142">Weka kauli ya siri ili uanze kusawazisha</translation>
 <translation id="7285236536143823449">NDIYO, NINAKUBALI</translation>
 <translation id="7291368939935408496">Inatayarisha Manenosiri...</translation>
 <translation id="7336264872878993241">Faili imepakuliwa asilimia <ph name="PERCENT" /></translation>
@@ -439,7 +441,6 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="794799177247607889">Acha Kuleta Kumbukumbu</translation>
 <translation id="7961015016161918242">Katu</translation>
 <translation id="7971521879845308059">Zuia Ibukizi</translation>
-<translation id="7981313251711023384">Pakia mapema kurasa ili upate huduma ya haraka ya kuvinjari na kutafuta</translation>
 <translation id="7982789257301363584">Mtandao</translation>
 <translation id="8019783059653722575">Hii hukuwezesha kuhifadhi na kupakia picha.</translation>
 <translation id="802154636333426148">Haikuweza kupakua</translation>
