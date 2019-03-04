@@ -3948,6 +3948,10 @@ def CMDstatus(parser, args):
 
   Also see 'git cl comments'.
   """
+  parser.add_option(
+      '--no-branch-color',
+      action='store_true',
+      help='Disable colorized branch names')
   parser.add_option('--field',
                     help='print only specific field (desc|id|patch|status|url)')
   parser.add_option('-f', '--fast', action='store_true',
@@ -4019,14 +4023,6 @@ def CMDstatus(parser, args):
       return asterisk + color + branch_name + Fore.RESET
     return asterisk + branch_name
 
-  def LeftPadColorfulString(string_plain, string_colorful, alignment):
-    """Pad string_colorful with spaces until it hits alignment. Use string_plain
-    to compute required number of spaces."""
-
-    padding_amount = alignment - len(string_plain)
-    padding = ' ' * padding_amount
-    return padding + string_colorful
-
   branch_statuses = {}
 
   alignment = max(5, max(len(FormatBranchName(c.GetBranch())) for c in changes))
@@ -4048,14 +4044,13 @@ def CMDstatus(parser, args):
       reset = ''
     status_str = '(%s)' % status if status else ''
 
-    branch_display_plain = FormatBranchName(branch)
-    branch_display_color = FormatBranchName(branch, colorize=True)
-    padded_branch_name = LeftPadColorfulString(branch_display_plain,
-                                               branch_display_color, alignment)
+    branch_display = FormatBranchName(branch)
+    padding = ' ' * (alignment - len(branch_display))
+    if not options.no_branch_color:
+      branch_display = FormatBranchName(branch, colorize=True)
 
-    print('  %s : %s%s %s%s' % (
-        padded_branch_name, color, url, status_str, reset))
-
+    print('  %s : %s%s %s%s' % (padding + branch_display, color, url,
+                                status_str, reset))
 
   print()
   print('Current branch: %s' % current_branch)
