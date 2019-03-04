@@ -26,10 +26,9 @@ async_test(t => {
   });
 
   video.addEventListener('seeked', () => {
-    double_tap_gesture.then(t.step_func_done(() => {
-          // Check the video advanced 10 seconds
-          assert_equals(Math.round(video.currentTime), time + 10);
-    }));
+    // Check the video advanced 10 seconds
+    assert_equals(Math.round(video.currentTime), time + 10);
+    double_tap_gesture.then(t.step_func_done());
   }, { once: true });
 
   video.play();
