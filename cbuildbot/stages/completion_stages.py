@@ -103,18 +103,18 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     self._fatal = False
     self.buildbucket_client = self.GetBuildbucketClient()
 
-  def _WaitForSlavesToComplete(self, manager, build_id, builders_array,
+  def _WaitForSlavesToComplete(self, manager, build_identifier, builders_array,
                                timeout):
     """Wait for slave builds to complete.
 
     Args:
       manager: An instance of BuildSpecsManager.
-      build_id: The build id of the master build.
+      build_identifier: The BuildIdentifier instance of the master build.
       builders_array: A list of builder names (strings) of slave builds.
       timeout: Number of seconds to wait for the results.
     """
     return manager.WaitForSlavesToComplete(
-        build_id, builders_array, timeout=timeout)
+        build_identifier, builders_array, timeout=timeout)
 
   def _GetBuilderStatusesFetcher(self):
     """Construct and return the BuilderStatusesFetcher instance.
@@ -151,14 +151,14 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       if sync_stages.MasterSlaveLKGMSyncStage.external_manager:
         manager = sync_stages.MasterSlaveLKGMSyncStage.external_manager
 
-      self._WaitForSlavesToComplete(manager, build_id, builders_array,
+      self._WaitForSlavesToComplete(manager, build_identifier, builders_array,
                                     timeout)
 
     # Set exclude_experimental to False to fetch the BuilderStatus for
     # builds which are important in config but marked as experimental in
     # the tree status.
     builder_statuses_fetcher = builder_status_lib.BuilderStatusesFetcher(
-        build_id,
+        build_identifier,
         self.buildstore,
         self.success,
         self.message,
@@ -330,10 +330,9 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
       build_identifier, _ = self._run.GetCIDBHandle()
       if self.buildstore.AreClientsReady():
-        build_id = build_identifier.cidb_id
         aborted_slaves = (
             builder_status_lib.GetSlavesAbortedBySelfDestructedMaster(
-                build_id, self.buildstore))
+                build_identifier, self.buildstore))
         # Ignore the slaves aborted by self-destruction.
         not_passed_builders -= aborted_slaves
 
@@ -673,13 +672,13 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       tree_status.SendHealthAlert(
           self._run, subject, msg, extra_fields=extra_fields)
 
-  def _WaitForSlavesToComplete(self, manager, build_id, builders_array,
+  def _WaitForSlavesToComplete(self, manager, build_identifier, builders_array,
                                timeout):
     """Wait for slave builds to complete.
 
     Args:
       manager: An instance of BuildSpecsManager.
-      build_id: The build id of the master build.
+      build_identifier: The BuildIdentifier instance of the master build.
       db: An instance of cidb.CIDBConnection.
       builders_array: A list of builder names (strings) of slave builds.
       timeout: Number of seconds to wait for the results.
@@ -687,7 +686,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     # CQ master build needs needs validation_pool to keep track of applied
     # changes and change dependencies.
     return manager.WaitForSlavesToComplete(
-        build_id,
+        build_identifier,
         builders_array,
         pool=self.sync_stage.pool,
         timeout=timeout)

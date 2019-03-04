@@ -191,12 +191,13 @@ class BuildStore(object):
       return self.cidb_conn.GetSlaveStatuses(master_build_id, buildbucket_ids)
 
   def GetBuildMessages(
-      self, build_id, message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
+      self, build_identifier,
+      message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
       message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION):
     """Gets build messages for particular build_id.
 
     Args:
-      build_id: The build to get messages for.
+      build_identifier: The build to get messages for.
       message_type: Get messages with the specific message_type (string) if
         message_type is not None.
       message_subtype: Get messages with the specific message_subtype (string)
@@ -209,8 +210,11 @@ class BuildStore(object):
     """
     if not self.InitializeClients():
       raise BuildStoreException('BuildStore clients could not be initialized.')
-    if not self._read_from_bb:
-      return self.cidb_conn.GetBuildMessages(build_id,
+    if self._read_from_bb:
+      return self.bb_client.GetKilledChildBuilds(
+          build_identifier.buildbucket_id)
+    else:
+      return self.cidb_conn.GetBuildMessages(build_identifier.cidb_id,
                                              message_type=message_type,
                                              message_subtype=message_subtype)
 
@@ -321,9 +325,14 @@ class BuildStore(object):
     if not self.InitializeClients():
       raise BuildStoreException('BuildStore clients could not be initialized.')
     if self._write_to_cidb:
-      return self.cidb_conn.InsertBuildMessage(
-          build_id, message_type=message_type, message_subtype=message_subtype,
-          message_value=message_value, board=board)
+      for buildbucket_id in message_value:
+        self.cidb_conn.InsertBuildMessage(
+            build_id, message_type=message_type,
+            message_subtype=message_subtype, message_value=buildbucket_id,
+            board=board)
+    if self._write_to_bb:
+      buildbucket_v2.UpdateSelfCommonBuildProperties(
+          killed_child_builds=message_value)
 
   def FinishBuild(self, build_id, status=None, summary=None, metadata_url=None,
                   strict=True):
@@ -593,8 +602,9 @@ class FakeBuildStore(object):
     return self.fake_cidb.GetSlaveStatuses(master_build_id, buildbucket_ids)
 
   def GetBuildMessages(
-      self, build_id, message_type=None, message_subtype=None):
-    return self.fake_cidb.GetBuildMessages(build_id, message_type=message_type,
+      self, build_identifier, message_type=None, message_subtype=None):
+    return self.fake_cidb.GetBuildMessages(build_identifier.cidb_id,
+                                           message_type=message_type,
                                            message_subtype=message_subtype)
 
   def InsertBuildMessage(

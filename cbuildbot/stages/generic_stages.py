@@ -38,6 +38,7 @@ from chromite.lib import portage_util
 from chromite.lib import results_lib
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
+from chromite.lib.buildstore import BuildIdentifier
 
 
 class BuilderStage(object):
@@ -384,12 +385,12 @@ class BuilderStage(object):
     failure_msg_manager = failure_message_lib.FailureMessageManager()
     failure_messages = failure_msg_manager.ConstructStageFailureMessages(
         stage_failures)
-    master_build_id = None
-    if stage_failures:
-      master_build_id = stage_failures[0].master_build_id
+    master_build_identifier = BuildIdentifier(
+        self._run.options.master_build_id,
+        self._run.options.master_buildbucket_id)
     aborted = builder_status_lib.BuilderStatusManager.AbortedBySelfDestruction(
         buildstore, build_identifier.buildbucket_id,
-        master_build_id)
+        master_build_identifier)
 
     return builder_status_lib.BuilderStatusManager.CreateBuildFailureMessage(
         self._run.config.name,

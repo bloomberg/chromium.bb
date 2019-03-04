@@ -38,15 +38,15 @@ class SlaveStatus(object):
   ACCEPTED_STATUSES = (constants.BUILDER_STATUS_PASSED,
                        constants.BUILDER_STATUS_SKIPPED,)
 
-  def __init__(self, start_time, builders_array, master_build_id, buildstore,
-               config=None, metadata=None, buildbucket_client=None,
+  def __init__(self, start_time, builders_array, master_build_identifier,
+               buildstore, config=None, metadata=None, buildbucket_client=None,
                version=None, pool=None, dry_run=True):
     """Initializes a SlaveStatus instance.
 
     Args:
       start_time: datetime.datetime object of when the build started.
       builders_array: List of the expected slave builds.
-      master_build_id: The build_id of the master build.
+      master_build_identifier: The BuildIdentifier instance of the master build.
       buildstore: BuildStore instance to make DB calls.
       config: Instance of config_lib.BuildConfig. Config dict of this build.
       metadata: Instance of metadata_lib.CBuildbotMetadata. Metadata of this
@@ -60,7 +60,8 @@ class SlaveStatus(object):
     """
     self.start_time = start_time
     self.all_builders = builders_array
-    self.master_build_id = master_build_id
+    self.master_build_identifier = master_build_identifier
+    self.master_build_id = master_build_identifier.cidb_id
     self.buildstore = buildstore
     self.db = buildstore.GetCIDBHandle()
     self.config = config
@@ -615,11 +616,12 @@ class SlaveStatus(object):
 
     if self.pool is not None:
       triage_relevant_changes = relevant_changes.TriageRelevantChanges(
-          self.master_build_id, self.buildstore, self._GetExpectedBuilders(),
-          self.config, self.metadata, self.version, self.pool.build_root,
-          self.pool.applied, self.all_buildbucket_info_dict,
-          self.all_cidb_status_dict, self.completed_builds, self.dependency_map,
-          self.buildbucket_client, dry_run=self.dry_run)
+          self.master_build_identifier, self.buildstore,
+          self._GetExpectedBuilders(), self.config, self.metadata, self.version,
+          self.pool.build_root, self.pool.applied,
+          self.all_buildbucket_info_dict, self.all_cidb_status_dict,
+          self.completed_builds, self.dependency_map, self.buildbucket_client,
+          dry_run=self.dry_run)
 
       should_self_destruct, should_self_destruct_with_success = (
           triage_relevant_changes.ShouldSelfDestruct())

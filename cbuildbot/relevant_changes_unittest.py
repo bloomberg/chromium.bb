@@ -22,7 +22,7 @@ from chromite.lib import fake_cidb
 from chromite.lib import metadata_lib
 from chromite.lib import patch_unittest
 from chromite.lib import triage_lib
-from chromite.lib.buildstore import FakeBuildStore
+from chromite.lib.buildstore import FakeBuildStore, BuildIdentifier
 
 
 # pylint: disable=protected-access
@@ -281,7 +281,9 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     self.buildbucket_ids = [bb_info.buildbucket_id
                             for bb_info in self.buildbucket_info_dict.values()]
     self.master_build_id = self.fake_cidb.InsertBuild(
-        self._bot_id, '1', self._bot_id, 'bot_hostname')
+        self._bot_id, '1', self._bot_id, 'bot_hostname', buildbucket_id=1234)
+    self.master_build_identifier = BuildIdentifier(cidb_id=self.master_build_id,
+                                                   buildbucket_id=1234)
     self.changes = self._patch_factory.GetPatches(how_many=4)
     self._InsertCLActionsForBuild(self.master_build_id, self.changes,
                                   constants.CL_ACTION_PICKED_UP)
@@ -332,7 +334,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
       dependency_map = {}
 
     return relevant_changes.TriageRelevantChanges(
-        self.master_build_id, self.buildstore, builders_array,
+        self.master_build_identifier, self.buildstore, builders_array,
         self.build_config, metadata, self.version, self.build_root, changes,
         buildbucket_info_dict, cidb_status_dict, completed_builds,
         dependency_map, self.buildbucket_client, dry_run)

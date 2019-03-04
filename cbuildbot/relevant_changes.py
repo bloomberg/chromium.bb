@@ -212,14 +212,14 @@ class TriageRelevantChanges(object):
   STAGE_UPLOAD_PREBUILTS = (
       artifact_stages.UploadPrebuiltsStage.StageNamePrefix())
 
-  def __init__(self, master_build_id, buildstore, builders_array, config,
-               metadata, version, build_root, changes, buildbucket_info_dict,
-               cidb_status_dict, completed_builds, dependency_map,
-               buildbucket_client, dry_run=True):
+  def __init__(self, master_build_identifier, buildstore, builders_array,
+               config, metadata, version, build_root, changes,
+               buildbucket_info_dict, cidb_status_dict, completed_builds,
+               dependency_map, buildbucket_client, dry_run=True):
     """Initialize an instance of TriageRelevantChanges.
 
     Args:
-      master_build_id: The build_id of the master build.
+      master_build_identifier: The BuildIdentifier instance of the master build.
       buildstore: A BuildStore instance to make DB calls.
       builders_array: A list of expected slave build config names (strings).
       config: An instance of config_lib.BuildConfig. Config dict of this build.
@@ -244,7 +244,8 @@ class TriageRelevantChanges(object):
       buildbucket_client: Instance of buildbucket_lib.buildbucket_client.
       dry_run: Boolean indicating whether it's a dry run. Default to True.
     """
-    self.master_build_id = master_build_id
+    self.master_build_identifier = master_build_identifier
+    self.master_build_id = master_build_identifier.cidb_id
     self.buildstore = buildstore
     self.db = buildstore.GetCIDBHandle()
     self.builders_array = builders_array
@@ -501,8 +502,9 @@ class TriageRelevantChanges(object):
     # TODO(nxia): Improve SlaveBuilderStatus to take buildbucket_info_dict
     # and cidb_status_dict as arguments to avoid extra queries.
     slave_builder_statuses = builder_status_lib.SlaveBuilderStatus(
-        self.master_build_id, self.buildstore, self.config, self.metadata,
-        self.buildbucket_client, self.builders_array, self.dry_run)
+        self.master_build_identifier, self.buildstore, self.config,
+        self.metadata, self.buildbucket_client, self.builders_array,
+        self.dry_run)
 
     for build_config, bb_info in self.buildbucket_info_dict.iteritems():
       if (build_config in self.completed_builds and

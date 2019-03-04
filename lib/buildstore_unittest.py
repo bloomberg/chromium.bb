@@ -156,29 +156,39 @@ class TestBuildStore(cros_test_lib.MockTestCase):
                             return_value=True)
     bs = BuildStore()
     bs.cidb_conn = mock.MagicMock()
-    build_id = 1234
+    build_identifier = buildstore.BuildIdentifier(cidb_id=1,
+                                                  buildbucket_id=1234)
     # Test for buildbucket_ids.
-    bs.GetBuildMessages(build_id,
+    bs.GetBuildMessages(build_identifier,
                         message_type=constants.MESSAGE_TYPE_IGNORED_REASON)
     bs.cidb_conn.GetBuildMessages.assert_called_once_with(
-        build_id, message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
+        1, message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
         message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION)
+    bs = BuildStore(_read_from_bb=True)
+    bs.bb_client = mock.MagicMock()
+    bs.GetBuildMessages(build_identifier)
+    bs.bb_client.GetKilledChildBuilds.assert_called_once_with(1234)
     init.return_value = False
     with self.assertRaises(buildstore.BuildStoreException):
-      bs.GetBuildsFailures(build_id)
+      bs.GetBuildMessages(build_identifier)
 
   def testInsertBuildMessage(self):
     """Tests the redirect for InsertBuildMessage function."""
     init = self.PatchObject(BuildStore, 'InitializeClients',
                             return_value=True)
-    bs = BuildStore()
+    bs = BuildStore(_write_to_bb=True)
     bs.cidb_conn = mock.MagicMock()
+    buildbucket_v2.UpdateSelfCommonBuildProperties = mock.MagicMock()
     self.PatchObject(bs.cidb_conn, 'InsertBuildMessage')
-    bs.InsertBuildMessage(1234, message_value=8921795536486453568)
-    bs.cidb_conn.InsertBuildMessage.assert_called_once_with(
+    bs.InsertBuildMessage(1234,
+                          message_value=[8921795536486453568,
+                                         8921795536486453567])
+    bs.cidb_conn.InsertBuildMessage.assert_called_with(
         1234, message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
         message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION,
-        message_value=8921795536486453568, board=None)
+        message_value=8921795536486453567, board=None)
+    buildbucket_v2.UpdateSelfCommonBuildProperties.assert_called_once_with(
+        killed_child_builds=[8921795536486453568, 8921795536486453567])
     init.return_value = False
     with self.assertRaises(buildstore.BuildStoreException):
       bs.InsertBuildMessage(1234, message_value=8921795536486453568)

@@ -24,7 +24,7 @@ from chromite.lib import fake_cidb
 from chromite.lib import metadata_lib
 from chromite.lib import patch_unittest
 from chromite.lib import tree_status
-from chromite.lib.buildstore import FakeBuildStore
+from chromite.lib.buildstore import FakeBuildStore, BuildIdentifier
 
 
 # pylint: disable=protected-access
@@ -197,6 +197,8 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
 
     self.time_now = datetime.datetime.now()
     self.master_build_id = 0
+    self.master_build_identifier = BuildIdentifier(cidb_id=self.master_build_id,
+                                                   buildbucket_id=1234)
     self.master_test_config = config_lib.BuildConfig(
         name='master-test', master=True)
     self.master_cq_config = site_config['master-paladin']
@@ -209,15 +211,15 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     self._patch_factory = patch_unittest.MockPatchFactory()
 
   def _GetSlaveStatus(self, start_time=None, builders_array=None,
-                      master_build_id=None, db=None, config=None,
+                      master_build_identifier=None, db=None, config=None,
                       metadata=None, buildbucket_client=None, version=None,
                       pool=None, dry_run=True):
     if start_time is None:
       start_time = self.time_now
     if builders_array is None:
       builders_array = []
-    if master_build_id is None:
-      master_build_id = self.master_build_id
+    if master_build_identifier is None:
+      master_build_identifier = self.master_build_identifier
     if db is None:
       db = self.db
     if metadata is None:
@@ -226,7 +228,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
       buildbucket_client = self.buildbucket_client
 
     return build_status.SlaveStatus(
-        start_time, builders_array, master_build_id, self.buildstore,
+        start_time, builders_array, master_build_identifier, self.buildstore,
         config=config,
         metadata=metadata,
         buildbucket_client=buildbucket_client,

@@ -12,10 +12,12 @@ client out of lib/luci/prpc and third_party/infra_libs/buildbucket.
 
 from __future__ import print_function
 
+import ast
+
 from google.protobuf import field_mask_pb2
 
 from chromite.lib import cros_logging as logging
-from chromite.lib.luci.prpc.client import Client
+from chromite.lib.luci.prpc.client import Client, ProtocolError
 
 from infra_libs.buildbucket.proto import rpc_pb2
 from infra_libs.buildbucket.proto.rpc_prpc_pb2 import BuildsServiceDescription
@@ -44,11 +46,12 @@ def UpdateSelfCommonBuildProperties(
     critical=None, chrome_version=None, milestone_version=None,
     platform_version=None, full_version=None, toolchain_url=None,
     build_type=None, unibuild=None, suite_scheduling=None,
-    board=None, main_firmware_version=None, ec_firmware_version=None):
+    killed_child_builds=None, board=None, main_firmware_version=None,
+    ec_firmware_version=None):
   """Update build.output.properties for the current build.
 
   Sends the property values to buildbucket via
-  UpdateSelfBuildPropertiesNonBlocking.
+  UpdateSelfBuildPropertiesNonBlocking. All arguments are optional.
 
   Args:
     critical: (Optional) |important| flag of the build.
@@ -61,6 +64,8 @@ def UpdateSelfCommonBuildProperties(
     build_type: (Optional) One of ('paladin', 'full', 'canary', 'pre_cq',...).
     unibuild: (Optional) Boolean indicating whether build is unibuild.
     suite_scheduling: (Optional)
+    killed_child_builds: (Optional) A list of Buildbucket IDs of child builds
+      that were killed by self-destructed master build.
     board: (Optional) board of the build.
     main_firmware_version: (Optional) main firmware version of the build.
     ec_firmware_version: (Optional) ec_firmware version of the build.
@@ -83,6 +88,9 @@ def UpdateSelfCommonBuildProperties(
     UpdateSelfBuildPropertiesNonBlocking('unibuild', unibuild)
   if suite_scheduling is not None:
     UpdateSelfBuildPropertiesNonBlocking('suite_scheduling', suite_scheduling)
+  if killed_child_builds is not None:
+    UpdateSelfBuildPropertiesNonBlocking('killed_child_builds',
+                                         str(killed_child_builds))
   if board is not None:
     UpdateSelfBuildPropertiesNonBlocking('board', board)
   if main_firmware_version is not None:
@@ -114,6 +122,7 @@ def UpdateBuildMetadata(metadata):
       unibuild=d.get('unibuild', False),
       suite_scheduling=d.get('suite_scheduling', False))
 
+
 class BuildbucketV2(object):
   """Connection to Buildbucket V2 database."""
 
@@ -128,8 +137,8 @@ class BuildbucketV2(object):
     else:
       self.client = Client(BBV2_URL_ENDPOINT_PROD, BuildsServiceDescription)
 
-  def GetBuildStatus(self, buildbucket_id, properties=None):
-    """GetBuildStatus of a specific build with buildbucket_id.
+  def GetBuild(self, buildbucket_id, properties=None):
+    """GetBuild call of a specific build with buildbucket_id.
 
     Args:
       buildbucket_id: id of the build in buildbucket.
@@ -146,3 +155,27 @@ class BuildbucketV2(object):
     else:
       get_build_request = rpc_pb2.GetBuildRequest(id=buildbucket_id)
     return self.client.GetBuild(get_build_request)
+
+  def GetKilledChildBuilds(self, buildbucket_id):
+    """Get IDs of all the builds killed by self-destructed master build.
+
+    Args:
+      buildbucket_id: Buildbucket ID of the master build.
+
+    Returns:
+      A list of Buildbucket IDs of the child builds that were killed by the
+      master build or None if the query was unsuccessful.
+    """
+    properties = 'output.properties'
+    try:
+      build_with_properties = self.GetBuild(buildbucket_id,
+                                            properties=properties)
+    except ProtocolError:
+      logging.error('Could not fetch Buildbucket status for %d', buildbucket_id)
+      return
+
+    if build_with_properties.output.HasField('properties'):
+      build_properties = build_with_properties.output.properties
+      if ('killed_child_builds' in build_properties and
+          build_properties['killed_child_builds'] is not 'None'):
+        return ast.literal_eval(build_properties['killed_child_builds'])
