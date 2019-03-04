@@ -83,11 +83,6 @@ group("telemetry_chrome_test") {
 group("telemetry_chrome_test_without_chrome") {
   testonly = true
 
-  data = [
-    "//tools/perf/core/",  # chrome_telemetry_build/ depends on core/
-    "//tools/perf/chrome_telemetry_build/",
-    "//components/crash/content/tools/generate_breakpad_symbols.py",
-  ]
   data_deps = [
     "//third_party/catapult:telemetry_chrome_test_support",
   ]
@@ -97,11 +92,13 @@ group("telemetry_chrome_test_without_chrome") {
       "//third_party/breakpad:minidump_stackwalk",
       "//third_party/breakpad:dump_syms",
     ]
-    data += [
-      "//build/android/devil_chromium.py",
-      "//build/android/stacktrace/",  # Depends on devil_chromium.py.
-    ]
   } else {
     data_deps += [ "//third_party/catapult/telemetry:bitmaptools" ]
   }
+
+  data = [
+    "//tools/perf/core/",  # chrome_telemetry_build/ depends on core/
+    "//tools/perf/chrome_telemetry_build/",
+    "//components/crash/content/tools/generate_breakpad_symbols.py",
+  ]
 }
