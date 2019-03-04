@@ -181,9 +181,18 @@ bool DecodingImageGenerator::GetPixels(const SkImageInfo& dst_info,
 
   // Convert the color type to the requested one if necessary
   if (decoded && target_info.colorType() != dst_info.colorType()) {
-    decoded = SkPixmap{target_info, memory, adjusted_row_bytes}.readPixels(
-        SkPixmap{dst_info, pixels, row_bytes});
+    auto canvas = SkCanvas::MakeRasterDirect(dst_info, pixels, row_bytes);
+    DCHECK(canvas);
+    SkPaint paint;
+    if (dst_info.colorType() == kARGB_4444_SkColorType ||
+        dst_info.colorType() == kRGB_565_SkColorType) {
+      paint.setDither(true);
+    }
+    paint.setBlendMode(SkBlendMode::kSrc);
+    SkBitmap bitmap;
+    decoded = bitmap.installPixels(target_info, memory, adjusted_row_bytes);
     DCHECK(decoded);
+    canvas->drawBitmap(bitmap, 0, 0, &paint);
   }
   return decoded;
 }
