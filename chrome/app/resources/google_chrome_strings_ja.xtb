@@ -179,7 +179,6 @@
 <translation id="6014844626092547096">Chrome にログインしています。同期は管理者によって無効にされています。</translation>
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="6070348360322141662">セキュリティ強化のため、データは Google Chrome で暗号化されます</translation>
-<translation id="6100051050886660823">画像に説明がない場合、Google Chrome で説明を生成できるように、画像をスキャンします。この機能は設定でいつでも無効にできます。</translation>
 <translation id="6113794647360055231">進化する Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome Beta</translation>
@@ -227,7 +226,7 @@
 <translation id="7561940363513215021">{0,plural, =1{Chrome は 1 分後に再起動されます}other{Chrome は # 分後に再起動されます}}</translation>
 <translation id="7589360514048265910">Mac OS X 10.9 はサポートされなくなったため、このパソコンでは今後 Google Chrome のアップデートは受信されません。</translation>
 <translation id="7592736734348559088">アカウントのログイン情報が最新ではないため、Google Chrome はデータを同期できませんでした。</translation>
-<translation id="7626032353295482388">Chrome にようこそ</translation>
+<translation id="7626032353295482388">Chrome へようこそ</translation>
 <translation id="7651907282515937834">Chrome Enterprise ロゴ</translation>
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>
 <translation id="7761834446675418963">Chrome を開いてブラウジングを始めるには、名前をクリックしてください。</translation>
@@ -280,7 +279,6 @@
 <translation id="8823341990149967727">Chrome は古いバージョンです</translation>
 <translation id="884296878221830158">この拡張機能では、Chrome の起動時、またはホーム ボタンのクリック時に表示されるページも制御されます。</translation>
 <translation id="8862326446509486874">権限が不十分なためシステムレベルのインストールができません。管理者権限でインストールしてください。</translation>
-<translation id="8878013752519808729">画像に説明がない場合、Google Chrome で説明を生成できるように、画像をスキャンします。</translation>
 <translation id="8914504000324227558">Chrome の再起動</translation>
 <translation id="9026991721384951619">アカウントのログイン情報が最新ではないため、Chrome OS はデータを同期できませんでした。</translation>
 <translation id="9067395829937117663">Google Chrome のご利用には Windows 7 以上が必要です。</translation>

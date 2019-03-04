@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">status</translation>
 <translation id="1938124657309484470">Värdet måste vara <ph name="MAXIMUM_DATE_OR_TIME" /> eller tidigare.</translation>
 <translation id="1946271899482435442">Visa datumväljaren</translation>
-<translation id="1982354452682152483">Ingen beskrivning är tillgänglig.</translation>
 <translation id="1993104285338243655">Bytte till spegling</translation>
 <translation id="2060505056492490888"><ph name="DOT" /> används på fel plats i <ph name="INVALIDDOMAIN" />.</translation>
 <translation id="2148716181193084225">Idag</translation>
@@ -95,6 +94,7 @@
 <translation id="4360991593054037559">Ange ett giltigt värde. De två närmaste giltiga värdena är <ph name="VALID_VALUE_LOW" /> och <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Frågor och svar</translation>
 <translation id="4413860115965805769">menyknapp</translation>
+<translation id="4444765639179266822">Säger troligen: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">hänvisning till ordlista</translation>
 <translation id="4522570452068850558">Info</translation>
 <translation id="4542388879936266156">tid som återstår: <ph name="REMAINING_TIME" /></translation>
@@ -121,6 +121,7 @@
 <translation id="5164977714490026579">Värdet måste vara större än eller lika med <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Ange en del följt av <ph name="ATSIGN" />. <ph name="INVALIDADDRESS" /> är ofullständig.</translation>
+<translation id="5334352251556557839">Det går inte att spela upp media.</translation>
 <translation id="5406322316791861025">figur</translation>
 <translation id="5453733299334684579">trädobjekt</translation>
 <translation id="5466621249238537318">Välj en eller flera filer.</translation>
@@ -147,6 +148,7 @@
 <translation id="6150588977291308318">bibliografi</translation>
 <translation id="6164829606128959761">mätare</translation>
 <translation id="6166809985690652833">efterord</translation>
+<translation id="6209276755895393898">Det verkar vara: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">ordlista</translation>
 <translation id="6398862346408813489">Visa panelen för val av månad</translation>
 <translation id="6404546809543547843">tidsreglage för ljud</translation>
@@ -177,7 +179,7 @@
 <translation id="7139483182332611405">företal</translation>
 <translation id="7263440858009898357">Välj ett alternativ i listan.</translation>
 <translation id="727747134524199931">kolumnrubrik</translation>
-<translation id="7336527682887843386">Det gick inte att hämta en beskrivning.</translation>
+<translation id="7320576522385648310">buffrar</translation>
 <translation id="7353453495576941748">erkännande</translation>
 <translation id="7364796246159120393">Välj fil</translation>
 <translation id="739024184232394898">Annat ...</translation>
@@ -200,7 +202,6 @@
 <translation id="7888071071722539607">Inkludera ett <ph name="ATSIGN" /> i e-postadressen. <ph name="INVALIDADDRESS" /> saknar ett <ph name="ATSIGN" />.</translation>
 <translation id="7891486169920085145">delare</translation>
 <translation id="795667975304826397">Ingen fil har valts</translation>
-<translation id="8042519864538898414">Verkar vara barnförbjudet innehåll.</translation>
 <translation id="8053789581856978548">fält för söktext</translation>
 <translation id="8057695513531652401">anmärkning</translation>
 <translation id="8105797009065549151">referensnot</translation>

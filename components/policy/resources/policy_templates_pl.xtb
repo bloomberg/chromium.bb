@@ -102,6 +102,19 @@
       W przypadku urządzeń w trybie sklepu określa czas, po upływie którego na ekranie logowania jest wyświetlany wygaszacz ekranu.
 
       Wartość tej zasady należy podać w milisekundach.</translation>
+<translation id="1141767714195601945">Ta zasada określa parametry wiersza poleceń Chrome przekazywane podczas przełączania z Internet Explorera.
+
+      Jeśli nie jest zainstalowany dodatek „Obsługa starszych przeglądarek” do Internet Explorera, ta zasada nie jest skuteczna.
+
+      Gdy ta zasada jest nieskonfigurowana, Internet Explorer przekazuje do Chrome jako parametr wiersza poleceń tylko URL.
+
+      Gdy wartością tej zasady jest lista ciągów znaków, ciągi te są łączone spacjami i przekazywane do Chrome jako parametry wiersza poleceń.
+
+      Jeśli jakiś element zawiera ciąg ${url}, ciąg ten zostanie zastąpiony URL-em strony, która ma zostać otwarta.
+
+      Jeśli żaden element nie zawiera ciągu ${url}, URL zostanie dodany na końcu wiersza polecenia.
+
+      Zmienne środowiskowe są rozwijane. W Windows ciąg %ABC% jest zastępowany wartością zmiennej środowiskowej ABC.</translation>
 <translation id="1151353063931113432">Zezwalaj na grafiki w tych witrynach</translation>
 <translation id="1152117524387175066">Zgłasza stan przełącznika trybu programisty podczas uruchomienia urządzenia.
 
@@ -165,6 +178,10 @@
 
       Jeśli zasada jest wyłączona, <ph name="PRODUCT_NAME" /> nie zezwala na uruchamianie sesji gościa.</translation>
 <translation id="1363275621236827384">Włącz wysyłanie zapytań o profile sprzętowe do Quirks Server</translation>
+<translation id="1363612796557848469">Ta zasada daje Asystentowi Google zgodę na dostęp do kontekstu ekranu i wysyłanie informacji na serwer.
+      Jeśli zasada jest włączona, Asystent Google ma dostęp do kontekstu ekranu.
+      Jeśli zasada jest wyłączona, Asystent Google nie ma dostępu do kontekstu ekranu.
+      Jeśli zasada jest nieskonfigurowana, użytkownik może zezwolić lub nie zezwolić Asystentowi Google na dostęp do kontekstu ekranu</translation>
 <translation id="1383493480903114193">Ta zasada wymusza działanie kodu obsługi sieci w procesie przeglądarki.
 
       Ta zasada jest domyślnie wyłączona. Jej włączenie naraża bezpieczeństwo użytkowników po przeniesieniu procesu obsługi sieci do piaskownicy.
@@ -237,6 +254,13 @@
       ujednolicony pulpit jest wyłączony i użytkownik nie może go włączyć.</translation>
 <translation id="1474273443907024088">Wyłącz TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1478485744311397487">Serwery, którym <ph name="PRODUCT_NAME" /> może przekazywać dane logowania.
+
+          Podając wiele nazw serwerów, rozdziel je przecinkami. Możesz używać symboli wieloznacznych (*).
+
+          Jeśli nie ustawisz tej zasady, <ph name="PRODUCT_NAME" /> nie będzie przekazywać danych logowania użytkowników, nawet gdy serwer działa w intranecie.
+
+          Ta zasada jest ignorowana, gdy zasada „UseKDCConstrainedDelegation” ma wartość Prawda.</translation>
 <translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> będzie pomijać serwer proxy dla hostów z tej listy.
 
           Ta zasada obowiązuje tylko wtedy, gdy w opcji „Wybierz sposób określenia ustawień serwera proxy” wybrano ręczne wprowadzanie ustawień serwera proxy.
@@ -283,6 +307,12 @@
       Więcej informacji o Bezpiecznym przeglądaniu znajdziesz na https://developers.google.com/safe-browsing</translation>
 <translation id="1583248206450240930">Używaj domyślnie wtyczki <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1599424828227887013">Włącz izolację witryn z określonych źródeł na urządzeniach z Androidem</translation>
+<translation id="1608259529294767544">Ta zasada daje Asystentowi Google uprawnienie do nasłuchiwania wyrażenia aktywującego obsługę komend głosowych.
+
+      Gdy ta zasada jest włączona, Asystent Google będzie nasłuchiwać wyrażenia aktywującego obsługę komend głosowych.
+      Gdy ta zasada jest wyłączona, Asystent Google nie będzie nasłuchiwać wyrażenia aktywującego obsługę komend głosowych.
+      Gdy zasada jest nieskonfigurowana, użytkownicy mogą wybrać, czy zezwolić Asystentowi Google na nasłuchiwanie wyrażenia aktywującego obsługę komend głosowych.
+      </translation>
 <translation id="1608755754295374538">Adresy URL, które bez pytania otrzymają dostęp do urządzeń do nagrywania dźwięku</translation>
 <translation id="1615221548356595305">Zezwól na zespalanie połączeń HTTP/2 z wymienionymi hostami nawet wtedy, gdy używane są certyfikaty klienta</translation>
 <translation id="1617235075406854669">Włącz usuwanie historii przeglądarki i pobierania</translation>
@@ -334,6 +364,7 @@
       Zasada powinna określać URL, z którego <ph name="PRODUCT_OS_NAME" /> może pobrać Warunki korzystania z usługi. Dokument ten musi mieć postać zwykłego tekstu (MIME) bez żadnych znaczników.</translation>
 <translation id="1750315445671978749">Blokuj pobieranie wszystkich plików</translation>
 <translation id="1781356041596378058">Ta zasada kontroluje też dostęp do Opcji programisty Androida. Jej włączenie powoduje odebranie użytkownikom dostępu do Opcji programisty. Gdy jest wyłączona lub nieskonfigurowana, użytkownicy mogą uzyskać dostęp do Opcji programisty, klikając siedem razy numer kompilacji w aplikacji Ustawienia Androida.</translation>
+<translation id="1793346220873697538">Wyłącz drukowanie domyślnie z kodem PIN</translation>
 <translation id="1797233582739332495">Wyświetlaj cyklicznie komunikat o tym, że wymagane jest ponowne uruchomienie</translation>
 <translation id="1798559516913615713">Czas przechowywania obiektów zasad grupy w pamięci podręcznej</translation>
 <translation id="1803646570632580723">Lista przypiętych aplikacji pokazywanych w programie uruchamiającym</translation>
@@ -357,6 +388,7 @@
 <translation id="1843117931376765605">Częstotliwość odświeżania zasad użytkownika</translation>
 <translation id="1844620919405873871">Konfiguruje zasady szybkiego odblokowania.</translation>
 <translation id="1845405905602899692">Ustawienia kiosku</translation>
+<translation id="1845429996559814839">Ogranicz tryb drukowania z kodem PIN</translation>
 <translation id="1847960418907100918">Określa parametry używane przy wyszukiwaniu dynamicznym z użyciem POST. Składa się z rozdzielonych przecinkami par nazwy i wartości. Jeśli wartość jest parametrem szablonu, tak jak w przykładzie powyżej {searchTerms}, zostanie ona zastąpiona rzeczywistymi danymi wyszukiwanych słów.
 
           Ta zasada jest opcjonalna. Jeśli nie jest ustawiona, żądania wyszukiwania dynamicznego są wysyłane przy użyciu metody GET.
@@ -371,7 +403,7 @@
 
       Pamiętaj, że nie zalecamy blokowania wewnętrznych adresów URL „chrome://*” – mogłoby to powodować nieoczekiwane błędy.
 
-      Począwszy od M73 można blokować adresy URL „javascript://*”. Ma to wpływ tylko na kod JavaScript wpisany w pasku adresu (oraz na przykład na skryptozakładki). Pamiętaj, że adresy URL JavaScript znajdujące się na stronie oraz dane ładowanie dynamicznie nie podlegają tej zasadzie. Na przykład: jeśli zablokujesz „example.com/abc”, strona „example.com” będzie mimo tego mogła załadować „example.com/abc” za pomocą XMLHTTPRequest.
+      Począwszy od M73 można blokować adresy URL „javascript://*”. Ma to wpływ tylko na kod JavaScript wpisany w pasku adresu (oraz na przykład na skryptozakładki). Pamiętaj, że adresy URL JavaScript znajdujące się na stronie oraz dane ładowane dynamicznie nie podlegają tej zasadzie. Na przykład: jeśli zablokujesz „example.com/abc”, strona „example.com” będzie mimo tego mogła załadować „example.com/abc” za pomocą XMLHTTPRequest.
 
       Jeśli ta zasada pozostanie nieskonfigurowana, przeglądarka nie będzie blokować żadnego adresu URL.</translation>
 <translation id="1859859319036806634">Ostrzeżenie: możliwość zastępczego użycia starszej wersji protokołu TLS zostanie wycofana z <ph name="PRODUCT_NAME" /> po wersji 52 (w okolicach września 2016 roku), a zasada przestanie działać.
@@ -465,6 +497,15 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
       Pozostawienie tej zasady nieskonfigurowanej powoduje, że <ph name="PRODUCT_NAME" /> używa wartości domyślnej, która wynosi 3 godziny.
 
       Uwaga: jeśli platforma obsługuje powiadomienia o naruszeniach zasad, czas odświeżania będzie ustawiony na 24 godziny (wartości domyślne i wartość tej zasady będą ignorowane), ponieważ powiadomienia te powinny automatycznie wymuszać odświeżenie po każdej zmianie zasad, przez co częstsze odświeżanie jest niepotrzebne.</translation>
+<translation id="2024149678078029009">Ta zasada określa polecenie używane do otwierania adresów URL w <ph name="PRODUCT_NAME" /> podczas przełączania z Internet Explorera.
+
+      Jeśli nie jest zainstalowany dodatek „Obsługa starszych przeglądarek” do Internet Explorera, ta zasada nie jest skuteczna.
+
+      Gdy zasada jest nieskonfigurowana, Internet Explorer automatycznie wykrywa ścieżkę pliku wykonywalnego <ph name="PRODUCT_NAME" /> podczas uruchamiania <ph name="PRODUCT_NAME" /> z Internet Explorera.
+
+      Gdy zasada jest skonfigurowana, będzie używana do uruchamiania <ph name="PRODUCT_NAME" /> podczas uruchamiania <ph name="PRODUCT_NAME" /> z Internet Explorera.
+
+      Jak wartość tej zasady można ustawić ścieżkę pliku wykonywalnego lub ${chrome}, by automatycznie wykrywać miejsce instalacji Chrome.</translation>
 <translation id="2024476116966025075">Konfiguracja wymaganej nazwy domeny dla klientów zdalnego dostępu</translation>
 <translation id="2030905906517501646">Słowo kluczowe domyślnego dostawcy wyszukiwania</translation>
 <translation id="203096360153626918">Ta zasada nie ma wpływu na aplikacje na Androida. Mogą one działać w trybie pełnoekranowym, nawet gdy zasada jest ustawiona na <ph name="FALSE" />.</translation>
@@ -483,6 +524,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="209586405398070749">Wersja stabilna</translation>
 <translation id="2098658257603918882">Włącz przesyłanie raportów o użytkowaniu i danych dotyczących awarii</translation>
 <translation id="2104418465060359056">Zgłaszaj informacje o rozszerzeniach i wtyczkach</translation>
+<translation id="2106627642643925514">Zastępuje domyślny tryb drukowania z kodem PIN. Jeśli tryb jest niedostępny, zasada jest ignorowana.</translation>
 <translation id="2107601598727098402">
         Ta zasada jest nieużywana od wersji M72. Użyj w zamian zasady CloudManagementEnrollmentToken.
         </translation>
@@ -500,6 +542,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
       Gdy zasada ma wartość fałsz, informacje, na podstawie których można zidentyfikować użytkowników, nie są zbierane.
 
       Ta zasada jest stosowana tylko wtedy, gdy włączone jest <ph name="CHROME_REPORTING_EXTENSION_NAME" />, a komputer jest zarejestrowany w <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="2126178089984117495">Ogranicza tryb drukowania z kodem PIN. Zasada nieskonfigurowana jest traktowana jako brak ograniczeń. Jeśli tryb jest niedostępny, zasada jest ignorowana.</translation>
 <translation id="2127599828444728326">Zezwalaj na powiadomienia w tych witrynach.</translation>
 <translation id="2131902621292742709">Opóźnienie przyciemnienia ekranu przy zasilaniu z baterii</translation>
 <translation id="2134437727173969994">Zezwól na blokowanie ekranu</translation>
@@ -520,6 +563,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2156132677421487971">Pozwala skonfigurować zasady dotyczące <ph name="PRODUCT_NAME" /> – funkcji, która umożliwia użytkownikom przesyłanie zawartości kart, stron i pulpitu z przeglądarki do zdalnych wyświetlaczy i systemów audio.</translation>
 <translation id="2166472654199325139">Nie filtruj witryn pod kątem treści dla dorosłych</translation>
 <translation id="2168397434410358693">Opóźnienie bezczynności przy zasilaniu sieciowym</translation>
+<translation id="217013996107840632">Parametry wiersza poleceń używane podczas przełączania z alternatywnej przeglądarki.</translation>
 <translation id="2170233653554726857">Włącz optymalizację WPAD</translation>
 <translation id="2176565653304920879">Gdy zasada jest ustawiona, proces automatycznego wykrywania strefy czasowej przebiega na jeden z tych sposobów, zależnie od ustawionej wartości:
 
@@ -763,6 +807,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="267596348720209223">Pozwala określić kodowania znaków obsługiwane przez dostawcę wyszukiwania. Kodowania są określane za pomocą nazw stron kodowych, np. UTF-8, GB2312 czy ISO-8859-1. Są stosowane w podanej kolejności. Ta zasada jest opcjonalna. Jeśli nie zostanie skonfigurowana, będzie używana wartość domyślna, czyli UTF-8. Zasada ta jest stosowana tylko przy włączonej zasadzie „DefaultSearchProviderEnabled”.</translation>
 <translation id="268577405881275241">Włącz serwer proxy kompresowania danych</translation>
 <translation id="2693108589792503178">Skonfiguruj adres URL do zmiany hasła.</translation>
+<translation id="2706708761587205154">Zezwól tylko na drukowanie z kodem PIN</translation>
 <translation id="2731627323327011390">Wyłącz korzystanie z certyfikatów <ph name="PRODUCT_OS_NAME" /> w aplikacjach ARC</translation>
 <translation id="2742843273354638707">Ukrywa aplikację Chrome Web Store i link w stopce na stronie Nowa karta oraz w menu z aplikacjami <ph name="PRODUCT_OS_NAME" />.
 
@@ -865,6 +910,11 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 
       Jeśli włączysz to ustawienie, w podglądzie wydruku zostanie wybrana domyślna drukarka systemowa.</translation>
 <translation id="2856674246949497058">Przywróć i pozostaw docelową wersję systemu operacyjnego, jeśli zainstalowana jest wersja nowsza niż docelowa. W trakcie tego procesu zostanie wykonana procedura Powerwash.</translation>
+<translation id="2858646435735022107">Określa, czy respektować flagę OK-AS-DELEGATE z KDC, czy stosować zasadę „AuthNegotiateDelegateWhitelist” do ograniczania przekazywania biletów Kerberos.
+
+          Jeśli zasada ma wartość Prawda, podczas uwierzytelniania HTTP respektowane są ustawienia ograniczonego przekazywania w KDC. Zasada „AuthNegotiateDelegateWhitelist” jest wtedy ignorowana. Więcej informacji znajdziesz w dokumencie https://tools.ietf.org/html/rfc5896.html
+
+          Jeśli zasada jest nieskonfigurowana lub ma wartość Fałsz, ustawienia ograniczonego przekazywania z KDC są ignorowane, a respektowana jest zasada „AuthNegotiateDelegateWhitelist”.</translation>
 <translation id="2872961005593481000">Wyłącz</translation>
 <translation id="2873651257716068683">Zastępuje domyślny rozmiar drukowanej strony. Jeśli dany rozmiar strony jest niedostępny, zasada jest ignorowana.</translation>
 <translation id="2874209944580848064">Uwaga dotycząca urządzeń z <ph name="PRODUCT_OS_NAME" /> obsługujących aplikacje na Androida:</translation>
@@ -1443,6 +1493,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Ta zasada jest opcjonalna. Jeśli nie jest ustawiona, żądania wyszukiwania obrazem są wysyłane przy użyciu metody GET.
 
           Ta zasada jest uwzględniana tyko wtedy, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
+<translation id="427706009709857238">„Zezwól Asystentowi Google na nasłuchiwanie wyrażenia aktywującego obsługę komend głosowych”</translation>
 <translation id="4285674129118156176">Zezwalaj użytkownikom z innych domen na używanie ARC</translation>
 <translation id="4298509794364745131">Określa listę aplikacji, które mogą być włączone jako aplikacje do notatek na ekranie blokady w: <ph name="PRODUCT_OS_NAME" />.
 
@@ -1524,6 +1575,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="4483649828988077221">Wyłącz automatyczne aktualizacje</translation>
 <translation id="4485425108474077672">Skonfiguruj URL strony nowej karty</translation>
 <translation id="4492287494009043413">Wyłącza tworzenie zrzutów ekranu</translation>
+<translation id="4494132853995232608">Wilco DTC</translation>
 <translation id="449423975179525290">Skonfiguruj zasady powiązane z wtyczką <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="450537894712826981">Ustala rozmiar pamięci podręcznej, której <ph name="PRODUCT_NAME" /> będzie używać do zapisywania plików pamięci podręcznej na dysku.
 
@@ -1686,8 +1738,10 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="4978405676361550165">Jeśli zasada „OffHours” jest ustawiona, to określone zasady dotyczące urządzeń są ignorowane (używane są ustawienia domyślne tych zasad) w konkretnych okresach. Zasady dotyczące urządzeń są ponownie stosowane przez Chrome za każdym razem, gdy zaczyna lub kończy się okres „OffHours”. Użytkownik otrzymuje powiadomienie i następuje wymuszone wylogowanie, gdy zakończenie okresu „OffHours” i zasady dotyczące urządzeń zmienią się (np. gdy użytkownik jest zalogowany na konto, które nie ma uprawnień).</translation>
 <translation id="4980635395568992380">Typ danych:</translation>
 <translation id="4983201894483989687">Zezwalaj na uruchamianie nieaktualnych wtyczek</translation>
+<translation id="4986560318567565414">Ścieżka Chrome służąca do przełączania z alternatywnej przeglądarki.</translation>
 <translation id="4988291787868618635">Działanie, jakie ma zostać wykonane po osiągnięciu opóźnienia bezczynności</translation>
 <translation id="4995548127349206948">Czy uwierzytelnianie NTLMv2 jest włączone.</translation>
+<translation id="5022792010322211583">Używaj przekazywania danych logowania ograniczanego przez KDC</translation>
 <translation id="5047604665028708335">Zezwalaj na dostęp do witryn spoza pakietów treści</translation>
 <translation id="5052081091120171147">Po włączeniu tej zasady wymuszany jest import historii przeglądania z bieżącej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia historia przeglądania nie jest importowana. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zaimportować historię lub operacja ta zostanie wykonana automatycznie.</translation>
 <translation id="5056708224511062314">Lupa wyłączona</translation>
@@ -1932,6 +1986,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
       Jeśli zasada nie zostanie określona, nie będzie modyfikować URL-a odmian.</translation>
 <translation id="5561811616825571914">Automatycznie wybierz certyfikaty klienta dla tych witryn na ekranie logowania</translation>
+<translation id="5566210228171064229">Zezwól na drukowanie z kodem PIN i bez niego</translation>
 <translation id="556941986578702361">Steruje autoukrywaniem półki <ph name="PRODUCT_OS_NAME" />.
 
       W przypadku ustawienia wartości „AlwaysAutoHideShelf” półka zawsze będzie ukrywana automatycznie.
@@ -1951,6 +2006,15 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       Ta zasada jest stosowana tylko wtedy, gdy włączone jest <ph name="CHROME_REPORTING_EXTENSION_NAME" />, a komputer jest zarejestrowany w <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Kontroluj usługi lokalizacyjne Google na Androidzie</translation>
 <translation id="5586942249556966598">Nic nie rób</translation>
+<translation id="5590494712401018042">Określa wartość procentową, na podstawie której skalowane jest opóźnienie przyciemnienia ekranu w trybie prezentacji.
+
+          Jeśli ta zasada jest ustawiona, określa wartość procentową, na podstawie której skalowane jest opóźnienie przyciemnienia ekranu w trybie prezentacji. Gdy opóźnienie przyciemnienia ekranu jest skalowane, opóźnienia wyłączenia ekranu, zablokowania ekranu i braku aktywności są korygowane tak, by zachować oryginalnie skonfigurowane odstępy od opóźnienia przyciemnienia ekranu.
+
+          Jeśli ta zasada nie jest skonfigurowana, stosowany jest domyślny współczynnik skalowania.
+
+          Ta zasada jest stosowana tylko wtedy, gdy wyłączona jest zasada <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" />. W przeciwnym razie jest ignorowana, ponieważ opóźnienie przyciemnienia ekranu jest określane przez model z systemu uczącego się.
+
+          Współczynnik skalowania musi wynosić co najmniej 100%. Nie są dozwolone wartości, które powodowałyby, że opóźnienie przyciemnienia ekranu w trybie prezentacji byłoby krótsze niż normalne opóźnienie.</translation>
 <translation id="5592242031005200087">
       Jeśli ta zasada jest włączona, każde nazwane źródło na liście
       rozdzielanej przecinkami będzie działać w obrębie własnego procesu.
@@ -2163,6 +2227,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
       Jeśli nie skonfigurujesz tej zasady, lista odłączanych urządzeń USB będzie pusta.</translation>
 <translation id="6083631234867522991">Windows (klienty Windows):</translation>
+<translation id="6089679180657323464">Określa ustawienia kontrolera diagnostyki i telemetrii wilco.</translation>
 <translation id="6091233616732024397">Wymuś logowanie w przeglądarce</translation>
 <translation id="6093156968240188330">Umożliwia użytkownikom zdalnym używanie okien z podwyższonym poziomem uprawnień w sesjach pomocy zdalnej</translation>
 <translation id="6095999036251797924">Określa czas, po jakim ekran jest blokowany przy pracy na zasilaniu sieciowym lub bateryjnym, jeśli użytkownik jest nieaktywny.
@@ -2435,6 +2500,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="6770454900105963262">Informuj o aktywnych sesjach kiosku</translation>
 <translation id="6786747875388722282">Rozszerzenia</translation>
 <translation id="6786967369487349613">Ustaw katalog profilu przenośnego</translation>
+<translation id="6795485990775913659">Zezwól na drukowanie tylko bez kodu PIN</translation>
 <translation id="6810445994095397827">Blokuj kod JavaScript w tych witrynach</translation>
 <translation id="6813263547126514821">Zasilanie i wyłączanie</translation>
 <translation id="681446116407619279">Obsługiwane schematy uwierzytelniania</translation>
@@ -2540,6 +2606,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
       Ta zasada ma zastosowanie tylko wtedy, gdy jest włączona obsługa aplikacji na Linuxa.</translation>
 <translation id="69525503251220566">Parametr udostępniający funkcję wyszukiwania obrazem dla domyślnego dostawcy wyszukiwania</translation>
+<translation id="6953102253399571439">Włącz drukowanie domyślnie z kodem PIN</translation>
 <translation id="6956272732789158625">Nie zezwalaj na generowanie kluczy w żadnej witrynie</translation>
 <translation id="6965859329738616662">Określa, czy model inteligentnego przyciemniania może opóźniać przyciemnienie ekranu.
 
@@ -2591,6 +2658,15 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
           Jeśli ta zasada nie zostanie ustawiona, będzie używana wartość domyślna z zasady „DefaultWebUsbGuardSetting” (jeśli jest określona) lub z osobistej konfiguracji użytkownika.
 
           Wzorce adresów URL z tej zasady nie mogą kolidować z wzorcami skonfigurowanymi w zasadzie WebUsbBlockedForUrls. Nie jest określone, która zasada zostanie zastosowana, gdy URL pasuje do obu zasad.</translation>
+<translation id="7086677522575756117">Określa wartość procentową, na podstawie której skalowane jest opóźnienie przyciemnienia ekranu w przypadku wykrycia aktywności użytkownika po przyciemnieniu ekranu lub krótko po jego wyłączeniu.
+
+          Jeśli ta zasada jest skonfigurowana, określa wartość procentową, na podstawie której skalowane jest opóźnienie przyciemnienia ekranu w przypadku wykrycia aktywności użytkownika po przyciemnieniu ekranu lub krótko po jego wyłączeniu. Gdy opóźnienie przyciemnienia jest skalowane, opóźnienia wyłączenia ekranu, zablokowania ekranu i braku aktywności są korygowane tak, by zachować oryginalnie skonfigurowane odstępy od opóźnienia przyciemnienia ekranu.
+
+          Jeśli ta zasada nie jest skonfigurowana, stosowany jest domyślny współczynnik skalowania.
+
+          Ta zasada jest stosowana tylko wtedy, gdy wyłączona jest zasada <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" />. W przeciwnym razie jest ignorowana, ponieważ opóźnienie przyciemnienia ekranu jest określane przez model z systemu uczącego się.
+
+          Współczynnik skalowania musi wynosić co najmniej 100%.</translation>
 <translation id="7106631983877564505">Powoduje włączenie blokady w przypadku bezczynności lub zawieszenia działania urządzenia z systemem operacyjnym <ph name="PRODUCT_OS_NAME" />.
 
       Jeśli włączysz to ustawienie, użytkownik będzie musiał podać hasło w celu odblokowania uśpionego urządzenia.
@@ -2627,6 +2703,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       Możliwe ustawienia zasady to „conservative” i „performance”. Pierwsze ustawienia zwiększa stabilność, a drugie maksymalizuje wydajność.
 
       Jeśli zasada jest nieskonfigurowana, użytkownik może samodzielnie wybrać ustawienie.</translation>
+<translation id="7145335384492396213">Domyślny tryb drukowania z kodem PIN</translation>
 <translation id="7158064522994309072">Ta zasada określa polecenie używane do otwierania adresów URL w alternatywnej przeglądarce.
 
       Gdy ta zasada jest nieskonfigurowana, używana jest przeglądarka domyślna dla danej platformy: Internet Explorer w Windows lub Safari w Mac OS X. W Linuksie, gdy ta zasada jest nieskonfigurowana, otwieranie alternatywnej przeglądarki nie działa.
@@ -2694,6 +2771,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
       Ustawienie tej zasady na wartość Prawda powoduje również wyłączenie drukarek używających protokołów innych niż IPPS, USB i IPP-over-USB, ponieważ nazwy użytkownika ani nazwy pliku nie wolno przesyłać w sieci bez szyfrowania.</translation>
 <translation id="7258823566580374486">Włącz separację hostów zdalnego dostępu</translation>
+<translation id="7260204423892780600">Określa ustawienia Asystenta Google.</translation>
 <translation id="7260277299188117560">Sieć P2P aktualizacji automatycznych włączona</translation>
 <translation id="7261252191178797385">Tapeta na urządzeniu</translation>
 <translation id="7264704483008663819">Ta zasada została wycofana z użycia w wersji M68. Zamiast niej użyj DeveloperToolsAvailability.
@@ -2801,10 +2879,15 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
           Gdy ta zasada jest ustawiona, początkowa jasność ekranu jest ustawiana na wartość tej zasady, ale użytkownik może ją później zmienić. Wyłączone są funkcje jasności automatycznej.
           Gdy zasada nie jest ustawiona, nie ma wpływu na ustawienia ekranu wybierane przez użytkownika ani funkcje jasności automatycznej.
           Wartość zasady musi być określona procentowo w zakresie 0–100.</translation>
+<translation id="7517846421386644905">Umożliwia administratorowi określenie, czy kontroler diagnostyki i telemetrii wilco DTC ma zbierać, przetwarzać i raportować dane telemetryczne i diagnostyczne.
+
+      Jeśli zasada ma wartość Fałsz lub jest nieskonfigurowana, DTC jest wyłączony i nie może zbierać, przetwarzać ani raportować danych telemetrycznych i diagnostycznych z urządzenia.
+      Jeśli wilco DTC jest dostępny na danym urządzeniu a zasada ma wartość Prawda, zbieranie, przetwarzanie i raportowanie danych telemetrycznych i diagnostycznych jest włączone.</translation>
 <translation id="7519251620064708155">Zezwalaj na generowanie kluczy w tych witrynach</translation>
 <translation id="7529100000224450960">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być otwierane wyskakujące okienka. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultPopupsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="7529144158022474049">Współczynnik rozkładania automatycznych aktualizacji w czasie</translation>
 <translation id="7534199150025803530">Ta zasada nie ma wpływu na aplikację Dysk Google na Androida. Aby uniemożliwić używanie Dysku Google przez połączenia komórkowe, należy wyłączyć możliwość zainstalowania tej aplikacji.</translation>
+<translation id="7540622499178214923">Zezwala na działanie kontrolera diagnostyki i telemetrii wilco</translation>
 <translation id="7547549430720182663">Scal</translation>
 <translation id="7553535237300701827">Gdy ta zasada jest ustawiona, proces uwierzytelniania logowania przebiega na jeden z tych sposobów, zależnie od ustawionej wartości:
 
@@ -3502,6 +3585,7 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
       Ustawienie niższej wartości tej zasady ma trwały efekt: cofnięcie oprogramowania urządzenia do wcześniejszej wersji MOŻE być niemożliwe nawet po przywróceniu wyższej wartości.
 
       Rzeczywista możliwość cofnięcia może zależeć też od modelu urządzenia i poprawek usuwających luki krytyczne.</translation>
+<translation id="9126014181388780690">„Zezwól Asystentowi Google na dostęp do kontekstu ekranu”</translation>
 <translation id="913195841488580904">Blokuj dostęp do listy adresów URL</translation>
 <translation id="9135033364005346124">Włącz serwer proxy usługi <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9136399279941091445">Okresy bezczynności, gdy określone zasady dotyczące urządzeń są aktywne</translation>

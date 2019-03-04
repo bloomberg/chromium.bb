@@ -47,7 +47,6 @@
 <translation id="121201262018556460">Intentaste acceder a <ph name="DOMAIN" />, pero el servidor  presentó un certificado que contiene una clave no segura. Es posible que un atacante haya descifrado la clave privada y que este no sea el servidor esperado (es posible que hayas establecido comunicación con un atacante).</translation>
 <translation id="1219129156119358924">Seguridad del sistema</translation>
 <translation id="1227224963052638717">Política desconocida</translation>
-<translation id="1227633850867390598">Ocultar valor</translation>
 <translation id="1228893227497259893">El identificador de la entidad es incorrecto.</translation>
 <translation id="1232569758102978740">Sin título</translation>
 <translation id="124116460088058876">Más idiomas</translation>
@@ -102,6 +101,7 @@
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1455413310270022028">Borrador</translation>
 <translation id="1463543813647160932">5 x 7</translation>
+<translation id="1472675084647422956">Mostrar más</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Elegir dirección de envío</translation>
 <translation id="1501859676467574491">Mostrar tarjetas de tu Cuenta de Google</translation>
@@ -191,7 +191,7 @@
 <translation id="1948773908305951926">Tarjetas de prepago aceptadas</translation>
 <translation id="1962204205936693436">Favoritos de <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Error de serialización</translation>
-<translation id="1974060860693918893">Avanzada</translation>
+<translation id="1974060860693918893">Configuración avanzada</translation>
 <translation id="1978555033938440688">Versión de firmware</translation>
 <translation id="1981206234434200693">Borrar datos del historial de navegación de Chrome</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{y 1 más}other{y # más}}</translation>
@@ -483,7 +483,6 @@
 <translation id="3615877443314183785">Ingresa una fecha de vencimiento válida</translation>
 <translation id="36224234498066874">Borrar datos de navegación...</translation>
 <translation id="362276910939193118">Mostrar historial completo</translation>
-<translation id="3623476034248543066">Mostrar valor</translation>
 <translation id="3630155396527302611">Si ya está incluido como un programa con permiso para acceder a la red, intenta
       quitarlo de la lista y agregarlo de nuevo.</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
@@ -741,6 +740,7 @@
 <translation id="5115563688576182185">(64 bits)</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5135404736266831032">Administrar direcciones…</translation>
+<translation id="5138227688689900538">Mostrar menos</translation>
 <translation id="5141240743006678641">Encriptar contraseñas sincronizadas con tus credenciales de Google</translation>
 <translation id="5145883236150621069">Código de error en la respuesta de la política</translation>
 <translation id="515292512908731282">C4 (Envelope)</translation>
@@ -1266,6 +1266,7 @@ Detalles adicionales:
 <translation id="8197543752516192074">Traducir página</translation>
 <translation id="8201077131113104583">URL de actualización no válida para la extensión con ID "<ph name="EXTENSION_ID" />"</translation>
 <translation id="8202097416529803614">Resumen del pedido</translation>
+<translation id="8202370299023114387">Conflicto</translation>
 <translation id="8206978196348664717">Prc4 (Envelope)</translation>
 <translation id="8211406090763984747">La conexión es segura</translation>
 <translation id="8218327578424803826">Ubicación asignada:</translation>

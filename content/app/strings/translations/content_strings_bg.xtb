@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">състояние</translation>
 <translation id="1938124657309484470">Стойността трябва да е <ph name="MAXIMUM_DATE_OR_TIME" /> или по-рано.</translation>
 <translation id="1946271899482435442">Показване на инструмента за избор на дата</translation>
-<translation id="1982354452682152483">Няма налично описание.</translation>
 <translation id="1993104285338243655">Превключихте към дублиране</translation>
 <translation id="2060505056492490888">„<ph name="DOT" />“ се използва на неправилна позиция в/ъв „<ph name="INVALIDDOMAIN" />“.</translation>
 <translation id="2148716181193084225">Днес</translation>
@@ -177,7 +176,6 @@
 <translation id="7139483182332611405">предисловие</translation>
 <translation id="7263440858009898357">Моля, изберете елемент в списъка.</translation>
 <translation id="727747134524199931">заглавка на колона</translation>
-<translation id="7336527682887843386">Не може да бъде изтеглено описание.</translation>
 <translation id="7353453495576941748">признание за източника</translation>
 <translation id="7364796246159120393">Избор на файл</translation>
 <translation id="739024184232394898">Други...</translation>
@@ -200,7 +198,6 @@
 <translation id="7888071071722539607">Моля, включете „<ph name="ATSIGN" />“ в имейл адреса. В/ъв „<ph name="INVALIDADDRESS" />“ липсва „<ph name="ATSIGN" />“.</translation>
 <translation id="7891486169920085145">разделител</translation>
 <translation id="795667975304826397">Няма избран файл</translation>
-<translation id="8042519864538898414">Съдържанието изглежда е за пълнолетни.</translation>
 <translation id="8053789581856978548">текстово поле за търсене</translation>
 <translation id="8057695513531652401">известие</translation>
 <translation id="8105797009065549151">препратка към бележка</translation>

@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">Status</translation>
 <translation id="1938124657309484470">Verwenden Sie <ph name="MAXIMUM_DATE_OR_TIME" /> oder einen früheren Wert.</translation>
 <translation id="1946271899482435442">Datumsauswahl anzeigen</translation>
-<translation id="1982354452682152483">Es ist keine Beschreibung verfügbar.</translation>
 <translation id="1993104285338243655">Zu 1:1-Wiedergabe gewechselt</translation>
 <translation id="2060505056492490888">Das Punktzeichen "<ph name="DOT" />" steht in "<ph name="INVALIDDOMAIN" />" an einer falschen Stelle.</translation>
 <translation id="2148716181193084225">Heute</translation>
@@ -95,6 +94,7 @@
 <translation id="4360991593054037559">Geben Sie einen gültigen Wert ein. Die zwei nächstliegenden gültigen Werte sind <ph name="VALID_VALUE_LOW" /> und <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Fragen und Antworten</translation>
 <translation id="4413860115965805769">Menüschaltfläche</translation>
+<translation id="4444765639179266822">Es sieht aus wie: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">Glossarreferenz</translation>
 <translation id="4522570452068850558">Details</translation>
 <translation id="4542388879936266156">verbleibende Zeit: <ph name="REMAINING_TIME" /></translation>
@@ -121,6 +121,7 @@
 <translation id="5164977714490026579">Wert muss größer als oder gleich <ph name="MINIMUM" /> sein.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Geben Sie etwas vor dem <ph name="ATSIGN" />-Zeichen ein. Die Angabe "<ph name="INVALIDADDRESS" />" ist unvollständig.</translation>
+<translation id="5334352251556557839">Medien können nicht abgespielt werden.</translation>
 <translation id="5406322316791861025">Zahl</translation>
 <translation id="5453733299334684579">Baumelement</translation>
 <translation id="5466621249238537318">Wählen Sie eine oder mehrere Dateien aus.</translation>
@@ -147,6 +148,7 @@
 <translation id="6150588977291308318">Bibliografie</translation>
 <translation id="6164829606128959761">Messinstrument</translation>
 <translation id="6166809985690652833">Nachwort</translation>
+<translation id="6209276755895393898">Anscheinend ist es: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">Glossar</translation>
 <translation id="6398862346408813489">Auswahlbereich für Monatsanzeige</translation>
 <translation id="6404546809543547843">Audio-Zeitachse</translation>
@@ -177,7 +179,7 @@
 <translation id="7139483182332611405">Vorbemerkung</translation>
 <translation id="7263440858009898357">Wählen Sie ein Element in der Liste aus.</translation>
 <translation id="727747134524199931">Spaltenüberschrift</translation>
-<translation id="7336527682887843386">Beschreibung konnte nicht abgerufen werden.</translation>
+<translation id="7320576522385648310">Wird zwischengespeichert</translation>
 <translation id="7353453495576941748">Danksagung</translation>
 <translation id="7364796246159120393">Datei auswählen</translation>
 <translation id="739024184232394898">Andere...</translation>
@@ -200,7 +202,6 @@
 <translation id="7888071071722539607">Die E-Mail-Adresse muss ein <ph name="ATSIGN" />-Zeichen enthalten. In der Angabe "<ph name="INVALIDADDRESS" />" fehlt ein <ph name="ATSIGN" />-Zeichen.</translation>
 <translation id="7891486169920085145">Teilungsfunktion</translation>
 <translation id="795667975304826397">Keine ausgewählt</translation>
-<translation id="8042519864538898414">Der Inhalt ist anscheinend nur für Erwachsene.</translation>
 <translation id="8053789581856978548">Feld für den Suchtext</translation>
 <translation id="8057695513531652401">Bemerkung</translation>
 <translation id="8105797009065549151">Hinweisreferenz</translation>

@@ -82,6 +82,7 @@
 <translation id="3897092660631435901">मेनू</translation>
 <translation id="3909791450649380159">&amp;काटें</translation>
 <translation id="3990502903496589789">दायां सिरा</translation>
+<translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 न पढ़ी गई सूचना}one{# न पढ़ी गई सूचनाएं}other{# न पढ़ी गई सूचनाएं}}</translation>
 <translation id="4202807286478387388">जाएं</translation>
 <translation id="4250229828105606438">स्क्रीनशॉट</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 माह पहले}one{# माह पहले}other{# माह पहले}}</translation>
@@ -203,4 +204,5 @@
 <translation id="9161053988251441839">सुझाए गए ऐप्लिकेशन</translation>
 <translation id="9170848237812810038">&amp;पूर्ववत् करें</translation>
 <translation id="932327136139879170">होम</translation>
+<translation id="944069440740578670">पढ़ी न गई सूचनाएं</translation>
 </translationbundle>

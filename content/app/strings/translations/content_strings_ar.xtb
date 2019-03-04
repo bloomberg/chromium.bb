@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">الحالة</translation>
 <translation id="1938124657309484470">يجب أن تكون القيمة <ph name="MAXIMUM_DATE_OR_TIME" /> أو قبل ذلك.</translation>
 <translation id="1946271899482435442">عرض منتقي التاريخ</translation>
-<translation id="1982354452682152483">لا يتوفّر وصف.</translation>
 <translation id="1993104285338243655">تم التبديل إلى النسخ المطابق.</translation>
 <translation id="2060505056492490888">تم استخدام "<ph name="DOT" />" في موضع خاطئ في "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">اليوم</translation>
@@ -95,6 +94,7 @@
 <translation id="4360991593054037559">يُرجى إدخال قيمة صالحة. علمًا بأن القيم الصالحة تتراوح بين <ph name="VALID_VALUE_LOW" /> و<ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">سين وجيم</translation>
 <translation id="4413860115965805769">زر القائمة</translation>
+<translation id="4444765639179266822">يبدو أنه يقول: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">مرجع مسرد مصطلحات</translation>
 <translation id="4522570452068850558">التفاصيل</translation>
 <translation id="4542388879936266156">الوقت المتبقي: <ph name="REMAINING_TIME" />ّ</translation>
@@ -121,6 +121,7 @@
 <translation id="5164977714490026579">يجب أن تكون القيمة أكبر من أو تساوي <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> بيتابايت</translation>
 <translation id="5307600278924710095">يُرجى إدخال جزء متبوع بعلامة "<ph name="ATSIGN" />"، حيث إن "<ph name="INVALIDADDRESS" />" غير مكتمل.</translation>
+<translation id="5334352251556557839">تعذّر تشغيل الوسائط</translation>
 <translation id="5406322316791861025">شكل</translation>
 <translation id="5453733299334684579">عنصر متفرع</translation>
 <translation id="5466621249238537318">يُرجى تحديد ملف واحد أو أكثر.</translation>
@@ -147,6 +148,7 @@
 <translation id="6150588977291308318">قائمة مراجع</translation>
 <translation id="6164829606128959761">متر</translation>
 <translation id="6166809985690652833">كلمة ختامية</translation>
+<translation id="6209276755895393898">يبدو أن: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">مسرد مصطلحات</translation>
 <translation id="6398862346408813489">عرض لوحة تحديد الشهر</translation>
 <translation id="6404546809543547843">شريط تمرير وقت الصوت</translation>
@@ -177,7 +179,7 @@
 <translation id="7139483182332611405">تمهيد</translation>
 <translation id="7263440858009898357">يُرجى تحديد عنصر من القائمة.</translation>
 <translation id="727747134524199931">عنوان العمود</translation>
-<translation id="7336527682887843386">تعذَّر الحصول على وصف.</translation>
+<translation id="7320576522385648310">التخزين مؤقتًا</translation>
 <translation id="7353453495576941748">إسهام</translation>
 <translation id="7364796246159120393">اختيار ملفّ</translation>
 <translation id="739024184232394898">آخر...</translation>
@@ -192,7 +194,7 @@
 <translation id="7673697353781729403">ساعات</translation>
 <translation id="7681220483256441252">فهرس</translation>
 <translation id="7740050170769002709">‏محتوى HTML</translation>
-<translation id="7745230546936012372">للحصول على أوصاف الصور المفقودة، يمكنك فتح قائمة السياقات.</translation>
+<translation id="7745230546936012372">للحصول على أوصاف الصور غير المتوفّرة، افتح قائمة السياقات.</translation>
 <translation id="7750228210027921155">نافذة ضمن النافذة</translation>
 <translation id="775297008183122718">إدخال غير صالح</translation>
 <translation id="7789962463072032349">إيقاف مؤقت</translation>
@@ -200,7 +202,6 @@
 <translation id="7888071071722539607">يُرجى تضمين العلامة "<ph name="ATSIGN" />" في عنوان البريد الإلكتروني، حيث يفتقر "<ph name="INVALIDADDRESS" />" إلى العلامة "<ph name="ATSIGN" />".</translation>
 <translation id="7891486169920085145">أداة التقسيم</translation>
 <translation id="795667975304826397">ّلم يتمّ اختيار أيّ ملفّ</translation>
-<translation id="8042519864538898414">تبدو كمحتوى للبالغين.</translation>
 <translation id="8053789581856978548">الحقل النصي للبحث</translation>
 <translation id="8057695513531652401">ملاحظة</translation>
 <translation id="8105797009065549151">ملاحظة مرجعية</translation>

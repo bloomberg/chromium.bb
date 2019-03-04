@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">stare</translation>
 <translation id="1938124657309484470">Valoarea pentru dată/oră trebuie să fie <ph name="MAXIMUM_DATE_OR_TIME" /> sau una anterioară.</translation>
 <translation id="1946271899482435442">Afișează selectorul de date</translation>
-<translation id="1982354452682152483">Nu este disponibilă nicio descriere.</translation>
 <translation id="1993104285338243655">S-a comutat la oglindire</translation>
 <translation id="2060505056492490888">Semnul „<ph name="DOT" />” apare poziționat greșit în „<ph name="INVALIDDOMAIN" />”.</translation>
 <translation id="2148716181193084225">Astăzi</translation>
@@ -95,6 +94,7 @@
 <translation id="4360991593054037559">Introduceți o valoare validă. Cele mai apropiate valori valide sunt <ph name="VALID_VALUE_LOW" /> și <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Întrebări și răspunsuri</translation>
 <translation id="4413860115965805769">buton de meniu</translation>
+<translation id="4444765639179266822">Se pare că spune: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">trimitere la glosar</translation>
 <translation id="4522570452068850558">Detalii</translation>
 <translation id="4542388879936266156">timp rămas: <ph name="REMAINING_TIME" /></translation>
@@ -121,6 +121,7 @@
 <translation id="5164977714490026579">Valoarea trebuie să fie mai mare sau egală cu <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Introduceți o valoare urmată de semnul „<ph name="ATSIGN" />”. Adresa „<ph name="INVALIDADDRESS" />” nu este completă.</translation>
+<translation id="5334352251556557839">Nu se pot reda fișiere media.</translation>
 <translation id="5406322316791861025">cifră</translation>
 <translation id="5453733299334684579">element arbore</translation>
 <translation id="5466621249238537318">Selectează unul sau mai multe fișiere.</translation>
@@ -147,6 +148,7 @@
 <translation id="6150588977291308318">bibliografie</translation>
 <translation id="6164829606128959761">instrument de măsurare</translation>
 <translation id="6166809985690652833">postfață</translation>
+<translation id="6209276755895393898">Pare a fi: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glosar</translation>
 <translation id="6398862346408813489">Afișează panoul de selectare a lunii</translation>
 <translation id="6404546809543547843">glisor redare audio</translation>
@@ -177,7 +179,7 @@
 <translation id="7139483182332611405">prefață</translation>
 <translation id="7263440858009898357">Selectează un articol din listă.</translation>
 <translation id="727747134524199931">antet coloană</translation>
-<translation id="7336527682887843386">Nu se poate obține o descriere.</translation>
+<translation id="7320576522385648310">Se încarcă în memoria temporară</translation>
 <translation id="7353453495576941748">mulțumire</translation>
 <translation id="7364796246159120393">Alege fișierul</translation>
 <translation id="739024184232394898">Altele...</translation>
@@ -186,7 +188,7 @@
 <translation id="7491962110804786152">filă</translation>
 <translation id="7514365320538308">Descarcă</translation>
 <translation id="7529102961911894712">backlink</translation>
-<translation id="7533959249147584474">Grafic neetichetat</translation>
+<translation id="7533959249147584474">Imagine neetichetată</translation>
 <translation id="7647456547678091388">sfat</translation>
 <translation id="7661956066982048809">document grafic</translation>
 <translation id="7673697353781729403">Ore</translation>
@@ -200,7 +202,6 @@
 <translation id="7888071071722539607">Includeți semnul „<ph name="ATSIGN" />” în adresa de e-mail. Din adresa „<ph name="INVALIDADDRESS" />” lipsește semnul „<ph name="ATSIGN" />”.</translation>
 <translation id="7891486169920085145">element de divizare</translation>
 <translation id="795667975304826397">Nu ai ales niciun fișier</translation>
-<translation id="8042519864538898414">Pare a fi conținut pentru adulți.</translation>
 <translation id="8053789581856978548">câmp pentru căutarea textului</translation>
 <translation id="8057695513531652401">anunț</translation>
 <translation id="8105797009065549151">trimitere la notă</translation>

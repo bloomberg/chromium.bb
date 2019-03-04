@@ -312,7 +312,7 @@
 <translation id="3232388865800379423">ปุ่มป๊อปอัป</translation>
 <translation id="3241052487511142956">ลิงก์ที่เคยเข้าชมก่อนหน้า</translation>
 <translation id="3241638166094654466">จำนวนเซลล์ในแต่ละบรรทัด:</translation>
-<translation id="327361630706777244">สิ้นสุดหมวด <ph name="FONT_COLOR" /></translation>
+<translation id="327361630706777244">สิ้นสุด<ph name="FONT_COLOR" /></translation>
 <translation id="3286372614333682499">แนวตั้ง</translation>
 <translation id="3286390186030710347">แถบเลื่อน</translation>
 <translation id="3299925995433437805">ไม่มีลิงก์ที่เคยเข้าชมถัดไป</translation>
@@ -344,7 +344,7 @@
 <translation id="3462439746547587373">ปุ่ม <ph name="NAME" /></translation>
 <translation id="3466530247399808663">การกดแป้นที่ไม่ถูกต้อง</translation>
 <translation id="3468959318854349468">ไม่มีชื่อ</translation>
-<translation id="3469413619751135069">สีเขียวอ่อน</translation>
+<translation id="3469413619751135069">สีเขียวจาง</translation>
 <translation id="3473644018603298796">เลือก <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> ถึง <ph name="V2" /></translation>
 <translation id="3490765818161916458">รายการตาราง</translation>
@@ -359,7 +359,7 @@
 <translation id="3555380819397253474">เริ่มต้นแบบอักษร <ph name="FONT_FAMILY" /></translation>
 <translation id="3568702578574425662">ไม่ได้เลือกช่องทำเครื่องหมาย <ph name="NAME" /></translation>
 <translation id="3589661172894441357">อภิธานศัพท์</translation>
-<translation id="3591784666823501596">สีรอยัลบลู</translation>
+<translation id="3591784666823501596">สีน้ำเงินรอยัลบลู</translation>
 <translation id="3594207934078151302">สีเขียวน้ำทะเลปานกลาง</translation>
 <translation id="3599054940393788245">ไม่ได้อยู่ในคณิตศาสตร์</translation>
 <translation id="360241989769010433">กิตติกรรมประกาศ</translation>
@@ -527,7 +527,7 @@
 <translation id="479989351350248267">ค้นหา</translation>
 <translation id="4804818685124855865">ตัดการเชื่อมต่อ</translation>
 <translation id="481165870889056555">แจ้งชื่อของหน้าเว็บปัจจุบัน</translation>
-<translation id="4815668758102003883">สีเทอร์ควอยซ์อ่อน</translation>
+<translation id="4815668758102003883">สีเทอร์ควอยซ์จาง</translation>
 <translation id="4826415162591436065">นำทางไปข้างหน้า</translation>
 <translation id="4826604887384865800">การข้ามถัดไป</translation>
 <translation id="4827410568042294688">ไม่ได้เลือก</translation>
@@ -575,7 +575,7 @@
 <translation id="5075936896689244141">คีย์แมป Next</translation>
 <translation id="5078661581131202757">การเลือกไฟล์</translation>
 <translation id="5080758118274074384">ดับเบิลคลิกแล้ว</translation>
-<translation id="5085453135206054947">สีแดงอมม่วงอ่อน</translation>
+<translation id="5085453135206054947">สีแดงอมม่วงจาง</translation>
 <translation id="5087864757604726239">กลับ</translation>
 <translation id="5098541983634824365">ออกจากตาราง</translation>
 <translation id="5102981729317424850">แถบเครื่องมือ</translation>
@@ -750,7 +750,7 @@
 <translation id="6324551002951139333">ตรวจพบข้อผิดพลาดทางไวยากรณ์</translation>
 <translation id="6325241889020214828">คัดลอก <ph name="TEXT" /></translation>
 <translation id="6348657800373377022">ช่องตัวเลือกรวม</translation>
-<translation id="6348869651006731065">สีเทาดิมเกรย์</translation>
+<translation id="6348869651006731065">สีเทาหม่น</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{สัญลักษณ์หัวข้อย่อย}other{สัญลักษณ์หัวข้อย่อย # ตัว}}</translation>
 <translation id="6355910664415701303">ไม่มีรายการก่อนหน้า</translation>
 <translation id="6364795331201459219">h6</translation>
@@ -771,7 +771,7 @@
 <translation id="646954774886932461">ดัชนี</translation>
 <translation id="6470797302070897045">เริ่มต้นขนาด <ph name="FONT_SIZE" /></translation>
 <translation id="6493991254603208962">ลดความสว่าง</translation>
-<translation id="6497864469186228849">สิ้นสุดหมวด <ph name="FONT_FAMILY" /></translation>
+<translation id="6497864469186228849">สิ้นสุดแบบอักษร <ph name="FONT_FAMILY" /></translation>
 <translation id="6501595918865591267">สีเทอร์ควอยซ์</translation>
 <translation id="6508059270146105198">เลื่อนการแสดงผลเบรลล์ไปที่ด้านล่างของหน้า</translation>
 <translation id="6521550811716689390">สีม่วงเข้ม</translation>
@@ -795,7 +795,7 @@
 <translation id="6659594942844771486">แท็บ</translation>
 <translation id="667999046851023355">เอกสาร</translation>
 <translation id="6688209025607531203">การแจ้งเตือนที่ไม่ใช่แบบโมดัล</translation>
-<translation id="6689672606256159458">สีแซลมอนเข้ม</translation>
+<translation id="6689672606256159458">สีส้มแซลมอนเข้ม</translation>
 <translation id="6696967141280706829">ส่วนนำ</translation>
 <translation id="6697092096875747123">ช่องตัวเลือกรวมก่อนหน้า</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{เครื่องหมายอัศเจรีย์}other{เครื่องหมายอัศเจรีย์ # ตัว}}</translation>
@@ -812,7 +812,7 @@
 <translation id="6787839852456839824">แป้นพิมพ์ลัด</translation>
 <translation id="6793101435925451627">กล่องรายการ</translation>
 <translation id="6815255864998354418">สีเหลืองเลมอนชิฟฟอน</translation>
-<translation id="6816066673340002913">สีเหลืองอ่อนโกลเด้นร็อด</translation>
+<translation id="6816066673340002913">สีเหลืองโกลเด้นร็อดจาง</translation>
 <translation id="6826226459053491773">เลื่อน 2 นิ้วลง</translation>
 <translation id="6833103209700200188">ส่วนท้าย</translation>
 <translation id="6858047746862060282">อารัมภบท</translation>
@@ -855,7 +855,7 @@
 <translation id="7096001299300236431">สื่อก่อนหน้า</translation>
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">พูดคำ</translation>
-<translation id="7137397390322864165">สีแซลมอน</translation>
+<translation id="7137397390322864165">สีส้มแซลมอน</translation>
 <translation id="713824876195128146">ข้อความอ้างอิงถัดไป</translation>
 <translation id="7143034430156387447">สลับไปมาระหว่างอักษรเบรลล์ 6 และ 8 จุด</translation>
 <translation id="7143207342074048698">กำลังเชื่อมต่อ</translation>
@@ -919,7 +919,7 @@
 <translation id="7552432549459840808">แป้นพิมพ์ลัดของ Chrome ที่มีประโยชน์</translation>
 <translation id="7569983096843329377">สีดำ</translation>
 <translation id="7579911500627256166">จุด <ph name="DOT" /></translation>
-<translation id="7596131838331109045">สีแซลมอนอ่อน</translation>
+<translation id="7596131838331109045">สีส้มแซลมอนอ่อน</translation>
 <translation id="7596919493010894443">ล้างการเลือกแล้ว</translation>
 <translation id="7604026522577407655">ไปที่ด้านบนของคอลัมน์ปัจจุบัน</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -972,7 +972,7 @@
 <translation id="7942349550061667556">สีแดง</translation>
 <translation id="7965147473449754028">ปิดเมนูแล้ว</translation>
 <translation id="7968340748835037139">สีเขียวเข้ม</translation>
-<translation id="7972507042926081808">สีช็อกโกแล็ต</translation>
+<translation id="7972507042926081808">สีน้ำตาลช็อกโกแล็ต</translation>
 <translation id="7974390230414479278">รายการเมนู</translation>
 <translation id="8007540374018858731">h3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{เครื่องหมายอัญประกาศ}other{# เครื่องหมายอัญประกาศ}}</translation>

@@ -47,7 +47,6 @@
 <translation id="121201262018556460">شما می‌خواستید به <ph name="DOMAIN" /> دسترسی یابید، اما سرور یک گواهی دارای کلید ضعیف ارائه داد. یک مهاجم ممکن است کلید خصوصی را تخریب کرده باشد و سرور، همان سروری نباشد که شما انتظار داشتید (ممکن است در حال ارتباط با یک مهاجم باشید).</translation>
 <translation id="1219129156119358924">سیستم امنیتی</translation>
 <translation id="1227224963052638717">خط‌مشی ناشناس.</translation>
-<translation id="1227633850867390598">پنهان کردن مقدار</translation>
 <translation id="1228893227497259893">‏شناسه entity نادرست</translation>
 <translation id="1232569758102978740">بدون عنوان</translation>
 <translation id="124116460088058876">زبان‌های بیشتر</translation>
@@ -102,6 +101,7 @@
 <translation id="1430915738399379752">چاپ</translation>
 <translation id="1455413310270022028">پاک‌کن</translation>
 <translation id="1463543813647160932">۵x۷</translation>
+<translation id="1472675084647422956">بیشتر ببینید</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">انتخاب نشانی تحویل کالا</translation>
 <translation id="1501859676467574491">‏کارت‌ها را از حساب Google خود نمایش دهید</translation>
@@ -482,7 +482,6 @@
 <translation id="3615877443314183785">تاریخ انقضای معتبری وارد کنید</translation>
 <translation id="36224234498066874">پاک کردن داده‌های محصول مرور…</translation>
 <translation id="362276910939193118">نمایش کل سابقه</translation>
-<translation id="3623476034248543066">نشان دادن مقدار</translation>
 <translation id="3630155396527302611">اگر درحال حاضر به‌عنوان برنامه‌ای برای دسترسی به شبکه در فهرست قرار دارد،
       سعی کنید آن را از فهرست حذف کرده و دوباره به فهرست اضافه کنید.</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
@@ -740,6 +739,7 @@
 <translation id="5115563688576182185">(۶۴ بیت)</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5135404736266831032">مدیریت نشانی‌ها…</translation>
+<translation id="5138227688689900538">نمایش موارد کمتر</translation>
 <translation id="5141240743006678641">‏رمزگذاری گذرواژه‌های همگام‌سازی شده با اطلاعات کاربری Google شما</translation>
 <translation id="5145883236150621069">کد خطا در پاسخ خط‌مشی موجود است</translation>
 <translation id="515292512908731282">C4 (Envelope)</translation>
@@ -1265,6 +1265,7 @@
 <translation id="8197543752516192074">ترجمه صفحه</translation>
 <translation id="8201077131113104583">نشانی وب به‌روزرسانی نامعتبر برای برنامه افزودنی با شناسه «<ph name="EXTENSION_ID" />».</translation>
 <translation id="8202097416529803614">خلاصه سفارش</translation>
+<translation id="8202370299023114387">اختلال</translation>
 <translation id="8206978196348664717">Prc4 (Envelope)</translation>
 <translation id="8211406090763984747">اتصال امن است</translation>
 <translation id="8218327578424803826">مکان اختصاص یافته:</translation>

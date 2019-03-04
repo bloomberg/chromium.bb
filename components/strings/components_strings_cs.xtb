@@ -47,7 +47,6 @@
 <translation id="121201262018556460">Pokusili jste se přejít na web <ph name="DOMAIN" />, server však předložil certifikát obsahující slabý klíč. Útočník možná prolomil soukromý klíč a může se jednat o jiný server, než předpokládáte (můžete komunikovat s útočníkem).</translation>
 <translation id="1219129156119358924">Zabezpečení systému</translation>
 <translation id="1227224963052638717">Neznámá zásada.</translation>
-<translation id="1227633850867390598">Skrýt hodnotu</translation>
 <translation id="1228893227497259893">Nesprávný identifikátor subjektu</translation>
 <translation id="1232569758102978740">Bez názvu</translation>
 <translation id="124116460088058876">Další jazyky</translation>
@@ -100,6 +99,7 @@
 <translation id="1430915738399379752">Tisk</translation>
 <translation id="1455413310270022028">Guma</translation>
 <translation id="1463543813647160932">5:7</translation>
+<translation id="1472675084647422956">Zobrazit více</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Vybrat dodací adresu</translation>
 <translation id="1501859676467574491">Zobrazit karty z vašeho účtu Google</translation>
@@ -471,7 +471,6 @@
 <translation id="3615877443314183785">Zadejte platné datum vypršení platnosti</translation>
 <translation id="36224234498066874">Smazat údaje o prohlížení...</translation>
 <translation id="362276910939193118">Zobrazit celou historii</translation>
-<translation id="3623476034248543066">Zobrazit hodnotu</translation>
 <translation id="3630155396527302611">Pokud je program v seznamu programů s oprávněním přistupovat k síti již uveden, zkuste jej ze seznamu odebrat a znovu přidat.</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Ověření proběhlo úspěšně</translation>
@@ -728,6 +727,7 @@
 <translation id="5115563688576182185">(64bitový)</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5135404736266831032">Spravovat adresy...</translation>
+<translation id="5138227688689900538">Zobrazit méně</translation>
 <translation id="5141240743006678641">Šifrovat synchronizovaná hesla pomocí hesla k účtu Google</translation>
 <translation id="5145883236150621069">Odpověď zásady obsahuje kód chyby</translation>
 <translation id="515292512908731282">C4 (obálka)</translation>
@@ -1248,6 +1248,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="8197543752516192074">Přeložit stránku</translation>
 <translation id="8201077131113104583">Neplatná adresa URL aktualizace rozšíření s ID <ph name="EXTENSION_ID" />.</translation>
 <translation id="8202097416529803614">Shrnutí objednávky</translation>
+<translation id="8202370299023114387">Konflikt</translation>
 <translation id="8206978196348664717">Prc4 (obálka)</translation>
 <translation id="8211406090763984747">Připojení je zabezpečené</translation>
 <translation id="8218327578424803826">Přiřazené místo:</translation>

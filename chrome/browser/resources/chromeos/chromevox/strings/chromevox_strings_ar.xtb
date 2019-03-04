@@ -39,7 +39,7 @@
 <translation id="1213216066620407844">‏ChromeVox - تزويد Chrome بالصوت</translation>
 <translation id="1225437811932752266">‏تهانينا! لقد تعلمت أساسيات استخدام ChromeVox بنجاح. تذكّر أنه يمكنك فتح قائمة أوامر ChromeVox في أي وقت عن طريق الضغط على "Search+نقطة". ولمعرفة مزيد من المعلومات حول ChromeVox ونظام التشغيل Chrome، انتقل إلى المقالات التالية.
 إذا انتهيت من البرنامج التعليمي، استخدم ChromeVox للانتقال إلى الزر "إغلاق" والنقر عليه.</translation>
-<translation id="1225969361094801578">رمادي أردوازي داكن</translation>
+<translation id="1225969361094801578">رمادي داكن مائل إلى الأزرق</translation>
 <translation id="1229276918471378188">الانتقال السابق</translation>
 <translation id="1236794971743289975">تعليق ختامي</translation>
 <translation id="1237866625126425153">rdgrp</translation>
@@ -112,7 +112,7 @@
 <translation id="1722567105086139392">رابط</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">الرسم التالي</translation>
-<translation id="1756785467854861272">أرجواني داكن</translation>
+<translation id="1756785467854861272">أحمر أرجواني داكن</translation>
 <translation id="1765245556747822181">التمرير السريع بإصبع واحد إلى الأعلى</translation>
 <translation id="1781173782405573156">مفتاح التمرير</translation>
 <translation id="1787176709638001873">نص تعديل كلمة المرور</translation>
@@ -132,7 +132,7 @@
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
 <translation id="1914635379910604678">الوَتر <ph name="DOT" /></translation>
-<translation id="1923956950274750765">أرجواني متوسط</translation>
+<translation id="1923956950274750765">أرجواني خفيف متوسط</translation>
 <translation id="1954623340234317532">التحكم في أسبوع من العام</translation>
 <translation id="1964135212174907577">الكائن التالي</translation>
 <translation id="1969092762068865084">تموز (يوليو)</translation>
@@ -159,7 +159,7 @@
 <translation id="2169714232367507776">النقر على العنصر الحالي</translation>
 <translation id="2179452035581866348">‏يستخدم ChromeVox الأصوات لمنحك المعلومات الأساسية والإضافية. ويمكنك استخدام هذه الأصوات للانتقال بسرعة أكبر من خلال معرفة ما يعنيه كل صوت. عندما تشعر براحة أكبر، يمكنك إيقاف تشغيل الأوصاف المطوَّلة في الكلام والاعتماد عليها للحصول على المعلومات الأساسية حول الصفحة. وإليك قائمة كاملة بالأصوات وما تعنيه هذه الأصوات.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{قوس مغلق واحد}zero{# close parens}two{قوسان مغلقان (#)}few{# أقواس مغلقة}many{# قوسًا مغلقًا}other{# من الأقواس المغلقة}}</translation>
-<translation id="2197863150503783129">بني سرجي</translation>
+<translation id="2197863150503783129">بني جلدي</translation>
 <translation id="2199994615414171367">التعبير الرياضي السابق</translation>
 <translation id="2203046366315513658">تقليل القيمة</translation>
 <translation id="2220529011494928058">الإبلاغ عن مشكلة</translation>
@@ -188,7 +188,7 @@
 <translation id="2429669115401274487">مساءً</translation>
 <translation id="242998846562331953">عنوان فرعي</translation>
 <translation id="2435413342408885429">‏أصبح <ph name="KEY" /> مفتاح تعديل ChromeVox الجديد الآن.</translation>
-<translation id="2435422727584637732">أزرق سماوي</translation>
+<translation id="2435422727584637732">أزرق سماوي خفيف</translation>
 <translation id="2450814015951372393">مربع الاختيار</translation>
 <translation id="2462626033734746142">مجموعة أزرار الاختيار</translation>
 <translation id="2471138580042810658">العنوان السادس</translation>
@@ -256,7 +256,7 @@
 <translation id="2911433807131383493">‏فتح برنامج ChromeVox التعليمي</translation>
 <translation id="2912405967290226587">التمرير السريع بثلاثة أصابع إلى يسار الشاشة</translation>
 <translation id="2932083475399492303">تبديل نوع الخط بين تنظيمي أو تخطيطي</translation>
-<translation id="2942710183375260152">أزرق أردوازي داكن</translation>
+<translation id="2942710183375260152">أزرق داكن مائل إلى الرمادي</translation>
 <translation id="2943596527105977722">أصفر ذهبي داكن</translation>
 <translation id="2944762337049891859">يمكنك قراءة الصفحة تلقائيًا بعد انتهاء التحميل.</translation>
 <translation id="2964026537669811554">مجموعة عناوين</translation>
@@ -305,7 +305,7 @@
 <translation id="316542773973815724">تنقل</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{مسافة واحدة}zero{# spaces}two{مسافتان (#)}few{# مسافات}many{# مسافة}other{# من المسافات}}</translation>
 <translation id="320961988183078793">تم إدخال <ph name="TYPE" /></translation>
-<translation id="321072937702597574">أرجواني</translation>
+<translation id="321072937702597574">أرجواني خفيف</translation>
 <translation id="3218691001991391708">لصق <ph name="TEXT" />.</translation>
 <translation id="3223701887221307104">علامة تبويب <ph name="NAME" /></translation>
 <translation id="3226035351387556942">chk</translation>
@@ -374,7 +374,7 @@
 <translation id="3681531118904532409">أصفر باهت</translation>
 <translation id="3687295507293856493">إجراء تخمين في عنوان العمود للخلية الحالية</translation>
 <translation id="3692274950075847560">بحث:<ph name="RESULT" /></translation>
-<translation id="370367311675896712">خط خلال النص</translation>
+<translation id="370367311675896712">يتوسّطه خط</translation>
 <translation id="3712520970944678024">التحكم في النطق</translation>
 <translation id="371302509916403935">تحته خط</translation>
 <translation id="3716845769494773620">متعدد الأسطر</translation>
@@ -410,7 +410,7 @@
 <translation id="3970951409746498040">بني رملي</translation>
 <translation id="3989324057180830702">زر التبديل</translation>
 <translation id="3991317907213946254">أصفر باهت</translation>
-<translation id="4002709828007663583">أرجواني داكن</translation>
+<translation id="4002709828007663583">أرجواني خفيف داكن</translation>
 <translation id="4004802134384979325">تم التحديد</translation>
 <translation id="4006140876663370126">img</translation>
 <translation id="4038349100599457191">التحكم في الشهر</translation>
@@ -450,12 +450,12 @@
 <translation id="4206289001967551965">داخل الجدول</translation>
 <translation id="4209770650650780359">يُرجى الضغط على السهم المتجه للأعلى أو للأسفل لقائمة الإكمال التلقائي.</translation>
 <translation id="4215733775853809057">شريط التمرير التالي</translation>
-<translation id="42164919740161077">أزرق حربي</translation>
+<translation id="42164919740161077">أزرق رمادي</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{شرطة واحدة}zero{# dashes}two{شرطتان (#)}few{# شرطات}many{# شرطة}other{# من الشرطات}}</translation>
 <translation id="421884353938374759">علبة الألوان</translation>
 <translation id="4229646983878045487">تاريخ ووقت</translation>
-<translation id="4230834257931120629">رمادي أردوازي فاتح</translation>
-<translation id="4231102694147661229">تفعيل خيارات المطورين</translation>
+<translation id="4230834257931120629">رمادي فاتح مائل إلى الأزرق</translation>
+<translation id="4231102694147661229">تفعيل خيارات المطوّرين</translation>
 <translation id="423334822609210999">ليست هناك خلية في اليسار.</translation>
 <translation id="4243624244759495699"><ph name="LOCALE" />، الدرجة <ph name="GRADE" /></translation>
 <translation id="4246217262268234757">أزرق معدني</translation>
@@ -470,7 +470,7 @@
 <translation id="4289540628985791613">نظرة عامة</translation>
 <translation id="4300318234632215983">‏الإعلان عن عنوان URL وراء رابط</translation>
 <translation id="4301352596632316575">لها قائمة فرعية</translation>
-<translation id="4322625298640984693">أصفر برتقالي</translation>
+<translation id="4322625298640984693">بني غامق</translation>
 <translation id="4342180618051828363">{COUNT,plural, =1{نقطة واحدة}=3{علامة حذف}zero{# dots}two{نقطتان (#)}few{# نقاط}many{# نقطة}other{# من النقاط}}</translation>
 <translation id="4347461890115250064">ليست هناك قائمة تالية.</translation>
 <translation id="4367650418938037324">ورقة لغة التوصيف الرياضية</translation>
@@ -487,7 +487,7 @@
 <translation id="4457472090507035117">تحديد الصوت الحالي:</translation>
 <translation id="4471074325120394300">ليست هناك أي روابط.</translation>
 <translation id="4476183483923481720">سطر جديد</translation>
-<translation id="4479068155583208887">طوبي ناري</translation>
+<translation id="4479068155583208887">أحمر قرميدي ناري</translation>
 <translation id="4482330759234983253">الجدول السابق</translation>
 <translation id="4491109536499578614">صورة</translation>
 <translation id="4505167975768625962">إدراج</translation>
@@ -588,7 +588,7 @@
 <translation id="5119330972669454698">خشبي صلب</translation>
 <translation id="5136967254288895616">ليس هناك رابط سابق.</translation>
 <translation id="513774504516943387">lnk</translation>
-<translation id="5138912041966667164">أزرق أردوازي متوسط</translation>
+<translation id="5138912041966667164">أزرق متوسط مائل إلى الرمادي</translation>
 <translation id="5140016802771803559">أرجواني داكن</translation>
 <translation id="5158275234811857234">غلاف</translation>
 <translation id="517143700877085897">، تم إلغاء التحديد</translation>
@@ -757,7 +757,7 @@
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">العنوان السابق</translation>
 <translation id="6376999910001533545">كستنائي</translation>
-<translation id="6378394210114975876">أرجواني</translation>
+<translation id="6378394210114975876">بنفسجي خفيف</translation>
 <translation id="6385591741672306837">العمود</translation>
 <translation id="6387719785439924554">aside</translation>
 <translation id="6411426777058107714">ليس هناك زر اختيار سابق.</translation>
@@ -776,7 +776,7 @@
 <translation id="6501595918865591267">فيروزي</translation>
 <translation id="6508059270146105198">نقل عرض برايل إلى أسفل الصفحة</translation>
 <translation id="6521550811716689390">بنفسجي داكن</translation>
-<translation id="6536157907112457272">كتاني</translation>
+<translation id="6536157907112457272">كتّاني</translation>
 <translation id="6536864053412760904">الرمز المميز للغة التوصيف الرياضية</translation>
 <translation id="6540201937398578274">‏في ChromeVox، يكون مفتاح البحث (Search) هو مفتاح التعديل. وتبدأ معظم اختصارات ChromeVox بمفتاح البحث. وستستخدم أيضًا مفاتيح الأسهم للتنقل.</translation>
 <translation id="6544923685317771506">صدفي</translation>
@@ -796,7 +796,7 @@
 <translation id="6659594942844771486">علامة تبويب</translation>
 <translation id="667999046851023355">مستند</translation>
 <translation id="6688209025607531203">تنبيه غير نمطي</translation>
-<translation id="6689672606256159458">سلموني داكن</translation>
+<translation id="6689672606256159458">برتقالي وردي داكن</translation>
 <translation id="6696967141280706829">تمهيد</translation>
 <translation id="6697092096875747123">مربع التحرير والسرد السابق</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{علامة تعجب واحدة}zero{# علامة تعجب}two{علامتا تعجب (#)}few{# علامات تعجب}many{# علامة تعجب}other{# علامة تعجب}}</translation>
@@ -851,12 +851,12 @@
 <translation id="7062635574500127092">أزرق مخضر</translation>
 <translation id="7086377898680121060">سطوع مرتفع</translation>
 <translation id="7088743565397416204">النقر المزدوج لتفعيل العنصر المحدّد</translation>
-<translation id="7091296112653361280">أبيض الناڤايو</translation>
+<translation id="7091296112653361280">أبيض مائل إلى الأصفر</translation>
 <translation id="7095834689119144465">تعديل النص الرقمي فقط</translation>
 <translation id="7096001299300236431">الوسائط السابقة</translation>
 <translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">صدى الكلمة</translation>
-<translation id="7137397390322864165">سلموني</translation>
+<translation id="7137397390322864165">برتقالي وردي</translation>
 <translation id="713824876195128146">الاقتباس الطويل التالي</translation>
 <translation id="7143034430156387447">التبديل بين نمط برايل ذي 6 نقاط و8 نقاط</translation>
 <translation id="7143207342074048698">اتصال</translation>
@@ -900,7 +900,7 @@
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">جارٍ مغادرة الجدول.</translation>
 <translation id="7374188624530452127">بدء <ph name="FONT_COLOR" /></translation>
-<translation id="738899727977260036">أزرق أردوازي</translation>
+<translation id="738899727977260036">أزرق مائل إلى الرمادي</translation>
 <translation id="7392145451309930991">بداية مطابقة النص</translation>
 <translation id="739763518212184081">السطر السابق</translation>
 <translation id="7400575256015741911">تم اكتشاف خطأ إملائي</translation>
@@ -920,7 +920,7 @@
 <translation id="7552432549459840808">‏اختصارات Chrome المفيدة</translation>
 <translation id="7569983096843329377">أسود</translation>
 <translation id="7579911500627256166">نقطة <ph name="DOT" /></translation>
-<translation id="7596131838331109045">سلموني فاتح</translation>
+<translation id="7596131838331109045">برتقالي وردي فاتح</translation>
 <translation id="7596919493010894443">تم مسح التحديد</translation>
 <translation id="7604026522577407655">الانتقال إلى بداية العمود الحالي</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -973,7 +973,7 @@
 <translation id="7942349550061667556">أحمر</translation>
 <translation id="7965147473449754028">تم غلق القائمة</translation>
 <translation id="7968340748835037139">أخضر داكن</translation>
-<translation id="7972507042926081808">شوكولاتي</translation>
+<translation id="7972507042926081808">بني بلون الشوكولاتة</translation>
 <translation id="7974390230414479278">عنصر القائمة</translation>
 <translation id="8007540374018858731">h3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{علامة اقتباس واحدة}zero{# quotes}two{علامتا اقتباس (#)}few{# علامات اقتباس}many{# علامة اقتباس}other{# من علامات الاقتباس}}</translation>
@@ -1072,7 +1072,7 @@
 <translation id="8076492880354921740">علامات التبويب</translation>
 <translation id="8091452896542422286">المسافة</translation>
 <translation id="8096975275316362544">زبدي</translation>
-<translation id="8098587210054821856">رمادي أردوازي</translation>
+<translation id="8098587210054821856">رمادي مائل إلى الأزرق</translation>
 <translation id="8110647606445335195">‏ليست هناك معالم ARIA.</translation>
 <translation id="8138880386467279117">اللمس</translation>
 <translation id="8153880621934657047">ليس بداخل الجدول.</translation>
@@ -1127,18 +1127,18 @@
 <translation id="860150890330522909">تم تحديد مربع الاختيار <ph name="NAME" /></translation>
 <translation id="8603071050456974042">‏لوحة ChromeVox</translation>
 <translation id="8606621670302093223">التحكم في التاريخ</translation>
-<translation id="8613709718990529335">أصفر حسائي</translation>
-<translation id="8628186274519446680">أحمر طماطمي</translation>
+<translation id="8613709718990529335">أصفر حاد</translation>
+<translation id="8628186274519446680">أحمر بلون الطماطم</translation>
 <translation id="8631359288236106450">تم تحديد <ph name="COUNT" /> من العناصر</translation>
 <translation id="8638532244051952400">إعلان إحداثيات الخلية الحالية</translation>
-<translation id="8640369214276455272">دخاني أبيض</translation>
+<translation id="8640369214276455272">أبيض دخاني</translation>
 <translation id="8650576015643545550">ليست هناك قائمة سابقة.</translation>
 <translation id="8651481478098336970">كتم الصوت</translation>
 <translation id="8653646212587894517">عرض قائمة الروابط</translation>
 <translation id="8656888282555543604">تفعيل ميزة تسجيل لغة برايل</translation>
 <translation id="8664519043722036194">ثوانٍ</translation>
 <translation id="867187640362843212">العنوان الخامس</translation>
-<translation id="8696284982970258155">شمامي اللون</translation>
+<translation id="8696284982970258155">شمّامي</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{شريط رأسي واحد}zero{# vertical pipes}two{شريطان رأسيان (#)}few{# أشرطة رأسية}many{# شريطًا رأسيًا}other{# من الأشرطة الرأسية}}</translation>
 <translation id="8735450637152821465">بدء التحديد</translation>
 <translation id="8743786158317878347">دخول إلى المحتوى المنظم، مثل الجداول</translation>

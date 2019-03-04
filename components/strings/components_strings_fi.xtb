@@ -47,7 +47,6 @@
 <translation id="121201262018556460">Yritit yhdistää verkkotunnukseen <ph name="DOMAIN" />, mutta palvelin esitti varmenteen, joka käyttää heikkoa avainta. Hakkeri on saattanut murtaa avaimen. Palvelin ei siis välttämättä ole tavoittelemasi palvelin, vaan saatat viestiä hakkerin kanssa.</translation>
 <translation id="1219129156119358924">Järjestelmän suojaus</translation>
 <translation id="1227224963052638717">Tuntematon käytäntö.</translation>
-<translation id="1227633850867390598">Piilota arvo</translation>
 <translation id="1228893227497259893">Väärä entiteettitunnus</translation>
 <translation id="1232569758102978740">Nimetön</translation>
 <translation id="124116460088058876">Lisää kieliä</translation>
@@ -102,6 +101,7 @@
 <translation id="1430915738399379752">Tulosta</translation>
 <translation id="1455413310270022028">Pyyhekumi</translation>
 <translation id="1463543813647160932">5 x 7</translation>
+<translation id="1472675084647422956">Näytä enemmän</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Valitse toimitusosoite</translation>
 <translation id="1501859676467574491">Näytä Google-tilin kortit</translation>
@@ -483,7 +483,6 @@
 <translation id="3615877443314183785">Anna kelvollinen viimeinen voimassaolopäivä.</translation>
 <translation id="36224234498066874">Poista selaustiedot...</translation>
 <translation id="362276910939193118">Näytä koko selaushistoria</translation>
-<translation id="3623476034248543066">Näytä arvo</translation>
 <translation id="3630155396527302611">Jos sillä on jo verkon käyttöoikeus, kokeile sen poistamista
       sallittujen ohjelmien luettelosta ja lisäämistä sitten uudelleen.</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
@@ -741,6 +740,7 @@
 <translation id="5115563688576182185">(64-bittinen)</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5135404736266831032">Hallinnoi osoitteita…</translation>
+<translation id="5138227688689900538">Näytä vähemmän</translation>
 <translation id="5141240743006678641">Salaa synkronoidut salasanat Google-kirjautumistietojesi avulla</translation>
 <translation id="5145883236150621069">Käytäntövastaus sisältää virhekoodin</translation>
 <translation id="515292512908731282">C4 (kirjekuori)</translation>
@@ -1266,6 +1266,7 @@ Lisätietoja:
 <translation id="8197543752516192074">Käännä sivu</translation>
 <translation id="8201077131113104583">Laajennuksella, jonka tunnus on <ph name="EXTENSION_ID" />, on virheellinen päivitys-URL-osoite.</translation>
 <translation id="8202097416529803614">Tilauksen yhteenveto</translation>
+<translation id="8202370299023114387">Ristiriita</translation>
 <translation id="8206978196348664717">Prc4 (kirjekuori)</translation>
 <translation id="8211406090763984747">Yhteys on turvallinen</translation>
 <translation id="8218327578424803826">Määrätty sijainti:</translation>

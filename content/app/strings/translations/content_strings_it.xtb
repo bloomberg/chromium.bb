@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">stato</translation>
 <translation id="1938124657309484470">Il valore deve essere <ph name="MAXIMUM_DATE_OR_TIME" /> o precedente.</translation>
 <translation id="1946271899482435442">Mostra selettore date</translation>
-<translation id="1982354452682152483">Nessuna descrizione disponibile.</translation>
 <translation id="1993104285338243655">Sei passato a mirroring</translation>
 <translation id="2060505056492490888">Il segno "<ph name="DOT" />" è utilizzato in una posizione errata in "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Oggi</translation>
@@ -95,6 +94,7 @@
 <translation id="4360991593054037559">Inserisci un valore valido. I due valori validi più vicini sono <ph name="VALID_VALUE_LOW" /> e <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Domande e risposte</translation>
 <translation id="4413860115965805769">pulsante di menu</translation>
+<translation id="4444765639179266822">Sembra che dica: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">riferimento glossario</translation>
 <translation id="4522570452068850558">Dettagli</translation>
 <translation id="4542388879936266156">Tempo rimanente: <ph name="REMAINING_TIME" /></translation>
@@ -121,6 +121,7 @@
 <translation id="5164977714490026579">Il valore deve essere superiore o uguale a <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Inserisci una parte seguita da "<ph name="ATSIGN" />". Il valore "<ph name="INVALIDADDRESS" />" è incompleto.</translation>
+<translation id="5334352251556557839">Impossibile riprodurre i contenuti multimediali.</translation>
 <translation id="5406322316791861025">figura</translation>
 <translation id="5453733299334684579">elemento albero</translation>
 <translation id="5466621249238537318">Seleziona uno o più file.</translation>
@@ -147,6 +148,7 @@
 <translation id="6150588977291308318">bibliografia</translation>
 <translation id="6164829606128959761">indicatore</translation>
 <translation id="6166809985690652833">postfazione</translation>
+<translation id="6209276755895393898">Sembra che sia: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glossario</translation>
 <translation id="6398862346408813489">Mostra il riquadro di selezione del mese</translation>
 <translation id="6404546809543547843">dispositivo di scorrimento durata audio</translation>
@@ -177,7 +179,7 @@
 <translation id="7139483182332611405">prefazione</translation>
 <translation id="7263440858009898357">Seleziona un elemento nell'elenco.</translation>
 <translation id="727747134524199931">intestazione di colonna</translation>
-<translation id="7336527682887843386">Impossibile recuperare la descrizione.</translation>
+<translation id="7320576522385648310">Buffering</translation>
 <translation id="7353453495576941748">ringraziamento</translation>
 <translation id="7364796246159120393">Scegli file</translation>
 <translation id="739024184232394898">Altro...</translation>
@@ -200,7 +202,6 @@
 <translation id="7888071071722539607">Aggiungi un simbolo "<ph name="ATSIGN" />" nell'indirizzo email. In "<ph name="INVALIDADDRESS" />" manca un simbolo "<ph name="ATSIGN" />".</translation>
 <translation id="7891486169920085145">barra di divisione</translation>
 <translation id="795667975304826397">Nessun file selezionato</translation>
-<translation id="8042519864538898414">Sembrano essere contenuti per adulti.</translation>
 <translation id="8053789581856978548">campo di testo della ricerca</translation>
 <translation id="8057695513531652401">informativa</translation>
 <translation id="8105797009065549151">riferimento note</translation>

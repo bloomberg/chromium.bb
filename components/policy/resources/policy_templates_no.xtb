@@ -92,6 +92,19 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Avgjør varighet før skjermspareren vises på påloggingssiden for enheter i detaljistmodus.
 
       Retningslinjeverdien må angis i millisekunder.</translation>
+<translation id="1141767714195601945">Denne regelen styrer kommandolinjeparametere for Chrome fra Internet Explorer.
+
+      Hvis ikke «Støtte for eldre nettlesere»-tillegget for Internet Explorer er installert, har ikke denne regelen noen virkning.
+
+      Når denne regelen ikke er angitt, sender Internet Explorer bare nettadressen til Chrome som en kommandolinjeparameter.
+
+      Når denne regelen er satt til en liste med strenger, settes strengene sammen med mellomrom og sendes til Chrome som kommandolinjeparametere.
+
+      Hvis et element inneholder ${url}, erstattes det med nettadressen til siden som skal åpnes.
+
+      Hvis ingen elementer inneholder ${url}, blir nettadressen føyd til på slutten av kommandolinjen.
+
+      Miljøvariabler utvides. I Windows erstattes %ABC% med verdien av ABC-miljøvariabelen.</translation>
 <translation id="1151353063931113432">Tillat bilder på disse nettstedene</translation>
 <translation id="1152117524387175066">Rapportér tilstanden til enhetens utviklerbryter ved oppstart.
 
@@ -154,6 +167,10 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Hvis denne regelen settes til false (usann), tillater ikke <ph name="PRODUCT_NAME" /> at gjesteprofiler startes.</translation>
 <translation id="1363275621236827384">Slå på forespørsler til Quirks Server for maskinvareprofiler</translation>
+<translation id="1363612796557848469">Denne regelen gir Google-assistenten tilgang til skjermkonteksten og tillatelse til å sende informasjon til tjeneren.
+      Hvis regelen er aktivert, får Google-assistenten tilgang til skjermkonteksten.
+      Hvis regelen er deaktivert, får ikke Google-assistenten tilgang til skjermkonteksten.
+      Hvis regelen ikke er angitt, kan brukerne velge om de vil gi Google-assistenten tilgang til skjermkonteksten eller ikke.</translation>
 <translation id="1383493480903114193">Denne regelen tvinger nettverkskode til å kjøre i nettleserprosessen.
 
       Som standard er denne regelen slått av. Hvis den slås på, kan brukere være utsatt for sikkerhetsproblemene når nettverksprosessen kjøres isolert.
@@ -228,6 +245,13 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       skrivebordet slått av. I så fall kan ikke brukeren slå på denne funksjonen.</translation>
 <translation id="1474273443907024088">Slå av falsk start av TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1478485744311397487">Tjenere som <ph name="PRODUCT_NAME" /> kan delegere til.
+
+          Skill tjenernavn med komma. Jokertegn (*) er tillatt.
+
+          Hvis du ikke angir denne regelen, delegerer ikke <ph name="PRODUCT_NAME" /> brukerlegitimasjon selv om en tjener registreres som intranett.
+
+          Denne regelen ignoreres hvis regelen «UseKDCConstrainedDelegation» er satt til «true» (sann).</translation>
 <translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> går forbi alle proxy-tjenere for listen over verter som er angitt her.
 
           Denne regelen trer bare i kraft hvis du har valgt manuelle innstillinger for proxy-tjenere under «Velg hvordan innstillinger for proxy-tjener angis».
@@ -274,6 +298,12 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Du kan finne ut mer om Safe Browsing på https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Bruk <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
 <translation id="1599424828227887013">Slå på nettstedsisolering for spesifiserte opprinnelser på Android-enheter</translation>
+<translation id="1608259529294767544">Denne regelen gir Google-assistenten tillatelse til å lytte etter frasen for taleaktivering.
+
+      Hvis regelen er aktivert, lytter Google-assistenten etter frasen for taleaktivering.
+      Hvis regelen er deaktivert, lytter Google-assistenten ikke etter frasen for taleaktivering.
+      Hvis regelen ikke er angitt, kan brukere velge om de vil tillate at Google-assistenten lytter etter frasen for taleaktivering.
+      </translation>
 <translation id="1608755754295374538">Nettadresser som uten forespørsel blir gitt tilgang til enheter med lydopptak</translation>
 <translation id="1615221548356595305">Tillat sammenslåing av HTTP/2-tilkoblinger for disse vertene selv når klientsertifikater brukes</translation>
 <translation id="1617235075406854669">Gjør det mulig å slette nettleser- og nedlastingslogg</translation>
@@ -325,6 +355,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Denne innnstillingen må konfigureres med en nettadresse der <ph name="PRODUCT_OS_NAME" /> kan laste ned vilkårene. Vilkårene må være i ren tekst, levert som MIME-typen tekst/ren. Det er ikke tillatt med koding.</translation>
 <translation id="1750315445671978749">Blokkér alle nedlastinger</translation>
 <translation id="1781356041596378058">Denne regelen kontrollerer også tilgangen til utvikleralternativene for Android. Hvis du angir denne regelen som «true» (sann), fjerner du brukernes tilgang til utvikleralternativene. Hvis du angir denne regelen som «false» (usann) eller ikke angir den, kan brukere få tilgang til utvikleralternativene ved å trykke sju ganger på delversjonsnummeret i appen for Android-innstillinger.</translation>
+<translation id="1793346220873697538">Deaktiver utskrift med PIN-kode som standard</translation>
 <translation id="1797233582739332495">Vis brukeren en gjentakende melding om at omstart kreves</translation>
 <translation id="1798559516913615713">Levetiden for GPO-bufferen</translation>
 <translation id="1803646570632580723">Liste over programmer som er festet i programlisten</translation>
@@ -348,6 +379,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="1843117931376765605">Oppdateringsfrekvens for brukerinnstilling</translation>
 <translation id="1844620919405873871">Konfigurerer retningslinjer for hurtigopplåsing.</translation>
 <translation id="1845405905602899692">Kioskinnstillinger</translation>
+<translation id="1845429996559814839">Begrens modusen for utskrift med PIN-kode</translation>
 <translation id="1847960418907100918">Angir parameterene som brukes når du utfører et Instant-søk med POST. De består av kommainndelte navn og verdi-par. Hvis en verdi er et malparameter, som {searchTerms} i eksempelet ovenfor, blir den erstattet med virkelige søkeordsdata.
 
           Denne innstillingen er valgfri. Hvis den ikke er angitt, blir forespørsler om søkeforslag sendt via GET-metoden.
@@ -460,6 +492,15 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis du ikke spesifiserer noen periode, bruker <ph name="PRODUCT_NAME" /> standardverdien på 3 timer.
 
       Merk: Hvis plattformen støtter varsler om brudd på reglene, angis forsinkelsen for ny innlasting til 24 timer (dette ignorerer alle standarder og verdier i regelen), fordi det forventes at varsler om brudd på reglene fremtvinger en nye innlasting automatisk når regelen endres. Dette gjør at det ikke er nødvendig med hyppige nye innlastinger.</translation>
+<translation id="2024149678078029009">Denne regelen styrer hvilken kommando som skal brukes til å åpne nettadresser i <ph name="PRODUCT_NAME" /> ved bytte fra Internet Explorer.
+
+      Hvis ikke «Støtte for eldre nettlesere»-tillegget for Internet Explorer er installert, har ikke denne regelen noen virkning.
+
+      Når denne regelen ikke er angitt, finner Internet Explorer automatisk den kjørbare banen til <ph name="PRODUCT_NAME" /> når <ph name="PRODUCT_NAME" /> startes fra Internet Explorer.
+
+      Når denne regelen er angitt, brukes den til å starte <ph name="PRODUCT_NAME" /> ved bytte av oppstart av <ph name="PRODUCT_NAME" /> fra Internet Explorer.
+
+      Denne regelen kan settes til banen til en kjørbar fil – eller til ${chrome} for å finne ut hvor Chrome er installert, automatisk.</translation>
 <translation id="2024476116966025075">Konfigurer det nødvendige domenenavnet for klienter med ekstern tilgang</translation>
 <translation id="2030905906517501646">Søkeord for standard søkeleverandør</translation>
 <translation id="203096360153626918">Denne regelen har ingen innvirkning på Android-apper. Android-apper kan brukes i fullskjermmodus selv om denne regelen er angitt som <ph name="FALSE" />.</translation>
@@ -478,6 +519,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="209586405398070749">Stabil kanal</translation>
 <translation id="2098658257603918882">Aktiver rapportering av bruk og programstopprelaterte data</translation>
 <translation id="2104418465060359056">Rapportér informasjon om utvidelser og programtillegg</translation>
+<translation id="2106627642643925514">Overstyrer standardmodusen for utskrift med PIN-kode. Hvis modusen ikke er tilgjengelig, ignoreres denne regelen.</translation>
 <translation id="2107601598727098402">
         Denne regelen er avviklet i M72. Bruk CloudManagementEnrollmentToken i stedet.
         </translation>
@@ -495,6 +537,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis denne regelen er angitt som «false» (usant), innhentes ikke informasjon som kan brukes til å identifisere brukere.
 
       Denne regelen gjelder bare når <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er slått på og maskinen er registrert med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="2126178089984117495">Begrenser modusen for utskrift med PIN-kode. Hvis regelen ikke er angitt, er det ingen begrensninger. Hvis modusen ikke er tilgjengelig, ignoreres denne regelen.</translation>
 <translation id="2127599828444728326">Tillat varslinger på disse nettstedene</translation>
 <translation id="2131902621292742709">Forsinkelse for nedtonet skjerm når enheten kjører på batteristrøm</translation>
 <translation id="2134437727173969994">Tillat låsing av skjermen</translation>
@@ -514,6 +557,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="2156132677421487971">Konfigurer retningslinjer for <ph name="PRODUCT_NAME" /> – en funksjon som gjør det mulig for brukere å sende skrivebords-, nettsteds- og faneinnhold fra nettleseren til eksterne skjermer og lydanlegg.</translation>
 <translation id="2166472654199325139">Ikke filtrer nettsteder for seksuelt innhold</translation>
 <translation id="2168397434410358693">Inaktivitetsforsinkelse når enheten kjører på vekselstrøm</translation>
+<translation id="217013996107840632">Kommandolinjeparametere for å bytte fra den alternative nettleseren.</translation>
 <translation id="2170233653554726857">Slå på WPAD-optimalisering</translation>
 <translation id="2176565653304920879">Når denne regelen er spesifisert, blir tidssonen automatisk påvist i henhold til innstillingen som er valgt. Her ser du de ulike alternativene:
 
@@ -765,6 +809,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           Denne retningslinjen tas til etterretning bare hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
 <translation id="268577405881275241">Aktiver proxy-tjenerfunksjonen for datakomprimering</translation>
 <translation id="2693108589792503178">Konfigurer nettadressen for endring av passord.</translation>
+<translation id="2706708761587205154">Tillat utskrift kun med PIN-kode</translation>
 <translation id="2731627323327011390">Slå av bruken av <ph name="PRODUCT_OS_NAME" />-sertifikater for ARC-apper</translation>
 <translation id="2742843273354638707">Skjul Chrome Nettmarked-appen og linken fra ny fane-siden og <ph name="PRODUCT_OS_NAME" /> OS-appvelgeren.
 
@@ -867,6 +912,11 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Hvis du aktiverer denne innstillingen, brukes skriveren som er standard for OS-et, som standard destinasjonsvalg.</translation>
 <translation id="2856674246949497058">Rull tilbake og behold målversjonen hvis OS-versjonen er nyere enn målet. Utfør en powerwash i løpet av prosessen.</translation>
+<translation id="2858646435735022107">Styrer om OK-AS-DELEGATE-flagget fra KDC overholdes, eller om «AuthNegotiateDelegateWhitelist» brukes for å begrense delegering av Kerberos-saker.
+
+          Hvis denne regelen er satt til «true» (sann), overholder HTTP-autentiseringen innstillinger for begrenset delegering i KDC. I så fall ignoreres «AuthNegotiateDelegateWhitelist»-regelen. Se https://tools.ietf.org/html/rfc5896.html for mer informasjon.
+
+          Hvis denne regelen ikke er angitt eller er satt til «false» (usann), ignoreres innstillinger for begrenset delegering fra KDC, og «AuthNegotiateDelegateWhitelist»-regelen overholdes.</translation>
 <translation id="2872961005593481000">Slå av</translation>
 <translation id="2873651257716068683">Overstyrer standard sidestørrelse for utskrift. Hvis sidestørrelsen ikke er tilgjengelig, ignoreres regelen.</translation>
 <translation id="2874209944580848064">Merknad for <ph name="PRODUCT_OS_NAME" />-enheter som støtter Android-apper:</translation>
@@ -1448,6 +1498,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           Denne innstillingen er valgfri. Hvis den ikke er angitt, blir forespørsler om bildesøk sendt via GET-metoden.
 
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er aktivert.</translation>
+<translation id="427706009709857238">«Tillat at Google-assistenten lytter etter frasen for taleaktivering»</translation>
 <translation id="4285674129118156176">Tillat at brukere uten tilknytning bruker ARC</translation>
 <translation id="4298509794364745131">Angir en liste over apper som kan aktiveres som notatapper på låseskjermen for <ph name="PRODUCT_OS_NAME" />.
 
@@ -1529,6 +1580,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="4483649828988077221">Slå av automatisk oppdatering</translation>
 <translation id="4485425108474077672">Konfigurer nettadressen for Ny fane-siden</translation>
 <translation id="4492287494009043413">Deaktiver mulighet til å ta skjermdumper</translation>
+<translation id="4494132853995232608">wilco-DTC</translation>
 <translation id="449423975179525290">Konfigurer regler som er relatert til <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="450537894712826981">Konfigurerer bufferstørrelsen som <ph name="PRODUCT_NAME" /> bruker for lagring av bufrede mediafiler på disken.
 
@@ -1695,8 +1747,10 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="4978405676361550165">Hvis regelen «OffHours» er angitt, ignoreres de spesifiserte enhetsreglene (og standardverdiene for disse reglene brukes i stedet) i løpet av de definerte tidsintervallene. Enhetsreglene brukes på nytt av Chrome hver gang perioden for «OffHours» begynner og slutter. Brukeren blir varslet og tvunget til å logge av når «OffHours»-perioden slutter og enhetsinnstillingene for regelen blir endret (for eksempel når brukeren er logget på med en konto som ikke er tillatt).</translation>
 <translation id="4980635395568992380">Datatype:</translation>
 <translation id="4983201894483989687">Tillat kjøring av foreldede programtillegg</translation>
+<translation id="4986560318567565414">Banen til Chrome for å bytte fra den alternative nettleseren.</translation>
 <translation id="4988291787868618635">Handling som skal utføres når inaktivitetsforsinkelsen blir overskredet</translation>
 <translation id="4995548127349206948">Om NTLMv2-autentisering er aktivert eller ikke.</translation>
+<translation id="5022792010322211583">Bruk KDC-begrenset delegering</translation>
 <translation id="5047604665028708335">Gi tilgang til nettsteder som ikke inngår i innholdspakker</translation>
 <translation id="5052081091120171147">Denne retningslinjen tvinger import av nettleserloggen fra den aktuelle standardnettleseren hvis den er aktivert. Hvis den er aktivert, påvirker denne retningslinjen også importdialogen. Hvis den er deaktivert, importeres ingen nettleserlogg. Hvis den ikke er angitt, er det mulig at brukeren får spørsmål om hvorvidt vedkommende ønsker å importere, eller så kan importeringen skje automatisk.</translation>
 <translation id="5056708224511062314">Skjermforstørrelse deaktivert</translation>
@@ -1958,6 +2012,7 @@ I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder denne regelen begge 
 
       Hvis ikke angitt, endres ikke nettadressen for startverdien.</translation>
 <translation id="5561811616825571914">Velg klientsertifikater for disse nettstedene automatisk på påloggingsskjermen</translation>
+<translation id="5566210228171064229">Tillat utskrift både med og uten PIN-kode</translation>
 <translation id="556941986578702361">Kontroller automatisk skjuling av <ph name="PRODUCT_OS_NAME" />-hyllen.
 
       Hvis denne innstillingen angis til «AlwaysAutoHideShelf'», skjules alltid hyllen automatisk.
@@ -1977,6 +2032,15 @@ I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder denne regelen begge 
       Disse reglene gjelder bare når <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er slått på og maskinen er registrert med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Kontrollér Googles posisjonstjenester for Android</translation>
 <translation id="5586942249556966598">Gjør ingenting</translation>
+<translation id="5590494712401018042">Spesifiserer prosentandelen som skjermdempingsforsinkelsen skaleres etter når enheten er i presentasjonsmodus.
+
+          Hvis denne regelen er angitt, spesifiserer den prosentandelen som skjermdempingsforsinkelsen skaleres etter når enheten er i presentasjonsmodus. Når skjermdempingsforsinkelsen skaleres, justeres forsinkelsene for skjermlås og inaktivitet, samt forsinkelsen før skjermen slås av, for å opprettholde de samme avstandene fra skjermdempingsforsinkelsen som opprinnelig var konfigurert.
+
+          Hvis denne regelen ikke er angitt, brukes en standard skaleringsfaktor.
+
+          Denne regelen trer kun i kraft hvis <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> er deaktivert. Ellers ignoreres denne regelen fordi skjermdempingsforsinkelsen avgjøres av en modell for maskinlæring.
+
+          Skaleringsfaktoren må være på minst 100 %. Verdier som medfører at skjermdempingsforsinkelsen i presentasjonsmodus blir kortere enn den vanlige skjermdempingsforsinkelsen, er ikke tillatt.</translation>
 <translation id="5592242031005200087">
       Hvis regelen er aktivert, kjøres alle navngitte opprinnelser i
       kommadelte lister i egne prosesser. Da isoleres også
@@ -2195,6 +2259,7 @@ I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder denne regelen begge 
 
       Hvis denne regelen ikke er spesifisert, er listen over frakoblingsbare USB-enheter tom.</translation>
 <translation id="6083631234867522991">Windows (Windows-klienter):</translation>
+<translation id="6089679180657323464">Kontrollerer innstillinger for wilco-DTC-en (kontrolleren for diagnostikk og telemetri).</translation>
 <translation id="6091233616732024397">Tving brukere til å logge på for å bruke nettleseren</translation>
 <translation id="6093156968240188330">Tillat at eksterne brukere kommuniserer via uthevede vinduer i fjernhjelpøkter.</translation>
 <translation id="6095999036251797924">Angir hvor mye tid som kan gå uten brukeraktivitet før skjermen låses når nettstrøm eller batteri brukes.
@@ -2474,6 +2539,7 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="6770454900105963262">Rapportér informasjon om aktive kioskøkter</translation>
 <translation id="6786747875388722282">Utvidelser</translation>
 <translation id="6786967369487349613">Angir katalogen for roamingprofiler</translation>
+<translation id="6795485990775913659">Tillat utskrift kun uten PIN-kode</translation>
 <translation id="6810445994095397827">Blokkér JavaScript på disse nettstedene</translation>
 <translation id="6813263547126514821">Strøm og avslutning</translation>
 <translation id="681446116407619279">Støttede autentiseringssystemer</translation>
@@ -2584,6 +2650,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="6943577887654905793">Innstillingsnavn for Mac/Linux:</translation>
 <translation id="6944167205014013774">Informasjon om bruken av Linux-apper sendes tilbake til tjeneren. Hvis regelen er angitt som «false» (usann) eller ikke er angitt, blir det ikke rapportert noen bruksinformasjon. Hvis den er angitt som «true» (sann), blir bruksinformasjon rapportert. Denne regelen gjelder bare hvis støtten for Linux-apper er slått på.</translation>
 <translation id="69525503251220566">Parameteret som tilbyr search-by-image-funksjonen for standardsøkemotoren</translation>
+<translation id="6953102253399571439">Aktivér utskrift med PIN-kode som standard</translation>
 <translation id="6956272732789158625">Ikke tillat noen nettsteder å bruke nøkkelgenerering</translation>
 <translation id="6965859329738616662">Angir om en smart modell for nedtoning kan forlenge tiden det tar før skjermen nedtones.
 
@@ -2643,6 +2710,15 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettsteder. Denne verdien hentes fra DefaultWebUsbGuardSetting-regelen hvis den er angitt, eller fra brukerens personlige konfigurasjon hvis den ikke er angitt.
 
           Nettadressemønstre i denne regelen må ikke kollidere med de som er konfigurert via WebUsbBlockedForUrls. Det er ikke spesifisert hvilken av reglene som har prioritet hvis en nettadresse samsvarer med begge.</translation>
+<translation id="7086677522575756117">Spesifiserer prosentandelen som skjermdempingsforsinkelsen skaleres etter når det observeres brukeraktivitet mens skjermen er dempet, eller kort tid etter at skjermen er slått av.
+
+          Hvis denne regelen er angitt, spesifiserer den prosentandelen som skjermdempingsforsinkelsen skaleres etter når det observeres brukeraktivitet mens skjermen er dempet, eller kort tid etter at skjermen er slått av. Når dempingsforsinkelsen skaleres, justeres forsinkelsene for skjermlås og inaktivitet, samt forsinkelsen før skjermen slås av, for å opprettholde de samme avstandene fra skjermdempingsforsinkelsen som opprinnelig var konfigurert.
+
+          Hvis denne regelen ikke er angitt, brukes en standard skaleringsfaktor.
+
+          Denne regelen trer kun i kraft hvis <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" />-regelen er deaktivert. Ellers ignoreres denne regelen fordi skjermdempingsforsinkelsen avgjøres av en modell for maskinlæring.
+
+          Skaleringsfaktoren må være på minst 100 %.</translation>
 <translation id="7106631983877564505">Slå på lås når <ph name="PRODUCT_OS_NAME" />-enheter blir inaktive eller suspenderes.
 
       Hvis du slår på denne innstillingen, må brukere angi passord for å låse opp enheten fra hvilemodus.
@@ -2679,6 +2755,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Denne regelen kan settes til «conservative» («konservativ») og «performance» («ytelse») for å velge konfigurasjoner for oppgaveplanlegging som er justert for henholdsvis stabilitet og maksimal ytelse.
 
       Hvis regelen ikke er angitt, kan brukeren velge selv.</translation>
+<translation id="7145335384492396213">Standardmodus for utskrift med PIN-kode</translation>
 <translation id="7158064522994309072">Denne regelen kontrollerer hvilken kommando som skal brukes for å åpne nettadresser i en alternativ nettleser.
 
       Hvis denne regelen ikke er angitt, brukes en plattformspesifikk standardregel: Internet Explorer for Windows, eller Safari for Mac OS X. På Linux åpnes det ikke noen alternativ nettleser når denne regelen ikke er angitt.
@@ -2746,6 +2823,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis denne regelen er satt til «true» (sann), deaktiveres også skrivere som bruker andre protokoller enn IPPS, USB og IPP-over-USB, siden brukernavn og filnavn ikke skal sendes åpent over nettverket.</translation>
 <translation id="7258823566580374486">Aktiver begrensning (curtaining) av verter for fjerntilgang</translation>
+<translation id="7260204423892780600">Styrer innstillinger for Google-assistenten.</translation>
 <translation id="7260277299188117560">Automatisk oppdatering for p2p aktivert</translation>
 <translation id="7261252191178797385">Bakgrunnsbilde på enheten</translation>
 <translation id="7264704483008663819">Denne regelen er avviklet i M68. Bruk DeveloperToolsAvailability i stedet.
@@ -2855,12 +2933,17 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           Når denne regelen er angitt, justeres innledende lysstyrke til regelverdien, men brukere kan endre den senere. Funksjoner for automatisk lysstyrke er slått av.
           Når denne regelen ikke er angitt, påvirkes ikke funksjonene skjermkontroll og automatisk lysstyrke.
           Regelverdiene skal angis i prosent (0–100).</translation>
+<translation id="7517846421386644905">Lar administratorer kontrollere om telemetri- og diagnostikkdata skal samles inn, behandles og rapporteres av wilco-DTC-en (kontrolleren for diagnostikk og telemetri).
+
+      Hvis regelen er satt til «false» (usann) eller ikke er angitt, slås DTC-en av og kan ikke samle inn, behandle og rapportere telemetri- og diagnostikkdata fra enheten.
+      Hvis wilco-DTC-en er tilgjengelig på den aktuelle enheten og regelen er satt til «true» (sann), blir innsamling, behandling og rapportering av telemetri- og diagnostikkdata slått på.</translation>
 <translation id="7519251620064708155">Tillat nøkkelgenerering på disse nettstedene</translation>
 <translation id="7529100000224450960">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får åpne forgrunnsvinduer.
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder fra retningslinjen DefaultPopupsSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
 <translation id="7529144158022474049">Automatisk oppdatering av spredningsfaktor</translation>
 <translation id="7534199150025803530">Denne regelen har ingen innvirkning på Google Disk-appen for Android. Hvis du vil forhindre bruk av Google Disk via mobiltilkoblinger, bør du ikke tillate installasjon av Google Disk-appen for Android.</translation>
+<translation id="7540622499178214923">Tillater wilco-DTC-en (kontrolleren for diagnostikk og telemetri)</translation>
 <translation id="7547549430720182663">Slå sammen</translation>
 <translation id="7553535237300701827">Når denne regelen er angitt, blir autentiseringsprosessen ved pålogging ett av de følgende alternativene, avhengig av verdien for innstillingen:
 
@@ -3545,6 +3628,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Denne regelen kan settes til en lavere verdi, men dette har en permanent effekt: Det KAN bli umulig å utføre rollback til tidligere versjoner på enheten – selv etter at regelen tilbakestilles til en høyere verdi.
 
        De faktiske mulighetene for rollback kan også avhenge av modellen samt patcher av kritiske sårbarheter.</translation>
+<translation id="9126014181388780690">«Gi Google-assistenten tilgang til skjermkonteksten»</translation>
 <translation id="913195841488580904">Blokker tilgang til en liste over nettadresser</translation>
 <translation id="9135033364005346124">Aktiver mellomtjener for <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9136399279941091445">Intervaller utenfor arbeidstiden når de spesifiserte enhetsinnstillingene er tilgjengelige</translation>

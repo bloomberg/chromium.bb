@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">നില</translation>
 <translation id="1938124657309484470">മൂല്യം <ph name="MAXIMUM_DATE_OR_TIME" /> എന്നതോ അതിനുമുമ്പുള്ള തീയതിയോ ആയിരിക്കണം.</translation>
 <translation id="1946271899482435442">തീയതി തിരഞ്ഞെടുക്കൽ കാണിക്കുക</translation>
-<translation id="1982354452682152483">വിവരണം ലഭ്യമല്ല.</translation>
 <translation id="1993104285338243655">മിററിംഗിലേക്ക് മാറി</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />', '<ph name="INVALIDDOMAIN" />' എന്നതിൽ തെറ്റായ സ്ഥാനത്താണ് ഉപയോഗിച്ചിരിക്കുന്നത്.</translation>
 <translation id="2148716181193084225">ഇന്ന്</translation>
@@ -95,6 +94,7 @@
 <translation id="4360991593054037559">സാധുവായ മൂല്യം നൽകുക. സാധുവായ ഏറ്റവുമടുത്ത രണ്ട് മൂല്യങ്ങൾ <ph name="VALID_VALUE_LOW" />, <ph name="VALID_VALUE_HIGHER" /> എന്നിവയാണ്.</translation>
 <translation id="4384583879834880242">ചോദ്യോത്തരം</translation>
 <translation id="4413860115965805769">മെനു ബട്ടൺ</translation>
+<translation id="4444765639179266822">പറയാൻ ദൃശ്യമാകുന്നത്: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">പദസഞ്ചയ റെഫറൻസ്</translation>
 <translation id="4522570452068850558">വിശദാംശങ്ങൾ‌</translation>
 <translation id="4542388879936266156">അവശേഷിക്കുന്ന സമയം: <ph name="REMAINING_TIME" /></translation>
@@ -121,6 +121,7 @@
 <translation id="5164977714490026579">മൂല്യം <ph name="MINIMUM" /> എന്നതില്‍ കൂടുതലോ സമമോ ആയിരിക്കണം.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">'<ph name="ATSIGN" />' എന്നതിനുശേഷം ഒരു ഭാഗം നൽകുക.'<ph name="INVALIDADDRESS" />' അപൂർണ്ണമാണ്.</translation>
+<translation id="5334352251556557839">മീഡിയ പ്ലേ ചെയ്യാനായില്ല.</translation>
 <translation id="5406322316791861025">ആകാരം</translation>
 <translation id="5453733299334684579">ട്രീ ഇനം</translation>
 <translation id="5466621249238537318">ഒന്നോ അതില്‍ക്കൂടുതലോ ഫയലുകള്‍ ദയവായി തിരഞ്ഞെടുക്കുക.</translation>
@@ -147,6 +148,7 @@
 <translation id="6150588977291308318">ഗ്രന്ഥസൂചി</translation>
 <translation id="6164829606128959761">മീറ്റർ</translation>
 <translation id="6166809985690652833">പിൻ കുറിപ്പ്</translation>
+<translation id="6209276755895393898">ഇങ്ങനെ ദൃശ്യമാകും: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">പദസഞ്ചയം</translation>
 <translation id="6398862346408813489">മാസം തിരഞ്ഞെടുക്കുന്ന പാനൽ കാണിക്കുക</translation>
 <translation id="6404546809543547843">ഓഡിയോ സമയ സ്‌ക്രബർ</translation>
@@ -177,7 +179,7 @@
 <translation id="7139483182332611405">പീഠിക</translation>
 <translation id="7263440858009898357">പട്ടികയിലെ ഒരു ഇനം ദയവായി തിരഞ്ഞെടുക്കുക</translation>
 <translation id="727747134524199931">കോളം പേര്</translation>
-<translation id="7336527682887843386">വിവരണം ലഭ്യമാക്കാനായില്ല.</translation>
+<translation id="7320576522385648310">ബഫർ ചെയ്യൽ</translation>
 <translation id="7353453495576941748">ക്രെഡിറ്റ്</translation>
 <translation id="7364796246159120393">ഫയല്‍ തിരഞ്ഞെടുക്കൂ</translation>
 <translation id="739024184232394898">മറ്റുള്ളവ...</translation>
@@ -192,7 +194,7 @@
 <translation id="7673697353781729403">മണിക്കൂര്‍‌</translation>
 <translation id="7681220483256441252">സൂചിക</translation>
 <translation id="7740050170769002709">HTML ഉള്ളടക്കം</translation>
-<translation id="7745230546936012372">ഇല്ലാത്ത ചിത്ര വിവരണങ്ങൾ ലഭിക്കാൻ സന്ദർഭ മെനു തുറക്കുക.</translation>
+<translation id="7745230546936012372">വിട്ടുപോയ ചിത്ര വിവരണങ്ങൾ ലഭിക്കാൻ സന്ദർഭ മെനു തുറക്കുക.</translation>
 <translation id="7750228210027921155">ചിത്രത്തിനുള്ളിലെ ചിത്രം</translation>
 <translation id="775297008183122718">എൻട്രി അസാധുവാണ്</translation>
 <translation id="7789962463072032349">താല്‍‌ക്കാലികമായി നിര്‍‌ത്തുക</translation>
@@ -200,7 +202,6 @@
 <translation id="7888071071722539607">ഇമെയിൽ വിലാസത്തിൽ '<ph name="ATSIGN" />' ഉൾപ്പെടുത്തുക. '<ph name="INVALIDADDRESS" />' എന്നതിൽ ഒരു '<ph name="ATSIGN" />' കാണുന്നില്ല.</translation>
 <translation id="7891486169920085145">സ്‌പ്ലിറ്റർ</translation>
 <translation id="795667975304826397">ഒരു ഫയലും തിരഞ്ഞെടുത്തിട്ടില്ല</translation>
-<translation id="8042519864538898414">മുതിർന്നവർക്കുള്ള ഉള്ളടക്കമാണെന്ന് തോന്നുന്നു.</translation>
 <translation id="8053789581856978548">തിരയൽ ടെക്‌സ്റ്റ് ഫീൽഡ്</translation>
 <translation id="8057695513531652401">അറിയിപ്പ്</translation>
 <translation id="8105797009065549151">കുറിപ്പ് റെഫറൻസ്</translation>

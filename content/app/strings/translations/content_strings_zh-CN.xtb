@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">状态</translation>
 <translation id="1938124657309484470">指定的值不得晚于<ph name="MAXIMUM_DATE_OR_TIME" />。</translation>
 <translation id="1946271899482435442">显示日期选择器</translation>
-<translation id="1982354452682152483">未提供说明。</translation>
 <translation id="1993104285338243655">已切换到镜像</translation>
 <translation id="2060505056492490888">“<ph name="INVALIDDOMAIN" />”中“<ph name="DOT" />”的位置不正确。</translation>
 <translation id="2148716181193084225">今天</translation>
@@ -177,7 +176,6 @@
 <translation id="7139483182332611405">序言</translation>
 <translation id="7263440858009898357">请在列表中选择一项。</translation>
 <translation id="727747134524199931">列标题</translation>
-<translation id="7336527682887843386">无法获取说明。</translation>
 <translation id="7353453495576941748">感谢</translation>
 <translation id="7364796246159120393">选择文件</translation>
 <translation id="739024184232394898">其他...</translation>
@@ -200,7 +198,6 @@
 <translation id="7888071071722539607">请在电子邮件地址中包括“<ph name="ATSIGN" />”。“<ph name="INVALIDADDRESS" />”中缺少“<ph name="ATSIGN" />”。</translation>
 <translation id="7891486169920085145">分离器</translation>
 <translation id="795667975304826397">未选择任何文件</translation>
-<translation id="8042519864538898414">图片好像含有成人内容。</translation>
 <translation id="8053789581856978548">搜索文本字段</translation>
 <translation id="8057695513531652401">通知</translation>
 <translation id="8105797009065549151">备注参考资料</translation>

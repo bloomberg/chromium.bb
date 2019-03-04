@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">status</translation>
 <translation id="1938124657309484470">Nilai mestilah <ph name="MAXIMUM_DATE_OR_TIME" /> atau lebih awal.</translation>
 <translation id="1946271899482435442">Tunjukkan pemilih tarikh</translation>
-<translation id="1982354452682152483">Tiada perihalan tersedia.</translation>
 <translation id="1993104285338243655">Beralih kepada pencerminan</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' digunakan pada kedudukan yang salah dalam '<ph name="INVALIDDOMAIN" />'.</translation>
 <translation id="2148716181193084225">Hari ini</translation>
@@ -95,6 +94,7 @@
 <translation id="4360991593054037559">Sila masukkan nilai yang sah. Dua nilai sah yang terdekat ialah <ph name="VALID_VALUE_LOW" /> dan <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Soal Jawab</translation>
 <translation id="4413860115965805769">butang menu</translation>
+<translation id="4444765639179266822">Nampaknya menyatakan: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">rujukan glosari</translation>
 <translation id="4522570452068850558">Butiran</translation>
 <translation id="4542388879936266156">masa yang tinggal: <ph name="REMAINING_TIME" /></translation>
@@ -121,6 +121,7 @@
 <translation id="5164977714490026579">Nilai mesti lebih besar daripada atau sama dengan <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Sila masukkan bahagian diikuti oleh '<ph name="ATSIGN" />'. '<ph name="INVALIDADDRESS" />' tidak lengkap.</translation>
+<translation id="5334352251556557839">Tidak dapat memainkan media.</translation>
 <translation id="5406322316791861025">angka</translation>
 <translation id="5453733299334684579">item pohon</translation>
 <translation id="5466621249238537318">Sila pilih satu fail atau lebih.</translation>
@@ -147,6 +148,7 @@
 <translation id="6150588977291308318">bibliografi</translation>
 <translation id="6164829606128959761">meter</translation>
 <translation id="6166809985690652833">kata hujungan</translation>
+<translation id="6209276755895393898">Nampaknya: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glosari</translation>
 <translation id="6398862346408813489">Tunjukkan panel pilihan bulan</translation>
 <translation id="6404546809543547843">pembersih masa audio</translation>
@@ -177,7 +179,7 @@
 <translation id="7139483182332611405">kata penghantar</translation>
 <translation id="7263440858009898357">Sila pilih item dalam senarai.</translation>
 <translation id="727747134524199931">pengepala lajur</translation>
-<translation id="7336527682887843386">Gagal mendapatkan perihalan.</translation>
+<translation id="7320576522385648310">menimbal</translation>
 <translation id="7353453495576941748">kredit</translation>
 <translation id="7364796246159120393">Pilih Fail</translation>
 <translation id="739024184232394898">Lain-lain...</translation>
@@ -200,7 +202,6 @@
 <translation id="7888071071722539607">Sila masukkan '<ph name="ATSIGN" />' dalam alamat e-mel. '<ph name="INVALIDADDRESS" />' tiada '<ph name="ATSIGN" />'.</translation>
 <translation id="7891486169920085145">pemisah</translation>
 <translation id="795667975304826397">Tiada fail dipilih</translation>
-<translation id="8042519864538898414">Nampaknya kandungan dewasa.</translation>
 <translation id="8053789581856978548">medan teks carian</translation>
 <translation id="8057695513531652401">notis</translation>
 <translation id="8105797009065549151">rujukan nota</translation>

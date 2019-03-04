@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">상태</translation>
 <translation id="1938124657309484470">값은 <ph name="MAXIMUM_DATE_OR_TIME" /> 이전이어야 합니다.</translation>
 <translation id="1946271899482435442">날짜 선택도구 표시</translation>
-<translation id="1982354452682152483">설명이 없습니다.</translation>
 <translation id="1993104285338243655">미러링으로 전환됨</translation>
 <translation id="2060505056492490888">'<ph name="INVALIDDOMAIN" />'에서 '<ph name="DOT" />'의 위치가 잘못되었습니다.</translation>
 <translation id="2148716181193084225">오늘</translation>
@@ -177,7 +176,6 @@
 <translation id="7139483182332611405">머리말</translation>
 <translation id="7263440858009898357">목록에서 항목을 선택하세요.</translation>
 <translation id="727747134524199931">열 헤더</translation>
-<translation id="7336527682887843386">설명을 가져올 수 없습니다.</translation>
 <translation id="7353453495576941748">크레딧</translation>
 <translation id="7364796246159120393">파일 선택</translation>
 <translation id="739024184232394898">다른 주...</translation>
@@ -200,7 +198,6 @@
 <translation id="7888071071722539607">이메일 주소에 '<ph name="ATSIGN" />'를 포함해 주세요. '<ph name="INVALIDADDRESS" />'에 '<ph name="ATSIGN" />'가 없습니다.</translation>
 <translation id="7891486169920085145">분할선</translation>
 <translation id="795667975304826397">선택된 파일 없음</translation>
-<translation id="8042519864538898414">성인용 콘텐츠로 보입니다.</translation>
 <translation id="8053789581856978548">검색어 입력란</translation>
 <translation id="8057695513531652401">안내문</translation>
 <translation id="8105797009065549151">참고 자료</translation>

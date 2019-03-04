@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">ሁኔታ</translation>
 <translation id="1938124657309484470">ዋጋ <ph name="MAXIMUM_DATE_OR_TIME" /> ወይም ከዚያ በፊት መሆን አለበት።</translation>
 <translation id="1946271899482435442">የቀን መልቀሚያ አሳይ</translation>
-<translation id="1982354452682152483">ምንም ዝርዝር መግለጫ አይገኝም።</translation>
 <translation id="1993104285338243655">ወደ ማንጸባረቅ ተቀይሯል</translation>
 <translation id="2060505056492490888">«<ph name="DOT" />» በ«<ph name="INVALIDDOMAIN" />» ውስጥ በተሳሳተ ቦታ ላይ ነው የገባው።</translation>
 <translation id="2148716181193084225">ዛሬ</translation>
@@ -95,6 +94,7 @@
 <translation id="4360991593054037559">እባክዎ የሚሰራ ዋጋ ያስገቡ። ሁለቱ የሚቀርቡ ዋጋዎች <ph name="VALID_VALUE_LOW" /> እና <ph name="VALID_VALUE_HIGHER" /> ናቸው።</translation>
 <translation id="4384583879834880242">ጥያቄ እና መልስ</translation>
 <translation id="4413860115965805769">የምናሌ አዝራር</translation>
+<translation id="4444765639179266822">እንዲህ የሚል ይመስላል፦ <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">የሙዳየ ቃላት ዋቢ</translation>
 <translation id="4522570452068850558">ዝርዝሮች</translation>
 <translation id="4542388879936266156">ቀሪ ጊዜ፦ <ph name="REMAINING_TIME" /></translation>
@@ -121,6 +121,7 @@
 <translation id="5164977714490026579">ዋጋ ከ<ph name="MINIMUM" /> የሚበልጥ ወይም ከእሱ እኩል መሆን አለበት።</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> ፔታ</translation>
 <translation id="5307600278924710095">እባክዎ አንድ ክፍል ያስገቡና «<ph name="ATSIGN" />»ን ያስከትሉ። «<ph name="INVALIDADDRESS" />» ያልተሟላ ነው።</translation>
+<translation id="5334352251556557839">ሚዲያን ማጫወት አልተቻለም።</translation>
 <translation id="5406322316791861025">ምስል</translation>
 <translation id="5453733299334684579">የዛፍ ንጥል</translation>
 <translation id="5466621249238537318">እባክዎ አንድ ወይም ተጨማሪ ፋይሎችን ይምረጡ።</translation>
@@ -147,6 +148,7 @@
 <translation id="6150588977291308318">ዋቢ መጽሐፍት</translation>
 <translation id="6164829606128959761">ሜትር</translation>
 <translation id="6166809985690652833">ድሕረ ቃል</translation>
+<translation id="6209276755895393898">ይህ ይመስላል፦ <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">ሙዳየ ቃላት</translation>
 <translation id="6398862346408813489">የወር መምረጫ ፓነል አሳይ</translation>
 <translation id="6404546809543547843">የኦዲዮ ሰዓት አንፏቃቂ</translation>
@@ -177,7 +179,7 @@
 <translation id="7139483182332611405">መቅድም</translation>
 <translation id="7263440858009898357">እባክዎ በዝርዝሩ ውስጥ አንድ ንጥል ይምረጡ።</translation>
 <translation id="727747134524199931">የአምድ ራስጌ</translation>
-<translation id="7336527682887843386">ዝርዝር መግለጫን ማግኘት አልተቻለም።</translation>
+<translation id="7320576522385648310">በማቋት ላይ</translation>
 <translation id="7353453495576941748">ክሬዲት</translation>
 <translation id="7364796246159120393">ፋይል ምረጥ</translation>
 <translation id="739024184232394898">ሌላ...</translation>
@@ -200,7 +202,6 @@
 <translation id="7888071071722539607">እባክዎ በኢሜይል አድራሻው ውስጥ «<ph name="ATSIGN" />» ያካትቱ። «<ph name="INVALIDADDRESS" />» ውስጥ «<ph name="ATSIGN" />» ይጎድላል።</translation>
 <translation id="7891486169920085145">መክፈያ</translation>
 <translation id="795667975304826397">ምንም ፋይል አልተመረጠም</translation>
-<translation id="8042519864538898414">የዐዋቂ ሰው ይዘት ይመስላል።</translation>
 <translation id="8053789581856978548">የጽሑፍ መስክ ፈልግ</translation>
 <translation id="8057695513531652401">ማስታወቂያ</translation>
 <translation id="8105797009065549151">ማስታወሻ ማጣቀሻ</translation>

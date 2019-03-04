@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">status</translation>
 <translation id="1938124657309484470">Værdien må ikke være senere end <ph name="MAXIMUM_DATE_OR_TIME" />.</translation>
 <translation id="1946271899482435442">Vis datovælger</translation>
-<translation id="1982354452682152483">Der er ingen tilgængelig beskrivelse.</translation>
 <translation id="1993104285338243655">Ændret til spejling</translation>
 <translation id="2060505056492490888">"<ph name="DOT" />" er placeret forkert i "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">I dag</translation>
@@ -95,6 +94,7 @@
 <translation id="4360991593054037559">Angiv en gyldig værdi. De to nærmeste gyldige værdier er <ph name="VALID_VALUE_LOW" /> og <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Spørgsmål og svar</translation>
 <translation id="4413860115965805769">menuknap</translation>
+<translation id="4444765639179266822">Der lader til at stå: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">reference på ordliste</translation>
 <translation id="4522570452068850558">Detaljer</translation>
 <translation id="4542388879936266156">resterende tid: <ph name="REMAINING_TIME" /></translation>
@@ -121,6 +121,7 @@
 <translation id="5164977714490026579">Værdien skal være større end eller lig med <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Angiv den del, der kommer før "<ph name="ATSIGN" />". "<ph name="INVALIDADDRESS" />" er ufuldstændig.</translation>
+<translation id="5334352251556557839">Mediet kunne ikke afspilles.</translation>
 <translation id="5406322316791861025">tal</translation>
 <translation id="5453733299334684579">træelement</translation>
 <translation id="5466621249238537318">Vælg en eller flere filer.</translation>
@@ -147,6 +148,7 @@
 <translation id="6150588977291308318">bibliografi</translation>
 <translation id="6164829606128959761">måler</translation>
 <translation id="6166809985690652833">efterskrift</translation>
+<translation id="6209276755895393898">Det lader til at være: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">ordliste</translation>
 <translation id="6398862346408813489">Vis panel til valg af måned</translation>
 <translation id="6404546809543547843">afspilningsbjælke for lyd</translation>
@@ -177,7 +179,7 @@
 <translation id="7139483182332611405">forord</translation>
 <translation id="7263440858009898357">Vælg et punkt på listen.</translation>
 <translation id="727747134524199931">kolonneoverskrift</translation>
-<translation id="7336527682887843386">Der kunne ikke hentes en beskrivelse.</translation>
+<translation id="7320576522385648310">gemmer i buffer</translation>
 <translation id="7353453495576941748">anerkendelse</translation>
 <translation id="7364796246159120393">Vælg fil</translation>
 <translation id="739024184232394898">Andet...</translation>
@@ -200,7 +202,6 @@
 <translation id="7888071071722539607">Mailadressen skal indeholde et "<ph name="ATSIGN" />". "<ph name="INVALIDADDRESS" />" mangler et "<ph name="ATSIGN" />".</translation>
 <translation id="7891486169920085145">splitter</translation>
 <translation id="795667975304826397">Der er ikke valgt nogen fil</translation>
-<translation id="8042519864538898414">Lader til at indeholde voksenindhold.</translation>
 <translation id="8053789581856978548">tekstfelt til søgning</translation>
 <translation id="8057695513531652401">meddelelse</translation>
 <translation id="8105797009065549151">reference i noter</translation>

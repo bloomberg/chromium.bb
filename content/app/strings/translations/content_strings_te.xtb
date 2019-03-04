@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">స్థితి</translation>
 <translation id="1938124657309484470">విలువ తప్పనిసరిగా <ph name="MAXIMUM_DATE_OR_TIME" /> లేదా అంతకంటే మునుపటిది అయి ఉండాలి.</translation>
 <translation id="1946271899482435442">తేదీ ఎంపికను చూపుతుంది</translation>
-<translation id="1982354452682152483">వివరణ ఏదీ లేదు.</translation>
 <translation id="1993104285338243655">మిర్రరింగ్‌కు మార్చబడింది</translation>
 <translation id="2060505056492490888">'<ph name="INVALIDDOMAIN" />'లో '<ph name="DOT" />' తప్పు స్థానంలో ఉపయోగించబడింది.</translation>
 <translation id="2148716181193084225">ఈ రోజు</translation>
@@ -95,6 +94,7 @@
 <translation id="4360991593054037559">దయచేసి చెల్లుబాటు అయ్యే విలువను నమోదు చేయండి. <ph name="VALID_VALUE_LOW" /> మరియు <ph name="VALID_VALUE_HIGHER" /> అనేవి రెండు సమీప చెల్లుబాటు విలువలు.</translation>
 <translation id="4384583879834880242">Q&amp;A</translation>
 <translation id="4413860115965805769">మెను బటన్</translation>
+<translation id="4444765639179266822">ఇది చెబుతున్నట్లుగా ఉంది: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">పదకోశ సూచన</translation>
 <translation id="4522570452068850558">వివరాలు</translation>
 <translation id="4542388879936266156">మిగిలి ఉన్న సమయం: <ph name="REMAINING_TIME" /></translation>
@@ -121,6 +121,7 @@
 <translation id="5164977714490026579">విలువ ఖచ్చితంగా <ph name="MINIMUM" /> కంటే ఎక్కువగా లేదా సమానంగా ఉండాలి.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">దయచేసి '<ph name="ATSIGN" />'కి ముందు ఉన్న భాగాన్ని నమోదు చేయండి. '<ph name="INVALIDADDRESS" />' అసంపూర్ణంగా ఉంది.</translation>
+<translation id="5334352251556557839">మీడియాను ప్లే చేయడం సాధ్యపడలేదు.</translation>
 <translation id="5406322316791861025">రూపం</translation>
 <translation id="5453733299334684579">వృక్షాంశం</translation>
 <translation id="5466621249238537318">దయచేసి ఒకటి లేదా మరిన్ని ఫైళ్ళను ఎంచుకోండి.</translation>
@@ -147,6 +148,7 @@
 <translation id="6150588977291308318">వివరణపట్టి</translation>
 <translation id="6164829606128959761">మీటర్</translation>
 <translation id="6166809985690652833">చివరిమాట</translation>
+<translation id="6209276755895393898">వీరిలా కనిపిస్తున్నారు: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">పదకోశం</translation>
 <translation id="6398862346408813489">నెల ఎంపిక ప్యానెల్‌ను చూపుతుంది</translation>
 <translation id="6404546809543547843">ఆడియో సమయ స్క్రబ్బర్</translation>
@@ -177,7 +179,7 @@
 <translation id="7139483182332611405">ముందుమాట</translation>
 <translation id="7263440858009898357">దయచేసి జాబితాలోని ఒక అంశాన్ని ఎంచుకోండి.</translation>
 <translation id="727747134524199931">నిలువు వరుస శీర్షిక</translation>
-<translation id="7336527682887843386">వివరణను పొందడం సాధ్యపడలేదు.</translation>
+<translation id="7320576522385648310">బఫర్ చేయడం</translation>
 <translation id="7353453495576941748">సహకారి</translation>
 <translation id="7364796246159120393">ఫైల్‌ను ఎంచుకోండి</translation>
 <translation id="739024184232394898">ఇతర...</translation>
@@ -200,7 +202,6 @@
 <translation id="7888071071722539607">దయచేసి ఇమెయిల్ చిరునామాలో '<ph name="ATSIGN" />'ని చేర్చండి. '<ph name="INVALIDADDRESS" />'లో '<ph name="ATSIGN" />' లేదు.</translation>
 <translation id="7891486169920085145">విభజన</translation>
 <translation id="795667975304826397">ఫైల్ ఏదీ ఎంచుకోలేదు</translation>
-<translation id="8042519864538898414">పెద్దలకు మాత్రమే తగిన విషయాలుగా కనిపిస్తున్నాయి.</translation>
 <translation id="8053789581856978548">శోధన వచనం ఫీల్డ్</translation>
 <translation id="8057695513531652401">గమనిక</translation>
 <translation id="8105797009065549151">గమనిక సూచన</translation>

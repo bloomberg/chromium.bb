@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">stav</translation>
 <translation id="1938124657309484470">Datum musí být <ph name="MAXIMUM_DATE_OR_TIME" /> nebo dříve.</translation>
 <translation id="1946271899482435442">Zobrazit výběr data</translation>
-<translation id="1982354452682152483">Popis není k dispozici.</translation>
 <translation id="1993104285338243655">Přepnuto na zrcadlení</translation>
 <translation id="2060505056492490888">Znak <ph name="DOT" /> v doméně <ph name="INVALIDDOMAIN" /> není použitý správně.</translation>
 <translation id="2148716181193084225">Dnes</translation>
@@ -177,7 +176,6 @@
 <translation id="7139483182332611405">předmluva</translation>
 <translation id="7263440858009898357">Vyberte prosím v seznamu některou položku.</translation>
 <translation id="727747134524199931">záhlaví sloupce</translation>
-<translation id="7336527682887843386">Popis se nepodařilo získat.</translation>
 <translation id="7353453495576941748">poděkování</translation>
 <translation id="7364796246159120393">Vybrat soubor</translation>
 <translation id="739024184232394898">Jiné…</translation>
@@ -200,7 +198,6 @@
 <translation id="7888071071722539607">Do e-mailové adresy zahrňte znak <ph name="ATSIGN" />. V adrese <ph name="INVALIDADDRESS" /> chybí znak <ph name="ATSIGN" />.</translation>
 <translation id="7891486169920085145">rozdělovač</translation>
 <translation id="795667975304826397">Soubor nevybrán</translation>
-<translation id="8042519864538898414">Zřejmě se jedná o obsah pro dospělé.</translation>
 <translation id="8053789581856978548">pole pro vyhledání textu</translation>
 <translation id="8057695513531652401">oznámení</translation>
 <translation id="8105797009065549151">odkaz na poznámku</translation>

@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">স্থিতি</translation>
 <translation id="1938124657309484470">মানকে অবশ্যই <ph name="MAXIMUM_DATE_OR_TIME" /> বা আগের হতে হবে৷</translation>
 <translation id="1946271899482435442">তারিখ বেছে নেওয়ার বিকল্পটি দেখান</translation>
-<translation id="1982354452682152483">এই ছবির কোনও বিবরণ নেই।</translation>
 <translation id="1993104285338243655">মিররিং এ পরিবর্তন করা হয়েছে</translation>
 <translation id="2060505056492490888">'<ph name="INVALIDDOMAIN" />' এ একটি ভুল অবস্থানে '<ph name="DOT" />' ব্যবহৃত হয়েছে৷</translation>
 <translation id="2148716181193084225">আজ</translation>
@@ -177,7 +176,6 @@
 <translation id="7139483182332611405">মুখবন্ধ</translation>
 <translation id="7263440858009898357">তালিকা থেকে একটি আইটেম নির্বাচন করুন৷ </translation>
 <translation id="727747134524199931">কলাম শিরোলেখ</translation>
-<translation id="7336527682887843386">বিবরণ পাওয়া যাচ্ছে না।</translation>
 <translation id="7353453495576941748">স্বীকৃতি</translation>
 <translation id="7364796246159120393">ফাইল বেছে নিন</translation>
 <translation id="739024184232394898">অন্যান্য...</translation>
@@ -200,7 +198,6 @@
 <translation id="7888071071722539607">ইমেল আইডিতে অনুগ্রহ করে একটি '<ph name="ATSIGN" />' অন্তর্ভুক্ত করুন৷ '<ph name="INVALIDADDRESS" />'-তে একটি '<ph name="ATSIGN" />' অনুপস্থিত৷</translation>
 <translation id="7891486169920085145">স্প্লিটার</translation>
 <translation id="795667975304826397">কোনও ফাইল চয়ন করা হয় নি</translation>
-<translation id="8042519864538898414">শুধু প্রাপ্তবয়স্কদের জন্য উপযুক্ত কন্টেন্ট বলে মনে হচ্ছে।</translation>
 <translation id="8053789581856978548">সার্চ পাঠ্য ফিল্ড</translation>
 <translation id="8057695513531652401">বিজ্ঞপ্তি</translation>
 <translation id="8105797009065549151">নোটের রেফারেন্স</translation>

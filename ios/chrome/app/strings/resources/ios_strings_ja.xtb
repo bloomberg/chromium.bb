@@ -63,7 +63,6 @@
 <translation id="1809939268435598390">フォルダーを削除</translation>
 <translation id="1813414402673211292">閲覧履歴の消去</translation>
 <translation id="1820259098641718022">リーディング リストに追加しました</translation>
-<translation id="1821253160463689938">Cookie を使って設定を保存します（これらのページにアクセスしない場合も Cookie が保持されます）</translation>
 <translation id="1828824471510190776">パスワードを自動生成...</translation>
 <translation id="1876721852596493031">使用状況データ送信</translation>
 <translation id="1886928167269928266">始めから</translation>
@@ -176,6 +175,7 @@
 <translation id="3588820906588687999">新しいタブで画像を開く</translation>
 <translation id="3603009562372709545">リンクのURLをコピー</translation>
 <translation id="3607167657931203000">自動入力のデータ</translation>
+<translation id="3607323550193047592">同期はONです</translation>
 <translation id="3609785682760573515">同期しています...</translation>
 <translation id="3638472932233958418">ウェブページのプリロード</translation>
 <translation id="3691593122358196899">「<ph name="FOLDER_TITLE" />」にブックマークしました</translation>
@@ -247,7 +247,6 @@
 <translation id="4854345657858711387">パスコードの設定</translation>
 <translation id="4860895144060829044">通話</translation>
 <translation id="4881695831933465202">開く</translation>
-<translation id="4895709476292058519">アカウントを変更</translation>
 <translation id="4904877109095351937">既読にする</translation>
 <translation id="4930268273022498155">既存のデータを削除します。<ph name="USER_EMAIL1" /> に切り替えると、削除したデータを取得できます。</translation>
 <translation id="4941089862236492464">アイテムの共有中に問題が発生しました。</translation>
@@ -439,7 +438,6 @@
 <translation id="794799177247607889">ログ記録を停止</translation>
 <translation id="7961015016161918242">使用しない</translation>
 <translation id="7971521879845308059">ポップアップのブロック</translation>
-<translation id="7981313251711023384">ページをプリロードして閲覧と検索をすばやく行えるようにする</translation>
 <translation id="7982789257301363584">ネットワーク</translation>
 <translation id="8019783059653722575">写真を保存してアップロードできます。</translation>
 <translation id="802154636333426148">ダウンロード エラー</translation>

@@ -32,7 +32,6 @@
 <translation id="1930711995431081526">статус</translation>
 <translation id="1938124657309484470">Має бути <ph name="MAXIMUM_DATE_OR_TIME" /> або раніша дата.</translation>
 <translation id="1946271899482435442">Показує засіб вибору дати</translation>
-<translation id="1982354452682152483">Немає опису.</translation>
 <translation id="1993104285338243655">Змінено на дзеркалювання</translation>
 <translation id="2060505056492490888">Символ "<ph name="DOT" />" у "<ph name="INVALIDDOMAIN" />" використано неправильно.</translation>
 <translation id="2148716181193084225">Сьогодні</translation>
@@ -177,7 +176,6 @@
 <translation id="7139483182332611405">передмова</translation>
 <translation id="7263440858009898357">Виберіть елемент зі списку.</translation>
 <translation id="727747134524199931">заголовок стовпця</translation>
-<translation id="7336527682887843386">Не вдалося отримати опис.</translation>
 <translation id="7353453495576941748">подяка</translation>
 <translation id="7364796246159120393">Вибрати файл</translation>
 <translation id="739024184232394898">Інші...</translation>
@@ -200,7 +198,6 @@
 <translation id="7888071071722539607">Електронна адреса має містити знак "<ph name="ATSIGN" />". В електронній адресі "<ph name="INVALIDADDRESS" />" знака "<ph name="ATSIGN" />" немає.</translation>
 <translation id="7891486169920085145">розділювач</translation>
 <translation id="795667975304826397">Файл не вибрано</translation>
-<translation id="8042519864538898414">Схоже, це вміст для дорослих.</translation>
 <translation id="8053789581856978548">текстове поле пошуку</translation>
 <translation id="8057695513531652401">примітка</translation>
 <translation id="8105797009065549151">посилання на примітку</translation>

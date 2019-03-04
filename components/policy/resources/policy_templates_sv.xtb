@@ -106,6 +106,19 @@
       Avgör hur länge skärmsläckaren ska visas på inloggningsskärmen för enheter i återförsäljarläge.
 
       Policyns värde anges i millisekunder.</translation>
+<translation id="1141767714195601945">Den här principen styr kommandoradsparametrar för Chrome från Internet Explorer.
+
+      Om tillägget Stöd för äldre webbläsare för Internet Explorer inte är installerat har den här principen ingen funktion.
+
+      Om den här principen saknar inställning skickar Internet Explorer bara webbadressen till Chrome som en kommandoradsparameter.
+
+      Om den här principen är inställd på en lista med strängar, kombineras strängarna med blanksteg och skickas till Chrome som kommandoradsparametrar.
+
+      Om ett element innehåller ${url} ersätts det med webbadressen till sidan som ska öppnas.
+
+      Om inget element innehåller ${url} läggs webbadressen till i slutet av kommandoraden.
+
+      Miljövariabler utökas. I Windows ersätts %ABC% med värdet för miljövariabeln ABC.</translation>
 <translation id="1151353063931113432">Tillåt bilder på dessa webbplatser</translation>
 <translation id="1152117524387175066">Rapportera vilket läge enhetens utvecklarväxel har vid uppstart.
 
@@ -169,6 +182,10 @@
 
       Om principen är inställd på falskt tillåts ingen användning av gästprofiler i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1363275621236827384">Aktivera frågor till Quirks-servern (servern för maskinvaruspecifik information) om maskinvaruprofiler</translation>
+<translation id="1363612796557848469">Den här principen ger Google Assistent tillåtelse att läsa skärmkontext och skicka informationen till servern.
+      Om principen är aktiverad får Google Assistent läsa skärmkontexten.
+      Om principen är inaktiverad får Google Assistent inte läsa skärmkontexten.
+      Om principen saknar inställning kan användarna välja om Google Assistent får läsa skärmkontext eller inte</translation>
 <translation id="1383493480903114193">Principen tvingar nätverkskod att köras i webbläsarprocessen.
 
       Principen är inaktiverad som standard, och när den är aktiverad utsätts användarna för säkerhetsproblemen när nätverksprocessen körs i en sandlåda.
@@ -243,6 +260,13 @@
       enhetligt skrivbord. I så fall kan användaren inte aktivera funktionen.</translation>
 <translation id="1474273443907024088">Inaktivera falsk start i TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1478485744311397487">Servrar som <ph name="PRODUCT_NAME" /> kan delegera till.
+
+          Avgränsa flera servernamn med komma. Jokertecken (*) får användas.
+
+          Om den här principen saknar inställning kommer <ph name="PRODUCT_NAME" /> inte att delegera användaruppgifter även om en server identifieras som ett intranät.
+
+          Den här principen ignoreras om principen UseKDCConstrainedDelegation är inställd på sant.</translation>
 <translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> förbigår proxyn för listan med värdenheter som anges här.
 
           Den här principen används bara om du har valt manuella proxyinställningar i Välj hur inställningar för proxyserver ska anges.
@@ -290,6 +314,12 @@
       Läs mer om Säker webbsökning på https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Använd <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
 <translation id="1599424828227887013">Aktivera webbplatsisolering för angivna ursprung på Android-enheter</translation>
+<translation id="1608259529294767544">Den här principen ger Google Assistent behörighet att lyssna efter röstaktiveringsfrasen.
+
+      Om den här principen är aktiverad lyssnar Google Assistent efter röstaktiveringsfrasen.
+      Om den här principen inte är aktiverad lyssnar inte Google Assistent efter röstaktiveringsfrasen.
+      Om principen saknar inställning kan användaren avgöra om Google Assistent ska lyssna efter röstaktiveringsfrasen.
+      </translation>
 <translation id="1608755754295374538">Webbadresser som ska ges tillgång till ljudinspelningsenheter utan meddelande</translation>
 <translation id="1615221548356595305">TIllåt att HTTP/2-anslutningar kombineras för dessa värdar även när klientcertifikat används</translation>
 <translation id="1617235075406854669">Aktivera borttagning av webb- och nedladdningshistorik</translation>
@@ -341,6 +371,7 @@
       Den här policyn ska ställas in på en webbadress som <ph name="PRODUCT_OS_NAME" /> kan ladda ned användarvillkoren från. Användarvillkoren måste vara oformaterad text av MIME-typ. Ingen kod får användas.</translation>
 <translation id="1750315445671978749">Blockera alla nedladdningar</translation>
 <translation id="1781356041596378058">Den här principen styr även tillgången till Androids utvecklaralternativ. Om principen är inställd på sant kan användarna inte öppna utvecklaralternativen. Om principen är inställd på falskt eller lämnas utan inställning kan användarna öppna utvecklaralternativen genom att trycka sju gånger på versionsnumret i appen Inställningar i Android.</translation>
+<translation id="1793346220873697538">Inaktivera PIN-utskrift som standard</translation>
 <translation id="1797233582739332495">Visa användaren ett återkommande meddelande om att omstart krävs</translation>
 <translation id="1798559516913615713">Livstid för GPO-cache</translation>
 <translation id="1803646570632580723">Lista över fasta appar som ska visas i startfönstret</translation>
@@ -364,6 +395,7 @@
 <translation id="1843117931376765605">Uppdateringsfrekvens för användarpolicy</translation>
 <translation id="1844620919405873871">Konfigurerar principer som är relaterade till snabb upplåsning.</translation>
 <translation id="1845405905602899692">Inställningar för offentlig miljö</translation>
+<translation id="1845429996559814839">Begränsa PIN-utskriftsläge</translation>
 <translation id="1847960418907100918">Anger parametrarna som används vid sökningar på Instant med POST. Den består av kommaavgränsade namn-/värdepar. Om ett värde är en mallparameter, t.ex. {searchTerms} i ovanstående exempel, kommer det att ersättas med riktiga söktermer.
 
           Den här policyn är valfri. Om den inte anges kommer begäran om sökningar på Instant att använda GET-metoden.
@@ -478,6 +510,15 @@
       Om denna policy inte har ställts in används standardvärdet 3 timmar i <ph name="PRODUCT_NAME" />.
 
       Observera att om plattformen stöder policymeddelanden används 24 timmar som uppdateringsfördröjning (och alla standardvärden och detta policyvärde ignoreras), eftersom uppdateringar då sker automatiskt så fort policyn förändras. Det gör tätare uppdateringar överflödiga.</translation>
+<translation id="2024149678078029009">Den här principen styr vilket kommando som används för att öppna webbadresser i <ph name="PRODUCT_NAME" /> när användaren byter från Internet Explorer.
+
+      Om tillägget Stöd för äldre webbläsare för Internet Explorer inte är installerat har den här principen ingen funktion.
+
+      Om den här principen saknar inställning identifierar Internet Explorer automatiskt <ph name="PRODUCT_NAME" />s egna körbara sökväg när <ph name="PRODUCT_NAME" /> startas från Internet Explorer.
+
+      När den här principen är inställd används den för att starta <ph name="PRODUCT_NAME" /> när <ph name="PRODUCT_NAME" /> startas från Internet Explorer.
+
+      Den här principen kan ställas in på en körbar filsökväg, eller på ${chrome} för att identifiera Chromes installationsplats automatiskt.</translation>
 <translation id="2024476116966025075">Konfigurera domännamnet som krävs för fjärråtkomstklienter</translation>
 <translation id="2030905906517501646">Sökord för standardsökleverantör</translation>
 <translation id="203096360153626918">Den här principen gäller inte Android-appar. De kan använda helskärmsläge även om den har principen har ställts in på <ph name="FALSE" />.</translation>
@@ -496,6 +537,7 @@
 <translation id="209586405398070749">Stabil kanal</translation>
 <translation id="2098658257603918882">Aktivera rapportering av användning och kraschrelaterade data</translation>
 <translation id="2104418465060359056">Rapportera information om tillägg och pluginprogram</translation>
+<translation id="2106627642643925514">Ersätter standardläget för PIN-utskrift. Om läget inte är tillgängligt ignoreras den här principen.</translation>
 <translation id="2107601598727098402">
         Den här principen fasades ut i M72. Använd CloudManagementEnrollmentToken istället.
         </translation>
@@ -513,6 +555,7 @@
       När principen är inställd på falskt samlas information som kan användas för att identifiera användarna inte in.
 
       Principen träder bara i kraft när tillägget <ph name="CHROME_REPORTING_EXTENSION_NAME" /> har aktiverats och enheten har registrerats med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="2126178089984117495">Begränsar PIN-utskriftsläge. Om principen saknar inställning räknas det som ingen begränsning. Om läget inte är tillgängligt ignoreras den här principen.</translation>
 <translation id="2127599828444728326">Tillåt meddelanden på dessa webbplatser</translation>
 <translation id="2131902621292742709">Skärmdämpningstid när enheten drivs av batteriet</translation>
 <translation id="2134437727173969994">Tillåt att skärmen låses</translation>
@@ -532,6 +575,7 @@
 <translation id="2156132677421487971">Konfigurera principer för <ph name="PRODUCT_NAME" />, en funktion med vars hjälp användare kan skicka innehåll på flikar, webbplatser och skrivbordet från webbläsaren till fjärrskärmar och ljudsystem.</translation>
 <translation id="2166472654199325139">Filtrera inte bort webbplatser med barnförbjudet innehåll</translation>
 <translation id="2168397434410358693">Inaktivitetstid när enheten är ansluten till elnätet</translation>
+<translation id="217013996107840632">Kommandoradsparametrar för att byta från den alternativa webbläsaren.</translation>
 <translation id="2170233653554726857">Aktivera WPAD-optimering</translation>
 <translation id="2176565653304920879">När den här principen har ställts in fungerar den automatiska identifieringen av tidszon på något av följande sätt beroende på vilken inställning som har valts:
 
@@ -791,6 +835,7 @@
           Policyn används bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="268577405881275241">Aktivera proxyfunktionen för datakomprimering</translation>
 <translation id="2693108589792503178">Konfigurera webbadressen för ändring av lösenord.</translation>
+<translation id="2706708761587205154">Tillåt bara utskrift med PIN</translation>
 <translation id="2731627323327011390">Inaktivera användning av <ph name="PRODUCT_OS_NAME" />-certifikat för ARC-appar</translation>
 <translation id="2742843273354638707">Dölj appen Chrome Web Store och länken i sidfoten från den nya fliksidan och startprogrammet för <ph name="PRODUCT_OS_NAME" />.
 
@@ -893,6 +938,11 @@
 
       Om du aktiverar den här inställningen används operativsystemets standardskrivare som standardval för Förhandsgranskning.</translation>
 <translation id="2856674246949497058">Återställ till målversionen om operativsystemet är nyare än målversionen. Utför powerwash i samband med detta.</translation>
+<translation id="2858646435735022107">Styr om flaggan OK-AS-DELEGATE från KDC ska följas eller om AuthNegotiateDelegateWhitelist ska användas för att begränsa delegering av Kerberos-ärenden.
+
+          Om den här principen är inställd på sant följer HTTP-autentiseringen inställningarna för begränsad delegering på KDC. Principen AuthNegotiateDelegateWhitelist ignoreras i detta fall. Mer information finns på https://tools.ietf.org/html/rfc5896.html.
+
+          Om den här principen saknar inställning eller ställs in på falskt ignoreras inställningarna för begränsad delegering från KDC och AuthNegotiateDelegateWhitelist följs.</translation>
 <translation id="2872961005593481000">Stäng av</translation>
 <translation id="2873651257716068683">Åsidosätter standardpappersformatet för utskrift. Om pappersformatet inte är tillgängligt ignoreras principen.</translation>
 <translation id="2874209944580848064">Tänk på detta för <ph name="PRODUCT_OS_NAME" />-enheter som stöder Android-appar:</translation>
@@ -1483,6 +1533,7 @@
           Den här policyn är valfri. Om den inte anges kommer begäran om bildsökning att skickas via GET-metoden.
 
           Den här policyn följs endast om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
+<translation id="427706009709857238">"Tillåt att Google Assistent lyssnar efter röstaktiveringsfrasen"</translation>
 <translation id="4285674129118156176">Tillåt oanknutna användare att använda ARC</translation>
 <translation id="4298509794364745131">Anger en lista med anteckningsappar som går att aktivera på låsskärmen i <ph name="PRODUCT_OS_NAME" />.
 
@@ -1564,6 +1615,7 @@
 <translation id="4483649828988077221">Inaktivera automatiska uppdateringar</translation>
 <translation id="4485425108474077672">Konfigurera webbadressen för sidan Ny flik</translation>
 <translation id="4492287494009043413">Inaktivera tagning av skärmdumpar</translation>
+<translation id="4494132853995232608">Wilco DTC</translation>
 <translation id="449423975179525290">Konfigurera principer som är kopplade till <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="450537894712826981">Konfigurerar storleken på cacheminnet där <ph name="PRODUCT_NAME" /> sparar cachade mediafiler på skivan.
 
@@ -1730,8 +1782,10 @@
 <translation id="4978405676361550165">När principen OffHours har ställts in ignoreras de angivna enhetsprinciperna (använd standardinställningarna för dessa principer) under de angivna tidsperioderna. Varje gång en OffHours-period börjar eller slutar ändras tillämpningen av enhetsprinciperna i Chrome. Användarna aviseras och måste logga ut när OffHours-perioden slutar och enhetens principinställningar ändras (t.ex. om användaren är inloggad med ett konto som inte är tillåtet).</translation>
 <translation id="4980635395568992380">Datatyp:</translation>
 <translation id="4983201894483989687">Tillåt att föråldrade plugin-program körs</translation>
+<translation id="4986560318567565414">Sökväg till Chrome för att byta från den alternativa webbläsaren.</translation>
 <translation id="4988291787868618635">Åtgärd som ska vidtas när inaktivitetstiden har gått</translation>
 <translation id="4995548127349206948">Om autentisering med NTLMv2 har aktiverats eller inte</translation>
+<translation id="5022792010322211583">Använd KDC-begränsad delegering</translation>
 <translation id="5047604665028708335">Tillåt åtkomst till webbplatser utanför innehållspaket</translation>
 <translation id="5052081091120171147">Om den här policyn är aktiverad gör den att webbhistoriken måste importeras från den nuvarande standardwebbläsaren. Den påverkar då även importfönstret.
 
@@ -2001,6 +2055,7 @@
 
       Om den inte anges ändras inte webbadressen för startvärdet för Variations.</translation>
 <translation id="5561811616825571914">Välj klientcertifikat automatiskt för dessa webbplatser på inloggningsskärmen</translation>
+<translation id="5566210228171064229">Tillåt utskrift både med och utan pinkod</translation>
 <translation id="556941986578702361">Kontrollera hur <ph name="PRODUCT_OS_NAME" />-hyllan döljs automatiskt.
 
       Om policyn har angetts till AlwaysAutoHideShelf döljs alltid hyllan automatiskt.
@@ -2020,6 +2075,15 @@
       Principen träder bara i kraft när tillägget <ph name="CHROME_REPORTING_EXTENSION_NAME" /> har aktiverats och enheten har registrerats med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Styr Googles platstjänster för Android</translation>
 <translation id="5586942249556966598">Gör ingenting</translation>
+<translation id="5590494712401018042">Anger den procentsats med vilken fördröjningen av skärmdämpningen ändras när enheten är i presentationsläge.
+
+          Om den här principen är inställd anges den procentsats med vilken fördröjningen av skärmdämpningen ändras när enheten är i presentationsläge. När fördröjningen av skärmdämpningen ändras anpassas fördröjningen av avstängningen av skärmen, skärmlåset och viloläget så att de är lika långt efter skärmdämpningsfördröjningen som i ursprungskonfigurationen.
+
+          Om den här principen saknar inställning används en standardfaktor.
+
+          Den här principen används bara om <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> är inaktiverad. I annat fall ignoreras principen eftersom fördröjningen av skärmdämpningen avgörs av en maskininlärningsmodell.
+
+          Skalningsfaktorn måste vara 100 % eller mer. Värdet får inte göra fördröjningen av skärmdämpningen i presentationsläge kortare än den vanliga skärmdämpningsfördröjningen.</translation>
 <translation id="5592242031005200087">
       Om principen aktiveras körs alla namngivna ursprung,
       som anges i en kommaavgränsad lista, som egna processer. Även ursprung som anges
@@ -2239,6 +2303,7 @@
 
       Om principen inte har konfigurerats är listan med frånkopplingsbara USB-enheter tom.</translation>
 <translation id="6083631234867522991">Windows (Windows-klienter):</translation>
+<translation id="6089679180657323464">Styr inställningar för Wilcos styrenhet för diagnostik och telemetri.</translation>
 <translation id="6091233616732024397">Tvinga användare att logga in i webbläsaren</translation>
 <translation id="6093156968240188330">Tillåt att fjärranvändare kan interagera med fönster som öppnats med adminbehörighet i fjärrhjälpsessioner</translation>
 <translation id="6095999036251797924">Anger efter hur lång tid skärmen släcks när användaren är inaktiv och enheten drivs med batteri eller ström.
@@ -2517,6 +2582,7 @@
 <translation id="6770454900105963262">Rapportera information om aktiva kiosksessioner</translation>
 <translation id="6786747875388722282">Tillägg</translation>
 <translation id="6786967369487349613">Ange roamingprofilkatalogen</translation>
+<translation id="6795485990775913659">Tillåt inget annat än utskrift utan pinkod</translation>
 <translation id="6810445994095397827">Blockera JavaScript på dessa webbplatser</translation>
 <translation id="6813263547126514821">Strömförsörjning och avstängning</translation>
 <translation id="681446116407619279">Autentiseringsscheman som stöds</translation>
@@ -2634,6 +2700,7 @@
 
       Principen gäller bara om stöd för Linux-appar är aktiverat.</translation>
 <translation id="69525503251220566">Parameter som anger bildsökningsfunktionen för sökleverantören som är standard</translation>
+<translation id="6953102253399571439">Aktivera PIN-utskrift som standard</translation>
 <translation id="6956272732789158625">Tillåt inte att någon webbplats använder nyckelgenerering</translation>
 <translation id="6965859329738616662">Anger om en smart modell för nedtoning får utöka tiden tills skärmen tonas ned.
 
@@ -2697,6 +2764,15 @@
           Om den här principen inte anges används det globala standardvärdet för alla webbplatser. Värdet hämtas antingen från principen DefaultWebUsbGuardSetting, om den har ställts in, eller från användarens egna inställningar.
 
           Webbadressmönstren i den här principen får inte överlappa dem som konfigurerats via WebUsbBlockedForUrls. Det är inte definierat vilken av principerna som ska ha företräde om en webbadress matchar båda.</translation>
+<translation id="7086677522575756117">Anger den procentsats med vilken fördröjningen skärmdämpningen ändras när användaraktivitet identifieras medan skärmen är dämpad, eller kort tid efter att skärmen har stängts av.
+
+          Om den här policyn är inställd anges den procentsats med vilken fördröjningen av skärmdämpningen ändras när användaren gör något eller strax efter det att skärmen har stängts av. När fördröjningen av skärmdämpningen ändras anpassas fördröjningen av avstängningen av skärmen, skärmlåset och viloläget så att de är lika långt efter skärmdämpningsfördröjningen som i ursprungskonfigurationen.
+
+          Om den här principen saknar inställning används en standardfaktor.
+
+          Den här principen används bara om <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> är inaktiverad. I annat fall ignoreras principen eftersom fördröjningen av skärmdämpningen avgörs av en maskininlärningsmodell.
+
+          Skalningsfaktorn måste vara 100 % eller mer.</translation>
 <translation id="7106631983877564505">Policyn aktiverar lås när <ph name="PRODUCT_OS_NAME" />-enheter blir inaktiva eller stängs av.
 
       Om du aktiverar inställningen måste användarna ange ett lösenord för att låsa upp enheter som är i viloläge.
@@ -2733,6 +2809,7 @@
       Principen kan vara inställd på conservative eller performance. Med det första alternativet väljs en schemaläggningskonfiguration som optimerats för stabilitet och med det andra en konfiguration som optimerats för prestanda.
 
       Om principen saknar inställning kan användaren välja själv.</translation>
+<translation id="7145335384492396213">Standardläge för PIN-utskrift</translation>
 <translation id="7158064522994309072">Med den här principen styrs vilket kommando som ska användas för att öppna webbadresser i en alternativ webbläsare.
 
       När principen lämnas utan inställning används en standard som är specifik för plattformen: Internet Explorer för Windows eller Safari för Mac OS X. Det går inte att öppna en alternativ webbläsare i Linux när den här principen inte är inställd.
@@ -2799,6 +2876,7 @@
 
       När principen är inställd på sant inaktiveras skrivare som använder andra protokoll än IPPS, USB eller IPP-over-USB, eftersom användarnamn och filnamn inte ska skickas öppet över nätverket.</translation>
 <translation id="7258823566580374486">Aktivera avskärmning av fjärråtkomstvärdar</translation>
+<translation id="7260204423892780600">Styr inställningar för Google Assistent.</translation>
 <translation id="7260277299188117560">Automatisk uppdatering av p2p har aktiverats</translation>
 <translation id="7261252191178797385">Enhetens bakgrundsbild</translation>
 <translation id="7264704483008663819">Den här principen har fasats ut i M68. Använd DeveloperToolsAvailability i stället.
@@ -2908,12 +2986,17 @@
           När principen används ställs skärmens ljusstyrka inledningsvis in på det värde som har angetts i principen. Användaren kan ändra det senare. Funktioner som anpassar ljusstyrkan automatiskt inaktiveras.
           När principen har lämnats utan inställning påverkas inte användarens skärminställningar eller funktioner som anpassar ljusstyrkan automatiskt.
           Principens värde ska anges som ett procenttal inom intervallet 0–100.</translation>
+<translation id="7517846421386644905">Tillåter att en administratör styr om telemetri- och diagnostikdata ska samlas in, bearbetas och rapporteras av Wilcos styrenhet för diagnostik och telemetri (DTC).
+
+      Om principen ställs in på falskt eller saknar inställning inaktiveras DTC och kan inte samla in, bearbeta och rapportera telemetri- och diagnostikdata från enheten.
+      Om Wilco DTC är tillgänglig på den givna enheten och principen är inställd på sant används insamling, bearbetning och rapportering av telemetri- och diagnostikdata.</translation>
 <translation id="7519251620064708155">Tillåt nyckelgenerering på dessa webbplatser</translation>
 <translation id="7529100000224450960">Policyn gör att du kan ange en lista med webbadressmönster som anger webbplatser som får öppna popupfönster.
 
           Om den här policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultPopupsSetting om den har angetts och från användarens personliga konfiguration om den inte har det.</translation>
 <translation id="7529144158022474049">Uppdatera spridningsfaktor automatiskt</translation>
 <translation id="7534199150025803530">Den här principen gäller inte appen Google Drive för Android. Om du vill förhindra att Google Drive används via mobilanslutning bör du blockera möjligheten att installera appen Google Drive för Android.</translation>
+<translation id="7540622499178214923">Tillåter Wilcos styrenhet för diagnostik och telemetri</translation>
 <translation id="7547549430720182663">Sammanfoga</translation>
 <translation id="7553535237300701827">När principen är angiven går autentiseringen vid inloggning till på ett av följande sätt beroende på inställningens värde:
 
@@ -3626,6 +3709,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       Om principen ställs in på ett lägre värde gäller det värdet permanent: det KANSKE inte går att återställa tidigare versioner på enheten ävenom principen ändras till ett högre värde.
 
       Vilka möjligheter till återställning som finns kan också bero på moderkortet och kritiska säkerhetskorrigeringar.</translation>
+<translation id="9126014181388780690">”Ge Google Assistent tillgång till skärminnehåll”</translation>
 <translation id="913195841488580904">Blockera åtkomst till en lista med webbadresser</translation>
 <translation id="9135033364005346124">Aktivera <ph name="CLOUD_PRINT_NAME" />-proxy</translation>
 <translation id="9136399279941091445">Intervall för användning utanför arbetstid när de angivna enhetsprinciperna lanseras</translation>

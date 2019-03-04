@@ -47,7 +47,6 @@
 <translation id="121201262018556460">Ви пробували зв’язатися з доменом <ph name="DOMAIN" />, проте сервер надав сертифікат, який містить слабкий ключ. Можливо, зловмисник зламав секретний ключ, а сервер не є тим, який вам потрібен (ви можете обмінюватися даними зі зловмисником).</translation>
 <translation id="1219129156119358924">Безпека системи</translation>
 <translation id="1227224963052638717">Невідоме правило</translation>
-<translation id="1227633850867390598">Сховати значення</translation>
 <translation id="1228893227497259893">Неправильний ідентифікатор організації</translation>
 <translation id="1232569758102978740">Без імені</translation>
 <translation id="124116460088058876">Інші мови</translation>
@@ -102,6 +101,7 @@
 <translation id="1430915738399379752">Друк</translation>
 <translation id="1455413310270022028">Гумка</translation>
 <translation id="1463543813647160932">5x7</translation>
+<translation id="1472675084647422956">Показати більше</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Вибрати адресу доставки</translation>
 <translation id="1501859676467574491">Показує картки з облікового запису Google</translation>
@@ -482,7 +482,6 @@
 <translation id="3615877443314183785">Введіть дійсний термін дії</translation>
 <translation id="36224234498066874">Очистити дані веб-перегляду...</translation>
 <translation id="362276910939193118">Показати повну історію</translation>
-<translation id="3623476034248543066">Показати значення</translation>
 <translation id="3630155396527302611">Якщо цій програмі вже надано доступ до мережі, спробуйте
         вилучити її зі списку та додати знову.</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
@@ -740,6 +739,7 @@
 <translation id="5115563688576182185">(64-розрядна версія)</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5135404736266831032">Керувати адресами…</translation>
+<translation id="5138227688689900538">Показати менше</translation>
 <translation id="5141240743006678641">Шифрувати синхронізовані паролі за допомогою облікових даних Google</translation>
 <translation id="5145883236150621069">Відповідь правила містить код помилки</translation>
 <translation id="515292512908731282">C4 (конверт)</translation>
@@ -1265,6 +1265,7 @@
 <translation id="8197543752516192074">Перекласти сторінку</translation>
 <translation id="8201077131113104583">Недійсна URL-адреса для оновлення розширення з ідентифікатором "<ph name="EXTENSION_ID" />".</translation>
 <translation id="8202097416529803614">Підсумок замовлення</translation>
+<translation id="8202370299023114387">Конфлікт</translation>
 <translation id="8206978196348664717">Prc4 (конверт)</translation>
 <translation id="8211406090763984747">З’єднання безпечне</translation>
 <translation id="8218327578424803826">Указане місцезнаходження:</translation>

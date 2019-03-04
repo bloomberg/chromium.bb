@@ -92,6 +92,19 @@ servera, pretože objekty GPO sa znova sťahujú pri každom načítaní pravidi
       Určuje čas, ktorý musí uplynúť pred zobrazením šetriča obrazovky na prihlasovacej obrazovke v režime určenom pre predaj.
 
       Hodnota pre toto pravidlo by mala byť zadaná v milisekundách.</translation>
+<translation id="1141767714195601945">Toto pravidlo ovláda parametre príkazového riadka pre Chrome z prehliadača Internet Explorer.
+
+      Ak nie je nainštalovaný doplnok Podpora staršieho prehliadača pre Internet Explorer, toto pravidlo nemá žiadny účinok.
+
+      Keď toto pravidlo nenastavíte, Internet Explorer postúpi webovú adresu Chromu iba ako parameter príkazového riadka.
+
+      Keď toto pravidlo nastavíte na zoznam reťazcov, reťazce sa spoja medzerami a budú postúpené Chromu ako parametre príkazového riadka.
+
+      Ak určitý prvok obsahuje zástupný znak ${url}, nahradí sa webovou adresou stránky, ktorá sa má otvoriť.
+
+      Ak zástupný znak ${url} neobsahuje žiadny prvok, webová adresa sa pripojí na koniec príkazového riadka.
+
+      Premenné prostredia sa rozbalia. V systéme Windows sa reťazec %ABC% nahradí hodnotou premennej prostredia ABC.</translation>
 <translation id="1151353063931113432">Povoliť obrázky na týchto webových stránkach</translation>
 <translation id="1152117524387175066">Nahlásenie stavu prepínača režimu pre vývojárov pri spustení zariadenia.
 
@@ -154,6 +167,10 @@ servera, pretože objekty GPO sa znova sťahujú pri každom načítaní pravidi
 
       Ak je toto pravidlo nastavené na možnosť False, prehliadač <ph name="PRODUCT_NAME" /> nepovolí spustenie profilov hostí.</translation>
 <translation id="1363275621236827384">Povoľte dopyty na serveri Quirks pre hardvérové profily</translation>
+<translation id="1363612796557848469">Toto pravidlo povoľuje Asistentovi Google prístup ku kontextu obrazovky a odosielať tieto informácie na server.
+      Ak toto pravidlo povolíte, Asistent Google bude mať prístup ku kontextu obrazovky.
+      Ak toto pravidlo zakážete, Asistent Google nebude mať prístup ku kontextu obrazovky.
+      Ak pravidlo nenastavíte, používatelia si budú môcť vybrať, či Asistent Google bude mať prístup ku kontextu obrazovky.</translation>
 <translation id="1383493480903114193">Toto pravidlo vynúti spustenie kódu siete v procese prehliadača.
 
       Predvolene je zakázané. Ak ho povolíte, po presunutí procesu siete do karantény nebudú používatelia chránení proti bezpečnostným problémom.
@@ -228,6 +245,13 @@ servera, pretože objekty GPO sa znova sťahujú pri každom načítaní pravidi
       bude vypnutý. V tomto prípade ho používateľ nemôže zapnúť.</translation>
 <translation id="1474273443907024088">Zakázať funkciu TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1478485744311397487">Servery, na ktoré môže <ph name="PRODUCT_NAME" /> delegovať poverenia.
+
+          Ak chcete zadať niekoľko názvov serverov, oddeľte ich čiarkami. Zástupné znaky (*) sú povolené.
+
+          Ak pravidlo nenastavíte, <ph name="PRODUCT_NAME" /> nebude delegovať poverenia používateľov ani v prípade, keď je server na intranete.
+
+          Toto pravidlo sa ignoruje, ak je pravidlo UseKDCConstrainedDelegation nastavené na hodnotu true.</translation>
 <translation id="1484146587843605071">Pri hostiteľoch v uvedenom zozname prehliadač <ph name="PRODUCT_NAME" /> vynechá všetky proxy servery.
 
           Toto pravidlo sa prejaví len v prípade, že ste v časti „Zvoľte spôsob konfigurácie nastavení proxy servera“ vybrali ručné nastavenia proxy servera.
@@ -270,6 +294,12 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ďalšie informácie o Bezpečnom prehliadaní nájdete na adrese https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Používať v predvolenom nastavení doplnok <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1599424828227887013">Povolenie izolácie webov pre konkrétne zdroje v zariadeniach s Androidom</translation>
+<translation id="1608259529294767544">Toto pravidlo povoľuje Asistentovi Google počúvať frázy aktivácie hlasom.
+
+      Ak toto pravidlo povolíte, Asistent Google bude počúvať frázy aktivácie hlasom.
+      Ak toto pravidlo zakážete, Asistent Google nebude počúvať frázy aktivácie hlasom.
+      Ak pravidlo nenastavíte, používatelia si budú môcť vybrať, či povolia Asistentovi Google počúvať frázy aktivácie hlasom.
+      </translation>
 <translation id="1608755754295374538">Webové adresy, ktorým bude udelený prístup k zariadeniam na zachytávanie zvuku bez zobrazenia výzvy</translation>
 <translation id="1615221548356595305">Povoliť združenie pripojení HTTP/2 pre týchto hostiteľov, aj keď sa používajú certifikáty klienta</translation>
 <translation id="1617235075406854669">Povoliť odstránenie histórie prehliadača a sťahovania</translation>
@@ -317,6 +347,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Toto pravidlo byť malo byť nastavené ako webová adresa, z ktorej systém <ph name="PRODUCT_OS_NAME" /> môže Zmluvné podmienky stiahnuť. Zmluvné podmienky musia byť uložené vo formáte čistého textu, zobrazované ako typ MIME „text/plain“. Nie sú povolené žiadne značky.</translation>
 <translation id="1750315445671978749">Blokovať všetky súbory na stiahnutie</translation>
 <translation id="1781356041596378058">Toto pravidlo ovláda aj prístup k nastaveniu Androidu Pre vývojárov. Ak toto pravidlo nastavíte na hodnotu True, používatelia budú môcť pristupovať k nastaveniu Pre vývojárov. Ak toto pravidlo nastavíte na hodnotu False alebo ho ponecháte nenastavené, umožní to používateľom otvoriť nastavenie Pre vývojárov tým, že sedemkrát klepnú na číslo zostavy v aplikácii nastavení Androidu.</translation>
+<translation id="1793346220873697538">Predvolene zakázať tlač s kódom PIN</translation>
 <translation id="1797233582739332495">Zobrazovať používateľovi opakovanú výzvu, že sa vyžaduje opätovné spustenie</translation>
 <translation id="1798559516913615713">Životnosť vyrovnávacej pamäte GPO</translation>
 <translation id="1803646570632580723">Zoznam pripnutých aplikácií, ktoré sa zobrazujú v spúšťači</translation>
@@ -340,6 +371,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="1843117931376765605">Frekvencia obnovenia pravidiel pre používateľov</translation>
 <translation id="1844620919405873871">Nakonfiguruje pravidlá súvisiace s rýchlym odomknutím.</translation>
 <translation id="1845405905602899692">Nastavenia Kiosku</translation>
+<translation id="1845429996559814839">Obmedziť tlač kódom PIN</translation>
 <translation id="1847960418907100918">Určuje parametre, ktoré sa použijú pri okamžitom vyhľadávaní pomocou metódy POST. Pozostáva z párov názov/hodnota oddelených čiarkami. Ak je hodnota parameter šablóny, napr. hodnota {searchTerms} v príklade vyššie, bude nahradená údajmi skutočných vyhľadávaných výrazov.
 
           Toto pravidlo je voliteľné. Ak nie je nastavené, žiadosť o okamžité vyhľadávanie sa odošle pomocou metódy GET.
@@ -454,6 +486,15 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak toto pravidlo nenastavíte, <ph name="PRODUCT_NAME" /> použije predvolenú hodnotu – 3 hodiny.
 
       Upozorňujeme, že ak platforma podporuje upozornenia na pravidlá, oneskorenie obnovenia bude nastavené na 24 hodín (všetky predvolené nastavenia a hodnota určená v tomto pravidle budú ignorované), pretože sa očakáva, že upozornenia na pravidlá vynútia automatické obnovenie po každej zmene pravidiel. Častejšie obnovenia sú preto zbytočné.</translation>
+<translation id="2024149678078029009">Toto pravidlo ovláda príkaz na otváranie webových adries v prehliadači <ph name="PRODUCT_NAME" /> pri prepnutí z prehliadača Internet Explorer.
+
+      Ak nie je nainštalovaný doplnok Podpora staršieho prehliadača pre Internet Explorer, toto pravidlo nemá žiadny účinok.
+
+      Keď toto pravidlo nenastavíte, Internet Explorer pri spustení prehliadača<ph name="PRODUCT_NAME" /> z tohto programu automaticky zistí vlastnú cestu spustenia prehliadača <ph name="PRODUCT_NAME" />.
+
+      Keď toto pravidlo nastavíte, použije sa na spustenie prehliadača <ph name="PRODUCT_NAME" /> pri prepínaní spustenia prehliadača <ph name="PRODUCT_NAME" /> z programu Internet Explorer.
+
+      Toto pravidlo je možné nastaviť na cestu k spustiteľnému súboru alebo na hodnotu ${chrome}, ktorá automaticky zistí miesto nainštalovania Chromu.</translation>
 <translation id="2024476116966025075">Konfigurovať požadovaný názov domény pre klientov vzdialeného prístupu</translation>
 <translation id="2030905906517501646">Kľúčové slovo predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="203096360153626918">Toto pravidlo nemá žiaden vplyv na aplikácie pre Android. Budú môcť prejsť do režimu celej obrazovky aj v prípade, že je toto pravidlo nastavené na hodnotu <ph name="FALSE" />.</translation>
@@ -472,6 +513,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="209586405398070749">Stabilná verzia</translation>
 <translation id="2098658257603918882">Povoliť hlásenie údajov týkajúcich sa používania a zlyhaní</translation>
 <translation id="2104418465060359056">Nahlasovanie informácií o rozšíreniach a doplnkoch</translation>
+<translation id="2106627642643925514">Prekoná predvolený režim tlače s kódom PIN. Ak nie je tento režim k dispozícii, toto pravidlo sa bude ignorovať.</translation>
 <translation id="2107601598727098402">
         Podpora tohto pravidla bola ukončená vo verzii M72. Použite namiesto neho pravidlo CloudManagementEnrollmentToken.
         </translation>
@@ -489,6 +531,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Keď ho nastavíte na hodnotu false, informácie použiteľné na identifikáciu používateľov sa nezhromažďujú.
 
       Toto pravidlo je účinné iba vtedy, keď povolíte aj rozšírenie <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a zariadenie zaregistrujete prostredníctvom tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="2126178089984117495">Obmedzí režim tlače s kódom PIN. Ak toto pravidlo nenastavíte, znamená to, že sa nepoužijú žiadne obmedzenia. Ak nie je tento režim k dispozícii, toto pravidlo sa bude ignorovať.</translation>
 <translation id="2127599828444728326">Povoliť upozornenia na týchto webových stránkach</translation>
 <translation id="2131902621292742709">Oneskorenie zníženia jasu obrazovky pri napájaní z batérie</translation>
 <translation id="2134437727173969994">Povoliť uzamykanie obrazovky</translation>
@@ -508,6 +551,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2156132677421487971">Umožňuje nakonfigurovať pravidlá pre funkciu <ph name="PRODUCT_NAME" />, ktorá používateľom umožňuje odosielať obsah kariet, webov alebo plochy z prehliadača na vzdialené obrazovky a do vzdialených zvukových systémov.</translation>
 <translation id="2166472654199325139">Nefiltrovať weby podľa obsahu pre dospelých</translation>
 <translation id="2168397434410358693">Oneskorenie režimu nečinnosti pri používaní napájacieho zdroja</translation>
+<translation id="217013996107840632">Parametre príkazového riadka na prepínanie z alternatívneho prehliadača.</translation>
 <translation id="2170233653554726857">Povoliť optimalizáciu pomocou protokolu WPAD</translation>
 <translation id="2176565653304920879">Keď je toto pravidlo nastavené, postup automatického zisťovania časového pásma bude v závislosti od hodnoty daného nastavenia prebiehať jedným z nasledujúcich spôsobov:
 
@@ -768,6 +812,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Toto pravidlo bude dodržané len v prípade, ak je povolené pravidlo „DefaultSearchProviderEnabled“.</translation>
 <translation id="268577405881275241">Povoliť funkciu servera proxy na kompresiu údajov</translation>
 <translation id="2693108589792503178">Konfiguruje webovú adresu zmeny hesla.</translation>
+<translation id="2706708761587205154">Povoliť tlač iba s kódom PIN</translation>
 <translation id="2731627323327011390">Zakázať použitie certifikátov systému <ph name="PRODUCT_OS_NAME" /> v aplikáciách ARC</translation>
 <translation id="2742843273354638707">Skryje na stránke Nová karta a v spúšťači systému <ph name="PRODUCT_OS_NAME" /> aplikáciu Internetový obchod Chrome a odkaz na pätu stránky.
 
@@ -858,7 +903,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       – [a:b:c:d:e:f:g:h] (zodpovedá presnej adrese IP IPv6)
 
-      Ak pravidlo AutoplayAllowed nastavíte na hodnotu true, nebude platiť.
+      Ak pravidlo AutoplayAllowed nastavíte na hodnotu true, toto pravidlo nebude platiť.
 
       Ak ho nastavíte na hodnotu false, ľubovoľné vzory webových adries nastavené v tomto pravidle sa budú môcť prehrávať.
 
@@ -870,6 +915,11 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Ak povolíte toto zariadenie, Ukážka tlače bude používať predvolenú tlačiareň operačného systému OS ako predvolenú cieľovú možnosť.</translation>
 <translation id="2856674246949497058">Ak je verzia operačného systému novšia ako cieľová, prejdite na cieľovú verziu. Počas tohto procesu vykonajte kompletné obnovenie Powerwash.</translation>
+<translation id="2858646435735022107">Ovláda, či sa bude rešpektovať funkcia OK-AS-DELEGATE z platformy KDC alebo či sa bude používať pravidlo AuthNegotiateDelegateWhitelist na obmedzenie delegovania lístkov Kerberos.
+
+          Ak toto pravidlo nastavíte na hodnotu true, overenie HTTP bude rešpektovať nastavenia obmedzeného delegovania v platforme KDC. V takomto prípade sa bude pravidlo AuthNegotiateDelegateWhitelist ignorovať. Ďalšie informácie nájdete na https://tools.ietf.org/html/rfc5896.html.
+
+          Ak toto pravidlo nenastavíte alebo ho nastavíte na hodnotu false, nastavenia obmedzeného delegovania z platformy KDS sa budú ignorovať a bude sa rešpektovať pravidlo AuthNegotiateDelegateWhitelist.</translation>
 <translation id="2872961005593481000">Vypnúť</translation>
 <translation id="2873651257716068683">Prepíše predvolenú veľkosť tlačenej strany. Ak nie je k dispozícii veľkosť strany, toto pravidlo je ignorované.</translation>
 <translation id="2874209944580848064">Poznámka pre zariadenia so systémom <ph name="PRODUCT_OS_NAME" />, ktoré podporujú aplikácie pre Android:</translation>
@@ -1462,6 +1512,7 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
           Toto pravidlo je voliteľné. Ak nie je nastavené, žiadosť o vyhľadávanie obrázka sa odošle pomocou metódy GET.
 
           Toto pravidlo sa rešpektuje iba v prípade, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
+<translation id="427706009709857238">„Povoliť Googlu prístup k Asistentovi na počúvanie frázy aktivácie hlasom“</translation>
 <translation id="4285674129118156176">Povoliť používať funkciu ARC používateľom, ktorí nie sú partneri</translation>
 <translation id="4298509794364745131">Špecifikuje zoznam aplikácií, ktoré môžu byť na uzamknutej obrazovke systému <ph name="PRODUCT_OS_NAME" /> povolené ako aplikácie na písanie poznámok.
 
@@ -1543,6 +1594,7 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
 <translation id="4483649828988077221">Zakázať automatické aktualizácie</translation>
 <translation id="4485425108474077672">Konfigurovať webovú adresu stránky na novej karte</translation>
 <translation id="4492287494009043413">Zákaz zaznamenávania snímok obrazovky</translation>
+<translation id="4494132853995232608">Wilco DTC</translation>
 <translation id="449423975179525290">Nakonfigurujte pravidlá súvisiace s doplnkom <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="450537894712826981">Umožňuje nakonfigurovať veľkosť vyrovnávacej pamäte, ktorú služba <ph name="PRODUCT_NAME" /> použije na ukladanie mediálnych súborov vo vyrovnávacej pamäti na disk.
 
@@ -1711,8 +1763,10 @@ Aplikácie ARC bude môcť používať iba proxy server HTTP s najvyššou prio
 <translation id="4978405676361550165">Ak nastavíte pravidlo OffHours, zadané pravidlá zariadenia budú ignorované (použite predvolené nastavenia týchto pravidiel) počas stanovených časových intervalov. Chrome znova začne používať pravidlá zariadenia, keď sa obdobie pravidla OffHours začne alebo skončí. Používateľ bude upozornený a systém vynúti jeho odhlásenie, keď sa časové obdobie pravidla OffHours skončí a nastavenia pravidiel zariadenia sa zmenia (t. j. keď sa používateľ prihlási pomocou účtu, ktorý nie je povolený).</translation>
 <translation id="4980635395568992380">Typ údajov:</translation>
 <translation id="4983201894483989687">Povoliť spúšťanie zastaraných doplnkov</translation>
+<translation id="4986560318567565414">Cesta prepnutia na Chrome v alternatívnom prehliadači</translation>
 <translation id="4988291787868618635">Akcia po určitej dobe nečinnosti</translation>
 <translation id="4995548127349206948">Či je povolené overenie totožnosti NTLMv2</translation>
+<translation id="5022792010322211583">Používanie obmedzeného delegovania poverení KDC</translation>
 <translation id="5047604665028708335">Povoliť prístup ku stránkam mimo balíkov obsahu</translation>
 <translation id="5052081091120171147">Ak je toto pravidlo povolené, história prehliadania bude importovaná z aktuálneho predvoleného prehliadača. Povolenie tohto pravidla má vplyv aj na dialógové okno importu.
 
@@ -1978,6 +2032,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
       Ak pravidlo stanovené nie je, webová adresa počiatočnej hodnoty variácie sa nezmení.</translation>
 <translation id="5561811616825571914">Automaticky vyberať certifikáty klienta pre tieto weby na prihlasovacej obrazovke</translation>
+<translation id="5566210228171064229">Povoliť tlač s kódom PIN aj bez neho</translation>
 <translation id="556941986578702361">Ovláda nastavenie automatického skrývania poličky systému <ph name="PRODUCT_OS_NAME" />.
 
       Ak je toto pravidlo nastavené na hodnotu AlwaysAutoHideShelf, polička sa bude skrývať automaticky.
@@ -1997,6 +2052,15 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Toto pravidlo je účinné iba vtedy, keď povolíte aj rozšírenie <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a zariadenie zaregistrujete prostredníctvom tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Ovládanie služieb určovania polohy od Googlu v Androide</translation>
 <translation id="5586942249556966598">Nevykonať žiadnu akciu</translation>
+<translation id="5590494712401018042">Určuje percento upravenia oneskorenia stlmenia obrazovky, keď je zariadenie v režime prezentácie.
+
+          Ak toto pravidlo nastavíte, bude určovať percento upravenia oneskorenia stlmenia obrazovky, keď je zariadenie v režime prezentácie. Keď sa upraví oneskorenie stlmenia obrazovky, upravia sa parametre vypnutia obrazovky, uzamknutia obrazovky a nečinnosti obrazovky, aby sa zachovali rovnaké časové intervaly od oneskorenia stlmenia obrazovky podľa pôvodnej konfigurácie.
+
+          Ak toto pravidlo nenastavíte, použije sa predvolený faktor zmeny.
+
+          Toto pravidlo platí iba vtedy, keď je zakázané pravidlo <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" />. V opačnom prípade sa bude toto pravidlo ignorovať, pretože oneskorenie stlmenia obrazovky určuje model strojového učenia.
+
+          Faktor zmeny musí byť minimálne 100 %. Hodnoty, ktoré skrátia oneskorenie stlmenia obrazovky v režime prezentácie viac, ako je bežné oneskorenie stlmenia obrazovky, nie sú povolené.</translation>
 <translation id="5592242031005200087">
       Ak toto pravidlo povolíte, jednotlivé uvedené zdroje v zozname oddelené čiarkami sa spustia vo vlastných procesoch. Zároveň sa tým izolujú zdroje označené subdoménami, napr. ak uvediete adresu https://example.com/, izolovaná bude aj adresa https://foo.example.com/ ako súčasť webu https://example.com/. Ak toto pravidlo zakážete, nenastane žiadna explicitná izoláciu webu a skúšobné testy pravidiel IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť ale pravidlo SitePerProcess ručne povoliť prostredníctvom príznaku v príkazovom riadku.
       Ak toto pravidlo nenakonfigurujete, používateľ bude môcť dané nastavenie zmeniť.
@@ -2210,6 +2274,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
       Ak toto pravidlo nenakonfigurujete, zoznam odpojiteľných zariadení USB bude prázdny.</translation>
 <translation id="6083631234867522991">Windows (klienty Windows):</translation>
+<translation id="6089679180657323464">Ovláda nastavenia diagnostického a telemetrického ovládača Wilco</translation>
 <translation id="6091233616732024397">Presadzovať prihlásenie používateľov pred použitím prehliadača</translation>
 <translation id="6093156968240188330">Umožnite vzdialeným používateľom interagovať počas relácií vzdialenej pomoci s privilegovanými oknami</translation>
 <translation id="6095999036251797924">Stanovuje čas, počas ktorého nebol zadaný žiadny vstup používateľa, a po ktorého uplynutí sa pri používaní napájacieho zdroja alebo batérie uzamkne obrazovka.
@@ -2482,6 +2547,7 @@ Ak značku recommended nastavíte na hodnotu true, používatelia môžu zmeniť
 <translation id="6770454900105963262">Nahlásiť informácie o aktívnych reláciách verejného terminálu</translation>
 <translation id="6786747875388722282">Rozšírenia</translation>
 <translation id="6786967369487349613">Nastaviť adresár roamingového profilu</translation>
+<translation id="6795485990775913659">Povoliť tlač iba bez kódu PIN</translation>
 <translation id="6810445994095397827">Blokovať jazyk JavaScript na týchto webových stránkach</translation>
 <translation id="6813263547126514821">Napájanie a vypínanie</translation>
 <translation id="681446116407619279">Podporované schémy overenia</translation>
@@ -2599,6 +2665,7 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
 
       Toto pravidlo platí iba vtedy, keď je povolená podpora aplikácií pre Linux.</translation>
 <translation id="69525503251220566">Parameter poskytujúci funkciu vyhľadávania podľa obrázka pre predvoleného poskytovateľa vyhľadávania</translation>
+<translation id="6953102253399571439">Predvolene povoliť tlač s kódom PIN</translation>
 <translation id="6956272732789158625">Nepovoliť žiadnym webovým stránkam používať generovanie kľúčov</translation>
 <translation id="6965859329738616662">Určuje, či je povolený inteligentný model stlmenia na predĺženie času do stlmenia obrazovky.
 
@@ -2662,6 +2729,15 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
           Ak toto pravidlo ponecháte nenastavené, použije sa globálna predvolená hodnota pre všetky weby buď z pravidla DefaultWebUsbGuardSetting (ak je nastavené), alebo z osobnej konfigurácie používateľa.
 
           Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, ktoré sú nakonfigurované prostredníctvom pravidla WebUsbAskForUrls. Ak webová adresa zodpovedá obom pravidlám, nie je určené, ktoré z nich má prednosť.</translation>
+<translation id="7086677522575756117">Určuje percento upravenia oneskorenia stlmenia obrazovky, keď sa zistí aktivita používateľa pri stlmenej obrazovke alebo krátko po vypnutí obrazovky.
+
+          Ak toto pravidlo nastavíte, bude určovať percento upravenia oneskorenia stlmenia obrazovky, keď sa zistí aktivita používateľa pri stlmenej obrazovke alebo krátko po vypnutí obrazovky. Keď sa upraví oneskorenie stlmenia, upravia sa parametre vypnutia, uzamknutia a nečinnosti obrazovky, aby sa zachovali rovnaké časové intervaly od oneskorenia stlmenia obrazovky podľa pôvodnej konfigurácie.
+
+          Ak toto pravidlo nenastavíte, použije sa predvolený faktor zmeny.
+
+          Toto pravidlo platí iba vtedy, keď je zakázané pravidlo <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" />. V opačnom prípade sa bude toto pravidlo ignorovať, pretože oneskorenie stlmenia obrazovky určuje model strojového učenia.
+
+          Faktor zmeny musí byť minimálne 100 %.</translation>
 <translation id="7106631983877564505">Povolí uzamknutie v prípade, ak sú zariadenia so systémom <ph name="PRODUCT_OS_NAME" /> nečinné alebo pozastavené.
 
       Ak toto nastavenie povolíte, pri pokuse o odomknutie zariadenia a prebudenie z režimu spánku sa používateľom zobrazí výzva na zadanie hesla.
@@ -2698,6 +2774,7 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
       Toto pravidlo sa dá nastaviť na hodnoty Konzervatívne a Výkonné, ktoré vyberú konfigurácie plánovača úloh doladené na stabilitu pri maximálnej výkonnosti.
 
       Ak pravidlo nenastavíte, používateľ si bude môcť vybrať.</translation>
+<translation id="7145335384492396213">Predvolený režim tlače s kódom PIN</translation>
 <translation id="7158064522994309072">Toto pravidlo ovláda, pomocou ktorého príkazu sa majú webové adresy otvárať v alternatívnom prehliadači.
 
       Keď toto pravidlo ponecháte nenastavené, použije sa predvolená hodnota špecifická pre danú platformu: Internet Explorer pre systém Windows alebo Safari pre systém Mac OS X. Ak ho nenastavíte, v systéme Linux sa alternatívny prehliadač nepodarí spustiť.
@@ -2765,6 +2842,7 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
 
       Nastavením tohto pravidla na hodnotu True tiež zakážete tlačiarne, ktoré používajú protokoly iné ako IPPS, USB a IPP-over-USB, pretože používateľské meno a názov súboru by nemali byť odosielané cez sieť bez zabezpečenia.</translation>
 <translation id="7258823566580374486">Povoliť blokovanie hostiteľov so vzdialeným prístupom</translation>
+<translation id="7260204423892780600">Ovláda nastavenia Asistenta Google.</translation>
 <translation id="7260277299188117560">Protokol p2p na automatické aktualizácie je povolený</translation>
 <translation id="7261252191178797385">Obrázok tapety zariadenia</translation>
 <translation id="7264704483008663819">Podpora tohto pravidla bola ukončená vo verzii M68. Použite namiesto neho pravidlo DeveloperToolsAvailability.
@@ -2874,12 +2952,17 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
           Keď toto pravidlo nastavíte, pôvodný jas obrazovky sa upraví podľa jeho hodnoty, ale používateľ ho môže neskôr zmeniť. Funkcie automatického jasu sú zakázané.
           Keď toto pravidlo nenastavíte, ovládacie prvky obrazovky používateľa a funkcie automatického jasu sa nezmenia.
           Hodnoty tohto pravidla by ste mali uviesť v percentách od 0 do 100.</translation>
+<translation id="7517846421386644905">Umožňuje správcovi ovládať, či má diagnostický a telemetrický ovládač (DTC) Wilco zhromažďovať, spracovávať a nahlasovať telemetrické a diagnostické údaje.
+
+      Ak toto pravidlo nastavíte na hodnotu false alebo ho nenastavíte, DTC bude vypnutý a nebude môcť zhromažďovať, spracovávať ani nahlasovať telemetrické a diagnostické údaje zo zariadenia.
+      Ak je v danom zariadení ovládač Wilco DTC k dispozícii a pravidlo je nastavené na hodnotu true, zhromažďovanie, spracovávanie a nahlasovanie telemetrických a diagnostických údajov bude zapnuté.</translation>
 <translation id="7519251620064708155">Povoliť generovanie kľúčov na týchto webových stránkach</translation>
 <translation id="7529100000224450960">Umožňuje nastaviť zoznam vzorov webových adries určujúcich webové stránky, ktoré môžu otvárať kontextové okná.
 
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultPopupsSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
 <translation id="7529144158022474049">Rozptylový faktor automatických aktualizácií</translation>
 <translation id="7534199150025803530">Toto pravidlo nemá žiaden vplyv na aplikáciu Disk Google pre Android. Ak chcete zabrániť používaniu Disku Google prostredníctvom mobilného pripojenia, mali by ste zakázať inštaláciu aplikácie Disk Google.</translation>
+<translation id="7540622499178214923">Povoliť diagnostický a telemetrický ovládač Wilco</translation>
 <translation id="7547549430720182663">Zlúčiť</translation>
 <translation id="7553535237300701827">Ak nastavíte toto pravidlo, overovanie prihlasovacích údajov bude v závislosti od hodnoty nastavenia prebiehať jedným z nasledujúcich spôsobov:
 
@@ -2901,7 +2984,7 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
 
       Keď toto pravidlo ponecháte nenastavené alebo ho nastavíte na hodnotu 0, pri prejdení na určenú webovú adresu sa táto adresa okamžite otvorí v alternatívnom prehliadači.
 
-      Keď toto pravidlo nastavíte na číslo, Chrome zobrazí hlásenie pre daný počet milisekúnd a potom otvorí alternatívny prehliadač.</translation>
+      Keď toto pravidlo nastavíte na číslo, Chrome zobrazí hlásenie na daný počet milisekúnd a potom otvorí alternatívny prehliadač.</translation>
 <translation id="7593523670408385997">Umožňuje nakonfigurovať veľkosť vyrovnávacej pamäte, ktorú služba <ph name="PRODUCT_NAME" /> použije na ukladanie súborov vo vyrovnávacej pamäti na disk.
 
       Ak nastavíte toto pravidlo, služba <ph name="PRODUCT_NAME" /> použije uvedenú veľkosť vyrovnávacej pamäte bez ohľadu na to, či používateľ určil príznak --disk-cache-size. Hodnota určená v tomto pravidle nie je pevnou hraničnou hodnotou, ale skôr návrhom pre systém ukladania do vyrovnávacej pamäte. Každá hodnota menšia ako niekoľko megabajtov je príliš malá a zaokrúhli sa smerom nahor na rozumné minimum.
@@ -3563,6 +3646,7 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
       Nastavenie tohto pravidla na nižšiu hodnotu má trvalý dôsledok: zariadenie sa MOŽNO nebude môcť vrátiť na skoršie verzie, aj keď pravidlo znova nastavíte na vyššiu hodnotu.
 
       Možnosti skutočného vrátenia môžu tiež závisieť od dosky a opráv závažných chýb zabezpečenia.</translation>
+<translation id="9126014181388780690">Povoliť Asistentovi Google prístup k obsahu na obrazovke</translation>
 <translation id="913195841488580904">Blokovať prístup k zoznamu webových adries</translation>
 <translation id="9135033364005346124">Povoliť server proxy <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9136399279941091445">Intervaly nečinnosti, kedy sú povolené určené pravidlá zariadenia</translation>

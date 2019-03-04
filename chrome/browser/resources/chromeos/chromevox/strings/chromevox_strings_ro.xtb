@@ -751,7 +751,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="6324551002951139333">Greșeală de gramatică detectată</translation>
 <translation id="6325241889020214828">copiază <ph name="TEXT" />.</translation>
 <translation id="6348657800373377022">Casetă combo</translation>
-<translation id="6348869651006731065">Gri închis</translation>
+<translation id="6348869651006731065">Gri șters</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{marcator}few{# marcatori}other{# de marcatori}}</translation>
 <translation id="6355910664415701303">Nu există un element de listă anterior.</translation>
 <translation id="6364795331201459219">titlu 6</translation>
@@ -1138,7 +1138,7 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="8656888282555543604">Activează înregistrarea braille</translation>
 <translation id="8664519043722036194">secunde</translation>
 <translation id="867187640362843212">Titlu 5</translation>
-<translation id="8696284982970258155">Ambrozie</translation>
+<translation id="8696284982970258155">Pepene galben</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{bară verticală}few{# bare verticale}other{# de bare verticale}}</translation>
 <translation id="8735450637152821465">S-a început selectarea</translation>
 <translation id="8743786158317878347">intrați în conținut structurat, cum ar fi tabelele</translation>

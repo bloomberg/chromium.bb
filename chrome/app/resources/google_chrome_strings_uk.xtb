@@ -179,7 +179,6 @@
 <translation id="6014844626092547096">Ви ввійшли в Chrome. Проте ваш адміністратор вимкнув синхронізацію.</translation>
 <translation id="6040143037577758943">Закрити</translation>
 <translation id="6070348360322141662">Щоб підвищити безпеку, Google Chrome шифруватиме ваші дані</translation>
-<translation id="6100051050886660823">Якщо опис зображення відсутній, Google Chrome спробує додати його. Google сканує зображення. Ви можете будь-коли вимкнути це в налаштуваннях.</translation>
 <translation id="6113794647360055231">Chrome став ще кращим</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Бета-версія Google Chrome</translation>
@@ -280,7 +279,6 @@
 <translation id="8823341990149967727">Версія Chrome застаріла</translation>
 <translation id="884296878221830158">Розширення також змінило сторінку, яка відкривається під час запуску Chrome або натискання кнопки "Домашня сторінка".</translation>
 <translation id="8862326446509486874">У вас немає відповідних прав для встановлення на рівні системи. Спробуйте запустити програму встановлення, увійшовши з правами адміністратора.</translation>
-<translation id="8878013752519808729">Якщо опис зображення відсутній, Google Chrome спробує додати його. Google сканує зображення.</translation>
 <translation id="8914504000324227558">Перезапустити Chrome</translation>
 <translation id="9026991721384951619">ОС Chrome не вдалося синхронізувати ваші дані, оскільки дані для входу в обліковий запис застаріли.</translation>
 <translation id="9067395829937117663">Для роботи Google Chrome потрібно мати ОС Windows 7 або новішої версії.</translation>
