@@ -1914,7 +1914,20 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityTableSpans) {
   RunHtmlTest(FILE_PATH_LITERAL("table-spans.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityTableHeadersEmptyFirstCell) {
+  RunHtmlTest(FILE_PATH_LITERAL("table-headers-empty-first-cell.html"));
+}
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityTableHeadersOnAllSides) {
+  RunHtmlTest(FILE_PATH_LITERAL("table-headers-on-all-sides.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityTableMultipleRowAndColumnHeaders) {
+  RunHtmlTest(FILE_PATH_LITERAL("table-multiple-row-and-column-headers.html"));
+}
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityTextarea) {
   RunHtmlTest(FILE_PATH_LITERAL("textarea.html"));
