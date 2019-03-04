@@ -327,7 +327,12 @@ class ServiceWorkerContextClientTest : public testing::Test {
 
     embedded_worker_instance_client->worker_ =
         std::make_unique<FakeWebEmbeddedWorker>(std::move(context_client));
-    context_client_raw->WorkerContextStarted(proxy);
+    // TODO(falken): We should mock a worker thread task runner instead of
+    // using GetSingleThreadTaskRunnerForTesting() again, since that's the
+    // runner we used to mock the main thread when constructing the context
+    // client above.
+    context_client_raw->WorkerContextStarted(
+        proxy, blink::scheduler::GetSingleThreadTaskRunnerForTesting());
 
     blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host;
     out_pipes->service_worker_host_request =

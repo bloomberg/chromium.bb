@@ -16,7 +16,7 @@
 #include "base/callback.h"
 #include "base/containers/id_map.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
@@ -40,8 +40,8 @@
 #include "v8/include/v8.h"
 
 namespace base {
+class SequencedTaskRunner;
 class SingleThreadTaskRunner;
-class TaskRunner;
 }
 
 namespace blink {
@@ -104,7 +104,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   void WorkerScriptLoadedOnMainThread() override;
   void WorkerScriptLoadedOnWorkerThread() override;
   void WorkerContextStarted(
-      blink::WebServiceWorkerContextProxy* proxy) override;
+      blink::WebServiceWorkerContextProxy* proxy,
+      scoped_refptr<base::SequencedTaskRunner> worker_task_runner) override;
   void WillEvaluateScript() override;
   void DidEvaluateScript(bool success) override;
   void DidInitializeWorkerContext(v8::Local<v8::Context> context) override;
@@ -387,7 +388,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-  scoped_refptr<base::TaskRunner> worker_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
 
   // Not owned; |this| is destroyed when |proxy_| becomes invalid.
   blink::WebServiceWorkerContextProxy* proxy_;

@@ -15,6 +15,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
@@ -413,11 +414,14 @@ void ServiceWorkerContextClient::WorkerScriptLoadedOnWorkerThread() {
 }
 
 void ServiceWorkerContextClient::WorkerContextStarted(
-    blink::WebServiceWorkerContextProxy* proxy) {
-  CHECK(!worker_task_runner_.get());
-  DCHECK_NE(0, WorkerThread::GetCurrentId());
+    blink::WebServiceWorkerContextProxy* proxy,
+    scoped_refptr<base::SequencedTaskRunner> worker_task_runner) {
+  DCHECK_NE(0, WorkerThread::GetCurrentId())
+      << "service worker started on the main thread instead of a worker thread";
   RecordDebugLog("WorkerContextStarted");
-  worker_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  CHECK(worker_task_runner->RunsTasksInCurrentSequence());
+  CHECK(!worker_task_runner_);
+  worker_task_runner_ = std::move(worker_task_runner);
   CHECK(!proxy_);
   proxy_ = proxy;
 
@@ -435,7 +439,7 @@ void ServiceWorkerContextClient::WorkerContextStarted(
   CHECK(!context_->service_worker_binding.is_bound());
   CHECK(!context_->controller_impl);
   context_->service_worker_binding.Bind(
-      std::move(pending_service_worker_request_));
+      std::move(pending_service_worker_request_), worker_task_runner_);
 
   if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     auto weak_ptr = GetWeakPtr();
@@ -443,7 +447,8 @@ void ServiceWorkerContextClient::WorkerContextStarted(
     // ensure the WeakPtrFactory is bound to this thread (the worker thread).
     weak_ptr = weak_ptr->GetWeakPtr();
     context_->controller_impl = std::make_unique<ControllerServiceWorkerImpl>(
-        std::move(pending_controller_request_), std::move(weak_ptr));
+        std::move(pending_controller_request_), std::move(weak_ptr),
+        worker_task_runner_);
   }
 
   // Create the idle timer. At this point the timer is not started. It will be
@@ -834,6 +839,10 @@ void ServiceWorkerContextClient::DidHandlePushEvent(
     int request_id,
     blink::mojom::ServiceWorkerEventStatus status) {
   CHECK(worker_task_runner_->RunsTasksInCurrentSequence());
+  if (!context_) {
+    CrashWithDebugLog("DHPE");
+    return;
+  }
   TRACE_EVENT_WITH_FLOW1("ServiceWorker",
                          "ServiceWorkerContextClient::DidHandlePushEvent",
                          TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
@@ -1628,11 +1637,11 @@ void ServiceWorkerContextClient::SetupNavigationPreload(
 }
 
 void ServiceWorkerContextClient::OnIdleTimeout() {
-  // ServiceWorkerTimeoutTimer::did_idle_timeout() returns true if
-  // ServiceWorkerContextClient::OnIdleTiemout() has been called. It means
-  // termination has been requested.
   CHECK(worker_task_runner_->RunsTasksInCurrentSequence());
+  // RequestedTermination() returns true if ServiceWorkerTimeoutTimer agrees
+  // we should request the host to terminate this worker now.
   CHECK(RequestedTermination());
+  RecordDebugLog("OnIdleTimeout");
   (*instance_host_)
       ->RequestTermination(base::BindOnce(
           &ServiceWorkerContextClient::OnRequestedTermination, GetWeakPtr()));
@@ -1644,7 +1653,8 @@ void ServiceWorkerContextClient::OnRequestedTermination(
   CHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   CHECK(context_);
   CHECK(context_->timeout_timer);
-  RecordDebugLog("OnRequestedTermination");
+  RecordDebugLog(will_be_terminated ? "OnRequestedTermination/Y"
+                                    : "OnRequestedTermination/N");
 
   // This worker will be terminated soon. Ignore the message.
   if (will_be_terminated)
@@ -1658,6 +1668,8 @@ void ServiceWorkerContextClient::OnRequestedTermination(
 
 bool ServiceWorkerContextClient::RequestedTermination() const {
   CHECK(worker_task_runner_->RunsTasksInCurrentSequence());
+  CHECK(context_);
+  CHECK(context_->timeout_timer);
   return context_->timeout_timer->did_idle_timeout();
 }
 

@@ -635,7 +635,14 @@ void ServiceWorkerGlobalScopeProxy::DidCreateWorkerGlobalScope(
   DCHECK(!worker_global_scope_);
   worker_global_scope_ =
       static_cast<ServiceWorkerGlobalScope*>(worker_global_scope);
-  Client().WorkerContextStarted(this);
+  // ServiceWorkerContextClient uses this task runner to bind its Mojo
+  // interface, so use kInternalIPC type.
+  // TODO(falken): Consider adding task types for "the handle fetch task source"
+  // and "handle functional event task source" defined in the service worker
+  // spec and use them when dispatching events.
+  scoped_refptr<base::SequencedTaskRunner> worker_task_runner =
+      worker_global_scope->GetThread()->GetTaskRunner(TaskType::kInternalIPC);
+  Client().WorkerContextStarted(this, std::move(worker_task_runner));
 }
 
 void ServiceWorkerGlobalScopeProxy::DidInitializeWorkerContext() {

@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-shared.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
@@ -40,6 +41,10 @@
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "v8/include/v8.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace blink {
 
@@ -101,6 +106,10 @@ class WebServiceWorkerContextClient {
   // be destroyed by the caller. No proxy methods should be called after
   // willDestroyWorkerContext() is called.
   //
+  // |worker_task_runner| is a task runner that runs tasks on the worker thread
+  // and safely discards tasks when the thread stops. See
+  // blink::WorkerThread::GetTaskRunner().
+  //
   // For new workers (on-main-thread script fetch), this is called after
   // WorkerScriptLoadedOnWorkerThread().
   //
@@ -108,7 +117,9 @@ class WebServiceWorkerContextClient {
   // WorkerScriptLoadedOnMainThread().
   //
   // Script evaluation does not start until WillEvaluateScript().
-  virtual void WorkerContextStarted(WebServiceWorkerContextProxy*) {}
+  virtual void WorkerContextStarted(
+      WebServiceWorkerContextProxy*,
+      scoped_refptr<base::SequencedTaskRunner> worker_task_runner) {}
 
   // Called immediately before V8 script evaluation starts for the main script.
   // This means all setup is finally complete: the script has been loaded, the
