@@ -21,6 +21,7 @@
 #include "base/callback_list.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
@@ -75,6 +76,14 @@ constexpr size_t kMinimumReservedAppsContainerCapacity = 60U;
 // Relevance threshold to use when Crostini has not yet been enabled. This value
 // is somewhat arbitrary, but is roughly equivalent to the 'ter' in 'terminal'.
 constexpr double kCrostiniTerminalRelevanceThreshold = 0.8;
+
+// When ranking with the |AppSearchResultRanker| is enabled, this boost is
+// added to all apps that the ranker knows about.
+constexpr float kDefaultRankerScoreBoost = 0.0f;
+
+// When ranking with the |AppSearchResultRanker| is enabled, its scores are
+// multiplied by this amount.
+constexpr float kDefaultRankerScoreCoefficient = 0.1f;
 
 // Adds |app_result| to |results| only in case no duplicate apps were already
 // added. Duplicate means the same app but for different domain, Chrome and
@@ -759,7 +768,26 @@ void AppSearchProvider::UpdateQueriedResults() {
   std::set<std::string> seen_or_filtered_apps;
   const size_t apps_size = apps_.size();
   new_results.reserve(apps_size);
-  const auto& ranker_scores = ranker_->Rank();
+
+  const bool should_rerank =
+      app_list_features::IsAppSearchResultRankerEnabled() &&
+      base::GetFieldTrialParamByFeatureAsBool(
+          app_list_features::kEnableAppSearchResultRanker,
+          "rank_app_query_results", false) &&
+      ranker_ != nullptr;
+  // Maps app IDs to their score according to |ranker_|.
+  base::flat_map<std::string, float> ranker_scores;
+  float ranker_score_coefficient = kDefaultRankerScoreCoefficient;
+  float ranker_score_boost = kDefaultRankerScoreBoost;
+  if (should_rerank) {
+    ranker_scores = ranker_->Rank();
+    ranker_score_coefficient = base::GetFieldTrialParamByFeatureAsDouble(
+        app_list_features::kEnableAppSearchResultRanker,
+        "app_query_coefficient", ranker_score_coefficient);
+    ranker_score_boost = base::GetFieldTrialParamByFeatureAsDouble(
+        app_list_features::kEnableAppSearchResultRanker, "app_query_boost",
+        ranker_score_boost);
+  }
 
   const TokenizedString query_terms(query_);
   for (auto& app : apps_) {
@@ -784,14 +812,14 @@ void AppSearchProvider::UpdateQueriedResults() {
     std::unique_ptr<AppResult> result =
         app->data_source()->CreateResult(app->id(), list_controller_, false);
     result->UpdateFromMatch(*indexed_name, match);
-    // Update scores
-    const auto find_in_ranker = ranker_scores.find(app->id());
-    if (find_in_ranker != ranker_scores.end()) {
-      // TODO(crbug.com/931149): review relevance score's range and update
-      // the formula for new_score
-      const double new_score =
-          result->relevance() + find_in_ranker->second / 10;
-      result->set_relevance(new_score);
+    if (should_rerank) {
+      const auto find_in_ranker = ranker_scores.find(app->id());
+      if (find_in_ranker != ranker_scores.end()) {
+        result->set_relevance(result->relevance() +
+                              ranker_score_coefficient *
+                                  find_in_ranker->second +
+                              ranker_score_boost);
+      }
     }
     MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
   }
