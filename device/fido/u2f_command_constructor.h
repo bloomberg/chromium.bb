@@ -37,21 +37,18 @@ COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<std::vector<uint8_t>> ConvertToU2fRegisterCommand(
     const CtapMakeCredentialRequest& request);
 
-// Extracts APDU encoded U2F check only sign command from
-// CtapMakeCredentialRequest. Invoked when U2F register operation includes key
-// handles in exclude list.
+// Extracts APDU encoded U2F sign command from CtapMakeCredentialRequest.
 COMPONENT_EXPORT(DEVICE_FIDO)
-base::Optional<std::vector<uint8_t>> ConvertToU2fCheckOnlySignCommand(
+base::Optional<std::vector<uint8_t>> ConvertToU2fSignCommand(
     const CtapMakeCredentialRequest& request,
-    const PublicKeyCredentialDescriptor& key_handle);
+    base::span<const uint8_t> key_handle);
 
 // Extracts APDU encoded U2F sign command from CtapGetAssertionRequest.
 COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<std::vector<uint8_t>> ConvertToU2fSignCommand(
     const CtapGetAssertionRequest& request,
     ApplicationParameterType application_parameter_type,
-    base::span<const uint8_t> key_handle,
-    bool check_only = false);
+    base::span<const uint8_t> key_handle);
 
 // TODO(hongjunchoi): Move this logic inside ConvertToU2fRegisterCommand()
 // once U2fRegister is removed.
@@ -67,8 +64,7 @@ COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<std::vector<uint8_t>> ConstructU2fSignCommand(
     base::span<const uint8_t, kU2fApplicationParamLength> application_parameter,
     base::span<const uint8_t, kU2fChallengeParamLength> challenge_parameter,
-    base::span<const uint8_t> key_handle,
-    bool check_only = false);
+    base::span<const uint8_t> key_handle);
 
 COMPONENT_EXPORT(DEVICE_FIDO)
 std::vector<uint8_t> ConstructBogusU2fRegistrationCommand();

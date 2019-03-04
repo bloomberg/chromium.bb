@@ -23,12 +23,9 @@ namespace device {
 class FidoDevice;
 class CtapGetAssertionRequest;
 class AuthenticatorGetAssertionResponse;
-class PublicKeyCredentialDescriptor;
 
 // Represents per device authentication logic for U2F tokens. Handles iterating
-// through credentials in the allowed list, invokes check-only sign, and if
-// check-only sign returns success, invokes regular sign call with user
-// presence enforced.
+// through credentials in the allowed list.
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#using-the-ctap2-authenticatorgetassertion-command-with-ctap1-u2f-authenticators
 class COMPONENT_EXPORT(DEVICE_FIDO) U2fSignOperation
     : public DeviceOperation<CtapGetAssertionRequest,
@@ -43,23 +40,18 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fSignOperation
   void Start() override;
 
  private:
-  using AllowedListIterator =
-      std::vector<PublicKeyCredentialDescriptor>::const_iterator;
-
-  void SendFakeEnrollment();
-  void RetrySign(bool is_fake_enrollment,
-                 ApplicationParameterType application_parameter_type,
-                 const std::vector<uint8_t>& key_handle);
+  void TrySign();
   void OnSignResponseReceived(
-      bool is_fake_enrollment,
-      ApplicationParameterType application_parameter_type,
-      const std::vector<uint8_t>& key_handle,
       base::Optional<std::vector<uint8_t>> device_response);
-  void OnCheckForKeyHandlePresence(
-      ApplicationParameterType application_parameter_type,
-      AllowedListIterator it,
+  void TryFakeEnrollment();
+  void OnEnrollmentResponseReceived(
       base::Optional<std::vector<uint8_t>> device_response);
+  const std::vector<uint8_t>& key_handle() const;
 
+  size_t current_key_handle_index_ = 0;
+  // app_param_type_ identifies whether we're currently trying the RP ID (the
+  // primary value) or an RP-provided U2F AppID.
+  ApplicationParameterType app_param_type_ = ApplicationParameterType::kPrimary;
   base::WeakPtrFactory<U2fSignOperation> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(U2fSignOperation);
