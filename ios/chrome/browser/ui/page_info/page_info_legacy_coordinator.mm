@@ -10,6 +10,8 @@
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/reading_list/features.h"
+#import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
@@ -116,10 +118,21 @@ NSString* const kPageInfoWillHideNotification =
   // Disable fullscreen while the page info UI is displayed.
   [self didStartFullscreenDisablingUI];
 
+  GURL url = navItem->GetURL();
+  bool presenting_offline_page = false;
+  if (reading_list::IsOfflinePageWithoutNativeContentEnabled()) {
+    presenting_offline_page =
+        OfflinePageTabHelper::FromWebState(webState)->presenting_offline_page();
+  } else {
+    presenting_offline_page =
+        url.SchemeIs(kChromeUIScheme) && url.host() == kChromeUIOfflineHost;
+  }
+
   // TODO(crbug.com/760387): Get rid of PageInfoModel completely.
   PageInfoModelBubbleBridge* bridge = new PageInfoModelBubbleBridge();
-  PageInfoModel* pageInfoModel = new PageInfoModel(
-      self.browserState, navItem->GetURL(), navItem->GetSSL(), bridge);
+  PageInfoModel* pageInfoModel =
+      new PageInfoModel(self.browserState, navItem->GetURL(), navItem->GetSSL(),
+                        presenting_offline_page, bridge);
 
   CGPoint originPresentationCoordinates = [self.presentationProvider
       convertToPresentationCoordinatesForOrigin:originPoint];

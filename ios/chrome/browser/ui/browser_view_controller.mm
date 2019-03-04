@@ -51,6 +51,8 @@
 #import "ios/chrome/browser/prerender/preload_controller_delegate.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
+#include "ios/chrome/browser/reading_list/features.h"
+#import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/search_engines_util.h"
@@ -2728,6 +2730,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   NetExportTabHelper::CreateForWebState(tab.webState, self);
   CaptivePortalDetectorTabHelper::CreateForWebState(tab.webState, self);
 
+  if (reading_list::IsOfflinePageWithoutNativeContentEnabled()) {
+    OfflinePageTabHelper::CreateForWebState(
+        tab.webState,
+        ReadingListModelFactory::GetForBrowserState(_browserState));
+  }
+
   // DownloadManagerTabHelper cannot function without delegate.
   DCHECK(_downloadManagerCoordinator);
   DownloadManagerTabHelper::CreateForWebState(tab.webState,
@@ -3612,7 +3620,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (BOOL)hasControllerForURL:(const GURL&)url {
   base::StringPiece host = url.host_piece();
-  if (host == kChromeUIOfflineHost) {
+  if (host == kChromeUIOfflineHost &&
+      !reading_list::IsOfflinePageWithoutNativeContentEnabled()) {
     // Only allow offline URL that are fully specified.
     return reading_list::IsOfflineURLValid(
         url, ReadingListModelFactory::GetForBrowserState(_browserState));
@@ -3654,7 +3663,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                safeAreaInset:safeAreaInset];
     pageController.swipeRecognizerProvider = self.sideSwipeController;
     nativeController = pageController;
-  } else if (url_host == kChromeUIOfflineHost &&
+  } else if (!reading_list::IsOfflinePageWithoutNativeContentEnabled() &&
+             url_host == kChromeUIOfflineHost &&
              [self hasControllerForURL:url]) {
     StaticHtmlNativeContent* staticNativeController =
         [[OfflinePageNativeContent alloc] initWithBrowserState:_browserState

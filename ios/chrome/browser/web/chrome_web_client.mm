@@ -21,6 +21,8 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ios_chrome_main_parts.h"
 #include "ios/chrome/browser/passwords/password_manager_features.h"
+#include "ios/chrome/browser/reading_list/features.h"
+#import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #include "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
 #include "ios/chrome/browser/web/chrome_overlay_manifests.h"
 #import "ios/chrome/browser/web/error_page_util.h"
@@ -209,6 +211,20 @@ void ChromeWebClient::PrepareErrorPage(web::WebState* web_state,
                                        bool is_post,
                                        bool is_off_the_record,
                                        NSString** error_html) {
+  if (reading_list::IsOfflinePageWithoutNativeContentEnabled()) {
+    OfflinePageTabHelper* offline_page_tab_helper =
+        OfflinePageTabHelper::FromWebState(web_state);
+    // WebState that are not attached to a tab may not have a
+    // OfflinePageTabHelper.
+    if (offline_page_tab_helper &&
+        offline_page_tab_helper->HasDistilledVersionForOnlineUrl(url)) {
+      // An offline version of the page will be displayed to replace this error
+      // page. Return an empty error page to avoid having the error page
+      // flash vefore the offline version is loaded.
+      *error_html = @"";
+      return;
+    }
+  }
   DCHECK(error);
   *error_html = GetErrorPage(url, error, is_post, is_off_the_record);
 }

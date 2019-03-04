@@ -52,6 +52,7 @@
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/find_in_page/features.h"
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
+#include "ios/chrome/browser/reading_list/features.h"
 #include "ios/chrome/browser/search_engines/feature_flags.h"
 #include "ios/chrome/browser/signin/feature_flags.h"
 #include "ios/chrome/browser/system_flags.h"
@@ -567,6 +568,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableSyncUSSPasswordsName,
      flag_descriptions::kEnableSyncUSSPasswordsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(switches::kSyncUSSPasswords)},
+    {"offline-page-without-native-content",
+     flag_descriptions::kOfflineVersionWithoutNativeContentName,
+     flag_descriptions::kOfflineVersionWithoutNativeContentDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(reading_list::kOfflineVersionWithoutNativeContent)},
 };
 
 // Add all switches from experimental flags to |command_line|.

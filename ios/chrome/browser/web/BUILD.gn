@@ -233,6 +233,7 @@ source_set("web_internal") {
     "//ios/chrome/browser/content_settings",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/passwords",
+    "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/ui/util",
     "//ios/public/provider/chrome/browser",

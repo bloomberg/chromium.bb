@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/passwords/password_manager_features.h"
 #import "ios/chrome/browser/web/error_page_util.h"
 #import "ios/web/public/test/error_test_util.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/test/js_test_util.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
 #import "ios/web/public/web_view_creation_util.h"
@@ -187,7 +188,8 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageNonPostNonOtr) {
   ChromeWebClient web_client;
   NSError* error = CreateTestError();
   NSString* page = nil;
-  web_client.PrepareErrorPage(/*web_state*/ nullptr, GURL(kTestUrl), error,
+  web::TestWebState test_web_state;
+  web_client.PrepareErrorPage(&test_web_state, GURL(kTestUrl), error,
                               /*is_post=*/false,
                               /*is_off_the_record=*/false, &page);
   EXPECT_NSEQ(GetErrorPage(GURL(kTestUrl), error, /*is_post=*/false,
@@ -200,7 +202,8 @@ TEST_F(ChromeWebClientTest, PrepareErrorPagePostNonOtr) {
   ChromeWebClient web_client;
   NSError* error = CreateTestError();
   NSString* page = nil;
-  web_client.PrepareErrorPage(/*web_state*/ nullptr, GURL(kTestUrl), error,
+  web::TestWebState test_web_state;
+  web_client.PrepareErrorPage(&test_web_state, GURL(kTestUrl), error,
                               /*is_post=*/true,
                               /*is_off_the_record=*/false, &page);
   EXPECT_NSEQ(GetErrorPage(GURL(kTestUrl), error, /*is_post=*/true,
@@ -213,7 +216,8 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageNonPostOtr) {
   ChromeWebClient web_client;
   NSError* error = CreateTestError();
   NSString* page = nil;
-  web_client.PrepareErrorPage(/*web_state*/ nullptr, GURL(kTestUrl), error,
+  web::TestWebState test_web_state;
+  web_client.PrepareErrorPage(&test_web_state, GURL(kTestUrl), error,
                               /*is_post=*/false,
                               /*is_off_the_record=*/true, &page);
   EXPECT_NSEQ(GetErrorPage(GURL(kTestUrl), error, /*is_post=*/false,
@@ -226,7 +230,8 @@ TEST_F(ChromeWebClientTest, PrepareErrorPagePostOtr) {
   ChromeWebClient web_client;
   NSError* error = CreateTestError();
   NSString* page = nil;
-  web_client.PrepareErrorPage(/*web_state*/ nullptr, GURL(kTestUrl), error,
+  web::TestWebState test_web_state;
+  web_client.PrepareErrorPage(&test_web_state, GURL(kTestUrl), error,
                               /*is_post=*/true,
                               /*is_off_the_record=*/true, &page);
   EXPECT_NSEQ(GetErrorPage(GURL(kTestUrl), error, /*is_post=*/true,

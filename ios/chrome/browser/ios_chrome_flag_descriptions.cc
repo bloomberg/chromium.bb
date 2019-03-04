@@ -320,6 +320,11 @@ const char kNonModalDialogsDescription[] =
     "Presents JavaScript dialogs non-modally so that the user can change tabs "
     "while a dialog is displayed.";
 
+const char kOfflineVersionWithoutNativeContentName[] =
+    "Use offline pages without native content";
+const char kOfflineVersionWithoutNativeContentDescription[] =
+    "Shows offline pages directly in the web view.";
+
 const char kOmniboxPopupShortcutIconsInZeroStateName[] =
     "Show zero-state omnibox shortcuts";
 const char kOmniboxPopupShortcutIconsInZeroStateDescription[] =

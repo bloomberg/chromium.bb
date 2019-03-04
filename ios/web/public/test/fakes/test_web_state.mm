@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#import "base/strings/sys_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #import "ios/web/public/crw_navigation_item_storage.h"
 #import "ios/web/public/crw_session_storage.h"
@@ -143,6 +144,16 @@ void TestWebState::SetWebViewProxy(CRWWebViewProxyType web_view_proxy) {
 
 CRWJSInjectionReceiver* TestWebState::GetJSInjectionReceiver() const {
   return injection_receiver_;
+}
+
+void TestWebState::LoadData(NSData* data,
+                            NSString* mime_type,
+                            const GURL& url) {
+  SetCurrentURL(url);
+  mime_type_ = base::SysNSStringToUTF8(mime_type);
+  last_loaded_data_ = data;
+  // Load Data is always a success. Send the event accordingly.
+  OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
 }
 
 void TestWebState::ExecuteJavaScript(const base::string16& javascript) {
@@ -302,6 +313,10 @@ base::string16 TestWebState::GetLastExecutedJavascript() const {
   return last_executed_javascript_;
 }
 
+NSData* TestWebState::GetLastLoadedData() const {
+  return last_loaded_data_;
+}
+
 void TestWebState::SetCurrentURL(const GURL& url) {
   url_ = url;
 }
@@ -377,9 +392,5 @@ void TestWebState::TakeSnapshot(const gfx::RectF& rect,
                                 SnapshotCallback callback) {
   std::move(callback).Run(gfx::Image([[UIImage alloc] init]));
 }
-
-void TestWebState::LoadData(NSData* data,
-                            NSString* mime_type,
-                            const GURL& url) {}
 
 }  // namespace web

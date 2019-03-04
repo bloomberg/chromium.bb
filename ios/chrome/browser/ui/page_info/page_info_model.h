@@ -91,10 +91,12 @@ class PageInfoModel {
     // action on top of dismissing the sheet.
     ButtonAction button;
   };
-
+  // |is_offline_page| is true if related WebState presents Offline Version of
+  // the page.
   PageInfoModel(ios::ChromeBrowserState* browser_state,
                 const GURL& url,
                 const web::SSLStatus& ssl,
+                bool is_offline_page,
                 PageInfoModelObserver* observer);
   ~PageInfoModel();
 
