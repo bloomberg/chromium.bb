@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_WELCOME_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_WELCOME_VIEW_H_
 
+#include <string>
+
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 
 namespace chromeos {
@@ -36,6 +38,12 @@ class WelcomeView {
 
   // Reloads localized contents.
   virtual void ReloadLocalizedContent() = 0;
+
+  // Change the current input method.
+  virtual void SetInputMethodId(const std::string& input_method_id) = 0;
+
+  // Change the current timezone.
+  virtual void SetTimezoneId(const std::string& timezone_id) = 0;
 };
 
 }  // namespace chromeos

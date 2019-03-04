@@ -7,39 +7,37 @@
  */
 
 login.createScreen('WelcomeScreen', 'connect', function() {
-  var CONTEXT_KEY_LOCALE = 'locale';
-  var CONTEXT_KEY_INPUT_METHOD = 'input-method';
-  var CONTEXT_KEY_TIMEZONE = 'timezone';
-
   return {
-    EXTERNAL_API: [],
+    EXTERNAL_API:
+        ['onInputMethodIdSetFromBackend', 'onTimezoneIdSetFromBackend'],
 
     /** @override */
     decorate: function() {
       var welcomeScreen = $('oobe-welcome-md');
       welcomeScreen.screen = this;
 
-      this.context.addObserver(
-          CONTEXT_KEY_INPUT_METHOD, function(inputMethodId) {
-            $('oobe-welcome-md').setSelectedKeyboard(inputMethodId);
-          });
-
       this.updateLocalizedContent();
     },
 
+    onInputMethodIdSetFromBackend: function(inputMethodId) {
+      $('oobe-welcome-md').setSelectedKeyboard(inputMethodId);
+    },
+
+    onTimezoneIdSetFromBackend: function(timezoneId) {
+      // Timezone change triggers a localized content update so we don't need to
+      // do anything here.
+    },
+
     onLanguageSelected_: function(languageId) {
-      this.context.set(CONTEXT_KEY_LOCALE, languageId);
-      this.commitContextChanges();
+      chrome.send('WelcomeScreen.setLocaleId', [languageId]);
     },
 
     onKeyboardSelected_: function(inputMethodId) {
-      this.context.set(CONTEXT_KEY_INPUT_METHOD, inputMethodId);
-      this.commitContextChanges();
+      chrome.send('WelcomeScreen.setInputMethodId', [inputMethodId]);
     },
 
     onTimezoneSelected_: function(timezoneId) {
-      this.context.set(CONTEXT_KEY_TIMEZONE, timezoneId);
-      this.commitContextChanges();
+      chrome.send('WelcomeScreen.setTimezoneId', [timezoneId]);
     },
 
     onBeforeShow: function(data) {
@@ -70,7 +68,8 @@ login.createScreen('WelcomeScreen', 'connect', function() {
       $('oobe-welcome-md').updateLocalizedContent();
     },
 
-    /** Called when OOBE configuration is loaded.
+    /**
+     * Called when OOBE configuration is loaded.
      * @param {!OobeTypes.OobeConfiguration} configuration
      */
     updateOobeConfiguration: function(configuration) {
