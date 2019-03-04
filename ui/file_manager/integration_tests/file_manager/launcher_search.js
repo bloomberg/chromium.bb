@@ -7,12 +7,12 @@
 
 'use strict';
 
-(function() {
+(() => {
 
 /**
  * Tests opening an image using the Launcher app's search feature.
  */
-testcase.launcherOpenSearchResult = async function() {
+testcase.launcherOpenSearchResult = async () => {
   const imageName = ENTRIES.desktop.nameText;
 
   // Create an image file in Drive.
@@ -49,7 +49,7 @@ const hostedDocument = Object.assign(
 /**
  * Tests Local and Drive files show up in search results.
  */
-testcase.launcherSearch = async function() {
+testcase.launcherSearch = async () => {
   // Create a file in Downloads, and a pinned and unpinned file in Drive.
   await setupAndWaitUntilReady(
       'downloads', [ENTRIES.tallText],
@@ -72,7 +72,7 @@ testcase.launcherSearch = async function() {
 /**
  * Tests Local and Drive files show up in search results.
  */
-testcase.launcherSearchOffline = async function() {
+testcase.launcherSearchOffline = async () => {
   // Create a file in Downloads, and a pinned and unpinned file in Drive.
   await setupAndWaitUntilReady(
       'downloads', [ENTRIES.tallText],

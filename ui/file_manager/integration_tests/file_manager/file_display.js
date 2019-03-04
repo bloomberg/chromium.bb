@@ -31,21 +31,21 @@ async function fileDisplay(path, defaultEntries) {
 /**
  * Tests files display in Downloads.
  */
-testcase.fileDisplayDownloads = function() {
+testcase.fileDisplayDownloads = () => {
   return fileDisplay(RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET);
 };
 
 /**
  * Tests files display in Google Drive.
  */
-testcase.fileDisplayDrive = function() {
+testcase.fileDisplayDrive = () => {
   return fileDisplay(RootPath.DRIVE, BASIC_DRIVE_ENTRY_SET);
 };
 
 /**
  * Tests file display rendering in offline Google Drive.
  */
-testcase.fileDisplayDriveOffline = async function() {
+testcase.fileDisplayDriveOffline = async () => {
   const driveFiles =
       [ENTRIES.hello, ENTRIES.pinned, ENTRIES.photos, ENTRIES.testDocument];
 
@@ -90,7 +90,7 @@ testcase.fileDisplayDriveOffline = async function() {
 /**
  * Tests file display rendering in online Google Drive.
  */
-testcase.fileDisplayDriveOnline = async function() {
+testcase.fileDisplayDriveOnline = async () => {
   // Open Files app on Drive.
   const appId =
       await setupAndWaitUntilReady(RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET);
@@ -112,7 +112,7 @@ testcase.fileDisplayDriveOnline = async function() {
  * we can navigate to folders inside /Computers also has the side effect of
  * testing that the breadcrumbs are working.
  */
-testcase.fileDisplayComputers = async function() {
+testcase.fileDisplayComputers = async () => {
   // Open Files app on Drive with Computers registered.
   const appId =
       await setupAndWaitUntilReady(RootPath.DRIVE, [], COMPUTERS_ENTRY_SET);
@@ -134,7 +134,7 @@ testcase.fileDisplayComputers = async function() {
 /**
  * Tests files display in an MTP volume.
  */
-testcase.fileDisplayMtp = async function() {
+testcase.fileDisplayMtp = async () => {
   const MTP_VOLUME_QUERY = '#directory-tree [volume-type-icon="mtp"]';
 
   // Open Files app on local downloads.
@@ -158,7 +158,7 @@ testcase.fileDisplayMtp = async function() {
 /**
  * Tests files display in a removable USB volume.
  */
-testcase.fileDisplayUsb = async function() {
+testcase.fileDisplayUsb = async () => {
   const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
 
   // Open Files app on local downloads.
@@ -182,7 +182,7 @@ testcase.fileDisplayUsb = async function() {
 /**
  * Tests files display on a removable USB volume with and without partitions.
  */
-testcase.fileDisplayUsbPartition = async function() {
+testcase.fileDisplayUsbPartition = async () => {
   // Open Files app on local downloads.
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
@@ -236,7 +236,7 @@ testcase.fileDisplayUsbPartition = async function() {
  * Tests partitions display in the file table when root removable entry
  * is selected. Checks file system type is displayed.
  */
-testcase.fileDisplayPartitionFileTable = async function() {
+testcase.fileDisplayPartitionFileTable = async () => {
   const removableGroup = '#directory-tree [root-type-icon="removable"]';
 
   // Open Files app on local downloads.
@@ -294,14 +294,14 @@ async function searchDownloads(searchTerm, expectedResults) {
 /**
  * Tests case-senstive search for an entry in Downloads.
  */
-testcase.fileSearch = function() {
+testcase.fileSearch = () => {
   return searchDownloads('hello', [ENTRIES.hello]);
 };
 
 /**
  * Tests case-insenstive search for an entry in Downloads.
  */
-testcase.fileSearchCaseInsensitive = function() {
+testcase.fileSearchCaseInsensitive = () => {
   return searchDownloads('HELLO', [ENTRIES.hello]);
 };
 
@@ -309,7 +309,7 @@ testcase.fileSearchCaseInsensitive = function() {
  * Tests searching for a string doesn't match anything in Downloads and that
  * there are no displayed items that match the search string.
  */
-testcase.fileSearchNotFound = async function() {
+testcase.fileSearchNotFound = async () => {
   const searchTerm = 'blahblah';
 
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
@@ -334,7 +334,7 @@ testcase.fileSearchNotFound = async function() {
  * Tests Files app opening without errors when there isn't Downloads which is
  * the default volume.
  */
-testcase.fileDisplayWithoutDownloadsVolume = async function() {
+testcase.fileDisplayWithoutDownloadsVolume = async () => {
   // Ensure no volumes are mounted.
   chrome.test.assertEq(
       0, await remoteCall.callRemoteTestUtil('getVolumesCount', null, []));
@@ -355,7 +355,7 @@ testcase.fileDisplayWithoutDownloadsVolume = async function() {
 /**
  * Tests Files app opening without errors when there are no volumes at all.
  */
-testcase.fileDisplayWithoutVolumes = async function() {
+testcase.fileDisplayWithoutVolumes = async () => {
   // Ensure no volumes are mounted.
   chrome.test.assertEq(
       0, await remoteCall.callRemoteTestUtil('getVolumesCount', null, []));
@@ -373,7 +373,7 @@ testcase.fileDisplayWithoutVolumes = async function() {
  * then mounting Downloads volume which should appear and be able to display its
  * files.
  */
-testcase.fileDisplayWithoutVolumesThenMountDownloads = async function() {
+testcase.fileDisplayWithoutVolumesThenMountDownloads = async () => {
   // Ensure no volumes are mounted.
   chrome.test.assertEq(
       0, await remoteCall.callRemoteTestUtil('getVolumesCount', null, []));
@@ -405,7 +405,7 @@ testcase.fileDisplayWithoutVolumesThenMountDownloads = async function() {
  * then mounting Drive volume which should appear and be able to display its
  * files.
  */
-testcase.fileDisplayWithoutVolumesThenMountDrive = async function() {
+testcase.fileDisplayWithoutVolumesThenMountDrive = async () => {
   // Ensure no volumes are mounted.
   chrome.test.assertEq(
       0, await remoteCall.callRemoteTestUtil('getVolumesCount', null, []));
@@ -441,7 +441,7 @@ testcase.fileDisplayWithoutVolumesThenMountDrive = async function() {
 /**
  * Tests Files app opening without Drive mounted.
  */
-testcase.fileDisplayWithoutDrive = async function() {
+testcase.fileDisplayWithoutDrive = async () => {
   // Ensure no volumes are mounted.
   chrome.test.assertEq(
       0, await remoteCall.callRemoteTestUtil('getVolumesCount', null, []));
@@ -477,7 +477,7 @@ testcase.fileDisplayWithoutDrive = async function() {
  * Tests Files app opening without Drive mounted and then disabling and
  * re-enabling Drive.
  */
-testcase.fileDisplayWithoutDriveThenDisable = async function() {
+testcase.fileDisplayWithoutDriveThenDisable = async () => {
   // Ensure no volumes are mounted.
   chrome.test.assertEq(
       0, await remoteCall.callRemoteTestUtil('getVolumesCount', null, []));
@@ -542,7 +542,7 @@ testcase.fileDisplayWithoutDriveThenDisable = async function() {
  * Tests Files app resisting the urge to switch to Downloads when mounts change.
  * re-enabling Drive.
  */
-testcase.fileDisplayMountWithFakeItemSelected = async function() {
+testcase.fileDisplayMountWithFakeItemSelected = async () => {
   // Open Files app on Drive with the given test files.
   const appId = await setupAndWaitUntilReady(
       RootPath.DOWNLOADS, [ENTRIES.newlyAdded], []);
@@ -572,7 +572,7 @@ testcase.fileDisplayMountWithFakeItemSelected = async function() {
  * Tests Files app switching away from Drive virtual folders when Drive is
  * unmounted.
  */
-testcase.fileDisplayUnmountDriveWithSharedWithMeSelected = async function() {
+testcase.fileDisplayUnmountDriveWithSharedWithMeSelected = async () => {
   // Open Files app on Drive with the given test files.
   const appId = await setupAndWaitUntilReady(
       RootPath.DRIVE, [ENTRIES.newlyAdded],
@@ -686,7 +686,7 @@ async function unmountRemovableVolume(removableDirectory) {
  * Tests Files app switches away from a removable device root after the USB is
  * unmounted.
  */
-testcase.fileDisplayUnmountRemovableRoot = function() {
+testcase.fileDisplayUnmountRemovableRoot = () => {
   return unmountRemovableVolume('Drive Label');
 };
 
@@ -694,7 +694,7 @@ testcase.fileDisplayUnmountRemovableRoot = function() {
  * Tests Files app switches away from a partition inside the USB after the USB
  * is unmounted.
  */
-testcase.fileDisplayUnmountFirstPartition = function() {
+testcase.fileDisplayUnmountFirstPartition = () => {
   return unmountRemovableVolume('partition-1');
 };
 
@@ -702,6 +702,6 @@ testcase.fileDisplayUnmountFirstPartition = function() {
  * Tests Files app switches away from a partition inside the USB after the USB
  * is unmounted. Partition-1 will be ejected first.
  */
-testcase.fileDisplayUnmountLastPartition = function() {
+testcase.fileDisplayUnmountLastPartition = () => {
   return unmountRemovableVolume('partition-2');
 };

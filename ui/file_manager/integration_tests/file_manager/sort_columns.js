@@ -6,7 +6,7 @@
 /**
  * Tests the order is sorted correctly for each of the columns.
  */
-testcase.sortColumns = async function() {
+testcase.sortColumns = async () => {
   const NAME_ASC = TestEntryInfo.getExpectedRows([
     ENTRIES.photos,
     ENTRIES.beautiful,

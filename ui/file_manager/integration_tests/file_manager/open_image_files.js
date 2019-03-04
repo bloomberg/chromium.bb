@@ -4,7 +4,7 @@
 
 'use strict';
 
-(function() {
+(() => {
 
 /**
  * Tests opening (then closing) the image Gallery from Files app.
@@ -75,19 +75,19 @@ async function imageOpenGalleryOpen(path) {
       galleryAppId, 800, 600, 'My Desktop Background');
 }
 
-testcase.imageOpenDownloads = function() {
+testcase.imageOpenDownloads = () => {
   return imageOpen(RootPath.DOWNLOADS);
 };
 
-testcase.imageOpenDrive = function() {
+testcase.imageOpenDrive = () => {
   return imageOpen(RootPath.DRIVE);
 };
 
-testcase.imageOpenGalleryOpenDownloads = function() {
+testcase.imageOpenGalleryOpenDownloads = () => {
   return imageOpenGalleryOpen(RootPath.DOWNLOADS);
 };
 
-testcase.imageOpenGalleryOpenDrive = function() {
+testcase.imageOpenGalleryOpenDrive = () => {
   return imageOpenGalleryOpen(RootPath.DRIVE);
 };
 })();

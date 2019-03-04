@@ -130,7 +130,7 @@ async function manageWithDriveExpectBrowserURL(
 /**
  * Tests sharing a file on Drive.
  */
-testcase.shareFileDrive = function() {
+testcase.shareFileDrive = () => {
   const URL = 'https://file_alternate_link/world.ogv?userstoinvite=%22%22';
   return shareWithOthersExpectBrowserURL('world.ogv', URL);
 };
@@ -138,7 +138,7 @@ testcase.shareFileDrive = function() {
 /**
  * Tests sharing a directory on Drive.
  */
-testcase.shareDirectoryDrive = function() {
+testcase.shareDirectoryDrive = () => {
   const URL = 'https://folder_alternate_link/photos?userstoinvite=%22%22';
   return shareWithOthersExpectBrowserURL('photos', URL);
 };
@@ -146,7 +146,7 @@ testcase.shareDirectoryDrive = function() {
 /**
  * Tests sharing a hosted file (gdoc) on Drive.
  */
-testcase.shareHostedFileDrive = function() {
+testcase.shareHostedFileDrive = () => {
   const URL =
       'https://document_alternate_link/Test%20Document?userstoinvite=%22%22';
   return shareWithOthersExpectBrowserURL('Test Document.gdoc', URL);
@@ -155,7 +155,7 @@ testcase.shareHostedFileDrive = function() {
 /**
  * Tests managing a file on Drive.
  */
-testcase.manageFileDrive = function() {
+testcase.manageFileDrive = () => {
   const URL = 'https://file_alternate_link/world.ogv';
   return manageWithDriveExpectBrowserURL('world.ogv', URL);
 };
@@ -163,7 +163,7 @@ testcase.manageFileDrive = function() {
 /**
  * Tests managing a directory on Drive.
  */
-testcase.manageDirectoryDrive = function() {
+testcase.manageDirectoryDrive = () => {
   const URL = 'https://folder_alternate_link/photos';
   return manageWithDriveExpectBrowserURL('photos', URL);
 };
@@ -171,7 +171,7 @@ testcase.manageDirectoryDrive = function() {
 /**
  * Tests managing a hosted file (gdoc) on Drive.
  */
-testcase.manageHostedFileDrive = function() {
+testcase.manageHostedFileDrive = () => {
   const URL = 'https://document_alternate_link/Test%20Document';
   return manageWithDriveExpectBrowserURL('Test Document.gdoc', URL);
 };
@@ -179,7 +179,7 @@ testcase.manageHostedFileDrive = function() {
 /**
  * Tests sharing a file in a team drive.
  */
-testcase.shareFileTeamDrive = function() {
+testcase.shareFileTeamDrive = () => {
   const URL =
       'https://file_alternate_link/teamDriveAFile.txt?userstoinvite=%22%22';
   return shareWithOthersExpectBrowserURL(
@@ -189,7 +189,7 @@ testcase.shareFileTeamDrive = function() {
 /**
  * Tests that sharing a directory in a team drive is not allowed.
  */
-testcase.shareDirectoryTeamDrive = async function() {
+testcase.shareDirectoryTeamDrive = async () => {
   const teamDrive = 'Team Drive A';
   const path = 'teamDriveADirectory';
 
@@ -231,7 +231,7 @@ testcase.shareDirectoryTeamDrive = async function() {
 /**
  * Tests sharing a hosted file (gdoc) in a team drive.
  */
-testcase.shareHostedFileTeamDrive = function() {
+testcase.shareHostedFileTeamDrive = () => {
   const URL =
       'https://document_alternate_link/teamDriveAHostedDoc?userstoinvite=%22%22';
   return shareWithOthersExpectBrowserURL(
@@ -241,7 +241,7 @@ testcase.shareHostedFileTeamDrive = function() {
 /**
  * Tests managing a file in a team drive.
  */
-testcase.manageFileTeamDrive = function() {
+testcase.manageFileTeamDrive = () => {
   const URL = 'https://file_alternate_link/teamDriveAFile.txt';
   return manageWithDriveExpectBrowserURL(
       'teamDriveAFile.txt', URL, 'Team Drive A');
@@ -250,7 +250,7 @@ testcase.manageFileTeamDrive = function() {
 /**
  * Tests managing a directory in a team drive.
  */
-testcase.manageDirectoryTeamDrive = function() {
+testcase.manageDirectoryTeamDrive = () => {
   const URL = 'https://folder_alternate_link/teamDriveADirectory';
   return manageWithDriveExpectBrowserURL(
       'teamDriveADirectory', URL, 'Team Drive A');
@@ -259,7 +259,7 @@ testcase.manageDirectoryTeamDrive = function() {
 /**
  * Tests managing a hosted file (gdoc) in a team drive.
  */
-testcase.manageHostedFileTeamDrive = function() {
+testcase.manageHostedFileTeamDrive = () => {
   const URL = 'https://document_alternate_link/teamDriveAHostedDoc';
   return manageWithDriveExpectBrowserURL(
       'teamDriveAHostedDoc.gdoc', URL, 'Team Drive A');
@@ -268,7 +268,7 @@ testcase.manageHostedFileTeamDrive = function() {
 /**
  * Tests managing a team drive.
  */
-testcase.manageTeamDrive = function() {
+testcase.manageTeamDrive = () => {
   const URL = 'https://folder_alternate_link/Team%20Drive%20A';
   return manageWithDriveExpectBrowserURL('Team Drive A', URL, '');
 };
@@ -276,7 +276,7 @@ testcase.manageTeamDrive = function() {
 /**
  * Tests sharing a team drive.
  */
-testcase.shareTeamDrive = function() {
+testcase.shareTeamDrive = () => {
   const URL =
       'https://folder_alternate_link/Team%20Drive%20A?userstoinvite=%22%22';
   return shareWithOthersExpectBrowserURL('Team Drive A', URL, '');

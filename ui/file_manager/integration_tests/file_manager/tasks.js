@@ -107,7 +107,7 @@ async function defaultTaskDialog(appId, expectedTaskId) {
   const caller = getCaller();
 
   // Wait for the list of menu item is added as expected.
-  await repeatUntil(async function() {
+  await repeatUntil(async () => {
     // Obtains menu items.
     const items = await remoteCall.callRemoteTestUtil(
         'queryAllElements', appId,
@@ -158,27 +158,27 @@ async function defaultTaskDialog(appId, expectedTaskId) {
   await remoteCall.waitUntilTaskExecutes(appId, expectedTaskId);
 }
 
-testcase.executeDefaultTaskDrive = async function() {
+testcase.executeDefaultTaskDrive = async () => {
   const appId = await setupTaskTest(RootPath.DRIVE, DRIVE_FAKE_TASKS);
   await executeDefaultTask(appId, 'dummytaskid|drive|open-with');
 };
 
-testcase.executeDefaultTaskDownloads = async function() {
+testcase.executeDefaultTaskDownloads = async () => {
   const appId = await setupTaskTest(RootPath.DOWNLOADS, DOWNLOADS_FAKE_TASKS);
   await executeDefaultTask(appId, 'dummytaskid|open-with');
 };
 
-testcase.defaultTaskDialogDrive = async function() {
+testcase.defaultTaskDialogDrive = async () => {
   const appId = await setupTaskTest(RootPath.DRIVE, DRIVE_FAKE_TASKS);
   await defaultTaskDialog(appId, 'dummytaskid-2|drive|open-with');
 };
 
-testcase.defaultTaskDialogDownloads = async function() {
+testcase.defaultTaskDialogDownloads = async () => {
   const appId = await setupTaskTest(RootPath.DOWNLOADS, DOWNLOADS_FAKE_TASKS);
   await defaultTaskDialog(appId, 'dummytaskid-2|open-with');
 };
 
-testcase.genericTaskIsNotExecuted = async function() {
+testcase.genericTaskIsNotExecuted = async () => {
   const tasks = [new FakeTask(
       false, 'dummytaskid|open-with', 'DummyTask1',
       true /* isGenericFileHandler */)];
@@ -193,7 +193,7 @@ testcase.genericTaskIsNotExecuted = async function() {
       appId, FILE_MANAGER_EXTENSIONS_ID + '|file|view-in-browser');
 };
 
-testcase.genericTaskAndNonGenericTask = async function() {
+testcase.genericTaskAndNonGenericTask = async () => {
   const tasks = [
     new FakeTask(
         false, 'dummytaskid|open-with', 'DummyTask1',

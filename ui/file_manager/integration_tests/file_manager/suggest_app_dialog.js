@@ -7,7 +7,7 @@
 /**
  * Tests sharing a file on Drive
  */
-testcase.suggestAppDialog = async function() {
+testcase.suggestAppDialog = async () => {
   // Fetch the mock CWS page data.
   const data =
       JSON.parse(await sendTestMessage({name: 'getCwsWidgetContainerMockUrl'}));

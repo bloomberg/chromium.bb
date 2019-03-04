@@ -219,28 +219,28 @@ const TEST_LOCAL_FILE = BASIC_LOCAL_ENTRY_SET[0].targetPath;
 /**
  * Tests opening file dialog on Downloads and closing it with Ok button.
  */
-testcase.openFileDialogDownloads = function() {
+testcase.openFileDialogDownloads = () => {
   return openFileDialogClickOkButton('downloads', TEST_LOCAL_FILE);
 };
 
 /**
  * Tests opening save file dialog on Downloads and closing it with Ok button.
  */
-testcase.saveFileDialogDownloads = function() {
+testcase.saveFileDialogDownloads = () => {
   return saveFileDialogClickOkButton('downloads', TEST_LOCAL_FILE);
 };
 
 /**
  * Tests opening file dialog on Downloads and closing it with Cancel button.
  */
-testcase.openFileDialogCancelDownloads = function() {
+testcase.openFileDialogCancelDownloads = () => {
   return openFileDialogClickCancelButton('downloads', TEST_LOCAL_FILE);
 };
 
 /**
  * Tests opening file dialog on Downloads and closing it with ESC key.
  */
-testcase.openFileDialogEscapeDownloads = function() {
+testcase.openFileDialogEscapeDownloads = () => {
   return openFileDialogSendEscapeKey('downloads', TEST_LOCAL_FILE);
 };
 
@@ -259,14 +259,14 @@ const TEST_DRIVE_PINNED_FILE = ENTRIES.pinned.targetPath;
 /**
  * Tests opening file dialog on Drive and closing it with Ok button.
  */
-testcase.openFileDialogDrive = function() {
+testcase.openFileDialogDrive = () => {
   return openFileDialogClickOkButton('drive', TEST_DRIVE_FILE);
 };
 
 /**
  * Tests save file dialog on Drive and closing it with Ok button.
  */
-testcase.saveFileDialogDrive = function() {
+testcase.saveFileDialogDrive = () => {
   return saveFileDialogClickOkButton('drive', TEST_DRIVE_FILE);
 };
 
@@ -274,7 +274,7 @@ testcase.saveFileDialogDrive = function() {
  * Tests that an unpinned file cannot be selected in file open dialogs while
  * offline.
  */
-testcase.openFileDialogDriveOffline = function() {
+testcase.openFileDialogDriveOffline = () => {
   return openFileDialogExpectOkButtonDisabled(
       'drive', TEST_DRIVE_FILE, TEST_DRIVE_PINNED_FILE);
 };
@@ -283,7 +283,7 @@ testcase.openFileDialogDriveOffline = function() {
  * Tests that an unpinned file cannot be selected in save file dialogs while
  * offline.
  */
-testcase.saveFileDialogDriveOffline = function() {
+testcase.saveFileDialogDriveOffline = () => {
   return openFileDialogExpectOkButtonDisabled(
       'drive', TEST_DRIVE_FILE, TEST_DRIVE_PINNED_FILE, 'saveFile');
 };
@@ -291,14 +291,14 @@ testcase.saveFileDialogDriveOffline = function() {
 /**
  * Tests opening file dialog on Drive and closing it with Ok button.
  */
-testcase.openFileDialogDriveOfflinePinned = function() {
+testcase.openFileDialogDriveOfflinePinned = () => {
   return openFileDialogClickOkButton('drive', TEST_DRIVE_PINNED_FILE);
 };
 
 /**
  * Tests save file dialog on Drive and closing it with Ok button.
  */
-testcase.saveFileDialogDriveOfflinePinned = function() {
+testcase.saveFileDialogDriveOfflinePinned = () => {
   return saveFileDialogClickOkButton('drive', TEST_DRIVE_PINNED_FILE);
 };
 
@@ -306,7 +306,7 @@ testcase.saveFileDialogDriveOfflinePinned = function() {
  * Tests opening a file from Drive in the browser, ensuring it correctly
  * opens the file URL.
  */
-testcase.openFileDialogDriveFromBrowser = async function() {
+testcase.openFileDialogDriveFromBrowser = async () => {
   const url = new URL(
       await openFileDialogClickOkButton('drive', TEST_DRIVE_FILE, true));
 
@@ -323,7 +323,7 @@ testcase.openFileDialogDriveFromBrowser = async function() {
  * Tests opening a hosted doc in the browser, ensuring it correctly navigates to
  * the doc's URL.
  */
-testcase.openFileDialogDriveHostedDoc = async function() {
+testcase.openFileDialogDriveHostedDoc = async () => {
   chrome.test.assertEq(
       await openFileDialogClickOkButton(
           'drive', ENTRIES.testDocument.nameText, true),
@@ -334,7 +334,7 @@ testcase.openFileDialogDriveHostedDoc = async function() {
  * Tests that selecting a hosted doc from a dialog requiring a real file is
  * disabled.
  */
-testcase.openFileDialogDriveHostedNeedsFile = function() {
+testcase.openFileDialogDriveHostedNeedsFile = () => {
   return openFileDialogExpectOkButtonDisabled(
       'drive', ENTRIES.testDocument.nameText, TEST_DRIVE_FILE);
 };
@@ -343,7 +343,7 @@ testcase.openFileDialogDriveHostedNeedsFile = function() {
  * Tests that selecting a hosted doc from a dialog requiring a real file is
  * disabled.
  */
-testcase.saveFileDialogDriveHostedNeedsFile = function() {
+testcase.saveFileDialogDriveHostedNeedsFile = () => {
   return openFileDialogExpectOkButtonDisabled(
       'drive', ENTRIES.testDocument.nameText, TEST_DRIVE_FILE, 'saveFile');
 };
@@ -351,21 +351,21 @@ testcase.saveFileDialogDriveHostedNeedsFile = function() {
 /**
  * Tests opening file dialog on Drive and closing it with Cancel button.
  */
-testcase.openFileDialogCancelDrive = function() {
+testcase.openFileDialogCancelDrive = () => {
   return openFileDialogClickCancelButton('drive', TEST_DRIVE_FILE);
 };
 
 /**
  * Tests opening file dialog on Drive and closing it with ESC key.
  */
-testcase.openFileDialogEscapeDrive = function() {
+testcase.openFileDialogEscapeDrive = () => {
   return openFileDialogSendEscapeKey('drive', TEST_DRIVE_FILE);
 };
 
 /**
  * Tests opening file dialog, then closing it with an 'unload' event.
  */
-testcase.openFileDialogUnload = async function() {
+testcase.openFileDialogUnload = async () => {
   chrome.fileSystem.chooseEntry({type: 'openFile'}, (entry) => {});
   const dialog = await remoteCall.waitForWindow('dialog#');
   await unloadOpenFileDialog(dialog);

@@ -301,7 +301,7 @@ const TRANSFER_LOCATIONS = Object.freeze({
 /**
  * Tests copying from Drive to Downloads.
  */
-testcase.transferFromDriveToDownloads = function() {
+testcase.transferFromDriveToDownloads = () => {
   return transferBetweenVolumes(new TransferInfo({
     fileToTransfer: ENTRIES.hello,
     source: TRANSFER_LOCATIONS.drive,
@@ -312,7 +312,7 @@ testcase.transferFromDriveToDownloads = function() {
 /**
  * Tests moving files from MyFiles/Downloads to MyFiles crbug.com/925175.
  */
-testcase.transferFromDownloadsToMyFilesMove = function() {
+testcase.transferFromDownloadsToMyFilesMove = () => {
   return transferBetweenVolumes(new TransferInfo({
     fileToTransfer: ENTRIES.hello,
     source: TRANSFER_LOCATIONS.downloads,
@@ -324,7 +324,7 @@ testcase.transferFromDownloadsToMyFilesMove = function() {
 /**
  * Tests copying files from MyFiles/Downloads to MyFiles crbug.com/925175.
  */
-testcase.transferFromDownloadsToMyFiles = function() {
+testcase.transferFromDownloadsToMyFiles = () => {
   return transferBetweenVolumes(new TransferInfo({
     fileToTransfer: ENTRIES.hello,
     source: TRANSFER_LOCATIONS.downloads,
@@ -336,7 +336,7 @@ testcase.transferFromDownloadsToMyFiles = function() {
 /**
  * Tests copying from Downloads to Drive.
  */
-testcase.transferFromDownloadsToDrive = function() {
+testcase.transferFromDownloadsToDrive = () => {
   return transferBetweenVolumes(new TransferInfo({
     fileToTransfer: ENTRIES.hello,
     source: TRANSFER_LOCATIONS.downloads,
@@ -347,7 +347,7 @@ testcase.transferFromDownloadsToDrive = function() {
 /**
  * Tests copying from Drive shared with me to Downloads.
  */
-testcase.transferFromSharedToDownloads = function() {
+testcase.transferFromSharedToDownloads = () => {
   return transferBetweenVolumes(new TransferInfo({
     fileToTransfer: ENTRIES.testSharedDocument,
     source: TRANSFER_LOCATIONS.sharedWithMe,
@@ -358,7 +358,7 @@ testcase.transferFromSharedToDownloads = function() {
 /**
  * Tests copying from Drive shared with me to Drive.
  */
-testcase.transferFromSharedToDrive = function() {
+testcase.transferFromSharedToDrive = () => {
   return transferBetweenVolumes(new TransferInfo({
     fileToTransfer: ENTRIES.testSharedDocument,
     source: TRANSFER_LOCATIONS.sharedWithMe,
@@ -369,7 +369,7 @@ testcase.transferFromSharedToDrive = function() {
 /**
  * Tests copying from Drive offline to Downloads.
  */
-testcase.transferFromOfflineToDownloads = function() {
+testcase.transferFromOfflineToDownloads = () => {
   return transferBetweenVolumes(new TransferInfo({
     fileToTransfer: ENTRIES.testDocument,
     source: TRANSFER_LOCATIONS.driveOffline,
@@ -380,7 +380,7 @@ testcase.transferFromOfflineToDownloads = function() {
 /**
  * Tests copying from Drive offline to Drive.
  */
-testcase.transferFromOfflineToDrive = function() {
+testcase.transferFromOfflineToDrive = () => {
   return transferBetweenVolumes(new TransferInfo({
     fileToTransfer: ENTRIES.testDocument,
     source: TRANSFER_LOCATIONS.driveOffline,
@@ -391,7 +391,7 @@ testcase.transferFromOfflineToDrive = function() {
 /**
  * Tests copying from a Team Drive to Drive.
  */
-testcase.transferFromTeamDriveToDrive = function() {
+testcase.transferFromTeamDriveToDrive = () => {
   return transferBetweenVolumes(new TransferInfo({
     fileToTransfer: ENTRIES.teamDriveAFile,
     source: TRANSFER_LOCATIONS.driveTeamDriveA,
@@ -402,7 +402,7 @@ testcase.transferFromTeamDriveToDrive = function() {
 /**
  * Tests copying from Drive to a Team Drive.
  */
-testcase.transferFromDriveToTeamDrive = function() {
+testcase.transferFromDriveToTeamDrive = () => {
   return transferBetweenVolumes(new TransferInfo({
     fileToTransfer: ENTRIES.hello,
     source: TRANSFER_LOCATIONS.driveWithTeamDriveEntries,
@@ -416,7 +416,7 @@ testcase.transferFromDriveToTeamDrive = function() {
 /**
  * Tests copying from a Team Drive to Downloads.
  */
-testcase.transferFromTeamDriveToDownloads = function() {
+testcase.transferFromTeamDriveToDownloads = () => {
   return transferBetweenVolumes(new TransferInfo({
     fileToTransfer: ENTRIES.teamDriveAFile,
     source: TRANSFER_LOCATIONS.driveTeamDriveA,
@@ -429,7 +429,7 @@ testcase.transferFromTeamDriveToDownloads = function() {
  * drive (e.g. Downloads). Hosted documents only make sense in the context of
  * Drive.
  */
-testcase.transferHostedFileFromTeamDriveToDownloads = function() {
+testcase.transferHostedFileFromTeamDriveToDownloads = () => {
   return transferBetweenVolumes(new TransferInfo({
     fileToTransfer: ENTRIES.teamDriveAHostedFile,
     source: TRANSFER_LOCATIONS.driveTeamDriveA,
@@ -441,7 +441,7 @@ testcase.transferHostedFileFromTeamDriveToDownloads = function() {
 /**
  * Tests copying from Downloads to a Team Drive.
  */
-testcase.transferFromDownloadsToTeamDrive = function() {
+testcase.transferFromDownloadsToTeamDrive = () => {
   return transferBetweenVolumes(new TransferInfo({
     fileToTransfer: ENTRIES.hello,
     source: TRANSFER_LOCATIONS.downloads,
@@ -455,7 +455,7 @@ testcase.transferFromDownloadsToTeamDrive = function() {
 /**
  * Tests copying between Team Drives.
  */
-testcase.transferBetweenTeamDrives = function() {
+testcase.transferBetweenTeamDrives = () => {
   return transferBetweenVolumes(new TransferInfo({
     fileToTransfer: ENTRIES.teamDriveBFile,
     source: TRANSFER_LOCATIONS.driveTeamDriveB,
@@ -469,7 +469,7 @@ testcase.transferBetweenTeamDrives = function() {
 /**
  * Tests that moving a file to its current location is a no-op.
  */
-testcase.transferFromDownloadsToDownloads = async function() {
+testcase.transferFromDownloadsToDownloads = async () => {
   const appId = await transferBetweenVolumes(new TransferInfo({
     fileToTransfer: ENTRIES.hello,
     source: TRANSFER_LOCATIONS.downloads,

@@ -4,7 +4,7 @@
 
 'use strict';
 
-(function() {
+(() => {
 
 /**
  * Check if |value| equals the |desiredValue| within 1% margin of tolerance.
@@ -113,7 +113,7 @@ const testEntries = [
  *  - Opening Files app in My Drive with 8 files and 3 folders.
  *  - Navigate to My Drive > photos1 > folder2, which is empty.
  */
-testcase.metadataDrive = async function() {
+testcase.metadataDrive = async () => {
   // Open Files app on Drive.
   const appId =
       await setupAndWaitUntilReady(RootPath.DRIVE, testEntries, testEntries);
@@ -152,7 +152,7 @@ testcase.metadataDrive = async function() {
  *  - Opening Files app in Downloads with 8 files and 3 folders.
  *  - Navigate to Downloads > photos1 > folder1 which is empty.
  */
-testcase.metadataDownloads = async function() {
+testcase.metadataDownloads = async () => {
   // Open Files app on Downloads.
   const appId = await setupAndWaitUntilReady(
       RootPath.DOWNLOADS, testEntries, testEntries);
@@ -199,7 +199,7 @@ testcase.metadataDownloads = async function() {
  * Using 50 files and 50 folders because in the Drive backend it has a
  * throttle for max of 20 concurrent operations.
  */
-testcase.metadataLargeDrive = async function() {
+testcase.metadataLargeDrive = async () => {
   const entries = [createTestFolder('folder1')];
 
   const folder1ExpectedRows = [];
@@ -259,7 +259,7 @@ testcase.metadataLargeDrive = async function() {
  *  - Navigate to Team Drives, with 50 team drives.
  *  - Expand Team Drives to display the 50 team drives..
  */
-testcase.metadataTeamDrives = async function() {
+testcase.metadataTeamDrives = async () => {
   const entries = [];
   const driveEntries = [];
 

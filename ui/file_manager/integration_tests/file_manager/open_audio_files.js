@@ -4,7 +4,7 @@
 
 'use strict';
 
-(function() {
+(() => {
 
 /**
  * Returns the title and artist text associated with the given audio track.
@@ -481,47 +481,47 @@ async function audioRepeatOneModeMultipleFile(path) {
   await audioPlayerApp.waitForElement(audioAppId, repeats);
 }
 
-testcase.audioOpenCloseDownloads = function() {
+testcase.audioOpenCloseDownloads = () => {
   return audioOpenClose(RootPath.DOWNLOADS);
 };
 
-testcase.audioOpenCloseDrive = function() {
+testcase.audioOpenCloseDrive = () => {
   return audioOpenClose(RootPath.DRIVE);
 };
 
-testcase.audioOpenDownloads = function() {
+testcase.audioOpenDownloads = () => {
   return audioOpenTrackDownloads();
 };
 
-testcase.audioOpenDrive = function() {
+testcase.audioOpenDrive = () => {
   return audioOpenMultipleTracksDrive();
 };
 
-testcase.audioAutoAdvanceDrive = function() {
+testcase.audioAutoAdvanceDrive = () => {
   return audioAutoAdvance(RootPath.DRIVE);
 };
 
-testcase.audioRepeatAllModeSingleFileDrive = function() {
+testcase.audioRepeatAllModeSingleFileDrive = () => {
   return audioRepeatAllModeSingleFile(RootPath.DRIVE);
 };
 
-testcase.audioNoRepeatModeSingleFileDrive = function() {
+testcase.audioNoRepeatModeSingleFileDrive = () => {
   return audioNoRepeatModeSingleFile(RootPath.DRIVE);
 };
 
-testcase.audioRepeatOneModeSingleFileDrive = function() {
+testcase.audioRepeatOneModeSingleFileDrive = () => {
   return audioRepeatOneModeSingleFile(RootPath.DRIVE);
 };
 
-testcase.audioRepeatAllModeMultipleFileDrive = function() {
+testcase.audioRepeatAllModeMultipleFileDrive = () => {
   return audioRepeatAllModeMultipleFile(RootPath.DRIVE);
 };
 
-testcase.audioNoRepeatModeMultipleFileDrive = function() {
+testcase.audioNoRepeatModeMultipleFileDrive = () => {
   return audioNoRepeatModeMultipleFile(RootPath.DRIVE);
 };
 
-testcase.audioRepeatOneModeMultipleFileDrive = function() {
+testcase.audioRepeatOneModeMultipleFileDrive = () => {
   return audioRepeatOneModeMultipleFile(RootPath.DRIVE);
 };
 })();

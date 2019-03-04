@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 'use strict';
 
-(function() {
+(() => {
 
 /**
  * Waits for QuickView element to be closed.
@@ -84,7 +84,7 @@ async function closeQuickView(appId) {
 /**
  * Tests opening Quick View on a local downloads file.
  */
-testcase.openQuickView = async function() {
+testcase.openQuickView = async () => {
   // Open Files app on Downloads containing ENTRIES.hello.
   const appId =
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
@@ -96,7 +96,7 @@ testcase.openQuickView = async function() {
 /**
  * Tests opening then closing Quick View on a local downloads file.
  */
-testcase.closeQuickView = async function() {
+testcase.closeQuickView = async () => {
   // Open Files app on Downloads containing ENTRIES.hello.
   const appId =
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
@@ -111,7 +111,7 @@ testcase.closeQuickView = async function() {
 /**
  * Tests opening Quick View on a Drive file.
  */
-testcase.openQuickViewDrive = async function() {
+testcase.openQuickViewDrive = async () => {
   // Open Files app on Drive containing ENTRIES.hello.
   const appId =
       await setupAndWaitUntilReady(RootPath.DRIVE, [], [ENTRIES.hello]);
@@ -134,7 +134,7 @@ testcase.openQuickViewDrive = async function() {
 /**
  * Tests opening Quick View on a USB file.
  */
-testcase.openQuickViewUsb = async function() {
+testcase.openQuickViewUsb = async () => {
   const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
 
   // Open Files app on Downloads containing ENTRIES.photos.
@@ -164,7 +164,7 @@ testcase.openQuickViewUsb = async function() {
 /**
  * Tests opening Quick View on a removable partition.
  */
-testcase.openQuickViewRemovablePartitions = async function() {
+testcase.openQuickViewRemovablePartitions = async () => {
   const PARTITION_QUERY =
       '#directory-tree .tree-children [volume-type-icon="removable"]';
   const caller = getCaller();
@@ -205,7 +205,7 @@ testcase.openQuickViewRemovablePartitions = async function() {
 /**
  * Tests opening Quick View on an MTP file.
  */
-testcase.openQuickViewMtp = async function() {
+testcase.openQuickViewMtp = async () => {
   const MTP_VOLUME_QUERY = '#directory-tree [volume-type-icon="mtp"]';
 
   // Open Files app on Downloads containing ENTRIES.photos.
@@ -235,7 +235,7 @@ testcase.openQuickViewMtp = async function() {
 /**
  * Tests opening Quick View on a Crostini file.
  */
-testcase.openQuickViewCrostini = async function() {
+testcase.openQuickViewCrostini = async () => {
   const fakeLinuxFiles = '#directory-tree [root-type-icon="crostini"]';
   const realLinuxFiles = '#directory-tree [volume-type-icon="crostini"]';
 
@@ -269,7 +269,7 @@ testcase.openQuickViewCrostini = async function() {
 /**
  * Tests opening Quick View on an Android file.
  */
-testcase.openQuickViewAndroid = async function() {
+testcase.openQuickViewAndroid = async () => {
   // Open Files app on Android files.
   const appId = await openNewWindow(RootPath.ANDROID_FILES);
 
@@ -300,7 +300,7 @@ testcase.openQuickViewAndroid = async function() {
 /**
  * Tests opening Quick View on a DocumentsProvider root.
  */
-testcase.openQuickViewDocumentsProvider = async function() {
+testcase.openQuickViewDocumentsProvider = async () => {
   const DOCUMENTS_PROVIDER_VOLUME_QUERY =
       '[has-children="true"] [volume-type-icon="documents_provider"]';
 
@@ -331,7 +331,7 @@ testcase.openQuickViewDocumentsProvider = async function() {
  * Tests opening Quick View and scrolling its <webview> which contains a tall
  * text document.
  */
-testcase.openQuickViewScrollText = async function() {
+testcase.openQuickViewScrollText = async () => {
   const caller = getCaller();
 
   /**
@@ -397,7 +397,7 @@ testcase.openQuickViewScrollText = async function() {
  * Tests opening Quick View on a text document to verify that the background
  * color of the <webview> root (html) element is solid white.
  */
-testcase.openQuickViewBackgroundColorText = async function() {
+testcase.openQuickViewBackgroundColorText = async () => {
   const caller = getCaller();
 
   /**
@@ -442,7 +442,7 @@ testcase.openQuickViewBackgroundColorText = async function() {
 /**
  * Tests opening Quick View containing a PDF document.
  */
-testcase.openQuickViewPdf = async function() {
+testcase.openQuickViewPdf = async () => {
   const caller = getCaller();
 
   /**
@@ -496,7 +496,7 @@ testcase.openQuickViewPdf = async function() {
  * Tests opening Quick View and scrolling its <webview> which contains a tall
  * html document.
  */
-testcase.openQuickViewScrollHtml = async function() {
+testcase.openQuickViewScrollHtml = async () => {
   const caller = getCaller();
 
   /**
@@ -563,7 +563,7 @@ testcase.openQuickViewScrollHtml = async function() {
  * color of the <files-safe-media type="html"> that contains the <webview> is
  * solid white.
  */
-testcase.openQuickViewBackgroundColorHtml = async function() {
+testcase.openQuickViewBackgroundColorHtml = async () => {
   const caller = getCaller();
 
   /**
@@ -604,7 +604,7 @@ testcase.openQuickViewBackgroundColorHtml = async function() {
 /**
  * Tests opening Quick View containing an audio file.
  */
-testcase.openQuickViewAudio = async function() {
+testcase.openQuickViewAudio = async () => {
   const caller = getCaller();
 
   /**
@@ -649,7 +649,7 @@ testcase.openQuickViewAudio = async function() {
 /**
  * Tests opening Quick View containing an image.
  */
-testcase.openQuickViewImage = async function() {
+testcase.openQuickViewImage = async () => {
   const caller = getCaller();
 
   /**
@@ -694,7 +694,7 @@ testcase.openQuickViewImage = async function() {
 /**
  * Tests opening Quick View containing a video.
  */
-testcase.openQuickViewVideo = async function() {
+testcase.openQuickViewVideo = async () => {
   const caller = getCaller();
 
   /**
@@ -740,7 +740,7 @@ testcase.openQuickViewVideo = async function() {
  * Tests opening Quick View with multiple files and using the up/down arrow
  * keys to select and view their content.
  */
-testcase.openQuickViewKeyboardUpDownChangesView = async function() {
+testcase.openQuickViewKeyboardUpDownChangesView = async () => {
   const caller = getCaller();
 
   /**
@@ -807,7 +807,7 @@ testcase.openQuickViewKeyboardUpDownChangesView = async function() {
  * Tests opening Quick View with multiple files and using the left/right arrow
  * keys to select and view their content.
  */
-testcase.openQuickViewKeyboardLeftRightChangesView = async function() {
+testcase.openQuickViewKeyboardLeftRightChangesView = async () => {
   const caller = getCaller();
 
   /**
@@ -873,7 +873,7 @@ testcase.openQuickViewKeyboardLeftRightChangesView = async function() {
 /**
  * Tests close/open metadata info via Enter key.
  */
-testcase.pressEnterOnInfoBoxToOpenClose = async function() {
+testcase.pressEnterOnInfoBoxToOpenClose = async () => {
   const infoButton = ['#quick-view', '#metadata-button'];
   const key = [infoButton, 'Enter', false, false, false];
   const infoShown = ['#quick-view', '#contentPanel[metadata-box-active]'];
@@ -907,7 +907,7 @@ testcase.pressEnterOnInfoBoxToOpenClose = async function() {
 /**
  * Tests that Quick View doesn't open with multiple files selected.
  */
-testcase.cantOpenQuickViewWithMultipleFiles = async function() {
+testcase.cantOpenQuickViewWithMultipleFiles = async () => {
   // Open Files app on Downloads containing ENTRIES.hello and ENTRIES.world.
   const appId = await setupAndWaitUntilReady(
       RootPath.DOWNLOADS, [ENTRIES.hello, ENTRIES.world], []);
@@ -940,7 +940,7 @@ testcase.cantOpenQuickViewWithMultipleFiles = async function() {
  * Tests opening Quick View and closing with Escape key returns focus to file
  * list.
  */
-testcase.openQuickViewAndEscape = async function() {
+testcase.openQuickViewAndEscape = async () => {
   // Open Files app on Downloads containing ENTRIES.hello.
   const appId =
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);

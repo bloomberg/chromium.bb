@@ -4,7 +4,7 @@
 /**
  * Tests if MyFiles is displayed when flag is true.
  */
-testcase.showMyFiles = async function() {
+testcase.showMyFiles = async () => {
   const expectedElementLabels = [
     'Recent: FakeItem',
     'My files: EntryListItem',
@@ -54,7 +54,7 @@ testcase.showMyFiles = async function() {
 /**
  * Tests search button hidden when selected My Files.
  */
-testcase.hideSearchButton = async function() {
+testcase.hideSearchButton = async () => {
   // Open Files app on local Downloads.
   const appId =
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
@@ -95,7 +95,7 @@ testcase.hideSearchButton = async function() {
  * DirectoryTree expects NavigationModelItem to be the same instance through
  * updates.
  */
-testcase.directoryTreeRefresh = async function() {
+testcase.directoryTreeRefresh = async () => {
   const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
 
   // Open Files app on local Downloads.
@@ -117,7 +117,7 @@ testcase.directoryTreeRefresh = async function() {
  * Tests My Files displaying Downloads on file list (RHS) and opening Downloads
  * from file list.
  */
-testcase.myFilesDisplaysAndOpensEntries = async function() {
+testcase.myFilesDisplaysAndOpensEntries = async () => {
   // Open Files app on local Downloads.
   const appId =
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
@@ -158,7 +158,7 @@ testcase.myFilesDisplaysAndOpensEntries = async function() {
  * If it doesn't update its children recursively it can cause directory tree to
  * not show or hide sub-folders crbug.com/864453.
  */
-testcase.myFilesUpdatesChildren = async function() {
+testcase.myFilesUpdatesChildren = async () => {
   const downloadsQuery = '#directory-tree [entry-label="Downloads"]';
   const hiddenFolder = new TestEntryInfo({
     type: EntryType.DIRECTORY,
@@ -221,7 +221,7 @@ testcase.myFilesUpdatesChildren = async function() {
  * Check naming a folder after navigating inside MyFiles using file list (RHS).
  * crbug.com/889636.
  */
-testcase.myFilesFolderRename = async function() {
+testcase.myFilesFolderRename = async () => {
   const textInput = '#file-list .table-row[renaming] input.rename';
 
   // Open Files app on local Downloads.

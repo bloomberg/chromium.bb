@@ -4,7 +4,7 @@
 
 'use strict';
 
-(function() {
+(() => {
 
 /**
  * Returns provider name of the given testing provider manifest viz., the
@@ -211,7 +211,7 @@ async function requestMountNotInMenuInternal(manifest) {
 /**
  * Tests mounting a single mount point in the button menu.
  */
-testcase.requestMount = function() {
+testcase.requestMount = () => {
   const multipleMounts = false;
   return requestMountInternal(multipleMounts, 'manifest.json');
 };
@@ -219,7 +219,7 @@ testcase.requestMount = function() {
 /**
  * Tests mounting multiple mount points in the button menu.
  */
-testcase.requestMountMultipleMounts = function() {
+testcase.requestMountMultipleMounts = () => {
   const multipleMounts = true;
   return requestMountInternal(multipleMounts, 'manifest_multiple_mounts.json');
 };
@@ -227,14 +227,14 @@ testcase.requestMountMultipleMounts = function() {
 /**
  * Tests mounting a device not present in the button menu.
  */
-testcase.requestMountSourceDevice = function() {
+testcase.requestMountSourceDevice = () => {
   return requestMountNotInMenuInternal('manifest_source_device.json');
 };
 
 /**
  * Tests mounting a file not present in the button menu.
  */
-testcase.requestMountSourceFile = function() {
+testcase.requestMountSourceFile = () => {
   return requestMountNotInMenuInternal('manifest_source_file.json');
 };
 
@@ -242,7 +242,7 @@ testcase.requestMountSourceFile = function() {
  * Tests that pressing the eject button on a FSP adds a message to screen
  * reader.
  */
-testcase.providerEject = async function() {
+testcase.providerEject = async () => {
   const manifest = 'manifest_source_file.json';
   const appId = await setUpProvider(manifest);
 

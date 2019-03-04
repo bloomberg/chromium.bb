@@ -65,7 +65,7 @@ async function copyBetweenWindows(
 /**
  * Tests file copy+paste from Drive to Downloads.
  */
-testcase.copyBetweenWindowsDriveToLocal = async function() {
+testcase.copyBetweenWindowsDriveToLocal = async () => {
   // Open two Files app windows.
   const [window1, window2] =
       await openTwoWindows(RootPath.DOWNLOADS, RootPath.DRIVE);
@@ -86,7 +86,7 @@ testcase.copyBetweenWindowsDriveToLocal = async function() {
 /**
  * Tests file copy+paste from Downloads to Drive.
  */
-testcase.copyBetweenWindowsLocalToDrive = async function() {
+testcase.copyBetweenWindowsLocalToDrive = async () => {
   // Open two Files app windows.
   const [window1, window2] =
       await openTwoWindows(RootPath.DOWNLOADS, RootPath.DRIVE);
@@ -107,7 +107,7 @@ testcase.copyBetweenWindowsLocalToDrive = async function() {
 /**
  * Tests file copy+paste from Drive to USB.
  */
-testcase.copyBetweenWindowsDriveToUsb = async function() {
+testcase.copyBetweenWindowsDriveToUsb = async () => {
   // Add photos to Downloads.
   await addEntries(['local'], [ENTRIES.photos]);
 
@@ -147,7 +147,7 @@ testcase.copyBetweenWindowsDriveToUsb = async function() {
 /**
  * Tests file copy+paste from Downloads to USB.
  */
-testcase.copyBetweenWindowsLocalToUsb = async function() {
+testcase.copyBetweenWindowsLocalToUsb = async () => {
   // Add photos to Drive.
   await addEntries(['drive'], [ENTRIES.photos]);
 
@@ -187,7 +187,7 @@ testcase.copyBetweenWindowsLocalToUsb = async function() {
 /**
  * Tests file copy+paste from USB to Drive.
  */
-testcase.copyBetweenWindowsUsbToDrive = async function() {
+testcase.copyBetweenWindowsUsbToDrive = async () => {
   // Add photos to Downloads.
   await addEntries(['local'], [ENTRIES.photos]);
 
@@ -227,7 +227,7 @@ testcase.copyBetweenWindowsUsbToDrive = async function() {
 /**
  * Tests file copy+paste from USB to Downloads.
  */
-testcase.copyBetweenWindowsUsbToLocal = async function() {
+testcase.copyBetweenWindowsUsbToLocal = async () => {
   // Add photos to Drive.
   await addEntries(['drive'], [ENTRIES.photos]);
 
