@@ -513,41 +513,48 @@ TEST_F(PasswordSyncBridgeTest, ShouldMergeSyncRemoteAndLocalPasswords) {
   fake_db()->AddLoginForPrimaryKey(kPrimaryKey1, form1);
   fake_db()->AddLoginForPrimaryKey(kPrimaryKey2, form2);
 
-  // Form 1 will be added to the change processor, Form 2 will be updated in the
-  // password sync store, and Form 3 will be added to the password store sync.
+  // Form 1 will be added to the change processor. The local version of Form 2
+  // isn't more recent than the remote version, therefore it  will be updated in
+  // the password sync store using the remote version. Form 3 will be added to
+  // the password store sync.
 
   // Interactions should happen in this order:
   //           +--> Put(1) ------------------------------------+
   //           |                                               |
-  // Begin() --|--> UpdateLoginSync(2) --> UpdateStorageKey(2)-|--> Commit()
+  //           |--> UpdateStorageKey(2) -----------------------|
+  // Begin() --|                                               |--> Commit()
+  //           |--> UpdateLoginSync(3) ------------------------|
   //           |                                               |
-  //           +--> AddLoginSync (3)   --> UpdateStorageKey(3)-+
+  //           +--> AddLoginSync (4) ---> UpdateStorageKey(4)--+
 
-  testing::Sequence s1, s2, s3;
+  testing::Sequence s1, s2, s3, s4;
   EXPECT_CALL(*mock_password_store_sync(), BeginTransaction())
-      .InSequence(s1, s2, s3);
+      .InSequence(s1, s2, s3, s4);
   EXPECT_CALL(mock_processor(),
               Put(kPrimaryKeyStr1, EntityDataHasSignonRealm(kSignonRealm1), _))
       .InSequence(s1);
-  EXPECT_CALL(*mock_password_store_sync(),
-              UpdateLoginSync(FormHasSignonRealm(kSignonRealm2)))
-      .InSequence(s2);
-  EXPECT_CALL(*mock_password_store_sync(),
-              AddLoginSync(FormHasSignonRealm(kSignonRealm3)))
-      .InSequence(s3);
 
   EXPECT_CALL(mock_processor(), UpdateStorageKey(_, kPrimaryKeyStr2, _))
       .InSequence(s2);
-  EXPECT_CALL(mock_processor(), UpdateStorageKey(_, kExpectedPrimaryKeyStr3, _))
+
+  EXPECT_CALL(*mock_password_store_sync(),
+              UpdateLoginSync(FormHasSignonRealm(kSignonRealm2)))
       .InSequence(s3);
+
+  EXPECT_CALL(*mock_password_store_sync(),
+              AddLoginSync(FormHasSignonRealm(kSignonRealm3)))
+      .InSequence(s4);
+  EXPECT_CALL(mock_processor(), UpdateStorageKey(_, kExpectedPrimaryKeyStr3, _))
+      .InSequence(s4);
+
   EXPECT_CALL(*mock_password_store_sync(), CommitTransaction())
-      .InSequence(s1, s2, s3);
+      .InSequence(s1, s2, s3, s4);
 
   EXPECT_CALL(*mock_password_store_sync(),
               NotifyLoginsChanged(UnorderedElementsAre(
                   ChangeHasPrimaryKey(kPrimaryKey2),
                   ChangeHasPrimaryKey(kExpectedPrimaryKey3))))
-      .InSequence(s1, s2, s3);
+      .InSequence(s1, s2, s3, s4);
 
   // Processor shouldn't be informed about Form 2 or Form 3.
   EXPECT_CALL(mock_processor(), Put(kPrimaryKeyStr2, _, _)).Times(0);
@@ -559,6 +566,60 @@ TEST_F(PasswordSyncBridgeTest, ShouldMergeSyncRemoteAndLocalPasswords) {
            /*storage_key=*/"", SpecificsToEntity(specifics2)),
        syncer::EntityChange::CreateAdd(
            /*storage_key=*/"", SpecificsToEntity(specifics3))});
+  EXPECT_FALSE(error);
+}
+
+TEST_F(PasswordSyncBridgeTest,
+       ShouldMergeSyncRemoteAndLocalPasswordsChoosingTheMoreRecent) {
+  // Setup the test to have Form 1 and Form 2 stored locally and remotely. Local
+  // Form 1 is more recent than the remote one. Remote Form 2 is more recent
+  // than the local one. We will assign primary keys for Form 1 and Form 2 in
+  // the local DB.
+  base::Time now = base::Time::Now();
+  base::Time yesterday = now - base::TimeDelta::FromDays(1);
+  const int kPrimaryKey1 = 1000;
+  const int kPrimaryKey2 = 1001;
+  const std::string kPrimaryKeyStr1 = "1000";
+  const std::string kPrimaryKeyStr2 = "1001";
+
+  // Local form 1 is more recent than the remote.
+  autofill::PasswordForm form1 = MakePasswordForm(kSignonRealm1);
+  form1.date_created = now;
+  sync_pb::PasswordSpecifics specifics1 =
+      CreateSpecificsWithSignonRealm(kSignonRealm1);
+  specifics1.mutable_client_only_encrypted_data()->set_date_created(
+      yesterday.ToDeltaSinceWindowsEpoch().InMicroseconds());
+
+  // Remote form 2 is more recent than the local.
+  autofill::PasswordForm form2 = MakePasswordForm(kSignonRealm2);
+  form2.date_created = yesterday;
+  sync_pb::PasswordSpecifics specifics2 =
+      CreateSpecificsWithSignonRealm(kSignonRealm2);
+  specifics2.mutable_client_only_encrypted_data()->set_date_created(
+      now.ToDeltaSinceWindowsEpoch().InMicroseconds());
+
+  fake_db()->AddLoginForPrimaryKey(kPrimaryKey1, form1);
+  fake_db()->AddLoginForPrimaryKey(kPrimaryKey2, form2);
+
+  // The processor should be informed about the storage keys of both passwords.
+  EXPECT_CALL(mock_processor(), UpdateStorageKey(_, kPrimaryKeyStr1, _));
+  EXPECT_CALL(mock_processor(), UpdateStorageKey(_, kPrimaryKeyStr2, _));
+
+  // Since local Form 1 is more recent, it will be put() in the processor.
+  EXPECT_CALL(mock_processor(),
+              Put(kPrimaryKeyStr1, EntityDataHasSignonRealm(kSignonRealm1), _));
+
+  // Since the remote Form 2 is more recent, it will be updated in the password
+  // store.
+  EXPECT_CALL(*mock_password_store_sync(),
+              UpdateLoginSync(FormHasSignonRealm(kSignonRealm2)));
+
+  base::Optional<syncer::ModelError> error = bridge()->MergeSyncData(
+      bridge()->CreateMetadataChangeList(),
+      {syncer::EntityChange::CreateAdd(
+           /*storage_key=*/"", SpecificsToEntity(specifics1)),
+       syncer::EntityChange::CreateAdd(
+           /*storage_key=*/"", SpecificsToEntity(specifics2))});
   EXPECT_FALSE(error);
 }
 
