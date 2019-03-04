@@ -562,9 +562,9 @@ CryptAuthV2EnrollerImpl::ProcessSingleKeyResponses(
                    CryptAuthKeyCreator::CreateKeyData>* new_keys_to_create,
     base::flat_map<CryptAuthKeyBundle::Name, cryptauthv2::KeyDirective>*
         new_key_directives) {
-  // Starts as null but is overwritten with a ResultCode if any errors occur. If
-  // an error occurs for a single key bundle, proceed to the next key bundle
-  // instead of exiting immediately.
+  // Starts as null but is overwritten with the ResultCode of the first error,
+  // if any errors occur. If an error occurs for a single key bundle, proceed to
+  // the next key bundle instead of exiting immediately.
   base::Optional<CryptAuthEnrollmentResult::ResultCode> error_code;
 
   for (size_t i = 0; i < GetKeyBundleOrder().size(); ++i) {
@@ -583,14 +583,20 @@ CryptAuthV2EnrollerImpl::ProcessSingleKeyResponses(
     // EnrollKeysResponse."
     base::Optional<std::string> handle_to_activate;
     std::vector<std::string> handles_to_delete;
-    error_code = ProcessKeyActions(single_response.key_actions(),
-                                   key_handle_orders_[bundle_name],
-                                   &handle_to_activate, &handles_to_delete);
+    base::Optional<CryptAuthEnrollmentResult::ResultCode> error_code_actions =
+        ProcessKeyActions(single_response.key_actions(),
+                          key_handle_orders_[bundle_name], &handle_to_activate,
+                          &handles_to_delete);
 
     // Do not apply the key actions or process the key creation instructions
     // if the key actions are invalid. Proceed to the next key bundle.
-    if (error_code)
+    if (error_code_actions) {
+      // Set final error code if it hasn't already been set.
+      if (!error_code)
+        error_code = error_code_actions;
+
       continue;
+    }
 
     for (const std::string& handle : handles_to_delete)
       key_registry_->DeleteKey(bundle_name, handle);
@@ -601,14 +607,20 @@ CryptAuthV2EnrollerImpl::ProcessSingleKeyResponses(
     // Process new-key data, if any.
     base::Optional<CryptAuthKeyCreator::CreateKeyData> new_key_to_create;
     base::Optional<cryptauthv2::KeyDirective> new_key_directive;
-    error_code = ProcessKeyCreationInstructions(
-        bundle_name, single_response, sync_keys_response.server_ephemeral_dh(),
-        &new_key_to_create, &new_key_directive);
+    base::Optional<CryptAuthEnrollmentResult::ResultCode> error_code_creation =
+        ProcessKeyCreationInstructions(bundle_name, single_response,
+                                       sync_keys_response.server_ephemeral_dh(),
+                                       &new_key_to_create, &new_key_directive);
 
     // If the key-creation instructions are invalid, do not add to the list of
     // keys to be created. Proceed to the next key bundle.
-    if (error_code)
+    if (error_code_creation) {
+      // Set final error code if it hasn't already been set.
+      if (!error_code)
+        error_code = error_code_creation;
+
       continue;
+    }
 
     if (new_key_to_create)
       new_keys_to_create->insert_or_assign(bundle_name, *new_key_to_create);
