@@ -3329,7 +3329,8 @@ void DriverEGL::InitializeExtensionBindings() {
         file.write('  {\n')
         file.write('    GLenum error = %s_api_->glGetErrorFn();\n'
             % set_name.lower())
-        file.write('    DCHECK(error == 0);\n')
+        file.write('    DCHECK(error == 0) << "OpenGL error 0x" << std::hex '
+                   '<< error << std::dec;\n')
         file.write('  }\n')
     else:
       file.write('  GL_SERVICE_LOG("%s" << "(" %s << ")");\n' %
@@ -3344,7 +3345,8 @@ void DriverEGL::InitializeExtensionBindings() {
         file.write('  {\n')
         file.write('    GLenum _error = %s_api_->glGetErrorFn();\n' %
             set_name.lower())
-        file.write('    DCHECK(_error == 0);\n')
+        file.write('    DCHECK(_error == 0) << "OpenGL error " << std::hex '
+                   '<< _error << std::dec;\n')
         file.write('  }\n')
       file.write('  return result;\n')
     file.write('}\n')
