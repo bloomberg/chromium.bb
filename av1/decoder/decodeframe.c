@@ -5319,6 +5319,11 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   }
 
   read_tile_info(pbi, rb);
+  if (!is_min_tile_width_satisfied(cm)) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "Minimum tile width requirement not satisfied");
+  }
+
   setup_quantization(cm, rb);
   xd->bd = (int)seq_params->bit_depth;
 

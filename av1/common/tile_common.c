@@ -67,18 +67,24 @@ void av1_calculate_tile_cols(AV1_COMMON *const cm) {
 
     cm->tile_width = size_sb << cm->seq_params.mib_size_log2;
     cm->tile_width = AOMMIN(cm->tile_width, cm->mi_cols);
+    cm->min_tile_width = cm->tile_width;
   } else {
     int max_tile_area_sb = (sb_rows * sb_cols);
     int widest_tile_sb = 1;
+    int narrowest_tile_sb = 65536;
     cm->log2_tile_cols = tile_log2(1, cm->tile_cols);
     for (i = 0; i < cm->tile_cols; i++) {
       int size_sb = cm->tile_col_start_sb[i + 1] - cm->tile_col_start_sb[i];
       widest_tile_sb = AOMMAX(widest_tile_sb, size_sb);
+      // ignore the rightmost tile in frame for detrmining the narrowest
+      if (i < cm->tile_cols - 1)
+        narrowest_tile_sb = AOMMIN(narrowest_tile_sb, size_sb);
     }
     if (cm->min_log2_tiles) {
       max_tile_area_sb >>= (cm->min_log2_tiles + 1);
     }
     cm->max_tile_height_sb = AOMMAX(max_tile_area_sb / widest_tile_sb, 1);
+    cm->min_tile_width = narrowest_tile_sb << cm->seq_params.mib_size_log2;
   }
 }
 
@@ -203,4 +209,12 @@ void av1_get_uniform_tile_size(const AV1_COMMON *cm, int *w, int *h) {
       *h = tile_h;
     }
   }
+}
+
+int is_min_tile_width_satisfied(const AV1_COMMON *cm) {
+  // Disable check if there is a single tile in the frame
+  if (cm->tile_cols == 1 && cm->tile_rows == 1) return 1;
+
+  return ((cm->min_tile_width << MI_SIZE_LOG2) >=
+          (64 << av1_superres_scaled(cm)));
 }
