@@ -4,9 +4,6 @@
 
 #include "chrome/browser/sync/test/integration/sync_test.h"
 
-#include <stddef.h>
-#include <stdint.h>
-
 #include <limits>
 
 #include "base/bind.h"
@@ -16,26 +13,17 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
-#include "base/process/launch.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/synchronization/waitable_event.h"
-#include "base/test/bind_test_util.h"
-#include "base/test/test_timeouts.h"
-#include "base/threading/platform_thread.h"
-#include "base/threading/thread_restrictions.h"
-#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -59,7 +47,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/search_test_utils.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -81,22 +68,14 @@
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "jingle/glue/network_service_config_test_util.h"
-#include "net/base/escape.h"
-#include "net/base/load_flags.h"
-#include "net/base/network_change_notifier.h"
 #include "net/base/port_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "url/gurl.h"
 
@@ -115,7 +94,6 @@
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
 
 using browser_sync::ProfileSyncService;
-using content::BrowserThread;
 
 namespace switches {
 const char kPasswordFileForTest[] = "password-file-for-test";
@@ -251,8 +229,6 @@ SyncTest::SyncTest(TestType test_type)
       num_clients_ = 2;
       break;
     }
-    default:
-      NOTREACHED() << "Invalid test type specified.";
   }
 }
 
@@ -303,9 +279,6 @@ void SyncTest::TearDown() {
   // Stop the local python test server. This is a no-op if one wasn't started.
   TearDownLocalPythonTestServer();
 
-  // Stop the local sync test server. This is a no-op if one wasn't started.
-  TearDownLocalTestServer();
-
   // Return OSCrypt to its real behaviour
   OSCryptMocker::TearDown();
 
@@ -314,7 +287,6 @@ void SyncTest::TearDown() {
 
 void SyncTest::SetUpCommandLine(base::CommandLine* cl) {
   AddTestSwitches(cl);
-  AddOptionalTypesToCommandLine(cl);
 
 #if defined(OS_CHROMEOS)
   cl->AppendSwitch(chromeos::switches::kIgnoreUserProfileMappingForTests);
@@ -333,8 +305,6 @@ void SyncTest::AddTestSwitches(base::CommandLine* cl) {
   if (!cl->HasSwitch(switches::kSyncShortNudgeDelayForTest))
     cl->AppendSwitch(switches::kSyncShortNudgeDelayForTest);
 }
-
-void SyncTest::AddOptionalTypesToCommandLine(base::CommandLine* cl) {}
 
 bool SyncTest::CreateGaiaAccount(const std::string& username,
                                  const std::string& password) {
@@ -401,8 +371,7 @@ bool SyncTest::CreateProfile(int index) {
         std::make_unique<SyncProfileDelegate>(base::Bind(
             &SyncTest::InitializeProfile, base::Unretained(this), index));
     Profile* profile = MakeTestProfile(profile_path, index);
-    SetURLLoaderFactoryForTest(profile,
-                               test_url_loader_factory_.GetSafeWeakWrapper());
+    SetupMockGaiaResponsesForProfile(profile);
   }
 
   // Once profile initialization has kicked off, wait for it to finish.
@@ -1136,52 +1105,6 @@ bool SyncTest::TearDownLocalPythonTestServer() {
   }
   xmpp_port_.reset();
   return true;
-}
-
-bool SyncTest::TearDownLocalTestServer() {
-  if (test_server_.IsValid()) {
-    EXPECT_TRUE(test_server_.Terminate(0, false))
-        << "Could not stop local test server.";
-    test_server_.Close();
-  }
-  return true;
-}
-
-bool SyncTest::WaitForTestServerToStart(base::TimeDelta wait, int intervals) {
-  for (int i = 0; i < intervals; ++i) {
-    if (IsTestServerRunning())
-      return true;
-    base::PlatformThread::Sleep(wait / intervals);
-  }
-  return false;
-}
-
-bool SyncTest::IsTestServerRunning() {
-  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-  std::string sync_url = cl->GetSwitchValueASCII(switches::kSyncServiceURL);
-  GURL sync_url_status(sync_url.append("/healthz"));
-  auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = sync_url_status;
-  resource_request->load_flags = net::LOAD_DISABLE_CACHE |
-                                 net::LOAD_DO_NOT_SEND_COOKIES |
-                                 net::LOAD_DO_NOT_SAVE_COOKIES;
-  std::unique_ptr<network::SimpleURLLoader> simple_url_loader =
-      network::SimpleURLLoader::Create(std::move(resource_request),
-                                       TRAFFIC_ANNOTATION_FOR_TESTS);
-  bool server_running = false;
-  base::RunLoop run_loop;
-  simple_url_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      g_browser_process->system_network_context_manager()
-          ->GetURLLoaderFactory(),
-      base::BindLambdaForTesting(
-          [&server_running,
-           &run_loop](std::unique_ptr<std::string> response_body) {
-            server_running =
-                response_body && base::StartsWith(*response_body, "ok",
-                                                  base::CompareCase::SENSITIVE);
-            run_loop.Quit();
-          }));
-  return server_running;
 }
 
 bool SyncTest::TestUsesSelfNotifications() {

@@ -12,7 +12,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/process/process.h"
 #include "build/buildflag.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,7 +19,6 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/protocol/sync_protocol_error.h"
 #include "components/sync/test/fake_server/fake_server.h"
 #include "components/sync/test/local_sync_test_server.h"
 #include "net/http/http_status_code.h"
@@ -68,15 +66,6 @@ namespace fake_server {
 class FakeServer;
 class FakeServerInvalidationService;
 }  // namespace fake_server
-
-namespace net {
-class FakeURLFetcherFactory;
-class URLFetcherImplFactory;
-}  // namespace net
-
-namespace network {
-class WeakWrapperSharedURLLoaderFactory;
-}  // namespace network
 
 // This is the base class for integration tests for all sync data types. Derived
 // classes must be defined for each sync data type. Individual tests are defined
@@ -265,15 +254,13 @@ class SyncTest : public InProcessBrowserTest {
 
  protected:
   // Add custom switches needed for running the test.
-  virtual void AddTestSwitches(base::CommandLine* cl);
-
-  // Append the command line switches to enable experimental types that aren't
-  // on by default yet.
-  virtual void AddOptionalTypesToCommandLine(base::CommandLine* cl);
+  void AddTestSwitches(base::CommandLine* cl);
 
   // BrowserTestBase implementation:
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
+
+  virtual void BeforeSetupClient(int index);
 
   // Implementations of the EnableNotifications() and DisableNotifications()
   // functions defined above.
@@ -316,23 +303,11 @@ class SyncTest : public InProcessBrowserTest {
 
   base::test::ScopedFeatureList feature_list_;
 
-  // GAIA account used by the test case.
-  std::string username_;
-
-  // GAIA password used by the test case.
-  std::string password_;
-
-  // Locally available plain text file in which GAIA credentials are stored.
-  base::FilePath password_file_;
-
   // The FakeServer used in tests with server type IN_PROCESS_FAKE_SERVER.
   std::unique_ptr<fake_server::FakeServer> fake_server_;
 
   // The factory used to mock out GAIA signin.
   network::TestURLLoaderFactory test_url_loader_factory_;
-
- protected:
-  virtual void BeforeSetupClient(int index);
 
  private:
   // Handles Profile creation for given index. Profile's path and type is
@@ -378,19 +353,6 @@ class SyncTest : public InProcessBrowserTest {
   // created. Returns true if successful.
   bool TearDownLocalPythonTestServer();
 
-  // Helper method used to destroy the local sync test server if one was
-  // created. Returns true if successful.
-  bool TearDownLocalTestServer();
-
-  // Helper method that waits for up to |wait| for the test server
-  // to start. Splits the time into |intervals| intervals, and polls the
-  // server after each interval to see if it has started. Returns true if
-  // successful.
-  bool WaitForTestServerToStart(base::TimeDelta wait, int intervals);
-
-  // Helper method used to check if the test server is up and running.
-  bool IsTestServerRunning();
-
   // Helper method used to set up fake responses for kClientLoginUrl,
   // kIssueAuthTokenUrl, kGetUserInfoUrl and kSearchDomainCheckUrl in order to
   // mock out calls to GAIA servers.
@@ -417,6 +379,15 @@ class SyncTest : public InProcessBrowserTest {
 
   // Internal routine for setting up sync.
   void SetupSyncInternal(bool wait_for_completion);
+
+  // GAIA account used by the test case.
+  std::string username_;
+
+  // GAIA password used by the test case.
+  std::string password_;
+
+  // Locally available plain text file in which GAIA credentials are stored.
+  base::FilePath password_file_;
 
   // Python sync test server, started on demand.
   syncer::LocalSyncTestServer sync_server_;
@@ -502,19 +473,6 @@ class SyncTest : public InProcessBrowserTest {
   // be set if tests are run against external servers with support for user
   // creation via http requests.
   bool create_gaia_account_at_runtime_;
-
-  // Used to start and stop the local test server.
-  base::Process test_server_;
-
-  // The shared URLLoaderFactory backed by |test_url_loader_factory_|.
-  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-      test_shared_url_loader_factory_;
-
-  // Fake URLFetcher factory used to mock out GAIA signin.
-  std::unique_ptr<net::FakeURLFetcherFactory> fake_factory_;
-
-  // The URLFetcherImplFactory instance used to instantiate |fake_factory_|.
-  std::unique_ptr<net::URLFetcherImplFactory> factory_;
 
   // The contents to be written to a profile's Preferences file before the
   // Profile object is created. If empty, no preexisting file will be written.
