@@ -5956,3 +5956,8 @@ crbug.com/937544 [ Win7 Mac ] virtual/omt-worker-fetch/external/wpt/service-work
 # Sheriff 2019-03-02
 crbug.com/937639 [ Linux Debug ] external/wpt/html/browsers/browsing-the-web/read-media/pageload-image-in-popup.html [ Pass Failure ]
 
+# Sheriff 2019-03-04
+crbug.com/937811 [ Linux Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-2.js [ Pass Failure ]
+crbug.com/937811 [ Linux Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-3.js [ Pass Failure ]
+crbug.com/937811 [ Win Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-2.js [ Pass Failure ]
+crbug.com/937811 [ Win Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-3.js [ Pass Failure ]
