@@ -7,6 +7,8 @@ source_set("reading_list") {
   sources = [
     "favicon_web_state_dispatcher_impl.h",
     "favicon_web_state_dispatcher_impl.mm",
+    "offline_page_tab_helper.h",
+    "offline_page_tab_helper.mm",
     "offline_url_utils.cc",
     "offline_url_utils.h",
     "reading_list_distiller_page.h",
@@ -50,9 +52,21 @@ source_set("reading_list") {
     "//url",
   ]
   public_deps = [
+    ":features",
     "//ios/chrome/browser/dom_distiller",
   ]
   allow_circular_includes_from = [ ":reading_list_remover" ]
+}
+
+source_set("features") {
+  sources = [
+    "features.cc",
+    "features.h",
+  ]
+  deps = [
+    "//base",
+    "//ios/web/public",
+  ]
 }
 
 source_set("reading_list_remover") {
@@ -80,11 +94,13 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "favicon_web_state_dispatcher_impl_unittest.mm",
+    "offline_page_tab_helper_unittest.mm",
     "offline_url_utils_unittest.cc",
     "reading_list_web_state_observer_unittest.mm",
     "url_downloader_unittest.mm",
   ]
   deps = [
+    ":distilled_bundle_data",
     ":reading_list",
     "//base",
     "//base/test:test_support",
@@ -101,5 +117,16 @@ source_set("unit_tests") {
     "//services/network:test_support",
     "//testing/gtest",
     "//url",
+  ]
+}
+
+bundle_data("distilled_bundle_data") {
+  testonly = true
+
+  sources = [
+    "data/distilled.html",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/ios/testing/data/Offline/{{source_file_part}}",
   ]
 }

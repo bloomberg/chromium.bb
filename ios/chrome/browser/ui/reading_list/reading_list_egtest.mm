@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/reading_list/core/reading_list_model.h"
+#import "ios/chrome/browser/reading_list/features.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
@@ -395,8 +396,35 @@ void OpenPageSecurityInfoBubble() {
       tapToolsMenuButton:grey_accessibilityID(kToolsMenuSiteInformation)];
 }
 
-// Tests that the correct version of kDistillableURL is displayed.
-void AssertIsShowingDistillablePage(bool online, GURL distillable_url) {
+void AssertIsShowingDistillablePageNoNativeContent(
+    bool online,
+    const GURL& distillable_url) {
+  [ChromeEarlGrey waitForWebViewContainingText:kContentToKeep];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          distillable_url.GetContent())]
+      assertWithMatcher:grey_notNil()];
+
+  // Test that the offline and online pages are properly displayed.
+  if (online) {
+    [ChromeEarlGrey waitForWebViewContainingText:kContentToRemove];
+    [ChromeEarlGrey waitForWebViewContainingText:kContentToKeep];
+  } else {
+    [ChromeEarlGrey waitForWebViewNotContainingText:kContentToRemove];
+    [ChromeEarlGrey waitForWebViewContainingText:kContentToKeep];
+  }
+
+  // Test the presence of the omnibox offline chip.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(chrome_test_util::PageSecurityInfoIndicator(),
+                            chrome_test_util::ImageViewWithImageNamed(
+                                @"location_bar_offline"),
+                            nil)]
+      assertWithMatcher:online ? grey_nil() : grey_notNil()];
+}
+
+void AssertIsShowingDistillablePageNativeContent(bool online,
+                                                 const GURL& distillable_url) {
   NSString* contentToKeep = base::SysUTF8ToNSString(kContentToKeep);
   // There will be multiple reloads, wait for the page to be displayed.
   if (online) {
@@ -436,6 +464,15 @@ void AssertIsShowingDistillablePage(bool online, GURL distillable_url) {
                                 @"location_bar_offline"),
                             nil)]
       assertWithMatcher:online ? grey_nil() : grey_notNil()];
+}
+
+// Tests that the correct version of kDistillableURL is displayed.
+void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
+  if (reading_list::IsOfflinePageWithoutNativeContentEnabled()) {
+    return AssertIsShowingDistillablePageNoNativeContent(online,
+                                                         distillable_url);
+  }
+  return AssertIsShowingDistillablePageNativeContent(online, distillable_url);
 }
 
 }  // namespace
@@ -555,7 +592,7 @@ void AssertIsShowingDistillablePage(bool online, GURL distillable_url) {
   AssertEntryVisible(pageTitle);
   WaitForDistillation();
 
-  // Long press the entry, and open it offline.
+  // Press the entry, and open it online.
   TapEntry(pageTitle);
 
   AssertIsShowingDistillablePage(true, distillableURL);
@@ -575,6 +612,10 @@ void AssertIsShowingDistillablePage(bool online, GURL distillable_url) {
 - (void)testSavingToReadingListAndLoadNoNetwork {
   // TODO(crbug.com/874649): re-enable this test.
   if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
+  // TODO(crbug.com/936773): re-enable this test.
+  if (reading_list::IsOfflinePageWithoutNativeContentEnabled())
     EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
 
   auto network_change_disabler =
@@ -626,6 +667,10 @@ void AssertIsShowingDistillablePage(bool online, GURL distillable_url) {
 - (void)testSavingToReadingListAndLoadBadNetwork {
   // TODO(crbug.com/905839): re-enable this test.
   if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
+  // TODO(crbug.com/936773): re-enable this test.
+  if (reading_list::IsOfflinePageWithoutNativeContentEnabled())
     EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
 
   auto network_change_disabler =

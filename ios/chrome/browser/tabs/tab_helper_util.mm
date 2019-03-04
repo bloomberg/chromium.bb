@@ -28,6 +28,7 @@
 #import "ios/chrome/browser/itunes_urls/itunes_urls_handler_tab_helper.h"
 #import "ios/chrome/browser/metrics/ukm_url_recorder.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
+#include "ios/chrome/browser/reading_list/features.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
 #import "ios/chrome/browser/search_engines/feature_flags.h"
@@ -98,9 +99,11 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
 
   ImageFetchTabHelper::CreateForWebState(web_state);
 
-  ReadingListModel* model =
-      ReadingListModelFactory::GetForBrowserState(browser_state);
-  ReadingListWebStateObserver::CreateForWebState(web_state, model);
+  if (!reading_list::IsOfflinePageWithoutNativeContentEnabled()) {
+    ReadingListModel* model =
+        ReadingListModelFactory::GetForBrowserState(browser_state);
+    ReadingListWebStateObserver::CreateForWebState(web_state, model);
+  }
 
   ios::ChromeBrowserState* original_browser_state =
       browser_state->GetOriginalChromeBrowserState();
