@@ -126,6 +126,10 @@ YUVToRGBConverter::YUVToRGBConverter(const GLVersionInfo& gl_version_info,
 
   glUniform1i(y_sampler_location, 0);
   glUniform1i(uv_sampler_location, 1);
+
+  if (use_es3 || use_core_profile) {
+    glGenVertexArraysOES(1, &vertex_array_object_);
+  }
 }
 
 YUVToRGBConverter::~YUVToRGBConverter() {
@@ -136,6 +140,9 @@ YUVToRGBConverter::~YUVToRGBConverter() {
   glDeleteShader(fragment_shader_);
   glDeleteBuffersARB(1, &vertex_buffer_);
   glDeleteFramebuffersEXT(1, &framebuffer_);
+  if (vertex_array_object_) {
+    glDeleteVertexArraysOES(1, &vertex_array_object_);
+  }
 }
 
 void YUVToRGBConverter::CopyYUV420ToRGB(unsigned target,
@@ -171,7 +178,20 @@ void YUVToRGBConverter::CopyYUV420ToRGB(unsigned target,
             glCheckFramebufferStatusEXT(GL_FRAMEBUFFER));
   ScopedUseProgram use_program(program_);
   glUniform2f(size_location_, size.width(), size.height());
+  // User code may have set up the other vertex attributes in the
+  // context in unexpected ways, including setting vertex attribute
+  // divisors which may otherwise cause GL_INVALID_OPERATION during
+  // glDrawArrays. Avoid interference by binding our own VAO during
+  // the draw call. crbug.com/930479
+  GLint old_vertex_array_object_ = 0;
+  if (vertex_array_object_) {
+    glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &old_vertex_array_object_);
+    glBindVertexArrayOES(vertex_array_object_);
+  }
   GLHelper::DrawQuad(vertex_buffer_);
+  if (vertex_array_object_) {
+    glBindVertexArrayOES(old_vertex_array_object_);
+  }
 
   // Restore previous state.
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
