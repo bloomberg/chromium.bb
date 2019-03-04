@@ -11,9 +11,6 @@ issues]].
 ** Bug fixes
 - Fix a problem in the callback registration in the Python bindings
   thanks to Leonard de Ruijter
-- Fix a problem in the Python bindings when translating using tables
-  located in path with Non-ASCII characters. Thanks to André-Abush
-  Clause.
 - Fixed memory leaks created by block scope compound literals thanks
   to Martin Gieseking
 
