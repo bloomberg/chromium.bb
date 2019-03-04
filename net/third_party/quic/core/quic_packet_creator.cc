@@ -860,9 +860,6 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
 
   if (save_retransmittable_frames &&
       QuicUtils::IsRetransmittableFrame(frame.type)) {
-    if (packet_.retransmittable_frames.empty()) {
-      packet_.retransmittable_frames.reserve(2);
-    }
     packet_.retransmittable_frames.push_back(frame);
     queued_frames_.push_back(frame);
     if (QuicUtils::IsHandshakeFrame(frame, framer_->transport_version())) {

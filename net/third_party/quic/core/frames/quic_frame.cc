@@ -26,8 +26,7 @@ QuicFrame::QuicFrame(QuicAckFrame* frame) : type(ACK_FRAME), ack_frame(frame) {}
 QuicFrame::QuicFrame(QuicMtuDiscoveryFrame frame)
     : mtu_discovery_frame(frame) {}
 
-QuicFrame::QuicFrame(QuicStopWaitingFrame* frame)
-    : type(STOP_WAITING_FRAME), stop_waiting_frame(frame) {}
+QuicFrame::QuicFrame(QuicStopWaitingFrame frame) : stop_waiting_frame(frame) {}
 
 QuicFrame::QuicFrame(QuicPingFrame frame) : ping_frame(frame) {}
 
@@ -89,14 +88,12 @@ void DeleteFrame(QuicFrame* frame) {
     case MTU_DISCOVERY_FRAME:
     case PING_FRAME:
     case MAX_STREAM_ID_FRAME:
+    case STOP_WAITING_FRAME:
     case STREAM_ID_BLOCKED_FRAME:
     case STREAM_FRAME:
       break;
     case ACK_FRAME:
       delete frame->ack_frame;
-      break;
-    case STOP_WAITING_FRAME:
-      delete frame->stop_waiting_frame;
       break;
     case RST_STREAM_FRAME:
       delete frame->rst_stream_frame;
@@ -299,7 +296,7 @@ std::ostream& operator<<(std::ostream& os, const QuicFrame& frame) {
       break;
     }
     case STOP_WAITING_FRAME: {
-      os << "type { STOP_WAITING_FRAME } " << *(frame.stop_waiting_frame);
+      os << "type { STOP_WAITING_FRAME } " << frame.stop_waiting_frame;
       break;
     }
     case PING_FRAME: {

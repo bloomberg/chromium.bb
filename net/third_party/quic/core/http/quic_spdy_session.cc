@@ -537,6 +537,14 @@ void QuicSpdySession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
   }
 }
 
+// True if there are open HTTP requests.
+bool QuicSpdySession::ShouldKeepConnectionAlive() const {
+  // Change to check if there are open HTTP requests.
+  // When IETF QUIC control and QPACK streams are used, those will need to be
+  // subtracted from this count to ensure only request streams are counted.
+  return GetNumOpenDynamicStreams() > 0;
+}
+
 bool QuicSpdySession::ShouldBufferIncomingStream(QuicStreamId id) const {
   DCHECK_EQ(QUIC_VERSION_99, connection()->transport_version());
   return !QuicUtils::IsBidirectionalStreamId(id);

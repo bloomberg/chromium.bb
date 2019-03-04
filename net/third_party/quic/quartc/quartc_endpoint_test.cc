@@ -46,13 +46,12 @@ class QuartcEndpointTest : public QuicTest {
 // After calling Connect, the client endpoint must wait for an async callback.
 // The callback occurs after a finite amount of time and produces a session.
 TEST_F(QuartcEndpointTest, ClientCreatesSessionAsynchronously) {
-  QuartcClientEndpoint endpoint_(simulator_.GetAlarmFactory(),
-                                 simulator_.GetClock(), &delegate_,
-                                 /*serialized_server_config=*/"");
   QuartcSessionConfig config;
-  config.packet_transport = &transport_;
   config.max_packet_size = kDefaultMaxPacketSize;
-  endpoint_.Connect(config);
+  QuartcClientEndpoint endpoint_(simulator_.GetAlarmFactory(),
+                                 simulator_.GetClock(), &delegate_, config,
+                                 /*serialized_server_config=*/"");
+  endpoint_.Connect(&transport_);
 
   EXPECT_EQ(delegate_.last_session(), nullptr);
 

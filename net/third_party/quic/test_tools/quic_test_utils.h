@@ -380,7 +380,7 @@ class MockQuicConnectionVisitor : public QuicConnectionVisitorInterface {
   MOCK_METHOD0(OnPathDegrading, void());
   MOCK_CONST_METHOD0(WillingAndAbleToWrite, bool());
   MOCK_CONST_METHOD0(HasPendingHandshake, bool());
-  MOCK_CONST_METHOD0(HasOpenDynamicStreams, bool());
+  MOCK_CONST_METHOD0(ShouldKeepConnectionAlive, bool());
   MOCK_METHOD1(OnSuccessfulVersionNegotiation,
                void(const ParsedQuicVersion& version));
   MOCK_METHOD2(OnConnectivityProbeReceived,
@@ -634,6 +634,7 @@ class MockQuicSession : public QuicSession {
   MOCK_METHOD3(OnStreamHeadersComplete,
                void(QuicStreamId stream_id, bool fin, size_t frame_len));
   MOCK_CONST_METHOD0(IsCryptoHandshakeConfirmed, bool());
+  MOCK_CONST_METHOD0(ShouldKeepConnectionAlive, bool());
   MOCK_METHOD2(SendStopSending, void(uint16_t code, QuicStreamId stream_id));
 
   using QuicSession::ActivateStream;
@@ -1170,10 +1171,14 @@ inline void MakeIOVector(QuicStringPiece str, struct iovec* iov) {
   iov->iov_len = static_cast<size_t>(str.size());
 }
 
-// Utilities that will adapt stream ids when http stream pairs are
-// enabled.
+// Helper functions for stream ids, to allow test logic to abstract over the
+// HTTP stream numbering scheme (i.e. whether one or two QUIC streams are used
+// per HTTP transaction).
 QuicStreamId NextStreamId(QuicTransportVersion version);
 QuicStreamId GetNthClientInitiatedBidirectionalStreamId(
+    QuicTransportVersion version,
+    int n);
+QuicStreamId GetNthServerInitiatedBidirectionalStreamId(
     QuicTransportVersion version,
     int n);
 QuicStreamId GetNthServerInitiatedUnidirectionalStreamId(

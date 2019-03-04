@@ -64,6 +64,7 @@ class QuartcSession : public QuicSession,
 
   // QuicConnectionVisitorInterface overrides.
   void OnCongestionWindowChange(QuicTime now) override;
+  bool ShouldKeepConnectionAlive() const override;
 
   void OnCanWrite() override;
 

@@ -904,7 +904,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     } else {
       EXPECT_CALL(visitor_, OnCanWrite()).Times(AnyNumber());
     }
-    EXPECT_CALL(visitor_, HasOpenDynamicStreams())
+    EXPECT_CALL(visitor_, ShouldKeepConnectionAlive())
         .WillRepeatedly(Return(false));
     EXPECT_CALL(visitor_, OnCongestionWindowChange(_)).Times(AnyNumber());
     EXPECT_CALL(visitor_, OnConnectivityProbeReceived(_, _)).Times(AnyNumber());
@@ -1141,12 +1141,12 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     ProcessFramePacket(QuicFrame(frame));
   }
 
-  void ProcessStopWaitingPacket(QuicStopWaitingFrame* frame) {
+  void ProcessStopWaitingPacket(QuicStopWaitingFrame frame) {
     ProcessFramePacket(QuicFrame(frame));
   }
 
   size_t ProcessStopWaitingPacketAtLevel(uint64_t number,
-                                         QuicStopWaitingFrame* frame,
+                                         QuicStopWaitingFrame frame,
                                          EncryptionLevel level) {
     return ProcessFramePacketAtLevel(number, QuicFrame(frame),
                                      ENCRYPTION_ZERO_RTT);
@@ -1185,7 +1185,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     QuicFrames frames;
     frames.push_back(QuicFrame(frame1_));
     if (has_stop_waiting) {
-      frames.push_back(QuicFrame(&stop_waiting_));
+      frames.push_back(QuicFrame(stop_waiting_));
     }
     return ConstructPacket(header, frames);
   }
@@ -2427,8 +2427,7 @@ TEST_P(QuicConnectionTest, LeastUnackedLower) {
 
   // Start out saying the least unacked is 2.
   QuicPacketCreatorPeer::SetPacketNumber(&peer_creator_, 5);
-  QuicStopWaitingFrame frame = InitStopWaitingFrame(2);
-  ProcessStopWaitingPacket(&frame);
+  ProcessStopWaitingPacket(InitStopWaitingFrame(2));
 
   // Change it to 1, but lower the packet number to fake out-of-order packets.
   // This should be fine.
@@ -2438,8 +2437,7 @@ TEST_P(QuicConnectionTest, LeastUnackedLower) {
   if (!GetParam().no_stop_waiting) {
     EXPECT_CALL(visitor_, OnCanWrite());
   }
-  QuicStopWaitingFrame frame2 = InitStopWaitingFrame(1);
-  ProcessStopWaitingPacket(&frame2);
+  ProcessStopWaitingPacket(InitStopWaitingFrame(1));
 
   // Now claim it's one, but set the ordering so it was sent "after" the first
   // one.  This should cause a connection error.
@@ -2449,8 +2447,7 @@ TEST_P(QuicConnectionTest, LeastUnackedLower) {
     EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_STOP_WAITING_DATA, _,
                                              ConnectionCloseSource::FROM_SELF));
   }
-  QuicStopWaitingFrame frame3 = InitStopWaitingFrame(1);
-  ProcessStopWaitingPacket(&frame3);
+  ProcessStopWaitingPacket(InitStopWaitingFrame(1));
 }
 
 TEST_P(QuicConnectionTest, TooManySentPackets) {
@@ -4039,7 +4036,8 @@ TEST_P(QuicConnectionTest, HandshakeTimeout) {
 
 TEST_P(QuicConnectionTest, PingAfterSend) {
   EXPECT_TRUE(connection_.connected());
-  EXPECT_CALL(visitor_, HasOpenDynamicStreams()).WillRepeatedly(Return(true));
+  EXPECT_CALL(visitor_, ShouldKeepConnectionAlive())
+      .WillRepeatedly(Return(true));
   EXPECT_FALSE(connection_.GetPingAlarm()->IsSet());
 
   // Advance to 5ms, and send a packet to the peer, which will set
@@ -4077,7 +4075,8 @@ TEST_P(QuicConnectionTest, PingAfterSend) {
   ASSERT_EQ(1u, writer_->ping_frames().size());
   writer_->Reset();
 
-  EXPECT_CALL(visitor_, HasOpenDynamicStreams()).WillRepeatedly(Return(false));
+  EXPECT_CALL(visitor_, ShouldKeepConnectionAlive())
+      .WillRepeatedly(Return(false));
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
   SendAckPacketToPeer();
 
@@ -4086,7 +4085,8 @@ TEST_P(QuicConnectionTest, PingAfterSend) {
 
 TEST_P(QuicConnectionTest, ReducedPingTimeout) {
   EXPECT_TRUE(connection_.connected());
-  EXPECT_CALL(visitor_, HasOpenDynamicStreams()).WillRepeatedly(Return(true));
+  EXPECT_CALL(visitor_, ShouldKeepConnectionAlive())
+      .WillRepeatedly(Return(true));
   EXPECT_FALSE(connection_.GetPingAlarm()->IsSet());
 
   // Use a reduced ping timeout for this connection.
@@ -4127,7 +4127,8 @@ TEST_P(QuicConnectionTest, ReducedPingTimeout) {
   ASSERT_EQ(1u, writer_->ping_frames().size());
   writer_->Reset();
 
-  EXPECT_CALL(visitor_, HasOpenDynamicStreams()).WillRepeatedly(Return(false));
+  EXPECT_CALL(visitor_, ShouldKeepConnectionAlive())
+      .WillRepeatedly(Return(false));
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
   SendAckPacketToPeer();
 
@@ -4734,7 +4735,8 @@ TEST_P(QuicConnectionTest, TimeoutAfterSendSilentCloseWithOpenStreams) {
   EXPECT_EQ(default_timeout, connection_.GetTimeoutAlarm()->deadline());
 
   // Indicate streams are still open.
-  EXPECT_CALL(visitor_, HasOpenDynamicStreams()).WillRepeatedly(Return(true));
+  EXPECT_CALL(visitor_, ShouldKeepConnectionAlive())
+      .WillRepeatedly(Return(true));
 
   // This time, we should time out and send a connection close due to the TLP.
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_NETWORK_IDLE_TIMEOUT, _,
@@ -6230,8 +6232,7 @@ TEST_P(QuicConnectionTest, MissingPacketsBeforeLeastUnacked) {
   // Set the packet number of the ack packet to be least unacked (4).
   QuicPacketCreatorPeer::SetPacketNumber(&peer_creator_, 3);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  QuicStopWaitingFrame frame = InitStopWaitingFrame(4);
-  ProcessStopWaitingPacket(&frame);
+  ProcessStopWaitingPacket(InitStopWaitingFrame(4));
   EXPECT_FALSE(outgoing_ack()->packets.Empty());
 }
 
@@ -6894,7 +6895,8 @@ TEST_P(QuicConnectionTest, RetransmittableOnWireSetsPingAlarm) {
       retransmittable_on_wire_timeout);
 
   EXPECT_TRUE(connection_.connected());
-  EXPECT_CALL(visitor_, HasOpenDynamicStreams()).WillRepeatedly(Return(true));
+  EXPECT_CALL(visitor_, ShouldKeepConnectionAlive())
+      .WillRepeatedly(Return(true));
 
   EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
   EXPECT_FALSE(connection_.IsPathDegrading());
@@ -7416,7 +7418,8 @@ TEST_P(QuicConnectionTest, PingAfterLastRetransmittablePacketAcked) {
       retransmittable_on_wire_timeout);
 
   EXPECT_TRUE(connection_.connected());
-  EXPECT_CALL(visitor_, HasOpenDynamicStreams()).WillRepeatedly(Return(true));
+  EXPECT_CALL(visitor_, ShouldKeepConnectionAlive())
+      .WillRepeatedly(Return(true));
 
   const char data[] = "data";
   size_t data_size = strlen(data);
@@ -7507,7 +7510,8 @@ TEST_P(QuicConnectionTest, NoPingIfRetransmittablePacketSent) {
       retransmittable_on_wire_timeout);
 
   EXPECT_TRUE(connection_.connected());
-  EXPECT_CALL(visitor_, HasOpenDynamicStreams()).WillRepeatedly(Return(true));
+  EXPECT_CALL(visitor_, ShouldKeepConnectionAlive())
+      .WillRepeatedly(Return(true));
 
   const char data[] = "data";
   size_t data_size = strlen(data);

@@ -43,13 +43,13 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
   explicit QuicFrame(QuicMtuDiscoveryFrame frame);
   explicit QuicFrame(QuicPingFrame frame);
   explicit QuicFrame(QuicMaxStreamIdFrame frame);
+  explicit QuicFrame(QuicStopWaitingFrame frame);
   explicit QuicFrame(QuicStreamIdBlockedFrame frame);
   explicit QuicFrame(QuicStreamFrame stream_frame);
 
   explicit QuicFrame(QuicAckFrame* frame);
   explicit QuicFrame(QuicRstStreamFrame* frame);
   explicit QuicFrame(QuicConnectionCloseFrame* frame);
-  explicit QuicFrame(QuicStopWaitingFrame* frame);
   explicit QuicFrame(QuicGoAwayFrame* frame);
   explicit QuicFrame(QuicWindowUpdateFrame* frame);
   explicit QuicFrame(QuicBlockedFrame* frame);
@@ -75,6 +75,7 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
     QuicMtuDiscoveryFrame mtu_discovery_frame;
     QuicPingFrame ping_frame;
     QuicMaxStreamIdFrame max_stream_id_frame;
+    QuicStopWaitingFrame stop_waiting_frame;
     QuicStreamIdBlockedFrame stream_id_blocked_frame;
     QuicStreamFrame stream_frame;
 
@@ -83,12 +84,11 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
       QuicFrameType type;
 
       // TODO(wub): These frames can also be inlined without increasing the size
-      // of QuicFrame: QuicStopWaitingFrame, QuicRstStreamFrame,
-      // QuicWindowUpdateFrame, QuicBlockedFrame, QuicPathResponseFrame,
-      // QuicPathChallengeFrame and QuicStopSendingFrame.
+      // of QuicFrame: QuicRstStreamFrame, QuicWindowUpdateFrame,
+      // QuicBlockedFrame, QuicPathResponseFrame, QuicPathChallengeFrame and
+      // QuicStopSendingFrame.
       union {
         QuicAckFrame* ack_frame;
-        QuicStopWaitingFrame* stop_waiting_frame;
         QuicRstStreamFrame* rst_stream_frame;
         QuicConnectionCloseFrame* connection_close_frame;
         QuicGoAwayFrame* goaway_frame;

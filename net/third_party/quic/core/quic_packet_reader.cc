@@ -162,11 +162,8 @@ bool QuicPacketReader::ReadAndDispatchManyPackets(
         QuicSocketUtils::GetTtlFromMsghdr(&mmsg_hdr_[i].msg_hdr, &ttl);
     char* headers = nullptr;
     size_t headers_length = 0;
-    if (GetQuicReloadableFlag(quic_get_recv_headers)) {
-      QUIC_RELOADABLE_FLAG_COUNT_N(quic_get_recv_headers, 1, 3);
-      QuicSocketUtils::GetPacketHeadersFromMsghdr(&mmsg_hdr_[i].msg_hdr,
-                                                  &headers, &headers_length);
-    }
+    QuicSocketUtils::GetPacketHeadersFromMsghdr(&mmsg_hdr_[i].msg_hdr, &headers,
+                                                &headers_length);
     QuicReceivedPacket packet(reinterpret_cast<char*>(packets_[i].iov.iov_base),
                               mmsg_hdr_[i].msg_len, timestamp, false, ttl,
                               has_ttl, headers, headers_length, false);

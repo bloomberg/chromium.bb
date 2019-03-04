@@ -195,21 +195,19 @@ class QuicHeadersStreamTest : public QuicTestWithParam<TestParams> {
     EXPECT_EQ(transport_version(), session_.connection()->transport_version());
     EXPECT_TRUE(headers_stream_ != nullptr);
     connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
-    client_id_1_ =
-        QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(
-            session_, 0);
-    client_id_2_ =
-        QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(
-            session_, 1);
-    client_id_3_ =
-        QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(
-            session_, 2);
-    next_stream_id_ = QuicSpdySessionPeer::StreamIdDelta(session_);
+    client_id_1_ = GetNthClientInitiatedBidirectionalStreamId(
+        connection_->transport_version(), 0);
+    client_id_2_ = GetNthClientInitiatedBidirectionalStreamId(
+        connection_->transport_version(), 1);
+    client_id_3_ = GetNthClientInitiatedBidirectionalStreamId(
+        connection_->transport_version(), 2);
+    next_stream_id_ =
+        QuicUtils::StreamIdDelta(connection_->transport_version());
   }
 
   QuicStreamId GetNthClientInitiatedId(int n) {
-    return QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(
-        session_, n);
+    return GetNthClientInitiatedBidirectionalStreamId(
+        connection_->transport_version(), n);
   }
 
   QuicConsumedData SaveIov(size_t write_length) {

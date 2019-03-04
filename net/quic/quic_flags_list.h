@@ -149,11 +149,6 @@ QUIC_FLAG(bool,
 // expire when the bandwidth increases more than 25% in QUIC BBR STARTUP.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slower_startup4, false)
 
-// If true, increase size of random bytes in IETF stateless reset packet.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_more_random_bytes_in_stateless_reset,
-          true)
-
 // When true and the BBR9 connection option is present, BBR only considers
 // bandwidth samples app-limited if they're not filling the pipe.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_flexible_app_limited, false)
@@ -295,3 +290,16 @@ QUIC_FLAG(bool,
 
 // If true, use one loss algorithm per encryption level.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_uber_loss_algorithm, false)
+
+// When true, QuicFramer will use AppendIetfConnectionIdsNew instead of
+// AppendIetfConnectionId.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_use_new_append_connection_id,
+          false)
+
+// If true, QuicStreamSequencerBuffer will switch to a new
+// QuicIntervalSet::AddOptimizedForAppend method in OnStreamData().
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_faster_interval_add_in_sequence_buffer,
+    false)

@@ -175,6 +175,9 @@ bool QuicDataWriter::WritePaddingBytes(size_t count) {
 }
 
 bool QuicDataWriter::WriteConnectionId(QuicConnectionId connection_id) {
+  if (connection_id.IsEmpty()) {
+    return true;
+  }
   return WriteBytes(connection_id.data(), connection_id.length());
 }
 

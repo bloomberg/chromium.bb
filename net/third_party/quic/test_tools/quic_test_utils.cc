@@ -1137,12 +1137,20 @@ QuicStreamId GetNthClientInitiatedBidirectionalStreamId(
          NextStreamId(version) * (n + 1);
 }
 
+QuicStreamId GetNthServerInitiatedBidirectionalStreamId(
+    QuicTransportVersion version,
+    int n) {
+  return QuicUtils::GetFirstBidirectionalStreamId(version,
+                                                  Perspective::IS_SERVER) +
+         QuicUtils::StreamIdDelta(version) * n;
+}
+
 QuicStreamId GetNthServerInitiatedUnidirectionalStreamId(
     QuicTransportVersion version,
     int n) {
   return QuicUtils::GetFirstUnidirectionalStreamId(version,
                                                    Perspective::IS_SERVER) +
-         NextStreamId(version) * n;
+         QuicUtils::StreamIdDelta(version) * n;
 }
 
 StreamType DetermineStreamType(QuicStreamId id,

@@ -157,13 +157,13 @@ class QuicServerSessionBaseTest : public QuicTestWithParam<ParsedQuicVersion> {
   }
 
   QuicStreamId GetNthClientInitiatedBidirectionalId(int n) {
-    return QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(
-        *session_, n);
+    return GetNthClientInitiatedBidirectionalStreamId(
+        connection_->transport_version(), n);
   }
 
   QuicStreamId GetNthServerInitiatedUnidirectionalId(int n) {
-    return QuicSpdySessionPeer::GetNthServerInitiatedUnidirectionalStreamId(
-        *session_, n);
+    return quic::test::GetNthServerInitiatedUnidirectionalStreamId(
+        connection_->transport_version(), n);
   }
 
   QuicTransportVersion transport_version() const {
@@ -363,7 +363,7 @@ TEST_P(QuicServerSessionBaseTest, MaxOpenStreams) {
   for (size_t i = 0; i < kMaxStreamsForTest; ++i) {
     EXPECT_TRUE(QuicServerSessionBasePeer::GetOrCreateDynamicStream(
         session_.get(), stream_id));
-    stream_id += QuicSpdySessionPeer::StreamIdDelta(*session_);
+    stream_id += QuicUtils::StreamIdDelta(connection_->transport_version());
   }
 
   if (transport_version() != QUIC_VERSION_99) {
@@ -372,11 +372,11 @@ TEST_P(QuicServerSessionBaseTest, MaxOpenStreams) {
     for (size_t i = 0; i < kMaxStreamsMinimumIncrement; ++i) {
       EXPECT_TRUE(QuicServerSessionBasePeer::GetOrCreateDynamicStream(
           session_.get(), stream_id));
-      stream_id += QuicSpdySessionPeer::StreamIdDelta(*session_);
+      stream_id += QuicUtils::StreamIdDelta(connection_->transport_version());
     }
   }
   // Now violate the server's internal stream limit.
-  stream_id += QuicSpdySessionPeer::StreamIdDelta(*session_);
+  stream_id += QuicUtils::StreamIdDelta(connection_->transport_version());
 
   if (transport_version() != QUIC_VERSION_99) {
     // For non-version 99, QUIC responds to an attempt to exceed the stream
@@ -408,7 +408,8 @@ TEST_P(QuicServerSessionBaseTest, MaxAvailableBidirectionalStreams) {
       session_.get(), GetNthClientInitiatedBidirectionalId(0)));
 
   // Establish available streams up to the server's limit.
-  QuicStreamId next_id = QuicSpdySessionPeer::StreamIdDelta(*session_);
+  QuicStreamId next_id =
+      QuicUtils::StreamIdDelta(connection_->transport_version());
   const int kLimitingStreamId =
       GetNthClientInitiatedBidirectionalId(kAvailableStreamLimit + 1);
   if (transport_version() != QUIC_VERSION_99) {

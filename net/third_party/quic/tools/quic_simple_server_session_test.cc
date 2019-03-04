@@ -235,13 +235,13 @@ class QuicSimpleServerSessionTest
   }
 
   QuicStreamId GetNthClientInitiatedBidirectionalId(int n) {
-    return QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(
-        *session_, n);
+    return GetNthClientInitiatedBidirectionalStreamId(
+        connection_->transport_version(), n);
   }
 
   QuicStreamId GetNthServerInitiatedUnidirectionalId(int n) {
-    return QuicSpdySessionPeer::GetNthServerInitiatedUnidirectionalStreamId(
-        *session_, n);
+    return quic::test::GetNthServerInitiatedUnidirectionalStreamId(
+        connection_->transport_version(), n);
   }
 
   bool IsVersion99() const {

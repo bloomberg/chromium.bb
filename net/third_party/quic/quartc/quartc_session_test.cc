@@ -190,12 +190,16 @@ class QuartcSessionTest : public QuicTest {
     server_endpoint_delegate_ = QuicMakeUnique<FakeQuartcEndpointDelegate>(
         server_session_delegate_.get());
 
+    // No 0-rtt setup, because server config is empty.
+    // CannotCreateDataStreamBeforeHandshake depends on 1-rtt setup.
     client_endpoint_ = QuicMakeUnique<QuartcClientEndpoint>(
         simulator_.GetAlarmFactory(), simulator_.GetClock(),
-        client_endpoint_delegate_.get(), /*serialized_server_config=*/"");
+        client_endpoint_delegate_.get(), quic::QuartcSessionConfig(),
+        /*serialized_server_config=*/"");
+
     server_endpoint_ = QuicMakeUnique<QuartcServerEndpoint>(
         simulator_.GetAlarmFactory(), simulator_.GetClock(),
-        server_endpoint_delegate_.get());
+        server_endpoint_delegate_.get(), quic::QuartcSessionConfig());
   }
 
   // Note that input session config will apply to both server and client.
@@ -206,13 +210,8 @@ class QuartcSessionTest : public QuicTest {
       Init();
     }
 
-    QuartcSessionConfig server_session_config = session_config;
-    server_session_config.packet_transport = server_transport_.get();
-    server_endpoint_->Connect(server_session_config);
-
-    QuartcSessionConfig client_session_config = session_config;
-    client_session_config.packet_transport = client_transport_.get();
-    client_endpoint_->Connect(client_session_config);
+    server_endpoint_->Connect(server_transport_.get());
+    client_endpoint_->Connect(client_transport_.get());
 
     CHECK(simulator_.RunUntil([this] {
       return client_endpoint_delegate_->session() != nullptr &&
@@ -246,7 +245,7 @@ class QuartcSessionTest : public QuicTest {
         server_peer_->CreateOutgoingBidirectionalStream();
     QuicStreamId stream_id = outgoing_stream->id();
     ASSERT_NE(nullptr, outgoing_stream);
-    EXPECT_TRUE(server_peer_->HasOpenDynamicStreams());
+    EXPECT_TRUE(server_peer_->ShouldKeepConnectionAlive());
 
     outgoing_stream->SetDelegate(server_stream_delegate_.get());
 
@@ -263,7 +262,7 @@ class QuartcSessionTest : public QuicTest {
     QuartcStream* incoming = client_session_delegate_->last_incoming_stream();
     ASSERT_TRUE(incoming);
     EXPECT_EQ(incoming->id(), stream_id);
-    EXPECT_TRUE(client_peer_->HasOpenDynamicStreams());
+    EXPECT_TRUE(client_peer_->ShouldKeepConnectionAlive());
 
     EXPECT_EQ(client_stream_delegate_->data()[stream_id], kTestMessage);
     // Send a test message from peer 2 to peer 1.
@@ -628,21 +627,16 @@ TEST_F(QuartcSessionTest, DISABLED_PreSharedKeyHandshakeIs0RTT) {
 
   Init();
 
-  QuartcSessionConfig server_session_config = session_config;
-  server_session_config.packet_transport = server_transport_.get();
-  server_endpoint_->Connect(server_session_config);
+  server_endpoint_->Connect(server_transport_.get());
 
   client_endpoint_ = QuicMakeUnique<QuartcClientEndpoint>(
       simulator_.GetAlarmFactory(), simulator_.GetClock(),
-      client_endpoint_delegate_.get(),
+      client_endpoint_delegate_.get(), QuartcSessionConfig(),
       // This is the key line here. It passes through the server config
       // from the server to the client.
       server_endpoint_->server_crypto_config());
 
-  QuartcSessionConfig client_session_config = session_config;
-  QuicString();
-  client_session_config.packet_transport = client_transport_.get();
-  client_endpoint_->Connect(client_session_config);
+  client_endpoint_->Connect(client_transport_.get());
 
   // Running for 1ms. This is shorter than the RTT, so the
   // client session should be created, but server won't be created yet.

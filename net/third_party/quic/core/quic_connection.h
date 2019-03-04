@@ -172,9 +172,10 @@ class QUIC_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   // Called to ask if any handshake messages are pending in this visitor.
   virtual bool HasPendingHandshake() const = 0;
 
-  // Called to ask if any streams are open in this visitor, excluding the
-  // reserved crypto and headers stream.
-  virtual bool HasOpenDynamicStreams() const = 0;
+  // Called to ask if the connection should be kept alive and prevented
+  // from timing out, for example if there are outstanding application
+  // transactions expecting a response.
+  virtual bool ShouldKeepConnectionAlive() const = 0;
 
   // Called when a self address change is observed. Returns true if self address
   // change is allowed.

@@ -113,8 +113,7 @@ TEST_F(QuicTraceVisitorTest, SentStream) {
       }
 
       ASSERT_GT(info.length(), 0u);
-      offsets.Add(QuicIntervalSet<QuicStreamOffset>(
-          info.offset(), info.offset() + info.length()));
+      offsets.Add(info.offset(), info.offset() + info.length());
     }
   }
 

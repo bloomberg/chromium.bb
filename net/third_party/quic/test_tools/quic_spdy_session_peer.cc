@@ -61,42 +61,5 @@ size_t QuicSpdySessionPeer::WriteHeadersOnHeadersStream(
       id, std::move(headers), fin, priority, std::move(ack_listener));
 }
 
-//  static
-QuicStreamId QuicSpdySessionPeer::StreamIdDelta(
-    const QuicSpdySession& session) {
-  return QuicUtils::StreamIdDelta(session.connection()->transport_version());
-}
-
-//  static
-QuicStreamId QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(
-    const QuicSpdySession& session,
-    int n) {
-  return QuicUtils::GetFirstBidirectionalStreamId(
-             session.connection()->transport_version(),
-             Perspective::IS_CLIENT) +
-         // + 1 because spdy_session contains headers stream.
-         QuicSpdySessionPeer::StreamIdDelta(session) * (n + 1);
-}
-
-//  static
-QuicStreamId QuicSpdySessionPeer::GetNthServerInitiatedBidirectionalStreamId(
-    const QuicSpdySession& session,
-    int n) {
-  return QuicUtils::GetFirstBidirectionalStreamId(
-             session.connection()->transport_version(),
-             Perspective::IS_SERVER) +
-         QuicSpdySessionPeer::StreamIdDelta(session) * n;
-}
-
-//  static
-QuicStreamId QuicSpdySessionPeer::GetNthServerInitiatedUnidirectionalStreamId(
-    const QuicSpdySession& session,
-    int n) {
-  return QuicUtils::GetFirstUnidirectionalStreamId(
-             session.connection()->transport_version(),
-             Perspective::IS_SERVER) +
-         QuicSpdySessionPeer::StreamIdDelta(session) * n;
-}
-
 }  // namespace test
 }  // namespace quic

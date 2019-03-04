@@ -463,7 +463,7 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const quic::QuicFrame& frame) {
     case quic::STOP_WAITING_FRAME:
       net_log_.AddEvent(NetLogEventType::QUIC_SESSION_STOP_WAITING_FRAME_SENT,
                         base::Bind(&NetLogQuicStopWaitingFrameCallback,
-                                   frame.stop_waiting_frame));
+                                   &frame.stop_waiting_frame));
       break;
     case quic::PING_FRAME:
       UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.ConnectionFlowControlBlocked",

@@ -526,6 +526,32 @@ TEST_F(QuicDispatcherTest, NoVersionNegotiationWithSmallPacket) {
                 PACKET_4BYTE_PACKET_NUMBER, 1);
 }
 
+// Disabling CHLO size validation allows the dispatcher to send version
+// negotiation packets in response to a CHLO that is otherwise too small.
+TEST_F(QuicDispatcherTest, VersionNegotiationWithoutChloSizeValidation) {
+  crypto_config_.set_validate_chlo_size(false);
+
+  CreateTimeWaitListManager();
+  QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
+
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _)).Times(0);
+  EXPECT_CALL(*time_wait_list_manager_,
+              SendVersionNegotiationPacket(_, _, _, _, _, _))
+      .Times(1);
+  QuicTransportVersion version =
+      static_cast<QuicTransportVersion>(QuicTransportVersionMin() - 1);
+  ParsedQuicVersion parsed_version(PROTOCOL_QUIC_CRYPTO, version);
+  QuicString chlo = SerializeCHLO() + QuicString(1200, 'a');
+  // Truncate to 1100 bytes of payload which results in a packet just
+  // under 1200 bytes after framing, packet, and encryption overhead.
+  DCHECK_LE(1200u, chlo.length());
+  QuicString truncated_chlo = chlo.substr(0, 1100);
+  DCHECK_EQ(1100u, truncated_chlo.length());
+  ProcessPacket(client_address, TestConnectionId(1), true, parsed_version,
+                truncated_chlo, PACKET_8BYTE_CONNECTION_ID,
+                PACKET_4BYTE_PACKET_NUMBER, 1);
+}
+
 TEST_F(QuicDispatcherTest, Shutdown) {
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
 

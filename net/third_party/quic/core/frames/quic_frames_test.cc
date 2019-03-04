@@ -219,7 +219,7 @@ TEST_F(QuicFramesTest, StopWaitingFrameToString) {
   std::ostringstream stream;
   stream << frame;
   EXPECT_EQ("{ least_unacked: 2 }\n", stream.str());
-  QuicFrame quic_frame(&frame);
+  QuicFrame quic_frame(frame);
   EXPECT_FALSE(IsControlFrame(quic_frame.type));
 }
 

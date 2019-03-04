@@ -84,7 +84,7 @@ class QuicEndpoint : public Endpoint,
   void OnCanWrite() override;
   bool WillingAndAbleToWrite() const override;
   bool HasPendingHandshake() const override;
-  bool HasOpenDynamicStreams() const override;
+  bool ShouldKeepConnectionAlive() const override;
 
   void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override {}
   void OnBlockedFrame(const QuicBlockedFrame& frame) override {}

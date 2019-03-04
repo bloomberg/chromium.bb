@@ -161,6 +161,35 @@ static void TestNotContainsAndFind(const QuicIntervalSet<int>& is,
                           << "and max " << max;
 }
 
+TEST_F(QuicIntervalSetTest, AddOptimizedForAppend) {
+  QuicIntervalSet<int> empty_one, empty_two;
+  empty_one.AddOptimizedForAppend(QuicInterval<int>(0, 99));
+  EXPECT_TRUE(Check(empty_one, 1, 0, 99));
+
+  empty_two.AddOptimizedForAppend(1, 50);
+  EXPECT_TRUE(Check(empty_two, 1, 1, 50));
+
+  QuicIntervalSet<int> iset;
+  iset.AddOptimizedForAppend(100, 150);
+  iset.AddOptimizedForAppend(200, 250);
+  EXPECT_TRUE(Check(iset, 2, 100, 150, 200, 250));
+
+  iset.AddOptimizedForAppend(199, 200);
+  EXPECT_TRUE(Check(iset, 2, 100, 150, 199, 250));
+
+  iset.AddOptimizedForAppend(251, 260);
+  EXPECT_TRUE(Check(iset, 3, 100, 150, 199, 250, 251, 260));
+
+  iset.AddOptimizedForAppend(252, 260);
+  EXPECT_TRUE(Check(iset, 3, 100, 150, 199, 250, 251, 260));
+
+  iset.AddOptimizedForAppend(252, 300);
+  EXPECT_TRUE(Check(iset, 3, 100, 150, 199, 250, 251, 300));
+
+  iset.AddOptimizedForAppend(300, 350);
+  EXPECT_TRUE(Check(iset, 3, 100, 150, 199, 250, 251, 350));
+}
+
 TEST_F(QuicIntervalSetTest, QuicIntervalSetBasic) {
   // Test Add, Get, Contains and Find
   QuicIntervalSet<int> iset;
@@ -200,7 +229,7 @@ TEST_F(QuicIntervalSetTest, QuicIntervalSetBasic) {
   iset_add.Add(300, 400);
   iset_add.Add(250, 450);
 
-  iset.Add(iset_add);
+  iset.Union(iset_add);
   EXPECT_FALSE(iset.Empty());
   EXPECT_EQ(2u, iset.Size());
   EXPECT_TRUE(Check(iset, 2, 90, 220, 250, 450));

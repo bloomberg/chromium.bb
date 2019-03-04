@@ -607,13 +607,15 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
   }
 
   QuicStreamId GetNthClientInitiatedBidirectionalId(int n) {
-    return QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(
-        *client_->client()->client_session(), n);
+    return GetNthClientInitiatedBidirectionalStreamId(
+        client_->client()->client_session()->connection()->transport_version(),
+        n);
   }
 
   QuicStreamId GetNthServerInitiatedBidirectionalId(int n) {
-    return QuicSpdySessionPeer::GetNthServerInitiatedBidirectionalStreamId(
-        *client_->client()->client_session(), n);
+    return GetNthServerInitiatedBidirectionalStreamId(
+        client_->client()->client_session()->connection()->transport_version(),
+        n);
   }
 
   ScopedEnvironmentForThreads environment_;

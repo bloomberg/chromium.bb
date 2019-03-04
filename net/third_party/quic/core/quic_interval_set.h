@@ -110,9 +110,46 @@ class QuicIntervalSet {
   // interval has no effect.
   void Add(const T& min, const T& max) { Add(value_type(min, max)); }
 
-  // DEPRECATED(kosak). Use Union() instead. This method merges all of the
-  // values contained in "other" into this QuicIntervalSet.
-  void Add(const QuicIntervalSet& other);
+  // Same semantics as Add(const value_type&), but optimized for the case where
+  // rbegin()->min() <= |interval|.min() <= rbegin()->max().
+  void AddOptimizedForAppend(const value_type& interval) {
+    if (Empty()) {
+      Add(interval);
+      return;
+    }
+
+    const_reverse_iterator last_interval = intervals_.rbegin();
+
+    // If interval.min() is outside of [last_interval->min, last_interval->max],
+    // we can not simply extend last_interval->max.
+    if (interval.min() < last_interval->min() ||
+        interval.min() > last_interval->max()) {
+      Add(interval);
+      return;
+    }
+
+    if (interval.max() <= last_interval->max()) {
+      // interval is fully contained by last_interval.
+      return;
+    }
+
+    // Extend last_interval.max to interval.max, in place.
+    //
+    // Set does not allow in-place updates due to the potential of violating its
+    // ordering requirements. But we know setting the max of the last interval
+    // is safe w.r.t set ordering and other invariants of QuicIntervalSet, so we
+    // force an in-place update for performance.
+    const_cast<value_type*>(&(*last_interval))->SetMax(interval.max());
+  }
+
+  // Same semantics as Add(const T&, const T&), but optimized for the case where
+  // rbegin()->max() == |min|.
+  void AddOptimizedForAppend(const T& min, const T& max) {
+    AddOptimizedForAppend(value_type(min, max));
+  }
+
+  // TODO(wub): Similar to AddOptimizedForAppend, we can also have a
+  // AddOptimizedForPrepend if there is a use case.
 
   // Returns true if this QuicIntervalSet is empty.
   bool Empty() const { return intervals_.empty(); }
@@ -394,13 +431,6 @@ void QuicIntervalSet<T>::Add(const value_type& interval) {
   const value_type target_end(interval.max(), interval.max());
   const typename Set::iterator end = intervals_.upper_bound(target_end);
   Compact(begin, end);
-}
-
-template <typename T>
-void QuicIntervalSet<T>::Add(const QuicIntervalSet& other) {
-  for (const_iterator it = other.begin(); it != other.end(); ++it) {
-    Add(*it);
-  }
 }
 
 template <typename T>
