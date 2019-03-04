@@ -61,7 +61,7 @@ struct BLINK_COMMON_EXPORT Manifest {
     std::vector<Purpose> purpose;
   };
 
-  struct BLINK_COMMON_EXPORT ShareTargetFile {
+  struct BLINK_COMMON_EXPORT FileFilter {
     base::string16 name;
     std::vector<base::string16> accept;
   };
@@ -74,7 +74,7 @@ struct BLINK_COMMON_EXPORT Manifest {
     base::NullableString16 title;
     base::NullableString16 text;
     base::NullableString16 url;
-    std::vector<ShareTargetFile> files;
+    std::vector<FileFilter> files;
   };
 
   // Structure representing how a Web Share target handles an incoming share.
@@ -104,6 +104,9 @@ struct BLINK_COMMON_EXPORT Manifest {
 
     ShareTargetParams params;
   };
+
+  // Structure representing a File Handler's query parameter keys.
+  using FileHandler = std::vector<FileFilter>;
 
   // Structure representing a related application.
   struct BLINK_COMMON_EXPORT RelatedApplication {
@@ -160,6 +163,12 @@ struct BLINK_COMMON_EXPORT Manifest {
   // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
   // As such, this field should not be exposed to web contents.
   base::Optional<ShareTarget> share_target;
+
+  // Null if parsing failed or the field was not present.
+  // TODO(harrisjay): This field is non-standard and part of a Chrome
+  // experiment. See:
+  // https://github.com/WICG/file-handling/blob/master/explainer.md
+  base::Optional<FileHandler> file_handler;
 
   // Empty if the parsing failed, the field was not present, empty or all the
   // applications inside the array were invalid. The order of the array

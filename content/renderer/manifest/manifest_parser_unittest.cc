@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 
@@ -1040,6 +1041,114 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
   }
 }
 
+TEST_F(ManifestParserTest, FileHandlerParseRules) {
+  // Contains file_handler field but no keys.
+  {
+    blink::Manifest manifest = ParseManifest("{ \"file_handler\": [] }");
+    EXPECT_FALSE(manifest.file_handler.has_value());
+    EXPECT_TRUE(manifest.IsEmpty());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("no file handlers were specified.", errors()[0]);
+  }
+
+  // Single accept value can be parsed from string.
+  {
+    blink::Manifest manifest = ParseManifest(
+        "{"
+        "  \"file_handler\": ["
+        "    {"
+        "      \"name\": \"name\","
+        "      \"accept\": \"image/png\""
+        "    }"
+        "  ]"
+        "}");
+    EXPECT_TRUE(manifest.file_handler.has_value());
+
+    auto file_handler = manifest.file_handler.value();
+    EXPECT_EQ(file_handler.size(), 1u);
+    EXPECT_EQ(file_handler[0].name, base::ASCIIToUTF16("name"));
+    EXPECT_EQ(file_handler[0].accept.size(), 1u);
+    EXPECT_EQ(file_handler[0].accept[0], base::ASCIIToUTF16("image/png"));
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Single accept value can be parsed from list.
+  {
+    blink::Manifest manifest = ParseManifest(
+        "{"
+        "  \"file_handler\": ["
+        "    {"
+        "      \"name\": \"name\","
+        "      \"accept\": [\"image/png\"]"
+        "    }"
+        "  ]"
+        "}");
+    EXPECT_TRUE(manifest.file_handler.has_value());
+
+    auto file_handler = manifest.file_handler.value();
+    EXPECT_EQ(file_handler.size(), 1u);
+    EXPECT_EQ(file_handler[0].name, base::ASCIIToUTF16("name"));
+    EXPECT_EQ(file_handler[0].accept.size(), 1u);
+    EXPECT_EQ(file_handler[0].accept[0], base::ASCIIToUTF16("image/png"));
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Multiple accept values can be parsed.
+  {
+    blink::Manifest manifest = ParseManifest(
+        "{"
+        "  \"file_handler\": ["
+        "    {"
+        "      \"name\": \"name\","
+        "      \"accept\": [\"image/png\", \".png\"]"
+        "    }"
+        "  ]"
+        "}");
+    EXPECT_TRUE(manifest.file_handler.has_value());
+
+    auto file_handler = manifest.file_handler.value();
+    EXPECT_EQ(file_handler.size(), 1u);
+    EXPECT_EQ(file_handler[0].name, base::ASCIIToUTF16("name"));
+    EXPECT_EQ(file_handler[0].accept.size(), 2u);
+    EXPECT_EQ(file_handler[0].accept[0], base::ASCIIToUTF16("image/png"));
+    EXPECT_EQ(file_handler[0].accept[1], base::ASCIIToUTF16(".png"));
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Multiple file handlers can be parsed.
+  {
+    blink::Manifest manifest = ParseManifest(
+        "{"
+        "  \"file_handler\": ["
+        "    {"
+        "      \"name\": \"name\","
+        "      \"accept\": [\"image/png\", \".png\"]"
+        "    },"
+        "    {"
+        "      \"name\": \"svgish\","
+        "      \"accept\": ["
+        "        \".svg\","
+        "        \"xml/svg\""
+        "      ]"
+        "    }"
+        "  ]"
+        "}");
+    EXPECT_TRUE(manifest.file_handler.has_value());
+
+    auto file_handler = manifest.file_handler.value();
+    EXPECT_EQ(file_handler.size(), 2u);
+    EXPECT_EQ(file_handler[0].name, base::ASCIIToUTF16("name"));
+    EXPECT_EQ(file_handler[0].accept.size(), 2u);
+    EXPECT_EQ(file_handler[0].accept[0], base::ASCIIToUTF16("image/png"));
+    EXPECT_EQ(file_handler[0].accept[1], base::ASCIIToUTF16(".png"));
+    EXPECT_EQ(file_handler[1].name, base::ASCIIToUTF16("svgish"));
+    EXPECT_EQ(file_handler[1].accept.size(), 2u);
+    EXPECT_EQ(file_handler[1].accept[0], base::ASCIIToUTF16(".svg"));
+    EXPECT_EQ(file_handler[1].accept[1], base::ASCIIToUTF16("xml/svg"));
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+}
+
 TEST_F(ManifestParserTest, ShareTargetParseRules) {
   // Contains share_target field but no keys.
   {
@@ -1752,7 +1861,7 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
         manifest.share_target;
     EXPECT_TRUE(share_target.has_value());
 
-    const std::vector<blink::Manifest::ShareTargetFile>& files =
+    const std::vector<blink::Manifest::FileFilter>& files =
         share_target->params.files;
     EXPECT_EQ(1u, files.size());
     EXPECT_TRUE(base::EqualsASCII(files.at(0).name, "name"));
@@ -1788,7 +1897,7 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
         manifest.share_target;
     EXPECT_TRUE(share_target.has_value());
 
-    const std::vector<blink::Manifest::ShareTargetFile>& files =
+    const std::vector<blink::Manifest::FileFilter>& files =
         share_target->params.files;
     EXPECT_EQ(1u, files.size());
     EXPECT_TRUE(base::EqualsASCII(files.at(0).name, "name"));
@@ -1821,7 +1930,7 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
         manifest.share_target;
     EXPECT_TRUE(share_target.has_value());
 
-    const std::vector<blink::Manifest::ShareTargetFile>& files =
+    const std::vector<blink::Manifest::FileFilter>& files =
         share_target->params.files;
     EXPECT_EQ(0u, files.size());
 
@@ -1830,7 +1939,7 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
               errors()[0]);
   }
 
-  // Files is just a single ShareTargetFile (not an array).
+  // Files is just a single FileFilter (not an array).
   {
     blink::Manifest manifest = ParseManifestWithURLs(
         "{"
@@ -1861,7 +1970,7 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
     EXPECT_EQ(0u, GetErrorCount());
   }
 
-  // Files is neither array nor ShareTargetFile.
+  // Files is neither array nor FileFilter.
   {
     blink::Manifest manifest = ParseManifestWithURLs(
         "{"
@@ -1880,14 +1989,13 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
         manifest.share_target;
     EXPECT_TRUE(share_target.has_value());
 
-    const std::vector<blink::Manifest::ShareTargetFile>& files =
+    const std::vector<blink::Manifest::FileFilter>& files =
         share_target->params.files;
     EXPECT_EQ(0u, files.size());
 
     EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ(
-        "property 'files' ignored, type array or ShareTargetFile expected.",
-        errors()[0]);
+    EXPECT_EQ("property 'files' ignored, type array or FileFilter expected.",
+              errors()[0]);
   }
 
   // Files contains a non-dictionary entry.
@@ -1915,7 +2023,7 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
         manifest.share_target;
     EXPECT_TRUE(share_target.has_value());
 
-    const std::vector<blink::Manifest::ShareTargetFile>& files =
+    const std::vector<blink::Manifest::FileFilter>& files =
         share_target->params.files;
     EXPECT_EQ(1u, files.size());
     EXPECT_TRUE(base::EqualsASCII(files.at(0).name, "name"));
@@ -1954,7 +2062,7 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
         manifest.share_target;
     EXPECT_TRUE(share_target.has_value());
 
-    const std::vector<blink::Manifest::ShareTargetFile>& files =
+    const std::vector<blink::Manifest::FileFilter>& files =
         share_target->params.files;
     EXPECT_EQ(1u, files.size());
     EXPECT_TRUE(base::EqualsASCII(files.at(0).name, "name"));

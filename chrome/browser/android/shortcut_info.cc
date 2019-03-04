@@ -112,7 +112,7 @@ void ShortcutInfo::UpdateFromManifest(const blink::Manifest& manifest) {
     if (!manifest.share_target->params.url.is_null())
       share_target->params.url = manifest.share_target->params.url.string();
 
-    for (blink::Manifest::ShareTargetFile manifest_share_target_file :
+    for (blink::Manifest::FileFilter manifest_share_target_file :
          manifest.share_target->params.files) {
       ShareTargetParamsFile share_target_params_file;
       share_target_params_file.name = manifest_share_target_file.name;

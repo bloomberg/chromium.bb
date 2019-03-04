@@ -158,26 +158,26 @@ class CONTENT_EXPORT ManifestParser {
   // Parses the name field of a share target file, as defined in:
   // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
   // Returns the parsed string if any, an empty string if the parsing failed.
-  base::string16 ParseShareTargetFileName(const base::DictionaryValue& file);
+  base::string16 ParseFileFilterName(const base::DictionaryValue& file);
 
-  // Parses the accept field of a share target file, as defined in:
+  // Parses the accept field of a file filter, as defined in:
   // https://wicg.github.io/web-share-target/level-2/#sharetargetfiles-and-its-members
-  // Returns the vector of parsed strings if any, an empty vector if the parsing
-  // failed or no accept instances were provided.
-  std::vector<base::string16> ParseShareTargetFileAccept(
+  // Returns the vector of parsed strings if any exist, an empty vector if the
+  // parsing failed or no accept instances were provided.
+  std::vector<base::string16> ParseFileFilterAccept(
       const base::DictionaryValue& file);
 
-  // Parses the 'files' field of a Share Target param, as defined in:
-  // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
+  // Parses the |key| field of |from| as a list of FileFilters.
+  // This is used to parse |file_handlers| and |share_target.params.files|
   // Returns a parsed vector of share target files.
-  std::vector<blink::Manifest::ShareTargetFile> ParseShareTargetFiles(
-      const base::DictionaryValue& share_target_params);
+  std::vector<blink::Manifest::FileFilter> ParseTargetFiles(
+      const base::StringPiece& key,
+      const base::DictionaryValue& from);
 
-  // Parses a single ShareTargetFile (see above comment) and appends it to
+  // Parses a single FileFilter (see above comment) and appends it to
   // the given |files| vector.
-  void ParseShareTargetFile(
-      const base::DictionaryValue& file_dictionary,
-      std::vector<blink::Manifest::ShareTargetFile>* files);
+  void ParseFileFilter(const base::DictionaryValue& file_dictionary,
+                       std::vector<blink::Manifest::FileFilter>* files);
 
   // Parses the method field of a Share Target, as defined in:
   // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
@@ -203,6 +203,13 @@ class CONTENT_EXPORT ManifestParser {
   // Returns the parsed Web Share target. The returned Share Target is null if
   // the field didn't exist, parsing failed, or it was empty.
   base::Optional<blink::Manifest::ShareTarget> ParseShareTarget(
+      const base::DictionaryValue& dictionary);
+
+  // Parses the 'file_handler' field of a Manifest, as defined in:
+  // https://github.com/WICG/file-handling/blob/master/explainer.md
+  // Returns the parsed file handler information. The returned FileHandler is
+  // null if the field didn't exist, parsing failed, or it was empty.
+  base::Optional<blink::Manifest::FileHandler> ParseFileHandler(
       const base::DictionaryValue& dictionary);
 
   // Parses the 'platform' field of a related application, as defined in:
