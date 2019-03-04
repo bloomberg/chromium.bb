@@ -14,6 +14,7 @@
 #include "ui/views/accessibility/ax_view_obj_wrapper.h"
 #include "ui/views/accessibility/ax_widget_obj_wrapper.h"
 #include "ui/views/accessibility/ax_window_obj_wrapper.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -103,8 +104,14 @@ void AXAuraObjCache::GetTopLevelWindows(
 
 AXAuraObjWrapper* AXAuraObjCache::GetFocus() {
   View* focused_view = GetFocusedView();
-  if (focused_view)
+  if (focused_view) {
+    const ViewAccessibility& view_accessibility =
+        focused_view->GetViewAccessibility();
+    if (view_accessibility.FocusedVirtualChild())
+      return view_accessibility.FocusedVirtualChild()->GetWrapper();
+
     return GetOrCreate(focused_view);
+  }
   return nullptr;
 }
 

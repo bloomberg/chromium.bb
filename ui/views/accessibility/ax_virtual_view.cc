@@ -7,9 +7,11 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <map>
 #include <utility>
 
 #include "base/callback.h"
+#include "base/no_destructor.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
@@ -20,11 +22,29 @@
 
 namespace views {
 
+// Tracks all virtual ax views.
+std::map<int32_t, AXVirtualView*>& GetIdMap() {
+  static base::NoDestructor<std::map<int32_t, AXVirtualView*>> id_to_obj_map;
+  return *id_to_obj_map;
+}
+
 // static
 const char AXVirtualView::kViewClassName[] = "AXVirtualView";
 
+// static
+AXVirtualView* AXVirtualView::GetFromId(int32_t id) {
+  auto& id_map = GetIdMap();
+  const auto& it = id_map.find(id);
+  return it != id_map.end() ? it->second : nullptr;
+}
+
 AXVirtualView::AXVirtualView()
     : parent_view_(nullptr), virtual_parent_view_(nullptr) {
+#if defined(USE_AURA)
+  wrapper_ = std::make_unique<AXVirtualViewWrapper>(this);
+#endif
+
+  GetIdMap()[unique_id_.Get()] = this;
   ax_platform_node_ = ui::AXPlatformNode::Create(this);
   DCHECK(ax_platform_node_);
   custom_data_.AddStringAttribute(ax::mojom::StringAttribute::kClassName,
@@ -32,6 +52,7 @@ AXVirtualView::AXVirtualView()
 }
 
 AXVirtualView::~AXVirtualView() {
+  GetIdMap().erase(unique_id_.Get());
   DCHECK(!parent_view_ || !virtual_parent_view_)
       << "Either |parent_view_| or |virtual_parent_view_| could be set but "
          "not both.";
@@ -47,6 +68,11 @@ void AXVirtualView::AddChildView(std::unique_ptr<AXVirtualView> view) {
   if (view->virtual_parent_view_ == this)
     return;
   AddChildViewAt(std::move(view), GetChildCount());
+
+  if (GetOwnerView()) {
+    GetOwnerView()->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged,
+                                             false);
+  }
 }
 
 void AXVirtualView::AddChildViewAt(std::unique_ptr<AXVirtualView> view,
@@ -64,6 +90,10 @@ void AXVirtualView::AddChildViewAt(std::unique_ptr<AXVirtualView> view,
 
   view->virtual_parent_view_ = this;
   children_.insert(children_.begin() + index, std::move(view));
+  if (GetOwnerView()) {
+    GetOwnerView()->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged,
+                                             false);
+  }
 }
 
 void AXVirtualView::ReorderChildView(AXVirtualView* view, int index) {
@@ -84,6 +114,9 @@ void AXVirtualView::ReorderChildView(AXVirtualView* view, int index) {
   std::unique_ptr<AXVirtualView> child = std::move(children_[cur_index]);
   children_.erase(children_.begin() + cur_index);
   children_.insert(children_.begin() + index, std::move(child));
+
+  GetOwnerView()->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged,
+                                           false);
 }
 
 std::unique_ptr<AXVirtualView> AXVirtualView::RemoveChildView(
@@ -106,12 +139,23 @@ std::unique_ptr<AXVirtualView> AXVirtualView::RemoveChildView(
   children_.erase(children_.begin() + cur_index);
   child->virtual_parent_view_ = nullptr;
   child->populate_data_callback_.Reset();
+
+  if (GetOwnerView()) {
+    GetOwnerView()->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged,
+                                             false);
+  }
+
   return child;
 }
 
 void AXVirtualView::RemoveAllChildViews() {
   while (!children_.empty())
     RemoveChildView(children_.back().get());
+
+  if (GetOwnerView()) {
+    GetOwnerView()->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged,
+                                             false);
+  }
 }
 
 const AXVirtualView* AXVirtualView::child_at(int index) const {
@@ -177,6 +221,9 @@ const ui::AXNodeData& AXVirtualView::GetData() const {
   // made to the data that users of this class will be manipulating.
   static ui::AXNodeData node_data;
   node_data = custom_data_;
+
+  node_data.id = GetUniqueId().Get();
+
   if (!GetOwnerView() || !GetOwnerView()->enabled())
     node_data.SetRestriction(ax::mojom::Restriction::kDisabled);
 
@@ -289,6 +336,10 @@ View* AXVirtualView::GetOwnerView() const {
 
   // This virtual view hasn't been added to a parent view yet.
   return nullptr;
+}
+
+AXVirtualViewWrapper* AXVirtualView::GetWrapper() const {
+  return wrapper_.get();
 }
 
 }  // namespace views

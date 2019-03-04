@@ -23,6 +23,13 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 
+#if defined(USE_AURA)
+#include "ui/views/accessibility/ax_virtual_view_wrapper.h"
+#else
+// Currently unused.
+class AXVirtualViewWrapper {};
+#endif
+
 namespace ui {
 
 struct AXActionData;
@@ -45,6 +52,8 @@ class ViewAccessibility;
 // ViewAccessibility or an AXVirtualView.
 class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
  public:
+  static AXVirtualView* GetFromId(int32_t id);
+
   AXVirtualView();
   ~AXVirtualView() override;
 
@@ -129,7 +138,12 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   bool IsOffscreen() const override;
   const ui::AXUniqueId& GetUniqueId() const override;
 
- protected:
+  // Gets the real View that owns our shallowest virtual ancestor,, if any.
+  View* GetOwnerView() const;
+
+  // Gets a wrapper suitable for use with tree sources.
+  AXVirtualViewWrapper* GetWrapper() const;
+
   // Handle a request from assistive technology to perform an action on this
   // virtual view. Returns true on success, but note that the success/failure is
   // not propagated to the client that requested the action, since the
@@ -148,9 +162,6 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
     DCHECK(!virtual_parent_view_);
     parent_view_ = view_accessibility;
   }
-
-  // Gets the real View that owns our shallowest virtual ancestor,, if any.
-  View* GetOwnerView() const;
 
   // We own this, but it is reference-counted on some platforms so we can't use
   // a unique_ptr. It is destroyed in the destructor.
@@ -171,6 +182,8 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   ui::AXNodeData custom_data_;
   base::RepeatingCallback<void(const View&, ui::AXNodeData*)>
       populate_data_callback_;
+
+  std::unique_ptr<AXVirtualViewWrapper> wrapper_;
 
   friend class ViewAccessibility;
   DISALLOW_COPY_AND_ASSIGN(AXVirtualView);

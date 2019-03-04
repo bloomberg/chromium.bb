@@ -8,6 +8,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
+#include "ui/views/accessibility/ax_virtual_view.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -50,7 +51,8 @@ void AXViewObjWrapper::GetChildren(
   if (!view_)
     return;
 
-  if (view_->GetViewAccessibility().IsLeaf())
+  const ViewAccessibility& view_accessibility = view_->GetViewAccessibility();
+  if (view_accessibility.IsLeaf())
     return;
 
   // TODO(dtseng): Need to handle |Widget| child of |View|.
@@ -60,6 +62,11 @@ void AXViewObjWrapper::GetChildren(
 
     AXAuraObjWrapper* child = aura_obj_cache_->GetOrCreate(view_->child_at(i));
     out_children->push_back(child);
+  }
+
+  for (int i = 0; i < view_accessibility.virtual_child_count(); ++i) {
+    out_children->push_back(
+        view_accessibility.virtual_child_at(i)->GetWrapper());
   }
 }
 

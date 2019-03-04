@@ -14,6 +14,7 @@
 #include "ui/gfx/transform.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
+#include "ui/views/accessibility/ax_virtual_view.h"
 
 namespace views {
 
@@ -63,7 +64,14 @@ AXAuraObjWrapper* AXTreeSourceViews::GetFromId(int32_t id) const {
   // Root might not be in the cache.
   if (id == root->GetUniqueId())
     return root;
-  return AXAuraObjCache::GetInstance()->Get(id);
+  AXAuraObjWrapper* wrapper = AXAuraObjCache::GetInstance()->Get(id);
+
+  // We must do a lookup in AXVirtualView as well if the main cache doesn't hold
+  // this node.
+  if (!wrapper && AXVirtualView::GetFromId(id))
+    return AXVirtualView::GetFromId(id)->GetWrapper();
+
+  return wrapper;
 }
 
 int32_t AXTreeSourceViews::GetId(AXAuraObjWrapper* node) const {
