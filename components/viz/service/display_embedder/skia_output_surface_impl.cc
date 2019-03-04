@@ -141,8 +141,7 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
         backend_format, size_.width(), size_.height(), mipmap_,
         kTopLeft_GrSurfaceOrigin /* origin */, color_type, alpha_type_,
         color_space_, PromiseTextureHelper::Fulfill,
-        PromiseTextureHelper::Release, PromiseTextureHelper::Done, this,
-        SkDeferredDisplayListRecorder::DelayReleaseCallback::kYes);
+        PromiseTextureHelper::Release, PromiseTextureHelper::Done, this);
   }
 
   static sk_sp<SkPromiseImageTexture> Fulfill(void* texture_context) {
@@ -217,7 +216,7 @@ class SkiaOutputSurfaceImpl::YUVAPromiseTextureHelper {
         {-1, SkColorChannel::kR},
     };
     SkISize yuva_sizes[4] = {};
-    SkDeferredDisplayListRecorder::TextureContext contexts[4] = {
+    SkDeferredDisplayListRecorder::PromiseImageTextureContext contexts[4] = {
         nullptr, nullptr, nullptr, nullptr};
 
     // The ownership of the contexts will be passed into
@@ -275,8 +274,7 @@ class SkiaOutputSurfaceImpl::YUVAPromiseTextureHelper {
         yuv_color_space, formats, yuva_sizes, indices, yuva_sizes[0].width(),
         yuva_sizes[0].height(), kTopLeft_GrSurfaceOrigin,
         nullptr /* color_space */, PromiseTextureHelper::Fulfill,
-        PromiseTextureHelper::Release, PromiseTextureHelper::Done, contexts,
-        SkDeferredDisplayListRecorder::DelayReleaseCallback::kYes);
+        PromiseTextureHelper::Release, PromiseTextureHelper::Done, contexts);
     return image;
   }
 
