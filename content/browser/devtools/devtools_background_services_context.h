@@ -5,13 +5,13 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_BACKGROUND_SERVICES_CONTEXT_H_
 #define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_BACKGROUND_SERVICES_CONTEXT_H_
 
+#include <array>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
@@ -93,8 +93,10 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContext
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
   // Maps from the background service to the time up until the events can be
-  // recorded.
-  base::flat_map<devtools::proto::BackgroundService, base::Time>
+  // recorded. The BackgroundService enum is used as the index.
+  // This should only be updated on the UI thread, but is also
+  // accessed from the IO thread.
+  std::array<base::Time, devtools::proto::BackgroundService_ARRAYSIZE>
       expiration_times_;
 
   base::WeakPtrFactory<DevToolsBackgroundServicesContext> weak_ptr_factory_;

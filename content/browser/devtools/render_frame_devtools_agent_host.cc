@@ -20,6 +20,7 @@
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_renderer_channel.h"
 #include "content/browser/devtools/devtools_session.h"
+#include "content/browser/devtools/protocol/background_service_handler.h"
 #include "content/browser/devtools/protocol/browser_handler.h"
 #include "content/browser/devtools/protocol/dom_handler.h"
 #include "content/browser/devtools/protocol/emulation_handler.h"
@@ -274,39 +275,39 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   if (!ShouldAllowSession(session))
     return false;
 
-  protocol::EmulationHandler* emulation_handler =
-      new protocol::EmulationHandler();
-  session->AddHandler(base::WrapUnique(new protocol::BrowserHandler()));
-  session->AddHandler(base::WrapUnique(
-      new protocol::DOMHandler(session->client()->MayReadLocalFiles())));
-  session->AddHandler(base::WrapUnique(emulation_handler));
-  session->AddHandler(base::WrapUnique(new protocol::InputHandler()));
-  session->AddHandler(base::WrapUnique(new protocol::InspectorHandler()));
-  session->AddHandler(base::WrapUnique(new protocol::IOHandler(
-      GetIOContext())));
-  session->AddHandler(base::WrapUnique(new protocol::MemoryHandler()));
-  session->AddHandler(base::WrapUnique(new protocol::NetworkHandler(
+  auto emulation_handler = std::make_unique<protocol::EmulationHandler>();
+  protocol::EmulationHandler* emulation_handler_ptr = emulation_handler.get();
+
+  session->AddHandler(std::make_unique<protocol::BackgroundServiceHandler>());
+  session->AddHandler(std::make_unique<protocol::BrowserHandler>());
+  session->AddHandler(std::make_unique<protocol::DOMHandler>(
+      session->client()->MayReadLocalFiles()));
+  session->AddHandler(std::move(emulation_handler));
+  session->AddHandler(std::make_unique<protocol::InputHandler>());
+  session->AddHandler(std::make_unique<protocol::InspectorHandler>());
+  session->AddHandler(std::make_unique<protocol::IOHandler>(GetIOContext()));
+  session->AddHandler(std::make_unique<protocol::MemoryHandler>());
+  session->AddHandler(std::make_unique<protocol::NetworkHandler>(
       GetId(),
       frame_tree_node_ ? frame_tree_node_->devtools_frame_token()
                        : base::UnguessableToken(),
-      GetIOContext())));
-  session->AddHandler(
-      base::WrapUnique(new protocol::FetchHandler(GetIOContext())));
-  session->AddHandler(base::WrapUnique(new protocol::SchemaHandler()));
-  session->AddHandler(base::WrapUnique(new protocol::ServiceWorkerHandler()));
-  session->AddHandler(base::WrapUnique(new protocol::StorageHandler()));
-  session->AddHandler(base::WrapUnique(new protocol::TargetHandler(
+      GetIOContext()));
+  session->AddHandler(std::make_unique<protocol::FetchHandler>(GetIOContext()));
+  session->AddHandler(std::make_unique<protocol::SchemaHandler>());
+  session->AddHandler(std::make_unique<protocol::ServiceWorkerHandler>());
+  session->AddHandler(std::make_unique<protocol::StorageHandler>());
+  session->AddHandler(std::make_unique<protocol::TargetHandler>(
       session->client()->MayAttachToBrowser()
           ? protocol::TargetHandler::AccessMode::kRegular
           : protocol::TargetHandler::AccessMode::kAutoAttachOnly,
-      GetId(), GetRendererChannel(), session->GetRootSession())));
-  session->AddHandler(base::WrapUnique(new protocol::PageHandler(
-      emulation_handler, session->client()->MayWriteLocalFiles())));
-  session->AddHandler(base::WrapUnique(new protocol::SecurityHandler()));
+      GetId(), GetRendererChannel(), session->GetRootSession()));
+  session->AddHandler(std::make_unique<protocol::PageHandler>(
+      emulation_handler_ptr, session->client()->MayWriteLocalFiles()));
+  session->AddHandler(std::make_unique<protocol::SecurityHandler>());
   if (!frame_tree_node_ || !frame_tree_node_->parent()) {
-    session->AddHandler(base::WrapUnique(
-        new protocol::TracingHandler(frame_tree_node_, GetIOContext(),
-                                     session->client()->UsesBinaryProtocol())));
+    session->AddHandler(std::make_unique<protocol::TracingHandler>(
+        frame_tree_node_, GetIOContext(),
+        session->client()->UsesBinaryProtocol()));
   }
 
   if (sessions().empty()) {
@@ -319,7 +320,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
     // When video capture API is used, don't instantiate
     // DevToolsFrameTraceRecorder. Taking snapshots happens in TracingHandler.
     if (!use_video_capture_api)
-      frame_trace_recorder_.reset(new DevToolsFrameTraceRecorder());
+      frame_trace_recorder_ = std::make_unique<DevToolsFrameTraceRecorder>();
     UpdateRawHeadersAccess(nullptr, frame_host_);
 #if defined(OS_ANDROID)
     GetWakeLock()->RequestWakeLock();
