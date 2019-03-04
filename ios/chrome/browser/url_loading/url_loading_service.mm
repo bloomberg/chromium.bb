@@ -251,11 +251,15 @@ void UrlLoadingService::OpenUrlInNewTab(OpenNewTabCommand* command) {
     adjacent_tab = tab_model.currentTab;
 
   GURL captured_url = command.URL;
+  GURL captured_virtual_url = command.virtualURL;
   web::Referrer captured_referrer = command.referrer;
   auto openTab = ^{
-    [tab_model insertTabWithURL:captured_url
-                       referrer:captured_referrer
-                     transition:ui::PAGE_TRANSITION_LINK
+    web::NavigationManager::WebLoadParams params(captured_url);
+    params.referrer = captured_referrer;
+    params.transition_type = ui::PAGE_TRANSITION_LINK;
+    params.virtual_url = captured_virtual_url;
+    [tab_model
+        insertTabWithLoadParams:params
                          opener:adjacent_tab
                     openedByDOM:NO
                         atIndex:TabModelConstants::kTabPositionAutomatically

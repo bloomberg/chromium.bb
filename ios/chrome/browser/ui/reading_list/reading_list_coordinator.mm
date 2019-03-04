@@ -368,6 +368,7 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
                                            web::ReferrerPolicyDefault);
     OpenNewTabCommand* command =
         [[OpenNewTabCommand alloc] initWithURL:loadURL
+                                    virtualURL:entryURL
                                       referrer:referrer
                                    inIncognito:incognito
                                   inBackground:NO
