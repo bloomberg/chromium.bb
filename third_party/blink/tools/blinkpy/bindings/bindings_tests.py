@@ -39,7 +39,6 @@ from code_generator_v8 import CodeGeneratorDictionaryImpl
 from code_generator_v8 import CodeGeneratorV8
 from code_generator_v8 import CodeGeneratorUnionType
 from code_generator_v8 import CodeGeneratorCallbackFunction
-from code_generator_web_agent_api import CodeGeneratorWebAgentAPI
 from compute_interfaces_info_individual import InterfaceInfoCollector
 from compute_interfaces_info_overall import (compute_interfaces_info_overall,
                                              interfaces_info)
@@ -333,11 +332,6 @@ def bindings_tests(output_directory, verbose, suppress_diff):
                                             info_provider, options)
             generate_bindings(
                 CodeGeneratorV8,
-                info_provider,
-                options,
-                idl_filenames)
-            generate_bindings(
-                CodeGeneratorWebAgentAPI,
                 info_provider,
                 options,
                 idl_filenames)
