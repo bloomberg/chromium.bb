@@ -993,11 +993,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-content-suggestions-new-favicon-server",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-content-suggestions-thumbnail-dominant-color",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

@@ -2246,11 +2246,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSuggestionsOptOutName,
      flag_descriptions::kContextualSuggestionsOptOutDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(contextual_suggestions::kContextualSuggestionsOptOut)},
-    {"enable-content-suggestions-new-favicon-server",
-     flag_descriptions::kEnableContentSuggestionsNewFaviconServerName,
-     flag_descriptions::kEnableContentSuggestionsNewFaviconServerDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(ntp_snippets::kPublisherFaviconsFromNewServerFeature)},
     {"enable-content-suggestions-thumbnail-dominant-color",
      flag_descriptions::kEnableContentSuggestionsThumbnailDominantColorName,
      flag_descriptions::

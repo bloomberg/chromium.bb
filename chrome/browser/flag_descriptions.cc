@@ -2318,12 +2318,6 @@ const char kEnableCommandLineOnNonRootedName[] =
 const char kEnableCommandLineOnNoRootedDescription[] =
     "Enable reading command line file on non-rooted devices (DANGEROUS).";
 
-const char kEnableContentSuggestionsNewFaviconServerName[] =
-    "Get favicons for content suggestions from a new server.";
-const char kEnableContentSuggestionsNewFaviconServerDescription[] =
-    "If enabled, the content suggestions (on the NTP) will get favicons from a "
-    "new favicon server.";
-
 const char kEnableContentSuggestionsThumbnailDominantColorName[] =
     "Use content suggestions thumbnail dominant color.";
 const char kEnableContentSuggestionsThumbnailDominantColorDescription[] =

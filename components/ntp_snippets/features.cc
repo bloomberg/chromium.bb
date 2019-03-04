@@ -31,7 +31,6 @@ const base::Feature* const kAllFeatures[] = {
     &kIncreasedVisibility,
     &kKeepPrefetchedContentSuggestions,
     &kNotificationsFeature,
-    &kPublisherFaviconsFromNewServerFeature,
     &kRemoteSuggestionsBackendFeature};
 
 const base::Feature kArticleSuggestionsFeature{
@@ -48,10 +47,6 @@ const base::Feature kBreakingNewsPushFeature{"BreakingNewsPush",
 
 const base::Feature kCategoryRanker{"ContentSuggestionsCategoryRanker",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kPublisherFaviconsFromNewServerFeature{
-    "ContentSuggestionsFaviconsFromNewServer",
-    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kRemoteSuggestionsEmulateM58FetchingSchedule{
     "RemoteSuggestionsEmulateM58FetchingSchedule",

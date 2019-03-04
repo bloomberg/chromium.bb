@@ -16,9 +16,4 @@ public final class SnippetsConfig {
     public static boolean isIncreasedCardVisibilityEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS_INCREASED_VISIBILITY);
     }
-
-    public static boolean isFaviconsFromNewServerEnabled() {
-        return ChromeFeatureList.isEnabled(
-                ChromeFeatureList.CONTENT_SUGGESTIONS_FAVICONS_FROM_NEW_SERVER);
-    }
 }

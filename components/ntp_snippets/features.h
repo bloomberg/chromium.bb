@@ -48,9 +48,6 @@ extern const base::Feature kBreakingNewsPushFeature;
 // Feature to choose a category ranker.
 extern const base::Feature kCategoryRanker;
 
-// Feature to allow the new Google favicon server for fetching publisher icons.
-extern const base::Feature kPublisherFaviconsFromNewServerFeature;
-
 // Feature for simple experimental comparison and validation of changes since
 // M58: enabling this brings back the M58 Stable fetching schedule (which is
 // suitable for Holdback groups).
