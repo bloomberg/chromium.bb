@@ -12,7 +12,6 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
 #include "content/browser/service_worker/fake_service_worker.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
@@ -92,10 +91,6 @@ class EmbeddedWorkerTestHelper {
 
   TestBrowserContext* browser_context() { return browser_context_.get(); }
 
-  base::WeakPtr<EmbeddedWorkerTestHelper> AsWeakPtr() {
-    return weak_factory_.GetWeakPtr();
-  }
-
   static net::HttpResponseInfo CreateHttpResponseInfo();
 
   URLLoaderFactoryGetter* url_loader_factory_getter() {
@@ -134,7 +129,7 @@ class EmbeddedWorkerTestHelper {
   /////////////////////////////////////////////////////////////////////////////
   // The following are exposed to public so the fake embedded worker and service
   // worker implementations and their subclasses can call them.
-  //
+
   // Called when |request| is received. It takes the object from a previous
   // AddPending*() call if any and calls Create*() otherwise.
   void OnInstanceClientRequest(
@@ -186,8 +181,6 @@ class EmbeddedWorkerTestHelper {
 
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
   std::unique_ptr<MockNetworkURLLoaderFactory> default_network_loader_factory_;
-
-  base::WeakPtrFactory<EmbeddedWorkerTestHelper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerTestHelper);
 };
