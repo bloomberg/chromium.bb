@@ -143,6 +143,7 @@ dist_braille_specs_TESTS =				  \
 	braille-specs/pl-pl-comp8_harness.yaml		  \
 	braille-specs/Pl-Pl-g1_backward.yaml		  \
 	braille-specs/sk-g1_harness.yaml		  \
+	braille-specs/sl-g1.yaml			  \
 	braille-specs/spaces.yaml			  \
 	braille-specs/sr-g1_harness.yaml		  \
 	braille-specs/ta-ta-g1_harness.yaml		  \
