@@ -10,6 +10,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/image_view.h"
 
 namespace {
@@ -54,22 +55,33 @@ void CustomImageView::OnPaint(gfx::Canvas* canvas) {
 // Helpers --------------------------------------------------------------------
 
 gfx::ImageSkia ImageForBadgeType(BadgedProfilePhoto::BadgeType badge_type) {
+  ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
   switch (badge_type) {
     case BadgedProfilePhoto::BADGE_TYPE_SUPERVISOR:
-      return gfx::CreateVectorIcon(kSupervisorAccountCircleIcon, kBadgeIconSize,
-                                   gfx::kChromeIconGrey);
+      return gfx::CreateVectorIcon(
+          kSupervisorAccountCircleIcon, kBadgeIconSize,
+          native_theme->GetSystemColor(
+              ui::NativeTheme::kColorId_DefaultIconColor));
     case BadgedProfilePhoto::BADGE_TYPE_CHILD:
-      return gfx::CreateVectorIcon(kAccountChildCircleIcon, kBadgeIconSize,
-                                   gfx::kChromeIconGrey);
+      return gfx::CreateVectorIcon(
+          kAccountChildCircleIcon, kBadgeIconSize,
+          native_theme->GetSystemColor(
+              ui::NativeTheme::kColorId_DefaultIconColor));
     case BadgedProfilePhoto::BADGE_TYPE_SYNC_COMPLETE:
       return gfx::CreateVectorIcon(kSyncCircleIcon, kBadgeIconSize,
-                                   gfx::kGoogleGreen700);
+                                   native_theme->SystemDarkModeEnabled()
+                                       ? gfx::kGoogleGreen300
+                                       : gfx::kGoogleGreen700);
     case BadgedProfilePhoto::BADGE_TYPE_SYNC_ERROR:
       return gfx::CreateVectorIcon(kSyncErrorCircleIcon, kBadgeIconSize,
-                                   gfx::kGoogleRed700);
+                                   native_theme->SystemDarkModeEnabled()
+                                       ? gfx::kGoogleRed300
+                                       : gfx::kGoogleRed700);
     case BadgedProfilePhoto::BADGE_TYPE_SYNC_PAUSED:
       return gfx::CreateVectorIcon(kSyncPausedCircleIcon, kBadgeIconSize,
-                                   gfx::kGoogleBlue500);
+                                   native_theme->SystemDarkModeEnabled()
+                                       ? gfx::kGoogleBlue300
+                                       : gfx::kGoogleBlue500);
     case BadgedProfilePhoto::BADGE_TYPE_SYNC_DISABLED:
       return gfx::CreateVectorIcon(kSyncCircleIcon, kBadgeIconSize,
                                    gfx::kGoogleGrey400);
