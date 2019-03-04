@@ -144,8 +144,7 @@ class CONTENT_EXPORT FrameConnectorDelegate {
       const gfx::PointF& point,
       RenderWidgetHostViewBase* target_view,
       const viz::SurfaceId& local_surface_id,
-      gfx::PointF* transformed_point,
-      viz::EventSource source = viz::EventSource::ANY);
+      gfx::PointF* transformed_point);
 
   // Pass acked touchpad pinch or double tap gesture events to the root view
   // for processing.

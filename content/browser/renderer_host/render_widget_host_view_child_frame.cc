@@ -773,8 +773,7 @@ bool RenderWidgetHostViewChildFrame::TransformPointToLocalCoordSpaceLegacy(
 bool RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
     const gfx::PointF& point,
     RenderWidgetHostViewBase* target_view,
-    gfx::PointF* transformed_point,
-    viz::EventSource source) {
+    gfx::PointF* transformed_point) {
   viz::SurfaceId surface_id = GetCurrentSurfaceId();
   // LocalSurfaceId is not needed in Viz hit-test.
   if (!frame_connector_ || (!use_viz_hit_test_ && !surface_id.is_valid())) {
@@ -787,7 +786,7 @@ bool RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
   }
 
   return frame_connector_->TransformPointToCoordSpaceForView(
-      point, target_view, surface_id, transformed_point, source);
+      point, target_view, surface_id, transformed_point);
 }
 
 gfx::PointF RenderWidgetHostViewChildFrame::TransformRootPointToViewCoordSpace(

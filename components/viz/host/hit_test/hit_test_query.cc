@@ -109,7 +109,6 @@ Target HitTestQuery::FindTargetForLocationStartingFrom(
 }
 
 bool HitTestQuery::TransformLocationForTarget(
-    EventSource event_source,
     const std::vector<FrameSinkId>& target_ancestors,
     const gfx::PointF& location_in_root,
     gfx::PointF* transformed_location) const {
@@ -142,9 +141,8 @@ bool HitTestQuery::TransformLocationForTarget(
                                           transform_timer.Elapsed(),
                                           base::TimeDelta::FromMicroseconds(1),
                                           base::TimeDelta::FromSeconds(10), 50);
-  return TransformLocationForTargetRecursively(event_source, target_ancestors,
-                                               target_ancestors.size() - 1, 0,
-                                               transformed_location);
+  return TransformLocationForTargetRecursively(
+      target_ancestors, target_ancestors.size() - 1, 0, transformed_location);
 }
 
 bool HitTestQuery::GetTransformToTarget(const FrameSinkId& target,
@@ -277,17 +275,10 @@ bool HitTestQuery::FindTargetInRegionForLocation(
 }
 
 bool HitTestQuery::TransformLocationForTargetRecursively(
-    EventSource event_source,
     const std::vector<FrameSinkId>& target_ancestors,
     size_t target_ancestor,
     size_t region_index,
     gfx::PointF* location_in_target) const {
-  const uint32_t flags = hit_test_data_[region_index].flags;
-  if ((flags & HitTestRegionFlags::kHitTestChildSurface) == 0u &&
-      !RegionMatchEventSource(event_source, flags)) {
-    return false;
-  }
-
   hit_test_data_[region_index].transform().TransformPoint(location_in_target);
   if (!target_ancestor)
     return true;
@@ -304,7 +295,7 @@ bool HitTestQuery::TransformLocationForTargetRecursively(
     if (hit_test_data_[child_region].frame_sink_id ==
         target_ancestors[target_ancestor - 1]) {
       return TransformLocationForTargetRecursively(
-          event_source, target_ancestors, target_ancestor - 1, child_region,
+          target_ancestors, target_ancestor - 1, child_region,
           location_in_target);
     }
 

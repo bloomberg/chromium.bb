@@ -71,8 +71,7 @@ bool FrameConnectorDelegate::TransformPointToCoordSpaceForView(
     const gfx::PointF& point,
     RenderWidgetHostViewBase* target_view,
     const viz::SurfaceId& local_surface_id,
-    gfx::PointF* transformed_point,
-    viz::EventSource source) {
+    gfx::PointF* transformed_point) {
   return false;
 }
 
