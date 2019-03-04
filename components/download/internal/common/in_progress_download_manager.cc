@@ -472,11 +472,9 @@ void InProgressDownloadManager::OnDownloadNamesRetrieved(
       }
 #if defined(OS_ANDROID)
       const base::FilePath& path = item->GetTargetFilePath();
-      auto iter = display_names_->find(path.value());
-      if (iter != display_names_->end()) {
-        DCHECK(path.IsContentUri());
-        item->SetDisplayName(iter->second);
-      }
+      base::FilePath display_name = GetDownloadDisplayName(path);
+      if (!display_name.empty())
+        item->SetDisplayName(display_name);
 #endif
       item->AddObserver(download_db_cache_.get());
       in_progress_downloads_.emplace_back(std::move(item));
