@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -85,6 +86,8 @@ using CompositingReasons = uint64_t;
   V(LayerForDecoration)
 
 class PLATFORM_EXPORT CompositingReason {
+  DISALLOW_NEW();
+
  private:
   // This contains ordinal values for compositing reasons and will be used to
   // generate the compositing reason bits.

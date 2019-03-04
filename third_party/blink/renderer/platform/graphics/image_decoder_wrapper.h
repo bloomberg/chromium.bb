@@ -7,6 +7,7 @@
 
 #include "cc/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/skia/include/core/SkSize.h"
 
 namespace blink {
@@ -15,6 +16,8 @@ class ImageFrameGenerator;
 class SegmentReader;
 
 class ImageDecoderWrapper {
+  STACK_ALLOCATED();
+
  public:
   ImageDecoderWrapper(ImageFrameGenerator* generator,
                       SegmentReader* data,

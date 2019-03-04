@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 
 namespace blink {
@@ -22,6 +23,8 @@ class WebGraphicsContext3DProvider;
 // Platform::CreateSharedOffscreenGraphicsContext3DProvider, and the
 // same query as Platform::IsGPUCompositingEnabled().
 class PLATFORM_EXPORT SharedGpuContext {
+  DISALLOW_NEW();
+
  public:
   // Thread-safe query if gpu compositing is enabled. This should be done before
   // calling ContextProviderWrapper() if the context will be used to make

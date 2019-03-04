@@ -9,12 +9,15 @@
 
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
 class IntRect;
 
 class PLATFORM_EXPORT HighContrastImageClassifier {
+  DISALLOW_NEW();
+
  public:
   HighContrastImageClassifier();
   ~HighContrastImageClassifier() = default;

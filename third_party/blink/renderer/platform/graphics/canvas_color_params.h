@@ -8,6 +8,7 @@
 #include "components/viz/common/resources/resource_format.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/gfx/buffer_types.h"
@@ -40,6 +41,8 @@ enum CanvasPixelFormat {
 };
 
 class PLATFORM_EXPORT CanvasColorParams {
+  DISALLOW_NEW();
+
  public:
   // The default constructor will create an output-blended 8-bit surface.
   CanvasColorParams();

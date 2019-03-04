@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/graphics/scroll_types.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
@@ -35,6 +36,8 @@ class PLATFORM_EXPORT GeometryMapper {
   // |translation_2d| is the accumulated 2d translation. Otherwise |matrix|
   // points to the accumulated projection, and |translation_2d| is zero.
   class Translation2DOrMatrix {
+    DISALLOW_NEW();
+
    public:
     Translation2DOrMatrix() { DCHECK(IsIdentity()); }
     explicit Translation2DOrMatrix(const FloatSize& translation_2d)

@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -57,6 +58,8 @@
 namespace blink {
 
 class CombinedImageDecodeCache {
+  USING_FAST_MALLOC(CombinedImageDecodeCache);
+
  public:
   CombinedImageDecodeCache(size_t locked_memory_limit_bytes)
       : locked_memory_limit_bytes_(locked_memory_limit_bytes) {
