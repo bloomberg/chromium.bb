@@ -56,7 +56,7 @@
 
 namespace {
 void DispatchImpl(blink::Node* node_ptr, blink::Event* evt) {
-  blink::EventDispatcher::DispatchScopedEvent(*node_ptr, evt);
+  blink::EventDispatcher::DispatchScopedEvent(*node_ptr, *evt);
 }
 }
 

@@ -22,7 +22,6 @@
 
 #include <blpwtk2_contentrendererclientimpl.h>
 #include <blpwtk2_inprocessresourceloaderbridge.h>
-#include <blpwtk2_jswidget.h>
 #include <blpwtk2_renderviewobserverimpl.h>
 #include <blpwtk2_resourceloader.h>
 #include <blpwtk2_statics.h>
@@ -31,6 +30,7 @@
 
 
 // patch section: jswidget plugin
+#include <blpwtk2_jswidget.h>
 
 
 // patch section: renderer ui

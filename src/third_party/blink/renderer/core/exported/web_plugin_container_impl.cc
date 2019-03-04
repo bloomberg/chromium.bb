@@ -309,9 +309,9 @@ void WebPluginContainerImpl::EnqueueEvent(const WebDOMEvent& event) {
   if (!element_->GetDocument().IsActive())
     return;
 
-  static_cast<Event*>(event)->SetTarget(element_);
-  element_->GetExecutionContext()->GetEventQueue()->EnqueueEvent(FROM_HERE,
-                                                                 event);
+  if (!element_->GetExecutionContext())
+    return;
+  element_->EnqueueEvent(*event, TaskType::kInternalDefault);
 }
 
 void WebPluginContainerImpl::SetPlugin(WebPlugin* plugin) {
@@ -1115,7 +1115,7 @@ void WebPluginContainerImpl::ComputeClipRectsForPlugin(
   // map it to absolute coordinates to get a value similar to frameRect()
   // but with consideration to transforms.
   FloatRect frame_rect_with_transforms =
-      box->LocalToAbsoluteQuad(FloatRect(box->ContentBoxRect()),
+      box->LocalToAbsoluteQuad(FloatRect(box->PhysicalContentBoxRect()),
                                MapCoordinatesMode::kUseTransforms).BoundingBox();
 
   LayoutRect layout_window_rect =
