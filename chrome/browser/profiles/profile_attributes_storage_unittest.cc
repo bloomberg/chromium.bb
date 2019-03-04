@@ -612,13 +612,6 @@ TEST_F(ProfileAttributesStorageTest, ChooseAvatarIconIndexForNewProfile) {
       // Icon must not be used.
       ASSERT_EQ(0u, used_icon_indices.count(icon_index));
       ASSERT_GT(total_icon_count, icon_index);
-
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-      if (i < total_icon_count - generic_icon_count)
-        ASSERT_LE(generic_icon_count, icon_index);
-      else
-        ASSERT_GT(generic_icon_count, icon_index);
-#endif
     }
 
     used_icon_indices.insert(icon_index);

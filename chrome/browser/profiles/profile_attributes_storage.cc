@@ -5,13 +5,13 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 
 #include <algorithm>
+#include <unordered_set>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/string_compare.h"
-#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -140,29 +140,6 @@ bool ProfileAttributesSortComparator::operator()(
   return a->GetPath().value() < b->GetPath().value();
 }
 
-// Tries to find an random icon index that satisfies all the given conditions.
-// Returns true if an icon was found, false otherwise.
-bool GetRandomAvatarIconIndex(
-    bool allow_generic_icon,
-    bool must_be_unused,
-    const std::unordered_set<size_t>& used_icon_indices,
-    size_t* out_icon_index) {
-  size_t start = allow_generic_icon ? 0 : profiles::GetGenericAvatarIconCount();
-  size_t end = profiles::GetDefaultAvatarIconCount();
-  size_t count = end - start;
-
-  int rand = base::RandInt(0, count);
-  for (size_t i = 0; i < count; ++i) {
-    size_t icon_index = start + (rand + i) % count;
-    if (!must_be_unused || used_icon_indices.count(icon_index) == 0u) {
-      *out_icon_index = icon_index;
-      return true;
-    }
-  }
-
-  return false;
-}
-
 }  // namespace
 
 ProfileAttributesStorage::ProfileAttributesStorage(PrefService* prefs)
@@ -277,23 +254,7 @@ size_t ProfileAttributesStorage::ChooseAvatarIconIndexForNewProfile() const {
   for (const ProfileAttributesEntry* entry : entries)
     used_icon_indices.insert(entry->GetAvatarIconIndex());
 
-  size_t icon_index = 0;
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-  // For ChromeOS and Android, try to find a unique, non-generic icon.
-  if (GetRandomAvatarIconIndex(false, true, used_icon_indices, &icon_index))
-    return icon_index;
-#endif
-
-  // Try to find any unique icon.
-  if (GetRandomAvatarIconIndex(true, true, used_icon_indices, &icon_index))
-    return icon_index;
-
-  // Settle for any random icon, even if it's not already used.
-  if (GetRandomAvatarIconIndex(true, false, used_icon_indices, &icon_index))
-    return icon_index;
-
-  NOTREACHED();
-  return 0;
+  return profiles::GetRandomAvatarIconIndex(used_icon_indices);
 }
 
 const gfx::Image* ProfileAttributesStorage::LoadAvatarPictureFromPath(
