@@ -19,17 +19,6 @@ namespace ash {
 
 class AssistantViewDelegate;
 
-// AssistantOptInDelegate ------------------------------------------------------
-
-class COMPONENT_EXPORT(ASSISTANT_UI) AssistantOptInDelegate {
- public:
-  // Invoked when the Assistant opt in button is pressed.
-  virtual void OnOptInButtonPressed() = 0;
-
- protected:
-  virtual ~AssistantOptInDelegate() = default;
-};
-
 // AssistantOptInView ----------------------------------------------------------
 
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantOptInView

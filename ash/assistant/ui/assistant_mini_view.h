@@ -23,19 +23,6 @@ namespace ash {
 
 class AssistantViewDelegate;
 
-// AssistantMiniViewDelegate ---------------------------------------------------
-
-// TODO(wutao): Remove this class and call methods on AssistantViewDelegate
-// derectly.
-class COMPONENT_EXPORT(ASSISTANT_UI) AssistantMiniViewDelegate {
- public:
-  // Invoked when the AssistantMiniView is pressed.
-  virtual void OnAssistantMiniViewPressed() {}
-
- protected:
-  virtual ~AssistantMiniViewDelegate() = default;
-};
-
 // AssistantMiniView -----------------------------------------------------------
 
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantMiniView
@@ -68,18 +55,12 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantMiniView
       base::Optional<AssistantEntryPoint> entry_point,
       base::Optional<AssistantExitPoint> exit_point) override;
 
-  void set_mini_view_delegate(AssistantMiniViewDelegate* delegate) {
-    mini_view_delegate_ = delegate;
-  }
-
  private:
   void InitLayout();
   void UpdatePrompt();
 
   AssistantViewDelegate* const delegate_;
   views::Label* label_;                              // Owned by view hierarchy.
-
-  AssistantMiniViewDelegate* mini_view_delegate_ = nullptr;
 
   // The most recent active query for the current Assistant UI session. If there
   // has been no active query for the current UI session, this is empty.

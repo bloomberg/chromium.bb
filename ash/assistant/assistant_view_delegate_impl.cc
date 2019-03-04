@@ -105,14 +105,6 @@ CaptionBarDelegate* AssistantViewDelegateImpl::GetCaptionBarDelegate() {
   return assistant_controller_->ui_controller();
 }
 
-AssistantMiniViewDelegate* AssistantViewDelegateImpl::GetMiniViewDelegate() {
-  return assistant_controller_->ui_controller();
-}
-
-AssistantOptInDelegate* AssistantViewDelegateImpl::GetOptInDelegate() {
-  return assistant_controller_->setup_controller();
-}
-
 void AssistantViewDelegateImpl::DownloadImage(
     const GURL& url,
     mojom::AssistantImageDownloader::DownloadCallback callback) {
@@ -157,6 +149,11 @@ void AssistantViewDelegateImpl::OnDialogPlateContentsCommitted(
     observer.OnDialogPlateContentsCommitted(text);
 }
 
+void AssistantViewDelegateImpl::OnMiniViewPressed() {
+  for (auto& observer : view_delegate_observers_)
+    observer.OnMiniViewPressed();
+}
+
 void AssistantViewDelegateImpl::OnNotificationButtonPressed(
     const std::string& notification_id,
     int notification_button_index) {
@@ -164,10 +161,15 @@ void AssistantViewDelegateImpl::OnNotificationButtonPressed(
       notification_id, notification_button_index, /*reply=*/base::nullopt);
 }
 
+void AssistantViewDelegateImpl::OnOptInButtonPressed() {
+  for (auto& observer : view_delegate_observers_)
+    observer.OnOptInButtonPressed();
+}
+
 void AssistantViewDelegateImpl::OnSuggestionChipPressed(
     const AssistantSuggestion* suggestion) {
-  assistant_controller_->interaction_controller()->OnSuggestionChipPressed(
-      suggestion);
+  for (AssistantViewDelegateObserver& observer : view_delegate_observers_)
+    observer.OnSuggestionChipPressed(suggestion);
 }
 
 void AssistantViewDelegateImpl::OpenUrlFromView(const GURL& url) {

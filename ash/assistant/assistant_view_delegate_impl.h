@@ -46,8 +46,6 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
   void RemoveVoiceInteractionControllerObserver(
       DefaultVoiceInteractionObserver* observer) override;
   CaptionBarDelegate* GetCaptionBarDelegate() override;
-  AssistantMiniViewDelegate* GetMiniViewDelegate() override;
-  AssistantOptInDelegate* GetOptInDelegate() override;
   void DownloadImage(
       const GURL& url,
       mojom::AssistantImageDownloader::DownloadCallback callback) override;
@@ -59,8 +57,10 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
   bool IsTabletMode() const override;
   void OnDialogPlateButtonPressed(AssistantButtonId id) override;
   void OnDialogPlateContentsCommitted(const std::string& text) override;
+  void OnMiniViewPressed() override;
   void OnNotificationButtonPressed(const std::string& notification_id,
                                    int notification_button_index) override;
+  void OnOptInButtonPressed() override;
   void OnSuggestionChipPressed(const AssistantSuggestion* suggestion) override;
   void OpenUrlFromView(const GURL& url) override;
 

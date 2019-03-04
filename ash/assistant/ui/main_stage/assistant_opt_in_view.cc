@@ -36,12 +36,10 @@ views::StyledLabel::RangeStyleInfo CreateStyleInfo(
 }
 
 base::string16 GetAction(mojom::ConsentStatus consent_status) {
-  if (consent_status == mojom::ConsentStatus::kUnauthorized) {
-    return l10n_util::GetStringUTF16(
-        IDS_ASH_ASSISTANT_OPT_IN_ASK_ADMINISTRATOR);
-  } else {
-    return l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_OPT_IN_GET_STARTED);
-  }
+  return consent_status == mojom::ConsentStatus::kUnauthorized
+             ? l10n_util::GetStringUTF16(
+                   IDS_ASH_ASSISTANT_OPT_IN_ASK_ADMINISTRATOR)
+             : l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_OPT_IN_GET_STARTED);
 }
 
 // AssistantOptInContainer -----------------------------------------------------
@@ -109,6 +107,16 @@ void AssistantOptInView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   label_->SizeToFit(width());
 }
 
+void AssistantOptInView::ButtonPressed(views::Button* sender,
+                                       const ui::Event& event) {
+  delegate_->OnOptInButtonPressed();
+}
+
+void AssistantOptInView::OnVoiceInteractionConsentStatusUpdated(
+    mojom::ConsentStatus consent_status) {
+  UpdateLabel(consent_status);
+}
+
 void AssistantOptInView::InitLayout() {
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -170,16 +178,6 @@ void AssistantOptInView::UpdateLabel(mojom::ConsentStatus consent_status) {
       CreateStyleInfo(gfx::Font::Weight::BOLD));
 
   container_->SetAccessibleName(label_text);
-}
-
-void AssistantOptInView::ButtonPressed(views::Button* sender,
-                                       const ui::Event& event) {
-  delegate_->GetOptInDelegate()->OnOptInButtonPressed();
-}
-
-void AssistantOptInView::OnVoiceInteractionConsentStatusUpdated(
-    mojom::ConsentStatus consent_status) {
-  UpdateLabel(consent_status);
 }
 
 }  // namespace ash

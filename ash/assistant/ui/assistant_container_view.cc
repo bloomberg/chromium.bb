@@ -348,8 +348,6 @@ void AssistantContainerView::Init() {
 
   // Mini view.
   assistant_mini_view_ = new AssistantMiniView(delegate_);
-  assistant_mini_view_->set_mini_view_delegate(
-      delegate_->GetMiniViewDelegate());
   AddChildView(assistant_mini_view_);
 
   // Web view.

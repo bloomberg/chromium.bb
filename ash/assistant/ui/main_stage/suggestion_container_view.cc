@@ -181,7 +181,6 @@ void SuggestionContainerView::ButtonPressed(views::Button* sender,
             sender->id());
   }
 
-  // TODO(dmblack): Use a delegate pattern here similar to CaptionBar.
   delegate_->OnSuggestionChipPressed(suggestion);
 }
 

@@ -44,6 +44,14 @@ void AssistantSetupController::SetAssistantSetup(
   assistant_setup_ = std::move(assistant_setup);
 }
 
+void AssistantSetupController::OnAssistantControllerConstructed() {
+  assistant_controller_->view_delegate()->AddObserver(this);
+}
+
+void AssistantSetupController::OnAssistantControllerDestroying() {
+  assistant_controller_->view_delegate()->RemoveObserver(this);
+}
+
 void AssistantSetupController::OnDeepLinkReceived(
     assistant::util::DeepLinkType type,
     const std::map<std::string, std::string>& params) {

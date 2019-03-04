@@ -103,9 +103,7 @@ class AssistantInteractionController
   // AssistantViewDelegateObserver:
   void OnDialogPlateButtonPressed(AssistantButtonId id) override;
   void OnDialogPlateContentsCommitted(const std::string& text) override;
-
-  // Invoked on suggestion chip pressed event.
-  void OnSuggestionChipPressed(const AssistantSuggestion* suggestion);
+  void OnSuggestionChipPressed(const AssistantSuggestion* suggestion) override;
 
  private:
   bool HasUnprocessedPendingResponse();
