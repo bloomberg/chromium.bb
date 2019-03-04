@@ -17,11 +17,32 @@
 #include "third_party/metrics_proto/sampled_profile.pb.h"
 
 using Frame = base::StackSamplingProfiler::Frame;
-using Module = base::ModuleCache::Module;
 
 namespace metrics {
 
 namespace {
+
+// Stub module for testing.
+class TestModule : public base::ModuleCache::Module {
+ public:
+  TestModule(uintptr_t base_address = 0,
+             const std::string& id = "",
+             const base::FilePath& debug_basename = base::FilePath())
+      : base_address_(base_address), id_(id), debug_basename_(debug_basename) {}
+
+  TestModule(const TestModule&) = delete;
+  TestModule& operator=(const TestModule&) = delete;
+
+  uintptr_t GetBaseAddress() const override { return base_address_; }
+  std::string GetId() const override { return id_; }
+  base::FilePath GetDebugBasename() const override { return debug_basename_; }
+  size_t GetSize() const override { return 0; }
+
+ private:
+  uintptr_t base_address_;
+  std::string id_;
+  base::FilePath debug_basename_;
+};
 
 constexpr CallStackProfileParams kProfileParams = {
     CallStackProfileParams::BROWSER_PROCESS,
@@ -85,15 +106,15 @@ TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
 #endif
 
   const uintptr_t module_base_address1 = 0x1000;
-  Module module1(module_base_address1, "1", module_path, 0x100);
+  TestModule module1(module_base_address1, "1", module_path);
   Frame frame1 = {module_base_address1 + 0x10, &module1};
 
   const uintptr_t module_base_address2 = 0x1100;
-  Module module2(module_base_address2, "2", module_path, 0x10);
+  TestModule module2(module_base_address2, "2", module_path);
   Frame frame2 = {module_base_address2 + 0x10, &module2};
 
   const uintptr_t module_base_address3 = 0x1010;
-  Module module3(module_base_address3, "3", module_path, 0x100);
+  TestModule module3(module_base_address3, "3", module_path);
   Frame frame3 = {module_base_address3 + 0x10, &module3};
 
   std::vector<Frame> frames1 = {frame1, frame2};
@@ -158,19 +179,11 @@ TEST(CallStackProfileBuilderTest, StacksDeduped) {
   auto profile_builder =
       std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
 
-#if defined(OS_WIN)
-  base::FilePath module_path(L"c:\\some\\path\\to\\chrome.exe");
-#else
-  base::FilePath module_path("/some/path/to/chrome");
-#endif
+  TestModule module1;
+  Frame frame1 = {0x10, &module1};
 
-  const uintptr_t module_base_address1 = 0x1000;
-  Module module1(module_base_address1, "1", module_path, 0x100);
-  Frame frame1 = {module_base_address1 + 0x10, &module1};
-
-  const uintptr_t module_base_address2 = 0x1100;
-  Module module2(module_base_address2, "2", module_path, 0x100);
-  Frame frame2 = {module_base_address2 + 0x10, &module2};
+  TestModule module2;
+  Frame frame2 = {0x20, &module2};
 
   std::vector<Frame> frames = {frame1, frame2};
 
@@ -204,19 +217,11 @@ TEST(CallStackProfileBuilderTest, StacksNotDeduped) {
   auto profile_builder =
       std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
 
-#if defined(OS_WIN)
-  base::FilePath module_path(L"c:\\some\\path\\to\\chrome.exe");
-#else
-  base::FilePath module_path("/some/path/to/chrome");
-#endif
+  TestModule module1;
+  Frame frame1 = {0x10, &module1};
 
-  const uintptr_t module_base_address1 = 0x1000;
-  Module module1(module_base_address1, "1", module_path, 0x100);
-  Frame frame1 = {module_base_address1 + 0x10, &module1};
-
-  const uintptr_t module_base_address2 = 0x1100;
-  Module module2(module_base_address2, "2", module_path, 0x100);
-  Frame frame2 = {module_base_address2 + 0x10, &module2};
+  TestModule module2;
+  Frame frame2 = {0x20, &module2};
 
   std::vector<Frame> frames1 = {frame1};
   std::vector<Frame> frames2 = {frame2};
@@ -250,9 +255,8 @@ TEST(CallStackProfileBuilderTest, Modules) {
   auto profile_builder =
       std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
 
-  const uintptr_t module_base_address1 = 0x1000;
   // A frame with no module.
-  Frame frame1 = {module_base_address1 + 0x10, nullptr};
+  Frame frame1 = {0x1010, nullptr};
 
   const uintptr_t module_base_address2 = 0x1100;
 #if defined(OS_WIN)
@@ -262,7 +266,7 @@ TEST(CallStackProfileBuilderTest, Modules) {
   uint64_t module_md5 = 0x554838A8451AC36CULL;
   base::FilePath module_path("/some/path/to/chrome");
 #endif
-  Module module2(module_base_address2, "2", module_path, 0x100);
+  TestModule module2(module_base_address2, "2", module_path);
   Frame frame2 = {module_base_address2 + 0x10, &module2};
 
   std::vector<Frame> frames = {frame1, frame2};
@@ -311,7 +315,7 @@ TEST(CallStackProfileBuilderTest, DedupModules) {
   base::FilePath module_path("/some/path/to/chrome");
 #endif
 
-  Module module(module_base_address, "1", module_path, 0x100);
+  TestModule module(module_base_address, "1", module_path);
   Frame frame1 = {module_base_address + 0x10, &module};
   Frame frame2 = {module_base_address + 0x20, &module};
 
@@ -363,14 +367,8 @@ TEST(CallStackProfileBuilderTest, WorkIds) {
   auto profile_builder = std::make_unique<TestingCallStackProfileBuilder>(
       kProfileParams, &work_id_recorder);
 
-#if defined(OS_WIN)
-  base::FilePath module_path(L"c:\\some\\path\\to\\chrome.exe");
-#else
-  base::FilePath module_path("/some/path/to/chrome");
-#endif
-
-  Module module(0x1000, "1", module_path, 0x100);
-  Frame frame = {0x1000 + 0x10, &module};
+  TestModule module;
+  Frame frame = {0x10, &module};
 
   // Id 0 means the message loop hasn't been started yet, so the sample should
   // not have continued_work set.
@@ -420,14 +418,8 @@ TEST(CallStackProfileBuilderTest, MetadataRecorder) {
   auto profile_builder = std::make_unique<TestingCallStackProfileBuilder>(
       kProfileParams, nullptr, &metadata_recorder);
 
-#if defined(OS_WIN)
-  base::FilePath module_path(L"c:\\some\\path\\to\\chrome.exe");
-#else
-  base::FilePath module_path("/some/path/to/chrome");
-#endif
-
-  Module module = {0x1000, "1", module_path, 0x100};
-  Frame frame = {0x1000 + 0x10, &module};
+  TestModule module;
+  Frame frame = {0x10, &module};
 
   metadata_recorder.current_value = 5;
   profile_builder->OnSampleCompleted({frame});
