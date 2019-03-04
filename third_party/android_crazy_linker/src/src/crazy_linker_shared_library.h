@@ -137,11 +137,10 @@ class SharedLibrary {
   // function result is less than |minimum_jni_version|, fail with
   // a message in |error|. On success, return true, and record
   // |java_vm| to call 'JNI_OnUnload' at unload time, if present.
-  bool SetJavaVM(void* java_vm, int minimum_jni_version, Error* error);
+  bool CallJniOnLoad(void* java_vm, int minimum_jni_version, Error* error);
 
   // Call 'JNI_OnUnload()' is necessary, i.e. if there was a succesful call
-  // to SetJavaVM() before. This will pass the same |java_vm| value to the
-  // callback, if it is present in the library.
+  // to CallJniOnLoad() before, or nothing otherwise.
   void CallJniOnUnload();
 
   // Release reserved memory mapping. Caller takes ownership. Used to delay

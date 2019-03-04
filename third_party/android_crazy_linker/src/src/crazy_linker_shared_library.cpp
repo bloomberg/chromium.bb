@@ -469,14 +469,14 @@ void SharedLibrary::CallDestructors() {
   CallFunction(fini_func_, "DT_FINI");
 }
 
-bool SharedLibrary::SetJavaVM(void* java_vm,
-                              int minimum_jni_version,
-                              Error* error) {
-  if (java_vm == NULL)
+bool SharedLibrary::CallJniOnLoad(void* java_vm,
+                                  int minimum_jni_version,
+                                  Error* error) {
+  if (!java_vm)
     return true;
 
   // Lookup for JNI_OnLoad, exit if it doesn't exist.
-  JNI_OnLoadFunctionPtr jni_onload = reinterpret_cast<JNI_OnLoadFunctionPtr>(
+  auto jni_onload = reinterpret_cast<JNI_OnLoadFunctionPtr>(
       FindAddressForSymbol("JNI_OnLoad"));
   if (!jni_onload)
     return true;

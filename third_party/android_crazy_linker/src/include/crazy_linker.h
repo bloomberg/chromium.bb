@@ -66,7 +66,6 @@ typedef enum {
 typedef struct crazy_context_t crazy_context_t;
 
 // Create a new context object.
-// Note that this calls crazy_context_reset_search_paths().
 crazy_context_t* crazy_context_create(void) _CRAZY_PUBLIC;
 
 // Return current error string, or NULL if there was no error.
@@ -83,31 +82,8 @@ void crazy_context_set_load_address(crazy_context_t* context,
 // Return the current load address in a context.
 size_t crazy_context_get_load_address(crazy_context_t* context) _CRAZY_PUBLIC;
 
-// Add one or more paths to the list of library search paths held
-// by a given context. |path| is a string using a column (:) as a
-// list separator. As with the PATH variable, an empty list item
-// is equivalent to '.', the current directory.
-// This can fail if too many paths are added to the context.
-//
-// NOTE: Calling this function appends new paths to the search list,
-// but all paths added with this function will be searched before
-// the ones listed in LD_LIBRARY_PATH.
-crazy_status_t crazy_context_add_search_path(
-    crazy_context_t* context,
-    const char* file_path) _CRAZY_PUBLIC;
-
-// Find the ELF binary that contains |address|, and add its directory
-// path to the context's list of search directories. This is useful to
-// load libraries in the same directory than the current program itself.
-crazy_status_t crazy_context_add_search_path_for_address(
-    crazy_context_t* context,
-    void* address) _CRAZY_PUBLIC;
-
-// Reset the search paths to the value of the LD_LIBRARY_PATH
-// environment variable. This essentially removes any paths
-// that were added with crazy_context_add_search_path() or
-// crazy_context_add_search_path_for_address().
-void crazy_context_reset_search_paths(crazy_context_t* context) _CRAZY_PUBLIC;
+// Destroy a given context object.
+void crazy_context_destroy(crazy_context_t* context) _CRAZY_PUBLIC;
 
 // Record the value of |java_vm| inside of |context|. If this is not NULL,
 // which is the default, then after loading any library, the crazy linker
@@ -118,18 +94,32 @@ void crazy_context_reset_search_paths(crazy_context_t* context) _CRAZY_PUBLIC;
 //
 // The |java_vm| field is also saved in the crazy_library_t object, and
 // used at unload time to call JNI_OnUnload() if it exists.
-void crazy_context_set_java_vm(crazy_context_t* context,
-                               void* java_vm,
-                               int minimum_jni_version);
+void crazy_set_java_vm(void* java_vm, int minimum_jni_version);
 
 // Retrieves the last values set with crazy_context_set_java_vm().
 // A value of NUMM in |*java_vm| means the feature is disabled.
-void crazy_context_get_java_vm(crazy_context_t* context,
-                               void** java_vm,
-                               int* minimum_jni_version);
+void crazy_get_java_vm(void** java_vm, int* minimum_jni_version);
 
-// Destroy a given context object.
-void crazy_context_destroy(crazy_context_t* context) _CRAZY_PUBLIC;
+// Add one or more paths to the global list of library search paths. |path| is a
+// string using a column (:) as a list separator. As with the PATH variable,
+// an empty list item is equivalent to '.', the current directory.
+// This can fail if too many paths are added to the context.
+//
+// NOTE: Calling this function appends new paths to the global search list,
+// but all paths added with this function will be searched before
+// the ones listed in LD_LIBRARY_PATH.
+crazy_status_t crazy_add_search_path(const char* file_path) _CRAZY_PUBLIC;
+
+// Find the ELF binary that contains |address|, and add its directory
+// path to the global list of search directories. This is useful to
+// load libraries in the same directory as the current program itself.
+crazy_status_t crazy_add_search_path_for_address(void* address) _CRAZY_PUBLIC;
+
+// Reset the search paths to the value of the LD_LIBRARY_PATH
+// environment variable. This essentially removes any paths
+// that were added with crazy_add_search_path() or
+// crazy_context_add_search_path_for_address().
+void crazy_reset_search_paths(void) _CRAZY_PUBLIC;
 
 // Pass the platform's SDK build version to the crazy linker. The value is
 // from android.os.Build.VERSION.SDK_INT.
