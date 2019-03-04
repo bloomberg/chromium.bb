@@ -15,16 +15,12 @@ static const SkColor kHoverColor = SkColorSetRGB(0xEA, 0xEA, 0xEA);
 enum BubbleViewMode {
   // Shows the default avatar bubble.
   BUBBLE_VIEW_MODE_PROFILE_CHOOSER,
-  // Shows a list of accounts for the active user.
-  BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT,
   // Shows a web view for primary sign in.
   BUBBLE_VIEW_MODE_GAIA_SIGNIN,
   // Shows a web view for adding secondary accounts.
   BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT,
   // Shows a web view for reauthenticating an account.
   BUBBLE_VIEW_MODE_GAIA_REAUTH,
-  // Shows a view for confirming account removal.
-  BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL,
   // Shows a view for incognito that displays the number of incognito windows.
   BUBBLE_VIEW_MODE_INCOGNITO,
 };

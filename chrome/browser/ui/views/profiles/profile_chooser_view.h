@@ -22,8 +22,6 @@
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace views {
-class GridLayout;
-class ImageButton;
 class LabelButton;
 }
 
@@ -68,7 +66,6 @@ class ProfileChooserView : public ProfileMenuViewBase,
 
   typedef std::vector<size_t> Indexes;
   typedef std::map<views::Button*, int> ButtonIndexes;
-  typedef std::map<views::Button*, std::string> AccountButtonIndexes;
 
   ProfileChooserView(views::Button* anchor_button,
                      const gfx::Rect& anchor_rect,
@@ -99,7 +96,6 @@ class ProfileChooserView : public ProfileMenuViewBase,
   // identity::IdentityManager::Observer overrides.
   void OnRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info) override;
-  void OnRefreshTokenRemovedForAccount(const std::string& account_id) override;
 
   static ProfileChooserView* profile_bubble_;
 
@@ -135,24 +131,9 @@ class ProfileChooserView : public ProfileMenuViewBase,
   views::View* CreateSupervisedUserDisclaimerView();
   views::View* CreateAutofillHomeView();
 
-  // Account Management view for the profile |avatar_item|.
-  views::View* CreateCurrentProfileAccountsView(
-      const AvatarMenu::Item& avatar_item);
-  void CreateAccountButton(views::GridLayout* layout,
-                           const std::string& account_id,
-                           bool is_primary_account,
-                           bool reauth_required,
-                           int width);
-
   // Creates the DICE UI view to sign in and turn on sync. It includes an
   // illustration, a promo and a button.
   views::View* CreateDiceSigninView();
-
-  // Creates a view to confirm account removal for |account_id_to_remove_|.
-  views::View* CreateAccountRemovalView();
-
-  // Removes the currently selected account and attempts to restart Chrome.
-  void RemoveAccount();
 
   // Creates a header for signin and sync error surfacing for the user menu.
   views::View* CreateSyncErrorViewIfNeeded(const AvatarMenu::Item& avatar_item);
@@ -182,10 +163,6 @@ class ProfileChooserView : public ProfileMenuViewBase,
   // Other profiles used in the "fast profile switcher" view.
   ButtonIndexes open_other_profile_indexes_map_;
 
-  // Buttons associated with the current profile.
-  AccountButtonIndexes delete_account_button_map_;
-  AccountButtonIndexes reauth_account_button_map_;
-
   // Button in the signin/sync error header on top of the desktop user menu.
   views::LabelButton* sync_error_button_;
 
@@ -213,18 +190,8 @@ class ProfileChooserView : public ProfileMenuViewBase,
   views::LabelButton* addresses_button_;
   views::LabelButton* signout_button_;
 
-  // Buttons displayed in the gaia signin view.
-  views::ImageButton* gaia_signin_cancel_button_;
-
-  // Links and buttons displayed in the account removal view.
-  views::LabelButton* remove_account_button_;
-  views::ImageButton* account_removal_cancel_button_;
-
   // View for the signin/turn-on-sync button in the dice promo.
   DiceSigninButtonView* dice_signin_button_view_;
-
-  // Records the account id to remove.
-  std::string account_id_to_remove_;
 
   // Active view mode.
   profiles::BubbleViewMode view_mode_;
