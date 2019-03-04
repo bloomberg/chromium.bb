@@ -93,10 +93,10 @@ enum PrintPreviewHelperEvents {
   PREVIEW_EVENT_MAX,
 };
 
-const double kMinDpi = 1.0;
+constexpr double kMinDpi = 1.0;
 
 // Also set in third_party/WebKit/Source/core/page/PrintContext.h
-const float kPrintingMinimumShrinkFactor = 1.33333333f;
+constexpr float kPrintingMinimumShrinkFactor = 1.33333333f;
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 bool g_is_preview_enabled = true;
@@ -134,9 +134,8 @@ int GetDPI(const PrintMsg_Print_Params* print_params) {
 bool PrintMsg_Print_Params_IsValid(const PrintMsg_Print_Params& params) {
   return !params.content_size.IsEmpty() && !params.page_size.IsEmpty() &&
          !params.printable_area.IsEmpty() && params.document_cookie &&
-         !params.dpi.IsEmpty() && params.dpi.width() > kMinDpi &&
-         params.dpi.height() > kMinDpi && params.margin_top >= 0 &&
-         params.margin_left >= 0 && params.document_cookie != 0;
+         params.dpi.width() > kMinDpi && params.dpi.height() > kMinDpi &&
+         params.margin_top >= 0 && params.margin_left >= 0;
 }
 
 // Helper function to check for fit to page
@@ -181,7 +180,7 @@ PrintMsg_Print_Params GetCssPrintParams(
 
   // Invalid page size and/or margins. We just use the default setting.
   if (new_content_width < 1 || new_content_height < 1) {
-    CHECK(frame != nullptr);
+    CHECK(frame);
     page_css_params = GetCssPrintParams(nullptr, page_index, page_params);
     return page_css_params;
   }
@@ -624,9 +623,9 @@ void FrameReference::Reset(blink::WebLocalFrame* frame) {
 }
 
 blink::WebLocalFrame* FrameReference::GetFrame() {
-  if (view_ == nullptr || frame_ == nullptr)
+  if (!view_ || !frame_)
     return nullptr;
-  for (blink::WebFrame* frame = view_->MainFrame(); frame != nullptr;
+  for (blink::WebFrame* frame = view_->MainFrame(); frame;
        frame = frame->TraverseNext()) {
     if (frame == frame_)
       return frame_;
