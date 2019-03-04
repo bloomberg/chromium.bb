@@ -732,7 +732,7 @@ void InsertListCommand::MoveParagraphOverPositionIntoEmptyListItem(
           .Build()));
 }
 
-void InsertListCommand::Trace(blink::Visitor* visitor) {
+void InsertListCommand::Trace(Visitor* visitor) {
   CompositeEditCommand::Trace(visitor);
 }
 

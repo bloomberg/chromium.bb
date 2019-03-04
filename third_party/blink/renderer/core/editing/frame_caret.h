@@ -89,7 +89,7 @@ class CORE_EXPORT FrameCaret final
   void RecreateCaretBlinkTimerForTesting(
       scoped_refptr<base::SingleThreadTaskRunner>);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   friend class FrameCaretTest;

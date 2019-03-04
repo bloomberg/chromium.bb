@@ -46,7 +46,7 @@ class InsertNodeBeforeCommand final : public SimpleEditCommand {
                           Node* child_to_insert_before,
                           ShouldAssumeContentIsAlwaysEditable);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DoApply(EditingState*) override;

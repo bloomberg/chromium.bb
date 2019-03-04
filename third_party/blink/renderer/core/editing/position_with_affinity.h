@@ -47,7 +47,7 @@ class PositionWithAffinityTemplate {
   Node* AnchorNode() const { return position_.AnchorNode(); }
   Document* GetDocument() const { return position_.GetDocument(); }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   PositionTemplate<Strategy> position_;

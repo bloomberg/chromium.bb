@@ -40,7 +40,7 @@ class WrapContentsInDummySpanCommand final : public SimpleEditCommand {
 
   explicit WrapContentsInDummySpanCommand(Element*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DoApply(EditingState*) override;

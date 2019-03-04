@@ -71,7 +71,7 @@ SelectionController::SelectionController(LocalFrame& frame)
       mouse_down_allows_multi_click_(false),
       selection_state_(SelectionState::kHaveNotStartedSelection) {}
 
-void SelectionController::Trace(blink::Visitor* visitor) {
+void SelectionController::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(original_base_in_flat_tree_);
   DocumentShutdownObserver::Trace(visitor);

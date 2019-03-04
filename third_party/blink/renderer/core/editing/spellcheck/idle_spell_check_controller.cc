@@ -48,7 +48,7 @@ class IdleSpellCheckController::IdleCallback final
   explicit IdleCallback(IdleSpellCheckController* controller)
       : controller_(controller) {}
 
-  void Trace(blink::Visitor* visitor) final {
+  void Trace(Visitor* visitor) final {
     visitor->Trace(controller_);
     ScriptedIdleTaskController::IdleTask::Trace(visitor);
   }
@@ -63,7 +63,7 @@ class IdleSpellCheckController::IdleCallback final
 
 IdleSpellCheckController::~IdleSpellCheckController() = default;
 
-void IdleSpellCheckController::Trace(blink::Visitor* visitor) {
+void IdleSpellCheckController::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(cold_mode_requester_);
   DocumentShutdownObserver::Trace(visitor);

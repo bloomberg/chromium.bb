@@ -68,7 +68,7 @@ namespace blink {
 TextFinder::FindMatch::FindMatch(Range* range, int ordinal)
     : range_(range), ordinal_(ordinal) {}
 
-void TextFinder::FindMatch::Trace(blink::Visitor* visitor) {
+void TextFinder::FindMatch::Trace(Visitor* visitor) {
   visitor->Trace(range_);
 }
 
@@ -711,7 +711,7 @@ void TextFinder::InvalidatePaintForTickmarks() {
   OwnerFrame().GetFrame()->ContentLayoutObject()->InvalidatePaintForTickmarks();
 }
 
-void TextFinder::Trace(blink::Visitor* visitor) {
+void TextFinder::Trace(Visitor* visitor) {
   visitor->Trace(owner_frame_);
   visitor->Trace(find_task_controller_);
   visitor->Trace(active_match_);

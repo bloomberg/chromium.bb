@@ -42,7 +42,7 @@ class RemoveNodeCommand final : public SimpleEditCommand {
 
   explicit RemoveNodeCommand(Node*, ShouldAssumeContentIsAlwaysEditable);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DoApply(EditingState*) override;

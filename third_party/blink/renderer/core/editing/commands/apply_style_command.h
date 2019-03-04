@@ -85,7 +85,7 @@ class CORE_EXPORT ApplyStyleCommand final : public CompositeEditCommand {
                     bool (*is_inline_element_to_remove)(const Element*),
                     InputEvent::InputType);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DoApply(EditingState*) override;

@@ -24,7 +24,7 @@ class CORE_EXPORT SetCharacterDataCommand final : public SimpleEditCommand {
                           unsigned count,
                           const String& text);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // EditCommand implementation

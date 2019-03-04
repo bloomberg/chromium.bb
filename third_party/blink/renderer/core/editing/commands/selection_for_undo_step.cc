@@ -78,7 +78,7 @@ bool SelectionForUndoStep::IsValidFor(const Document& document) const {
   return base_.IsValidFor(document) && extent_.IsValidFor(document);
 }
 
-void SelectionForUndoStep::Trace(blink::Visitor* visitor) {
+void SelectionForUndoStep::Trace(Visitor* visitor) {
   visitor->Trace(base_);
   visitor->Trace(extent_);
 }
@@ -112,7 +112,7 @@ SelectionForUndoStep::Builder::SetBaseAndExtentAsForwardSelection(
   return *this;
 }
 
-void SelectionForUndoStep::Builder::Trace(blink::Visitor* visitor) {
+void SelectionForUndoStep::Builder::Trace(Visitor* visitor) {
   visitor->Trace(selection_);
 }
 

@@ -48,7 +48,7 @@ class CORE_EXPORT InsertParagraphSeparatorCommand final
                                   bool use_default_paragraph_element,
                                   bool paste_blockquote_into_unquoted_area);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DoApply(EditingState*) override;

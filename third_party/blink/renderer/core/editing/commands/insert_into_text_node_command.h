@@ -42,7 +42,7 @@ class InsertIntoTextNodeCommand final : public SimpleEditCommand {
 
   InsertIntoTextNodeCommand(Text* node, unsigned offset, const String& text);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DoApply(EditingState*) override;

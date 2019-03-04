@@ -741,7 +741,7 @@ void DocumentMarkerController::DidProcessMarkerMap(Visitor* visitor) {
     Clear();
 }
 
-void DocumentMarkerController::Trace(blink::Visitor* visitor) {
+void DocumentMarkerController::Trace(Visitor* visitor) {
   // Note: To make |DidProcessMarkerMap()| called after weak members callback
   // of |markers_|, we should register it before tracing |markers_|.
   visitor->template RegisterWeakMembers<

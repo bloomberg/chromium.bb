@@ -900,7 +900,7 @@ void LayoutSelection::InvalidatePaintForSelection() {
                                       &visitor);
 }
 
-void LayoutSelection::Trace(blink::Visitor* visitor) {
+void LayoutSelection::Trace(Visitor* visitor) {
   visitor->Trace(frame_selection_);
   visitor->Trace(paint_range_);
 }

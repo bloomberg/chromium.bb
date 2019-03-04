@@ -223,7 +223,7 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   void SetTypingStyle(EditingStyle*);
   void ClearTypingStyle();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   void RevealSelectionAfterEditingOperation(
       const ScrollAlignment& = ScrollAlignment::kAlignToEdgeIfNeeded);

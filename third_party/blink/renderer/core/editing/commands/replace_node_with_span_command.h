@@ -50,7 +50,7 @@ class ReplaceNodeWithSpanCommand final : public SimpleEditCommand {
 
   HTMLSpanElement* SpanElement() { return span_element_.Get(); }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DoApply(EditingState*) override;

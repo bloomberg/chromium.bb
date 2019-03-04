@@ -41,7 +41,7 @@ class SimplifyMarkupCommand final : public CompositeEditCommand {
 
   SimplifyMarkupCommand(Document&, Node* first_node, Node* node_after_last);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DoApply(EditingState*) override;

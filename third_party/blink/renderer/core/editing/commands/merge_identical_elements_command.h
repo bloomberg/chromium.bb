@@ -40,7 +40,7 @@ class MergeIdenticalElementsCommand final : public SimpleEditCommand {
 
   MergeIdenticalElementsCommand(Element*, Element*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DoApply(EditingState*) override;

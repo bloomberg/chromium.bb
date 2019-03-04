@@ -100,7 +100,7 @@ void SimpleEditCommand::DoReapply() {
   DoApply(&editing_state);
 }
 
-void EditCommand::Trace(blink::Visitor* visitor) {
+void EditCommand::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(parent_);
 }

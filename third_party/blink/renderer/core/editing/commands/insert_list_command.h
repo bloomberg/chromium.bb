@@ -45,7 +45,7 @@ class CORE_EXPORT InsertListCommand final : public CompositeEditCommand {
 
   bool PreservesTypingStyle() const override { return true; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DoApply(EditingState*) override;

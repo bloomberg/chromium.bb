@@ -96,7 +96,7 @@ void DragCaret::NodeWillBeRemoved(Node& node) {
   Clear();
 }
 
-void DragCaret::Trace(blink::Visitor* visitor) {
+void DragCaret::Trace(Visitor* visitor) {
   visitor->Trace(position_);
   SynchronousMutationObserver::Trace(visitor);
 }

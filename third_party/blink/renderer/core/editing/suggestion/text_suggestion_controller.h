@@ -44,7 +44,7 @@ class CORE_EXPORT TextSuggestionController final
   void OnSuggestionMenuClosed();
   void SuggestionMenuTimeoutCallback(size_t max_number_of_suggestions);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class TextSuggestionControllerTest;

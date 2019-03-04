@@ -53,7 +53,7 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
 
   explicit SpellChecker(LocalFrame&);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   WebSpellCheckPanelHostClient& SpellCheckPanelHostClient() const;
   WebTextCheckClient* GetTextCheckerClient() const;

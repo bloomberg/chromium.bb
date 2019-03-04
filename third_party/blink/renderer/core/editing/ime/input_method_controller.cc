@@ -1491,7 +1491,7 @@ void InputMethodController::WillChangeFocus() {
   FinishComposingText(kKeepSelection);
 }
 
-void InputMethodController::Trace(blink::Visitor* visitor) {
+void InputMethodController::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(composition_range_);
   DocumentShutdownObserver::Trace(visitor);

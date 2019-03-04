@@ -38,7 +38,7 @@ class AppendNodeCommand final : public SimpleEditCommand {
 
   AppendNodeCommand(ContainerNode* parent, Node*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DoApply(EditingState*) override;

@@ -45,7 +45,7 @@ class RevealSelectionScope {
   explicit RevealSelectionScope(LocalFrame&);
   ~RevealSelectionScope();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   Editor& GetEditor();
