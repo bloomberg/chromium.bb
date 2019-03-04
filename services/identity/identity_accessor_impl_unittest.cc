@@ -25,7 +25,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace identity {
-namespace {
 
 const char kTestGaiaId[] = "dummyId";
 const char kTestEmail[] = "me@dummy.com";
@@ -594,5 +593,4 @@ TEST_F(IdentityAccessorImplTest, GetAccessTokenSignedIn) {
   EXPECT_EQ(GoogleServiceAuthError::State::NONE, access_token_error_.state());
 }
 
-}  // namespace
 }  // namespace identity
