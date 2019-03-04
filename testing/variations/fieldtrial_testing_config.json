@@ -4533,7 +4533,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_V2",
                     "enable_features": [
                         "ShowManagedUi"
                     ]
