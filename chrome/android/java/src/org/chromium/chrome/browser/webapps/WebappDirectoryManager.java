@@ -19,12 +19,14 @@ import android.text.format.DateUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
+import org.chromium.base.PackageUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.metrics.WebApkUma;
+import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.io.File;
 import java.util.HashSet;
@@ -136,11 +138,20 @@ public class WebappDirectoryManager {
             }
         }
 
-        // Clean out web app directories no longer corresponding to tasks in Recents.
+        // Clean out web app directories which no longer correspond to a task in recents.
+        // Check if a WebAPK is installed to avoid an issue where
+        // {@link ActivityManager#getAppTasks()} does not return WebAPK tasks when
+        // WebApkActivity is not the root of the task (e.g. when the new-style splash screen
+        // is the root).
         files = webappBaseDirectory.listFiles();
         if (files != null) {
             for (File file : files) {
-                if (!liveWebapps.contains(file.getName())) directoriesToDelete.add(file);
+                String webApkPackageName = getWebApkPackageFromWebappDirectory(file);
+                if ((TextUtils.isEmpty(webApkPackageName)
+                            || !PackageUtils.isPackageInstalled(context, webApkPackageName))
+                        && !liveWebapps.contains(file.getName())) {
+                    directoriesToDelete.add(file);
+                }
             }
         }
     }
@@ -188,6 +199,18 @@ public class WebappDirectoryManager {
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
+    }
+
+    /**
+     * Returns the WebAPK package name if the passed-in directory is for a WebAPK. Returns null
+     * otherwise.
+     */
+    private static String getWebApkPackageFromWebappDirectory(File directory) {
+        String name = directory.getName();
+        if (!name.startsWith(WebApkConstants.WEBAPK_ID_PREFIX)) {
+            return null;
+        }
+        return name.substring(WebApkConstants.WEBAPK_ID_PREFIX.length());
     }
 
     /** Returns the directory containing all of Chrome's web app data, creating it if needed. */
