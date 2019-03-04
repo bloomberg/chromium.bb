@@ -6,11 +6,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_DISPLAY_ITEM_RASTER_INVALIDATOR_H_
 
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
 // Generates raster invalidation for changed display items in a chunk.
 class DisplayItemRasterInvalidator {
+  STACK_ALLOCATED();
+
  public:
   DisplayItemRasterInvalidator(RasterInvalidator& invalidator,
                                const PaintArtifact& old_paint_artifact,

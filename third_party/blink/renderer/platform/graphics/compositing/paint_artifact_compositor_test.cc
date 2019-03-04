@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/platform/testing/picture_matchers.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/test_paint_artifact.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -64,6 +65,8 @@ void SetTransform(PaintChunk& chunk,
 }
 
 class FakeScrollClient {
+  DISALLOW_NEW();
+
  public:
   FakeScrollClient() : did_scroll_count(0) {}
 

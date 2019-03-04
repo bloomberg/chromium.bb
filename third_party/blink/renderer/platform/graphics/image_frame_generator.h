@@ -114,6 +114,8 @@ class PLATFORM_EXPORT ImageFrameGenerator final
 
  private:
   class ClientMutexLocker {
+    STACK_ALLOCATED();
+
    public:
     ClientMutexLocker(ImageFrameGenerator* generator,
                       cc::PaintImage::GeneratorClientId client_id);

@@ -35,6 +35,8 @@ class PaintChunkSubset;
 // Unless its dangerous accessors are used, it promises to be in a reasonable
 // state (e.g. chunk bounding boxes computed).
 class PLATFORM_EXPORT PaintArtifact final : public RefCounted<PaintArtifact> {
+  USING_FAST_MALLOC(PaintArtifact);
+
  public:
   static scoped_refptr<PaintArtifact> Create(DisplayItemList,
                                              Vector<PaintChunk>);

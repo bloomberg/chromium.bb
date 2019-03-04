@@ -6,6 +6,7 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
 
 namespace blink {
@@ -63,6 +64,8 @@ TEST(ContiguousContainerTest, AllocateLots) {
 }
 
 class MockDestructible {
+  USING_FAST_MALLOC(MockDestructible);
+
  public:
   ~MockDestructible() { Destruct(); }
   MOCK_METHOD0(Destruct, void());

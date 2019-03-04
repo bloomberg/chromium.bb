@@ -24,6 +24,8 @@ class PaintChunkSubset {
       : chunks_(chunks), subset_indices_(nullptr) {}
 
   class Iterator {
+    STACK_ALLOCATED();
+
    public:
     const PaintChunk& operator*() const { return subset_[offset_]; }
     const PaintChunk* operator->() const { return &subset_[offset_]; }

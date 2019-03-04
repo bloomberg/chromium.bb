@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COLOR_SCHEME_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COLOR_SCHEME_H_
 
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+
 namespace blink {
 
 // This is the color scheme for rendering web content. The color scheme affects
@@ -17,6 +19,8 @@ enum ColorScheme {
 };
 
 class ColorSchemeSet {
+  DISALLOW_NEW();
+
  public:
   void Set(ColorScheme scheme) { schemes_ |= scheme; }
   bool Contains(ColorScheme scheme) const { return schemes_ & scheme; }
