@@ -9,20 +9,17 @@
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/threading/thread.h"
-#include "content/browser/renderer_host/media/ref_counted_video_source_provider.h"
+#include "content/browser/renderer_host/media/ref_counted_video_capture_factory.h"
 #include "content/browser/renderer_host/media/service_launched_video_capture_device.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/video_capture/public/cpp/mock_push_subscription.h"
-#include "services/video_capture/public/cpp/mock_video_source.h"
-#include "services/video_capture/public/cpp/mock_video_source_provider.h"
+#include "services/video_capture/public/cpp/mock_device_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
 using testing::Invoke;
 using testing::InvokeWithoutArgs;
+using testing::_;
 
 namespace content {
 
@@ -49,87 +46,46 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
   ServiceVideoCaptureDeviceLauncherTest() {}
   ~ServiceVideoCaptureDeviceLauncherTest() override {}
 
-  void CloseSourceBinding() { source_binding_.reset(); }
-
-  void CloseSubscriptionBindings() {
-    subscription_bindings_.CloseAllBindings();
-  }
-
  protected:
   void SetUp() override {
-    source_provider_binding_ = std::make_unique<
-        mojo::Binding<video_capture::mojom::VideoSourceProvider>>(
-        &mock_source_provider_, mojo::MakeRequest(&source_provider_));
-    service_connection_ = base::MakeRefCounted<RefCountedVideoSourceProvider>(
-        std::move(source_provider_),
+    video_capture::mojom::DeviceFactoryPtr device_factory;
+    factory_binding_ =
+        std::make_unique<mojo::Binding<video_capture::mojom::DeviceFactory>>(
+            &mock_device_factory_, mojo::MakeRequest(&device_factory));
+    factory_delegate_ = base::MakeRefCounted<RefCountedVideoCaptureFactory>(
+        std::move(device_factory),
         video_capture::mojom::DeviceFactoryProviderPtr(),
         release_connection_cb_.Get());
 
     launcher_ = std::make_unique<ServiceVideoCaptureDeviceLauncher>(
         connect_to_device_factory_cb_.Get());
-    launcher_has_connected_to_source_provider_ = false;
-    launcher_has_released_source_provider_ = false;
+    launcher_has_connected_to_device_factory_ = false;
+    launcher_has_released_device_factory_ = false;
 
     ON_CALL(connect_to_device_factory_cb_, Run(_))
         .WillByDefault(Invoke(
-            [this](scoped_refptr<RefCountedVideoSourceProvider>* out_provider) {
-              launcher_has_connected_to_source_provider_ = true;
-              *out_provider = service_connection_;
+            [this](scoped_refptr<RefCountedVideoCaptureFactory>* out_factory) {
+              launcher_has_connected_to_device_factory_ = true;
+              *out_factory = factory_delegate_;
             }));
 
     ON_CALL(release_connection_cb_, Run())
         .WillByDefault(InvokeWithoutArgs([this]() {
-          launcher_has_released_source_provider_ = true;
+          launcher_has_released_device_factory_ = true;
           wait_for_release_connection_cb_.Quit();
         }));
-
-    ON_CALL(mock_source_provider_, DoGetVideoSource(kStubDeviceId, _))
-        .WillByDefault(Invoke(
-            [this](const std::string& device_id,
-                   video_capture::mojom::VideoSourceRequest* source_request) {
-              source_binding_ = std::make_unique<
-                  mojo::Binding<video_capture::mojom::VideoSource>>(
-                  &mock_source_, std::move(*source_request));
-            }));
-
-    ON_CALL(mock_source_, DoCreatePushSubscription(_, _, _, _, _))
-        .WillByDefault(Invoke(
-            [this](video_capture::mojom::ReceiverPtr& subscriber,
-                   const media::VideoCaptureParams& requested_settings,
-                   bool force_reopen_with_new_settings,
-                   video_capture::mojom::PushVideoStreamSubscriptionRequest&
-                       subscription,
-                   video_capture::mojom::VideoSource::
-                       CreatePushSubscriptionCallback& callback) {
-              subscription_bindings_.AddBinding(&mock_subscription_,
-                                                std::move(subscription));
-              std::move(callback).Run(
-                  video_capture::mojom::CreatePushSubscriptionResultCode::
-                      kCreatedWithRequestedSettings,
-                  requested_settings);
-            }));
   }
 
   void TearDown() override {}
 
   void RunLaunchingDeviceIsAbortedTest(
-      video_capture::mojom::CreatePushSubscriptionResultCode
-          service_result_code);
-  void RunConnectionLostAfterSuccessfulStartTest(
-      base::OnceClosure close_connection_cb);
+      video_capture::mojom::DeviceAccessResultCode service_result_code);
 
   TestBrowserThreadBundle thread_bundle_;
+  video_capture::MockDeviceFactory mock_device_factory_;
   MockVideoCaptureDeviceLauncherCallbacks mock_callbacks_;
-  video_capture::mojom::VideoSourceProviderPtr source_provider_;
-  video_capture::MockVideoSourceProvider mock_source_provider_;
-  std::unique_ptr<mojo::Binding<video_capture::mojom::VideoSourceProvider>>
-      source_provider_binding_;
-  video_capture::MockVideoSource mock_source_;
-  std::unique_ptr<mojo::Binding<video_capture::mojom::VideoSource>>
-      source_binding_;
-  video_capture::MockPushSubcription mock_subscription_;
-  mojo::BindingSet<video_capture::mojom::PushVideoStreamSubscription>
-      subscription_bindings_;
+  std::unique_ptr<mojo::Binding<video_capture::mojom::DeviceFactory>>
+      factory_binding_;
   std::unique_ptr<ServiceVideoCaptureDeviceLauncher> launcher_;
   base::MockCallback<base::OnceClosure> connection_lost_cb_;
   base::MockCallback<base::OnceClosure> done_cb_;
@@ -137,11 +93,11 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
       ServiceVideoCaptureDeviceLauncher::ConnectToDeviceFactoryCB>
       connect_to_device_factory_cb_;
   base::MockCallback<base::OnceClosure> release_connection_cb_;
-  // |service_connection_| needs to go below |release_connection_cb_|, because
-  // its destructor will call |release_connection_cb_|.
-  scoped_refptr<RefCountedVideoSourceProvider> service_connection_;
-  bool launcher_has_connected_to_source_provider_;
-  bool launcher_has_released_source_provider_;
+  // |factory_delegate_| needs to go below |release_connection_cb_|, because its
+  // destructor will call |release_connection_cb_|.
+  scoped_refptr<RefCountedVideoCaptureFactory> factory_delegate_;
+  bool launcher_has_connected_to_device_factory_;
+  bool launcher_has_released_device_factory_;
   base::RunLoop wait_for_release_connection_cb_;
 
  private:
@@ -149,6 +105,26 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
 };
 
 TEST_F(ServiceVideoCaptureDeviceLauncherTest, LaunchingDeviceSucceeds) {
+  EXPECT_CALL(mock_device_factory_, DoCreateDevice(kStubDeviceId, _, _))
+      .WillOnce(Invoke([](const std::string& device_id,
+                          video_capture::mojom::DeviceRequest* device_request,
+                          video_capture::mojom::DeviceFactory::
+                              CreateDeviceCallback& callback) {
+        // Note: We must keep |device_request| alive at least until we have
+        // sent out the callback. Otherwise, |launcher_| may interpret this
+        // as the connection having been lost before receiving the callback.
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE,
+            base::BindOnce(
+                [](video_capture::mojom::DeviceRequest device_request,
+                   video_capture::mojom::DeviceFactory::CreateDeviceCallback
+                       callback) {
+                  std::move(callback).Run(
+                      video_capture::mojom::DeviceAccessResultCode::SUCCESS);
+                },
+                std::move(*device_request), std::move(callback)));
+      }));
+
   EXPECT_CALL(mock_callbacks_, DoOnDeviceLaunched(_)).Times(1);
   EXPECT_CALL(mock_callbacks_, OnDeviceLaunchAborted()).Times(0);
   EXPECT_CALL(mock_callbacks_, OnDeviceLaunchFailed(_)).Times(0);
@@ -166,64 +142,55 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest, LaunchingDeviceSucceeds) {
   wait_for_done_cb.Run();
 
   launcher_.reset();
-  service_connection_.reset();
+  factory_delegate_.reset();
   wait_for_release_connection_cb_.Run();
-  EXPECT_TRUE(launcher_has_connected_to_source_provider_);
-  EXPECT_TRUE(launcher_has_released_source_provider_);
+  EXPECT_TRUE(launcher_has_connected_to_device_factory_);
+  EXPECT_TRUE(launcher_has_released_device_factory_);
 }
 
 TEST_F(ServiceVideoCaptureDeviceLauncherTest,
        LaunchingDeviceIsAbortedBeforeServiceRespondsWithSuccess) {
   RunLaunchingDeviceIsAbortedTest(
-      video_capture::mojom::CreatePushSubscriptionResultCode::
-          kCreatedWithRequestedSettings);
+      video_capture::mojom::DeviceAccessResultCode::SUCCESS);
 }
 
 TEST_F(ServiceVideoCaptureDeviceLauncherTest,
        LaunchingDeviceIsAbortedBeforeServiceRespondsWithNotFound) {
   RunLaunchingDeviceIsAbortedTest(
-      video_capture::mojom::CreatePushSubscriptionResultCode::
-          kCreatedWithDifferentSettings);
+      video_capture::mojom::DeviceAccessResultCode::ERROR_DEVICE_NOT_FOUND);
 }
 
 TEST_F(ServiceVideoCaptureDeviceLauncherTest,
        LaunchingDeviceIsAbortedBeforeServiceRespondsWithNotInitialized) {
   RunLaunchingDeviceIsAbortedTest(
-      video_capture::mojom::CreatePushSubscriptionResultCode::kFailed);
+      video_capture::mojom::DeviceAccessResultCode::NOT_INITIALIZED);
 }
 
 void ServiceVideoCaptureDeviceLauncherTest::RunLaunchingDeviceIsAbortedTest(
-    video_capture::mojom::CreatePushSubscriptionResultCode
-        service_result_code) {
+    video_capture::mojom::DeviceAccessResultCode service_result_code) {
   base::RunLoop step_1_run_loop;
   base::RunLoop step_2_run_loop;
 
-  base::OnceClosure create_push_subscription_success_answer_cb;
-  EXPECT_CALL(mock_source_, DoCreatePushSubscription(_, _, _, _, _))
-      .WillOnce(Invoke(
-          [&create_push_subscription_success_answer_cb, &step_1_run_loop,
-           service_result_code](
-              video_capture::mojom::ReceiverPtr& subscriber,
-              const media::VideoCaptureParams& requested_settings,
-              bool force_reopen_with_new_settings,
-              video_capture::mojom::PushVideoStreamSubscriptionRequest&
-                  subscription,
-              video_capture::mojom::VideoSource::CreatePushSubscriptionCallback&
-                  callback) {
+  base::OnceClosure create_device_success_answer_cb;
+  EXPECT_CALL(mock_device_factory_, DoCreateDevice(kStubDeviceId, _, _))
+      .WillOnce(
+          Invoke([&create_device_success_answer_cb, &step_1_run_loop,
+                  service_result_code](
+                     const std::string& device_id,
+                     video_capture::mojom::DeviceRequest* device_request,
+                     video_capture::mojom::DeviceFactory::CreateDeviceCallback&
+                         callback) {
             // Prepare the callback, but save it for now instead of invoking it.
-            create_push_subscription_success_answer_cb = base::BindOnce(
-                [](const media::VideoCaptureParams& requested_settings,
-                   video_capture::mojom::PushVideoStreamSubscriptionRequest
-                       subscription,
-                   video_capture::mojom::VideoSource::
-                       CreatePushSubscriptionCallback callback,
-                   video_capture::mojom::CreatePushSubscriptionResultCode
+            create_device_success_answer_cb = base::BindOnce(
+                [](video_capture::mojom::DeviceRequest device_request,
+                   video_capture::mojom::DeviceFactory::CreateDeviceCallback
+                       callback,
+                   video_capture::mojom::DeviceAccessResultCode
                        service_result_code) {
-                  std::move(callback).Run(service_result_code,
-                                          requested_settings);
+                  std::move(callback).Run(service_result_code);
                 },
-                requested_settings, std::move(subscription),
-                std::move(callback), service_result_code);
+                std::move(*device_request), std::move(callback),
+                service_result_code);
             step_1_run_loop.Quit();
           }));
   EXPECT_CALL(mock_callbacks_, DoOnDeviceLaunched(_)).Times(0);
@@ -242,46 +209,39 @@ void ServiceVideoCaptureDeviceLauncherTest::RunLaunchingDeviceIsAbortedTest(
   step_1_run_loop.Run();
   launcher_->AbortLaunch();
 
-  std::move(create_push_subscription_success_answer_cb).Run();
+  std::move(create_device_success_answer_cb).Run();
   step_2_run_loop.Run();
 
-  service_connection_.reset();
+  factory_delegate_.reset();
 
-  EXPECT_TRUE(launcher_has_connected_to_source_provider_);
-  EXPECT_TRUE(launcher_has_released_source_provider_);
+  EXPECT_TRUE(launcher_has_connected_to_device_factory_);
+  EXPECT_TRUE(launcher_has_released_device_factory_);
 }
 
 TEST_F(ServiceVideoCaptureDeviceLauncherTest,
        LaunchingDeviceFailsBecauseDeviceNotFound) {
   base::RunLoop run_loop;
 
-  EXPECT_CALL(mock_source_, DoCreatePushSubscription(_, _, _, _, _))
-      .WillOnce(Invoke(
-          [](video_capture::mojom::ReceiverPtr& subscriber,
-             const media::VideoCaptureParams& requested_settings,
-             bool force_reopen_with_new_settings,
-             video_capture::mojom::PushVideoStreamSubscriptionRequest&
-                 subscription,
-             video_capture::mojom::VideoSource::CreatePushSubscriptionCallback&
-                 callback) {
-            // Note: We post this to the end of the message queue to make it
-            // asynchronous.
+  EXPECT_CALL(mock_device_factory_, DoCreateDevice(kStubDeviceId, _, _))
+      .WillOnce(
+          Invoke([](const std::string& device_id,
+                    video_capture::mojom::DeviceRequest* device_request,
+                    video_capture::mojom::DeviceFactory::CreateDeviceCallback&
+                        callback) {
+            // Note: We must keep |device_request| alive at least until we have
+            // sent out the callback. Otherwise, |launcher_| may interpret this
+            // as the connection having been lost before receiving the callback.
             base::ThreadTaskRunnerHandle::Get()->PostTask(
                 FROM_HERE,
                 base::BindOnce(
-                    [](video_capture::mojom::ReceiverPtr subscriber,
-                       const media::VideoCaptureParams& requested_settings,
-                       video_capture::mojom::PushVideoStreamSubscriptionRequest
-                           subscription,
-                       video_capture::mojom::VideoSource::
-                           CreatePushSubscriptionCallback callback) {
+                    [](video_capture::mojom::DeviceRequest device_request,
+                       video_capture::mojom::DeviceFactory::CreateDeviceCallback
+                           callback) {
                       std::move(callback).Run(
-                          video_capture::mojom::
-                              CreatePushSubscriptionResultCode::kFailed,
-                          requested_settings);
+                          video_capture::mojom::DeviceAccessResultCode::
+                              ERROR_DEVICE_NOT_FOUND);
                     },
-                    std::move(subscriber), requested_settings,
-                    std::move(subscription), std::move(callback)));
+                    std::move(*device_request), std::move(callback)));
           }));
   EXPECT_CALL(mock_callbacks_, DoOnDeviceLaunched(_)).Times(0);
   EXPECT_CALL(mock_callbacks_, OnDeviceLaunchAborted()).Times(0);
@@ -304,7 +264,7 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest,
 }
 
 TEST_F(ServiceVideoCaptureDeviceLauncherTest,
-       LaunchingDeviceFailsBecauseSourceProviderIsUnbound) {
+       LaunchingDeviceFailsBecauseFactoryIsUnbound) {
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
 
   EXPECT_CALL(mock_callbacks_, DoOnDeviceLaunched(_)).Times(0);
@@ -316,7 +276,7 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest,
   }));
 
   // Exercise
-  service_connection_->ReleaseProviderForTesting();
+  factory_delegate_->ReleaseFactoryForTesting();
 
   launcher_->LaunchDeviceAsync(kStubDeviceId, blink::MEDIA_DEVICE_VIDEO_CAPTURE,
                                kArbitraryParams, kNullReceiver,
@@ -330,22 +290,18 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest,
        LaunchingDeviceFailsBecauseConnectionLostWhileLaunching) {
   base::RunLoop run_loop;
 
-  video_capture::mojom::VideoSource::CreatePushSubscriptionCallback
-      create_subscription_cb;
-  EXPECT_CALL(mock_source_, DoCreatePushSubscription(_, _, _, _, _))
-      .WillOnce(Invoke(
-          [&create_subscription_cb](
-              video_capture::mojom::ReceiverPtr& subscriber,
-              const media::VideoCaptureParams& requested_settings,
-              bool force_reopen_with_new_settings,
-              video_capture::mojom::PushVideoStreamSubscriptionRequest&
-                  subscription,
-              video_capture::mojom::VideoSource::CreatePushSubscriptionCallback&
-                  callback) {
+  video_capture::mojom::DeviceFactory::CreateDeviceCallback create_device_cb;
+  EXPECT_CALL(mock_device_factory_, DoCreateDevice(kStubDeviceId, _, _))
+      .WillOnce(
+          Invoke([&create_device_cb](
+                     const std::string& device_id,
+                     video_capture::mojom::DeviceRequest* device_request,
+                     video_capture::mojom::DeviceFactory::CreateDeviceCallback&
+                         callback) {
             // Simulate connection lost by not invoking |callback| and releasing
-            // |subscription|. We have to save |callback| and invoke it later
+            // |device_request|. We have to save |callback| and invoke it later
             // to avoid hitting a DCHECK.
-            create_subscription_cb = std::move(callback);
+            create_device_cb = std::move(callback);
           }));
   EXPECT_CALL(mock_callbacks_, DoOnDeviceLaunched(_)).Times(0);
   EXPECT_CALL(mock_callbacks_, OnDeviceLaunchAborted()).Times(0);
@@ -365,35 +321,36 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest,
 
   run_loop.Run();
 
-  // Cleanup
-  // Cut the connection to the source, so that the outstanding
-  // |create_subscription_cb| will be dropped when we invoke it below.
-  source_binding_.reset();
+  // Cut the connection to the factory, so that the outstanding
+  // |create_device_cb| will be dropped.
+  factory_binding_.reset();
   // We have to invoke the callback, because not doing so triggers a DCHECK.
-  const video_capture::mojom::CreatePushSubscriptionResultCode
-      arbitrary_result_code = video_capture::mojom::
-          CreatePushSubscriptionResultCode::kCreatedWithRequestedSettings;
-  std::move(create_subscription_cb)
-      .Run(arbitrary_result_code, kArbitraryParams);
+  const video_capture::mojom::DeviceAccessResultCode arbitrary_result_code =
+      video_capture::mojom::DeviceAccessResultCode::SUCCESS;
+  std::move(create_device_cb).Run(arbitrary_result_code);
 }
 
 TEST_F(ServiceVideoCaptureDeviceLauncherTest,
-       ConnectionToSubscriptionLostAfterSuccessfulLaunch) {
-  RunConnectionLostAfterSuccessfulStartTest(
-      base::BindOnce(&ServiceVideoCaptureDeviceLauncherTest::CloseSourceBinding,
-                     base::Unretained(this)));
-}
-
-TEST_F(ServiceVideoCaptureDeviceLauncherTest,
-       ConnectionToSourceLostAfterSuccessfulLaunch) {
-  RunConnectionLostAfterSuccessfulStartTest(base::BindOnce(
-      &ServiceVideoCaptureDeviceLauncherTest::CloseSubscriptionBindings,
-      base::Unretained(this)));
-}
-
-void ServiceVideoCaptureDeviceLauncherTest::
-    RunConnectionLostAfterSuccessfulStartTest(
-        base::OnceClosure close_connection_cb) {
+       ConnectionLostAfterSuccessfulLaunch) {
+  video_capture::mojom::DeviceRequest device_request_owned_by_service;
+  EXPECT_CALL(mock_device_factory_, DoCreateDevice(kStubDeviceId, _, _))
+      .WillOnce(Invoke([&device_request_owned_by_service](
+                           const std::string& device_id,
+                           video_capture::mojom::DeviceRequest* device_request,
+                           video_capture::mojom::DeviceFactory::
+                               CreateDeviceCallback& callback) {
+        // The service holds on to the |device_request|.
+        device_request_owned_by_service = std::move(*device_request);
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE,
+            base::BindOnce(
+                [](video_capture::mojom::DeviceFactory::CreateDeviceCallback
+                       callback) {
+                  std::move(callback).Run(
+                      video_capture::mojom::DeviceAccessResultCode::SUCCESS);
+                },
+                std::move(callback)));
+      }));
   std::unique_ptr<LaunchedVideoCaptureDevice> launched_device;
   EXPECT_CALL(mock_callbacks_, DoOnDeviceLaunched(_))
       .WillOnce(
@@ -419,14 +376,14 @@ void ServiceVideoCaptureDeviceLauncherTest::
     step_2_run_loop.Quit();
   }));
   // Exercise step 2: The service cuts/loses the connection
-  std::move(close_connection_cb).Run();
+  device_request_owned_by_service = nullptr;
   step_2_run_loop.Run();
 
   launcher_.reset();
-  service_connection_.reset();
+  factory_delegate_.reset();
   wait_for_release_connection_cb_.Run();
-  EXPECT_TRUE(launcher_has_connected_to_source_provider_);
-  EXPECT_TRUE(launcher_has_released_source_provider_);
+  EXPECT_TRUE(launcher_has_connected_to_device_factory_);
+  EXPECT_TRUE(launcher_has_released_device_factory_);
 }
 
 }  // namespace content

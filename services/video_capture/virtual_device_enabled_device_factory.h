@@ -12,7 +12,6 @@
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/video_capture/device_factory.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
-#include "services/video_capture/public/mojom/devices_changed_observer.mojom.h"
 #include "services/video_capture/public/mojom/virtual_device.mojom.h"
 
 #if defined(OS_CHROMEOS)

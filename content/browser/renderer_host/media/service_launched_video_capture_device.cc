@@ -3,29 +3,19 @@
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/media/service_launched_video_capture_device.h"
-
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 
 namespace content {
 
 ServiceLaunchedVideoCaptureDevice::ServiceLaunchedVideoCaptureDevice(
-    video_capture::mojom::VideoSourcePtr source,
-    video_capture::mojom::PushVideoStreamSubscriptionPtr subscription,
+    video_capture::mojom::DevicePtr device,
     base::OnceClosure connection_lost_cb)
-    : source_(std::move(source)),
-      subscription_(std::move(subscription)),
+    : device_(std::move(device)),
       connection_lost_cb_(std::move(connection_lost_cb)) {
-  // Unretained |this| is safe, because |this| owns |source_|.
-  source_.set_connection_error_handler(
-      base::BindOnce(&ServiceLaunchedVideoCaptureDevice::
-                         OnLostConnectionToSourceOrSubscription,
-                     base::Unretained(this)));
-  // Unretained |this| is safe, because |this| owns |subscription_|.
-  subscription_.set_connection_error_handler(
-      base::BindOnce(&ServiceLaunchedVideoCaptureDevice::
-                         OnLostConnectionToSourceOrSubscription,
-                     base::Unretained(this)));
+  // Unretained |this| is safe, because |this| owns |device_|.
+  device_.set_connection_error_handler(base::BindOnce(
+      &ServiceLaunchedVideoCaptureDevice::OnLostConnectionToDevice,
+      base::Unretained(this)));
 }
 
 ServiceLaunchedVideoCaptureDevice::~ServiceLaunchedVideoCaptureDevice() {
@@ -35,7 +25,7 @@ ServiceLaunchedVideoCaptureDevice::~ServiceLaunchedVideoCaptureDevice() {
 void ServiceLaunchedVideoCaptureDevice::GetPhotoState(
     media::VideoCaptureDevice::GetPhotoStateCallback callback) const {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  subscription_->GetPhotoState(base::BindOnce(
+  device_->GetPhotoState(base::BindOnce(
       &ServiceLaunchedVideoCaptureDevice::OnGetPhotoStateResponse,
       base::Unretained(this), std::move(callback)));
 }
@@ -44,7 +34,7 @@ void ServiceLaunchedVideoCaptureDevice::SetPhotoOptions(
     media::mojom::PhotoSettingsPtr settings,
     media::VideoCaptureDevice::SetPhotoOptionsCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  subscription_->SetPhotoOptions(
+  device_->SetPhotoOptions(
       std::move(settings),
       base::BindOnce(
           &ServiceLaunchedVideoCaptureDevice::OnSetPhotoOptionsResponse,
@@ -57,25 +47,23 @@ void ServiceLaunchedVideoCaptureDevice::TakePhoto(
   TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
                        "ServiceLaunchedVideoCaptureDevice::TakePhoto",
                        TRACE_EVENT_SCOPE_PROCESS);
-  subscription_->TakePhoto(
+  device_->TakePhoto(
       base::BindOnce(&ServiceLaunchedVideoCaptureDevice::OnTakePhotoResponse,
                      base::Unretained(this), std::move(callback)));
 }
 
 void ServiceLaunchedVideoCaptureDevice::MaybeSuspendDevice() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  subscription_->Suspend(base::DoNothing());
+  device_->MaybeSuspend();
 }
 
 void ServiceLaunchedVideoCaptureDevice::ResumeDevice() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  subscription_->Resume();
+  device_->Resume();
 }
 
 void ServiceLaunchedVideoCaptureDevice::RequestRefreshFrame() {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
-  // Nothing to do here. The video capture service does not support refresh
-  // frames.
+  // Ignore this call.
 }
 
 void ServiceLaunchedVideoCaptureDevice::SetDesktopCaptureWindowIdAsync(
@@ -90,16 +78,11 @@ void ServiceLaunchedVideoCaptureDevice::SetDesktopCaptureWindowIdAsync(
 void ServiceLaunchedVideoCaptureDevice::OnUtilizationReport(
     int frame_feedback_id,
     double utilization) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
-  // Nothing to do here. The video capture service does not support utilization
-  // reporting.
+  // Ignore this call.
 }
 
-void ServiceLaunchedVideoCaptureDevice::
-    OnLostConnectionToSourceOrSubscription() {
+void ServiceLaunchedVideoCaptureDevice::OnLostConnectionToDevice() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  source_.reset();
-  subscription_.reset();
   base::ResetAndReturn(&connection_lost_cb_).Run();
 }
 

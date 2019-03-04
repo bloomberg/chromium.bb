@@ -64,13 +64,6 @@ void VideoSourceProviderImpl::AddTextureVirtualDevice(
                                            std::move(virtual_device));
 }
 
-void VideoSourceProviderImpl::RegisterVirtualDevicesChangedObserver(
-    mojom::DevicesChangedObserverPtr observer,
-    bool raise_event_if_virtual_devices_already_present) {
-  device_factory_->RegisterVirtualDevicesChangedObserver(
-      std::move(observer), raise_event_if_virtual_devices_already_present);
-}
-
 void VideoSourceProviderImpl::OnVideoSourceLastClientDisconnected(
     const std::string& device_id) {
   sources_.erase(device_id);

@@ -12,7 +12,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/video_capture/device_factory.h"
-#include "services/video_capture/public/mojom/devices_changed_observer.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
