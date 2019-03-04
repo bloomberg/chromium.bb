@@ -5768,6 +5768,7 @@ if (!is_android && !is_fuchsia) {
 
     data = [
       "//chrome/test/data/autofill/captured_sites/",
+      "//third_party/catapult/telemetry/telemetry/internal/bin/",
     ]
 
     if (is_linux || is_win) {
