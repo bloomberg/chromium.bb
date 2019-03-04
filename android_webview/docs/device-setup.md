@@ -26,15 +26,15 @@ developer hurdles.
 
 ## Physical device
 
-*** promo
-If you're a Googler, please see internal instructions
+### Flash a prebuilt image (Googler only)
+
+Googlers can consult internal instructions
 [here](http://go/clank-webview/building-webview/device-setup).
-***
 
-External developers can obtain Nexus/Pixel images
-[here](https://source.android.com/setup/build/running.html).
+Unfortunately, Google does not offer prebuilt `userdebug`/`eng` images for
+external contributors.
 
-## Building AOSP yourself (hard way)
+### Building AOSP yourself (hard way)
 
 *** note
 This takes significantly longer than the two previous methods, so please
