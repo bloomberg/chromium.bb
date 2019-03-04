@@ -1927,16 +1927,23 @@ if (is_official_build) {
 }
 
 template("monochrome_public_bundle_tmpl") {
-  _bundle_name = "MonochromePublic${invoker.bundle_suffix}"
   _base_module_target_name = "${invoker.target_name}__base_bundle_module"
+  _is_trichrome =
+      defined(invoker.use_trichrome_library) && invoker.use_trichrome_library
+  if (_is_trichrome) {
+    _bundle_name = "TrichromeChrome${invoker.bundle_suffix}"
+  } else {
+    _bundle_name = "MonochromePublic${invoker.bundle_suffix}"
+  }
 
   monochrome_public_apk_or_module_tmpl(_base_module_target_name) {
     forward_variables_from(invoker,
                            [
                              "is_64_bit_browser",
                              "include_32_bit_webview",
+                             "use_trichrome_library",
                            ])
-    module_name = "${_bundle_name}Base"
+    module_name = _bundle_name + "Base"
     target_type = "android_app_bundle_module"
     is_base_module = true
   }
@@ -1946,7 +1953,11 @@ template("monochrome_public_bundle_tmpl") {
       manifest_package = manifest_package
       module_name = "Ar" + _bundle_name
       base_module_target = ":$_base_module_target_name"
-      version_code = monochrome_version_code
+      if (_is_trichrome) {
+        version_code = trichrome_version_code
+      } else {
+        version_code = monochrome_version_code
+      }
       version_name = chrome_version_name
       forward_variables_from(invoker,
                              [
@@ -1961,13 +1972,21 @@ template("monochrome_public_bundle_tmpl") {
       manifest_package = manifest_package
       module_name = "Vr" + _bundle_name
       base_module_target = ":$_base_module_target_name"
-      version_code = monochrome_version_code
+      if (_is_trichrome) {
+        version_code = trichrome_version_code
+      } else {
+        version_code = monochrome_version_code
+      }
       version_name = chrome_version_name
       uncompress_shared_libraries = true
     }
   }
 
   android_app_bundle(target_name) {
+    if (_is_trichrome) {
+      add_native_lib_placeholders_for_base_module = true
+    }
+
     bundle_name = _bundle_name
     base_module_target = ":$_base_module_target_name"
     command_line_flags_file = "chrome-command-line"
@@ -2027,6 +2046,11 @@ if (android_64bit_target_cpu && enable_64_bit_browser) {
       include_32_bit_webview = true
     }
   }
+}
+
+monochrome_public_bundle_tmpl("trichrome_chrome_bundle") {
+  bundle_suffix = ""
+  use_trichrome_library = true
 }
 
 generate_jni("jni_headers") {

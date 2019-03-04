@@ -2756,11 +2756,17 @@ if (enable_java_templates) {
         uncompress_shared_libraries = _uncompress_shared_libraries
       }
     } else {
-      # placeholder native libraries never go into bundles, since they are
-      # only used for pre-L Android releases. Use the invoker variable to
-      # avoid GN errors when the target defines them.
+      # TODO(huangs): Replace this with build_config usage.
+      # Placeholder native libraries are never directly added into bundles.
+      # * For pre-L Android releases this used to be done, but no longer so.
+      # * APK splits need to add placeholders to allow "32-bit" and "64-bit"
+      #   versions of Chrome to depend on respective versions of shared library
+      #   APK. However, the inclusion is *indirect* via android_apk target.
+      # Use invoker variable to avoid GN errors when the target defines them.
       assert(!defined(invoker.native_lib_placeholders) ||
              invoker.native_lib_placeholders != [])
+      assert(!defined(invoker.secondary_native_lib_placeholders) ||
+             invoker.secondary_native_lib_placeholders != [])
 
       _final_deps += [
                        ":$_merge_manifest_target",
@@ -3876,6 +3882,10 @@ if (enable_java_templates) {
   #      such that they are extracted upon install. Libraries prefixed with
   #      "crazy." are never compressed.
   #
+  #    add_native_lib_placeholders_for_base_module: Optional. Whether to add
+  #      native library placeholders to the base module.
+  #      # TODO(huangs): Replace this with build_config usage.
+  #
   # Example:
   #   android_app_bundle("chrome_public_bundle") {
   #      base_module_target = "//chrome/android:chrome_public_apk"
@@ -4023,6 +4033,20 @@ if (enable_java_templates) {
       _module_zip_path = "$target_gen_dir/$target_name/${_module.name}.zip"
 
       create_android_app_bundle_module(_create_module_target) {
+        if (_module.name == "base") {
+          if (defined(invoker.add_native_lib_placeholders_for_base_module) &&
+              invoker.add_native_lib_placeholders_for_base_module) {
+            # TODO(huangs): Replace this with build_config usage.
+            # Include placeholder libraries to support multiarch. This allows
+            # the "32-bit" and "64-bit" versions of the module to depend on
+            # their respective versions of the shared library APK even though
+            # they're functionally the same.
+            native_lib_placeholders = [ "libdummy.so" ]
+            if (android_64bit_target_cpu && build_apk_secondary_abi) {
+              secondary_native_lib_placeholders = [ "libdummy.so" ]
+            }
+          }
+        }
         build_config = _module_build_config
         module_zip_path = _module_zip_path
 
