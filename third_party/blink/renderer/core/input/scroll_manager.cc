@@ -251,11 +251,11 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
   RecomputeScrollChain(*node, *scroll_state, scroll_chain);
 
   while (!scroll_chain.empty()) {
-    Node* node = DOMNodeIds::NodeForId(scroll_chain.back());
+    Node* scroll_chain_node = DOMNodeIds::NodeForId(scroll_chain.back());
     scroll_chain.pop_back();
-    DCHECK(node);
+    DCHECK(scroll_chain_node);
 
-    LayoutBox* box = ToLayoutBox(node->GetLayoutObject());
+    LayoutBox* box = ToLayoutBox(scroll_chain_node->GetLayoutObject());
     DCHECK(box);
 
     ScrollDirectionPhysical physical_direction =
