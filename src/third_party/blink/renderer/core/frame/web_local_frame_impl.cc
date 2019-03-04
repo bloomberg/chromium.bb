@@ -130,6 +130,7 @@
 #include "third_party/blink/public/web/web_serialized_script_value.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
@@ -250,6 +251,8 @@
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
+
+#include <unordered_map>
 
 namespace blink {
 
@@ -496,6 +499,20 @@ class ChromePluginPrintContext final : public ChromePrintContext {
 static WebDocumentLoader* DocumentLoaderForDocLoader(DocumentLoader* loader) {
   return loader ? WebDocumentLoaderImpl::FromDocumentLoader(loader) : nullptr;
 }
+
+static void CollectAllFrames(std::vector<const LocalFrame*>& list,
+                             const LocalFrame* frame) {
+  list.push_back(frame);
+
+  for (auto* childFrame = frame->Tree().FirstChild(); childFrame;
+       childFrame = childFrame->Tree().NextSibling()) {
+    if (!childFrame->IsLocalFrame())
+      continue;
+
+    CollectAllFrames(list, ToLocalFrame(childFrame));
+  }
+}
+
 
 // WebFrame -------------------------------------------------------------------
 
@@ -1529,6 +1546,9 @@ int WebLocalFrameImpl::PrintBegin(const WebPrintParams& print_params,
     print_context_ =
         new ChromePrintContext(GetFrame(), print_params.use_printing_layout);
   }
+
+  if (!print_params.use_media_selector)
+    print_context_->UseDefaultMediaSelector();
 
   FloatSize size(static_cast<float>(print_params.print_content_area.width),
                  static_cast<float>(print_params.print_content_area.height));
@@ -2609,6 +2629,60 @@ void WebLocalFrameImpl::BindDevToolsAgentRequest(
   if (!dev_tools_agent_)
     dev_tools_agent_ = WebDevToolsAgentImpl::CreateForFrame(this);
   dev_tools_agent_->BindRequest(std::move(request));
+}
+
+void WebLocalFrameImpl::DrawInCanvas(const WebRect& rect,
+                                     const WebString& styleClass,
+                                     cc::PaintCanvas* canvas) {
+  // Set the new "style" attribute if specified
+  static const WTF::String classAttribute("class");
+  // To avoid problems where the same document body is referenced multiple
+  // times in frames, hash map is used to prevent getting & setting the
+  // temporarily updated style attribute.
+  std::unordered_map<HTMLElement*, WTF::String> originalStyleClasses;
+
+  if (!styleClass.IsEmpty()) {
+    std::vector<const LocalFrame*> frames;
+    CollectAllFrames(frames, GetFrame());
+    for (auto* localFrame : frames) {
+      auto* htmlBody = localFrame->GetDocument()->body();
+
+      // Some documents (ie. SVG documents) do not have body elements
+      if (!htmlBody || originalStyleClasses.count(htmlBody))
+        continue;
+
+      auto webBody = WebElement(htmlBody);
+      if (webBody.HasAttribute(classAttribute)) {
+        WTF::String originalStyleClass = webBody.GetAttribute(classAttribute);
+        WTF::String newClass(originalStyleClass);
+        newClass.append(" ");
+        newClass.append(styleClass);
+        webBody.SetAttribute(classAttribute, WebString(newClass));
+        originalStyleClasses.emplace(htmlBody, std::move(originalStyleClass));
+      } else {
+        originalStyleClasses.emplace(htmlBody, WTF::String());
+        webBody.SetAttribute(classAttribute, styleClass);
+      }
+    }
+  }
+
+  WebPrintParams print_params(WebSize{ rect.width, rect.height }, false);
+  print_params.print_content_area = rect;
+  print_params.printable_area = rect;
+  print_params.use_media_selector = false;
+
+  int page_count = PrintBegin(print_params, blink::WebNode());
+  DCHECK(1 == page_count);
+  if (1 == page_count) {
+    PrintPage(0, canvas);
+  }
+  PrintEnd();
+
+  // Restore the original "style" attribute
+  for (auto& item : originalStyleClasses) {
+    auto webBody = WebElement(item.first);
+    webBody.SetAttribute(classAttribute, item.second);
+  }
 }
 
 }  // namespace blink

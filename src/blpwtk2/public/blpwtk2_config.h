@@ -43,6 +43,7 @@
 
 // feature 0
 // feature 1
+#define BLPWTK2_FEATURE_SCREENPRINT
 // feature 2
 // feature 3
 // feature 4
