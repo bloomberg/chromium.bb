@@ -71,6 +71,10 @@
 - (void)updateForNTP:(BOOL)isNTP;
 // Sets |enabled| of the share button.
 - (void)setShareButtonEnabled:(BOOL)enabled;
+// Displays or hides the InfobarButton.
+// TODO(crbug.com/935804): This method is currently only being used in the
+// Infobar redesign.
+- (void)displayInfobarButton:(BOOL)display;
 
 // Displays the voice search button instead of the share button in steady state,
 // and adds the voice search button to the empty textfield.

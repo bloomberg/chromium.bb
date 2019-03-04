@@ -31,12 +31,16 @@ void InfobarBadgeTabHelper::SetDelegate(
   delegate_ = delegate;
 }
 
+bool InfobarBadgeTabHelper::IsInfobarBadgeDisplaying() {
+  return is_infobar_displaying_;
+}
+
 InfobarBadgeTabHelper::~InfobarBadgeTabHelper() = default;
 
 #pragma mark - Private
 
 InfobarBadgeTabHelper::InfobarBadgeTabHelper(web::WebState* web_state)
-    : infobar_observer_(this) {
+    : infobar_observer_(this), is_infobar_displaying_(false) {
   infobars::InfoBarManager* infoBarManager =
       InfoBarManagerImpl::FromWebState(web_state);
   if (infoBarManager) {
@@ -55,9 +59,6 @@ void InfobarBadgeTabHelper::OnInfoBarRemoved(infobars::InfoBar* infobar,
   this->UpdateBadgeForInfobar(infobar, false);
 }
 
-void InfobarBadgeTabHelper::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
-                                              infobars::InfoBar* new_infobar) {}
-
 void InfobarBadgeTabHelper::OnManagerShuttingDown(
     infobars::InfoBarManager* manager) {
   infobar_observer_.Remove(manager);
@@ -67,6 +68,7 @@ void InfobarBadgeTabHelper::OnManagerShuttingDown(
 
 void InfobarBadgeTabHelper::UpdateBadgeForInfobar(infobars::InfoBar* infobar,
                                                   bool display) {
+  is_infobar_displaying_ = display;
   InfoBarIOS* infobar_ios = static_cast<InfoBarIOS*>(infobar);
   id<InfobarUIDelegate> controller_ = infobar_ios->InfobarUIDelegate();
   if (IsInfobarUIRebootEnabled() && [controller_ isPresented]) {

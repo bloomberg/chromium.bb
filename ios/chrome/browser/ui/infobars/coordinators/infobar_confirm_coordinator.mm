@@ -66,9 +66,6 @@
     [self.bannerViewController.presentingViewController
         dismissViewControllerAnimated:YES
                            completion:nil];
-    // RemoveInfoBar() will delete the InfobarIOS that owns this Coordinator
-    // from memory.
-    self.delegate->RemoveInfoBar();
   }
 }
 
@@ -80,6 +77,9 @@
 
 - (void)detachView {
   [self stop];
+  // RemoveInfoBar() will delete the InfobarIOS that owns this Coordinator
+  // from memory.
+  self.delegate->RemoveInfoBar();
 }
 
 #pragma mark - InfobarBannerDelegate
