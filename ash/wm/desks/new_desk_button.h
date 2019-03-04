@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/label_button.h"
 
@@ -14,7 +15,7 @@ namespace ash {
 
 // A button view that shows up in the top-right corner of the screen when
 // overview mode is on, which is used to create a new virtual desk.
-class NewDeskButton : public views::LabelButton {
+class ASH_EXPORT NewDeskButton : public views::LabelButton {
  public:
   NewDeskButton(views::ButtonListener* listener);
   ~NewDeskButton() override = default;

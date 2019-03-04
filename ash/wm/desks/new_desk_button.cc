@@ -41,9 +41,9 @@ NewDeskButton::NewDeskButton(views::ButtonListener* listener)
   layer()->SetFillsBoundsOpaquely(false);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(kNewDeskButtonIcon, SK_ColorWHITE));
+           gfx::CreateVectorIcon(kDesksNewDeskButtonIcon, SK_ColorWHITE));
   SetImage(views::Button::STATE_DISABLED,
-           gfx::CreateVectorIcon(kNewDeskButtonIcon, SK_ColorGRAY));
+           gfx::CreateVectorIcon(kDesksNewDeskButtonIcon, SK_ColorGRAY));
   SetTextColor(views::Button::STATE_NORMAL, SK_ColorWHITE);
   SetTextColor(views::Button::STATE_HOVERED, SK_ColorWHITE);
   SetTextColor(views::Button::STATE_PRESSED, SK_ColorWHITE);

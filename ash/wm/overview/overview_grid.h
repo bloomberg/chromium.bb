@@ -29,6 +29,8 @@ class Widget;
 }
 
 namespace ash {
+
+class DesksBarView;
 class OverviewItem;
 
 // Represents a grid of windows in the Overview Mode in a particular root
@@ -213,6 +215,11 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // Returns the window of the overview item that contains |location_in_screen|.
   aura::Window* GetTargetWindowOnLocation(const gfx::Point& location_in_screen);
 
+  // The vertical offset by which the overview window grid is pushed down to
+  // account for the desks thumbnails. Initially when we don't have any
+  // thumbnails, this value is zero.
+  int GetGridYOffset() const;
+
   // Returns true if the grid has no more windows.
   bool empty() const { return window_list_.empty(); }
 
@@ -244,6 +251,8 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   }
 
   void set_suspend_reposition(bool value) { suspend_reposition_ = value; }
+
+  const DesksBarView* GetDesksBarViewForTesting() const;
 
  private:
   class ShieldView;

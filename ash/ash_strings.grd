@@ -693,6 +693,18 @@ This file contains the strings for ash.
       <message name="IDS_ASH_DESKS_NEW_DESK_BUTTON" desc="The label of the new virtual desk (a.k.a. workspaces) button.">
         New Desk
       </message>
+      <message name="IDS_ASH_DESKS_DESK_1_MINI_VIEW_TITLE" desc="The label of the first virtual desk thumbnail.">
+        Desk 1
+      </message>
+      <message name="IDS_ASH_DESKS_DESK_2_MINI_VIEW_TITLE" desc="The label of the second virtual desk thumbnail.">
+        Desk 2
+      </message>
+      <message name="IDS_ASH_DESKS_DESK_3_MINI_VIEW_TITLE" desc="The label of the third virtual desk thumbnail.">
+        Desk 3
+      </message>
+      <message name="IDS_ASH_DESKS_DESK_4_MINI_VIEW_TITLE" desc="The label of the fourth virtual desk thumbnail.">
+        Desk 4
+      </message>
 
       <!-- Status tray charging strings. -->
       <message name="IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE" desc="The title of a notification indicating that a low-current USB charger has been connected.">
