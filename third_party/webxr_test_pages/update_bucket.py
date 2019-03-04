@@ -30,6 +30,7 @@ BUCKET = 'gs://chromium-webxr-test'
 LINK_OMAHAPROXY = ('https://storage.googleapis.com/'
                    'chromium-find-releases-static/index.html#%s')
 LINK_CRREV = 'https://crrev.com/%s'
+LINK_CHROMIUMDASH = 'https://chromiumdash.appspot.com/commit/%s'
 
 CR_POSITION_RE = re.compile(r'^Cr-Commit-Position:.*\#(\d+)')
 BUCKET_COPY_RE = re.compile(r'^r(\d+)')
@@ -66,6 +67,22 @@ def get_cr_positions():
         cr_position = m.group(1)
     cr_positions.append(cr_position)
   return cr_positions
+
+def get_commit_from_cr_position(position):
+  """Given the Cr-Commit-Position, returns a string with commit hash.
+
+  The function works on a best-effort basis. If commit hash cannot be found,
+  it will return an empty string.
+
+  Args:
+    position: String containing Cr-Commit-Position number."""
+  try:
+    git_hash = run_readonly('git', 'crrev-parse', position).strip()
+    logging.debug('`git crrev-parse %s` returned hash %s', position, git_hash)
+    return git_hash
+  except subprocess.CalledProcessError:
+    logging.debug('`git crrev-parse %s` returned an error', position)
+    return ''
 
 def get_bucket_copies():
   """Retrieves list of test subdirectories from Cloud Storage"""
@@ -107,6 +124,10 @@ def write_index():
                   'anchor': '[crrev]'})
     links.append({'href': LINK_OMAHAPROXY % rev,
                   'anchor': '[find in releases]'})
+    commit_hash = get_commit_from_cr_position(pos)
+    if commit_hash:
+      links.append({'href': LINK_CHROMIUMDASH % commit_hash,
+                    'anchor' : '[chromium dash]'})
     items.append({'text': rev, 'links': links})
 
   template = jinja2.Template(open(INDEX_TEMPLATE).read())
