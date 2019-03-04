@@ -459,7 +459,7 @@ void PrefetchDispatcherImpl::ThumbnailExistenceChecked(
       auto complete_callback = base::BindOnce(
           &PrefetchDispatcherImpl::ThumbnailFetchComplete, GetWeakPtr(),
           offline_id, std::move(remaining_ids), is_first_attempt);
-      thumbnail_fetcher->FetchSuggestionImageData(client_id, is_first_attempt,
+      thumbnail_fetcher->FetchSuggestionImageData(client_id,
                                                   std::move(complete_callback));
     } else {
       task_queue_.AddTask(std::make_unique<GetThumbnailInfoTask>(
