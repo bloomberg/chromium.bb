@@ -134,7 +134,7 @@ async function requestMountInternal(multipleMounts, manifest) {
   // still listed.
   if (multipleMounts) {
     await showProvidersMenu(appId);
-    var selector =
+    const selector =
         '#add-new-services-menu:not([hidden]) cr-menu-item:first-child ' +
         'span';
     result = await remoteCall.waitForElement(appId, selector);
@@ -149,7 +149,7 @@ async function requestMountInternal(multipleMounts, manifest) {
   const isSmbEnabled = await sendTestMessage({name: 'isSmbEnabled'}) === 'true';
   if (!isSmbEnabled) {
     await clickGearMenu(appId);
-    var selector = '#gear-menu:not([hidden]) ' +
+    const selector = '#gear-menu:not([hidden]) ' +
         'cr-menu-item[command="#install-new-extension"]';
     result = await remoteCall.waitForElement(appId, selector);
     return;
@@ -158,7 +158,7 @@ async function requestMountInternal(multipleMounts, manifest) {
   // If !multipleMounts but isSmbEnabled, we display the provider menu and check
   // the provider is not listed.
   await showProvidersMenu(appId);
-  var selector =
+  const selector =
       '#add-new-services-menu:not([hidden]) cr-menu-item:first-child ' +
       'span';
   result = await remoteCall.waitForElement(appId, selector);

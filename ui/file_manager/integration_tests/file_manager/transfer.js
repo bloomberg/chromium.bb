@@ -200,7 +200,7 @@ async function transferBetweenVolumes(transferInfo) {
 
   // Wait for the file list to change, if the test is expected to pass.
   const dstContentsAfterPaste = dstContents.slice();
-  var ignoreFileSize =
+  const ignoreFileSize =
       transferInfo.source.volumeName == 'drive_shared_with_me' ||
       transferInfo.source.volumeName == 'drive_offline' ||
       transferInfo.destination.volumeName == 'drive_shared_with_me' ||
@@ -211,10 +211,10 @@ async function transferBetweenVolumes(transferInfo) {
   // of expected rows.
   if (!transferInfo.expectFailure && !transferInfo.isMove &&
       transferInfo.source !== transferInfo.destination) {
-    var pasteFile = transferInfo.fileToTransfer.getExpectedRow();
+    const pasteFile = transferInfo.fileToTransfer.getExpectedRow();
     // Check if we need to add (1) to the filename, in the case of a
     // duplicate file.
-    for (var i = 0; i < dstContentsAfterPaste.length; i++) {
+    for (let i = 0; i < dstContentsAfterPaste.length; i++) {
       if (dstContentsAfterPaste[i][0] === pasteFile[0]) {
         // Replace the last '.' in filename with ' (1).'.
         // e.g. 'my.note.txt' -> 'my.note (1).txt'

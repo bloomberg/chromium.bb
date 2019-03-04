@@ -26,12 +26,12 @@ async function setupForDirectoryTreeContextMenuTest() {
 /**
  * @const
  */
-var ITEMS_IN_DEST_DIR_BEFORE_PASTE = TestEntryInfo.getExpectedRows([]);
+const ITEMS_IN_DEST_DIR_BEFORE_PASTE = TestEntryInfo.getExpectedRows([]);
 
 /**
  * @const
  */
-var ITEMS_IN_DEST_DIR_AFTER_PASTE =
+const ITEMS_IN_DEST_DIR_AFTER_PASTE =
     TestEntryInfo.getExpectedRows([new TestEntryInfo({
       type: EntryType.DIRECTORY,
       targetPath: 'photos',

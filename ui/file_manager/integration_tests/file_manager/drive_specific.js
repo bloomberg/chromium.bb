@@ -8,7 +8,7 @@
  * @type {Array<string>}
  * @const
  */
-var EXPECTED_AUTOCOMPLETE_LIST = [
+const EXPECTED_AUTOCOMPLETE_LIST = [
   '\'hello\' - search Drive',
   'hello.txt',
 ];
@@ -19,7 +19,7 @@ var EXPECTED_AUTOCOMPLETE_LIST = [
  * @type {Array<TestEntryInfo>}
  * @const
  */
-var SEARCH_RESULTS_ENTRY_SET = [
+const SEARCH_RESULTS_ENTRY_SET = [
   ENTRIES.hello,
 ];
 
@@ -44,11 +44,11 @@ async function startDriveSearchWithAutoComplete() {
       'fakeEvent', appId, ['#search-box cr-input', 'input']));
 
   // Wait for the auto complete list getting the expected contents.
-  var caller = getCaller();
+  const caller = getCaller();
   await repeatUntil(async () => {
     const elements = await remoteCall.callRemoteTestUtil(
         'queryAllElements', appId, ['#autocomplete-list li']);
-    var list = elements.map((element) => element.text);
+    const list = elements.map((element) => element.text);
     return chrome.test.checkDeepEq(EXPECTED_AUTOCOMPLETE_LIST, list) ?
         undefined :
         pending(caller, 'Current auto complete list: %j.', list);
@@ -165,7 +165,7 @@ testcase.drivePressEnterToSearch = async function() {
  */
 testcase.drivePinFileMobileNetwork = async function() {
   const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
-  var caller = getCaller();
+  const caller = getCaller();
   await sendTestMessage({name: 'useCellularNetwork'});
   await remoteCall.callRemoteTestUtil('selectFile', appId, ['hello.txt']);
   await repeatUntil(() => {
@@ -270,14 +270,14 @@ testcase.driveMigratePinnedFile = async function() {
 
 // Match the way the production version formats dates.
 function formatDate(date) {
-  var padAndConvert = function(i) {
+  const padAndConvert = function(i) {
     return (i < 10 ? '0' : '') + i.toString();
   };
 
-  var year = date.getFullYear().toString();
+  const year = date.getFullYear().toString();
   // Months are 0-based, but days aren't.
-  var month = padAndConvert(date.getMonth() + 1);
-  var day = padAndConvert(date.getDate());
+  const month = padAndConvert(date.getMonth() + 1);
+  const day = padAndConvert(date.getDate());
 
   return `${year}-${month}-${day}`;
 }
@@ -412,7 +412,7 @@ testcase.driveRecoverDirtyFiles = async function() {
       'My files/Downloads');
 
   // Ensure it contains never-sync.txt and never-sync (1).txt.
-  var uniquifiedNeverSync = ENTRIES.neverSync.getExpectedRow();
+  const uniquifiedNeverSync = ENTRIES.neverSync.getExpectedRow();
   uniquifiedNeverSync[0] = 'never-sync (1).txt';
   expectedEntryRows = [
     ENTRIES.neverSync.getExpectedRow(),

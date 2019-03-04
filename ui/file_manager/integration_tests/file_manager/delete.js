@@ -27,7 +27,7 @@ testcase.deleteMenuItemNoEntrySelected = async function() {
  * Tests deleting an entry using the toolbar.
  */
 testcase.deleteEntryWithToolbar = async function() {
-  var beforeDeletion = TestEntryInfo.getExpectedRows([
+  const beforeDeletion = TestEntryInfo.getExpectedRows([
     ENTRIES.photos,
     ENTRIES.hello,
     ENTRIES.world,
@@ -35,7 +35,7 @@ testcase.deleteEntryWithToolbar = async function() {
     ENTRIES.beautiful,
   ]);
 
-  var afterDeletion = TestEntryInfo.getExpectedRows([
+  const afterDeletion = TestEntryInfo.getExpectedRows([
     ENTRIES.photos,
     ENTRIES.hello,
     ENTRIES.world,
