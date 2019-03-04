@@ -18,7 +18,6 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/ui/login_display_webui.h"
 #include "chrome/browser/chromeos/login/ui/web_contents_forced_title.h"
@@ -394,18 +393,6 @@ views::WebView* WebUILoginView::web_view() {
   return webui_login_.get();
 }
 
-void WebUILoginView::SetLockScreenAppFocusCyclerDelegate() {
-  delegates_lock_screen_app_focus_cycle_ = true;
-  lock_screen_apps::StateController::Get()->SetFocusCyclerDelegate(this);
-}
-
-void WebUILoginView::ClearLockScreenAppFocusCyclerDelegate() {
-  if (!delegates_lock_screen_app_focus_cycle_)
-    return;
-  lock_screen_apps::StateController::Get()->SetFocusCyclerDelegate(nullptr);
-  delegates_lock_screen_app_focus_cycle_ = false;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // ChromeKeyboardControllerClient::Observer
 
@@ -463,15 +450,6 @@ bool WebUILoginView::TakeFocus(content::WebContents* source, bool reverse) {
   if (!reverse && MoveFocusToSystemTray(reverse))
     return true;
 
-  // Either if tab order is reversed (in which case system tray focus was not
-  // attempted), or system tray focus failed (in which case focusing an app
-  // window is preferrable to  focus returning to login UI), try moving focus
-  // to the app window.
-  if (!lock_screen_app_focus_handler_.is_null()) {
-    lock_screen_app_focus_handler_.Run(reverse);
-    return true;
-  }
-
   // If initial MoveFocusToSystemTray was skipped due to lock screen app being
   // a preferred option (due to traversal direction), try focusing system tray
   // again.
@@ -509,28 +487,7 @@ bool WebUILoginView::PreHandleGestureEvent(
   return blink::WebInputEvent::IsPinchGestureEventType(event.GetType());
 }
 
-void WebUILoginView::RegisterLockScreenAppFocusHandler(
-    const LockScreenAppFocusCallback& focus_handler) {
-  lock_screen_app_focus_handler_ = focus_handler;
-}
-
-void WebUILoginView::UnregisterLockScreenAppFocusHandler() {
-  lock_screen_app_focus_handler_.Reset();
-}
-
-void WebUILoginView::HandleLockScreenAppFocusOut(bool reverse) {
-  if (reverse && MoveFocusToSystemTray(reverse))
-    return;
-
-  AboutToRequestFocusFromTabTraversal(reverse);
-}
-
 void WebUILoginView::OnFocusLeavingSystemTray(bool reverse) {
-  if (!reverse && !lock_screen_app_focus_handler_.is_null()) {
-    lock_screen_app_focus_handler_.Run(reverse);
-    return;
-  }
-
   AboutToRequestFocusFromTabTraversal(reverse);
 }
 
