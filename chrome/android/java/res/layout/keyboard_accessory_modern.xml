@@ -44,10 +44,9 @@
             android:paddingEnd="@dimen/keyboard_accessory_bar_item_padding"
             android:paddingTop="@dimen/keyboard_accessory_image_top_padding"
             android:paddingBottom="@dimen/keyboard_accessory_image_top_padding"
-            android:clickable="true"
-            android:focusable="true"
             android:contentDescription="@string/keyboard_accessory_sheet_hide"
-            android:background="?attr/selectableItemBackground"/>
+            android:background="?attr/selectableItemBackground"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/sheet_title"
@@ -63,7 +62,10 @@
             android:id="@+id/bar_items_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:requiresFadingEdge="horizontal"
+            android:fadingEdgeLength="@dimen/keyboard_accessory_scroll_shadow_width"
             android:clipToPadding="false"/>
+
     </LinearLayout>
 
 </org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryModernView>

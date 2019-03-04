@@ -20,9 +20,6 @@ import static org.junit.Assert.assertTrue;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.AUTOFILL_SUGGESTION;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.GENERATE_PASSWORD_AUTOMATIC;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BAR_ITEMS;
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BOTTOM_OFFSET_PX;
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TAB_LAYOUT_ITEM;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.VISIBLE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
@@ -57,7 +54,6 @@ import org.chromium.ui.DeferredViewStubInflationProvider;
 import org.chromium.ui.DropdownItem;
 import org.chromium.ui.ViewProvider;
 import org.chromium.ui.modelutil.LazyConstructionPropertyMcp;
-import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -83,12 +79,7 @@ public class KeyboardAccessoryViewTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mModel =
-                    new PropertyModel
-                            .Builder(BAR_ITEMS, VISIBLE, BOTTOM_OFFSET_PX, TAB_LAYOUT_ITEM,
-                                    KEYBOARD_TOGGLE_VISIBLE, SHOW_KEYBOARD_CALLBACK)
-                            .with(BAR_ITEMS, new ListModel<>())
-                            .with(VISIBLE, false)
-                            .with(KEYBOARD_TOGGLE_VISIBLE, false)
+                    KeyboardAccessoryProperties.defaultModelBuilder()
                             .with(TAB_LAYOUT_ITEM,
                                     new TabLayoutBarItem(new TabLayoutBarItem.TabLayoutCallbacks() {
                                         @Override
