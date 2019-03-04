@@ -104,7 +104,7 @@ double NumberPropertyFunctions::ClampNumber(const CSSProperty& property,
 
     case CSSPropertyOrphans:
     case CSSPropertyWidows:
-      return clampTo<short>(round(value), 1);
+      return clampTo<int16_t>(round(value), 1);
 
     case CSSPropertyColumnCount:
       return clampTo<uint16_t>(round(value), 1);

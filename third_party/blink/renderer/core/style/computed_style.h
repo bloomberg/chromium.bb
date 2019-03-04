@@ -1007,10 +1007,10 @@ class ComputedStyle : public ComputedStyleBase,
   void SetWordSpacing(float);
 
   // orphans
-  void SetOrphans(short o) { SetOrphansInternal(clampTo<short>(o, 1)); }
+  void SetOrphans(int16_t o) { SetOrphansInternal(clampTo<int16_t>(o, 1)); }
 
   // widows
-  void SetWidows(short w) { SetWidowsInternal(clampTo<short>(w, 1)); }
+  void SetWidows(int16_t w) { SetWidowsInternal(clampTo<int16_t>(w, 1)); }
 
   // SVG properties.
   const SVGComputedStyle& SvgStyle() const { return *svg_style_.Get(); }
