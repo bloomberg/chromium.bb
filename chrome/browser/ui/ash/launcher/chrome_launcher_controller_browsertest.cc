@@ -13,6 +13,7 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/app_list_button.h"
+#include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_view.h"
@@ -1628,6 +1629,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragOffShelf) {
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow(),
                                      gfx::Point());
   ash::ShelfViewTestAPI test(GetPrimaryShelfView());
+  const ash::ShelfView* shelf_view = GetPrimaryShelfView();
   test.SetAnimationDuration(1);  // Speed up animations for test.
   // Create a known application and check that we have 3 items in the shelf.
   CreateShortcut("app1");
@@ -1688,10 +1690,10 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragOffShelf) {
   // Test #6: Ripping out the application when the overflow button exists.
   // After ripping out, overflow button should be removed.
   int items_added = 0;
-  EXPECT_FALSE(test.IsOverflowButtonVisible());
+  EXPECT_FALSE(shelf_view->GetOverflowButton()->visible());
 
   // Create fake app shortcuts until overflow button is created.
-  while (!test.IsOverflowButtonVisible()) {
+  while (!shelf_view->GetOverflowButton()->visible()) {
     std::string fake_app_id = base::StringPrintf("fake_app_%d", items_added);
     PinFakeApp(fake_app_id);
     test.RunMessageLoopUntilAnimationsDone();
@@ -1713,12 +1715,12 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragOffShelf) {
   // however correctly done and the item will get removed (as well as the
   // overflow button).
   EXPECT_EQ(total_count - 1, shelf_model()->item_count());
-  EXPECT_TRUE(test.IsOverflowButtonVisible());
+  EXPECT_TRUE(shelf_view->GetOverflowButton()->visible());
 
   // Rip off again and the overflow button should has disappeared.
   RipOffItemIndex(app_index, &generator, &test, RIP_OFF_ITEM);
   EXPECT_EQ(total_count - 2, shelf_model()->item_count());
-  EXPECT_FALSE(test.IsOverflowButtonVisible());
+  EXPECT_FALSE(shelf_view->GetOverflowButton()->visible());
 }
 
 // TODO(crbug.com/759779, crbug.com/819386): add back |ClickItem|.

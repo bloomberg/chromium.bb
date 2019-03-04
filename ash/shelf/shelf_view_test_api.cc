@@ -59,18 +59,6 @@ views::View* ShelfViewTestAPI::GetViewAt(int index) {
   return shelf_view_->view_model_->view_at(index);
 }
 
-int ShelfViewTestAPI::GetFirstVisibleIndex() {
-  return shelf_view_->first_visible_index_;
-}
-
-int ShelfViewTestAPI::GetLastVisibleIndex() {
-  return shelf_view_->last_visible_index_;
-}
-
-bool ShelfViewTestAPI::IsOverflowButtonVisible() {
-  return shelf_view_->overflow_button_->visible();
-}
-
 void ShelfViewTestAPI::ShowOverflowBubble() {
   DCHECK(!shelf_view_->IsShowingOverflowBubble());
   shelf_view_->ToggleOverflowBubble();
@@ -79,10 +67,6 @@ void ShelfViewTestAPI::ShowOverflowBubble() {
 void ShelfViewTestAPI::HideOverflowBubble() {
   DCHECK(shelf_view_->IsShowingOverflowBubble());
   shelf_view_->ToggleOverflowBubble();
-}
-
-bool ShelfViewTestAPI::IsShowingOverflowBubble() const {
-  return shelf_view_->IsShowingOverflowBubble();
 }
 
 const gfx::Rect& ShelfViewTestAPI::GetBoundsByIndex(int index) {
@@ -133,10 +117,6 @@ bool ShelfViewTestAPI::CloseMenu() {
 
 OverflowBubble* ShelfViewTestAPI::overflow_bubble() {
   return shelf_view_->overflow_bubble_.get();
-}
-
-OverflowButton* ShelfViewTestAPI::overflow_button() const {
-  return shelf_view_->overflow_button_;
 }
 
 ShelfTooltipManager* ShelfViewTestAPI::tooltip_manager() {
