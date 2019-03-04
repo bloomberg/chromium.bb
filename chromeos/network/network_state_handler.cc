@@ -1012,15 +1012,21 @@ void NetworkStateHandler::GetDeviceListByType(const NetworkTypePattern& type,
 
 void NetworkStateHandler::RequestScan(const NetworkTypePattern& type) {
   NET_LOG_USER("RequestScan", type.ToDebugString());
-
-  if (type.MatchesType(shill::kTypeWifi)) {
-    shill_property_handler_->RequestScanByType(shill::kTypeWifi);
+  if (type.MatchesPattern(NetworkTypePattern::WiFi())) {
+    if (IsTechnologyEnabled(NetworkTypePattern::WiFi()))
+      shill_property_handler_->RequestScanByType(shill::kTypeWifi);
+    else if (type.Equals(NetworkTypePattern::WiFi()))
+      return;  // Skip notify if disabled and wifi only requested.
   }
-  if (type.Equals(NetworkTypePattern::Primitive(shill::kTypeCellular))) {
+  if (type.Equals(NetworkTypePattern::Cellular())) {
     // Only request a Cellular scan if Cellular is requested explicitly.
-    shill_property_handler_->RequestScanByType(shill::kTypeCellular);
+    if (IsTechnologyEnabled(NetworkTypePattern::Cellular()))
+      shill_property_handler_->RequestScanByType(shill::kTypeCellular);
+    else
+      return;  // Skip notify if disabled and cellular only requested.
   }
 
+  // Note: for Tether we initiate the scan in the observer.
   NotifyScanRequested(type);
 }
 
