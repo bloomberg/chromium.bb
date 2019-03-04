@@ -74,10 +74,12 @@ constexpr float kFeaturePromoPulseInsetDip = 3.0f;
 class PulsingInkDropMask : public gfx::AnimationDelegate,
                            public views::InkDropMask {
  public:
-  PulsingInkDropMask(const gfx::Size& layer_size,
+  PulsingInkDropMask(views::View* layer_container,
+                     const gfx::Size& layer_size,
                      float normal_corner_radius,
                      float max_inset)
       : views::InkDropMask(layer_size),
+        layer_container_(layer_container),
         normal_corner_radius_(normal_corner_radius),
         max_inset_(max_inset),
         throb_animation_(this) {
@@ -109,7 +111,17 @@ class PulsingInkDropMask : public gfx::AnimationDelegate,
   void AnimationProgressed(const gfx::Animation* animation) override {
     DCHECK_EQ(animation, &throb_animation_);
     layer()->SchedulePaint(gfx::Rect(layer()->size()));
+
+    // This is a workaround for crbug.com/935808: for scale factors >1,
+    // invalidating the mask layer doesn't cause the whole layer to be repainted
+    // on screen. TODO(crbug.com/935808): remove this workaround once the bug is
+    // fixed.
+    layer_container_->SchedulePaint();
   }
+
+  // The View that contains the InkDrop layer we're masking. This must outlive
+  // our instance.
+  views::View* const layer_container_;
 
   // Normal corner radius of the ink drop without animation. This is also the
   // corner radius at the largest instant of the animation.
@@ -382,9 +394,9 @@ std::unique_ptr<views::InkDropMask> BrowserAppMenuButton::CreateInkDropMask()
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   if (promo_feature_) {
     const float corner_radius = height() / 2.0f;
-    return std::make_unique<PulsingInkDropMask>(ink_drop_container()->size(),
-                                                corner_radius,
-                                                kFeaturePromoPulseInsetDip);
+    return std::make_unique<PulsingInkDropMask>(
+        ink_drop_container(), ink_drop_container()->size(), corner_radius,
+        kFeaturePromoPulseInsetDip);
   }
 #endif
 
