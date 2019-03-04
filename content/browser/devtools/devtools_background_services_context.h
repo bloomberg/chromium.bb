@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_BACKGROUND_SERVICES_CONTEXT_H_
 
 #include <array>
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -39,7 +40,7 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContext
     : public base::RefCountedThreadSafe<DevToolsBackgroundServicesContext> {
  public:
   using GetLoggedBackgroundServiceEventsCallback = base::OnceCallback<void(
-      std::vector<devtools::proto::BackgroundServiceState>)>;
+      std::vector<devtools::proto::BackgroundServiceEvent>)>;
 
   DevToolsBackgroundServicesContext(
       BrowserContext* browser_context,
@@ -67,22 +68,22 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContext
   void ClearLoggedBackgroundServiceEvents(
       devtools::proto::BackgroundService service);
 
+  // Logs the event for |service|. |event_name| is a description of the event.
+  // |instance_id| is for tracking events related to the same feature instance.
+  // Any additional useful information relating to the feature can be sent via
+  // |event_metadata|. Must be called on the IO thread.
+  void LogBackgroundServiceEvent(
+      uint64_t service_worker_registration_id,
+      const url::Origin& origin,
+      devtools::proto::BackgroundService service,
+      const std::string& event_name,
+      const std::string& instance_id,
+      const std::map<std::string, std::string>& event_metadata);
+
  private:
   friend class DevToolsBackgroundServicesContextTest;
   friend class base::RefCountedThreadSafe<DevToolsBackgroundServicesContext>;
   ~DevToolsBackgroundServicesContext();
-
-  // Entry point for logging a test event.
-  void LogTestBackgroundServiceEvent(
-      uint64_t service_worker_registration_id,
-      const url::Origin& origin,
-      devtools::proto::TestBackgroundServiceEvent event);
-
-  // Called after the Log*Event method creates the appropriate state proto.
-  void LogBackgroundServiceState(
-      uint64_t service_worker_registration_id,
-      const url::Origin& origin,
-      devtools::proto::BackgroundServiceState service_state);
 
   void DidGetUserData(
       GetLoggedBackgroundServiceEventsCallback callback,
