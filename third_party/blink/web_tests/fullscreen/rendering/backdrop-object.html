@@ -12,8 +12,6 @@ testRunner.waitUntilDone();
 var t = { step_func: func => func() };
 trusted_request(t, document.querySelector("object"));
 document.addEventListener("fullscreenchange", function() {
-  document.querySelector("object").addEventListener("load", () => {
-    testRunner.notifyDone();
-  });
+  testRunner.notifyDone();
 });
 </script>
