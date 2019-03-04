@@ -20,9 +20,4 @@ bool IsTouchDragDropEnabled() {
 #endif
 }
 
-bool IsTouchableAppContextMenuEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kEnableTouchableAppContextMenu);
-}
-
 }  // namespace switches
