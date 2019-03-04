@@ -179,7 +179,7 @@
     _passwordFetcher =
         [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
                                               delegate:self
-                                                origin:GURL::EmptyGURL()];
+                                                   URL:GURL::EmptyGURL()];
   }
   if (personalDataManager) {
     _personalDataManager = personalDataManager;

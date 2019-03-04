@@ -71,7 +71,7 @@ class PasswordStoreObserverBridge
                     (scoped_refptr<password_manager::PasswordStore>)
                         passwordStore
                              delegate:(id<PasswordFetcherDelegate>)delegate
-                               origin:(const GURL&)origin {
+                                  URL:(const GURL&)URL {
   DCHECK(passwordStore);
   DCHECK(delegate);
   self = [super init];
@@ -82,12 +82,12 @@ class PasswordStoreObserverBridge
     _passwordStoreObserver.reset(new PasswordStoreObserverBridge(self));
     _passwordStore->AddObserver(_passwordStoreObserver.get());
 
-    if (origin.is_empty()) {
+    if (URL.is_empty()) {
       _passwordStore->GetAutofillableLogins(_savedPasswordsConsumer.get());
     } else {
       password_manager::PasswordStore::FormDigest digest = {
-          autofill::PasswordForm::SCHEME_HTML, std::string(), origin};
-      digest.signon_realm = origin.spec();
+          autofill::PasswordForm::SCHEME_HTML, std::string(), URL};
+      digest.signon_realm = URL.spec();
       _passwordStore->GetLogins(digest, _savedPasswordsConsumer.get());
     }
   }

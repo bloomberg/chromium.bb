@@ -56,7 +56,7 @@ extern NSString* const SuggestPasswordAccessibilityIdentifier;
 
 // Fetches passwords using |origin| as the filter. If origin is empty (invalid)
 // it will fetch all the passwords.
-- (void)fetchPasswordsForOrigin:(const GURL&)origin;
+- (void)fetchPasswordsForURL:(const GURL&)URL;
 
 @end
 

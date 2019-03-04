@@ -15,8 +15,6 @@
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_presentation_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -48,8 +46,8 @@ NSString* const PasswordDoneButtonAccessibilityIdentifier =
 // dismissing any presented view controller. iPad only.
 @property(nonatomic, weak) UIButton* presentingButton;
 
-// The origin for this mediator.
-@property(nonatomic) GURL origin;
+// The domain for this mediator.
+@property(nonatomic) GURL URL;
 
 @end
 
@@ -61,10 +59,10 @@ NSString* const PasswordDoneButtonAccessibilityIdentifier =
 @dynamic delegate;
 
 - (instancetype)
-initWithBaseViewController:(UIViewController*)viewController
-              browserState:(ios::ChromeBrowserState*)browserState
-              webStateList:(WebStateList*)webStateList
-          injectionHandler:(ManualFillInjectionHandler*)injectionHandler {
+    initWithBaseViewController:(UIViewController*)viewController
+                  browserState:(ios::ChromeBrowserState*)browserState
+                           URL:(const GURL&)URL
+              injectionHandler:(ManualFillInjectionHandler*)injectionHandler {
   self = [super initWithBaseViewController:viewController
                               browserState:browserState
                           injectionHandler:injectionHandler];
@@ -77,11 +75,8 @@ initWithBaseViewController:(UIViewController*)viewController
         browserState, ServiceAccessType::EXPLICIT_ACCESS);
     _passwordMediator = [[ManualFillPasswordMediator alloc]
         initWithPasswordStore:passwordStore];
-    // TODO(crbug.com/936413): This class doesn't need the WebState anymore,
-    // remove it from the init and only pass the origin.
-    DCHECK(webStateList->GetActiveWebState());
-    _origin = webStateList->GetActiveWebState()->GetLastCommittedURL();
-    [_passwordMediator fetchPasswordsForOrigin:_origin];
+    _URL = URL;
+    [_passwordMediator fetchPasswordsForURL:_URL];
     _passwordMediator.actionSectionEnabled = YES;
     _passwordMediator.consumer = _passwordViewController;
     _passwordMediator.navigationDelegate = self;
@@ -170,7 +165,7 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
   PasswordViewController* allPasswordsViewController = [
       [PasswordViewController alloc] initWithSearchController:searchController];
   self.passwordMediator.actionSectionEnabled = NO;
-  [self.passwordMediator fetchPasswordsForOrigin:GURL::EmptyGURL()];
+  [self.passwordMediator fetchPasswordsForURL:GURL::EmptyGURL()];
   self.passwordMediator.consumer = allPasswordsViewController;
   UIBarButtonItem* doneButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
@@ -200,7 +195,7 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
                          completion:^{
                            weakSelf.passwordMediator.actionSectionEnabled = YES;
                            [weakSelf.passwordMediator
-                               fetchPasswordsForOrigin:self.origin];
+                               fetchPasswordsForURL:self.URL];
                            weakSelf.passwordMediator.consumer =
                                weakSelf.passwordViewController;
                            if (weakSelf.presentingButton) {
