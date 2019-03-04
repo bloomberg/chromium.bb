@@ -88,6 +88,7 @@ OfflinePageTabHelper::OfflinePageTabHelper(web::WebState* web_state,
                                            ReadingListModel* model)
     : web_state_(web_state), reading_list_model_(model) {
   web_state_->AddObserver(this);
+  reading_list_model_->AddObserver(this);
 }
 
 OfflinePageTabHelper::~OfflinePageTabHelper() {
