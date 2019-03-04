@@ -3180,11 +3180,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "windows10-custom-titlebar",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "windows-mixed-reality",
     "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 76

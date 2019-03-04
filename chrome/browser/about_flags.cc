@@ -2616,13 +2616,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillSendExperimentIdsInPaymentsRPCs)},
 
-#if defined(OS_WIN)
-    {"windows10-custom-titlebar",
-     flag_descriptions::kWindows10CustomTitlebarName,
-     flag_descriptions::kWindows10CustomTitlebarDescription, kOsWin,
-     FEATURE_VALUE_TYPE(kWindows10CustomTitlebar)},
-#endif  // OS_WIN
-
 #if defined(OS_ANDROID)
     {"enable-autofill-manual-fallback",
      flag_descriptions::kAutofillManualFallbackAndroidName,
