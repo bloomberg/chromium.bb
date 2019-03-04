@@ -625,11 +625,16 @@ static const arg_def_t gf_max_pyr_height =
 static const arg_def_t max_reference_frames = ARG_DEF(
     NULL, "max-reference-frames", 1,
     "maximum number of reference frames allowed per frame (3 to 7 (default))");
-
 static const arg_def_t reduced_reference_set =
     ARG_DEF(NULL, "reduced-reference-set", 1,
             "Use reduced set of single and compound references (0: off "
             "(default), 1: on)");
+static const arg_def_t target_seq_level_idx =
+    ARG_DEF(NULL, "target-seq-level-idx", 1,
+            "Target sequence level index. "
+            "(-1: Not enabled(default); "
+            "0~23: Target for the given level index; "
+            "31: Passively measure the level of the encoded bitstream.)");
 
 static const struct arg_enum_list color_primaries_enum[] = {
   { "bt709", AOM_CICP_CP_BT_709 },
@@ -817,6 +822,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &max_reference_frames,
                                        &reduced_reference_set,
                                        &enable_ref_frame_mvs,
+                                       &target_seq_level_idx,
                                        &bitdeptharg,
                                        &inbitdeptharg,
                                        &input_chroma_subsampling_x,
@@ -907,6 +913,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_MAX_REFERENCE_FRAMES,
                                         AV1E_SET_REDUCED_REFERENCE_SET,
                                         AV1E_SET_ENABLE_REF_FRAME_MVS,
+                                        AV1E_SET_TARGET_SEQ_LEVEL_IDX,
                                         0 };
 #endif  // CONFIG_AV1_ENCODER
 

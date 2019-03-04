@@ -1012,6 +1012,14 @@ enum aome_enc_control_id {
    * 2: Update at tile level
    */
   AV1E_SET_MODE_COST_UPD_FREQ,
+
+  /*!\brief Control to set target sequence level index
+   * Possible values are:
+   * -1: Not enabled (default)
+   * 0~23: Target for the given sequence level index
+   * 31: Passively measure the level of the encoded bitstream
+   */
+  AV1E_SET_TARGET_SEQ_LEVEL_IDX,
 };
 
 /*!\brief aom 1-D scaling mode
@@ -1412,6 +1420,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_COEFF_COST_UPD_FREQ, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_MODE_COST_UPD_FREQ, unsigned int)
 #define AOM_CTRL_AV1E_SET_MODE_COST_UPD_FREQ
+
+AOM_CTRL_USE_TYPE(AV1E_SET_TARGET_SEQ_LEVEL_IDX, int)
+#define AOM_CTRL_AV1E_SET_TARGET_SEQ_LEVEL_IDX
 
 /*!\endcond */
 /*! @} - end defgroup aom_encoder */

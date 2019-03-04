@@ -395,6 +395,7 @@ typedef struct AV1EncoderConfig {
   COST_UPDATE_TYPE coeff_cost_upd_freq;
   COST_UPDATE_TYPE mode_cost_upd_freq;
   int border_in_pixels;
+  int target_seq_level_idx;
 } AV1EncoderConfig;
 
 static INLINE int is_lossless_requested(const AV1EncoderConfig *cfg) {
