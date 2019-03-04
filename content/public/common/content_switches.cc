@@ -154,6 +154,11 @@ const char kDisableGpuMemoryBufferVideoFrames[] =
 // restarted.
 const char kDisableGpuProcessCrashLimit[] = "disable-gpu-process-crash-limit";
 
+// For tests, to disable falling back to software compositing if the GPU Process
+// has crashed, and reached the GPU Process crash limit.
+const char kDisableSoftwareCompositingFallback[] =
+    "disable-software-compositing-fallback";
+
 // When using CPU rasterizing disable low resolution tiling. This uses
 // less power, particularly during animations, but more white may be seen
 // during fast scrolling especially on slower devices.
