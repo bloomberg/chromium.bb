@@ -7,7 +7,7 @@
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/fallback_coordinator.h"
 
-class WebStateList;
+class GURL;
 
 namespace manual_fill {
 
@@ -35,10 +35,10 @@ extern NSString* const PasswordDoneButtonAccessibilityIdentifier;
 // Creates a coordinator that uses a |viewController|, |browserState|,
 // |webStateList| and an |injectionHandler|.
 - (instancetype)
-initWithBaseViewController:(UIViewController*)viewController
-              browserState:(ios::ChromeBrowserState*)browserState
-              webStateList:(WebStateList*)webStateList
-          injectionHandler:(ManualFillInjectionHandler*)injectionHandler
+    initWithBaseViewController:(UIViewController*)viewController
+                  browserState:(ios::ChromeBrowserState*)browserState
+                           URL:(const GURL&)URL
+              injectionHandler:(ManualFillInjectionHandler*)injectionHandler
     NS_DESIGNATED_INITIALIZER;
 
 // Unavailable, use

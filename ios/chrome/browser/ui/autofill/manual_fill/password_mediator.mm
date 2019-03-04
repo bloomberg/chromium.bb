@@ -86,12 +86,12 @@ BOOL AreCredentialsAtIndexesConnected(
   return self;
 }
 
-- (void)fetchPasswordsForOrigin:(const GURL&)origin {
+- (void)fetchPasswordsForURL:(const GURL&)URL {
   self.credentials = @[];
   self.passwordFetcher =
       [[PasswordFetcher alloc] initWithPasswordStore:_passwordStore
                                             delegate:self
-                                              origin:origin];
+                                                 URL:URL];
 }
 
 #pragma mark - PasswordFetcherDelegate

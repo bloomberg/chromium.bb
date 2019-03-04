@@ -122,7 +122,7 @@ class PasswordFetcherTest : public PlatformTest {
     form->password_element = base::ASCIIToUTF16("password");
     form->password_value = base::ASCIIToUTF16("cantsay");
     form->submit_element = base::ASCIIToUTF16("signIn");
-    form->signon_realm = "http://www.secret.com/";
+    form->signon_realm = "http://www.secret.test/";
     form->preferred = false;
     form->scheme = autofill::PasswordForm::SCHEME_HTML;
     form->blacklisted_by_user = true;
@@ -142,7 +142,7 @@ TEST_F(PasswordFetcherTest, Initialization) {
   PasswordFetcher* passwordFetcher =
       [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
                                             delegate:passwordFetcherDelegate
-                                              origin:GURL::EmptyGURL()];
+                                                 URL:GURL::EmptyGURL()];
   EXPECT_TRUE(passwordFetcher);
 }
 
@@ -156,7 +156,7 @@ TEST_F(PasswordFetcherTest, ReturnsPassword) {
   PasswordFetcher* passwordFetcher =
       [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
                                             delegate:passwordFetcherDelegate
-                                              origin:GURL::EmptyGURL()];
+                                                 URL:GURL::EmptyGURL()];
 
   WaitUntilCondition(
       ^bool {
@@ -179,7 +179,7 @@ TEST_F(PasswordFetcherTest, ReturnsTwoPasswords) {
   PasswordFetcher* passwordFetcher =
       [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
                                             delegate:passwordFetcherDelegate
-                                              origin:GURL::EmptyGURL()];
+                                                 URL:GURL::EmptyGURL()];
   WaitUntilCondition(
       ^bool {
         return passwordFetcherDelegate.passwordNumber > 0;
@@ -201,7 +201,7 @@ TEST_F(PasswordFetcherTest, IgnoresBlacklisted) {
   PasswordFetcher* passwordFetcher =
       [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
                                             delegate:passwordFetcherDelegate
-                                              origin:GURL::EmptyGURL()];
+                                                 URL:GURL::EmptyGURL()];
   WaitUntilCondition(
       ^bool {
         return passwordFetcherDelegate.passwordNumber > 0;
@@ -225,7 +225,7 @@ TEST_F(PasswordFetcherTest, IgnoresDuplicated) {
   PasswordFetcher* passwordFetcher =
       [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
                                             delegate:passwordFetcherDelegate
-                                              origin:GURL::EmptyGURL()];
+                                                 URL:GURL::EmptyGURL()];
   WaitUntilCondition(
       ^bool {
         return passwordFetcherDelegate.passwordNumber > 0;
@@ -246,7 +246,7 @@ TEST_F(PasswordFetcherTest, ReceivesZeroPasswords) {
   PasswordFetcher* passwordFetcher =
       [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
                                             delegate:passwordFetcherDelegate
-                                              origin:GURL::EmptyGURL()];
+                                                 URL:GURL::EmptyGURL()];
   WaitUntilCondition(
       ^bool {
         return passwordFetcherDelegate.passwordNumber > 0;
@@ -276,7 +276,7 @@ TEST_F(PasswordFetcherTest, FilterPassword) {
   PasswordFetcher* passwordFetcher = [[PasswordFetcher alloc]
       initWithPasswordStore:passwordStore
                    delegate:passwordFetcherDelegate
-                     origin:GURL("http://www.secret.com/")];
+                        URL:GURL("http://www.secret.test/")];
   WaitUntilCondition(
       ^bool {
         return passwordFetcherDelegate.passwordNumber > 0;

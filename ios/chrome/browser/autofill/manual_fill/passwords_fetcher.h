@@ -42,7 +42,7 @@ class GURL;
     initWithPasswordStore:
         (scoped_refptr<password_manager::PasswordStore>)passwordStore
                  delegate:(id<PasswordFetcherDelegate>)delegate
-                   origin:(const GURL&)origin NS_DESIGNATED_INITIALIZER;
+                      URL:(const GURL&)URL NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
