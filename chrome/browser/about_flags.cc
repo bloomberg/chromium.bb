@@ -2780,13 +2780,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kWebNfc)},
 #endif
 
-#if defined(OS_ANDROID)
-    {"enable-clipboard-provider",
-     flag_descriptions::kEnableOmniboxClipboardProviderName,
-     flag_descriptions::kEnableOmniboxClipboardProviderDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(omnibox::kEnableClipboardProvider)},
-#endif
-
     {"autoplay-policy", flag_descriptions::kAutoplayPolicyName,
      flag_descriptions::kAutoplayPolicyDescription, kOsAll,
      MULTI_VALUE_TYPE(kAutoplayPolicyChoices)},

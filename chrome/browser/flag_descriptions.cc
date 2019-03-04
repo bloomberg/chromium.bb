@@ -2329,12 +2329,6 @@ const char kEnableCustomContextMenuDescription[] =
     "Enables a new context menu when a link, image, or video is pressed within "
     "Chrome.";
 
-const char kEnableOmniboxClipboardProviderName[] =
-    "Omnibox clipboard URL suggestions";
-const char kEnableOmniboxClipboardProviderDescription[] =
-    "Provide a suggestion of the URL stored in the clipboard (if any) upon "
-    "focus in the omnibox.";
-
 const char kEnableNtpAssetDownloadSuggestionsName[] =
     "Show asset downloads on the New Tab page";
 const char kEnableNtpAssetDownloadSuggestionsDescription[] =

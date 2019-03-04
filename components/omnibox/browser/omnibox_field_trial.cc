@@ -147,17 +147,6 @@ const base::Feature kOmniboxPedalSuggestions{"OmniboxPedalSuggestions",
 const base::Feature kOmniboxContextMenuForSuggestions{
     "OmniboxContextMenuForSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used to enable clipboard provider, which provides the user with
-// suggestions of the URL in the user's clipboard (if any) upon omnibox focus.
-const base::Feature kEnableClipboardProvider {
-  "OmniboxEnableClipboardProvider",
-#if defined(OS_IOS) || defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
-
 // Feature to enable clipboard provider to suggest copied text.
 const base::Feature kEnableClipboardProviderTextSuggestions{
     "OmniboxEnableClipboardProviderTextSuggestions",

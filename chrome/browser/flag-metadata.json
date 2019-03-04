@@ -963,11 +963,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-clipboard-provider",
-    "owners": [ "orinj", "mpearson", "jdonnelly" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-cloud-print-xps",
     "owners": [ "//printing/OWNERS" ],
     "expiry_milestone": 76
