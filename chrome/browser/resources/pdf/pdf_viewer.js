@@ -254,7 +254,7 @@ function PDFViewer(browserApi) {
     this.toolbar_.addEventListener(
         'redo', () => this.currentController_.redo());
     this.toolbar_.addEventListener(
-        'rotate-right', () => this.currentController_.rotateClockwise());
+        'rotate-right', () => this.rotateClockwise());
     this.toolbar_.addEventListener(
         'annotation-mode-changed', e => this.annotationModeChanged_(e));
     this.toolbar_.addEventListener(
@@ -448,7 +448,7 @@ PDFViewer.prototype = {
         return;
       case 219:  // Left bracket key.
         if (e.ctrlKey) {
-          this.currentController_.rotateCounterClockwise();
+          this.rotateCounterclockwise();
         }
         return;
       case 220:  // Backslash key.
@@ -458,7 +458,7 @@ PDFViewer.prototype = {
         return;
       case 221:  // Right bracket key.
         if (e.ctrlKey) {
-          this.currentController_.rotateClockwise();
+          this.rotateClockwise();
         }
         return;
     }
@@ -1198,7 +1198,33 @@ PDFViewer.prototype = {
     PDFMetrics.record(PDFMetrics.UserAction.PRINT);
     await this.exitAnnotationMode_();
     this.currentController_.print();
-  }
+  },
+
+  /**
+   * Updates the toolbar's annotation available flag depending on current
+   * conditions.
+   */
+  updateAnnotationAvailable_() {
+    let annotationAvailable = true;
+    if (this.viewport_.getClockwiseRotations() != 0) {
+      annotationAvailable = false;
+    }
+    this.toolbar_.annotationAvailable = annotationAvailable;
+  },
+
+  rotateClockwise() {
+    PDFMetrics.record(PDFMetrics.UserAction.ROTATE);
+    this.viewport_.rotateClockwise(1);
+    this.currentController_.rotateClockwise();
+    this.updateAnnotationAvailable_();
+  },
+
+  rotateCounterclockwise() {
+    PDFMetrics.record(PDFMetrics.UserAction.ROTATE);
+    this.viewport_.rotateClockwise(3);
+    this.currentController_.rotateCounterclockwise();
+    this.updateAnnotationAvailable_();
+  },
 };
 
 /** @abstract */
@@ -1230,7 +1256,7 @@ class ContentController {
    * Rotates the document 90 degrees in the counter clockwise direction.
    * @abstract
    */
-  rotateCounterClockwise() {}
+  rotateCounterclockwise() {}
 
   /**
    * Triggers printing of the current document.
@@ -1300,7 +1326,7 @@ class InkController extends ContentController {
   }
 
   /** @override */
-  rotateCounterClockwise() {
+  rotateCounterclockwise() {
     // TODO(dstockwell): implement rotation
   }
 
@@ -1422,15 +1448,11 @@ class PluginController extends ContentController {
 
   /** @override */
   rotateClockwise() {
-    PDFMetrics.record(PDFMetrics.UserAction.ROTATE);
-    this.viewport_.rotateClockwise(1);
     this.postMessage({type: 'rotateClockwise'});
   }
 
   /** @override */
-  rotateCounterClockwise() {
-    PDFMetrics.record(PDFMetrics.UserAction.ROTATE);
-    this.viewport_.rotateClockwise(3);
+  rotateCounterclockwise() {
     this.postMessage({type: 'rotateCounterclockwise'});
   }
 

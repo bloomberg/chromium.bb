@@ -173,6 +173,7 @@
         <div id="buttons" class="invisible">
           <template is="dom-if" if="[[pdfAnnotationsEnabled]]">
             <paper-icon-button id="annotate" icon="pdf:create"
+                disabled="[[!annotationAvailable]]"
                 on-click="toggleAnnotation"
                 aria-label$="{{strings.tooltipAnnotate}}"
                 title$="{{strings.tooltipAnnotate}}">
@@ -180,6 +181,7 @@
           </template>
 
           <paper-icon-button id="rotate-right" icon="pdf:rotate-right"
+              disabled="[[annotationMode]]"
               on-click="rotateRight"
               aria-label$="{{strings.tooltipRotateCW}}"
               title$="{{strings.tooltipRotateCW}}">

@@ -53,9 +53,22 @@ Polymer({
     },
 
     /**
+     * Whether annotation mode can be entered. This would be false if for
+     * example the PDF is encrypted or password protected. Note, this is
+     * true regardless of whether the feature flag is enabled.
+     */
+    annotationAvailable: {
+      type: Boolean,
+      value: true,
+    },
+
+    /**
      * Whether the PDF Annotations feature is enabled.
      */
-    pdfAnnotationsEnabled: Boolean,
+    pdfAnnotationsEnabled: {
+      type: Boolean,
+      value: false,
+    },
 
     strings: Object,
   },
