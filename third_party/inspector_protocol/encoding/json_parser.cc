@@ -225,7 +225,8 @@ class JsonParser {
 
   static bool IsSpaceOrNewLine(Char c) {
     // \v = vertial tab; \f = form feed page break.
-    return c == ' ' || c == '\n' || c == '\v' || c == '\f' || c == '\r';
+    return c == ' ' || c == '\n' || c == '\v' || c == '\f' || c == '\r' ||
+           c == '\t';
   }
 
   static void SkipWhitespaceAndComments(const Char* start, const Char* end,
@@ -467,7 +468,7 @@ class JsonParser {
           HandleError(Error::JSON_PARSER_INVALID_STRING, token_start);
           return;
         }
-        handler_->HandleString16(std::move(value));
+        handler_->HandleString16(span<uint16_t>(value.data(), value.size()));
         break;
       }
       case ArrayBegin: {
@@ -513,7 +514,7 @@ class JsonParser {
             HandleError(Error::JSON_PARSER_INVALID_STRING, token_start);
             return;
           }
-          handler_->HandleString16(std::move(key));
+          handler_->HandleString16(span<uint16_t>(key.data(), key.size()));
           start = token_end;
 
           token = ParseToken(start, end, &token_start, &token_end);

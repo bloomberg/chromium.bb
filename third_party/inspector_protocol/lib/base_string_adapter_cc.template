@@ -185,6 +185,13 @@ void StringBuilder::reserveCapacity(size_t capacity) {
   string_.reserve(capacity);
 }
 
+// static
+String StringUtil::fromUTF16(const uint16_t* data, size_t length) {
+  std::string utf8;
+  base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(data), length, &utf8);
+  return utf8;
+}
+
 Binary::Binary() : bytes_(new base::RefCountedBytes) {}
 Binary::Binary(const Binary& binary) : bytes_(binary.bytes_) {}
 Binary::Binary(scoped_refptr<base::RefCountedMemory> bytes) : bytes_(bytes) {}

@@ -96,8 +96,9 @@ static constexpr uint8_t kStopByte =
 // - UTF16 strings, including with unbalanced surrogate pairs, are encoded
 //   as CBOR BYTE_STRING (major type 2). For such strings, the number of
 //   bytes encoded must be even.
-// - UTF8 strings (major type 3) may only have ASCII characters
-//   (7 bit US-ASCII).
+// - UTF8 strings (major type 3) are supported.
+// - 7 bit US-ASCII strings must always be encoded as UTF8 strings, not
+//   as UTF16 strings.
 // - Arbitrary byte arrays, in the inspector protocol called 'binary',
 //   are encoded as BYTE_STRING (major type 2), prefixed with a byte
 //   indicating base64 when rendered as JSON.
@@ -113,6 +114,15 @@ void EncodeString16(span<uint16_t> in, std::vector<uint8_t>* out);
 
 // Encodes a UTF8 string |in| as STRING (major type 3).
 void EncodeString8(span<uint8_t> in, std::vector<uint8_t>* out);
+
+// Encodes the given |latin1| string as STRING8.
+// If any non-ASCII character is present, it will be represented
+// as a 2 byte UTF8 sequence.
+void EncodeFromLatin1(span<uint8_t> latin1, std::vector<uint8_t>* out);
+
+// Encodes the given |utf16| string as STRING8 if it's entirely US-ASCII.
+// Otherwise, encodes as STRING16.
+void EncodeFromUTF16(span<uint16_t> utf16, std::vector<uint8_t>* out);
 
 // Encodes arbitrary binary data in |in| as a BYTE_STRING (major type 2) with
 // definitive length, prefixed with tag 22 indicating expected conversion to

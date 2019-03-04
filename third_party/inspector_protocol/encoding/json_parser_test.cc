@@ -22,10 +22,16 @@ class Log : public JSONParserHandler {
 
   void HandleArrayEnd() override { log_ << "array end\n"; }
 
-  void HandleString16(std::vector<uint16_t> chars) override {
+  void HandleString8(span<uint8_t> chars) override {
+    base::StringPiece foo(reinterpret_cast<const char*>(chars.data()),
+                          chars.size());
+    log_ << "string8: " << foo << "\n";
+  }
+
+  void HandleString16(span<uint16_t> chars) override {
     base::StringPiece16 foo(reinterpret_cast<const base::char16*>(chars.data()),
                             chars.size());
-    log_ << "string: " << base::UTF16ToUTF8(foo) << "\n";
+    log_ << "string16: " << base::UTF16ToUTF8(foo) << "\n";
   }
 
   void HandleBinary(std::vector<uint8_t> bytes) override {
@@ -69,8 +75,23 @@ TEST_F(JsonParserTest, SimpleDictionary) {
   EXPECT_TRUE(log_.status().ok());
   EXPECT_EQ(
       "object begin\n"
-      "string: foo\n"
+      "string16: foo\n"
       "int: 42\n"
+      "object end\n",
+      log_.str());
+}
+
+TEST_F(JsonParserTest, Whitespace) {
+  std::string json = "\n  {\n\"msg\"\n: \v\"Hello, world.\"\t\r}\t";
+  ParseJSONChars(
+      GetLinuxDevPlatform(),
+      span<uint8_t>(reinterpret_cast<const uint8_t*>(json.data()), json.size()),
+      &log_);
+  EXPECT_TRUE(log_.status().ok());
+  EXPECT_EQ(
+      "object begin\n"
+      "string16: msg\n"
+      "string16: Hello, world.\n"
       "object end\n",
       log_.str());
 }
@@ -84,14 +105,14 @@ TEST_F(JsonParserTest, NestedDictionary) {
   EXPECT_TRUE(log_.status().ok());
   EXPECT_EQ(
       "object begin\n"
-      "string: foo\n"
+      "string16: foo\n"
       "object begin\n"
-      "string: bar\n"
+      "string16: bar\n"
       "object begin\n"
-      "string: baz\n"
+      "string16: baz\n"
       "int: 1\n"
       "object end\n"
-      "string: bar2\n"
+      "string16: bar2\n"
       "int: 2\n"
       "object end\n"
       "object end\n",
@@ -107,9 +128,9 @@ TEST_F(JsonParserTest, Doubles) {
   EXPECT_TRUE(log_.status().ok());
   EXPECT_EQ(
       "object begin\n"
-      "string: foo\n"
+      "string16: foo\n"
       "double: 3.1415\n"
-      "string: bar\n"
+      "string16: bar\n"
       "double: 3.1415\n"
       "object end\n",
       log_.str());
@@ -125,8 +146,8 @@ TEST_F(JsonParserTest, Unicode) {
   EXPECT_TRUE(log_.status().ok());
   EXPECT_EQ(
       "object begin\n"
-      "string: msg\n"
-      "string: Hello, 🌎.\n"
+      "string16: msg\n"
+      "string16: Hello, 🌎.\n"
       "object end\n",
       log_.str());
 }
@@ -145,8 +166,8 @@ TEST_F(JsonParserTest, Unicode_ParseUtf16) {
   EXPECT_TRUE(log_.status().ok());
   EXPECT_EQ(
       "object begin\n"
-      "string: space\n"
-      "string: 🌎 🌙.\n"
+      "string16: space\n"
+      "string16: 🌎 🌙.\n"
       "object end\n",
       log_.str());
 }
@@ -174,14 +195,14 @@ TEST_F(JsonParserTest, Unicode_ParseUtf8) {
   EXPECT_TRUE(log_.status().ok());
   EXPECT_EQ(
       "object begin\n"
-      "string: escapes\n"
-      "string: 🌙\n"
-      "string: 2 byte\n"
-      "string: гласность\n"
-      "string: 3 byte\n"
-      "string: 屋\n"
-      "string: 4 byte\n"
-      "string: 🌎\n"
+      "string16: escapes\n"
+      "string16: 🌙\n"
+      "string16: 2 byte\n"
+      "string16: гласность\n"
+      "string16: 3 byte\n"
+      "string16: 屋\n"
+      "string16: 4 byte\n"
+      "string16: 🌎\n"
       "object end\n",
       log_.str());
 }
@@ -219,11 +240,11 @@ TEST_F(JsonParserTest, StackLimitExceededError) {
   EXPECT_TRUE(log_.status().ok());
   EXPECT_EQ(
       "object begin\n"
-      "string: foo\n"
+      "string16: foo\n"
       "object begin\n"
-      "string: foo\n"
+      "string16: foo\n"
       "object begin\n"
-      "string: foo\n"
+      "string16: foo\n"
       "int: 42\n"
       "object end\n"
       "object end\n"

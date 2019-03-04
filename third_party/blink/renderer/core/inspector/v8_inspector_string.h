@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8-inspector.h"
@@ -39,7 +38,6 @@ class Value;
 
 using String = WTF::String;
 using StringBuilder = WTF::StringBuilder;
-using StringUTF8Adapter = WTF::StringUTF8Adaptor;
 
 struct ProtocolMessage {
   String json;
@@ -91,6 +89,17 @@ class CORE_EXPORT StringUtil {
   static String fromUTF8(const uint8_t* data, size_t length) {
     return String::FromUTF8(reinterpret_cast<const char*>(data), length);
   }
+
+  static String fromUTF16(const uint16_t* data, size_t length);
+
+  static const uint8_t* CharactersLatin1(const String& s) {
+    return reinterpret_cast<const uint8_t*>(s.Characters8());
+  }
+  static const uint8_t* CharactersUTF8(const String& s) { return nullptr; }
+  static const uint16_t* CharactersUTF16(const String& s) {
+    return reinterpret_cast<const uint16_t*>(s.Characters16());
+  }
+  static size_t CharacterCount(const String& s) { return s.length(); }
 };
 
 // A read-only sequence of uninterpreted bytes with reference-counted storage.
