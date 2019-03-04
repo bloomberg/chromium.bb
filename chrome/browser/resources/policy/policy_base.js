@@ -485,7 +485,9 @@ cr.define('policy', function() {
                 name => Object.assign(
                     {
                       name,
-                      link: knownPolicyNamesSet.has(name) ?
+                      link:
+                          knownPolicyNames === policyNames.chrome.policyNames &&
+                              knownPolicyNamesSet.has(name) ?
                           `https://chromium.org/administrators/policy-list-3#${
                               name}` :
                           undefined,
