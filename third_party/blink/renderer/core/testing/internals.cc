@@ -2664,8 +2664,8 @@ void Internals::updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(
         "The node provided is neither a document nor an IFrame.");
     return;
   }
-  document->UpdateStyleAndLayoutIgnorePendingStylesheets(
-      Document::kRunPostLayoutTasksSynchronously);
+  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document->View()->FlushAnyPendingPostLayoutTasks();
 }
 
 void Internals::forceFullRepaint(Document* document,
