@@ -2,25 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_TEST_FAKE_REFRESH_TOKEN_STORE_H_
-#define REMOTING_TEST_FAKE_REFRESH_TOKEN_STORE_H_
+#ifndef REMOTING_TEST_FAKE_TEST_TOKEN_STORAGE_H_
+#define REMOTING_TEST_FAKE_TEST_TOKEN_STORAGE_H_
+
+#include <string>
 
 #include "base/macros.h"
-#include "remoting/test/refresh_token_store.h"
+#include "remoting/test/test_token_storage.h"
 
 namespace remoting {
 namespace test {
 
 // Stubs out the file API and returns fake data so we can remove
 // file system dependencies when testing the TestDriverEnvironment.
-class FakeRefreshTokenStore : public RefreshTokenStore {
+class FakeTestTokenStorage : public TestTokenStorage {
  public:
-  FakeRefreshTokenStore();
-  ~FakeRefreshTokenStore() override;
+  FakeTestTokenStorage();
+  ~FakeTestTokenStorage() override;
 
-  // RefreshTokenStore interface.
+  // TestTokenStorage interface.
   std::string FetchRefreshToken() override;
   bool StoreRefreshToken(const std::string& refresh_token) override;
+  std::string FetchAccessToken() override;
+  bool StoreAccessToken(const std::string& access_token) override;
+  std::string FetchDeviceId() override;
+  bool StoreDeviceId(const std::string& device_id) override;
 
   bool refresh_token_write_attempted() const {
     return refresh_token_write_attempted_;
@@ -47,10 +53,10 @@ class FakeRefreshTokenStore : public RefreshTokenStore {
   bool refresh_token_write_attempted_;
   std::string stored_refresh_token_value_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeRefreshTokenStore);
+  DISALLOW_COPY_AND_ASSIGN(FakeTestTokenStorage);
 };
 
 }  // namespace test
 }  // namespace remoting
 
-#endif  // REMOTING_TEST_FAKE_REFRESH_TOKEN_STORE_H_
+#endif  // REMOTING_TEST_FAKE_TEST_TOKEN_STORAGE_H_
