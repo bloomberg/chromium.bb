@@ -6,7 +6,6 @@
 
 #include "base/android/build_info.h"
 #include "base/bind.h"
-#include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"

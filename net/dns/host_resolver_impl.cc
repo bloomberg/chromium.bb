@@ -31,7 +31,6 @@
 #include "base/compiler_specific.h"
 #include "base/containers/linked_list.h"
 #include "base/debug/debugger.h"
-#include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"

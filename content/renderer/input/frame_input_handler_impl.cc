@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "content/common/input/ime_text_span_conversions.h"
 #include "content/renderer/compositor/layer_tree_view.h"

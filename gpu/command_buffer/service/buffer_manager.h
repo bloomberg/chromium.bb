@@ -14,7 +14,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

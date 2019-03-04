@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/bits.h"
+#include "base/debug/stack_trace.h"
 #include "base/no_destructor.h"
 #include "base/process/process_metrics.h"
 #include "base/rand_util.h"
