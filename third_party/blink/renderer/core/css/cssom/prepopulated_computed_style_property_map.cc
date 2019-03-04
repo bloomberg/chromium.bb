@@ -41,7 +41,7 @@ PrepopulatedComputedStylePropertyMap::PrepopulatedComputedStylePropertyMap(
   }
 }
 
-unsigned PrepopulatedComputedStylePropertyMap::size() {
+unsigned PrepopulatedComputedStylePropertyMap::size() const {
   return native_values_.size() + custom_values_.size();
 }
 
@@ -83,12 +83,12 @@ void PrepopulatedComputedStylePropertyMap::UpdateCustomProperty(
 }
 
 const CSSValue* PrepopulatedComputedStylePropertyMap::GetProperty(
-    CSSPropertyID property_id) {
+    CSSPropertyID property_id) const {
   return native_values_.at(property_id);
 }
 
 const CSSValue* PrepopulatedComputedStylePropertyMap::GetCustomProperty(
-    AtomicString property_name) {
+    AtomicString property_name) const {
   return custom_values_.at(property_name);
 }
 
@@ -117,7 +117,7 @@ void PrepopulatedComputedStylePropertyMap::ForEachProperty(
 }
 
 String PrepopulatedComputedStylePropertyMap::SerializationForShorthand(
-    const CSSProperty&) {
+    const CSSProperty&) const {
   // TODO(816722): Shorthands not yet supported for this style map.
   NOTREACHED();
   return "";

@@ -33,22 +33,22 @@ class CORE_EXPORT PaintWorkletStylePropertyMap
 
   CSSStyleValue* get(const ExecutionContext*,
                      const String& property_name,
-                     ExceptionState&) override;
+                     ExceptionState&) const override;
 
   CSSStyleValueVector getAll(const ExecutionContext*,
                              const String& property_name,
-                             ExceptionState&) override;
+                             ExceptionState&) const override;
 
   bool has(const ExecutionContext*,
            const String& property_name,
-           ExceptionState&) override;
+           ExceptionState&) const override;
 
-  unsigned int size() override;
+  unsigned int size() const override;
 
   void Trace(blink::Visitor*) override;
 
-  const HashMap<String, std::unique_ptr<CrossThreadStyleValue>>&
-  ValuesForTest() {
+  const HashMap<String, std::unique_ptr<CrossThreadStyleValue>>& ValuesForTest()
+      const {
     return values_;
   }
 

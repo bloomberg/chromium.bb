@@ -11,19 +11,20 @@
 
 namespace blink {
 
-unsigned int InlineStylePropertyMap::size() {
+unsigned int InlineStylePropertyMap::size() const {
   const CSSPropertyValueSet* inline_style = owner_element_->InlineStyle();
   return inline_style ? inline_style->PropertyCount() : 0;
 }
 
-const CSSValue* InlineStylePropertyMap::GetProperty(CSSPropertyID property_id) {
+const CSSValue* InlineStylePropertyMap::GetProperty(
+    CSSPropertyID property_id) const {
   const CSSPropertyValueSet* inline_style = owner_element_->InlineStyle();
   return inline_style ? inline_style->GetPropertyCSSValue(property_id)
                       : nullptr;
 }
 
 const CSSValue* InlineStylePropertyMap::GetCustomProperty(
-    AtomicString property_name) {
+    AtomicString property_name) const {
   const CSSPropertyValueSet* inline_style = owner_element_->InlineStyle();
   return inline_style ? inline_style->GetPropertyCSSValue(property_name)
                       : nullptr;
@@ -79,7 +80,7 @@ void InlineStylePropertyMap::ForEachProperty(
 }
 
 String InlineStylePropertyMap::SerializationForShorthand(
-    const CSSProperty& property) {
+    const CSSProperty& property) const {
   DCHECK(property.IsShorthand());
   if (const CSSPropertyValueSet* inline_style = owner_element_->InlineStyle()) {
     return StylePropertySerializer(*inline_style)

@@ -44,7 +44,7 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
     waitable_event.Wait();
   }
 
-  void CheckCustomProperties(PaintWorkletStylePropertyMap* map,
+  void CheckCustomProperties(const PaintWorkletStylePropertyMap* map,
                              DummyExceptionStateForTesting& exception_state) {
     const CSSStyleValue* foo = map->get(nullptr, "--foo", exception_state);
     ASSERT_NE(nullptr, foo);
@@ -71,7 +71,7 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
     EXPECT_FALSE(exception_state.HadException());
   }
 
-  void CheckNativeProperties(PaintWorkletStylePropertyMap* map,
+  void CheckNativeProperties(const PaintWorkletStylePropertyMap* map,
                              DummyExceptionStateForTesting& exception_state) {
     map->get(nullptr, "color", exception_state);
     EXPECT_FALSE(exception_state.HadException());
@@ -100,7 +100,7 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
     DCHECK(!IsMainThread());
     thread_->InitializeOnThread();
 
-    PaintWorkletStylePropertyMap* map = input->StyleMap();
+    const PaintWorkletStylePropertyMap* map = input->StyleMap();
     DCHECK(map);
     DummyExceptionStateForTesting exception_state;
     CheckNativeProperties(map, exception_state);
@@ -159,7 +159,7 @@ TEST_F(PaintWorkletStylePropertyMapTest, NativePropertyAccessors) {
   UpdateAllLifecyclePhasesForTest();
   Node* node = PageNode();
 
-  PaintWorkletStylePropertyMap* map =
+  const PaintWorkletStylePropertyMap* map =
       MakeGarbageCollected<PaintWorkletStylePropertyMap>(
           GetDocument(), node->ComputedStyleRef(), node, native_properties,
           empty_custom_properties);
@@ -187,7 +187,7 @@ TEST_F(PaintWorkletStylePropertyMapTest, CustomPropertyAccessors) {
   UpdateAllLifecyclePhasesForTest();
   Node* node = PageNode();
 
-  PaintWorkletStylePropertyMap* map =
+  const PaintWorkletStylePropertyMap* map =
       MakeGarbageCollected<PaintWorkletStylePropertyMap>(
           GetDocument(), node->ComputedStyleRef(), node,
           empty_native_properties, custom_properties);

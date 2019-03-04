@@ -21,35 +21,35 @@ class CORE_EXPORT StylePropertyMapReadOnlyMainThread
 
   CSSStyleValue* get(const ExecutionContext*,
                      const String& property_name,
-                     ExceptionState&) override;
+                     ExceptionState&) const override;
   CSSStyleValueVector getAll(const ExecutionContext*,
                              const String& property_name,
-                             ExceptionState&) override;
+                             ExceptionState&) const override;
   bool has(const ExecutionContext*,
            const String& property_name,
-           ExceptionState&) override;
+           ExceptionState&) const override;
 
-  unsigned int size() override = 0;
+  unsigned int size() const override = 0;
 
  protected:
   StylePropertyMapReadOnlyMainThread() = default;
 
-  virtual const CSSValue* GetProperty(CSSPropertyID) = 0;
-  virtual const CSSValue* GetCustomProperty(AtomicString) = 0;
+  virtual const CSSValue* GetProperty(CSSPropertyID) const = 0;
+  virtual const CSSValue* GetCustomProperty(AtomicString) const = 0;
 
   using IterationCallback =
       std::function<void(const CSSPropertyName&, const CSSValue&)>;
   virtual void ForEachProperty(const IterationCallback&) = 0;
 
-  virtual String SerializationForShorthand(const CSSProperty&) = 0;
+  virtual String SerializationForShorthand(const CSSProperty&) const = 0;
 
   const CSSValue* GetCustomProperty(const ExecutionContext&,
-                                    const AtomicString&);
+                                    const AtomicString&) const;
 
  private:
   IterationSource* StartIteration(ScriptState*, ExceptionState&) override;
 
-  CSSStyleValue* GetShorthandProperty(const CSSProperty&);
+  CSSStyleValue* GetShorthandProperty(const CSSProperty&) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StylePropertyMapReadOnlyMainThread);

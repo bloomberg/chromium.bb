@@ -38,15 +38,15 @@ class CORE_EXPORT PrepopulatedComputedStylePropertyMap
   // Updates the values of the properties based on the new computed style.
   void UpdateStyle(const Document&, const ComputedStyle&);
 
-  unsigned size() override;
+  unsigned size() const override;
   void Trace(blink::Visitor*) override;
 
  protected:
-  const CSSValue* GetProperty(CSSPropertyID) override;
-  const CSSValue* GetCustomProperty(AtomicString) override;
+  const CSSValue* GetProperty(CSSPropertyID) const override;
+  const CSSValue* GetCustomProperty(AtomicString) const override;
   void ForEachProperty(const IterationCallback&) override;
 
-  String SerializationForShorthand(const CSSProperty&) override;
+  String SerializationForShorthand(const CSSProperty&) const override;
 
  private:
   void UpdateNativeProperty(const ComputedStyle&, CSSPropertyID);

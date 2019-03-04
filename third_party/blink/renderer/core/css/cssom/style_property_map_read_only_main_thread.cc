@@ -61,7 +61,7 @@ class StylePropertyMapIterationSource final
 CSSStyleValue* StylePropertyMapReadOnlyMainThread::get(
     const ExecutionContext* execution_context,
     const String& property_name,
-    ExceptionState& exception_state) {
+    ExceptionState& exception_state) const {
   base::Optional<CSSPropertyName> name = CSSPropertyName::From(property_name);
 
   if (!name) {
@@ -94,7 +94,7 @@ CSSStyleValue* StylePropertyMapReadOnlyMainThread::get(
 CSSStyleValueVector StylePropertyMapReadOnlyMainThread::getAll(
     const ExecutionContext* execution_context,
     const String& property_name,
-    ExceptionState& exception_state) {
+    ExceptionState& exception_state) const {
   base::Optional<CSSPropertyName> name = CSSPropertyName::From(property_name);
 
   if (!name) {
@@ -123,13 +123,13 @@ CSSStyleValueVector StylePropertyMapReadOnlyMainThread::getAll(
 bool StylePropertyMapReadOnlyMainThread::has(
     const ExecutionContext* execution_context,
     const String& property_name,
-    ExceptionState& exception_state) {
+    ExceptionState& exception_state) const {
   return !getAll(execution_context, property_name, exception_state).IsEmpty();
 }
 
 const CSSValue* StylePropertyMapReadOnlyMainThread::GetCustomProperty(
     const ExecutionContext& execution_context,
-    const AtomicString& property_name) {
+    const AtomicString& property_name) const {
   const CSSValue* value = GetCustomProperty(property_name);
 
   const auto* document = DynamicTo<Document>(execution_context);
@@ -169,7 +169,7 @@ StylePropertyMapReadOnlyMainThread::StartIteration(ScriptState* script_state,
 }
 
 CSSStyleValue* StylePropertyMapReadOnlyMainThread::GetShorthandProperty(
-    const CSSProperty& property) {
+    const CSSProperty& property) const {
   DCHECK(property.IsShorthand());
   const auto serialization = SerializationForShorthand(property);
   if (serialization.IsEmpty())

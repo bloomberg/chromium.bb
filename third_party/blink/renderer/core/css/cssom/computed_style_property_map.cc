@@ -163,7 +163,7 @@ const CSSValue* ComputedTransform(const ComputedStyle& style) {
 
 }  // namespace
 
-unsigned int ComputedStylePropertyMap::size() {
+unsigned int ComputedStylePropertyMap::size() const {
   const ComputedStyle* style = UpdateStyle();
   if (!style)
     return 0;
@@ -202,7 +202,7 @@ Node* ComputedStylePropertyMap::StyledNode() const {
   return nullptr;
 }
 
-const ComputedStyle* ComputedStylePropertyMap::UpdateStyle() {
+const ComputedStyle* ComputedStylePropertyMap::UpdateStyle() const {
   Node* node = StyledNode();
   if (!node || !node->InActiveDocument())
     return nullptr;
@@ -225,7 +225,7 @@ const ComputedStyle* ComputedStylePropertyMap::UpdateStyle() {
 }
 
 const CSSValue* ComputedStylePropertyMap::GetProperty(
-    CSSPropertyID property_id) {
+    CSSPropertyID property_id) const {
   const ComputedStyle* style = UpdateStyle();
   if (!style)
     return nullptr;
@@ -244,7 +244,7 @@ const CSSValue* ComputedStylePropertyMap::GetProperty(
 }
 
 const CSSValue* ComputedStylePropertyMap::GetCustomProperty(
-    AtomicString property_name) {
+    AtomicString property_name) const {
   const ComputedStyle* style = UpdateStyle();
   if (!style)
     return nullptr;
@@ -290,7 +290,7 @@ void ComputedStylePropertyMap::ForEachProperty(
 }
 
 String ComputedStylePropertyMap::SerializationForShorthand(
-    const CSSProperty& property) {
+    const CSSProperty& property) const {
   DCHECK(property.IsShorthand());
   const ComputedStyle* style = UpdateStyle();
   if (!style) {

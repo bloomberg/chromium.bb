@@ -21,11 +21,11 @@ class CORE_EXPORT InlineStylePropertyMap final : public StylePropertyMap {
     StylePropertyMap::Trace(visitor);
   }
 
-  unsigned int size() final;
+  unsigned int size() const final;
 
  protected:
-  const CSSValue* GetProperty(CSSPropertyID) override;
-  const CSSValue* GetCustomProperty(AtomicString) override;
+  const CSSValue* GetProperty(CSSPropertyID) const override;
+  const CSSValue* GetCustomProperty(AtomicString) const override;
   void ForEachProperty(const IterationCallback&) override;
   void SetProperty(CSSPropertyID, const CSSValue&) override;
   bool SetShorthandProperty(CSSPropertyID,
@@ -36,7 +36,7 @@ class CORE_EXPORT InlineStylePropertyMap final : public StylePropertyMap {
   void RemoveCustomProperty(const AtomicString&) override;
   void RemoveAllProperties() final;
 
-  String SerializationForShorthand(const CSSProperty&) final;
+  String SerializationForShorthand(const CSSProperty&) const final;
 
  private:
   Member<Element> owner_element_;
