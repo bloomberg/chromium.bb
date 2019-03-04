@@ -58,32 +58,33 @@ void IdentityAccessorImpl::AccessTokenRequest::OnRequestCompleted(
 
 // static
 void IdentityAccessorImpl::Create(mojom::IdentityAccessorRequest request,
+                                  IdentityManager* identity_manager,
                                   AccountTrackerService* account_tracker,
                                   SigninManagerBase* signin_manager,
                                   ProfileOAuth2TokenService* token_service) {
-  new IdentityAccessorImpl(std::move(request), account_tracker, signin_manager,
-                           token_service);
+  new IdentityAccessorImpl(std::move(request), identity_manager,
+                           account_tracker, signin_manager, token_service);
 }
 
 IdentityAccessorImpl::IdentityAccessorImpl(
     mojom::IdentityAccessorRequest request,
+    IdentityManager* identity_manager,
     AccountTrackerService* account_tracker,
     SigninManagerBase* signin_manager,
     ProfileOAuth2TokenService* token_service)
     : binding_(this, std::move(request)),
+      identity_manager_(identity_manager),
       account_tracker_(account_tracker),
       signin_manager_(signin_manager),
       token_service_(token_service) {
   binding_.set_connection_error_handler(base::BindRepeating(
       &IdentityAccessorImpl::OnConnectionError, base::Unretained(this)));
 
-  token_service_->AddObserver(this);
-  signin_manager_->AddObserver(this);
+  identity_manager_->AddObserver(this);
 }
 
 IdentityAccessorImpl::~IdentityAccessorImpl() {
-  token_service_->RemoveObserver(this);
-  signin_manager_->RemoveObserver(this);
+  identity_manager_->RemoveObserver(this);
   binding_.Close();
 }
 
@@ -137,14 +138,14 @@ void IdentityAccessorImpl::GetAccessToken(const std::string& account_id,
       std::move(access_token_request);
 }
 
-void IdentityAccessorImpl::OnRefreshTokenAvailable(
-    const std::string& account_id) {
-  OnAccountStateChange(account_id);
+void IdentityAccessorImpl::OnRefreshTokenUpdatedForAccount(
+    const CoreAccountInfo& account_info) {
+  OnAccountStateChange(account_info.account_id);
 }
 
-void IdentityAccessorImpl::GoogleSigninSucceeded(
-    const AccountInfo& account_info) {
-  OnAccountStateChange(account_info.account_id);
+void IdentityAccessorImpl::OnPrimaryAccountSet(
+    const CoreAccountInfo& primary_account_info) {
+  OnAccountStateChange(primary_account_info.account_id);
 }
 
 void IdentityAccessorImpl::OnAccountStateChange(const std::string& account_id) {

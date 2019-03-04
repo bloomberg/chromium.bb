@@ -6,6 +6,7 @@
 #define SERVICES_IDENTITY_IDENTITY_SERVICE_H_
 
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -19,7 +20,8 @@ namespace identity {
 
 class IdentityService : public service_manager::Service {
  public:
-  IdentityService(AccountTrackerService* account_tracker,
+  IdentityService(IdentityManager* identity_manager,
+                  AccountTrackerService* account_tracker,
                   SigninManagerBase* signin_manager,
                   ProfileOAuth2TokenService* token_service,
                   service_manager::mojom::ServiceRequest request);
@@ -41,6 +43,7 @@ class IdentityService : public service_manager::Service {
 
   service_manager::ServiceBinding service_binding_;
 
+  IdentityManager* identity_manager_;
   AccountTrackerService* account_tracker_;
   SigninManagerBase* signin_manager_;
   ProfileOAuth2TokenService* token_service_;

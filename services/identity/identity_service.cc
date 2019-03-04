@@ -4,16 +4,21 @@
 
 #include "services/identity/identity_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "services/identity/identity_accessor_impl.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace identity {
 
-IdentityService::IdentityService(AccountTrackerService* account_tracker,
+IdentityService::IdentityService(IdentityManager* identity_manager,
+                                 AccountTrackerService* account_tracker,
                                  SigninManagerBase* signin_manager,
                                  ProfileOAuth2TokenService* token_service,
                                  service_manager::mojom::ServiceRequest request)
     : service_binding_(this, std::move(request)),
+      identity_manager_(identity_manager),
       account_tracker_(account_tracker),
       signin_manager_(signin_manager),
       token_service_(token_service) {
@@ -50,8 +55,9 @@ void IdentityService::Create(mojom::IdentityAccessorRequest request) {
   if (IsShutDown())
     return;
 
-  IdentityAccessorImpl::Create(std::move(request), account_tracker_,
-                               signin_manager_, token_service_);
+  IdentityAccessorImpl::Create(std::move(request), identity_manager_,
+                               account_tracker_, signin_manager_,
+                               token_service_);
 }
 
 }  // namespace identity

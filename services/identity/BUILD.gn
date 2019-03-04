@@ -20,7 +20,7 @@ source_set("lib") {
     "//base",
     "//components/signin/core/browser:internals",
     "//components/signin/core/browser:shared",
-    "//services/identity/public/cpp:cpp_types",
+    "//services/identity/public/cpp:cpp",
     "//services/identity/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
