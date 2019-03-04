@@ -44,7 +44,7 @@ class RemoveCSSPropertyCommand final : public SimpleEditCommand {
 
   RemoveCSSPropertyCommand(Document&, Element*, CSSPropertyID);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   ~RemoveCSSPropertyCommand() override;

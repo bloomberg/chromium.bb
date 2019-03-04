@@ -43,7 +43,7 @@ class RemoveNodePreservingChildrenCommand final : public CompositeEditCommand {
   RemoveNodePreservingChildrenCommand(Node*,
                                       ShouldAssumeContentIsAlwaysEditable);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DoApply(EditingState*) override;

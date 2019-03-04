@@ -33,7 +33,7 @@ ColdModeSpellCheckRequester* ColdModeSpellCheckRequester::Create(
   return MakeGarbageCollected<ColdModeSpellCheckRequester>(frame);
 }
 
-void ColdModeSpellCheckRequester::Trace(blink::Visitor* visitor) {
+void ColdModeSpellCheckRequester::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(root_editable_);
   visitor->Trace(remaining_check_range_);

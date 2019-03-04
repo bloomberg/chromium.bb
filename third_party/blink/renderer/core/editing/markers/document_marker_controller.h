@@ -148,7 +148,7 @@ class CORE_EXPORT DocumentMarkerController final
   void InvalidateRectsForAllTextMatchMarkers();
   void InvalidateRectsForTextMatchMarkersInNode(const Text&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
 #ifndef NDEBUG
   void ShowMarkers() const;

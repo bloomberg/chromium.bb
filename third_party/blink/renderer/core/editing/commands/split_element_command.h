@@ -40,7 +40,7 @@ class SplitElementCommand final : public SimpleEditCommand {
 
   SplitElementCommand(Element*, Node* split_point_child);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DoApply(EditingState*) override;

@@ -40,7 +40,7 @@ class SplitTextNodeContainingElementCommand final
 
   SplitTextNodeContainingElementCommand(Text*, int offset);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DoApply(EditingState*) override;

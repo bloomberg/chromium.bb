@@ -177,7 +177,7 @@ class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
                    bool important,
                    SecureContextMode);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
   static EditingTriState SelectionHasStyle(const LocalFrame&,
                                            CSSPropertyID,
                                            const String& value);

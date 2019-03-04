@@ -44,7 +44,7 @@ class SetNodeAttributeCommand final : public SimpleEditCommand {
                           const QualifiedName& attribute,
                           const AtomicString& value);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DoApply(EditingState*) override;

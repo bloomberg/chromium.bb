@@ -52,7 +52,7 @@ class CORE_EXPORT SelectionController final
 
   explicit SelectionController(LocalFrame&);
   virtual ~SelectionController();
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   bool HandleMousePressEvent(const MouseEventWithHitTestResults&);
   void HandleMouseDraggedEvent(const MouseEventWithHitTestResults&,

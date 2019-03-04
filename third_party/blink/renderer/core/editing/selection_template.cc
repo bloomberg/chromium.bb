@@ -49,7 +49,7 @@ bool SelectionTemplate<Strategy>::operator!=(
 }
 
 template <typename Strategy>
-void SelectionTemplate<Strategy>::Trace(blink::Visitor* visitor) {
+void SelectionTemplate<Strategy>::Trace(Visitor* visitor) {
   visitor->Trace(base_);
   visitor->Trace(extent_);
 }

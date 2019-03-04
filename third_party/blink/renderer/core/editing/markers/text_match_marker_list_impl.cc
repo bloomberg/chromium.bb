@@ -71,7 +71,7 @@ bool TextMatchMarkerListImpl::ShiftMarkers(const String&,
       &markers_, offset, old_length, new_length);
 }
 
-void TextMatchMarkerListImpl::Trace(blink::Visitor* visitor) {
+void TextMatchMarkerListImpl::Trace(Visitor* visitor) {
   visitor->Trace(markers_);
   DocumentMarkerList::Trace(visitor);
 }

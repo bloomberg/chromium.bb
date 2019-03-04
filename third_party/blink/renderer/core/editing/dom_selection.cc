@@ -846,7 +846,7 @@ void DOMSelection::AddConsoleWarning(const String& message) {
   }
 }
 
-void DOMSelection::Trace(blink::Visitor* visitor) {
+void DOMSelection::Trace(Visitor* visitor) {
   visitor->Trace(tree_scope_);
   ScriptWrappable::Trace(visitor);
   ContextClient::Trace(visitor);

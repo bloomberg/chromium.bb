@@ -599,7 +599,7 @@ void SpellChecker::DidAttachDocument(Document* document) {
   idle_spell_check_controller_->DidAttachDocument(document);
 }
 
-void SpellChecker::Trace(blink::Visitor* visitor) {
+void SpellChecker::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(spell_check_requester_);
   visitor->Trace(idle_spell_check_controller_);

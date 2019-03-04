@@ -277,7 +277,7 @@ class CORE_EXPORT FrameSelection final
   LayoutSelectionStatus ComputeLayoutSelectionStatus(
       const NGPaintFragment&) const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class CaretDisplayItemClientTest;

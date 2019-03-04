@@ -68,7 +68,7 @@ class DragCaret final : public GarbageCollectedFinalized<DragCaret>,
   void SetCaretPosition(const PositionWithAffinity&);
   void Clear() { SetCaretPosition(PositionWithAffinity()); }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // Implementations of |SynchronousMutationObserver|

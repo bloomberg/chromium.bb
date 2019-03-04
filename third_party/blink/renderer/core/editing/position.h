@@ -221,7 +221,7 @@ class PositionTemplate {
   void ShowTreeForThisInFlatTree() const;
 #endif
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   bool IsAfterAnchorOrAfterChildren() const {

@@ -36,7 +36,7 @@ class ColdModeSpellCheckRequester
   void ClearProgress();
   bool FullyChecked() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   LocalFrame& GetFrame() const { return *frame_; }
