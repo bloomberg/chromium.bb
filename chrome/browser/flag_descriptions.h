@@ -1379,9 +1379,6 @@ extern const char kEnableContentSuggestionsThumbnailDominantColorDescription[];
 extern const char kEnableCustomContextMenuName[];
 extern const char kEnableCustomContextMenuDescription[];
 
-extern const char kEnableOmniboxClipboardProviderName[];
-extern const char kEnableOmniboxClipboardProviderDescription[];
-
 extern const char kEnableNtpAssetDownloadSuggestionsName[];
 extern const char kEnableNtpAssetDownloadSuggestionsDescription[];
 
