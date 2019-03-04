@@ -59,10 +59,6 @@ gfx::Image GetSizedAvatarIcon(const gfx::Image& image,
                               int width,
                               int height);
 
-// Returns a version of |image| suitable for use in menus.
-gfx::Image GetAvatarIconForMenu(const gfx::Image& image,
-                                bool is_rectangle);
-
 // Returns a version of |image| suitable for use in WebUI.
 gfx::Image GetAvatarIconForWebUI(const gfx::Image& image,
                                  bool is_rectangle);

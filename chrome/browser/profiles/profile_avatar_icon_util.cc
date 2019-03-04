@@ -289,12 +289,6 @@ gfx::Image GetSizedAvatarIcon(const gfx::Image& image,
                             profiles::SHAPE_SQUARE);
 }
 
-gfx::Image GetAvatarIconForMenu(const gfx::Image& image,
-                                bool is_rectangle) {
-  return GetSizedAvatarIcon(
-      image, is_rectangle, kAvatarIconWidth, kAvatarIconHeight);
-}
-
 gfx::Image GetAvatarIconForWebUI(const gfx::Image& image,
                                  bool is_rectangle) {
   return GetSizedAvatarIcon(image, is_rectangle,
