@@ -7,7 +7,7 @@
 
 #include "content/browser/renderer_host/media/video_capture_provider.h"
 #include "content/public/browser/video_capture_device_launcher.h"
-#include "services/video_capture/public/mojom/video_source.mojom.h"
+#include "services/video_capture/public/mojom/device.mojom.h"
 
 namespace content {
 
@@ -15,10 +15,8 @@ namespace content {
 // service.
 class ServiceLaunchedVideoCaptureDevice : public LaunchedVideoCaptureDevice {
  public:
-  ServiceLaunchedVideoCaptureDevice(
-      video_capture::mojom::VideoSourcePtr source,
-      video_capture::mojom::PushVideoStreamSubscriptionPtr subscription,
-      base::OnceClosure connection_lost_cb);
+  ServiceLaunchedVideoCaptureDevice(video_capture::mojom::DevicePtr device,
+                                    base::OnceClosure connection_lost_cb);
   ~ServiceLaunchedVideoCaptureDevice() override;
 
   // LaunchedVideoCaptureDevice implementation.
@@ -39,7 +37,7 @@ class ServiceLaunchedVideoCaptureDevice : public LaunchedVideoCaptureDevice {
   void OnUtilizationReport(int frame_feedback_id, double utilization) override;
 
  private:
-  void OnLostConnectionToSourceOrSubscription();
+  void OnLostConnectionToDevice();
   void OnGetPhotoStateResponse(
       media::VideoCaptureDevice::GetPhotoStateCallback callback,
       media::mojom::PhotoStatePtr capabilities) const;
@@ -50,8 +48,7 @@ class ServiceLaunchedVideoCaptureDevice : public LaunchedVideoCaptureDevice {
       media::VideoCaptureDevice::TakePhotoCallback callback,
       media::mojom::BlobPtr blob);
 
-  video_capture::mojom::VideoSourcePtr source_;
-  video_capture::mojom::PushVideoStreamSubscriptionPtr subscription_;
+  video_capture::mojom::DevicePtr device_;
   base::OnceClosure connection_lost_cb_;
   base::SequenceChecker sequence_checker_;
 };

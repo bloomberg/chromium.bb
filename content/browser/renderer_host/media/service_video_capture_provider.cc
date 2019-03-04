@@ -59,7 +59,7 @@ ServiceVideoCaptureProvider::ServiceVideoCaptureProvider(
     : connector_(connector ? connector->Clone() : nullptr),
       create_accelerator_factory_cb_(std::move(create_accelerator_factory_cb)),
       emit_log_message_cb_(std::move(emit_log_message_cb)),
-      launcher_has_connected_to_source_provider_(false),
+      launcher_has_connected_to_device_factory_(false),
       service_listener_binding_(this),
       weak_ptr_factory_(this) {
   base::PostTaskWithTraits(
@@ -86,7 +86,7 @@ ServiceVideoCaptureProvider::CreateDeviceLauncher() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   return std::make_unique<ServiceVideoCaptureDeviceLauncher>(
       base::BindRepeating(
-          &ServiceVideoCaptureProvider::OnLauncherConnectingToSourceProvider,
+          &ServiceVideoCaptureProvider::OnLauncherConnectingToDeviceFactory,
           weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -106,7 +106,7 @@ void ServiceVideoCaptureProvider::OnServiceStarted(
   mojo::MakeStrongBinding(
       std::make_unique<VirtualVideoCaptureDevicesChangedObserver>(),
       mojo::MakeRequest(&observer));
-  service_connection->source_provider()->RegisterVirtualDevicesChangedObserver(
+  service_connection->device_factory()->RegisterVirtualDevicesChangedObserver(
       std::move(observer),
       true /*raise_event_if_virtual_devices_already_present*/);
 }
@@ -144,14 +144,14 @@ void ServiceVideoCaptureProvider::RegisterServiceListenerOnIOThread() {
   service_manager->AddListener(std::move(listener));
 }
 
-void ServiceVideoCaptureProvider::OnLauncherConnectingToSourceProvider(
-    scoped_refptr<RefCountedVideoSourceProvider>* out_provider) {
+void ServiceVideoCaptureProvider::OnLauncherConnectingToDeviceFactory(
+    scoped_refptr<RefCountedVideoCaptureFactory>* out_factory) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  launcher_has_connected_to_source_provider_ = true;
-  *out_provider = LazyConnectToService();
+  launcher_has_connected_to_device_factory_ = true;
+  *out_factory = LazyConnectToService();
 }
 
-scoped_refptr<RefCountedVideoSourceProvider>
+scoped_refptr<RefCountedVideoCaptureFactory>
 ServiceVideoCaptureProvider::LazyConnectToService() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
@@ -163,7 +163,7 @@ ServiceVideoCaptureProvider::LazyConnectToService() {
   video_capture::uma::LogVideoCaptureServiceEvent(
       video_capture::uma::BROWSER_CONNECTING_TO_SERVICE);
   if (time_of_last_uninitialize_ != base::TimeTicks()) {
-    if (launcher_has_connected_to_source_provider_) {
+    if (launcher_has_connected_to_device_factory_) {
       video_capture::uma::LogDurationUntilReconnectAfterCapture(
           base::TimeTicks::Now() - time_of_last_uninitialize_);
     } else {
@@ -172,7 +172,7 @@ ServiceVideoCaptureProvider::LazyConnectToService() {
     }
   }
 
-  launcher_has_connected_to_source_provider_ = false;
+  launcher_has_connected_to_device_factory_ = false;
   time_of_last_connect_ = base::TimeTicks::Now();
 
   video_capture::mojom::AcceleratorFactoryPtr accelerator_factory;
@@ -189,14 +189,14 @@ ServiceVideoCaptureProvider::LazyConnectToService() {
 
   device_factory_provider->InjectGpuDependencies(
       std::move(accelerator_factory));
-  video_capture::mojom::VideoSourceProviderPtr source_provider;
-  device_factory_provider->ConnectToVideoSourceProvider(
-      mojo::MakeRequest(&source_provider));
-  source_provider.set_connection_error_handler(base::BindOnce(
-      &ServiceVideoCaptureProvider::OnLostConnectionToSourceProvider,
+  video_capture::mojom::DeviceFactoryPtr device_factory;
+  device_factory_provider->ConnectToDeviceFactory(
+      mojo::MakeRequest(&device_factory));
+  device_factory.set_connection_error_handler(base::BindOnce(
+      &ServiceVideoCaptureProvider::OnLostConnectionToDeviceFactory,
       weak_ptr_factory_.GetWeakPtr()));
-  auto result = base::MakeRefCounted<RefCountedVideoSourceProvider>(
-      std::move(source_provider), std::move(device_factory_provider),
+  auto result = base::MakeRefCounted<RefCountedVideoCaptureFactory>(
+      std::move(device_factory), std::move(device_factory_provider),
       base::BindOnce(&ServiceVideoCaptureProvider::OnServiceConnectionClosed,
                      weak_ptr_factory_.GetWeakPtr(),
                      ReasonForDisconnect::kUnused));
@@ -211,7 +211,7 @@ void ServiceVideoCaptureProvider::GetDeviceInfosAsyncForRetry(
   auto service_connection = LazyConnectToService();
   // Use a ScopedCallbackRunner to make sure that |result_callback| gets
   // invoked with an empty result in case that the service drops the request.
-  service_connection->source_provider()->GetSourceInfos(
+  service_connection->device_factory()->GetDeviceInfos(
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(&ServiceVideoCaptureProvider::OnDeviceInfosReceived,
                          weak_ptr_factory_.GetWeakPtr(), service_connection,
@@ -220,7 +220,7 @@ void ServiceVideoCaptureProvider::GetDeviceInfosAsyncForRetry(
 }
 
 void ServiceVideoCaptureProvider::OnDeviceInfosReceived(
-    scoped_refptr<RefCountedVideoSourceProvider> service_connection,
+    scoped_refptr<RefCountedVideoCaptureFactory> service_connection,
     GetDeviceInfosCallback result_callback,
     int retry_count,
     const std::vector<media::VideoCaptureDeviceInfo>& infos) {
@@ -254,10 +254,10 @@ void ServiceVideoCaptureProvider::OnDeviceInfosReceived(
   base::ResetAndReturn(&result_callback).Run(infos);
 }
 
-void ServiceVideoCaptureProvider::OnLostConnectionToSourceProvider() {
+void ServiceVideoCaptureProvider::OnLostConnectionToDeviceFactory() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   emit_log_message_cb_.Run(
-      "ServiceVideoCaptureProvider::OnLostConnectionToSourceProvider");
+      "ServiceVideoCaptureProvider::OnLostConnectionToDeviceFactory");
   // This may indicate that the video capture service has crashed. Uninitialize
   // here, so that a new connection will be established when clients try to
   // reconnect.
@@ -272,7 +272,7 @@ void ServiceVideoCaptureProvider::OnServiceConnectionClosed(
   switch (reason) {
     case ReasonForDisconnect::kShutdown:
     case ReasonForDisconnect::kUnused:
-      if (launcher_has_connected_to_source_provider_) {
+      if (launcher_has_connected_to_device_factory_) {
         video_capture::uma::LogVideoCaptureServiceEvent(
             video_capture::uma::
                 BROWSER_CLOSING_CONNECTION_TO_SERVICE_AFTER_CAPTURE);

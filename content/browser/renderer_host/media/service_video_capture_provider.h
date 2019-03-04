@@ -7,7 +7,7 @@
 
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
-#include "content/browser/renderer_host/media/ref_counted_video_source_provider.h"
+#include "content/browser/renderer_host/media/ref_counted_video_capture_factory.h"
 #include "content/browser/renderer_host/media/video_capture_provider.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -66,31 +66,31 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider
   void RegisterServiceListenerOnIOThread();
   // Note, this needs to have void return value because of "weak_ptrs can only
   // bind to methods without return values".
-  void OnLauncherConnectingToSourceProvider(
-      scoped_refptr<RefCountedVideoSourceProvider>* out_provider);
-  // Discarding the returned RefCountedVideoSourceProvider indicates that the
+  void OnLauncherConnectingToDeviceFactory(
+      scoped_refptr<RefCountedVideoCaptureFactory>* out_factory);
+  // Discarding the returned RefCountedVideoCaptureFactory indicates that the
   // caller no longer requires the connection to the service and allows it to
   // disconnect.
-  scoped_refptr<RefCountedVideoSourceProvider> LazyConnectToService()
+  scoped_refptr<RefCountedVideoCaptureFactory> LazyConnectToService()
       WARN_UNUSED_RESULT;
 
   void GetDeviceInfosAsyncForRetry(GetDeviceInfosCallback result_callback,
                                    int retry_count);
   void OnDeviceInfosReceived(
-      scoped_refptr<RefCountedVideoSourceProvider> service_connection,
+      scoped_refptr<RefCountedVideoCaptureFactory> service_connection,
       GetDeviceInfosCallback result_callback,
       int retry_count,
       const std::vector<media::VideoCaptureDeviceInfo>& infos);
-  void OnLostConnectionToSourceProvider();
+  void OnLostConnectionToDeviceFactory();
   void OnServiceConnectionClosed(ReasonForDisconnect reason);
 
   std::unique_ptr<service_manager::Connector> connector_;
   CreateAcceleratorFactoryCallback create_accelerator_factory_cb_;
   base::RepeatingCallback<void(const std::string&)> emit_log_message_cb_;
 
-  base::WeakPtr<RefCountedVideoSourceProvider> weak_service_connection_;
+  base::WeakPtr<RefCountedVideoCaptureFactory> weak_service_connection_;
 
-  bool launcher_has_connected_to_source_provider_;
+  bool launcher_has_connected_to_device_factory_;
   base::TimeTicks time_of_last_connect_;
   base::TimeTicks time_of_last_uninitialize_;
 

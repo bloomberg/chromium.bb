@@ -20,26 +20,37 @@ namespace content {
 namespace {
 
 void ConcludeLaunchDeviceWithSuccess(
-    video_capture::mojom::VideoSourcePtr source,
-    video_capture::mojom::PushVideoStreamSubscriptionPtr subscription,
+    const media::VideoCaptureParams& params,
+    video_capture::mojom::DevicePtr device,
+    base::WeakPtr<media::VideoFrameReceiver> receiver,
     base::OnceClosure connection_lost_cb,
     VideoCaptureDeviceLauncher::Callbacks* callbacks,
     base::OnceClosure done_cb) {
-  subscription->Activate();
+  auto receiver_adapter =
+      std::make_unique<video_capture::ReceiverMediaToMojoAdapter>(
+          std::make_unique<media::VideoFrameReceiverOnTaskRunner>(
+              std::move(receiver), base::CreateSingleThreadTaskRunnerWithTraits(
+                                       {BrowserThread::IO})));
+  video_capture::mojom::ReceiverPtr receiver_proxy;
+  mojo::MakeStrongBinding<video_capture::mojom::Receiver>(
+      std::move(receiver_adapter), mojo::MakeRequest(&receiver_proxy));
+  media::VideoCaptureParams new_params = params;
+  new_params.power_line_frequency =
+      media::VideoCaptureDevice::GetPowerLineFrequency(params);
+  device->Start(new_params, std::move(receiver_proxy));
   callbacks->OnDeviceLaunched(
       std::make_unique<ServiceLaunchedVideoCaptureDevice>(
-          std::move(source), std::move(subscription),
-          std::move(connection_lost_cb)));
+          std::move(device), std::move(connection_lost_cb)));
   base::ResetAndReturn(&done_cb).Run();
 }
 
 void ConcludeLaunchDeviceWithFailure(
     bool abort_requested,
     media::VideoCaptureError error,
-    scoped_refptr<RefCountedVideoSourceProvider> service_connection,
+    scoped_refptr<RefCountedVideoCaptureFactory> device_factory,
     VideoCaptureDeviceLauncher::Callbacks* callbacks,
     base::OnceClosure done_cb) {
-  service_connection.reset();
+  device_factory.reset();
   if (abort_requested)
     callbacks->OnDeviceLaunchAborted();
   else
@@ -50,8 +61,8 @@ void ConcludeLaunchDeviceWithFailure(
 }  // anonymous namespace
 
 ServiceVideoCaptureDeviceLauncher::ServiceVideoCaptureDeviceLauncher(
-    ConnectToDeviceFactoryCB connect_to_source_provider_cb)
-    : connect_to_source_provider_cb_(std::move(connect_to_source_provider_cb)),
+    ConnectToDeviceFactoryCB connect_to_device_factory_cb)
+    : connect_to_device_factory_cb_(std::move(connect_to_device_factory_cb)),
       state_(State::READY_TO_LAUNCH),
       callbacks_(nullptr) {}
 
@@ -77,14 +88,16 @@ void ServiceVideoCaptureDeviceLauncher::LaunchDeviceAsync(
     return;
   }
 
-  connect_to_source_provider_cb_.Run(&service_connection_);
-  if (!service_connection_->source_provider().is_bound()) {
-    // This can happen when the connection to the service was lost.
+  connect_to_device_factory_cb_.Run(&device_factory_);
+  if (!device_factory_->device_factory().is_bound()) {
+    // This can happen when the ServiceVideoCaptureProvider owning
+    // |device_factory_| loses connection to the service process and resets
+    // |device_factory_|.
     ConcludeLaunchDeviceWithFailure(
         false,
         media::VideoCaptureError::
             kServiceDeviceLauncherLostConnectionToDeviceFactoryDuringDeviceStart,
-        std::move(service_connection_), callbacks, std::move(done_cb));
+        std::move(device_factory_), callbacks, std::move(done_cb));
     return;
   }
 
@@ -92,62 +105,32 @@ void ServiceVideoCaptureDeviceLauncher::LaunchDeviceAsync(
     std::ostringstream string_stream;
     string_stream
         << "ServiceVideoCaptureDeviceLauncher::LaunchDeviceAsync: Asking "
-           "video capture service to create source for device_id = "
+           "video capture service to create device for device_id = "
         << device_id;
     receiver->OnLog(string_stream.str());
   }
 
+  video_capture::mojom::DevicePtr device;
+  auto device_request = mojo::MakeRequest(&device);
   // Ownership of |done_cb| is moved to |this|. It is not sufficient to attach
-  // it to the callback passed to CreatePushSubscription(), because the
-  // connection to the service may get torn down before |callbacks| are
-  // invoked.
+  // it to the callback passed to |device_factory_->CreateDevice()|, because
+  // |device_factory_| may get torn down before the callback is invoked.
   done_cb_ = std::move(done_cb);
   callbacks_ = callbacks;
-  video_capture::mojom::VideoSourcePtr source;
-  service_connection_->source_provider()->GetVideoSource(
-      device_id, mojo::MakeRequest(&source));
-
-  auto receiver_adapter =
-      std::make_unique<video_capture::ReceiverMediaToMojoAdapter>(
-          std::make_unique<media::VideoFrameReceiverOnTaskRunner>(
-              std::move(receiver), base::CreateSingleThreadTaskRunnerWithTraits(
-                                       {BrowserThread::IO})));
-  video_capture::mojom::ReceiverPtr receiver_proxy;
-  mojo::MakeStrongBinding<video_capture::mojom::Receiver>(
-      std::move(receiver_adapter), mojo::MakeRequest(&receiver_proxy));
-
-  video_capture::mojom::PushVideoStreamSubscriptionPtr subscription;
-  // Create message pipe so that we can subsequently call
-  // subscription.set_connection_error_handler().
-  auto subscription_request = mojo::MakeRequest(&subscription);
   // Use of Unretained(this) is safe, because |done_cb_| guarantees that |this|
   // stays alive.
-  subscription.set_connection_error_handler(
+  device.set_connection_error_handler(
       base::BindOnce(&ServiceVideoCaptureDeviceLauncher::
                          OnConnectionLostWhileWaitingForCallback,
                      base::Unretained(this)));
-
-  // TODO(crbug.com/925083)
-  media::VideoCaptureParams new_params = params;
-  new_params.power_line_frequency =
-      media::VideoCaptureDevice::GetPowerLineFrequency(params);
-
-  // Note that we set |force_reopen_with_new_settings| to true in order
-  // to avoid the situation that a requests to open (or reopen) a device
-  // that has just been closed with different settings ends up getting the old
-  // settings, because from the perspective of the service, the device was still
-  // in use. In order to be able to set |force_reopen_with_new_settings|, we
-  // have to refactor code here and upstream to wait for a callback from the
-  // service indicating that the device closing is complete.
-  source->CreatePushSubscription(
-      std::move(receiver_proxy), new_params,
-      true /*force_reopen_with_new_settings*/, std::move(subscription_request),
+  device_factory_->device_factory()->CreateDevice(
+      device_id, std::move(device_request),
       base::BindOnce(
           // Use of Unretained |this| is safe, because |done_cb_| guarantees
           // that |this| stays alive.
-          &ServiceVideoCaptureDeviceLauncher::OnCreatePushSubscriptionCallback,
-          base::Unretained(this), std::move(source), std::move(subscription),
-          std::move(connection_lost_cb)));
+          &ServiceVideoCaptureDeviceLauncher::OnCreateDeviceCallback,
+          base::Unretained(this), params, std::move(device),
+          std::move(receiver), std::move(connection_lost_cb)));
   state_ = State::DEVICE_START_IN_PROGRESS;
 }
 
@@ -157,43 +140,40 @@ void ServiceVideoCaptureDeviceLauncher::AbortLaunch() {
     state_ = State::DEVICE_START_ABORTING;
 }
 
-void ServiceVideoCaptureDeviceLauncher::OnCreatePushSubscriptionCallback(
-    video_capture::mojom::VideoSourcePtr source,
-    video_capture::mojom::PushVideoStreamSubscriptionPtr subscription,
+void ServiceVideoCaptureDeviceLauncher::OnCreateDeviceCallback(
+    const media::VideoCaptureParams& params,
+    video_capture::mojom::DevicePtr device,
+    base::WeakPtr<media::VideoFrameReceiver> receiver,
     base::OnceClosure connection_lost_cb,
-    video_capture::mojom::CreatePushSubscriptionResultCode result_code,
-    const media::VideoCaptureParams& params) {
+    video_capture::mojom::DeviceAccessResultCode result_code) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(callbacks_);
   DCHECK(done_cb_);
-  subscription.set_connection_error_handler(base::DoNothing());
+  device.set_connection_error_handler(base::DoNothing());
   const bool abort_requested = (state_ == State::DEVICE_START_ABORTING);
   state_ = State::READY_TO_LAUNCH;
   Callbacks* callbacks = callbacks_;
   callbacks_ = nullptr;
   switch (result_code) {
-    case video_capture::mojom::CreatePushSubscriptionResultCode::
-        kCreatedWithRequestedSettings:  // Fall through.
-    case video_capture::mojom::CreatePushSubscriptionResultCode::
-        kCreatedWithDifferentSettings:
+    case video_capture::mojom::DeviceAccessResultCode::SUCCESS:
       if (abort_requested) {
-        subscription.reset();
-        source.reset();
-        service_connection_.reset();
+        device.reset();
+        device_factory_.reset();
         callbacks->OnDeviceLaunchAborted();
         base::ResetAndReturn(&done_cb_).Run();
         return;
       }
       ConcludeLaunchDeviceWithSuccess(
-          std::move(source), std::move(subscription),
+          params, std::move(device), std::move(receiver),
           std::move(connection_lost_cb), callbacks, std::move(done_cb_));
       return;
-    case video_capture::mojom::CreatePushSubscriptionResultCode::kFailed:
+    case video_capture::mojom::DeviceAccessResultCode::ERROR_DEVICE_NOT_FOUND:
+    case video_capture::mojom::DeviceAccessResultCode::NOT_INITIALIZED:
       ConcludeLaunchDeviceWithFailure(
           abort_requested,
           media::VideoCaptureError::
               kServiceDeviceLauncherServiceRespondedWithDeviceNotFound,
-          std::move(service_connection_), callbacks, std::move(done_cb_));
+          std::move(device_factory_), callbacks, std::move(done_cb_));
       return;
   }
 }
@@ -210,7 +190,7 @@ void ServiceVideoCaptureDeviceLauncher::
       abort_requested,
       media::VideoCaptureError::
           kServiceDeviceLauncherConnectionLostWhileWaitingForCallback,
-      std::move(service_connection_), callbacks, std::move(done_cb_));
+      std::move(device_factory_), callbacks, std::move(done_cb_));
 }
 
 }  // namespace content
