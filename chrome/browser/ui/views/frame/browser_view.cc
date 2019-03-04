@@ -166,6 +166,7 @@
 #include "ash/public/cpp/window_pin_type.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/window_properties.h"
+#include "chrome/browser/ui/views/frame/top_controls_slide_controller_chromeos.h"
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "ui/base/ui_base_features.h"
@@ -2466,10 +2467,13 @@ void BrowserView::InfoBarContainerStateChanged(bool is_animating) {
 void BrowserView::InitViews() {
   // TopControlsSlideController must be initialized here in InitViews() rather
   // than Init() as it depends on the browser frame being ready.
+#if defined(OS_CHROMEOS)
   if (IsBrowserTypeNormal()) {
     DCHECK(frame_);
-    top_controls_slide_controller_ = CreateTopControlsSlideController(this);
+    top_controls_slide_controller_ =
+        std::make_unique<TopControlsSlideControllerChromeOS>(this);
   }
+#endif
 
   GetWidget()->AddObserver(this);
 

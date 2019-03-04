@@ -2003,9 +2003,6 @@ extern const char kShowTouchHudDescription[];
 extern const char kSingleProcessMashName[];
 extern const char kSingleProcessMashDescription[];
 
-extern const char kSlideTopChromeWithPageScrollsName[];
-extern const char kSlideTopChromeWithPageScrollsDescription[];
-
 extern const char kSmartTextSelectionName[];
 extern const char kSmartTextSelectionDescription[];
 
