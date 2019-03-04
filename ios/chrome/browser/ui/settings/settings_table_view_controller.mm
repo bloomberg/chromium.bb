@@ -438,12 +438,8 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
       toSectionWithIdentifier:SectionIdentifierAdvanced];
   [model addItem:[self contentSettingsDetailItem]
       toSectionWithIdentifier:SectionIdentifierAdvanced];
-  if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    // When unified consent flag is enabled, the bandwidth settings is available
-    // under the Google services and sync settings.
-    [model addItem:[self bandwidthManagementDetailItem]
-        toSectionWithIdentifier:SectionIdentifierAdvanced];
-  }
+  [model addItem:[self bandwidthManagementDetailItem]
+      toSectionWithIdentifier:SectionIdentifierAdvanced];
 
   // Info Section
   [model addSectionWithIdentifier:SectionIdentifierInfo];
