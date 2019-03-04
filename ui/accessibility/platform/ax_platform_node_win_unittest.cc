@@ -3400,6 +3400,18 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertyValueFlowsFromMultiple) {
       child_node2, UIA_FlowsFromPropertyId, UIA_NamePropertyId, expected_names);
 }
 
+TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertyValueFrameworkId) {
+  AXNodeData root_ax_node_data;
+  root_ax_node_data.id = 0;
+  root_ax_node_data.role = ax::mojom::Role::kRootWebArea;
+  Init(root_ax_node_data);
+
+  ComPtr<IRawElementProviderSimple> root_raw_element_provider_simple =
+      GetRootIRawElementProviderSimple();
+  EXPECT_UIA_BSTR_EQ(root_raw_element_provider_simple,
+                     UIA_FrameworkIdPropertyId, L"Chrome");
+}
+
 TEST_F(AXPlatformNodeWinTest, TestGetPropertyValue_LabeledByTest) {
   AXNodeData root;
   root.role = ax::mojom::Role::kListItem;

@@ -3674,7 +3674,8 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_FrameworkIdPropertyId:
-      // TODO(suproteem)
+      V_VT(result) = VT_BSTR;
+      V_BSTR(result) = SysAllocString(FRAMEWORK_ID);
       break;
 
     case UIA_HasKeyboardFocusPropertyId:

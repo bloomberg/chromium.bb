@@ -131,10 +131,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_toolkitName(BSTR* toolkit_name) {
   if (!toolkit_name)
     return E_INVALIDARG;
 
-  // This is hard-coded; all products based on the Chromium engine
-  // will have the same toolkit name, so that assistive technology can
-  // detect any Chrome-based product.
-  *toolkit_name = SysAllocString(L"Chrome");
+  *toolkit_name = SysAllocString(FRAMEWORK_ID);
   DCHECK(*toolkit_name);
   return *toolkit_name ? S_OK : E_FAIL;
 }
