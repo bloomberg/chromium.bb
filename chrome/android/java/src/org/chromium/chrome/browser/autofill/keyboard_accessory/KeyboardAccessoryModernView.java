@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import android.content.Context;
+import android.support.annotation.Px;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.RecyclerView;
@@ -31,8 +32,8 @@ class KeyboardAccessoryModernView extends KeyboardAccessoryView {
      * uses the same offset as all other items.
      */
     private class StickyLastItemDecoration extends HorizontalDividerItemDecoration {
-        StickyLastItemDecoration() {
-            super(0);
+        StickyLastItemDecoration(@Px int minimalLeadingHorizontalMargin) {
+            super(minimalLeadingHorizontalMargin);
         }
 
         @Override
@@ -108,8 +109,10 @@ class KeyboardAccessoryModernView extends KeyboardAccessoryView {
 
         int pad = getResources().getDimensionPixelSize(R.dimen.keyboard_accessory_bar_item_padding);
         // Ensure the last element (although scrollable) is always end-aligned.
-        mBarItemsView.addItemDecoration(new StickyLastItemDecoration());
-        ViewCompat.setPaddingRelative(mBarItemsView, pad, 0, 0, 0);
+        mBarItemsView.addItemDecoration(new StickyLastItemDecoration(pad));
+
+        // Remove any paddings that might be inherited since this messes up the fading edge.
+        ViewCompat.setPaddingRelative(mBarItemsView, 0, 0, 0, 0);
     }
 
     @Override

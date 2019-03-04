@@ -106,13 +106,8 @@ class KeyboardAccessoryViewBinder {
             view.setVisible(model.get(VISIBLE));
         } else if (propertyKey == BOTTOM_OFFSET_PX) {
             view.setBottomOffset(model.get(BOTTOM_OFFSET_PX));
-        } else if (propertyKey == SHOW_KEYBOARD_CALLBACK) {
-            // No binding required.
-        } else if (propertyKey == KEYBOARD_TOGGLE_VISIBLE) {
-            // No binding required.
-        } else if (propertyKey == SHEET_TITLE) {
-            // No binding required.
-        } else if (propertyKey == TAB_LAYOUT_ITEM) {
+        } else if (propertyKey == SHOW_KEYBOARD_CALLBACK || propertyKey == KEYBOARD_TOGGLE_VISIBLE
+                || propertyKey == SHEET_TITLE || propertyKey == TAB_LAYOUT_ITEM) {
             // No binding required.
         } else {
             return false;

@@ -11,6 +11,7 @@ import android.support.v7.widget.RecyclerView;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.ui.modelutil.ListModel;
+import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModel.ReadableObjectPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
@@ -39,6 +40,15 @@ class KeyboardAccessoryProperties {
             new WritableObjectPropertyKey<>("tab_layout_item");
     static final WritableObjectPropertyKey<Runnable> SHOW_KEYBOARD_CALLBACK =
             new WritableObjectPropertyKey<>("keyboard_callback");
+
+    static PropertyModel.Builder defaultModelBuilder() {
+        return new PropertyModel
+                .Builder(BAR_ITEMS, VISIBLE, BOTTOM_OFFSET_PX, TAB_LAYOUT_ITEM,
+                        KEYBOARD_TOGGLE_VISIBLE, SHEET_TITLE, SHOW_KEYBOARD_CALLBACK)
+                .with(BAR_ITEMS, new ListModel<>())
+                .with(VISIBLE, false)
+                .with(KEYBOARD_TOGGLE_VISIBLE, false);
+    }
 
     /**
      * This class wraps data used in ViewHolders of the accessory bar's {@link RecyclerView}.
