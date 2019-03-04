@@ -8,12 +8,14 @@
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/identity/identity_service.h"
 #include "services/identity/public/cpp/account_state.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/identity/public/cpp/scope_set.h"
 #include "services/identity/public/mojom/account.mojom.h"
 #include "services/identity/public/mojom/constants.mojom.h"
@@ -44,17 +46,46 @@ class IdentityAccessorImplTest : public testing::Test {
                         nullptr,
                         signin::AccountConsistencyMethod::kDisabled),
 #endif
+        gaia_cookie_manager_service_(
+            &token_service_,
+            &signin_client_,
+            base::BindRepeating(
+                [](network::TestURLLoaderFactory* test_url_loader_factory)
+                    -> scoped_refptr<network::SharedURLLoaderFactory> {
+                  return test_url_loader_factory->GetSafeWeakWrapper();
+                },
+                signin_client_.test_url_loader_factory())),
+        identity_test_environment_(&pref_service_,
+                                   &account_tracker_,
+                                   &account_fetcher_,
+                                   &token_service_,
+                                   &signin_manager_,
+                                   &gaia_cookie_manager_service_,
+                                   signin_client_.test_url_loader_factory()),
         service_(
+            identity_test_environment_.identity_manager(),
             &account_tracker_,
             &signin_manager_,
             &token_service_,
             test_connector_factory_.RegisterInstance(mojom::kServiceName)) {
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
+    AccountFetcherService::RegisterPrefs(pref_service_.registry());
     ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
     SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
     SigninManagerBase::RegisterPrefs(pref_service_.registry());
 
     account_tracker_.Initialize(&pref_service_, base::FilePath());
+    account_fetcher_.Initialize(&signin_client_, &token_service_,
+                                &account_tracker_,
+                                std::make_unique<TestImageDecoder>());
+  }
+
+  ~IdentityAccessorImplTest() override {
+    token_service_.Shutdown();
+    signin_client_.Shutdown();
+    account_tracker_.Shutdown();
+    gaia_cookie_manager_service_.Shutdown();
+    account_fetcher_.Shutdown();
   }
 
   void TearDown() override {
@@ -150,6 +181,7 @@ class IdentityAccessorImplTest : public testing::Test {
  private:
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   AccountTrackerService account_tracker_;
+  FakeAccountFetcherService account_fetcher_;
   TestSigninClient signin_client_;
   FakeProfileOAuth2TokenService token_service_;
 #if defined(OS_CHROMEOS)
@@ -157,7 +189,9 @@ class IdentityAccessorImplTest : public testing::Test {
 #else
   SigninManager signin_manager_;
 #endif
+  GaiaCookieManagerService gaia_cookie_manager_service_;
 
+  identity::IdentityTestEnvironment identity_test_environment_;
   service_manager::TestConnectorFactory test_connector_factory_;
   IdentityService service_;
 

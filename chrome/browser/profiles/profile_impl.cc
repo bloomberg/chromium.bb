@@ -1254,6 +1254,7 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
     service_manager::mojom::ServiceRequest request) {
   if (service_name == identity::mojom::kServiceName) {
     return std::make_unique<identity::IdentityService>(
+        IdentityManagerFactory::GetForProfile(this),
         AccountTrackerServiceFactory::GetForProfile(this),
         SigninManagerFactory::GetForProfile(this),
         ProfileOAuth2TokenServiceFactory::GetForProfile(this),
