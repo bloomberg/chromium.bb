@@ -150,7 +150,7 @@ void DWriteFontLookupTableBuilder::InitializeDirectWrite() {
 }
 
 bool DWriteFontLookupTableBuilder::EnsureFontUniqueNameTable() {
-  TRACE_EVENT0("dwrite",
+  TRACE_EVENT0("dwrite,fonts",
                "DWriteFontLookupTableBuilder::EnsureFontUniqueNameTable");
   DCHECK(base::FeatureList::IsEnabled(features::kFontSrcLocalMatching));
   base::ScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
@@ -176,7 +176,7 @@ void DWriteFontLookupTableBuilder::ScheduleBuildFontUniqueNameTable() {
 }
 
 void DWriteFontLookupTableBuilder::BuildFontUniqueNameTable() {
-  TRACE_EVENT0("dwrite",
+  TRACE_EVENT0("dwrite,fonts",
                "DWriteFontLookupTableBuilder::BuildFontUniqueNameTable");
   // The table must only be built once.
   DCHECK(!font_table_built_.IsSignaled());
@@ -232,7 +232,7 @@ DWriteFontLookupTableBuilder::ExtractPathAndNamesFromFamily(
     base::TimeTicks start_time,
     SlowDownMode slow_down_mode_for_testing,
     base::WaitableEvent* hang_event_for_testing) {
-  TRACE_EVENT0("dwrite",
+  TRACE_EVENT0("dwrite,fonts",
                "DWriteFontLookupTableBuilder::ExtractPathAndNamesFromFamily");
 
   static base::NoDestructor<base::string16> windows_fonts_path(
@@ -345,7 +345,7 @@ DWriteFontLookupTableBuilder::ExtractPathAndNamesFromFamily(
 void DWriteFontLookupTableBuilder::AppendFamilyResultAndFinalizeIfNeeded(
     const FamilyResult& family_result) {
   TRACE_EVENT0(
-      "dwrite",
+      "dwrite,fonts",
       "DWriteFontLookupTableBuilder::AppendFamilyResultAndFinalizeIfNeeded");
 
   outstanding_family_results_--;
@@ -378,7 +378,8 @@ void DWriteFontLookupTableBuilder::AppendFamilyResultAndFinalizeIfNeeded(
 }
 
 void DWriteFontLookupTableBuilder::FinalizeFontTable() {
-  TRACE_EVENT0("dwrite", "DWriteFontLookupTableBuilder::FinalizeFontTable");
+  TRACE_EVENT0("dwrite,fonts",
+               "DWriteFontLookupTableBuilder::FinalizeFontTable");
   DCHECK(!font_table_built_.IsSignaled());
   ScopedAutoSignal auto_signal(&font_table_built_);
 
