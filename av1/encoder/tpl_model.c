@@ -325,9 +325,6 @@ static void tpl_model_update_b(TplDepFrame *tpl_frame, TplDepStats *tpl_stats,
                          (ref_mi_col + idx)];
 
           des_stats->mc_flow += (mc_flow * overlap_area) / pix_num;
-          des_stats->mc_ref_cost +=
-              ((tpl_stats->intra_cost - tpl_stats->inter_cost) * overlap_area) /
-              pix_num;
           assert(overlap_area >= 0);
         }
       }
