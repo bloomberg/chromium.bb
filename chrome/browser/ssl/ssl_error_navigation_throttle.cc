@@ -108,19 +108,16 @@ void SSLErrorNavigationThrottle::QueueShowInterstitial(
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter) {
-  // We don't know whether SSLErrorHandler will call the ShowInterstitial()
-  // callback synchronously, so we post a task that will run after the caller
-  // defers the navigation. This ensures that ShowInterstitial() can always
-  // safely call CancelDeferredNavigation().
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          std::move(handle_ssl_error_callback), web_contents,
-          net::MapCertStatusToNetError(cert_status), ssl_info, request_url,
-          false /* expired_previous_decision */, std::move(ssl_cert_reporter),
-          base::Callback<void(content::CertificateRequestResultType)>(),
-          base::BindOnce(&SSLErrorNavigationThrottle::ShowInterstitial,
-                         weak_ptr_factory_.GetWeakPtr())));
+  // It is safe to call this without posting because SSLErrorHandler will always
+  // call ShowInterstitial asynchronously, giving the throttle time to defer the
+  // navigation.
+  std::move(handle_ssl_error_callback)
+      .Run(web_contents, net::MapCertStatusToNetError(cert_status), ssl_info,
+           request_url, false /* expired_previous_decision */,
+           std::move(ssl_cert_reporter),
+           base::Callback<void(content::CertificateRequestResultType)>(),
+           base::BindOnce(&SSLErrorNavigationThrottle::ShowInterstitial,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SSLErrorNavigationThrottle::ShowInterstitial(
