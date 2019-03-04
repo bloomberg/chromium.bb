@@ -320,9 +320,9 @@ bool Range::isPointInRange(Node* ref_node,
          !exception_state.HadException();
 }
 
-short Range::comparePoint(Node* ref_node,
-                          unsigned offset,
-                          ExceptionState& exception_state) const {
+int16_t Range::comparePoint(Node* ref_node,
+                            unsigned offset,
+                            ExceptionState& exception_state) const {
   // http://developer.mozilla.org/en/docs/DOM:range.comparePoint
   // This method returns -1, 0 or 1 depending on if the point described by the
   // refNode node and an offset within the node is before, same as, or after the
@@ -357,9 +357,9 @@ short Range::comparePoint(Node* ref_node,
   return 0;
 }
 
-short Range::compareBoundaryPoints(unsigned how,
-                                   const Range* source_range,
-                                   ExceptionState& exception_state) const {
+int16_t Range::compareBoundaryPoints(unsigned how,
+                                     const Range* source_range,
+                                     ExceptionState& exception_state) const {
   if (!(how == kStartToStart || how == kStartToEnd || how == kEndToEnd ||
         how == kEndToStart)) {
     exception_state.ThrowDOMException(
@@ -408,14 +408,14 @@ short Range::compareBoundaryPoints(unsigned how,
   return 0;
 }
 
-short Range::compareBoundaryPoints(Node* container_a,
-                                   unsigned offset_a,
-                                   Node* container_b,
-                                   unsigned offset_b,
-                                   ExceptionState& exception_state) {
+int16_t Range::compareBoundaryPoints(Node* container_a,
+                                     unsigned offset_a,
+                                     Node* container_b,
+                                     unsigned offset_b,
+                                     ExceptionState& exception_state) {
   bool disconnected = false;
-  short result = ComparePositionsInDOMTree(container_a, offset_a, container_b,
-                                           offset_b, &disconnected);
+  int16_t result = ComparePositionsInDOMTree(container_a, offset_a, container_b,
+                                             offset_b, &disconnected);
   if (disconnected) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kWrongDocumentError,
@@ -425,9 +425,9 @@ short Range::compareBoundaryPoints(Node* container_a,
   return result;
 }
 
-short Range::compareBoundaryPoints(const RangeBoundaryPoint& boundary_a,
-                                   const RangeBoundaryPoint& boundary_b,
-                                   ExceptionState& exception_state) {
+int16_t Range::compareBoundaryPoints(const RangeBoundaryPoint& boundary_a,
+                                     const RangeBoundaryPoint& boundary_b,
+                                     ExceptionState& exception_state) {
   return compareBoundaryPoints(&boundary_a.Container(), boundary_a.Offset(),
                                &boundary_b.Container(), boundary_b.Offset(),
                                exception_state);

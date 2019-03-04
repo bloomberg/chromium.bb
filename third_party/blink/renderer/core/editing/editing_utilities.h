@@ -229,20 +229,21 @@ CORE_EXPORT int NextGraphemeBoundaryOf(const Node&, int current);
 
 // |disconnected| is optional output parameter having true if specified
 // positions don't have common ancestor.
-int ComparePositionsInDOMTree(const Node* container_a,
-                              int offset_a,
-                              const Node* container_b,
-                              int offset_b,
-                              bool* disconnected = nullptr);
-int ComparePositionsInFlatTree(const Node* container_a,
-                               int offset_a,
-                               const Node* container_b,
-                               int offset_b,
-                               bool* disconnected = nullptr);
+int16_t ComparePositionsInDOMTree(const Node* container_a,
+                                  int offset_a,
+                                  const Node* container_b,
+                                  int offset_b,
+                                  bool* disconnected = nullptr);
+int16_t ComparePositionsInFlatTree(const Node* container_a,
+                                   int offset_a,
+                                   const Node* container_b,
+                                   int offset_b,
+                                   bool* disconnected = nullptr);
 // TODO(yosin): We replace |comparePositions()| by |Position::opeator<()| to
 // utilize |DCHECK_XX()|.
-int ComparePositions(const Position&, const Position&);
-int ComparePositions(const PositionWithAffinity&, const PositionWithAffinity&);
+int16_t ComparePositions(const Position&, const Position&);
+int16_t ComparePositions(const PositionWithAffinity&,
+                         const PositionWithAffinity&);
 bool IsNodeFullyContained(const EphemeralRange&, const Node&);
 
 // boolean functions on Position
@@ -268,7 +269,7 @@ Position PositionAfterNode(const Node&);
 // VisiblePosition
 // -------------------------------------------------------------------------
 
-int ComparePositions(const VisiblePosition&, const VisiblePosition&);
+int16_t ComparePositions(const VisiblePosition&, const VisiblePosition&);
 
 CORE_EXPORT int IndexForVisiblePosition(const VisiblePosition&,
                                         ContainerNode*& scope);
