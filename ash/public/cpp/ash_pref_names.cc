@@ -344,6 +344,9 @@ const char kDetachableBaseDevices[] = "ash.detachable_base.devices";
 const char kAssistantNumWarmerWelcomeTriggered[] =
     "ash.assistant.num_warmer_welcome_triggered";
 
+// Whether the user is allowed to disconnect and configure VPN connections.
+const char kVpnConfigAllowed[] = "vpn_config_allowed";
+
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.
 

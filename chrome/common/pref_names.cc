@@ -1964,9 +1964,6 @@ const char kRemoveUsersRemoteCommand[] = "remove_users_remote_command";
 // Whether camera-produced media files have been consolidated to one place.
 const char kCameraMediaConsolidated[] = "camera_media_consolidated";
 
-// Whether the user is allowed to disconnect and configure VPN connections.
-const char kVpnConfigAllowed[] = "vpn_config_allowed";
-
 // Integer pref used by the metrics::DailyEvent owned by
 // chromeos::power::auto_screen_brightness::MetricsReporter.
 const char kAutoScreenBrightnessMetricsDailySample[] =

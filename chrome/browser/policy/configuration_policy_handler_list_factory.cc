@@ -866,7 +866,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
 
   { key::kVpnConfigAllowed,
-    prefs::kVpnConfigAllowed,
+    ash::prefs::kVpnConfigAllowed,
     base::Value::Type::BOOLEAN },
 #endif
 

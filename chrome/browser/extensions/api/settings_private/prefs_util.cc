@@ -421,7 +421,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::ash::prefs::kUserBluetoothAdapterEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kVpnConfigAllowed] =
+  (*s_whitelist)[::ash::prefs::kVpnConfigAllowed] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[arc::prefs::kAlwaysOnVpnPackage] =
       settings_api::PrefType::PREF_TYPE_STRING;

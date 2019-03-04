@@ -104,6 +104,7 @@
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/sms_observer.h"
 #include "ash/system/network/vpn_list.h"
+#include "ash/system/network/vpn_list_view.h"
 #include "ash/system/night_light/night_light_controller.h"
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/palette/palette_welcome_bubble.h"
@@ -250,6 +251,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   AccessibilityController::RegisterProfilePrefs(registry, for_test);
   AssistantController::RegisterProfilePrefs(registry);
   BluetoothPowerController::RegisterProfilePrefs(registry);
+  CapsLockNotificationController::RegisterProfilePrefs(registry, for_test);
   DockedMagnifierController::RegisterProfilePrefs(registry, for_test);
   KioskNextShellController::RegisterProfilePrefs(registry);
   LoginScreenController::RegisterProfilePrefs(registry, for_test);
@@ -260,7 +262,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   PaletteWelcomeBubble::RegisterProfilePrefs(registry);
   ShelfController::RegisterProfilePrefs(registry);
   TouchDevicesController::RegisterProfilePrefs(registry);
-  CapsLockNotificationController::RegisterProfilePrefs(registry, for_test);
+  tray::VPNListView::RegisterProfilePrefs(registry);
 }
 
 }  // namespace
