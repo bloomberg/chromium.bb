@@ -26,17 +26,14 @@ class BASE_EXPORT ModuleCache {
   // associated state.
   class BASE_EXPORT Module {
    public:
-    Module(uintptr_t base_address,
-           const std::string& id,
-           const FilePath& filename,
-           size_t size);
-    ~Module();
+    Module() = default;
+    virtual ~Module() = default;
 
     Module(const Module&) = delete;
     Module& operator=(const Module&) = delete;
 
     // Gets the base address of the module.
-    uintptr_t GetBaseAddress() const;
+    virtual uintptr_t GetBaseAddress() const = 0;
 
     // Gets the opaque binary string that uniquely identifies a particular
     // program version with high probability. This is parsed from headers of the
@@ -45,20 +42,14 @@ class BASE_EXPORT ModuleCache {
     //   Contents of the .note.gnu.build-id field.
     // On Windows:
     //   GUID + AGE in the debug image headers of a module.
-    std::string GetId() const;
+    virtual std::string GetId() const = 0;
 
     // Gets the debug basename of the module. This is the basename of the PDB
     // file on Windows and the basename of the binary on other platforms.
-    FilePath GetDebugBasename() const;
+    virtual FilePath GetDebugBasename() const = 0;
 
     // Gets the size of the module.
-    size_t GetSize() const;
-
-   private:
-    uintptr_t base_address_;
-    std::string id_;
-    FilePath debug_basename_;
-    size_t size_;
+    virtual size_t GetSize() const = 0;
   };
 
   ModuleCache();

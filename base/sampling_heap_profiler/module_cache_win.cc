@@ -65,6 +65,33 @@ void GetDebugInfoForModule(HMODULE module_handle,
 
 }  // namespace
 
+class WindowsModule : public ModuleCache::Module {
+ public:
+  WindowsModule(uintptr_t base_address,
+                const std::string& id,
+                const FilePath& debug_basename,
+                size_t size)
+      : base_address_(base_address),
+        id_(id),
+        debug_basename_(debug_basename),
+        size_(size) {}
+
+  WindowsModule(const WindowsModule&) = delete;
+  WindowsModule& operator=(const WindowsModule&) = delete;
+
+  // ModuleCache::Module
+  uintptr_t GetBaseAddress() const override { return base_address_; }
+  std::string GetId() const override { return id_; }
+  FilePath GetDebugBasename() const override { return debug_basename_; }
+  size_t GetSize() const override { return size_; }
+
+ private:
+  uintptr_t base_address_;
+  std::string id_;
+  FilePath debug_basename_;
+  size_t size_;
+};
+
 // static
 std::unique_ptr<ModuleCache::Module> ModuleCache::CreateModuleForAddress(
     uintptr_t address) {
@@ -114,7 +141,7 @@ std::unique_ptr<ModuleCache::Module> ModuleCache::CreateModuleForHandle(
     return nullptr;
   }
 
-  return std::make_unique<Module>(
+  return std::make_unique<WindowsModule>(
       reinterpret_cast<uintptr_t>(module_info.lpBaseOfDll), build_id, pdb_name,
       module_info.SizeOfImage);
 }

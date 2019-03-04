@@ -8,33 +8,6 @@
 
 namespace base {
 
-ModuleCache::Module::Module(uintptr_t base_address,
-                            const std::string& id,
-                            const FilePath& debug_basename,
-                            size_t size)
-    : base_address_(base_address),
-      id_(id),
-      debug_basename_(debug_basename),
-      size_(size) {}
-
-ModuleCache::Module::~Module() = default;
-
-uintptr_t ModuleCache::Module::GetBaseAddress() const {
-  return base_address_;
-}
-
-std::string ModuleCache::Module::GetId() const {
-  return id_;
-}
-
-FilePath ModuleCache::Module::GetDebugBasename() const {
-  return debug_basename_;
-}
-
-size_t ModuleCache::Module::GetSize() const {
-  return size_;
-}
-
 ModuleCache::ModuleCache() = default;
 ModuleCache::~ModuleCache() = default;
 

@@ -6,7 +6,6 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
-#include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/profiler/stack_sampling_profiler.h"
@@ -143,6 +142,20 @@ class TracingSampleProfilerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(TracingSampleProfilerTest);
 };
 
+// Stub module for testing.
+class TestModule : public base::ModuleCache::Module {
+ public:
+  TestModule() = default;
+
+  TestModule(const TestModule&) = delete;
+  TestModule& operator=(const TestModule&) = delete;
+
+  uintptr_t GetBaseAddress() const override { return 0; }
+  std::string GetId() const override { return ""; }
+  base::FilePath GetDebugBasename() const override { return base::FilePath(); }
+  size_t GetSize() const override { return 0; }
+};
+
 }  // namespace
 
 TEST_F(TracingSampleProfilerTest, OnSampleCompleted) {
@@ -178,13 +191,7 @@ TEST_F(TracingSampleProfilerTest, SamplingChildThread) {
 }
 
 TEST(TracingProfileBuilderTest, ValidModule) {
-#if defined(OS_WIN)
-  base::FilePath module_path(L"c:\\some\\path\\to\\chrome.exe");
-#else
-  base::FilePath module_path("/some/path/to/chrome");
-#endif
-
-  base::ModuleCache::Module module(0x1000, "ID", module_path, 0x2000);
+  TestModule module;
   TracingSamplerProfiler::TracingProfileBuilder profile_builder(
       (base::PlatformThreadId()));
   profile_builder.OnSampleCompleted(
