@@ -476,70 +476,86 @@ void VideoRendererAlgorithm::UpdateFrameStatistics() {
   for (const auto& ready_frame : frame_queue_)
     media_timestamps.push_back(ready_frame.frame->timestamp());
 
-  // If there are not enough frames to estimate duration based on end time, ask
-  // the WallClockTimeCB to convert the estimated frame duration into wall clock
-  // time.
-  //
-  // Note: This duration value is not compensated for playback rate and
-  // thus is different than |average_frame_duration_| which is compensated.
+  // If available, always use the last frame's metadata duration to estimate the
+  // end time for that frame. This is useful when playback ends on long frame
+  // duration content.
   //
   // Note: Not all frames have duration. E.g., this class is used with WebRTC
   // which does not provide duration information for its frames.
-  base::TimeDelta metadata_frame_duration;
-  const bool use_frame_duration_metadata =
-      !frame_duration_calculator_.count() && frame_queue_.size() == 1u &&
-      frame_queue_.front().frame->metadata()->GetTimeDelta(
-          VideoFrameMetadata::FRAME_DURATION, &metadata_frame_duration) &&
-      metadata_frame_duration > base::TimeDelta();
-  if (use_frame_duration_metadata) {
-    media_timestamps.push_back(frame_queue_.front().frame->timestamp() +
-                               metadata_frame_duration);
+  bool have_metadata_duration = false;
+  {
+    const auto& last_frame = frame_queue_.back().frame;
+    base::TimeDelta metadata_frame_duration;
+    if (last_frame->metadata()->GetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
+                                             &metadata_frame_duration) &&
+        metadata_frame_duration > base::TimeDelta()) {
+      have_metadata_duration = true;
+      media_timestamps.push_back(last_frame->timestamp() +
+                                 metadata_frame_duration);
+    }
   }
 
   std::vector<base::TimeTicks> wall_clock_times;
   was_time_moving_ =
       wall_clock_time_cb_.Run(media_timestamps, &wall_clock_times);
+  DCHECK_EQ(wall_clock_times.size(),
+            frame_queue_.size() + (have_metadata_duration ? 1 : 0));
+
+  // Transfer the converted wall clock times into our frame queue. Never process
+  // the last frame in this loop; the last frame timing is handled below.
+  for (size_t i = 0; i < frame_queue_.size() - 1; ++i) {
+    ReadyFrame& frame = frame_queue_[i];
+
+    // Whenever a frame is added to the queue, |has_estimated_end_time| is true;
+    // this remains true until we receive a later frame -- from which we use its
+    // timestamp to assign the true |end_time| for the previous frame.
+    //
+    // So a new sample can always be determined by the |has_estimated_end_time|
+    // flag and the fact that the frame is being processed in this loop which
+    // never processes the last (and thus always estimated) frame.
+    const bool new_sample = frame.has_estimated_end_time;
+
+    frame.start_time = wall_clock_times[i];
+    frame.end_time = wall_clock_times[i + 1];
+    frame.has_estimated_end_time = false;
+    if (new_sample)
+      frame_duration_calculator_.AddSample(frame.end_time - frame.start_time);
+  }
 
   base::TimeDelta deviation;
-  if (!use_frame_duration_metadata) {
-    // Transfer the converted wall clock times into our frame queue.
-    DCHECK_EQ(wall_clock_times.size(), frame_queue_.size());
-    for (size_t i = 0; i < frame_queue_.size() - 1; ++i) {
-      ReadyFrame& frame = frame_queue_[i];
-      const bool new_sample = frame.has_estimated_end_time;
-      frame.start_time = wall_clock_times[i];
-      frame.end_time = wall_clock_times[i + 1];
-      frame.has_estimated_end_time = false;
-      if (new_sample)
-        frame_duration_calculator_.AddSample(frame.end_time - frame.start_time);
-    }
-    frame_queue_.back().start_time = wall_clock_times.back();
-
-    if (!frame_duration_calculator_.count())
-      return;
-
+  if (frame_duration_calculator_.count()) {
     // Compute |average_frame_duration_|, a moving average of the last few
     // frames; see kMovingAverageSamples for the exact number.
     average_frame_duration_ = frame_duration_calculator_.Average();
     deviation = frame_duration_calculator_.Deviation();
+  }
+
+  if (have_metadata_duration) {
+    auto& frame = frame_queue_.back();
+    frame.start_time = wall_clock_times.end()[-2];
+    frame.end_time = wall_clock_times.end()[-1];
+
+    // This path will be taken for frames after the very first, but we only want
+    // to use our estimate of |average_frame_duration_| when we have no samples
+    // in |frame_duration_calculator_| -- since it's a more accurate reflection
+    // of the per-frame on screen time.
+    if (!frame_duration_calculator_.count()) {
+      average_frame_duration_ = frame.end_time - frame.start_time;
+      if (average_frame_duration_.is_zero())
+        return;
+    }
+  } else {
+    frame_queue_.back().start_time = wall_clock_times.back();
+
+    // If |have_metadata_duration| is false and we don't have any subsequent
+    // frames, we can't continue processing since the cadence estimate requires
+    // |average_frame_duration_| and |deviation| to be non-zero.
+    if (!frame_duration_calculator_.count())
+      return;
 
     // Update the frame end time for the last frame based on the average.
     frame_queue_.back().end_time =
         frame_queue_.back().start_time + average_frame_duration_;
-  } else {
-    DCHECK_EQ(frame_duration_calculator_.count(), 0u);
-    DCHECK_EQ(wall_clock_times.size(), 2u);
-
-    ReadyFrame& frame = frame_queue_.front();
-    frame.start_time = wall_clock_times[0];
-    frame.end_time = wall_clock_times[1];
-    frame.has_estimated_end_time = true;
-
-    // Note: This may be called multiple times, so we don't want to update the
-    // frame duration calculator with our estimate.
-    average_frame_duration_ = frame.end_time - frame.start_time;
-    if (average_frame_duration_.is_zero())
-      return;
   }
 
   // ITU-R BR.265 recommends a maximum acceptable drift of +/- half of the frame

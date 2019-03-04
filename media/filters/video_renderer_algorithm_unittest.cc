@@ -208,6 +208,7 @@ class VideoRendererAlgorithmTest : public testing::Test {
       const base::TimeTicks deadline_max = display_tg->step();
       scoped_refptr<VideoFrame> frame =
           algorithm_.Render(deadline_min, deadline_max, &frames_dropped);
+      EXPECT_EQ(deadline_max - deadline_min, algorithm_.render_interval());
 
       render_test_func(frame, frames_dropped);
       tick_clock_->Advance(display_tg->current() - tick_clock_->NowTicks());
@@ -1605,6 +1606,34 @@ TEST_F(VideoRendererAlgorithmTest, InfiniteDurationMetadata) {
   size_t frames_dropped = 0;
   frame = RenderAndStep(&tg, &frames_dropped);
   EXPECT_TRUE(algorithm_.average_frame_duration().is_zero());
+}
+
+TEST_F(VideoRendererAlgorithmTest, UsesFrameDuration) {
+  TickGenerator tg(tick_clock_->NowTicks(), 50);
+
+  auto frame = CreateFrame(tg.interval(0));
+  frame->metadata()->SetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
+                                  tg.interval(1));
+  algorithm_.EnqueueFrame(frame);
+
+  // This should not crash or fail.
+  size_t frames_dropped = 0;
+  frame = RenderAndStep(&tg, &frames_dropped);
+  EXPECT_EQ(tg.interval(1), algorithm_.average_frame_duration());
+
+  // Add a bunch of normal frames and then one with a 3s duration.
+  constexpr base::TimeDelta kLongDuration = base::TimeDelta::FromSeconds(3);
+  for (int i = 1; i < 4; ++i) {
+    frame = CreateFrame(tg.interval(i));
+    frame->metadata()->SetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
+                                    i == 3 ? kLongDuration : tg.interval(1));
+    algorithm_.EnqueueFrame(frame);
+  }
+
+  frame = RenderAndStep(&tg, &frames_dropped);
+  EXPECT_EQ(tg.interval(1), algorithm_.average_frame_duration());
+  EXPECT_EQ(algorithm_.last_frame_end_time(),
+            base::TimeTicks() + kLongDuration + tg.interval(1) * 3);
 }
 
 }  // namespace media

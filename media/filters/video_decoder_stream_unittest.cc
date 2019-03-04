@@ -307,8 +307,13 @@ class VideoDecoderStreamTest
     DCHECK(pending_read_);
     frame_read_ = frame;
     last_read_status_ = status;
-    if (frame.get() &&
+    if (frame &&
         !frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM)) {
+      base::TimeDelta metadata_frame_duration;
+      EXPECT_TRUE(frame->metadata()->GetTimeDelta(
+          VideoFrameMetadata::FRAME_DURATION, &metadata_frame_duration));
+      EXPECT_EQ(metadata_frame_duration, demuxer_stream_->duration());
+
       num_decoded_frames_++;
     }
     pending_read_ = false;

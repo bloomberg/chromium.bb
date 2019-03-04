@@ -144,6 +144,14 @@ class MEDIA_EXPORT VideoRendererAlgorithm {
     return average_frame_duration_;
   }
 
+  // End time of the last frame.
+  base::TimeTicks last_frame_end_time() const {
+    return frame_queue_.back().end_time;
+  }
+
+  // Current render interval.
+  base::TimeDelta render_interval() const { return render_interval_; }
+
   // Method used for testing which disables frame dropping, in this mode the
   // algorithm will never drop frames and instead always return every frame
   // for display at least once.

@@ -167,7 +167,7 @@ void DecoderStreamTraits<DemuxerStream::VIDEO>::OnStreamReset(
     DemuxerStream* stream) {
   DCHECK(stream);
   last_keyframe_timestamp_ = base::TimeDelta();
-  frames_to_drop_.clear();
+  frame_metadata_.clear();
 }
 
 void DecoderStreamTraits<DemuxerStream::VIDEO>::OnDecode(
@@ -177,8 +177,10 @@ void DecoderStreamTraits<DemuxerStream::VIDEO>::OnDecode(
     return;
   }
 
-  if (buffer.discard_padding().first == kInfiniteDuration)
-    frames_to_drop_.insert(buffer.timestamp());
+  frame_metadata_[buffer.timestamp()] = {
+      buffer.discard_padding().first == kInfiniteDuration,  // should_drop
+      buffer.duration(),                                    // duration
+  };
 
   if (!buffer.is_key_frame())
     return;
@@ -197,17 +199,31 @@ void DecoderStreamTraits<DemuxerStream::VIDEO>::OnDecode(
 
 PostDecodeAction DecoderStreamTraits<DemuxerStream::VIDEO>::OnDecodeDone(
     const scoped_refptr<OutputType>& buffer) {
-  auto it = frames_to_drop_.find(buffer->timestamp());
-  if (it != frames_to_drop_.end()) {
-    // We erase from the beginning onward to our target frame since frames
-    // should be returned in presentation order. It's possible to accumulate
-    // entries in this queue if playback begins at a non-keyframe; those frames
-    // may never be returned from the decoder.
-    frames_to_drop_.erase(frames_to_drop_.begin(), it + 1);
-    return PostDecodeAction::DROP;
+  auto it = frame_metadata_.find(buffer->timestamp());
+
+  // If the frame isn't in |frame_metadata_| it probably was erased below on a
+  // previous cycle. We could drop these, but today our video algorithm will put
+  // them back into sorted order or drop the frame if a later frame has already
+  // been rendered.
+  if (it == frame_metadata_.end())
+    return PostDecodeAction::DELIVER;
+
+  auto action = it->second.should_drop ? PostDecodeAction::DROP
+                                       : PostDecodeAction::DELIVER;
+
+  // Provide duration information to help the rendering algorithm on the very
+  // first and very last frames.
+  if (it->second.duration != kNoTimestamp) {
+    buffer->metadata()->SetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
+                                     it->second.duration);
   }
 
-  return PostDecodeAction::DELIVER;
+  // We erase from the beginning onward to our target frame since frames should
+  // be returned in presentation order. It's possible to accumulate entries in
+  // this queue if playback begins at a non-keyframe; those frames may never be
+  // returned from the decoder.
+  frame_metadata_.erase(frame_metadata_.begin(), it + 1);
+  return action;
 }
 
 }  // namespace media
