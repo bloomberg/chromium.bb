@@ -27,7 +27,8 @@ void AddHitTestRegion(const FrameSinkId& frame_sink_id,
                       const gfx::Rect& visible_rect,
                       const gfx::Transform& hit_test_region_transform,
                       std::vector<HitTestRegion>* regions,
-                      bool should_ask_for_child_region) {
+                      bool should_ask_for_child_region,
+                      bool ignores_input_event) {
   regions->emplace_back();
   HitTestRegion* hit_test_region = &regions->back();
   hit_test_region->frame_sink_id = frame_sink_id;
@@ -39,6 +40,8 @@ void AddHitTestRegion(const FrameSinkId& frame_sink_id,
     hit_test_region->async_hit_test_reasons =
         AsyncHitTestReasons::kUseDrawQuadData;
   }
+  if (ignores_input_event)
+    hit_test_region->flags |= HitTestRegionFlags::kHitTestIgnore;
   hit_test_region->rect = visible_rect;
   hit_test_region->transform = hit_test_region_transform;
 }
@@ -100,10 +103,6 @@ void AddHitTestDataFromRenderPass(const CompositorFrame& frame,
     if (quad->material == DrawQuad::SURFACE_CONTENT) {
       const SurfaceDrawQuad* surface_quad = SurfaceDrawQuad::MaterialCast(quad);
 
-      // Skip the quad if it has pointer-events:none set.
-      if (surface_quad->ignores_input_event)
-        continue;
-
       // Skip the quad if the transform is not invertible (i.e. it will not
       // be able to receive events).
       gfx::Transform quad_to_target_transform =
@@ -126,12 +125,14 @@ void AddHitTestDataFromRenderPass(const CompositorFrame& frame,
       if (filter_regions.empty()) {
         AddHitTestRegion(surface_quad->surface_range.end().frame_sink_id(),
                          surface_quad->rect, hit_test_region_transform, regions,
-                         should_ask_for_child_region);
+                         should_ask_for_child_region,
+                         surface_quad->ignores_input_event);
       } else {
         for (const auto& filter_region : filter_regions) {
           AddHitTestRegion(surface_quad->surface_range.end().frame_sink_id(),
                            filter_region, hit_test_region_transform, regions,
-                           should_ask_for_child_region);
+                           should_ask_for_child_region,
+                           surface_quad->ignores_input_event);
         }
       }
     } else if (quad->material == DrawQuad::RENDER_PASS) {

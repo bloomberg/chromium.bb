@@ -2758,6 +2758,16 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
         root->current_frame_host()->GetRenderWidgetHost());
     observer.Wait();
   }
+  {
+    MainThreadFrameObserver observer(
+        root->child_at(0)->current_frame_host()->GetRenderWidgetHost());
+    observer.Wait();
+  }
+  {
+    MainThreadFrameObserver observer(
+        root->child_at(1)->current_frame_host()->GetRenderWidgetHost());
+    observer.Wait();
+  }
 
   WaitForHitTestDataOrChildSurfaceReady(child_node1->current_frame_host());
   WaitForHitTestDataOrChildSurfaceReady(child_node2->current_frame_host());
@@ -6403,17 +6413,27 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
       gfx::Rect(1, 1), device_scale_factor, device_scale_factor);
   expected_transform.Translate(-2 * device_scale_factor,
                                -2 * device_scale_factor);
+  gfx::Rect expected_region2 = gfx::ScaleToEnclosingRect(
+      gfx::Rect(100, 100), device_scale_factor, device_scale_factor);
+  gfx::Transform expected_transform2;
+  expected_transform2.Translate(-52 * device_scale_factor,
+                                -52 * device_scale_factor);
 
-  // We should not submit hit test region for iframes with pointer-events: none.
-  DCHECK(hit_test_data.size() == 3);
-  EXPECT_EQ(expected_region.ToString(), hit_test_data[2].rect.ToString());
-  EXPECT_TRUE(
-      expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
-  // Non v2 hit-testing should still treat the second OOPIF as slow path.
+  // We should not submit hit test region for iframes with pointer-events: none
+  // in /2 hit-testing; we submit data in /1 but with Ignore flag set.
   if (features::IsVizHitTestingSurfaceLayerEnabled()) {
+    DCHECK(hit_test_data.size() == 3);
+    EXPECT_EQ(expected_region.ToString(), hit_test_data[2].rect.ToString());
+    EXPECT_TRUE(
+        expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
     EXPECT_EQ(kFastHitTestFlags, hit_test_data[2].flags);
-  } else {
-    EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
+  } else if (features::IsVizHitTestingDrawQuadEnabled()) {
+    DCHECK(hit_test_data.size() == 4);
+    EXPECT_EQ(expected_region2.ToString(), hit_test_data[3].rect.ToString());
+    EXPECT_TRUE(
+        expected_transform2.ApproximatelyEqual(hit_test_data[3].transform()));
+    EXPECT_EQ(kSlowHitTestFlags | viz::HitTestRegionFlags::kHitTestIgnore,
+              hit_test_data[3].flags);
   }
 
   // Check that an update on the css property can trigger an update in submitted
@@ -6435,6 +6455,16 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
         root->current_frame_host()->GetRenderWidgetHost());
     observer.Wait();
   }
+  {
+    MainThreadFrameObserver observer(
+        root->child_at(0)->current_frame_host()->GetRenderWidgetHost());
+    observer.Wait();
+  }
+  {
+    MainThreadFrameObserver observer(
+        root->child_at(1)->current_frame_host()->GetRenderWidgetHost());
+    observer.Wait();
+  }
 
   WaitForHitTestDataOrChildSurfaceReady(
       root->child_at(0)->current_frame_host());
@@ -6445,12 +6475,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   observer.WaitForHitTestData();
   hit_test_data = observer.GetHitTestData();
   MaybeStripHitTestData(&hit_test_data);
-
-  gfx::Rect expected_region2 = gfx::ScaleToEnclosingRect(
-      gfx::Rect(100, 100), device_scale_factor, device_scale_factor);
-  gfx::Transform expected_transform2;
-  expected_transform2.Translate(-52 * device_scale_factor,
-                                -52 * device_scale_factor);
 
   DCHECK(hit_test_data.size() == 4);
   EXPECT_EQ(expected_region.ToString(), hit_test_data[2].rect.ToString());
