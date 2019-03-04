@@ -61,6 +61,7 @@
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -94,6 +95,8 @@ namespace {
 const CGFloat kAccountProfilePhotoDimension = 40.0f;
 
 NSString* const kSyncAndGoogleServicesImageName = @"sync_and_google_services";
+NSString* const kSyncAndGoogleServicesErrorImageName =
+    @"google_services_sync_error";
 NSString* const kSettingsSearchEngineImageName = @"settings_search_engine";
 NSString* const kSettingsPasswordsImageName = @"settings_passwords";
 NSString* const kSettingsAutofillCreditCardImageName =
@@ -505,11 +508,14 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 - (TableViewItem*)googleServicesCellItem {
   // TODO(crbug.com/805214): This branded icon image needs to come from
   // BrandedImageProvider.
-  return [self detailItemWithType:ItemGoogleServices
-                             text:l10n_util::GetNSString(
-                                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_TITLE)
-                       detailText:nil
-                    iconImageName:kSyncAndGoogleServicesImageName];
+  TableViewImageItem* googleServicesItem =
+      [[TableViewImageItem alloc] initWithType:ItemGoogleServices];
+  googleServicesItem.accessoryType =
+      UITableViewCellAccessoryDisclosureIndicator;
+  googleServicesItem.title =
+      l10n_util::GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_TITLE);
+  [self updateGoogleServicesItem:googleServicesItem];
+  return googleServicesItem;
 }
 
 - (TableViewItem*)accountCellItem {
@@ -977,6 +983,10 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   }
   identityAccountItem.image = [self userAccountImage];
   identityAccountItem.text = [_identity userFullName];
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    identityAccountItem.detailText = _identity.userEmail;
+    return;
+  }
 
   SyncSetupService* syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(_browserState);
@@ -1017,6 +1027,47 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
     [self updateIdentityAccountItem:identityAccountItem];
     [self reconfigureCellsForItems:@[ identityAccountItem ]];
   }
+}
+
+// Updates the Google services item to display the right icon and status message
+// in the detail text of the cell.
+- (void)updateGoogleServicesItem:(TableViewImageItem*)googleServicesItem {
+  // TODO(crbug.com/889470): Needs to include sync off, sync on, and error sync
+  // badges.
+  googleServicesItem.detailTextColor = nil;
+  googleServicesItem.image =
+      [UIImage imageNamed:kSyncAndGoogleServicesImageName];
+  SyncSetupService* syncSetupService =
+      SyncSetupServiceFactory::GetForBrowserState(_browserState);
+  if (!syncSetupService->HasFinishedInitialSetup()) {
+    googleServicesItem.detailText =
+        l10n_util::GetNSString(IDS_IOS_SYNC_SETUP_IN_PROGRESS);
+  } else if (!IsTransientSyncError(syncSetupService->GetSyncServiceState())) {
+    googleServicesItem.detailTextColor = UIColor.redColor;
+    googleServicesItem.detailText =
+        GetSyncErrorDescriptionForSyncSetupService(syncSetupService);
+    googleServicesItem.image =
+        [UIImage imageNamed:kSyncAndGoogleServicesErrorImageName];
+  } else if (syncSetupService->IsSyncEnabled()) {
+    googleServicesItem.detailText =
+        l10n_util::GetNSString(IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SYNC_ON);
+  } else {
+    googleServicesItem.detailText =
+        l10n_util::GetNSString(IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SYNC_OFF);
+  }
+}
+
+// Updates and reloads the Google service cell.
+- (void)reloadGoogleServicesCell {
+  NSIndexPath* googleServicesCellIndexPath =
+      [self.tableViewModel indexPathForItemType:ItemGoogleServices
+                              sectionIdentifier:SectionIdentifierAccount];
+  TableViewImageItem* googleServicesItem =
+      base::mac::ObjCCast<TableViewImageItem>(
+          [self.tableViewModel itemAtIndexPath:googleServicesCellIndexPath]);
+  DCHECK(googleServicesItem);
+  [self updateGoogleServicesItem:googleServicesItem];
+  [self reconfigureCellsForItems:@[ googleServicesItem ]];
 }
 
 #pragma mark - SigninPresenter
@@ -1095,7 +1146,11 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 #pragma mark SyncObserverModelBridge
 
 - (void)onSyncStateChanged {
-  [self reloadAccountCell];
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    [self reloadGoogleServicesCell];
+  } else {
+    [self reloadAccountCell];
+  }
 }
 
 #pragma mark - IdentityRefreshLogic
