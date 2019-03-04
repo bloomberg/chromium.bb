@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/debug/stack_trace.h"
 #include "base/files/file_path.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/media_router/media_cast_mode.h"

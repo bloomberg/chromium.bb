@@ -6,8 +6,6 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 
-#include "base/debug/stack_trace.h"
-
 namespace blink {
 
 // These are defined here because of PaintLayer dependency.

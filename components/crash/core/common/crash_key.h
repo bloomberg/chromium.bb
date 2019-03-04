@@ -9,7 +9,6 @@
 
 #include <string>
 
-#include "base/debug/stack_trace.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
@@ -23,6 +22,12 @@
 #if BUILDFLAG(USE_CRASHPAD_ANNOTATION)
 #include "third_party/crashpad/crashpad/client/annotation.h"  // nogncheck
 #endif
+
+namespace base {
+namespace debug {
+class StackTrace;
+}  // namespace debug
+}  // namespace base
 
 namespace crash_reporter {
 

@@ -10,7 +10,6 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/compiler_specific.h"
-#include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"

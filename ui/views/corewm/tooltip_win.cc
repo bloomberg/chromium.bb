@@ -4,7 +4,6 @@
 
 #include "ui/views/corewm/tooltip_win.h"
 
-#include "base/debug/stack_trace.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/win/windowsx_shim.h"

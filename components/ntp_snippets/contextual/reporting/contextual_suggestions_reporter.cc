@@ -4,7 +4,6 @@
 
 #include "components/ntp_snippets/contextual/reporting/contextual_suggestions_reporter.h"
 
-#include "base/debug/stack_trace.h"
 #include "components/ntp_snippets/contextual/reporting/contextual_suggestions_composite_reporter.h"
 #include "components/ntp_snippets/contextual/reporting/contextual_suggestions_debugging_reporter.h"
 #include "components/ntp_snippets/contextual/reporting/contextual_suggestions_metrics_reporter.h"
