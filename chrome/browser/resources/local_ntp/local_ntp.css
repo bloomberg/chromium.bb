@@ -736,6 +736,7 @@ html[darkmode=true] body:not(.light-chip) #error-notice-link:active {
 
 #promo {
   bottom: 16px;
+  display: block;
   left: 0;
   pointer-events: none;
   position: fixed;
@@ -810,6 +811,10 @@ html[darkmode=true] body:not(.light-chip) #promo > div > a:visited {
 
 html[darkmode=true] body:not(.light-chip) #promo > div > img {
   background-color: rgb(var(--GG200-rgb));
+}
+
+#promo.hide-promo {
+  display: none;
 }
 
 #promo.notice-hide {

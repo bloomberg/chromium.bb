@@ -88,6 +88,7 @@ var CLASSES = {
   HAS_LINK: 'has-link',
   HIDE_FAKEBOX: 'hide-fakebox',
   HIDE_NOTIFICATION: 'notice-hide',
+  HIDE_PROMO: 'hide-promo',
   INITED: 'inited',  // Reveals the <body> once init() is done.
   LEFT_ALIGN_ATTRIBUTION: 'left-align-attribution',
   MATERIAL_DESIGN_ICONS:
@@ -780,7 +781,7 @@ function showErrorNotification(msg, linkName, linkOnClick) {
  * @param {!Element} notificationContainer The notification container element.
  */
 function floatUpNotification(notification, notificationContainer) {
-  // Show middle-slot promo if one is present.
+  // Hide middle-slot promo if one is present.
   if ($(IDS.PROMO) !== null) {
     $(IDS.PROMO).classList.add(CLASSES.HIDE_NOTIFICATION);
   }
@@ -821,7 +822,7 @@ function floatDownNotification(notification, notificationContainer) {
     return;
   }
 
-  // Hide middle-slot promo if one is present.
+  // Show middle-slot promo if one is present.
   if ($(IDS.PROMO) !== null) {
     $(IDS.PROMO).classList.remove(CLASSES.HIDE_NOTIFICATION);
   }
@@ -973,7 +974,7 @@ function handlePostMessage(event) {
         $(IDS.SUGGESTIONS).style.visibility = 'visible';
       }
       if ($(IDS.PROMO)) {
-        $(IDS.PROMO).style.display = 'block';
+        $(IDS.PROMO).classList.remove(CLASSES.HIDE_PROMO);
       }
       $(IDS.OGB).classList.remove('hidden');
       $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT)
@@ -1335,7 +1336,7 @@ function injectPromo(promo) {
   let promoContainer = document.createElement('div');
   promoContainer.id = IDS.PROMO;
   promoContainer.innerHTML += promo.promoHtml;
-  promoContainer.style.display = 'none';
+  promoContainer.classList.add(CLASSES.HIDE_PROMO);
   $(IDS.NTP_CONTENTS).appendChild(promoContainer);
 
   if (promo.promoLogUrl) {
