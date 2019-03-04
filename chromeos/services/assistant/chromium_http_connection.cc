@@ -20,6 +20,14 @@ using assistant_client::HttpConnection;
 using network::SharedURLLoaderFactory;
 using network::SharedURLLoaderFactoryInfo;
 
+// A macro which ensures we are running on the main thread.
+#define ENSURE_MAIN_THREAD(method, ...)                                  \
+  if (!task_runner_->RunsTasksInCurrentSequence()) {                     \
+    task_runner_->PostTask(FROM_HERE,                                    \
+                           base::BindOnce(method, this, ##__VA_ARGS__)); \
+    return;                                                              \
+  }
+
 namespace chromeos {
 namespace assistant {
 
@@ -138,7 +146,8 @@ void ChromiumHttpConnection::SetChunkedUploadContentTypeOnTaskRunner(
 }
 
 void ChromiumHttpConnection::EnableHeaderResponse() {
-  NOTIMPLEMENTED();
+  ENSURE_MAIN_THREAD(&ChromiumHttpConnection::EnableHeaderResponse)
+  enable_header_response_ = true;
 }
 
 void ChromiumHttpConnection::EnablePartialResults() {
@@ -274,7 +283,13 @@ void ChromiumHttpConnection::StartReading(
 void ChromiumHttpConnection::OnDataReceived(base::StringPiece string_piece,
                                             base::OnceClosure resume) {
   DCHECK(handle_partial_response_);
-  delegate_->OnPartialResponse(string_piece.as_string());
+  if (enable_header_response_) {
+    // Cache the partial responses, we need to send the headers back before
+    // any |OnPartialResposne| to honor the API contract.
+    partial_response_cache_.emplace_back(string_piece.as_string());
+  } else {
+    delegate_->OnPartialResponse(string_piece.as_string());
+  }
   std::move(resume).Run();
 }
 
@@ -291,6 +306,12 @@ void ChromiumHttpConnection::OnComplete(bool success) {
   if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers) {
     raw_headers = url_loader_->ResponseInfo()->headers->raw_headers();
     response_code = url_loader_->ResponseInfo()->headers->response_code();
+  }
+
+  if (enable_header_response_) {
+    delegate_->OnHeaderResponse(raw_headers);
+    for (auto& partial_response : partial_response_cache_)
+      delegate_->OnPartialResponse(partial_response);
   }
 
   if (success) {
