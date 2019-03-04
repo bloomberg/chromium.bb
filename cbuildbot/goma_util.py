@@ -340,10 +340,12 @@ class GomaLogUploader(object):
     # Otherwise, upload will take long (> 10 mins).
     # Each gomacc logs file size must be small (around 4KB).
 
-    # Find files matched with the pattern in |goma_log_dir|. Sort for
-    # stabilization.
-    gomacc_paths = sorted(glob.glob(
-        os.path.join(self._goma_log_dir, 'gomacc.*.INFO.*')))
+    # Find files matched with the pattern in |goma_log_dir|.
+    # The paths were themselves used as the inputs for the create
+    # tarball, but there can be too many of them. As long as we have
+    # files we'll just tar up the entire directory.
+    gomacc_paths = glob.glob(os.path.join(self._goma_log_dir,
+                                          'gomacc.*.INFO.*'))
     if not gomacc_paths:
       # gomacc logs won't be made every time.
       # Only when goma compiler_proxy has
@@ -351,13 +353,12 @@ class GomaLogUploader(object):
       logging.info('No gomacc logs found')
       return None
 
-    # Taking the first name as uploaded_filename.
-    tgz_name = os.path.basename(gomacc_paths[0]) + '.tar.gz'
+    # Taking the alphabetically first name as uploaded_filename.
+    tgz_name = os.path.basename(min(gomacc_paths)) + '.tar.gz'
     tgz_path = os.path.join(self._goma_log_dir, tgz_name)
     cros_build_lib.CreateTarball(target=tgz_path,
                                  cwd=self._goma_log_dir,
-                                 compression=cros_build_lib.COMP_GZIP,
-                                 inputs=gomacc_paths)
+                                 compression=cros_build_lib.COMP_GZIP)
     self._gs_context.CopyInto(tgz_path, self._remote_dir,
                               filename=tgz_name,
                               headers=self._headers)

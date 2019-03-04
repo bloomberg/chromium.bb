@@ -1000,7 +1000,17 @@ class ReportStage(generic_stages.BuilderStage,
         sys.stdout, current_version=(self._run.attrs.release_tag or ''))
 
     # Upload goma log if used for BuildPackage and TestSimpleChrome.
-    # TODO(crbug.com/934879): reenable uploading goma log
+    _UploadAndLinkGomaLogIfNecessary(
+        'BuildPackages',
+        self._run.options.goma_dir,
+        self._run.options.goma_client_json,
+        self._run.attrs.metadata.GetValueWithDefault('goma_tmp_dir'))
+    _UploadAndLinkGomaLogIfNecessary(
+        'TestSimpleChromeWorkflow',
+        self._run.options.goma_dir,
+        self._run.options.goma_client_json,
+        self._run.attrs.metadata.GetValueWithDefault(
+            'goma_tmp_dir_for_simple_chrome'))
 
     if self.buildstore.AreClientsReady():
       status_for_db = final_status
