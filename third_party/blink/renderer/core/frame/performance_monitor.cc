@@ -238,7 +238,7 @@ void PerformanceMonitor::Did(const probe::CallFunction& probe) {
     return;
 
   String name = user_callback->name ? String(user_callback->name)
-                                    : String(user_callback->atomicName);
+                                    : String(user_callback->atomic_name);
   String text = String::Format("'%s' handler took %" PRId64 "ms",
                                name.Utf8().data(), duration.InMilliseconds());
   InnerReportGenericViolation(probe.context, handler_type, text, duration,

@@ -664,11 +664,11 @@ void InspectorDOMDebuggerAgent::Did(const probe::ExecuteScript& probe) {
 }
 
 void InspectorDOMDebuggerAgent::Will(const probe::UserCallback& probe) {
-  String name = probe.name ? String(probe.name) : probe.atomicName;
-  if (probe.eventTarget) {
-    Node* node = probe.eventTarget->ToNode();
+  String name = probe.name ? String(probe.name) : probe.atomic_name;
+  if (probe.event_target) {
+    Node* node = probe.event_target->ToNode();
     String target_name =
-        node ? node->nodeName() : probe.eventTarget->InterfaceName();
+        node ? node->nodeName() : probe.event_target->InterfaceName();
     AllowNativeBreakpoint(name, &target_name, false);
     return;
   }
