@@ -190,14 +190,27 @@ cca.nav.close = function(id, condition) {
  */
 cca.nav.onKeyPressed = function(event) {
   var key = cca.util.getShortcutIdentifier(event);
-  if (key == 'BrowserBack') {
-    chrome.app.window.current().minimize();
-    return;
-  }
-  // Make the topmost visible view handle the pressed key.
-  if (cca.nav.topmostIndex_ >= 0 &&
-      cca.nav.views_[cca.nav.topmostIndex_].onKeyPressed(key)) {
-    event.preventDefault();
+  var openInspector = (type) => chrome.fileManagerPrivate &&
+      chrome.fileManagerPrivate.openInspector(type);
+  switch (key) {
+    case 'BrowserBack':
+      chrome.app.window.current().minimize();
+      break;
+    case 'Ctrl-Shift-I':
+      openInspector('normal');
+      break;
+    case 'Ctrl-Shift-J':
+      openInspector('console');
+      break;
+    case 'Ctrl-Shift-C':
+      openInspector('element');
+      break;
+    default:
+      // Make the topmost visible view handle the pressed key.
+      if (cca.nav.topmostIndex_ >= 0 &&
+          cca.nav.views_[cca.nav.topmostIndex_].onKeyPressed(key)) {
+        event.preventDefault();
+      }
   }
 };
 
