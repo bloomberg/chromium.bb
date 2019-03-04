@@ -975,7 +975,8 @@ String TextControlElement::DirectionForFormData() const {
 void TextControlElement::SetAutofillValue(const String& value) {
   // Set the value trimmed to the max length of the field and dispatch the input
   // and change events.
-  setValue(value.Substring(0, maxLength()), kDispatchInputAndChangeEvent);
+  setValue(value.Substring(0, maxLength()),
+           TextFieldEventBehavior::kDispatchInputAndChangeEvent);
 }
 
 // TODO(crbug.com/772433): Create and use a new suggested-value element instead.

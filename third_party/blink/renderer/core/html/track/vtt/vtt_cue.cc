@@ -767,7 +767,6 @@ void VTTCue::UpdatePastAndFutureNodes(double movie_time) {
 
   for (Node& child : NodeTraversal::DescendantsOf(*display_tree_)) {
     if (child.nodeName() == timestamp_tag) {
-      double current_timestamp;
       bool check =
           VTTParser::CollectTimeStamp(child.nodeValue(), current_timestamp);
       DCHECK(check);

@@ -74,7 +74,8 @@ ClickHandlingState* CheckboxInputType::WillDispatchClick() {
   if (state->indeterminate)
     GetElement().setIndeterminate(false);
 
-  GetElement().setChecked(!state->checked, kDispatchChangeEvent);
+  GetElement().setChecked(!state->checked,
+                          TextFieldEventBehavior::kDispatchChangeEvent);
   is_in_click_handler_ = true;
   return state;
 }

@@ -228,7 +228,8 @@ void RangeInputType::HandleKeydownEvent(KeyboardEvent& event) {
 
   if (new_value != current) {
     EventQueueScope scope;
-    TextFieldEventBehavior event_behavior = kDispatchInputAndChangeEvent;
+    TextFieldEventBehavior event_behavior =
+        TextFieldEventBehavior::kDispatchInputAndChangeEvent;
     SetValueAsDecimal(new_value, event_behavior, IGNORE_EXCEPTION_FOR_TESTING);
 
     if (AXObjectCache* cache =

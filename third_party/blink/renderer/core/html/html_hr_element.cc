@@ -135,7 +135,8 @@ void HTMLHRElement::RemovedFrom(ContainerNode& insertion_point) {
       select->HrInsertedOrRemoved(*this);
   } else if (IsHTMLOptGroupElement(insertion_point)) {
     Node* parent = insertion_point.parentNode();
-    if (auto* select = ToHTMLSelectElementOrNull(parent))
+    select = ToHTMLSelectElementOrNull(parent);
+    if (select)
       select->HrInsertedOrRemoved(*this);
   }
   HTMLElement::RemovedFrom(insertion_point);

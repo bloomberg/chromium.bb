@@ -42,7 +42,7 @@ enum TextFieldSelectionDirection {
   kSelectionHasForwardDirection,
   kSelectionHasBackwardDirection
 };
-enum TextFieldEventBehavior {
+enum class TextFieldEventBehavior {
   kDispatchNoEvent,
   kDispatchChangeEvent,
   kDispatchInputAndChangeEvent
@@ -123,7 +123,7 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   virtual String value() const = 0;
   virtual void setValue(
       const String&,
-      TextFieldEventBehavior = kDispatchNoEvent,
+      TextFieldEventBehavior = TextFieldEventBehavior::kDispatchNoEvent,
       TextControlSetValueSelection =
           TextControlSetValueSelection::kSetSelectionToEnd) = 0;
 

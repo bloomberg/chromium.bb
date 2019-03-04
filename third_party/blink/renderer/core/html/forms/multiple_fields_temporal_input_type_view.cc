@@ -271,7 +271,8 @@ bool MultipleFieldsTemporalInputTypeView::
 void MultipleFieldsTemporalInputTypeView::PickerIndicatorChooseValue(
     const String& value) {
   if (GetElement().IsValidValue(value)) {
-    GetElement().setValue(value, kDispatchInputAndChangeEvent);
+    GetElement().setValue(value,
+                          TextFieldEventBehavior::kDispatchInputAndChangeEvent);
     return;
   }
 
@@ -289,11 +290,14 @@ void MultipleFieldsTemporalInputTypeView::PickerIndicatorChooseValue(
 void MultipleFieldsTemporalInputTypeView::PickerIndicatorChooseValue(
     double value) {
   DCHECK(std::isfinite(value) || std::isnan(value));
-  if (std::isnan(value))
-    GetElement().setValue(g_empty_string, kDispatchInputAndChangeEvent);
-  else
-    GetElement().setValueAsNumber(value, ASSERT_NO_EXCEPTION,
-                                  kDispatchInputAndChangeEvent);
+  if (std::isnan(value)) {
+    GetElement().setValue(g_empty_string,
+                          TextFieldEventBehavior::kDispatchInputAndChangeEvent);
+  } else {
+    GetElement().setValueAsNumber(
+        value, ASSERT_NO_EXCEPTION,
+        TextFieldEventBehavior::kDispatchInputAndChangeEvent);
+  }
 }
 
 Element& MultipleFieldsTemporalInputTypeView::PickerOwnerElement() const {
@@ -618,7 +622,8 @@ bool MultipleFieldsTemporalInputTypeView::
 }
 
 void MultipleFieldsTemporalInputTypeView::ClearValue() {
-  GetElement().setValue("", kDispatchInputAndChangeEvent);
+  GetElement().setValue("",
+                        TextFieldEventBehavior::kDispatchInputAndChangeEvent);
   GetElement().UpdateClearButtonVisibility();
 }
 

@@ -386,7 +386,7 @@ void HTMLTextAreaElement::setValue(const String& value,
 }
 
 void HTMLTextAreaElement::SetNonDirtyValue(const String& value) {
-  SetValueCommon(value, kDispatchNoEvent,
+  SetValueCommon(value, TextFieldEventBehavior::kDispatchNoEvent,
                  TextControlSetValueSelection::kSetSelectionToEnd);
   is_dirty_ = false;
 }
@@ -410,11 +410,11 @@ void HTMLTextAreaElement::SetValueCommon(
   if (normalized_value == value())
     return;
 
-  if (event_behavior != kDispatchNoEvent)
+  if (event_behavior != TextFieldEventBehavior::kDispatchNoEvent)
     SetValueBeforeFirstUserEditIfNotSet();
   value_ = normalized_value;
   SetInnerEditorValue(value_);
-  if (event_behavior == kDispatchNoEvent)
+  if (event_behavior == TextFieldEventBehavior::kDispatchNoEvent)
     SetLastChangeWasNotUserEdit();
   else
     CheckIfValueWasReverted(value_);
@@ -432,16 +432,16 @@ void HTMLTextAreaElement::SetValueCommon(
 
   NotifyFormStateChanged();
   switch (event_behavior) {
-    case kDispatchChangeEvent:
+    case TextFieldEventBehavior::kDispatchChangeEvent:
       DispatchFormControlChangeEvent();
       break;
 
-    case kDispatchInputAndChangeEvent:
+    case TextFieldEventBehavior::kDispatchInputAndChangeEvent:
       DispatchInputEvent();
       DispatchFormControlChangeEvent();
       break;
 
-    case kDispatchNoEvent:
+    case TextFieldEventBehavior::kDispatchNoEvent:
       break;
   }
 }
@@ -631,7 +631,8 @@ void HTMLTextAreaElement::CloneNonAttributePropertiesFrom(
     const Element& source,
     CloneChildrenFlag flag) {
   const HTMLTextAreaElement& source_element = ToHTMLTextAreaElement(source);
-  SetValueCommon(source_element.value(), kDispatchNoEvent,
+  SetValueCommon(source_element.value(),
+                 TextFieldEventBehavior::kDispatchNoEvent,
                  TextControlSetValueSelection::kSetSelectionToEnd);
   is_dirty_ = source_element.is_dirty_;
   TextControlElement::CloneNonAttributePropertiesFrom(source, flag);

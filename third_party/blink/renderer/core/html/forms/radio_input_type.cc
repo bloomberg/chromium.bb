@@ -191,7 +191,7 @@ ClickHandlingState* RadioInputType::WillDispatchClick() {
 
   state->checked = GetElement().checked();
   state->checked_radio_button = GetElement().CheckedRadioButtonForGroup();
-  GetElement().setChecked(true, kDispatchChangeEvent);
+  GetElement().setChecked(true, TextFieldEventBehavior::kDispatchChangeEvent);
   is_in_click_handler_ = true;
   return state;
 }

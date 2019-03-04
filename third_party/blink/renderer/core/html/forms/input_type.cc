@@ -520,21 +520,21 @@ void InputType::SetValue(const String& sanitized_value,
   // TextFieldInputType. That is to say, type=color, type=range, and temporal
   // input types.
   DCHECK_EQ(GetValueMode(), ValueMode::kValue);
-  if (event_behavior == kDispatchNoEvent)
+  if (event_behavior == TextFieldEventBehavior::kDispatchNoEvent)
     GetElement().SetNonAttributeValue(sanitized_value);
   else
     GetElement().SetNonAttributeValueByUserEdit(sanitized_value);
   if (!value_changed)
     return;
   switch (event_behavior) {
-    case kDispatchChangeEvent:
+    case TextFieldEventBehavior::kDispatchChangeEvent:
       GetElement().DispatchFormControlChangeEvent();
       break;
-    case kDispatchInputAndChangeEvent:
+    case TextFieldEventBehavior::kDispatchInputAndChangeEvent:
       GetElement().DispatchInputEvent();
       GetElement().DispatchFormControlChangeEvent();
       break;
-    case kDispatchNoEvent:
+    case TextFieldEventBehavior::kDispatchNoEvent:
       break;
   }
 }
@@ -775,7 +775,8 @@ void InputType::StepUp(double n, ExceptionState& exception_state) {
     return;
   }
   const Decimal current = ParseToNumber(GetElement().value(), 0);
-  ApplyStep(current, n, kRejectAny, kDispatchNoEvent, exception_state);
+  ApplyStep(current, n, kRejectAny, TextFieldEventBehavior::kDispatchNoEvent,
+            exception_state);
 }
 
 void InputType::StepUpFromLayoutObject(int n) {
@@ -845,18 +846,21 @@ void InputType::StepUpFromLayoutObject(int n) {
       current = step_range.Minimum() - next_diff;
     if (current > step_range.Maximum() - next_diff)
       current = step_range.Maximum() - next_diff;
-    SetValueAsDecimal(current, kDispatchNoEvent, IGNORE_EXCEPTION_FOR_TESTING);
+    SetValueAsDecimal(current, TextFieldEventBehavior::kDispatchNoEvent,
+                      IGNORE_EXCEPTION_FOR_TESTING);
   }
   if ((sign > 0 && current < step_range.Minimum()) ||
       (sign < 0 && current > step_range.Maximum())) {
     SetValueAsDecimal(sign > 0 ? step_range.Minimum() : step_range.Maximum(),
-                      kDispatchChangeEvent, IGNORE_EXCEPTION_FOR_TESTING);
+                      TextFieldEventBehavior::kDispatchChangeEvent,
+                      IGNORE_EXCEPTION_FOR_TESTING);
     return;
   }
   if ((sign > 0 && current >= step_range.Maximum()) ||
       (sign < 0 && current <= step_range.Minimum()))
     return;
-  ApplyStep(current, n, kAnyIsDefaultStep, kDispatchChangeEvent,
+  ApplyStep(current, n, kAnyIsDefaultStep,
+            TextFieldEventBehavior::kDispatchChangeEvent,
             IGNORE_EXCEPTION_FOR_TESTING);
 }
 

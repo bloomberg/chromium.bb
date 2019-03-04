@@ -116,7 +116,9 @@ class CORE_EXPORT HTMLInputElement
   bool HasBeenPasswordField() const;
 
   bool checked() const;
-  void setChecked(bool, TextFieldEventBehavior = kDispatchNoEvent);
+  void setChecked(
+      bool,
+      TextFieldEventBehavior = TextFieldEventBehavior::kDispatchNoEvent);
   void DispatchChangeEventIfNeeded();
   void DispatchInputAndChangeEventIfNeeded();
 
@@ -135,13 +137,15 @@ class CORE_EXPORT HTMLInputElement
   void setType(const AtomicString&);
 
   String value() const override;
-  void setValue(const String&,
-                ExceptionState&,
-                TextFieldEventBehavior = kDispatchNoEvent);
-  void setValue(const String&,
-                TextFieldEventBehavior = kDispatchNoEvent,
-                TextControlSetValueSelection =
-                    TextControlSetValueSelection::kSetSelectionToEnd) override;
+  void setValue(
+      const String&,
+      ExceptionState&,
+      TextFieldEventBehavior = TextFieldEventBehavior::kDispatchNoEvent);
+  void setValue(
+      const String&,
+      TextFieldEventBehavior = TextFieldEventBehavior::kDispatchNoEvent,
+      TextControlSetValueSelection =
+          TextControlSetValueSelection::kSetSelectionToEnd) override;
   void SetValueForUser(const String&);
   // Update the value, and clear hasDirtyValue() flag.
   void SetNonDirtyValue(const String&);
@@ -163,9 +167,10 @@ class CORE_EXPORT HTMLInputElement
   void setValueAsDate(double, bool is_null, ExceptionState&);
 
   double valueAsNumber() const;
-  void setValueAsNumber(double,
-                        ExceptionState&,
-                        TextFieldEventBehavior = kDispatchNoEvent);
+  void setValueAsNumber(
+      double,
+      ExceptionState&,
+      TextFieldEventBehavior = TextFieldEventBehavior::kDispatchNoEvent);
 
   String ValueOrDefaultLabel() const;
 
