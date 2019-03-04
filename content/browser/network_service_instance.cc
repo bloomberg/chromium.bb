@@ -109,31 +109,39 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
   if (!g_network_service_ptr)
     g_network_service_ptr = new network::mojom::NetworkServicePtr;
   static NetworkServiceClient* g_client;
-  if ((!g_network_service_ptr->is_bound() ||
-       g_network_service_ptr->encountered_error()) &&
-      !GetContentClient()->browser()->IsShuttingDown()) {
-    if (is_network_service_enabled) {
-      connector->BindInterface(mojom::kNetworkServiceName,
-                               g_network_service_ptr);
-      g_network_service_ptr->set_connection_error_handler(
-          base::BindOnce(&OnNetworkServiceCrash));
+  if (!g_network_service_ptr->is_bound() ||
+      g_network_service_ptr->encountered_error()) {
+    if (GetContentClient()->browser()->IsShuttingDown()) {
+      // This happens at system shutdown, since in other scenarios the network
+      // process would only be torn down once the message loop stopped running.
+      // We don't want to want to start the network service again so just create
+      // message pipe that's not bound to stop consumers from requesting
+      // creation of the service.
+      auto request = mojo::MakeRequest(g_network_service_ptr);
+      auto leaked_pipe = request.PassMessagePipe().release();
     } else {
-      DCHECK(!g_network_service_ptr->is_bound());
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(CreateNetworkServiceOnIO,
-                         mojo::MakeRequest(g_network_service_ptr)));
-    }
+      if (is_network_service_enabled) {
+        connector->BindInterface(mojom::kNetworkServiceName,
+                                 g_network_service_ptr);
+        g_network_service_ptr->set_connection_error_handler(
+            base::BindOnce(&OnNetworkServiceCrash));
+      } else {
+        DCHECK(!g_network_service_ptr->is_bound());
+        base::PostTaskWithTraits(
+            FROM_HERE, {BrowserThread::IO},
+            base::BindOnce(CreateNetworkServiceOnIO,
+                           mojo::MakeRequest(g_network_service_ptr)));
+      }
 
-    network::mojom::NetworkServiceClientPtr client_ptr;
-    auto client_request = mojo::MakeRequest(&client_ptr);
-    // Call SetClient before creating NetworkServiceClient, as the latter might
-    // make requests to NetworkService that depend on initialization.
-    (*g_network_service_ptr)
-        ->SetClient(std::move(client_ptr), CreateNetworkServiceParams());
+      network::mojom::NetworkServiceClientPtr client_ptr;
+      auto client_request = mojo::MakeRequest(&client_ptr);
+      // Call SetClient before creating NetworkServiceClient, as the latter
+      // might make requests to NetworkService that depend on initialization.
+      (*g_network_service_ptr)
+          ->SetClient(std::move(client_ptr), CreateNetworkServiceParams());
 
-    delete g_client;  // In case we're recreating the network service.
-    g_client = new NetworkServiceClient(std::move(client_request));
+      delete g_client;  // In case we're recreating the network service.
+      g_client = new NetworkServiceClient(std::move(client_request));
 
       const base::CommandLine* command_line =
           base::CommandLine::ForCurrentProcess();
@@ -183,6 +191,7 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
 
       GetContentClient()->browser()->OnNetworkServiceCreated(
           g_network_service_ptr->get());
+    }
   }
   return g_network_service_ptr->get();
 }
