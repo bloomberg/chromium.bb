@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Listens for a find keyboard shortcut (i.e. Ctrl/Cmd+f)
+ * @fileoverview Listens for a find keyboard shortcut (i.e. Ctrl/Cmd+f or /)
  * and keeps track of an stack of potential listeners. Only the listener at the
  * top of the stack will be notified that a find shortcut has been invoked.
  */
@@ -23,12 +23,17 @@ const FindShortcutManager = (() => {
    */
   let modalContextOpen = false;
 
-  const shortcut =
+  const shortcutCtrlF =
       new cr.ui.KeyboardShortcutList(cr.isMac ? 'meta|f' : 'ctrl|f');
+  const shortcutSlash = new cr.ui.KeyboardShortcutList('/');
 
   window.addEventListener('keydown', e => {
-    if (e.defaultPrevented || listeners.length == 0 ||
-        !shortcut.matchesEvent(e)) {
+    if (e.defaultPrevented || listeners.length == 0) {
+      return;
+    }
+
+    if (!shortcutCtrlF.matchesEvent(e) &&
+        (isTextInputElement(e.path[0]) || !shortcutSlash.matchesEvent(e))) {
       return;
     }
 
