@@ -676,12 +676,6 @@ void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
   // Clear focus if the located event is not handled by any child view.
   GetFocusManager()->ClearFocus();
 
-  // Back to |search_result_page_view_| if the embedded Assistant UI is shown.
-  if (app_list_main_view()->contents_view()->IsShowingEmbeddedAssistantUI()) {
-    Back();
-    return;
-  }
-
   if (GetAppsContainerView()->IsInFolderView()) {
     // Close the folder if it is opened.
     GetAppsContainerView()->app_list_folder_view()->CloseFolderPage();
@@ -713,6 +707,10 @@ void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
       Dismiss();
     return;
   }
+
+  // Reset the AppListState if the embedded Assistant UI is shown.
+  if (app_list_main_view()->contents_view()->IsShowingEmbeddedAssistantUI())
+    Back();
 
   search_box_view_->ClearSearch();
   search_box_view_->SetSearchBoxActive(false, ui::ET_UNKNOWN);
