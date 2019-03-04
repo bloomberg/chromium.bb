@@ -57,9 +57,9 @@ namespace blink {
 
 // TODO(sashab): Move these to CSSPrimitiveValue.h.
 template <>
-inline short CSSPrimitiveValue::ConvertTo() const {
+inline int16_t CSSPrimitiveValue::ConvertTo() const {
   DCHECK(IsNumber());
-  return clampTo<short>(GetDoubleValue());
+  return clampTo<int16_t>(GetDoubleValue());
 }
 
 template <>

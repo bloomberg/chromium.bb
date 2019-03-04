@@ -1779,7 +1779,7 @@ CSSValue* ComputedStyleUtils::ValueForCounterDirectives(
       continue;
 
     list->Append(*CSSCustomIdentValue::Create(item.key));
-    short number =
+    int32_t number =
         is_increment ? item.value.IncrementValue() : item.value.ResetValue();
     list->Append(*CSSPrimitiveValue::Create(
         (double)number, CSSPrimitiveValue::UnitType::kInteger));
