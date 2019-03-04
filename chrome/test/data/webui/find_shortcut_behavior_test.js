@@ -15,18 +15,25 @@ suite('find-shortcut', () => {
   /** @type {boolean} */
   let resolved;
 
+  const pressCtrlF = () => MockInteractions.pressAndReleaseKeyOn(
+      window, 70, cr.isMac ? 'meta' : 'ctrl', 'f');
+  const pressSlash = () =>
+      MockInteractions.pressAndReleaseKeyOn(window, 191, '', '/');
+
   /**
    * Checks that the handleFindShortcut method is being called for the
    * element reference |expectedSelf| when a find shortcut is invoked.
    * @param {!HTMLElement} expectedSelf
-   * @param {?boolean} expectedModalContextOpen
+   * @param {boolean} expectedModalContextOpen
+   * @param {function()} pressShortcut
    * @return {!Promise}
    */
-  const check = async (expectedSelf, expectedModalContextOpen) => {
+  const check = async (
+      expectedSelf, expectedModalContextOpen = false,
+      pressShortcut = pressCtrlF) => {
     wait = new PromiseResolver();
     resolved = false;
-    MockInteractions.pressAndReleaseKeyOn(
-        window, 70, cr.isMac ? 'meta' : 'ctrl', 'f');
+    pressShortcut();
     const args = await wait.promise;
     assertEquals(expectedSelf, args.self);
     assertEquals(!!expectedModalContextOpen, args.modalContextOpen);
@@ -232,5 +239,12 @@ suite('find-shortcut', () => {
     testElements[1].hasFocus = false;
     testElements[2].hasFocus = true;
     await check(testElements[1]);
+  });
+
+  test('slash "/" is supported as a keyboard shortcut', async () => {
+    document.body.innerHTML = '<find-shortcut-element></find-shortcut-element>';
+    const testElement = document.body.querySelector('find-shortcut-element');
+    testElement.hasFocus = false;
+    await check(testElement, false, pressSlash);
   });
 });

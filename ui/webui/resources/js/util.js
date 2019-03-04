@@ -537,3 +537,11 @@ if (!('key' in KeyboardEvent.prototype)) {
 function hasKeyModifiers(e) {
   return !!(e.altKey || e.ctrlKey || e.metaKey || e.shiftKey);
 }
+
+/**
+ * @param {!Element} el
+ * @return {boolean} Whether the element is interactive via text input.
+ */
+function isTextInputElement(el) {
+  return el.tagName == 'INPUT' || el.tagName == 'TEXTAREA';
+}

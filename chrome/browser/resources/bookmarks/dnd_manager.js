@@ -423,7 +423,7 @@ cr.define('bookmarks', function() {
      */
     onDrop_(e) {
       // Allow normal DND on text inputs.
-      if (e.path[0].tagName == 'INPUT') {
+      if (isTextInputElement(e.path[0])) {
         return;
       }
 
@@ -462,7 +462,7 @@ cr.define('bookmarks', function() {
       this.dropDestination_ = null;
 
       // Allow normal DND on text inputs.
-      if (e.path[0].tagName == 'INPUT') {
+      if (isTextInputElement(e.path[0])) {
         return;
       }
 

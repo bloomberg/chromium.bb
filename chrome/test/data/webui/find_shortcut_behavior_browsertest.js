@@ -27,10 +27,13 @@ FindShortcutBehaviorTest.prototype = {
   browsePreload: 'chrome://resources/html/find_shortcut_behavior.html',
 
   /** @override */
-  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+  extraLibraries: [
+    ...PolymerTest.getLibraries(ROOT_PATH),
+    ROOT_PATH + 'ui/webui/resources/js/util.js',
+    'settings/test_util.js',
     'settings/test_util.js',
     'find_shortcut_behavior_test.js',
-  ]),
+  ],
 };
 
 TEST_F('FindShortcutBehaviorTest', 'All', function() {
