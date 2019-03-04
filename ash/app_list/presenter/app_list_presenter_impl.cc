@@ -28,7 +28,6 @@
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/presentation_feedback.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/widget/widget.h"
 
 namespace app_list {
@@ -412,12 +411,6 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
         (!gained_focus || !applist_container->Contains(gained_focus)) &&
         !switches::ShouldNotDismissOnBlur() && !delegate_->IsTabletMode()) {
       Dismiss(base::TimeTicks());
-    }
-    if (applist_container->Contains(gained_focus) &&
-        keyboard::KeyboardController::HasInstance()) {
-      auto* const keyboard_controller = keyboard::KeyboardController::Get();
-      if (keyboard_controller->IsKeyboardVisible())
-        keyboard_controller->HideKeyboardImplicitlyBySystem();
     }
   }
 }
