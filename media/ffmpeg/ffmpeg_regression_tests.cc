@@ -171,8 +171,8 @@ FFMPEG_TEST_CASE(Cr444546,
                  DEMUXER_ERROR_COULD_NOT_OPEN);
 FFMPEG_TEST_CASE(Cr447860,
                  "security/447860.webm",
-                 PIPELINE_OK,
-                 PIPELINE_OK);
+                 PIPELINE_ERROR_DECODE,
+                 PIPELINE_ERROR_DECODE);
 FFMPEG_TEST_CASE(Cr449958,
                  "security/449958.webm",
                  PIPELINE_OK,
@@ -183,8 +183,8 @@ FFMPEG_TEST_CASE(Cr536601,
                  PIPELINE_ERROR_DECODE);
 FFMPEG_TEST_CASE(Cr532967,
                  "security/532967.webm",
-                 PIPELINE_OK,
-                 PIPELINE_OK);
+                 PIPELINE_ERROR_DECODE,
+                 PIPELINE_ERROR_DECODE);
 // TODO(tguilbert): update PIPELINE_ERROR_DECODE to
 // AUDIO_RENDERER_ERROR_IMPLICIT_CONFIG_CHANGE once the status is created.
 FFMPEG_TEST_CASE(Cr599625,
