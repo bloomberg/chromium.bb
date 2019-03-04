@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -122,6 +123,8 @@ class ChromiumHttpConnection
   std::string upload_content_type_;
   std::string chunked_upload_content_type_;
   bool handle_partial_response_ = false;
+  bool enable_header_response_ = false;
+  std::vector<std::string> partial_response_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromiumHttpConnection);
 };
