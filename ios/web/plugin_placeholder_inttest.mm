@@ -4,7 +4,9 @@
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ios/testing/embedded_test_server_handlers.h"
+#import "ios/web/public/test/fakes/test_web_client.h"
 #import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
@@ -18,11 +20,23 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+const char kPluginNotSupportedText[] =
+    "hahaha, your plugin is not supported :D";
+}
+
 namespace web {
 
 // Tests that web page shows a placeholder for unsupported plugins.
 class PluginPlaceholderTest : public WebTestWithWebState {
  protected:
+  PluginPlaceholderTest()
+      : WebTestWithWebState(std::make_unique<TestWebClient>()) {
+    TestWebClient* web_client = static_cast<TestWebClient*>(GetWebClient());
+    web_client->SetPluginNotSupportedText(
+        base::UTF8ToUTF16(kPluginNotSupportedText));
+  }
+
   // Sets up |server_| with |html| as response content.
   bool SetUpServer(const std::string& html) WARN_UNUSED_RESULT {
     server_.RegisterDefaultHandler(
@@ -54,6 +68,8 @@ TEST_F(PluginPlaceholderTest, AppletFallback) {
   EXPECT_TRUE(test::WaitForWebViewContainingText(web_state(), kFallbackText));
   EXPECT_TRUE(test::WaitForWebViewNotContainingElement(
       web_state(), test::ElementSelector::ElementSelectorCss("img")));
+  EXPECT_TRUE(test::WaitForWebViewNotContainingText(web_state(),
+                                                    kPluginNotSupportedText));
 }
 
 // Tests placeholder for a large <applet> with no fallback.
@@ -75,6 +91,8 @@ TEST_F(PluginPlaceholderTest, AppletOnly) {
   EXPECT_TRUE(test::WaitForWebViewContainingElement(
       web_state(),
       test::ElementSelector::ElementSelectorCss("img[src*='data']")));
+  EXPECT_TRUE(
+      test::WaitForWebViewContainingText(web_state(), kPluginNotSupportedText));
 }
 
 // Tests placeholder for a large <object> with a flash embed fallback.
@@ -101,6 +119,8 @@ TEST_F(PluginPlaceholderTest, ObjectFlashEmbedFallback) {
   EXPECT_TRUE(test::WaitForWebViewContainingElement(
       web_state(),
       test::ElementSelector::ElementSelectorCss("img[src*='data']")));
+  EXPECT_TRUE(
+      test::WaitForWebViewContainingText(web_state(), kPluginNotSupportedText));
 }
 
 // Tests that a large <object> with an embed fallback of unspecified type is
@@ -126,6 +146,8 @@ TEST_F(PluginPlaceholderTest, ObjectUndefinedEmbedFallback) {
       test::WaitForWebViewContainingText(web_state(), kPageDescription));
   EXPECT_TRUE(test::WaitForWebViewNotContainingElement(
       web_state(), test::ElementSelector::ElementSelectorCss("img")));
+  EXPECT_TRUE(test::WaitForWebViewNotContainingText(web_state(),
+                                                    kPluginNotSupportedText));
 }
 
 // Tests that a large <object> with text fallback is untouched.
@@ -151,6 +173,8 @@ TEST_F(PluginPlaceholderTest, ObjectFallback) {
   EXPECT_TRUE(test::WaitForWebViewContainingText(web_state(), kFallbackText));
   EXPECT_TRUE(test::WaitForWebViewNotContainingElement(
       web_state(), test::ElementSelector::ElementSelectorCss("img")));
+  EXPECT_TRUE(test::WaitForWebViewNotContainingText(web_state(),
+                                                    kPluginNotSupportedText));
 }
 
 // Tests placeholder for a large <object> with no fallback.
@@ -173,6 +197,8 @@ TEST_F(PluginPlaceholderTest, ObjectOnly) {
   EXPECT_TRUE(test::WaitForWebViewContainingElement(
       web_state(),
       test::ElementSelector::ElementSelectorCss("img[src*='data']")));
+  EXPECT_TRUE(
+      test::WaitForWebViewContainingText(web_state(), kPluginNotSupportedText));
 }
 
 // Tests that a large png <object> is untouched.
@@ -193,6 +219,8 @@ TEST_F(PluginPlaceholderTest, PNGObject) {
       test::WaitForWebViewContainingText(web_state(), kPageDescription));
   EXPECT_TRUE(test::WaitForWebViewNotContainingElement(
       web_state(), test::ElementSelector::ElementSelectorCss("img")));
+  EXPECT_TRUE(test::WaitForWebViewNotContainingText(web_state(),
+                                                    kPluginNotSupportedText));
 }
 
 // Test that non-major plugins (e.g., top/side ads) don't get placeholders.
@@ -232,6 +260,8 @@ TEST_F(PluginPlaceholderTest, SmallFlash) {
       test::WaitForWebViewContainingText(web_state(), kPageDescription));
   EXPECT_TRUE(test::WaitForWebViewNotContainingElement(
       web_state(), test::ElementSelector::ElementSelectorCss("img")));
+  EXPECT_TRUE(test::WaitForWebViewNotContainingText(web_state(),
+                                                    kPluginNotSupportedText));
 }
 
 }  // namespace web

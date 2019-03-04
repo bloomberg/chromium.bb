@@ -103,6 +103,15 @@ bool WaitForWebViewContainingText(web::WebState* web_state,
   });
 }
 
+bool WaitForWebViewNotContainingText(web::WebState* web_state,
+                                     std::string text,
+                                     NSTimeInterval timeout) {
+  return WaitUntilConditionOrTimeout(timeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return !IsWebViewContainingText(web_state, text);
+  });
+}
+
 bool WaitForWebViewContainingImage(std::string image_id,
                                    web::WebState* web_state,
                                    ImageStateElement image_state) {
