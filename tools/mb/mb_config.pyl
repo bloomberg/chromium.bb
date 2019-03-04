@@ -92,6 +92,7 @@
     },
 
     'chromium.chrome': {
+      'chromeos-amd64-generic-google-rel': 'official_cros_chrome_sdk',
       'Google Chrome ChromeOS': 'official_goma_chromeos',
       'Google Chrome Linux x64': 'official_goma',
       'Google Chrome Mac': 'official_goma',
@@ -1621,6 +1622,14 @@
 
     'msan_release_bot': [
       'msan', 'release_bot',
+    ],
+
+    # The cros chrome-sdk takes care of adding needed official/branding args
+    # when using the sdk with '--internal'. So use the base cros_chrome_sdk
+    # config here, but make sure the '--internal' argument is passed to the
+    # SDK when entering it.
+    'official_cros_chrome_sdk': [
+      'cros_chrome_sdk',
     ],
 
     'official_goma': [
