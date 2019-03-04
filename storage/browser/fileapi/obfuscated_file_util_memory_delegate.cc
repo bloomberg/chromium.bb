@@ -6,7 +6,10 @@
 
 #include <utility>
 
+#include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
+#include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
 
 namespace storage {
 
@@ -398,4 +401,40 @@ bool ObfuscatedFileUtilMemoryDelegate::CopyOrMoveFileInternal(
   return true;
 }
 
+int ObfuscatedFileUtilMemoryDelegate::ReadFile(const base::FilePath& path,
+                                               int64_t offset,
+                                               net::IOBuffer* buf,
+                                               int buf_len) {
+  base::Optional<DecomposedPath> dp = ParsePath(path);
+  if (!dp || dp->entry->type != Entry::kFile)
+    return net::ERR_FILE_NOT_FOUND;
+
+  int64_t remaining = dp->entry->file_content.size() - offset;
+  if (offset < 0 || remaining < 0)
+    return net::ERR_REQUEST_RANGE_NOT_SATISFIABLE;
+
+  if (buf_len > remaining)
+    buf_len = static_cast<int>(remaining);
+
+  memcpy(buf->data(), &dp->entry->file_content[offset], buf_len);
+
+  return buf_len;
+}
+
+base::File::Error ObfuscatedFileUtilMemoryDelegate::CreateFileForTesting(
+    const base::FilePath& path,
+    base::span<const char> content) {
+  bool created;
+  base::File::Error result = EnsureFileExists(path, &created);
+  if (result != base::File::FILE_OK)
+    return result;
+
+  base::Optional<DecomposedPath> dp = ParsePath(path);
+  DCHECK(dp && dp->entry->type == Entry::kFile);
+
+  dp->entry->file_content =
+      std::vector<uint8_t>(content.begin(), content.end());
+
+  return base::File::FILE_OK;
+}
 }  // namespace storage

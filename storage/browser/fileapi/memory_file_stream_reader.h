@@ -39,6 +39,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) MemoryFileStreamReader
 
   base::WeakPtr<ObfuscatedFileUtilMemoryDelegate> memory_file_util_;
 
+  const base::FilePath file_path_;
+  const base::Time expected_modification_time_;
+  int64_t offset_;
+
   DISALLOW_COPY_AND_ASSIGN(MemoryFileStreamReader);
 };
 
