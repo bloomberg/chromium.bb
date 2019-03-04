@@ -28,6 +28,8 @@ issues]].
 - Updates to Bopomofo-based Chinese Braille thanks to Sponge Jhan:
   Improved Braille representation of Chinese characters, and rewritten
   Kana rules using multipass statements.
+- Implement the new Slovenian braille standard thanks to Robert Merič
+  and Bert Frees.
 
 ** Other changes
 - Don't search for tables in ~/usr/local/share/liblouis/tables~ (or
