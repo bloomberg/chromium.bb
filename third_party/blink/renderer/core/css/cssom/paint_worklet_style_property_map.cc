@@ -110,7 +110,7 @@ void PaintWorkletStylePropertyMap::BuildCustomValues(
 CSSStyleValue* PaintWorkletStylePropertyMap::get(
     const ExecutionContext* execution_context,
     const String& property_name,
-    ExceptionState& exception_state) {
+    ExceptionState& exception_state) const {
   CSSStyleValueVector all_values =
       getAll(execution_context, property_name, exception_state);
   return all_values.IsEmpty() ? nullptr : all_values[0];
@@ -119,7 +119,7 @@ CSSStyleValue* PaintWorkletStylePropertyMap::get(
 CSSStyleValueVector PaintWorkletStylePropertyMap::getAll(
     const ExecutionContext* execution_context,
     const String& property_name,
-    ExceptionState& exception_state) {
+    ExceptionState& exception_state) const {
   CSSPropertyID property_id = cssPropertyID(property_name);
   if (property_id == CSSPropertyInvalid) {
     exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
@@ -139,11 +139,11 @@ CSSStyleValueVector PaintWorkletStylePropertyMap::getAll(
 bool PaintWorkletStylePropertyMap::has(
     const ExecutionContext* execution_context,
     const String& property_name,
-    ExceptionState& exception_state) {
+    ExceptionState& exception_state) const {
   return !getAll(execution_context, property_name, exception_state).IsEmpty();
 }
 
-unsigned PaintWorkletStylePropertyMap::size() {
+unsigned PaintWorkletStylePropertyMap::size() const {
   return values_.size();
 }
 
