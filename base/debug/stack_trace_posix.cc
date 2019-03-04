@@ -577,10 +577,10 @@ class SandboxSymbolizeHelper {
     //   it cannot be called before the singleton is created.
     SandboxSymbolizeHelper* instance = GetInstance();
 
-    // The assumption here is that iterating over
-    // std::vector<MappedMemoryRegion> using a const_iterator does not allocate
-    // dynamic memory, hence it is async-signal-safe.
-    for (const MappedMemoryRegion& region : instance->regions_) {
+    // Cannot use STL iterators here, since debug iterators use locks.
+    // NOLINTNEXTLINE(modernize-loop-convert)
+    for (size_t i = 0; i < instance->regions_.size(); ++i) {
+      const MappedMemoryRegion& region = instance->regions_[i];
       if (region.start <= pc && pc < region.end) {
         start_address = region.start;
         base_address = region.base;
