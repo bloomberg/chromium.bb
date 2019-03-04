@@ -21,3 +21,10 @@ service Registration {
   rpc SignInGaia(remoting.ftl.SignInGaiaRequest)
       returns (remoting.ftl.SignInGaiaResponse) {}
 }
+
+service Messaging {
+  rpc PullMessages(remoting.ftl.PullMessagesRequest)
+      returns (remoting.ftl.PullMessagesResponse) {}
+  rpc AckMessages(remoting.ftl.AckMessagesRequest)
+      returns (remoting.ftl.AckMessagesResponse) {}
+}
