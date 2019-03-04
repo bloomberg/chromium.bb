@@ -1821,6 +1821,15 @@ TEST_F(NetworkStateHandlerTest, RequestScan) {
       NetworkTypePattern::WiFi().Equals(test_observer_->scan_requests()[0]));
   EXPECT_TRUE(
       NetworkTypePattern::Tether().Equals(test_observer_->scan_requests()[1]));
+
+  // Disable wifi, scan request for wifi only should not send a notification.
+  test_observer_->reset_change_counts();
+  network_state_handler_->SetTechnologyEnabled(
+      NetworkTypePattern::WiFi(), false, network_handler::ErrorCallback());
+  network_state_handler_->RequestScan(NetworkTypePattern::WiFi());
+  EXPECT_EQ(0u, test_observer_->scan_requested_count());
+  network_state_handler_->RequestScan(NetworkTypePattern::Default());
+  EXPECT_EQ(1u, test_observer_->scan_requested_count());
 }
 
 TEST_F(NetworkStateHandlerTest, NetworkGuidInProfile) {
