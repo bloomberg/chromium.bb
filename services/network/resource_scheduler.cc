@@ -401,6 +401,10 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
       pending_requests_.Erase(request);
       DCHECK(!base::ContainsKey(in_flight_requests_, request));
     } else {
+      // Record metrics.
+      if (!RequestAttributesAreSet(request->attributes(), kAttributeDelayable))
+        last_non_delayable_request_end_ = tick_clock_->NowTicks();
+      RecordNetworkContentionMetrics(*request);
       EraseInFlightRequest(request);
 
       // Removing this request may have freed up another to load.
@@ -523,8 +527,6 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
   }
 
   void EraseInFlightRequest(ScheduledResourceRequestImpl* request) {
-    if (request)
-      RecordNetworkContentionMetrics(*request);
     size_t erased = in_flight_requests_.erase(request);
     DCHECK_EQ(1u, erased);
     // Clear any special state that we were tracking for this request.
@@ -667,9 +669,55 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
     return false;
   }
 
+  void RecordMetricsOnStartRequest(const ScheduledResourceRequestImpl& request,
+                                   base::TimeTicks ticks_now) const {
+    // Record the number of delayable requests in-flight when a non-delayable
+    // request starts.
+    if (!RequestAttributesAreSet(request.attributes(), kAttributeDelayable)) {
+      UMA_HISTOGRAM_COUNTS_100(
+          "ResourceScheduler.NumDelayableRequestsInFlightAtStart.NonDelayable",
+          in_flight_delayable_count_);
+      if (last_non_delayable_request_start_.has_value()) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "ResourceScheduler.NonDelayableLastStartToNonDelayableStart",
+            ticks_now - last_non_delayable_request_start_.value());
+      }
+      if (last_non_delayable_request_end_.has_value()) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "ResourceScheduler.NonDelayableLastEndToNonDelayableStart",
+            ticks_now - last_non_delayable_request_end_.value());
+      }
+
+      // Record time since last non-delayable request start or end, whichever
+      // happened later.
+      base::Optional<base::TimeTicks> last_non_delayable_request_start_or_end;
+      if (last_non_delayable_request_start_.has_value() &&
+          !last_non_delayable_request_end_.has_value()) {
+        last_non_delayable_request_start_or_end =
+            last_non_delayable_request_start_;
+      } else if (!last_non_delayable_request_start_.has_value() &&
+                 last_non_delayable_request_end_.has_value()) {
+        last_non_delayable_request_start_or_end =
+            last_non_delayable_request_end_;
+      } else if (last_non_delayable_request_start_.has_value() &&
+                 last_non_delayable_request_end_.has_value()) {
+        last_non_delayable_request_start_or_end =
+            std::max(last_non_delayable_request_start_.value(),
+                     last_non_delayable_request_end_.value());
+      }
+
+      if (last_non_delayable_request_start_or_end) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "ResourceScheduler.NonDelayableLastStartOrEndToNonDelayableStart",
+            ticks_now - last_non_delayable_request_start_or_end.value());
+      }
+    }
+  }
+
   void StartRequest(ScheduledResourceRequestImpl* request,
                     StartMode start_mode,
                     RequestStartTrigger trigger) {
+    const base::TimeTicks ticks_now = tick_clock_->NowTicks();
     // Only log on requests that were blocked by the ResourceScheduler.
     if (start_mode == START_ASYNC) {
       DCHECK_NE(RequestStartTrigger::NONE, trigger);
@@ -678,17 +726,12 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
           net::NetLog::StringCallback("trigger",
                                       RequestStartTriggerString(trigger)));
     }
-    // Record the number of delayable requests in-flight when a non-delayable
-    // request starts.
-    if (!RequestAttributesAreSet(request->attributes(), kAttributeDelayable)) {
-      UMA_HISTOGRAM_COUNTS_100(
-          "ResourceScheduler.NumDelayableRequestsInFlightAtStart.NonDelayable",
-          in_flight_delayable_count_);
-    }
+    if (request)
+      RecordMetricsOnStartRequest(*request, ticks_now);
 
     DCHECK(!request->url_request()->creation_time().is_null());
     base::TimeDelta queuing_duration =
-        tick_clock_->NowTicks() - request->url_request()->creation_time();
+        ticks_now - request->url_request()->creation_time();
     base::UmaHistogramMediumTimes(
         "ResourceScheduler.RequestQueuingDuration.Priority" +
             base::NumberToString(
@@ -697,7 +740,7 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
 
     // Update the start time of the non-delayble request.
     if (!RequestAttributesAreSet(request->attributes(), kAttributeDelayable))
-      last_non_delayable_request_start_ = tick_clock_->NowTicks();
+      last_non_delayable_request_start_ = ticks_now;
 
     InsertInFlightRequest(request);
     request->Start(start_mode);
@@ -954,6 +997,9 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
 
   // Time when the last non-delayble request started in this client.
   base::Optional<base::TimeTicks> last_non_delayable_request_start_;
+
+  // Time when the last non-delayble request ended in this client.
+  base::Optional<base::TimeTicks> last_non_delayable_request_end_;
 
   base::WeakPtrFactory<ResourceScheduler::Client> weak_ptr_factory_;
 };
