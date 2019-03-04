@@ -3461,13 +3461,13 @@ callback. Passing @code{NULL} resets to the default callback.
 @example
 typedef enum
 @{
-  LOG_ALL = 0,
-  LOG_DEBUG = 10000,
-  LOG_INFO = 20000,
-  LOG_WARN = 30000,
-  LOG_ERROR = 40000,
-  LOG_FATAL = 50000,
-  LOG_OFF = 60000
+  LOU_LOG_ALL = 0,
+  LOU_LOG_DEBUG = 10000,
+  LOU_LOG_INFO = 20000,
+  LOU_LOG_WARN = 30000,
+  LOU_LOG_ERROR = 40000,
+  LOU_LOG_FATAL = 50000,
+  LOU_LOG_OFF = 60000
 @} logLevels;
 void lou_setLogLevel (
   logLevels level);
@@ -3475,11 +3475,11 @@ void lou_setLogLevel (
 
 This function can be used to influence the amount of logging, from
 fatal error messages only to detailed debugging messages. Supported
-values are @code{LOG_DEBUG}, @code{LOG_INFO}, @code{LOG_WARN},
-@code{LOG_ERROR}, @code{LOG_FATAL} and @code{LOG_OFF}. Enabling
-logging at a given level also enables logging at all higher
-levels. Setting the level to @code{LOG_OFF} disables logging. The
-default level is @code{LOG_INFO}.
+values are @code{LOU_LOG_DEBUG}, @code{LOU_LOG_INFO},
+@code{LOU_LOG_WARN}, @code{LOU_LOG_ERROR}, @code{LOU_LOG_FATAL} and
+@code{LOU_LOG_OFF}. Enabling logging at a given level also enables
+logging at all higher levels. Setting the level to @code{LOU_LOG_OFF}
+disables logging. The default level is @code{LOU_LOG_INFO}.
 
 @node lou_logFile
 @section lou_logFile (deprecated)

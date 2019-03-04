@@ -293,13 +293,13 @@ char *EXPORT_CALL
 lou_getDataPath(void);
 
 typedef enum {
-	LOG_ALL = 0,
-	LOG_DEBUG = 10000,
-	LOG_INFO = 20000,
-	LOG_WARN = 30000,
-	LOG_ERROR = 40000,
-	LOG_FATAL = 50000,
-	LOG_OFF = 60000
+	LOU_LOG_ALL = 0,
+	LOU_LOG_DEBUG = 10000,
+	LOU_LOG_INFO = 20000,
+	LOU_LOG_WARN = 30000,
+	LOU_LOG_ERROR = 40000,
+	LOU_LOG_FATAL = 50000,
+	LOU_LOG_OFF = 60000
 } logLevels;
 
 typedef void (*logcallback)(logLevels level, const char *message);
