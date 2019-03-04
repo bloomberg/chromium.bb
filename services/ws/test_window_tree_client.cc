@@ -117,7 +117,7 @@ void TestWindowTreeClient::OnTopLevelCreated(
     int64_t display_id,
     bool drawn,
     const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
-  tracker_.OnTopLevelCreated(change_id, std::move(data), drawn,
+  tracker_.OnTopLevelCreated(change_id, std::move(data), display_id, drawn,
                              local_surface_id_allocation);
 }
 

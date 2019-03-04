@@ -223,6 +223,7 @@ class TestChangeTracker {
   void OnTopLevelCreated(
       uint32_t change_id,
       mojom::WindowDataPtr window_data,
+      int64_t display_id,
       bool drawn,
       const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
   void OnDragDropStart(

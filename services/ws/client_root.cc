@@ -239,6 +239,12 @@ void ClientRoot::UnattachChildFrameSinkIdRecursive(ProxyWindow* proxy_window) {
   }
 }
 
+void ClientRoot::NotifyClientOfDisplayIdChange() {
+  window_tree_->window_tree_client_->OnWindowDisplayChanged(
+      window_tree_->TransportIdForWindow(window_),
+      window_->GetHost()->GetDisplayId());
+}
+
 void ClientRoot::UpdateLocalSurfaceIdAndClientSurfaceEmbedder() {
   GenerateLocalSurfaceIdIfNecessary();
   ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window_);
@@ -346,9 +352,7 @@ void ClientRoot::OnWindowAddedToRootWindow(aura::Window* window) {
   DCHECK_EQ(window, window_);
   DCHECK(window->GetHost());
   window->GetHost()->AddObserver(this);
-  window_tree_->window_tree_client_->OnWindowDisplayChanged(
-      window_tree_->TransportIdForWindow(window),
-      window->GetHost()->GetDisplayId());
+  NotifyClientOfDisplayIdChange();
 
   // When the addition to a new root window isn't the result of moving across
   // displays (e.g. destruction of the current display), the window bounds in

@@ -553,12 +553,14 @@ void TestChangeTracker::OnChangeCompleted(uint32_t change_id, bool success) {
 void TestChangeTracker::OnTopLevelCreated(
     uint32_t change_id,
     mojom::WindowDataPtr window_data,
+    int64_t display_id,
     bool drawn,
     const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
   Change change;
   change.type = CHANGE_TYPE_ON_TOP_LEVEL_CREATED;
   change.change_id = change_id;
   change.window_id = window_data->window_id;
+  change.display_id = display_id;
   change.bool_value = drawn;
   change.local_surface_id_allocation = local_surface_id_allocation;
   AddChange(change);

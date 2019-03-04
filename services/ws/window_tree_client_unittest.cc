@@ -319,7 +319,7 @@ class TestWindowTreeClient2 : public TestWindowTreeClient {
                          bool drawn,
                          const viz::LocalSurfaceIdAllocation&
                              local_surface_id_allocation) override {
-    tracker()->OnTopLevelCreated(change_id, std::move(data), drawn,
+    tracker()->OnTopLevelCreated(change_id, std::move(data), display_id, drawn,
                                  local_surface_id_allocation);
   }
   void OnWindowBoundsChanged(
