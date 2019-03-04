@@ -26,6 +26,9 @@ class InfobarBadgeTabHelper
   static void CreateForWebState(web::WebState* web_state);
   // Sets the InfobarBadgeTabHelperDelegate to |delegate|.
   void SetDelegate(id<InfobarBadgeTabHelperDelegate> delegate);
+  // Returns wheter an Infobar badge is being displayed for the TabHelper
+  // Webstate.
+  bool IsInfobarBadgeDisplaying();
   ~InfobarBadgeTabHelper() override;
 
  private:
@@ -35,8 +38,6 @@ class InfobarBadgeTabHelper
   // InfoBarManagerObserver implementation.
   void OnInfoBarAdded(infobars::InfoBar* infobar) override;
   void OnInfoBarRemoved(infobars::InfoBar* infobar, bool animate) override;
-  void OnInfoBarReplaced(infobars::InfoBar* old_infobar,
-                         infobars::InfoBar* new_infobar) override;
   void OnManagerShuttingDown(infobars::InfoBarManager* manager) override;
   // Updates the badge delegate for |infobar|.
   void UpdateBadgeForInfobar(infobars::InfoBar* infobar, bool display);
@@ -46,6 +47,8 @@ class InfobarBadgeTabHelper
       infobar_observer_;
   // Delegate which displays the Infobar badge.
   __weak id<InfobarBadgeTabHelperDelegate> delegate_ = nil;
+  // Returns wheter an Infobar is being displayed.
+  bool is_infobar_displaying_;
 
   WEB_STATE_USER_DATA_KEY_DECL();
   DISALLOW_COPY_AND_ASSIGN(InfobarBadgeTabHelper);

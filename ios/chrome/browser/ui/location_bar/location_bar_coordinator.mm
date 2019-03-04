@@ -376,6 +376,10 @@ const int kLocationAuthorizationStatusCount = 4;
   self.viewController.searchByImageEnabled = searchByImageSupported;
 }
 
+- (void)displayInfobarBadge:(BOOL)display {
+  [self.viewController displayInfobarButton:display];
+}
+
 #pragma mark - private
 
 // Returns a dictionary with variation headers for qualified URLs. Can be empty.

@@ -243,6 +243,10 @@ typedef NS_ENUM(int, TrailingButtonState) {
   }
 }
 
+- (void)displayInfobarButton:(BOOL)display {
+  self.locationBarSteadyView.leadingButton.hidden = !display;
+}
+
 #pragma mark - LocationBarAnimatee
 
 - (void)offsetEditViewToMatchSteadyView {
@@ -434,6 +438,8 @@ typedef NS_ENUM(int, TrailingButtonState) {
                    imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
       forState:UIControlStateNormal];
   self.locationBarSteadyView.leadingButton.tintColor = [UIColor lightGrayColor];
+  // Set as hidden as it should only be shown by |displayInfobarButton:|
+  self.locationBarSteadyView.leadingButton.hidden = YES;
 }
 
 #pragma mark - UIMenu

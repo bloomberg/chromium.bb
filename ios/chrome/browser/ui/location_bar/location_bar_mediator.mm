@@ -8,9 +8,12 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/omnibox/browser/location_bar_model.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
+#include "ios/chrome/browser/infobars/infobar_badge_tab_helper_delegate.h"
 #import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
 #import "ios/chrome/browser/search_engines/search_engines_util.h"
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_consumer.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
@@ -31,8 +34,10 @@
 #endif
 
 @interface LocationBarMediator () <CRWWebStateObserver,
-                                   WebStateListObserving,
-                                   SearchEngineObserving>
+                                   InfobarBadgeTabHelperDelegate,
+                                   SearchEngineObserving,
+                                   WebStateListObserving>
+
 // The current web state associated with the toolbar.
 @property(nonatomic, assign) web::WebState* webState;
 
@@ -153,6 +158,13 @@
       search_engines::SupportsSearchByImage(self.templateURLService);
 }
 
+#pragma mark - InfobarBadgeTabHelper
+
+- (void)displayBadge:(BOOL)display {
+  DCHECK(IsInfobarUIRebootEnabled());
+  [self.consumer displayInfobarBadge:display];
+}
+
 #pragma mark - Setters
 
 - (void)setWebState:(web::WebState*)webState {
@@ -164,6 +176,19 @@
 
   if (_webState) {
     _webState->AddObserver(_webStateObserver.get());
+
+    if (IsInfobarUIRebootEnabled()) {
+      InfobarBadgeTabHelper* infobarBadgeTabHelper =
+          InfobarBadgeTabHelper::FromWebState(_webState);
+      DCHECK(infobarBadgeTabHelper);
+      infobarBadgeTabHelper->SetDelegate(self);
+      if (self.consumer) {
+        // Whenever the WebState changes ask the corresponding
+        // InfobarBadgeTabHelper if a badge should be displayed.
+        [self.consumer displayInfobarBadge:infobarBadgeTabHelper
+                                               ->IsInfobarBadgeDisplaying()];
+      }
+    }
 
     if (self.consumer) {
       [self notifyConsumerOfChangedLocation];
