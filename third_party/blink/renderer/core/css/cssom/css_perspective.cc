@@ -47,7 +47,7 @@ CSSPerspective* CSSPerspective::FromCSSValue(const CSSFunctionValue& value) {
 }
 
 DOMMatrix* CSSPerspective::toMatrix(ExceptionState& exception_state) const {
-  if (length_->IsUnitValue() && ToCSSUnitValue(length_)->value() < 0) {
+  if (length_->IsUnitValue() && To<CSSUnitValue>(length_.Get())->value() < 0) {
     // Negative values are invalid.
     // https://github.com/w3c/css-houdini-drafts/issues/420
     return nullptr;
@@ -65,7 +65,7 @@ DOMMatrix* CSSPerspective::toMatrix(ExceptionState& exception_state) const {
 
 const CSSFunctionValue* CSSPerspective::ToCSSValue() const {
   const CSSValue* length = nullptr;
-  if (length_->IsUnitValue() && ToCSSUnitValue(length_)->value() < 0) {
+  if (length_->IsUnitValue() && To<CSSUnitValue>(length_.Get())->value() < 0) {
     // Wrap out of range length with a calc.
     CSSCalcExpressionNode* node = length_->ToCalcExpressionNode();
     node->SetIsNestedCalc();

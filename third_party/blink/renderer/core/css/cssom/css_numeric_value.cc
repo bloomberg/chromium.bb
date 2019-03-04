@@ -38,13 +38,13 @@ CSSUnitValue* MaybeSimplifyAsUnitValue(const CSSNumericValueVector& values,
                                        const BinaryOperation& op) {
   DCHECK(!values.IsEmpty());
 
-  CSSUnitValue* first_unit_value = ToCSSUnitValueOrNull(values[0]);
+  auto* first_unit_value = DynamicTo<CSSUnitValue>(values[0].Get());
   if (!first_unit_value)
     return nullptr;
 
   double final_value = first_unit_value->value();
   for (wtf_size_t i = 1; i < values.size(); i++) {
-    CSSUnitValue* unit_value = ToCSSUnitValueOrNull(values[i]);
+    auto* unit_value = DynamicTo<CSSUnitValue>(values[i].Get());
     if (!unit_value ||
         unit_value->GetInternalUnit() != first_unit_value->GetInternalUnit())
       return nullptr;
@@ -63,7 +63,7 @@ CSSUnitValue* MaybeMultiplyAsUnitValue(const CSSNumericValueVector& values) {
 
   double final_value = 1.0;
   for (wtf_size_t i = 0; i < values.size(); i++) {
-    CSSUnitValue* unit_value = ToCSSUnitValueOrNull(values[i]);
+    auto* unit_value = DynamicTo<CSSUnitValue>(values[i].Get());
     if (!unit_value)
       return nullptr;
 
@@ -315,8 +315,8 @@ CSSMathSum* CSSNumericValue::toSum(const Vector<String>& unit_strings,
 
   if (unit_strings.size() == 0) {
     std::sort(values.begin(), values.end(), [](const auto& a, const auto& b) {
-      return WTF::CodePointCompareLessThan(ToCSSUnitValue(a)->unit(),
-                                           ToCSSUnitValue(b)->unit());
+      return WTF::CodePointCompareLessThan(To<CSSUnitValue>(a.Get())->unit(),
+                                           To<CSSUnitValue>(b.Get())->unit());
     });
 
     // We got 'values' from a sum value, so it must be a valid CSSMathSum.
@@ -336,7 +336,7 @@ CSSMathSum* CSSNumericValue::toSum(const Vector<String>& unit_strings,
         std::accumulate(values.begin(), values.end(), 0.0,
                         [target_unit](double cur_sum, auto& value) {
                           if (value) {
-                            auto& unit_value = ToCSSUnitValue(*value);
+                            auto& unit_value = To<CSSUnitValue>(*value);
                             if (const auto* converted_value =
                                     unit_value.ConvertTo(target_unit)) {
                               cur_sum += converted_value->value();

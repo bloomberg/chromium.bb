@@ -135,8 +135,9 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
         "test");
     EXPECT_EQ(values.at("--x")->ToCSSStyleValue()->GetType(),
               CSSStyleValue::StyleValueType::kUnitType);
-    EXPECT_EQ(ToCSSUnitValue(values.at("--x")->ToCSSStyleValue())->value(), 10);
-    EXPECT_EQ(ToCSSUnitValue(values.at("--x")->ToCSSStyleValue())->unit(),
+    EXPECT_EQ(To<CSSUnitValue>(values.at("--x")->ToCSSStyleValue())->value(),
+              10);
+    EXPECT_EQ(To<CSSUnitValue>(values.at("--x")->ToCSSStyleValue())->unit(),
               "px");
     EXPECT_EQ(values.at("--y")->ToCSSStyleValue()->GetType(),
               CSSStyleValue::StyleValueType::kUnknownType);

@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_SHORTHAND_H_
 
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -31,11 +32,12 @@ class Shorthand : public CSSProperty {
   constexpr Shorthand() : CSSProperty() {}
 };
 
-DEFINE_TYPE_CASTS(Shorthand,
-                  CSSProperty,
-                  shorthand,
-                  shorthand->IsShorthand(),
-                  shorthand.IsShorthand());
+template <>
+struct DowncastTraits<Shorthand> {
+  static bool AllowFrom(const CSSProperty& property) {
+    return property.IsShorthand();
+  }
+};
 
 }  // namespace blink
 
