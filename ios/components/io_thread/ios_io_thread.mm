@@ -213,8 +213,8 @@ void IOSIOThread::ChangedToOnTheRecord() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   base::PostTaskWithTraits(
       FROM_HERE, {web::WebThread::IO},
-      base::Bind(&IOSIOThread::ChangedToOnTheRecordOnIOThread,
-                 base::Unretained(this)));
+      base::BindOnce(&IOSIOThread::ChangedToOnTheRecordOnIOThread,
+                     base::Unretained(this)));
 }
 
 net::URLRequestContextGetter* IOSIOThread::system_url_request_context_getter() {

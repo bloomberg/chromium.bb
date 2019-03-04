@@ -40,7 +40,7 @@ void CookieNotificationBridge::OnNotificationReceived(
       isEqualToString:NSHTTPCookieManagerCookiesChangedNotification]);
   base::PostTaskWithTraits(
       FROM_HERE, {web::WebThread::IO},
-      base::Bind(&net::CookieStoreIOS::NotifySystemCookiesChanged));
+      base::BindOnce(&net::CookieStoreIOS::NotifySystemCookiesChanged));
 }
 
 }  // namespace web

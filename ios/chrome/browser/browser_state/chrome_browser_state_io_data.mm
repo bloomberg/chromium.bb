@@ -456,9 +456,10 @@ void ChromeBrowserStateIOData::ShutdownOnUIThread(
 
   if (!context_getters->empty()) {
     if (web::WebThread::IsThreadInitialized(web::WebThread::IO)) {
-      base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO},
-                               base::Bind(&NotifyContextGettersOfShutdownOnIO,
-                                          base::Passed(&context_getters)));
+      base::PostTaskWithTraits(
+          FROM_HERE, {web::WebThread::IO},
+          base::BindOnce(&NotifyContextGettersOfShutdownOnIO,
+                         std::move(context_getters)));
     }
   }
 

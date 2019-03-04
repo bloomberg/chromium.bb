@@ -375,7 +375,7 @@ class AppStateWithThreadTest : public PlatformTest {
     base::Lock* lock = new base::Lock;
 
     base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO},
-                             base::Bind(&createTracker, &created, lock));
+                             base::BindOnce(&createTracker, &created, lock));
 
     CFTimeInterval start = CACurrentMediaTime();
 

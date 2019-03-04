@@ -164,8 +164,8 @@ void WebMainLoop::ShutdownThreadsAndCleanUp() {
   base::ThreadRestrictions::SetIOAllowed(true);
   base::PostTaskWithTraits(
       FROM_HERE, {WebThread::IO},
-      base::Bind(base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed),
-                 true));
+      base::BindOnce(
+          base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed), true));
 
   // Also allow waiting to join threads.
   // TODO(crbug.com/800808): Ideally this (and the above SetIOAllowed()
