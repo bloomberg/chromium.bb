@@ -15,9 +15,11 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/root_window_finder.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/timer/timer.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
@@ -79,6 +81,7 @@ AutoclickController::AutoclickController()
   Shell::GetPrimaryRootWindow()->GetHost()->GetEventSource()->AddEventRewriter(
       drag_event_rewriter_.get());
   InitClickTimers();
+  UpdateRingSize();
 }
 
 AutoclickController::~AutoclickController() {
@@ -137,6 +140,11 @@ void AutoclickController::SetAutoclickEventType(
     return;
   CancelAutoclickAction();
   event_type_ = type;
+}
+
+void AutoclickController::SetMovementThreshold(int movement_threshold) {
+  movement_threshold_ = movement_threshold;
+  UpdateRingSize();
 }
 
 void AutoclickController::CreateAutoclickRingWidget(
@@ -327,6 +335,15 @@ void AutoclickController::UpdateRingWidget(const gfx::Point& point_in_screen) {
   } else {
     UpdateAutoclickRingWidget(widget_.get(), point_in_screen);
   }
+}
+
+void AutoclickController::UpdateRingSize() {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalAccessibilityAutoclick)) {
+    return;
+  }
+  autoclick_ring_handler_->SetSize(movement_threshold_,
+                                   movement_threshold_ + 10);
 }
 
 bool AutoclickController::DragInProgress() const {

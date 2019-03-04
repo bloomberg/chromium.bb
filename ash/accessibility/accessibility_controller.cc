@@ -975,7 +975,7 @@ void AccessibilityController::UpdateAutoclickMovementThresholdFromPref() {
   int movement_threshold = active_user_prefs_->GetInteger(
       prefs::kAccessibilityAutoclickMovementThreshold);
 
-  Shell::Get()->autoclick_controller()->set_movement_threshold(
+  Shell::Get()->autoclick_controller()->SetMovementThreshold(
       movement_threshold);
 }
 
