@@ -71,16 +71,6 @@ scoped_refptr<VP9Picture> D3D11VP9Accelerator::CreateVP9Picture() {
 }
 
 bool D3D11VP9Accelerator::BeginFrame(D3D11VP9Picture* pic) {
-  Microsoft::WRL::ComPtr<ID3D11VideoDecoderOutputView> output_view;
-  D3D11_VIDEO_DECODER_OUTPUT_VIEW_DESC view_desc = {
-      .DecodeProfile = D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0,
-      .ViewDimension = D3D11_VDOV_DIMENSION_TEXTURE2D,
-      .Texture2D = {.ArraySlice = (UINT)pic->level()}};
-
-  RETURN_ON_HR_FAILURE(CreateVideoDecoderOutputView,
-                       video_device_->CreateVideoDecoderOutputView(
-                           pic->picture_buffer()->texture().Get(), &view_desc,
-                           output_view.GetAddressOf()));
   // This |decrypt_context| has to be outside the if block because pKeyInfo in
   // D3D11_VIDEO_DECODER_BEGIN_FRAME_CRYPTO_SESSION is a pointer (to a GUID).
   base::Optional<CdmProxyContext::D3D11DecryptContext> decrypt_context;
@@ -106,7 +96,7 @@ bool D3D11VP9Accelerator::BeginFrame(D3D11VP9Picture* pic) {
   HRESULT hr;
   do {
     hr = video_context_->DecoderBeginFrame(
-        video_decoder_.Get(), output_view.Get(),
+        video_decoder_.Get(), pic->picture_buffer()->output_view().Get(),
         content_key ? sizeof(*content_key) : 0, content_key.get());
   } while (hr == E_PENDING || hr == D3DERR_WASSTILLDRAWING);
 
