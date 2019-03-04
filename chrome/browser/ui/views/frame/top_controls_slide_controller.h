@@ -9,8 +9,6 @@
 
 #include "base/macros.h"
 
-class BrowserView;
-
 namespace content {
 class WebContents;
 }  // namespace content
@@ -58,10 +56,5 @@ class TopControlsSlideController {
  private:
   DISALLOW_COPY_AND_ASSIGN(TopControlsSlideController);
 };
-
-// If the feature is enabled, returns an instance of the controller, otherwise
-// returns nullptr.
-std::unique_ptr<TopControlsSlideController> CreateTopControlsSlideController(
-    BrowserView* browser_view);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_TOP_CONTROLS_SLIDE_CONTROLLER_H_

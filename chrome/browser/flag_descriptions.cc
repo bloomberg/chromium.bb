@@ -3354,12 +3354,6 @@ const char kSingleProcessMashDescription[] =
     "Runs the system UI (ash) as a mojo service, but inside the browser "
     "process. The browser uses the mojo window service (ws) APIs.";
 
-const char kSlideTopChromeWithPageScrollsName[] =
-    "Slide top-chrome with page scrolls";
-const char kSlideTopChromeWithPageScrollsDescription[] =
-    "If enabled, page scrolls in tablet mode will also scroll the top-chrome"
-    " UI.";
-
 const char kSmartTextSelectionName[] = "Smart Text Selection";
 const char kSmartTextSelectionDescription[] =
     "Shows quick actions for text "

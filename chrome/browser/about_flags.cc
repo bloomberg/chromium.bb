@@ -3077,13 +3077,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(base::kDCheckIsFatalFeature)},
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
 
-#if defined(OS_CHROMEOS)
-    {"slide-top-chrome-with-page-scrolls",
-     flag_descriptions::kSlideTopChromeWithPageScrollsName,
-     flag_descriptions::kSlideTopChromeWithPageScrollsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kSlideTopChromeWithPageScrolls)},
-#endif  // defined(OS_CHROMEOS)
-
     {"enable-improved-geolanguage-data",
      flag_descriptions::kImprovedGeoLanguageDataName,
      flag_descriptions::kImprovedGeoLanguageDataDescription, kOsAll,

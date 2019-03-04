@@ -17,7 +17,6 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/strings/safe_sprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "cc/base/math_util.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/permissions/permission_request_impl.h"
@@ -27,7 +26,6 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -256,13 +254,6 @@ class TopControlsSlideControllerTest : public InProcessBrowserTest {
   TestController* top_controls_slide_controller() const {
     DCHECK(test_controller_);
     return test_controller_;
-  }
-
-  // InProcessBrowserTest:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kSlideTopChromeWithPageScrolls);
-    InProcessBrowserTest::SetUp();
   }
 
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
