@@ -411,8 +411,6 @@ void FlagsState::SetOriginListFlag(const std::string& internal_name,
 
   std::set<std::string> enabled_entries;
   GetSanitizedEnabledFlags(flags_storage, &enabled_entries);
-  // const bool enabled =
-  //    enabled_entries.find(entry->internal_name) != enabled_entries.end();
   const bool enabled = base::ContainsKey(enabled_entries, entry->internal_name);
   switch_values_[entry->command_line_switch] = value;
   DidModifyOriginListFlag(*entry, enabled);
