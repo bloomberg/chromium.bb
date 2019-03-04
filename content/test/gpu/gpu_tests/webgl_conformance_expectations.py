@@ -467,8 +467,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'vulkan'], bug=2887) # ANGLE bug ID
     self.Fail('WebglExtension_EXT_shader_texture_lod',
         ['win', 'passthrough', 'vulkan'], bug=2899) # ANGLE bug ID
-    self.Fail('WebglExtension_EXT_sRGB',
-        ['win', 'passthrough', 'vulkan'], bug=2900) # ANGLE bug ID
     self.Fail('WebglExtension_OES_element_index_uint',
         ['win', 'passthrough', 'vulkan'], bug=2902) # ANGLE bug ID
     self.Fail('WebglExtension_OES_standard_derivatives',
