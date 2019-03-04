@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -23,6 +24,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
@@ -54,6 +56,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/metrics/system_memory_stats_recorder.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
@@ -235,8 +238,7 @@ void TabManager::Start() {
   // it asks TabManager to do tab discarding.
   base::MemoryPressureMonitor* monitor = base::MemoryPressureMonitor::Get();
   if (monitor) {
-    memory_pressure_listener_.reset(new base::MemoryPressureListener(
-        base::Bind(&TabManager::OnMemoryPressure, base::Unretained(this))));
+    RegisterMemoryPressureListener();
     base::MemoryPressureListener::MemoryPressureLevel level =
         monitor->GetCurrentPressureLevel();
     if (level == base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
@@ -274,7 +276,7 @@ void TabManager::Start() {
 void TabManager::Stop() {
   update_timer_.Stop();
   force_load_timer_.reset();
-  memory_pressure_listener_.reset();
+  UnregisterMemoryPressureListener();
 }
 
 LifecycleUnitVector TabManager::GetSortedLifecycleUnits() {
@@ -296,7 +298,8 @@ LifecycleUnitVector TabManager::GetSortedLifecycleUnits() {
   return sorted_lifecycle_units;
 }
 
-void TabManager::DiscardTab(LifecycleUnitDiscardReason reason) {
+void TabManager::DiscardTab(LifecycleUnitDiscardReason reason,
+                            TabDiscardDoneCB tab_discard_done) {
   if (reason == LifecycleUnitDiscardReason::URGENT) {
     stats_collector_->RecordWillDiscardUrgently(GetNumAliveTabs());
     resource_coordinator::TabActivityWatcher::GetInstance()
@@ -305,9 +308,9 @@ void TabManager::DiscardTab(LifecycleUnitDiscardReason reason) {
 
 #if defined(OS_CHROMEOS)
   // Call Chrome OS specific low memory handling process.
-  delegate_->LowMemoryKill(reason);
+  delegate_->LowMemoryKill(reason, std::move(tab_discard_done));
 #else
-  DiscardTabImpl(reason);
+  DiscardTabImpl(reason, std::move(tab_discard_done));
 #endif  // defined(OS_CHROMEOS)
 }
 
@@ -328,7 +331,15 @@ void TabManager::LogMemoryAndDiscardTab(LifecycleUnitDiscardReason reason) {
   // Discard immediately without waiting for LogMemory() (https://crbug/850545).
   // Consider removing LogMemory() at all if nobody cares about the log.
   LogMemory("Tab Discards Memory details");
-  DiscardTab(reason);
+
+  // Start handling memory pressure. Suppress further notifications before
+  // completion in case a slow handler queues up multiple dispatches of this
+  // method and inadvertently discards more than necessary tabs/apps in a burst.
+  UnregisterMemoryPressureListener();
+
+  TabDiscardDoneCB tab_discard_done(base::BindOnce(
+      &TabManager::OnTabDiscardDone, weak_ptr_factory_.GetWeakPtr()));
+  DiscardTab(reason, std::move(tab_discard_done));
 }
 
 void TabManager::LogMemory(const std::string& title) {
@@ -530,6 +541,34 @@ void TabManager::OnMemoryPressure(
   NOTREACHED();
 }
 
+void TabManager::OnTabDiscardDone() {
+  base::MemoryPressureMonitor* monitor = base::MemoryPressureMonitor::Get();
+  if (!monitor ||
+      // Check update_timer_ to see if Stop() was called.
+      !update_timer_.IsRunning()) {
+    return;
+  }
+
+  // Create a MemoryPressureListener instance to re-register to the observer.
+  // Note that we've just finished handling memory pressure and async
+  // tab/app discard might haven't taken effect yet. Don't check memory pressure
+  // level or act on it, or we might over-discard tabs or apps.
+  RegisterMemoryPressureListener();
+}
+
+void TabManager::RegisterMemoryPressureListener() {
+  DCHECK(!memory_pressure_listener_);
+  // Use sync memory pressure listener.
+  memory_pressure_listener_ =
+      std::make_unique<base::MemoryPressureListener>(base::BindRepeating(
+          &TabManager::OnMemoryPressure, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void TabManager::UnregisterMemoryPressureListener() {
+  // Destroying the memory pressure listener to unregister from the observer.
+  memory_pressure_listener_.reset();
+}
+
 void TabManager::OnActiveTabChanged(content::WebContents* old_contents,
                                     content::WebContents* new_contents) {
   // An active tab is not purged.
@@ -638,7 +677,8 @@ TabManager::WebContentsData* TabManager::GetWebContentsData(
 // such as tabs created with JavaScript window.open(). Potentially consider
 // discarding the entire set together, or use that in the priority computation.
 content::WebContents* TabManager::DiscardTabImpl(
-    LifecycleUnitDiscardReason reason) {
+    LifecycleUnitDiscardReason reason,
+    TabDiscardDoneCB tab_discard_done) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (LifecycleUnit* lifecycle_unit : GetSortedLifecycleUnits()) {

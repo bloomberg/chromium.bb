@@ -18,6 +18,7 @@
 #include "base/process/process.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/process/arc_process.h"
+#include "chrome/browser/chromeos/arc/process/arc_process_service.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
@@ -87,7 +88,8 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
                          aura::Window* lost_active) override;
 
   // Kills a process on memory pressure.
-  void LowMemoryKill(::mojom::LifecycleUnitDiscardReason reason);
+  void LowMemoryKill(::mojom::LifecycleUnitDiscardReason reason,
+                     TabManager::TabDiscardDoneCB tab_discard_done);
 
   // Returns oom_score_adj of a process if the score is cached by |this|.
   // If couldn't find the score in the cache, returns -1001 since the valid
@@ -127,6 +129,8 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, KillMultipleProcesses);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, SetOomScoreAdj);
 
+  using OptionalArcProcessList = arc::ArcProcessService::OptionalArcProcessList;
+
   class Candidate;
   class FocusedProcess;
 
@@ -150,7 +154,7 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
   // Get the list of candidates to kill, sorted by descending importance.
   static std::vector<Candidate> GetSortedCandidates(
       const LifecycleUnitVector& lifecycle_units,
-      const std::vector<arc::ArcProcess>& arc_processes);
+      const OptionalArcProcessList& arc_processes);
 
   // Returns the LifecycleUnits in TabManager. Virtual for unit tests.
   virtual LifecycleUnitVector GetLifecycleUnits();
@@ -161,13 +165,14 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
   // Kills a process after getting all info of tabs and apps.
   void LowMemoryKillImpl(base::TimeTicks start_time,
                          ::mojom::LifecycleUnitDiscardReason reason,
-                         std::vector<arc::ArcProcess> arc_processes);
+                         TabManager::TabDiscardDoneCB tab_discard_done,
+                         OptionalArcProcessList arc_processes);
 
   // Sets a newly focused tab the highest priority process if it wasn't.
   void AdjustFocusedTabScore(base::ProcessHandle pid);
 
   // Called by AdjustOomPriorities. Runs on the main thread.
-  void AdjustOomPrioritiesImpl(std::vector<arc::ArcProcess> arc_processes);
+  void AdjustOomPrioritiesImpl(OptionalArcProcessList arc_processes);
 
   // Sets OOM score for processes in the range [|rbegin|, |rend|) to integers
   // distributed evenly in [|range_begin|, |range_end|).

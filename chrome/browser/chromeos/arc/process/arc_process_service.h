@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/process/process_iterator.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/arc/process/arc_process.h"
@@ -34,17 +35,25 @@ class ArcBridgeService;
 //
 // Call RequestAppProcessList() / RequestSystemProcessList() on the main UI
 // thread to get a list of all ARC app / system processes. It returns
-// vector<arc::ArcProcess>, which includes pid <-> nspid mapping.
-// Example:
-//   void OnUpdateProcessList(const vector<arc::ArcProcess>&) {...}
+// base::Optional<vector<arc::ArcProcess>>, which includes pid <-> nspid
+// mapping. Example:
+//   void OnUpdateProcessList(
+//       base::Optional<vector<arc::ArcProcess>> processes) {
+//     if (!processes) {
+//         // Arc process service is not ready.
+//        return;
+//     }
+//     ...
+//   }
 //
 //   arc::ArcProcessService* arc_process_service =
 //       arc::ArcProcessService::Get();
-//   if (!arc_process_service ||
-//       !arc_process_service->RequestAppProcessList(
-//           base::Bind(&OnUpdateProcessList)) {
+//   if (!arc_process_service)
 //     LOG(ERROR) << "ARC process instance not ready.";
+//     return;
 //   }
+//   arc_process_service->RequestAppProcessList(
+//       base::BindOnce(&OnUpdateProcessList));
 //
 // [System Process]
 // The system process here is defined by the scope. If the process is produced
@@ -60,8 +69,9 @@ class ArcProcessService : public KeyedService,
   static ArcProcessService* GetForBrowserContext(
       content::BrowserContext* context);
 
+  using OptionalArcProcessList = base::Optional<std::vector<ArcProcess>>;
   using RequestProcessListCallback =
-      base::Callback<void(std::vector<ArcProcess>)>;
+      base::OnceCallback<void(OptionalArcProcessList)>;
   using RequestMemoryInfoCallback = base::OnceCallback<void(
       std::unique_ptr<memory_instrumentation::GlobalMemoryDump>)>;
 
@@ -72,9 +82,10 @@ class ArcProcessService : public KeyedService,
   // Returns nullptr before the global instance is ready.
   static ArcProcessService* Get();
 
-  // Returns true if ARC IPC is ready for process list request,
-  // otherwise false.
-  bool RequestAppProcessList(RequestProcessListCallback callback);
+  // If ARC IPC is ready for the process list request, the result is returned
+  // as the argument of |callback|. Otherwise, |callback| is called with
+  // base::nullopt.
+  void RequestAppProcessList(RequestProcessListCallback callback);
   void RequestSystemProcessList(RequestProcessListCallback callback);
 
   bool RequestAppMemoryInfo(RequestMemoryInfoCallback callback);
@@ -111,7 +122,7 @@ class ArcProcessService : public KeyedService,
 
  private:
   void OnReceiveProcessList(
-      const RequestProcessListCallback& callback,
+      RequestProcessListCallback callback,
       std::vector<mojom::RunningAppProcessInfoPtr> processes);
   void OnReceiveMemoryInfo(
       RequestMemoryInfoCallback callback,

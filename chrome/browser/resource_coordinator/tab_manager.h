@@ -91,6 +91,8 @@ class TabManager : public LifecycleUnitObserver,
 
   class WebContentsData;
 
+  using TabDiscardDoneCB = base::ScopedClosureRunner;
+
   // |page_signal_receiver| might be null.
   TabManager(PageSignalReceiver* page_signal_receiver,
              TabLoadTracker* tab_load_tracker);
@@ -110,7 +112,9 @@ class TabManager : public LifecycleUnitObserver,
   // urgent, an aggressive fast-kill will be attempted if the sudden termination
   // disablers are allowed to be ignored (e.g. On ChromeOS, we can ignore an
   // unload handler and fast-kill the tab regardless).
-  void DiscardTab(LifecycleUnitDiscardReason reason);
+  void DiscardTab(
+      LifecycleUnitDiscardReason reason,
+      TabDiscardDoneCB tab_discard_done = TabDiscardDoneCB(base::DoNothing()));
 
   // Method used by the extensions API to discard tabs. If |contents| is null,
   // discards the least important tab using DiscardTab(). Otherwise discards
@@ -205,6 +209,7 @@ class TabManager : public LifecycleUnitObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, EnablePageAlmostIdleSignal);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, FreezeTab);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, InvalidOrEmptyURL);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TabDiscardDoneCallback);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, IsInBackgroundTabOpeningSession);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, IsInternalPage);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, IsTabRestoredInForeground);
@@ -310,6 +315,17 @@ class TabManager : public LifecycleUnitObserver,
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
+  // Called when we finished handling the memory pressure by discarding tabs.
+  void OnTabDiscardDone();
+
+  // Register to start listening to memory pressure. Called on startup or end
+  // of tab discards.
+  void RegisterMemoryPressureListener();
+
+  // Unregister to stop listening to memory pressure. Called on shutdown or
+  // beginning of tab discards.
+  void UnregisterMemoryPressureListener();
+
   // Methods called by OnTabStripModelChanged()
   void OnActiveTabChanged(content::WebContents* old_contents,
                           content::WebContents* new_contents);
@@ -339,7 +355,9 @@ class TabManager : public LifecycleUnitObserver,
 
   // Discards the less important LifecycleUnit that supports discarding under
   // |reason|.
-  content::WebContents* DiscardTabImpl(LifecycleUnitDiscardReason reason);
+  content::WebContents* DiscardTabImpl(
+      LifecycleUnitDiscardReason reason,
+      TabDiscardDoneCB tab_discard_done = TabDiscardDoneCB(base::DoNothing()));
 
   void OnSessionRestoreStartedLoadingTabs();
   void OnSessionRestoreFinishedLoadingTabs();
