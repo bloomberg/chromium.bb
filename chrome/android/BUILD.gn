@@ -2060,10 +2060,10 @@ monochrome_public_bundle_tmpl("trichrome_chrome_bundle") {
 
 generate_jni("jni_headers") {
   sources = [
-    "features/media_router/java/org/chromium/chrome/browser/media/router/ChromeMediaRouter.java",
-    "features/media_router/java/org/chromium/chrome/browser/media/router/ChromeMediaRouterDialogController.java",
-    "features/media_router/java/org/chromium/chrome/browser/media/router/FlingingControllerBridge.java",
-    "features/media_router/java/org/chromium/chrome/browser/media/router/MediaStatusBridge.java",
+    "features/media_router/java/src/org/chromium/chrome/browser/media/router/ChromeMediaRouter.java",
+    "features/media_router/java/src/org/chromium/chrome/browser/media/router/ChromeMediaRouterDialogController.java",
+    "features/media_router/java/src/org/chromium/chrome/browser/media/router/FlingingControllerBridge.java",
+    "features/media_router/java/src/org/chromium/chrome/browser/media/router/MediaStatusBridge.java",
     "java/src/org/chromium/chrome/browser/AfterStartupTaskUtils.java",
     "java/src/org/chromium/chrome/browser/AppHooks.java",
     "java/src/org/chromium/chrome/browser/ApplicationLifetime.java",
