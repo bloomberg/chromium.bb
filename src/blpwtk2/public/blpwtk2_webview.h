@@ -63,6 +63,47 @@ class WebView
         bool isRight;
     };
 
+    struct DrawParams {
+        enum class RendererType {
+            PDF,
+            Bitmap
+        };
+
+        NativeRect srcRegion;
+            // The region of the webview that will be captured.  The units are
+            // specified in terms of pixels.
+
+        float destWidth;
+        float destHeight;
+            // The size of the generated document.  The units are specified in
+            // terms of points (1/72th of an inch) as described in
+            // https://drafts.csswg.org/css-values-3/#absolute-lengths
+            // If a device dependent renderer is selected (ie. bitmap), the
+            // size will be assumed to be of the native resolution unit of the
+            // device.
+
+        StringRef styleClass;
+            // A space separated class list that will be applied to the body
+            // element.  The application is only temporary and the style
+            // attribute is reverted once the draw operation is complete.
+
+        RendererType rendererType;
+            // The picture format of the generated output.
+
+        int dpi;
+            // The 'dpi' field is only applicable for PDF renderer and when
+            // the target is a Blob.
+
+        DrawParams()
+            : srcRegion({ 0 })
+            , destWidth(0.0)
+            , destHeight(0.0)
+            , rendererType(RendererType::PDF)
+            , dpi(72)
+        {
+        }
+    };
+
     virtual void destroy() = 0;
         // Destroy the WebView and release any resources.  Do not use this
         // WebView after calling this method.
@@ -189,6 +230,9 @@ class WebView
     virtual void setDelegate(WebViewDelegate* delegate) = 0;
         // Set a new web view delegate. From this point on, all callbacks will
         // be sent to the new delegate.
+
+    virtual void drawContentsToBlob(Blob *blob, const DrawParams& params) = 0;
+        // Draw the specified region of the main web frame onto a blob.
 
     virtual int getRoutingId() const = 0;
         // Return the routingId for this WebView.  This can only be used in
