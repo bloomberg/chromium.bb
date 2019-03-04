@@ -1577,7 +1577,7 @@ enum class EnterTabSwitcherSnapshotResult {
     if ([command fromChrome]) {
       [self dismissModalsAndOpenSelectedTabInMode:ApplicationMode::NORMAL
                                           withURL:[command URL]
-                                       virtualURL:GURL::EmptyGURL()
+                                       virtualURL:[command virtualURL]
                                    dismissOmnibox:YES
                                        transition:ui::PAGE_TRANSITION_TYPED
                                        completion:nil];
