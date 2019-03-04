@@ -45,7 +45,7 @@ namespace printing {
 
 namespace {
 
-static constexpr int kDefaultDocumentCookie = 1234;
+constexpr int kDefaultDocumentCookie = 1234;
 
 class PrintPreviewObserver : PrintPreviewUI::TestingDelegate {
  public:
@@ -84,7 +84,7 @@ class PrintPreviewObserver : PrintPreviewUI::TestingDelegate {
 class TestPrintFrameContentMsgFilter : public content::BrowserMessageFilter {
  public:
   TestPrintFrameContentMsgFilter(int document_cookie,
-                                 base::RepeatingClosure msg_callback)
+                                 const base::RepeatingClosure& msg_callback)
       : content::BrowserMessageFilter(PrintMsgStart),
         document_cookie_(document_cookie),
         task_runner_(base::SequencedTaskRunnerHandle::Get()),
@@ -103,7 +103,7 @@ class TestPrintFrameContentMsgFilter : public content::BrowserMessageFilter {
   }
 
  private:
-  ~TestPrintFrameContentMsgFilter() override {}
+  ~TestPrintFrameContentMsgFilter() override = default;
 
   void CheckMessage(int document_cookie,
                     const PrintHostMsg_DidPrintContent_Params& param) {
@@ -133,7 +133,7 @@ class KillPrintFrameContentMsgFilter : public content::BrowserMessageFilter {
   }
 
  private:
-  ~KillPrintFrameContentMsgFilter() override {}
+  ~KillPrintFrameContentMsgFilter() override = default;
 
   void KillRenderProcess(int document_cookie,
                          const PrintHostMsg_DidPrintContent_Params& param) {
@@ -147,8 +147,8 @@ class KillPrintFrameContentMsgFilter : public content::BrowserMessageFilter {
 
 class PrintBrowserTest : public InProcessBrowserTest {
  public:
-  PrintBrowserTest() {}
-  ~PrintBrowserTest() override {}
+  PrintBrowserTest() = default;
+  ~PrintBrowserTest() override = default;
 
   void SetUp() override {
     num_expected_messages_ = 1;  // By default, only wait on one message.
@@ -166,9 +166,8 @@ class PrintBrowserTest : public InProcessBrowserTest {
   void PrintAndWaitUntilPreviewIsReady(bool print_only_selection) {
     PrintPreviewObserver print_preview_observer;
 
-    printing::StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
-                         /*print_preview_disabled=*/false,
-                         print_only_selection);
+    StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
+               /*print_preview_disabled=*/false, print_only_selection);
 
     print_preview_observer.WaitUntilPreviewIsReady();
   }
@@ -226,8 +225,8 @@ class PrintBrowserTest : public InProcessBrowserTest {
 
 class SitePerProcessPrintBrowserTest : public PrintBrowserTest {
  public:
-  SitePerProcessPrintBrowserTest() {}
-  ~SitePerProcessPrintBrowserTest() override {}
+  SitePerProcessPrintBrowserTest() = default;
+  ~SitePerProcessPrintBrowserTest() override = default;
 
   // content::BrowserTestBase
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -239,8 +238,8 @@ class IsolateOriginsPrintBrowserTest : public PrintBrowserTest {
  public:
   static constexpr char kIsolatedSite[] = "b.com";
 
-  IsolateOriginsPrintBrowserTest() {}
-  ~IsolateOriginsPrintBrowserTest() override {}
+  IsolateOriginsPrintBrowserTest() = default;
+  ~IsolateOriginsPrintBrowserTest() override = default;
 
   // content::BrowserTestBase
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -260,15 +259,14 @@ constexpr char IsolateOriginsPrintBrowserTest::kIsolatedSite[];
 
 class PrintExtensionBrowserTest : public extensions::ExtensionBrowserTest {
  public:
-  PrintExtensionBrowserTest() {}
-  ~PrintExtensionBrowserTest() override {}
+  PrintExtensionBrowserTest() = default;
+  ~PrintExtensionBrowserTest() override = default;
 
   void PrintAndWaitUntilPreviewIsReady(bool print_only_selection) {
     PrintPreviewObserver print_preview_observer;
 
-    printing::StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
-                         /*print_preview_disabled=*/false,
-                         print_only_selection);
+    StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
+               /*print_preview_disabled=*/false, print_only_selection);
 
     print_preview_observer.WaitUntilPreviewIsReady();
   }
