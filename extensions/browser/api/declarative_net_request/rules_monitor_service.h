@@ -27,7 +27,6 @@ class ExtensionRegistry;
 class WarningService;
 
 namespace declarative_net_request {
-class RulesetMatcher;
 
 // Observes loading and unloading of extensions to load and unload their
 // rulesets for the Declarative Net Request API. Lives on the UI thread. Note: A
@@ -60,7 +59,7 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   void RemoveObserver(Observer* observer);
 
  private:
-  struct LoadRulesetInfo;
+  struct LoadRequestData;
   class FileSequenceState;
   class FileSequenceBridge;
 
@@ -83,10 +82,8 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
                            const Extension* extension,
                            UnloadedExtensionReason reason) override;
 
-  // Callback invoked when we have loaded the ruleset for |info| on
-  // |file_task_runner_|. |matcher| is null iff the ruleset loading failed.
-  void OnRulesetLoaded(LoadRulesetInfo info,
-                       std::unique_ptr<RulesetMatcher> matcher);
+  // Invoked when we have loaded the ruleset on |file_task_runner_|.
+  void OnRulesetLoaded(LoadRequestData load_data);
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       registry_observer_;
