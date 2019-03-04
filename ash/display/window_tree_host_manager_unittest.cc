@@ -22,6 +22,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "services/ws/test_window_tree_client.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
@@ -1084,6 +1085,52 @@ TEST_F(WindowTreeHostManagerTest, SetPrimaryWithFourDisplays) {
     EXPECT_EQ(display::DisplayPlacement::RIGHT,
               current_layout.placement_list[2].position);
   }
+}
+
+// Tests that SetPrimaryDisplayId updates the Window Service client.
+TEST_F(WindowTreeHostManagerTest, SetPrimaryDisplayIdUpdateWSClientDisplayId) {
+  // Create two displays.
+  UpdateDisplay("200x200,300x300");
+  ASSERT_EQ(2200000000, display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  int64_t non_primary_display_id =
+      display_manager()->GetSecondaryDisplay().id();
+  ASSERT_EQ(2200000001, non_primary_display_id);
+
+  std::vector<ws::Change>* ws_client_changes =
+      GetTestWindowTreeClient()->tracker()->changes();
+
+  // Create the first window (0,1) on primary display 2200000000.
+  ws_client_changes->clear();
+  std::unique_ptr<aura::Window> window_in_primary =
+      CreateTestWindow(gfx::Rect(0, 0, 10, 20));
+  auto iter = FirstChangeOfType(*ws_client_changes,
+                                ws::CHANGE_TYPE_ON_TOP_LEVEL_CREATED);
+  ASSERT_NE(iter, ws_client_changes->end());
+  ASSERT_EQ(1, static_cast<int>(iter->window_id));
+  ASSERT_EQ(2200000000, iter->display_id);
+
+  // Create the second window (0,2) on non-primary display 2200000001.
+  ws_client_changes->clear();
+  std::unique_ptr<aura::Window> window_in_non_primary =
+      CreateTestWindow(gfx::Rect(300, 0, 30, 40));
+  iter = FirstChangeOfType(*ws_client_changes,
+                           ws::CHANGE_TYPE_ON_TOP_LEVEL_CREATED);
+  ASSERT_NE(iter, ws_client_changes->end());
+  ASSERT_EQ(2, static_cast<int>(iter->window_id));
+  ASSERT_EQ(2200000001, iter->display_id);
+
+  // Set primary display id to the non-primary 2200000001. This triggers
+  // swapping of WindowTreeHosts and client should receive updates about the
+  // display id change.
+  ws_client_changes->clear();
+  Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(
+      non_primary_display_id);
+  EXPECT_TRUE(
+      ContainsChange(*ws_client_changes,
+                     "DisplayChanged window_id=0,1 display_id=2200000001"));
+  EXPECT_TRUE(
+      ContainsChange(*ws_client_changes,
+                     "DisplayChanged window_id=0,2 display_id=2200000000"));
 }
 
 TEST_F(WindowTreeHostManagerTest, OverscanInsets) {

@@ -87,6 +87,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
     return parent_local_surface_id_allocator_.has_value();
   }
 
+  // Called when the display id changes.
+  void NotifyClientOfDisplayIdChange();
+
  private:
   friend class ClientRootTestHelper;
 

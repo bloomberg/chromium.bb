@@ -112,6 +112,14 @@ const char* GetUICompositorMemoryLimitMB() {
   return width >= 3000 ? "1024" : "512";
 }
 
+// Returns the Shell's WindowService instance or nullptr if Shell's
+// |window_service_owner_| is not yet created.
+ws::WindowService* GetWindowService() {
+  return Shell::Get()->window_service_owner()
+             ? Shell::Get()->window_service_owner()->window_service()
+             : nullptr;
+}
+
 }  // namespace
 
 // A utility class to store/restore focused/active window
@@ -600,15 +608,14 @@ void WindowTreeHostManager::OnDisplayMetricsChanged(
   // Shell creates |window_service_owner_| from Shell::Init(), but this
   // function may be called before |window_service_owner_| is created. It's safe
   // to ignore the call in this case as no clients have connected yet.
-  ws::WindowService* window_service =
-      Shell::Get()->window_service_owner()
-          ? Shell::Get()->window_service_owner()->window_service()
-          : nullptr;
-  if (window_service)
+  if (auto* window_service = GetWindowService())
     window_service->OnDisplayMetricsChanged(display, metrics);
+
   if (!(metrics & (DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_ROTATION |
-                   DISPLAY_METRIC_DEVICE_SCALE_FACTOR)))
+                   DISPLAY_METRIC_DEVICE_SCALE_FACTOR))) {
     return;
+  }
+
   const display::ManagedDisplayInfo& display_info =
       GetDisplayManager()->GetDisplayInfo(display.id());
   DCHECK(!display_info.bounds_in_native().IsEmpty());
@@ -721,6 +728,10 @@ void WindowTreeHostManager::SetPrimaryDisplayId(int64_t id) {
 
   for (auto& observer : observers_)
     observer.OnWindowTreeHostsSwappedDisplays(primary_host, non_primary_host);
+  if (auto* window_service = GetWindowService()) {
+    window_service->OnWindowTreeHostsSwappedDisplays(primary_window,
+                                                     non_primary_window);
+  }
 
   const display::DisplayLayout& layout =
       GetDisplayManager()->GetCurrentDisplayLayout();
