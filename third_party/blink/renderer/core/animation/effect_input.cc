@@ -426,7 +426,7 @@ bool GetPropertyIndexedKeyframeValues(const v8::Local<v8::Object>& keyframe,
 // See https://drafts.csswg.org/web-animations/#processing-a-keyframes-argument
 StringKeyframeVector ConvertObjectForm(Element* element,
                                        Document& document,
-                                       const v8::Local<v8::Object>& keyframe,
+                                       const v8::Local<v8::Object>& v8_keyframe,
                                        ScriptState* script_state,
                                        ExceptionState& exception_state) {
   // We implement much of this procedure out of order from the way the spec is
@@ -437,7 +437,7 @@ StringKeyframeVector ConvertObjectForm(Element* element,
   // to process a keyframe-like object'.
   BasePropertyIndexedKeyframe* property_indexed_keyframe =
       NativeValueTraits<BasePropertyIndexedKeyframe>::NativeValue(
-          script_state->GetIsolate(), keyframe, exception_state);
+          script_state->GetIsolate(), v8_keyframe, exception_state);
   if (exception_state.HadException())
     return {};
 
@@ -466,7 +466,7 @@ StringKeyframeVector ConvertObjectForm(Element* element,
   // object' and step 5.2 of the 'procedure to process a keyframes argument'.
 
   Vector<String> keyframe_properties = GetOwnPropertyNames(
-      script_state->GetIsolate(), keyframe, exception_state);
+      script_state->GetIsolate(), v8_keyframe, exception_state);
   if (exception_state.HadException())
     return {};
 
@@ -496,7 +496,7 @@ StringKeyframeVector ConvertObjectForm(Element* element,
       continue;
 
     Vector<String> values;
-    if (!GetPropertyIndexedKeyframeValues(keyframe, property, script_state,
+    if (!GetPropertyIndexedKeyframeValues(v8_keyframe, property, script_state,
                                           exception_state, values)) {
       return {};
     }
