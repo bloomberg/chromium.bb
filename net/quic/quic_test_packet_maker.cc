@@ -13,6 +13,7 @@
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/test_tools/mock_random.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quic/test_tools/simple_data_producer.h"
 
 namespace net {
 namespace test {
@@ -148,16 +149,29 @@ QuicTestPacketMaker::MakeDummyCHLOPacket(uint64_t packet_num) {
   const quic::QuicData& data = message.GetSerialized();
 
   quic::QuicFrames frames;
-  quic::QuicStreamFrame frame(
-      quic::QuicUtils::GetCryptoStreamId(version_), /*fin=*/false, /*offset=*/0,
-      quic::QuicStringPiece(data.data(), data.length()));
-  frames.push_back(quic::QuicFrame(frame));
+  quic::QuicCryptoFrame crypto_frame;
+  quic::test::SimpleDataProducer producer;
+  quic::QuicStreamFrameDataProducer* producer_p = nullptr;
+  if (version_ < quic::QUIC_VERSION_47) {
+    quic::QuicStreamFrame frame(quic::QuicUtils::GetCryptoStreamId(version_),
+                                /*fin=*/false, /*offset=*/0,
+                                data.AsStringPiece());
+    frames.push_back(quic::QuicFrame(frame));
+  } else {
+    crypto_frame =
+        quic::QuicCryptoFrame(quic::ENCRYPTION_NONE, 0, data.length());
+    producer.SaveCryptoData(quic::ENCRYPTION_NONE, 0, data.AsStringPiece());
+    frames.push_back(quic::QuicFrame(&crypto_frame));
+    producer_p = &producer;
+  }
   DVLOG(1) << "Adding frame: " << frames.back();
   quic::QuicPaddingFrame padding;
   frames.push_back(quic::QuicFrame(padding));
   DVLOG(1) << "Adding frame: " << frames.back();
 
-  return MakeMultipleFramesPacket(header_, frames);
+  std::unique_ptr<quic::QuicReceivedPacket> packet =
+      MakeMultipleFramesPacket(header_, frames, producer_p);
+  return packet;
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -201,7 +215,7 @@ QuicTestPacketMaker::MakeAckAndPingPacket(uint64_t num,
   frames.push_back(quic::QuicFrame(quic::QuicPingFrame()));
   DVLOG(1) << "Adding frame: " << frames.back();
 
-  return MakeMultipleFramesPacket(header, frames);
+  return MakeMultipleFramesPacket(header, frames, nullptr);
 }
 
 std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeRstPacket(
@@ -251,7 +265,7 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeRstPacket(
     frames.push_back(quic::QuicFrame(&stop));
     DVLOG(1) << "Adding frame: " << frames.back();
   }
-  return MakeMultipleFramesPacket(header, frames);
+  return MakeMultipleFramesPacket(header, frames, nullptr);
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -352,7 +366,7 @@ QuicTestPacketMaker::MakeRstAndRequestHeadersPacket(
   DVLOG(1) << "Adding frame: " << frames.back();
 
   InitializeHeader(num, include_version);
-  return MakeMultipleFramesPacket(header_, frames);
+  return MakeMultipleFramesPacket(header_, frames, nullptr);
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -427,7 +441,7 @@ QuicTestPacketMaker::MakeAckAndRstPacket(
     DVLOG(1) << "Adding frame: " << frames.back();
   }
 
-  return MakeMultipleFramesPacket(header, frames);
+  return MakeMultipleFramesPacket(header, frames, nullptr);
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -494,7 +508,7 @@ QuicTestPacketMaker::MakeRstAckAndConnectionClosePacket(
   frames.push_back(quic::QuicFrame(&close));
   DVLOG(1) << "Adding frame: " << frames.back();
 
-  return MakeMultipleFramesPacket(header, frames);
+  return MakeMultipleFramesPacket(header, frames, nullptr);
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -546,7 +560,7 @@ QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
   frames.push_back(quic::QuicFrame(&close));
   DVLOG(1) << "Adding frame: " << frames.back();
 
-  return MakeMultipleFramesPacket(header, frames);
+  return MakeMultipleFramesPacket(header, frames, nullptr);
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -731,7 +745,7 @@ QuicTestPacketMaker::MakeMultipleDataFramesPacket(
     data_frames.push_back(quic_frame);
     offset += data_writes[i].length();
   }
-  return MakeMultipleFramesPacket(header_, data_frames);
+  return MakeMultipleFramesPacket(header_, data_frames, nullptr);
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -764,7 +778,7 @@ QuicTestPacketMaker::MakeAckAndDataPacket(uint64_t packet_number,
       quic::QuicFrame(quic::QuicStreamFrame(stream_id, fin, offset, data)));
   DVLOG(1) << "Adding frame: " << frames.back();
 
-  return MakeMultipleFramesPacket(header_, frames);
+  return MakeMultipleFramesPacket(header_, frames, nullptr);
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -802,7 +816,7 @@ QuicTestPacketMaker::MakeAckAndMultipleDataFramesPacket(
     frames.push_back(quic_frame);
     offset += data_writes[i].length();
   }
-  return MakeMultipleFramesPacket(header_, frames);
+  return MakeMultipleFramesPacket(header_, frames, nullptr);
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -849,7 +863,7 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
     frames.push_back(quic_frame);
     offset += data_writes[i].length();
   }
-  return MakeMultipleFramesPacket(header_, frames);
+  return MakeMultipleFramesPacket(header_, frames, nullptr);
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -966,7 +980,7 @@ QuicTestPacketMaker::MakeRequestHeadersAndRstPacket(
   }
 
   InitializeHeader(packet_number, should_include_version);
-  return MakeMultipleFramesPacket(header_, frames);
+  return MakeMultipleFramesPacket(header_, frames, nullptr);
 }
 
 spdy::SpdySerializedFrame QuicTestPacketMaker::MakeSpdyHeadersFrame(
@@ -1167,16 +1181,20 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakePacket(
     const quic::QuicFrame& frame) {
   quic::QuicFrames frames;
   frames.push_back(frame);
-  return MakeMultipleFramesPacket(header, frames);
+  return MakeMultipleFramesPacket(header, frames, nullptr);
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
 QuicTestPacketMaker::MakeMultipleFramesPacket(
     const quic::QuicPacketHeader& header,
-    const quic::QuicFrames& frames) {
+    const quic::QuicFrames& frames,
+    quic::QuicStreamFrameDataProducer* data_producer) {
   quic::QuicFramer framer(quic::test::SupportedVersions(quic::ParsedQuicVersion(
                               quic::PROTOCOL_QUIC_CRYPTO, version_)),
                           clock_->Now(), perspective_);
+  if (data_producer != nullptr) {
+    framer.set_data_producer(data_producer);
+  }
   size_t max_plaintext_size =
       framer.GetMaxPlaintextSize(quic::kDefaultMaxPacketSize);
   std::unique_ptr<quic::QuicPacket> packet(quic::test::BuildUnsizedDataPacket(
@@ -1323,7 +1341,7 @@ QuicTestPacketMaker::MakeAckAndMultiplePriorityFramesPacket(
   }
 
   InitializeHeader(packet_number, should_include_version);
-  return MakeMultipleFramesPacket(header_, frames);
+  return MakeMultipleFramesPacket(header_, frames, nullptr);
 }
 
 void QuicTestPacketMaker::SetEncryptionLevel(quic::EncryptionLevel level) {
