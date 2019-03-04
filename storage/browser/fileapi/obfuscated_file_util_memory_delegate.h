@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/containers/span.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -71,6 +72,17 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtilMemoryDelegate
       FileSystemOperation::CopyOrMoveOption option,
       NativeFileUtil::CopyOrMoveMode mode) override;
   base::File::Error DeleteFile(const base::FilePath& path) override;
+
+  // Reads |buf_len| bytes from the file at |path|, starting from |offset|.
+  // If successful, read bytes are written to |buf| and actual number of read
+  // bytes are returned. Otherwise a net::Error value is returned.
+  int ReadFile(const base::FilePath& path,
+               int64_t offset,
+               net::IOBuffer* buf,
+               int buf_len);
+
+  base::File::Error CreateFileForTesting(const base::FilePath& path,
+                                         base::span<const char> content);
 
   base::WeakPtr<ObfuscatedFileUtilMemoryDelegate> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
