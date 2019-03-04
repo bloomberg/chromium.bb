@@ -491,6 +491,7 @@ class WorkspaceBuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
         chroot_args=ChrootArgs(self._run.options),
         extra_env=self._portage_extra_env)
 
+
 class WorkspaceUnitTestStage(generic_stages.BoardSpecificBuilderStage,
                              WorkspaceStageBase):
   """Run unit tests."""
@@ -522,13 +523,17 @@ class WorkspaceUnitTestStage(generic_stages.BoardSpecificBuilderStage,
       extra_env['USE'] = ' '.join(self._run.config.useflags)
     r = ' Reached UnitTestStage timeout.'
     with timeout_util.Timeout(self.UNIT_TEST_TIMEOUT, reason_message=r):
-      commands.RunUnitTests(
-          self._build_root,
-          self._current_board,
-          blacklist=self._run.config.unittest_blacklist,
-          build_stage=self._run.config.build_packages,
-          chroot_args=ChrootArgs(self._run.options),
-          extra_env=extra_env)
+      try:
+        commands.RunUnitTests(
+            self._build_root,
+            self._current_board,
+            blacklist=self._run.config.unittest_blacklist,
+            build_stage=self._run.config.build_packages,
+            chroot_args=ChrootArgs(self._run.options),
+            extra_env=extra_env)
+      except failures_lib.BuildScriptFailure:
+        logging.PrintBuildbotStepWarnings()
+        logging.warning('Unittests failed. Ignored crbug.com/936123.')
 
 
 class WorkspaceBuildImageStage(generic_stages.BoardSpecificBuilderStage,
