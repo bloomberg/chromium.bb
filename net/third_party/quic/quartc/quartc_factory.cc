@@ -26,13 +26,13 @@ QuartcFactory::QuartcFactory(const QuartcFactoryConfig& factory_config)
 
 std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcClientSession(
     const QuartcSessionConfig& quartc_session_config,
-    QuicStringPiece server_crypto_config) {
-  DCHECK(quartc_session_config.packet_transport);
+    QuicStringPiece server_crypto_config,
+    QuartcPacketTransport* packet_transport) {
+  DCHECK(packet_transport);
 
   // QuartcSession will eventually own both |writer| and |quic_connection|.
-  auto writer =
-      QuicMakeUnique<QuartcPacketWriter>(quartc_session_config.packet_transport,
-                                         quartc_session_config.max_packet_size);
+  auto writer = QuicMakeUnique<QuartcPacketWriter>(
+      packet_transport, quartc_session_config.max_packet_size);
 
   // While the QuicConfig is not directly used by the connection, creating it
   // also sets flag values which must be set before creating the connection.

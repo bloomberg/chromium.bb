@@ -243,13 +243,13 @@ class QuicChromiumClientStreamTest
   }
 
   quic::QuicStreamId GetNthClientInitiatedBidirectionalStreamId(int n) {
-    return quic::test::QuicSpdySessionPeer::
-        GetNthClientInitiatedBidirectionalStreamId(session_, n);
+    return quic::test::GetNthClientInitiatedBidirectionalStreamId(
+        session_.connection()->transport_version(), n);
   }
 
   quic::QuicStreamId GetNthServerInitiatedUnidirectionalStreamId(int n) {
-    return quic::test::QuicSpdySessionPeer::
-        GetNthServerInitiatedUnidirectionalStreamId(session_, n);
+    return quic::test::GetNthServerInitiatedUnidirectionalStreamId(
+        session_.connection()->transport_version(), n);
   }
 
   void ResetStreamCallback(QuicChromiumClientStream* stream, int /*rv*/) {

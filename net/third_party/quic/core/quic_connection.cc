@@ -2914,7 +2914,7 @@ void QuicConnection::CheckForTimeout() {
     QUIC_DVLOG(1) << ENDPOINT << error_details;
     if ((sent_packet_manager_.GetConsecutiveTlpCount() > 0 ||
          sent_packet_manager_.GetConsecutiveRtoCount() > 0 ||
-         visitor_->HasOpenDynamicStreams())) {
+         visitor_->ShouldKeepConnectionAlive())) {
       CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT, error_details,
                       ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     } else {
@@ -2961,7 +2961,7 @@ void QuicConnection::SetPingAlarm() {
     // Only clients send pings.
     return;
   }
-  if (!visitor_->HasOpenDynamicStreams()) {
+  if (!visitor_->ShouldKeepConnectionAlive()) {
     ping_alarm_->Cancel();
     // Don't send a ping unless there are open streams.
     return;

@@ -387,6 +387,9 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
     validate_chlo_size_ = new_value;
   }
 
+  // Returns whether the sender is allowed to not pad the client hello.
+  bool validate_chlo_size() const { return validate_chlo_size_; }
+
   // When QUIC is tunneled through some other mechanism, source token validation
   // may be disabled. Do not disable it if you are not providing other
   // protection. (|true| protects against UDP amplification attack.).

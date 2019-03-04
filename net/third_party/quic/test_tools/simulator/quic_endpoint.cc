@@ -241,7 +241,7 @@ bool QuicEndpoint::WillingAndAbleToWrite() const {
 bool QuicEndpoint::HasPendingHandshake() const {
   return false;
 }
-bool QuicEndpoint::HasOpenDynamicStreams() const {
+bool QuicEndpoint::ShouldKeepConnectionAlive() const {
   return true;
 }
 

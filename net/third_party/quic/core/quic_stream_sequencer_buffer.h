@@ -240,6 +240,9 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
 
   // Total number of bytes that have been prefetched.
   QuicStreamOffset total_bytes_prefetched_;
+
+  // Latched value of --quic_faster_interval_add_in_sequence_buffer.
+  const bool faster_interval_add_in_sequence_buffer_;
 };
 }  // namespace quic
 

@@ -178,6 +178,9 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   virtual bool ShouldCreateOutgoingBidirectionalStream() = 0;
   virtual bool ShouldCreateOutgoingUnidirectionalStream() = 0;
 
+  // Returns true if there are open HTTP requests.
+  bool ShouldKeepConnectionAlive() const override;
+
   // Overridden to buffer incoming streams for version 99.
   bool ShouldBufferIncomingStream(QuicStreamId id) const override;
 

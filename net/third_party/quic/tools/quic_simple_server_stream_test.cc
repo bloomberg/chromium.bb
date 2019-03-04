@@ -198,8 +198,8 @@ class QuicSimpleServerStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
     session_.config()->SetInitialSessionFlowControlWindowToSend(
         kInitialSessionFlowControlWindowForTest);
     stream_ = new StrictMock<TestStream>(
-        QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(
-            session_, 0),
+        GetNthClientInitiatedBidirectionalStreamId(
+            connection_->transport_version(), 0),
         &session_, BIDIRECTIONAL, &memory_cache_backend_);
     // Register stream_ in dynamic_stream_map_ and pass ownership to session_.
     session_.ActivateStream(QuicWrapUnique(stream_));
@@ -397,8 +397,8 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus2) {
 TEST_P(QuicSimpleServerStreamTest, SendPushResponseWith404Response) {
   // Create a new promised stream with even id().
   auto promised_stream = new StrictMock<TestStream>(
-      QuicSpdySessionPeer::GetNthServerInitiatedUnidirectionalStreamId(session_,
-                                                                       0),
+      GetNthServerInitiatedUnidirectionalStreamId(
+          connection_->transport_version(), 0),
       &session_, WRITE_UNIDIRECTIONAL, &memory_cache_backend_);
   session_.ActivateStream(QuicWrapUnique(promised_stream));
 
@@ -485,13 +485,11 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithPushResources) {
 
   stream_->set_fin_received(true);
   InSequence s;
-  EXPECT_CALL(
-      session_,
-      PromisePushResourcesMock(
-          host + request_path, _,
-          QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(
-              session_, 0),
-          _));
+  EXPECT_CALL(session_, PromisePushResourcesMock(
+                            host + request_path, _,
+                            GetNthClientInitiatedBidirectionalStreamId(
+                                connection_->transport_version(), 0),
+                            _));
   EXPECT_CALL(*stream_, WriteHeadersMock(false));
   if (HasFrameHeader()) {
     EXPECT_CALL(session_, WritevData(_, _, header_length, _, NO_FIN));
@@ -520,8 +518,8 @@ TEST_P(QuicSimpleServerStreamTest, PushResponseOnServerInitiatedStream) {
 
   // Create a stream with even stream id and test against this stream.
   const QuicStreamId kServerInitiatedStreamId =
-      QuicSpdySessionPeer::GetNthServerInitiatedUnidirectionalStreamId(session_,
-                                                                       0);
+      GetNthServerInitiatedUnidirectionalStreamId(
+          connection_->transport_version(), 0);
   // Create a server initiated stream and pass it to session_.
   auto server_initiated_stream =
       new StrictMock<TestStream>(kServerInitiatedStreamId, &session_,

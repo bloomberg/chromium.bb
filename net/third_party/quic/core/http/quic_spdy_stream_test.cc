@@ -169,8 +169,8 @@ class QuicSpdyStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
   }
 
   QuicStreamId GetNthClientInitiatedBidirectionalId(int n) {
-    return QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(
-        *session_, n);
+    return GetNthClientInitiatedBidirectionalStreamId(
+        connection_->transport_version(), n);
   }
 
   bool HasFrameHeader() const {
@@ -1269,8 +1269,8 @@ TEST_P(QuicSpdyStreamTest, SetPriorityBeforeUpdateStreamPriority) {
   std::unique_ptr<TestMockUpdateStreamSession> session(
       new StrictMock<TestMockUpdateStreamSession>(connection));
   auto stream = new StrictMock<TestStream>(
-      QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(*session,
-                                                                      0),
+      GetNthClientInitiatedBidirectionalStreamId(
+          session->connection()->transport_version(), 0),
       session.get(),
       /*should_process_data=*/true);
   session->ActivateStream(QuicWrapUnique(stream));

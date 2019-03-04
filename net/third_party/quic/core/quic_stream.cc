@@ -48,8 +48,10 @@ PendingStream::PendingStream(QuicStreamId id, QuicSession* session)
       connection_flow_controller_(session->flow_controller()),
       flow_controller_(session,
                        id,
+                       /*is_connection_flow_controller*/ false,
                        GetReceivedFlowControlWindow(session),
                        GetInitialStreamFlowControlWindowToSend(session),
+                       kStreamReceiveWindowLimit,
                        session_->flow_controller()->auto_tune_receive_window(),
                        session_->flow_controller()),
       sequencer_(this) {}
@@ -193,8 +195,10 @@ QuicStream::QuicStream(QuicStreamId id,
                  QuicFlowController(
                      session,
                      id,
+                     /*is_connection_flow_controller*/ false,
                      GetReceivedFlowControlWindow(session),
                      GetInitialStreamFlowControlWindowToSend(session),
+                     kStreamReceiveWindowLimit,
                      session->flow_controller()->auto_tune_receive_window(),
                      session->flow_controller()),
                  session->flow_controller()) {}
@@ -490,11 +494,15 @@ void QuicStream::OnCanWrite() {
 }
 
 void QuicStream::MaybeSendBlocked() {
-  flow_controller_.MaybeSendBlocked();
+  if (flow_controller_.ShouldSendBlocked()) {
+    session_->SendBlocked(id_);
+  }
   if (!stream_contributes_to_connection_flow_control_) {
     return;
   }
-  connection_flow_controller_->MaybeSendBlocked();
+  if (connection_flow_controller_->ShouldSendBlocked()) {
+    session_->SendBlocked(QuicUtils::GetInvalidStreamId(transport_version()));
+  }
   // If the stream is blocked by connection-level flow control but not by
   // stream-level flow control, add the stream to the write blocked list so that
   // the stream will be given a chance to write when a connection-level

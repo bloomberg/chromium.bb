@@ -317,7 +317,7 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
     delegate_->PopulateStopWaitingFrame(&pending_stop_waiting_frame_);
     // If we can't this add the frame now, then we still need to do so later.
     should_send_stop_waiting_ = !packet_creator_.AddSavedFrame(
-        QuicFrame(&pending_stop_waiting_frame_), next_transmission_type_);
+        QuicFrame(pending_stop_waiting_frame_), next_transmission_type_);
     // Return success if we have cleared out this flag (i.e., added the frame).
     // If we still need to send, then the frame is full, and we have failed.
     return !should_send_stop_waiting_;

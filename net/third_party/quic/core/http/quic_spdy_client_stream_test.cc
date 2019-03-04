@@ -75,8 +75,8 @@ class QuicSpdyClientStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
     headers_["content-length"] = "11";
 
     stream_ = QuicMakeUnique<QuicSpdyClientStream>(
-        QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(
-            session_, 0),
+        GetNthClientInitiatedBidirectionalStreamId(
+            connection_->transport_version(), 0),
         &session_, BIDIRECTIONAL);
     stream_visitor_ = QuicMakeUnique<StreamVisitor>();
     stream_->set_visitor(stream_visitor_.get());

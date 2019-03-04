@@ -63,8 +63,6 @@ std::vector<TestParams> GetTestParams() {
     params.push_back(TestParams(all_supported_versions[i], true));
     params.push_back(TestParams(all_supported_versions[i], false));
   }
-  params.push_back(TestParams(all_supported_versions[0], true));
-  params.push_back(TestParams(all_supported_versions[0], true));
   return params;
 }
 

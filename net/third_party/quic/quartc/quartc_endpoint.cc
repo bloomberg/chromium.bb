@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "net/third_party/quic/quartc/quartc_endpoint.h"
+
 #include "net/third_party/quic/core/quic_version_manager.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/quartc/quartc_connection_helper.h"
@@ -55,6 +56,7 @@ QuartcClientEndpoint::QuartcClientEndpoint(
     QuicAlarmFactory* alarm_factory,
     const QuicClock* clock,
     QuartcEndpoint::Delegate* delegate,
+    const QuartcSessionConfig& config,
     QuicStringPiece serialized_server_config)
     : alarm_factory_(alarm_factory),
       clock_(clock),
@@ -63,37 +65,44 @@ QuartcClientEndpoint::QuartcClientEndpoint(
       create_session_alarm_(QuicWrapUnique(
           alarm_factory_->CreateAlarm(new CreateSessionDelegate(this)))),
       factory_(QuicMakeUnique<QuartcFactory>(
-          CreateFactoryConfig(alarm_factory, clock))) {}
+          CreateFactoryConfig(alarm_factory, clock))),
+      config_(config) {}
 
-void QuartcClientEndpoint::Connect(const QuartcSessionConfig& config) {
-  config_ = config;
+void QuartcClientEndpoint::Connect(QuartcPacketTransport* packet_transport) {
+  packet_transport_ = packet_transport;
   create_session_alarm_->Set(clock_->Now());
 }
 
 void QuartcClientEndpoint::OnCreateSessionAlarm() {
-  session_ =
-      factory_->CreateQuartcClientSession(config_, serialized_server_config_);
+  session_ = factory_->CreateQuartcClientSession(
+      config_, serialized_server_config_, packet_transport_);
   delegate_->OnSessionCreated(session_.get());
 }
 
 QuartcServerEndpoint::QuartcServerEndpoint(QuicAlarmFactory* alarm_factory,
                                            const QuicClock* clock,
-                                           QuartcEndpoint::Delegate* delegate)
-    : alarm_factory_(alarm_factory), clock_(clock), delegate_(delegate) {}
+                                           QuartcEndpoint::Delegate* delegate,
+                                           const QuartcSessionConfig& config)
+    : alarm_factory_(alarm_factory),
+      delegate_(delegate),
+      config_(config),
+      pre_connection_helper_(QuicMakeUnique<QuartcConnectionHelper>(clock)),
+      crypto_config_(
+          CreateCryptoServerConfig(pre_connection_helper_->GetRandomGenerator(),
+                                   clock,
+                                   config.pre_shared_key)) {}
 
-void QuartcServerEndpoint::Connect(const QuartcSessionConfig& config) {
-  auto connection_helper = QuicMakeUnique<QuartcConnectionHelper>(clock_);
-  auto crypto_config = CreateCryptoServerConfig(
-      connection_helper->GetRandomGenerator(), clock_, config.pre_shared_key);
+void QuartcServerEndpoint::Connect(QuartcPacketTransport* packet_transport) {
+  DCHECK(pre_connection_helper_ != nullptr);
   dispatcher_ = QuicMakeUnique<QuartcDispatcher>(
-      QuicMakeUnique<QuicConfig>(CreateQuicConfig(config)),
-      std::move(crypto_config.config), crypto_config.serialized_crypto_config,
+      QuicMakeUnique<QuicConfig>(CreateQuicConfig(config_)),
+      std::move(crypto_config_.config), crypto_config_.serialized_crypto_config,
       QuicMakeUnique<QuicVersionManager>(AllSupportedVersions()),
-      std::move(connection_helper),
+      std::move(pre_connection_helper_),
       QuicMakeUnique<QuartcCryptoServerStreamHelper>(),
       QuicMakeUnique<QuartcAlarmFactoryWrapper>(alarm_factory_),
-      QuicMakeUnique<QuartcPacketWriter>(config.packet_transport,
-                                         config.max_packet_size),
+      QuicMakeUnique<QuartcPacketWriter>(packet_transport,
+                                         config_.max_packet_size),
       this);
   // The dispatcher requires at least one call to |ProcessBufferedChlos| to
   // set the number of connections it is allowed to create.

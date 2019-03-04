@@ -62,12 +62,15 @@ QuicSession::QuicSession(QuicConnection* connection,
       num_draining_incoming_streams_(0),
       num_locally_closed_incoming_streams_highest_offset_(0),
       error_(QUIC_NO_ERROR),
-      flow_controller_(this,
-                       kConnectionLevelId,
-                       kMinimumFlowControlSendWindow,
-                       config_.GetInitialSessionFlowControlWindowToSend(),
-                       perspective() == Perspective::IS_SERVER,
-                       nullptr),
+      flow_controller_(
+          this,
+          QuicUtils::GetInvalidStreamId(connection->transport_version()),
+          /*is_connection_flow_controller*/ true,
+          kMinimumFlowControlSendWindow,
+          config_.GetInitialSessionFlowControlWindowToSend(),
+          kSessionReceiveWindowLimit,
+          perspective() == Perspective::IS_SERVER,
+          nullptr),
       currently_writing_stream_id_(0),
       largest_static_stream_id_(0),
       is_handshake_confirmed_(false),
@@ -359,7 +362,8 @@ void QuicSession::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
   // Stream may be closed by the time we receive a WINDOW_UPDATE, so we can't
   // assume that it still exists.
   QuicStreamId stream_id = frame.stream_id;
-  if (stream_id == kConnectionLevelId) {
+  if (stream_id ==
+      QuicUtils::GetInvalidStreamId(connection_->transport_version())) {
     // This is a window update that applies to the connection, rather than an
     // individual stream.
     QUIC_DLOG(INFO) << ENDPOINT
@@ -510,9 +514,9 @@ bool QuicSession::HasPendingHandshake() const {
              QuicUtils::GetCryptoStreamId(connection_->transport_version()));
 }
 
-bool QuicSession::HasOpenDynamicStreams() const {
-  return (dynamic_stream_map_.size() - draining_streams_.size() +
-          locally_closed_streams_highest_offset_.size()) > 0;
+uint64_t QuicSession::GetNumOpenDynamicStreams() const {
+  return dynamic_stream_map_.size() - draining_streams_.size() +
+         locally_closed_streams_highest_offset_.size();
 }
 
 void QuicSession::ProcessUdpPacket(const QuicSocketAddress& self_address,

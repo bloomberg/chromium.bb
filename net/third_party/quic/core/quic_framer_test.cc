@@ -7091,7 +7091,7 @@ TEST_P(QuicFramerTest, BuildNewStopWaitingPacket) {
   QuicStopWaitingFrame stop_waiting_frame;
   stop_waiting_frame.least_unacked = kLeastUnacked;
 
-  QuicFrames frames = {QuicFrame(&stop_waiting_frame)};
+  QuicFrames frames = {QuicFrame(stop_waiting_frame)};
 
   // clang-format off
   unsigned char packet[] = {
@@ -9088,11 +9088,7 @@ TEST_P(QuicFramerTest, BuildIetfStatelessResetPacket) {
                                       AsChars(packet44), 1);
   const size_t random_bytes_length =
       data->length() - kPacketHeaderTypeSize - sizeof(kTestStatelessResetToken);
-  if (GetQuicReloadableFlag(quic_more_random_bytes_in_stateless_reset)) {
-    EXPECT_EQ(kMinRandomBytesLengthInStatelessReset, random_bytes_length);
-  } else {
-    EXPECT_EQ(1u, random_bytes_length);
-  }
+  EXPECT_EQ(kMinRandomBytesLengthInStatelessReset, random_bytes_length);
   // Verify stateless reset token is correct.
   test::CompareCharArraysWithHexError(
       "constructed packet",

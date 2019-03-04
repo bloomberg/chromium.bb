@@ -611,7 +611,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                               QuicPacketHeader* header);
 
   bool ProcessPublicHeader(QuicDataReader* reader,
-                           bool last_packet_is_ietf_quic,
+                           bool packet_has_ietf_packet_header,
                            QuicPacketHeader* header);
 
   // Processes the unauthenticated portion of the header into |header| from
@@ -846,7 +846,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   // Returns true if |header| indicates a version negotiation packet.
   bool IsVersionNegotiation(const QuicPacketHeader& header,
-                            bool last_packet_is_ietf_quic) const;
+                            bool packet_has_ietf_packet_header) const;
 
   // Calculates and returns type byte of stream frame.
   uint8_t GetStreamFrameTypeByte(const QuicStreamFrame& frame,

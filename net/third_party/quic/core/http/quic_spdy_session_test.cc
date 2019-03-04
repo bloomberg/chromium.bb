@@ -367,17 +367,16 @@ class QuicSpdySessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
   bool IsVersion99() const { return transport_version() == QUIC_VERSION_99; }
 
   QuicStreamId GetNthClientInitiatedBidirectionalId(int n) {
-    return QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(
-        session_, n);
+    return GetNthClientInitiatedBidirectionalStreamId(transport_version(), n);
   }
 
   QuicStreamId GetNthServerInitiatedBidirectionalId(int n) {
-    return QuicSpdySessionPeer::GetNthServerInitiatedBidirectionalStreamId(
-        session_, n);
+    return GetNthServerInitiatedBidirectionalStreamId(
+        connection_->transport_version(), n);
   }
 
   QuicStreamId IdDelta() {
-    return QuicSpdySessionPeer::StreamIdDelta(session_);
+    return QuicUtils::StreamIdDelta(connection_->transport_version());
   }
 
   MockQuicConnectionHelper helper_;
@@ -1467,7 +1466,8 @@ TEST_P(QuicSpdySessionTestServer,
       GetNthClientInitiatedBidirectionalId(kMaxStreams);
   // Create kMaxStreams data streams, and close them all without receiving a
   // FIN or a RST_STREAM from the client.
-  const QuicStreamId kNextId = QuicSpdySessionPeer::StreamIdDelta(session_);
+  const QuicStreamId kNextId =
+      QuicUtils::StreamIdDelta(connection_->transport_version());
   for (QuicStreamId i = kFirstStreamId; i < kFinalStreamId; i += kNextId) {
     QuicStreamFrame data1(i, false, 0, QuicStringPiece("HT"));
     session_.OnStreamFrame(data1);

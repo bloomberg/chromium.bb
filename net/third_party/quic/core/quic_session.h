@@ -122,7 +122,6 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   void SendPing() override;
   bool WillingAndAbleToWrite() const override;
   bool HasPendingHandshake() const override;
-  bool HasOpenDynamicStreams() const override;
   void OnPathDegrading() override;
   bool AllowSelfAddressChange() const override;
   void OnForwardProgressConfirmed() override;
@@ -440,6 +439,9 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // open streams.
   bool CanOpenNextOutgoingBidirectionalStream();
   bool CanOpenNextOutgoingUnidirectionalStream();
+
+  // Returns the number of open dynamic streams.
+  uint64_t GetNumOpenDynamicStreams() const;
 
   // Returns existing stream with id = |stream_id|. If no such stream exists,
   // and |stream_id| is a peer-created id, then a new stream is created and

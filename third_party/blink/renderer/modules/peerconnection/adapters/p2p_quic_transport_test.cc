@@ -896,8 +896,8 @@ TEST_F(P2PQuicTransportTest, ClientCreatesStream) {
 
   RunCurrentTasks();
 
-  EXPECT_TRUE(client_peer()->quic_transport()->HasOpenDynamicStreams());
-  EXPECT_FALSE(server_peer()->quic_transport()->HasOpenDynamicStreams());
+  EXPECT_TRUE(client_peer()->quic_transport()->ShouldKeepConnectionAlive());
+  EXPECT_FALSE(server_peer()->quic_transport()->ShouldKeepConnectionAlive());
 
   // After sending data across it will trigger a stream to be created on the
   // server side.
@@ -918,7 +918,7 @@ TEST_F(P2PQuicTransportTest, ClientCreatesStream) {
       /*fin=*/false);
   run_loop.RunUntilCallbacksFired();
 
-  EXPECT_TRUE(server_peer()->quic_transport()->HasOpenDynamicStreams());
+  EXPECT_TRUE(server_peer()->quic_transport()->ShouldKeepConnectionAlive());
 }
 
 // Tests that the server transport can create a stream and an incoming stream
@@ -932,8 +932,8 @@ TEST_F(P2PQuicTransportTest, ServerCreatesStream) {
 
   RunCurrentTasks();
 
-  EXPECT_TRUE(server_peer()->quic_transport()->HasOpenDynamicStreams());
-  EXPECT_FALSE(client_peer()->quic_transport()->HasOpenDynamicStreams());
+  EXPECT_TRUE(server_peer()->quic_transport()->ShouldKeepConnectionAlive());
+  EXPECT_FALSE(client_peer()->quic_transport()->ShouldKeepConnectionAlive());
 
   // After sending data across it will trigger a stream to be created on the
   // server side.
@@ -954,7 +954,7 @@ TEST_F(P2PQuicTransportTest, ServerCreatesStream) {
       /*fin=*/false);
   run_loop.RunUntilCallbacksFired();
 
-  EXPECT_TRUE(client_peer()->quic_transport()->HasOpenDynamicStreams());
+  EXPECT_TRUE(client_peer()->quic_transport()->ShouldKeepConnectionAlive());
 }
 
 // Tests that when the client transport calls Stop() it closes its outgoing

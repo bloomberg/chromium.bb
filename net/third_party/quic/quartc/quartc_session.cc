@@ -176,6 +176,11 @@ void QuartcSession::OnCongestionWindowChange(QuicTime now) {
                                                rtt_stats->latest_rtt());
 }
 
+bool QuartcSession::ShouldKeepConnectionAlive() const {
+  // TODO(mellem): Quartc may want different keepalive logic than HTTP.
+  return GetNumOpenDynamicStreams() > 0;
+}
+
 void QuartcSession::OnConnectionClosed(QuicErrorCode error,
                                        const QuicString& error_details,
                                        ConnectionCloseSource source) {

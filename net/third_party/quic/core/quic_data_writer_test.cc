@@ -6,6 +6,7 @@
 
 #include <cstdint>
 
+#include "net/third_party/quic/core/quic_connection_id.h"
 #include "net/third_party/quic/core/quic_data_reader.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
@@ -266,6 +267,40 @@ TEST_P(QuicDataWriterTest, WriteConnectionId) {
   EXPECT_TRUE(
       reader.ReadConnectionId(&read_connection_id, QUIC_ARRAYSIZE(big_endian)));
   EXPECT_EQ(connection_id, read_connection_id);
+}
+
+TEST_P(QuicDataWriterTest, EmptyConnectionIds) {
+  QuicConnectionId empty_connection_id = EmptyQuicConnectionId();
+  char buffer[2];
+  QuicDataWriter writer(QUIC_ARRAYSIZE(buffer), buffer, GetParam().endianness);
+  EXPECT_TRUE(writer.WriteConnectionId(empty_connection_id));
+  EXPECT_TRUE(writer.WriteUInt8(1));
+  EXPECT_TRUE(writer.WriteConnectionId(empty_connection_id));
+  EXPECT_TRUE(writer.WriteUInt8(2));
+  EXPECT_TRUE(writer.WriteConnectionId(empty_connection_id));
+  EXPECT_FALSE(writer.WriteUInt8(3));
+
+  EXPECT_EQ(buffer[0], 1);
+  EXPECT_EQ(buffer[1], 2);
+
+  QuicConnectionId read_connection_id = TestConnectionId();
+  uint8_t read_byte;
+  QuicDataReader reader(buffer, QUIC_ARRAYSIZE(buffer), GetParam().endianness);
+  EXPECT_TRUE(reader.ReadConnectionId(&read_connection_id, 0));
+  EXPECT_EQ(read_connection_id, empty_connection_id);
+  EXPECT_TRUE(reader.ReadUInt8(&read_byte));
+  EXPECT_EQ(read_byte, 1);
+  // Reset read_connection_id to something else to verify that
+  // ReadConnectionId properly sets it back to empty.
+  read_connection_id = TestConnectionId();
+  EXPECT_TRUE(reader.ReadConnectionId(&read_connection_id, 0));
+  EXPECT_EQ(read_connection_id, empty_connection_id);
+  EXPECT_TRUE(reader.ReadUInt8(&read_byte));
+  EXPECT_EQ(read_byte, 2);
+  read_connection_id = TestConnectionId();
+  EXPECT_TRUE(reader.ReadConnectionId(&read_connection_id, 0));
+  EXPECT_EQ(read_connection_id, empty_connection_id);
+  EXPECT_FALSE(reader.ReadUInt8(&read_byte));
 }
 
 TEST_P(QuicDataWriterTest, WriteTag) {

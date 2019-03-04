@@ -134,6 +134,10 @@ bool QuicDataReader::ReadStringPiece(QuicStringPiece* result, size_t size) {
 bool QuicDataReader::ReadConnectionId(QuicConnectionId* connection_id,
                                       uint8_t length) {
   DCHECK_LE(length, kQuicMaxConnectionIdLength);
+  if (length == 0) {
+    connection_id->set_length(0);
+    return true;
+  }
 
   const bool ok = ReadBytes(connection_id->mutable_data(), length);
   if (ok) {

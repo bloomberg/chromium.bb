@@ -222,6 +222,10 @@ class TestSession : public QuicSession {
     return QuicSession::GetOrCreateDynamicStream(stream_id);
   }
 
+  bool ShouldKeepConnectionAlive() const override {
+    return GetNumOpenDynamicStreams() > 0;
+  }
+
   QuicConsumedData WritevData(QuicStream* stream,
                               QuicStreamId id,
                               size_t write_length,
@@ -1239,8 +1243,8 @@ TEST_P(QuicSessionTestServer, HandshakeUnblocksFlowControlBlockedStream) {
 }
 
 TEST_P(QuicSessionTestServer, HandshakeUnblocksFlowControlBlockedCryptoStream) {
-  if (GetParam().transport_version >= QUIC_VERSION_46) {
-    // QUIC version 46 onwards uses CRYPTO frames for the handshake, so this
+  if (GetParam().transport_version >= QUIC_VERSION_47) {
+    // QUIC version 47 onwards uses CRYPTO frames for the handshake, so this
     // test doesn't make sense for those versions since CRYPTO frames aren't
     // flow controlled.
     return;

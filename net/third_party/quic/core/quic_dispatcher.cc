@@ -423,7 +423,8 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
       if (ShouldCreateSessionForUnknownVersion(framer_.last_version_label())) {
         return true;
       }
-      if (current_packet_->length() >= kMinPacketSizeForVersionNegotiation) {
+      if (!crypto_config()->validate_chlo_size() ||
+          current_packet_->length() >= kMinPacketSizeForVersionNegotiation) {
         // Since the version is not supported, send a version negotiation
         // packet and stop processing the current packet.
         time_wait_list_manager()->SendVersionNegotiationPacket(

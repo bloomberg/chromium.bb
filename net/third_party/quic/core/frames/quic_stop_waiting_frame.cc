@@ -8,9 +8,8 @@
 
 namespace quic {
 
-QuicStopWaitingFrame::QuicStopWaitingFrame() {}
-
-QuicStopWaitingFrame::~QuicStopWaitingFrame() {}
+QuicStopWaitingFrame::QuicStopWaitingFrame()
+    : QuicInlinedFrame(STOP_WAITING_FRAME) {}
 
 std::ostream& operator<<(std::ostream& os,
                          const QuicStopWaitingFrame& sent_info) {

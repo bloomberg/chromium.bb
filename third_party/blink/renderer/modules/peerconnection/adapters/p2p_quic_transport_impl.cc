@@ -507,6 +507,12 @@ void P2PQuicTransportImpl::OnConnectionClosed(
   }
 }
 
+bool P2PQuicTransportImpl::ShouldKeepConnectionAlive() const {
+  // TODO: this is default behavior; please change the timeout logic as
+  // appropriate.
+  return GetNumOpenDynamicStreams() > 0;
+}
+
 bool P2PQuicTransportImpl::IsClosed() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return !connection_->connected();

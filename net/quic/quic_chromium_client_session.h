@@ -502,7 +502,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       const quic::QuicSocketAddress& self_address,
       const quic::QuicSocketAddress& peer_address) override;
   void OnPathDegrading() override;
-  bool HasOpenDynamicStreams() const override;
+  bool ShouldKeepConnectionAlive() const override;
 
   // QuicChromiumPacketReader::Visitor methods:
   void OnReadError(int result, const DatagramClientSocket* socket) override;

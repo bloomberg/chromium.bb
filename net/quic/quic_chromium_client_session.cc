@@ -2323,8 +2323,8 @@ void QuicChromiumClientSession::OnPathDegrading() {
       NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
 }
 
-bool QuicChromiumClientSession::HasOpenDynamicStreams() const {
-  return quic::QuicSession::HasOpenDynamicStreams() ||
+bool QuicChromiumClientSession::ShouldKeepConnectionAlive() const {
+  return quic::QuicSpdySession::ShouldKeepConnectionAlive() ||
          GetNumDrainingOutgoingStreams() > 0;
 }
 

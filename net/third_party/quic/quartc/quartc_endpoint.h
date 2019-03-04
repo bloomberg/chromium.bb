@@ -9,6 +9,8 @@
 #include "net/third_party/quic/core/quic_error_codes.h"
 #include "net/third_party/quic/platform/api/quic_clock.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
+#include "net/third_party/quic/quartc/quartc_connection_helper.h"
+#include "net/third_party/quic/quartc/quartc_crypto_helpers.h"
 #include "net/third_party/quic/quartc/quartc_dispatcher.h"
 #include "net/third_party/quic/quartc/quartc_factory.h"
 
@@ -49,7 +51,7 @@ class QuartcEndpoint {
   // Connects the endpoint using the given session config.  After |Connect| is
   // called, the endpoint will asynchronously create a session, then call
   // |Delegate::OnSessionCreated|.
-  virtual void Connect(const QuartcSessionConfig& config) = 0;
+  virtual void Connect(QuartcPacketTransport* packet_transport) = 0;
 };
 
 // Implementation of QuartcEndpoint which immediately (but asynchronously)
@@ -62,9 +64,10 @@ class QuartcClientEndpoint : public QuartcEndpoint {
   QuartcClientEndpoint(QuicAlarmFactory* alarm_factory,
                        const QuicClock* clock,
                        Delegate* delegate,
+                       const QuartcSessionConfig& config,
                        QuicStringPiece serialized_server_config);
 
-  void Connect(const QuartcSessionConfig& config) override;
+  void Connect(QuartcPacketTransport* packet_transport) override;
 
  private:
   friend class CreateSessionDelegate;
@@ -111,6 +114,8 @@ class QuartcClientEndpoint : public QuartcEndpoint {
   // The currently-active session.  Nullptr until |Connect| and
   // |Delegate::OnSessionCreated| are called.
   std::unique_ptr<QuartcSession> session_;
+
+  QuartcPacketTransport* packet_transport_;
 };
 
 // Implementation of QuartcEndpoint which uses a QuartcDispatcher to listen for
@@ -121,10 +126,11 @@ class QuartcServerEndpoint : public QuartcEndpoint,
  public:
   QuartcServerEndpoint(QuicAlarmFactory* alarm_factory,
                        const QuicClock* clock,
-                       QuartcEndpoint::Delegate* delegate);
+                       QuartcEndpoint::Delegate* delegate,
+                       const QuartcSessionConfig& config);
 
   // Implements QuartcEndpoint.
-  void Connect(const QuartcSessionConfig& config) override;
+  void Connect(QuartcPacketTransport* packet_transport) override;
 
   // Implements QuartcDispatcher::Delegate.
   void OnSessionCreated(QuartcSession* session) override;
@@ -132,23 +138,30 @@ class QuartcServerEndpoint : public QuartcEndpoint,
   // Accessor to retrieve the server crypto config.  May only be called after
   // Connect().
   QuicStringPiece server_crypto_config() const {
-    return dispatcher_->server_crypto_config();
+    return crypto_config_.serialized_crypto_config;
   }
 
  private:
   // Implementation of QuicAlarmFactory used by this endpoint.  Unowned.
   QuicAlarmFactory* alarm_factory_;
 
-  // Implementation of QuicClock used by this endpoint.  Unowned.
-  const QuicClock* clock_;
-
   // Delegate which receives callbacks for newly created sessions.
   QuartcEndpoint::Delegate* delegate_;
+
+  // Config to be used for new sessions.
+  QuartcSessionConfig config_;
 
   // QuartcDispatcher waits for an incoming CHLO, then either rejects it or
   // creates a session to respond to it.  The dispatcher owns all sessions it
   // creates.
   std::unique_ptr<QuartcDispatcher> dispatcher_;
+
+  // This field is only available before connection was started.
+  std::unique_ptr<QuartcConnectionHelper> pre_connection_helper_;
+
+  // A configuration, containing public key, that may need to be passed to the
+  // client to enable 0rtt.
+  CryptoServerConfig crypto_config_;
 };
 
 }  // namespace quic

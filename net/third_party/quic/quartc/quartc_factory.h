@@ -30,10 +30,6 @@ struct QuartcSessionConfig {
   // here.  This value will only be used if non-empty.
   QuicString pre_shared_key;
 
-  // The way the QuicConnection will send and receive packets, like a virtual
-  // UDP socket. For WebRTC, this will typically be an IceTransport.
-  QuartcPacketTransport* packet_transport = nullptr;
-
   // The maximum size of the packet can be written with the packet writer.
   // 1200 bytes by default.
   QuicPacketLength max_packet_size = 1200;
@@ -62,7 +58,8 @@ class QuartcFactory {
   // Creates a new QuartcSession using the given configuration.
   std::unique_ptr<QuartcSession> CreateQuartcClientSession(
       const QuartcSessionConfig& quartc_session_config,
-      QuicStringPiece server_crypto_config);
+      QuicStringPiece server_crypto_config,
+      QuartcPacketTransport* packet_transport);
 
  private:
   std::unique_ptr<QuicConnection> CreateQuicConnection(
