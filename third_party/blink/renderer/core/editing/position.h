@@ -185,7 +185,7 @@ class PositionTemplate {
   // should check null-position before comparing them.
   // TODO(yosin): We should use |Position::operator<()| instead of
   // |Position::comapreTo()| to utilize |DHCECK_XX()|.
-  int CompareTo(const PositionTemplate<Strategy>&) const;
+  int16_t CompareTo(const PositionTemplate<Strategy>&) const;
   bool operator<(const PositionTemplate<Strategy>&) const;
   bool operator<=(const PositionTemplate<Strategy>&) const;
   bool operator>(const PositionTemplate<Strategy>&) const;

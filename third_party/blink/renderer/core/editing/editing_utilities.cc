@@ -178,11 +178,11 @@ bool IsAtomicNode(const Node* node) {
 }
 
 template <typename Traversal>
-static int ComparePositions(const Node* container_a,
-                            int offset_a,
-                            const Node* container_b,
-                            int offset_b,
-                            bool* disconnected) {
+static int16_t ComparePositions(const Node* container_a,
+                                int offset_a,
+                                const Node* container_b,
+                                int offset_b,
+                                bool* disconnected) {
   DCHECK(container_a);
   DCHECK(container_b);
 
@@ -275,27 +275,27 @@ static int ComparePositions(const Node* container_a,
   return 0;
 }
 
-int ComparePositionsInDOMTree(const Node* container_a,
-                              int offset_a,
-                              const Node* container_b,
-                              int offset_b,
-                              bool* disconnected) {
+int16_t ComparePositionsInDOMTree(const Node* container_a,
+                                  int offset_a,
+                                  const Node* container_b,
+                                  int offset_b,
+                                  bool* disconnected) {
   return ComparePositions<NodeTraversal>(container_a, offset_a, container_b,
                                          offset_b, disconnected);
 }
 
-int ComparePositionsInFlatTree(const Node* container_a,
-                               int offset_a,
-                               const Node* container_b,
-                               int offset_b,
-                               bool* disconnected) {
+int16_t ComparePositionsInFlatTree(const Node* container_a,
+                                   int offset_a,
+                                   const Node* container_b,
+                                   int offset_b,
+                                   bool* disconnected) {
   return ComparePositions<FlatTreeTraversal>(container_a, offset_a, container_b,
                                              offset_b, disconnected);
 }
 
 // Compare two positions, taking into account the possibility that one or both
 // could be inside a shadow tree. Only works for non-null values.
-int ComparePositions(const Position& a, const Position& b) {
+int16_t ComparePositions(const Position& a, const Position& b) {
   DCHECK(a.IsNotNull());
   DCHECK(b.IsNotNull());
   const TreeScope* common_scope = Position::CommonAncestorTreeScope(a, b);
@@ -314,7 +314,7 @@ int ComparePositions(const Position& a, const Position& b) {
   bool has_descendent_b = node_b != b.ComputeContainerNode();
   int offset_b = has_descendent_b ? 0 : b.ComputeOffsetInContainerNode();
 
-  int bias = 0;
+  int16_t bias = 0;
   if (node_a == node_b) {
     if (has_descendent_a)
       bias = -1;
@@ -322,16 +322,17 @@ int ComparePositions(const Position& a, const Position& b) {
       bias = 1;
   }
 
-  int result = ComparePositionsInDOMTree(node_a, offset_a, node_b, offset_b);
+  int16_t result =
+      ComparePositionsInDOMTree(node_a, offset_a, node_b, offset_b);
   return result ? result : bias;
 }
 
-int ComparePositions(const PositionWithAffinity& a,
-                     const PositionWithAffinity& b) {
+int16_t ComparePositions(const PositionWithAffinity& a,
+                         const PositionWithAffinity& b) {
   return ComparePositions(a.GetPosition(), b.GetPosition());
 }
 
-int ComparePositions(const VisiblePosition& a, const VisiblePosition& b) {
+int16_t ComparePositions(const VisiblePosition& a, const VisiblePosition& b) {
   return ComparePositions(a.DeepEquivalent(), b.DeepEquivalent());
 }
 
