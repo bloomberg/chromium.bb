@@ -1817,6 +1817,47 @@ void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
           feature = WebFeature::kCSSValueAppearanceOthers;
       }
       context.Count(feature);
+
+      if (value_id == CSSValueButtonBevel) {
+        feature = WebFeature::kCSSValueAppearanceButtonBevel;
+      } else if (value_id == CSSValueCaret) {
+        feature = WebFeature::kCSSValueAppearanceCaret;
+      } else if (value_id == CSSValueListitem) {
+        feature = WebFeature::kCSSValueAppearanceListitem;
+      } else if (value_id == CSSValueMediaControlsBackground) {
+        feature = WebFeature::kCSSValueAppearanceMediaControlsBackground;
+      } else if (value_id == CSSValueMediaControlsFullscreenBackground) {
+        feature =
+            WebFeature::kCSSValueAppearanceMediaControlsFullscreenBackground;
+      } else if (value_id == CSSValueMediaCurrentTimeDisplay) {
+        feature = WebFeature::kCSSValueAppearanceMediaCurrentTimeDisplay;
+      } else if (value_id == CSSValueMediaEnterFullscreenButton) {
+        feature = WebFeature::kCSSValueAppearanceMediaEnterFullscreenButton;
+      } else if (value_id == CSSValueMediaExitFullscreenButton) {
+        feature = WebFeature::kCSSValueAppearanceMediaExitFullscreenButton;
+      } else if (value_id == CSSValueMediaMuteButton) {
+        feature = WebFeature::kCSSValueAppearanceMediaMuteButton;
+      } else if (value_id == CSSValueMediaOverlayPlayButton) {
+        feature = WebFeature::kCSSValueAppearanceMediaOverlayPlayButton;
+      } else if (value_id == CSSValueMediaPlayButton) {
+        feature = WebFeature::kCSSValueAppearanceMediaPlayButton;
+      } else if (value_id == CSSValueMediaTimeRemainingDisplay) {
+        feature = WebFeature::kCSSValueAppearanceMediaTimeRemainingDisplay;
+      } else if (value_id == CSSValueMediaToggleClosedCaptionsButton) {
+        feature =
+            WebFeature::kCSSValueAppearanceMediaToggleClosedCaptionsButton;
+      } else if (value_id == CSSValueMediaVolumeSliderContainer) {
+        feature = WebFeature::kCSSValueAppearanceMediaVolumeSliderContainer;
+      } else if (value_id == CSSValueMenulistTextfield) {
+        feature = WebFeature::kCSSValueAppearanceMenulistTextfield;
+      } else if (value_id == CSSValueMenulistText) {
+        feature = WebFeature::kCSSValueAppearanceMenulistText;
+      } else if (value_id == CSSValueProgressBarValue) {
+        feature = WebFeature::kCSSValueAppearanceProgressBarValue;
+      } else {
+        break;
+      }
+      context.CountDeprecation(feature);
       break;
     }
 

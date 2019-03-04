@@ -2227,6 +2227,22 @@ enum WebFeature {
   kAnimationFrameCancelledWithinFrame = 2793,
   kSchedulingIsInputPending = 2794,
   kV8StringNormalize = 2795,
+  kCSSValueAppearanceButtonBevel = 2796,
+  kCSSValueAppearanceListitem = 2797,
+  kCSSValueAppearanceMediaControlsBackground = 2798,
+  kCSSValueAppearanceMediaControlsFullscreenBackground = 2799,
+  kCSSValueAppearanceMediaCurrentTimeDisplay = 2800,
+  kCSSValueAppearanceMediaEnterFullscreenButton = 2801,
+  kCSSValueAppearanceMediaExitFullscreenButton = 2802,
+  kCSSValueAppearanceMediaMuteButton = 2803,
+  kCSSValueAppearanceMediaOverlayPlayButton = 2804,
+  kCSSValueAppearanceMediaPlayButton = 2805,
+  kCSSValueAppearanceMediaTimeRemainingDisplay = 2806,
+  kCSSValueAppearanceMediaToggleClosedCaptionsButton = 2807,
+  kCSSValueAppearanceMediaVolumeSliderContainer = 2808,
+  kCSSValueAppearanceMenulistTextfield = 2809,
+  kCSSValueAppearanceMenulistText = 2810,
+  kCSSValueAppearanceProgressBarValue = 2811,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

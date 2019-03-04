@@ -21756,6 +21756,23 @@ Called by update_net_error_codes.py.-->
   <int value="2793" label="AnimationFrameCancelledWithinFrame"/>
   <int value="2794" label="SchedulingIsInputPending"/>
   <int value="2795" label="V8StringNormalize"/>
+  <int value="2796" label="CSSValueAppearanceButtonBevel"/>
+  <int value="2797" label="CSSValueAppearanceListitem"/>
+  <int value="2798" label="CSSValueAppearanceMediaControlsBackground"/>
+  <int value="2799"
+      label="CSSValueAppearanceMediaControlsFullscreenBackground"/>
+  <int value="2800" label="CSSValueAppearanceMediaCurrentTimeDisplay"/>
+  <int value="2801" label="CSSValueAppearanceMediaEnterFullscreenButton"/>
+  <int value="2802" label="CSSValueAppearanceMediaExitFullscreenButton"/>
+  <int value="2803" label="CSSValueAppearanceMediaMuteButton"/>
+  <int value="2804" label="CSSValueAppearanceMediaOverlayPlayButton"/>
+  <int value="2805" label="CSSValueAppearanceMediaPlayButton"/>
+  <int value="2806" label="CSSValueAppearanceMediaTimeRemainingDisplay"/>
+  <int value="2807" label="CSSValueAppearanceMediaToggleClosedCaptionsButton"/>
+  <int value="2808" label="CSSValueAppearanceMediaVolumeSliderContainer"/>
+  <int value="2809" label="CSSValueAppearanceMenulistTextfield"/>
+  <int value="2810" label="CSSValueAppearanceMenulistText"/>
+  <int value="2811" label="CSSValueAppearanceProgressBarValue"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
