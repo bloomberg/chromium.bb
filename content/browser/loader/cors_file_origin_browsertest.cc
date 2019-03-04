@@ -29,7 +29,6 @@
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -60,19 +59,16 @@ class CorsFileOriginBrowserTest
         scoped_feature_list_.InitWithFeatures(
             {} /* enabled */,
             {network::features::kOutOfBlinkCors,
-             blink::features::kServiceWorkerServicification,
              network::features::kNetworkService} /* disabled */);
         break;
       case CorsTestMode::kInBrowserProcess:
         scoped_feature_list_.InitWithFeatures(
-            {network::features::kOutOfBlinkCors,
-             blink::features::kServiceWorkerServicification} /* enabled */,
+            {network::features::kOutOfBlinkCors} /* enabled */,
             {network::features::kNetworkService} /* disabled */);
         break;
       case CorsTestMode::kInNetworkService:
         scoped_feature_list_.InitWithFeatures(
             {network::features::kOutOfBlinkCors,
-             blink::features::kServiceWorkerServicification,
              network::features::kNetworkService} /* enabled */,
             {} /*disabled */);
         break;

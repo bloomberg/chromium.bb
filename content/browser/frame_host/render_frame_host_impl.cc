@@ -4747,9 +4747,7 @@ void RenderFrameHostImpl::CommitNavigation(
           std::move(subresource_loader_factories));
       subresource_loader_factories = CloneFactoryBundle(bundle);
       factory_bundle_for_prefetch = CloneFactoryBundle(bundle);
-    } else if (base::FeatureList::IsEnabled(
-                   blink::features::kServiceWorkerServicification) &&
-               (!is_same_document || is_first_navigation)) {
+    } else if (!is_same_document || is_first_navigation) {
       DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
       factory_bundle_for_prefetch =
           std::make_unique<blink::URLLoaderFactoryBundleInfo>();
@@ -4765,9 +4763,6 @@ void RenderFrameHostImpl::CommitNavigation(
       // factories. TODO(kinuko): Consider setting this up only when prefetch
       // is used. Currently we have this here to make sure we have non-racy
       // situation (https://crbug.com/849929).
-      DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-             base::FeatureList::IsEnabled(
-                 blink::features::kServiceWorkerServicification));
       auto* storage_partition = static_cast<StoragePartitionImpl*>(
           BrowserContext::GetStoragePartition(
               GetSiteInstance()->GetBrowserContext(), GetSiteInstance()));

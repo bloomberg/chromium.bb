@@ -25,7 +25,6 @@
 #include "services/network/public/mojom/cors.mojom.h"
 #include "services/network/public/mojom/cors_origin_pattern.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -58,8 +57,7 @@ class CorsOriginAccessListBrowserTest
         scoped_feature_list_.InitWithFeatures(
             // Enabled features
             {network::features::kOutOfBlinkCors,
-             network::features::kNetworkService,
-             blink::features::kServiceWorkerServicification},
+             network::features::kNetworkService},
             // Disabled features
             {});
         break;
@@ -68,8 +66,7 @@ class CorsOriginAccessListBrowserTest
             // Enabled features
             {network::features::kOutOfBlinkCors},
             // Disabled features
-            {network::features::kNetworkService,
-             blink::features::kServiceWorkerServicification});
+            {network::features::kNetworkService});
         break;
     }
   }

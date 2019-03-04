@@ -13,44 +13,15 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "net/ssl/ssl_server_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "services/network/public/cpp/features.h"
-#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
 namespace content {
 
-namespace {
-enum class ServicifiedFeatures { kNone, kServiceWorker, kNetwork };
-}
-
 // Tests TLS + service workers. Inspired by
 // content/browser/worker_host/worker_browsertest.cc.
-class ServiceWorkerTlsTest
-    : public ContentBrowserTest,
-      public ::testing::WithParamInterface<ServicifiedFeatures> {
+class ServiceWorkerTlsTest : public ContentBrowserTest {
  public:
   ServiceWorkerTlsTest() = default;
-
-  void SetUp() override {
-    ServicifiedFeatures param = GetParam();
-    switch (param) {
-      case ServicifiedFeatures::kNone:
-        scoped_feature_list_.InitWithFeatures(
-            {}, {blink::features::kServiceWorkerServicification,
-                 network::features::kNetworkService});
-        break;
-      case ServicifiedFeatures::kServiceWorker:
-        scoped_feature_list_.InitWithFeatures(
-            {blink::features::kServiceWorkerServicification},
-            {network::features::kNetworkService});
-        break;
-      case ServicifiedFeatures::kNetwork:
-        scoped_feature_list_.InitAndEnableFeature(
-            network::features::kNetworkService);
-        break;
-    }
-    ContentBrowserTest::SetUp();
-  }
 
   void SetUpOnMainThread() override {
     ShellContentBrowserClient::Get()->set_select_client_certificate_callback(
@@ -80,7 +51,7 @@ class ServiceWorkerTlsTest
 
 // Tests that TLS client auth prompts for a page controlled by a service
 // worker, when the service worker calls fetch() for the main resource.
-IN_PROC_BROWSER_TEST_P(ServiceWorkerTlsTest, ClientAuthFetchMainResource) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTlsTest, ClientAuthFetchMainResource) {
   // Start an HTTPS server which doesn't need client certs.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.ServeFilesFromSourceDirectory("content/test/data");
@@ -110,7 +81,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTlsTest, ClientAuthFetchMainResource) {
 
 // Tests that TLS client auth prompts for a page controlled by a service
 // worker, when the service worker calls fetch() for a subresource.
-IN_PROC_BROWSER_TEST_P(ServiceWorkerTlsTest, ClientAuthFetchSubResource) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTlsTest, ClientAuthFetchSubResource) {
   // Load a page that installs the service worker.
   EXPECT_TRUE(NavigateToURL(
       shell(), GetTestURL("service_worker_setup.html", std::string())));
@@ -136,11 +107,5 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTlsTest, ClientAuthFetchSubResource) {
   EXPECT_EQ("TypeError", EvalJs(shell(), "try_fetch('" + url + "');"));
   EXPECT_EQ(1, select_certificate_count());
 }
-
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
-                         ServiceWorkerTlsTest,
-                         ::testing::Values(ServicifiedFeatures::kNone,
-                                           ServicifiedFeatures::kServiceWorker,
-                                           ServicifiedFeatures::kNetwork));
 
 }  // namespace content

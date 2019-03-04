@@ -19,7 +19,6 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
 namespace content {
@@ -124,9 +123,6 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-         base::FeatureList::IsEnabled(
-             blink::features::kServiceWorkerServicification));
   const auto& dispatch_context = *loader_factory_bindings_.dispatch_context();
   int frame_tree_node_id = dispatch_context.frame_tree_node_id;
   CreateLoaderAndStart(

@@ -86,7 +86,6 @@
 #include "services/network/test/test_url_loader_client.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 
 // TODO(eroman): Write unit tests for SafeBrowsing that exercise
@@ -658,19 +657,12 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestMode> {
         auto_advance_(false) {
     switch (GetParam()) {
       case TestMode::kWithoutOutOfBlinkCors:
-        scoped_feature_list_.InitWithFeatures(
-            // Enabled features
-            {},
-            // Disabled features
-            {network::features::kOutOfBlinkCors});
+        scoped_feature_list_.InitAndDisableFeature(
+            network::features::kOutOfBlinkCors);
         break;
       case TestMode::kWithOutOfBlinkCors:
-        scoped_feature_list_.InitWithFeatures(
-            // Enabled features
-            {network::features::kOutOfBlinkCors,
-             blink::features::kServiceWorkerServicification},
-            // Disabled features
-            {});
+        scoped_feature_list_.InitAndEnableFeature(
+            network::features::kOutOfBlinkCors);
         break;
     }
     host_.SetLoaderDelegate(&loader_delegate_);

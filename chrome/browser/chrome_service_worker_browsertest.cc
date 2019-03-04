@@ -48,8 +48,6 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
-#include "services/network/public/cpp/features.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/messaging/string_message_codec.h"
 
 namespace chrome_service_worker_browser_test {
@@ -809,33 +807,11 @@ enum class ServicifiedFeatures { kNone, kServiceWorker, kNetwork };
 //
 // This is in //chrome instead of //content since the tests exercise the
 // kBlockThirdPartyCookies preference which is not a //content concept.
-class ChromeServiceWorkerNavigationPreloadTest
-    : public InProcessBrowserTest,
-      public ::testing::WithParamInterface<ServicifiedFeatures> {
+class ChromeServiceWorkerNavigationPreloadTest : public InProcessBrowserTest {
  public:
   ChromeServiceWorkerNavigationPreloadTest() = default;
 
   void SetUp() override {
-    // Enable servicification based on the test parameter.
-    ServicifiedFeatures param = GetParam();
-    switch (param) {
-      case ServicifiedFeatures::kNone:
-        scoped_feature_list_.InitWithFeatures(
-            {}, {blink::features::kServiceWorkerServicification,
-                 network::features::kNetworkService});
-        break;
-      case ServicifiedFeatures::kServiceWorker:
-        scoped_feature_list_.InitWithFeatures(
-            {blink::features::kServiceWorkerServicification},
-            {network::features::kNetworkService});
-        break;
-      case ServicifiedFeatures::kNetwork:
-        scoped_feature_list_.InitAndEnableFeature(
-            network::features::kNetworkService);
-        break;
-    }
-
-    // Setup the test server.
     embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
         &ChromeServiceWorkerNavigationPreloadTest::HandleRequest,
         base::Unretained(this)));
@@ -908,7 +884,7 @@ class ChromeServiceWorkerNavigationPreloadTest
 // when third-party cookies are blocked. The navigation preload request
 // should be sent with cookies as normal. Regression test for
 // https://crbug.com/913220.
-IN_PROC_BROWSER_TEST_P(ChromeServiceWorkerNavigationPreloadTest,
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerNavigationPreloadTest,
                        TopFrameWithThirdPartyBlocking) {
   // Enable third-party cookie blocking.
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies,
@@ -941,7 +917,7 @@ IN_PROC_BROWSER_TEST_P(ChromeServiceWorkerNavigationPreloadTest,
 // when third-party cookies are blocked. This blocks service worker as well,
 // so the navigation preload request should not be sent. And the navigation
 // request should not include cookies.
-IN_PROC_BROWSER_TEST_P(ChromeServiceWorkerNavigationPreloadTest,
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerNavigationPreloadTest,
                        SubFrameWithThirdPartyBlocking) {
   // Enable third-party cookie blocking.
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies,
@@ -982,11 +958,5 @@ IN_PROC_BROWSER_TEST_P(ChromeServiceWorkerNavigationPreloadTest,
       HasHeader(received_request(), "Service-Worker-Navigation-Preload"));
   EXPECT_FALSE(HasHeader(received_request(), "Cookie"));
 }
-
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
-                         ChromeServiceWorkerNavigationPreloadTest,
-                         ::testing::Values(ServicifiedFeatures::kNone,
-                                           ServicifiedFeatures::kServiceWorker,
-                                           ServicifiedFeatures::kNetwork));
 
 }  // namespace chrome_service_worker_browser_test
