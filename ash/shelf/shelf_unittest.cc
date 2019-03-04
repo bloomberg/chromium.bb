@@ -7,6 +7,7 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/test_session_controller_client.h"
+#include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_controller.h"
@@ -30,12 +31,13 @@ class ShelfTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    ShelfView* shelf_view = GetPrimaryShelf()->GetShelfViewForTesting();
-    shelf_model_ = shelf_view->model();
+    shelf_view_ = GetPrimaryShelf()->GetShelfViewForTesting();
+    shelf_model_ = shelf_view_->model();
 
-    test_.reset(new ShelfViewTestAPI(shelf_view));
+    test_.reset(new ShelfViewTestAPI(shelf_view_));
   }
 
+  ShelfView* shelf_view() { return shelf_view_; }
   ShelfModel* shelf_model() { return shelf_model_; }
 
   ShelfViewTestAPI* test_api() { return test_.get(); }
@@ -48,6 +50,7 @@ class ShelfTest : public AshTestBase {
   }
 
  private:
+  ShelfView* shelf_view_ = nullptr;
   ShelfModel* shelf_model_ = nullptr;
   std::unique_ptr<ShelfViewTestAPI> test_;
 
@@ -104,7 +107,7 @@ TEST_F(ShelfTest, ShowOverflowBubble) {
   ShelfItem item;
   item.type = TYPE_APP;
   item.status = STATUS_RUNNING;
-  while (!test_api()->IsOverflowButtonVisible()) {
+  while (!shelf_view()->GetOverflowButton()->visible()) {
     item.id = ShelfID(base::NumberToString(shelf_model()->item_count()));
     shelf_model()->Add(item);
     ASSERT_LT(shelf_model()->item_count(), 10000);
