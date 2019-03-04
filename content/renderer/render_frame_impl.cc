@@ -5432,6 +5432,11 @@ void RenderFrameImpl::DidChangePerformanceTiming() {
     observer.DidChangePerformanceTiming();
 }
 
+void RenderFrameImpl::DidChangeCpuTiming(base::TimeDelta time) {
+  for (auto& observer : observers_)
+    observer.DidChangeCpuTiming(time);
+}
+
 void RenderFrameImpl::DidObserveLoadingBehavior(
     blink::WebLoadingBehaviorFlag behavior) {
   for (auto& observer : observers_)

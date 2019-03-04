@@ -42,6 +42,10 @@ class TestMetricsRenderFrameObserver : public MetricsRenderFrameObserver,
     validator_.ExpectPageLoadTiming(timing);
   }
 
+  void ExpectCpuTiming(const base::TimeDelta& timing) {
+    validator_.ExpectCpuTiming(timing);
+  }
+
   void SetFakePageLoadTiming(const mojom::PageLoadTiming& timing) {
     EXPECT_EQ(nullptr, fake_timing_.get());
     fake_timing_ = timing.Clone();
@@ -91,6 +95,28 @@ TEST_F(MetricsRenderFrameObserverTest, SingleMetric) {
   observer.ExpectPageLoadTiming(timing);
 
   observer.DidChangePerformanceTiming();
+  observer.GetMockTimer()->Fire();
+}
+
+// Verify that when two CpuTimings come in, they're grouped into a single
+// Message with the total being the sum of the two.
+TEST_F(MetricsRenderFrameObserverTest, SingleCpuMetric) {
+  base::Time nav_start = base::Time::FromDoubleT(10);
+  TestMetricsRenderFrameObserver observer;
+  mojom::PageLoadTiming timing;
+
+  // Initialize the page and add the initial timing info to the expected.
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.navigation_start = nav_start;
+  observer.ExpectPageLoadTiming(timing);
+  observer.DidStartNavigation(GURL(), base::nullopt);
+  observer.ReadyToCommitNavigation(nullptr);
+  observer.DidCommitProvisionalLoad(false, ui::PAGE_TRANSITION_LINK);
+
+  // Send cpu timing updates and verify the expected result.
+  observer.DidChangeCpuTiming(base::TimeDelta::FromMilliseconds(110));
+  observer.DidChangeCpuTiming(base::TimeDelta::FromMilliseconds(50));
+  observer.ExpectCpuTiming(base::TimeDelta::FromMilliseconds(160));
   observer.GetMockTimer()->Fire();
 }
 

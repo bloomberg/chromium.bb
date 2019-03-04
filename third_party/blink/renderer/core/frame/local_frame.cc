@@ -1598,6 +1598,10 @@ int64_t LocalFrame::GetUkmSourceId() {
   return document->UkmSourceID();
 }
 
+void LocalFrame::UpdateTaskTime(base::TimeDelta time) {
+  Client()->DidChangeCpuTiming(time);
+}
+
 const mojom::blink::ReportingServiceProxyPtr& LocalFrame::GetReportingService()
     const {
   if (!reporting_service_) {

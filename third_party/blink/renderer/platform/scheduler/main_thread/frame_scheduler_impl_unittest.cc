@@ -34,6 +34,23 @@ namespace scheduler {
 // To avoid symbol collisions in jumbo builds.
 namespace frame_scheduler_impl_unittest {
 
+class FrameSchedulerDelegateForTesting : public FrameScheduler::Delegate {
+ public:
+  FrameSchedulerDelegateForTesting() {}
+
+  ~FrameSchedulerDelegateForTesting() override {}
+
+  ukm::UkmRecorder* GetUkmRecorder() override { return nullptr; }
+
+  ukm::SourceId GetUkmSourceId() override { return ukm::kInvalidSourceId; }
+
+  void UpdateTaskTime(base::TimeDelta task_time) override {
+    update_task_time_calls_++;
+  }
+
+  int update_task_time_calls_ = 0;
+};
+
 class FrameSchedulerImplTest : public testing::Test {
  public:
   FrameSchedulerImplTest()
@@ -59,9 +76,11 @@ class FrameSchedulerImplTest : public testing::Test {
             task_environment_.GetMockTickClock()),
         base::nullopt));
     page_scheduler_.reset(new PageSchedulerImpl(nullptr, scheduler_.get()));
-    frame_scheduler_ =
-        FrameSchedulerImpl::Create(page_scheduler_.get(), nullptr, nullptr,
-                                   FrameScheduler::FrameType::kSubframe);
+    frame_scheduler_delegate_ =
+        std::make_unique<FrameSchedulerDelegateForTesting>();
+    frame_scheduler_ = FrameSchedulerImpl::Create(
+        page_scheduler_.get(), frame_scheduler_delegate_.get(), nullptr,
+        FrameScheduler::FrameType::kSubframe);
   }
 
   void TearDown() override {
@@ -69,6 +88,12 @@ class FrameSchedulerImplTest : public testing::Test {
     page_scheduler_.reset();
     scheduler_->Shutdown();
     scheduler_.reset();
+  }
+
+  base::TimeDelta GetTaskTime() { return frame_scheduler_->task_time_; }
+
+  int GetTotalUpdateTaskTimeCalls() {
+    return frame_scheduler_delegate_->update_task_time_calls_;
   }
 
  protected:
@@ -154,6 +179,7 @@ class FrameSchedulerImplTest : public testing::Test {
   std::unique_ptr<MainThreadSchedulerImpl> scheduler_;
   std::unique_ptr<PageSchedulerImpl> page_scheduler_;
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler_;
+  std::unique_ptr<FrameSchedulerDelegateForTesting> frame_scheduler_delegate_;
   scoped_refptr<TaskQueue> throttleable_task_queue_;
 };
 
@@ -227,6 +253,13 @@ void IncrementCounter(int* counter) {
 void RecordQueueName(const scoped_refptr<TaskQueue> task_queue,
                      std::vector<std::string>* tasks) {
   tasks->push_back(task_queue->GetName());
+}
+
+// Simulate running a task of a particular length by fast forwarding the task
+// environment clock, which is used to determine the wall time of a task.
+void RunTaskOfLength(base::test::ScopedTaskEnvironment* task_environment,
+                     base::TimeDelta length) {
+  task_environment->FastForwardBy(length);
 }
 
 }  // namespace
@@ -450,6 +483,23 @@ TEST_F(FrameSchedulerImplStopNonTimersInBackgroundDisabledTest,
   // Same as RunUntilIdle but also advances the clock if necessary.
   task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(5, counter);
+}
+
+TEST_F(FrameSchedulerImplTest, PagePostsCpuTasks) {
+  DCHECK(GetTaskTime().is_zero());
+  DCHECK_EQ(GetTotalUpdateTaskTimeCalls(), 0);
+  UnpausableTaskQueue()->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&RunTaskOfLength, &task_environment_,
+                                base::TimeDelta::FromMilliseconds(10)));
+  base::RunLoop().RunUntilIdle();
+  DCHECK(!GetTaskTime().is_zero());
+  DCHECK_EQ(GetTotalUpdateTaskTimeCalls(), 0);
+  UnpausableTaskQueue()->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&RunTaskOfLength, &task_environment_,
+                                base::TimeDelta::FromMilliseconds(100)));
+  base::RunLoop().RunUntilIdle();
+  DCHECK(GetTaskTime().is_zero());
+  DCHECK_EQ(GetTotalUpdateTaskTimeCalls(), 1);
 }
 
 TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {

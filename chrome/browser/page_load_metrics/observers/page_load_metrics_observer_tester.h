@@ -89,6 +89,7 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
                                     const mojom::PageLoadMetadata& metadata,
                                     const mojom::PageLoadFeatures& new_features,
                                     const mojom::PageRenderData& render_data,
+                                    const mojom::CpuTiming& cpu_timing,
                                     content::RenderFrameHost* rfh);
 
   content::WebContents* web_contents() const { return web_contents_; }

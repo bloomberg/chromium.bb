@@ -443,7 +443,8 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     mojom::PageLoadMetadataPtr new_metadata,
     mojom::PageLoadFeaturesPtr new_features,
     const std::vector<mojom::ResourceDataUpdatePtr>& resources,
-    mojom::PageRenderDataPtr render_data) {
+    mojom::PageRenderDataPtr render_data,
+    mojom::CpuTimingPtr new_cpu_timing) {
   if (render_frame_host->GetLastCommittedURL().SchemeIs(
           extensions::kExtensionScheme)) {
     // Extensions can inject child frames into a page. We don't want to track
@@ -451,6 +452,8 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     return;
   }
 
+  // Report cpu usage.
+  UpdateFrameCpuTiming(render_frame_host, std::move(new_cpu_timing));
   // Report data usage before new timing and metadata for messages that have
   // both updates.
   client_->UpdateResourceDataUse(render_frame_host->GetFrameTreeNodeId(),
@@ -516,6 +519,24 @@ void PageLoadMetricsUpdateDispatcher::UpdateSubFrameTiming(
   merger.Merge(navigation_start_offset, *new_timing, false /* is_main_frame */);
 
   MaybeDispatchTimingUpdates(merger.should_buffer_timing_update_callback());
+}
+
+void PageLoadMetricsUpdateDispatcher::UpdateFrameCpuTiming(
+    content::RenderFrameHost* render_frame_host,
+    mojom::CpuTimingPtr new_timing) {
+  // If the task time is zero, then there's nothing to do.
+  if (new_timing->task_time.is_zero())
+    return;
+  // If this is not the main frame, make sure it's valid.
+  if (render_frame_host->GetParent() != nullptr) {
+    const auto it = subframe_navigation_start_offset_.find(
+        render_frame_host->GetFrameTreeNodeId());
+    if (it == subframe_navigation_start_offset_.end()) {
+      // We received timing information for an untracked load. Ignore it.
+      return;
+    }
+  }
+  client_->UpdateFrameCpuTiming(render_frame_host, *new_timing);
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateSubFrameMetadata(

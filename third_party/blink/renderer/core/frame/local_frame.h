@@ -469,6 +469,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // FrameScheduler::Delegate overrides:
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
+  void UpdateTaskTime(base::TimeDelta time) override;
 
   // Activates the user activation states of this frame and all its ancestors.
   void NotifyUserActivation();

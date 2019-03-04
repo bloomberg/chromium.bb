@@ -406,6 +406,12 @@ class PageLoadMetricsObserver {
                               const mojom::PageLoadTiming& timing,
                               const PageLoadExtraInfo& extra_info) {}
 
+  // Triggered when an updated CpuTiming is available at the page or subframe
+  // level. This method is intended for monitoring cpu usage and load across
+  // the frames on a page during navigation.
+  virtual void OnCpuTimingUpdate(content::RenderFrameHost* subframe_rfh,
+                                 const mojom::CpuTiming& timing) {}
+
   // OnUserInput is triggered when a new user input is passed in to
   // web_contents.
   virtual void OnUserInput(const blink::WebInputEvent& event,

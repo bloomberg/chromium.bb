@@ -34,6 +34,8 @@ class FrameScheduler : public FrameOrWorkerScheduler {
 
     virtual ukm::UkmRecorder* GetUkmRecorder() = 0;
     virtual ukm::SourceId GetUkmSourceId() = 0;
+    // Called when a frame has exceeded a total task time threshold (100ms).
+    virtual void UpdateTaskTime(base::TimeDelta time) = 0;
   };
 
   ~FrameScheduler() override = default;

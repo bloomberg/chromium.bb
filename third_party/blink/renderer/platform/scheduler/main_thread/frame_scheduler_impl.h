@@ -140,6 +140,10 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
       MainThreadTaskQueue*,
       base::sequence_manager::TaskQueue::QueueEnabledVoter*) override;
 
+  // Adds the time for the task to a running tally, then forwards it on when
+  // the total time exceeds the threshold (100ms).
+  void AddTaskTime(base::TimeDelta time);
+
   using FrameTaskTypeToQueueTraitsArray =
       std::array<base::Optional<MainThreadTaskQueue::QueueTraits>,
                  static_cast<size_t>(TaskType::kCount)>;
@@ -249,6 +253,10 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   const FrameScheduler::FrameType frame_type_;
 
   bool is_ad_frame_;
+
+  // A running tally of (wall) time spent in tasks for this frame.
+  // This is periodically forwarded and zeroed out.
+  base::TimeDelta task_time_;
 
   TraceableVariableController tracing_controller_;
   std::unique_ptr<FrameTaskQueueController> frame_task_queue_controller_;

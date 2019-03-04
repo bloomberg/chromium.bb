@@ -183,6 +183,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client {
   void UpdateResourceDataUse(
       int frame_tree_node_id,
       const std::vector<mojom::ResourceDataUpdatePtr>& resources) override;
+  void UpdateFrameCpuTiming(content::RenderFrameHost* rfh,
+                            const mojom::CpuTiming& timing) override;
 
   void Redirect(content::NavigationHandle* navigation_handle);
   void WillProcessNavigationResponse(

@@ -686,4 +686,11 @@ void PageLoadTracker::UpdateResourceDataUse(
   }
 }
 
+void PageLoadTracker::UpdateFrameCpuTiming(content::RenderFrameHost* rfh,
+                                           const mojom::CpuTiming& timing) {
+  for (const auto& observer : observers_) {
+    observer->OnCpuTimingUpdate(rfh, timing);
+  }
+}
+
 }  // namespace page_load_metrics
