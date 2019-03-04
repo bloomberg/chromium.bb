@@ -742,7 +742,7 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
 
   if (v8::HeapProfiler* profiler = isolate->GetHeapProfiler()) {
     profiler->AddBuildEmbedderGraphCallback(
-        &V8EmbedderGraphBuilder::BuildEmbedderGraphCallback, nullptr);
+        &EmbedderGraphBuilder::BuildEmbedderGraphCallback, nullptr);
   }
 
   V8PerIsolateData::From(isolate)->SetThreadDebugger(
