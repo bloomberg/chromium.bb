@@ -217,8 +217,7 @@ PositionWithAffinityTemplate<Strategy> AdjustBlockFlowPositionToInline(
   }
   const PositionTemplate<Strategy>& upstream_equivalent =
       UpstreamIgnoringEditingBoundaries(position);
-  if (upstream_equivalent == position ||
-      DownstreamIgnoringEditingBoundaries(upstream_equivalent) == position)
+  if (upstream_equivalent == position)
     return PositionWithAffinityTemplate<Strategy>();
 
   return ComputeInlineAdjustedPositionAlgorithm(
