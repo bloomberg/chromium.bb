@@ -236,8 +236,8 @@ async function openAndWaitForClosingDialog(
   if (useBrowserOpen) {
     resultPromise = sendTestMessage({name: 'runSelectFileDialog'});
   } else {
-    resultPromise = new Promise(function(fulfill) {
-      chrome.fileSystem.chooseEntry(dialogParams, function(entry) {
+    resultPromise = new Promise(fulfill => {
+      chrome.fileSystem.chooseEntry(dialogParams, entry => {
         fulfill(entry);
       });
       chrome.test.assertTrue(!chrome.runtime.lastError, 'chooseEntry failed.');
@@ -378,21 +378,21 @@ const testcase = {};
  * name to run. Use the configuration/details to setup the test ennvironment,
  * then run the test case using chrome.test.RunTests.
  */
-window.addEventListener('load', function() {
+window.addEventListener('load', () => {
   const steps = [
     // Request the guest mode state.
-    function() {
+    () => {
       sendBrowserTestCommand({name: 'isInGuestMode'}, steps.shift());
     },
     // Request the root entry paths.
-    function(mode) {
+    mode => {
       if (JSON.parse(mode) != chrome.extension.inIncognitoContext) {
         return;
       }
       sendBrowserTestCommand({name: 'getRootPaths'}, steps.shift());
     },
     // Request the test case name.
-    function(paths) {
+    paths => {
       const roots = JSON.parse(paths);
       RootPath.DOWNLOADS = roots.downloads;
       RootPath.DOWNLOADS_PATH = roots.downloads_path;
@@ -401,7 +401,7 @@ window.addEventListener('load', function() {
       sendBrowserTestCommand({name: 'getTestName'}, steps.shift());
     },
     // Run the test case.
-    function(testCaseName) {
+    testCaseName => {
       // Get the test function from testcase namespace testCaseName.
       const test = testcase[testCaseName];
       // Verify test is an unnamed (aka 'anonymous') Function.

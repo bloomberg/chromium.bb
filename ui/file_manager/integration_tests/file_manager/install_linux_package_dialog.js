@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 'use strict';
 
-testcase.installLinuxPackageDialog = async function() {
+testcase.installLinuxPackageDialog = async () => {
   const fake = '#directory-tree .tree-item [root-type-icon="crostini"]';
   const real = '#directory-tree .tree-item [volume-type-icon="crostini"]';
 

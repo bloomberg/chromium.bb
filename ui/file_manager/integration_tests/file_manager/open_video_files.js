@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 'use strict';
 
-(function() {
+(() => {
 
 /**
  * Waits until a window having the given filename appears.
@@ -42,11 +42,11 @@ async function videoOpen(path) {
 }
 
 // Exports test functions.
-testcase.videoOpenDrive = function() {
+testcase.videoOpenDrive = () => {
   return videoOpen(RootPath.DRIVE);
 };
 
-testcase.videoOpenDownloads = function() {
+testcase.videoOpenDownloads = () => {
   return videoOpen(RootPath.DOWNLOADS);
 };
 })();

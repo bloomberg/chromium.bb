@@ -7,7 +7,7 @@
 /**
  * Tests the focus behavior of the search box.
  */
-testcase.tabindexSearchBoxFocus = async function() {
+testcase.tabindexSearchBoxFocus = async () => {
   // Open Files app on Drive.
   const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
 
@@ -34,7 +34,7 @@ testcase.tabindexSearchBoxFocus = async function() {
 /**
  * Tests the tab focus behavior of the Files app when no file is selected.
  */
-testcase.tabindexFocus = async function() {
+testcase.tabindexFocus = async () => {
   // Open Files app on Drive.
   const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
 
@@ -66,7 +66,7 @@ testcase.tabindexFocus = async function() {
  * Tests the tab focus behavior of the Files app when no file is selected in
  * Downloads directory.
  */
-testcase.tabindexFocusDownloads = async function() {
+testcase.tabindexFocusDownloads = async () => {
   // Open Files app on Downloads.
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
@@ -96,7 +96,7 @@ testcase.tabindexFocusDownloads = async function() {
 /**
  * Tests for background color change when breadcrumb has focus.
  */
-testcase.tabindexFocusBreadcrumbBackground = async function() {
+testcase.tabindexFocusBreadcrumbBackground = async () => {
   // Open Files app on Downloads.
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
@@ -121,7 +121,7 @@ testcase.tabindexFocusBreadcrumbBackground = async function() {
 /**
  * Tests the tab focus behavior of the Files app when a directory is selected.
  */
-testcase.tabindexFocusDirectorySelected = async function() {
+testcase.tabindexFocusDirectorySelected = async () => {
   // Open Files app on Drive.
   const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
 
@@ -225,7 +225,7 @@ async function tabindexFocus(
 /**
  * Tests the tab focus behavior of Open Dialog (Downloads).
  */
-testcase.tabindexOpenDialogDownloads = async function() {
+testcase.tabindexOpenDialogDownloads = async () => {
   return tabindexFocus(
       {type: 'openFile'}, 'downloads', BASIC_LOCAL_ENTRY_SET,
       async (appId) => {
@@ -241,7 +241,7 @@ testcase.tabindexOpenDialogDownloads = async function() {
 /**
  * Tests the tab focus behavior of Open Dialog (Drive).
  */
-testcase.tabindexOpenDialogDrive = async function() {
+testcase.tabindexOpenDialogDrive = async () => {
   return tabindexFocus(
       {type: 'openFile'}, 'drive', BASIC_DRIVE_ENTRY_SET,
       async (appId) => {
@@ -256,7 +256,7 @@ testcase.tabindexOpenDialogDrive = async function() {
 /**
  * Tests the tab focus behavior of Save File Dialog (Downloads).
  */
-testcase.tabindexSaveFileDialogDownloads = async function() {
+testcase.tabindexSaveFileDialogDownloads = async () => {
   return tabindexFocus(
       {
         type: 'saveFile',
@@ -273,7 +273,7 @@ testcase.tabindexSaveFileDialogDownloads = async function() {
 /**
  * Tests the tab focus behavior of Save File Dialog (Drive).
  */
-testcase.tabindexSaveFileDialogDrive = async function() {
+testcase.tabindexSaveFileDialogDrive = async () => {
   return tabindexFocus(
       {
         type: 'saveFile',

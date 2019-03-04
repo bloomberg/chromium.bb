@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 'use strict';
 
-(function() {
+(() => {
 
 /**
  * Directory tree selector constants.
@@ -213,7 +213,7 @@ async function clickShortcut(appId, directory) {
 /**
  * Creates some shortcuts and traverse them and some other directories.
  */
-testcase.traverseFolderShortcuts = async function() {
+testcase.traverseFolderShortcuts = async () => {
   // Open Files app on Drive.
   const appId =
       await setupAndWaitUntilReady(RootPath.DRIVE, [], FOLDER_ENTRY_SET);
@@ -265,7 +265,7 @@ testcase.traverseFolderShortcuts = async function() {
  * Adds and removes shortcuts from other window and check if the active
  * directories and selected navigation items are correct.
  */
-testcase.addRemoveFolderShortcuts = async function() {
+testcase.addRemoveFolderShortcuts = async () => {
   async function openFilesAppOnDrive() {
     const appId = await openNewWindow(RootPath.DRIVE);
     await remoteCall.waitForElement(appId, '#file-list');

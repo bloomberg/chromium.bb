@@ -35,13 +35,13 @@ async function traverseDirectories(path) {
 /**
  * Tests to traverse local directories.
  */
-testcase.traverseDownloads = function() {
+testcase.traverseDownloads = () => {
   return traverseDirectories(RootPath.DOWNLOADS);
 };
 
 /**
  * Tests to traverse drive directories.
  */
-testcase.traverseDrive = function() {
+testcase.traverseDrive = () => {
   return traverseDirectories(RootPath.DRIVE);
 };

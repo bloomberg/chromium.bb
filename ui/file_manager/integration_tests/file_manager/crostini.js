@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 'use strict';
 
-testcase.mountCrostini = async function() {
+testcase.mountCrostini = async () => {
   const fakeLinuxFiles = '#directory-tree [root-type-icon="crostini"]';
   const realLinxuFiles = '#directory-tree [volume-type-icon="crostini"]';
 
@@ -27,7 +27,7 @@ testcase.mountCrostini = async function() {
   await remoteCall.waitForElement(appId, fakeLinuxFiles);
 };
 
-testcase.sharePathWithCrostini = async function() {
+testcase.sharePathWithCrostini = async () => {
   const fakeLinuxFiles = '#directory-tree [root-type-icon="crostini"]';
   const realLinuxFiles = '#directory-tree [volume-type-icon="crostini"]';
   const downloads = '#directory-tree [volume-type-icon="downloads"]';

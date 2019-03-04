@@ -191,7 +191,7 @@ async function createDirectoryFromDirectoryTree(
 /**
  * Tests copying a directory from directory tree with context menu.
  */
-testcase.dirCopyWithContextMenu = async function() {
+testcase.dirCopyWithContextMenu = async () => {
   const appId = await setupForDirectoryTreeContextMenuTest();
   await remoteCall.navigateWithDirectoryTree(
       appId, RootPath.DOWNLOADS_PATH + '/photos', 'My files/Downloads');
@@ -203,7 +203,7 @@ testcase.dirCopyWithContextMenu = async function() {
 /**
  * Tests copying a directory from directory tree with the keyboard shortcut.
  */
-testcase.dirCopyWithKeyboard = async function() {
+testcase.dirCopyWithKeyboard = async () => {
   const appId = await setupForDirectoryTreeContextMenuTest();
   await remoteCall.navigateWithDirectoryTree(
       appId, RootPath.DOWNLOADS_PATH + '/photos', 'My files/Downloads');
@@ -217,7 +217,7 @@ testcase.dirCopyWithKeyboard = async function() {
 /**
  * Tests copying a directory without changing the current directory.
  */
-testcase.dirCopyWithoutChangingCurrent = async function() {
+testcase.dirCopyWithoutChangingCurrent = async () => {
   const appId = await setupForDirectoryTreeContextMenuTest();
 
   const downloadsQuery =
@@ -231,7 +231,7 @@ testcase.dirCopyWithoutChangingCurrent = async function() {
 /**
  * Tests cutting a directory with the context menu.
  */
-testcase.dirCutWithContextMenu = async function() {
+testcase.dirCutWithContextMenu = async () => {
   const appId = await setupForDirectoryTreeContextMenuTest();
   await remoteCall.navigateWithDirectoryTree(
       appId, RootPath.DOWNLOADS_PATH + '/photos', 'My files/Downloads');
@@ -247,7 +247,7 @@ testcase.dirCutWithContextMenu = async function() {
 /**
  * Tests cutting a directory with the keyboard shortcut.
  */
-testcase.dirCutWithKeyboard = async function() {
+testcase.dirCutWithKeyboard = async () => {
   const appId = await setupForDirectoryTreeContextMenuTest();
   await remoteCall.navigateWithDirectoryTree(
       appId, RootPath.DOWNLOADS_PATH + '/photos', 'My files/Downloads');
@@ -265,7 +265,7 @@ testcase.dirCutWithKeyboard = async function() {
 /**
  * Tests cutting a directory without changing the current directory.
  */
-testcase.dirCutWithoutChangingCurrent = async function() {
+testcase.dirCutWithoutChangingCurrent = async () => {
   const appId = await setupForDirectoryTreeContextMenuTest();
 
   const downloadsQuery =
@@ -281,7 +281,7 @@ testcase.dirCutWithoutChangingCurrent = async function() {
 /**
  * Tests pasting into folder with the context menu.
  */
-testcase.dirPasteWithContextMenu = async function() {
+testcase.dirPasteWithContextMenu = async () => {
   const appId = await setupForDirectoryTreeContextMenuTest();
   const destinationPath = RootPath.DOWNLOADS_PATH + '/destination';
 
@@ -319,7 +319,7 @@ testcase.dirPasteWithContextMenu = async function() {
 /**
  * Tests pasting into a folder without changing the current directory.
  */
-testcase.dirPasteWithoutChangingCurrent = async function() {
+testcase.dirPasteWithoutChangingCurrent = async () => {
   const destinationPath = RootPath.DOWNLOADS_PATH + '/destination';
   const downloadsQuery =
       '#directory-tree [entry-label="My files"] [entry-label="Downloads"]';
@@ -345,7 +345,7 @@ testcase.dirPasteWithoutChangingCurrent = async function() {
 /**
  * Tests renaming a folder with the context menu.
  */
-testcase.dirRenameWithContextMenu = function() {
+testcase.dirRenameWithContextMenu = () => {
   return renameDirectoryFromDirectoryTreeSuccessCase(
       false /* do not use keyboard shortcut */);
 };
@@ -354,7 +354,7 @@ testcase.dirRenameWithContextMenu = function() {
  * Tests that a child folder breadcrumbs is updated when renaming its parent
  * folder. crbug.com/885328.
  */
-testcase.dirRenameUpdateChildrenBreadcrumbs = async function() {
+testcase.dirRenameUpdateChildrenBreadcrumbs = async () => {
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Add child-folder inside /photos/
@@ -404,7 +404,7 @@ testcase.dirRenameUpdateChildrenBreadcrumbs = async function() {
 /**
  * Tests renaming folder with the keyboard shortcut.
  */
-testcase.dirRenameWithKeyboard = function() {
+testcase.dirRenameWithKeyboard = () => {
   return renameDirectoryFromDirectoryTreeSuccessCase(
       true /* use keyboard shortcut */);
 };
@@ -412,7 +412,7 @@ testcase.dirRenameWithKeyboard = function() {
 /**
  * Tests renaming folder without changing the current directory.
  */
-testcase.dirRenameWithoutChangingCurrent = async function() {
+testcase.dirRenameWithoutChangingCurrent = async () => {
   const appId = await setupForDirectoryTreeContextMenuTest();
   const downloadsQuery =
       '#directory-tree [entry-label="My files"] [entry-label="Downloads"]';
@@ -430,7 +430,7 @@ testcase.dirRenameWithoutChangingCurrent = async function() {
 /**
  * Tests renaming a folder to an empty string.
  */
-testcase.dirRenameToEmptyString = async function() {
+testcase.dirRenameToEmptyString = async () => {
   const appId = await setupForDirectoryTreeContextMenuTest();
 
   await remoteCall.navigateWithDirectoryTree(
@@ -447,14 +447,14 @@ testcase.dirRenameToEmptyString = async function() {
 /**
  * Tests renaming folder an existing name.
  */
-testcase.dirRenameToExisting = function() {
+testcase.dirRenameToExisting = () => {
   return renameDirectoryFromDirectoryTreeAndConfirmAlertDialog('destination');
 };
 
 /**
  * Tests creating a folder with the context menu.
  */
-testcase.dirCreateWithContextMenu = function() {
+testcase.dirCreateWithContextMenu = () => {
   return createDirectoryFromDirectoryTree(
       false /* do not use keyboard shortcut */,
       true /* change current directory */);
@@ -463,7 +463,7 @@ testcase.dirCreateWithContextMenu = function() {
 /**
  * Tests creating a folder with the keyboard shortcut.
  */
-testcase.dirCreateWithKeyboard = function() {
+testcase.dirCreateWithKeyboard = () => {
   return createDirectoryFromDirectoryTree(
       true /* use keyboard shortcut */, true /* change current directory */);
 };
@@ -471,7 +471,7 @@ testcase.dirCreateWithKeyboard = function() {
 /**
  * Tests creating folder without changing the current directory.
  */
-testcase.dirCreateWithoutChangingCurrent = function() {
+testcase.dirCreateWithoutChangingCurrent = () => {
   return createDirectoryFromDirectoryTree(
       false /* Do not use keyboard shortcut */,
       false /* Do not change current directory */);

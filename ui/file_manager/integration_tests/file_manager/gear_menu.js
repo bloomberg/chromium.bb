@@ -165,7 +165,7 @@ async function runHiddenFilesTestWithMenuItem(
 /**
  * Tests toggling the show-hidden-files menu option on Downloads.
  */
-testcase.showHiddenFilesDownloads = async function() {
+testcase.showHiddenFilesDownloads = async () => {
   const appId = await setupAndWaitUntilReady(
       RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET_WITH_HIDDEN, []);
 
@@ -177,7 +177,7 @@ testcase.showHiddenFilesDownloads = async function() {
 /**
  * Tests toggling the show-hidden-files menu option on Drive.
  */
-testcase.showHiddenFilesDrive = async function() {
+testcase.showHiddenFilesDrive = async () => {
   const appId = await setupAndWaitUntilReady(
       RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET_WITH_HIDDEN);
 
@@ -190,7 +190,7 @@ testcase.showHiddenFilesDrive = async function() {
  * is selected, but hidden in Recents.
  */
 testcase.showToggleHiddenAndroidFoldersGearMenuItemsInMyFiles =
-    async function() {
+    async () => {
   // Open Files.App on Play Files.
   const appId = await openNewWindow(RootPath.ANDROID_FILES);
   await addEntries(['android_files'], BASIC_ANDROID_ENTRY_SET);
@@ -242,7 +242,7 @@ testcase.showToggleHiddenAndroidFoldersGearMenuItemsInMyFiles =
  * Tests that "Play files" shows the full set of files after
  * toggle-hidden-android-folders is enabled.
  */
-testcase.enableToggleHiddenAndroidFoldersShowsHiddenFiles = async function() {
+testcase.enableToggleHiddenAndroidFoldersShowsHiddenFiles = async () => {
   // Open Files.App on Play Files.
   const appId = await openNewWindow(RootPath.ANDROID_FILES);
   await addEntries(['android_files'], BASIC_ANDROID_ENTRY_SET_WITH_HIDDEN);
@@ -260,7 +260,7 @@ testcase.enableToggleHiddenAndroidFoldersShowsHiddenFiles = async function() {
  * Tests that the current directory is changed to "Play files" after the
  * current directory is hidden by toggle-hidden-android-folders option.
  */
-testcase.hideCurrentDirectoryByTogglingHiddenAndroidFolders = async function() {
+testcase.hideCurrentDirectoryByTogglingHiddenAndroidFolders = async () => {
   const MENU_ITEM_SELECTOR = '#gear-menu-toggle-hidden-android-folders';
   const appId = await openNewWindow(RootPath.ANDROID_FILES);
   await addEntries(['android_files'], BASIC_ANDROID_ENTRY_SET_WITH_HIDDEN);
@@ -327,7 +327,7 @@ testcase.hideCurrentDirectoryByTogglingHiddenAndroidFolders = async function() {
 /**
  * Tests the paste-into-current-folder menu item.
  */
-testcase.showPasteIntoCurrentFolder = async function() {
+testcase.showPasteIntoCurrentFolder = async () => {
   const entrySet = [ENTRIES.hello, ENTRIES.world];
 
   // Add files to Downloads volume.
@@ -405,7 +405,7 @@ testcase.showPasteIntoCurrentFolder = async function() {
 /**
  * Tests the "select-all" menu item.
  */
-testcase.showSelectAllInCurrentFolder = async function() {
+testcase.showSelectAllInCurrentFolder = async () => {
   const entrySet = [ENTRIES.newlyAdded];
 
   // Open Files.App on Downloads.
@@ -465,7 +465,7 @@ testcase.showSelectAllInCurrentFolder = async function() {
  * Tests that new folder appears in the gear menu with Downloads focused in the
  * directory tree.
  */
-testcase.newFolderInDownloads = async function() {
+testcase.newFolderInDownloads = async () => {
   const appId =
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
 
@@ -490,7 +490,7 @@ testcase.newFolderInDownloads = async function() {
 /**
  * Tests that Send feedback appears in the gear menu.
  */
-testcase.showSendFeedbackAction = async function() {
+testcase.showSendFeedbackAction = async () => {
   const entrySet = [ENTRIES.newlyAdded];
 
   // Open Files.App on Downloads.

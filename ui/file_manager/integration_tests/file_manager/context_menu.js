@@ -81,7 +81,7 @@ async function checkContextMenu(commandId, path, expectedEnabledState) {
 /**
  * Tests that the Delete menu item is enabled if a read-write entry is selected.
  */
-testcase.checkDeleteEnabledForReadWriteFile = function() {
+testcase.checkDeleteEnabledForReadWriteFile = () => {
   return checkContextMenu('delete', 'hello.txt', true);
 };
 
@@ -89,14 +89,14 @@ testcase.checkDeleteEnabledForReadWriteFile = function() {
  * Tests that the Delete menu item is disabled if a read-only document is
  * selected.
  */
-testcase.checkDeleteDisabledForReadOnlyDocument = function() {
+testcase.checkDeleteDisabledForReadOnlyDocument = () => {
   return checkContextMenu('delete', 'Read-Only Doc.gdoc', false);
 };
 
 /**
  * Tests that the Delete menu item is disabled if a read-only file is selected.
  */
-testcase.checkDeleteDisabledForReadOnlyFile = function() {
+testcase.checkDeleteDisabledForReadOnlyFile = () => {
   return checkContextMenu('delete', 'Read-Only File.jpg', false);
 };
 
@@ -104,14 +104,14 @@ testcase.checkDeleteDisabledForReadOnlyFile = function() {
  * Tests that the Delete menu item is disabled if a read-only folder is
  * selected.
  */
-testcase.checkDeleteDisabledForReadOnlyFolder = function() {
+testcase.checkDeleteDisabledForReadOnlyFolder = () => {
   return checkContextMenu('delete', 'Read-Only Folder', false);
 };
 
 /**
  * Tests that the Rename menu item is enabled if a read-write entry is selected.
  */
-testcase.checkRenameEnabledForReadWriteFile = function() {
+testcase.checkRenameEnabledForReadWriteFile = () => {
   return checkContextMenu('rename', 'hello.txt', true);
 };
 
@@ -119,14 +119,14 @@ testcase.checkRenameEnabledForReadWriteFile = function() {
  * Tests that the Rename menu item is disabled if a read-only document is
  * selected.
  */
-testcase.checkRenameDisabledForReadOnlyDocument = function() {
+testcase.checkRenameDisabledForReadOnlyDocument = () => {
   return checkContextMenu('rename', 'Read-Only Doc.gdoc', false);
 };
 
 /**
  * Tests that the Rename menu item is disabled if a read-only file is selected.
  */
-testcase.checkRenameDisabledForReadOnlyFile = function() {
+testcase.checkRenameDisabledForReadOnlyFile = () => {
   return checkContextMenu('rename', 'Read-Only File.jpg', false);
 };
 
@@ -134,14 +134,14 @@ testcase.checkRenameDisabledForReadOnlyFile = function() {
  * Tests that the Rename menu item is disabled if a read-only folder is
  * selected.
  */
-testcase.checkRenameDisabledForReadOnlyFolder = function() {
+testcase.checkRenameDisabledForReadOnlyFolder = () => {
   return checkContextMenu('rename', 'Read-Only Folder', false);
 };
 
 /**
  * Tests that the Share menu item is enabled if a read-write entry is selected.
  */
-testcase.checkShareEnabledForReadWriteFile = function() {
+testcase.checkShareEnabledForReadWriteFile = () => {
   return checkContextMenu('share', 'hello.txt', true);
 };
 
@@ -149,7 +149,7 @@ testcase.checkShareEnabledForReadWriteFile = function() {
  * Tests that the Share menu item is enabled if a read-only document is
  * selected.
  */
-testcase.checkShareEnabledForReadOnlyDocument = function() {
+testcase.checkShareEnabledForReadOnlyDocument = () => {
   return checkContextMenu('share', 'Read-Only Doc.gdoc', true);
 };
 
@@ -157,14 +157,14 @@ testcase.checkShareEnabledForReadOnlyDocument = function() {
  * Tests that the Share menu item is disabled if a strict read-only document is
  * selected.
  */
-testcase.checkShareDisabledForStrictReadOnlyDocument = function() {
+testcase.checkShareDisabledForStrictReadOnlyDocument = () => {
   return checkContextMenu('share', 'Read-Only (Strict) Doc.gdoc', false);
 };
 
 /**
  * Tests that the Share menu item is enabled if a read-only file is selected.
  */
-testcase.checkShareEnabledForReadOnlyFile = function() {
+testcase.checkShareEnabledForReadOnlyFile = () => {
   return checkContextMenu('share', 'Read-Only File.jpg', true);
 };
 
@@ -172,14 +172,14 @@ testcase.checkShareEnabledForReadOnlyFile = function() {
  * Tests that the Share menu item is enabled if a read-only folder is
  * selected.
  */
-testcase.checkShareEnabledForReadOnlyFolder = function() {
+testcase.checkShareEnabledForReadOnlyFolder = () => {
   return checkContextMenu('share', 'Read-Only Folder', true);
 };
 
 /**
  * Tests that the Copy menu item is enabled if a read-write entry is selected.
  */
-testcase.checkCopyEnabledForReadWriteFile = function() {
+testcase.checkCopyEnabledForReadWriteFile = () => {
   return checkContextMenu('copy', 'hello.txt', true);
 };
 
@@ -187,7 +187,7 @@ testcase.checkCopyEnabledForReadWriteFile = function() {
  * Tests that the Copy menu item is enabled if a read-only document is
  * selected.
  */
-testcase.checkCopyEnabledForReadOnlyDocument = function() {
+testcase.checkCopyEnabledForReadOnlyDocument = () => {
   return checkContextMenu('copy', 'Read-Only Doc.gdoc', true);
 };
 
@@ -195,14 +195,14 @@ testcase.checkCopyEnabledForReadOnlyDocument = function() {
  * Tests that the Copy menu item is disabled if a strict (no-copy) read-only
  * document is selected.
  */
-testcase.checkCopyDisabledForStrictReadOnlyDocument = function() {
+testcase.checkCopyDisabledForStrictReadOnlyDocument = () => {
   return checkContextMenu('copy', 'Read-Only Doc.gdoc', true);
 };
 
 /**
  * Tests that the Copy menu item is enabled if a read-only file is selected.
  */
-testcase.checkCopyEnabledForReadOnlyFile = function() {
+testcase.checkCopyEnabledForReadOnlyFile = () => {
   return checkContextMenu('copy', 'Read-Only File.jpg', true);
 };
 
@@ -210,14 +210,14 @@ testcase.checkCopyEnabledForReadOnlyFile = function() {
  * Tests that the Copy menu item is enabled if a read-only folder is
  * selected.
  */
-testcase.checkCopyEnabledForReadOnlyFolder = function() {
+testcase.checkCopyEnabledForReadOnlyFolder = () => {
   return checkContextMenu('copy', 'Read-Only Folder', true);
 };
 
 /**
  * Tests that the Cut menu item is enabled if a read-write entry is selected.
  */
-testcase.checkCutEnabledForReadWriteFile = function() {
+testcase.checkCutEnabledForReadWriteFile = () => {
   return checkContextMenu('cut', 'hello.txt', true);
 };
 
@@ -225,14 +225,14 @@ testcase.checkCutEnabledForReadWriteFile = function() {
  * Tests that the Cut menu item is disabled if a read-only document is
  * selected.
  */
-testcase.checkCutDisabledForReadOnlyDocument = function() {
+testcase.checkCutDisabledForReadOnlyDocument = () => {
   return checkContextMenu('cut', 'Read-Only Doc.gdoc', false);
 };
 
 /**
  * Tests that the Cut menu item is disabled if a read-only file is selected.
  */
-testcase.checkCutDisabledForReadOnlyFile = function() {
+testcase.checkCutDisabledForReadOnlyFile = () => {
   return checkContextMenu('cut', 'Read-Only File.jpg', false);
 };
 
@@ -240,7 +240,7 @@ testcase.checkCutDisabledForReadOnlyFile = function() {
  * Tests that the Cut menu item is disabled if a read-only folder is
  * selected.
  */
-testcase.checkCutDisabledForReadOnlyFolder = function() {
+testcase.checkCutDisabledForReadOnlyFolder = () => {
   return checkContextMenu('cut', 'Read-Only Folder', false);
 };
 
@@ -248,7 +248,7 @@ testcase.checkCutDisabledForReadOnlyFolder = function() {
  * Tests that the Paste into Folder menu item is enabled if a read-write folder
  * is selected.
  */
-testcase.checkPasteIntoFolderEnabledForReadWriteFolder = function() {
+testcase.checkPasteIntoFolderEnabledForReadWriteFolder = () => {
   return checkContextMenu('paste-into-folder', 'photos', true);
 };
 
@@ -256,14 +256,14 @@ testcase.checkPasteIntoFolderEnabledForReadWriteFolder = function() {
  * Tests that the Paste into Folder menu item is disabled if a read-only folder
  * is selected.
  */
-testcase.checkPasteIntoFolderDisabledForReadOnlyFolder = function() {
+testcase.checkPasteIntoFolderDisabledForReadOnlyFolder = () => {
   return checkContextMenu('paste-into-folder', 'Read-Only Folder', false);
 };
 
 /**
  * Tests that text selection context menus are disabled in tablet mode.
  */
-testcase.checkContextMenusForInputElements = async function() {
+testcase.checkContextMenusForInputElements = async () => {
   // Open FilesApp on Downloads.
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
@@ -366,7 +366,7 @@ async function checkContextMenuInDriveFolder(
  * Tests that the New Folder menu item is enabled inside a folder that has
  * read-write permissions.
  */
-testcase.checkNewFolderEnabledInsideReadWriteFolder = function() {
+testcase.checkNewFolderEnabledInsideReadWriteFolder = () => {
   return checkContextMenuInDriveFolder('new-folder', 'photos', true);
 };
 
@@ -374,7 +374,7 @@ testcase.checkNewFolderEnabledInsideReadWriteFolder = function() {
  * Tests that the New Folder menu item is enabled inside a folder that has
  * read-write permissions.
  */
-testcase.checkNewFolderDisabledInsideReadOnlyFolder = function() {
+testcase.checkNewFolderDisabledInsideReadOnlyFolder = () => {
   return checkContextMenuInDriveFolder('new-folder', 'Read-Only Folder', false);
 };
 
@@ -382,7 +382,7 @@ testcase.checkNewFolderDisabledInsideReadOnlyFolder = function() {
  * Tests that the Paste menu item is enabled inside a folder that has read-write
  * permissions.
  */
-testcase.checkPasteEnabledInsideReadWriteFolder = function() {
+testcase.checkPasteEnabledInsideReadWriteFolder = () => {
   return checkContextMenuInDriveFolder('paste', 'photos', true);
 };
 
@@ -390,7 +390,7 @@ testcase.checkPasteEnabledInsideReadWriteFolder = function() {
  * Tests that the Paste menu item is disabled inside a folder that has read-only
  * permissions.
  */
-testcase.checkPasteDisabledInsideReadOnlyFolder = function() {
+testcase.checkPasteDisabledInsideReadOnlyFolder = () => {
   return checkContextMenuInDriveFolder('paste', 'Read-Only Folder', false);
 };
 
@@ -456,7 +456,7 @@ async function checkContextMenuForDriveFolderInTree(
  * Tests that the Copy menu item is enabled if a read-write folder is selected
  * in the directory tree.
  */
-testcase.checkCopyEnabledForReadWriteFolderInTree = function() {
+testcase.checkCopyEnabledForReadWriteFolderInTree = () => {
   return checkContextMenuForDriveFolderInTree(
       'copy',
       '#directory-tree [full-path-for-testing="/root/photos"]:not([hidden])',
@@ -467,7 +467,7 @@ testcase.checkCopyEnabledForReadWriteFolderInTree = function() {
  * Tests that the Copy menu item is enabled if a read-only folder is
  * selected in the directory tree.
  */
-testcase.checkCopyEnabledForReadOnlyFolderInTree = function() {
+testcase.checkCopyEnabledForReadOnlyFolderInTree = () => {
   return checkContextMenuForDriveFolderInTree(
       'copy',
       '#directory-tree [full-path-for-testing="/root/Read-Only Folder"]' +
@@ -479,7 +479,7 @@ testcase.checkCopyEnabledForReadOnlyFolderInTree = function() {
  * Tests that the Cut menu item is enabled if a read-write folder is
  * selected in the directory tree.
  */
-testcase.checkCutEnabledForReadWriteFolderInTree = function() {
+testcase.checkCutEnabledForReadWriteFolderInTree = () => {
   return checkContextMenuForDriveFolderInTree(
       'cut',
       '#directory-tree [full-path-for-testing="/root/photos"]:not([hidden])',
@@ -490,7 +490,7 @@ testcase.checkCutEnabledForReadWriteFolderInTree = function() {
  * Tests that the Cut menu item is disabled if a read-only folder is
  * selected in the directory tree.
  */
-testcase.checkCutDisabledForReadOnlyFolderInTree = function() {
+testcase.checkCutDisabledForReadOnlyFolderInTree = () => {
   return checkContextMenuForDriveFolderInTree(
       'cut',
       '#directory-tree [full-path-for-testing="/root/Read-Only Folder"]' +
@@ -502,7 +502,7 @@ testcase.checkCutDisabledForReadOnlyFolderInTree = function() {
  * Tests that the Paste menu item is enabled in the directory
  * tree for a folder that has read-write permissions.
  */
-testcase.checkPasteEnabledForReadWriteFolderInTree = function() {
+testcase.checkPasteEnabledForReadWriteFolderInTree = () => {
   return checkContextMenuForDriveFolderInTree(
       'paste-into-folder',
       '#directory-tree [full-path-for-testing="/root/photos"]:not([hidden])',
@@ -513,7 +513,7 @@ testcase.checkPasteEnabledForReadWriteFolderInTree = function() {
  * Tests that the Paste menu item is disabled in the directory tree for a folder
  * that has read-only permissions.
  */
-testcase.checkPasteDisabledForReadOnlyFolderInTree = function() {
+testcase.checkPasteDisabledForReadOnlyFolderInTree = () => {
   return checkContextMenuForDriveFolderInTree(
       'paste-into-folder',
       '#directory-tree [full-path-for-testing="/root/Read-Only Folder"]' +
@@ -590,7 +590,7 @@ async function checkTeamDriveContextMenuInTree(
  * Tests that the context menu contains the correct items with the correct
  * enabled/disabled state if a Team Drive Root is selected.
  */
-testcase.checkContextMenuForTeamDriveRoot = function() {
+testcase.checkContextMenuForTeamDriveRoot = () => {
   return checkTeamDriveContextMenuInTree('Team Drive A', {
     'cut': false,
     'copy': false,
@@ -653,7 +653,7 @@ async function checkMyFilesRootItemContextMenu(itemName) {
  * Check that mutating context menu items are not shown for Downloads within My
  * files.
  */
-testcase.checkDownloadsContextMenu = function() {
+testcase.checkDownloadsContextMenu = () => {
   return checkMyFilesRootItemContextMenu('Downloads');
 };
 
@@ -661,7 +661,7 @@ testcase.checkDownloadsContextMenu = function() {
  * Check that mutating context menu items are not shown for Play files within My
  * files.
  */
-testcase.checkPlayFilesContextMenu = function() {
+testcase.checkPlayFilesContextMenu = () => {
   return checkMyFilesRootItemContextMenu('Play files');
 };
 
@@ -669,7 +669,7 @@ testcase.checkPlayFilesContextMenu = function() {
  * Check that mutating context menu items are not shown for Linux files within
  * My files.
  */
-testcase.checkLinuxFilesContextMenu = function() {
+testcase.checkLinuxFilesContextMenu = () => {
   return checkMyFilesRootItemContextMenu('Linux files');
 };
 
@@ -709,14 +709,14 @@ async function checkUnmountRootsContextMenu(entryLabel) {
  * Checks that the unmount command is shown in the context menu for a removable
  * root with child partitions.
  */
-testcase.checkRemovableRootContextMenu = async function() {
+testcase.checkRemovableRootContextMenu = async () => {
   return checkUnmountRootsContextMenu('Drive Label');
 };
 
 /**
  * Checks that the unmount command is shown in the context menu for a USB.
  */
-testcase.checkUsbContextMenu = async function() {
+testcase.checkUsbContextMenu = async () => {
   return checkUnmountRootsContextMenu('fake-usb');
 };
 
@@ -725,7 +725,7 @@ testcase.checkUsbContextMenu = async function() {
  * The directory tree context menu should be visible and display the new-folder
  * command.
  */
-testcase.checkPartitionContextMenu = async function() {
+testcase.checkPartitionContextMenu = async () => {
   // Query the element by label, and wait for the contextmenu attribute which
   // shows the menu has been set up.
   const partitionQuery = '#directory-tree .tree-children ' +

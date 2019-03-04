@@ -7,7 +7,7 @@
 /**
  * Tests restoring window geometry of the Files app.
  */
-testcase.restoreGeometry = async function() {
+testcase.restoreGeometry = async () => {
   // Set up Files app.
   let appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
@@ -33,7 +33,7 @@ testcase.restoreGeometry = async function() {
 /**
  * Tests restoring a maximized Files app window.
  */
-testcase.restoreGeometryMaximized = async function() {
+testcase.restoreGeometryMaximized = async () => {
   const caller = getCaller();
 
   // Set up Files app.
@@ -43,7 +43,7 @@ testcase.restoreGeometryMaximized = async function() {
   await remoteCall.callRemoteTestUtil('maximizeWindow', appId, []);
 
   // Check that the first window is maximized.
-  await repeatUntil(async function() {
+  await repeatUntil(async () => {
     if (await remoteCall.callRemoteTestUtil('isWindowMaximized', appId, [])) {
       return true;
     }
@@ -57,7 +57,7 @@ testcase.restoreGeometryMaximized = async function() {
   appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Check that the newly opened window is maximized initially.
-  await repeatUntil(async function() {
+  await repeatUntil(async () => {
     if (await remoteCall.callRemoteTestUtil('isWindowMaximized', appId, [])) {
       return true;
     }

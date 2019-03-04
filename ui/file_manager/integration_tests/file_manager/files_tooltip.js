@@ -4,7 +4,7 @@
 
 'use strict';
 
-(function() {
+(() => {
 
 const tooltipQueryHidden = 'files-tooltip:not([visible])';
 const tooltipQueryVisible = 'files-tooltip[visible=true]';

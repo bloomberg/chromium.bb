@@ -39,21 +39,21 @@ async function verifyRecents(appId, expectedRecents = RECENT_ENTRY_SET) {
   chrome.test.assertTrue(deleteButton.hidden, 'delete button should be hidden');
 }
 
-testcase.recentsDownloads = async function() {
+testcase.recentsDownloads = async () => {
   // Populate downloads.
   const appId = await setupAndWaitUntilReady(
       RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
   await verifyRecents(appId);
 };
 
-testcase.recentsDrive = async function() {
+testcase.recentsDrive = async () => {
   // Populate drive.
   const appId =
       await setupAndWaitUntilReady(RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET);
   await verifyRecents(appId);
 };
 
-testcase.recentsDownloadsAndDrive = async function() {
+testcase.recentsDownloadsAndDrive = async () => {
   // Populate both downloads and drive with disjoint sets of files.
   const appId = await setupAndWaitUntilReady(
       RootPath.DOWNLOADS, [ENTRIES.beautiful, ENTRIES.hello, ENTRIES.photos],
@@ -61,7 +61,7 @@ testcase.recentsDownloadsAndDrive = async function() {
   await verifyRecents(appId);
 };
 
-testcase.recentsDownloadsAndDriveWithOverlap = async function() {
+testcase.recentsDownloadsAndDriveWithOverlap = async () => {
   // Populate both downloads and drive with overlapping sets of files.
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
   await verifyRecents(appId, RECENT_ENTRY_SET.concat(RECENT_ENTRY_SET));

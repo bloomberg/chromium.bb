@@ -46,13 +46,13 @@ async function showGridView(rootPath, expectedSet) {
 /**
  * Tests to show grid view on a local directory.
  */
-testcase.showGridViewDownloads = function() {
+testcase.showGridViewDownloads = () => {
   return showGridView(RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET);
 };
 
 /**
  * Tests to show grid view on a drive directory.
  */
-testcase.showGridViewDrive = function() {
+testcase.showGridViewDrive = () => {
   return showGridView(RootPath.DRIVE, BASIC_DRIVE_ENTRY_SET);
 };

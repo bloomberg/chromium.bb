@@ -76,7 +76,7 @@ function getUnzippedFileListRowEntriesAbsolutePathsSubdir() {
 /**
  * Tests zip file open (aka unzip) from Downloads.
  */
-testcase.zipFileOpenDownloads = async function() {
+testcase.zipFileOpenDownloads = async () => {
   // Open Files app on Downloads containing a zip file.
   const appId = await setupAndWaitUntilReady(
       RootPath.DOWNLOADS, [ENTRIES.zipArchive], []);
@@ -101,7 +101,7 @@ testcase.zipFileOpenDownloads = async function() {
 /**
  * Tests zip file, with absolute paths, open (aka unzip) from Downloads.
  */
-testcase.zipFileOpenDownloadsWithAbsolutePaths = async function() {
+testcase.zipFileOpenDownloadsWithAbsolutePaths = async () => {
   // Open Files app on Downloads containing a zip file.
   const appId = await setupAndWaitUntilReady(
       RootPath.DOWNLOADS, [ENTRIES.zipArchiveWithAbsolutePaths], []);
@@ -140,7 +140,7 @@ testcase.zipFileOpenDownloadsWithAbsolutePaths = async function() {
 /**
  * Tests encrypted zip file open, and canceling the passphrase dialog.
  */
-testcase.zipFileOpenDownloadsEncryptedCancelPassphrase = async function() {
+testcase.zipFileOpenDownloadsEncryptedCancelPassphrase = async () => {
   const zipArchiverAppId = 'dmboannefpncccogfdikhmhpmdnddgoe';
   const zipArchiverPassphraseDialogUrl =
       'chrome-extension://dmboannefpncccogfdikhmhpmdnddgoe/html/passphrase.html';
@@ -156,7 +156,7 @@ testcase.zipFileOpenDownloadsEncryptedCancelPassphrase = async function() {
         clickClose();
       }
       `;
-  const cancelPassphraseDialog = function(windowId) {
+  const cancelPassphraseDialog = windowId => {
     return sendTestMessage({
       'name': 'runJsInAppWindow',
       'windowId': windowId,
@@ -164,7 +164,7 @@ testcase.zipFileOpenDownloadsEncryptedCancelPassphrase = async function() {
     });
   };
 
-  const waitForAllPassphraseWindowsClosed = function() {
+  const waitForAllPassphraseWindowsClosed = () => {
     const caller = getCaller();
 
     const passphraseWindowCountCommand = {
@@ -177,7 +177,7 @@ testcase.zipFileOpenDownloadsEncryptedCancelPassphrase = async function() {
       'windowUrl': zipArchiverPassphraseDialogUrl
     };
 
-    return repeatUntil(async function() {
+    return repeatUntil(async () => {
       const windowCount = await sendTestMessage(passphraseWindowCountCommand);
       if (windowCount == 0) {
         return true;
@@ -240,7 +240,7 @@ testcase.zipFileOpenDownloadsEncryptedCancelPassphrase = async function() {
 /**
  * Tests zip file open (aka unzip) from Google Drive.
  */
-testcase.zipFileOpenDrive = async function() {
+testcase.zipFileOpenDrive = async () => {
   // Open Files app on Drive containing a zip file.
   const appId =
       await setupAndWaitUntilReady(RootPath.DRIVE, [], [ENTRIES.zipArchive]);
@@ -265,7 +265,7 @@ testcase.zipFileOpenDrive = async function() {
 /**
  * Tests zip file open (aka unzip) from a removable USB volume.
  */
-testcase.zipFileOpenUsb = async function() {
+testcase.zipFileOpenUsb = async () => {
   const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
 
   // Open Files app on Drive.
@@ -320,7 +320,7 @@ function getZipSelectionFileListRowEntries() {
 /**
  * Tests creating a zip file on Downloads.
  */
-testcase.zipCreateFileDownloads = async function() {
+testcase.zipCreateFileDownloads = async () => {
   // Open Files app on Downloads containing ENTRIES.photos.
   const appId =
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
@@ -353,7 +353,7 @@ testcase.zipCreateFileDownloads = async function() {
 /**
  * Tests creating a zip file on Drive.
  */
-testcase.zipCreateFileDrive = async function() {
+testcase.zipCreateFileDrive = async () => {
   // Open Files app on Drive containing ENTRIES.photos.
   const appId =
       await setupAndWaitUntilReady(RootPath.DRIVE, [], [ENTRIES.photos]);
@@ -386,7 +386,7 @@ testcase.zipCreateFileDrive = async function() {
 /**
  * Tests creating a zip file on a removable USB volume.
  */
-testcase.zipCreateFileUsb = async function() {
+testcase.zipCreateFileUsb = async () => {
   const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
 
   // Open Files app on Drive.
@@ -439,7 +439,7 @@ testcase.zipCreateFileUsb = async function() {
  * Tests zip file open (aka unzip) from Downloads.
  * The file names are encoded in SJIS.
  */
-testcase.zipFileOpenDownloadsShiftJIS = async function() {
+testcase.zipFileOpenDownloadsShiftJIS = async () => {
   // Open Files app on Downloads containing a zip file.
   const appId = await setupAndWaitUntilReady(
       RootPath.DOWNLOADS, [ENTRIES.zipArchiveSJIS], []);
@@ -480,7 +480,7 @@ testcase.zipFileOpenDownloadsShiftJIS = async function() {
  * Tests zip file open (aka unzip) from Downloads. The file name in the archive
  * is encoded in UTF-8, but the language encoding flag bit is set to 0.
  */
-testcase.zipFileOpenDownloadsMacOs = async function() {
+testcase.zipFileOpenDownloadsMacOs = async () => {
   // Open Files app on Downloads containing a zip file.
   const appId = await setupAndWaitUntilReady(
       RootPath.DOWNLOADS, [ENTRIES.zipArchiveMacOs], []);
