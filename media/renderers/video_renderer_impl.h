@@ -155,7 +155,7 @@ class MEDIA_EXPORT VideoRendererImpl
 
   // Helper method for checking if a frame timestamp plus the frame's expected
   // duration is before |start_timestamp_|.
-  bool IsBeforeStartTime(base::TimeDelta timestamp);
+  bool IsBeforeStartTime(const VideoFrame& frame);
 
   // Attempts to remove frames which are no longer effective for rendering when
   // |buffering_state_| == BUFFERING_HAVE_NOTHING or |was_background_rendering_|
@@ -311,7 +311,7 @@ class MEDIA_EXPORT VideoRendererImpl
   // This is useful when doing video frame copies asynchronously since we
   // want to discard video frames that might be received after the stream has
   // been reset.
-  base::WeakPtrFactory<VideoRendererImpl> frame_callback_weak_factory_;
+  base::WeakPtrFactory<VideoRendererImpl> cancel_on_flush_weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoRendererImpl);
 };
