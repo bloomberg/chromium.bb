@@ -65,7 +65,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ManageSyncItemType,
   // NonPersonalizedSectionIdentifier section.
   AutocompleteSearchesAndURLsItemType,
-  PreloadPagesItemType,
   ImproveChromeItemType,
   BetterSearchAndBrowsingItemType,
 };
@@ -108,14 +107,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 // Preference value for the "Autocomplete searches and URLs" feature.
 @property(nonatomic, strong, readonly)
     PrefBackedBoolean* autocompleteSearchPreference;
-// Preference value for the "Preload pages for faster browsing" feature.
-@property(nonatomic, strong, readonly)
-    PrefBackedBoolean* preloadPagesPreference;
-// Preference value for the "Preload pages for faster browsing" for Wifi-Only.
-// TODO(crbug.com/872101): Needs to create the UI to change from Wifi-Only to
-// always
-@property(nonatomic, strong, readonly)
-    PrefBackedBoolean* preloadPagesWifiOnlyPreference;
 // Preference value for the "Help improve Chromium's features" feature.
 @property(nonatomic, strong, readonly)
     PrefBackedBoolean* sendDataUsagePreference;
@@ -149,13 +140,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
         initWithPrefService:userPrefService
                    prefName:prefs::kSearchSuggestEnabled];
     _autocompleteSearchPreference.observer = self;
-    _preloadPagesPreference = [[PrefBackedBoolean alloc]
-        initWithPrefService:userPrefService
-                   prefName:prefs::kNetworkPredictionEnabled];
-    _preloadPagesPreference.observer = self;
-    _preloadPagesWifiOnlyPreference = [[PrefBackedBoolean alloc]
-        initWithPrefService:userPrefService
-                   prefName:prefs::kNetworkPredictionWifiOnly];
     _sendDataUsagePreference = [[PrefBackedBoolean alloc]
         initWithPrefService:localPrefService
                    prefName:metrics::prefs::kMetricsReportingEnabled];
@@ -431,9 +415,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       case AutocompleteSearchesAndURLsItemType:
         switchItem.on = self.autocompleteSearchPreference.value;
         break;
-      case PreloadPagesItemType:
-        switchItem.on = self.preloadPagesPreference.value;
-        break;
       case ImproveChromeItemType:
         switchItem.on = self.sendDataUsagePreference.value;
         break;
@@ -468,13 +449,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
                 detailStringID:
                     IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_DETAIL
                       dataType:0];
-    SyncSwitchItem* preloadPagesItem =
-        [self switchItemWithItemType:PreloadPagesItemType
-                        textStringID:
-                            IDS_IOS_GOOGLE_SERVICES_SETTINGS_PRELOAD_PAGES_TEXT
-                      detailStringID:
-                          IDS_IOS_GOOGLE_SERVICES_SETTINGS_PRELOAD_PAGES_DETAIL
-                            dataType:0];
     SyncSwitchItem* improveChromeItem =
         [self switchItemWithItemType:ImproveChromeItemType
                         textStringID:
@@ -490,7 +464,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
                     IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_DETAIL
                       dataType:0];
     _nonPersonalizedItems = @[
-      autocompleteSearchesAndURLsItem, preloadPagesItem, improveChromeItem,
+      autocompleteSearchesAndURLsItem, improveChromeItem,
       betterSearchAndBrowsingItemType
     ];
   }
@@ -555,13 +529,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     case AutocompleteSearchesAndURLsItemType:
       self.autocompleteSearchPreference.value = value;
       break;
-    case PreloadPagesItemType:
-      self.preloadPagesPreference.value = value;
-      if (value) {
-        // Should be wifi only, until https://crbug.com/872101 is fixed.
-        self.preloadPagesWifiOnlyPreference.value = YES;
-      }
-      break;
     case ImproveChromeItemType:
       self.sendDataUsagePreference.value = value;
       if (value) {
@@ -608,7 +575,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       [self.commandHandler openManageSyncSettings];
       break;
     case AutocompleteSearchesAndURLsItemType:
-    case PreloadPagesItemType:
     case ImproveChromeItemType:
     case BetterSearchAndBrowsingItemType:
     case SyncChromeDataItemType:
