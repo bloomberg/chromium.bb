@@ -6,6 +6,7 @@ module video_capture.mojom;
 
 import "media/capture/mojom/video_capture_types.mojom";
 import "services/video_capture/public/mojom/device.mojom";
+import "services/video_capture/public/mojom/devices_changed_observer.mojom";
 import "services/video_capture/public/mojom/producer.mojom";
 import "services/video_capture/public/mojom/virtual_device.mojom";
 
@@ -13,10 +14,6 @@ enum DeviceAccessResultCode {
   NOT_INITIALIZED,
   SUCCESS,
   ERROR_DEVICE_NOT_FOUND
-};
-
-interface DevicesChangedObserver {
-  OnDevicesChanged();
 };
 
 // Enables access to a set of video capture devices.

@@ -34,6 +34,9 @@ class VideoSourceProviderImpl : public mojom::VideoSourceProvider {
   void AddTextureVirtualDevice(
       const media::VideoCaptureDeviceInfo& device_info,
       mojom::TextureVirtualDeviceRequest virtual_device) override;
+  void RegisterVirtualDevicesChangedObserver(
+      mojom::DevicesChangedObserverPtr observer,
+      bool raise_event_if_virtual_devices_already_present) override;
 
  private:
   void OnVideoSourceLastClientDisconnected(const std::string& device_id);
