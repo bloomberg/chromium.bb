@@ -153,7 +153,7 @@ void TextFieldInputType::SetValue(const String& sanitized_value,
                                   TextControlSetValueSelection selection) {
   // We don't use InputType::setValue.  TextFieldInputType dispatches events
   // different way from InputType::setValue.
-  if (event_behavior == kDispatchNoEvent)
+  if (event_behavior == TextFieldEventBehavior::kDispatchNoEvent)
     GetElement().SetNonAttributeValue(sanitized_value);
   else
     GetElement().SetNonAttributeValueByUserEdit(sanitized_value);
@@ -173,7 +173,7 @@ void TextFieldInputType::SetValue(const String& sanitized_value,
   }
 
   switch (event_behavior) {
-    case kDispatchChangeEvent:
+    case TextFieldEventBehavior::kDispatchChangeEvent:
       // If the user is still editing this field, dispatch an input event rather
       // than a change event.  The change event will be dispatched when editing
       // finishes.
@@ -183,13 +183,13 @@ void TextFieldInputType::SetValue(const String& sanitized_value,
         GetElement().DispatchFormControlChangeEvent();
       break;
 
-    case kDispatchInputAndChangeEvent: {
+    case TextFieldEventBehavior::kDispatchInputAndChangeEvent: {
       GetElement().DispatchInputEvent();
       GetElement().DispatchFormControlChangeEvent();
       break;
     }
 
-    case kDispatchNoEvent:
+    case TextFieldEventBehavior::kDispatchNoEvent:
       break;
   }
 }

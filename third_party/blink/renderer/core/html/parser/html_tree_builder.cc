@@ -1461,7 +1461,7 @@ void HTMLTreeBuilder::CallTheAdoptionAgency(AtomicHTMLToken* token) {
     HTMLElementStack::ElementRecord* next_node = node->Next();
     HTMLElementStack::ElementRecord* last_node = furthest_block;
     // 9.1, 9.2, 9.3 and 9.11 are covered by the for() loop.
-    for (int i = 0; i < kInnerIterationLimit; ++i) {
+    for (int j = 0; j < kInnerIterationLimit; ++j) {
       // 9.4
       node = next_node;
       DCHECK(node);

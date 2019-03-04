@@ -329,11 +329,13 @@ bool TextResourceDecoder::CheckForXMLCharset(const char* data,
       return false;
     // No need for +1, because we have an extra "?" to lose at the end of XML
     // declaration.
-    int len = 0;
-    int pos =
-        FindXMLEncoding(ptr, static_cast<int>(xml_declaration_end - ptr), len);
-    if (pos != -1)
-      SetEncoding(FindTextEncoding(ptr + pos, len), kEncodingFromXMLHeader);
+    int encoding_length = 0;
+    int encoding_pos = FindXMLEncoding(
+        ptr, static_cast<int>(xml_declaration_end - ptr), encoding_length);
+    if (encoding_pos != -1) {
+      SetEncoding(FindTextEncoding(ptr + encoding_pos, encoding_length),
+                  kEncodingFromXMLHeader);
+    }
     // continue looking for a charset - it may be specified in an HTTP-Equiv
     // meta
   } else if (BytesEqual(ptr, '<', 0, '?', 0, 'x', 0)) {

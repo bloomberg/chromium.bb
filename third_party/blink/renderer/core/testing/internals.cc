@@ -1366,7 +1366,7 @@ void Internals::setAutofilledValue(Element* element,
   }
 
   if (auto* select = ToHTMLSelectElementOrNull(*element))
-    select->setValue(value, kDispatchInputAndChangeEvent);
+    select->setValue(value, true /* send_events */);
 
   ToHTMLFormControlElement(element)->SetAutofillState(
       blink::WebAutofillState::kAutofilled);

@@ -114,7 +114,7 @@ bool AXSlider::OnNativeSetValueAction(const String& value) {
   if (input->value() == value)
     return false;
 
-  input->setValue(value, kDispatchInputAndChangeEvent);
+  input->setValue(value, TextFieldEventBehavior::kDispatchInputAndChangeEvent);
 
   // Fire change event manually, as LayoutSlider::setValueForPosition does.
   input->DispatchFormControlChangeEvent();

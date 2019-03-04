@@ -2547,13 +2547,13 @@ bool AXLayoutObject::OnNativeSetValueAction(const String& string) {
   LayoutBoxModelObject* layout_object = ToLayoutBoxModelObject(layout_object_);
   if (layout_object->IsTextField() && IsHTMLInputElement(*GetNode())) {
     ToHTMLInputElement(*GetNode())
-        .setValue(string, kDispatchInputAndChangeEvent);
+        .setValue(string, TextFieldEventBehavior::kDispatchInputAndChangeEvent);
     return true;
   }
 
   if (layout_object->IsTextArea() && IsHTMLTextAreaElement(*GetNode())) {
     ToHTMLTextAreaElement(*GetNode())
-        .setValue(string, kDispatchInputAndChangeEvent);
+        .setValue(string, TextFieldEventBehavior::kDispatchInputAndChangeEvent);
     return true;
   }
 

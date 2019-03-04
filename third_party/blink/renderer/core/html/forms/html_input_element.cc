@@ -997,7 +997,8 @@ void HTMLInputElement::setChecked(bool now_checked,
   // unchecked to match other browsers. DOM is not a useful standard for this
   // because it says only to fire change events at "lose focus" time, which is
   // definitely wrong in practice for these types of elements.
-  if (event_behavior == kDispatchInputAndChangeEvent && isConnected() &&
+  if (event_behavior == TextFieldEventBehavior::kDispatchInputAndChangeEvent &&
+      isConnected() &&
       input_type_->ShouldSendChangeEventAfterCheckedChanged()) {
     DispatchInputEvent();
   }
@@ -1069,7 +1070,7 @@ String HTMLInputElement::ValueOrDefaultLabel() const {
 
 void HTMLInputElement::SetValueForUser(const String& value) {
   // Call setValue and make it send a change event.
-  setValue(value, kDispatchChangeEvent);
+  setValue(value, TextFieldEventBehavior::kDispatchChangeEvent);
 }
 
 void HTMLInputElement::SetSuggestedValue(const String& value) {
