@@ -59,8 +59,8 @@ void GoogleAssistantHandler::HandleShowGoogleAssistantSettings(
 void GoogleAssistantHandler::HandleRetrainVoiceModel(
     const base::ListValue* args) {
   CHECK_EQ(0U, args->GetSize());
-  chromeos::AssistantOptInDialog::Show(
-      ash::mojom::FlowType::SPEAKER_ID_ENROLLMENT, base::DoNothing());
+  chromeos::AssistantOptInDialog::Show(ash::mojom::FlowType::SPEAKER_ID_RETRAIN,
+                                       base::DoNothing());
 }
 
 void GoogleAssistantHandler::BindAssistantSettingsManager() {

@@ -188,7 +188,10 @@ void AssistantOptInFlowScreenHandler::OnSpeakerIdEnrollmentDone() {
 }
 
 void AssistantOptInFlowScreenHandler::OnSpeakerIdEnrollmentFailure() {
-  // TODO(updowndota): Show an error message to user, and add an UMA metric.
+  settings_manager_->StopSpeakerIdEnrollment(base::DoNothing());
+  RecordAssistantOptInStatus(VOICE_MATCH_ENROLLMENT_ERROR);
+  CallJS("login.AssistantOptInFlowScreen.onVoiceMatchUpdate",
+         base::Value("failure"));
   LOG(ERROR) << "Speaker ID enrollmend failure.";
 }
 
@@ -443,14 +446,18 @@ void AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenUserAction(
     ShowNextScreen();
   } else if (action == kSkipPressed) {
     RecordAssistantOptInStatus(VOICE_MATCH_ENROLLMENT_SKIPPED);
-    prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, false);
+    if (!is_retrain_flow_) {
+      // No need to disable hotword for retrain flow since user has a model.
+      prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, false);
+    }
     settings_manager_->StopSpeakerIdEnrollment(base::DoNothing());
     ShowNextScreen();
   } else if (action == kRecordPressed) {
     if (!prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled)) {
       prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, true);
     }
-    settings_manager_->StartSpeakerIdEnrollment(true, std::move(client_ptr_));
+    settings_manager_->StartSpeakerIdEnrollment(is_retrain_flow_,
+                                                std::move(client_ptr_));
   }
 }
 
@@ -516,6 +523,9 @@ void AssistantOptInFlowScreenHandler::HandleFlowInitialized(
       flow_type == static_cast<int>(ash::mojom::FlowType::CONSENT_FLOW)) {
     SendGetSettingsRequest();
   }
+
+  if (flow_type == static_cast<int>(ash::mojom::FlowType::SPEAKER_ID_RETRAIN))
+    is_retrain_flow_ = true;
 }
 
 }  // namespace chromeos

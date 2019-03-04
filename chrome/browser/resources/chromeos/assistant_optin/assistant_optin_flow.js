@@ -30,6 +30,8 @@ Polymer({
     CONSENT_FLOW: 0,
     // The voice match enrollment flow.
     SPEAKER_ID_ENROLLMENT: 1,
+    // The voice match retrain flow.
+    SPEAKER_ID_RETRAIN: 2,
   },
 
   /**
@@ -41,6 +43,7 @@ Polymer({
     switch (flowType) {
       case this.FlowType.CONSENT_FLOW:
       case this.FlowType.SPEAKER_ID_ENROLLMENT:
+      case this.FlowType.SPEAKER_ID_RETRAIN:
         this.flowType = flowType;
         break;
       default:
@@ -58,6 +61,8 @@ Polymer({
 
     switch (this.flowType) {
       case this.FlowType.SPEAKER_ID_ENROLLMENT:
+      case this.FlowType.SPEAKER_ID_RETRAIN:
+        this.$['value-prop'].hidden = true;
         this.showScreen(this.$['voice-match']);
         break;
       default:
@@ -115,7 +120,8 @@ Polymer({
         }
         break;
       case this.$['voice-match']:
-        if (this.flowType == this.FlowType.SPEAKER_ID_ENROLLMENT) {
+        if (this.flowType == this.FlowType.SPEAKER_ID_ENROLLMENT ||
+            this.flowType == this.FlowType.SPEAKER_ID_RETRAIN) {
           chrome.send('login.AssistantOptInFlowScreen.flowFinished');
         } else {
           this.showScreen(this.$['get-more']);
@@ -147,6 +153,9 @@ Polymer({
         break;
       case 'done':
         this.$['voice-match'].voiceMatchDone();
+        break;
+      case 'failure':
+        this.onScreenLoadingError();
         break;
       default:
         break;

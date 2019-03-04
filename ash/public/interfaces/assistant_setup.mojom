@@ -9,6 +9,8 @@ enum FlowType {
   CONSENT_FLOW,
   // The speaker id enrollment flow.
   SPEAKER_ID_ENROLLMENT,
+  // The speaker id retrain flow.
+  SPEAKER_ID_RETRAIN,
 };
 
 // Interface for a class which is responsible for start Assistant OptIn flow.
