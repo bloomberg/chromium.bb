@@ -90,6 +90,11 @@ void StringUtil::builderAppendQuotedString(StringBuilder& builder,
   builder.Append('"');
 }
 
+// static
+String StringUtil::fromUTF16(const uint16_t* data, size_t length) {
+  return String(reinterpret_cast<const UChar*>(data), length);
+}
+
 namespace {
 class BinaryBasedOnSharedBuffer : public Binary::Impl {
  public:
