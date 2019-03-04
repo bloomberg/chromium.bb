@@ -14,9 +14,8 @@ class MockThumbnailFetcher : public ThumbnailFetcher {
  public:
   MockThumbnailFetcher();
   ~MockThumbnailFetcher() override;
-  MOCK_METHOD3(FetchSuggestionImageData,
+  MOCK_METHOD2(FetchSuggestionImageData,
                void(const ClientId& client_id,
-                    bool is_first_attempt,
                     ImageDataFetchedCallback callback));
 };
 
