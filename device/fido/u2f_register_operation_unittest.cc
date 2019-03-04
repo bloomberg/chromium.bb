@@ -159,11 +159,10 @@ TEST_F(U2fRegisterOperationTest, TestRegistrationWithExclusionList) {
   // MockFidoDevice::NoErrorRegister will be invoked after registration.
   ::testing::InSequence s;
   device->ExpectRequestAndRespondWith(
-      test_data::kU2fCheckOnlySignCommandApduWithKeyAlpha,
+      test_data::kU2fSignCommandApduWithKeyAlpha,
       test_data::kU2fWrongDataApduResponse);
-  device->ExpectRequestAndRespondWith(
-      test_data::kU2fCheckOnlySignCommandApduWithKeyBeta,
-      test_data::kU2fWrongLengthApduResponse);
+  device->ExpectRequestAndRespondWith(test_data::kU2fSignCommandApduWithKeyBeta,
+                                      test_data::kU2fWrongLengthApduResponse);
   device->ExpectRequestAndRespondWith(
       test_data::kU2fRegisterCommandApdu,
       test_data::kApduEncodedNoErrorRegisterResponse);
@@ -208,17 +207,13 @@ TEST_F(U2fRegisterOperationTest, TestRegistrationWithDuplicateHandle) {
   // MockFidoDevice::NoErrorRegister.
   ::testing::InSequence s;
   device->ExpectRequestAndRespondWith(
-      test_data::kU2fCheckOnlySignCommandApduWithKeyAlpha,
+      test_data::kU2fSignCommandApduWithKeyAlpha,
       test_data::kU2fWrongDataApduResponse);
+  device->ExpectRequestAndRespondWith(test_data::kU2fSignCommandApduWithKeyBeta,
+                                      test_data::kU2fWrongDataApduResponse);
   device->ExpectRequestAndRespondWith(
-      test_data::kU2fCheckOnlySignCommandApduWithKeyBeta,
-      test_data::kU2fWrongDataApduResponse);
-  device->ExpectRequestAndRespondWith(
-      test_data::kU2fCheckOnlySignCommandApduWithKeyGamma,
+      test_data::kU2fSignCommandApduWithKeyGamma,
       test_data::kApduEncodedNoErrorSignResponse);
-  device->ExpectRequestAndRespondWith(
-      test_data::kU2fFakeRegisterCommand,
-      test_data::kApduEncodedNoErrorRegisterResponse);
 
   auto u2f_register = std::make_unique<U2fRegisterOperation>(
       device.get(), std::move(request),

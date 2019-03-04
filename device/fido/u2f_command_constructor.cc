@@ -49,22 +49,18 @@ base::Optional<std::vector<uint8_t>> ConvertToU2fRegisterCommand(
       request.client_data_hash(), is_invidual_attestation);
 }
 
-base::Optional<std::vector<uint8_t>> ConvertToU2fCheckOnlySignCommand(
+base::Optional<std::vector<uint8_t>> ConvertToU2fSignCommand(
     const CtapMakeCredentialRequest& request,
-    const PublicKeyCredentialDescriptor& key_handle) {
-  if (key_handle.credential_type() != CredentialType::kPublicKey)
-    return base::nullopt;
-
+    base::span<const uint8_t> key_handle) {
   return ConstructU2fSignCommand(
       fido_parsing_utils::CreateSHA256Hash(request.rp().rp_id()),
-      request.client_data_hash(), key_handle.id(), true /* check_only */);
+      request.client_data_hash(), key_handle);
 }
 
 base::Optional<std::vector<uint8_t>> ConvertToU2fSignCommand(
     const CtapGetAssertionRequest& request,
     ApplicationParameterType application_parameter_type,
-    base::span<const uint8_t> key_handle,
-    bool check_only) {
+    base::span<const uint8_t> key_handle) {
   if (!IsConvertibleToU2fSignCommand(request))
     return base::nullopt;
 
@@ -75,8 +71,7 @@ base::Optional<std::vector<uint8_t>> ConvertToU2fSignCommand(
                 std::array<uint8_t, kRpIdHashLength>());
 
   return ConstructU2fSignCommand(application_parameter,
-                                 request.client_data_hash(), key_handle,
-                                 check_only);
+                                 request.client_data_hash(), key_handle);
 }
 
 std::vector<uint8_t> ConstructU2fRegisterCommand(
@@ -100,8 +95,7 @@ std::vector<uint8_t> ConstructU2fRegisterCommand(
 base::Optional<std::vector<uint8_t>> ConstructU2fSignCommand(
     base::span<const uint8_t, kU2fApplicationParamLength> application_parameter,
     base::span<const uint8_t, kU2fChallengeParamLength> challenge_parameter,
-    base::span<const uint8_t> key_handle,
-    bool check_only) {
+    base::span<const uint8_t> key_handle) {
   if (key_handle.size() > kMaxKeyHandleLength) {
     return base::nullopt;
   }
@@ -116,7 +110,7 @@ base::Optional<std::vector<uint8_t>> ConstructU2fSignCommand(
 
   apdu::ApduCommand command;
   command.set_ins(base::strict_cast<uint8_t>(U2fApduInstruction::kSign));
-  command.set_p1(check_only ? kP1CheckOnly : kP1TupRequiredConsumed);
+  command.set_p1(kP1TupRequiredConsumed);
   command.set_data(std::move(data));
   command.set_response_length(apdu::ApduCommand::kApduMaxResponseLength);
   return command.GetEncodedCommand();

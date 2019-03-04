@@ -215,9 +215,6 @@ TEST_F(FidoGetAssertionHandlerTest, TestU2fSign) {
 
   auto device = MockFidoDevice::MakeU2fWithGetInfoExpectation();
   device->ExpectRequestAndRespondWith(
-      test_data::kU2fCheckOnlySignCommandApdu,
-      test_data::kApduEncodedNoErrorSignResponse);
-  device->ExpectRequestAndRespondWith(
       test_data::kU2fSignCommandApdu,
       test_data::kApduEncodedNoErrorSignResponse);
 

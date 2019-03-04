@@ -74,9 +74,6 @@ TEST_F(FidoGetAssertionTaskTest, TestGetAssertionSuccess) {
 TEST_F(FidoGetAssertionTaskTest, TestU2fSignSuccess) {
   auto device = MockFidoDevice::MakeU2f();
   device->ExpectRequestAndRespondWith(
-      test_data::kU2fCheckOnlySignCommandApdu,
-      test_data::kApduEncodedNoErrorSignResponse);
-  device->ExpectRequestAndRespondWith(
       test_data::kU2fSignCommandApdu,
       test_data::kApduEncodedNoErrorSignResponse);
 
@@ -224,22 +221,19 @@ TEST_F(FidoGetAssertionTaskTest, TestU2fFallbackForAppIdExtension) {
   auto device = MockFidoDevice::MakeCtap();
   std::array<uint8_t, 1> error{{base::strict_cast<uint8_t>(
       CtapDeviceResponseCode::kCtap2ErrNoCredentials)}};
-  // First as device supports both CTAP and U2F protocol, browser will try CTAP
-  // GetAssertion.
+  // First, as the device supports both CTAP2 and U2F, the browser will attempt
+  // a CTAP2 GetAssertion.
   device->ExpectRequestAndRespondWith(test_data::kCtapSilentGetAssertionRequest,
                                       error);
-  // After falling back to U2F request will use the primary app_param, which
-  // will be rejected.
-  device->ExpectRequestAndRespondWith(test_data::kU2fCheckOnlySignCommandApdu,
-                                      test_data::kU2fWrongDataApduResponse);
-  // After the rejection, the U2F sign request with alternative application
-  // parameter should be tried.
-  device->ExpectRequestAndRespondWith(
-      test_data::
-          kU2fCheckOnlySignCommandApduWithAlternativeApplicationParameter,
-      test_data::kApduEncodedNoErrorSignResponse);
+  // After falling back to U2F the request will use the alternative app_param,
+  // which will be rejected.
   device->ExpectRequestAndRespondWith(
       test_data::kU2fSignCommandApduWithAlternativeApplicationParameter,
+      test_data::kU2fWrongDataApduResponse);
+  // After the rejection, the U2F sign request with the primary application
+  // parameter should be tried.
+  device->ExpectRequestAndRespondWith(
+      test_data::kU2fSignCommandApdu,
       test_data::kApduEncodedNoErrorSignResponse);
 
   auto task = std::make_unique<GetAssertionTask>(

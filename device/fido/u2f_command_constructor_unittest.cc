@@ -71,44 +71,6 @@ TEST(U2fCommandConstructorTest, TestConvertCtapMakeCredentialToU2fRegister) {
               ::testing::ElementsAreArray(test_data::kU2fRegisterCommandApdu));
 }
 
-TEST(U2fCommandConstructorTest,
-     TestConvertCtapMakeCredentialToU2fCheckOnlySign) {
-  auto make_credential_param = ConstructMakeCredentialRequest();
-  PublicKeyCredentialDescriptor credential_descriptor(
-      CredentialType::kPublicKey,
-      fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle));
-  std::vector<PublicKeyCredentialDescriptor> exclude_list;
-  exclude_list.push_back(credential_descriptor);
-  make_credential_param.SetExcludeList(std::move(exclude_list));
-  EXPECT_TRUE(IsConvertibleToU2fRegisterCommand(make_credential_param));
-
-  const auto u2f_check_only_sign = ConvertToU2fCheckOnlySignCommand(
-      make_credential_param, credential_descriptor);
-
-  ASSERT_TRUE(u2f_check_only_sign);
-  EXPECT_THAT(
-      *u2f_check_only_sign,
-      ::testing::ElementsAreArray(test_data::kU2fCheckOnlySignCommandApdu));
-}
-
-TEST(U2fCommandConstructorTest,
-     TestConvertCtapMakeCredentialToU2fCheckOnlySignWithInvalidCredentialType) {
-  auto make_credential_param = ConstructMakeCredentialRequest();
-  PublicKeyCredentialDescriptor credential_descriptor(
-      // Purposefully construct an invalid CredentialType.
-      static_cast<CredentialType>(-1),
-      fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle));
-  std::vector<PublicKeyCredentialDescriptor> exclude_list;
-  exclude_list.push_back(credential_descriptor);
-  make_credential_param.SetExcludeList(std::move(exclude_list));
-  EXPECT_TRUE(IsConvertibleToU2fRegisterCommand(make_credential_param));
-
-  const auto u2f_check_only_sign = ConvertToU2fCheckOnlySignCommand(
-      make_credential_param, credential_descriptor);
-
-  EXPECT_FALSE(u2f_check_only_sign);
-}
-
 TEST(U2fCommandConstructorTest, TestU2fRegisterCredentialAlgorithmRequirement) {
   PublicKeyCredentialRpEntity rp("acme.com");
   rp.SetRpName("acme.com");
@@ -148,14 +110,6 @@ TEST(U2fCommandConstructorTest, TestCreateSignApduCommand) {
   ASSERT_TRUE(encoded_sign);
   EXPECT_THAT(*encoded_sign,
               ::testing::ElementsAreArray(test_data::kU2fSignCommandApdu));
-
-  const auto encoded_sign_check_only = ConstructU2fSignCommand(
-      test_data::kApplicationParameter, test_data::kChallengeParameter,
-      test_data::kU2fSignKeyHandle, true /* check_only */);
-  ASSERT_TRUE(encoded_sign_check_only);
-  EXPECT_THAT(
-      *encoded_sign_check_only,
-      ::testing::ElementsAreArray(test_data::kU2fCheckOnlySignCommandApdu));
 }
 
 TEST(U2fCommandConstructorTest, TestConvertCtapGetAssertionToU2fSignRequest) {
