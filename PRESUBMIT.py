@@ -1378,7 +1378,7 @@ def _CheckForVersionControlConflictsInFile(input_api, f):
   pattern = input_api.re.compile('^(?:<<<<<<<|>>>>>>>) |^=======$')
   errors = []
   for line_num, line in f.ChangedContents():
-    if f.LocalPath().endswith('.md'):
+    if f.LocalPath().endswith(('.md', '.rst', '.txt')):
       # First-level headers in markdown look a lot like version control
       # conflict markers. http://daringfireball.net/projects/markdown/basics
       continue

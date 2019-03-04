@@ -25,8 +25,9 @@ except IOError:
 
 
 _EXCLUDED_PATHS = (
-    # This directory is created and updated via a script.
+    # These directories are created and updated via a script.
     r'^third_party[\\\/]blink[\\\/]tools[\\\/]blinkpy[\\\/]third_party[\\\/]wpt[\\\/]wpt[\\\/].*',
+    r'^third_party[\\\/]blink[\\\/]web_tests[\\\/]external[\\\/]wpt[\\\/]tools[\\\/].*',
 )
 
 
