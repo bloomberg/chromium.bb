@@ -94,7 +94,7 @@ UserType GetStoredUserType(const base::DictionaryValue* prefs_user_types,
 
 // Feature that hides Supervised Users.
 const base::Feature kHideSupervisedUsers{"HideSupervisedUsers",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // static
 void UserManagerBase::RegisterPrefs(PrefRegistrySimple* registry) {

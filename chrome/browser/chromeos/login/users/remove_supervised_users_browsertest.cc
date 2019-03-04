@@ -81,8 +81,9 @@ class RemoveSupervisedUsersBrowserEnabledTest
     : public RemoveSupervisedUsersBrowserTest {
  protected:
   void SetUpInProcessBrowserTestFixture() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kRemoveSupervisedUsersOnStartup);
+    scoped_feature_list_.InitWithFeatures(
+        {features::kRemoveSupervisedUsersOnStartup},
+        {user_manager::kHideSupervisedUsers});
   }
 
  private:
@@ -93,8 +94,9 @@ class RemoveSupervisedUsersBrowserDisabledTest
     : public RemoveSupervisedUsersBrowserTest {
  protected:
   void SetUpInProcessBrowserTestFixture() override {
-    scoped_feature_list_.InitAndDisableFeature(
-        features::kRemoveSupervisedUsersOnStartup);
+    scoped_feature_list_.InitWithFeatures(
+        {}, {user_manager::kHideSupervisedUsers,
+             features::kRemoveSupervisedUsersOnStartup});
   }
 
  private:
