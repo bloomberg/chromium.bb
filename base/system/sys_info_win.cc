@@ -131,8 +131,7 @@ std::string SysInfo::OperatingSystemVersion() {
 
 // static
 std::string SysInfo::OperatingSystemArchitecture() {
-  win::OSInfo::WindowsArchitecture arch =
-      win::OSInfo::GetInstance()->architecture();
+  win::OSInfo::WindowsArchitecture arch = win::OSInfo::GetArchitecture();
   switch (arch) {
     case win::OSInfo::X86_ARCHITECTURE:
       return "x86";

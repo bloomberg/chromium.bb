@@ -110,6 +110,14 @@ class BASE_EXPORT OSInfo {
 
   static OSInfo* GetInstance();
 
+  // Separate from the rest of OSInfo so it can be used during early process
+  // initialization.
+  static WindowsArchitecture GetArchitecture();
+
+  // Like wow64_status(), but for the supplied handle instead of the current
+  // process.  This doesn't touch member state, so you can bypass the singleton.
+  static WOW64Status GetWOW64StatusForProcess(HANDLE process_handle);
+
   Version version() const { return version_; }
   Version Kernel32Version() const;
   base::Version Kernel32BaseVersion() const;
@@ -118,15 +126,12 @@ class BASE_EXPORT OSInfo {
   VersionType version_type() const { return version_type_; }
   ServicePack service_pack() const { return service_pack_; }
   std::string service_pack_str() const { return service_pack_str_; }
-  WindowsArchitecture architecture() const { return architecture_; }
+  // TODO(thestig): Switch callers to GetArchitecture().
+  WindowsArchitecture architecture() const { return GetArchitecture(); }
   int processors() const { return processors_; }
   size_t allocation_granularity() const { return allocation_granularity_; }
   WOW64Status wow64_status() const { return wow64_status_; }
   std::string processor_model_name();
-
-  // Like wow64_status(), but for the supplied handle instead of the current
-  // process.  This doesn't touch member state, so you can bypass the singleton.
-  static WOW64Status GetWOW64StatusForProcess(HANDLE process_handle);
 
  private:
   friend class base::test::ScopedOSInfoOverride;
@@ -150,7 +155,6 @@ class BASE_EXPORT OSInfo {
   // installed on the system. If no Service Pack has been installed, the string
   // is empty.
   std::string service_pack_str_;
-  WindowsArchitecture architecture_;
   int processors_;
   size_t allocation_granularity_;
   WOW64Status wow64_status_;
