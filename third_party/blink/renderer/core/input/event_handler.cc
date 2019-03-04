@@ -748,20 +748,6 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
     mouse_event_manager_->SetCapturesDragging(false);
   }
 
-  // If the hit testing originally determined the event was in a scrollbar,
-  // refetch the MouseEventWithHitTestResults in case the scrollbar
-  // EmbeddedContentView was destroyed when the mouse event was handled.
-  if (mev.GetScrollbar()) {
-    if (mev.GetScrollbar() == last_scrollbar_under_mouse_.Get()) {
-      HitTestRequest read_only_request(HitTestRequest::kReadOnly |
-                                       HitTestRequest::kActive);
-      mev = frame_->GetDocument()->PerformMouseEventHitTest(
-          read_only_request, document_point, mouse_event);
-      if (mev.GetScrollbar() != last_scrollbar_under_mouse_.Get())
-        last_scrollbar_under_mouse_ = nullptr;
-    }
-  }
-
   // Scrollbars should get events anyway, even disabled controls might be
   // scrollable.
   if (PassMousePressEventToScrollbar(mev))
