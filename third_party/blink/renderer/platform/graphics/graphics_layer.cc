@@ -781,7 +781,8 @@ void GraphicsLayer::SetMaskLayer(GraphicsLayer* mask_layer) {
     return;
 
   mask_layer_ = mask_layer;
-  CcLayer()->SetMaskLayer(mask_layer_ ? mask_layer_->CcLayer() : nullptr);
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    CcLayer()->SetMaskLayer(mask_layer_ ? mask_layer_->CcLayer() : nullptr);
 }
 
 void GraphicsLayer::SetContentsClippingMaskLayer(
