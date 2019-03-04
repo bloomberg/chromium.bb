@@ -78,6 +78,10 @@
 - (void)setScrollProgressForTabletOmnibox:(CGFloat)progress {
   [super setScrollProgressForTabletOmnibox:progress];
 
+  // Sometimes an NTP may make a delegate call when it's no longer visible.
+  if (!self.isNTP)
+    progress = 1;
+
   if (progress == 1) {
     self.view.locationBarContainer.transform = CGAffineTransformIdentity;
   } else {
