@@ -27,8 +27,9 @@ class TabListRecyclerView extends RecyclerView {
     interface VisibilityListener {
         /**
          * Called before the animation to show the tab list has started.
+         * @param isAnimating Whether visibility is changing with animation
          */
-        void startedShowing();
+        void startedShowing(boolean isAnimating);
 
         /**
          * Called when the animation to show the tab list is finished.
@@ -37,8 +38,9 @@ class TabListRecyclerView extends RecyclerView {
 
         /**
          * Called before the animation to hide the tab list has started.
+         * @param isAnimating Whether visibility is changing with animation
          */
-        void startedHiding();
+        void startedHiding(boolean isAnimating);
 
         /**
          * Called when the animation to show the tab list is finished.
@@ -70,7 +72,7 @@ class TabListRecyclerView extends RecyclerView {
      * @param animate Whether the visibility change should be animated.
      */
     void startShowing(boolean animate) {
-        mListener.startedShowing();
+        mListener.startedShowing(animate);
         cancelAllAnimations();
         setAlpha(0);
         setVisibility(View.VISIBLE);
@@ -92,7 +94,7 @@ class TabListRecyclerView extends RecyclerView {
      * @param animate Whether the visibility change should be animated.
      */
     void startHiding(boolean animate) {
-        mListener.startedHiding();
+        mListener.startedHiding(animate);
         cancelAllAnimations();
         mFadeOutAnimator = ObjectAnimator.ofFloat(this, View.ALPHA, 0);
         mFadeOutAnimator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);

@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
@@ -34,9 +35,9 @@ class GridTabSwitcherMediator
         implements OverviewModeController, TabListRecyclerView.VisibilityListener {
     // This should be the same as TabListCoordinator.GRID_LAYOUT_SPAN_COUNT for the selected tab
     // to be on the 2nd row.
-    private static final int INITIAL_SCROLL_INDEX_OFFSET = 2;
+    static final int INITIAL_SCROLL_INDEX_OFFSET = 2;
 
-    private final GridTabSwitcherCoordinator mCoordinator;
+    private final ResetHandler mResetHandler;
     private final PropertyModel mContainerViewModel;
     private final TabModelSelector mTabModelSelector;
     private final TabModelSelectorTabModelObserver mTabModelObserver;
@@ -62,23 +63,29 @@ class GridTabSwitcherMediator
             };
 
     /**
-     * In cases where a didSelectTab was due to closing a tab or switching models with a toggle,
+     * In cases where a didSelectTab was due to switching models with a toggle,
      * we don't change tab grid visibility.
      */
     private boolean mShouldIgnoreNextSelect;
 
     /**
+     * Interface to delegate resetting the tab grid.
+     */
+    interface ResetHandler {
+        void resetWithTabModel(TabModel tabModel);
+    }
+
+    /**
      * Basic constructor for the Mediator.
-     * @param coordinator The {@link GridTabSwitcherCoordinator} that owns this Mediator.
+     * @param resetHandler The {@link ResetHandler} that handles reset for this Mediator.
      * @param containerViewModel The {@link PropertyModel} to keep state on the View containing the
      *         grid.
      * @param tabModelSelector {@link TabModelSelector} to observer for model and selection changes.
      * @param fullscreenManager {@link FullscreenManager} to use.
      */
-    GridTabSwitcherMediator(GridTabSwitcherCoordinator coordinator,
-            PropertyModel containerViewModel, TabModelSelector tabModelSelector,
-            ChromeFullscreenManager fullscreenManager) {
-        mCoordinator = coordinator;
+    GridTabSwitcherMediator(ResetHandler resetHandler, PropertyModel containerViewModel,
+            TabModelSelector tabModelSelector, ChromeFullscreenManager fullscreenManager) {
+        mResetHandler = resetHandler;
         mContainerViewModel = containerViewModel;
         mTabModelSelector = tabModelSelector;
         mFullscreenManager = fullscreenManager;
@@ -87,35 +94,21 @@ class GridTabSwitcherMediator
             @Override
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
                 mShouldIgnoreNextSelect = true;
-                mCoordinator.resetWithTabModel(newModel);
+                mResetHandler.resetWithTabModel(newModel);
                 mContainerViewModel.set(IS_INCOGNITO, newModel.isIncognito());
             }
         };
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
 
-        mTabModelSelector.setOverviewModeBehavior(this);
-
         mTabModelObserver = new TabModelSelectorTabModelObserver(mTabModelSelector) {
 
             @Override
             public void didSelectTab(Tab tab, int type, int lastId) {
-                if (mShouldIgnoreNextSelect) {
+                if (type == TabSelectionType.FROM_CLOSE || mShouldIgnoreNextSelect) {
                     mShouldIgnoreNextSelect = false;
                     return;
                 }
                 setVisibility(false);
-            }
-
-            @Override
-            public void willCloseTab(Tab tab, boolean animate) {
-                // Needed to handle the extra select for closing the currently selected tab.
-                mShouldIgnoreNextSelect = true;
-            }
-
-            @Override
-            public void didCloseTab(int tabId, boolean incognito) {
-                // Handles most of the tab closes.
-                mShouldIgnoreNextSelect = true;
             }
         };
 
@@ -131,7 +124,7 @@ class GridTabSwitcherMediator
 
     private void setVisibility(boolean isVisible) {
         if (isVisible) {
-            mCoordinator.resetWithTabModel(mTabModelSelector.getCurrentModel());
+            mResetHandler.resetWithTabModel(mTabModelSelector.getCurrentModel());
             int initialPosition = Math.max(
                     mTabModelSelector.getCurrentModel().index() - INITIAL_SCROLL_INDEX_OFFSET, 0);
             mContainerViewModel.set(INITIAL_SCROLL_INDEX, initialPosition);
@@ -170,7 +163,7 @@ class GridTabSwitcherMediator
     }
 
     @Override
-    public void startedShowing() {
+    public void startedShowing(boolean isAnimating) {
         for (OverviewModeObserver observer : mObservers) {
             observer.onOverviewModeStartedShowing(true);
         }
@@ -184,7 +177,7 @@ class GridTabSwitcherMediator
     }
 
     @Override
-    public void startedHiding() {
+    public void startedHiding(boolean isAnimating) {
         for (OverviewModeObserver observer : mObservers) {
             observer.onOverviewModeStartedHiding(true, false);
         }
@@ -192,7 +185,7 @@ class GridTabSwitcherMediator
 
     @Override
     public void finishedHiding() {
-        mCoordinator.resetWithTabModel(null);
+        mResetHandler.resetWithTabModel(null);
         mContainerViewModel.set(INITIAL_SCROLL_INDEX, 0);
         for (OverviewModeObserver observer : mObservers) {
             observer.onOverviewModeFinishedHiding();
