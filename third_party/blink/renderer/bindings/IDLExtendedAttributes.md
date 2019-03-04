@@ -1637,7 +1637,6 @@ Added to members of a partial interface definition (and implemented interfaces w
 * `[LegacyInterfaceTypeChecking]`
 * `[LogAllWorlds]`
 * `[PerWorldBindings]` :: interacts with `[LogActivity]`
-* `[WebAgentAPI]`
 
 -------------
 
