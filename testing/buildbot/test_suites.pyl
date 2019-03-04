@@ -3389,6 +3389,27 @@
       },
     },
 
+    'gpu_fyi_vulkan_gtests': {
+      'vulkan_content_browsertests': {
+        'args': [
+          '--enable-gpu',
+          '--test-launcher-bot-mode',
+          '--test-launcher-jobs=1',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter',
+          '--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization',
+          '--use-gl=any',
+          '--enable-oop-rasterization',
+          '--enable-vulkan',
+          '--enable-gpu-rasterization',
+          '--enable-raster-to-sk-image',
+          '--force-gpu-rasterization',
+	  '--disable-software-compositing-fallback',
+        ],
+        'linux_args': [ '--no-xvfb' ],
+        'test': 'content_browsertests',
+      },
+    },
+
     'gpu_gl_tests_validating': {
       'gl_tests': {
         'desktop_args': [
@@ -4726,6 +4747,7 @@
       'gpu_common_gtests',
       'gpu_dawn_end2end_tests',
       'gpu_fyi_desktop_specific_gtests',
+      'gpu_fyi_vulkan_gtests',
     ],
 
     'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests': [
@@ -4742,6 +4764,7 @@
       'gpu_angle_white_box_tests',
       'gpu_dawn_end2end_tests',
       'gpu_fyi_desktop_specific_gtests',
+      'gpu_fyi_vulkan_gtests',
     ],
 
     'gpu_fyi_linux_release_gtests': [
@@ -4752,6 +4775,7 @@
       'gpu_dawn_end2end_tests',
       'gpu_desktop_specific_gtests',
       'gpu_fyi_desktop_specific_gtests',
+      'gpu_fyi_vulkan_gtests',
     ],
 
     'gpu_fyi_mac_debug_gtests': [
