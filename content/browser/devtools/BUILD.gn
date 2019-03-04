@@ -76,6 +76,8 @@ inspector_protocol_generate("protocol_sources") {
 
   # These are relative to $target_gen_dir.
   outputs = [
+    "protocol/background_service.cc",
+    "protocol/background_service.h",
     "protocol/base_string_adapter.cc",
     "protocol/base_string_adapter.h",
     "protocol/browser.cc",

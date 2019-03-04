@@ -10,6 +10,9 @@
         "export_header": "content/common/content_export.h",
         "options": [
             {
+                "domain": "BackgroundService"
+            },
+            {
                 "domain": "Browser",
                 "include": ["getVersion", "getHistograms", "getHistogram", "getBrowserCommandLine", "grantPermissions", "resetPermissions", "crash", "crashGpuProcess"]
             },

@@ -39,16 +39,6 @@ void DidClearServiceEvents(blink::ServiceWorkerStatusCode status) {
   // TODO(rayankans): Log errors to UMA.
 }
 
-void UpdateDevToolsBackgroundServiceExpiration(
-    BrowserContext* browser_context,
-    devtools::proto::BackgroundService service,
-    base::Time expiration_time) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  GetContentClient()->browser()->UpdateDevToolsBackgroundServiceExpiration(
-      browser_context, service, expiration_time);
-}
-
 }  // namespace
 
 DevToolsBackgroundServicesContext::DevToolsBackgroundServicesContext(
@@ -65,9 +55,7 @@ DevToolsBackgroundServicesContext::DevToolsBackgroundServicesContext(
 
   for (const auto& expiration_time : expiration_times) {
     DCHECK(devtools::proto::BackgroundService_IsValid(expiration_time.first));
-    expiration_times_.emplace(
-        static_cast<devtools::proto::BackgroundService>(expiration_time.first),
-        expiration_time.second);
+    expiration_times_[expiration_time.first] = expiration_time.second;
   }
 }
 
@@ -76,7 +64,7 @@ DevToolsBackgroundServicesContext::~DevToolsBackgroundServicesContext() =
 
 void DevToolsBackgroundServicesContext::StartRecording(
     devtools::proto::BackgroundService service) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DCHECK(expiration_times_[service].is_null());
 
@@ -84,23 +72,19 @@ void DevToolsBackgroundServicesContext::StartRecording(
   base::Time expiration_time = base::Time::Now() + base::TimeDelta::FromDays(3);
   expiration_times_[service] = expiration_time;
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&UpdateDevToolsBackgroundServiceExpiration,
-                     browser_context_, service, expiration_time));
+  GetContentClient()->browser()->UpdateDevToolsBackgroundServiceExpiration(
+      browser_context_, service, expiration_time);
 }
 
 void DevToolsBackgroundServicesContext::StopRecording(
     devtools::proto::BackgroundService service) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DCHECK(!expiration_times_[service].is_null());
-  expiration_times_.erase(service);
+  expiration_times_[service] = base::Time();
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&UpdateDevToolsBackgroundServiceExpiration,
-                     browser_context_, service, base::Time()));
+  GetContentClient()->browser()->UpdateDevToolsBackgroundServiceExpiration(
+      browser_context_, service, base::Time());
 }
 
 bool DevToolsBackgroundServicesContext::IsRecording(

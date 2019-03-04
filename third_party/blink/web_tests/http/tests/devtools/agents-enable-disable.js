@@ -33,7 +33,8 @@
                                && agentName !== 'Inspector'
                                && agentName !== 'HeadlessExperimental'
                                && agentName !== 'Fetch'
-                               && agentName !== 'Cast';
+                               && agentName !== 'Cast'
+                               && agentName !== 'BackgroundService';
                          })
                          .sort();
 
