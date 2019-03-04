@@ -5,37 +5,24 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_EMBEDDED_WORKER_TEST_HELPER_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_EMBEDDED_WORKER_TEST_HELPER_H_
 
-#include <stdint.h>
-
-#include <map>
 #include <memory>
-#include <string>
 #include <utility>
-#include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/time/time.h"
 #include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
 #include "content/browser/service_worker/fake_service_worker.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/url_loader_factory_getter.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "net/http/http_response_info.h"
-#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
-#include "url/gurl.h"
 
 namespace content {
 
-class EmbeddedWorkerRegistry;
 class MockRenderProcessHost;
 class FakeServiceWorker;
 class ServiceWorkerContextCore;
@@ -165,18 +152,6 @@ class EmbeddedWorkerTestHelper {
   /////////////////////////////////////////////////////////////////////////////
 
  protected:
-  EmbeddedWorkerRegistry* registry();
-
-  blink::mojom::ServiceWorkerHost* GetServiceWorkerHost(
-      int embedded_worker_id) {
-    return embedded_worker_id_host_map_[embedded_worker_id].get();
-  }
-
-  blink::mojom::EmbeddedWorkerInstanceHostProxy* GetEmbeddedWorkerInstanceHost(
-      int embedded_worker_id) {
-    return embedded_worker_id_instance_host_ptr_map_[embedded_worker_id].get();
-  }
-
   // Subclasses can override these to change the default fakes. This saves tests
   // from calling AddPending*() for each start worker attempt.
   virtual std::unique_ptr<FakeEmbeddedWorkerInstanceClient>
@@ -184,7 +159,6 @@ class EmbeddedWorkerTestHelper {
   virtual std::unique_ptr<FakeServiceWorker> CreateServiceWorker();
 
  private:
-  friend FakeServiceWorker;
   class MockNetworkURLLoaderFactory;
   class MockRendererInterface;
 
@@ -209,26 +183,6 @@ class EmbeddedWorkerTestHelper {
   int next_thread_id_;
   int mock_render_process_id_;
   int new_mock_render_process_id_;
-
-  std::map<int, int64_t> embedded_worker_id_service_worker_version_id_map_;
-
-  std::map<int /* embedded_worker_id */,
-           blink::mojom::
-               EmbeddedWorkerInstanceHostAssociatedPtr /* instance_host_ptr */>
-      embedded_worker_id_instance_host_ptr_map_;
-  std::map<int /* embedded_worker_id */, ServiceWorkerRemoteProviderEndpoint>
-      embedded_worker_id_remote_provider_map_;
-  std::map<int /* embedded_worker_id */,
-           blink::mojom::ServiceWorkerInstalledScriptsInfoPtr>
-      embedded_worker_id_installed_scripts_info_map_;
-  std::map<
-      int /* embedded_worker_id */,
-      blink::mojom::ServiceWorkerHostAssociatedPtr /* service_worker_host */>
-      embedded_worker_id_host_map_;
-  std::map<int /* embedded_worker_id */,
-           blink::mojom::
-               ServiceWorkerRegistrationObjectInfoPtr /* registration_info */>
-      embedded_worker_id_registration_info_map_;
 
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
   std::unique_ptr<MockNetworkURLLoaderFactory> default_network_loader_factory_;
