@@ -616,6 +616,41 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               "native UI",
               kM75, "5825971391299584")};
 
+#define REMOVE_APPEARANCE_KEYWORD_M75(id, keyword)                 \
+  case WebFeature::kCSSValueAppearance##id:                        \
+    return {"CSSValueAppearance" #id, kM75,                        \
+            WillBeRemoved("The keyword '" keyword                  \
+                          "' for -webkit-appearance CSS property", \
+                          kM75, "5075579829223424")}
+
+      REMOVE_APPEARANCE_KEYWORD_M75(ButtonBevel, "button-bevel");
+      REMOVE_APPEARANCE_KEYWORD_M75(Caret, "caret");
+      REMOVE_APPEARANCE_KEYWORD_M75(Listitem, "listitem");
+      REMOVE_APPEARANCE_KEYWORD_M75(MediaControlsBackground,
+                                    "media-controls-background");
+      REMOVE_APPEARANCE_KEYWORD_M75(MediaControlsFullscreenBackground,
+                                    "media-controls-fullscreen-background");
+      REMOVE_APPEARANCE_KEYWORD_M75(MediaCurrentTimeDisplay,
+                                    "media-current-time-display");
+      REMOVE_APPEARANCE_KEYWORD_M75(MediaEnterFullscreenButton,
+                                    "media-enter-fullscreen-button");
+      REMOVE_APPEARANCE_KEYWORD_M75(MediaExitFullscreenButton,
+                                    "media-exit-fullscreen-button");
+      REMOVE_APPEARANCE_KEYWORD_M75(MediaMuteButton, "media-mute-button");
+      REMOVE_APPEARANCE_KEYWORD_M75(MediaOverlayPlayButton,
+                                    "media-overlay-play-button");
+      REMOVE_APPEARANCE_KEYWORD_M75(MediaPlayButton, "media-play-button");
+      REMOVE_APPEARANCE_KEYWORD_M75(MediaTimeRemainingDisplay,
+                                    "media-time-remaining-display");
+      REMOVE_APPEARANCE_KEYWORD_M75(MediaToggleClosedCaptionsButton,
+                                    "media-toggle-closed-captions-button");
+      REMOVE_APPEARANCE_KEYWORD_M75(MediaVolumeSliderContainer,
+                                    "media-volume-slider-container");
+      REMOVE_APPEARANCE_KEYWORD_M75(MenulistTextfield, "menulist-textfield");
+      REMOVE_APPEARANCE_KEYWORD_M75(MenulistText, "menulist-text");
+      REMOVE_APPEARANCE_KEYWORD_M75(ProgressBarValue, "progress-bar-value");
+#undef REMOVE_APPEARANCE_KEYWORD_M75
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return {"NotDeprecated", kUnknown, ""};
