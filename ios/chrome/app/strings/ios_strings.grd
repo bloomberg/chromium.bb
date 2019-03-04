@@ -1888,7 +1888,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
         To get your bookmarks on all your devices, turn on sync.
       </message>
       <message name="IDS_IOS_SIGNIN_PROMO_CHANGE_ACCOUNT" desc="Button that the user can press if they are not the profile that Chrome found (opposite of 'Continue as Joe Doe'). The user will be able to choose another account and sign-in with it.">
-        Change Accounts
+        Choose Another Account
       </message>
       <message name="IDS_IOS_SIGNIN_PROMO_CLOSE_ACCESSIBILITY" desc="Accessibility label to describe the close button action in the sign-in promo element.">
         Close sign-in promo
