@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/engine/model_safe_worker.h"
@@ -25,6 +26,7 @@ using passwords_helper::AddLogin;
 using passwords_helper::AllProfilesContainSamePasswordForms;
 using passwords_helper::AllProfilesContainSamePasswordFormsAsVerifier;
 using passwords_helper::CreateTestPasswordForm;
+using passwords_helper::GetLogins;
 using passwords_helper::GetPasswordCount;
 using passwords_helper::GetPasswordStore;
 using passwords_helper::GetVerifierPasswordCount;
@@ -122,6 +124,57 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ENABLED(MAYBE_Race)) {
   AddLogin(GetPasswordStore(1), form1);
 
   ASSERT_TRUE(SamePasswordFormsChecker().Wait());
+}
+
+// Flaky on TSAN: crbug.com/915219
+#if defined(THREAD_SANITIZER)
+#define MAYBE_MergeWithTheMostRecent DISABLED_MergeWithTheMostRecent
+#else
+#define MAYBE_MergeWithTheMostRecent MergeWithTheMostRecent
+#endif
+IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest,
+                       E2E_ENABLED(MAYBE_MergeWithTheMostRecent)) {
+  // Setup the test to have Form 0 and Form 1 added on both clients. Form 0 is
+  // more recent on Client 0, and Form 1 is more recent on Client 1. They should
+  // be merged such that recent passwords are chosen.
+
+  base::Time now = base::Time::Now();
+  base::Time yesterday = now - base::TimeDelta::FromDays(1);
+
+  PasswordForm form0_recent = CreateTestPasswordForm(0);
+  form0_recent.date_created = now;
+  PasswordForm form0_old = CreateTestPasswordForm(0);
+  form0_old.date_created = yesterday;
+
+  PasswordForm form1_recent = CreateTestPasswordForm(1);
+  form1_recent.date_created = now;
+  PasswordForm form1_old = CreateTestPasswordForm(1);
+  form1_old.date_created = yesterday;
+
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // Add the passwords to Client 0.
+  AddLogin(GetPasswordStore(0), form0_recent);
+  AddLogin(GetPasswordStore(0), form1_old);
+  // Enable sync on Client 0 and wait until they are committed.
+  ASSERT_TRUE(GetClient(0)->SetupSync()) << "GetClient(0)->SetupSync() failed.";
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+
+  // Add the passwords to Client 1.
+  AddLogin(GetPasswordStore(1), form0_old);
+  AddLogin(GetPasswordStore(1), form1_recent);
+
+  // Enable sync on Client 1 and wait until all passwords are merged.
+  ASSERT_TRUE(GetClient(1)->SetupSync()) << "GetClient(1)->SetupSync() failed.";
+  ASSERT_TRUE(SamePasswordFormsChecker().Wait());
+
+  // There should be only 2 passwords.
+  EXPECT_EQ(2, GetPasswordCount(0));
+  // All passwords should be the recent ones.
+  for (const std::unique_ptr<PasswordForm>& form :
+       GetLogins(GetPasswordStore(0))) {
+    EXPECT_EQ(now, form->date_created);
+  }
 }
 
 // Flaky on TSAN: crbug.com/915219

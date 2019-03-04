@@ -112,6 +112,39 @@ int ParsePrimaryKey(const std::string& storage_key) {
   return primary_key;
 }
 
+// Returns true iff |password_specifics| and |password_form| are equal
+// memberwise.
+bool AreLocalAndRemotePasswordsEqual(
+    const sync_pb::PasswordSpecificsData& password_specifics,
+    const autofill::PasswordForm& password_form) {
+  return (password_form.scheme == password_specifics.scheme() &&
+          password_form.signon_realm == password_specifics.signon_realm() &&
+          password_form.origin.spec() == password_specifics.origin() &&
+          password_form.action.spec() == password_specifics.action() &&
+          base::UTF16ToUTF8(password_form.username_element) ==
+              password_specifics.username_element() &&
+          base::UTF16ToUTF8(password_form.password_element) ==
+              password_specifics.password_element() &&
+          base::UTF16ToUTF8(password_form.username_value) ==
+              password_specifics.username_value() &&
+          base::UTF16ToUTF8(password_form.password_value) ==
+              password_specifics.password_value() &&
+          password_form.preferred == password_specifics.preferred() &&
+          password_form.date_created ==
+              base::Time::FromDeltaSinceWindowsEpoch(
+                  base::TimeDelta::FromMicroseconds(
+                      password_specifics.date_created())) &&
+          password_form.blacklisted_by_user ==
+              password_specifics.blacklisted() &&
+          password_form.type == password_specifics.type() &&
+          password_form.times_used == password_specifics.times_used() &&
+          base::UTF16ToUTF8(password_form.display_name) ==
+              password_specifics.display_name() &&
+          password_form.icon_url.spec() == password_specifics.avatar_url() &&
+          url::Origin::Create(GURL(password_specifics.federation_url()))
+                  .Serialize() == password_form.federation_origin.Serialize());
+}
+
 // A simple class for scoping a password store sync transaction. This does not
 // support rollback since the password store sync doesn't either.
 class ScopedStoreTransaction {
@@ -202,6 +235,16 @@ PasswordSyncBridge::CreateMetadataChangeList() {
 base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
+  // This method merges the local and remote passwords based on their client
+  // tags. For a form |F|, there are three cases to handle:
+  // 1. |F| exists only in the local model --> |F| should be Put() in the change
+  //    processor.
+  // 2. |F| exists only in the remote model --> |F| should be AddLoginSync() to
+  //    the local password store.
+  // 3. |F| exists in both the local and the remote models --> both versions
+  //    should be merged by accepting the most recently created one, and update
+  //    local and remote models accordingly.
+
   base::AutoReset<bool> processing_changes(&is_processing_remote_sync_changes_,
                                            true);
   // Read all local passwords.
@@ -211,11 +254,13 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
                               "Failed to load entries from password store.");
   }
 
-  // Collect the client tags of remote passwords.  Note that |entity_data| only
-  // contains client tag *hashes*.
-  std::unordered_set<std::string> client_tags_of_remote_passwords;
+  // Collect the client tags of remote passwords and the corresponding
+  // EntityChange. Note that |entity_data| only contains client tag *hashes*.
+  std::map<std::string, const syncer::EntityChange*>
+      client_tag_to_remote_entity_change_map;
   for (const syncer::EntityChange& entity_change : entity_data) {
-    client_tags_of_remote_passwords.insert(GetClientTag(entity_change.data()));
+    client_tag_to_remote_entity_change_map[GetClientTag(entity_change.data())] =
+        &entity_change;
   }
 
   // This is used to keep track of all the changes applied to the password
@@ -224,47 +269,102 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
   base::Optional<syncer::ModelError> error;
   {
     ScopedStoreTransaction transaction(password_store_sync_);
+    const base::Time time_now = base::Time::Now();
     // For any local password that doesn't exist in the remote passwords, issue
-    // a change_processor()->Put(). Password comparison is done by comparing the
-    // client tags. In addition, collect the client tags of local passwords.
+    // a change_processor()->Put(). For any local password that exists in the
+    // remote passwords, both should be merged by picking the most recently
+    // created version. Password comparison is done by comparing the client
+    // tags. In addition, collect the client tags of local passwords.
     std::unordered_set<std::string> client_tags_of_local_passwords;
     for (const auto& pair : key_to_local_form_map) {
-      std::unique_ptr<syncer::EntityData> entity_data =
-          CreateEntityData(/*password_form=*/*pair.second);
+      const int primary_key = pair.first;
+      const autofill::PasswordForm& local_password_form = *pair.second;
+      std::unique_ptr<syncer::EntityData> local_form_entity_data =
+          CreateEntityData(local_password_form);
       const std::string client_tag_of_local_password =
-          GetClientTag(*entity_data);
+          GetClientTag(*local_form_entity_data);
       client_tags_of_local_passwords.insert(client_tag_of_local_password);
-      if (client_tags_of_remote_passwords.count(client_tag_of_local_password) ==
-          0) {
+
+      if (client_tag_to_remote_entity_change_map.count(
+              client_tag_of_local_password) == 0) {
+        // Local password doesn't exist in the remote model, Put() it in the
+        // processor.
         change_processor()->Put(
-            /*storage_key=*/base::NumberToString(pair.first),
-            std::move(entity_data), metadata_change_list.get());
+            /*storage_key=*/base::NumberToString(primary_key),
+            std::move(local_form_entity_data), metadata_change_list.get());
+        continue;
+      }
+
+      // Local password exists in the remote model as well. A merge is required.
+      const syncer::EntityChange& remote_entity_change =
+          *client_tag_to_remote_entity_change_map[client_tag_of_local_password];
+      const sync_pb::PasswordSpecificsData& remote_password_specifics =
+          remote_entity_change.data()
+              .specifics.password()
+              .client_only_encrypted_data();
+
+      // First, we need to inform the processor about the storage key anyway.
+      change_processor()->UpdateStorageKey(remote_entity_change.data(),
+                                           /*storage_key=*/
+                                           base::NumberToString(primary_key),
+                                           metadata_change_list.get());
+
+      if (AreLocalAndRemotePasswordsEqual(remote_password_specifics,
+                                          local_password_form)) {
+        // Passwords are identical, nothing else to do.
+        continue;
+      }
+
+      // Passwords aren't identical, pick the most recently created one.
+      if (base::Time::FromDeltaSinceWindowsEpoch(
+              base::TimeDelta::FromMicroseconds(
+                  remote_password_specifics.date_created())) <
+          local_password_form.date_created) {
+        // The local password is more recent, update the processor.
+        change_processor()->Put(
+            /*storage_key=*/base::NumberToString(primary_key),
+            std::move(local_form_entity_data), metadata_change_list.get());
+      } else {
+        // The remote password is more recent, update the local model.
+        PasswordStoreChangeList changes =
+            password_store_sync_->UpdateLoginSync(PasswordFromEntityChange(
+                remote_entity_change, /*sync_time=*/time_now));
+        DCHECK_LE(changes.size(), 1U);
+        if (changes.empty()) {
+          return syncer::ModelError(
+              FROM_HERE, "Failed to update an entry in the password store.");
+        }
+        DCHECK(changes[0].primary_key() == primary_key);
+        password_store_changes.push_back(changes[0]);
       }
     }
 
+    // At this point, we have processed all local passwords. In addition, we
+    // also have processed all remote passwords that exist in the local model.
+    // What's remaining is to process remote passwords that don't exist in the
+    // local model.
+
     // For any remote password that doesn't exist in the local passwords, issue
-    // a password_store_sync_->AddLoginSync() and for those that exist in the
-    // local passwords, issue a password_store_sync_->UpdateLoginSync().
-    // Password comparison is done by comparing the client tags. In both cases,
-    // invoke the change_processor()->UpdateStorageKey().
-    const base::Time time_now = base::Time::Now();
+    // a password_store_sync_->AddLoginSync() and invoke the
+    // change_processor()->UpdateStorageKey(). Password comparison is done by
+    // comparing the client tags.
     for (const syncer::EntityChange& entity_change : entity_data) {
       const std::string client_tag_of_remote_password =
           GetClientTag(entity_change.data());
-      PasswordStoreChangeList changes;
-      if (client_tags_of_local_passwords.count(client_tag_of_remote_password) ==
+      if (client_tags_of_local_passwords.count(client_tag_of_remote_password) !=
           0) {
-        changes = password_store_sync_->AddLoginSync(
-            PasswordFromEntityChange(entity_change, /*sync_time=*/time_now));
-        DCHECK_LE(changes.size(), 1U);
-      } else {
-        changes = password_store_sync_->UpdateLoginSync(
-            PasswordFromEntityChange(entity_change, /*sync_time=*/time_now));
-        DCHECK_LE(changes.size(), 1U);
+        // Passwords in both local and remote models have been processed
+        // already.
+        continue;
       }
+
+      PasswordStoreChangeList changes = password_store_sync_->AddLoginSync(
+          PasswordFromEntityChange(entity_change, /*sync_time=*/time_now));
+      DCHECK_LE(changes.size(), 1U);
+
       if (changes.empty()) {
         return syncer::ModelError(
-            FROM_HERE, "Failed to add/update an entry in the password store.");
+            FROM_HERE, "Failed to add an entry in the password store.");
       }
 
       change_processor()->UpdateStorageKey(
