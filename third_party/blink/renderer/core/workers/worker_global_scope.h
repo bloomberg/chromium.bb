@@ -201,9 +201,6 @@ class CORE_EXPORT WorkerGlobalScope
   mojom::ScriptType GetScriptType() const { return script_type_; }
 
  private:
-  virtual void importScriptsFromStrings(const Vector<String>& urls,
-                                        ExceptionState&);
-
   void SetWorkerSettings(std::unique_ptr<WorkerSettings>);
 
   void DidReceiveResponseForClassicScript(
@@ -211,28 +208,9 @@ class CORE_EXPORT WorkerGlobalScope
   void DidImportClassicScript(WorkerClassicScriptLoader* classic_script_loader,
                               const v8_inspector::V8StackTraceId& stack_id);
 
-  // |kNotHandled| is used when the script was not in
-  // InstalledScriptsManager, which means it was not an installed script.
-  enum class LoadResult { kSuccess, kFailed, kNotHandled };
-
-  // Tries to load the script synchronously from the
-  // InstalledScriptsManager, which holds scripts that are sent from the browser
-  // upon starting an installed worker. This blocks until the script is
-  // received. If the script load could not be handled by the
-  // InstalledScriptsManager, e.g. when the script was not an installed script,
-  // returns LoadResult::kNotHandled.
-  // TODO(crbug.com/753350): Factor out LoadScriptFrom* into a new class which
-  // provides the worker's scripts.
-  LoadResult LoadScriptFromInstalledScriptsManager(
-      const KURL& script_url,
-      KURL* out_response_url,
-      String* out_source_code,
-      std::unique_ptr<Vector<uint8_t>>* out_cached_meta_data);
-
-  // Tries to load the script synchronously from the WorkerClassicScriptLoader,
-  // which requests the script from the browser. This blocks until the script is
-  // received.
-  LoadResult LoadScriptFromClassicScriptLoader(
+  // Used for importScripts().
+  void ImportScriptsInternal(const Vector<String>& urls, ExceptionState&);
+  bool FetchClassicImportedScript(
       const KURL& script_url,
       KURL* out_response_url,
       String* out_source_code,

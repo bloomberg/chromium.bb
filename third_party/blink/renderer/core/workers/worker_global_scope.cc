@@ -173,14 +173,13 @@ void WorkerGlobalScope::importScripts(
                             : stringOrUrl.GetAsTrustedScriptURL()->toString();
     string_urls.push_back(string_url);
   }
-  importScriptsFromStrings(string_urls, exception_state);
+  ImportScriptsInternal(string_urls, exception_state);
 }
 
-// Implementation of the "importScripts()" algorithm:
-// https://html.spec.whatwg.org/C/#dom-workerglobalscope-importscripts
-void WorkerGlobalScope::importScriptsFromStrings(
-    const Vector<String>& urls,
-    ExceptionState& exception_state) {
+// Implementation of the "import scripts into worker global scope" algorithm:
+// https://html.spec.whatwg.org/C/#import-scripts-into-worker-global-scope
+void WorkerGlobalScope::ImportScriptsInternal(const Vector<String>& urls,
+                                              ExceptionState& exception_state) {
   DCHECK(GetContentSecurityPolicy());
   DCHECK(GetExecutionContext());
 
@@ -192,10 +191,18 @@ void WorkerGlobalScope::importScriptsFromStrings(
     return;
   }
 
-  ExecutionContext& execution_context = *this->GetExecutionContext();
+  // Step 2: "Let settings object be the current settings object."
+  // |this| roughly corresponds to the current settings object.
+
+  // Step 3: "If urls is empty, return."
+  if (urls.IsEmpty())
+    return;
+
+  // Step 4: "Parse each value in urls relative to settings object. If any fail,
+  // throw a "SyntaxError" DOMException."
   Vector<KURL> completed_urls;
   for (const String& url_string : urls) {
-    const KURL& url = execution_context.CompleteURL(url_string);
+    const KURL& url = CompleteURL(url_string);
     if (!url.IsValid()) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kSyntaxError,
@@ -212,22 +219,18 @@ void WorkerGlobalScope::importScriptsFromStrings(
     completed_urls.push_back(url);
   }
 
+  // Step 5: "For each url in the resulting URL records, run these substeps:"
   for (const KURL& complete_url : completed_urls) {
     KURL response_url;
     String source_code;
     std::unique_ptr<Vector<uint8_t>> cached_meta_data;
-    LoadResult result = LoadResult::kNotHandled;
-    result = LoadScriptFromInstalledScriptsManager(
-        complete_url, &response_url, &source_code, &cached_meta_data);
 
-    // If the script wasn't provided by the InstalledScriptsManager, load from
-    // ResourceLoader.
-    if (result == LoadResult::kNotHandled) {
-      result = LoadScriptFromClassicScriptLoader(
-          complete_url, &response_url, &source_code, &cached_meta_data);
-    }
-
-    if (result != LoadResult::kSuccess) {
+    // Step 5.1: "Fetch a classic worker-imported script given url and settings
+    // object, passing along any custom perform the fetch steps provided. If
+    // this succeeds, let script be the result. Otherwise, rethrow the
+    // exception."
+    if (!FetchClassicImportedScript(complete_url, &response_url, &source_code,
+                                    &cached_meta_data)) {
       // TODO(vogelheim): In case of certain types of failure - e.g. 'nosniff'
       // block - this ought to be a DOMExceptionCode::kSecurityError, but that
       // information presently gets lost on the way.
@@ -242,10 +245,12 @@ void WorkerGlobalScope::importScriptsFromStrings(
     // enough.
     // TODO(yhirano): Remove this ad-hoc logic and use the response type.
     const SanitizeScriptErrors sanitize_script_errors =
-        execution_context.GetSecurityOrigin()->CanReadContent(response_url)
+        GetSecurityOrigin()->CanReadContent(response_url)
             ? SanitizeScriptErrors::kDoNotSanitize
             : SanitizeScriptErrors::kSanitize;
 
+    // Step 5.2: "Run the classic script script, with the rethrow errors
+    // argument set to true."
     ErrorEvent* error_event = nullptr;
     SingleCachedMetadataHandler* handler(
         CreateWorkerScriptCachedMetadataHandler(complete_url,
@@ -264,34 +269,34 @@ void WorkerGlobalScope::importScriptsFromStrings(
   }
 }
 
-WorkerGlobalScope::LoadResult
-WorkerGlobalScope::LoadScriptFromInstalledScriptsManager(
+// Implementation of the "fetch a classic worker-imported script" algorithm.
+// https://html.spec.whatwg.org/C/#fetch-a-classic-worker-imported-script
+bool WorkerGlobalScope::FetchClassicImportedScript(
     const KURL& script_url,
     KURL* out_response_url,
     String* out_source_code,
     std::unique_ptr<Vector<uint8_t>>* out_cached_meta_data) {
-  if (!GetThread()->GetInstalledScriptsManager() ||
-      !GetThread()->GetInstalledScriptsManager()->IsScriptInstalled(
-          script_url)) {
-    return LoadResult::kNotHandled;
+  // InstalledScriptsManager is now used only for starting installed service
+  // workers.
+  // TODO(nhiroki): Consider moving this into ServiceWorkerGlobalScope.
+  InstalledScriptsManager* installed_scripts_manager =
+      GetThread()->GetInstalledScriptsManager();
+  if (installed_scripts_manager &&
+      installed_scripts_manager->IsScriptInstalled(script_url)) {
+    DCHECK(IsServiceWorkerGlobalScope());
+    std::unique_ptr<InstalledScriptsManager::ScriptData> script_data =
+        installed_scripts_manager->GetScriptData(script_url);
+    if (!script_data)
+      return false;
+    *out_response_url = script_url;
+    *out_source_code = script_data->TakeSourceText();
+    *out_cached_meta_data = script_data->TakeMetaData();
+    // TODO(shimazu): Add appropriate probes for inspector.
+    return true;
   }
-  std::unique_ptr<InstalledScriptsManager::ScriptData> script_data =
-      GetThread()->GetInstalledScriptsManager()->GetScriptData(script_url);
-  if (!script_data)
-    return LoadResult::kFailed;
-  *out_response_url = script_url;
-  *out_source_code = script_data->TakeSourceText();
-  *out_cached_meta_data = script_data->TakeMetaData();
-  // TODO(shimazu): Add appropriate probes for inspector.
-  return LoadResult::kSuccess;
-}
 
-WorkerGlobalScope::LoadResult
-WorkerGlobalScope::LoadScriptFromClassicScriptLoader(
-    const KURL& script_url,
-    KURL* out_response_url,
-    String* out_source_code,
-    std::unique_ptr<Vector<uint8_t>>* out_cached_meta_data) {
+  // If the script wasn't provided by the InstalledScriptsManager, load from
+  // ResourceLoader.
   ExecutionContext* execution_context = GetExecutionContext();
   WorkerClassicScriptLoader* classic_script_loader =
       MakeGarbageCollected<WorkerClassicScriptLoader>();
@@ -300,18 +305,14 @@ WorkerGlobalScope::LoadScriptFromClassicScriptLoader(
       *execution_context, Fetcher(), script_url,
       mojom::RequestContextType::SCRIPT,
       execution_context->GetSecurityContext().AddressSpace());
-
-  // If the fetching attempt failed, throw a NetworkError exception and
-  // abort all these steps.
   if (classic_script_loader->Failed())
-    return LoadResult::kFailed;
-
+    return false;
   *out_response_url = classic_script_loader->ResponseURL();
   *out_source_code = classic_script_loader->SourceText();
   *out_cached_meta_data = classic_script_loader->ReleaseCachedMetadata();
   probe::ScriptImported(execution_context, classic_script_loader->Identifier(),
                         classic_script_loader->SourceText());
-  return LoadResult::kSuccess;
+  return true;
 }
 
 bool WorkerGlobalScope::IsContextThread() const {
