@@ -156,11 +156,9 @@ cast_source_set("browser") {
     "//components/prefs",
     "//components/proxy_config",
     "//components/viz/service",
-    "//content",
     "//content/public/browser",
     "//content/public/common",
     "//content/public/common:service_names",
-    "//content/public/utility",
     "//device/bluetooth",
     "//gpu",
     "//ipc",
@@ -411,7 +409,7 @@ cast_source_set("public") {
   deps = [
     "//base",
     "//chromecast/graphics",
-    "//content",
+    "//content/public/common",
     "//ui/events",
     "//url",
   ]
