@@ -176,8 +176,7 @@ PerformanceNavigationTiming*
 WindowPerformance::CreateNavigationTimingInstance() {
   if (!GetFrame())
     return nullptr;
-  const DocumentLoader* document_loader =
-      GetFrame()->Loader().GetDocumentLoader();
+  DocumentLoader* document_loader = GetFrame()->Loader().GetDocumentLoader();
   if (!document_loader)
     return nullptr;
   ResourceTimingInfo* info = document_loader->GetNavigationTimingInfo();
@@ -185,10 +184,9 @@ WindowPerformance::CreateNavigationTimingInstance() {
     return nullptr;
   WebVector<WebServerTimingInfo> server_timing =
       PerformanceServerTiming::ParseServerTiming(*info);
-  if (!server_timing.empty()) {
-    UseCounter::Count(GetFrame()->GetDocument(),
-                      WebFeature::kPerformanceServerTiming);
-  }
+  if (!server_timing.empty())
+    UseCounter::Count(document_loader, WebFeature::kPerformanceServerTiming);
+
   return MakeGarbageCollected<PerformanceNavigationTiming>(
       GetFrame(), info, time_origin_, server_timing);
 }

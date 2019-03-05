@@ -307,7 +307,7 @@ void TouchEvent::preventDefault() {
     if (local_frame && current_touch_action_ == TouchAction::kTouchActionAuto) {
       switch (HandlingPassive()) {
         case PassiveMode::kNotPassiveDefault:
-          UseCounter::Count(local_frame->GetDocument(),
+          UseCounter::Count(local_dom_window->document(),
                             WebFeature::kTouchEventPreventedNoTouchAction);
           break;
         case PassiveMode::kPassiveForcedDocumentLevel:
