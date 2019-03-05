@@ -4711,6 +4711,13 @@ crbug.com/926642 [ Win ] virtual/gpu/fast/canvas/canvas-blend-image.html [ Timeo
 
 crbug.com/766129 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
 
+# Skia roll
+crbug.com/630695 images/cross-fade-overflow-position.html [ Failure Pass ]
+crbug.com/630695 images/drag-svg-image.html [ Failure Pass ]
+crbug.com/630695 virtual/exotic-color-space/images/cross-fade-overflow-position.html [ Failure Pass ]
+crbug.com/630695 virtual/exotic-color-space/images/drag-svg-image.html [ Failure Pass ]
+crbug.com/630695 virtual/gpu-rasterization/images/drag-svg-image.html [ Failure Pass ]
+
 # Antialiasing error
 crbug.com/845973 virtual/display-compositor-pixel-dump/fast/canvas/display-compositor-pixel-dump/OffscreenCanvas-opaque-background-compositing.html  [ Pass Failure ]
 
