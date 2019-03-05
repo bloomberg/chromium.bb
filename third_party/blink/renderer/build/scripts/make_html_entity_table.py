@@ -182,11 +182,11 @@ static const HTMLEntityTableEntry staticEntityTable[%s] = {\n""" % entity_count)
     output_file.write("};\n\n")
     output_file.write("\n}\n")
 
-    output_file.write("static const short uppercaseOffset[] = {\n")
+    output_file.write("static const int16_t uppercaseOffset[] = {\n")
     for letter in range(ord('A'), ord('Z') + 1):
         output_file.write("%d,\n" % index[chr(letter)])
     output_file.write("%d\n" % index['a'])
-    output_file.write("};\n\nstatic const short lowercaseOffset[] = {\n")
+    output_file.write("};\n\nstatic const int16_t lowercaseOffset[] = {\n")
     for letter in range(ord('a'), ord('z') + 1):
         output_file.write("%d,\n" % index[chr(letter)])
     output_file.write("%d\n" % entity_count)

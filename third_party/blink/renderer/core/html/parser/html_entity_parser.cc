@@ -130,9 +130,9 @@ static bool ConsumeNamedEntity(SegmentedString& source,
     UnconsumeCharacters(source, consumed_characters);
     consumed_characters.clear();
     const HTMLEntityTableEntry* most_recent = entity_search.MostRecentMatch();
-    const int length = most_recent->length;
+    const uint16_t length = most_recent->length;
     const LChar* reference = HTMLEntityTable::EntityString(*most_recent);
-    for (int i = 0; i < length; ++i) {
+    for (uint16_t i = 0; i < length; ++i) {
       cc = source.CurrentChar();
       DCHECK_EQ(cc, static_cast<UChar>(*reference++));
       consumed_characters.push_back(cc);
