@@ -13,20 +13,14 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/sync_auth_manager.h"
-#include "components/invalidation/impl/invalidation_prefs.h"
-#include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/public/invalidation_service.h"
-#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/sync/base/bind_to_task_runner.h"
-#include "components/sync/base/cryptographer.h"
-#include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/base/stop_source.h"
 #include "components/sync/base/sync_base_switches.h"
@@ -39,15 +33,12 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_type_preference_provider.h"
 #include "components/sync/driver/sync_util.h"
-#include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/cycle/type_debug_info_observer.h"
 #include "components/sync/engine/engine_components_factory_impl.h"
 #include "components/sync/engine/net/http_bridge_network_resources.h"
 #include "components/sync/engine/net/network_resources.h"
 #include "components/sync/engine/polling_constants.h"
 #include "components/sync/engine/sync_encryption_handler.h"
-#include "components/sync/model/change_processor.h"
-#include "components/sync/model/model_type_store_service.h"
 #include "components/sync/model/sync_error.h"
 #include "components/sync/syncable/base_transaction.h"
 #include "components/sync/syncable/directory.h"
@@ -359,9 +350,20 @@ void ProfileSyncService::AccountStateChanged() {
 void ProfileSyncService::CredentialsChanged() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  syncer::SyncCredentials credentials = auth_manager_->GetCredentials();
+  // If the engine isn't allowed to start anymore due to the credentials change,
+  // then shut down. This happens when the user signs out on the web, i.e. we're
+  // in the "Sync paused" state.
+  if (!IsEngineAllowedToStart()) {
+    // This will notify observers if appropriate.
+    StopImpl(KEEP_DATA);
+    return;
+  }
 
-  if (engine_) {
+  if (!engine_) {
+    startup_controller_->TryStart(/*force_immediate=*/true);
+  } else {
+    // If the engine already exists, just propagate the new credentials.
+    syncer::SyncCredentials credentials = auth_manager_->GetCredentials();
     if (credentials.sync_token.empty()) {
       engine_->InvalidateCredentials();
     } else {
@@ -705,6 +707,9 @@ int ProfileSyncService::GetDisableReasons() const {
   if (unrecoverable_error_reason_ != ERROR_REASON_UNSET) {
     result = result | DISABLE_REASON_UNRECOVERABLE_ERROR;
   }
+  if (auth_manager_->IsSyncPaused()) {
+    result = result | DISABLE_REASON_PAUSED;
+  }
   return result;
 }
 
@@ -718,9 +723,6 @@ syncer::SyncService::TransportState ProfileSyncService::GetTransportState()
     return TransportState::DISABLED;
   }
 
-  // Typically, Sync won't start until the initial setup is at least in
-  // progress. StartupController::TryStartImmediately bypasses the first setup
-  // check though, so we first have to check whether the engine is initialized.
   if (!engine_initialized_) {
     switch (startup_controller_->GetState()) {
       case syncer::StartupController::State::NOT_STARTED:

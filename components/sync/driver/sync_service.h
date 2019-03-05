@@ -73,7 +73,11 @@ class SyncService : public KeyedService {
     // Sync has encountered an unrecoverable error. It won't attempt to start
     // again until either the browser is restarted, or the user fully signs out
     // and back in again.
-    DISABLE_REASON_UNRECOVERABLE_ERROR = 1 << 4
+    DISABLE_REASON_UNRECOVERABLE_ERROR = 1 << 4,
+    // Sync is paused because the user signed out on the web. This is different
+    // from NOT_SIGNED_IN: In this case, there *is* still a primary account, but
+    // it doesn't have valid credentials.
+    DISABLE_REASON_PAUSED = 1 << 5,
   };
 
   // The overall state of the SyncService, in ascending order of "activeness".

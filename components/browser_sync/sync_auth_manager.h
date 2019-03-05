@@ -68,6 +68,11 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   // from the Sync server or from the IdentityManager.
   GoogleServiceAuthError GetLastAuthError() const;
 
+  // Returns whether we are in the "Sync paused" state. That means there is a
+  // primary account, but the user signed out in the content area, and so we
+  // don't have credentials for it anymore.
+  bool IsSyncPaused() const;
+
   // Returns the credentials to be passed to the SyncEngine.
   syncer::SyncCredentials GetCredentials() const;
 
