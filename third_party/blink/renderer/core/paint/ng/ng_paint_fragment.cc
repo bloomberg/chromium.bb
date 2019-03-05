@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_inline_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment_traversal.h"
 
 namespace blink {
@@ -585,24 +584,6 @@ void NGPaintFragment::AddSelfOutlineRect(Vector<LayoutRect>* outline_rects,
       return;
     ToNGPhysicalBoxFragment(fragment).AddSelfOutlineRects(
         outline_rects, additional_offset, outline_type);
-  }
-}
-
-void NGPaintFragment::PaintInlineBoxForDescendants(
-    const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset,
-    const LayoutInline* layout_object,
-    NGPhysicalOffset offset) const {
-  DCHECK(layout_object);
-  for (const NGPaintFragment* child : Children()) {
-    if (child->GetLayoutObject() == layout_object) {
-      NGInlineBoxFragmentPainter(*child).Paint(
-          paint_info, paint_offset + offset.ToLayoutPoint() /*, paint_offset*/);
-      continue;
-    }
-
-    child->PaintInlineBoxForDescendants(paint_info, paint_offset, layout_object,
-                                        offset + child->Offset());
   }
 }
 

@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/paint/line_box_list_painter.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_inline_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
@@ -20,21 +21,21 @@ void InlinePainter::Paint(const PaintInfo& paint_info) {
   auto paint_offset = paint_state.PaintOffset();
   const auto& local_paint_info = paint_state.GetPaintInfo();
 
-  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    // Inline box with self painting layer is painted in this code path.
-    if (auto* block_flow = layout_inline_.ContainingNGBlockFlow()) {
-      if (auto* block_flow_fragment = block_flow->PaintFragment()) {
-        block_flow_fragment->PaintInlineBoxForDescendants(
-            local_paint_info, paint_offset, &layout_inline_);
-        return;
-      }
-    }
-  }
-
   if (local_paint_info.phase == PaintPhase::kForeground &&
       local_paint_info.IsPrinting()) {
     ObjectPainter(layout_inline_)
         .AddPDFURLRectIfNeeded(local_paint_info, paint_offset);
+  }
+
+  if (layout_inline_.IsInLayoutNGInlineFormattingContext()) {
+    for (const NGPaintFragment* fragment :
+         NGPaintFragment::InlineFragmentsFor(&layout_inline_)) {
+      NGInlineBoxFragmentPainter(*fragment).Paint(
+          paint_info, paint_offset + (fragment->InlineOffsetToContainerBox() -
+                                      fragment->Offset())
+                                         .ToLayoutPoint());
+    }
+    return;
   }
 
   if (ShouldPaintSelfOutline(local_paint_info.phase) ||
