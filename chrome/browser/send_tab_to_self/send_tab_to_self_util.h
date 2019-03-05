@@ -9,9 +9,11 @@ class Browser;
 class GURL;
 class Profile;
 
-namespace send_tab_to_self {
+namespace content {
+class WebContents;
+}
 
-// The send tab to self util contains a list of helper functions.
+namespace send_tab_to_self {
 
 // Returns true if the 'send tab to self' flag is enabled.
 bool IsFlagEnabled();
@@ -30,6 +32,10 @@ bool IsContentRequirementsMet(GURL& gurl, Profile* profile);
 
 // Returns true if all conditions are true and shows the option onto the menu
 bool ShouldOfferFeature(Browser* browser);
+
+// Add a new entry to SendTabToSelfModel when user click "Share to my devices"
+// option
+void CreateNewEntry(content::WebContents* tab, Profile* profile);
 
 }  // namespace send_tab_to_self
 

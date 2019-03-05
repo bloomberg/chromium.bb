@@ -15,6 +15,8 @@
 
 namespace send_tab_to_self {
 
+SendTabToSelfSyncService::SendTabToSelfSyncService() = default;
+
 SendTabToSelfSyncService::SendTabToSelfSyncService(
     version_info::Channel channel,
     syncer::LocalDeviceInfoProvider* local_device_info_provider,

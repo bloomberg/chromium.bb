@@ -26,6 +26,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
@@ -963,9 +964,8 @@ bool CanSavePage(const Browser* browser) {
 }
 
 void SendToMyDevices(Browser* browser) {
-  browser->tab_strip_model()->ExecuteContextMenuCommand(
-      browser->tab_strip_model()->active_index(),
-      TabStripModel::ContextMenuCommand::CommandSendToMyDevices);
+  send_tab_to_self::CreateNewEntry(
+      browser->tab_strip_model()->GetActiveWebContents(), browser->profile());
 }
 
 void ShowFindBar(Browser* browser) {

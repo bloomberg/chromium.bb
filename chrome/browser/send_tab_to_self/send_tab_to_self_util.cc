@@ -4,16 +4,23 @@
 
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 
+#include <string>
+
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "components/send_tab_to_self/send_tab_to_self_model.h"
+#include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/device_info/device_info_tracker.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "url/gurl.h"
 
@@ -60,6 +67,14 @@ bool ShouldOfferFeature(Browser* browser) {
   return IsFlagEnabled() && IsUserSyncTypeEnabled(profile) &&
          IsSyncingOnMultipleDevices(profile) &&
          IsContentRequirementsMet(url, profile);
+}
+
+void CreateNewEntry(content::WebContents* tab, Profile* profile) {
+  GURL url = tab->GetURL();
+  std::string title = base::UTF16ToUTF8(tab->GetTitle());
+  SendTabToSelfSyncServiceFactory::GetForProfile(profile)
+      ->GetSendTabToSelfModel()
+      ->AddEntry(url, title);
 }
 
 }  // namespace send_tab_to_self
