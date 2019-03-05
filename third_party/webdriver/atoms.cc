@@ -6242,12 +6242,12 @@ const char* const GET_LOCATION_IN_VIEW[] = {
     "rentNode;wb&&b instanceof ShadowRoot&&(b=a.host);return b}for(var f=z(a",
     "),g=e(a),l;g&&g!=f.documentElement&&g!=f.body;)l=xb(g,a),d(g,new x(g.cl",
     "ientWidth,\ng.clientHeight),l,b,c),g=e(g);l=vb(a);a=ra(a?new A(z(a)):r|",
-    "|(r=new A));d(f.documentElement,a,l,b,c);d(f.body,a,l,b,c)};aa(\"_\",fu",
-    "nction(a,b,c){c||(c=new qb(0,0,a.offsetWidth,a.offsetHeight));yb(a,c,b)",
-    ";a=vb(a);return new w(a.x+c.left,a.y+c.top)});; return this._.apply(nul",
-    "l,arguments);}.apply({navigator:typeof window!='undefined'?window.navig",
-    "ator:null,document:typeof window!='undefined'?window.document:null}, ar",
-    "guments);}",
+    "|(r=new A));d(f.documentElement,a,l,b,c);f.body&&d(f.body,a,l,b,c)};aa(",
+    "\"_\",function(a,b,c){c||(c=new qb(0,0,a.offsetWidth,a.offsetHeight));y",
+    "b(a,c,b);a=vb(a);return new w(a.x+c.left,a.y+c.top)});; return this._.a",
+    "pply(null,arguments);}.apply({navigator:typeof window!='undefined'?wind",
+    "ow.navigator:null,document:typeof window!='undefined'?window.document:n",
+    "ull}, arguments);}",
     NULL
 };
 
