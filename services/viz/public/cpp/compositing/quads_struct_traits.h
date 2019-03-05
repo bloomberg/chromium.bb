@@ -165,10 +165,11 @@ struct UnionTraits<viz::mojom::DrawQuadStateDataView, viz::DrawQuad> {
 
 template <>
 struct StructTraits<viz::mojom::VideoHoleQuadStateDataView, viz::DrawQuad> {
-  static const base::UnguessableToken& overlay_id(const viz::DrawQuad& input) {
+  static const base::UnguessableToken& overlay_plane_id(
+      const viz::DrawQuad& input) {
     const viz::VideoHoleDrawQuad* quad =
         viz::VideoHoleDrawQuad::MaterialCast(&input);
-    return quad->overlay_id;
+    return quad->overlay_plane_id;
   }
 
   static bool Read(viz::mojom::VideoHoleQuadStateDataView data,

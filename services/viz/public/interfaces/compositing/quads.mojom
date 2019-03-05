@@ -110,7 +110,7 @@ struct YUVVideoQuadState {
 };
 
 struct VideoHoleQuadState {
-  mojo_base.mojom.UnguessableToken overlay_id;
+  mojo_base.mojom.UnguessableToken overlay_plane_id;
 };
 
 union DrawQuadState {

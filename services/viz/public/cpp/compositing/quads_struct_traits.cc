@@ -178,7 +178,7 @@ bool StructTraits<viz::mojom::VideoHoleQuadStateDataView, viz::DrawQuad>::Read(
     viz::DrawQuad* out) {
   viz::VideoHoleDrawQuad* video_hole_quad =
       static_cast<viz::VideoHoleDrawQuad*>(out);
-  return data.ReadOverlayId(&video_hole_quad->overlay_id);
+  return data.ReadOverlayPlaneId(&video_hole_quad->overlay_plane_id);
 }
 
 // static

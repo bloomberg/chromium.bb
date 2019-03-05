@@ -101,7 +101,7 @@ bool OverlayStrategyUnderlayCast::Attempt(
       // TODO(guohuideng): activate overlay through MediaServe when it's
       // ready, using |overlay_plane_id|. see b/79266094.
       base::UnguessableToken overlay_plane_id =
-          VideoHoleDrawQuad::MaterialCast(*it)->overlay_id;
+          VideoHoleDrawQuad::MaterialCast(*it)->overlay_plane_id;
       ANALYZER_ALLOW_UNUSED(overlay_plane_id);
 
       render_pass->quad_list.ReplaceExistingQuadWithOpaqueTransparentSolidColor(

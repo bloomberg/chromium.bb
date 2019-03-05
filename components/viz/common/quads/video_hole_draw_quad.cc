@@ -19,20 +19,20 @@ VideoHoleDrawQuad::~VideoHoleDrawQuad() = default;
 void VideoHoleDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                const gfx::Rect& rect,
                                const gfx::Rect& visible_rect,
-                               const base::UnguessableToken& overlay_id) {
+                               const base::UnguessableToken& overlay_plane_id) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::VIDEO_HOLE, rect, visible_rect,
                    /*needs_blending=*/false);
-  this->overlay_id = overlay_id;
+  this->overlay_plane_id = overlay_plane_id;
 }
 
 void VideoHoleDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                                const gfx::Rect& rect,
                                const gfx::Rect& visible_rect,
                                bool needs_blending,
-                               const base::UnguessableToken& overlay_id) {
+                               const base::UnguessableToken& overlay_plane_id) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::VIDEO_HOLE, rect, visible_rect,
                    needs_blending);
-  this->overlay_id = overlay_id;
+  this->overlay_plane_id = overlay_plane_id;
 }
 
 const VideoHoleDrawQuad* VideoHoleDrawQuad::MaterialCast(const DrawQuad* quad) {
@@ -42,7 +42,7 @@ const VideoHoleDrawQuad* VideoHoleDrawQuad::MaterialCast(const DrawQuad* quad) {
 
 void VideoHoleDrawQuad::ExtendValue(
     base::trace_event::TracedValue* value) const {
-  value->SetString("overlay_id", overlay_id.ToString());
+  value->SetString("overlay_plane_id", overlay_plane_id.ToString());
 }
 
 }  // namespace viz
