@@ -15,6 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/common/content_features.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -30,6 +31,15 @@ void AccessibilityLabelsService::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kAccessibilityImageLabelsOptInAccepted, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+}
+
+// static
+void AccessibilityLabelsService::InitOffTheRecordPrefs(Profile* profile) {
+  DCHECK(profile->IsOffTheRecord());
+  profile->GetPrefs()->SetBoolean(prefs::kAccessibilityImageLabelsEnabled,
+                                  false);
+  profile->GetPrefs()->SetBoolean(prefs::kAccessibilityImageLabelsOptInAccepted,
+                                  false);
 }
 
 void AccessibilityLabelsService::Init() {

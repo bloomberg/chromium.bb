@@ -26,6 +26,9 @@ class AccessibilityLabelsService : public KeyedService {
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // Off the record profiles will default to having the feature disabled.
+  static void InitOffTheRecordPrefs(Profile* profile);
+
   void Init();
 
   ui::AXMode GetAXMode();

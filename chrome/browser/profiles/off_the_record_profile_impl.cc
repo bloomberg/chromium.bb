@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_factory.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
@@ -201,6 +202,9 @@ void OffTheRecordProfileImpl::Init() {
   // The DomDistillerViewerSource is not a normal WebUI so it must be registered
   // as a URLDataSource early.
   dom_distiller::RegisterViewerSource(this);
+
+  // AccessibilityLabelsService has a default prefs behavior in incognito.
+  AccessibilityLabelsService::InitOffTheRecordPrefs(this);
 }
 
 OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
