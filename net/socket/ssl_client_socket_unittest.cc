@@ -851,10 +851,8 @@ class SSLClientSocketTest : public PlatformTest,
       std::unique_ptr<StreamSocket> transport_socket,
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config) {
-    std::unique_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-    connection->SetSocket(std::move(transport_socket));
     return socket_factory_->CreateSSLClientSocket(
-        std::move(connection), host_and_port, ssl_config, context_);
+        std::move(transport_socket), host_and_port, ssl_config, context_);
   }
 
   // Create an SSLClientSocket object and use it to connect to a test server,
@@ -2386,11 +2384,8 @@ TEST_F(SSLClientSocketTest, ClientSocketHandleNotFromPool) {
   int rv = callback.GetResult(transport->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
 
-  std::unique_ptr<ClientSocketHandle> socket_handle(new ClientSocketHandle());
-  socket_handle->SetSocket(std::move(transport));
-
   std::unique_ptr<SSLClientSocket> sock(socket_factory_->CreateSSLClientSocket(
-      std::move(socket_handle), spawned_test_server()->host_port_pair(),
+      std::move(transport), spawned_test_server()->host_port_pair(),
       SSLConfig(), context_));
 
   EXPECT_FALSE(sock->IsConnected());

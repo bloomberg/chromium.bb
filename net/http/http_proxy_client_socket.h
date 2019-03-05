@@ -29,7 +29,6 @@
 
 namespace net {
 
-class ClientSocketHandle;
 class GrowableIOBuffer;
 class HttpStreamParser;
 class IOBuffer;
@@ -38,11 +37,10 @@ class StreamSocket;
 
 class NET_EXPORT_PRIVATE HttpProxyClientSocket : public ProxyClientSocket {
  public:
-  // Takes ownership of |stream_socket|, which should already be connected
-  // by the time Connect() is called. |stream_socket_| is assumed to be a freash
-  // socket. If tunnel is true then on Connect() this socket will establish an
-  // Http tunnel.
-  HttpProxyClientSocket(std::unique_ptr<StreamSocket> stream_socket,
+  // Takes ownership of |socket|, which should already be connected by the time
+  // Connect() is called. |socket| is assumed to be a freash socket. If tunnel
+  // is true then on Connect() this socket will establish an Http tunnel.
+  HttpProxyClientSocket(std::unique_ptr<StreamSocket> socket,
                         const std::string& user_agent,
                         const HostPortPair& endpoint,
                         const ProxyServer& proxy_server,
@@ -53,21 +51,6 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocket : public ProxyClientSocket {
                         ProxyDelegate* proxy_delegate,
                         bool is_https_proxy,
                         const NetworkTrafficAnnotationTag& traffic_annotation);
-
-  // Same as above, but takes a ClientSocketHandle instead.
-  // TODO(mmenke): Remove in favor of above constructor.
-  HttpProxyClientSocket(
-      std::unique_ptr<ClientSocketHandle> client_socket_handle,
-      const std::string& user_agent,
-      const HostPortPair& endpoint,
-      const ProxyServer& proxy_server,
-      HttpAuthController* http_auth_controller,
-      bool tunnel,
-      bool using_spdy,
-      NextProto negotiated_protocol,
-      ProxyDelegate* proxy_delegate,
-      bool is_https_proxy,
-      const NetworkTrafficAnnotationTag& traffic_annotation);
 
   // On destruction Disconnect() is called.
   ~HttpProxyClientSocket() override;
@@ -163,12 +146,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocket : public ProxyClientSocket {
   std::unique_ptr<HttpStreamParser> http_stream_parser_;
   scoped_refptr<IOBuffer> drain_buf_;
 
-  // One of these two stores the underlying socket, depending on which
-  // constructor was used.
-  std::unique_ptr<ClientSocketHandle> client_socket_handle_;
-  std::unique_ptr<StreamSocket> stream_socket_;
-  // The underlying socket.
-  StreamSocket* socket_;
+  std::unique_ptr<StreamSocket> socket_;
 
   // Whether or not |socket_| has been previously used. Once auth credentials
   // are sent, set to true.

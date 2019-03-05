@@ -12,7 +12,6 @@
 #include "net/cert/x509_certificate.h"
 #include "net/log/net_log_source.h"
 #include "net/log/test_net_log.h"
-#include "net/socket/client_socket_handle.h"
 #include "net/socket/fuzzed_socket_factory.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
@@ -65,12 +64,6 @@ class FuzzedSocketFactoryWithMockSSLData : public FuzzedSocketFactory {
   void AddSSLSocketDataProvider(SSLSocketDataProvider* socket);
 
   std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
-      std::unique_ptr<ClientSocketHandle> transport_socket,
-      const HostPortPair& host_and_port,
-      const SSLConfig& ssl_config,
-      const SSLClientSocketContext& context) override;
-
-  std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
       std::unique_ptr<StreamSocket> nested_socket,
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config,
@@ -87,17 +80,6 @@ FuzzedSocketFactoryWithMockSSLData::FuzzedSocketFactoryWithMockSSLData(
 void FuzzedSocketFactoryWithMockSSLData::AddSSLSocketDataProvider(
     SSLSocketDataProvider* data) {
   mock_ssl_data_.Add(data);
-}
-
-std::unique_ptr<SSLClientSocket>
-FuzzedSocketFactoryWithMockSSLData::CreateSSLClientSocket(
-    std::unique_ptr<ClientSocketHandle> transport_socket,
-    const HostPortPair& host_and_port,
-    const SSLConfig& ssl_config,
-    const SSLClientSocketContext& context) {
-  return std::make_unique<MockSSLClientSocket>(std::move(transport_socket),
-                                               host_and_port, ssl_config,
-                                               mock_ssl_data_.GetNext());
 }
 
 std::unique_ptr<SSLClientSocket>

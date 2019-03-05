@@ -18,12 +18,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/ct_verify_result.h"
 #include "net/log/net_log_with_source.h"
-#include "net/socket/client_socket_handle.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_bio_adapter.h"
 #include "net/socket/ssl_client_socket.h"
@@ -50,20 +50,11 @@ class SSLKeyLogger;
 class SSLClientSocketImpl : public SSLClientSocket,
                             public SocketBIOAdapter::Delegate {
  public:
-  // Takes ownership of the transport_socket, which may already be connected.
+  // Takes ownership of |stream_socket|, which may already be connected.
   // The given hostname will be compared with the name(s) in the server's
   // certificate during the SSL handshake.  |ssl_config| specifies the SSL
   // settings.
-  // TODO(mmenke): Remove this constructor in favor of the next one.
-  SSLClientSocketImpl(std::unique_ptr<ClientSocketHandle> transport_socket,
-                      const HostPortPair& host_and_port,
-                      const SSLConfig& ssl_config,
-                      const SSLClientSocketContext& context);
-  // Takes ownership of |nested_socket|, which may already be connected.
-  // The given hostname will be compared with the name(s) in the server's
-  // certificate during the SSL handshake.  |ssl_config| specifies the SSL
-  // settings.
-  SSLClientSocketImpl(std::unique_ptr<StreamSocket> nested_socket,
+  SSLClientSocketImpl(std::unique_ptr<StreamSocket> stream_socket,
                       const HostPortPair& host_and_port,
                       const SSLConfig& ssl_config,
                       const SSLClientSocketContext& context);
@@ -267,11 +258,7 @@ class SSLClientSocketImpl : public SSLClientSocket,
   // OpenSSL stuff
   bssl::UniquePtr<SSL> ssl_;
 
-  std::unique_ptr<ClientSocketHandle> client_socket_handle_;
-  std::unique_ptr<StreamSocket> nested_socket_;
-  // Either |nested_socket_| or the socket owned by |client_socket_handle_|,
-  // depending on constructor used.
-  StreamSocket* stream_socket_;
+  std::unique_ptr<StreamSocket> stream_socket_;
   std::unique_ptr<SocketBIOAdapter> transport_adapter_;
   const HostPortPair host_and_port_;
   SSLConfig ssl_config_;

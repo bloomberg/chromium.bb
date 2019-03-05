@@ -403,7 +403,7 @@ const SSL_PRIVATE_KEY_METHOD
 };
 
 SSLClientSocketImpl::SSLClientSocketImpl(
-    std::unique_ptr<ClientSocketHandle> transport_socket,
+    std::unique_ptr<StreamSocket> stream_socket,
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     const SSLClientSocketContext& context)
@@ -414,43 +414,7 @@ SSLClientSocketImpl::SSLClientSocketImpl(
       cert_verifier_(context.cert_verifier),
       cert_verification_result_(kCertVerifyPending),
       cert_transparency_verifier_(context.cert_transparency_verifier),
-      client_socket_handle_(std::move(transport_socket)),
-      stream_socket_(client_socket_handle_->socket()),
-      host_and_port_(host_and_port),
-      ssl_config_(ssl_config),
-      ssl_client_session_cache_(context.ssl_client_session_cache),
-      next_handshake_state_(STATE_NONE),
-      in_confirm_handshake_(false),
-      disconnected_(false),
-      negotiated_protocol_(kProtoUnknown),
-      certificate_requested_(false),
-      signature_result_(kSSLClientSocketNoPendingResult),
-      transport_security_state_(context.transport_security_state),
-      policy_enforcer_(context.ct_policy_enforcer),
-      pkp_bypassed_(false),
-      is_fatal_cert_error_(false),
-      net_log_(stream_socket_->NetLog()),
-      weak_factory_(this) {
-  CHECK(cert_verifier_);
-  CHECK(transport_security_state_);
-  CHECK(cert_transparency_verifier_);
-  CHECK(policy_enforcer_);
-}
-
-SSLClientSocketImpl::SSLClientSocketImpl(
-    std::unique_ptr<StreamSocket> nested_socket,
-    const HostPortPair& host_and_port,
-    const SSLConfig& ssl_config,
-    const SSLClientSocketContext& context)
-    : pending_read_error_(kSSLClientSocketNoPendingResult),
-      pending_read_ssl_error_(SSL_ERROR_NONE),
-      completed_connect_(false),
-      was_ever_used_(false),
-      cert_verifier_(context.cert_verifier),
-      cert_verification_result_(kCertVerifyPending),
-      cert_transparency_verifier_(context.cert_transparency_verifier),
-      nested_socket_(std::move(nested_socket)),
-      stream_socket_(nested_socket_.get()),
+      stream_socket_(std::move(stream_socket)),
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
       ssl_client_session_cache_(context.ssl_client_session_cache),
@@ -839,7 +803,7 @@ int SSLClientSocketImpl::Init() {
   }
 
   transport_adapter_.reset(
-      new SocketBIOAdapter(stream_socket_, kDefaultOpenSSLBufferSize,
+      new SocketBIOAdapter(stream_socket_.get(), kDefaultOpenSSLBufferSize,
                            kDefaultOpenSSLBufferSize, this));
   BIO* transport_bio = transport_adapter_->bio();
 

@@ -16,7 +16,7 @@
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/socket/client_socket_factory.h"
-#include "net/socket/client_socket_handle.h"
+#include "net/socket/stream_socket.h"
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request_context.h"
@@ -86,11 +86,9 @@ void TLSSocketFactory::UpgradeToTLS(
         mojo::ScopedDataPipeProducerHandle(), base::nullopt);
     return;
   }
-  auto socket_handle = std::make_unique<net::ClientSocketHandle>();
-  socket_handle->SetSocket(socket_delegate->TakeSocket());
   CreateTLSClientSocket(
       host_port_pair, std::move(socket_options), std::move(request),
-      std::move(socket_handle), std::move(observer),
+      socket_delegate->TakeSocket(), std::move(observer),
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
       std::move(callback));
 }
@@ -99,7 +97,7 @@ void TLSSocketFactory::CreateTLSClientSocket(
     const net::HostPortPair& host_port_pair,
     mojom::TLSClientSocketOptionsPtr socket_options,
     mojom::TLSClientSocketRequest request,
-    std::unique_ptr<net::ClientSocketHandle> underlying_socket,
+    std::unique_ptr<net::StreamSocket> underlying_socket,
     mojom::SocketObserverPtr observer,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     mojom::TCPConnectedSocket::UpgradeToTLSCallback callback) {

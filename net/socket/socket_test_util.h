@@ -621,27 +621,10 @@ class MockClientSocketFactory : public ClientSocketFactory {
       NetLog* net_log,
       const NetLogSource& source) override;
   std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
-      std::unique_ptr<ClientSocketHandle> transport_socket,
+      std::unique_ptr<StreamSocket> stream_socket,
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config,
       const SSLClientSocketContext& context) override;
-  std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
-      std::unique_ptr<StreamSocket> nested_socket,
-      const HostPortPair& host_and_port,
-      const SSLConfig& ssl_config,
-      const SSLClientSocketContext& context) override;
-  std::unique_ptr<ProxyClientSocket> CreateProxyClientSocket(
-      std::unique_ptr<ClientSocketHandle> transport_socket,
-      const std::string& user_agent,
-      const HostPortPair& endpoint,
-      const ProxyServer& proxy_server,
-      HttpAuthController* http_auth_controller,
-      bool tunnel,
-      bool using_spdy,
-      NextProto negotiated_protocol,
-      ProxyDelegate* proxy_delegate,
-      bool is_https_proxy,
-      const NetworkTrafficAnnotationTag& traffic_annotation) override;
   std::unique_ptr<ProxyClientSocket> CreateProxyClientSocket(
       std::unique_ptr<StreamSocket> stream_socket,
       const std::string& user_agent,
@@ -828,12 +811,7 @@ class MockTCPClientSocket : public MockClientSocket, public AsyncSocket {
 
 class MockProxyClientSocket : public AsyncSocket, public ProxyClientSocket {
  public:
-  // TODO(mmenke): Remove this constructor.
-  MockProxyClientSocket(
-      std::unique_ptr<ClientSocketHandle> client_socket_handle,
-      HttpAuthController* auth_controller,
-      ProxyClientSocketDataProvider* data);
-  MockProxyClientSocket(std::unique_ptr<StreamSocket> stream_socket,
+  MockProxyClientSocket(std::unique_ptr<StreamSocket> socket,
                         HttpAuthController* auth_controller,
                         ProxyClientSocketDataProvider* data);
   ~MockProxyClientSocket() override;
@@ -887,9 +865,7 @@ class MockProxyClientSocket : public AsyncSocket, public ProxyClientSocket {
   void RunCallbackAsync(CompletionOnceCallback callback, int result);
 
   NetLogWithSource net_log_;
-  std::unique_ptr<ClientSocketHandle> client_socket_handle_;
-  std::unique_ptr<StreamSocket> stream_socket_;
-  StreamSocket* socket_;
+  std::unique_ptr<StreamSocket> socket_;
   ProxyClientSocketDataProvider* data_;
   scoped_refptr<HttpAuthController> auth_controller_;
 
@@ -900,12 +876,7 @@ class MockProxyClientSocket : public AsyncSocket, public ProxyClientSocket {
 
 class MockSSLClientSocket : public AsyncSocket, public SSLClientSocket {
  public:
-  // TODO(mmenke): Remove this constructor.
-  MockSSLClientSocket(std::unique_ptr<ClientSocketHandle> transport_socket,
-                      const HostPortPair& host_and_port,
-                      const SSLConfig& ssl_config,
-                      SSLSocketDataProvider* socket);
-  MockSSLClientSocket(std::unique_ptr<StreamSocket> nested_socket,
+  MockSSLClientSocket(std::unique_ptr<StreamSocket> stream_socket,
                       const HostPortPair& host_and_port,
                       const SSLConfig& ssl_config,
                       SSLSocketDataProvider* socket);
@@ -974,11 +945,7 @@ class MockSSLClientSocket : public AsyncSocket, public SSLClientSocket {
 
   bool connected_ = false;
   NetLogWithSource net_log_;
-  std::unique_ptr<ClientSocketHandle> client_socket_handle_;
-  std::unique_ptr<StreamSocket> nested_socket_;
-  // Owned by either |nested_socket_| or |client_socket_handle_|, depending on
-  // the constructor that was used.
-  StreamSocket* stream_socket_;
+  std::unique_ptr<StreamSocket> stream_socket_;
   SSLSocketDataProvider* data_;
   // Address of the "remote" peer we're connected to.
   IPEndPoint peer_addr_;

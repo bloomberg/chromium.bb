@@ -28,9 +28,9 @@
 #include "net/cert/x509_certificate.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_with_source.h"
-#include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/ssl_server_socket.h"
+#include "net/socket/stream_socket.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_server_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -306,19 +306,16 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     context.cert_verifier = cert_verifier_.get();
     context.cert_transparency_verifier = ct_verifier_.get();
     context.ct_policy_enforcer = ct_policy_enforcer_.get();
-    std::unique_ptr<net::ClientSocketHandle> socket_handle(
-        new net::ClientSocketHandle);
-    socket_handle->SetSocket(
-        std::make_unique<NetStreamSocketAdapter>(std::move(socket)));
-
+    std::unique_ptr<net::StreamSocket> stream_socket =
+        std::make_unique<NetStreamSocketAdapter>(std::move(socket));
 #if defined(OS_NACL)
     // net_nacl doesn't include ClientSocketFactory.
     socket_.reset(new net::SSLClientSocketImpl(
-        std::move(socket_handle), host_and_port, ssl_config, context));
+        std::move(stream_socket), host_and_port, ssl_config, context));
 #else
     socket_ =
         net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
-            std::move(socket_handle), host_and_port, ssl_config, context);
+            std::move(stream_socket), host_and_port, ssl_config, context);
 #endif
 
     result = socket_->Connect(
