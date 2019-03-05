@@ -110,6 +110,7 @@ KeyboardEvent::KeyboardEvent(const WebKeyboardEvent& key,
       code_(Platform::Current()->DomCodeStringFromEnum(key.dom_code)),
       key_(Platform::Current()->DomKeyStringFromEnum(key.dom_key)),
       location_(GetKeyLocationCode(key)),
+      is_num_lock(key.is_num_lock),
       is_composing_(HasCurrentComposition(dom_window)) {
   InitLocationModifiers(location_);
 
@@ -138,6 +139,7 @@ KeyboardEvent::KeyboardEvent(const AtomicString& event_type,
       code_(initializer->code()),
       key_(initializer->key()),
       location_(initializer->location()),
+      is_num_lock(initializer->hasBbIsNumLock()),
       is_composing_(initializer->isComposing()),
       char_code_(initializer->charCode()),
       key_code_(initializer->keyCode()) {
