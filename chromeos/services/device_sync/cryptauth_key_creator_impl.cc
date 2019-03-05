@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/secure_message_delegate_impl.h"
+#include "chromeos/services/device_sync/cryptauth_constants.h"
 #include "chromeos/services/device_sync/cryptauth_key.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 #include "crypto/hkdf.h"
@@ -27,10 +28,6 @@ namespace chromeos {
 namespace device_sync {
 
 namespace {
-
-// The salt used in HKDF to derive symmetric keys from Diffie-Hellman handshake.
-// This value is part of the CryptAuth v2 Enrollment specifications.
-const char kSymmetricKeyDerivationSalt[] = "CryptAuth Enrollment";
 
 bool IsValidSymmetricKeyType(const cryptauthv2::KeyType& type) {
   return type == cryptauthv2::KeyType::RAW128 ||
@@ -178,8 +175,9 @@ void CryptAuthKeyCreatorImpl::StartKeyCreation() {
                                ? *key_to_create.second.handle
                                : CreateRandomHandle();
       std::string derived_symmetric_key_material = crypto::HkdfSha256(
-          dh_handshake_secret_->symmetric_key(), kSymmetricKeyDerivationSalt,
-          handle, NumBytesForSymmetricKeyType(key_to_create.second.type));
+          dh_handshake_secret_->symmetric_key(),
+          kCryptAuthSymmetricKeyDerivationSalt, handle,
+          NumBytesForSymmetricKeyType(key_to_create.second.type));
 
       OnSymmetricKeyDerived(key_to_create.first, derived_symmetric_key_material,
                             handle);

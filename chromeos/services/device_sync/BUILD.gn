@@ -11,6 +11,8 @@ static_library("device_sync") {
     "cryptauth_client.h",
     "cryptauth_client_impl.cc",
     "cryptauth_client_impl.h",
+    "cryptauth_constants.cc",
+    "cryptauth_constants.h",
     "cryptauth_device_manager.cc",
     "cryptauth_device_manager.h",
     "cryptauth_device_manager_impl.cc",

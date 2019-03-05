@@ -13,6 +13,7 @@
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/timer/mock_timer.h"
+#include "chromeos/services/device_sync/cryptauth_constants.h"
 #include "chromeos/services/device_sync/cryptauth_enrollment_result.h"
 #include "chromeos/services/device_sync/cryptauth_key_creator_impl.h"
 #include "chromeos/services/device_sync/cryptauth_key_proof_computer_impl.h"
@@ -119,8 +120,6 @@ const CryptAuthKey kClientEphemeralDh(kClientDhPublicKey,
                                       kClientDhPrivateKey,
                                       CryptAuthKey::Status::kActive,
                                       KeyType::P256);
-
-const char kKeyProofSalt[] = "CryptAuth Key Proof";
 
 class FakeCryptAuthKeyCreatorFactory : public CryptAuthKeyCreatorImpl::Factory {
  public:
@@ -683,7 +682,7 @@ TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest, SuccessfulEnrollment) {
   EXPECT_EQ(key_proof_computer->ComputeKeyProof(
                 expected_new_keys.find(CryptAuthKeyBundle::Name::kUserKeyPair)
                     ->second,
-                kRandomSessionId, kKeyProofSalt),
+                kRandomSessionId, kCryptAuthKeyProofSalt),
             single_request_user_key_pair.key_proof());
 
   const EnrollSingleKeyRequest& single_request_legacy_master_key =
@@ -699,7 +698,7 @@ TEST_F(DeviceSyncCryptAuthV2EnrollerImplTest, SuccessfulEnrollment) {
       key_proof_computer->ComputeKeyProof(
           expected_new_keys.find(CryptAuthKeyBundle::Name::kLegacyMasterKey)
               ->second,
-          kRandomSessionId, kKeyProofSalt),
+          kRandomSessionId, kCryptAuthKeyProofSalt),
       single_request_legacy_master_key.key_proof());
 
   // Assume a successful EnrollKeys() call.

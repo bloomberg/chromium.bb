@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "chromeos/components/multidevice/fake_secure_message_delegate.h"
 #include "chromeos/components/multidevice/secure_message_delegate_impl.h"
+#include "chromeos/services/device_sync/cryptauth_constants.h"
 #include "chromeos/services/device_sync/cryptauth_key.h"
 #include "chromeos/services/device_sync/cryptauth_key_bundle.h"
 #include "chromeos/services/device_sync/cryptauth_key_creator.h"
@@ -26,10 +27,6 @@ namespace chromeos {
 namespace device_sync {
 
 namespace {
-
-// The salt used in HKDF to derive symmetric keys from Diffie-Hellman handshake.
-// This value is part of the CryptAuth v2 Enrollment specifications.
-const char kSymmetricKeyDerivationSalt[] = "CryptAuth Enrollment";
 
 const char kFakeServerEphemeralDhPublicKeyMaterial[] = "server_ephemeral_dh";
 const char kFakeClientEphemeralDhPublicKeyMaterial[] = "client_ephemeral_dh";
@@ -167,9 +164,10 @@ TEST_F(DeviceSyncCryptAuthKeyCreatorImplTest, SymmetricKeyCreation) {
 
   CryptAuthKey expected_handshake_secret =
       DeriveSecret(fake_server_ephemeral_dh, expected_client_ephemeral_dh);
-  std::string expected_symmetric_key_material = crypto::HkdfSha256(
-      expected_handshake_secret.symmetric_key(), kSymmetricKeyDerivationSalt,
-      kFakeSymmetricKeyHandle, 32u /* derived_key_size */);
+  std::string expected_symmetric_key_material =
+      crypto::HkdfSha256(expected_handshake_secret.symmetric_key(),
+                         kCryptAuthSymmetricKeyDerivationSalt,
+                         kFakeSymmetricKeyHandle, 32u /* derived_key_size */);
 
   CryptAuthKey expected_symmetric_key(
       expected_symmetric_key_material, CryptAuthKey::Status::kActive,

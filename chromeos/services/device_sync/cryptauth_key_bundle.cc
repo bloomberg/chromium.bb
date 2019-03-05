@@ -8,17 +8,13 @@
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
+#include "chromeos/services/device_sync/cryptauth_constants.h"
 
 namespace chromeos {
 
 namespace device_sync {
 
 namespace {
-
-// The special strings used in SyncSingleKeyRequest::key_name. These strings are
-// not arbitrary; CryptAuth must be able to identify these names.
-const char kUserKeyPairName[] = "PublicKey";
-const char kLegacyMasterKeyName[] = "authzen";
 
 const char kBundleNameDictKey[] = "name";
 const char kKeyListDictKey[] = "keys";
@@ -63,18 +59,18 @@ std::string CryptAuthKeyBundle::KeyBundleNameEnumToString(
     CryptAuthKeyBundle::Name name) {
   switch (name) {
     case CryptAuthKeyBundle::Name::kUserKeyPair:
-      return kUserKeyPairName;
+      return kCryptAuthUserKeyPairName;
     case CryptAuthKeyBundle::Name::kLegacyMasterKey:
-      return kLegacyMasterKeyName;
+      return kCryptAuthLegacyMasterKeyName;
   }
 }
 
 // static
 base::Optional<CryptAuthKeyBundle::Name>
 CryptAuthKeyBundle::KeyBundleNameStringToEnum(const std::string& name) {
-  if (name == kUserKeyPairName)
+  if (name == kCryptAuthUserKeyPairName)
     return CryptAuthKeyBundle::Name::kUserKeyPair;
-  if (name == kLegacyMasterKeyName)
+  if (name == kCryptAuthLegacyMasterKeyName)
     return CryptAuthKeyBundle::Name::kLegacyMasterKey;
 
   return base::nullopt;
