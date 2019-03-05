@@ -46,5 +46,18 @@ cr.define('color_settings_test', function() {
       await print_preview_test_utils.selectOption(colorSection, 'bw');
       assertFalse(colorSection.getSettingValue('color'));
     });
+
+    if (cr.isChromeOS) {
+      // Tests that if the setting is enforced by enterprise policy it is
+      // disabled.
+      test('disabled by policy', function() {
+        // Verify that the selected option and names are as expected.
+        const select = colorSection.$$('select');
+        assertFalse(select.disabled);
+
+        colorSection.set('settings.color.setByPolicy', true);
+        assertTrue(select.disabled);
+      });
+    }
   });
 });
