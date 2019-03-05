@@ -223,7 +223,6 @@
 
       <!-- App Management. -->
       <if expr="not is_android">
-        <include name="IDR_APP_MANAGEMENT_BIG_BUFFER_MOJO_LITE_JS" file="${root_gen_dir}\mojo\public\mojom\base\big_buffer.mojom-lite.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_BITMAP_MOJO_LITE_JS" file="${root_gen_dir}\skia\public\interfaces\bitmap.mojom-lite.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_IMAGE_INFO_MOJO_LITE_JS" file="${root_gen_dir}\skia\public\interfaces\image_info.mojom-lite.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_IMAGE_MOJO_LITE_JS" file="${root_gen_dir}\ui\gfx\image\mojo\image.mojom-lite.js" use_base_dir="false" type="BINDATA" />
