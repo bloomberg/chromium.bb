@@ -1008,10 +1008,21 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return bitfields_.IsGlobalRootScroller();
   }
 
+  bool IsHTMLLegendElement() const { return bitfields_.IsHTMLLegendElement(); }
+
   // Return true if this is the "rendered legend" of a fieldset. They get
   // special treatment, in that they establish a new formatting context, and
   // shrink to fit if no logical width is specified.
-  bool IsRenderedLegend() const;
+  //
+  // This function is performance sensitive.
+  inline bool IsRenderedLegend() const {
+    if (LIKELY(!IsHTMLLegendElement()))
+      return false;
+
+    return IsRenderedLegendInternal();
+  }
+
+  bool IsRenderedLegendInternal() const;
 
   // The pseudo element style can be cached or uncached.  Use the cached method
   // if the pseudo element doesn't respect any pseudo classes (and therefore
@@ -1243,6 +1254,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void SetIsGlobalRootScroller(bool is_global_root_scroller) {
     bitfields_.SetIsGlobalRootScroller(is_global_root_scroller);
   }
+  void SetIsHTMLLegendElement() { bitfields_.SetIsHTMLLegendElement(true); }
 
   virtual void Paint(const PaintInfo&) const;
 
@@ -2580,6 +2592,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           is_effective_root_scroller_(false),
           is_global_root_scroller_(false),
           pending_update_first_line_image_observers_(false),
+          is_html_legend_element_(false),
           positioned_state_(kIsStaticallyPositioned),
           selection_state_(static_cast<unsigned>(SelectionState::kNone)),
           subtree_paint_property_update_reasons_(
@@ -2821,6 +2834,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // first line style before it is inserted into the tree.
     ADD_BOOLEAN_BITFIELD(pending_update_first_line_image_observers_,
                          PendingUpdateFirstLineImageObservers);
+
+    // Whether this object's |Node| is a HTMLLegendElement. Used to increase
+    // performance of |IsRenderedLegend| which is performance sensitive.
+    ADD_BOOLEAN_BITFIELD(is_html_legend_element_, IsHTMLLegendElement);
 
    private:
     // This is the cached 'position' value of this object

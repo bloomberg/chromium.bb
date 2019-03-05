@@ -491,9 +491,10 @@ bool LayoutObject::HasClipRelatedProperty() const {
   return false;
 }
 
-bool LayoutObject::IsRenderedLegend() const {
-  if (!IsBox() || !IsHTMLLegendElement(GetNode()))
-    return false;
+bool LayoutObject::IsRenderedLegendInternal() const {
+  DCHECK(IsBox());
+  DCHECK(IsHTMLLegendElement());
+
   if (IsFloatingOrOutOfFlowPositioned())
     return false;
   const auto* parent = Parent();
