@@ -4,9 +4,12 @@
 
 package org.chromium.chrome.browser.autofill_assistant.overlay;
 
+import android.animation.TimeInterpolator;
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -28,6 +31,7 @@ import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -55,6 +59,13 @@ import java.util.List;
  */
 public class TouchEventFilterView
         extends View implements ChromeFullscreenManager.FullscreenListener, GestureStateListener {
+    private static final int FADE_DURATION_MS = 250;
+
+    /** Alpha value of the background, used for animations. */
+    private static final int BACKGROUND_ALPHA = 0x42;
+
+    /** Width of the line drawn around the boxes. */
+    private static final int BOX_STROKE_WIDTH = 3;
 
     /**
      * Complain after there's been {@link TAP_TRACKING_COUNT} taps within
@@ -82,8 +93,11 @@ public class TouchEventFilterView
     private ChromeFullscreenManager mFullscreenManager;
     private GestureListenerManager mGestureListenerManager;
     private View mCompositorView;
-    private final Paint mGrayOut;
+
+    private final Paint mBackground;
     private final Paint mClear;
+    private final Paint mBoxStroke;
+    private final Paint mBoxFill;
 
     @AssistantOverlayState
     private int mCurrentState = AssistantOverlayState.HIDDEN;
@@ -167,6 +181,18 @@ public class TouchEventFilterView
     /** Current bottom margin of this view. */
     private int mMarginBottom;
 
+    /**
+     * Currently running animator for boxes fade in and out, either {@link #mFadeOutBoxesAnimator}
+     * or {@link #mFadeOutBoxesAnimator}.
+     */
+    private ValueAnimator mCurrentBoxesAnimator;
+
+    /** Animator created by {@link #fadeInBoxes}. Fades in box content. */
+    private ValueAnimator mFadeInBoxesAnimator;
+
+    /** Animator created by {@link #fadeOutBoxes}. Fades out box content. */
+    private ValueAnimator mFadeOutBoxesAnimator;
+
     public TouchEventFilterView(Context context) {
         this(context, null, 0);
     }
@@ -177,19 +203,31 @@ public class TouchEventFilterView
 
     public TouchEventFilterView(Context context, AttributeSet attributeSet, int defStyle) {
         super(context, attributeSet, defStyle);
-        mGrayOut = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mGrayOut.setColor(
-                ApiCompatibilityUtils.getColor(context.getResources(), R.color.black_alpha_65));
-        mGrayOut.setStyle(Paint.Style.FILL);
+        mBackground = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mBackground.setColor(Color.BLACK);
+        mBackground.setAlpha(BACKGROUND_ALPHA);
+        mBackground.setStyle(Paint.Style.FILL);
+
+        mClear = new Paint();
+        mClear.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+        mClear.setStyle(Paint.Style.FILL);
+
+        mBoxFill = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mBoxFill.setColor(Color.BLACK);
+        mBoxFill.setStyle(Paint.Style.FILL);
+
+        mBoxStroke = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mBoxStroke.setColor(
+                ApiCompatibilityUtils.getColor(context.getResources(), R.color.modern_blue_600));
+        mBoxStroke.setStyle(Paint.Style.STROKE);
+        mBoxStroke.setStrokeWidth(BOX_STROKE_WIDTH);
+        mBoxStroke.setStrokeCap(Paint.Cap.ROUND);
 
         mPaddingPx = TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, 2, context.getResources().getDisplayMetrics());
         mCornerPx = TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, 8, context.getResources().getDisplayMetrics());
         // TODO(crbug.com/806868): Add support for XML attributes configuration.
-
-        mClear = new Paint();
-        mClear.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
 
         mTapDetector = new GestureDetector(context, new SimpleOnGestureListener() {
             @Override
@@ -254,14 +292,35 @@ public class TouchEventFilterView
      * Set the current state of the overlay.
      */
     public void setState(@AssistantOverlayState int newState) {
+        if (AccessibilityUtil.isAccessibilityEnabled()
+                && newState == AssistantOverlayState.PARTIAL) {
+            // Touch exploration is fully disabled if there's an overlay in front. In this case, the
+            // overlay must be fully gone and filtering elements for touch exploration must happen
+            // at another level.
+            newState = AssistantOverlayState.HIDDEN;
+        }
+
+        if (mCurrentState == newState) return;
+
+        // Animate transitions
+        if (newState == AssistantOverlayState.HIDDEN) {
+            setVisibility(View.GONE);
+        } else if (mCurrentState == AssistantOverlayState.HIDDEN) {
+            setVisibility(View.VISIBLE);
+        } else if (mCurrentState == AssistantOverlayState.FULL
+                && newState == AssistantOverlayState.PARTIAL) {
+            if (!mTouchableArea.isEmpty()) fadeOutBoxes();
+        } else if (mCurrentState == AssistantOverlayState.PARTIAL
+                && newState == AssistantOverlayState.FULL) {
+            if (!mTouchableArea.isEmpty()) fadeInBoxes();
+        }
+
         mCurrentState = newState;
 
         // Reset tap counter each time we hide the overlay.
         if (mCurrentState == AssistantOverlayState.HIDDEN) {
             mUnexpectedTapTimes.clear();
         }
-
-        updateVisibility();
         invalidate();
     }
 
@@ -269,26 +328,18 @@ public class TouchEventFilterView
      * Set the touchable area. This only applies if current state is AssistantOverlayState.PARTIAL.
      */
     public void setTouchableArea(List<RectF> touchableArea) {
-        mTouchableArea = touchableArea;
-
-        clearOffsets();
         if (mCurrentState == AssistantOverlayState.PARTIAL) {
             invalidate();
+            boolean wasEmpty = mTouchableArea.isEmpty();
+            boolean isEmpty = touchableArea.isEmpty();
+            if (wasEmpty && !isEmpty) {
+                fadeOutBoxes();
+            } else if (!wasEmpty && isEmpty) {
+                fadeInBoxes();
+            }
         }
-    }
-
-    private void updateVisibility() {
-        if (AccessibilityUtil.isAccessibilityEnabled()) {
-            // Touch exploration is fully disabled if there's an overlay in front. In this case, the
-            // overlay must be fully gone and filtering elements for touch exploration must happen
-            // at another level.
-            //
-            // TODO(crbug.com/806868): filter elements available to touch exploration, when it
-            // is enabled.
-            setVisibility(mCurrentState != AssistantOverlayState.FULL ? View.GONE : View.VISIBLE);
-        }
-
-        setAlpha(mCurrentState == AssistantOverlayState.HIDDEN ? 0.0f : 1.0f);
+        mTouchableArea = touchableArea;
+        clearOffsets();
     }
 
     private void clearOffsets() {
@@ -481,7 +532,7 @@ public class TouchEventFilterView
         if (mCurrentState == AssistantOverlayState.HIDDEN) {
             return;
         }
-        canvas.drawPaint(mGrayOut);
+        canvas.drawPaint(mBackground);
 
         int width = canvas.getWidth();
         int yTop = getVisualViewportTop();
@@ -498,6 +549,13 @@ public class TouchEventFilterView
         }
 
         int height = yBottom - yTop;
+
+        float boxesAlpha = (mCurrentBoxesAnimator != null && mCurrentBoxesAnimator.isRunning())
+                ? ((float) mCurrentBoxesAnimator.getAnimatedValue())
+                : 0f;
+        mBoxStroke.setAlpha((int) (0xff * (1.0 - boxesAlpha)));
+        mBoxFill.setAlpha((int) (BACKGROUND_ALPHA * boxesAlpha));
+
         for (RectF rect : mTouchableArea) {
             mDrawRect.left = rect.left * width - mPaddingPx;
             mDrawRect.top =
@@ -509,8 +567,16 @@ public class TouchEventFilterView
                 // Rounded corners look strange in the case where the rectangle takes exactly the
                 // width of the screen.
                 canvas.drawRect(mDrawRect, mClear);
+                if (boxesAlpha > 0f) {
+                    canvas.drawRect(mDrawRect, mBoxFill);
+                }
+                canvas.drawRect(mDrawRect, mBoxStroke);
             } else {
                 canvas.drawRoundRect(mDrawRect, mCornerPx, mCornerPx, mClear);
+                if (boxesAlpha > 0f) {
+                    canvas.drawRoundRect(mDrawRect, mCornerPx, mCornerPx, mBoxFill);
+                }
+                canvas.drawRoundRect(mDrawRect, mCornerPx, mCornerPx, mBoxStroke);
             }
         }
     }
@@ -666,5 +732,41 @@ public class TouchEventFilterView
         ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) getLayoutParams();
         params.setMargins(/* left= */ 0, /* top= */ top, /* right= */ 0, /* bottom= */ bottom);
         setLayoutParams(params);
+    }
+
+    private void fadeInBoxes() {
+        if (mFadeInBoxesAnimator == null) {
+            mFadeInBoxesAnimator =
+                    createBoxesAnimator(0f, 1f, BakedBezierInterpolator.FADE_IN_CURVE);
+        }
+        runBoxesAnimation(mFadeInBoxesAnimator);
+    }
+
+    private void fadeOutBoxes() {
+        if (mFadeOutBoxesAnimator == null) {
+            mFadeOutBoxesAnimator =
+                    createBoxesAnimator(1f, 0f, BakedBezierInterpolator.FADE_OUT_CURVE);
+        }
+        runBoxesAnimation(mFadeOutBoxesAnimator);
+    }
+
+    private ValueAnimator createBoxesAnimator(
+            float start, float end, TimeInterpolator interpolator) {
+        ValueAnimator animator = ValueAnimator.ofFloat(start, end);
+        animator.setDuration(FADE_DURATION_MS);
+        animator.setInterpolator(interpolator);
+        animator.addUpdateListener((ignoredAnimator) -> invalidate());
+        return animator;
+    }
+
+    private void runBoxesAnimation(ValueAnimator animator) {
+        if (mCurrentBoxesAnimator != null && mCurrentBoxesAnimator.isRunning()) {
+            if (mCurrentBoxesAnimator == animator) {
+                return;
+            }
+            mCurrentBoxesAnimator.cancel();
+        }
+        animator.start();
+        mCurrentBoxesAnimator = animator;
     }
 }
