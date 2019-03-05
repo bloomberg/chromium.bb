@@ -173,6 +173,18 @@ gpu::gles2::GLES2Interface* BrowserGpuVideoAcceleratorFactories::ContextGL() {
   return nullptr;
 }
 
+gpu::SharedImageInterface*
+BrowserGpuVideoAcceleratorFactories::SharedImageInterface() {
+  NOTREACHED();
+  return nullptr;
+}
+
+gpu::GpuMemoryBufferManager*
+BrowserGpuVideoAcceleratorFactories::GpuMemoryBufferManager() {
+  NOTREACHED();
+  return nullptr;
+}
+
 std::unique_ptr<base::SharedMemory>
 BrowserGpuVideoAcceleratorFactories::CreateSharedMemory(size_t size) {
   return nullptr;

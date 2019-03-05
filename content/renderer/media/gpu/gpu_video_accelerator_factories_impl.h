@@ -107,6 +107,10 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   // Called on the media thread. Returns the GLES2Interface unless the
   // ContextProvider has been lost, in which case it returns null.
   gpu::gles2::GLES2Interface* ContextGL() override;
+  // Called on the media thread. Returns the SharedImageInterface unless the
+  // ContextProvider has been lost, in which case it returns null.
+  gpu::SharedImageInterface* SharedImageInterface() override;
+  gpu::GpuMemoryBufferManager* GpuMemoryBufferManager() override;
   // Called on the media thread. Verifies if the ContextProvider is lost and
   // notifies the main thread of loss if it has occured, which can be seen later
   // from CheckContextProviderLost().

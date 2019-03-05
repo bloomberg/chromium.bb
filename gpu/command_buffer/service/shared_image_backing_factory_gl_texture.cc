@@ -350,7 +350,8 @@ class SharedImageBackingGLTexture : public SharedImageBacking {
     gl::GLImage* image = texture_->GetLevelImage(target, 0, &old_state);
     if (!image)
       return;
-    image->ReleaseTexImage(target);
+    if (old_state == gles2::Texture::BOUND)
+      image->ReleaseTexImage(target);
     gles2::Texture::ImageState new_state = gles2::Texture::UNBOUND;
     if (image->ShouldBindOrCopy() == gl::GLImage::BIND &&
         image->BindTexImage(target)) {
