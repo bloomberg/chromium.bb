@@ -617,15 +617,31 @@ HRESULT CGaiaCredentialBase::GetBaseGlsCommandline(
     base::CommandLine* command_line) {
   DCHECK(command_line);
 
-  base::FilePath chrome_path =
+  base::FilePath gls_path =
       chrome_launcher_support::GetChromePathForInstallationLevel(
           chrome_launcher_support::SYSTEM_LEVEL_INSTALLATION, false);
-  if (chrome_path.empty()) {
+
+  constexpr wchar_t kGlsPath[] = L"gls_path";
+
+  wchar_t custom_gls_path_value[MAX_PATH];
+  ULONG path_len = base::size(custom_gls_path_value) * sizeof(wchar_t);
+  HRESULT hr = GetGlobalFlag(kGlsPath, custom_gls_path_value, &path_len);
+  if (SUCCEEDED(hr)) {
+    base::FilePath custom_gls_path(custom_gls_path_value);
+    if (base::PathExists(custom_gls_path)) {
+      gls_path = custom_gls_path;
+    } else {
+      LOGFN(ERROR) << "Specified gls path ('" << custom_gls_path.value()
+                   << "') does not exist, using default gls path.";
+    }
+  }
+
+  if (gls_path.empty()) {
     LOGFN(ERROR) << "No path to chrome.exe could be found.";
     return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
   }
 
-  command_line->SetProgram(chrome_path);
+  command_line->SetProgram(gls_path);
 
   LOGFN(INFO) << "App exe: " << command_line->GetProgram().value();
 
