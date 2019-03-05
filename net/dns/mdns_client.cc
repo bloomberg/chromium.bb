@@ -4,8 +4,6 @@
 
 #include "net/dns/mdns_client.h"
 
-#include <utility>
-
 #include "net/base/address_family.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"
@@ -18,22 +16,13 @@ namespace net {
 
 namespace {
 
-int BindSendSocket(AddressFamily address_family,
-                   uint32_t interface_index,
-                   DatagramClientSocket* socket) {
-  int rv = socket->SetMulticastInterface(interface_index);
-  DCHECK_EQ(OK, rv);
-  return socket->Connect(dns_util::GetMdnsGroupEndPoint(address_family));
-}
-
-int BindRecvSocket(AddressFamily address_family,
-                   uint32_t interface_index,
-                   DatagramServerSocket* socket) {
+int Bind(AddressFamily address_family,
+         uint32_t interface_index,
+         DatagramServerSocket* socket) {
   socket->AllowAddressSharingForMulticast();
-  int rv = socket->SetMulticastInterface(interface_index);
-  DCHECK_EQ(OK, rv);
+  socket->SetMulticastInterface(interface_index);
 
-  rv = socket->Listen(dns_util::GetMdnsReceiveEndPoint(address_family));
+  int rv = socket->Listen(dns_util::GetMdnsReceiveEndPoint(address_family));
   if (rv < OK)
     return rv;
 
@@ -75,26 +64,20 @@ InterfaceIndexFamilyList GetMDnsInterfacesToBind() {
   return interfaces;
 }
 
-MDnsSendRecvSocketPair CreateAndBindMDnsSocketPair(AddressFamily address_family,
-                                                   uint32_t interface_index,
-                                                   NetLog* net_log) {
-  auto send_socket = std::make_unique<UDPClientSocket>(
-      DatagramSocket::RANDOM_BIND, net_log, NetLogSource());
-  int rv = BindSendSocket(address_family, interface_index, send_socket.get());
-  if (rv != OK) {
-    VLOG(1) << "MDNS send socket bind failed, address_family=" << address_family
-            << ", error=" << rv;
-    return std::make_pair(nullptr, nullptr);
-  }
+std::unique_ptr<DatagramServerSocket> CreateAndBindMDnsSocket(
+    AddressFamily address_family,
+    uint32_t interface_index,
+    NetLog* net_log) {
+  std::unique_ptr<DatagramServerSocket> socket(
+      new UDPServerSocket(net_log, NetLogSource()));
 
-  auto recv_socket = std::make_unique<UDPServerSocket>(net_log, NetLogSource());
-  rv = BindRecvSocket(address_family, interface_index, recv_socket.get());
+  int rv = Bind(address_family, interface_index, socket.get());
   if (rv != OK) {
-    VLOG(1) << "MDNS recv socket bind failed, address_family=" << address_family
+    socket.reset();
+    VLOG(1) << "MDNS bind failed, address_family=" << address_family
             << ", error=" << rv;
-    return std::make_pair(nullptr, nullptr);
   }
-  return std::make_pair(std::move(send_socket), std::move(recv_socket));
+  return socket;
 }
 
 }  // namespace net

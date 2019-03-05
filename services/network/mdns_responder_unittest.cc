@@ -80,23 +80,22 @@ class MockFailingMdnsSocketFactory : public net::MDnsSocketFactory {
 
   ~MockFailingMdnsSocketFactory() override = default;
 
-  MOCK_METHOD1(CreateSocketPairs,
-               void(std::vector<net::MDnsSendRecvSocketPair>*));
+  MOCK_METHOD1(CreateSockets,
+               void(std::vector<std::unique_ptr<net::DatagramServerSocket>>*));
 
   MOCK_METHOD1(OnSendTo, void(const std::string&));
 
   // Emulates the asynchronous contract of invoking |callback| in the SendTo
   // primitive but failed sending;
   int FailToSend(const std::string& packet,
-                 net::CompletionOnceCallback* callback,
-                 const net::NetworkTrafficAnnotationTag& traffic_annotation) {
+                 const std::string& address,
+                 net::CompletionRepeatingCallback callback) {
     OnSendTo(packet);
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(
-                               [](net::CompletionOnceCallback callback) {
-                                 std::move(callback).Run(-1);
-                               },
-                               std::move(*callback)));
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](net::CompletionRepeatingCallback callback) { callback.Run(-1); },
+            callback));
     return -1;
   }
 
@@ -105,13 +104,12 @@ class MockFailingMdnsSocketFactory : public net::MDnsSocketFactory {
   int FailToRecv(net::IOBuffer* buffer,
                  int size,
                  net::IPEndPoint* address,
-                 net::CompletionOnceCallback* callback) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(
-                               [](net::CompletionOnceCallback callback) {
-                                 std::move(callback).Run(-1);
-                               },
-                               std::move(*callback)));
+                 net::CompletionRepeatingCallback callback) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](net::CompletionRepeatingCallback callback) { callback.Run(-1); },
+            callback));
     return -1;
   }
 
@@ -614,7 +612,7 @@ TEST_F(MdnsResponderTest, ResponderHostDoesCleanUpAfterMojoConnectionError) {
 // Test that the host generates a Mojo connection error when no socket handler
 // is successfully started.
 TEST_F(MdnsResponderTest, ClosesBindingWhenNoSocketHanlderStarted) {
-  EXPECT_CALL(failing_socket_factory_, CreateSocketPairs(_)).WillOnce(Return());
+  EXPECT_CALL(failing_socket_factory_, CreateSockets(_)).WillOnce(Return());
   Reset(true /* use_failing_socket_factory */);
   RunUntilNoTasksRemain();
   // MdnsResponderTest::OnMojoConnectionError.
@@ -625,30 +623,26 @@ TEST_F(MdnsResponderTest, ClosesBindingWhenNoSocketHanlderStarted) {
 // Test that an announcement is retried after send failure.
 TEST_F(MdnsResponderTest, AnnouncementRetriedAfterSendFailure) {
   auto create_send_failing_socket =
-      [this](std::vector<net::MDnsSendRecvSocketPair>* socket_pairs) {
-        auto send_socket =
-            std::make_unique<NiceMock<net::MockMDnsDatagramClientSocket>>();
-
-        auto recv_socket =
+      [this](std::vector<std::unique_ptr<net::DatagramServerSocket>>* sockets) {
+        auto socket =
             std::make_unique<NiceMock<net::MockMDnsDatagramServerSocket>>(
                 net::ADDRESS_FAMILY_IPV4);
 
-        ON_CALL(*send_socket, WriteInternal(_, _, _))
+        ON_CALL(*socket, SendToInternal(_, _, _))
             .WillByDefault(Invoke(&failing_socket_factory_,
                                   &MockFailingMdnsSocketFactory::FailToSend));
-        ON_CALL(*recv_socket, RecvFromInternal(_, _, _, _))
+        ON_CALL(*socket, RecvFromInternal(_, _, _, _))
             .WillByDefault(Return(-1));
 
-        socket_pairs->push_back(
-            std::make_pair(std::move(send_socket), std::move(recv_socket)));
+        sockets->push_back(std::move(socket));
       };
-  EXPECT_CALL(failing_socket_factory_, CreateSocketPairs(_))
+  EXPECT_CALL(failing_socket_factory_, CreateSockets(_))
       .WillOnce(Invoke(create_send_failing_socket));
   Reset(true /* use_failing_socket_factory */);
   const auto& addr = kPublicAddrs[0];
   std::string expected_announcement =
       CreateResolutionResponse(kDefaultTtl, {{"0.local", addr}});
-  // Mocked CreateSocketPairs above only creates one pair of sockets.
+  // Mocked CreateSockets above only creates one socket.
   EXPECT_CALL(failing_socket_factory_, OnSendTo(expected_announcement))
       .Times(kNumAnnouncementsPerInterface + kNumMaxRetriesPerResponse);
   const auto name = CreateNameForAddress(0, addr);
@@ -974,25 +968,22 @@ TEST_F(MdnsResponderTest, ScheduledSendsAreCancelledAfterManagerDestroyed) {
 // Test that if all socket handlers fail to read, the manager restarts itself.
 TEST_F(MdnsResponderTest, ManagerCanRestartAfterAllSocketHandlersFailToRead) {
   auto create_read_failing_socket =
-      [this](std::vector<net::MDnsSendRecvSocketPair>* socket_pairs) {
-        auto send_socket =
-            std::make_unique<NiceMock<net::MockMDnsDatagramClientSocket>>();
-        auto recv_socket =
+      [this](std::vector<std::unique_ptr<net::DatagramServerSocket>>* sockets) {
+        auto socket =
             std::make_unique<NiceMock<net::MockMDnsDatagramServerSocket>>(
                 net::ADDRESS_FAMILY_IPV4);
 
-        ON_CALL(*send_socket, WriteInternal(_, _, _)).WillByDefault(Return(0));
-        ON_CALL(*recv_socket, RecvFromInternal(_, _, _, _))
+        ON_CALL(*socket, SendToInternal(_, _, _)).WillByDefault(Return(0));
+        ON_CALL(*socket, RecvFromInternal(_, _, _, _))
             .WillByDefault(Invoke(&failing_socket_factory_,
                                   &MockFailingMdnsSocketFactory::FailToRecv));
 
-        socket_pairs->push_back(
-            std::make_pair(std::move(send_socket), std::move(recv_socket)));
+        sockets->push_back(std::move(socket));
       };
-  EXPECT_CALL(failing_socket_factory_, CreateSocketPairs(_))
+  EXPECT_CALL(failing_socket_factory_, CreateSockets(_))
       .WillOnce(Invoke(create_read_failing_socket));
   Reset(true /* use_failing_socket_factory */);
-  EXPECT_CALL(failing_socket_factory_, CreateSocketPairs(_)).Times(1);
+  EXPECT_CALL(failing_socket_factory_, CreateSockets(_)).Times(1);
   RunUntilNoTasksRemain();
 }
 

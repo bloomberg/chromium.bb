@@ -23,9 +23,7 @@
 #include "net/base/net_export.h"
 #include "net/dns/mdns_cache.h"
 #include "net/dns/mdns_client.h"
-#include "net/socket/datagram_client_socket.h"
 #include "net/socket/datagram_server_socket.h"
-#include "net/socket/udp_client_socket.h"
 #include "net/socket/udp_server_socket.h"
 #include "net/socket/udp_socket.h"
 
@@ -44,8 +42,8 @@ class MDnsSocketFactoryImpl : public MDnsSocketFactory {
   explicit MDnsSocketFactoryImpl(NetLog* net_log) : net_log_(net_log) {}
   ~MDnsSocketFactoryImpl() override {}
 
-  void CreateSocketPairs(
-      std::vector<MDnsSendRecvSocketPair>* socket_pairs) override;
+  void CreateSockets(
+      std::vector<std::unique_ptr<DatagramServerSocket>>* sockets) override;
 
  private:
   NetLog* const net_log_;
@@ -75,7 +73,7 @@ class NET_EXPORT_PRIVATE MDnsConnection {
  private:
   class SocketHandler {
    public:
-    SocketHandler(MDnsSendRecvSocketPair socket_pair,
+    SocketHandler(std::unique_ptr<DatagramServerSocket> socket,
                   MDnsConnection* connection);
     ~SocketHandler();
 
@@ -89,8 +87,7 @@ class NET_EXPORT_PRIVATE MDnsConnection {
     // Callback for when sending a query has finished.
     void SendDone(int rv);
 
-    std::unique_ptr<DatagramClientSocket> send_socket_;
-    std::unique_ptr<DatagramServerSocket> recv_socket_;
+    std::unique_ptr<DatagramServerSocket> socket_;
     MDnsConnection* connection_;
     IPEndPoint recv_addr_;
     DnsResponse response_;
