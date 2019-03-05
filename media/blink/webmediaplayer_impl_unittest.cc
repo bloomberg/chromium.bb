@@ -594,7 +594,7 @@ class WebMediaPlayerImplTest : public testing::Test {
         blink::WebString::FromUTF8("Content-Length"),
         blink::WebString::FromUTF8(base::NumberToString(data->data_size())));
     response.SetExpectedContentLength(data->data_size());
-    response.SetHTTPStatusCode(200);
+    response.SetHttpStatusCode(200);
     client->DidReceiveResponse(response);
 
     // Copy over the file data and indicate that's everything.

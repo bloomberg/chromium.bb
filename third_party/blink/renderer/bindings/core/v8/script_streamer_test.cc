@@ -64,7 +64,7 @@ class ScriptStreamingTest : public testing::Test {
     Platform::Current()->GetURLLoaderMockFactory()->UnregisterURL(url);
 
     ResourceResponse response(url);
-    response.SetHTTPStatusCode(200);
+    response.SetHttpStatusCode(200);
     GetResource()->SetResponse(response);
   }
 

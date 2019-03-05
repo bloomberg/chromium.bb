@@ -188,7 +188,7 @@ TEST_F(ResourceLoaderTest, ResponseType) {
     ResourceLoader* loader = resource->Loader();
 
     ResourceResponse response(test.url);
-    response.SetHTTPStatusCode(200);
+    response.SetHttpStatusCode(200);
     response.SetType(test.original_response_type);
     response.SetWasFetchedViaServiceWorker(test.from == From::kServiceWorker);
     if (test.allowed_origin) {
@@ -218,7 +218,7 @@ TEST_F(ResourceLoaderTest, LoadResponseBody) {
   ResourceLoader* loader = resource->Loader();
 
   ResourceResponse response(url);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
 
   mojo::ScopedDataPipeProducerHandle producer;
   mojo::ScopedDataPipeConsumerHandle consumer;
@@ -569,14 +569,14 @@ class ResourceLoaderIsolatedCodeCacheTest : public ResourceLoaderTest {
 
 TEST_F(ResourceLoaderIsolatedCodeCacheTest, ResponseFromNetwork) {
   ResourceResponse response(foo_url_);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   EXPECT_EQ(true, LoadAndCheckIsolatedCodeCache(response));
 }
 
 TEST_F(ResourceLoaderIsolatedCodeCacheTest,
        SyntheticResponseFromServiceWorker) {
   ResourceResponse response(foo_url_);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   response.SetWasFetchedViaServiceWorker(true);
   EXPECT_EQ(false, LoadAndCheckIsolatedCodeCache(response));
 }
@@ -584,7 +584,7 @@ TEST_F(ResourceLoaderIsolatedCodeCacheTest,
 TEST_F(ResourceLoaderIsolatedCodeCacheTest,
        PassThroughResponseFromServiceWorker) {
   ResourceResponse response(foo_url_);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   response.SetWasFetchedViaServiceWorker(true);
   response.SetURLListViaServiceWorker(Vector<KURL>(1, foo_url_));
   EXPECT_EQ(true, LoadAndCheckIsolatedCodeCache(response));
@@ -593,7 +593,7 @@ TEST_F(ResourceLoaderIsolatedCodeCacheTest,
 TEST_F(ResourceLoaderIsolatedCodeCacheTest,
        DifferentUrlResponseFromServiceWorker) {
   ResourceResponse response(foo_url_);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   response.SetWasFetchedViaServiceWorker(true);
   response.SetURLListViaServiceWorker(Vector<KURL>(1, bar_url_));
   EXPECT_EQ(false, LoadAndCheckIsolatedCodeCache(response));
@@ -601,7 +601,7 @@ TEST_F(ResourceLoaderIsolatedCodeCacheTest,
 
 TEST_F(ResourceLoaderIsolatedCodeCacheTest, CacheResponseFromServiceWorker) {
   ResourceResponse response(foo_url_);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   response.SetWasFetchedViaServiceWorker(true);
   response.SetCacheStorageCacheName("dummy");
   // The browser does support code cache for cache_storage Responses, but they

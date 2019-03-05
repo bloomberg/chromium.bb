@@ -246,7 +246,7 @@ class SubresourceIntegrityTest : public testing::Test {
     request.SetFetchRequestMode(request_mode);
 
     ResourceResponse response(url);
-    response.SetHTTPStatusCode(200);
+    response.SetHttpStatusCode(200);
     response.SetType(response_type);
 
     resource->SetResourceRequest(request);

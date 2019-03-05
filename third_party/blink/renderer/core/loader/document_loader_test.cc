@@ -99,7 +99,7 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
     bool FillNavigationParamsResponse(WebNavigationParams* params) override {
       params->response = WebURLResponse(params->url);
       params->response.SetMIMEType("text/html");
-      params->response.SetHTTPStatusCode(200);
+      params->response.SetHttpStatusCode(200);
 
       std::string data("<html><body>foo</body></html>");
       for (size_t i = 0; i < data.size(); i++)
@@ -216,7 +216,7 @@ TEST_F(DocumentLoaderTest, MixedContentOptOutSetIfHeaderReceived) {
   WebURL url =
       url_test_helpers::ToKURL("https://examplenoupgrade.com/foo.html");
   WebURLResponse response(url);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   response.SetHTTPHeaderField("mixed-content", "noupgrade");
   url_test_helpers::RegisterMockedURLLoadWithCustomResponse(
       url, test::CoreTestDataPath("foo.html"), response);

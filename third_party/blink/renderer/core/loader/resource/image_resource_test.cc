@@ -187,7 +187,7 @@ void ReceiveResponse(ImageResource* image_resource,
                      size_t data_size) {
   ResourceResponse resource_response(url);
   resource_response.SetMimeType(mime_type);
-  resource_response.SetHTTPStatusCode(200);
+  resource_response.SetHttpStatusCode(200);
   image_resource->NotifyStartLoad();
   image_resource->ResponseReceived(resource_response);
   image_resource->AppendData(data, data_size);
@@ -277,7 +277,7 @@ void TestThatIsPlaceholderRequestAndServeResponse(
   resource_response.SetMimeType("image/jpeg");
   resource_response.SetExpectedContentLength(
       kJpegImageSubrangeWithDimensionsLength);
-  resource_response.SetHTTPStatusCode(206);
+  resource_response.SetHttpStatusCode(206);
   resource_response.SetHTTPHeaderField(
       "content-range", BuildContentRange(kJpegImageSubrangeWithDimensionsLength,
                                          sizeof(kJpegImage)));
@@ -1067,7 +1067,7 @@ TEST(ImageResourceTest, SuccessfulRevalidationJpeg) {
 
   image_resource->SetRevalidatingRequest(ResourceRequest(url));
   ResourceResponse resource_response(url);
-  resource_response.SetHTTPStatusCode(304);
+  resource_response.SetHttpStatusCode(304);
 
   image_resource->ResponseReceived(resource_response);
 
@@ -1102,7 +1102,7 @@ TEST(ImageResourceTest, SuccessfulRevalidationSvg) {
 
   image_resource->SetRevalidatingRequest(ResourceRequest(url));
   ResourceResponse resource_response(url);
-  resource_response.SetHTTPStatusCode(304);
+  resource_response.SetHttpStatusCode(304);
   image_resource->ResponseReceived(resource_response);
 
   EXPECT_FALSE(image_resource->ErrorOccurred());
@@ -1358,7 +1358,7 @@ TEST(ImageResourceTest, PartialContentWithoutDimensions) {
   partial_response.SetMimeType("image/jpeg");
   partial_response.SetExpectedContentLength(
       kJpegImageSubrangeWithoutDimensionsLength);
-  partial_response.SetHTTPStatusCode(206);
+  partial_response.SetHttpStatusCode(206);
   partial_response.SetHTTPHeaderField(
       "content-range",
       BuildContentRange(kJpegImageSubrangeWithoutDimensionsLength,
@@ -1483,7 +1483,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
   ResourceResponse bad_response(test_url);
   bad_response.SetMimeType("image/jpeg");
   bad_response.SetExpectedContentLength(sizeof(kBadData));
-  bad_response.SetHTTPStatusCode(206);
+  bad_response.SetHttpStatusCode(206);
   bad_response.SetHTTPHeaderField(
       "content-range", BuildContentRange(sizeof(kBadData), sizeof(kJpegImage)));
 
@@ -1527,7 +1527,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessfulClientLoFi) {
   ResourceResponse bad_response(test_url);
   bad_response.SetMimeType("image/jpeg");
   bad_response.SetExpectedContentLength(sizeof(kBadData));
-  bad_response.SetHTTPStatusCode(206);
+  bad_response.SetHttpStatusCode(206);
   bad_response.SetHTTPHeaderField(
       "content-range", BuildContentRange(sizeof(kBadData), sizeof(kJpegImage)));
 
@@ -1591,7 +1591,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderPartialContentWithoutDimensions) {
     partial_response.SetMimeType("image/jpeg");
     partial_response.SetExpectedContentLength(
         kJpegImageSubrangeWithoutDimensionsLength);
-    partial_response.SetHTTPStatusCode(206);
+    partial_response.SetHttpStatusCode(206);
     partial_response.SetHTTPHeaderField(
         "content-range",
         BuildContentRange(kJpegImageSubrangeWithoutDimensionsLength,
@@ -1741,7 +1741,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderFullResponseDecodeSuccess) {
     ResourceResponse resource_response(test_url);
     resource_response.SetMimeType("imapge/jpeg");
     resource_response.SetExpectedContentLength(sizeof(kJpegImage));
-    resource_response.SetHTTPStatusCode(test.status_code);
+    resource_response.SetHttpStatusCode(test.status_code);
     if (test.content_range != g_null_atom)
       resource_response.SetHTTPHeaderField("content-range", test.content_range);
     image_resource->Loader()->DidReceiveResponse(
@@ -1802,7 +1802,7 @@ TEST(ImageResourceTest,
     ResourceResponse resource_response(test_url);
     resource_response.SetMimeType("image/jpeg");
     resource_response.SetExpectedContentLength(test.data_size);
-    resource_response.SetHTTPStatusCode(test.status_code);
+    resource_response.SetHttpStatusCode(test.status_code);
     if (test.content_range != g_null_atom)
       resource_response.SetHTTPHeaderField("content-range", test.content_range);
     image_resource->Loader()->DidReceiveResponse(
@@ -1838,7 +1838,7 @@ TEST(ImageResourceTest,
     ResourceResponse resource_response(test_url);
     resource_response.SetMimeType("image/jpeg");
     resource_response.SetExpectedContentLength(sizeof(kBadImageData));
-    resource_response.SetHTTPStatusCode(status_code);
+    resource_response.SetHttpStatusCode(status_code);
     image_resource->Loader()->DidReceiveResponse(
         WrappedResourceResponse(resource_response));
     image_resource->Loader()->DidReceiveData(kBadImageData,

@@ -1385,7 +1385,7 @@ TEST_F(MultibufferDataSourceTest, Http_RetryThenRedirect) {
   // Server responds with a redirect.
   blink::WebURL url{GURL(kHttpDifferentPathUrl)};
   blink::WebURLResponse response((GURL(kHttpUrl)));
-  response.SetHTTPStatusCode(307);
+  response.SetHttpStatusCode(307);
   data_provider()->WillFollowRedirect(url, response);
   Respond(response_generator_->Generate206(kDataSize));
   ReceiveData(kDataSize);
@@ -1401,7 +1401,7 @@ TEST_F(MultibufferDataSourceTest, Http_NotStreamingAfterRedirect) {
   // Server responds with a redirect.
   blink::WebURL url{GURL(kHttpDifferentPathUrl)};
   blink::WebURLResponse response((GURL(kHttpUrl)));
-  response.SetHTTPStatusCode(307);
+  response.SetHttpStatusCode(307);
   data_provider()->WillFollowRedirect(url, response);
 
   EXPECT_CALL(host_, SetTotalBytes(response_generator_->content_length()));
@@ -1423,7 +1423,7 @@ TEST_F(MultibufferDataSourceTest, Http_RangeNotSatisfiableAfterRedirect) {
   // Server responds with a redirect.
   blink::WebURL url{GURL(kHttpDifferentPathUrl)};
   blink::WebURLResponse response((GURL(kHttpUrl)));
-  response.SetHTTPStatusCode(307);
+  response.SetHttpStatusCode(307);
   data_provider()->WillFollowRedirect(url, response);
 
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize));
@@ -1437,7 +1437,7 @@ TEST_F(MultibufferDataSourceTest, Http_404AfterRedirect) {
   // Server responds with a redirect.
   blink::WebURL url{GURL(kHttpDifferentPathUrl)};
   blink::WebURLResponse response((GURL(kHttpUrl)));
-  response.SetHTTPStatusCode(307);
+  response.SetHttpStatusCode(307);
   data_provider()->WillFollowRedirect(url, response);
 
   Respond(response_generator_->Generate404());
@@ -1475,7 +1475,7 @@ TEST_F(MultibufferDataSourceTest, FileSizeLessThanBlockSize) {
   Initialize(kHttpUrl, true);
   GURL gurl(kHttpUrl);
   blink::WebURLResponse response(gurl);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   response.SetHTTPHeaderField(
       WebString::FromUTF8("Content-Length"),
       WebString::FromUTF8(base::NumberToString(kDataSize / 2)));

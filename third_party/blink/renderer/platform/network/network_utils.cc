@@ -87,7 +87,7 @@ ParseDataURLAndPopulateResponse(const KURL& url, bool verify_mime_type) {
 
   auto buffer = SharedBuffer::Create(data_string.data(), data_string.size());
   ResourceResponse response;
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   response.SetHTTPStatusText("OK");
   response.SetCurrentRequestUrl(url);
   response.SetMimeType(WebString::FromUTF8(utf8_mime_type));
