@@ -169,6 +169,11 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   void SetDevToolsAttached(bool attached);
   bool devtools_attached() const { return devtools_attached_; }
 
+  // Ensures that the UMA for how long this worker ran for, normally emitted
+  // when the worker stops, is not emitted. Takes effect only for the current
+  // running session, and has no effect if the worker is not currently running.
+  void AbortLifetimeTracking();
+
   bool network_accessed_for_script() const {
     return network_accessed_for_script_;
   }
@@ -226,6 +231,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
 
  private:
   typedef base::ObserverList<Listener>::Unchecked ListenerList;
+  class ScopedLifetimeTracker;
   class StartTask;
   class WorkerProcessHandle;
   friend class EmbeddedWorkerRegistry;
@@ -343,6 +349,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   std::unique_ptr<DevToolsProxy> devtools_proxy_;
 
   std::unique_ptr<StartTask> inflight_start_task_;
+  std::unique_ptr<ScopedLifetimeTracker> lifetime_tracker_;
 
   // This is valid only after a process is allocated for the worker.
   ServiceWorkerMetrics::StartSituation start_situation_ =
