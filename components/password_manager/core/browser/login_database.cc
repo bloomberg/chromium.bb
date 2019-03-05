@@ -1073,19 +1073,20 @@ bool LoginDatabase::RemoveLogin(const PasswordForm& form,
 
 bool LoginDatabase::RemoveLoginByPrimaryKey(int primary_key,
                                             PasswordStoreChangeList* changes) {
-  PrimaryKeyToFormMap key_to_form_map;
+  PasswordForm form;
   if (changes) {
     changes->clear();
     sql::Statement s1(db_.GetCachedStatement(
         SQL_FROM_HERE, "SELECT * FROM logins WHERE id = ?"));
     s1.BindInt(0, primary_key);
-    // TODO(mamir): StatementToForms() fails if the password field couldn't be
-    // decrypted. However, this is not relevant for RemoveLoginByPrimaryKey(),
-    // and hence it shouldn't be used here.
-    if (StatementToForms(&s1, nullptr, &key_to_form_map) !=
-        FormRetrievalResult::kSuccess) {
+    if (!s1.Step()) {
       return false;
     }
+    int db_primary_key = -1;
+    EncryptionResult result = InitPasswordFormFromStatement(
+        s1, /*decrypt_and_fill_password_value=*/false, &db_primary_key, &form);
+    DCHECK_EQ(result, ENCRYPTION_RESULT_SUCCESS);
+    DCHECK_EQ(db_primary_key, primary_key);
   }
 
 #if defined(OS_IOS)
@@ -1099,8 +1100,8 @@ bool LoginDatabase::RemoveLoginByPrimaryKey(int primary_key,
     return false;
   }
   if (changes) {
-    changes->emplace_back(PasswordStoreChange::REMOVE,
-                          *key_to_form_map[primary_key], primary_key);
+    changes->emplace_back(PasswordStoreChange::REMOVE, std::move(form),
+                          primary_key);
   }
   return true;
 }
@@ -1211,17 +1212,20 @@ bool LoginDatabase::DisableAutoSignInForOrigin(const GURL& origin) {
 
 LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
     const sql::Statement& s,
+    bool decrypt_and_fill_password_value,
     int* primary_key,
     PasswordForm* form) const {
   std::string encrypted_password;
   s.ColumnBlobAsString(COLUMN_PASSWORD_VALUE, &encrypted_password);
   base::string16 decrypted_password;
-  EncryptionResult encryption_result =
-      DecryptedString(encrypted_password, &decrypted_password);
-  if (encryption_result != ENCRYPTION_RESULT_SUCCESS) {
-    VLOG(0) << "Password decryption failed, encryption_result is "
-            << encryption_result;
-    return encryption_result;
+  if (decrypt_and_fill_password_value) {
+    EncryptionResult encryption_result =
+        DecryptedString(encrypted_password, &decrypted_password);
+    if (encryption_result != ENCRYPTION_RESULT_SUCCESS) {
+      VLOG(0) << "Password decryption failed, encryption_result is "
+              << encryption_result;
+      return encryption_result;
+    }
   }
 
   *primary_key = s.ColumnInt(COLUMN_ID);
@@ -1744,8 +1748,9 @@ FormRetrievalResult LoginDatabase::StatementToForms(
   while (statement->Step()) {
     auto new_form = std::make_unique<PasswordForm>();
     int primary_key = -1;
-    EncryptionResult result =
-        InitPasswordFormFromStatement(*statement, &primary_key, new_form.get());
+    EncryptionResult result = InitPasswordFormFromStatement(
+        *statement, /*decrypt_and_fill_password_value=*/true, &primary_key,
+        new_form.get());
     if (result == ENCRYPTION_RESULT_SERVICE_FAILURE)
       return FormRetrievalResult::kEncrytionServiceFailure;
     if (result == ENCRYPTION_RESULT_ITEM_FAILURE) {
