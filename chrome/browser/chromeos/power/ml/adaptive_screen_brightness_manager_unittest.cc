@@ -618,7 +618,8 @@ TEST_F(AdaptiveScreenBrightnessManagerTest, UserEventCounts) {
   EXPECT_EQ(4, features.activity_data().num_recent_stylus_events());
 }
 
-TEST_F(AdaptiveScreenBrightnessManagerTest, SingleBrowser) {
+// Test is flaky. See https://crbug.com/938055.
+TEST_F(AdaptiveScreenBrightnessManagerTest, DISABLED_SingleBrowser) {
   std::unique_ptr<Browser> browser =
       CreateTestBrowser(true /* is_visible */, true /* is_focused */);
   BrowserList::GetInstance()->SetLastActive(browser.get());
