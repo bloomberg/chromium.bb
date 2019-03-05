@@ -831,8 +831,8 @@ public class ToolbarManager
     }
 
     private void showMenuIPHTextBubble(ChromeActivity activity, Tracker tracker, String featureName,
-            @StringRes int stringId, @StringRes int accessibilityStringId,
-            Integer highlightItemId) {
+            @StringRes int stringId, @StringRes int accessibilityStringId, Integer highlightItemId,
+            boolean circleHighlight) {
         ViewRectProvider rectProvider = new ViewRectProvider(getMenuButton());
         int yInsetPx = mActivity.getResources().getDimensionPixelOffset(
                 R.dimen.text_bubble_menu_anchor_y_inset);
@@ -843,10 +843,10 @@ public class ToolbarManager
         mTextBubble.addOnDismissListener(() -> {
             mHandler.postDelayed(() -> {
                 tracker.dismissed(featureName);
-                activity.getAppMenuHandler().setMenuHighlight(null);
+                activity.getAppMenuHandler().clearMenuHighlight();
             }, ViewHighlighter.IPH_MIN_DELAY_BETWEEN_TWO_HIGHLIGHTS);
         });
-        activity.getAppMenuHandler().setMenuHighlight(highlightItemId);
+        activity.getAppMenuHandler().setMenuHighlight(highlightItemId, circleHighlight);
         mTextBubble.show();
     }
 
@@ -871,7 +871,7 @@ public class ToolbarManager
         showMenuIPHTextBubble(activity, tracker, featureName,
                 R.string.iph_download_page_for_offline_usage_text,
                 R.string.iph_download_page_for_offline_usage_accessibility_text,
-                R.id.offline_page_id);
+                R.id.offline_page_id, true);
 
         // Record metrics if we show Download IPH after a screenshot of the page.
         ChromeTabbedActivity chromeActivity = ((ChromeTabbedActivity) activity);
@@ -901,7 +901,7 @@ public class ToolbarManager
 
         showMenuIPHTextBubble(activity, tracker, featureName,
                 R.string.iph_translate_menu_button_text,
-                R.string.iph_translate_menu_button_accessibility_text, R.id.translate_id);
+                R.string.iph_translate_menu_button_accessibility_text, R.id.translate_id, false);
     }
 
     /**
