@@ -26,6 +26,8 @@
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pb.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 
+using TrackEvent = perfetto::protos::TrackEvent;
+
 namespace tracing {
 
 namespace {
@@ -164,9 +166,7 @@ class DummyTraceWriter : public perfetto::TraceWriter {
     return perfetto::WriterID(0);
   }
 
-  uint64_t written() const override {
-    return 0u;
-  }
+  uint64_t written() const override { return 0u; }
 
  private:
   perfetto::protos::pbzero::TracePacket trace_packet_;
@@ -190,9 +190,7 @@ class MockTraceWriter : public perfetto::TraceWriter {
     return perfetto::WriterID(0);
   }
 
-  uint64_t written() const override {
-    return 0u;
-  }
+  uint64_t written() const override { return 0u; }
 
  private:
   MockProducerClient* producer_client_;
@@ -214,9 +212,7 @@ std::unique_ptr<perfetto::TraceWriter> MockProducerClient::CreateTraceWriter(
 
 class TraceEventDataSourceTest : public testing::Test {
  public:
-  void SetUp() override {
-    ProducerClient::ResetTaskRunnerForTesting();
-  }
+  void SetUp() override { ProducerClient::ResetTaskRunnerForTesting(); }
 
   void TearDown() override {
     if (base::trace_event::TraceLog::GetInstance()->IsEnabled()) {
@@ -693,16 +689,84 @@ class TraceEventDataSourceNewProtosTest : public TraceEventDataSourceTest {
     EXPECT_EQ(packet->track_event().category_iids_size(), 1);
     EXPECT_EQ(packet->track_event().category_iids(0), category_iid);
     EXPECT_TRUE(packet->track_event().has_legacy_event());
-    EXPECT_EQ(packet->track_event().legacy_event().name_iid(), name_iid);
-    EXPECT_EQ(packet->track_event().legacy_event().phase(), phase);
-    EXPECT_EQ(packet->track_event().legacy_event().flags(), flags);
-    EXPECT_EQ(packet->track_event().legacy_event().id(), id);
-    EXPECT_EQ(packet->track_event().legacy_event().duration(), duration);
 
-    EXPECT_EQ(packet->track_event().legacy_event().tid_override(),
-              tid_override);
-    EXPECT_EQ(packet->track_event().legacy_event().pid_override(),
-              pid_override);
+    const auto& legacy_event = packet->track_event().legacy_event();
+    EXPECT_EQ(legacy_event.name_iid(), name_iid);
+    EXPECT_EQ(legacy_event.phase(), phase);
+    EXPECT_EQ(legacy_event.duration(), duration);
+
+    if (phase == TRACE_EVENT_PHASE_INSTANT) {
+      switch (flags & TRACE_EVENT_FLAG_SCOPE_MASK) {
+        case TRACE_EVENT_SCOPE_GLOBAL:
+          EXPECT_EQ(legacy_event.instant_event_scope(),
+                    TrackEvent::LegacyEvent::SCOPE_GLOBAL);
+          break;
+
+        case TRACE_EVENT_SCOPE_PROCESS:
+          EXPECT_EQ(legacy_event.instant_event_scope(),
+                    TrackEvent::LegacyEvent::SCOPE_PROCESS);
+          break;
+
+        case TRACE_EVENT_SCOPE_THREAD:
+          EXPECT_EQ(legacy_event.instant_event_scope(),
+                    TrackEvent::LegacyEvent::SCOPE_THREAD);
+          break;
+      }
+    } else {
+      EXPECT_EQ(legacy_event.instant_event_scope(),
+                TrackEvent::LegacyEvent::SCOPE_UNSPECIFIED);
+    }
+
+    switch (flags & (TRACE_EVENT_FLAG_HAS_ID | TRACE_EVENT_FLAG_HAS_LOCAL_ID |
+                     TRACE_EVENT_FLAG_HAS_GLOBAL_ID)) {
+      case TRACE_EVENT_FLAG_HAS_ID:
+        EXPECT_EQ(legacy_event.id(), id);
+        EXPECT_EQ(legacy_event.local_id(), 0u);
+        EXPECT_EQ(legacy_event.global_id(), 0u);
+        break;
+      case TRACE_EVENT_FLAG_HAS_LOCAL_ID:
+        EXPECT_EQ(legacy_event.id(), 0u);
+        EXPECT_EQ(legacy_event.local_id(), id);
+        EXPECT_EQ(legacy_event.global_id(), 0u);
+        break;
+      case TRACE_EVENT_FLAG_HAS_GLOBAL_ID:
+        EXPECT_EQ(legacy_event.id(), 0u);
+        EXPECT_EQ(legacy_event.local_id(), 0u);
+        EXPECT_EQ(legacy_event.global_id(), id);
+        break;
+      default:
+        EXPECT_EQ(legacy_event.id(), 0u);
+        EXPECT_EQ(legacy_event.local_id(), 0u);
+        EXPECT_EQ(legacy_event.global_id(), 0u);
+        break;
+    }
+
+    EXPECT_EQ(legacy_event.use_async_tts(), flags & TRACE_EVENT_FLAG_ASYNC_TTS);
+
+    switch (flags & (TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_FLOW_IN)) {
+      case TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_FLOW_IN:
+        EXPECT_EQ(legacy_event.flow_direction(),
+                  TrackEvent::LegacyEvent::FLOW_INOUT);
+        break;
+      case TRACE_EVENT_FLAG_FLOW_OUT:
+        EXPECT_EQ(legacy_event.flow_direction(),
+                  TrackEvent::LegacyEvent::FLOW_OUT);
+        break;
+      case TRACE_EVENT_FLAG_FLOW_IN:
+        EXPECT_EQ(legacy_event.flow_direction(),
+                  TrackEvent::LegacyEvent::FLOW_IN);
+        break;
+      default:
+        EXPECT_EQ(legacy_event.flow_direction(),
+                  TrackEvent::LegacyEvent::FLOW_UNSPECIFIED);
+        break;
+    }
+
+    EXPECT_EQ(legacy_event.bind_to_enclosing(),
+              flags & TRACE_EVENT_FLAG_BIND_TO_ENCLOSING);
+
+    EXPECT_EQ(legacy_event.tid_override(), tid_override);
+    EXPECT_EQ(legacy_event.pid_override(), pid_override);
   }
 
   void ExpectEventCategories(
