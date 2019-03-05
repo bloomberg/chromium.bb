@@ -12,9 +12,12 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/common/favicon_url.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/native_theme/native_theme.h"
+#include "ui/resources/grit/ui_resources.h"
 
 namespace favicon {
 
@@ -88,6 +91,15 @@ gfx::Image TabFaviconFromWebContents(content::WebContents* contents) {
   }
 
   return favicon;
+}
+
+gfx::Image GetDefaultFavicon() {
+  const ui::NativeTheme* native_theme =
+      ui::NativeTheme::GetInstanceForNativeUi();
+  bool is_dark = native_theme && native_theme->SystemDarkModeEnabled();
+  int resource_id = is_dark ? IDR_DEFAULT_FAVICON_DARK : IDR_DEFAULT_FAVICON;
+  return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      resource_id);
 }
 
 }  // namespace favicon
