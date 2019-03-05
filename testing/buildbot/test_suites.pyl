@@ -351,12 +351,6 @@
       'exo_unittests': {},
     },
 
-    'check_gn_headers_script': {
-      'check_gn_headers': {
-        'script': 'check_gn_headers.py',
-      }
-    },
-
     'check_network_annotations_script': {
       'check_network_annotations': {
         'script': 'check_network_annotations.py',

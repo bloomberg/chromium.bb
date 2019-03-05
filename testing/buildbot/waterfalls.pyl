@@ -806,7 +806,6 @@
       'ToTLinux': {
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
-          'scripts': 'check_gn_headers_script',
         },
       },
       'ToTLinux (dbg)': {
@@ -837,7 +836,6 @@
       'ToTLinuxOfficial': {
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
-          'scripts': 'check_gn_headers_script',
         },
       },
       'ToTLinuxTSan': {
