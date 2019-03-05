@@ -2764,3 +2764,42 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DialogsAllowedInFullscreenWithinTabMode) {
   browser_as_dialog_delegate->SetWebContentsBlocked(tab, false);
   tab->DecrementCapturerCount();
 }
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, CountIncognitoWindows) {
+  DCHECK_EQ(0, BrowserList::GetIncognitoSessionsActiveForProfile(
+                   browser()->profile()));
+
+  // Create an incognito browser and check the count.
+  Browser* browser1 = CreateIncognitoBrowser(browser()->profile());
+  DCHECK_EQ(1, BrowserList::GetIncognitoSessionsActiveForProfile(
+                   browser()->profile()));
+
+  // Create another incognito browser and check the count.
+  Browser* browser2 = CreateIncognitoBrowser(browser()->profile());
+  DCHECK_EQ(2, BrowserList::GetIncognitoSessionsActiveForProfile(
+                   browser()->profile()));
+
+  // Open a docked DevTool window and count.
+  DevToolsWindow* devtools_window =
+      DevToolsWindowTesting::OpenDevToolsWindowSync(browser1, true);
+  DCHECK_EQ(2, BrowserList::GetIncognitoSessionsActiveForProfile(
+                   browser()->profile()));
+  DevToolsWindowTesting::CloseDevToolsWindowSync(devtools_window);
+
+  // Open a detached DevTool window and count.
+  devtools_window =
+      DevToolsWindowTesting::OpenDevToolsWindowSync(browser1, false);
+  DCHECK_EQ(2, BrowserList::GetIncognitoSessionsActiveForProfile(
+                   browser()->profile()));
+  DevToolsWindowTesting::CloseDevToolsWindowSync(devtools_window);
+
+  // Close one browser and count.
+  CloseBrowserSynchronously(browser2);
+  DCHECK_EQ(1, BrowserList::GetIncognitoSessionsActiveForProfile(
+                   browser()->profile()));
+
+  // Close another browser and count.
+  CloseBrowserSynchronously(browser1);
+  DCHECK_EQ(0, BrowserList::GetIncognitoSessionsActiveForProfile(
+                   browser()->profile()));
+}

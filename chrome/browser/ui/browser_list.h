@@ -121,7 +121,8 @@ class BrowserList {
   static bool IsIncognitoSessionActive();
 
   // Returns the number of active incognito sessions for |profile| across all
-  // desktops.
+  // desktops. Note that this function does not count devtools windows opened
+  // for incognito windows.
   static int GetIncognitoSessionsActiveForProfile(Profile* profile);
 
  private:
