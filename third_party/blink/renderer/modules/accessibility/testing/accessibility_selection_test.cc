@@ -149,8 +149,15 @@ class AXSelectionSerializer final {
   }
 
   void SerializeSubtree(const AXObject& subtree) {
-    if (subtree.ChildCount() == 0)
+    if (subtree.ChildCount() == 0) {
+      // Though they are in this particular case both equivalent to an "after
+      // object" position, "Before children" and "after children" positions are
+      // still valid within empty subtrees.
+      const auto position = AXPosition::CreateFirstPositionInObject(subtree);
+      HandleSelection(position);
       return;
+    }
+
     for (const AXObject* child : subtree.Children()) {
       DCHECK(child);
       const auto position = AXPosition::CreatePositionBeforeObject(*child);
@@ -165,6 +172,8 @@ class AXSelectionSerializer final {
       }
       --tree_level_;
     }
+
+    // Handle any "after children" positions.
     HandleSelection(AXPosition::CreateLastPositionInObject(subtree));
   }
 
