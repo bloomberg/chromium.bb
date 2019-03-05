@@ -104,7 +104,6 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
 
   bool IsStorageUnlimited(const url::Origin& origin) const;
 
-  const UsageTracker* const tracker_;
   QuotaClient* client_;
   const blink::mojom::StorageType type_;
   StorageMonitor* storage_monitor_;

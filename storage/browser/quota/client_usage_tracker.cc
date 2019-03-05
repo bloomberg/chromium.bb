@@ -63,15 +63,13 @@ ClientUsageTracker::ClientUsageTracker(
     blink::mojom::StorageType type,
     SpecialStoragePolicy* special_storage_policy,
     StorageMonitor* storage_monitor)
-    : tracker_(tracker),
-      client_(client),
+    : client_(client),
       type_(type),
       storage_monitor_(storage_monitor),
       global_limited_usage_(0),
       global_unlimited_usage_(0),
       global_usage_retrieved_(false),
       special_storage_policy_(special_storage_policy) {
-  DCHECK(tracker_);
   DCHECK(client_);
   if (special_storage_policy_.get())
     special_storage_policy_->AddObserver(this);
