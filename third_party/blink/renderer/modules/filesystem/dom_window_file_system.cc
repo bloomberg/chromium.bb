@@ -199,7 +199,7 @@ ScriptPromise DOMWindowFileSystem::chooseFileSystemEntries(
     ScriptState* script_state,
     LocalDOMWindow& window,
     const ChooseFileSystemEntriesOptions* options) {
-  if (!base::FeatureList::IsEnabled(blink::features::kWritableFilesAPI)) {
+  if (!base::FeatureList::IsEnabled(blink::features::kNativeFilesystemAPI)) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kAbortError));
   }

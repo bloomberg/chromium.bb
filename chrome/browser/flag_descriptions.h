@@ -740,6 +740,9 @@ extern const char kMessageCenterNewStyleNotificationDescription[];
 extern const char kMobileIdentityConsistencyName[];
 extern const char kMobileIdentityConsistencyDescription[];
 
+extern const char kNativeFilesystemAPIName[];
+extern const char kNativeFilesystemAPIDescription[];
+
 extern const char kNewAudioRenderingMixingStrategyName[];
 extern const char kNewAudioRenderingMixingStrategyDescription[];
 
