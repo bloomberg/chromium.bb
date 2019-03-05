@@ -207,6 +207,7 @@
       'chromeos-amd64-generic-rel-goma-canary': 'cros_chrome_sdk',
       'chromeos-amd64-generic-rel-vm-tests': 'cros_chrome_sdk_headless_ozone_dcheck_always_on',
       'chromeos-kevin-rel-hw-tests': 'cros_chrome_sdk_headless_ozone',
+      'chromeos-vm-code-coverage': 'cros_chrome_sdk_headless_ozone_coverage',
 
       'Linux Builder Goma Canary': 'release_bot',
       'Linux Builder Goma Latest Client': 'release_bot',
@@ -1307,6 +1308,10 @@
 
     'cros_chrome_sdk_headless_ozone': [
       'cros_chrome_sdk', 'ozone_platform_headless',
+    ],
+
+    'cros_chrome_sdk_headless_ozone_coverage': [
+      'cros_chrome_sdk', 'ozone_platform_headless', 'use_clang_coverage',
     ],
 
     'cros_chrome_sdk_headless_ozone_cfi_thin_lto': [
