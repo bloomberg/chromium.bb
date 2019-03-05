@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_INSTALL_FINALIZER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_INSTALL_FINALIZER_H_
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -47,7 +47,10 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
   bool CanRevealAppShim() const override;
   void RevealAppShim(const web_app::AppId& app_id) override;
 
-  void SetCrxInstallerForTesting(scoped_refptr<CrxInstaller> crx_installer);
+  using CrxInstallerFactory =
+      base::RepeatingCallback<scoped_refptr<CrxInstaller>(Profile*)>;
+  void SetCrxInstallerFactoryForTesting(
+      CrxInstallerFactory crx_installer_factory);
 
  private:
   void OnExtensionInstalled(std::unique_ptr<WebApplicationInfo> web_app_info,
@@ -55,6 +58,7 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
                             const base::Optional<CrxInstallError>& error);
 
   scoped_refptr<CrxInstaller> crx_installer_;
+  CrxInstallerFactory crx_installer_factory_;
   Profile* profile_;
 
   // We need a WeakPtr because CrxInstaller is refcounted and it can run its

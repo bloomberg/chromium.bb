@@ -120,7 +120,12 @@ TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallFails) {
   auto fake_crx_installer =
       base::MakeRefCounted<BookmarkAppInstallFinalizerTest::FakeCrxInstaller>(
           profile());
-  installer.SetCrxInstallerForTesting(fake_crx_installer);
+
+  installer.SetCrxInstallerFactoryForTesting(
+      base::BindLambdaForTesting([&](Profile* profile) {
+        scoped_refptr<CrxInstaller> crx_installer = fake_crx_installer;
+        return crx_installer;
+      }));
 
   auto info = std::make_unique<WebApplicationInfo>();
   info->app_url = GURL(kWebAppUrl);
