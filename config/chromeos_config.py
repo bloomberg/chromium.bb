@@ -3213,9 +3213,9 @@ def FactoryBuilders(site_config, boards_dict, ge_build_config):
       'factory-whirlwind-6812.41.B',
       'factory-arkham-7077.113.B',
       'factory-strago-7458.B',
+      'factory-veyron-7505.B',
       'factory-glados-7657.B',
       'factory-glados-7828.B',
-      'factory-glados-7857.B',
   }
 
   for active, branch, boards in branch_builders:
