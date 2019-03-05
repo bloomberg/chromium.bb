@@ -139,8 +139,8 @@ class ViewEventTestBase : public views::WidgetDelegate, public testing::Test {
   // The content of the Window.
   views::View* content_view_;
 
-  // Thread for posting background MouseMoves.
-  std::unique_ptr<base::Thread> dnd_thread_;
+  // Thread for posting background drag events.
+  std::unique_ptr<base::Thread> drag_event_thread_;
 
   content::TestBrowserThreadBundle thread_bundle_;
 
