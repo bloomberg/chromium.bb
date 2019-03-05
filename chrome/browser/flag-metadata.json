@@ -924,8 +924,8 @@
   },
   {
     "name": "enable-bloated-renderer-detection",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "ulan" ],
+    "expiry_milestone": 75
   },
   {
     "name": "enable-block-tab-unders",
