@@ -170,17 +170,17 @@ void ViewEventTestBase::StartMessageLoopAndRunTest() {
 }
 
 void ViewEventTestBase::ScheduleMouseMoveInBackground(int x, int y) {
-  if (!dnd_thread_) {
-    dnd_thread_ = std::make_unique<base::Thread>("mouse-move-thread");
-    dnd_thread_->Start();
+  if (!drag_event_thread_) {
+    drag_event_thread_ = std::make_unique<base::Thread>("drag-event-thread");
+    drag_event_thread_->Start();
   }
-  dnd_thread_->task_runner()->PostTask(
+  drag_event_thread_->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(base::IgnoreResult(&ui_controls::SendMouseMove), x, y));
 }
 
 void ViewEventTestBase::StopBackgroundThread() {
-  dnd_thread_.reset();
+  drag_event_thread_.reset();
 }
 
 void ViewEventTestBase::RunTestMethod(base::OnceClosure task) {
