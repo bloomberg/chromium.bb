@@ -1963,10 +1963,6 @@ const char kUnifiedConsentDescription[] =
 const char kUiPartialSwapName[] = "Partial swap";
 const char kUiPartialSwapDescription[] = "Sets partial swap behavior.";
 
-const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
-const char kUseDdljsonApiDescription[] =
-    "Enables the new ddljson API to fetch Doodles for the NTP.";
-
 const char kUsePdfCompositorServiceName[] =
     "Use PDF compositor service for printing";
 const char kUsePdfCompositorServiceDescription[] =

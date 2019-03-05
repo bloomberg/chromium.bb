@@ -3072,11 +3072,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "use-ddljson-api",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "use-google-local-ntp",
     "owners": [ "ramyan" ],
     "expiry_milestone": 75
