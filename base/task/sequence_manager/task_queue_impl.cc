@@ -375,18 +375,13 @@ void TaskQueueImpl::ReloadEmptyImmediateWorkQueue() {
 }
 
 void TaskQueueImpl::TakeImmediateIncomingQueueTasks(TaskDeque* queue) {
+  AutoLock immediate_incoming_queue_lock(immediate_incoming_queue_lock_);
   DCHECK(queue->empty());
+  queue->swap(immediate_incoming_queue_);
 
-  {
-    AutoLock immediate_incoming_queue_lock(immediate_incoming_queue_lock_);
-    queue->swap(immediate_incoming_queue_);
-
-    // Since |immediate_incoming_queue| is empty, now is a good time to consider
-    // reducing it's capacity if we're wasting memory.
-    immediate_incoming_queue_.MaybeShrinkQueue();
-
-    UpdateCrossThreadQueueStateLocked();
-  }
+  // Since |immediate_incoming_queue| is empty, now is a good time to consider
+  // reducing it's capacity if we're wasting memory.
+  immediate_incoming_queue_.MaybeShrinkQueue();
 
   // Activate delayed fence if necessary. This is ideologically similar to
   // ActivateDelayedFenceIfNeeded, but due to immediate tasks being posted
@@ -405,11 +400,12 @@ void TaskQueueImpl::TakeImmediateIncomingQueueTasks(TaskDeque* queue) {
             main_thread_only().current_fence);
         main_thread_only().delayed_work_queue->InsertFenceSilently(
             main_thread_only().current_fence);
-        UpdateCrossThreadQueueState();
         break;
       }
     }
   }
+
+  UpdateCrossThreadQueueStateLocked();
 }
 
 bool TaskQueueImpl::IsEmpty() const {
@@ -686,16 +682,18 @@ void TaskQueueImpl::InsertFence(TaskQueue::InsertFencePosition position) {
   task_unblocked |=
       main_thread_only().delayed_work_queue->InsertFence(current_fence);
 
-  if (!task_unblocked && previous_fence && previous_fence < current_fence) {
+  {
     AutoLock lock(immediate_incoming_queue_lock_);
-    if (!immediate_incoming_queue_.empty() &&
-        immediate_incoming_queue_.front().enqueue_order() > previous_fence &&
-        immediate_incoming_queue_.front().enqueue_order() < current_fence) {
-      task_unblocked = true;
+    if (!task_unblocked && previous_fence && previous_fence < current_fence) {
+      if (!immediate_incoming_queue_.empty() &&
+          immediate_incoming_queue_.front().enqueue_order() > previous_fence &&
+          immediate_incoming_queue_.front().enqueue_order() < current_fence) {
+        task_unblocked = true;
+      }
     }
-  }
 
-  UpdateCrossThreadQueueState();
+    UpdateCrossThreadQueueStateLocked();
+  }
 
   if (IsQueueEnabled() && task_unblocked)
     sequence_manager_->ScheduleWork();
@@ -719,15 +717,17 @@ void TaskQueueImpl::RemoveFence() {
   bool task_unblocked = main_thread_only().immediate_work_queue->RemoveFence();
   task_unblocked |= main_thread_only().delayed_work_queue->RemoveFence();
 
-  if (!task_unblocked && previous_fence) {
+  {
     AutoLock lock(immediate_incoming_queue_lock_);
-    if (!immediate_incoming_queue_.empty() &&
-        immediate_incoming_queue_.front().enqueue_order() > previous_fence) {
-      task_unblocked = true;
+    if (!task_unblocked && previous_fence) {
+      if (!immediate_incoming_queue_.empty() &&
+          immediate_incoming_queue_.front().enqueue_order() > previous_fence) {
+        task_unblocked = true;
+      }
     }
-  }
 
-  UpdateCrossThreadQueueState();
+    UpdateCrossThreadQueueStateLocked();
+  }
 
   if (IsQueueEnabled() && task_unblocked)
     sequence_manager_->ScheduleWork();
@@ -816,10 +816,16 @@ void TaskQueueImpl::EnableOrDisableWithSelector(bool enable) {
   LazyNow lazy_now = main_thread_only().time_domain->CreateLazyNow();
   UpdateDelayedWakeUp(&lazy_now);
 
-  UpdateCrossThreadQueueState();
+  bool has_pending_immediate_work;
+
+  {
+    AutoLock lock(immediate_incoming_queue_lock_);
+    UpdateCrossThreadQueueStateLocked();
+    has_pending_immediate_work = HasPendingImmediateWorkLocked();
+  }
 
   if (enable) {
-    if (HasPendingImmediateWork() &&
+    if (has_pending_immediate_work &&
         !main_thread_only().on_next_wake_up_changed_callback.is_null()) {
       // Delayed work notification will be issued via time domain.
       main_thread_only().on_next_wake_up_changed_callback.Run(TimeTicks());
@@ -831,11 +837,6 @@ void TaskQueueImpl::EnableOrDisableWithSelector(bool enable) {
   } else {
     sequence_manager_->main_thread_only().selector.DisableQueue(this);
   }
-}
-
-void TaskQueueImpl::UpdateCrossThreadQueueState() {
-  AutoLock lock(immediate_incoming_queue_lock_);
-  UpdateCrossThreadQueueStateLocked();
 }
 
 void TaskQueueImpl::UpdateCrossThreadQueueStateLocked() {
@@ -961,6 +962,13 @@ bool TaskQueueImpl::HasPendingImmediateWork() {
   // Finally tasks on |immediate_incoming_queue| count as immediate work.
   AutoLock lock(immediate_incoming_queue_lock_);
   return !immediate_incoming_queue_.empty();
+}
+
+bool TaskQueueImpl::HasPendingImmediateWorkLocked() {
+  immediate_incoming_queue_lock_.AssertAcquired();
+  return !main_thread_only().delayed_work_queue->Empty() ||
+         !main_thread_only().immediate_work_queue->Empty() ||
+         !immediate_incoming_queue_.empty();
 }
 
 void TaskQueueImpl::SetOnTaskStartedHandler(

@@ -145,6 +145,8 @@ class BASE_EXPORT TaskQueueImpl {
   // Check for available tasks in immediate work queues.
   // Used to check if we need to generate notifications about delayed work.
   bool HasPendingImmediateWork();
+  bool HasPendingImmediateWorkLocked()
+      EXCLUSIVE_LOCKS_REQUIRED(immediate_incoming_queue_lock_);
 
   bool has_pending_high_resolution_tasks() const {
     return main_thread_only()
@@ -408,7 +410,6 @@ class BASE_EXPORT TaskQueueImpl {
   void ActivateDelayedFenceIfNeeded(TimeTicks now);
 
   // Updates state protected by immediate_incoming_queue_lock_.
-  void UpdateCrossThreadQueueState();
   void UpdateCrossThreadQueueStateLocked()
       EXCLUSIVE_LOCKS_REQUIRED(immediate_incoming_queue_lock_);
 
