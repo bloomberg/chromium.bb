@@ -52,8 +52,10 @@ IN_PROC_BROWSER_TEST_F(MediaColorTest, Yuv444pVp9) {
 }
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
+
 // This test fails on Android: http://crbug.com/938320
-#if defined(OS_ANDROID)
+// It also fails on ChromeOS https://crbug.com/938618
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
 #define MAYBE_Yuv420pH264 DISABLED_Yuv420pH264
 #else
 #define MAYBE_Yuv420pH264 Yuv420pH264
