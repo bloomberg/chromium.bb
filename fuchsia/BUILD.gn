@@ -7,6 +7,12 @@ assert(is_fuchsia)
 import("//build/config/fuchsia/fidl_library.gni")
 import("//build/util/process_version.gni")
 
+# Location where Fuchsia release archives and supporting files are placed.
+_release_artifact_root = "$root_out_dir/fuchsia_artifacts"
+
+# Location where debug symbol tarballs are placed.
+_symbol_artifact_root = "$root_out_dir/symbol_artifacts"
+
 fidl_library("web_fidl") {
   library_name = "web"
   namespace = "chromium"
@@ -48,11 +54,8 @@ if (host_os == "mac") {
   _gn_path = "//buildtools/linux64/gn"
 }
 
-# Build location where all Fuchsia archive source files are placed.
-_artifact_root = "$root_out_dir/fuchsia_artifacts"
-
 # Produces a LICENSE file for webrunner and its transitive dependencies.
-_license_path = "$_artifact_root/LICENSE"
+_license_path = "$_release_artifact_root/LICENSE"
 action("license") {
   script = "//tools/licenses.py"
   inputs = [
@@ -82,12 +85,12 @@ process_version("build_id") {
   sources = [
     "//chrome/VERSION",
   ]
-  output = "$_artifact_root/build_id.txt"
+  output = "$_release_artifact_root/build_id.txt"
   process_only = true
 }
 
 # Puts copies of files at the top level of the CIPD archive's structure.
-copy("restaged_packages") {
+copy("release_archives") {
   sources = [
     "$root_gen_dir/fuchsia/engine/chromium/chromium.far",
     "$root_gen_dir/fuchsia/http/http/http.far",
@@ -95,7 +98,7 @@ copy("restaged_packages") {
     "$root_gen_dir/fuchsia/runners/web_runner/web_runner.far",
   ]
   outputs = [
-    "$_artifact_root/{{source_file_part}}",
+    "$_release_artifact_root/{{source_file_part}}",
   ]
   deps = [
     "//fuchsia/engine:web_engine",
@@ -105,13 +108,36 @@ copy("restaged_packages") {
   ]
 }
 
+copy("symbol_tarballs") {
+  sources = [
+    "$_release_artifact_root/build_id.txt",
+    "$root_gen_dir/fuchsia/engine/chromium/chromium.symbols.tar.bz2",
+    "$root_gen_dir/fuchsia/http/http/http.symbols.tar.bz2",
+    "$root_gen_dir/fuchsia/runners/cast_runner/cast_runner.symbols.tar.bz2",
+    "$root_gen_dir/fuchsia/runners/web_runner/web_runner.symbols.tar.bz2",
+    _license_path,
+  ]
+  outputs = [
+    "$_symbol_artifact_root/{{source_file_part}}",
+  ]
+  deps = [
+    ":build_id",
+    ":license",
+    "//fuchsia/engine:symbol_archive",
+    "//fuchsia/http:symbol_archive",
+    "//fuchsia/runners:cast_runner_symbol_archive",
+    "//fuchsia/runners:web_runner_symbol_archive",
+  ]
+}
+
 # Specifies the build steps that must be performed before the creation of
 # a CIPD archive.
 group("archive_sources") {
   deps = [
     ":build_id",
     ":license",
-    ":restaged_packages",
+    ":release_archives",
+    ":symbol_tarballs",
   ]
 }
 

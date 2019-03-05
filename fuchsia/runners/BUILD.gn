@@ -5,6 +5,7 @@
 assert(is_fuchsia)
 
 import("//build/config/fuchsia/rules.gni")
+import("//build/config/fuchsia/symbol_archive.gni")
 import("//testing/test.gni")
 
 # Files common to both cast_runner and web_runner targets.
@@ -208,4 +209,22 @@ test("web_runner_integration_tests") {
       "web_runner",
     ],
   ]
+}
+
+symbol_archive("cast_runner_symbol_archive") {
+  deps = [
+    ":cast_runner_pkg",
+  ]
+  ids_txt = "$root_gen_dir/fuchsia/runners/cast_runner/ids.txt"
+  archive_name =
+      "$root_gen_dir/fuchsia/runners/cast_runner/cast_runner.symbols.tar.bz2"
+}
+
+symbol_archive("web_runner_symbol_archive") {
+  deps = [
+    ":web_runner_pkg",
+  ]
+  ids_txt = "$root_gen_dir/fuchsia/runners/web_runner/ids.txt"
+  archive_name =
+      "$root_gen_dir/fuchsia/runners/web_runner/web_runner.symbols.tar.bz2"
 }
