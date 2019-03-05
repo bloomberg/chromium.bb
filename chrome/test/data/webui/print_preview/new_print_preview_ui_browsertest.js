@@ -95,22 +95,6 @@ TEST_F(
           settings_sections_tests.TestNames.SettingsSectionsVisibilityChange);
     });
 
-TEST_F('PrintPreviewSettingsSectionsTest', 'SetLayout', function() {
-  this.runMochaTest(settings_sections_tests.TestNames.SetLayout);
-});
-
-TEST_F('PrintPreviewSettingsSectionsTest', 'SetColor', function() {
-  this.runMochaTest(settings_sections_tests.TestNames.SetColor);
-});
-
-TEST_F('PrintPreviewSettingsSectionsTest', 'SetMargins', function() {
-  this.runMochaTest(settings_sections_tests.TestNames.SetMargins);
-});
-
-TEST_F('PrintPreviewSettingsSectionsTest', 'SetPagesPerSheet', function() {
-  this.runMochaTest(settings_sections_tests.TestNames.SetPagesPerSheet);
-});
-
 TEST_F('PrintPreviewSettingsSectionsTest', 'PresetCopies', function() {
   this.runMochaTest(settings_sections_tests.TestNames.PresetCopies);
 });
@@ -128,13 +112,6 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'DuplexManaged', function() {
   this.runMochaTest(settings_sections_tests.TestNames.DuplexManaged);
 });
 GEN('#endif');
-
-TEST_F(
-    'PrintPreviewSettingsSectionsTest', 'DisableMarginsByPagesPerSheet',
-    function() {
-      this.runMochaTest(
-          settings_sections_tests.TestNames.DisableMarginsByPagesPerSheet);
-    });
 
 PrintPreviewPagesSettingsTest = class extends NewPrintPreviewTest {
   /** @override */
@@ -1359,5 +1336,85 @@ PrintPreviewOtherOptionsSettingsTest = class extends NewPrintPreviewTest {
 };
 
 TEST_F('PrintPreviewOtherOptionsSettingsTest', 'All', function() {
+  mocha.run();
+});
+
+PrintPreviewLayoutSettingsTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/layout_settings.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      'print_preview_test_utils.js',
+      'layout_settings_test.js',
+    ]);
+  }
+};
+
+TEST_F('PrintPreviewLayoutSettingsTest', 'All', function() {
+  mocha.run();
+});
+
+PrintPreviewColorSettingsTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/color_settings.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      'print_preview_test_utils.js',
+      'color_settings_test.js',
+    ]);
+  }
+};
+
+TEST_F('PrintPreviewColorSettingsTest', 'All', function() {
+  mocha.run();
+});
+
+PrintPreviewMarginsSettingsTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/margins_settings.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      'print_preview_test_utils.js',
+      'margins_settings_test.js',
+    ]);
+  }
+};
+
+TEST_F('PrintPreviewMarginsSettingsTest', 'All', function() {
+  mocha.run();
+});
+
+PrintPreviewPagesPerSheetSettingsTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/pages_per_sheet_settings.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      'print_preview_test_utils.js',
+      'pages_per_sheet_settings_test.js',
+    ]);
+  }
+};
+
+TEST_F('PrintPreviewPagesPerSheetSettingsTest', 'All', function() {
   mocha.run();
 });
