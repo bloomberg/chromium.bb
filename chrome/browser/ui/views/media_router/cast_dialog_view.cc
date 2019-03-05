@@ -440,7 +440,11 @@ base::Optional<MediaCastMode> CastDialogView::GetCastModeToUse(
 }
 
 void CastDialogView::DisableUnsupportedSinks() {
+  // Go through the AVAILABLE sinks and enable or disable them depending on
+  // whether they support the selected cast mode.
   for (CastDialogSinkButton* sink_button : sink_buttons_) {
+    if (sink_button->sink().state != UIMediaSinkState::AVAILABLE)
+      continue;
     const bool enable = GetCastModeToUse(sink_button->sink()).has_value();
     sink_button->SetEnabled(enable);
   }

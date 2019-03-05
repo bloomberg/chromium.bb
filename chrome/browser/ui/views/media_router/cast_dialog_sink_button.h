@@ -31,6 +31,8 @@ class CastDialogSinkButton : public HoverButton {
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnEnabledChanged() override;
   void RequestFocus() override;
+  void OnFocus() override;
+  void OnBlur() override;
 
   const UIMediaSink& sink() const { return sink_; }
 
