@@ -59,7 +59,7 @@ class NET_EXPORT ProxyConfigServiceAndroid : public ProxyConfigService {
   };
 
   ProxyConfigServiceAndroid(
-      const scoped_refptr<base::SequencedTaskRunner>& network_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& main_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& jni_task_runner);
 
   ~ProxyConfigServiceAndroid() override;
@@ -112,7 +112,7 @@ class NET_EXPORT ProxyConfigServiceAndroid : public ProxyConfigService {
 
   // For tests.
   ProxyConfigServiceAndroid(
-      const scoped_refptr<base::SequencedTaskRunner>& network_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& main_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& jni_task_runner,
       GetPropertyCallback get_property_callback);
 
