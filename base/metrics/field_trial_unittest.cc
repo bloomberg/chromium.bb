@@ -33,7 +33,7 @@
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-#include "base/metrics/field_trial_memory_mac.h"
+#include "base/mac/mach_port_rendezvous.h"
 #endif
 
 namespace base {
@@ -1477,16 +1477,16 @@ TEST(FieldTrialListTest, SerializeSharedMemoryRegionMetadata) {
       base::ReadOnlySharedMemoryRegion::Create(4 << 10);
   ASSERT_TRUE(shm.IsValid());
 
-#if defined(OS_MACOSX)
-  FieldTrialMemoryServer mach_server(shm.region.GetPlatformHandle());
-  ASSERT_TRUE(mach_server.Start());
-#endif
-
   std::string serialized =
       FieldTrialList::SerializeSharedMemoryRegionMetadata(shm.region);
 
   LaunchOptions options;
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  options.mach_ports_for_rendezvous.insert(
+      std::make_pair('fldt', MachRendezvousPort{shm.region.GetPlatformHandle(),
+                                                MACH_MSG_TYPE_COPY_SEND}));
+#elif defined(OS_POSIX)
 
 #if defined(OS_ANDROID)
   int shm_fd = shm.region.GetPlatformHandle();
@@ -1496,7 +1496,7 @@ TEST(FieldTrialListTest, SerializeSharedMemoryRegionMetadata) {
 
   // Pick an arbitrary FD number to use for the shmem FD in the child.
   options.fds_to_remap.emplace_back(std::make_pair(shm_fd, 42));
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
+#endif  // defined(OS_POSIX)
   CommandLine cmd_line = GetMultiProcessTestChildBaseCommandLine();
   cmd_line.AppendSwitchASCII("field_trials", serialized);
   cmd_line.AppendSwitchASCII("guid", shm.region.GetGUID().ToString());

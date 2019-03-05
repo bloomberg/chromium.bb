@@ -82,10 +82,13 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "base/mac/mach_port_rendezvous.h"
+#endif
+
 namespace base {
 
 class FieldTrialList;
-class FieldTrialMemoryServer;
 
 class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
  public:
@@ -592,7 +595,8 @@ class BASE_EXPORT FieldTrialList {
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   // On Mac, the field trial shared memory is accessed via a Mach server, which
   // the child looks up directly.
-  static FieldTrialMemoryServer* GetFieldTrialMemoryServer();
+  static void InsertFieldTrialHandleIfNeeded(
+      MachPortsForRendezvous* rendezvous_ports);
 #elif defined(OS_POSIX) && !defined(OS_NACL)
   // On POSIX, we also need to explicitly pass down this file descriptor that
   // should be shared with the child process. Returns -1 if it was not
@@ -805,12 +809,6 @@ class BASE_EXPORT FieldTrialList {
   // because it's needed from both CopyFieldTrialStateToFlags() and
   // AppendFieldTrialHandleIfNeeded().
   base::ReadOnlySharedMemoryRegion readonly_allocator_region_;
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // Mach message server that handles requests to acquire the shared memory
-  // object.
-  std::unique_ptr<FieldTrialMemoryServer> field_trial_server_;
-#endif
 
   // Tracks whether CreateTrialsFromCommandLine() has been called.
   bool create_trials_from_command_line_called_ = false;

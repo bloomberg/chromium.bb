@@ -94,7 +94,7 @@
                               (param browser-pid))))
 
 (allow mach-lookup
-  (browser-service-name "FieldTrialMemoryServer")
+  (browser-service-name "MachPortRendezvousServer")
   (browser-service-name "rohitfork")
 )
 

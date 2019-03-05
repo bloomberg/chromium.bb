@@ -26,9 +26,7 @@
 #include "base/unguessable_token.h"
 
 // On POSIX, the fd is shared using the mapping in GlobalDescriptors.
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-#include "base/metrics/field_trial_memory_mac.h"
-#elif defined(OS_POSIX) && !defined(OS_NACL)
+#if defined(OS_POSIX) && !defined(OS_NACL)
 #include "base/posix/global_descriptors.h"
 #endif
 
@@ -56,6 +54,10 @@ const char kAllocatorName[] = "FieldTrialAllocator";
 // child processes, leading to an inconsistent view between browser and child
 // processes and possibly causing crashes (see crbug.com/661617).
 const size_t kFieldTrialAllocationSize = 128 << 10;  // 128 KiB
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+constexpr MachPortsForRendezvous::key_type kFieldTrialRendezvousKey = 'fldt';
+#endif
 
 // Writes out string1 and then string2 to pickle.
 void WriteStringPair(Pickle* pickle,
@@ -868,12 +870,18 @@ void FieldTrialList::AppendFieldTrialHandleIfNeeded(
 // TODO(fuchsia): Implement shared-memory configuration (crbug.com/752368).
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 // static
-FieldTrialMemoryServer* FieldTrialList::GetFieldTrialMemoryServer() {
-  if (global_) {
-    InstantiateFieldTrialAllocatorIfNeeded();
-    return global_->field_trial_server_.get();
+void FieldTrialList::InsertFieldTrialHandleIfNeeded(
+    MachPortsForRendezvous* rendezvous_ports) {
+  if (!global_)
+    return;
+  InstantiateFieldTrialAllocatorIfNeeded();
+  if (global_->readonly_allocator_region_.IsValid()) {
+    rendezvous_ports->emplace(
+        kFieldTrialRendezvousKey,
+        MachRendezvousPort(
+            global_->readonly_allocator_region_.GetPlatformHandle(),
+            MACH_MSG_TYPE_COPY_SEND));
   }
-  return nullptr;
 }
 #elif defined(OS_POSIX) && !defined(OS_NACL)
 // static
@@ -1195,7 +1203,7 @@ std::string FieldTrialList::SerializeSharedMemoryRegionMetadata(
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   // The handle on Mac is looked up directly by the child, rather than being
   // transferred to the child over the command line.
-  ss << "0,";
+  ss << kFieldTrialRendezvousKey << ",";
 #elif !defined(OS_POSIX)
 #error Unsupported OS
 #endif
@@ -1241,9 +1249,10 @@ FieldTrialList::DeserializeSharedMemoryRegionMetadata(
   }
   win::ScopedHandle scoped_handle(handle);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
+  auto* rendezvous = MachPortRendezvousClient::GetInstance();
   mac::ScopedMachSendRight scoped_handle =
-      FieldTrialMemoryClient::AcquireMemoryObject();
-  if (scoped_handle == MACH_PORT_NULL)
+      rendezvous->TakeSendRight(field_trial_handle);
+  if (!scoped_handle.is_valid())
     return base::ReadOnlySharedMemoryRegion();
 #endif
 
@@ -1406,13 +1415,6 @@ void FieldTrialList::InstantiateFieldTrialAllocatorIfNeeded() {
 
 #if !defined(OS_NACL)
   global_->readonly_allocator_region_ = std::move(shm.region);
-#endif
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  global_->field_trial_server_ = std::make_unique<FieldTrialMemoryServer>(
-      global_->readonly_allocator_region_.GetPlatformHandle());
-  bool ok = global_->field_trial_server_->Start();
-  DCHECK(ok);
 #endif
 }
 
