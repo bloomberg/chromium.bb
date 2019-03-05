@@ -10,4 +10,3 @@
 %define PREFIX 1
 
 ; %define STACK_ALIGNMENT 4 -- Stack alignment is controlled by Chromium
-
