@@ -223,10 +223,11 @@ void VPNListNetworkEntry::UpdateFromNetworkState(const NetworkState* vpn) {
   Reset();
   disconnect_button_ = nullptr;
 
-  gfx::ImageSkia image =
-      network_icon::GetImageForVPN(vpn, network_icon::ICON_TYPE_LIST);
-  base::string16 label =
-      network_icon::GetLabelForNetwork(vpn, network_icon::ICON_TYPE_MENU_LIST);
+  network_icon::NetworkIconState vpn_icon_state(vpn);
+  gfx::ImageSkia image = network_icon::GetImageForVPN(
+      vpn_icon_state, network_icon::ICON_TYPE_LIST);
+  base::string16 label = network_icon::GetLabelForNetwork(
+      vpn_icon_state, network_icon::ICON_TYPE_MENU_LIST);
   AddIconAndLabel(image, label);
   if (vpn->IsConnectedState()) {
     owner_->SetupConnectedScrollListItem(this);

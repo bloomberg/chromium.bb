@@ -35,6 +35,9 @@ namespace chromeos {
 
 namespace {
 
+// Ignore changes to signal strength less than this value for active networks.
+const int kSignalStrengthChangeThreshold = 5;
+
 bool ConnectionStateChanged(const NetworkState* network,
                             const std::string& prev_connection_state,
                             bool prev_is_captive_portal) {
@@ -99,13 +102,16 @@ class NetworkStateHandler::ActiveNetworkState {
       : guid_(network->guid()),
         connection_state_(network->connection_state()),
         activation_state_(network->activation_state()),
-        connect_requested_(network->connect_requested()) {}
+        connect_requested_(network->connect_requested()),
+        signal_strength_(network->signal_strength()) {}
 
   bool MatchesNetworkState(const NetworkState* network) {
     return guid_ == network->guid() &&
            connection_state_ == network->connection_state() &&
            activation_state_ == network->activation_state() &&
-           connect_requested_ == network->connect_requested();
+           connect_requested_ == network->connect_requested() &&
+           (abs(signal_strength_ - network->signal_strength()) <
+            kSignalStrengthChangeThreshold);
   }
 
  private:
@@ -119,6 +125,8 @@ class NetworkStateHandler::ActiveNetworkState {
   const std::string activation_state_;
   // The connect_requested state affects 'connecting' in the UI.
   const bool connect_requested_;
+  // We care about signal strength changes to active networks.
+  const int signal_strength_;
 };
 
 const char NetworkStateHandler::kDefaultCheckPortalList[] =
@@ -1365,6 +1373,7 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
   if (request_update)
     RequestUpdateForNetwork(service_path);
 
+  bool notify_active = false;
   std::string value_str;
   value.GetAsString(&value_str);
   if (key == shill::kSignalStrengthProperty || key == shill::kWifiBSsid ||
@@ -1378,6 +1387,9 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
       return;
     // Otherwise do not trigger 'default network changed'.
     notify_default = false;
+    // Notify signal strength changes for active networks.
+    if (key == shill::kSignalStrengthProperty)
+      notify_active = true;
   }
 
   LogPropertyUpdated(network, key, value);
@@ -1385,6 +1397,8 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
     NotifyNetworkConnectionStateChanged(network);
   if (notify_default)
     NotifyDefaultNetworkChanged();
+  if (notify_active)
+    NotifyIfActiveNetworksChanged();
   NotifyNetworkPropertiesUpdated(network);
   if (sort_networks)
     SortNetworkList(true /* ensure_cellular */);
