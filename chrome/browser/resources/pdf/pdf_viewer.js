@@ -1187,6 +1187,9 @@ PDFViewer.prototype = {
           entry.createWriter(writer => {
             writer.write(
                 new Blob([result.dataToSave], {type: 'application/pdf'}));
+            // Unblock closing the window now that the user has saved
+            // successfully.
+            chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(false);
           });
         });
 
@@ -1224,6 +1227,11 @@ PDFViewer.prototype = {
     this.viewport_.rotateClockwise(3);
     this.currentController_.rotateCounterclockwise();
     this.updateAnnotationAvailable_();
+  },
+
+  setHasUnsavedChanges: function() {
+    // Warn the user if they attempt to close the window without saving.
+    chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(true);
   },
 };
 
@@ -1356,6 +1364,9 @@ class InkController extends ContentController {
       this.inkHost_ = document.createElement('viewer-ink-host');
       $('content').appendChild(this.inkHost_);
       this.inkHost_.viewport = this.viewport_;
+      this.inkHost_.addEventListener('stroke-added', e => {
+        this.viewer_.setHasUnsavedChanges();
+      });
     }
     return this.inkHost_.load(filename, data);
   }

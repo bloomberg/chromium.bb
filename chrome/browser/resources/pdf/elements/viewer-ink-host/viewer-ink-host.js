@@ -171,8 +171,10 @@ Polymer({
     this.activePointer_ = null;
     if (!this.pointerGesture_) {
       this.dispatchPointerEvent_(e);
-      // If the stroke was not cancelled, record metrics.
+      // If the stroke was not cancelled (type == pointercanel),
+      // notify about mutation and record metrics.
       if (e.type == 'pointerup') {
+        this.dispatchEvent(new CustomEvent('stroke-added'));
         if (e.pointerType == 'mouse') {
           PDFMetrics.record(PDFMetrics.UserAction.ANNOTATE_STROKE_DEVICE_MOUSE);
         } else if (e.pointerType == 'pen') {
