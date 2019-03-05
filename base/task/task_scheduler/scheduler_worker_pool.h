@@ -55,6 +55,15 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
   // Returns true if the worker pool is registered in TLS.
   bool IsBoundToCurrentThread() const;
 
+  // Updates the position of the Sequence in |sequence_and_transaction| in
+  // |shared_priority_queue| based on the Sequence's current traits.
+  void UpdateSortKey(SequenceAndTransaction sequence_and_transaction);
+
+  // Removes |sequence| from |priority_queue_|. Returns true if successful, or
+  // false if |sequence| is not currently in |priority_queue_|, such as when a
+  // worker is running a task from it.
+  bool RemoveSequence(scoped_refptr<Sequence> sequence);
+
   // Prevents new tasks from starting to run and waits for currently running
   // tasks to complete their execution. It is guaranteed that no thread will do
   // work on behalf of this SchedulerWorkerPool after this returns. It is
@@ -73,6 +82,15 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
   // the Sequence as argument after this is called.
   virtual void OnCanScheduleSequence(
       SequenceAndTransaction sequence_and_transaction) = 0;
+
+  // Returns the maximum number of non-blocked tasks that can run concurrently
+  // in this pool.
+  //
+  // TODO(fdoray): Remove this method. https://crbug.com/687264
+  virtual size_t GetMaxConcurrentNonBlockedTasksDeprecated() const = 0;
+
+  // Reports relevant metrics per implementation.
+  virtual void ReportHeartbeatMetrics() const = 0;
 
  protected:
   SchedulerWorkerPool(TrackedRef<TaskTracker> task_tracker,

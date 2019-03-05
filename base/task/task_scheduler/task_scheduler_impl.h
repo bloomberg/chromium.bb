@@ -97,22 +97,14 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler,
       const TaskTraits& traits);
 
  private:
-  // Returns the worker pool that runs Tasks with |traits|.
-  // TODO(fdoray): Move all methods used by TaskSchedulerImpl to the
-  // SchedulerWorkerPool interface and remove the SchedulerWorkerPool*Impl*
-  // accessors.
-  SchedulerWorkerPoolImpl* GetWorkerPoolImplForTraits(const TaskTraits& traits);
-  const SchedulerWorkerPoolImpl* GetWorkerPoolImplForTraits(
-      const TaskTraits& traits) const {
-    return const_cast<TaskSchedulerImpl*>(this)->GetWorkerPoolImplForTraits(
-        traits);
-  }
-
   // Returns |traits|, with priority set to TaskPriority::USER_BLOCKING if
   // |all_tasks_user_blocking_| is set.
   TaskTraits SetUserBlockingPriorityIfNeeded(const TaskTraits& traits) const;
 
   void ReportHeartbeatMetrics() const;
+
+  const SchedulerWorkerPool* GetWorkerPoolForTraits(
+      const TaskTraits& traits) const;
 
   // SchedulerWorkerPool::Delegate:
   SchedulerWorkerPool* GetWorkerPoolForTraits(

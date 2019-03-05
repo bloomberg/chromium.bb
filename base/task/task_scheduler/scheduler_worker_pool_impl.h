@@ -101,6 +101,8 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   void JoinForTesting() override;
   void ReEnqueueSequenceChangingPool(
       SequenceAndTransaction sequence_and_transaction) override;
+  size_t GetMaxConcurrentNonBlockedTasksDeprecated() const override;
+  void ReportHeartbeatMetrics() const override;
 
   const HistogramBase* num_tasks_before_detach_histogram() const {
     return num_tasks_before_detach_histogram_;
@@ -113,12 +115,6 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   const HistogramBase* num_workers_histogram() const {
     return num_workers_histogram_;
   }
-
-  // Returns the maximum number of non-blocked tasks that can run concurrently
-  // in this pool.
-  //
-  // TODO(fdoray): Remove this method. https://crbug.com/687264
-  size_t GetMaxConcurrentNonBlockedTasksDeprecated() const;
 
   // Waits until at least |n| workers are idle. Note that while workers are
   // disallowed from cleaning up during this call: tests using a custom
@@ -147,18 +143,6 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // Returns the number of workers that are idle (i.e. not running tasks).
   size_t NumberOfIdleWorkersForTesting() const;
-
-  // Records number of worker and active workers.
-  void ReportHeartbeatMetrics() const;
-
-  // Updates the position of the Sequence in |sequence_and_transaction| in
-  // |shared_priority_queue| based on the Sequence's current traits.
-  void UpdateSortKey(SequenceAndTransaction sequence_and_transaction);
-
-  // Removes |sequence| from |priority_queue_|. Returns true if successful, or
-  // false if |sequence| is not currently in |priority_queue_|, such as when a
-  // worker is running a task from it.
-  bool RemoveSequence(scoped_refptr<Sequence> sequence);
 
  private:
   class SchedulerWorkerActionExecutor;

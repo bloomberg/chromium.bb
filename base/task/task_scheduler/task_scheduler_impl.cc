@@ -208,7 +208,7 @@ int TaskSchedulerImpl::GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
   // This method does not support getting the maximum number of BEST_EFFORT
   // tasks that can run concurrently in a pool.
   DCHECK_NE(traits.priority(), TaskPriority::BEST_EFFORT);
-  return GetWorkerPoolImplForTraits(traits)
+  return GetWorkerPoolForTraits(traits)
       ->GetMaxConcurrentNonBlockedTasksDeprecated();
 }
 
@@ -284,7 +284,7 @@ bool TaskSchedulerImpl::PostTaskWithSequence(Task task,
 
 bool TaskSchedulerImpl::IsRunningPoolWithTraits(
     const TaskTraits& traits) const {
-  return GetWorkerPoolImplForTraits(traits)->IsBoundToCurrentThread();
+  return GetWorkerPoolForTraits(traits)->IsBoundToCurrentThread();
 }
 
 void TaskSchedulerImpl::UpdatePriority(scoped_refptr<Sequence> sequence,
@@ -292,11 +292,11 @@ void TaskSchedulerImpl::UpdatePriority(scoped_refptr<Sequence> sequence,
   auto sequence_and_transaction =
       SequenceAndTransaction::FromSequence(std::move(sequence));
 
-  SchedulerWorkerPoolImpl* const current_worker_pool =
-      GetWorkerPoolImplForTraits(sequence_and_transaction.transaction.traits());
+  SchedulerWorkerPool* const current_worker_pool =
+      GetWorkerPoolForTraits(sequence_and_transaction.transaction.traits());
   sequence_and_transaction.transaction.UpdatePriority(priority);
-  SchedulerWorkerPoolImpl* const new_worker_pool =
-      GetWorkerPoolImplForTraits(sequence_and_transaction.transaction.traits());
+  SchedulerWorkerPool* const new_worker_pool =
+      GetWorkerPoolForTraits(sequence_and_transaction.transaction.traits());
 
   if (new_worker_pool == current_worker_pool) {
     // |sequence|'s position needs to be updated within its current pool.
@@ -314,18 +314,18 @@ void TaskSchedulerImpl::UpdatePriority(scoped_refptr<Sequence> sequence,
   }
 }
 
-SchedulerWorkerPoolImpl* TaskSchedulerImpl::GetWorkerPoolImplForTraits(
+const SchedulerWorkerPool* TaskSchedulerImpl::GetWorkerPoolForTraits(
+    const TaskTraits& traits) const {
+  return const_cast<TaskSchedulerImpl*>(this)->GetWorkerPoolForTraits(traits);
+}
+
+SchedulerWorkerPool* TaskSchedulerImpl::GetWorkerPoolForTraits(
     const TaskTraits& traits) {
   if (traits.priority() == TaskPriority::BEST_EFFORT &&
       background_pool_.has_value()) {
     return &background_pool_.value();
   }
   return &foreground_pool_.value();
-}
-
-SchedulerWorkerPool* TaskSchedulerImpl::GetWorkerPoolForTraits(
-    const TaskTraits& traits) {
-  return GetWorkerPoolImplForTraits(traits);
 }
 
 TaskTraits TaskSchedulerImpl::SetUserBlockingPriorityIfNeeded(

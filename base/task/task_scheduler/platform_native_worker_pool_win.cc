@@ -4,8 +4,10 @@
 
 #include "base/task/task_scheduler/platform_native_worker_pool_win.h"
 
+#include <algorithm>
 #include <utility>
 
+#include "base/system/sys_info.h"
 #include "base/task/task_scheduler/task_tracker.h"
 
 namespace base {
@@ -119,6 +121,21 @@ void PlatformNativeWorkerPoolWin::OnCanScheduleSequence(
   // TODO(fdoray): Handle priorities by having different work objects and using
   // SetThreadpoolCallbackPriority() and SetThreadpoolCallbackRunsLong().
   ::SubmitThreadpoolWork(work_);
+}
+
+size_t PlatformNativeWorkerPoolWin::GetMaxConcurrentNonBlockedTasksDeprecated()
+    const {
+  // The Windows Thread Pool API gives us no control over the number of workers
+  // that are active at one time. Consequently, we cannot report a true value
+  // here. Instead, the values were chosen to match
+  // TaskScheduler::StartWithDefaultParams.
+  const int num_cores = SysInfo::NumberOfProcessors();
+  return std::max(3, num_cores - 1);
+}
+
+void PlatformNativeWorkerPoolWin::ReportHeartbeatMetrics() const {
+  // Windows Thread Pool API does not provide the capability to determine the
+  // number of worker threads created.
 }
 
 }  // namespace internal
