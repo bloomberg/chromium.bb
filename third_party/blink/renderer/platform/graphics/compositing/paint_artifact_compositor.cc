@@ -34,16 +34,28 @@ namespace blink {
 
 namespace {
 
+// Returns true if the given element namespace is one of the ones needed for
+// running animations on the compositor. These are the only element_ids the
+// compositor needs to track existence of in the element id set.
+bool IsAnimationNamespace(CompositorElementIdNamespace element_namespace) {
+  return element_namespace == CompositorElementIdNamespace::kPrimaryTransform ||
+         element_namespace == CompositorElementIdNamespace::kPrimaryEffect ||
+         element_namespace == CompositorElementIdNamespace::kEffectFilter;
+}
+
 // Inserts the element ids of the given node and all of its ancestors into the
-// given |composited_element_ids| set. Returns once it finds an id which already
+// given |composited_element_ids| set. Filters out specifically element ids
+// which are needed for animations. Returns once it finds an id which already
 // exists as this implies that all of those ancestor nodes have already been
 // inserted.
 template <typename NodeType>
-void InsertAncestorElementIds(const NodeType& node,
-                              CompositorElementIdSet& composited_element_ids) {
+void InsertAncestorElementIdsForAnimation(
+    const NodeType& node,
+    CompositorElementIdSet& composited_element_ids) {
   for (const auto* n = &node; n; n = SafeUnalias(n->Parent())) {
     const CompositorElementId& element_id = n->GetCompositorElementId();
-    if (element_id) {
+    if (element_id &&
+        IsAnimationNamespace(NamespaceFromCompositorElementId(element_id))) {
       if (composited_element_ids.count(element_id)) {
         // Once we reach a node already counted we can stop traversing the
         // parent chain.
@@ -886,8 +898,9 @@ void PaintArtifactCompositor::Update(
         pending_layer.FirstPaintChunk(*paint_artifact).id.client.OwnerNodeId());
     // TODO(wangxianzhu): cc_picture_layer_->set_compositing_reasons(...);
 
-    InsertAncestorElementIds(property_state.Effect(), composited_element_ids);
-    InsertAncestorElementIds(transform, composited_element_ids);
+    InsertAncestorElementIdsForAnimation(property_state.Effect(),
+                                         composited_element_ids);
+    InsertAncestorElementIdsForAnimation(transform, composited_element_ids);
     if (layer->scrollable())
       composited_element_ids.insert(layer->element_id());
 

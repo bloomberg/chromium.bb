@@ -1954,7 +1954,8 @@ scoped_refptr<EffectPaintPropertyNode> CreateSampleEffectNodeWithElementId() {
   state.output_clip = &c0();
   state.opacity = 2.0 / 255.0;
   state.direct_compositing_reasons = CompositingReason::kActiveOpacityAnimation;
-  state.compositor_element_id = CompositorElementId(2);
+  state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
+      2, CompositorElementIdNamespace::kPrimaryEffect);
   return EffectPaintPropertyNode::Create(e0(), std::move(state));
 }
 
@@ -1964,7 +1965,8 @@ CreateSampleTransformNodeWithElementId() {
   state.matrix.Rotate(90);
   state.origin = FloatPoint3D(100, 100, 0);
   state.direct_compositing_reasons = CompositingReason::k3DTransform;
-  state.compositor_element_id = CompositorElementId(3);
+  state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
+      3, CompositorElementIdNamespace::kPrimaryTransform);
   return TransformPaintPropertyNode::Create(t0(), std::move(state));
 }
 
