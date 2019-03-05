@@ -16,6 +16,7 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "storage/browser/quota/quota_callbacks.h"
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_task.h"
@@ -40,7 +41,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) UsageTracker
                StorageMonitor* storage_monitor);
   ~UsageTracker() override;
 
-  blink::mojom::StorageType type() const { return type_; }
+  blink::mojom::StorageType type() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return type_;
+  }
   ClientUsageTracker* GetClientTracker(QuotaClient::ID client_id);
 
   void GetGlobalLimitedUsage(UsageCallback callback);
@@ -57,6 +61,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) UsageTracker
       std::map<url::Origin, int64_t>* origin_usage) const;
   void GetCachedOrigins(std::set<url::Origin>* origins) const;
   bool IsWorking() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return !global_usage_callbacks_.empty() || !host_usage_callbacks_.empty();
   }
 
@@ -99,6 +104,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) UsageTracker
       host_usage_callbacks_;
 
   StorageMonitor* storage_monitor_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<UsageTracker> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(UsageTracker);
