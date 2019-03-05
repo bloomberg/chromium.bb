@@ -297,6 +297,12 @@ Polymer({
       },
     },
 
+    controlsManaged: {
+      type: Boolean,
+      notify: true,
+      value: false,
+    },
+
     /** @type {print_preview.Destination} */
     destination: {
       type: Object,
@@ -740,11 +746,13 @@ Polymer({
       }
     }
     this.initialized_ = true;
+    this.updateManaged_();
     this.stickySettings_ = null;
     this.updateRecentDestinations_();
     this.stickySettingsChanged_();
   },
 
+  // <if expr="chromeos">
   /**
    * Restricts settings and applies defaults as defined by policy applicable to
    * current destination.
@@ -770,6 +778,20 @@ Polymer({
           duplexValue != print_preview.DuplexModeRestriction.SIMPLEX);
     }
     this.set('settings.duplex.setByPolicy', !!duplexPolicy);
+    this.updateManaged_();
+  },
+  // </if>
+
+  /** @private */
+  updateManaged_: function() {
+    let managedSettings = ['headerFooter'];
+    // <if expr="chromeos">
+    managedSettings = managedSettings.concat(['color', 'duplex']);
+    // </if>
+    this.controlsManaged = managedSettings.some(settingName => {
+      const setting = this.getSetting(settingName);
+      return setting.available && setting.setByPolicy;
+    });
   },
 
   /** @return {boolean} Whether the model has been initialized. */
