@@ -25,6 +25,16 @@ ContentCaptureTask::ContentCaptureTask(LocalFrame& local_frame_root,
   local_frame_root.Client()
       ->GetWebContentCaptureClient()
       ->GetTaskTimingParameters(task_short_delay_, task_long_delay_);
+  // The histogram is all about time, just disable it if high resolution isn't
+  // supported.
+  if (TimeTicks::IsHighResolution()) {
+    histogram_reporter_ =
+        base::MakeRefCounted<ContentCaptureTaskHistogramReporter>();
+    task_session_->SetSentNodeCountCallback(
+        WTF::BindRepeating(&ContentCaptureTaskHistogramReporter::
+                               RecordsSentContentCountPerDocument,
+                           histogram_reporter_));
+  }
 }
 
 ContentCaptureTask::~ContentCaptureTask() {}
@@ -53,7 +63,11 @@ bool ContentCaptureTask::CaptureContent(std::vector<cc::NodeHolder>& data) {
 bool ContentCaptureTask::CaptureContent() {
   DCHECK(task_session_);
   std::vector<cc::NodeHolder> buffer;
+  if (histogram_reporter_)
+    histogram_reporter_->OnCaptureContentStarted();
   bool result = CaptureContent(buffer);
+  if (histogram_reporter_)
+    histogram_reporter_->OnCaptureContentEnded(buffer.size());
   if (!buffer.empty())
     task_session_->SetCapturedContent(buffer);
   return result;
@@ -63,6 +77,8 @@ void ContentCaptureTask::SendContent(
     TaskSession::DocumentSession& doc_session) {
   auto* document = doc_session.GetDocument();
   DCHECK(document);
+  if (histogram_reporter_)
+    histogram_reporter_->OnSendContentStarted();
   std::vector<scoped_refptr<WebContentHolder>> content_batch;
   content_batch.reserve(kBatchSize);
   while (content_batch.size() < kBatchSize) {
@@ -79,6 +95,8 @@ void ContentCaptureTask::SendContent(
         content_batch, !doc_session.FirstDataHasSent());
     doc_session.SetFirstDataHasSent();
   }
+  if (histogram_reporter_)
+    histogram_reporter_->OnSendContentEnded(content_batch.size());
 }
 
 WebContentCaptureClient* ContentCaptureTask::GetWebContentCaptureClient(
@@ -200,6 +218,8 @@ void ContentCaptureTask::ScheduleInternal(ScheduleReason reason) {
 void ContentCaptureTask::Schedule(ScheduleReason reason) {
   DCHECK(local_frame_root_);
   has_content_change_ = true;
+  if (histogram_reporter_)
+    histogram_reporter_->OnContentChanged();
   ScheduleInternal(reason);
 }
 
@@ -208,6 +228,10 @@ bool ContentCaptureTask::ShouldPause() {
     return task_state_ == task_stop_for_testing_.value();
   }
   return ThreadScheduler::Current()->ShouldYieldForHighPriorityWork();
+}
+
+void ContentCaptureTask::ClearDocumentSessionsForTesting() {
+  task_session_->ClearDocumentSessionsForTesting();
 }
 
 }  // namespace blink

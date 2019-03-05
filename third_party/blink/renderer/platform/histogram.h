@@ -27,6 +27,7 @@ class PLATFORM_EXPORT CustomCountHistogram {
                        int32_t bucket_count);
   void Count(base::HistogramBase::Sample);
   void CountMicroseconds(base::TimeDelta);
+  void CountMilliseconds(base::TimeDelta);
 
  protected:
   explicit CustomCountHistogram(base::HistogramBase*);
