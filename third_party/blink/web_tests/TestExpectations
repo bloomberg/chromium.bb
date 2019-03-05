@@ -5712,10 +5712,6 @@ crbug.com/902633 virtual/streams-native/http/tests/streams/chromium/touching-glo
 crbug.com/902633 virtual/streams-native/http/tests/streams/transferable/writable-stream.html [ Timeout ]
 crbug.com/902633 virtual/streams-native/http/tests/streams/transferable/window.html [ Timeout ]
 
-# Sheriff 2018-12-27
-crbug.com/917970 [ Mac10.13 Retina ] virtual/mouseevent_fractional/fast/events/popup-blocking-timers5.html [ Pass Failure ]
-crbug.com/917970 [ Mac10.13 Retina ] virtual/user-activation-v2/fast/events/popup-blocking-timers5.html [ Pass Failure ]
-
 # Sheriff 2019-01-03
 crbug.com/918905 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-table-1b.html [ Pass Failure ]
 
