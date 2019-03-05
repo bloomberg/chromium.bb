@@ -118,6 +118,12 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   }
 
   PerformanceEntryVector getEntries();
+  // Get BufferedEntriesByType will return all entries in the buffer regardless
+  // of whether they are exposed in the Performance Timeline. getEntriesByType
+  // will only return all entries for existing types in
+  // PerformanceEntry.IsValidTimelineEntryType.
+  PerformanceEntryVector getBufferedEntriesByType(
+      const AtomicString& entry_type);
   PerformanceEntryVector getEntriesByType(const AtomicString& entry_type);
   PerformanceEntryVector getEntriesByName(const AtomicString& name,
                                           const AtomicString& entry_type);
@@ -283,6 +289,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
                                         ExceptionState&);
 
   void CopySecondaryBuffer();
+  PerformanceEntryVector getEntriesByTypeInternal(
+      PerformanceEntry::EntryType type);
 
  protected:
   Performance(TimeTicks time_origin,

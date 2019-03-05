@@ -661,7 +661,6 @@ crbug.com/874695 external/wpt/orientation-sensor/AbsoluteOrientationSensor.https
 crbug.com/874695 external/wpt/orientation-sensor/RelativeOrientationSensor.https.html [ Slow ]
 crbug.com/874695 external/wpt/payment-request/allowpaymentrequest/setting-allowpaymentrequest-timing.https.sub.html [ Slow ]
 crbug.com/874695 virtual/not-site-per-process/external/wpt/payment-request/allowpaymentrequest/setting-allowpaymentrequest-timing.https.sub.html [ Slow ]
-crbug.com/874695 external/wpt/performance-timeline/po-observe.html [ Slow ]
 crbug.com/874695 external/wpt/picture-in-picture/leave-picture-in-picture.html [ Slow ]
 crbug.com/874695 external/wpt/picture-in-picture/picture-in-picture-window.html [ Slow ]
 crbug.com/874695 external/wpt/picture-in-picture/request-picture-in-picture-twice.html [ Slow ]
