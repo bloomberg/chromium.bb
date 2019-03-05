@@ -628,7 +628,8 @@ public class ManualFillingControllerTest {
     }
 
     private AccessorySheetData createPasswordData(String text) {
-        AccessorySheetData sheetData = new AccessorySheetData("Passwords");
+        AccessorySheetData sheetData =
+                new AccessorySheetData(FallbackSheetType.PASSWORD, "Passwords");
         UserInfo userInfo = new UserInfo(null);
         userInfo.addField(new UserInfo.Field("(No username)", "No username", false, null));
         userInfo.addField(new UserInfo.Field(text, "Password", true, null));

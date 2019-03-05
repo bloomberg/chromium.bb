@@ -248,7 +248,8 @@ AccessorySheetData PasswordAccessoryControllerImpl::CreateAccessorySheetData(
           ? IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_LIST_EMPTY_MESSAGE
           : IDS_PASSWORD_MANAGER_ACCESSORY_PASSWORD_LIST_TITLE,
       base::ASCIIToUTF16(origin.host()));
-  AccessorySheetData data(passwords_title_str);
+  AccessorySheetData data(autofill::FallbackSheetType::PASSWORD,
+                          passwords_title_str);
 
   // Create a username and a password element for every suggestion.
   for (const SuggestionElementData& suggestion : suggestions) {

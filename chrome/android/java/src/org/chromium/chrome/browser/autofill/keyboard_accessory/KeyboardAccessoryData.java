@@ -347,12 +347,10 @@ public class KeyboardAccessoryData {
     /**
      * Represents the contents of a accessory sheet tab below the keyboard accessory, which can
      * correspond to passwords, credit cards, or profiles data. Created natively.
-     *
-     * TODO(crbug.com/902425): Add a field to indicate if this corresponds to password, profile, or
-     *                         credit card data.
      */
     public final static class AccessorySheetData {
         private final String mTitle;
+        private final @FallbackSheetType int mSheetType;
         private final List<UserInfo> mUserInfoList = new ArrayList<>();
         private final List<FooterCommand> mFooterCommands = new ArrayList<>();
 
@@ -360,8 +358,13 @@ public class KeyboardAccessoryData {
          * Creates the AccessorySheetData object.
          * @param title The title of accessory sheet tab.
          */
-        public AccessorySheetData(String title) {
+        public AccessorySheetData(@FallbackSheetType int sheetType, String title) {
+            mSheetType = sheetType;
             mTitle = title;
+        }
+
+        public @FallbackSheetType int getSheetType() {
+            return mSheetType;
         }
 
         /**

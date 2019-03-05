@@ -101,8 +101,8 @@ class ManualFillingBridge {
     }
 
     @CalledByNative
-    private static Object createAccessorySheetData(String title) {
-        return new AccessorySheetData(title);
+    private static Object createAccessorySheetData(@FallbackSheetType int type, String title) {
+        return new AccessorySheetData(type, title);
     }
 
     @CalledByNative
