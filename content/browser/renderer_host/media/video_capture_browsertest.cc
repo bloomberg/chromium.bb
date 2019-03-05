@@ -245,7 +245,8 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest, StartAndImmediatelyStop) {
 }
 
 // Flaky on MSAN. https://crbug.com/840294
-#if defined(MEMORY_SANITIZER)
+// Flaky on MacOS 10.12. https://crbug.com/938074
+#if defined(MEMORY_SANITIZER) || defined(MAC_OS_X_VERSION_10_12)
 #define MAYBE_ReceiveFramesFromFakeCaptureDevice \
   DISABLED_ReceiveFramesFromFakeCaptureDevice
 #else
