@@ -797,7 +797,6 @@ void RTCVideoEncoder::Impl::ReturnEncodedImage(
   }
 
   webrtc::CodecSpecificInfo info;
-  memset(&info, 0, sizeof(info));
   info.codecType = video_codec_type_;
   if (video_codec_type_ == webrtc::kVideoCodecVP8) {
     info.codecSpecific.VP8.keyIdx = -1;

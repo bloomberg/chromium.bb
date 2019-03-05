@@ -162,7 +162,6 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
   encoded_image.content_type_ = webrtc::VideoContentType::SCREENSHARE;
 
   webrtc::CodecSpecificInfo codec_specific_info;
-  memset(&codec_specific_info, 0, sizeof(codec_specific_info));
   codec_specific_info.codecType = frame.codec;
 
   if (frame.codec == webrtc::kVideoCodecVP8) {
