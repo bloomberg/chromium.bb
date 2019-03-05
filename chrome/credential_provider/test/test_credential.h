@@ -31,6 +31,8 @@ class DECLSPEC_UUID("3710aa3a-13c7-44c2-bc38-09ba137804d8") ITestCredential
     : public IUnknown {
  public:
   virtual HRESULT STDMETHODCALLTYPE
+  SetDefaultExitCode(UiExitCodes default_exit_code) = 0;
+  virtual HRESULT STDMETHODCALLTYPE
   SetGlsEmailAddress(const std::string& email) = 0;
   virtual HRESULT STDMETHODCALLTYPE
   SetGaiaIdOverride(const std::string& gaia_id) = 0;
@@ -67,6 +69,7 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
   ~CTestCredentialBase();
 
   // ITestCredential.
+  IFACEMETHODIMP SetDefaultExitCode(UiExitCodes default_exit_code) override;
   IFACEMETHODIMP SetGlsEmailAddress(const std::string& email) override;
   IFACEMETHODIMP SetGaiaIdOverride(const std::string& gaia_id) override;
   IFACEMETHODIMP WaitForGls() override;
@@ -112,6 +115,7 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
 
   void ResetInternalState() override;
 
+  UiExitCodes default_exit_code_ = kUiecSuccess;
   std::string gls_email_;
   std::string gaia_id_override_;
   base::WaitableEvent gls_done_;
@@ -129,6 +133,13 @@ CTestCredentialBase<T>::CTestCredentialBase()
 
 template <class T>
 CTestCredentialBase<T>::~CTestCredentialBase() {}
+
+template <class T>
+HRESULT CTestCredentialBase<T>::SetDefaultExitCode(
+    UiExitCodes default_exit_code) {
+  default_exit_code_ = default_exit_code;
+  return S_OK;
+}
 
 template <class T>
 HRESULT CTestCredentialBase<T>::SetGlsEmailAddress(const std::string& email) {
@@ -221,7 +232,8 @@ template <class T>
 HRESULT CTestCredentialBase<T>::GetBaseGlsCommandline(
     base::CommandLine* command_line) {
   return FakeGlsRunHelper::GetFakeGlsCommandline(
-      gls_email_, gaia_id_override_, start_gls_event_name_, command_line);
+      default_exit_code_, gls_email_, gaia_id_override_, start_gls_event_name_,
+      command_line);
 }
 
 template <class T>

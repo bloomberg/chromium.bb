@@ -45,6 +45,7 @@ class CredentialProviderSigninDialogWinBaseTest : public InProcessBrowserTest {
   content::WebContents* web_contents() { return web_contents_; }
   virtual void WaitForDialogToLoad();
 
+  views::WebDialogView* web_view_ = nullptr;
   content::WebContents* web_contents_ = nullptr;
 
  private:
@@ -129,14 +130,14 @@ void CredentialProviderSigninDialogWinDialogTest::
 }
 
 void CredentialProviderSigninDialogWinDialogTest::ShowSigninDialog() {
-  views::WebDialogView* web_view = ShowCredentialProviderSigninDialog(
+  web_view_ = ShowCredentialProviderSigninDialog(
       base::CommandLine(base::CommandLine::NoProgram::NO_PROGRAM),
       browser()->profile(),
       base::BindOnce(
           &CredentialProviderSigninDialogWinDialogTest::HandleSignInComplete,
           base::Unretained(this)));
 
-  web_contents_ = web_view->web_contents();
+  web_contents_ = web_view_->web_contents();
 }
 
 void CredentialProviderSigninDialogWinDialogTest::HandleSignInComplete(
@@ -164,6 +165,29 @@ void CredentialProviderSigninDialogWinDialogTest::HandleSignInComplete(
 
   if (signin_complete_closure_)
     std::move(signin_complete_closure_).Run();
+}
+
+IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
+                       SimulateEscape) {
+  ShowSigninDialog();
+  WaitForDialogToLoad();
+
+  web_view_->GetWidget()->CloseWithReason(
+      views::Widget::ClosedReason::kEscKeyPressed);
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+
+  EXPECT_TRUE(signin_complete_called_);
+  EXPECT_TRUE(result_value_.is_dict());
+  EXPECT_EQ(result_value_.DictSize(), 1u);
+  const base::DictionaryValue* result_dict;
+  EXPECT_TRUE(result_value_.GetAsDictionary(&result_dict));
+  int exit_code;
+  EXPECT_TRUE(
+      result_dict->GetInteger(credential_provider::kKeyExitCode, &exit_code));
+  EXPECT_EQ(credential_provider::kUiecAbort, exit_code);
+  EXPECT_TRUE(result_access_token_.empty());
+  EXPECT_TRUE(result_refresh_token_.empty());
 }
 
 IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
@@ -269,11 +293,13 @@ IN_PROC_BROWSER_TEST_F(CredentialProviderSigninDialogWinDialogTest,
   const base::DictionaryValue* result_dict;
   EXPECT_TRUE(result_value_.GetAsDictionary(&result_dict));
   std::string id_in_dict;
-  EXPECT_TRUE(result_dict->GetString("id", &id_in_dict));
+  EXPECT_TRUE(result_dict->GetString(credential_provider::kKeyId, &id_in_dict));
   std::string email_in_dict;
-  EXPECT_TRUE(result_dict->GetString("email", &email_in_dict));
+  EXPECT_TRUE(
+      result_dict->GetString(credential_provider::kKeyEmail, &email_in_dict));
   std::string password_in_dict;
-  EXPECT_TRUE(result_dict->GetString("password", &password_in_dict));
+  EXPECT_TRUE(result_dict->GetString(credential_provider::kKeyPassword,
+                                     &password_in_dict));
 
   EXPECT_EQ(id_in_dict, test_data_storage_.GetSuccessId());
   EXPECT_EQ(email_in_dict, test_data_storage_.GetSuccessEmail());
@@ -311,14 +337,19 @@ IN_PROC_BROWSER_TEST_P(CredentialProviderSigninDialogWinDialogExitCodeTest,
   if (should_succeed) {
     EXPECT_GT(result_value_.DictSize(), 1u);
 
-    std::string id_in_dict =
-        result_value_.FindKeyOfType("id", base::Value::Type::STRING)
-            ->GetString();
+    std::string id_in_dict = result_value_
+                                 .FindKeyOfType(credential_provider::kKeyId,
+                                                base::Value::Type::STRING)
+                                 ->GetString();
     std::string email_in_dict =
-        result_value_.FindKeyOfType("email", base::Value::Type::STRING)
+        result_value_
+            .FindKeyOfType(credential_provider::kKeyEmail,
+                           base::Value::Type::STRING)
             ->GetString();
     std::string password_in_dict =
-        result_value_.FindKeyOfType("password", base::Value::Type::STRING)
+        result_value_
+            .FindKeyOfType(credential_provider::kKeyPassword,
+                           base::Value::Type::STRING)
             ->GetString();
 
     EXPECT_EQ(id_in_dict, test_data_storage_.GetSuccessId());

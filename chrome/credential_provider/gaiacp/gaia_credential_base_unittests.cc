@@ -171,6 +171,35 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Finish) {
   EXPECT_EQ(2ul, fake_os_user_manager()->GetUserCount());
 }
 
+TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Abort) {
+  FakeGaiaCredentialProvider provider;
+
+  // Start logon.
+  CComPtr<IGaiaCredential> gaia_cred;
+  CComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  ASSERT_EQ(S_OK, test->SetDefaultExitCode(kUiecAbort));
+
+  ASSERT_EQ(S_OK, run_helper()->StartLogonProcessAndWait(cred));
+
+  // Now finish the logon.
+  CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
+  CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION cpcs;
+  wchar_t* status_text;
+  CREDENTIAL_PROVIDER_STATUS_ICON status_icon;
+  ASSERT_EQ(S_OK,
+            cred->GetSerialization(&cpgsr, &cpcs, &status_text, &status_icon));
+  EXPECT_EQ(nullptr, status_text);
+  EXPECT_EQ(CPSI_NONE, status_icon);
+  EXPECT_EQ(CPGSR_NO_CREDENTIAL_NOT_FINISHED, cpgsr);
+  EXPECT_EQ(nullptr, test->GetErrorText());
+
+  EXPECT_EQ(S_OK, gaia_cred->Terminate());
+}
+
 TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_MdmEnrollment) {
   // Force a successful MDM enrollment.
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
