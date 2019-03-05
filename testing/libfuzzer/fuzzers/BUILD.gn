@@ -68,6 +68,7 @@ fuzzer_test("template_url_parser_fuzzer") {
     "//base",
     "//base:i18n",
     "//components/search_engines:search_engines",
+    "//third_party/libxml:libxml",
   ]
   dict = "//third_party/libxml/fuzz/xml.dict"
   libfuzzer_options = [ "max_len=4096" ]
