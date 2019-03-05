@@ -11,6 +11,7 @@
 #include "base/no_destructor.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
+#include "chromeos/services/device_sync/cryptauth_constants.h"
 #include "chromeos/services/device_sync/cryptauth_key_creator_impl.h"
 #include "chromeos/services/device_sync/cryptauth_key_proof_computer_impl.h"
 #include "chromeos/services/device_sync/cryptauth_key_registry.h"
@@ -42,19 +43,6 @@ using EnrollSingleKeyRequest =
 using cryptauthv2::EnrollKeysResponse;
 using EnrollSingleKeyResponse =
     cryptauthv2::EnrollKeysResponse::EnrollSingleKeyResponse;
-
-// The client version sent to CryptAuth in the SyncKeysRequest.
-const char kClientVersion[] = "1.0.0";
-
-// CryptAuth demands that the key in the kUserKeyPair bundle has this handle
-// for backward compatibility reasons.
-const char kFixedUserKeyPairHandle[] = "device_key";
-
-// The salt used in HKDF for symmetric key proofs. Also, for asymmetric key
-// proofs, the salt is prepended to the payload before being signed by the
-// private key. This value is part of the CryptAuth v2 Enrollment
-// specifications.
-const char kKeyProofSalt[] = "CryptAuth Key Proof";
 
 // Timeout values for asynchronous operations.
 // TODO(https://crbug.com/933656): Tune these values.
@@ -300,7 +288,7 @@ ProcessKeyCreationInstructions(
   // CryptAuthKey generate a handle for us.
   base::Optional<std::string> new_key_handle;
   if (bundle_name == CryptAuthKeyBundle::Name::kUserKeyPair)
-    new_key_handle = kFixedUserKeyPairHandle;
+    new_key_handle = kCryptAuthFixedUserKeyPairHandle;
 
   *new_key_to_create = CryptAuthKeyCreator::CreateKeyData(
       ConvertKeyCreationToKeyStatus(single_key_response.key_creation()),
@@ -446,7 +434,7 @@ SyncKeysRequest CryptAuthV2EnrollerImpl::BuildSyncKeysRequest(
       client_app_metadata.application_specific_metadata(),
       request.application_name()));
 
-  request.set_client_version(kClientVersion);
+  request.set_client_version(kCryptAuthClientVersion);
   request.mutable_client_metadata()->CopyFrom(client_metadata);
   request.set_client_app_metadata(client_app_metadata.SerializeAsString());
 
@@ -668,8 +656,8 @@ void CryptAuthV2EnrollerImpl::OnKeysCreated(
     // Compute key proofs for the new keys using the random_session_id from the
     // SyncKeysResponse as the payload and the particular salt specified by the
     // v2 Enrollment protocol.
-    base::Optional<std::string> key_proof =
-        key_proof_computer->ComputeKeyProof(new_key, session_id, kKeyProofSalt);
+    base::Optional<std::string> key_proof = key_proof_computer->ComputeKeyProof(
+        new_key, session_id, kCryptAuthKeyProofSalt);
     if (!key_proof || key_proof->empty()) {
       FinishAttempt(CryptAuthEnrollmentResult::ResultCode::
                         kErrorKeyProofComputationFailed);
