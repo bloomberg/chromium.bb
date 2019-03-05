@@ -16,7 +16,6 @@
 #import <CoreWLAN/CoreWLAN.h>
 #import <IOBluetooth/IOBluetooth.h>
 #import <ImageCaptureCore/ImageCaptureCore.h>
-#import <LocalAuthentication/LocalAuthentication.h>
 #import <QuartzCore/QuartzCore.h>
 #include <stdint.h>
 
@@ -69,22 +68,6 @@ typedef NSUInteger NSSpringLoadingHighlight;
 @end
 
 #endif  // MAC_OS_X_VERSION_10_12
-
-#if !defined(MAC_OS_X_VERSION_10_13_2) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_13_2
-
-enum {
-  LABiometryTypeNone = 0,
-  LABiometryTypeFaceID = 1,
-  LABiometryTypeTouchID = 2
-};
-typedef NSInteger LABiometryType;
-
-@interface LAContext (HighSierraPointTwoSDK)
-@property(nonatomic, readonly) LABiometryType biometryType;
-@end
-
-#endif  // MAC_OS_X_VERSION_10_13_2
 
 // ----------------------------------------------------------------------------
 // Define NSStrings only available in newer versions of the OSX SDK to force
