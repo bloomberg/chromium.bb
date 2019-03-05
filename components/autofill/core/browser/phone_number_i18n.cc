@@ -329,6 +329,15 @@ base::string16 GetFormattedPhoneNumberForDisplay(const AutofillProfile& profile,
   return base::UTF8ToUTF16(phone);
 }
 
+std::string FormatPhoneNationallyForDisplay(const std::string& phone_number,
+                                            const std::string& country_code) {
+  if (IsValidPhoneNumber(phone_number, country_code)) {
+    return FormatPhoneNumber(phone_number, country_code,
+                             PhoneNumberUtil::PhoneNumberFormat::NATIONAL);
+  }
+  return phone_number;
+}
+
 std::string FormatPhoneForDisplay(const std::string& phone_number,
                                   const std::string& country_code) {
   if (IsValidPhoneNumber(phone_number, country_code)) {

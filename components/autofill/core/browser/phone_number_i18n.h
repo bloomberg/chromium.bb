@@ -90,11 +90,17 @@ bool PhoneNumbersMatch(const base::string16& number_a,
                        const std::string& app_locale);
 
 // Returns the phone number from the given |profile| formatted for display.
-// If it's valid number for the country of profile, or for the |locale| given
-// as a fall back, return the number in internaional format; otherwise return
+// If it's a valid number for the profile's country or for the |locale| given
+// as a fallback, returns the number in international format; otherwise returns
 // the raw number string from profile.
 base::string16 GetFormattedPhoneNumberForDisplay(const AutofillProfile& profile,
                                                  const std::string& locale);
+
+// Returns |phone_number| in i18n::phonenumbers::PhoneNumberUtil::
+// PhoneNumberFormat::NATIONAL format if the number is valid for
+// |country_code|. Otherwise, returns the given |phone_number|.
+std::string FormatPhoneNationallyForDisplay(const std::string& phone_number,
+                                            const std::string& country_code);
 
 // Formats the given number |phone_number| to
 // i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat::INTERNATIONAL format
