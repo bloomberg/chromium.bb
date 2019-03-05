@@ -8,6 +8,7 @@
 #include "url/gurl.h"
 
 namespace content {
+struct ConsoleMessage;
 
 class ServiceWorkerContextObserver {
  public:
@@ -29,6 +30,11 @@ class ServiceWorkerContextObserver {
   // Called when there are no more controllees for the service worker with id
   // |version_id|.
   virtual void OnNoControllees(int64_t version_id, const GURL& scope) {}
+
+  // Called when a console message is reported for the service worker with id
+  // |version_id|.
+  virtual void OnReportConsoleMessage(int64_t version_id,
+                                      const ConsoleMessage& message) {}
 
  protected:
   virtual ~ServiceWorkerContextObserver() {}

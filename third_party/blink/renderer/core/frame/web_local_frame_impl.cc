@@ -736,6 +736,8 @@ void WebLocalFrameImpl::SetIsolatedWorldInfo(int world_id,
 }
 
 void WebLocalFrameImpl::AddMessageToConsole(const WebConsoleMessage& message) {
+  // TODO(devlin): Use WebConsoleMessage::LogWebConsoleMessage here.
+
   DCHECK(GetFrame());
 
   MessageLevel web_core_message_level = kInfoMessageLevel;

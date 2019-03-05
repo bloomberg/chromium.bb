@@ -38,6 +38,7 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/console_message.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/url_utils.h"
 #include "ipc/ipc_message.h"
@@ -854,8 +855,8 @@ void ServiceWorkerContextCore::OnReportConsoleMessage(
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnReportConsoleMessage,
       version->version_id(),
-      ServiceWorkerContextCoreObserver::ConsoleMessage(
-          source_identifier, message_level, message, line_number, source_url));
+      ConsoleMessage(source_identifier, message_level, message, line_number,
+                     source_url));
 }
 
 void ServiceWorkerContextCore::OnControlleeAdded(

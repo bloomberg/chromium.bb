@@ -279,6 +279,13 @@ void ServiceWorkerContextWrapper::OnRegistrationCompleted(
     observer.OnRegistrationCompleted(scope);
 }
 
+void ServiceWorkerContextWrapper::OnReportConsoleMessage(
+    int64_t version_id,
+    const ConsoleMessage& message) {
+  for (auto& observer : observer_list_)
+    observer.OnReportConsoleMessage(version_id, message);
+}
+
 void ServiceWorkerContextWrapper::OnNoControllees(int64_t version_id,
                                                   const GURL& scope) {
   for (auto& observer : observer_list_)

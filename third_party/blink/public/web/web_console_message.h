@@ -35,6 +35,12 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_node.h"
 
+namespace v8 {
+class Context;
+template <typename T>
+class Local;
+}  // namespace v8
+
 namespace blink {
 
 struct WebConsoleMessage {
@@ -62,6 +68,11 @@ struct WebConsoleMessage {
         url(url),
         line_number(line_number),
         column_number(column_number) {}
+
+  // Logs the console message for the given v8::Context.
+  BLINK_EXPORT static void LogWebConsoleMessage(
+      v8::Local<v8::Context> context,
+      const WebConsoleMessage& message);
 };
 
 }  // namespace blink

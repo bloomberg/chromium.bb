@@ -108,6 +108,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // ServiceWorkerContextCoreObserver implementation:
   void OnRegistrationCompleted(int64_t registration_id,
                                const GURL& scope) override;
+  void OnReportConsoleMessage(int64_t version_id,
+                              const ConsoleMessage& message) override;
   void OnNoControllees(int64_t version_id, const GURL& scope) override;
   void OnVersionStateChanged(int64_t version_id,
                              const GURL& scope,
