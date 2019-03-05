@@ -13,7 +13,7 @@ namespace blink {
 
 class LocalFontFaceSource final : public CSSFontFaceSource {
  public:
-  LocalFontFaceSource(const String& font_name) : font_name_(font_name) {}
+  LocalFontFaceSource(const String& fontName);
   bool IsLocal() const override { return true; }
   bool IsLocalFontAvailable(const FontDescription&) override;
 
@@ -35,6 +35,7 @@ class LocalFontFaceSource final : public CSSFontFaceSource {
 
   AtomicString font_name_;
   LocalFontHistograms histograms_;
+  bool need_to_adjust_for_bold_italic_;
 };
 
 }  // namespace blink
