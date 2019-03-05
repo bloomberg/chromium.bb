@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/renderer/spellcheck.h"
@@ -144,15 +145,18 @@ void SpellCheckProvider::RequestTextChecking(
 }
 
 void SpellCheckProvider::FocusedNodeChanged(const blink::WebNode& unused) {
-#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if defined(OS_ANDROID)
   WebLocalFrame* frame = render_frame()->GetWebFrame();
   WebElement element = frame->GetDocument().IsNull()
                            ? WebElement()
                            : frame->GetDocument().FocusedElement();
   bool enabled = !element.IsNull() && element.IsEditable();
-  bool checked = enabled && IsSpellCheckingEnabled();
-  GetSpellCheckHost().ToggleSpellCheck(enabled, checked);
-#endif  // USE_BROWSER_SPELLCHECKER
+
+  // TODO(xiaochengh): Don't call GetSpellCheckHost() if SpellCheckHost is not
+  // bound yet. crbug.com/814225
+  if (!enabled)
+    GetSpellCheckHost().DisconnectSessionBridge();
+#endif  // defined(OS_ANDROID)
 }
 
 bool SpellCheckProvider::IsSpellCheckingEnabled() const {

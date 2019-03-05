@@ -57,9 +57,9 @@ interface SpellCheckHost {
   RequestTextCheck(mojo_base.mojom.String16 text, int32 route_id) =>
       (array<SpellCheckResult> results);
 
-  // Toggles the enabled state of the platform-specific spell checker.
-  [EnableIf=USE_BROWSER_SPELLCHECKER]
-  ToggleSpellCheck(bool enabled, bool checked);
+  // Disconnects the Android spell checker session bridge.
+  [EnableIf=is_android]
+  DisconnectSessionBridge();
 
   // Checks the correctness of a word with a platform-specific spell checker.
   // TODO(groby): This needs to originate from SpellcheckProvider.

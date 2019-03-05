@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "components/spellcheck/renderer/empty_local_interface_provider.h"
 #include "components/spellcheck/renderer/spellcheck_provider.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -88,13 +89,16 @@ class TestingSpellCheckProvider : public SpellCheckProvider,
   void RequestTextCheck(const base::string16&,
                         int,
                         RequestTextCheckCallback) override;
-  void ToggleSpellCheck(bool, bool) override;
   using SpellCheckProvider::CheckSpelling;
   void CheckSpelling(const base::string16&,
                      int,
                      CheckSpellingCallback) override;
   void FillSuggestionList(const base::string16&,
                           FillSuggestionListCallback) override;
+#endif
+
+#if defined(OS_ANDROID)
+  void DisconnectSessionBridge() override;
 #endif
 
   // Message loop (if needed) to deliver the SpellCheckHost request flow.
