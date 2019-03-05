@@ -15,6 +15,30 @@
 
 namespace blink {
 
+class ReadableStreamWrapper::ReadHandleImpl final
+    : public ReadableStream::ReadHandle {
+ public:
+  ReadHandleImpl(v8::Isolate* isolate, v8::Local<v8::Value> reader)
+      : reader_(isolate, reader) {}
+
+  ~ReadHandleImpl() override = default;
+
+  ScriptPromise Read(ScriptState* script_state) override {
+    return ReadableStreamOperations::DefaultReaderRead(
+        script_state,
+        ScriptValue(script_state,
+                    reader_.NewLocal(script_state->GetIsolate())));
+  }
+
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(reader_);
+    ReadHandle::Trace(visitor);
+  }
+
+ private:
+  TraceWrapperV8Reference<v8::Value> reader_;
+};
+
 void ReadableStreamWrapper::Init(ScriptState* script_state,
                                  ScriptValue underlying_source,
                                  ScriptValue strategy,
@@ -477,6 +501,18 @@ void ReadableStreamWrapper::Tee(ScriptState* script_state,
 
   *branch1 = temp_branch1;
   *branch2 = temp_branch2;
+}
+
+ReadableStream::ReadHandle* ReadableStreamWrapper::GetReadHandle(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
+  ScriptValue reader = ReadableStreamOperations::GetReader(
+      script_state, GetInternalStream(script_state), exception_state);
+  if (exception_state.HadException()) {
+    return nullptr;
+  }
+  return MakeGarbageCollected<ReadHandleImpl>(script_state->GetIsolate(),
+                                              reader.V8Value());
 }
 
 base::Optional<bool> ReadableStreamWrapper::IsLocked(

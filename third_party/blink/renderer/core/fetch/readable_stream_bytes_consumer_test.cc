@@ -55,12 +55,9 @@ TEST(ReadableStreamBytesConsumerTest, Create) {
   ASSERT_TRUE(stream);
   ASSERT_FALSE(exception_state.HadException());
 
-  ScriptValue reader = stream->getReader(script_state, exception_state);
-  ASSERT_FALSE(reader.IsEmpty());
-  ASSERT_FALSE(exception_state.HadException());
-
   Persistent<BytesConsumer> consumer =
-      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, reader);
+      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, stream,
+                                                        ASSERT_NO_EXCEPTION);
 
   EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
 }
@@ -68,7 +65,6 @@ TEST(ReadableStreamBytesConsumerTest, Create) {
 TEST(ReadableStreamBytesConsumerTest, EmptyStream) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
-  ExceptionState& exception_state = scope.GetExceptionState();
 
   auto* underlying_source =
       MakeGarbageCollected<TestUnderlyingSource>(script_state);
@@ -76,12 +72,9 @@ TEST(ReadableStreamBytesConsumerTest, EmptyStream) {
       script_state, underlying_source, 0);
   underlying_source->Close();
 
-  ScriptValue reader = stream->getReader(script_state, exception_state);
-  ASSERT_FALSE(reader.IsEmpty());
-  ASSERT_FALSE(exception_state.HadException());
-
   Persistent<BytesConsumer> consumer =
-      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, reader);
+      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, stream,
+                                                        ASSERT_NO_EXCEPTION);
 
   Persistent<MockClient> client = MockClient::Create();
   consumer->SetClient(client);
@@ -111,7 +104,6 @@ TEST(ReadableStreamBytesConsumerTest, EmptyStream) {
 TEST(ReadableStreamBytesConsumerTest, ErroredStream) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
-  ExceptionState& exception_state = scope.GetExceptionState();
 
   auto* underlying_source =
       MakeGarbageCollected<TestUnderlyingSource>(script_state);
@@ -120,12 +112,9 @@ TEST(ReadableStreamBytesConsumerTest, ErroredStream) {
   underlying_source->SetError(
       ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())));
 
-  ScriptValue reader = stream->getReader(script_state, exception_state);
-  ASSERT_FALSE(reader.IsEmpty());
-  ASSERT_FALSE(exception_state.HadException());
-
   Persistent<BytesConsumer> consumer =
-      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, reader);
+      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, stream,
+                                                        ASSERT_NO_EXCEPTION);
   Persistent<MockClient> client = MockClient::Create();
   consumer->SetClient(client);
   Checkpoint checkpoint;
@@ -154,7 +143,6 @@ TEST(ReadableStreamBytesConsumerTest, ErroredStream) {
 TEST(ReadableStreamBytesConsumerTest, TwoPhaseRead) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
-  ExceptionState& exception_state = scope.GetExceptionState();
 
   auto* underlying_source =
       MakeGarbageCollected<TestUnderlyingSource>(script_state);
@@ -181,11 +169,9 @@ TEST(ReadableStreamBytesConsumerTest, TwoPhaseRead) {
     underlying_source->Close();
   }
 
-  ScriptValue reader = stream->getReader(script_state, exception_state);
-  ASSERT_FALSE(reader.IsEmpty());
-  ASSERT_FALSE(exception_state.HadException());
   Persistent<BytesConsumer> consumer =
-      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, reader);
+      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, stream,
+                                                        ASSERT_NO_EXCEPTION);
   Persistent<MockClient> client = MockClient::Create();
   consumer->SetClient(client);
   Checkpoint checkpoint;
@@ -266,7 +252,6 @@ TEST(ReadableStreamBytesConsumerTest, TwoPhaseRead) {
 TEST(ReadableStreamBytesConsumerTest, EnqueueUndefined) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
-  ExceptionState& exception_state = scope.GetExceptionState();
 
   auto* underlying_source =
       MakeGarbageCollected<TestUnderlyingSource>(script_state);
@@ -276,11 +261,9 @@ TEST(ReadableStreamBytesConsumerTest, EnqueueUndefined) {
       ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())));
   underlying_source->Close();
 
-  ScriptValue reader = stream->getReader(script_state, exception_state);
-  ASSERT_FALSE(reader.IsEmpty());
-  ASSERT_FALSE(exception_state.HadException());
   Persistent<BytesConsumer> consumer =
-      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, reader);
+      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, stream,
+                                                        ASSERT_NO_EXCEPTION);
   Persistent<MockClient> client = MockClient::Create();
   consumer->SetClient(client);
   Checkpoint checkpoint;
@@ -309,7 +292,6 @@ TEST(ReadableStreamBytesConsumerTest, EnqueueUndefined) {
 TEST(ReadableStreamBytesConsumerTest, EnqueueNull) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
-  ExceptionState& exception_state = scope.GetExceptionState();
 
   auto* underlying_source =
       MakeGarbageCollected<TestUnderlyingSource>(script_state);
@@ -319,11 +301,9 @@ TEST(ReadableStreamBytesConsumerTest, EnqueueNull) {
       ScriptValue(script_state, v8::Null(script_state->GetIsolate())));
   underlying_source->Close();
 
-  ScriptValue reader = stream->getReader(script_state, exception_state);
-  ASSERT_FALSE(reader.IsEmpty());
-  ASSERT_FALSE(exception_state.HadException());
   Persistent<BytesConsumer> consumer =
-      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, reader);
+      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, stream,
+                                                        ASSERT_NO_EXCEPTION);
   Persistent<MockClient> client = MockClient::Create();
   consumer->SetClient(client);
   Checkpoint checkpoint;
@@ -352,7 +332,6 @@ TEST(ReadableStreamBytesConsumerTest, EnqueueNull) {
 TEST(ReadableStreamBytesConsumerTest, EnqueueString) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
-  ExceptionState& exception_state = scope.GetExceptionState();
 
   auto* underlying_source =
       MakeGarbageCollected<TestUnderlyingSource>(script_state);
@@ -362,11 +341,9 @@ TEST(ReadableStreamBytesConsumerTest, EnqueueString) {
       ScriptValue(script_state, V8String(script_state->GetIsolate(), "hello")));
   underlying_source->Close();
 
-  ScriptValue reader = stream->getReader(script_state, exception_state);
-  ASSERT_FALSE(reader.IsEmpty());
-  ASSERT_FALSE(exception_state.HadException());
   Persistent<BytesConsumer> consumer =
-      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, reader);
+      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, stream,
+                                                        ASSERT_NO_EXCEPTION);
   Persistent<MockClient> client = MockClient::Create();
   consumer->SetClient(client);
   Checkpoint checkpoint;

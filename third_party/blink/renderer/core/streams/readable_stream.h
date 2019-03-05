@@ -24,6 +24,30 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  // ReadHandle is used to read from a stream. Each call to Read() corresponds
+  // to a call to ReadableStreamDefaultReaderRead on the underlying stream.
+  //
+  // It has awkward garbage collection semantics: either it must be kept in a
+  // TraceWrapperMember, or the ReadableStream must outlive it.
+  //
+  // This is a transitional interface while the streams C++ port is in progress.
+  // Eventually callers will just use ReadableStreamDefaultReader objects
+  // directly.
+  //
+  // TODO(ricea): Remove this when the V8 Extras implementation is removed.
+  class ReadHandle : public GarbageCollectedFinalized<ReadHandle> {
+   public:
+    ReadHandle() = default;
+    virtual ~ReadHandle() = default;
+
+    virtual ScriptPromise Read(ScriptState*) = 0;
+
+    virtual void Trace(Visitor*) {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ReadHandle);
+  };
+
   // Create* functions create an appropriate subclass depending on which
   // implementation is selected by blink features.
   static ReadableStream* Create(ScriptState*, ExceptionState&);
@@ -72,6 +96,12 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
                    ReadableStream** branch1,
                    ReadableStream** branch2,
                    ExceptionState&) = 0;
+
+  // Lock the stream and return a handle that permits reading from the stream.
+  // This is a temporary API to abstract away the difference between the two
+  // implementations. It is not possible to unlock the stream again after
+  // calling this.
+  virtual ReadHandle* GetReadHandle(ScriptState*, ExceptionState&) = 0;
 
   virtual base::Optional<bool> IsLocked(ScriptState*,
                                         ExceptionState&) const = 0;
