@@ -308,7 +308,7 @@ TEST_F(InputMethodEngineTest, TestHistograms) {
   FocusIn(ui::TEXT_INPUT_TYPE_TEXT);
   engine_->Enable(kTestImeComponentId);
   std::vector<InputMethodEngineBase::SegmentInfo> segments;
-  int context = engine_->GetCotextIdForTesting();
+  int context = engine_->GetContextIdForTesting();
   std::string error;
   base::HistogramTester histograms;
   engine_->SetComposition(context, "test", 0, 0, 0, segments, nullptr);

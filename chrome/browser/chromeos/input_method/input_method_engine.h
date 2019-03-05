@@ -21,7 +21,6 @@
 namespace ui {
 class CandidateWindow;
 struct CompositionText;
-class IMEEngineHandlerInterface;
 class KeyEvent;
 
 namespace ime {
@@ -87,16 +86,13 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
 
   ~InputMethodEngine() override;
 
-  // IMEEngineHandlerInterface overrides.
-  bool SetCandidateWindowVisible(bool visible, std::string* error) override;
-  bool SetCursorPosition(int context_id,
-                         int candidate_id,
-                         std::string* error) override;
-  bool IsActive() const override;
+  // InputMethodEngineBase overrides.
   void Enable(const std::string& component_id) override;
+  bool IsActive() const override;
+
+  // ui::IMEEngineHandlerInterface overrides.
   void PropertyActivate(const std::string& property_name) override;
   void CandidateClicked(uint32_t index) override;
-  void HideInputView() override;
   void SetMirroringEnabled(bool mirroring_enabled) override;
   void SetCastingEnabled(bool casting_enabled) override;
 
@@ -109,10 +105,16 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
   // window widget.
   void SetCandidateWindowProperty(const CandidateWindowProperty& property);
 
+  // Show or hide the candidate window.
+  bool SetCandidateWindowVisible(bool visible, std::string* error);
+
   // Set the list of entries displayed in the candidate window.
   bool SetCandidates(int context_id,
                      const std::vector<Candidate>& candidates,
                      std::string* error);
+
+  // Set the position of the cursor in the candidate window.
+  bool SetCursorPosition(int context_id, int candidate_id, std::string* error);
 
   // Set the list of items that appears in the language menu when this IME is
   // active.
@@ -123,15 +125,10 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
   bool UpdateMenuItems(
       const std::vector<input_method::InputMethodManager::MenuItem>& items);
 
+  // Hides the input view window (from API call).
+  void HideInputView();
+
  private:
-  // Converts MenuItem to InputMethodMenuItem.
-  void MenuItemToProperty(
-      const input_method::InputMethodManager::MenuItem& item,
-      ui::ime::InputMethodMenuItem* property);
-
-  // Enables overriding input view page to Virtual Keyboard window.
-  void EnableInputView();
-
   // input_method::InputMethodEngineBase:
   void UpdateComposition(const ui::CompositionText& composition_text,
                          uint32_t cursor_pos,
@@ -139,6 +136,14 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
   void CommitTextToInputContext(int context_id,
                                 const std::string& text) override;
   bool SendKeyEvent(ui::KeyEvent* event, const std::string& code) override;
+
+  // Enables overriding input view page to Virtual Keyboard window.
+  void EnableInputView();
+
+  // Converts MenuItem to InputMethodMenuItem.
+  void MenuItemToProperty(
+      const input_method::InputMethodManager::MenuItem& item,
+      ui::ime::InputMethodMenuItem* property);
 
   // The current candidate window.
   std::unique_ptr<ui::CandidateWindow> candidate_window_;

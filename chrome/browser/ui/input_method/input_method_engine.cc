@@ -48,6 +48,91 @@ InputMethodEngine::~InputMethodEngine() {
   CloseImeWindows();
 }
 
+void InputMethodEngine::FocusOut() {
+  InputMethodEngineBase::FocusOut();
+  if (follow_cursor_window_)
+    follow_cursor_window_->Hide();
+}
+
+void InputMethodEngine::SetCompositionBounds(
+    const std::vector<gfx::Rect>& bounds) {
+  InputMethodEngineBase::SetCompositionBounds(bounds);
+  if (!bounds.empty()) {
+    current_cursor_bounds_ = bounds[0];
+    if (follow_cursor_window_)
+      follow_cursor_window_->FollowCursor(current_cursor_bounds_);
+  }
+}
+
+void InputMethodEngine::UpdateComposition(
+    const ui::CompositionText& composition_text,
+    uint32_t cursor_pos,
+    bool is_visible) {
+  composition_ = composition_text;
+
+  // Use a thin underline with text color by default.
+  if (composition_.ime_text_spans.empty()) {
+    composition_.ime_text_spans.push_back(ui::ImeTextSpan(
+        ui::ImeTextSpan::Type::kComposition, 0, composition_.text.length(),
+        ui::ImeTextSpan::Thickness::kThin, SK_ColorTRANSPARENT));
+  }
+
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  // If the IME extension is handling key event, hold the composition text
+  // until the key event is handled.
+  if (input_context && !handling_key_event_) {
+    input_context->UpdateCompositionText(composition_, cursor_pos, is_visible);
+    composition_ = ui::CompositionText();
+  } else {
+    composition_changed_ = true;
+  }
+}
+
+void InputMethodEngine::CommitTextToInputContext(int context_id,
+                                                 const std::string& text) {
+  // Append the text to the buffer, as it allows committing text multiple times
+  // when processing a key event.
+  text_ += text;
+
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  // If the IME extension is handling key event, hold the text until the key
+  // event is handled.
+  if (input_context && !handling_key_event_) {
+    input_context->CommitText(text_);
+    text_ = "";
+  } else {
+    commit_text_changed_ = true;
+  }
+}
+
+bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
+                                     const std::string& code) {
+  DCHECK(event);
+
+  // input.ime.sendKeyEvents API is only allowed to work on text fields.
+  if (current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
+    return false;
+
+  if (event->key_code() == ui::VKEY_UNKNOWN)
+    event->set_key_code(ui::DomCodeToUsLayoutKeyboardCode(event->code()));
+
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  if (!input_context)
+    return false;
+
+  // ENTER et al. keys are allowed to work only on http:, https: etc.
+  if (!IsValidKeyForAllPages(event)) {
+    if (IsSpecialPage(input_context->GetInputMethod()))
+      return false;
+  }
+
+  input_context->SendKeyEvent(event);
+  return true;
+}
+
 bool InputMethodEngine::IsActive() const {
   return true;
 }
@@ -115,65 +200,6 @@ void InputMethodEngine::CloseImeWindows() {
   normal_windows_.clear();
 }
 
-void InputMethodEngine::FocusOut() {
-  InputMethodEngineBase::FocusOut();
-  if (follow_cursor_window_)
-    follow_cursor_window_->Hide();
-}
-
-void InputMethodEngine::SetCompositionBounds(
-    const std::vector<gfx::Rect>& bounds) {
-  InputMethodEngineBase::SetCompositionBounds(bounds);
-  if (!bounds.empty()) {
-    current_cursor_bounds_ = bounds[0];
-    if (follow_cursor_window_)
-      follow_cursor_window_->FollowCursor(current_cursor_bounds_);
-  }
-}
-
-void InputMethodEngine::UpdateComposition(
-    const ui::CompositionText& composition_text,
-    uint32_t cursor_pos,
-    bool is_visible) {
-  composition_ = composition_text;
-
-  // Use a thin underline with text color by default.
-  if (composition_.ime_text_spans.empty()) {
-    composition_.ime_text_spans.push_back(ui::ImeTextSpan(
-        ui::ImeTextSpan::Type::kComposition, 0, composition_.text.length(),
-        ui::ImeTextSpan::Thickness::kThin, SK_ColorTRANSPARENT));
-  }
-
-  ui::IMEInputContextHandlerInterface* input_context =
-      ui::IMEBridge::Get()->GetInputContextHandler();
-  // If the IME extension is handling key event, hold the composition text
-  // until the key event is handled.
-  if (input_context && !handling_key_event_) {
-    input_context->UpdateCompositionText(composition_, cursor_pos, is_visible);
-    composition_ = ui::CompositionText();
-  } else {
-    composition_changed_ = true;
-  }
-}
-
-void InputMethodEngine::CommitTextToInputContext(int context_id,
-                                                 const std::string& text) {
-  // Append the text to the buffer, as it allows committing text multiple times
-  // when processing a key event.
-  text_ += text;
-
-  ui::IMEInputContextHandlerInterface* input_context =
-      ui::IMEBridge::Get()->GetInputContextHandler();
-  // If the IME extension is handling key event, hold the text until the key
-  // event is handled.
-  if (input_context && !handling_key_event_) {
-    input_context->CommitText(text_);
-    text_ = "";
-  } else {
-    commit_text_changed_ = true;
-  }
-}
-
 void InputMethodEngine::OnWindowDestroyed(ui::ImeWindow* ime_window) {
   if (ime_window == follow_cursor_window_) {
     follow_cursor_window_ = nullptr;
@@ -195,32 +221,6 @@ ui::ImeWindow* InputMethodEngine::FindWindowById(int window_id) const {
       return ime_window;
   }
   return nullptr;
-}
-
-bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
-                                     const std::string& code) {
-  DCHECK(event);
-
-  // input.ime.sendKeyEvents API is only allowed to work on text fields.
-  if (current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
-    return false;
-
-  if (event->key_code() == ui::VKEY_UNKNOWN)
-    event->set_key_code(ui::DomCodeToUsLayoutKeyboardCode(event->code()));
-
-  ui::IMEInputContextHandlerInterface* input_context =
-      ui::IMEBridge::Get()->GetInputContextHandler();
-  if (!input_context)
-    return false;
-
-  // ENTER et al. keys are allowed to work only on http:, https: etc.
-  if (!IsValidKeyForAllPages(event)) {
-    if (IsSpecialPage(input_context->GetInputMethod()))
-      return false;
-  }
-
-  input_context->SendKeyEvent(event);
-  return true;
 }
 
 bool InputMethodEngine::IsSpecialPage(ui::InputMethod* input_method) {
