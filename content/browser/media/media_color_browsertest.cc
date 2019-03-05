@@ -54,11 +54,11 @@ IN_PROC_BROWSER_TEST_F(MediaColorTest, Yuv444pVp9) {
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 // This test fails on Android: http://crbug.com/938320
 #if defined(OS_ANDROID)
-#define MAYBE_Yuvj420pH264_2 DISABLED_Yuvj420pH264_2
+#define MAYBE_Yuv420pH264 DISABLED_Yuv420pH264
 #else
-#define MAYBE_Yuvj420pH264_2 Yuvj420pH264_2
+#define MAYBE_Yuv420pH264 Yuv420pH264
 #endif
-IN_PROC_BROWSER_TEST_F(MediaColorTest, MAYBE_Yuv420pH264_2) {
+IN_PROC_BROWSER_TEST_F(MediaColorTest, MAYBE_Yuv420pH264) {
 #if defined(OS_ANDROID)
   // https://crbug.com/907572
   if (base::android::BuildInfo::GetInstance()->sdk_int() <=
