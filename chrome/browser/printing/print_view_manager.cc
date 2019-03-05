@@ -135,6 +135,14 @@ void PrintViewManager::PrintPreviewForWebNode(content::RenderFrameHost* rfh) {
   print_preview_state_ = USER_INITIATED_PREVIEW;
 }
 
+void PrintViewManager::PrintPreviewAlmostDone() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (print_preview_state_ != SCRIPTED_PREVIEW)
+    return;
+
+  MaybeUnblockScriptedPreviewRPH();
+}
+
 void PrintViewManager::PrintPreviewDone() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (print_preview_state_ == NOT_PREVIEWING)
@@ -164,7 +172,10 @@ void PrintViewManager::PrintPreviewDone() {
     CHECK(it != map.end());
     it->second.Run();
     map.erase(it);
-    scripted_print_preview_rph_->SetBlocked(false);
+
+    // PrintPreviewAlmostDone() usually already calls this. Calling it again
+    // will likely be a no-op, but do it anyway to reset the state for sure.
+    MaybeUnblockScriptedPreviewRPH();
     scripted_print_preview_rph_ = nullptr;
   }
   print_preview_state_ = NOT_PREVIEWING;
@@ -230,7 +241,11 @@ void PrintViewManager::OnSetupScriptedPrintPreview(
   map[rph] = base::Bind(&PrintViewManager::OnScriptedPrintPreviewReply,
                         base::Unretained(this), reply_msg);
   scripted_print_preview_rph_ = rph;
-  scripted_print_preview_rph_->SetBlocked(true);
+  DCHECK(!scripted_print_preview_rph_set_blocked_);
+  if (!scripted_print_preview_rph_->IsBlocked()) {
+    scripted_print_preview_rph_->SetBlocked(true);
+    scripted_print_preview_rph_set_blocked_ = true;
+  }
 }
 
 void PrintViewManager::OnShowScriptedPrintPreview(content::RenderFrameHost* rfh,
@@ -280,6 +295,13 @@ bool PrintViewManager::OnMessageReceived(
 
   return handled ||
          PrintViewManagerBase::OnMessageReceived(message, render_frame_host);
+}
+
+void PrintViewManager::MaybeUnblockScriptedPreviewRPH() {
+  if (scripted_print_preview_rph_set_blocked_) {
+    scripted_print_preview_rph_->SetBlocked(false);
+    scripted_print_preview_rph_set_blocked_ = false;
+  }
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PrintViewManager)

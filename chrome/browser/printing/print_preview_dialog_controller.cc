@@ -41,6 +41,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
@@ -52,10 +53,13 @@ using content::NavigationController;
 using content::WebContents;
 using content::WebUIMessageHandler;
 
+namespace printing {
+
 namespace {
 
 // A ui::WebDialogDelegate that specifies the print preview dialog appearance.
-class PrintPreviewDialogDelegate : public ui::WebDialogDelegate {
+class PrintPreviewDialogDelegate : public ui::WebDialogDelegate,
+                                   public content::WebContentsObserver {
  public:
   explicit PrintPreviewDialogDelegate(WebContents* initiator);
   ~PrintPreviewDialogDelegate() override;
@@ -73,14 +77,13 @@ class PrintPreviewDialogDelegate : public ui::WebDialogDelegate {
   bool ShouldShowDialogTitle() const override;
 
  private:
-  WebContents* initiator_;
+  WebContents* initiator() const { return web_contents(); }
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewDialogDelegate);
 };
 
 PrintPreviewDialogDelegate::PrintPreviewDialogDelegate(WebContents* initiator)
-    : initiator_(initiator) {
-}
+    : content::WebContentsObserver(initiator) {}
 
 PrintPreviewDialogDelegate::~PrintPreviewDialogDelegate() {
 }
@@ -117,7 +120,10 @@ void PrintPreviewDialogDelegate::GetDialogSize(gfx::Size* size) const {
 
   web_modal::WebContentsModalDialogHost* host = nullptr;
   content::WebContents* outermost_web_contents =
-      guest_view::GuestViewBase::GetTopLevelWebContents(initiator_);
+      guest_view::GuestViewBase::GetTopLevelWebContents(initiator());
+  if (!outermost_web_contents)
+    return;
+
   Browser* browser = chrome::FindBrowserWithWebContents(outermost_web_contents);
   if (browser)
     host = browser->window()->GetWebContentsModalDialogHost();
@@ -142,6 +148,12 @@ std::string PrintPreviewDialogDelegate::GetDialogArgs() const {
 
 void PrintPreviewDialogDelegate::OnDialogClosed(
     const std::string& /* json_retval */) {
+  if (!initiator())
+    return;
+
+  auto* print_view_manager = PrintViewManager::FromWebContents(initiator());
+  if (print_view_manager)
+    print_view_manager->PrintPreviewAlmostDone();
 }
 
 void PrintPreviewDialogDelegate::OnCloseContents(WebContents* /* source */,
@@ -154,8 +166,6 @@ bool PrintPreviewDialogDelegate::ShouldShowDialogTitle() const {
 }
 
 }  // namespace
-
-namespace printing {
 
 PrintPreviewDialogController::PrintPreviewDialogController()
     : waiting_for_new_preview_page_(false),
