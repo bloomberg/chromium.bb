@@ -144,6 +144,7 @@ source_set("jpeg_decoder_unit_test") {
     "//base/test:test_support",
     "//media:test_support",
     "//testing/gtest",
+    "//third_party/libyuv:libyuv",
     "//ui/gfx/geometry",
   ]
 }
