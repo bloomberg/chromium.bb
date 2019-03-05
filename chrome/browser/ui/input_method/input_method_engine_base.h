@@ -220,10 +220,6 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   std::unique_ptr<ui::CompositionText> composition_text_;
   int composition_cursor_;
 
-  // Used with SendKeyEvents and ProcessKeyEvent to check if the key event
-  // sent to ProcessKeyEvent is sent by SendKeyEvents.
-  const ui::KeyEvent* sent_key_event_;
-
   Profile* profile_;
 
   using RequestMap =
