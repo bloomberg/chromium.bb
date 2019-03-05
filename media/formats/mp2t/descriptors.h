@@ -10,10 +10,11 @@
 #include <map>
 #include <string>
 
+#include "media/base/decrypt_config.h"
+
 namespace media {
 
 class BitReader;
-class EncryptionScheme;
 
 namespace mp2t {
 
@@ -48,10 +49,10 @@ class Descriptors {
   // Indicates whether a CA descriptor is present, and if so, whether it is
   // of the type defined by ISO/IEC 23001-9:2014 (i.e. with a specific
   // system_id value and layout of the private_data). If so, the |ca_pid|,
-  // |pssh_pid| and |scheme| are populated with the contents of the descriptor.
+  // |pssh_pid| and |mode| are populated with the contents of the descriptor.
   bool HasCADescriptorCenc(int* ca_pid,
                            int* pssh_pid,
-                           EncryptionScheme* scheme) const;
+                           EncryptionMode* mode) const;
 
   // Indicates whether a Private Data Indicator descriptor is present with a
   // particular |value|.
