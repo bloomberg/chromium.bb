@@ -43,8 +43,7 @@ class CountedBrowserAccessibility : public BrowserAccessibility {
 int CountedBrowserAccessibility::global_obj_count_ = 0;
 
 // Factory that creates a CountedBrowserAccessibility.
-class CountedBrowserAccessibilityFactory
-    : public BrowserAccessibilityFactory {
+class CountedBrowserAccessibilityFactory : public BrowserAccessibilityFactory {
  public:
   ~CountedBrowserAccessibilityFactory() override {}
   BrowserAccessibility* Create() override {
@@ -52,11 +51,9 @@ class CountedBrowserAccessibilityFactory
   }
 };
 
-class TestBrowserAccessibilityDelegate
-    : public BrowserAccessibilityDelegate {
+class TestBrowserAccessibilityDelegate : public BrowserAccessibilityDelegate {
  public:
-  TestBrowserAccessibilityDelegate()
-      : got_fatal_error_(false) {}
+  TestBrowserAccessibilityDelegate() : got_fatal_error_(false) {}
 
   void AccessibilityPerformAction(const ui::AXActionData& data) override {}
   bool AccessibilityViewHasFocus() const override { return false; }
@@ -77,7 +74,7 @@ class TestBrowserAccessibilityDelegate
   bool got_fatal_error() const { return got_fatal_error_; }
   void reset_got_fatal_error() { got_fatal_error_ = false; }
 
-private:
+ private:
   bool got_fatal_error_;
 };
 
@@ -109,11 +106,9 @@ TEST(BrowserAccessibilityManagerTest, TestNoLeaks) {
   // BrowserAccessibility, and ensure that exactly 3 instances were
   // created. Note that the manager takes ownership of the factory.
   CountedBrowserAccessibility::global_obj_count_ = 0;
-  BrowserAccessibilityManager* manager =
-      BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root, button, checkbox),
-          nullptr,
-          new CountedBrowserAccessibilityFactory());
+  BrowserAccessibilityManager* manager = BrowserAccessibilityManager::Create(
+      MakeAXTreeUpdate(root, button, checkbox), nullptr,
+      new CountedBrowserAccessibilityFactory());
 
   ASSERT_EQ(3, CountedBrowserAccessibility::global_obj_count_);
 
@@ -123,11 +118,9 @@ TEST(BrowserAccessibilityManagerTest, TestNoLeaks) {
 
   // Construct a manager again, and this time save references to two of
   // the three nodes in the tree.
-  manager =
-      BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root, button, checkbox),
-          nullptr,
-          new CountedBrowserAccessibilityFactory());
+  manager = BrowserAccessibilityManager::Create(
+      MakeAXTreeUpdate(root, button, checkbox), nullptr,
+      new CountedBrowserAccessibilityFactory());
   ASSERT_EQ(3, CountedBrowserAccessibility::global_obj_count_);
 
   CountedBrowserAccessibility* root_accessible =
@@ -207,12 +200,9 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
 
   // Construct a BrowserAccessibilityManager with tree1.
   CountedBrowserAccessibility::global_obj_count_ = 0;
-  BrowserAccessibilityManager* manager =
-      BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(tree1_root,
-                           tree1_child1, tree1_child2, tree1_child3),
-          nullptr,
-          new CountedBrowserAccessibilityFactory());
+  BrowserAccessibilityManager* manager = BrowserAccessibilityManager::Create(
+      MakeAXTreeUpdate(tree1_root, tree1_child1, tree1_child2, tree1_child3),
+      nullptr, new CountedBrowserAccessibilityFactory());
   ASSERT_EQ(4, CountedBrowserAccessibility::global_obj_count_);
 
   // Save references to all of the objects.
@@ -367,14 +357,11 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
 
   // Construct a BrowserAccessibilityManager with tree1.
   CountedBrowserAccessibility::global_obj_count_ = 0;
-  BrowserAccessibilityManager* manager =
-      BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(tree1_root, tree1_container,
-                           tree1_child1, tree1_grandchild1,
-                           tree1_child2, tree1_grandchild2,
-                           tree1_child3, tree1_grandchild3),
-          nullptr,
-          new CountedBrowserAccessibilityFactory());
+  BrowserAccessibilityManager* manager = BrowserAccessibilityManager::Create(
+      MakeAXTreeUpdate(tree1_root, tree1_container, tree1_child1,
+                       tree1_grandchild1, tree1_child2, tree1_grandchild2,
+                       tree1_child3, tree1_grandchild3),
+      nullptr, new CountedBrowserAccessibilityFactory());
   ASSERT_EQ(8, CountedBrowserAccessibility::global_obj_count_);
 
   // Save references to some objects.
@@ -487,11 +474,9 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
 
   // Construct a BrowserAccessibilityManager with tree1.
   CountedBrowserAccessibility::global_obj_count_ = 0;
-  BrowserAccessibilityManager* manager =
-      BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(tree1_1, tree1_2, tree1_3, tree1_4),
-          nullptr,
-          new CountedBrowserAccessibilityFactory());
+  BrowserAccessibilityManager* manager = BrowserAccessibilityManager::Create(
+      MakeAXTreeUpdate(tree1_1, tree1_2, tree1_3, tree1_4), nullptr,
+      new CountedBrowserAccessibilityFactory());
   ASSERT_EQ(4, CountedBrowserAccessibility::global_obj_count_);
 
   // Process a notification containing the changed subtree.
@@ -529,10 +514,8 @@ TEST(BrowserAccessibilityManagerTest, DISABLED_TestFatalError) {
       new TestBrowserAccessibilityDelegate());
   std::unique_ptr<BrowserAccessibilityManager> manager;
   ASSERT_FALSE(delegate->got_fatal_error());
-  manager.reset(BrowserAccessibilityManager::Create(
-      MakeAXTreeUpdate(root),
-      delegate.get(),
-      factory));
+  manager.reset(BrowserAccessibilityManager::Create(MakeAXTreeUpdate(root),
+                                                    delegate.get(), factory));
   ASSERT_TRUE(delegate->got_fatal_error());
 
   ui::AXNodeData root2;
@@ -563,10 +546,9 @@ TEST(BrowserAccessibilityManagerTest, DISABLED_TestFatalError) {
   delegate->reset_got_fatal_error();
   factory = new CountedBrowserAccessibilityFactory();
   manager.reset(BrowserAccessibilityManager::Create(
-      MakeAXTreeUpdate(root2, child1, child2,
-                       grandchild4, grandchild5, grandchild6),
-      delegate.get(),
-      factory));
+      MakeAXTreeUpdate(root2, child1, child2, grandchild4, grandchild5,
+                       grandchild6),
+      delegate.get(), factory));
   ASSERT_TRUE(delegate->got_fatal_error());
 }
 
@@ -673,7 +655,7 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeMultiElement) {
   inline_text1.role = ax::mojom::Role::kInlineTextBox;
   inline_text1.relative_bounds.bounds = gfx::RectF(0, 20, 33, 9);
   inline_text1.SetTextDirection(ax::mojom::TextDirection::kLtr);
-  std::vector<int32_t> character_offsets { 10, 21, 33 };
+  std::vector<int32_t> character_offsets{10, 21, 33};
   inline_text1.AddIntListAttribute(
       ax::mojom::IntListAttribute::kCharacterOffsets, character_offsets);
   static_text.child_ids.push_back(3);
@@ -697,8 +679,8 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeMultiElement) {
 
   std::unique_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(
-              root, static_text, inline_text1, static_text2, inline_text2),
+          MakeAXTreeUpdate(root, static_text, inline_text1, static_text2,
+                           inline_text2),
           nullptr, new CountedBrowserAccessibilityFactory()));
 
   BrowserAccessibility* root_accessible = manager->GetRoot();
@@ -712,45 +694,52 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeMultiElement) {
 
   // The first line.
   EXPECT_EQ(gfx::Rect(0, 20, 33, 9).ToString(),
-            manager->GetPageBoundsForRange(
-                *static_text_accessible, 0,
-                *static_text_accessible, 3).ToString());
+            manager
+                ->GetPageBoundsForRange(*static_text_accessible, 0,
+                                        *static_text_accessible, 3)
+                .ToString());
 
   // Part of the first line.
   EXPECT_EQ(gfx::Rect(0, 20, 21, 9).ToString(),
-            manager->GetPageBoundsForRange(
-                *static_text_accessible, 0,
-                *static_text_accessible, 2).ToString());
+            manager
+                ->GetPageBoundsForRange(*static_text_accessible, 0,
+                                        *static_text_accessible, 2)
+                .ToString());
 
   // Part of the first line.
   EXPECT_EQ(gfx::Rect(10, 20, 23, 9).ToString(),
-            manager->GetPageBoundsForRange(
-                *static_text_accessible, 1,
-                *static_text_accessible, 3).ToString());
+            manager
+                ->GetPageBoundsForRange(*static_text_accessible, 1,
+                                        *static_text_accessible, 3)
+                .ToString());
 
   // The second line.
   EXPECT_EQ(gfx::Rect(10, 40, 33, 9).ToString(),
-            manager->GetPageBoundsForRange(
-                *static_text_accessible2, 0,
-                *static_text_accessible2, 3).ToString());
+            manager
+                ->GetPageBoundsForRange(*static_text_accessible2, 0,
+                                        *static_text_accessible2, 3)
+                .ToString());
 
   // All of both lines.
   EXPECT_EQ(gfx::Rect(0, 20, 43, 29).ToString(),
-            manager->GetPageBoundsForRange(
-                *static_text_accessible, 0,
-                *static_text_accessible2, 3).ToString());
+            manager
+                ->GetPageBoundsForRange(*static_text_accessible, 0,
+                                        *static_text_accessible2, 3)
+                .ToString());
 
   // Part of both lines.
   EXPECT_EQ(gfx::Rect(10, 20, 23, 29).ToString(),
-            manager->GetPageBoundsForRange(
-                *static_text_accessible, 2,
-                *static_text_accessible2, 1).ToString());
+            manager
+                ->GetPageBoundsForRange(*static_text_accessible, 2,
+                                        *static_text_accessible2, 1)
+                .ToString());
 
   // Part of both lines in reverse order.
   EXPECT_EQ(gfx::Rect(10, 20, 23, 29).ToString(),
-            manager->GetPageBoundsForRange(
-                *static_text_accessible2, 1,
-                *static_text_accessible, 2).ToString());
+            manager
+                ->GetPageBoundsForRange(*static_text_accessible2, 1,
+                                        *static_text_accessible, 2)
+                .ToString());
 }
 
 TEST(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
@@ -1156,18 +1145,18 @@ TEST(BrowserAccessibilityManagerTest, TestNextPreviousTextOnlyObject) {
   EXPECT_EQ(nullptr, manager->NextTextOnlyObject(text4_accessible));
 
   EXPECT_EQ(nullptr, manager->PreviousTextOnlyObject(nullptr));
-  EXPECT_EQ(
-      text3_accessible, manager->PreviousTextOnlyObject(text4_accessible));
-  EXPECT_EQ(
-      text3_accessible, manager->PreviousTextOnlyObject(node5_accessible));
-  EXPECT_EQ(
-      text2_accessible, manager->PreviousTextOnlyObject(text3_accessible));
-  EXPECT_EQ(
-      text2_accessible, manager->PreviousTextOnlyObject(node4_accessible));
-  EXPECT_EQ(
-      text1_accessible, manager->PreviousTextOnlyObject(text2_accessible));
-  EXPECT_EQ(
-      text1_accessible, manager->PreviousTextOnlyObject(node3_accessible));
+  EXPECT_EQ(text3_accessible,
+            manager->PreviousTextOnlyObject(text4_accessible));
+  EXPECT_EQ(text3_accessible,
+            manager->PreviousTextOnlyObject(node5_accessible));
+  EXPECT_EQ(text2_accessible,
+            manager->PreviousTextOnlyObject(text3_accessible));
+  EXPECT_EQ(text2_accessible,
+            manager->PreviousTextOnlyObject(node4_accessible));
+  EXPECT_EQ(text1_accessible,
+            manager->PreviousTextOnlyObject(text2_accessible));
+  EXPECT_EQ(text1_accessible,
+            manager->PreviousTextOnlyObject(node3_accessible));
   EXPECT_EQ(nullptr, manager->PreviousTextOnlyObject(node2_accessible));
   EXPECT_EQ(nullptr, manager->PreviousTextOnlyObject(root_accessible));
 }

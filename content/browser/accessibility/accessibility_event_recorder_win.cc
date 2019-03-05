@@ -42,16 +42,18 @@ std::string RoleVariantToString(const base::win::ScopedVariant& role) {
 HRESULT QueryIAccessible2(IAccessible* accessible, IAccessible2** accessible2) {
   Microsoft::WRL::ComPtr<IServiceProvider> service_provider;
   HRESULT hr = accessible->QueryInterface(service_provider.GetAddressOf());
-  return SUCCEEDED(hr) ?
-      service_provider->QueryService(IID_IAccessible2, accessible2) : hr;
+  return SUCCEEDED(hr)
+             ? service_provider->QueryService(IID_IAccessible2, accessible2)
+             : hr;
 }
 
 HRESULT QueryIAccessibleText(IAccessible* accessible,
                              IAccessibleText** accessible_text) {
   Microsoft::WRL::ComPtr<IServiceProvider> service_provider;
   HRESULT hr = accessible->QueryInterface(service_provider.GetAddressOf());
-  return SUCCEEDED(hr) ?
-      service_provider->QueryService(IID_IAccessibleText, accessible_text) : hr;
+  return SUCCEEDED(hr) ? service_provider->QueryService(IID_IAccessibleText,
+                                                        accessible_text)
+                       : hr;
 }
 
 std::string BstrToPrettyUTF8(BSTR bstr) {
@@ -105,8 +107,10 @@ class AccessibilityEventRecorderWin : public AccessibilityEventRecorder {
 
   // Wrapper around AccessibleObjectFromWindow because the function call
   // inexplicably flakes sometimes on build/trybots.
-  HRESULT AccessibleObjectFromWindowWrapper(
-      HWND hwnd, DWORD dwId, REFIID riid, void **ppvObject);
+  HRESULT AccessibleObjectFromWindowWrapper(HWND hwnd,
+                                            DWORD dwId,
+                                            REFIID riid,
+                                            void** ppvObject);
 
   HWINEVENTHOOK win_event_hook_handle_;
   static AccessibilityEventRecorderWin* instance_;
@@ -186,14 +190,13 @@ AccessibilityEventRecorderWin::~AccessibilityEventRecorderWin() {
   instance_ = nullptr;
 }
 
-void AccessibilityEventRecorderWin::OnWinEventHook(
-    HWINEVENTHOOK handle,
-    DWORD event,
-    HWND hwnd,
-    LONG obj_id,
-    LONG child_id,
-    DWORD event_thread,
-    DWORD event_time) {
+void AccessibilityEventRecorderWin::OnWinEventHook(HWINEVENTHOOK handle,
+                                                   DWORD event,
+                                                   HWND hwnd,
+                                                   LONG obj_id,
+                                                   LONG child_id,
+                                                   DWORD event_thread,
+                                                   DWORD event_time) {
   Microsoft::WRL::ComPtr<IAccessible> browser_accessible;
   HRESULT hr = AccessibleObjectFromWindowWrapper(
       hwnd, obj_id, IID_IAccessible,
@@ -384,13 +387,16 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
     }
   }
 
-  log = base::UTF16ToUTF8(
-      base::CollapseWhitespace(base::UTF8ToUTF16(log), true));
+  log =
+      base::UTF16ToUTF8(base::CollapseWhitespace(base::UTF8ToUTF16(log), true));
   OnEvent(log);
 }
 
 HRESULT AccessibilityEventRecorderWin::AccessibleObjectFromWindowWrapper(
-    HWND hwnd, DWORD dw_id, REFIID riid, void** ppv_object) {
+    HWND hwnd,
+    DWORD dw_id,
+    REFIID riid,
+    void** ppv_object) {
   HRESULT hr = ::AccessibleObjectFromWindow(hwnd, dw_id, riid, ppv_object);
   if (SUCCEEDED(hr))
     return hr;

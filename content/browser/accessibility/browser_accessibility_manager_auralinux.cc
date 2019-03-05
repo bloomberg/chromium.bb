@@ -35,12 +35,10 @@ BrowserAccessibilityManagerAuraLinux::BrowserAccessibilityManagerAuraLinux(
   Initialize(initial_tree);
 }
 
-BrowserAccessibilityManagerAuraLinux::~BrowserAccessibilityManagerAuraLinux() {
-}
+BrowserAccessibilityManagerAuraLinux::~BrowserAccessibilityManagerAuraLinux() {}
 
 // static
-ui::AXTreeUpdate
-    BrowserAccessibilityManagerAuraLinux::GetEmptyDocument() {
+ui::AXTreeUpdate BrowserAccessibilityManagerAuraLinux::GetEmptyDocument() {
   ui::AXNodeData empty_document;
   empty_document.id = 0;
   empty_document.role = ax::mojom::Role::kRootWebArea;

@@ -40,7 +40,7 @@ const GUID GUID_IAccessibleContentDocument = {
 namespace ui {
 enum TextBoundaryDirection;
 enum TextBoundaryType;
-}
+}  // namespace ui
 
 namespace content {
 class BrowserAccessibilityWin;

@@ -36,10 +36,10 @@
 // These tests time out on Android.
 #if defined(OS_ANDROID)
 #define MAYBE_SitePerProcessAccessibilityBrowserTest \
-    DISABLED_SitePerProcessAccessibilityBrowserTest
+  DISABLED_SitePerProcessAccessibilityBrowserTest
 #else
 #define MAYBE_SitePerProcessAccessibilityBrowserTest \
-    SitePerProcessAccessibilityBrowserTest
+  SitePerProcessAccessibilityBrowserTest
 #endif
 
 namespace content {
@@ -78,9 +78,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
 
   // Load same-site page into iframe.
   FrameTreeNode* child = root->child_at(0);
@@ -90,9 +90,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
   // Load cross-site page into iframe and wait for text from that
   // page to appear in the accessibility tree.
   LoadCrossSitePageIntoFrame(child, "/title2.html", "foo.com");
-  WaitForAccessibilityTreeToContainNodeWithName(
-      shell()->web_contents(),
-      "Title Of Awesomeness");
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Title Of Awesomeness");
 
   RenderFrameHostImpl* main_frame = static_cast<RenderFrameHostImpl*>(
       shell()->web_contents()->GetMainFrame());
@@ -146,25 +145,23 @@ IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
   NavigateToURL(shell(), main_url);
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root =
-      static_cast<WebContentsImpl*>(shell()->web_contents())->
-          GetFrameTree()->root();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
 
   // Load first cross-site page into iframe and wait for text from that
   // page to appear in the accessibility tree.
   FrameTreeNode* child = root->child_at(0);
   LoadCrossSitePageIntoFrame(child, "/title1.html", "foo.com");
-  WaitForAccessibilityTreeToContainNodeWithName(
-      shell()->web_contents(),
-      "This page has no title.");
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "This page has no title.");
 
   // Load second cross-site page into iframe and wait for text from that
   // page to appear in the accessibility tree. If this succeeds and doesn't
   // time out, the test passes.
   LoadCrossSitePageIntoFrame(child, "/title2.html", "bar.com");
-  WaitForAccessibilityTreeToContainNodeWithName(
-      shell()->web_contents(),
-      "Title Of Awesomeness");
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Title Of Awesomeness");
 }
 
 // Ensure that enabling accessibility and doing a remote-to-local main frame

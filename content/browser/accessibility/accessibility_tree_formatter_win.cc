@@ -182,8 +182,7 @@ AccessibilityTreeFormatterWin::AccessibilityTreeFormatterWin() {
   ui::win::CreateATLModuleIfNeeded();
 }
 
-AccessibilityTreeFormatterWin::~AccessibilityTreeFormatterWin() {
-}
+AccessibilityTreeFormatterWin::~AccessibilityTreeFormatterWin() {}
 
 static HRESULT QuerySimpleDOMNode(IAccessible* accessible,
                                   ISimpleDOMNode** simple_dom_node) {
@@ -544,23 +543,23 @@ void AccessibilityTreeFormatterWin::AddMSAAProperties(
   }
 
   if (SUCCEEDED(node->get_accDescription(variant_self, temp_bstr.Receive()))) {
-    dict->SetString("description", base::string16(temp_bstr,
-        temp_bstr.Length()));
+    dict->SetString("description",
+                    base::string16(temp_bstr, temp_bstr.Length()));
   }
   temp_bstr.Reset();
 
   // |get_accDefaultAction| returns a localized string.
   if (SUCCEEDED(
           node->get_accDefaultAction(variant_self, temp_bstr.Receive()))) {
-    dict->SetString("default_action", base::string16(temp_bstr,
-        temp_bstr.Length()));
+    dict->SetString("default_action",
+                    base::string16(temp_bstr, temp_bstr.Length()));
   }
   temp_bstr.Reset();
 
   if (SUCCEEDED(
           node->get_accKeyboardShortcut(variant_self, temp_bstr.Receive()))) {
-    dict->SetString("keyboard_shortcut", base::string16(temp_bstr,
-        temp_bstr.Length()));
+    dict->SetString("keyboard_shortcut",
+                    base::string16(temp_bstr, temp_bstr.Length()));
   }
   temp_bstr.Reset();
 
@@ -980,8 +979,7 @@ base::string16 AccessibilityTreeFormatterWin::ProcessTreeForOutput(
         std::unique_ptr<base::ListValue> filtered_list(new base::ListValue());
 
         for (base::ListValue::const_iterator it = list_value->begin();
-             it != list_value->end();
-             ++it) {
+             it != list_value->end(); ++it) {
           base::string16 string_value;
           if (it->GetAsString(&string_value))
             if (WriteAttribute(false, string_value, &line))

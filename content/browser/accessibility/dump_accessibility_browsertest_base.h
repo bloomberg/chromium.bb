@@ -92,10 +92,9 @@ class DumpAccessibilityTestBase : public ContentBrowserTest {
   // indicating that the test is done, and this framework will wait for that
   // string to appear before comparing the results. There can be multiple
   // @WAIT-FOR: directives.
-  void ParseHtmlForExtraDirectives(
-      const std::string& test_html,
-      std::vector<std::string>* wait_for,
-      std::vector<std::string>* run_until);
+  void ParseHtmlForExtraDirectives(const std::string& test_html,
+                                   std::vector<std::string>* wait_for,
+                                   std::vector<std::string>* run_until);
 
   void RunTestForPlatform(const base::FilePath file_path, const char* file_dir);
 

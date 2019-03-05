@@ -48,7 +48,7 @@ class TouchAccessibilityBrowserTest : public ContentBrowserTest {
     aura::Window* window = shell()->web_contents()->GetContentNativeView();
     ui::EventSink* sink = window->GetHost()->event_sink();
     gfx::Rect bounds = window->GetBoundsInRootWindow();
-    gfx::Point location(bounds.x() + x,  bounds.y() + y);
+    gfx::Point location(bounds.x() + x, bounds.y() + y);
     int flags = ui::EF_TOUCH_ACCESSIBILITY;
     std::unique_ptr<ui::Event> mouse_move_event(
         new ui::MouseEvent(ui::ET_MOUSE_MOVED, location, location,
@@ -85,8 +85,8 @@ IN_PROC_BROWSER_TEST_F(TouchAccessibilityBrowserTest,
   NavigateToUrlAndWaitForAccessibilityTree(GURL(html_url));
 
   // Get the BrowserAccessibilityManager.
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      shell()->web_contents());
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
   BrowserAccessibilityManager* manager =
       web_contents->GetRootBrowserAccessibilityManager();
   ASSERT_NE(nullptr, manager);
@@ -122,12 +122,11 @@ IN_PROC_BROWSER_TEST_F(TouchAccessibilityBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(TouchAccessibilityBrowserTest,
                        TouchExplorationInIframe) {
-  NavigateToUrlAndWaitForAccessibilityTree(
-      embedded_test_server()->GetURL(
-          "/accessibility/html/iframe-coordinates.html"));
+  NavigateToUrlAndWaitForAccessibilityTree(embedded_test_server()->GetURL(
+      "/accessibility/html/iframe-coordinates.html"));
 
-  WaitForAccessibilityTreeToContainNodeWithName(
-      shell()->web_contents(), "Ordinary Button");
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Ordinary Button");
 
   // Get the BrowserAccessibilityManager for the first child frame.
   RenderFrameHostImpl* main_frame = static_cast<RenderFrameHostImpl*>(
@@ -154,12 +153,11 @@ IN_PROC_BROWSER_TEST_F(TouchAccessibilityBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(TouchAccessibilityBrowserTest,
                        TouchExplorationInCrossSiteIframe) {
-  NavigateToUrlAndWaitForAccessibilityTree(
-      embedded_test_server()->GetURL(
-          "/accessibility/html/iframe-coordinates-cross-process.html"));
+  NavigateToUrlAndWaitForAccessibilityTree(embedded_test_server()->GetURL(
+      "/accessibility/html/iframe-coordinates-cross-process.html"));
 
-  WaitForAccessibilityTreeToContainNodeWithName(
-      shell()->web_contents(), "Ordinary Button");
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Ordinary Button");
 
   // Get the BrowserAccessibilityManager for the first child frame.
   RenderFrameHostImpl* main_frame = static_cast<RenderFrameHostImpl*>(

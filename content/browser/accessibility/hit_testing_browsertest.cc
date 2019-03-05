@@ -156,10 +156,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   NavigateToURL(shell(), url);
   waiter.WaitForNotification();
 
-  WaitForAccessibilityTreeToContainNodeWithName(
-      shell()->web_contents(), "Ordinary Button");
-  WaitForAccessibilityTreeToContainNodeWithName(
-      shell()->web_contents(), "Scrolled Button");
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Ordinary Button");
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Scrolled Button");
 
   // Send a series of hit test requests, and for each one
   // wait for the hover event in response, verifying we hit the
@@ -226,10 +226,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   NavigateToURL(shell(), url);
   waiter.WaitForNotification();
 
-  WaitForAccessibilityTreeToContainNodeWithName(
-      shell()->web_contents(), "Ordinary Button");
-  WaitForAccessibilityTreeToContainNodeWithName(
-      shell()->web_contents(), "Scrolled Button");
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Ordinary Button");
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Scrolled Button");
 
   // For each point we try, the first time we call CachingAsyncHitTest it
   // should FAIL and return the wrong object, because this test page has

@@ -53,8 +53,7 @@ BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() {
 }
 
 // static
-ui::AXTreeUpdate
-    BrowserAccessibilityManagerWin::GetEmptyDocument() {
+ui::AXTreeUpdate BrowserAccessibilityManagerWin::GetEmptyDocument() {
   ui::AXNodeData empty_document;
   empty_document.id = 0;
   empty_document.role = ax::mojom::Role::kRootWebArea;
@@ -252,8 +251,8 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
     ui::AXTree* tree,
     bool root_changed,
     const std::vector<ui::AXTreeObserver::Change>& changes) {
-  BrowserAccessibilityManager::OnAtomicUpdateFinished(
-      tree, root_changed, changes);
+  BrowserAccessibilityManager::OnAtomicUpdateFinished(tree, root_changed,
+                                                      changes);
 
   if (root_changed &&
       switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {

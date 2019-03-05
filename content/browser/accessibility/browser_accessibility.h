@@ -209,7 +209,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   virtual void Destroy();
 
   // Subclasses should override this to support platform reference counting.
-  virtual void NativeAddReference() { }
+  virtual void NativeAddReference() {}
 
   // Subclasses should override this to support platform reference counting.
   virtual void NativeReleaseReference();

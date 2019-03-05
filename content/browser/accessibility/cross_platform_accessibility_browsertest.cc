@@ -344,8 +344,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   RecursiveAssertUniqueIds(root, &ids);
 }
 
-IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
-                       MAYBE_TableSpan) {
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest, MAYBE_TableSpan) {
   // +---+---+---+
   // |   1   | 2 |
   // +---+---+---+
@@ -401,8 +400,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
             GetIntAttr(cell4, ax::mojom::IntAttribute::kTableCellColumnSpan));
 }
 
-IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
-                       WritableElement) {
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest, WritableElement) {
   const char url_str[] =
       "data:text/html,"
       "<!doctype html>"

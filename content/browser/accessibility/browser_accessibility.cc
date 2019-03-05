@@ -36,11 +36,10 @@ BrowserAccessibility* BrowserAccessibility::Create() {
 BrowserAccessibility::BrowserAccessibility()
     : manager_(nullptr), node_(nullptr) {}
 
-BrowserAccessibility::~BrowserAccessibility() {
-}
+BrowserAccessibility::~BrowserAccessibility() {}
 
 void BrowserAccessibility::Init(BrowserAccessibilityManager* manager,
-    ui::AXNode* node) {
+                                ui::AXNode* node) {
   manager_ = manager;
   node_ = node;
 }
@@ -403,8 +402,8 @@ gfx::Rect BrowserAccessibility::GetPageBoundsForRange(int start,
   for (size_t i = 0; i < InternalChildCount() && child_end < start + len; ++i) {
     BrowserAccessibility* child = InternalGetChild(i);
     if (child->GetRole() != ax::mojom::Role::kInlineTextBox) {
-      DLOG(WARNING) << "BrowserAccessibility objects with role STATIC_TEXT " <<
-          "should have children of role INLINE_TEXT_BOX.";
+      DLOG(WARNING) << "BrowserAccessibility objects with role STATIC_TEXT "
+                    << "should have children of role INLINE_TEXT_BOX.";
       continue;
     }
 
@@ -438,8 +437,7 @@ gfx::Rect BrowserAccessibility::GetPageBoundsForRange(int start,
     }
     int start_pixel_offset =
         local_start > 0 ? character_offsets[local_start - 1] : 0;
-    int end_pixel_offset =
-        local_end > 0 ? character_offsets[local_end - 1] : 0;
+    int end_pixel_offset = local_end > 0 ? character_offsets[local_end - 1] : 0;
     int max_pixel_offset = character_offsets_length > 0
                                ? character_offsets[character_offsets_length - 1]
                                : 0;
@@ -729,13 +727,13 @@ bool BrowserAccessibility::GetIntListAttribute(
   return GetData().GetIntListAttribute(attribute, value);
 }
 
-bool BrowserAccessibility::GetHtmlAttribute(
-    const char* html_attr, std::string* value) const {
+bool BrowserAccessibility::GetHtmlAttribute(const char* html_attr,
+                                            std::string* value) const {
   return GetData().GetHtmlAttribute(html_attr, value);
 }
 
-bool BrowserAccessibility::GetHtmlAttribute(
-    const char* html_attr, base::string16* value) const {
+bool BrowserAccessibility::GetHtmlAttribute(const char* html_attr,
+                                            base::string16* value) const {
   return GetData().GetHtmlAttribute(html_attr, value);
 }
 

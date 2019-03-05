@@ -340,63 +340,67 @@ TEST_F(BrowserAccessibilityWinTest, TestTextBoundaries) {
   LONG start;
   LONG end;
   EXPECT_EQ(S_OK, text_field_obj->get_textAtOffset(
-      1, IA2_TEXT_BOUNDARY_CHAR, &start, &end, text.Receive()));
+                      1, IA2_TEXT_BOUNDARY_CHAR, &start, &end, text.Receive()));
   EXPECT_EQ(1, start);
   EXPECT_EQ(2, end);
   EXPECT_STREQ(L"n", text);
   text.Reset();
 
-  EXPECT_EQ(S_FALSE, text_field_obj->get_textAtOffset(
-      text_len, IA2_TEXT_BOUNDARY_CHAR, &start, &end, text.Receive()));
+  EXPECT_EQ(S_FALSE,
+            text_field_obj->get_textAtOffset(text_len, IA2_TEXT_BOUNDARY_CHAR,
+                                             &start, &end, text.Receive()));
   EXPECT_EQ(0, start);
   EXPECT_EQ(0, end);
   EXPECT_EQ(nullptr, text);
   text.Reset();
 
-  EXPECT_EQ(S_FALSE, text_field_obj->get_textAtOffset(
-      text_len, IA2_TEXT_BOUNDARY_WORD, &start, &end, text.Receive()));
+  EXPECT_EQ(S_FALSE,
+            text_field_obj->get_textAtOffset(text_len, IA2_TEXT_BOUNDARY_WORD,
+                                             &start, &end, text.Receive()));
   EXPECT_EQ(0, start);
   EXPECT_EQ(0, end);
   EXPECT_EQ(nullptr, text);
   text.Reset();
 
   EXPECT_EQ(S_OK, text_field_obj->get_textAtOffset(
-      1, IA2_TEXT_BOUNDARY_WORD, &start, &end, text.Receive()));
+                      1, IA2_TEXT_BOUNDARY_WORD, &start, &end, text.Receive()));
   EXPECT_EQ(0, start);
   EXPECT_EQ(4, end);
   EXPECT_STREQ(L"One ", text);
   text.Reset();
 
   EXPECT_EQ(S_OK, text_field_obj->get_textAtOffset(
-      6, IA2_TEXT_BOUNDARY_WORD, &start, &end, text.Receive()));
+                      6, IA2_TEXT_BOUNDARY_WORD, &start, &end, text.Receive()));
   EXPECT_EQ(4, start);
   EXPECT_EQ(8, end);
   EXPECT_STREQ(L"two ", text);
   text.Reset();
 
   EXPECT_EQ(S_OK, text_field_obj->get_textAtOffset(
-      text_len - 1, IA2_TEXT_BOUNDARY_WORD, &start, &end, text.Receive()));
+                      text_len - 1, IA2_TEXT_BOUNDARY_WORD, &start, &end,
+                      text.Receive()));
   EXPECT_EQ(25, start);
   EXPECT_EQ(29, end);
   EXPECT_STREQ(L"six.", text);
   text.Reset();
 
   EXPECT_EQ(S_OK, text_field_obj->get_textAtOffset(
-      1, IA2_TEXT_BOUNDARY_LINE, &start, &end, text.Receive()));
+                      1, IA2_TEXT_BOUNDARY_LINE, &start, &end, text.Receive()));
   EXPECT_EQ(0, start);
   EXPECT_EQ(15, end);
   EXPECT_STREQ(L"One two three.\n", text);
   text.Reset();
 
-  EXPECT_EQ(S_OK, text_field_obj->get_textAtOffset(
-      text_len, IA2_TEXT_BOUNDARY_LINE, &start, &end, text.Receive()));
+  EXPECT_EQ(S_OK,
+            text_field_obj->get_textAtOffset(text_len, IA2_TEXT_BOUNDARY_LINE,
+                                             &start, &end, text.Receive()));
   EXPECT_EQ(15, start);
   EXPECT_EQ(text_len, end);
   EXPECT_STREQ(L"Four five six.", text);
   text.Reset();
 
-  EXPECT_EQ(S_OK, text_field_obj->get_text(
-      0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
+  EXPECT_EQ(S_OK, text_field_obj->get_text(0, IA2_TEXT_OFFSET_LENGTH,
+                                           text.Receive()));
   EXPECT_EQ(text_value, base::UTF16ToUTF8(base::string16(text)));
 
   // Delete the manager and test that all BrowserAccessibility instances are
@@ -1184,7 +1188,7 @@ TEST_F(BrowserAccessibilityWinTest, TestCaretAndSelectionInSimpleFields) {
   // Test get_selection.
   hr = combo_box_accessible->GetCOM()->get_selection(
       0L /* selection_index */, &selection_start, &selection_end);
-  EXPECT_EQ(E_INVALIDARG, hr); // No selections available.
+  EXPECT_EQ(E_INVALIDARG, hr);  // No selections available.
   hr = text_field_accessible->GetCOM()->get_selection(
       0L /* selection_index */, &selection_start, &selection_end);
   EXPECT_EQ(S_OK, hr);
@@ -1233,8 +1237,8 @@ TEST_F(BrowserAccessibilityWinTest, TestCaretInContentEditables) {
   div_editable.child_ids.push_back(4);
   link.child_ids.push_back(5);
 
-  ui::AXTreeUpdate update = MakeAXTreeUpdate(
-      root, div_editable, link, link_text, text);
+  ui::AXTreeUpdate update =
+      MakeAXTreeUpdate(root, div_editable, link, link_text, text);
 
   // Place the caret between 'h' and 'e'.
   update.has_tree_data = true;
