@@ -44,7 +44,9 @@ std::string GetContentUriMimeType(const FilePath& content_uri) {
 
 bool MaybeGetFileDisplayName(const FilePath& content_uri,
                              base::string16* file_display_name) {
-  DCHECK(content_uri.IsContentUri());
+  if (!content_uri.IsContentUri())
+    return false;
+
   DCHECK(file_display_name);
 
   JNIEnv* env = base::android::AttachCurrentThread();
