@@ -37,10 +37,10 @@
 #include "content/renderer/media/webrtc/rtc_stats.h"
 #include "content/renderer/media/webrtc/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc/webrtc_set_description_observer.h"
-#include "content/renderer/media/webrtc/webrtc_uma_histograms.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/media_switches.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
+#include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_rtc_answer_options.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
@@ -1726,7 +1726,8 @@ RTCPeerConnectionHandler::AddTrack(
   for (const auto& stream_id : rtp_senders_.back()->state().stream_ids()) {
     if (GetLocalStreamUsageCount(rtp_senders_, stream_id) == 1u) {
       // This is the first occurrence of this stream.
-      PerSessionWebRTCAPIMetrics::GetInstance()->IncrementStreamCounter();
+      blink::PerSessionWebRTCAPIMetrics::GetInstance()
+          ->IncrementStreamCounter();
     }
   }
   return web_transceiver;
@@ -1808,7 +1809,8 @@ bool RTCPeerConnectionHandler::RemoveTrackPlanB(
   for (const auto& stream_id : stream_ids) {
     if (GetLocalStreamUsageCount(rtp_senders_, stream_id) == 0u) {
       // This was the last occurrence of this stream.
-      PerSessionWebRTCAPIMetrics::GetInstance()->DecrementStreamCounter();
+      blink::PerSessionWebRTCAPIMetrics::GetInstance()
+          ->DecrementStreamCounter();
     }
   }
   return true;
@@ -2107,7 +2109,8 @@ void RTCPeerConnectionHandler::OnAddReceiverPlanB(
   for (const auto& stream_id : receiver_state.stream_ids()) {
     // New remote stream?
     if (!IsRemoteStream(rtp_receivers_, stream_id))
-      PerSessionWebRTCAPIMetrics::GetInstance()->IncrementStreamCounter();
+      blink::PerSessionWebRTCAPIMetrics::GetInstance()
+          ->IncrementStreamCounter();
   }
   uintptr_t receiver_id =
       RTCRtpReceiver::getId(receiver_state.webrtc_receiver().get());
@@ -2154,7 +2157,8 @@ void RTCPeerConnectionHandler::OnRemoveReceiverPlanB(uintptr_t receiver_id) {
   for (const auto& stream_id : receiver->state().stream_ids()) {
     // This was the last occurence of the stream?
     if (!IsRemoteStream(rtp_receivers_, stream_id))
-      PerSessionWebRTCAPIMetrics::GetInstance()->IncrementStreamCounter();
+      blink::PerSessionWebRTCAPIMetrics::GetInstance()
+          ->IncrementStreamCounter();
   }
   if (!is_closed_)
     client_->DidRemoveReceiverPlanB(std::move(receiver));

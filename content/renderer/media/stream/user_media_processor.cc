@@ -32,7 +32,6 @@
 #include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "content/renderer/media/stream/user_media_client_impl.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
-#include "content/renderer/media/webrtc/webrtc_uma_histograms.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -42,6 +41,7 @@
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
@@ -1405,12 +1405,13 @@ void UserMediaProcessor::StopAllProcessing() {
         FALLTHROUGH;
 
       case RequestInfo::State::NOT_SENT_FOR_GENERATION:
-        LogUserMediaRequestWithNoResult(MEDIA_STREAM_REQUEST_NOT_GENERATED);
+        LogUserMediaRequestWithNoResult(
+            blink::MEDIA_STREAM_REQUEST_NOT_GENERATED);
         break;
 
       case RequestInfo::State::GENERATED:
         LogUserMediaRequestWithNoResult(
-            MEDIA_STREAM_REQUEST_PENDING_MEDIA_TRACKS);
+            blink::MEDIA_STREAM_REQUEST_PENDING_MEDIA_TRACKS);
         break;
     }
     current_request_info_.reset();

@@ -121,7 +121,7 @@
 
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/rtc_certificate_generator.h"
-#include "content/renderer/media/webrtc/webrtc_uma_histograms.h"
+#include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 
 using blink::Platform;
 using blink::WebAudioDevice;

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/webrtc_uma_histograms.h"
+#include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
 
-namespace content {
+namespace blink {
 
 class MockPerSessionWebRTCAPIMetrics : public PerSessionWebRTCAPIMetrics {
  public:
@@ -17,12 +17,12 @@ class MockPerSessionWebRTCAPIMetrics : public PerSessionWebRTCAPIMetrics {
 
   using PerSessionWebRTCAPIMetrics::LogUsageOnlyOnce;
 
-  MOCK_METHOD1(LogUsage, void(blink::WebRTCAPIName));
+  MOCK_METHOD1(LogUsage, void(WebRTCAPIName));
 };
 
 class PerSessionWebRTCAPIMetricsTest
     : public testing::Test,
-      public testing::WithParamInterface<blink::WebRTCAPIName> {
+      public testing::WithParamInterface<WebRTCAPIName> {
  public:
   PerSessionWebRTCAPIMetricsTest() = default;
   ~PerSessionWebRTCAPIMetricsTest() override = default;
@@ -32,13 +32,13 @@ class PerSessionWebRTCAPIMetricsTest
 };
 
 TEST_P(PerSessionWebRTCAPIMetricsTest, NoCallOngoing) {
-  blink::WebRTCAPIName api_name = GetParam();
+  WebRTCAPIName api_name = GetParam();
   EXPECT_CALL(metrics, LogUsage(api_name)).Times(1);
   metrics.LogUsageOnlyOnce(api_name);
 }
 
 TEST_P(PerSessionWebRTCAPIMetricsTest, CallOngoing) {
-  blink::WebRTCAPIName api_name = GetParam();
+  WebRTCAPIName api_name = GetParam();
   metrics.IncrementStreamCounter();
   EXPECT_CALL(metrics, LogUsage(api_name)).Times(1);
   metrics.LogUsageOnlyOnce(api_name);
@@ -47,36 +47,33 @@ TEST_P(PerSessionWebRTCAPIMetricsTest, CallOngoing) {
 INSTANTIATE_TEST_SUITE_P(
     PerSessionWebRTCAPIMetricsTest,
     PerSessionWebRTCAPIMetricsTest,
-    ::testing::ValuesIn({blink::WebRTCAPIName::kGetUserMedia,
-                         blink::WebRTCAPIName::kGetDisplayMedia,
-                         blink::WebRTCAPIName::kEnumerateDevices,
-                         blink::WebRTCAPIName::kRTCPeerConnection}));
+    ::testing::ValuesIn({WebRTCAPIName::kGetUserMedia,
+                         WebRTCAPIName::kGetDisplayMedia,
+                         WebRTCAPIName::kEnumerateDevices,
+                         WebRTCAPIName::kRTCPeerConnection}));
 
 TEST(PerSessionWebRTCAPIMetrics, NoCallOngoingMultiplePC) {
   MockPerSessionWebRTCAPIMetrics metrics;
-  EXPECT_CALL(metrics, LogUsage(blink::WebRTCAPIName::kRTCPeerConnection))
-      .Times(1);
-  metrics.LogUsageOnlyOnce(blink::WebRTCAPIName::kRTCPeerConnection);
-  metrics.LogUsageOnlyOnce(blink::WebRTCAPIName::kRTCPeerConnection);
-  metrics.LogUsageOnlyOnce(blink::WebRTCAPIName::kRTCPeerConnection);
+  EXPECT_CALL(metrics, LogUsage(WebRTCAPIName::kRTCPeerConnection)).Times(1);
+  metrics.LogUsageOnlyOnce(WebRTCAPIName::kRTCPeerConnection);
+  metrics.LogUsageOnlyOnce(WebRTCAPIName::kRTCPeerConnection);
+  metrics.LogUsageOnlyOnce(WebRTCAPIName::kRTCPeerConnection);
 }
 
 TEST(PerSessionWebRTCAPIMetrics, BeforeAfterCallMultiplePC) {
   MockPerSessionWebRTCAPIMetrics metrics;
-  EXPECT_CALL(metrics, LogUsage(blink::WebRTCAPIName::kRTCPeerConnection))
-      .Times(1);
-  metrics.LogUsageOnlyOnce(blink::WebRTCAPIName::kRTCPeerConnection);
-  metrics.LogUsageOnlyOnce(blink::WebRTCAPIName::kRTCPeerConnection);
+  EXPECT_CALL(metrics, LogUsage(WebRTCAPIName::kRTCPeerConnection)).Times(1);
+  metrics.LogUsageOnlyOnce(WebRTCAPIName::kRTCPeerConnection);
+  metrics.LogUsageOnlyOnce(WebRTCAPIName::kRTCPeerConnection);
   metrics.IncrementStreamCounter();
   metrics.IncrementStreamCounter();
-  metrics.LogUsageOnlyOnce(blink::WebRTCAPIName::kRTCPeerConnection);
+  metrics.LogUsageOnlyOnce(WebRTCAPIName::kRTCPeerConnection);
   metrics.DecrementStreamCounter();
-  metrics.LogUsageOnlyOnce(blink::WebRTCAPIName::kRTCPeerConnection);
+  metrics.LogUsageOnlyOnce(WebRTCAPIName::kRTCPeerConnection);
   metrics.DecrementStreamCounter();
-  EXPECT_CALL(metrics, LogUsage(blink::WebRTCAPIName::kRTCPeerConnection))
-      .Times(1);
-  metrics.LogUsageOnlyOnce(blink::WebRTCAPIName::kRTCPeerConnection);
-  metrics.LogUsageOnlyOnce(blink::WebRTCAPIName::kRTCPeerConnection);
+  EXPECT_CALL(metrics, LogUsage(WebRTCAPIName::kRTCPeerConnection)).Times(1);
+  metrics.LogUsageOnlyOnce(WebRTCAPIName::kRTCPeerConnection);
+  metrics.LogUsageOnlyOnce(WebRTCAPIName::kRTCPeerConnection);
 }
 
-}  // namespace content
+}  // namespace blink
