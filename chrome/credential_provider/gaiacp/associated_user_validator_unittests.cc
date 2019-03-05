@@ -331,7 +331,7 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest,
             GetMachineRegDWORD(kWinlogonUserListRegKey, username, &reg_value));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     AssociatedUserValidatorUserAccessBlockingTest,
     ::testing::Combine(::testing::Values(CPUS_INVALID,

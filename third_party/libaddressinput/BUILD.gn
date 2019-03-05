@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//testing/test.gni")
-import("//testing/libfuzzer/fuzzer_test.gni")
 import("//build/config/locales.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
+import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 
 config("internal_config") {
@@ -266,6 +266,11 @@ test("libaddressinput_unittests") {
   ]
 
   include_dirs = [ "src/cpp/src" ]
+
+  # TODO(crbug.com/936653): Remove this after fixing deprecated API usage.
+  if (is_clang) {
+    cflags = [ "-Wno-deprecated-declarations" ]
+  }
 
   deps = [
     ":libaddressinput",
