@@ -146,14 +146,14 @@ void SpellCheckProvider::RequestTextChecking(
 
 void SpellCheckProvider::FocusedNodeChanged(const blink::WebNode& unused) {
 #if defined(OS_ANDROID)
+  if (!spell_check_host_.is_bound())
+    return;
+
   WebLocalFrame* frame = render_frame()->GetWebFrame();
   WebElement element = frame->GetDocument().IsNull()
                            ? WebElement()
                            : frame->GetDocument().FocusedElement();
   bool enabled = !element.IsNull() && element.IsEditable();
-
-  // TODO(xiaochengh): Don't call GetSpellCheckHost() if SpellCheckHost is not
-  // bound yet. crbug.com/814225
   if (!enabled)
     GetSpellCheckHost().DisconnectSessionBridge();
 #endif  // defined(OS_ANDROID)
