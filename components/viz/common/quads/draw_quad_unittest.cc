@@ -400,17 +400,17 @@ TEST(DrawQuadTest, CopyTileDrawQuad) {
 
 TEST(DrawQuadTest, CopyVideoHoleDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
-  base::UnguessableToken overlay_id = base::UnguessableToken::Create();
+  base::UnguessableToken overlay_plane_id = base::UnguessableToken::Create();
   CREATE_SHARED_STATE();
 
-  CREATE_QUAD_NEW(VideoHoleDrawQuad, visible_rect, overlay_id);
+  CREATE_QUAD_NEW(VideoHoleDrawQuad, visible_rect, overlay_plane_id);
   EXPECT_EQ(DrawQuad::VIDEO_HOLE, copy_quad->material);
   EXPECT_EQ(visible_rect, copy_quad->visible_rect);
-  EXPECT_EQ(overlay_id, copy_quad->overlay_id);
+  EXPECT_EQ(overlay_plane_id, copy_quad->overlay_plane_id);
 
-  CREATE_QUAD_ALL(VideoHoleDrawQuad, overlay_id);
+  CREATE_QUAD_ALL(VideoHoleDrawQuad, overlay_plane_id);
   EXPECT_EQ(DrawQuad::VIDEO_HOLE, copy_quad->material);
-  EXPECT_EQ(overlay_id, copy_quad->overlay_id);
+  EXPECT_EQ(overlay_plane_id, copy_quad->overlay_plane_id);
 }
 
 TEST(DrawQuadTest, CopyYUVVideoDrawQuad) {
@@ -658,10 +658,10 @@ TEST_F(DrawQuadIteratorTest, TileDrawQuad) {
 
 TEST_F(DrawQuadIteratorTest, VideoHoleDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
-  base::UnguessableToken overlay_id = base::UnguessableToken::Create();
+  base::UnguessableToken overlay_plane_id = base::UnguessableToken::Create();
 
   CREATE_SHARED_STATE();
-  CREATE_QUAD_NEW(VideoHoleDrawQuad, visible_rect, overlay_id);
+  CREATE_QUAD_NEW(VideoHoleDrawQuad, visible_rect, overlay_plane_id);
   EXPECT_EQ(0, IterateAndCount(quad_new));
 }
 

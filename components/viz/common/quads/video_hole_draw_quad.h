@@ -19,8 +19,8 @@
 namespace viz {
 
 // A VideoHoleDrawQuad is used by Chromecast to instruct that a video
-// overlay is to be activated. It carries |overlay_id| which identifies
-// the origin of the video overlay frame. |overlay_id| will be used
+// overlay is to be activated. It carries |overlay_plane_id| which identifies
+// the origin of the video overlay frame. |overlay_plane_id| will be used
 // to find the right VideoDecoder to apply SetGeometry() on.
 class VIZ_COMMON_EXPORT VideoHoleDrawQuad : public DrawQuad {
  public:
@@ -31,16 +31,16 @@ class VIZ_COMMON_EXPORT VideoHoleDrawQuad : public DrawQuad {
   void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& visible_rect,
-              const base::UnguessableToken& overlay_id);
+              const base::UnguessableToken& overlay_plane_id);
 
   void SetAll(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& visible_rect,
               bool needs_blending,
-              const base::UnguessableToken& overlay_id);
+              const base::UnguessableToken& overlay_plane_id);
 
   static const VideoHoleDrawQuad* MaterialCast(const DrawQuad*);
-  base::UnguessableToken overlay_id;
+  base::UnguessableToken overlay_plane_id;
 
  private:
   void ExtendValue(base::trace_event::TracedValue* value) const override;
