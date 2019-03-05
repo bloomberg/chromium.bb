@@ -13,11 +13,9 @@
 <dom-module id="all-sites">
   <template>
     <style include="settings-shared md-select">
-      /* Align the search box search icon with the site-entry icons. */
-      #searchAndSort {
+      #sort {
         align-items: center;
         display: flex;
-        justify-content: space-between;
         margin: 0 var(--cr-icon-button-margin-start);
         margin-bottom: 50px;
         padding: 0 var(--settings-box-row-padding);
@@ -33,28 +31,20 @@
         padding-inline-start: var(--settings-box-row-padding);
       }
     </style>
-    <div id="searchAndSort">
-      <div>
-        <cr-search-field label="$i18n{siteSettingsAllSitesSearch}"
-            on-search-changed="onSearchChanged_">
-        </cr-search-field>
-      </div>
-
-      <div>
-        <label id="sortLabel">$i18n{siteSettingsAllSitesSort}</label>
-        <select id="sortMethod" class="md-select" aria-labelledby="sortLabel"
-          on-change="onSortMethodChanged_">
-          <option value="[[sortMethods_.MOST_VISITED]]">
-            $i18n{siteSettingsAllSitesSortMethodMostVisited}
-          </option>
-          <option value="[[sortMethods_.STORAGE]]">
-            $i18n{siteSettingsAllSitesSortMethodStorage}
-          </option>
-          <option value="[[sortMethods_.NAME]]">
-            $i18n{siteSettingsAllSitesSortMethodName}
-          </option>
-        </select>
-      </div>
+    <div id="sort">
+      <label id="sortLabel">$i18n{siteSettingsAllSitesSort}</label>
+      <select id="sortMethod" class="md-select" aria-labelledby="sortLabel"
+        on-change="onSortMethodChanged_">
+        <option value="[[sortMethods_.MOST_VISITED]]">
+          $i18n{siteSettingsAllSitesSortMethodMostVisited}
+        </option>
+        <option value="[[sortMethods_.STORAGE]]">
+          $i18n{siteSettingsAllSitesSortMethodStorage}
+        </option>
+        <option value="[[sortMethods_.NAME]]">
+          $i18n{siteSettingsAllSitesSortMethodName}
+        </option>
+      </select>
     </div>
     <div class="list-frame" hidden$="[[!siteGroupMapEmpty_(siteGroupMap)]]">
       <div class="list-item secondary">$i18n{emptyAllSitesPage}</div>
