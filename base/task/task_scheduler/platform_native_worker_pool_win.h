@@ -43,6 +43,8 @@ class BASE_EXPORT PlatformNativeWorkerPoolWin : public SchedulerWorkerPool {
   void JoinForTesting() override;
   void ReEnqueueSequenceChangingPool(
       SequenceAndTransaction sequence_and_transaction) override;
+  size_t GetMaxConcurrentNonBlockedTasksDeprecated() const override;
+  void ReportHeartbeatMetrics() const override;
 
  private:
   // Callback that gets run by |pool_|. It runs a task off the next sequence on

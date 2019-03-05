@@ -535,20 +535,6 @@ void SchedulerWorkerPoolImpl::ReportHeartbeatMetrics() const {
                                      idle_workers_stack_.Size());
 }
 
-void SchedulerWorkerPoolImpl::UpdateSortKey(
-    SequenceAndTransaction sequence_and_transaction) {
-  // TODO(fdoray): A worker should be woken up when the priority of a
-  // BEST_EFFORT task is increased and |num_running_best_effort_tasks_| is
-  // equal to |max_best_effort_tasks_|.
-  AutoSchedulerLock auto_lock(lock_);
-  priority_queue_.UpdateSortKey(std::move(sequence_and_transaction));
-}
-
-bool SchedulerWorkerPoolImpl::RemoveSequence(scoped_refptr<Sequence> sequence) {
-  AutoSchedulerLock auto_lock(lock_);
-  return priority_queue_.RemoveSequence(std::move(sequence));
-}
-
 SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
     SchedulerWorkerDelegateImpl(TrackedRef<SchedulerWorkerPoolImpl> outer)
     : outer_(std::move(outer)) {
