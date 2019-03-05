@@ -9,13 +9,10 @@ import argparse
 import datetime
 import json
 import os
-import random
 import re
 import shutil
 import subprocess
 import tempfile
-import time
-import webbrowser
 
 from core import cli_helpers
 from core import path_util
@@ -27,7 +24,7 @@ from services import request  # pylint: disable=import-error
 
 
 SRC_ROOT = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
+    os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 RESULTS2JSON = os.path.join(
     SRC_ROOT, 'third_party', 'catapult', 'tracing', 'bin', 'results2json')
 HISTOGRAM2CSV = os.path.join(
@@ -36,41 +33,6 @@ RUN_BENCHMARK = os.path.join(SRC_ROOT, 'tools', 'perf', 'run_benchmark')
 DATA_DIR = os.path.join(SRC_ROOT, 'tools', 'perf', 'page_sets', 'data')
 RECORD_WPR = os.path.join(SRC_ROOT, 'tools', 'perf', 'record_wpr')
 DEFAULT_REVIEWERS = ['perezju@chromium.org']
-
-
-def _GetBranchName():
-  return subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
-
-
-def _OpenBrowser(url):
-  # Redirect I/O before invoking browser to avoid it spamming our output.
-  # Based on https://stackoverflow.com/a/2323563.
-  savout = os.dup(1)
-  saverr = os.dup(2)
-  os.close(1)
-  os.close(2)
-  os.open(os.devnull, os.O_RDWR)
-  try:
-    webbrowser.open(url)
-  finally:
-    os.dup2(savout, 1)
-    os.dup2(saverr, 2)
-
-
-def _SendCLForReview(comment):
-  subprocess.check_call(
-      ['git', 'cl', 'comments', '--publish', '--add-comment', comment])
-
-
-def _EnsureEditor():
-  if 'EDITOR' not in os.environ:
-    os.environ['EDITOR'] = cli_helpers.Prompt(
-        'Looks like EDITOR environment varible is not defined. Please enter '
-        'the command to view logs: ')
-
-
-def _OpenEditor(filepath):
-  subprocess.check_call([os.environ['EDITOR'], filepath])
 
 
 class WprUpdater(object):
@@ -264,48 +226,6 @@ class WprUpdater(object):
     with open(output_file, 'r') as output_fd:
       return json.load(output_fd)['issue_url']
 
-  def _CreateBranch(self):
-    sanitized_story = re.sub(r'[^A-Za-z0-9-_.]', r'-', self.story)
-    subprocess.check_call([
-      'git', 'new-branch',
-      'update-wpr-%s-%d' % (sanitized_story, random.randint(0, 10000)),
-    ])
-
-  def _FilterLogForDiff(self, log_filename):
-    """Removes unimportant details from console logs for cleaner diffs.
-
-    For example, log line from file `log_filename`
-
-      2018-02-01 22:23:22,123 operation abcdef01-abcd-abcd-0123-abcdef012345
-      from /tmp/tmpX34v/results.html took 22145ms when accessed via
-      https://127.0.0.1:1233/endpoint
-
-    would become
-
-      <timestamp> operation <guid> from /tmp/tmp<random>/results.html took
-      <duration> when accessed via https://127.0.0.1:<port>/endpoint
-
-    Returns:
-      Path to the filtered log.
-    """
-    with open(log_filename) as src, tempfile.NamedTemporaryFile(
-        suffix='diff', dir=self.output_dir, delete=False) as dest:
-      for line in src:
-        # Remove timestamps.
-        line = re.sub(
-            r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}', r'<timestamp>', line)
-        # Remove GUIDs.
-        line = re.sub(
-            r'[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}', r'<guid>', line)
-        # Remove random letters in paths to temp dirs and files.
-        line = re.sub(r'(/tmp/tmp)[^/\s]+', r'\1<random>', line)
-        # Remove random port in localhost URLs.
-        line = re.sub(r'(://127.0.0.1:)\d+', r'\1<port>', line)
-        # Remove random durations in ms.
-        line = re.sub(r'\d+ ms', r'<duration>', line)
-        dest.write(line)
-        return dest.name
-
   def _StartPinpointJob(self, configuration):
     """Creates, starts a Pinpoint job and returns its URL."""
     try:
@@ -408,153 +328,6 @@ class WprUpdater(object):
         job_urls.append(job_url)
     return job_urls, failed_configs
 
-  def AutoRun(self):
-    # Let the quest begin...
-    cli_helpers.Comment(
-        'This script will help you update the recording of a story. It will go '
-        'through the following stages, which you can also invoke manually via '
-        'subcommand specified in parentheses:')
-    cli_helpers.Comment('  - help create a new branch if needed')
-    cli_helpers.Comment('  - run story with live network connection (live)')
-    cli_helpers.Comment('  - record story (record)')
-    cli_helpers.Comment('  - replay the recording (replay)')
-    cli_helpers.Comment('  - upload the recording to Google Storage (upload)')
-    cli_helpers.Comment(
-        '  - upload CL with updated recording reference (review)')
-    cli_helpers.Comment('  - trigger pinpoint tryjobs (pinpoint)')
-    cli_helpers.Comment('  - post links to these jobs on the CL')
-    cli_helpers.Comment(
-        'Note that you can always enter prefix of the answer to any of the '
-        'questions asked below, e.g. "y" for "yes" or "j" for "just-replay".')
-
-    # TODO(sergiyb): Detect if benchmark is not implemented and try to add it
-    # automatically by copying the same benchmark without :<current-year> suffix
-    # and changing name of the test, name of the benchmark and the year tag.
-
-    # Create branch if needed.
-    reuse_cl = False
-    branch = _GetBranchName()
-    if branch == 'HEAD':
-      cli_helpers.Comment('You are not on a branch.')
-      if not cli_helpers.Ask(
-          'Should script create a new branch automatically?'):
-        cli_helpers.Comment(
-            'Please create a new branch and start this script again')
-        return
-      self._CreateBranch()
-    else:
-      issue = self._GetBranchIssueUrl()
-      if issue is not None:
-        issue_message = 'with an associated issue: %s' % issue
-      else:
-        issue_message = 'without an associated issue'
-      cli_helpers.Comment(
-          'You are on a branch {branch} {issue_message}. Please commit or '
-          'stash any changes unrelated to the updated story before '
-          'proceeding.', branch=branch, issue_message=issue_message)
-      ans = cli_helpers.Ask(
-          'Should the script create a new branch automatically, reuse '
-          'existing one or exit?', answers=['create', 'reuse', 'exit'],
-          default='create')
-      if ans == 'create':
-        self._CreateBranch()
-      elif ans == 'reuse':
-        reuse_cl = issue is not None
-      elif ans == 'exit':
-        return
-
-    # Live run.
-    live_out_file = self.LiveRun()
-    cli_helpers.Comment(
-        'Please inspect the live run results above for any errors.')
-    ans = None
-    while ans != 'continue':
-      ans = cli_helpers.Ask(
-          'Should I continue with recording, view metric results in a browser, '
-          'view stdout/stderr output or stop?',
-          ['continue', 'metrics', 'output', 'stop'], default='continue')
-      if ans == 'stop':
-        cli_helpers.Comment(
-            'Please update the story class to resolve the observed issues and '
-            'then run this script again.')
-        return
-      elif ans == 'metrics':
-        _OpenBrowser('file://%s.results.html' % live_out_file)
-      elif ans == 'output':
-        _OpenEditor(live_out_file)
-
-    # Record & replay.
-    action = 'record'
-    while action != 'continue':
-      if action == 'record':
-        self.RecordWpr()
-      if action in ['record', 'just-replay']:
-        replay_out_file = self.ReplayWpr()
-        cli_helpers.Comment(
-            'Check that the console:error:all metrics above have low values '
-            'and are similar to the live run above.')
-      if action == 'diff':
-        diff_path = os.path.join(self.output_dir, 'live_replay.diff')
-        with open(diff_path, 'w') as diff_file:
-          subprocess.call([
-            'diff', '--color', self._FilterLogForDiff(live_out_file),
-            self._FilterLogForDiff(replay_out_file)], stdout=diff_file)
-        _OpenEditor(diff_path)
-      if action == 'stop':
-        return
-      action = cli_helpers.Ask(
-          'Should I record and replay again, just replay, continue with '
-          'uploading CL, stop and exit, or would you prefer to see diff '
-          'between live/replay console logs?',
-          ['record', 'just-replay', 'continue', 'stop', 'diff'],
-          default='continue')
-
-    # Upload WPR and create a WIP CL for the new story.
-    if not self.UploadWpr():
-      return
-    while self.UploadCL(short_description=reuse_cl) != 0:
-      if not cli_helpers.Ask('Upload failed. Should I try again?'):
-        return
-
-    # Gerrit needs some time to sync its backends, hence we sleep here for 5
-    # seconds. Otherwise, pinpoint app may get an answer that the CL that we've
-    # just uploaded does not exist yet.
-    cli_helpers.Comment(
-        'Waiting 20 seconds for the Gerrit backends to sync, so that Pinpoint '
-        'app can detect the newly-created CL.')
-    time.sleep(20)
-
-    # Trigger pinpoint jobs.
-    configs_to_trigger = None
-    job_urls = []
-    while True:
-      new_job_urls, configs_to_trigger = self.StartPinpointJobs(
-          configs_to_trigger)
-      job_urls.extend(new_job_urls)
-      if not configs_to_trigger or not cli_helpers.Ask(
-          'Do you want to try triggering the failed configs again?'):
-        break
-
-    if configs_to_trigger:
-      if not cli_helpers.Ask(
-          'Some jobs failed to trigger. Do you still want to send created '
-          'CL for review?', default='no'):
-        return
-
-    # Post a link to the triggered jobs, publish CL for review and open it.
-    _SendCLForReview(
-        'Started the following Pinpoint jobs:\n%s' %
-        '\n'.join('  - %s' % url for url in job_urls))
-    cli_helpers.Comment(
-        'Posted a message with Pinpoint job URLs on the CL and sent it for '
-        'review. Opening the CL in a browser...')
-    _OpenBrowser(self._GetBranchIssueUrl())
-
-    # Hooray, you won! :-)
-    cli_helpers.Comment(
-        'Thank you, you have successfully updated the recording for %s. Please '
-        'wait for LGTM and land the created CL.' % self.story)
-
 
 def Main(argv):
   parser = argparse.ArgumentParser()
@@ -578,27 +351,15 @@ def Main(argv):
       '--binary', default=None,
       help='Path to the Chromium/Chrome binary relative to output directory. '
            'Defaults to default Chrome browser installed if not specified.')
-
-  subparsers = parser.add_subparsers(
-      title='Mode in which to run this script', dest='command')
-  subparsers.add_parser(
-      'auto', help='interactive mode automating updating a recording')
-  subparsers.add_parser('live', help='run story on a live website')
-  subparsers.add_parser('record', help='record story from a live website')
-  subparsers.add_parser('replay', help='replay story from the recording')
-  subparsers.add_parser('upload', help='upload recording to the Google Storage')
-  subparsers.add_parser('review', help='create a CL with updated recording')
-  subparsers.add_parser(
-      'pinpoint', help='trigger Pinpoint jobs to test the recording')
+  parser.add_argument(
+      'command', choices=[
+        'live', 'record', 'replay', 'upload', 'review', 'pinpoint'],
+      help='Mode in which to run this script.')
 
   args = parser.parse_args(argv)
 
   updater = WprUpdater(args)
-  if args.command == 'auto':
-    _EnsureEditor()
-    luci_auth.CheckLoggedIn()
-    updater.AutoRun()
-  elif args.command =='live':
+  if args.command =='live':
     updater.LiveRun()
   elif args.command == 'record':
     updater.RecordWpr()
