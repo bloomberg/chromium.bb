@@ -67,12 +67,12 @@ CSSPropertyName CSSPropertyValueSet::PropertyReference::Name() const {
 
 ImmutableCSSPropertyValueSet* CSSPropertyValueSet::ImmutableCopyIfNeeded()
     const {
-  if (!IsMutable()) {
-    return ToImmutableCSSPropertyValueSet(
-        const_cast<CSSPropertyValueSet*>(this));
-  }
-  const MutableCSSPropertyValueSet* mutable_this =
-      ToMutableCSSPropertyValueSet(this);
+  auto* immutable_property_set = DynamicTo<ImmutableCSSPropertyValueSet>(
+      const_cast<CSSPropertyValueSet*>(this));
+  if (immutable_property_set)
+    return immutable_property_set;
+
+  const auto* mutable_this = To<MutableCSSPropertyValueSet>(this);
   return ImmutableCSSPropertyValueSet::Create(
       mutable_this->property_vector_.data(),
       mutable_this->property_vector_.size(), CssParserMode());
@@ -182,8 +182,9 @@ void ImmutableCSSPropertyValueSet::TraceAfterDispatch(blink::Visitor* visitor) {
 MutableCSSPropertyValueSet::MutableCSSPropertyValueSet(
     const CSSPropertyValueSet& other)
     : CSSPropertyValueSet(other.CssParserMode()) {
-  if (other.IsMutable()) {
-    property_vector_ = ToMutableCSSPropertyValueSet(other).property_vector_;
+  if (auto* other_mutable_property_set =
+          DynamicTo<MutableCSSPropertyValueSet>(other)) {
+    property_vector_ = other_mutable_property_set->property_vector_;
   } else {
     property_vector_.ReserveInitialCapacity(other.PropertyCount());
     for (unsigned i = 0; i < other.PropertyCount(); ++i) {
@@ -249,16 +250,16 @@ template CORE_EXPORT const CSSValue*
 
 void CSSPropertyValueSet::Trace(blink::Visitor* visitor) {
   if (is_mutable_)
-    ToMutableCSSPropertyValueSet(this)->TraceAfterDispatch(visitor);
+    To<MutableCSSPropertyValueSet>(this)->TraceAfterDispatch(visitor);
   else
-    ToImmutableCSSPropertyValueSet(this)->TraceAfterDispatch(visitor);
+    To<ImmutableCSSPropertyValueSet>(this)->TraceAfterDispatch(visitor);
 }
 
 void CSSPropertyValueSet::FinalizeGarbageCollectedObject() {
   if (is_mutable_)
-    ToMutableCSSPropertyValueSet(this)->~MutableCSSPropertyValueSet();
+    To<MutableCSSPropertyValueSet>(this)->~MutableCSSPropertyValueSet();
   else
-    ToImmutableCSSPropertyValueSet(this)->~ImmutableCSSPropertyValueSet();
+    To<ImmutableCSSPropertyValueSet>(this)->~ImmutableCSSPropertyValueSet();
 }
 
 bool MutableCSSPropertyValueSet::RemoveShorthandProperty(

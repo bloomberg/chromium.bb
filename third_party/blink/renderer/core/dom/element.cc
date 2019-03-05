@@ -4879,7 +4879,7 @@ MutableCSSPropertyValueSet& Element::EnsureMutableInlineStyle() {
   } else if (!inline_style->IsMutable()) {
     inline_style = inline_style->MutableCopy();
   }
-  return *ToMutableCSSPropertyValueSet(inline_style);
+  return *To<MutableCSSPropertyValueSet>(inline_style.Get());
 }
 
 void Element::ClearMutableInlineStyleIfEmpty() {

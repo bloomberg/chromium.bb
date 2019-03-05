@@ -174,7 +174,7 @@ CSSPropertyValueSet* ComputePresentationAttributeStyle(Element& element) {
     AttributeCollection attributes = element.AttributesWithoutUpdate();
     for (const Attribute& attr : attributes) {
       element.CollectStyleForPresentationAttribute(
-          attr.GetName(), attr.Value(), ToMutableCSSPropertyValueSet(style));
+          attr.GetName(), attr.Value(), To<MutableCSSPropertyValueSet>(style));
     }
   }
 
