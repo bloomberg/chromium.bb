@@ -4122,9 +4122,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(
       base::BindRepeating(&FileChooserImpl::Create, base::Unretained(this)));
 
-  registry_->AddInterface(base::BindRepeating(&AudioContextManagerImpl::Create,
-                                              base::Unretained(this)));
-
   registry_->AddInterface(base::BindRepeating(&WakeLockServiceImpl::Create,
                                               base::Unretained(this)));
 
@@ -5762,6 +5759,11 @@ void RenderFrameHostImpl::GetFrameHostTestInterface(
 
   mojo::MakeStrongBinding(std::make_unique<FrameHostTestInterfaceImpl>(),
                           std::move(request));
+}
+
+void RenderFrameHostImpl::GetAudioContextManager(
+    blink::mojom::AudioContextManagerRequest request) {
+  AudioContextManagerImpl::Create(this, std::move(request));
 }
 
 std::unique_ptr<NavigationRequest>
