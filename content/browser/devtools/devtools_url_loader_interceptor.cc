@@ -22,7 +22,7 @@
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/cookies/cookie_util.h"
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
 #include "net/url_request/url_request.h"
@@ -1190,46 +1190,11 @@ void InterceptionJob::FetchCookies(
 
   const network::ResourceRequest& request = create_loader_params_->request;
 
-  // The below is a copy of the logic in URLRequestHttpJob
+  options.set_same_site_cookie_context(
+      net::cookie_util::ComputeSameSiteContextForRequest(
+          request.method, request.url, request.site_for_cookies,
+          request.request_initiator, request.attach_same_site_cookies));
 
-  // Set SameSiteCookieMode according to the rules laid out in
-  // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site:
-  //
-  // * Include both "strict" and "lax" same-site cookies if the request's
-  //   |url|, |initiator|, and |site_for_cookies| all have the same
-  //   registrable domain. Note: this also covers the case of a request
-  //   without an initiator (only happens for browser-initiated main frame
-  //   navigations).
-  //
-  // * Include only "lax" same-site cookies if the request's |URL| and
-  //   |site_for_cookies| have the same registrable domain, _and_ the
-  //   request's |method| is "safe" ("GET" or "HEAD").
-  //
-  //   Note that this will generally be the case only for cross-site requests
-  //   which target a top-level browsing context.
-  //
-  // * Include both "strict" and "lax" same-site cookies if the request is
-  //   tagged with a flag allowing it.
-  //   Note that this can be the case for requests initiated by extensions,
-  //   which need to behave as though they are made by the document itself,
-  //   but appear like cross-site ones.
-  //
-  // * Otherwise, do not include same-site cookies.
-  using namespace net::registry_controlled_domains;
-  if (SameDomainOrHost(request.url, request.site_for_cookies,
-                       INCLUDE_PRIVATE_REGISTRIES)) {
-    if (!request.request_initiator ||
-        SameDomainOrHost(request.url,
-                         request.request_initiator.value().GetURL(),
-                         INCLUDE_PRIVATE_REGISTRIES) ||
-        request.attach_same_site_cookies) {
-      options.set_same_site_cookie_mode(
-          net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
-    } else if (net::HttpUtil::IsMethodSafe(request.method)) {
-      options.set_same_site_cookie_mode(
-          net::CookieOptions::SameSiteCookieMode::INCLUDE_LAX);
-    }
-  }
   cookie_manager_->GetCookieList(request.url, options, std::move(callback));
 }
 

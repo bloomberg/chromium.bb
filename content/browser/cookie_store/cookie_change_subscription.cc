@@ -171,8 +171,8 @@ bool CookieChangeSubscription::ShouldObserveChangeTo(
   }
 
   net::CookieOptions net_options;
-  net_options.set_same_site_cookie_mode(
-      net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+  net_options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
 
   return cookie.IncludeForRequestURL(url_, net_options) ==
          net::CanonicalCookie::CookieInclusionStatus::INCLUDE;

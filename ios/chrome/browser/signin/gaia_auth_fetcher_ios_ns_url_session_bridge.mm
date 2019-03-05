@@ -94,8 +94,8 @@ void GaiaAuthFetcherIOSNSURLSessionBridge::FetchPendingRequest() {
       GetBrowserState()->GetCookieManager();
   net::CookieOptions options;
   options.set_include_httponly();
-  options.set_same_site_cookie_mode(
-      net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+  options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   cookie_manager->GetCookieList(
       GetRequest().url, options,
       base::BindOnce(

@@ -250,8 +250,8 @@ class CookieRetrieverNetworkService
         new CookieRetrieverNetworkService(std::move(callback));
     net::CookieOptions cookie_options;
     cookie_options.set_include_httponly();
-    cookie_options.set_same_site_cookie_mode(
-        net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+    cookie_options.set_same_site_cookie_context(
+        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
     cookie_options.set_do_not_update_access_time();
     for (const auto& url : urls) {
       cookie_manager->GetCookieList(

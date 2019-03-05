@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
+#include "net/http/http_util.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -365,6 +366,69 @@ std::string SerializeRequestCookieLine(
     buffer.append(i->second.begin(), i->second.end());
   }
   return buffer;
+}
+
+CookieOptions::SameSiteCookieContext ComputeSameSiteContext(
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const base::Optional<url::Origin>& initiator) {
+  if (registry_controlled_domains::SameDomainOrHost(
+          url, site_for_cookies,
+          registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+    if (!initiator ||
+        registry_controlled_domains::SameDomainOrHost(
+            url, initiator.value(),
+            registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+      return CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT;
+    } else {
+      return CookieOptions::SameSiteCookieContext::SAME_SITE_LAX;
+    }
+  }
+  return CookieOptions::SameSiteCookieContext::CROSS_SITE;
+}
+
+CookieOptions::SameSiteCookieContext ComputeSameSiteContextForRequest(
+    const std::string& http_method,
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const base::Optional<url::Origin>& initiator,
+    bool attach_same_site_cookies) {
+  // Set SameSiteCookieMode according to the rules laid out in
+  // https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-02:
+  //
+  // * Include both "strict" and "lax" same-site cookies if the request's
+  //   |url|, |initiator|, and |site_for_cookies| all have the same
+  //   registrable domain. Note: this also covers the case of a request
+  //   without an initiator (only happens for browser-initiated main frame
+  //   navigations).
+  //
+  // * Include only "lax" same-site cookies if the request's |URL| and
+  //   |site_for_cookies| have the same registrable domain, _and_ the
+  //   request's |http_method| is "safe" ("GET" or "HEAD").
+  //
+  //   This case should generally occur only for cross-site requests which
+  //   target a top-level browsing context.
+  //
+  // * Include both "strict" and "lax" same-site cookies if the request is
+  //   tagged with a flag allowing it and "lax" would have been allowed had
+  //   |http_method| been safe.
+  //
+  //   Note that this can be the case for requests initiated by extensions,
+  //   which need to behave as though they are made by the document itself,
+  //   but appear like cross-site ones.
+  //
+  // * Otherwise, do not include same-site cookies.
+  CookieOptions::SameSiteCookieContext same_site_context =
+      ComputeSameSiteContext(url, site_for_cookies, initiator);
+  if (same_site_context ==
+      CookieOptions::SameSiteCookieContext::SAME_SITE_LAX) {
+    if (attach_same_site_cookies)
+      same_site_context =
+          CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT;
+    else if (!net::HttpUtil::IsMethodSafe(http_method))
+      same_site_context = CookieOptions::SameSiteCookieContext::CROSS_SITE;
+  }
+  return same_site_context;
 }
 
 }  // namespace cookie_util

@@ -37,6 +37,7 @@
 #include "net/cert/known_roots.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
+#include "net/cookies/cookie_util.h"
 #include "net/filter/brotli_source_stream.h"
 #include "net/filter/filter_source_stream.h"
 #include "net/filter/gzip_source_stream.h"
@@ -691,46 +692,10 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
   if (cookie_store && !(request_info_.load_flags & LOAD_DO_NOT_SEND_COOKIES)) {
     CookieOptions options;
     options.set_include_httponly();
-
-    // Set SameSiteCookieMode according to the rules laid out in
-    // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site:
-    //
-    // * Include both "strict" and "lax" same-site cookies if the request's
-    //   |url|, |initiator|, and |site_for_cookies| all have the same
-    //   registrable domain. Note: this also covers the case of a request
-    //   without an initiator (only happens for browser-initiated main frame
-    //   navigations).
-    //
-    // * Include only "lax" same-site cookies if the request's |URL| and
-    //   |site_for_cookies| have the same registrable domain, _and_ the
-    //   request's |method| is "safe" ("GET" or "HEAD").
-    //
-    //   Note that this will generally be the case only for cross-site requests
-    //   which target a top-level browsing context.
-    //
-    // * Include both "strict" and "lax" same-site cookies if the request is
-    //   tagged with a flag allowing it.
-    //   Note that this can be the case for requests initiated by extensions,
-    //   which need to behave as though they are made by the document itself,
-    //   but appear like cross-site ones.
-    //
-    // * Otherwise, do not include same-site cookies.
-    if (registry_controlled_domains::SameDomainOrHost(
-            request_->url(), request_->site_for_cookies(),
-            registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-      if (!request_->initiator() ||
-          registry_controlled_domains::SameDomainOrHost(
-              request_->url(), request_->initiator().value().GetURL(),
-              registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES) ||
-          request_->attach_same_site_cookies()) {
-        options.set_same_site_cookie_mode(
-            CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
-      } else if (HttpUtil::IsMethodSafe(request_->method())) {
-        options.set_same_site_cookie_mode(
-            CookieOptions::SameSiteCookieMode::INCLUDE_LAX);
-      }
-    }
-
+    options.set_same_site_cookie_context(
+        net::cookie_util::ComputeSameSiteContextForRequest(
+            request_->method(), request_->url(), request_->site_for_cookies(),
+            request_->initiator(), request_->attach_same_site_cookies()));
     cookie_store->GetCookieListWithOptionsAsync(
         request_->url(), options,
         base::Bind(&URLRequestHttpJob::SetCookieHeaderAndStart,

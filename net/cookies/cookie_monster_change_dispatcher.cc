@@ -44,8 +44,8 @@ CookieMonsterChangeDispatcher::Subscription::Subscription(
   // different options. For example, JavaScript observers will not be allowed to
   // see HTTP-only changes.
   options_.set_include_httponly();
-  options_.set_same_site_cookie_mode(
-      CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+  options_.set_same_site_cookie_context(
+      CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
 }
 
 CookieMonsterChangeDispatcher::Subscription::~Subscription() {

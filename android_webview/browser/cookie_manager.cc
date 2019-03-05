@@ -403,8 +403,8 @@ void CookieManager::GetCookieListAsyncHelper(const GURL& host,
                                              base::OnceClosure complete) {
   net::CookieOptions options;
   options.set_include_httponly();
-  options.set_same_site_cookie_mode(
-      net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+  options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     GetCookieManagerWrapper()->GetCookieList(
