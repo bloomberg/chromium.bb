@@ -4,6 +4,8 @@
 
 #include "chrome/browser/vr/ui_host/vr_ui_host_impl.h"
 
+#include <memory>
+
 #include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
@@ -145,7 +147,8 @@ void VRUiHostImpl::StartUiRendering() {
   DVLOG(1) << __func__;
 
   DCHECK(info_);
-  ui_rendering_thread_ = std::make_unique<VRBrowserRendererThreadWin>();
+  ui_rendering_thread_ =
+      std::make_unique<VRBrowserRendererThreadWin>(compositor_.get());
   ui_rendering_thread_->SetVRDisplayInfo(info_.Clone());
 }
 
@@ -156,22 +159,28 @@ void VRUiHostImpl::StopUiRendering() {
   ui_rendering_thread_ = nullptr;
 }
 
+void VRUiHostImpl::SetLocationInfoOnUi() {
+  GURL gurl;
+  if (web_contents_) {
+    content::NavigationEntry* entry =
+        web_contents_->GetController().GetVisibleEntry();
+    if (entry) {
+      gurl = entry->GetVirtualURL();
+    }
+  }
+  // TODO(https://crbug.com/905375): The below call should eventually be
+  // rewritten to take a LocationBarState and not just GURL. See
+  // VRBrowserRendererThreadWin::StartOverlay() also.
+  ui_rendering_thread_->SetLocationInfo(gurl);
+}
+
 void VRUiHostImpl::OnBubbleAdded() {
   if (!ui_rendering_thread_) {
     DVLOG(1) << __func__ << ": no ui_rendering_thread_";
     return;
   }
 
-  ui_rendering_thread_->StartOverlay(compositor_.get());
-
-  if (web_contents_) {
-    content::NavigationEntry* entry =
-        web_contents_->GetController().GetVisibleEntry();
-    if (entry) {
-      GURL gurl = entry->GetVirtualURL();
-      ui_rendering_thread_->SetLocationInfo(gurl);
-    }
-  }
+  SetLocationInfoOnUi();
 
   ui_rendering_thread_->SetVisibleExternalPromptNotification(
       ExternalPromptNotificationType::kPromptGenericPermission);
@@ -198,6 +207,5 @@ void VRUiHostImpl::RemoveHeadsetNotificationPrompt(int prompt_sequence_num) {
   is_prompt_showing_in_headset_ = false;
   ui_rendering_thread_->SetVisibleExternalPromptNotification(
       ExternalPromptNotificationType::kPromptNone);
-  ui_rendering_thread_->StopOverlay();
 }
 }  // namespace vr

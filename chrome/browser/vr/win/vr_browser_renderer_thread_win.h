@@ -23,13 +23,14 @@ class VRUiBrowserInterface;
 
 class VR_EXPORT VRBrowserRendererThreadWin {
  public:
-  VRBrowserRendererThreadWin();
+  explicit VRBrowserRendererThreadWin(
+      device::mojom::XRCompositorHost* compositor);
   ~VRBrowserRendererThreadWin();
 
-  void StartOverlay(device::mojom::XRCompositorHost* host);
-  void StopOverlay();
   void SetVRDisplayInfo(device::mojom::VRDisplayInfoPtr display_info);
   void SetLocationInfo(GURL gurl);
+
+  // The below function(s) affect(s) whether UI is drawn or not.
   void SetVisibleExternalPromptNotification(
       ExternalPromptNotificationType prompt);
 
@@ -45,7 +46,6 @@ class VR_EXPORT VRBrowserRendererThreadWin {
       prompt_ = prompt;
       return prompt_ != old;
     }
-    void StopOverlay();
 
     // State querying methods.
     bool ShouldDrawUI();
@@ -56,10 +56,11 @@ class VR_EXPORT VRBrowserRendererThreadWin {
         ExternalPromptNotificationType::kPromptNone;
   };
 
-  void CleanUp();
   void OnPose(device::mojom::XRFrameDataPtr data);
   void SubmitResult(bool success);
   void SubmitFrame(device::mojom::XRFrameDataPtr data);
+  void StartOverlay();
+  void StopOverlay();
 
   // We need to do some initialization of GraphicsDelegateWin before
   // browser_renderer_, so we first store it in a unique_ptr, then transition
@@ -74,6 +75,10 @@ class VR_EXPORT VRBrowserRendererThreadWin {
   SchedulerDelegateWin* scheduler_ = nullptr;
   BrowserUiInterface* ui_ = nullptr;
 
+  // Owned by vr_ui_host:
+  device::mojom::XRCompositorHost* compositor_;
+
+  GURL gurl_;
   DrawState draw_state_;
 
   device::mojom::ImmersiveOverlayPtr overlay_;
