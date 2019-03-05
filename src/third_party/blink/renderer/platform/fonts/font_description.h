@@ -135,15 +135,21 @@ class PLATFORM_EXPORT FontDescription {
 
    public:
     FamilyDescription(GenericFamilyType generic_family)
-        : generic_family(generic_family) {}
+        : generic_family(generic_family),
+          bold_override(false),
+          italic_override(false) {}
     FamilyDescription(GenericFamilyType generic_family,
                       const FontFamily& family)
-        : generic_family(generic_family), family(family) {}
+        : generic_family(generic_family), family(family),
+          bold_override(false),
+          italic_override(false) {}
 
     String ToString() const;
 
     GenericFamilyType generic_family;
     FontFamily family;
+    bool bold_override;
+    bool italic_override;
   };
 
   const FontFamily& Family() const { return family_list_; }
