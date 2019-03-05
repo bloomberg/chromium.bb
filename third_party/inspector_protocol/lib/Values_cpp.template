@@ -380,7 +380,9 @@ namespace {
 //   have LATIN1 on the wire, so we call EncodeFromLatin1 which
 //   transcodes to UTF8 if needed.
 void EncodeString(const String& s, std::vector<uint8_t>* out) {
-  if (StringUtil::CharactersLatin1(s)) {
+  if (StringUtil::CharacterCount(s) == 0) {
+    EncodeString8(span<uint8_t>(nullptr, 0), out);  // Empty string.
+  } else if (StringUtil::CharactersLatin1(s)) {
     EncodeFromLatin1(span<uint8_t>(StringUtil::CharactersLatin1(s),
                                    StringUtil::CharacterCount(s)),
                      out);
@@ -392,8 +394,6 @@ void EncodeString(const String& s, std::vector<uint8_t>* out) {
     EncodeString8(span<uint8_t>(StringUtil::CharactersUTF8(s),
                                 StringUtil::CharacterCount(s)),
                   out);
-  } else {
-    EncodeString8(span<uint8_t>(nullptr, 0), out);  // Empty string.
   }
 }
 }  // namespace
