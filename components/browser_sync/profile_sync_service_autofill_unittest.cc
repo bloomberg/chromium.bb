@@ -998,10 +998,6 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
   StartAutofillProfileSyncService(add_autofill.callback());
   ASSERT_TRUE(add_autofill.success());
 
-  // TODO(crbug.com/904390): Remove when the investigation is over. This call is
-  // needed in the AutofillProfileChanged() callback.
-  EXPECT_CALL(autofill_table(), GetServerProfiles(_)).WillOnce(Return(true));
-
   AutofillProfileChange change(AutofillProfileChange::REMOVE,
                                sync_profile.guid(), nullptr);
   web_data_service()->OnAutofillProfileChanged(change);

@@ -614,21 +614,21 @@ void AutofillProfileSyncableService::ActOnChange(
   }
 
   // TODO(crbug.com/904390): Remove when the investigation is over.
-  const AutofillProfile* local_profile = nullptr;
-  if (change.type() == AutofillProfileChange::REMOVE) {
-    if (profiles_map_.find(change.key()) != profiles_map_.end()) {
-      local_profile = profiles_map_[change.key()];
-    }
-  } else {
-    local_profile = change.data_model();
-  }
   bool is_converted_from_server = false;
-  // |webdata_backend_| may be null in unit-tests.
-  if (local_profile != nullptr && webdata_backend_ != nullptr) {
-    std::vector<std::unique_ptr<AutofillProfile>> server_profiles;
-    GetAutofillTable()->GetServerProfiles(&server_profiles);
-    is_converted_from_server = IsLocalProfileEqualToServerProfile(
-        server_profiles, *local_profile, app_locale_);
+  if (change.type() == AutofillProfileChange::REMOVE) {
+    // The profile is not available any more so we cannot compare its value,
+    // instead we use a rougher test based on the id - whether it is a local
+    // GUID or a server id. As a result, it has a different semantics compared
+    // to AddOrUpdate.
+    is_converted_from_server = !base::IsValidGUID(change.key());
+  } else {
+    // |webdata_backend_|, used by GetAutofillTable() may be null in unit-tests.
+    if (webdata_backend_ != nullptr) {
+      std::vector<std::unique_ptr<AutofillProfile>> server_profiles;
+      GetAutofillTable()->GetServerProfiles(&server_profiles);
+      is_converted_from_server = IsLocalProfileEqualToServerProfile(
+          server_profiles, *change.data_model(), app_locale_);
+    }
   }
 
   syncer::SyncChangeList new_changes;

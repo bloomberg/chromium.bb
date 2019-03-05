@@ -49,20 +49,6 @@ namespace {
 // Address to this variable used as the user data key.
 static int kAutofillProfileSyncBridgeUserDataKey = 0;
 
-// TODO(crbug.com/904390): Remove when the investigation is over.
-base::Optional<AutofillProfile> FindLocalProfileByStorageKey(
-    const std::string& storage_key,
-    AutofillTable* table) {
-  std::vector<std::unique_ptr<AutofillProfile>> local_profiles;
-  table->GetAutofillProfiles(&local_profiles);
-  for (const auto& local_profile : local_profiles) {
-    if (storage_key == GetStorageKeyFromAutofillProfile(*local_profile)) {
-      return *local_profile;
-    }
-  }
-  return base::nullopt;
-}
-
 }  // namespace
 
 // static
@@ -232,19 +218,18 @@ void AutofillProfileSyncBridge::ActOnLocalChange(
           GetAutofillTable(), syncer::AUTOFILL_PROFILE);
 
   // TODO(crbug.com/904390): Remove when the investigation is over.
-  base::Optional<AutofillProfile> local_profile;
-  if (change.type() == AutofillProfileChange::REMOVE) {
-    local_profile =
-        FindLocalProfileByStorageKey(change.key(), GetAutofillTable());
-  } else {
-    local_profile = *change.data_model();
-  }
-  std::vector<std::unique_ptr<AutofillProfile>> server_profiles;
-  GetAutofillTable()->GetServerProfiles(&server_profiles);
   bool is_converted_from_server = false;
-  if (local_profile != base::nullopt) {
+  if (change.type() == AutofillProfileChange::REMOVE) {
+    // The profile is not available any more so we cannot compare its value,
+    // instead we use a rougher test based on the id - whether it is a local
+    // GUID or a server id. As a result, it has a different semantics compared
+    // to AddOrUpdate.
+    is_converted_from_server = !base::IsValidGUID(change.key());
+  } else {
+    std::vector<std::unique_ptr<AutofillProfile>> server_profiles;
+    GetAutofillTable()->GetServerProfiles(&server_profiles);
     is_converted_from_server = IsLocalProfileEqualToServerProfile(
-        server_profiles, *local_profile, app_locale_);
+        server_profiles, *change.data_model(), app_locale_);
   }
 
   switch (change.type()) {
@@ -271,13 +256,10 @@ void AutofillProfileSyncBridge::ActOnLocalChange(
       change_processor()->Delete(change.key(), metadata_change_list.get());
 
       // TODO(crbug.com/904390): Remove when the investigation is over.
-      if (local_profile != base::nullopt) {
-        // Report only if we delete an existing entity.
-        ReportAutofillProfileDeleteOrigin(
-            is_converted_from_server
-                ? AutofillProfileSyncChangeOrigin::kConvertedLocal
-                : AutofillProfileSyncChangeOrigin::kTrulyLocal);
-      }
+      ReportAutofillProfileDeleteOrigin(
+          is_converted_from_server
+              ? AutofillProfileSyncChangeOrigin::kConvertedLocal
+              : AutofillProfileSyncChangeOrigin::kTrulyLocal);
       break;
     case AutofillProfileChange::EXPIRE:
       // EXPIRE changes are not being issued for profiles.
