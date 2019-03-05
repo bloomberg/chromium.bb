@@ -5,6 +5,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
 #include <stddef.h>
+#include <algorithm>
 #include <map>
 #include <utility>
 
@@ -30,6 +31,45 @@ base::LazyInstance<AXTreeIDMap>::Leaky g_ax_tree_id_map =
 // A function to call when focus changes, for testing only.
 base::LazyInstance<base::Closure>::DestructorAtExit
     g_focus_change_callback_for_testing = LAZY_INSTANCE_INITIALIZER;
+
+// If 2 or more tree updates can all be merged into others,
+// process the whole set of tree updates, copying them to |dst|,
+// and returning true.  Otherwise, return false and |dst|
+// is left unchanged.
+//
+// Merging tree updates helps minimize the overhead of calling
+// Unserialize multiple times.
+bool MergeTreeUpdates(const std::vector<ui::AXTreeUpdate>& src,
+                      std::vector<ui::AXTreeUpdate>* dst) {
+  size_t merge_count = 0;
+  for (size_t i = 1; i < src.size(); i++) {
+    if (ui::TreeUpdatesCanBeMerged(src[i - 1], src[i]))
+      merge_count++;
+  }
+
+  // Doing a single merge isn't necessarily worth it because
+  // copying the tree updates takes time too so the total
+  // savings is less. But two more more merges is probably
+  // worth the overhead of copying.
+  if (merge_count < 2)
+    return false;
+
+  dst->resize(src.size() - merge_count);
+  (*dst)[0] = src[0];
+  size_t dst_index = 0;
+  for (size_t i = 1; i < src.size(); i++) {
+    if (ui::TreeUpdatesCanBeMerged(src[i - 1], src[i])) {
+      std::vector<ui::AXNodeData>& dst_nodes = (*dst)[dst_index].nodes;
+      const std::vector<ui::AXNodeData>& src_nodes = src[i].nodes;
+      dst_nodes.insert(dst_nodes.end(), src_nodes.begin(), src_nodes.end());
+    } else {
+      dst_index++;
+      (*dst)[dst_index] = src[i];
+    }
+  }
+
+  return true;
+}
 
 }  // namespace
 
@@ -333,9 +373,15 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
   if (delegate_ && !use_custom_device_scale_factor_for_testing_)
     device_scale_factor_ = delegate_->AccessibilityGetDeviceScaleFactor();
 
+  // Optionally merge multiple tree updates into fewer updates.
+  const std::vector<ui::AXTreeUpdate>* tree_updates = &details.updates;
+  std::vector<ui::AXTreeUpdate> merged_tree_updates;
+  if (MergeTreeUpdates(details.updates, &merged_tree_updates))
+    tree_updates = &merged_tree_updates;
+
   // Process all changes to the accessibility tree first.
-  for (uint32_t index = 0; index < details.updates.size(); ++index) {
-    if (!tree_->Unserialize(details.updates[index])) {
+  for (uint32_t index = 0; index < tree_updates->size(); ++index) {
+    if (!tree_->Unserialize((*tree_updates)[index])) {
       if (delegate_) {
         LOG(ERROR) << tree_->error();
         delegate_->AccessibilityFatalError();

@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -76,6 +77,26 @@ class TestBrowserAccessibilityDelegate : public BrowserAccessibilityDelegate {
 
  private:
   bool got_fatal_error_;
+};
+
+class CountingAXTreeObserver : public ui::AXTreeObserver {
+ public:
+  CountingAXTreeObserver() {}
+  ~CountingAXTreeObserver() override {}
+
+  int update_count() { return update_count_; }
+  int node_count() { return node_count_; }
+
+ private:
+  void OnAtomicUpdateFinished(ui::AXTree* tree,
+                              bool root_changed,
+                              const std::vector<Change>& changes) override {
+    update_count_++;
+    node_count_ += static_cast<int>(changes.size());
+  }
+
+  int update_count_ = 0;
+  int node_count_ = 0;
 };
 
 }  // anonymous namespace
@@ -1550,6 +1571,54 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash2) {
   // that this doesn't crash.
   ASSERT_EQ(3, manager->GetRoot()->GetId());
   ASSERT_EQ(3, manager->GetFocus()->GetId());
+}
+
+TEST(BrowserAccessibilityManagerTest, TreeUpdatesAreMergedWhenPossible) {
+  ui::AXTreeUpdate tree;
+  tree.root_id = 1;
+  tree.nodes.resize(4);
+  tree.nodes[0].id = 1;
+  tree.nodes[0].role = ax::mojom::Role::kMenu;
+  tree.nodes[0].child_ids = {2, 3, 4};
+  tree.nodes[1].id = 2;
+  tree.nodes[1].role = ax::mojom::Role::kMenuItem;
+  tree.nodes[2].id = 3;
+  tree.nodes[2].role = ax::mojom::Role::kMenuItemCheckBox;
+  tree.nodes[3].id = 4;
+  tree.nodes[3].role = ax::mojom::Role::kMenuItemRadio;
+
+  std::unique_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          tree, nullptr, new CountedBrowserAccessibilityFactory()));
+
+  CountingAXTreeObserver observer;
+  manager->ax_tree()->AddObserver(&observer);
+
+  // Update each of the children using separate AXTreeUpdates.
+  AXEventNotificationDetails events;
+  events.updates.resize(3);
+  for (int i = 0; i < 3; i++) {
+    ui::AXTreeUpdate update;
+    update.root_id = 1;
+    update.nodes.resize(1);
+    update.nodes[0].id = 2 + i;
+    events.updates[i] = update;
+  }
+  events.updates[0].nodes[0].role = ax::mojom::Role::kMenuItemCheckBox;
+  events.updates[1].nodes[0].role = ax::mojom::Role::kMenuItemRadio;
+  events.updates[2].nodes[0].role = ax::mojom::Role::kMenuItem;
+  manager->OnAccessibilityEvents(events);
+
+  // These should have been merged into a single tree update.
+  EXPECT_EQ(1, observer.update_count());
+
+  EXPECT_EQ(ax::mojom::Role::kMenuItemCheckBox,
+            manager->GetFromID(2)->GetRole());
+  EXPECT_EQ(ax::mojom::Role::kMenuItemRadio, manager->GetFromID(3)->GetRole());
+  EXPECT_EQ(ax::mojom::Role::kMenuItem, manager->GetFromID(4)->GetRole());
+
+  // Remove the observer before the manager is destroyed.
+  manager->ax_tree()->RemoveObserver(&observer);
 }
 
 }  // namespace content

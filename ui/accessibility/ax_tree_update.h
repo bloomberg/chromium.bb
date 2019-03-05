@@ -115,6 +115,26 @@ std::string AXTreeUpdateBase<AXNodeData, AXTreeData>::ToString() const {
   return result;
 }
 
+// Two tree updates can be merged into one if the second one
+// doesn't clear a subtree, doesn't have new tree data, and
+// doesn't have a new root id - in other words the second tree
+// update consists of only changes to nodes.
+template <typename AXNodeData, typename AXTreeData>
+bool TreeUpdatesCanBeMerged(
+    const AXTreeUpdateBase<AXNodeData, AXTreeData>& u1,
+    const AXTreeUpdateBase<AXNodeData, AXTreeData>& u2) {
+  if (u2.node_id_to_clear)
+    return false;
+
+  if (u2.has_tree_data && u2.tree_data != u1.tree_data)
+    return false;
+
+  if (u2.root_id != u1.root_id)
+    return false;
+
+  return true;
+}
+
 }  // namespace ui
 
 #endif  // UI_ACCESSIBILITY_AX_TREE_UPDATE_H_
