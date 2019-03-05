@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "chrome/browser/extensions/bookmark_app_extension_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -42,19 +41,24 @@ const Extension* GetExtensionById(Profile* profile,
 }  // namespace
 
 BookmarkAppInstallFinalizer::BookmarkAppInstallFinalizer(Profile* profile)
-    : profile_(profile) {}
+    : profile_(profile) {
+  crx_installer_factory_ = base::BindRepeating([](Profile* profile) {
+    ExtensionService* extension_service =
+        ExtensionSystem::Get(profile)->extension_service();
+    DCHECK(extension_service);
+    return CrxInstaller::CreateSilent(extension_service);
+  });
+}
 
 BookmarkAppInstallFinalizer::~BookmarkAppInstallFinalizer() = default;
 
 void BookmarkAppInstallFinalizer::FinalizeInstall(
     const WebApplicationInfo& web_app_info,
     InstallFinalizedCallback callback) {
-  if (!crx_installer_) {
-    ExtensionService* extension_service =
-        ExtensionSystem::Get(profile_)->extension_service();
-    DCHECK(extension_service);
-    crx_installer_ = CrxInstaller::CreateSilent(extension_service);
-  }
+  DCHECK(!crx_installer_);
+
+  crx_installer_ = crx_installer_factory_.Run(profile_);
+  DCHECK(crx_installer_);
 
   crx_installer_->set_installer_callback(base::BindOnce(
       &BookmarkAppInstallFinalizer::OnExtensionInstalled,
@@ -63,22 +67,19 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
   crx_installer_->InstallWebApp(web_app_info);
 }
 
-void BookmarkAppInstallFinalizer::SetCrxInstallerForTesting(
-    scoped_refptr<CrxInstaller> crx_installer) {
-  crx_installer_ = crx_installer;
-}
-
 void BookmarkAppInstallFinalizer::OnExtensionInstalled(
     std::unique_ptr<WebApplicationInfo> web_app_info,
     InstallFinalizedCallback callback,
     const base::Optional<CrxInstallError>& error) {
+  const Extension* extension = crx_installer_->extension();
+  crx_installer_.reset();
+
   if (error) {
     std::move(callback).Run(web_app::AppId(),
                             web_app::InstallResultCode::kFailedUnknownReason);
     return;
   }
 
-  auto* extension = crx_installer_->extension();
   DCHECK(extension);
   DCHECK_EQ(AppLaunchInfo::GetLaunchWebURL(extension), web_app_info->app_url);
 
@@ -135,6 +136,11 @@ bool BookmarkAppInstallFinalizer::CanRevealAppShim() const {
 void BookmarkAppInstallFinalizer::RevealAppShim(const web_app::AppId& app_id) {
   const Extension* app = GetExtensionById(profile_, app_id);
   BookmarkAppRevealAppShim(profile_, app);
+}
+
+void BookmarkAppInstallFinalizer::SetCrxInstallerFactoryForTesting(
+    CrxInstallerFactory crx_installer_factory) {
+  crx_installer_factory_ = crx_installer_factory;
 }
 
 }  // namespace extensions
