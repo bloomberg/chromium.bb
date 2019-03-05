@@ -85,11 +85,14 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'cast_shell_apk',
   'chrome_official_builder',
   'chrome_official_builder_no_unittests',
+  'chrome_sandbox',
   'chromium_builder_asan',
   'chromium_builder_perf',
   'chromiumos_preflight',
+  'linux_symbols',
   'mini_installer',
   'previous_version_mini_installer',
+  'symupload',
 
   # iOS tests are listed in //ios/build/bots.
   'cronet_test',
