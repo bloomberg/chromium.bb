@@ -4071,6 +4071,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBuiltInModuleKvStorageDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kBuiltInModuleKvStorage)},
 
+    {"native-filesystem-api", flag_descriptions::kNativeFilesystemAPIName,
+     flag_descriptions::kNativeFilesystemAPIDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kNativeFilesystemAPI)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

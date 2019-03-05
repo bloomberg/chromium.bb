@@ -574,7 +574,7 @@ void FileSystemManagerImpl::CreateWriter(const GURL& file_path,
                                          CreateWriterCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!base::FeatureList::IsEnabled(blink::features::kWritableFilesAPI)) {
+  if (!base::FeatureList::IsEnabled(blink::features::kNativeFilesystemAPI)) {
     bindings_.ReportBadMessage("FileSystemManager.CreateWriter");
     return;
   }
@@ -604,7 +604,7 @@ void FileSystemManagerImpl::ChooseEntry(
     bool include_accepts_all,
     ChooseEntryCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!base::FeatureList::IsEnabled(blink::features::kWritableFilesAPI)) {
+  if (!base::FeatureList::IsEnabled(blink::features::kNativeFilesystemAPI)) {
     bindings_.ReportBadMessage("FSMI_WRITABLE_FILES_DISABLED");
     return;
   }

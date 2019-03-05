@@ -436,7 +436,7 @@ void SetIndividualRuntimeFeatures(
   if (command_line.HasSwitch(switches::kEnableAccessibilityObjectModel))
     WebRuntimeFeatures::EnableAccessibilityObjectModel(true);
 
-  if (base::FeatureList::IsEnabled(blink::features::kWritableFilesAPI))
+  if (base::FeatureList::IsEnabled(blink::features::kNativeFilesystemAPI))
     WebRuntimeFeatures::EnableFeatureFromString("WritableFiles", true);
 
   if (base::FeatureList::IsEnabled(

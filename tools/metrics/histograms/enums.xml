@@ -30904,6 +30904,7 @@ from previous Chrome versions.
   <int value="-2098243118" label="OmniboxTailSuggestions:disabled"/>
   <int value="-2097895488" label="NotificationScrollBar:enabled"/>
   <int value="-2097515669" label="disable-cast"/>
+  <int value="-2092067251" label="NativeFilesystemAPI:disabled"/>
   <int value="-2091404586" label="TabStripKeyboardFocus:enabled"/>
   <int value="-2090484194" label="ContextualSearchUrlActions:disabled"/>
   <int value="-2088472280" label="KeyboardShortcutViewerApp:disabled"/>
@@ -32095,6 +32096,7 @@ from previous Chrome versions.
   <int value="-183246373" label="enable-multilingual-spellchecker"/>
   <int value="-181590721"
       label="AutofillEnforceMinRequiredFieldsForHeuristics:enabled"/>
+  <int value="-181279574" label="NativeFilesystemAPI:enabled"/>
   <int value="-181093956" label="ScrollAnchoring:enabled"/>
   <int value="-174706795"
       label="WebPaymentsPerMethodCanMakePaymentQuota:enabled"/>

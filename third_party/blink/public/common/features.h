@@ -52,7 +52,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kStopInBackground;
 BLINK_COMMON_EXPORT extern const base::Feature kStopNonTimersInBackground;
 BLINK_COMMON_EXPORT extern const base::Feature kTextFragmentAnchor;
 BLINK_COMMON_EXPORT extern const base::Feature kWasmCodeCache;
-BLINK_COMMON_EXPORT extern const base::Feature kWritableFilesAPI;
+BLINK_COMMON_EXPORT extern const base::Feature kNativeFilesystemAPI;
 BLINK_COMMON_EXPORT extern const base::Feature kForbidSyncXHRInPageDismissal;
 BLINK_COMMON_EXPORT extern const base::Feature
     kRestrictDeviceSensorEventsToSecureContexts;

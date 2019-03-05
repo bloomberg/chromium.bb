@@ -1226,6 +1226,11 @@ const char kMobileIdentityConsistencyName[] = "Mobile identity consistency";
 const char kMobileIdentityConsistencyDescription[] =
     "Enables stronger identity consistency on mobile";
 
+const char kNativeFilesystemAPIName[] = "Native Filesystem API";
+const char kNativeFilesystemAPIDescription[] =
+    "Enables the experimental Native Filesystem API, giving websites access to "
+    "the native filesystem";
+
 const char kNewAudioRenderingMixingStrategyName[] =
     "New audio rendering mixing strategy";
 const char kNewAudioRenderingMixingStrategyDescription[] =
@@ -1935,7 +1940,6 @@ const char kTranslateForceTriggerOnEnglishName[] =
 const char kTranslateForceTriggerOnEnglishDescription[] =
     "Force the Translate Triggering on English pages experiment to be enabled "
     "with the selected language model active.";
-
 
 const char kTreatInsecureOriginAsSecureName[] =
     "Insecure origins treated as secure";
