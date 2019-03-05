@@ -26,8 +26,9 @@ void BookmarkAppRegistrar::Init(base::OnceClosure callback) {
 }
 
 bool BookmarkAppRegistrar::IsInstalled(const web_app::AppId& app_id) const {
-  return ExtensionRegistry::Get(profile_)->GetInstalledExtension(app_id) !=
-         nullptr;
+  auto* app =
+      ExtensionRegistry::Get(profile_)->enabled_extensions().GetByID(app_id);
+  return app != nullptr;
 }
 
 bool BookmarkAppRegistrar::WasExternalAppUninstalledByUser(
