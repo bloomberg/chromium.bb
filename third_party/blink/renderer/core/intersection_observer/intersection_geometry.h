@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INTERSECTION_OBSERVER_INTERSECTION_GEOMETRY_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INTERSECTION_OBSERVER_INTERSECTION_GEOMETRY_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
@@ -14,7 +15,6 @@
 namespace blink {
 
 class Element;
-class IntersectionObserverEntry;
 class LayoutObject;
 
 // Computes the intersection between an ancestor (root) element and a
@@ -24,9 +24,7 @@ class LayoutObject;
 //
 // If the root argument to the constructor is null, computes the intersection
 // of the target with the top-level frame viewport (AKA the "implicit root").
-class IntersectionGeometry {
-  STACK_ALLOCATED();
-
+class CORE_EXPORT IntersectionGeometry {
  public:
   enum Flags {
     // These flags should passed to the constructor
@@ -44,6 +42,7 @@ class IntersectionGeometry {
                        const Vector<Length>& root_margin,
                        const Vector<float>& thresholds,
                        unsigned flags);
+  IntersectionGeometry(const IntersectionGeometry&) = default;
   ~IntersectionGeometry();
 
   bool ShouldReportRootBounds() const {
@@ -56,23 +55,10 @@ class IntersectionGeometry {
     return flags_ & kShouldTrackFractionOfRoot;
   }
 
-  LayoutObject* Root() const { return root_; }
-  LayoutObject* Target() const { return target_; }
-
-  // Client rect in the coordinate system of the frame containing target.
+  // These are all in CSS pixels
   LayoutRect TargetRect() const { return target_rect_; }
-  // Target rect in CSS pixels
-  LayoutRect UnZoomedTargetRect() const;
-
-  // Client rect in the coordinate system of the frame containing target.
   LayoutRect IntersectionRect() const { return intersection_rect_; }
-  // Intersection rect in CSS pixels
-  LayoutRect UnZoomedIntersectionRect() const;
-
-  // Client rect in the coordinate system of the frame containing root.
   LayoutRect RootRect() const { return root_rect_; }
-  // Root rect in CSS pixels
-  LayoutRect UnZoomedRootRect() const;
 
   IntRect IntersectionIntRect() const {
     return PixelSnappedIntRect(intersection_rect_);
@@ -87,26 +73,22 @@ class IntersectionGeometry {
   bool IsIntersecting() const { return threshold_index_ > 0; }
   bool IsVisible() const { return flags_ & kIsVisible; }
 
-  IntersectionObserverEntry* CreateEntry(Element* target,
-                                         DOMHighResTimeStamp timestamp);
-
  private:
-  void ComputeGeometry();
-  bool CanComputeGeometry(Element* root, Element& target) const;
-  void InitializeTargetRect();
-  void InitializeRootRect();
-  bool ClipToRoot();
-  void MapTargetRectToTargetFrameCoordinates();
-  void MapRootRectToRootFrameCoordinates();
-  void MapIntersectionRectToTargetFrameCoordinates();
-  void ApplyRootMargin();
-  unsigned FirstThresholdGreaterThan(float ratio) const;
-  void ComputeVisibility();
+  void ComputeGeometry(Element* root_element,
+                       Element& target_element,
+                       const Vector<Length>& root_margin,
+                       const Vector<float>& thresholds);
+  LayoutRect InitializeTargetRect(LayoutObject* target);
+  LayoutRect InitializeRootRect(LayoutObject* root,
+                                const Vector<Length>& margin);
+  void ApplyRootMargin(LayoutRect& rect, const Vector<Length>& margin);
+  bool ClipToRoot(LayoutObject* root,
+                  LayoutObject* target,
+                  const LayoutRect& root_rect,
+                  LayoutRect& intersection_rect);
+  unsigned FirstThresholdGreaterThan(float ratio,
+                                     const Vector<float>& thresholds) const;
 
-  LayoutObject* root_;
-  LayoutObject* target_;
-  const Vector<Length>& root_margin_;
-  const Vector<float>& thresholds_;
   LayoutRect target_rect_;
   LayoutRect intersection_rect_;
   LayoutRect root_rect_;

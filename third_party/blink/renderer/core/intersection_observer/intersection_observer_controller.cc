@@ -56,7 +56,8 @@ void IntersectionObserverController::DeliverIntersectionObservations() {
   // TODO(yukishiino): Remove this CHECK once https://crbug.com/809784 gets
   // resolved.
   CHECK(!context->IsContextDestroyed());
-  pending_intersection_observers_.swap(intersection_observers_being_invoked_);
+  CopyToVector(pending_intersection_observers_,
+               intersection_observers_being_invoked_);
   for (auto& observer : intersection_observers_being_invoked_)
     observer->Deliver();
   intersection_observers_being_invoked_.clear();

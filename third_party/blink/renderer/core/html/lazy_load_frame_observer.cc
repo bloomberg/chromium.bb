@@ -38,17 +38,17 @@ namespace {
 // could break their functionality, so these heuristics are used to recognize
 // likely hidden frames and immediately load them so that they can function
 // properly.
-bool IsFrameProbablyHidden(const DOMRectReadOnly& bounding_client_rect,
+bool IsFrameProbablyHidden(const LayoutRect& bounding_client_rect,
                            const Element& element) {
   // Tiny frames that are 4x4 or smaller are likely not intended to be seen by
   // the user. Note that this condition includes frames marked as
   // "display:none", since those frames would have dimensions of 0x0.
-  if (bounding_client_rect.width() < 4.1 || bounding_client_rect.height() < 4.1)
+  if (bounding_client_rect.Width() < 4.1 || bounding_client_rect.Height() < 4.1)
     return true;
 
   // Frames that are positioned completely off the page above or to the left are
   // likely never intended to be visible to the user.
-  if (bounding_client_rect.right() < 0.0 || bounding_client_rect.bottom() < 0.0)
+  if (bounding_client_rect.MaxX() < 0.0 || bounding_client_rect.MaxY() < 0.0)
     return true;
 
   const ComputedStyle* style = element.GetComputedStyle();
@@ -142,7 +142,7 @@ void LazyLoadFrameObserver::LoadIfHiddenOrNearViewport(
   if (entries.back()->isIntersecting()) {
     RecordInitialDeferralAction(
         FrameInitialDeferralAction::kLoadedNearOrInViewport);
-  } else if (IsFrameProbablyHidden(*entries.back()->boundingClientRect(),
+  } else if (IsFrameProbablyHidden(entries.back()->GetGeometry().TargetRect(),
                                    *element_)) {
     RecordInitialDeferralAction(FrameInitialDeferralAction::kLoadedHidden);
   } else {
@@ -206,7 +206,8 @@ void LazyLoadFrameObserver::RecordMetricsOnVisibilityChanged(
   DCHECK(!entries.IsEmpty());
   DCHECK_EQ(element_, entries.back()->target());
 
-  if (IsFrameProbablyHidden(*entries.back()->boundingClientRect(), *element_)) {
+  if (IsFrameProbablyHidden(entries.back()->GetGeometry().TargetRect(),
+                            *element_)) {
     visibility_metrics_observer_->disconnect();
     visibility_metrics_observer_.Clear();
     return;

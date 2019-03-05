@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_delegate.h"
-#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_init.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
@@ -230,7 +229,8 @@ IntersectionObserver::IntersectionObserver(
       root_is_implicit_(root ? 0 : 1),
       track_visibility_(track_visibility ? 1 : 0),
       track_fraction_of_root_(semantics == kFractionOfRoot),
-      always_report_root_bounds_(always_report_root_bounds ? 1 : 0) {
+      always_report_root_bounds_(always_report_root_bounds ? 1 : 0),
+      needs_delivery_(0) {
   switch (root_margin.size()) {
     case 0:
       break;
@@ -331,6 +331,7 @@ void IntersectionObserver::disconnect(ExceptionState& exception_state) {
 
 HeapVector<Member<IntersectionObserverEntry>> IntersectionObserver::takeRecords(
     ExceptionState& exception_state) {
+  needs_delivery_ = 0;
   HeapVector<Member<IntersectionObserverEntry>> entries;
   for (auto& observation : observations_)
     observation->TakeRecords(entries);
@@ -369,14 +370,19 @@ DOMHighResTimeStamp IntersectionObserver::GetTimeStamp() const {
   return -1;
 }
 
-unsigned IntersectionObserver::FirstThresholdGreaterThan(float ratio) const {
-  unsigned result = 0;
-  while (result < thresholds_.size() && thresholds_[result] <= ratio)
-    ++result;
-  return result;
+void IntersectionObserver::SetNeedsDelivery() {
+  if (needs_delivery_)
+    return;
+  needs_delivery_ = 1;
+  To<Document>(GetExecutionContext())
+      ->EnsureIntersectionObserverController()
+      .ScheduleIntersectionObserverForDelivery(*this);
 }
 
 void IntersectionObserver::Deliver() {
+  if (!needs_delivery_)
+    return;
+  needs_delivery_ = 0;
   HeapVector<Member<IntersectionObserverEntry>> entries;
   for (auto& observation : observations_)
     observation->TakeRecords(entries);

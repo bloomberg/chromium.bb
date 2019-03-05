@@ -124,7 +124,7 @@ class CORE_EXPORT IntersectionObserver final
   const Length& RightMargin() const { return right_margin_; }
   const Length& BottomMargin() const { return bottom_margin_; }
   const Length& LeftMargin() const { return left_margin_; }
-  unsigned FirstThresholdGreaterThan(float ratio) const;
+  void SetNeedsDelivery();
   void Deliver();
 
   // Returns false if this observer has an explicit root element which has been
@@ -156,6 +156,7 @@ class CORE_EXPORT IntersectionObserver final
   unsigned track_visibility_ : 1;
   unsigned track_fraction_of_root_ : 1;
   unsigned always_report_root_bounds_ : 1;
+  unsigned needs_delivery_ : 1;
 };
 
 }  // namespace blink
