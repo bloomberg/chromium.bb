@@ -9,9 +9,17 @@ Polymer({
 
   properties: {
     disabled: Boolean,
+
+    /** Mirroring the enum so that it can be used from HTML bindings. */
+    MarginsValue: Object,
   },
 
   observers: ['onMarginsSettingChange_(settings.margins.value)'],
+
+  /** @override */
+  ready: function() {
+    this.MarginsValue = print_preview.ticket_items.MarginsTypeValue;
+  },
 
   /**
    * @param {*} newValue The new value of the margins setting.
