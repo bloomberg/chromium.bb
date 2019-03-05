@@ -19,52 +19,16 @@ class PaymentsManager {
   addCreditCardListChangedListener(listener) {}
 
   /**
-   * Add an observer to the list of local credit cards.
-   * @param {function(!Array<!PaymentsManager.CreditCardEntry>):void} listener
-   */
-  addLocalCreditCardListChangedListener(listener) {}
-
-  /**
-   * Add an observer to the list of server credit cards.
-   * @param {function(!Array<!PaymentsManager.CreditCardEntry>):void} listener
-   */
-  addServerCreditCardListChangedListener(listener) {}
-
-  /**
    * Remove an observer from the list of credit cards.
    * @param {function(!Array<!PaymentsManager.CreditCardEntry>):void} listener
    */
   removeCreditCardListChangedListener(listener) {}
 
   /**
-   * Remove an observer from the list of local credit cards.
-   * @param {function(!Array<!PaymentsManager.CreditCardEntry>):void} listener
-   */
-  removeLocalCreditCardListChangedListener(listener) {}
-
-  /**
-   * Remove an observer from the list of server credit cards.
-   * @param {function(!Array<!PaymentsManager.CreditCardEntry>):void} listener
-   */
-  removeServerCreditCardListChangedListener(listener) {}
-
-  /**
    * Request the list of credit cards.
    * @param {function(!Array<!PaymentsManager.CreditCardEntry>):void} callback
    */
   getCreditCardList(callback) {}
-
-  /**
-   * Request the list of local credit cards.
-   * @param {function(!Array<!PaymentsManager.CreditCardEntry>):void} callback
-   */
-  getLocalCreditCardList(callback) {}
-
-  /**
-   * Request the list of server credit cards.
-   * @param {function(!Array<!PaymentsManager.CreditCardEntry>):void} callback
-   */
-  getServerCreditCardList(callback) {}
 
   /** @param {string} guid The GUID of the credit card to remove.  */
   removeCreditCard(guid) {}
@@ -103,45 +67,13 @@ class PaymentsManagerImpl {
   }
 
   /** @override */
-  addLocalCreditCardListChangedListener(listener) {
-    chrome.autofillPrivate.onLocalCreditCardListChanged.addListener(listener);
-  }
-
-  /** @override */
-  addServerCreditCardListChangedListener(listener) {
-    chrome.autofillPrivate.onServerCreditCardListChanged.addListener(listener);
-  }
-
-  /** @override */
   removeCreditCardListChangedListener(listener) {
     chrome.autofillPrivate.onCreditCardListChanged.removeListener(listener);
   }
 
   /** @override */
-  removeLocalCreditCardListChangedListener(listener) {
-    chrome.autofillPrivate.onLocalCreditCardListChanged.removeListener(
-        listener);
-  }
-
-  /** @override */
-  removeServerCreditCardListChangedListener(listener) {
-    chrome.autofillPrivate.onServerCreditCardListChanged.removeListener(
-        listener);
-  }
-
-  /** @override */
   getCreditCardList(callback) {
     chrome.autofillPrivate.getCreditCardList(callback);
-  }
-
-  /** @override */
-  getLocalCreditCardList(callback) {
-    chrome.autofillPrivate.getLocalCreditCardList(callback);
-  }
-
-  /** @override */
-  getServerCreditCardList(callback) {
-    chrome.autofillPrivate.getServerCreditCardList(callback);
   }
 
   /** @override */
@@ -189,18 +121,6 @@ Polymer({
      * @type {!Array<!PaymentsManager.CreditCardEntry>}
      */
     creditCards: Array,
-
-    /**
-     * An array of saved locl credit cards.
-     * @type {!Array<!PaymentsManager.CreditCardEntry>}
-     */
-    localCreditCards: Array,
-
-    /**
-     * An array of saved server credit cards.
-     * @type {!Array<!PaymentsManager.CreditCardEntry>}
-     */
-    serverCreditCards: Array,
 
     /**
      * The model for any credit card related action menus or dialogs.
@@ -291,18 +211,6 @@ Polymer({
       },
       readOnly: true,
     },
-
-    /**
-     * True when the cards list should be split in two..
-     * @private {boolean}
-     */
-    splitCreditCardList_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('splitCreditCardList');
-      },
-      readOnly: true,
-    },
   },
 
   listeners: {
@@ -330,18 +238,6 @@ Polymer({
    */
   setCreditCardsListener_: null,
 
-  /**
-   * @type {?function(!Array<!PaymentsManager.CreditCardEntry>)}
-   * @private
-   */
-  setLocalCreditCardsListener_: null,
-
-  /**
-   * @type {?function(!Array<!PaymentsManager.CreditCardEntry>)}
-   * @private
-   */
-  setServerCreditCardsListener_: null,
-
   /** @private {?settings.SyncBrowserProxy} */
   syncBrowserProxy_: null,
 
@@ -352,35 +248,19 @@ Polymer({
     const setCreditCardsListener = list => {
       this.creditCards = list;
     };
-    /** @type {function(!Array<!PaymentsManager.CreditCardEntry>)} */
-    const setLocalCreditCardsListener = list => {
-      this.localCreditCards = list;
-    };
-    /** @type {function(!Array<!PaymentsManager.CreditCardEntry>)} */
-    const setServerCreditCardsListener = list => {
-      this.serverCreditCards = list;
-    };
 
     // Remember the bound reference in order to detach.
     this.setCreditCardsListener_ = setCreditCardsListener;
-    this.setLocalCreditCardsListener_ = setLocalCreditCardsListener;
-    this.setServerCreditCardsListener_ = setServerCreditCardsListener;
 
     // Set the managers. These can be overridden by tests.
     this.paymentsManager_ = PaymentsManagerImpl.getInstance();
 
     // Request initial data.
     this.paymentsManager_.getCreditCardList(setCreditCardsListener);
-    this.paymentsManager_.getLocalCreditCardList(setLocalCreditCardsListener);
-    this.paymentsManager_.getServerCreditCardList(setServerCreditCardsListener);
 
     // Listen for changes.
     this.paymentsManager_.addCreditCardListChangedListener(
         setCreditCardsListener);
-    this.paymentsManager_.addLocalCreditCardListChangedListener(
-        setLocalCreditCardsListener);
-    this.paymentsManager_.addServerCreditCardListChangedListener(
-        setServerCreditCardsListener);
 
     this.syncBrowserProxy_ = settings.SyncBrowserProxyImpl.getInstance();
     this.syncBrowserProxy_.getSyncStatus().then(
@@ -397,12 +277,6 @@ Polymer({
     this.paymentsManager_.removeCreditCardListChangedListener(
         /** @type {function(!Array<!PaymentsManager.CreditCardEntry>)} */ (
             this.setCreditCardsListener_));
-    this.paymentsManager_.removeLocalCreditCardListChangedListener(
-        /** @type {function(!Array<!PaymentsManager.CreditCardEntry>)} */ (
-            this.setLocalCreditCardsListener_));
-    this.paymentsManager_.removeServerCreditCardListChangedListener(
-        /** @type {function(!Array<!PaymentsManager.CreditCardEntry>)} */ (
-            this.setServerCreditCardsListener_));
   },
 
   /**
