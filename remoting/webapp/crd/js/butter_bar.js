@@ -59,16 +59,17 @@ remoting.ButterBar.prototype.init = function() {
     remoting.identity.getEmail(),
   ];
   Promise.all(promises).then(function (results) {
-    /** @type {!remoting.Xhr.Response} */
-    var response = results[0];
-    /** @type {string} */
-    var email = results[1];
-    if (email.toLocaleLowerCase().endsWith('@google.com')) {
-      result.resolve();
-      return;
-    }
     try {
+      /** @type {!remoting.Xhr.Response} */
+      var response = results[0];
       var responseObj = response.getJson();
+      /** @type {string} */
+      var email = results[1];
+      if (email.toLocaleLowerCase().endsWith('@google.com') &&
+          !Boolean(responseObj.includeGooglers)) {
+        result.resolve();
+        return;
+      }
       /** @type {number} The index of the message to display. */
       var index = base.assertNumber(responseObj.index);
       /** @type {string} The URL of the website. */
