@@ -11,7 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/browser/password_store_sync.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_type_change_processor.h"
@@ -145,6 +145,12 @@ bool AreLocalAndRemotePasswordsEqual(
                   .Serialize() == password_form.federation_origin.Serialize());
 }
 
+bool ShouldRecoverPasswordsDuringMerge() {
+  return base::FeatureList::IsEnabled(
+             features::kRecoverPasswordsForSyncUsers) &&
+         !base::FeatureList::IsEnabled(features::kDeleteCorruptedPasswords);
+}
+
 // A simple class for scoping a password store sync transaction. This does not
 // support rollback since the password store sync doesn't either.
 class ScopedStoreTransaction {
@@ -247,13 +253,36 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
 
   base::AutoReset<bool> processing_changes(&is_processing_remote_sync_changes_,
                                            true);
+
   // Read all local passwords.
   PrimaryKeyToFormMap key_to_local_form_map;
-  if (password_store_sync_->ReadAllLogins(&key_to_local_form_map) !=
-      FormRetrievalResult::kSuccess) {
+  FormRetrievalResult read_result =
+      password_store_sync_->ReadAllLogins(&key_to_local_form_map);
+
+  if (read_result == FormRetrievalResult::kDbError) {
     return syncer::ModelError(FROM_HERE,
                               "Failed to load entries from password store.");
   }
+  if (read_result == FormRetrievalResult::kEncrytionServiceFailure) {
+    if (!ShouldRecoverPasswordsDuringMerge()) {
+      return syncer::ModelError(FROM_HERE,
+                                "Failed to load entries from password store. "
+                                "Encryption service failure.");
+    }
+    base::Optional<syncer::ModelError> cleanup_result_error =
+        CleanupPasswordStore();
+    if (cleanup_result_error) {
+      return cleanup_result_error;
+    }
+    // Clean up done successfully, try to read again.
+    read_result = password_store_sync_->ReadAllLogins(&key_to_local_form_map);
+    if (read_result != FormRetrievalResult::kSuccess) {
+      return syncer::ModelError(
+          FROM_HERE,
+          "Failed to load entries from password store after cleanup.");
+    }
+  }
+  DCHECK_EQ(read_result, FormRetrievalResult::kSuccess);
 
   // Collect the client tags of remote passwords and the corresponding
   // EntityChange. Note that |entity_data| only contains client tag *hashes*.
@@ -557,6 +586,22 @@ void PasswordSyncBridge::ApplyStopSyncChanges(
   // implementation, via a dedicated method in PasswordStoreSync.
   ModelTypeSyncBridge::ApplyStopSyncChanges(
       std::move(delete_metadata_change_list));
+}
+
+base::Optional<syncer::ModelError> PasswordSyncBridge::CleanupPasswordStore() {
+  DatabaseCleanupResult cleanup_result =
+      password_store_sync_->DeleteUndecryptableLogins();
+  switch (cleanup_result) {
+    case DatabaseCleanupResult::kSuccess:
+      break;
+    case DatabaseCleanupResult::kEncryptionUnavailable:
+      return syncer::ModelError(
+          FROM_HERE, "Failed to get encryption key during database cleanup.");
+    case DatabaseCleanupResult::kItemFailure:
+    case DatabaseCleanupResult::kDatabaseUnavailable:
+      return syncer::ModelError(FROM_HERE, "Failed to cleanup database.");
+  }
+  return base::nullopt;
 }
 
 }  // namespace password_manager
