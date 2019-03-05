@@ -1222,6 +1222,29 @@ TEST_F(LayerWithNullDelegateTest, MirroringVisibility) {
   EXPECT_FALSE(l2_mirror->cc_layer_for_testing()->hide_layer_and_subtree());
 }
 
+TEST_F(LayerWithDelegateTest, RoundedCorner) {
+  gfx::Rect layer_bounds(10, 20, 100, 100);
+  const std::array<uint32_t, 4> radii = {5, 10, 15, 20};
+  const std::array<uint32_t, 4> kEmpty = {0, 0, 0, 0};
+  std::unique_ptr<Layer> layer(new Layer(LAYER_TEXTURED));
+
+  NullLayerDelegate delegate;
+  layer->set_delegate(&delegate);
+  layer->SetVisible(true);
+  layer->SetBounds(layer_bounds);
+  layer->SetMasksToBounds(true);
+
+  compositor()->SetRootLayer(layer.get());
+  Draw();
+
+  EXPECT_EQ(layer->rounded_corner_radii(), kEmpty);
+
+  // Setting a rounded corner radius should set an rrect with bounds same as the
+  // layer.
+  layer->SetRoundedCornerRadius(radii);
+  EXPECT_EQ(layer->rounded_corner_radii(), radii);
+}
+
 // Checks that stacking-related methods behave as advertised.
 TEST_F(LayerWithNullDelegateTest, Stacking) {
   std::unique_ptr<Layer> root(new Layer(LAYER_NOT_DRAWN));

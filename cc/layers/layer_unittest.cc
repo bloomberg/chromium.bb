@@ -351,6 +351,23 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
       grand_child->PushPropertiesTo(grand_child_impl.get()));
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  const std::array<uint32_t, 4> radii{1, 2, 3, 4};
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetRoundedCorner(radii));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
+      root->PushPropertiesTo(root_impl.get());
+      child->PushPropertiesTo(child_impl.get());
+      child2->PushPropertiesTo(child2_impl.get());
+      grand_child->PushPropertiesTo(grand_child_impl.get()));
+
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetRoundedCorner({0, 0, 0, 0}));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
+      root->PushPropertiesTo(root_impl.get());
+      child->PushPropertiesTo(child_impl.get());
+      child2->PushPropertiesTo(child2_impl.get());
+      grand_child->PushPropertiesTo(grand_child_impl.get()));
+
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetDoubleSided(false));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       root->PushPropertiesTo(root_impl.get());
@@ -920,6 +937,7 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
       1, test_layer->SetTransformOrigin(gfx::Point3F(1.23f, 4.56f, 0.f)));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetBackgroundColor(SK_ColorLTGRAY));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetMasksToBounds(true));
+  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetRoundedCorner({1, 2, 3, 4}));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetOpacity(0.5f));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetBlendMode(SkBlendMode::kHue));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetIsRootForIsolatedGroup(true));
@@ -999,6 +1017,26 @@ TEST_F(LayerTest, PushPropertiesCausesLayerPropertyChangedForTransform) {
   gfx::Transform transform;
   transform.Rotate(45.0);
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetTransform(transform));
+
+  EXPECT_FALSE(impl_layer->LayerPropertyChanged());
+
+  test_layer->PushPropertiesTo(impl_layer.get());
+
+  EXPECT_TRUE(impl_layer->LayerPropertyChanged());
+  EXPECT_FALSE(impl_layer->LayerPropertyChangedFromPropertyTrees());
+  EXPECT_TRUE(impl_layer->LayerPropertyChangedNotFromPropertyTrees());
+}
+
+TEST_F(LayerTest, PushPropertiesCausesLayerPropertyChangedForRoundCorner) {
+  scoped_refptr<Layer> test_layer = Layer::Create();
+  test_layer->SetMasksToBounds(true);
+  std::unique_ptr<LayerImpl> impl_layer =
+      LayerImpl::Create(host_impl_.active_tree(), 1);
+
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1,
+                                  layer_tree_host_->SetRootLayer(test_layer));
+
+  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetRoundedCorner({1, 2, 3, 4}));
 
   EXPECT_FALSE(impl_layer->LayerPropertyChanged());
 
