@@ -83,7 +83,13 @@ RemoteFrameView* RemoteFrameView::Create(RemoteFrame* remote_frame) {
   return view;
 }
 
-void RemoteFrameView::UpdateViewportIntersectionsForSubtree() {
+void RemoteFrameView::UpdateViewportIntersectionsForSubtree(
+    unsigned parent_flags) {
+  if (!(parent_flags &
+        IntersectionObservation::kImplicitRootObserversNeedUpdate)) {
+    return;
+  }
+
   LayoutEmbeddedContent* owner = remote_frame_->OwnerLayoutObject();
   if (!owner)
     return;

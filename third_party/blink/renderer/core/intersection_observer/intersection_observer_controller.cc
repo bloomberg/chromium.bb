@@ -63,14 +63,12 @@ void IntersectionObserverController::DeliverIntersectionObservations() {
   intersection_observers_being_invoked_.clear();
 }
 
-void IntersectionObserverController::ComputeTrackedIntersectionObservations() {
+void IntersectionObserverController::ComputeTrackedIntersectionObservations(
+    unsigned flags) {
   if (Document* document = To<Document>(GetExecutionContext())) {
     TRACE_EVENT0("blink",
                  "IntersectionObserverController::"
                  "computeTrackedIntersectionObservations");
-    unsigned flags;
-    if (LocalFrameView* target_view = document->View())
-      flags = target_view->GetIntersectionObservationFlags();
     for (auto& element : tracked_observation_targets_)
       element->ComputeIntersectionObservations(flags);
   }

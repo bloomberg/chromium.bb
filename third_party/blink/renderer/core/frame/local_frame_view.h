@@ -218,7 +218,7 @@ class CORE_EXPORT LocalFrameView final
 
   // Get the InstersectionObservation::ComputeFlags for target elements in this
   // view.
-  unsigned GetIntersectionObservationFlags() const;
+  unsigned GetIntersectionObservationFlags(unsigned parent_flags) const;
 
   void SetPaintArtifactCompositorNeedsUpdate() const;
 
@@ -867,7 +867,8 @@ class CORE_EXPORT LocalFrameView final
   template <typename Function>
   void ForAllNonThrottledLocalFrameViews(const Function&);
 
-  void UpdateViewportIntersectionsForSubtree() override;
+  void UpdateViewportIntersectionsForSubtree(unsigned parent_flags) override;
+
   void UpdateThrottlingStatusForSubtree();
 
   void NotifyResizeObservers();
