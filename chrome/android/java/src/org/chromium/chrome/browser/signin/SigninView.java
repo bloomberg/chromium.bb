@@ -136,7 +136,7 @@ public class SigninView extends LinearLayout {
 
     static Drawable getExpandArrowDrawable(Context context) {
         return UiUtils.getTintedDrawable(
-                context, R.drawable.ic_expand_more_black_24dp, R.color.dark_mode_tint);
+                context, R.drawable.ic_expand_more_black_24dp, R.color.standard_mode_tint);
     }
 
     static Drawable getCheckmarkDrawable(Context context) {

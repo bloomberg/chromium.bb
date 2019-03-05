@@ -66,6 +66,9 @@ public class TabState {
      */
     private static final int MAX_BUNDLE_SIZE = 200 * 1024;
 
+    /** A theme color that indicates an unspecified state. */
+    public static final int UNSPECIFIED_THEME_COLOR = Color.TRANSPARENT;
+
     private static final String TAB_STATE_BUNDLE_PREFIX = "tab_";
     private static final String TIMESTAMP_MILLIS = TAB_STATE_BUNDLE_PREFIX + "timestampMillis";
     private static final String CONTENT_STATE_BYTES =
@@ -143,16 +146,16 @@ public class TabState {
     public String openerAppId;
     public boolean shouldPreserve;
 
-    /** The tab's theme color. */
-    public int themeColor;
+    /**
+     * The tab's brand theme color. Set this to {@link #UNSPECIFIED_THEME_COLOR} for an unspecified
+     * state.
+     */
+    public int themeColor = UNSPECIFIED_THEME_COLOR;
 
     public @Nullable @TabLaunchType Integer tabLaunchTypeAtCreation;
 
     /** Whether this TabState was created from a file containing info about an incognito Tab. */
     protected boolean mIsIncognito;
-
-    /** Whether the theme color was set for this tab. */
-    protected boolean mHasThemeColor;
 
     /** @return Whether a Stable channel build of Chrome is being used. */
     private static boolean isStableChannelBuild() {
@@ -223,7 +226,6 @@ public class TabState {
         tabState.contentsState.setVersion(bundle.getInt(VERSION));
         tabState.shouldPreserve = bundle.getBoolean(SHOULD_PRESERVE);
         tabState.themeColor = bundle.getInt(THEME_COLOR);
-        tabState.mHasThemeColor = ColorUtils.isValidThemeColor(tabState.themeColor);
         tabState.mIsIncognito = bundle.getBoolean(IS_INCOGNITO);
 
         return tabState;
@@ -309,14 +311,12 @@ public class TabState {
             tabState.mIsIncognito = encrypted;
             try {
                 tabState.themeColor = stream.readInt();
-                tabState.mHasThemeColor = ColorUtils.isValidThemeColor(tabState.themeColor);
             } catch (EOFException eof) {
                 // Could happen if reading a version of TabState without a theme color.
-                tabState.themeColor = Color.WHITE;
-                tabState.mHasThemeColor = false;
+                tabState.themeColor = UNSPECIFIED_THEME_COLOR;
                 Log.w(TAG,
                         "Failed to read theme color from tab state. "
-                                + "Assuming theme color is white");
+                                + "Assuming theme color is TabState#UNSPECIFIED_THEME_COLOR");
             }
             try {
                 tabState.tabLaunchTypeAtCreation = stream.readInt();
@@ -476,14 +476,14 @@ public class TabState {
         return mIsIncognito;
     }
 
-    /** @return The theme color of the tab or Color.WHITE if not set. */
+    /** @return The theme color of the tab or {@link #UNSPECIFIED_THEME_COLOR} if not set. */
     public int getThemeColor() {
         return themeColor;
     }
 
     /** @return True if the tab has a theme color set. */
     public boolean hasThemeColor() {
-        return mHasThemeColor;
+        return themeColor != UNSPECIFIED_THEME_COLOR && ColorUtils.isValidThemeColor(themeColor);
     }
 
     /**

@@ -25,6 +25,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 
@@ -280,7 +281,7 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
     void initRefineIcon(boolean useDarkColors) {
         if (mRefineIcon != null) return;
         @ColorRes
-        int tintId = useDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint;
+        int tintId = ColorUtils.getIconTintRes(!useDarkColors);
         mRefineIcon = TintedDrawable.constructTintedDrawable(
                 getContext(), R.drawable.btn_suggestion_refine, tintId);
         mRefineIcon.setBounds(
@@ -295,7 +296,7 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
     void updateRefineIconTint(boolean useDarkColors) {
         if (mRefineIcon == null) return;
         @ColorRes
-        int tintId = useDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint;
+        int tintId = ColorUtils.getIconTintRes(!useDarkColors);
         mRefineIcon.setTint(AppCompatResources.getColorStateList(getContext(), tintId));
         mRefineView.postInvalidateOnAnimation();
     }
@@ -326,7 +327,7 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
         if (!mContentsView.mAllowTint || mContentsView.mSuggestionIcon == null) return;
         DrawableCompat.setTint(mContentsView.mSuggestionIcon,
                 ApiCompatibilityUtils.getColor(getContext().getResources(),
-                        useDarkTint ? R.color.dark_mode_tint : R.color.white_mode_tint));
+                        useDarkTint ? R.color.standard_mode_tint : R.color.white_mode_tint));
         mContentsView.invalidate();
     }
 

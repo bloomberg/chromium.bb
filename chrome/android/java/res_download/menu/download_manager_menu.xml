@@ -21,13 +21,13 @@
             android:title="@string/search"
             android:visible="false"
             app:showAsAction="ifRoom"
-            app:iconTint="@color/dark_mode_tint" />
+            app:iconTint="@color/standard_mode_tint" />
         <item
             android:id="@+id/close_menu_id"
             android:icon="@drawable/btn_close"
             android:title="@string/close"
             app:showAsAction="ifRoom"
-            app:iconTint="@color/dark_mode_tint" />
+            app:iconTint="@color/standard_mode_tint" />
      </group>
     <group android:id="@+id/with_settings_normal_menu_group"
         android:visible="false" >
@@ -37,20 +37,20 @@
             android:title="@string/preferences"
             android:visible="false"
             app:showAsAction="ifRoom"
-            app:iconTint="@color/dark_mode_tint" />
+            app:iconTint="@color/standard_mode_tint" />
         <item
             android:id="@+id/with_settings_search_menu_id"
             android:icon="@drawable/ic_search"
             android:title="@string/search"
             android:visible="false"
             app:showAsAction="ifRoom"
-            app:iconTint="@color/dark_mode_tint" />
+            app:iconTint="@color/standard_mode_tint" />
         <item
             android:id="@+id/with_settings_close_menu_id"
             android:icon="@drawable/btn_close"
             android:title="@string/close"
             app:showAsAction="ifRoom"
-            app:iconTint="@color/dark_mode_tint" />
+            app:iconTint="@color/standard_mode_tint" />
     </group>
      <group
         android:id="@+id/selection_mode_menu_group"

@@ -25,7 +25,7 @@
             android:paddingStart="23dp"
             android:paddingEnd="13dp"
             android:src="@drawable/btn_delete_24dp"
-            app:tint="@color/dark_mode_tint" />
+            app:tint="@color/standard_mode_tint" />
     </LinearLayout>
 
     <LinearLayout

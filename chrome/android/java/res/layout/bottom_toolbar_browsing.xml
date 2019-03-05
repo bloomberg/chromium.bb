@@ -39,7 +39,7 @@
 
             <org.chromium.chrome.browser.toolbar.HomeButton
                 android:id="@+id/home_button"
-                app:tint="@color/dark_mode_tint"
+                app:tint="@color/standard_mode_tint"
                 style="@style/BottomToolbarButton"
                 android:contentDescription="@string/accessibility_toolbar_btn_home" />
 
@@ -49,7 +49,7 @@
                 android:id="@+id/share_button"
                 style="@style/BottomToolbarButton"
                 android:src="@drawable/ic_share_white_24dp"
-                app:tint="@color/dark_mode_tint"
+                app:tint="@color/standard_mode_tint"
                 android:contentDescription="@string/share" />
 
             <include layout="@layout/toolbar_space" />

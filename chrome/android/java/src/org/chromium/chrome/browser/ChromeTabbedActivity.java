@@ -1577,9 +1577,7 @@ public class ChromeTabbedActivity
     @Override
     protected void initializeToolbar() {
         super.initializeToolbar();
-        if (isTablet()) {
-            getToolbarManager().setShouldUpdateToolbarPrimaryColor(false);
-        } else if (FeatureUtilities.isBottomToolbarEnabled()) {
+        if (!isTablet() && FeatureUtilities.isBottomToolbarEnabled()) {
             getToolbarManager().enableBottomToolbar();
         }
     }

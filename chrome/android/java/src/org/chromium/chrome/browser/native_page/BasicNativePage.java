@@ -32,7 +32,7 @@ public abstract class BasicNativePage extends EmptyTabObserver implements Native
         initialize(activity, host);
         mActivity = activity;
         mHost = host;
-        mBackgroundColor = ColorUtils.getDefaultThemeColor(activity.getResources(), false);
+        mBackgroundColor = ColorUtils.getPrimaryBackgroundColor(activity.getResources(), false);
 
         Resources res = mActivity.getResources();
 

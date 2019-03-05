@@ -28,28 +28,28 @@
             android:src="@drawable/btn_toolbar_home"
             android:contentDescription="@string/accessibility_toolbar_btn_home"
             android:visibility="gone"
-            app:tint="@color/dark_mode_tint" />
+            app:tint="@color/standard_mode_tint" />
 
         <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/back_button"
             style="@style/ToolbarButton"
             android:src="@drawable/btn_back"
             android:contentDescription="@string/accessibility_toolbar_btn_back"
-            app:tint="@color/dark_mode_tint" />
+            app:tint="@color/standard_mode_tint" />
 
         <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/forward_button"
             style="@style/ToolbarButton"
             android:src="@drawable/btn_forward"
             android:contentDescription="@string/accessibility_toolbar_btn_forward"
-            app:tint="@color/dark_mode_tint" />
+            app:tint="@color/standard_mode_tint" />
 
         <!-- The src will be set in onFinishInflate. -->
         <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/refresh_button"
             style="@style/ToolbarButton"
             android:contentDescription="@string/accessibility_btn_refresh"
-            tools:tint="@color/dark_mode_tint"
+            tools:tint="@color/standard_mode_tint"
             tools:src="@drawable/btn_reload_stop" />
 
         <org.chromium.chrome.browser.omnibox.LocationBarTablet
@@ -58,7 +58,7 @@
             android:layout_height="@dimen/modern_toolbar_background_size"
             android:layout_weight="1"
             android:layout_gravity="center_vertical"
-            android:background="@drawable/modern_toolbar_background"
+            android:background="@drawable/modern_toolbar_text_box_background"
             android:paddingEnd="@dimen/location_bar_lateral_padding"
             android:paddingStart="2dp" />
 
@@ -79,7 +79,7 @@
                 android:src="@drawable/ic_more_vert_black_24dp"
                 android:contentDescription="@string/accessibility_toolbar_btn_menu"
                 android:layout_gravity="center"
-                app:tint="@color/dark_mode_tint" />
+                app:tint="@color/standard_mode_tint" />
 
             <ImageView
                 android:id="@+id/menu_badge"

@@ -16,6 +16,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Browser;
 import android.support.annotation.IntDef;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.ContextThemeWrapper;
@@ -661,6 +662,17 @@ public class Tab
     }
 
     /**
+     * @return The {@link Activity} {@link Context} if this {@link Tab} is attached to an
+     *         {@link Activity}, otherwise the themed application context (e.g. hidden tab or
+     *         browser action tab).
+     */
+    public @NonNull Context getContext() {
+        if (getWindowAndroid() == null) return getThemedApplicationContext();
+        Context context = getWindowAndroid().getContext().get();
+        return context == context.getApplicationContext() ? getThemedApplicationContext() : context;
+    }
+
+    /**
      * @return {@link TabModelSelector} that currently hosts the {@link TabModel} for this
      *         {@link Tab}.
      */
@@ -679,7 +691,11 @@ public class Tab
         tabState.shouldPreserve = mShouldPreserve;
         tabState.timestampMillis = mTimestampMillis;
         tabState.tabLaunchTypeAtCreation = mLaunchTypeAtCreation;
-        tabState.themeColor = TabThemeColorHelper.getColor(this);
+        // Don't save actual default theme color because it could change on night mode state
+        // changed.
+        tabState.themeColor = TabThemeColorHelper.isDefaultColorUsed(this)
+                ? TabState.UNSPECIFIED_THEME_COLOR
+                : TabThemeColorHelper.getColor(this);
         tabState.rootId = mRootId;
         return tabState;
     }

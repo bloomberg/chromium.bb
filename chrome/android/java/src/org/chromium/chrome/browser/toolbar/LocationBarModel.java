@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
+import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
@@ -222,8 +223,8 @@ public class LocationBarModel implements ToolbarDataProvider {
             }
 
             OmniboxUrlEmphasizer.emphasizeUrl(spannableDisplayText, mContext.getResources(),
-                    getProfile(), getSecurityLevel(), isInternalPage, shouldUseDarkUrlColors(),
-                    shouldEmphasizeHttpsScheme());
+                    getProfile(), getSecurityLevel(), isInternalPage,
+                    shouldUseDarkColors(hasTab(), getPrimaryColor()), shouldEmphasizeHttpsScheme());
         }
 
         return UrlBarData.forUrlAndText(url, spannableDisplayText, editingText);
@@ -248,15 +249,14 @@ public class LocationBarModel implements ToolbarDataProvider {
         return !isUsingBrandColor() && !isIncognito();
     }
 
-    private boolean shouldUseDarkUrlColors() {
-        boolean brandColorNeedsLightText = false;
-        if (isUsingBrandColor()) {
-            int currentPrimaryColor = getPrimaryColor();
-            brandColorNeedsLightText =
-                    ColorUtils.shouldUseLightForegroundOnBackground(currentPrimaryColor);
-        }
-
-        return !isIncognito() && (!hasTab() || !brandColorNeedsLightText);
+    /**
+     * @param hasTab Whether the location is attached to a {@link Tab}. See
+     *               {@link ToolbarDataProvider#hasTab()}.
+     * @param primaryColor The primary color of the toolbar that holds this location bar.
+     * @return Whether or not dark text color or icon tint should be used for the location bar.
+     */
+    public static boolean shouldUseDarkColors(boolean hasTab, @ColorInt int primaryColor) {
+        return !hasTab || !ColorUtils.shouldUseLightForegroundOnBackground(primaryColor);
     }
 
     @Override
@@ -390,7 +390,7 @@ public class LocationBarModel implements ToolbarDataProvider {
 
         if (isIncognito() || needLightIcon) {
             // For a dark theme color, use light icons.
-            return R.color.light_mode_tint;
+            return ColorUtils.getThemedToolbarIconTintRes(true);
         }
 
         if (isPreview()) {
@@ -407,7 +407,7 @@ public class LocationBarModel implements ToolbarDataProvider {
             // For theme colors which are not dark and are also not
             // light enough to warrant an opaque URL bar, use dark
             // icons.
-            return R.color.dark_mode_tint;
+            return ColorUtils.getThemedToolbarIconTintRes(false);
         }
 
         if (securityLevel == ConnectionSecurityLevel.DANGEROUS) {
@@ -422,7 +422,7 @@ public class LocationBarModel implements ToolbarDataProvider {
             return R.color.google_green_700;
         }
 
-        return R.color.dark_mode_tint;
+        return ColorUtils.getThemedToolbarIconTintRes(false);
     }
 
     @Override

@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.toolbar.LocationBarModel;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.ToolbarActionModeCallback;
@@ -1021,9 +1022,16 @@ public class LocationBarLayout extends FrameLayout
      */
     @Override
     public void updateVisualsForState() {
-        updateUseDarkColors();
+        // If the location bar is focused, the toolbar background color would be the default color
+        // regardless of whether it is branded or not.
+        final int defaultPrimaryColor =
+                ColorUtils.getDefaultThemeColor(getResources(), mToolbarDataProvider.isIncognito());
+        final int primaryColor =
+                mUrlHasFocus ? defaultPrimaryColor : mToolbarDataProvider.getPrimaryColor();
+        mUseDarkColors =
+                LocationBarModel.shouldUseDarkColors(mToolbarDataProvider.hasTab(), primaryColor);
 
-        int id = mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint;
+        int id = ColorUtils.getIconTintRes(!mUseDarkColors);
         ColorStateList colorStateList = AppCompatResources.getColorStateList(getContext(), id);
         ApiCompatibilityUtils.setImageTintList(mMicButton, colorStateList);
         ApiCompatibilityUtils.setImageTintList(mDeleteButton, colorStateList);
@@ -1036,26 +1044,6 @@ public class LocationBarLayout extends FrameLayout
 
         mStatusViewCoordinator.setUseDarkColors(mUseDarkColors);
         mAutocompleteCoordinator.updateVisualsForState(mUseDarkColors);
-    }
-
-    /**
-     * Checks the current specs and updates {@link LocationBarLayout#mUseDarkColors} if necessary.
-     * @return Whether {@link LocationBarLayout#mUseDarkColors} has been updated.
-     */
-    private boolean updateUseDarkColors() {
-        boolean brandColorNeedsLightText = false;
-        if (mToolbarDataProvider.isUsingBrandColor() && !mUrlHasFocus) {
-            int currentPrimaryColor = mToolbarDataProvider.getPrimaryColor();
-            brandColorNeedsLightText =
-                    ColorUtils.shouldUseLightForegroundOnBackground(currentPrimaryColor);
-        }
-
-        boolean useDarkColors = !mToolbarDataProvider.isIncognito()
-                && (!mToolbarDataProvider.hasTab() || !brandColorNeedsLightText);
-        boolean hasChanged = useDarkColors != mUseDarkColors;
-        mUseDarkColors = useDarkColors;
-
-        return hasChanged;
     }
 
     @Override

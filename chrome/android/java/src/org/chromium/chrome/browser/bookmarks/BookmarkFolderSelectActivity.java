@@ -369,7 +369,7 @@ public class BookmarkFolderSelectActivity extends SynchronousInitializationActiv
                 VectorDrawableCompat vectorDrawable = VectorDrawableCompat.create(
                         view.getResources(), R.drawable.ic_add, view.getContext().getTheme());
                 vectorDrawable.setTintList(AppCompatResources.getColorStateList(
-                        view.getContext(), R.color.dark_mode_tint));
+                        view.getContext(), R.color.standard_mode_tint));
                 iconDrawable = vectorDrawable;
             }
 

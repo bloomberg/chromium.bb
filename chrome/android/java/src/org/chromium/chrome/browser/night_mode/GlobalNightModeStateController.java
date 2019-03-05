@@ -90,7 +90,7 @@ public class GlobalNightModeStateController
     // NightModeStateProvider implementation.
     @Override
     public boolean isInNightMode() {
-        return mNightModeOn;
+        return mNightModeOn != null ? mNightModeOn : false;
     }
 
     @Override

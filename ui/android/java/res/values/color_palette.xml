@@ -13,11 +13,15 @@
     <color name="modern_grey_600" tools:ignore="UnusedResources">#80868B</color>
     <color name="modern_grey_700">#5F6368</color>
     <color name="modern_grey_800" tools:ignore="UnusedResources">#3C4043</color>
+    <color name="modern_grey_800_alpha_38" tools:ignore="UnusedResources">#613C4043</color>
     <color name="modern_grey_900">#202124</color>
+
+    <color name="modern_grey_900_with_white_alpha_8" tools:ignore="UnusedResources">#313235</color>
 
     <color name="black_alpha_38">#61000000</color>
 
     <color name="white_alpha_10" tools:ignore="UnusedResources">#1AFFFFFF</color>
+    <color name="white_alpha_20">#33FFFFFF</color>
     <color name="white_alpha_50" tools:ignore="UnusedResources">#80FFFFFF</color>
     <color name="white_alpha_70">#B3FFFFFF</color>
 </resources>

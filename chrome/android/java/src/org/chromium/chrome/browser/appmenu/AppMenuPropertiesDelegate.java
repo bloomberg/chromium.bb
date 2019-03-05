@@ -135,7 +135,8 @@ public class AppMenuPropertiesDelegate {
                 Drawable icon =
                         AppCompatResources.getDrawable(mActivity, R.drawable.btn_reload_stop);
                 DrawableCompat.setTintList(icon,
-                        AppCompatResources.getColorStateList(mActivity, R.color.dark_mode_tint));
+                        AppCompatResources.getColorStateList(
+                                mActivity, R.color.standard_mode_tint));
                 mReloadMenuItem.setIcon(icon);
                 loadingStateChanged(currentTab.isLoading());
 
