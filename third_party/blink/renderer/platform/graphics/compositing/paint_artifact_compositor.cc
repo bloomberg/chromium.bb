@@ -514,12 +514,23 @@ static bool SkipGroupIfEffectivelyInvisible(
     const PaintArtifact& paint_artifact,
     const EffectPaintPropertyNode& unaliased_group,
     Vector<PaintChunk>::const_iterator& chunk_it) {
+  // In pre-CompositeAfterPaint, existence of composited layers is decided
+  // during compositing update before paint. Each chunk contains a foreign layer
+  // corresponding a composited layer. We should not skip any of them to ensure
+  // correct composited hit testing and animation.
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return false;
+
   // The lower bound of visibility is considered to be 0.0004f < 1/2048. With
   // 10-bit color channels (only available on the newest Macs as of 2016;
   // otherwise it's 8-bit), we see that an alpha of 1/2048 or less leads to a
   // color output of less than 0.5 in all channels, hence not visible.
   static const float kMinimumVisibleOpacity = 0.0004f;
   if (unaliased_group.Opacity() >= kMinimumVisibleOpacity ||
+      // TODO(crbug.com/937573): We should disable the optimization for all
+      // cases that the invisible group will be composited, to ensure correct
+      // composited hit testing and animation. Checking the effect node's
+      // HasDirectCompositingReasons() is not enough.
       unaliased_group.HasDirectCompositingReasons()) {
     return false;
   }
