@@ -53,11 +53,11 @@ void LoggedUIThreadExtensionFunction::OnResponded() {
     LOG(WARNING) << log_message;
     if (logger) {
       logger->LogRawString(logging::LOG_ERROR,
-                           "PEFORMANCE WARNING: " + log_message);
+                           "PERFORMANCE WARNING: " + log_message);
     }
   } else if (logger && elapsed >= slow_threshold_) {
     logger->Log(logging::LOG_WARNING,
-                "PEFORMANCE WARNING: %s[%d] was slow. (elapsed time: %" PRId64
+                "PERFORMANCE WARNING: %s[%d] was slow. (elapsed time: %" PRId64
                 "ms)",
                 name(), request_id(), elapsed.InMilliseconds());
   }
