@@ -156,7 +156,7 @@ class CrashReporterClient {
   // Used by WebView to sample crashes without generating the unwanted dumps. If
   // the returned value is less than 100, crash dumping will be sampled to that
   // percentage.
-  virtual unsigned int GetCrashDumpPercentageForWebView();
+  virtual unsigned int GetCrashDumpPercentage();
 
   // Returns true if |ptype| was set to a value to override the default `ptype`
   // annotation used for the browser process.
