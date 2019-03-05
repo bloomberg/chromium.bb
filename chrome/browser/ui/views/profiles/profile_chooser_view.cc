@@ -524,8 +524,10 @@ views::View* ProfileChooserView::CreateIncognitoWindowCountView() {
   int incognito_window_count =
       BrowserList::GetIncognitoSessionsActiveForProfile(browser()->profile());
   auto incognito_icon = std::make_unique<views::ImageView>();
-  const SkColor icon_color = ThemeProperties::GetDefaultColor(
-      ThemeProperties::COLOR_TOOLBAR, true /* incognito */);
+  // The icon color is set to match the menu text, which guarantees sufficient
+  // contrast and a consistent visual appearance..
+  const SkColor icon_color = provider->GetTypographyProvider().GetColor(
+      *this, views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY);
   incognito_icon->SetImage(
       gfx::CreateVectorIcon(kIncognitoProfileIcon, icon_color));
 
