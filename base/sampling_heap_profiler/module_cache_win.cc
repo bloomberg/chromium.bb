@@ -132,8 +132,6 @@ std::unique_ptr<ModuleCache::Module> ModuleCache::CreateModuleForHandle(
   FilePath pdb_name;
   std::string build_id;
   GetDebugInfoForModule(module_handle, &build_id, &pdb_name);
-  if (build_id.empty())
-    return nullptr;
 
   MODULEINFO module_info;
   if (!::GetModuleInformation(GetCurrentProcessHandle(), module_handle,
