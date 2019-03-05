@@ -14,10 +14,10 @@
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
+#include "net/cookies/cookie_util.h"
 #include "services/network/cookie_managers_shared.h"
 #include "services/network/cookie_settings.h"
 
@@ -118,18 +118,11 @@ void RestrictedCookieManager::GetAllForUrl(
     return;
   }
 
+  // TODO(https://crbug.com/925311): Wire initiator here.
   net::CookieOptions net_options;
-  if (net::registry_controlled_domains::SameDomainOrHost(
-          url, site_for_cookies,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-    // TODO(mkwst): This check ought to further distinguish between frames
-    // initiated in a strict or lax same-site context.
-    net_options.set_same_site_cookie_mode(
-        net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
-  } else {
-    net_options.set_same_site_cookie_mode(
-        net::CookieOptions::SameSiteCookieMode::DO_NOT_INCLUDE);
-  }
+  net_options.set_same_site_cookie_context(
+      net::cookie_util::ComputeSameSiteContext(url, site_for_cookies,
+                                               base::nullopt /*initiator*/));
 
   cookie_store_->GetCookieListWithOptionsAsync(
       url, net_options,
@@ -214,18 +207,11 @@ void RestrictedCookieManager::AddChangeListener(
     return;
   }
 
+  // TODO(https://crbug.com/925311): Wire initiator here.
   net::CookieOptions net_options;
-  if (net::registry_controlled_domains::SameDomainOrHost(
-          url, site_for_cookies,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-    // TODO(mkwst): This check ought to further distinguish between frames
-    // initiated in a strict or lax same-site context.
-    net_options.set_same_site_cookie_mode(
-        net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
-  } else {
-    net_options.set_same_site_cookie_mode(
-        net::CookieOptions::SameSiteCookieMode::DO_NOT_INCLUDE);
-  }
+  net_options.set_same_site_cookie_context(
+      net::cookie_util::ComputeSameSiteContext(url, site_for_cookies,
+                                               base::nullopt /*initiator*/));
 
   auto listener = std::make_unique<Listener>(cookie_store_, url, net_options,
                                              std::move(mojo_listener));

@@ -30,12 +30,12 @@ struct EnumTraits<network::mojom::CookieSameSite, net::CookieSameSite> {
 
 template <>
 struct EnumTraits<network::mojom::CookieSameSiteFilter,
-                  net::CookieOptions::SameSiteCookieMode> {
+                  net::CookieOptions::SameSiteCookieContext> {
   static network::mojom::CookieSameSiteFilter ToMojom(
-      net::CookieOptions::SameSiteCookieMode input);
+      net::CookieOptions::SameSiteCookieContext input);
 
   static bool FromMojom(network::mojom::CookieSameSiteFilter input,
-                        net::CookieOptions::SameSiteCookieMode* output);
+                        net::CookieOptions::SameSiteCookieContext* output);
 };
 
 template <>
@@ -43,9 +43,9 @@ struct StructTraits<network::mojom::CookieOptionsDataView, net::CookieOptions> {
   static bool exclude_httponly(const net::CookieOptions& o) {
     return o.exclude_httponly();
   }
-  static net::CookieOptions::SameSiteCookieMode cookie_same_site_filter(
+  static net::CookieOptions::SameSiteCookieContext cookie_same_site_filter(
       const net::CookieOptions& o) {
-    return o.same_site_cookie_mode();
+    return o.same_site_cookie_context();
   }
   static bool update_access_time(const net::CookieOptions& o) {
     return o.update_access_time();

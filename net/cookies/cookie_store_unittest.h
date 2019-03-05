@@ -174,8 +174,8 @@ class CookieStoreTest : public testing::Test {
     GetCookieListCallback callback;
     CookieOptions options;
     options.set_include_httponly();
-    options.set_same_site_cookie_mode(
-        CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+    options.set_same_site_cookie_context(
+        CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
     options.set_return_excluded_cookies();
     cs->GetCookieListWithOptionsAsync(
         url, options,
@@ -456,8 +456,8 @@ TYPED_TEST_P(CookieStoreTest, FilterTest) {
   // make that difficult.
   CookieOptions options;
   options.set_include_httponly();
-  options.set_same_site_cookie_mode(
-      CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+  options.set_same_site_cookie_context(
+      CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   options.set_do_not_update_access_time();
 
   CookieList cookies =
@@ -641,8 +641,8 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
   // make that difficult.
   CookieOptions options;
   options.set_include_httponly();
-  options.set_same_site_cookie_mode(
-      CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+  options.set_same_site_cookie_context(
+      CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   options.set_do_not_update_access_time();
 
   CookieList cookies =

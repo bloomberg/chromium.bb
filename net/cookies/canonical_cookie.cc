@@ -383,14 +383,14 @@ CanonicalCookie::CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
   // Don't include same-site cookies for cross-site requests.
   switch (SameSite()) {
     case CookieSameSite::STRICT_MODE:
-      if (options.same_site_cookie_mode() !=
-          CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX) {
+      if (options.same_site_cookie_context() <
+          CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT) {
         return CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT;
       }
       break;
     case CookieSameSite::LAX_MODE:
-      if (options.same_site_cookie_mode() ==
-          CookieOptions::SameSiteCookieMode::DO_NOT_INCLUDE) {
+      if (options.same_site_cookie_context() <
+          CookieOptions::SameSiteCookieContext::SAME_SITE_LAX) {
         return CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX;
       }
       break;

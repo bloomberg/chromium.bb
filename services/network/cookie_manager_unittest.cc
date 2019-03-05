@@ -486,16 +486,16 @@ TEST_F(CookieManagerTest, GetCookieListSameSite) {
 
   // Retrieve only unrestricted cookies.
   net::CookieOptions options;
-  EXPECT_EQ(net::CookieOptions::SameSiteCookieMode::DO_NOT_INCLUDE,
-            options.same_site_cookie_mode());
+  EXPECT_EQ(net::CookieOptions::SameSiteCookieContext::CROSS_SITE,
+            options.same_site_cookie_context());
   std::vector<net::CanonicalCookie> cookies = service_wrapper()->GetCookieList(
       GURL("https://foo_host.com/with/path"), options);
   ASSERT_EQ(1u, cookies.size());
   EXPECT_EQ("A", cookies[0].Name());
 
   // Retrieve unrestricted and lax cookies.
-  options.set_same_site_cookie_mode(
-      net::CookieOptions::SameSiteCookieMode::INCLUDE_LAX);
+  options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX);
   cookies = service_wrapper()->GetCookieList(
       GURL("https://foo_host.com/with/path"), options);
   ASSERT_EQ(2u, cookies.size());
@@ -504,8 +504,8 @@ TEST_F(CookieManagerTest, GetCookieListSameSite) {
   EXPECT_EQ("C", cookies[1].Name());
 
   // Retrieve everything.
-  options.set_same_site_cookie_mode(
-      net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+  options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   cookies = service_wrapper()->GetCookieList(
       GURL("https://foo_host.com/with/path"), options);
   ASSERT_EQ(3u, cookies.size());

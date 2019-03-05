@@ -74,14 +74,14 @@ bool EnumTraits<network::mojom::CookieSameSite, net::CookieSameSite>::FromMojom(
 
 network::mojom::CookieSameSiteFilter
 EnumTraits<network::mojom::CookieSameSiteFilter,
-           net::CookieOptions::SameSiteCookieMode>::
-    ToMojom(net::CookieOptions::SameSiteCookieMode input) {
+           net::CookieOptions::SameSiteCookieContext>::
+    ToMojom(net::CookieOptions::SameSiteCookieContext input) {
   switch (input) {
-    case net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX:
+    case net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT:
       return network::mojom::CookieSameSiteFilter::INCLUDE_STRICT_AND_LAX;
-    case net::CookieOptions::SameSiteCookieMode::INCLUDE_LAX:
+    case net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX:
       return network::mojom::CookieSameSiteFilter::INCLUDE_LAX;
-    case net::CookieOptions::SameSiteCookieMode::DO_NOT_INCLUDE:
+    case net::CookieOptions::SameSiteCookieContext::CROSS_SITE:
       return network::mojom::CookieSameSiteFilter::DO_NOT_INCLUDE;
   }
   NOTREACHED();
@@ -89,18 +89,18 @@ EnumTraits<network::mojom::CookieSameSiteFilter,
 }
 
 bool EnumTraits<network::mojom::CookieSameSiteFilter,
-                net::CookieOptions::SameSiteCookieMode>::
+                net::CookieOptions::SameSiteCookieContext>::
     FromMojom(network::mojom::CookieSameSiteFilter input,
-              net::CookieOptions::SameSiteCookieMode* output) {
+              net::CookieOptions::SameSiteCookieContext* output) {
   switch (input) {
     case network::mojom::CookieSameSiteFilter::INCLUDE_STRICT_AND_LAX:
-      *output = net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX;
+      *output = net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT;
       return true;
     case network::mojom::CookieSameSiteFilter::INCLUDE_LAX:
-      *output = net::CookieOptions::SameSiteCookieMode::INCLUDE_LAX;
+      *output = net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX;
       return true;
     case network::mojom::CookieSameSiteFilter::DO_NOT_INCLUDE:
-      *output = net::CookieOptions::SameSiteCookieMode::DO_NOT_INCLUDE;
+      *output = net::CookieOptions::SameSiteCookieContext::CROSS_SITE;
       return true;
   }
   return false;
@@ -114,10 +114,10 @@ bool StructTraits<network::mojom::CookieOptionsDataView, net::CookieOptions>::
   else
     cookie_options->set_include_httponly();
 
-  net::CookieOptions::SameSiteCookieMode same_site_cookie_mode;
-  if (!mojo_options.ReadCookieSameSiteFilter(&same_site_cookie_mode))
+  net::CookieOptions::SameSiteCookieContext same_site_cookie_context;
+  if (!mojo_options.ReadCookieSameSiteFilter(&same_site_cookie_context))
     return false;
-  cookie_options->set_same_site_cookie_mode(same_site_cookie_mode);
+  cookie_options->set_same_site_cookie_context(same_site_cookie_context);
 
   if (mojo_options.update_access_time())
     cookie_options->set_update_access_time();
