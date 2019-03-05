@@ -2695,6 +2695,10 @@ action("device_policy_remover_generate") {
       "$chrome_device_policy_pb2_dir/chrome_device_policy_pb2.py"
 
   sources = [
+    # It's important to explicitly list which files provided by this action's
+    # dependencies are actually used by this action, because the action is not
+    # automatically re-run on changes in one of the public_deps. See
+    # https://crbug.com/933359 for more information.
     chrome_device_policy_pb2_path,
   ]
 
