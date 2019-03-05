@@ -125,8 +125,10 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   // Creates the CookiesTreeModel if necessary.
   void EnsureCookiesTreeModelCreated(bool omit_cookies = false);
 
-  // Add this class as an observer for content settings and chooser contexts.
-  void ObserveSources();
+  // Add or remove this class as an observer for content settings and chooser
+  // contexts corresponding to |profile|.
+  void ObserveSourcesForProfile(Profile* profile);
+  void StopObservingSourcesForProfile(Profile* profile);
 
   // Calculates the data storage that has been used for each origin, and
   // stores the information in the |all_sites_map| and |origin_size_map|.

@@ -48,6 +48,9 @@ Polymer({
     },
 
     /** @private */
+    hasIncognito_: Boolean,
+
+    /** @private */
     tooltipText_: String,
   },
 
@@ -62,6 +65,9 @@ Polymer({
     this.addWebUIListener(
         'contentSettingChooserPermissionChanged',
         this.objectWithinChooserTypeChanged_.bind(this));
+    this.addWebUIListener(
+        'onIncognitoStatusChanged', this.onIncognitoStatusChanged_.bind(this));
+    this.browserProxy.updateIncognitoStatus();
   },
 
   /**
@@ -77,6 +83,17 @@ Polymer({
     if (category === this.category && chooserType === this.chooserType) {
       this.chooserTypeChanged_();
     }
+  },
+
+  /**
+   * Called for each chooser-exception-list when incognito is enabled or
+   * disabled. Only called on change (opening N incognito windows only fires one
+   * message). Another message is sent when the *last* incognito window closes.
+   * @private
+   */
+  onIncognitoStatusChanged_: function(hasIncognito) {
+    this.hasIncognito_ = hasIncognito;
+    this.populateList_();
   },
 
   /**
@@ -155,6 +172,15 @@ Polymer({
       return Object.assign(exception, {sites});
     });
 
-    this.updateList('chooserExceptions', x => x.displayName, exceptions);
+    if (!this.updateList('chooserExceptions', x => x.displayName, exceptions)) {
+      // The chooser objects have not been changed, so check if their site
+      // permissions have changed. The |exceptions| and |this.chooserExceptions|
+      // arrays should be the same length.
+      const siteUidGetter = x => x.origin + x.embeddingOrigin + x.incognito;
+      exceptions.forEach((exception, index) => {
+        const propertyPath = 'chooserExceptions.' + index + '.sites';
+        this.updateList(propertyPath, siteUidGetter, exception.sites);
+      }, this);
+    }
   },
 });

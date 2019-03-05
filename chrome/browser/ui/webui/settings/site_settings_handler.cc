@@ -419,7 +419,9 @@ void SiteSettingsHandler::RegisterMessages() {
 }
 
 void SiteSettingsHandler::OnJavascriptAllowed() {
-  ObserveSources();
+  ObserveSourcesForProfile(profile_);
+  if (profile_->HasOffTheRecordProfile())
+    ObserveSourcesForProfile(profile_->GetOffTheRecordProfile());
 
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_PROFILE_CREATED,
@@ -534,13 +536,8 @@ void SiteSettingsHandler::Observe(
         break;
       SendIncognitoStatus(profile, /*was_destroyed=*/ true);
 
-      HostContentSettingsMap* settings_map =
-          HostContentSettingsMapFactory::GetForProfile(profile);
-      if (profile->IsOffTheRecord() &&
-          observer_.IsObserving(settings_map)) {
-        observer_.Remove(settings_map);
-      }
-
+      if (profile->IsOffTheRecord())
+        StopObservingSourcesForProfile(profile);
       break;
     }
 
@@ -550,7 +547,7 @@ void SiteSettingsHandler::Observe(
         break;
       SendIncognitoStatus(profile, /*was_destroyed=*/ false);
 
-      observer_.Add(HostContentSettingsMapFactory::GetForProfile(profile));
+      ObserveSourcesForProfile(profile);
       break;
     }
   }
@@ -871,7 +868,6 @@ void SiteSettingsHandler::HandleGetChooserExceptionList(
 
   std::unique_ptr<base::ListValue> exceptions =
       site_settings::GetChooserExceptionListFromProfile(profile_,
-                                                        /*incognito=*/false,
                                                         *chooser_type);
   ResolveJavascriptCallback(*callback_id, *exceptions.get());
 }
@@ -1360,21 +1356,24 @@ void SiteSettingsHandler::EnsureCookiesTreeModelCreated(bool omit_cookies) {
   cookies_tree_model_->AddCookiesTreeObserver(this);
 }
 
-void SiteSettingsHandler::ObserveSources() {
-  observer_.Add(HostContentSettingsMapFactory::GetForProfile(profile_));
-  chooser_observer_.Add(UsbChooserContextFactory::GetForProfile(profile_));
-
-  if (!profile_->HasOffTheRecordProfile())
-    return;
-
-  // At the moment, off the record chooser permissions are not included in the
-  // chooser permissions.
-  // TODO(https://crbug.com/927372): When chooser permissions are included,
-  // attach SiteSettingsHandler as an observer to the chooser contexts.
-  auto* map = HostContentSettingsMapFactory::GetForProfile(
-      profile_->GetOffTheRecordProfile());
+void SiteSettingsHandler::ObserveSourcesForProfile(Profile* profile) {
+  auto* map = HostContentSettingsMapFactory::GetForProfile(profile);
   if (!observer_.IsObserving(map))
     observer_.Add(map);
+
+  auto* usb_context = UsbChooserContextFactory::GetForProfile(profile);
+  if (!chooser_observer_.IsObserving(usb_context))
+    chooser_observer_.Add(usb_context);
+}
+
+void SiteSettingsHandler::StopObservingSourcesForProfile(Profile* profile) {
+  auto* map = HostContentSettingsMapFactory::GetForProfile(profile);
+  if (observer_.IsObserving(map))
+    observer_.Remove(map);
+
+  auto* usb_context = UsbChooserContextFactory::GetForProfile(profile);
+  if (chooser_observer_.IsObserving(usb_context))
+    chooser_observer_.Remove(usb_context);
 }
 
 void SiteSettingsHandler::TreeNodesAdded(ui::TreeModel* model,

@@ -332,15 +332,14 @@ TEST_F(SiteSettingsHelperTest, CreateChooserExceptionObject) {
   // embedding origin of |kChromiumOrigin|.
   exception_details[std::make_pair(kGoogleOrigin.GetOrigin(),
                                    kPreferenceSource)]
-      .insert(kChromiumOrigin.GetOrigin());
+      .insert(std::make_pair(kChromiumOrigin.GetOrigin(), /*incognito=*/false));
 
   {
     auto exception = CreateChooserExceptionObject(
         /*display_name=*/kObjectName,
         /*object=*/*chooser_object,
         /*chooser_type=*/kUsbChooserGroupName,
-        /*chooser_exception_details=*/exception_details,
-        /*incognito=*/false);
+        /*chooser_exception_details=*/exception_details);
     ExpectValidChooserExceptionObject(
         *exception, /*chooser_type=*/kUsbChooserGroupName,
         /*display_name=*/kObjectName, *chooser_object);
@@ -354,18 +353,17 @@ TEST_F(SiteSettingsHelperTest, CreateChooserExceptionObject) {
   }
 
   // Add a user permissions for a requesting and embedding origin pair of
-  // |kAndroidOrigin|.
+  // |kAndroidOrigin| granted in an off the record profile.
   exception_details[std::make_pair(kAndroidOrigin.GetOrigin(),
                                    kPreferenceSource)]
-      .insert(kAndroidOrigin.GetOrigin());
+      .insert(std::make_pair(kAndroidOrigin.GetOrigin(), /*incognito=*/true));
 
   {
     auto exception = CreateChooserExceptionObject(
         /*display_name=*/kObjectName,
         /*object=*/*chooser_object,
         /*chooser_type=*/kUsbChooserGroupName,
-        /*chooser_exception_details=*/exception_details,
-        /*incognito=*/true);
+        /*chooser_exception_details=*/exception_details);
     ExpectValidChooserExceptionObject(*exception,
                                       /*chooser_type=*/kUsbChooserGroupName,
                                       /*display_name=*/kObjectName,
@@ -383,20 +381,19 @@ TEST_F(SiteSettingsHelperTest, CreateChooserExceptionObject) {
                                    /*origin=*/kGoogleOrigin,
                                    /*embedding_origin=*/kChromiumOrigin,
                                    /*source=*/kPreferenceSource,
-                                   /*incognito=*/true);
+                                   /*incognito=*/false);
   }
 
   // Add a policy permission for a requesting origin of |kGoogleOrigin| with a
   // wildcard embedding origin.
   exception_details[std::make_pair(kGoogleOrigin.GetOrigin(), kPolicySource)]
-      .insert(GURL::EmptyGURL());
+      .insert(std::make_pair(GURL::EmptyGURL(), /*incognito=*/false));
   {
     auto exception = CreateChooserExceptionObject(
         /*display_name=*/kObjectName,
         /*object=*/*chooser_object,
         /*chooser_type=*/kUsbChooserGroupName,
-        /*chooser_exception_details=*/exception_details,
-        /*incognito=*/false);
+        /*chooser_exception_details=*/exception_details);
     ExpectValidChooserExceptionObject(*exception,
                                       /*chooser_type=*/kUsbChooserGroupName,
                                       /*display_name=*/kObjectName,
@@ -416,7 +413,7 @@ TEST_F(SiteSettingsHelperTest, CreateChooserExceptionObject) {
                                    /*origin=*/kAndroidOrigin,
                                    /*embedding_origin=*/kAndroidOrigin,
                                    /*source=*/kPreferenceSource,
-                                   /*incognito=*/false);
+                                   /*incognito=*/true);
     ExpectValidSiteExceptionObject(/*actual_site_object=*/sites_list[2],
                                    /*origin=*/kGoogleOrigin,
                                    /*embedding_origin=*/kChromiumOrigin,
@@ -522,8 +519,7 @@ TEST_F(SiteSettingsHelperChooserExceptionTest,
   // granted by policy are combined with the policy so that duplicate
   // permissions are not displayed.
   std::unique_ptr<base::ListValue> exceptions =
-      GetChooserExceptionListFromProfile(profile(), /*incognito=*/false,
-                                         *chooser_type);
+      GetChooserExceptionListFromProfile(profile(), *chooser_type);
   ASSERT_EQ(exceptions->GetSize(), 4u);
   auto& exceptions_list = exceptions->GetList();
 
