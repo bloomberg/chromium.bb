@@ -476,13 +476,7 @@ function(setup_av1_targets)
                                   "AOM_AV1_ENCODER_INTRIN_MSA" "aom")
   endif()
 
-  target_sources(aom PRIVATE $<TARGET_OBJECTS:aom_dsp>)
-  target_sources(aom PRIVATE $<TARGET_OBJECTS:aom_scale>)
-
   # Pass the new lib targets up to the parent scope instance of
   # $AOM_LIB_TARGETS.
   set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} PARENT_SCOPE)
-endfunction()
-
-function(setup_av1_test_targets)
 endfunction()
