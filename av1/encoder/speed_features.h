@@ -198,6 +198,8 @@ enum {
   FULL_PEL
 } UENUM1BYTE(SUBPEL_FORCE_STOP);
 
+enum { NOT_IN_USE, DIRECT_PRED, RELAXED_PRED } UENUM1BYTE(MAX_PART_PRED_MODE);
+
 typedef struct MV_SPEED_FEATURES {
   // Motion search method (Diamond, NSTEP, Hex, Big Diamond, Square, etc).
   SEARCH_METHODS search_method;
@@ -402,7 +404,7 @@ typedef struct SPEED_FEATURES {
   // Sets min and max square partition levels for this superblock based on
   // motion vector and prediction error distribution produced from 16x16
   // simple motion search
-  int auto_max_partition_based_on_simple_motion;
+  MAX_PART_PRED_MODE auto_max_partition_based_on_simple_motion;
   int auto_min_partition_based_on_simple_motion;
 
   // Ensures the rd based auto partition search will always

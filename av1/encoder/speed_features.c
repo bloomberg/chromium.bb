@@ -98,9 +98,13 @@ static void set_good_speed_feature_framesize_dependent(
 
   if (is_480p_or_larger) {
     sf->use_square_partition_only_threshold = BLOCK_128X128;
+    if (is_720p_or_larger)
+      sf->auto_max_partition_based_on_simple_motion = NOT_IN_USE;
+    else
+      sf->auto_max_partition_based_on_simple_motion = RELAXED_PRED;
   } else {
     sf->use_square_partition_only_threshold = BLOCK_64X64;
-    sf->auto_max_partition_based_on_simple_motion = 1;
+    sf->auto_max_partition_based_on_simple_motion = DIRECT_PRED;
   }
 
   // TODO(huisu@google.com): train models for 720P and above.
@@ -676,7 +680,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->less_rectangular_check_level = 0;
   sf->use_square_partition_only_threshold = BLOCK_128X128;
   sf->prune_ref_frame_for_rect_partitions = 0;
-  sf->auto_max_partition_based_on_simple_motion = 0;
+  sf->auto_max_partition_based_on_simple_motion = NOT_IN_USE;
   sf->auto_min_partition_based_on_simple_motion = 0;
   sf->rd_auto_partition_min_limit = BLOCK_4X4;
   sf->default_max_partition_size = BLOCK_LARGEST;

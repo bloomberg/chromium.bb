@@ -3651,7 +3651,7 @@ static int use_auto_max_partition(AV1_COMP *const cpi, BLOCK_SIZE sb_size,
   AV1_COMMON *const cm = &cpi->common;
 
   return !frame_is_intra_only(cm) &&
-         cpi->sf.auto_max_partition_based_on_simple_motion &&
+         cpi->sf.auto_max_partition_based_on_simple_motion != NOT_IN_USE &&
          sb_size == BLOCK_128X128 && is_full_sb(cm, mi_row, mi_col, sb_size) &&
          cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index] !=
              OVERLAY_UPDATE &&
@@ -3759,20 +3759,31 @@ static void get_max_min_partition_features(AV1_COMP *const cpi,
 }
 
 #define MAX_NUM_CLASSES 4
-static BLOCK_SIZE predict_max_partition(float *features) {
+static BLOCK_SIZE predict_max_partition(
+    const MAX_PART_PRED_MODE max_part_pred_mode, const float *features) {
   float scores[MAX_NUM_CLASSES] = { 0.0f }, probs[MAX_NUM_CLASSES] = { 0.0f };
   const NN_CONFIG *nn_config = &av1_max_part_pred_nn_config;
+
+  assert(max_part_pred_mode != NOT_IN_USE);
 
   aom_clear_system_state();
   av1_nn_predict(features, nn_config, scores);
   av1_nn_softmax(scores, probs, MAX_NUM_CLASSES);
 
-  int result = 0;
-  float max_prob = probs[0];
-  for (int i = 1; i < MAX_NUM_CLASSES; ++i) {
-    if (probs[i] > max_prob) {
-      max_prob = probs[i];
-      result = i;
+  int result = MAX_NUM_CLASSES - 1;
+  if (max_part_pred_mode == DIRECT_PRED) {
+    result = 0;
+    float max_prob = probs[0];
+    for (int i = 1; i < MAX_NUM_CLASSES; ++i) {
+      if (probs[i] > max_prob) {
+        max_prob = probs[i];
+        result = i;
+      }
+    }
+  } else if (max_part_pred_mode == RELAXED_PRED) {
+    for (result = MAX_NUM_CLASSES - 1; result >= 0; --result) {
+      if (result < MAX_NUM_CLASSES - 1) probs[result] += probs[result + 1];
+      if (probs[result] > 0.2) break;
     }
   }
 
@@ -5709,7 +5720,10 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
 
         get_max_min_partition_features(cpi, tile_info, x, mi_row, mi_col,
                                        features);
-        max_sq_size = AOMMIN(predict_max_partition(features), max_sq_size);
+        max_sq_size = AOMMIN(
+            predict_max_partition(
+                cpi->sf.auto_max_partition_based_on_simple_motion, features),
+            max_sq_size);
       }
 
       min_sq_size = AOMMIN(min_sq_size, max_sq_size);
