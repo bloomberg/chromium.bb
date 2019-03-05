@@ -104,9 +104,9 @@ TEST_F(DesksTest, DesksBarViewDeskCreation) {
       overview_controller->overview_session()->GetGridWithRootWindow(
           Shell::GetPrimaryRootWindow());
 
-  // TODO(afakhry): Update expected initial grid's y offset when there are no
-  // desk mini_views once animations are added.
-  EXPECT_EQ(DesksBarView::GetBarHeight(), overview_grid->GetGridYOffset());
+  // Initially the grid is not offset down when there are no desk mini_views
+  // once animations are added.
+  EXPECT_FALSE(overview_grid->IsDesksBarViewActive());
 
   const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
 
@@ -126,7 +126,7 @@ TEST_F(DesksTest, DesksBarViewDeskCreation) {
   for (size_t i = 0; i < DesksController::kMaxNumberOfDesks + 2; ++i)
     event_generator->ClickLeftButton();
 
-  EXPECT_EQ(DesksBarView::GetBarHeight(), overview_grid->GetGridYOffset());
+  EXPECT_TRUE(overview_grid->IsDesksBarViewActive());
   EXPECT_EQ(DesksController::kMaxNumberOfDesks, controller->desks().size());
   EXPECT_EQ(controller->desks().size(), desks_bar_view->mini_views().size());
   EXPECT_FALSE(controller->CanCreateDesks());
@@ -165,7 +165,7 @@ TEST_F(DesksTest, DesksBarViewDeskCreation) {
   overview_grid =
       overview_controller->overview_session()->GetGridWithRootWindow(
           Shell::GetPrimaryRootWindow());
-  EXPECT_EQ(DesksBarView::GetBarHeight(), overview_grid->GetGridYOffset());
+  EXPECT_TRUE(overview_grid->IsDesksBarViewActive());
   desks_bar_view = overview_grid->GetDesksBarViewForTesting();
 
   DCHECK(desks_bar_view);

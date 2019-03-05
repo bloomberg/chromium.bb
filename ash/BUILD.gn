@@ -1041,6 +1041,8 @@ component("ash") {
     "wm/desks/desk.h",
     "wm/desks/desk_mini_view.cc",
     "wm/desks/desk_mini_view.h",
+    "wm/desks/desk_mini_view_animations.cc",
+    "wm/desks/desk_mini_view_animations.h",
     "wm/desks/desks_bar_view.cc",
     "wm/desks/desks_bar_view.h",
     "wm/desks/desks_controller.cc",

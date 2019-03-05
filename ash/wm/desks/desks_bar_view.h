@@ -57,8 +57,9 @@ class ASH_EXPORT DesksBarView : public views::View,
 
  private:
   // This is called on initialization or when a new desk is created to create
-  // the needed new mini_views.
-  void UpdateNewMiniViews();
+  // the needed new mini_views. If |animate| is true, the mini_views will be
+  // animated to their final positions.
+  void UpdateNewMiniViews(bool animate);
 
   // Updates the enabled state of the new desk button when the ability to create
   // new desk may have changed.
@@ -71,6 +72,12 @@ class ASH_EXPORT DesksBarView : public views::View,
   // Updates the text labels of the existing mini_views. This is called after a
   // mini_view has been removed.
   void UpdateMiniViewsLabels();
+
+  // Returns the X offset of the first mini_view on the left (if there's one),
+  // or the X offset of this view's center point when there are no mini_views.
+  // This offset is used to calculate the amount by which the mini_views should
+  // be moved when performing the mini_view creation or deletion animations.
+  int GetFirstMiniViewXOffset() const;
 
   // A view that shows a dark gary transparent background that can be animated
   // when the very first mini_views are created.
