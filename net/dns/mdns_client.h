@@ -22,13 +22,8 @@
 namespace net {
 
 class DatagramServerSocket;
-class DatagramClientSocket;
 class NetLog;
 class RecordParsed;
-
-typedef std::pair<std::unique_ptr<DatagramClientSocket>,
-                  std::unique_ptr<DatagramServerSocket>>
-    MDnsSendRecvSocketPair;
 
 // Represents a one-time record lookup. A transaction takes one
 // associated callback (see |MDnsClient::CreateTransaction|) and calls it
@@ -145,8 +140,8 @@ class NET_EXPORT MDnsListener {
 class NET_EXPORT MDnsSocketFactory {
  public:
   virtual ~MDnsSocketFactory() {}
-  virtual void CreateSocketPairs(
-      std::vector<MDnsSendRecvSocketPair>* socket_pairs) = 0;
+  virtual void CreateSockets(
+      std::vector<std::unique_ptr<DatagramServerSocket>>* sockets) = 0;
 
   static std::unique_ptr<MDnsSocketFactory> CreateDefault();
 };
@@ -186,19 +181,31 @@ class NET_EXPORT MDnsClient {
   static std::unique_ptr<MDnsClient> CreateDefault();
 };
 
+// Gets the endpoint for the multicast group a socket should join to receive
+// MDNS messages. Such sockets should also bind to the endpoint from
+// GetMDnsReceiveEndPoint().
+//
+// This is also the endpoint messages should be sent to to send MDNS messages.
+NET_EXPORT IPEndPoint GetMDnsGroupEndPoint(AddressFamily address_family);
+
+// Gets the endpoint sockets should be bound to to receive MDNS messages. Such
+// sockets should also join the multicast group from GetMDnsGroupEndPoint().
+NET_EXPORT IPEndPoint GetMDnsReceiveEndPoint(AddressFamily address_family);
+
 typedef std::vector<std::pair<uint32_t, AddressFamily>>
     InterfaceIndexFamilyList;
 // Returns pairs of interface and address family to bind. Current
 // implementation returns unique list of all available interfaces.
 NET_EXPORT InterfaceIndexFamilyList GetMDnsInterfacesToBind();
 
-// Creates a pair of sockets for sending and receiving, binds them to mDNS
-// endpoints, and sets their multicast interfaces and joins the multicast group
-// on for |interface_index|. Returns NULL if failed.
-NET_EXPORT MDnsSendRecvSocketPair
-CreateAndBindMDnsSocketPair(AddressFamily address_family,
-                            uint32_t interface_index,
-                            NetLog* net_log);
+// Create sockets, binds socket to MDns endpoint, and sets multicast interface
+// and joins multicast group on for |interface_index|.
+// Returns NULL if failed.
+NET_EXPORT std::unique_ptr<DatagramServerSocket> CreateAndBindMDnsSocket(
+    AddressFamily address_family,
+    uint32_t interface_index,
+    NetLog* net_log);
+
 }  // namespace net
 
 #endif  // NET_DNS_MDNS_CLIENT_H_

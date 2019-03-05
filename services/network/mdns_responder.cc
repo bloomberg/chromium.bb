@@ -29,9 +29,7 @@
 #include "net/dns/public/util.h"
 #include "net/dns/record_parsed.h"
 #include "net/dns/record_rdata.h"
-#include "net/socket/datagram_client_socket.h"
 #include "net/socket/datagram_server_socket.h"
-#include "net/socket/udp_client_socket.h"
 #include "net/socket/udp_server_socket.h"
 
 // TODO(qingsi): Several features to implement:
@@ -75,34 +73,6 @@ const uint16_t kFlagCacheFlush = 0x8000;
 const uint8_t kMaxMdnsResponseRetries = 2;
 // Maximum delay allowed for per-response rate-limited responses.
 const base::TimeDelta kMaxScheduledDelay = base::TimeDelta::FromSeconds(10);
-
-constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
-    net::DefineNetworkTrafficAnnotation("mdns_responder", R"(
-        semantics {
-          sender: "mDNS Responder"
-          description:
-            "mDNS responder implements a multicast DNS responder as defined in "
-            "RFC 6762."
-          trigger:
-            "Any network request that may require name registration or "
-            "deregistration, and also mDNS queries for name resolution from "
-            "the local network."
-          data:
-            "DNS records of type A, AAAA or NSEC for name registration or "
-            "resolution."
-          destination: OTHER
-          destination_other:
-            "mDNS responses are sent to the mDNS multicast groups within the "
-            "subnets where the user resides."
-          }
-        policy {
-          cookies_allowed: NO
-          setting:
-            "No setting for this feature. Individual usages may have their own "
-            "disabling flags."
-          policy_exception_justification:
-            "This is core networking functionality on local networks."
-        })");
 
 class RandomUuidNameGenerator
     : public network::MdnsResponderManager::NameGenerator {
@@ -282,12 +252,11 @@ scoped_refptr<net::IOBufferWithSize> CreateNegativeResponse(
 class MdnsResponderManager::SocketHandler {
  public:
   SocketHandler(uint16_t id,
-                net::MDnsSendRecvSocketPair socket_pair,
+                std::unique_ptr<net::DatagramServerSocket> socket,
                 MdnsResponderManager* responder_manager)
       : id_(id),
         scheduler_(std::make_unique<ResponseScheduler>(this)),
-        send_socket_(std::move(socket_pair.first)),
-        recv_socket_(std::move(socket_pair.second)),
+        socket_(std::move(socket)),
         responder_manager_(responder_manager),
         io_buffer_(base::MakeRefCounted<net::IOBufferWithSize>(
             net::dns_protocol::kMaxUDPSize + 1)),
@@ -296,17 +265,14 @@ class MdnsResponderManager::SocketHandler {
 
   int Start() {
     net::IPEndPoint end_point;
-    int rv = recv_socket_->GetLocalAddress(&end_point);
-    if (rv != net::OK)
+    int rv = socket_->GetLocalAddress(&end_point);
+    if (rv != net::OK) {
       return rv;
-    const net::AddressFamily af = end_point.GetFamily();
-#ifdef DEBUG
-    DCHECK(af == net::ADDRESS_FAMILY_IPV4 || af == net::ADDRESS_FAMILY_IPV6);
-    net::IPEndPoint send_socket_end_point;
-    DCHECK(send_socket_->GetLocalAddress(&send_socket_end_point));
-    DCHECK_EQ(af, send_socket_end_point.GetFamily());
-#endif
-    multicast_addr_ = net::dns_util::GetMdnsGroupEndPoint(af);
+    }
+    DCHECK(end_point.GetFamily() == net::ADDRESS_FAMILY_IPV4 ||
+           end_point.GetFamily() == net::ADDRESS_FAMILY_IPV6);
+    multicast_addr_ =
+        net::dns_util::GetMdnsGroupEndPoint(end_point.GetFamily());
     int result = DoReadLoop();
     if (result == net::ERR_IO_PENDING) {
       // An in-progress read loop is considered a completed start.
@@ -338,9 +304,9 @@ class MdnsResponderManager::SocketHandler {
     int result;
     do {
       // Using base::Unretained(this) is safe because the CompletionOnceCallback
-      // is automatically cancelled when |recv_socket_| is destroyed, and the
-      // latter is owned by |this|.
-      result = recv_socket_->RecvFrom(
+      // is automatically cancelled when |socket_| is destroyed, and the latter
+      // is owned by |this|.
+      result = socket_->RecvFrom(
           io_buffer_.get(), io_buffer_->size(), &recv_addr_,
           base::BindOnce(&MdnsResponderManager::SocketHandler::OnRead,
                          base::Unretained(this)));
@@ -366,8 +332,7 @@ class MdnsResponderManager::SocketHandler {
 
   uint16_t id_;
   std::unique_ptr<ResponseScheduler> scheduler_;
-  std::unique_ptr<net::DatagramClientSocket> send_socket_;
-  std::unique_ptr<net::DatagramServerSocket> recv_socket_;
+  std::unique_ptr<net::DatagramServerSocket> socket_;
   // A back pointer to the responder manager that owns this socket handler. The
   // handler should be destroyed before |responder_manager_| becomes invalid or
   // a weak reference should be used to access the manager when there is no such
@@ -521,11 +486,10 @@ void MdnsResponderManager::SocketHandler::DoSend(
     scoped_refptr<MdnsResponseSendOption> option) {
   auto* buf_data = buf.get();
   size_t buf_size = buf->size();
-  send_socket_->Write(buf_data, buf_size,
-                      base::BindOnce(&ResponseScheduler::OnResponseSent,
-                                     scheduler_->GetWeakPtr(), std::move(buf),
-                                     std::move(option)),
-                      kTrafficAnnotation);
+  socket_->SendTo(buf_data, buf_size, multicast_addr_,
+                  base::BindOnce(&ResponseScheduler::OnResponseSent,
+                                 scheduler_->GetWeakPtr(), std::move(buf),
+                                 std::move(option)));
 }
 
 void MdnsResponderManager::SocketHandler::SetTickClockForTesting(
@@ -654,16 +618,16 @@ void MdnsResponderManager::Start() {
   VLOG(1) << "Starting mDNS responder manager.";
   DCHECK(start_result_ == SocketHandlerStartResult::UNSPECIFIED);
   DCHECK(socket_handler_by_id_.empty());
-  std::vector<net::MDnsSendRecvSocketPair> socket_pairs;
+  std::vector<std::unique_ptr<net::DatagramServerSocket>> sockets;
   // Create and return only bound sockets.
-  socket_factory_->CreateSocketPairs(&socket_pairs);
+  socket_factory_->CreateSockets(&sockets);
 
   uint16_t next_available_id = 1;
-  for (auto& send_recv_sockets : socket_pairs) {
+  for (std::unique_ptr<net::DatagramServerSocket>& socket : sockets) {
     socket_handler_by_id_.emplace(
         next_available_id,
         std::make_unique<MdnsResponderManager::SocketHandler>(
-            next_available_id, std::move(send_recv_sockets), this));
+            next_available_id, std::move(socket), this));
     ++next_available_id;
   }
 
@@ -682,7 +646,7 @@ void MdnsResponderManager::Start() {
   size_t num_started_socket_handlers = socket_handler_by_id_.size();
   if (socket_handler_by_id_.empty()) {
     start_result_ = SocketHandlerStartResult::ALL_FAILURE;
-    LOG(ERROR) << "mDNS responder manager failed to start.";
+    LOG(ERROR) << "mDNS responder manager failed to started.";
     return;
   }
 
