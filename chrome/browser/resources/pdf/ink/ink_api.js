@@ -58,7 +58,7 @@ class InkAPI {
     const shape = {
       eraser: 'MAGIC_ERASE',
       pen: 'INKPEN',
-      highlighter: 'HIGHLIGHTER',
+      highlighter: 'SMART_HIGHLIGHTER_TOOL',
     }[tool.tool];
     this.brush_.setShape(shape);
     if (tool.tool != 'eraser') {
