@@ -128,7 +128,7 @@ void FCMNetworkHandler::DidRetrieveToken(const std::string& subscription_token,
       // validation.
       DeliverToken(subscription_token);
       token_ = subscription_token;
-      UpdateGcmChannelState(/* online */ true);
+      UpdateChannelState(FcmChannelState::ENABLED);
       break;
     case InstanceID::INVALID_PARAMETER:
     case InstanceID::DISABLED:
@@ -138,7 +138,7 @@ void FCMNetworkHandler::DidRetrieveToken(const std::string& subscription_token,
     case InstanceID::NETWORK_ERROR:
       DLOG(WARNING) << "Messaging subscription failed; InstanceID::Result = "
                     << result;
-      UpdateGcmChannelState(/* online */ false);
+      UpdateChannelState(FcmChannelState::NO_INSTANCE_ID_TOKEN);
       break;
   }
   ScheduleNextTokenValidation();
@@ -178,6 +178,7 @@ void FCMNetworkHandler::DidReceiveTokenForValidation(
   diagnostic_info_.instance_id_token_verified = base::Time::Now();
   diagnostic_info_.token_verification_result = result;
   if (result == InstanceID::SUCCESS) {
+    UpdateChannelState(FcmChannelState::ENABLED);
     if (token_ != new_token) {
       diagnostic_info_.token_changed = true;
       token_ = new_token;
@@ -188,12 +189,11 @@ void FCMNetworkHandler::DidReceiveTokenForValidation(
   ScheduleNextTokenValidation();
 }
 
-void FCMNetworkHandler::UpdateGcmChannelState(bool online) {
-  if (gcm_channel_online_ == online)
+void FCMNetworkHandler::UpdateChannelState(FcmChannelState state) {
+  if (channel_state_ == state)
     return;
-  gcm_channel_online_ = online;
-  NotifyChannelStateChange(gcm_channel_online_ ? INVALIDATIONS_ENABLED
-                                               : TRANSIENT_INVALIDATION_ERROR);
+  channel_state_ = state;
+  NotifyChannelStateChange(channel_state_);
 }
 
 void FCMNetworkHandler::ShutdownHandler() {}

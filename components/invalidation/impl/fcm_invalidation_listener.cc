@@ -23,8 +23,6 @@ FCMInvalidationListener::FCMInvalidationListener(
     std::unique_ptr<FCMSyncNetworkChannel> network_channel)
     : network_channel_(std::move(network_channel)),
       delegate_(nullptr),
-      subscription_channel_state_(DEFAULT_INVALIDATION_ERROR),
-      fcm_network_state_(DEFAULT_INVALIDATION_ERROR),
       weak_factory_(this) {
   network_channel_->AddObserver(this);
 }
@@ -202,18 +200,17 @@ void FCMInvalidationListener::Stop() {
   per_user_topic_registration_manager_.reset();
 
   subscription_channel_state_ = DEFAULT_INVALIDATION_ERROR;
-  fcm_network_state_ = DEFAULT_INVALIDATION_ERROR;
+  fcm_network_state_ = FcmChannelState::NOT_STARTED;
 }
 
 InvalidatorState FCMInvalidationListener::GetState() const {
-  if (subscription_channel_state_ == INVALIDATION_CREDENTIALS_REJECTED ||
-      fcm_network_state_ == INVALIDATION_CREDENTIALS_REJECTED) {
+  if (subscription_channel_state_ == INVALIDATION_CREDENTIALS_REJECTED) {
     // If either the ticl or the push client rejected our credentials,
     // return INVALIDATION_CREDENTIALS_REJECTED.
     return INVALIDATION_CREDENTIALS_REJECTED;
   }
   if (subscription_channel_state_ == INVALIDATIONS_ENABLED &&
-      fcm_network_state_ == INVALIDATIONS_ENABLED) {
+      fcm_network_state_ == FcmChannelState::ENABLED) {
     // If the ticl is ready and the push client notifications are
     // enabled, return INVALIDATIONS_ENABLED.
     return INVALIDATIONS_ENABLED;
@@ -229,9 +226,8 @@ void FCMInvalidationListener::EmitStateChange() {
   delegate_->OnInvalidatorStateChange(GetState());
 }
 
-void FCMInvalidationListener::OnFCMSyncNetworkChannelStateChanged(
-    InvalidatorState invalidator_state) {
-  fcm_network_state_ = invalidator_state;
+void FCMInvalidationListener::OnFCMChannelStateChanged(FcmChannelState state) {
+  fcm_network_state_ = state;
   EmitStateChange();
 }
 
@@ -245,7 +241,7 @@ base::DictionaryValue FCMInvalidationListener::CollectDebugData() const {
   base::DictionaryValue status =
       per_user_topic_registration_manager_->CollectDebugData();
   status.SetString("InvalidationListener.FCM-channel-state",
-                   InvalidatorStateToString(fcm_network_state_));
+                   FcmChannelStateToString(fcm_network_state_));
   status.SetString("InvalidationListener.Subscription-channel-state",
                    InvalidatorStateToString(subscription_channel_state_));
   for (const Topic& topic : registered_topics_) {

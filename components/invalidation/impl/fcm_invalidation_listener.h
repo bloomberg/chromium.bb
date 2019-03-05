@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/invalidation/impl/channels_states.h"
 #include "components/invalidation/impl/fcm_sync_network_channel.h"
 #include "components/invalidation/impl/invalidation_client.h"
 #include "components/invalidation/impl/invalidation_listener.h"
@@ -82,8 +83,7 @@ class FCMInvalidationListener : public InvalidationListener,
             const syncer::AckHandle& handle) override;
 
   // FCMSyncNetworkChannel::Observer implementation.
-  void OnFCMSyncNetworkChannelStateChanged(
-      InvalidatorState invalidator_state) override;
+  void OnFCMChannelStateChanged(FcmChannelState state) override;
 
   // PerUserTopicRegistrationManager::Observer implementation.
   void OnSubscriptionChannelStateChanged(
@@ -139,8 +139,8 @@ class FCMInvalidationListener : public InvalidationListener,
   TopicSet registered_topics_;
 
   // The states of the HTTP and FCM channel.
-  InvalidatorState subscription_channel_state_;
-  InvalidatorState fcm_network_state_;
+  InvalidatorState subscription_channel_state_ = DEFAULT_INVALIDATION_ERROR;
+  FcmChannelState fcm_network_state_ = FcmChannelState::NOT_STARTED;
 
   std::unique_ptr<PerUserTopicRegistrationManager>
       per_user_topic_registration_manager_;
