@@ -592,6 +592,23 @@ TEST_P(PipWindowResizerTest, PipFreeResizeAreaUmaMetrics) {
   histograms().ExpectTotalCount(kAshPipFreeResizeFinishAreaHistogramName, 1);
 }
 
+TEST_P(PipWindowResizerTest, DragDetailsAreDestroyed) {
+  PreparePipWindow(gfx::Rect(200, 200, 100, 100));
+  wm::WindowState* window_state = wm::GetWindowState(window());
+
+  {
+    std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
+    ASSERT_TRUE(resizer.get());
+
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 10), 0);
+    EXPECT_NE(nullptr, window_state->drag_details());
+
+    resizer->CompleteDrag();
+    EXPECT_NE(nullptr, window_state->drag_details());
+  }
+  EXPECT_EQ(nullptr, window_state->drag_details());
+}
+
 // TODO: UpdateDisplay() doesn't support different layouts of multiple displays.
 // We should add some way to try multiple layouts.
 INSTANTIATE_TEST_SUITE_P(

@@ -96,7 +96,11 @@ PipWindowResizer::PipWindowResizer(wm::WindowState* window_state)
   }
 }
 
-PipWindowResizer::~PipWindowResizer() {}
+PipWindowResizer::~PipWindowResizer() {
+  // Drag details should be deleted upon destruction of the resizer.
+  if (window_state())
+    window_state()->DeleteDragDetails();
+}
 
 // TODO(edcourtney): Implement swipe-to-dismiss on fling.
 void PipWindowResizer::Drag(const gfx::Point& location_in_parent,
@@ -190,7 +194,7 @@ void PipWindowResizer::CompleteDrag() {
   }
 
   window_state()->OnCompleteDrag(last_location_in_screen_);
-  window_state()->DeleteDragDetails();
+
   window_state()->ClearRestoreBounds();
   window_state()->set_bounds_changed_by_user(moved_or_resized_);
 
