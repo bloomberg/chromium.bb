@@ -249,6 +249,11 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
     int intra_priority;
   };
 
+  // Checks if |pending_requests_| for the specified option is effectively
+  // empty, that means it does not contain any request that is still alive in
+  // |pending_request_map_|.
+  bool IsPendingRequestEffectivelyEmpty(ThrottleOption option);
+
   // Gets the highest priority pending request that is allowed to be run.
   bool GetNextPendingRequest(ClientId* id);
 
@@ -313,11 +318,13 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
     kStopped,
   };
   ThrottlingHistory throttling_history_ = ThrottlingHistory::kInitial;
+
   scheduler::SchedulingLifecycleState frame_scheduler_lifecycle_state_ =
       scheduler::SchedulingLifecycleState::kNotThrottled;
 
   // Holds clients that haven't been granted, and are waiting for a grant.
   HeapHashMap<ClientId, Member<ClientInfo>> pending_request_map_;
+
   // We use std::set here because WTF doesn't have its counterpart.
   // This tracks two sets of requests, throttleable and stoppable.
   std::map<ThrottleOption,

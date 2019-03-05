@@ -604,6 +604,23 @@ ResourceLoadScheduler::ClientId ResourceLoadScheduler::GenerateClientId() {
   return id;
 }
 
+bool ResourceLoadScheduler::IsPendingRequestEffectivelyEmpty(
+    ThrottleOption option) {
+  for (const auto& client : pending_requests_[option]) {
+    // The request in |pending_request_| is erased when it is scheduled. So if
+    // the request is canceled, or Release() is called before firing its Run(),
+    // the entry for the request remains in |pending_request_| until it is
+    // popped in GetNextPendingRequest().
+    if (pending_request_map_.find(client.client_id) !=
+        pending_request_map_.end()) {
+      return false;
+    }
+  }
+  // There is no entry, or no existing entries are alive in
+  // |pending_request_map_|.
+  return true;
+}
+
 bool ResourceLoadScheduler::GetNextPendingRequest(ClientId* id) {
   bool needs_throttling =
       running_throttleable_requests_.size() >= GetOutstandingLimit();
@@ -714,20 +731,23 @@ void ResourceLoadScheduler::ShowConsoleMessageIfNeeded() {
       base::TimeTicks::Now() - base::TimeDelta::FromMinutes(1);
   ThrottleOption target_option;
   if (pending_queue_update_times_[ThrottleOption::kThrottleable] < limit &&
-      !pending_requests_[ThrottleOption::kThrottleable].empty()) {
+      !IsPendingRequestEffectivelyEmpty(ThrottleOption::kThrottleable)) {
     target_option = ThrottleOption::kThrottleable;
   } else if (pending_queue_update_times_[ThrottleOption::kStoppable] < limit &&
-             !pending_requests_[ThrottleOption::kStoppable].empty()) {
+             !IsPendingRequestEffectivelyEmpty(ThrottleOption::kStoppable)) {
     target_option = ThrottleOption::kStoppable;
   } else {
     // At least, one of the top requests in pending queues was handled in the
     // last 1 minutes, or there is no pending requests in the inactive queue.
     return;
   }
-  auto client_it = pending_request_map_.find(
-      pending_requests_[target_option].begin()->client_id);
-  DCHECK_NE(pending_request_map_.end(), client_it);
-  ConsoleLogger* logger = client_it->value->client->GetConsoleLogger();
+  ConsoleLogger* logger = nullptr;
+  for (const auto& client : pending_requests_[target_option]) {
+    auto client_it = pending_request_map_.find(client.client_id);
+    if (pending_request_map_.end() == client_it)
+      continue;
+    logger = client_it->value->client->GetConsoleLogger();
+  }
   DCHECK(logger);
 
   logger->AddInfoMessage(
