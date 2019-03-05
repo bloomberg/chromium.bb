@@ -5991,3 +5991,6 @@ crbug.com/935689 [ Linux Debug ] external/wpt/css/vendor-imports/mozilla/mozilla
 crbug.com/937858 [ Debug ] external/wpt/ambient-light/AmbientLightSensor.https.html [ Pass Failure ]
 crbug.com/937902 [ Linux Debug ] virtual/disable-blink-gen-property-trees/compositing/overflow/overflow-scroll-with-local-background.html [ Pass Failure ]
 crbug.com/937991 [ Win7 Release ] http/tests/devtools/cache-storage/cache-data.js [ Pass Timeout ]
+
+# Sheriff 2019-03-05
+crbug.com/938200 http/tests/devtools/network/network-blocked-reason.js [ Timeout Pass ] http/tests/devtools/network/network-blocked-reason.js
