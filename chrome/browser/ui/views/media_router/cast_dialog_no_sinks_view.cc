@@ -86,6 +86,7 @@ views::View* CastDialogNoSinksView::CreateHelpIconView() {
   views::ImageButton* help_icon_ptr = help_icon.get();
   const SkColor icon_color = help_icon->GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DefaultIconColor);
+  help_icon->SetInstallFocusRingOnFocus(true);
   help_icon->SetImage(views::Button::STATE_NORMAL,
                       gfx::CreateVectorIcon(::vector_icons::kHelpOutlineIcon,
                                             kPrimaryIconSize, icon_color));
