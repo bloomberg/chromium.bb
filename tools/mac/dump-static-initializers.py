@@ -39,7 +39,8 @@ def ParseDsymutil(binary):
   static initializers.
   """
 
-  child = subprocess.Popen(['dsymutil', '-s', binary], stdout=subprocess.PIPE)
+  child = subprocess.Popen(['tools/clang/dsymutil/bin/dsymutil', '-s', binary],
+     stdout=subprocess.PIPE)
   for line in child.stdout:
     file_match = dsymutil_file_re.search(line)
     if file_match:
