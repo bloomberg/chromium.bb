@@ -11,6 +11,11 @@
 
 namespace ui {
 
+bool OSExchangeData::Provider::GetCustomData(const FORMATETC& format,
+                                             base::string16* data) const {
+  return false;
+}
+
 OSExchangeData::DownloadFileInfo::DownloadFileInfo(
     const base::FilePath& filename,
     DownloadFileProvider* downloader)
