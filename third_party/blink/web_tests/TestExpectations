@@ -101,6 +101,7 @@ crbug.com/891427 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/to
 
 # The following fail only on Android.
 crbug.com/891427 [ Android ] virtual/threaded/synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Failure Timeout Crash ]
+crbug.com/898987 [ Android ] synthetic_gestures/smooth-scroll-tiny-delta.html [ Failure Pass Timeout ]
 
 # These 6 are special. They are tied to both of these CLs:
 #   - https://chromium-review.googlesource.com/c/chromium/src/+/1213864
@@ -5580,7 +5581,6 @@ crbug.com/899710 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline
 crbug.com/899710 [ Win ] virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Failure Pass Timeout ]
 crbug.com/766357 [ Mac ] virtual/threaded/fast/scroll-behavior/wheel-and-touch-scroll-use-count.html [ Failure Pass ]
 crbug.com/766357 [ Win ] virtual/threaded/fast/scroll-behavior/wheel-and-touch-scroll-use-count.html [ Failure Pass ]
-crbug.com/898987 [ Android ] synthetic_gestures/smooth-scroll-tiny-delta.html [ Failure Pass ]
 
 # Sheriff 2018-10-30
 crbug.com/867668 [ Linux ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-click-hyperlink.html [ Failure Pass ]
