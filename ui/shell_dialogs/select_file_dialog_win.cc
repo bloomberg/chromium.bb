@@ -57,8 +57,8 @@ bool GetRegistryDescriptionFromExtension(const base::string16& file_ext,
 //   1. only files that have 'file_ext' as their extension
 //   2. all files (only added if 'include_all_files' is true)
 // If a description is not provided for a file extension, it will be retrieved
-// from the registry. If the file extension does not exist in the registry, it
-// will be omitted from the filter, as it is likely a bogus extension.
+// from the registry. If the file extension does not exist in the registry, a
+// default description will be created (e.g. "qqq" yields "QQQ File").
 std::vector<FileFilterSpec> FormatFilterForExtensions(
     const std::vector<base::string16>& file_ext,
     const std::vector<base::string16>& ext_desc,
@@ -73,10 +73,7 @@ std::vector<FileFilterSpec> FormatFilterForExtensions(
     include_all_files = true;
 
   std::vector<FileFilterSpec> result;
-
-  // Precompute the final size of the resulting vector.
-  size_t final_size = file_ext.size() + (include_all_files ? 1 : 0);
-  result.resize(final_size);
+  result.reserve(file_ext.size() + 1);
 
   for (size_t i = 0; i < file_ext.size(); ++i) {
     base::string16 ext = file_ext[i];
@@ -107,21 +104,20 @@ std::vector<FileFilterSpec> FormatFilterForExtensions(
       if (!GetRegistryDescriptionFromExtension(first_extension, &desc)) {
         // The extension doesn't exist in the registry. Create a description
         // based on the unknown extension type (i.e. if the extension is .qqq,
-        // the we create a description "QQQ File (.qqq)").
+        // then we create a description "QQQ File").
+        desc = l10n_util::GetStringFUTF16(IDS_APP_SAVEAS_EXTENSION_FORMAT,
+                                          base::i18n::ToUpper(ext_name));
         include_all_files = true;
-        desc =
-            l10n_util::GetStringFUTF16(IDS_APP_SAVEAS_EXTENSION_FORMAT,
-                                       base::i18n::ToUpper(ext_name), ext_name);
       }
       if (desc.empty())
         desc = L"*." + ext_name;
     }
 
-    result[i] = {desc, ext};
+    result.push_back({desc, ext});
   }
 
   if (include_all_files)
-    result.back() = {all_desc, all_ext};
+    result.push_back({all_desc, all_ext});
 
   return result;
 }
