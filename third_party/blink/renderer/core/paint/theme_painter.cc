@@ -147,6 +147,8 @@ bool ThemePainter::Paint(const LayoutObject& o,
       return true;
     case kProgressBarPart:
       COUNT_APPEARANCE(doc, ProgressBar);
+      if (!o.IsProgress())
+        COUNT_APPEARANCE(doc, ProgressBarForOthers);
       // Note that |-webkit-appearance: progress-bar| works only for <progress>.
       return PaintProgressBar(o, paint_info, r);
     case kSliderHorizontalPart: {

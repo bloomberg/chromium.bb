@@ -1801,14 +1801,24 @@ void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
           feature = WebFeature::kCSSValueAppearanceCaret;
         else if (value_id == CSSValueCheckbox)
           feature = WebFeature::kCSSValueAppearanceCheckbox;
+        else if (value_id == CSSValueInnerSpinButton)
+          feature = WebFeature::kCSSValueAppearanceInnerSpinButton;
         else if (value_id == CSSValueMenulist)
           feature = WebFeature::kCSSValueAppearanceMenulist;
         else if (value_id == CSSValueMenulistButton)
           feature = WebFeature::kCSSValueAppearanceMenulistButton;
+        else if (value_id == CSSValueMeter)
+          feature = WebFeature::kCSSValueAppearanceMeter;
         else if (value_id == CSSValueListbox)
           feature = WebFeature::kCSSValueAppearanceListbox;
+        else if (value_id == CSSValueProgressBar)
+          feature = WebFeature::kCSSValueAppearanceProgressBar;
+        else if (value_id == CSSValuePushButton)
+          feature = WebFeature::kCSSValueAppearancePushButton;
         else if (value_id == CSSValueRadio)
           feature = WebFeature::kCSSValueAppearanceRadio;
+        else if (value_id == CSSValueSquareButton)
+          feature = WebFeature::kCSSValueAppearanceSquareButton;
         else if (value_id == CSSValueSearchfield)
           feature = WebFeature::kCSSValueAppearanceSearchField;
         else if (value_id == CSSValueTextfield)

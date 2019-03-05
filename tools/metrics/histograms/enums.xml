@@ -21775,6 +21775,12 @@ Called by update_net_error_codes.py.-->
   <int value="2811" label="CSSValueAppearanceProgressBarValue"/>
   <int value="2812" label="U2FCryptotokenRegister"/>
   <int value="2813" label="U2FCryptotokenSign"/>
+  <int value="2814" label="CSSValueAppearanceInnerSpinButton"/>
+  <int value="2815" label="CSSValueAppearanceMeter"/>
+  <int value="2816" label="CSSValueAppearanceProgressBar"/>
+  <int value="2817" label="CSSValueAppearanceProgressBarForOthersRendered"/>
+  <int value="2818" label="CSSValueAppearancePushButton"/>
+  <int value="2819" label="CSSValueAppearanceSquareButton"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
