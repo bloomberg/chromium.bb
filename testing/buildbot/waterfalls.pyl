@@ -625,6 +625,11 @@
   {
     'name': 'chromium.chrome',
     'machines': {
+      'chromeos-amd64-generic-google-rel': {
+        'additional_compile_targets': [
+          'chrome',
+        ],
+      },
     },
   },
   {
