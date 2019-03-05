@@ -168,13 +168,9 @@ void SurfaceAudioProcessingSettings(blink::WebMediaStreamSource* source) {
         echo_cancellation_mode =
             WebMediaStreamSource::EchoCancellationMode::kDisabled;
         break;
-      case EchoCancellationType::kEchoCancellationAec2:
-        echo_cancellation_mode =
-            WebMediaStreamSource::EchoCancellationMode::kBrowser;
-        break;
       case EchoCancellationType::kEchoCancellationAec3:
         echo_cancellation_mode =
-            WebMediaStreamSource::EchoCancellationMode::kAec3;
+            WebMediaStreamSource::EchoCancellationMode::kBrowser;
         break;
       case EchoCancellationType::kEchoCancellationSystem:
         echo_cancellation_mode =

@@ -444,7 +444,7 @@ class MediaStreamConstraintsUtilAudioTest
   EchoCancellationType GetEchoCancellationTypeFromConstraintString(
       const blink::WebString& constraint_string) {
     if (constraint_string == kEchoCancellationTypeValues[0])
-      return EchoCancellationType::kEchoCancellationAec2;
+      return EchoCancellationType::kEchoCancellationAec3;
     if (constraint_string == kEchoCancellationTypeValues[1])
       return EchoCancellationType::kEchoCancellationAec3;
     if (constraint_string == kEchoCancellationTypeValues[2])
@@ -1932,7 +1932,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithAudioProcessing) {
     constraint_factory_.Reset();
     constraint_factory_.basic().echo_cancellation.SetExact(
         properties.echo_cancellation_type ==
-        EchoCancellationType::kEchoCancellationAec2);
+        EchoCancellationType::kEchoCancellationAec3);
     auto result = SelectSettingsAudioCapture(
         source.get(), constraint_factory_.CreateWebMediaConstraints());
     EXPECT_TRUE(result.HasValue());
@@ -1940,7 +1940,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithAudioProcessing) {
     constraint_factory_.Reset();
     constraint_factory_.basic().echo_cancellation.SetExact(
         properties.echo_cancellation_type !=
-        EchoCancellationType::kEchoCancellationAec2);
+        EchoCancellationType::kEchoCancellationAec3);
     result = SelectSettingsAudioCapture(
         source.get(), constraint_factory_.CreateWebMediaConstraints());
     EXPECT_FALSE(result.HasValue());
@@ -2030,7 +2030,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest,
 
   const EchoCancellationType kEchoCancellationTypes[] = {
       EchoCancellationType::kEchoCancellationDisabled,
-      EchoCancellationType::kEchoCancellationAec2,
       EchoCancellationType::kEchoCancellationAec3,
       EchoCancellationType::kEchoCancellationSystem};
 
@@ -2107,7 +2106,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, UsedAndUnusedSources) {
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(result.device_id(), processed_source->device().id);
     EXPECT_EQ(result.audio_processing_properties().echo_cancellation_type,
-              EchoCancellationType::kEchoCancellationAec2);
+              EchoCancellationType::kEchoCancellationAec3);
   }
 }
 

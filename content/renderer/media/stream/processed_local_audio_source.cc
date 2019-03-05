@@ -49,8 +49,6 @@ void LogAudioProcesingProperties(const AudioProcessingProperties& properties) {
         switch (type) {
           case AEC::kEchoCancellationDisabled:
             return "disabled";
-          case AEC::kEchoCancellationAec2:
-            return "aec2";
           case AEC::kEchoCancellationAec3:
             return "aec3";
           case AEC::kEchoCancellationSystem:
