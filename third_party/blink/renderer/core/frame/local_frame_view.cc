@@ -1068,7 +1068,7 @@ void LocalFrameView::RunIntersectionObserverSteps() {
                "LocalFrameView::UpdateViewportIntersectionsForSubtree");
   SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
                            LocalFrameUkmAggregator::kIntersectionObservation);
-  UpdateViewportIntersectionsForSubtree();
+  UpdateViewportIntersectionsForSubtree(0);
 #if DCHECK_IS_ON()
   DCHECK(was_dirty || !NeedsLayout());
 #endif
@@ -3869,7 +3869,8 @@ void LocalFrameView::CollectAnnotatedRegions(
     CollectAnnotatedRegions(*curr, regions);
 }
 
-void LocalFrameView::UpdateViewportIntersectionsForSubtree() {
+void LocalFrameView::UpdateViewportIntersectionsForSubtree(
+    unsigned parent_flags) {
   // TODO(dcheng): Since LocalFrameView tree updates are deferred, FrameViews
   // might still be in the LocalFrameView hierarchy even though the associated
   // Document is already detached. Investigate if this check and a similar check
@@ -3878,28 +3879,31 @@ void LocalFrameView::UpdateViewportIntersectionsForSubtree() {
   if (!GetFrame().GetDocument()->IsActive())
     return;
 
+  unsigned flags = GetIntersectionObservationFlags(parent_flags);
+
   if (!NeedsLayout()) {
     // Notify javascript IntersectionObservers
     if (GetFrame().GetDocument()->GetIntersectionObserverController()) {
       GetFrame()
           .GetDocument()
           ->GetIntersectionObserverController()
-          ->ComputeTrackedIntersectionObservations();
+          ->ComputeTrackedIntersectionObservations(flags);
     }
+    intersection_observation_state_ = kNotNeeded;
   }
 
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
-    child->View()->UpdateViewportIntersectionsForSubtree();
+    child->View()->UpdateViewportIntersectionsForSubtree(flags);
   }
 
   for (HTMLPortalElement* portal :
        DocumentPortals::From(*frame_->GetDocument()).GetPortals()) {
-    if (portal->ContentFrame())
-      portal->ContentFrame()->View()->UpdateViewportIntersectionsForSubtree();
+    if (portal->ContentFrame()) {
+      portal->ContentFrame()->View()->UpdateViewportIntersectionsForSubtree(
+          flags);
+    }
   }
-
-  intersection_observation_state_ = kNotNeeded;
 }
 
 void LocalFrameView::UpdateThrottlingStatusForSubtree() {
@@ -4044,7 +4048,8 @@ void LocalFrameView::SetPaintArtifactCompositorNeedsUpdate() const {
     root->paint_artifact_compositor_->SetNeedsUpdate();
 }
 
-unsigned LocalFrameView::GetIntersectionObservationFlags() const {
+unsigned LocalFrameView::GetIntersectionObservationFlags(
+    unsigned parent_flags) const {
   unsigned flags = 0;
 
   const LocalFrame& target_frame = GetFrame();
@@ -4057,21 +4062,15 @@ unsigned LocalFrameView::GetIntersectionObservationFlags() const {
 
   // Observers with explicit roots only need to be checked on the same frame,
   // since in this case target and root must be in the same document.
-  if (intersection_observation_state_ != kNotNeeded)
-    flags |= IntersectionObservation::kExplicitRootObserversNeedUpdate;
+  if (intersection_observation_state_ != kNotNeeded) {
+    flags |= (IntersectionObservation::kExplicitRootObserversNeedUpdate |
+              IntersectionObservation::kImplicitRootObserversNeedUpdate);
+  }
 
   // For observers with implicit roots, we need to check state on the whole
-  // local frame tree.
-  const LocalFrameView* local_root_view = target_frame.LocalFrameRoot().View();
-  for (const LocalFrameView* view = this; view;
-       view = view->ParentFrameView()) {
-    if (view->intersection_observation_state_ != kNotNeeded) {
-      flags |= IntersectionObservation::kImplicitRootObserversNeedUpdate;
-      break;
-    }
-    if (view == local_root_view)
-      break;
-  }
+  // local frame tree, as passed down from the parent.
+  flags |= (parent_flags &
+            IntersectionObservation::kImplicitRootObserversNeedUpdate);
 
   return flags;
 }

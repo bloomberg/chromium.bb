@@ -33,7 +33,11 @@ class IntersectionObserverController
 
   void ScheduleIntersectionObserverForDelivery(IntersectionObserver&);
   void DeliverIntersectionObservations();
-  void ComputeTrackedIntersectionObservations();
+
+  // The flags argument is composed of values from
+  // IntersectionObservation::ComputeFlags. They are dirty bits that control
+  // whether an IntersectionObserver needs to do any work.
+  void ComputeTrackedIntersectionObservations(unsigned flags);
   void AddTrackedTarget(Element&);
   void RemoveTrackedTarget(Element&);
 
