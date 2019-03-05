@@ -5,7 +5,7 @@
 var callbackPass = chrome.test.callbackPass;
 
 function getSetCookieUrl(name, value) {
-  return getServerURL('set-header?Set-Cookie:%20' + name + '=' + value);
+  return getServerURL('set-cookie?' + name + '=' + value);
 }
 
 function checkHeaders(headers, requiredNames, disallowedNames) {
