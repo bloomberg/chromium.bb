@@ -152,16 +152,6 @@ class CLIHelpersTest(unittest.TestCase):
     with self.assertRaises(ValueError):
       cli_helpers.Run('cmd with args')
 
-  @mock.patch('__builtin__.print')
-  @mock.patch('__builtin__.raw_input')
-  def testPrompt(self, raw_input_mock, print_mock):
-    raw_input_mock.side_effect = ['', '42']
-    self.assertEqual(cli_helpers.Prompt(
-        'What is the ultimate meaning of life, universe and everything?'), '42')
-    self.assertEqual(raw_input_mock.call_count, 2)
-    self.assertEqual(print_mock.call_count, 3)
-
-
 
 if __name__ == "__main__":
   unittest.main()

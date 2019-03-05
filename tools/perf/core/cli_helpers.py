@@ -137,15 +137,6 @@ def Ask(question, answers=None, default=None):
         ', '.join(choices[:-1]), choices[-1]))
 
 
-def Prompt(question, accept_empty=False):
-  while True:
-    print(Colored(question, color='cyan'))
-    answer = raw_input().strip()
-    if answer or accept_empty:
-      return answer
-    Error('Please enter non-empty answer')
-
-
 def CheckLog(command, log_path, env=None):
   """Executes a command and writes its stdout to a specified log file.
 

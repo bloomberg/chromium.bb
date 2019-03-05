@@ -35,7 +35,6 @@ class UpdateWprTest(unittest.TestCase):
     datetime.now.return_value.strftime.return_value = '<tstamp>'
 
     mock.patch('tempfile.mkdtemp', return_value='/tmp/dir').start()
-    mock.patch('random.randint', return_value=1234).start()
     mock.patch('core.cli_helpers.Fatal').start()
     mock.patch('core.cli_helpers.Error').start()
     mock.patch('core.cli_helpers.Step').start()
@@ -48,7 +47,6 @@ class UpdateWprTest(unittest.TestCase):
     mock.patch(WPR_UPDATER + 'RECORD_WPR', '.../record_wpr').start()
     mock.patch('os.path.join', lambda *parts: '/'.join(parts)).start()
     mock.patch('os.path.exists', return_value=True).start()
-    mock.patch('time.sleep').start()
 
     self.wpr_updater = update_wpr.WprUpdater(argparse.Namespace(
       story='<story>', device_id=None, repeat=1, binary=None, bug_id=None,
@@ -60,13 +58,13 @@ class UpdateWprTest(unittest.TestCase):
   def testMain(self):
     wpr_updater_cls = mock.patch(WPR_UPDATER + 'WprUpdater').start()
     update_wpr.Main([
+      'live',
       '-s', 'foo:bar:story:2019',
       '-d', 'H2345234FC33',
       '--binary', '<binary>',
       '-b', '1234',
       '-r', 'test_user1@chromium.org',
       '-r', 'test_user2@chromium.org',
-      'live',
     ])
     self.assertListEqual(wpr_updater_cls.mock_calls, [
       mock.call(argparse.Namespace(
@@ -91,83 +89,6 @@ class UpdateWprTest(unittest.TestCase):
     rmtree = mock.patch('shutil.rmtree').start()
     self.wpr_updater.Cleanup()
     rmtree.assert_called_once_with('/tmp/dir', ignore_errors=True)
-
-  def testGetBranchName(self):
-    self._check_output.return_value = 'master'
-    self.assertEqual(update_wpr._GetBranchName(), 'master')
-    self._check_output.assert_called_once_with(
-        ['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
-
-  def testCreateBranch(self):
-    self.wpr_updater._CreateBranch()
-    self._check_call.assert_called_once_with(
-        ['git', 'new-branch', 'update-wpr--story--1234'])
-
-  def testSendCLForReview(self):
-    update_wpr._SendCLForReview('comment')
-    self._check_call.assert_called_once_with(
-        ['git', 'cl', 'comments', '--publish', '--add-comment', 'comment'])
-
-  @mock.patch('os.dup')
-  @mock.patch('os.close')
-  @mock.patch('os.dup2')
-  @mock.patch('webbrowser.open')
-  def testOpenBrowser(self, webbrowser_open, os_dup2, os_close, os_dup):
-    del os_dup2, os_close, os_dup  # unused
-    update_wpr._OpenBrowser('<url>')
-    webbrowser_open.assert_called_once_with('<url>')
-
-  def testAutoRun(self):
-    # Mock low-level methods tested above.
-    mock.patch(WPR_UPDATER + '_GetBranchName', return_value='HEAD').start()
-    mock.patch(
-        WPR_UPDATER + 'WprUpdater._GetBranchIssueUrl',
-        return_value='<issue-url>').start()
-    mock.patch(WPR_UPDATER + 'WprUpdater._CreateBranch').start()
-    send_cl_for_review = mock.patch(WPR_UPDATER + '_SendCLForReview').start()
-    open_browser = mock.patch(WPR_UPDATER + '_OpenBrowser').start()
-
-    # Mock high-level methods tested below.
-    live_run = mock.patch(WPR_UPDATER + 'WprUpdater.LiveRun').start()
-    record_wpr = mock.patch(WPR_UPDATER + 'WprUpdater.RecordWpr').start()
-    replay_wpr = mock.patch(WPR_UPDATER + 'WprUpdater.ReplayWpr').start()
-    upload_wpr = mock.patch(
-        WPR_UPDATER + 'WprUpdater.UploadWpr', return_value=True).start()
-    upload_cl = mock.patch(
-        WPR_UPDATER + 'WprUpdater.UploadCL', return_value=0).start()
-    start_pinpoint_jobs = mock.patch(
-        WPR_UPDATER + 'WprUpdater.StartPinpointJobs',
-        return_value=(['<url1>', '<url2>', '<url3>'], [])).start()
-
-    # Mock user interaction.
-    mock.patch('core.cli_helpers.Ask', side_effect=[
-        True,        # Should script create a new branch automatically?
-        'continue',  # Should I continue with recording, ...?
-        'continue',  # Should I record and replay again, ...?
-    ]).start()
-
-    self.wpr_updater.AutoRun()
-
-    # Run once to make sure story works.
-    live_run.assert_called_once_with()
-    # Run again to create a recording.
-    record_wpr.assert_called_once_with()
-    # Replay to verify the recording.
-    replay_wpr.assert_called_once_with()
-    # Upload the recording.
-    upload_wpr.assert_called_once_with()
-    # Upload the CL.
-    upload_cl.assert_called_once_with(short_description=False)
-    # Start pinpoint jobs to verify recording works on the bots.
-    start_pinpoint_jobs.assert_called_once_with(None)
-    # Send CL for review with a comment listing triggered Pinpoint jobs.
-    send_cl_for_review.assert_called_once_with(
-        'Started the following Pinpoint jobs:\n'
-        '  - <url1>\n'
-        '  - <url2>\n'
-        '  - <url3>')
-    # Open the CL in browser,
-    open_browser.assert_called_once_with('<issue-url>')
 
   def testLiveRun(self):
     run_benchmark = mock.patch(
