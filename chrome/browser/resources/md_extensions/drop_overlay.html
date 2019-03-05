@@ -13,14 +13,19 @@
     <style include="cr-hidden-style">
       :host {
         align-items: center;
-        background-color: #f1f1f1;
+        background-color: rgba(241, 241, 241, .9);
+        color: var(--cr-secondary-text-color);
         display: flex;
         height: 100%;
         justify-content: center;
-        opacity: 0.9;
         position: absolute;
         width: 100%;
         z-index: 10;
+      }
+
+      :host-context([dark]) {
+        /* TODO(dbeam): share with cr-dialog dialog::backdrop? */
+        background-color: rgba(0, 0, 0, .6);
       }
 
       #container {
@@ -30,7 +35,6 @@
       }
 
       iron-icon {
-        color: var(--google-grey-refresh-700);
         height: 64px;
         margin-bottom: 16px;
         width: 64px;
