@@ -693,7 +693,7 @@ class TraceEventDataSourceNewProtosTest : public TraceEventDataSourceTest {
     const auto& legacy_event = packet->track_event().legacy_event();
     EXPECT_EQ(legacy_event.name_iid(), name_iid);
     EXPECT_EQ(legacy_event.phase(), phase);
-    EXPECT_EQ(legacy_event.duration(), duration);
+    EXPECT_EQ(legacy_event.duration_us(), duration);
 
     if (phase == TRACE_EVENT_PHASE_INSTANT) {
       switch (flags & TRACE_EVENT_FLAG_SCOPE_MASK) {
@@ -720,22 +720,22 @@ class TraceEventDataSourceNewProtosTest : public TraceEventDataSourceTest {
     switch (flags & (TRACE_EVENT_FLAG_HAS_ID | TRACE_EVENT_FLAG_HAS_LOCAL_ID |
                      TRACE_EVENT_FLAG_HAS_GLOBAL_ID)) {
       case TRACE_EVENT_FLAG_HAS_ID:
-        EXPECT_EQ(legacy_event.id(), id);
+        EXPECT_EQ(legacy_event.unscoped_id(), id);
         EXPECT_EQ(legacy_event.local_id(), 0u);
         EXPECT_EQ(legacy_event.global_id(), 0u);
         break;
       case TRACE_EVENT_FLAG_HAS_LOCAL_ID:
-        EXPECT_EQ(legacy_event.id(), 0u);
+        EXPECT_EQ(legacy_event.unscoped_id(), 0u);
         EXPECT_EQ(legacy_event.local_id(), id);
         EXPECT_EQ(legacy_event.global_id(), 0u);
         break;
       case TRACE_EVENT_FLAG_HAS_GLOBAL_ID:
-        EXPECT_EQ(legacy_event.id(), 0u);
+        EXPECT_EQ(legacy_event.unscoped_id(), 0u);
         EXPECT_EQ(legacy_event.local_id(), 0u);
         EXPECT_EQ(legacy_event.global_id(), id);
         break;
       default:
-        EXPECT_EQ(legacy_event.id(), 0u);
+        EXPECT_EQ(legacy_event.unscoped_id(), 0u);
         EXPECT_EQ(legacy_event.local_id(), 0u);
         EXPECT_EQ(legacy_event.global_id(), 0u);
         break;
