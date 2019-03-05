@@ -12,8 +12,8 @@
     [Unforgeable] TrustedTypePolicy getExposedPolicy(DOMString policyName);
     // All the policy object names that have been created
     [Affects=Nothing, Unforgeable] sequence<DOMString> getPolicyNames();
-    [CallWith=ScriptState, Unforgeable] boolean isHTML(object? checkedObject);
-    [CallWith=ScriptState, Unforgeable] boolean isScript(object? checkedObject);
-    [CallWith=ScriptState, Unforgeable] boolean isScriptURL(object? checkedObject);
-    [CallWith=ScriptState, Unforgeable] boolean isURL(object? checkedObject);
+    [CallWith=ScriptState, Unforgeable] boolean isHTML(any checkedObject);
+    [CallWith=ScriptState, Unforgeable] boolean isScript(any checkedObject);
+    [CallWith=ScriptState, Unforgeable] boolean isScriptURL(any checkedObject);
+    [CallWith=ScriptState, Unforgeable] boolean isURL(any checkedObject);
 };
