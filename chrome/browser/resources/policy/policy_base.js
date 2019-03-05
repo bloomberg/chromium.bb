@@ -274,16 +274,6 @@ cr.define('policy', function() {
             messagesNotice || conflictsNotice || loadTimeData.getString('ok');
         messagesDisplay.textContent = notice;
 
-        // <if expr="android">
-        const valueRowDisplay = this.querySelector('.value.row');
-        valueRowDisplay.hidden = false;
-        valueDisplay.hidden = true;
-        levelDisplay.hidden = true;
-        scopeDisplay.hidden = true;
-        this.querySelector('.toggle').hidden = true;
-        row.querySelectorAll('.policy-conflict-data')
-            .forEach(row => row.hidden = false);
-        // </if>
 
         if (policy.conflicts) {
           policy.conflicts.forEach(conflict => {

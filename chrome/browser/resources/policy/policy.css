@@ -89,11 +89,13 @@ body > main {
   white-space: pre;
 }
 
+<if expr="not android">
 .messages.row .name,
 .conflict.row .name,
 .value.row .name {
   text-align: end;
 }
+</if>
 
 #status-box-container {
   display: flex;
@@ -178,11 +180,22 @@ a {
 }
 
 <if expr="android">
+body > main {
+  padding: 0;
+}
+
+.value,
+.level,
+.messages,
+.scope {
+  display: none;
+}
+
 .name {
   flex: 0 0 50%;
 }
 
-.messages {
+.toggle {
   flex: 0 0 25%;
 }
 
@@ -202,6 +215,6 @@ a {
 .messages.row .value,
 .value.row .value {
   display: block;
-  flex: 0 0 25%;
+  flex: 1;
 }
 </if>
