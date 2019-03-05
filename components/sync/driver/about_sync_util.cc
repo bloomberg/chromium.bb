@@ -197,6 +197,8 @@ std::string GetDisableReasonsString(int disable_reasons) {
     reason_strings.push_back("User choice");
   if (disable_reasons & syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR)
     reason_strings.push_back("Unrecoverable error");
+  if (disable_reasons & syncer::SyncService::DISABLE_REASON_PAUSED)
+    reason_strings.push_back("Paused");
   return base::JoinString(reason_strings, ", ");
 }
 

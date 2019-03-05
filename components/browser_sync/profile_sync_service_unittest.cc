@@ -773,17 +773,13 @@ TEST_F(ProfileSyncServiceTest, RevokeAccessTokenFromTokenService) {
 // Sync. Regression test for https://crbug.com/824791.
 TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient) {
   syncer::SyncCredentials init_credentials;
-  bool invalidate_credentials_called = false;
-  base::RepeatingClosure invalidate_credentials_callback =
-      base::BindRepeating([](bool* called) { *called = true; },
-                          base::Unretained(&invalidate_credentials_called));
 
   CreateService(ProfileSyncService::AUTO_START);
   SignIn();
   EXPECT_CALL(*component_factory(), CreateSyncEngine(_, _, _))
       .WillOnce(
           Return(ByMove(std::make_unique<FakeSyncEngineCollectCredentials>(
-              &init_credentials, invalidate_credentials_callback))));
+              &init_credentials, base::RepeatingClosure()))));
   InitializeForNthSync();
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
@@ -813,7 +809,7 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient) {
   // Simulate the credentials getting locally rejected by the client by setting
   // the refresh token to a special invalid value.
   identity_test_env()->SetInvalidRefreshTokenForPrimaryAccount();
-  GoogleServiceAuthError rejected_by_client =
+  const GoogleServiceAuthError rejected_by_client =
       GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
           GoogleServiceAuthError::InvalidGaiaCredentialsReason::
               CREDENTIALS_REJECTED_BY_CLIENT);
@@ -822,13 +818,14 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient) {
                 ->identity_manager()
                 ->GetErrorStateOfRefreshTokenForAccount(primary_account_id));
   EXPECT_TRUE(service()->GetAccessTokenForTest().empty());
-  EXPECT_TRUE(invalidate_credentials_called);
 
   // The observer should have been notified of the auth error state.
   EXPECT_EQ(rejected_by_client, observer.auth_error());
-  // The overall state should remain ACTIVE.
-  EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
+  // The Sync engine should have been shut down.
+  EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
             service()->GetTransportState());
+  EXPECT_TRUE(
+      service()->HasDisableReason(syncer::SyncService::DISABLE_REASON_PAUSED));
 
   service()->RemoveObserver(&observer);
 }

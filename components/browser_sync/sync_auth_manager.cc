@@ -50,6 +50,16 @@ constexpr net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
     false,
 };
 
+bool IsWebSignout(const GoogleServiceAuthError& auth_error) {
+  // The identity code sets an account's refresh token to be invalid (error
+  // CREDENTIALS_REJECTED_BY_CLIENT) if the user signs out of that account on
+  // the web.
+  return auth_error ==
+         GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+             GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                 CREDENTIALS_REJECTED_BY_CLIENT);
+}
+
 }  // namespace
 
 SyncAuthManager::SyncAuthManager(
@@ -102,6 +112,10 @@ GoogleServiceAuthError SyncAuthManager::GetLastAuthError() const {
     return GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED);
   }
   return last_auth_error_;
+}
+
+bool SyncAuthManager::IsSyncPaused() const {
+  return IsWebSignout(GetLastAuthError());
 }
 
 syncer::SyncTokenStatus SyncAuthManager::GetSyncTokenStatus() const {
@@ -260,16 +274,13 @@ void SyncAuthManager::OnRefreshTokenUpdatedForAccount(
   }
 
   // Compute the validity of the new refresh token: The identity code sets an
-  // account's refresh token to be invalid (error
-  // CREDENTIALS_REJECTED_BY_CLIENT) if the user signs out of that account on
-  // the web.
+  // account's refresh token to be invalid if the user signs out of that account
+  // on the web.
   // TODO(blundell): Hide this logic inside IdentityManager.
   GoogleServiceAuthError token_error =
       identity_manager_->GetErrorStateOfRefreshTokenForAccount(
           account_info.account_id);
-  if (token_error == GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
-                         GoogleServiceAuthError::InvalidGaiaCredentialsReason::
-                             CREDENTIALS_REJECTED_BY_CLIENT)) {
+  if (IsWebSignout(token_error)) {
     // When the refresh token is replaced by an invalid token, Sync must be
     // stopped immediately, even if the current access token is still valid.
     // This happens e.g. when the user signs out of the web with Dice enabled.
@@ -315,6 +326,7 @@ void SyncAuthManager::OnRefreshTokenRemovedForAccount(
 
   // If we're still here, then that means Chrome is still signed in to this
   // account. Keep Sync alive but set an auth error.
+  // TODO(crbug.com/906995): Should we stop Sync in this case?
   DCHECK_EQ(sync_account_.account_info.account_id,
             identity_manager_->GetPrimaryAccountId());
 
