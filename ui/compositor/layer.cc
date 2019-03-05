@@ -571,6 +571,12 @@ bool Layer::ShouldDraw() const {
   return type_ != LAYER_NOT_DRAWN && GetCombinedOpacity() > 0.0f;
 }
 
+void Layer::SetRoundedCornerRadius(
+    const std::array<uint32_t, 4>& corner_radii) {
+  cc_layer_->SetRoundedCorner(corner_radii);
+  ScheduleDraw();
+}
+
 // static
 void Layer::ConvertPointToLayer(const Layer* source,
                                 const Layer* target,

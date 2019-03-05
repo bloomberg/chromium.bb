@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <array>
 #include <memory>
 #include <string>
 #include <vector>
@@ -267,6 +268,14 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // Returns true if this layer can have a texture (has_texture_ is true)
   // and is not completely obscured by a child.
   bool ShouldDraw() const;
+
+  // Sets a rounded corner clip radius on the layer. This will clip the layer to
+  // bounds. The ordering for the array is:
+  //    top left, top right, bottom right, bottom left
+  void SetRoundedCornerRadius(const std::array<uint32_t, 4>& corner_radii);
+  const std::array<uint32_t, 4>& rounded_corner_radii() const {
+    return cc_layer_->corner_radii();
+  }
 
   // Converts a point from the coordinates of |source| to the coordinates of
   // |target|. Necessarily, |source| and |target| must inhabit the same Layer

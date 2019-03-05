@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <array>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -237,6 +238,15 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // Returns the union of previous calls to SetNeedsDisplayRect() and
   // SetNeedsDisplay() that have not been committed to the compositor thread.
   const gfx::Rect& update_rect() const { return inputs_.update_rect; }
+
+  // Set or get the rounded corner rrect which is applied to the layer and it
+  // its subtree (as if they are together as a single composited entity) when
+  // blitting into their target. If this is set, then the layer should be masked
+  // to bounds.
+  void SetRoundedCorner(const std::array<uint32_t, 4>& corner_radii);
+  const std::array<uint32_t, 4>& corner_radii() const {
+    return inputs_.corner_radii;
+  }
 
   // Set or get the opacity which should be applied to the contents of the layer
   // and its subtree (together as a single composited entity) when blending them
@@ -881,6 +891,12 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // they are marked as needing to be rebuilt.
   void UpdateScrollOffset(const gfx::ScrollOffset&);
 
+  // Returns true if any of the corner has a non-zero radius set.
+  bool HasRoundedCorner() const {
+    return corner_radii()[0] + corner_radii()[1] + corner_radii()[2] +
+           corner_radii()[3];
+  }
+
   // Encapsulates all data, callbacks or interfaces received from the embedder.
   struct Inputs {
     explicit Inputs(int layer_id);
@@ -932,6 +948,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     gfx::RRectF backdrop_filter_bounds;
     gfx::PointF filters_origin;
     float backdrop_filter_quality;
+
+    // Corner clip radius for the 4 corners of the layer in the following order:
+    //     top left, top right, bottom right, bottom left
+    std::array<uint32_t, 4> corner_radii;
 
     gfx::ScrollOffset scroll_offset;
 
