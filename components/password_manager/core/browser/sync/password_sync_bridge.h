@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "components/password_manager/core/browser/password_store_change.h"
+#include "components/password_manager/core/browser/password_store_sync.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 
 namespace syncer {
@@ -58,6 +59,13 @@ class PasswordSyncBridge : public syncer::ModelTypeSyncBridge {
                                 delete_metadata_change_list) override;
 
  private:
+  // On MacOS it may happen that some passwords cannot be decrypted due to
+  // modification of encryption key in Keychain (https://crbug.com/730625). This
+  // method deletes those logins from the store. So during merge, the data in
+  // sync will be added to the password store. This should be called during
+  // MergeSyncData().
+  base::Optional<syncer::ModelError> CleanupPasswordStore();
+
   // Password store responsible for persistence.
   PasswordStoreSync* const password_store_sync_;
 

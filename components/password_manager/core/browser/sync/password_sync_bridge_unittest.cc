@@ -697,4 +697,22 @@ TEST_F(PasswordSyncBridgeTest,
                             mock_password_store_sync());
 }
 
+// Tests that in case ReadAllLogins() during initial merge returns encryption
+// service failure, the bridge would try to do a DB clean up.
+TEST_F(PasswordSyncBridgeTest, ShouldDeleteUndecryptableLoginsDuringMerge) {
+  ON_CALL(*mock_password_store_sync(), DeleteUndecryptableLogins())
+      .WillByDefault(Return(DatabaseCleanupResult::kSuccess));
+
+  // We should try to read first, and simulate an encryption failure. Then,
+  // cleanup the database and try to read again which should be successful now.
+  EXPECT_CALL(*mock_password_store_sync(), ReadAllLogins(_))
+      .WillOnce(Return(FormRetrievalResult::kEncrytionServiceFailure))
+      .WillOnce(Return(FormRetrievalResult::kSuccess));
+  EXPECT_CALL(*mock_password_store_sync(), DeleteUndecryptableLogins());
+
+  base::Optional<syncer::ModelError> error =
+      bridge()->MergeSyncData(bridge()->CreateMetadataChangeList(), {});
+  EXPECT_FALSE(error);
+}
+
 }  // namespace password_manager
