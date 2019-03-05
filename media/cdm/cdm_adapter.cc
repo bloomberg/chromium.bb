@@ -677,10 +677,7 @@ cdm::Buffer* CdmAdapter::Allocate(uint32_t capacity) {
 }
 
 void CdmAdapter::SetTimer(int64_t delay_ms, void* context) {
-  // TODO(crbug.com/887761): Use CHECKs for bug investigation. Change back to
-  // DCHECK after it's completed.
-  CHECK(task_runner_);
-  CHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   auto delay = base::TimeDelta::FromMilliseconds(delay_ms);
   DVLOG(3) << __func__ << ": delay = " << delay << ", context = " << context;
