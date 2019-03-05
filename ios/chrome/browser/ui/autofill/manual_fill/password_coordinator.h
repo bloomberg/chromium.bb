@@ -9,12 +9,6 @@
 
 class GURL;
 
-namespace manual_fill {
-
-extern NSString* const PasswordDoneButtonAccessibilityIdentifier;
-
-}  // namespace manual_fill
-
 // Delegate for the coordinator actions.
 @protocol PasswordCoordinatorDelegate<FallbackCoordinatorDelegate>
 
@@ -23,9 +17,9 @@ extern NSString* const PasswordDoneButtonAccessibilityIdentifier;
 
 @end
 
-// Creates and manages a view controller to present passwords to the user.
-// Any selected password will be sent to the current field in the active web
-// state.
+// Creates and manages a view controller to present passwords to the user. It
+// will filter the passwords based on the passed URL when instantiating it. Any
+// selected password will be sent to the current field in the active web state.
 @interface ManualFillPasswordCoordinator : FallbackCoordinator
 
 // The delegate for this coordinator. Delegate class extends
@@ -33,7 +27,7 @@ extern NSString* const PasswordDoneButtonAccessibilityIdentifier;
 @property(nonatomic, weak) id<PasswordCoordinatorDelegate> delegate;
 
 // Creates a coordinator that uses a |viewController|, |browserState|,
-// |webStateList| and an |injectionHandler|.
+// |URL| and an |injectionHandler|.
 - (instancetype)
     initWithBaseViewController:(UIViewController*)viewController
                   browserState:(ios::ChromeBrowserState*)browserState

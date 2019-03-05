@@ -17,7 +17,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_delegate.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_cell.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_consumer.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/password_list_delegate.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/password_list_navigator.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -211,7 +211,7 @@ BOOL AreCredentialsAtIndexesConnected(
                  action:^{
                    base::RecordAction(base::UserMetricsAction(
                        "ManualFallback_Password_OpenOtherPassword"));
-                   [weakSelf.navigationDelegate openAllPasswordsList];
+                   [weakSelf.navigator openAllPasswordsList];
                  }];
       otherPasswordsItem.accessibilityIdentifier =
           manual_fill::OtherPasswordsAccessibilityIdentifier;
@@ -225,15 +225,13 @@ BOOL AreCredentialsAtIndexesConnected(
                action:^{
                  base::RecordAction(base::UserMetricsAction(
                      "ManualFallback_Password_OpenManagePassword"));
-                 [weakSelf.navigationDelegate openPasswordSettings];
+                 [weakSelf.navigator openPasswordSettings];
                }];
     managePasswordsItem.accessibilityIdentifier =
         manual_fill::ManagePasswordsAccessibilityIdentifier;
     [actions addObject:managePasswordsItem];
 
     [self.consumer presentActions:actions];
-  } else {
-    [self.consumer presentActions:@[]];
   }
 }
 
@@ -258,7 +256,7 @@ BOOL AreCredentialsAtIndexesConnected(
 - (void)userDidPickContent:(NSString*)content
              passwordField:(BOOL)passwordField
              requiresHTTPS:(BOOL)requiresHTTPS {
-  [self.navigationDelegate dismissPresentedViewController];
+  [self.navigator dismissPresentedViewController];
   [self.contentDelegate userDidPickContent:content
                              passwordField:passwordField
                              requiresHTTPS:requiresHTTPS];

@@ -16,8 +16,8 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/all_password_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/password_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_mediator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_controller.h"
@@ -87,7 +87,7 @@ id<GREYMatcher> OtherPasswordsMatcher() {
 
 id<GREYMatcher> OtherPasswordsDismissMatcher() {
   return grey_accessibilityID(
-      manual_fill::PasswordDoneButtonAccessibilityIdentifier);
+      manual_fill::kPasswordDoneButtonAccessibilityIdentifier);
 }
 
 // Returns a matcher for the example username in the list.
