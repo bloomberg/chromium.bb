@@ -330,9 +330,6 @@ are declared in tools/grit/grit_rule.gni.
       </message>
 
       <!-- Generic terms -->
-      <message name="IDS_UNDO_DELETE" desc="Description for a command to undo a delete command.">
-        Undo Delete
-      </message>
       <message name="IDS_EDIT" desc="Edit menu item">
         &amp;Edit
       </message>
@@ -537,9 +534,6 @@ are declared in tools/grit/grit_rule.gni.
           </message>
           <message name="IDS_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE" desc="The name of the 'Paste as plain text' command in the content area context menu">
             Paste as plain text
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_DELETE" desc="The name of the Delete command in the content area context menu">
-            &amp;Delete
           </message>
           <message name="IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY" desc="The name of the Add to dictionary command in the content area context menu">
             &amp;Add to dictionary
@@ -777,9 +771,6 @@ are declared in tools/grit/grit_rule.gni.
               Paste As Plain Text
             </message>
           </if>
-          <message name="IDS_CONTENT_CONTEXT_DELETE" desc="In Title Case: The name of the Delete command in the content area context menu">
-            &amp;Delete
-          </message>
           <message name="IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY" desc="In Title Case: The name of the Add to dictionary command in the content area context menu">
             &amp;Add to Dictionary
           </message>

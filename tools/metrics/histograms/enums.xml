@@ -16999,7 +16999,7 @@ Called by update_net_error_codes.py.-->
   <int value="294" label="SOCKET_READ"/>
   <int value="295" label="DELETED_EXPERIMENTAL_PROCESSES_TERMINATE"/>
   <int value="296" label="METRICSPRIVATE_RECORDTIME"/>
-  <int value="297" label="BOOKMARKMANAGERPRIVATE_GETSTRINGS"/>
+  <int value="297" label="DELETED_BOOKMARKMANAGERPRIVATE_GETSTRINGS"/>
   <int value="298" label="USB_ISOCHRONOUSTRANSFER"/>
   <int value="299" label="PERMISSIONS_REMOVE"/>
   <int value="300" label="MANAGEMENT_UNINSTALL"/>

@@ -119,24 +119,6 @@
         ]
       },
       {
-        "name": "getStrings",
-        "type": "function",
-        "description": "Gets the i18n strings for the bookmark manager.",
-        "parameters": [
-          {
-            "type": "function",
-             "name": "callback",
-             "parameters": [
-              {
-                "name": "result",
-                "type": "object",
-                "additionalProperties": {"type": "string"}
-              }
-            ]
-          }
-        ]
-      },
-      {
         "name": "startDrag",
         "type": "function",
         "description": "Begins dragging a set of bookmarks.",

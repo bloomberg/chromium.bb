@@ -73,12 +73,6 @@ chrome.bookmarkManagerPrivate.canPaste = function(parentId, callback) {};
 chrome.bookmarkManagerPrivate.sortChildren = function(parentId) {};
 
 /**
- * Gets the i18n strings for the bookmark manager
- * @param {Function} callback
- */
-chrome.bookmarkManagerPrivate.getStrings = function(callback) {};
-
-/**
  * Begins dragging a set of bookmarks
  * @param {Array} idList An array of string-valued ids
  * @param {number} dragNodeIndex The index of the dragged node in |idList|
