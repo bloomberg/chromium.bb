@@ -2183,7 +2183,8 @@ void WebViewImpl::ComputeScaleAndScrollForEditableElementRects(
   // perform the conversion here.  TODO(bokan): Convert this function to take
   // coordinates in absolute/root-frame coordinates to make this more
   // consistent. https://crbug.com/931447.
-  if (root_scroller != MainFrameImpl()->GetFrame()->GetDocument()) {
+  if (root_scroller != MainFrameImpl()->GetFrame()->GetDocument() &&
+      controller.RootScrollerArea()) {
     ScrollOffset offset = controller.RootScrollerArea()->GetScrollOffset();
     element_bounds_in_content.Move(FlooredIntSize(offset));
     caret_bounds_in_content.Move(FlooredIntSize(offset));
