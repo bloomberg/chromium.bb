@@ -21,6 +21,7 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 
 import java.lang.annotation.Retention;
@@ -28,7 +29,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.Calendar;
 /**
  * Helper methods that can be used across multiple Autofill UIs.
- * TODO(crbug.com/934915) Add unit tests.
  */
 public class AutofillUiUtils {
     /**
@@ -113,16 +113,18 @@ public class AutofillUiUtils {
         int thisMonth = calendar.get(Calendar.MONTH) + 1; // calendar month is 0-based
 
         int month = getMonth(monthInput);
-        if (month < 1 || month > 12) {
+        if (month == -1) {
             if (monthInput.getText().length() == EXPIRATION_FIELDS_LENGTH
                     || (!monthInput.isFocused() && didFocusOnMonth)) {
                 return ErrorType.EXPIRATION_MONTH;
             }
-            return ErrorType.NOT_ENOUGH_INFO;
+            if (!didFocusOnYear) {
+                return ErrorType.NOT_ENOUGH_INFO;
+            }
         }
 
         int year = getFourDigitYear(yearInput);
-        if (year < thisYear || year > thisYear + 10) {
+        if (year == -1) {
             if (yearInput.getText().length() == EXPIRATION_FIELDS_LENGTH
                     || (!yearInput.isFocused() && didFocusOnYear)) {
                 return ErrorType.EXPIRATION_YEAR;
@@ -141,7 +143,8 @@ public class AutofillUiUtils {
      * @param yearInput EditText for the year field.
      * @return The expiration year the user entered.
      *         Two digit values (such as 17) will be converted to 4 digit years (such as 2017).
-     *         Returns -1 if the input is empty or otherwise not a valid year.
+     *         Returns -1 if the input is empty or otherwise not a valid year (previous year or
+     *         more than 10 years in the future).
      */
     public static int getFourDigitYear(EditText yearInput) {
         Calendar calendar = Calendar.getInstance();
@@ -150,6 +153,7 @@ public class AutofillUiUtils {
             int year = Integer.parseInt(yearInput.getText().toString());
             if (year < 0) return -1;
             if (year < 100) year += thisYear - thisYear % 100;
+            if (year < thisYear || year > thisYear + 10) return -1;
             return year;
         } catch (NumberFormatException e) {
             return -1;
@@ -159,11 +163,16 @@ public class AutofillUiUtils {
     /**
      * @param monthInput EditText for the month field.
      * @return The expiration month the user entered.
-     *         Returns -1 if the input is empty or not a number.
+     *         Returns -1 if not a valid month.
      */
-    private static int getMonth(EditText monthInput) {
+    @VisibleForTesting
+    static int getMonth(EditText monthInput) {
         try {
-            return Integer.parseInt(monthInput.getText().toString());
+            int month = Integer.parseInt(monthInput.getText().toString());
+            if (month < 1 || month > 12) {
+                return -1;
+            }
+            return month;
         } catch (NumberFormatException e) {
             return -1;
         }
