@@ -9,7 +9,7 @@
 
 if [ $# -lt 1 ];
 then
-  echo "Usage: "$0" (common|android|ios)" >&2
+  echo "Usage: "$0" (android|cast|chromeos|common|flutter|ios)" >&2
   exit 1
 fi
 
@@ -30,6 +30,15 @@ function copy_common {
   done
 
   echo "Done with copying pre-built ICU data files."
+}
+
+function copy_chromeos {
+  DATA_FILE="data/out/tmp/icudt${VERSION}l.dat"
+
+  echo "Copying icudtl.dat"
+  cp "${DATA_FILE}" "${TOPSRC}/chromeos/icudtl.dat"
+
+  echo "Done with copying pre-built ICU data files for chromeos."
 }
 
 function copy_android_ios {
@@ -70,6 +79,9 @@ function copy_flutter {
 }
 
 case "$1" in
+  "chromeos")
+    copy_chromeos
+    ;;
   "common")
     copy_common
     ;;

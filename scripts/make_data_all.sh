@@ -6,6 +6,9 @@ ICUROOT="$(dirname "$0")/.."
 
 $ICUROOT/scripts/trim_data.sh
 $ICUROOT/scripts/make_data.sh
+$ICUROOT/scripts/copy_data.sh chromeos
+# TODO(ftang) trim data only needed for chromeos
+$ICUROOT/scripts/make_data.sh
 $ICUROOT/scripts/copy_data.sh common
 $ICUROOT/cast/patch_locale.sh
 $ICUROOT/scripts/make_data.sh

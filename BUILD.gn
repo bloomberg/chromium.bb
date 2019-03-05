@@ -1075,6 +1075,8 @@ if (is_android) {
   data_dir = "android"
 } else if (is_ios) {
   data_dir = "ios"
+} else if (is_chromeos) {
+  data_dir = "chromeos"
 } else {
   data_dir = "common"
 }
