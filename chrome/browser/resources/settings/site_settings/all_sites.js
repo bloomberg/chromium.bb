@@ -54,7 +54,7 @@ Polymer({
      * filter the All Sites list.
      * @private
      */
-    searchQuery_: {
+    filter: {
       type: String,
       value: '',
       observer: 'forceListUpdate_',
@@ -301,15 +301,6 @@ Polymer({
   },
 
   /**
-   * Called when the input text in the search textbox is updated.
-   * @private
-   */
-  onSearchChanged_: function() {
-    const searchElement = this.$$('cr-search-field');
-    this.searchQuery_ = searchElement.getSearchInput().value.toLowerCase();
-  },
-
-  /**
    * Called when the user chooses a different sort method to the default.
    * @private
    */
@@ -328,7 +319,7 @@ Polymer({
    */
   forceListUpdate_: function() {
     this.filteredList_ =
-        this.filterPopulatedList_(this.siteGroupMap, this.searchQuery_);
+        this.filterPopulatedList_(this.siteGroupMap, this.filter);
     this.$.allSitesList.fire('iron-resize');
   },
 

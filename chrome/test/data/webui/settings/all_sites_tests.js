@@ -149,7 +149,7 @@ suite('AllSites', function() {
               testElement.$.listContainer.querySelectorAll('site-entry');
           assertEquals(3, siteEntries.length);
 
-          testElement.searchQuery_ = SEARCH_QUERY;
+          testElement.filter = SEARCH_QUERY;
         })
         .then(() => {
           Polymer.dom.flush();
