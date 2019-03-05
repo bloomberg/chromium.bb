@@ -5056,7 +5056,6 @@ test("net_unittests") {
     "socket/socks5_client_socket_unittest.cc",
     "socket/socks_client_socket_unittest.cc",
     "socket/socks_connect_job_unittest.cc",
-    "socket/ssl_client_socket_pool_unittest.cc",
     "socket/ssl_client_socket_unittest.cc",
     "socket/ssl_connect_job_unittest.cc",
     "socket/ssl_server_socket_unittest.cc",
