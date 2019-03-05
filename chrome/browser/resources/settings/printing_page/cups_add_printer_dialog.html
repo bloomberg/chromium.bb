@@ -112,12 +112,12 @@
         <div class="settings-box first two-line">
           <cr-input class="printer-name-input" autofocus
             id="printerNameInput" value="{{newPrinter.printerName}}"
-            label="$i18n{printerName}">
+            label="$i18n{printerName}" maxlength=64>
           </cr-input>
         </div>
         <div class="settings-box two-line">
           <cr-input id="printerAddressInput" label="$i18n{printerAddress}"
-              value="{{newPrinter.printerAddress}}">
+              value="{{newPrinter.printerAddress}}" maxlength=128>
           </cr-input>
         </div>
         <div class="settings-box two-line">
@@ -140,7 +140,7 @@
         </div>
         <div class="settings-box two-line">
           <cr-input placeholder="ipp/print" label="$i18n{printerQueue}"
-              value="{{newPrinter.printerQueue}}">
+              value="{{newPrinter.printerQueue}}" maxlength=64>
           </cr-input>
         </div>
       </div>

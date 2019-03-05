@@ -27,13 +27,15 @@
         <div class="settings-box first two-line">
           <cr-input class="printer-name-input" autofocus
               value="{{activePrinter.printerName}}"
-              label="$i18n{printerName}">
+              label="$i18n{printerName}"
+              maxlength=64>
           </cr-input>
         </div>
         <div class="settings-box two-line">
           <cr-input label="$i18n{printerAddress}"
               value="{{activePrinter.printerAddress}}"
-              disabled="[[!networkProtocolActive_]]">
+              disabled="[[!networkProtocolActive_]]"
+              maxlength=128>
           </cr-input>
         </div>
         <div class="settings-box two-line">
@@ -75,7 +77,8 @@
         <div class="settings-box two-line">
           <cr-input label="$i18n{printerQueue}"
               value="{{activePrinter.printerQueue}}"
-              disabled="[[!networkProtocolActive_]]">
+              disabled="[[!networkProtocolActive_]]"
+              maxlength=64>
           </cr-input>
         </div>
         <div class="settings-box two-line">
