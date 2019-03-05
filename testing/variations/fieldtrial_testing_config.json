@@ -401,21 +401,20 @@
             ]
         }
     ],
-    "AndroidInProductHelpTranslateMenuButton": [
+    "AndroidInProductHelpManualTranslate": [
         {
             "platforms": [
                 "android"
             ],
             "experiments": [
                 {
-                    "name": "TranslateMenuButton",
+                    "name": "Enabled",
                     "params": {
                         "availability": "any",
-                        "event_trigger": "name:translate_menu_button_iph_triggered;comparator:<2;window:90;storage:360",
-                        "event_trigger_delay": "name:translate_menu_button_iph_triggered;comparator:<1;window:7;storage:360",
+                        "event_trigger": "name:translate_menu_button_iph_triggered;comparator:<2;window:30;storage:360",
+                        "event_trigger_delay": "name:translate_menu_button_iph_triggered;comparator:<1;window:1;storage:360",
                         "event_used": "name:translate_menu_button_clicked;comparator:==0;window:90;storage:360",
-                        "session_rate": "==0",
-                        "tracking_only": "true"
+                        "session_rate": "==0"
                     },
                     "enable_features": [
                         "IPH_TranslateMenuButton"
