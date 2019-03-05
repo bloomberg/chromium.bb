@@ -18,11 +18,15 @@
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/resource_metadata.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/shared_image_factory.h"
+#include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/texture_base.h"
+#include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkYUVAIndex.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gl/gl_bindings.h"
@@ -46,17 +50,35 @@ scoped_refptr<gpu::SyncPointClientState> CreateSyncPointClientState(
       command_buffer_id, sequence_id);
 }
 
+std::unique_ptr<gpu::SharedImageRepresentationFactory>
+CreateSharedImageRepresentationFactory(gpu::SharedImageManager* manager) {
+  if (!manager)
+    return nullptr;
+  // TODO(https://crbug.com/899905): Use a real MemoryTracker, not nullptr.
+  return std::make_unique<gpu::SharedImageRepresentationFactory>(
+      manager, nullptr /* tracker */);
+}
+
+void ReleaseSharedImagePresentation(void* context) {
+  std::unique_ptr<gpu::SharedImageRepresentationSkia> representation(
+      static_cast<gpu::SharedImageRepresentationSkia*>(context));
+  representation->EndReadAccess();
+}
+
 }  // namespace
 
 SkiaOutputSurfaceImplNonDDL::SkiaOutputSurfaceImplNonDDL(
     scoped_refptr<gl::GLSurface> gl_surface,
     scoped_refptr<gpu::SharedContextState> shared_context_state,
     gpu::MailboxManager* mailbox_manager,
+    gpu::SharedImageManager* shared_image_manager,
     gpu::SyncPointManager* sync_point_manager,
     bool need_swapbuffers_ack)
     : gl_surface_(std::move(gl_surface)),
       shared_context_state_(std::move(shared_context_state)),
       mailbox_manager_(mailbox_manager),
+      sir_factory_(
+          CreateSharedImageRepresentationFactory(shared_image_manager)),
       sync_point_order_data_(sync_point_manager->CreateSyncPointOrderData()),
       sync_point_client_state_(
           CreateSyncPointClientState(sync_point_manager,
@@ -200,6 +222,11 @@ SkCanvas* SkiaOutputSurfaceImplNonDDL::BeginPaintCurrentFrame() {
 sk_sp<SkImage> SkiaOutputSurfaceImplNonDDL::MakePromiseSkImage(
     ResourceMetadata metadata) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (metadata.mailbox_holder.mailbox.IsSharedImage() && sir_factory_) {
+    WaitSyncToken(metadata.mailbox_holder.sync_token);
+    return MakeSkImageFromSharedImage(metadata);
+  }
 
   GrBackendTexture backend_texture;
   if (!GetGrBackendTexture(metadata, &backend_texture)) {
@@ -401,23 +428,66 @@ void SkiaOutputSurfaceImplNonDDL::RemoveContextLostObserver(
   observers_.RemoveObserver(observer);
 }
 
+bool SkiaOutputSurfaceImplNonDDL::WaitSyncToken(
+    const gpu::SyncToken& sync_token) {
+  base::WaitableEvent event;
+  if (!sync_point_client_state_->Wait(
+          sync_token, base::BindOnce(&base::WaitableEvent::Signal,
+                                     base::Unretained(&event)))) {
+    return false;
+  }
+  event.Wait();
+  return true;
+}
+
+sk_sp<SkImage> SkiaOutputSurfaceImplNonDDL::MakeSkImageFromSharedImage(
+    const ResourceMetadata& metadata) {
+  auto representation =
+      sir_factory_->ProduceSkia(metadata.mailbox_holder.mailbox);
+  if (!representation) {
+    DLOG(ERROR) << "Failed to make the SkImage - SharedImage mailbox not "
+                   "found in SharedImageManager.";
+    return nullptr;
+  }
+
+  if (!(representation->usage() & gpu::SHARED_IMAGE_USAGE_DISPLAY)) {
+    DLOG(ERROR) << "Failed to make the SkImage - SharedImage was not created "
+                   "with display usage.";
+    return nullptr;
+  }
+  // TODO(penghuang): make SharedImageBacking be aware the target context.
+  auto promise_texture =
+      representation->BeginReadAccess(nullptr /* read_surface */);
+  if (!promise_texture) {
+    DLOG(ERROR)
+        << "Failed to begin read access for SharedImageRepresentationSkia";
+    return nullptr;
+  }
+
+  SkColorType color_type = ResourceFormatToClosestSkColorType(
+      true /* gpu_compositing */, metadata.resource_format);
+
+  auto sk_image = SkImage::MakeFromTexture(
+      gr_context(), promise_texture->backendTexture(), kTopLeft_GrSurfaceOrigin,
+      color_type, metadata.alpha_type, metadata.color_space.ToSkColorSpace(),
+      ReleaseSharedImagePresentation, representation.get());
+
+  if (!sk_image) {
+    DLOG(ERROR) << "Failed to create the SkImage";
+    return nullptr;
+  }
+
+  representation.release();
+  return sk_image;
+}
+
 bool SkiaOutputSurfaceImplNonDDL::GetGrBackendTexture(
     const ResourceMetadata& metadata,
     GrBackendTexture* backend_texture) {
   DCHECK(!metadata.mailbox_holder.mailbox.IsZero());
-
-  base::WaitableEvent event;
-  if (sync_point_client_state_->Wait(
-          metadata.mailbox_holder.sync_token,
-          base::BindOnce(&base::WaitableEvent::Signal,
-                         base::Unretained(&event)))) {
-    event.Wait();
+  if (WaitSyncToken(metadata.mailbox_holder.sync_token)) {
     DCHECK(mailbox_manager_->UsesSync());
     mailbox_manager_->PullTextureUpdates(metadata.mailbox_holder.sync_token);
-  }
-
-  if (metadata.mailbox_holder.mailbox.IsSharedImage()) {
-    // TODO(https://crbug.com/900973): support shared image.
   }
 
   auto* texture_base =

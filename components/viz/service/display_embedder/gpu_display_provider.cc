@@ -158,6 +158,7 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
       }
       output_surface = std::make_unique<SkiaOutputSurfaceImplNonDDL>(
           std::move(gl_surface), shared_context_state_, mailbox_manager_.get(),
+          gpu_service_impl_->shared_image_manager(),
           gpu_service_impl_->sync_point_manager(),
           true /* need_swapbuffers_ack */);
 

@@ -108,7 +108,9 @@ SurfacesInstance::SurfacesInstance()
     if (settings.use_skia_renderer_non_ddl) {
       output_surface = std::make_unique<viz::SkiaOutputSurfaceImplNonDDL>(
           base::MakeRefCounted<AwGLSurface>(), shared_context_state_,
-          task_executor->mailbox_manager(), task_executor->sync_point_manager(),
+          task_executor->mailbox_manager(),
+          task_executor->shared_image_manager(),
+          task_executor->sync_point_manager(),
           false /* need_swapbuffers_ack */);
     } else {
       output_surface = std::make_unique<viz::SkiaOutputSurfaceImpl>(
