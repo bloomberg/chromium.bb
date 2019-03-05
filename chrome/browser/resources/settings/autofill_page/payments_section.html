@@ -59,72 +59,31 @@
       <span>$i18nRaw{manageCreditCardsLabel}</span>
     </div>
 
-    <!--The version of settings that contains all the credit cards.-->
-    <template is="dom-if" if="[[!splitCreditCardList_]]">
-      <div class="settings-box continuation">
-        <h2 class="start">$i18n{creditCards}</h2>
-        <paper-button id="addCreditCard"
-            class="secondary-button header-aligned-button"
-            on-click="onAddCreditCardTap_"
-            hidden$="[[!prefs.autofill.credit_card_enabled.value]]">
-          $i18n{add}
-        </paper-button>
+    <div class="settings-box continuation">
+      <h2 class="start">$i18n{creditCards}</h2>
+      <paper-button id="addCreditCard"
+          class="secondary-button header-aligned-button"
+          on-click="onAddCreditCardTap_"
+          hidden$="[[!prefs.autofill.credit_card_enabled.value]]">
+        $i18n{add}
+      </paper-button>
+    </div>
+    <div class="settings-box two-line" id="migrateCreditCards"
+        hidden$="[[!checkIfMigratable_(syncStatus, creditCards,
+            prefs.autofill.credit_card_enabled.value)]]"
+        on-click="onMigrateCreditCardsClick_" actionable>
+      <div class="start">
+        $i18n{migrateCreditCardsLabel}
+        <div class="secondary">[[migratableCreditCardsInfo_]]</div>
       </div>
-      <div class="settings-box two-line" id="migrateCreditCards"
-          hidden$="[[!checkIfMigratable_(syncStatus, creditCards,
-              prefs.autofill.credit_card_enabled.value)]]"
-          on-click="onMigrateCreditCardsClick_" actionable>
-        <div class="start">
-          $i18n{migrateCreditCardsLabel}
-          <div class="secondary">[[migratableCreditCardsInfo_]]</div>
-        </div>
-        <paper-icon-button-light id="migrateCreditCardsButton"
-            class="subpage-arrow">
-          <button aria-label="[[migrateCreditCardsLabel_]]"></button>
-        </paper-icon-button-light>
-      </div>
-      <settings-credit-card-list id="creditCardList" class="list-frame"
-          credit-cards="[[creditCards]]">
-      </settings-credit-card-list>
-    </template>
-
-    <!--The version of settings that have split credit card sections.-->
-    <template is="dom-if" if="[[splitCreditCardList_]]">
-      <!--The section that contains the local credit cards.-->
-      <div class="settings-box continuation">
-        <h2 class="start">$i18n{localCreditCardsSectionTitle}</h2>
-        <paper-button id="addCreditCard"
-            class="secondary-button header-aligned-button"
-            on-click="onAddCreditCardTap_"
-            hidden$="[[!prefs.autofill.credit_card_enabled.value]]">
-          $i18n{add}
-        </paper-button>
-      </div>
-      <div class="settings-box two-line" id="migrateCreditCards"
-          hidden$="[[!checkIfMigratable_(syncStatus, localCreditCards,
-              prefs.autofill.credit_card_enabled.value)]]"
-          on-click="onMigrateCreditCardsClick_" actionable>
-        <div class="start">
-          $i18n{migrateCreditCardsLabel}
-          <div class="secondary">[[migratableCreditCardsInfo_]]</div>
-        </div>
-        <paper-icon-button-light id="migrateCreditCardsButton"
-            class="subpage-arrow">
-          <button aria-label="[[migrateCreditCardsLabel_]]"></button>
-        </paper-icon-button-light>
-      </div>
-      <settings-credit-card-list id="localCreditCardList" class="list-frame"
-          credit-cards="[[localCreditCards]]">
-      </settings-credit-card-list>
-
-      <!--The section that contains the server credit cards.-->
-      <div class="settings-box continuation">
-        <h2 class="start">$i18n{serverCreditCardsSectionTitle}</h2>
-      </div>
-      <settings-credit-card-list id="serverCreditCardList" class="list-frame"
-          credit-cards="[[serverCreditCards]]">
-      </settings-credit-card-list>
-    </template>
+      <paper-icon-button-light id="migrateCreditCardsButton"
+          class="subpage-arrow">
+        <button aria-label="[[migrateCreditCardsLabel_]]"></button>
+      </paper-icon-button-light>
+    </div>
+    <settings-credit-card-list id="creditCardList" class="list-frame"
+        credit-cards="[[creditCards]]">
+    </settings-credit-card-list>
 
     <cr-action-menu id="creditCardSharedMenu">
       <button id="menuEditCreditCard" class="dropdown-item"

@@ -33,7 +33,6 @@ cr.define('settings_payments_section', function() {
         isUsingSecondaryPassphrase: false,
         uploadToGoogleActive: true,
         userEmailDomainAllowed: true,
-        splitCreditCardList: false
       });
     });
 
@@ -51,29 +50,6 @@ cr.define('settings_payments_section', function() {
 
       const section = document.createElement('settings-payments-section');
       section.prefs = {autofill: prefValues};
-      document.body.appendChild(section);
-      Polymer.dom.flush();
-
-      return section;
-    }
-
-    /**
-     * Creates the payments autofill section for the given lists.
-     * @param {!Array<!chrome.autofillPrivate.CreditCardEntry>} localCreditCards
-     * @param {!Array<!chrome.autofillPrivate.CreditCardEntry>}
-     *     serverCreditCards
-     * @return {!Object}
-     */
-    function createSplitPaymentsSection(localCreditCards, serverCreditCards) {
-      loadTimeData.overrideValues({splitCreditCardList: true});
-
-      // Override the PaymentsManagerImpl for testing.
-      const paymentsManager = new TestPaymentsManager();
-      paymentsManager.data.localCreditCards = localCreditCards;
-      paymentsManager.data.serverCreditCards = serverCreditCards;
-      PaymentsManagerImpl.instance_ = paymentsManager;
-
-      const section = document.createElement('settings-payments-section');
       document.body.appendChild(section);
       Polymer.dom.flush();
 
@@ -102,37 +78,6 @@ cr.define('settings_payments_section', function() {
       return document.body.querySelector('settings-payments-section')
           .$$('#creditCardList')
           .shadowRoot.querySelectorAll('settings-credit-card-list-entry');
-    }
-
-    /**
-     * Returns an array containing the local credit card items.
-     * @return {!Array<!chrome.autofillPrivate.CreditCardEntry>}
-     */
-    function getLocalListItems() {
-      return document.body.querySelector('settings-payments-section')
-          .$$('#localCreditCardList')
-          .shadowRoot.querySelectorAll('settings-credit-card-list-entry');
-    }
-
-    /**
-     * Returns an array containing the server credit card items.
-     * @return {!Array<!chrome.autofillPrivate.CreditCardEntry>}
-     */
-    function getServerListItems() {
-      return document.body.querySelector('settings-payments-section')
-          .$$('#serverCreditCardList')
-          .shadowRoot.querySelectorAll('settings-credit-card-list-entry');
-    }
-
-    /**
-     * Makes sure that the number of actual local and server credit cards
-     * match the given expectations.
-     * @param {number} expectedServer
-     * @param {number} expectedLocal
-     */
-    function assertCreditCards(expectedLocal, expectedServer) {
-      assertEquals(expectedLocal, getLocalListItems().length);
-      assertEquals(expectedServer, getServerListItems().length);
     }
 
     /**
@@ -461,169 +406,6 @@ cr.define('settings_payments_section', function() {
       const rowShadowRoot = getCardRowShadowRoot(section.$$('#creditCardList'));
       assertTrue(!!rowShadowRoot.querySelector('#remoteCreditCardLink'));
       assertFalse(!!rowShadowRoot.querySelector('#creditCardMenu'));
-    });
-
-    test('verifyLocalCreditCardInSplitSettings', function() {
-      // Create a local credit card.
-      const localCard = FakeDataMaker.creditCardEntry();
-      assertTrue(localCard.metadata.isLocal);
-
-      const section = createSplitPaymentsSection([localCard], []);
-      assertCreditCards(1 /*expectedLocal*/, 0 /*expectedServer*/);
-
-      // Make sure the button is a dropdown and not an outlink.
-      const rowShadowRoot =
-          getCardRowShadowRoot(section.$$('#localCreditCardList'));
-      const menuButton = rowShadowRoot.querySelector('#creditCardMenu');
-      assertTrue(!!menuButton);
-      const outlinkButton =
-          rowShadowRoot.querySelector('paper-icon-button-light.icon-external');
-      assertFalse(!!outlinkButton);
-    });
-
-    test('verifyMaskedServerCreditCardInSplitSettings', function() {
-      // Create a server credit card.
-      const maskedServerCard = FakeDataMaker.creditCardEntry();
-      maskedServerCard.metadata.isLocal = false;
-      maskedServerCard.metadata.isCached = false;
-
-      const section = createSplitPaymentsSection([], [maskedServerCard]);
-      assertCreditCards(0 /*expectedLocal*/, 1 /*expectedServer*/);
-
-      // Make sure the button is an outlink and not a dropdown.
-      const rowShadowRoot =
-          getCardRowShadowRoot(section.$$('#serverCreditCardList'));
-      const menuButton = rowShadowRoot.querySelector('#creditCardMenu');
-      assertFalse(!!menuButton);
-      const outlinkButton =
-          rowShadowRoot.querySelector('paper-icon-button-light.icon-external');
-      assertTrue(!!outlinkButton);
-    });
-
-    test('verifyUnmaskedServerCreditCardInSplitSettings', function() {
-      // Create a full (unmasked) server credit card.
-      const fullServerCard = FakeDataMaker.creditCardEntry();
-      fullServerCard.metadata.isLocal = false;
-      fullServerCard.metadata.isCached = true;
-
-      const section =
-          createSplitPaymentsSection([fullServerCard], [fullServerCard]);
-
-      // Make sure the card is present in the two sections.
-      assertCreditCards(1 /*expectedLocal*/, 1 /*expectedServer*/);
-
-      // Make sure the button is a dropdown and not an outlink for both the
-      // local and server sections.
-      const localRowShadowRoot =
-          getCardRowShadowRoot(section.$$('#localCreditCardList'));
-      menuButton = localRowShadowRoot.querySelector('#creditCardMenu');
-      assertTrue(!!menuButton);
-      outlinkButton = localRowShadowRoot.querySelector(
-          'paper-icon-button-light.icon-external');
-      assertFalse(!!outlinkButton);
-
-      const serverRowShadowRoot =
-          getCardRowShadowRoot(section.$$('#serverCreditCardList'));
-      menuButton = serverRowShadowRoot.querySelector('#creditCardMenu');
-      assertTrue(!!menuButton);
-      outlinkButton = serverRowShadowRoot.querySelector(
-          'paper-icon-button-light.icon-external');
-      assertFalse(!!outlinkButton);
-    });
-
-    test('verifyLocalCreditCardMenu_SplitSettings', function() {
-      // Create a local credit card.
-      const creditCard = FakeDataMaker.creditCardEntry();
-      assertTrue(creditCard.metadata.isLocal);
-
-      const section = createSplitPaymentsSection([creditCard], []);
-      assertEquals(1, getLocalListItems().length);
-
-      // Local credit cards will show the overflow menu.
-      const localRowShadowRoot =
-          getCardRowShadowRoot(section.$$('#localCreditCardList'));
-      assertFalse(!!localRowShadowRoot.querySelector('#remoteCreditCardLink'));
-      const menuButton = localRowShadowRoot.querySelector('#creditCardMenu');
-      assertTrue(!!menuButton);
-
-      // Make sure only the two expected options are in the menu.
-      menuButton.click();
-      Polymer.dom.flush();
-      const menu = section.$.creditCardSharedMenu;
-      assertFalse(menu.querySelector('#menuEditCreditCard').hidden);
-      assertFalse(menu.querySelector('#menuRemoveCreditCard').hidden);
-      assertTrue(menu.querySelector('#menuClearCreditCard').hidden);
-      menu.close();
-      Polymer.dom.flush();
-    });
-
-    test('verifyCachedCreditCardMenu_SplitSettings', function() {
-      // Create a full (cached) credit card.
-      const fullServerCard = FakeDataMaker.creditCardEntry();
-      fullServerCard.metadata.isLocal = false;
-      fullServerCard.metadata.isCached = true;
-
-      const section =
-          createSplitPaymentsSection([fullServerCard], [fullServerCard]);
-
-      // Make sure the card is present in the two sections.
-      assertCreditCards(1 /*expectedLocal*/, 1 /*expectedServer*/);
-
-      // Make sure the button in the local section is a menu.
-      const localRowShadowRoot =
-          getCardRowShadowRoot(section.$$('#localCreditCardList'));
-      assertFalse(!!localRowShadowRoot.querySelector('#remoteCreditCardLink'));
-      menuButton = localRowShadowRoot.querySelector('#creditCardMenu');
-      assertTrue(!!menuButton);
-      outlinkButton = localRowShadowRoot.querySelector(
-          'paper-icon-button-light.icon-external');
-      assertFalse(!!outlinkButton);
-
-      // Make sure only the two expected options are in the menu.
-      menuButton.click();
-      Polymer.dom.flush();
-      menu = section.$.creditCardSharedMenu;
-      assertFalse(menu.querySelector('#menuEditCreditCard').hidden);
-      assertTrue(menu.querySelector('#menuRemoveCreditCard').hidden);
-      assertFalse(menu.querySelector('#menuClearCreditCard').hidden);
-      menu.close();
-      Polymer.dom.flush();
-
-      // Make sure the button in the local section is also a menu.
-      const serverRowShadowRoot =
-          getCardRowShadowRoot(section.$$('#serverCreditCardList'));
-      assertFalse(!!serverRowShadowRoot.querySelector('#remoteCreditCardLink'));
-      menuButton = serverRowShadowRoot.querySelector('#creditCardMenu');
-      assertTrue(!!menuButton);
-      outlinkButton = serverRowShadowRoot.querySelector(
-          'paper-icon-button-light.icon-external');
-      assertFalse(!!outlinkButton);
-
-      // Make sure only the two expected options are in the menu.
-      menuButton.click();
-      Polymer.dom.flush();
-      menu = section.$.creditCardSharedMenu;
-      assertFalse(menu.querySelector('#menuEditCreditCard').hidden);
-      assertTrue(menu.querySelector('#menuRemoveCreditCard').hidden);
-      assertFalse(menu.querySelector('#menuClearCreditCard').hidden);
-      menu.close();
-      Polymer.dom.flush();
-    });
-
-    test('verifyNotCachedCreditCardMenu_SplitSettings', function() {
-      // Create a masked (not cached) credit card.
-      const maskedCard = FakeDataMaker.creditCardEntry();
-      maskedCard.metadata.isLocal = false;
-      maskedCard.metadata.isCached = false;
-
-      const section = createSplitPaymentsSection([], [maskedCard]);
-      assertEquals(1, getServerListItems().length);
-
-      // No overflow menu when not cached.
-      const serverRowShadowRoot =
-          getCardRowShadowRoot(section.$$('#serverCreditCardList'));
-      assertTrue(!!serverRowShadowRoot.querySelector('#remoteCreditCardLink'));
-      assertFalse(!!serverRowShadowRoot.querySelector('#creditCardMenu'));
     });
 
     test('verifyMigrationButtonNotShownIfMigrationNotEnabled', function() {
