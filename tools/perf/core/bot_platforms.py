@@ -18,6 +18,13 @@ _ALL_PERF_WATERFALL_TELEMETRY_BENCHMARKS = frozenset(
     benchmark_finders.GetAllPerfBenchmarks())
 
 
+def _IsPlatformSupported(benchmark, platform):
+    supported = benchmark.GetSupportedPlatformNames(
+        benchmark.SUPPORTED_PLATFORMS)
+    return 'all' in supported or platform in supported
+
+
+# TODO(crbug.com/937715): Give this class and this file more meaningful names.
 class PerfPlatform(object):
   def __init__(self, name, description, is_fyi=False,
                benchmarks_names_to_run=None, num_shards=None):
@@ -35,7 +42,9 @@ class PerfPlatform(object):
       benchmarks_to_run = frozenset(benchmarks)
     else:
       benchmarks_to_run = _ALL_PERF_WATERFALL_TELEMETRY_BENCHMARKS
-    self._benchmarks_to_run = benchmarks_to_run
+    platform = self._sort_key.split(' ', 1)[0]
+    self._benchmarks_to_run = frozenset([
+        b for b in benchmarks_to_run if _IsPlatformSupported(b, platform)])
 
     base_file_name = name.replace(' ', '_').lower()
     self._timing_file_path = os.path.join(

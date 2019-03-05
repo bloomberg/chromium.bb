@@ -62,9 +62,7 @@
             "loading.desktop": {
                 "begin": 96
             },
-            "loading.mobile": {},
             "media.desktop": {},
-            "media.mobile": {},
             "memory.desktop": {
                 "end": 2
             }
@@ -76,21 +74,14 @@
                 "begin": 2
             },
             "memory.long_running_idle_gmail_background_tbmv2": {},
-            "memory.long_running_idle_gmail_tbmv2": {},
-            "memory.top_10_mobile": {
-                "end": 14
-            }
+            "memory.long_running_idle_gmail_tbmv2": {}
         }
     },
     "7": {
         "benchmarks": {
-            "memory.top_10_mobile": {
-                "begin": 14
-            },
             "octane": {},
             "oortonline_tbmv2": {},
             "power.desktop": {},
-            "power.typical_10_mobile": {},
             "rasterize_and_record_micro.partial_invalidation": {},
             "rasterize_and_record_micro.top_25": {},
             "rendering.desktop": {
@@ -126,24 +117,17 @@
         "benchmarks": {
             "rendering.desktop": {
                 "begin": 199
-            },
-            "rendering.mobile": {
-                "end": 378
             }
         }
     },
     "12": {
         "benchmarks": {
-            "rendering.mobile": {
-                "begin": 378
-            },
             "smoothness.gpu_rasterization.tough_pinch_zoom_cases": {},
             "smoothness.tough_pinch_zoom_cases": {},
             "speedometer": {},
             "speedometer-future": {},
             "speedometer2": {},
             "speedometer2-future": {},
-            "startup.mobile": {},
             "system_health.common_desktop": {
                 "end": 23
             }
@@ -162,7 +146,6 @@
             "system_health.common_desktop": {
                 "begin": 92
             },
-            "system_health.common_mobile": {},
             "system_health.memory_desktop": {
                 "end": 9
             }
@@ -205,8 +188,6 @@
             "system_health.memory_desktop": {
                 "begin": 97
             },
-            "system_health.memory_mobile": {},
-            "system_health.webview_startup": {},
             "tab_switching.typical_25": {},
             "tracing.tracing_with_background_memory_infra": {},
             "v8.browsing_desktop": {
@@ -233,8 +214,6 @@
             "v8.browsing_desktop-future": {
                 "begin": 27
             },
-            "v8.browsing_mobile": {},
-            "v8.browsing_mobile-future": {},
             "v8.runtime_stats.top_25": {
                 "end": 29
             }

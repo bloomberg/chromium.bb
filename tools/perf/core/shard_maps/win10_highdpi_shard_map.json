@@ -1,9 +1,6 @@
 {
     "0": {
         "benchmarks": {
-            "system_health.common_mobile": {},
-            "v8.browsing_mobile-future": {},
-            "rendering.mobile": {},
             "blink_perf.image_decoder": {},
             "power.desktop": {},
             "speedometer-future": {},
@@ -21,7 +18,6 @@
             "speedometer2-future": {},
             "jetstream": {},
             "smoothness.tough_pinch_zoom_cases": {},
-            "power.typical_10_mobile": {},
             "v8.runtime_stats.top_25": {
                 "end": 83
             }
@@ -32,7 +28,6 @@
             "v8.runtime_stats.top_25": {
                 "begin": 83
             },
-            "loading.mobile": {},
             "speedometer2": {},
             "v8.browsing_desktop-future": {},
             "webrtc": {},
@@ -42,7 +37,6 @@
             "memory.long_running_idle_gmail_background_tbmv2": {},
             "tab_switching.typical_25": {},
             "blink_perf.dom": {},
-            "media.mobile": {},
             "start_with_url.cold.startup_pages": {},
             "blink_perf.bindings": {},
             "system_health.memory_desktop": {
@@ -60,7 +54,6 @@
             "rasterize_and_record_micro.partial_invalidation": {},
             "v8.browsing_desktop": {},
             "blink_perf.parser": {},
-            "memory.top_10_mobile": {},
             "blink_perf.canvas": {},
             "loading.desktop": {
                 "end": 2
@@ -86,10 +79,8 @@
             },
             "rasterize_and_record_micro.top_25": {},
             "dummy_benchmark.stable_benchmark_1": {},
-            "system_health.memory_mobile": {},
             "rendering.desktop": {},
             "blink_perf.css": {},
-            "v8.browsing_mobile": {},
             "blink_perf.paint": {},
             "tracing.tracing_with_background_memory_infra": {}
         }

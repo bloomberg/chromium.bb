@@ -32,7 +32,6 @@
     "2": {
         "benchmarks": {
             "kraken": {},
-            "loading.desktop": {},
             "loading.mobile": {
                 "end": 33
             }
@@ -59,9 +58,7 @@
             "loading.mobile": {
                 "begin": 92
             },
-            "media.desktop": {},
             "media.mobile": {},
-            "memory.desktop": {},
             "memory.long_running_idle_gmail_background_tbmv2": {},
             "memory.long_running_idle_gmail_tbmv2": {},
             "memory.top_10_mobile": {
@@ -76,11 +73,9 @@
             },
             "octane": {},
             "oortonline_tbmv2": {},
-            "power.desktop": {},
             "power.typical_10_mobile": {},
             "rasterize_and_record_micro.partial_invalidation": {},
             "rasterize_and_record_micro.top_25": {},
-            "rendering.desktop": {},
             "rendering.mobile": {
                 "end": 19
             }
@@ -114,7 +109,6 @@
             "speedometer2": {},
             "speedometer2-future": {},
             "startup.mobile": {},
-            "system_health.common_desktop": {},
             "system_health.common_mobile": {
                 "end": 12
             }
@@ -124,8 +118,7 @@
         "benchmarks": {
             "system_health.common_mobile": {
                 "begin": 12
-            },
-            "system_health.memory_desktop": {}
+            }
         }
     },
     "11": {
@@ -149,10 +142,7 @@
                 "begin": 59
             },
             "system_health.webview_startup": {},
-            "tab_switching.typical_25": {},
             "tracing.tracing_with_background_memory_infra": {},
-            "v8.browsing_desktop": {},
-            "v8.browsing_desktop-future": {},
             "v8.browsing_mobile": {
                 "end": 7
             }
@@ -173,7 +163,6 @@
             "v8.browsing_mobile-future": {
                 "begin": 7
             },
-            "v8.runtime_stats.top_25": {},
             "wasm": {},
             "webrtc": {}
         }
