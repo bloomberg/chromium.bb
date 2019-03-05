@@ -49,11 +49,7 @@ config("icu_config") {
   if (icu_use_data_file) {
     defines += [ "ICU_UTIL_DATA_IMPL=ICU_UTIL_DATA_FILE" ]
   } else {
-    if (is_win) {
-      defines += [ "ICU_UTIL_DATA_IMPL=ICU_UTIL_DATA_SHARED" ]
-    } else {
-      defines += [ "ICU_UTIL_DATA_IMPL=ICU_UTIL_DATA_STATIC" ]
-    }
+    defines += [ "ICU_UTIL_DATA_IMPL=ICU_UTIL_DATA_STATIC" ]
   }
 
   if (is_win) {
@@ -1106,37 +1102,47 @@ if (icu_use_data_file) {
     }
   }
 } else {
+  data_assembly = "$target_gen_dir/${data_bundle_prefix}_dat.S"
+  inline_data_assembly = "$target_gen_dir/${data_bundle_prefix}_dat.cc"
+  action("make_data_assembly") {
+    script = "scripts/make_data_assembly.py"
+    inputs = [ "$data_dir/$data_bundle" ]
+    outputs = [ data_assembly ]
+    args = [
+      rebase_path(inputs[0], root_build_dir),
+      rebase_path(data_assembly, root_build_dir),
+    ]
+    # TODO(GYP): Gyp has considerations here for QNX and for the host
+    # toolchain that have not been ported over.
+    if (is_mac || is_ios) {
+      args += [ "--mac" ]
+    } else if (is_win) {
+      args += [ "--win" ]
+    }
+  }
+
   if (is_win) {
-    # On Windows the target DLL is pre-built so just use a copy rule.
-    # data_bundle and data_dir have to be used to avoid 'unused variable'
-    # error.
-    data_bundle = "icudt.dll"
-    data_dir = "windows"
-    copy("icudata") {
-      sources = [ "$data_dir/$data_bundle" ]
-      outputs = [ "$root_out_dir/$data_bundle" ]
-      data = outputs
+    action("make_inline_data_assembly") {
+      deps = [ ":make_data_assembly" ]
+      script = "scripts/asm_to_inline_asm.py"
+      inputs = [ data_assembly ]
+      outputs =  [ inline_data_assembly ]
+      args = rebase_path([
+        data_assembly,
+        inline_data_assembly,
+      ], root_build_dir)
     }
   } else {
-    data_assembly = "$target_gen_dir/${data_bundle_prefix}_dat.S"
-    action("make_data_assembly") {
-      script = "scripts/make_data_assembly.py"
-      inputs = [ "$data_dir/$data_bundle" ]
-      outputs = [ "$data_assembly" ]
-      args = [
-        rebase_path(inputs[0], root_build_dir),
-        rebase_path(data_assembly, root_build_dir),
-      ]
-      # TODO(GYP): Gyp has considerations here for QNX and for the host
-      # toolchain that have not been ported over.
-      if (is_mac || is_ios) {
-        args += [ "--mac" ]
-      }
-    }
+    not_needed([ "inline_data_assembly" ])
+  }
 
-    source_set("icudata") {
-      sources = [ "$data_assembly" ]
-      defines = [ "U_HIDE_DATA_SYMBOL" ]
+  source_set("icudata") {
+    defines = [ "U_HIDE_DATA_SYMBOL" ]
+    if (is_win) {
+      sources = [ inline_data_assembly ]
+      deps = [ ":make_inline_data_assembly", ]
+    } else {
+      sources = [ data_assembly ]
       deps = [ ":make_data_assembly", ]
     }
   }
