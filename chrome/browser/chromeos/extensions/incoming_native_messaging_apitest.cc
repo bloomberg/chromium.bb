@@ -142,7 +142,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionIncomingNativeMessagingTest,
 
 }  // namespace
 
-INSTANTIATE_TEST_CASE_P(,
-                        ExtensionIncomingNativeMessagingTest,
-                        testing::Values(BindingsType::kNative,
-                                        BindingsType::kJavaScript));
+INSTANTIATE_TEST_SUITE_P(,
+                         ExtensionIncomingNativeMessagingTest,
+                         testing::Values(BindingsType::kNative,
+                                         BindingsType::kJavaScript));

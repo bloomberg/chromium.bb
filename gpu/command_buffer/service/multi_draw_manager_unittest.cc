@@ -216,7 +216,7 @@ TEST_P(MultiDrawManagerTest, ElementTypeMismatch) {
   EXPECT_FALSE(DoMultiDraw(50, GL_TRIANGLES, GL_UNSIGNED_SHORT));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     MultiDrawManagerTest,
     testing::Combine(

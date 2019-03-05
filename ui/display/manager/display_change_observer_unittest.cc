@@ -253,8 +253,8 @@ TEST_P(DisplayChangeObserverTest,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        DisplayChangeObserverTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         DisplayChangeObserverTest,
+                         ::testing::Values(false, true));
 
 }  // namespace display

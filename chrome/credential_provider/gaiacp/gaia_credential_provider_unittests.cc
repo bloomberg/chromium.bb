@@ -386,11 +386,11 @@ TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        GcpCredentialProviderWithGaiaUsersTest,
-                        ::testing::Combine(::testing::Bool(),
-                                           ::testing::Bool(),
-                                           ::testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(,
+                         GcpCredentialProviderWithGaiaUsersTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool(),
+                                            ::testing::Bool()));
 
 // Check that the correct reauth credential type is created based on various
 // policy settings as well as usage scenarios.
@@ -557,7 +557,7 @@ TEST_P(GcpCredentialProviderAvailableCredentialsTest, AvailableCredentials) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     GcpCredentialProviderAvailableCredentialsTest,
     ::testing::Combine(::testing::Bool(),
