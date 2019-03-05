@@ -322,14 +322,16 @@ bool SelectionController::HandleSingleClick(
   // link or image.
   bool extend_selection = IsExtendingSelection(event);
 
-  const VisiblePositionInFlatTree& visible_hit_position = CreateVisiblePosition(
-      PositionWithAffinityOfHitTestResult(event.GetHitTestResult()));
+  const PositionInFlatTreeWithAffinity visible_hit_position =
+      CreateVisiblePosition(
+          PositionWithAffinityOfHitTestResult(event.GetHitTestResult()))
+          .ToPositionWithAffinity();
   const PositionInFlatTreeWithAffinity& position_to_use =
       visible_hit_position.IsNull()
           ? CreateVisiblePosition(
                 PositionInFlatTree::FirstPositionInOrBeforeNode(*inner_node))
                 .ToPositionWithAffinity()
-          : visible_hit_position.ToPositionWithAffinity();
+          : visible_hit_position;
   const VisibleSelectionInFlatTree& selection =
       this->Selection().ComputeVisibleSelectionInFlatTree();
 
@@ -619,16 +621,17 @@ bool SelectionController::SelectClosestWordFromHitTestResult(
     adjusted_hit_test_result.SetNodeAndPosition(result.InnerNode(),
                                                 LayoutPoint(0, 0));
 
-  const VisiblePositionInFlatTree& pos = CreateVisiblePosition(
-      PositionWithAffinityOfHitTestResult(adjusted_hit_test_result));
+  const PositionInFlatTreeWithAffinity pos =
+      CreateVisiblePosition(
+          PositionWithAffinityOfHitTestResult(adjusted_hit_test_result))
+          .ToPositionWithAffinity();
   const SelectionInFlatTree new_selection =
-      pos.IsNotNull() ? CreateVisibleSelectionWithGranularity(
-                            SelectionInFlatTree::Builder()
-                                .Collapse(pos.ToPositionWithAffinity())
-                                .Build(),
-                            TextGranularity::kWord)
-                            .AsSelection()
-                      : SelectionInFlatTree();
+      pos.IsNotNull()
+          ? CreateVisibleSelectionWithGranularity(
+                SelectionInFlatTree::Builder().Collapse(pos).Build(),
+                TextGranularity::kWord)
+                .AsSelection()
+          : SelectionInFlatTree();
 
   // TODO(editing-dev): Fix CreateVisibleSelectionWithGranularity() to not
   // return invalid ranges. Until we do that, we need this check here to avoid a
@@ -646,7 +649,7 @@ bool SelectionController::SelectClosestWordFromHitTestResult(
 
     Element* const editable =
         RootEditableElementOf(new_selection.ComputeStartPosition());
-    if (editable && pos.DeepEquivalent() ==
+    if (editable && pos.GetPosition() ==
                         VisiblePositionInFlatTree::LastPositionInNode(*editable)
                             .DeepEquivalent())
       return false;
@@ -675,8 +678,9 @@ void SelectionController::SelectClosestMisspellingFromHitTestResult(
   if (!inner_node || !inner_node->GetLayoutObject())
     return;
 
-  const VisiblePositionInFlatTree& pos =
-      CreateVisiblePosition(PositionWithAffinityOfHitTestResult(result));
+  const PositionInFlatTreeWithAffinity pos =
+      CreateVisiblePosition(PositionWithAffinityOfHitTestResult(result))
+          .ToPositionWithAffinity();
   if (pos.IsNull()) {
     UpdateSelectionForMouseDownDispatchingSelectStart(
         inner_node, SelectionInFlatTree(),
@@ -687,7 +691,7 @@ void SelectionController::SelectClosestMisspellingFromHitTestResult(
   }
 
   const PositionInFlatTree& marker_position =
-      pos.DeepEquivalent().ParentAnchoredEquivalent();
+      pos.GetPosition().ParentAnchoredEquivalent();
   const DocumentMarker* const marker = SpellCheckMarkerAtPosition(
       inner_node->GetDocument().Markers(), marker_position);
   if (!marker) {
@@ -764,11 +768,12 @@ void SelectionController::SelectClosestWordOrLinkFromMouseEvent(
     return;
 
   Element* url_element = result.GetHitTestResult().URLElement();
-  const VisiblePositionInFlatTree& pos = CreateVisiblePosition(
-      PositionWithAffinityOfHitTestResult(result.GetHitTestResult()));
+  const PositionInFlatTreeWithAffinity pos =
+      CreateVisiblePosition(
+          PositionWithAffinityOfHitTestResult(result.GetHitTestResult()))
+          .ToPositionWithAffinity();
   const SelectionInFlatTree& new_selection =
-      pos.IsNotNull() &&
-              pos.DeepEquivalent().AnchorNode()->IsDescendantOf(url_element)
+      pos.IsNotNull() && pos.AnchorNode()->IsDescendantOf(url_element)
           ? SelectionInFlatTree::Builder()
                 .SelectAllChildren(*url_element)
                 .Build()
@@ -800,26 +805,27 @@ void SelectionController::SetNonDirectionalSelectionIfNeeded(
   // to |CreateVisiblePosition()| for |original_base|.
   const PositionInFlatTree& base_position =
       original_base_in_flat_tree_.GetPosition();
-  const VisiblePositionInFlatTree& original_base =
-      base_position.IsConnected() ? CreateVisiblePosition(base_position)
-                                  : VisiblePositionInFlatTree();
-  const VisiblePositionInFlatTree& base =
+  const PositionInFlatTreeWithAffinity original_base =
+      base_position.IsConnected()
+          ? CreateVisiblePosition(base_position).ToPositionWithAffinity()
+          : PositionInFlatTreeWithAffinity();
+  const PositionInFlatTreeWithAffinity base =
       original_base.IsNotNull() ? original_base
-                                : CreateVisiblePosition(new_selection.Base());
-  const VisiblePositionInFlatTree& extent =
-      CreateVisiblePosition(new_selection.Extent());
+                                : CreateVisiblePosition(new_selection.Base())
+                                      .ToPositionWithAffinity();
+  const PositionInFlatTreeWithAffinity extent =
+      CreateVisiblePosition(new_selection.Extent()).ToPositionWithAffinity();
   const SelectionInFlatTree& adjusted_selection =
       endpoints_adjustment_mode == kAdjustEndpointsAtBidiBoundary
           ? BidiAdjustment::AdjustForRangeSelection(base, extent)
           : SelectionInFlatTree::Builder()
-                .SetBaseAndExtent(base.DeepEquivalent(),
-                                  extent.DeepEquivalent())
+                .SetBaseAndExtent(base.GetPosition(), extent.GetPosition())
                 .Build();
 
   SelectionInFlatTree::Builder builder(new_selection);
-  if (adjusted_selection.Base() != base.DeepEquivalent() ||
-      adjusted_selection.Extent() != extent.DeepEquivalent()) {
-    original_base_in_flat_tree_ = base.ToPositionWithAffinity();
+  if (adjusted_selection.Base() != base.GetPosition() ||
+      adjusted_selection.Extent() != extent.GetPosition()) {
+    original_base_in_flat_tree_ = base;
     SetContext(&GetDocument());
     builder.SetBaseAndExtent(adjusted_selection.Base(),
                              adjusted_selection.Extent());
@@ -828,7 +834,7 @@ void SelectionController::SetNonDirectionalSelectionIfNeeded(
             Selection().ComputeVisibleSelectionInFlatTree().Base())
             .DeepEquivalent() ==
         CreateVisiblePosition(new_selection.Base()).DeepEquivalent()) {
-      builder.SetBaseAndExtent(original_base.DeepEquivalent(),
+      builder.SetBaseAndExtent(original_base.GetPosition(),
                                new_selection.Extent());
     }
     original_base_in_flat_tree_ = PositionInFlatTreeWithAffinity();
@@ -863,12 +869,15 @@ void SelectionController::SetCaretAtHitTestResult(
     const HitTestResult& hit_test_result) {
   Node* inner_node = hit_test_result.InnerNode();
   DCHECK(inner_node);
-  const VisiblePositionInFlatTree& visible_hit_pos = CreateVisiblePosition(
-      PositionWithAffinityOfHitTestResult(hit_test_result));
-  const VisiblePositionInFlatTree& visible_pos =
+  const PositionInFlatTreeWithAffinity visible_hit_pos =
+      CreateVisiblePosition(
+          PositionWithAffinityOfHitTestResult(hit_test_result))
+          .ToPositionWithAffinity();
+  const PositionInFlatTreeWithAffinity visible_pos =
       visible_hit_pos.IsNull()
           ? CreateVisiblePosition(
                 PositionInFlatTree::FirstPositionInOrBeforeNode(*inner_node))
+                .ToPositionWithAffinity()
           : visible_hit_pos;
 
   if (visible_pos.IsNull()) {
@@ -880,9 +889,8 @@ void SelectionController::SetCaretAtHitTestResult(
   UpdateSelectionForMouseDownDispatchingSelectStart(
       inner_node,
       ExpandSelectionToRespectUserSelectAll(
-          inner_node, SelectionInFlatTree::Builder()
-                          .Collapse(visible_pos.ToPositionWithAffinity())
-                          .Build()),
+          inner_node,
+          SelectionInFlatTree::Builder().Collapse(visible_pos).Build()),
       SetSelectionOptions::Builder().SetShouldShowHandle(true).Build());
 }
 
@@ -939,16 +947,17 @@ bool SelectionController::HandleTripleClick(
         mouse_down_may_start_select_))
     return false;
 
-  const VisiblePositionInFlatTree& pos = CreateVisiblePosition(
-      PositionWithAffinityOfHitTestResult(event.GetHitTestResult()));
+  const PositionInFlatTreeWithAffinity pos =
+      CreateVisiblePosition(
+          PositionWithAffinityOfHitTestResult(event.GetHitTestResult()))
+          .ToPositionWithAffinity();
   const SelectionInFlatTree new_selection =
-      pos.IsNotNull() ? CreateVisibleSelectionWithGranularity(
-                            SelectionInFlatTree::Builder()
-                                .Collapse(pos.ToPositionWithAffinity())
-                                .Build(),
-                            TextGranularity::kParagraph)
-                            .AsSelection()
-                      : SelectionInFlatTree();
+      pos.IsNotNull()
+          ? CreateVisibleSelectionWithGranularity(
+                SelectionInFlatTree::Builder().Collapse(pos).Build(),
+                TextGranularity::kParagraph)
+                .AsSelection()
+          : SelectionInFlatTree();
 
   const bool is_handle_visible =
       event.Event().FromTouch() && new_selection.IsRange();
@@ -1067,10 +1076,12 @@ bool SelectionController::HandleMouseReleaseEvent(
     SelectionInFlatTree::Builder builder;
     Node* node = event.InnerNode();
     if (node && node->GetLayoutObject() && HasEditableStyle(*node)) {
-      const VisiblePositionInFlatTree& pos = CreateVisiblePosition(
-          PositionWithAffinityOfHitTestResult(event.GetHitTestResult()));
+      const PositionInFlatTreeWithAffinity pos =
+          CreateVisiblePosition(
+              PositionWithAffinityOfHitTestResult(event.GetHitTestResult()))
+              .ToPositionWithAffinity();
       if (pos.IsNotNull())
-        builder.Collapse(pos.ToPositionWithAffinity());
+        builder.Collapse(pos);
     }
 
     const SelectionInFlatTree new_selection = builder.Build();
@@ -1234,16 +1245,16 @@ void SelectionController::PassMousePressEventToSubframe(
   if (!Selection().Contains(p))
     return;
 
-  const VisiblePositionInFlatTree& visible_pos = CreateVisiblePosition(
-      PositionWithAffinityOfHitTestResult(mev.GetHitTestResult()));
+  const PositionInFlatTreeWithAffinity visible_pos =
+      CreateVisiblePosition(
+          PositionWithAffinityOfHitTestResult(mev.GetHitTestResult()))
+          .ToPositionWithAffinity();
   if (visible_pos.IsNull()) {
     Selection().SetSelectionAndEndTyping(SelectionInDOMTree());
     return;
   }
   Selection().SetSelectionAndEndTyping(ConvertToSelectionInDOMTree(
-      SelectionInFlatTree::Builder()
-          .Collapse(visible_pos.ToPositionWithAffinity())
-          .Build()));
+      SelectionInFlatTree::Builder().Collapse(visible_pos).Build()));
 }
 
 void SelectionController::InitializeSelectionState() {

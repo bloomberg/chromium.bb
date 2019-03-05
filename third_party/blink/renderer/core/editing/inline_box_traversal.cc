@@ -602,20 +602,17 @@ class RangeSelectionAdjuster {
 
  public:
   static SelectionInFlatTree AdjustFor(
-      const VisiblePositionInFlatTree& visible_base,
-      const VisiblePositionInFlatTree& visible_extent) {
-    DCHECK(visible_base.IsValid());
-    DCHECK(visible_extent.IsValid());
-
+      const PositionInFlatTreeWithAffinity& visible_base,
+      const PositionInFlatTreeWithAffinity& visible_extent) {
     const SelectionInFlatTree& unchanged_selection =
         SelectionInFlatTree::Builder()
-            .SetBaseAndExtent(visible_base.DeepEquivalent(),
-                              visible_extent.DeepEquivalent())
+            .SetBaseAndExtent(visible_base.GetPosition(),
+                              visible_extent.GetPosition())
             .Build();
 
     if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled()) {
-      if (NGInlineFormattingContextOf(visible_base.DeepEquivalent()) ||
-          NGInlineFormattingContextOf(visible_extent.DeepEquivalent()))
+      if (NGInlineFormattingContextOf(visible_base.GetPosition()) ||
+          NGInlineFormattingContextOf(visible_extent.GetPosition()))
         return unchanged_selection;
     }
 
@@ -632,7 +629,7 @@ class RangeSelectionAdjuster {
         const PositionInFlatTree adjusted_base =
             CreateVisiblePosition(base.GetPosition()).DeepEquivalent();
         return SelectionInFlatTree::Builder()
-            .SetBaseAndExtent(adjusted_base, visible_extent.DeepEquivalent())
+            .SetBaseAndExtent(adjusted_base, visible_extent.GetPosition())
             .Build();
       }
       return unchanged_selection;
@@ -642,7 +639,7 @@ class RangeSelectionAdjuster {
       const PositionInFlatTree adjusted_extent =
           CreateVisiblePosition(extent.GetPosition()).DeepEquivalent();
       return SelectionInFlatTree::Builder()
-          .SetBaseAndExtent(visible_base.DeepEquivalent(), adjusted_extent)
+          .SetBaseAndExtent(visible_base.GetPosition(), adjusted_extent)
           .Build();
     }
 
@@ -655,7 +652,7 @@ class RangeSelectionAdjuster {
 
    public:
     RenderedPosition() = default;
-    static RenderedPosition Create(const VisiblePositionInFlatTree&);
+    static RenderedPosition Create(const PositionInFlatTreeWithAffinity&);
 
     bool IsNull() const { return box_.IsNull(); }
     bool operator==(const RenderedPosition& other) const {
@@ -736,12 +733,11 @@ class RangeSelectionAdjuster {
 
     // Helper function for Create().
     static RenderedPosition CreateUncanonicalized(
-        const VisiblePositionInFlatTree& position) {
-      if (position.IsNull() ||
-          !position.DeepEquivalent().AnchorNode()->GetLayoutObject())
+        const PositionInFlatTreeWithAffinity& position) {
+      if (position.IsNull() || !position.AnchorNode()->GetLayoutObject())
         return RenderedPosition();
       const PositionInFlatTreeWithAffinity adjusted =
-          ComputeInlineAdjustedPosition(position.ToPositionWithAffinity());
+          ComputeInlineAdjustedPosition(position);
       if (adjusted.IsNull())
         return RenderedPosition();
 
@@ -782,7 +778,7 @@ class RangeSelectionAdjuster {
 
 RangeSelectionAdjuster::RenderedPosition
 RangeSelectionAdjuster::RenderedPosition::Create(
-    const VisiblePositionInFlatTree& position) {
+    const PositionInFlatTreeWithAffinity& position) {
   const RenderedPosition uncanonicalized = CreateUncanonicalized(position);
   const BidiBoundaryType potential_type = uncanonicalized.bidi_boundary_type_;
   if (potential_type == BidiBoundaryType::kNotBoundary)
@@ -904,8 +900,8 @@ NGCaretPosition BidiAdjustment::AdjustForHitTest(
 }
 
 SelectionInFlatTree BidiAdjustment::AdjustForRangeSelection(
-    const VisiblePositionInFlatTree& base,
-    const VisiblePositionInFlatTree& extent) {
+    const PositionInFlatTreeWithAffinity& base,
+    const PositionInFlatTreeWithAffinity& extent) {
   return RangeSelectionAdjuster::AdjustFor(base, extent);
 }
 

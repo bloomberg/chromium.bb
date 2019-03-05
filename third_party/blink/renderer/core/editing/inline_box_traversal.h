@@ -37,8 +37,8 @@ class BidiAdjustment final {
   // even with bidi adjustment.
   // TODO(editing-dev): Eliminate |VisiblePosition| from this function.
   static SelectionInFlatTree AdjustForRangeSelection(
-      const VisiblePositionInFlatTree&,
-      const VisiblePositionInFlatTree&);
+      const PositionInFlatTreeWithAffinity&,
+      const PositionInFlatTreeWithAffinity&);
 };
 
 // This class provides common traveral functions on list of |InlineBox|.
