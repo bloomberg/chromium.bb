@@ -323,6 +323,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
       public QuicPacketGenerator::DelegateInterface,
       public QuicSentPacketManager::NetworkChangeVisitor {
  public:
+  // TODO(fayang): Remove this enum when deprecating
+  // quic_deprecate_ack_bundling_mode.
   enum AckBundling {
     // Send an ack if it's already queued in the connection.
     SEND_ACK_IF_QUEUED,
@@ -528,6 +530,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // QuicPacketGenerator::DelegateInterface
   bool ShouldGeneratePacket(HasRetransmittableData retransmittable,
                             IsHandshake handshake) override;
+  const QuicFrames MaybeBundleAckOpportunistically() override;
   const QuicFrame GetUpdatedAckFrame() override;
   void PopulateStopWaitingFrame(QuicStopWaitingFrame* stop_waiting) override;
 
@@ -703,6 +706,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
    public:
     // Setting |include_ack| to true ensures that an ACK frame is
     // opportunistically bundled with the first outgoing packet.
+    // TODO(fayang): Remove |ack_mode| when deprecating
+    // quic_deprecate_ack_bundling_mode.
     ScopedPacketFlusher(QuicConnection* connection, AckBundling ack_mode);
     ~ScopedPacketFlusher();
 
@@ -751,9 +756,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Set transmission type of next sending packets.
   void SetTransmissionType(TransmissionType type);
-
-  // Set long header type of next sending packets.
-  void SetLongHeaderType(QuicLongHeaderType type);
 
   // Tries to send |message| and returns the message status.
   virtual MessageStatus SendMessage(QuicMessageId message_id,
@@ -926,6 +928,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Sends the connection close packet to the peer. |ack_mode| determines
   // whether ack frame will be bundled with the connection close packet.
+  // TODO(fayang): change |ack_mode| to bool |force_sending_ack| when
+  // deprecating quic_deprecate_ack_bundling_mode.
   virtual void SendConnectionClosePacket(QuicErrorCode error,
                                          const QuicString& details,
                                          AckBundling ack_mode);
@@ -1041,6 +1045,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // |sent_packet_number| is the recently sent packet number.
   void MaybeSetMtuAlarm(QuicPacketNumber sent_packet_number);
 
+  // Sets ack alarm to |time| if ack alarm is not set or the deadline > time.
+  void MaybeSetAckAlarmTo(QuicTime time);
+
   HasRetransmittableData IsRetransmittable(const SerializedPacket& packet);
   bool IsTerminationPacket(const SerializedPacket& packet);
 
@@ -1093,9 +1100,18 @@ class QUIC_EXPORT_PRIVATE QuicConnection
                                   const QuicSocketAddress& peer_address,
                                   bool is_response);
 
+  // Called when an ACK is about to send. Resets ACK related internal states,
+  // e.g., cancels ack_alarm_, resets
+  // num_retransmittable_packets_received_since_last_ack_sent_ etc.
+  void ResetAckStates();
+
   // Returns true if ack alarm is not set and there is no pending ack in the
   // generator.
   bool ShouldSetAckAlarm() const;
+
+  // Returns the encryption level the connection close packet should be sent at,
+  // which is the highest encryption level that peer can guarantee to process.
+  EncryptionLevel GetConnectionCloseEncryptionLevel() const;
 
   QuicFramer framer_;
 
@@ -1214,6 +1230,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   QuicReceivedPacketManager received_packet_manager_;
 
   // Indicates whether an ack should be sent the next time we try to write.
+  // TODO(fayang): Remove ack_queued_ when deprecating
+  // quic_deprecate_ack_bundling_mode.
   bool ack_queued_;
   // How many retransmittable packets have arrived without sending an ack.
   QuicPacketCount num_retransmittable_packets_received_since_last_ack_sent_;
@@ -1430,6 +1448,16 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // might send a packet with more than one PATH_CHALLENGE, so all need to be
   // saved and responded to.
   QuicDeque<QuicPathFrameBuffer> received_path_challenge_payloads_;
+
+  // Latched value of quic_fix_termination_packets.
+  const bool fix_termination_packets_;
+
+  // Indicates whether an ACK needs to be sent in OnCanWrite(). Only used when
+  // deprecate_ack_bundling_mode is true.
+  // TODO(fayang): Remove this when ACK sending logic is moved to received
+  // packet manager, and an ACK timeout would be used to record when an ACK
+  // needs to be sent.
+  bool send_ack_when_on_can_write_;
 };
 
 }  // namespace quic

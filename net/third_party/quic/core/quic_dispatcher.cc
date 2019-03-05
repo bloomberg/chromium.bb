@@ -140,14 +140,6 @@ class StatelessConnectionTerminator {
     QuicConnectionCloseFrame* frame = new QuicConnectionCloseFrame;
     frame->error_code = error_code;
     frame->error_details = error_details;
-    // TODO(fayang): Use the right long header type for conneciton close sent by
-    // dispatcher.
-    if (QuicVersionHasLongHeaderLengths(framer_->transport_version())) {
-      creator_.SetLongHeaderType(HANDSHAKE);
-    } else {
-      // TODO(b/123493765): we should probably not be sending RETRY here.
-      creator_.SetLongHeaderType(RETRY);
-    }
     if (!creator_.AddSavedFrame(QuicFrame(frame), NOT_RETRANSMISSION)) {
       QUIC_BUG << "Unable to add frame to an empty packet";
       delete frame;
@@ -158,7 +150,7 @@ class StatelessConnectionTerminator {
     time_wait_list_manager_->AddConnectionIdToTimeWait(
         connection_id_, ietf_quic,
         QuicTimeWaitListManager::SEND_TERMINATION_PACKETS,
-        collector_.packets());
+        quic::ENCRYPTION_NONE, collector_.packets());
   }
 
   // Generates a series of termination packets containing the crypto handshake
@@ -169,12 +161,6 @@ class StatelessConnectionTerminator {
     collector_.SaveStatelessRejectFrameData(reject);
     while (offset < reject.length()) {
       QuicFrame frame;
-      if (QuicVersionHasLongHeaderLengths(framer_->transport_version())) {
-        creator_.SetLongHeaderType(HANDSHAKE);
-      } else {
-        // TODO(b/123493765): we should probably not be sending RETRY here.
-        creator_.SetLongHeaderType(RETRY);
-      }
       if (framer_->transport_version() < QUIC_VERSION_47) {
         if (!creator_.ConsumeData(
                 QuicUtils::GetCryptoStreamId(framer_->transport_version()),
@@ -203,7 +189,7 @@ class StatelessConnectionTerminator {
     }
     time_wait_list_manager_->AddConnectionIdToTimeWait(
         connection_id_, ietf_quic,
-        QuicTimeWaitListManager::SEND_TERMINATION_PACKETS,
+        QuicTimeWaitListManager::SEND_TERMINATION_PACKETS, ENCRYPTION_NONE,
         collector_.packets());
     DCHECK(time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id_));
   }
@@ -309,9 +295,7 @@ QuicDispatcher::QuicDispatcher(
               Perspective::IS_SERVER),
       last_error_(QUIC_NO_ERROR),
       new_sessions_allowed_per_event_loop_(0u),
-      accept_new_connections_(true),
-      check_blocked_writer_for_blockage_(
-          GetQuicRestartFlag(quic_check_blocked_writer_for_blockage)) {
+      accept_new_connections_(true) {
   framer_.set_visitor(this);
 }
 
@@ -355,11 +339,9 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
     return false;
   }
 
-  // Stopgap test: The code does not construct full-length connection IDs
-  // correctly from truncated connection ID fields.  Prevent this from causing
-  // the connection ID lookup to error by dropping any packet with a short
-  // connection ID.
-  if (header.destination_connection_id_length != PACKET_8BYTE_CONNECTION_ID) {
+  // The dispatcher requires the connection ID to be present in order to
+  // look up the matching QuicConnection, so we error out if it is absent.
+  if (header.destination_connection_id_included != CONNECTION_ID_PRESENT) {
     return false;
   }
 
@@ -404,7 +386,7 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
     // This connection ID is already in time-wait state.
     time_wait_list_manager_->ProcessPacket(
         current_self_address_, current_peer_address_,
-        header.destination_connection_id, GetPerPacketContext());
+        header.destination_connection_id, header.form, GetPerPacketContext());
     return false;
   }
 
@@ -486,7 +468,7 @@ void QuicDispatcher::ProcessUnauthenticatedHeaderFate(
       }
       DCHECK(time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id));
       time_wait_list_manager_->ProcessPacket(
-          current_self_address_, current_peer_address_, connection_id,
+          current_self_address_, current_peer_address_, connection_id, form,
           GetPerPacketContext());
 
       // Any packets which were buffered while the stateless rejector logic was
@@ -574,13 +556,7 @@ void QuicDispatcher::CleanUpSession(SessionMap::iterator it,
       !connection->termination_packets()->empty()) {
     action = QuicTimeWaitListManager::SEND_TERMINATION_PACKETS;
   } else if (connection->transport_version() > QUIC_VERSION_43) {
-    // TODO(fayang): Always resetting IETF connections is a debugging
-    // expediency. Stop doing this when removing flag
-    // quic_always_reset_ietf_connections.
-    if (!GetQuicReloadableFlag(quic_always_reset_ietf_connections) &&
-        source == ConnectionCloseSource::FROM_PEER) {
-      action = QuicTimeWaitListManager::DO_NOTHING;
-    } else if (!connection->IsHandshakeConfirmed()) {
+    if (!connection->IsHandshakeConfirmed()) {
       QUIC_CODE_COUNT(quic_v44_add_to_time_wait_list_with_handshake_failed);
       action = QuicTimeWaitListManager::SEND_TERMINATION_PACKETS;
       // This serializes a connection close termination packet with error code
@@ -595,22 +571,17 @@ void QuicDispatcher::CleanUpSession(SessionMap::iterator it,
           action);
       session_map_.erase(it);
       return;
-    } else {
-      QUIC_CODE_COUNT(quic_v44_add_to_time_wait_list_with_stateless_reset);
     }
+    QUIC_CODE_COUNT(quic_v44_add_to_time_wait_list_with_stateless_reset);
   }
   time_wait_list_manager_->AddConnectionIdToTimeWait(
       it->first, connection->transport_version() > QUIC_VERSION_43, action,
-      connection->termination_packets());
+      connection->encryption_level(), connection->termination_packets());
   session_map_.erase(it);
 }
 
 void QuicDispatcher::StopAcceptingNewConnections() {
   accept_new_connections_ = false;
-}
-
-bool QuicDispatcher::ShouldAddToBlockedList() {
-  return writer_->IsWriteBlocked();
 }
 
 std::unique_ptr<QuicPerPacketContext> QuicDispatcher::GetPerPacketContext()
@@ -637,40 +608,27 @@ void QuicDispatcher::OnCanWrite() {
   // The socket is now writable.
   writer_->SetWritable();
 
-  if (check_blocked_writer_for_blockage_) {
-    QUIC_RESTART_FLAG_COUNT_N(quic_check_blocked_writer_for_blockage, 2, 6);
-    // Move every blocked writer in |write_blocked_list_| to a temporary list.
-    const size_t num_blocked_writers_before = write_blocked_list_.size();
-    WriteBlockedList temp_list;
-    temp_list.swap(write_blocked_list_);
-    DCHECK(write_blocked_list_.empty());
+  // Move every blocked writer in |write_blocked_list_| to a temporary list.
+  const size_t num_blocked_writers_before = write_blocked_list_.size();
+  WriteBlockedList temp_list;
+  temp_list.swap(write_blocked_list_);
+  DCHECK(write_blocked_list_.empty());
 
-    // Give each blocked writer a chance to write what they indended to write.
-    // If they are blocked again, they will call |OnWriteBlocked| to add
-    // themselves back into |write_blocked_list_|.
-    while (!temp_list.empty()) {
-      QuicBlockedWriterInterface* blocked_writer = temp_list.begin()->first;
-      temp_list.erase(temp_list.begin());
-      blocked_writer->OnBlockedWriterCanWrite();
-    }
-    const size_t num_blocked_writers_after = write_blocked_list_.size();
-    if (num_blocked_writers_after != 0) {
-      if (num_blocked_writers_before == num_blocked_writers_after) {
-        QUIC_CODE_COUNT(quic_zero_progress_on_can_write);
-      } else {
-        QUIC_CODE_COUNT(quic_blocked_again_on_can_write);
-      }
-    }
-    return;
-  }
-
-  // Give all the blocked writers one chance to write, until we're blocked again
-  // or there's no work left.
-  while (!write_blocked_list_.empty() && !writer_->IsWriteBlocked()) {
-    QuicBlockedWriterInterface* blocked_writer =
-        write_blocked_list_.begin()->first;
-    write_blocked_list_.erase(write_blocked_list_.begin());
+  // Give each blocked writer a chance to write what they indended to write.
+  // If they are blocked again, they will call |OnWriteBlocked| to add
+  // themselves back into |write_blocked_list_|.
+  while (!temp_list.empty()) {
+    QuicBlockedWriterInterface* blocked_writer = temp_list.begin()->first;
+    temp_list.erase(temp_list.begin());
     blocked_writer->OnBlockedWriterCanWrite();
+  }
+  const size_t num_blocked_writers_after = write_blocked_list_.size();
+  if (num_blocked_writers_after != 0) {
+    if (num_blocked_writers_before == num_blocked_writers_after) {
+      QUIC_CODE_COUNT(quic_zero_progress_on_can_write);
+    } else {
+      QUIC_CODE_COUNT(quic_blocked_again_on_can_write);
+    }
   }
 }
 
@@ -726,26 +684,16 @@ void QuicDispatcher::OnConnectionClosed(QuicConnectionId connection_id,
 
 void QuicDispatcher::OnWriteBlocked(
     QuicBlockedWriterInterface* blocked_writer) {
-  if (check_blocked_writer_for_blockage_) {
-    QUIC_RESTART_FLAG_COUNT_N(quic_check_blocked_writer_for_blockage, 1, 6);
-    if (!blocked_writer->IsWriterBlocked()) {
-      // It is a programming error if this ever happens. When we are sure it is
-      // not happening, replace it with a DCHECK.
-      QUIC_BUG
-          << "Tried to add writer into blocked list when it shouldn't be added";
-      // Return without adding the connection to the blocked list, to avoid
-      // infinite loops in OnCanWrite.
-      return;
-    }
-  } else {
-    if (!ShouldAddToBlockedList()) {
-      QUIC_BUG
-          << "Tried to add writer into blocked list when it shouldn't be added";
-      // Return without adding the connection to the blocked list, to avoid
-      // infinite loops in OnCanWrite.
-      return;
-    }
+  if (!blocked_writer->IsWriterBlocked()) {
+    // It is a programming error if this ever happens. When we are sure it is
+    // not happening, replace it with a DCHECK.
+    QUIC_BUG
+        << "Tried to add writer into blocked list when it shouldn't be added";
+    // Return without adding the connection to the blocked list, to avoid
+    // infinite loops in OnCanWrite.
+    return;
   }
+
   write_blocked_list_.insert(std::make_pair(blocked_writer, true));
 }
 
@@ -772,8 +720,8 @@ void QuicDispatcher::StatelesslyTerminateConnection(
                   << ", error_code:" << error_code
                   << ", error_details:" << error_details;
     time_wait_list_manager_->AddConnectionIdToTimeWait(
-        connection_id, format != GOOGLE_QUIC_PACKET, action,
-        /*termination_packets=*/nullptr);
+        connection_id, format != GOOGLE_QUIC_PACKET, action, ENCRYPTION_NONE,
+        nullptr);
     return;
   }
 
@@ -812,7 +760,8 @@ void QuicDispatcher::StatelesslyTerminateConnection(
       ParsedQuicVersionVector{UnsupportedQuicVersion()}));
   time_wait_list_manager()->AddConnectionIdToTimeWait(
       connection_id, /*ietf_quic=*/true,
-      QuicTimeWaitListManager::SEND_TERMINATION_PACKETS, &termination_packets);
+      QuicTimeWaitListManager::SEND_TERMINATION_PACKETS, ENCRYPTION_NONE,
+      &termination_packets);
 }
 
 void QuicDispatcher::OnPacket() {}
@@ -1108,7 +1057,7 @@ void QuicDispatcher::ProcessChlo(PacketHeaderFormat form,
     // Time wait list will reject the packet correspondingly.
     time_wait_list_manager()->ProcessPacket(
         current_self_address(), current_peer_address(), current_connection_id(),
-        GetPerPacketContext());
+        form, GetPerPacketContext());
     return;
   }
   if (!buffered_packets_.HasBufferedPackets(current_connection_id_) &&
@@ -1316,7 +1265,7 @@ void QuicDispatcher::OnStatelessRejectorProcessDone(
           rejector->connection_id())) {
     time_wait_list_manager_->ProcessPacket(
         current_self_address, current_peer_address, rejector->connection_id(),
-        GetPerPacketContext());
+        current_packet_format, GetPerPacketContext());
     return;
   }
 

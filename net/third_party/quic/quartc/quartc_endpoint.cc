@@ -57,11 +57,15 @@ QuartcClientEndpoint::QuartcClientEndpoint(
     const QuicClock* clock,
     QuartcEndpoint::Delegate* delegate,
     const QuartcSessionConfig& config,
-    QuicStringPiece serialized_server_config)
+    QuicStringPiece serialized_server_config,
+    std::unique_ptr<QuicVersionManager> version_manager)
     : alarm_factory_(alarm_factory),
       clock_(clock),
       delegate_(delegate),
       serialized_server_config_(serialized_server_config),
+      version_manager_(version_manager ? std::move(version_manager)
+                                       : QuicMakeUnique<QuicVersionManager>(
+                                             AllSupportedVersions())),
       create_session_alarm_(QuicWrapUnique(
           alarm_factory_->CreateAlarm(new CreateSessionDelegate(this)))),
       factory_(QuicMakeUnique<QuartcFactory>(
@@ -75,17 +79,23 @@ void QuartcClientEndpoint::Connect(QuartcPacketTransport* packet_transport) {
 
 void QuartcClientEndpoint::OnCreateSessionAlarm() {
   session_ = factory_->CreateQuartcClientSession(
-      config_, serialized_server_config_, packet_transport_);
+      config_, version_manager_->GetSupportedVersions(),
+      serialized_server_config_, packet_transport_);
   delegate_->OnSessionCreated(session_.get());
 }
 
-QuartcServerEndpoint::QuartcServerEndpoint(QuicAlarmFactory* alarm_factory,
-                                           const QuicClock* clock,
-                                           QuartcEndpoint::Delegate* delegate,
-                                           const QuartcSessionConfig& config)
+QuartcServerEndpoint::QuartcServerEndpoint(
+    QuicAlarmFactory* alarm_factory,
+    const QuicClock* clock,
+    QuartcEndpoint::Delegate* delegate,
+    const QuartcSessionConfig& config,
+    std::unique_ptr<QuicVersionManager> version_manager)
     : alarm_factory_(alarm_factory),
       delegate_(delegate),
       config_(config),
+      version_manager_(version_manager ? std::move(version_manager)
+                                       : QuicMakeUnique<QuicVersionManager>(
+                                             AllSupportedVersions())),
       pre_connection_helper_(QuicMakeUnique<QuartcConnectionHelper>(clock)),
       crypto_config_(
           CreateCryptoServerConfig(pre_connection_helper_->GetRandomGenerator(),
@@ -97,8 +107,7 @@ void QuartcServerEndpoint::Connect(QuartcPacketTransport* packet_transport) {
   dispatcher_ = QuicMakeUnique<QuartcDispatcher>(
       QuicMakeUnique<QuicConfig>(CreateQuicConfig(config_)),
       std::move(crypto_config_.config), crypto_config_.serialized_crypto_config,
-      QuicMakeUnique<QuicVersionManager>(AllSupportedVersions()),
-      std::move(pre_connection_helper_),
+      version_manager_.get(), std::move(pre_connection_helper_),
       QuicMakeUnique<QuartcCryptoServerStreamHelper>(),
       QuicMakeUnique<QuartcAlarmFactoryWrapper>(alarm_factory_),
       QuicMakeUnique<QuartcPacketWriter>(packet_transport,

@@ -220,12 +220,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr_startup_rate_reduction,
           false)
 
-// If true, QuicDispatcher will not assume all blocked writers share the same
-// opinion about whether their packet writers are blocked.
-QUIC_FLAG(bool,
-          FLAGS_quic_restart_flag_quic_check_blocked_writer_for_blockage,
-          true)
-
 // If true, disconnected quic connection will not be added to dispatcher's write
 // blocked list.
 QUIC_FLAG(
@@ -237,16 +231,6 @@ QUIC_FLAG(
 // type of the next successfully added frame.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_set_transmission_type_for_next_frame,
-          true)
-// If true, always send connection close/reset for IETF connections.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_always_reset_ietf_connections,
-          true)
-
-// When true, allows the AKD2 and AKD4 connection options to continue activating
-// ack decimation with reordering.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_keep_ack_decimation_reordering,
           true)
 
 // If true, log leaf cert subject name into warning log.
@@ -282,12 +266,6 @@ QUIC_FLAG(
     FLAGS_quic_reloadable_flag_quic_simplify_build_connectivity_probing_packet,
     true)
 
-// If true, for QUIC v44+, long header packet type is determined by encryption
-// level.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_encryption_driven_header_type,
-          true)
-
 // If true, use one loss algorithm per encryption level.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_uber_loss_algorithm, false)
 
@@ -303,3 +281,13 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_faster_interval_add_in_sequence_buffer,
     false)
+
+// If true, GFE time wait list will send termination packets based on current
+// packet's encryption level.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_termination_packets, false)
+
+// If true, stop using AckBundling mode to send ACK, also deprecate ack_queued
+// from QuicConnection.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_deprecate_ack_bundling_mode,
+          false)

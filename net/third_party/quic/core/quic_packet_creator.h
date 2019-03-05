@@ -213,6 +213,9 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // Returns length of source connection ID to send over the wire.
   QuicConnectionIdLength GetSourceConnectionIdLength() const;
 
+  // Sets whether the connection ID should be sent over the wire.
+  void SetConnectionIdIncluded(QuicConnectionIdIncluded connection_id_included);
+
   // Sets the encryption level that will be applied to new packets.
   void set_encryption_level(EncryptionLevel level) {
     packet_.encryption_level = level;
@@ -221,8 +224,6 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // packet number of the last created packet, or 0 if no packets have been
   // created.
   QuicPacketNumber packet_number() const { return packet_.packet_number; }
-
-  void SetConnectionIdLength(QuicConnectionIdLength length);
 
   QuicByteCount max_packet_length() const { return max_packet_length_; }
 
@@ -248,9 +249,6 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
 
   // Sets transmission type of next constructed packets.
   void SetTransmissionType(TransmissionType type);
-
-  // Sets long header type of next constructed packets.
-  void SetLongHeaderType(QuicLongHeaderType type);
 
   // Sets the retry token to be sent over the wire in v99 IETF Initial packets.
   void SetRetryToken(QuicStringPiece retry_token);
@@ -335,8 +333,11 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // function instead.
   QuicPacketNumberLength GetPacketNumberLength() const;
 
-  // Returns long header type of packet to send over the wire.
-  QuicLongHeaderType GetLongHeaderType() const;
+  // Returns whether the destination connection ID is sent over the wire.
+  QuicConnectionIdIncluded GetDestinationConnectionIdIncluded() const;
+
+  // Returns whether the source connection ID is sent over the wire.
+  QuicConnectionIdIncluded GetSourceConnectionIdIncluded() const;
 
   // Returns length of the retry token variable length integer to send over the
   // wire. Is non-zero for v99 IETF Initial packets.
@@ -373,9 +374,8 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // Maximum length including headers and encryption (UDP payload length.)
   QuicByteCount max_packet_length_;
   size_t max_plaintext_size_;
-  // Length of connection_id to send over the wire. connection_id_length_ should
-  // never be read directly, use GetConnectionIdLength() instead.
-  QuicConnectionIdLength connection_id_length_;
+  // Whether the connection_id is sent over the wire.
+  QuicConnectionIdIncluded connection_id_included_;
 
   // Frames to be added to the next SerializedPacket
   QuicFrames queued_frames_;
@@ -388,11 +388,6 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
 
   // Packet used to invoke OnSerializedPacket.
   SerializedPacket packet_;
-
-  // Long header type of next constructed packets.
-  // TODO(fayang): remove this variable when deprecating
-  // quic_encryption_driven_header_type.
-  QuicLongHeaderType long_header_type_;
 
   // Retry token to send over the wire in v99 IETF Initial packets.
   QuicString retry_token_;
@@ -414,9 +409,6 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // Latched value of --quic_set_transmission_type_for_next_frame. Don't use
   // this variable directly, use ShouldSetTransmissionTypeForNextFrame instead.
   bool set_transmission_type_for_next_frame_;
-
-  // Latched value of quic_reloadable_flag_quic_encryption_driven_header_type.
-  const bool encryption_level_driven_long_header_type_;
 };
 
 }  // namespace quic

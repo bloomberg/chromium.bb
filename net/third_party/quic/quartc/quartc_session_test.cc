@@ -16,6 +16,7 @@
 #include "net/third_party/quic/platform/api/quic_test_mem_slice_vector.h"
 #include "net/third_party/quic/quartc/counting_packet_filter.h"
 #include "net/third_party/quic/quartc/quartc_endpoint.h"
+#include "net/third_party/quic/quartc/quartc_fakes.h"
 #include "net/third_party/quic/quartc/quartc_packet_writer.h"
 #include "net/third_party/quic/quartc/simulated_packet_transport.h"
 #include "net/third_party/quic/test_tools/mock_clock.h"
@@ -39,129 +40,11 @@ constexpr QuicTime::Delta kPropagationDelayAndABit =
 
 static QuicByteCount kDefaultMaxPacketSize = 1200;
 
-class FakeQuartcEndpointDelegate : public QuartcEndpoint::Delegate {
- public:
-  explicit FakeQuartcEndpointDelegate(QuartcSession::Delegate* session_delegate)
-      : session_delegate_(session_delegate) {}
-
-  void OnSessionCreated(QuartcSession* session) override {
-    CHECK_EQ(session_, nullptr);
-    CHECK_NE(session, nullptr);
-    session_ = session;
-    session_->SetDelegate(session_delegate_);
-    session_->StartCryptoHandshake();
-  }
-
-  void OnConnectError(QuicErrorCode error,
-                      const QuicString& error_details) override {
-    LOG(FATAL) << "Unexpected error during QuartcEndpoint::Connect(); error="
-               << error << ", error_details=" << error_details;
-  }
-
-  QuartcSession* session() { return session_; }
-
- private:
-  QuartcSession::Delegate* session_delegate_;
-  QuartcSession* session_ = nullptr;
-};
-
-class FakeQuartcSessionDelegate : public QuartcSession::Delegate {
- public:
-  explicit FakeQuartcSessionDelegate(QuartcStream::Delegate* stream_delegate,
-                                     const QuicClock* clock)
-      : stream_delegate_(stream_delegate), clock_(clock) {}
-
-  void OnConnectionWritable() override {
-    LOG(INFO) << "Connection writable!";
-    if (!writable_time_.IsInitialized()) {
-      writable_time_ = clock_->Now();
-    }
-  }
-
-  // Called when peers have established forward-secure encryption
-  void OnCryptoHandshakeComplete() override {
-    LOG(INFO) << "Crypto handshake complete!";
-    crypto_handshake_time_ = clock_->Now();
-  }
-
-  // Called when connection closes locally, or remotely by peer.
-  void OnConnectionClosed(QuicErrorCode error_code,
-                          const QuicString& error_details,
-                          ConnectionCloseSource source) override {
-    connected_ = false;
-  }
-
-  // Called when an incoming QUIC stream is created.
-  void OnIncomingStream(QuartcStream* quartc_stream) override {
-    last_incoming_stream_ = quartc_stream;
-    last_incoming_stream_->SetDelegate(stream_delegate_);
-  }
-
-  void OnMessageReceived(QuicStringPiece message) override {
-    incoming_messages_.emplace_back(message);
-  }
-
-  void OnCongestionControlChange(QuicBandwidth bandwidth_estimate,
-                                 QuicBandwidth pacing_rate,
-                                 QuicTime::Delta latest_rtt) override {}
-
-  QuartcStream* last_incoming_stream() { return last_incoming_stream_; }
-
-  // Returns all received messages.
-  const std::vector<QuicString>& incoming_messages() {
-    return incoming_messages_;
-  }
-
-  bool connected() { return connected_; }
-  QuicTime writable_time() const { return writable_time_; }
-  QuicTime crypto_handshake_time() const { return crypto_handshake_time_; }
-
- private:
-  QuartcStream* last_incoming_stream_;
-  std::vector<QuicString> incoming_messages_;
-  bool connected_ = true;
-  QuartcStream::Delegate* stream_delegate_;
-  QuicTime writable_time_ = QuicTime::Zero();
-  QuicTime crypto_handshake_time_ = QuicTime::Zero();
-  const QuicClock* clock_;
-};
-
-class FakeQuartcStreamDelegate : public QuartcStream::Delegate {
- public:
-  size_t OnReceived(QuartcStream* stream,
-                    iovec* iov,
-                    size_t iov_length,
-                    bool fin) override {
-    size_t bytes_consumed = 0;
-    for (size_t i = 0; i < iov_length; ++i) {
-      received_data_[stream->id()] +=
-          QuicString(static_cast<const char*>(iov[i].iov_base), iov[i].iov_len);
-      bytes_consumed += iov[i].iov_len;
-    }
-    return bytes_consumed;
-  }
-
-  void OnClose(QuartcStream* stream) override {
-    errors_[stream->id()] = stream->stream_error();
-  }
-
-  void OnBufferChanged(QuartcStream* stream) override {}
-
-  bool has_data() { return !received_data_.empty(); }
-  std::map<QuicStreamId, QuicString> data() { return received_data_; }
-
-  QuicRstStreamErrorCode stream_error(QuicStreamId id) { return errors_[id]; }
-
- private:
-  std::map<QuicStreamId, QuicString> received_data_;
-  std::map<QuicStreamId, QuicRstStreamErrorCode> errors_;
-};
-
 class QuartcSessionTest : public QuicTest {
  public:
   ~QuartcSessionTest() override {}
 
-  void Init() {
+  void Init(bool create_client_endpoint = true) {
     client_transport_ =
         QuicMakeUnique<simulator::SimulatedQuartcPacketTransport>(
             &simulator_, "client_transport", "server_transport",
@@ -192,11 +75,12 @@ class QuartcSessionTest : public QuicTest {
 
     // No 0-rtt setup, because server config is empty.
     // CannotCreateDataStreamBeforeHandshake depends on 1-rtt setup.
-    client_endpoint_ = QuicMakeUnique<QuartcClientEndpoint>(
-        simulator_.GetAlarmFactory(), simulator_.GetClock(),
-        client_endpoint_delegate_.get(), quic::QuartcSessionConfig(),
-        /*serialized_server_config=*/"");
-
+    if (create_client_endpoint) {
+      client_endpoint_ = QuicMakeUnique<QuartcClientEndpoint>(
+          simulator_.GetAlarmFactory(), simulator_.GetClock(),
+          client_endpoint_delegate_.get(), quic::QuartcSessionConfig(),
+          /*serialized_server_config=*/"");
+    }
     server_endpoint_ = QuicMakeUnique<QuartcServerEndpoint>(
         simulator_.GetAlarmFactory(), simulator_.GetClock(),
         server_endpoint_delegate_.get(), quic::QuartcSessionConfig());
@@ -620,12 +504,13 @@ TEST_F(QuartcSessionTest, ServerRegistersAsWriteBlocked) {
   TestSendReceiveStreams();
 }
 
-// TODO(psla): re-enable once Simulator::AddActor() DCHECK failure fixed.
-TEST_F(QuartcSessionTest, DISABLED_PreSharedKeyHandshakeIs0RTT) {
+TEST_F(QuartcSessionTest, PreSharedKeyHandshakeIs0RTT) {
   QuartcSessionConfig session_config;
   session_config.pre_shared_key = "foo";
 
-  Init();
+  // Client endpoint is created below. Destructing client endpoint
+  // causes issues with the simulator.
+  Init(/*create_client_endpoint=*/false);
 
   server_endpoint_->Connect(server_transport_.get());
 

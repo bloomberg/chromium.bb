@@ -142,16 +142,6 @@ void QuicCryptoStream::WriteCryptoData(EncryptionLevel level,
                                "Writing too much crypto handshake data");
   }
 
-  // Set long header type based on the encryption level.
-  if (level != ENCRYPTION_FORWARD_SECURE) {
-    QuicStreamOffset fake_offset = level == ENCRYPTION_NONE ? 0 : 1;
-    // Implementations of GetLongHeaderType either don't care at all about the
-    // offset, or only care whether or not it's 0. However, they do care that it
-    // is an absolute offset from the start of unencrypted crypto data, not the
-    // offset at a particular encryption level.
-    QuicLongHeaderType type = GetLongHeaderType(fake_offset);
-    session()->connection()->SetLongHeaderType(type);
-  }
   EncryptionLevel current_level = session()->connection()->encryption_level();
   session()->connection()->SetDefaultEncryptionLevel(level);
   size_t bytes_consumed =

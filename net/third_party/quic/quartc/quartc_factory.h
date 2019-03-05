@@ -58,12 +58,14 @@ class QuartcFactory {
   // Creates a new QuartcSession using the given configuration.
   std::unique_ptr<QuartcSession> CreateQuartcClientSession(
       const QuartcSessionConfig& quartc_session_config,
+      const ParsedQuicVersionVector& supported_versions,
       QuicStringPiece server_crypto_config,
       QuartcPacketTransport* packet_transport);
 
  private:
   std::unique_ptr<QuicConnection> CreateQuicConnection(
       Perspective perspective,
+      const ParsedQuicVersionVector& supported_versions,
       QuartcPacketWriter* packet_writer);
 
   // Used to implement QuicAlarmFactory.  Owned by the user and must outlive

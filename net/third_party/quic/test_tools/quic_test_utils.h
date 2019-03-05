@@ -80,8 +80,8 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
     bool reset_flag,
     uint64_t packet_number,
     const QuicString& data,
-    QuicConnectionIdLength destination_connection_id_length,
-    QuicConnectionIdLength source_connection_id_length,
+    QuicConnectionIdIncluded destination_connection_id_included,
+    QuicConnectionIdIncluded source_connection_id_included,
     QuicPacketNumberLength packet_number_length,
     ParsedQuicVersionVector* versions,
     Perspective perspective);
@@ -97,8 +97,8 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
     bool reset_flag,
     uint64_t packet_number,
     const QuicString& data,
-    QuicConnectionIdLength destination_connection_id_length,
-    QuicConnectionIdLength source_connection_id_length,
+    QuicConnectionIdIncluded destination_connection_id_included,
+    QuicConnectionIdIncluded source_connection_id_included,
     QuicPacketNumberLength packet_number_length,
     ParsedQuicVersionVector* versions);
 
@@ -110,8 +110,8 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
     bool reset_flag,
     uint64_t packet_number,
     const QuicString& data,
-    QuicConnectionIdLength destination_connection_id_length,
-    QuicConnectionIdLength source_connection_id_length,
+    QuicConnectionIdIncluded destination_connection_id_included,
+    QuicConnectionIdIncluded source_connection_id_included,
     QuicPacketNumberLength packet_number_length);
 
 // This form assumes |connection_id_length| == PACKET_8BYTE_CONNECTION_ID,
@@ -143,8 +143,8 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
     bool reset_flag,
     uint64_t packet_number,
     const QuicString& data,
-    QuicConnectionIdLength destination_connection_id_length,
-    QuicConnectionIdLength source_connection_id_length,
+    QuicConnectionIdIncluded destination_connection_id_included,
+    QuicConnectionIdIncluded source_connection_id_included,
     QuicPacketNumberLength packet_number_length,
     ParsedQuicVersionVector* versions,
     Perspective perspective);
@@ -657,7 +657,6 @@ class MockQuicCryptoStream : public QuicCryptoStream {
 
   ~MockQuicCryptoStream() override;
 
-  QuicLongHeaderType GetLongHeaderType(QuicStreamOffset offset) const override;
   bool encryption_established() const override;
   bool handshake_confirmed() const override;
   const QuicCryptoNegotiatedParameters& crypto_negotiated_params()

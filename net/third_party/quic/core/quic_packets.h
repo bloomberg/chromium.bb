@@ -33,6 +33,24 @@ namespace quic {
 class QuicPacket;
 struct QuicPacketHeader;
 
+// Number of connection ID bytes that are actually included over the wire.
+QUIC_EXPORT_PRIVATE QuicConnectionIdLength
+GetIncludedConnectionIdLength(QuicTransportVersion version,
+                              QuicConnectionId connection_id,
+                              QuicConnectionIdIncluded connection_id_included);
+
+// Number of destination connection ID bytes that are actually included over the
+// wire for this particular header.
+QUIC_EXPORT_PRIVATE QuicConnectionIdLength
+GetIncludedDestinationConnectionIdLength(QuicTransportVersion version,
+                                         const QuicPacketHeader& header);
+
+// Number of source connection ID bytes that are actually included over the
+// wire for this particular header.
+QUIC_EXPORT_PRIVATE QuicConnectionIdLength
+GetIncludedSourceConnectionIdLength(QuicTransportVersion version,
+                                    const QuicPacketHeader& header);
+
 // Size in bytes of the data packet header.
 QUIC_EXPORT_PRIVATE size_t GetPacketHeaderSize(QuicTransportVersion version,
                                                const QuicPacketHeader& header);
@@ -76,9 +94,9 @@ struct QUIC_EXPORT_PRIVATE QuicPacketHeader {
   // Universal header. All QuicPacket headers will have a connection_id and
   // public flags.
   QuicConnectionId destination_connection_id;
-  QuicConnectionIdLength destination_connection_id_length;
+  QuicConnectionIdIncluded destination_connection_id_included;
   QuicConnectionId source_connection_id;
-  QuicConnectionIdLength source_connection_id_length;
+  QuicConnectionIdIncluded source_connection_id_included;
   // This is only used for Google QUIC.
   bool reset_flag;
   // For Google QUIC, version flag in packets from the server means version
@@ -183,7 +201,8 @@ class QUIC_EXPORT_PRIVATE QuicPacket : public QuicData {
              QuicVariableLengthIntegerLength retry_token_length_length,
              QuicByteCount retry_token_length,
              QuicVariableLengthIntegerLength length_length);
-  QuicPacket(char* buffer,
+  QuicPacket(QuicTransportVersion version,
+             char* buffer,
              size_t length,
              bool owns_buffer,
              const QuicPacketHeader& header);

@@ -353,22 +353,6 @@ bool QuicCryptoServerHandshaker::ShouldSendExpectCTHeader() const {
   return signed_config_->proof.send_expect_ct_header;
 }
 
-QuicLongHeaderType QuicCryptoServerHandshaker::GetLongHeaderType(
-    QuicStreamOffset /*offset*/) const {
-  if (last_sent_handshake_message_tag() == kSREJ) {
-    if (QuicVersionHasLongHeaderLengths(
-            session()->connection()->transport_version())) {
-      return HANDSHAKE;
-    }
-    // TODO(b/123493765): we should probably not be sending RETRY here.
-    return RETRY;
-  }
-  if (last_sent_handshake_message_tag() == kSHLO) {
-    return ZERO_RTT_PROTECTED;
-  }
-  return HANDSHAKE;
-}
-
 bool QuicCryptoServerHandshaker::GetBase64SHA256ClientChannelID(
     QuicString* output) const {
   if (!encryption_established() ||

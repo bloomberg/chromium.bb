@@ -872,7 +872,6 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   size_t spdy_request_headers_frame_length;
   quic::QuicStreamOffset header_stream_offset = 0;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   AddWrite(ConstructRequestHeadersPacketInner(
       1, GetNthClientInitiatedBidirectionalStreamId(0), kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
@@ -976,7 +975,6 @@ TEST_P(BidirectionalStreamQuicImplTest, LoadTimingTwoRequests) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   quic::QuicStreamOffset offset = 0;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   AddWrite(ConstructRequestHeadersPacketInner(
       1, GetNthClientInitiatedBidirectionalStreamId(0), kFin, DEFAULT_PRIORITY,
       nullptr, &offset));
@@ -1810,7 +1808,6 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterHeaders) {
   size_t spdy_request_headers_frame_length;
   quic::QuicStreamOffset header_stream_offset = 0;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   AddWrite(ConstructRequestHeadersPacketInner(
       1, GetNthClientInitiatedBidirectionalStreamId(0), kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
@@ -1857,7 +1854,6 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterReadData) {
   size_t spdy_request_headers_frame_length;
   quic::QuicStreamOffset header_stream_offset = 0;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   AddWrite(ConstructRequestHeadersPacketInner(
       1, GetNthClientInitiatedBidirectionalStreamId(0), kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
@@ -2332,7 +2328,6 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   AddWrite(ConstructRequestHeadersPacket(1, kFin, DEFAULT_PRIORITY,
                                          &spdy_request_headers_frame_length));
   AddWrite(ConstructClientAckPacket(2, 3, 1, 2));  // Ack the data packet

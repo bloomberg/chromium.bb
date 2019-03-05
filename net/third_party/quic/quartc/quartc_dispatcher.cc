@@ -14,7 +14,7 @@ QuartcDispatcher::QuartcDispatcher(
     std::unique_ptr<QuicConfig> config,
     std::unique_ptr<QuicCryptoServerConfig> crypto_config,
     QuicStringPiece crypto_config_serialized,
-    std::unique_ptr<QuicVersionManager> version_manager,
+    QuicVersionManager* version_manager,
     std::unique_ptr<QuicConnectionHelperInterface> helper,
     std::unique_ptr<QuicCryptoServerStream::Helper> session_helper,
     std::unique_ptr<QuicAlarmFactory> alarm_factory,
@@ -22,14 +22,13 @@ QuartcDispatcher::QuartcDispatcher(
     Delegate* delegate)
     : QuicDispatcher(config.get(),
                      crypto_config.get(),
-                     version_manager.get(),
+                     version_manager,
                      std::move(helper),
                      std::move(session_helper),
                      std::move(alarm_factory)),
       owned_quic_config_(std::move(config)),
       owned_crypto_config_(std::move(crypto_config)),
       crypto_config_(crypto_config_serialized),
-      owned_version_manager_(std::move(version_manager)),
       delegate_(delegate),
       packet_writer_(packet_writer.get()) {
   // QuicDispatcher takes ownership of the writer.

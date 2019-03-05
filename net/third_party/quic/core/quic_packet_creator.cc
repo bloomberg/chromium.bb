@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "net/third_party/quic/core/crypto/crypto_protocol.h"
+#include "net/third_party/quic/core/quic_connection_id.h"
 #include "net/third_party/quic/core/quic_data_writer.h"
 #include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/core/quic_utils.h"
@@ -70,7 +71,7 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
       send_version_in_packet_(framer->perspective() == Perspective::IS_CLIENT),
       have_diversification_nonce_(false),
       max_packet_length_(0),
-      connection_id_length_(PACKET_8BYTE_CONNECTION_ID),
+      connection_id_included_(CONNECTION_ID_PRESENT),
       packet_size_(0),
       connection_id_(connection_id),
       packet_(QuicPacketNumber(),
@@ -79,14 +80,11 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
               0,
               false,
               false),
-      long_header_type_(HANDSHAKE),
       pending_padding_bytes_(0),
       needs_full_padding_(false),
       can_set_transmission_type_(false),
       set_transmission_type_for_next_frame_(
-          GetQuicReloadableFlag(quic_set_transmission_type_for_next_frame)),
-      encryption_level_driven_long_header_type_(
-          GetQuicReloadableFlag(quic_encryption_driven_header_type)) {
+          GetQuicReloadableFlag(quic_set_transmission_type_for_next_frame)) {
   SetMaxPacketLength(kDefaultMaxPacketSize);
 }
 
@@ -737,24 +735,38 @@ SerializedPacket QuicPacketCreator::NoPacket() {
                           nullptr, 0, false, false);
 }
 
-QuicConnectionIdLength QuicPacketCreator::GetDestinationConnectionIdLength()
+QuicConnectionIdIncluded QuicPacketCreator::GetDestinationConnectionIdIncluded()
     const {
   if (framer_->transport_version() > QUIC_VERSION_43) {
     // Packets sent by client always include destination connection ID, and
     // those sent by the server do not include destination connection ID.
     return framer_->perspective() == Perspective::IS_CLIENT
-               ? PACKET_8BYTE_CONNECTION_ID
-               : PACKET_0BYTE_CONNECTION_ID;
+               ? CONNECTION_ID_PRESENT
+               : CONNECTION_ID_ABSENT;
   }
-  return connection_id_length_;
+  return connection_id_included_;
+}
+
+QuicConnectionIdIncluded QuicPacketCreator::GetSourceConnectionIdIncluded()
+    const {
+  // Long header packets sent by server include source connection ID.
+  if (HasIetfLongHeader() && framer_->perspective() == Perspective::IS_SERVER) {
+    return CONNECTION_ID_PRESENT;
+  }
+  return CONNECTION_ID_ABSENT;
+}
+
+QuicConnectionIdLength QuicPacketCreator::GetDestinationConnectionIdLength()
+    const {
+  return GetDestinationConnectionIdIncluded() == CONNECTION_ID_PRESENT
+             ? PACKET_8BYTE_CONNECTION_ID
+             : PACKET_0BYTE_CONNECTION_ID;
 }
 
 QuicConnectionIdLength QuicPacketCreator::GetSourceConnectionIdLength() const {
-  // Long header packets sent by server include source connection ID.
-  if (HasIetfLongHeader() && framer_->perspective() == Perspective::IS_SERVER) {
-    return PACKET_8BYTE_CONNECTION_ID;
-  }
-  return PACKET_0BYTE_CONNECTION_ID;
+  return GetSourceConnectionIdIncluded() == CONNECTION_ID_PRESENT
+             ? PACKET_8BYTE_CONNECTION_ID
+             : PACKET_0BYTE_CONNECTION_ID;
 }
 
 QuicPacketNumberLength QuicPacketCreator::GetPacketNumberLength() const {
@@ -764,16 +776,11 @@ QuicPacketNumberLength QuicPacketCreator::GetPacketNumberLength() const {
   return packet_.packet_number_length;
 }
 
-QuicLongHeaderType QuicPacketCreator::GetLongHeaderType() const {
-  return (encryption_level_driven_long_header_type_
-              ? EncryptionlevelToLongHeaderType(packet_.encryption_level)
-              : long_header_type_);
-}
-
 QuicVariableLengthIntegerLength QuicPacketCreator::GetRetryTokenLengthLength()
     const {
   if (QuicVersionHasLongHeaderLengths(framer_->transport_version()) &&
-      HasIetfLongHeader() && GetLongHeaderType() == INITIAL) {
+      HasIetfLongHeader() &&
+      EncryptionlevelToLongHeaderType(packet_.encryption_level) == INITIAL) {
     return QuicDataWriter::GetVarInt62Len(GetRetryToken().length());
   }
   return VARIABLE_LENGTH_INTEGER_LENGTH_0;
@@ -790,7 +797,8 @@ void QuicPacketCreator::SetRetryToken(QuicStringPiece retry_token) {
 QuicVariableLengthIntegerLength QuicPacketCreator::GetLengthLength() const {
   if (QuicVersionHasLongHeaderLengths(framer_->transport_version()) &&
       HasIetfLongHeader()) {
-    QuicLongHeaderType long_header_type = GetLongHeaderType();
+    QuicLongHeaderType long_header_type =
+        EncryptionlevelToLongHeaderType(packet_.encryption_level);
     if (long_header_type == INITIAL || long_header_type == ZERO_RTT_PROTECTED ||
         long_header_type == HANDSHAKE) {
       return VARIABLE_LENGTH_INTEGER_LENGTH_2;
@@ -801,9 +809,10 @@ QuicVariableLengthIntegerLength QuicPacketCreator::GetLengthLength() const {
 
 void QuicPacketCreator::FillPacketHeader(QuicPacketHeader* header) {
   header->destination_connection_id = connection_id_;
-  header->destination_connection_id_length = GetDestinationConnectionIdLength();
+  header->destination_connection_id_included =
+      GetDestinationConnectionIdIncluded();
   header->source_connection_id = connection_id_;
-  header->source_connection_id_length = GetSourceConnectionIdLength();
+  header->source_connection_id_included = GetSourceConnectionIdIncluded();
   header->reset_flag = false;
   header->version_flag = IncludeVersionInHeader();
   if (IncludeNonceInPublicHeader()) {
@@ -826,7 +835,8 @@ void QuicPacketCreator::FillPacketHeader(QuicPacketHeader* header) {
   if (!HasIetfLongHeader()) {
     return;
   }
-  header->long_packet_type = GetLongHeaderType();
+  header->long_packet_type =
+      EncryptionlevelToLongHeaderType(packet_.encryption_level);
 }
 
 bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
@@ -951,10 +961,13 @@ bool QuicPacketCreator::StreamFrameStartsWithChlo(
   return framer_->StartsWithChlo(frame.stream_id, frame.offset);
 }
 
-void QuicPacketCreator::SetConnectionIdLength(QuicConnectionIdLength length) {
+void QuicPacketCreator::SetConnectionIdIncluded(
+    QuicConnectionIdIncluded connection_id_included) {
+  DCHECK(connection_id_included == CONNECTION_ID_PRESENT ||
+         connection_id_included == CONNECTION_ID_ABSENT);
   DCHECK(framer_->perspective() == Perspective::IS_SERVER ||
-         length != PACKET_0BYTE_CONNECTION_ID);
-  connection_id_length_ = length;
+         connection_id_included != CONNECTION_ID_ABSENT);
+  connection_id_included_ = connection_id_included;
 }
 
 void QuicPacketCreator::SetTransmissionType(TransmissionType type) {
@@ -967,10 +980,6 @@ void QuicPacketCreator::SetTransmissionType(TransmissionType type) {
 
     packet_.transmission_type = type;
   }
-}
-
-void QuicPacketCreator::SetLongHeaderType(QuicLongHeaderType type) {
-  long_header_type_ = type;
 }
 
 QuicPacketLength QuicPacketCreator::GetLargestMessagePayload() const {

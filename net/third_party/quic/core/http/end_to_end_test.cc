@@ -21,6 +21,7 @@
 #include "net/third_party/quic/core/quic_session.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_epoll.h"
+#include "net/third_party/quic/platform/api/quic_error_code_wrappers.h"
 #include "net/third_party/quic/platform/api/quic_expect_bug.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
@@ -1686,8 +1687,7 @@ TEST_P(EndToEndTest, 0ByteConnectionId) {
       client_->client()->client_session()->connection();
   QuicPacketHeader* header =
       QuicConnectionPeer::GetLastHeader(client_connection);
-  EXPECT_EQ(PACKET_0BYTE_CONNECTION_ID,
-            header->destination_connection_id_length);
+  EXPECT_EQ(CONNECTION_ID_ABSENT, header->destination_connection_id_included);
 }
 
 TEST_P(EndToEndTestWithTls, 8ByteConnectionId) {
@@ -1701,11 +1701,10 @@ TEST_P(EndToEndTestWithTls, 8ByteConnectionId) {
   QuicPacketHeader* header =
       QuicConnectionPeer::GetLastHeader(client_connection);
   if (client_connection->transport_version() > QUIC_VERSION_43) {
-    EXPECT_EQ(PACKET_0BYTE_CONNECTION_ID,
-              header->destination_connection_id_length);
+    EXPECT_EQ(CONNECTION_ID_ABSENT, header->destination_connection_id_included);
   } else {
-    EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID,
-              header->destination_connection_id_length);
+    EXPECT_EQ(CONNECTION_ID_PRESENT,
+              header->destination_connection_id_included);
   }
 }
 
@@ -1721,11 +1720,10 @@ TEST_P(EndToEndTestWithTls, 15ByteConnectionId) {
   QuicPacketHeader* header =
       QuicConnectionPeer::GetLastHeader(client_connection);
   if (client_connection->transport_version() > QUIC_VERSION_43) {
-    EXPECT_EQ(PACKET_0BYTE_CONNECTION_ID,
-              header->destination_connection_id_length);
+    EXPECT_EQ(CONNECTION_ID_ABSENT, header->destination_connection_id_included);
   } else {
-    EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID,
-              header->destination_connection_id_length);
+    EXPECT_EQ(CONNECTION_ID_PRESENT,
+              header->destination_connection_id_included);
   }
 }
 
@@ -2464,8 +2462,7 @@ TEST_P(EndToEndTestWithTls, BadEncryptedData) {
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
       client_->client()->client_session()->connection()->connection_id(),
       EmptyQuicConnectionId(), false, false, 1, "At least 20 characters.",
-      PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID,
-      PACKET_4BYTE_PACKET_NUMBER));
+      CONNECTION_ID_PRESENT, CONNECTION_ID_ABSENT, PACKET_4BYTE_PACKET_NUMBER));
   // Damage the encrypted data.
   QuicString damaged_packet(packet->data(), packet->length());
   damaged_packet[30] ^= 0x01;
@@ -3698,6 +3695,123 @@ TEST_P(EndToEndTest, SimpleStopSendingRstStreamTest) {
 
   // Stream should be gone.
   ASSERT_EQ(nullptr, client_->latest_created_stream());
+}
+
+class BadShloPacketWriter : public QuicPacketWriterWrapper {
+ public:
+  BadShloPacketWriter() : error_returned_(false) {}
+  ~BadShloPacketWriter() override {}
+
+  WriteResult WritePacket(const char* buffer,
+                          size_t buf_len,
+                          const QuicIpAddress& self_address,
+                          const QuicSocketAddress& peer_address,
+                          quic::PerPacketOptions* options) override {
+    const WriteResult result = QuicPacketWriterWrapper::WritePacket(
+        buffer, buf_len, self_address, peer_address, options);
+    const uint8_t type_byte = buffer[0];
+    if (!error_returned_ && (type_byte & FLAGS_LONG_HEADER) &&
+        (((type_byte & 0x30) >> 4) == 1 || (type_byte & 0x7F) == 0x7C)) {
+      QUIC_DVLOG(1) << "Return write error for ZERO_RTT_PACKET";
+      error_returned_ = true;
+      return WriteResult(WRITE_STATUS_ERROR, QUIC_EMSGSIZE);
+    }
+    return result;
+  }
+
+ private:
+  bool error_returned_;
+};
+
+TEST_P(EndToEndTest, ZeroRttProtectedConnectionClose) {
+  // This test ensures ZERO_RTT_PROTECTED connection close could close a client
+  // which has switched to forward secure.
+  connect_to_server_on_initialize_ =
+      negotiated_version_.transport_version <= QUIC_VERSION_43;
+  ASSERT_TRUE(Initialize());
+  if (negotiated_version_.transport_version <= QUIC_VERSION_43) {
+    // Only runs for IETF QUIC header.
+    return;
+  }
+  server_thread_->Pause();
+  QuicDispatcher* dispatcher =
+      QuicServerPeer::GetDispatcher(server_thread_->server());
+  ASSERT_EQ(0u, dispatcher->session_map().size());
+  // Note: this writer will only used by the server connection, not the time
+  // wait list.
+  QuicDispatcherPeer::UseWriter(
+      dispatcher,
+      // This causes the first server sent ZERO_RTT_PROTECTED packet (i.e.,
+      // SHLO) to be sent, but WRITE_ERROR is returned. Such that a
+      // ZERO_RTT_PROTECTED connection close would be sent to a client with
+      // encryption level FORWARD_SECURE.
+      new BadShloPacketWriter());
+  server_thread_->Resume();
+
+  client_.reset(CreateQuicClient(client_writer_));
+  EXPECT_EQ("", client_->SendSynchronousRequest("/foo"));
+  // Verify ZERO_RTT_PROTECTED connection close is successfully processed by
+  // client which switches to FORWARD_SECURE.
+  EXPECT_EQ(QUIC_PACKET_WRITE_ERROR, client_->connection_error());
+}
+
+class BadShloPacketWriter2 : public QuicPacketWriterWrapper {
+ public:
+  BadShloPacketWriter2() : error_returned_(false) {}
+  ~BadShloPacketWriter2() override {}
+
+  WriteResult WritePacket(const char* buffer,
+                          size_t buf_len,
+                          const QuicIpAddress& self_address,
+                          const QuicSocketAddress& peer_address,
+                          quic::PerPacketOptions* options) override {
+    const uint8_t type_byte = buffer[0];
+    if ((type_byte & FLAGS_LONG_HEADER) &&
+        (((type_byte & 0x30) >> 4) == 1 || (type_byte & 0x7F) == 0x7C)) {
+      QUIC_DVLOG(1) << "Dropping ZERO_RTT_PACKET packet";
+      return WriteResult(WRITE_STATUS_OK, buf_len);
+    }
+    if (!error_returned_ && !(type_byte & FLAGS_LONG_HEADER)) {
+      QUIC_DVLOG(1) << "Return write error for short header packet";
+      error_returned_ = true;
+      return WriteResult(WRITE_STATUS_ERROR, QUIC_EMSGSIZE);
+    }
+    return QuicPacketWriterWrapper::WritePacket(buffer, buf_len, self_address,
+                                                peer_address, options);
+  }
+
+ private:
+  bool error_returned_;
+};
+
+TEST_P(EndToEndTest, ForwardSecureConnectionClose) {
+  // This test ensures ZERO_RTT_PROTECTED connection close is sent to a client
+  // which has ZERO_RTT_PROTECTED encryption level.
+  SetQuicReloadableFlag(quic_fix_termination_packets, true);
+  connect_to_server_on_initialize_ =
+      negotiated_version_.transport_version <= QUIC_VERSION_43;
+  ASSERT_TRUE(Initialize());
+  if (negotiated_version_.transport_version <= QUIC_VERSION_43) {
+    // Only runs for IETF QUIC header.
+    return;
+  }
+  server_thread_->Pause();
+  QuicDispatcher* dispatcher =
+      QuicServerPeer::GetDispatcher(server_thread_->server());
+  ASSERT_EQ(0u, dispatcher->session_map().size());
+  // Note: this writer will only used by the server connection, not the time
+  // wait list.
+  QuicDispatcherPeer::UseWriter(
+      dispatcher,
+      // This causes the all server sent ZERO_RTT_PROTECTED packets to be
+      // dropped, and first short header packet causes write error.
+      new BadShloPacketWriter2());
+  server_thread_->Resume();
+  client_.reset(CreateQuicClient(client_writer_));
+  EXPECT_EQ("", client_->SendSynchronousRequest("/foo"));
+  // Verify ZERO_RTT_PROTECTED connection close is successfully processed by
+  // client.
+  EXPECT_EQ(QUIC_PACKET_WRITE_ERROR, client_->connection_error());
 }
 
 }  // namespace

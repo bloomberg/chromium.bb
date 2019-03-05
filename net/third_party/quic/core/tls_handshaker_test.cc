@@ -140,10 +140,6 @@ class TestQuicCryptoStream : public QuicCryptoStream {
 
   virtual TlsHandshaker* handshaker() const = 0;
 
-  QuicLongHeaderType GetLongHeaderType(QuicStreamOffset offset) const override {
-    return handshaker()->GetLongHeaderType(offset);
-  }
-
   bool encryption_established() const override {
     return handshaker()->encryption_established();
   }

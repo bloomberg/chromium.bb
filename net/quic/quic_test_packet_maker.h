@@ -369,8 +369,6 @@ class QuicTestPacketMaker {
 
   void SetEncryptionLevel(quic::EncryptionLevel level);
 
-  void SetLongHeaderType(quic::QuicLongHeaderType type);
-
   spdy::SpdyHeaderBlock GetRequestHeaders(const std::string& method,
                                           const std::string& scheme,
                                           const std::string& path);
@@ -407,9 +405,8 @@ class QuicTestPacketMaker {
 
   quic::QuicPacketNumberLength GetPacketNumberLength() const;
 
-  quic::QuicConnectionIdLength GetDestinationConnectionIdLength() const;
-
-  quic::QuicConnectionIdLength GetSourceConnectionIdLength() const;
+  quic::QuicConnectionIdIncluded HasDestinationConnectionId() const;
+  quic::QuicConnectionIdIncluded HasSourceConnectionId() const;
 
   quic::QuicTransportVersion version_;
   quic::QuicConnectionId connection_id_;

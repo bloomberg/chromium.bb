@@ -67,10 +67,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoStream : public QuicStream {
   // Writes |data| to the QuicStream at level |level|.
   virtual void WriteCryptoData(EncryptionLevel level, QuicStringPiece data);
 
-  // Returns appropriate long header type when sending data starts at |offset|.
-  virtual QuicLongHeaderType GetLongHeaderType(
-      QuicStreamOffset offset) const = 0;
-
   // Returns true once an encrypter has been set for the connection.
   virtual bool encryption_established() const = 0;
 

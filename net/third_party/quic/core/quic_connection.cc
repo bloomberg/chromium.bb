@@ -81,6 +81,10 @@ class AckAlarmDelegate : public QuicAlarm::Delegate {
     DCHECK(connection_->ack_frame_updated());
     QuicConnection::ScopedPacketFlusher flusher(connection_,
                                                 QuicConnection::SEND_ACK);
+    if (connection_->packet_generator().deprecate_ack_bundling_mode()) {
+      DCHECK(!connection_->GetUpdatedAckFrame().ack_frame->packets.Empty());
+      connection_->SendAck();
+    }
   }
 
  private:
@@ -332,9 +336,15 @@ QuicConnection::QuicConnection(
       processing_ack_frame_(false),
       supports_release_time_(false),
       release_time_into_future_(QuicTime::Delta::Zero()),
-      no_version_negotiation_(supported_versions.size() == 1) {
+      no_version_negotiation_(supported_versions.size() == 1),
+      fix_termination_packets_(
+          GetQuicReloadableFlag(quic_fix_termination_packets)),
+      send_ack_when_on_can_write_(false) {
   if (ack_mode_ == ACK_DECIMATION) {
     QUIC_RELOADABLE_FLAG_COUNT(quic_enable_ack_decimation);
+  }
+  if (packet_generator_.deprecate_ack_bundling_mode()) {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_deprecate_ack_bundling_mode);
   }
   QUIC_DLOG(INFO) << ENDPOINT
                   << "Created connection with connection_id: " << connection_id
@@ -424,24 +434,14 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   if (config.HasClientSentConnectionOption(kACKD, perspective_)) {
     ack_mode_ = ACK_DECIMATION;
   }
-  if ((!GetQuicReloadableFlag(quic_enable_ack_decimation) ||
-       GetQuicReloadableFlag(quic_keep_ack_decimation_reordering)) &&
-      config.HasClientSentConnectionOption(kAKD2, perspective_)) {
-    if (GetQuicReloadableFlag(quic_keep_ack_decimation_reordering)) {
-      QUIC_RELOADABLE_FLAG_COUNT_N(quic_keep_ack_decimation_reordering, 1, 2);
-    }
+  if (config.HasClientSentConnectionOption(kAKD2, perspective_)) {
     ack_mode_ = ACK_DECIMATION_WITH_REORDERING;
   }
   if (config.HasClientSentConnectionOption(kAKD3, perspective_)) {
     ack_mode_ = ACK_DECIMATION;
     ack_decimation_delay_ = kShortAckDecimationDelay;
   }
-  if ((!GetQuicReloadableFlag(quic_enable_ack_decimation) ||
-       GetQuicReloadableFlag(quic_keep_ack_decimation_reordering)) &&
-      config.HasClientSentConnectionOption(kAKD4, perspective_)) {
-    if (GetQuicReloadableFlag(quic_keep_ack_decimation_reordering)) {
-      QUIC_RELOADABLE_FLAG_COUNT_N(quic_keep_ack_decimation_reordering, 2, 2);
-    }
+  if (config.HasClientSentConnectionOption(kAKD4, perspective_)) {
     ack_mode_ = ACK_DECIMATION_WITH_REORDERING;
     ack_decimation_delay_ = kShortAckDecimationDelay;
   }
@@ -1463,7 +1463,11 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
         sent_packet_manager_.unacked_packets().largest_sent_largest_acked();
     if (largest_sent_largest_acked.IsInitialized() &&
         last_header_.packet_number < largest_sent_largest_acked) {
-      ack_queued_ = true;
+      if (packet_generator_.deprecate_ack_bundling_mode()) {
+        MaybeSetAckAlarmTo(clock_->ApproximateNow());
+      } else {
+        ack_queued_ = true;
+      }
     }
   }
 
@@ -1477,7 +1481,11 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
       if (!unlimited_ack_decimation_ &&
           num_retransmittable_packets_received_since_last_ack_sent_ >=
               kMaxRetransmittablePacketsBeforeAck) {
-        ack_queued_ = true;
+        if (packet_generator_.deprecate_ack_bundling_mode()) {
+          MaybeSetAckAlarmTo(clock_->ApproximateNow());
+        } else {
+          ack_queued_ = true;
+        }
       } else if (ShouldSetAckAlarm()) {
         // Wait for the minimum of the ack decimation delay or the delayed ack
         // time before sending an ack.
@@ -1500,7 +1508,11 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
       // Ack with a timer or every 2 packets by default.
       if (num_retransmittable_packets_received_since_last_ack_sent_ >=
           ack_frequency_before_ack_decimation_) {
-        ack_queued_ = true;
+        if (packet_generator_.deprecate_ack_bundling_mode()) {
+          MaybeSetAckAlarmTo(clock_->ApproximateNow());
+        } else {
+          ack_queued_ = true;
+        }
       } else if (ShouldSetAckAlarm()) {
         const QuicTime approximate_now = clock_->ApproximateNow();
         if (fast_ack_after_quiescence_ &&
@@ -1521,8 +1533,6 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
     // If there are new missing packets to report, send an ack immediately.
     if (received_packet_manager_.HasNewMissingPackets()) {
       if (ack_mode_ == ACK_DECIMATION_WITH_REORDERING) {
-        DCHECK(!GetQuicReloadableFlag(quic_enable_ack_decimation) ||
-               GetQuicReloadableFlag(quic_keep_ack_decimation_reordering));
         // Wait the minimum of an eighth min_rtt and the existing ack time.
         QuicTime ack_time =
             clock_->ApproximateNow() +
@@ -1531,7 +1541,11 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
           ack_alarm_->Update(ack_time, QuicTime::Delta::Zero());
         }
       } else {
-        ack_queued_ = true;
+        if (packet_generator_.deprecate_ack_bundling_mode()) {
+          MaybeSetAckAlarmTo(clock_->ApproximateNow());
+        } else {
+          ack_queued_ = true;
+        }
       }
     }
 
@@ -1854,10 +1868,7 @@ void QuicConnection::ProcessUdpPacket(const QuicSocketAddress& self_address,
 }
 
 void QuicConnection::OnBlockedWriterCanWrite() {
-  if (GetQuicRestartFlag(quic_check_blocked_writer_for_blockage)) {
-    QUIC_RESTART_FLAG_COUNT_N(quic_check_blocked_writer_for_blockage, 3, 6);
-    writer_->SetWritable();
-  }
+  writer_->SetWritable();
   OnCanWrite();
 }
 
@@ -1868,6 +1879,13 @@ void QuicConnection::OnCanWrite() {
   ScopedPacketFlusher flusher(this, NO_ACK);
 
   WriteQueuedPackets();
+  if (send_ack_when_on_can_write_) {
+    // Send an ACK now because either 1) we were write blocked when we last
+    // tried to send an ACK, or 2) both ack alarm and send alarm were set to go
+    // off together.
+    DCHECK(packet_generator_.deprecate_ack_bundling_mode());
+    SendAck();
+  }
   if (!session_decides_what_to_write()) {
     WritePendingRetransmissions();
   }
@@ -2139,6 +2157,25 @@ bool QuicConnection::ShouldGeneratePacket(
   return CanWrite(retransmittable);
 }
 
+const QuicFrames QuicConnection::MaybeBundleAckOpportunistically() {
+  DCHECK(packet_generator_.deprecate_ack_bundling_mode());
+  QuicFrames frames;
+  if (!ack_alarm_->IsSet() && stop_waiting_count_ <= 1) {
+    // No need to send an ACK.
+    return frames;
+  }
+  ResetAckStates();
+
+  QUIC_DVLOG(1) << ENDPOINT << "Bundle an ACK opportunistically";
+  frames.push_back(GetUpdatedAckFrame());
+  if (!no_stop_waiting_frames_) {
+    QuicStopWaitingFrame stop_waiting;
+    PopulateStopWaitingFrame(&stop_waiting);
+    frames.push_back(QuicFrame(stop_waiting));
+  }
+  return frames;
+}
+
 bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
   if (!connected_) {
     return false;
@@ -2367,9 +2404,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
 }
 
 void QuicConnection::FlushPackets() {
-  if (GetQuicRestartFlag(quic_check_blocked_writer_for_blockage) &&
-      !connected_) {
-    QUIC_RESTART_FLAG_COUNT_N(quic_check_blocked_writer_for_blockage, 5, 6);
+  if (!connected_) {
     return;
   }
 
@@ -2561,13 +2596,21 @@ void QuicConnection::OnPingTimeout() {
 }
 
 void QuicConnection::SendAck() {
-  ack_alarm_->Cancel();
-  ack_queued_ = false;
-  stop_waiting_count_ = 0;
-  num_retransmittable_packets_received_since_last_ack_sent_ = 0;
-  num_packets_received_since_last_ack_sent_ = 0;
+  ResetAckStates();
 
-  packet_generator_.SetShouldSendAck(!no_stop_waiting_frames_);
+  if (packet_generator_.deprecate_ack_bundling_mode()) {
+    QUIC_DVLOG(1) << ENDPOINT << "Sending an ACK proactively";
+    QuicFrames frames;
+    frames.push_back(GetUpdatedAckFrame());
+    if (!no_stop_waiting_frames_) {
+      QuicStopWaitingFrame stop_waiting;
+      PopulateStopWaitingFrame(&stop_waiting);
+      frames.push_back(QuicFrame(stop_waiting));
+    }
+    send_ack_when_on_can_write_ = !packet_generator_.FlushAckFrame(frames);
+  } else {
+    packet_generator_.SetShouldSendAck(!no_stop_waiting_frames_);
+  }
   if (consecutive_num_packets_with_no_retransmittable_frames_ <
       max_consecutive_num_packets_with_no_retransmittable_frames_) {
     return;
@@ -2795,8 +2838,16 @@ void QuicConnection::SendConnectionClosePacket(QuicErrorCode error,
                                                const QuicString& details,
                                                AckBundling ack_mode) {
   QUIC_DLOG(INFO) << ENDPOINT << "Sending connection close packet.";
+  if (fix_termination_packets_) {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_fix_termination_packets);
+    SetDefaultEncryptionLevel(GetConnectionCloseEncryptionLevel());
+  }
   ClearQueuedPackets();
   ScopedPacketFlusher flusher(this, ack_mode);
+  if (packet_generator_.deprecate_ack_bundling_mode() && ack_mode == SEND_ACK &&
+      !GetUpdatedAckFrame().ack_frame->packets.Empty()) {
+    SendAck();
+  }
   QuicConnectionCloseFrame* frame = new QuicConnectionCloseFrame();
   frame->error_code = error;
   frame->error_details = details;
@@ -2814,10 +2865,7 @@ void QuicConnection::TearDownLocalConnectionState(
   }
 
   // If we are using a batch writer, flush packets queued in it, if any.
-  if (GetQuicRestartFlag(quic_check_blocked_writer_for_blockage)) {
-    QUIC_RESTART_FLAG_COUNT_N(quic_check_blocked_writer_for_blockage, 6, 6);
-    FlushPackets();
-  }
+  FlushPackets();
   connected_ = false;
   DCHECK(visitor_ != nullptr);
   visitor_->OnConnectionClosed(error, error_details, source);
@@ -3028,6 +3076,13 @@ void QuicConnection::MaybeSetMtuAlarm(QuicPacketNumber sent_packet_number) {
   }
 }
 
+void QuicConnection::MaybeSetAckAlarmTo(QuicTime time) {
+  DCHECK(packet_generator_.deprecate_ack_bundling_mode());
+  if (!ack_alarm_->IsSet() || ack_alarm_->deadline() > time) {
+    ack_alarm_->Update(time, QuicTime::Delta::Zero());
+  }
+}
+
 QuicConnection::ScopedPacketFlusher::ScopedPacketFlusher(
     QuicConnection* connection,
     AckBundling ack_mode)
@@ -3041,6 +3096,10 @@ QuicConnection::ScopedPacketFlusher::ScopedPacketFlusher(
     flush_and_set_pending_retransmission_alarm_on_delete_ = true;
     connection->packet_generator_.AttachPacketFlusher();
   }
+  if (connection_->packet_generator_.deprecate_ack_bundling_mode()) {
+    return;
+  }
+
   // If caller wants us to include an ack, check the delayed-ack timer to see if
   // there's ack info to be sent.
   if (ShouldSendAck(ack_mode)) {
@@ -3053,6 +3112,7 @@ QuicConnection::ScopedPacketFlusher::ScopedPacketFlusher(
 
 bool QuicConnection::ScopedPacketFlusher::ShouldSendAck(
     AckBundling ack_mode) const {
+  DCHECK(!connection_->packet_generator_.deprecate_ack_bundling_mode());
   // If the ack alarm is set, make sure the ack has been updated.
   DCHECK(!connection_->ack_alarm_->IsSet() || connection_->ack_frame_updated())
       << "ack_mode:" << ack_mode;
@@ -3078,6 +3138,23 @@ QuicConnection::ScopedPacketFlusher::~ScopedPacketFlusher() {
   }
 
   if (flush_and_set_pending_retransmission_alarm_on_delete_) {
+    if (connection_->packet_generator_.deprecate_ack_bundling_mode() &&
+        connection_->ack_alarm_->IsSet() &&
+        connection_->ack_alarm_->deadline() <=
+            connection_->clock_->ApproximateNow()) {
+      // An ACK needs to be sent right now. This ACK did not get bundled
+      // because either there was no data to write or packets were marked as
+      // received after frames were queued in the generator.
+      if (connection_->send_alarm_->IsSet() &&
+          connection_->send_alarm_->deadline() <=
+              connection_->clock_->ApproximateNow()) {
+        // If send alarm will go off soon, let send alarm send the ACK.
+        connection_->ack_alarm_->Cancel();
+        connection_->send_ack_when_on_can_write_ = true;
+      } else {
+        connection_->SendAck();
+      }
+    }
     connection_->packet_generator_.Flush();
     connection_->FlushPackets();
     if (connection_->session_decides_what_to_write()) {
@@ -3559,10 +3636,6 @@ void QuicConnection::SetTransmissionType(TransmissionType type) {
   packet_generator_.SetTransmissionType(type);
 }
 
-void QuicConnection::SetLongHeaderType(QuicLongHeaderType type) {
-  packet_generator_.SetLongHeaderType(type);
-}
-
 bool QuicConnection::session_decides_what_to_write() const {
   return sent_packet_manager_.session_decides_what_to_write();
 }
@@ -3577,6 +3650,14 @@ void QuicConnection::UpdateReleaseTimeIntoFuture() {
               GetQuicFlag(FLAGS_quic_max_pace_time_into_future_ms)),
           sent_packet_manager_.GetRttStats()->SmoothedOrInitialRtt() *
               GetQuicFlag(FLAGS_quic_pace_time_into_future_srtt_fraction)));
+}
+
+void QuicConnection::ResetAckStates() {
+  ack_alarm_->Cancel();
+  ack_queued_ = false;
+  stop_waiting_count_ = 0;
+  num_retransmittable_packets_received_since_last_ack_sent_ = 0;
+  num_packets_received_since_last_ack_sent_ = 0;
 }
 
 MessageStatus QuicConnection::SendMessage(QuicMessageId message_id,
@@ -3615,6 +3696,29 @@ bool QuicConnection::ShouldSetAckAlarm() const {
     return false;
   }
   return true;
+}
+
+EncryptionLevel QuicConnection::GetConnectionCloseEncryptionLevel() const {
+  DCHECK(fix_termination_packets_);
+  if (perspective_ == Perspective::IS_CLIENT) {
+    return encryption_level_;
+  }
+  if (sent_packet_manager_.handshake_confirmed()) {
+    // A forward secure packet has been received.
+    QUIC_BUG_IF(encryption_level_ != ENCRYPTION_FORWARD_SECURE);
+    return ENCRYPTION_FORWARD_SECURE;
+  }
+  if (framer_.HasEncrypterOfEncryptionLevel(ENCRYPTION_ZERO_RTT)) {
+    if (encryption_level_ != ENCRYPTION_ZERO_RTT) {
+      if (transport_version() > QUIC_VERSION_43) {
+        QUIC_CODE_COUNT(quic_wrong_encryption_level_connection_close_ietf);
+      } else {
+        QUIC_CODE_COUNT(quic_wrong_encryption_level_connection_close);
+      }
+    }
+    return ENCRYPTION_ZERO_RTT;
+  }
+  return ENCRYPTION_NONE;
 }
 
 #undef ENDPOINT  // undef for jumbo builds
