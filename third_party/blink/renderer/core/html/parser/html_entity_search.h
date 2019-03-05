@@ -42,7 +42,7 @@ class HTMLEntitySearch {
   void Advance(UChar);
 
   bool IsEntityPrefix() const { return !!first_; }
-  int CurrentLength() const { return current_length_; }
+  uint16_t CurrentLength() const { return current_length_; }
 
   const HTMLEntityTableEntry* MostRecentMatch() const {
     return most_recent_match_;
@@ -64,7 +64,7 @@ class HTMLEntitySearch {
     last_ = nullptr;
   }
 
-  int current_length_;
+  uint16_t current_length_;
 
   const HTMLEntityTableEntry* most_recent_match_;
   const HTMLEntityTableEntry* first_;
