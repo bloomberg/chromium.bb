@@ -5666,7 +5666,6 @@ crbug.com/912793 virtual/android/fullscreen/full-screen-iframe-allowed-video.htm
 crbug.com/912821 [ Mac ] virtual/threaded/http/tests/devtools/tracing/user-timing.js [ Pass Failure ]
 crbug.com/912821 [ Mac ] http/tests/devtools/tracing/user-timing.js [ Pass Failure ]
 
-crbug.com/913170 compositing/layer-creation/fixed-position-in-fixed-overflow.html [ Crash Pass ]
 crbug.com/913173 fast/backgrounds/background-svg-scaling-zoom.html [ Failure Pass ]
 
 # Sheriff 2018-12-13
