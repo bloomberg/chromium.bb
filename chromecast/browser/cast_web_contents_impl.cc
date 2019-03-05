@@ -8,8 +8,10 @@
 
 #include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "chromecast/base/chromecast_switches.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
+#include "chromecast/common/mojom/media_playback_options.mojom.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -19,6 +21,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "net/base/net_errors.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "url/gurl.h"
 
 namespace chromecast {
@@ -30,6 +33,7 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
       page_state_(PageState::IDLE),
       last_state_(PageState::IDLE),
       enabled_for_dev_(init_params.enabled_for_dev),
+      use_cma_renderer_(init_params.use_cma_renderer),
       remote_debugging_server_(
           shell::CastBrowserProcess::GetInstance()->remote_debugging_server()),
       closing_(false),
@@ -46,6 +50,11 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
   if (enabled_for_dev_) {
     LOG(INFO) << "Enabling dev console for CastWebContentsImpl";
     remote_debugging_server_->EnableWebContentsForDebugging(web_contents_);
+  }
+
+  // TODO(yucliu): Change the flag name to kDisableCmaRenderer in a latter diff.
+  if (GetSwitchValueBoolean(switches::kDisableMojoRenderer, false)) {
+    use_cma_renderer_ = false;
   }
 }
 
@@ -214,6 +223,12 @@ void CastWebContentsImpl::RenderFrameCreated(
   chromecast::shell::mojom::FeatureManagerPtr feature_manager_ptr;
   render_frame_host->GetRemoteInterfaces()->GetInterface(&feature_manager_ptr);
   feature_manager_ptr->ConfigureFeatures(GetRendererFeatures());
+
+  chromecast::shell::mojom::MediaPlaybackOptionsAssociatedPtr
+      media_playback_options;
+  render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
+      &media_playback_options);
+  media_playback_options->SetUseCmaRenderer(use_cma_renderer_);
 }
 
 std::vector<chromecast::shell::mojom::FeaturePtr>

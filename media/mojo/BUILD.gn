@@ -36,9 +36,6 @@ buildflag_header("buildflags") {
         assert(false, "Invalid mojo media service: $service")
       }
     }
-    assert(
-        enable_mojo_renderer || !enable_runtime_media_renderer_selection,
-        "The mojo renderer must be enabled to use runtime media renderer selection.")
 
     if (mojo_media_host == "browser") {
       enable_mojo_media_in_browser_process = true

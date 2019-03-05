@@ -190,6 +190,11 @@ extern const char kCastMemoryPressureCriticalFraction[] =
 extern const char kCastMemoryPressureModerateFraction[] =
     "memory-pressure-moderate-fraction";
 
+// Rather than use the renderer hosted remotely in the media service, fall back
+// to the default renderer within content_renderer. Does not change the behavior
+// of the media service.
+const char kDisableMojoRenderer[] = "disable-mojo-renderer";
+
 }  // namespace switches
 
 namespace chromecast {

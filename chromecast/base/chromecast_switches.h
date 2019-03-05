@@ -91,6 +91,8 @@ extern const char kMixerServiceEndpoint[];
 extern const char kCastMemoryPressureCriticalFraction[];
 extern const char kCastMemoryPressureModerateFraction[];
 
+extern const char kDisableMojoRenderer[];
+
 }  // namespace switches
 
 namespace chromecast {

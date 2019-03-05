@@ -28,6 +28,9 @@ struct RenderFrameMediaPlaybackOptions {
 
   // Whether background video optimization is supported on current platform.
   bool is_background_video_track_optimization_supported = true;
+
+  // Whether MojoRenderer should be used for given |render_frame|.
+  bool is_mojo_renderer_enabled = true;
 };
 
 }  // namespace content
