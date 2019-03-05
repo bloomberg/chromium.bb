@@ -120,9 +120,9 @@ public class AppMenuPropertiesDelegate {
                             < DeviceFormFactor.getMinimumTabletWidthPx(
                                       mActivity.getWindowAndroid().getDisplay());
 
-            boolean bottomToolbarEnabled = mActivity.getToolbarManager() != null
-                    && mActivity.getToolbarManager().getBottomToolbarCoordinator() != null;
-            shouldShowIconRow &= !bottomToolbarEnabled;
+            final boolean bottomToolbarVisible = mActivity.getToolbarManager() != null
+                    && mActivity.getToolbarManager().isMenuButtonInBottomToolbar();
+            shouldShowIconRow &= !bottomToolbarVisible;
 
             // Update the icon row items (shown in narrow form factors).
             menu.findItem(R.id.icon_row_menu_id).setVisible(shouldShowIconRow);

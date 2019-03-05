@@ -47,9 +47,6 @@ class BrowsingModeBottomToolbarMediator
     /** The model for the browsing mode bottom toolbar that holds all of its state. */
     private BrowsingModeBottomToolbarModel mModel;
 
-    /** The previous height of the bottom toolbar. */
-    private int mBrowsingModeBottomToolbarHeightBeforeHide;
-
     /** Whether the swipe layout is currently active. */
     private boolean mIsInSwipeLayout;
 
@@ -68,6 +65,12 @@ class BrowsingModeBottomToolbarMediator
     /** A state set to {@code true} while any overlay panel is showing. */
     private boolean mIsOverlayPanelShowing;
 
+    /** Whether the bottom toolbar is hidden because we are in adaptive toolbar mode. */
+    private boolean mIsHiddenForAdaptiveToolbar;
+
+    /** The height of the bottom bar in pixels */
+    private final int mBottomToolbarHeight;
+
     /**
      * Build a new mediator that handles events from outside the bottom toolbar.
      * @param model The {@link BrowsingModeBottomToolbarModel} that holds all the state for the
@@ -81,11 +84,7 @@ class BrowsingModeBottomToolbarMediator
         mModel = model;
         mFullscreenManager = fullscreenManager;
         mFullscreenManager.addListener(this);
-
-        // Notify the fullscreen manager that the bottom controls now have a height.
-        fullscreenManager.setBottomControlsHeight(
-                resources.getDimensionPixelOffset(R.dimen.bottom_toolbar_height));
-        fullscreenManager.updateViewportSize();
+        mBottomToolbarHeight = resources.getDimensionPixelOffset(R.dimen.bottom_toolbar_height);
     }
 
     /**
@@ -199,7 +198,10 @@ class BrowsingModeBottomToolbarMediator
     public void onToggleOverlayVideoMode(boolean enabled) {}
 
     @Override
-    public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
+    public void onBottomControlsHeightChanged(int bottomControlsHeight) {
+        mModel.set(
+                BrowsingModeBottomToolbarModel.COMPOSITED_VIEW_VISIBLE, bottomControlsHeight != 0);
+    }
 
     @Override
     public void onOverviewModeStartedShowing(boolean showToolbar) {
@@ -236,17 +238,14 @@ class BrowsingModeBottomToolbarMediator
         // The toolbars are force shown when the keyboard is visible, so we can blindly set
         // the bottom toolbar view to visible or invisible regardless of the previous state.
         if (isShowing) {
-            mBrowsingModeBottomToolbarHeightBeforeHide =
-                    mFullscreenManager.getBottomControlsHeight();
             mModel.set(BrowsingModeBottomToolbarModel.ANDROID_VIEW_VISIBLE, false);
-            mModel.set(BrowsingModeBottomToolbarModel.COMPOSITED_VIEW_VISIBLE, false);
             mFullscreenManager.setBottomControlsHeight(0);
         } else {
-            mFullscreenManager.setBottomControlsHeight(mBrowsingModeBottomToolbarHeightBeforeHide);
+            mFullscreenManager.setBottomControlsHeight(
+                    mIsHiddenForAdaptiveToolbar ? 0 : mBottomToolbarHeight);
             tryShowingAndroidView();
             mModel.set(BrowsingModeBottomToolbarModel.Y_OFFSET,
                     (int) mFullscreenManager.getBottomControlOffset());
-            mModel.set(BrowsingModeBottomToolbarModel.COMPOSITED_VIEW_VISIBLE, true);
         }
     }
 
@@ -276,9 +275,17 @@ class BrowsingModeBottomToolbarMediator
      * hidden.
      */
     private void tryShowingAndroidView() {
+        if (mIsHiddenForAdaptiveToolbar) return;
         if (mFullscreenManager.getBottomControlOffset() > 0) return;
         if (mIsOverlayPanelShowing) return;
         if (mModel.get(BrowsingModeBottomToolbarModel.Y_OFFSET) != 0) return;
         mModel.set(BrowsingModeBottomToolbarModel.ANDROID_VIEW_VISIBLE, true);
+    }
+
+    public void setVisible(boolean isVisible) {
+        mIsHiddenForAdaptiveToolbar = !isVisible;
+        mFullscreenManager.setBottomControlsHeight(
+                mIsHiddenForAdaptiveToolbar ? 0 : mBottomToolbarHeight);
+        mFullscreenManager.updateViewportSize();
     }
 }

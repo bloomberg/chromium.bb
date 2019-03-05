@@ -40,6 +40,9 @@ public class BottomToolbarCoordinator {
     /** A provider that notifies components when the theme color changes.*/
     private final BottomToolbarThemeColorProvider mBottomToolbarThemeColorProvider;
 
+    /** The root view of the bottom toolbar. */
+    private final View mRoot;
+
     /**
      * Build the coordinator that manages the bottom toolbar.
      * @param fullscreenManager A {@link ChromeFullscreenManager} to update the bottom controls
@@ -53,14 +56,15 @@ public class BottomToolbarCoordinator {
     public BottomToolbarCoordinator(ChromeFullscreenManager fullscreenManager, ViewStub stub,
             ActivityTabProvider tabProvider, OnClickListener homeButtonListener,
             OnClickListener searchAcceleratorListener, OnClickListener shareButtonListener) {
-        final View root = stub.inflate();
+        mRoot = stub.inflate();
 
-        mBrowsingModeCoordinator = new BrowsingModeBottomToolbarCoordinator(root, fullscreenManager,
-                tabProvider, homeButtonListener, searchAcceleratorListener, shareButtonListener);
+        mBrowsingModeCoordinator =
+                new BrowsingModeBottomToolbarCoordinator(mRoot, fullscreenManager, tabProvider,
+                        homeButtonListener, searchAcceleratorListener, shareButtonListener);
 
-        mTabSwitcherModeStub = root.findViewById(R.id.bottom_toolbar_tab_switcher_mode_stub);
+        mTabSwitcherModeStub = mRoot.findViewById(R.id.bottom_toolbar_tab_switcher_mode_stub);
 
-        mBottomToolbarThemeColorProvider = new BottomToolbarThemeColorProvider(root.getContext());
+        mBottomToolbarThemeColorProvider = new BottomToolbarThemeColorProvider(mRoot.getContext());
     }
 
     /**
@@ -104,11 +108,16 @@ public class BottomToolbarCoordinator {
     }
 
     /**
-     * @param shouldHide Whether the bottom toolbar should be hidden.
+     * @param isVisible Whether the bottom toolbar is visible.
      */
-    public void setBottomToolbarHidden(boolean shouldHide) {
+    public void setBottomToolbarVisible(boolean isVisible) {
+        // TODO (amaralp): The coordinator should not have direct access to the view.
+        mRoot.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+
+        mBrowsingModeCoordinator.setVisible(isVisible);
+
         if (mTabSwitcherModeCoordinator != null) {
-            mTabSwitcherModeCoordinator.showToolbarOnTop(shouldHide);
+            mTabSwitcherModeCoordinator.showToolbarOnTop(!isVisible);
         }
     }
 

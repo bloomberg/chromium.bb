@@ -186,6 +186,12 @@ public class ChromePreferenceManager {
     public static final String BOTTOM_TOOLBAR_ENABLED_KEY = "bottom_toolbar_enabled";
 
     /**
+     * Whether or not the adaptive toolbar is enabled.
+     * Default value is true.
+     */
+    public static final String ADAPTIVE_TOOLBAR_ENABLED_KEY = "adaptive_toolbar_enabled";
+
+    /**
      * Whether or not night mode is available.
      * Default value is false.
      */

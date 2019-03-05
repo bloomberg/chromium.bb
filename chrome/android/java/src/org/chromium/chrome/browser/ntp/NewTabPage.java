@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.download.DownloadManagerService;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
@@ -55,7 +56,6 @@ import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.content_public.browser.NavigationController;
@@ -71,8 +71,9 @@ import java.util.List;
 /**
  * Provides functionality when the user interacts with the NTP.
  */
-public class NewTabPage
-        implements NativePage, InvalidationAwareThumbnailProvider, TemplateUrlServiceObserver {
+public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvider,
+                                   TemplateUrlServiceObserver,
+                                   ChromeFullscreenManager.FullscreenListener {
     private static final String TAG = "NewTabPage";
 
     // Key for the scroll position data that may be stored in a navigation entry.
@@ -86,6 +87,7 @@ public class NewTabPage
     protected final NewTabPageManagerImpl mNewTabPageManager;
     protected final TileGroup.Delegate mTileGroupDelegate;
     private final boolean mIsTablet;
+    private final ChromeFullscreenManager mFullscreenManager;
 
     /**
      * The {@link NewTabPageView} shown in this NewTabPageLayout. This may be null in sub-classes.
@@ -108,6 +110,20 @@ public class NewTabPage
 
     // Whether destroy() has been called.
     private boolean mIsDestroyed;
+
+    @Override
+    public void onContentOffsetChanged(int offset) {}
+
+    @Override
+    public void onControlsOffsetChanged(int topOffset, int bottomOffset, boolean needsAnimate) {}
+
+    @Override
+    public void onToggleOverlayVideoMode(boolean enabled) {}
+
+    @Override
+    public void onBottomControlsHeightChanged(int bottomControlsHeight) {
+        updateMargins();
+    }
 
     /**
      * Allows clients to listen for updates to the scroll changes of the search box on the
@@ -314,23 +330,26 @@ public class NewTabPage
 
             @Override
             public void onBrowserControlsConstraintsUpdated(Tab tab, int constraints) {
-                updateMargins(constraints);
+                updateMargins();
             }
         };
         mTab.addObserver(mTabObserver);
         updateSearchProviderHasLogo();
 
         initializeMainView(activity);
+
+        mFullscreenManager = activity.getFullscreenManager();
         getView().addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
             public void onViewAttachedToWindow(View view) {
-                updateMargins(mTab.getBrowserControlsStateConstraints());
+                updateMargins();
                 getView().removeOnAttachStateChangeListener(this);
             }
 
             @Override
             public void onViewDetachedFromWindow(View view) {}
         });
+        mFullscreenManager.addListener(this);
 
         eventReporter.onSurfaceOpened();
 
@@ -383,8 +402,11 @@ public class NewTabPage
                 index, NAVIGATION_ENTRY_SCROLL_POSITION_KEY, Integer.toString(scrollPosition));
     }
 
-    /** Update the margins for the content when browser controls constraints are changed. */
-    private void updateMargins(@BrowserControlsState int constraints) {
+    /**
+     * Update the margins for the content when browser controls constraints or bottom control
+     *  height are changed.
+     */
+    private void updateMargins() {
         // TODO(mdjones): can this be merged with BasicNativePage's updateMargins?
 
         View view = getView();
@@ -392,12 +414,17 @@ public class NewTabPage
                 ((ViewGroup.MarginLayoutParams) view.getLayoutParams());
         if (layoutParams == null) return;
 
-        int bottomMargin = 0;
-        if (FeatureUtilities.isBottomToolbarEnabled()
-                && constraints != BrowserControlsState.HIDDEN) {
-            bottomMargin = mTab.getActivity().getFullscreenManager().getBottomControlsHeight();
-        }
-        layoutParams.bottomMargin = bottomMargin;
+        final @BrowserControlsState int constraints = mTab.getBrowserControlsStateConstraints();
+        layoutParams.bottomMargin = (constraints != BrowserControlsState.HIDDEN)
+                ? mFullscreenManager.getBottomControlsHeight()
+                : 0;
+
+        // Apply negative margin to the top of the N logo (which would otherwise be the height of
+        // the top toolbar) when Duet is enabled to remove some of the empty space.
+        layoutParams.topMargin = (layoutParams.bottomMargin == 0)
+                ? 0
+                : -view.getResources().getDimensionPixelSize(R.dimen.duet_ntp_logo_top_margin);
+        view.setLayoutParams(layoutParams);
     }
 
     /** @return The view container for the new tab page. */
@@ -604,6 +631,7 @@ public class NewTabPage
         TemplateUrlService.getInstance().removeObserver(this);
         mTab.removeObserver(mTabObserver);
         mTabObserver = null;
+        mFullscreenManager.removeListener(this);
         mIsDestroyed = true;
     }
 

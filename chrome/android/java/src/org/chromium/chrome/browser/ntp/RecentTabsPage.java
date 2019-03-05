@@ -24,6 +24,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.util.ViewUtils;
 
@@ -37,8 +38,9 @@ public class RecentTabsPage
                    ExpandableListView.OnGroupCollapseListener,
                    ExpandableListView.OnGroupExpandListener, RecentTabsManager.UpdatedCallback,
                    View.OnAttachStateChangeListener, View.OnCreateContextMenuListener,
-                   InvalidationAwareThumbnailProvider {
+                   InvalidationAwareThumbnailProvider, ChromeFullscreenManager.FullscreenListener {
     private final Activity mActivity;
+    private final ChromeFullscreenManager mFullscreenManager;
     private final ExpandableListView mListView;
     private final String mTitle;
     private final ViewGroup mView;
@@ -97,14 +99,9 @@ public class RecentTabsPage
         ApplicationStatus.registerStateListenerForActivity(this, activity);
         // {@link #mInForeground} will be updated once the view is attached to the window.
 
-        View recentTabsRoot = mView.findViewById(R.id.recent_tabs_root);
-        if (activity.getFullscreenManager().getBottomControlsHeight() != 0) {
-            ViewCompat.setPaddingRelative(recentTabsRoot,
-                    ViewCompat.getPaddingStart(recentTabsRoot),
-                    activity.getFullscreenManager().getTopControlsHeight(),
-                    ViewCompat.getPaddingEnd(recentTabsRoot),
-                    activity.getFullscreenManager().getBottomControlsHeight());
-        }
+        mFullscreenManager = activity.getFullscreenManager();
+        mFullscreenManager.addListener(this);
+        onBottomControlsHeightChanged(mFullscreenManager.getBottomControlsHeight());
 
         onUpdated();
     }
@@ -174,6 +171,7 @@ public class RecentTabsPage
 
         mView.removeOnAttachStateChangeListener(this);
         ApplicationStatus.unregisterActivityStateListener(this);
+        mFullscreenManager.removeListener(this);
     }
 
     @Override
@@ -287,5 +285,22 @@ public class RecentTabsPage
         mSnapshotListTop = topItem == null ? 0 : topItem.getTop();
         mSnapshotWidth = mView.getWidth();
         mSnapshotHeight = mView.getHeight();
+    }
+
+    @Override
+    public void onContentOffsetChanged(int offset) {}
+
+    @Override
+    public void onControlsOffsetChanged(int topOffset, int bottomOffset, boolean needsAnimate) {}
+
+    @Override
+    public void onToggleOverlayVideoMode(boolean enabled) {}
+
+    @Override
+    public void onBottomControlsHeightChanged(int bottomControlsHeight) {
+        final View recentTabsRoot = mView.findViewById(R.id.recent_tabs_root);
+        ViewCompat.setPaddingRelative(recentTabsRoot, ViewCompat.getPaddingStart(recentTabsRoot),
+                mFullscreenManager.getTopControlsHeight(), ViewCompat.getPaddingEnd(recentTabsRoot),
+                bottomControlsHeight);
     }
 }

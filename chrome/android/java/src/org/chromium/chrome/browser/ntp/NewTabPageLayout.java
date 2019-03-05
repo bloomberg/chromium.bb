@@ -194,13 +194,6 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
             exploreStub.setLayoutResource(R.layout.experimental_explore_sites_section);
             mExploreSectionView = exploreStub.inflate();
         }
-
-        // Apply negative margin to the top of the N logo (which would otherwise be the height of
-        // the top toolbar) when Duet is enabled to remove some of the empty space.
-        if (FeatureUtilities.isBottomToolbarEnabled()) {
-            ((MarginLayoutParams) mSearchProviderLogoView.getLayoutParams()).topMargin =
-                    -getResources().getDimensionPixelSize(R.dimen.duet_ntp_logo_top_margin);
-        }
     }
 
     /**

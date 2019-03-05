@@ -58,20 +58,27 @@ public class BrowsingModeBottomToolbarViewBinder
                             ? View.VISIBLE
                             : View.INVISIBLE);
         } else if (BrowsingModeBottomToolbarModel.COMPOSITED_VIEW_VISIBLE == propertyKey) {
-            view.sceneLayer.setIsVisible(
-                    model.get(BrowsingModeBottomToolbarModel.COMPOSITED_VIEW_VISIBLE));
+            if (view.sceneLayer == null) return;
+            final boolean showCompositedView =
+                    model.get(BrowsingModeBottomToolbarModel.COMPOSITED_VIEW_VISIBLE);
+            view.sceneLayer.setIsVisible(showCompositedView);
+            model.get(BrowsingModeBottomToolbarModel.TOOLBAR_SWIPE_LAYOUT)
+                    .setBottomToolbarSceneLayersVisibility(showCompositedView);
             model.get(BrowsingModeBottomToolbarModel.LAYOUT_MANAGER).requestUpdate();
         } else if (BrowsingModeBottomToolbarModel.LAYOUT_MANAGER == propertyKey) {
             assert view.sceneLayer == null;
             view.sceneLayer = new ScrollingBottomViewSceneLayer(
                     view.toolbarRoot, view.toolbarRoot.getTopShadowHeight());
+            view.sceneLayer.setIsVisible(
+                    model.get(BrowsingModeBottomToolbarModel.COMPOSITED_VIEW_VISIBLE));
             model.get(BrowsingModeBottomToolbarModel.LAYOUT_MANAGER)
                     .addSceneOverlayToBack(view.sceneLayer);
         } else if (BrowsingModeBottomToolbarModel.TOOLBAR_SWIPE_LAYOUT == propertyKey) {
             assert view.sceneLayer != null;
             model.get(BrowsingModeBottomToolbarModel.TOOLBAR_SWIPE_LAYOUT)
                     .setBottomToolbarSceneLayers(new ScrollingBottomViewSceneLayer(view.sceneLayer),
-                            new ScrollingBottomViewSceneLayer(view.sceneLayer));
+                            new ScrollingBottomViewSceneLayer(view.sceneLayer),
+                            model.get(BrowsingModeBottomToolbarModel.COMPOSITED_VIEW_VISIBLE));
         } else if (BrowsingModeBottomToolbarModel.RESOURCE_MANAGER == propertyKey) {
             model.get(BrowsingModeBottomToolbarModel.RESOURCE_MANAGER)
                     .getDynamicResourceLoader()

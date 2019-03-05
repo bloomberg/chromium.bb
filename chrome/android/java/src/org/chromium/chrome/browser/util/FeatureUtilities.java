@@ -75,6 +75,7 @@ public class FeatureUtilities {
     private static Boolean sIsHomepageTileEnabled;
     private static Boolean sIsNewTabPageButtonEnabled;
     private static Boolean sIsBottomToolbarEnabled;
+    private static Boolean sIsAdaptiveToolbarEnabled;
     private static Boolean sShouldInflateToolbarOnBackgroundThread;
     private static Boolean sIsNightModeAvailable;
 
@@ -190,6 +191,7 @@ public class FeatureUtilities {
         cacheHomepageTileEnabled();
         cacheNewTabPageButtonEnabled();
         cacheBottomToolbarEnabled();
+        cacheAdaptiveToolbarEnabled();
         cacheInflateToolbarOnBackgroundThread();
         cacheNightModeAvailable();
         cacheDownloadAutoResumptionEnabledInNative();
@@ -349,6 +351,16 @@ public class FeatureUtilities {
     }
 
     /**
+     * Cache whether or not the adaptive toolbar is enabled so on next startup, the value can
+     * be made available immediately.
+     */
+    public static void cacheAdaptiveToolbarEnabled() {
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.ADAPTIVE_TOOLBAR_ENABLED_KEY,
+                ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_DUET_ADAPTIVE));
+    }
+
+    /**
      * Cache whether or not download auto-resumptions are enabled in native so on next startup, the
      * value can be made available immediately.
      */
@@ -371,6 +383,19 @@ public class FeatureUtilities {
         return sIsBottomToolbarEnabled
                 && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
                            ContextUtils.getApplicationContext());
+    }
+
+    /**
+     * @return Whether or not the adaptive toolbar is enabled.
+     */
+    public static boolean isAdaptiveToolbarEnabled() {
+        if (sIsAdaptiveToolbarEnabled == null) {
+            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
+
+            sIsAdaptiveToolbarEnabled = prefManager.readBoolean(
+                    ChromePreferenceManager.ADAPTIVE_TOOLBAR_ENABLED_KEY, true);
+        }
+        return sIsAdaptiveToolbarEnabled;
     }
 
     /**
