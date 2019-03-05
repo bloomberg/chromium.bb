@@ -54,7 +54,7 @@ EmbeddedWorkerInstance::StatusCallback ReceiveStatus(
 
 }  // namespace
 
-class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
+class EmbeddedWorkerInstanceTest : public testing::Test,
                                    public EmbeddedWorkerInstance::Listener {
  protected:
   EmbeddedWorkerInstanceTest()
@@ -226,7 +226,7 @@ class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstanceTest);
 };
 
-TEST_P(EmbeddedWorkerInstanceTest, StartAndStop) {
+TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -265,7 +265,7 @@ TEST_P(EmbeddedWorkerInstanceTest, StartAndStop) {
 
 // Test that a worker that failed twice will use a new render process
 // on the next attempt.
-TEST_P(EmbeddedWorkerInstanceTest, ForceNewProcess) {
+TEST_F(EmbeddedWorkerInstanceTest, ForceNewProcess) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -303,7 +303,7 @@ TEST_P(EmbeddedWorkerInstanceTest, ForceNewProcess) {
   }
 }
 
-TEST_P(EmbeddedWorkerInstanceTest, StopWhenDevToolsAttached) {
+TEST_F(EmbeddedWorkerInstanceTest, StopWhenDevToolsAttached) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -342,7 +342,7 @@ TEST_P(EmbeddedWorkerInstanceTest, StopWhenDevToolsAttached) {
 
 // Test that the removal of a worker from the registry doesn't remove
 // other workers in the same process.
-TEST_P(EmbeddedWorkerInstanceTest, RemoveWorkerInSharedProcess) {
+TEST_F(EmbeddedWorkerInstanceTest, RemoveWorkerInSharedProcess) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -377,7 +377,7 @@ TEST_P(EmbeddedWorkerInstanceTest, RemoveWorkerInSharedProcess) {
   worker2->Stop();
 }
 
-TEST_P(EmbeddedWorkerInstanceTest, DetachDuringProcessAllocation) {
+TEST_F(EmbeddedWorkerInstanceTest, DetachDuringProcessAllocation) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -406,7 +406,7 @@ TEST_P(EmbeddedWorkerInstanceTest, DetachDuringProcessAllocation) {
   EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[0].status.value());
 }
 
-TEST_P(EmbeddedWorkerInstanceTest, DetachAfterSendingStartWorkerMessage) {
+TEST_F(EmbeddedWorkerInstanceTest, DetachAfterSendingStartWorkerMessage) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -436,7 +436,7 @@ TEST_P(EmbeddedWorkerInstanceTest, DetachAfterSendingStartWorkerMessage) {
   EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[0].status.value());
 }
 
-TEST_P(EmbeddedWorkerInstanceTest, StopDuringProcessAllocation) {
+TEST_F(EmbeddedWorkerInstanceTest, StopDuringProcessAllocation) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -495,7 +495,7 @@ class DontReceiveResumeAfterDownloadInstanceClient
   bool* const was_resume_after_download_called_;
 };
 
-TEST_P(EmbeddedWorkerInstanceTest, StopDuringPausedAfterDownload) {
+TEST_F(EmbeddedWorkerInstanceTest, StopDuringPausedAfterDownload) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -529,7 +529,7 @@ TEST_P(EmbeddedWorkerInstanceTest, StopDuringPausedAfterDownload) {
   EXPECT_FALSE(was_resume_after_download_called);
 }
 
-TEST_P(EmbeddedWorkerInstanceTest, StopAfterSendingStartWorkerMessage) {
+TEST_F(EmbeddedWorkerInstanceTest, StopAfterSendingStartWorkerMessage) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -573,7 +573,7 @@ TEST_P(EmbeddedWorkerInstanceTest, StopAfterSendingStartWorkerMessage) {
   worker->Stop();
 }
 
-TEST_P(EmbeddedWorkerInstanceTest, Detach) {
+TEST_F(EmbeddedWorkerInstanceTest, Detach) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -599,7 +599,7 @@ TEST_P(EmbeddedWorkerInstanceTest, Detach) {
 }
 
 // Test for when sending the start IPC failed.
-TEST_P(EmbeddedWorkerInstanceTest, FailToSendStartIPC) {
+TEST_F(EmbeddedWorkerInstanceTest, FailToSendStartIPC) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -632,7 +632,7 @@ TEST_P(EmbeddedWorkerInstanceTest, FailToSendStartIPC) {
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
 }
 
-TEST_P(EmbeddedWorkerInstanceTest, RemoveRemoteInterface) {
+TEST_F(EmbeddedWorkerInstanceTest, RemoveRemoteInterface) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -692,7 +692,7 @@ class StoreMessageInstanceClient : public FakeEmbeddedWorkerInstanceClient {
   base::RepeatingClosure add_message_to_console_callback_;
 };
 
-TEST_P(EmbeddedWorkerInstanceTest, AddMessageToConsole) {
+TEST_F(EmbeddedWorkerInstanceTest, AddMessageToConsole) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
@@ -760,7 +760,7 @@ class RecordCacheStorageInstanceClient
 
 // Test that the worker is given a CacheStoragePtr during startup, when
 // |pause_after_download| is false.
-TEST_P(EmbeddedWorkerInstanceTest, CacheStorageOptimization) {
+TEST_F(EmbeddedWorkerInstanceTest, CacheStorageOptimization) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
@@ -814,7 +814,7 @@ TEST_P(EmbeddedWorkerInstanceTest, CacheStorageOptimization) {
 
 // Test that the worker is not given a CacheStoragePtr during startup when
 // the feature is disabled.
-TEST_P(EmbeddedWorkerInstanceTest, CacheStorageOptimizationIsDisabled) {
+TEST_F(EmbeddedWorkerInstanceTest, CacheStorageOptimizationIsDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(
       blink::features::kEagerCacheStorageSetupForServiceWorkers);
@@ -891,7 +891,7 @@ class AbruptCompletionInstanceClient : public FakeEmbeddedWorkerInstanceClient {
 
 // Tests that kAbruptCompletion is the OnStarted() status when the
 // renderer reports abrupt completion.
-TEST_P(EmbeddedWorkerInstanceTest, AbruptCompletion) {
+TEST_F(EmbeddedWorkerInstanceTest, AbruptCompletion) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
