@@ -47,14 +47,6 @@ void PageAlmostIdleDecorator::OnFramePropertyChanged(
   }
 }
 
-void PageAlmostIdleDecorator::OnPagePropertyChanged(
-    PageNodeImpl* page_node,
-    resource_coordinator::mojom::PropertyType property_type,
-    int64_t value) {
-  if (property_type == resource_coordinator::mojom::PropertyType::kIsLoading)
-    UpdateLoadIdleStatePage(page_node);
-}
-
 void PageAlmostIdleDecorator::OnProcessPropertyChanged(
     ProcessNodeImpl* process_node,
     resource_coordinator::mojom::PropertyType property_type,
@@ -77,6 +69,10 @@ void PageAlmostIdleDecorator::OnPageEventReceived(
   auto* data = GetOrCreateData(page_node);
   data->load_idle_state_ = LoadIdleState::kLoadingNotStarted;
   PageNodeImpl::PageAlmostIdleHelper::set_page_almost_idle(page_node, false);
+  UpdateLoadIdleStatePage(page_node);
+}
+
+void PageAlmostIdleDecorator::OnIsLoadingChanged(PageNodeImpl* page_node) {
   UpdateLoadIdleStatePage(page_node);
 }
 
@@ -118,14 +114,14 @@ void PageAlmostIdleDecorator::UpdateLoadIdleStatePage(PageNodeImpl* page_node) {
   // Otherwise do normal state transitions.
   switch (data->load_idle_state_) {
     case LoadIdleState::kLoadingNotStarted: {
-      if (!IsLoading(page_node))
+      if (!page_node->is_loading())
         return;
       data->load_idle_state_ = LoadIdleState::kLoading;
       return;
     }
 
     case LoadIdleState::kLoading: {
-      if (IsLoading(page_node))
+      if (page_node->is_loading())
         return;
       data->load_idle_state_ = LoadIdleState::kLoadedNotIdling;
       data->loading_stopped_ = now;
@@ -211,12 +207,6 @@ PageAlmostIdleData* PageAlmostIdleDecorator::GetOrCreateData(
 // static
 PageAlmostIdleData* PageAlmostIdleDecorator::GetData(PageNodeImpl* page_node) {
   return PageNodeImpl::PageAlmostIdleHelper::GetData(page_node);
-}
-
-// static
-bool PageAlmostIdleDecorator::IsLoading(const PageNodeImpl* page_node) {
-  return page_node->GetPropertyOrDefault(
-      resource_coordinator::mojom::PropertyType::kIsLoading, 0u);
 }
 
 // static
