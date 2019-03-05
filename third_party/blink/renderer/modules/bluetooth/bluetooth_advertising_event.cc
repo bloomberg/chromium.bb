@@ -31,7 +31,7 @@ BluetoothAdvertisingEvent::BluetoothAdvertisingEvent(
     BluetoothDevice* device,
     const String& name,
     const HeapVector<StringOrUnsignedLong>& uuids,
-    base::Optional<short> appearance,
+    base::Optional<uint16_t> appearance,
     base::Optional<int8_t> txPower,
     base::Optional<int8_t> rssi,
     BluetoothManufacturerDataMap* manufacturerData,
@@ -73,7 +73,7 @@ const HeapVector<StringOrUnsignedLong>& BluetoothAdvertisingEvent::uuids()
   return uuids_;
 }
 
-short BluetoothAdvertisingEvent::appearance(bool& is_null) const {
+uint16_t BluetoothAdvertisingEvent::appearance(bool& is_null) const {
   is_null = !appearance_.has_value();
   return appearance_.value_or(0);
 }
