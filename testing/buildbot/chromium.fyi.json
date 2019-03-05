@@ -3033,6 +3033,11 @@
       "libANGLE"
     ]
   },
+  "Win cl.exe Goma Latest Client LocalOutputCache": {
+    "additional_compile_targets": [
+      "libANGLE"
+    ]
+  },
   "Win7 Builder (dbg) Goma Canary": {
     "additional_compile_targets": [
       "all"
@@ -3073,6 +3078,11 @@
     ]
   },
   "WinMSVC64 Goma Canary": {
+    "additional_compile_targets": [
+      "libANGLE"
+    ]
+  },
+  "WinMSVC64 Goma Latest Client": {
     "additional_compile_targets": [
       "libANGLE"
     ]

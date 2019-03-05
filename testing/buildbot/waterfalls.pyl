@@ -1306,6 +1306,12 @@
           'libANGLE',
         ],
       },
+      'Win cl.exe Goma Latest Client LocalOutputCache': {
+        # Build only chromium's subproject using cl.exe.
+        'additional_compile_targets': [
+          'libANGLE',
+        ],
+      },
       'Win7 Builder (dbg) Goma Canary': {
         'additional_compile_targets': [
           'all',
@@ -1324,6 +1330,12 @@
         },
       },
       'WinMSVC64 Goma Canary': {
+        # Build only chromium's subproject using cl.exe.
+        'additional_compile_targets': [
+          'libANGLE',
+        ],
+      },
+      'WinMSVC64 Goma Latest Client': {
         # Build only chromium's subproject using cl.exe.
         'additional_compile_targets': [
           'libANGLE',
