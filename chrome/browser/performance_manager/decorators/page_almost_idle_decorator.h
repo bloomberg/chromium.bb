@@ -35,16 +35,13 @@ class PageAlmostIdleDecorator : public GraphObserver {
       FrameNodeImpl* frame_node,
       resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override;
-  void OnPagePropertyChanged(
-      PageNodeImpl* page_node,
-      resource_coordinator::mojom::PropertyType property_type,
-      int64_t value) override;
   void OnProcessPropertyChanged(
       ProcessNodeImpl* process_node,
       resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override;
   void OnPageEventReceived(PageNodeImpl* page_node,
                            resource_coordinator::mojom::Event event) override;
+  void OnIsLoadingChanged(PageNodeImpl* page_node) override;
 
  protected:
   using LoadIdleState = PageAlmostIdleData::LoadIdleState;
@@ -84,7 +81,6 @@ class PageAlmostIdleDecorator : public GraphObserver {
   // Convenience accessors for state associated with a |page_node|.
   static PageAlmostIdleData* GetOrCreateData(PageNodeImpl* page_node);
   static PageAlmostIdleData* GetData(PageNodeImpl* page_node);
-  static bool IsLoading(const PageNodeImpl* page_node);
   static bool IsIdling(const PageNodeImpl* page_node);
 
  private:

@@ -74,11 +74,11 @@ void PageAlmostIdleDecoratorTestUtils::DrivePageToLoadedAndIdle(
       NOTREACHED();
       break;
     case PageAlmostIdleData::LoadIdleState::kLoadingNotStarted:
-      DCHECK(!page_node->GetPropertyOrDefault(PropertyType::kIsLoading, 0));
+      DCHECK(!page_node->is_loading());
       page_node->SetIsLoading(true);
       FALLTHROUGH;
     case PageAlmostIdleData::LoadIdleState::kLoading:
-      DCHECK(page_node->GetPropertyOrDefault(PropertyType::kIsLoading, 0));
+      DCHECK(page_node->is_loading());
       page_node->SetIsLoading(false);
       FALLTHROUGH;
     case PageAlmostIdleData::LoadIdleState::kLoadedNotIdling:

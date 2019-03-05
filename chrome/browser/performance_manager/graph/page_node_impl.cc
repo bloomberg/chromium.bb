@@ -64,8 +64,11 @@ void PageNodeImpl::RemoveFrame(
 }
 
 void PageNodeImpl::SetIsLoading(bool is_loading) {
-  SetProperty(resource_coordinator::mojom::PropertyType::kIsLoading,
-              is_loading);
+  if (is_loading_ == is_loading)
+    return;
+  is_loading_ = is_loading;
+  for (auto& observer : observers())
+    observer.OnIsLoadingChanged(this);
 }
 
 void PageNodeImpl::SetVisibility(bool visible) {

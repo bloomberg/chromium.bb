@@ -183,28 +183,20 @@ TEST_F(PageNodeImplTest, IsLoading) {
   MockSinglePageInSingleProcessGraph cu_graph(coordination_unit_graph());
   auto* page_cu = cu_graph.page.get();
 
-  // First attempt should fail, as the property is unset.
-  int64_t loading = 0;
-  EXPECT_FALSE(page_cu->GetProperty(
-      resource_coordinator::mojom::PropertyType::kIsLoading, &loading));
+  // This should be initialized to false.
+  EXPECT_FALSE(page_cu->is_loading());
 
-  // Set to false and the property should read false.
+  // Set to false and the property should stay false.
   page_cu->SetIsLoading(false);
-  EXPECT_TRUE(page_cu->GetProperty(
-      resource_coordinator::mojom::PropertyType::kIsLoading, &loading));
-  EXPECT_EQ(0u, loading);
+  EXPECT_FALSE(page_cu->is_loading());
 
   // Set to true and the property should read true.
   page_cu->SetIsLoading(true);
-  EXPECT_TRUE(page_cu->GetProperty(
-      resource_coordinator::mojom::PropertyType::kIsLoading, &loading));
-  EXPECT_EQ(1u, loading);
+  EXPECT_TRUE(page_cu->is_loading());
 
   // Set to false and the property should read false again.
   page_cu->SetIsLoading(false);
-  EXPECT_TRUE(page_cu->GetProperty(
-      resource_coordinator::mojom::PropertyType::kIsLoading, &loading));
-  EXPECT_EQ(0u, loading);
+  EXPECT_FALSE(page_cu->is_loading());
 }
 
 TEST_F(PageNodeImplTest, OnAllFramesInPageFrozen) {

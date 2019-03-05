@@ -79,10 +79,6 @@ class PageAlmostIdleDecoratorTestHelper {
         PageAlmostIdleDecorator::GetData(page_node));
   }
 
-  static bool IsLoading(const PageNodeImpl* page_node) {
-    return PageAlmostIdleDecorator::IsLoading(page_node);
-  }
-
   static bool IsIdling(const PageNodeImpl* page_node) {
     return PageAlmostIdleDecorator::IsIdling(page_node);
   }
@@ -224,15 +220,15 @@ TEST_F(PageAlmostIdleDecoratorTest, IsLoading) {
 
   // The loading property hasn't yet been set. Then IsLoading should return
   // false as the default value.
-  EXPECT_FALSE(PageAlmostIdleDecoratorTestHelper::IsLoading(page_node));
+  EXPECT_FALSE(page_node->is_loading());
 
   // Once the loading property has been set it should return that value.
   page_node->SetIsLoading(false);
-  EXPECT_FALSE(PageAlmostIdleDecoratorTestHelper::IsLoading(page_node));
+  EXPECT_FALSE(page_node->is_loading());
   page_node->SetIsLoading(true);
-  EXPECT_TRUE(PageAlmostIdleDecoratorTestHelper::IsLoading(page_node));
+  EXPECT_TRUE(page_node->is_loading());
   page_node->SetIsLoading(false);
-  EXPECT_FALSE(PageAlmostIdleDecoratorTestHelper::IsLoading(page_node));
+  EXPECT_FALSE(page_node->is_loading());
 }
 
 TEST_F(PageAlmostIdleDecoratorTest, IsIdling) {

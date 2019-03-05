@@ -73,6 +73,7 @@ class PageNodeImpl
   FrameNodeImpl* GetMainFrameNode() const;
 
   // Accessors.
+  bool is_loading() const { return is_loading_; }
   base::TimeTicks usage_estimate_time() const { return usage_estimate_time_; }
   void set_usage_estimate_time(base::TimeTicks usage_estimate_time) {
     usage_estimate_time_ = usage_estimate_time;
@@ -219,6 +220,10 @@ class PageNodeImpl
   // Page almost idle state. This is the output that is driven by the
   // PageAlmostIdleDecorator.
   bool page_almost_idle_ = false;
+
+  // The loading state. This is driven by instrumentation in the browser
+  // process.
+  bool is_loading_ = false;
 
   // TODO(chrisha): Hide away this type using a base class, and expose a
   // strongly typed "WebContentsUserData" like mechanism.
