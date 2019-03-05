@@ -141,6 +141,9 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 // Tracks if current password is generated.
 @property(nonatomic, assign) BOOL isPasswordGenerated;
 
+// Tracks field when current password was generated.
+@property(nonatomic, copy) NSString* passwordGeneratedIdentifier;
+
 @end
 
 @interface PasswordController ()<FormSuggestionProvider, PasswordFormFiller>
@@ -360,19 +363,30 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                        }];
 
   if (self.isPasswordGenerated &&
-      [self canGeneratePasswordForForm:formName
-                       fieldIdentifier:fieldIdentifier
-                             fieldType:fieldType]) {
+      [fieldIdentifier isEqualToString:self.passwordGeneratedIdentifier]) {
+    // TODO(crbug.com/886583):  On other platforms, when the user clicks on
+    // generation field, we show password in clear text. And the user has
+    // the possibility to edit it. On iOS, it's harder to do (it's probably
+    // bad idea to change field type from password to text).
+    // We probably need to show some additionaly UI.  Waiting on UX.
     if (typedValue.length < kMinimumLengthForEditedPassword) {
       self.isPasswordGenerated = NO;
-      // TODO(crbug.com/886583): call
-      // passwordManager->OnPasswordNoLongerGenerated, but how to get
-      // PasswordForm?
+      self.passwordGeneratedIdentifier = nil;
+      self.passwordManager->OnPasswordNoLongerGenerated(
+          self.passwordManagerDriver);
     } else {
+      // Inject updated value to possibly update confirmation field.
       [self injectGeneratedPasswordForFormName:formName
                              generatedPassword:typedValue
                              completionHandler:nil];
     }
+  }
+
+  if (self.isPasswordGenerated) {
+    // Always update, in case, for example, that username has been edited.
+    self.passwordManager->UpdateGeneratedPasswordOnUserInput(
+        self.passwordManagerDriver, SysNSStringToUTF16(formName),
+        SysNSStringToUTF16(fieldIdentifier), SysNSStringToUTF16(typedValue));
   }
 }
 
@@ -794,10 +808,24 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                          generatedPassword:(NSString*)generatedPassword
                          completionHandler:(void (^)(BOOL))completionHandler {
   auto generatedPasswordInjected = ^(BOOL success) {
+    auto passwordPresaved = ^(BOOL found, const autofill::FormData& form) {
+      if (found) {
+        // TODO(crbug.com/886583): set is_manually_triggered when we show a
+        // prompt.
+        self.passwordManager->PresaveGeneratedPassword(
+            self.passwordManagerDriver, form,
+            SysNSStringToUTF16(generatedPassword),
+            SysNSStringToUTF16(newPasswordIdentifier),
+            /* is_manually_triggered */ false);
+      }
+      // If the form isn't found, it disappeared between fillPasswordForm below
+      // and here. There isn't much that can be done.
+    };
     if (success) {
-      // TODO(crbug.com/886583) call _pM::OnPresaveGeneratedPassword once it has
-      // been refactored not to need a full form.
+      [self.formHelper extractPasswordFormData:formName
+                             completionHandler:passwordPresaved];
       self.isPasswordGenerated = YES;
+      self.passwordGeneratedIdentifier = newPasswordIdentifier;
     }
     if (completionHandler)
       completionHandler(YES);
