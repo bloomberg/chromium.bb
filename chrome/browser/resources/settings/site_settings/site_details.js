@@ -258,4 +258,13 @@ Polymer({
     return storage != '';
   },
 
+  /** @private */
+  onResetSettingsDialogClosed_: function() {
+    cr.ui.focusWithoutInk(assert(this.$$('#resetSettingsButton')));
+  },
+
+  /** @private */
+  onClearStorageDialogClosed_: function() {
+    cr.ui.focusWithoutInk(assert(this.$$('#clearStorage')));
+  },
 });

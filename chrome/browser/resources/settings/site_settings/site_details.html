@@ -2,6 +2,8 @@
 
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
+<link rel="import" href="chrome://resources/html/assert.html">
+<link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
@@ -33,12 +35,13 @@
         padding-inline-start: var(--settings-box-row-padding);
       }
 
-      div#resetSettingsButton {
+      #resetSettingsButton {
         margin-top: 24px;
       }
     </style>
     <!-- Confirm reset settings dialog. -->
-    <cr-dialog id="confirmResetSettings" close-text="$i18n{close}">
+    <cr-dialog id="confirmResetSettings" close-text="$i18n{close}"
+        on-close="onResetSettingsDialogClosed_">
       <div slot="body">
         [[i18n('siteSettingsSiteResetConfirmation', pageTitle)]]
       </div>
@@ -53,7 +56,8 @@
     </cr-dialog>
 
     <!-- Confirm clear storage dialog. -->
-    <cr-dialog id="confirmClearStorage" close-text="$i18n{close}">
+    <cr-dialog id="confirmClearStorage" close-text="$i18n{close}"
+        on-close="onClearStorageDialogClosed_">
       <div slot="title">
         $i18n{siteSettingsSiteClearStorageDialogTitle}
       </div>
@@ -82,8 +86,9 @@
           </div>
           <div class="list-item" id="storage" hidden$="[[!storedData_]]">
             <div class="start">[[storedData_]]</div>
-            <paper-button class="secondary-button" role="button"
-                aria-disabled="false" on-click="onConfirmClearStorage_"
+            <paper-button class="secondary-button" id="clearStorage" 
+                role="button" aria-disabled="false"
+                on-click="onConfirmClearStorage_"
                 aria-label="$i18n{siteSettingsDelete}">
               $i18n{siteSettingsDelete}
             </paper-button>
